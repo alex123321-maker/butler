@@ -13,6 +13,7 @@ Current baseline:
 - implements the internal event-to-run execution flow for normalized `InputEvent` values using the transport layer and transcript store
 - exposes an internal delivery sink for `assistant_delta` and `assistant_final` events without allowing channel adapters to mutate run state
 - exposes `SubmitEvent` over gRPC and synchronous `POST /api/v1/events` over REST for normalized event ingestion
+- optionally runs the in-process Telegram adapter using Bot API long polling and final-response delivery
 - exposes `GET /health` and `GET /metrics`
 
 Dependencies:
@@ -23,6 +24,7 @@ Dependencies:
 Configuration:
 - required: `BUTLER_POSTGRES_URL`, `BUTLER_REDIS_URL`
 - commonly used: `BUTLER_HTTP_ADDR`, `BUTLER_GRPC_ADDR`, `BUTLER_LOG_LEVEL`, `BUTLER_SESSION_LEASE_TTL_SECONDS`, `BUTLER_OPENAI_MODEL`
+- Telegram adapter: `BUTLER_TELEGRAM_BOT_TOKEN`, `BUTLER_TELEGRAM_ALLOWED_CHAT_IDS`, `BUTLER_TELEGRAM_BASE_URL`, `BUTLER_TELEGRAM_POLL_TIMEOUT_SECONDS`
 - see `internal/config/config.go` and `.env.example` for the current typed config surface
 
 Entry points and APIs:
@@ -41,6 +43,7 @@ Local run:
 Testing:
 - unit and integration tests: `go test ./apps/orchestrator/...`
 - smoke verification: `go run ./scripts/smoke/sprint2_event_flow.go`
+- Telegram manual check: `docs/testing/telegram-manual.md`
 - full repo checks: `go test ./...`, `go build ./...`, `go vet ./...`
 
 Related docs:
@@ -49,6 +52,7 @@ Related docs:
 - `docs/architecture/model-transport-contract.md`
 - `docs/architecture/memory-model.md`
 - `docs/testing/sprint-2-smoke.md`
+- `docs/testing/telegram-manual.md`
 
 Current limitations:
 - the service executes the OpenAI transport path synchronously inside request handling, so REST ingestion returns only after run completion

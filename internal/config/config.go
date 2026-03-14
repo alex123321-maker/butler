@@ -62,6 +62,10 @@ type OrchestratorConfig struct {
 	OpenAIModel            string
 	OpenAIBaseURL          string
 	OpenAITimeoutSeconds   int
+	TelegramBotToken       string
+	TelegramAllowedChatIDs []string
+	TelegramBaseURL        string
+	TelegramPollTimeout    int
 	SessionLeaseTTLSeconds int
 }
 
@@ -146,9 +150,19 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_OPENAI_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-5-mini", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.OpenAIModel = v }},
 		fieldSpec{key: "BUTLER_OPENAI_BASE_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "https://api.openai.com/v1", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.OpenAIBaseURL = v }},
 		fieldSpec{key: "BUTLER_OPENAI_TIMEOUT_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "60", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.OpenAITimeoutSeconds = mustParseInt(v) }},
+		fieldSpec{key: "BUTLER_TELEGRAM_BOT_TOKEN", component: "orchestrator", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: func(v string) { cfg.TelegramBotToken = v }},
+		fieldSpec{key: "BUTLER_TELEGRAM_ALLOWED_CHAT_IDS", component: "orchestrator", typeName: "csv", required: false, defaultValue: "", requiresRestart: true, validate: validateOptionalChatIDList, assign: func(v string) { cfg.TelegramAllowedChatIDs = parseCSV(v) }},
+		fieldSpec{key: "BUTLER_TELEGRAM_BASE_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "https://api.telegram.org", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.TelegramBaseURL = v }},
+		fieldSpec{key: "BUTLER_TELEGRAM_POLL_TIMEOUT_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "25", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.TelegramPollTimeout = mustParseInt(v) }},
 	)
 
 	snapshot, err := loadSpecs(get, specs)
+	if conditionalErr := validateOrchestratorConditionalConfig(cfg); conditionalErr != nil {
+		if err != nil {
+			return cfg, snapshot, fmt.Errorf("%v; %v", err, conditionalErr)
+		}
+		return cfg, snapshot, conditionalErr
+	}
 	return cfg, snapshot, err
 }
 
@@ -329,6 +343,15 @@ func validateOptionalURL(value string) error {
 	return validateNonEmptyURL(value)
 }
 
+func validateOptionalChatIDList(value string) error {
+	for _, item := range parseCSV(value) {
+		if _, err := strconv.ParseInt(item, 10, 64); err != nil {
+			return fmt.Errorf("must be a comma-separated list of Telegram chat ids")
+		}
+	}
+	return nil
+}
+
 func validateListenAddr(value string) error {
 	if err := validateNonEmpty(value); err != nil {
 		return err
@@ -379,4 +402,28 @@ func mustParseInt(value string) int {
 
 func mustParseInt32(value string) int32 {
 	return int32(mustParseInt(value))
+}
+
+func parseCSV(value string) []string {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return nil
+	}
+	parts := strings.Split(trimmed, ",")
+	result := make([]string, 0, len(parts))
+	for _, part := range parts {
+		item := strings.TrimSpace(part)
+		if item == "" {
+			continue
+		}
+		result = append(result, item)
+	}
+	return result
+}
+
+func validateOrchestratorConditionalConfig(cfg OrchestratorConfig) error {
+	if strings.TrimSpace(cfg.TelegramBotToken) != "" && len(cfg.TelegramAllowedChatIDs) == 0 {
+		return fmt.Errorf("BUTLER_TELEGRAM_ALLOWED_CHAT_IDS is required when BUTLER_TELEGRAM_BOT_TOKEN is set")
+	}
+	return nil
 }

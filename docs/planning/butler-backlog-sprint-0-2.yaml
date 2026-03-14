@@ -759,3 +759,148 @@ sprints:
           - smoke test script or test case
           - documented verification steps
           - expected-output checklist
+
+  - id: SPRINT-3
+    title: Telegram Adapter, Tool Broker Skeleton, First E2E
+    goal: Connect Telegram as the first real user channel, make the MVP stack runnable from Docker Compose, add the first end-to-end acceptance path, and establish the Tool Broker and Working Memory foundations.
+    status: in_progress
+    tasks:
+      - id: T-025
+        title: Implement Telegram adapter with long polling and final response delivery
+        subsystem: channel-adapter
+        sprint: SPRINT-3
+        priority: high
+        status: done
+        description: >
+          Add the in-process Telegram channel adapter that polls Bot API updates, normalizes
+          Telegram text messages into Butler InputEvent values, submits them to the orchestrator,
+          and delivers final assistant responses back to Telegram chats.
+        why_now: >
+          Telegram is the first real user channel and is required for the first end-to-end vertical slice.
+        dependencies:
+          - T-023
+          - T-022
+        docs_to_read:
+          - docs/architecture/butler-prd-architecture.md
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - '`apps/orchestrator/internal/channel/telegram/adapter.go` exists in the orchestrator process.'
+          - Telegram Bot API long polling is implemented without adding unnecessary dependencies.
+          - 'Text messages from allowed chats are normalized into `user_message` InputEvent values.'
+          - The adapter submits normalized events to the orchestrator execution path.
+          - Final assistant responses are delivered back to the originating Telegram chat.
+          - Configuration covers bot token, allowed chat ids, and polling options.
+          - Structured logging exists for adapter lifecycle and execution failures.
+          - Unit tests cover Telegram event normalization.
+          - Manual verification steps are documented.
+        deliverables:
+          - '`apps/orchestrator/internal/channel/telegram/`'
+          - updated orchestrator config and env example
+          - unit tests for Telegram normalization
+          - documented Telegram manual verification steps
+
+      - id: T-026
+        title: Update Docker Compose to run the full MVP stack
+        subsystem: deployment
+        sprint: SPRINT-3
+        priority: high
+        status: todo
+        description: >
+          Extend Docker Compose so PostgreSQL, Redis, migrations, and orchestrator can be started
+          together as the first runnable MVP stack.
+        why_now: >
+          The first end-to-end scenario requires one-command startup for the full local stack.
+        dependencies:
+          - T-025
+        docs_to_read:
+          - docs/architecture/butler-prd-architecture.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - Compose definitions include postgres, redis, and orchestrator with health-aware dependencies.
+          - Migrations run automatically during startup or through an init-style step.
+          - '`.env.example` includes all required MVP variables including OpenAI and Telegram configuration.'
+          - '`make up`, `make down`, and `make logs` support the MVP stack workflow.'
+        deliverables:
+          - '`deploy/docker-compose.yml` updated'
+          - '`deploy/docker-compose.dev.yml` updated'
+          - updated Makefile commands
+
+      - id: T-027
+        title: Add first end-to-end acceptance path
+        subsystem: e2e
+        sprint: SPRINT-3
+        priority: high
+        status: todo
+        description: >
+          Document and verify the first end-to-end vertical slice from Telegram input through model
+          execution, response delivery, and transcript persistence.
+        why_now: >
+          The MVP needs a clear acceptance path proving the vertical slice works in practice.
+        dependencies:
+          - T-025
+          - T-026
+        docs_to_read:
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - A documented manual Telegram scenario exists for the end-to-end path.
+          - The scenario verifies completed run state and transcript persistence in PostgreSQL.
+          - The scenario works from the Compose-based MVP stack.
+          - 'Automated smoke verification for `/api/v1/events` remains available as an optional non-Telegram path.'
+        deliverables:
+          - e2e verification documentation
+          - any supporting smoke or helper scripts
+
+      - id: T-028
+        title: Implement Tool Broker skeleton with registry and validation
+        subsystem: tool-broker
+        sprint: SPRINT-3
+        priority: high
+        status: todo
+        description: >
+          Build the initial Tool Broker service with an in-memory registry, contract lookup, tool-call
+          schema validation, and a stub execution endpoint.
+        why_now: >
+          Tool Broker is the next core subsystem and must exist before Sprint 4 runtime routing work.
+        dependencies:
+          - T-003
+        docs_to_read:
+          - docs/architecture/tool-runtime-adr.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - '`apps/tool-broker/main.go` runs a gRPC server.'
+          - Tool Registry loads tool contracts from config.
+          - '`ListTools`, `GetToolContract`, and `ValidateToolCall` work.'
+          - '`ExecuteToolCall` returns a clear not-implemented stub error.'
+          - Unit tests cover registry lookup and schema validation.
+        deliverables:
+          - '`apps/tool-broker/internal/registry/`'
+          - updated proto wiring if needed
+          - unit tests for broker registry and validation
+
+      - id: T-029
+        title: Implement durable Working Memory store baseline
+        subsystem: memory
+        sprint: SPRINT-3
+        priority: high
+        status: todo
+        description: >
+          Add the durable Working Memory storage layer in PostgreSQL with CRUD operations for the
+          latest per-session working snapshot.
+        why_now: >
+          Working Memory is needed for later orchestrator context preparation and memory evolution work.
+        dependencies:
+          - T-011
+        docs_to_read:
+          - docs/architecture/memory-model.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - 'migration adds `memory_working`'
+          - store supports save, get, and clear by session key
+          - PostgreSQL is the durable source of truth
+          - unit and integration tests cover the store behavior
+        deliverables:
+          - 'migration for `memory_working`'
+          - '`internal/memory/working/`'
+          - unit and integration tests

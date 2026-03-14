@@ -10,10 +10,12 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
 	apiservice "github.com/butler/butler/apps/orchestrator/internal/api"
+	telegramadapter "github.com/butler/butler/apps/orchestrator/internal/channel/telegram"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
@@ -40,6 +42,7 @@ type App struct {
 	httpServer *http.Server
 	grpcServer *grpc.Server
 	grpcListen net.Listener
+	telegram   *telegramadapter.Adapter
 }
 
 func New(ctx context.Context) (*App, error) {
@@ -87,6 +90,26 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	runManager := runservice.NewService(runservice.NewPostgresRepository(postgres.Pool()), logger.WithComponent(log, "run-service"))
+	delivery := flow.NewCompositeDeliverySink(flow.NewLoggingDeliverySink(log))
+	var telegram *telegramadapter.Adapter
+	if strings.TrimSpace(cfg.TelegramBotToken) != "" {
+		telegramClient, err := telegramadapter.NewClient(cfg.TelegramBaseURL, cfg.TelegramBotToken, nil)
+		if err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, err
+		}
+		telegram, err = telegramadapter.NewAdapter(telegramadapter.Config{
+			AllowedChatIDs: cfg.TelegramAllowedChatIDs,
+			PollTimeout:    time.Duration(cfg.TelegramPollTimeout) * time.Second,
+		}, telegramClient, logger.WithComponent(log, "telegram"))
+		if err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, err
+		}
+		delivery = flow.NewCompositeDeliverySink(delivery, telegram)
+	}
 	executor := flow.NewService(
 		session.NewPostgresRepository(postgres.Pool()),
 		session.NewRedisLeaseManager(redis.Client(), logger.WithComponent(log, "session-lease-store")),
@@ -98,10 +121,13 @@ func New(ctx context.Context) (*App, error) {
 			ModelName:    cfg.OpenAIModel,
 			OwnerID:      cfg.Shared.ServiceName,
 			LeaseTTL:     int64(cfg.SessionLeaseTTLSeconds),
-			Delivery:     flow.NewLoggingDeliverySink(log),
+			Delivery:     delivery,
 		},
 		logger.WithComponent(log, "executor"),
 	)
+	if telegram != nil {
+		telegram.SetExecutor(executor)
+	}
 	apiServer := apiservice.NewServer(executor, logger.WithComponent(log, "api"))
 
 	mux := http.NewServeMux()
@@ -151,11 +177,14 @@ func New(ctx context.Context) (*App, error) {
 		httpServer: server,
 		grpcServer: grpcServer,
 		grpcListen: grpcListener,
+		telegram:   telegram,
 	}, nil
 }
 
 func (a *App) Run(ctx context.Context) error {
-	errCh := make(chan error, 2)
+	errCh := make(chan error, 3)
+	runCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	go func() {
 		a.log.Info("starting orchestrator http server", slog.String("http_addr", a.config.Shared.HTTPAddr))
 		if err := a.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -174,13 +203,26 @@ func (a *App) Run(ctx context.Context) error {
 		errCh <- nil
 	}()
 
-	sigCtx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
+	if a.telegram != nil {
+		go func() {
+			a.log.Info("starting telegram adapter")
+			if err := a.telegram.Run(runCtx); err != nil {
+				errCh <- err
+				return
+			}
+			errCh <- nil
+		}()
+	}
+
+	sigCtx, stop := signal.NotifyContext(runCtx, os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	select {
 	case err := <-errCh:
+		cancel()
 		return a.shutdown(err)
 	case <-sigCtx.Done():
+		cancel()
 		a.log.Info("received shutdown signal")
 		return a.shutdown(nil)
 	}

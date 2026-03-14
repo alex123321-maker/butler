@@ -37,6 +37,12 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	if cfg.OpenAITimeoutSeconds != 60 {
 		t.Fatalf("expected default OpenAI timeout, got %d", cfg.OpenAITimeoutSeconds)
 	}
+	if cfg.TelegramBaseURL != "https://api.telegram.org" {
+		t.Fatalf("expected default Telegram base URL, got %q", cfg.TelegramBaseURL)
+	}
+	if cfg.TelegramPollTimeout != 25 {
+		t.Fatalf("expected default Telegram poll timeout, got %d", cfg.TelegramPollTimeout)
+	}
 	if cfg.SessionLeaseTTLSeconds != 60 {
 		t.Fatalf("expected default session lease ttl, got %d", cfg.SessionLeaseTTLSeconds)
 	}
@@ -73,6 +79,11 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	baseURL := findKey(t, keys, "BUTLER_OPENAI_BASE_URL")
 	if baseURL.DefaultValue != "https://api.openai.com/v1" {
 		t.Fatalf("expected default OpenAI base URL, got %q", baseURL.DefaultValue)
+	}
+
+	telegramBaseURL := findKey(t, keys, "BUTLER_TELEGRAM_BASE_URL")
+	if telegramBaseURL.DefaultValue != "https://api.telegram.org" {
+		t.Fatalf("expected default Telegram base URL, got %q", telegramBaseURL.DefaultValue)
 	}
 
 	leaseTTL := findKey(t, keys, "BUTLER_SESSION_LEASE_TTL_SECONDS")
@@ -114,6 +125,20 @@ func TestLoadToolBrokerValidatesAllowedValues(t *testing.T) {
 	}
 	if !strings.Contains(key.ValidationError, "must be one of") {
 		t.Fatalf("expected allowed values error, got %q", key.ValidationError)
+	}
+}
+
+func TestLoadOrchestratorRequiresAllowedChatsWhenTelegramEnabled(t *testing.T) {
+	_, _, err := loadOrchestrator(envMap(map[string]string{
+		"BUTLER_POSTGRES_URL":       "postgres://butler:secret@localhost:5432/butler",
+		"BUTLER_REDIS_URL":          "redis://localhost:6379/0",
+		"BUTLER_TELEGRAM_BOT_TOKEN": "telegram-token",
+	}))
+	if err == nil {
+		t.Fatal("expected telegram allowed chat ids validation error")
+	}
+	if !strings.Contains(err.Error(), "BUTLER_TELEGRAM_ALLOWED_CHAT_IDS") {
+		t.Fatalf("expected allowed chat ids error, got %v", err)
 	}
 }
 
