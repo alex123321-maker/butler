@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package butler.toolbroker.v1;
+
+option go_package = "github.com/butler/butler/internal/gen/toolbroker/v1;toolbrokerv1";
+
+import "toolbroker/v1/types.proto";
+
+service ToolBrokerService {
+  rpc ValidateToolCall(ValidateToolCallRequest) returns (ValidateToolCallResponse);
+  rpc ExecuteToolCall(ExecuteToolCallRequest) returns (ExecuteToolCallResponse);
+  rpc ListTools(ListToolsRequest) returns (ListToolsResponse);
+  rpc GetToolContract(GetToolContractRequest) returns (GetToolContractResponse);
+}
+
+message ValidateToolCallRequest {
+  ToolCall tool_call = 1;
+}
+
+message ValidateToolCallResponse {
+  bool valid = 1;
+  ToolError error = 2;
+  ToolContract contract = 3;
+}
+
+message ExecuteToolCallRequest {
+  ToolCall tool_call = 1;
+}
+
+message ExecuteToolCallResponse {
+  ToolResult result = 1;
+}
+
+message ListToolsRequest {
+  string tool_class = 1;
+  bool include_disabled = 2;
+}
+
+message ListToolsResponse {
+  repeated ToolContract tools = 1;
+}
+
+message GetToolContractRequest {
+  string tool_name = 1;
+}
+
+message GetToolContractResponse {
+  ToolContract contract = 1;
+}

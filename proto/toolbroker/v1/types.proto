@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package butler.toolbroker.v1;
+
+option go_package = "github.com/butler/butler/internal/gen/toolbroker/v1;toolbrokerv1";
+
+import "common/v1/types.proto";
+
+message CredentialRef {
+  string type = 1;
+  string alias = 2;
+  string field = 3;
+}
+
+message ToolError {
+  butler.common.v1.ErrorClass error_class = 1;
+  string message = 2;
+  bool retryable = 3;
+  string details_json = 4;
+}
+
+message ToolCall {
+  string tool_call_id = 1;
+  string run_id = 2;
+  string tool_name = 3;
+  string args_json = 4;
+  string status = 5;
+  string runtime_target = 6;
+  string started_at = 7;
+  string finished_at = 8;
+  string result_json = 9;
+  ToolError error = 10;
+  repeated CredentialRef credential_refs = 11;
+}
+
+message ToolResult {
+  string tool_call_id = 1;
+  string run_id = 2;
+  string tool_name = 3;
+  string status = 4;
+  string result_json = 5;
+  ToolError error = 6;
+  string finished_at = 7;
+}
+
+message ToolContract {
+  string tool_name = 1;
+  string description = 2;
+  string tool_class = 3;
+  string input_schema_json = 4;
+  string output_schema_json = 5;
+  string runtime_target = 6;
+  string risk_level = 7;
+  bool supports_credential_refs = 8;
+  bool requires_approval = 9;
+  bool supports_streaming = 10;
+  string status = 11;
+  repeated string allowed_domains = 12;
+  repeated string allowed_tools = 13;
+}
