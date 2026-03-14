@@ -44,7 +44,7 @@ func TestMigrationFilesSortsUpMigrations(t *testing.T) {
 	writeFile(t, filepath.Join(dir, "002_second.down.sql"), "SELECT 1;")
 	writeFile(t, filepath.Join(dir, "002_second.up.sql"), "SELECT 1;")
 
-	files, err := migrationFiles(dir)
+	files, err := migrationFiles(dir, migrationDirectionUp)
 	if err != nil {
 		t.Fatalf("migrationFiles returned error: %v", err)
 	}
@@ -54,6 +54,26 @@ func TestMigrationFilesSortsUpMigrations(t *testing.T) {
 	}
 	if !strings.HasSuffix(files[0], "001_first.up.sql") || !strings.HasSuffix(files[1], "002_second.up.sql") || !strings.HasSuffix(files[2], "003_third.up.sql") {
 		t.Fatalf("unexpected order: %v", files)
+	}
+}
+
+func TestMigrationFilesSortsDownMigrationsInReverse(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, filepath.Join(dir, "001_first.down.sql"), "SELECT 1;")
+	writeFile(t, filepath.Join(dir, "003_third.down.sql"), "SELECT 1;")
+	writeFile(t, filepath.Join(dir, "002_second.up.sql"), "SELECT 1;")
+	writeFile(t, filepath.Join(dir, "002_second.down.sql"), "SELECT 1;")
+
+	files, err := migrationFiles(dir, migrationDirectionDown)
+	if err != nil {
+		t.Fatalf("migrationFiles returned error: %v", err)
+	}
+
+	if len(files) != 3 {
+		t.Fatalf("expected 3 down migrations, got %d", len(files))
+	}
+	if !strings.HasSuffix(files[0], "003_third.down.sql") || !strings.HasSuffix(files[1], "002_second.down.sql") || !strings.HasSuffix(files[2], "001_first.down.sql") {
+		t.Fatalf("unexpected reverse order: %v", files)
 	}
 }
 
@@ -124,6 +144,17 @@ func TestRunMigrationsIntegration(t *testing.T) {
 	}
 	if count != 1 {
 		t.Fatalf("expected single migration row, got %d", count)
+	}
+
+	if err := store.RunDownMigrations(ctx, dir); err != nil {
+		t.Fatalf("RunDownMigrations returned error: %v", err)
+	}
+
+	if err := store.Pool().QueryRow(ctx, `SELECT COUNT(*) FROM schema_migrations WHERE version IN ('001_create_t004_probe.up.sql', '002_insert_t004_probe.up.sql')`).Scan(&count); err != nil {
+		t.Fatalf("failed to query schema_migrations: %v", err)
+	}
+	if count != 0 {
+		t.Fatalf("expected migrations to be removed after rollback, got %d", count)
 	}
 
 	_, _ = store.Pool().Exec(ctx, `DROP TABLE IF EXISTS t004_probe`)

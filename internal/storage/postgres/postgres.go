@@ -109,6 +109,21 @@ func (s *Store) Close() {
 }
 
 func (s *Store) RunMigrations(ctx context.Context, dir string) error {
+	return s.runMigrations(ctx, dir, migrationDirectionUp)
+}
+
+func (s *Store) RunDownMigrations(ctx context.Context, dir string) error {
+	return s.runMigrations(ctx, dir, migrationDirectionDown)
+}
+
+type migrationDirection string
+
+const (
+	migrationDirectionUp   migrationDirection = "up"
+	migrationDirectionDown migrationDirection = "down"
+)
+
+func (s *Store) runMigrations(ctx context.Context, dir string, direction migrationDirection) error {
 	if strings.TrimSpace(dir) == "" {
 		dir = s.config.MigrationsDir
 	}
@@ -116,7 +131,7 @@ func (s *Store) RunMigrations(ctx context.Context, dir string) error {
 		return fmt.Errorf("migrations directory is required")
 	}
 
-	entries, err := migrationFiles(dir)
+	entries, err := migrationFiles(dir, direction)
 	if err != nil {
 		return err
 	}
@@ -131,12 +146,15 @@ func (s *Store) RunMigrations(ctx context.Context, dir string) error {
 	}
 
 	for _, path := range entries {
-		version := filepath.Base(path)
+		version := migrationVersion(path, direction)
 		var alreadyApplied bool
 		if err := s.pool.QueryRow(ctx, "SELECT EXISTS (SELECT 1 FROM schema_migrations WHERE version = $1)", version).Scan(&alreadyApplied); err != nil {
 			return fmt.Errorf("check migration %s: %w", version, err)
 		}
-		if alreadyApplied {
+		if direction == migrationDirectionUp && alreadyApplied {
+			continue
+		}
+		if direction == migrationDirectionDown && !alreadyApplied {
 			continue
 		}
 
@@ -155,21 +173,32 @@ func (s *Store) RunMigrations(ctx context.Context, dir string) error {
 			s.log.Error("migration failed", slog.String("component", "postgres"), slog.String("migration", version), slog.String("error", err.Error()))
 			return fmt.Errorf("execute migration %s: %w", version, err)
 		}
-		if _, err := tx.Exec(ctx, "INSERT INTO schema_migrations (version) VALUES ($1)", version); err != nil {
-			_ = tx.Rollback(ctx)
-			return fmt.Errorf("record migration %s: %w", version, err)
+		if direction == migrationDirectionUp {
+			if _, err := tx.Exec(ctx, "INSERT INTO schema_migrations (version) VALUES ($1)", version); err != nil {
+				_ = tx.Rollback(ctx)
+				return fmt.Errorf("record migration %s: %w", version, err)
+			}
+		} else {
+			if _, err := tx.Exec(ctx, "DELETE FROM schema_migrations WHERE version = $1", version); err != nil {
+				_ = tx.Rollback(ctx)
+				return fmt.Errorf("remove migration record %s: %w", version, err)
+			}
 		}
 		if err := tx.Commit(ctx); err != nil {
 			return fmt.Errorf("commit migration %s: %w", version, err)
 		}
 
-		s.log.Info("migration applied", slog.String("component", "postgres"), slog.String("migration", version))
+		message := "migration applied"
+		if direction == migrationDirectionDown {
+			message = "migration rolled back"
+		}
+		s.log.Info(message, slog.String("component", "postgres"), slog.String("migration", version))
 	}
 
 	return nil
 }
 
-func migrationFiles(dir string) ([]string, error) {
+func migrationFiles(dir string, direction migrationDirection) ([]string, error) {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, fmt.Errorf("read migrations directory: %w", err)
@@ -180,19 +209,40 @@ func migrationFiles(dir string) ([]string, error) {
 		if entry.IsDir() {
 			continue
 		}
-		if !isUpSQLFile(entry) {
+		if !isMigrationFile(entry, direction) {
 			continue
 		}
 		files = append(files, filepath.Join(dir, entry.Name()))
 	}
 
 	sort.Strings(files)
+	if direction == migrationDirectionDown {
+		reverse(files)
+	}
 	return files, nil
 }
 
-func isUpSQLFile(entry fs.DirEntry) bool {
+func isMigrationFile(entry fs.DirEntry, direction migrationDirection) bool {
 	name := entry.Name()
-	return strings.HasSuffix(name, ".up.sql")
+	suffix := ".up.sql"
+	if direction == migrationDirectionDown {
+		suffix = ".down.sql"
+	}
+	return strings.HasSuffix(name, suffix)
+}
+
+func reverse(values []string) {
+	for i, j := 0, len(values)-1; i < j; i, j = i+1, j-1 {
+		values[i], values[j] = values[j], values[i]
+	}
+}
+
+func migrationVersion(path string, direction migrationDirection) string {
+	name := filepath.Base(path)
+	if direction == migrationDirectionDown {
+		return strings.TrimSuffix(name, ".down.sql") + ".up.sql"
+	}
+	return name
 }
 
 func resolveLogger(log *slog.Logger) *slog.Logger {

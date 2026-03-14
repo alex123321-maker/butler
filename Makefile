@@ -1,4 +1,4 @@
-.PHONY: build test lint proto infra-up infra-down
+.PHONY: build test lint proto infra-up infra-down migrate-up migrate-down
 
 build:
 	go build ./...
@@ -17,3 +17,9 @@ infra-up:
 
 infra-down:
 	docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml down
+
+migrate-up:
+	go run ./apps/migrator --direction=up
+
+migrate-down:
+	go run ./apps/migrator --direction=down
