@@ -632,7 +632,7 @@ sprints:
         subsystem: orchestrator
         sprint: SPRINT-2
         priority: high
-        status: todo
+        status: done
         description: >
           Implement the MVP orchestrator execution path: resolve session, acquire lease, create run,
           prepare minimal context, start model execution, consume streaming events, persist transcript,

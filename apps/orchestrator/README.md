@@ -10,6 +10,7 @@ Current baseline:
 - implements `CreateSession`, `GetSession`, and `ResolveSessionKey` inside the orchestrator process
 - implements Redis-backed `AcquireLease`, `RenewLease`, and `ReleaseLease`
 - implements durable run creation, lookup, state transitions, and input-event deduplication
+- implements the internal event-to-run execution flow for normalized `InputEvent` values using the transport layer and transcript store
 - exposes `GET /health` and `GET /metrics`
 - exposes placeholder `POST /api/v1/events` that is not wired to run execution yet
 
@@ -27,6 +28,7 @@ Entry points and APIs:
 - binary entrypoint: `apps/orchestrator/main.go`
 - gRPC API: `SessionService` from `proto/session/v1/session.proto`
 - HTTP endpoints: `/health`, `/metrics`, `/api/v1/events`
+- internal execution package: `apps/orchestrator/internal/orchestrator`
 
 Local run:
 - copy `.env.example` to `.env`
@@ -44,6 +46,6 @@ Related docs:
 - `docs/architecture/memory-model.md`
 
 Current limitations:
-- no model transport provider is wired yet
-- `POST /api/v1/events` is still a placeholder boundary, not a working ingestion flow
+- the OpenAI provider exists, but the service binary does not wire transport execution yet
+- `POST /api/v1/events` is still a placeholder boundary, even though the internal execution service is now implemented
 - Dockerfile exists, but the full service stack is not wired into Compose yet
