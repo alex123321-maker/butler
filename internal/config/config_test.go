@@ -30,6 +30,9 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	if cfg.OpenAIModel != "gpt-5-mini" {
 		t.Fatalf("expected default OpenAI model, got %q", cfg.OpenAIModel)
 	}
+	if cfg.SessionLeaseTTLSeconds != 60 {
+		t.Fatalf("expected default session lease ttl, got %d", cfg.SessionLeaseTTLSeconds)
+	}
 
 	keys := snapshot.ListKeys()
 	if len(keys) == 0 {
@@ -53,6 +56,11 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	}
 	if model.DefaultValue != "gpt-5-mini" {
 		t.Fatalf("expected default value to be recorded, got %q", model.DefaultValue)
+	}
+
+	leaseTTL := findKey(t, keys, "BUTLER_SESSION_LEASE_TTL_SECONDS")
+	if leaseTTL.DefaultValue != "60" {
+		t.Fatalf("expected session lease ttl default, got %q", leaseTTL.DefaultValue)
 	}
 }
 

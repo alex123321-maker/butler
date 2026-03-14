@@ -12,6 +12,7 @@ service SessionService {
   rpc GetSession(GetSessionRequest) returns (GetSessionResponse);
   rpc ResolveSessionKey(ResolveSessionKeyRequest) returns (ResolveSessionKeyResponse);
   rpc AcquireLease(AcquireLeaseRequest) returns (AcquireLeaseResponse);
+  rpc RenewLease(RenewLeaseRequest) returns (RenewLeaseResponse);
   rpc ReleaseLease(ReleaseLeaseRequest) returns (ReleaseLeaseResponse);
   rpc CreateRun(CreateRunRequest) returns (CreateRunResponse);
   rpc UpdateRunState(UpdateRunStateRequest) returns (UpdateRunStateResponse);
@@ -95,6 +96,15 @@ message AcquireLeaseRequest {
 }
 
 message AcquireLeaseResponse {
+  Lease lease = 1;
+}
+
+message RenewLeaseRequest {
+  string lease_id = 1;
+  int64 ttl_seconds = 2;
+}
+
+message RenewLeaseResponse {
   Lease lease = 1;
 }
 

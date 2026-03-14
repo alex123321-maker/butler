@@ -23,6 +23,7 @@ const (
 	SessionService_GetSession_FullMethodName        = "/butler.session.v1.SessionService/GetSession"
 	SessionService_ResolveSessionKey_FullMethodName = "/butler.session.v1.SessionService/ResolveSessionKey"
 	SessionService_AcquireLease_FullMethodName      = "/butler.session.v1.SessionService/AcquireLease"
+	SessionService_RenewLease_FullMethodName        = "/butler.session.v1.SessionService/RenewLease"
 	SessionService_ReleaseLease_FullMethodName      = "/butler.session.v1.SessionService/ReleaseLease"
 	SessionService_CreateRun_FullMethodName         = "/butler.session.v1.SessionService/CreateRun"
 	SessionService_UpdateRunState_FullMethodName    = "/butler.session.v1.SessionService/UpdateRunState"
@@ -37,6 +38,7 @@ type SessionServiceClient interface {
 	GetSession(ctx context.Context, in *GetSessionRequest, opts ...grpc.CallOption) (*GetSessionResponse, error)
 	ResolveSessionKey(ctx context.Context, in *ResolveSessionKeyRequest, opts ...grpc.CallOption) (*ResolveSessionKeyResponse, error)
 	AcquireLease(ctx context.Context, in *AcquireLeaseRequest, opts ...grpc.CallOption) (*AcquireLeaseResponse, error)
+	RenewLease(ctx context.Context, in *RenewLeaseRequest, opts ...grpc.CallOption) (*RenewLeaseResponse, error)
 	ReleaseLease(ctx context.Context, in *ReleaseLeaseRequest, opts ...grpc.CallOption) (*ReleaseLeaseResponse, error)
 	CreateRun(ctx context.Context, in *CreateRunRequest, opts ...grpc.CallOption) (*CreateRunResponse, error)
 	UpdateRunState(ctx context.Context, in *UpdateRunStateRequest, opts ...grpc.CallOption) (*UpdateRunStateResponse, error)
@@ -91,6 +93,16 @@ func (c *sessionServiceClient) AcquireLease(ctx context.Context, in *AcquireLeas
 	return out, nil
 }
 
+func (c *sessionServiceClient) RenewLease(ctx context.Context, in *RenewLeaseRequest, opts ...grpc.CallOption) (*RenewLeaseResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RenewLeaseResponse)
+	err := c.cc.Invoke(ctx, SessionService_RenewLease_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *sessionServiceClient) ReleaseLease(ctx context.Context, in *ReleaseLeaseRequest, opts ...grpc.CallOption) (*ReleaseLeaseResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ReleaseLeaseResponse)
@@ -139,6 +151,7 @@ type SessionServiceServer interface {
 	GetSession(context.Context, *GetSessionRequest) (*GetSessionResponse, error)
 	ResolveSessionKey(context.Context, *ResolveSessionKeyRequest) (*ResolveSessionKeyResponse, error)
 	AcquireLease(context.Context, *AcquireLeaseRequest) (*AcquireLeaseResponse, error)
+	RenewLease(context.Context, *RenewLeaseRequest) (*RenewLeaseResponse, error)
 	ReleaseLease(context.Context, *ReleaseLeaseRequest) (*ReleaseLeaseResponse, error)
 	CreateRun(context.Context, *CreateRunRequest) (*CreateRunResponse, error)
 	UpdateRunState(context.Context, *UpdateRunStateRequest) (*UpdateRunStateResponse, error)
@@ -164,6 +177,9 @@ func (UnimplementedSessionServiceServer) ResolveSessionKey(context.Context, *Res
 }
 func (UnimplementedSessionServiceServer) AcquireLease(context.Context, *AcquireLeaseRequest) (*AcquireLeaseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AcquireLease not implemented")
+}
+func (UnimplementedSessionServiceServer) RenewLease(context.Context, *RenewLeaseRequest) (*RenewLeaseResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RenewLease not implemented")
 }
 func (UnimplementedSessionServiceServer) ReleaseLease(context.Context, *ReleaseLeaseRequest) (*ReleaseLeaseResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReleaseLease not implemented")
@@ -270,6 +286,24 @@ func _SessionService_AcquireLease_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SessionService_RenewLease_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RenewLeaseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SessionServiceServer).RenewLease(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SessionService_RenewLease_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SessionServiceServer).RenewLease(ctx, req.(*RenewLeaseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _SessionService_ReleaseLease_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ReleaseLeaseRequest)
 	if err := dec(in); err != nil {
@@ -364,6 +398,10 @@ var SessionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AcquireLease",
 			Handler:    _SessionService_AcquireLease_Handler,
+		},
+		{
+			MethodName: "RenewLease",
+			Handler:    _SessionService_RenewLease_Handler,
 		},
 		{
 			MethodName: "ReleaseLease",

@@ -795,6 +795,102 @@ func (x *AcquireLeaseResponse) GetLease() *Lease {
 	return nil
 }
 
+type RenewLeaseRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	LeaseId       string                 `protobuf:"bytes,1,opt,name=lease_id,json=leaseId,proto3" json:"lease_id,omitempty"`
+	TtlSeconds    int64                  `protobuf:"varint,2,opt,name=ttl_seconds,json=ttlSeconds,proto3" json:"ttl_seconds,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RenewLeaseRequest) Reset() {
+	*x = RenewLeaseRequest{}
+	mi := &file_session_v1_session_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RenewLeaseRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RenewLeaseRequest) ProtoMessage() {}
+
+func (x *RenewLeaseRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_session_v1_session_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RenewLeaseRequest.ProtoReflect.Descriptor instead.
+func (*RenewLeaseRequest) Descriptor() ([]byte, []int) {
+	return file_session_v1_session_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *RenewLeaseRequest) GetLeaseId() string {
+	if x != nil {
+		return x.LeaseId
+	}
+	return ""
+}
+
+func (x *RenewLeaseRequest) GetTtlSeconds() int64 {
+	if x != nil {
+		return x.TtlSeconds
+	}
+	return 0
+}
+
+type RenewLeaseResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Lease         *Lease                 `protobuf:"bytes,1,opt,name=lease,proto3" json:"lease,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RenewLeaseResponse) Reset() {
+	*x = RenewLeaseResponse{}
+	mi := &file_session_v1_session_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RenewLeaseResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RenewLeaseResponse) ProtoMessage() {}
+
+func (x *RenewLeaseResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_session_v1_session_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RenewLeaseResponse.ProtoReflect.Descriptor instead.
+func (*RenewLeaseResponse) Descriptor() ([]byte, []int) {
+	return file_session_v1_session_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *RenewLeaseResponse) GetLease() *Lease {
+	if x != nil {
+		return x.Lease
+	}
+	return nil
+}
+
 type ReleaseLeaseRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	LeaseId       string                 `protobuf:"bytes,1,opt,name=lease_id,json=leaseId,proto3" json:"lease_id,omitempty"`
@@ -804,7 +900,7 @@ type ReleaseLeaseRequest struct {
 
 func (x *ReleaseLeaseRequest) Reset() {
 	*x = ReleaseLeaseRequest{}
-	mi := &file_session_v1_session_proto_msgTypes[11]
+	mi := &file_session_v1_session_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -816,7 +912,7 @@ func (x *ReleaseLeaseRequest) String() string {
 func (*ReleaseLeaseRequest) ProtoMessage() {}
 
 func (x *ReleaseLeaseRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_session_v1_session_proto_msgTypes[11]
+	mi := &file_session_v1_session_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -829,7 +925,7 @@ func (x *ReleaseLeaseRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReleaseLeaseRequest.ProtoReflect.Descriptor instead.
 func (*ReleaseLeaseRequest) Descriptor() ([]byte, []int) {
-	return file_session_v1_session_proto_rawDescGZIP(), []int{11}
+	return file_session_v1_session_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ReleaseLeaseRequest) GetLeaseId() string {
@@ -848,7 +944,7 @@ type ReleaseLeaseResponse struct {
 
 func (x *ReleaseLeaseResponse) Reset() {
 	*x = ReleaseLeaseResponse{}
-	mi := &file_session_v1_session_proto_msgTypes[12]
+	mi := &file_session_v1_session_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -860,7 +956,7 @@ func (x *ReleaseLeaseResponse) String() string {
 func (*ReleaseLeaseResponse) ProtoMessage() {}
 
 func (x *ReleaseLeaseResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_session_v1_session_proto_msgTypes[12]
+	mi := &file_session_v1_session_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -873,7 +969,7 @@ func (x *ReleaseLeaseResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReleaseLeaseResponse.ProtoReflect.Descriptor instead.
 func (*ReleaseLeaseResponse) Descriptor() ([]byte, []int) {
-	return file_session_v1_session_proto_rawDescGZIP(), []int{12}
+	return file_session_v1_session_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ReleaseLeaseResponse) GetReleased() bool {
@@ -897,7 +993,7 @@ type CreateRunRequest struct {
 
 func (x *CreateRunRequest) Reset() {
 	*x = CreateRunRequest{}
-	mi := &file_session_v1_session_proto_msgTypes[13]
+	mi := &file_session_v1_session_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -909,7 +1005,7 @@ func (x *CreateRunRequest) String() string {
 func (*CreateRunRequest) ProtoMessage() {}
 
 func (x *CreateRunRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_session_v1_session_proto_msgTypes[13]
+	mi := &file_session_v1_session_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -922,7 +1018,7 @@ func (x *CreateRunRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRunRequest.ProtoReflect.Descriptor instead.
 func (*CreateRunRequest) Descriptor() ([]byte, []int) {
-	return file_session_v1_session_proto_rawDescGZIP(), []int{13}
+	return file_session_v1_session_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *CreateRunRequest) GetSessionKey() string {
@@ -976,7 +1072,7 @@ type CreateRunResponse struct {
 
 func (x *CreateRunResponse) Reset() {
 	*x = CreateRunResponse{}
-	mi := &file_session_v1_session_proto_msgTypes[14]
+	mi := &file_session_v1_session_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -988,7 +1084,7 @@ func (x *CreateRunResponse) String() string {
 func (*CreateRunResponse) ProtoMessage() {}
 
 func (x *CreateRunResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_session_v1_session_proto_msgTypes[14]
+	mi := &file_session_v1_session_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1001,7 +1097,7 @@ func (x *CreateRunResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRunResponse.ProtoReflect.Descriptor instead.
 func (*CreateRunResponse) Descriptor() ([]byte, []int) {
-	return file_session_v1_session_proto_rawDescGZIP(), []int{14}
+	return file_session_v1_session_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *CreateRunResponse) GetRun() *RunRecord {
@@ -1026,7 +1122,7 @@ type UpdateRunStateRequest struct {
 
 func (x *UpdateRunStateRequest) Reset() {
 	*x = UpdateRunStateRequest{}
-	mi := &file_session_v1_session_proto_msgTypes[15]
+	mi := &file_session_v1_session_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1038,7 +1134,7 @@ func (x *UpdateRunStateRequest) String() string {
 func (*UpdateRunStateRequest) ProtoMessage() {}
 
 func (x *UpdateRunStateRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_session_v1_session_proto_msgTypes[15]
+	mi := &file_session_v1_session_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1051,7 +1147,7 @@ func (x *UpdateRunStateRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRunStateRequest.ProtoReflect.Descriptor instead.
 func (*UpdateRunStateRequest) Descriptor() ([]byte, []int) {
-	return file_session_v1_session_proto_rawDescGZIP(), []int{15}
+	return file_session_v1_session_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *UpdateRunStateRequest) GetRunId() string {
@@ -1112,7 +1208,7 @@ type UpdateRunStateResponse struct {
 
 func (x *UpdateRunStateResponse) Reset() {
 	*x = UpdateRunStateResponse{}
-	mi := &file_session_v1_session_proto_msgTypes[16]
+	mi := &file_session_v1_session_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1124,7 +1220,7 @@ func (x *UpdateRunStateResponse) String() string {
 func (*UpdateRunStateResponse) ProtoMessage() {}
 
 func (x *UpdateRunStateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_session_v1_session_proto_msgTypes[16]
+	mi := &file_session_v1_session_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1137,7 +1233,7 @@ func (x *UpdateRunStateResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRunStateResponse.ProtoReflect.Descriptor instead.
 func (*UpdateRunStateResponse) Descriptor() ([]byte, []int) {
-	return file_session_v1_session_proto_rawDescGZIP(), []int{16}
+	return file_session_v1_session_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *UpdateRunStateResponse) GetRun() *RunRecord {
@@ -1156,7 +1252,7 @@ type GetRunRequest struct {
 
 func (x *GetRunRequest) Reset() {
 	*x = GetRunRequest{}
-	mi := &file_session_v1_session_proto_msgTypes[17]
+	mi := &file_session_v1_session_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1168,7 +1264,7 @@ func (x *GetRunRequest) String() string {
 func (*GetRunRequest) ProtoMessage() {}
 
 func (x *GetRunRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_session_v1_session_proto_msgTypes[17]
+	mi := &file_session_v1_session_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1181,7 +1277,7 @@ func (x *GetRunRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRunRequest.ProtoReflect.Descriptor instead.
 func (*GetRunRequest) Descriptor() ([]byte, []int) {
-	return file_session_v1_session_proto_rawDescGZIP(), []int{17}
+	return file_session_v1_session_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *GetRunRequest) GetRunId() string {
@@ -1200,7 +1296,7 @@ type GetRunResponse struct {
 
 func (x *GetRunResponse) Reset() {
 	*x = GetRunResponse{}
-	mi := &file_session_v1_session_proto_msgTypes[18]
+	mi := &file_session_v1_session_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1212,7 +1308,7 @@ func (x *GetRunResponse) String() string {
 func (*GetRunResponse) ProtoMessage() {}
 
 func (x *GetRunResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_session_v1_session_proto_msgTypes[18]
+	mi := &file_session_v1_session_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1225,7 +1321,7 @@ func (x *GetRunResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRunResponse.ProtoReflect.Descriptor instead.
 func (*GetRunResponse) Descriptor() ([]byte, []int) {
-	return file_session_v1_session_proto_rawDescGZIP(), []int{18}
+	return file_session_v1_session_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *GetRunResponse) GetRun() *RunRecord {
@@ -1316,6 +1412,12 @@ const file_session_v1_session_proto_rawDesc = "" +
 	"\vttl_seconds\x18\x04 \x01(\x03R\n" +
 	"ttlSeconds\"F\n" +
 	"\x14AcquireLeaseResponse\x12.\n" +
+	"\x05lease\x18\x01 \x01(\v2\x18.butler.session.v1.LeaseR\x05lease\"O\n" +
+	"\x11RenewLeaseRequest\x12\x19\n" +
+	"\blease_id\x18\x01 \x01(\tR\aleaseId\x12\x1f\n" +
+	"\vttl_seconds\x18\x02 \x01(\x03R\n" +
+	"ttlSeconds\"D\n" +
+	"\x12RenewLeaseResponse\x12.\n" +
 	"\x05lease\x18\x01 \x01(\v2\x18.butler.session.v1.LeaseR\x05lease\"0\n" +
 	"\x13ReleaseLeaseRequest\x12\x19\n" +
 	"\blease_id\x18\x01 \x01(\tR\aleaseId\"2\n" +
@@ -1348,13 +1450,15 @@ const file_session_v1_session_proto_rawDesc = "" +
 	"\rGetRunRequest\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\"@\n" +
 	"\x0eGetRunResponse\x12.\n" +
-	"\x03run\x18\x01 \x01(\v2\x1c.butler.session.v1.RunRecordR\x03run2\x8f\x06\n" +
+	"\x03run\x18\x01 \x01(\v2\x1c.butler.session.v1.RunRecordR\x03run2\xea\x06\n" +
 	"\x0eSessionService\x12b\n" +
 	"\rCreateSession\x12'.butler.session.v1.CreateSessionRequest\x1a(.butler.session.v1.CreateSessionResponse\x12Y\n" +
 	"\n" +
 	"GetSession\x12$.butler.session.v1.GetSessionRequest\x1a%.butler.session.v1.GetSessionResponse\x12n\n" +
 	"\x11ResolveSessionKey\x12+.butler.session.v1.ResolveSessionKeyRequest\x1a,.butler.session.v1.ResolveSessionKeyResponse\x12_\n" +
-	"\fAcquireLease\x12&.butler.session.v1.AcquireLeaseRequest\x1a'.butler.session.v1.AcquireLeaseResponse\x12_\n" +
+	"\fAcquireLease\x12&.butler.session.v1.AcquireLeaseRequest\x1a'.butler.session.v1.AcquireLeaseResponse\x12Y\n" +
+	"\n" +
+	"RenewLease\x12$.butler.session.v1.RenewLeaseRequest\x1a%.butler.session.v1.RenewLeaseResponse\x12_\n" +
 	"\fReleaseLease\x12&.butler.session.v1.ReleaseLeaseRequest\x1a'.butler.session.v1.ReleaseLeaseResponse\x12V\n" +
 	"\tCreateRun\x12#.butler.session.v1.CreateRunRequest\x1a$.butler.session.v1.CreateRunResponse\x12e\n" +
 	"\x0eUpdateRunState\x12(.butler.session.v1.UpdateRunStateRequest\x1a).butler.session.v1.UpdateRunStateResponse\x12M\n" +
@@ -1372,7 +1476,7 @@ func file_session_v1_session_proto_rawDescGZIP() []byte {
 	return file_session_v1_session_proto_rawDescData
 }
 
-var file_session_v1_session_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_session_v1_session_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_session_v1_session_proto_goTypes = []any{
 	(*Session)(nil),                   // 0: butler.session.v1.Session
 	(*Lease)(nil),                     // 1: butler.session.v1.Lease
@@ -1385,55 +1489,60 @@ var file_session_v1_session_proto_goTypes = []any{
 	(*ResolveSessionKeyResponse)(nil), // 8: butler.session.v1.ResolveSessionKeyResponse
 	(*AcquireLeaseRequest)(nil),       // 9: butler.session.v1.AcquireLeaseRequest
 	(*AcquireLeaseResponse)(nil),      // 10: butler.session.v1.AcquireLeaseResponse
-	(*ReleaseLeaseRequest)(nil),       // 11: butler.session.v1.ReleaseLeaseRequest
-	(*ReleaseLeaseResponse)(nil),      // 12: butler.session.v1.ReleaseLeaseResponse
-	(*CreateRunRequest)(nil),          // 13: butler.session.v1.CreateRunRequest
-	(*CreateRunResponse)(nil),         // 14: butler.session.v1.CreateRunResponse
-	(*UpdateRunStateRequest)(nil),     // 15: butler.session.v1.UpdateRunStateRequest
-	(*UpdateRunStateResponse)(nil),    // 16: butler.session.v1.UpdateRunStateResponse
-	(*GetRunRequest)(nil),             // 17: butler.session.v1.GetRunRequest
-	(*GetRunResponse)(nil),            // 18: butler.session.v1.GetRunResponse
-	(v1.AutonomyMode)(0),              // 19: butler.common.v1.AutonomyMode
-	(v1.RunState)(0),                  // 20: butler.common.v1.RunState
-	(v1.ErrorClass)(0),                // 21: butler.common.v1.ErrorClass
-	(*v11.InputEvent)(nil),            // 22: butler.run.v1.InputEvent
+	(*RenewLeaseRequest)(nil),         // 11: butler.session.v1.RenewLeaseRequest
+	(*RenewLeaseResponse)(nil),        // 12: butler.session.v1.RenewLeaseResponse
+	(*ReleaseLeaseRequest)(nil),       // 13: butler.session.v1.ReleaseLeaseRequest
+	(*ReleaseLeaseResponse)(nil),      // 14: butler.session.v1.ReleaseLeaseResponse
+	(*CreateRunRequest)(nil),          // 15: butler.session.v1.CreateRunRequest
+	(*CreateRunResponse)(nil),         // 16: butler.session.v1.CreateRunResponse
+	(*UpdateRunStateRequest)(nil),     // 17: butler.session.v1.UpdateRunStateRequest
+	(*UpdateRunStateResponse)(nil),    // 18: butler.session.v1.UpdateRunStateResponse
+	(*GetRunRequest)(nil),             // 19: butler.session.v1.GetRunRequest
+	(*GetRunResponse)(nil),            // 20: butler.session.v1.GetRunResponse
+	(v1.AutonomyMode)(0),              // 21: butler.common.v1.AutonomyMode
+	(v1.RunState)(0),                  // 22: butler.common.v1.RunState
+	(v1.ErrorClass)(0),                // 23: butler.common.v1.ErrorClass
+	(*v11.InputEvent)(nil),            // 24: butler.run.v1.InputEvent
 }
 var file_session_v1_session_proto_depIdxs = []int32{
-	19, // 0: butler.session.v1.RunRecord.autonomy_mode:type_name -> butler.common.v1.AutonomyMode
-	20, // 1: butler.session.v1.RunRecord.current_state:type_name -> butler.common.v1.RunState
-	21, // 2: butler.session.v1.RunRecord.error_type:type_name -> butler.common.v1.ErrorClass
+	21, // 0: butler.session.v1.RunRecord.autonomy_mode:type_name -> butler.common.v1.AutonomyMode
+	22, // 1: butler.session.v1.RunRecord.current_state:type_name -> butler.common.v1.RunState
+	23, // 2: butler.session.v1.RunRecord.error_type:type_name -> butler.common.v1.ErrorClass
 	0,  // 3: butler.session.v1.CreateSessionResponse.session:type_name -> butler.session.v1.Session
 	0,  // 4: butler.session.v1.GetSessionResponse.session:type_name -> butler.session.v1.Session
 	1,  // 5: butler.session.v1.AcquireLeaseResponse.lease:type_name -> butler.session.v1.Lease
-	22, // 6: butler.session.v1.CreateRunRequest.input_event:type_name -> butler.run.v1.InputEvent
-	19, // 7: butler.session.v1.CreateRunRequest.autonomy_mode:type_name -> butler.common.v1.AutonomyMode
-	2,  // 8: butler.session.v1.CreateRunResponse.run:type_name -> butler.session.v1.RunRecord
-	20, // 9: butler.session.v1.UpdateRunStateRequest.from_state:type_name -> butler.common.v1.RunState
-	20, // 10: butler.session.v1.UpdateRunStateRequest.to_state:type_name -> butler.common.v1.RunState
-	21, // 11: butler.session.v1.UpdateRunStateRequest.error_type:type_name -> butler.common.v1.ErrorClass
-	2,  // 12: butler.session.v1.UpdateRunStateResponse.run:type_name -> butler.session.v1.RunRecord
-	2,  // 13: butler.session.v1.GetRunResponse.run:type_name -> butler.session.v1.RunRecord
-	3,  // 14: butler.session.v1.SessionService.CreateSession:input_type -> butler.session.v1.CreateSessionRequest
-	5,  // 15: butler.session.v1.SessionService.GetSession:input_type -> butler.session.v1.GetSessionRequest
-	7,  // 16: butler.session.v1.SessionService.ResolveSessionKey:input_type -> butler.session.v1.ResolveSessionKeyRequest
-	9,  // 17: butler.session.v1.SessionService.AcquireLease:input_type -> butler.session.v1.AcquireLeaseRequest
-	11, // 18: butler.session.v1.SessionService.ReleaseLease:input_type -> butler.session.v1.ReleaseLeaseRequest
-	13, // 19: butler.session.v1.SessionService.CreateRun:input_type -> butler.session.v1.CreateRunRequest
-	15, // 20: butler.session.v1.SessionService.UpdateRunState:input_type -> butler.session.v1.UpdateRunStateRequest
-	17, // 21: butler.session.v1.SessionService.GetRun:input_type -> butler.session.v1.GetRunRequest
-	4,  // 22: butler.session.v1.SessionService.CreateSession:output_type -> butler.session.v1.CreateSessionResponse
-	6,  // 23: butler.session.v1.SessionService.GetSession:output_type -> butler.session.v1.GetSessionResponse
-	8,  // 24: butler.session.v1.SessionService.ResolveSessionKey:output_type -> butler.session.v1.ResolveSessionKeyResponse
-	10, // 25: butler.session.v1.SessionService.AcquireLease:output_type -> butler.session.v1.AcquireLeaseResponse
-	12, // 26: butler.session.v1.SessionService.ReleaseLease:output_type -> butler.session.v1.ReleaseLeaseResponse
-	14, // 27: butler.session.v1.SessionService.CreateRun:output_type -> butler.session.v1.CreateRunResponse
-	16, // 28: butler.session.v1.SessionService.UpdateRunState:output_type -> butler.session.v1.UpdateRunStateResponse
-	18, // 29: butler.session.v1.SessionService.GetRun:output_type -> butler.session.v1.GetRunResponse
-	22, // [22:30] is the sub-list for method output_type
-	14, // [14:22] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	1,  // 6: butler.session.v1.RenewLeaseResponse.lease:type_name -> butler.session.v1.Lease
+	24, // 7: butler.session.v1.CreateRunRequest.input_event:type_name -> butler.run.v1.InputEvent
+	21, // 8: butler.session.v1.CreateRunRequest.autonomy_mode:type_name -> butler.common.v1.AutonomyMode
+	2,  // 9: butler.session.v1.CreateRunResponse.run:type_name -> butler.session.v1.RunRecord
+	22, // 10: butler.session.v1.UpdateRunStateRequest.from_state:type_name -> butler.common.v1.RunState
+	22, // 11: butler.session.v1.UpdateRunStateRequest.to_state:type_name -> butler.common.v1.RunState
+	23, // 12: butler.session.v1.UpdateRunStateRequest.error_type:type_name -> butler.common.v1.ErrorClass
+	2,  // 13: butler.session.v1.UpdateRunStateResponse.run:type_name -> butler.session.v1.RunRecord
+	2,  // 14: butler.session.v1.GetRunResponse.run:type_name -> butler.session.v1.RunRecord
+	3,  // 15: butler.session.v1.SessionService.CreateSession:input_type -> butler.session.v1.CreateSessionRequest
+	5,  // 16: butler.session.v1.SessionService.GetSession:input_type -> butler.session.v1.GetSessionRequest
+	7,  // 17: butler.session.v1.SessionService.ResolveSessionKey:input_type -> butler.session.v1.ResolveSessionKeyRequest
+	9,  // 18: butler.session.v1.SessionService.AcquireLease:input_type -> butler.session.v1.AcquireLeaseRequest
+	11, // 19: butler.session.v1.SessionService.RenewLease:input_type -> butler.session.v1.RenewLeaseRequest
+	13, // 20: butler.session.v1.SessionService.ReleaseLease:input_type -> butler.session.v1.ReleaseLeaseRequest
+	15, // 21: butler.session.v1.SessionService.CreateRun:input_type -> butler.session.v1.CreateRunRequest
+	17, // 22: butler.session.v1.SessionService.UpdateRunState:input_type -> butler.session.v1.UpdateRunStateRequest
+	19, // 23: butler.session.v1.SessionService.GetRun:input_type -> butler.session.v1.GetRunRequest
+	4,  // 24: butler.session.v1.SessionService.CreateSession:output_type -> butler.session.v1.CreateSessionResponse
+	6,  // 25: butler.session.v1.SessionService.GetSession:output_type -> butler.session.v1.GetSessionResponse
+	8,  // 26: butler.session.v1.SessionService.ResolveSessionKey:output_type -> butler.session.v1.ResolveSessionKeyResponse
+	10, // 27: butler.session.v1.SessionService.AcquireLease:output_type -> butler.session.v1.AcquireLeaseResponse
+	12, // 28: butler.session.v1.SessionService.RenewLease:output_type -> butler.session.v1.RenewLeaseResponse
+	14, // 29: butler.session.v1.SessionService.ReleaseLease:output_type -> butler.session.v1.ReleaseLeaseResponse
+	16, // 30: butler.session.v1.SessionService.CreateRun:output_type -> butler.session.v1.CreateRunResponse
+	18, // 31: butler.session.v1.SessionService.UpdateRunState:output_type -> butler.session.v1.UpdateRunStateResponse
+	20, // 32: butler.session.v1.SessionService.GetRun:output_type -> butler.session.v1.GetRunResponse
+	24, // [24:33] is the sub-list for method output_type
+	15, // [15:24] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_session_v1_session_proto_init() }
@@ -1447,7 +1556,7 @@ func file_session_v1_session_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_session_v1_session_proto_rawDesc), len(file_session_v1_session_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   19,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

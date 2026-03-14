@@ -3,20 +3,26 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
+	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/internal/config"
+	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/metrics"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	redisstore "github.com/butler/butler/internal/storage/redis"
+	"google.golang.org/grpc"
 )
 
 type App struct {
@@ -27,6 +33,8 @@ type App struct {
 	postgres   *postgresstore.Store
 	redis      *redisstore.Store
 	httpServer *http.Server
+	grpcServer *grpc.Server
+	grpcListen net.Listener
 }
 
 func New(ctx context.Context) (*App, error) {
@@ -88,6 +96,26 @@ func New(ctx context.Context) (*App, error) {
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
+	grpcListener, err := net.Listen("tcp", cfg.Shared.GRPCAddr)
+	if err != nil {
+		redis.Close()
+		postgres.Close()
+		return nil, fmt.Errorf("listen on grpc addr %s: %w", cfg.Shared.GRPCAddr, err)
+	}
+
+	grpcServer := grpc.NewServer()
+	runManager := runservice.NewService(runservice.NewPostgresRepository(postgres.Pool()), logger.WithComponent(log, "run-service"))
+	sessionv1.RegisterSessionServiceServer(
+		grpcServer,
+		session.NewServer(
+			session.NewPostgresRepository(postgres.Pool()),
+			session.NewRedisLeaseManager(redis.Client(), logger.WithComponent(log, "session-lease-store")),
+			runManager,
+			time.Duration(cfg.SessionLeaseTTLSeconds)*time.Second,
+			logger.WithComponent(log, "session-service"),
+		),
+	)
+
 	return &App{
 		config:     cfg,
 		log:        log,
@@ -96,14 +124,25 @@ func New(ctx context.Context) (*App, error) {
 		postgres:   postgres,
 		redis:      redis,
 		httpServer: server,
+		grpcServer: grpcServer,
+		grpcListen: grpcListener,
 	}, nil
 }
 
 func (a *App) Run(ctx context.Context) error {
-	errCh := make(chan error, 1)
+	errCh := make(chan error, 2)
 	go func() {
 		a.log.Info("starting orchestrator http server", slog.String("http_addr", a.config.Shared.HTTPAddr))
 		if err := a.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			errCh <- err
+			return
+		}
+		errCh <- nil
+	}()
+
+	go func() {
+		a.log.Info("starting orchestrator grpc server", slog.String("grpc_addr", a.config.Shared.GRPCAddr))
+		if err := a.grpcServer.Serve(a.grpcListen); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
 			errCh <- err
 			return
 		}
@@ -129,6 +168,13 @@ func (a *App) shutdown(runErr error) error {
 	if err := a.httpServer.Shutdown(ctx); err != nil {
 		a.log.Error("http shutdown failed", slog.String("error", err.Error()))
 		if runErr == nil {
+			runErr = err
+		}
+	}
+
+	a.grpcServer.GracefulStop()
+	if a.grpcListen != nil {
+		if err := a.grpcListen.Close(); err != nil && !errors.Is(err, net.ErrClosed) && runErr == nil {
 			runErr = err
 		}
 	}

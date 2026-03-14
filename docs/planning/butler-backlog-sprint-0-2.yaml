@@ -1,0 +1,760 @@
+sprints:
+  - id: SPRINT-0
+    title: "Foundation: Repo skeleton, shared libs, infrastructure contracts"
+    goal: Create the Butler monorepo baseline, shared Go packages, core internal contracts, and Docker Compose infrastructure so service work can start in parallel.
+    status: done
+    tasks:
+      - id: T-001
+        title: Initialize monorepo skeleton and root Go module
+        subsystem: infra
+        sprint: SPRINT-0
+        priority: high
+        status: done
+        description: >
+          Create the repository layout defined by the roadmap and engineering standards:
+          root go.mod, baseline directories, service stubs, ignore rules, root build/test/lint/proto
+          automation, and top-level README updates.
+        why_now: >
+          Hard blocker for all implementation work; every later task depends on a stable repo layout
+          and build entrypoints.
+        dependencies: []
+        docs_to_read:
+          - docs/architecture/butler-prd-architecture.md
+          - docs/architecture/technology-stack-and-engineering-standards.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - Root go.mod exists with the Butler module path.
+          - Directories apps, internal, web, proto, migrations, docker, deploy, docs, and .opencode exist.
+          - Service stubs exist for orchestrator, tool-broker, tool-browser, tool-http, and tool-doctor with minimal main.go files.
+          - .gitignore covers Go, Node, and Docker artifacts.
+          - Root Makefile or Taskfile provides build, test, lint, and proto targets.
+          - Root README describes repository structure and local workflow.
+        deliverables:
+          - go.mod
+          - apps/ service stub directories
+          - root Makefile or Taskfile
+          - updated README.md
+          - updated .gitignore
+
+      - id: T-002
+        title: Implement shared structured logging package
+        subsystem: observability
+        sprint: SPRINT-0
+        priority: high
+        status: done
+        description: >
+          Add a shared Go logging package based on slog with JSON output, required Butler log fields,
+          child logger helpers, and secret masking utilities.
+        why_now: >
+          Observability conventions must be established before service code spreads across the repo.
+        dependencies:
+          - T-001
+        docs_to_read:
+          - docs/ai/engineering-rules.md
+          - docs/architecture/technology-stack-and-engineering-standards.md
+        acceptance_criteria:
+          - Package internal/log or internal/logger exists and uses Go standard library slog.
+          - Default output is structured JSON.
+          - Helpers support service, component, run_id, tool_call_id, level, message, and timestamp fields.
+          - MaskSecret helper exists and is covered by tests.
+          - Unit tests verify formatting, field injection, and masking behavior.
+        deliverables:
+          - internal/log or internal/logger package
+          - unit tests for logger package
+
+      - id: T-003
+        title: Implement shared configuration and introspection package
+        subsystem: infra
+        sprint: SPRINT-0
+        priority: high
+        status: done
+        description: >
+          Build environment-based typed config loading and validation for Butler services, including
+          the configuration introspection interface required for future doctor capabilities.
+        why_now: >
+          All services need typed config early, and the introspection contract is a foundation blocker
+          for doctor-related architecture.
+        dependencies:
+          - T-001
+        docs_to_read:
+          - docs/ai/engineering-rules.md
+          - docs/architecture/tool-runtime-adr.md
+          - docs/architecture/technology-stack-and-engineering-standards.md
+        acceptance_criteria:
+          - Package internal/config loads values from environment variables without heavy config frameworks.
+          - Typed config structs exist for shared and service-specific settings.
+          - Validation covers required fields, types, and allowed values.
+          - Config metadata supports is_secret marking.
+          - Introspection API returns key, component, type, required, default/effective value, source, is_secret, requires_restart, validation_status, and validation_error.
+          - Unit tests cover loading, validation, and introspection behavior.
+        deliverables:
+          - internal/config package
+          - config model and introspection interface
+          - unit tests for config package
+
+      - id: T-004
+        title: Implement PostgreSQL storage package and migration runner integration
+        subsystem: infra
+        sprint: SPRINT-0
+        priority: high
+        status: done
+        description: >
+          Add the shared PostgreSQL package using pgx/v5 with connection pooling, health checks,
+          structured logging, and migration runner integration for later schema tasks.
+        why_now: >
+          PostgreSQL is the durable source of truth for sessions, runs, transcript, and memory.
+        dependencies:
+          - T-001
+          - T-002
+          - T-003
+        docs_to_read:
+          - docs/architecture/butler-prd-architecture.md
+          - docs/architecture/memory-model.md
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/architecture/technology-stack-and-engineering-standards.md
+        acceptance_criteria:
+          - Package internal/storage/postgres exists and uses pgx/v5.
+          - Connection pool creation is driven by typed config.
+          - Health check function is available.
+          - Migration runner can execute migrations from a configured directory.
+          - Connection lifecycle and errors are logged with structured logs.
+          - Integration test verifies connect, health check, and clean shutdown against PostgreSQL.
+        deliverables:
+          - internal/storage/postgres package
+          - migration runner integration
+          - PostgreSQL integration test
+
+      - id: T-005
+        title: Implement Redis storage package
+        subsystem: infra
+        sprint: SPRINT-0
+        priority: high
+        status: done
+        description: >
+          Add the shared Redis package with connection handling, health checks, and logging for
+          leases, short-lived execution state, and future queue use.
+        why_now: >
+          Redis underpins the lease model and transient execution state required by run lifecycle.
+        dependencies:
+          - T-001
+          - T-002
+          - T-003
+        docs_to_read:
+          - docs/architecture/butler-prd-architecture.md
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/architecture/memory-model.md
+          - docs/architecture/technology-stack-and-engineering-standards.md
+        acceptance_criteria:
+          - Package internal/storage/redis exists with one minimal mature Redis client.
+          - Connection creation is driven by typed config.
+          - Health check function is available.
+          - Structured logging is used for connection lifecycle.
+          - Integration test verifies connect, SET/GET, health check, and close.
+        deliverables:
+          - internal/storage/redis package
+          - Redis integration test
+
+      - id: T-006
+        title: Define core Butler domain types and run-state validation
+        subsystem: orchestrator
+        sprint: SPRINT-0
+        priority: high
+        status: done
+        description: >
+          Create the shared domain package for identifiers, enums, run states, input event types,
+          autonomy modes, and transition validation used across proto and service code.
+        why_now: >
+          Shared types must be defined once before gRPC contracts and service implementations begin.
+        dependencies:
+          - T-001
+        docs_to_read:
+          - docs/architecture/butler-prd-architecture.md
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - Package internal/domain exists.
+          - Value types include RunID, SessionKey, ToolCallID, EventID, LeaseID, and CredentialAlias.
+          - RunState enum matches the lifecycle spec.
+          - Transition validation function enforces allowed and disallowed transitions.
+          - Terminal error classes and input event types are defined.
+          - Autonomy mode enum supports Mode 0 through Mode 3.
+          - Unit tests cover valid and invalid state transitions.
+        deliverables:
+          - internal/domain package
+          - state transition validator
+          - unit tests for domain transitions
+
+      - id: T-007
+        title: Define gRPC proto contracts for sessions and runs
+        subsystem: session
+        sprint: SPRINT-0
+        priority: high
+        status: done
+        description: >
+          Create the internal gRPC contracts for session lookup, lease operations, run records, and
+          normalized input events, with generated Go code wired into the build.
+        why_now: >
+          Session and run contracts are the foundation for Session Service and orchestrator work in Sprint 1.
+        dependencies:
+          - T-001
+          - T-006
+        docs_to_read:
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/architecture/technology-stack-and-engineering-standards.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - proto/session/v1/session.proto defines CreateSession, GetSession, ResolveSessionKey, AcquireLease, ReleaseLease, CreateRun, UpdateRunState, and GetRun.
+          - proto/run/v1/events.proto defines InputEvent fields aligned with the lifecycle spec.
+          - proto/common/v1/types.proto defines shared enums including RunState, AutonomyMode, and ErrorClass.
+          - Proto generation is available via the root proto target.
+          - Generated Go code is written to an internal generated-code directory.
+        deliverables:
+          - proto/session/v1/session.proto
+          - proto/run/v1/events.proto
+          - proto/common/v1/types.proto
+          - generated Go bindings
+
+      - id: T-008
+        title: Define gRPC proto contracts for Tool Broker
+        subsystem: tool-broker
+        sprint: SPRINT-0
+        priority: medium
+        status: done
+        description: >
+          Create the broker-side proto contracts for tool validation, execution, registry listing, and
+          credential-ref-aware request and response types.
+        why_now: >
+          This is not on the MVP critical path for Sprint 2, but it is a foundation-first contract
+          needed before broker and runtime implementation.
+        dependencies:
+          - T-001
+          - T-006
+        docs_to_read:
+          - docs/architecture/tool-runtime-adr.md
+          - docs/architecture/credential-management.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - proto/toolbroker/v1/broker.proto defines ValidateToolCall, ExecuteToolCall, ListTools, and GetToolContract.
+          - proto/toolbroker/v1/types.proto defines ToolCall, ToolResult, ToolContract, CredentialRef, and ToolError.
+          - Contract fields align with Butler tool and credential architecture.
+          - Proto generation works through the shared proto target.
+        deliverables:
+          - proto/toolbroker/v1/broker.proto
+          - proto/toolbroker/v1/types.proto
+          - generated Go bindings
+
+      - id: T-009
+        title: Define gRPC proto contracts for Model Transport
+        subsystem: transport
+        sprint: SPRINT-0
+        priority: high
+        status: done
+        description: >
+          Create the transport-layer gRPC contract for model turn lifecycle, transport events,
+          provider-session references, and tool-result submission.
+        why_now: >
+          Transport contracts are a hard blocker for Sprint 2 provider and orchestrator work.
+        dependencies:
+          - T-001
+          - T-006
+        docs_to_read:
+          - docs/architecture/model-transport-contract.md
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - proto/transport/v1/transport.proto defines StartRun, ContinueRun, SubmitToolResult, CancelRun, and StreamEvents.
+          - Request and event messages align with the transport contract document.
+          - Transport event enums include run_started, provider_session_bound, assistant_delta, assistant_final, tool_call_requested, tool_call_batch_requested, transport_warning, transport_error, run_cancelled, run_timed_out, and run_completed.
+          - Proto generation works through the shared proto target.
+        deliverables:
+          - proto/transport/v1/transport.proto
+          - generated Go bindings
+
+      - id: T-010
+        title: Create Docker Compose baseline for PostgreSQL and Redis
+        subsystem: infra
+        sprint: SPRINT-0
+        priority: high
+        status: done
+        description: >
+          Add the baseline deployment assets for local and self-hosted development: Compose files,
+          env template, health checks, and make targets for infrastructure lifecycle.
+        why_now: >
+          Local infrastructure is required for integration tests and all later service development.
+        dependencies:
+          - T-001
+        docs_to_read:
+          - docs/architecture/butler-prd-architecture.md
+          - docs/architecture/technology-stack-and-engineering-standards.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - deploy/docker-compose.yml defines postgres with pgvector and redis.
+          - deploy/docker-compose.dev.yml provides dev overrides with ports and volumes.
+          - .env.example documents required variables.
+          - PostgreSQL and Redis health checks are configured.
+          - Root automation includes infra-up and infra-down targets.
+          - Both services become reachable and healthy after startup.
+        deliverables:
+          - deploy/docker-compose.yml
+          - deploy/docker-compose.dev.yml
+          - .env.example
+          - make targets for infra lifecycle
+
+      - id: T-011
+        title: Add baseline SQL migrations for sessions, runs, transcript, and pgvector
+        subsystem: memory
+        sprint: SPRINT-0
+        priority: high
+        status: done
+        description: >
+          Create the initial SQL schema and migration workflow for sessions, runs, messages, tool_calls,
+          and pgvector enablement.
+        why_now: >
+          Sprint 1 persistence work depends on the durable schema existing first.
+        dependencies:
+          - T-004
+          - T-010
+        docs_to_read:
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/architecture/memory-model.md
+          - docs/architecture/butler-prd-architecture.md
+        acceptance_criteria:
+          - Migration execution method is chosen and wired into the repo with minimal operational overhead.
+          - Sessions, runs, messages, and tool_calls tables exist with fields aligned to the lifecycle and memory specs.
+          - pgvector extension migration exists.
+          - Migrations apply cleanly to an empty database.
+          - Root automation includes migrate-up and migrate-down targets.
+        deliverables:
+          - migrations/001_sessions.up.sql
+          - migrations/002_runs.up.sql
+          - migrations/003_messages.up.sql
+          - migrations/004_tool_calls.up.sql
+          - migrations/005_enable_pgvector.up.sql
+          - migration run targets
+
+      - id: T-012
+        title: Implement baseline metrics package
+        subsystem: observability
+        sprint: SPRINT-0
+        priority: medium
+        status: done
+        description: >
+          Add the shared metrics package with Prometheus-compatible output and minimal helpers for
+          counters, histograms, and gauges.
+        why_now: >
+          Early metrics establish a common instrumentation pattern before services are wired.
+        dependencies:
+          - T-001
+        docs_to_read:
+          - docs/ai/engineering-rules.md
+          - docs/architecture/technology-stack-and-engineering-standards.md
+        acceptance_criteria:
+          - Package internal/metrics exists.
+          - Package exposes a Prometheus-compatible /metrics handler.
+          - Helpers exist for counters, histograms, and gauges.
+          - Baseline metrics include request count, error count, and request duration.
+          - Unit test verifies metric emission.
+        deliverables:
+          - internal/metrics package
+          - metrics HTTP handler
+          - unit tests for metrics package
+
+  - id: SPRINT-1
+    title: Session Service, Run State Machine, Transcript Store
+    goal: Implement the Butler core execution backbone so input events can resolve sessions, acquire ownership, create runs, transition state, and persist transcript data.
+    status: in_progress
+    tasks:
+      - id: T-013
+        title: Implement Session Service core inside orchestrator process
+        subsystem: session
+        sprint: SPRINT-1
+        priority: high
+        status: done
+        description: >
+          Implement session lookup and idempotent creation inside the orchestrator codebase, backed by
+          PostgreSQL and exposing the session gRPC contract.
+        why_now: >
+          This is the first entry point for all inbound work and a blocker for every run.
+        dependencies:
+          - T-002
+          - T-003
+          - T-004
+          - T-005
+          - T-006
+          - T-007
+          - T-011
+        docs_to_read:
+          - docs/architecture/butler-prd-architecture.md
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - Session Service implementation lives inside the orchestrator process, not as a separate binary.
+          - gRPC methods CreateSession, GetSession, and ResolveSessionKey are implemented.
+          - Session lookup by session_key works.
+          - Session creation is idempotent on session_key.
+          - Sessions persist to PostgreSQL.
+          - Structured logging covers all operations.
+          - Unit tests cover create, lookup, and idempotency.
+          - Integration test verifies persistence in PostgreSQL.
+        deliverables:
+          - apps/orchestrator/internal/session implementation
+          - session persistence layer
+          - unit and integration tests
+          - service README for orchestrator updated
+
+      - id: T-014
+        title: Implement session lease model on Redis
+        subsystem: session
+        sprint: SPRINT-1
+        priority: high
+        status: done
+        description: >
+          Add the Redis-backed lease subsystem for single-active-owner session execution, including
+          acquire, renew, release, and conflict handling.
+        why_now: >
+          Lease ownership is a hard blocker for safe run execution ordering.
+        dependencies:
+          - T-013
+          - T-005
+        docs_to_read:
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/architecture/butler-prd-architecture.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - AcquireLease, ReleaseLease, and RenewLease operations are implemented.
+          - Lease data includes session_key, run_id, owner_id, ttl, and lease identity.
+          - Default configurable TTL exists.
+          - Conflicts are detected when another run owns the session.
+          - Unit tests cover acquire, release, renew, conflict, and expiry.
+          - Integration test verifies behavior against Redis.
+        deliverables:
+          - Redis-backed lease implementation
+          - lease API wiring
+          - unit and integration tests
+
+      - id: T-015
+        title: Implement run state machine and durable run store
+        subsystem: orchestrator
+        sprint: SPRINT-1
+        priority: high
+        status: done
+        description: >
+          Build the orchestrator-side run state machine, including run creation, transition validation,
+          durable run persistence, and transition logging.
+        why_now: >
+          The run lifecycle is the core execution contract of Butler and blocks orchestrator behavior.
+        dependencies:
+          - T-006
+          - T-011
+          - T-004
+          - T-013
+        docs_to_read:
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/architecture/butler-prd-architecture.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - State machine implementation enforces allowed transitions from the lifecycle spec.
+          - Run creation persists a full run record with required lifecycle fields.
+          - TransitionRun validates from_state to to_state changes and rejects invalid transitions.
+          - Every transition is logged with structured logs.
+          - Unit tests cover valid paths, invalid paths, and terminal-state finality.
+          - Integration test verifies a full happy-path state sequence in PostgreSQL.
+        deliverables:
+          - run state machine package
+          - run persistence store
+          - unit and integration tests
+
+      - id: T-016
+        title: Implement Transcript Store baseline
+        subsystem: memory
+        sprint: SPRINT-1
+        priority: high
+        status: todo
+        description: >
+          Add append-only transcript persistence for messages and tool-call records, plus transcript
+          retrieval methods scoped by session and run.
+        why_now: >
+          Transcript persistence is part of finalization and a required Butler memory class.
+        dependencies:
+          - T-004
+          - T-011
+          - T-006
+        docs_to_read:
+          - docs/architecture/memory-model.md
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/architecture/butler-prd-architecture.md
+        acceptance_criteria:
+          - Store supports AppendMessage, AppendToolCall, GetTranscript, and GetRunTranscript.
+          - Persistence uses the messages and tool_calls tables.
+          - Append-only behavior is preserved; no update/delete path is introduced for transcript records.
+          - Unit tests cover core methods.
+          - Integration test verifies persisted and retrieved transcript data.
+        deliverables:
+          - internal/memory/transcript/store.go
+          - transcript persistence implementation
+          - unit and integration tests
+
+      - id: T-017
+        title: Implement normalized InputEvent model and ingestion helpers
+        subsystem: session
+        sprint: SPRINT-1
+        priority: high
+        status: todo
+        description: >
+          Create the normalized Butler InputEvent model and raw-ingress normalization helpers so future
+          channel adapters can submit a single event shape.
+        why_now: >
+          A normalized ingress contract must exist before transport-facing and channel-facing APIs are built.
+        dependencies:
+          - T-006
+          - T-007
+        docs_to_read:
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/architecture/butler-prd-architecture.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - InputEvent struct includes event_id, event_type, session_key, source, payload, created_at, and idempotency_key.
+          - NormalizeEvent helper converts source-specific payloads into InputEvent.
+          - Idempotency key generation is deterministic for equivalent input deliveries.
+          - Unit tests cover normalization and idempotency key generation.
+        deliverables:
+          - internal/ingress/event model
+          - normalization helpers
+          - unit tests
+
+      - id: T-018
+        title: Add input-event deduplication support to Session Service
+        subsystem: session
+        sprint: SPRINT-1
+        priority: medium
+        status: todo
+        description: >
+          Extend Session Service with explicit input-event deduplication behavior keyed by idempotency_key,
+          so duplicate deliveries do not create duplicate runs.
+        why_now: >
+          The roadmap calls for deduplication, and run-lifecycle compliance requires it before external
+          adapters start submitting events.
+        dependencies:
+          - T-013
+          - T-017
+          - T-015
+        docs_to_read:
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - Session Service checks idempotency_key before creating a new run for an input event.
+          - Duplicate deliveries resolve to the existing run or a clear duplicate result instead of creating a second run.
+          - Unit tests cover first-submit and duplicate-submit behavior.
+          - Integration test verifies no duplicate run records are created for the same idempotency_key.
+        deliverables:
+          - deduplication logic in Session Service
+          - persistence or lookup path for deduplication
+          - unit and integration tests
+
+  - id: SPRINT-2
+    title: Model Transport Layer (OpenAI), Basic Orchestrator
+    goal: Enable the first model execution loop so Butler can take a normalized input event, call OpenAI through the transport layer, persist the assistant response, and expose callable APIs for later channel adapters.
+    tasks:
+      - id: T-019
+        title: Implement transport provider interface and normalized transport types
+        subsystem: transport
+        sprint: SPRINT-2
+        priority: high
+        status: todo
+        description: >
+          Create the Go-side Model Transport abstraction, normalized transport entities, capability
+          snapshot model, and transport error normalization used by all providers.
+        why_now: >
+          This is the transport foundation and a blocker for the OpenAI provider and orchestrator integration.
+        dependencies:
+          - T-006
+          - T-009
+        docs_to_read:
+          - docs/architecture/model-transport-contract.md
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - ModelProvider interface exposes StartRun, ContinueRun, SubmitToolResult, and CancelRun.
+          - Normalized transport structs exist for TransportRunContext, ProviderSessionRef, TransportCommand, and TransportEvent.
+          - Transport event constants cover the event taxonomy in the contract.
+          - Normalized transport errors align with the transport spec.
+          - CapabilitySnapshot exists and matches required capability fields.
+          - Unit tests cover event construction and error normalization.
+        deliverables:
+          - internal/transport/provider.go
+          - internal/transport/types.go
+          - internal/transport/events.go
+          - internal/transport/errors.go
+          - internal/transport/capabilities.go
+          - unit tests
+
+      - id: T-020
+        title: Implement OpenAI Responses API provider with streaming normalization
+        subsystem: transport
+        sprint: SPRINT-2
+        priority: high
+        status: todo
+        description: >
+          Build the first concrete transport provider using the OpenAI Responses API over HTTP streaming,
+          including SSE parsing, provider-session tracking, capability reporting, config, and normalized
+          transport events.
+        why_now: >
+          This is the first provider on the MVP critical path for model execution.
+        dependencies:
+          - T-019
+          - T-002
+          - T-003
+        docs_to_read:
+          - docs/architecture/model-transport-contract.md
+          - docs/architecture/butler-prd-architecture.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - OpenAI provider implements the shared ModelProvider interface.
+          - StartRun sends prepared input items and tool definitions to the OpenAI Responses API.
+          - Streaming responses are parsed into normalized assistant delta, tool request, final, warning, and error events.
+          - SubmitToolResult supports continued provider interaction even if the orchestrator tool loop is not yet wired.
+          - CancelRun provides best-effort cancellation semantics.
+          - Provider session references are tracked from provider response identifiers.
+          - Config supports API key, model name, base URL, and timeouts, with secret marking for API key.
+          - Errors map to Butler transport error classes.
+          - Unit tests use a mock HTTP server for streaming behavior.
+          - Optional integration test can run with a real API key.
+        deliverables:
+          - internal/transport/openai/provider.go
+          - OpenAI provider config model
+          - streaming parser
+          - unit tests
+          - opt-in integration test
+
+      - id: T-021
+        title: Implement basic orchestrator run execution flow without tools
+        subsystem: orchestrator
+        sprint: SPRINT-2
+        priority: high
+        status: todo
+        description: >
+          Implement the MVP orchestrator execution path: resolve session, acquire lease, create run,
+          prepare minimal context, start model execution, consume streaming events, persist transcript,
+          finalize the run, and release the lease.
+        why_now: >
+          This is the core vertical slice needed before Telegram or Web UI can use Butler end to end.
+        dependencies:
+          - T-013
+          - T-014
+          - T-015
+          - T-016
+          - T-019
+          - T-020
+          - T-018
+        docs_to_read:
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/architecture/model-transport-contract.md
+          - docs/architecture/memory-model.md
+          - docs/architecture/butler-prd-architecture.md
+        acceptance_criteria:
+          - Orchestrator accepts a normalized InputEvent.
+          - Execution path performs session resolution, lease acquisition, run creation, and state transitions through created, queued, acquired, preparing, model_running, finalizing, and completed.
+          - Preparing stage includes input payload and an explicit empty memory bundle placeholder, without bypassing Butler memory boundaries.
+          - Transport StartRun is invoked during model_running.
+          - assistant_delta events are processed and exposed to an internal delivery hook for future channel adapters.
+          - assistant_final triggers transcript persistence and run finalization.
+          - User and assistant messages are written to the Transcript Store.
+          - Transport failures move the run to failed with normalized error logging.
+          - Lease is released on terminal completion or failure.
+          - Unit tests use a mock transport provider.
+          - Integration test verifies a full InputEvent-to-completed-run flow in the database.
+        deliverables:
+          - apps/orchestrator/internal/orchestrator/run flow
+          - orchestrator-to-transport integration
+          - transcript finalization path
+          - unit and integration tests
+          - orchestrator README update
+
+      - id: T-022
+        title: Add internal streaming delivery hook for future channel adapters
+        subsystem: orchestrator
+        sprint: SPRINT-2
+        priority: medium
+        status: todo
+        description: >
+          Extract a minimal orchestrator-side event delivery interface for assistant deltas and final
+          responses so Telegram and Web UI can attach later without changing run semantics.
+        why_now: >
+          The roadmap mentions future channel delivery; making the seam explicit now avoids coupling
+          channel UX directly into model execution.
+        dependencies:
+          - T-021
+        docs_to_read:
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/architecture/butler-prd-architecture.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - Orchestrator exposes an internal delivery interface for assistant_delta and assistant_final events.
+          - The interface does not let channel adapters mutate run state directly.
+          - Default implementation can be a no-op or logging sink.
+          - Unit tests verify events are emitted in order on a successful model run.
+        deliverables:
+          - internal delivery interface
+          - default delivery implementation
+          - unit tests for delivery hook
+
+      - id: T-023
+        title: Expose orchestrator gRPC and REST ingestion APIs with health and metrics
+        subsystem: orchestrator
+        sprint: SPRINT-2
+        priority: high
+        status: todo
+        description: >
+          Wire the orchestrator into a runnable service binary exposing the event submission APIs,
+          health checks, metrics, and graceful shutdown behavior required by later adapters.
+        why_now: >
+          Telegram and Web UI depend on a stable service endpoint; this is also needed for smoke testing.
+        dependencies:
+          - T-021
+          - T-003
+          - T-012
+        docs_to_read:
+          - docs/architecture/technology-stack-and-engineering-standards.md
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - apps/orchestrator/main.go starts gRPC and HTTP servers.
+          - gRPC service exposes SubmitEvent(InputEvent) to trigger run execution.
+          - REST endpoint POST /api/v1/events submits normalized input events.
+          - GET /health checks PostgreSQL and Redis connectivity.
+          - GET /metrics exposes Prometheus-compatible metrics.
+          - Graceful shutdown is implemented.
+          - Dockerfile exists for orchestrator using a multistage Go build.
+          - Startup logs include service identity and masked config summary.
+        deliverables:
+          - apps/orchestrator/main.go
+          - gRPC API wiring
+          - REST API wiring
+          - health and metrics endpoints
+          - docker/orchestrator/Dockerfile
+
+      - id: T-024
+        title: Add Sprint-2 smoke verification for event-to-response flow
+        subsystem: observability
+        sprint: SPRINT-2
+        priority: medium
+        status: todo
+        description: >
+          Add a targeted smoke verification path for the pre-Telegram vertical slice using the
+          orchestrator API, verifying run completion and transcript persistence.
+        why_now: >
+          This validates the Sprint 2 cut line and reduces risk before channel-adapter work in Sprint 3.
+        dependencies:
+          - T-023
+        docs_to_read:
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - A documented smoke scenario exists for POST /api/v1/events with a test InputEvent.
+          - The scenario verifies run completion in the runs store.
+          - The scenario verifies transcript persistence of user and assistant messages.
+          - The smoke path runs against the Docker Compose baseline plus orchestrator dependencies.
+        deliverables:
+          - smoke test script or test case
+          - documented verification steps
+          - expected-output checklist
