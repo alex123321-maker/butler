@@ -52,5 +52,6 @@ Related docs:
 
 Current limitations:
 - the service executes the OpenAI transport path synchronously inside request handling, so REST ingestion returns only after run completion
+- the current OpenAI transport backend is HTTP SSE only; WebSocket-first OpenAI transport is still pending
 - tool-calling and resume paths are not wired into the service API yet
 - Dockerfile exists, but the full service stack is not wired into Compose yet

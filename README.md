@@ -4,7 +4,7 @@ Self-hosted personal long-lived agent platform.
 
 ## Status
 
-Sprint 0, Sprint 1, and Sprint 2 are complete. The repository now includes the monorepo foundation, shared infra packages, contracts, migrations, Session Service, Redis leases, run lifecycle persistence, transcript storage, normalized ingress helpers, normalized transport types, the OpenAI transport provider, synchronous orchestrator event ingestion APIs, and a documented smoke flow.
+Sprint 0 and Sprint 1 are complete. Sprint 2 is functionally delivered for the first vertical slice, but the OpenAI transport remains a partial implementation because it currently uses HTTP streaming (SSE) only and does not yet satisfy Butler's WebSocket-first requirement for OpenAI. The repository now includes the monorepo foundation, shared infra packages, contracts, migrations, Session Service, Redis leases, run lifecycle persistence, transcript storage, normalized ingress helpers, normalized transport types, the OpenAI SSE transport path, synchronous orchestrator event ingestion APIs, and a documented smoke flow.
 
 ## Repository layout
 

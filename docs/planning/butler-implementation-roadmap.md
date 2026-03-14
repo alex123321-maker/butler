@@ -2,7 +2,7 @@
 
 ## Planning assumptions
 
-**Текущее состояние:** Sprint 0, Sprint 1 и Sprint 2 фактически реализованы: в репозитории уже есть Go-код, proto-контракты, SQL-миграции, Docker Compose baseline для PostgreSQL/Redis, Session Service, Redis lease model, run persistence, transcript store, ingress normalization, transport/provider loop для OpenAI, synchronous orchestrator ingestion APIs и документированный smoke flow. Sprint 3 остаётся следующим крупным шагом: Telegram adapter, full MVP compose stack, first end-to-end acceptance, Tool Broker skeleton и Working Memory foundation.
+**Текущее состояние:** Sprint 0 и Sprint 1 фактически реализованы полностью. Sprint 2 реализован как рабочий vertical slice, но транспортная часть остаётся частичной: в репозитории уже есть Go-код, proto-контракты, SQL-миграции, Docker Compose baseline для PostgreSQL/Redis, Session Service, Redis lease model, run persistence, transcript store, ingress normalization, synchronous orchestrator ingestion APIs и OpenAI provider на HTTP streaming (SSE). Это временная реализация и она ещё не закрывает архитектурное требование WebSocket-first для OpenAI. Sprint 3 остаётся следующим крупным шагом: Telegram adapter, full MVP compose stack, first end-to-end acceptance, Tool Broker skeleton и Working Memory foundation.
 
 **Модель спринтов:**
 - 1 спринт = ~2 недели
