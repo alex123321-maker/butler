@@ -39,9 +39,7 @@ type Config struct {
 	ModelName    string
 	OwnerID      string
 	LeaseTTL     int64
-
-	OnAssistantDelta func(context.Context, DeliveryEvent) error
-	OnAssistantFinal func(context.Context, DeliveryEvent) error
+	Delivery     DeliverySink
 }
 
 type Service struct {
@@ -89,6 +87,9 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 	}
 	if cfg.LeaseTTL <= 0 {
 		cfg.LeaseTTL = 60
+	}
+	if cfg.Delivery == nil {
+		cfg.Delivery = NopDeliverySink{}
 	}
 	return &Service{
 		sessions:   sessions,
@@ -214,8 +215,8 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	for transportEvent := range stream {
 		switch transportEvent.EventType {
 		case transport.EventTypeAssistantDelta:
-			if transportEvent.AssistantDelta != nil && s.config.OnAssistantDelta != nil {
-				if err := s.config.OnAssistantDelta(ctx, DeliveryEvent{
+			if transportEvent.AssistantDelta != nil {
+				if err := s.config.Delivery.DeliverAssistantDelta(ctx, DeliveryEvent{
 					RunID:      current.GetRunId(),
 					SessionKey: event.SessionKey,
 					Content:    transportEvent.AssistantDelta.Content,
@@ -227,10 +228,8 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 		case transport.EventTypeAssistantFinal:
 			if transportEvent.AssistantFinal != nil {
 				finalMessage = transportEvent.AssistantFinal.Content
-				if s.config.OnAssistantFinal != nil {
-					if err := s.config.OnAssistantFinal(ctx, DeliveryEvent{RunID: current.GetRunId(), SessionKey: event.SessionKey, Content: finalMessage, Final: true}); err != nil {
-						return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
-					}
+				if err := s.config.Delivery.DeliverAssistantFinal(ctx, DeliveryEvent{RunID: current.GetRunId(), SessionKey: event.SessionKey, Content: finalMessage, Final: true}); err != nil {
+					return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
 				}
 			}
 		case transport.EventTypeTransportError:

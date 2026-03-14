@@ -11,6 +11,7 @@ Current baseline:
 - implements Redis-backed `AcquireLease`, `RenewLease`, and `ReleaseLease`
 - implements durable run creation, lookup, state transitions, and input-event deduplication
 - implements the internal event-to-run execution flow for normalized `InputEvent` values using the transport layer and transcript store
+- exposes an internal delivery sink for `assistant_delta` and `assistant_final` events without allowing channel adapters to mutate run state
 - exposes `GET /health` and `GET /metrics`
 - exposes placeholder `POST /api/v1/events` that is not wired to run execution yet
 
@@ -29,6 +30,7 @@ Entry points and APIs:
 - gRPC API: `SessionService` from `proto/session/v1/session.proto`
 - HTTP endpoints: `/health`, `/metrics`, `/api/v1/events`
 - internal execution package: `apps/orchestrator/internal/orchestrator`
+- internal delivery seam: `apps/orchestrator/internal/orchestrator/delivery.go`
 
 Local run:
 - copy `.env.example` to `.env`

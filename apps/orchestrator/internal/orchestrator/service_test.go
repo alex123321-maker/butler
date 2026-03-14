@@ -18,11 +18,11 @@ import (
 func TestExecuteRunsHappyPath(t *testing.T) {
 	t.Parallel()
 
-	deltas := make([]string, 0, 2)
 	sessions := &memorySessionRepo{}
 	leases := &memoryLeaseManager{}
 	runs := newMemoryRunManager()
 	transcripts := &memoryTranscriptStore{}
+	delivery := &recordingDeliverySink{}
 	provider := &mockProvider{events: []transport.TransportEvent{
 		transport.NewAssistantDeltaEvent("", "openai", transport.AssistantDelta{Content: "Hel", SequenceNo: 1}),
 		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "Hello world", FinishReason: "completed"}),
@@ -32,10 +32,7 @@ func TestExecuteRunsHappyPath(t *testing.T) {
 	service := NewService(sessions, leases, runs, transcripts, provider, Config{
 		ProviderName: "openai",
 		ModelName:    "gpt-5-mini",
-		OnAssistantDelta: func(_ context.Context, event DeliveryEvent) error {
-			deltas = append(deltas, event.Content)
-			return nil
-		},
+		Delivery:     delivery,
 	}, nil)
 
 	result, err := service.Execute(context.Background(), ingress.InputEvent{
@@ -53,8 +50,8 @@ func TestExecuteRunsHappyPath(t *testing.T) {
 	if result.AssistantResponse != "Hello world" {
 		t.Fatalf("expected final response, got %q", result.AssistantResponse)
 	}
-	if len(deltas) != 1 || deltas[0] != "Hel" {
-		t.Fatalf("expected one delta callback, got %v", deltas)
+	if got := delivery.contents(); len(got) != 2 || got[0] != "Hel" || got[1] != "Hello world" {
+		t.Fatalf("expected ordered delivery events, got %v", got)
 	}
 	if len(transcripts.messages) != 2 {
 		t.Fatalf("expected user and assistant transcript messages, got %d", len(transcripts.messages))
@@ -226,4 +223,26 @@ func (m *mockProvider) SubmitToolResult(context.Context, transport.SubmitToolRes
 
 func (m *mockProvider) CancelRun(context.Context, transport.CancelRunRequest) (*transport.TransportEvent, error) {
 	return nil, nil
+}
+
+type recordingDeliverySink struct {
+	events []DeliveryEvent
+}
+
+func (r *recordingDeliverySink) DeliverAssistantDelta(_ context.Context, event DeliveryEvent) error {
+	r.events = append(r.events, event)
+	return nil
+}
+
+func (r *recordingDeliverySink) DeliverAssistantFinal(_ context.Context, event DeliveryEvent) error {
+	r.events = append(r.events, event)
+	return nil
+}
+
+func (r *recordingDeliverySink) contents() []string {
+	result := make([]string, 0, len(r.events))
+	for _, event := range r.events {
+		result = append(result, event.Content)
+	}
+	return result
 }

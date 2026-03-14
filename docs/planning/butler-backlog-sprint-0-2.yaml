@@ -676,7 +676,7 @@ sprints:
         subsystem: orchestrator
         sprint: SPRINT-2
         priority: medium
-        status: todo
+        status: done
         description: >
           Extract a minimal orchestrator-side event delivery interface for assistant deltas and final
           responses so Telegram and Web UI can attach later without changing run semantics.
