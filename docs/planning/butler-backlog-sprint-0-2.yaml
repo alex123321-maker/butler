@@ -554,7 +554,7 @@ sprints:
   - id: SPRINT-2
     title: Model Transport Layer (OpenAI), Basic Orchestrator
     goal: Enable the first model execution loop so Butler can take a normalized input event, call OpenAI through the transport layer, persist the assistant response, and expose callable APIs for later channel adapters.
-    status: in_progress
+    status: done
     tasks:
       - id: T-019
         title: Implement transport provider interface and normalized transport types
@@ -739,7 +739,7 @@ sprints:
         subsystem: observability
         sprint: SPRINT-2
         priority: medium
-        status: todo
+        status: done
         description: >
           Add a targeted smoke verification path for the pre-Telegram vertical slice using the
           orchestrator API, verifying run completion and transcript persistence.

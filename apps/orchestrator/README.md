@@ -40,6 +40,7 @@ Local run:
 
 Testing:
 - unit and integration tests: `go test ./apps/orchestrator/...`
+- smoke verification: `go run ./scripts/smoke/sprint2_event_flow.go`
 - full repo checks: `go test ./...`, `go build ./...`, `go vet ./...`
 
 Related docs:
@@ -47,6 +48,7 @@ Related docs:
 - `docs/architecture/run-lifecycle-spec.md`
 - `docs/architecture/model-transport-contract.md`
 - `docs/architecture/memory-model.md`
+- `docs/testing/sprint-2-smoke.md`
 
 Current limitations:
 - the service executes the OpenAI transport path synchronously inside request handling, without a separate run queue yet
