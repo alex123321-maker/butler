@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package butler.run.v1;
+
+option go_package = "github.com/butler/butler/internal/gen/run/v1;runv1";
+
+enum InputEventType {
+  INPUT_EVENT_TYPE_UNSPECIFIED = 0;
+  INPUT_EVENT_TYPE_USER_MESSAGE = 1;
+  INPUT_EVENT_TYPE_UI_ACTION = 2;
+  INPUT_EVENT_TYPE_SYSTEM_DIAGNOSTIC_TRIGGER = 3;
+  INPUT_EVENT_TYPE_SCHEDULED_INTERNAL_EVENT = 4;
+  INPUT_EVENT_TYPE_RESUME_OR_RETRY_EVENT = 5;
+  INPUT_EVENT_TYPE_APPROVAL_RESPONSE_EVENT = 6;
+}
+
+message InputEvent {
+  string event_id = 1;
+  InputEventType event_type = 2;
+  string session_key = 3;
+  string source = 4;
+  string payload_json = 5;
+  string created_at = 6;
+  string idempotency_key = 7;
+}
