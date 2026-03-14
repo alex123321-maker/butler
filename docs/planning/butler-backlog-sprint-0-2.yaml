@@ -499,7 +499,7 @@ sprints:
         subsystem: session
         sprint: SPRINT-1
         priority: high
-        status: todo
+        status: done
         description: >
           Create the normalized Butler InputEvent model and raw-ingress normalization helpers so future
           channel adapters can submit a single event shape.
