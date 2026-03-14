@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+
+# Go
+bin/
+coverage.out
+vendor/
+*.test
+
+# Build output
+dist/
+build/
+out/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+.docker/
+
+# Logs
+*.log
+
+# Go workspace files
+go.work
+go.work.sum
+
+# Credentials and secrets
+credentials.json
+*.pem
+*.key
