@@ -1,0 +1,167 @@
+syntax = "proto3";
+
+package butler.transport.v1;
+
+option go_package = "github.com/butler/butler/internal/gen/transport/v1;transportv1";
+
+message CapabilitySnapshot {
+  bool supports_streaming = 1;
+  bool supports_tool_calls = 2;
+  bool supports_batch_tool_calls = 3;
+  bool supports_stateful_sessions = 4;
+  bool supports_cancel = 5;
+  bool supports_usage_metadata = 6;
+}
+
+message ProviderSessionRef {
+  string provider_name = 1;
+  string session_ref = 2;
+  string response_ref = 3;
+  string created_at = 4;
+  string last_used_at = 5;
+}
+
+message TransportRunContext {
+  string run_id = 1;
+  string session_key = 2;
+  string provider_name = 3;
+  string model_name = 4;
+  ProviderSessionRef provider_session_ref = 5;
+  bool supports_streaming = 6;
+  bool supports_tool_calls = 7;
+  bool supports_stateful_resume = 8;
+}
+
+message TransportCommand {
+  string command_id = 1;
+  string run_id = 2;
+  string command_type = 3;
+  string provider_name = 4;
+  string payload_json = 5;
+  string created_at = 6;
+}
+
+message ToolDefinition {
+  string tool_name = 1;
+  string description = 2;
+  string input_schema_json = 3;
+}
+
+message InputItem {
+  string item_id = 1;
+  string role = 2;
+  string content = 3;
+  string content_type = 4;
+  string metadata_json = 5;
+}
+
+message StartRunRequest {
+  string run_id = 1;
+  string session_key = 2;
+  string provider_name = 3;
+  string model_name = 4;
+  repeated InputItem input_items = 5;
+  repeated ToolDefinition tool_definitions = 6;
+  ProviderSessionRef provider_session_ref = 7;
+  bool streaming_enabled = 8;
+  string transport_options_json = 9;
+}
+
+message ContinueRunRequest {
+  string run_id = 1;
+  ProviderSessionRef provider_session_ref = 2;
+  repeated InputItem input_items = 3;
+  string transport_options_json = 4;
+}
+
+message SubmitToolResultRequest {
+  string run_id = 1;
+  ProviderSessionRef provider_session_ref = 2;
+  string tool_call_ref = 3;
+  string tool_result_json = 4;
+  string transport_options_json = 5;
+}
+
+message CancelRunRequest {
+  string run_id = 1;
+  ProviderSessionRef provider_session_ref = 2;
+  string reason = 3;
+}
+
+message TransportError {
+  string error_type = 1;
+  string message = 2;
+  bool retryable = 3;
+  string provider_name = 4;
+  string provider_code = 5;
+  string provider_details_json = 6;
+}
+
+enum TransportEventType {
+  TRANSPORT_EVENT_TYPE_UNSPECIFIED = 0;
+  TRANSPORT_EVENT_TYPE_RUN_STARTED = 1;
+  TRANSPORT_EVENT_TYPE_PROVIDER_SESSION_BOUND = 2;
+  TRANSPORT_EVENT_TYPE_ASSISTANT_DELTA = 3;
+  TRANSPORT_EVENT_TYPE_ASSISTANT_FINAL = 4;
+  TRANSPORT_EVENT_TYPE_TOOL_CALL_REQUESTED = 5;
+  TRANSPORT_EVENT_TYPE_TOOL_CALL_BATCH_REQUESTED = 6;
+  TRANSPORT_EVENT_TYPE_TRANSPORT_WARNING = 7;
+  TRANSPORT_EVENT_TYPE_TRANSPORT_ERROR = 8;
+  TRANSPORT_EVENT_TYPE_RUN_CANCELLED = 9;
+  TRANSPORT_EVENT_TYPE_RUN_TIMED_OUT = 10;
+  TRANSPORT_EVENT_TYPE_RUN_COMPLETED = 11;
+}
+
+message ToolCallRequest {
+  string tool_call_ref = 1;
+  string provider_native_id = 2;
+  string tool_name = 3;
+  string args_json = 4;
+  int64 sequence_no = 5;
+}
+
+message ToolCallBatch {
+  repeated ToolCallRequest tool_calls = 1;
+  string batch_ref = 2;
+  int64 sequence_no = 3;
+}
+
+message AssistantDelta {
+  string delta_type = 1;
+  string content = 2;
+  int64 sequence_no = 3;
+}
+
+message AssistantFinal {
+  string content = 1;
+  string finish_reason = 2;
+  string usage_json = 3;
+}
+
+message TransportEvent {
+  string event_id = 1;
+  string run_id = 2;
+  TransportEventType event_type = 3;
+  string provider_name = 4;
+  string payload_json = 5;
+  string timestamp = 6;
+  ProviderSessionRef provider_session_ref = 7;
+  CapabilitySnapshot capabilities_snapshot = 8;
+  AssistantDelta assistant_delta = 9;
+  AssistantFinal assistant_final = 10;
+  ToolCallRequest tool_call = 11;
+  ToolCallBatch tool_call_batch = 12;
+  TransportError transport_error = 13;
+}
+
+service ModelTransportService {
+  rpc StartRun(StartRunRequest) returns (stream TransportEvent);
+  rpc ContinueRun(ContinueRunRequest) returns (stream TransportEvent);
+  rpc SubmitToolResult(SubmitToolResultRequest) returns (stream TransportEvent);
+  rpc CancelRun(CancelRunRequest) returns (TransportEvent);
+  rpc StreamEvents(StreamEventsRequest) returns (stream TransportEvent);
+}
+
+message StreamEventsRequest {
+  string run_id = 1;
+}
