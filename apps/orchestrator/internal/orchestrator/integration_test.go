@@ -60,6 +60,7 @@ func TestExecuteIntegrationPersistsRunAndTranscript(t *testing.T) {
 		runservice.NewService(runservice.NewPostgresRepository(postgres.Pool()), nil),
 		transcript.NewStore(postgres.Pool()),
 		&mockProvider{events: []transport.TransportEvent{
+			transport.NewRunStartedEvent("", "openai", transport.CapabilitySnapshot{SupportsStreaming: true}, &transport.ProviderSessionRef{ProviderName: "openai", ResponseRef: "resp_integration"}),
 			transport.NewAssistantDeltaEvent("", "openai", transport.AssistantDelta{Content: "Hel", SequenceNo: 1}),
 			transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "Hello integration", FinishReason: "completed"}),
 			transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
@@ -82,11 +83,15 @@ func TestExecuteIntegrationPersistsRunAndTranscript(t *testing.T) {
 	}
 
 	var state string
-	if err := postgres.Pool().QueryRow(ctx, `SELECT current_state FROM runs WHERE run_id = $1`, result.RunID).Scan(&state); err != nil {
+	var providerSessionRef string
+	if err := postgres.Pool().QueryRow(ctx, `SELECT current_state, COALESCE(provider_session_ref, '') FROM runs WHERE run_id = $1`, result.RunID).Scan(&state, &providerSessionRef); err != nil {
 		t.Fatalf("query run state: %v", err)
 	}
 	if state != "completed" {
 		t.Fatalf("expected completed run state, got %q", state)
+	}
+	if providerSessionRef == "" {
+		t.Fatal("expected provider_session_ref to be persisted")
 	}
 
 	transcriptRows, err := transcript.NewStore(postgres.Pool()).GetRunTranscript(ctx, result.RunID)

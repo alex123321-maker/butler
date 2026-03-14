@@ -4,7 +4,7 @@ Self-hosted personal long-lived agent platform.
 
 ## Status
 
-Sprint 0 and Sprint 1 are complete. The repository now includes the monorepo foundation, shared infra packages, contracts, migrations, Session Service, Redis leases, run lifecycle persistence, transcript storage, and normalized ingress helpers. Sprint 2 is only partially started with orchestrator bootstrap, health, metrics, and a placeholder REST ingestion endpoint.
+Sprint 0, Sprint 1, and Sprint 2 are complete. The repository now includes the monorepo foundation, shared infra packages, contracts, migrations, Session Service, Redis leases, run lifecycle persistence, transcript storage, normalized ingress helpers, normalized transport types, the OpenAI transport provider, synchronous orchestrator event ingestion APIs, and a documented smoke flow.
 
 ## Repository layout
 

@@ -2,7 +2,7 @@
 
 Go service binaries live here.
 
-- `orchestrator/` hosts the Butler core API process, Session Service implementation, run lifecycle logic, and current health/metrics bootstrap.
+- `orchestrator/` hosts the Butler core API process, Session Service implementation, run lifecycle logic, model execution flow, and synchronous event ingestion APIs.
 - `migrator/` applies and rolls back SQL migrations against PostgreSQL.
 - `tool-broker/`, `tool-browser/`, `tool-http/`, and `tool-doctor/` are planned service binaries with Sprint 0 skeleton stubs only.
 

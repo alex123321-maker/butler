@@ -76,7 +76,7 @@ func postEvent(ctx context.Context, url string, payload map[string]any) submitRe
 		fail("post event: %v", err)
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusAccepted {
+	if resp.StatusCode != http.StatusOK {
 		fail("unexpected response status: %s", resp.Status)
 	}
 	var result submitResponse

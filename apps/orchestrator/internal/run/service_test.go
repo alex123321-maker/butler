@@ -159,6 +159,35 @@ func TestTransitionRunTerminalStateSetsFinishedAt(t *testing.T) {
 	}
 }
 
+func TestPersistProviderSessionRefUpdatesRun(t *testing.T) {
+	createdAt := time.Date(2026, time.March, 15, 13, 0, 0, 0, time.UTC)
+	repo := &memoryRepository{records: map[string]Record{
+		"run-1": {
+			RunID:         "run-1",
+			SessionKey:    "telegram:chat:42",
+			InputEventID:  "event-1",
+			Status:        "model_running",
+			AutonomyMode:  "mode_1",
+			CurrentState:  "model_running",
+			ModelProvider: "openai",
+			StartedAt:     createdAt,
+			UpdatedAt:     createdAt,
+		},
+	}}
+	service := NewService(repo, nil)
+
+	run, err := service.PersistProviderSessionRef(context.Background(), "run-1", `{"provider_name":"openai","response_ref":"resp_123"}`)
+	if err != nil {
+		t.Fatalf("PersistProviderSessionRef returned error: %v", err)
+	}
+	if run.GetProviderSessionRef() == "" {
+		t.Fatal("expected provider session ref to be stored")
+	}
+	if repo.records["run-1"].ProviderSessionRef == "" {
+		t.Fatal("expected repository to persist provider session ref")
+	}
+}
+
 type memoryRepository struct {
 	created           Record
 	records           map[string]Record
@@ -205,6 +234,17 @@ func (m *memoryRepository) UpdateRun(_ context.Context, params UpdateParams) (Re
 	record.ErrorType = params.ErrorType
 	record.ErrorMessage = params.ErrorMessage
 	record.FinishedAt = params.FinishedAt
+	record.UpdatedAt = params.UpdatedAt
+	m.records[params.RunID] = record
+	return record, nil
+}
+
+func (m *memoryRepository) UpdateProviderSessionRef(_ context.Context, params UpdateProviderSessionRefParams) (Record, error) {
+	record, ok := m.records[params.RunID]
+	if !ok {
+		return Record{}, ErrRunNotFound
+	}
+	record.ProviderSessionRef = params.ProviderSessionRef
 	record.UpdatedAt = params.UpdatedAt
 	m.records[params.RunID] = record
 	return record, nil

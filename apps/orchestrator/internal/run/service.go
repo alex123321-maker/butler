@@ -84,6 +84,29 @@ func (s *Service) GetRun(ctx context.Context, runID string) (*sessionv1.RunRecor
 	return recordToProto(record), nil
 }
 
+func (s *Service) PersistProviderSessionRef(ctx context.Context, runID, providerSessionRef string) (*sessionv1.RunRecord, error) {
+	runID = strings.TrimSpace(runID)
+	if runID == "" {
+		return nil, fmt.Errorf("run_id is required")
+	}
+
+	record, err := s.repo.UpdateProviderSessionRef(ctx, UpdateProviderSessionRefParams{
+		RunID:              runID,
+		ProviderSessionRef: strings.TrimSpace(providerSessionRef),
+		UpdatedAt:          time.Now().UTC(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	s.log.Info("run provider session updated",
+		slog.String("run_id", record.RunID),
+		slog.Bool("has_provider_session_ref", record.ProviderSessionRef != ""),
+	)
+
+	return recordToProto(record), nil
+}
+
 func (s *Service) TransitionRun(ctx context.Context, req *sessionv1.UpdateRunStateRequest) (*sessionv1.RunRecord, error) {
 	params, err := validateTransitionRequest(req)
 	if err != nil {

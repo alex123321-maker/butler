@@ -7,10 +7,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -21,12 +23,14 @@ type Config struct {
 	Model   string
 	BaseURL string
 	Timeout time.Duration
+	Logger  *slog.Logger
 }
 
 type Provider struct {
 	config       Config
 	httpClient   *http.Client
 	capabilities transport.CapabilitySnapshot
+	log          *slog.Logger
 }
 
 func NewProvider(cfg Config, client *http.Client) (*Provider, error) {
@@ -42,9 +46,14 @@ func NewProvider(cfg Config, client *http.Client) (*Provider, error) {
 	if client == nil {
 		client = &http.Client{Timeout: cfg.Timeout}
 	}
+	log := cfg.Logger
+	if log == nil {
+		log = slog.Default()
+	}
 	return &Provider{
 		config:     cfg,
 		httpClient: client,
+		log:        logger.WithComponent(log, "transport-openai"),
 		capabilities: transport.CapabilitySnapshot{
 			SupportsStreaming:        true,
 			SupportsToolCalls:        true,
@@ -68,6 +77,11 @@ func (p *Provider) StartRun(ctx context.Context, req transport.StartRunRequest) 
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
+	p.log.Info("starting openai run",
+		slog.String("run_id", req.Context.RunID),
+		slog.String("model", req.Context.ModelName),
+		slog.Bool("streaming_enabled", req.StreamingEnabled),
+	)
 	body, err := p.startRunBody(req)
 	if err != nil {
 		return nil, err
@@ -79,6 +93,7 @@ func (p *Provider) ContinueRun(ctx context.Context, req transport.ContinueRunReq
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
+	p.log.Info("continuing openai run", slog.String("run_id", req.RunID))
 	body, err := p.continueRunBody(req)
 	if err != nil {
 		return nil, err
@@ -90,6 +105,10 @@ func (p *Provider) SubmitToolResult(ctx context.Context, req transport.SubmitToo
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
+	p.log.Info("submitting tool result to openai",
+		slog.String("run_id", req.RunID),
+		slog.String("tool_call_ref", req.ToolCallRef),
+	)
 	body, err := p.submitToolResultBody(req)
 	if err != nil {
 		return nil, err
@@ -101,6 +120,7 @@ func (p *Provider) CancelRun(ctx context.Context, req transport.CancelRunRequest
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
+	p.log.Info("cancelling openai run", slog.String("run_id", req.RunID))
 	responseRef := ""
 	if req.ProviderSessionRef != nil {
 		responseRef = strings.TrimSpace(req.ProviderSessionRef.ResponseRef)
@@ -118,67 +138,83 @@ func (p *Provider) CancelRun(ctx context.Context, req transport.CancelRunRequest
 
 	resp, err := p.httpClient.Do(httpReq)
 	if err != nil {
+		p.log.Error("openai cancel request failed", slog.String("run_id", req.RunID), slog.String("error", err.Error()))
 		return nil, transport.NormalizeError(err, providerName)
 	}
 	defer resp.Body.Close()
 	if err := decodeAPIError(resp); err != nil {
+		p.log.Error("openai cancel request rejected", slog.String("run_id", req.RunID), slog.Int("status_code", resp.StatusCode), slog.String("error", err.Error()))
 		return nil, transport.NormalizeError(err, providerName)
 	}
 	event := transport.NewTerminalEvent(req.RunID, transport.EventTypeRunCancelled, providerName)
+	p.log.Info("openai run cancelled", slog.String("run_id", req.RunID), slog.Int("status_code", resp.StatusCode))
 	return &event, nil
 }
 
 func (p *Provider) executeStreamingRequest(ctx context.Context, runID, method, url string, body []byte) (transport.EventStream, error) {
+	path := strings.TrimPrefix(url, strings.TrimRight(p.config.BaseURL, "/"))
 	httpReq, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(body))
 	if err != nil {
+		p.log.Error("failed to create openai request", slog.String("run_id", runID), slog.String("method", method), slog.String("path", path), slog.String("error", err.Error()))
 		return nil, transport.NormalizeError(err, providerName)
 	}
 	p.applyHeaders(httpReq)
 	httpReq.Header.Set("Content-Type", "application/json")
 
+	p.log.Info("opening openai stream", slog.String("run_id", runID), slog.String("method", method), slog.String("path", path))
 	resp, err := p.httpClient.Do(httpReq)
 	if err != nil {
+		p.log.Error("openai stream request failed", slog.String("run_id", runID), slog.String("path", path), slog.String("error", err.Error()))
 		return nil, transport.NormalizeError(err, providerName)
 	}
 	if err := decodeAPIError(resp); err != nil {
 		resp.Body.Close()
+		p.log.Error("openai stream request rejected", slog.String("run_id", runID), slog.String("path", path), slog.Int("status_code", resp.StatusCode), slog.String("error", err.Error()))
 		return nil, transport.NormalizeError(err, providerName)
 	}
+	p.log.Info("openai stream opened", slog.String("run_id", runID), slog.String("path", path), slog.Int("status_code", resp.StatusCode))
 
 	stream := make(chan transport.TransportEvent, 32)
-	go p.streamResponse(ctx, runID, resp.Body, stream)
+	go p.streamResponse(ctx, runID, path, resp.Body, stream)
 	return stream, nil
 }
 
-func (p *Provider) streamResponse(ctx context.Context, runID string, body io.ReadCloser, stream chan<- transport.TransportEvent) {
+func (p *Provider) streamResponse(ctx context.Context, runID, path string, body io.ReadCloser, stream chan<- transport.TransportEvent) {
 	defer close(stream)
 	defer body.Close()
 
 	decoder := newSSEDecoder(body)
 	state := streamState{}
+	eventsEmitted := 0
 	for {
 		message, err := decoder.Next(ctx)
 		if err != nil {
 			if err == io.EOF || ctx.Err() != nil {
+				p.log.Info("openai stream closed", slog.String("run_id", runID), slog.String("path", path), slog.Int("events_emitted", eventsEmitted))
 				return
 			}
+			p.log.Error("openai stream decode failed", slog.String("run_id", runID), slog.String("path", path), slog.String("error", err.Error()))
 			stream <- transport.NewTransportErrorEvent(runID, providerName, err)
 			return
 		}
 
 		events, stop, err := p.normalizeMessage(runID, message, &state)
 		if err != nil {
+			p.log.Error("openai event normalization failed", slog.String("run_id", runID), slog.String("path", path), slog.String("error", err.Error()))
 			stream <- transport.NewTransportErrorEvent(runID, providerName, err)
 			return
 		}
 		for _, event := range events {
 			select {
 			case <-ctx.Done():
+				p.log.Info("openai stream cancelled", slog.String("run_id", runID), slog.String("path", path), slog.Int("events_emitted", eventsEmitted))
 				return
 			case stream <- event:
+				eventsEmitted++
 			}
 		}
 		if stop {
+			p.log.Info("openai stream completed", slog.String("run_id", runID), slog.String("path", path), slog.Int("events_emitted", eventsEmitted))
 			return
 		}
 	}
@@ -204,10 +240,11 @@ func (p *Provider) normalizeMessage(runID string, message sseMessage, state *str
 	case "response.created", "response.in_progress":
 		ref := providerSessionFromPayload(payload)
 		state.providerSession = ref
-		return []transport.TransportEvent{
-			transport.NewRunStartedEvent(runID, providerName, p.capabilities, ref),
-			transport.NewProviderSessionBoundEvent(runID, providerName, *ref),
-		}, false, nil
+		events := []transport.TransportEvent{transport.NewRunStartedEvent(runID, providerName, p.capabilities, ref)}
+		if ref != nil {
+			events = append(events, transport.NewProviderSessionBoundEvent(runID, providerName, *ref))
+		}
+		return events, false, nil
 	case "response.output_text.delta":
 		delta := stringValue(payload["delta"])
 		state.finalText.WriteString(delta)

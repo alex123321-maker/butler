@@ -24,6 +24,7 @@ func TestExecuteRunsHappyPath(t *testing.T) {
 	transcripts := &memoryTranscriptStore{}
 	delivery := &recordingDeliverySink{}
 	provider := &mockProvider{events: []transport.TransportEvent{
+		transport.NewRunStartedEvent("", "openai", transport.CapabilitySnapshot{SupportsStreaming: true}, &transport.ProviderSessionRef{ProviderName: "openai", ResponseRef: "resp_123"}),
 		transport.NewAssistantDeltaEvent("", "openai", transport.AssistantDelta{Content: "Hel", SequenceNo: 1}),
 		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "Hello world", FinishReason: "completed"}),
 		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
@@ -55,6 +56,9 @@ func TestExecuteRunsHappyPath(t *testing.T) {
 	}
 	if len(transcripts.messages) != 2 {
 		t.Fatalf("expected user and assistant transcript messages, got %d", len(transcripts.messages))
+	}
+	if runs.records[result.RunID].GetProviderSessionRef() == "" {
+		t.Fatal("expected provider session ref to be persisted")
 	}
 	if transcripts.messages[0].Role != "user" || transcripts.messages[1].Role != "assistant" {
 		t.Fatalf("unexpected transcript roles: %+v", transcripts.messages)
@@ -112,6 +116,85 @@ func TestExecuteFailsRunOnTransportError(t *testing.T) {
 	}
 }
 
+func TestExecuteFailsRunWhenLeaseAcquireFails(t *testing.T) {
+	t.Parallel()
+
+	runs := newMemoryRunManager()
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{acquireErr: session.ErrLeaseConflict}, runs, &memoryTranscriptStore{}, &mockProvider{}, Config{ProviderName: "openai", ModelName: "gpt-5-mini"}, nil)
+
+	_, err := service.Execute(context.Background(), ingress.InputEvent{
+		EventID:        "event-1",
+		EventType:      runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE,
+		SessionKey:     "telegram:chat:1",
+		Source:         "telegram",
+		PayloadJSON:    `{"text":"hello"}`,
+		CreatedAt:      time.Now().UTC(),
+		IdempotencyKey: "event-1",
+	})
+	if err == nil {
+		t.Fatal("expected Execute error")
+	}
+	states := runs.statesFor("run-1")
+	if states[len(states)-1] != commonv1.RunState_RUN_STATE_FAILED {
+		t.Fatalf("expected failed terminal state after lease acquire failure, got %v", states)
+	}
+}
+
+func TestExecuteFailsRunFromFinalizing(t *testing.T) {
+	t.Parallel()
+
+	runs := newMemoryRunManager()
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{failAssistant: errors.New("persist assistant failed")}, &mockProvider{events: []transport.TransportEvent{
+		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "Hello world", FinishReason: "completed"}),
+		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+	}}, Config{ProviderName: "openai", ModelName: "gpt-5-mini"}, nil)
+
+	_, err := service.Execute(context.Background(), ingress.InputEvent{
+		EventID:        "event-1",
+		EventType:      runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE,
+		SessionKey:     "telegram:chat:1",
+		Source:         "telegram",
+		PayloadJSON:    `{"text":"hello"}`,
+		CreatedAt:      time.Now().UTC(),
+		IdempotencyKey: "event-1",
+	})
+	if err == nil {
+		t.Fatal("expected Execute error")
+	}
+	states := runs.statesFor("run-1")
+	if states[len(states)-1] != commonv1.RunState_RUN_STATE_FAILED {
+		t.Fatalf("expected finalizing failure to end in failed, got %v", states)
+	}
+}
+
+func TestExecuteRenewsLeaseDuringLongRun(t *testing.T) {
+	t.Parallel()
+
+	leases := &memoryLeaseManager{}
+	runs := newMemoryRunManager()
+	provider := &delayedProvider{delay: 1200 * time.Millisecond}
+	service := NewService(&memorySessionRepo{}, leases, runs, &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", LeaseTTL: 1}, nil)
+
+	result, err := service.Execute(context.Background(), ingress.InputEvent{
+		EventID:        "event-1",
+		EventType:      runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE,
+		SessionKey:     "telegram:chat:1",
+		Source:         "telegram",
+		PayloadJSON:    `{"text":"hello"}`,
+		CreatedAt:      time.Now().UTC(),
+		IdempotencyKey: "event-1",
+	})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if result.AssistantResponse == "" {
+		t.Fatal("expected final assistant response")
+	}
+	if leases.renewCount == 0 {
+		t.Fatal("expected lease renewals during long-running model execution")
+	}
+}
+
 type memorySessionRepo struct{}
 
 func (m *memorySessionRepo) CreateSession(_ context.Context, params session.CreateSessionParams) (session.SessionRecord, bool, error) {
@@ -122,9 +205,15 @@ func (m *memorySessionRepo) CreateSession(_ context.Context, params session.Crea
 type memoryLeaseManager struct {
 	releaseCount int
 	leaseID      string
+	renewCount   int
+	acquireErr   error
+	renewErr     error
 }
 
 func (m *memoryLeaseManager) AcquireLease(_ context.Context, params session.AcquireLeaseParams) (session.LeaseRecord, error) {
+	if m.acquireErr != nil {
+		return session.LeaseRecord{}, m.acquireErr
+	}
 	if m.leaseID == "" {
 		m.leaseID = "lease-1"
 	}
@@ -133,6 +222,10 @@ func (m *memoryLeaseManager) AcquireLease(_ context.Context, params session.Acqu
 }
 
 func (m *memoryLeaseManager) RenewLease(context.Context, string, time.Duration) (session.LeaseRecord, error) {
+	m.renewCount++
+	if m.renewErr != nil {
+		return session.LeaseRecord{}, m.renewErr
+	}
 	return session.LeaseRecord{}, nil
 }
 
@@ -174,15 +267,25 @@ func (m *memoryRunManager) GetRun(_ context.Context, runID string) (*sessionv1.R
 	return m.records[runID], nil
 }
 
+func (m *memoryRunManager) PersistProviderSessionRef(_ context.Context, runID, providerSessionRef string) (*sessionv1.RunRecord, error) {
+	record := m.records[runID]
+	record.ProviderSessionRef = providerSessionRef
+	return record, nil
+}
+
 func (m *memoryRunManager) statesFor(runID string) []commonv1.RunState {
 	return append([]commonv1.RunState(nil), m.history[runID]...)
 }
 
 type memoryTranscriptStore struct {
-	messages []transcript.Message
+	messages      []transcript.Message
+	failAssistant error
 }
 
 func (m *memoryTranscriptStore) AppendMessage(_ context.Context, message transcript.Message) (transcript.Message, error) {
+	if message.Role == "assistant" && m.failAssistant != nil {
+		return transcript.Message{}, m.failAssistant
+	}
 	m.messages = append(m.messages, message)
 	return message, nil
 }
@@ -222,6 +325,40 @@ func (m *mockProvider) SubmitToolResult(context.Context, transport.SubmitToolRes
 }
 
 func (m *mockProvider) CancelRun(context.Context, transport.CancelRunRequest) (*transport.TransportEvent, error) {
+	return nil, nil
+}
+
+type delayedProvider struct {
+	delay time.Duration
+}
+
+func (p *delayedProvider) Name() string { return "openai" }
+
+func (p *delayedProvider) Capabilities(context.Context, transport.TransportRunContext) (transport.CapabilitySnapshot, error) {
+	return transport.CapabilitySnapshot{SupportsStreaming: true}, nil
+}
+
+func (p *delayedProvider) StartRun(_ context.Context, req transport.StartRunRequest) (transport.EventStream, error) {
+	ch := make(chan transport.TransportEvent, 3)
+	go func() {
+		defer close(ch)
+		ch <- transport.NewRunStartedEvent(req.Context.RunID, "openai", transport.CapabilitySnapshot{SupportsStreaming: true}, &transport.ProviderSessionRef{ProviderName: "openai", ResponseRef: "resp_123"})
+		time.Sleep(p.delay)
+		ch <- transport.NewAssistantFinalEvent(req.Context.RunID, "openai", transport.AssistantFinal{Content: "Hello after renew", FinishReason: "completed"})
+		ch <- transport.NewTerminalEvent(req.Context.RunID, transport.EventTypeRunCompleted, "openai")
+	}()
+	return ch, nil
+}
+
+func (p *delayedProvider) ContinueRun(context.Context, transport.ContinueRunRequest) (transport.EventStream, error) {
+	return nil, nil
+}
+
+func (p *delayedProvider) SubmitToolResult(context.Context, transport.SubmitToolResultRequest) (transport.EventStream, error) {
+	return nil, nil
+}
+
+func (p *delayedProvider) CancelRun(context.Context, transport.CancelRunRequest) (*transport.TransportEvent, error) {
 	return nil, nil
 }
 

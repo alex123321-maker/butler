@@ -82,7 +82,7 @@ func (s *Server) HTTPHandler() http.Handler {
 			return
 		}
 
-		writeJSON(w, http.StatusAccepted, map[string]any{
+		writeJSON(w, http.StatusOK, map[string]any{
 			"run_id":             result.RunID,
 			"session_key":        result.SessionKey,
 			"current_state":      result.CurrentState.String(),

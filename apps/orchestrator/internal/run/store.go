@@ -42,6 +42,7 @@ type Repository interface {
 	GetRun(ctx context.Context, runID string) (Record, error)
 	FindRunByIdempotencyKey(ctx context.Context, sessionKey, idempotencyKey string) (Record, error)
 	UpdateRun(ctx context.Context, params UpdateParams) (Record, error)
+	UpdateProviderSessionRef(ctx context.Context, params UpdateProviderSessionRefParams) (Record, error)
 }
 
 type UpdateParams struct {
@@ -54,6 +55,12 @@ type UpdateParams struct {
 	ErrorMessage string
 	FinishedAt   *time.Time
 	UpdatedAt    time.Time
+}
+
+type UpdateProviderSessionRefParams struct {
+	RunID              string
+	ProviderSessionRef string
+	UpdatedAt          time.Time
 }
 
 type PostgresRepository struct {
@@ -180,6 +187,31 @@ func (r *PostgresRepository) UpdateRun(ctx context.Context, params UpdateParams)
 			return Record{}, ErrRunNotFound
 		}
 		return Record{}, fmt.Errorf("update run: %w", err)
+	}
+	return record, nil
+}
+
+func (r *PostgresRepository) UpdateProviderSessionRef(ctx context.Context, params UpdateProviderSessionRefParams) (Record, error) {
+	const query = `
+		UPDATE runs
+		SET provider_session_ref = $1,
+			updated_at = $2
+		WHERE run_id = $3
+		RETURNING run_id, session_key, input_event_id, COALESCE(idempotency_key, ''), status, autonomy_mode, current_state,
+			model_provider, provider_session_ref, lease_id, resumes_run_id,
+			started_at, updated_at, finished_at, error_type, error_message, metadata_json::text
+	`
+
+	record, err := scanRunRow(r.pool.QueryRow(ctx, query,
+		nullString(params.ProviderSessionRef),
+		params.UpdatedAt,
+		params.RunID,
+	))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Record{}, ErrRunNotFound
+		}
+		return Record{}, fmt.Errorf("update provider session ref: %w", err)
 	}
 	return record, nil
 }

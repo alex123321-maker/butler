@@ -78,6 +78,7 @@ func New(ctx context.Context) (*App, error) {
 		Model:   cfg.OpenAIModel,
 		BaseURL: cfg.OpenAIBaseURL,
 		Timeout: time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
+		Logger:  logger.WithComponent(log, "transport-openai"),
 	}, nil)
 	if err != nil {
 		redis.Close()

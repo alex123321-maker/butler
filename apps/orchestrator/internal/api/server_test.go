@@ -50,8 +50,8 @@ func TestHTTPHandler(t *testing.T) {
 
 	server.HTTPHandler().ServeHTTP(rr, req)
 
-	if rr.Code != http.StatusAccepted {
-		t.Fatalf("expected 202 Accepted, got %d", rr.Code)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected 200 OK, got %d", rr.Code)
 	}
 	var payload map[string]any
 	if err := json.Unmarshal(rr.Body.Bytes(), &payload); err != nil {

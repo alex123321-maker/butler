@@ -65,16 +65,19 @@ const (
 var allowedTransitions = map[RunState]map[RunState]struct{}{
 	RunStateCreated: {
 		RunStateQueued:    {},
+		RunStateFailed:    {},
 		RunStateCancelled: {},
 		RunStateTimedOut:  {},
 	},
 	RunStateQueued: {
 		RunStateAcquired:  {},
+		RunStateFailed:    {},
 		RunStateCancelled: {},
 		RunStateTimedOut:  {},
 	},
 	RunStateAcquired: {
 		RunStatePreparing: {},
+		RunStateFailed:    {},
 		RunStateCancelled: {},
 		RunStateTimedOut:  {},
 	},
@@ -116,6 +119,7 @@ var allowedTransitions = map[RunState]map[RunState]struct{}{
 	},
 	RunStateFinalizing: {
 		RunStateCompleted: {},
+		RunStateFailed:    {},
 		RunStateCancelled: {},
 		RunStateTimedOut:  {},
 	},

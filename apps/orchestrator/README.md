@@ -12,7 +12,7 @@ Current baseline:
 - implements durable run creation, lookup, state transitions, and input-event deduplication
 - implements the internal event-to-run execution flow for normalized `InputEvent` values using the transport layer and transcript store
 - exposes an internal delivery sink for `assistant_delta` and `assistant_final` events without allowing channel adapters to mutate run state
-- exposes `SubmitEvent` over gRPC and `POST /api/v1/events` over REST for normalized event ingestion
+- exposes `SubmitEvent` over gRPC and synchronous `POST /api/v1/events` over REST for normalized event ingestion
 - exposes `GET /health` and `GET /metrics`
 
 Dependencies:
@@ -51,6 +51,6 @@ Related docs:
 - `docs/testing/sprint-2-smoke.md`
 
 Current limitations:
-- the service executes the OpenAI transport path synchronously inside request handling, without a separate run queue yet
+- the service executes the OpenAI transport path synchronously inside request handling, so REST ingestion returns only after run completion
 - tool-calling and resume paths are not wired into the service API yet
 - Dockerfile exists, but the full service stack is not wired into Compose yet

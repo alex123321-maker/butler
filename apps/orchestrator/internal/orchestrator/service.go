@@ -28,6 +28,7 @@ type RunManager interface {
 	CreateRun(context.Context, *sessionv1.CreateRunRequest) (*sessionv1.RunRecord, error)
 	TransitionRun(context.Context, *sessionv1.UpdateRunStateRequest) (*sessionv1.RunRecord, error)
 	GetRun(context.Context, string) (*sessionv1.RunRecord, error)
+	PersistProviderSessionRef(context.Context, string, string) (*sessionv1.RunRecord, error)
 }
 
 type TranscriptStore interface {
@@ -66,6 +67,8 @@ type DeliveryEvent struct {
 	Final      bool
 	SequenceNo int
 }
+
+var errLeaseRenewalFailed = errors.New("lease renewal failed")
 
 type preparedRun struct {
 	InputItems    []transport.InputItem
@@ -159,8 +162,10 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 		TTL:        time.Duration(s.config.LeaseTTL) * time.Second,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("acquire lease: %w", err)
+		return nil, s.failRun(ctx, current, "", runLog, fmt.Errorf("acquire lease: %w", err))
 	}
+	runCtx, stopRenewing, renewErrs := s.startLeaseRenewer(ctx, lease, runLog)
+	defer stopRenewing()
 	defer func() {
 		if _, releaseErr := s.leases.ReleaseLease(context.Background(), lease.LeaseID); releaseErr != nil {
 			runLog.Error("release lease failed", slog.String("lease_id", lease.LeaseID), slog.String("error", releaseErr.Error()))
@@ -169,13 +174,13 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 
 	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_ACQUIRED, lease.LeaseID, "", "")
 	if err != nil {
-		return nil, fmt.Errorf("mark run acquired: %w", err)
+		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("mark run acquired: %w", err))
 	}
 	current = next
 
 	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_PREPARING, lease.LeaseID, "", "")
 	if err != nil {
-		return nil, fmt.Errorf("mark run preparing: %w", err)
+		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("mark run preparing: %w", err))
 	}
 	current = next
 
@@ -195,12 +200,18 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	}
 	current = next
 
-	stream, err := s.provider.StartRun(ctx, transport.StartRunRequest{
+	existingProviderSessionRef, err := transport.ParseProviderSessionRef(current.GetProviderSessionRef())
+	if err != nil {
+		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("parse persisted provider session ref: %w", err))
+	}
+
+	stream, err := s.provider.StartRun(runCtx, transport.StartRunRequest{
 		Context: transport.TransportRunContext{
 			RunID:                  current.GetRunId(),
 			SessionKey:             event.SessionKey,
 			ProviderName:           s.config.ProviderName,
 			ModelName:              s.config.ModelName,
+			ProviderSessionRef:     existingProviderSessionRef,
 			SupportsStreaming:      true,
 			SupportsToolCalls:      true,
 			SupportsStatefulResume: true,
@@ -214,10 +225,13 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 
 	var finalMessage string
 	for transportEvent := range stream {
+		if current, err = s.persistProviderSessionRef(ctx, current, transportEvent.ProviderSessionRef, runLog); err != nil {
+			return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
+		}
 		switch transportEvent.EventType {
 		case transport.EventTypeAssistantDelta:
 			if transportEvent.AssistantDelta != nil {
-				if err := s.config.Delivery.DeliverAssistantDelta(ctx, DeliveryEvent{
+				if err := s.config.Delivery.DeliverAssistantDelta(runCtx, DeliveryEvent{
 					RunID:      current.GetRunId(),
 					SessionKey: event.SessionKey,
 					Content:    transportEvent.AssistantDelta.Content,
@@ -229,7 +243,7 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 		case transport.EventTypeAssistantFinal:
 			if transportEvent.AssistantFinal != nil {
 				finalMessage = transportEvent.AssistantFinal.Content
-				if err := s.config.Delivery.DeliverAssistantFinal(ctx, DeliveryEvent{RunID: current.GetRunId(), SessionKey: event.SessionKey, Content: finalMessage, Final: true}); err != nil {
+				if err := s.config.Delivery.DeliverAssistantFinal(runCtx, DeliveryEvent{RunID: current.GetRunId(), SessionKey: event.SessionKey, Content: finalMessage, Final: true}); err != nil {
 					return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
 				}
 			}
@@ -239,6 +253,9 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 			runLog.Warn("transport warning", slog.String("payload", transportEvent.PayloadJSON))
 		}
 	}
+	if renewErr := drainRenewError(renewErrs); renewErr != nil {
+		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, renewErr)
+	}
 
 	if strings.TrimSpace(finalMessage) == "" {
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("model run completed without assistant_final event"))
@@ -246,7 +263,7 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 
 	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_FINALIZING, lease.LeaseID, "", "")
 	if err != nil {
-		return nil, fmt.Errorf("mark run finalizing: %w", err)
+		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("mark run finalizing: %w", err))
 	}
 	current = next
 
@@ -262,7 +279,7 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 
 	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_COMPLETED, lease.LeaseID, "", "")
 	if err != nil {
-		return nil, fmt.Errorf("mark run completed: %w", err)
+		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("mark run completed: %w", err))
 	}
 
 	runLog.Info("run completed", slog.String("session_key", event.SessionKey))
@@ -272,12 +289,78 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 func (s *Service) failRun(ctx context.Context, current *sessionv1.RunRecord, leaseID string, runLog *slog.Logger, err error) error {
 	runLog.Error("run execution failed", slog.String("error", err.Error()))
 	state := current.GetCurrentState()
-	if state == commonv1.RunState_RUN_STATE_PREPARING || state == commonv1.RunState_RUN_STATE_MODEL_RUNNING {
-		if _, transitionErr := s.transition(ctx, current.GetRunId(), state, commonv1.RunState_RUN_STATE_FAILED, leaseID, string(domain.ErrorClassTransport), err.Error()); transitionErr != nil {
-			return fmt.Errorf("%w: additionally failed to transition run to failed: %v", err, transitionErr)
-		}
+	if state == commonv1.RunState_RUN_STATE_UNSPECIFIED || state == commonv1.RunState_RUN_STATE_FAILED || state == commonv1.RunState_RUN_STATE_CANCELLED || state == commonv1.RunState_RUN_STATE_TIMED_OUT || state == commonv1.RunState_RUN_STATE_COMPLETED {
+		return err
+	}
+	if _, transitionErr := s.transition(ctx, current.GetRunId(), state, commonv1.RunState_RUN_STATE_FAILED, leaseID, classifyExecutionError(err), err.Error()); transitionErr != nil {
+		return fmt.Errorf("%w: additionally failed to transition run to failed: %v", err, transitionErr)
 	}
 	return err
+}
+
+func (s *Service) persistProviderSessionRef(ctx context.Context, current *sessionv1.RunRecord, ref *transport.ProviderSessionRef, runLog *slog.Logger) (*sessionv1.RunRecord, error) {
+	if ref == nil {
+		return current, nil
+	}
+	encoded, err := transport.MarshalProviderSessionRef(ref)
+	if err != nil {
+		return current, fmt.Errorf("marshal provider session ref: %w", err)
+	}
+	if strings.TrimSpace(encoded) == strings.TrimSpace(current.GetProviderSessionRef()) {
+		return current, nil
+	}
+	updated, err := s.runs.PersistProviderSessionRef(ctx, current.GetRunId(), encoded)
+	if err != nil {
+		return current, fmt.Errorf("persist provider session ref: %w", err)
+	}
+	runLog.Info("provider session ref persisted", slog.String("run_id", current.GetRunId()))
+	return updated, nil
+}
+
+func (s *Service) startLeaseRenewer(parent context.Context, lease session.LeaseRecord, runLog *slog.Logger) (context.Context, context.CancelFunc, <-chan error) {
+	runCtx, cancel := context.WithCancel(parent)
+	errCh := make(chan error, 1)
+	ttl := time.Duration(s.config.LeaseTTL) * time.Second
+	if ttl <= 0 {
+		ttl = time.Minute
+	}
+	interval := ttl / 2
+	if interval < time.Second {
+		interval = time.Second
+	}
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-runCtx.Done():
+				return
+			case <-ticker.C:
+				callCtx, callCancel := context.WithTimeout(context.Background(), 5*time.Second)
+				_, err := s.leases.RenewLease(callCtx, lease.LeaseID, ttl)
+				callCancel()
+				if err != nil {
+					runLog.Error("lease renew failed", slog.String("lease_id", lease.LeaseID), slog.String("error", err.Error()))
+					select {
+					case errCh <- fmt.Errorf("%w: %v", errLeaseRenewalFailed, err):
+					default:
+					}
+					cancel()
+					return
+				}
+			}
+		}
+	}()
+	return runCtx, cancel, errCh
+}
+
+func drainRenewError(errCh <-chan error) error {
+	select {
+	case err := <-errCh:
+		return err
+	default:
+		return nil
+	}
 }
 
 func (s *Service) transition(ctx context.Context, runID string, from, to commonv1.RunState, leaseID, errorType, errorMessage string) (*sessionv1.RunRecord, error) {
@@ -390,8 +473,46 @@ func transportError(err *transport.Error) error {
 }
 
 func toErrorClass(value string) commonv1.ErrorClass {
-	if strings.TrimSpace(value) == "" {
+	switch strings.TrimSpace(value) {
+	case "":
 		return commonv1.ErrorClass_ERROR_CLASS_UNSPECIFIED
+	case string(domain.ErrorClassValidation):
+		return commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR
+	case string(domain.ErrorClassTransport):
+		return commonv1.ErrorClass_ERROR_CLASS_TRANSPORT_ERROR
+	case string(domain.ErrorClassTool):
+		return commonv1.ErrorClass_ERROR_CLASS_TOOL_ERROR
+	case string(domain.ErrorClassPolicy):
+		return commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED
+	case string(domain.ErrorClassCredential):
+		return commonv1.ErrorClass_ERROR_CLASS_CREDENTIAL_ERROR
+	case string(domain.ErrorClassApproval):
+		return commonv1.ErrorClass_ERROR_CLASS_APPROVAL_ERROR
+	case string(domain.ErrorClassTimeout):
+		return commonv1.ErrorClass_ERROR_CLASS_TIMEOUT
+	case string(domain.ErrorClassCancelled):
+		return commonv1.ErrorClass_ERROR_CLASS_CANCELLED
+	case string(domain.ErrorClassInternal):
+		return commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR
+	default:
+		return commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR
 	}
-	return commonv1.ErrorClass_ERROR_CLASS_TRANSPORT_ERROR
+}
+
+func classifyExecutionError(err error) string {
+	switch {
+	case err == nil:
+		return ""
+	case errors.Is(err, context.DeadlineExceeded):
+		return string(domain.ErrorClassTimeout)
+	case errors.Is(err, context.Canceled):
+		return string(domain.ErrorClassCancelled)
+	case errors.Is(err, errLeaseRenewalFailed), errors.Is(err, session.ErrLeaseConflict), errors.Is(err, session.ErrLeaseNotFound):
+		return string(domain.ErrorClassInternal)
+	}
+	var transportErr *transport.Error
+	if errors.As(err, &transportErr) {
+		return string(domain.ErrorClassTransport)
+	}
+	return string(domain.ErrorClassInternal)
 }

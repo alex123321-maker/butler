@@ -33,6 +33,6 @@ Expected output checklist:
 - `smoke verification passed`
 
 Failure signals:
-- non-`202 Accepted` response from `POST /api/v1/events`
+- non-`200 OK` response from `POST /api/v1/events`
 - run enters `failed`, `cancelled`, or `timed_out`
 - transcript verification does not find both roles

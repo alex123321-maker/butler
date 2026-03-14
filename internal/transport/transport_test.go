@@ -156,3 +156,28 @@ func TestErrorIs(t *testing.T) {
 		t.Fatalf("unexpected terminal event timestamp")
 	}
 }
+
+func TestProviderSessionRefRoundTrip(t *testing.T) {
+	t.Parallel()
+
+	ref := &ProviderSessionRef{ProviderName: "openai", ResponseRef: "resp_123"}
+	encoded, err := MarshalProviderSessionRef(ref)
+	if err != nil {
+		t.Fatalf("MarshalProviderSessionRef returned error: %v", err)
+	}
+	parsed, err := ParseProviderSessionRef(encoded)
+	if err != nil {
+		t.Fatalf("ParseProviderSessionRef returned error: %v", err)
+	}
+	if parsed == nil || parsed.ResponseRef != "resp_123" {
+		t.Fatalf("expected provider session ref round-trip, got %+v", parsed)
+	}
+
+	blank, err := ParseProviderSessionRef("")
+	if err != nil {
+		t.Fatalf("unexpected parse error for blank value: %v", err)
+	}
+	if blank != nil {
+		t.Fatalf("expected nil provider session ref for blank value")
+	}
+}
