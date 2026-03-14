@@ -19,6 +19,7 @@ Sprint 0 foundation is in progress. The repository now includes the initial Go m
 
 ## Local workflow
 
+- Copy `.env.example` to `.env` before starting local infrastructure.
 - `make build` - build all Go packages.
 - `make test` - run the Go test suite.
 - `make lint` - run baseline static checks with `go vet`.

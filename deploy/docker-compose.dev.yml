@@ -1,0 +1,16 @@
+services:
+  postgres:
+    ports:
+      - ${BUTLER_POSTGRES_PORT:-5432}:5432
+    volumes:
+      - butler-postgres-data:/var/lib/postgresql/data
+
+  redis:
+    ports:
+      - ${BUTLER_REDIS_PORT:-6379}:6379
+    volumes:
+      - butler-redis-data:/data
+
+volumes:
+  butler-postgres-data:
+  butler-redis-data:

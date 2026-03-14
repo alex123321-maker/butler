@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: ${BUTLER_POSTGRES_IMAGE:-pgvector/pgvector:pg17}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${BUTLER_POSTGRES_DB:-butler}
+      POSTGRES_USER: ${BUTLER_POSTGRES_USER:-butler}
+      POSTGRES_PASSWORD: ${BUTLER_POSTGRES_PASSWORD:-butler-dev-password}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: ${BUTLER_REDIS_IMAGE:-redis:7.4-alpine}
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
