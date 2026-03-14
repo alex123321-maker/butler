@@ -594,7 +594,7 @@ sprints:
         subsystem: transport
         sprint: SPRINT-2
         priority: high
-        status: todo
+        status: done
         description: >
           Build the first concrete transport provider using the OpenAI Responses API over HTTP streaming,
           including SSE parsing, provider-session tracking, capability reporting, config, and normalized

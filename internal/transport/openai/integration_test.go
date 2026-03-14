@@ -1,0 +1,41 @@
+package openai
+
+import (
+	"context"
+	"os"
+	"testing"
+	"time"
+
+	"github.com/butler/butler/internal/transport"
+)
+
+func TestOpenAIIntegrationStartRun(t *testing.T) {
+	apiKey := os.Getenv("BUTLER_OPENAI_API_KEY")
+	if apiKey == "" {
+		t.Skip("set BUTLER_OPENAI_API_KEY to run the OpenAI integration test")
+	}
+
+	provider, err := NewProvider(Config{APIKey: apiKey, Model: "gpt-5-mini", Timeout: 60 * time.Second}, nil)
+	if err != nil {
+		t.Fatalf("NewProvider returned error: %v", err)
+	}
+
+	stream, err := provider.StartRun(context.Background(), transport.StartRunRequest{
+		Context:          transport.TransportRunContext{RunID: "integration-run", SessionKey: "integration:session", ProviderName: "openai", ModelName: "gpt-5-mini"},
+		InputItems:       []transport.InputItem{{Role: "user", Content: "Reply with the word integration."}},
+		StreamingEnabled: true,
+	})
+	if err != nil {
+		t.Fatalf("StartRun returned error: %v", err)
+	}
+
+	sawFinal := false
+	for event := range stream {
+		if event.EventType == transport.EventTypeAssistantFinal {
+			sawFinal = true
+		}
+	}
+	if !sawFinal {
+		t.Fatal("expected assistant_final event from OpenAI integration test")
+	}
+}

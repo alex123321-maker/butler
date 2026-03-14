@@ -7,10 +7,11 @@ import (
 
 func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	get := envMap(map[string]string{
-		"BUTLER_POSTGRES_URL": "postgres://butler:secret@localhost:5432/butler",
-		"BUTLER_REDIS_URL":    "redis://localhost:6379/0",
-		"BUTLER_LOG_LEVEL":    "warn",
-		"BUTLER_HTTP_ADDR":    "127.0.0.1:8088",
+		"BUTLER_POSTGRES_URL":   "postgres://butler:secret@localhost:5432/butler",
+		"BUTLER_REDIS_URL":      "redis://localhost:6379/0",
+		"BUTLER_LOG_LEVEL":      "warn",
+		"BUTLER_HTTP_ADDR":      "127.0.0.1:8088",
+		"BUTLER_OPENAI_API_KEY": "sk-test",
 	})
 
 	cfg, snapshot, err := loadOrchestrator(get)
@@ -29,6 +30,12 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	}
 	if cfg.OpenAIModel != "gpt-5-mini" {
 		t.Fatalf("expected default OpenAI model, got %q", cfg.OpenAIModel)
+	}
+	if cfg.OpenAIBaseURL != "https://api.openai.com/v1" {
+		t.Fatalf("expected default OpenAI base URL, got %q", cfg.OpenAIBaseURL)
+	}
+	if cfg.OpenAITimeoutSeconds != 60 {
+		t.Fatalf("expected default OpenAI timeout, got %d", cfg.OpenAITimeoutSeconds)
 	}
 	if cfg.SessionLeaseTTLSeconds != 60 {
 		t.Fatalf("expected default session lease ttl, got %d", cfg.SessionLeaseTTLSeconds)
@@ -56,6 +63,16 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	}
 	if model.DefaultValue != "gpt-5-mini" {
 		t.Fatalf("expected default value to be recorded, got %q", model.DefaultValue)
+	}
+
+	apiKey := findKey(t, keys, "BUTLER_OPENAI_API_KEY")
+	if apiKey.EffectiveValue != "[masked]" {
+		t.Fatalf("expected masked OpenAI API key, got %q", apiKey.EffectiveValue)
+	}
+
+	baseURL := findKey(t, keys, "BUTLER_OPENAI_BASE_URL")
+	if baseURL.DefaultValue != "https://api.openai.com/v1" {
+		t.Fatalf("expected default OpenAI base URL, got %q", baseURL.DefaultValue)
 	}
 
 	leaseTTL := findKey(t, keys, "BUTLER_SESSION_LEASE_TTL_SECONDS")
