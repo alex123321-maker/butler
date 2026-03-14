@@ -561,7 +561,7 @@ sprints:
         subsystem: transport
         sprint: SPRINT-2
         priority: high
-        status: todo
+        status: done
         description: >
           Create the Go-side Model Transport abstraction, normalized transport entities, capability
           snapshot model, and transport error normalization used by all providers.
