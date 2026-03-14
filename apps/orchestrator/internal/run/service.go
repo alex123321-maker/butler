@@ -49,6 +49,13 @@ func (s *Service) CreateRun(ctx context.Context, req *sessionv1.CreateRunRequest
 		MetadataJSON:   params.MetadataJSON,
 	})
 	if err != nil {
+		if params.IdempotencyKey != "" && err == ErrRunDuplicate {
+			duplicate, lookupErr := s.repo.FindRunByIdempotencyKey(ctx, params.SessionKey, params.IdempotencyKey)
+			if lookupErr != nil {
+				return nil, lookupErr
+			}
+			return recordToProto(duplicate), nil
+		}
 		return nil, err
 	}
 

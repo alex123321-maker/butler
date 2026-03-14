@@ -51,6 +51,7 @@ func TestRunLifecycleIntegration(t *testing.T) {
 		InputEvent:    &runv1.InputEvent{EventId: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, IdempotencyKey: "event-1-key"},
 		AutonomyMode:  commonv1.AutonomyMode_AUTONOMY_MODE_1,
 		ModelProvider: "openai",
+		MetadataJson:  `{"origin":"integration"}`,
 	})
 	if err != nil {
 		t.Fatalf("CreateRun returned error: %v", err)
@@ -83,12 +84,19 @@ func TestRunLifecycleIntegration(t *testing.T) {
 	if fetched.GetFinishedAt() == "" {
 		t.Fatal("expected finished_at after completed transition")
 	}
+	if fetched.GetMetadataJson() != `{"origin":"integration"}` {
+		t.Fatalf("expected metadata_json to round-trip, got %q", fetched.GetMetadataJson())
+	}
 
 	var state string
-	if err := store.Pool().QueryRow(ctx, `SELECT current_state FROM runs WHERE run_id = $1`, current.GetRunId()).Scan(&state); err != nil {
+	var metadata string
+	if err := store.Pool().QueryRow(ctx, `SELECT current_state, metadata_json::text FROM runs WHERE run_id = $1`, current.GetRunId()).Scan(&state, &metadata); err != nil {
 		t.Fatalf("failed to query run state: %v", err)
 	}
 	if state != "completed" {
 		t.Fatalf("expected persisted completed state, got %q", state)
+	}
+	if metadata != `{"origin": "integration"}` && metadata != `{"origin":"integration"}` {
+		t.Fatalf("expected persisted metadata_json, got %q", metadata)
 	}
 }

@@ -14,6 +14,7 @@ import (
 var (
 	ErrRunNotFound     = fmt.Errorf("run not found")
 	ErrSessionNotFound = fmt.Errorf("session not found")
+	ErrRunDuplicate    = fmt.Errorf("run already exists for idempotency key")
 )
 
 type Record struct {
@@ -68,15 +69,15 @@ func (r *PostgresRepository) CreateRun(ctx context.Context, record Record) (Reco
 		INSERT INTO runs (
 			run_id, session_key, input_event_id, idempotency_key, status, autonomy_mode, current_state,
 			model_provider, provider_session_ref, lease_id, resumes_run_id,
-			started_at, updated_at, finished_at, error_type, error_message
+			started_at, updated_at, finished_at, error_type, error_message, metadata_json
 		) VALUES (
 			$1, $2, $3, NULLIF($4, ''), $5, $6, $7,
 			$8, $9, $10, $11,
-			$12, $13, $14, $15, $16
+			$12, $13, $14, $15, $16, $17::jsonb
 		)
 		RETURNING run_id, session_key, input_event_id, COALESCE(idempotency_key, ''), status, autonomy_mode, current_state,
 			model_provider, provider_session_ref, lease_id, resumes_run_id,
-			started_at, updated_at, finished_at, error_type, error_message
+			started_at, updated_at, finished_at, error_type, error_message, metadata_json::text
 	`
 
 	stored, err := scanRunRow(r.pool.QueryRow(ctx, query,
@@ -96,14 +97,17 @@ func (r *PostgresRepository) CreateRun(ctx context.Context, record Record) (Reco
 		record.FinishedAt,
 		nullString(record.ErrorType),
 		nullString(record.ErrorMessage),
+		normalizeJSON(record.MetadataJSON),
 	))
 	if err != nil {
 		if isForeignKeyViolation(err) {
 			return Record{}, ErrSessionNotFound
 		}
+		if isUniqueViolation(err) {
+			return Record{}, ErrRunDuplicate
+		}
 		return Record{}, fmt.Errorf("create run: %w", err)
 	}
-	stored.MetadataJSON = record.MetadataJSON
 	return stored, nil
 }
 
@@ -111,7 +115,7 @@ func (r *PostgresRepository) GetRun(ctx context.Context, runID string) (Record, 
 	const query = `
 		SELECT run_id, session_key, input_event_id, COALESCE(idempotency_key, ''), status, autonomy_mode, current_state,
 			model_provider, provider_session_ref, lease_id, resumes_run_id,
-			started_at, updated_at, finished_at, error_type, error_message
+			started_at, updated_at, finished_at, error_type, error_message, metadata_json::text
 		FROM runs
 		WHERE run_id = $1
 	`
@@ -130,7 +134,7 @@ func (r *PostgresRepository) FindRunByIdempotencyKey(ctx context.Context, sessio
 	const query = `
 		SELECT run_id, session_key, input_event_id, COALESCE(idempotency_key, ''), status, autonomy_mode, current_state,
 			model_provider, provider_session_ref, lease_id, resumes_run_id,
-			started_at, updated_at, finished_at, error_type, error_message
+			started_at, updated_at, finished_at, error_type, error_message, metadata_json::text
 		FROM runs
 		WHERE session_key = $1 AND idempotency_key = $2
 	`
@@ -157,7 +161,7 @@ func (r *PostgresRepository) UpdateRun(ctx context.Context, params UpdateParams)
 		WHERE run_id = $8 AND current_state = $9
 		RETURNING run_id, session_key, input_event_id, COALESCE(idempotency_key, ''), status, autonomy_mode, current_state,
 			model_provider, provider_session_ref, lease_id, resumes_run_id,
-			started_at, updated_at, finished_at, error_type, error_message
+			started_at, updated_at, finished_at, error_type, error_message, metadata_json::text
 	`
 
 	record, err := scanRunRow(r.pool.QueryRow(ctx, query,
@@ -206,6 +210,7 @@ func scanRunRow(row rowScanner) (Record, error) {
 		&finishedAt,
 		&errorType,
 		&errorMessage,
+		&record.MetadataJSON,
 	)
 	if err != nil {
 		return Record{}, err
@@ -238,7 +243,19 @@ func nullString(value string) any {
 	return value
 }
 
+func normalizeJSON(value string) string {
+	if value == "" {
+		return "{}"
+	}
+	return value
+}
+
 func isForeignKeyViolation(err error) bool {
 	var pgErr *pgconn.PgError
 	return errors.As(err, &pgErr) && pgErr.Code == "23503"
+}
+
+func isUniqueViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == "23505"
 }

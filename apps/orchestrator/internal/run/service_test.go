@@ -48,6 +48,41 @@ func TestFindRunByIdempotencyKeyReturnsExistingRun(t *testing.T) {
 	}
 }
 
+func TestCreateRunReturnsExistingRunAfterDuplicateConflict(t *testing.T) {
+	repo := &memoryRepository{
+		duplicateOnCreate: true,
+		records: map[string]Record{
+			"run-existing": {
+				RunID:          "run-existing",
+				SessionKey:     "telegram:chat:42",
+				InputEventID:   "event-1",
+				IdempotencyKey: "dup-1",
+				Status:         "created",
+				AutonomyMode:   "mode_1",
+				CurrentState:   "created",
+				ModelProvider:  "openai",
+				MetadataJSON:   `{"origin":"existing"}`,
+				StartedAt:      time.Date(2026, time.March, 15, 13, 0, 0, 0, time.UTC),
+				UpdatedAt:      time.Date(2026, time.March, 15, 13, 0, 0, 0, time.UTC),
+			},
+		},
+	}
+	service := NewService(repo, nil)
+
+	resp, err := service.CreateRun(context.Background(), &sessionv1.CreateRunRequest{
+		SessionKey:    "telegram:chat:42",
+		InputEvent:    &runv1.InputEvent{EventId: "event-1", IdempotencyKey: "dup-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE},
+		AutonomyMode:  commonv1.AutonomyMode_AUTONOMY_MODE_1,
+		ModelProvider: "openai",
+	})
+	if err != nil {
+		t.Fatalf("CreateRun returned error: %v", err)
+	}
+	if resp.GetRunId() != "run-existing" {
+		t.Fatalf("expected existing run id, got %q", resp.GetRunId())
+	}
+}
+
 func TestTransitionRunAllowsHappyPath(t *testing.T) {
 	createdAt := time.Date(2026, time.March, 15, 13, 0, 0, 0, time.UTC)
 	repo := &memoryRepository{records: map[string]Record{
@@ -125,11 +160,15 @@ func TestTransitionRunTerminalStateSetsFinishedAt(t *testing.T) {
 }
 
 type memoryRepository struct {
-	created Record
-	records map[string]Record
+	created           Record
+	records           map[string]Record
+	duplicateOnCreate bool
 }
 
 func (m *memoryRepository) CreateRun(_ context.Context, record Record) (Record, error) {
+	if m.duplicateOnCreate {
+		return Record{}, ErrRunDuplicate
+	}
 	m.created = record
 	if m.records == nil {
 		m.records = make(map[string]Record)

@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
 	"time"
 
+	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/internal/gen/session/v1"
 	"github.com/butler/butler/internal/logger"
 	"google.golang.org/grpc/codes"
@@ -217,7 +219,7 @@ func (s *Server) CreateRun(ctx context.Context, req *sessionv1.CreateRunRequest)
 				)
 				return &sessionv1.CreateRunResponse{Run: existing}, nil
 			}
-			if !strings.Contains(err.Error(), "not found") {
+			if !errors.Is(err, runservice.ErrRunNotFound) {
 				return nil, mapRunError(err)
 			}
 		}
@@ -259,10 +261,15 @@ func mapRunError(err error) error {
 	if err == nil {
 		return nil
 	}
+	if status.Code(err) != codes.Unknown {
+		return err
+	}
 	message := err.Error()
 	switch {
-	case strings.Contains(message, "not found"):
+	case errors.Is(err, runservice.ErrRunNotFound):
 		return status.Error(codes.NotFound, message)
+	case errors.Is(err, runservice.ErrRunDuplicate):
+		return status.Error(codes.AlreadyExists, message)
 	case strings.Contains(message, "is required"), strings.Contains(message, "must be"), strings.Contains(message, "not allowed"):
 		return status.Error(codes.InvalidArgument, message)
 	default:

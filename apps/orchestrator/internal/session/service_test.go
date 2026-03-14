@@ -2,9 +2,11 @@ package session
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
+	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	"google.golang.org/grpc/codes"
@@ -12,10 +14,15 @@ import (
 )
 
 type memoryRunManager struct {
-	run *sessionv1.RunRecord
+	run       *sessionv1.RunRecord
+	lookupErr error
+	createErr error
 }
 
 func (m *memoryRunManager) CreateRun(_ context.Context, req *sessionv1.CreateRunRequest) (*sessionv1.RunRecord, error) {
+	if m.createErr != nil {
+		return nil, m.createErr
+	}
 	if m.run != nil {
 		return m.run, nil
 	}
@@ -30,10 +37,31 @@ func (m *memoryRunManager) GetRun(_ context.Context, runID string) (*sessionv1.R
 }
 
 func (m *memoryRunManager) FindRunByIdempotencyKey(_ context.Context, _, idempotencyKey string) (*sessionv1.RunRecord, error) {
+	if m.lookupErr != nil {
+		return nil, m.lookupErr
+	}
 	if m.run != nil && idempotencyKey == "dup-1" {
 		return m.run, nil
 	}
 	return nil, status.Error(codes.NotFound, "run not found")
+}
+
+func TestCreateRunReturnsInternalWhenDedupeLookupFails(t *testing.T) {
+	server := NewServer(&memoryRepository{}, nil, &memoryRunManager{lookupErr: errors.New("storage unavailable")}, time.Minute, nil)
+
+	_, err := server.CreateRun(context.Background(), &sessionv1.CreateRunRequest{
+		SessionKey: "telegram:chat:1",
+		InputEvent: &runv1.InputEvent{EventId: "event-1", IdempotencyKey: "dup-1"},
+	})
+	if status.Code(err) != codes.Internal {
+		t.Fatalf("expected internal error, got %v", err)
+	}
+}
+
+func TestMapRunErrorUsesTypedRunNotFound(t *testing.T) {
+	if got := status.Code(mapRunError(runservice.ErrRunNotFound)); got != codes.NotFound {
+		t.Fatalf("expected not found, got %v", got)
+	}
 }
 
 func (m *memoryRunManager) TransitionRun(_ context.Context, req *sessionv1.UpdateRunStateRequest) (*sessionv1.RunRecord, error) {
@@ -235,6 +263,12 @@ func TestAcquireLeaseDetectsConflict(t *testing.T) {
 	})
 	if status.Code(err) != codes.FailedPrecondition {
 		t.Fatalf("expected lease conflict, got %v", err)
+	}
+}
+
+func TestLeaseErrorToStatusMapsUnexpectedErrorsToInternal(t *testing.T) {
+	if got := status.Code(leaseErrorToStatus(errors.New("redis script failed"))); got != codes.Internal {
+		t.Fatalf("expected internal error, got %v", got)
 	}
 }
 

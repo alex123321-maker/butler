@@ -554,6 +554,7 @@ sprints:
   - id: SPRINT-2
     title: Model Transport Layer (OpenAI), Basic Orchestrator
     goal: Enable the first model execution loop so Butler can take a normalized input event, call OpenAI through the transport layer, persist the assistant response, and expose callable APIs for later channel adapters.
+    status: in_progress
     tasks:
       - id: T-019
         title: Implement transport provider interface and normalized transport types
@@ -703,7 +704,7 @@ sprints:
         subsystem: orchestrator
         sprint: SPRINT-2
         priority: high
-        status: todo
+        status: in_progress
         description: >
           Wire the orchestrator into a runnable service binary exposing the event submission APIs,
           health checks, metrics, and graceful shutdown behavior required by later adapters.

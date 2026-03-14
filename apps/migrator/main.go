@@ -14,8 +14,12 @@ import (
 func main() {
 	direction := flag.String("direction", "up", "migration direction: up or down")
 	migrationsDir := flag.String("migrations-dir", envOrDefault("BUTLER_POSTGRES_MIGRATIONS_DIR", "migrations"), "migration directory")
-	postgresURL := flag.String("postgres-url", envOrDefault("BUTLER_POSTGRES_URL", "postgres://butler:butler-dev-password@localhost:5432/butler?sslmode=disable"), "postgres connection string")
+	postgresURL := flag.String("postgres-url", envOrDefault("BUTLER_POSTGRES_URL", ""), "postgres connection string")
 	flag.Parse()
+	if *postgresURL == "" {
+		slog.Error("postgres-url is required", slog.String("flag", "postgres-url"), slog.String("env", "BUTLER_POSTGRES_URL"))
+		os.Exit(1)
+	}
 
 	log := logger.New(logger.Options{Service: "migrator", Component: "cli", Level: slog.LevelInfo, Writer: os.Stdout})
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)

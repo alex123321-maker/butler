@@ -4,7 +4,7 @@ Self-hosted personal long-lived agent platform.
 
 ## Status
 
-Sprint 0 foundation is in progress. The repository now includes the initial Go module, service stubs, shared top-level directories, and baseline automation targets.
+Sprint 0 and Sprint 1 are complete. The repository now includes the monorepo foundation, shared infra packages, contracts, migrations, Session Service, Redis leases, run lifecycle persistence, transcript storage, and normalized ingress helpers. Sprint 2 is only partially started with orchestrator bootstrap, health, metrics, and a placeholder REST ingestion endpoint.
 
 ## Repository layout
 
@@ -23,7 +23,7 @@ Sprint 0 foundation is in progress. The repository now includes the initial Go m
 - `make build` - build all Go packages.
 - `make test` - run the Go test suite.
 - `make lint` - run baseline static checks with `go vet`.
-- `make proto` - placeholder target for proto generation wiring added in later Sprint 0 tasks.
+- `make proto` - regenerate the current gRPC bindings from `proto/`.
 - `make infra-up` - start local PostgreSQL and Redis once Compose assets exist.
 - `make infra-down` - stop local infrastructure.
 

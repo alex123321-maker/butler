@@ -6,12 +6,14 @@ import (
 	"os"
 
 	"github.com/butler/butler/apps/orchestrator/internal/app"
+	"github.com/butler/butler/internal/logger"
 )
 
 func main() {
+	log := logger.New(logger.Options{Service: "orchestrator", Component: "main", Level: slog.LevelInfo, Writer: os.Stdout})
 	application, err := app.New(context.Background())
 	if err != nil {
-		slog.Error("failed to bootstrap orchestrator", slog.String("error", err.Error()))
+		log.Error("failed to bootstrap orchestrator", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 

@@ -115,6 +115,19 @@ func TestSnapshotListKeysReturnsCopy(t *testing.T) {
 	}
 }
 
+func TestLoadToolBrowserFromEnvUsesSharedDefaults(t *testing.T) {
+	cfg, snapshot, err := loadToolBrowser(envMap(map[string]string{}))
+	if err != nil {
+		t.Fatalf("loadToolBrowser returned error: %v", err)
+	}
+	if cfg.Shared.ServiceName != "tool-browser" {
+		t.Fatalf("expected tool-browser service name, got %q", cfg.Shared.ServiceName)
+	}
+	if findKey(t, snapshot.ListKeys(), "BUTLER_HTTP_ADDR").DefaultValue != ":8080" {
+		t.Fatal("expected shared HTTP addr default")
+	}
+}
+
 func envMap(values map[string]string) envGetter {
 	return func(key string) (string, bool) {
 		value, ok := values[key]

@@ -241,8 +241,10 @@ func leaseErrorToStatus(err error) error {
 		return status.Error(codes.FailedPrecondition, err.Error())
 	case errors.Is(err, ErrLeaseNotFound):
 		return status.Error(codes.NotFound, err.Error())
-	default:
+	case strings.Contains(err.Error(), "is required"), strings.Contains(err.Error(), "greater than zero"):
 		return status.Error(codes.InvalidArgument, err.Error())
+	default:
+		return status.Error(codes.Internal, err.Error())
 	}
 }
 

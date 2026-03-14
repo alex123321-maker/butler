@@ -49,7 +49,6 @@ type SharedConfig struct {
 	LogLevel    string
 	HTTPAddr    string
 	GRPCAddr    string
-	MetricsAddr string
 	Environment string
 }
 
@@ -68,6 +67,18 @@ type ToolBrokerConfig struct {
 	Postgres      PostgresConfig
 	RegistryPath  string
 	DefaultTarget string
+}
+
+type ToolBrowserConfig struct {
+	Shared SharedConfig
+}
+
+type ToolHTTPConfig struct {
+	Shared SharedConfig
+}
+
+type ToolDoctorConfig struct {
+	Shared SharedConfig
 }
 
 type PostgresConfig struct {
@@ -105,6 +116,18 @@ func LoadToolBrokerFromEnv() (ToolBrokerConfig, Snapshot, error) {
 	return loadToolBroker(os.LookupEnv)
 }
 
+func LoadToolBrowserFromEnv() (ToolBrowserConfig, Snapshot, error) {
+	return loadToolBrowser(os.LookupEnv)
+}
+
+func LoadToolHTTPFromEnv() (ToolHTTPConfig, Snapshot, error) {
+	return loadToolHTTP(os.LookupEnv)
+}
+
+func LoadToolDoctorFromEnv() (ToolDoctorConfig, Snapshot, error) {
+	return loadToolDoctor(os.LookupEnv)
+}
+
 func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 	cfg := OrchestratorConfig{}
 	sharedSpecs := sharedSpecs("orchestrator", &cfg.Shared)
@@ -140,13 +163,30 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 	return cfg, snapshot, err
 }
 
+func loadToolBrowser(get envGetter) (ToolBrowserConfig, Snapshot, error) {
+	cfg := ToolBrowserConfig{}
+	snapshot, err := loadSpecs(get, sharedSpecs("tool-browser", &cfg.Shared))
+	return cfg, snapshot, err
+}
+
+func loadToolHTTP(get envGetter) (ToolHTTPConfig, Snapshot, error) {
+	cfg := ToolHTTPConfig{}
+	snapshot, err := loadSpecs(get, sharedSpecs("tool-http", &cfg.Shared))
+	return cfg, snapshot, err
+}
+
+func loadToolDoctor(get envGetter) (ToolDoctorConfig, Snapshot, error) {
+	cfg := ToolDoctorConfig{}
+	snapshot, err := loadSpecs(get, sharedSpecs("tool-doctor", &cfg.Shared))
+	return cfg, snapshot, err
+}
+
 func sharedSpecs(serviceName string, cfg *SharedConfig) []fieldSpec {
 	return []fieldSpec{
 		{key: "BUTLER_SERVICE_NAME", component: serviceName, typeName: "string", required: false, defaultValue: serviceName, requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.ServiceName = v }},
 		{key: "BUTLER_LOG_LEVEL", component: serviceName, typeName: "string", required: false, defaultValue: "info", allowedValues: []string{"debug", "info", "warn", "error"}, requiresRestart: false, assign: func(v string) { cfg.LogLevel = strings.ToLower(v) }},
 		{key: "BUTLER_HTTP_ADDR", component: serviceName, typeName: "string", required: false, defaultValue: ":8080", requiresRestart: true, validate: validateListenAddr, assign: func(v string) { cfg.HTTPAddr = v }},
 		{key: "BUTLER_GRPC_ADDR", component: serviceName, typeName: "string", required: false, defaultValue: ":9090", requiresRestart: true, validate: validateListenAddr, assign: func(v string) { cfg.GRPCAddr = v }},
-		{key: "BUTLER_METRICS_ADDR", component: serviceName, typeName: "string", required: false, defaultValue: ":9100", requiresRestart: true, validate: validateListenAddr, assign: func(v string) { cfg.MetricsAddr = v }},
 		{key: "BUTLER_ENVIRONMENT", component: serviceName, typeName: "string", required: false, defaultValue: "development", allowedValues: []string{"development", "test", "production"}, requiresRestart: false, assign: func(v string) { cfg.Environment = strings.ToLower(v) }},
 	}
 }

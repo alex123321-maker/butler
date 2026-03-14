@@ -1,0 +1,2 @@
+ALTER TABLE runs
+DROP COLUMN IF EXISTS metadata_json;
