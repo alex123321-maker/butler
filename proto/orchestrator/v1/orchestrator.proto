@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package butler.orchestrator.v1;
+
+option go_package = "github.com/butler/butler/internal/gen/orchestrator/v1;orchestratorv1";
+
+import "common/v1/types.proto";
+import "run/v1/events.proto";
+
+service OrchestratorService {
+  rpc SubmitEvent(SubmitEventRequest) returns (SubmitEventResponse);
+}
+
+message SubmitEventRequest {
+  butler.run.v1.InputEvent event = 1;
+}
+
+message SubmitEventResponse {
+  string run_id = 1;
+  string session_key = 2;
+  butler.common.v1.RunState current_state = 3;
+  string assistant_response = 4;
+}

@@ -12,8 +12,8 @@ Current baseline:
 - implements durable run creation, lookup, state transitions, and input-event deduplication
 - implements the internal event-to-run execution flow for normalized `InputEvent` values using the transport layer and transcript store
 - exposes an internal delivery sink for `assistant_delta` and `assistant_final` events without allowing channel adapters to mutate run state
+- exposes `SubmitEvent` over gRPC and `POST /api/v1/events` over REST for normalized event ingestion
 - exposes `GET /health` and `GET /metrics`
-- exposes placeholder `POST /api/v1/events` that is not wired to run execution yet
 
 Dependencies:
 - PostgreSQL for durable sessions, runs, and transcript state
@@ -28,6 +28,7 @@ Configuration:
 Entry points and APIs:
 - binary entrypoint: `apps/orchestrator/main.go`
 - gRPC API: `SessionService` from `proto/session/v1/session.proto`
+- gRPC API: `OrchestratorService` from `proto/orchestrator/v1/orchestrator.proto`
 - HTTP endpoints: `/health`, `/metrics`, `/api/v1/events`
 - internal execution package: `apps/orchestrator/internal/orchestrator`
 - internal delivery seam: `apps/orchestrator/internal/orchestrator/delivery.go`
@@ -48,6 +49,6 @@ Related docs:
 - `docs/architecture/memory-model.md`
 
 Current limitations:
-- the OpenAI provider exists, but the service binary does not wire transport execution yet
-- `POST /api/v1/events` is still a placeholder boundary, even though the internal execution service is now implemented
+- the service executes the OpenAI transport path synchronously inside request handling, without a separate run queue yet
+- tool-calling and resume paths are not wired into the service API yet
 - Dockerfile exists, but the full service stack is not wired into Compose yet

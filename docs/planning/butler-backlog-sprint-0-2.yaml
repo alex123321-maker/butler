@@ -704,7 +704,7 @@ sprints:
         subsystem: orchestrator
         sprint: SPRINT-2
         priority: high
-        status: in_progress
+        status: done
         description: >
           Wire the orchestrator into a runnable service binary exposing the event submission APIs,
           health checks, metrics, and graceful shutdown behavior required by later adapters.

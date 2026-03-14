@@ -55,6 +55,7 @@ type Service struct {
 type ExecutionResult struct {
 	RunID             string
 	SessionKey        string
+	CurrentState      commonv1.RunState
 	AssistantResponse string
 }
 
@@ -265,7 +266,7 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	}
 
 	runLog.Info("run completed", slog.String("session_key", event.SessionKey))
-	return &ExecutionResult{RunID: next.GetRunId(), SessionKey: event.SessionKey, AssistantResponse: finalMessage}, nil
+	return &ExecutionResult{RunID: next.GetRunId(), SessionKey: event.SessionKey, CurrentState: next.GetCurrentState(), AssistantResponse: finalMessage}, nil
 }
 
 func (s *Service) failRun(ctx context.Context, current *sessionv1.RunRecord, leaseID string, runLog *slog.Logger, err error) error {

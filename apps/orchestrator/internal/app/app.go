@@ -13,15 +13,20 @@ import (
 	"syscall"
 	"time"
 
+	apiservice "github.com/butler/butler/apps/orchestrator/internal/api"
+	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/internal/config"
+	orchestratorv1 "github.com/butler/butler/internal/gen/orchestrator/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
+	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/metrics"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	redisstore "github.com/butler/butler/internal/storage/redis"
+	"github.com/butler/butler/internal/transport/openai"
 	"google.golang.org/grpc"
 )
 
@@ -68,21 +73,40 @@ func New(ctx context.Context) (*App, error) {
 		health.FuncChecker{CheckName: "redis", Fn: redis.HealthCheck},
 	)
 
+	provider, err := openai.NewProvider(openai.Config{
+		APIKey:  cfg.OpenAIAPIKey,
+		Model:   cfg.OpenAIModel,
+		BaseURL: cfg.OpenAIBaseURL,
+		Timeout: time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
+	}, nil)
+	if err != nil {
+		redis.Close()
+		postgres.Close()
+		return nil, err
+	}
+
+	runManager := runservice.NewService(runservice.NewPostgresRepository(postgres.Pool()), logger.WithComponent(log, "run-service"))
+	executor := flow.NewService(
+		session.NewPostgresRepository(postgres.Pool()),
+		session.NewRedisLeaseManager(redis.Client(), logger.WithComponent(log, "session-lease-store")),
+		runManager,
+		transcript.NewStore(postgres.Pool()),
+		provider,
+		flow.Config{
+			ProviderName: "openai",
+			ModelName:    cfg.OpenAIModel,
+			OwnerID:      cfg.Shared.ServiceName,
+			LeaseTTL:     int64(cfg.SessionLeaseTTLSeconds),
+			Delivery:     flow.NewLoggingDeliverySink(log),
+		},
+		logger.WithComponent(log, "executor"),
+	)
+	apiServer := apiservice.NewServer(executor, logger.WithComponent(log, "api"))
+
 	mux := http.NewServeMux()
 	mux.Handle("/health", h.Handler())
 	mux.Handle("/metrics", m.Handler())
-	mux.HandleFunc("/api/v1/events", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			return
-		}
-		_ = m.IncrCounter(metrics.MetricRequestsTotal, map[string]string{
-			"operation": "submit_event",
-			"service":   cfg.Shared.ServiceName,
-			"status":    "not_implemented",
-		})
-		writeJSON(w, http.StatusNotImplemented, map[string]string{"error": "submit event is not implemented yet"})
-	})
+	mux.Handle("/api/v1/events", apiServer.HTTPHandler())
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{
 			"service": cfg.Shared.ServiceName,
@@ -104,7 +128,6 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	grpcServer := grpc.NewServer()
-	runManager := runservice.NewService(runservice.NewPostgresRepository(postgres.Pool()), logger.WithComponent(log, "run-service"))
 	sessionv1.RegisterSessionServiceServer(
 		grpcServer,
 		session.NewServer(
@@ -115,6 +138,7 @@ func New(ctx context.Context) (*App, error) {
 			logger.WithComponent(log, "session-service"),
 		),
 	)
+	orchestratorv1.RegisterOrchestratorServiceServer(grpcServer, apiServer)
 
 	return &App{
 		config:     cfg,
