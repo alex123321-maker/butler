@@ -1,0 +1,262 @@
+package config
+
+import (
+	"fmt"
+	"os"
+	"sort"
+	"strconv"
+	"strings"
+)
+
+type ValidationStatus string
+
+const (
+	ValidationStatusValid   ValidationStatus = "valid"
+	ValidationStatusInvalid ValidationStatus = "invalid"
+	ValidationStatusMissing ValidationStatus = "missing"
+)
+
+type ConfigKeyInfo struct {
+	Key              string
+	Component        string
+	Type             string
+	Required         bool
+	DefaultValue     string
+	EffectiveValue   string
+	Source           string
+	IsSecret         bool
+	RequiresRestart  bool
+	ValidationStatus ValidationStatus
+	ValidationError  string
+}
+
+type Introspector interface {
+	ListKeys() []ConfigKeyInfo
+}
+
+type Snapshot struct {
+	keys []ConfigKeyInfo
+}
+
+func (s Snapshot) ListKeys() []ConfigKeyInfo {
+	keys := make([]ConfigKeyInfo, len(s.keys))
+	copy(keys, s.keys)
+	return keys
+}
+
+type SharedConfig struct {
+	ServiceName string
+	LogLevel    string
+	HTTPAddr    string
+	GRPCAddr    string
+	MetricsAddr string
+	Environment string
+}
+
+type OrchestratorConfig struct {
+	Shared      SharedConfig
+	PostgresURL string
+	RedisURL    string
+	OpenAIModel string
+}
+
+type ToolBrokerConfig struct {
+	Shared        SharedConfig
+	RegistryPath  string
+	DefaultTarget string
+}
+
+type envGetter func(string) (string, bool)
+
+type fieldSpec struct {
+	key             string
+	component       string
+	typeName        string
+	required        bool
+	defaultValue    string
+	isSecret        bool
+	requiresRestart bool
+	allowedValues   []string
+	validate        func(string) error
+	assign          func(string)
+}
+
+func LoadOrchestratorFromEnv() (OrchestratorConfig, Snapshot, error) {
+	return loadOrchestrator(os.LookupEnv)
+}
+
+func LoadToolBrokerFromEnv() (ToolBrokerConfig, Snapshot, error) {
+	return loadToolBroker(os.LookupEnv)
+}
+
+func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
+	cfg := OrchestratorConfig{}
+	sharedSpecs := sharedSpecs("orchestrator", &cfg.Shared)
+	specs := append(sharedSpecs,
+		fieldSpec{key: "BUTLER_POSTGRES_URL", component: "orchestrator", typeName: "string", required: true, isSecret: true, requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.PostgresURL = v }},
+		fieldSpec{key: "BUTLER_REDIS_URL", component: "orchestrator", typeName: "string", required: true, isSecret: true, requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.RedisURL = v }},
+		fieldSpec{key: "BUTLER_OPENAI_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-5-mini", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.OpenAIModel = v }},
+	)
+
+	snapshot, err := loadSpecs(get, specs)
+	return cfg, snapshot, err
+}
+
+func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
+	cfg := ToolBrokerConfig{}
+	sharedSpecs := sharedSpecs("tool-broker", &cfg.Shared)
+	specs := append(sharedSpecs,
+		fieldSpec{key: "BUTLER_TOOL_REGISTRY_PATH", component: "tool-broker", typeName: "string", required: false, defaultValue: "configs/tools.json", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.RegistryPath = v }},
+		fieldSpec{key: "BUTLER_TOOL_DEFAULT_TARGET", component: "tool-broker", typeName: "string", required: false, defaultValue: "local", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.DefaultTarget = v }},
+	)
+
+	snapshot, err := loadSpecs(get, specs)
+	return cfg, snapshot, err
+}
+
+func sharedSpecs(serviceName string, cfg *SharedConfig) []fieldSpec {
+	return []fieldSpec{
+		{key: "BUTLER_SERVICE_NAME", component: serviceName, typeName: "string", required: false, defaultValue: serviceName, requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.ServiceName = v }},
+		{key: "BUTLER_LOG_LEVEL", component: serviceName, typeName: "string", required: false, defaultValue: "info", allowedValues: []string{"debug", "info", "warn", "error"}, requiresRestart: false, assign: func(v string) { cfg.LogLevel = strings.ToLower(v) }},
+		{key: "BUTLER_HTTP_ADDR", component: serviceName, typeName: "string", required: false, defaultValue: ":8080", requiresRestart: true, validate: validateListenAddr, assign: func(v string) { cfg.HTTPAddr = v }},
+		{key: "BUTLER_GRPC_ADDR", component: serviceName, typeName: "string", required: false, defaultValue: ":9090", requiresRestart: true, validate: validateListenAddr, assign: func(v string) { cfg.GRPCAddr = v }},
+		{key: "BUTLER_METRICS_ADDR", component: serviceName, typeName: "string", required: false, defaultValue: ":9100", requiresRestart: true, validate: validateListenAddr, assign: func(v string) { cfg.MetricsAddr = v }},
+		{key: "BUTLER_ENVIRONMENT", component: serviceName, typeName: "string", required: false, defaultValue: "development", allowedValues: []string{"development", "test", "production"}, requiresRestart: false, assign: func(v string) { cfg.Environment = strings.ToLower(v) }},
+	}
+}
+
+func loadSpecs(get envGetter, specs []fieldSpec) (Snapshot, error) {
+	keys := make([]ConfigKeyInfo, 0, len(specs))
+	var problems []string
+
+	for _, spec := range specs {
+		value, ok := get(spec.key)
+		source := "default"
+		if ok {
+			source = "env"
+		} else {
+			value = spec.defaultValue
+		}
+
+		info := ConfigKeyInfo{
+			Key:             spec.key,
+			Component:       spec.component,
+			Type:            spec.typeName,
+			Required:        spec.required,
+			DefaultValue:    spec.defaultValue,
+			Source:          source,
+			IsSecret:        spec.isSecret,
+			RequiresRestart: spec.requiresRestart,
+		}
+
+		if spec.required && strings.TrimSpace(value) == "" {
+			info.ValidationStatus = ValidationStatusMissing
+			info.ValidationError = "required value is missing"
+			keys = append(keys, finalizeInfo(info, value))
+			problems = append(problems, fmt.Sprintf("%s: %s", spec.key, info.ValidationError))
+			continue
+		}
+
+		if strings.TrimSpace(value) == "" && !spec.required {
+			info.ValidationStatus = ValidationStatusValid
+			keys = append(keys, finalizeInfo(info, value))
+			if spec.assign != nil {
+				spec.assign(value)
+			}
+			continue
+		}
+
+		if err := validateValue(spec, value); err != nil {
+			info.ValidationStatus = ValidationStatusInvalid
+			info.ValidationError = err.Error()
+			keys = append(keys, finalizeInfo(info, value))
+			problems = append(problems, fmt.Sprintf("%s: %s", spec.key, err.Error()))
+			continue
+		}
+
+		info.ValidationStatus = ValidationStatusValid
+		keys = append(keys, finalizeInfo(info, value))
+		if spec.assign != nil {
+			spec.assign(value)
+		}
+	}
+
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i].Key < keys[j].Key
+	})
+
+	if len(problems) > 0 {
+		return Snapshot{keys: keys}, fmt.Errorf("config validation failed: %s", strings.Join(problems, "; "))
+	}
+
+	return Snapshot{keys: keys}, nil
+}
+
+func finalizeInfo(info ConfigKeyInfo, rawValue string) ConfigKeyInfo {
+	if info.IsSecret {
+		info.EffectiveValue = maskedPresence(rawValue)
+		return info
+	}
+	info.EffectiveValue = rawValue
+	return info
+}
+
+func maskedPresence(value string) string {
+	if strings.TrimSpace(value) == "" {
+		return ""
+	}
+	return "[masked]"
+}
+
+func validateValue(spec fieldSpec, value string) error {
+	if len(spec.allowedValues) > 0 {
+		normalized := strings.ToLower(value)
+		for _, allowed := range spec.allowedValues {
+			if normalized == allowed {
+				goto custom
+			}
+		}
+		return fmt.Errorf("must be one of %s", strings.Join(spec.allowedValues, ", "))
+	}
+
+custom:
+	if spec.validate != nil {
+		return spec.validate(value)
+	}
+	return nil
+}
+
+func validateNonEmpty(value string) error {
+	if strings.TrimSpace(value) == "" {
+		return fmt.Errorf("must not be empty")
+	}
+	return nil
+}
+
+func validateNonEmptyURL(value string) error {
+	if err := validateNonEmpty(value); err != nil {
+		return err
+	}
+	if !strings.Contains(value, "://") {
+		return fmt.Errorf("must be a URL")
+	}
+	return nil
+}
+
+func validateListenAddr(value string) error {
+	if err := validateNonEmpty(value); err != nil {
+		return err
+	}
+	if !strings.Contains(value, ":") {
+		return fmt.Errorf("must include host or port separator")
+	}
+	return nil
+}
+
+func parseInt(value string) (int, error) {
+	parsed, err := strconv.Atoi(value)
+	if err != nil {
+		return 0, fmt.Errorf("must be an integer")
+	}
+	return parsed, nil
+}
