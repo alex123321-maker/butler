@@ -55,6 +55,8 @@ type SharedConfig struct {
 
 type OrchestratorConfig struct {
 	Shared      SharedConfig
+	Postgres    PostgresConfig
+	Redis       RedisConfig
 	PostgresURL string
 	RedisURL    string
 	OpenAIModel string
@@ -62,8 +64,21 @@ type OrchestratorConfig struct {
 
 type ToolBrokerConfig struct {
 	Shared        SharedConfig
+	Postgres      PostgresConfig
 	RegistryPath  string
 	DefaultTarget string
+}
+
+type PostgresConfig struct {
+	URL             string
+	MaxConns        int32
+	MinConns        int32
+	MaxConnLifetime int
+	MigrationsDir   string
+}
+
+type RedisConfig struct {
+	URL string
 }
 
 type envGetter func(string) (string, bool)
@@ -93,8 +108,12 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 	cfg := OrchestratorConfig{}
 	sharedSpecs := sharedSpecs("orchestrator", &cfg.Shared)
 	specs := append(sharedSpecs,
-		fieldSpec{key: "BUTLER_POSTGRES_URL", component: "orchestrator", typeName: "string", required: true, isSecret: true, requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.PostgresURL = v }},
-		fieldSpec{key: "BUTLER_REDIS_URL", component: "orchestrator", typeName: "string", required: true, isSecret: true, requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.RedisURL = v }},
+		fieldSpec{key: "BUTLER_POSTGRES_URL", component: "orchestrator", typeName: "string", required: true, isSecret: true, requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.PostgresURL = v; cfg.Postgres.URL = v }},
+		fieldSpec{key: "BUTLER_REDIS_URL", component: "orchestrator", typeName: "string", required: true, isSecret: true, requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.RedisURL = v; cfg.Redis.URL = v }},
+		fieldSpec{key: "BUTLER_POSTGRES_MAX_CONNS", component: "orchestrator", typeName: "int", required: false, defaultValue: "10", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.Postgres.MaxConns = mustParseInt32(v) }},
+		fieldSpec{key: "BUTLER_POSTGRES_MIN_CONNS", component: "orchestrator", typeName: "int", required: false, defaultValue: "2", requiresRestart: true, validate: validateNonNegativeInt, assign: func(v string) { cfg.Postgres.MinConns = mustParseInt32(v) }},
+		fieldSpec{key: "BUTLER_POSTGRES_MAX_CONN_LIFETIME_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "1800", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.Postgres.MaxConnLifetime = mustParseInt(v) }},
+		fieldSpec{key: "BUTLER_POSTGRES_MIGRATIONS_DIR", component: "orchestrator", typeName: "string", required: false, defaultValue: "migrations", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.Postgres.MigrationsDir = v }},
 		fieldSpec{key: "BUTLER_OPENAI_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-5-mini", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.OpenAIModel = v }},
 	)
 
@@ -106,6 +125,11 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 	cfg := ToolBrokerConfig{}
 	sharedSpecs := sharedSpecs("tool-broker", &cfg.Shared)
 	specs := append(sharedSpecs,
+		fieldSpec{key: "BUTLER_POSTGRES_URL", component: "tool-broker", typeName: "string", required: false, isSecret: true, requiresRestart: true, validate: validateOptionalURL, assign: func(v string) { cfg.Postgres.URL = v }},
+		fieldSpec{key: "BUTLER_POSTGRES_MAX_CONNS", component: "tool-broker", typeName: "int", required: false, defaultValue: "10", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.Postgres.MaxConns = mustParseInt32(v) }},
+		fieldSpec{key: "BUTLER_POSTGRES_MIN_CONNS", component: "tool-broker", typeName: "int", required: false, defaultValue: "2", requiresRestart: true, validate: validateNonNegativeInt, assign: func(v string) { cfg.Postgres.MinConns = mustParseInt32(v) }},
+		fieldSpec{key: "BUTLER_POSTGRES_MAX_CONN_LIFETIME_SECONDS", component: "tool-broker", typeName: "int", required: false, defaultValue: "1800", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.Postgres.MaxConnLifetime = mustParseInt(v) }},
+		fieldSpec{key: "BUTLER_POSTGRES_MIGRATIONS_DIR", component: "tool-broker", typeName: "string", required: false, defaultValue: "migrations", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.Postgres.MigrationsDir = v }},
 		fieldSpec{key: "BUTLER_TOOL_REGISTRY_PATH", component: "tool-broker", typeName: "string", required: false, defaultValue: "configs/tools.json", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.RegistryPath = v }},
 		fieldSpec{key: "BUTLER_TOOL_DEFAULT_TARGET", component: "tool-broker", typeName: "string", required: false, defaultValue: "local", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.DefaultTarget = v }},
 	)
@@ -243,6 +267,13 @@ func validateNonEmptyURL(value string) error {
 	return nil
 }
 
+func validateOptionalURL(value string) error {
+	if strings.TrimSpace(value) == "" {
+		return nil
+	}
+	return validateNonEmptyURL(value)
+}
+
 func validateListenAddr(value string) error {
 	if err := validateNonEmpty(value); err != nil {
 		return err
@@ -259,4 +290,38 @@ func parseInt(value string) (int, error) {
 		return 0, fmt.Errorf("must be an integer")
 	}
 	return parsed, nil
+}
+
+func validatePositiveInt(value string) error {
+	parsed, err := parseInt(value)
+	if err != nil {
+		return err
+	}
+	if parsed <= 0 {
+		return fmt.Errorf("must be greater than zero")
+	}
+	return nil
+}
+
+func validateNonNegativeInt(value string) error {
+	parsed, err := parseInt(value)
+	if err != nil {
+		return err
+	}
+	if parsed < 0 {
+		return fmt.Errorf("must be zero or greater")
+	}
+	return nil
+}
+
+func mustParseInt(value string) int {
+	parsed, err := strconv.Atoi(value)
+	if err != nil {
+		panic(err)
+	}
+	return parsed
+}
+
+func mustParseInt32(value string) int32 {
+	return int32(mustParseInt(value))
 }
