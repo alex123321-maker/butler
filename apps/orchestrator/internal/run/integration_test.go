@@ -48,7 +48,7 @@ func TestRunLifecycleIntegration(t *testing.T) {
 	service := NewService(NewPostgresRepository(store.Pool()), nil)
 	created, err := service.CreateRun(ctx, &sessionv1.CreateRunRequest{
 		SessionKey:    sessionKey,
-		InputEvent:    &runv1.InputEvent{EventId: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE},
+		InputEvent:    &runv1.InputEvent{EventId: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, IdempotencyKey: "event-1-key"},
 		AutonomyMode:  commonv1.AutonomyMode_AUTONOMY_MODE_1,
 		ModelProvider: "openai",
 	})

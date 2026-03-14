@@ -20,6 +20,7 @@ type Record struct {
 	RunID              string
 	SessionKey         string
 	InputEventID       string
+	IdempotencyKey     string
 	Status             string
 	AutonomyMode       string
 	CurrentState       string
@@ -38,6 +39,7 @@ type Record struct {
 type Repository interface {
 	CreateRun(ctx context.Context, record Record) (Record, error)
 	GetRun(ctx context.Context, runID string) (Record, error)
+	FindRunByIdempotencyKey(ctx context.Context, sessionKey, idempotencyKey string) (Record, error)
 	UpdateRun(ctx context.Context, params UpdateParams) (Record, error)
 }
 
@@ -64,15 +66,15 @@ func NewPostgresRepository(pool *pgxpool.Pool) *PostgresRepository {
 func (r *PostgresRepository) CreateRun(ctx context.Context, record Record) (Record, error) {
 	const query = `
 		INSERT INTO runs (
-			run_id, session_key, input_event_id, status, autonomy_mode, current_state,
+			run_id, session_key, input_event_id, idempotency_key, status, autonomy_mode, current_state,
 			model_provider, provider_session_ref, lease_id, resumes_run_id,
 			started_at, updated_at, finished_at, error_type, error_message
 		) VALUES (
-			$1, $2, $3, $4, $5, $6,
-			$7, $8, $9, $10,
-			$11, $12, $13, $14, $15
+			$1, $2, $3, NULLIF($4, ''), $5, $6, $7,
+			$8, $9, $10, $11,
+			$12, $13, $14, $15, $16
 		)
-		RETURNING run_id, session_key, input_event_id, status, autonomy_mode, current_state,
+		RETURNING run_id, session_key, input_event_id, COALESCE(idempotency_key, ''), status, autonomy_mode, current_state,
 			model_provider, provider_session_ref, lease_id, resumes_run_id,
 			started_at, updated_at, finished_at, error_type, error_message
 	`
@@ -81,6 +83,7 @@ func (r *PostgresRepository) CreateRun(ctx context.Context, record Record) (Reco
 		record.RunID,
 		record.SessionKey,
 		record.InputEventID,
+		record.IdempotencyKey,
 		record.Status,
 		record.AutonomyMode,
 		record.CurrentState,
@@ -106,7 +109,7 @@ func (r *PostgresRepository) CreateRun(ctx context.Context, record Record) (Reco
 
 func (r *PostgresRepository) GetRun(ctx context.Context, runID string) (Record, error) {
 	const query = `
-		SELECT run_id, session_key, input_event_id, status, autonomy_mode, current_state,
+		SELECT run_id, session_key, input_event_id, COALESCE(idempotency_key, ''), status, autonomy_mode, current_state,
 			model_provider, provider_session_ref, lease_id, resumes_run_id,
 			started_at, updated_at, finished_at, error_type, error_message
 		FROM runs
@@ -123,6 +126,24 @@ func (r *PostgresRepository) GetRun(ctx context.Context, runID string) (Record, 
 	return record, nil
 }
 
+func (r *PostgresRepository) FindRunByIdempotencyKey(ctx context.Context, sessionKey, idempotencyKey string) (Record, error) {
+	const query = `
+		SELECT run_id, session_key, input_event_id, COALESCE(idempotency_key, ''), status, autonomy_mode, current_state,
+			model_provider, provider_session_ref, lease_id, resumes_run_id,
+			started_at, updated_at, finished_at, error_type, error_message
+		FROM runs
+		WHERE session_key = $1 AND idempotency_key = $2
+	`
+	record, err := scanRunRow(r.pool.QueryRow(ctx, query, sessionKey, idempotencyKey))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return Record{}, ErrRunNotFound
+		}
+		return Record{}, fmt.Errorf("find run by idempotency key: %w", err)
+	}
+	return record, nil
+}
+
 func (r *PostgresRepository) UpdateRun(ctx context.Context, params UpdateParams) (Record, error) {
 	const query = `
 		UPDATE runs
@@ -134,7 +155,7 @@ func (r *PostgresRepository) UpdateRun(ctx context.Context, params UpdateParams)
 			finished_at = $6,
 			updated_at = $7
 		WHERE run_id = $8 AND current_state = $9
-		RETURNING run_id, session_key, input_event_id, status, autonomy_mode, current_state,
+		RETURNING run_id, session_key, input_event_id, COALESCE(idempotency_key, ''), status, autonomy_mode, current_state,
 			model_provider, provider_session_ref, lease_id, resumes_run_id,
 			started_at, updated_at, finished_at, error_type, error_message
 	`
@@ -172,6 +193,7 @@ func scanRunRow(row rowScanner) (Record, error) {
 		&record.RunID,
 		&record.SessionKey,
 		&record.InputEventID,
+		&record.IdempotencyKey,
 		&record.Status,
 		&record.AutonomyMode,
 		&record.CurrentState,

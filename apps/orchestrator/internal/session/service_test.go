@@ -5,10 +5,40 @@ import (
 	"testing"
 	"time"
 
+	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+type memoryRunManager struct {
+	run *sessionv1.RunRecord
+}
+
+func (m *memoryRunManager) CreateRun(_ context.Context, req *sessionv1.CreateRunRequest) (*sessionv1.RunRecord, error) {
+	if m.run != nil {
+		return m.run, nil
+	}
+	return &sessionv1.RunRecord{RunId: "run-new", SessionKey: req.GetSessionKey()}, nil
+}
+
+func (m *memoryRunManager) GetRun(_ context.Context, runID string) (*sessionv1.RunRecord, error) {
+	if m.run != nil && m.run.GetRunId() == runID {
+		return m.run, nil
+	}
+	return nil, status.Error(codes.NotFound, "run not found")
+}
+
+func (m *memoryRunManager) FindRunByIdempotencyKey(_ context.Context, _, idempotencyKey string) (*sessionv1.RunRecord, error) {
+	if m.run != nil && idempotencyKey == "dup-1" {
+		return m.run, nil
+	}
+	return nil, status.Error(codes.NotFound, "run not found")
+}
+
+func (m *memoryRunManager) TransitionRun(_ context.Context, req *sessionv1.UpdateRunStateRequest) (*sessionv1.RunRecord, error) {
+	return &sessionv1.RunRecord{RunId: req.GetRunId()}, nil
+}
 
 func TestCreateSessionCreatesNewRecord(t *testing.T) {
 	repo := &memoryRepository{}
@@ -284,6 +314,22 @@ func TestAcquireLeaseAllowsReacquireAfterExpiry(t *testing.T) {
 	}
 	if resp.GetLease().GetRunId() != "run-2" {
 		t.Fatalf("expected reacquired lease for run-2, got %q", resp.GetLease().GetRunId())
+	}
+}
+
+func TestCreateRunReturnsExistingRunForDuplicateInputEvent(t *testing.T) {
+	existing := &sessionv1.RunRecord{RunId: "run-existing", SessionKey: "telegram:chat:1"}
+	server := NewServer(&memoryRepository{}, nil, &memoryRunManager{run: existing}, time.Minute, nil)
+
+	resp, err := server.CreateRun(context.Background(), &sessionv1.CreateRunRequest{
+		SessionKey: "telegram:chat:1",
+		InputEvent: &runv1.InputEvent{EventId: "event-1", IdempotencyKey: "dup-1"},
+	})
+	if err != nil {
+		t.Fatalf("CreateRun returned error: %v", err)
+	}
+	if resp.GetRun().GetRunId() != existing.GetRunId() {
+		t.Fatalf("expected duplicate to resolve to %q, got %q", existing.GetRunId(), resp.GetRun().GetRunId())
 	}
 }
 

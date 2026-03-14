@@ -362,7 +362,7 @@ sprints:
   - id: SPRINT-1
     title: Session Service, Run State Machine, Transcript Store
     goal: Implement the Butler core execution backbone so input events can resolve sessions, acquire ownership, create runs, transition state, and persist transcript data.
-    status: in_progress
+    status: done
     tasks:
       - id: T-013
         title: Implement Session Service core inside orchestrator process
@@ -527,7 +527,7 @@ sprints:
         subsystem: session
         sprint: SPRINT-1
         priority: medium
-        status: todo
+        status: done
         description: >
           Extend Session Service with explicit input-event deduplication behavior keyed by idempotency_key,
           so duplicate deliveries do not create duplicate runs.

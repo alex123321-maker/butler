@@ -25,6 +25,7 @@ type CreateSessionParams struct {
 type RunManager interface {
 	CreateRun(ctx context.Context, req *sessionv1.CreateRunRequest) (*sessionv1.RunRecord, error)
 	GetRun(ctx context.Context, runID string) (*sessionv1.RunRecord, error)
+	FindRunByIdempotencyKey(ctx context.Context, sessionKey, idempotencyKey string) (*sessionv1.RunRecord, error)
 	TransitionRun(ctx context.Context, req *sessionv1.UpdateRunStateRequest) (*sessionv1.RunRecord, error)
 }
 
@@ -203,6 +204,23 @@ func invalidArgumentError(err error) error {
 func (s *Server) CreateRun(ctx context.Context, req *sessionv1.CreateRunRequest) (*sessionv1.CreateRunResponse, error) {
 	if s.runs == nil {
 		return nil, status.Error(codes.Unimplemented, "run manager is not configured")
+	}
+	if req.GetInputEvent() != nil {
+		idempotencyKey := strings.TrimSpace(req.GetInputEvent().GetIdempotencyKey())
+		if idempotencyKey != "" {
+			existing, err := s.runs.FindRunByIdempotencyKey(ctx, req.GetSessionKey(), idempotencyKey)
+			if err == nil {
+				s.log.Info("duplicate input event resolved to existing run",
+					slog.String("session_key", req.GetSessionKey()),
+					slog.String("run_id", existing.GetRunId()),
+					slog.String("idempotency_key", idempotencyKey),
+				)
+				return &sessionv1.CreateRunResponse{Run: existing}, nil
+			}
+			if !strings.Contains(err.Error(), "not found") {
+				return nil, mapRunError(err)
+			}
+		}
 	}
 	run, err := s.runs.CreateRun(ctx, req)
 	if err != nil {

@@ -10,6 +10,7 @@ Current baseline:
 - implements `CreateSession`, `GetSession`, and `ResolveSessionKey` inside the orchestrator process
 - implements Redis-backed `AcquireLease`, `RenewLease`, and `ReleaseLease` session ownership operations
 - implements durable run creation, lookup, and lifecycle transitions backed by PostgreSQL
+- deduplicates repeated input events by `idempotency_key` before creating a new run
 - exposes `GET /health`
 - exposes `GET /metrics`
 - exposes placeholder `POST /api/v1/events`

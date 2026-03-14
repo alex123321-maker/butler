@@ -35,17 +35,18 @@ func (s *Service) CreateRun(ctx context.Context, req *sessionv1.CreateRunRequest
 
 	now := time.Now().UTC()
 	record, err := s.repo.CreateRun(ctx, Record{
-		RunID:         newRunID(now),
-		SessionKey:    params.SessionKey,
-		InputEventID:  params.InputEventID,
-		Status:        string(domain.RunStateCreated),
-		AutonomyMode:  params.AutonomyMode,
-		CurrentState:  string(domain.RunStateCreated),
-		ModelProvider: params.ModelProvider,
-		ResumesRunID:  params.ResumesRunID,
-		StartedAt:     now,
-		UpdatedAt:     now,
-		MetadataJSON:  params.MetadataJSON,
+		RunID:          newRunID(now),
+		SessionKey:     params.SessionKey,
+		InputEventID:   params.InputEventID,
+		IdempotencyKey: params.IdempotencyKey,
+		Status:         string(domain.RunStateCreated),
+		AutonomyMode:   params.AutonomyMode,
+		CurrentState:   string(domain.RunStateCreated),
+		ModelProvider:  params.ModelProvider,
+		ResumesRunID:   params.ResumesRunID,
+		StartedAt:      now,
+		UpdatedAt:      now,
+		MetadataJSON:   params.MetadataJSON,
 	})
 	if err != nil {
 		return nil, err
@@ -57,6 +58,14 @@ func (s *Service) CreateRun(ctx context.Context, req *sessionv1.CreateRunRequest
 		slog.String("state", record.CurrentState),
 	)
 
+	return recordToProto(record), nil
+}
+
+func (s *Service) FindRunByIdempotencyKey(ctx context.Context, sessionKey, idempotencyKey string) (*sessionv1.RunRecord, error) {
+	record, err := s.repo.FindRunByIdempotencyKey(ctx, strings.TrimSpace(sessionKey), strings.TrimSpace(idempotencyKey))
+	if err != nil {
+		return nil, err
+	}
 	return recordToProto(record), nil
 }
 
@@ -109,12 +118,13 @@ func (s *Service) TransitionRun(ctx context.Context, req *sessionv1.UpdateRunSta
 }
 
 type createParams struct {
-	SessionKey    string
-	InputEventID  string
-	AutonomyMode  string
-	ModelProvider string
-	ResumesRunID  string
-	MetadataJSON  string
+	SessionKey     string
+	InputEventID   string
+	IdempotencyKey string
+	AutonomyMode   string
+	ModelProvider  string
+	ResumesRunID   string
+	MetadataJSON   string
 }
 
 type transitionParams struct {
@@ -147,12 +157,13 @@ func validateCreateRunRequest(req *sessionv1.CreateRunRequest) (createParams, er
 	}
 
 	return createParams{
-		SessionKey:    strings.TrimSpace(req.GetSessionKey()),
-		InputEventID:  strings.TrimSpace(req.GetInputEvent().GetEventId()),
-		AutonomyMode:  mode,
-		ModelProvider: strings.TrimSpace(req.GetModelProvider()),
-		ResumesRunID:  strings.TrimSpace(req.GetResumesRunId()),
-		MetadataJSON:  strings.TrimSpace(req.GetMetadataJson()),
+		SessionKey:     strings.TrimSpace(req.GetSessionKey()),
+		InputEventID:   strings.TrimSpace(req.GetInputEvent().GetEventId()),
+		IdempotencyKey: strings.TrimSpace(req.GetInputEvent().GetIdempotencyKey()),
+		AutonomyMode:   mode,
+		ModelProvider:  strings.TrimSpace(req.GetModelProvider()),
+		ResumesRunID:   strings.TrimSpace(req.GetResumesRunId()),
+		MetadataJSON:   strings.TrimSpace(req.GetMetadataJson()),
 	}, nil
 }
 

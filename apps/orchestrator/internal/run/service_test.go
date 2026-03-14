@@ -32,6 +32,22 @@ func TestCreateRunPersistsCreatedState(t *testing.T) {
 	}
 }
 
+func TestFindRunByIdempotencyKeyReturnsExistingRun(t *testing.T) {
+	createdAt := time.Date(2026, time.March, 15, 13, 0, 0, 0, time.UTC)
+	repo := &memoryRepository{records: map[string]Record{
+		"run-1": {RunID: "run-1", SessionKey: "telegram:chat:42", InputEventID: "event-1", IdempotencyKey: "dup-1", Status: "created", AutonomyMode: "mode_1", CurrentState: "created", ModelProvider: "openai", StartedAt: createdAt, UpdatedAt: createdAt},
+	}}
+	service := NewService(repo, nil)
+
+	run, err := service.FindRunByIdempotencyKey(context.Background(), "telegram:chat:42", "dup-1")
+	if err != nil {
+		t.Fatalf("FindRunByIdempotencyKey returned error: %v", err)
+	}
+	if run.GetRunId() != "run-1" {
+		t.Fatalf("unexpected run id %q", run.GetRunId())
+	}
+}
+
 func TestTransitionRunAllowsHappyPath(t *testing.T) {
 	createdAt := time.Date(2026, time.March, 15, 13, 0, 0, 0, time.UTC)
 	repo := &memoryRepository{records: map[string]Record{
@@ -128,6 +144,15 @@ func (m *memoryRepository) GetRun(_ context.Context, runID string) (Record, erro
 		return Record{}, ErrRunNotFound
 	}
 	return record, nil
+}
+
+func (m *memoryRepository) FindRunByIdempotencyKey(_ context.Context, sessionKey, idempotencyKey string) (Record, error) {
+	for _, record := range m.records {
+		if record.SessionKey == sessionKey && record.IdempotencyKey == idempotencyKey {
+			return record, nil
+		}
+	}
+	return Record{}, ErrRunNotFound
 }
 
 func (m *memoryRepository) UpdateRun(_ context.Context, params UpdateParams) (Record, error) {
