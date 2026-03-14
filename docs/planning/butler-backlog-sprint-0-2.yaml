@@ -469,7 +469,7 @@ sprints:
         subsystem: memory
         sprint: SPRINT-1
         priority: high
-        status: todo
+        status: done
         description: >
           Add append-only transcript persistence for messages and tool-call records, plus transcript
           retrieval methods scoped by session and run.
