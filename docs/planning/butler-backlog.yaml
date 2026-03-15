@@ -1830,7 +1830,7 @@ sprints:
         subsystem: docs
         sprint: SPRINT-8
         priority: medium
-        status: todo
+        status: done
         description: >
           Update .env.example with BUTLER_SETTINGS_ENCRYPTION_KEY. Update orchestrator README
           with settings API documentation. Add operational notes about config layering behavior
