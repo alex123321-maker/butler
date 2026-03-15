@@ -16,6 +16,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+const migrationsAdvisoryLockID int64 = 82640191320461121
+
 type Store struct {
 	pool   *pgxpool.Pool
 	log    *slog.Logger
@@ -43,6 +45,9 @@ func ConfigFromShared(cfg config.PostgresConfig) Config {
 func Open(ctx context.Context, cfg Config, log *slog.Logger) (*Store, error) {
 	if strings.TrimSpace(cfg.URL) == "" {
 		return nil, fmt.Errorf("postgres url is required")
+	}
+	if cfg.MaxConns > 0 && cfg.MinConns > 0 && cfg.MaxConns < cfg.MinConns {
+		return nil, fmt.Errorf("postgres max_conns must be greater than or equal to min_conns")
 	}
 
 	poolConfig, err := pgxpool.ParseConfig(cfg.URL)
@@ -131,12 +136,23 @@ func (s *Store) runMigrations(ctx context.Context, dir string, direction migrati
 		return fmt.Errorf("migrations directory is required")
 	}
 
+	conn, err := s.pool.Acquire(ctx)
+	if err != nil {
+		return fmt.Errorf("acquire migration connection: %w", err)
+	}
+	defer releaseMigrationConn(conn)
+
+	if _, err := conn.Exec(ctx, "SELECT pg_advisory_lock($1)", migrationsAdvisoryLockID); err != nil {
+		return fmt.Errorf("acquire migration advisory lock: %w", err)
+	}
+	defer unlockMigrationConn(s.log, conn)
+
 	entries, err := migrationFiles(dir, direction)
 	if err != nil {
 		return err
 	}
 
-	if _, err := s.pool.Exec(ctx, `
+	if _, err := conn.Exec(ctx, `
 		CREATE TABLE IF NOT EXISTS schema_migrations (
 			version TEXT PRIMARY KEY,
 			applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -148,7 +164,7 @@ func (s *Store) runMigrations(ctx context.Context, dir string, direction migrati
 	for _, path := range entries {
 		version := migrationVersion(path, direction)
 		var alreadyApplied bool
-		if err := s.pool.QueryRow(ctx, "SELECT EXISTS (SELECT 1 FROM schema_migrations WHERE version = $1)", version).Scan(&alreadyApplied); err != nil {
+		if err := conn.QueryRow(ctx, "SELECT EXISTS (SELECT 1 FROM schema_migrations WHERE version = $1)", version).Scan(&alreadyApplied); err != nil {
 			return fmt.Errorf("check migration %s: %w", version, err)
 		}
 		if direction == migrationDirectionUp && alreadyApplied {
@@ -163,7 +179,7 @@ func (s *Store) runMigrations(ctx context.Context, dir string, direction migrati
 			return fmt.Errorf("read migration %s: %w", version, err)
 		}
 
-		tx, err := s.pool.Begin(ctx)
+		tx, err := conn.Begin(ctx)
 		if err != nil {
 			return fmt.Errorf("begin migration %s: %w", version, err)
 		}
@@ -250,4 +266,26 @@ func resolveLogger(log *slog.Logger) *slog.Logger {
 		return log
 	}
 	return slog.Default()
+}
+
+func unlockMigrationConn(log *slog.Logger, conn *pgxpool.Conn) {
+	if conn == nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if _, err := conn.Exec(ctx, "SELECT pg_advisory_unlock($1)", migrationsAdvisoryLockID); err != nil {
+		log.Error("postgres migration advisory unlock failed",
+			slog.String("component", "postgres"),
+			slog.String("error", err.Error()),
+		)
+		_ = conn.Conn().Close(ctx)
+	}
+}
+
+func releaseMigrationConn(conn *pgxpool.Conn) {
+	if conn == nil {
+		return
+	}
+	conn.Release()
 }

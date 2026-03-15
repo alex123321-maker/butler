@@ -40,7 +40,7 @@ func New(context.Context) (*App, error) {
 		return nil, fmt.Errorf("listen on grpc addr %s: %w", cfg.Shared.GRPCAddr, err)
 	}
 	grpcServer := grpc.NewServer()
-	runtimev1.RegisterToolRuntimeServiceServer(grpcServer, runtime.NewServer(runtime.NewPlaywrightRunner(), log))
+	runtimev1.RegisterToolRuntimeServiceServer(grpcServer, runtime.NewServer(runtime.NewPlaywrightRunner(cfg.NodeBinary, cfg.HelperScriptPath), log))
 
 	httpMux := http.NewServeMux()
 	httpMux.Handle("/health", health.New(cfg.Shared.ServiceName).Handler())

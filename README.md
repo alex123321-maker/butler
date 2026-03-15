@@ -4,7 +4,7 @@ Self-hosted personal long-lived agent platform.
 
 ## Status
 
-Sprint 0 and Sprint 1 are complete. Sprint 2 is functionally delivered for the first vertical slice, Sprint 3 is complete with the first user-facing MVP path, and Sprint 4 is now complete for the first tool-enabled stack. The OpenAI transport prefers Realtime WebSocket with HTTP streaming (SSE) fallback while preserving the same Butler transport contract. The repository now includes the monorepo foundation, shared infra packages, contracts, migrations, Session Service, Redis leases, run lifecycle persistence, transcript storage, normalized ingress helpers, normalized transport types, the OpenAI transport path, synchronous orchestrator event ingestion APIs, the in-process Telegram adapter, the tool-enabled Docker Compose stack, the Tool Broker skeleton, the Working Memory baseline, the runtime gRPC contract, broker routing, sequential tool execution flow, the HTTP runtime skeleton, the browser runtime skeleton, and documented smoke/end-to-end verification flows.
+Sprint 0 through Sprint 7 are implemented in the repository backlog and reflected in the current codebase. The stack now includes the monorepo foundation, shared infra packages, contracts, migrations, Session Service, Redis leases, run lifecycle persistence, transcript storage, normalized ingress helpers, the OpenAI transport with Realtime WebSocket preference and SSE fallback, synchronous orchestrator ingestion APIs, Telegram delivery and approval UX, the full tool-enabled Docker Compose stack, Tool Broker validation and routing, credential metadata and deferred secret resolution, working/profile/episodic memory stores, the async memory extraction pipeline, session summaries, the doctor runtime, and the Nuxt web UI shell with sessions and doctor views.
 
 ## Repository layout
 
@@ -44,6 +44,8 @@ Sprint 0 and Sprint 1 are complete. Sprint 2 is functionally delivered for the f
 - [Memory Model](docs/architecture/memory-model.md)
 - [Tooling and Execution Specification](docs/architecture/tool-runtime-adr.md)
 - [Credential Management](docs/architecture/credential-management.md)
+- [Run Lifecycle Specification](docs/architecture/run-lifecycle-spec.md)
+- [Model Transport Contract](docs/architecture/model-transport-contract.md)
 - [Implementation Roadmap](docs/planning/butler-implementation-roadmap.md)
 - [Sprint Backlog](docs/planning/butler-backlog.yaml)
 

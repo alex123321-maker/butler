@@ -31,8 +31,23 @@ func TestProfileStoreIntegration(t *testing.T) {
 	}()
 
 	profileStore := NewStore(store.Pool())
-	if _, err := profileStore.Save(ctx, Entry{ScopeType: "session", ScopeID: "integration:profile", Key: "language", ValueJSON: `{"value":"ru"}`, Summary: "User prefers Russian", SourceType: "run", SourceID: "run-1", Status: "active"}); err != nil {
+	first, err := profileStore.Save(ctx, Entry{ScopeType: "session", ScopeID: "integration:profile", Key: "language", ValueJSON: `{"value":"ru"}`, Summary: "User prefers Russian", SourceType: "run", SourceID: "run-1", Status: StatusActive})
+	if err != nil {
 		t.Fatalf("Save returned error: %v", err)
+	}
+	second, err := profileStore.Supersede(ctx, first.ID, Entry{Summary: "User prefers English", ValueJSON: `{"value":"en"}`, SourceType: "run", SourceID: "run-2"})
+	if err != nil {
+		t.Fatalf("Supersede returned error: %v", err)
+	}
+	if second.SupersedesID == nil || *second.SupersedesID != first.ID {
+		t.Fatalf("unexpected supersedes pointer: %+v", second)
+	}
+	current, err := profileStore.Get(ctx, "session", "integration:profile", "language")
+	if err != nil {
+		t.Fatalf("Get returned error: %v", err)
+	}
+	if current.ID != second.ID {
+		t.Fatalf("expected active entry %d, got %d", second.ID, current.ID)
 	}
 	entries, err := profileStore.GetByScope(ctx, "session", "integration:profile")
 	if err != nil {
@@ -40,5 +55,8 @@ func TestProfileStoreIntegration(t *testing.T) {
 	}
 	if len(entries) != 1 || entries[0].Key != "language" {
 		t.Fatalf("unexpected profile entries: %+v", entries)
+	}
+	if entries[0].ID != second.ID || entries[0].Status != StatusActive {
+		t.Fatalf("expected active superseding entry, got %+v", entries[0])
 	}
 }

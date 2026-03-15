@@ -2,6 +2,9 @@
 
 Utility binary for applying and rolling back Butler SQL migrations.
 
+Behavior:
+- serializes migration runs with a PostgreSQL advisory lock so concurrent migrator processes do not interleave schema changes
+
 Dependencies:
 - PostgreSQL connectivity via `internal/storage/postgres`
 - migration files under `migrations/`

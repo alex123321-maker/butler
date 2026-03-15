@@ -55,6 +55,30 @@ func TestInstrumentHTTPRecordsErrors(t *testing.T) {
 	}
 }
 
+func TestCORSMiddlewareHandlesSettingsPreflight(t *testing.T) {
+	handler := corsMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	req := httptest.NewRequest(http.MethodOptions, "/api/v1/settings/BUTLER_TELEGRAM_BOT_TOKEN", nil)
+	req.Header.Set("Access-Control-Request-Method", http.MethodPut)
+	RR := httptest.NewRecorder()
+	handler.ServeHTTP(RR, req)
+
+	if RR.Code != http.StatusNoContent {
+		t.Fatalf("expected status 204, got %d", RR.Code)
+	}
+	if got := RR.Header().Get("Access-Control-Allow-Methods"); got != "GET, POST, PUT, DELETE, OPTIONS" {
+		t.Fatalf("unexpected allowed methods header: %q", got)
+	}
+	if got := RR.Header().Get("Access-Control-Allow-Headers"); got != "Content-Type, Authorization" {
+		t.Fatalf("unexpected allowed headers: %q", got)
+	}
+	if got := RR.Header().Get("Access-Control-Allow-Origin"); got != "*" {
+		t.Fatalf("unexpected allowed origin: %q", got)
+	}
+}
+
 func contains(haystack, needle string) bool {
 	return len(haystack) >= len(needle) && (haystack == needle || len(haystack) > len(needle) && (stringIndex(haystack, needle) >= 0))
 }

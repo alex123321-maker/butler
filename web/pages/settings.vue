@@ -6,7 +6,12 @@
         <h2 class="page-title">Settings</h2>
         <p class="hero-copy">Review effective configuration, trace where each value comes from, and apply overrides without leaving the dashboard.</p>
       </div>
-      <button class="refresh-btn" type="button" :disabled="pending || busyKey !== null" @click="refresh">Refresh</button>
+      <div class="hero-actions">
+        <button class="refresh-btn" type="button" :disabled="pending || busyKey !== null" @click="refreshAll">Refresh</button>
+        <button class="refresh-btn restart-btn" type="button" :disabled="busyKey !== null || restartBusy || !restartState.components.length" @click="restartChanged">
+          Restart changed
+        </button>
+      </div>
     </section>
 
     <p v-if="toast" class="toast">{{ toast }}</p>
@@ -24,6 +29,21 @@
         @save="saveSetting"
         @remove="removeSetting"
       />
+
+      <section class="tools-registry">
+        <div class="tools-header">
+          <div>
+            <p class="group-label">Tools</p>
+            <h3>tools.json</h3>
+            <p class="registry-path">{{ toolsPath }}</p>
+          </div>
+          <button class="refresh-btn" type="button" :disabled="toolsBusy" @click="loadToolsRegistry">Reload file</button>
+        </div>
+        <textarea v-model="toolsContent" class="tools-editor" spellcheck="false" />
+        <div class="tools-actions">
+          <button class="primary-btn" type="button" :disabled="toolsBusy" @click="saveToolsRegistry">Save tools.json</button>
+        </div>
+      </section>
     </div>
   </div>
 </template>
@@ -35,10 +55,15 @@ import { useSettingsData, type SettingsComponent } from '~/composables/useSettin
 
 useHead({ title: 'Settings — Butler' })
 
-const { data, pending, error, refresh, updateSetting, deleteSetting } = useSettingsData()
+const { data, pending, error, refresh, updateSetting, deleteSetting, getToolsRegistry, updateToolsRegistry, getRestartState, applyRestart } = useSettingsData()
 const busyKey = ref<string | null>(null)
 const toast = ref('')
 const restartKeys = ref(new Set<string>())
+const restartBusy = ref(false)
+const restartState = ref({ components: [] as string[], suggested_command: '' })
+const toolsBusy = ref(false)
+const toolsContent = ref('')
+const toolsPath = ref('')
 
 const groups = computed<SettingsComponent[]>(() => data.value ?? [])
 
@@ -59,9 +84,7 @@ async function saveSetting(payload: { key: string, value: string }) {
   try {
     const setting = await updateSetting(payload.key, payload.value)
     replaceSetting(setting)
-    if (setting.requires_restart) {
-      restartKeys.value = new Set([...restartKeys.value, setting.key])
-    }
+    await refreshRestartState()
   } catch (err: any) {
     toast.value = err?.data?.error || err?.message || 'Failed to save setting.'
   } finally {
@@ -75,15 +98,80 @@ async function removeSetting(key: string) {
   try {
     const setting = await deleteSetting(key)
     replaceSetting(setting)
-    const next = new Set(restartKeys.value)
-    next.delete(key)
-    restartKeys.value = next
+    await refreshRestartState()
   } catch (err: any) {
     toast.value = err?.data?.error || err?.message || 'Failed to delete setting.'
   } finally {
     busyKey.value = null
   }
 }
+
+async function loadToolsRegistry() {
+  toolsBusy.value = true
+  toast.value = ''
+  try {
+    const payload = await getToolsRegistry()
+    toolsPath.value = payload.path
+    toolsContent.value = payload.content
+  } catch (err: any) {
+    toast.value = err?.data?.error || err?.message || 'Failed to load tools.json.'
+  } finally {
+    toolsBusy.value = false
+  }
+}
+
+async function saveToolsRegistry() {
+  toolsBusy.value = true
+  toast.value = ''
+  try {
+    const payload = await updateToolsRegistry(toolsContent.value)
+    toolsPath.value = payload.path
+    await refreshRestartState()
+  } catch (err: any) {
+    toast.value = err?.data?.error || err?.message || 'Failed to save tools.json.'
+  } finally {
+    toolsBusy.value = false
+  }
+}
+
+async function refreshRestartState() {
+  const payload = await getRestartState()
+  restartState.value = payload
+  const activeKeys = new Set<string>()
+  const componentSet = new Set(payload.components)
+  for (const group of groups.value) {
+    for (const setting of group.settings) {
+      if (setting.requires_restart && componentSet.has(setting.component)) {
+        activeKeys.add(setting.key)
+      }
+    }
+  }
+  restartKeys.value = activeKeys
+}
+
+async function refreshAll() {
+  await refresh()
+  await Promise.all([refreshRestartState(), loadToolsRegistry()])
+}
+
+async function restartChanged() {
+  restartBusy.value = true
+  toast.value = ''
+  try {
+    const payload = await applyRestart()
+    restartState.value = payload
+    restartKeys.value = new Set()
+    if (payload.suggested_command) {
+      toast.value = `Run command to restart changed services: ${payload.suggested_command}`
+    }
+  } catch (err: any) {
+    toast.value = err?.data?.error || err?.message || 'Failed to build restart command.'
+  } finally {
+    restartBusy.value = false
+  }
+}
+
+await Promise.all([refreshRestartState(), loadToolsRegistry()])
 </script>
 
 <style scoped>
@@ -127,9 +215,72 @@ async function removeSetting(key: string) {
   cursor: pointer;
 }
 
+.hero-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.restart-btn {
+  background: linear-gradient(135deg, #c2410c, #f97316);
+}
+
 .settings-grid {
   display: grid;
   gap: 18px;
+}
+
+.tools-registry {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(20, 28, 44, 0.92), rgba(14, 18, 30, 0.94));
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.tools-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.tools-header h3 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.registry-path {
+  margin: 6px 0 0;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 12px;
+}
+
+.tools-editor {
+  width: 100%;
+  min-height: 260px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(7, 10, 18, 0.72);
+  color: #f8fafc;
+  padding: 12px 14px;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 13px;
+}
+
+.tools-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.primary-btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  min-width: 88px;
+  background: linear-gradient(135deg, #f97316, #fb7185);
+  color: #fff;
+  cursor: pointer;
 }
 
 .toast {
@@ -143,6 +294,12 @@ async function removeSetting(key: string) {
 @media (max-width: 860px) {
   .settings-hero {
     flex-direction: column;
+  }
+
+  .hero-actions,
+  .tools-header {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 </style>

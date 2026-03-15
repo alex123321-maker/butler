@@ -19,7 +19,7 @@ Current baseline:
 - optionally runs the in-process Telegram adapter using Bot API long polling and final-response delivery
 - progressively edits Telegram responses during assistant delta streaming and finalizes the same message on completion
 - exposes REST views for sessions, runs, transcripts, and doctor reports
-- exposes settings management endpoints for layered config overrides and masked secret display
+- exposes grouped settings management endpoints for layered config overrides, masked secret display, restart planning, and `tools.json` editing
 - supports approval-gated tool execution with Telegram callback actions
 - exposes `GET /health` and `GET /metrics`
 
@@ -46,7 +46,7 @@ Entry points and APIs:
 - binary entrypoint: `apps/orchestrator/main.go`
 - gRPC API: `SessionService` from `proto/session/v1/session.proto`
 - gRPC API: `OrchestratorService` from `proto/orchestrator/v1/orchestrator.proto`
-- HTTP endpoints: `/health`, `/metrics`, `/api/v1/events`, `/api/v1/settings`, `/api/v1/settings/{key}`, `/api/v1/sessions`, `/api/v1/sessions/{key}`, `/api/v1/runs/{id}`, `/api/v1/runs/{id}/transcript`, `/api/v1/doctor/reports`, `/api/v1/doctor/checks/system`
+- HTTP endpoints: `/health`, `/metrics`, `/api/v1/events`, `/api/v1/settings`, `/api/v1/settings/{key}`, `/api/v1/settings/restart`, `/api/v1/settings/tools-registry`, `/api/v1/sessions`, `/api/v1/sessions/{key}`, `/api/v1/runs/{id}`, `/api/v1/runs/{id}/transcript`, `/api/v1/doctor/reports`, `/api/v1/doctor/check`
 - internal execution package: `apps/orchestrator/internal/orchestrator`
 - internal delivery seam: `apps/orchestrator/internal/orchestrator/delivery.go`
 
@@ -78,4 +78,4 @@ Current limitations:
 - the service executes the OpenAI transport path synchronously inside request handling, so REST ingestion returns only after run completion
 - the current OpenAI transport path prefers Realtime WebSocket and falls back to HTTP SSE when the WebSocket backend is unavailable early in the run
 - tool calling now goes through Tool Broker and runtime services over gRPC
-- the web dashboard still includes placeholder sections for memory browsing, settings, and some dashboard cards that are intentionally left for later work
+- the web dashboard still includes placeholder sections for memory browsing and some dashboard cards that are intentionally left for later work

@@ -60,6 +60,22 @@ func TestRedisLeaseManagerIntegration(t *testing.T) {
 		t.Fatalf("expected renewed ttl 3, got %d", renewed.TTLSeconds)
 	}
 
+	reacquiredSameOwner, err := manager.AcquireLease(ctx, AcquireLeaseParams{
+		SessionKey: params.SessionKey,
+		RunID:      params.RunID,
+		OwnerID:    params.OwnerID,
+		TTL:        4 * time.Second,
+	})
+	if err != nil {
+		t.Fatalf("AcquireLease same owner returned error: %v", err)
+	}
+	if reacquiredSameOwner.TTLSeconds != 4 {
+		t.Fatalf("expected reacquired ttl 4, got %d", reacquiredSameOwner.TTLSeconds)
+	}
+	if !reacquiredSameOwner.ExpiresAt.After(renewed.ExpiresAt) {
+		t.Fatalf("expected reacquired expiry %s to be after renewed expiry %s", reacquiredSameOwner.ExpiresAt, renewed.ExpiresAt)
+	}
+
 	released, err := manager.ReleaseLease(ctx, lease.LeaseID)
 	if err != nil {
 		t.Fatalf("ReleaseLease returned error: %v", err)

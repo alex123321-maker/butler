@@ -119,6 +119,8 @@ services:
       dockerfile: docker/tool-broker/Dockerfile
     restart: unless-stopped
     depends_on:
+      postgres:
+        condition: service_healthy
       tool-http:
         condition: service_healthy
       tool-browser:
@@ -130,6 +132,7 @@ services:
       BUTLER_LOG_LEVEL: ${BUTLER_LOG_LEVEL:-info}
       BUTLER_HTTP_ADDR: :8080
       BUTLER_GRPC_ADDR: :9090
+      BUTLER_POSTGRES_URL: ${BUTLER_POSTGRES_URL:-postgres://butler:butler-dev-password@postgres:5432/butler?sslmode=disable}
       BUTLER_TOOL_REGISTRY_PATH: ${BUTLER_TOOL_REGISTRY_PATH:-configs/tools.json}
       BUTLER_TOOL_DEFAULT_TARGET: ${BUTLER_TOOL_DEFAULT_TARGET:-local}
     healthcheck:

@@ -11,7 +11,11 @@
       </div>
 
       <div v-if="editing" class="editor">
+        <select v-if="hasAllowedValues" v-model="draft" class="setting-input">
+          <option v-for="value in setting.allowed_values" :key="value" :value="value">{{ value }}</option>
+        </select>
         <input
+          v-else
           v-model="draft"
           class="setting-input"
           :type="setting.is_secret && !showSecret ? 'password' : 'text'"
@@ -40,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { SettingItem } from '~/composables/useSettings'
 
 const emit = defineEmits<{
@@ -57,6 +61,7 @@ const props = defineProps<{
 const editing = ref(false)
 const draft = ref('')
 const showSecret = ref(false)
+const hasAllowedValues = computed(() => (props.setting.allowed_values?.length ?? 0) > 0)
 
 watch(() => props.setting.value, (value) => {
   if (!editing.value) {
@@ -66,7 +71,7 @@ watch(() => props.setting.value, (value) => {
 
 function startEdit() {
   editing.value = true
-  draft.value = ''
+  draft.value = props.setting.value
   showSecret.value = false
 }
 

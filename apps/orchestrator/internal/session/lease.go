@@ -342,9 +342,22 @@ end
 
 local current = cjson.decode(existing)
 if current.run_id == ARGV[4] and current.owner_id == ARGV[5] then
-  redis.call("PEXPIRE", KEYS[1], ARGV[2])
-  redis.call("SET", KEYS[2], ARGV[3], "PX", ARGV[2])
-  return {0, existing}
+  local now = redis.call("TIME")
+  local seconds = tonumber(now[1])
+  local micros = tonumber(now[2])
+  local ttlMillis = tonumber(ARGV[2])
+  local ttlSeconds = math.floor(ttlMillis / 1000)
+  local expiresAtMillis = seconds * 1000 + math.floor(micros / 1000) + ttlMillis
+  local expiresAtSeconds = math.floor(expiresAtMillis / 1000)
+  local expiresAtNanos = (expiresAtMillis % 1000) * 1000000
+
+  current.ttl_seconds = ttlSeconds
+  current.expires_at = string.format("%s.%09dZ", os.date("!%Y-%m-%dT%H:%M:%S", expiresAtSeconds), expiresAtNanos)
+
+  local payload = cjson.encode(current)
+  redis.call("SET", KEYS[1], payload, "PX", ttlMillis)
+  redis.call("SET", KEYS[2], ARGV[3], "PX", ttlMillis)
+  return {0, payload}
 end
 
 return {-1, existing}

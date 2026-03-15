@@ -1,11 +1,13 @@
 # Tool HTTP
 
-Planned HTTP runtime service for Butler web and API tools.
+HTTP runtime service for Butler web and API tools.
 
 Current state:
 - runtime exposes the internal `ToolRuntimeService` gRPC contract
+- supports `http.request`, `http.download`, and `http.parse_html`
 - `http.request` executes with a domain allowlist enforced from the tool contract
 - `http.request` can inject resolved credential refs into outbound auth headers without exposing secrets in model-visible args
+- `http.download` enforces configurable size limits and `http.parse_html` provides selector-based extraction with bounded input size
 - HTTP health endpoint and unit tests are in place
 
 Local run:

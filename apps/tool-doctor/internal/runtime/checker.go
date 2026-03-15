@@ -2,8 +2,11 @@ package runtime
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/butler/butler/internal/config"
@@ -21,20 +24,28 @@ type SystemReport struct {
 
 type SystemInspector interface {
 	CheckSystem(context.Context) SystemReport
+	CheckDatabase(context.Context) SystemReport
+	CheckContainer(context.Context) SystemReport
+	CheckProvider(context.Context) SystemReport
 }
 
 type Checker struct {
-	cfg           config.ToolDoctorConfig
-	snapshot      config.Introspector
-	postgresCheck func(context.Context) error
-	redisCheck    func(context.Context) error
-	now           func() time.Time
+	cfg            config.ToolDoctorConfig
+	snapshot       config.Introspector
+	postgresCheck  func(context.Context) error
+	redisCheck     func(context.Context) error
+	providerCheck  func(context.Context) error
+	containerCheck func(context.Context, config.DoctorContainerTarget) error
+	httpClient     *http.Client
+	now            func() time.Time
 }
 
 func NewChecker(cfg config.ToolDoctorConfig, snapshot config.Introspector) *Checker {
-	checker := &Checker{cfg: cfg, snapshot: snapshot, now: time.Now}
+	checker := &Checker{cfg: cfg, snapshot: snapshot, now: time.Now, httpClient: &http.Client{Timeout: 5 * time.Second}}
 	checker.postgresCheck = checker.defaultPostgresCheck
 	checker.redisCheck = checker.defaultRedisCheck
+	checker.providerCheck = checker.defaultProviderCheck
+	checker.containerCheck = checker.defaultContainerCheck
 	return checker
 }
 
@@ -42,10 +53,45 @@ func (c *Checker) CheckSystem(ctx context.Context) SystemReport {
 	checkedAt := c.now().UTC().Format(time.RFC3339)
 	checks := []health.CheckResult{
 		c.checkConfig(),
+	}
+	checks = append(checks, c.databaseChecks(ctx)...)
+	return SystemReport{Status: aggregateStatus(checks), CheckedAt: checkedAt, Checks: checks, Config: configEntries(c.snapshot)}
+}
+
+func (c *Checker) CheckDatabase(ctx context.Context) SystemReport {
+	checks := c.databaseChecks(ctx)
+	return SystemReport{Status: aggregateStatus(checks), CheckedAt: c.now().UTC().Format(time.RFC3339), Checks: checks}
+}
+
+func (c *Checker) CheckContainer(ctx context.Context) SystemReport {
+	checks := c.containerChecks(ctx)
+	return SystemReport{Status: aggregateStatus(checks), CheckedAt: c.now().UTC().Format(time.RFC3339), Checks: checks}
+}
+
+func (c *Checker) CheckProvider(ctx context.Context) SystemReport {
+	checks := []health.CheckResult{c.runCheck(ctx, "provider.openai", strings.TrimSpace(c.cfg.OpenAIAPIKey) != "", c.providerCheck)}
+	return SystemReport{Status: aggregateStatus(checks), CheckedAt: c.now().UTC().Format(time.RFC3339), Checks: checks}
+}
+
+func (c *Checker) databaseChecks(ctx context.Context) []health.CheckResult {
+	return []health.CheckResult{
 		c.runCheck(ctx, "postgres", c.cfg.Postgres.URL != "", c.postgresCheck),
 		c.runCheck(ctx, "redis", c.cfg.Redis.URL != "", c.redisCheck),
 	}
-	return SystemReport{Status: aggregateStatus(checks), CheckedAt: checkedAt, Checks: checks, Config: configEntries(c.snapshot)}
+}
+
+func (c *Checker) containerChecks(ctx context.Context) []health.CheckResult {
+	if len(c.cfg.ContainerTargets) == 0 {
+		return []health.CheckResult{{Name: "containers", Status: health.StatusDegraded, Message: "not configured", Duration: "0s", CheckedAt: c.now().UTC().Format(time.RFC3339)}}
+	}
+	checks := make([]health.CheckResult, 0, len(c.cfg.ContainerTargets))
+	for _, target := range c.cfg.ContainerTargets {
+		target := target
+		checks = append(checks, c.runCheck(ctx, "container."+target.Name, strings.TrimSpace(target.URL) != "", func(callCtx context.Context) error {
+			return c.containerCheck(callCtx, target)
+		}))
+	}
+	return checks
 }
 
 func (c *Checker) checkConfig() health.CheckResult {
@@ -111,6 +157,43 @@ func (c *Checker) defaultRedisCheck(ctx context.Context) error {
 	}
 	defer func() { _ = store.Close() }()
 	return store.HealthCheck(ctx)
+}
+
+func (c *Checker) defaultProviderCheck(ctx context.Context) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, strings.TrimRight(c.cfg.OpenAIBaseURL, "/")+"/models", nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", "Bearer "+c.cfg.OpenAIAPIKey)
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("provider returned status %d", resp.StatusCode)
+	}
+	return nil
+}
+
+func (c *Checker) defaultContainerCheck(ctx context.Context, target config.DoctorContainerTarget) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, target.URL, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("health endpoint returned status %d", resp.StatusCode)
+	}
+	var report health.Report
+	if err := json.NewDecoder(resp.Body).Decode(&report); err == nil && report.Status == health.StatusUnhealthy {
+		return fmt.Errorf("health endpoint reported unhealthy")
+	}
+	return nil
 }
 
 func configEntries(snapshot config.Introspector) []config.ConfigKeyInfo {

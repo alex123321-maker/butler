@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/butler/butler/internal/memory/embeddings"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 )
 
@@ -31,17 +32,39 @@ func TestEpisodicStoreIntegration(t *testing.T) {
 	}()
 
 	episodeStore := NewStore(store.Pool())
-	if _, err := episodeStore.Save(ctx, Episode{ScopeType: "session", ScopeID: "integration:episode", Summary: "Resolved Redis outage", Content: "Restarted Redis and verified leases", SourceType: "run", SourceID: "run-1", Status: "active", TagsJSON: `["doctor","redis"]`, Embedding: []float32{0.1, 0.2, 0.3}}); err != nil {
+	if _, err := episodeStore.Save(ctx, Episode{ScopeType: "session", ScopeID: "integration:episode", Summary: "Resolved Redis outage", Content: "Restarted Redis and verified leases", SourceType: "run", SourceID: "run-1", Status: StatusActive, TagsJSON: `["doctor","redis"]`, Embedding: testEmbedding(0.1)}); err != nil {
 		t.Fatalf("Save returned error: %v", err)
 	}
-	if _, err := episodeStore.Save(ctx, Episode{ScopeType: "session", ScopeID: "integration:episode", Summary: "Telegram config fix", Content: "Updated allowed chat ids", SourceType: "run", SourceID: "run-2", Status: "active", TagsJSON: `["telegram"]`, Embedding: []float32{0.9, 0.8, 0.7}}); err != nil {
+	if _, err := episodeStore.Save(ctx, Episode{ScopeType: "session", ScopeID: "integration:episode", Summary: "Telegram config fix", Content: "Updated allowed chat ids", SourceType: "run", SourceID: "run-2", Status: StatusInactive, TagsJSON: `["telegram"]`, Embedding: testEmbedding(0.9)}); err != nil {
 		t.Fatalf("Save second returned error: %v", err)
 	}
-	results, err := episodeStore.Search(ctx, "session", "integration:episode", []float32{0.1, 0.2, 0.29}, 2)
+	entries, err := episodeStore.GetByScope(ctx, "session", "integration:episode")
+	if err != nil {
+		t.Fatalf("GetByScope returned error: %v", err)
+	}
+	if len(entries) != 1 || entries[0].Status != StatusActive {
+		t.Fatalf("unexpected scope entries: %+v", entries)
+	}
+	results, err := episodeStore.Search(ctx, "session", "integration:episode", testEmbedding(0.1), 2)
 	if err != nil {
 		t.Fatalf("Search returned error: %v", err)
 	}
 	if len(results) == 0 || results[0].Summary != "Resolved Redis outage" {
 		t.Fatalf("unexpected search results: %+v", results)
 	}
+	var indexCount int
+	if err := store.Pool().QueryRow(ctx, `SELECT COUNT(*) FROM pg_indexes WHERE tablename = 'memory_episodes' AND indexname = 'idx_memory_episodes_embedding_cosine'`).Scan(&indexCount); err != nil {
+		t.Fatalf("query pg_indexes returned error: %v", err)
+	}
+	if indexCount != 1 {
+		t.Fatalf("expected similarity index to exist, got %d", indexCount)
+	}
+}
+
+func testEmbedding(seed float32) []float32 {
+	vector := make([]float32, embeddings.VectorDimensions)
+	for i := range vector {
+		vector[i] = seed
+	}
+	return vector
 }

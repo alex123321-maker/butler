@@ -227,12 +227,15 @@ func New(ctx context.Context) (*App, error) {
 		return result.GetResultJson(), nil
 	})
 	doctorServer := apiservice.NewDoctorServer(postgres.Pool(), doctorChecker, logger.WithComponent(log, "doctor-api"))
-	settingsServer := apiservice.NewSettingsServer(config.NewSettingsService(settingsStore, hotConfig))
+	settingsService := config.NewSettingsService(settingsStore, hotConfig)
+	settingsServer := apiservice.NewSettingsServer(settingsService)
 
 	mux := http.NewServeMux()
 	mux.Handle("/health", h.Handler())
 	mux.Handle("/metrics", m.Handler())
 	mux.Handle("/api/v1/events", apiServer.HTTPHandler())
+	mux.Handle("/api/v1/settings/restart", settingsServer.HandleRestart())
+	mux.Handle("/api/v1/settings/tools-registry", settingsServer.HandleToolsRegistry())
 	mux.Handle("/api/v1/settings", settingsServer.HandleList())
 	mux.Handle("/api/v1/settings/", settingsServer.HandleItem())
 	mux.Handle("/api/v1/sessions", viewServer.HandleListSessions())
@@ -379,8 +382,8 @@ func (a *App) shutdown(runErr error) error {
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)
 			return

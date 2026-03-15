@@ -7,9 +7,10 @@ Nuxt.js frontend for the Butler self-hosted AI agent platform.
 Provides a browser-based interface for:
 - **Dashboard** — system health overview
 - **Sessions** — session list and run history (T-0604)
+- **Run detail** — transcript timeline for a selected run
 - **Memory** — profile and episodic memory browser (future sprint)
 - **Doctor** — system diagnostic reports (T-0605)
-- **Settings** — configuration management (future sprint)
+- **Settings** — grouped runtime configuration management with source tracing and `tools.json` editor
 
 ## Development
 
@@ -39,10 +40,11 @@ node .output/server/index.mjs
 Build and run via Docker Compose from the repo root:
 
 ```bash
-docker compose -f deploy/docker-compose.yml up web
+docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml up -d --build
 ```
 
 The web service is exposed on port 3000 by default (configurable via `BUTLER_WEB_PORT`).
+The dev overlay also publishes the orchestrator API on `http://localhost:8080`, which the browser UI uses by default.
 
 ## Architecture
 
@@ -68,8 +70,10 @@ web/
 │   └── default.vue            # Sidebar + main layout
 └── pages/
     ├── index.vue              # Dashboard
-    ├── sessions.vue           # Sessions (placeholder)
+    ├── sessions.vue           # Sessions list
+    ├── sessions/[key].vue     # Session detail with runs
+    ├── runs/[id].vue          # Run detail with transcript
     ├── memory.vue             # Memory (placeholder)
-    ├── doctor.vue             # Doctor (placeholder)
-    └── settings.vue           # Settings (placeholder)
+    ├── doctor.vue             # Doctor reports and system checks
+    └── settings.vue           # Settings and tools registry editor
 ```

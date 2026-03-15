@@ -14,6 +14,11 @@ type stubMetadataStore struct {
 	err    error
 }
 
+type stubAuditLogger struct {
+	entries []AuditLog
+	err     error
+}
+
 func (s stubMetadataStore) GetByAlias(context.Context, string) (Record, error) {
 	if s.err != nil {
 		return Record{}, s.err
@@ -21,10 +26,19 @@ func (s stubMetadataStore) GetByAlias(context.Context, string) (Record, error) {
 	return s.record, nil
 }
 
+func (s *stubAuditLogger) Create(_ context.Context, entry AuditLog) error {
+	if s.err != nil {
+		return s.err
+	}
+	s.entries = append(s.entries, entry)
+	return nil
+}
+
 func TestAuthorizeUsage(t *testing.T) {
 	t.Parallel()
-	broker := NewBroker(stubMetadataStore{record: Record{Alias: "github", Status: StatusActive, AllowedDomains: []string{"api.github.com"}, AllowedTools: []string{"http.request"}, ApprovalPolicy: ApprovalPolicyConfirmOnMutation}})
-	decision, err := broker.AuthorizeUsage(context.Background(), AuthorizationRequest{Alias: "github", ToolName: "http.request", TargetURL: "https://api.github.com/repos", Mutating: false, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2})
+	audit := &stubAuditLogger{}
+	broker := NewBroker(stubMetadataStore{record: Record{Alias: "github", Status: StatusActive, AllowedDomains: []string{"api.github.com"}, AllowedTools: []string{"http.request"}, ApprovalPolicy: ApprovalPolicyConfirmOnMutation}}, audit)
+	decision, err := broker.AuthorizeUsage(context.Background(), AuthorizationRequest{RunID: "run-1", ToolCallID: "tool-1", Alias: "github", Field: "token", ToolName: "http.request", TargetURL: "https://api.github.com/repos", Mutating: false, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2})
 	if err != nil {
 		t.Fatalf("AuthorizeUsage returned error: %v", err)
 	}
@@ -33,6 +47,9 @@ func TestAuthorizeUsage(t *testing.T) {
 	}
 	if decision.NormalizedDomain != "api.github.com" {
 		t.Fatalf("unexpected normalized domain %q", decision.NormalizedDomain)
+	}
+	if len(audit.entries) != 1 || audit.entries[0].Decision != AuditDecisionAllowed {
+		t.Fatalf("unexpected audit entries: %+v", audit.entries)
 	}
 }
 
@@ -73,5 +90,31 @@ func TestResolveReferencePropagatesStoreError(t *testing.T) {
 	_, err := broker.ResolveReference(context.Background(), &toolbrokerv1.CredentialRef{Type: "credential_ref", Alias: "github", Field: "token"}, "http.request", "", commonv1.AutonomyMode_AUTONOMY_MODE_2, false)
 	if !errors.Is(err, boom) {
 		t.Fatalf("ResolveReference error = %v, want %v", err, boom)
+	}
+}
+
+func TestAuthorizeUsageAuditsDeniedAndNotFound(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		name     string
+		store    stubMetadataStore
+		request  AuthorizationRequest
+		decision string
+	}{
+		{name: "denied", store: stubMetadataStore{record: Record{Alias: "github", Status: StatusActive, AllowedDomains: []string{"api.github.com"}, AllowedTools: []string{"http.request"}, ApprovalPolicy: ApprovalPolicyAlwaysConfirm}}, request: AuthorizationRequest{Alias: "github", Field: "token", ToolName: "http.request", TargetURL: "https://example.com", AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2}, decision: AuditDecisionDenied},
+		{name: "not found", store: stubMetadataStore{err: ErrRecordNotFound}, request: AuthorizationRequest{Alias: "missing", Field: "token", ToolName: "http.request", TargetURL: "https://api.github.com", AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2}, decision: AuditDecisionNotFound},
+	} {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			audit := &stubAuditLogger{}
+			broker := NewBroker(tc.store, audit)
+			if _, err := broker.AuthorizeUsage(context.Background(), tc.request); err == nil {
+				t.Fatal("expected authorization error")
+			}
+			if len(audit.entries) != 1 || audit.entries[0].Decision != tc.decision {
+				t.Fatalf("unexpected audit entries: %+v", audit.entries)
+			}
+		})
 	}
 }

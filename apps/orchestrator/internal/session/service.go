@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
+	"github.com/butler/butler/internal/domain"
 	"github.com/butler/butler/internal/gen/session/v1"
 	"github.com/butler/butler/internal/logger"
 	"google.golang.org/grpc/codes"
@@ -189,7 +189,7 @@ func normalizeMetadataJSON(value string) (string, error) {
 
 func sessionToProto(record SessionRecord) *sessionv1.Session {
 	return &sessionv1.Session{
-		SessionId:    record.SessionKey,
+		SessionId:    record.SessionID,
 		SessionKey:   record.SessionKey,
 		UserId:       record.UserID,
 		Channel:      record.Channel,
@@ -219,7 +219,7 @@ func (s *Server) CreateRun(ctx context.Context, req *sessionv1.CreateRunRequest)
 				)
 				return &sessionv1.CreateRunResponse{Run: existing}, nil
 			}
-			if !errors.Is(err, runservice.ErrRunNotFound) {
+			if !errors.Is(err, domain.ErrRunNotFound) {
 				return nil, mapRunError(err)
 			}
 		}
@@ -266,9 +266,9 @@ func mapRunError(err error) error {
 	}
 	message := err.Error()
 	switch {
-	case errors.Is(err, runservice.ErrRunNotFound):
+	case errors.Is(err, domain.ErrRunNotFound):
 		return status.Error(codes.NotFound, message)
-	case errors.Is(err, runservice.ErrRunDuplicate):
+	case errors.Is(err, domain.ErrRunDuplicate):
 		return status.Error(codes.AlreadyExists, message)
 	case strings.Contains(message, "is required"), strings.Contains(message, "must be"), strings.Contains(message, "not allowed"):
 		return status.Error(codes.InvalidArgument, message)

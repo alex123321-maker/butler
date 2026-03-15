@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
+	"sync"
 )
 
 var (
@@ -15,25 +17,29 @@ var (
 type SettingState struct {
 	Key              string
 	Component        string
+	Group            string
 	Value            string
 	Source           string
 	IsSecret         bool
 	RequiresRestart  bool
+	AllowedValues    []string
 	ValidationStatus ValidationStatus
 	ValidationError  string
 }
 
 type SettingsService struct {
-	store *PostgresSettingsStore
-	hot   *HotConfig
-	env   envGetter
+	store             *PostgresSettingsStore
+	hot               *HotConfig
+	env               envGetter
+	restartComponents map[string]struct{}
+	restartMu         sync.Mutex
 }
 
 func NewSettingsService(store *PostgresSettingsStore, hot *HotConfig) *SettingsService {
 	if hot == nil {
 		hot = NewHotConfig(Snapshot{})
 	}
-	return &SettingsService{store: store, hot: hot, env: os.LookupEnv}
+	return &SettingsService{store: store, hot: hot, env: os.LookupEnv, restartComponents: make(map[string]struct{})}
 }
 
 func (s *SettingsService) List(ctx context.Context) ([]SettingState, error) {
@@ -41,7 +47,7 @@ func (s *SettingsService) List(ctx context.Context) ([]SettingState, error) {
 	if err != nil {
 		return nil, err
 	}
-	return s.resolveStates(settings)
+	return s.resolveStates(settings, false)
 }
 
 func (s *SettingsService) Update(ctx context.Context, key, value string) (SettingState, error) {
@@ -59,6 +65,7 @@ func (s *SettingsService) Update(ctx context.Context, key, value string) (Settin
 	if err != nil {
 		return SettingState{}, err
 	}
+	s.markRestartComponent(state)
 	_, _ = s.hot.Apply(ConfigKeyInfo{Key: state.Key, RequiresRestart: state.RequiresRestart}, state.Value)
 	return state, nil
 }
@@ -72,12 +79,52 @@ func (s *SettingsService) Delete(ctx context.Context, key string) (SettingState,
 	if err != nil {
 		return SettingState{}, err
 	}
+	s.markRestartComponent(state)
 	_, _ = s.hot.Apply(ConfigKeyInfo{Key: state.Key, RequiresRestart: state.RequiresRestart}, state.Value)
 	return state, nil
 }
 
+func (s *SettingsService) EffectiveValue(ctx context.Context, key string) (string, error) {
+	state, err := s.stateForKey(ctx, key)
+	if err != nil {
+		return "", err
+	}
+	return state.Value, nil
+}
+
+func (s *SettingsService) PendingRestartComponents() []string {
+	s.restartMu.Lock()
+	defer s.restartMu.Unlock()
+	items := make([]string, 0, len(s.restartComponents))
+	for component := range s.restartComponents {
+		items = append(items, component)
+	}
+	sort.Strings(items)
+	return items
+}
+
+func (s *SettingsService) ClearPendingRestart() {
+	s.restartMu.Lock()
+	defer s.restartMu.Unlock()
+	s.restartComponents = make(map[string]struct{})
+}
+
+func (s *SettingsService) MarkRestartComponent(component string) {
+	trimmed := strings.TrimSpace(component)
+	if trimmed == "" {
+		return
+	}
+	s.restartMu.Lock()
+	defer s.restartMu.Unlock()
+	s.restartComponents[trimmed] = struct{}{}
+}
+
 func (s *SettingsService) stateForKey(ctx context.Context, key string) (SettingState, error) {
-	states, err := s.List(ctx)
+	settings, err := s.store.ListAll(ctx)
+	if err != nil {
+		return SettingState{}, err
+	}
+	states, err := s.resolveStates(settings, true)
 	if err != nil {
 		return SettingState{}, err
 	}
@@ -89,9 +136,9 @@ func (s *SettingsService) stateForKey(ctx context.Context, key string) (SettingS
 	return SettingState{}, ErrUnknownSetting
 }
 
-func (s *SettingsService) resolveStates(settings []Setting) ([]SettingState, error) {
+func (s *SettingsService) resolveStates(settings []Setting, includeHidden bool) ([]SettingState, error) {
 	resolver := NewLayeredResolver(s.env, settings)
-	snapshot, err := resolver.Resolve(layeredOrchestratorSpecs(&OrchestratorConfig{}))
+	snapshot, err := resolver.Resolve(managedFieldSpecs())
 	if err != nil {
 		return nil, err
 	}
@@ -101,12 +148,18 @@ func (s *SettingsService) resolveStates(settings []Setting) ([]SettingState, err
 	}
 	states := make([]SettingState, 0, len(snapshot.ListKeys()))
 	for _, item := range snapshot.ListKeys() {
+		spec, ok := managedSettingSpecByKey(item.Key)
+		if !ok || (!includeHidden && !spec.Visible) {
+			continue
+		}
 		state := SettingState{
 			Key:              item.Key,
 			Component:        item.Component,
+			Group:            spec.Group,
 			Source:           item.Source,
 			IsSecret:         item.IsSecret,
 			RequiresRestart:  item.RequiresRestart,
+			AllowedValues:    append([]string(nil), spec.Spec.allowedValues...),
 			ValidationStatus: item.ValidationStatus,
 			ValidationError:  item.ValidationError,
 		}
@@ -116,23 +169,35 @@ func (s *SettingsService) resolveStates(settings []Setting) ([]SettingState, err
 		case ConfigSourceDB:
 			state.Value = settingsByKey[item.Key].Value
 		default:
-			if spec, ok := settingSpecByKey(item.Key); ok {
-				state.Value = spec.defaultValue
-			}
+			state.Value = spec.Spec.defaultValue
 		}
 		states = append(states, state)
 	}
+	sort.Slice(states, func(i, j int) bool {
+		left, _ := managedSettingSpecByKey(states[i].Key)
+		right, _ := managedSettingSpecByKey(states[j].Key)
+		if left.DisplayOrder == right.DisplayOrder {
+			return states[i].Key < states[j].Key
+		}
+		return left.DisplayOrder < right.DisplayOrder
+	})
 	s.hot.Replace(snapshot)
 	return states, nil
 }
 
 func settingSpecByKey(key string) (fieldSpec, bool) {
-	for _, spec := range layeredOrchestratorSpecs(&OrchestratorConfig{}) {
-		if spec.key == key {
-			return spec, true
-		}
+	item, ok := managedSettingSpecByKey(key)
+	if ok {
+		return item.Spec, true
 	}
 	return fieldSpec{}, false
+}
+
+func (s *SettingsService) markRestartComponent(state SettingState) {
+	if !state.RequiresRestart {
+		return
+	}
+	s.MarkRestartComponent(state.Component)
 }
 
 func validateSettingValue(spec fieldSpec, value string) error {

@@ -55,7 +55,7 @@ func New(ctx context.Context) (*App, error) {
 			return nil, err
 		}
 		credentialResolver = credentials.NewToolCallBroker(
-			credentials.NewBroker(credentials.NewStore(postgres.Pool())),
+			credentials.NewBroker(credentials.NewStore(postgres.Pool()), credentials.NewAuditStore(postgres.Pool())),
 			credentials.EnvSecretResolver{},
 		)
 	}

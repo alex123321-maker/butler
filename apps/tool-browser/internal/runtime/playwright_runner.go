@@ -4,26 +4,39 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 )
 
-type PlaywrightRunner struct{}
+const defaultBrowserScriptPath = "apps/tool-browser/scripts/browser_runtime.mjs"
 
-func NewPlaywrightRunner() *PlaywrightRunner { return &PlaywrightRunner{} }
+type PlaywrightRunner struct {
+	nodeBinary string
+	scriptPath string
+}
+
+func NewPlaywrightRunner(nodeBinary, scriptPath string) *PlaywrightRunner {
+	if strings.TrimSpace(nodeBinary) == "" {
+		nodeBinary = "node"
+	}
+	if strings.TrimSpace(scriptPath) == "" {
+		scriptPath = defaultBrowserScriptPath
+	}
+	return &PlaywrightRunner{nodeBinary: nodeBinary, scriptPath: scriptPath}
+}
 
 func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error) {
 	payload, err := json.Marshal(req)
 	if err != nil {
 		return Result{}, fmt.Errorf("encode browser request: %w", err)
 	}
-	scriptPath, err := browserScriptPath()
+	scriptPath, err := resolveBrowserScriptPath(r.scriptPath)
 	if err != nil {
 		return Result{}, err
 	}
-	cmd := exec.CommandContext(ctx, "node", scriptPath, string(payload))
+	cmd := exec.CommandContext(ctx, r.nodeBinary, scriptPath, string(payload))
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return Result{}, fmt.Errorf("run playwright helper: %w: %s", err, strings.TrimSpace(string(output)))
@@ -35,10 +48,21 @@ func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error)
 	return result, nil
 }
 
-func browserScriptPath() (string, error) {
-	_, currentFile, _, ok := runtime.Caller(0)
-	if !ok {
-		return "", fmt.Errorf("resolve browser script path")
+func resolveBrowserScriptPath(configuredPath string) (string, error) {
+	path := strings.TrimSpace(configuredPath)
+	if path == "" {
+		path = defaultBrowserScriptPath
 	}
-	return filepath.Clean(filepath.Join(filepath.Dir(currentFile), "..", "..", "scripts", "browser_runtime.mjs")), nil
+	if !filepath.IsAbs(path) {
+		absPath, err := filepath.Abs(path)
+		if err != nil {
+			return "", fmt.Errorf("resolve browser script path: %w", err)
+		}
+		path = absPath
+	}
+	path = filepath.Clean(path)
+	if _, err := os.Stat(path); err != nil {
+		return "", fmt.Errorf("browser script path %q is not available: %w", path, err)
+	}
+	return path, nil
 }

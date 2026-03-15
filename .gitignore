@@ -11,6 +11,7 @@ vendor/
 dist/
 build/
 out/
+*.exe
 
 # Environment
 .env

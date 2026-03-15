@@ -28,11 +28,17 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	if cfg.Shared.HTTPAddr != "127.0.0.1:8088" {
 		t.Fatalf("expected HTTP addr override, got %q", cfg.Shared.HTTPAddr)
 	}
-	if cfg.OpenAIModel != "gpt-5-mini" {
+	if cfg.OpenAIModel != "gpt-4o-mini" {
 		t.Fatalf("expected default OpenAI model, got %q", cfg.OpenAIModel)
 	}
 	if cfg.OpenAIBaseURL != "https://api.openai.com/v1" {
 		t.Fatalf("expected default OpenAI base URL, got %q", cfg.OpenAIBaseURL)
+	}
+	if cfg.OpenAIRealtimeURL != "wss://api.openai.com/v1/realtime" {
+		t.Fatalf("expected default OpenAI realtime URL, got %q", cfg.OpenAIRealtimeURL)
+	}
+	if cfg.OpenAITransportMode != "ws-first" {
+		t.Fatalf("expected default OpenAI transport mode, got %q", cfg.OpenAITransportMode)
 	}
 	if cfg.OpenAITimeoutSeconds != 60 {
 		t.Fatalf("expected default OpenAI timeout, got %d", cfg.OpenAITimeoutSeconds)
@@ -48,6 +54,15 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	}
 	if cfg.SessionLeaseTTLSeconds != 60 {
 		t.Fatalf("expected default session lease ttl, got %d", cfg.SessionLeaseTTLSeconds)
+	}
+	if cfg.MemoryProfileLimit != 20 {
+		t.Fatalf("expected default profile limit, got %d", cfg.MemoryProfileLimit)
+	}
+	if cfg.MemoryEpisodicLimit != 3 {
+		t.Fatalf("expected default episodic limit, got %d", cfg.MemoryEpisodicLimit)
+	}
+	if strings.Join(cfg.MemoryScopeOrder, ",") != "session,user,global" {
+		t.Fatalf("unexpected memory scope order: %v", cfg.MemoryScopeOrder)
 	}
 
 	keys := snapshot.ListKeys()
@@ -70,7 +85,7 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	if model.Source != "default" {
 		t.Fatalf("expected default source, got %q", model.Source)
 	}
-	if model.DefaultValue != "gpt-5-mini" {
+	if model.DefaultValue != "gpt-4o-mini" {
 		t.Fatalf("expected default value to be recorded, got %q", model.DefaultValue)
 	}
 
@@ -84,6 +99,21 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 		t.Fatalf("expected default OpenAI base URL, got %q", baseURL.DefaultValue)
 	}
 
+	realtimeURL := findKey(t, keys, "BUTLER_OPENAI_REALTIME_URL")
+	if realtimeURL.DefaultValue != "wss://api.openai.com/v1/realtime" {
+		t.Fatalf("expected default OpenAI realtime URL, got %q", realtimeURL.DefaultValue)
+	}
+
+	transportMode := findKey(t, keys, "BUTLER_OPENAI_TRANSPORT_MODE")
+	if transportMode.DefaultValue != "ws-first" {
+		t.Fatalf("expected default OpenAI transport mode, got %q", transportMode.DefaultValue)
+	}
+
+	toolBrokerAddr := findKey(t, keys, "BUTLER_TOOL_BROKER_ADDR")
+	if toolBrokerAddr.DefaultValue != "127.0.0.1:10090" {
+		t.Fatalf("expected default tool broker addr, got %q", toolBrokerAddr.DefaultValue)
+	}
+
 	telegramBaseURL := findKey(t, keys, "BUTLER_TELEGRAM_BASE_URL")
 	if telegramBaseURL.DefaultValue != "https://api.telegram.org" {
 		t.Fatalf("expected default Telegram base URL, got %q", telegramBaseURL.DefaultValue)
@@ -92,6 +122,16 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	leaseTTL := findKey(t, keys, "BUTLER_SESSION_LEASE_TTL_SECONDS")
 	if leaseTTL.DefaultValue != "60" {
 		t.Fatalf("expected session lease ttl default, got %q", leaseTTL.DefaultValue)
+	}
+
+	memoryProfileLimit := findKey(t, keys, "BUTLER_MEMORY_PROFILE_LIMIT")
+	if memoryProfileLimit.DefaultValue != "20" {
+		t.Fatalf("expected memory profile limit default, got %q", memoryProfileLimit.DefaultValue)
+	}
+
+	memoryScopeOrder := findKey(t, keys, "BUTLER_MEMORY_SCOPE_ORDER")
+	if memoryScopeOrder.DefaultValue != "session,user,global" {
+		t.Fatalf("expected memory scope order default, got %q", memoryScopeOrder.DefaultValue)
 	}
 }
 
@@ -170,6 +210,32 @@ func TestLoadToolBrowserFromEnvUsesSharedDefaults(t *testing.T) {
 	}
 	if findKey(t, snapshot.ListKeys(), "BUTLER_HTTP_ADDR").DefaultValue != ":8080" {
 		t.Fatal("expected shared HTTP addr default")
+	}
+	if cfg.NodeBinary != "node" {
+		t.Fatalf("expected default node binary, got %q", cfg.NodeBinary)
+	}
+	if cfg.HelperScriptPath != "apps/tool-browser/scripts/browser_runtime.mjs" {
+		t.Fatalf("unexpected default browser script path %q", cfg.HelperScriptPath)
+	}
+}
+
+func TestLoadToolDoctorParsesContainerTargets(t *testing.T) {
+	cfg, snapshot, err := loadToolDoctor(envMap(map[string]string{
+		"BUTLER_DOCTOR_CONTAINER_TARGETS": "orchestrator=http://orchestrator:8080/health,tool-broker=http://tool-broker:8080/health",
+		"BUTLER_OPENAI_API_KEY":           "sk-test",
+	}))
+	if err != nil {
+		t.Fatalf("loadToolDoctor returned error: %v", err)
+	}
+	if len(cfg.ContainerTargets) != 2 {
+		t.Fatalf("expected container targets to parse, got %+v", cfg.ContainerTargets)
+	}
+	if cfg.OpenAIAPIKey != "sk-test" {
+		t.Fatalf("expected OpenAI API key override, got %q", cfg.OpenAIAPIKey)
+	}
+	key := findKey(t, snapshot.ListKeys(), "BUTLER_DOCTOR_CONTAINER_TARGETS")
+	if key.DefaultValue != "" {
+		t.Fatalf("expected empty default for doctor targets, got %q", key.DefaultValue)
 	}
 }
 

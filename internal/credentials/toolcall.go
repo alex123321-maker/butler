@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 )
 
@@ -29,7 +28,16 @@ func (b *ToolCallBroker) ResolveToolCall(ctx context.Context, call *toolbrokerv1
 	targetURL, mutating := toolExecutionMetadata(call)
 	resolved := make([]ResolvedSecret, 0, len(call.GetCredentialRefs()))
 	for _, ref := range call.GetCredentialRefs() {
-		decision, err := b.authorizer.ResolveReference(ctx, ref, call.GetToolName(), targetURL, normalizeAutonomyMode(call.GetAutonomyMode()), mutating)
+		decision, err := b.authorizer.AuthorizeUsage(ctx, AuthorizationRequest{
+			RunID:        call.GetRunId(),
+			ToolCallID:   call.GetToolCallId(),
+			Alias:        ref.GetAlias(),
+			Field:        ref.GetField(),
+			ToolName:     call.GetToolName(),
+			TargetURL:    targetURL,
+			Mutating:     mutating,
+			AutonomyMode: call.GetAutonomyMode(),
+		})
 		if err != nil {
 			return nil, err
 		}
@@ -68,11 +76,4 @@ func toolExecutionMetadata(call *toolbrokerv1.ToolCall) (targetURL string, mutat
 		mutating = false
 	}
 	return targetURL, mutating
-}
-
-func normalizeAutonomyMode(mode commonv1.AutonomyMode) commonv1.AutonomyMode {
-	if mode == commonv1.AutonomyMode_AUTONOMY_MODE_UNSPECIFIED {
-		return commonv1.AutonomyMode_AUTONOMY_MODE_1
-	}
-	return mode
 }

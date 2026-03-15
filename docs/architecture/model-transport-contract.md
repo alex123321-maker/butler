@@ -175,6 +175,8 @@ Orchestrator взаимодействует с Model Transport Layer через 
 - `StreamEvents` остаётся отдельным наблюдательным streaming RPC для случаев пассивной подписки на уже идущий run;
 - `CancelRun` возвращает одиночное подтверждение/terminal event.
 
+Для OpenAI baseline V1 transport backend должен предпочитать Realtime WebSocket (`wss`) и переходить на HTTP SSE fallback, если WebSocket backend недоступен на раннем этапе запуска, не меняя logical contract, видимый Orchestrator.
+
 ---
 
 ## 8. Core transport entities
@@ -507,6 +509,8 @@ Orchestrator:
 
 Отдельного run state для streaming не вводится.
 Streaming delivery происходит внутри `model_running`.
+
+Если preferred WebSocket backend недоступен до начала meaningful provider output, transport может переключиться на fallback backend и обязан выпустить `transport_warning`, чтобы Orchestrator сохранил observability о degraded path.
 
 ---
 

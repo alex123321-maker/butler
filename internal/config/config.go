@@ -70,6 +70,9 @@ type OrchestratorConfig struct {
 	TelegramBaseURL        string
 	TelegramPollTimeout    int
 	SessionLeaseTTLSeconds int
+	MemoryProfileLimit     int
+	MemoryEpisodicLimit    int
+	MemoryScopeOrder       []string
 }
 
 type ToolBrokerConfig struct {
@@ -80,7 +83,9 @@ type ToolBrokerConfig struct {
 }
 
 type ToolBrowserConfig struct {
-	Shared SharedConfig
+	Shared           SharedConfig
+	NodeBinary       string
+	HelperScriptPath string
 }
 
 type ToolHTTPConfig struct {
@@ -88,11 +93,20 @@ type ToolHTTPConfig struct {
 }
 
 type ToolDoctorConfig struct {
-	Shared      SharedConfig
-	Postgres    PostgresConfig
-	Redis       RedisConfig
-	PostgresURL string
-	RedisURL    string
+	Shared           SharedConfig
+	Postgres         PostgresConfig
+	Redis            RedisConfig
+	PostgresURL      string
+	RedisURL         string
+	OpenAIAPIKey     string
+	OpenAIBaseURL    string
+	OpenAIModel      string
+	ContainerTargets []DoctorContainerTarget
+}
+
+type DoctorContainerTarget struct {
+	Name string
+	URL  string
 }
 
 type PostgresConfig struct {
@@ -164,6 +178,9 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_TELEGRAM_ALLOWED_CHAT_IDS", component: "orchestrator", typeName: "csv", required: false, defaultValue: "", requiresRestart: true, validate: validateOptionalChatIDList, assign: func(v string) { cfg.TelegramAllowedChatIDs = parseCSV(v) }},
 		fieldSpec{key: "BUTLER_TELEGRAM_BASE_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "https://api.telegram.org", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.TelegramBaseURL = v }},
 		fieldSpec{key: "BUTLER_TELEGRAM_POLL_TIMEOUT_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "25", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.TelegramPollTimeout = mustParseInt(v) }},
+		fieldSpec{key: "BUTLER_MEMORY_PROFILE_LIMIT", component: "orchestrator", typeName: "int", required: false, defaultValue: "20", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.MemoryProfileLimit = mustParseInt(v) }},
+		fieldSpec{key: "BUTLER_MEMORY_EPISODIC_LIMIT", component: "orchestrator", typeName: "int", required: false, defaultValue: "3", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.MemoryEpisodicLimit = mustParseInt(v) }},
+		fieldSpec{key: "BUTLER_MEMORY_SCOPE_ORDER", component: "orchestrator", typeName: "csv", required: false, defaultValue: "session,user,global", requiresRestart: true, validate: validateMemoryScopeOrder, assign: func(v string) { cfg.MemoryScopeOrder = parseCSV(v) }},
 	)
 
 	snapshot, err := loadSpecs(get, specs)
@@ -195,7 +212,11 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 
 func loadToolBrowser(get envGetter) (ToolBrowserConfig, Snapshot, error) {
 	cfg := ToolBrowserConfig{}
-	snapshot, err := loadSpecs(get, sharedSpecs("tool-browser", &cfg.Shared))
+	specs := append(sharedSpecs("tool-browser", &cfg.Shared),
+		fieldSpec{key: "BUTLER_TOOL_BROWSER_NODE_BINARY", component: "tool-browser", typeName: "string", required: false, defaultValue: "node", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.NodeBinary = v }},
+		fieldSpec{key: "BUTLER_TOOL_BROWSER_SCRIPT_PATH", component: "tool-browser", typeName: "string", required: false, defaultValue: "apps/tool-browser/scripts/browser_runtime.mjs", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.HelperScriptPath = v }},
+	)
+	snapshot, err := loadSpecs(get, specs)
 	return cfg, snapshot, err
 }
 
@@ -211,6 +232,10 @@ func loadToolDoctor(get envGetter) (ToolDoctorConfig, Snapshot, error) {
 	specs := append(shared,
 		fieldSpec{key: "BUTLER_POSTGRES_URL", component: "tool-doctor", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalURL, assign: func(v string) { cfg.PostgresURL = v; cfg.Postgres.URL = v }},
 		fieldSpec{key: "BUTLER_REDIS_URL", component: "tool-doctor", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalURL, assign: func(v string) { cfg.RedisURL = v; cfg.Redis.URL = v }},
+		fieldSpec{key: "BUTLER_OPENAI_API_KEY", component: "tool-doctor", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: func(v string) { cfg.OpenAIAPIKey = v }},
+		fieldSpec{key: "BUTLER_OPENAI_BASE_URL", component: "tool-doctor", typeName: "string", required: false, defaultValue: "https://api.openai.com/v1", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.OpenAIBaseURL = v }},
+		fieldSpec{key: "BUTLER_OPENAI_MODEL", component: "tool-doctor", typeName: "string", required: false, defaultValue: "gpt-4o-mini", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.OpenAIModel = v }},
+		fieldSpec{key: "BUTLER_DOCTOR_CONTAINER_TARGETS", component: "tool-doctor", typeName: "csv", required: false, defaultValue: "", requiresRestart: true, validate: validateOptionalDoctorContainerTargets, assign: func(v string) { cfg.ContainerTargets = parseDoctorContainerTargets(v) }},
 		fieldSpec{key: "BUTLER_POSTGRES_MAX_CONNS", component: "tool-doctor", typeName: "int", required: false, defaultValue: "4", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.Postgres.MaxConns = mustParseInt32(v) }},
 		fieldSpec{key: "BUTLER_POSTGRES_MIN_CONNS", component: "tool-doctor", typeName: "int", required: false, defaultValue: "1", requiresRestart: true, validate: validateNonNegativeInt, assign: func(v string) { cfg.Postgres.MinConns = mustParseInt32(v) }},
 		fieldSpec{key: "BUTLER_POSTGRES_MAX_CONN_LIFETIME_SECONDS", component: "tool-doctor", typeName: "int", required: false, defaultValue: "30", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.Postgres.MaxConnLifetime = mustParseInt(v) }},
@@ -370,6 +395,28 @@ func validateOptionalChatIDList(value string) error {
 	return nil
 }
 
+func validateMemoryScopeOrder(value string) error {
+	allowed := map[string]struct{}{"session": {}, "user": {}, "global": {}}
+	for _, scope := range parseCSV(value) {
+		if _, ok := allowed[strings.ToLower(scope)]; !ok {
+			return fmt.Errorf("must contain only session, user, or global")
+		}
+	}
+	return nil
+}
+
+func validateOptionalDoctorContainerTargets(value string) error {
+	for _, target := range parseDoctorContainerTargets(value) {
+		if strings.TrimSpace(target.Name) == "" {
+			return fmt.Errorf("doctor container targets require a name")
+		}
+		if err := validateNonEmptyURL(target.URL); err != nil {
+			return fmt.Errorf("doctor container target %q: %w", target.Name, err)
+		}
+	}
+	return nil
+}
+
 func validateListenAddr(value string) error {
 	if err := validateNonEmpty(value); err != nil {
 		return err
@@ -435,6 +482,22 @@ func parseCSV(value string) []string {
 			continue
 		}
 		result = append(result, item)
+	}
+	return result
+}
+
+func parseDoctorContainerTargets(value string) []DoctorContainerTarget {
+	items := parseCSV(value)
+	if len(items) == 0 {
+		return nil
+	}
+	result := make([]DoctorContainerTarget, 0, len(items))
+	for _, item := range items {
+		name, url, ok := strings.Cut(item, "=")
+		if !ok {
+			continue
+		}
+		result = append(result, DoctorContainerTarget{Name: strings.TrimSpace(name), URL: strings.TrimSpace(url)})
 	}
 	return result
 }

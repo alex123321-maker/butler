@@ -31,15 +31,25 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	if call == nil {
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "tool_call is required", "{}")}, nil
 	}
-	if call.GetToolName() != "doctor.check_system" {
+	if call.GetToolName() != "doctor.check_system" && call.GetToolName() != "doctor.check_database" && call.GetToolName() != "doctor.check_container" && call.GetToolName() != "doctor.check_provider" {
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "unsupported tool for doctor runtime", mustJSON(map[string]any{"tool_name": call.GetToolName()}))}, nil
 	}
 	if s.inspector == nil {
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, "doctor inspector is not configured", "{}")}, nil
 	}
-	report := s.inspector.CheckSystem(ctx)
+	var report SystemReport
+	switch call.GetToolName() {
+	case "doctor.check_system":
+		report = s.inspector.CheckSystem(ctx)
+	case "doctor.check_database":
+		report = s.inspector.CheckDatabase(ctx)
+	case "doctor.check_container":
+		report = s.inspector.CheckContainer(ctx)
+	case "doctor.check_provider":
+		report = s.inspector.CheckProvider(ctx)
+	}
 	resultJSON := mustJSON(report)
-	s.log.Info("doctor system check executed", slog.String("tool_call_id", call.GetToolCallId()), slog.String("status", string(report.Status)))
+	s.log.Info("doctor check executed", slog.String("tool_call_id", call.GetToolCallId()), slog.String("tool_name", call.GetToolName()), slog.String("status", string(report.Status)))
 	return &runtimev1.ExecuteResponse{Result: &toolbrokerv1.ToolResult{ToolCallId: call.GetToolCallId(), RunId: call.GetRunId(), ToolName: call.GetToolName(), Status: "completed", ResultJson: resultJSON, FinishedAt: time.Now().UTC().Format(time.RFC3339Nano)}}, nil
 }
 

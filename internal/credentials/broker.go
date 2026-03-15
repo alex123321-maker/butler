@@ -17,10 +17,14 @@ type MetadataStore interface {
 
 type Broker struct {
 	store MetadataStore
+	audit AuditLogger
 }
 
 type AuthorizationRequest struct {
+	RunID        string
+	ToolCallID   string
 	Alias        string
+	Field        string
 	ToolName     string
 	TargetURL    string
 	Mutating     bool
@@ -34,34 +38,61 @@ type AuthorizationDecision struct {
 	NormalizedDomain string
 }
 
-func NewBroker(store MetadataStore) *Broker {
-	return &Broker{store: store}
+func NewBroker(store MetadataStore, audit ...AuditLogger) *Broker {
+	var logger AuditLogger
+	if len(audit) > 0 {
+		logger = audit[0]
+	}
+	return &Broker{store: store, audit: logger}
 }
 
 func (b *Broker) AuthorizeUsage(ctx context.Context, req AuthorizationRequest) (AuthorizationDecision, error) {
 	if b == nil || b.store == nil {
 		return AuthorizationDecision{}, errors.New("credential metadata store is not configured")
 	}
+	domain, domainErr := normalizeDomain(req.TargetURL)
+	if domainErr != nil {
+		if auditErr := b.auditAttempt(ctx, req, "", AuditDecisionDenied); auditErr != nil {
+			return AuthorizationDecision{}, auditErr
+		}
+		return AuthorizationDecision{}, domainErr
+	}
 	record, err := b.store.GetByAlias(ctx, req.Alias)
 	if err != nil {
+		if errors.Is(err, ErrRecordNotFound) {
+			if auditErr := b.auditAttempt(ctx, req, domain, AuditDecisionNotFound); auditErr != nil {
+				return AuthorizationDecision{}, auditErr
+			}
+		}
 		return AuthorizationDecision{}, err
 	}
 	if record.Status != StatusActive {
+		if auditErr := b.auditAttempt(ctx, req, domain, AuditDecisionDenied); auditErr != nil {
+			return AuthorizationDecision{}, auditErr
+		}
 		return AuthorizationDecision{}, fmt.Errorf("credential alias %q is not active", record.Alias)
 	}
-	domain, err := normalizeDomain(req.TargetURL)
-	if err != nil {
-		return AuthorizationDecision{}, err
-	}
 	if !valueAllowed(req.ToolName, record.AllowedTools) {
+		if auditErr := b.auditAttempt(ctx, req, domain, AuditDecisionDenied); auditErr != nil {
+			return AuthorizationDecision{}, auditErr
+		}
 		return AuthorizationDecision{}, fmt.Errorf("tool %q is not allowed for credential alias %q", req.ToolName, record.Alias)
 	}
 	if domain != "" && !valueAllowed(domain, record.AllowedDomains) {
+		if auditErr := b.auditAttempt(ctx, req, domain, AuditDecisionDenied); auditErr != nil {
+			return AuthorizationDecision{}, auditErr
+		}
 		return AuthorizationDecision{}, fmt.Errorf("domain %q is not allowed for credential alias %q", domain, record.Alias)
 	}
 	requiresApproval, reason, err := approvalDecision(record.ApprovalPolicy, req.AutonomyMode, req.Mutating)
 	if err != nil {
+		if auditErr := b.auditAttempt(ctx, req, domain, AuditDecisionDenied); auditErr != nil {
+			return AuthorizationDecision{}, auditErr
+		}
 		return AuthorizationDecision{}, err
+	}
+	if auditErr := b.auditAttempt(ctx, req, domain, AuditDecisionAllowed); auditErr != nil {
+		return AuthorizationDecision{}, auditErr
 	}
 	return AuthorizationDecision{Record: record, RequiresApproval: requiresApproval, ApprovalReason: reason, NormalizedDomain: domain}, nil
 }
@@ -79,7 +110,22 @@ func (b *Broker) ResolveReference(ctx context.Context, ref *toolbrokerv1.Credent
 	if strings.TrimSpace(ref.GetField()) == "" {
 		return AuthorizationDecision{}, errors.New("credential_ref field is required")
 	}
-	return b.AuthorizeUsage(ctx, AuthorizationRequest{Alias: ref.GetAlias(), ToolName: toolName, TargetURL: targetURL, Mutating: mutating, AutonomyMode: autonomyMode})
+	return b.AuthorizeUsage(ctx, AuthorizationRequest{Alias: ref.GetAlias(), Field: ref.GetField(), ToolName: toolName, TargetURL: targetURL, Mutating: mutating, AutonomyMode: autonomyMode})
+}
+
+func (b *Broker) auditAttempt(ctx context.Context, req AuthorizationRequest, domain, decision string) error {
+	if b == nil || b.audit == nil {
+		return nil
+	}
+	return b.audit.Create(ctx, AuditLog{
+		RunID:        req.RunID,
+		ToolCallID:   req.ToolCallID,
+		Alias:        req.Alias,
+		Field:        req.Field,
+		ToolName:     req.ToolName,
+		TargetDomain: domain,
+		Decision:     decision,
+	})
 }
 
 func approvalDecision(policy string, autonomyMode commonv1.AutonomyMode, mutating bool) (bool, string, error) {

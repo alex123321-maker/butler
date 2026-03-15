@@ -1,0 +1,179 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "docs/ai/engineering-rules.md"
+  ],
+  "default_agent": "butler-build",
+  "permission": {
+    "skill": {
+      "*": "allow"
+    }
+  },
+  "agent": {
+    "butler-build": {
+      "description": "Primary Butler implementation agent for code, docs, and tests.",
+      "mode": "primary",
+      "prompt": "{file:./prompts/butler-build.md}",
+      "permission": {
+        "edit": "allow",
+        "webfetch": "allow",
+        "bash": "allow",
+        "task": {
+          "*": "deny",
+          "butler-*": "allow"
+        },
+        "skill": {
+          "*": "allow"
+        }
+      }
+    },
+    "butler-plan": {
+      "description": "Primary planning agent for Butler analysis, design, and implementation plans.",
+      "mode": "primary",
+      "prompt": "{file:./prompts/butler-plan.md}",
+      "permission": {
+        "edit": "deny",
+        "webfetch": "allow",
+        "bash": {
+          "*": "ask",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow"
+        },
+        "task": {
+          "*": "deny",
+          "butler-*": "allow"
+        },
+        "skill": {
+          "*": "allow"
+        }
+      }
+    },
+    "butler-architecture": {
+      "description": "Subagent for Butler architecture boundaries, specs, and ADR-level concerns.",
+      "mode": "subagent",
+      "prompt": "{file:./prompts/butler-architecture.md}",
+      "permission": {
+        "edit": "deny",
+        "webfetch": "allow",
+        "bash": {
+          "*": "deny",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow"
+        },
+        "task": {
+          "*": "deny"
+        },
+        "skill": {
+          "*": "allow"
+        }
+      }
+    },
+    "butler-transport": {
+      "description": "Subagent for model transport, provider sessions, streaming, and run transport contracts.",
+      "mode": "subagent",
+      "prompt": "{file:./prompts/butler-transport.md}",
+      "permission": {
+        "edit": "deny",
+        "webfetch": "allow",
+        "bash": {
+          "*": "deny",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow"
+        },
+        "task": {
+          "*": "deny"
+        },
+        "skill": {
+          "*": "allow"
+        }
+      }
+    },
+    "butler-tools": {
+      "description": "Subagent for Tool Broker, runtime isolation, tool contracts, and execution policy.",
+      "mode": "subagent",
+      "prompt": "{file:./prompts/butler-tools.md}",
+      "permission": {
+        "edit": "deny",
+        "webfetch": "allow",
+        "bash": {
+          "*": "deny",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow"
+        },
+        "task": {
+          "*": "deny"
+        },
+        "skill": {
+          "*": "allow"
+        }
+      }
+    },
+    "butler-memory": {
+      "description": "Subagent for Butler memory model, retrieval, provenance, and storage semantics.",
+      "mode": "subagent",
+      "prompt": "{file:./prompts/butler-memory.md}",
+      "permission": {
+        "edit": "deny",
+        "webfetch": "allow",
+        "bash": {
+          "*": "deny",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow"
+        },
+        "task": {
+          "*": "deny"
+        },
+        "skill": {
+          "*": "allow"
+        }
+      }
+    },
+    "butler-security": {
+      "description": "Subagent for Butler credential handling, approval logic, and secret-safe execution.",
+      "mode": "subagent",
+      "prompt": "{file:./prompts/butler-security.md}",
+      "permission": {
+        "edit": "deny",
+        "webfetch": "allow",
+        "bash": {
+          "*": "deny",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow"
+        },
+        "task": {
+          "*": "deny"
+        },
+        "skill": {
+          "*": "allow"
+        }
+      }
+    },
+    "butler-doctor": {
+      "description": "Subagent for self-inspection, diagnostics, observability, and operator experience.",
+      "mode": "subagent",
+      "prompt": "{file:./prompts/butler-doctor.md}",
+      "permission": {
+        "edit": "deny",
+        "webfetch": "allow",
+        "bash": {
+          "*": "deny",
+          "git status*": "allow",
+          "git diff*": "allow",
+          "git log*": "allow"
+        },
+        "task": {
+          "*": "deny"
+        },
+        "skill": {
+          "*": "allow"
+        }
+      }
+    }
+  }
+}

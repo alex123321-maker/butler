@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -34,6 +35,24 @@ func TestConfigFromShared(t *testing.T) {
 	}
 	if got.MigrationsDir != shared.MigrationsDir {
 		t.Fatalf("expected migrations dir %q, got %q", shared.MigrationsDir, got.MigrationsDir)
+	}
+}
+
+func TestOpenRejectsMinConnsGreaterThanMaxConns(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	_, err := Open(ctx, Config{
+		URL:             "postgres://localhost:5432/butler",
+		MaxConns:        1,
+		MinConns:        2,
+		MaxConnLifetime: time.Minute,
+	}, nil)
+	if err == nil {
+		t.Fatal("expected Open to reject min_conns > max_conns")
+	}
+	if !strings.Contains(err.Error(), "max_conns") {
+		t.Fatalf("expected max_conns validation error, got %v", err)
 	}
 }
 
@@ -159,6 +178,72 @@ func TestRunMigrationsIntegration(t *testing.T) {
 
 	_, _ = store.Pool().Exec(ctx, `DROP TABLE IF EXISTS t004_probe`)
 	_, _ = store.Pool().Exec(ctx, `DELETE FROM schema_migrations WHERE version IN ('001_create_t004_probe.up.sql', '002_insert_t004_probe.up.sql')`)
+}
+
+func TestRunMigrationsSerializesConcurrentRunners(t *testing.T) {
+	dsn := os.Getenv("BUTLER_TEST_POSTGRES_URL")
+	if dsn == "" {
+		t.Skip("BUTLER_TEST_POSTGRES_URL is not set")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	storeA, err := Open(ctx, Config{URL: dsn, MaxConns: 2, MinConns: 1, MaxConnLifetime: time.Minute}, nil)
+	if err != nil {
+		t.Fatalf("Open storeA returned error: %v", err)
+	}
+	defer storeA.Close()
+
+	storeB, err := Open(ctx, Config{URL: dsn, MaxConns: 2, MinConns: 1, MaxConnLifetime: time.Minute}, nil)
+	if err != nil {
+		t.Fatalf("Open storeB returned error: %v", err)
+	}
+	defer storeB.Close()
+
+	dir := t.TempDir()
+	writeFile(t, filepath.Join(dir, "001_create_t004_concurrent_probe.up.sql"), `DROP TABLE IF EXISTS t004_concurrent_probe; CREATE TABLE t004_concurrent_probe (id INT PRIMARY KEY);`)
+	writeFile(t, filepath.Join(dir, "002_insert_t004_concurrent_probe.up.sql"), `SELECT pg_sleep(0.2); INSERT INTO t004_concurrent_probe (id) VALUES (1);`)
+
+	_, _ = storeA.Pool().Exec(ctx, `DROP TABLE IF EXISTS t004_concurrent_probe`)
+	_, _ = storeA.Pool().Exec(ctx, `DELETE FROM schema_migrations WHERE version IN ('001_create_t004_concurrent_probe.up.sql', '002_insert_t004_concurrent_probe.up.sql')`)
+	defer func() {
+		_, _ = storeA.Pool().Exec(context.Background(), `DROP TABLE IF EXISTS t004_concurrent_probe`)
+		_, _ = storeA.Pool().Exec(context.Background(), `DELETE FROM schema_migrations WHERE version IN ('001_create_t004_concurrent_probe.up.sql', '002_insert_t004_concurrent_probe.up.sql')`)
+	}()
+
+	var wg sync.WaitGroup
+	errCh := make(chan error, 2)
+	run := func(store *Store) {
+		defer wg.Done()
+		errCh <- store.RunMigrations(ctx, dir)
+	}
+
+	wg.Add(2)
+	go run(storeA)
+	go run(storeB)
+	wg.Wait()
+	close(errCh)
+	for err := range errCh {
+		if err != nil {
+			t.Fatalf("RunMigrations returned error: %v", err)
+		}
+	}
+
+	var count int
+	if err := storeA.Pool().QueryRow(ctx, `SELECT COUNT(*) FROM t004_concurrent_probe`).Scan(&count); err != nil {
+		t.Fatalf("failed to query concurrent probe table: %v", err)
+	}
+	if count != 1 {
+		t.Fatalf("expected one inserted row after concurrent migrations, got %d", count)
+	}
+
+	if err := storeA.Pool().QueryRow(ctx, `SELECT COUNT(*) FROM schema_migrations WHERE version IN ('001_create_t004_concurrent_probe.up.sql', '002_insert_t004_concurrent_probe.up.sql')`).Scan(&count); err != nil {
+		t.Fatalf("failed to query schema_migrations: %v", err)
+	}
+	if count != 2 {
+		t.Fatalf("expected two migration records after concurrent migrations, got %d", count)
+	}
 }
 
 func writeFile(t *testing.T, path, contents string) {

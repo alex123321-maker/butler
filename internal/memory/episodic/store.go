@@ -7,19 +7,28 @@ import (
 	"strings"
 	"time"
 
+	"github.com/butler/butler/internal/memory/embeddings"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Store struct{ pool *pgxpool.Pool }
 
+const (
+	StatusActive   = "active"
+	StatusInactive = "inactive"
+	MemoryType     = "episodic"
+)
+
 type Episode struct {
 	ID             int64
+	MemoryType     string
 	ScopeType      string
 	ScopeID        string
 	Summary        string
 	Content        string
 	SourceType     string
 	SourceID       string
+	Confidence     float64
 	Status         string
 	TagsJSON       string
 	Embedding      []float32
@@ -50,11 +59,17 @@ func (s *Store) Save(ctx context.Context, episode Episode) (Episode, error) {
 	if strings.TrimSpace(episode.Summary) == "" {
 		return Episode{}, fmt.Errorf("summary is required")
 	}
-	if len(episode.Embedding) == 0 {
-		return Episode{}, fmt.Errorf("embedding is required")
+	if len(episode.Embedding) != embeddings.VectorDimensions {
+		return Episode{}, fmt.Errorf("embedding must contain %d dimensions", embeddings.VectorDimensions)
+	}
+	if strings.TrimSpace(episode.MemoryType) == "" {
+		episode.MemoryType = MemoryType
+	}
+	if episode.Confidence <= 0 {
+		episode.Confidence = 1
 	}
 	if strings.TrimSpace(episode.Status) == "" {
-		episode.Status = "active"
+		episode.Status = StatusActive
 	}
 	if strings.TrimSpace(episode.TagsJSON) == "" {
 		episode.TagsJSON = "[]"
@@ -62,11 +77,11 @@ func (s *Store) Save(ctx context.Context, episode Episode) (Episode, error) {
 	stored := Episode{}
 	err := s.pool.QueryRow(ctx, `
 		INSERT INTO memory_episodes (
-			scope_type, scope_id, summary, content, source_type, source_id, status, tags, embedding, episode_start_at, episode_end_at, created_at, updated_at
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9::vector, $10, $11, NOW(), NOW())
-		RETURNING id, scope_type, scope_id, summary, content, source_type, source_id, status, tags::text, episode_start_at, episode_end_at, created_at, updated_at
-	`, episode.ScopeType, episode.ScopeID, episode.Summary, episode.Content, episode.SourceType, episode.SourceID, episode.Status, episode.TagsJSON, vectorLiteral(episode.Embedding), episode.EpisodeStartAt, episode.EpisodeEndAt).Scan(
-		&stored.ID, &stored.ScopeType, &stored.ScopeID, &stored.Summary, &stored.Content, &stored.SourceType, &stored.SourceID, &stored.Status, &stored.TagsJSON, &stored.EpisodeStartAt, &stored.EpisodeEndAt, &stored.CreatedAt, &stored.UpdatedAt,
+			memory_type, scope_type, scope_id, summary, content, source_type, source_id, confidence, status, tags, embedding, episode_start_at, episode_end_at, created_at, updated_at
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11::vector, $12, $13, NOW(), NOW())
+		RETURNING id, memory_type, scope_type, scope_id, summary, content, source_type, source_id, confidence, status, tags::text, episode_start_at, episode_end_at, created_at, updated_at
+	`, episode.MemoryType, episode.ScopeType, episode.ScopeID, episode.Summary, episode.Content, episode.SourceType, episode.SourceID, episode.Confidence, episode.Status, episode.TagsJSON, vectorLiteral(episode.Embedding), episode.EpisodeStartAt, episode.EpisodeEndAt).Scan(
+		&stored.ID, &stored.MemoryType, &stored.ScopeType, &stored.ScopeID, &stored.Summary, &stored.Content, &stored.SourceType, &stored.SourceID, &stored.Confidence, &stored.Status, &stored.TagsJSON, &stored.EpisodeStartAt, &stored.EpisodeEndAt, &stored.CreatedAt, &stored.UpdatedAt,
 	)
 	if err != nil {
 		return Episode{}, fmt.Errorf("save episodic memory: %w", err)
@@ -75,17 +90,45 @@ func (s *Store) Save(ctx context.Context, episode Episode) (Episode, error) {
 	return stored, nil
 }
 
+func (s *Store) GetByScope(ctx context.Context, scopeType, scopeID string) ([]Episode, error) {
+	rows, err := s.pool.Query(ctx, `
+		SELECT id, memory_type, scope_type, scope_id, summary, content, source_type, source_id, confidence, status, tags::text, episode_start_at, episode_end_at, created_at, updated_at
+		FROM memory_episodes
+		WHERE scope_type = $1 AND scope_id = $2 AND status = $3
+		ORDER BY created_at DESC
+	`, strings.TrimSpace(scopeType), strings.TrimSpace(scopeID), StatusActive)
+	if err != nil {
+		return nil, fmt.Errorf("query episodic memory entries: %w", err)
+	}
+	defer rows.Close()
+	var items []Episode
+	for rows.Next() {
+		var item Episode
+		if err := rows.Scan(&item.ID, &item.MemoryType, &item.ScopeType, &item.ScopeID, &item.Summary, &item.Content, &item.SourceType, &item.SourceID, &item.Confidence, &item.Status, &item.TagsJSON, &item.EpisodeStartAt, &item.EpisodeEndAt, &item.CreatedAt, &item.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("scan episodic memory entry: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate episodic memory entries: %w", err)
+	}
+	return items, nil
+}
+
 func (s *Store) Search(ctx context.Context, scopeType, scopeID string, embedding []float32, limit int) ([]SearchResult, error) {
 	if limit <= 0 {
 		limit = 5
 	}
+	if len(embedding) != embeddings.VectorDimensions {
+		return nil, fmt.Errorf("embedding must contain %d dimensions", embeddings.VectorDimensions)
+	}
 	rows, err := s.pool.Query(ctx, `
-		SELECT id, scope_type, scope_id, summary, content, source_type, source_id, status, tags::text, episode_start_at, episode_end_at, created_at, updated_at, embedding <=> $3::vector AS distance
+		SELECT id, memory_type, scope_type, scope_id, summary, content, source_type, source_id, confidence, status, tags::text, episode_start_at, episode_end_at, created_at, updated_at, embedding <=> $3::vector AS distance
 		FROM memory_episodes
-		WHERE scope_type = $1 AND scope_id = $2
+		WHERE scope_type = $1 AND scope_id = $2 AND status = $4 AND embedding IS NOT NULL
 		ORDER BY embedding <=> $3::vector ASC
-		LIMIT $4
-	`, strings.TrimSpace(scopeType), strings.TrimSpace(scopeID), vectorLiteral(embedding), limit)
+		LIMIT $5
+	`, strings.TrimSpace(scopeType), strings.TrimSpace(scopeID), vectorLiteral(embedding), StatusActive, limit)
 	if err != nil {
 		return nil, fmt.Errorf("search episodic memory: %w", err)
 	}
@@ -93,7 +136,7 @@ func (s *Store) Search(ctx context.Context, scopeType, scopeID string, embedding
 	var results []SearchResult
 	for rows.Next() {
 		var item SearchResult
-		if err := rows.Scan(&item.ID, &item.ScopeType, &item.ScopeID, &item.Summary, &item.Content, &item.SourceType, &item.SourceID, &item.Status, &item.TagsJSON, &item.EpisodeStartAt, &item.EpisodeEndAt, &item.CreatedAt, &item.UpdatedAt, &item.Distance); err != nil {
+		if err := rows.Scan(&item.ID, &item.MemoryType, &item.ScopeType, &item.ScopeID, &item.Summary, &item.Content, &item.SourceType, &item.SourceID, &item.Confidence, &item.Status, &item.TagsJSON, &item.EpisodeStartAt, &item.EpisodeEndAt, &item.CreatedAt, &item.UpdatedAt, &item.Distance); err != nil {
 			return nil, fmt.Errorf("scan episodic search result: %w", err)
 		}
 		results = append(results, item)

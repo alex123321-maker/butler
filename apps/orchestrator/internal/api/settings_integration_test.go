@@ -37,7 +37,7 @@ func TestSettingsFlowIntegration(t *testing.T) {
 		t.Fatalf("RunMigrations returned error: %v", err)
 	}
 
-	keys := []string{"BUTLER_LOG_LEVEL", "BUTLER_OPENAI_API_KEY", "BUTLER_OPENAI_MODEL", "BUTLER_HTTP_ADDR"}
+	keys := []string{"BUTLER_LOG_LEVEL", "BUTLER_OPENAI_API_KEY", "BUTLER_OPENAI_MODEL", "BUTLER_MEMORY_PROFILE_LIMIT"}
 	for _, key := range keys {
 		_, _ = store.Pool().Exec(ctx, `DELETE FROM system_settings WHERE key = $1`, key)
 	}
@@ -75,7 +75,7 @@ func TestSettingsFlowIntegration(t *testing.T) {
 		t.Fatalf("expected masked secret value, got %+v", item)
 	}
 
-	cold := put(t, server.HandleItem(), "/api/v1/settings/BUTLER_HTTP_ADDR", `{"value":":9099"}`, http.StatusOK)
+	cold := put(t, server.HandleItem(), "/api/v1/settings/BUTLER_MEMORY_PROFILE_LIMIT", `{"value":"15"}`, http.StatusOK)
 	if !cold.RequiresRestart {
 		t.Fatalf("expected cold setting to require restart, got %+v", cold)
 	}
