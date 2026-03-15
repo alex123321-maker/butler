@@ -38,6 +38,7 @@
             <tr>
               <th>Key</th>
               <th>Value</th>
+              <th>Source</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -45,6 +46,11 @@
             <tr v-for="entry in latestReport.report.config" :key="entry.key">
               <td class="config-key">{{ entry.key }}</td>
               <td class="config-value">{{ entry.effective_value }}</td>
+              <td>
+                <span class="source-badge" :class="'source-' + entry.source">
+                  {{ entry.source || 'default' }}
+                </span>
+              </td>
               <td>
                 <span class="validation-badge" :class="'validation-' + entry.validation_status">
                   {{ entry.validation_status }}
@@ -215,6 +221,31 @@ function formatTime(iso: string): string {
 }
 
 .status-unknown {
+  background: rgba(149, 165, 166, 0.15);
+  color: #95a5a6;
+}
+
+.source-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.source-env {
+  background: rgba(79, 140, 255, 0.15);
+  color: #4f8cff;
+}
+
+.source-db {
+  background: rgba(46, 204, 113, 0.15);
+  color: #2ecc71;
+}
+
+.source-default {
   background: rgba(149, 165, 166, 0.15);
   color: #95a5a6;
 }

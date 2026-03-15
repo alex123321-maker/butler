@@ -1770,7 +1770,7 @@ sprints:
         subsystem: tool-doctor
         sprint: SPRINT-8
         priority: low
-        status: todo
+        status: done
         description: >
           Update the Doctor config checker to report effective source (env/db/default) for each
           config key, using the layered resolver. Doctor reports now distinguish between
