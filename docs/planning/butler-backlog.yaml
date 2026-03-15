@@ -770,7 +770,7 @@ sprints:
         subsystem: architecture
         sprint: SPRINT-2.1
         priority: high
-        status: todo
+        status: done
         description: >
           Verify that Session Service, Orchestrator, and Model Transport layers comply with the isolation
           rules defined in butler-prd-architecture.md.
@@ -789,7 +789,7 @@ sprints:
         subsystem: config
         sprint: SPRINT-2.1
         priority: medium
-        status: todo
+        status: done
         description: >
           Check the config loading layer and structured logging for potential secret leaks. Ensure internal/config fully encapsulates sensitive data.
         why_now: Prevent credentials from leaking in logs early on.
@@ -805,7 +805,7 @@ sprints:
         subsystem: orchestrator
         sprint: SPRINT-2.1
         priority: high
-        status: todo
+        status: done
         description: >
           Review the core execution flow of Orchestrator. Write extensive unit tests for every valid and invalid transition.
         why_now: The state machine must be 100% robust before plugging in the complex tool-loop.
@@ -821,7 +821,7 @@ sprints:
         subsystem: storage
         sprint: SPRINT-2.1
         priority: high
-        status: todo
+        status: done
         description: >
           Analyze connection pools and verify migrations. Audit the Redis Lease mechanism to ensure there are no race conditions.
         why_now: Concurrency issues in Redis lease can break single-actor guarantees.
@@ -837,7 +837,7 @@ sprints:
         subsystem: core
         sprint: SPRINT-2.1
         priority: medium
-        status: todo
+        status: done
         description: >
           Audit how errors map to terminal run statuses and verify structured logging fields (run_id, component).
         why_now: Observability and debugging rely heavily on uniform error tracking.
@@ -858,7 +858,7 @@ sprints:
         subsystem: model-transport
         sprint: SPRINT-2.2
         priority: high
-        status: todo
+        status: done
         description: >
           Map the OpenAI WebSocket mode onto the existing ModelProvider interface, preserving architecture contracts.
         why_now: Prerequisite for implementation.
@@ -1076,7 +1076,7 @@ sprints:
   - id: SPRINT-4
     title: Tool Execution Loop, Browser & HTTP Runtimes
     goal: Teach Orchestrator to work with tools and connect the first runtime containers (Browser and HTTP).
-    status: todo
+    status: done
     tasks:
       - id: T-0401
         title: Orchestrator Tool Call Loop
