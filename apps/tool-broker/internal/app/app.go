@@ -15,6 +15,7 @@ import (
 
 	"github.com/butler/butler/apps/tool-broker/internal/broker"
 	"github.com/butler/butler/apps/tool-broker/internal/registry"
+	"github.com/butler/butler/apps/tool-broker/internal/runtimeclient"
 	"github.com/butler/butler/internal/config"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/health"
@@ -28,6 +29,7 @@ type App struct {
 	httpServer *http.Server
 	grpcServer *grpc.Server
 	grpcListen net.Listener
+	router     *runtimeclient.Router
 }
 
 func New(ctx context.Context) (*App, error) {
@@ -42,7 +44,8 @@ func New(ctx context.Context) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	server := broker.NewServer(registryStore, log)
+	router := runtimeclient.New(log)
+	server := broker.NewServer(registryStore, router, log)
 
 	httpMux := http.NewServeMux()
 	httpMux.Handle("/health", health.New(cfg.Shared.ServiceName).Handler())
@@ -56,7 +59,7 @@ func New(ctx context.Context) (*App, error) {
 	grpcServer := grpc.NewServer()
 	toolbrokerv1.RegisterToolBrokerServiceServer(grpcServer, server)
 
-	return &App{config: cfg, log: log, httpServer: httpServer, grpcServer: grpcServer, grpcListen: grpcListener}, nil
+	return &App{config: cfg, log: log, httpServer: httpServer, grpcServer: grpcServer, grpcListen: grpcListener, router: router}, nil
 }
 
 func (a *App) Run(ctx context.Context) error {
@@ -98,6 +101,11 @@ func (a *App) shutdown(runErr error) error {
 	a.grpcServer.GracefulStop()
 	if a.grpcListen != nil {
 		if err := a.grpcListen.Close(); err != nil && !errors.Is(err, net.ErrClosed) && runErr == nil {
+			runErr = err
+		}
+	}
+	if a.router != nil {
+		if err := a.router.Close(); err != nil && runErr == nil {
 			runErr = err
 		}
 	}
