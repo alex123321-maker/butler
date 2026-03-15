@@ -209,6 +209,36 @@
       "status": "active",
       "allowed_domains": [],
       "allowed_tools": []
+    },
+    {
+      "tool_name": "http.download",
+      "description": "Download content from a URL with configurable size limit. Returns the body, content type, size, and truncation status.",
+      "tool_class": "http",
+      "input_schema_json": "{\"type\":\"object\",\"required\":[\"url\"],\"properties\":{\"url\":{\"type\":\"string\"},\"max_size\":{\"type\":\"integer\",\"description\":\"Maximum bytes to download (default 10MB, max 50MB)\"}},\"additionalProperties\":false}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"status_code\":{\"type\":\"integer\"},\"content_type\":{\"type\":\"string\"},\"size\":{\"type\":\"integer\"},\"truncated\":{\"type\":\"boolean\"},\"body\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-http:9090",
+      "risk_level": "medium",
+      "supports_credential_refs": false,
+      "requires_approval": false,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "http.parse_html",
+      "description": "Parse HTML content by fetching a URL or from inline content, extracting text matching a simple CSS selector (tag, .class, #id, tag.class, tag#id).",
+      "tool_class": "http",
+      "input_schema_json": "{\"type\":\"object\",\"required\":[\"selector\"],\"properties\":{\"url\":{\"type\":\"string\",\"description\":\"URL to fetch HTML from (provide url or content)\"},\"content\":{\"type\":\"string\",\"description\":\"Inline HTML content to parse (provide url or content)\"},\"selector\":{\"type\":\"string\",\"description\":\"Simple CSS selector: tag, .class, #id, tag.class, tag#id\"}},\"additionalProperties\":false}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"selector\":{\"type\":\"string\"},\"matches\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"count\":{\"type\":\"integer\"}}}",
+      "runtime_target": "tool-http:9090",
+      "risk_level": "low",
+      "supports_credential_refs": false,
+      "requires_approval": false,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
     }
   ]
 }

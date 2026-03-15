@@ -1143,20 +1143,21 @@ Status: **Done** — all 5 tasks completed.
 
 ---
 
-### S7-05: HTTP Runtime — full V1 tool set
+### S7-05: HTTP Runtime — full V1 tool set ✅
 
 - **ID:** S7-05
 - **Title:** HTTP Runtime — full V1 tool set
+- **Status:** Done
 - **Subsystem:** Tool Runtime / HTTP
 - **Why now:** HTTP tools нужны для полноценных web interactions
 - **Dependencies:** S4-05
 - **Acceptance criteria:**
-  - Additional tools: `http.download(url, max_size)`, `http.parse_html(url_or_content, selector)`
-  - `http.request` supports auth via `credential_ref` in `auth` field (resolved by broker)
-  - Response size limits enforced
-  - HTML parsing: extract text/structure from HTML response
-  - Tool contracts registered
-  - Integration tests
+  - Additional tools: `http.download(url, max_size)`, `http.parse_html(url_or_content, selector)` ✅
+  - `http.request` supports auth via `credential_ref` in `auth` field (resolved by broker) ✅
+  - Response size limits enforced (configurable max_size, default 10MB, max 50MB) ✅
+  - HTML parsing: extract text by simple CSS selectors (tag, .class, #id, tag.class, tag#id) using `golang.org/x/net/html` ✅
+  - Tool contracts registered in `configs/tools.json` ✅
+  - Integration tests (20 tests, all pass) ✅
 
 ---
 

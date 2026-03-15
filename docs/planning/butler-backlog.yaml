@@ -1431,7 +1431,7 @@ sprints:
   - id: SPRINT-7
     title: Memory Pipeline and Hardening
     goal: Asynchronous extraction of memories and final stabilization of system flows.
-    status: in_progress
+    status: done
     tasks:
       - id: T-0701
         title: Async Memory Pipeline
@@ -1508,3 +1508,31 @@ sprints:
           - "Updated browser_runtime.mjs with all tool actions"
           - "9 new tool contracts in configs/tools.json"
           - "24 unit tests in server_test.go"
+
+      - id: T-0705
+        title: HTTP Runtime V1 Tool Set
+        subsystem: tool-http
+        sprint: SPRINT-7
+        priority: high
+        status: done
+        description: >
+          Expand HTTP runtime from http.request to a full V1 tool set:
+          http.download (GET with configurable max_size) and http.parse_html
+          (fetch or inline HTML, extract text by simple CSS selector using
+          golang.org/x/net/html). Refactored server.go with per-tool
+          handler routing. All tools enforce domain allowlists and size limits.
+        why_now: HTTP tools needed for complete web interaction capabilities.
+        dependencies: ["T-0405"]
+        docs_to_read:
+          - docs/architecture/tool-runtime-adr.md
+        acceptance_criteria:
+          - "http.download: GET with configurable max_size (default 10MB, max 50MB), returns status_code, content_type, size, truncated, body"
+          - "http.parse_html: accepts URL or inline content, simple selector support (tag, .class, #id, tag.class, tag#id)"
+          - "Domain allowlist enforced for both new tools"
+          - "Tool contracts registered in configs/tools.json"
+          - "20 tests pass including integration test (request → download → parse_html)"
+        deliverables:
+          - "Refactored server.go with executeRequest, executeDownload, executeParseHTML handlers"
+          - "HTML parsing helpers using golang.org/x/net/html"
+          - "2 new tool contracts in configs/tools.json"
+          - "20 unit tests in server_test.go"
