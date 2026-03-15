@@ -1239,14 +1239,22 @@ sprints:
         subsystem: memory
         sprint: SPRINT-5
         priority: medium
-        status: todo
+        status: done
         description: >
           Base tables and pgvector integration for long-term memory retrieval.
         why_now: Memory is a core V1 feature.
         dependencies: []
         docs_to_read: ["docs/architecture/memory-model.md"]
-        acceptance_criteria: ["pgvector search works"]
-        deliverables: ["memory stores module"]
+        acceptance_criteria:
+          - Base PostgreSQL tables exist for profile and episodic memory.
+          - Episodic memories support pgvector distance search.
+          - Profile memory supports durable structured lookup by scope.
+          - Integration tests verify persistence and retrieval.
+        deliverables:
+          - migrations/011_memory_profile.up.sql
+          - migrations/012_memory_episodes.up.sql
+          - internal/memory/profile/
+          - internal/memory/episodic/
 
       - id: T-0505
         title: Orchestrator Memory-aware Context
