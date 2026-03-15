@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"sort"
 	"strings"
 	"time"
 
@@ -18,7 +17,7 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/logger"
-	"github.com/butler/butler/internal/memory/embeddings"
+	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/transport"
 )
@@ -75,6 +74,10 @@ type PipelineEnqueuer interface {
 // SessionSummaryReader retrieves the current session summary for context assembly.
 type SessionSummaryReader interface {
 	GetSummary(ctx context.Context, sessionKey string) (string, error)
+}
+
+type MemoryBundleService interface {
+	BuildBundle(ctx context.Context, req memoryservice.BundleRequest) (memoryservice.Bundle, error)
 }
 
 type MemoryProfileEntry interface {
@@ -134,6 +137,7 @@ type Config struct {
 	WorkingPolicy    WorkingMemoryPolicy
 	TransientStore   TransientWorkingStore
 	TransientTTL     time.Duration
+	MemoryBundles    MemoryBundleService
 	ProfileLimit     int
 	EpisodeLimit     int
 	MemoryScopes     []string
@@ -176,14 +180,51 @@ type preparedRun struct {
 	Channel       string
 }
 
-type memoryScope struct {
-	Type string
-	ID   string
+type memoryBundleProfileStore struct{ store ProfileMemoryStore }
+
+func (a memoryBundleProfileStore) GetByScope(ctx context.Context, scopeType, scopeID string) ([]memoryservice.ProfileEntry, error) {
+	if a.store == nil {
+		return nil, nil
+	}
+	entries, err := a.store.GetByScope(ctx, scopeType, scopeID)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]memoryservice.ProfileEntry, 0, len(entries))
+	for _, entry := range entries {
+		result = append(result, entry)
+	}
+	return result, nil
 }
 
-type episodeMemoryItem struct {
-	Summary  string
-	Distance float64
+type memoryBundleEpisodeStore struct{ store EpisodicMemoryStore }
+
+func (a memoryBundleEpisodeStore) Search(ctx context.Context, scopeType, scopeID string, embedding []float32, limit int) ([]memoryservice.Episode, error) {
+	if a.store == nil {
+		return nil, nil
+	}
+	entries, err := a.store.Search(ctx, scopeType, scopeID, embedding, limit)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]memoryservice.Episode, 0, len(entries))
+	for _, entry := range entries {
+		result = append(result, entry)
+	}
+	return result, nil
+}
+
+type memoryBundleWorkingStore struct{ store WorkingMemoryStore }
+
+func (a memoryBundleWorkingStore) Get(ctx context.Context, sessionKey string) (memoryservice.WorkingSnapshot, error) {
+	if a.store == nil {
+		return memoryservice.WorkingSnapshot{}, ErrWorkingMemoryNotFound
+	}
+	snapshot, err := a.store.Get(ctx, sessionKey)
+	if err != nil {
+		return memoryservice.WorkingSnapshot{}, err
+	}
+	return memoryservice.WorkingSnapshot{Goal: snapshot.Goal, EntitiesJSON: snapshot.EntitiesJSON, PendingStepsJSON: snapshot.PendingStepsJSON, ScratchJSON: snapshot.ScratchJSON, Status: snapshot.Status}, nil
 }
 
 type workingMemoryContext struct {
@@ -234,6 +275,19 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 	}
 	if strings.TrimSpace(cfg.WorkingPolicy.OnTimedOut) == "" {
 		cfg.WorkingPolicy.OnTimedOut = "retain"
+	}
+	if cfg.MemoryBundles == nil {
+		cfg.MemoryBundles = memoryservice.New(memoryservice.Config{
+			ProfileStore:  memoryBundleProfileStore{store: cfg.ProfileStore},
+			EpisodeStore:  memoryBundleEpisodeStore{store: cfg.EpisodeStore},
+			WorkingStore:  memoryBundleWorkingStore{store: cfg.WorkingStore},
+			SummaryReader: cfg.SummaryReader,
+			Embeddings:    cfg.Embeddings,
+			ProfileLimit:  cfg.ProfileLimit,
+			EpisodeLimit:  cfg.EpisodeLimit,
+			ScopeOrder:    cfg.MemoryScopes,
+			Log:           log,
+		})
 	}
 	return &Service{
 		sessions:   sessions,
@@ -976,95 +1030,27 @@ func (s *Service) attachMemoryContext(ctx context.Context, sessionKey, userID, u
 	if prepared == nil {
 		return nil
 	}
-	scopes := s.memoryScopes(sessionKey, userID)
-	profileEntries, err := s.loadProfileMemory(ctx, scopes)
+	bundle, err := s.config.MemoryBundles.BuildBundle(ctx, memoryservice.BundleRequest{
+		SessionKey:   sessionKey,
+		UserID:       userID,
+		UserMessage:  userMessage,
+		IncludeQuery: true,
+	})
 	if err != nil {
 		return err
 	}
-	workingMemory, err := s.loadWorkingMemory(ctx, sessionKey)
-	if err != nil {
-		return err
-	}
+	workingMemory := workingMemoryFromBundle(bundle.Working, s.config.WorkingPolicy)
 	prepared.WorkingMemory = workingMemory
-	episodes, err := s.loadEpisodes(ctx, scopes, userMessage)
-	if err != nil {
-		return err
-	}
-	sessionSummary := s.loadSessionSummary(ctx, sessionKey)
-	if len(profileEntries) == 0 && len(episodes) == 0 && sessionSummary == "" && workingMemoryIsEmpty(workingMemory) {
+	if len(bundle.Items) == 0 && workingMemoryIsEmpty(workingMemory) && strings.TrimSpace(bundle.Prompt) == "" {
 		return nil
 	}
-	if !workingMemoryIsEmpty(workingMemory) {
-		prepared.MemoryBundle["working"] = workingMemory.bundleMap()
+	for key, value := range bundle.Items {
+		prepared.MemoryBundle[key] = value
 	}
-	prepared.MemoryBundle["profile"] = profileEntries
-	prepared.MemoryBundle["episodes"] = episodes
-	if sessionSummary != "" {
-		prepared.MemoryBundle["session_summary"] = sessionSummary
-	}
-	memoryPrompt := formatMemoryPrompt(workingMemory, profileEntries, episodes, sessionSummary)
-	if strings.TrimSpace(memoryPrompt) != "" {
-		prepared.InputItems = append([]transport.InputItem{{Role: "system", Content: memoryPrompt, ContentType: "text/plain"}}, prepared.InputItems...)
+	if strings.TrimSpace(bundle.Prompt) != "" {
+		prepared.InputItems = append([]transport.InputItem{{Role: "system", Content: bundle.Prompt, ContentType: "text/plain"}}, prepared.InputItems...)
 	}
 	return nil
-}
-
-func (s *Service) loadProfileMemory(ctx context.Context, scopes []memoryScope) ([]map[string]any, error) {
-	if s.config.ProfileStore == nil || s.config.ProfileLimit <= 0 {
-		return nil, nil
-	}
-	result := make([]map[string]any, 0, s.config.ProfileLimit)
-	for _, scope := range scopes {
-		entries, err := s.config.ProfileStore.GetByScope(ctx, scope.Type, scope.ID)
-		if err != nil {
-			return nil, fmt.Errorf("load profile memory: %w", err)
-		}
-		for _, entry := range entries {
-			result = append(result, map[string]any{"key": entry.ProfileKey(), "summary": entry.ProfileSummary(), "scope_type": scope.Type})
-			if len(result) >= s.config.ProfileLimit {
-				return result, nil
-			}
-		}
-	}
-	return result, nil
-}
-
-func (s *Service) loadEpisodes(ctx context.Context, scopes []memoryScope, userMessage string) ([]map[string]any, error) {
-	if s.config.EpisodeStore == nil || s.config.EpisodeLimit <= 0 || strings.TrimSpace(userMessage) == "" {
-		return nil, nil
-	}
-	if s.config.Embeddings == nil {
-		s.log.Info("episodic retrieval skipped; embedding provider is not configured")
-		return nil, nil
-	}
-	queryEmbedding, err := s.config.Embeddings.EmbedQuery(ctx, userMessage)
-	if err != nil {
-		s.log.Warn("episodic retrieval skipped; embedding query failed", slog.String("error", err.Error()))
-		return nil, nil
-	}
-	if len(queryEmbedding) != embeddings.VectorDimensions {
-		s.log.Warn("episodic retrieval skipped; embedding dimensions are invalid", slog.Int("dimensions", len(queryEmbedding)))
-		return nil, nil
-	}
-	items := make([]episodeMemoryItem, 0, s.config.EpisodeLimit)
-	for _, scope := range scopes {
-		results, err := s.config.EpisodeStore.Search(ctx, scope.Type, scope.ID, queryEmbedding, s.config.EpisodeLimit)
-		if err != nil {
-			return nil, fmt.Errorf("load episodic memory: %w", err)
-		}
-		for _, item := range results {
-			items = append(items, episodeMemoryItem{Summary: item.EpisodeSummary(), Distance: item.EpisodeDistance()})
-		}
-	}
-	sort.Slice(items, func(i, j int) bool { return items[i].Distance < items[j].Distance })
-	if len(items) > s.config.EpisodeLimit {
-		items = items[:s.config.EpisodeLimit]
-	}
-	result := make([]map[string]any, 0, len(items))
-	for _, item := range items {
-		result = append(result, map[string]any{"summary": item.Summary, "distance": item.Distance})
-	}
-	return result, nil
 }
 
 func (s *Service) loadWorkingMemory(ctx context.Context, sessionKey string) (*workingMemoryContext, error) {
@@ -1085,21 +1071,6 @@ func (s *Service) loadWorkingMemory(ctx context.Context, sessionKey string) (*wo
 	working.PendingSteps = decodeJSONValue(snapshot.PendingStepsJSON, []any{})
 	working.Scratch = decodeJSONObject(snapshot.ScratchJSON)
 	return working, nil
-}
-
-func (s *Service) loadSessionSummary(ctx context.Context, sessionKey string) string {
-	if s.config.SummaryReader == nil {
-		return ""
-	}
-	summary, err := s.config.SummaryReader.GetSummary(ctx, sessionKey)
-	if err != nil {
-		s.log.Warn("session summary retrieval failed",
-			slog.String("session_key", sessionKey),
-			slog.String("error", err.Error()),
-		)
-		return ""
-	}
-	return strings.TrimSpace(summary)
 }
 
 func (w *workingMemoryContext) bundleMap() map[string]any {
@@ -1130,73 +1101,15 @@ func workingMemoryIsEmpty(w *workingMemoryContext) bool {
 	return strings.TrimSpace(normalizeWorkingStatus(w.Status)) == "idle"
 }
 
-func (s *Service) memoryScopes(sessionKey, userID string) []memoryScope {
-	ids := map[string]string{
-		"session": strings.TrimSpace(sessionKey),
-		"user":    strings.TrimSpace(userID),
-		"global":  "global",
-	}
-	seen := make(map[string]struct{}, len(s.config.MemoryScopes))
-	scopes := make([]memoryScope, 0, len(s.config.MemoryScopes))
-	for _, scopeType := range s.config.MemoryScopes {
-		scopeType = strings.ToLower(strings.TrimSpace(scopeType))
-		scopeID := ids[scopeType]
-		if scopeType == "" || scopeID == "" {
-			continue
-		}
-		key := scopeType + ":" + scopeID
-		if _, ok := seen[key]; ok {
-			continue
-		}
-		seen[key] = struct{}{}
-		scopes = append(scopes, memoryScope{Type: scopeType, ID: scopeID})
-	}
-	return scopes
-}
-
-func formatMemoryPrompt(workingMemory *workingMemoryContext, profileEntries, episodes []map[string]any, sessionSummary string) string {
-	sections := make([]string, 0, 4)
-	if strings.TrimSpace(sessionSummary) != "" {
-		sections = append(sections, "Session summary:\n"+sessionSummary)
-	}
-	if lines := formatWorkingMemoryLines(workingMemory); len(lines) > 0 {
-		sections = append(sections, "Working memory:\n"+strings.Join(lines, "\n"))
-	}
-	if len(profileEntries) > 0 {
-		lines := make([]string, 0, len(profileEntries))
-		for _, entry := range profileEntries {
-			lines = append(lines, fmt.Sprintf("- %s: %s", entry["key"], entry["summary"]))
-		}
-		sections = append(sections, "Profile memory:\n"+strings.Join(lines, "\n"))
-	}
-	if len(episodes) > 0 {
-		lines := make([]string, 0, len(episodes))
-		for _, entry := range episodes {
-			lines = append(lines, fmt.Sprintf("- %s", entry["summary"]))
-		}
-		sections = append(sections, "Relevant episodes:\n"+strings.Join(lines, "\n"))
-	}
-	return strings.Join(sections, "\n\n")
-}
-
-func formatWorkingMemoryLines(workingMemory *workingMemoryContext) []string {
-	if workingMemoryIsEmpty(workingMemory) {
-		return nil
-	}
-	lines := []string{}
-	if goal := strings.TrimSpace(workingMemory.Goal); goal != "" {
-		lines = append(lines, "- Goal: "+goal)
-	}
-	if entities := formatJSONValueForPrompt(workingMemory.ActiveEntities); entities != "" {
-		lines = append(lines, "- Active entities: "+entities)
-	}
-	if pending := formatJSONValueForPrompt(workingMemory.PendingSteps); pending != "" {
-		lines = append(lines, "- Pending steps: "+pending)
-	}
-	if status := normalizeWorkingStatus(workingMemory.Status); status != "idle" {
-		lines = append(lines, "- Status: "+status)
-	}
-	return lines
+func workingMemoryFromBundle(bundle memoryservice.WorkingContext, policy WorkingMemoryPolicy) *workingMemoryContext {
+	return (&workingMemoryContext{
+		Goal:           strings.TrimSpace(bundle.Goal),
+		ActiveEntities: bundle.ActiveEntities,
+		PendingSteps:   bundle.PendingSteps,
+		Scratch:        bundle.Scratch,
+		Status:         normalizeWorkingStatus(bundle.Status),
+		Policy:         policy,
+	}).withInitialGoal("")
 }
 
 func extractUserMessage(payload map[string]any) string {

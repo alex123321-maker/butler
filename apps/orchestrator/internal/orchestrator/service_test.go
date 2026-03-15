@@ -15,6 +15,7 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/memory/embeddings"
+	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/transport"
 )
@@ -306,6 +307,68 @@ func TestExecuteIncludesMemoryAwareContext(t *testing.T) {
 	}
 	if episodeStore.calls != 0 {
 		t.Fatalf("expected episodic retrieval to be skipped without embeddings, got %d calls", episodeStore.calls)
+	}
+}
+
+func TestExecuteUsesConfiguredMemoryBundleService(t *testing.T) {
+	t.Parallel()
+
+	provider := &mockProvider{startEvents: []transport.TransportEvent{
+		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "memory aware", FinishReason: "completed"}),
+		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+	}}
+	bundles := &stubMemoryBundleService{bundle: memoryservice.Bundle{
+		Items: map[string]any{
+			"session_summary": "Remember the deployment checklist.",
+			"working": map[string]any{
+				"goal":            "Ship release",
+				"active_entities": map[string]any{"service": "web"},
+				"pending_steps":   []any{"run tests"},
+				"working_status":  "active",
+			},
+		},
+		Prompt: "Session summary:\nRemember the deployment checklist.\n\nWorking memory:\n- Goal: Ship release",
+		Working: memoryservice.WorkingContext{
+			Goal:           "Ship release",
+			ActiveEntities: map[string]any{"service": "web"},
+			PendingSteps:   []any{"run tests"},
+			Scratch:        map[string]any{"source": "memory-service"},
+			Status:         "active",
+		},
+	}}
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+		ProviderName:  "openai",
+		ModelName:     "gpt-5-mini",
+		MemoryBundles: bundles,
+	}, nil)
+
+	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-bundle-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:bundle", Source: "telegram", PayloadJSON: `{"text":"continue"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-bundle-1"})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if result.AssistantResponse != "memory aware" {
+		t.Fatalf("unexpected assistant response %q", result.AssistantResponse)
+	}
+	if bundles.calls != 1 {
+		t.Fatalf("expected configured memory bundle service to be called once, got %d", bundles.calls)
+	}
+	if bundles.lastRequest.SessionKey != "telegram:chat:bundle" || bundles.lastRequest.UserID != "telegram:chat:bundle" || bundles.lastRequest.UserMessage != "continue" || !bundles.lastRequest.IncludeQuery {
+		t.Fatalf("unexpected memory bundle request %+v", bundles.lastRequest)
+	}
+	if len(provider.startRequests) != 1 || provider.startRequests[0].InputItems[0].Role != "system" {
+		t.Fatalf("expected memory prompt to be injected, got %+v", provider.startRequests)
+	}
+	if !strings.Contains(provider.startRequests[0].InputItems[0].Content, "deployment checklist") {
+		t.Fatalf("expected memory prompt from bundle service, got %q", provider.startRequests[0].InputItems[0].Content)
+	}
+	metadata := runsMetadata(t, service, result.RunID)
+	workingBundle, ok := metadata["memory_bundle"].(map[string]any)["working"].(map[string]any)
+	if !ok || workingBundle["goal"] != "Ship release" {
+		t.Fatalf("expected bundle service output in run metadata, got %+v", metadata)
+	}
+	workingStore := service.config.WorkingStore
+	if workingStore != nil {
+		t.Fatal("expected no direct working store for configured bundle service test")
 	}
 }
 
@@ -628,14 +691,14 @@ func TestFormatMemoryPromptWithSummary(t *testing.T) {
 		profile        []map[string]any
 		episodes       []map[string]any
 		summary        string
-		working        *workingMemoryContext
+		working        memoryservice.WorkingContext
 		wantContains   []string
 		wantNotContain []string
 	}{
 		{
 			name:    "summary with working memory",
 			summary: "Deploying app.",
-			working: (&workingMemoryContext{Goal: "Ship release", ActiveEntities: map[string]any{"service": "web"}, PendingSteps: []any{"run tests"}, Status: "active"}).withInitialGoal(""),
+			working: memoryservice.WorkingContext{Goal: "Ship release", ActiveEntities: map[string]any{"service": "web"}, PendingSteps: []any{"run tests"}, Status: "active"},
 			wantContains: []string{
 				"Session summary:",
 				"Working memory:",
@@ -675,7 +738,7 @@ func TestFormatMemoryPromptWithSummary(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := formatMemoryPrompt(tt.working, tt.profile, tt.episodes, tt.summary)
+			result := memoryservice.FormatPrompt(tt.working, tt.profile, tt.episodes, tt.summary)
 			for _, want := range tt.wantContains {
 				if !strings.Contains(result, want) {
 					t.Errorf("expected prompt to contain %q, got %q", want, result)
@@ -1049,6 +1112,22 @@ func (s *stubSummaryReader) GetSummary(_ context.Context, sessionKey string) (st
 		return "", s.err
 	}
 	return s.summaries[sessionKey], nil
+}
+
+type stubMemoryBundleService struct {
+	bundle      memoryservice.Bundle
+	err         error
+	calls       int
+	lastRequest memoryservice.BundleRequest
+}
+
+func (s *stubMemoryBundleService) BuildBundle(_ context.Context, req memoryservice.BundleRequest) (memoryservice.Bundle, error) {
+	s.calls++
+	s.lastRequest = req
+	if s.err != nil {
+		return memoryservice.Bundle{}, s.err
+	}
+	return s.bundle, nil
 }
 
 type stubWorkingStore struct {

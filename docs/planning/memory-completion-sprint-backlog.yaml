@@ -81,7 +81,7 @@ sprint:
       subsystem: memory
       sprint: SPRINT-MEMORY-COMPLETION
       priority: high
-      status: todo
+      status: done
       description: >
         Introduce a dedicated memory service layer that assembles memory bundles and
         hides store-specific retrieval details from the orchestrator.

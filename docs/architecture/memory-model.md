@@ -316,7 +316,7 @@ Retrieval должен быть hybrid (гибридным), а не чисто 
 
 ### 10.3 Сбор памяти перед run
 
-Перед запуском model loop (цикла модели) orchestrator должен собрать memory bundle (пакет памяти):
+Перед запуском model loop (цикла модели) orchestrator должен запросить у memory service memory bundle (пакет памяти):
 
 * session summary;
 * working memory snapshot;
@@ -330,7 +330,8 @@ At the current implementation stage:
 
 * profile retrieval is structured lookup by scope from `memory_profile`;
 * episodic retrieval is vector similarity search from `memory_episodes` using pgvector distance ordering;
-* orchestrator prepares a memory-aware context bundle and injects a compact system memory prompt before model execution when relevant entries exist.
+* `internal/memory/service` owns bundle assembly policy, scope ordering, and store-specific retrieval for profile, episodic, working, and session-summary inputs;
+* orchestrator requests that bundle and injects the returned compact system memory prompt before model execution when relevant entries exist.
 
 ---
 
