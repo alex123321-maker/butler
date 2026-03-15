@@ -29,14 +29,14 @@ import (
 	"github.com/butler/butler/internal/memory/episodic"
 	"github.com/butler/butler/internal/memory/pipeline"
 	"github.com/butler/butler/internal/memory/profile"
-	"github.com/butler/butler/internal/memory/working"
 	"github.com/butler/butler/internal/memory/transcript"
+	"github.com/butler/butler/internal/memory/working"
 	"github.com/butler/butler/internal/metrics"
+	"github.com/butler/butler/internal/modelprovider"
+	"github.com/butler/butler/internal/providerauth"
+	"github.com/butler/butler/internal/providerfactory"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	redisstore "github.com/butler/butler/internal/storage/redis"
-	"github.com/butler/butler/internal/transport"
-	// Import openai provider to register it via init().
-	"github.com/butler/butler/internal/transport/openai"
 	"google.golang.org/grpc"
 )
 
@@ -82,6 +82,88 @@ func (a episodicStoreAdapter) Search(ctx context.Context, scopeType, scopeID str
 	return result, nil
 }
 
+type workingStoreAdapter struct{ store *working.Store }
+
+func (a workingStoreAdapter) Get(ctx context.Context, sessionKey string) (flow.WorkingMemorySnapshot, error) {
+	snapshot, err := a.store.Get(ctx, sessionKey)
+	if err != nil {
+		if errors.Is(err, working.ErrSnapshotNotFound) {
+			return flow.WorkingMemorySnapshot{}, flow.ErrWorkingMemoryNotFound
+		}
+		return flow.WorkingMemorySnapshot{}, err
+	}
+	return flow.WorkingMemorySnapshot{
+		SessionKey:       snapshot.SessionKey,
+		RunID:            snapshot.RunID,
+		Goal:             snapshot.Goal,
+		EntitiesJSON:     snapshot.EntitiesJSON,
+		PendingStepsJSON: snapshot.PendingStepsJSON,
+		ScratchJSON:      snapshot.ScratchJSON,
+		Status:           snapshot.Status,
+	}, nil
+}
+
+func (a workingStoreAdapter) Save(ctx context.Context, snapshot flow.WorkingMemorySnapshot) (flow.WorkingMemorySnapshot, error) {
+	saved, err := a.store.Save(ctx, working.Snapshot{
+		SessionKey:       snapshot.SessionKey,
+		RunID:            snapshot.RunID,
+		Goal:             snapshot.Goal,
+		EntitiesJSON:     snapshot.EntitiesJSON,
+		PendingStepsJSON: snapshot.PendingStepsJSON,
+		ScratchJSON:      snapshot.ScratchJSON,
+		Status:           snapshot.Status,
+	})
+	if err != nil {
+		return flow.WorkingMemorySnapshot{}, err
+	}
+	return flow.WorkingMemorySnapshot{
+		SessionKey:       saved.SessionKey,
+		RunID:            saved.RunID,
+		Goal:             saved.Goal,
+		EntitiesJSON:     saved.EntitiesJSON,
+		PendingStepsJSON: saved.PendingStepsJSON,
+		ScratchJSON:      saved.ScratchJSON,
+		Status:           saved.Status,
+	}, nil
+}
+
+func (a workingStoreAdapter) Clear(ctx context.Context, sessionKey string) error {
+	err := a.store.Clear(ctx, sessionKey)
+	if err != nil && errors.Is(err, working.ErrSnapshotNotFound) {
+		return flow.ErrWorkingMemoryNotFound
+	}
+	return err
+}
+
+type transientWorkingStoreAdapter struct{ store *working.TransientStore }
+
+func (a transientWorkingStoreAdapter) Get(ctx context.Context, sessionKey, runID string) (flow.TransientWorkingState, error) {
+	state, err := a.store.Get(ctx, sessionKey, runID)
+	if err != nil {
+		if errors.Is(err, working.ErrTransientStateNotFound) {
+			return flow.TransientWorkingState{}, flow.ErrTransientWorkingStateNotFound
+		}
+		return flow.TransientWorkingState{}, err
+	}
+	return flow.TransientWorkingState{SessionKey: state.SessionKey, RunID: state.RunID, Status: state.Status, ScratchJSON: state.ScratchJSON, UpdatedAt: state.UpdatedAt}, nil
+}
+
+func (a transientWorkingStoreAdapter) Save(ctx context.Context, state flow.TransientWorkingState, ttl time.Duration) (flow.TransientWorkingState, error) {
+	saved, err := a.store.Save(ctx, working.TransientState{SessionKey: state.SessionKey, RunID: state.RunID, Status: state.Status, ScratchJSON: state.ScratchJSON, UpdatedAt: state.UpdatedAt}, ttl)
+	if err != nil {
+		return flow.TransientWorkingState{}, err
+	}
+	return flow.TransientWorkingState{SessionKey: saved.SessionKey, RunID: saved.RunID, Status: saved.Status, ScratchJSON: saved.ScratchJSON, UpdatedAt: saved.UpdatedAt}, nil
+}
+
+func (a transientWorkingStoreAdapter) Clear(ctx context.Context, sessionKey, runID string) error {
+	err := a.store.Clear(ctx, sessionKey, runID)
+	if err != nil && errors.Is(err, working.ErrTransientStateNotFound) {
+		return flow.ErrTransientWorkingStateNotFound
+	}
+	return err
+}
+
 func New(ctx context.Context) (*App, error) {
 	baseCfg, _, err := config.LoadOrchestratorFromEnv()
 	if err != nil {
@@ -118,6 +200,7 @@ func New(ctx context.Context) (*App, error) {
 	}
 	log.Info("loaded layered orchestrator config", slog.String("config_summary", configSummary(snapshot)))
 	hotConfig := config.NewHotConfig(snapshot)
+	authManager := providerauth.NewManager(settingsStore)
 
 	redis, err := redisstore.Open(ctx, redisstore.ConfigFromShared(cfg.Redis), logger.WithComponent(log, "redis"))
 	if err != nil {
@@ -132,20 +215,25 @@ func New(ctx context.Context) (*App, error) {
 		health.FuncChecker{CheckName: "redis", Fn: redis.HealthCheck},
 	)
 
-	provider, err := transport.NewProvider("openai", openai.Config{
-		APIKey:        cfg.OpenAIAPIKey,
-		Model:         cfg.OpenAIModel,
-		BaseURL:       cfg.OpenAIBaseURL,
-		RealtimeURL:   cfg.OpenAIRealtimeURL,
-		TransportMode: cfg.OpenAITransportMode,
-		Timeout:       time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
-		Logger:        logger.WithComponent(log, "transport-openai"),
+	providerBuilder := providerfactory.New(authManager, log)
+	providerResult, err := providerBuilder.Build(ctx, providerfactory.BuildConfig{
+		ActiveProvider:      cfg.ModelProvider,
+		OpenAIAPIKey:        cfg.OpenAIAPIKey,
+		OpenAIModel:         cfg.OpenAIModel,
+		OpenAIBaseURL:       cfg.OpenAIBaseURL,
+		OpenAIRealtimeURL:   cfg.OpenAIRealtimeURL,
+		OpenAITransportMode: cfg.OpenAITransportMode,
+		OpenAICodexModel:    cfg.OpenAICodexModel,
+		OpenAICodexBaseURL:  cfg.OpenAICodexBaseURL,
+		GitHubCopilotModel:  cfg.GitHubCopilotModel,
+		Timeout:             time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
 	})
 	if err != nil {
 		redis.Close()
 		postgres.Close()
 		return nil, err
 	}
+	provider := providerResult.Provider
 
 	runRepo := runservice.NewPostgresRepository(postgres.Pool())
 	runManager := runservice.NewService(runRepo, logger.WithComponent(log, "run-service"))
@@ -191,8 +279,8 @@ func New(ctx context.Context) (*App, error) {
 		transcriptStore,
 		provider,
 		flow.Config{
-			ProviderName:     "openai",
-			ModelName:        cfg.OpenAIModel,
+			ProviderName:     providerResult.ProviderName,
+			ModelName:        providerResult.ModelName,
 			OwnerID:          cfg.Shared.ServiceName,
 			LeaseTTL:         int64(cfg.SessionLeaseTTLSeconds),
 			ProfileLimit:     cfg.MemoryProfileLimit,
@@ -201,8 +289,10 @@ func New(ctx context.Context) (*App, error) {
 			Delivery:         delivery,
 			Tools:            toolBrokerClient,
 			ApprovalChecker:  toolBrokerClient,
-			WorkingStore:     workingStoreAdapter{store: working.NewStore(postgres.Pool())},
 			ApprovalGate:     approvalGate,
+			WorkingStore:     workingStoreAdapter{store: working.NewStore(postgres.Pool())},
+			TransientStore:   transientWorkingStoreAdapter{store: working.NewTransientStore(redis.Client())},
+			TransientTTL:     time.Duration(cfg.MemoryWorkingTransientTTLSeconds) * time.Second,
 			ProfileStore:     profileStoreAdapter{store: profile.NewStore(postgres.Pool())},
 			EpisodeStore:     episodicStoreAdapter{store: episodic.NewStore(postgres.Pool())},
 			PipelineEnqueuer: pipelineEnqueuer,
@@ -231,15 +321,21 @@ func New(ctx context.Context) (*App, error) {
 	doctorServer := apiservice.NewDoctorServer(postgres.Pool(), doctorChecker, logger.WithComponent(log, "doctor-api"))
 	settingsService := config.NewSettingsService(settingsStore, hotConfig)
 	settingsServer := apiservice.NewSettingsServer(settingsService)
+	providerServer := apiservice.NewProviderServer(authManager, providerResult.ProviderName, map[string]string{
+		modelprovider.ProviderOpenAI:        cfg.OpenAIModel,
+		modelprovider.ProviderOpenAICodex:   cfg.OpenAICodexModel,
+		modelprovider.ProviderGitHubCopilot: cfg.GitHubCopilotModel,
+	}, strings.TrimSpace(cfg.OpenAIAPIKey) != "")
 
 	mux := http.NewServeMux()
 	mux.Handle("/health", h.Handler())
 	mux.Handle("/metrics", m.Handler())
 	mux.Handle("/api/v1/events", apiServer.HTTPHandler())
 	mux.Handle("/api/v1/settings/restart", settingsServer.HandleRestart())
-	mux.Handle("/api/v1/settings/tools-registry", settingsServer.HandleToolsRegistry())
 	mux.Handle("/api/v1/settings", settingsServer.HandleList())
 	mux.Handle("/api/v1/settings/", settingsServer.HandleItem())
+	mux.Handle("/api/v1/providers", providerServer.HandleList())
+	mux.Handle("/api/v1/providers/", providerServer.HandleItem())
 	mux.Handle("/api/v1/sessions", viewServer.HandleListSessions())
 	mux.Handle("/api/v1/sessions/", viewServer.HandleGetSession())
 	mux.Handle("/api/v1/runs/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

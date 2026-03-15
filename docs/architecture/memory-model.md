@@ -137,6 +137,8 @@ Working Memory физически разделена на два слоя:
 
 Durable layer отвечает на вопрос "где мы остановились", transient layer — "что происходит прямо сейчас внутри выполнения".
 
+Текущий baseline: transient Working Memory хранится в Redis под отдельными ключами session+run с явным TTL. Этот слой используется для scratchpads и checkpoint state во время выполнения, автоматически очищается при successful completion и истекает по TTL для timeout/abandon scenarios.
+
 #### Примеры
 
 * “сейчас пользователь настраивает Telegram adapter”;

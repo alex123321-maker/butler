@@ -31,6 +31,15 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	if cfg.OpenAIModel != "gpt-4o-mini" {
 		t.Fatalf("expected default OpenAI model, got %q", cfg.OpenAIModel)
 	}
+	if cfg.ModelProvider != "openai" {
+		t.Fatalf("expected default model provider, got %q", cfg.ModelProvider)
+	}
+	if cfg.OpenAICodexModel != "gpt-5.1-codex" {
+		t.Fatalf("expected default OpenAI Codex model, got %q", cfg.OpenAICodexModel)
+	}
+	if cfg.GitHubCopilotModel != "gpt-4o" {
+		t.Fatalf("expected default GitHub Copilot model, got %q", cfg.GitHubCopilotModel)
+	}
 	if cfg.OpenAIBaseURL != "https://api.openai.com/v1" {
 		t.Fatalf("expected default OpenAI base URL, got %q", cfg.OpenAIBaseURL)
 	}
@@ -64,6 +73,9 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	if strings.Join(cfg.MemoryScopeOrder, ",") != "session,user,global" {
 		t.Fatalf("unexpected memory scope order: %v", cfg.MemoryScopeOrder)
 	}
+	if cfg.MemoryWorkingTransientTTLSeconds != 1800 {
+		t.Fatalf("expected default working transient ttl, got %d", cfg.MemoryWorkingTransientTTLSeconds)
+	}
 
 	keys := snapshot.ListKeys()
 	if len(keys) == 0 {
@@ -92,6 +104,11 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	apiKey := findKey(t, keys, "BUTLER_OPENAI_API_KEY")
 	if apiKey.EffectiveValue != "[masked]" {
 		t.Fatalf("expected masked OpenAI API key, got %q", apiKey.EffectiveValue)
+	}
+
+	provider := findKey(t, keys, "BUTLER_MODEL_PROVIDER")
+	if provider.DefaultValue != "openai" {
+		t.Fatalf("expected default model provider, got %q", provider.DefaultValue)
 	}
 
 	baseURL := findKey(t, keys, "BUTLER_OPENAI_BASE_URL")
@@ -132,6 +149,11 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	memoryScopeOrder := findKey(t, keys, "BUTLER_MEMORY_SCOPE_ORDER")
 	if memoryScopeOrder.DefaultValue != "session,user,global" {
 		t.Fatalf("expected memory scope order default, got %q", memoryScopeOrder.DefaultValue)
+	}
+
+	transientTTL := findKey(t, keys, "BUTLER_MEMORY_WORKING_TRANSIENT_TTL_SECONDS")
+	if transientTTL.DefaultValue != "1800" {
+		t.Fatalf("expected working transient ttl default, got %q", transientTTL.DefaultValue)
 	}
 }
 
@@ -182,6 +204,25 @@ func TestLoadOrchestratorRequiresAllowedChatsWhenTelegramEnabled(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "BUTLER_TELEGRAM_ALLOWED_CHAT_IDS") {
 		t.Fatalf("expected allowed chat ids error, got %v", err)
+	}
+}
+
+func TestLoadOrchestratorFromEnvTreatsBlankEnvironmentValuesAsUnset(t *testing.T) {
+	cfg, snapshot, err := loadOrchestrator(envMap(map[string]string{
+		"BUTLER_POSTGRES_URL":              "postgres://butler:secret@localhost:5432/butler",
+		"BUTLER_REDIS_URL":                 "redis://localhost:6379/0",
+		"BUTLER_TELEGRAM_BOT_TOKEN":        "   ",
+		"BUTLER_TELEGRAM_ALLOWED_CHAT_IDS": "",
+	}))
+	if err != nil {
+		t.Fatalf("loadOrchestrator returned error: %v", err)
+	}
+	if cfg.TelegramBotToken != "" {
+		t.Fatalf("expected blank telegram token to be ignored, got %q", cfg.TelegramBotToken)
+	}
+	botToken := findKey(t, snapshot.ListKeys(), "BUTLER_TELEGRAM_BOT_TOKEN")
+	if botToken.Source != ConfigSourceDefault {
+		t.Fatalf("expected default source for blank env token, got %q", botToken.Source)
 	}
 }
 

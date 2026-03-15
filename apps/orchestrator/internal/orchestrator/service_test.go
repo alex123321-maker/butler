@@ -319,10 +319,12 @@ func TestExecuteLoadsAndClearsWorkingMemoryOnCompletion(t *testing.T) {
 	workingStore := &stubWorkingStore{snapshots: map[string]WorkingMemorySnapshot{
 		"telegram:chat:working": {SessionKey: "telegram:chat:working", Goal: "Existing goal", EntitiesJSON: `{"service":"postgres"}`, PendingStepsJSON: `["inspect logs"]`, Status: "active"},
 	}}
+	transientStore := &stubTransientWorkingStore{}
 	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
-		ProviderName: "openai",
-		ModelName:    "gpt-5-mini",
-		WorkingStore: workingStore,
+		ProviderName:   "openai",
+		ModelName:      "gpt-5-mini",
+		WorkingStore:   workingStore,
+		TransientStore: transientStore,
 	}, nil)
 
 	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-working-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:working", Source: "telegram", PayloadJSON: `{"text":"continue task"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-working-1"})
@@ -349,6 +351,9 @@ func TestExecuteLoadsAndClearsWorkingMemoryOnCompletion(t *testing.T) {
 	if len(workingStore.clearCalls) != 1 || workingStore.clearCalls[0] != "telegram:chat:working" {
 		t.Fatalf("expected working memory clear on completion, got %+v", workingStore.clearCalls)
 	}
+	if len(transientStore.clearCalls) != 1 {
+		t.Fatalf("expected transient working state clear on completion, got %+v", transientStore.clearCalls)
+	}
 	if _, exists := workingStore.snapshots["telegram:chat:working"]; exists {
 		t.Fatal("expected completed working memory snapshot to be removed")
 	}
@@ -361,9 +366,10 @@ func TestExecuteRetainsWorkingMemoryOnFailure(t *testing.T) {
 	workingStore := &stubWorkingStore{snapshots: map[string]WorkingMemorySnapshot{
 		"telegram:chat:failure": {SessionKey: "telegram:chat:failure", Goal: "Recover service", EntitiesJSON: `{"service":"api"}`, PendingStepsJSON: `["restart"]`, Status: "active"},
 	}}
+	transientStore := &stubTransientWorkingStore{}
 	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{}, &mockProvider{startEvents: []transport.TransportEvent{
 		transport.NewTransportErrorEvent("", "openai", errors.New("provider down")),
-	}}, Config{ProviderName: "openai", ModelName: "gpt-5-mini", WorkingStore: workingStore}, nil)
+	}}, Config{ProviderName: "openai", ModelName: "gpt-5-mini", WorkingStore: workingStore, TransientStore: transientStore}, nil)
 
 	_, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-working-fail", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:failure", Source: "telegram", PayloadJSON: `{"text":"continue"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-working-fail"})
 	if err == nil {
@@ -378,6 +384,39 @@ func TestExecuteRetainsWorkingMemoryOnFailure(t *testing.T) {
 	}
 	if !strings.Contains(snapshot.ScratchJSON, "provider down") {
 		t.Fatalf("expected failure note in scratch payload, got %q", snapshot.ScratchJSON)
+	}
+	transient := transientStore.states["telegram:chat:failure:run-1"]
+	if transient.Status != "retain" {
+		t.Fatalf("expected retained transient state, got %+v", transient)
+	}
+}
+
+func TestExecuteStoresTransientWorkingStateDuringToolLifecycle(t *testing.T) {
+	t.Parallel()
+
+	provider := &mockProvider{
+		startEvents: []transport.TransportEvent{
+			transport.NewRunStartedEvent("", "openai", transport.CapabilitySnapshot{SupportsStreaming: true}, &transport.ProviderSessionRef{ProviderName: "openai", ResponseRef: "resp_123"}),
+			transport.NewToolCallRequestedEvent("", "openai", transport.ToolCallRequest{ToolCallRef: "call_1", ToolName: "http.request", ArgsJSON: `{"url":"https://example.com"}`, SequenceNo: 1}),
+		},
+		submitEvents: []transport.TransportEvent{
+			transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "done after tool", FinishReason: "completed"}),
+			transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+		},
+	}
+	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{"status_code":200}`}}
+	transientStore := &stubTransientWorkingStore{}
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, TransientStore: transientStore}, nil)
+
+	_, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-transient-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:transient", Source: "telegram", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-transient-1"})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if len(transientStore.saveCalls) < 3 {
+		t.Fatalf("expected transient checkpoints to be saved, got %d", len(transientStore.saveCalls))
+	}
+	if transientStore.saveCalls[0].Status != "preparing" {
+		t.Fatalf("expected first transient checkpoint to be preparing, got %+v", transientStore.saveCalls[0])
 	}
 }
 
@@ -1052,6 +1091,47 @@ func (s *stubWorkingStore) Clear(_ context.Context, sessionKey string) error {
 		return s.errClear
 	}
 	delete(s.snapshots, sessionKey)
+	return nil
+}
+
+type stubTransientWorkingStore struct {
+	states     map[string]TransientWorkingState
+	saveCalls  []TransientWorkingState
+	clearCalls []string
+	errGet     error
+	errSave    error
+	errClear   error
+}
+
+func (s *stubTransientWorkingStore) Get(_ context.Context, sessionKey, runID string) (TransientWorkingState, error) {
+	if s.errGet != nil {
+		return TransientWorkingState{}, s.errGet
+	}
+	state, ok := s.states[sessionKey+":"+runID]
+	if !ok {
+		return TransientWorkingState{}, ErrTransientWorkingStateNotFound
+	}
+	return state, nil
+}
+
+func (s *stubTransientWorkingStore) Save(_ context.Context, state TransientWorkingState, _ time.Duration) (TransientWorkingState, error) {
+	s.saveCalls = append(s.saveCalls, state)
+	if s.errSave != nil {
+		return TransientWorkingState{}, s.errSave
+	}
+	if s.states == nil {
+		s.states = map[string]TransientWorkingState{}
+	}
+	s.states[state.SessionKey+":"+state.RunID] = state
+	return state, nil
+}
+
+func (s *stubTransientWorkingStore) Clear(_ context.Context, sessionKey, runID string) error {
+	s.clearCalls = append(s.clearCalls, sessionKey+":"+runID)
+	if s.errClear != nil {
+		return s.errClear
+	}
+	delete(s.states, sessionKey+":"+runID)
 	return nil
 }
 

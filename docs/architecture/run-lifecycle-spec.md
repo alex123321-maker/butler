@@ -493,6 +493,12 @@ Transcript Store должен получить:
 - при `completed` snapshot очищается по policy;
 - при `failed` snapshot сохраняется с terminal working status и compact final note, чтобы следующий run мог безопасно продолжить задачу.
 
+Для transient Working Memory текущий baseline использует отдельный Redis-backed store:
+- transient state привязан к `session_key + run_id`, а не заменяет durable snapshot;
+- orchestrator пишет transient checkpoints в `preparing`, `tool_running`, `awaiting_model_resume` и terminal paths;
+- successful completion очищает transient state сразу;
+- failed/abandoned paths оставляют transient state только на ограниченный TTL, после чего Redis очищает его автоматически.
+
 ---
 
 ## 16. Memory pipeline

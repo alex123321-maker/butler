@@ -53,7 +53,7 @@ sprint:
       subsystem: memory
       sprint: SPRINT-MEMORY-COMPLETION
       priority: high
-      status: todo
+      status: done
       description: >
         Implement the transient execution-time Working Memory layer in Redis for
         scratchpads, in-progress state, and resumable tool-heavy execution details,

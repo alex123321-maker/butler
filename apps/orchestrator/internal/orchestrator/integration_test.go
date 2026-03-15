@@ -21,6 +21,8 @@ import (
 
 type workingIntegrationAdapter struct{ store *working.Store }
 
+type transientWorkingIntegrationAdapter struct{ store *working.TransientStore }
+
 func (a workingIntegrationAdapter) Get(ctx context.Context, sessionKey string) (WorkingMemorySnapshot, error) {
 	snapshot, err := a.store.Get(ctx, sessionKey)
 	if err != nil {
@@ -44,6 +46,33 @@ func (a workingIntegrationAdapter) Clear(ctx context.Context, sessionKey string)
 	err := a.store.Clear(ctx, sessionKey)
 	if err == working.ErrSnapshotNotFound {
 		return ErrWorkingMemoryNotFound
+	}
+	return err
+}
+
+func (a transientWorkingIntegrationAdapter) Get(ctx context.Context, sessionKey, runID string) (TransientWorkingState, error) {
+	state, err := a.store.Get(ctx, sessionKey, runID)
+	if err != nil {
+		if err == working.ErrTransientStateNotFound {
+			return TransientWorkingState{}, ErrTransientWorkingStateNotFound
+		}
+		return TransientWorkingState{}, err
+	}
+	return TransientWorkingState{SessionKey: state.SessionKey, RunID: state.RunID, Status: state.Status, ScratchJSON: state.ScratchJSON, UpdatedAt: state.UpdatedAt}, nil
+}
+
+func (a transientWorkingIntegrationAdapter) Save(ctx context.Context, state TransientWorkingState, ttl time.Duration) (TransientWorkingState, error) {
+	saved, err := a.store.Save(ctx, working.TransientState{SessionKey: state.SessionKey, RunID: state.RunID, Status: state.Status, ScratchJSON: state.ScratchJSON, UpdatedAt: state.UpdatedAt}, ttl)
+	if err != nil {
+		return TransientWorkingState{}, err
+	}
+	return TransientWorkingState{SessionKey: saved.SessionKey, RunID: saved.RunID, Status: saved.Status, ScratchJSON: saved.ScratchJSON, UpdatedAt: saved.UpdatedAt}, nil
+}
+
+func (a transientWorkingIntegrationAdapter) Clear(ctx context.Context, sessionKey, runID string) error {
+	err := a.store.Clear(ctx, sessionKey, runID)
+	if err == working.ErrTransientStateNotFound {
+		return ErrTransientWorkingStateNotFound
 	}
 	return err
 }
@@ -98,7 +127,7 @@ func TestExecuteIntegrationPersistsRunAndTranscript(t *testing.T) {
 			transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "Hello integration", FinishReason: "completed"}),
 			transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
 		}},
-		Config{ProviderName: "openai", ModelName: "gpt-5-mini", OwnerID: "integration-test", LeaseTTL: 60, WorkingStore: workingIntegrationAdapter{store: working.NewStore(postgres.Pool())}},
+		Config{ProviderName: "openai", ModelName: "gpt-5-mini", OwnerID: "integration-test", LeaseTTL: 60, WorkingStore: workingIntegrationAdapter{store: working.NewStore(postgres.Pool())}, TransientStore: transientWorkingIntegrationAdapter{store: working.NewTransientStore(redis.Client())}, TransientTTL: 2 * time.Second},
 		nil,
 	)
 
@@ -155,5 +184,9 @@ func TestExecuteIntegrationPersistsRunAndTranscript(t *testing.T) {
 	}
 	if !strings.Contains(metadataJSON, "memory_bundle") || !strings.Contains(metadataJSON, "working") {
 		t.Fatalf("expected working memory bundle in run metadata, got %s", metadataJSON)
+	}
+	transientStore := working.NewTransientStore(redis.Client())
+	if _, err := transientStore.Get(ctx, sessionKey, result.RunID); err != working.ErrTransientStateNotFound {
+		t.Fatalf("expected transient working state to be cleared, got %v", err)
 	}
 }

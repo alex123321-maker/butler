@@ -57,6 +57,12 @@ type WorkingMemoryStore interface {
 	Clear(context.Context, string) error
 }
 
+type TransientWorkingStore interface {
+	Get(context.Context, string, string) (TransientWorkingState, error)
+	Save(context.Context, TransientWorkingState, time.Duration) (TransientWorkingState, error)
+	Clear(context.Context, string, string) error
+}
+
 type EmbeddingProvider interface {
 	EmbedQuery(context.Context, string) ([]float32, error)
 }
@@ -100,6 +106,16 @@ type WorkingMemoryPolicy struct {
 
 var ErrWorkingMemoryNotFound = errors.New("working memory snapshot not found")
 
+var ErrTransientWorkingStateNotFound = errors.New("transient working state not found")
+
+type TransientWorkingState struct {
+	SessionKey  string
+	RunID       string
+	Status      string
+	ScratchJSON string
+	UpdatedAt   string
+}
+
 type Config struct {
 	ProviderName     string
 	ModelName        string
@@ -116,6 +132,8 @@ type Config struct {
 	SummaryReader    SessionSummaryReader
 	WorkingStore     WorkingMemoryStore
 	WorkingPolicy    WorkingMemoryPolicy
+	TransientStore   TransientWorkingStore
+	TransientTTL     time.Duration
 	ProfileLimit     int
 	EpisodeLimit     int
 	MemoryScopes     []string
@@ -201,6 +219,9 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 	}
 	if len(cfg.MemoryScopes) == 0 {
 		cfg.MemoryScopes = []string{"session", "user", "global"}
+	}
+	if cfg.TransientTTL <= 0 {
+		cfg.TransientTTL = 30 * time.Minute
 	}
 	if strings.TrimSpace(cfg.WorkingPolicy.OnCompleted) == "" {
 		cfg.WorkingPolicy.OnCompleted = "clear"
@@ -316,6 +337,9 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	if err := s.savePreparedWorkingMemory(ctx, current.GetRunId(), event.SessionKey, prepared); err != nil {
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("save working memory: %w", err))
 	}
+	if err := s.saveTransientWorkingState(ctx, current.GetRunId(), event.SessionKey, "preparing", map[string]any{"goal": prepared.WorkingMemory.Goal}); err != nil {
+		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("save transient working memory: %w", err))
+	}
 
 	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_MODEL_RUNNING, lease.LeaseID, "", "")
 	if err != nil {
@@ -376,6 +400,9 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 
 	if err := s.finalizeWorkingMemory(ctx, event.SessionKey, current.GetRunId(), commonv1.RunState_RUN_STATE_COMPLETED, finalMessage); err != nil {
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("finalize working memory: %w", err))
+	}
+	if err := s.finalizeTransientWorkingState(ctx, event.SessionKey, current.GetRunId(), commonv1.RunState_RUN_STATE_COMPLETED, finalMessage); err != nil {
+		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("finalize transient working memory: %w", err))
 	}
 
 	// Enqueue async memory pipeline job (fire-and-forget; failure does not block the run).
@@ -559,6 +586,9 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 	if updateErr := s.updateWorkingMemoryCheckpoint(ctx, current.GetSessionKey(), current.GetRunId(), workingStatus, requested.ToolName, requested.ArgsJSON); updateErr != nil {
 		runLog.Warn("working memory update failed before tool execution", slog.String("error", updateErr.Error()))
 	}
+	if updateErr := s.saveTransientWorkingState(ctx, current.GetRunId(), current.GetSessionKey(), "tool_running", map[string]any{"tool_name": requested.ToolName, "args_json": normalizeJSON(requested.ArgsJSON, "{}")}); updateErr != nil {
+		runLog.Warn("transient working memory update failed before tool execution", slog.String("error", updateErr.Error()))
+	}
 	result, err := s.config.Tools.ExecuteToolCall(ctx, brokerCall)
 	if err != nil {
 		return nil, current, fmt.Errorf("execute tool call %s: %w", requested.ToolName, err)
@@ -566,6 +596,9 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 	finishedAt := time.Now().UTC()
 	if updateErr := s.updateWorkingMemoryCheckpoint(ctx, current.GetSessionKey(), current.GetRunId(), "active", requested.ToolName, toolResultPayload(result)); updateErr != nil {
 		runLog.Warn("working memory update failed after tool execution", slog.String("error", updateErr.Error()))
+	}
+	if updateErr := s.saveTransientWorkingState(ctx, current.GetRunId(), current.GetSessionKey(), "awaiting_model_resume", map[string]any{"tool_name": requested.ToolName, "result_json": toolResultPayload(result)}); updateErr != nil {
+		runLog.Warn("transient working memory update failed after tool execution", slog.String("error", updateErr.Error()))
 	}
 	if _, err := s.transcript.AppendToolCall(ctx, transcript.ToolCall{ToolCallID: toolCallID, RunID: current.GetRunId(), ToolName: requested.ToolName, ArgsJSON: normalizeJSON(requested.ArgsJSON, "{}"), Status: normalizeToolStatus(result.GetStatus()), RuntimeTarget: brokerCall.GetRuntimeTarget(), StartedAt: startedAt, FinishedAt: &finishedAt, ResultJSON: toolResultPayload(result), ErrorJSON: toolErrorPayload(result.GetError())}); err != nil {
 		return nil, current, fmt.Errorf("append tool transcript: %w", err)
@@ -595,6 +628,9 @@ func (s *Service) failRun(ctx context.Context, current *sessionv1.RunRecord, lea
 	if current != nil {
 		if finalizeErr := s.finalizeWorkingMemory(ctx, current.GetSessionKey(), current.GetRunId(), commonv1.RunState_RUN_STATE_FAILED, err.Error()); finalizeErr != nil {
 			runLog.Warn("working memory finalization failed on error", slog.String("error", finalizeErr.Error()))
+		}
+		if finalizeErr := s.finalizeTransientWorkingState(ctx, current.GetSessionKey(), current.GetRunId(), commonv1.RunState_RUN_STATE_FAILED, err.Error()); finalizeErr != nil {
+			runLog.Warn("transient working memory finalization failed on error", slog.String("error", finalizeErr.Error()))
 		}
 	}
 	if state == commonv1.RunState_RUN_STATE_UNSPECIFIED || state == commonv1.RunState_RUN_STATE_FAILED || state == commonv1.RunState_RUN_STATE_CANCELLED || state == commonv1.RunState_RUN_STATE_TIMED_OUT || state == commonv1.RunState_RUN_STATE_COMPLETED {
@@ -698,6 +734,44 @@ func (s *Service) workingMemoryAction(state commonv1.RunState) string {
 		return strings.ToLower(strings.TrimSpace(s.config.WorkingPolicy.OnTimedOut))
 	default:
 		return strings.ToLower(strings.TrimSpace(s.config.WorkingPolicy.OnFailed))
+	}
+}
+
+func (s *Service) saveTransientWorkingState(ctx context.Context, runID, sessionKey, status string, scratch map[string]any) error {
+	if s.config.TransientStore == nil {
+		return nil
+	}
+	if scratch == nil {
+		scratch = map[string]any{}
+	}
+	_, err := s.config.TransientStore.Save(ctx, TransientWorkingState{
+		SessionKey:  sessionKey,
+		RunID:       runID,
+		Status:      normalizeWorkingStatus(status),
+		ScratchJSON: mustMarshalJSON(scratch),
+		UpdatedAt:   time.Now().UTC().Format(time.RFC3339Nano),
+	}, s.config.TransientTTL)
+	return err
+}
+
+func (s *Service) finalizeTransientWorkingState(ctx context.Context, sessionKey, runID string, state commonv1.RunState, note string) error {
+	if s.config.TransientStore == nil {
+		return nil
+	}
+	action := s.workingMemoryAction(state)
+	switch action {
+	case "clear":
+		err := s.config.TransientStore.Clear(ctx, sessionKey, runID)
+		if err != nil && !errors.Is(err, ErrTransientWorkingStateNotFound) {
+			return err
+		}
+		return nil
+	default:
+		scratch := map[string]any{}
+		if trimmed := strings.TrimSpace(note); trimmed != "" {
+			scratch["final_note"] = trimmed
+		}
+		return s.saveTransientWorkingState(ctx, runID, sessionKey, action, scratch)
 	}
 }
 

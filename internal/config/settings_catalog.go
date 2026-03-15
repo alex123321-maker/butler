@@ -1,5 +1,7 @@
 package config
 
+import "github.com/butler/butler/internal/modelprovider"
+
 type SettingCatalogItem struct {
 	Spec         fieldSpec
 	Group        string
@@ -22,6 +24,12 @@ func managedSettingsCatalog() []SettingCatalogItem {
 			Visible:      true,
 		},
 		{
+			Spec:         fieldSpec{key: "BUTLER_MODEL_PROVIDER", component: "orchestrator", typeName: "string", required: false, defaultValue: modelprovider.ProviderOpenAI, allowedValues: modelprovider.SupportedProviders(), requiresRestart: true},
+			Group:        "Model",
+			DisplayOrder: 25,
+			Visible:      true,
+		},
+		{
 			Spec:         fieldSpec{key: "BUTLER_OPENAI_API_KEY", component: "orchestrator", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: nil},
 			Group:        "Model",
 			DisplayOrder: 30,
@@ -37,6 +45,24 @@ func managedSettingsCatalog() []SettingCatalogItem {
 			Spec:         fieldSpec{key: "BUTLER_OPENAI_TRANSPORT_MODE", component: "orchestrator", typeName: "string", required: false, defaultValue: "ws-first", allowedValues: []string{"ws-first", "sse-only"}, requiresRestart: true},
 			Group:        "Model",
 			DisplayOrder: 50,
+			Visible:      true,
+		},
+		{
+			Spec:         fieldSpec{key: "BUTLER_OPENAI_CODEX_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-5.1-codex", requiresRestart: true, validate: validateNonEmpty, assign: nil},
+			Group:        "Model",
+			DisplayOrder: 55,
+			Visible:      true,
+		},
+		{
+			Spec:         fieldSpec{key: "BUTLER_OPENAI_CODEX_BASE_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "https://chatgpt.com/backend-api", requiresRestart: true, validate: validateNonEmptyURL, assign: nil},
+			Group:        "Model",
+			DisplayOrder: 56,
+			Visible:      false,
+		},
+		{
+			Spec:         fieldSpec{key: "BUTLER_GITHUB_COPILOT_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-4o", requiresRestart: true, validate: validateNonEmpty, assign: nil},
+			Group:        "Model",
+			DisplayOrder: 57,
 			Visible:      true,
 		},
 		{
@@ -67,6 +93,12 @@ func managedSettingsCatalog() []SettingCatalogItem {
 			Spec:         fieldSpec{key: "BUTLER_MEMORY_SCOPE_ORDER", component: "orchestrator", typeName: "csv", required: false, defaultValue: "session,user,global", requiresRestart: true, validate: validateMemoryScopeOrder, assign: nil},
 			Group:        "Memory",
 			DisplayOrder: 100,
+			Visible:      true,
+		},
+		{
+			Spec:         fieldSpec{key: "BUTLER_MEMORY_WORKING_TRANSIENT_TTL_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "1800", requiresRestart: true, validate: validatePositiveInt, assign: nil},
+			Group:        "Memory",
+			DisplayOrder: 105,
 			Visible:      true,
 		},
 		{
