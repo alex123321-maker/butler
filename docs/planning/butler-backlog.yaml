@@ -1858,7 +1858,7 @@ sprints:
         subsystem: testing
         sprint: SPRINT-8
         priority: medium
-        status: todo
+        status: done
         description: >
           Add integration tests covering the full settings lifecycle: write a setting via API,
           verify layered resolution picks it up, verify secret encryption round-trip, verify
