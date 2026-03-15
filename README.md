@@ -4,7 +4,7 @@ Self-hosted personal long-lived agent platform.
 
 ## Status
 
-Sprint 0 and Sprint 1 are complete. Sprint 2 is functionally delivered for the first vertical slice, but the OpenAI transport remains a partial implementation because it currently uses HTTP streaming (SSE) only and does not yet satisfy Butler's WebSocket-first requirement for OpenAI. The repository now includes the monorepo foundation, shared infra packages, contracts, migrations, Session Service, Redis leases, run lifecycle persistence, transcript storage, normalized ingress helpers, normalized transport types, the OpenAI SSE transport path, synchronous orchestrator event ingestion APIs, and a documented smoke flow.
+Sprint 0 and Sprint 1 are complete. Sprint 2 is functionally delivered for the first vertical slice, and Sprint 3 is also complete with the first user-facing MVP path. Sprint 4 is now in progress, starting with the internal gRPC runtime contract used between the Tool Broker and isolated runtime containers. The OpenAI transport prefers Realtime WebSocket with HTTP streaming (SSE) fallback while preserving the same Butler transport contract. The repository now includes the monorepo foundation, shared infra packages, contracts, migrations, Session Service, Redis leases, run lifecycle persistence, transcript storage, normalized ingress helpers, normalized transport types, the OpenAI transport path, synchronous orchestrator event ingestion APIs, the in-process Telegram adapter, the MVP Docker Compose stack, the Tool Broker skeleton, the Working Memory baseline, the runtime gRPC contract, and documented smoke/end-to-end verification flows.
 
 ## Repository layout
 
@@ -45,7 +45,7 @@ Sprint 0 and Sprint 1 are complete. Sprint 2 is functionally delivered for the f
 - [Tooling and Execution Specification](docs/architecture/tool-runtime-adr.md)
 - [Credential Management](docs/architecture/credential-management.md)
 - [Implementation Roadmap](docs/planning/butler-implementation-roadmap.md)
-- [Sprint Backlog](docs/planning/butler-backlog-sprint-0-2.yaml)
+- [Sprint Backlog](docs/planning/butler-backlog.yaml)
 
 All architecture documents are written in Russian with English technical terms.
 

@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package butler.runtime.v1;
+
+option go_package = "github.com/butler/butler/internal/gen/runtime/v1;runtimev1";
+
+import "toolbroker/v1/types.proto";
+
+service ToolRuntimeService {
+  rpc Execute(ExecuteRequest) returns (ExecuteResponse);
+}
+
+message ExecutionContext {
+  string request_id = 1;
+  string run_id = 2;
+  string tool_call_id = 3;
+  string tool_name = 4;
+  string runtime_target = 5;
+  int64 timeout_ms = 6;
+}
+
+message ExecuteRequest {
+  ExecutionContext context = 1;
+  butler.toolbroker.v1.ToolCall tool_call = 2;
+  butler.toolbroker.v1.ToolContract contract = 3;
+}
+
+message ExecuteResponse {
+  butler.toolbroker.v1.ToolResult result = 1;
+}
