@@ -91,6 +91,7 @@ type MemoryEpisode interface {
 }
 
 type WorkingMemorySnapshot struct {
+	MemoryType       string
 	SessionKey       string
 	RunID            string
 	Goal             string
@@ -98,6 +99,9 @@ type WorkingMemorySnapshot struct {
 	PendingStepsJSON string
 	ScratchJSON      string
 	Status           string
+	SourceType       string
+	SourceID         string
+	ProvenanceJSON   string
 }
 
 type WorkingMemoryPolicy struct {
@@ -702,6 +706,7 @@ func (s *Service) savePreparedWorkingMemory(ctx context.Context, runID, sessionK
 	}
 	updated := prepared.WorkingMemory.withInitialGoal(prepared.UserMessage)
 	_, err := s.config.WorkingStore.Save(ctx, WorkingMemorySnapshot{
+		MemoryType:       "working",
 		SessionKey:       sessionKey,
 		RunID:            runID,
 		Goal:             updated.Goal,
@@ -709,6 +714,8 @@ func (s *Service) savePreparedWorkingMemory(ctx context.Context, runID, sessionK
 		PendingStepsJSON: mustMarshalJSON(updated.PendingSteps),
 		ScratchJSON:      mustMarshalJSON(updated.Scratch),
 		Status:           normalizeWorkingStatus(updated.Status),
+		SourceType:       "run",
+		SourceID:         runID,
 	})
 	if err != nil {
 		return err
@@ -732,6 +739,7 @@ func (s *Service) updateWorkingMemoryCheckpoint(ctx context.Context, sessionKey,
 		working.Scratch["last_tool"] = map[string]any{"name": toolName, "payload": normalizeJSON(payload, "{}")}
 	}
 	_, err = s.config.WorkingStore.Save(ctx, WorkingMemorySnapshot{
+		MemoryType:       "working",
 		SessionKey:       sessionKey,
 		RunID:            runID,
 		Goal:             working.Goal,
@@ -739,6 +747,8 @@ func (s *Service) updateWorkingMemoryCheckpoint(ctx context.Context, sessionKey,
 		PendingStepsJSON: mustMarshalJSON(working.PendingSteps),
 		ScratchJSON:      mustMarshalJSON(working.Scratch),
 		Status:           working.Status,
+		SourceType:       "run",
+		SourceID:         runID,
 	})
 	return err
 }
@@ -767,6 +777,7 @@ func (s *Service) finalizeWorkingMemory(ctx context.Context, sessionKey, runID s
 	}
 	working.Status = normalizeWorkingStatus(action)
 	_, err = s.config.WorkingStore.Save(ctx, WorkingMemorySnapshot{
+		MemoryType:       "working",
 		SessionKey:       sessionKey,
 		RunID:            runID,
 		Goal:             working.Goal,
@@ -774,8 +785,19 @@ func (s *Service) finalizeWorkingMemory(ctx context.Context, sessionKey, runID s
 		PendingStepsJSON: mustMarshalJSON(working.PendingSteps),
 		ScratchJSON:      mustMarshalJSON(working.Scratch),
 		Status:           working.Status,
+		SourceType:       string(runStateSourceType(state)),
+		SourceID:         runID,
 	})
 	return err
+}
+
+func runStateSourceType(state commonv1.RunState) string {
+	switch state {
+	case commonv1.RunState_RUN_STATE_COMPLETED, commonv1.RunState_RUN_STATE_FAILED, commonv1.RunState_RUN_STATE_CANCELLED, commonv1.RunState_RUN_STATE_TIMED_OUT:
+		return "run"
+	default:
+		return "system_event"
+	}
 }
 
 func (s *Service) workingMemoryAction(state commonv1.RunState) string {

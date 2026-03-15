@@ -486,10 +486,23 @@ Working Memory всегда может быть обновлена или очи
 * `content`
 * `source_type`
 * `source_id`
+* `provenance`
 * `created_at`
 * `updated_at`
 * `confidence`
 * `status`
+
+### 17.4 Provenance and links baseline
+
+Current baseline now stores explicit `provenance` JSON on durable Working, Profile, and Episodic memory records.
+
+`provenance` is intended to hold safe source references such as:
+
+* originating `run_id`;
+* source class like `run`, `tool_result`, `doctor_report`, `system_event`, or `memory_pipeline`;
+* non-secret-safe reference handles for transcript or tool-output lineage.
+
+Related references are stored separately in `memory_links`, which maps a durable memory record to safe target references such as runs, messages, tool calls, or doctor reports without copying sensitive source payloads into retrieval-facing records.
 
 ### 17.2 Дополнительные поля для Profile Memory
 

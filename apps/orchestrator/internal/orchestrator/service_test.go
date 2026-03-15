@@ -1160,6 +1160,12 @@ func (s *stubWorkingStore) Save(_ context.Context, snapshot WorkingMemorySnapsho
 	if s.snapshots == nil {
 		s.snapshots = map[string]WorkingMemorySnapshot{}
 	}
+	if snapshot.MemoryType == "" {
+		snapshot.MemoryType = "working"
+	}
+	if snapshot.ProvenanceJSON == "" {
+		snapshot.ProvenanceJSON = `{"source_type":"` + snapshot.SourceType + `","source_id":"` + snapshot.SourceID + `"}`
+	}
 	s.snapshots[snapshot.SessionKey] = snapshot
 	return snapshot, nil
 }

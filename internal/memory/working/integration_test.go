@@ -49,6 +49,7 @@ func TestWorkingMemoryStoreIntegration(t *testing.T) {
 
 	workingStore := NewStore(store.Pool())
 	saved, err := workingStore.Save(ctx, Snapshot{
+		MemoryType:       "working",
 		SessionKey:       sessionKey,
 		RunID:            "run-working-1",
 		Goal:             "Verify working memory persistence",
@@ -56,6 +57,8 @@ func TestWorkingMemoryStoreIntegration(t *testing.T) {
 		PendingStepsJSON: `["check persistence"]`,
 		ScratchJSON:      `{"attempt":1}`,
 		Status:           "active",
+		SourceType:       "run",
+		SourceID:         "run-working-1",
 	})
 	if err != nil {
 		t.Fatalf("Save returned error: %v", err)
@@ -70,6 +73,9 @@ func TestWorkingMemoryStoreIntegration(t *testing.T) {
 	}
 	if loaded.Goal != "Verify working memory persistence" {
 		t.Fatalf("unexpected goal %q", loaded.Goal)
+	}
+	if loaded.MemoryType != "working" || loaded.SourceType != "run" || loaded.SourceID != "run-working-1" || loaded.ProvenanceJSON == "" {
+		t.Fatalf("expected provenance-aware working snapshot, got %+v", loaded)
 	}
 
 	updated, err := workingStore.Save(ctx, Snapshot{SessionKey: sessionKey, Goal: "Updated goal", Status: "completed"})

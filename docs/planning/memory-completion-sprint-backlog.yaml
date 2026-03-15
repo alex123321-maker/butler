@@ -108,7 +108,7 @@ sprint:
       subsystem: memory
       sprint: SPRINT-MEMORY-COMPLETION
       priority: high
-      status: todo
+      status: done
       description: >
         Add explicit provenance and link semantics for stored memory items so every
         durable record can be traced back to session, run, transcript, tool result,

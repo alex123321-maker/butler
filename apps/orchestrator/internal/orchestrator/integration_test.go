@@ -31,15 +31,15 @@ func (a workingIntegrationAdapter) Get(ctx context.Context, sessionKey string) (
 		}
 		return WorkingMemorySnapshot{}, err
 	}
-	return WorkingMemorySnapshot{SessionKey: snapshot.SessionKey, RunID: snapshot.RunID, Goal: snapshot.Goal, EntitiesJSON: snapshot.EntitiesJSON, PendingStepsJSON: snapshot.PendingStepsJSON, ScratchJSON: snapshot.ScratchJSON, Status: snapshot.Status}, nil
+	return WorkingMemorySnapshot{MemoryType: snapshot.MemoryType, SessionKey: snapshot.SessionKey, RunID: snapshot.RunID, Goal: snapshot.Goal, EntitiesJSON: snapshot.EntitiesJSON, PendingStepsJSON: snapshot.PendingStepsJSON, ScratchJSON: snapshot.ScratchJSON, Status: snapshot.Status, SourceType: snapshot.SourceType, SourceID: snapshot.SourceID, ProvenanceJSON: snapshot.ProvenanceJSON}, nil
 }
 
 func (a workingIntegrationAdapter) Save(ctx context.Context, snapshot WorkingMemorySnapshot) (WorkingMemorySnapshot, error) {
-	saved, err := a.store.Save(ctx, working.Snapshot{SessionKey: snapshot.SessionKey, RunID: snapshot.RunID, Goal: snapshot.Goal, EntitiesJSON: snapshot.EntitiesJSON, PendingStepsJSON: snapshot.PendingStepsJSON, ScratchJSON: snapshot.ScratchJSON, Status: snapshot.Status})
+	saved, err := a.store.Save(ctx, working.Snapshot{MemoryType: snapshot.MemoryType, SessionKey: snapshot.SessionKey, RunID: snapshot.RunID, Goal: snapshot.Goal, EntitiesJSON: snapshot.EntitiesJSON, PendingStepsJSON: snapshot.PendingStepsJSON, ScratchJSON: snapshot.ScratchJSON, Status: snapshot.Status, SourceType: snapshot.SourceType, SourceID: snapshot.SourceID, ProvenanceJSON: snapshot.ProvenanceJSON})
 	if err != nil {
 		return WorkingMemorySnapshot{}, err
 	}
-	return WorkingMemorySnapshot{SessionKey: saved.SessionKey, RunID: saved.RunID, Goal: saved.Goal, EntitiesJSON: saved.EntitiesJSON, PendingStepsJSON: saved.PendingStepsJSON, ScratchJSON: saved.ScratchJSON, Status: saved.Status}, nil
+	return WorkingMemorySnapshot{MemoryType: saved.MemoryType, SessionKey: saved.SessionKey, RunID: saved.RunID, Goal: saved.Goal, EntitiesJSON: saved.EntitiesJSON, PendingStepsJSON: saved.PendingStepsJSON, ScratchJSON: saved.ScratchJSON, Status: saved.Status, SourceType: saved.SourceType, SourceID: saved.SourceID, ProvenanceJSON: saved.ProvenanceJSON}, nil
 }
 
 func (a workingIntegrationAdapter) Clear(ctx context.Context, sessionKey string) error {

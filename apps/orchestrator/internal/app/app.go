@@ -93,6 +93,7 @@ func (a workingStoreAdapter) Get(ctx context.Context, sessionKey string) (flow.W
 		return flow.WorkingMemorySnapshot{}, err
 	}
 	return flow.WorkingMemorySnapshot{
+		MemoryType:       snapshot.MemoryType,
 		SessionKey:       snapshot.SessionKey,
 		RunID:            snapshot.RunID,
 		Goal:             snapshot.Goal,
@@ -100,11 +101,15 @@ func (a workingStoreAdapter) Get(ctx context.Context, sessionKey string) (flow.W
 		PendingStepsJSON: snapshot.PendingStepsJSON,
 		ScratchJSON:      snapshot.ScratchJSON,
 		Status:           snapshot.Status,
+		SourceType:       snapshot.SourceType,
+		SourceID:         snapshot.SourceID,
+		ProvenanceJSON:   snapshot.ProvenanceJSON,
 	}, nil
 }
 
 func (a workingStoreAdapter) Save(ctx context.Context, snapshot flow.WorkingMemorySnapshot) (flow.WorkingMemorySnapshot, error) {
 	saved, err := a.store.Save(ctx, working.Snapshot{
+		MemoryType:       snapshot.MemoryType,
 		SessionKey:       snapshot.SessionKey,
 		RunID:            snapshot.RunID,
 		Goal:             snapshot.Goal,
@@ -112,11 +117,15 @@ func (a workingStoreAdapter) Save(ctx context.Context, snapshot flow.WorkingMemo
 		PendingStepsJSON: snapshot.PendingStepsJSON,
 		ScratchJSON:      snapshot.ScratchJSON,
 		Status:           snapshot.Status,
+		SourceType:       snapshot.SourceType,
+		SourceID:         snapshot.SourceID,
+		ProvenanceJSON:   snapshot.ProvenanceJSON,
 	})
 	if err != nil {
 		return flow.WorkingMemorySnapshot{}, err
 	}
 	return flow.WorkingMemorySnapshot{
+		MemoryType:       saved.MemoryType,
 		SessionKey:       saved.SessionKey,
 		RunID:            saved.RunID,
 		Goal:             saved.Goal,
@@ -124,6 +133,9 @@ func (a workingStoreAdapter) Save(ctx context.Context, snapshot flow.WorkingMemo
 		PendingStepsJSON: saved.PendingStepsJSON,
 		ScratchJSON:      saved.ScratchJSON,
 		Status:           saved.Status,
+		SourceType:       saved.SourceType,
+		SourceID:         saved.SourceID,
+		ProvenanceJSON:   saved.ProvenanceJSON,
 	}, nil
 }
 

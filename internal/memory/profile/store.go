@@ -19,9 +19,10 @@ const (
 )
 
 var (
-	ErrEntryNotFound   = fmt.Errorf("profile memory entry not found")
-	ErrEntryConflict   = fmt.Errorf("active profile memory entry already exists")
-	ErrScopeKeyChanged = fmt.Errorf("superseded profile entry must keep the same scope and key")
+	ErrEntryNotFound      = fmt.Errorf("profile memory entry not found")
+	ErrEntryConflict      = fmt.Errorf("active profile memory entry already exists")
+	ErrScopeKeyChanged    = fmt.Errorf("superseded profile entry must keep the same scope and key")
+	ErrStoreNotConfigured = fmt.Errorf("profile memory store is not configured")
 )
 
 type Store struct {
@@ -29,22 +30,23 @@ type Store struct {
 }
 
 type Entry struct {
-	ID            int64
-	MemoryType    string
-	ScopeType     string
-	ScopeID       string
-	Key           string
-	ValueJSON     string
-	Summary       string
-	SourceType    string
-	SourceID      string
-	Confidence    float64
-	Status        string
-	EffectiveFrom *time.Time
-	EffectiveTo   *time.Time
-	SupersedesID  *int64
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	ID             int64
+	MemoryType     string
+	ScopeType      string
+	ScopeID        string
+	Key            string
+	ValueJSON      string
+	Summary        string
+	SourceType     string
+	SourceID       string
+	ProvenanceJSON string
+	Confidence     float64
+	Status         string
+	EffectiveFrom  *time.Time
+	EffectiveTo    *time.Time
+	SupersedesID   *int64
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }
 
 func (e Entry) ProfileKey() string { return e.Key }
@@ -59,16 +61,19 @@ func (e Entry) ProfileSummary() string {
 func NewStore(pool *pgxpool.Pool) *Store { return &Store{pool: pool} }
 
 func (s *Store) Save(ctx context.Context, entry Entry) (Entry, error) {
+	if s == nil || s.pool == nil {
+		return Entry{}, ErrStoreNotConfigured
+	}
 	entry, err := normalizeEntry(entry)
 	if err != nil {
 		return Entry{}, err
 	}
 	stored, err := scanEntry(s.pool.QueryRow(ctx, `
 		INSERT INTO memory_profile (
-			memory_type, scope_type, scope_id, key, value_json, summary, source_type, source_id, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
-		) VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NOW())
-		RETURNING id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
-	`, entry.MemoryType, entry.ScopeType, entry.ScopeID, entry.Key, entry.ValueJSON, entry.Summary, entry.SourceType, entry.SourceID, entry.Confidence, entry.Status, entry.EffectiveFrom, entry.EffectiveTo, entry.SupersedesID))
+			memory_type, scope_type, scope_id, key, value_json, summary, source_type, source_id, provenance, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
+		) VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9::jsonb, $10, $11, $12, $13, $14, NOW(), NOW())
+		RETURNING id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
+	`, entry.MemoryType, entry.ScopeType, entry.ScopeID, entry.Key, entry.ValueJSON, entry.Summary, entry.SourceType, entry.SourceID, entry.ProvenanceJSON, entry.Confidence, entry.Status, entry.EffectiveFrom, entry.EffectiveTo, entry.SupersedesID))
 	if err != nil {
 		if isUniqueViolation(err) {
 			return Entry{}, ErrEntryConflict
@@ -79,14 +84,20 @@ func (s *Store) Save(ctx context.Context, entry Entry) (Entry, error) {
 }
 
 func (s *Store) Get(ctx context.Context, scopeType, scopeID, key string) (Entry, error) {
+	if s == nil || s.pool == nil {
+		return Entry{}, ErrStoreNotConfigured
+	}
 	return scanEntry(s.pool.QueryRow(ctx, `
-		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
+		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
 		FROM memory_profile
 		WHERE scope_type = $1 AND scope_id = $2 AND key = $3 AND status = $4
 	`, strings.TrimSpace(scopeType), strings.TrimSpace(scopeID), strings.TrimSpace(key), StatusActive))
 }
 
 func (s *Store) Supersede(ctx context.Context, previousID int64, entry Entry) (Entry, error) {
+	if s == nil || s.pool == nil {
+		return Entry{}, ErrStoreNotConfigured
+	}
 	if previousID == 0 {
 		return Entry{}, fmt.Errorf("previous entry id is required")
 	}
@@ -97,7 +108,7 @@ func (s *Store) Supersede(ctx context.Context, previousID int64, entry Entry) (E
 	defer func() { _ = tx.Rollback(ctx) }()
 
 	previous, err := scanEntry(tx.QueryRow(ctx, `
-		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
+		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
 		FROM memory_profile
 		WHERE id = $1
 	`, previousID))
@@ -131,10 +142,10 @@ func (s *Store) Supersede(ctx context.Context, previousID int64, entry Entry) (E
 	}
 	stored, err := scanEntry(tx.QueryRow(ctx, `
 		INSERT INTO memory_profile (
-			memory_type, scope_type, scope_id, key, value_json, summary, source_type, source_id, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
-		) VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9, $10, $11, $12, $13, NOW(), NOW())
-		RETURNING id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
-	`, entry.MemoryType, entry.ScopeType, entry.ScopeID, entry.Key, entry.ValueJSON, entry.Summary, entry.SourceType, entry.SourceID, entry.Confidence, entry.Status, entry.EffectiveFrom, entry.EffectiveTo, entry.SupersedesID))
+			memory_type, scope_type, scope_id, key, value_json, summary, source_type, source_id, provenance, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
+		) VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9::jsonb, $10, $11, $12, $13, $14, NOW(), NOW())
+		RETURNING id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
+	`, entry.MemoryType, entry.ScopeType, entry.ScopeID, entry.Key, entry.ValueJSON, entry.Summary, entry.SourceType, entry.SourceID, entry.ProvenanceJSON, entry.Confidence, entry.Status, entry.EffectiveFrom, entry.EffectiveTo, entry.SupersedesID))
 	if err != nil {
 		if isUniqueViolation(err) {
 			return Entry{}, ErrEntryConflict
@@ -148,8 +159,11 @@ func (s *Store) Supersede(ctx context.Context, previousID int64, entry Entry) (E
 }
 
 func (s *Store) GetByScope(ctx context.Context, scopeType, scopeID string) ([]Entry, error) {
+	if s == nil || s.pool == nil {
+		return nil, ErrStoreNotConfigured
+	}
 	rows, err := s.pool.Query(ctx, `
-		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
+		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
 		FROM memory_profile
 		WHERE scope_type = $1 AND scope_id = $2 AND status = $3
 		ORDER BY key ASC
@@ -176,7 +190,7 @@ type rowScanner interface{ Scan(dest ...any) error }
 
 func scanEntry(row rowScanner) (Entry, error) {
 	var entry Entry
-	err := row.Scan(&entry.ID, &entry.MemoryType, &entry.ScopeType, &entry.ScopeID, &entry.Key, &entry.ValueJSON, &entry.Summary, &entry.SourceType, &entry.SourceID, &entry.Confidence, &entry.Status, &entry.EffectiveFrom, &entry.EffectiveTo, &entry.SupersedesID, &entry.CreatedAt, &entry.UpdatedAt)
+	err := row.Scan(&entry.ID, &entry.MemoryType, &entry.ScopeType, &entry.ScopeID, &entry.Key, &entry.ValueJSON, &entry.Summary, &entry.SourceType, &entry.SourceID, &entry.ProvenanceJSON, &entry.Confidence, &entry.Status, &entry.EffectiveFrom, &entry.EffectiveTo, &entry.SupersedesID, &entry.CreatedAt, &entry.UpdatedAt)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return Entry{}, ErrEntryNotFound
@@ -199,6 +213,9 @@ func normalizeEntry(entry Entry) (Entry, error) {
 	if strings.TrimSpace(entry.ValueJSON) == "" {
 		entry.ValueJSON = "{}"
 	}
+	if strings.TrimSpace(entry.ProvenanceJSON) == "" {
+		entry.ProvenanceJSON = defaultProvenanceJSON(entry.SourceType, entry.SourceID)
+	}
 	if strings.TrimSpace(entry.MemoryType) == "" {
 		entry.MemoryType = MemoryType
 	}
@@ -209,6 +226,10 @@ func normalizeEntry(entry Entry) (Entry, error) {
 		entry.Status = StatusActive
 	}
 	return entry, nil
+}
+
+func defaultProvenanceJSON(sourceType, sourceID string) string {
+	return fmt.Sprintf(`{"source_type":%q,"source_id":%q}`, strings.TrimSpace(sourceType), strings.TrimSpace(sourceID))
 }
 
 func inheritScope(entry, previous Entry) Entry {

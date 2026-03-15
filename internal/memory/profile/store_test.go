@@ -19,6 +19,9 @@ func TestNormalizeEntryDefaults(t *testing.T) {
 	if entry.Status != StatusActive {
 		t.Fatalf("expected default status active, got %q", entry.Status)
 	}
+	if entry.ProvenanceJSON != `{"source_type":"","source_id":""}` {
+		t.Fatalf("expected default provenance, got %q", entry.ProvenanceJSON)
+	}
 }
 
 func TestInheritScope(t *testing.T) {
@@ -27,5 +30,13 @@ func TestInheritScope(t *testing.T) {
 	entry := inheritScope(Entry{}, previous)
 	if entry.ScopeType != previous.ScopeType || entry.ScopeID != previous.ScopeID || entry.Key != previous.Key {
 		t.Fatalf("inheritScope returned %+v", entry)
+	}
+}
+
+func TestSaveRequiresStorePool(t *testing.T) {
+	t.Parallel()
+	_, err := NewStore(nil).Save(nil, Entry{ScopeType: "session", ScopeID: "s-1", Key: "language"})
+	if err != ErrStoreNotConfigured {
+		t.Fatalf("expected ErrStoreNotConfigured, got %v", err)
 	}
 }
