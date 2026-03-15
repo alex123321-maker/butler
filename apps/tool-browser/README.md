@@ -3,12 +3,14 @@
 Planned browser runtime service for Butler browser automation tools.
 
 Current state:
-- Sprint 0 skeleton only; `main.go` is an empty stub
-- no runtime contract implementation, browser backend, health endpoint, or tests yet
+- runtime exposes the internal `ToolRuntimeService` gRPC contract
+- `browser.navigate` and `browser.snapshot` run through a Playwright helper
+- HTTP health endpoint and unit tests are in place
 
 Local run:
 - `go run ./apps/tool-browser`
-- current stub exits immediately because runtime wiring does not exist yet
+- requires `npm install` in `apps/tool-browser/` for the Playwright helper
+- service exposes HTTP health on `BUTLER_HTTP_ADDR` and runtime gRPC on `BUTLER_GRPC_ADDR`
 
 Intended responsibilities:
 - execute browser-class tools only

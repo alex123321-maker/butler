@@ -1,0 +1,8 @@
+{
+  "name": "@butler/tool-browser",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "playwright": "1.52.0"
+  }
+}
