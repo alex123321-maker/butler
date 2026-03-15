@@ -11,6 +11,7 @@ Current baseline:
 - implements Redis-backed `AcquireLease`, `RenewLease`, and `ReleaseLease`
 - implements durable run creation, lookup, state transitions, and input-event deduplication
 - implements the internal event-to-run execution flow for normalized `InputEvent` values using the transport layer and transcript store
+- loads durable Working Memory snapshots into the run memory bundle and applies explicit save/update/clear policy across prepare, tool checkpoints, and finalize paths
 - loads profile and episodic memory into a memory-aware prompt bundle during run preparation when entries are available
 - enqueues async post-run memory extraction work and stores session summaries for later context reuse
 - skips episodic similarity retrieval unless a real query-embedding provider is configured, rather than emitting placeholder vectors

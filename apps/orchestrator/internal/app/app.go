@@ -29,6 +29,7 @@ import (
 	"github.com/butler/butler/internal/memory/episodic"
 	"github.com/butler/butler/internal/memory/pipeline"
 	"github.com/butler/butler/internal/memory/profile"
+	"github.com/butler/butler/internal/memory/working"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/metrics"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
@@ -200,6 +201,7 @@ func New(ctx context.Context) (*App, error) {
 			Delivery:         delivery,
 			Tools:            toolBrokerClient,
 			ApprovalChecker:  toolBrokerClient,
+			WorkingStore:     workingStoreAdapter{store: working.NewStore(postgres.Pool())},
 			ApprovalGate:     approvalGate,
 			ProfileStore:     profileStoreAdapter{store: profile.NewStore(postgres.Pool())},
 			EpisodeStore:     episodicStoreAdapter{store: episodic.NewStore(postgres.Pool())},

@@ -2,6 +2,7 @@ package orchestrator
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"strings"
 	"testing"
@@ -276,11 +277,15 @@ func TestExecuteIncludesMemoryAwareContext(t *testing.T) {
 		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
 	}}
 	episodeStore := &stubEpisodeStore{entries: []MemoryEpisode{stubEpisode{summary: "Fixed Redis outage before", distance: 0.01}}}
+	workingStore := &stubWorkingStore{snapshots: map[string]WorkingMemorySnapshot{
+		"telegram:chat:1": {SessionKey: "telegram:chat:1", Goal: "Stabilize Redis", EntitiesJSON: `{"service":"redis"}`, PendingStepsJSON: `["check health"]`, Status: "active"},
+	}}
 	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
 		ProviderName: "openai",
 		ModelName:    "gpt-5-mini",
 		ProfileStore: stubProfileStore{entries: []MemoryProfileEntry{stubProfileEntry{key: "language", summary: "User prefers Russian"}}},
 		EpisodeStore: episodeStore,
+		WorkingStore: workingStore,
 	}, nil)
 
 	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:1", Source: "telegram", PayloadJSON: `{"text":"check redis"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
@@ -296,8 +301,83 @@ func TestExecuteIncludesMemoryAwareContext(t *testing.T) {
 	if provider.startRequests[0].InputItems[0].Role != "system" {
 		t.Fatalf("expected first input item to be system memory prompt, got %+v", provider.startRequests[0].InputItems)
 	}
+	if !strings.Contains(provider.startRequests[0].InputItems[0].Content, "Working memory:") {
+		t.Fatalf("expected working memory in prompt, got %q", provider.startRequests[0].InputItems[0].Content)
+	}
 	if episodeStore.calls != 0 {
 		t.Fatalf("expected episodic retrieval to be skipped without embeddings, got %d calls", episodeStore.calls)
+	}
+}
+
+func TestExecuteLoadsAndClearsWorkingMemoryOnCompletion(t *testing.T) {
+	t.Parallel()
+
+	provider := &mockProvider{startEvents: []transport.TransportEvent{
+		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "done", FinishReason: "completed"}),
+		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+	}}
+	workingStore := &stubWorkingStore{snapshots: map[string]WorkingMemorySnapshot{
+		"telegram:chat:working": {SessionKey: "telegram:chat:working", Goal: "Existing goal", EntitiesJSON: `{"service":"postgres"}`, PendingStepsJSON: `["inspect logs"]`, Status: "active"},
+	}}
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+		ProviderName: "openai",
+		ModelName:    "gpt-5-mini",
+		WorkingStore: workingStore,
+	}, nil)
+
+	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-working-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:working", Source: "telegram", PayloadJSON: `{"text":"continue task"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-working-1"})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if result.AssistantResponse != "done" {
+		t.Fatalf("unexpected response %q", result.AssistantResponse)
+	}
+	if len(workingStore.getCalls) == 0 {
+		t.Fatal("expected working memory snapshot to be loaded during prepare")
+	}
+	if len(provider.startRequests) != 1 {
+		t.Fatalf("expected single provider start request, got %d", len(provider.startRequests))
+	}
+	metadata := runsMetadata(t, service, result.RunID)
+	workingBundle, ok := metadata["memory_bundle"].(map[string]any)["working"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected structured working memory bundle, got %+v", metadata)
+	}
+	if workingBundle["goal"] != "Existing goal" {
+		t.Fatalf("unexpected working goal %+v", workingBundle)
+	}
+	if len(workingStore.clearCalls) != 1 || workingStore.clearCalls[0] != "telegram:chat:working" {
+		t.Fatalf("expected working memory clear on completion, got %+v", workingStore.clearCalls)
+	}
+	if _, exists := workingStore.snapshots["telegram:chat:working"]; exists {
+		t.Fatal("expected completed working memory snapshot to be removed")
+	}
+}
+
+func TestExecuteRetainsWorkingMemoryOnFailure(t *testing.T) {
+	t.Parallel()
+
+	runs := newMemoryRunManager()
+	workingStore := &stubWorkingStore{snapshots: map[string]WorkingMemorySnapshot{
+		"telegram:chat:failure": {SessionKey: "telegram:chat:failure", Goal: "Recover service", EntitiesJSON: `{"service":"api"}`, PendingStepsJSON: `["restart"]`, Status: "active"},
+	}}
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{}, &mockProvider{startEvents: []transport.TransportEvent{
+		transport.NewTransportErrorEvent("", "openai", errors.New("provider down")),
+	}}, Config{ProviderName: "openai", ModelName: "gpt-5-mini", WorkingStore: workingStore}, nil)
+
+	_, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-working-fail", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:failure", Source: "telegram", PayloadJSON: `{"text":"continue"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-working-fail"})
+	if err == nil {
+		t.Fatal("expected Execute error")
+	}
+	if len(workingStore.clearCalls) != 0 {
+		t.Fatalf("expected failed runs to retain working memory, got clear calls %+v", workingStore.clearCalls)
+	}
+	snapshot := workingStore.snapshots["telegram:chat:failure"]
+	if snapshot.Status != "retain" {
+		t.Fatalf("expected retained working memory status, got %+v", snapshot)
+	}
+	if !strings.Contains(snapshot.ScratchJSON, "provider down") {
+		t.Fatalf("expected failure note in scratch payload, got %q", snapshot.ScratchJSON)
 	}
 }
 
@@ -509,9 +589,22 @@ func TestFormatMemoryPromptWithSummary(t *testing.T) {
 		profile        []map[string]any
 		episodes       []map[string]any
 		summary        string
+		working        *workingMemoryContext
 		wantContains   []string
 		wantNotContain []string
 	}{
+		{
+			name:    "summary with working memory",
+			summary: "Deploying app.",
+			working: (&workingMemoryContext{Goal: "Ship release", ActiveEntities: map[string]any{"service": "web"}, PendingSteps: []any{"run tests"}, Status: "active"}).withInitialGoal(""),
+			wantContains: []string{
+				"Session summary:",
+				"Working memory:",
+				"Goal: Ship release",
+				"Active entities: {\"service\":\"web\"}",
+				"Pending steps: [\"run tests\"]",
+			},
+		},
 		{
 			name:         "summary only",
 			summary:      "Current goal: fix bugs.",
@@ -543,7 +636,7 @@ func TestFormatMemoryPromptWithSummary(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := formatMemoryPrompt(tt.profile, tt.episodes, tt.summary)
+			result := formatMemoryPrompt(tt.working, tt.profile, tt.episodes, tt.summary)
 			for _, want := range tt.wantContains {
 				if !strings.Contains(result, want) {
 					t.Errorf("expected prompt to contain %q, got %q", want, result)
@@ -556,6 +649,19 @@ func TestFormatMemoryPromptWithSummary(t *testing.T) {
 			}
 		})
 	}
+}
+
+func runsMetadata(t *testing.T, service *Service, runID string) map[string]any {
+	t.Helper()
+	runManager, ok := service.runs.(*memoryRunManager)
+	if !ok {
+		t.Fatal("expected in-memory run manager")
+	}
+	metadata := map[string]any{}
+	if err := json.Unmarshal([]byte(runManager.records[runID].GetMetadataJson()), &metadata); err != nil {
+		t.Fatalf("decode run metadata: %v", err)
+	}
+	return metadata
 }
 
 func TestExecuteFailsRunOnTransportError(t *testing.T) {
@@ -904,6 +1010,49 @@ func (s *stubSummaryReader) GetSummary(_ context.Context, sessionKey string) (st
 		return "", s.err
 	}
 	return s.summaries[sessionKey], nil
+}
+
+type stubWorkingStore struct {
+	snapshots  map[string]WorkingMemorySnapshot
+	getCalls   []string
+	saveCalls  []WorkingMemorySnapshot
+	clearCalls []string
+	errGet     error
+	errSave    error
+	errClear   error
+}
+
+func (s *stubWorkingStore) Get(_ context.Context, sessionKey string) (WorkingMemorySnapshot, error) {
+	s.getCalls = append(s.getCalls, sessionKey)
+	if s.errGet != nil {
+		return WorkingMemorySnapshot{}, s.errGet
+	}
+	snapshot, ok := s.snapshots[sessionKey]
+	if !ok {
+		return WorkingMemorySnapshot{}, ErrWorkingMemoryNotFound
+	}
+	return snapshot, nil
+}
+
+func (s *stubWorkingStore) Save(_ context.Context, snapshot WorkingMemorySnapshot) (WorkingMemorySnapshot, error) {
+	s.saveCalls = append(s.saveCalls, snapshot)
+	if s.errSave != nil {
+		return WorkingMemorySnapshot{}, s.errSave
+	}
+	if s.snapshots == nil {
+		s.snapshots = map[string]WorkingMemorySnapshot{}
+	}
+	s.snapshots[snapshot.SessionKey] = snapshot
+	return snapshot, nil
+}
+
+func (s *stubWorkingStore) Clear(_ context.Context, sessionKey string) error {
+	s.clearCalls = append(s.clearCalls, sessionKey)
+	if s.errClear != nil {
+		return s.errClear
+	}
+	delete(s.snapshots, sessionKey)
+	return nil
 }
 
 func testEmbeddingVector(value float32) []float32 {

@@ -1,0 +1,387 @@
+sprint:
+  id: SPRINT-MEMORY-COMPLETION
+  title: Memory System Completion Sprint
+  goal: >
+    Bring Butler memory behavior in line with the documented architecture by completing
+    Working Memory semantics, transient Redis state, provenance-safe persistence,
+    hybrid retrieval, memory pipeline classification, operator visibility, and
+    memory-specific hardening in one focused sprint.
+  status: todo
+  scope_notes:
+    - This sprint is intentionally tracked in a separate backlog file.
+    - PostgreSQL remains the durable source of truth for memory.
+    - Redis remains transient-only for execution-time working state.
+    - pgvector remains retrieval-only and must not become the primary memory store.
+    - Transcript Store, Working Memory, Episodic Memory, and Profile Memory must remain distinct.
+  docs_to_read:
+    - docs/architecture/butler-prd-architecture.md
+    - docs/architecture/memory-model.md
+    - docs/architecture/run-lifecycle-spec.md
+    - docs/architecture/credential-management.md
+    - docs/ai/engineering-rules.md
+  tasks:
+    - id: TM-01
+      title: Working Memory lifecycle integration
+      subsystem: memory
+      sprint: SPRINT-MEMORY-COMPLETION
+      priority: high
+      status: done
+      description: >
+        Integrate durable Working Memory into the orchestrator prepare/finalize flow so
+        runs load, update, and clear task state explicitly instead of relying only on
+        transcript, session summary, profile, and episodic memory.
+      why_now: >
+        Working Memory exists as a store but is not yet a first-class runtime memory
+        layer as required by the spec.
+      dependencies: []
+      docs_to_read:
+        - docs/architecture/memory-model.md
+        - docs/architecture/run-lifecycle-spec.md
+      acceptance_criteria:
+        - Preparing stage loads a working memory snapshot when one exists.
+        - Memory bundle contains goal, active entities, pending steps, and working status in structured form.
+        - Run execution updates working memory at meaningful checkpoints.
+        - Completed or abandoned tasks can clear or transition working memory according to explicit policy.
+        - Unit and integration tests cover load/update/clear behavior through run execution.
+      deliverables:
+        - updated apps/orchestrator memory bundle assembly
+        - working memory lifecycle policy in code
+        - orchestrator and memory tests
+
+    - id: TM-02
+      title: Transient Working Memory Redis layer
+      subsystem: memory
+      sprint: SPRINT-MEMORY-COMPLETION
+      priority: high
+      status: todo
+      description: >
+        Implement the transient execution-time Working Memory layer in Redis for
+        scratchpads, in-progress state, and resumable tool-heavy execution details,
+        explicitly separated from durable PostgreSQL snapshots.
+      why_now: >
+        The memory spec requires a two-layer Working Memory model and Redis currently
+        does not own this memory responsibility explicitly.
+      dependencies:
+        - TM-01
+      docs_to_read:
+        - docs/architecture/memory-model.md
+      acceptance_criteria:
+        - A dedicated Redis-backed transient working store exists.
+        - TTL and cleanup behavior are explicit and tested.
+        - Durable and transient working states are not conflated in code or docs.
+        - Run cancellation, timeout, and completion paths clean up transient state correctly.
+        - Integration tests validate Redis persistence and expiry behavior.
+      deliverables:
+        - internal memory transient store package
+        - orchestrator integration with transient state
+        - Redis integration tests
+
+    - id: TM-03
+      title: Memory service boundary and bundle assembler
+      subsystem: memory
+      sprint: SPRINT-MEMORY-COMPLETION
+      priority: high
+      status: todo
+      description: >
+        Introduce a dedicated memory service layer that assembles memory bundles and
+        hides store-specific retrieval details from the orchestrator.
+      why_now: >
+        Current retrieval logic is spread across orchestrator code and risks architecture drift.
+      dependencies:
+        - TM-01
+        - TM-02
+      docs_to_read:
+        - docs/architecture/butler-prd-architecture.md
+        - docs/architecture/memory-model.md
+      acceptance_criteria:
+        - Orchestrator depends on explicit memory bundle interfaces rather than store-specific logic.
+        - Bundle assembly supports working, session summary, profile, episodic, and future chunk/document inputs.
+        - Scope order and bundle limits are owned by the memory layer.
+        - Unit tests verify bundle assembly policies independently of the orchestrator.
+      deliverables:
+        - internal memory service interfaces
+        - bundle assembler implementation
+        - refactored orchestrator integration
+
+    - id: TM-04
+      title: Provenance model and memory links
+      subsystem: memory
+      sprint: SPRINT-MEMORY-COMPLETION
+      priority: high
+      status: todo
+      description: >
+        Add explicit provenance and link semantics for stored memory items so every
+        durable record can be traced back to session, run, transcript, tool result,
+        doctor report, or system event sources.
+      why_now: >
+        Provenance is a core memory invariant in the spec and is not yet represented fully.
+      dependencies:
+        - TM-03
+      docs_to_read:
+        - docs/architecture/memory-model.md
+      acceptance_criteria:
+        - Stored profile, episodic, and working items retain explicit provenance metadata.
+        - A minimal memory_links model exists for source references and related memory relationships.
+        - Retrieval paths can expose provenance-safe references without leaking secrets.
+        - Schema migrations and integration tests cover provenance and linking behavior.
+      deliverables:
+        - migration for provenance and/or memory_links
+        - updated memory stores
+        - provenance-aware retrieval tests
+
+    - id: TM-05
+      title: Memory sanitization and secret-safe persistence
+      subsystem: security
+      sprint: SPRINT-MEMORY-COMPLETION
+      priority: high
+      status: todo
+      description: >
+        Add redaction and sanitization passes before extraction and persistence so
+        transcripts, tool outputs, and diagnostic results cannot write raw secret
+        material into memory stores.
+      why_now: >
+        Memory growth increases the risk of secret leakage unless persistence is
+        explicitly sanitized.
+      dependencies:
+        - TM-04
+      docs_to_read:
+        - docs/architecture/memory-model.md
+        - docs/architecture/credential-management.md
+      acceptance_criteria:
+        - Redaction rules cover tokens, passwords, cookies, connection strings, and credential-like values.
+        - Sanitization occurs before memory extraction and before durable write paths.
+        - Memory persistence never stores raw secret material from tool outputs or doctor reports.
+        - Unit and integration tests validate secret-safe persistence.
+      deliverables:
+        - sanitization helpers and policy
+        - pipeline integration for redaction
+        - security-focused tests
+
+    - id: TM-06
+      title: Memory pipeline classification and conflict resolution
+      subsystem: memory
+      sprint: SPRINT-MEMORY-COMPLETION
+      priority: high
+      status: todo
+      description: >
+        Expand the async memory worker into explicit extraction, classification,
+        conflict-resolution, persistence, and indexing stages with ignore/noise handling.
+      why_now: >
+        The current worker covers the basics but does not yet implement the full pipeline
+        semantics described in the spec.
+      dependencies:
+        - TM-05
+      docs_to_read:
+        - docs/architecture/memory-model.md
+        - docs/architecture/run-lifecycle-spec.md
+      acceptance_criteria:
+        - Pipeline distinguishes working, profile, episodic, chunk/document, and ignore candidates.
+        - Noise and low-value candidates are skipped by explicit policy.
+        - Conflict resolution is a separate step before durable writes.
+        - Pipeline stage behavior is observable in logs and covered by tests.
+      deliverables:
+        - refactored memory pipeline worker
+        - classifier/conflict resolver components
+        - pipeline unit and integration tests
+
+    - id: TM-07
+      title: Profile conflict policy and episodic deduplication
+      subsystem: memory
+      sprint: SPRINT-MEMORY-COMPLETION
+      priority: medium
+      status: todo
+      description: >
+        Strengthen profile supersession rules and add episodic deduplication/variant
+        handling so long-term memory remains stable and low-noise over time.
+      why_now: >
+        Memory drift and over-saving are called out as explicit risks in the spec.
+      dependencies:
+        - TM-06
+      docs_to_read:
+        - docs/architecture/memory-model.md
+      acceptance_criteria:
+        - Profile updates apply deterministic supersede/versioning policy.
+        - Conflicting facts can be superseded, time-bounded, or preserved as versions by policy.
+        - Episodic memories support duplicate suppression or variant linking.
+        - Tests cover repeated similar runs and contradictory profile updates.
+      deliverables:
+        - updated profile conflict policy
+        - episodic dedup or variant-link logic
+        - regression tests for memory drift scenarios
+
+    - id: TM-08
+      title: Hybrid retrieval and prompt-budget policy
+      subsystem: memory
+      sprint: SPRINT-MEMORY-COMPLETION
+      priority: high
+      status: todo
+      description: >
+        Upgrade retrieval from simple structured lookup plus episodic similarity into a
+        hybrid retrieval model with metadata filtering, structured lookup, vector search,
+        optional keyword/full-text retrieval, and explicit bundle budgeting.
+      why_now: >
+        The documented retrieval model is hybrid and requires deterministic bundle selection.
+      dependencies:
+        - TM-03
+        - TM-06
+        - TM-07
+      docs_to_read:
+        - docs/architecture/memory-model.md
+      acceptance_criteria:
+        - Retrieval can combine structured facts, relevant episodes, and supported keyword/full-text results.
+        - Bundle assembly respects configured limits and ordering across summary, working, profile, episodic, and chunk memory.
+        - Retrieval degrades gracefully when embeddings or optional indexes are unavailable.
+        - Tests verify ranking, ordering, and prompt-budget behavior.
+      deliverables:
+        - hybrid retrieval implementation
+        - bundle selection policy
+        - retrieval relevance and budget tests
+
+    - id: TM-09
+      title: Document chunks, tool outputs, and doctor memory ingestion
+      subsystem: memory
+      sprint: SPRINT-MEMORY-COMPLETION
+      priority: high
+      status: todo
+      description: >
+        Add chunk/document memory plus controlled ingestion of long-form tool outputs
+        and doctor summaries, keeping PostgreSQL as truth and pgvector as retrieval-only.
+      why_now: >
+        The memory spec includes chunked document memory and selected tool output reuse,
+        which are currently missing.
+      dependencies:
+        - TM-05
+        - TM-06
+        - TM-08
+      docs_to_read:
+        - docs/architecture/memory-model.md
+      acceptance_criteria:
+        - A durable store exists for memory chunks or equivalent document memory records.
+        - Long-form tool outputs and doctor reports can be summarized/chunked by explicit allowlist policy.
+        - Retrieved chunks can be included in memory bundles when relevant.
+        - Tests verify chunk persistence, retrieval, and safe ingestion.
+      deliverables:
+        - chunk/document memory schema and store
+        - controlled tool output and doctor ingestion path
+        - chunk retrieval tests
+
+    - id: TM-10
+      title: Memory retention and housekeeping policies
+      subsystem: memory
+      sprint: SPRINT-MEMORY-COMPLETION
+      priority: medium
+      status: todo
+      description: >
+        Add retention, pruning, and housekeeping behavior for transient working state,
+        stale working snapshots, inactive profile entries, and noisy episodic growth.
+      why_now: >
+        Without retention policies the memory layer will degrade in relevance and operational cost.
+      dependencies:
+        - TM-02
+        - TM-07
+        - TM-09
+      docs_to_read:
+        - docs/architecture/memory-model.md
+      acceptance_criteria:
+        - Retention rules are explicit for each memory class.
+        - Transient Redis working state is cleaned automatically.
+        - Durable memory pruning/archival policies are documented and tested.
+        - Housekeeping jobs are observable and safe to rerun.
+      deliverables:
+        - retention policy implementation
+        - housekeeping jobs or tasks
+        - retention tests and docs
+
+    - id: TM-11
+      title: Memory observability and doctor checks
+      subsystem: observability
+      sprint: SPRINT-MEMORY-COMPLETION
+      priority: medium
+      status: todo
+      description: >
+        Add memory-specific metrics, logs, and doctor diagnostics for pipeline health,
+        retrieval quality signals, pgvector readiness, and queue/backlog visibility.
+      why_now: >
+        A memory subsystem this large needs dedicated operator visibility and self-diagnostics.
+      dependencies:
+        - TM-06
+        - TM-08
+        - TM-10
+      docs_to_read:
+        - docs/architecture/memory-model.md
+        - docs/ai/engineering-rules.md
+      acceptance_criteria:
+        - Metrics exist for extraction jobs, failures, writes by memory class, retrieval requests, and skips.
+        - Structured logs include memory-relevant context such as memory_type, run_id, and source_type.
+        - Doctor checks report memory worker health, queue health, and pgvector readiness.
+        - Tests cover the added doctor and metrics plumbing where practical.
+      deliverables:
+        - memory metrics and logging updates
+        - doctor memory health checks
+        - observability documentation
+
+    - id: TM-12
+      title: Web UI Memory Browser and APIs
+      subsystem: web
+      sprint: SPRINT-MEMORY-COMPLETION
+      priority: high
+      status: todo
+      description: >
+        Replace the placeholder memory page with real APIs and UI for browsing working,
+        profile, episodic, and chunk memory along with provenance metadata.
+      why_now: >
+        The PRD requires memory visibility in Web UI and the current page is only a placeholder.
+      dependencies:
+        - TM-03
+        - TM-04
+        - TM-09
+      docs_to_read:
+        - docs/architecture/butler-prd-architecture.md
+        - docs/architecture/memory-model.md
+      acceptance_criteria:
+        - REST endpoints exist for listing and inspecting memory records by class and scope.
+        - Web UI /memory shows profile, episodic, working, and chunk memory views.
+        - Provenance details are visible without exposing sensitive values.
+        - Backend tests and frontend component/page tests cover the new behavior.
+      deliverables:
+        - orchestrator memory view APIs
+        - implemented web/pages/memory.vue and supporting components/composables
+        - UI and API tests
+
+    - id: TM-13
+      title: Memory spec and README alignment
+      subsystem: documentation
+      sprint: SPRINT-MEMORY-COMPLETION
+      priority: high
+      status: todo
+      description: >
+        Update architecture docs and service READMEs so the implemented memory model,
+        policies, contracts, and operator expectations match the shipped behavior.
+      why_now: >
+        The current memory specification is still Draft and several important policies are still open.
+      dependencies:
+        - TM-01
+        - TM-02
+        - TM-03
+        - TM-04
+        - TM-05
+        - TM-06
+        - TM-07
+        - TM-08
+        - TM-09
+        - TM-10
+        - TM-11
+        - TM-12
+      docs_to_read:
+        - docs/architecture/memory-model.md
+        - docs/architecture/run-lifecycle-spec.md
+        - docs/architecture/butler-prd-architecture.md
+      acceptance_criteria:
+        - Memory architecture docs describe the final implemented behavior without unresolved contradictions.
+        - Open policy decisions are closed or explicitly deferred.
+        - Relevant service READMEs are updated for operators and future build agents.
+        - Documentation reflects storage roles, retrieval rules, provenance, sanitization, and UI/operator capabilities.
+      deliverables:
+        - updated memory architecture documentation
+        - updated orchestrator and web READMEs
+        - aligned implementation notes for future work

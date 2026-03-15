@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -12,10 +13,40 @@ import (
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/memory/transcript"
+	"github.com/butler/butler/internal/memory/working"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	redisstore "github.com/butler/butler/internal/storage/redis"
 	"github.com/butler/butler/internal/transport"
 )
+
+type workingIntegrationAdapter struct{ store *working.Store }
+
+func (a workingIntegrationAdapter) Get(ctx context.Context, sessionKey string) (WorkingMemorySnapshot, error) {
+	snapshot, err := a.store.Get(ctx, sessionKey)
+	if err != nil {
+		if err == working.ErrSnapshotNotFound {
+			return WorkingMemorySnapshot{}, ErrWorkingMemoryNotFound
+		}
+		return WorkingMemorySnapshot{}, err
+	}
+	return WorkingMemorySnapshot{SessionKey: snapshot.SessionKey, RunID: snapshot.RunID, Goal: snapshot.Goal, EntitiesJSON: snapshot.EntitiesJSON, PendingStepsJSON: snapshot.PendingStepsJSON, ScratchJSON: snapshot.ScratchJSON, Status: snapshot.Status}, nil
+}
+
+func (a workingIntegrationAdapter) Save(ctx context.Context, snapshot WorkingMemorySnapshot) (WorkingMemorySnapshot, error) {
+	saved, err := a.store.Save(ctx, working.Snapshot{SessionKey: snapshot.SessionKey, RunID: snapshot.RunID, Goal: snapshot.Goal, EntitiesJSON: snapshot.EntitiesJSON, PendingStepsJSON: snapshot.PendingStepsJSON, ScratchJSON: snapshot.ScratchJSON, Status: snapshot.Status})
+	if err != nil {
+		return WorkingMemorySnapshot{}, err
+	}
+	return WorkingMemorySnapshot{SessionKey: saved.SessionKey, RunID: saved.RunID, Goal: saved.Goal, EntitiesJSON: saved.EntitiesJSON, PendingStepsJSON: saved.PendingStepsJSON, ScratchJSON: saved.ScratchJSON, Status: saved.Status}, nil
+}
+
+func (a workingIntegrationAdapter) Clear(ctx context.Context, sessionKey string) error {
+	err := a.store.Clear(ctx, sessionKey)
+	if err == working.ErrSnapshotNotFound {
+		return ErrWorkingMemoryNotFound
+	}
+	return err
+}
 
 func TestExecuteIntegrationPersistsRunAndTranscript(t *testing.T) {
 	postgresURL := os.Getenv("BUTLER_TEST_POSTGRES_URL")
@@ -46,10 +77,12 @@ func TestExecuteIntegrationPersistsRunAndTranscript(t *testing.T) {
 
 	sessionKey := "integration:orchestrator:session"
 	_, _ = postgres.Pool().Exec(ctx, `DELETE FROM messages WHERE session_key = $1`, sessionKey)
+	_, _ = postgres.Pool().Exec(ctx, `DELETE FROM memory_working WHERE session_key = $1`, sessionKey)
 	_, _ = postgres.Pool().Exec(ctx, `DELETE FROM runs WHERE session_key = $1`, sessionKey)
 	_, _ = postgres.Pool().Exec(ctx, `DELETE FROM sessions WHERE session_key = $1`, sessionKey)
 	defer func() {
 		_, _ = postgres.Pool().Exec(context.Background(), `DELETE FROM messages WHERE session_key = $1`, sessionKey)
+		_, _ = postgres.Pool().Exec(context.Background(), `DELETE FROM memory_working WHERE session_key = $1`, sessionKey)
 		_, _ = postgres.Pool().Exec(context.Background(), `DELETE FROM runs WHERE session_key = $1`, sessionKey)
 		_, _ = postgres.Pool().Exec(context.Background(), `DELETE FROM sessions WHERE session_key = $1`, sessionKey)
 	}()
@@ -65,7 +98,7 @@ func TestExecuteIntegrationPersistsRunAndTranscript(t *testing.T) {
 			transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "Hello integration", FinishReason: "completed"}),
 			transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
 		}},
-		Config{ProviderName: "openai", ModelName: "gpt-5-mini", OwnerID: "integration-test", LeaseTTL: 60},
+		Config{ProviderName: "openai", ModelName: "gpt-5-mini", OwnerID: "integration-test", LeaseTTL: 60, WorkingStore: workingIntegrationAdapter{store: working.NewStore(postgres.Pool())}},
 		nil,
 	)
 
@@ -106,5 +139,21 @@ func TestExecuteIntegrationPersistsRunAndTranscript(t *testing.T) {
 	}
 	if transcriptRows.Messages[1].Content != "Hello integration" {
 		t.Fatalf("unexpected assistant transcript content %q", transcriptRows.Messages[1].Content)
+	}
+
+	var workingCount int
+	if err := postgres.Pool().QueryRow(ctx, `SELECT COUNT(*) FROM memory_working WHERE session_key = $1`, sessionKey).Scan(&workingCount); err != nil {
+		t.Fatalf("query working memory count: %v", err)
+	}
+	if workingCount != 0 {
+		t.Fatalf("expected completed run to clear working memory, got count %d", workingCount)
+	}
+
+	var metadataJSON string
+	if err := postgres.Pool().QueryRow(ctx, `SELECT metadata_json::text FROM runs WHERE run_id = $1`, result.RunID).Scan(&metadataJSON); err != nil {
+		t.Fatalf("query run metadata: %v", err)
+	}
+	if !strings.Contains(metadataJSON, "memory_bundle") || !strings.Contains(metadataJSON, "working") {
+		t.Fatalf("expected working memory bundle in run metadata, got %s", metadataJSON)
 	}
 }

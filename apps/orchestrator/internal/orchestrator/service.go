@@ -51,6 +51,12 @@ type EpisodicMemoryStore interface {
 	Search(context.Context, string, string, []float32, int) ([]MemoryEpisode, error)
 }
 
+type WorkingMemoryStore interface {
+	Get(context.Context, string) (WorkingMemorySnapshot, error)
+	Save(context.Context, WorkingMemorySnapshot) (WorkingMemorySnapshot, error)
+	Clear(context.Context, string) error
+}
+
 type EmbeddingProvider interface {
 	EmbedQuery(context.Context, string) ([]float32, error)
 }
@@ -75,6 +81,25 @@ type MemoryEpisode interface {
 	EpisodeDistance() float64
 }
 
+type WorkingMemorySnapshot struct {
+	SessionKey       string
+	RunID            string
+	Goal             string
+	EntitiesJSON     string
+	PendingStepsJSON string
+	ScratchJSON      string
+	Status           string
+}
+
+type WorkingMemoryPolicy struct {
+	OnCompleted string
+	OnFailed    string
+	OnCancelled string
+	OnTimedOut  string
+}
+
+var ErrWorkingMemoryNotFound = errors.New("working memory snapshot not found")
+
 type Config struct {
 	ProviderName     string
 	ModelName        string
@@ -89,6 +114,8 @@ type Config struct {
 	Embeddings       EmbeddingProvider
 	PipelineEnqueuer PipelineEnqueuer
 	SummaryReader    SessionSummaryReader
+	WorkingStore     WorkingMemoryStore
+	WorkingPolicy    WorkingMemoryPolicy
 	ProfileLimit     int
 	EpisodeLimit     int
 	MemoryScopes     []string
@@ -125,6 +152,7 @@ type preparedRun struct {
 	InputItems    []transport.InputItem
 	UserMessage   string
 	MemoryBundle  map[string]any
+	WorkingMemory *workingMemoryContext
 	InputPayload  map[string]any
 	SessionUserID string
 	Channel       string
@@ -138,6 +166,15 @@ type memoryScope struct {
 type episodeMemoryItem struct {
 	Summary  string
 	Distance float64
+}
+
+type workingMemoryContext struct {
+	Goal           string
+	ActiveEntities any
+	PendingSteps   any
+	Scratch        map[string]any
+	Status         string
+	Policy         WorkingMemoryPolicy
 }
 
 func NewService(sessions SessionRepository, leases session.LeaseManager, runs RunManager, transcriptStore TranscriptStore, provider transport.ModelProvider, cfg Config, log *slog.Logger) *Service {
@@ -164,6 +201,18 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 	}
 	if len(cfg.MemoryScopes) == 0 {
 		cfg.MemoryScopes = []string{"session", "user", "global"}
+	}
+	if strings.TrimSpace(cfg.WorkingPolicy.OnCompleted) == "" {
+		cfg.WorkingPolicy.OnCompleted = "clear"
+	}
+	if strings.TrimSpace(cfg.WorkingPolicy.OnFailed) == "" {
+		cfg.WorkingPolicy.OnFailed = "retain"
+	}
+	if strings.TrimSpace(cfg.WorkingPolicy.OnCancelled) == "" {
+		cfg.WorkingPolicy.OnCancelled = "retain"
+	}
+	if strings.TrimSpace(cfg.WorkingPolicy.OnTimedOut) == "" {
+		cfg.WorkingPolicy.OnTimedOut = "retain"
 	}
 	return &Service{
 		sessions:   sessions,
@@ -264,6 +313,10 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("append user transcript: %w", err))
 	}
 
+	if err := s.savePreparedWorkingMemory(ctx, current.GetRunId(), event.SessionKey, prepared); err != nil {
+		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("save working memory: %w", err))
+	}
+
 	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_MODEL_RUNNING, lease.LeaseID, "", "")
 	if err != nil {
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("mark run model_running: %w", err))
@@ -319,6 +372,10 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 		MetadataJSON: `{"source":"model"}`,
 	}); err != nil {
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("append assistant transcript: %w", err))
+	}
+
+	if err := s.finalizeWorkingMemory(ctx, event.SessionKey, current.GetRunId(), commonv1.RunState_RUN_STATE_COMPLETED, finalMessage); err != nil {
+		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("finalize working memory: %w", err))
 	}
 
 	// Enqueue async memory pipeline job (fire-and-forget; failure does not block the run).
@@ -498,11 +555,18 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 	current = next
 
 	startedAt := time.Now().UTC()
+	workingStatus := "running"
+	if updateErr := s.updateWorkingMemoryCheckpoint(ctx, current.GetSessionKey(), current.GetRunId(), workingStatus, requested.ToolName, requested.ArgsJSON); updateErr != nil {
+		runLog.Warn("working memory update failed before tool execution", slog.String("error", updateErr.Error()))
+	}
 	result, err := s.config.Tools.ExecuteToolCall(ctx, brokerCall)
 	if err != nil {
 		return nil, current, fmt.Errorf("execute tool call %s: %w", requested.ToolName, err)
 	}
 	finishedAt := time.Now().UTC()
+	if updateErr := s.updateWorkingMemoryCheckpoint(ctx, current.GetSessionKey(), current.GetRunId(), "active", requested.ToolName, toolResultPayload(result)); updateErr != nil {
+		runLog.Warn("working memory update failed after tool execution", slog.String("error", updateErr.Error()))
+	}
 	if _, err := s.transcript.AppendToolCall(ctx, transcript.ToolCall{ToolCallID: toolCallID, RunID: current.GetRunId(), ToolName: requested.ToolName, ArgsJSON: normalizeJSON(requested.ArgsJSON, "{}"), Status: normalizeToolStatus(result.GetStatus()), RuntimeTarget: brokerCall.GetRuntimeTarget(), StartedAt: startedAt, FinishedAt: &finishedAt, ResultJSON: toolResultPayload(result), ErrorJSON: toolErrorPayload(result.GetError())}); err != nil {
 		return nil, current, fmt.Errorf("append tool transcript: %w", err)
 	}
@@ -528,6 +592,11 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 func (s *Service) failRun(ctx context.Context, current *sessionv1.RunRecord, leaseID string, runLog *slog.Logger, err error) error {
 	runLog.Error("run execution failed", slog.String("error", err.Error()))
 	state := current.GetCurrentState()
+	if current != nil {
+		if finalizeErr := s.finalizeWorkingMemory(ctx, current.GetSessionKey(), current.GetRunId(), commonv1.RunState_RUN_STATE_FAILED, err.Error()); finalizeErr != nil {
+			runLog.Warn("working memory finalization failed on error", slog.String("error", finalizeErr.Error()))
+		}
+	}
 	if state == commonv1.RunState_RUN_STATE_UNSPECIFIED || state == commonv1.RunState_RUN_STATE_FAILED || state == commonv1.RunState_RUN_STATE_CANCELLED || state == commonv1.RunState_RUN_STATE_TIMED_OUT || state == commonv1.RunState_RUN_STATE_COMPLETED {
 		return err
 	}
@@ -535,6 +604,101 @@ func (s *Service) failRun(ctx context.Context, current *sessionv1.RunRecord, lea
 		return fmt.Errorf("%w: additionally failed to transition run to failed: %v", err, transitionErr)
 	}
 	return err
+}
+
+func (s *Service) savePreparedWorkingMemory(ctx context.Context, runID, sessionKey string, prepared preparedRun) error {
+	if s.config.WorkingStore == nil || prepared.WorkingMemory == nil {
+		return nil
+	}
+	updated := prepared.WorkingMemory.withInitialGoal(prepared.UserMessage)
+	_, err := s.config.WorkingStore.Save(ctx, WorkingMemorySnapshot{
+		SessionKey:       sessionKey,
+		RunID:            runID,
+		Goal:             updated.Goal,
+		EntitiesJSON:     mustMarshalJSON(updated.ActiveEntities),
+		PendingStepsJSON: mustMarshalJSON(updated.PendingSteps),
+		ScratchJSON:      mustMarshalJSON(updated.Scratch),
+		Status:           normalizeWorkingStatus(updated.Status),
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Service) updateWorkingMemoryCheckpoint(ctx context.Context, sessionKey, runID, status, toolName, payload string) error {
+	if s.config.WorkingStore == nil {
+		return nil
+	}
+	working, err := s.loadWorkingMemory(ctx, sessionKey)
+	if err != nil {
+		return err
+	}
+	if working.Scratch == nil {
+		working.Scratch = map[string]any{}
+	}
+	working.Status = normalizeWorkingStatus(status)
+	if strings.TrimSpace(toolName) != "" {
+		working.Scratch["last_tool"] = map[string]any{"name": toolName, "payload": normalizeJSON(payload, "{}")}
+	}
+	_, err = s.config.WorkingStore.Save(ctx, WorkingMemorySnapshot{
+		SessionKey:       sessionKey,
+		RunID:            runID,
+		Goal:             working.Goal,
+		EntitiesJSON:     mustMarshalJSON(working.ActiveEntities),
+		PendingStepsJSON: mustMarshalJSON(working.PendingSteps),
+		ScratchJSON:      mustMarshalJSON(working.Scratch),
+		Status:           working.Status,
+	})
+	return err
+}
+
+func (s *Service) finalizeWorkingMemory(ctx context.Context, sessionKey, runID string, state commonv1.RunState, note string) error {
+	if s.config.WorkingStore == nil || strings.TrimSpace(sessionKey) == "" {
+		return nil
+	}
+	action := s.workingMemoryAction(state)
+	if action == "clear" {
+		err := s.config.WorkingStore.Clear(ctx, sessionKey)
+		if err != nil && !errors.Is(err, ErrWorkingMemoryNotFound) {
+			return err
+		}
+		return nil
+	}
+	working, err := s.loadWorkingMemory(ctx, sessionKey)
+	if err != nil {
+		return err
+	}
+	if working.Scratch == nil {
+		working.Scratch = map[string]any{}
+	}
+	if trimmed := strings.TrimSpace(note); trimmed != "" {
+		working.Scratch["final_note"] = trimmed
+	}
+	working.Status = normalizeWorkingStatus(action)
+	_, err = s.config.WorkingStore.Save(ctx, WorkingMemorySnapshot{
+		SessionKey:       sessionKey,
+		RunID:            runID,
+		Goal:             working.Goal,
+		EntitiesJSON:     mustMarshalJSON(working.ActiveEntities),
+		PendingStepsJSON: mustMarshalJSON(working.PendingSteps),
+		ScratchJSON:      mustMarshalJSON(working.Scratch),
+		Status:           working.Status,
+	})
+	return err
+}
+
+func (s *Service) workingMemoryAction(state commonv1.RunState) string {
+	switch state {
+	case commonv1.RunState_RUN_STATE_COMPLETED:
+		return strings.ToLower(strings.TrimSpace(s.config.WorkingPolicy.OnCompleted))
+	case commonv1.RunState_RUN_STATE_CANCELLED:
+		return strings.ToLower(strings.TrimSpace(s.config.WorkingPolicy.OnCancelled))
+	case commonv1.RunState_RUN_STATE_TIMED_OUT:
+		return strings.ToLower(strings.TrimSpace(s.config.WorkingPolicy.OnTimedOut))
+	default:
+		return strings.ToLower(strings.TrimSpace(s.config.WorkingPolicy.OnFailed))
+	}
 }
 
 func (s *Service) persistProviderSessionRef(ctx context.Context, current *sessionv1.RunRecord, ref *transport.ProviderSessionRef, runLog *slog.Logger) (*sessionv1.RunRecord, error) {
@@ -602,6 +766,89 @@ func drainRenewError(errCh <-chan error) error {
 	}
 }
 
+func (w *workingMemoryContext) withInitialGoal(userMessage string) *workingMemoryContext {
+	if w == nil {
+		return &workingMemoryContext{Goal: strings.TrimSpace(userMessage), Status: "active", Scratch: map[string]any{}}
+	}
+	if strings.TrimSpace(w.Goal) == "" {
+		w.Goal = strings.TrimSpace(userMessage)
+	}
+	w.Status = normalizeWorkingStatus(w.Status)
+	if w.Status == "idle" && strings.TrimSpace(w.Goal) != "" {
+		w.Status = "active"
+	}
+	if w.ActiveEntities == nil {
+		w.ActiveEntities = map[string]any{}
+	}
+	if w.PendingSteps == nil {
+		w.PendingSteps = []any{}
+	}
+	if w.Scratch == nil {
+		w.Scratch = map[string]any{}
+	}
+	return w
+}
+
+func normalizeWorkingStatus(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "", "idle":
+		return "idle"
+	case "active", "running", "completed", "abandoned", "failed", "cancelled", "timed_out", "retained":
+		return strings.ToLower(strings.TrimSpace(value))
+	default:
+		return strings.ToLower(strings.TrimSpace(value))
+	}
+}
+
+func decodeJSONValue(raw string, fallback any) any {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" || !json.Valid([]byte(trimmed)) {
+		return fallback
+	}
+	var decoded any
+	if err := json.Unmarshal([]byte(trimmed), &decoded); err != nil {
+		return fallback
+	}
+	return decoded
+}
+
+func decodeJSONObject(raw string) map[string]any {
+	decoded := decodeJSONValue(raw, map[string]any{})
+	object, ok := decoded.(map[string]any)
+	if !ok {
+		return map[string]any{}
+	}
+	return object
+}
+
+func isEmptyJSONValue(value any) bool {
+	switch typed := value.(type) {
+	case nil:
+		return true
+	case map[string]any:
+		return len(typed) == 0
+	case []any:
+		return len(typed) == 0
+	case []string:
+		return len(typed) == 0
+	case string:
+		return strings.TrimSpace(typed) == ""
+	default:
+		return false
+	}
+}
+
+func formatJSONValueForPrompt(value any) string {
+	if isEmptyJSONValue(value) {
+		return ""
+	}
+	encoded, err := json.Marshal(value)
+	if err != nil {
+		return ""
+	}
+	return string(encoded)
+}
+
 func (s *Service) transition(ctx context.Context, runID string, from, to commonv1.RunState, leaseID, errorType, errorMessage string) (*sessionv1.RunRecord, error) {
 	resp, err := s.runs.TransitionRun(ctx, &sessionv1.UpdateRunStateRequest{
 		RunId:        runID,
@@ -640,6 +887,7 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 		InputItems:    []transport.InputItem{{Role: "user", Content: message, ContentType: "text/plain"}},
 		UserMessage:   message,
 		MemoryBundle:  map[string]any{},
+		WorkingMemory: &workingMemoryContext{Status: "idle", Policy: s.config.WorkingPolicy, Scratch: map[string]any{}},
 		InputPayload:  payload,
 		SessionUserID: userID,
 		Channel:       channel,
@@ -659,20 +907,28 @@ func (s *Service) attachMemoryContext(ctx context.Context, sessionKey, userID, u
 	if err != nil {
 		return err
 	}
+	workingMemory, err := s.loadWorkingMemory(ctx, sessionKey)
+	if err != nil {
+		return err
+	}
+	prepared.WorkingMemory = workingMemory
 	episodes, err := s.loadEpisodes(ctx, scopes, userMessage)
 	if err != nil {
 		return err
 	}
 	sessionSummary := s.loadSessionSummary(ctx, sessionKey)
-	if len(profileEntries) == 0 && len(episodes) == 0 && sessionSummary == "" {
+	if len(profileEntries) == 0 && len(episodes) == 0 && sessionSummary == "" && workingMemoryIsEmpty(workingMemory) {
 		return nil
+	}
+	if !workingMemoryIsEmpty(workingMemory) {
+		prepared.MemoryBundle["working"] = workingMemory.bundleMap()
 	}
 	prepared.MemoryBundle["profile"] = profileEntries
 	prepared.MemoryBundle["episodes"] = episodes
 	if sessionSummary != "" {
 		prepared.MemoryBundle["session_summary"] = sessionSummary
 	}
-	memoryPrompt := formatMemoryPrompt(profileEntries, episodes, sessionSummary)
+	memoryPrompt := formatMemoryPrompt(workingMemory, profileEntries, episodes, sessionSummary)
 	if strings.TrimSpace(memoryPrompt) != "" {
 		prepared.InputItems = append([]transport.InputItem{{Role: "system", Content: memoryPrompt, ContentType: "text/plain"}}, prepared.InputItems...)
 	}
@@ -737,6 +993,26 @@ func (s *Service) loadEpisodes(ctx context.Context, scopes []memoryScope, userMe
 	return result, nil
 }
 
+func (s *Service) loadWorkingMemory(ctx context.Context, sessionKey string) (*workingMemoryContext, error) {
+	working := &workingMemoryContext{Status: "idle", Policy: s.config.WorkingPolicy, Scratch: map[string]any{}}
+	if s.config.WorkingStore == nil {
+		return working, nil
+	}
+	snapshot, err := s.config.WorkingStore.Get(ctx, sessionKey)
+	if err != nil {
+		if errors.Is(err, ErrWorkingMemoryNotFound) {
+			return working, nil
+		}
+		return nil, fmt.Errorf("load working memory: %w", err)
+	}
+	working.Goal = strings.TrimSpace(snapshot.Goal)
+	working.Status = normalizeWorkingStatus(snapshot.Status)
+	working.ActiveEntities = decodeJSONValue(snapshot.EntitiesJSON, map[string]any{})
+	working.PendingSteps = decodeJSONValue(snapshot.PendingStepsJSON, []any{})
+	working.Scratch = decodeJSONObject(snapshot.ScratchJSON)
+	return working, nil
+}
+
 func (s *Service) loadSessionSummary(ctx context.Context, sessionKey string) string {
 	if s.config.SummaryReader == nil {
 		return ""
@@ -750,6 +1026,34 @@ func (s *Service) loadSessionSummary(ctx context.Context, sessionKey string) str
 		return ""
 	}
 	return strings.TrimSpace(summary)
+}
+
+func (w *workingMemoryContext) bundleMap() map[string]any {
+	if w == nil {
+		return nil
+	}
+	return map[string]any{
+		"goal":            w.Goal,
+		"active_entities": w.ActiveEntities,
+		"pending_steps":   w.PendingSteps,
+		"working_status":  w.Status,
+	}
+}
+
+func workingMemoryIsEmpty(w *workingMemoryContext) bool {
+	if w == nil {
+		return true
+	}
+	if strings.TrimSpace(w.Goal) != "" {
+		return false
+	}
+	if !isEmptyJSONValue(w.ActiveEntities) {
+		return false
+	}
+	if !isEmptyJSONValue(w.PendingSteps) {
+		return false
+	}
+	return strings.TrimSpace(normalizeWorkingStatus(w.Status)) == "idle"
 }
 
 func (s *Service) memoryScopes(sessionKey, userID string) []memoryScope {
@@ -776,10 +1080,13 @@ func (s *Service) memoryScopes(sessionKey, userID string) []memoryScope {
 	return scopes
 }
 
-func formatMemoryPrompt(profileEntries, episodes []map[string]any, sessionSummary string) string {
-	sections := make([]string, 0, 3)
+func formatMemoryPrompt(workingMemory *workingMemoryContext, profileEntries, episodes []map[string]any, sessionSummary string) string {
+	sections := make([]string, 0, 4)
 	if strings.TrimSpace(sessionSummary) != "" {
 		sections = append(sections, "Session summary:\n"+sessionSummary)
+	}
+	if lines := formatWorkingMemoryLines(workingMemory); len(lines) > 0 {
+		sections = append(sections, "Working memory:\n"+strings.Join(lines, "\n"))
 	}
 	if len(profileEntries) > 0 {
 		lines := make([]string, 0, len(profileEntries))
@@ -796,6 +1103,26 @@ func formatMemoryPrompt(profileEntries, episodes []map[string]any, sessionSummar
 		sections = append(sections, "Relevant episodes:\n"+strings.Join(lines, "\n"))
 	}
 	return strings.Join(sections, "\n\n")
+}
+
+func formatWorkingMemoryLines(workingMemory *workingMemoryContext) []string {
+	if workingMemoryIsEmpty(workingMemory) {
+		return nil
+	}
+	lines := []string{}
+	if goal := strings.TrimSpace(workingMemory.Goal); goal != "" {
+		lines = append(lines, "- Goal: "+goal)
+	}
+	if entities := formatJSONValueForPrompt(workingMemory.ActiveEntities); entities != "" {
+		lines = append(lines, "- Active entities: "+entities)
+	}
+	if pending := formatJSONValueForPrompt(workingMemory.PendingSteps); pending != "" {
+		lines = append(lines, "- Pending steps: "+pending)
+	}
+	if status := normalizeWorkingStatus(workingMemory.Status); status != "idle" {
+		lines = append(lines, "- Status: "+status)
+	}
+	return lines
 }
 
 func extractUserMessage(payload map[string]any) string {
