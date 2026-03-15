@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/butler/butler/internal/credentials"
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/logger"
@@ -28,7 +29,7 @@ func New(log *slog.Logger) *Router {
 	return &Router{log: logger.WithComponent(log, "runtime-router"), conns: make(map[string]*grpc.ClientConn)}
 }
 
-func (r *Router) Execute(ctx context.Context, toolCall *toolbrokerv1.ToolCall, contract *toolbrokerv1.ToolContract) (*toolbrokerv1.ToolResult, error) {
+func (r *Router) Execute(ctx context.Context, toolCall *toolbrokerv1.ToolCall, contract *toolbrokerv1.ToolContract, resolved []credentials.ResolvedSecret) (*toolbrokerv1.ToolResult, error) {
 	if toolCall == nil {
 		return nil, fmt.Errorf("tool_call is required")
 	}
@@ -48,9 +49,10 @@ func (r *Router) Execute(ctx context.Context, toolCall *toolbrokerv1.ToolCall, c
 		return nil, err
 	}
 	resp, err := client.Execute(ctx, &runtimev1.ExecuteRequest{
-		Context:  executionContext(ctx, toolCall, contract, target),
-		ToolCall: toolCall,
-		Contract: contract,
+		Context:             executionContext(ctx, toolCall, contract, target),
+		ToolCall:            toolCall,
+		Contract:            contract,
+		ResolvedCredentials: toResolvedCredentials(resolved),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("execute runtime tool via %s: %w", target, err)
@@ -69,6 +71,17 @@ func (r *Router) Execute(ctx context.Context, toolCall *toolbrokerv1.ToolCall, c
 		result.ToolName = toolCall.GetToolName()
 	}
 	return result, nil
+}
+
+func toResolvedCredentials(resolved []credentials.ResolvedSecret) []*runtimev1.ResolvedCredential {
+	if len(resolved) == 0 {
+		return nil
+	}
+	items := make([]*runtimev1.ResolvedCredential, 0, len(resolved))
+	for _, item := range resolved {
+		items = append(items, &runtimev1.ResolvedCredential{Alias: item.Alias, Field: item.Field, Value: item.Value})
+	}
+	return items
 }
 
 func (r *Router) Close() error {
@@ -90,9 +103,7 @@ func (r *Router) clientFor(target string) (runtimev1.ToolRuntimeServiceClient, e
 	if conn, ok := r.conns[target]; ok {
 		return runtimev1.NewToolRuntimeServiceClient(conn), nil
 	}
-	dialCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	conn, err := grpc.DialContext(dialCtx, target, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+	conn, err := grpc.NewClient(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("dial runtime target %s: %w", target, err)
 	}

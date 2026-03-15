@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 
+	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 )
 
@@ -133,6 +134,9 @@ func (r *Registry) Validate(call *toolbrokerv1.ToolCall) (bool, *toolbrokerv1.To
 	if strings.TrimSpace(call.GetArgsJson()) == "" {
 		return false, contract, validationError("args_json is required")
 	}
+	if len(call.GetCredentialRefs()) > 0 && !contract.GetSupportsCredentialRefs() {
+		return false, contract, validationError("tool does not support credential_refs")
+	}
 	if err := ValidateArgs(contract.GetInputSchemaJson(), call.GetArgsJson()); err != nil {
 		return false, contract, validationError(err.Error())
 	}
@@ -150,7 +154,7 @@ func cloneContract(contract *toolbrokerv1.ToolContract) *toolbrokerv1.ToolContra
 }
 
 func validationError(message string) *toolbrokerv1.ToolError {
-	return &toolbrokerv1.ToolError{ErrorClass: 1, Message: message, Retryable: false}
+	return &toolbrokerv1.ToolError{ErrorClass: commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, Message: message, Retryable: false}
 }
 
 type schemaNode struct {

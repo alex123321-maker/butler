@@ -31,6 +31,7 @@ message ToolCall {
   string result_json = 9;
   ToolError error = 10;
   repeated CredentialRef credential_refs = 11;
+  butler.common.v1.AutonomyMode autonomy_mode = 12;
 }
 
 message ToolResult {

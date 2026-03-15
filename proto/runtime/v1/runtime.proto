@@ -19,10 +19,17 @@ message ExecutionContext {
   int64 timeout_ms = 6;
 }
 
+message ResolvedCredential {
+  string alias = 1;
+  string field = 2;
+  string value = 3;
+}
+
 message ExecuteRequest {
   ExecutionContext context = 1;
   butler.toolbroker.v1.ToolCall tool_call = 2;
   butler.toolbroker.v1.ToolContract contract = 3;
+  repeated ResolvedCredential resolved_credentials = 4;
 }
 
 message ExecuteResponse {

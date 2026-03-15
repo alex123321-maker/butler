@@ -1193,14 +1193,24 @@ sprints:
         subsystem: tool-broker
         sprint: SPRINT-5
         priority: high
-        status: todo
+        status: done
         description: >
           Resolve secrets prior to tool execution without passing them to the model context.
         why_now: Fulfills the credential architecture requirement.
         dependencies: ["T-0501"]
-        docs_to_read: []
-        acceptance_criteria: ["Secrets resolved automatically during tool routing"]
-        deliverables: ["Resolution logic"]
+        docs_to_read:
+          - docs/architecture/credential-management.md
+          - docs/architecture/tool-runtime-adr.md
+        acceptance_criteria:
+          - Credential refs are authorized by alias metadata before runtime execution.
+          - Secret values are resolved only inside Tool Broker and runtime gRPC requests, never in model-visible tool args.
+          - Runtime contract carries resolved credentials separately from the original tool args.
+          - http.request can consume resolved credential refs for authenticated requests.
+        deliverables:
+          - Tool Broker credential resolution wiring
+          - updated runtime proto contract
+          - HTTP runtime credential-aware auth injection
+          - unit tests for credential routing
 
       - id: T-0503
         title: Doctor Runtime Skeleton

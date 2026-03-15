@@ -32,6 +32,15 @@ type requestArgs struct {
 	URL     string            `json:"url"`
 	Headers map[string]string `json:"headers"`
 	Body    string            `json:"body"`
+	Auth    *authArgs         `json:"auth"`
+}
+
+type authArgs struct {
+	Type   string `json:"type"`
+	Alias  string `json:"alias"`
+	Field  string `json:"field"`
+	Header string `json:"header"`
+	Scheme string `json:"scheme"`
 }
 
 func NewServer(httpClient *http.Client, log *slog.Logger) *Server {
@@ -89,6 +98,9 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	for key, value := range args.Headers {
 		httpReq.Header.Set(key, value)
 	}
+	if err := applyResolvedAuth(httpReq, args.Auth, req.GetResolvedCredentials()); err != nil {
+		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_CREDENTIAL_ERROR, err.Error(), mustJSON(map[string]any{"tool_name": call.GetToolName()}))}, nil
+	}
 
 	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
@@ -123,15 +135,19 @@ func failedResult(req *runtimev1.ExecuteRequest, class commonv1.ErrorClass, mess
 
 func domainAllowed(host string, allowed []string) bool {
 	host = strings.ToLower(strings.TrimSpace(host))
-	if host == "" || len(allowed) == 0 {
+	if host == "" {
 		return false
+	}
+	// Empty allowlist means unrestricted — operators populate the list to restrict domains.
+	if len(allowed) == 0 {
+		return true
 	}
 	for _, candidate := range allowed {
 		candidate = strings.ToLower(strings.TrimSpace(candidate))
 		if candidate == "" {
 			continue
 		}
-		if host == candidate || strings.HasSuffix(host, "."+candidate) {
+		if candidate == "*" || host == candidate || strings.HasSuffix(host, "."+candidate) {
 			return true
 		}
 	}
@@ -144,6 +160,49 @@ func flattenHeaders(headers http.Header) map[string]string {
 		result[key] = strings.Join(values, ", ")
 	}
 	return result
+}
+
+func applyResolvedAuth(req *http.Request, auth *authArgs, resolved []*runtimev1.ResolvedCredential) error {
+	if auth == nil {
+		return nil
+	}
+	if !strings.EqualFold(strings.TrimSpace(auth.Type), "credential_ref") {
+		return fmt.Errorf("unsupported auth type %q", auth.Type)
+	}
+	match := findResolvedCredential(resolved, auth.Alias, auth.Field)
+	if match == nil {
+		return fmt.Errorf("resolved credential %s/%s was not provided", strings.TrimSpace(auth.Alias), strings.TrimSpace(auth.Field))
+	}
+	header := strings.TrimSpace(auth.Header)
+	if header == "" {
+		header = "Authorization"
+	}
+	scheme := strings.TrimSpace(auth.Scheme)
+	value := match.GetValue()
+	if strings.EqualFold(header, "Authorization") {
+		if scheme == "" && strings.EqualFold(strings.TrimSpace(auth.Field), "token") {
+			scheme = "Bearer"
+		}
+		if scheme != "" {
+			value = scheme + " " + value
+		}
+	}
+	req.Header.Set(header, value)
+	return nil
+}
+
+func findResolvedCredential(resolved []*runtimev1.ResolvedCredential, alias, field string) *runtimev1.ResolvedCredential {
+	alias = strings.TrimSpace(alias)
+	field = strings.TrimSpace(field)
+	for _, item := range resolved {
+		if item == nil {
+			continue
+		}
+		if strings.EqualFold(strings.TrimSpace(item.GetAlias()), alias) && strings.EqualFold(strings.TrimSpace(item.GetField()), field) {
+			return item
+		}
+	}
+	return nil
 }
 
 func readBody(reader io.Reader, maxBytes int64) (string, bool, error) {

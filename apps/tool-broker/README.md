@@ -8,6 +8,7 @@ Current state:
 - schema validation is performed against tool `input_schema_json`
 - execution routing dials the per-tool `runtime_target` over the internal runtime gRPC contract
 - credential metadata foundation lives in `internal/credentials` with PostgreSQL-backed alias records and policy authorization helpers
+- credential refs are resolved in the broker via `secret_ref` values and forwarded to runtimes through `resolved_credentials`
 
 Expected dependencies:
 - generated `toolbroker` gRPC bindings
@@ -19,6 +20,7 @@ Configuration:
 - current typed config loader supports `BUTLER_TOOL_REGISTRY_PATH` and `BUTLER_TOOL_DEFAULT_TARGET`
 - placeholder registry file lives at `configs/tools.json`
 - shared service settings come from `BUTLER_HTTP_ADDR`, `BUTLER_GRPC_ADDR`, and `BUTLER_LOG_LEVEL`
+- credential metadata lookup uses the optional tool-broker PostgreSQL config; the current secret resolver supports `env://ENV_VAR_NAME` references
 
 Local run:
 - `go run ./apps/tool-broker`

@@ -58,3 +58,21 @@ func TestValidateToolCall(t *testing.T) {
 		t.Fatal("expected validation error message")
 	}
 }
+
+func TestValidateToolCallRejectsCredentialRefsWhenUnsupported(t *testing.T) {
+	t.Parallel()
+
+	registry := &Registry{toolsByName: map[string]*toolbrokerv1.ToolContract{
+		"browser.navigate": {
+			ToolName:               "browser.navigate",
+			Status:                 "enabled",
+			InputSchemaJson:        `{"type":"object","required":["url"],"properties":{"url":{"type":"string"}},"additionalProperties":false}`,
+			SupportsCredentialRefs: false,
+		},
+	}}
+
+	valid, _, err := registry.Validate(&toolbrokerv1.ToolCall{ToolName: "browser.navigate", ArgsJson: `{"url":"https://example.com"}`, CredentialRefs: []*toolbrokerv1.CredentialRef{{Type: "credential_ref", Alias: "github", Field: "token"}}})
+	if valid || err == nil {
+		t.Fatal("expected credential refs to be rejected for unsupported tool")
+	}
+}

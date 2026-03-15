@@ -221,6 +221,16 @@ Lookup не возвращает секретные значения, approval p
 5. Значение передаётся напрямую в runtime инструмента.
 6. Агенту возвращается только безопасный результат.
 
+#### V1 baseline implemented in Sprint 5.2
+
+В текущем baseline Butler:
+
+* `ToolCall.credential_refs` остаётся модельно-видимой typed reference структурой без секрета;
+* Tool Broker авторизует каждую ссылку по alias metadata, tool name, target domain и autonomy mode;
+* после авторизации broker разрешает `secret_ref` только в системном слое;
+* runtime получает секреты отдельно в gRPC-поле `resolved_credentials`, а не внутри `args_json`;
+* первая поддержанная runtime-инъекция реализована для `http.request`.
+
 ---
 
 ## 7. Поддерживаемые сценарии
@@ -450,6 +460,16 @@ Important constraints:
 
 * локальное зашифрованное хранилище;
 * либо внешний secret provider.
+
+#### V1 baseline resolver
+
+До появления полноценного encrypted Secret Store Butler V1 использует минимальный системный resolver по `secret_ref` схеме `env://ENV_VAR_NAME`.
+
+Это означает:
+
+* PostgreSQL хранит только metadata и `secret_ref`;
+* фактическое значение читается Tool Broker только из переменной окружения runtime/process layer;
+* raw secret не записывается в transcript, config introspection и model-visible tool args.
 
 ---
 

@@ -17,9 +17,11 @@ import (
 	"github.com/butler/butler/apps/tool-broker/internal/registry"
 	"github.com/butler/butler/apps/tool-broker/internal/runtimeclient"
 	"github.com/butler/butler/internal/config"
+	"github.com/butler/butler/internal/credentials"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
+	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	"google.golang.org/grpc"
 )
 
@@ -30,6 +32,7 @@ type App struct {
 	grpcServer *grpc.Server
 	grpcListen net.Listener
 	router     *runtimeclient.Router
+	postgres   *postgresstore.Store
 }
 
 func New(ctx context.Context) (*App, error) {
@@ -44,8 +47,20 @@ func New(ctx context.Context) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+	var postgres *postgresstore.Store
+	var credentialResolver *credentials.ToolCallBroker
+	if cfg.Postgres.URL != "" {
+		postgres, err = postgresstore.Open(ctx, postgresstore.ConfigFromShared(cfg.Postgres), log)
+		if err != nil {
+			return nil, err
+		}
+		credentialResolver = credentials.NewToolCallBroker(
+			credentials.NewBroker(credentials.NewStore(postgres.Pool())),
+			credentials.EnvSecretResolver{},
+		)
+	}
 	router := runtimeclient.New(log)
-	server := broker.NewServer(registryStore, router, log)
+	server := broker.NewServer(registryStore, router, credentialResolver, log)
 
 	httpMux := http.NewServeMux()
 	httpMux.Handle("/health", health.New(cfg.Shared.ServiceName).Handler())
@@ -59,7 +74,7 @@ func New(ctx context.Context) (*App, error) {
 	grpcServer := grpc.NewServer()
 	toolbrokerv1.RegisterToolBrokerServiceServer(grpcServer, server)
 
-	return &App{config: cfg, log: log, httpServer: httpServer, grpcServer: grpcServer, grpcListen: grpcListener, router: router}, nil
+	return &App{config: cfg, log: log, httpServer: httpServer, grpcServer: grpcServer, grpcListen: grpcListener, router: router, postgres: postgres}, nil
 }
 
 func (a *App) Run(ctx context.Context) error {
@@ -108,6 +123,9 @@ func (a *App) shutdown(runErr error) error {
 		if err := a.router.Close(); err != nil && runErr == nil {
 			runErr = err
 		}
+	}
+	if a.postgres != nil {
+		a.postgres.Close()
 	}
 	if runErr != nil {
 		a.log.Error("tool broker stopped with error", slog.String("error", runErr.Error()))

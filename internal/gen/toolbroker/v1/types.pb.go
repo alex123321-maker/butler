@@ -163,6 +163,7 @@ type ToolCall struct {
 	ResultJson     string                 `protobuf:"bytes,9,opt,name=result_json,json=resultJson,proto3" json:"result_json,omitempty"`
 	Error          *ToolError             `protobuf:"bytes,10,opt,name=error,proto3" json:"error,omitempty"`
 	CredentialRefs []*CredentialRef       `protobuf:"bytes,11,rep,name=credential_refs,json=credentialRefs,proto3" json:"credential_refs,omitempty"`
+	AutonomyMode   v1.AutonomyMode        `protobuf:"varint,12,opt,name=autonomy_mode,json=autonomyMode,proto3,enum=butler.common.v1.AutonomyMode" json:"autonomy_mode,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -272,6 +273,13 @@ func (x *ToolCall) GetCredentialRefs() []*CredentialRef {
 		return x.CredentialRefs
 	}
 	return nil
+}
+
+func (x *ToolCall) GetAutonomyMode() v1.AutonomyMode {
+	if x != nil {
+		return x.AutonomyMode
+	}
+	return v1.AutonomyMode(0)
 }
 
 type ToolResult struct {
@@ -520,7 +528,7 @@ const file_toolbroker_v1_types_proto_rawDesc = "" +
 	"errorClass\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1c\n" +
 	"\tretryable\x18\x03 \x01(\bR\tretryable\x12!\n" +
-	"\fdetails_json\x18\x04 \x01(\tR\vdetailsJson\"\xa2\x03\n" +
+	"\fdetails_json\x18\x04 \x01(\tR\vdetailsJson\"\xe7\x03\n" +
 	"\bToolCall\x12 \n" +
 	"\ftool_call_id\x18\x01 \x01(\tR\n" +
 	"toolCallId\x12\x15\n" +
@@ -537,7 +545,8 @@ const file_toolbroker_v1_types_proto_rawDesc = "" +
 	"resultJson\x125\n" +
 	"\x05error\x18\n" +
 	" \x01(\v2\x1f.butler.toolbroker.v1.ToolErrorR\x05error\x12L\n" +
-	"\x0fcredential_refs\x18\v \x03(\v2#.butler.toolbroker.v1.CredentialRefR\x0ecredentialRefs\"\xf3\x01\n" +
+	"\x0fcredential_refs\x18\v \x03(\v2#.butler.toolbroker.v1.CredentialRefR\x0ecredentialRefs\x12C\n" +
+	"\rautonomy_mode\x18\f \x01(\x0e2\x1e.butler.common.v1.AutonomyModeR\fautonomyMode\"\xf3\x01\n" +
 	"\n" +
 	"ToolResult\x12 \n" +
 	"\ftool_call_id\x18\x01 \x01(\tR\n" +
@@ -588,17 +597,19 @@ var file_toolbroker_v1_types_proto_goTypes = []any{
 	(*ToolResult)(nil),    // 3: butler.toolbroker.v1.ToolResult
 	(*ToolContract)(nil),  // 4: butler.toolbroker.v1.ToolContract
 	(v1.ErrorClass)(0),    // 5: butler.common.v1.ErrorClass
+	(v1.AutonomyMode)(0),  // 6: butler.common.v1.AutonomyMode
 }
 var file_toolbroker_v1_types_proto_depIdxs = []int32{
 	5, // 0: butler.toolbroker.v1.ToolError.error_class:type_name -> butler.common.v1.ErrorClass
 	1, // 1: butler.toolbroker.v1.ToolCall.error:type_name -> butler.toolbroker.v1.ToolError
 	0, // 2: butler.toolbroker.v1.ToolCall.credential_refs:type_name -> butler.toolbroker.v1.CredentialRef
-	1, // 3: butler.toolbroker.v1.ToolResult.error:type_name -> butler.toolbroker.v1.ToolError
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	6, // 3: butler.toolbroker.v1.ToolCall.autonomy_mode:type_name -> butler.common.v1.AutonomyMode
+	1, // 4: butler.toolbroker.v1.ToolResult.error:type_name -> butler.toolbroker.v1.ToolError
+	5, // [5:5] is the sub-list for method output_type
+	5, // [5:5] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_toolbroker_v1_types_proto_init() }

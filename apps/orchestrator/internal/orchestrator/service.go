@@ -360,7 +360,7 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 	if strings.TrimSpace(toolCallID) == "" {
 		toolCallID = fmt.Sprintf("tool-%s-%d", current.GetRunId(), time.Now().UTC().UnixNano())
 	}
-	brokerCall := &toolbrokerv1.ToolCall{ToolCallId: toolCallID, RunId: current.GetRunId(), ToolName: requested.ToolName, ArgsJson: requested.ArgsJSON, Status: "requested"}
+	brokerCall := &toolbrokerv1.ToolCall{ToolCallId: toolCallID, RunId: current.GetRunId(), ToolName: requested.ToolName, ArgsJson: requested.ArgsJSON, Status: "requested", AutonomyMode: current.GetAutonomyMode()}
 
 	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_TOOL_RUNNING, leaseID, "", "")
 	if err != nil {

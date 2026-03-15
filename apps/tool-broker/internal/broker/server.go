@@ -6,6 +6,8 @@ import (
 	"log/slog"
 
 	"github.com/butler/butler/apps/tool-broker/internal/registry"
+	"github.com/butler/butler/internal/credentials"
+	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/logger"
 	"google.golang.org/grpc/codes"
@@ -17,18 +19,23 @@ type Server struct {
 
 	registry *registry.Registry
 	executor RuntimeExecutor
+	creds    CredentialResolver
 	log      *slog.Logger
 }
 
 type RuntimeExecutor interface {
-	Execute(context.Context, *toolbrokerv1.ToolCall, *toolbrokerv1.ToolContract) (*toolbrokerv1.ToolResult, error)
+	Execute(context.Context, *toolbrokerv1.ToolCall, *toolbrokerv1.ToolContract, []credentials.ResolvedSecret) (*toolbrokerv1.ToolResult, error)
 }
 
-func NewServer(registry *registry.Registry, executor RuntimeExecutor, log *slog.Logger) *Server {
+type CredentialResolver interface {
+	ResolveToolCall(context.Context, *toolbrokerv1.ToolCall) ([]credentials.ResolvedSecret, error)
+}
+
+func NewServer(registry *registry.Registry, executor RuntimeExecutor, creds CredentialResolver, log *slog.Logger) *Server {
 	if log == nil {
 		log = slog.Default()
 	}
-	return &Server{registry: registry, executor: executor, log: logger.WithComponent(log, "tool-broker")}
+	return &Server{registry: registry, executor: executor, creds: creds, log: logger.WithComponent(log, "tool-broker")}
 }
 
 func (s *Server) ValidateToolCall(_ context.Context, req *toolbrokerv1.ValidateToolCallRequest) (*toolbrokerv1.ValidateToolCallResponse, error) {
@@ -44,13 +51,28 @@ func (s *Server) ExecuteToolCall(ctx context.Context, req *toolbrokerv1.ExecuteT
 	if !valid {
 		return &toolbrokerv1.ExecuteToolCallResponse{Result: invalidResult(req.GetToolCall(), toolErr)}, nil
 	}
-	result, err := s.executor.Execute(ctx, req.GetToolCall(), contract)
+	resolved, err := s.resolveCredentials(ctx, req.GetToolCall())
+	if err != nil {
+		s.log.Error("credential resolution failed", slog.String("tool_name", req.GetToolCall().GetToolName()), slog.String("tool_call_id", req.GetToolCall().GetToolCallId()), slog.String("error", err.Error()))
+		return &toolbrokerv1.ExecuteToolCallResponse{Result: credentialErrorResult(req.GetToolCall(), err)}, nil
+	}
+	result, err := s.executor.Execute(ctx, req.GetToolCall(), contract, resolved)
 	if err != nil {
 		s.log.Error("tool execution failed", slog.String("tool_name", req.GetToolCall().GetToolName()), slog.String("tool_call_id", req.GetToolCall().GetToolCallId()), slog.String("error", err.Error()))
 		return &toolbrokerv1.ExecuteToolCallResponse{Result: runtimeErrorResult(req.GetToolCall(), contract, err)}, nil
 	}
 	s.log.Info("tool execution routed", slog.String("tool_name", req.GetToolCall().GetToolName()), slog.String("tool_call_id", req.GetToolCall().GetToolCallId()), slog.String("runtime_target", contract.GetRuntimeTarget()))
 	return &toolbrokerv1.ExecuteToolCallResponse{Result: result}, nil
+}
+
+func (s *Server) resolveCredentials(ctx context.Context, call *toolbrokerv1.ToolCall) ([]credentials.ResolvedSecret, error) {
+	if call == nil || len(call.GetCredentialRefs()) == 0 {
+		return nil, nil
+	}
+	if s.creds == nil {
+		return nil, fmt.Errorf("credential resolution is not configured")
+	}
+	return s.creds.ResolveToolCall(ctx, call)
 }
 
 func (s *Server) ListTools(_ context.Context, req *toolbrokerv1.ListToolsRequest) (*toolbrokerv1.ListToolsResponse, error) {
@@ -87,12 +109,26 @@ func runtimeErrorResult(call *toolbrokerv1.ToolCall, contract *toolbrokerv1.Tool
 		ToolName:   call.GetToolName(),
 		Status:     "failed",
 		Error: &toolbrokerv1.ToolError{
-			ErrorClass: 1,
+			ErrorClass: commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR,
 			Message:    fmt.Sprintf("runtime execution failed: %v", err),
 			Retryable:  false,
 			DetailsJson: fmt.Sprintf(`{"runtime_target":%q}`,
 				runtimeTarget,
 			),
+		},
+	}
+}
+
+func credentialErrorResult(call *toolbrokerv1.ToolCall, err error) *toolbrokerv1.ToolResult {
+	return &toolbrokerv1.ToolResult{
+		ToolCallId: call.GetToolCallId(),
+		RunId:      call.GetRunId(),
+		ToolName:   call.GetToolName(),
+		Status:     "failed",
+		Error: &toolbrokerv1.ToolError{
+			ErrorClass: commonv1.ErrorClass_ERROR_CLASS_CREDENTIAL_ERROR,
+			Message:    fmt.Sprintf("credential resolution failed: %v", err),
+			Retryable:  false,
 		},
 	}
 }

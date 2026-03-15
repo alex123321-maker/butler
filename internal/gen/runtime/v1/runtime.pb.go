@@ -106,18 +106,79 @@ func (x *ExecutionContext) GetTimeoutMs() int64 {
 	return 0
 }
 
-type ExecuteRequest struct {
+type ResolvedCredential struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Context       *ExecutionContext      `protobuf:"bytes,1,opt,name=context,proto3" json:"context,omitempty"`
-	ToolCall      *v1.ToolCall           `protobuf:"bytes,2,opt,name=tool_call,json=toolCall,proto3" json:"tool_call,omitempty"`
-	Contract      *v1.ToolContract       `protobuf:"bytes,3,opt,name=contract,proto3" json:"contract,omitempty"`
+	Alias         string                 `protobuf:"bytes,1,opt,name=alias,proto3" json:"alias,omitempty"`
+	Field         string                 `protobuf:"bytes,2,opt,name=field,proto3" json:"field,omitempty"`
+	Value         string                 `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
+func (x *ResolvedCredential) Reset() {
+	*x = ResolvedCredential{}
+	mi := &file_runtime_v1_runtime_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResolvedCredential) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResolvedCredential) ProtoMessage() {}
+
+func (x *ResolvedCredential) ProtoReflect() protoreflect.Message {
+	mi := &file_runtime_v1_runtime_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResolvedCredential.ProtoReflect.Descriptor instead.
+func (*ResolvedCredential) Descriptor() ([]byte, []int) {
+	return file_runtime_v1_runtime_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ResolvedCredential) GetAlias() string {
+	if x != nil {
+		return x.Alias
+	}
+	return ""
+}
+
+func (x *ResolvedCredential) GetField() string {
+	if x != nil {
+		return x.Field
+	}
+	return ""
+}
+
+func (x *ResolvedCredential) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
+type ExecuteRequest struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	Context             *ExecutionContext      `protobuf:"bytes,1,opt,name=context,proto3" json:"context,omitempty"`
+	ToolCall            *v1.ToolCall           `protobuf:"bytes,2,opt,name=tool_call,json=toolCall,proto3" json:"tool_call,omitempty"`
+	Contract            *v1.ToolContract       `protobuf:"bytes,3,opt,name=contract,proto3" json:"contract,omitempty"`
+	ResolvedCredentials []*ResolvedCredential  `protobuf:"bytes,4,rep,name=resolved_credentials,json=resolvedCredentials,proto3" json:"resolved_credentials,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
 func (x *ExecuteRequest) Reset() {
 	*x = ExecuteRequest{}
-	mi := &file_runtime_v1_runtime_proto_msgTypes[1]
+	mi := &file_runtime_v1_runtime_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -129,7 +190,7 @@ func (x *ExecuteRequest) String() string {
 func (*ExecuteRequest) ProtoMessage() {}
 
 func (x *ExecuteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_runtime_v1_runtime_proto_msgTypes[1]
+	mi := &file_runtime_v1_runtime_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -142,7 +203,7 @@ func (x *ExecuteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteRequest.ProtoReflect.Descriptor instead.
 func (*ExecuteRequest) Descriptor() ([]byte, []int) {
-	return file_runtime_v1_runtime_proto_rawDescGZIP(), []int{1}
+	return file_runtime_v1_runtime_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ExecuteRequest) GetContext() *ExecutionContext {
@@ -166,6 +227,13 @@ func (x *ExecuteRequest) GetContract() *v1.ToolContract {
 	return nil
 }
 
+func (x *ExecuteRequest) GetResolvedCredentials() []*ResolvedCredential {
+	if x != nil {
+		return x.ResolvedCredentials
+	}
+	return nil
+}
+
 type ExecuteResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Result        *v1.ToolResult         `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
@@ -175,7 +243,7 @@ type ExecuteResponse struct {
 
 func (x *ExecuteResponse) Reset() {
 	*x = ExecuteResponse{}
-	mi := &file_runtime_v1_runtime_proto_msgTypes[2]
+	mi := &file_runtime_v1_runtime_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -187,7 +255,7 @@ func (x *ExecuteResponse) String() string {
 func (*ExecuteResponse) ProtoMessage() {}
 
 func (x *ExecuteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_runtime_v1_runtime_proto_msgTypes[2]
+	mi := &file_runtime_v1_runtime_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -200,7 +268,7 @@ func (x *ExecuteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteResponse.ProtoReflect.Descriptor instead.
 func (*ExecuteResponse) Descriptor() ([]byte, []int) {
-	return file_runtime_v1_runtime_proto_rawDescGZIP(), []int{2}
+	return file_runtime_v1_runtime_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ExecuteResponse) GetResult() *v1.ToolResult {
@@ -224,11 +292,16 @@ const file_runtime_v1_runtime_proto_rawDesc = "" +
 	"\ttool_name\x18\x04 \x01(\tR\btoolName\x12%\n" +
 	"\x0eruntime_target\x18\x05 \x01(\tR\rruntimeTarget\x12\x1d\n" +
 	"\n" +
-	"timeout_ms\x18\x06 \x01(\x03R\ttimeoutMs\"\xcc\x01\n" +
+	"timeout_ms\x18\x06 \x01(\x03R\ttimeoutMs\"V\n" +
+	"\x12ResolvedCredential\x12\x14\n" +
+	"\x05alias\x18\x01 \x01(\tR\x05alias\x12\x14\n" +
+	"\x05field\x18\x02 \x01(\tR\x05field\x12\x14\n" +
+	"\x05value\x18\x03 \x01(\tR\x05value\"\xa6\x02\n" +
 	"\x0eExecuteRequest\x12=\n" +
 	"\acontext\x18\x01 \x01(\v2#.butler.runtime.v1.ExecutionContextR\acontext\x12;\n" +
 	"\ttool_call\x18\x02 \x01(\v2\x1e.butler.toolbroker.v1.ToolCallR\btoolCall\x12>\n" +
-	"\bcontract\x18\x03 \x01(\v2\".butler.toolbroker.v1.ToolContractR\bcontract\"K\n" +
+	"\bcontract\x18\x03 \x01(\v2\".butler.toolbroker.v1.ToolContractR\bcontract\x12X\n" +
+	"\x14resolved_credentials\x18\x04 \x03(\v2%.butler.runtime.v1.ResolvedCredentialR\x13resolvedCredentials\"K\n" +
 	"\x0fExecuteResponse\x128\n" +
 	"\x06result\x18\x01 \x01(\v2 .butler.toolbroker.v1.ToolResultR\x06result2f\n" +
 	"\x12ToolRuntimeService\x12P\n" +
@@ -246,27 +319,29 @@ func file_runtime_v1_runtime_proto_rawDescGZIP() []byte {
 	return file_runtime_v1_runtime_proto_rawDescData
 }
 
-var file_runtime_v1_runtime_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_runtime_v1_runtime_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_runtime_v1_runtime_proto_goTypes = []any{
-	(*ExecutionContext)(nil), // 0: butler.runtime.v1.ExecutionContext
-	(*ExecuteRequest)(nil),   // 1: butler.runtime.v1.ExecuteRequest
-	(*ExecuteResponse)(nil),  // 2: butler.runtime.v1.ExecuteResponse
-	(*v1.ToolCall)(nil),      // 3: butler.toolbroker.v1.ToolCall
-	(*v1.ToolContract)(nil),  // 4: butler.toolbroker.v1.ToolContract
-	(*v1.ToolResult)(nil),    // 5: butler.toolbroker.v1.ToolResult
+	(*ExecutionContext)(nil),   // 0: butler.runtime.v1.ExecutionContext
+	(*ResolvedCredential)(nil), // 1: butler.runtime.v1.ResolvedCredential
+	(*ExecuteRequest)(nil),     // 2: butler.runtime.v1.ExecuteRequest
+	(*ExecuteResponse)(nil),    // 3: butler.runtime.v1.ExecuteResponse
+	(*v1.ToolCall)(nil),        // 4: butler.toolbroker.v1.ToolCall
+	(*v1.ToolContract)(nil),    // 5: butler.toolbroker.v1.ToolContract
+	(*v1.ToolResult)(nil),      // 6: butler.toolbroker.v1.ToolResult
 }
 var file_runtime_v1_runtime_proto_depIdxs = []int32{
 	0, // 0: butler.runtime.v1.ExecuteRequest.context:type_name -> butler.runtime.v1.ExecutionContext
-	3, // 1: butler.runtime.v1.ExecuteRequest.tool_call:type_name -> butler.toolbroker.v1.ToolCall
-	4, // 2: butler.runtime.v1.ExecuteRequest.contract:type_name -> butler.toolbroker.v1.ToolContract
-	5, // 3: butler.runtime.v1.ExecuteResponse.result:type_name -> butler.toolbroker.v1.ToolResult
-	1, // 4: butler.runtime.v1.ToolRuntimeService.Execute:input_type -> butler.runtime.v1.ExecuteRequest
-	2, // 5: butler.runtime.v1.ToolRuntimeService.Execute:output_type -> butler.runtime.v1.ExecuteResponse
-	5, // [5:6] is the sub-list for method output_type
-	4, // [4:5] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	4, // 1: butler.runtime.v1.ExecuteRequest.tool_call:type_name -> butler.toolbroker.v1.ToolCall
+	5, // 2: butler.runtime.v1.ExecuteRequest.contract:type_name -> butler.toolbroker.v1.ToolContract
+	1, // 3: butler.runtime.v1.ExecuteRequest.resolved_credentials:type_name -> butler.runtime.v1.ResolvedCredential
+	6, // 4: butler.runtime.v1.ExecuteResponse.result:type_name -> butler.toolbroker.v1.ToolResult
+	2, // 5: butler.runtime.v1.ToolRuntimeService.Execute:input_type -> butler.runtime.v1.ExecuteRequest
+	3, // 6: butler.runtime.v1.ToolRuntimeService.Execute:output_type -> butler.runtime.v1.ExecuteResponse
+	6, // [6:7] is the sub-list for method output_type
+	5, // [5:6] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_runtime_v1_runtime_proto_init() }
@@ -280,7 +355,7 @@ func file_runtime_v1_runtime_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_runtime_v1_runtime_proto_rawDesc), len(file_runtime_v1_runtime_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

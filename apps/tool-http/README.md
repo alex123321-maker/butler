@@ -5,6 +5,7 @@ Planned HTTP runtime service for Butler web and API tools.
 Current state:
 - runtime exposes the internal `ToolRuntimeService` gRPC contract
 - `http.request` executes with a domain allowlist enforced from the tool contract
+- `http.request` can inject resolved credential refs into outbound auth headers without exposing secrets in model-visible args
 - HTTP health endpoint and unit tests are in place
 
 Local run:
