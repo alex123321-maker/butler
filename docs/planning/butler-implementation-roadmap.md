@@ -1126,19 +1126,20 @@ Status: **Done** — all 5 tasks completed.
 
 ---
 
-### S7-04: Browser Runtime — full V1 tool set
+### S7-04: Browser Runtime — full V1 tool set ✅
 
 - **ID:** S7-04
 - **Title:** Browser Runtime — full V1 tool set
+- **Status:** Done
 - **Subsystem:** Tool Runtime / Browser
 - **Why now:** browser automation нуждается в полном наборе tools для реальных сценариев
 - **Dependencies:** S4-04
 - **Acceptance criteria:**
-  - Additional tools: `browser.click(selector)`, `browser.fill(selector, value)`, `browser.type(selector, text)`, `browser.wait_for(selector, timeout)`, `browser.extract_text(selector)`, `browser.set_cookie(cookie)`, `browser.restore_storage_state(state)`
-  - `browser.fill` and `browser.type` support `credential_ref` values (resolved by broker, passed in `resolved_credentials`)
-  - All tools return normalized, safe output (no raw HTML/DOM)
-  - Tool contracts registered in broker registry
-  - Unit tests per tool + integration test: navigate → fill form → submit
+  - Additional tools: `browser.click(selector)`, `browser.fill(selector, value)`, `browser.type(selector, text)`, `browser.wait_for(selector, timeout)`, `browser.extract_text(selector)`, `browser.set_cookie(cookie)`, `browser.restore_storage_state(state)` ✅
+  - `browser.fill` and `browser.type` support `credential_ref` values (resolved by broker, passed in `resolved_credentials`) ✅
+  - All tools return normalized, safe output (no raw HTML/DOM) ✅
+  - Tool contracts registered in broker registry ✅
+  - Unit tests per tool + integration test: navigate → fill form → submit ✅
 
 ---
 

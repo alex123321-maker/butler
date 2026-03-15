@@ -1479,3 +1479,32 @@ sprints:
         docs_to_read: ["docs/architecture/model-transport-contract.md"]
         acceptance_criteria: ["WebSocket sessions persist across runs", "Connection loss detected and reported", "Fallback to SSE works"]
         deliverables: ["Hardened websocket.go with session pool and health monitoring"]
+
+      - id: T-0704
+        title: Browser Runtime V1 Tool Set
+        subsystem: tool-browser
+        sprint: SPRINT-7
+        priority: high
+        status: done
+        description: >
+          Expand browser runtime from navigate/snapshot to a full V1 tool set:
+          click, fill, type, wait_for, extract_text, set_cookie, restore_storage_state.
+          Fill and type support credential_ref values resolved by broker. All tools
+          return normalized, safe output. Contracts registered in broker registry.
+        why_now: Browser automation requires a complete tool set for real-world scenarios.
+        dependencies: ["T-0404"]
+        docs_to_read:
+          - docs/architecture/tool-runtime-adr.md
+          - docs/architecture/credential-management.md
+        acceptance_criteria:
+          - "7 new tools: browser.click, browser.fill, browser.type, browser.wait_for, browser.extract_text, browser.set_cookie, browser.restore_storage_state"
+          - "browser.fill and browser.type support credential_ref values via resolved_credentials"
+          - "All tools return normalized, safe output (no raw HTML/DOM)"
+          - "Tool contracts registered in configs/tools.json"
+          - "Unit tests per tool + integration test: navigate → fill → click"
+          - "24 tests pass (including subtests)"
+        deliverables:
+          - "Expanded server.go with Request/Result types, validation, credential resolution, result building"
+          - "Updated browser_runtime.mjs with all tool actions"
+          - "9 new tool contracts in configs/tools.json"
+          - "24 unit tests in server_test.go"
