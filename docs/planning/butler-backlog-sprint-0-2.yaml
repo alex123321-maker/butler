@@ -763,7 +763,7 @@ sprints:
   - id: SPRINT-3
     title: Telegram Adapter, Tool Broker Skeleton, First E2E
     goal: Connect Telegram as the first real user channel, make the MVP stack runnable from Docker Compose, add the first end-to-end acceptance path, and establish the Tool Broker and Working Memory foundations.
-    status: in_progress
+    status: done
     tasks:
       - id: T-025
         title: Implement Telegram adapter with long polling and final response delivery
@@ -884,7 +884,7 @@ sprints:
         subsystem: memory
         sprint: SPRINT-3
         priority: high
-        status: todo
+        status: done
         description: >
           Add the durable Working Memory storage layer in PostgreSQL with CRUD operations for the
           latest per-session working snapshot.
