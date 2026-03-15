@@ -1682,7 +1682,7 @@ sprints:
         subsystem: config
         sprint: SPRINT-8
         priority: medium
-        status: todo
+        status: done
         description: >
           Implement display masking functions for secret values shown in the Web UI. Rules:
           passwords and connection strings are fully masked (••••••••), API keys show last 4
