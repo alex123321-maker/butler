@@ -3,12 +3,13 @@
 Planned HTTP runtime service for Butler web and API tools.
 
 Current state:
-- Sprint 0 skeleton only; `main.go` is an empty stub
-- no runtime contract implementation, allowlist policy layer, or tests yet
+- runtime exposes the internal `ToolRuntimeService` gRPC contract
+- `http.request` executes with a domain allowlist enforced from the tool contract
+- HTTP health endpoint and unit tests are in place
 
 Local run:
 - `go run ./apps/tool-http`
-- current stub exits immediately because runtime wiring does not exist yet
+- service exposes HTTP health on `BUTLER_HTTP_ADDR` and runtime gRPC on `BUTLER_GRPC_ADDR`
 
 Intended responsibilities:
 - execute HTTP-class tools only

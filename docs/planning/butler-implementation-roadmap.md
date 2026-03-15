@@ -2,7 +2,7 @@
 
 ## Planning assumptions
 
-**Текущее состояние:** Sprint 0 и Sprint 1 реализованы полностью. Sprint 2 реализован как рабочий vertical slice; transport layer поддерживает OpenAI Realtime WebSocket как preferred backend с HTTP streaming (SSE) fallback без изменения Butler logical contract. Sprint 3 также реализован: в репозитории уже есть Telegram adapter, full MVP Docker Compose stack, первый end-to-end acceptance path, Tool Broker skeleton и durable Working Memory baseline. Sprint 4 начат: уже добавлены внутренний gRPC runtime contract для связи Tool Broker с runtime containers, routing в Tool Broker и первый sequential tool loop в Orchestrator. Следующий крупный шаг внутри Sprint 4 — runtime skeletons и Compose wiring.
+**Текущее состояние:** Sprint 0 и Sprint 1 реализованы полностью. Sprint 2 реализован как рабочий vertical slice; transport layer поддерживает OpenAI Realtime WebSocket как preferred backend с HTTP streaming (SSE) fallback без изменения Butler logical contract. Sprint 3 также реализован: в репозитории уже есть Telegram adapter, full MVP Docker Compose stack, первый end-to-end acceptance path, Tool Broker skeleton и durable Working Memory baseline. Sprint 4 начат: уже добавлены внутренний gRPC runtime contract для связи Tool Broker с runtime containers, routing в Tool Broker, первый sequential tool loop в Orchestrator и начальный HTTP runtime. Следующий крупный шаг внутри Sprint 4 — browser runtime и Compose wiring.
 
 **Модель спринтов:**
 - 1 спринт = ~2 недели
