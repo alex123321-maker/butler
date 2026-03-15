@@ -1109,19 +1109,20 @@ Status: **Done** — all 5 tasks completed.
 
 ---
 
-### S7-03: Session summary — generation and retrieval
+### S7-03: Session summary — generation and retrieval ✅
 
 - **ID:** S7-03
 - **Title:** Session summary — generation and retrieval
+- **Status:** Done
 - **Subsystem:** Memory / Session
 - **Why now:** session summary — compact context for orchestrator per run-lifecycle-spec section 17; improves response quality
 - **Dependencies:** S7-01
 - **Acceptance criteria:**
-  - Session summary stored in sessions table (summary TEXT column, migration)
-  - Memory pipeline worker: after extraction, generates/updates session summary via LLM
-  - Orchestrator `preparing`: includes session summary in context bundle
-  - Summary format: current goal, recent important events, open tasks, critical facts (per run-lifecycle-spec section 17.2)
-  - Unit tests for summary integration in context bundle
+  - Session summary stored in sessions table (summary TEXT column, migration) ✅
+  - Memory pipeline worker: after extraction, generates/updates session summary via LLM ✅
+  - Orchestrator `preparing`: includes session summary in context bundle ✅
+  - Summary format: current goal, recent important events, open tasks, critical facts (per run-lifecycle-spec section 17.2) ✅
+  - Unit tests for summary integration in context bundle ✅
 
 ---
 

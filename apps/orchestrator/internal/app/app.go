@@ -185,6 +185,7 @@ func New(ctx context.Context) (*App, error) {
 			ProfileStore:     profileStoreAdapter{store: profile.NewStore(postgres.Pool())},
 			EpisodeStore:     episodicStoreAdapter{store: episodic.NewStore(postgres.Pool())},
 			PipelineEnqueuer: pipelineEnqueuer,
+			SummaryReader:    sessionRepo,
 		},
 		logger.WithComponent(log, "executor"),
 	)

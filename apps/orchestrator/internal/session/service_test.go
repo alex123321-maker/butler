@@ -229,6 +229,30 @@ func (r *memoryRepository) ListSessions(_ context.Context, limit, offset int) ([
 	return result[offset:end], nil
 }
 
+func (r *memoryRepository) UpdateSummary(_ context.Context, sessionKey, summary string) error {
+	if r.records == nil {
+		return ErrSessionNotFound
+	}
+	rec, ok := r.records[sessionKey]
+	if !ok {
+		return ErrSessionNotFound
+	}
+	rec.Summary = summary
+	r.records[sessionKey] = rec
+	return nil
+}
+
+func (r *memoryRepository) GetSummary(_ context.Context, sessionKey string) (string, error) {
+	if r.records == nil {
+		return "", ErrSessionNotFound
+	}
+	rec, ok := r.records[sessionKey]
+	if !ok {
+		return "", ErrSessionNotFound
+	}
+	return rec.Summary, nil
+}
+
 func TestNormalizeMetadataJSONRejectsInvalidJSON(t *testing.T) {
 	_, err := normalizeMetadataJSON("{broken}")
 	if err == nil {

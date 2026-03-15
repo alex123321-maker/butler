@@ -60,6 +60,11 @@ type PipelineEnqueuer interface {
 	EnqueuePostRun(ctx context.Context, runID, sessionKey string) error
 }
 
+// SessionSummaryReader retrieves the current session summary for context assembly.
+type SessionSummaryReader interface {
+	GetSummary(ctx context.Context, sessionKey string) (string, error)
+}
+
 type MemoryProfileEntry interface {
 	ProfileKey() string
 	ProfileSummary() string
@@ -83,6 +88,7 @@ type Config struct {
 	EpisodeStore     EpisodicMemoryStore
 	Embeddings       EmbeddingProvider
 	PipelineEnqueuer PipelineEnqueuer
+	SummaryReader    SessionSummaryReader
 	ProfileLimit     int
 	EpisodeLimit     int
 	MemoryScopes     []string
@@ -657,12 +663,16 @@ func (s *Service) attachMemoryContext(ctx context.Context, sessionKey, userID, u
 	if err != nil {
 		return err
 	}
-	if len(profileEntries) == 0 && len(episodes) == 0 {
+	sessionSummary := s.loadSessionSummary(ctx, sessionKey)
+	if len(profileEntries) == 0 && len(episodes) == 0 && sessionSummary == "" {
 		return nil
 	}
 	prepared.MemoryBundle["profile"] = profileEntries
 	prepared.MemoryBundle["episodes"] = episodes
-	memoryPrompt := formatMemoryPrompt(profileEntries, episodes)
+	if sessionSummary != "" {
+		prepared.MemoryBundle["session_summary"] = sessionSummary
+	}
+	memoryPrompt := formatMemoryPrompt(profileEntries, episodes, sessionSummary)
 	if strings.TrimSpace(memoryPrompt) != "" {
 		prepared.InputItems = append([]transport.InputItem{{Role: "system", Content: memoryPrompt, ContentType: "text/plain"}}, prepared.InputItems...)
 	}
@@ -727,6 +737,21 @@ func (s *Service) loadEpisodes(ctx context.Context, scopes []memoryScope, userMe
 	return result, nil
 }
 
+func (s *Service) loadSessionSummary(ctx context.Context, sessionKey string) string {
+	if s.config.SummaryReader == nil {
+		return ""
+	}
+	summary, err := s.config.SummaryReader.GetSummary(ctx, sessionKey)
+	if err != nil {
+		s.log.Warn("session summary retrieval failed",
+			slog.String("session_key", sessionKey),
+			slog.String("error", err.Error()),
+		)
+		return ""
+	}
+	return strings.TrimSpace(summary)
+}
+
 func (s *Service) memoryScopes(sessionKey, userID string) []memoryScope {
 	ids := map[string]string{
 		"session": strings.TrimSpace(sessionKey),
@@ -751,8 +776,11 @@ func (s *Service) memoryScopes(sessionKey, userID string) []memoryScope {
 	return scopes
 }
 
-func formatMemoryPrompt(profileEntries, episodes []map[string]any) string {
-	sections := make([]string, 0, 2)
+func formatMemoryPrompt(profileEntries, episodes []map[string]any, sessionSummary string) string {
+	sections := make([]string, 0, 3)
+	if strings.TrimSpace(sessionSummary) != "" {
+		sections = append(sections, "Session summary:\n"+sessionSummary)
+	}
 	if len(profileEntries) > 0 {
 		lines := make([]string, 0, len(profileEntries))
 		for _, entry := range profileEntries {

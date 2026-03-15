@@ -1452,14 +1452,17 @@ sprints:
         subsystem: memory
         sprint: SPRINT-7
         priority: medium
-        status: todo
+        status: done
         description: >
-          Generate concise session summaries to save token space.
+          Generate concise session summaries stored in sessions table (summary TEXT column).
+          Memory pipeline worker writes summary after extraction. Orchestrator injects
+          session summary into context bundle during preparing phase. Graceful degradation
+          on reader errors.
         why_now: Optimization for context limits.
         dependencies: ["T-0701"]
-        docs_to_read: []
-        acceptance_criteria: ["Summary generated and saved in DB"]
-        deliverables: ["Summary generation logic"]
+        docs_to_read: ["docs/architecture/run-lifecycle-spec.md"]
+        acceptance_criteria: ["Summary stored in sessions table via migration", "Pipeline worker writes summary after extraction", "Orchestrator includes summary in context bundle", "Unit tests for summary integration"]
+        deliverables: ["Migration 016", "Session store UpdateSummary/GetSummary", "Orchestrator SessionSummaryReader integration", "5 unit tests"]
 
       - id: T-0703
         title: WebSocket Transport Hardening

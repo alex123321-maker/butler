@@ -335,6 +335,229 @@ func TestExecuteUsesEmbeddingProviderForEpisodicRetrieval(t *testing.T) {
 	}
 }
 
+func TestExecuteIncludesSessionSummaryInContext(t *testing.T) {
+	t.Parallel()
+
+	provider := &mockProvider{startEvents: []transport.TransportEvent{
+		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "aware of summary", FinishReason: "completed"}),
+		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+	}}
+	summaryReader := &stubSummaryReader{summaries: map[string]string{
+		"telegram:chat:1": "Current goal: deploy new service. Recent events: fixed Redis connection. Open tasks: update Docker config.",
+	}}
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+		ProviderName:  "openai",
+		ModelName:     "gpt-5-mini",
+		SummaryReader: summaryReader,
+	}, nil)
+
+	result, err := service.Execute(context.Background(), ingress.InputEvent{
+		EventID:        "event-1",
+		EventType:      runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE,
+		SessionKey:     "telegram:chat:1",
+		Source:         "telegram",
+		PayloadJSON:    `{"text":"what are we doing?"}`,
+		CreatedAt:      time.Now().UTC(),
+		IdempotencyKey: "event-1",
+	})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if result.AssistantResponse != "aware of summary" {
+		t.Fatalf("unexpected response %q", result.AssistantResponse)
+	}
+	if len(provider.startRequests) != 1 {
+		t.Fatalf("expected 1 start request, got %d", len(provider.startRequests))
+	}
+	items := provider.startRequests[0].InputItems
+	if len(items) < 2 {
+		t.Fatalf("expected at least 2 input items (system + user), got %d", len(items))
+	}
+	if items[0].Role != "system" {
+		t.Fatalf("expected first input item to be system memory prompt, got %q", items[0].Role)
+	}
+	if !strings.Contains(items[0].Content, "Session summary:") {
+		t.Fatalf("expected session summary section in memory prompt, got %q", items[0].Content)
+	}
+	if !strings.Contains(items[0].Content, "deploy new service") {
+		t.Fatalf("expected summary content in memory prompt, got %q", items[0].Content)
+	}
+}
+
+func TestExecuteSessionSummaryWithProfileAndEpisodes(t *testing.T) {
+	t.Parallel()
+
+	provider := &mockProvider{startEvents: []transport.TransportEvent{
+		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "full context", FinishReason: "completed"}),
+		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+	}}
+	summaryReader := &stubSummaryReader{summaries: map[string]string{
+		"telegram:chat:1": "Working on deployment pipeline.",
+	}}
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+		ProviderName:  "openai",
+		ModelName:     "gpt-5-mini",
+		SummaryReader: summaryReader,
+		ProfileStore:  stubProfileStore{entries: []MemoryProfileEntry{stubProfileEntry{key: "name", summary: "User is Alice"}}},
+	}, nil)
+
+	result, err := service.Execute(context.Background(), ingress.InputEvent{
+		EventID:        "event-1",
+		EventType:      runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE,
+		SessionKey:     "telegram:chat:1",
+		Source:         "telegram",
+		PayloadJSON:    `{"text":"continue"}`,
+		CreatedAt:      time.Now().UTC(),
+		IdempotencyKey: "event-1",
+	})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if result.AssistantResponse != "full context" {
+		t.Fatalf("unexpected response %q", result.AssistantResponse)
+	}
+	prompt := provider.startRequests[0].InputItems[0].Content
+	// Session summary should come first in the prompt.
+	summaryIdx := strings.Index(prompt, "Session summary:")
+	profileIdx := strings.Index(prompt, "Profile memory:")
+	if summaryIdx < 0 {
+		t.Fatalf("expected session summary in prompt, got %q", prompt)
+	}
+	if profileIdx < 0 {
+		t.Fatalf("expected profile memory in prompt, got %q", prompt)
+	}
+	if summaryIdx > profileIdx {
+		t.Fatalf("expected session summary before profile memory in prompt")
+	}
+}
+
+func TestExecuteSkipsSummaryWhenEmpty(t *testing.T) {
+	t.Parallel()
+
+	provider := &mockProvider{startEvents: []transport.TransportEvent{
+		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "no summary", FinishReason: "completed"}),
+		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+	}}
+	summaryReader := &stubSummaryReader{summaries: map[string]string{}}
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+		ProviderName:  "openai",
+		ModelName:     "gpt-5-mini",
+		SummaryReader: summaryReader,
+	}, nil)
+
+	result, err := service.Execute(context.Background(), ingress.InputEvent{
+		EventID:        "event-1",
+		EventType:      runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE,
+		SessionKey:     "telegram:chat:1",
+		Source:         "telegram",
+		PayloadJSON:    `{"text":"hello"}`,
+		CreatedAt:      time.Now().UTC(),
+		IdempotencyKey: "event-1",
+	})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if result.AssistantResponse != "no summary" {
+		t.Fatalf("unexpected response %q", result.AssistantResponse)
+	}
+	// No memory context should be injected when summary is empty and no other memory.
+	items := provider.startRequests[0].InputItems
+	if len(items) != 1 {
+		t.Fatalf("expected only user input item when no memory context, got %d items", len(items))
+	}
+	if items[0].Role != "user" {
+		t.Fatalf("expected only user role, got %q", items[0].Role)
+	}
+}
+
+func TestExecuteSummaryReaderErrorDoesNotBlockRun(t *testing.T) {
+	t.Parallel()
+
+	provider := &mockProvider{startEvents: []transport.TransportEvent{
+		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "still works", FinishReason: "completed"}),
+		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+	}}
+	summaryReader := &stubSummaryReader{err: errors.New("database error")}
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+		ProviderName:  "openai",
+		ModelName:     "gpt-5-mini",
+		SummaryReader: summaryReader,
+	}, nil)
+
+	result, err := service.Execute(context.Background(), ingress.InputEvent{
+		EventID:        "event-1",
+		EventType:      runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE,
+		SessionKey:     "telegram:chat:1",
+		Source:         "telegram",
+		PayloadJSON:    `{"text":"hello"}`,
+		CreatedAt:      time.Now().UTC(),
+		IdempotencyKey: "event-1",
+	})
+	if err != nil {
+		t.Fatalf("Execute should not fail when summary reader errors: %v", err)
+	}
+	if result.AssistantResponse != "still works" {
+		t.Fatalf("unexpected response %q", result.AssistantResponse)
+	}
+}
+
+func TestFormatMemoryPromptWithSummary(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		profile        []map[string]any
+		episodes       []map[string]any
+		summary        string
+		wantContains   []string
+		wantNotContain []string
+	}{
+		{
+			name:         "summary only",
+			summary:      "Current goal: fix bugs.",
+			wantContains: []string{"Session summary:", "Current goal: fix bugs."},
+		},
+		{
+			name:    "summary with profile",
+			profile: []map[string]any{{"key": "name", "summary": "Alice"}},
+			summary: "Deploying app.",
+			wantContains: []string{
+				"Session summary:",
+				"Deploying app.",
+				"Profile memory:",
+				"- name: Alice",
+			},
+		},
+		{
+			name:           "no summary",
+			profile:        []map[string]any{{"key": "lang", "summary": "Go"}},
+			wantContains:   []string{"Profile memory:"},
+			wantNotContain: []string{"Session summary:"},
+		},
+		{
+			name:           "empty summary string",
+			summary:        "   ",
+			wantNotContain: []string{"Session summary:"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := formatMemoryPrompt(tt.profile, tt.episodes, tt.summary)
+			for _, want := range tt.wantContains {
+				if !strings.Contains(result, want) {
+					t.Errorf("expected prompt to contain %q, got %q", want, result)
+				}
+			}
+			for _, dontWant := range tt.wantNotContain {
+				if strings.Contains(result, dontWant) {
+					t.Errorf("expected prompt to NOT contain %q, got %q", dontWant, result)
+				}
+			}
+		})
+	}
+}
+
 func TestExecuteFailsRunOnTransportError(t *testing.T) {
 	t.Parallel()
 
@@ -669,6 +892,18 @@ type stubEmbeddingProvider struct{ embedding []float32 }
 
 func (s stubEmbeddingProvider) EmbedQuery(context.Context, string) ([]float32, error) {
 	return append([]float32(nil), s.embedding...), nil
+}
+
+type stubSummaryReader struct {
+	summaries map[string]string
+	err       error
+}
+
+func (s *stubSummaryReader) GetSummary(_ context.Context, sessionKey string) (string, error) {
+	if s.err != nil {
+		return "", s.err
+	}
+	return s.summaries[sessionKey], nil
 }
 
 func testEmbeddingVector(value float32) []float32 {
