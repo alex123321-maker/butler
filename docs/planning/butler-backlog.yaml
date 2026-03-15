@@ -760,6 +760,175 @@ sprints:
           - documented verification steps
           - expected-output checklist
 
+  - id: SPRINT-2.1
+    title: Full Review and Audit
+    goal: Audit implemented architecture, configurations, state machines, and integrations before adding new capabilities.
+    status: todo
+    tasks:
+      - id: T-2101
+        title: Architecture boundaries audit
+        subsystem: architecture
+        sprint: SPRINT-2.1
+        priority: high
+        status: todo
+        description: >
+          Verify that Session Service, Orchestrator, and Model Transport layers comply with the isolation
+          rules defined in butler-prd-architecture.md.
+        why_now: Ensure no architectural drift before adding the tool broker and runtimes.
+        dependencies: []
+        docs_to_read: ["docs/architecture/butler-prd-architecture.md"]
+        acceptance_criteria:
+          - No cross-boundary violations
+          - Detected issues fixed
+        deliverables:
+          - Audit report
+          - Refactoring commits
+
+      - id: T-2102
+        title: Configuration layer inspection
+        subsystem: config
+        sprint: SPRINT-2.1
+        priority: medium
+        status: todo
+        description: >
+          Check the config loading layer and structured logging for potential secret leaks. Ensure internal/config fully encapsulates sensitive data.
+        why_now: Prevent credentials from leaking in logs early on.
+        dependencies: []
+        docs_to_read: []
+        acceptance_criteria:
+          - Validated secret masking
+          - Refactored config usage if needed
+        deliverables: ["Improved config implementation"]
+
+      - id: T-2103
+        title: Run State Machine review
+        subsystem: orchestrator
+        sprint: SPRINT-2.1
+        priority: high
+        status: todo
+        description: >
+          Review the core execution flow of Orchestrator. Write extensive unit tests for every valid and invalid transition.
+        why_now: The state machine must be 100% robust before plugging in the complex tool-loop.
+        dependencies: []
+        docs_to_read: ["docs/architecture/run-lifecycle-spec.md"]
+        acceptance_criteria:
+          - High unit test coverage for transitions
+          - Correct handling of invalid transitions
+        deliverables: ["Updated unit tests"]
+
+      - id: T-2104
+        title: PostgreSQL and Redis validation
+        subsystem: storage
+        sprint: SPRINT-2.1
+        priority: high
+        status: todo
+        description: >
+          Analyze connection pools and verify migrations. Audit the Redis Lease mechanism to ensure there are no race conditions.
+        why_now: Concurrency issues in Redis lease can break single-actor guarantees.
+        dependencies: []
+        docs_to_read: []
+        acceptance_criteria:
+          - Reviewed pool configurations
+          - No race conditions found in lease logic
+        deliverables: ["Test scenarios for concurrency"]
+
+      - id: T-2105
+        title: Error handling audit
+        subsystem: core
+        sprint: SPRINT-2.1
+        priority: medium
+        status: todo
+        description: >
+          Audit how errors map to terminal run statuses and verify structured logging fields (run_id, component).
+        why_now: Observability and debugging rely heavily on uniform error tracking.
+        dependencies: []
+        docs_to_read: []
+        acceptance_criteria:
+          - Standardized error mapping
+          - Structured logs have complete context
+        deliverables: ["Refactored error mappings"]
+
+  - id: SPRINT-2.2
+    title: OpenAI WebSocket Mode Integration
+    goal: Transition the model transport layer from HTTP SSE to the native OpenAI WebSocket Mode for Realtime API.
+    status: todo
+    tasks:
+      - id: T-2201
+        title: WebSocket Mode contract design
+        subsystem: model-transport
+        sprint: SPRINT-2.2
+        priority: high
+        status: todo
+        description: >
+          Map the OpenAI WebSocket mode onto the existing ModelProvider interface, preserving architecture contracts.
+        why_now: Prerequisite for implementation.
+        dependencies: []
+        docs_to_read: ["docs/architecture/model-transport-contract.md"]
+        acceptance_criteria:
+          - Contract updated/verified to support WS
+        deliverables: ["Contract design"]
+
+      - id: T-2202
+        title: OpenAI WebSocket provider implementation
+        subsystem: model-transport
+        sprint: SPRINT-2.2
+        priority: high
+        status: todo
+        description: >
+          Implement stateful WebSocket sessions in internal/transport/openai/websocket.go.
+        why_now: WebSocket-first is a core architectural requirement.
+        dependencies: ["T-2201"]
+        docs_to_read: []
+        acceptance_criteria:
+          - Messages sent and received via WS
+          - Stateful context maintained
+        deliverables: ["WebSocket provider implementation"]
+
+      - id: T-2203
+        title: Streaming events handling over WebSocket
+        subsystem: model-transport
+        sprint: SPRINT-2.2
+        priority: high
+        status: todo
+        description: >
+          Parse and handle specific WS streaming events (assistant_delta, tool_call) and manage chunk buffering.
+        why_now: Essential for real-time responsiveness.
+        dependencies: ["T-2202"]
+        docs_to_read: []
+        acceptance_criteria:
+          - Events successfully mapped to internal TransportEvent
+        deliverables: ["Streaming event parser"]
+
+      - id: T-2204
+        title: HTTP SSE fallback mechanism
+        subsystem: model-transport
+        sprint: SPRINT-2.2
+        priority: medium
+        status: todo
+        description: >
+          Add automatic fallback to HTTP SSE if WebSocket connection drops or is unavailable.
+        why_now: Hardening transport reliability.
+        dependencies: ["T-2203"]
+        docs_to_read: []
+        acceptance_criteria:
+          - Fallback works and logs transport_warning
+        deliverables: ["Fallback logic"]
+
+      - id: T-2205
+        title: Integration tests for WebSocket provider
+        subsystem: model-transport
+        sprint: SPRINT-2.2
+        priority: high
+        status: todo
+        description: >
+          Test the new WS transport and fallback mechanisms via mock-server or test keys.
+        why_now: Ensure system works end-to-end with the new layer.
+        dependencies: ["T-2204"]
+        docs_to_read: []
+        acceptance_criteria:
+          - Passing integration tests for success and failure paths
+        deliverables: ["Integration tests suite"]
+
   - id: SPRINT-3
     title: Telegram Adapter, Tool Broker Skeleton, First E2E
     goal: Connect Telegram as the first real user channel, make the MVP stack runnable from Docker Compose, add the first end-to-end acceptance path, and establish the Tool Broker and Working Memory foundations.
@@ -904,3 +1073,288 @@ sprints:
           - 'migration for `memory_working`'
           - '`internal/memory/working/`'
           - unit and integration tests
+  - id: SPRINT-4
+    title: Tool Execution Loop, Browser & HTTP Runtimes
+    goal: Teach Orchestrator to work with tools and connect the first runtime containers (Browser and HTTP).
+    status: todo
+    tasks:
+      - id: T-0401
+        title: Orchestrator Tool Call Loop
+        subsystem: orchestrator
+        sprint: SPRINT-4
+        priority: high
+        status: todo
+        description: >
+          Handle tool calls and await results in the Orchestrator run loop.
+        why_now: Essential for agent capabilities.
+        dependencies: []
+        docs_to_read: []
+        acceptance_criteria: ["Loop executes tools sequentially"]
+        deliverables: ["Updated orchestrator loop"]
+
+      - id: T-0402
+        title: Tool Broker Routing
+        subsystem: tool-broker
+        sprint: SPRINT-4
+        priority: high
+        status: todo
+        description: >
+          Route execution calls to specific gRPC runtime containers based on tool class.
+        why_now: Must dynamically execute tools via sidecars.
+        dependencies: []
+        docs_to_read: []
+        acceptance_criteria: ["Routing functional"]
+        deliverables: ["Routing logic in broker"]
+
+      - id: T-0403
+        title: gRPC Tool Runtime Contract
+        subsystem: proto
+        sprint: SPRINT-4
+        priority: high
+        status: todo
+        description: >
+          Define internal gRPC proto messages for container interactions.
+        why_now: Contract needed before runtime stubs.
+        dependencies: []
+        docs_to_read: []
+        acceptance_criteria: ["protos compiled and integrated"]
+        deliverables: ["runtime.proto"]
+
+      - id: T-0404
+        title: Browser Runtime Skeleton
+        subsystem: tool-browser
+        sprint: SPRINT-4
+        priority: high
+        status: todo
+        description: >
+          Implement basic navigate and snapshot commands via Playwright in the Go sidecar.
+        why_now: Required for first interactive capabilities.
+        dependencies: ["T-0403"]
+        docs_to_read: []
+        acceptance_criteria: ["Container starts and runs playwright commands"]
+        deliverables: ["tool-browser implementation"]
+
+      - id: T-0405
+        title: HTTP Runtime Skeleton
+        subsystem: tool-http
+        sprint: SPRINT-4
+        priority: high
+        status: todo
+        description: >
+          Implement http.request capability.
+        why_now: Second core capability.
+        dependencies: ["T-0403"]
+        docs_to_read: []
+        acceptance_criteria: ["http requests work in restricted container"]
+        deliverables: ["tool-http implementation"]
+
+      - id: T-0406
+        title: Docker Compose updates for runtimes
+        subsystem: infra
+        sprint: SPRINT-4
+        priority: medium
+        status: todo
+        description: >
+          Add broker and runtimes to docker-compose with network isolation.
+        why_now: Needed for e2e local testing.
+        dependencies: ["T-0404", "T-0405"]
+        docs_to_read: []
+        acceptance_criteria: ["Full stack spins up successfully"]
+        deliverables: ["docker-compose.yml"]
+
+  - id: SPRINT-5
+    title: Credential Foundation, Doctor, Memory Retrieval
+    goal: Create foundation for credentials, add system self-diagnostics, and long-term memory retrieval.
+    status: todo
+    tasks:
+      - id: T-0501
+        title: Credential Store & Broker
+        subsystem: credentials
+        sprint: SPRINT-5
+        priority: high
+        status: todo
+        description: >
+          Store metadata (no raw secrets) and basic policies for credential usage.
+        why_now: Necessary for safe HTTP/Browser interactions.
+        dependencies: []
+        docs_to_read: ["docs/architecture/credential-management.md"]
+        acceptance_criteria: ["CRUD for credentials metadata works"]
+        deliverables: ["credential storage module"]
+
+      - id: T-0502
+        title: Credential Ref Resolution in Tool Broker
+        subsystem: tool-broker
+        sprint: SPRINT-5
+        priority: high
+        status: todo
+        description: >
+          Resolve secrets prior to tool execution without passing them to the model context.
+        why_now: Fulfills the credential architecture requirement.
+        dependencies: ["T-0501"]
+        docs_to_read: []
+        acceptance_criteria: ["Secrets resolved automatically during tool routing"]
+        deliverables: ["Resolution logic"]
+
+      - id: T-0503
+        title: Doctor Runtime Skeleton
+        subsystem: tool-doctor
+        sprint: SPRINT-5
+        priority: high
+        status: todo
+        description: >
+          Implement doctor.check_system for self-diagnostics.
+        why_now: Butler needs to self-inspect to help operators.
+        dependencies: []
+        docs_to_read: []
+        acceptance_criteria: ["Doctor checks DB/Redis/Config"]
+        deliverables: ["tool-doctor runtime"]
+
+      - id: T-0504
+        title: Episodic/Profile Memory Stores
+        subsystem: memory
+        sprint: SPRINT-5
+        priority: medium
+        status: todo
+        description: >
+          Base tables and pgvector integration for long-term memory retrieval.
+        why_now: Memory is a core V1 feature.
+        dependencies: []
+        docs_to_read: ["docs/architecture/memory-model.md"]
+        acceptance_criteria: ["pgvector search works"]
+        deliverables: ["memory stores module"]
+
+      - id: T-0505
+        title: Orchestrator Memory-aware Context
+        subsystem: orchestrator
+        sprint: SPRINT-5
+        priority: high
+        status: todo
+        description: >
+          Add fetched memories into the prompt before sending it to the model.
+        why_now: Closes the retrieval loop.
+        dependencies: ["T-0504"]
+        docs_to_read: []
+        acceptance_criteria: ["Context contains profile and episodic memories"]
+        deliverables: ["Updated orchestrator prepare logic"]
+
+  - id: SPRINT-6
+    title: Telegram Streaming, Approval UX, Web UI Shell
+    goal: Improve UX via streaming in Telegram, implement approval flows, and build the initial Web UI.
+    status: todo
+    tasks:
+      - id: T-0601
+        title: Telegram Streaming
+        subsystem: channel-adapter
+        sprint: SPRINT-6
+        priority: medium
+        status: todo
+        description: >
+          Progressive editing of Telegram messages (delta updates).
+        why_now: UX improvement.
+        dependencies: []
+        docs_to_read: []
+        acceptance_criteria: ["Messages stream smoothly in TG"]
+        deliverables: ["Telegram adapter updates"]
+
+      - id: T-0602
+        title: Telegram Approval UX
+        subsystem: channel-adapter
+        sprint: SPRINT-6
+        priority: high
+        status: todo
+        description: >
+          Inline keyboards for confirming dangerous tools (Approve/Reject).
+        why_now: Safety requirement for autonomy mode.
+        dependencies: []
+        docs_to_read: []
+        acceptance_criteria: ["Buttons render and work correctly"]
+        deliverables: ["Approval flow"]
+
+      - id: T-0603
+        title: Web UI Shell
+        subsystem: web
+        sprint: SPRINT-6
+        priority: high
+        status: todo
+        description: >
+          Initialize Nuxt.js project and base layout.
+        why_now: Start web surface area.
+        dependencies: []
+        docs_to_read: []
+        acceptance_criteria: ["Nuxt project boots"]
+        deliverables: ["web/ directory init"]
+
+      - id: T-0604
+        title: Web UI Sessions View
+        subsystem: web
+        sprint: SPRINT-6
+        priority: medium
+        status: todo
+        description: >
+          Display list of sessions and transcripts.
+        why_now: Basic visibility into runs.
+        dependencies: ["T-0603"]
+        docs_to_read: []
+        acceptance_criteria: ["Can view chat history in browser"]
+        deliverables: ["Sessions page"]
+
+      - id: T-0605
+        title: Web UI Doctor View
+        subsystem: web
+        sprint: SPRINT-6
+        priority: low
+        status: todo
+        description: >
+          Render tool-doctor reports on the dashboard.
+        why_now: Complete the self-hosted operator experience.
+        dependencies: ["T-0603"]
+        docs_to_read: []
+        acceptance_criteria: ["Doctor reports rendered"]
+        deliverables: ["Doctor page"]
+
+  - id: SPRINT-7
+    title: Memory Pipeline and Hardening
+    goal: Asynchronous extraction of memories and final stabilization of system flows.
+    status: todo
+    tasks:
+      - id: T-0701
+        title: Async Memory Pipeline
+        subsystem: memory
+        sprint: SPRINT-7
+        priority: high
+        status: todo
+        description: >
+          Redis job worker to extract profiles and episodes post-run.
+        why_now: Completes the durable memory architecture.
+        dependencies: []
+        docs_to_read: ["docs/architecture/memory-model.md"]
+        acceptance_criteria: ["Memories extracted via LLM worker automatically"]
+        deliverables: ["Memory worker implementation"]
+
+      - id: T-0702
+        title: Session Summary
+        subsystem: memory
+        sprint: SPRINT-7
+        priority: medium
+        status: todo
+        description: >
+          Generate concise session summaries to save token space.
+        why_now: Optimization for context limits.
+        dependencies: ["T-0701"]
+        docs_to_read: []
+        acceptance_criteria: ["Summary generated and saved in DB"]
+        deliverables: ["Summary generation logic"]
+
+      - id: T-0703
+        title: Load Testing and Orchestrator Timeouts Finalization
+        subsystem: core
+        sprint: SPRINT-7
+        priority: medium
+        status: todo
+        description: >
+          Final stabilization of WebSocket transport and execution timeouts under load.
+        why_now: Pre-release hardening.
+        dependencies: []
+        docs_to_read: []
+        acceptance_criteria: ["System handles concurrency gracefully"]
+        deliverables: ["Load test reports and tweaks"]

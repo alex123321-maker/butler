@@ -441,6 +441,153 @@ repo skeleton → shared libs (logging, config, DB) → postgres schema → sess
 
 ---
 
+
+## Sprint 2.1 — Full Review and Audit (Intermediate)
+
+Цель: провести полный аудит реализованного функционала (Sprint 0-2), выявить и исправить накопившийся технический долг, убедиться в соответствии кода архитектурным правилам Butler перед переходом к следующим этапам.
+
+---
+
+### S2.1-01: Architecture boundaries audit
+
+- **ID:** S2.1-01
+- **Title:** Architecture boundaries audit
+- **Subsystem:** Architecture
+- **Why now:** перед началом работы над новыми модулями необходимо убедиться, что текущая изоляция слоёв не нарушена
+- **Dependencies:** S2-04
+- **Acceptance criteria:**
+  - Session Service, Orchestrator и Model Transport проверены на соответствие `butler-prd-architecture.md`
+  - Найденные нарушения задокументированы и исправлены
+
+---
+
+### S2.1-02: Configuration layer inspection
+
+- **ID:** S2.1-02
+- **Title:** Configuration layer inspection
+- **Subsystem:** config / observability
+- **Why now:** секреты не должны утекать в логи, а внутренний конфиг-модуль должен надежно их инкапсулировать
+- **Dependencies:** S2-04
+- **Acceptance criteria:**
+  - Проверено отсутствие утечек секретов в логах
+  - Улучшена обработка маскирования чувствительных данных
+  - `internal/config` проверен на соответствие архитектуре
+
+---
+
+### S2.1-03: Run State Machine review
+
+- **ID:** S2.1-03
+- **Title:** Run State Machine review
+- **Subsystem:** Orchestrator
+- **Why now:** стейт-машина — ядро оркестратора, любые ошибки тут критичны для будущей интеграции инструментов
+- **Dependencies:** S2-04
+- **Acceptance criteria:**
+  - Проверены все возможные переходы состояний в Orchestrator (включая невалидные)
+  - Написаны/обновлены расширенные unit-тесты для state machine
+
+---
+
+### S2.1-04: PostgreSQL and Redis validation
+
+- **ID:** S2.1-04
+- **Title:** PostgreSQL and Redis validation
+- **Subsystem:** storage
+- **Why now:** от надежности работы пулов соединений и механизма lease зависит стабильность всей системы
+- **Dependencies:** S2-04
+- **Acceptance criteria:**
+  - Проанализирована работа пулов соединений (PostgreSQL, Redis)
+  - Подтверждена корректность миграций 001-005
+  - Проверен механизм Redis Lease на отсутствие race conditions
+
+---
+
+### S2.1-05: Error handling audit
+
+- **ID:** S2.1-05
+- **Title:** Error handling audit
+- **Subsystem:** Core
+- **Why now:** ошибки должны корректно мапиться на терминальные статусы системы
+- **Dependencies:** S2-04
+- **Acceptance criteria:**
+  - Ошибки корректно преобразуются в нужные статусы (например, failed, policy_denied и т.д.)
+  - Расширены structured logs (включая run_id, component в каждом сообщении об ошибке)
+
+---
+
+## Sprint 2.2 — OpenAI WebSocket Mode Integration (Intermediate)
+
+Цель: перевести транспортный слой на использование WebSocket Mode для OpenAI (Realtime API/WebSocket) в соответствии с архитектурным требованием WebSocket-first, отказавшись от временного HTTP SSE.
+
+---
+
+### S2.2-01: WebSocket Mode contract design
+
+- **ID:** S2.2-01
+- **Title:** WebSocket Mode contract design
+- **Subsystem:** Model Transport
+- **Why now:** перед имплементацией нужно спроектировать маппинг WebSocket API на существующий `ModelProvider`
+- **Dependencies:** S2.1-05
+- **Acceptance criteria:**
+  - Изучена документация OpenAI WebSocket Mode
+  - Создан или обновлен дизайн контракта поверх существующего интерфейса `ModelProvider`
+
+---
+
+### S2.2-02: OpenAI WebSocket provider implementation
+
+- **ID:** S2.2-02
+- **Title:** OpenAI WebSocket provider implementation
+- **Subsystem:** Model Transport
+- **Why now:** основная часть работы для обеспечения WebSocket-first коммуникации
+- **Dependencies:** S2.2-01
+- **Acceptance criteria:**
+  - Реализован `internal/transport/openai/websocket.go`
+  - Поддержка stateful WebSocket сессий (сохранение контекста между запросами)
+  - Отправка и прием сообщений через сокет вместо REST/SSE
+
+---
+
+### S2.2-03: Streaming events handling over WebSocket
+
+- **ID:** S2.2-03
+- **Title:** Streaming events handling over WebSocket
+- **Subsystem:** Model Transport
+- **Why now:** нужно правильно парсить специфичный для WS формат стриминговых ответов (включая дельты и инструменты)
+- **Dependencies:** S2.2-02
+- **Acceptance criteria:**
+  - Парсинг событий `assistant_delta` и `tool_call`
+  - Корректное управление буферизацией чанков
+  - События успешно транслируются в единый `TransportEvent` формат
+
+---
+
+### S2.2-04: HTTP SSE fallback mechanism
+
+- **ID:** S2.2-04
+- **Title:** HTTP SSE fallback mechanism
+- **Subsystem:** Model Transport
+- **Why now:** транспорт должен быть отказоустойчивым; если WS недоступен, нужно падать на HTTP SSE
+- **Dependencies:** S2.2-03
+- **Acceptance criteria:**
+  - Реализован автоматический переход на HTTP SSE, если WebSocket соединение обрывается или недоступно при старте
+  - Логируются fallback события (`transport_warning`)
+
+---
+
+### S2.2-05: Integration tests for WebSocket provider
+
+- **ID:** S2.2-05
+- **Title:** Integration tests for WebSocket provider
+- **Subsystem:** Model Transport / e2e
+- **Why now:** необходимо убедиться, что новый транспорт стабилен и работает с реальным API
+- **Dependencies:** S2.2-04
+- **Acceptance criteria:**
+  - Написаны интеграционные тесты для WebSocket провайдера (с mock-сервером или тестовым ключом)
+  - Проверена успешная обработка успешного ответа и возврата ошибки
+
+---
+
 ## Sprint 3 — Telegram Adapter, Tool Broker Skeleton, First E2E
 
 Цель: подключить Telegram как input/output channel и запустить первый end-to-end сценарий. Параллельно создать скелет Tool Broker.
