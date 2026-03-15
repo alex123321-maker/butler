@@ -1089,22 +1089,23 @@ Status: **Done** — all 5 tasks completed.
 
 ---
 
-### S7-02: Model Transport — OpenAI WebSocket session hardening
+### S7-02: Model Transport — OpenAI WebSocket session hardening ✅
 
 - **ID:** S7-02
 - **Title:** Model Transport — OpenAI WebSocket session hardening
+- **Status:** Done
 - **Subsystem:** Model Transport
 - **Why now:** базовый WebSocket-first path уже должен существовать к этому этапу; теперь нужно укрепить stateful session handling, fallback и recovery semantics
 - **Dependencies:** S2-02
 - **Acceptance criteria:**
-  - `internal/transport/openai/websocket.go`: hardened WebSocket client for OpenAI Realtime API
-  - Stateful session: single WebSocket connection per provider session, can persist across runs
-  - Same `ModelProvider` interface — orchestrator не знает о деталях transport
-  - Provider session ref management: create, reuse, detect loss
-  - Fallback: if WebSocket connection fails, fall back to HTTP streaming (with `transport_warning` event)
-  - Capability snapshot updated: `supports_stateful_sessions=true`
-  - Structured logging for connection lifecycle
-  - Integration test (opt-in): WebSocket session → send message → receive streaming response
+  - `internal/transport/openai/websocket.go`: hardened WebSocket client for OpenAI Realtime API ✅
+  - Stateful session: single WebSocket connection per provider session, can persist across runs ✅
+  - Same `ModelProvider` interface — orchestrator не знает о деталях transport ✅
+  - Provider session ref management: create, reuse, detect loss ✅
+  - Fallback: if WebSocket connection fails, fall back to HTTP streaming (with `transport_warning` event) ✅
+  - Capability snapshot updated: `supports_stateful_sessions=true` ✅
+  - Structured logging for connection lifecycle ✅
+  - Integration test (opt-in): WebSocket session → send message → receive streaming response ✅
 
 ---
 

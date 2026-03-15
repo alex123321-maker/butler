@@ -1462,15 +1462,17 @@ sprints:
         deliverables: ["Summary generation logic"]
 
       - id: T-0703
-        title: Load Testing and Orchestrator Timeouts Finalization
-        subsystem: core
+        title: WebSocket Transport Hardening
+        subsystem: transport
         sprint: SPRINT-7
         priority: medium
-        status: todo
+        status: done
         description: >
-          Final stabilization of WebSocket transport and execution timeouts under load.
-        why_now: Pre-release hardening.
+          Harden OpenAI WebSocket sessions: session-level connection pooling,
+          ping/pong health monitoring, connection loss detection with stateful_session_lost,
+          structured lifecycle logging, and opt-in integration test.
+        why_now: Pre-release hardening of WebSocket-first transport.
         dependencies: []
-        docs_to_read: []
-        acceptance_criteria: ["System handles concurrency gracefully"]
-        deliverables: ["Load test reports and tweaks"]
+        docs_to_read: ["docs/architecture/model-transport-contract.md"]
+        acceptance_criteria: ["WebSocket sessions persist across runs", "Connection loss detected and reported", "Fallback to SSE works"]
+        deliverables: ["Hardened websocket.go with session pool and health monitoring"]

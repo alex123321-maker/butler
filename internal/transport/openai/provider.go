@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/butler/butler/internal/logger"
@@ -18,12 +19,29 @@ import (
 
 const providerName = "openai"
 
+const (
+	TransportModeWSFirst = "ws-first"
+	TransportModeSSEOnly = "sse-only"
+)
+
+func init() {
+	transport.RegisterProvider(providerName, func(raw any) (transport.ModelProvider, error) {
+		cfg, ok := raw.(Config)
+		if !ok {
+			return nil, fmt.Errorf("openai: expected Config, got %T", raw)
+		}
+		return NewProvider(cfg, nil)
+	})
+}
+
 type Config struct {
-	APIKey  string
-	Model   string
-	BaseURL string
-	Timeout time.Duration
-	Logger  *slog.Logger
+	APIKey        string
+	Model         string
+	BaseURL       string
+	RealtimeURL   string
+	TransportMode string
+	Timeout       time.Duration
+	Logger        *slog.Logger
 }
 
 type Provider struct {
@@ -31,14 +49,23 @@ type Provider struct {
 	httpClient   *http.Client
 	capabilities transport.CapabilitySnapshot
 	log          *slog.Logger
+	mu           sync.Mutex
+	activeWS     map[string]*realtimeSession // runID → active session
+	sessions     map[string]*realtimeSession // sessionKey → persistent session
 }
 
 func NewProvider(cfg Config, client *http.Client) (*Provider, error) {
 	if strings.TrimSpace(cfg.Model) == "" {
-		cfg.Model = "gpt-5-mini"
+		cfg.Model = "gpt-4o-mini"
 	}
 	if strings.TrimSpace(cfg.BaseURL) == "" {
 		cfg.BaseURL = "https://api.openai.com/v1"
+	}
+	if strings.TrimSpace(cfg.RealtimeURL) == "" {
+		cfg.RealtimeURL = deriveRealtimeURL(cfg.BaseURL)
+	}
+	if strings.TrimSpace(cfg.TransportMode) == "" {
+		cfg.TransportMode = TransportModeWSFirst
 	}
 	if cfg.Timeout <= 0 {
 		cfg.Timeout = 60 * time.Second
@@ -54,6 +81,8 @@ func NewProvider(cfg Config, client *http.Client) (*Provider, error) {
 		config:     cfg,
 		httpClient: client,
 		log:        logger.WithComponent(log, "transport-openai"),
+		activeWS:   make(map[string]*realtimeSession),
+		sessions:   make(map[string]*realtimeSession),
 		capabilities: transport.CapabilitySnapshot{
 			SupportsStreaming:        true,
 			SupportsToolCalls:        true,
@@ -86,7 +115,9 @@ func (p *Provider) StartRun(ctx context.Context, req transport.StartRunRequest) 
 	if err != nil {
 		return nil, err
 	}
-	return p.executeStreamingRequest(ctx, req.Context.RunID, http.MethodPost, p.endpoint("/responses"), body)
+	return p.executeRunRequest(ctx, req.Context.RunID, req.Context.ModelName, body, func(context.Context) ([]map[string]any, error) {
+		return p.startRunRealtimeMessages(req)
+	})
 }
 
 func (p *Provider) ContinueRun(ctx context.Context, req transport.ContinueRunRequest) (transport.EventStream, error) {
@@ -98,7 +129,10 @@ func (p *Provider) ContinueRun(ctx context.Context, req transport.ContinueRunReq
 	if err != nil {
 		return nil, err
 	}
-	return p.executeStreamingRequest(ctx, req.RunID, http.MethodPost, p.endpoint("/responses"), body)
+	modelName := p.config.Model
+	return p.executeRunRequest(ctx, req.RunID, modelName, body, func(context.Context) ([]map[string]any, error) {
+		return p.continueRunRealtimeMessages(req)
+	})
 }
 
 func (p *Provider) SubmitToolResult(ctx context.Context, req transport.SubmitToolResultRequest) (transport.EventStream, error) {
@@ -113,7 +147,10 @@ func (p *Provider) SubmitToolResult(ctx context.Context, req transport.SubmitToo
 	if err != nil {
 		return nil, err
 	}
-	return p.executeStreamingRequest(ctx, req.RunID, http.MethodPost, p.endpoint("/responses"), body)
+	modelName := p.config.Model
+	return p.executeRunRequest(ctx, req.RunID, modelName, body, func(context.Context) ([]map[string]any, error) {
+		return p.submitToolResultRealtimeMessages(req)
+	})
 }
 
 func (p *Provider) CancelRun(ctx context.Context, req transport.CancelRunRequest) (*transport.TransportEvent, error) {
@@ -121,6 +158,14 @@ func (p *Provider) CancelRun(ctx context.Context, req transport.CancelRunRequest
 		return nil, err
 	}
 	p.log.Info("cancelling openai run", slog.String("run_id", req.RunID))
+	if active := p.activeRealtimeSession(req.RunID); active != nil {
+		if err := active.sendJSON(map[string]any{"type": "response.cancel"}); err != nil {
+			p.log.Warn("openai realtime cancel message failed", slog.String("run_id", req.RunID), slog.String("error", err.Error()))
+		}
+		active.closeConn()
+		event := transport.NewTerminalEvent(req.RunID, transport.EventTypeRunCancelled, providerName)
+		return &event, nil
+	}
 	responseRef := ""
 	if req.ProviderSessionRef != nil {
 		responseRef = strings.TrimSpace(req.ProviderSessionRef.ResponseRef)
@@ -235,8 +280,18 @@ func (p *Provider) normalizeMessage(runID string, message sseMessage, state *str
 	if eventType == "" {
 		eventType, _ = payload["type"].(string)
 	}
+	return p.normalizePayload(runID, eventType, payload, state)
+}
 
+func (p *Provider) normalizePayload(runID, eventType string, payload map[string]any, state *streamState) ([]transport.TransportEvent, bool, error) {
 	switch eventType {
+	case "session.created", "session.updated":
+		ref := providerSessionFromPayload(payload)
+		if ref == nil {
+			return nil, false, nil
+		}
+		state.providerSession = ref
+		return []transport.TransportEvent{transport.NewProviderSessionBoundEvent(runID, providerName, *ref)}, false, nil
 	case "response.created", "response.in_progress":
 		ref := providerSessionFromPayload(payload)
 		state.providerSession = ref
@@ -246,6 +301,14 @@ func (p *Provider) normalizeMessage(runID string, message sseMessage, state *str
 		}
 		return events, false, nil
 	case "response.output_text.delta":
+		delta := stringValue(payload["delta"])
+		state.finalText.WriteString(delta)
+		return []transport.TransportEvent{transport.NewAssistantDeltaEvent(runID, providerName, transport.AssistantDelta{
+			DeltaType:  "text",
+			Content:    delta,
+			SequenceNo: intValue(payload["sequence_number"]),
+		})}, false, nil
+	case "response.text.delta":
 		delta := stringValue(payload["delta"])
 		state.finalText.WriteString(delta)
 		return []transport.TransportEvent{transport.NewAssistantDeltaEvent(runID, providerName, transport.AssistantDelta{
@@ -264,6 +327,13 @@ func (p *Provider) normalizeMessage(runID string, message sseMessage, state *str
 			ArgsJSON:    coalesceJSONString(item["arguments"], "{}"),
 			SequenceNo:  intValue(payload["sequence_number"]),
 		})}, false, nil
+	case "response.function_call_arguments.done":
+		return []transport.TransportEvent{transport.NewToolCallRequestedEvent(runID, providerName, transport.ToolCallRequest{
+			ToolCallRef: stringValue(payload["call_id"]),
+			ToolName:    stringValue(payload["name"]),
+			ArgsJSON:    coalesceJSONString(payload["arguments"], "{}"),
+			SequenceNo:  intValue(payload["sequence_number"]),
+		})}, false, nil
 	case "response.completed":
 		response, _ := payload["response"].(map[string]any)
 		if ref := providerSessionFromPayload(payload); ref != nil {
@@ -276,6 +346,37 @@ func (p *Provider) normalizeMessage(runID string, message sseMessage, state *str
 		finalEvent := transport.NewAssistantFinalEvent(runID, providerName, transport.AssistantFinal{
 			Content:      finalText,
 			FinishReason: stringValue(response["status"]),
+			Usage:        usageFromMap(mapValue(response["usage"])),
+		})
+		if state.providerSession != nil {
+			finalEvent.ProviderSessionRef = state.providerSession
+		}
+		completed := transport.NewTerminalEvent(runID, transport.EventTypeRunCompleted, providerName)
+		if state.providerSession != nil {
+			completed.ProviderSessionRef = state.providerSession
+		}
+		return []transport.TransportEvent{finalEvent, completed}, true, nil
+	case "response.done":
+		response, _ := payload["response"].(map[string]any)
+		status := stringValue(response["status"])
+		if status == "failed" {
+			providerErr := errorFromPayload(map[string]any{"error": response["error"]})
+			errorEvent := transport.NewTransportErrorEvent(runID, providerName, providerErr)
+			if state.providerSession != nil {
+				errorEvent.ProviderSessionRef = state.providerSession
+			}
+			return []transport.TransportEvent{errorEvent}, true, nil
+		}
+		if ref := providerSessionFromPayload(payload); ref != nil {
+			state.providerSession = ref
+		}
+		finalText := strings.TrimSpace(extractOutputText(response))
+		if finalText == "" {
+			finalText = strings.TrimSpace(state.finalText.String())
+		}
+		finalEvent := transport.NewAssistantFinalEvent(runID, providerName, transport.AssistantFinal{
+			Content:      finalText,
+			FinishReason: status,
 			Usage:        usageFromMap(mapValue(response["usage"])),
 		})
 		if state.providerSession != nil {
@@ -430,17 +531,20 @@ type streamState struct {
 }
 
 func providerSessionFromPayload(payload map[string]any) *transport.ProviderSessionRef {
+	session := mapValue(payload["session"])
+	sessionID := stringValue(session["id"])
 	response := mapValue(payload["response"])
 	responseID := stringValue(response["id"])
 	if responseID == "" {
 		responseID = stringValue(payload["response_id"])
 	}
-	if responseID == "" {
+	if responseID == "" && sessionID == "" {
 		return nil
 	}
 	now := time.Now().UTC()
 	return &transport.ProviderSessionRef{
 		ProviderName: providerName,
+		SessionRef:   sessionID,
 		ResponseRef:  responseID,
 		CreatedAt:    now,
 		LastUsedAt:   now,
