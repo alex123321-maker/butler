@@ -59,7 +59,7 @@ func TestExecuteIntegrationPersistsRunAndTranscript(t *testing.T) {
 		session.NewRedisLeaseManager(redis.Client(), nil),
 		runservice.NewService(runservice.NewPostgresRepository(postgres.Pool()), nil),
 		transcript.NewStore(postgres.Pool()),
-		&mockProvider{events: []transport.TransportEvent{
+		&mockProvider{startEvents: []transport.TransportEvent{
 			transport.NewRunStartedEvent("", "openai", transport.CapabilitySnapshot{SupportsStreaming: true}, &transport.ProviderSessionRef{ProviderName: "openai", ResponseRef: "resp_integration"}),
 			transport.NewAssistantDeltaEvent("", "openai", transport.AssistantDelta{Content: "Hel", SequenceNo: 1}),
 			transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "Hello integration", FinishReason: "completed"}),

@@ -14,6 +14,7 @@ import (
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
+	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/transcript"
@@ -33,6 +34,11 @@ type RunManager interface {
 
 type TranscriptStore interface {
 	AppendMessage(context.Context, transcript.Message) (transcript.Message, error)
+	AppendToolCall(context.Context, transcript.ToolCall) (transcript.ToolCall, error)
+}
+
+type ToolExecutor interface {
+	ExecuteToolCall(context.Context, *toolbrokerv1.ToolCall) (*toolbrokerv1.ToolResult, error)
 }
 
 type Config struct {
@@ -41,6 +47,7 @@ type Config struct {
 	OwnerID      string
 	LeaseTTL     int64
 	Delivery     DeliverySink
+	Tools        ToolExecutor
 }
 
 type Service struct {
@@ -151,7 +158,7 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 
 	next, err := s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_QUEUED, "", "", "")
 	if err != nil {
-		return nil, fmt.Errorf("queue run: %w", err)
+		return nil, s.failRun(ctx, current, "", runLog, fmt.Errorf("queue run: %w", err))
 	}
 	current = next
 
@@ -196,7 +203,7 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 
 	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_MODEL_RUNNING, lease.LeaseID, "", "")
 	if err != nil {
-		return nil, fmt.Errorf("mark run model_running: %w", err)
+		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("mark run model_running: %w", err))
 	}
 	current = next
 
@@ -223,35 +230,9 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
 	}
 
-	var finalMessage string
-	for transportEvent := range stream {
-		if current, err = s.persistProviderSessionRef(ctx, current, transportEvent.ProviderSessionRef, runLog); err != nil {
-			return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
-		}
-		switch transportEvent.EventType {
-		case transport.EventTypeAssistantDelta:
-			if transportEvent.AssistantDelta != nil {
-				if err := s.config.Delivery.DeliverAssistantDelta(runCtx, DeliveryEvent{
-					RunID:      current.GetRunId(),
-					SessionKey: event.SessionKey,
-					Content:    transportEvent.AssistantDelta.Content,
-					SequenceNo: transportEvent.AssistantDelta.SequenceNo,
-				}); err != nil {
-					return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
-				}
-			}
-		case transport.EventTypeAssistantFinal:
-			if transportEvent.AssistantFinal != nil {
-				finalMessage = transportEvent.AssistantFinal.Content
-				if err := s.config.Delivery.DeliverAssistantFinal(runCtx, DeliveryEvent{RunID: current.GetRunId(), SessionKey: event.SessionKey, Content: finalMessage, Final: true}); err != nil {
-					return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
-				}
-			}
-		case transport.EventTypeTransportError:
-			return nil, s.failRun(ctx, current, lease.LeaseID, runLog, transportError(transportEvent.TransportError))
-		case transport.EventTypeTransportWarning:
-			runLog.Warn("transport warning", slog.String("payload", transportEvent.PayloadJSON))
-		}
+	finalMessage, current, err := s.consumeModelStream(runCtx, runLog, current, event.SessionKey, lease.LeaseID, stream)
+	if err != nil {
+		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
 	}
 	if renewErr := drainRenewError(renewErrs); renewErr != nil {
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, renewErr)
@@ -284,6 +265,135 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 
 	runLog.Info("run completed", slog.String("session_key", event.SessionKey))
 	return &ExecutionResult{RunID: next.GetRunId(), SessionKey: event.SessionKey, CurrentState: next.GetCurrentState(), AssistantResponse: finalMessage}, nil
+}
+
+func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, sessionKey, leaseID string, stream transport.EventStream) (string, *sessionv1.RunRecord, error) {
+	var finalMessage string
+	for transportEvent := range stream {
+		var err error
+		if current, err = s.persistProviderSessionRef(ctx, current, transportEvent.ProviderSessionRef, runLog); err != nil {
+			return "", current, err
+		}
+		switch transportEvent.EventType {
+		case transport.EventTypeAssistantDelta:
+			if transportEvent.AssistantDelta != nil {
+				if err := s.config.Delivery.DeliverAssistantDelta(ctx, DeliveryEvent{RunID: current.GetRunId(), SessionKey: sessionKey, Content: transportEvent.AssistantDelta.Content, SequenceNo: transportEvent.AssistantDelta.SequenceNo}); err != nil {
+					return "", current, err
+				}
+			}
+		case transport.EventTypeAssistantFinal:
+			if transportEvent.AssistantFinal != nil {
+				finalMessage = transportEvent.AssistantFinal.Content
+				if err := s.config.Delivery.DeliverAssistantFinal(ctx, DeliveryEvent{RunID: current.GetRunId(), SessionKey: sessionKey, Content: finalMessage, Final: true}); err != nil {
+					return "", current, err
+				}
+			}
+		case transport.EventTypeToolCallRequested:
+			resumed, updated, err := s.handleToolCall(ctx, runLog, current, leaseID, transportEvent.ToolCall)
+			if err != nil {
+				return "", updated, err
+			}
+			current = updated
+			resumedFinal, updated, err := s.consumeModelStream(ctx, runLog, current, sessionKey, leaseID, resumed)
+			if err != nil {
+				return "", updated, err
+			}
+			current = updated
+			if strings.TrimSpace(resumedFinal) != "" {
+				finalMessage = resumedFinal
+			}
+		case transport.EventTypeToolCallBatchRequested:
+			resumedFinal, updated, err := s.handleToolBatch(ctx, runLog, current, sessionKey, leaseID, transportEvent.ToolCallBatch)
+			if err != nil {
+				return "", updated, err
+			}
+			current = updated
+			if strings.TrimSpace(resumedFinal) != "" {
+				finalMessage = resumedFinal
+			}
+		case transport.EventTypeTransportError:
+			return "", current, transportError(transportEvent.TransportError)
+		case transport.EventTypeTransportWarning:
+			runLog.Warn("transport warning", slog.String("payload", transportEvent.PayloadJSON))
+		}
+	}
+	return finalMessage, current, nil
+}
+
+func (s *Service) handleToolBatch(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, sessionKey, leaseID string, batch *transport.ToolCallBatch) (string, *sessionv1.RunRecord, error) {
+	if batch == nil || len(batch.ToolCalls) == 0 {
+		return "", current, nil
+	}
+	var finalMessage string
+	for _, toolCall := range batch.ToolCalls {
+		resumed, updated, err := s.handleToolCall(ctx, runLog, current, leaseID, &toolCall)
+		if err != nil {
+			return "", updated, err
+		}
+		current = updated
+		resumedFinal, updated, err := s.consumeModelStream(ctx, runLog, current, sessionKey, leaseID, resumed)
+		if err != nil {
+			return "", updated, err
+		}
+		current = updated
+		if strings.TrimSpace(resumedFinal) != "" {
+			finalMessage = resumedFinal
+		}
+	}
+	return finalMessage, current, nil
+}
+
+func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, leaseID string, requested *transport.ToolCallRequest) (transport.EventStream, *sessionv1.RunRecord, error) {
+	if requested == nil {
+		return nil, current, fmt.Errorf("tool call request is required")
+	}
+	if s.config.Tools == nil {
+		return nil, current, fmt.Errorf("tool executor is not configured")
+	}
+	next, err := s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_TOOL_PENDING, leaseID, "", "")
+	if err != nil {
+		return nil, current, fmt.Errorf("mark run tool_pending: %w", err)
+	}
+	current = next
+
+	toolCallID := requested.ToolCallRef
+	if strings.TrimSpace(toolCallID) == "" {
+		toolCallID = fmt.Sprintf("tool-%s-%d", current.GetRunId(), time.Now().UTC().UnixNano())
+	}
+	brokerCall := &toolbrokerv1.ToolCall{ToolCallId: toolCallID, RunId: current.GetRunId(), ToolName: requested.ToolName, ArgsJson: requested.ArgsJSON, Status: "requested"}
+
+	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_TOOL_RUNNING, leaseID, "", "")
+	if err != nil {
+		return nil, current, fmt.Errorf("mark run tool_running: %w", err)
+	}
+	current = next
+
+	startedAt := time.Now().UTC()
+	result, err := s.config.Tools.ExecuteToolCall(ctx, brokerCall)
+	if err != nil {
+		return nil, current, fmt.Errorf("execute tool call %s: %w", requested.ToolName, err)
+	}
+	finishedAt := time.Now().UTC()
+	if _, err := s.transcript.AppendToolCall(ctx, transcript.ToolCall{ToolCallID: toolCallID, RunID: current.GetRunId(), ToolName: requested.ToolName, ArgsJSON: normalizeJSON(requested.ArgsJSON, "{}"), Status: normalizeToolStatus(result.GetStatus()), RuntimeTarget: brokerCall.GetRuntimeTarget(), StartedAt: startedAt, FinishedAt: &finishedAt, ResultJSON: toolResultPayload(result), ErrorJSON: toolErrorPayload(result.GetError())}); err != nil {
+		return nil, current, fmt.Errorf("append tool transcript: %w", err)
+	}
+
+	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME, leaseID, "", "")
+	if err != nil {
+		return nil, current, fmt.Errorf("mark run awaiting_model_resume: %w", err)
+	}
+	current = next
+
+	stream, err := s.provider.SubmitToolResult(ctx, transport.SubmitToolResultRequest{RunID: current.GetRunId(), ProviderSessionRef: providerSessionRefFromRun(current), ToolCallRef: requested.ToolCallRef, ToolResultJSON: toolResultEnvelope(result)})
+	if err != nil {
+		return nil, current, fmt.Errorf("submit tool result: %w", err)
+	}
+	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_MODEL_RUNNING, leaseID, "", "")
+	if err != nil {
+		return nil, current, fmt.Errorf("mark run model_running after tool: %w", err)
+	}
+	current = next
+	return stream, current, nil
 }
 
 func (s *Service) failRun(ctx context.Context, current *sessionv1.RunRecord, leaseID string, runLog *slog.Logger, err error) error {
@@ -470,6 +580,63 @@ func transportError(err *transport.Error) error {
 		return errors.New("transport error")
 	}
 	return err
+}
+
+func providerSessionRefFromRun(runRecord *sessionv1.RunRecord) *transport.ProviderSessionRef {
+	if runRecord == nil {
+		return nil
+	}
+	ref, err := transport.ParseProviderSessionRef(runRecord.GetProviderSessionRef())
+	if err != nil {
+		return nil
+	}
+	return ref
+}
+
+func normalizeJSON(value, fallback string) string {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" || !json.Valid([]byte(trimmed)) {
+		return fallback
+	}
+	return trimmed
+}
+
+func normalizeToolStatus(value string) string {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return "completed"
+	}
+	return trimmed
+}
+
+func toolResultEnvelope(result *toolbrokerv1.ToolResult) string {
+	payload := map[string]any{"status": normalizeToolStatus(result.GetStatus())}
+	if json.Valid([]byte(result.GetResultJson())) {
+		payload["result"] = json.RawMessage(result.GetResultJson())
+	}
+	if result.GetError() != nil {
+		payload["error"] = map[string]any{"error_class": result.GetError().GetErrorClass().String(), "message": result.GetError().GetMessage(), "retryable": result.GetError().GetRetryable(), "details_json": result.GetError().GetDetailsJson()}
+	}
+	return mustMarshalJSON(payload)
+}
+
+func toolResultPayload(result *toolbrokerv1.ToolResult) string {
+	return normalizeJSON(result.GetResultJson(), "{}")
+}
+
+func toolErrorPayload(toolErr *toolbrokerv1.ToolError) string {
+	if toolErr == nil {
+		return "{}"
+	}
+	payload := map[string]any{"error_class": toolErr.GetErrorClass().String(), "message": toolErr.GetMessage(), "retryable": toolErr.GetRetryable()}
+	if details := strings.TrimSpace(toolErr.GetDetailsJson()); details != "" {
+		if json.Valid([]byte(details)) {
+			payload["details"] = json.RawMessage(details)
+		} else {
+			payload["details"] = details
+		}
+	}
+	return mustMarshalJSON(payload)
 }
 
 func toErrorClass(value string) commonv1.ErrorClass {
