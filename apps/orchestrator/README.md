@@ -47,6 +47,7 @@ Testing:
 - unit and integration tests: `go test ./apps/orchestrator/...`
 - smoke verification: `go run ./scripts/smoke/sprint2_event_flow.go`
 - Telegram manual check: `docs/testing/telegram-manual.md`
+- Sprint 3 end-to-end check: `docs/testing/sprint-3-e2e.md`
 - full repo checks: `go test ./...`, `go build ./...`, `go vet ./...`
 
 Related docs:
@@ -56,6 +57,7 @@ Related docs:
 - `docs/architecture/memory-model.md`
 - `docs/testing/sprint-2-smoke.md`
 - `docs/testing/telegram-manual.md`
+- `docs/testing/sprint-3-e2e.md`
 
 Current limitations:
 - the service executes the OpenAI transport path synchronously inside request handling, so REST ingestion returns only after run completion

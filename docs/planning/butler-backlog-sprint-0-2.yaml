@@ -831,7 +831,7 @@ sprints:
         subsystem: e2e
         sprint: SPRINT-3
         priority: high
-        status: todo
+        status: done
         description: >
           Document and verify the first end-to-end vertical slice from Telegram input through model
           execution, response delivery, and transcript persistence.
