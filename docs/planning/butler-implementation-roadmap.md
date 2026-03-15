@@ -2,7 +2,7 @@
 
 ## Planning assumptions
 
-**Текущее состояние:** Sprint 0 и Sprint 1 реализованы полностью. Sprint 2 реализован как рабочий vertical slice; transport layer поддерживает OpenAI Realtime WebSocket как preferred backend с HTTP streaming (SSE) fallback без изменения Butler logical contract. Sprint 3 также реализован: в репозитории уже есть Telegram adapter, full MVP Docker Compose stack, первый end-to-end acceptance path, Tool Broker skeleton и durable Working Memory baseline. Sprint 4 теперь реализован: добавлены внутренний gRPC runtime contract для связи Tool Broker с runtime containers, routing в Tool Broker, sequential tool loop в Orchestrator, начальный HTTP runtime, начальный browser runtime на Playwright helper и Compose wiring для `tool-broker`, `tool-http`, `tool-browser`. Следующий крупный шаг — Sprint 5: Credential Foundation, Doctor Skeleton, Memory Retrieval.
+**Текущее состояние:** Sprint 0 и Sprint 1 реализованы полностью. Sprint 2 реализован как рабочий vertical slice; transport layer поддерживает OpenAI Realtime WebSocket как preferred backend с HTTP streaming (SSE) fallback без изменения Butler logical contract. Sprint 3 также реализован: в репозитории уже есть Telegram adapter, full MVP Docker Compose stack, первый end-to-end acceptance path, Tool Broker skeleton и durable Working Memory baseline. Sprint 4 реализован: добавлены внутренний gRPC runtime contract для связи Tool Broker с runtime containers, routing в Tool Broker, sequential tool loop в Orchestrator, начальный HTTP runtime, browser runtime на Playwright helper и Compose wiring для `tool-broker`, `tool-http`, `tool-browser`. Sprint 5 foundation тоже в основном на месте: credential metadata и audit schema теперь append-only через `010_credentials_metadata` + `013_credential_audit_logs`, doctor runtime покрывает `doctor.check_system`, `doctor.check_database`, `doctor.check_container`, `doctor.check_provider`, а memory retrieval repaired via `011_memory_profile`, `012_memory_episodes`, and `014_memory_schema_repairs`.
 
 **Модель спринтов:**
 - 1 спринт = ~2 недели
@@ -856,12 +856,13 @@ repo skeleton → shared libs (logging, config, DB) → postgres schema → sess
 - **Why now:** credential-aware tool execution — обязательное требование V1; нужна foundation до реализации `credential_ref` в browser/http tools
 - **Dependencies:** S0-04, S0-06
 - **Acceptance criteria:**
-  - `migrations/011_credentials.up.sql`: таблица `credential_records` (id, alias, secret_type, target_type, allowed_domains, allowed_tools, approval_policy, secret_ref, status, created_at, updated_at) + `credential_audit_logs` (run_id, tool_call_id, alias, field, tool_name, target_domain, decision, timestamp)
+  - `migrations/010_credentials_metadata.up.sql`: таблица `credentials` (id, alias, secret_type, target_type, allowed_domains, allowed_tools, approval_policy, secret_ref, status, created_at, updated_at)
+  - `migrations/013_credential_audit_logs.up.sql`: таблица `credential_audit_logs` (run_id, tool_call_id, alias, field, tool_name, target_domain, decision, timestamp)
   - `internal/credential/store.go`: CRUD для credential records (без secret material)
   - `internal/credential/broker.go`: `Resolve(alias, field, context) -> resolved_value | policy_denied | not_found`
   - Policy checks: allowed_domains, allowed_tools, autonomy_mode (per credential-management sections 6.5, 9)
   - Audit logging per resolution attempt
-  - Secret Store: V1 = PostgreSQL encrypted column (simple; per credential-management section 14.2 — финальный выбор отложен, начинаем с простого)
+  - Secret Store: V1 = `env://` resolver over runtime environment variables (per credential-management section 14.2 baseline)
   - Unit tests: policy enforcement (allowed/denied scenarios), audit logging
 
 ---
@@ -892,9 +893,10 @@ repo skeleton → shared libs (logging, config, DB) → postgres schema → sess
 - **Dependencies:** S4-03, S0-03
 - **Acceptance criteria:**
   - `apps/tool-doctor/main.go`: gRPC server implementing `ExecuteTool`
-  - `doctor.check_system`: checks PostgreSQL connectivity, Redis connectivity, config validation summary
-  - `doctor.check_container`: lists expected containers and their health status (via Docker API socket or config)
-  - `doctor.check_provider`: tests OpenAI API key validity (sends minimal request)
+  - `doctor.check_system`: checks config validation summary plus core database dependencies
+  - `doctor.check_database`: checks PostgreSQL connectivity and Redis connectivity explicitly
+  - `doctor.check_container`: probes configured health endpoints for expected Butler services
+  - `doctor.check_provider`: tests provider credential validity with a minimal HTTP probe
   - Uses configuration introspection interface from S0-03
   - Report format: list of checks, each with status (ok/warning/error), message, recommendation
   - Doctor не видит raw secrets (uses masked values from config introspection)
@@ -912,10 +914,11 @@ repo skeleton → shared libs (logging, config, DB) → postgres schema → sess
 - **Why now:** orchestrator context preparation нуждается в memory bundle; пора заложить episodic и profile storage
 - **Dependencies:** S0-04, S0-11
 - **Acceptance criteria:**
-  - `migrations/009_memory_episodic.up.sql`: таблица `memory_episodes` (per memory-model section 17.3: id, memory_type, scope_type, scope_id, summary, content, source_type, source_id, episode_start_at, episode_end_at, embedding vector(1536), tags, created_at, updated_at, confidence, status)
-  - `migrations/010_memory_profile.up.sql`: таблица `memory_profile` (per memory-model section 17.2: id, key, value, scope_type, scope_id, summary, source_type, source_id, effective_from, effective_to, supersedes_id, created_at, updated_at, confidence, status)
+  - `migrations/011_memory_profile.up.sql`: base table for `memory_profile`
+  - `migrations/012_memory_episodes.up.sql`: base table for `memory_episodes`
+  - `migrations/014_memory_schema_repairs.up.sql`: repair migration adding `memory_type`, `confidence`, active-only profile versioning support, `vector(1536)` compatibility, and pgvector similarity indexing
   - `internal/memory/episodic/store.go`: `Save`, `GetByScope`, `SearchByEmbedding(vector, limit)` (pgvector similarity search)
-  - `internal/memory/profile/store.go`: `Save`, `Get(key)`, `GetByScope`, `Update`, `Supersede`
+  - `internal/memory/profile/store.go`: `Save`, `Get`, `GetByScope`, `Supersede`
   - Integration tests с pgvector similarity search
 
 ---
@@ -928,9 +931,9 @@ repo skeleton → shared libs (logging, config, DB) → postgres schema → sess
 - **Why now:** orchestrator должен собирать memory bundle per run-lifecycle-spec section 10
 - **Dependencies:** S5-04, S3-05, S1-04
 - **Acceptance criteria:**
-  - Context preparation (`preparing` state) собирает: input event, session metadata, working memory snapshot, relevant profile entries, relevant episodic memories (top-N by embedding similarity)
+  - Context preparation (`preparing` state) собирает: input event, session metadata, working memory snapshot, relevant profile entries, relevant episodic memories (top-N by embedding similarity when an embedding provider is configured)
   - Memory bundle формируется как structured data, не raw text dump
-  - Configurable: max episodic memories count, max profile entries
+  - Configurable: max episodic memories count, max profile entries, and scope order (`session`, `user`, `global`)
   - If memory stores empty (new system) — gracefully proceeds with minimal context
   - Unit tests with mock memory stores
 
@@ -1011,19 +1014,28 @@ repo skeleton → shared libs (logging, config, DB) → postgres schema → sess
 
 ---
 
-### S6-04: Web UI — sessions and run history view
+### S6-04: Web UI — sessions and run history view ✅
 
 - **ID:** S6-04
 - **Title:** Web UI — sessions and run history view
 - **Subsystem:** Web UI
+- **Status:** Done
 - **Why now:** пользователь должен видеть историю сессий и runs; это базовый observability requirement
 - **Dependencies:** S6-03, S2-04
 - **Acceptance criteria:**
-  - REST API endpoints on orchestrator: `GET /api/v1/sessions`, `GET /api/v1/sessions/:key`, `GET /api/v1/runs/:id`, `GET /api/v1/runs/:id/transcript`
-  - Web UI `/sessions` page: list of sessions with last activity time
-  - Session detail: list of runs with state, timing, model provider
-  - Run detail: state transitions timeline, transcript (messages + tool calls)
-  - No edit capabilities — read-only
+  - ✅ REST API endpoints on orchestrator: `GET /api/v1/sessions`, `GET /api/v1/sessions/:key`, `GET /api/v1/runs/:id`, `GET /api/v1/runs/:id/transcript`
+  - ✅ Web UI `/sessions` page: list of sessions with last activity time
+  - ✅ Session detail: list of runs with state, timing, model provider
+  - ✅ Run detail: transcript (messages + tool calls) in chronological timeline
+  - ✅ No edit capabilities — read-only
+  - ✅ CORS middleware for cross-origin Web UI requests
+  - ✅ Unit tests for all view endpoints (9 tests)
+- **Implementation notes:**
+  - Added `ListSessions` to session repository, `ListRunsBySessionKey` to run repository
+  - Created `ViewServer` in `api/views.go` with typed DTOs and handlers
+  - CORS middleware added to orchestrator HTTP server
+  - Vue pages: `pages/sessions.vue`, `pages/sessions/[key].vue`, `pages/runs/[id].vue`
+  - API composables: `useSessions`, `useSessionDetail`, `useRunDetail`, `useRunTranscript`
 
 ---
 

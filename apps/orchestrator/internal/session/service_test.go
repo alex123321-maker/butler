@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
+	"github.com/butler/butler/internal/domain"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	"google.golang.org/grpc/codes"
@@ -59,7 +59,7 @@ func TestCreateRunReturnsInternalWhenDedupeLookupFails(t *testing.T) {
 }
 
 func TestMapRunErrorUsesTypedRunNotFound(t *testing.T) {
-	if got := status.Code(mapRunError(runservice.ErrRunNotFound)); got != codes.NotFound {
+	if got := status.Code(mapRunError(domain.ErrRunNotFound)); got != codes.NotFound {
 		t.Fatalf("expected not found, got %v", got)
 	}
 }
@@ -212,6 +212,21 @@ func (r *memoryRepository) GetSessionByKey(_ context.Context, sessionKey string)
 		return SessionRecord{}, ErrSessionNotFound
 	}
 	return record, nil
+}
+
+func (r *memoryRepository) ListSessions(_ context.Context, limit, offset int) ([]SessionRecord, error) {
+	var result []SessionRecord
+	for _, rec := range r.records {
+		result = append(result, rec)
+	}
+	if offset >= len(result) {
+		return nil, nil
+	}
+	end := offset + limit
+	if end > len(result) {
+		end = len(result)
+	}
+	return result[offset:end], nil
 }
 
 func TestNormalizeMetadataJSONRejectsInvalidJSON(t *testing.T) {

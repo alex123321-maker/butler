@@ -1378,14 +1378,26 @@ sprints:
         subsystem: web
         sprint: SPRINT-6
         priority: medium
-        status: todo
+        status: done
         description: >
-          Display list of sessions and transcripts.
+          REST API endpoints for sessions/runs/transcript on orchestrator.
+          Web UI pages for session list, session detail (runs), and run detail (transcript).
         why_now: Basic visibility into runs.
         dependencies: ["T-0603"]
         docs_to_read: []
-        acceptance_criteria: ["Can view chat history in browser"]
-        deliverables: ["Sessions page"]
+        acceptance_criteria:
+          - "REST endpoints: GET /api/v1/sessions, GET /api/v1/sessions/:key, GET /api/v1/runs/:id, GET /api/v1/runs/:id/transcript"
+          - "Web UI /sessions page lists sessions with channel, user, last activity"
+          - "Session detail page shows session info and list of runs with state badges"
+          - "Run detail page shows run info, transcript messages and tool calls in timeline"
+          - "CORS middleware on orchestrator for cross-origin Web UI requests"
+          - "Unit tests for all view endpoints (9 tests)"
+        deliverables:
+          - "Session and run repository list methods"
+          - "ViewServer REST handlers (views.go)"
+          - "CORS middleware"
+          - "Sessions list page, session detail page, run detail page"
+          - "API composables for sessions, runs, transcript"
 
       - id: T-0605
         title: Web UI Doctor View

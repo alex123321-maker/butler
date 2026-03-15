@@ -125,7 +125,8 @@ func New(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 
-	runManager := runservice.NewService(runservice.NewPostgresRepository(postgres.Pool()), logger.WithComponent(log, "run-service"))
+	runRepo := runservice.NewPostgresRepository(postgres.Pool())
+	runManager := runservice.NewService(runRepo, logger.WithComponent(log, "run-service"))
 	toolBrokerClient, err := tools.Dial(cfg.ToolBrokerAddr)
 	if err != nil {
 		redis.Close()
@@ -153,11 +154,14 @@ func New(ctx context.Context) (*App, error) {
 		}
 		delivery = flow.NewCompositeDeliverySink(delivery, telegram)
 	}
+	sessionRepo := session.NewPostgresRepository(postgres.Pool())
+	sessionLeaseManager := session.NewRedisLeaseManager(redis.Client(), logger.WithComponent(log, "session-lease-store"))
+	transcriptStore := transcript.NewStore(postgres.Pool())
 	executor := flow.NewService(
-		session.NewPostgresRepository(postgres.Pool()),
-		session.NewRedisLeaseManager(redis.Client(), logger.WithComponent(log, "session-lease-store")),
+		sessionRepo,
+		sessionLeaseManager,
 		runManager,
-		transcript.NewStore(postgres.Pool()),
+		transcriptStore,
 		provider,
 		flow.Config{
 			ProviderName:    "openai",
@@ -180,11 +184,21 @@ func New(ctx context.Context) (*App, error) {
 		telegram.SetExecutor(executor)
 	}
 	apiServer := apiservice.NewServer(executor, logger.WithComponent(log, "api"))
+	viewServer := apiservice.NewViewServer(sessionRepo, runRepo, transcriptStore, logger.WithComponent(log, "view-api"))
 
 	mux := http.NewServeMux()
 	mux.Handle("/health", h.Handler())
 	mux.Handle("/metrics", m.Handler())
 	mux.Handle("/api/v1/events", apiServer.HTTPHandler())
+	mux.Handle("/api/v1/sessions", viewServer.HandleListSessions())
+	mux.Handle("/api/v1/sessions/", viewServer.HandleGetSession())
+	mux.Handle("/api/v1/runs/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/transcript") {
+			viewServer.HandleGetRunTranscript().ServeHTTP(w, r)
+			return
+		}
+		viewServer.HandleGetRun().ServeHTTP(w, r)
+	}))
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{
 			"service": cfg.Shared.ServiceName,
@@ -194,7 +208,7 @@ func New(ctx context.Context) (*App, error) {
 
 	server := &http.Server{
 		Addr:              cfg.Shared.HTTPAddr,
-		Handler:           instrumentHTTP(cfg.Shared.ServiceName, m, mux),
+		Handler:           instrumentHTTP(cfg.Shared.ServiceName, m, corsMiddleware(mux)),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
@@ -209,8 +223,8 @@ func New(ctx context.Context) (*App, error) {
 	sessionv1.RegisterSessionServiceServer(
 		grpcServer,
 		session.NewServer(
-			session.NewPostgresRepository(postgres.Pool()),
-			session.NewRedisLeaseManager(redis.Client(), logger.WithComponent(log, "session-lease-store")),
+			sessionRepo,
+			sessionLeaseManager,
 			runManager,
 			time.Duration(cfg.SessionLeaseTTLSeconds)*time.Second,
 			logger.WithComponent(log, "session-service"),
@@ -313,6 +327,19 @@ func (a *App) shutdown(runErr error) error {
 
 	a.log.Info("orchestrator stopped cleanly")
 	return nil
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func instrumentHTTP(service string, registry *metrics.Registry, next http.Handler) http.Handler {

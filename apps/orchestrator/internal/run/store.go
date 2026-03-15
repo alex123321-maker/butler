@@ -6,15 +6,18 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/butler/butler/internal/domain"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// Re-export domain sentinel errors so existing in-package references compile
+// without a package-qualified prefix.
 var (
-	ErrRunNotFound     = fmt.Errorf("run not found")
-	ErrSessionNotFound = fmt.Errorf("session not found")
-	ErrRunDuplicate    = fmt.Errorf("run already exists for idempotency key")
+	ErrRunNotFound     = domain.ErrRunNotFound
+	ErrSessionNotFound = domain.ErrSessionNotFound
+	ErrRunDuplicate    = domain.ErrRunDuplicate
 )
 
 type Record struct {
@@ -43,6 +46,7 @@ type Repository interface {
 	FindRunByIdempotencyKey(ctx context.Context, sessionKey, idempotencyKey string) (Record, error)
 	UpdateRun(ctx context.Context, params UpdateParams) (Record, error)
 	UpdateProviderSessionRef(ctx context.Context, params UpdateProviderSessionRefParams) (Record, error)
+	ListRunsBySessionKey(ctx context.Context, sessionKey string) ([]Record, error)
 }
 
 type UpdateParams struct {
@@ -214,6 +218,36 @@ func (r *PostgresRepository) UpdateProviderSessionRef(ctx context.Context, param
 		return Record{}, fmt.Errorf("update provider session ref: %w", err)
 	}
 	return record, nil
+}
+
+func (r *PostgresRepository) ListRunsBySessionKey(ctx context.Context, sessionKey string) ([]Record, error) {
+	const query = `
+		SELECT run_id, session_key, input_event_id, COALESCE(idempotency_key, ''), status, autonomy_mode, current_state,
+			model_provider, provider_session_ref, lease_id, resumes_run_id,
+			started_at, updated_at, finished_at, error_type, error_message, metadata_json::text
+		FROM runs
+		WHERE session_key = $1
+		ORDER BY started_at DESC
+	`
+
+	rows, err := r.pool.Query(ctx, query, sessionKey)
+	if err != nil {
+		return nil, fmt.Errorf("list runs by session key: %w", err)
+	}
+	defer rows.Close()
+
+	var records []Record
+	for rows.Next() {
+		record, err := scanRunRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("scan run row: %w", err)
+		}
+		records = append(records, record)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate runs: %w", err)
+	}
+	return records, nil
 }
 
 type rowScanner interface {

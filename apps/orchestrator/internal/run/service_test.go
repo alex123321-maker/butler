@@ -249,3 +249,13 @@ func (m *memoryRepository) UpdateProviderSessionRef(_ context.Context, params Up
 	m.records[params.RunID] = record
 	return record, nil
 }
+
+func (m *memoryRepository) ListRunsBySessionKey(_ context.Context, sessionKey string) ([]Record, error) {
+	var result []Record
+	for _, rec := range m.records {
+		if rec.SessionKey == sessionKey {
+			result = append(result, rec)
+		}
+	}
+	return result, nil
+}

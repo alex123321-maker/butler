@@ -5,13 +5,16 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/butler/butler/internal/domain"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var ErrSessionNotFound = fmt.Errorf("session not found")
+// Re-export domain sentinel so in-package references work unchanged.
+var ErrSessionNotFound = domain.ErrSessionNotFound
 
 type SessionRecord struct {
+	SessionID    string
 	SessionKey   string
 	UserID       string
 	Channel      string
@@ -23,6 +26,7 @@ type SessionRecord struct {
 type Repository interface {
 	CreateSession(ctx context.Context, params CreateSessionParams) (SessionRecord, bool, error)
 	GetSessionByKey(ctx context.Context, sessionKey string) (SessionRecord, error)
+	ListSessions(ctx context.Context, limit, offset int) ([]SessionRecord, error)
 }
 
 type PostgresRepository struct {
@@ -38,7 +42,7 @@ func (r *PostgresRepository) CreateSession(ctx context.Context, params CreateSes
 		INSERT INTO sessions (session_key, user_id, channel, metadata)
 		VALUES ($1, $2, $3, $4::jsonb)
 		ON CONFLICT (session_key) DO NOTHING
-		RETURNING session_key, user_id, channel, metadata::text, created_at, updated_at
+		RETURNING session_id, session_key, user_id, channel, metadata::text, created_at, updated_at
 	`
 
 	record, err := scanSessionRow(r.pool.QueryRow(ctx, insertQuery,
@@ -64,7 +68,7 @@ func (r *PostgresRepository) CreateSession(ctx context.Context, params CreateSes
 
 func (r *PostgresRepository) GetSessionByKey(ctx context.Context, sessionKey string) (SessionRecord, error) {
 	const query = `
-		SELECT session_key, user_id, channel, metadata::text, created_at, updated_at
+		SELECT session_id, session_key, user_id, channel, metadata::text, created_at, updated_at
 		FROM sessions
 		WHERE session_key = $1
 	`
@@ -80,6 +84,41 @@ func (r *PostgresRepository) GetSessionByKey(ctx context.Context, sessionKey str
 	return record, nil
 }
 
+func (r *PostgresRepository) ListSessions(ctx context.Context, limit, offset int) ([]SessionRecord, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 50
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	const query = `
+		SELECT session_id, session_key, user_id, channel, metadata::text, created_at, updated_at
+		FROM sessions
+		ORDER BY updated_at DESC
+		LIMIT $1 OFFSET $2
+	`
+
+	rows, err := r.pool.Query(ctx, query, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("list sessions: %w", err)
+	}
+	defer rows.Close()
+
+	var sessions []SessionRecord
+	for rows.Next() {
+		record, err := scanSessionRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("scan session row: %w", err)
+		}
+		sessions = append(sessions, record)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate sessions: %w", err)
+	}
+	return sessions, nil
+}
+
 type sessionRowScanner interface {
 	Scan(dest ...any) error
 }
@@ -87,6 +126,7 @@ type sessionRowScanner interface {
 func scanSessionRow(row sessionRowScanner) (SessionRecord, error) {
 	var record SessionRecord
 	err := row.Scan(
+		&record.SessionID,
 		&record.SessionKey,
 		&record.UserID,
 		&record.Channel,
