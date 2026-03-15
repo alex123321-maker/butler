@@ -135,6 +135,35 @@ func TestExecuteRunsSequentialToolLoop(t *testing.T) {
 	}
 }
 
+func TestExecuteIncludesMemoryAwareContext(t *testing.T) {
+	t.Parallel()
+
+	provider := &mockProvider{startEvents: []transport.TransportEvent{
+		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "memory aware", FinishReason: "completed"}),
+		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+	}}
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+		ProviderName: "openai",
+		ModelName:    "gpt-5-mini",
+		ProfileStore: stubProfileStore{entries: []MemoryProfileEntry{stubProfileEntry{key: "language", summary: "User prefers Russian"}}},
+		EpisodeStore: stubEpisodeStore{entries: []MemoryEpisode{stubEpisode{summary: "Fixed Redis outage before", distance: 0.01}}},
+	}, nil)
+
+	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:1", Source: "telegram", PayloadJSON: `{"text":"check redis"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if result.AssistantResponse != "memory aware" {
+		t.Fatalf("unexpected assistant response %q", result.AssistantResponse)
+	}
+	if len(provider.startRequests) != 1 || len(provider.startRequests[0].InputItems) < 2 {
+		t.Fatalf("expected memory prompt plus user input, got %+v", provider.startRequests)
+	}
+	if provider.startRequests[0].InputItems[0].Role != "system" {
+		t.Fatalf("expected first input item to be system memory prompt, got %+v", provider.startRequests[0].InputItems)
+	}
+}
+
 func TestExecuteFailsRunOnTransportError(t *testing.T) {
 	t.Parallel()
 
@@ -401,6 +430,7 @@ func (m *memoryTranscriptStore) AppendToolCall(_ context.Context, call transcrip
 
 type mockProvider struct {
 	startEvents      []transport.TransportEvent
+	startRequests    []transport.StartRunRequest
 	submitEvents     []transport.TransportEvent
 	submittedResults []transport.SubmitToolResultRequest
 	err              error
@@ -416,6 +446,7 @@ func (m *mockProvider) StartRun(_ context.Context, req transport.StartRunRequest
 	if m.err != nil {
 		return nil, m.err
 	}
+	m.startRequests = append(m.startRequests, req)
 	ch := make(chan transport.TransportEvent, len(m.startEvents))
 	for _, event := range m.startEvents {
 		if event.RunID == "" {
@@ -426,6 +457,34 @@ func (m *mockProvider) StartRun(_ context.Context, req transport.StartRunRequest
 	close(ch)
 	return ch, nil
 }
+
+type stubProfileStore struct{ entries []MemoryProfileEntry }
+
+func (s stubProfileStore) GetByScope(context.Context, string, string) ([]MemoryProfileEntry, error) {
+	return s.entries, nil
+}
+
+type stubEpisodeStore struct{ entries []MemoryEpisode }
+
+func (s stubEpisodeStore) Search(context.Context, string, string, []float32, int) ([]MemoryEpisode, error) {
+	return s.entries, nil
+}
+
+type stubProfileEntry struct {
+	key     string
+	summary string
+}
+
+func (e stubProfileEntry) ProfileKey() string     { return e.key }
+func (e stubProfileEntry) ProfileSummary() string { return e.summary }
+
+type stubEpisode struct {
+	summary  string
+	distance float64
+}
+
+func (e stubEpisode) EpisodeSummary() string   { return e.summary }
+func (e stubEpisode) EpisodeDistance() float64 { return e.distance }
 
 func (m *mockProvider) ContinueRun(context.Context, transport.ContinueRunRequest) (transport.EventStream, error) {
 	return nil, nil

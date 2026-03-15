@@ -328,7 +328,7 @@ At the current implementation stage:
 
 * profile retrieval is structured lookup by scope from `memory_profile`;
 * episodic retrieval is vector similarity search from `memory_episodes` using pgvector distance ordering;
-* orchestrator-side prompt assembly still lands in the next sprint task that consumes these stores.
+* orchestrator prepares a memory-aware context bundle and injects a compact system memory prompt before model execution when relevant entries exist.
 
 ---
 

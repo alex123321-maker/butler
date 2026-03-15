@@ -41,6 +41,24 @@ type ToolExecutor interface {
 	ExecuteToolCall(context.Context, *toolbrokerv1.ToolCall) (*toolbrokerv1.ToolResult, error)
 }
 
+type ProfileMemoryStore interface {
+	GetByScope(context.Context, string, string) ([]MemoryProfileEntry, error)
+}
+
+type EpisodicMemoryStore interface {
+	Search(context.Context, string, string, []float32, int) ([]MemoryEpisode, error)
+}
+
+type MemoryProfileEntry interface {
+	ProfileKey() string
+	ProfileSummary() string
+}
+
+type MemoryEpisode interface {
+	EpisodeSummary() string
+	EpisodeDistance() float64
+}
+
 type Config struct {
 	ProviderName string
 	ModelName    string
@@ -48,6 +66,8 @@ type Config struct {
 	LeaseTTL     int64
 	Delivery     DeliverySink
 	Tools        ToolExecutor
+	ProfileStore ProfileMemoryStore
+	EpisodeStore EpisodicMemoryStore
 }
 
 type Service struct {
@@ -117,7 +137,7 @@ func (s *Service) Execute(ctx context.Context, event ingress.InputEvent) (*Execu
 	if err := validateInputEvent(event); err != nil {
 		return nil, err
 	}
-	prepared, err := prepareRun(event)
+	prepared, err := s.prepareRun(ctx, event)
 	if err != nil {
 		return nil, err
 	}
@@ -488,7 +508,7 @@ func (s *Service) transition(ctx context.Context, runID string, from, to commonv
 	return resp, nil
 }
 
-func prepareRun(event ingress.InputEvent) (preparedRun, error) {
+func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (preparedRun, error) {
 	payload := map[string]any{}
 	if strings.TrimSpace(event.PayloadJSON) != "" {
 		if err := json.Unmarshal([]byte(event.PayloadJSON), &payload); err != nil {
@@ -507,14 +527,104 @@ func prepareRun(event ingress.InputEvent) (preparedRun, error) {
 	if channel == "" {
 		channel = "unknown"
 	}
-	return preparedRun{
+	prepared := preparedRun{
 		InputItems:    []transport.InputItem{{Role: "user", Content: message, ContentType: "text/plain"}},
 		UserMessage:   message,
 		MemoryBundle:  map[string]any{},
 		InputPayload:  payload,
 		SessionUserID: userID,
 		Channel:       channel,
-	}, nil
+	}
+	if err := s.attachMemoryContext(ctx, event.SessionKey, message, &prepared); err != nil {
+		return preparedRun{}, err
+	}
+	return prepared, nil
+}
+
+func (s *Service) attachMemoryContext(ctx context.Context, sessionKey, userMessage string, prepared *preparedRun) error {
+	if prepared == nil {
+		return nil
+	}
+	profileEntries, err := s.loadProfileMemory(ctx, sessionKey)
+	if err != nil {
+		return err
+	}
+	episodes, err := s.loadEpisodes(ctx, sessionKey, userMessage)
+	if err != nil {
+		return err
+	}
+	if len(profileEntries) == 0 && len(episodes) == 0 {
+		return nil
+	}
+	prepared.MemoryBundle["profile"] = profileEntries
+	prepared.MemoryBundle["episodes"] = episodes
+	memoryPrompt := formatMemoryPrompt(profileEntries, episodes)
+	if strings.TrimSpace(memoryPrompt) != "" {
+		prepared.InputItems = append([]transport.InputItem{{Role: "system", Content: memoryPrompt, ContentType: "text/plain"}}, prepared.InputItems...)
+	}
+	return nil
+}
+
+func (s *Service) loadProfileMemory(ctx context.Context, sessionKey string) ([]map[string]any, error) {
+	if s.config.ProfileStore == nil {
+		return nil, nil
+	}
+	entries, err := s.config.ProfileStore.GetByScope(ctx, "session", sessionKey)
+	if err != nil {
+		return nil, fmt.Errorf("load profile memory: %w", err)
+	}
+	result := make([]map[string]any, 0, len(entries))
+	for _, entry := range entries {
+		result = append(result, map[string]any{"key": entry.ProfileKey(), "summary": entry.ProfileSummary()})
+	}
+	return result, nil
+}
+
+func (s *Service) loadEpisodes(ctx context.Context, sessionKey, userMessage string) ([]map[string]any, error) {
+	if s.config.EpisodeStore == nil || strings.TrimSpace(userMessage) == "" {
+		return nil, nil
+	}
+	items, err := s.config.EpisodeStore.Search(ctx, "session", sessionKey, deriveMemoryQueryEmbedding(userMessage), 3)
+	if err != nil {
+		return nil, fmt.Errorf("load episodic memory: %w", err)
+	}
+	result := make([]map[string]any, 0, len(items))
+	for _, item := range items {
+		result = append(result, map[string]any{"summary": item.EpisodeSummary(), "distance": item.EpisodeDistance()})
+	}
+	return result, nil
+}
+
+func formatMemoryPrompt(profileEntries, episodes []map[string]any) string {
+	sections := make([]string, 0, 2)
+	if len(profileEntries) > 0 {
+		lines := make([]string, 0, len(profileEntries))
+		for _, entry := range profileEntries {
+			lines = append(lines, fmt.Sprintf("- %s: %s", entry["key"], entry["summary"]))
+		}
+		sections = append(sections, "Profile memory:\n"+strings.Join(lines, "\n"))
+	}
+	if len(episodes) > 0 {
+		lines := make([]string, 0, len(episodes))
+		for _, entry := range episodes {
+			lines = append(lines, fmt.Sprintf("- %s", entry["summary"]))
+		}
+		sections = append(sections, "Relevant episodes:\n"+strings.Join(lines, "\n"))
+	}
+	return strings.Join(sections, "\n\n")
+}
+
+func deriveMemoryQueryEmbedding(value string) []float32 {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return []float32{0, 0, 0}
+	}
+	var sum int
+	for _, r := range trimmed {
+		sum += int(r)
+	}
+	wordCount := len(strings.Fields(trimmed))
+	return []float32{float32(len(trimmed)) / 100, float32(wordCount) / 10, float32(sum%1000) / 1000}
 }
 
 func extractUserMessage(payload map[string]any) string {

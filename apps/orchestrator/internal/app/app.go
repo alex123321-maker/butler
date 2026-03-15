@@ -25,10 +25,14 @@ import (
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
+	"github.com/butler/butler/internal/memory/episodic"
+	"github.com/butler/butler/internal/memory/profile"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/metrics"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	redisstore "github.com/butler/butler/internal/storage/redis"
+	"github.com/butler/butler/internal/transport"
+	// Import openai provider to register it via init().
 	"github.com/butler/butler/internal/transport/openai"
 	"google.golang.org/grpc"
 )
@@ -45,6 +49,34 @@ type App struct {
 	grpcListen net.Listener
 	telegram   *telegramadapter.Adapter
 	toolBroker *tools.BrokerClient
+}
+
+type profileStoreAdapter struct{ store *profile.Store }
+
+func (a profileStoreAdapter) GetByScope(ctx context.Context, scopeType, scopeID string) ([]flow.MemoryProfileEntry, error) {
+	entries, err := a.store.GetByScope(ctx, scopeType, scopeID)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]flow.MemoryProfileEntry, 0, len(entries))
+	for _, entry := range entries {
+		result = append(result, entry)
+	}
+	return result, nil
+}
+
+type episodicStoreAdapter struct{ store *episodic.Store }
+
+func (a episodicStoreAdapter) Search(ctx context.Context, scopeType, scopeID string, embedding []float32, limit int) ([]flow.MemoryEpisode, error) {
+	entries, err := a.store.Search(ctx, scopeType, scopeID, embedding, limit)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]flow.MemoryEpisode, 0, len(entries))
+	for _, entry := range entries {
+		result = append(result, entry)
+	}
+	return result, nil
 }
 
 func New(ctx context.Context) (*App, error) {
@@ -78,13 +110,15 @@ func New(ctx context.Context) (*App, error) {
 		health.FuncChecker{CheckName: "redis", Fn: redis.HealthCheck},
 	)
 
-	provider, err := openai.NewProvider(openai.Config{
-		APIKey:  cfg.OpenAIAPIKey,
-		Model:   cfg.OpenAIModel,
-		BaseURL: cfg.OpenAIBaseURL,
-		Timeout: time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
-		Logger:  logger.WithComponent(log, "transport-openai"),
-	}, nil)
+	provider, err := transport.NewProvider("openai", openai.Config{
+		APIKey:        cfg.OpenAIAPIKey,
+		Model:         cfg.OpenAIModel,
+		BaseURL:       cfg.OpenAIBaseURL,
+		RealtimeURL:   cfg.OpenAIRealtimeURL,
+		TransportMode: cfg.OpenAITransportMode,
+		Timeout:       time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
+		Logger:        logger.WithComponent(log, "transport-openai"),
+	})
 	if err != nil {
 		redis.Close()
 		postgres.Close()
@@ -92,7 +126,7 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	runManager := runservice.NewService(runservice.NewPostgresRepository(postgres.Pool()), logger.WithComponent(log, "run-service"))
-	toolBrokerClient, err := tools.Dial(ctx, cfg.ToolBrokerAddr)
+	toolBrokerClient, err := tools.Dial(cfg.ToolBrokerAddr)
 	if err != nil {
 		redis.Close()
 		postgres.Close()
@@ -131,6 +165,8 @@ func New(ctx context.Context) (*App, error) {
 			LeaseTTL:     int64(cfg.SessionLeaseTTLSeconds),
 			Delivery:     delivery,
 			Tools:        toolBrokerClient,
+			ProfileStore: profileStoreAdapter{store: profile.NewStore(postgres.Pool())},
+			EpisodeStore: episodicStoreAdapter{store: episodic.NewStore(postgres.Pool())},
 		},
 		logger.WithComponent(log, "executor"),
 	)

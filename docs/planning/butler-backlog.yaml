@@ -1165,7 +1165,7 @@ sprints:
   - id: SPRINT-5
     title: Credential Foundation, Doctor, Memory Retrieval
     goal: Create foundation for credentials, add system self-diagnostics, and long-term memory retrieval.
-    status: in_progress
+    status: done
     tasks:
       - id: T-0501
         title: Credential Store & Broker
@@ -1261,14 +1261,22 @@ sprints:
         subsystem: orchestrator
         sprint: SPRINT-5
         priority: high
-        status: todo
+        status: done
         description: >
           Add fetched memories into the prompt before sending it to the model.
         why_now: Closes the retrieval loop.
         dependencies: ["T-0504"]
-        docs_to_read: []
-        acceptance_criteria: ["Context contains profile and episodic memories"]
-        deliverables: ["Updated orchestrator prepare logic"]
+        docs_to_read:
+          - docs/architecture/memory-model.md
+          - docs/architecture/run-lifecycle-spec.md
+        acceptance_criteria:
+          - Preparing stage loads profile memory by session scope.
+          - Preparing stage retrieves relevant episodic memories before model execution.
+          - Model input includes a memory-aware system prompt when memories are available.
+          - Tests verify the enriched prompt path.
+        deliverables:
+          - updated orchestrator prepare logic
+          - orchestrator memory-loading test coverage
 
   - id: SPRINT-6
     title: Telegram Streaming, Approval UX, Web UI Shell

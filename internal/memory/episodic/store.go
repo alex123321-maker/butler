@@ -34,6 +34,10 @@ type SearchResult struct {
 	Distance float64
 }
 
+func (r SearchResult) EpisodeSummary() string { return r.Summary }
+
+func (r SearchResult) EpisodeDistance() float64 { return r.Distance }
+
 func NewStore(pool *pgxpool.Pool) *Store { return &Store{pool: pool} }
 
 func (s *Store) Save(ctx context.Context, episode Episode) (Episode, error) {

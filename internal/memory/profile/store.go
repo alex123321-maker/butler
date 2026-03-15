@@ -33,6 +33,15 @@ type Entry struct {
 	UpdatedAt     time.Time
 }
 
+func (e Entry) ProfileKey() string { return e.Key }
+
+func (e Entry) ProfileSummary() string {
+	if strings.TrimSpace(e.Summary) != "" {
+		return e.Summary
+	}
+	return e.Key
+}
+
 func NewStore(pool *pgxpool.Pool) *Store { return &Store{pool: pool} }
 
 func (s *Store) Save(ctx context.Context, entry Entry) (Entry, error) {

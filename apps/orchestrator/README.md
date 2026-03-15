@@ -11,6 +11,7 @@ Current baseline:
 - implements Redis-backed `AcquireLease`, `RenewLease`, and `ReleaseLease`
 - implements durable run creation, lookup, state transitions, and input-event deduplication
 - implements the internal event-to-run execution flow for normalized `InputEvent` values using the transport layer and transcript store
+- loads profile and episodic memory into a memory-aware prompt bundle during run preparation when entries are available
 - exposes an internal delivery sink for `assistant_delta` and `assistant_final` events without allowing channel adapters to mutate run state
 - exposes `SubmitEvent` over gRPC and synchronous `POST /api/v1/events` over REST for normalized event ingestion
 - optionally runs the in-process Telegram adapter using Bot API long polling and final-response delivery
@@ -24,7 +25,7 @@ Dependencies:
 
 Configuration:
 - required: `BUTLER_POSTGRES_URL`, `BUTLER_REDIS_URL`
-- commonly used: `BUTLER_HTTP_ADDR`, `BUTLER_GRPC_ADDR`, `BUTLER_LOG_LEVEL`, `BUTLER_SESSION_LEASE_TTL_SECONDS`, `BUTLER_OPENAI_MODEL`
+- commonly used: `BUTLER_HTTP_ADDR`, `BUTLER_GRPC_ADDR`, `BUTLER_LOG_LEVEL`, `BUTLER_SESSION_LEASE_TTL_SECONDS`, `BUTLER_OPENAI_MODEL`, `BUTLER_OPENAI_REALTIME_URL`, `BUTLER_OPENAI_TRANSPORT_MODE`, `BUTLER_TOOL_BROKER_ADDR`
 - Telegram adapter: `BUTLER_TELEGRAM_BOT_TOKEN`, `BUTLER_TELEGRAM_ALLOWED_CHAT_IDS`, `BUTLER_TELEGRAM_BASE_URL`, `BUTLER_TELEGRAM_POLL_TIMEOUT_SECONDS`
 - see `internal/config/config.go` and `.env.example` for the current typed config surface
 
@@ -62,6 +63,6 @@ Related docs:
 
 Current limitations:
 - the service executes the OpenAI transport path synchronously inside request handling, so REST ingestion returns only after run completion
-- the current OpenAI transport backend is HTTP SSE only; WebSocket-first OpenAI transport is still pending
+- the current OpenAI transport path prefers Realtime WebSocket and falls back to HTTP SSE when the WebSocket backend is unavailable early in the run
 - tool calling now goes through Tool Broker and runtime services over gRPC
 - the tool-enabled Compose stack is wired, but runtime capabilities are still Sprint 4 skeletons rather than full V1 breadth
