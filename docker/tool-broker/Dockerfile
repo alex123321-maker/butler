@@ -9,5 +9,6 @@ FROM alpine:3.21
 RUN adduser -D -H -u 10001 butler
 WORKDIR /app
 COPY --from=builder /out/tool-broker /usr/local/bin/tool-broker
+COPY configs/ /app/configs/
 USER butler
 ENTRYPOINT ["/usr/local/bin/tool-broker"]

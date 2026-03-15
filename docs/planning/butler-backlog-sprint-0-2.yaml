@@ -857,7 +857,7 @@ sprints:
         subsystem: tool-broker
         sprint: SPRINT-3
         priority: high
-        status: todo
+        status: done
         description: >
           Build the initial Tool Broker service with an in-memory registry, contract lookup, tool-call
           schema validation, and a stub execution endpoint.
