@@ -1710,7 +1710,7 @@ sprints:
         subsystem: orchestrator
         sprint: SPRINT-8
         priority: high
-        status: todo
+        status: done
         description: >
           Add REST API endpoints on the orchestrator HTTP server for settings management:
           GET /api/v1/settings (list all with masked secrets, source, validation status),
