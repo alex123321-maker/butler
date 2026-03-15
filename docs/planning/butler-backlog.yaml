@@ -1795,7 +1795,7 @@ sprints:
         subsystem: web
         sprint: SPRINT-8
         priority: high
-        status: todo
+        status: done
         description: >
           Replace the settings.vue placeholder with a full Settings page. Settings are grouped
           by component (General, Database, Redis, OpenAI, Telegram, Memory, Tools, Doctor).
