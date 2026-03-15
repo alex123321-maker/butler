@@ -82,22 +82,41 @@ func (a episodicStoreAdapter) Search(ctx context.Context, scopeType, scopeID str
 }
 
 func New(ctx context.Context) (*App, error) {
-	cfg, snapshot, err := config.LoadOrchestratorFromEnv()
+	baseCfg, _, err := config.LoadOrchestratorFromEnv()
 	if err != nil {
 		return nil, err
 	}
 
 	log := logger.New(logger.Options{
-		Service:   cfg.Shared.ServiceName,
+		Service:   baseCfg.Shared.ServiceName,
 		Component: "bootstrap",
-		Level:     parseLogLevel(cfg.Shared.LogLevel),
+		Level:     parseLogLevel(baseCfg.Shared.LogLevel),
 	})
-	log.Info("loaded orchestrator config", slog.String("config_summary", configSummary(snapshot)))
 
-	postgres, err := postgresstore.Open(ctx, postgresstore.ConfigFromShared(cfg.Postgres), logger.WithComponent(log, "postgres"))
+	postgres, err := postgresstore.Open(ctx, postgresstore.ConfigFromShared(baseCfg.Postgres), logger.WithComponent(log, "postgres"))
 	if err != nil {
 		return nil, err
 	}
+
+	settingsOptions := []config.SettingsStoreOption{}
+	if strings.TrimSpace(os.Getenv(config.SettingsEncryptionKeyEnv)) == "" {
+		log.Warn("settings encryption key not set; using plaintext settings storage")
+		settingsOptions = append(settingsOptions, config.WithPlaintextSecretStorage())
+	}
+	settingsStore := config.NewPostgresSettingsStore(postgres.Pool(), settingsOptions...)
+	storedSettings, err := settingsStore.ListAll(ctx)
+	if err != nil {
+		postgres.Close()
+		return nil, err
+	}
+
+	cfg, snapshot, err := config.LoadOrchestratorLayered(storedSettings)
+	if err != nil {
+		postgres.Close()
+		return nil, err
+	}
+	log.Info("loaded layered orchestrator config", slog.String("config_summary", configSummary(snapshot)))
+	hotConfig := config.NewHotConfig(snapshot)
 
 	redis, err := redisstore.Open(ctx, redisstore.ConfigFromShared(cfg.Redis), logger.WithComponent(log, "redis"))
 	if err != nil {
@@ -208,11 +227,14 @@ func New(ctx context.Context) (*App, error) {
 		return result.GetResultJson(), nil
 	})
 	doctorServer := apiservice.NewDoctorServer(postgres.Pool(), doctorChecker, logger.WithComponent(log, "doctor-api"))
+	settingsServer := apiservice.NewSettingsServer(config.NewSettingsService(settingsStore, hotConfig))
 
 	mux := http.NewServeMux()
 	mux.Handle("/health", h.Handler())
 	mux.Handle("/metrics", m.Handler())
 	mux.Handle("/api/v1/events", apiServer.HTTPHandler())
+	mux.Handle("/api/v1/settings", settingsServer.HandleList())
+	mux.Handle("/api/v1/settings/", settingsServer.HandleItem())
 	mux.Handle("/api/v1/sessions", viewServer.HandleListSessions())
 	mux.Handle("/api/v1/sessions/", viewServer.HandleGetSession())
 	mux.Handle("/api/v1/runs/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

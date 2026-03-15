@@ -1742,7 +1742,7 @@ sprints:
         subsystem: orchestrator
         sprint: SPRINT-8
         priority: high
-        status: todo
+        status: done
         description: >
           Wire the PostgresSettingsStore, LayeredResolver, and HotConfig into the orchestrator
           bootstrap sequence (app.go). The orchestrator loads DB settings at startup and merges

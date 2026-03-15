@@ -3,17 +3,18 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/butler/butler/internal/config"
 )
 
 func TestSettingsServerHandleListGroupsAndMasksSecrets(t *testing.T) {
-	server := NewSettingsServer(fakeSettingsManager{list: []SettingView{
-		{Key: "BUTLER_LOG_LEVEL", Component: "orchestrator", Value: "debug", Source: "db", ValidationStatus: "valid"},
-		{Key: "BUTLER_OPENAI_API_KEY", Component: "orchestrator", Value: "sk-abcdefghijkl1234", Source: "env", IsSecret: true, RequiresRestart: true, ValidationStatus: "valid"},
+	server := NewSettingsServer(fakeSettingsManager{list: []config.SettingState{
+		{Key: "BUTLER_LOG_LEVEL", Component: "orchestrator", Value: "debug", Source: "db", ValidationStatus: config.ValidationStatusValid},
+		{Key: "BUTLER_OPENAI_API_KEY", Component: "orchestrator", Value: "sk-abcdefghijkl1234", Source: "env", IsSecret: true, RequiresRestart: true, ValidationStatus: config.ValidationStatusValid},
 	}})
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/settings", nil)
@@ -44,7 +45,7 @@ func TestSettingsServerHandleListGroupsAndMasksSecrets(t *testing.T) {
 }
 
 func TestSettingsServerHandleUpdateReturnsValidationErrors(t *testing.T) {
-	server := NewSettingsServer(fakeSettingsManager{updateErr: ErrSettingsValidation})
+	server := NewSettingsServer(fakeSettingsManager{updateErr: config.ErrInvalidSettingValue})
 	req := httptest.NewRequest(http.MethodPut, "/api/v1/settings/BUTLER_LOG_LEVEL", strings.NewReader(`{"value":"verbose"}`))
 	rr := httptest.NewRecorder()
 
@@ -56,7 +57,7 @@ func TestSettingsServerHandleUpdateReturnsValidationErrors(t *testing.T) {
 }
 
 func TestSettingsServerHandleUpdateReturnsRestartMetadata(t *testing.T) {
-	server := NewSettingsServer(fakeSettingsManager{update: SettingView{Key: "BUTLER_HTTP_ADDR", Component: "orchestrator", Value: ":9090", Source: "db", RequiresRestart: true, ValidationStatus: "valid"}})
+	server := NewSettingsServer(fakeSettingsManager{update: config.SettingState{Key: "BUTLER_HTTP_ADDR", Component: "orchestrator", Value: ":9090", Source: "db", RequiresRestart: true, ValidationStatus: config.ValidationStatusValid}})
 	req := httptest.NewRequest(http.MethodPut, "/api/v1/settings/BUTLER_HTTP_ADDR", strings.NewReader(`{"value":":9090"}`))
 	rr := httptest.NewRecorder()
 
@@ -79,7 +80,7 @@ func TestSettingsServerHandleUpdateReturnsRestartMetadata(t *testing.T) {
 }
 
 func TestSettingsServerHandleDeleteReturnsResolvedSetting(t *testing.T) {
-	server := NewSettingsServer(fakeSettingsManager{deleted: SettingView{Key: "BUTLER_LOG_LEVEL", Component: "orchestrator", Value: "info", Source: "default", ValidationStatus: "valid"}})
+	server := NewSettingsServer(fakeSettingsManager{deleted: config.SettingState{Key: "BUTLER_LOG_LEVEL", Component: "orchestrator", Value: "info", Source: "default", ValidationStatus: config.ValidationStatusValid}})
 	req := httptest.NewRequest(http.MethodDelete, "/api/v1/settings/BUTLER_LOG_LEVEL", nil)
 	rr := httptest.NewRecorder()
 
@@ -91,31 +92,30 @@ func TestSettingsServerHandleDeleteReturnsResolvedSetting(t *testing.T) {
 }
 
 type fakeSettingsManager struct {
-	list      []SettingView
-	update    SettingView
-	deleted   SettingView
+	list      []config.SettingState
+	update    config.SettingState
+	deleted   config.SettingState
 	listErr   error
 	updateErr error
 	deleteErr error
 }
 
-func (f fakeSettingsManager) List(context.Context) ([]SettingView, error) {
+func (f fakeSettingsManager) List(context.Context) ([]config.SettingState, error) {
 	return f.list, f.listErr
 }
 
-func (f fakeSettingsManager) Update(context.Context, string, string) (SettingView, error) {
+func (f fakeSettingsManager) Update(context.Context, string, string) (config.SettingState, error) {
 	if f.updateErr != nil {
-		return SettingView{}, f.updateErr
+		return config.SettingState{}, f.updateErr
 	}
 	return f.update, nil
 }
 
-func (f fakeSettingsManager) Delete(context.Context, string) (SettingView, error) {
+func (f fakeSettingsManager) Delete(context.Context, string) (config.SettingState, error) {
 	if f.deleteErr != nil {
-		return SettingView{}, f.deleteErr
+		return config.SettingState{}, f.deleteErr
 	}
 	return f.deleted, nil
 }
 
 var _ SettingsManager = fakeSettingsManager{}
-var _ = errors.Is

@@ -11,23 +11,10 @@ import (
 	"github.com/butler/butler/internal/config"
 )
 
-var ErrSettingsValidation = errors.New("settings validation failed")
-
-type SettingView struct {
-	Key              string
-	Component        string
-	Value            string
-	Source           string
-	IsSecret         bool
-	RequiresRestart  bool
-	ValidationStatus string
-	ValidationError  string
-}
-
 type SettingsManager interface {
-	List(context.Context) ([]SettingView, error)
-	Update(context.Context, string, string) (SettingView, error)
-	Delete(context.Context, string) (SettingView, error)
+	List(context.Context) ([]config.SettingState, error)
+	Update(context.Context, string, string) (config.SettingState, error)
+	Delete(context.Context, string) (config.SettingState, error)
 }
 
 type SettingsServer struct {
@@ -73,7 +60,7 @@ func (s *SettingsServer) HandleItem() http.Handler {
 			setting, err := s.manager.Update(r.Context(), key, request.Value)
 			if err != nil {
 				status := http.StatusInternalServerError
-				if errors.Is(err, ErrSettingsValidation) {
+				if errors.Is(err, config.ErrInvalidSettingValue) {
 					status = http.StatusBadRequest
 				}
 				writeJSON(w, status, map[string]string{"error": err.Error()})
@@ -109,7 +96,7 @@ type settingDTO struct {
 	ValidationError  string `json:"validation_error,omitempty"`
 }
 
-func groupSettings(settings []SettingView) []settingsComponentDTO {
+func groupSettings(settings []config.SettingState) []settingsComponentDTO {
 	groups := map[string][]settingDTO{}
 	for _, setting := range settings {
 		groups[setting.Component] = append(groups[setting.Component], toSettingDTO(setting))
@@ -123,7 +110,7 @@ func groupSettings(settings []SettingView) []settingsComponentDTO {
 	return components
 }
 
-func toSettingDTO(setting SettingView) settingDTO {
+func toSettingDTO(setting config.SettingState) settingDTO {
 	value := setting.Value
 	if setting.IsSecret {
 		value = config.MaskForDisplay(setting.Key, setting.Value)
@@ -135,7 +122,7 @@ func toSettingDTO(setting SettingView) settingDTO {
 		Source:           setting.Source,
 		IsSecret:         setting.IsSecret,
 		RequiresRestart:  setting.RequiresRestart,
-		ValidationStatus: setting.ValidationStatus,
+		ValidationStatus: string(setting.ValidationStatus),
 		ValidationError:  setting.ValidationError,
 	}
 }
