@@ -1349,14 +1349,29 @@ sprints:
         subsystem: web
         sprint: SPRINT-6
         priority: high
-        status: todo
+        status: done
         description: >
-          Initialize Nuxt.js project and base layout.
+          Initialize Nuxt.js project with base layout, sidebar navigation,
+          system health indicator, and placeholder pages for all views.
         why_now: Start web surface area.
         dependencies: []
-        docs_to_read: []
-        acceptance_criteria: ["Nuxt project boots"]
-        deliverables: ["web/ directory init"]
+        docs_to_read:
+          - docs/architecture/butler-prd-architecture.md
+        acceptance_criteria:
+          - Nuxt 3 project initialized in web/ with TypeScript
+          - Pages for dashboard (/), sessions, memory, doctor, settings
+          - Default layout with fixed sidebar navigation and system status indicator
+          - REST API client composable with runtime config for base URL
+          - Health check composable polls GET /health and shows green/red indicator
+          - Dockerfile at docker/web/Dockerfile (multi-stage Node build)
+          - Docker Compose web service on port 3000
+          - Global CSS with dark theme and reusable component styles
+        deliverables:
+          - web/ Nuxt.js project with all pages and layout
+          - SystemStatus component
+          - useApiClient and useHealthCheck composables
+          - docker/web/Dockerfile
+          - Docker Compose web service
 
       - id: T-0604
         title: Web UI Sessions View
