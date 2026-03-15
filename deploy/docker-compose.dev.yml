@@ -11,6 +11,11 @@ services:
     volumes:
       - butler-redis-data:/data
 
+  orchestrator:
+    ports:
+      - ${BUTLER_ORCHESTRATOR_HTTP_PORT:-8080}:8080
+      - ${BUTLER_ORCHESTRATOR_GRPC_PORT:-9090}:9090
+
 volumes:
   butler-postgres-data:
   butler-redis-data:

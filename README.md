@@ -24,8 +24,11 @@ Sprint 0 and Sprint 1 are complete. Sprint 2 is functionally delivered for the f
 - `make test` - run the Go test suite.
 - `make lint` - run baseline static checks with `go vet`.
 - `make proto` - regenerate the current gRPC bindings from `proto/`.
-- `make infra-up` - start local PostgreSQL and Redis once Compose assets exist.
-- `make infra-down` - stop local infrastructure.
+- `make infra-up` - start only PostgreSQL and Redis for local `go run` workflows.
+- `make infra-down` - stop the local infrastructure services.
+- `make up` - build and start the Compose-based MVP stack.
+- `make down` - stop the full Compose-based MVP stack.
+- `make logs` - stream the unified Compose logs.
 
 ## Services
 

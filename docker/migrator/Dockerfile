@@ -9,5 +9,6 @@ FROM alpine:3.21
 RUN adduser -D -H -u 10001 butler
 WORKDIR /app
 COPY --from=builder /out/migrator /usr/local/bin/migrator
+COPY migrations/ /app/migrations/
 USER butler
 ENTRYPOINT ["/usr/local/bin/migrator"]

@@ -805,7 +805,7 @@ sprints:
         subsystem: deployment
         sprint: SPRINT-3
         priority: high
-        status: todo
+        status: done
         description: >
           Extend Docker Compose so PostgreSQL, Redis, migrations, and orchestrator can be started
           together as the first runnable MVP stack.

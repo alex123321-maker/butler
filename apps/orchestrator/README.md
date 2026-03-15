@@ -39,6 +39,9 @@ Local run:
 - copy `.env.example` to `.env`
 - start infra with `make infra-up`
 - start the service with `go run ./apps/orchestrator`
+- or build and start the Compose MVP stack with `make up`
+- stop the Compose MVP stack with `make down`
+- inspect unified service logs with `make logs`
 
 Testing:
 - unit and integration tests: `go test ./apps/orchestrator/...`

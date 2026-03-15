@@ -14,6 +14,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    ports: []
 
   redis:
     image: ${BUTLER_REDIS_IMAGE:-redis:7.4-alpine}
@@ -31,3 +32,56 @@ services:
       timeout: 5s
       retries: 5
       start_period: 5s
+    ports: []
+
+  migrator:
+    build:
+      context: ..
+      dockerfile: docker/migrator/Dockerfile
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      BUTLER_POSTGRES_URL: ${BUTLER_POSTGRES_URL:-postgres://butler:butler-dev-password@postgres:5432/butler?sslmode=disable}
+    command:
+      - --direction=up
+      - --migrations-dir=/app/migrations
+
+  orchestrator:
+    build:
+      context: ..
+      dockerfile: docker/orchestrator/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
+    environment:
+      BUTLER_ENVIRONMENT: ${BUTLER_ENVIRONMENT:-development}
+      BUTLER_LOG_LEVEL: ${BUTLER_LOG_LEVEL:-info}
+      BUTLER_HTTP_ADDR: :8080
+      BUTLER_GRPC_ADDR: :9090
+      BUTLER_POSTGRES_URL: ${BUTLER_POSTGRES_URL:-postgres://butler:butler-dev-password@postgres:5432/butler?sslmode=disable}
+      BUTLER_REDIS_URL: ${BUTLER_REDIS_URL:-redis://redis:6379/0}
+      BUTLER_OPENAI_API_KEY: ${BUTLER_OPENAI_API_KEY:-}
+      BUTLER_OPENAI_MODEL: ${BUTLER_OPENAI_MODEL:-gpt-5-mini}
+      BUTLER_OPENAI_BASE_URL: ${BUTLER_OPENAI_BASE_URL:-https://api.openai.com/v1}
+      BUTLER_OPENAI_TIMEOUT_SECONDS: ${BUTLER_OPENAI_TIMEOUT_SECONDS:-60}
+      BUTLER_TELEGRAM_BOT_TOKEN: ${BUTLER_TELEGRAM_BOT_TOKEN:-}
+      BUTLER_TELEGRAM_ALLOWED_CHAT_IDS: ${BUTLER_TELEGRAM_ALLOWED_CHAT_IDS:-}
+      BUTLER_TELEGRAM_BASE_URL: ${BUTLER_TELEGRAM_BASE_URL:-https://api.telegram.org}
+      BUTLER_TELEGRAM_POLL_TIMEOUT_SECONDS: ${BUTLER_TELEGRAM_POLL_TIMEOUT_SECONDS:-25}
+      BUTLER_SESSION_LEASE_TTL_SECONDS: ${BUTLER_SESSION_LEASE_TTL_SECONDS:-60}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:8080/health >/dev/null || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    ports: []

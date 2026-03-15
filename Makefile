@@ -1,4 +1,4 @@
-.PHONY: build test lint proto infra-up infra-down migrate-up migrate-down
+.PHONY: build test lint proto infra-up infra-down migrate-up migrate-down up down logs
 
 build:
 	go build ./...
@@ -13,10 +13,19 @@ proto:
 	protoc -I proto -I "$(CURDIR)" --go_out=. --go_opt=module=github.com/butler/butler --go-grpc_out=. --go-grpc_opt=module=github.com/butler/butler proto/common/v1/types.proto proto/run/v1/events.proto proto/session/v1/session.proto proto/orchestrator/v1/orchestrator.proto proto/toolbroker/v1/types.proto proto/toolbroker/v1/broker.proto proto/transport/v1/transport.proto
 
 infra-up:
-	docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml up -d
+	docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml up -d postgres redis
 
 infra-down:
+	docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml stop postgres redis
+
+up:
+	docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml up -d --build
+
+down:
 	docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml down
+
+logs:
+	docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml logs -f --tail=100
 
 migrate-up:
 	go run ./apps/migrator --direction=up
