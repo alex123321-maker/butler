@@ -31,6 +31,11 @@ services:
       - ${BUTLER_TOOL_BROWSER_HTTP_PORT:-12080}:8080
       - ${BUTLER_TOOL_BROWSER_GRPC_PORT:-12090}:9090
 
+  tool-doctor:
+    ports:
+      - ${BUTLER_TOOL_DOCTOR_HTTP_PORT:-13080}:8080
+      - ${BUTLER_TOOL_DOCTOR_GRPC_PORT:-13090}:9090
+
 volumes:
   butler-postgres-data:
   butler-redis-data:

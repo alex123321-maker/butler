@@ -16,6 +16,21 @@
       "allowed_tools": []
     },
     {
+      "tool_name": "doctor.check_system",
+      "description": "Inspect config validation and connectivity for Butler dependencies.",
+      "tool_class": "doctor",
+      "input_schema_json": "{\"type\":\"object\",\"additionalProperties\":false}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"status\":{\"type\":\"string\"},\"checks\":{\"type\":\"array\"}}}",
+      "runtime_target": "tool-doctor:9090",
+      "risk_level": "low",
+      "supports_credential_refs": false,
+      "requires_approval": false,
+      "supports_streaming": false,
+      "status": "enabled",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
       "tool_name": "http.request",
       "description": "Perform an outbound HTTP request through the HTTP runtime.",
       "tool_class": "http",

@@ -1217,14 +1217,22 @@ sprints:
         subsystem: tool-doctor
         sprint: SPRINT-5
         priority: high
-        status: todo
+        status: done
         description: >
           Implement doctor.check_system for self-diagnostics.
         why_now: Butler needs to self-inspect to help operators.
         dependencies: []
-        docs_to_read: []
-        acceptance_criteria: ["Doctor checks DB/Redis/Config"]
-        deliverables: ["tool-doctor runtime"]
+        docs_to_read:
+          - docs/architecture/tool-runtime-adr.md
+          - docs/architecture/credential-management.md
+        acceptance_criteria:
+          - doctor.check_system reports config validation state.
+          - doctor.check_system checks PostgreSQL and Redis connectivity from the runtime process.
+          - Tool Doctor runs as a real runtime service with HTTP health and runtime gRPC endpoints.
+        deliverables:
+          - apps/tool-doctor/internal/runtime/
+          - apps/tool-doctor/internal/app/app.go
+          - updated tool registry and compose wiring
 
       - id: T-0504
         title: Episodic/Profile Memory Stores

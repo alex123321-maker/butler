@@ -3,18 +3,23 @@
 Planned doctor runtime service for Butler diagnostics and self-inspection.
 
 Current state:
-- Sprint 0 skeleton only; `main.go` is an empty stub
-- config introspection, health, logging, and metrics foundations already exist in shared packages
-- no doctor runtime RPC implementation, report persistence, or tests yet
+- runtime exposes the internal `ToolRuntimeService` gRPC contract
+- `doctor.check_system` returns a secret-safe report with config validation and PostgreSQL/Redis connectivity checks
+- config introspection, health, and logging foundations are wired into the runtime report
+- unit tests cover the checker and runtime server
 
 Local run:
 - `go run ./apps/tool-doctor`
-- current stub exits immediately because runtime wiring does not exist yet
+- service exposes HTTP health on `BUTLER_HTTP_ADDR` and runtime gRPC on `BUTLER_GRPC_ADDR`
+- optional dependency checks use `BUTLER_POSTGRES_URL` and `BUTLER_REDIS_URL`
 
 Intended responsibilities:
 - inspect effective configuration without exposing secrets
 - check infrastructure, provider, and container health
 - return actionable operator-safe diagnostic reports
+
+Compose:
+- the Docker stack now includes `tool-doctor` and registers `doctor.check_system` in `configs/tools.json`
 
 Related docs:
 - `docs/architecture/butler-prd-architecture.md`

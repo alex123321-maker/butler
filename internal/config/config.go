@@ -61,6 +61,8 @@ type OrchestratorConfig struct {
 	OpenAIAPIKey           string
 	OpenAIModel            string
 	OpenAIBaseURL          string
+	OpenAIRealtimeURL      string
+	OpenAITransportMode    string
 	OpenAITimeoutSeconds   int
 	ToolBrokerAddr         string
 	TelegramBotToken       string
@@ -86,7 +88,11 @@ type ToolHTTPConfig struct {
 }
 
 type ToolDoctorConfig struct {
-	Shared SharedConfig
+	Shared      SharedConfig
+	Postgres    PostgresConfig
+	Redis       RedisConfig
+	PostgresURL string
+	RedisURL    string
 }
 
 type PostgresConfig struct {
@@ -148,8 +154,10 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_POSTGRES_MAX_CONN_LIFETIME_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "1800", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.Postgres.MaxConnLifetime = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_POSTGRES_MIGRATIONS_DIR", component: "orchestrator", typeName: "string", required: false, defaultValue: "migrations", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.Postgres.MigrationsDir = v }},
 		fieldSpec{key: "BUTLER_OPENAI_API_KEY", component: "orchestrator", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: func(v string) { cfg.OpenAIAPIKey = v }},
-		fieldSpec{key: "BUTLER_OPENAI_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-5-mini", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.OpenAIModel = v }},
+		fieldSpec{key: "BUTLER_OPENAI_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-4o-mini", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.OpenAIModel = v }},
 		fieldSpec{key: "BUTLER_OPENAI_BASE_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "https://api.openai.com/v1", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.OpenAIBaseURL = v }},
+		fieldSpec{key: "BUTLER_OPENAI_REALTIME_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "wss://api.openai.com/v1/realtime", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.OpenAIRealtimeURL = v }},
+		fieldSpec{key: "BUTLER_OPENAI_TRANSPORT_MODE", component: "orchestrator", typeName: "string", required: false, defaultValue: "ws-first", allowedValues: []string{"ws-first", "sse-only"}, requiresRestart: true, assign: func(v string) { cfg.OpenAITransportMode = strings.ToLower(v) }},
 		fieldSpec{key: "BUTLER_OPENAI_TIMEOUT_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "60", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.OpenAITimeoutSeconds = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_TOOL_BROKER_ADDR", component: "orchestrator", typeName: "string", required: false, defaultValue: "127.0.0.1:10090", requiresRestart: true, validate: validateListenAddr, assign: func(v string) { cfg.ToolBrokerAddr = v }},
 		fieldSpec{key: "BUTLER_TELEGRAM_BOT_TOKEN", component: "orchestrator", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: func(v string) { cfg.TelegramBotToken = v }},
@@ -199,7 +207,15 @@ func loadToolHTTP(get envGetter) (ToolHTTPConfig, Snapshot, error) {
 
 func loadToolDoctor(get envGetter) (ToolDoctorConfig, Snapshot, error) {
 	cfg := ToolDoctorConfig{}
-	snapshot, err := loadSpecs(get, sharedSpecs("tool-doctor", &cfg.Shared))
+	shared := sharedSpecs("tool-doctor", &cfg.Shared)
+	specs := append(shared,
+		fieldSpec{key: "BUTLER_POSTGRES_URL", component: "tool-doctor", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalURL, assign: func(v string) { cfg.PostgresURL = v; cfg.Postgres.URL = v }},
+		fieldSpec{key: "BUTLER_REDIS_URL", component: "tool-doctor", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalURL, assign: func(v string) { cfg.RedisURL = v; cfg.Redis.URL = v }},
+		fieldSpec{key: "BUTLER_POSTGRES_MAX_CONNS", component: "tool-doctor", typeName: "int", required: false, defaultValue: "4", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.Postgres.MaxConns = mustParseInt32(v) }},
+		fieldSpec{key: "BUTLER_POSTGRES_MIN_CONNS", component: "tool-doctor", typeName: "int", required: false, defaultValue: "1", requiresRestart: true, validate: validateNonNegativeInt, assign: func(v string) { cfg.Postgres.MinConns = mustParseInt32(v) }},
+		fieldSpec{key: "BUTLER_POSTGRES_MAX_CONN_LIFETIME_SECONDS", component: "tool-doctor", typeName: "int", required: false, defaultValue: "30", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.Postgres.MaxConnLifetime = mustParseInt(v) }},
+	)
+	snapshot, err := loadSpecs(get, specs)
 	return cfg, snapshot, err
 }
 
