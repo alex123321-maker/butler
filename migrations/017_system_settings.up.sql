@@ -1,0 +1,8 @@
+CREATE TABLE system_settings (
+	key TEXT PRIMARY KEY,
+	value TEXT NOT NULL,
+	component TEXT NOT NULL,
+	is_secret BOOLEAN NOT NULL DEFAULT FALSE,
+	updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+	updated_by TEXT NOT NULL
+);

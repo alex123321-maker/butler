@@ -1536,3 +1536,348 @@ sprints:
           - "HTML parsing helpers using golang.org/x/net/html"
           - "2 new tool contracts in configs/tools.json"
           - "20 unit tests in server_test.go"
+
+  - id: SPRINT-8
+    title: Web-Based Configuration Management
+    goal: Add a full Settings page to the Web UI allowing operators to view and edit all system configuration, including secrets, with layered config resolution (env > db > defaults), hot/cold reload semantics, and encrypted secret storage.
+    status: todo
+    tasks:
+      - id: T-0801
+        title: Migration for system_settings table
+        subsystem: infra
+        sprint: SPRINT-8
+        priority: high
+        status: done
+        description: >
+          Create migration 017_system_settings adding the system_settings table for persistent
+          configuration overrides. Table stores key, value (encrypted for secrets), component,
+          is_secret flag, updated_at timestamp, and updated_by identifier.
+        why_now: >
+          All other tasks depend on having a durable store for configuration overrides.
+        dependencies: []
+        docs_to_read:
+          - docs/architecture/butler-prd-architecture.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - Migration 017_system_settings.up.sql creates system_settings table with columns key (PK), value TEXT, component TEXT, is_secret BOOLEAN, updated_at TIMESTAMPTZ, updated_by TEXT.
+          - Migration 017_system_settings.down.sql drops the table.
+          - Migration applies cleanly to the existing schema.
+          - Unique constraint on key column.
+        deliverables:
+          - migrations/017_system_settings.up.sql
+          - migrations/017_system_settings.down.sql
+
+      - id: T-0802
+        title: PostgreSQL settings store (CRUD)
+        subsystem: config
+        sprint: SPRINT-8
+        priority: high
+        status: todo
+        description: >
+          Implement a PostgresSettingsStore in internal/config that provides Get, Set, Delete,
+          and ListAll operations against the system_settings table. Values flagged as secrets
+          are stored encrypted using AES-256-GCM. The store is a low-level persistence layer
+          with no config resolution logic.
+        why_now: >
+          The settings store is the persistence foundation for layered config resolution.
+        dependencies:
+          - T-0801
+        docs_to_read:
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - PostgresSettingsStore implements Get, Set, Delete, and ListAll.
+          - Secret values are encrypted before storage and decrypted on read.
+          - Non-secret values are stored in plaintext.
+          - Unit tests cover CRUD operations with mocked DB.
+          - Integration test verifies round-trip persistence including encryption.
+        deliverables:
+          - internal/config/store.go
+          - unit and integration tests
+
+      - id: T-0803
+        title: AES-256-GCM encryption helpers
+        subsystem: config
+        sprint: SPRINT-8
+        priority: high
+        status: todo
+        description: >
+          Implement encryption and decryption helpers using AES-256-GCM for secret values
+          stored in system_settings. Encryption key is provided via BUTLER_SETTINGS_ENCRYPTION_KEY
+          environment variable. Helpers handle key derivation, nonce generation, and authenticated
+          encryption with associated data.
+        why_now: >
+          Required by the settings store (T-0802) for encrypted secret persistence.
+        dependencies: []
+        docs_to_read:
+          - docs/architecture/credential-management.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - Encrypt and Decrypt functions use AES-256-GCM from Go standard library crypto packages.
+          - Nonce is randomly generated per encryption and prepended to ciphertext.
+          - Key is derived from BUTLER_SETTINGS_ENCRYPTION_KEY using SHA-256 to ensure 32-byte key length.
+          - Decrypt rejects tampered ciphertext (GCM authentication).
+          - Unit tests cover encrypt/decrypt round-trip, tamper detection, and missing key error.
+        deliverables:
+          - internal/config/crypto.go
+          - internal/config/crypto_test.go
+
+      - id: T-0804
+        title: Layered config resolver (env > db > defaults)
+        subsystem: config
+        sprint: SPRINT-8
+        priority: high
+        status: todo
+        description: >
+          Implement the layered configuration resolver that merges values from three sources
+          in priority order: environment variables (highest), database settings (middle),
+          and fieldSpec defaults (lowest). Each resolved key reports its effective value and
+          source. Integrates with the existing config.Snapshot and Introspector interface.
+        why_now: >
+          Core config resolution logic that all downstream consumers depend on.
+        dependencies:
+          - T-0802
+        docs_to_read:
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - LayeredResolver returns effective value and source (env, db, or default) for each config key.
+          - Environment variables always win over database values.
+          - Database values win over fieldSpec defaults.
+          - Missing keys return default with source "default".
+          - Resolver works with the existing ConfigKeyInfo and Introspector contracts.
+          - Unit tests cover all three resolution layers and priority ordering.
+        deliverables:
+          - internal/config/layered.go
+          - internal/config/layered_test.go
+
+      - id: T-0805
+        title: Hot-reload mechanism for runtime-safe settings
+        subsystem: config
+        sprint: SPRINT-8
+        priority: medium
+        status: todo
+        description: >
+          Implement a HotConfig container that holds runtime-mutable settings (e.g. LOG_LEVEL,
+          memory limits) and supports atomic swap on update. Cold settings (connection strings,
+          API keys, ports) are saved to DB but marked as "pending restart" in the API response.
+          Each fieldSpec gains a RequiresRestart flag to classify hot vs cold.
+        why_now: >
+          Enables immediate effect for safe settings without full service restart.
+        dependencies:
+          - T-0804
+        docs_to_read:
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - HotConfig struct holds current effective values for hot-reloadable settings.
+          - Atomic swap updates hot values without locks on read path.
+          - Cold setting writes return a response indicating restart required.
+          - fieldSpec RequiresRestart flag is already present and used for classification.
+          - Unit tests cover hot swap, cold detection, and concurrent read safety.
+        deliverables:
+          - internal/config/hotconfig.go
+          - internal/config/hotconfig_test.go
+
+      - id: T-0806
+        title: Display masking rules for secrets
+        subsystem: config
+        sprint: SPRINT-8
+        priority: medium
+        status: todo
+        description: >
+          Implement display masking functions for secret values shown in the Web UI. Rules:
+          passwords and connection strings are fully masked (••••••••), API keys show last 4
+          characters (sk-...abc1), Telegram bot tokens show first 6 + last 3 characters
+          (123456:...xyz). Masking is applied at the API layer before sending responses.
+        why_now: >
+          Security requirement for displaying secret status in the UI without exposing values.
+        dependencies: []
+        docs_to_read:
+          - docs/architecture/credential-management.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - MaskForDisplay function applies correct masking based on key type/pattern.
+          - Passwords and connection strings return "••••••••".
+          - API keys (containing "key" or "api") show "...XXXX" (last 4 chars).
+          - Telegram bot tokens show "XXXXXX:...XXX" (first 6 + last 3).
+          - Empty or unset values return empty string, not masked placeholder.
+          - Unit tests cover all masking patterns and edge cases.
+        deliverables:
+          - internal/config/masking.go
+          - internal/config/masking_test.go
+
+      - id: T-0807
+        title: Settings REST API endpoints on orchestrator
+        subsystem: orchestrator
+        sprint: SPRINT-8
+        priority: high
+        status: todo
+        description: >
+          Add REST API endpoints on the orchestrator HTTP server for settings management:
+          GET /api/v1/settings (list all with masked secrets, source, validation status),
+          PUT /api/v1/settings/:key (update a single setting),
+          DELETE /api/v1/settings/:key (remove DB override, revert to env/default).
+          Responses include effective value, source, validation status, and restart-required flag.
+        why_now: >
+          The Web UI needs API endpoints to read and write settings.
+        dependencies:
+          - T-0804
+          - T-0805
+          - T-0806
+        docs_to_read:
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - GET /api/v1/settings returns all config keys grouped by component with masked secret values, source, validation, and requires_restart.
+          - PUT /api/v1/settings/:key validates the new value against fieldSpec rules before saving.
+          - PUT returns validation errors with 400 status for invalid values.
+          - PUT for cold settings includes requires_restart=true in response.
+          - DELETE /api/v1/settings/:key removes the DB override.
+          - Secret values are never returned unmasked in any API response.
+          - Unit tests cover all endpoints including validation failures and masking.
+        deliverables:
+          - apps/orchestrator/internal/api/settings.go
+          - apps/orchestrator/internal/api/settings_test.go
+
+      - id: T-0808
+        title: Orchestrator bootstrap integration for layered config
+        subsystem: orchestrator
+        sprint: SPRINT-8
+        priority: high
+        status: todo
+        description: >
+          Wire the PostgresSettingsStore, LayeredResolver, and HotConfig into the orchestrator
+          bootstrap sequence (app.go). The orchestrator loads DB settings at startup and merges
+          them with environment config. Settings API handlers are registered on the HTTP mux.
+        why_now: >
+          Connects the config subsystem to the running orchestrator service.
+        dependencies:
+          - T-0807
+        docs_to_read:
+          - docs/architecture/butler-prd-architecture.md
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - Orchestrator creates PostgresSettingsStore on startup using the existing DB pool.
+          - LayeredResolver is initialized with env config, settings store, and fieldSpecs.
+          - HotConfig is populated from the layered resolver.
+          - Settings REST handlers are registered on the HTTP mux alongside existing routes.
+          - Startup logs confirm layered config initialization.
+          - If BUTLER_SETTINGS_ENCRYPTION_KEY is not set, settings store operates in plaintext mode with a startup warning.
+        deliverables:
+          - Updated apps/orchestrator/internal/app/app.go
+          - Integration wiring
+
+      - id: T-0809
+        title: Doctor update for layered config awareness
+        subsystem: tool-doctor
+        sprint: SPRINT-8
+        priority: low
+        status: todo
+        description: >
+          Update the Doctor config checker to report effective source (env/db/default) for each
+          config key, using the layered resolver. Doctor reports now distinguish between
+          environment-set, database-overridden, and default-only keys.
+        why_now: >
+          Doctor should reflect the real config resolution state for operator diagnostics.
+        dependencies:
+          - T-0808
+        docs_to_read:
+          - docs/architecture/tool-runtime-adr.md
+        acceptance_criteria:
+          - Doctor config report includes source field (env, db, default) for each key.
+          - Doctor report shows validation status using layered effective values.
+          - Web UI doctor page displays source information in config section.
+          - No secret values are exposed in doctor reports.
+        deliverables:
+          - Updated apps/tool-doctor/internal/runtime/checker.go
+          - Updated doctor API if needed
+
+      - id: T-0810
+        title: Web UI Settings page (frontend)
+        subsystem: web
+        sprint: SPRINT-8
+        priority: high
+        status: todo
+        description: >
+          Replace the settings.vue placeholder with a full Settings page. Settings are grouped
+          by component (General, Database, Redis, OpenAI, Telegram, Memory, Tools, Doctor).
+          Each setting row shows key name, effective value (masked for secrets), source badge
+          (env/db/default), validation status, and edit controls. Secret fields use password
+          inputs. Cold settings show a restart-required indicator after save.
+        why_now: >
+          This is the primary user-facing deliverable of the sprint.
+        dependencies:
+          - T-0807
+        docs_to_read:
+          - docs/architecture/butler-prd-architecture.md
+        acceptance_criteria:
+          - Settings page loads all config keys from GET /api/v1/settings.
+          - Settings are grouped by component with collapsible sections.
+          - Each row shows key, masked value, source badge, and validation indicator.
+          - Inline edit mode with save/cancel for each setting.
+          - Secret fields use password input type with show/hide toggle.
+          - Source badges use distinct colors (env=blue, db=green, default=gray).
+          - Cold settings show amber restart indicator after successful save.
+          - Delete button for DB overrides reverts to env/default.
+          - Error toast for validation failures.
+          - Loading and empty states are handled.
+        deliverables:
+          - web/pages/settings.vue (full implementation)
+          - web/components/SettingsGroup.vue
+          - web/components/SettingRow.vue
+          - web/composables/useSettings.ts
+
+      - id: T-0811
+        title: Documentation and .env.example updates
+        subsystem: docs
+        sprint: SPRINT-8
+        priority: medium
+        status: todo
+        description: >
+          Update .env.example with BUTLER_SETTINGS_ENCRYPTION_KEY. Update orchestrator README
+          with settings API documentation. Add operational notes about config layering behavior
+          and hot vs cold settings to the architecture docs.
+        why_now: >
+          Documentation must stay current with new capabilities per project rules.
+        dependencies:
+          - T-0808
+          - T-0810
+        docs_to_read:
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - .env.example includes BUTLER_SETTINGS_ENCRYPTION_KEY with comment explaining its purpose.
+          - Orchestrator README documents settings API endpoints.
+          - Config layering behavior (env > db > defaults) is documented.
+          - Hot vs cold settings behavior is documented.
+          - Secret masking rules are documented.
+        deliverables:
+          - Updated .env.example
+          - Updated apps/orchestrator/README.md
+          - Updated docs/architecture section if needed
+
+      - id: T-0812
+        title: Integration tests for settings flow
+        subsystem: testing
+        sprint: SPRINT-8
+        priority: medium
+        status: todo
+        description: >
+          Add integration tests covering the full settings lifecycle: write a setting via API,
+          verify layered resolution picks it up, verify secret encryption round-trip, verify
+          masking in API responses, verify hot-reload applies immediately, verify cold setting
+          returns restart-required flag.
+        why_now: >
+          End-to-end verification of the complete settings subsystem.
+        dependencies:
+          - T-0808
+        docs_to_read:
+          - docs/ai/engineering-rules.md
+        acceptance_criteria:
+          - Integration test writes a non-secret setting via PUT and reads it back via GET.
+          - Integration test writes a secret setting and verifies encrypted storage in DB.
+          - Integration test verifies masked value in GET response for secrets.
+          - Integration test verifies env override wins over DB value.
+          - Integration test verifies hot setting takes effect without restart flag.
+          - Integration test verifies cold setting returns requires_restart=true.
+          - Integration test verifies DELETE reverts to env/default.
+        deliverables:
+          - internal/config/integration_test.go or apps/orchestrator/internal/api/settings_integration_test.go
+          - test helpers for settings store setup
