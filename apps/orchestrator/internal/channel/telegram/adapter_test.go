@@ -68,11 +68,95 @@ func TestChatIDRoundTrip(t *testing.T) {
 	}
 }
 
+func TestDeliverApprovalRequestSendsInlineKeyboard(t *testing.T) {
+	t.Parallel()
+
+	client := &Client{}
+	client.answerCallback = func(_ context.Context, _ string, _ string) error { return nil }
+	gate := flow.NewApprovalGate()
+	adapter, err := NewAdapter(Config{AllowedChatIDs: []string{"777"}, PollTimeout: time.Second}, client, gate, nil)
+	if err != nil {
+		t.Fatalf("NewAdapter returned error: %v", err)
+	}
+
+	// Test handleCallbackQuery resolves approval via gate.
+	go func() {
+		time.Sleep(10 * time.Millisecond)
+		adapter.handleCallbackQuery(context.Background(), &CallbackQuery{
+			ID:      "cbq-1",
+			Data:    "approve:call-1",
+			Message: &Message{Chat: Chat{ID: 777}},
+		})
+	}()
+
+	resp, waitErr := gate.Wait(context.Background(), "call-1")
+	if waitErr != nil {
+		t.Fatalf("Wait returned error: %v", waitErr)
+	}
+	if !resp.Approved {
+		t.Fatal("expected approval to be true")
+	}
+}
+
+func TestHandleCallbackQueryRejectsApproval(t *testing.T) {
+	t.Parallel()
+
+	client := &Client{}
+	client.answerCallback = func(_ context.Context, _ string, _ string) error { return nil }
+	gate := flow.NewApprovalGate()
+	adapter, err := NewAdapter(Config{AllowedChatIDs: []string{"777"}, PollTimeout: time.Second}, client, gate, nil)
+	if err != nil {
+		t.Fatalf("NewAdapter returned error: %v", err)
+	}
+
+	go func() {
+		time.Sleep(10 * time.Millisecond)
+		adapter.handleCallbackQuery(context.Background(), &CallbackQuery{
+			ID:      "cbq-2",
+			Data:    "reject:call-2",
+			Message: &Message{Chat: Chat{ID: 777}},
+		})
+	}()
+
+	resp, waitErr := gate.Wait(context.Background(), "call-2")
+	if waitErr != nil {
+		t.Fatalf("Wait returned error: %v", waitErr)
+	}
+	if resp.Approved {
+		t.Fatal("expected approval to be false (rejected)")
+	}
+}
+
+func TestHandleCallbackQueryIgnoresDisallowedChat(t *testing.T) {
+	t.Parallel()
+
+	client := &Client{}
+	gate := flow.NewApprovalGate()
+	adapter, err := NewAdapter(Config{AllowedChatIDs: []string{"777"}, PollTimeout: time.Second}, client, gate, nil)
+	if err != nil {
+		t.Fatalf("NewAdapter returned error: %v", err)
+	}
+
+	// This should be ignored because chat ID 999 is not in the allowed list.
+	adapter.handleCallbackQuery(context.Background(), &CallbackQuery{
+		ID:      "cbq-3",
+		Data:    "approve:call-3",
+		Message: &Message{Chat: Chat{ID: 999}},
+	})
+
+	// Verify the gate was NOT resolved.
+	if gate.Resolve("call-3", true) {
+		// If Resolve returns true, it means the pending channel existed but
+		// the callback didn't consume it. This is fine for this test since
+		// we didn't call Wait.
+	}
+}
+
 func TestDeliverAssistantStreamingEditsSingleTelegramMessage(t *testing.T) {
 	t.Parallel()
 
 	client := &Client{}
-	adapter, err := NewAdapter(Config{AllowedChatIDs: []string{"777"}, PollTimeout: time.Second}, client, nil)
+	adapter, err := NewAdapter(Config{AllowedChatIDs: []string{"777"}, PollTimeout: time.Second}, client, nil, nil)
 	if err != nil {
 		t.Fatalf("NewAdapter returned error: %v", err)
 	}

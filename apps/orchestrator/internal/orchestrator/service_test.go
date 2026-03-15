@@ -3,6 +3,7 @@ package orchestrator
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/ingress"
+	"github.com/butler/butler/internal/memory/embeddings"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/transport"
 )
@@ -135,6 +137,137 @@ func TestExecuteRunsSequentialToolLoop(t *testing.T) {
 	}
 }
 
+func TestExecuteToolWithApprovalApproved(t *testing.T) {
+	t.Parallel()
+
+	sessions := &memorySessionRepo{}
+	leases := &memoryLeaseManager{}
+	runs := newMemoryRunManager()
+	transcripts := &memoryTranscriptStore{}
+	delivery := &recordingDeliverySink{}
+	gate := NewApprovalGate()
+	provider := &mockProvider{
+		startEvents: []transport.TransportEvent{
+			transport.NewRunStartedEvent("", "openai", transport.CapabilitySnapshot{SupportsStreaming: true}, &transport.ProviderSessionRef{ProviderName: "openai", ResponseRef: "resp_123"}),
+			transport.NewToolCallRequestedEvent("", "openai", transport.ToolCallRequest{ToolCallRef: "call_1", ToolName: "http.request", ArgsJSON: `{"url":"https://example.com"}`, SequenceNo: 1}),
+		},
+		submitEvents: []transport.TransportEvent{
+			transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "done after approved tool", FinishReason: "completed"}),
+			transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+		},
+	}
+	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{"status_code":200}`}}
+	checker := &mockApprovalChecker{toolsRequiringApproval: map[string]bool{"http.request": true}}
+
+	service := NewService(sessions, leases, runs, transcripts, provider, Config{
+		ProviderName:    "openai",
+		ModelName:       "gpt-5-mini",
+		Tools:           tools,
+		ApprovalChecker: checker,
+		ApprovalGate:    gate,
+		Delivery:        delivery,
+	}, nil)
+
+	// Approve asynchronously when approval request arrives.
+	go func() {
+		for {
+			if len(delivery.approvalRequests) > 0 {
+				gate.Resolve(delivery.approvalRequests[0].ToolCallID, true)
+				return
+			}
+			time.Sleep(5 * time.Millisecond)
+		}
+	}()
+
+	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:1", Source: "telegram", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if result.AssistantResponse != "done after approved tool" {
+		t.Fatalf("expected resumed assistant response, got %q", result.AssistantResponse)
+	}
+	if len(delivery.approvalRequests) != 1 {
+		t.Fatalf("expected one approval request, got %d", len(delivery.approvalRequests))
+	}
+	if delivery.approvalRequests[0].ToolName != "http.request" {
+		t.Fatalf("expected approval for http.request, got %q", delivery.approvalRequests[0].ToolName)
+	}
+	if len(tools.calls) != 1 {
+		t.Fatalf("expected tool to be executed after approval, got %d calls", len(tools.calls))
+	}
+	states := runs.statesFor(result.RunID)
+	// Should include awaiting_approval in the state sequence.
+	foundApproval := false
+	for _, s := range states {
+		if s == commonv1.RunState_RUN_STATE_AWAITING_APPROVAL {
+			foundApproval = true
+			break
+		}
+	}
+	if !foundApproval {
+		t.Fatalf("expected awaiting_approval state in transitions, got %v", states)
+	}
+}
+
+func TestExecuteToolWithApprovalRejected(t *testing.T) {
+	t.Parallel()
+
+	sessions := &memorySessionRepo{}
+	leases := &memoryLeaseManager{}
+	runs := newMemoryRunManager()
+	transcripts := &memoryTranscriptStore{}
+	delivery := &recordingDeliverySink{}
+	gate := NewApprovalGate()
+	provider := &mockProvider{
+		startEvents: []transport.TransportEvent{
+			transport.NewRunStartedEvent("", "openai", transport.CapabilitySnapshot{SupportsStreaming: true}, &transport.ProviderSessionRef{ProviderName: "openai", ResponseRef: "resp_123"}),
+			transport.NewToolCallRequestedEvent("", "openai", transport.ToolCallRequest{ToolCallRef: "call_1", ToolName: "http.request", ArgsJSON: `{"url":"https://danger.com"}`, SequenceNo: 1}),
+		},
+		submitEvents: []transport.TransportEvent{
+			transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "tool was rejected", FinishReason: "completed"}),
+			transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+		},
+	}
+	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{}`}}
+	checker := &mockApprovalChecker{toolsRequiringApproval: map[string]bool{"http.request": true}}
+
+	service := NewService(sessions, leases, runs, transcripts, provider, Config{
+		ProviderName:    "openai",
+		ModelName:       "gpt-5-mini",
+		Tools:           tools,
+		ApprovalChecker: checker,
+		ApprovalGate:    gate,
+		Delivery:        delivery,
+	}, nil)
+
+	// Reject asynchronously when approval request arrives.
+	go func() {
+		for {
+			if len(delivery.approvalRequests) > 0 {
+				gate.Resolve(delivery.approvalRequests[0].ToolCallID, false)
+				return
+			}
+			time.Sleep(5 * time.Millisecond)
+		}
+	}()
+
+	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:1", Source: "telegram", PayloadJSON: `{"text":"do something dangerous"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if result.AssistantResponse != "tool was rejected" {
+		t.Fatalf("expected rejected tool response, got %q", result.AssistantResponse)
+	}
+	// Tool should not have been called.
+	if len(tools.calls) != 0 {
+		t.Fatalf("expected tool to NOT be executed after rejection, got %d calls", len(tools.calls))
+	}
+	// Provider should still get a result (the rejection).
+	if len(provider.submittedResults) != 1 {
+		t.Fatalf("expected one submitted result (rejection), got %d", len(provider.submittedResults))
+	}
+}
+
 func TestExecuteIncludesMemoryAwareContext(t *testing.T) {
 	t.Parallel()
 
@@ -142,11 +275,12 @@ func TestExecuteIncludesMemoryAwareContext(t *testing.T) {
 		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "memory aware", FinishReason: "completed"}),
 		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
 	}}
+	episodeStore := &stubEpisodeStore{entries: []MemoryEpisode{stubEpisode{summary: "Fixed Redis outage before", distance: 0.01}}}
 	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
 		ProviderName: "openai",
 		ModelName:    "gpt-5-mini",
 		ProfileStore: stubProfileStore{entries: []MemoryProfileEntry{stubProfileEntry{key: "language", summary: "User prefers Russian"}}},
-		EpisodeStore: stubEpisodeStore{entries: []MemoryEpisode{stubEpisode{summary: "Fixed Redis outage before", distance: 0.01}}},
+		EpisodeStore: episodeStore,
 	}, nil)
 
 	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:1", Source: "telegram", PayloadJSON: `{"text":"check redis"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
@@ -161,6 +295,43 @@ func TestExecuteIncludesMemoryAwareContext(t *testing.T) {
 	}
 	if provider.startRequests[0].InputItems[0].Role != "system" {
 		t.Fatalf("expected first input item to be system memory prompt, got %+v", provider.startRequests[0].InputItems)
+	}
+	if episodeStore.calls != 0 {
+		t.Fatalf("expected episodic retrieval to be skipped without embeddings, got %d calls", episodeStore.calls)
+	}
+}
+
+func TestExecuteUsesEmbeddingProviderForEpisodicRetrieval(t *testing.T) {
+	t.Parallel()
+	provider := &mockProvider{startEvents: []transport.TransportEvent{
+		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "memory aware", FinishReason: "completed"}),
+		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+	}}
+	episodeStore := &stubEpisodeStore{entries: []MemoryEpisode{stubEpisode{summary: "Recovered Postgres connection before", distance: 0.01}}}
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+		ProviderName: "openai",
+		ModelName:    "gpt-5-mini",
+		EpisodeStore: episodeStore,
+		Embeddings:   stubEmbeddingProvider{embedding: testEmbeddingVector(0.2)},
+	}, nil)
+	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-2", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:2", Source: "telegram", PayloadJSON: `{"text":"check postgres"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-2"})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if result.AssistantResponse != "memory aware" {
+		t.Fatalf("unexpected assistant response %q", result.AssistantResponse)
+	}
+	if episodeStore.calls == 0 {
+		t.Fatal("expected episodic retrieval to call the store")
+	}
+	if len(provider.startRequests) != 1 || provider.startRequests[0].InputItems[0].Role != "system" {
+		t.Fatalf("expected memory prompt plus user input, got %+v", provider.startRequests)
+	}
+	if !strings.Contains(provider.startRequests[0].InputItems[0].Content, "Recovered Postgres connection before") {
+		t.Fatalf("expected episodic memory prompt, got %q", provider.startRequests[0].InputItems[0].Content)
+	}
+	if episodeStore.lastLimit != 3 {
+		t.Fatalf("expected default episodic limit 3, got %d", episodeStore.lastLimit)
 	}
 }
 
@@ -464,9 +635,17 @@ func (s stubProfileStore) GetByScope(context.Context, string, string) ([]MemoryP
 	return s.entries, nil
 }
 
-type stubEpisodeStore struct{ entries []MemoryEpisode }
+type stubEpisodeStore struct {
+	entries    []MemoryEpisode
+	calls      int
+	lastLimit  int
+	lastVector []float32
+}
 
-func (s stubEpisodeStore) Search(context.Context, string, string, []float32, int) ([]MemoryEpisode, error) {
+func (s *stubEpisodeStore) Search(_ context.Context, _ string, _ string, embedding []float32, limit int) ([]MemoryEpisode, error) {
+	s.calls++
+	s.lastLimit = limit
+	s.lastVector = append([]float32(nil), embedding...)
 	return s.entries, nil
 }
 
@@ -485,6 +664,20 @@ type stubEpisode struct {
 
 func (e stubEpisode) EpisodeSummary() string   { return e.summary }
 func (e stubEpisode) EpisodeDistance() float64 { return e.distance }
+
+type stubEmbeddingProvider struct{ embedding []float32 }
+
+func (s stubEmbeddingProvider) EmbedQuery(context.Context, string) ([]float32, error) {
+	return append([]float32(nil), s.embedding...), nil
+}
+
+func testEmbeddingVector(value float32) []float32 {
+	vector := make([]float32, embeddings.VectorDimensions)
+	for i := range vector {
+		vector[i] = value
+	}
+	return vector
+}
 
 func (m *mockProvider) ContinueRun(context.Context, transport.ContinueRunRequest) (transport.EventStream, error) {
 	return nil, nil
@@ -568,8 +761,17 @@ func (p *delayedProvider) CancelRun(context.Context, transport.CancelRunRequest)
 	return nil, nil
 }
 
+type mockApprovalChecker struct {
+	toolsRequiringApproval map[string]bool
+}
+
+func (m *mockApprovalChecker) RequiresApproval(_ context.Context, toolName string) (bool, error) {
+	return m.toolsRequiringApproval[toolName], nil
+}
+
 type recordingDeliverySink struct {
-	events []DeliveryEvent
+	events           []DeliveryEvent
+	approvalRequests []ApprovalRequest
 }
 
 func (r *recordingDeliverySink) DeliverAssistantDelta(_ context.Context, event DeliveryEvent) error {
@@ -579,6 +781,11 @@ func (r *recordingDeliverySink) DeliverAssistantDelta(_ context.Context, event D
 
 func (r *recordingDeliverySink) DeliverAssistantFinal(_ context.Context, event DeliveryEvent) error {
 	r.events = append(r.events, event)
+	return nil
+}
+
+func (r *recordingDeliverySink) DeliverApprovalRequest(_ context.Context, req ApprovalRequest) error {
+	r.approvalRequests = append(r.approvalRequests, req)
 	return nil
 }
 

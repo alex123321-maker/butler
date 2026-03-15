@@ -101,10 +101,11 @@ var allowedTransitions = map[RunState]map[RunState]struct{}{
 		RunStateTimedOut:         {},
 	},
 	RunStateAwaitingApproval: {
-		RunStateToolRunning: {},
-		RunStateCancelled:   {},
-		RunStateTimedOut:    {},
-		RunStateFailed:      {},
+		RunStateToolRunning:         {},
+		RunStateAwaitingModelResume: {},
+		RunStateCancelled:           {},
+		RunStateTimedOut:            {},
+		RunStateFailed:              {},
 	},
 	RunStateToolRunning: {
 		RunStateAwaitingModelResume: {},

@@ -134,6 +134,7 @@ func New(ctx context.Context) (*App, error) {
 	}
 	delivery := flow.NewCompositeDeliverySink(flow.NewLoggingDeliverySink(log))
 	var telegram *telegramadapter.Adapter
+	approvalGate := flow.NewApprovalGate()
 	if strings.TrimSpace(cfg.TelegramBotToken) != "" {
 		telegramClient, err := telegramadapter.NewClient(cfg.TelegramBaseURL, cfg.TelegramBotToken, nil)
 		if err != nil {
@@ -144,7 +145,7 @@ func New(ctx context.Context) (*App, error) {
 		telegram, err = telegramadapter.NewAdapter(telegramadapter.Config{
 			AllowedChatIDs: cfg.TelegramAllowedChatIDs,
 			PollTimeout:    time.Duration(cfg.TelegramPollTimeout) * time.Second,
-		}, telegramClient, logger.WithComponent(log, "telegram"))
+		}, telegramClient, approvalGate, logger.WithComponent(log, "telegram"))
 		if err != nil {
 			redis.Close()
 			postgres.Close()
@@ -159,14 +160,19 @@ func New(ctx context.Context) (*App, error) {
 		transcript.NewStore(postgres.Pool()),
 		provider,
 		flow.Config{
-			ProviderName: "openai",
-			ModelName:    cfg.OpenAIModel,
-			OwnerID:      cfg.Shared.ServiceName,
-			LeaseTTL:     int64(cfg.SessionLeaseTTLSeconds),
-			Delivery:     delivery,
-			Tools:        toolBrokerClient,
-			ProfileStore: profileStoreAdapter{store: profile.NewStore(postgres.Pool())},
-			EpisodeStore: episodicStoreAdapter{store: episodic.NewStore(postgres.Pool())},
+			ProviderName:    "openai",
+			ModelName:       cfg.OpenAIModel,
+			OwnerID:         cfg.Shared.ServiceName,
+			LeaseTTL:        int64(cfg.SessionLeaseTTLSeconds),
+			ProfileLimit:    cfg.MemoryProfileLimit,
+			EpisodeLimit:    cfg.MemoryEpisodicLimit,
+			MemoryScopes:    cfg.MemoryScopeOrder,
+			Delivery:        delivery,
+			Tools:           toolBrokerClient,
+			ApprovalChecker: toolBrokerClient,
+			ApprovalGate:    approvalGate,
+			ProfileStore:    profileStoreAdapter{store: profile.NewStore(postgres.Pool())},
+			EpisodeStore:    episodicStoreAdapter{store: episodic.NewStore(postgres.Pool())},
 		},
 		logger.WithComponent(log, "executor"),
 	)

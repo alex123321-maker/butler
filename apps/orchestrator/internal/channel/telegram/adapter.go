@@ -33,6 +33,7 @@ type Adapter struct {
 	allowedChatIDs    map[string]struct{}
 	pollTimeoutSecond int
 	executor          Executor
+	approvalGate      *flow.ApprovalGate
 	log               *slog.Logger
 	nextOffset        int64
 	mu                sync.Mutex
@@ -45,7 +46,7 @@ type streamingMessage struct {
 	Content   string
 }
 
-func NewAdapter(cfg Config, client *Client, log *slog.Logger) (*Adapter, error) {
+func NewAdapter(cfg Config, client *Client, approvalGate *flow.ApprovalGate, log *slog.Logger) (*Adapter, error) {
 	if client == nil {
 		return nil, fmt.Errorf("telegram client is required")
 	}
@@ -66,6 +67,7 @@ func NewAdapter(cfg Config, client *Client, log *slog.Logger) (*Adapter, error) 
 		client:            client,
 		allowedChatIDs:    allowed,
 		pollTimeoutSecond: int(cfg.PollTimeout / time.Second),
+		approvalGate:      approvalGate,
 		log:               logger.WithComponent(log, "telegram-adapter"),
 		streamingMessages: make(map[string]streamingMessage),
 	}, nil
@@ -112,6 +114,13 @@ func (a *Adapter) Run(ctx context.Context) error {
 			if update.UpdateID >= a.nextOffset {
 				a.nextOffset = update.UpdateID + 1
 			}
+
+			// Handle callback queries (approval button presses).
+			if update.CallbackQuery != nil {
+				a.handleCallbackQuery(ctx, update.CallbackQuery)
+				continue
+			}
+
 			event, err := NormalizeUpdate(update)
 			if err != nil {
 				if errors.Is(err, ErrIgnoredUpdate) {
@@ -282,4 +291,84 @@ func (a *Adapter) isAllowedSession(sessionKey string) bool {
 func (a *Adapter) isAllowedChatID(chatID int64) bool {
 	_, ok := a.allowedChatIDs[strconv.FormatInt(chatID, 10)]
 	return ok
+}
+
+const (
+	approvalCallbackPrefix  = "approve:"
+	rejectionCallbackPrefix = "reject:"
+)
+
+// DeliverApprovalRequest sends an inline keyboard to the Telegram chat with
+// Approve and Reject buttons for the given tool call.
+func (a *Adapter) DeliverApprovalRequest(ctx context.Context, req flow.ApprovalRequest) error {
+	chatID, ok := ChatIDFromSessionKey(req.SessionKey)
+	if !ok || !a.isAllowedChatID(chatID) {
+		return nil
+	}
+	text := fmt.Sprintf("Tool call requires approval:\n\nTool: %s\nArgs: %s\n\nApprove or reject?", req.ToolName, req.ArgsJSON)
+	markup := &InlineKeyboardMarkup{
+		InlineKeyboard: [][]InlineKeyboardButton{
+			{
+				{Text: "Approve", CallbackData: approvalCallbackPrefix + req.ToolCallID},
+				{Text: "Reject", CallbackData: rejectionCallbackPrefix + req.ToolCallID},
+			},
+		},
+	}
+	if _, err := a.client.SendMessageWithReplyMarkup(ctx, chatID, text, markup); err != nil {
+		return fmt.Errorf("send approval request: %w", err)
+	}
+	a.log.Info("approval request sent", slog.String("tool_call_id", req.ToolCallID), slog.String("tool_name", req.ToolName))
+	return nil
+}
+
+// handleCallbackQuery processes inline keyboard button presses for approval decisions.
+func (a *Adapter) handleCallbackQuery(ctx context.Context, query *CallbackQuery) {
+	if query == nil || query.Data == "" {
+		return
+	}
+	if query.Message != nil {
+		chatID := query.Message.Chat.ID
+		if !a.isAllowedChatID(chatID) {
+			a.log.Warn("callback query ignored for disallowed chat", slog.Int64("chat_id", chatID))
+			return
+		}
+	}
+
+	var toolCallID string
+	var approved bool
+	switch {
+	case strings.HasPrefix(query.Data, approvalCallbackPrefix):
+		toolCallID = strings.TrimPrefix(query.Data, approvalCallbackPrefix)
+		approved = true
+	case strings.HasPrefix(query.Data, rejectionCallbackPrefix):
+		toolCallID = strings.TrimPrefix(query.Data, rejectionCallbackPrefix)
+		approved = false
+	default:
+		a.log.Warn("unknown callback query data", slog.String("data", query.Data))
+		return
+	}
+
+	// Answer the callback to clear the loading state on the button.
+	answerText := "Approved"
+	if !approved {
+		answerText = "Rejected"
+	}
+	if err := a.client.AnswerCallbackQuery(ctx, query.ID, answerText); err != nil {
+		a.log.Warn("answer callback query failed", slog.String("error", err.Error()))
+	}
+
+	if a.approvalGate == nil {
+		a.log.Error("approval gate not configured, cannot resolve approval")
+		return
+	}
+	if !a.approvalGate.Resolve(toolCallID, approved) {
+		a.log.Warn("no pending approval found for tool call", slog.String("tool_call_id", toolCallID))
+		return
+	}
+
+	action := "approved"
+	if !approved {
+		action = "rejected"
+	}
+	a.log.Info("approval resolved via telegram", slog.String("tool_call_id", toolCallID), slog.String("action", action))
 }

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"sort"
 	"strings"
 	"time"
 
@@ -17,6 +18,7 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/logger"
+	"github.com/butler/butler/internal/memory/embeddings"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/transport"
 )
@@ -49,6 +51,10 @@ type EpisodicMemoryStore interface {
 	Search(context.Context, string, string, []float32, int) ([]MemoryEpisode, error)
 }
 
+type EmbeddingProvider interface {
+	EmbedQuery(context.Context, string) ([]float32, error)
+}
+
 type MemoryProfileEntry interface {
 	ProfileKey() string
 	ProfileSummary() string
@@ -60,14 +66,20 @@ type MemoryEpisode interface {
 }
 
 type Config struct {
-	ProviderName string
-	ModelName    string
-	OwnerID      string
-	LeaseTTL     int64
-	Delivery     DeliverySink
-	Tools        ToolExecutor
-	ProfileStore ProfileMemoryStore
-	EpisodeStore EpisodicMemoryStore
+	ProviderName    string
+	ModelName       string
+	OwnerID         string
+	LeaseTTL        int64
+	Delivery        DeliverySink
+	Tools           ToolExecutor
+	ApprovalChecker ApprovalChecker
+	ApprovalGate    *ApprovalGate
+	ProfileStore    ProfileMemoryStore
+	EpisodeStore    EpisodicMemoryStore
+	Embeddings      EmbeddingProvider
+	ProfileLimit    int
+	EpisodeLimit    int
+	MemoryScopes    []string
 }
 
 type Service struct {
@@ -106,6 +118,16 @@ type preparedRun struct {
 	Channel       string
 }
 
+type memoryScope struct {
+	Type string
+	ID   string
+}
+
+type episodeMemoryItem struct {
+	Summary  string
+	Distance float64
+}
+
 func NewService(sessions SessionRepository, leases session.LeaseManager, runs RunManager, transcriptStore TranscriptStore, provider transport.ModelProvider, cfg Config, log *slog.Logger) *Service {
 	if log == nil {
 		log = slog.Default()
@@ -121,6 +143,15 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 	}
 	if cfg.Delivery == nil {
 		cfg.Delivery = NopDeliverySink{}
+	}
+	if cfg.ProfileLimit <= 0 {
+		cfg.ProfileLimit = 20
+	}
+	if cfg.EpisodeLimit <= 0 {
+		cfg.EpisodeLimit = 3
+	}
+	if len(cfg.MemoryScopes) == 0 {
+		cfg.MemoryScopes = []string{"session", "user", "global"}
 	}
 	return &Service{
 		sessions:   sessions,
@@ -382,6 +413,60 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 	}
 	brokerCall := &toolbrokerv1.ToolCall{ToolCallId: toolCallID, RunId: current.GetRunId(), ToolName: requested.ToolName, ArgsJson: requested.ArgsJSON, Status: "requested", AutonomyMode: current.GetAutonomyMode()}
 
+	// Check if tool requires approval before execution.
+	if s.config.ApprovalChecker != nil && s.config.ApprovalGate != nil {
+		needsApproval, checkErr := s.config.ApprovalChecker.RequiresApproval(ctx, requested.ToolName)
+		if checkErr != nil {
+			runLog.Warn("approval check failed, proceeding without approval", slog.String("tool_name", requested.ToolName), slog.String("error", checkErr.Error()))
+		} else if needsApproval {
+			next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_AWAITING_APPROVAL, leaseID, "", "")
+			if err != nil {
+				return nil, current, fmt.Errorf("mark run awaiting_approval: %w", err)
+			}
+			current = next
+
+			if deliveryErr := s.config.Delivery.DeliverApprovalRequest(ctx, ApprovalRequest{
+				RunID:      current.GetRunId(),
+				SessionKey: current.GetSessionKey(),
+				ToolCallID: toolCallID,
+				ToolName:   requested.ToolName,
+				ArgsJSON:   requested.ArgsJSON,
+			}); deliveryErr != nil {
+				return nil, current, fmt.Errorf("deliver approval request: %w", deliveryErr)
+			}
+
+			resp, waitErr := s.config.ApprovalGate.Wait(ctx, toolCallID)
+			if waitErr != nil {
+				return nil, current, fmt.Errorf("wait for approval: %w", waitErr)
+			}
+			if !resp.Approved {
+				rejectedResult := &toolbrokerv1.ToolResult{
+					ToolCallId: toolCallID,
+					RunId:      current.GetRunId(),
+					ToolName:   requested.ToolName,
+					Status:     "rejected",
+					ResultJson: `{"rejected":true,"reason":"user rejected tool call"}`,
+				}
+				next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME, leaseID, "", "")
+				if err != nil {
+					return nil, current, fmt.Errorf("mark run awaiting_model_resume after rejection: %w", err)
+				}
+				current = next
+				stream, submitErr := s.provider.SubmitToolResult(ctx, transport.SubmitToolResultRequest{RunID: current.GetRunId(), ProviderSessionRef: providerSessionRefFromRun(current), ToolCallRef: requested.ToolCallRef, ToolResultJSON: toolResultEnvelope(rejectedResult)})
+				if submitErr != nil {
+					return nil, current, fmt.Errorf("submit rejected tool result: %w", submitErr)
+				}
+				next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_MODEL_RUNNING, leaseID, "", "")
+				if err != nil {
+					return nil, current, fmt.Errorf("mark run model_running after rejection: %w", err)
+				}
+				current = next
+				return stream, current, nil
+			}
+			runLog.Info("tool call approved", slog.String("tool_call_id", toolCallID), slog.String("tool_name", requested.ToolName))
+		}
+	}
+
 	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_TOOL_RUNNING, leaseID, "", "")
 	if err != nil {
 		return nil, current, fmt.Errorf("mark run tool_running: %w", err)
@@ -535,21 +620,22 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 		SessionUserID: userID,
 		Channel:       channel,
 	}
-	if err := s.attachMemoryContext(ctx, event.SessionKey, message, &prepared); err != nil {
+	if err := s.attachMemoryContext(ctx, event.SessionKey, prepared.SessionUserID, message, &prepared); err != nil {
 		return preparedRun{}, err
 	}
 	return prepared, nil
 }
 
-func (s *Service) attachMemoryContext(ctx context.Context, sessionKey, userMessage string, prepared *preparedRun) error {
+func (s *Service) attachMemoryContext(ctx context.Context, sessionKey, userID, userMessage string, prepared *preparedRun) error {
 	if prepared == nil {
 		return nil
 	}
-	profileEntries, err := s.loadProfileMemory(ctx, sessionKey)
+	scopes := s.memoryScopes(sessionKey, userID)
+	profileEntries, err := s.loadProfileMemory(ctx, scopes)
 	if err != nil {
 		return err
 	}
-	episodes, err := s.loadEpisodes(ctx, sessionKey, userMessage)
+	episodes, err := s.loadEpisodes(ctx, scopes, userMessage)
 	if err != nil {
 		return err
 	}
@@ -565,34 +651,86 @@ func (s *Service) attachMemoryContext(ctx context.Context, sessionKey, userMessa
 	return nil
 }
 
-func (s *Service) loadProfileMemory(ctx context.Context, sessionKey string) ([]map[string]any, error) {
-	if s.config.ProfileStore == nil {
+func (s *Service) loadProfileMemory(ctx context.Context, scopes []memoryScope) ([]map[string]any, error) {
+	if s.config.ProfileStore == nil || s.config.ProfileLimit <= 0 {
 		return nil, nil
 	}
-	entries, err := s.config.ProfileStore.GetByScope(ctx, "session", sessionKey)
-	if err != nil {
-		return nil, fmt.Errorf("load profile memory: %w", err)
-	}
-	result := make([]map[string]any, 0, len(entries))
-	for _, entry := range entries {
-		result = append(result, map[string]any{"key": entry.ProfileKey(), "summary": entry.ProfileSummary()})
+	result := make([]map[string]any, 0, s.config.ProfileLimit)
+	for _, scope := range scopes {
+		entries, err := s.config.ProfileStore.GetByScope(ctx, scope.Type, scope.ID)
+		if err != nil {
+			return nil, fmt.Errorf("load profile memory: %w", err)
+		}
+		for _, entry := range entries {
+			result = append(result, map[string]any{"key": entry.ProfileKey(), "summary": entry.ProfileSummary(), "scope_type": scope.Type})
+			if len(result) >= s.config.ProfileLimit {
+				return result, nil
+			}
+		}
 	}
 	return result, nil
 }
 
-func (s *Service) loadEpisodes(ctx context.Context, sessionKey, userMessage string) ([]map[string]any, error) {
-	if s.config.EpisodeStore == nil || strings.TrimSpace(userMessage) == "" {
+func (s *Service) loadEpisodes(ctx context.Context, scopes []memoryScope, userMessage string) ([]map[string]any, error) {
+	if s.config.EpisodeStore == nil || s.config.EpisodeLimit <= 0 || strings.TrimSpace(userMessage) == "" {
 		return nil, nil
 	}
-	items, err := s.config.EpisodeStore.Search(ctx, "session", sessionKey, deriveMemoryQueryEmbedding(userMessage), 3)
+	if s.config.Embeddings == nil {
+		s.log.Info("episodic retrieval skipped; embedding provider is not configured")
+		return nil, nil
+	}
+	queryEmbedding, err := s.config.Embeddings.EmbedQuery(ctx, userMessage)
 	if err != nil {
-		return nil, fmt.Errorf("load episodic memory: %w", err)
+		s.log.Warn("episodic retrieval skipped; embedding query failed", slog.String("error", err.Error()))
+		return nil, nil
+	}
+	if len(queryEmbedding) != embeddings.VectorDimensions {
+		s.log.Warn("episodic retrieval skipped; embedding dimensions are invalid", slog.Int("dimensions", len(queryEmbedding)))
+		return nil, nil
+	}
+	items := make([]episodeMemoryItem, 0, s.config.EpisodeLimit)
+	for _, scope := range scopes {
+		results, err := s.config.EpisodeStore.Search(ctx, scope.Type, scope.ID, queryEmbedding, s.config.EpisodeLimit)
+		if err != nil {
+			return nil, fmt.Errorf("load episodic memory: %w", err)
+		}
+		for _, item := range results {
+			items = append(items, episodeMemoryItem{Summary: item.EpisodeSummary(), Distance: item.EpisodeDistance()})
+		}
+	}
+	sort.Slice(items, func(i, j int) bool { return items[i].Distance < items[j].Distance })
+	if len(items) > s.config.EpisodeLimit {
+		items = items[:s.config.EpisodeLimit]
 	}
 	result := make([]map[string]any, 0, len(items))
 	for _, item := range items {
-		result = append(result, map[string]any{"summary": item.EpisodeSummary(), "distance": item.EpisodeDistance()})
+		result = append(result, map[string]any{"summary": item.Summary, "distance": item.Distance})
 	}
 	return result, nil
+}
+
+func (s *Service) memoryScopes(sessionKey, userID string) []memoryScope {
+	ids := map[string]string{
+		"session": strings.TrimSpace(sessionKey),
+		"user":    strings.TrimSpace(userID),
+		"global":  "global",
+	}
+	seen := make(map[string]struct{}, len(s.config.MemoryScopes))
+	scopes := make([]memoryScope, 0, len(s.config.MemoryScopes))
+	for _, scopeType := range s.config.MemoryScopes {
+		scopeType = strings.ToLower(strings.TrimSpace(scopeType))
+		scopeID := ids[scopeType]
+		if scopeType == "" || scopeID == "" {
+			continue
+		}
+		key := scopeType + ":" + scopeID
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		scopes = append(scopes, memoryScope{Type: scopeType, ID: scopeID})
+	}
+	return scopes
 }
 
 func formatMemoryPrompt(profileEntries, episodes []map[string]any) string {
@@ -612,19 +750,6 @@ func formatMemoryPrompt(profileEntries, episodes []map[string]any) string {
 		sections = append(sections, "Relevant episodes:\n"+strings.Join(lines, "\n"))
 	}
 	return strings.Join(sections, "\n\n")
-}
-
-func deriveMemoryQueryEmbedding(value string) []float32 {
-	trimmed := strings.TrimSpace(value)
-	if trimmed == "" {
-		return []float32{0, 0, 0}
-	}
-	var sum int
-	for _, r := range trimmed {
-		sum += int(r)
-	}
-	wordCount := len(strings.Fields(trimmed))
-	return []float32{float32(len(trimmed)) / 100, float32(wordCount) / 10, float32(sum%1000) / 1000}
 }
 
 func extractUserMessage(payload map[string]any) string {

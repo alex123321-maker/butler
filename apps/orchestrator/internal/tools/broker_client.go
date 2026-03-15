@@ -15,12 +15,12 @@ type BrokerClient struct {
 	client toolbrokerv1.ToolBrokerServiceClient
 }
 
-func Dial(ctx context.Context, address string) (*BrokerClient, error) {
+func Dial(address string) (*BrokerClient, error) {
 	address = strings.TrimSpace(address)
 	if address == "" {
 		return nil, fmt.Errorf("tool broker address is required")
 	}
-	conn, err := grpc.DialContext(ctx, address, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
+	conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("dial tool broker %s: %w", address, err)
 	}
@@ -36,6 +36,21 @@ func (c *BrokerClient) ExecuteToolCall(ctx context.Context, call *toolbrokerv1.T
 		return nil, fmt.Errorf("tool broker returned empty result")
 	}
 	return resp.GetResult(), nil
+}
+
+// RequiresApproval checks whether a tool requires approval before execution
+// by calling ValidateToolCall and inspecting the returned contract.
+func (c *BrokerClient) RequiresApproval(ctx context.Context, toolName string) (bool, error) {
+	resp, err := c.client.ValidateToolCall(ctx, &toolbrokerv1.ValidateToolCallRequest{
+		ToolCall: &toolbrokerv1.ToolCall{ToolName: toolName, ArgsJson: "{}"},
+	})
+	if err != nil {
+		return false, fmt.Errorf("validate tool call for approval check: %w", err)
+	}
+	if resp.GetContract() == nil {
+		return false, nil
+	}
+	return resp.GetContract().GetRequiresApproval(), nil
 }
 
 func (c *BrokerClient) Close() error {

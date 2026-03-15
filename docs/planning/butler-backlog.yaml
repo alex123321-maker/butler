@@ -1076,14 +1076,14 @@ sprints:
   - id: SPRINT-4
     title: Tool Execution Loop, Browser & HTTP Runtimes
     goal: Teach Orchestrator to work with tools and connect the first runtime containers (Browser and HTTP).
-    status: todo
+    status: done
     tasks:
       - id: T-0401
         title: Orchestrator Tool Call Loop
         subsystem: orchestrator
         sprint: SPRINT-4
         priority: high
-        status: todo
+        status: done
         description: >
           Handle tool calls and await results in the Orchestrator run loop.
         why_now: Essential for agent capabilities.
@@ -1097,7 +1097,7 @@ sprints:
         subsystem: tool-broker
         sprint: SPRINT-4
         priority: high
-        status: todo
+        status: done
         description: >
           Route execution calls to specific gRPC runtime containers based on tool class.
         why_now: Must dynamically execute tools via sidecars.
@@ -1125,7 +1125,7 @@ sprints:
         subsystem: tool-browser
         sprint: SPRINT-4
         priority: high
-        status: todo
+        status: done
         description: >
           Implement basic navigate and snapshot commands via Playwright in the Go sidecar.
         why_now: Required for first interactive capabilities.
@@ -1139,7 +1139,7 @@ sprints:
         subsystem: tool-http
         sprint: SPRINT-4
         priority: high
-        status: todo
+        status: done
         description: >
           Implement http.request capability.
         why_now: Second core capability.
@@ -1153,7 +1153,7 @@ sprints:
         subsystem: infra
         sprint: SPRINT-4
         priority: medium
-        status: todo
+        status: done
         description: >
           Add broker and runtimes to docker-compose with network isolation.
         why_now: Needed for e2e local testing.
@@ -1182,8 +1182,10 @@ sprints:
           - CRUD for credentials metadata works.
           - Metadata persists alias, policy, allowed domains/tools, and secret_ref without storing raw secrets in model-visible layers.
           - Metadata broker authorizes usage by alias, tool, domain, and autonomy mode before secret resolution.
+          - Credential audit logs persist allowed, denied, and not-found resolution attempts.
         deliverables:
           - migrations/010_credentials_metadata.up.sql
+          - migrations/013_credential_audit_logs.up.sql
           - internal/credentials/store.go
           - internal/credentials/broker.go
           - unit and integration tests for credential metadata
@@ -1206,6 +1208,7 @@ sprints:
           - Secret values are resolved only inside Tool Broker and runtime gRPC requests, never in model-visible tool args.
           - Runtime contract carries resolved credentials separately from the original tool args.
           - http.request can consume resolved credential refs for authenticated requests.
+          - Unspecified autonomy_mode fails closed instead of silently defaulting.
         deliverables:
           - Tool Broker credential resolution wiring
           - updated runtime proto contract
@@ -1219,7 +1222,7 @@ sprints:
         priority: high
         status: done
         description: >
-          Implement doctor.check_system for self-diagnostics.
+          Implement doctor.check_system plus the initial doctor runtime checks for database, containers, and provider reachability.
         why_now: Butler needs to self-inspect to help operators.
         dependencies: []
         docs_to_read:
@@ -1228,6 +1231,9 @@ sprints:
         acceptance_criteria:
           - doctor.check_system reports config validation state.
           - doctor.check_system checks PostgreSQL and Redis connectivity from the runtime process.
+          - doctor.check_database reports PostgreSQL and Redis connectivity directly.
+          - doctor.check_container probes configured Butler health endpoints.
+          - doctor.check_provider probes provider credentials without exposing secrets.
           - Tool Doctor runs as a real runtime service with HTTP health and runtime gRPC endpoints.
         deliverables:
           - apps/tool-doctor/internal/runtime/
@@ -1248,11 +1254,13 @@ sprints:
         acceptance_criteria:
           - Base PostgreSQL tables exist for profile and episodic memory.
           - Episodic memories support pgvector distance search.
-          - Profile memory supports durable structured lookup by scope.
+          - Profile memory supports durable structured lookup by scope and superseding version history.
+          - Repair migrations enforce memory_type, confidence, and vector(1536) compatibility.
           - Integration tests verify persistence and retrieval.
         deliverables:
           - migrations/011_memory_profile.up.sql
           - migrations/012_memory_episodes.up.sql
+          - migrations/014_memory_schema_repairs.up.sql
           - internal/memory/profile/
           - internal/memory/episodic/
 
@@ -1270,9 +1278,10 @@ sprints:
           - docs/architecture/memory-model.md
           - docs/architecture/run-lifecycle-spec.md
         acceptance_criteria:
-          - Preparing stage loads profile memory by session scope.
-          - Preparing stage retrieves relevant episodic memories before model execution.
+          - Preparing stage loads profile memory by configured scope order.
+          - Preparing stage retrieves relevant episodic memories before model execution only when a real embedding provider is configured.
           - Model input includes a memory-aware system prompt when memories are available.
+          - Memory loading limits are configurable.
           - Tests verify the enriched prompt path.
         deliverables:
           - updated orchestrator prepare logic
@@ -1309,14 +1318,31 @@ sprints:
         subsystem: channel-adapter
         sprint: SPRINT-6
         priority: high
-        status: todo
+        status: done
         description: >
           Inline keyboards for confirming dangerous tools (Approve/Reject).
+          ApprovalChecker interface for querying tool policy.
+          ApprovalGate for blocking orchestrator until user decision.
+          Telegram adapter sends inline keyboard buttons and resolves approval via callback queries.
         why_now: Safety requirement for autonomy mode.
         dependencies: []
-        docs_to_read: []
-        acceptance_criteria: ["Buttons render and work correctly"]
-        deliverables: ["Approval flow"]
+        docs_to_read:
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/architecture/tool-runtime-adr.md
+        acceptance_criteria:
+          - Orchestrator checks ApprovalChecker before tool execution.
+          - If approval required, transitions to awaiting_approval and delivers ApprovalRequest via DeliverySink.
+          - Telegram adapter sends inline keyboard with Approve/Reject buttons keyed by tool_call_id.
+          - Callback query handler resolves ApprovalGate asynchronously.
+          - Approved tool calls proceed to execution; rejected tool calls send rejection result to model.
+          - Domain state machine supports awaiting_approval → tool_running and awaiting_approval → awaiting_model_resume transitions.
+          - Unit tests for ApprovalGate, orchestrator approval paths, and Telegram callback handling.
+        deliverables:
+          - ApprovalChecker interface and ApprovalGate implementation
+          - DeliverySink.DeliverApprovalRequest method
+          - Orchestrator handleToolCall approval gate logic
+          - Telegram inline keyboard and callback query handling
+          - Approval unit tests
 
       - id: T-0603
         title: Web UI Shell
