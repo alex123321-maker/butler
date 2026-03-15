@@ -1654,7 +1654,7 @@ sprints:
         subsystem: config
         sprint: SPRINT-8
         priority: medium
-        status: todo
+        status: done
         description: >
           Implement a HotConfig container that holds runtime-mutable settings (e.g. LOG_LEVEL,
           memory limits) and supports atomic swap on update. Cold settings (connection strings,
