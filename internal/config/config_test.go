@@ -37,6 +37,9 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	if cfg.OpenAITimeoutSeconds != 60 {
 		t.Fatalf("expected default OpenAI timeout, got %d", cfg.OpenAITimeoutSeconds)
 	}
+	if cfg.ToolBrokerAddr != "127.0.0.1:10090" {
+		t.Fatalf("expected default tool broker addr, got %q", cfg.ToolBrokerAddr)
+	}
 	if cfg.TelegramBaseURL != "https://api.telegram.org" {
 		t.Fatalf("expected default Telegram base URL, got %q", cfg.TelegramBaseURL)
 	}

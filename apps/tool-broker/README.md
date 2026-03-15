@@ -22,6 +22,7 @@ Configuration:
 Local run:
 - `go run ./apps/tool-broker`
 - service exposes HTTP health on `BUTLER_HTTP_ADDR` and gRPC on `BUTLER_GRPC_ADDR`
+- Compose stack wires the broker to `tool-http` and `tool-browser` over the internal runtime network
 
 Testing:
 - run `go test ./apps/tool-broker/...`

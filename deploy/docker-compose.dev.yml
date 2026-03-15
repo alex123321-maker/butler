@@ -16,6 +16,21 @@ services:
       - ${BUTLER_ORCHESTRATOR_HTTP_PORT:-8080}:8080
       - ${BUTLER_ORCHESTRATOR_GRPC_PORT:-9090}:9090
 
+  tool-broker:
+    ports:
+      - ${BUTLER_TOOL_BROKER_HTTP_PORT:-10080}:8080
+      - ${BUTLER_TOOL_BROKER_GRPC_PORT:-10090}:9090
+
+  tool-http:
+    ports:
+      - ${BUTLER_TOOL_HTTP_HTTP_PORT:-11080}:8080
+      - ${BUTLER_TOOL_HTTP_GRPC_PORT:-11090}:9090
+
+  tool-browser:
+    ports:
+      - ${BUTLER_TOOL_BROWSER_HTTP_PORT:-12080}:8080
+      - ${BUTLER_TOOL_BROWSER_GRPC_PORT:-12090}:9090
+
 volumes:
   butler-postgres-data:
   butler-redis-data:

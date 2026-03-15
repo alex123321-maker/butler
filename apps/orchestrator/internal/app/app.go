@@ -19,6 +19,7 @@ import (
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
+	"github.com/butler/butler/apps/orchestrator/internal/tools"
 	"github.com/butler/butler/internal/config"
 	orchestratorv1 "github.com/butler/butler/internal/gen/orchestrator/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
@@ -43,6 +44,7 @@ type App struct {
 	grpcServer *grpc.Server
 	grpcListen net.Listener
 	telegram   *telegramadapter.Adapter
+	toolBroker *tools.BrokerClient
 }
 
 func New(ctx context.Context) (*App, error) {
@@ -90,6 +92,12 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	runManager := runservice.NewService(runservice.NewPostgresRepository(postgres.Pool()), logger.WithComponent(log, "run-service"))
+	toolBrokerClient, err := tools.Dial(ctx, cfg.ToolBrokerAddr)
+	if err != nil {
+		redis.Close()
+		postgres.Close()
+		return nil, err
+	}
 	delivery := flow.NewCompositeDeliverySink(flow.NewLoggingDeliverySink(log))
 	var telegram *telegramadapter.Adapter
 	if strings.TrimSpace(cfg.TelegramBotToken) != "" {
@@ -122,6 +130,7 @@ func New(ctx context.Context) (*App, error) {
 			OwnerID:      cfg.Shared.ServiceName,
 			LeaseTTL:     int64(cfg.SessionLeaseTTLSeconds),
 			Delivery:     delivery,
+			Tools:        toolBrokerClient,
 		},
 		logger.WithComponent(log, "executor"),
 	)
@@ -178,6 +187,7 @@ func New(ctx context.Context) (*App, error) {
 		grpcServer: grpcServer,
 		grpcListen: grpcListener,
 		telegram:   telegram,
+		toolBroker: toolBrokerClient,
 	}, nil
 }
 
@@ -247,6 +257,9 @@ func (a *App) shutdown(runErr error) error {
 	}
 
 	if err := a.redis.Close(); err != nil && runErr == nil {
+		runErr = err
+	}
+	if err := a.toolBroker.Close(); err != nil && runErr == nil {
 		runErr = err
 	}
 	a.postgres.Close()
