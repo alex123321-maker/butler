@@ -1599,7 +1599,7 @@ sprints:
         subsystem: config
         sprint: SPRINT-8
         priority: high
-        status: todo
+        status: done
         description: >
           Implement encryption and decryption helpers using AES-256-GCM for secret values
           stored in system_settings. Encryption key is provided via BUTLER_SETTINGS_ENCRYPTION_KEY
