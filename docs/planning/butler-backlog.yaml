@@ -1290,7 +1290,7 @@ sprints:
   - id: SPRINT-6
     title: Telegram Streaming, Approval UX, Web UI Shell
     goal: Improve UX via streaming in Telegram, implement approval flows, and build the initial Web UI.
-    status: in_progress
+    status: done
     tasks:
       - id: T-0601
         title: Telegram Streaming
@@ -1404,14 +1404,29 @@ sprints:
         subsystem: web
         sprint: SPRINT-6
         priority: low
-        status: todo
+        status: done
         description: >
-          Render tool-doctor reports on the dashboard.
+          REST API endpoints on orchestrator to trigger doctor checks via tool broker
+          and store/list reports. Web UI /doctor page with system check trigger and
+          report display including individual check statuses and config inspection.
         why_now: Complete the self-hosted operator experience.
         dependencies: ["T-0603"]
         docs_to_read: []
-        acceptance_criteria: ["Doctor reports rendered"]
-        deliverables: ["Doctor page"]
+        acceptance_criteria:
+          - "POST /api/v1/doctor/check triggers doctor.check_system via tool broker, stores report, returns result"
+          - "GET /api/v1/doctor/reports returns list of past reports ordered by checked_at desc"
+          - "Migration 015_doctor_reports creates doctor_reports table with id, status, checked_at, report_json"
+          - "Web UI /doctor page with Run System Check button"
+          - "Report display shows overall status, individual check items with status indicators"
+          - "Config section collapsible with key/value/validation status"
+          - "Past reports table with click-to-select"
+          - "Unit tests for doctor REST handlers and ToolBrokerDoctorChecker (8 tests)"
+        deliverables:
+          - "Migration 015_doctor_reports.{up,down}.sql"
+          - "DoctorServer REST handlers (api/doctor.go)"
+          - "ToolBrokerDoctorChecker implementation"
+          - "Doctor page with report display and trigger button"
+          - "Doctor API composables (useDoctorReports, useDoctorCheck)"
 
   - id: SPRINT-7
     title: Memory Pipeline and Hardening

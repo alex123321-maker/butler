@@ -953,9 +953,10 @@ repo skeleton → shared libs (logging, config, DB) → postgres schema → sess
 
 ---
 
-## Sprint 6 — Telegram Streaming, Approval UX, Web UI Shell
+## Sprint 6 — Telegram Streaming, Approval UX, Web UI Shell ✅
 
 Цель: улучшить UX: streaming ответов в Telegram, approval flow, начало Web UI.
+Status: **Done** — all 5 tasks completed.
 
 ---
 
@@ -1039,18 +1040,26 @@ repo skeleton → shared libs (logging, config, DB) → postgres schema → sess
 
 ---
 
-### S6-05: Web UI — doctor reports view
+### S6-05: Web UI — doctor reports view ✅
 
 - **ID:** S6-05
 - **Title:** Web UI — doctor reports view
 - **Subsystem:** Web UI
+- **Status:** Done
 - **Why now:** doctor reports — key self-hosted value proposition; нужно показывать их в UI
 - **Dependencies:** S6-03, S5-03
 - **Acceptance criteria:**
-  - REST API: `POST /api/v1/doctor/check` → triggers doctor.check_system, returns report
-  - REST API: `GET /api/v1/doctor/reports` → list of past reports
-  - Web UI `/doctor` page: trigger check button, display report (checks list with status indicators, messages, recommendations)
-  - Past reports list with timestamps
+  - ✅ REST API: `POST /api/v1/doctor/check` → triggers doctor.check_system via tool broker, stores report in PostgreSQL, returns result
+  - ✅ REST API: `GET /api/v1/doctor/reports` → list of past reports ordered by checked_at desc
+  - ✅ Web UI `/doctor` page: trigger check button, display report (checks list with status indicators, messages, config)
+  - ✅ Past reports table with click-to-select for viewing details
+  - ✅ Unit tests for doctor REST handlers and ToolBrokerDoctorChecker (8 tests)
+- **Implementation notes:**
+  - Migration `015_doctor_reports.{up,down}.sql` creates `doctor_reports` table
+  - `DoctorServer` in `api/doctor.go` with `HandleRunCheck` and `HandleListReports`
+  - `ToolBrokerDoctorChecker` calls `doctor.check_system` through tool broker gRPC
+  - Doctor page: `pages/doctor.vue` with status badges, check items, collapsible config section
+  - API composables: `useDoctorReports`, `useDoctorCheck`
 
 ---
 

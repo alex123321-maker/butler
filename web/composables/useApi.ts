@@ -133,3 +133,51 @@ export function useRunTranscript(runId: string) {
     server: false,
   })
 }
+
+// --- Doctor Types ---
+
+export interface DoctorCheckResult {
+  name: string
+  status: string
+  message?: string
+  duration: string
+  checked_at: string
+}
+
+export interface DoctorReportData {
+  status: string
+  checked_at: string
+  checks: DoctorCheckResult[]
+  config?: Array<{ key: string; effective_value: string; validation_status: string }>
+}
+
+export interface DoctorReport {
+  id: number
+  status: string
+  checked_at: string
+  report: DoctorReportData
+}
+
+// --- Doctor ---
+
+export function useDoctorReports() {
+  const { get } = useApiClient()
+
+  return useAsyncData<DoctorReport[]>('doctor-reports', async () => {
+    const resp = await get<{ reports: DoctorReport[] }>('/api/v1/doctor/reports')
+    return resp.reports
+  }, {
+    server: false,
+    default: () => [],
+  })
+}
+
+export function useDoctorCheck() {
+  const { post } = useApiClient()
+
+  async function runCheck(): Promise<DoctorReport> {
+    return await post<DoctorReport>('/api/v1/doctor/check')
+  }
+
+  return { runCheck }
+}

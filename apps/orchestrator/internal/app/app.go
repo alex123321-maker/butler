@@ -23,6 +23,7 @@ import (
 	"github.com/butler/butler/internal/config"
 	orchestratorv1 "github.com/butler/butler/internal/gen/orchestrator/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
+	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/episodic"
@@ -185,6 +186,20 @@ func New(ctx context.Context) (*App, error) {
 	}
 	apiServer := apiservice.NewServer(executor, logger.WithComponent(log, "api"))
 	viewServer := apiservice.NewViewServer(sessionRepo, runRepo, transcriptStore, logger.WithComponent(log, "view-api"))
+	doctorChecker := apiservice.NewToolBrokerDoctorChecker(func(ctx context.Context, toolName, argsJSON string) (string, error) {
+		result, err := toolBrokerClient.ExecuteToolCall(ctx, &toolbrokerv1.ToolCall{
+			ToolCallId: fmt.Sprintf("doctor-%d", time.Now().UnixNano()),
+			ToolName:   toolName,
+			ArgsJson:   argsJSON,
+			Status:     "pending",
+			StartedAt:  time.Now().UTC().Format(time.RFC3339Nano),
+		})
+		if err != nil {
+			return "", err
+		}
+		return result.GetResultJson(), nil
+	})
+	doctorServer := apiservice.NewDoctorServer(postgres.Pool(), doctorChecker, logger.WithComponent(log, "doctor-api"))
 
 	mux := http.NewServeMux()
 	mux.Handle("/health", h.Handler())
@@ -199,6 +214,8 @@ func New(ctx context.Context) (*App, error) {
 		}
 		viewServer.HandleGetRun().ServeHTTP(w, r)
 	}))
+	mux.Handle("/api/v1/doctor/check", doctorServer.HandleRunCheck())
+	mux.Handle("/api/v1/doctor/reports", doctorServer.HandleListReports())
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{
 			"service": cfg.Shared.ServiceName,
