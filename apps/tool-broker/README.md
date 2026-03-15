@@ -7,12 +7,13 @@ Current state:
 - in-memory Tool Registry is loaded from `configs/tools.json`
 - schema validation is performed against tool `input_schema_json`
 - execution routing dials the per-tool `runtime_target` over the internal runtime gRPC contract
+- credential metadata foundation lives in `internal/credentials` with PostgreSQL-backed alias records and policy authorization helpers
 
 Expected dependencies:
 - generated `toolbroker` gRPC bindings
 - generated `runtime` gRPC bindings
 - typed config from `internal/config`
-- future credential resolution and richer runtime policy layers
+- credential metadata and future secret resolution layers
 
 Configuration:
 - current typed config loader supports `BUTLER_TOOL_REGISTRY_PATH` and `BUTLER_TOOL_DEFAULT_TARGET`

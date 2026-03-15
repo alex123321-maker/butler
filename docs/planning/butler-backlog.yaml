@@ -763,7 +763,7 @@ sprints:
   - id: SPRINT-2.1
     title: Full Review and Audit
     goal: Audit implemented architecture, configurations, state machines, and integrations before adding new capabilities.
-    status: todo
+    status: done
     tasks:
       - id: T-2101
         title: Architecture boundaries audit
@@ -851,7 +851,7 @@ sprints:
   - id: SPRINT-2.2
     title: OpenAI WebSocket Mode Integration
     goal: Transition the model transport layer from HTTP SSE to the native OpenAI WebSocket Mode for Realtime API.
-    status: todo
+    status: done
     tasks:
       - id: T-2201
         title: WebSocket Mode contract design
@@ -873,7 +873,7 @@ sprints:
         subsystem: model-transport
         sprint: SPRINT-2.2
         priority: high
-        status: todo
+        status: done
         description: >
           Implement stateful WebSocket sessions in internal/transport/openai/websocket.go.
         why_now: WebSocket-first is a core architectural requirement.
@@ -889,7 +889,7 @@ sprints:
         subsystem: model-transport
         sprint: SPRINT-2.2
         priority: high
-        status: todo
+        status: done
         description: >
           Parse and handle specific WS streaming events (assistant_delta, tool_call) and manage chunk buffering.
         why_now: Essential for real-time responsiveness.
@@ -904,7 +904,7 @@ sprints:
         subsystem: model-transport
         sprint: SPRINT-2.2
         priority: medium
-        status: todo
+        status: done
         description: >
           Add automatic fallback to HTTP SSE if WebSocket connection drops or is unavailable.
         why_now: Hardening transport reliability.
@@ -919,7 +919,7 @@ sprints:
         subsystem: model-transport
         sprint: SPRINT-2.2
         priority: high
-        status: todo
+        status: done
         description: >
           Test the new WS transport and fallback mechanisms via mock-server or test keys.
         why_now: Ensure system works end-to-end with the new layer.
@@ -1076,7 +1076,7 @@ sprints:
   - id: SPRINT-4
     title: Tool Execution Loop, Browser & HTTP Runtimes
     goal: Teach Orchestrator to work with tools and connect the first runtime containers (Browser and HTTP).
-    status: done
+    status: todo
     tasks:
       - id: T-0401
         title: Orchestrator Tool Call Loop
@@ -1111,7 +1111,7 @@ sprints:
         subsystem: proto
         sprint: SPRINT-4
         priority: high
-        status: todo
+        status: done
         description: >
           Define internal gRPC proto messages for container interactions.
         why_now: Contract needed before runtime stubs.
@@ -1165,21 +1165,28 @@ sprints:
   - id: SPRINT-5
     title: Credential Foundation, Doctor, Memory Retrieval
     goal: Create foundation for credentials, add system self-diagnostics, and long-term memory retrieval.
-    status: todo
+    status: in_progress
     tasks:
       - id: T-0501
         title: Credential Store & Broker
         subsystem: credentials
         sprint: SPRINT-5
         priority: high
-        status: todo
+        status: done
         description: >
           Store metadata (no raw secrets) and basic policies for credential usage.
         why_now: Necessary for safe HTTP/Browser interactions.
         dependencies: []
         docs_to_read: ["docs/architecture/credential-management.md"]
-        acceptance_criteria: ["CRUD for credentials metadata works"]
-        deliverables: ["credential storage module"]
+        acceptance_criteria:
+          - CRUD for credentials metadata works.
+          - Metadata persists alias, policy, allowed domains/tools, and secret_ref without storing raw secrets in model-visible layers.
+          - Metadata broker authorizes usage by alias, tool, domain, and autonomy mode before secret resolution.
+        deliverables:
+          - migrations/010_credentials_metadata.up.sql
+          - internal/credentials/store.go
+          - internal/credentials/broker.go
+          - unit and integration tests for credential metadata
 
       - id: T-0502
         title: Credential Ref Resolution in Tool Broker
