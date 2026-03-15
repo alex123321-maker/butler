@@ -1281,21 +1281,28 @@ sprints:
   - id: SPRINT-6
     title: Telegram Streaming, Approval UX, Web UI Shell
     goal: Improve UX via streaming in Telegram, implement approval flows, and build the initial Web UI.
-    status: todo
+    status: in_progress
     tasks:
       - id: T-0601
         title: Telegram Streaming
         subsystem: channel-adapter
         sprint: SPRINT-6
         priority: medium
-        status: todo
+        status: done
         description: >
           Progressive editing of Telegram messages (delta updates).
         why_now: UX improvement.
         dependencies: []
-        docs_to_read: []
-        acceptance_criteria: ["Messages stream smoothly in TG"]
-        deliverables: ["Telegram adapter updates"]
+        docs_to_read:
+          - docs/architecture/run-lifecycle-spec.md
+          - docs/architecture/butler-prd-architecture.md
+        acceptance_criteria:
+          - assistant delta events progressively update a single Telegram message during model_running.
+          - final assistant delivery edits the in-flight Telegram message instead of posting a duplicate response.
+          - adapter tests cover streaming send/edit behavior.
+        deliverables:
+          - telegram adapter streaming state updates
+          - telegram client editMessageText support
 
       - id: T-0602
         title: Telegram Approval UX

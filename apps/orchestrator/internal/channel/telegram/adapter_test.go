@@ -1,9 +1,12 @@
 package telegram
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
+
+	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
 )
 
 func TestNormalizeUpdateBuildsUserMessageEvent(t *testing.T) {
@@ -62,5 +65,39 @@ func TestChatIDRoundTrip(t *testing.T) {
 	}
 	if _, ok := ChatIDFromSessionKey("not-telegram"); ok {
 		t.Fatal("expected non-telegram session key to be rejected")
+	}
+}
+
+func TestDeliverAssistantStreamingEditsSingleTelegramMessage(t *testing.T) {
+	t.Parallel()
+
+	client := &Client{}
+	adapter, err := NewAdapter(Config{AllowedChatIDs: []string{"777"}, PollTimeout: time.Second}, client, nil)
+	if err != nil {
+		t.Fatalf("NewAdapter returned error: %v", err)
+	}
+	client.sendMessage = func(context.Context, int64, string) (Message, error) {
+		return Message{MessageID: 10}, nil
+	}
+	var edits []string
+	client.editMessage = func(_ context.Context, _ int64, _ int64, text string) (Message, error) {
+		edits = append(edits, text)
+		return Message{MessageID: 10}, nil
+	}
+
+	if err := adapter.DeliverAssistantDelta(context.Background(), flow.DeliveryEvent{RunID: "run-1", SessionKey: "telegram:chat:777", Content: "Hel", SequenceNo: 1}); err != nil {
+		t.Fatalf("DeliverAssistantDelta returned error: %v", err)
+	}
+	if err := adapter.DeliverAssistantDelta(context.Background(), flow.DeliveryEvent{RunID: "run-1", SessionKey: "telegram:chat:777", Content: "Hello", SequenceNo: 2}); err != nil {
+		t.Fatalf("DeliverAssistantDelta second returned error: %v", err)
+	}
+	if err := adapter.DeliverAssistantFinal(context.Background(), flow.DeliveryEvent{RunID: "run-1", SessionKey: "telegram:chat:777", Content: "Hello world", Final: true}); err != nil {
+		t.Fatalf("DeliverAssistantFinal returned error: %v", err)
+	}
+	if len(edits) != 2 || edits[0] != "Hello" || edits[1] != "Hello world" {
+		t.Fatalf("unexpected edits: %+v", edits)
+	}
+	if _, ok := adapter.streamingMessages["run-1"]; ok {
+		t.Fatal("expected final delivery to clear streaming state")
 	}
 }

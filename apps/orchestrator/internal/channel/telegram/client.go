@@ -12,9 +12,11 @@ import (
 )
 
 type Client struct {
-	baseURL    string
-	botToken   string
-	httpClient *http.Client
+	baseURL     string
+	botToken    string
+	httpClient  *http.Client
+	sendMessage func(context.Context, int64, string) (Message, error)
+	editMessage func(context.Context, int64, int64, string) (Message, error)
 }
 
 type apiError struct {
@@ -67,6 +69,12 @@ type sendMessageRequest struct {
 	Text   string `json:"text"`
 }
 
+type editMessageTextRequest struct {
+	ChatID    int64  `json:"chat_id"`
+	MessageID int64  `json:"message_id"`
+	Text      string `json:"text"`
+}
+
 type apiEnvelope[T any] struct {
 	OK          bool   `json:"ok"`
 	Result      T      `json:"result"`
@@ -103,9 +111,18 @@ func (c *Client) GetUpdates(ctx context.Context, offset int64, timeoutSeconds in
 	return response, nil
 }
 
-func (c *Client) SendMessage(ctx context.Context, chatID int64, text string) error {
-	_, err := doTelegramRequest[Message](ctx, c, "sendMessage", sendMessageRequest{ChatID: chatID, Text: text})
-	return err
+func (c *Client) SendMessage(ctx context.Context, chatID int64, text string) (Message, error) {
+	if c.sendMessage != nil {
+		return c.sendMessage(ctx, chatID, text)
+	}
+	return doTelegramRequest[Message](ctx, c, "sendMessage", sendMessageRequest{ChatID: chatID, Text: text})
+}
+
+func (c *Client) EditMessageText(ctx context.Context, chatID, messageID int64, text string) (Message, error) {
+	if c.editMessage != nil {
+		return c.editMessage(ctx, chatID, messageID, text)
+	}
+	return doTelegramRequest[Message](ctx, c, "editMessageText", editMessageTextRequest{ChatID: chatID, MessageID: messageID, Text: text})
 }
 
 func (c *Client) endpoint(method string) string {

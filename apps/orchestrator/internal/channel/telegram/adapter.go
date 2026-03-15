@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
@@ -34,6 +35,14 @@ type Adapter struct {
 	executor          Executor
 	log               *slog.Logger
 	nextOffset        int64
+	mu                sync.Mutex
+	streamingMessages map[string]streamingMessage
+}
+
+type streamingMessage struct {
+	ChatID    int64
+	MessageID int64
+	Content   string
 }
 
 func NewAdapter(cfg Config, client *Client, log *slog.Logger) (*Adapter, error) {
@@ -58,6 +67,7 @@ func NewAdapter(cfg Config, client *Client, log *slog.Logger) (*Adapter, error) 
 		allowedChatIDs:    allowed,
 		pollTimeoutSecond: int(cfg.PollTimeout / time.Second),
 		log:               logger.WithComponent(log, "telegram-adapter"),
+		streamingMessages: make(map[string]streamingMessage),
 	}, nil
 }
 
@@ -124,8 +134,15 @@ func (a *Adapter) Run(ctx context.Context) error {
 	}
 }
 
-func (a *Adapter) DeliverAssistantDelta(context.Context, flow.DeliveryEvent) error {
-	return nil
+func (a *Adapter) DeliverAssistantDelta(ctx context.Context, event flow.DeliveryEvent) error {
+	if strings.TrimSpace(event.Content) == "" {
+		return nil
+	}
+	chatID, ok := ChatIDFromSessionKey(event.SessionKey)
+	if !ok || !a.isAllowedChatID(chatID) {
+		return nil
+	}
+	return a.upsertStreamingMessage(ctx, event.RunID, chatID, event.Content, false)
 }
 
 func (a *Adapter) DeliverAssistantFinal(ctx context.Context, event flow.DeliveryEvent) error {
@@ -133,11 +150,57 @@ func (a *Adapter) DeliverAssistantFinal(ctx context.Context, event flow.Delivery
 	if !ok || !a.isAllowedChatID(chatID) || strings.TrimSpace(event.Content) == "" {
 		return nil
 	}
-	if err := a.client.SendMessage(ctx, chatID, event.Content); err != nil {
-		return fmt.Errorf("send telegram message: %w", err)
+	if err := a.upsertStreamingMessage(ctx, event.RunID, chatID, event.Content, true); err != nil {
+		return err
 	}
 	a.log.Info("telegram final response delivered", slog.String("run_id", event.RunID), slog.String("session_key", event.SessionKey))
 	return nil
+}
+
+func (a *Adapter) upsertStreamingMessage(ctx context.Context, runID string, chatID int64, content string, final bool) error {
+	content = strings.TrimSpace(content)
+	if content == "" {
+		return nil
+	}
+	a.mu.Lock()
+	state, ok := a.streamingMessages[runID]
+	a.mu.Unlock()
+	if ok {
+		if state.Content == content {
+			if final {
+				a.clearStreamingMessage(runID)
+			}
+			return nil
+		}
+		message, err := a.client.EditMessageText(ctx, state.ChatID, state.MessageID, content)
+		if err != nil {
+			return fmt.Errorf("edit telegram message: %w", err)
+		}
+		a.storeStreamingMessage(runID, streamingMessage{ChatID: state.ChatID, MessageID: message.MessageID, Content: content}, final)
+		return nil
+	}
+	message, err := a.client.SendMessage(ctx, chatID, content)
+	if err != nil {
+		return fmt.Errorf("send telegram message: %w", err)
+	}
+	a.storeStreamingMessage(runID, streamingMessage{ChatID: chatID, MessageID: message.MessageID, Content: content}, final)
+	return nil
+}
+
+func (a *Adapter) storeStreamingMessage(runID string, state streamingMessage, final bool) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if final {
+		delete(a.streamingMessages, runID)
+		return
+	}
+	a.streamingMessages[runID] = state
+}
+
+func (a *Adapter) clearStreamingMessage(runID string) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	delete(a.streamingMessages, runID)
 }
 
 func NormalizeUpdate(update Update) (ingress.InputEvent, error) {

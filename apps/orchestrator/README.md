@@ -15,6 +15,7 @@ Current baseline:
 - exposes an internal delivery sink for `assistant_delta` and `assistant_final` events without allowing channel adapters to mutate run state
 - exposes `SubmitEvent` over gRPC and synchronous `POST /api/v1/events` over REST for normalized event ingestion
 - optionally runs the in-process Telegram adapter using Bot API long polling and final-response delivery
+- progressively edits Telegram responses during assistant delta streaming and finalizes the same message on completion
 - exposes `GET /health` and `GET /metrics`
 
 Dependencies:
