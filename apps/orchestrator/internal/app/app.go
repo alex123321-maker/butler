@@ -27,6 +27,7 @@ import (
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/episodic"
+	"github.com/butler/butler/internal/memory/pipeline"
 	"github.com/butler/butler/internal/memory/profile"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/metrics"
@@ -158,6 +159,11 @@ func New(ctx context.Context) (*App, error) {
 	sessionRepo := session.NewPostgresRepository(postgres.Pool())
 	sessionLeaseManager := session.NewRedisLeaseManager(redis.Client(), logger.WithComponent(log, "session-lease-store"))
 	transcriptStore := transcript.NewStore(postgres.Pool())
+
+	// Memory pipeline: enqueuer for async post-run extraction.
+	pipelineQueue := pipeline.NewQueue(redis.Client())
+	pipelineEnqueuer := pipeline.NewEnqueuer(pipelineQueue)
+
 	executor := flow.NewService(
 		sessionRepo,
 		sessionLeaseManager,
@@ -165,19 +171,20 @@ func New(ctx context.Context) (*App, error) {
 		transcriptStore,
 		provider,
 		flow.Config{
-			ProviderName:    "openai",
-			ModelName:       cfg.OpenAIModel,
-			OwnerID:         cfg.Shared.ServiceName,
-			LeaseTTL:        int64(cfg.SessionLeaseTTLSeconds),
-			ProfileLimit:    cfg.MemoryProfileLimit,
-			EpisodeLimit:    cfg.MemoryEpisodicLimit,
-			MemoryScopes:    cfg.MemoryScopeOrder,
-			Delivery:        delivery,
-			Tools:           toolBrokerClient,
-			ApprovalChecker: toolBrokerClient,
-			ApprovalGate:    approvalGate,
-			ProfileStore:    profileStoreAdapter{store: profile.NewStore(postgres.Pool())},
-			EpisodeStore:    episodicStoreAdapter{store: episodic.NewStore(postgres.Pool())},
+			ProviderName:     "openai",
+			ModelName:        cfg.OpenAIModel,
+			OwnerID:          cfg.Shared.ServiceName,
+			LeaseTTL:         int64(cfg.SessionLeaseTTLSeconds),
+			ProfileLimit:     cfg.MemoryProfileLimit,
+			EpisodeLimit:     cfg.MemoryEpisodicLimit,
+			MemoryScopes:     cfg.MemoryScopeOrder,
+			Delivery:         delivery,
+			Tools:            toolBrokerClient,
+			ApprovalChecker:  toolBrokerClient,
+			ApprovalGate:     approvalGate,
+			ProfileStore:     profileStoreAdapter{store: profile.NewStore(postgres.Pool())},
+			EpisodeStore:     episodicStoreAdapter{store: episodic.NewStore(postgres.Pool())},
+			PipelineEnqueuer: pipelineEnqueuer,
 		},
 		logger.WithComponent(log, "executor"),
 	)

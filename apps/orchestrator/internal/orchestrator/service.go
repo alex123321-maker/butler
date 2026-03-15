@@ -55,6 +55,11 @@ type EmbeddingProvider interface {
 	EmbedQuery(context.Context, string) ([]float32, error)
 }
 
+// PipelineEnqueuer enqueues async memory pipeline jobs after a run completes.
+type PipelineEnqueuer interface {
+	EnqueuePostRun(ctx context.Context, runID, sessionKey string) error
+}
+
 type MemoryProfileEntry interface {
 	ProfileKey() string
 	ProfileSummary() string
@@ -66,20 +71,21 @@ type MemoryEpisode interface {
 }
 
 type Config struct {
-	ProviderName    string
-	ModelName       string
-	OwnerID         string
-	LeaseTTL        int64
-	Delivery        DeliverySink
-	Tools           ToolExecutor
-	ApprovalChecker ApprovalChecker
-	ApprovalGate    *ApprovalGate
-	ProfileStore    ProfileMemoryStore
-	EpisodeStore    EpisodicMemoryStore
-	Embeddings      EmbeddingProvider
-	ProfileLimit    int
-	EpisodeLimit    int
-	MemoryScopes    []string
+	ProviderName     string
+	ModelName        string
+	OwnerID          string
+	LeaseTTL         int64
+	Delivery         DeliverySink
+	Tools            ToolExecutor
+	ApprovalChecker  ApprovalChecker
+	ApprovalGate     *ApprovalGate
+	ProfileStore     ProfileMemoryStore
+	EpisodeStore     EpisodicMemoryStore
+	Embeddings       EmbeddingProvider
+	PipelineEnqueuer PipelineEnqueuer
+	ProfileLimit     int
+	EpisodeLimit     int
+	MemoryScopes     []string
 }
 
 type Service struct {
@@ -307,6 +313,18 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 		MetadataJSON: `{"source":"model"}`,
 	}); err != nil {
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("append assistant transcript: %w", err))
+	}
+
+	// Enqueue async memory pipeline job (fire-and-forget; failure does not block the run).
+	if s.config.PipelineEnqueuer != nil {
+		if enqueueErr := s.config.PipelineEnqueuer.EnqueuePostRun(ctx, current.GetRunId(), event.SessionKey); enqueueErr != nil {
+			runLog.Warn("failed to enqueue memory pipeline job",
+				slog.String("run_id", current.GetRunId()),
+				slog.String("error", enqueueErr.Error()),
+			)
+		} else {
+			runLog.Info("memory pipeline job enqueued", slog.String("run_id", current.GetRunId()))
+		}
 	}
 
 	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_COMPLETED, lease.LeaseID, "", "")

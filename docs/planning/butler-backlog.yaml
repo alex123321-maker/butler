@@ -1431,14 +1431,14 @@ sprints:
   - id: SPRINT-7
     title: Memory Pipeline and Hardening
     goal: Asynchronous extraction of memories and final stabilization of system flows.
-    status: todo
+    status: in_progress
     tasks:
       - id: T-0701
         title: Async Memory Pipeline
         subsystem: memory
         sprint: SPRINT-7
         priority: high
-        status: todo
+        status: done
         description: >
           Redis job worker to extract profiles and episodes post-run.
         why_now: Completes the durable memory architecture.

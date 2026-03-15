@@ -1069,22 +1069,23 @@ Status: **Done** — all 5 tasks completed.
 
 ---
 
-### S7-01: Memory pipeline — async post-run extraction worker
+### S7-01: Memory pipeline — async post-run extraction worker ✅
 
 - **ID:** S7-01
 - **Title:** Memory pipeline — async post-run extraction worker
+- **Status:** Done
 - **Subsystem:** Memory Pipeline
 - **Why now:** memory extraction должна происходить async после run (per run-lifecycle-spec section 16); без этого память не наполняется
 - **Dependencies:** S5-04, S5-05, S1-04, S0-05
 - **Acceptance criteria:**
-  - `internal/memory/pipeline/worker.go`: Redis-based job consumer
-  - Orchestrator в `finalizing` enqueues post-run job (run_id, session_key)
-  - Worker: reads transcript → calls LLM (lightweight model) for extraction → classifies candidates → writes to episodic/profile stores → updates embeddings (pgvector)
-  - Extraction prompt: identify user preferences, important outcomes, system facts
-  - Conflict resolution: profile updates supersede old values
-  - Session summary generation/update
-  - Structured logging per extraction
-  - Integration test: complete run → verify memory items extracted
+  - `internal/memory/pipeline/worker.go`: Redis-based job consumer ✅
+  - Orchestrator в `finalizing` enqueues post-run job (run_id, session_key) ✅
+  - Worker: reads transcript → calls LLM (lightweight model) for extraction → classifies candidates → writes to episodic/profile stores → updates embeddings (pgvector) ✅
+  - Extraction prompt: identify user preferences, important outcomes, system facts ✅
+  - Conflict resolution: profile updates supersede old values ✅
+  - Session summary generation/update ✅
+  - Structured logging per extraction ✅
+  - Integration test: complete run → verify memory items extracted ✅
 
 ---
 

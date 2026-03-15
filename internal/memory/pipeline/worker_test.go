@@ -1,0 +1,247 @@
+package pipeline
+
+import (
+	"context"
+	"encoding/json"
+	"testing"
+	"time"
+
+	"github.com/butler/butler/internal/memory/transcript"
+)
+
+// --- Fake LLM Caller ---
+
+type fakeLLMCaller struct {
+	response string
+	err      error
+}
+
+func (f *fakeLLMCaller) Complete(_ context.Context, _, _ string) (string, error) {
+	return f.response, f.err
+}
+
+// --- Fake TranscriptReader ---
+
+type fakeTranscriptReader struct {
+	transcripts map[string]transcript.Transcript
+}
+
+func (f *fakeTranscriptReader) GetRunTranscript(_ context.Context, runID string) (transcript.Transcript, error) {
+	if t, ok := f.transcripts[runID]; ok {
+		return t, nil
+	}
+	return transcript.Transcript{}, nil
+}
+
+// --- Fake EmbeddingProvider ---
+
+type fakeEmbeddingProvider struct {
+	embedding []float32
+	err       error
+}
+
+func (f *fakeEmbeddingProvider) EmbedQuery(_ context.Context, _ string) ([]float32, error) {
+	return f.embedding, f.err
+}
+
+// --- Fake ProfileStore (for testing extraction flow) ---
+
+// --- Fake SessionSummaryWriter ---
+
+type fakeSessionSummaryWriter struct {
+	summaries map[string]string
+}
+
+func (f *fakeSessionSummaryWriter) UpdateSummary(_ context.Context, sessionKey, summary string) error {
+	if f.summaries == nil {
+		f.summaries = make(map[string]string)
+	}
+	f.summaries[sessionKey] = summary
+	return nil
+}
+
+// --- Tests ---
+
+func TestLLMExtractor_Extract(t *testing.T) {
+	response := ExtractionResult{
+		ProfileUpdates: []ProfileCandidate{
+			{ScopeType: "user", ScopeID: "user-1", Key: "name", Value: "Alice", Summary: "User name is Alice", Confidence: 0.95},
+		},
+		Episodes: []EpisodeCandidate{
+			{ScopeType: "session", ScopeID: "sess-1", Summary: "User asked about weather", Content: "Detailed weather conversation", Confidence: 0.8},
+		},
+		SessionSummary: "User inquired about weather conditions",
+	}
+	responseJSON, _ := json.Marshal(response)
+
+	extractor := NewLLMExtractor(&fakeLLMCaller{response: string(responseJSON)})
+	tr := transcript.Transcript{
+		Messages: []transcript.Message{
+			{Role: "user", Content: "What is the weather like?"},
+			{Role: "assistant", Content: "It is sunny today."},
+		},
+	}
+
+	result, err := extractor.Extract(context.Background(), "sess-1", tr)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(result.ProfileUpdates) != 1 {
+		t.Fatalf("expected 1 profile update, got %d", len(result.ProfileUpdates))
+	}
+	if result.ProfileUpdates[0].Key != "name" {
+		t.Errorf("expected key 'name', got %q", result.ProfileUpdates[0].Key)
+	}
+	if len(result.Episodes) != 1 {
+		t.Fatalf("expected 1 episode, got %d", len(result.Episodes))
+	}
+	if result.SessionSummary == "" {
+		t.Error("expected non-empty session summary")
+	}
+}
+
+func TestLLMExtractor_EmptyTranscript(t *testing.T) {
+	extractor := NewLLMExtractor(&fakeLLMCaller{response: `{}`})
+	result, err := extractor.Extract(context.Background(), "sess-1", transcript.Transcript{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(result.ProfileUpdates) != 0 || len(result.Episodes) != 0 {
+		t.Error("expected empty results for empty transcript")
+	}
+}
+
+func TestLLMExtractor_MarkdownFencing(t *testing.T) {
+	wrapped := "```json\n" + `{"profile_updates":[],"episodes":[],"session_summary":"test"}` + "\n```"
+	extractor := NewLLMExtractor(&fakeLLMCaller{response: wrapped})
+	tr := transcript.Transcript{
+		Messages: []transcript.Message{{Role: "user", Content: "hello"}},
+	}
+	result, err := extractor.Extract(context.Background(), "sess-1", tr)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result.SessionSummary != "test" {
+		t.Errorf("expected session summary 'test', got %q", result.SessionSummary)
+	}
+}
+
+func TestFormatTranscriptForExtraction(t *testing.T) {
+	tr := transcript.Transcript{
+		Messages: []transcript.Message{
+			{Role: "user", Content: "Hello"},
+			{Role: "assistant", Content: "Hi there!"},
+		},
+		ToolCalls: []transcript.ToolCall{
+			{ToolName: "web_search", Status: "completed"},
+		},
+	}
+	output := formatTranscriptForExtraction("sess-1", tr)
+	if output == "" {
+		t.Fatal("expected non-empty output")
+	}
+	if !contains(output, "Session: sess-1") {
+		t.Error("expected session key in output")
+	}
+	if !contains(output, "[user] Hello") {
+		t.Error("expected user message in output")
+	}
+	if !contains(output, "web_search") {
+		t.Error("expected tool call in output")
+	}
+}
+
+func TestParseExtractionResponse_ValidJSON(t *testing.T) {
+	input := `{"profile_updates":[{"key":"test","summary":"test val","confidence":0.9}],"episodes":[],"session_summary":"ok"}`
+	result, err := parseExtractionResponse(input)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(result.ProfileUpdates) != 1 {
+		t.Errorf("expected 1 profile update, got %d", len(result.ProfileUpdates))
+	}
+}
+
+func TestParseExtractionResponse_InvalidJSON(t *testing.T) {
+	_, err := parseExtractionResponse("not json")
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
+func TestNormalizeScopeType(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"user", "user"},
+		{"USER", "user"},
+		{"session", "session"},
+		{"global", "global"},
+		{"unknown", "session"},
+		{"", "session"},
+	}
+	for _, test := range tests {
+		result := normalizeScopeType(test.input)
+		if result != test.expected {
+			t.Errorf("normalizeScopeType(%q) = %q, want %q", test.input, result, test.expected)
+		}
+	}
+}
+
+func TestScopeIDForType(t *testing.T) {
+	if got := scopeIDForType("global", "sess-1"); got != "global" {
+		t.Errorf("expected 'global', got %q", got)
+	}
+	if got := scopeIDForType("session", "sess-1"); got != "sess-1" {
+		t.Errorf("expected 'sess-1', got %q", got)
+	}
+	if got := scopeIDForType("user", "sess-1"); got != "sess-1" {
+		t.Errorf("expected 'sess-1', got %q", got)
+	}
+}
+
+func TestTruncate(t *testing.T) {
+	if got := truncate("hello", 10); got != "hello" {
+		t.Errorf("expected 'hello', got %q", got)
+	}
+	if got := truncate("hello world", 5); got != "hello..." {
+		t.Errorf("expected 'hello...', got %q", got)
+	}
+}
+
+func TestJobMarshalRoundtrip(t *testing.T) {
+	job := Job{
+		JobType:    JobTypePostRun,
+		RunID:      "run-123",
+		SessionKey: "sess-456",
+		EnqueuedAt: time.Now().UTC().Format(time.RFC3339Nano),
+	}
+	data, err := json.Marshal(job)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	var decoded Job
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if decoded.JobType != job.JobType {
+		t.Errorf("job type mismatch: %q vs %q", decoded.JobType, job.JobType)
+	}
+	if decoded.RunID != job.RunID {
+		t.Errorf("run id mismatch: %q vs %q", decoded.RunID, job.RunID)
+	}
+}
+
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(s) > 0 && containsImpl(s, substr))
+}
+
+func containsImpl(s, substr string) bool {
+	for i := 0; i+len(substr) <= len(s); i++ {
+		if s[i:i+len(substr)] == substr {
+			return true
+		}
+	}
+	return false
+}
