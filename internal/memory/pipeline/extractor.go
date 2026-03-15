@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/butler/butler/internal/memory/sanitize"
 	"github.com/butler/butler/internal/memory/transcript"
 )
 
@@ -107,12 +108,12 @@ func formatTranscriptForExtraction(sessionKey string, t transcript.Transcript) s
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("Session: %s\n\n", sessionKey))
 	for _, msg := range t.Messages {
-		b.WriteString(fmt.Sprintf("[%s] %s\n", msg.Role, msg.Content))
+		b.WriteString(fmt.Sprintf("[%s] %s\n", msg.Role, sanitize.TranscriptMessageContent(msg.Content)))
 	}
 	if len(t.ToolCalls) > 0 {
 		b.WriteString("\nTool calls:\n")
 		for _, tc := range t.ToolCalls {
-			b.WriteString(fmt.Sprintf("- %s (status: %s)\n", tc.ToolName, tc.Status))
+			b.WriteString(fmt.Sprintf("- %s (status: %s) args=%s result=%s error=%s\n", tc.ToolName, tc.Status, sanitize.TranscriptToolArgsJSON(tc.ArgsJSON), sanitize.TranscriptToolResultJSON(tc.ResultJSON), sanitize.TranscriptToolErrorJSON(tc.ErrorJSON)))
 		}
 	}
 	return b.String()

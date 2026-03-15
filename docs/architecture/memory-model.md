@@ -390,6 +390,10 @@ At the current implementation stage:
 * скрытые промежуточные рассуждения модели;
 * большие outputs без признаков будущей полезности.
 
+#### Current sanitization baseline
+
+Before memory extraction and before durable memory writes for memory classes, Butler now applies a sanitization pass that redacts credential-like values such as bearer tokens, passwords, cookies, storage-state blobs, and DSNs / connection strings. This keeps Transcript Store as raw audit history while preventing raw secret material from entering Working, Profile, Episodic memory, and session summaries.
+
 ---
 
 ## 13. Принципы конфликтов и обновлений

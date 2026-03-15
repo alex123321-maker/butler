@@ -50,6 +50,11 @@ LLM не должен получать пароль, токен, cookie value, s
 
 Каждое использование alias должно оставлять audit trail без записи самого секрета.
 
+### 4.6 Provider auth is a separate secret class
+
+Учётные данные model providers (например, OpenAI Codex refresh token или GitHub Copilot device-flow credentials) не должны смешиваться с user-facing credential aliases.
+Они хранятся и обновляются в системном control-plane слое Butler и выдаются transport слою только как runtime auth material.
+
 ---
 
 ## 5. Базовые сущности
@@ -359,6 +364,8 @@ LLM никогда не получает:
 4. `storage_state`
 5. `oauth_token`
 
+`oauth_token` может использоваться и для tool-facing aliases, и для provider auth, но provider auth credentials не проходят через alias selection / credential_ref flow.
+
 ---
 
 ## 11. Контракт аргументов
@@ -508,3 +515,17 @@ Important constraints:
 4. Bootstrap UX для `/cred add`: через какой канал пользователь безопасно вводит секрет (Telegram, Web UI, CLI), как защитить ввод от попадания в историю чата.
 5. Masking и redaction policy: точные правила маскирования в логах, tool outputs и диагностических отчётах; какие поля маскируются, какой формат маски.
 6. Предпочтение browser session state vs raw password: когда использовать `storage_state` / `cookie_bundle` вместо `username_password`, политика выбора по умолчанию.
+
+## 18. Current masking baseline for memory safety
+
+Current Butler baseline now applies memory-focused sanitization before memory extraction prompts and before durable memory persistence for memory-derived records.
+
+Minimum covered categories:
+
+* bearer tokens and API tokens;
+* passwords and password-like fields;
+* cookies and storage-state-like blobs;
+* connection strings / DSNs with embedded credentials;
+* common credential-like JSON/header fields such as `authorization`, `access_token`, `refresh_token`, `api_key`, `client_secret`, `cookie`, and `connection_string`.
+
+This sanitization is intended to protect memory stores and extraction prompts. It does not change Transcript Store raw audit semantics, which remain the source-of-truth history layer.

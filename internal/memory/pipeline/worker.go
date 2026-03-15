@@ -11,6 +11,7 @@ import (
 	"github.com/butler/butler/internal/memory/embeddings"
 	"github.com/butler/butler/internal/memory/episodic"
 	"github.com/butler/butler/internal/memory/profile"
+	"github.com/butler/butler/internal/memory/sanitize"
 	"github.com/butler/butler/internal/memory/transcript"
 )
 
@@ -146,6 +147,15 @@ func (w *Worker) processPostRun(ctx context.Context, log *slog.Logger, job *Job)
 	if err != nil {
 		return fmt.Errorf("read transcript: %w", err)
 	}
+	for idx := range t.Messages {
+		t.Messages[idx].Content = sanitize.TranscriptMessageContent(t.Messages[idx].Content)
+		t.Messages[idx].MetadataJSON = sanitize.TranscriptMetadataJSON(t.Messages[idx].MetadataJSON)
+	}
+	for idx := range t.ToolCalls {
+		t.ToolCalls[idx].ArgsJSON = sanitize.TranscriptToolArgsJSON(t.ToolCalls[idx].ArgsJSON)
+		t.ToolCalls[idx].ResultJSON = sanitize.TranscriptToolResultJSON(t.ToolCalls[idx].ResultJSON)
+		t.ToolCalls[idx].ErrorJSON = sanitize.TranscriptToolErrorJSON(t.ToolCalls[idx].ErrorJSON)
+	}
 	if len(t.Messages) == 0 {
 		log.Info("empty transcript, skipping extraction")
 		return nil
@@ -156,6 +166,7 @@ func (w *Worker) processPostRun(ctx context.Context, log *slog.Logger, job *Job)
 	if err != nil {
 		return fmt.Errorf("extract: %w", err)
 	}
+	result = sanitizeExtractionResult(result)
 
 	// 3. Write profile updates (with conflict resolution via Supersede).
 	profileCount, err := w.writeProfileUpdates(ctx, log, job, result.ProfileUpdates)
@@ -207,17 +218,18 @@ func (w *Worker) writeProfileUpdates(ctx context.Context, log *slog.Logger, job 
 
 		valueJSON := candidate.Value
 		if strings.TrimSpace(valueJSON) == "" {
-			valueJSON = mustJSON(map[string]string{"value": candidate.Summary})
+			valueJSON = mustJSON(map[string]string{"value": sanitize.Text(candidate.Summary)})
 		} else if !json.Valid([]byte(valueJSON)) {
-			valueJSON = mustJSON(map[string]string{"value": valueJSON})
+			valueJSON = mustJSON(map[string]string{"value": sanitize.Text(valueJSON)})
 		}
+		valueJSON = sanitize.JSON(valueJSON)
 
 		entry := profile.Entry{
 			ScopeType:  scopeType,
 			ScopeID:    scopeID,
 			Key:        candidate.Key,
 			ValueJSON:  valueJSON,
-			Summary:    candidate.Summary,
+			Summary:    sanitize.Text(candidate.Summary),
 			SourceType: "memory_pipeline",
 			SourceID:   job.RunID,
 			Confidence: candidate.Confidence,
@@ -289,7 +301,8 @@ func (w *Worker) writeEpisodes(ctx context.Context, log *slog.Logger, job *Job, 
 		// Generate embedding for the episode summary.
 		var embedding []float32
 		if w.embeddings != nil {
-			emb, err := w.embeddings.EmbedQuery(ctx, candidate.Summary)
+			sanitizedSummary := sanitize.Text(candidate.Summary)
+			emb, err := w.embeddings.EmbedQuery(ctx, sanitizedSummary)
 			if err != nil {
 				log.Warn("episode embedding failed, skipping",
 					slog.String("summary", truncate(candidate.Summary, 80)),
@@ -316,8 +329,8 @@ func (w *Worker) writeEpisodes(ctx context.Context, log *slog.Logger, job *Job, 
 		ep := episodic.Episode{
 			ScopeType:      scopeType,
 			ScopeID:        scopeID,
-			Summary:        candidate.Summary,
-			Content:        candidate.Content,
+			Summary:        sanitize.Text(candidate.Summary),
+			Content:        sanitize.Text(candidate.Content),
 			SourceType:     "memory_pipeline",
 			SourceID:       job.RunID,
 			Confidence:     candidate.Confidence,
@@ -343,6 +356,7 @@ func (w *Worker) writeEpisodes(ctx context.Context, log *slog.Logger, job *Job, 
 
 func (w *Worker) updateSessionSummary(ctx context.Context, log *slog.Logger, job *Job, summary string) error {
 	summary = strings.TrimSpace(summary)
+	summary = sanitize.Text(summary)
 	if summary == "" {
 		return nil
 	}
@@ -382,4 +396,27 @@ func mustJSON(v any) string {
 		return "{}"
 	}
 	return string(data)
+}
+
+func sanitizeExtractionResult(result *ExtractionResult) *ExtractionResult {
+	if result == nil {
+		return &ExtractionResult{}
+	}
+	copyResult := &ExtractionResult{
+		ProfileUpdates: make([]ProfileCandidate, 0, len(result.ProfileUpdates)),
+		Episodes:       make([]EpisodeCandidate, 0, len(result.Episodes)),
+		SessionSummary: sanitize.Text(result.SessionSummary),
+	}
+	for _, candidate := range result.ProfileUpdates {
+		candidate.Value = sanitize.JSON(candidate.Value)
+		candidate.Summary = sanitize.Text(candidate.Summary)
+		candidate.Key = sanitize.Text(candidate.Key)
+		copyResult.ProfileUpdates = append(copyResult.ProfileUpdates, candidate)
+	}
+	for _, candidate := range result.Episodes {
+		candidate.Summary = sanitize.Text(candidate.Summary)
+		candidate.Content = sanitize.Text(candidate.Content)
+		copyResult.Episodes = append(copyResult.Episodes, candidate)
+	}
+	return copyResult
 }

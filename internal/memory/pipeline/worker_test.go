@@ -3,6 +3,7 @@ package pipeline
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
@@ -129,11 +130,11 @@ func TestLLMExtractor_MarkdownFencing(t *testing.T) {
 func TestFormatTranscriptForExtraction(t *testing.T) {
 	tr := transcript.Transcript{
 		Messages: []transcript.Message{
-			{Role: "user", Content: "Hello"},
+			{Role: "user", Content: "Hello token=secret-value"},
 			{Role: "assistant", Content: "Hi there!"},
 		},
 		ToolCalls: []transcript.ToolCall{
-			{ToolName: "web_search", Status: "completed"},
+			{ToolName: "web_search", Status: "completed", ArgsJSON: `{"authorization":"Bearer abc"}`, ResultJSON: `{"cookie":"session=abc"}`, ErrorJSON: `{"password":"secret"}`},
 		},
 	}
 	output := formatTranscriptForExtraction("sess-1", tr)
@@ -148,6 +149,29 @@ func TestFormatTranscriptForExtraction(t *testing.T) {
 	}
 	if !contains(output, "web_search") {
 		t.Error("expected tool call in output")
+	}
+	for _, secret := range []string{"secret-value", "Bearer abc", "session=abc", `"password":"secret"`} {
+		if strings.Contains(output, secret) {
+			t.Fatalf("expected secret %q to be redacted in %q", secret, output)
+		}
+	}
+	if !contains(output, "[REDACTED") {
+		t.Fatalf("expected redaction markers in %q", output)
+	}
+}
+
+func TestSanitizeExtractionResult(t *testing.T) {
+	t.Parallel()
+	result := sanitizeExtractionResult(&ExtractionResult{
+		ProfileUpdates: []ProfileCandidate{{Key: "api_token", Value: `{"token":"abc"}`, Summary: "token=abc", Confidence: 0.9}},
+		Episodes:       []EpisodeCandidate{{Summary: "password is secret", Content: "cookie value is abc123", Confidence: 0.8}},
+		SessionSummary: "Bearer abc",
+	})
+	joined := result.ProfileUpdates[0].Value + result.ProfileUpdates[0].Summary + result.Episodes[0].Summary + result.Episodes[0].Content + result.SessionSummary
+	for _, secret := range []string{"abc123", "secret", "Bearer abc"} {
+		if strings.Contains(joined, secret) {
+			t.Fatalf("expected secret %q to be redacted in %q", secret, joined)
+		}
 	}
 }
 

@@ -454,6 +454,41 @@ func TestExecuteRetainsWorkingMemoryOnFailure(t *testing.T) {
 	}
 }
 
+func TestExecuteSanitizesWorkingMemoryToolPayloads(t *testing.T) {
+	t.Parallel()
+
+	provider := &mockProvider{
+		startEvents: []transport.TransportEvent{
+			transport.NewRunStartedEvent("", "openai", transport.CapabilitySnapshot{SupportsStreaming: true}, &transport.ProviderSessionRef{ProviderName: "openai", ResponseRef: "resp_123"}),
+			transport.NewToolCallRequestedEvent("", "openai", transport.ToolCallRequest{ToolCallRef: "call_1", ToolName: "http.request", ArgsJSON: `{"authorization":"Bearer abc","password":"secret"}`, SequenceNo: 1}),
+		},
+		submitEvents: []transport.TransportEvent{
+			transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "done after tool", FinishReason: "completed"}),
+			transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+		},
+	}
+	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{"access_token":"abc","cookie":"session=abc123"}`}}
+	workingStore := &stubWorkingStore{snapshots: map[string]WorkingMemorySnapshot{}}
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, WorkingStore: workingStore}, nil)
+
+	_, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-sanitize-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:sanitize", Source: "telegram", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-sanitize-1"})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	joined := ""
+	for _, save := range workingStore.saveCalls {
+		joined += save.ScratchJSON + save.Goal + save.EntitiesJSON + save.PendingStepsJSON
+	}
+	for _, secret := range []string{"Bearer abc", "session=abc123", "secret"} {
+		if strings.Contains(joined, secret) {
+			t.Fatalf("expected secret %q to be redacted in working memory saves %q", secret, joined)
+		}
+	}
+	if !strings.Contains(joined, "[REDACTED") {
+		t.Fatalf("expected redaction markers in %q", joined)
+	}
+}
+
 func TestExecuteStoresTransientWorkingStateDuringToolLifecycle(t *testing.T) {
 	t.Parallel()
 

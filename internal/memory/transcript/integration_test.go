@@ -51,11 +51,11 @@ func TestTranscriptStoreIntegration(t *testing.T) {
 	}
 
 	transcriptStore := NewStore(store.Pool())
-	msg, err := transcriptStore.AppendMessage(ctx, Message{SessionKey: sessionKey, RunID: runID, Role: "user", Content: "hello"})
+	msg, err := transcriptStore.AppendMessage(ctx, Message{SessionKey: sessionKey, RunID: runID, Role: "user", Content: "hello password=supersecret", MetadataJSON: `{"token":"abc"}`})
 	if err != nil {
 		t.Fatalf("AppendMessage returned error: %v", err)
 	}
-	call, err := transcriptStore.AppendToolCall(ctx, ToolCall{RunID: runID, ToolName: "browser.navigate", Status: "completed", RuntimeTarget: "browser"})
+	call, err := transcriptStore.AppendToolCall(ctx, ToolCall{RunID: runID, ToolName: "browser.navigate", Status: "completed", RuntimeTarget: "browser", ArgsJSON: `{"authorization":"Bearer abc"}`, ResultJSON: `{"cookie":"session=abc123"}`, ErrorJSON: `{"connection_string":"postgres://user:pass@localhost/db"}`})
 	if err != nil {
 		t.Fatalf("AppendToolCall returned error: %v", err)
 	}
@@ -77,5 +77,8 @@ func TestTranscriptStoreIntegration(t *testing.T) {
 	}
 	if len(runTranscript.Messages) != 1 || len(runTranscript.ToolCalls) != 1 {
 		t.Fatalf("unexpected run transcript: %+v", runTranscript)
+	}
+	if runTranscript.Messages[0].Content != "hello password=supersecret" || runTranscript.ToolCalls[0].ArgsJSON == "" {
+		t.Fatalf("expected transcript store to preserve raw transcript for source-of-truth audit, got %+v", runTranscript)
 	}
 }

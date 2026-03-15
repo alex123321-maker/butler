@@ -17,6 +17,7 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/logger"
+	"github.com/butler/butler/internal/memory/sanitize"
 	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/transport"
@@ -709,10 +710,10 @@ func (s *Service) savePreparedWorkingMemory(ctx context.Context, runID, sessionK
 		MemoryType:       "working",
 		SessionKey:       sessionKey,
 		RunID:            runID,
-		Goal:             updated.Goal,
-		EntitiesJSON:     mustMarshalJSON(updated.ActiveEntities),
-		PendingStepsJSON: mustMarshalJSON(updated.PendingSteps),
-		ScratchJSON:      mustMarshalJSON(updated.Scratch),
+		Goal:             sanitize.Text(updated.Goal),
+		EntitiesJSON:     sanitize.JSON(mustMarshalJSON(updated.ActiveEntities)),
+		PendingStepsJSON: sanitize.JSON(mustMarshalJSON(updated.PendingSteps)),
+		ScratchJSON:      sanitize.JSON(mustMarshalJSON(updated.Scratch)),
 		Status:           normalizeWorkingStatus(updated.Status),
 		SourceType:       "run",
 		SourceID:         runID,
@@ -736,16 +737,16 @@ func (s *Service) updateWorkingMemoryCheckpoint(ctx context.Context, sessionKey,
 	}
 	working.Status = normalizeWorkingStatus(status)
 	if strings.TrimSpace(toolName) != "" {
-		working.Scratch["last_tool"] = map[string]any{"name": toolName, "payload": normalizeJSON(payload, "{}")}
+		working.Scratch["last_tool"] = map[string]any{"name": toolName, "payload": sanitize.JSON(normalizeJSON(payload, "{}"))}
 	}
 	_, err = s.config.WorkingStore.Save(ctx, WorkingMemorySnapshot{
 		MemoryType:       "working",
 		SessionKey:       sessionKey,
 		RunID:            runID,
-		Goal:             working.Goal,
-		EntitiesJSON:     mustMarshalJSON(working.ActiveEntities),
-		PendingStepsJSON: mustMarshalJSON(working.PendingSteps),
-		ScratchJSON:      mustMarshalJSON(working.Scratch),
+		Goal:             sanitize.Text(working.Goal),
+		EntitiesJSON:     sanitize.JSON(mustMarshalJSON(working.ActiveEntities)),
+		PendingStepsJSON: sanitize.JSON(mustMarshalJSON(working.PendingSteps)),
+		ScratchJSON:      sanitize.JSON(mustMarshalJSON(working.Scratch)),
 		Status:           working.Status,
 		SourceType:       "run",
 		SourceID:         runID,
@@ -773,17 +774,17 @@ func (s *Service) finalizeWorkingMemory(ctx context.Context, sessionKey, runID s
 		working.Scratch = map[string]any{}
 	}
 	if trimmed := strings.TrimSpace(note); trimmed != "" {
-		working.Scratch["final_note"] = trimmed
+		working.Scratch["final_note"] = sanitize.Text(trimmed)
 	}
 	working.Status = normalizeWorkingStatus(action)
 	_, err = s.config.WorkingStore.Save(ctx, WorkingMemorySnapshot{
 		MemoryType:       "working",
 		SessionKey:       sessionKey,
 		RunID:            runID,
-		Goal:             working.Goal,
-		EntitiesJSON:     mustMarshalJSON(working.ActiveEntities),
-		PendingStepsJSON: mustMarshalJSON(working.PendingSteps),
-		ScratchJSON:      mustMarshalJSON(working.Scratch),
+		Goal:             sanitize.Text(working.Goal),
+		EntitiesJSON:     sanitize.JSON(mustMarshalJSON(working.ActiveEntities)),
+		PendingStepsJSON: sanitize.JSON(mustMarshalJSON(working.PendingSteps)),
+		ScratchJSON:      sanitize.JSON(mustMarshalJSON(working.Scratch)),
 		Status:           working.Status,
 		SourceType:       string(runStateSourceType(state)),
 		SourceID:         runID,
