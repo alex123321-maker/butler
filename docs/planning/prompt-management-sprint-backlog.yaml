@@ -1,0 +1,308 @@
+sprint:
+  id: SPRINT-PROMPT-MANAGEMENT
+  title: Prompt Management Sprint
+  goal: >
+    Add an operator-managed system prompt surface for Butler that supports safe runtime
+    context injection during orchestrator preparing, while preserving Butler boundaries:
+    orchestrator owns prompt assembly, memory remains a separate subsystem, transport
+    only carries normalized instructions, and tool contracts remain structured rather
+    than prompt-only.
+  status: todo
+  scope_notes:
+    - This sprint is separate from the memory completion sprint.
+    - The editable prompt is an operator-facing base instruction, not the full runtime prompt.
+    - Final system instructions are assembled at run time by the orchestrator.
+    - Memory injection must use memory bundle interfaces, not direct store access from transport.
+    - Tool availability remains authoritative in structured ToolDefinitions sent to transport.
+    - Prompt assembly must never expose raw secrets or unresolved credential material.
+  docs_to_read:
+    - docs/architecture/butler-prd-architecture.md
+    - docs/architecture/run-lifecycle-spec.md
+    - docs/architecture/model-transport-contract.md
+    - docs/architecture/tool-runtime-adr.md
+    - docs/architecture/memory-model.md
+    - docs/architecture/credential-management.md
+    - docs/architecture/config-layering.md
+    - docs/ai/engineering-rules.md
+  tasks:
+    - id: TP-01
+      title: Prompt architecture spec and composition contract
+      subsystem: architecture
+      sprint: SPRINT-PROMPT-MANAGEMENT
+      priority: high
+      status: todo
+      description: >
+        Define the Butler prompt composition model: operator-authored base prompt,
+        runtime-generated context sections, optional tool summary section, and final
+        transport-facing instruction payload. Explicitly document ownership boundaries
+        between orchestrator, memory, transport, tool broker, and config surfaces.
+      why_now: >
+        Butler already injects some memory-derived system instructions, but there is no
+        explicit prompt-management contract, which risks architecture drift as prompt
+        editing and richer context injection are introduced.
+      dependencies: []
+      docs_to_read:
+        - docs/architecture/butler-prd-architecture.md
+        - docs/architecture/run-lifecycle-spec.md
+        - docs/architecture/model-transport-contract.md
+        - docs/architecture/tool-runtime-adr.md
+        - docs/ai/engineering-rules.md
+      acceptance_criteria:
+        - A documented prompt composition contract exists.
+        - The spec distinguishes base prompt from runtime context sections.
+        - The spec states that transport does not assemble prompts.
+        - The spec states that tool contracts remain structured and are not prompt-only.
+        - The spec defines safe placeholder or injection rules and secret-safety constraints.
+      deliverables:
+        - prompt-management architecture spec or equivalent architecture doc section
+        - documented section order and ownership rules
+        - closed decisions for placeholders, limits, and fallback behavior
+
+    - id: TP-02
+      title: Prompt template data model and config storage
+      subsystem: config
+      sprint: SPRINT-PROMPT-MANAGEMENT
+      priority: high
+      status: todo
+      description: >
+        Add a durable storage model for the operator-managed base system prompt with
+        revision metadata, enable or disable state, and optional scoped variants only
+        if justified. Prefer the smallest acceptable storage path compatible with the
+        existing layered settings model.
+      why_now: >
+        A prompt editor or API cannot exist safely without a durable and well-scoped
+        storage model for the base instruction.
+      dependencies:
+        - TP-01
+      docs_to_read:
+        - docs/architecture/config-layering.md
+        - docs/ai/engineering-rules.md
+      acceptance_criteria:
+        - Base system prompt can be stored durably and loaded by orchestrator.
+        - Revision metadata exists for audit and operator clarity.
+        - Empty or missing prompt falls back to safe default behavior.
+        - Secret masking and config hygiene rules are preserved.
+        - Tests cover storage, load, update, and fallback paths.
+      deliverables:
+        - storage decision documented such as system_settings or a dedicated table
+        - migration if a dedicated table is chosen
+        - prompt config service or store tests
+
+    - id: TP-03
+      title: Prompt assembler service in orchestrator
+      subsystem: orchestrator
+      sprint: SPRINT-PROMPT-MANAGEMENT
+      priority: high
+      status: todo
+      description: >
+        Introduce a dedicated prompt assembler that builds the final system instruction
+        from the operator base prompt plus runtime sections such as session summary,
+        working memory, profile memory, episodic memory, and optional chunk or document
+        excerpts when available.
+      why_now: >
+        Prompt composition is currently implicit and partially inlined; a dedicated
+        assembler keeps prompt ownership in orchestrator while avoiding ad hoc string
+        building spread across run execution code.
+      dependencies:
+        - TP-01
+        - TP-02
+      docs_to_read:
+        - docs/architecture/run-lifecycle-spec.md
+        - docs/architecture/memory-model.md
+      acceptance_criteria:
+        - Orchestrator no longer hand-builds memory prompt strings inline.
+        - Prompt assembly is encapsulated behind an explicit interface.
+        - Final prompt section order is deterministic and tested.
+        - Empty sections are omitted cleanly.
+        - Prompt assembly respects size, budget, and truncation policy.
+      deliverables:
+        - prompt assembler interface and implementation
+        - refactored orchestrator preparing integration
+        - unit tests for composition rules and ordering
+
+    - id: TP-04
+      title: Safe variable and context injection policy
+      subsystem: security
+      sprint: SPRINT-PROMPT-MANAGEMENT
+      priority: high
+      status: todo
+      description: >
+        Define and implement an allowlisted injection model for runtime placeholders or
+        named sections so operators can reference safe context without enabling arbitrary
+        template execution or secret leakage.
+      why_now: >
+        Prompt customization without strict injection rules would create a high risk of
+        secret exposure, brittle templates, and operator confusion.
+      dependencies:
+        - TP-01
+        - TP-03
+      docs_to_read:
+        - docs/architecture/credential-management.md
+        - docs/ai/engineering-rules.md
+      acceptance_criteria:
+        - Only allowlisted variables or sections can be injected.
+        - No arbitrary code or template execution is supported.
+        - Raw credentials, tokens, cookies, and secret-like values are blocked.
+        - Missing variables degrade safely without breaking runs.
+        - Tests cover sanitization, unknown placeholders, and secret-like input.
+      deliverables:
+        - placeholder allowlist and sanitization policy
+        - secure interpolation or section-toggle implementation
+        - security-focused tests
+
+    - id: TP-05
+      title: Tool capability summary injection
+      subsystem: tools
+      sprint: SPRINT-PROMPT-MANAGEMENT
+      priority: medium
+      status: todo
+      description: >
+        Add an optional compact tool-capability summary section for the final system
+        prompt, sourced from Tool Registry or Broker metadata, while keeping the
+        authoritative tool definitions in structured transport payloads.
+      why_now: >
+        Operators may want the agent to receive a compact reminder of available tool
+        capabilities, but this must not replace the structured tool contract.
+      dependencies:
+        - TP-01
+        - TP-03
+      docs_to_read:
+        - docs/architecture/tool-runtime-adr.md
+        - docs/architecture/model-transport-contract.md
+      acceptance_criteria:
+        - Prompt can include a compact safe summary of available tools.
+        - Summary is derived from stable tool metadata, not ad hoc strings.
+        - Sensitive implementation details and credentials are excluded.
+        - Structured ToolDefinitions remain present in transport requests.
+        - Tests verify prompt summary alignment with tool registry output.
+      deliverables:
+        - tool summary adapter for prompt assembler
+        - safe formatting rules for tool summaries
+        - alignment tests against tool definitions
+
+    - id: TP-06
+      title: Runtime preview and effective prompt inspection API
+      subsystem: api
+      sprint: SPRINT-PROMPT-MANAGEMENT
+      priority: high
+      status: todo
+      description: >
+        Add REST endpoints for reading the configured base prompt, updating it, and
+        previewing the effective assembled prompt for a given session or run context
+        without exposing raw secrets.
+      why_now: >
+        Operators need a safe way to inspect what the agent will actually receive before
+        changes are trusted in production usage.
+      dependencies:
+        - TP-02
+        - TP-03
+        - TP-04
+      docs_to_read:
+        - docs/architecture/butler-prd-architecture.md
+        - docs/architecture/config-layering.md
+      acceptance_criteria:
+        - API exists to get and update the base prompt.
+        - API exists to preview the effective prompt with masked or safe context.
+        - Preview clearly distinguishes base prompt and injected runtime sections.
+        - Access control and masking rules are documented and tested.
+        - API tests cover normal, empty, oversized, and invalid cases.
+      deliverables:
+        - prompt config REST handlers
+        - effective prompt preview endpoint
+        - backend API tests
+
+    - id: TP-07
+      title: Web UI Prompt Editor and preview
+      subsystem: web
+      sprint: SPRINT-PROMPT-MANAGEMENT
+      priority: high
+      status: todo
+      description: >
+        Build a Web UI surface for editing the agent base system prompt, viewing revision
+        metadata, toggling supported injected sections, and previewing the effective
+        prompt before saving.
+      why_now: >
+        Prompt management should be operator-friendly and visible in the Web UI rather
+        than only editable through low-level storage or ad hoc scripts.
+      dependencies:
+        - TP-06
+      docs_to_read:
+        - docs/architecture/butler-prd-architecture.md
+      acceptance_criteria:
+        - UI supports view, edit, save, and reset for the base prompt.
+        - UI shows safe available injection variables or sections.
+        - UI shows effective prompt preview with section labels.
+        - UI warns when prompt exceeds configured budget guidance.
+        - Frontend tests cover edit, validation, preview, and error states.
+      deliverables:
+        - prompt settings page and components
+        - preview workflow
+        - frontend tests
+
+    - id: TP-08
+      title: Prompt budget, truncation, and observability
+      subsystem: observability
+      sprint: SPRINT-PROMPT-MANAGEMENT
+      priority: medium
+      status: todo
+      description: >
+        Add budget accounting and logs or metrics for prompt assembly so operators can
+        see why sections were omitted or truncated and diagnose prompt-size regressions.
+      why_now: >
+        Prompt management without visibility will make failures and degraded context hard
+        to understand once memory and tool summaries grow.
+      dependencies:
+        - TP-03
+        - TP-05
+      docs_to_read:
+        - docs/ai/engineering-rules.md
+        - docs/architecture/run-lifecycle-spec.md
+      acceptance_criteria:
+        - Prompt assembly emits structured logs for included and omitted sections.
+        - Metrics track effective prompt size, truncations, and preview usage.
+        - Budget policy is explicit for base prompt, memory, and tool summary sections.
+        - Failures in prompt preview do not break run execution.
+        - Tests cover truncation and omission behavior.
+      deliverables:
+        - prompt assembly metrics and logging
+        - budget policy implementation
+        - observability tests and docs
+
+    - id: TP-09
+      title: Docs and README alignment for prompt management
+      subsystem: documentation
+      sprint: SPRINT-PROMPT-MANAGEMENT
+      priority: high
+      status: todo
+      description: >
+        Update architecture docs and service READMEs so prompt ownership, composition
+        flow, operator editing surface, tool summary behavior, and memory injection
+        policy are documented without contradicting transport or memory specs.
+      why_now: >
+        Prompt management changes cross subsystem boundaries and will become a long-lived
+        operator-facing capability, so documentation must stay aligned from the start.
+      dependencies:
+        - TP-01
+        - TP-02
+        - TP-03
+        - TP-04
+        - TP-05
+        - TP-06
+        - TP-07
+        - TP-08
+      docs_to_read:
+        - docs/architecture/butler-prd-architecture.md
+        - docs/architecture/run-lifecycle-spec.md
+        - docs/architecture/model-transport-contract.md
+        - docs/architecture/tool-runtime-adr.md
+        - docs/architecture/memory-model.md
+      acceptance_criteria:
+        - Docs describe base prompt versus effective prompt clearly.
+        - Run lifecycle docs mention prompt assembly in preparing.
+        - Transport docs remain clear that transport carries, not owns, instructions.
+        - Tool docs state that prompt tool summaries are informational only.
+        - Relevant READMEs are updated for operators and future agents.
+      deliverables:
+        - updated architecture docs
+        - updated orchestrator, web, and relevant service READMEs
+        - operator guidance for prompt editing and preview

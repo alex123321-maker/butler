@@ -65,6 +65,11 @@ Model Transport Layer обязан скрывать различия между:
 
 Provider-side session может существовать, но она не заменяет Butler session и не определяет run semantics.
 
+### 3.6 Provider auth is resolved before transport
+
+OAuth/device-flow логика, refresh tokens и хранение provider credentials находятся в системном control-plane слое Butler.
+Transport получает только runtime auth material (например, bearer token и provider-specific headers) и не выполняет login flow самостоятельно.
+
 ---
 
 ## 4. Задачи Model Transport Layer
@@ -175,7 +180,8 @@ Orchestrator взаимодействует с Model Transport Layer через 
 - `StreamEvents` остаётся отдельным наблюдательным streaming RPC для случаев пассивной подписки на уже идущий run;
 - `CancelRun` возвращает одиночное подтверждение/terminal event.
 
-Для OpenAI baseline V1 transport backend должен предпочитать Realtime WebSocket (`wss`) и переходить на HTTP SSE fallback, если WebSocket backend недоступен на раннем этапе запуска, не меняя logical contract, видимый Orchestrator.
+Для OpenAI API baseline V1 transport backend должен предпочитать Realtime WebSocket (`wss`) и переходить на HTTP SSE fallback, если WebSocket backend недоступен на раннем этапе запуска, не меняя logical contract, видимый Orchestrator.
+Для OpenAI Codex и GitHub Copilot допускается HTTP streaming backend, если provider не поддерживает совместимый WebSocket path.
 
 ---
 

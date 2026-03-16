@@ -1,40 +1,40 @@
 services:
   postgres:
     ports:
-      - ${BUTLER_POSTGRES_PORT:-5432}:5432
+      - 5432:5432
     volumes:
       - butler-postgres-data:/var/lib/postgresql/data
 
   redis:
     ports:
-      - ${BUTLER_REDIS_PORT:-6379}:6379
+      - 6379:6379
     volumes:
       - butler-redis-data:/data
 
   orchestrator:
     ports:
-      - ${BUTLER_ORCHESTRATOR_HTTP_PORT:-8080}:8080
-      - ${BUTLER_ORCHESTRATOR_GRPC_PORT:-9090}:9090
+      - 8080:8080
+      - 9090:9090
 
   tool-broker:
     ports:
-      - ${BUTLER_TOOL_BROKER_HTTP_PORT:-10080}:8080
-      - ${BUTLER_TOOL_BROKER_GRPC_PORT:-10090}:9090
+      - 10080:8080
+      - 10090:9090
 
   tool-http:
     ports:
-      - ${BUTLER_TOOL_HTTP_HTTP_PORT:-11080}:8080
-      - ${BUTLER_TOOL_HTTP_GRPC_PORT:-11090}:9090
+      - 11080:8080
+      - 11090:9090
 
   tool-browser:
     ports:
-      - ${BUTLER_TOOL_BROWSER_HTTP_PORT:-12080}:8080
-      - ${BUTLER_TOOL_BROWSER_GRPC_PORT:-12090}:9090
+      - 12080:8080
+      - 12090:9090
 
   tool-doctor:
     ports:
-      - ${BUTLER_TOOL_DOCTOR_HTTP_PORT:-13080}:8080
-      - ${BUTLER_TOOL_DOCTOR_GRPC_PORT:-13090}:9090
+      - 13080:8080
+      - 13090:9090
 
 volumes:
   butler-postgres-data:

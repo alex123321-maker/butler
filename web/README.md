@@ -8,9 +8,9 @@ Provides a browser-based interface for:
 - **Dashboard** — system health overview
 - **Sessions** — session list and run history (T-0604)
 - **Run detail** — transcript timeline for a selected run
-- **Memory** — profile and episodic memory browser (future sprint)
+- **Memory** — scope-based browser for durable working, profile, episodic, and chunk memory with provenance links
 - **Doctor** — system diagnostic reports (T-0605)
-- **Settings** — grouped runtime configuration management with source tracing and `tools.json` editor
+- **Settings** — grouped runtime configuration management with source tracing plus provider auth flows for GitHub Copilot and OpenAI Codex
 
 ## Development
 
@@ -43,7 +43,7 @@ Build and run via Docker Compose from the repo root:
 docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml up -d --build
 ```
 
-The web service is exposed on port 3000 by default (configurable via `BUTLER_WEB_PORT`).
+The web service is exposed on port 3000 in the Compose dev stack.
 The dev overlay also publishes the orchestrator API on `http://localhost:8080`, which the browser UI uses by default.
 
 ## Architecture
@@ -73,7 +73,7 @@ web/
     ├── sessions.vue           # Sessions list
     ├── sessions/[key].vue     # Session detail with runs
     ├── runs/[id].vue          # Run detail with transcript
-    ├── memory.vue             # Memory (placeholder)
+    ├── memory.vue             # Memory browser
     ├── doctor.vue             # Doctor reports and system checks
-    └── settings.vue           # Settings and tools registry editor
+    └── settings.vue           # Settings management
 ```

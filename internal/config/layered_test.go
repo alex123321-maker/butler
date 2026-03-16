@@ -73,3 +73,23 @@ func TestLayeredResolverAllowsDatabaseBlankOverrides(t *testing.T) {
 		t.Fatalf("expected empty masked value, got %q", apiKey.EffectiveValue)
 	}
 }
+
+func TestLoadOrchestratorLayeredTreatsBlankEnvironmentValuesAsUnset(t *testing.T) {
+	settings := []Setting{{Key: "BUTLER_OPENAI_MODEL", Value: "gpt-db", Component: "orchestrator", UpdatedBy: "unit-test"}}
+
+	cfg, snapshot, err := loadOrchestratorLayered(envMap(map[string]string{
+		"BUTLER_POSTGRES_URL": "postgres://localhost:5432/butler",
+		"BUTLER_REDIS_URL":    "redis://localhost:6379/0",
+		"BUTLER_OPENAI_MODEL": "   ",
+	}), settings)
+	if err != nil {
+		t.Fatalf("loadOrchestratorLayered returned error: %v", err)
+	}
+	if cfg.OpenAIModel != "gpt-db" {
+		t.Fatalf("expected db model to win when env is blank, got %q", cfg.OpenAIModel)
+	}
+	model := findKey(t, snapshot.ListKeys(), "BUTLER_OPENAI_MODEL")
+	if model.Source != ConfigSourceDB {
+		t.Fatalf("expected db source, got %q", model.Source)
+	}
+}

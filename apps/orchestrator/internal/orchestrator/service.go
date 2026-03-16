@@ -354,6 +354,7 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 			ChunkLimit:    2,
 			ScopeOrder:    cfg.MemoryScopes,
 			Log:           log,
+			Metrics:       nil,
 		})
 	}
 	return &Service{

@@ -18,14 +18,37 @@ export interface SettingsComponent {
   settings: SettingItem[]
 }
 
-export interface ToolsRegistryState {
-  path: string
-  content: string
-}
-
 export interface RestartState {
   components: string[]
   suggested_command: string
+}
+
+export interface ProviderFlowState {
+  id: string
+  status: string
+  verification_uri?: string
+  user_code?: string
+  auth_url?: string
+  instructions?: string
+  expires_at?: string
+  error?: string
+}
+
+export interface ProviderItem {
+  name: string
+  model: string
+  active: boolean
+  connected: boolean
+  auth_kind: string
+  account_hint?: string
+  enterprise_domain?: string
+  expires_at?: string
+  pending?: ProviderFlowState | null
+}
+
+export interface ProvidersState {
+  active_provider: string
+  providers: ProviderItem[]
 }
 
 export function useSettingsData() {
@@ -54,17 +77,6 @@ export function useSettingsData() {
     return response.setting
   }
 
-  async function getToolsRegistry(): Promise<ToolsRegistryState> {
-    return await $fetch<ToolsRegistryState>(`${baseURL}/api/v1/settings/tools-registry`)
-  }
-
-  async function updateToolsRegistry(content: string): Promise<{ updated: boolean, path: string }> {
-    return await $fetch<{ updated: boolean, path: string }>(`${baseURL}/api/v1/settings/tools-registry`, {
-      method: 'PUT',
-      body: { content },
-    })
-  }
-
   async function getRestartState(): Promise<RestartState> {
     return await $fetch<RestartState>(`${baseURL}/api/v1/settings/restart`)
   }
@@ -75,13 +87,47 @@ export function useSettingsData() {
     })
   }
 
+  async function getProviders(): Promise<ProvidersState> {
+    return await get<ProvidersState>('/api/v1/providers')
+  }
+
+  async function getProvider(name: string): Promise<ProviderItem> {
+    const response = await get<{ provider: ProviderItem }>(`/api/v1/providers/${name}/auth`)
+    return response.provider
+  }
+
+  async function startProviderAuth(name: string, enterpriseURL = ''): Promise<{ provider: ProviderItem, flow?: ProviderFlowState }> {
+    return await $fetch<{ provider: ProviderItem, flow?: ProviderFlowState }>(`${baseURL}/api/v1/providers/${name}/auth/start`, {
+      method: 'POST',
+      body: { enterprise_url: enterpriseURL },
+    })
+  }
+
+  async function completeProviderAuth(name: string, flowId: string, input: string): Promise<ProviderItem> {
+    const response = await $fetch<{ provider: ProviderItem }>(`${baseURL}/api/v1/providers/${name}/auth/complete`, {
+      method: 'POST',
+      body: { flow_id: flowId, input },
+    })
+    return response.provider
+  }
+
+  async function deleteProviderAuth(name: string): Promise<ProviderItem> {
+    const response = await $fetch<{ provider: ProviderItem }>(`${baseURL}/api/v1/providers/${name}/auth`, {
+      method: 'DELETE',
+    })
+    return response.provider
+  }
+
   return {
     ...data,
     updateSetting,
     deleteSetting,
-    getToolsRegistry,
-    updateToolsRegistry,
     getRestartState,
     applyRestart,
+    getProviders,
+    getProvider,
+    startProviderAuth,
+    completeProviderAuth,
+    deleteProviderAuth,
   }
 }

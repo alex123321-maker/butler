@@ -4,10 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
-	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 
@@ -18,10 +15,8 @@ type SettingsManager interface {
 	List(context.Context) ([]config.SettingState, error)
 	Update(context.Context, string, string) (config.SettingState, error)
 	Delete(context.Context, string) (config.SettingState, error)
-	EffectiveValue(context.Context, string) (string, error)
 	PendingRestartComponents() []string
 	ClearPendingRestart()
-	MarkRestartComponent(string)
 }
 
 type SettingsServer struct {
@@ -81,46 +76,6 @@ func (s *SettingsServer) HandleItem() http.Handler {
 				return
 			}
 			writeJSON(w, http.StatusOK, map[string]any{"setting": toSettingDTO(setting)})
-		default:
-			w.WriteHeader(http.StatusMethodNotAllowed)
-		}
-	})
-}
-
-func (s *SettingsServer) HandleToolsRegistry() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		path, err := s.resolveToolsRegistryPath(r.Context())
-		if err != nil {
-			writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
-			return
-		}
-
-		switch r.Method {
-		case http.MethodGet:
-			raw, err := os.ReadFile(path)
-			if err != nil {
-				writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
-				return
-			}
-			writeJSON(w, http.StatusOK, map[string]any{"path": path, "content": string(raw)})
-		case http.MethodPut:
-			var request struct {
-				Content string `json:"content"`
-			}
-			if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-				writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid JSON request body"})
-				return
-			}
-			if err := validateJSON(request.Content); err != nil {
-				writeJSON(w, http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("invalid tools registry JSON: %v", err)})
-				return
-			}
-			if err := os.WriteFile(path, []byte(request.Content), 0o600); err != nil {
-				writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
-				return
-			}
-			s.manager.MarkRestartComponent("tool-broker")
-			writeJSON(w, http.StatusOK, map[string]any{"path": path, "updated": true})
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
@@ -195,31 +150,6 @@ func toSettingDTO(setting config.SettingState) settingDTO {
 		ValidationStatus: string(setting.ValidationStatus),
 		ValidationError:  setting.ValidationError,
 	}
-}
-
-func (s *SettingsServer) resolveToolsRegistryPath(ctx context.Context) (string, error) {
-	path, err := s.manager.EffectiveValue(ctx, "BUTLER_TOOL_REGISTRY_PATH")
-	if err != nil {
-		return "", err
-	}
-	trimmed := strings.TrimSpace(path)
-	if trimmed == "" {
-		return "", fmt.Errorf("tools registry path is empty")
-	}
-	if filepath.IsAbs(trimmed) {
-		return trimmed, nil
-	}
-	return filepath.Clean(trimmed), nil
-}
-
-func validateJSON(raw string) error {
-	decoder := json.NewDecoder(strings.NewReader(raw))
-	decoder.DisallowUnknownFields()
-	var payload map[string]any
-	if err := decoder.Decode(&payload); err != nil {
-		return err
-	}
-	return nil
 }
 
 func restartResponse(components []string) map[string]any {

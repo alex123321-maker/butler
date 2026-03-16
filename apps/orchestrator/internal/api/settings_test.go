@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -125,45 +123,10 @@ func TestSettingsServerHandleRestartReturnsPendingComponents(t *testing.T) {
 	}
 }
 
-func TestSettingsServerHandleToolsRegistryReadsAndWritesFile(t *testing.T) {
-	dir := t.TempDir()
-	path := filepath.Join(dir, "tools.json")
-	if err := os.WriteFile(path, []byte(`{"tools":[]}`), 0o600); err != nil {
-		t.Fatalf("write temp tools file: %v", err)
-	}
-	manager := &restartAwareManager{fakeSettingsManager: fakeSettingsManager{effective: map[string]string{"BUTLER_TOOL_REGISTRY_PATH": path}}}
-	server := NewSettingsServer(manager)
-
-	getReq := httptest.NewRequest(http.MethodGet, "/api/v1/settings/tools-registry", nil)
-	getRR := httptest.NewRecorder()
-	server.HandleToolsRegistry().ServeHTTP(getRR, getReq)
-	if getRR.Code != http.StatusOK {
-		t.Fatalf("expected 200, got %d", getRR.Code)
-	}
-
-	badReq := httptest.NewRequest(http.MethodPut, "/api/v1/settings/tools-registry", strings.NewReader(`{"content":"{"}`))
-	badRR := httptest.NewRecorder()
-	server.HandleToolsRegistry().ServeHTTP(badRR, badReq)
-	if badRR.Code != http.StatusBadRequest {
-		t.Fatalf("expected 400, got %d", badRR.Code)
-	}
-
-	putReq := httptest.NewRequest(http.MethodPut, "/api/v1/settings/tools-registry", strings.NewReader(`{"content":"{\"tools\":[]}"}`))
-	putRR := httptest.NewRecorder()
-	server.HandleToolsRegistry().ServeHTTP(putRR, putReq)
-	if putRR.Code != http.StatusOK {
-		t.Fatalf("expected 200, got %d with body %s", putRR.Code, putRR.Body.String())
-	}
-	if !reflect.DeepEqual(manager.marked, []string{"tool-broker"}) {
-		t.Fatalf("expected tool-broker restart mark, got %+v", manager.marked)
-	}
-}
-
 type fakeSettingsManager struct {
 	list      []config.SettingState
 	update    config.SettingState
 	deleted   config.SettingState
-	effective map[string]string
 	restarts  []string
 	listErr   error
 	updateErr error
@@ -188,13 +151,6 @@ func (f fakeSettingsManager) Delete(context.Context, string) (config.SettingStat
 	return f.deleted, nil
 }
 
-func (f fakeSettingsManager) EffectiveValue(_ context.Context, key string) (string, error) {
-	if value, ok := f.effective[key]; ok {
-		return value, nil
-	}
-	return "", config.ErrUnknownSetting
-}
-
 func (f fakeSettingsManager) PendingRestartComponents() []string {
 	return append([]string(nil), f.restarts...)
 }
@@ -206,15 +162,10 @@ func (f fakeSettingsManager) MarkRestartComponent(string) {}
 type restartAwareManager struct {
 	fakeSettingsManager
 	cleared bool
-	marked  []string
 }
 
 func (m *restartAwareManager) ClearPendingRestart() {
 	m.cleared = true
-}
-
-func (m *restartAwareManager) MarkRestartComponent(component string) {
-	m.marked = append(m.marked, component)
 }
 
 var _ SettingsManager = fakeSettingsManager{}
