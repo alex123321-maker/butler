@@ -26,6 +26,7 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
+	"github.com/butler/butler/internal/memory/chunks"
 	"github.com/butler/butler/internal/memory/episodic"
 	"github.com/butler/butler/internal/memory/pipeline"
 	"github.com/butler/butler/internal/memory/profile"
@@ -95,6 +96,38 @@ func (a episodicStoreAdapter) FindBySummary(ctx context.Context, scopeType, scop
 	result := make([]flow.MemoryEpisode, 0, len(entries))
 	for _, entry := range entries {
 		result = append(result, memoryEpisodeExactMatch{Episode: entry})
+	}
+	return result, nil
+}
+
+type chunkStoreAdapter struct{ store *chunks.Store }
+
+type memoryChunkExactMatch struct{ chunks.Chunk }
+
+func (m memoryChunkExactMatch) ChunkTitle() string     { return m.Title }
+func (m memoryChunkExactMatch) ChunkSummary() string   { return m.Summary }
+func (m memoryChunkExactMatch) ChunkDistance() float64 { return 0.25 }
+
+func (a chunkStoreAdapter) Search(ctx context.Context, scopeType, scopeID string, embedding []float32, limit int) ([]flow.MemoryChunk, error) {
+	entries, err := a.store.Search(ctx, scopeType, scopeID, embedding, limit)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]flow.MemoryChunk, 0, len(entries))
+	for _, entry := range entries {
+		result = append(result, entry)
+	}
+	return result, nil
+}
+
+func (a chunkStoreAdapter) FindByTitle(ctx context.Context, scopeType, scopeID, title string, limit int) ([]flow.MemoryChunk, error) {
+	entries, err := a.store.FindByTitle(ctx, scopeType, scopeID, title, limit)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]flow.MemoryChunk, 0, len(entries))
+	for _, entry := range entries {
+		result = append(result, memoryChunkExactMatch{Chunk: entry})
 	}
 	return result, nil
 }
@@ -324,6 +357,7 @@ func New(ctx context.Context) (*App, error) {
 			TransientTTL:     time.Duration(cfg.MemoryWorkingTransientTTLSeconds) * time.Second,
 			ProfileStore:     profileStoreAdapter{store: profile.NewStore(postgres.Pool())},
 			EpisodeStore:     episodicStoreAdapter{store: episodic.NewStore(postgres.Pool())},
+			ChunkStore:       chunkStoreAdapter{store: chunks.NewStore(postgres.Pool())},
 			PipelineEnqueuer: pipelineEnqueuer,
 			SummaryReader:    sessionRepo,
 		},

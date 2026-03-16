@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/butler/butler/internal/memory/chunks"
 	"github.com/butler/butler/internal/memory/embeddings"
 	"github.com/butler/butler/internal/memory/episodic"
 	"github.com/butler/butler/internal/memory/profile"
@@ -30,6 +31,21 @@ type SessionSummaryWriter interface {
 	UpdateSummary(ctx context.Context, sessionKey, summary string) error
 }
 
+type ChunkStore interface {
+	Save(context.Context, chunks.Chunk) (chunks.Chunk, error)
+}
+
+type DoctorReportReader interface {
+	LatestReport(context.Context) (DoctorIngestionReport, error)
+}
+
+type DoctorIngestionReport struct {
+	ID         string
+	Status     string
+	Summary    string
+	ReportJSON string
+}
+
 // WorkerConfig holds configuration for the memory pipeline worker.
 type WorkerConfig struct {
 	// PollTimeout is how long to block-wait on the Redis queue per iteration.
@@ -45,6 +61,8 @@ type Worker struct {
 	extractor     Extractor
 	classifier    *Classifier
 	resolver      *ConflictResolver
+	chunkStore    ChunkStore
+	doctorReports DoctorReportReader
 	profileStore  *profile.Store
 	episodicStore *episodic.Store
 	embeddings    EmbeddingProvider
@@ -80,6 +98,8 @@ func NewWorker(
 		extractor:     extractor,
 		classifier:    NewClassifier(),
 		resolver:      NewConflictResolver(),
+		chunkStore:    nil,
+		doctorReports: nil,
 		profileStore:  profileStore,
 		episodicStore: episodicStore,
 		embeddings:    embeddingProvider,
@@ -178,6 +198,7 @@ func (w *Worker) processPostRun(ctx context.Context, log *slog.Logger, job *Job)
 		slog.Int("profile_candidates", len(classified.Profiles)),
 		slog.Int("episode_candidates", len(classified.Episodes)),
 		slog.Int("working_candidates", len(classified.Working)),
+		slog.Int("document_candidates", len(classified.Documents)),
 		slog.Int("ignored_candidates", len(resolved.Ignored)),
 	)
 
@@ -198,9 +219,15 @@ func (w *Worker) processPostRun(ctx context.Context, log *slog.Logger, job *Job)
 		return fmt.Errorf("update session summary: %w", err)
 	}
 
+	chunkCount, err := w.writeDocumentChunks(ctx, log, job, classified.Documents, t)
+	if err != nil {
+		return fmt.Errorf("write chunks: %w", err)
+	}
+
 	log.Info("extraction complete",
 		slog.Int("profiles_written", profileCount),
 		slog.Int("episodes_written", episodeCount),
+		slog.Int("chunks_written", chunkCount),
 		slog.Bool("summary_updated", strings.TrimSpace(resolved.Summary) != ""),
 	)
 	return nil
@@ -386,6 +413,105 @@ func (w *Worker) updateSessionSummary(ctx context.Context, log *slog.Logger, job
 	}
 	log.Info("session summary updated", slog.String("session_key", job.SessionKey))
 	return nil
+}
+
+func (w *Worker) writeDocumentChunks(ctx context.Context, log *slog.Logger, job *Job, candidates []ClassifiedDocument, t transcript.Transcript) (int, error) {
+	if w.chunkStore == nil {
+		return 0, nil
+	}
+	written := 0
+	for _, candidate := range candidates {
+		content := strings.TrimSpace(candidate.Candidate.Content)
+		if content == "" {
+			continue
+		}
+		embedding, err := w.embedChunkContent(ctx, candidate.Candidate.Title, content)
+		if err != nil {
+			log.Warn("chunk embedding failed", slog.String("title", candidate.Candidate.Title), slog.String("error", err.Error()))
+			continue
+		}
+		if _, err := w.chunkStore.Save(ctx, chunks.Chunk{
+			ScopeType:      candidate.ScopeType,
+			ScopeID:        candidate.ScopeID,
+			Title:          sanitize.Text(candidate.Candidate.Title),
+			Content:        sanitize.Text(content),
+			Summary:        sanitize.Text(candidate.Candidate.Content),
+			SourceType:     "memory_pipeline",
+			SourceID:       job.RunID,
+			ProvenanceJSON: mustJSON(map[string]any{"source_type": "memory_pipeline", "source_id": job.RunID}),
+			TagsJSON:       tagsForChunk(candidate.Candidate.Title, t),
+			Confidence:     candidate.Candidate.Confidence,
+			Embedding:      embedding,
+		}); err != nil {
+			log.Warn("save chunk failed", slog.String("title", candidate.Candidate.Title), slog.String("error", err.Error()))
+			continue
+		}
+		written++
+	}
+	if doctorChunk, ok := doctorChunkCandidate(job.SessionKey, t); ok {
+		embedding, err := w.embedChunkContent(ctx, doctorChunk.Title, doctorChunk.Content)
+		if err == nil {
+			if _, err := w.chunkStore.Save(ctx, chunks.Chunk{ScopeType: "session", ScopeID: job.SessionKey, Title: doctorChunk.Title, Content: doctorChunk.Content, Summary: doctorChunk.Summary, SourceType: doctorChunk.SourceType, SourceID: doctorChunk.SourceID, TagsJSON: doctorChunk.TagsJSON, Confidence: 0.9, Embedding: embedding}); err == nil {
+				written++
+			}
+		}
+	}
+	return written, nil
+}
+
+func (w *Worker) embedChunkContent(ctx context.Context, title, content string) ([]float32, error) {
+	if w.embeddings == nil {
+		return nil, fmt.Errorf("embedding provider is not configured")
+	}
+	vector, err := w.embeddings.EmbedQuery(ctx, sanitize.Text(strings.TrimSpace(title+"\n"+content)))
+	if err != nil {
+		return nil, err
+	}
+	if len(vector) != embeddings.VectorDimensions {
+		return nil, fmt.Errorf("embedding must contain %d dimensions", embeddings.VectorDimensions)
+	}
+	return vector, nil
+}
+
+func tagsForChunk(title string, t transcript.Transcript) string {
+	tags := []string{"document"}
+	lowered := strings.ToLower(strings.TrimSpace(title))
+	if strings.Contains(lowered, "doctor") {
+		tags = append(tags, "doctor")
+	}
+	for _, call := range t.ToolCalls {
+		tool := strings.ToLower(strings.TrimSpace(call.ToolName))
+		if tool == "" {
+			continue
+		}
+		if strings.Contains(strings.ToLower(call.ResultJSON), lowered) {
+			tags = append(tags, tool)
+		}
+	}
+	return mustJSON(tags)
+}
+
+type syntheticChunkCandidate struct {
+	Title      string
+	Content    string
+	Summary    string
+	SourceType string
+	SourceID   string
+	TagsJSON   string
+}
+
+func doctorChunkCandidate(sessionKey string, t transcript.Transcript) (syntheticChunkCandidate, bool) {
+	for _, call := range t.ToolCalls {
+		if !strings.EqualFold(strings.TrimSpace(call.ToolName), "doctor.check_system") {
+			continue
+		}
+		content := sanitize.TranscriptToolResultJSON(call.ResultJSON)
+		if strings.TrimSpace(content) == "{}" || strings.TrimSpace(content) == "" {
+			continue
+		}
+		return syntheticChunkCandidate{Title: "Doctor report", Content: content, Summary: "Doctor report summary", SourceType: "doctor_report", SourceID: sessionKey, TagsJSON: `["doctor","tool_output"]`}, true
+	}
+	return syntheticChunkCandidate{}, false
 }
 
 func normalizeScopeType(scopeType string) string {

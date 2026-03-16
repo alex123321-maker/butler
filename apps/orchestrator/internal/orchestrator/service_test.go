@@ -773,7 +773,7 @@ func TestFormatMemoryPromptWithSummary(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := memoryservice.FormatPrompt(tt.working, tt.profile, tt.episodes, tt.summary)
+			result := memoryservice.FormatPrompt(tt.working, tt.profile, tt.episodes, nil, tt.summary)
 			for _, want := range tt.wantContains {
 				if !strings.Contains(result, want) {
 					t.Errorf("expected prompt to contain %q, got %q", want, result)
@@ -1174,6 +1174,34 @@ func (s *stubMemoryBundleService) BuildBundle(_ context.Context, req memoryservi
 	}
 	return s.bundle, nil
 }
+
+type stubChunkStore struct {
+	entries []MemoryChunk
+}
+
+func (s *stubChunkStore) Search(_ context.Context, _ string, _ string, _ []float32, _ int) ([]MemoryChunk, error) {
+	return s.entries, nil
+}
+
+func (s *stubChunkStore) FindByTitle(_ context.Context, _ string, _ string, title string, _ int) ([]MemoryChunk, error) {
+	var result []MemoryChunk
+	for _, entry := range s.entries {
+		if strings.EqualFold(entry.ChunkTitle(), title) {
+			result = append(result, entry)
+		}
+	}
+	return result, nil
+}
+
+type stubChunk struct {
+	title    string
+	summary  string
+	distance float64
+}
+
+func (s stubChunk) ChunkTitle() string     { return s.title }
+func (s stubChunk) ChunkSummary() string   { return s.summary }
+func (s stubChunk) ChunkDistance() float64 { return s.distance }
 
 type stubWorkingStore struct {
 	snapshots  map[string]WorkingMemorySnapshot

@@ -376,6 +376,8 @@ The async memory worker now separates:
 
 Document candidates may be classified and observed even when durable document-chunk persistence is not yet implemented.
 
+Current baseline now persists accepted document candidates into `memory_chunks`, and may additionally ingest selected long-form tool outputs and doctor reports through explicit allowlist-style logic in the async memory pipeline.
+
 5. **Write structured memory**
    записать результат в соответствующий memory store.
 

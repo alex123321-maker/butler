@@ -3,10 +3,12 @@ package pipeline
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/butler/butler/internal/memory/chunks"
 	"github.com/butler/butler/internal/memory/transcript"
 )
 
@@ -59,6 +61,16 @@ func (f *fakeSessionSummaryWriter) UpdateSummary(_ context.Context, sessionKey, 
 	}
 	f.summaries[sessionKey] = summary
 	return nil
+}
+
+type fakeChunkStore struct {
+	chunks []chunks.Chunk
+}
+
+func (f *fakeChunkStore) Save(_ context.Context, chunk chunks.Chunk) (chunks.Chunk, error) {
+	chunk.ID = int64(len(f.chunks) + 1)
+	f.chunks = append(f.chunks, chunk)
+	return chunk, nil
 }
 
 // --- Tests ---
@@ -189,6 +201,9 @@ func TestClassifierSeparatesAcceptedAndIgnoredCandidates(t *testing.T) {
 		SessionSummary: "Summary",
 	})
 	if len(result.Profiles) != 1 || len(result.Episodes) != 1 || len(result.Working) != 1 {
+		if len(result.Documents) != 1 {
+			t.Fatalf("expected document candidate to be classified, got %+v", result)
+		}
 		t.Fatalf("unexpected classified result %+v", result)
 	}
 	if len(result.Ignored) == 0 {
@@ -259,6 +274,33 @@ func TestConflictResolverMarksEpisodeVariants(t *testing.T) {
 		t.Fatal("expected variant episode link")
 	}
 }
+
+func TestWriteDocumentChunksPersistsDocumentCandidatesAndDoctorOutput(t *testing.T) {
+	t.Parallel()
+	worker := &Worker{chunkStore: &fakeChunkStore{}, embeddings: &fakeEmbeddingProvider{embedding: testWorkerVector(0.3)}}
+	transcriptValue := transcript.Transcript{ToolCalls: []transcript.ToolCall{{ToolName: "doctor.check_system", ResultJSON: `{"status":"healthy","summary":"all good"}`}}}
+	count, err := worker.writeDocumentChunks(context.Background(), nilLogger(), &Job{RunID: "run-1", SessionKey: "session-1"}, []ClassifiedDocument{{Candidate: DocumentCandidate{Title: "Runbook", Content: "Restart Redis and verify leases", Confidence: 0.9}, ScopeType: "session", ScopeID: "session-1"}}, transcriptValue)
+	if err != nil {
+		t.Fatalf("writeDocumentChunks returned error: %v", err)
+	}
+	if count != 2 {
+		t.Fatalf("expected explicit doc + doctor chunk, got %d", count)
+	}
+	stored := worker.chunkStore.(*fakeChunkStore).chunks
+	if len(stored) != 2 || stored[0].Title == "" || stored[1].SourceType != "doctor_report" {
+		t.Fatalf("unexpected stored chunks %+v", stored)
+	}
+}
+
+func testWorkerVector(value float32) []float32 {
+	vector := make([]float32, 1536)
+	for i := range vector {
+		vector[i] = value
+	}
+	return vector
+}
+
+func nilLogger() *slog.Logger { return slog.Default() }
 
 func TestParseExtractionResponse_ValidJSON(t *testing.T) {
 	input := `{"profile_updates":[{"key":"test","summary":"test val","confidence":0.9}],"episodes":[],"session_summary":"ok"}`

@@ -133,6 +133,30 @@ func TestBuildBundleCombinesKeywordAndVectorEpisodes(t *testing.T) {
 	}
 }
 
+func TestBuildBundleIncludesRelevantChunks(t *testing.T) {
+	t.Parallel()
+	svc := New(Config{
+		ChunkStore: &stubChunkStore{
+			vectorMatches:  []Chunk{stubChunk{title: "Redis runbook", summary: "Recover Redis after outage", distance: 0.05}},
+			keywordMatches: map[string][]Chunk{"redis": {stubChunk{title: "Redis note", summary: "Redis config note", distance: 0.25}}},
+		},
+		Embeddings:   stubEmbeddings{vector: testVector(0.4)},
+		ChunkLimit:   3,
+		BundleBudget: 5,
+	})
+	bundle, err := svc.BuildBundle(context.Background(), BundleRequest{SessionKey: "session-1", UserID: "user-1", UserMessage: "redis incident", IncludeQuery: true})
+	if err != nil {
+		t.Fatalf("BuildBundle returned error: %v", err)
+	}
+	chunks := bundle.Items["chunks"].([]map[string]any)
+	if len(chunks) != 2 {
+		t.Fatalf("expected chunk matches, got %+v", chunks)
+	}
+	if !strings.Contains(bundle.Prompt, "Relevant document chunks:") {
+		t.Fatalf("expected chunk prompt section, got %q", bundle.Prompt)
+	}
+}
+
 func TestBuildBundlePropagatesProfileStoreError(t *testing.T) {
 	t.Parallel()
 
@@ -197,6 +221,32 @@ type stubEpisode struct {
 
 func (s stubEpisode) EpisodeSummary() string   { return s.summary }
 func (s stubEpisode) EpisodeDistance() float64 { return s.distance }
+
+type stubChunkStore struct {
+	vectorMatches  []Chunk
+	keywordMatches map[string][]Chunk
+}
+
+func (s *stubChunkStore) Search(context.Context, string, string, []float32, int) ([]Chunk, error) {
+	return s.vectorMatches, nil
+}
+
+func (s *stubChunkStore) FindByTitle(_ context.Context, _, _, title string, _ int) ([]Chunk, error) {
+	if s.keywordMatches == nil {
+		return nil, nil
+	}
+	return s.keywordMatches[strings.ToLower(strings.TrimSpace(title))], nil
+}
+
+type stubChunk struct {
+	title    string
+	summary  string
+	distance float64
+}
+
+func (s stubChunk) ChunkTitle() string     { return s.title }
+func (s stubChunk) ChunkSummary() string   { return s.summary }
+func (s stubChunk) ChunkDistance() float64 { return s.distance }
 
 type stubEmbeddings struct{ vector []float32 }
 

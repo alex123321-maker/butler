@@ -82,6 +82,11 @@ type MemoryBundleService interface {
 	BuildBundle(ctx context.Context, req memoryservice.BundleRequest) (memoryservice.Bundle, error)
 }
 
+type ChunkMemoryStore interface {
+	Search(context.Context, string, string, []float32, int) ([]MemoryChunk, error)
+	FindByTitle(context.Context, string, string, string, int) ([]MemoryChunk, error)
+}
+
 type MemoryProfileEntry interface {
 	ProfileKey() string
 	ProfileSummary() string
@@ -90,6 +95,12 @@ type MemoryProfileEntry interface {
 type MemoryEpisode interface {
 	EpisodeSummary() string
 	EpisodeDistance() float64
+}
+
+type MemoryChunk interface {
+	ChunkTitle() string
+	ChunkSummary() string
+	ChunkDistance() float64
 }
 
 type WorkingMemorySnapshot struct {
@@ -136,6 +147,7 @@ type Config struct {
 	ApprovalGate     *ApprovalGate
 	ProfileStore     ProfileMemoryStore
 	EpisodeStore     EpisodicMemoryStore
+	ChunkStore       ChunkMemoryStore
 	Embeddings       EmbeddingProvider
 	PipelineEnqueuer PipelineEnqueuer
 	SummaryReader    SessionSummaryReader
@@ -248,6 +260,38 @@ func (a memoryBundleWorkingStore) Get(ctx context.Context, sessionKey string) (m
 	return memoryservice.WorkingSnapshot{Goal: snapshot.Goal, EntitiesJSON: snapshot.EntitiesJSON, PendingStepsJSON: snapshot.PendingStepsJSON, ScratchJSON: snapshot.ScratchJSON, Status: snapshot.Status}, nil
 }
 
+type memoryBundleChunkStore struct{ store ChunkMemoryStore }
+
+func (a memoryBundleChunkStore) Search(ctx context.Context, scopeType, scopeID string, embedding []float32, limit int) ([]memoryservice.Chunk, error) {
+	if a.store == nil {
+		return nil, nil
+	}
+	entries, err := a.store.Search(ctx, scopeType, scopeID, embedding, limit)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]memoryservice.Chunk, 0, len(entries))
+	for _, entry := range entries {
+		result = append(result, entry)
+	}
+	return result, nil
+}
+
+func (a memoryBundleChunkStore) FindByTitle(ctx context.Context, scopeType, scopeID, title string, limit int) ([]memoryservice.Chunk, error) {
+	if a.store == nil {
+		return nil, nil
+	}
+	entries, err := a.store.FindByTitle(ctx, scopeType, scopeID, title, limit)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]memoryservice.Chunk, 0, len(entries))
+	for _, entry := range entries {
+		result = append(result, entry)
+	}
+	return result, nil
+}
+
 type workingMemoryContext struct {
 	Goal           string
 	ActiveEntities any
@@ -301,11 +345,13 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 		cfg.MemoryBundles = memoryservice.New(memoryservice.Config{
 			ProfileStore:  memoryBundleProfileStore{store: cfg.ProfileStore},
 			EpisodeStore:  memoryBundleEpisodeStore{store: cfg.EpisodeStore},
+			ChunkStore:    memoryBundleChunkStore{store: cfg.ChunkStore},
 			WorkingStore:  memoryBundleWorkingStore{store: cfg.WorkingStore},
 			SummaryReader: cfg.SummaryReader,
 			Embeddings:    cfg.Embeddings,
 			ProfileLimit:  cfg.ProfileLimit,
 			EpisodeLimit:  cfg.EpisodeLimit,
+			ChunkLimit:    2,
 			ScopeOrder:    cfg.MemoryScopes,
 			Log:           log,
 		})

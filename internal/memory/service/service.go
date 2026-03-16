@@ -25,6 +25,11 @@ type WorkingStore interface {
 	Get(context.Context, string) (WorkingSnapshot, error)
 }
 
+type ChunkStore interface {
+	Search(context.Context, string, string, []float32, int) ([]Chunk, error)
+	FindByTitle(context.Context, string, string, string, int) ([]Chunk, error)
+}
+
 type SummaryReader interface {
 	GetSummary(context.Context, string) (string, error)
 }
@@ -51,14 +56,22 @@ type WorkingSnapshot struct {
 	Status           string
 }
 
+type Chunk interface {
+	ChunkTitle() string
+	ChunkSummary() string
+	ChunkDistance() float64
+}
+
 type Config struct {
 	ProfileStore  ProfileStore
 	EpisodeStore  EpisodeStore
+	ChunkStore    ChunkStore
 	WorkingStore  WorkingStore
 	SummaryReader SummaryReader
 	Embeddings    EmbeddingProvider
 	ProfileLimit  int
 	EpisodeLimit  int
+	ChunkLimit    int
 	BundleBudget  int
 	KeywordLimit  int
 	ScopeOrder    []string
@@ -112,6 +125,9 @@ func New(cfg Config) *Service {
 	if cfg.BundleBudget <= 0 {
 		cfg.BundleBudget = 12
 	}
+	if cfg.ChunkLimit <= 0 {
+		cfg.ChunkLimit = 2
+	}
 	if cfg.KeywordLimit <= 0 {
 		cfg.KeywordLimit = 2
 	}
@@ -139,10 +155,14 @@ func (s *Service) BuildBundle(ctx context.Context, req BundleRequest) (Bundle, e
 	if err != nil {
 		return Bundle{}, err
 	}
+	chunks, err := s.loadChunks(ctx, scopes, req.UserMessage, req.IncludeQuery)
+	if err != nil {
+		return Bundle{}, err
+	}
 	summary := s.loadSummary(ctx, req.SessionKey)
-	items, promptSummary, promptWorking, promptProfile, promptEpisodes := s.applyBudget(summary, working, profileEntries, episodes)
+	items, promptSummary, promptWorking, promptProfile, promptEpisodes, promptChunks := s.applyBudget(summary, working, profileEntries, episodes, chunks)
 
-	return Bundle{Items: items, Prompt: FormatPrompt(promptWorking, promptProfile, promptEpisodes, promptSummary), Working: working}, nil
+	return Bundle{Items: items, Prompt: FormatPrompt(promptWorking, promptProfile, promptEpisodes, promptChunks, promptSummary), Working: working}, nil
 }
 
 func (s *Service) scopes(sessionKey, userID string) []Scope {
@@ -294,6 +314,56 @@ func (s *Service) loadWorking(ctx context.Context, sessionKey string) (WorkingCo
 	}, nil
 }
 
+func (s *Service) loadChunks(ctx context.Context, scopes []Scope, userMessage string, includeQuery bool) ([]map[string]any, error) {
+	if !includeQuery || s.config.ChunkStore == nil || s.config.ChunkLimit <= 0 || strings.TrimSpace(userMessage) == "" {
+		return nil, nil
+	}
+	if s.config.Embeddings == nil {
+		return nil, nil
+	}
+	queryEmbedding, err := s.config.Embeddings.EmbedQuery(ctx, userMessage)
+	if err != nil || len(queryEmbedding) != embeddings.VectorDimensions {
+		return nil, nil
+	}
+	items := []map[string]any{}
+	seen := map[string]struct{}{}
+	for _, scope := range scopes {
+		results, err := s.config.ChunkStore.Search(ctx, scope.Type, scope.ID, queryEmbedding, s.config.ChunkLimit)
+		if err != nil {
+			return nil, fmt.Errorf("load chunk memory: %w", err)
+		}
+		for _, item := range results {
+			key := strings.ToLower(strings.TrimSpace(item.ChunkTitle()))
+			if _, ok := seen[key]; ok {
+				continue
+			}
+			seen[key] = struct{}{}
+			items = append(items, map[string]any{"title": item.ChunkTitle(), "summary": item.ChunkSummary(), "distance": item.ChunkDistance(), "source": "vector"})
+			if len(items) >= s.config.ChunkLimit {
+				return items, nil
+			}
+		}
+		for _, term := range keywordTerms(userMessage) {
+			matches, err := s.config.ChunkStore.FindByTitle(ctx, scope.Type, scope.ID, term, s.config.KeywordLimit)
+			if err != nil {
+				return nil, fmt.Errorf("load chunk titles: %w", err)
+			}
+			for _, match := range matches {
+				key := strings.ToLower(strings.TrimSpace(match.ChunkTitle()))
+				if _, ok := seen[key]; ok {
+					continue
+				}
+				seen[key] = struct{}{}
+				items = append(items, map[string]any{"title": match.ChunkTitle(), "summary": match.ChunkSummary(), "distance": 0.25, "source": "keyword"})
+				if len(items) >= s.config.ChunkLimit {
+					return items, nil
+				}
+			}
+		}
+	}
+	return items, nil
+}
+
 func (s *Service) loadSummary(ctx context.Context, sessionKey string) string {
 	if s.config.SummaryReader == nil {
 		return ""
@@ -323,8 +393,8 @@ func (w WorkingContext) IsEmpty() bool {
 	return strings.TrimSpace(normalizeWorkingStatus(w.Status)) == "idle"
 }
 
-func FormatPrompt(working WorkingContext, profileEntries, episodes []map[string]any, sessionSummary string) string {
-	sections := make([]string, 0, 4)
+func FormatPrompt(working WorkingContext, profileEntries, episodes, chunks []map[string]any, sessionSummary string) string {
+	sections := make([]string, 0, 5)
 	if strings.TrimSpace(sessionSummary) != "" {
 		sections = append(sections, "Session summary:\n"+sessionSummary)
 	}
@@ -344,6 +414,13 @@ func FormatPrompt(working WorkingContext, profileEntries, episodes []map[string]
 			lines = append(lines, fmt.Sprintf("- %s", entry["summary"]))
 		}
 		sections = append(sections, "Relevant episodes:\n"+strings.Join(lines, "\n"))
+	}
+	if len(chunks) > 0 {
+		lines := make([]string, 0, len(chunks))
+		for _, entry := range chunks {
+			lines = append(lines, fmt.Sprintf("- %s: %s", entry["title"], entry["summary"]))
+		}
+		sections = append(sections, "Relevant document chunks:\n"+strings.Join(lines, "\n"))
 	}
 	return strings.Join(sections, "\n\n")
 }
@@ -368,13 +445,14 @@ func formatWorkingMemoryLines(working WorkingContext) []string {
 	return lines
 }
 
-func (s *Service) applyBudget(summary string, working WorkingContext, profileEntries, episodes []map[string]any) (map[string]any, string, WorkingContext, []map[string]any, []map[string]any) {
+func (s *Service) applyBudget(summary string, working WorkingContext, profileEntries, episodes, chunks []map[string]any) (map[string]any, string, WorkingContext, []map[string]any, []map[string]any, []map[string]any) {
 	remaining := s.config.BundleBudget
 	items := map[string]any{}
 	selectedSummary := ""
 	selectedWorking := WorkingContext{Status: "idle"}
 	selectedProfile := []map[string]any{}
 	selectedEpisodes := []map[string]any{}
+	selectedChunks := []map[string]any{}
 	if strings.TrimSpace(summary) != "" && remaining > 0 {
 		selectedSummary = summary
 		items["session_summary"] = summary
@@ -395,8 +473,14 @@ func (s *Service) applyBudget(summary string, working WorkingContext, profileEnt
 		count := min(remaining, len(episodes))
 		selectedEpisodes = append(selectedEpisodes, episodes[:count]...)
 		items["episodes"] = selectedEpisodes
+		remaining -= count
 	}
-	return items, selectedSummary, selectedWorking, selectedProfile, selectedEpisodes
+	if remaining > 0 && len(chunks) > 0 {
+		count := min(remaining, len(chunks))
+		selectedChunks = append(selectedChunks, chunks[:count]...)
+		items["chunks"] = selectedChunks
+	}
+	return items, selectedSummary, selectedWorking, selectedProfile, selectedEpisodes, selectedChunks
 }
 
 func keywordTerms(input string) []string {

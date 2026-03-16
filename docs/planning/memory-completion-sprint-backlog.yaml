@@ -242,7 +242,7 @@ sprint:
       subsystem: memory
       sprint: SPRINT-MEMORY-COMPLETION
       priority: high
-      status: todo
+      status: done
       description: >
         Add chunk/document memory plus controlled ingestion of long-form tool outputs
         and doctor summaries, keeping PostgreSQL as truth and pgvector as retrieval-only.

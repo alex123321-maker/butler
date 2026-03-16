@@ -103,9 +103,7 @@ func (c *Classifier) Classify(sessionKey string, result *ExtractionResult) Class
 			classified.Ignored = append(classified.Ignored, IgnoredCandidate{Kind: CandidateDocument, Reason: reason, Ref: candidate.Title})
 			continue
 		}
-		classified.Documents = append(classified.Documents, ClassifiedDocument{Candidate: candidate, ScopeType: scopeType, ScopeID: scopeID, Reason: "document_candidates_not_persisted_in_v1"})
-		classified.Ignored = append(classified.Ignored, IgnoredCandidate{Kind: CandidateDocument, Reason: "document_persistence_not_implemented", Ref: candidate.Title})
-		classified.Documents = classified.Documents[:len(classified.Documents)-1]
+		classified.Documents = append(classified.Documents, ClassifiedDocument{Candidate: candidate, ScopeType: scopeType, ScopeID: scopeID, Reason: "accepted_document_candidate"})
 	}
 	return classified
 }
