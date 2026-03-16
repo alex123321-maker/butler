@@ -2,7 +2,9 @@ package episodic
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -160,6 +162,68 @@ func (s *Store) Search(ctx context.Context, scopeType, scopeID string, embedding
 		return nil, fmt.Errorf("iterate episodic search result: %w", err)
 	}
 	return results, nil
+}
+
+func (s *Store) FindBySummary(ctx context.Context, scopeType, scopeID, summary string) ([]Episode, error) {
+	if s == nil || s.pool == nil {
+		return nil, ErrStoreNotConfigured
+	}
+	rows, err := s.pool.Query(ctx, `
+		SELECT id, memory_type, scope_type, scope_id, summary, content, source_type, source_id, provenance::text, confidence, status, tags::text, episode_start_at, episode_end_at, created_at, updated_at
+		FROM memory_episodes
+		WHERE scope_type = $1 AND scope_id = $2 AND lower(summary) = lower($3) AND status = $4
+		ORDER BY created_at DESC
+	`, strings.TrimSpace(scopeType), strings.TrimSpace(scopeID), strings.TrimSpace(summary), StatusActive)
+	if err != nil {
+		return nil, fmt.Errorf("query episodic summary matches: %w", err)
+	}
+	defer rows.Close()
+	var items []Episode
+	for rows.Next() {
+		var item Episode
+		if err := rows.Scan(&item.ID, &item.MemoryType, &item.ScopeType, &item.ScopeID, &item.Summary, &item.Content, &item.SourceType, &item.SourceID, &item.ProvenanceJSON, &item.Confidence, &item.Status, &item.TagsJSON, &item.EpisodeStartAt, &item.EpisodeEndAt, &item.CreatedAt, &item.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("scan episodic summary match: %w", err)
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate episodic summary matches: %w", err)
+	}
+	return items, nil
+}
+
+func MergeTagsJSON(values ...string) string {
+	set := map[string]struct{}{}
+	for _, value := range values {
+		trimmed := strings.TrimSpace(value)
+		if trimmed == "" {
+			continue
+		}
+		var tags []string
+		if err := json.Unmarshal([]byte(trimmed), &tags); err != nil {
+			continue
+		}
+		for _, tag := range tags {
+			tag = strings.TrimSpace(tag)
+			if tag == "" {
+				continue
+			}
+			set[tag] = struct{}{}
+		}
+	}
+	if len(set) == 0 {
+		return "[]"
+	}
+	tags := make([]string, 0, len(set))
+	for tag := range set {
+		tags = append(tags, tag)
+	}
+	sort.Strings(tags)
+	data, err := json.Marshal(tags)
+	if err != nil {
+		return "[]"
+	}
+	return string(data)
 }
 
 func vectorLiteral(values []float32) string {

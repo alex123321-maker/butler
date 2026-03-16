@@ -81,4 +81,11 @@ func TestProfileStoreIntegration(t *testing.T) {
 	if len(links) != 1 || links[0].TargetID != "run-2" {
 		t.Fatalf("unexpected provenance links %+v", links)
 	}
+	history, err := profileStore.GetHistory(ctx, "session", "integration:profile", "language")
+	if err != nil {
+		t.Fatalf("GetHistory returned error: %v", err)
+	}
+	if len(history) != 2 || history[0].Status != StatusSuperseded || history[1].Status != StatusActive {
+		t.Fatalf("expected profile version history, got %+v", history)
+	}
 }

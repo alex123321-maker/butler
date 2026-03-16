@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/butler/butler/internal/memory/sanitize"
@@ -207,12 +208,16 @@ func NewConflictResolver() *ConflictResolver { return &ConflictResolver{} }
 
 type ResolvedProfile struct {
 	ClassifiedProfile
-	Action string
+	Action        string
+	Policy        string
+	EffectiveFrom *string
 }
 
 type ResolvedEpisode struct {
 	ClassifiedEpisode
-	Action string
+	Action       string
+	LinkVariant  bool
+	CanonicalRef string
 }
 
 type ResolutionResult struct {
@@ -229,13 +234,25 @@ func (r *ConflictResolver) Resolve(classified ClassificationResult) ResolutionRe
 	for _, candidate := range classified.Profiles {
 		key := candidate.ScopeType + ":" + candidate.ScopeID + ":" + candidate.Candidate.Key
 		existing, ok := profileSeen[key]
-		if !ok || candidate.Candidate.Confidence >= existing.Candidate.Confidence {
-			if ok {
-				resolved.Ignored = append(resolved.Ignored, IgnoredCandidate{Kind: CandidateProfile, Reason: "duplicate_profile_replaced", Ref: existing.Candidate.Key})
+		if !ok {
+			profileSeen[key] = ResolvedProfile{ClassifiedProfile: candidate, Action: "upsert_profile", Policy: "initial_version"}
+			continue
+		}
+		if profileValuesEquivalent(existing.Candidate.Value, candidate.Candidate.Value) {
+			if candidate.Candidate.Confidence >= existing.Candidate.Confidence {
+				profileSeen[key] = ResolvedProfile{ClassifiedProfile: candidate, Action: "keep_profile_version", Policy: "same_value_higher_confidence"}
+			} else {
+				resolved.Ignored = append(resolved.Ignored, IgnoredCandidate{Kind: CandidateProfile, Reason: "duplicate_profile_same_value", Ref: candidate.Candidate.Key})
 			}
-			profileSeen[key] = ResolvedProfile{ClassifiedProfile: candidate, Action: "upsert_profile"}
+			continue
+		}
+		if candidate.Candidate.Confidence >= existing.Candidate.Confidence {
+			if ok {
+				resolved.Ignored = append(resolved.Ignored, IgnoredCandidate{Kind: CandidateProfile, Reason: "profile_conflict_superseded", Ref: existing.Candidate.Key})
+			}
+			profileSeen[key] = ResolvedProfile{ClassifiedProfile: candidate, Action: "supersede_profile", Policy: "higher_confidence_conflict"}
 		} else {
-			resolved.Ignored = append(resolved.Ignored, IgnoredCandidate{Kind: CandidateProfile, Reason: "duplicate_profile_lower_confidence", Ref: candidate.Candidate.Key})
+			resolved.Ignored = append(resolved.Ignored, IgnoredCandidate{Kind: CandidateProfile, Reason: "profile_conflict_lower_confidence", Ref: candidate.Candidate.Key})
 		}
 	}
 	for _, item := range profileSeen {
@@ -243,15 +260,26 @@ func (r *ConflictResolver) Resolve(classified ClassificationResult) ResolutionRe
 	}
 	episodeSeen := map[string]ResolvedEpisode{}
 	for _, candidate := range classified.Episodes {
-		key := candidate.ScopeType + ":" + candidate.ScopeID + ":" + strings.ToLower(strings.TrimSpace(candidate.Candidate.Summary))
+		key := candidate.ScopeType + ":" + candidate.ScopeID + ":" + canonicalEpisodeKey(candidate.Candidate.Summary)
 		existing, ok := episodeSeen[key]
-		if !ok || candidate.Candidate.Confidence >= existing.Candidate.Confidence {
-			if ok {
-				resolved.Ignored = append(resolved.Ignored, IgnoredCandidate{Kind: CandidateEpisode, Reason: "duplicate_episode_replaced", Ref: existing.Candidate.Summary})
-			}
+		if !ok {
 			episodeSeen[key] = ResolvedEpisode{ClassifiedEpisode: candidate, Action: "create_episode"}
+			continue
+		}
+		if episodeContentSimilar(existing.Candidate.Content, candidate.Candidate.Content) {
+			if candidate.Candidate.Confidence >= existing.Candidate.Confidence {
+				resolved.Ignored = append(resolved.Ignored, IgnoredCandidate{Kind: CandidateEpisode, Reason: "duplicate_episode_suppressed", Ref: existing.Candidate.Summary})
+				episodeSeen[key] = ResolvedEpisode{ClassifiedEpisode: candidate, Action: "create_episode"}
+			} else {
+				resolved.Ignored = append(resolved.Ignored, IgnoredCandidate{Kind: CandidateEpisode, Reason: "duplicate_episode_lower_confidence", Ref: candidate.Candidate.Summary})
+			}
 		} else {
-			resolved.Ignored = append(resolved.Ignored, IgnoredCandidate{Kind: CandidateEpisode, Reason: "duplicate_episode_lower_confidence", Ref: candidate.Candidate.Summary})
+			if candidate.Candidate.Confidence >= existing.Candidate.Confidence {
+				resolved.Episodes = append(resolved.Episodes, ResolvedEpisode{ClassifiedEpisode: existing.ClassifiedEpisode, Action: "create_episode", CanonicalRef: existing.Candidate.Summary})
+				episodeSeen[key] = ResolvedEpisode{ClassifiedEpisode: candidate, Action: "create_episode_variant", LinkVariant: true, CanonicalRef: existing.Candidate.Summary}
+			} else {
+				resolved.Episodes = append(resolved.Episodes, ResolvedEpisode{ClassifiedEpisode: candidate, Action: "create_episode_variant", LinkVariant: true, CanonicalRef: existing.Candidate.Summary})
+			}
 		}
 	}
 	for _, item := range episodeSeen {
@@ -263,4 +291,59 @@ func (r *ConflictResolver) Resolve(classified ClassificationResult) ResolutionRe
 		}
 	}
 	return resolved
+}
+
+func profileValuesEquivalent(left, right string) bool {
+	left = strings.TrimSpace(left)
+	right = strings.TrimSpace(right)
+	if left == right {
+		return true
+	}
+	var leftJSON any
+	var rightJSON any
+	if json.Unmarshal([]byte(left), &leftJSON) == nil && json.Unmarshal([]byte(right), &rightJSON) == nil {
+		leftBytes, _ := json.Marshal(leftJSON)
+		rightBytes, _ := json.Marshal(rightJSON)
+		return string(leftBytes) == string(rightBytes)
+	}
+	return false
+}
+
+func canonicalEpisodeKey(summary string) string {
+	summary = strings.ToLower(strings.TrimSpace(summary))
+	replacer := strings.NewReplacer(",", " ", ".", " ", ";", " ", ":", " ", "-", " ", "_", " ", "\n", " ")
+	parts := strings.Fields(replacer.Replace(summary))
+	return strings.Join(parts, " ")
+}
+
+func episodeContentSimilar(left, right string) bool {
+	leftSet := tokenSet(left)
+	rightSet := tokenSet(right)
+	if len(leftSet) == 0 || len(rightSet) == 0 {
+		return false
+	}
+	shared := 0
+	for token := range leftSet {
+		if _, ok := rightSet[token]; ok {
+			shared++
+		}
+	}
+	minSize := len(leftSet)
+	if len(rightSet) < minSize {
+		minSize = len(rightSet)
+	}
+	return shared >= minSize/2 && shared > 0
+}
+
+func tokenSet(value string) map[string]struct{} {
+	value = canonicalEpisodeKey(value)
+	parts := strings.Fields(value)
+	set := make(map[string]struct{}, len(parts))
+	for _, part := range parts {
+		if len(part) < 3 {
+			continue
+		}
+		set[part] = struct{}{}
+	}
+	return set
 }

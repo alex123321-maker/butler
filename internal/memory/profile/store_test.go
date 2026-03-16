@@ -40,3 +40,10 @@ func TestSaveRequiresStorePool(t *testing.T) {
 		t.Fatalf("expected ErrStoreNotConfigured, got %v", err)
 	}
 }
+
+func TestDefaultProvenanceJSON(t *testing.T) {
+	t.Parallel()
+	if got := defaultProvenanceJSON("run", "run-1"); got != `{"source_type":"run","source_id":"run-1"}` {
+		t.Fatalf("unexpected provenance json %q", got)
+	}
+}

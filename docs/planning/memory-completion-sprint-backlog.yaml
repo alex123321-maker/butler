@@ -189,7 +189,7 @@ sprint:
       subsystem: memory
       sprint: SPRINT-MEMORY-COMPLETION
       priority: medium
-      status: todo
+      status: done
       description: >
         Strengthen profile supersession rules and add episodic deduplication/variant
         handling so long-term memory remains stable and low-noise over time.

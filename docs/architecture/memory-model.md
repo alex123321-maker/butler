@@ -417,9 +417,21 @@ Before memory extraction and before durable memory writes for memory classes, Bu
 * либо пометить старое как superseded (замещённое);
 * либо сохранить обе версии при явной временной привязке.
 
+#### Current profile conflict baseline
+
+Current pipeline baseline now applies deterministic profile conflict handling:
+
+* same key + same value => keep the stronger version and suppress weaker duplicates;
+* same key + conflicting value => higher-confidence candidate supersedes the current active version;
+* superseded entries remain queryable through profile history for audit/version review.
+
 ### 13.2 Episodic duplication
 
 Похожие эпизоды могут дедуплицироваться или связываться как variants (варианты).
+
+#### Current episodic dedup baseline
+
+Current pipeline baseline now suppresses near-duplicate episodic candidates with the same canonical summary and similar content, while preserving materially different candidates as variants linked to the same canonical summary.
 
 ### 13.3 Working Memory replacement
 

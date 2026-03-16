@@ -65,6 +65,13 @@ func TestEpisodicStoreIntegration(t *testing.T) {
 	if len(links) != 1 || links[0].TargetID != "run-1" {
 		t.Fatalf("unexpected links %+v", links)
 	}
+	matches, err := episodeStore.FindBySummary(ctx, "session", "integration:episode", "Resolved Redis outage")
+	if err != nil {
+		t.Fatalf("FindBySummary returned error: %v", err)
+	}
+	if len(matches) != 1 || matches[0].ID != first.ID {
+		t.Fatalf("unexpected summary matches %+v", matches)
+	}
 	results, err := episodeStore.Search(ctx, "session", "integration:episode", testEmbedding(0.1), 2)
 	if err != nil {
 		t.Fatalf("Search returned error: %v", err)

@@ -48,3 +48,10 @@ func testVector() []float32 {
 	}
 	return vector
 }
+
+func TestMergeTagsJSON(t *testing.T) {
+	t.Parallel()
+	if got := MergeTagsJSON(`["redis","doctor"]`, `["variant","redis"]`); got != `["doctor","redis","variant"]` {
+		t.Fatalf("unexpected merged tags %q", got)
+	}
+}

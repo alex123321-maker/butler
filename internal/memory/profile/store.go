@@ -186,6 +186,34 @@ func (s *Store) GetByScope(ctx context.Context, scopeType, scopeID string) ([]En
 	return entries, nil
 }
 
+func (s *Store) GetHistory(ctx context.Context, scopeType, scopeID, key string) ([]Entry, error) {
+	if s == nil || s.pool == nil {
+		return nil, ErrStoreNotConfigured
+	}
+	rows, err := s.pool.Query(ctx, `
+		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
+		FROM memory_profile
+		WHERE scope_type = $1 AND scope_id = $2 AND key = $3
+		ORDER BY created_at ASC
+	`, strings.TrimSpace(scopeType), strings.TrimSpace(scopeID), strings.TrimSpace(key))
+	if err != nil {
+		return nil, fmt.Errorf("query profile memory history: %w", err)
+	}
+	defer rows.Close()
+	var entries []Entry
+	for rows.Next() {
+		entry, err := scanEntry(rows)
+		if err != nil {
+			return nil, fmt.Errorf("scan profile memory history: %w", err)
+		}
+		entries = append(entries, entry)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate profile memory history: %w", err)
+	}
+	return entries, nil
+}
+
 type rowScanner interface{ Scan(dest ...any) error }
 
 func scanEntry(row rowScanner) (Entry, error) {

@@ -242,6 +242,15 @@ func (w *Worker) writeProfileUpdates(ctx context.Context, log *slog.Logger, job 
 		existing, err := w.profileStore.Get(ctx, scopeType, scopeID, candidate.Candidate.Key)
 		if err == nil {
 			// Supersede the existing entry.
+			if candidate.Policy == "same_value_higher_confidence" {
+				log.Info("profile entry reaffirmed",
+					slog.String("key", candidate.Candidate.Key),
+					slog.String("scope_type", scopeType),
+					slog.String("resolution_action", candidate.Action),
+				)
+				written++
+				continue
+			}
 			if _, err := w.profileStore.Supersede(ctx, existing.ID, entry); err != nil {
 				log.Warn("supersede profile entry failed",
 					slog.String("key", candidate.Candidate.Key),
@@ -253,6 +262,7 @@ func (w *Worker) writeProfileUpdates(ctx context.Context, log *slog.Logger, job 
 				slog.String("key", candidate.Candidate.Key),
 				slog.String("scope_type", scopeType),
 				slog.String("resolution_action", candidate.Action),
+				slog.String("resolution_policy", candidate.Policy),
 			)
 		} else if err == profile.ErrEntryNotFound {
 			// Create new entry.
@@ -267,6 +277,7 @@ func (w *Worker) writeProfileUpdates(ctx context.Context, log *slog.Logger, job 
 				slog.String("key", candidate.Candidate.Key),
 				slog.String("scope_type", scopeType),
 				slog.String("resolution_action", candidate.Action),
+				slog.String("resolution_policy", candidate.Policy),
 			)
 		} else {
 			log.Warn("check existing profile entry failed",
@@ -344,7 +355,17 @@ func (w *Worker) writeEpisodes(ctx context.Context, log *slog.Logger, job *Job, 
 			slog.String("summary", truncate(candidate.Candidate.Summary, 80)),
 			slog.String("scope_type", scopeType),
 			slog.String("resolution_action", candidate.Action),
+			slog.Bool("variant_link", candidate.LinkVariant),
 		)
+		if candidate.LinkVariant {
+			matches, matchErr := w.episodicStore.FindBySummary(ctx, scopeType, scopeID, candidate.CanonicalRef)
+			if matchErr == nil && len(matches) > 0 {
+				log.Info("episode variant linked",
+					slog.String("summary", truncate(candidate.Candidate.Summary, 80)),
+					slog.String("canonical_ref", truncate(candidate.CanonicalRef, 80)),
+				)
+			}
+		}
 		written++
 	}
 	return written, nil

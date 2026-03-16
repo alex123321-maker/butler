@@ -204,8 +204,8 @@ func TestConflictResolverDeduplicatesCandidates(t *testing.T) {
 			{Candidate: ProfileCandidate{Key: "language", Summary: "Go preferred", Confidence: 0.9}, ScopeType: "session", ScopeID: "sess-1"},
 		},
 		Episodes: []ClassifiedEpisode{
-			{Candidate: EpisodeCandidate{Summary: "Redis fix", Content: "one", Confidence: 0.6}, ScopeType: "session", ScopeID: "sess-1"},
-			{Candidate: EpisodeCandidate{Summary: "Redis fix", Content: "two", Confidence: 0.8}, ScopeType: "session", ScopeID: "sess-1"},
+			{Candidate: EpisodeCandidate{Summary: "Redis fix", Content: "Restarted redis and verified leases", Confidence: 0.6}, ScopeType: "session", ScopeID: "sess-1"},
+			{Candidate: EpisodeCandidate{Summary: "Redis fix", Content: "Restarted redis and verified leases again", Confidence: 0.8}, ScopeType: "session", ScopeID: "sess-1"},
 		},
 	}
 	resolved := (&ConflictResolver{}).Resolve(classified)
@@ -214,6 +214,49 @@ func TestConflictResolverDeduplicatesCandidates(t *testing.T) {
 	}
 	if len(resolved.Ignored) == 0 {
 		t.Fatal("expected ignored duplicates")
+	}
+}
+
+func TestConflictResolverPreservesContradictoryProfileVersions(t *testing.T) {
+	t.Parallel()
+	classified := ClassificationResult{
+		Profiles: []ClassifiedProfile{
+			{Candidate: ProfileCandidate{Key: "language", Value: `{"value":"ru"}`, Summary: "Prefers Russian", Confidence: 0.6}, ScopeType: "session", ScopeID: "sess-1"},
+			{Candidate: ProfileCandidate{Key: "language", Value: `{"value":"en"}`, Summary: "Prefers English", Confidence: 0.9}, ScopeType: "session", ScopeID: "sess-1"},
+		},
+	}
+	resolved := (&ConflictResolver{}).Resolve(classified)
+	if len(resolved.Profiles) != 1 {
+		t.Fatalf("expected one resolved profile action, got %+v", resolved)
+	}
+	if resolved.Profiles[0].Action != "supersede_profile" || resolved.Profiles[0].Policy != "higher_confidence_conflict" {
+		t.Fatalf("unexpected profile resolution %+v", resolved.Profiles[0])
+	}
+}
+
+func TestConflictResolverMarksEpisodeVariants(t *testing.T) {
+	t.Parallel()
+	classified := ClassificationResult{
+		Episodes: []ClassifiedEpisode{
+			{Candidate: EpisodeCandidate{Summary: "Redis fix", Content: "Restarted redis and checked leases", Confidence: 0.8}, ScopeType: "session", ScopeID: "sess-1", Reason: "accepted_episode_candidate"},
+			{Candidate: EpisodeCandidate{Summary: "Redis fix", Content: "Investigated postgres auth mismatch and rotated credentials after network drift", Confidence: 0.9}, ScopeType: "session", ScopeID: "sess-1", Reason: "accepted_episode_candidate"},
+		},
+	}
+	resolved := (&ConflictResolver{}).Resolve(classified)
+	if len(resolved.Episodes) != 2 {
+		t.Fatalf("expected canonical plus variant episode, got %+v", resolved)
+	}
+	variantFound := false
+	for _, episode := range resolved.Episodes {
+		if episode.LinkVariant {
+			variantFound = true
+			if episode.Action != "create_episode_variant" {
+				t.Fatalf("unexpected variant action %+v", episode)
+			}
+		}
+	}
+	if !variantFound {
+		t.Fatal("expected variant episode link")
 	}
 }
 
