@@ -3,6 +3,7 @@ package chunks
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/butler/butler/internal/memory/embeddings"
 )
@@ -27,5 +28,13 @@ func TestSearchRequiresFixedDimensions(t *testing.T) {
 	_, err := NewStore(nil).Search(context.Background(), "session", "s-1", make([]float32, embeddings.VectorDimensions-1), 3)
 	if err == nil {
 		t.Fatal("expected dimension error")
+	}
+}
+
+func TestPruneRequiresConfiguredStore(t *testing.T) {
+	t.Parallel()
+	_, err := NewStore(nil).Prune(context.Background(), time.Now().UTC(), 5)
+	if err != ErrStoreNotConfigured {
+		t.Fatalf("expected ErrStoreNotConfigured, got %v", err)
 	}
 }

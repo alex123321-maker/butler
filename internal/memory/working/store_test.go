@@ -2,6 +2,7 @@ package working
 
 import (
 	"testing"
+	"time"
 )
 
 func TestSaveDefaults(t *testing.T) {
@@ -27,6 +28,14 @@ func TestErrSnapshotNotFound(t *testing.T) {
 func TestSaveRequiresStorePool(t *testing.T) {
 	t.Parallel()
 	_, err := NewStore(nil).Save(nil, Snapshot{SessionKey: "session-1"})
+	if err != ErrStoreNotConfigured {
+		t.Fatalf("expected ErrStoreNotConfigured, got %v", err)
+	}
+}
+
+func TestDeleteStaleBeforeRequiresStorePool(t *testing.T) {
+	t.Parallel()
+	_, err := NewStore(nil).DeleteStaleBefore(nil, time.Now().UTC())
 	if err != ErrStoreNotConfigured {
 		t.Fatalf("expected ErrStoreNotConfigured, got %v", err)
 	}

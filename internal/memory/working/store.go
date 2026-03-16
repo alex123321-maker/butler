@@ -134,6 +134,17 @@ func (s *Store) Clear(ctx context.Context, sessionKey string) error {
 	return nil
 }
 
+func (s *Store) DeleteStaleBefore(ctx context.Context, cutoff time.Time) (int64, error) {
+	if s == nil || s.pool == nil {
+		return 0, ErrStoreNotConfigured
+	}
+	commandTag, err := s.pool.Exec(ctx, `DELETE FROM memory_working WHERE updated_at < $1`, cutoff.UTC())
+	if err != nil {
+		return 0, fmt.Errorf("delete stale working memory snapshots: %w", err)
+	}
+	return commandTag.RowsAffected(), nil
+}
+
 type rowScanner interface {
 	Scan(dest ...any) error
 }

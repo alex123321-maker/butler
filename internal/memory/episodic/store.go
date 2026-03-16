@@ -226,6 +226,32 @@ func MergeTagsJSON(values ...string) string {
 	return string(data)
 }
 
+func (s *Store) Prune(ctx context.Context, cutoff time.Time, keepPerScope int) (int64, error) {
+	if s == nil || s.pool == nil {
+		return 0, ErrStoreNotConfigured
+	}
+	if keepPerScope <= 0 {
+		keepPerScope = 20
+	}
+	commandTag, err := s.pool.Exec(ctx, `
+		WITH ranked AS (
+			SELECT id,
+			       ROW_NUMBER() OVER (PARTITION BY scope_type, scope_id ORDER BY confidence DESC, created_at DESC) AS rn
+			FROM memory_episodes
+			WHERE created_at < $1
+		)
+		DELETE FROM memory_episodes
+		WHERE id IN (
+			SELECT id FROM ranked WHERE rn > $2
+		)
+		   OR (status <> $3 AND created_at < $1)
+	`, cutoff.UTC(), keepPerScope, StatusActive)
+	if err != nil {
+		return 0, fmt.Errorf("prune episodic memory entries: %w", err)
+	}
+	return commandTag.RowsAffected(), nil
+}
+
 func vectorLiteral(values []float32) string {
 	parts := make([]string, 0, len(values))
 	for _, value := range values {

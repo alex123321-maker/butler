@@ -20,6 +20,7 @@ Current baseline:
 - applies deterministic profile supersession and episodic duplicate/variant policy to reduce memory drift across repeated runs
 - assembles hybrid memory bundles with ordered structured facts, episodic retrieval, optional keyword matches, and explicit prompt-budget trimming
 - persists and retrieves reusable document chunks, including controlled doctor/tool-output derived chunks, through PostgreSQL-backed memory chunk storage
+- relies on explicit housekeeping/retention policies for stale working snapshots, inactive profile versions, noisy episodic growth, and chunk overgrowth
 - enqueues async post-run memory extraction work and stores session summaries for later context reuse
 - skips episodic similarity retrieval unless a real query-embedding provider is configured, rather than emitting placeholder vectors
 - exposes an internal delivery sink for `assistant_delta` and `assistant_final` events without allowing channel adapters to mutate run state

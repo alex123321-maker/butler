@@ -214,6 +214,21 @@ func (s *Store) GetHistory(ctx context.Context, scopeType, scopeID, key string) 
 	return entries, nil
 }
 
+func (s *Store) DeleteInactiveBefore(ctx context.Context, cutoff time.Time) (int64, error) {
+	if s == nil || s.pool == nil {
+		return 0, ErrStoreNotConfigured
+	}
+	commandTag, err := s.pool.Exec(ctx, `
+		DELETE FROM memory_profile
+		WHERE status <> $1
+		  AND COALESCE(effective_to, updated_at, created_at) < $2
+	`, StatusActive, cutoff.UTC())
+	if err != nil {
+		return 0, fmt.Errorf("delete inactive profile memory entries: %w", err)
+	}
+	return commandTag.RowsAffected(), nil
+}
+
 type rowScanner interface{ Scan(dest ...any) error }
 
 func scanEntry(row rowScanner) (Entry, error) {

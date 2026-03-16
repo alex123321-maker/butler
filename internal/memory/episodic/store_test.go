@@ -3,6 +3,7 @@ package episodic
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/butler/butler/internal/memory/embeddings"
 )
@@ -53,5 +54,13 @@ func TestMergeTagsJSON(t *testing.T) {
 	t.Parallel()
 	if got := MergeTagsJSON(`["redis","doctor"]`, `["variant","redis"]`); got != `["doctor","redis","variant"]` {
 		t.Fatalf("unexpected merged tags %q", got)
+	}
+}
+
+func TestPruneRequiresStorePool(t *testing.T) {
+	t.Parallel()
+	_, err := NewStore(nil).Prune(context.Background(), time.Now().UTC(), 5)
+	if err != ErrStoreNotConfigured {
+		t.Fatalf("expected ErrStoreNotConfigured, got %v", err)
 	}
 }

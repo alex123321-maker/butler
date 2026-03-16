@@ -2,6 +2,7 @@ package profile
 
 import (
 	"testing"
+	"time"
 )
 
 func TestNormalizeEntryDefaults(t *testing.T) {
@@ -45,5 +46,13 @@ func TestDefaultProvenanceJSON(t *testing.T) {
 	t.Parallel()
 	if got := defaultProvenanceJSON("run", "run-1"); got != `{"source_type":"run","source_id":"run-1"}` {
 		t.Fatalf("unexpected provenance json %q", got)
+	}
+}
+
+func TestDeleteInactiveBeforeRequiresStorePool(t *testing.T) {
+	t.Parallel()
+	_, err := NewStore(nil).DeleteInactiveBefore(nil, time.Now().UTC())
+	if err != ErrStoreNotConfigured {
+		t.Fatalf("expected ErrStoreNotConfigured, got %v", err)
 	}
 }

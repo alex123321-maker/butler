@@ -270,7 +270,7 @@ sprint:
       subsystem: memory
       sprint: SPRINT-MEMORY-COMPLETION
       priority: medium
-      status: todo
+      status: done
       description: >
         Add retention, pruning, and housekeeping behavior for transient working state,
         stale working snapshots, inactive profile entries, and noisy episodic growth.

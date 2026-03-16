@@ -596,9 +596,19 @@ Related references are stored separately in `memory_links`, which maps a durable
 
 Если не решать конфликты и устаревание, агент начнёт опираться на неверные старые факты.
 
+## 20. Current retention baseline
+
+Current Butler baseline now applies explicit housekeeping policies:
+
+* transient Working Memory remains Redis TTL-based and self-expires automatically;
+* stale durable Working Memory snapshots can be pruned by `updated_at` age;
+* inactive / superseded Profile Memory versions can be removed after retention windows;
+* Episodic Memory and document chunks can be pruned by age while keeping the highest-confidence recent items per scope;
+* housekeeping operations are safe to rerun and report deletion counts for observability.
+
 ---
 
-## 20. Открытые решения
+## 21. Открытые решения
 
 1. Точная SQL schema для memory tables.
 2. Политика дедупликации episodic memory.
@@ -609,7 +619,7 @@ Related references are stored separately in `memory_links`, which maps a durable
 
 ---
 
-## 21. Итоговый тезис
+## 22. Итоговый тезис
 
 Память Butler должна быть **многослойной, структурированной и управляемой**.
 Она не равна ни чату, ни RAG, ни векторной базе.

@@ -158,6 +158,32 @@ func (s *Store) FindByTitle(ctx context.Context, scopeType, scopeID, title strin
 	return results, rows.Err()
 }
 
+func (s *Store) Prune(ctx context.Context, cutoff time.Time, keepPerScope int) (int64, error) {
+	if s == nil || s.pool == nil {
+		return 0, ErrStoreNotConfigured
+	}
+	if keepPerScope <= 0 {
+		keepPerScope = 20
+	}
+	commandTag, err := s.pool.Exec(ctx, `
+		WITH ranked AS (
+			SELECT id,
+			       ROW_NUMBER() OVER (PARTITION BY scope_type, scope_id ORDER BY confidence DESC, created_at DESC) AS rn
+			FROM memory_chunks
+			WHERE created_at < $1
+		)
+		DELETE FROM memory_chunks
+		WHERE id IN (
+			SELECT id FROM ranked WHERE rn > $2
+		)
+		   OR (status <> $3 AND created_at < $1)
+	`, cutoff.UTC(), keepPerScope, StatusActive)
+	if err != nil {
+		return 0, fmt.Errorf("prune chunk memory entries: %w", err)
+	}
+	return commandTag.RowsAffected(), nil
+}
+
 func vectorLiteral(values []float32) string {
 	if len(values) == 0 {
 		return ""
