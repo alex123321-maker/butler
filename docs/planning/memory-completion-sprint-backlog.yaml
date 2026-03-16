@@ -214,7 +214,7 @@ sprint:
       subsystem: memory
       sprint: SPRINT-MEMORY-COMPLETION
       priority: high
-      status: todo
+      status: done
       description: >
         Upgrade retrieval from simple structured lookup plus episodic similarity into a
         hybrid retrieval model with metadata filtering, structured lookup, vector search,

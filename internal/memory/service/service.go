@@ -18,6 +18,7 @@ type ProfileStore interface {
 
 type EpisodeStore interface {
 	Search(context.Context, string, string, []float32, int) ([]Episode, error)
+	FindBySummary(context.Context, string, string, string) ([]Episode, error)
 }
 
 type WorkingStore interface {
@@ -58,6 +59,8 @@ type Config struct {
 	Embeddings    EmbeddingProvider
 	ProfileLimit  int
 	EpisodeLimit  int
+	BundleBudget  int
+	KeywordLimit  int
 	ScopeOrder    []string
 	Log           *slog.Logger
 }
@@ -96,6 +99,7 @@ type WorkingContext struct {
 type episodeItem struct {
 	Summary  string
 	Distance float64
+	Source   string
 }
 
 func New(cfg Config) *Service {
@@ -104,6 +108,12 @@ func New(cfg Config) *Service {
 	}
 	if cfg.EpisodeLimit <= 0 {
 		cfg.EpisodeLimit = 3
+	}
+	if cfg.BundleBudget <= 0 {
+		cfg.BundleBudget = 12
+	}
+	if cfg.KeywordLimit <= 0 {
+		cfg.KeywordLimit = 2
 	}
 	if len(cfg.ScopeOrder) == 0 {
 		cfg.ScopeOrder = []string{"session", "user", "global"}
@@ -130,21 +140,9 @@ func (s *Service) BuildBundle(ctx context.Context, req BundleRequest) (Bundle, e
 		return Bundle{}, err
 	}
 	summary := s.loadSummary(ctx, req.SessionKey)
+	items, promptSummary, promptWorking, promptProfile, promptEpisodes := s.applyBudget(summary, working, profileEntries, episodes)
 
-	items := map[string]any{}
-	if !working.IsEmpty() {
-		items["working"] = working.BundleMap()
-	}
-	if len(profileEntries) > 0 {
-		items["profile"] = profileEntries
-	}
-	if len(episodes) > 0 {
-		items["episodes"] = episodes
-	}
-	if summary != "" {
-		items["session_summary"] = summary
-	}
-	return Bundle{Items: items, Prompt: FormatPrompt(working, profileEntries, episodes, summary), Working: working}, nil
+	return Bundle{Items: items, Prompt: FormatPrompt(promptWorking, promptProfile, promptEpisodes, promptSummary), Working: working}, nil
 }
 
 func (s *Service) scopes(sessionKey, userID string) []Scope {
@@ -205,24 +203,78 @@ func (s *Service) loadEpisodes(ctx context.Context, scopes []Scope, userMessage 
 		return nil, nil
 	}
 	items := make([]episodeItem, 0, s.config.EpisodeLimit)
+	seen := map[string]struct{}{}
 	for _, scope := range scopes {
 		results, err := s.config.EpisodeStore.Search(ctx, scope.Type, scope.ID, queryEmbedding, s.config.EpisodeLimit)
 		if err != nil {
 			return nil, fmt.Errorf("load episodic memory: %w", err)
 		}
 		for _, item := range results {
-			items = append(items, episodeItem{Summary: item.EpisodeSummary(), Distance: item.EpisodeDistance()})
+			key := strings.ToLower(strings.TrimSpace(item.EpisodeSummary()))
+			if _, ok := seen[key]; ok {
+				continue
+			}
+			seen[key] = struct{}{}
+			items = append(items, episodeItem{Summary: item.EpisodeSummary(), Distance: item.EpisodeDistance(), Source: "vector"})
+		}
+		keywordMatches, keywordErr := s.loadKeywordEpisodes(ctx, scope, userMessage)
+		if keywordErr != nil {
+			s.log.Warn("episodic keyword retrieval skipped", slog.String("scope_type", scope.Type), slog.String("error", keywordErr.Error()))
+			continue
+		}
+		for _, item := range keywordMatches {
+			key := strings.ToLower(strings.TrimSpace(item.Summary))
+			if _, ok := seen[key]; ok {
+				continue
+			}
+			seen[key] = struct{}{}
+			items = append(items, item)
 		}
 	}
-	sort.Slice(items, func(i, j int) bool { return items[i].Distance < items[j].Distance })
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].Distance == items[j].Distance {
+			return items[i].Source < items[j].Source
+		}
+		return items[i].Distance < items[j].Distance
+	})
 	if len(items) > s.config.EpisodeLimit {
 		items = items[:s.config.EpisodeLimit]
 	}
 	result := make([]map[string]any, 0, len(items))
 	for _, item := range items {
-		result = append(result, map[string]any{"summary": item.Summary, "distance": item.Distance})
+		result = append(result, map[string]any{"summary": item.Summary, "distance": item.Distance, "source": item.Source})
 	}
 	return result, nil
+}
+
+func (s *Service) loadKeywordEpisodes(ctx context.Context, scope Scope, userMessage string) ([]episodeItem, error) {
+	if s.config.EpisodeStore == nil || s.config.KeywordLimit <= 0 {
+		return nil, nil
+	}
+	terms := keywordTerms(userMessage)
+	if len(terms) == 0 {
+		return nil, nil
+	}
+	matches := make([]episodeItem, 0, s.config.KeywordLimit)
+	seen := map[string]struct{}{}
+	for _, term := range terms {
+		entries, err := s.config.EpisodeStore.FindBySummary(ctx, scope.Type, scope.ID, term)
+		if err != nil {
+			return nil, err
+		}
+		for _, entry := range entries {
+			key := strings.ToLower(strings.TrimSpace(entry.EpisodeSummary()))
+			if _, ok := seen[key]; ok {
+				continue
+			}
+			seen[key] = struct{}{}
+			matches = append(matches, episodeItem{Summary: entry.EpisodeSummary(), Distance: 0.25, Source: "keyword"})
+			if len(matches) >= s.config.KeywordLimit {
+				return matches, nil
+			}
+		}
+	}
+	return matches, nil
 }
 
 func (s *Service) loadWorking(ctx context.Context, sessionKey string) (WorkingContext, error) {
@@ -314,6 +366,65 @@ func formatWorkingMemoryLines(working WorkingContext) []string {
 		lines = append(lines, "- Status: "+status)
 	}
 	return lines
+}
+
+func (s *Service) applyBudget(summary string, working WorkingContext, profileEntries, episodes []map[string]any) (map[string]any, string, WorkingContext, []map[string]any, []map[string]any) {
+	remaining := s.config.BundleBudget
+	items := map[string]any{}
+	selectedSummary := ""
+	selectedWorking := WorkingContext{Status: "idle"}
+	selectedProfile := []map[string]any{}
+	selectedEpisodes := []map[string]any{}
+	if strings.TrimSpace(summary) != "" && remaining > 0 {
+		selectedSummary = summary
+		items["session_summary"] = summary
+		remaining--
+	}
+	if !working.IsEmpty() && remaining > 0 {
+		selectedWorking = working
+		items["working"] = working.BundleMap()
+		remaining--
+	}
+	if remaining > 0 && len(profileEntries) > 0 {
+		count := min(remaining, len(profileEntries))
+		selectedProfile = append(selectedProfile, profileEntries[:count]...)
+		items["profile"] = selectedProfile
+		remaining -= count
+	}
+	if remaining > 0 && len(episodes) > 0 {
+		count := min(remaining, len(episodes))
+		selectedEpisodes = append(selectedEpisodes, episodes[:count]...)
+		items["episodes"] = selectedEpisodes
+	}
+	return items, selectedSummary, selectedWorking, selectedProfile, selectedEpisodes
+}
+
+func keywordTerms(input string) []string {
+	normalized := strings.ToLower(strings.TrimSpace(input))
+	if normalized == "" {
+		return nil
+	}
+	parts := strings.Fields(strings.NewReplacer(",", " ", ".", " ", ":", " ", ";", " ", "-", " ", "_", " ", "\n", " ").Replace(normalized))
+	seen := map[string]struct{}{}
+	terms := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if len(part) < 4 {
+			continue
+		}
+		if _, ok := seen[part]; ok {
+			continue
+		}
+		seen[part] = struct{}{}
+		terms = append(terms, part)
+	}
+	return terms
+}
+
+func min(left, right int) int {
+	if left < right {
+		return left
+	}
+	return right
 }
 
 func normalizeWorkingStatus(value string) string {

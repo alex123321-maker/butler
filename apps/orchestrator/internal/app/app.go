@@ -70,6 +70,11 @@ func (a profileStoreAdapter) GetByScope(ctx context.Context, scopeType, scopeID 
 
 type episodicStoreAdapter struct{ store *episodic.Store }
 
+type memoryEpisodeExactMatch struct{ episodic.Episode }
+
+func (m memoryEpisodeExactMatch) EpisodeSummary() string   { return m.Summary }
+func (m memoryEpisodeExactMatch) EpisodeDistance() float64 { return 0.25 }
+
 func (a episodicStoreAdapter) Search(ctx context.Context, scopeType, scopeID string, embedding []float32, limit int) ([]flow.MemoryEpisode, error) {
 	entries, err := a.store.Search(ctx, scopeType, scopeID, embedding, limit)
 	if err != nil {
@@ -78,6 +83,18 @@ func (a episodicStoreAdapter) Search(ctx context.Context, scopeType, scopeID str
 	result := make([]flow.MemoryEpisode, 0, len(entries))
 	for _, entry := range entries {
 		result = append(result, entry)
+	}
+	return result, nil
+}
+
+func (a episodicStoreAdapter) FindBySummary(ctx context.Context, scopeType, scopeID, summary string) ([]flow.MemoryEpisode, error) {
+	entries, err := a.store.FindBySummary(ctx, scopeType, scopeID, summary)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]flow.MemoryEpisode, 0, len(entries))
+	for _, entry := range entries {
+		result = append(result, memoryEpisodeExactMatch{Episode: entry})
 	}
 	return result, nil
 }

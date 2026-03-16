@@ -18,6 +18,7 @@ Current baseline:
 - sanitizes credential-like values before memory extraction and before durable working-memory persistence so memory stores do not retain raw tokens, passwords, cookies, or DSNs
 - runs an explicit async memory pipeline with extraction, classification, conflict resolution, and ignore/noise handling before profile and episodic persistence
 - applies deterministic profile supersession and episodic duplicate/variant policy to reduce memory drift across repeated runs
+- assembles hybrid memory bundles with ordered structured facts, episodic retrieval, optional keyword matches, and explicit prompt-budget trimming
 - enqueues async post-run memory extraction work and stores session summaries for later context reuse
 - skips episodic similarity retrieval unless a real query-embedding provider is configured, rather than emitting placeholder vectors
 - exposes an internal delivery sink for `assistant_delta` and `assistant_final` events without allowing channel adapters to mutate run state

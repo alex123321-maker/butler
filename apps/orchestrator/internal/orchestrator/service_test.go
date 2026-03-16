@@ -1115,6 +1115,16 @@ func (s *stubEpisodeStore) Search(_ context.Context, _ string, _ string, embeddi
 	return s.entries, nil
 }
 
+func (s *stubEpisodeStore) FindBySummary(_ context.Context, _ string, _ string, summary string) ([]MemoryEpisode, error) {
+	var result []MemoryEpisode
+	for _, entry := range s.entries {
+		if strings.EqualFold(entry.EpisodeSummary(), summary) {
+			result = append(result, entry)
+		}
+	}
+	return result, nil
+}
+
 type stubProfileEntry struct {
 	key     string
 	summary string

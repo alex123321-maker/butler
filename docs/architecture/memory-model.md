@@ -333,6 +333,18 @@ At the current implementation stage:
 * `internal/memory/service` owns bundle assembly policy, scope ordering, and store-specific retrieval for profile, episodic, working, and session-summary inputs;
 * orchestrator requests that bundle and injects the returned compact system memory prompt before model execution when relevant entries exist.
 
+#### Current hybrid retrieval baseline
+
+Current bundle assembly now combines:
+
+* structured profile lookup by ordered scope;
+* session summary and working memory as highest-priority bundle items;
+* vector episodic retrieval when embeddings are available;
+* lightweight keyword summary matching as an optional fallback / complement when supported by the store;
+* explicit bundle-budget ordering across summary, working, profile, and episodic sections.
+
+When embeddings or optional keyword matches are unavailable, bundle assembly degrades gracefully and still returns deterministic summary / working / profile context within budget.
+
 ---
 
 ## 11. Memory pipeline (конвейер памяти)

@@ -61,7 +61,7 @@ func TestBuildBundleUsesEmbeddingProviderForEpisodes(t *testing.T) {
 	t.Parallel()
 
 	episodeStore := &stubEpisodeStore{entries: []Episode{stubEpisode{summary: "Recovered postgres", distance: 0.05}, stubEpisode{summary: "Older event", distance: 0.2}}}
-	svc := New(Config{EpisodeStore: episodeStore, Embeddings: stubEmbeddings{vector: testVector(0.4)}, EpisodeLimit: 1})
+	svc := New(Config{EpisodeStore: episodeStore, Embeddings: stubEmbeddings{vector: testVector(0.4)}, EpisodeLimit: 1, BundleBudget: 4})
 	bundle, err := svc.BuildBundle(context.Background(), BundleRequest{SessionKey: "session-1", UserID: "user-1", UserMessage: "check postgres", IncludeQuery: true})
 	if err != nil {
 		t.Fatalf("BuildBundle returned error: %v", err)
@@ -75,6 +75,61 @@ func TestBuildBundleUsesEmbeddingProviderForEpisodes(t *testing.T) {
 	}
 	if !strings.Contains(bundle.Prompt, "Relevant episodes:") {
 		t.Fatalf("expected episodic section in prompt, got %q", bundle.Prompt)
+	}
+}
+
+func TestBuildBundleAppliesPromptBudgetOrdering(t *testing.T) {
+	t.Parallel()
+	profileEntries := map[string][]ProfileEntry{}
+	profileEntries["session:session-1"] = []ProfileEntry{stubProfile{key: "language", summary: "ru"}, stubProfile{key: "style", summary: "concise"}}
+	svc := New(Config{
+		ProfileStore:  stubProfileStore{entriesByScope: profileEntries},
+		WorkingStore:  stubWorkingStore{snapshot: WorkingSnapshot{Goal: "Finish task", EntitiesJSON: `{"service":"redis"}`, PendingStepsJSON: `[]`, Status: "active"}},
+		SummaryReader: stubSummaryReader{summary: "Summary"},
+		EpisodeStore:  &stubEpisodeStore{entries: []Episode{stubEpisode{summary: "Episode one", distance: 0.05}, stubEpisode{summary: "Episode two", distance: 0.1}}},
+		Embeddings:    stubEmbeddings{vector: testVector(0.4)},
+		ProfileLimit:  5,
+		EpisodeLimit:  5,
+		BundleBudget:  3,
+	})
+	bundle, err := svc.BuildBundle(context.Background(), BundleRequest{SessionKey: "session-1", UserID: "user-1", UserMessage: "redis", IncludeQuery: true})
+	if err != nil {
+		t.Fatalf("BuildBundle returned error: %v", err)
+	}
+	if _, ok := bundle.Items["session_summary"]; !ok {
+		t.Fatal("expected summary in bundle")
+	}
+	if _, ok := bundle.Items["working"]; !ok {
+		t.Fatal("expected working memory in bundle")
+	}
+	if _, ok := bundle.Items["profile"]; !ok {
+		t.Fatal("expected profile entries in bundle")
+	}
+	if _, ok := bundle.Items["episodes"]; ok {
+		t.Fatalf("expected episodes to be excluded by budget, got %+v", bundle.Items)
+	}
+	if strings.Contains(bundle.Prompt, "Relevant episodes:") {
+		t.Fatalf("expected prompt to respect budget, got %q", bundle.Prompt)
+	}
+}
+
+func TestBuildBundleCombinesKeywordAndVectorEpisodes(t *testing.T) {
+	t.Parallel()
+	episodeStore := &stubEpisodeStore{
+		entries:       []Episode{stubEpisode{summary: "Recovered postgres", distance: 0.05}},
+		keywordByTerm: map[string][]Episode{"postgres": {stubEpisode{summary: "postgres", distance: 0.25}}},
+	}
+	svc := New(Config{EpisodeStore: episodeStore, Embeddings: stubEmbeddings{vector: testVector(0.4)}, EpisodeLimit: 3, KeywordLimit: 2, BundleBudget: 6})
+	bundle, err := svc.BuildBundle(context.Background(), BundleRequest{SessionKey: "session-1", UserID: "user-1", UserMessage: "postgres recovery", IncludeQuery: true})
+	if err != nil {
+		t.Fatalf("BuildBundle returned error: %v", err)
+	}
+	episodes := bundle.Items["episodes"].([]map[string]any)
+	if len(episodes) != 2 {
+		t.Fatalf("expected vector + keyword episode matches, got %+v", episodes)
+	}
+	if episodes[0]["source"] == episodes[1]["source"] {
+		t.Fatalf("expected mixed retrieval sources, got %+v", episodes)
 	}
 }
 
@@ -118,13 +173,21 @@ func (s stubProfile) ProfileKey() string     { return s.key }
 func (s stubProfile) ProfileSummary() string { return s.summary }
 
 type stubEpisodeStore struct {
-	entries []Episode
-	calls   int
+	entries       []Episode
+	keywordByTerm map[string][]Episode
+	calls         int
 }
 
 func (s *stubEpisodeStore) Search(context.Context, string, string, []float32, int) ([]Episode, error) {
 	s.calls++
 	return s.entries, nil
+}
+
+func (s *stubEpisodeStore) FindBySummary(_ context.Context, _, _, summary string) ([]Episode, error) {
+	if s.keywordByTerm == nil {
+		return nil, nil
+	}
+	return s.keywordByTerm[strings.ToLower(strings.TrimSpace(summary))], nil
 }
 
 type stubEpisode struct {

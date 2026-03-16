@@ -49,6 +49,7 @@ type ProfileMemoryStore interface {
 
 type EpisodicMemoryStore interface {
 	Search(context.Context, string, string, []float32, int) ([]MemoryEpisode, error)
+	FindBySummary(context.Context, string, string, string) ([]MemoryEpisode, error)
 }
 
 type WorkingMemoryStore interface {
@@ -209,6 +210,21 @@ func (a memoryBundleEpisodeStore) Search(ctx context.Context, scopeType, scopeID
 		return nil, nil
 	}
 	entries, err := a.store.Search(ctx, scopeType, scopeID, embedding, limit)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]memoryservice.Episode, 0, len(entries))
+	for _, entry := range entries {
+		result = append(result, entry)
+	}
+	return result, nil
+}
+
+func (a memoryBundleEpisodeStore) FindBySummary(ctx context.Context, scopeType, scopeID, summary string) ([]memoryservice.Episode, error) {
+	if a.store == nil {
+		return nil, nil
+	}
+	entries, err := a.store.FindBySummary(ctx, scopeType, scopeID, summary)
 	if err != nil {
 		return nil, err
 	}
