@@ -1,3 +1,5 @@
+import { computed, type Ref } from 'vue'
+
 // --- Types ---
 
 export interface SessionRecord {
@@ -42,6 +44,94 @@ export interface TranscriptToolCall {
   finished_at: string | null
   result_json: string
   error_json?: string
+}
+
+export interface MemoryLinkRecord {
+	link_type: string
+	target_type: string
+	target_id: string
+	metadata: string
+}
+
+export interface WorkingMemoryRecord {
+	memory_type: string
+	session_key: string
+	run_id: string
+	goal: string
+	entities_json: string
+	pending_steps_json: string
+	scratch_json: string
+	status: string
+	source_type: string
+	source_id: string
+	provenance: string
+	created_at: string
+	updated_at: string
+}
+
+export interface ProfileMemoryRecord {
+	id: number
+	memory_type: string
+	scope_type: string
+	scope_id: string
+	key: string
+	value_json: string
+	summary: string
+	source_type: string
+	source_id: string
+	provenance: string
+	confidence: number
+	status: string
+	created_at: string
+	updated_at: string
+	links: MemoryLinkRecord[]
+}
+
+export interface EpisodicMemoryRecord {
+	id: number
+	memory_type: string
+	scope_type: string
+	scope_id: string
+	summary: string
+	content: string
+	source_type: string
+	source_id: string
+	provenance: string
+	confidence: number
+	status: string
+	tags_json: string
+	created_at: string
+	updated_at: string
+	links: MemoryLinkRecord[]
+}
+
+export interface ChunkMemoryRecord {
+	id: number
+	memory_type: string
+	scope_type: string
+	scope_id: string
+	title: string
+	summary: string
+	content: string
+	source_type: string
+	source_id: string
+	provenance: string
+	confidence: number
+	status: string
+	tags_json: string
+	created_at: string
+	updated_at: string
+	links: MemoryLinkRecord[]
+}
+
+export interface MemoryScopeView {
+	scope_type: string
+	scope_id: string
+	limit?: number
+	working?: WorkingMemoryRecord
+	profile?: ProfileMemoryRecord[]
+	episodic?: EpisodicMemoryRecord[]
+	chunks?: ChunkMemoryRecord[]
 }
 
 interface HealthResponse {
@@ -180,4 +270,25 @@ export function useDoctorCheck() {
   }
 
   return { runCheck }
+}
+
+export function useMemoryScope(scopeType: Ref<string> | string, scopeID: Ref<string> | string) {
+	const { get } = useApiClient()
+	const resolvedScopeType = typeof scopeType === 'string' ? computed(() => scopeType) : scopeType
+	const resolvedScopeID = typeof scopeID === 'string' ? computed(() => scopeID) : scopeID
+
+	return useAsyncData<MemoryScopeView>(
+		() => `memory-${resolvedScopeType.value}-${resolvedScopeID.value}`,
+		async () => {
+			if (!resolvedScopeType.value || !resolvedScopeID.value) {
+				return { scope_type: resolvedScopeType.value || '', scope_id: resolvedScopeID.value || '' }
+			}
+			return await get<MemoryScopeView>(`/api/v1/memory?scope_type=${encodeURIComponent(resolvedScopeType.value)}&scope_id=${encodeURIComponent(resolvedScopeID.value)}`)
+		},
+		{
+			server: false,
+			default: () => ({ scope_type: typeof scopeType === 'string' ? scopeType : '', scope_id: typeof scopeID === 'string' ? scopeID : '' }),
+			watch: [resolvedScopeType, resolvedScopeID],
+		}
+	)
 }

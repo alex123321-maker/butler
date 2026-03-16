@@ -22,6 +22,7 @@ Current baseline:
 - persists and retrieves reusable document chunks, including controlled doctor/tool-output derived chunks, through PostgreSQL-backed memory chunk storage
 - relies on explicit housekeeping/retention policies for stale working snapshots, inactive profile versions, noisy episodic growth, and chunk overgrowth
 - exposes memory-specific metrics and doctor diagnostics for pipeline jobs, queue depth, retrieval activity, and pgvector readiness
+- exposes `GET /api/v1/memory` for scope-based browsing of durable working, profile, episodic, and chunk memory plus provenance-safe links
 - enqueues async post-run memory extraction work and stores session summaries for later context reuse
 - skips episodic similarity retrieval unless a real query-embedding provider is configured, rather than emitting placeholder vectors
 - exposes an internal delivery sink for `assistant_delta` and `assistant_final` events without allowing channel adapters to mutate run state
@@ -59,7 +60,7 @@ Entry points and APIs:
 - binary entrypoint: `apps/orchestrator/main.go`
 - gRPC API: `SessionService` from `proto/session/v1/session.proto`
 - gRPC API: `OrchestratorService` from `proto/orchestrator/v1/orchestrator.proto`
-- HTTP endpoints: `/health`, `/metrics`, `/api/v1/events`, `/api/v1/settings`, `/api/v1/settings/{key}`, `/api/v1/settings/restart`, `/api/v1/providers`, `/api/v1/providers/{provider}/auth`, `/api/v1/providers/{provider}/auth/start`, `/api/v1/providers/{provider}/auth/complete`, `/api/v1/sessions`, `/api/v1/sessions/{key}`, `/api/v1/runs/{id}`, `/api/v1/runs/{id}/transcript`, `/api/v1/doctor/reports`, `/api/v1/doctor/check`
+- HTTP endpoints: `/health`, `/metrics`, `/api/v1/events`, `/api/v1/settings`, `/api/v1/settings/{key}`, `/api/v1/settings/restart`, `/api/v1/providers`, `/api/v1/providers/{provider}/auth`, `/api/v1/providers/{provider}/auth/start`, `/api/v1/providers/{provider}/auth/complete`, `/api/v1/memory`, `/api/v1/sessions`, `/api/v1/sessions/{key}`, `/api/v1/runs/{id}`, `/api/v1/runs/{id}/transcript`, `/api/v1/doctor/reports`, `/api/v1/doctor/check`
 - internal execution package: `apps/orchestrator/internal/orchestrator`
 - internal delivery seam: `apps/orchestrator/internal/orchestrator/delivery.go`
 
@@ -91,4 +92,4 @@ Current limitations:
 - the service executes the active model transport path synchronously inside request handling, so REST ingestion returns only after run completion
 - the OpenAI API path prefers Realtime WebSocket and falls back to HTTP SSE when the WebSocket backend is unavailable early in the run; GitHub Copilot and OpenAI Codex currently use HTTP streaming only
 - tool calling now goes through Tool Broker and runtime services over gRPC
-- the web dashboard still includes placeholder sections for memory browsing and some dashboard cards that are intentionally left for later work
+- some dashboard cards are still intentionally placeholder content, but the `/memory` view now browses durable memory records through the orchestrator API

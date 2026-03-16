@@ -6,7 +6,7 @@ sprint:
     Working Memory semantics, transient Redis state, provenance-safe persistence,
     hybrid retrieval, memory pipeline classification, operator visibility, and
     memory-specific hardening in one focused sprint.
-  status: todo
+  status: in_progress
   scope_notes:
     - This sprint is intentionally tracked in a separate backlog file.
     - PostgreSQL remains the durable source of truth for memory.
@@ -325,7 +325,7 @@ sprint:
       subsystem: web
       sprint: SPRINT-MEMORY-COMPLETION
       priority: high
-      status: todo
+      status: done
       description: >
         Replace the placeholder memory page with real APIs and UI for browsing working,
         profile, episodic, and chunk memory along with provenance metadata.

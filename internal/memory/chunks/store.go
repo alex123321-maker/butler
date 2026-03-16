@@ -158,6 +158,35 @@ func (s *Store) FindByTitle(ctx context.Context, scopeType, scopeID, title strin
 	return results, rows.Err()
 }
 
+func (s *Store) GetByScope(ctx context.Context, scopeType, scopeID string, limit int) ([]Chunk, error) {
+	if s == nil || s.pool == nil {
+		return nil, ErrStoreNotConfigured
+	}
+	if limit <= 0 {
+		limit = 50
+	}
+	rows, err := s.pool.Query(ctx, `
+		SELECT id, memory_type, scope_type, scope_id, title, content, summary, source_type, source_id, provenance::text, tags::text, confidence, status, created_at, updated_at
+		FROM memory_chunks
+		WHERE scope_type = $1 AND scope_id = $2
+		ORDER BY created_at DESC
+		LIMIT $3
+	`, strings.TrimSpace(scopeType), strings.TrimSpace(scopeID), limit)
+	if err != nil {
+		return nil, fmt.Errorf("query chunk scope entries: %w", err)
+	}
+	defer rows.Close()
+	var results []Chunk
+	for rows.Next() {
+		var item Chunk
+		if err := rows.Scan(&item.ID, &item.MemoryType, &item.ScopeType, &item.ScopeID, &item.Title, &item.Content, &item.Summary, &item.SourceType, &item.SourceID, &item.ProvenanceJSON, &item.TagsJSON, &item.Confidence, &item.Status, &item.CreatedAt, &item.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("scan chunk scope result: %w", err)
+		}
+		results = append(results, item)
+	}
+	return results, rows.Err()
+}
+
 func (s *Store) Prune(ctx context.Context, cutoff time.Time, keepPerScope int) (int64, error) {
 	if s == nil || s.pool == nil {
 		return 0, ErrStoreNotConfigured

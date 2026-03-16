@@ -31,6 +31,7 @@ import (
 	"github.com/butler/butler/internal/memory/episodic"
 	"github.com/butler/butler/internal/memory/pipeline"
 	"github.com/butler/butler/internal/memory/profile"
+	"github.com/butler/butler/internal/memory/provenance"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/memory/working"
 	"github.com/butler/butler/internal/metrics"
@@ -386,6 +387,7 @@ func New(ctx context.Context) (*App, error) {
 	doctorServer := apiservice.NewDoctorServer(postgres.Pool(), doctorChecker, memoryDoctor, logger.WithComponent(log, "doctor-api"))
 	settingsService := config.NewSettingsService(settingsStore, hotConfig)
 	settingsServer := apiservice.NewSettingsServer(settingsService)
+	memoryServer := apiservice.NewMemoryServer(working.NewStore(postgres.Pool()), profile.NewStore(postgres.Pool()), episodic.NewStore(postgres.Pool()), chunks.NewStore(postgres.Pool()), provenance.NewStore(postgres.Pool()))
 	providerServer := apiservice.NewProviderServer(authManager, providerResult.ProviderName, map[string]string{
 		modelprovider.ProviderOpenAI:        cfg.OpenAIModel,
 		modelprovider.ProviderOpenAICodex:   cfg.OpenAICodexModel,
@@ -401,6 +403,7 @@ func New(ctx context.Context) (*App, error) {
 	mux.Handle("/api/v1/settings/", settingsServer.HandleItem())
 	mux.Handle("/api/v1/providers", providerServer.HandleList())
 	mux.Handle("/api/v1/providers/", providerServer.HandleItem())
+	mux.Handle("/api/v1/memory", memoryServer.HandleList())
 	mux.Handle("/api/v1/sessions", viewServer.HandleListSessions())
 	mux.Handle("/api/v1/sessions/", viewServer.HandleGetSession())
 	mux.Handle("/api/v1/runs/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
