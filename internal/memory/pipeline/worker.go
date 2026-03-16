@@ -43,6 +43,8 @@ type Worker struct {
 	queue         *Queue
 	transcripts   TranscriptReader
 	extractor     Extractor
+	classifier    *Classifier
+	resolver      *ConflictResolver
 	profileStore  *profile.Store
 	episodicStore *episodic.Store
 	embeddings    EmbeddingProvider
@@ -76,6 +78,8 @@ func NewWorker(
 		queue:         queue,
 		transcripts:   transcripts,
 		extractor:     extractor,
+		classifier:    NewClassifier(),
+		resolver:      NewConflictResolver(),
 		profileStore:  profileStore,
 		episodicStore: episodicStore,
 		embeddings:    embeddingProvider,
@@ -168,57 +172,56 @@ func (w *Worker) processPostRun(ctx context.Context, log *slog.Logger, job *Job)
 	}
 	result = sanitizeExtractionResult(result)
 
+	classified := w.classifier.Classify(job.SessionKey, result)
+	resolved := w.resolver.Resolve(classified)
+	log.Info("memory pipeline classification complete",
+		slog.Int("profile_candidates", len(classified.Profiles)),
+		slog.Int("episode_candidates", len(classified.Episodes)),
+		slog.Int("working_candidates", len(classified.Working)),
+		slog.Int("ignored_candidates", len(resolved.Ignored)),
+	)
+
 	// 3. Write profile updates (with conflict resolution via Supersede).
-	profileCount, err := w.writeProfileUpdates(ctx, log, job, result.ProfileUpdates)
+	profileCount, err := w.writeProfileUpdates(ctx, log, job, resolved.Profiles)
 	if err != nil {
 		return fmt.Errorf("write profiles: %w", err)
 	}
 
 	// 4. Write episodic memories (with embeddings).
-	episodeCount, err := w.writeEpisodes(ctx, log, job, result.Episodes)
+	episodeCount, err := w.writeEpisodes(ctx, log, job, resolved.Episodes)
 	if err != nil {
 		return fmt.Errorf("write episodes: %w", err)
 	}
 
 	// 5. Update session summary.
-	if err := w.updateSessionSummary(ctx, log, job, result.SessionSummary); err != nil {
+	if err := w.updateSessionSummary(ctx, log, job, resolved.Summary); err != nil {
 		return fmt.Errorf("update session summary: %w", err)
 	}
 
 	log.Info("extraction complete",
 		slog.Int("profiles_written", profileCount),
 		slog.Int("episodes_written", episodeCount),
-		slog.Bool("summary_updated", strings.TrimSpace(result.SessionSummary) != ""),
+		slog.Bool("summary_updated", strings.TrimSpace(resolved.Summary) != ""),
 	)
 	return nil
 }
 
-func (w *Worker) writeProfileUpdates(ctx context.Context, log *slog.Logger, job *Job, candidates []ProfileCandidate) (int, error) {
+func (w *Worker) writeProfileUpdates(ctx context.Context, log *slog.Logger, job *Job, candidates []ResolvedProfile) (int, error) {
 	if w.profileStore == nil {
 		return 0, nil
 	}
 	written := 0
 	for _, candidate := range candidates {
-		if strings.TrimSpace(candidate.Key) == "" || strings.TrimSpace(candidate.Summary) == "" {
-			continue
-		}
-		if candidate.Confidence < 0.5 {
-			log.Debug("skipping low-confidence profile candidate",
-				slog.String("key", candidate.Key),
-				slog.Float64("confidence", candidate.Confidence),
-			)
+		if strings.TrimSpace(candidate.Candidate.Key) == "" || strings.TrimSpace(candidate.Candidate.Summary) == "" {
 			continue
 		}
 
-		scopeType := normalizeScopeType(candidate.ScopeType)
+		scopeType := candidate.ScopeType
 		scopeID := candidate.ScopeID
-		if scopeID == "" {
-			scopeID = scopeIDForType(scopeType, job.SessionKey)
-		}
 
-		valueJSON := candidate.Value
+		valueJSON := candidate.Candidate.Value
 		if strings.TrimSpace(valueJSON) == "" {
-			valueJSON = mustJSON(map[string]string{"value": sanitize.Text(candidate.Summary)})
+			valueJSON = mustJSON(map[string]string{"value": sanitize.Text(candidate.Candidate.Summary)})
 		} else if !json.Valid([]byte(valueJSON)) {
 			valueJSON = mustJSON(map[string]string{"value": sanitize.Text(valueJSON)})
 		}
@@ -227,45 +230,47 @@ func (w *Worker) writeProfileUpdates(ctx context.Context, log *slog.Logger, job 
 		entry := profile.Entry{
 			ScopeType:  scopeType,
 			ScopeID:    scopeID,
-			Key:        candidate.Key,
+			Key:        candidate.Candidate.Key,
 			ValueJSON:  valueJSON,
-			Summary:    sanitize.Text(candidate.Summary),
+			Summary:    sanitize.Text(candidate.Candidate.Summary),
 			SourceType: "memory_pipeline",
 			SourceID:   job.RunID,
-			Confidence: candidate.Confidence,
+			Confidence: candidate.Candidate.Confidence,
 		}
 
 		// Conflict resolution: check if an active entry with this key exists.
-		existing, err := w.profileStore.Get(ctx, scopeType, scopeID, candidate.Key)
+		existing, err := w.profileStore.Get(ctx, scopeType, scopeID, candidate.Candidate.Key)
 		if err == nil {
 			// Supersede the existing entry.
 			if _, err := w.profileStore.Supersede(ctx, existing.ID, entry); err != nil {
 				log.Warn("supersede profile entry failed",
-					slog.String("key", candidate.Key),
+					slog.String("key", candidate.Candidate.Key),
 					slog.String("error", err.Error()),
 				)
 				continue
 			}
 			log.Info("profile entry superseded",
-				slog.String("key", candidate.Key),
+				slog.String("key", candidate.Candidate.Key),
 				slog.String("scope_type", scopeType),
+				slog.String("resolution_action", candidate.Action),
 			)
 		} else if err == profile.ErrEntryNotFound {
 			// Create new entry.
 			if _, err := w.profileStore.Save(ctx, entry); err != nil {
 				log.Warn("save profile entry failed",
-					slog.String("key", candidate.Key),
+					slog.String("key", candidate.Candidate.Key),
 					slog.String("error", err.Error()),
 				)
 				continue
 			}
 			log.Info("profile entry created",
-				slog.String("key", candidate.Key),
+				slog.String("key", candidate.Candidate.Key),
 				slog.String("scope_type", scopeType),
+				slog.String("resolution_action", candidate.Action),
 			)
 		} else {
 			log.Warn("check existing profile entry failed",
-				slog.String("key", candidate.Key),
+				slog.String("key", candidate.Candidate.Key),
 				slog.String("error", err.Error()),
 			)
 			continue
@@ -275,37 +280,27 @@ func (w *Worker) writeProfileUpdates(ctx context.Context, log *slog.Logger, job 
 	return written, nil
 }
 
-func (w *Worker) writeEpisodes(ctx context.Context, log *slog.Logger, job *Job, candidates []EpisodeCandidate) (int, error) {
+func (w *Worker) writeEpisodes(ctx context.Context, log *slog.Logger, job *Job, candidates []ResolvedEpisode) (int, error) {
 	if w.episodicStore == nil {
 		return 0, nil
 	}
 	written := 0
 	for _, candidate := range candidates {
-		if strings.TrimSpace(candidate.Summary) == "" {
-			continue
-		}
-		if candidate.Confidence < 0.5 {
-			log.Debug("skipping low-confidence episode candidate",
-				slog.String("summary", truncate(candidate.Summary, 80)),
-				slog.Float64("confidence", candidate.Confidence),
-			)
+		if strings.TrimSpace(candidate.Candidate.Summary) == "" {
 			continue
 		}
 
-		scopeType := normalizeScopeType(candidate.ScopeType)
+		scopeType := candidate.ScopeType
 		scopeID := candidate.ScopeID
-		if scopeID == "" {
-			scopeID = scopeIDForType(scopeType, job.SessionKey)
-		}
 
 		// Generate embedding for the episode summary.
 		var embedding []float32
 		if w.embeddings != nil {
-			sanitizedSummary := sanitize.Text(candidate.Summary)
+			sanitizedSummary := sanitize.Text(candidate.Candidate.Summary)
 			emb, err := w.embeddings.EmbedQuery(ctx, sanitizedSummary)
 			if err != nil {
 				log.Warn("episode embedding failed, skipping",
-					slog.String("summary", truncate(candidate.Summary, 80)),
+					slog.String("summary", truncate(candidate.Candidate.Summary, 80)),
 					slog.String("error", err.Error()),
 				)
 				continue
@@ -320,7 +315,7 @@ func (w *Worker) writeEpisodes(ctx context.Context, log *slog.Logger, job *Job, 
 			embedding = emb
 		} else {
 			log.Warn("no embedding provider configured, skipping episode",
-				slog.String("summary", truncate(candidate.Summary, 80)),
+				slog.String("summary", truncate(candidate.Candidate.Summary, 80)),
 			)
 			continue
 		}
@@ -329,25 +324,26 @@ func (w *Worker) writeEpisodes(ctx context.Context, log *slog.Logger, job *Job, 
 		ep := episodic.Episode{
 			ScopeType:      scopeType,
 			ScopeID:        scopeID,
-			Summary:        sanitize.Text(candidate.Summary),
-			Content:        sanitize.Text(candidate.Content),
+			Summary:        sanitize.Text(candidate.Candidate.Summary),
+			Content:        sanitize.Text(candidate.Candidate.Content),
 			SourceType:     "memory_pipeline",
 			SourceID:       job.RunID,
-			Confidence:     candidate.Confidence,
+			Confidence:     candidate.Candidate.Confidence,
 			Embedding:      embedding,
 			EpisodeStartAt: &now,
 		}
 
 		if _, err := w.episodicStore.Save(ctx, ep); err != nil {
 			log.Warn("save episode failed",
-				slog.String("summary", truncate(candidate.Summary, 80)),
+				slog.String("summary", truncate(candidate.Candidate.Summary, 80)),
 				slog.String("error", err.Error()),
 			)
 			continue
 		}
 		log.Info("episode created",
-			slog.String("summary", truncate(candidate.Summary, 80)),
+			slog.String("summary", truncate(candidate.Candidate.Summary, 80)),
 			slog.String("scope_type", scopeType),
+			slog.String("resolution_action", candidate.Action),
 		)
 		written++
 	}
@@ -405,6 +401,8 @@ func sanitizeExtractionResult(result *ExtractionResult) *ExtractionResult {
 	copyResult := &ExtractionResult{
 		ProfileUpdates: make([]ProfileCandidate, 0, len(result.ProfileUpdates)),
 		Episodes:       make([]EpisodeCandidate, 0, len(result.Episodes)),
+		WorkingUpdates: make([]WorkingCandidate, 0, len(result.WorkingUpdates)),
+		DocumentChunks: make([]DocumentCandidate, 0, len(result.DocumentChunks)),
 		SessionSummary: sanitize.Text(result.SessionSummary),
 	}
 	for _, candidate := range result.ProfileUpdates {
@@ -417,6 +415,16 @@ func sanitizeExtractionResult(result *ExtractionResult) *ExtractionResult {
 		candidate.Summary = sanitize.Text(candidate.Summary)
 		candidate.Content = sanitize.Text(candidate.Content)
 		copyResult.Episodes = append(copyResult.Episodes, candidate)
+	}
+	for _, candidate := range result.WorkingUpdates {
+		candidate.Goal = sanitize.Text(candidate.Goal)
+		candidate.Summary = sanitize.Text(candidate.Summary)
+		copyResult.WorkingUpdates = append(copyResult.WorkingUpdates, candidate)
+	}
+	for _, candidate := range result.DocumentChunks {
+		candidate.Title = sanitize.Text(candidate.Title)
+		candidate.Content = sanitize.Text(candidate.Content)
+		copyResult.DocumentChunks = append(copyResult.DocumentChunks, candidate)
 	}
 	return copyResult
 }

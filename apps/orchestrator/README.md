@@ -16,6 +16,7 @@ Current baseline:
 - requests memory bundles from `internal/memory/service`, which owns scope ordering plus profile, episodic, working, and session-summary retrieval during run preparation
 - writes durable working-memory provenance metadata tied to the active run and supports provenance-safe memory links for downstream profile/episodic records
 - sanitizes credential-like values before memory extraction and before durable working-memory persistence so memory stores do not retain raw tokens, passwords, cookies, or DSNs
+- runs an explicit async memory pipeline with extraction, classification, conflict resolution, and ignore/noise handling before profile and episodic persistence
 - enqueues async post-run memory extraction work and stores session summaries for later context reuse
 - skips episodic similarity retrieval unless a real query-embedding provider is configured, rather than emitting placeholder vectors
 - exposes an internal delivery sink for `assistant_delta` and `assistant_final` events without allowing channel adapters to mutate run state

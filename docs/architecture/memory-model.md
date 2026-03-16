@@ -353,6 +353,17 @@ At the current implementation stage:
 4. **Resolve conflicts**
    выяснить, это новый факт, обновление старого факта, временное состояние или шум.
 
+#### Current pipeline baseline
+
+The async memory worker now separates:
+
+* extraction;
+* candidate classification into profile / episodic / working / document / ignore;
+* conflict resolution before durable writes;
+* explicit ignore handling for low-confidence or noise candidates.
+
+Document candidates may be classified and observed even when durable document-chunk persistence is not yet implemented.
+
 5. **Write structured memory**
    записать результат в соответствующий memory store.
 

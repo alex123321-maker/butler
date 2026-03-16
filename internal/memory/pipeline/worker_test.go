@@ -71,6 +71,8 @@ func TestLLMExtractor_Extract(t *testing.T) {
 		Episodes: []EpisodeCandidate{
 			{ScopeType: "session", ScopeID: "sess-1", Summary: "User asked about weather", Content: "Detailed weather conversation", Confidence: 0.8},
 		},
+		WorkingUpdates: []WorkingCandidate{{ScopeType: "session", ScopeID: "sess-1", Goal: "Track weather task", Summary: "Continue weather flow", Confidence: 0.7}},
+		DocumentChunks: []DocumentCandidate{{ScopeType: "session", ScopeID: "sess-1", Title: "Weather API note", Content: "Endpoint docs", Confidence: 0.8}},
 		SessionSummary: "User inquired about weather conditions",
 	}
 	responseJSON, _ := json.Marshal(response)
@@ -96,7 +98,7 @@ func TestLLMExtractor_Extract(t *testing.T) {
 	if len(result.Episodes) != 1 {
 		t.Fatalf("expected 1 episode, got %d", len(result.Episodes))
 	}
-	if result.SessionSummary == "" {
+	if result.SessionSummary == "" || len(result.WorkingUpdates) != 1 || len(result.DocumentChunks) != 1 {
 		t.Error("expected non-empty session summary")
 	}
 }
@@ -107,7 +109,7 @@ func TestLLMExtractor_EmptyTranscript(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if len(result.ProfileUpdates) != 0 || len(result.Episodes) != 0 {
+	if len(result.ProfileUpdates) != 0 || len(result.Episodes) != 0 || len(result.WorkingUpdates) != 0 || len(result.DocumentChunks) != 0 {
 		t.Error("expected empty results for empty transcript")
 	}
 }
@@ -165,13 +167,53 @@ func TestSanitizeExtractionResult(t *testing.T) {
 	result := sanitizeExtractionResult(&ExtractionResult{
 		ProfileUpdates: []ProfileCandidate{{Key: "api_token", Value: `{"token":"abc"}`, Summary: "token=abc", Confidence: 0.9}},
 		Episodes:       []EpisodeCandidate{{Summary: "password is secret", Content: "cookie value is abc123", Confidence: 0.8}},
+		WorkingUpdates: []WorkingCandidate{{Goal: "Bearer abc", Summary: "cookie value is abc123", Confidence: 0.8}},
+		DocumentChunks: []DocumentCandidate{{Title: "token", Content: "password is secret", Confidence: 0.8}},
 		SessionSummary: "Bearer abc",
 	})
-	joined := result.ProfileUpdates[0].Value + result.ProfileUpdates[0].Summary + result.Episodes[0].Summary + result.Episodes[0].Content + result.SessionSummary
+	joined := result.ProfileUpdates[0].Value + result.ProfileUpdates[0].Summary + result.Episodes[0].Summary + result.Episodes[0].Content + result.WorkingUpdates[0].Goal + result.DocumentChunks[0].Content + result.SessionSummary
 	for _, secret := range []string{"abc123", "secret", "Bearer abc"} {
 		if strings.Contains(joined, secret) {
 			t.Fatalf("expected secret %q to be redacted in %q", secret, joined)
 		}
+	}
+}
+
+func TestClassifierSeparatesAcceptedAndIgnoredCandidates(t *testing.T) {
+	t.Parallel()
+	result := (&Classifier{}).Classify("sess-1", &ExtractionResult{
+		ProfileUpdates: []ProfileCandidate{{ScopeType: "session", Key: "language", Summary: "prefers Go", Confidence: 0.9}, {ScopeType: "session", Key: "", Summary: "ok", Confidence: 0.9}},
+		Episodes:       []EpisodeCandidate{{ScopeType: "session", Summary: "Resolved Redis issue", Content: "Restarted Redis", Confidence: 0.8}, {ScopeType: "session", Summary: "ok", Content: "ok", Confidence: 0.9}},
+		WorkingUpdates: []WorkingCandidate{{ScopeType: "session", Goal: "Continue deploy", Summary: "active task", Confidence: 0.8}},
+		DocumentChunks: []DocumentCandidate{{ScopeType: "session", Title: "Runbook", Content: "Useful docs", Confidence: 0.8}, {ScopeType: "session", Title: "Low confidence", Content: "skip", Confidence: 0.2}},
+		SessionSummary: "Summary",
+	})
+	if len(result.Profiles) != 1 || len(result.Episodes) != 1 || len(result.Working) != 1 {
+		t.Fatalf("unexpected classified result %+v", result)
+	}
+	if len(result.Ignored) == 0 {
+		t.Fatal("expected ignored candidates")
+	}
+}
+
+func TestConflictResolverDeduplicatesCandidates(t *testing.T) {
+	t.Parallel()
+	classified := ClassificationResult{
+		Profiles: []ClassifiedProfile{
+			{Candidate: ProfileCandidate{Key: "language", Summary: "Go", Confidence: 0.6}, ScopeType: "session", ScopeID: "sess-1"},
+			{Candidate: ProfileCandidate{Key: "language", Summary: "Go preferred", Confidence: 0.9}, ScopeType: "session", ScopeID: "sess-1"},
+		},
+		Episodes: []ClassifiedEpisode{
+			{Candidate: EpisodeCandidate{Summary: "Redis fix", Content: "one", Confidence: 0.6}, ScopeType: "session", ScopeID: "sess-1"},
+			{Candidate: EpisodeCandidate{Summary: "Redis fix", Content: "two", Confidence: 0.8}, ScopeType: "session", ScopeID: "sess-1"},
+		},
+	}
+	resolved := (&ConflictResolver{}).Resolve(classified)
+	if len(resolved.Profiles) != 1 || len(resolved.Episodes) != 1 {
+		t.Fatalf("expected deduplicated candidates, got %+v", resolved)
+	}
+	if len(resolved.Ignored) == 0 {
+		t.Fatal("expected ignored duplicates")
 	}
 }
 

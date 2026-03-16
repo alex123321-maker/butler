@@ -162,7 +162,7 @@ sprint:
       subsystem: memory
       sprint: SPRINT-MEMORY-COMPLETION
       priority: high
-      status: todo
+      status: done
       description: >
         Expand the async memory worker into explicit extraction, classification,
         conflict-resolution, persistence, and indexing stages with ignore/noise handling.

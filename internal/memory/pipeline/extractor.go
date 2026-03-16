@@ -12,9 +12,11 @@ import (
 
 // ExtractionResult holds the structured output of LLM-based memory extraction.
 type ExtractionResult struct {
-	ProfileUpdates []ProfileCandidate `json:"profile_updates"`
-	Episodes       []EpisodeCandidate `json:"episodes"`
-	SessionSummary string             `json:"session_summary"`
+	ProfileUpdates []ProfileCandidate  `json:"profile_updates"`
+	Episodes       []EpisodeCandidate  `json:"episodes"`
+	WorkingUpdates []WorkingCandidate  `json:"working_updates"`
+	DocumentChunks []DocumentCandidate `json:"document_chunks"`
+	SessionSummary string              `json:"session_summary"`
 }
 
 // ProfileCandidate represents a candidate profile memory entry from extraction.
@@ -32,6 +34,22 @@ type EpisodeCandidate struct {
 	ScopeType  string  `json:"scope_type"`
 	ScopeID    string  `json:"scope_id"`
 	Summary    string  `json:"summary"`
+	Content    string  `json:"content"`
+	Confidence float64 `json:"confidence"`
+}
+
+type WorkingCandidate struct {
+	ScopeType  string  `json:"scope_type"`
+	ScopeID    string  `json:"scope_id"`
+	Goal       string  `json:"goal"`
+	Summary    string  `json:"summary"`
+	Confidence float64 `json:"confidence"`
+}
+
+type DocumentCandidate struct {
+	ScopeType  string  `json:"scope_type"`
+	ScopeID    string  `json:"scope_id"`
+	Title      string  `json:"title"`
 	Content    string  `json:"content"`
 	Confidence float64 `json:"confidence"`
 }
@@ -65,12 +83,20 @@ const extractionSystemPrompt = `You are a memory extraction agent. Analyze the c
 2. Episodes: important events or outcomes worth remembering for future reference.
    - Each episode has: scope_type, scope_id, summary, content (detailed description), confidence (0.0-1.0).
 
-3. Session summary: a concise summary of the session state after this run, covering: current goal, recent events, open tasks, critical facts.
+3. Working updates: short-lived task state that should stay separate from long-term profile memory.
+   - Each working update has: scope_type, scope_id, goal, summary, confidence (0.0-1.0).
+
+4. Document chunks: reusable technical references or compact knowledge snippets if present.
+   - Each document chunk has: scope_type, scope_id, title, content, confidence (0.0-1.0).
+
+5. Session summary: a concise summary of the session state after this run, covering: current goal, recent events, open tasks, critical facts.
 
 Return ONLY valid JSON matching this schema:
 {
   "profile_updates": [{"scope_type":"...","scope_id":"...","key":"...","value":"...","summary":"...","confidence":0.9}],
   "episodes": [{"scope_type":"...","scope_id":"...","summary":"...","content":"...","confidence":0.8}],
+  "working_updates": [{"scope_type":"...","scope_id":"...","goal":"...","summary":"...","confidence":0.8}],
+  "document_chunks": [{"scope_type":"...","scope_id":"...","title":"...","content":"...","confidence":0.7}],
   "session_summary": "..."
 }
 
