@@ -3,8 +3,8 @@
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Memory Model
-**Версия:** 0.1
-**Статус:** Draft
+**Версия:** 0.2
+**Статус:** Baseline
 **Связанный документ:** Butler PRD + Architecture Specification
 
 ---
@@ -237,17 +237,21 @@ Butler использует structured persistence (структурирован
 * memory_chunks
 * memory_links
 
-#### V1 baseline implemented in Sprint 5
+#### Current baseline
 
 The current Butler baseline now includes durable PostgreSQL tables for:
 
 * `memory_working`
 * `memory_profile`
 * `memory_episodes`
+* `memory_chunks`
+* `memory_links`
 
 `memory_profile` is used for structured long-lived facts addressed by `scope_type`, `scope_id`, and `key`.
 
 `memory_episodes` stores completed summaries plus pgvector embeddings so Butler can perform semantic retrieval without treating pgvector as the primary source of truth.
+
+`memory_chunks` stores durable chunked long-form memory such as selected tool-output summaries and doctor-derived memory documents in PostgreSQL, while `memory_links` stores provenance-safe references separately from retrieval-facing content.
 
 ### 8.2 Redis
 
@@ -373,8 +377,6 @@ The async memory worker now separates:
 * candidate classification into profile / episodic / working / document / ignore;
 * conflict resolution before durable writes;
 * explicit ignore handling for low-confidence or noise candidates.
-
-Document candidates may be classified and observed even when durable document-chunk persistence is not yet implemented.
 
 Current baseline now persists accepted document candidates into `memory_chunks`, and may additionally ingest selected long-form tool outputs and doctor reports through explicit allowlist-style logic in the async memory pipeline.
 
@@ -615,15 +617,24 @@ Current Butler baseline now includes memory-specific observability signals:
 * structured logs with memory-oriented fields such as `memory_type`, `source_type`, and `run_id` on persistence paths;
 * doctor memory reporting for queue health and pgvector readiness.
 
+## 21.1 Current operator/browser baseline
+
+Current Butler baseline now exposes read-only operator visibility for durable memory:
+
+* orchestrator serves `GET /api/v1/memory?scope_type=...&scope_id=...` for scope-based inspection;
+* the endpoint returns durable Working, Profile, Episodic, and Chunk memory records when present;
+* provenance-safe related references are returned via `memory_links` instead of copying raw source payloads;
+* Web UI `/memory` provides the corresponding browser for operators and future build agents.
+
 ---
 
 ## 22. Открытые решения
 
-1. Точная SQL schema для memory tables.
-2. Политика дедупликации episodic memory.
-3. Политика сохранения doctor outputs.
-4. Формат session summary и правила его обновления.
-5. Приоритет retrieval между profile, episodic и document memory.
+1. ~~Точная SQL schema для memory tables.~~ — **Текущий baseline реализован** через `memory_working`, `memory_profile`, `memory_episodes`, `memory_chunks`, `memory_links`; дальнейшая эволюция schema остаётся допустимой отдельными миграциями.
+2. ~~Политика дедупликации episodic memory.~~ — **Решено:** near-duplicate эпизоды подавляются, materially different варианты сохраняются как variants по canonical summary policy.
+3. ~~Политика сохранения doctor outputs.~~ — **Решено:** doctor/tool-derived long-form data допускается только через явную allowlist-style ingestion policy с предварительной sanitization и записью в chunk memory.
+4. Формат session summary и точные правила его обновления остаются частично открытыми; текущий baseline использует compact async-updated summary path через memory worker.
+5. ~~Приоритет retrieval между profile, episodic и document memory.~~ — **Решено:** bundle assembly применяет явный порядок summary → working → profile → episodic → chunks в пределах budget policy.
 6. Использовать ли отдельный reranking layer (слой переранжирования) в будущем.
 
 ---
