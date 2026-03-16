@@ -297,7 +297,7 @@ sprint:
       subsystem: observability
       sprint: SPRINT-MEMORY-COMPLETION
       priority: medium
-      status: todo
+      status: done
       description: >
         Add memory-specific metrics, logs, and doctor diagnostics for pipeline health,
         retrieval quality signals, pgvector readiness, and queue/backlog visibility.

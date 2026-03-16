@@ -27,6 +27,7 @@ import (
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/chunks"
+	memorydoctor "github.com/butler/butler/internal/memory/doctor"
 	"github.com/butler/butler/internal/memory/episodic"
 	"github.com/butler/butler/internal/memory/pipeline"
 	"github.com/butler/butler/internal/memory/profile"
@@ -332,7 +333,7 @@ func New(ctx context.Context) (*App, error) {
 
 	// Memory pipeline: enqueuer for async post-run extraction.
 	pipelineQueue := pipeline.NewQueue(redis.Client())
-	pipelineEnqueuer := pipeline.NewEnqueuer(pipelineQueue)
+	pipelineEnqueuer := pipeline.NewEnqueuer(pipelineQueue, m)
 
 	executor := flow.NewService(
 		sessionRepo,
@@ -381,7 +382,8 @@ func New(ctx context.Context) (*App, error) {
 		}
 		return result.GetResultJson(), nil
 	})
-	doctorServer := apiservice.NewDoctorServer(postgres.Pool(), doctorChecker, logger.WithComponent(log, "doctor-api"))
+	memoryDoctor := memorydoctor.NewReporter(pipelineQueue, postgres)
+	doctorServer := apiservice.NewDoctorServer(postgres.Pool(), doctorChecker, memoryDoctor, logger.WithComponent(log, "doctor-api"))
 	settingsService := config.NewSettingsService(settingsStore, hotConfig)
 	settingsServer := apiservice.NewSettingsServer(settingsService)
 	providerServer := apiservice.NewProviderServer(authManager, providerResult.ProviderName, map[string]string{

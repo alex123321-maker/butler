@@ -18,8 +18,17 @@ func (m *mockDoctorChecker) RunCheck(_ context.Context) (string, json.RawMessage
 	return m.status, m.reportJSON, m.err
 }
 
+type mockMemoryReporter struct {
+	report map[string]any
+	err    error
+}
+
+func (m *mockMemoryReporter) Report(context.Context) (map[string]any, error) {
+	return m.report, m.err
+}
+
 func TestDoctorHandleRunCheck_MethodNotAllowed(t *testing.T) {
-	srv := NewDoctorServer(nil, &mockDoctorChecker{}, nil)
+	srv := NewDoctorServer(nil, &mockDoctorChecker{}, nil, nil)
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/doctor/check", nil)
 	srv.HandleRunCheck().ServeHTTP(rec, req)
@@ -30,7 +39,7 @@ func TestDoctorHandleRunCheck_MethodNotAllowed(t *testing.T) {
 
 func TestDoctorHandleRunCheck_CheckerError(t *testing.T) {
 	checker := &mockDoctorChecker{err: errTestFail}
-	srv := NewDoctorServer(nil, checker, nil)
+	srv := NewDoctorServer(nil, checker, nil, nil)
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/doctor/check", nil)
 	srv.HandleRunCheck().ServeHTTP(rec, req)
@@ -43,7 +52,7 @@ func TestDoctorHandleRunCheck_Success_NoPool(t *testing.T) {
 	// When pool is nil, the store fails but we still return the report
 	report := json.RawMessage(`{"status":"healthy","checks":[]}`)
 	checker := &mockDoctorChecker{status: "healthy", reportJSON: report}
-	srv := NewDoctorServer(nil, checker, nil)
+	srv := NewDoctorServer(nil, checker, &mockMemoryReporter{report: map[string]any{"queue": map[string]any{"healthy": true, "depth": float64(0)}}}, nil)
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/doctor/check", nil)
 	srv.HandleRunCheck().ServeHTTP(rec, req)
@@ -61,10 +70,14 @@ func TestDoctorHandleRunCheck_Success_NoPool(t *testing.T) {
 	if resp["stored"] != false {
 		t.Errorf("expected stored=false, got %v", resp["stored"])
 	}
+	reportBody := resp["report"].(map[string]any)
+	if _, ok := reportBody["memory"]; !ok {
+		t.Fatalf("expected memory doctor data, got %+v", reportBody)
+	}
 }
 
 func TestDoctorHandleListReports_MethodNotAllowed(t *testing.T) {
-	srv := NewDoctorServer(nil, &mockDoctorChecker{}, nil)
+	srv := NewDoctorServer(nil, &mockDoctorChecker{}, nil, nil)
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/doctor/reports", nil)
 	srv.HandleListReports().ServeHTTP(rec, req)
@@ -74,7 +87,7 @@ func TestDoctorHandleListReports_MethodNotAllowed(t *testing.T) {
 }
 
 func TestDoctorHandleListReports_NoPool(t *testing.T) {
-	srv := NewDoctorServer(nil, &mockDoctorChecker{}, nil)
+	srv := NewDoctorServer(nil, &mockDoctorChecker{}, nil, nil)
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/doctor/reports", nil)
 	srv.HandleListReports().ServeHTTP(rec, req)

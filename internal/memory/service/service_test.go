@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/butler/butler/internal/memory/embeddings"
+	"github.com/butler/butler/internal/metrics"
 )
 
 func TestBuildBundleOwnsScopeOrderAndLimits(t *testing.T) {
@@ -135,6 +136,7 @@ func TestBuildBundleCombinesKeywordAndVectorEpisodes(t *testing.T) {
 
 func TestBuildBundleIncludesRelevantChunks(t *testing.T) {
 	t.Parallel()
+	registry := metrics.New()
 	svc := New(Config{
 		ChunkStore: &stubChunkStore{
 			vectorMatches:  []Chunk{stubChunk{title: "Redis runbook", summary: "Recover Redis after outage", distance: 0.05}},
@@ -143,6 +145,7 @@ func TestBuildBundleIncludesRelevantChunks(t *testing.T) {
 		Embeddings:   stubEmbeddings{vector: testVector(0.4)},
 		ChunkLimit:   3,
 		BundleBudget: 5,
+		Metrics:      registry,
 	})
 	bundle, err := svc.BuildBundle(context.Background(), BundleRequest{SessionKey: "session-1", UserID: "user-1", UserMessage: "redis incident", IncludeQuery: true})
 	if err != nil {

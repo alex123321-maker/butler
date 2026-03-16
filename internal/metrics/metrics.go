@@ -15,6 +15,11 @@ const (
 	MetricRequestsTotal          = "butler_requests_total"
 	MetricErrorsTotal            = "butler_errors_total"
 	MetricRequestDurationSeconds = "butler_request_duration_seconds"
+	MetricMemoryJobsTotal        = "butler_memory_jobs_total"
+	MetricMemoryWritesTotal      = "butler_memory_writes_total"
+	MetricMemoryRetrievalsTotal  = "butler_memory_retrievals_total"
+	MetricMemoryQueueDepth       = "butler_memory_queue_depth"
+	MetricDoctorChecksTotal      = "butler_doctor_checks_total"
 )
 
 type Registry struct {
@@ -38,6 +43,16 @@ func New() *Registry {
 	r.mustRegisterCounter(MetricRequestsTotal, "Total number of Butler requests.", []string{"operation", "service", "status"})
 	r.mustRegisterCounter(MetricErrorsTotal, "Total number of Butler errors.", []string{"error_class", "operation", "service"})
 	r.mustRegisterHistogram(MetricRequestDurationSeconds, "Latency of Butler request handling in seconds.", []string{"operation", "service"})
+	r.mustRegisterCounter(MetricMemoryJobsTotal, "Total number of Butler memory jobs.", []string{"job_type", "service", "status"})
+	r.mustRegisterCounter(MetricMemoryWritesTotal, "Total number of Butler memory writes.", []string{"memory_type", "service", "status"})
+	r.mustRegisterCounter(MetricMemoryRetrievalsTotal, "Total number of Butler memory retrieval operations.", []string{"memory_type", "service", "status"})
+	r.mustRegisterCounter(MetricDoctorChecksTotal, "Total number of Butler doctor checks.", []string{"component", "service", "status"})
+	r.mu.Lock()
+	queueGauge := prometheus.NewGaugeVec(prometheus.GaugeOpts{Name: MetricMemoryQueueDepth, Help: "Depth of Butler memory queues."}, []string{"queue", "service"})
+	r.registry.MustRegister(queueGauge)
+	r.gauges[MetricMemoryQueueDepth] = queueGauge
+	r.metricLabelNames[MetricMemoryQueueDepth] = []string{"queue", "service"}
+	r.mu.Unlock()
 
 	return r
 }

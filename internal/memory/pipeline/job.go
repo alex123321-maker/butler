@@ -69,3 +69,11 @@ func (q *Queue) Dequeue(ctx context.Context, timeout time.Duration) (*Job, error
 	}
 	return &job, nil
 }
+
+func (q *Queue) Depth(ctx context.Context) (int64, error) {
+	depth, err := q.client.LLen(ctx, QueueKey).Result()
+	if err != nil {
+		return 0, fmt.Errorf("memory pipeline queue depth: %w", err)
+	}
+	return depth, nil
+}

@@ -24,21 +24,27 @@ type DoctorChecker interface {
 	RunCheck(ctx context.Context) (status string, reportJSON json.RawMessage, err error)
 }
 
+type MemoryDoctorReporter interface {
+	Report(ctx context.Context) (map[string]any, error)
+}
+
 // DoctorServer serves REST endpoints for doctor reports.
 type DoctorServer struct {
 	pool    *pgxpool.Pool
 	checker DoctorChecker
+	memory  MemoryDoctorReporter
 	log     *slog.Logger
 }
 
 // NewDoctorServer creates a new DoctorServer.
-func NewDoctorServer(pool *pgxpool.Pool, checker DoctorChecker, log *slog.Logger) *DoctorServer {
+func NewDoctorServer(pool *pgxpool.Pool, checker DoctorChecker, memory MemoryDoctorReporter, log *slog.Logger) *DoctorServer {
 	if log == nil {
 		log = slog.Default()
 	}
 	return &DoctorServer{
 		pool:    pool,
 		checker: checker,
+		memory:  memory,
 		log:     logger.WithComponent(log, "doctor-api"),
 	}
 }
@@ -58,6 +64,19 @@ func (d *DoctorServer) HandleRunCheck() http.Handler {
 			d.log.Error("doctor check failed", slog.String("error", err.Error()))
 			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "doctor check failed: " + err.Error()})
 			return
+		}
+
+		if d.memory != nil {
+			memoryReport, memErr := d.memory.Report(ctx)
+			if memErr == nil {
+				var combined map[string]any
+				if err := json.Unmarshal(reportJSON, &combined); err == nil {
+					combined["memory"] = memoryReport
+					if merged, err := json.Marshal(combined); err == nil {
+						reportJSON = merged
+					}
+				}
+			}
 		}
 
 		// Store the report

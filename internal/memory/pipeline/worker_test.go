@@ -10,6 +10,7 @@ import (
 
 	"github.com/butler/butler/internal/memory/chunks"
 	"github.com/butler/butler/internal/memory/transcript"
+	"github.com/butler/butler/internal/metrics"
 )
 
 // --- Fake LLM Caller ---
@@ -277,7 +278,7 @@ func TestConflictResolverMarksEpisodeVariants(t *testing.T) {
 
 func TestWriteDocumentChunksPersistsDocumentCandidatesAndDoctorOutput(t *testing.T) {
 	t.Parallel()
-	worker := &Worker{chunkStore: &fakeChunkStore{}, embeddings: &fakeEmbeddingProvider{embedding: testWorkerVector(0.3)}}
+	worker := &Worker{chunkStore: &fakeChunkStore{}, embeddings: &fakeEmbeddingProvider{embedding: testWorkerVector(0.3)}, metrics: metrics.New()}
 	transcriptValue := transcript.Transcript{ToolCalls: []transcript.ToolCall{{ToolName: "doctor.check_system", ResultJSON: `{"status":"healthy","summary":"all good"}`}}}
 	count, err := worker.writeDocumentChunks(context.Background(), nilLogger(), &Job{RunID: "run-1", SessionKey: "session-1"}, []ClassifiedDocument{{Candidate: DocumentCandidate{Title: "Runbook", Content: "Restart Redis and verify leases", Confidence: 0.9}, ScopeType: "session", ScopeID: "session-1"}}, transcriptValue)
 	if err != nil {
@@ -290,6 +291,14 @@ func TestWriteDocumentChunksPersistsDocumentCandidatesAndDoctorOutput(t *testing
 	if len(stored) != 2 || stored[0].Title == "" || stored[1].SourceType != "doctor_report" {
 		t.Fatalf("unexpected stored chunks %+v", stored)
 	}
+}
+
+func TestRecordMemoryMetricsHelpersDoNotPanic(t *testing.T) {
+	t.Parallel()
+	worker := &Worker{metrics: metrics.New()}
+	worker.recordMemoryJobMetric(JobTypePostRun, "started")
+	worker.recordMemoryWriteMetric("profile", 2)
+	worker.recordMemoryQueueDepth(context.Background())
 }
 
 func testWorkerVector(value float32) []float32 {

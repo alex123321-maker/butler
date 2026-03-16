@@ -14,6 +14,7 @@ import (
 	"github.com/butler/butler/internal/memory/profile"
 	"github.com/butler/butler/internal/memory/sanitize"
 	"github.com/butler/butler/internal/memory/transcript"
+	"github.com/butler/butler/internal/metrics"
 )
 
 // TranscriptReader reads transcripts for a given run.
@@ -69,6 +70,7 @@ type Worker struct {
 	summaryWriter SessionSummaryWriter
 	config        WorkerConfig
 	log           *slog.Logger
+	metrics       *metrics.Registry
 }
 
 // NewWorker creates a new memory pipeline worker.
@@ -81,6 +83,7 @@ func NewWorker(
 	embeddingProvider EmbeddingProvider,
 	summaryWriter SessionSummaryWriter,
 	cfg WorkerConfig,
+	registry *metrics.Registry,
 	log *slog.Logger,
 ) *Worker {
 	if log == nil {
@@ -106,6 +109,7 @@ func NewWorker(
 		summaryWriter: summaryWriter,
 		config:        cfg,
 		log:           log,
+		metrics:       registry,
 	}
 }
 
@@ -144,11 +148,13 @@ func (w *Worker) processJob(ctx context.Context, job *Job) {
 	)
 
 	jobLog.Info("processing memory pipeline job")
+	w.recordMemoryJobMetric(job.JobType, "started")
 	started := time.Now()
 
 	switch job.JobType {
 	case JobTypePostRun:
 		if err := w.processPostRun(ctx, jobLog, job); err != nil {
+			w.recordMemoryJobMetric(job.JobType, "error")
 			jobLog.Error("post-run extraction failed",
 				slog.String("error", err.Error()),
 				slog.Duration("duration", time.Since(started)),
@@ -163,6 +169,7 @@ func (w *Worker) processJob(ctx context.Context, job *Job) {
 	jobLog.Info("memory pipeline job completed",
 		slog.Duration("duration", time.Since(started)),
 	)
+	w.recordMemoryJobMetric(job.JobType, "completed")
 }
 
 func (w *Worker) processPostRun(ctx context.Context, log *slog.Logger, job *Job) error {
@@ -230,6 +237,10 @@ func (w *Worker) processPostRun(ctx context.Context, log *slog.Logger, job *Job)
 		slog.Int("chunks_written", chunkCount),
 		slog.Bool("summary_updated", strings.TrimSpace(resolved.Summary) != ""),
 	)
+	w.recordMemoryWriteMetric("profile", profileCount)
+	w.recordMemoryWriteMetric("episodic", episodeCount)
+	w.recordMemoryWriteMetric("chunk", chunkCount)
+	w.recordMemoryQueueDepth(ctx)
 	return nil
 }
 
@@ -512,6 +523,31 @@ func doctorChunkCandidate(sessionKey string, t transcript.Transcript) (synthetic
 		return syntheticChunkCandidate{Title: "Doctor report", Content: content, Summary: "Doctor report summary", SourceType: "doctor_report", SourceID: sessionKey, TagsJSON: `["doctor","tool_output"]`}, true
 	}
 	return syntheticChunkCandidate{}, false
+}
+
+func (w *Worker) recordMemoryJobMetric(jobType, status string) {
+	if w.metrics == nil {
+		return
+	}
+	_ = w.metrics.IncrCounter(metrics.MetricMemoryJobsTotal, map[string]string{"job_type": jobType, "service": "memory-pipeline", "status": status})
+}
+
+func (w *Worker) recordMemoryWriteMetric(memoryType string, count int) {
+	if w.metrics == nil || count <= 0 {
+		return
+	}
+	for i := 0; i < count; i++ {
+		_ = w.metrics.IncrCounter(metrics.MetricMemoryWritesTotal, map[string]string{"memory_type": memoryType, "service": "memory-pipeline", "status": "success"})
+	}
+}
+
+func (w *Worker) recordMemoryQueueDepth(ctx context.Context) {
+	if w.metrics == nil || w.queue == nil {
+		return
+	}
+	if depth, err := w.queue.Depth(ctx); err == nil {
+		_ = w.metrics.SetGauge(metrics.MetricMemoryQueueDepth, float64(depth), map[string]string{"queue": QueueKey, "service": "memory-pipeline"})
+	}
 }
 
 func normalizeScopeType(scopeType string) string {

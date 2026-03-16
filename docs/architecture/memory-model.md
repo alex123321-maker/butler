@@ -606,9 +606,18 @@ Current Butler baseline now applies explicit housekeeping policies:
 * Episodic Memory and document chunks can be pruned by age while keeping the highest-confidence recent items per scope;
 * housekeeping operations are safe to rerun and report deletion counts for observability.
 
+## 21. Current observability baseline
+
+Current Butler baseline now includes memory-specific observability signals:
+
+* counters for memory jobs, memory writes, retrieval hits/misses, and doctor checks;
+* queue depth gauge for the memory pipeline backlog;
+* structured logs with memory-oriented fields such as `memory_type`, `source_type`, and `run_id` on persistence paths;
+* doctor memory reporting for queue health and pgvector readiness.
+
 ---
 
-## 21. Открытые решения
+## 22. Открытые решения
 
 1. Точная SQL schema для memory tables.
 2. Политика дедупликации episodic memory.
@@ -619,7 +628,7 @@ Current Butler baseline now applies explicit housekeeping policies:
 
 ---
 
-## 22. Итоговый тезис
+## 23. Итоговый тезис
 
 Память Butler должна быть **многослойной, структурированной и управляемой**.
 Она не равна ни чату, ни RAG, ни векторной базе.

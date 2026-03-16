@@ -10,6 +10,7 @@ import (
 
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/embeddings"
+	"github.com/butler/butler/internal/metrics"
 )
 
 type ProfileStore interface {
@@ -76,6 +77,7 @@ type Config struct {
 	KeywordLimit  int
 	ScopeOrder    []string
 	Log           *slog.Logger
+	Metrics       *metrics.Registry
 }
 
 type Service struct {
@@ -161,6 +163,9 @@ func (s *Service) BuildBundle(ctx context.Context, req BundleRequest) (Bundle, e
 	}
 	summary := s.loadSummary(ctx, req.SessionKey)
 	items, promptSummary, promptWorking, promptProfile, promptEpisodes, promptChunks := s.applyBudget(summary, working, profileEntries, episodes, chunks)
+	s.recordRetrievalMetric("profile", len(promptProfile) > 0)
+	s.recordRetrievalMetric("episodic", len(promptEpisodes) > 0)
+	s.recordRetrievalMetric("chunk", len(promptChunks) > 0)
 
 	return Bundle{Items: items, Prompt: FormatPrompt(promptWorking, promptProfile, promptEpisodes, promptChunks, promptSummary), Working: working}, nil
 }
@@ -509,6 +514,17 @@ func min(left, right int) int {
 		return left
 	}
 	return right
+}
+
+func (s *Service) recordRetrievalMetric(memoryType string, hit bool) {
+	if s.config.Metrics == nil {
+		return
+	}
+	status := "miss"
+	if hit {
+		status = "hit"
+	}
+	_ = s.config.Metrics.IncrCounter(metrics.MetricMemoryRetrievalsTotal, map[string]string{"memory_type": memoryType, "service": "memory-service", "status": status})
 }
 
 func normalizeWorkingStatus(value string) string {
