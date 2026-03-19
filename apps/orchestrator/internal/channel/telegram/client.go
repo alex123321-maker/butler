@@ -12,18 +12,22 @@ import (
 )
 
 type Client struct {
-	baseURL        string
-	botToken       string
-	httpClient     *http.Client
-	sendMessage    func(context.Context, int64, string) (Message, error)
-	editMessage    func(context.Context, int64, int64, string) (Message, error)
-	answerCallback func(context.Context, string, string) error
+	baseURL           string
+	botToken          string
+	httpClient        *http.Client
+	sendMessage       func(context.Context, int64, string) (Message, error)
+	sendMessageMarkup func(context.Context, int64, string, *InlineKeyboardMarkup) (Message, error)
+	editMessage       func(context.Context, int64, int64, string) (Message, error)
+	sendMessageDraft  func(context.Context, int64, int64, string) error
+	answerCallback    func(context.Context, string, string) error
+	sendChatAction    func(context.Context, int64, string) error
 }
 
 type apiError struct {
 	StatusCode  int
 	Description string
 	Retryable   bool
+	RetryAfter  time.Duration
 }
 
 func (e *apiError) Error() string {
@@ -83,13 +87,15 @@ type getUpdatesRequest struct {
 }
 
 type sendMessageRequest struct {
-	ChatID int64  `json:"chat_id"`
-	Text   string `json:"text"`
+	ChatID    int64  `json:"chat_id"`
+	Text      string `json:"text"`
+	ParseMode string `json:"parse_mode,omitempty"`
 }
 
 type sendMessageWithMarkupRequest struct {
 	ChatID      int64                 `json:"chat_id"`
 	Text        string                `json:"text"`
+	ParseMode   string                `json:"parse_mode,omitempty"`
 	ReplyMarkup *InlineKeyboardMarkup `json:"reply_markup,omitempty"`
 }
 
@@ -97,6 +103,13 @@ type editMessageTextRequest struct {
 	ChatID    int64  `json:"chat_id"`
 	MessageID int64  `json:"message_id"`
 	Text      string `json:"text"`
+	ParseMode string `json:"parse_mode,omitempty"`
+}
+
+type sendMessageDraftRequest struct {
+	ChatID  int64  `json:"chat_id"`
+	DraftID int64  `json:"draft_id"`
+	Text    string `json:"text"`
 }
 
 type answerCallbackQueryRequest struct {
@@ -104,11 +117,25 @@ type answerCallbackQueryRequest struct {
 	Text            string `json:"text,omitempty"`
 }
 
+type sendChatActionRequest struct {
+	ChatID int64  `json:"chat_id"`
+	Action string `json:"action"`
+}
+
+// Chat action constants supported by Telegram.
+const (
+	ChatActionTyping         = "typing"
+	ChatActionUploadDocument = "upload_document"
+)
+
 type apiEnvelope[T any] struct {
 	OK          bool   `json:"ok"`
 	Result      T      `json:"result"`
 	Description string `json:"description"`
 	ErrorCode   int    `json:"error_code"`
+	Parameters  struct {
+		RetryAfter int `json:"retry_after"`
+	} `json:"parameters"`
 }
 
 func NewClient(baseURL, botToken string, httpClient *http.Client) (*Client, error) {
@@ -144,11 +171,14 @@ func (c *Client) SendMessage(ctx context.Context, chatID int64, text string) (Me
 	if c.sendMessage != nil {
 		return c.sendMessage(ctx, chatID, text)
 	}
-	return doTelegramRequest[Message](ctx, c, "sendMessage", sendMessageRequest{ChatID: chatID, Text: text})
+	return doTelegramRequest[Message](ctx, c, "sendMessage", sendMessageRequest{ChatID: chatID, Text: renderTelegramHTML(text), ParseMode: telegramParseModeHTML})
 }
 
 func (c *Client) SendMessageWithReplyMarkup(ctx context.Context, chatID int64, text string, markup *InlineKeyboardMarkup) (Message, error) {
-	return doTelegramRequest[Message](ctx, c, "sendMessage", sendMessageWithMarkupRequest{ChatID: chatID, Text: text, ReplyMarkup: markup})
+	if c.sendMessageMarkup != nil {
+		return c.sendMessageMarkup(ctx, chatID, text, markup)
+	}
+	return doTelegramRequest[Message](ctx, c, "sendMessage", sendMessageWithMarkupRequest{ChatID: chatID, Text: renderTelegramHTML(text), ParseMode: telegramParseModeHTML, ReplyMarkup: markup})
 }
 
 func (c *Client) AnswerCallbackQuery(ctx context.Context, callbackQueryID, text string) error {
@@ -163,7 +193,26 @@ func (c *Client) EditMessageText(ctx context.Context, chatID, messageID int64, t
 	if c.editMessage != nil {
 		return c.editMessage(ctx, chatID, messageID, text)
 	}
-	return doTelegramRequest[Message](ctx, c, "editMessageText", editMessageTextRequest{ChatID: chatID, MessageID: messageID, Text: text})
+	return doTelegramRequest[Message](ctx, c, "editMessageText", editMessageTextRequest{ChatID: chatID, MessageID: messageID, Text: renderTelegramHTML(text), ParseMode: telegramParseModeHTML})
+}
+
+func (c *Client) SendMessageDraft(ctx context.Context, chatID, draftID int64, text string) error {
+	if c.sendMessageDraft != nil {
+		return c.sendMessageDraft(ctx, chatID, draftID, text)
+	}
+	_, err := doTelegramRequest[bool](ctx, c, "sendMessageDraft", sendMessageDraftRequest{ChatID: chatID, DraftID: draftID, Text: text})
+	return err
+}
+
+// SendChatAction sends a chat action indicator (e.g. "typing") to the
+// specified chat. The action is displayed for up to 5 seconds or until
+// the bot sends a message.
+func (c *Client) SendChatAction(ctx context.Context, chatID int64, action string) error {
+	if c.sendChatAction != nil {
+		return c.sendChatAction(ctx, chatID, action)
+	}
+	_, err := doTelegramRequest[bool](ctx, c, "sendChatAction", sendChatActionRequest{ChatID: chatID, Action: action})
+	return err
 }
 
 func (c *Client) endpoint(method string) string {
@@ -198,10 +247,12 @@ func doTelegramRequest[T any](ctx context.Context, client *Client, method string
 		return zero, fmt.Errorf("decode telegram %s response: %w", method, err)
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 || !envelope.OK {
+		retryAfter := time.Duration(envelope.Parameters.RetryAfter) * time.Second
 		return zero, &apiError{
 			StatusCode:  resp.StatusCode,
 			Description: strings.TrimSpace(envelope.Description),
 			Retryable:   resp.StatusCode >= 500 || resp.StatusCode == http.StatusTooManyRequests,
+			RetryAfter:  retryAfter,
 		}
 	}
 	return envelope.Result, nil

@@ -95,13 +95,29 @@ type StorageEntry struct {
 	Value string `json:"value"`
 }
 
+// ResultLink represents a single navigation link extracted from a page.
+type ResultLink struct {
+	Text string `json:"text"`
+	Href string `json:"href"`
+}
+
+// ResultError contains structured error information from the browser runtime.
+type ResultError struct {
+	ErrorType string `json:"error_type"`
+	Message   string `json:"message"`
+	Retryable bool   `json:"retryable"`
+}
+
 // Result represents normalized output from the Playwright runner.
 type Result struct {
-	FinalURL string `json:"final_url,omitempty"`
-	Title    string `json:"title,omitempty"`
-	Text     string `json:"text,omitempty"`
-	Matched  bool   `json:"matched,omitempty"`
-	OK       bool   `json:"ok,omitempty"`
+	FinalURL   string       `json:"final_url,omitempty"`
+	Title      string       `json:"title,omitempty"`
+	Text       string       `json:"text,omitempty"`
+	Matched    bool         `json:"matched,omitempty"`
+	OK         bool         `json:"ok,omitempty"`
+	Links      []ResultLink `json:"links,omitempty"`
+	PageStatus string       `json:"page_status,omitempty"`
+	Error      *ResultError `json:"error,omitempty"`
 }
 
 func NewServer(runner Runner, log *slog.Logger) *Server {
@@ -218,15 +234,34 @@ func resolveCredentialValue(args *Request, resolved []*runtimev1.ResolvedCredent
 func buildResultJSON(toolName string, result Result) string {
 	switch toolName {
 	case "browser.navigate", "browser.snapshot":
-		return mustJSON(map[string]any{"final_url": result.FinalURL, "title": result.Title, "text": result.Text})
+		out := map[string]any{"final_url": result.FinalURL, "title": result.Title, "text": result.Text, "page_status": result.PageStatus}
+		if len(result.Links) > 0 {
+			out["links"] = result.Links
+		}
+		if result.Error != nil {
+			out["error"] = result.Error
+		}
+		return mustJSON(out)
 	case "browser.click":
-		return mustJSON(map[string]any{"ok": result.OK, "title": result.Title})
+		out := map[string]any{"ok": result.OK, "title": result.Title}
+		if result.Error != nil {
+			out["error"] = result.Error
+		}
+		return mustJSON(out)
 	case "browser.fill", "browser.type":
-		return mustJSON(map[string]any{"ok": result.OK})
+		out := map[string]any{"ok": result.OK}
+		if result.Error != nil {
+			out["error"] = result.Error
+		}
+		return mustJSON(out)
 	case "browser.wait_for":
 		return mustJSON(map[string]any{"matched": result.Matched})
 	case "browser.extract_text":
-		return mustJSON(map[string]any{"text": result.Text})
+		out := map[string]any{"text": result.Text}
+		if result.Error != nil {
+			out["error"] = result.Error
+		}
+		return mustJSON(out)
 	case "browser.set_cookie", "browser.restore_storage_state":
 		return mustJSON(map[string]any{"ok": result.OK})
 	default:

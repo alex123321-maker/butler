@@ -333,6 +333,25 @@ func parseLeaseResult(values []string) (LeaseRecord, error) {
 }
 
 var acquireLeaseScript = redislib.NewScript(`
+local function epoch_to_iso(epoch)
+  local s = epoch
+  local Z = math.floor(s / 86400) + 719468
+  local era = math.floor((Z >= 0 and Z or Z - 146096) / 146097)
+  local doe = Z - era * 146097
+  local yoe = math.floor((doe - math.floor(doe/1460) + math.floor(doe/36524) - math.floor(doe/146096)) / 365)
+  local y = yoe + era * 400
+  local doy = doe - (365*yoe + math.floor(yoe/4) - math.floor(yoe/100))
+  local mp = math.floor((5*doy + 2) / 153)
+  local d = doy - math.floor((153*mp + 2) / 5) + 1
+  local m = mp + (mp < 10 and 3 or -9)
+  if m <= 2 then y = y + 1 end
+  local daySec = s % 86400
+  local h = math.floor(daySec / 3600)
+  local mi = math.floor((daySec % 3600) / 60)
+  local sec = daySec % 60
+  return string.format("%04d-%02d-%02dT%02d:%02d:%02d", y, m, d, h, mi, sec)
+end
+
 local existing = redis.call("GET", KEYS[1])
 if not existing then
   redis.call("SET", KEYS[1], ARGV[1], "PX", ARGV[2])
@@ -352,7 +371,7 @@ if current.run_id == ARGV[4] and current.owner_id == ARGV[5] then
   local expiresAtNanos = (expiresAtMillis % 1000) * 1000000
 
   current.ttl_seconds = ttlSeconds
-  current.expires_at = string.format("%s.%09dZ", os.date("!%Y-%m-%dT%H:%M:%S", expiresAtSeconds), expiresAtNanos)
+  current.expires_at = string.format("%s.%09dZ", epoch_to_iso(expiresAtSeconds), expiresAtNanos)
 
   local payload = cjson.encode(current)
   redis.call("SET", KEYS[1], payload, "PX", ttlMillis)
@@ -364,6 +383,25 @@ return {-1, existing}
 `)
 
 var renewLeaseScript = redislib.NewScript(`
+local function epoch_to_iso(epoch)
+  local s = epoch
+  local Z = math.floor(s / 86400) + 719468
+  local era = math.floor((Z >= 0 and Z or Z - 146096) / 146097)
+  local doe = Z - era * 146097
+  local yoe = math.floor((doe - math.floor(doe/1460) + math.floor(doe/36524) - math.floor(doe/146096)) / 365)
+  local y = yoe + era * 400
+  local doy = doe - (365*yoe + math.floor(yoe/4) - math.floor(yoe/100))
+  local mp = math.floor((5*doy + 2) / 153)
+  local d = doy - math.floor((153*mp + 2) / 5) + 1
+  local m = mp + (mp < 10 and 3 or -9)
+  if m <= 2 then y = y + 1 end
+  local daySec = s % 86400
+  local h = math.floor(daySec / 3600)
+  local mi = math.floor((daySec % 3600) / 60)
+  local sec = daySec % 60
+  return string.format("%04d-%02d-%02dT%02d:%02d:%02d", y, m, d, h, mi, sec)
+end
+
 local sessionKey = redis.call("GET", KEYS[1])
 if not sessionKey then
   return nil
@@ -392,7 +430,7 @@ local expiresAtSeconds = math.floor(expiresAtMillis / 1000)
 local expiresAtNanos = (expiresAtMillis % 1000) * 1000000
 
 current.ttl_seconds = ttlSeconds
-current.expires_at = os.date("!%Y-%m-%dT%H:%M:%S", expiresAtSeconds) .. string.format(".%09dZ", expiresAtNanos)
+current.expires_at = epoch_to_iso(expiresAtSeconds) .. string.format(".%09dZ", expiresAtNanos)
 
 local payload = cjson.encode(current)
 redis.call("SET", leaseKey, payload, "PX", ttlMillis)

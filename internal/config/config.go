@@ -80,6 +80,14 @@ type OrchestratorConfig struct {
 	MemoryEpisodicLimit              int
 	MemoryScopeOrder                 []string
 	MemoryWorkingTransientTTLSeconds int
+	MemoryEmbeddingModel             string
+	MemoryEmbeddingProvider          string
+	MemoryEmbeddingDimensions        int
+	OllamaURL                        string
+	MemoryPipelineEnabled            bool
+	MemoryPipelinePollTimeoutSeconds int
+	MemoryPipelineMaxRetries         int
+	MemoryExtractionModel            string
 }
 
 type ToolBrokerConfig struct {
@@ -207,6 +215,14 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_MEMORY_EPISODIC_LIMIT", component: "orchestrator", typeName: "int", required: false, defaultValue: "3", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.MemoryEpisodicLimit = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_MEMORY_SCOPE_ORDER", component: "orchestrator", typeName: "csv", required: false, defaultValue: "session,user,global", requiresRestart: true, validate: validateMemoryScopeOrder, assign: func(v string) { cfg.MemoryScopeOrder = parseCSV(v) }},
 		fieldSpec{key: "BUTLER_MEMORY_WORKING_TRANSIENT_TTL_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "1800", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.MemoryWorkingTransientTTLSeconds = mustParseInt(v) }},
+		fieldSpec{key: "BUTLER_MEMORY_EMBEDDING_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "text-embedding-3-small", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.MemoryEmbeddingModel = v }},
+		fieldSpec{key: "BUTLER_MEMORY_EMBEDDING_PROVIDER", component: "orchestrator", typeName: "string", required: false, defaultValue: "openai", allowedValues: []string{"openai", "ollama"}, requiresRestart: true, assign: func(v string) { cfg.MemoryEmbeddingProvider = strings.ToLower(strings.TrimSpace(v)) }},
+		fieldSpec{key: "BUTLER_MEMORY_EMBEDDING_DIMENSIONS", component: "orchestrator", typeName: "int", required: false, defaultValue: "1536", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.MemoryEmbeddingDimensions = mustParseInt(v) }},
+		fieldSpec{key: "BUTLER_OLLAMA_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "http://ollama:11434", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.OllamaURL = v }},
+		fieldSpec{key: "BUTLER_MEMORY_PIPELINE_ENABLED", component: "orchestrator", typeName: "string", required: false, defaultValue: "true", allowedValues: []string{"true", "false"}, requiresRestart: true, assign: func(v string) { cfg.MemoryPipelineEnabled = strings.ToLower(strings.TrimSpace(v)) == "true" }},
+		fieldSpec{key: "BUTLER_MEMORY_PIPELINE_POLL_TIMEOUT_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "5", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.MemoryPipelinePollTimeoutSeconds = mustParseInt(v) }},
+		fieldSpec{key: "BUTLER_MEMORY_PIPELINE_MAX_RETRIES", component: "orchestrator", typeName: "int", required: false, defaultValue: "3", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.MemoryPipelineMaxRetries = mustParseInt(v) }},
+		fieldSpec{key: "BUTLER_MEMORY_EXTRACTION_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-4o-mini", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.MemoryExtractionModel = v }},
 	)
 
 	snapshot, err := loadSpecs(get, specs)

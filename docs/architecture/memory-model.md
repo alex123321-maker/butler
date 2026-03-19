@@ -335,7 +335,7 @@ At the current implementation stage:
 * profile retrieval is structured lookup by scope from `memory_profile`;
 * episodic retrieval is vector similarity search from `memory_episodes` using pgvector distance ordering;
 * `internal/memory/service` owns bundle assembly policy, scope ordering, and store-specific retrieval for profile, episodic, working, and session-summary inputs;
-* orchestrator requests that bundle and injects the returned compact system memory prompt before model execution when relevant entries exist.
+* orchestrator requests that structured bundle and assembles the final system prompt itself when relevant entries exist.
 
 #### Current hybrid retrieval baseline
 
@@ -615,7 +615,7 @@ Current Butler baseline now includes memory-specific observability signals:
 * counters for memory jobs, memory writes, retrieval hits/misses, and doctor checks;
 * queue depth gauge for the memory pipeline backlog;
 * structured logs with memory-oriented fields such as `memory_type`, `source_type`, and `run_id` on persistence paths;
-* doctor memory reporting for queue health and pgvector readiness.
+* doctor memory reporting for queue health, pgvector readiness, pipeline worker status, and embedding provider availability.
 
 ## 21.1 Current operator/browser baseline
 
@@ -625,6 +625,42 @@ Current Butler baseline now exposes read-only operator visibility for durable me
 * the endpoint returns durable Working, Profile, Episodic, and Chunk memory records when present;
 * provenance-safe related references are returned via `memory_links` instead of copying raw source payloads;
 * Web UI `/memory` provides the corresponding browser for operators and future build agents.
+
+---
+
+## 21.2 Current pipeline operational baseline
+
+The async memory pipeline is now fully operational end-to-end:
+
+* **Embedding provider** (`internal/memory/embeddings/`): pluggable embedding provider supporting both OpenAI-compatible and Ollama backends. The provider produces embedding vectors for episodic memory and document chunk semantic search.
+  * **OpenAI provider** (`provider.go`): HTTP client for OpenAI `/v1/embeddings` endpoint, default model `text-embedding-3-small` (1536 dimensions). Requires an API key.
+  * **Ollama provider** (`ollama.go`): HTTP client for Ollama `/api/embed` endpoint, default model `nomic-embed-text` (768 dimensions). No API key required; runs locally via Docker. Recommended for self-hosted deployments without an OpenAI API key.
+  * **Vector dimensions** are configurable at startup via `BUTLER_MEMORY_EMBEDDING_DIMENSIONS` (defaults to 1536). The database migration `021_flexible_vector_dimensions` removes fixed `vector(1536)` column types to support any dimension size.
+* **LLM caller** (`internal/memory/pipeline/llmcaller.go`, `internal/memory/pipeline/codexcaller.go`): lightweight extraction callers for either OpenAI chat completions or OpenAI Codex responses auth, depending on which provider credentials Butler has available.
+* **Pipeline worker** (`internal/memory/pipeline/worker.go`): async worker started in `app.go` that dequeues post-run jobs from Redis, reads the transcript, calls LLM extraction, classifies/resolves candidates, generates embeddings, and writes profile entries, episodic memories, document chunks, and session summaries.
+* The pipeline now supports two embedding provider backends: OpenAI (requires API key) and Ollama (local, no API key). When configured with `BUTLER_MEMORY_EMBEDDING_PROVIDER=ollama`, Butler uses a local Ollama instance for embeddings while still using the available LLM provider (OpenAI or Codex) for extraction. This enables full episodic and chunk memory without a paid OpenAI API key.
+
+### Configuration keys
+
+| Environment variable | Default | Description |
+|---|---|---|
+| `BUTLER_MEMORY_EMBEDDING_PROVIDER` | `openai` | Embedding backend: `openai` or `ollama` |
+| `BUTLER_MEMORY_EMBEDDING_MODEL` | `text-embedding-3-small` | Embedding model name (provider-specific) |
+| `BUTLER_MEMORY_EMBEDDING_DIMENSIONS` | `1536` | Expected embedding vector dimensions |
+| `BUTLER_OLLAMA_URL` | `http://ollama:11434` | Ollama API base URL (used when provider is `ollama`) |
+| `BUTLER_MEMORY_EXTRACTION_MODEL` | `gpt-4o-mini` | LLM model for memory extraction |
+| `BUTLER_MEMORY_PIPELINE_ENABLED` | `true` | Enable/disable the async memory pipeline worker |
+| `BUTLER_MEMORY_PIPELINE_POLL_TIMEOUT_SECONDS` | `5` | How long the worker blocks waiting for a job |
+| `BUTLER_MEMORY_PIPELINE_MAX_RETRIES` | `3` | Max retries for a failed pipeline job |
+
+### Doctor checks
+
+The memory doctor (`/api/v1/doctor/check`) now reports:
+
+* `queue`: Redis queue health and current depth;
+* `pgvector`: whether the `vector` PostgreSQL extension is enabled;
+* `pipeline_worker`: whether the worker is enabled and running;
+* `embedding_provider`: whether an embedding provider is configured.
 
 ---
 

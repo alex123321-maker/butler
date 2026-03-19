@@ -20,6 +20,9 @@
         <div v-if="data.run.error_message" class="info-row"><span class="info-label">Error</span><span class="error-text">{{ data.run.error_type }}: {{ data.run.error_message }}</span></div>
       </div>
 
+      <!-- Live timeline -->
+      <RunTimeline :run-id="runId" class="timeline-section" />
+
       <!-- Transcript -->
       <h3 class="section-title">Transcript</h3>
 
@@ -141,6 +144,10 @@ function stateBadgeClass(state: string): string {
 }
 
 .run-info {
+  margin-bottom: 24px;
+}
+
+.timeline-section {
   margin-bottom: 32px;
 }
 

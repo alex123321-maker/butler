@@ -27,7 +27,7 @@ func TestSaveRequiresFixedDimensions(t *testing.T) {
 func TestSearchRequiresFixedDimensions(t *testing.T) {
 	t.Parallel()
 	store := NewStore(nil)
-	_, err := store.Search(context.Background(), "session", "s-1", make([]float32, embeddings.VectorDimensions-1), 3)
+	_, err := store.Search(context.Background(), "session", "s-1", make([]float32, embeddings.VectorDimensions()-1), 3)
 	if err == nil {
 		t.Fatal("expected embedding dimension validation error")
 	}
@@ -43,7 +43,7 @@ func TestSearchRequiresStorePool(t *testing.T) {
 }
 
 func testVector() []float32 {
-	vector := make([]float32, embeddings.VectorDimensions)
+	vector := make([]float32, embeddings.VectorDimensions())
 	for i := range vector {
 		vector[i] = 0.1
 	}

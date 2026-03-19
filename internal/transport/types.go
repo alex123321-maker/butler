@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -151,4 +152,20 @@ func normalizeTransportOptions(value string) error {
 		return fmt.Errorf("transport_options_json must be valid JSON")
 	}
 	return nil
+}
+
+type contextKey string
+
+const sessionKeyContextKey contextKey = "transport_session_key"
+
+// WithSessionKey returns a context annotated with the session key for
+// transport session pooling (e.g., WebSocket reuse).
+func WithSessionKey(ctx context.Context, sessionKey string) context.Context {
+	return context.WithValue(ctx, sessionKeyContextKey, sessionKey)
+}
+
+// SessionKeyFromContext extracts the session key from a context, if present.
+func SessionKeyFromContext(ctx context.Context) (string, bool) {
+	key, ok := ctx.Value(sessionKeyContextKey).(string)
+	return key, ok
 }

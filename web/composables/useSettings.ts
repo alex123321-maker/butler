@@ -51,6 +51,36 @@ export interface ProvidersState {
   providers: ProviderItem[]
 }
 
+export interface PromptConfig {
+  configured_prompt: string
+  effective_prompt: string
+  enabled: boolean
+  source: 'env' | 'db' | 'default' | string
+  updated_at?: string
+  updated_by?: string
+  available_placeholders: string[]
+}
+
+export interface PromptSection {
+  name: string
+  label: string
+  content: string
+  inserted: boolean
+  truncated: boolean
+  omitted: boolean
+  omitted_reason?: string
+}
+
+export interface PromptPreview {
+  prompt: PromptConfig
+  configured_prompt: string
+  effective_base_prompt: string
+  final_prompt: string
+  unknown_placeholders?: string[]
+  truncated: boolean
+  sections: PromptSection[]
+}
+
 export function useSettingsData() {
   const { get, baseURL } = useApiClient()
 
@@ -118,6 +148,27 @@ export function useSettingsData() {
     return response.provider
   }
 
+  async function getPrompt(): Promise<PromptConfig> {
+	  const response = await get<{ prompt: PromptConfig }>('/api/v1/prompts/system')
+	  return response.prompt
+	}
+
+	async function updatePrompt(basePrompt: string, enabled: boolean): Promise<PromptConfig> {
+	  const response = await $fetch<{ prompt: PromptConfig }>(`${baseURL}/api/v1/prompts/system`, {
+		method: 'PUT',
+		body: { base_prompt: basePrompt, enabled },
+	  })
+	  return response.prompt
+	}
+
+	async function previewPrompt(sessionKey: string, userMessage: string): Promise<PromptPreview> {
+	  const response = await $fetch<{ preview: PromptPreview }>(`${baseURL}/api/v1/prompts/system/preview`, {
+		method: 'POST',
+		body: { session_key: sessionKey, user_message: userMessage },
+	  })
+	  return response.preview
+	}
+
   return {
     ...data,
     updateSetting,
@@ -129,5 +180,8 @@ export function useSettingsData() {
     startProviderAuth,
     completeProviderAuth,
     deleteProviderAuth,
+	getPrompt,
+	updatePrompt,
+	previewPrompt,
   }
 }

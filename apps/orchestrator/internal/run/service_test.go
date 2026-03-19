@@ -188,6 +188,54 @@ func TestPersistProviderSessionRefUpdatesRun(t *testing.T) {
 	}
 }
 
+func TestListRunsBySessionKeyReturnsSessionRuns(t *testing.T) {
+	createdAt := time.Date(2026, time.March, 15, 13, 0, 0, 0, time.UTC)
+	repo := &memoryRepository{records: map[string]Record{
+		"run-1": {
+			RunID:         "run-1",
+			SessionKey:    "telegram:chat:42",
+			InputEventID:  "event-1",
+			Status:        "completed",
+			AutonomyMode:  "mode_1",
+			CurrentState:  "completed",
+			ModelProvider: "openai",
+			StartedAt:     createdAt,
+			UpdatedAt:     createdAt,
+		},
+		"run-2": {
+			RunID:         "run-2",
+			SessionKey:    "telegram:chat:42",
+			InputEventID:  "event-2",
+			Status:        "completed",
+			AutonomyMode:  "mode_1",
+			CurrentState:  "completed",
+			ModelProvider: "openai",
+			StartedAt:     createdAt.Add(time.Minute),
+			UpdatedAt:     createdAt.Add(time.Minute),
+		},
+		"run-3": {
+			RunID:         "run-3",
+			SessionKey:    "telegram:chat:other",
+			InputEventID:  "event-3",
+			Status:        "completed",
+			AutonomyMode:  "mode_1",
+			CurrentState:  "completed",
+			ModelProvider: "openai",
+			StartedAt:     createdAt.Add(2 * time.Minute),
+			UpdatedAt:     createdAt.Add(2 * time.Minute),
+		},
+	}}
+	service := NewService(repo, nil)
+
+	runs, err := service.ListRunsBySessionKey(context.Background(), "telegram:chat:42")
+	if err != nil {
+		t.Fatalf("ListRunsBySessionKey returned error: %v", err)
+	}
+	if len(runs) != 2 {
+		t.Fatalf("expected 2 runs, got %d", len(runs))
+	}
+}
+
 type memoryRepository struct {
 	created           Record
 	records           map[string]Record

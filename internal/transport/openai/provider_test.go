@@ -362,7 +362,7 @@ func TestWebSocketSessionReusedAcrossRuns(t *testing.T) {
 	sessionKey := "telegram:chat:reuse"
 
 	// First run.
-	ctx1 := WithSessionKey(context.Background(), sessionKey)
+	ctx1 := transport.WithSessionKey(context.Background(), sessionKey)
 	stream1, err := provider.StartRun(ctx1, transport.StartRunRequest{
 		Context:          transport.TransportRunContext{RunID: "run-1", SessionKey: sessionKey, ProviderName: "openai", ModelName: "gpt-4o-mini"},
 		InputItems:       []transport.InputItem{{Role: "user", Content: "hello 1"}},
@@ -375,7 +375,7 @@ func TestWebSocketSessionReusedAcrossRuns(t *testing.T) {
 	}
 
 	// Second run — should reuse the same WebSocket connection.
-	ctx2 := WithSessionKey(context.Background(), sessionKey)
+	ctx2 := transport.WithSessionKey(context.Background(), sessionKey)
 	stream2, err := provider.StartRun(ctx2, transport.StartRunRequest{
 		Context:          transport.TransportRunContext{RunID: "run-2", SessionKey: sessionKey, ProviderName: "openai", ModelName: "gpt-4o-mini"},
 		InputItems:       []transport.InputItem{{Role: "user", Content: "hello 2"}},
@@ -470,7 +470,7 @@ func TestWebSocketSessionLossTriggersNewConnection(t *testing.T) {
 	sessionKey := "telegram:chat:loss"
 
 	// First run — will experience connection loss.
-	ctx1 := WithSessionKey(context.Background(), sessionKey)
+	ctx1 := transport.WithSessionKey(context.Background(), sessionKey)
 	stream1, err := provider.StartRun(ctx1, transport.StartRunRequest{
 		Context:          transport.TransportRunContext{RunID: "run-loss-1", SessionKey: sessionKey, ProviderName: "openai", ModelName: "gpt-4o-mini"},
 		InputItems:       []transport.InputItem{{Role: "user", Content: "hello"}},
@@ -492,7 +492,7 @@ func TestWebSocketSessionLossTriggersNewConnection(t *testing.T) {
 	}
 
 	// Second run — should create a new connection since the old one was lost.
-	ctx2 := WithSessionKey(context.Background(), sessionKey)
+	ctx2 := transport.WithSessionKey(context.Background(), sessionKey)
 	stream2, err := provider.StartRun(ctx2, transport.StartRunRequest{
 		Context:          transport.TransportRunContext{RunID: "run-loss-2", SessionKey: sessionKey, ProviderName: "openai", ModelName: "gpt-4o-mini"},
 		InputItems:       []transport.InputItem{{Role: "user", Content: "hello again"}},
@@ -544,9 +544,63 @@ func TestCloseAllSessionsCleansUp(t *testing.T) {
 func TestWithSessionKeyContext(t *testing.T) {
 	t.Parallel()
 
-	ctx := WithSessionKey(context.Background(), "telegram:chat:42")
-	val, ok := ctx.Value(sessionKeyContextKey).(string)
+	ctx := transport.WithSessionKey(context.Background(), "telegram:chat:42")
+	val, ok := transport.SessionKeyFromContext(ctx)
 	if !ok || val != "telegram:chat:42" {
 		t.Fatalf("expected session key from context, got %q", val)
+	}
+}
+
+func TestEncodeInputItemsUsesOutputTextForAssistant(t *testing.T) {
+	t.Parallel()
+
+	items := []transport.InputItem{
+		{Role: "user", Content: "hello"},
+		{Role: "assistant", Content: "hi there"},
+		{Role: "system", Content: "you are a bot"},
+	}
+	encoded := encodeInputItems(items)
+	if len(encoded) != 3 {
+		t.Fatalf("expected 3 encoded items, got %d", len(encoded))
+	}
+
+	// user → input_text
+	userContent := encoded[0]["content"].([]map[string]any)
+	if userContent[0]["type"] != "input_text" {
+		t.Fatalf("expected input_text for user role, got %v", userContent[0]["type"])
+	}
+
+	// assistant → output_text
+	assistantContent := encoded[1]["content"].([]map[string]any)
+	if assistantContent[0]["type"] != "output_text" {
+		t.Fatalf("expected output_text for assistant role, got %v", assistantContent[0]["type"])
+	}
+
+	// system → input_text
+	systemContent := encoded[2]["content"].([]map[string]any)
+	if systemContent[0]["type"] != "input_text" {
+		t.Fatalf("expected input_text for system role, got %v", systemContent[0]["type"])
+	}
+}
+
+func TestContentTypeForRole(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		role string
+		want string
+	}{
+		{"user", "input_text"},
+		{"assistant", "output_text"},
+		{"system", "input_text"},
+		{"Assistant", "output_text"},
+		{"ASSISTANT", "output_text"},
+		{"", "input_text"},
+	}
+	for _, tt := range tests {
+		got := contentTypeForRole(tt.role)
+		if got != tt.want {
+			t.Errorf("contentTypeForRole(%q) = %q, want %q", tt.role, got, tt.want)
+		}
 	}
 }

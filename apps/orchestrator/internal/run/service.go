@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/domain"
+	"github.com/butler/butler/internal/domain/convert"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	"github.com/butler/butler/internal/logger"
@@ -105,6 +106,24 @@ func (s *Service) PersistProviderSessionRef(ctx context.Context, runID, provider
 	)
 
 	return recordToProto(record), nil
+}
+
+func (s *Service) ListRunsBySessionKey(ctx context.Context, sessionKey string) ([]*sessionv1.RunRecord, error) {
+	sessionKey = strings.TrimSpace(sessionKey)
+	if sessionKey == "" {
+		return nil, fmt.Errorf("session_key is required")
+	}
+
+	records, err := s.repo.ListRunsBySessionKey(ctx, sessionKey)
+	if err != nil {
+		return nil, err
+	}
+
+	runs := make([]*sessionv1.RunRecord, 0, len(records))
+	for _, record := range records {
+		runs = append(runs, recordToProto(record))
+	}
+	return runs, nil
 }
 
 func (s *Service) TransitionRun(ctx context.Context, req *sessionv1.UpdateRunStateRequest) (*sessionv1.RunRecord, error) {
@@ -251,153 +270,27 @@ func parseFinishedAt(value string) (*time.Time, error) {
 }
 
 func protoRunStateToDomain(state commonv1.RunState) (domain.RunState, error) {
-	switch state {
-	case commonv1.RunState_RUN_STATE_CREATED:
-		return domain.RunStateCreated, nil
-	case commonv1.RunState_RUN_STATE_QUEUED:
-		return domain.RunStateQueued, nil
-	case commonv1.RunState_RUN_STATE_ACQUIRED:
-		return domain.RunStateAcquired, nil
-	case commonv1.RunState_RUN_STATE_PREPARING:
-		return domain.RunStatePreparing, nil
-	case commonv1.RunState_RUN_STATE_MODEL_RUNNING:
-		return domain.RunStateModelRunning, nil
-	case commonv1.RunState_RUN_STATE_TOOL_PENDING:
-		return domain.RunStateToolPending, nil
-	case commonv1.RunState_RUN_STATE_AWAITING_APPROVAL:
-		return domain.RunStateAwaitingApproval, nil
-	case commonv1.RunState_RUN_STATE_TOOL_RUNNING:
-		return domain.RunStateToolRunning, nil
-	case commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME:
-		return domain.RunStateAwaitingModelResume, nil
-	case commonv1.RunState_RUN_STATE_FINALIZING:
-		return domain.RunStateFinalizing, nil
-	case commonv1.RunState_RUN_STATE_COMPLETED:
-		return domain.RunStateCompleted, nil
-	case commonv1.RunState_RUN_STATE_FAILED:
-		return domain.RunStateFailed, nil
-	case commonv1.RunState_RUN_STATE_CANCELLED:
-		return domain.RunStateCancelled, nil
-	case commonv1.RunState_RUN_STATE_TIMED_OUT:
-		return domain.RunStateTimedOut, nil
-	default:
-		return "", fmt.Errorf("run state is required")
-	}
+	return convert.ProtoToRunState(state)
 }
 
 func domainRunStateToProto(state string) commonv1.RunState {
-	switch domain.RunState(state) {
-	case domain.RunStateCreated:
-		return commonv1.RunState_RUN_STATE_CREATED
-	case domain.RunStateQueued:
-		return commonv1.RunState_RUN_STATE_QUEUED
-	case domain.RunStateAcquired:
-		return commonv1.RunState_RUN_STATE_ACQUIRED
-	case domain.RunStatePreparing:
-		return commonv1.RunState_RUN_STATE_PREPARING
-	case domain.RunStateModelRunning:
-		return commonv1.RunState_RUN_STATE_MODEL_RUNNING
-	case domain.RunStateToolPending:
-		return commonv1.RunState_RUN_STATE_TOOL_PENDING
-	case domain.RunStateAwaitingApproval:
-		return commonv1.RunState_RUN_STATE_AWAITING_APPROVAL
-	case domain.RunStateToolRunning:
-		return commonv1.RunState_RUN_STATE_TOOL_RUNNING
-	case domain.RunStateAwaitingModelResume:
-		return commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME
-	case domain.RunStateFinalizing:
-		return commonv1.RunState_RUN_STATE_FINALIZING
-	case domain.RunStateCompleted:
-		return commonv1.RunState_RUN_STATE_COMPLETED
-	case domain.RunStateFailed:
-		return commonv1.RunState_RUN_STATE_FAILED
-	case domain.RunStateCancelled:
-		return commonv1.RunState_RUN_STATE_CANCELLED
-	case domain.RunStateTimedOut:
-		return commonv1.RunState_RUN_STATE_TIMED_OUT
-	default:
-		return commonv1.RunState_RUN_STATE_UNSPECIFIED
-	}
+	return convert.RunStateStringToProto(state)
 }
 
 func autonomyModeToString(mode commonv1.AutonomyMode) (string, error) {
-	switch mode {
-	case commonv1.AutonomyMode_AUTONOMY_MODE_0:
-		return string(domain.AutonomyMode0), nil
-	case commonv1.AutonomyMode_AUTONOMY_MODE_1:
-		return string(domain.AutonomyMode1), nil
-	case commonv1.AutonomyMode_AUTONOMY_MODE_2:
-		return string(domain.AutonomyMode2), nil
-	case commonv1.AutonomyMode_AUTONOMY_MODE_3:
-		return string(domain.AutonomyMode3), nil
-	default:
-		return "", fmt.Errorf("autonomy_mode is required")
-	}
+	return convert.ProtoToAutonomyModeString(mode)
 }
 
 func stringToAutonomyMode(value string) commonv1.AutonomyMode {
-	switch value {
-	case string(domain.AutonomyMode0):
-		return commonv1.AutonomyMode_AUTONOMY_MODE_0
-	case string(domain.AutonomyMode1):
-		return commonv1.AutonomyMode_AUTONOMY_MODE_1
-	case string(domain.AutonomyMode2):
-		return commonv1.AutonomyMode_AUTONOMY_MODE_2
-	case string(domain.AutonomyMode3):
-		return commonv1.AutonomyMode_AUTONOMY_MODE_3
-	default:
-		return commonv1.AutonomyMode_AUTONOMY_MODE_UNSPECIFIED
-	}
+	return convert.AutonomyModeStringToProto(value)
 }
 
 func errorClassToString(value commonv1.ErrorClass) (string, error) {
-	switch value {
-	case commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR:
-		return string(domain.ErrorClassValidation), nil
-	case commonv1.ErrorClass_ERROR_CLASS_TRANSPORT_ERROR:
-		return string(domain.ErrorClassTransport), nil
-	case commonv1.ErrorClass_ERROR_CLASS_TOOL_ERROR:
-		return string(domain.ErrorClassTool), nil
-	case commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED:
-		return string(domain.ErrorClassPolicy), nil
-	case commonv1.ErrorClass_ERROR_CLASS_CREDENTIAL_ERROR:
-		return string(domain.ErrorClassCredential), nil
-	case commonv1.ErrorClass_ERROR_CLASS_APPROVAL_ERROR:
-		return string(domain.ErrorClassApproval), nil
-	case commonv1.ErrorClass_ERROR_CLASS_TIMEOUT:
-		return string(domain.ErrorClassTimeout), nil
-	case commonv1.ErrorClass_ERROR_CLASS_CANCELLED:
-		return string(domain.ErrorClassCancelled), nil
-	case commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR:
-		return string(domain.ErrorClassInternal), nil
-	default:
-		return "", fmt.Errorf("error_type is invalid")
-	}
+	return convert.ProtoToErrorClassString(value)
 }
 
 func stringToErrorClass(value string) commonv1.ErrorClass {
-	switch value {
-	case string(domain.ErrorClassValidation):
-		return commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR
-	case string(domain.ErrorClassTransport):
-		return commonv1.ErrorClass_ERROR_CLASS_TRANSPORT_ERROR
-	case string(domain.ErrorClassTool):
-		return commonv1.ErrorClass_ERROR_CLASS_TOOL_ERROR
-	case string(domain.ErrorClassPolicy):
-		return commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED
-	case string(domain.ErrorClassCredential):
-		return commonv1.ErrorClass_ERROR_CLASS_CREDENTIAL_ERROR
-	case string(domain.ErrorClassApproval):
-		return commonv1.ErrorClass_ERROR_CLASS_APPROVAL_ERROR
-	case string(domain.ErrorClassTimeout):
-		return commonv1.ErrorClass_ERROR_CLASS_TIMEOUT
-	case string(domain.ErrorClassCancelled):
-		return commonv1.ErrorClass_ERROR_CLASS_CANCELLED
-	case string(domain.ErrorClassInternal):
-		return commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR
-	default:
-		return commonv1.ErrorClass_ERROR_CLASS_UNSPECIFIED
-	}
+	return convert.ErrorClassStringToProto(value)
 }
 
 func recordToProto(record Record) *sessionv1.RunRecord {

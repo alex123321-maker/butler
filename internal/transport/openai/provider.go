@@ -321,8 +321,12 @@ func (p *Provider) normalizePayload(runID, eventType string, payload map[string]
 		if stringValue(item["type"]) != "function_call" {
 			return nil, false, nil
 		}
+		callID := stringValue(item["call_id"])
+		if callID == "" {
+			callID = stringValue(item["id"])
+		}
 		return []transport.TransportEvent{transport.NewToolCallRequestedEvent(runID, providerName, transport.ToolCallRequest{
-			ToolCallRef: stringValue(item["call_id"]),
+			ToolCallRef: callID,
 			ToolName:    stringValue(item["name"]),
 			ArgsJSON:    coalesceJSONString(item["arguments"], "{}"),
 			SequenceNo:  intValue(payload["sequence_number"]),
@@ -554,10 +558,11 @@ func providerSessionFromPayload(payload map[string]any) *transport.ProviderSessi
 func encodeInputItems(items []transport.InputItem) []map[string]any {
 	encoded := make([]map[string]any, 0, len(items))
 	for _, item := range items {
+		contentType := contentTypeForRole(item.Role)
 		entry := map[string]any{
 			"role": item.Role,
 			"content": []map[string]any{{
-				"type": "input_text",
+				"type": contentType,
 				"text": item.Content,
 			}},
 		}
@@ -567,6 +572,15 @@ func encodeInputItems(items []transport.InputItem) []map[string]any {
 		encoded = append(encoded, entry)
 	}
 	return encoded
+}
+
+// contentTypeForRole returns the correct content type for the OpenAI Responses
+// API: "input_text" for user/system messages, "output_text" for assistant messages.
+func contentTypeForRole(role string) string {
+	if strings.EqualFold(strings.TrimSpace(role), "assistant") {
+		return "output_text"
+	}
+	return "input_text"
 }
 
 func encodeTools(tools []transport.ToolDefinition) []map[string]any {

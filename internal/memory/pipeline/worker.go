@@ -113,6 +113,16 @@ func NewWorker(
 	}
 }
 
+// SetChunkStore sets the chunk store for document chunk persistence.
+func (w *Worker) SetChunkStore(store ChunkStore) {
+	w.chunkStore = store
+}
+
+// SetDoctorReportReader sets the doctor report reader for report ingestion.
+func (w *Worker) SetDoctorReportReader(reader DoctorReportReader) {
+	w.doctorReports = reader
+}
+
 // Run starts the worker loop. It blocks until the context is cancelled.
 func (w *Worker) Run(ctx context.Context) error {
 	w.log.Info("memory pipeline worker started")
@@ -159,6 +169,16 @@ func (w *Worker) processJob(ctx context.Context, job *Job) {
 				slog.String("error", err.Error()),
 				slog.Duration("duration", time.Since(started)),
 			)
+			job.Retries++
+			if job.Retries <= w.config.MaxRetries {
+				if enqErr := w.queue.Enqueue(context.Background(), *job); enqErr != nil {
+					jobLog.Error("failed to re-enqueue job", slog.String("error", enqErr.Error()))
+				} else {
+					jobLog.Info("job re-enqueued", slog.Int("retries", job.Retries))
+				}
+			} else {
+				jobLog.Error("max retries exceeded, dropping job")
+			}
 			return
 		}
 	default:
@@ -354,10 +374,10 @@ func (w *Worker) writeEpisodes(ctx context.Context, log *slog.Logger, job *Job, 
 				)
 				continue
 			}
-			if len(emb) != embeddings.VectorDimensions {
+			if len(emb) != embeddings.VectorDimensions() {
 				log.Warn("episode embedding has wrong dimensions, skipping",
 					slog.Int("dimensions", len(emb)),
-					slog.Int("expected", embeddings.VectorDimensions),
+					slog.Int("expected", embeddings.VectorDimensions()),
 				)
 				continue
 			}
@@ -478,8 +498,8 @@ func (w *Worker) embedChunkContent(ctx context.Context, title, content string) (
 	if err != nil {
 		return nil, err
 	}
-	if len(vector) != embeddings.VectorDimensions {
-		return nil, fmt.Errorf("embedding must contain %d dimensions", embeddings.VectorDimensions)
+	if len(vector) != embeddings.VectorDimensions() {
+		return nil, fmt.Errorf("embedding must contain %d dimensions", embeddings.VectorDimensions())
 	}
 	return vector, nil
 }

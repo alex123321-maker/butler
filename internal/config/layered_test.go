@@ -93,3 +93,23 @@ func TestLoadOrchestratorLayeredTreatsBlankEnvironmentValuesAsUnset(t *testing.T
 		t.Fatalf("expected db source, got %q", model.Source)
 	}
 }
+
+func TestLoadOrchestratorLayeredMemoryPipelineDefaultsToTrue(t *testing.T) {
+	cfg, snapshot, err := loadOrchestratorLayered(envMap(map[string]string{
+		"BUTLER_POSTGRES_URL": "postgres://localhost:5432/butler",
+		"BUTLER_REDIS_URL":    "redis://localhost:6379/0",
+	}), nil)
+	if err != nil {
+		t.Fatalf("loadOrchestratorLayered returned error: %v", err)
+	}
+	if !cfg.MemoryPipelineEnabled {
+		t.Fatal("expected MemoryPipelineEnabled to default to true")
+	}
+	pipelineKey := findKey(t, snapshot.ListKeys(), "BUTLER_MEMORY_PIPELINE_ENABLED")
+	if pipelineKey.Source != ConfigSourceDefault {
+		t.Fatalf("expected default source, got %q", pipelineKey.Source)
+	}
+	if pipelineKey.EffectiveValue != "true" {
+		t.Fatalf("expected effective value 'true', got %q", pipelineKey.EffectiveValue)
+	}
+}

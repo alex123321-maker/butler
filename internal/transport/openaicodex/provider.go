@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -29,18 +31,40 @@ type Config struct {
 }
 
 type Provider struct {
-	config       Config
-	httpClient   *http.Client
-	capabilities transport.CapabilitySnapshot
-	log          *slog.Logger
-	mu           sync.Mutex
-	active       map[string]context.CancelFunc
+	config        Config
+	httpClient    *http.Client
+	capabilities  transport.CapabilitySnapshot
+	log           *slog.Logger
+	mu            sync.Mutex
+	active        map[string]context.CancelFunc
+	toolAliases   map[string]map[string]string
+	instructions  map[string]string
+	lastToolCalls map[string]lastToolCall // runID -> last emitted tool call
 }
 
+// lastToolCall stores the most recently emitted tool call for a run so the
+// stateless Codex API can receive the function_call item alongside the
+// function_call_output when submitting tool results.
+type lastToolCall struct {
+	CallID    string
+	Name      string
+	Arguments string
+}
+
+var invalidToolNameChars = regexp.MustCompile(`[^a-zA-Z0-9_-]+`)
+
 type streamState struct {
-	providerSession *transport.ProviderSessionRef
-	finalText       strings.Builder
-	sessionID       string
+	providerSession  *transport.ProviderSessionRef
+	finalText        strings.Builder
+	sessionID        string
+	pendingToolCalls map[string]pendingToolCall
+}
+
+type pendingToolCall struct {
+	ID        string
+	CallID    string
+	Name      string
+	Arguments string
 }
 
 type sseDecoder struct {
@@ -73,17 +97,20 @@ func NewProvider(cfg Config, client *http.Client) (*Provider, error) {
 		cfg.Timeout = 60 * time.Second
 	}
 	if client == nil {
-		client = &http.Client{Timeout: cfg.Timeout}
+		client = newStreamingHTTPClient(cfg.Timeout)
 	}
 	log := cfg.Logger
 	if log == nil {
 		log = slog.Default()
 	}
 	return &Provider{
-		config:     cfg,
-		httpClient: client,
-		log:        logger.WithComponent(log, "transport-openai-codex"),
-		active:     make(map[string]context.CancelFunc),
+		config:        cfg,
+		httpClient:    client,
+		log:           logger.WithComponent(log, "transport-openai-codex"),
+		active:        make(map[string]context.CancelFunc),
+		toolAliases:   make(map[string]map[string]string),
+		instructions:  make(map[string]string),
+		lastToolCalls: make(map[string]lastToolCall),
 		capabilities: transport.CapabilitySnapshot{
 			SupportsStreaming:        true,
 			SupportsToolCalls:        true,
@@ -93,6 +120,13 @@ func NewProvider(cfg Config, client *http.Client) (*Provider, error) {
 			SupportsUsageMetadata:    true,
 		},
 	}, nil
+}
+
+func newStreamingHTTPClient(responseHeaderTimeout time.Duration) *http.Client {
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.ResponseHeaderTimeout = responseHeaderTimeout
+	transport.DialContext = (&net.Dialer{Timeout: 30 * time.Second, KeepAlive: 30 * time.Second}).DialContext
+	return &http.Client{Transport: transport}
 }
 
 func (p *Provider) Name() string {
@@ -107,8 +141,11 @@ func (p *Provider) StartRun(ctx context.Context, req transport.StartRunRequest) 
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
+	p.registerToolAliases(req.Context.RunID, req.ToolDefinitions)
+	p.storeInstructions(req.Context.RunID, req.InputItems)
 	body, err := p.startRunBody(req)
 	if err != nil {
+		p.clearRunState(req.Context.RunID)
 		return nil, err
 	}
 	return p.executeStreamingRequest(ctx, req.Context.RunID, sessionIDFromStart(req), body)
@@ -118,6 +155,7 @@ func (p *Provider) ContinueRun(ctx context.Context, req transport.ContinueRunReq
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
+	p.storeInstructions(req.RunID, req.InputItems)
 	body, err := p.continueRunBody(req)
 	if err != nil {
 		return nil, err
@@ -144,6 +182,7 @@ func (p *Provider) CancelRun(_ context.Context, req transport.CancelRunRequest) 
 	cancel := p.active[req.RunID]
 	delete(p.active, req.RunID)
 	p.mu.Unlock()
+	p.clearRunState(req.RunID)
 	if cancel != nil {
 		cancel()
 	}
@@ -250,15 +289,60 @@ func (p *Provider) normalizePayload(runID, eventType string, payload map[string]
 		delta := stringValue(payload["delta"])
 		state.finalText.WriteString(delta)
 		return []transport.TransportEvent{transport.NewAssistantDeltaEvent(runID, providerName, transport.AssistantDelta{DeltaType: "text", Content: delta, SequenceNo: intValue(payload["sequence_number"])})}, false, nil
+	case "response.output_item.added":
+		item := mapValue(payload["item"])
+		if stringValue(item["type"]) != "function_call" {
+			return nil, false, nil
+		}
+		state.storePendingToolCall(pendingToolCall{
+			ID:        stringValue(item["id"]),
+			CallID:    stringValue(item["call_id"]),
+			Name:      stringValue(item["name"]),
+			Arguments: coalesceJSONString(item["arguments"], ""),
+		})
+		return nil, false, nil
+	case "response.function_call_arguments.delta":
+		return nil, false, nil
 	case "response.output_item.done":
 		item := mapValue(payload["item"])
 		if stringValue(item["type"]) != "function_call" {
 			return nil, false, nil
 		}
-		return []transport.TransportEvent{transport.NewToolCallRequestedEvent(runID, providerName, transport.ToolCallRequest{ToolCallRef: stringValue(item["call_id"]), ToolName: stringValue(item["name"]), ArgsJSON: coalesceJSONString(item["arguments"], "{}"), SequenceNo: intValue(payload["sequence_number"])})}, true, nil
+		pending := pendingToolCall{
+			ID:        stringValue(item["id"]),
+			CallID:    stringValue(item["call_id"]),
+			Name:      stringValue(item["name"]),
+			Arguments: coalesceJSONString(item["arguments"], ""),
+		}
+		state.storePendingToolCall(pending)
+		callID := pending.CallID
+		if callID == "" {
+			callID = pending.ID
+		}
+		argsJSON := coalesceJSONString(item["arguments"], "{}")
+		p.storeLastToolCall(runID, lastToolCall{CallID: callID, Name: pending.Name, Arguments: argsJSON})
+		return []transport.TransportEvent{transport.NewToolCallRequestedEvent(runID, providerName, transport.ToolCallRequest{ToolCallRef: callID, ToolName: p.resolveToolName(runID, pending.Name), ArgsJSON: argsJSON, SequenceNo: intValue(payload["sequence_number"])})}, true, nil
 	case "response.function_call_arguments.done":
-		return []transport.TransportEvent{transport.NewToolCallRequestedEvent(runID, providerName, transport.ToolCallRequest{ToolCallRef: stringValue(payload["call_id"]), ToolName: stringValue(payload["name"]), ArgsJSON: coalesceJSONString(payload["arguments"], "{}"), SequenceNo: intValue(payload["sequence_number"])})}, true, nil
+		pending := state.pendingToolCall(stringValue(payload["item_id"]))
+		callID := stringValue(payload["call_id"])
+		if callID == "" {
+			callID = pending.CallID
+		}
+		if callID == "" {
+			callID = pending.ID
+		}
+		name := stringValue(payload["name"])
+		if name == "" {
+			name = pending.Name
+		}
+		argsJSON := coalesceJSONString(payload["arguments"], pending.Arguments)
+		if strings.TrimSpace(argsJSON) == "" {
+			argsJSON = "{}"
+		}
+		p.storeLastToolCall(runID, lastToolCall{CallID: callID, Name: name, Arguments: argsJSON})
+		return []transport.TransportEvent{transport.NewToolCallRequestedEvent(runID, providerName, transport.ToolCallRequest{ToolCallRef: callID, ToolName: p.resolveToolName(runID, name), ArgsJSON: argsJSON, SequenceNo: intValue(payload["sequence_number"])})}, true, nil
 	case "response.completed", "response.done":
+		defer p.clearRunState(runID)
 		response := mapValue(payload["response"])
 		status := stringValue(response["status"])
 		if status == "failed" {
@@ -281,6 +365,7 @@ func (p *Provider) normalizePayload(runID, eventType string, payload map[string]
 		}
 		return []transport.TransportEvent{finalEvent, completed}, true, nil
 	case "response.failed", "error":
+		defer p.clearRunState(runID)
 		return []transport.TransportEvent{transport.NewTransportErrorEvent(runID, providerName, errorFromPayload(payload))}, true, nil
 	default:
 		warning := transport.NewTransportWarningEvent(runID, providerName, "unhandled openai codex event", map[string]any{"event_type": eventType})
@@ -292,9 +377,10 @@ func (p *Provider) normalizePayload(runID, eventType string, payload map[string]
 }
 
 func (p *Provider) startRunBody(req transport.StartRunRequest) ([]byte, error) {
-	payload := map[string]any{"model": req.Context.ModelName, "input": encodeInputItems(req.InputItems), "stream": req.StreamingEnabled}
-	if req.Context.ProviderSessionRef != nil && req.Context.ProviderSessionRef.ResponseRef != "" {
-		payload["previous_response_id"] = req.Context.ProviderSessionRef.ResponseRef
+	instructions, input := splitInstructions(req.InputItems)
+	payload := map[string]any{"model": req.Context.ModelName, "input": input, "stream": req.StreamingEnabled, "store": false}
+	if instructions != "" {
+		payload["instructions"] = instructions
 	}
 	if sessionID := sessionIDFromStart(req); sessionID != "" {
 		payload["prompt_cache_key"] = sessionID
@@ -307,9 +393,10 @@ func (p *Provider) startRunBody(req transport.StartRunRequest) ([]byte, error) {
 }
 
 func (p *Provider) continueRunBody(req transport.ContinueRunRequest) ([]byte, error) {
-	payload := map[string]any{"model": p.config.Model, "input": encodeInputItems(req.InputItems), "stream": true}
-	if req.ProviderSessionRef != nil && req.ProviderSessionRef.ResponseRef != "" {
-		payload["previous_response_id"] = req.ProviderSessionRef.ResponseRef
+	instructions, input := splitInstructions(req.InputItems)
+	payload := map[string]any{"model": p.config.Model, "input": input, "stream": true, "store": false}
+	if instructions != "" {
+		payload["instructions"] = instructions
 	}
 	if sessionID := sessionIDFromRef(req.ProviderSessionRef); sessionID != "" {
 		payload["prompt_cache_key"] = sessionID
@@ -319,13 +406,31 @@ func (p *Provider) continueRunBody(req transport.ContinueRunRequest) ([]byte, er
 }
 
 func (p *Provider) submitToolResultBody(req transport.SubmitToolResultRequest) ([]byte, error) {
+	// The Codex API does not support previous_response_id, so each request is
+	// stateless.  We replay the function_call item alongside the
+	// function_call_output so the API can match the result to the call.
+	input := make([]map[string]any, 0, 2)
+	if call, ok := p.lastToolCallFor(req.RunID); ok && call.CallID == req.ToolCallRef {
+		input = append(input, map[string]any{
+			"type":      "function_call",
+			"call_id":   call.CallID,
+			"name":      call.Name,
+			"arguments": call.Arguments,
+		})
+	}
+	input = append(input, map[string]any{
+		"type":    "function_call_output",
+		"call_id": req.ToolCallRef,
+		"output":  strings.TrimSpace(req.ToolResultJSON),
+	})
 	payload := map[string]any{
 		"model":  p.config.Model,
+		"store":  false,
 		"stream": true,
-		"input":  []map[string]any{{"type": "function_call_output", "call_id": req.ToolCallRef, "output": json.RawMessage(req.ToolResultJSON)}},
+		"input":  input,
 	}
-	if req.ProviderSessionRef != nil && req.ProviderSessionRef.ResponseRef != "" {
-		payload["previous_response_id"] = req.ProviderSessionRef.ResponseRef
+	if instructions := p.instructionsFor(req.RunID); instructions != "" {
+		payload["instructions"] = instructions
 	}
 	if sessionID := sessionIDFromRef(req.ProviderSessionRef); sessionID != "" {
 		payload["prompt_cache_key"] = sessionID
@@ -370,6 +475,33 @@ func (p *Provider) clearCancel(runID string) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	delete(p.active, runID)
+}
+
+func (s *streamState) storePendingToolCall(call pendingToolCall) {
+	if strings.TrimSpace(call.ID) == "" {
+		return
+	}
+	if s.pendingToolCalls == nil {
+		s.pendingToolCalls = make(map[string]pendingToolCall)
+	}
+	existing := s.pendingToolCalls[call.ID]
+	if strings.TrimSpace(call.CallID) == "" {
+		call.CallID = existing.CallID
+	}
+	if strings.TrimSpace(call.Name) == "" {
+		call.Name = existing.Name
+	}
+	if strings.TrimSpace(call.Arguments) == "" {
+		call.Arguments = existing.Arguments
+	}
+	s.pendingToolCalls[call.ID] = call
+}
+
+func (s *streamState) pendingToolCall(itemID string) pendingToolCall {
+	if s.pendingToolCalls == nil {
+		return pendingToolCall{}
+	}
+	return s.pendingToolCalls[strings.TrimSpace(itemID)]
 }
 
 func sessionIDFromStart(req transport.StartRunRequest) string {
@@ -443,7 +575,7 @@ func (d *sseDecoder) Next(ctx context.Context) (sseMessage, error) {
 func encodeInputItems(items []transport.InputItem) []map[string]any {
 	encoded := make([]map[string]any, 0, len(items))
 	for _, item := range items {
-		entry := map[string]any{"role": item.Role, "content": []map[string]any{{"type": "input_text", "text": item.Content}}}
+		entry := map[string]any{"role": item.Role, "content": []map[string]any{{"type": contentTypeForRole(item.Role), "text": item.Content}}}
 		if strings.TrimSpace(item.Name) != "" {
 			entry["name"] = item.Name
 		}
@@ -452,19 +584,184 @@ func encodeInputItems(items []transport.InputItem) []map[string]any {
 	return encoded
 }
 
+func splitInstructions(items []transport.InputItem) (string, []map[string]any) {
+	encoded := make([]map[string]any, 0, len(items))
+	instructions := make([]string, 0, 1)
+	for _, item := range items {
+		if strings.EqualFold(item.Role, "system") {
+			content := strings.TrimSpace(item.Content)
+			if content != "" {
+				instructions = append(instructions, content)
+			}
+			continue
+		}
+		entry := map[string]any{"role": item.Role, "content": []map[string]any{{"type": contentTypeForRole(item.Role), "text": item.Content}}}
+		if strings.TrimSpace(item.Name) != "" {
+			entry["name"] = item.Name
+		}
+		encoded = append(encoded, entry)
+	}
+	return strings.Join(instructions, "\n\n"), encoded
+}
+
+// contentTypeForRole returns the correct content type for the OpenAI Responses
+// API: "input_text" for user/system messages, "output_text" for assistant messages.
+func contentTypeForRole(role string) string {
+	if strings.EqualFold(strings.TrimSpace(role), "assistant") {
+		return "output_text"
+	}
+	return "input_text"
+}
+
 func encodeTools(tools []transport.ToolDefinition) []map[string]any {
+	aliases := buildToolAliases(tools)
 	encoded := make([]map[string]any, 0, len(tools))
 	for _, tool := range tools {
-		entry := map[string]any{"type": "function", "name": tool.Name, "description": tool.Description}
+		entry := map[string]any{"type": "function", "name": aliases[tool.Name], "description": tool.Description}
 		if strings.TrimSpace(tool.SchemaJSON) != "" {
 			var schema any
 			if err := json.Unmarshal([]byte(tool.SchemaJSON), &schema); err == nil {
+				normalizeSchema(schema)
 				entry["parameters"] = schema
 			}
 		}
 		encoded = append(encoded, entry)
 	}
 	return encoded
+}
+
+func (p *Provider) registerToolAliases(runID string, tools []transport.ToolDefinition) {
+	if strings.TrimSpace(runID) == "" {
+		return
+	}
+	aliases := buildToolAliases(tools)
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if len(aliases) == 0 {
+		delete(p.toolAliases, runID)
+		return
+	}
+	reverse := make(map[string]string, len(aliases))
+	for original, alias := range aliases {
+		reverse[alias] = original
+	}
+	p.toolAliases[runID] = reverse
+}
+
+func (p *Provider) clearToolAliases(runID string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	delete(p.toolAliases, runID)
+}
+
+func (p *Provider) storeInstructions(runID string, items []transport.InputItem) {
+	if strings.TrimSpace(runID) == "" {
+		return
+	}
+	instructions, _ := splitInstructions(items)
+	if instructions == "" {
+		return
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.instructions[runID] = instructions
+}
+
+func (p *Provider) instructionsFor(runID string) string {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.instructions[runID]
+}
+
+func (p *Provider) clearRunState(runID string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	delete(p.toolAliases, runID)
+	delete(p.instructions, runID)
+	delete(p.lastToolCalls, runID)
+}
+
+func (p *Provider) storeLastToolCall(runID string, call lastToolCall) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.lastToolCalls[runID] = call
+}
+
+func (p *Provider) lastToolCallFor(runID string) (lastToolCall, bool) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	call, ok := p.lastToolCalls[runID]
+	return call, ok
+}
+
+func (p *Provider) resolveToolName(runID, name string) string {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if aliases := p.toolAliases[runID]; aliases != nil {
+		if original := aliases[name]; original != "" {
+			return original
+		}
+	}
+	return name
+}
+
+func buildToolAliases(tools []transport.ToolDefinition) map[string]string {
+	if len(tools) == 0 {
+		return nil
+	}
+	aliases := make(map[string]string, len(tools))
+	used := make(map[string]struct{}, len(tools))
+	for _, tool := range tools {
+		name := strings.TrimSpace(tool.Name)
+		if name == "" {
+			continue
+		}
+		alias := sanitizeToolName(name)
+		base := alias
+		idx := 2
+		for {
+			if _, exists := used[alias]; !exists {
+				break
+			}
+			alias = fmt.Sprintf("%s_%d", base, idx)
+			idx++
+		}
+		used[alias] = struct{}{}
+		aliases[name] = alias
+	}
+	return aliases
+}
+
+func sanitizeToolName(name string) string {
+	cleaned := invalidToolNameChars.ReplaceAllString(strings.TrimSpace(name), "_")
+	cleaned = strings.Trim(cleaned, "_")
+	if cleaned == "" {
+		return "tool"
+	}
+	return cleaned
+}
+
+func normalizeSchema(value any) {
+	switch node := value.(type) {
+	case map[string]any:
+		if strings.EqualFold(stringValue(node["type"]), "array") {
+			if _, ok := node["items"]; !ok {
+				node["items"] = map[string]any{}
+			}
+		}
+		if strings.EqualFold(stringValue(node["type"]), "object") {
+			if _, ok := node["properties"]; !ok {
+				node["properties"] = map[string]any{}
+			}
+		}
+		for _, child := range node {
+			normalizeSchema(child)
+		}
+	case []any:
+		for _, child := range node {
+			normalizeSchema(child)
+		}
+	}
 }
 
 func decodeAPIError(resp *http.Response) error {
@@ -569,16 +866,30 @@ func intValue(value any) int {
 }
 
 func coalesceJSONString(value any, fallback string) string {
-	text := strings.TrimSpace(stringValue(value))
-	if text == "" {
+	if value == nil {
 		return fallback
 	}
-	if json.Valid([]byte(text)) {
-		return text
+	if text, ok := value.(string); ok {
+		trimmed := strings.TrimSpace(text)
+		if trimmed == "" {
+			return fallback
+		}
+		if json.Valid([]byte(trimmed)) {
+			return trimmed
+		}
+		encoded, err := json.Marshal(trimmed)
+		if err != nil {
+			return fallback
+		}
+		return string(encoded)
 	}
-	encoded, err := json.Marshal(text)
+	encoded, err := json.Marshal(value)
 	if err != nil {
 		return fallback
 	}
-	return string(encoded)
+	trimmed := strings.TrimSpace(string(encoded))
+	if trimmed == "" {
+		return fallback
+	}
+	return trimmed
 }

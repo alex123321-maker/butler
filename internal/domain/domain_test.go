@@ -66,6 +66,7 @@ func TestEveryAllowedTransitionIsAccepted(t *testing.T) {
 		// tool_pending ->
 		{RunStateToolPending, RunStateAwaitingApproval},
 		{RunStateToolPending, RunStateToolRunning},
+		{RunStateToolPending, RunStateFailed},
 		{RunStateToolPending, RunStateCancelled},
 		{RunStateToolPending, RunStateTimedOut},
 		// awaiting_approval ->
@@ -81,6 +82,7 @@ func TestEveryAllowedTransitionIsAccepted(t *testing.T) {
 		{RunStateToolRunning, RunStateTimedOut},
 		// awaiting_model_resume ->
 		{RunStateAwaitingModelResume, RunStateModelRunning},
+		{RunStateAwaitingModelResume, RunStateFailed},
 		{RunStateAwaitingModelResume, RunStateCancelled},
 		{RunStateAwaitingModelResume, RunStateTimedOut},
 		// finalizing ->
@@ -303,15 +305,17 @@ func TestTimeoutFromEveryNonTerminalState(t *testing.T) {
 // ---------- Failure from specific allowed states ----------
 
 func TestFailureFromAllowedStates(t *testing.T) {
-	// Failure is allowed from most states except tool_pending and awaiting_model_resume
+	// Failure is allowed from all non-terminal states.
 	canFail := []RunState{
 		RunStateCreated,
 		RunStateQueued,
 		RunStateAcquired,
 		RunStatePreparing,
 		RunStateModelRunning,
+		RunStateToolPending,
 		RunStateAwaitingApproval,
 		RunStateToolRunning,
+		RunStateAwaitingModelResume,
 		RunStateFinalizing,
 	}
 	for _, state := range canFail {
@@ -324,17 +328,17 @@ func TestFailureFromAllowedStates(t *testing.T) {
 	}
 }
 
-func TestFailureNotAllowedFromToolPending(t *testing.T) {
+func TestFailureAllowedFromToolPending(t *testing.T) {
 	err := ValidateRunStateTransition(RunStateToolPending, RunStateFailed)
-	if err == nil {
-		t.Fatal("expected tool_pending -> failed to be rejected")
+	if err != nil {
+		t.Fatalf("expected tool_pending -> failed to be allowed, got: %v", err)
 	}
 }
 
-func TestFailureNotAllowedFromAwaitingModelResume(t *testing.T) {
+func TestFailureAllowedFromAwaitingModelResume(t *testing.T) {
 	err := ValidateRunStateTransition(RunStateAwaitingModelResume, RunStateFailed)
-	if err == nil {
-		t.Fatal("expected awaiting_model_resume -> failed to be rejected")
+	if err != nil {
+		t.Fatalf("expected awaiting_model_resume -> failed to be allowed, got: %v", err)
 	}
 }
 
@@ -396,6 +400,7 @@ func buildAllowedSet() map[transitionPair]bool {
 
 		{RunStateToolPending, RunStateAwaitingApproval},
 		{RunStateToolPending, RunStateToolRunning},
+		{RunStateToolPending, RunStateFailed},
 		{RunStateToolPending, RunStateCancelled},
 		{RunStateToolPending, RunStateTimedOut},
 
@@ -411,6 +416,7 @@ func buildAllowedSet() map[transitionPair]bool {
 		{RunStateToolRunning, RunStateTimedOut},
 
 		{RunStateAwaitingModelResume, RunStateModelRunning},
+		{RunStateAwaitingModelResume, RunStateFailed},
 		{RunStateAwaitingModelResume, RunStateCancelled},
 		{RunStateAwaitingModelResume, RunStateTimedOut},
 

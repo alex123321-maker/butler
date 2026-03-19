@@ -25,7 +25,7 @@ func TestSaveRequiresConfiguredStore(t *testing.T) {
 
 func TestSearchRequiresFixedDimensions(t *testing.T) {
 	t.Parallel()
-	_, err := NewStore(nil).Search(context.Background(), "session", "s-1", make([]float32, embeddings.VectorDimensions-1), 3)
+	_, err := NewStore(nil).Search(context.Background(), "session", "s-1", make([]float32, embeddings.VectorDimensions()-1), 3)
 	if err == nil {
 		t.Fatal("expected dimension error")
 	}

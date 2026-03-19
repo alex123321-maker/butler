@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/memory/chunks"
+	"github.com/butler/butler/internal/memory/embeddings"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/metrics"
 )
@@ -302,7 +303,7 @@ func TestRecordMemoryMetricsHelpersDoNotPanic(t *testing.T) {
 }
 
 func testWorkerVector(value float32) []float32 {
-	vector := make([]float32, 1536)
+	vector := make([]float32, embeddings.VectorDimensions())
 	for i := range vector {
 		vector[i] = value
 	}

@@ -25,6 +25,9 @@ func TestApprovalGateWaitAndResolveApproved(t *testing.T) {
 	if resp.ToolCallID != "call-1" {
 		t.Fatalf("expected tool call id call-1, got %q", resp.ToolCallID)
 	}
+	if resp.Channel != "unknown" {
+		t.Fatalf("expected default channel unknown, got %q", resp.Channel)
+	}
 }
 
 func TestApprovalGateWaitAndResolveRejected(t *testing.T) {
@@ -42,6 +45,33 @@ func TestApprovalGateWaitAndResolveRejected(t *testing.T) {
 	}
 	if resp.Approved {
 		t.Fatal("expected approval to be false")
+	}
+	if resp.Channel != "unknown" {
+		t.Fatalf("expected default channel unknown, got %q", resp.Channel)
+	}
+}
+
+func TestApprovalGateResolveWithChannel(t *testing.T) {
+	t.Parallel()
+
+	gate := NewApprovalGate()
+	go func() {
+		time.Sleep(10 * time.Millisecond)
+		gate.ResolveWithChannel("call-5", true, "telegram", "telegram_user:1")
+	}()
+
+	resp, err := gate.Wait(context.Background(), "call-5")
+	if err != nil {
+		t.Fatalf("Wait returned error: %v", err)
+	}
+	if !resp.Approved {
+		t.Fatal("expected approval true")
+	}
+	if resp.Channel != "telegram" {
+		t.Fatalf("expected channel telegram, got %q", resp.Channel)
+	}
+	if resp.ResolvedBy != "telegram_user:1" {
+		t.Fatalf("expected resolved_by telegram_user:1, got %q", resp.ResolvedBy)
 	}
 }
 

@@ -147,7 +147,7 @@ function formatTime(iso: string): string {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
 }
 
 .page-header .page-title {
@@ -155,15 +155,15 @@ function formatTime(iso: string): string {
 }
 
 .check-btn {
-  padding: 8px 20px;
+  padding: var(--space-2) var(--space-5);
   border: none;
-  border-radius: 6px;
-  background: var(--color-primary, #4f8cff);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-primary);
+  color: var(--color-text-inverse);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition: opacity var(--transition-normal);
 }
 
 .check-btn:hover:not(:disabled) {
@@ -176,11 +176,11 @@ function formatTime(iso: string): string {
 }
 
 .report-card {
-  background: var(--color-surface, #1e1e2e);
-  border: 1px solid var(--color-border, #2d2d3d);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 24px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  margin-bottom: var(--space-6);
 }
 
 .report-header {
@@ -191,142 +191,142 @@ function formatTime(iso: string): string {
 }
 
 .report-time {
-  color: var(--color-text-secondary, #888);
-  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
 }
 
 .status-badge {
   display: inline-block;
   padding: 3px 10px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: var(--tracking-wide);
 }
 
 .status-healthy {
-  background: rgba(46, 204, 113, 0.15);
-  color: #2ecc71;
+  background: var(--color-state-successMuted);
+  color: var(--color-state-success);
 }
 
 .status-degraded {
-  background: rgba(243, 156, 18, 0.15);
-  color: #f39c12;
+  background: var(--color-state-warningMuted);
+  color: var(--color-state-warning);
 }
 
 .status-unhealthy {
-  background: rgba(231, 76, 60, 0.15);
-  color: #e74c3c;
+  background: var(--color-state-errorMuted);
+  color: var(--color-state-error);
 }
 
 .status-unknown {
-  background: rgba(149, 165, 166, 0.15);
-  color: #95a5a6;
+  background: var(--color-state-neutralMuted);
+  color: var(--color-state-neutral);
 }
 
 .source-badge {
   display: inline-block;
   padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: var(--tracking-wide);
 }
 
 .source-env {
-  background: rgba(79, 140, 255, 0.15);
-  color: #4f8cff;
+  background: var(--color-accent-primaryMuted);
+  color: var(--color-accent-primary);
 }
 
 .source-db {
-  background: rgba(46, 204, 113, 0.15);
-  color: #2ecc71;
+  background: var(--color-state-successMuted);
+  color: var(--color-state-success);
 }
 
 .source-default {
-  background: rgba(149, 165, 166, 0.15);
-  color: #95a5a6;
+  background: var(--color-state-neutralMuted);
+  color: var(--color-state-neutral);
 }
 
 .checks-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .check-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 6px;
-  font-size: 13px;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
 }
 
 .check-indicator {
   font-size: 10px;
 }
 
-.indicator-healthy { color: #2ecc71; }
-.indicator-degraded { color: #f39c12; }
-.indicator-unhealthy { color: #e74c3c; }
+.indicator-healthy { color: var(--color-state-success); }
+.indicator-degraded { color: var(--color-state-warning); }
+.indicator-unhealthy { color: var(--color-state-error); }
 
 .check-name {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   min-width: 140px;
 }
 
 .check-status {
   min-width: 80px;
-  font-size: 12px;
+  font-size: var(--text-xs);
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: var(--tracking-wide);
 }
 
 .check-message {
-  color: var(--color-text-secondary, #888);
+  color: var(--color-text-secondary);
   flex: 1;
 }
 
 .check-duration {
-  color: var(--color-text-secondary, #888);
-  font-size: 12px;
-  font-family: monospace;
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
 }
 
 .section-title {
-  margin: 24px 0 12px;
-  font-size: 16px;
-  font-weight: 600;
+  margin: var(--space-6) 0 var(--space-3);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
 }
 
 .config-section {
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }
 
 .config-section summary {
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-secondary, #888);
-  margin-bottom: 8px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
 }
 
 .config-table {
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 
 .config-key {
-  font-family: monospace;
-  font-weight: 500;
+  font-family: var(--font-mono);
+  font-weight: var(--font-medium);
 }
 
 .config-value {
-  font-family: monospace;
-  color: var(--color-text-secondary, #888);
+  font-family: var(--font-mono);
+  color: var(--color-text-secondary);
   max-width: 300px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -337,36 +337,36 @@ function formatTime(iso: string): string {
   display: inline-block;
   padding: 1px 6px;
   border-radius: 3px;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
   text-transform: uppercase;
 }
 
 .validation-ok {
-  background: rgba(46, 204, 113, 0.15);
-  color: #2ecc71;
+  background: var(--color-state-successMuted);
+  color: var(--color-state-success);
 }
 
 .validation-missing {
-  background: rgba(243, 156, 18, 0.15);
-  color: #f39c12;
+  background: var(--color-state-warningMuted);
+  color: var(--color-state-warning);
 }
 
 .validation-invalid {
-  background: rgba(231, 76, 60, 0.15);
-  color: #e74c3c;
+  background: var(--color-state-errorMuted);
+  color: var(--color-state-error);
 }
 
 .report-row {
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--transition-normal);
 }
 
 .report-row:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--color-border-subtle);
 }
 
 .selected-row {
-  background: rgba(79, 140, 255, 0.08);
+  background: var(--color-accent-primaryMuted);
 }
 </style>

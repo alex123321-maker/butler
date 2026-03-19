@@ -38,6 +38,14 @@ func (c *BrokerClient) ExecuteToolCall(ctx context.Context, call *toolbrokerv1.T
 	return resp.GetResult(), nil
 }
 
+func (c *BrokerClient) ListTools(ctx context.Context) ([]*toolbrokerv1.ToolContract, error) {
+	resp, err := c.client.ListTools(ctx, &toolbrokerv1.ListToolsRequest{})
+	if err != nil {
+		return nil, err
+	}
+	return resp.GetTools(), nil
+}
+
 // RequiresApproval checks whether a tool requires approval before execution
 // by calling ValidateToolCall and inspecting the returned contract.
 func (c *BrokerClient) RequiresApproval(ctx context.Context, toolName string) (bool, error) {

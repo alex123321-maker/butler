@@ -98,6 +98,8 @@ Session:
 
 ## 5. Границы ответственности
 
+> **Implementation note**: Session Service and Orchestrator are described here as separate logical subsystems with distinct responsibilities. In the current deployment they share a single binary (`apps/orchestrator`), but are isolated at the Go package level (`internal/session/`, `internal/run/`, `internal/orchestrator/`). This preserves the logical boundary without the operational cost of a separate service. If scaling or isolation requirements change, the packages can be promoted to their own service without altering contracts.
+
 ## 5.1 Session Service
 
 Session Service отвечает за:
@@ -234,7 +236,7 @@ Run ожидает получения session ownership.
 Session lock / lease получен, run стал активным owner для session.
 
 #### `preparing`
-Orchestrator собирает execution context: transcript state, tool availability и запрашивает у memory service session summary + memory bundle.
+Orchestrator собирает execution context: transcript state, tool availability, запрашивает у memory service session summary + structured memory bundle и на этой стадии собирает финальный transport-facing system prompt из operator base prompt и runtime context sections.
 
 #### `model_running`
 Идёт активное взаимодействие с Model Transport Layer. Streaming delivery пользователю, если она поддерживается каналом, также происходит внутри этого состояния.
@@ -338,6 +340,7 @@ Run остановлен из-за превышения допустимого �
 7. `available tool contracts`
 8. `credential context`, если он передан пользователем
 9. `autonomy_mode`
+10. `effective system prompt`, assembled by orchestrator from the base prompt plus runtime sections
 
 ### 10.1 Что не делается на стадии preparing
 

@@ -11,6 +11,7 @@ Provides a browser-based interface for:
 - **Memory** — scope-based browser for durable working, profile, episodic, and chunk memory with provenance links
 - **Doctor** — system diagnostic reports (T-0605)
 - **Settings** — grouped runtime configuration management with source tracing plus provider auth flows for GitHub Copilot and OpenAI Codex
+- **Prompt management** — operator base prompt editing, placeholder insertion, and effective prompt preview inside Settings
 
 ## Development
 

@@ -139,6 +139,53 @@ func TestExecuteRunsSequentialToolLoop(t *testing.T) {
 	}
 }
 
+func TestExecuteToolCallWithEmptyRefPropagatesFallbackToSubmit(t *testing.T) {
+	t.Parallel()
+
+	// When the model returns a tool call with an empty ToolCallRef, the
+	// orchestrator must generate a fallback ID and propagate it back into
+	// the request so SubmitToolResult receives a non-empty ref.
+	sessions := &memorySessionRepo{}
+	leases := &memoryLeaseManager{}
+	runs := newMemoryRunManager()
+	transcripts := &memoryTranscriptStore{}
+	provider := &mockProvider{
+		startEvents: []transport.TransportEvent{
+			transport.NewRunStartedEvent("", "openai", transport.CapabilitySnapshot{SupportsStreaming: true}, &transport.ProviderSessionRef{ProviderName: "openai", ResponseRef: "resp_123"}),
+			transport.NewToolCallRequestedEvent("", "openai", transport.ToolCallRequest{ToolCallRef: "", ToolName: "http.request", ArgsJSON: `{"url":"https://example.com"}`, SequenceNo: 1}),
+		},
+		submitEvents: []transport.TransportEvent{
+			transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "done after tool", FinishReason: "completed"}),
+			transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+		},
+	}
+	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{"ok":true}`}}
+
+	service := NewService(sessions, leases, runs, transcripts, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools}, nil)
+	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:1", Source: "telegram", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if result.AssistantResponse != "done after tool" {
+		t.Fatalf("expected response, got %q", result.AssistantResponse)
+	}
+	// The key assertion: SubmitToolResult received a non-empty ToolCallRef
+	// (the generated fallback), not an empty string.
+	if len(provider.submittedResults) != 1 {
+		t.Fatalf("expected one submitted tool result, got %d", len(provider.submittedResults))
+	}
+	ref := provider.submittedResults[0].ToolCallRef
+	if ref == "" {
+		t.Fatal("expected non-empty ToolCallRef in submitted tool result, but got empty string")
+	}
+	if !strings.HasPrefix(ref, "tool-") {
+		t.Fatalf("expected fallback ToolCallRef starting with 'tool-', got %q", ref)
+	}
+	if len(ref) > 64 {
+		t.Fatalf("expected fallback ToolCallRef length <= 64, got %d for %q", len(ref), ref)
+	}
+}
+
 func TestExecuteToolWithApprovalApproved(t *testing.T) {
 	t.Parallel()
 
@@ -277,14 +324,14 @@ func TestExecuteIncludesMemoryAwareContext(t *testing.T) {
 		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "memory aware", FinishReason: "completed"}),
 		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
 	}}
-	episodeStore := &stubEpisodeStore{entries: []MemoryEpisode{stubEpisode{summary: "Fixed Redis outage before", distance: 0.01}}}
+	episodeStore := &stubEpisodeStore{entries: []memoryservice.Episode{stubEpisode{summary: "Fixed Redis outage before", distance: 0.01}}}
 	workingStore := &stubWorkingStore{snapshots: map[string]WorkingMemorySnapshot{
 		"telegram:chat:1": {SessionKey: "telegram:chat:1", Goal: "Stabilize Redis", EntitiesJSON: `{"service":"redis"}`, PendingStepsJSON: `["check health"]`, Status: "active"},
 	}}
 	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
 		ProviderName: "openai",
 		ModelName:    "gpt-5-mini",
-		ProfileStore: stubProfileStore{entries: []MemoryProfileEntry{stubProfileEntry{key: "language", summary: "User prefers Russian"}}},
+		ProfileStore: stubProfileStore{entries: []memoryservice.ProfileEntry{stubProfileEntry{key: "language", summary: "User prefers Russian"}}},
 		EpisodeStore: episodeStore,
 		WorkingStore: workingStore,
 	}, nil)
@@ -307,6 +354,41 @@ func TestExecuteIncludesMemoryAwareContext(t *testing.T) {
 	}
 	if episodeStore.calls != 0 {
 		t.Fatalf("expected episodic retrieval to be skipped without embeddings, got %d calls", episodeStore.calls)
+	}
+}
+
+func TestExecuteIncludesToolSummaryAndStructuredToolDefinitions(t *testing.T) {
+	t.Parallel()
+
+	provider := &mockProvider{startEvents: []transport.TransportEvent{
+		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "tool aware", FinishReason: "completed"}),
+		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+	}}
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+		ProviderName: "openai",
+		ModelName:    "gpt-5-mini",
+		ToolCatalog:  stubToolCatalog{contracts: []*toolbrokerv1.ToolContract{{ToolName: "http.request", ToolClass: "http", Description: "Perform an outbound HTTP request through the HTTP runtime.", InputSchemaJson: `{"type":"object"}`, SupportsCredentialRefs: true}, {ToolName: "browser.set_cookie", ToolClass: "browser", Description: "Set a cookie on the browser context for the specified domain.", InputSchemaJson: `{"type":"object"}`, RequiresApproval: true}}},
+	}, nil)
+
+	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-tools-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:tools", Source: "telegram", PayloadJSON: `{"text":"use tools"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-tools-1"})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if result.AssistantResponse != "tool aware" {
+		t.Fatalf("unexpected assistant response %q", result.AssistantResponse)
+	}
+	if len(provider.startRequests) != 1 {
+		t.Fatalf("expected single start request, got %d", len(provider.startRequests))
+	}
+	if got := provider.startRequests[0].ToolDefinitions; len(got) != 2 || got[0].Name != "http.request" {
+		t.Fatalf("expected structured tool definitions, got %+v", got)
+	}
+	prompt := provider.startRequests[0].InputItems[0].Content
+	if !strings.Contains(prompt, "Available tools:") || !strings.Contains(prompt, "http.request [http]") {
+		t.Fatalf("expected tool summary in prompt, got %q", prompt)
+	}
+	if !strings.Contains(prompt, "approval") || !strings.Contains(prompt, "credential refs") {
+		t.Fatalf("expected safe tool metadata in prompt, got %q", prompt)
 	}
 }
 
@@ -524,7 +606,7 @@ func TestExecuteUsesEmbeddingProviderForEpisodicRetrieval(t *testing.T) {
 		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "memory aware", FinishReason: "completed"}),
 		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
 	}}
-	episodeStore := &stubEpisodeStore{entries: []MemoryEpisode{stubEpisode{summary: "Recovered Postgres connection before", distance: 0.01}}}
+	episodeStore := &stubEpisodeStore{entries: []memoryservice.Episode{stubEpisode{summary: "Recovered Postgres connection before", distance: 0.01}}}
 	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
 		ProviderName: "openai",
 		ModelName:    "gpt-5-mini",
@@ -601,6 +683,116 @@ func TestExecuteIncludesSessionSummaryInContext(t *testing.T) {
 	}
 }
 
+func TestExecuteReusesProviderSessionRefAcrossRuns(t *testing.T) {
+	t.Parallel()
+
+	provider := &mockProvider{startEvents: []transport.TransportEvent{
+		transport.NewRunStartedEvent("", "openai", transport.CapabilitySnapshot{SupportsStreaming: true}, &transport.ProviderSessionRef{ProviderName: "openai", ResponseRef: "resp_123"}),
+		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "first", FinishReason: "completed"}),
+		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+	}}
+	runs := newMemoryRunManager()
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{}, provider, Config{
+		ProviderName: "openai",
+		ModelName:    "gpt-5-mini",
+	}, nil)
+
+	if _, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:reuse", Source: "telegram", PayloadJSON: `{"text":"open site"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"}); err != nil {
+		t.Fatalf("first Execute returned error: %v", err)
+	}
+	provider.startEvents = []transport.TransportEvent{
+		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "second", FinishReason: "completed"}),
+		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+	}
+
+	if _, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-2", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:reuse", Source: "telegram", PayloadJSON: `{"text":"follow up"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-2"}); err != nil {
+		t.Fatalf("second Execute returned error: %v", err)
+	}
+	if len(provider.startRequests) != 2 {
+		t.Fatalf("expected 2 provider start requests, got %d", len(provider.startRequests))
+	}
+	ref := provider.startRequests[1].Context.ProviderSessionRef
+	if ref == nil || ref.ResponseRef != "resp_123" {
+		t.Fatalf("expected previous provider session ref on second run, got %+v", ref)
+	}
+}
+
+func TestExecuteSkipsInvalidPreviousProviderSessionRef(t *testing.T) {
+	t.Parallel()
+
+	runs := newMemoryRunManager()
+	now := time.Now().UTC()
+	runs.records["run-prev"] = &sessionv1.RunRecord{
+		RunId:              "run-prev",
+		SessionKey:         "telegram:chat:invalid-ref",
+		CurrentState:       commonv1.RunState_RUN_STATE_COMPLETED,
+		Status:             "completed",
+		ModelProvider:      "openai",
+		ProviderSessionRef: `not-json`,
+		StartedAt:          now.Add(-time.Minute).Format(time.RFC3339Nano),
+		UpdatedAt:          now.Add(-time.Minute).Format(time.RFC3339Nano),
+	}
+	runs.history["run-prev"] = []commonv1.RunState{commonv1.RunState_RUN_STATE_CREATED, commonv1.RunState_RUN_STATE_COMPLETED}
+	provider := &mockProvider{startEvents: []transport.TransportEvent{
+		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "ok", FinishReason: "completed"}),
+		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+	}}
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini"}, nil)
+
+	if _, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:invalid-ref", Source: "telegram", PayloadJSON: `{"text":"hello"}`, CreatedAt: now, IdempotencyKey: "event-1"}); err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if len(provider.startRequests) != 1 {
+		t.Fatalf("expected 1 provider start request, got %d", len(provider.startRequests))
+	}
+	if provider.startRequests[0].Context.ProviderSessionRef != nil {
+		t.Fatalf("expected invalid previous provider ref to be skipped, got %+v", provider.startRequests[0].Context.ProviderSessionRef)
+	}
+}
+
+func TestExecuteReplaysRecentTranscriptWhenSummaryUnavailable(t *testing.T) {
+	t.Parallel()
+
+	provider := &mockProvider{startEvents: []transport.TransportEvent{
+		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "ok", FinishReason: "completed"}),
+		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
+	}}
+	transcripts := &memoryTranscriptStore{messages: []transcript.Message{
+		{SessionKey: "telegram:chat:history", Role: "user", Content: "Я хочу пиццу из makelovepizza с печёной картошкой"},
+		{SessionKey: "telegram:chat:history", Role: "assistant", Content: "Открыл сайт Make Love Pizza для Томска"},
+	}}
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), transcripts, provider, Config{
+		ProviderName: "openai",
+		ModelName:    "gpt-5-mini",
+	}, nil)
+
+	if _, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-2", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:history", Source: "telegram", PayloadJSON: `{"text":"Какая из пицц в меню с запечённым картофелем"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-2"}); err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if len(provider.startRequests) != 1 {
+		t.Fatalf("expected 1 provider start request, got %d", len(provider.startRequests))
+	}
+	items := provider.startRequests[0].InputItems
+	if len(items) < 3 {
+		t.Fatalf("expected replayed history plus current user input, got %+v", items)
+	}
+	var history []transport.InputItem
+	for _, item := range items {
+		if item.Role == "user" || item.Role == "assistant" {
+			history = append(history, item)
+		}
+	}
+	if len(history) < 3 {
+		t.Fatalf("expected replayed user/assistant history plus current user input, got %+v", items)
+	}
+	if !strings.Contains(history[0].Content, "makelovepizza") {
+		t.Fatalf("expected replayed prior user context, got %+v", history[0])
+	}
+	if history[1].Role != "assistant" || !strings.Contains(history[1].Content, "Make Love Pizza") {
+		t.Fatalf("expected replayed prior assistant context, got %+v", history[1])
+	}
+}
+
 func TestExecuteSessionSummaryWithProfileAndEpisodes(t *testing.T) {
 	t.Parallel()
 
@@ -615,7 +807,7 @@ func TestExecuteSessionSummaryWithProfileAndEpisodes(t *testing.T) {
 		ProviderName:  "openai",
 		ModelName:     "gpt-5-mini",
 		SummaryReader: summaryReader,
-		ProfileStore:  stubProfileStore{entries: []MemoryProfileEntry{stubProfileEntry{key: "name", summary: "User is Alice"}}},
+		ProfileStore:  stubProfileStore{entries: []memoryservice.ProfileEntry{stubProfileEntry{key: "name", summary: "User is Alice"}}},
 	}, nil)
 
 	result, err := service.Execute(context.Background(), ingress.InputEvent{
@@ -679,11 +871,14 @@ func TestExecuteSkipsSummaryWhenEmpty(t *testing.T) {
 	}
 	// No memory context should be injected when summary is empty and no other memory.
 	items := provider.startRequests[0].InputItems
-	if len(items) != 1 {
-		t.Fatalf("expected only user input item when no memory context, got %d items", len(items))
+	if len(items) != 2 {
+		t.Fatalf("expected base prompt plus user input when no memory context, got %d items", len(items))
 	}
-	if items[0].Role != "user" {
-		t.Fatalf("expected only user role, got %q", items[0].Role)
+	if items[0].Role != "system" || items[1].Role != "user" {
+		t.Fatalf("expected system then user roles, got %+v", items)
+	}
+	if !strings.Contains(items[0].Content, "You are Butler") {
+		t.Fatalf("expected default base prompt, got %q", items[0].Content)
 	}
 }
 
@@ -1042,6 +1237,16 @@ func (m *memoryRunManager) PersistProviderSessionRef(_ context.Context, runID, p
 	return record, nil
 }
 
+func (m *memoryRunManager) ListRunsBySessionKey(_ context.Context, sessionKey string) ([]*sessionv1.RunRecord, error) {
+	result := make([]*sessionv1.RunRecord, 0)
+	for _, record := range m.records {
+		if record.GetSessionKey() == sessionKey {
+			result = append(result, record)
+		}
+	}
+	return result, nil
+}
+
 func (m *memoryRunManager) statesFor(runID string) []commonv1.RunState {
 	return append([]commonv1.RunState(nil), m.history[runID]...)
 }
@@ -1063,6 +1268,16 @@ func (m *memoryTranscriptStore) AppendMessage(_ context.Context, message transcr
 func (m *memoryTranscriptStore) AppendToolCall(_ context.Context, call transcript.ToolCall) (transcript.ToolCall, error) {
 	m.toolCalls = append(m.toolCalls, call)
 	return call, nil
+}
+
+func (m *memoryTranscriptStore) GetTranscript(_ context.Context, sessionKey string) (transcript.Transcript, error) {
+	filtered := make([]transcript.Message, 0)
+	for _, message := range m.messages {
+		if message.SessionKey == sessionKey {
+			filtered = append(filtered, message)
+		}
+	}
+	return transcript.Transcript{Messages: filtered, ToolCalls: append([]transcript.ToolCall(nil), m.toolCalls...)}, nil
 }
 
 type mockProvider struct {
@@ -1095,28 +1310,28 @@ func (m *mockProvider) StartRun(_ context.Context, req transport.StartRunRequest
 	return ch, nil
 }
 
-type stubProfileStore struct{ entries []MemoryProfileEntry }
+type stubProfileStore struct{ entries []memoryservice.ProfileEntry }
 
-func (s stubProfileStore) GetByScope(context.Context, string, string) ([]MemoryProfileEntry, error) {
+func (s stubProfileStore) GetByScope(context.Context, string, string) ([]memoryservice.ProfileEntry, error) {
 	return s.entries, nil
 }
 
 type stubEpisodeStore struct {
-	entries    []MemoryEpisode
+	entries    []memoryservice.Episode
 	calls      int
 	lastLimit  int
 	lastVector []float32
 }
 
-func (s *stubEpisodeStore) Search(_ context.Context, _ string, _ string, embedding []float32, limit int) ([]MemoryEpisode, error) {
+func (s *stubEpisodeStore) Search(_ context.Context, _ string, _ string, embedding []float32, limit int) ([]memoryservice.Episode, error) {
 	s.calls++
 	s.lastLimit = limit
 	s.lastVector = append([]float32(nil), embedding...)
 	return s.entries, nil
 }
 
-func (s *stubEpisodeStore) FindBySummary(_ context.Context, _ string, _ string, summary string) ([]MemoryEpisode, error) {
-	var result []MemoryEpisode
+func (s *stubEpisodeStore) FindBySummary(_ context.Context, _ string, _ string, summary string) ([]memoryservice.Episode, error) {
+	var result []memoryservice.Episode
 	for _, entry := range s.entries {
 		if strings.EqualFold(entry.EpisodeSummary(), summary) {
 			result = append(result, entry)
@@ -1176,15 +1391,15 @@ func (s *stubMemoryBundleService) BuildBundle(_ context.Context, req memoryservi
 }
 
 type stubChunkStore struct {
-	entries []MemoryChunk
+	entries []memoryservice.Chunk
 }
 
-func (s *stubChunkStore) Search(_ context.Context, _ string, _ string, _ []float32, _ int) ([]MemoryChunk, error) {
+func (s *stubChunkStore) Search(_ context.Context, _ string, _ string, _ []float32, _ int) ([]memoryservice.Chunk, error) {
 	return s.entries, nil
 }
 
-func (s *stubChunkStore) FindByTitle(_ context.Context, _ string, _ string, title string, _ int) ([]MemoryChunk, error) {
-	var result []MemoryChunk
+func (s *stubChunkStore) FindByTitle(_ context.Context, _ string, _ string, title string, _ int) ([]memoryservice.Chunk, error) {
+	var result []memoryservice.Chunk
 	for _, entry := range s.entries {
 		if strings.EqualFold(entry.ChunkTitle(), title) {
 			result = append(result, entry)
@@ -1294,7 +1509,7 @@ func (s *stubTransientWorkingStore) Clear(_ context.Context, sessionKey, runID s
 }
 
 func testEmbeddingVector(value float32) []float32 {
-	vector := make([]float32, embeddings.VectorDimensions)
+	vector := make([]float32, embeddings.VectorDimensions())
 	for i := range vector {
 		vector[i] = value
 	}
@@ -1358,6 +1573,12 @@ type mockToolExecutor struct {
 	err    error
 }
 
+type stubToolCatalog struct{ contracts []*toolbrokerv1.ToolContract }
+
+func (s stubToolCatalog) ListTools(context.Context) ([]*toolbrokerv1.ToolContract, error) {
+	return s.contracts, nil
+}
+
 func (m *mockToolExecutor) ExecuteToolCall(_ context.Context, call *toolbrokerv1.ToolCall) (*toolbrokerv1.ToolResult, error) {
 	m.calls = append(m.calls, call)
 	if m.err != nil {
@@ -1394,6 +1615,8 @@ func (m *mockApprovalChecker) RequiresApproval(_ context.Context, toolName strin
 type recordingDeliverySink struct {
 	events           []DeliveryEvent
 	approvalRequests []ApprovalRequest
+	toolCallEvents   []ToolCallEvent
+	statusEvents     []StatusEvent
 }
 
 func (r *recordingDeliverySink) DeliverAssistantDelta(_ context.Context, event DeliveryEvent) error {
@@ -1408,6 +1631,16 @@ func (r *recordingDeliverySink) DeliverAssistantFinal(_ context.Context, event D
 
 func (r *recordingDeliverySink) DeliverApprovalRequest(_ context.Context, req ApprovalRequest) error {
 	r.approvalRequests = append(r.approvalRequests, req)
+	return nil
+}
+
+func (r *recordingDeliverySink) DeliverToolCallEvent(_ context.Context, event ToolCallEvent) error {
+	r.toolCallEvents = append(r.toolCallEvents, event)
+	return nil
+}
+
+func (r *recordingDeliverySink) DeliverStatusEvent(_ context.Context, event StatusEvent) error {
+	r.statusEvents = append(r.statusEvents, event)
 	return nil
 }
 

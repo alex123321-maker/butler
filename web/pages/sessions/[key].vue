@@ -29,11 +29,12 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="run in data.runs" :key="run.run_id">
+          <tr v-for="run in data.runs" :key="run.run_id || `${run.session_key}-${run.started_at}`">
             <td>
-              <NuxtLink :to="`/runs/${encodeURIComponent(run.run_id)}`" class="run-link">
+              <NuxtLink v-if="run.run_id" :to="`/runs/${encodeURIComponent(run.run_id)}`" class="run-link">
                 {{ shortRunId(run.run_id) }}
               </NuxtLink>
+              <span v-else class="placeholder-text">pending</span>
             </td>
             <td>
               <span :class="stateBadgeClass(run.current_state)" class="state-badge">{{ run.current_state }}</span>

@@ -16,13 +16,27 @@ const (
 	StatusActive     = "active"
 	StatusSuperseded = "superseded"
 	MemoryType       = "profile"
+
+	// ConfirmationState values
+	ConfirmationPending       = "pending"
+	ConfirmationConfirmed     = "confirmed"
+	ConfirmationRejected      = "rejected"
+	ConfirmationAutoConfirmed = "auto_confirmed"
+
+	// EffectiveStatus values
+	EffectiveStatusActive     = "active"
+	EffectiveStatusInactive   = "inactive"
+	EffectiveStatusSuppressed = "suppressed"
+	EffectiveStatusExpired    = "expired"
+	EffectiveStatusDeleted    = "deleted"
 )
 
 var (
-	ErrEntryNotFound      = fmt.Errorf("profile memory entry not found")
-	ErrEntryConflict      = fmt.Errorf("active profile memory entry already exists")
-	ErrScopeKeyChanged    = fmt.Errorf("superseded profile entry must keep the same scope and key")
-	ErrStoreNotConfigured = fmt.Errorf("profile memory store is not configured")
+	ErrEntryNotFound       = fmt.Errorf("profile memory entry not found")
+	ErrEntryConflict       = fmt.Errorf("active profile memory entry already exists")
+	ErrScopeKeyChanged     = fmt.Errorf("superseded profile entry must keep the same scope and key")
+	ErrStoreNotConfigured  = fmt.Errorf("profile memory store is not configured")
+	ErrOperationNotAllowed = fmt.Errorf("operation not allowed for this entry state")
 )
 
 type Store struct {
@@ -30,23 +44,29 @@ type Store struct {
 }
 
 type Entry struct {
-	ID             int64
-	MemoryType     string
-	ScopeType      string
-	ScopeID        string
-	Key            string
-	ValueJSON      string
-	Summary        string
-	SourceType     string
-	SourceID       string
-	ProvenanceJSON string
-	Confidence     float64
-	Status         string
-	EffectiveFrom  *time.Time
-	EffectiveTo    *time.Time
-	SupersedesID   *int64
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	ID                int64
+	MemoryType        string
+	ScopeType         string
+	ScopeID           string
+	Key               string
+	ValueJSON         string
+	Summary           string
+	SourceType        string
+	SourceID          string
+	ProvenanceJSON    string
+	Confidence        float64
+	Status            string
+	EffectiveFrom     *time.Time
+	EffectiveTo       *time.Time
+	SupersedesID      *int64
+	ConfirmationState string
+	EffectiveStatus   string
+	Suppressed        bool
+	ExpiresAt         *time.Time
+	EditedBy          string
+	EditedAt          *time.Time
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
 }
 
 func (e Entry) ProfileKey() string { return e.Key }
@@ -70,10 +90,13 @@ func (s *Store) Save(ctx context.Context, entry Entry) (Entry, error) {
 	}
 	stored, err := scanEntry(s.pool.QueryRow(ctx, `
 		INSERT INTO memory_profile (
-			memory_type, scope_type, scope_id, key, value_json, summary, source_type, source_id, provenance, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
-		) VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9::jsonb, $10, $11, $12, $13, $14, NOW(), NOW())
-		RETURNING id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
-	`, entry.MemoryType, entry.ScopeType, entry.ScopeID, entry.Key, entry.ValueJSON, entry.Summary, entry.SourceType, entry.SourceID, entry.ProvenanceJSON, entry.Confidence, entry.Status, entry.EffectiveFrom, entry.EffectiveTo, entry.SupersedesID))
+			memory_type, scope_type, scope_id, key, value_json, summary, source_type, source_id, provenance, confidence, status, effective_from, effective_to, supersedes_id,
+			confirmation_state, effective_status, suppressed, expires_at, edited_by, edited_at, created_at, updated_at
+		) VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9::jsonb, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, NOW(), NOW())
+		RETURNING id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id,
+			confirmation_state, effective_status, suppressed, expires_at, edited_by, edited_at, created_at, updated_at
+	`, entry.MemoryType, entry.ScopeType, entry.ScopeID, entry.Key, entry.ValueJSON, entry.Summary, entry.SourceType, entry.SourceID, entry.ProvenanceJSON, entry.Confidence, entry.Status, entry.EffectiveFrom, entry.EffectiveTo, entry.SupersedesID,
+		entry.ConfirmationState, entry.EffectiveStatus, entry.Suppressed, entry.ExpiresAt, entry.EditedBy, entry.EditedAt))
 	if err != nil {
 		if isUniqueViolation(err) {
 			return Entry{}, ErrEntryConflict
@@ -88,10 +111,24 @@ func (s *Store) Get(ctx context.Context, scopeType, scopeID, key string) (Entry,
 		return Entry{}, ErrStoreNotConfigured
 	}
 	return scanEntry(s.pool.QueryRow(ctx, `
-		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
+		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id,
+			confirmation_state, effective_status, suppressed, expires_at, edited_by, edited_at, created_at, updated_at
 		FROM memory_profile
 		WHERE scope_type = $1 AND scope_id = $2 AND key = $3 AND status = $4
 	`, strings.TrimSpace(scopeType), strings.TrimSpace(scopeID), strings.TrimSpace(key), StatusActive))
+}
+
+// GetByID returns a profile entry by its ID.
+func (s *Store) GetByID(ctx context.Context, id int64) (Entry, error) {
+	if s == nil || s.pool == nil {
+		return Entry{}, ErrStoreNotConfigured
+	}
+	return scanEntry(s.pool.QueryRow(ctx, `
+		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id,
+			confirmation_state, effective_status, suppressed, expires_at, edited_by, edited_at, created_at, updated_at
+		FROM memory_profile
+		WHERE id = $1
+	`, id))
 }
 
 func (s *Store) Supersede(ctx context.Context, previousID int64, entry Entry) (Entry, error) {
@@ -108,7 +145,8 @@ func (s *Store) Supersede(ctx context.Context, previousID int64, entry Entry) (E
 	defer func() { _ = tx.Rollback(ctx) }()
 
 	previous, err := scanEntry(tx.QueryRow(ctx, `
-		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
+		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id,
+			confirmation_state, effective_status, suppressed, expires_at, edited_by, edited_at, created_at, updated_at
 		FROM memory_profile
 		WHERE id = $1
 	`, previousID))
@@ -135,17 +173,21 @@ func (s *Store) Supersede(ctx context.Context, previousID int64, entry Entry) (E
 		UPDATE memory_profile
 		SET status = $2,
 			effective_to = $3,
+			effective_status = $4,
 			updated_at = NOW()
 		WHERE id = $1
-	`, previous.ID, StatusSuperseded, effectiveTo); err != nil {
+	`, previous.ID, StatusSuperseded, effectiveTo, EffectiveStatusInactive); err != nil {
 		return Entry{}, fmt.Errorf("mark superseded profile entry: %w", err)
 	}
 	stored, err := scanEntry(tx.QueryRow(ctx, `
 		INSERT INTO memory_profile (
-			memory_type, scope_type, scope_id, key, value_json, summary, source_type, source_id, provenance, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
-		) VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9::jsonb, $10, $11, $12, $13, $14, NOW(), NOW())
-		RETURNING id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
-	`, entry.MemoryType, entry.ScopeType, entry.ScopeID, entry.Key, entry.ValueJSON, entry.Summary, entry.SourceType, entry.SourceID, entry.ProvenanceJSON, entry.Confidence, entry.Status, entry.EffectiveFrom, entry.EffectiveTo, entry.SupersedesID))
+			memory_type, scope_type, scope_id, key, value_json, summary, source_type, source_id, provenance, confidence, status, effective_from, effective_to, supersedes_id,
+			confirmation_state, effective_status, suppressed, expires_at, edited_by, edited_at, created_at, updated_at
+		) VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7, $8, $9::jsonb, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, NOW(), NOW())
+		RETURNING id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id,
+			confirmation_state, effective_status, suppressed, expires_at, edited_by, edited_at, created_at, updated_at
+	`, entry.MemoryType, entry.ScopeType, entry.ScopeID, entry.Key, entry.ValueJSON, entry.Summary, entry.SourceType, entry.SourceID, entry.ProvenanceJSON, entry.Confidence, entry.Status, entry.EffectiveFrom, entry.EffectiveTo, entry.SupersedesID,
+		entry.ConfirmationState, entry.EffectiveStatus, entry.Suppressed, entry.ExpiresAt, entry.EditedBy, entry.EditedAt))
 	if err != nil {
 		if isUniqueViolation(err) {
 			return Entry{}, ErrEntryConflict
@@ -163,7 +205,8 @@ func (s *Store) GetByScope(ctx context.Context, scopeType, scopeID string) ([]En
 		return nil, ErrStoreNotConfigured
 	}
 	rows, err := s.pool.Query(ctx, `
-		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
+		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id,
+			confirmation_state, effective_status, suppressed, expires_at, edited_by, edited_at, created_at, updated_at
 		FROM memory_profile
 		WHERE scope_type = $1 AND scope_id = $2 AND status = $3
 		ORDER BY key ASC
@@ -186,12 +229,78 @@ func (s *Store) GetByScope(ctx context.Context, scopeType, scopeID string) ([]En
 	return entries, nil
 }
 
+// GetByScopeEffective returns profile entries that are effective (visible in retrieval).
+func (s *Store) GetByScopeEffective(ctx context.Context, scopeType, scopeID string) ([]Entry, error) {
+	if s == nil || s.pool == nil {
+		return nil, ErrStoreNotConfigured
+	}
+	rows, err := s.pool.Query(ctx, `
+		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id,
+			confirmation_state, effective_status, suppressed, expires_at, edited_by, edited_at, created_at, updated_at
+		FROM memory_profile
+		WHERE scope_type = $1 AND scope_id = $2 AND effective_status = $3 AND suppressed = FALSE
+			AND (expires_at IS NULL OR expires_at > NOW())
+		ORDER BY key ASC
+	`, strings.TrimSpace(scopeType), strings.TrimSpace(scopeID), EffectiveStatusActive)
+	if err != nil {
+		return nil, fmt.Errorf("query effective profile memory entries: %w", err)
+	}
+	defer rows.Close()
+	var entries []Entry
+	for rows.Next() {
+		entry, err := scanEntry(rows)
+		if err != nil {
+			return nil, fmt.Errorf("scan effective profile memory entry: %w", err)
+		}
+		entries = append(entries, entry)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate effective profile memory entries: %w", err)
+	}
+	return entries, nil
+}
+
+// ListPendingConfirmation returns entries awaiting user confirmation.
+func (s *Store) ListPendingConfirmation(ctx context.Context, limit int) ([]Entry, error) {
+	if s == nil || s.pool == nil {
+		return nil, ErrStoreNotConfigured
+	}
+	if limit <= 0 {
+		limit = 50
+	}
+	rows, err := s.pool.Query(ctx, `
+		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id,
+			confirmation_state, effective_status, suppressed, expires_at, edited_by, edited_at, created_at, updated_at
+		FROM memory_profile
+		WHERE confirmation_state = $1 AND effective_status = $2
+		ORDER BY created_at DESC
+		LIMIT $3
+	`, ConfirmationPending, EffectiveStatusActive, limit)
+	if err != nil {
+		return nil, fmt.Errorf("query pending confirmation entries: %w", err)
+	}
+	defer rows.Close()
+	var entries []Entry
+	for rows.Next() {
+		entry, err := scanEntry(rows)
+		if err != nil {
+			return nil, fmt.Errorf("scan pending confirmation entry: %w", err)
+		}
+		entries = append(entries, entry)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate pending confirmation entries: %w", err)
+	}
+	return entries, nil
+}
+
 func (s *Store) GetHistory(ctx context.Context, scopeType, scopeID, key string) ([]Entry, error) {
 	if s == nil || s.pool == nil {
 		return nil, ErrStoreNotConfigured
 	}
 	rows, err := s.pool.Query(ctx, `
-		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id, created_at, updated_at
+		SELECT id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id,
+			confirmation_state, effective_status, suppressed, expires_at, edited_by, edited_at, created_at, updated_at
 		FROM memory_profile
 		WHERE scope_type = $1 AND scope_id = $2 AND key = $3
 		ORDER BY created_at ASC
@@ -214,6 +323,99 @@ func (s *Store) GetHistory(ctx context.Context, scopeType, scopeID, key string) 
 	return entries, nil
 }
 
+// Confirm marks an entry as confirmed by user.
+func (s *Store) Confirm(ctx context.Context, id int64, editedBy string) (Entry, error) {
+	if s == nil || s.pool == nil {
+		return Entry{}, ErrStoreNotConfigured
+	}
+	now := time.Now().UTC()
+	return scanEntry(s.pool.QueryRow(ctx, `
+		UPDATE memory_profile
+		SET confirmation_state = $2, edited_by = $3, edited_at = $4, updated_at = NOW()
+		WHERE id = $1 AND confirmation_state = $5
+		RETURNING id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id,
+			confirmation_state, effective_status, suppressed, expires_at, edited_by, edited_at, created_at, updated_at
+	`, id, ConfirmationConfirmed, editedBy, now, ConfirmationPending))
+}
+
+// Reject marks an entry as rejected by user.
+func (s *Store) Reject(ctx context.Context, id int64, editedBy string) (Entry, error) {
+	if s == nil || s.pool == nil {
+		return Entry{}, ErrStoreNotConfigured
+	}
+	now := time.Now().UTC()
+	return scanEntry(s.pool.QueryRow(ctx, `
+		UPDATE memory_profile
+		SET confirmation_state = $2, effective_status = $3, edited_by = $4, edited_at = $5, updated_at = NOW()
+		WHERE id = $1 AND confirmation_state = $6
+		RETURNING id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id,
+			confirmation_state, effective_status, suppressed, expires_at, edited_by, edited_at, created_at, updated_at
+	`, id, ConfirmationRejected, EffectiveStatusInactive, editedBy, now, ConfirmationPending))
+}
+
+// Suppress soft-suppresses an entry (hidden from retrieval but kept for audit).
+func (s *Store) Suppress(ctx context.Context, id int64, editedBy string) (Entry, error) {
+	if s == nil || s.pool == nil {
+		return Entry{}, ErrStoreNotConfigured
+	}
+	now := time.Now().UTC()
+	return scanEntry(s.pool.QueryRow(ctx, `
+		UPDATE memory_profile
+		SET suppressed = TRUE, effective_status = $2, edited_by = $3, edited_at = $4, updated_at = NOW()
+		WHERE id = $1 AND suppressed = FALSE
+		RETURNING id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id,
+			confirmation_state, effective_status, suppressed, expires_at, edited_by, edited_at, created_at, updated_at
+	`, id, EffectiveStatusSuppressed, editedBy, now))
+}
+
+// Unsuppress restores a suppressed entry.
+func (s *Store) Unsuppress(ctx context.Context, id int64, editedBy string) (Entry, error) {
+	if s == nil || s.pool == nil {
+		return Entry{}, ErrStoreNotConfigured
+	}
+	now := time.Now().UTC()
+	return scanEntry(s.pool.QueryRow(ctx, `
+		UPDATE memory_profile
+		SET suppressed = FALSE, effective_status = $2, edited_by = $3, edited_at = $4, updated_at = NOW()
+		WHERE id = $1 AND suppressed = TRUE
+		RETURNING id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id,
+			confirmation_state, effective_status, suppressed, expires_at, edited_by, edited_at, created_at, updated_at
+	`, id, EffectiveStatusActive, editedBy, now))
+}
+
+// SoftDelete marks an entry as deleted (kept for audit).
+func (s *Store) SoftDelete(ctx context.Context, id int64, editedBy string) (Entry, error) {
+	if s == nil || s.pool == nil {
+		return Entry{}, ErrStoreNotConfigured
+	}
+	now := time.Now().UTC()
+	return scanEntry(s.pool.QueryRow(ctx, `
+		UPDATE memory_profile
+		SET effective_status = $2, edited_by = $3, edited_at = $4, updated_at = NOW()
+		WHERE id = $1 AND effective_status <> $2
+		RETURNING id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id,
+			confirmation_state, effective_status, suppressed, expires_at, edited_by, edited_at, created_at, updated_at
+	`, id, EffectiveStatusDeleted, editedBy, now))
+}
+
+// UpdateValue updates the value of an editable profile entry.
+func (s *Store) UpdateValue(ctx context.Context, id int64, valueJSON, summary, editedBy string) (Entry, error) {
+	if s == nil || s.pool == nil {
+		return Entry{}, ErrStoreNotConfigured
+	}
+	if strings.TrimSpace(valueJSON) == "" {
+		valueJSON = "{}"
+	}
+	now := time.Now().UTC()
+	return scanEntry(s.pool.QueryRow(ctx, `
+		UPDATE memory_profile
+		SET value_json = $2::jsonb, summary = $3, edited_by = $4, edited_at = $5, updated_at = NOW()
+		WHERE id = $1 AND effective_status = $6
+		RETURNING id, memory_type, scope_type, scope_id, key, value_json::text, summary, source_type, source_id, provenance::text, confidence, status, effective_from, effective_to, supersedes_id,
+			confirmation_state, effective_status, suppressed, expires_at, edited_by, edited_at, created_at, updated_at
+	`, id, valueJSON, summary, editedBy, now, EffectiveStatusActive))
+}
+
 func (s *Store) DeleteInactiveBefore(ctx context.Context, cutoff time.Time) (int64, error) {
 	if s == nil || s.pool == nil {
 		return 0, ErrStoreNotConfigured
@@ -233,7 +435,13 @@ type rowScanner interface{ Scan(dest ...any) error }
 
 func scanEntry(row rowScanner) (Entry, error) {
 	var entry Entry
-	err := row.Scan(&entry.ID, &entry.MemoryType, &entry.ScopeType, &entry.ScopeID, &entry.Key, &entry.ValueJSON, &entry.Summary, &entry.SourceType, &entry.SourceID, &entry.ProvenanceJSON, &entry.Confidence, &entry.Status, &entry.EffectiveFrom, &entry.EffectiveTo, &entry.SupersedesID, &entry.CreatedAt, &entry.UpdatedAt)
+	err := row.Scan(
+		&entry.ID, &entry.MemoryType, &entry.ScopeType, &entry.ScopeID, &entry.Key, &entry.ValueJSON, &entry.Summary,
+		&entry.SourceType, &entry.SourceID, &entry.ProvenanceJSON, &entry.Confidence, &entry.Status,
+		&entry.EffectiveFrom, &entry.EffectiveTo, &entry.SupersedesID,
+		&entry.ConfirmationState, &entry.EffectiveStatus, &entry.Suppressed, &entry.ExpiresAt, &entry.EditedBy, &entry.EditedAt,
+		&entry.CreatedAt, &entry.UpdatedAt,
+	)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return Entry{}, ErrEntryNotFound
@@ -267,6 +475,12 @@ func normalizeEntry(entry Entry) (Entry, error) {
 	}
 	if strings.TrimSpace(entry.Status) == "" {
 		entry.Status = StatusActive
+	}
+	if strings.TrimSpace(entry.ConfirmationState) == "" {
+		entry.ConfirmationState = ConfirmationAutoConfirmed
+	}
+	if strings.TrimSpace(entry.EffectiveStatus) == "" {
+		entry.EffectiveStatus = EffectiveStatusActive
 	}
 	return entry, nil
 }

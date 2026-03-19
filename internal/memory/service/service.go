@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"reflect"
 	"sort"
 	"strings"
 
@@ -214,7 +215,7 @@ func (s *Service) loadEpisodes(ctx context.Context, scopes []Scope, userMessage 
 	if !includeQuery || s.config.EpisodeStore == nil || s.config.EpisodeLimit <= 0 || strings.TrimSpace(userMessage) == "" {
 		return nil, nil
 	}
-	if s.config.Embeddings == nil {
+	if isNilEmbeddingProvider(s.config.Embeddings) {
 		s.log.Info("episodic retrieval skipped; embedding provider is not configured")
 		return nil, nil
 	}
@@ -223,7 +224,7 @@ func (s *Service) loadEpisodes(ctx context.Context, scopes []Scope, userMessage 
 		s.log.Warn("episodic retrieval skipped; embedding query failed", slog.String("error", err.Error()))
 		return nil, nil
 	}
-	if len(queryEmbedding) != embeddings.VectorDimensions {
+	if len(queryEmbedding) != embeddings.VectorDimensions() {
 		s.log.Warn("episodic retrieval skipped; embedding dimensions are invalid", slog.Int("dimensions", len(queryEmbedding)))
 		return nil, nil
 	}
@@ -323,11 +324,11 @@ func (s *Service) loadChunks(ctx context.Context, scopes []Scope, userMessage st
 	if !includeQuery || s.config.ChunkStore == nil || s.config.ChunkLimit <= 0 || strings.TrimSpace(userMessage) == "" {
 		return nil, nil
 	}
-	if s.config.Embeddings == nil {
+	if isNilEmbeddingProvider(s.config.Embeddings) {
 		return nil, nil
 	}
 	queryEmbedding, err := s.config.Embeddings.EmbedQuery(ctx, userMessage)
-	if err != nil || len(queryEmbedding) != embeddings.VectorDimensions {
+	if err != nil || len(queryEmbedding) != embeddings.VectorDimensions() {
 		return nil, nil
 	}
 	items := []map[string]any{}
@@ -580,4 +581,17 @@ func formatJSONValueForPrompt(value any) string {
 		return ""
 	}
 	return string(encoded)
+}
+
+func isNilEmbeddingProvider(provider EmbeddingProvider) bool {
+	if provider == nil {
+		return true
+	}
+	v := reflect.ValueOf(provider)
+	switch v.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
+		return v.IsNil()
+	default:
+		return false
+	}
 }

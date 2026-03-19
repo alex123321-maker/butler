@@ -388,20 +388,10 @@ func (p *Provider) streamRealtime(ctx context.Context, runID, sessionKey string,
 // It looks at the run context set by the current request. If not
 // available, falls back to runID as a one-off session key.
 func (p *Provider) sessionKeyForRun(ctx context.Context, runID string) string {
-	if key, ok := ctx.Value(sessionKeyContextKey).(string); ok && key != "" {
+	if key, ok := transport.SessionKeyFromContext(ctx); ok && key != "" {
 		return key
 	}
 	return runID
-}
-
-type contextKey string
-
-const sessionKeyContextKey contextKey = "transport_session_key"
-
-// WithSessionKey returns a context annotated with the session key for
-// WebSocket session pooling.
-func WithSessionKey(ctx context.Context, sessionKey string) context.Context {
-	return context.WithValue(ctx, sessionKeyContextKey, sessionKey)
 }
 
 // storeSession saves a session into the pool, keyed by session key.
@@ -566,7 +556,7 @@ func (p *Provider) startRunRealtimeMessages(req transport.StartRunRequest) ([]ma
 				"type": "message",
 				"role": item.Role,
 				"content": []map[string]any{{
-					"type": "input_text",
+					"type": contentTypeForRole(item.Role),
 					"text": item.Content,
 				}},
 			},
@@ -590,7 +580,7 @@ func (p *Provider) continueRunRealtimeMessages(req transport.ContinueRunRequest)
 				"type": "message",
 				"role": item.Role,
 				"content": []map[string]any{{
-					"type": "input_text",
+					"type": contentTypeForRole(item.Role),
 					"text": item.Content,
 				}},
 			},

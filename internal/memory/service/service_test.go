@@ -10,6 +10,12 @@ import (
 	"github.com/butler/butler/internal/metrics"
 )
 
+type nilEmbeddingProvider struct{}
+
+func (*nilEmbeddingProvider) EmbedQuery(context.Context, string) ([]float32, error) {
+	panic("typed nil embedding provider should not be called")
+}
+
 func TestBuildBundleOwnsScopeOrderAndLimits(t *testing.T) {
 	t.Parallel()
 
@@ -52,6 +58,24 @@ func TestBuildBundleSkipsEpisodesWithoutEmbeddings(t *testing.T) {
 	}
 	if _, ok := bundle.Items["episodes"]; ok {
 		t.Fatalf("expected episodes to be skipped without embeddings, got %+v", bundle.Items)
+	}
+	if episodeStore.calls != 0 {
+		t.Fatalf("expected episode store not to be called, got %d", episodeStore.calls)
+	}
+}
+
+func TestBuildBundleSkipsEpisodesWithTypedNilEmbeddings(t *testing.T) {
+	t.Parallel()
+
+	episodeStore := &stubEpisodeStore{entries: []Episode{stubEpisode{summary: "Recovered service", distance: 0.1}}}
+	var provider *nilEmbeddingProvider
+	svc := New(Config{EpisodeStore: episodeStore, Embeddings: provider})
+	bundle, err := svc.BuildBundle(context.Background(), BundleRequest{SessionKey: "session-1", UserID: "user-1", UserMessage: "help", IncludeQuery: true})
+	if err != nil {
+		t.Fatalf("BuildBundle returned error: %v", err)
+	}
+	if _, ok := bundle.Items["episodes"]; ok {
+		t.Fatalf("expected episodes to be skipped with typed nil embeddings, got %+v", bundle.Items)
 	}
 	if episodeStore.calls != 0 {
 		t.Fatalf("expected episode store not to be called, got %d", episodeStore.calls)
@@ -256,7 +280,7 @@ type stubEmbeddings struct{ vector []float32 }
 func (s stubEmbeddings) EmbedQuery(context.Context, string) ([]float32, error) { return s.vector, nil }
 
 func testVector(value float32) []float32 {
-	vector := make([]float32, embeddings.VectorDimensions)
+	vector := make([]float32, embeddings.VectorDimensions())
 	for i := range vector {
 		vector[i] = value
 	}

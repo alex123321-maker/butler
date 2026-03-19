@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"log/slog"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	"github.com/butler/butler/internal/ingress"
@@ -33,18 +35,30 @@ type Adapter struct {
 	allowedChatIDs    map[string]struct{}
 	pollTimeoutSecond int
 	executor          Executor
+	auth              ProviderAuthManager
 	approvalGate      *flow.ApprovalGate
+	approvalService   *approvals.Service
 	log               *slog.Logger
 	nextOffset        int64
+	now               func() time.Time
 	mu                sync.Mutex
 	streamingMessages map[string]streamingMessage
+	authPrompts       map[int64]pendingAuthPrompt
 }
 
 type streamingMessage struct {
-	ChatID    int64
-	MessageID int64
-	Content   string
+	ChatID        int64
+	DraftID       int64
+	Content       string
+	SentLen       int
+	LastSentAt    time.Time
+	NextAllowedAt time.Time
 }
+
+const (
+	minDraftFlushInterval = 900 * time.Millisecond
+	minDraftFlushChars    = 48
+)
 
 func NewAdapter(cfg Config, client *Client, approvalGate *flow.ApprovalGate, log *slog.Logger) (*Adapter, error) {
 	if client == nil {
@@ -69,12 +83,18 @@ func NewAdapter(cfg Config, client *Client, approvalGate *flow.ApprovalGate, log
 		pollTimeoutSecond: int(cfg.PollTimeout / time.Second),
 		approvalGate:      approvalGate,
 		log:               logger.WithComponent(log, "telegram-adapter"),
+		now:               time.Now,
 		streamingMessages: make(map[string]streamingMessage),
+		authPrompts:       make(map[int64]pendingAuthPrompt),
 	}, nil
 }
 
 func (a *Adapter) SetExecutor(executor Executor) {
 	a.executor = executor
+}
+
+func (a *Adapter) SetApprovalService(service *approvals.Service) {
+	a.approvalService = service
 }
 
 func (a *Adapter) Run(ctx context.Context) error {
@@ -115,43 +135,141 @@ func (a *Adapter) Run(ctx context.Context) error {
 				a.nextOffset = update.UpdateID + 1
 			}
 
-			// Handle callback queries (approval button presses).
 			if update.CallbackQuery != nil {
 				a.handleCallbackQuery(ctx, update.CallbackQuery)
 				continue
 			}
 
-			event, err := NormalizeUpdate(update)
-			if err != nil {
+			if err := a.handleMessageUpdate(ctx, update); err != nil {
 				if errors.Is(err, ErrIgnoredUpdate) {
 					continue
 				}
-				a.log.Warn("telegram update normalization failed", slog.Int64("update_id", update.UpdateID), slog.String("error", err.Error()))
-				continue
+				a.log.Warn("telegram update handling failed", slog.Int64("update_id", update.UpdateID), slog.String("error", err.Error()))
 			}
-			if !a.isAllowedSession(event.SessionKey) {
-				a.log.Warn("telegram update ignored for disallowed chat", slog.Int64("update_id", update.UpdateID), slog.String("session_key", event.SessionKey))
-				continue
-			}
-			result, execErr := a.executor.Execute(ctx, event)
-			if execErr != nil {
-				a.log.Error("telegram update execution failed", slog.Int64("update_id", update.UpdateID), slog.String("session_key", event.SessionKey), slog.String("error", execErr.Error()))
-				continue
-			}
-			a.log.Info("telegram update executed", slog.Int64("update_id", update.UpdateID), slog.String("run_id", result.RunID), slog.String("session_key", result.SessionKey))
 		}
 	}
 }
 
+func (a *Adapter) handleMessageUpdate(ctx context.Context, update Update) error {
+	if update.Message == nil {
+		return ErrIgnoredUpdate
+	}
+	if !a.isAllowedChatID(update.Message.Chat.ID) {
+		a.log.Warn("telegram update ignored for disallowed chat", slog.Int64("update_id", update.UpdateID), slog.Int64("chat_id", update.Message.Chat.ID))
+		return ErrIgnoredUpdate
+	}
+	handled, err := a.handleCommand(ctx, update.Message)
+	if err != nil {
+		return err
+	}
+	if handled {
+		return nil
+	}
+	handled, err = a.handlePendingAuthInput(ctx, update.Message)
+	if err != nil {
+		return err
+	}
+	if handled {
+		return nil
+	}
+	event, err := NormalizeUpdate(update)
+	if err != nil {
+		return err
+	}
+
+	// Show "typing" indicator immediately so the user sees the bot is working.
+	if actionErr := a.client.SendChatAction(ctx, update.Message.Chat.ID, ChatActionTyping); actionErr != nil {
+		a.log.Warn("send typing action failed", slog.String("error", actionErr.Error()))
+	}
+
+	result, execErr := a.executor.Execute(ctx, event)
+	if execErr != nil {
+		if a.shouldPromptForAuth(execErr) {
+			if promptErr := a.deliverProviderAuthPrompt(ctx, update.Message.Chat.ID, "I could not process that yet because no working provider auth is available."); promptErr != nil {
+				return fmt.Errorf("deliver provider auth fallback: %w", promptErr)
+			}
+			a.log.Warn("telegram update requires provider auth", slog.Int64("update_id", update.UpdateID), slog.String("session_key", event.SessionKey), slog.String("error", execErr.Error()))
+			return nil
+		}
+		if notifyErr := a.sendExecutionFailureMessage(ctx, update.Message.Chat.ID, execErr); notifyErr != nil {
+			return fmt.Errorf("execute telegram update: %w; additionally failed to notify chat: %v", execErr, notifyErr)
+		}
+		a.log.Warn("telegram update execution failed; user notified", slog.Int64("update_id", update.UpdateID), slog.String("session_key", event.SessionKey), slog.String("error", execErr.Error()))
+		return nil
+	}
+	a.log.Info("telegram update executed", slog.Int64("update_id", update.UpdateID), slog.String("run_id", result.RunID), slog.String("session_key", result.SessionKey))
+	return nil
+}
+
+func (a *Adapter) sendExecutionFailureMessage(ctx context.Context, chatID int64, err error) error {
+	text := "I could not finish that request. Please try again."
+	if errors.Is(err, context.DeadlineExceeded) || strings.Contains(strings.ToLower(err.Error()), "client.timeout") || strings.Contains(strings.ToLower(err.Error()), "context deadline exceeded") {
+		text = "I could not finish that request in time. Please try again, or ask me to be more specific so I can do less work in one run."
+	}
+	return a.sendFinalMessage(ctx, chatID, text)
+}
+
 func (a *Adapter) DeliverAssistantDelta(ctx context.Context, event flow.DeliveryEvent) error {
-	if strings.TrimSpace(event.Content) == "" {
+	if event.Content == "" {
 		return nil
 	}
 	chatID, ok := ChatIDFromSessionKey(event.SessionKey)
 	if !ok || !a.isAllowedChatID(chatID) {
 		return nil
 	}
-	return a.upsertStreamingMessage(ctx, event.RunID, chatID, event.Content, false)
+
+	a.mu.Lock()
+	state, exists := a.streamingMessages[event.RunID]
+	if !exists {
+		state = streamingMessage{
+			ChatID:  chatID,
+			DraftID: draftIDFromRunID(event.RunID),
+		}
+	}
+	state.Content += event.Content
+	now := a.now().UTC()
+	shouldFlush := state.SentLen == 0 || len(state.Content)-state.SentLen >= minDraftFlushChars || now.Sub(state.LastSentAt) >= minDraftFlushInterval
+	if now.Before(state.NextAllowedAt) || !shouldFlush {
+		a.streamingMessages[event.RunID] = state
+		a.mu.Unlock()
+		return nil
+	}
+	a.streamingMessages[event.RunID] = state
+	accumulated := state.Content
+	draftID := state.DraftID
+	a.mu.Unlock()
+
+	// Telegram messages are limited to 4096 characters. During streaming we
+	// send in-place drafts, so we truncate to the tail of the accumulated
+	// content to keep the user seeing the most recent output. The full
+	// content will be delivered properly in DeliverAssistantFinal.
+	draftText := accumulated
+	if len(draftText) > telegramMaxMessageLen {
+		draftText = "…" + draftText[len(draftText)-telegramMaxMessageLen+len("…"):]
+	}
+
+	if err := a.client.SendMessageDraft(ctx, chatID, draftID, draftText); err != nil {
+		var apiErr *apiError
+		if errors.As(err, &apiErr) && apiErr.StatusCode == 429 {
+			backoff := nextAllowedAt(now, apiErr.RetryAfter)
+			a.mu.Lock()
+			state := a.streamingMessages[event.RunID]
+			state.NextAllowedAt = backoff
+			a.streamingMessages[event.RunID] = state
+			a.mu.Unlock()
+			a.log.Warn("telegram draft rate limited", slog.String("run_id", event.RunID), slog.String("session_key", event.SessionKey), slog.Duration("retry_after", backoff.Sub(now)))
+			return nil
+		}
+		return fmt.Errorf("send telegram message draft: %w", err)
+	}
+	a.mu.Lock()
+	state = a.streamingMessages[event.RunID]
+	state.SentLen = len(accumulated)
+	state.LastSentAt = now
+	state.NextAllowedAt = time.Time{}
+	a.streamingMessages[event.RunID] = state
+	a.mu.Unlock()
+	return nil
 }
 
 func (a *Adapter) DeliverAssistantFinal(ctx context.Context, event flow.DeliveryEvent) error {
@@ -159,57 +277,115 @@ func (a *Adapter) DeliverAssistantFinal(ctx context.Context, event flow.Delivery
 	if !ok || !a.isAllowedChatID(chatID) || strings.TrimSpace(event.Content) == "" {
 		return nil
 	}
-	if err := a.upsertStreamingMessage(ctx, event.RunID, chatID, event.Content, true); err != nil {
-		return err
+
+	if err := a.sendFinalMessage(ctx, chatID, event.Content); err != nil {
+		return fmt.Errorf("send telegram final message: %w", err)
 	}
+
+	a.mu.Lock()
+	delete(a.streamingMessages, event.RunID)
+	a.mu.Unlock()
+
 	a.log.Info("telegram final response delivered", slog.String("run_id", event.RunID), slog.String("session_key", event.SessionKey))
 	return nil
 }
 
-func (a *Adapter) upsertStreamingMessage(ctx context.Context, runID string, chatID int64, content string, final bool) error {
-	content = strings.TrimSpace(content)
-	if content == "" {
+// DeliverToolCallEvent sends a short notification about tool call lifecycle
+// and shows a chat action indicator so the user knows the bot is working.
+func (a *Adapter) DeliverToolCallEvent(ctx context.Context, event flow.ToolCallEvent) error {
+	chatID, ok := ChatIDFromSessionKey(event.SessionKey)
+	if !ok || !a.isAllowedChatID(chatID) {
 		return nil
 	}
-	a.mu.Lock()
-	state, ok := a.streamingMessages[runID]
-	a.mu.Unlock()
-	if ok {
-		if state.Content == content {
-			if final {
-				a.clearStreamingMessage(runID)
-			}
-			return nil
+	switch event.Status {
+	case "started":
+		// Show "upload_document" action to indicate tool work in progress.
+		if err := a.client.SendChatAction(ctx, chatID, ChatActionUploadDocument); err != nil {
+			a.log.Warn("send chat action failed", slog.String("action", ChatActionUploadDocument), slog.String("error", err.Error()))
 		}
-		message, err := a.client.EditMessageText(ctx, state.ChatID, state.MessageID, content)
-		if err != nil {
-			return fmt.Errorf("edit telegram message: %w", err)
+		text := formatToolCallStarted(event.ToolName)
+		if _, err := a.client.SendMessage(ctx, chatID, text); err != nil {
+			a.log.Warn("send tool call started message failed", slog.String("tool_name", event.ToolName), slog.String("error", err.Error()))
 		}
-		a.storeStreamingMessage(runID, streamingMessage{ChatID: state.ChatID, MessageID: message.MessageID, Content: content}, final)
-		return nil
+	case "completed", "failed":
+		text := formatToolCallFinished(event.ToolName, event.Status, event.DurationMs)
+		if _, err := a.client.SendMessage(ctx, chatID, text); err != nil {
+			a.log.Warn("send tool call completed message failed", slog.String("tool_name", event.ToolName), slog.String("error", err.Error()))
+		}
+		// Resume "typing" indicator since the model will continue generating.
+		if err := a.client.SendChatAction(ctx, chatID, ChatActionTyping); err != nil {
+			a.log.Warn("send chat action failed", slog.String("action", ChatActionTyping), slog.String("error", err.Error()))
+		}
 	}
-	message, err := a.client.SendMessage(ctx, chatID, content)
-	if err != nil {
-		return fmt.Errorf("send telegram message: %w", err)
-	}
-	a.storeStreamingMessage(runID, streamingMessage{ChatID: chatID, MessageID: message.MessageID, Content: content}, final)
 	return nil
 }
 
-func (a *Adapter) storeStreamingMessage(runID string, state streamingMessage, final bool) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	if final {
-		delete(a.streamingMessages, runID)
-		return
+// DeliverStatusEvent shows a chat action and optionally sends a short status
+// message so the user gets immediate feedback when the bot starts working.
+func (a *Adapter) DeliverStatusEvent(ctx context.Context, event flow.StatusEvent) error {
+	chatID, ok := ChatIDFromSessionKey(event.SessionKey)
+	if !ok || !a.isAllowedChatID(chatID) {
+		return nil
 	}
-	a.streamingMessages[runID] = state
+	// Always show "typing" indicator for status events.
+	if err := a.client.SendChatAction(ctx, chatID, ChatActionTyping); err != nil {
+		a.log.Warn("send chat action failed", slog.String("action", ChatActionTyping), slog.String("error", err.Error()))
+	}
+	return nil
 }
 
-func (a *Adapter) clearStreamingMessage(runID string) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	delete(a.streamingMessages, runID)
+func (a *Adapter) sendFinalMessage(ctx context.Context, chatID int64, text string) error {
+	chunks := splitMessage(text, telegramMaxMessageLen)
+	for _, chunk := range chunks {
+		if err := a.sendSingleMessage(ctx, chatID, chunk); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// sendSingleMessage sends a single message (must be within Telegram limits)
+// with one retry after a 429 rate limit.
+func (a *Adapter) sendSingleMessage(ctx context.Context, chatID int64, text string) error {
+	_, err := a.client.SendMessage(ctx, chatID, text)
+	if err == nil {
+		return nil
+	}
+	var apiErr *apiError
+	if !errors.As(err, &apiErr) || apiErr.StatusCode != 429 {
+		return err
+	}
+	wait := apiErr.RetryAfter
+	if wait <= 0 {
+		wait = time.Second
+	}
+	timer := time.NewTimer(wait)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+	}
+	_, err = a.client.SendMessage(ctx, chatID, text)
+	return err
+}
+
+func nextAllowedAt(now time.Time, retryAfter time.Duration) time.Time {
+	if retryAfter <= 0 {
+		retryAfter = time.Second
+	}
+	return now.Add(retryAfter)
+}
+
+// draftIDFromRunID derives a stable non-zero draft ID from the run ID string.
+func draftIDFromRunID(runID string) int64 {
+	h := fnv.New64a()
+	h.Write([]byte(runID))
+	id := int64(h.Sum64() >> 1) // shift to keep positive
+	if id == 0 {
+		id = 1
+	}
+	return id
 }
 
 func NormalizeUpdate(update Update) (ingress.InputEvent, error) {
@@ -309,8 +485,8 @@ func (a *Adapter) DeliverApprovalRequest(ctx context.Context, req flow.ApprovalR
 	markup := &InlineKeyboardMarkup{
 		InlineKeyboard: [][]InlineKeyboardButton{
 			{
-				{Text: "Approve", CallbackData: approvalCallbackPrefix + req.ToolCallID},
-				{Text: "Reject", CallbackData: rejectionCallbackPrefix + req.ToolCallID},
+				{Text: "Allow", CallbackData: approvalCallbackPrefix + req.ToolCallID},
+				{Text: "Deny", CallbackData: rejectionCallbackPrefix + req.ToolCallID},
 			},
 		},
 	}
@@ -334,6 +510,24 @@ func (a *Adapter) handleCallbackQuery(ctx context.Context, query *CallbackQuery)
 		}
 	}
 
+	if strings.HasPrefix(query.Data, authStartCallbackPrefix) {
+		provider := strings.TrimPrefix(query.Data, authStartCallbackPrefix)
+		answerText := "Opening connection flow"
+		if err := a.handleAuthCallback(ctx, query, provider); err != nil {
+			answerText = "Connection failed"
+			a.log.Warn("provider auth callback failed", slog.String("provider", provider), slog.String("error", err.Error()))
+			if query.Message != nil {
+				if _, sendErr := a.client.SendMessage(ctx, query.Message.Chat.ID, "Could not start auth for "+providerLabel(provider)+"\n\nError: "+err.Error()); sendErr != nil {
+					a.log.Warn("send provider auth failure failed", slog.String("error", sendErr.Error()))
+				}
+			}
+		}
+		if err := a.client.AnswerCallbackQuery(ctx, query.ID, answerText); err != nil {
+			a.log.Warn("answer callback query failed", slog.String("error", err.Error()))
+		}
+		return
+	}
+
 	var toolCallID string
 	var approved bool
 	switch {
@@ -348,7 +542,6 @@ func (a *Adapter) handleCallbackQuery(ctx context.Context, query *CallbackQuery)
 		return
 	}
 
-	// Answer the callback to clear the loading state on the button.
 	answerText := "Approved"
 	if !approved {
 		answerText = "Rejected"
@@ -361,9 +554,28 @@ func (a *Adapter) handleCallbackQuery(ctx context.Context, query *CallbackQuery)
 		a.log.Error("approval gate not configured, cannot resolve approval")
 		return
 	}
-	if !a.approvalGate.Resolve(toolCallID, approved) {
+	resolvedBy := "telegram"
+	if query.From != nil {
+		resolvedBy = fmt.Sprintf("telegram_user:%d", query.From.ID)
+	}
+	if !a.approvalGate.ResolveWithChannel(toolCallID, approved, "telegram", resolvedBy) {
 		a.log.Warn("no pending approval found for tool call", slog.String("tool_call_id", toolCallID))
-		return
+	}
+
+	if a.approvalService != nil {
+		_, _, err := a.approvalService.ResolveByToolCall(ctx, approvals.ResolveByToolCallParams{
+			ToolCallID:       toolCallID,
+			Approved:         approved,
+			ResolvedVia:      approvals.ResolvedViaTelegram,
+			ResolvedBy:       resolvedBy,
+			ResolutionReason: telegramResolutionReason(approved),
+			ResolvedAt:       time.Now().UTC(),
+			ActorType:        "telegram",
+			ActorID:          resolvedBy,
+		})
+		if err != nil {
+			a.log.Warn("resolve durable approval via telegram failed", slog.String("tool_call_id", toolCallID), slog.String("error", err.Error()))
+		}
 	}
 
 	action := "approved"
@@ -371,4 +583,11 @@ func (a *Adapter) handleCallbackQuery(ctx context.Context, query *CallbackQuery)
 		action = "rejected"
 	}
 	a.log.Info("approval resolved via telegram", slog.String("tool_call_id", toolCallID), slog.String("action", action))
+}
+
+func telegramResolutionReason(approved bool) string {
+	if approved {
+		return "approved in telegram"
+	}
+	return "rejected in telegram"
 }

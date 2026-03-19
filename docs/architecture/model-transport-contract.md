@@ -259,6 +259,8 @@ Orchestrator взаимодействует с Model Transport Layer через 
 * transport options
 * existing provider_session_ref, если run продолжает существующую provider-side session
 
+`prepared input items` may already include the fully assembled Butler system instruction. That instruction is authored and ordered by Orchestrator; Transport carries it through provider normalization only and does not assemble prompt sections itself.
+
 #### Результат
 
 * start acknowledgement;
@@ -576,6 +578,14 @@ Transport обязан:
 
 Для локальных моделей `provider_session_ref` может отсутствовать.
 В этом случае transport работает в stateless mode, но logical contract остаётся тем же.
+
+#### Current baseline
+
+Текущий baseline orchestrator повторно использует последний валидный `provider_session_ref` того же `model_provider` для новых run внутри той же session на best-effort основе.
+
+Это нужно, чтобы immediate follow-up turns могли продолжать provider-side state даже до того, как async memory pipeline успеет обновить session summary.
+
+Если ссылка отсутствует, невалидна или provider-side session потеряна, Butler продолжает run без неё и полагается на собственный prompt/memory context.
 
 ---
 

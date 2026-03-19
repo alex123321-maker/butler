@@ -8,6 +8,7 @@ Current state:
 - URL and selector validation are enforced before execution, and extracted text is truncated to safe response sizes
 - resolved credential refs can be injected for fill/type flows without exposing raw secrets to model-visible args
 - Playwright helper resolution is deployment-safe through `BUTLER_TOOL_BROWSER_SCRIPT_PATH` instead of `runtime.Caller` path discovery
+- Docker Compose deployment must attach the runtime to an egress-capable network in addition to the internal tool network so outbound site navigation can resolve public DNS
 - HTTP health endpoint and unit tests are in place
 
 Local run:

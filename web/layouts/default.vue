@@ -1,33 +1,27 @@
 <template>
   <div class="app-layout">
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <h1 class="sidebar-title">Butler</h1>
-        <SystemStatus />
-      </div>
-      <nav class="sidebar-nav">
-        <NuxtLink to="/" class="nav-link" active-class="nav-link--active">
-          <span class="nav-icon">◉</span> Dashboard
-        </NuxtLink>
-        <NuxtLink to="/sessions" class="nav-link" active-class="nav-link--active">
-          <span class="nav-icon">◎</span> Sessions
-        </NuxtLink>
-        <NuxtLink to="/memory" class="nav-link" active-class="nav-link--active">
-          <span class="nav-icon">◈</span> Memory
-        </NuxtLink>
-        <NuxtLink to="/doctor" class="nav-link" active-class="nav-link--active">
-          <span class="nav-icon">◇</span> Doctor
-        </NuxtLink>
-        <NuxtLink to="/settings" class="nav-link" active-class="nav-link--active">
-          <span class="nav-icon">◆</span> Settings
-        </NuxtLink>
-      </nav>
-    </aside>
-    <main class="main-content">
+    <WidgetSidebar />
+    <div class="content-wrapper">
       <slot />
-    </main>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import WidgetSidebar from '~/widgets/sidebar/ui/WidgetSidebar.vue'
 </script>
+
+<style scoped>
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-bg-canvas);
+  color: var(--color-text-primary);
+}
+.content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+</style>

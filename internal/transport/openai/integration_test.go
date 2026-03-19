@@ -62,7 +62,7 @@ func TestOpenAIIntegrationWebSocketSession(t *testing.T) {
 	defer provider.CloseAllSessions()
 
 	sessionKey := "integration:ws:session"
-	ctx := WithSessionKey(context.Background(), sessionKey)
+	ctx := transport.WithSessionKey(context.Background(), sessionKey)
 
 	// First run via WebSocket.
 	stream, err := provider.StartRun(ctx, transport.StartRunRequest{

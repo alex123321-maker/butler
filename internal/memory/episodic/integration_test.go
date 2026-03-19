@@ -89,7 +89,7 @@ func TestEpisodicStoreIntegration(t *testing.T) {
 }
 
 func testEmbedding(seed float32) []float32 {
-	vector := make([]float32, embeddings.VectorDimensions)
+	vector := make([]float32, embeddings.VectorDimensions())
 	for i := range vector {
 		vector[i] = seed
 	}

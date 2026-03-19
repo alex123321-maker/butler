@@ -9,10 +9,14 @@ import (
 	"strings"
 	"time"
 
+	activity "github.com/butler/butler/apps/orchestrator/internal/activity"
+	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
+	artifacts "github.com/butler/butler/apps/orchestrator/internal/artifacts"
+	"github.com/butler/butler/apps/orchestrator/internal/observability"
+	promptmgmt "github.com/butler/butler/apps/orchestrator/internal/prompt"
+	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
-	"github.com/butler/butler/internal/domain"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
-	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/ingress"
@@ -32,24 +36,30 @@ type RunManager interface {
 	TransitionRun(context.Context, *sessionv1.UpdateRunStateRequest) (*sessionv1.RunRecord, error)
 	GetRun(context.Context, string) (*sessionv1.RunRecord, error)
 	PersistProviderSessionRef(context.Context, string, string) (*sessionv1.RunRecord, error)
+	ListRunsBySessionKey(context.Context, string) ([]*sessionv1.RunRecord, error)
 }
 
 type TranscriptStore interface {
 	AppendMessage(context.Context, transcript.Message) (transcript.Message, error)
 	AppendToolCall(context.Context, transcript.ToolCall) (transcript.ToolCall, error)
+	GetTranscript(context.Context, string) (transcript.Transcript, error)
 }
 
 type ToolExecutor interface {
 	ExecuteToolCall(context.Context, *toolbrokerv1.ToolCall) (*toolbrokerv1.ToolResult, error)
 }
 
+type ToolCatalog interface {
+	ListTools(context.Context) ([]*toolbrokerv1.ToolContract, error)
+}
+
 type ProfileMemoryStore interface {
-	GetByScope(context.Context, string, string) ([]MemoryProfileEntry, error)
+	GetByScope(context.Context, string, string) ([]memoryservice.ProfileEntry, error)
 }
 
 type EpisodicMemoryStore interface {
-	Search(context.Context, string, string, []float32, int) ([]MemoryEpisode, error)
-	FindBySummary(context.Context, string, string, string) ([]MemoryEpisode, error)
+	Search(context.Context, string, string, []float32, int) ([]memoryservice.Episode, error)
+	FindBySummary(context.Context, string, string, string) ([]memoryservice.Episode, error)
 }
 
 type WorkingMemoryStore interface {
@@ -83,24 +93,8 @@ type MemoryBundleService interface {
 }
 
 type ChunkMemoryStore interface {
-	Search(context.Context, string, string, []float32, int) ([]MemoryChunk, error)
-	FindByTitle(context.Context, string, string, string, int) ([]MemoryChunk, error)
-}
-
-type MemoryProfileEntry interface {
-	ProfileKey() string
-	ProfileSummary() string
-}
-
-type MemoryEpisode interface {
-	EpisodeSummary() string
-	EpisodeDistance() float64
-}
-
-type MemoryChunk interface {
-	ChunkTitle() string
-	ChunkSummary() string
-	ChunkDistance() float64
+	Search(context.Context, string, string, []float32, int) ([]memoryservice.Chunk, error)
+	FindByTitle(context.Context, string, string, string, int) ([]memoryservice.Chunk, error)
 }
 
 type WorkingMemorySnapshot struct {
@@ -136,6 +130,11 @@ type TransientWorkingState struct {
 	UpdatedAt   string
 }
 
+// TransitionLogger records run state transitions for observability.
+type TransitionLogger interface {
+	InsertTransition(ctx context.Context, t runservice.StateTransition) error
+}
+
 type Config struct {
 	ProviderName     string
 	ModelName        string
@@ -143,8 +142,10 @@ type Config struct {
 	LeaseTTL         int64
 	Delivery         DeliverySink
 	Tools            ToolExecutor
+	ToolCatalog      ToolCatalog
 	ApprovalChecker  ApprovalChecker
 	ApprovalGate     *ApprovalGate
+	ApprovalService  *approvals.Service
 	ProfileStore     ProfileMemoryStore
 	EpisodeStore     EpisodicMemoryStore
 	ChunkStore       ChunkMemoryStore
@@ -156,9 +157,24 @@ type Config struct {
 	TransientStore   TransientWorkingStore
 	TransientTTL     time.Duration
 	MemoryBundles    MemoryBundleService
+	PromptManager    PromptManager
+	PromptAssembler  PromptAssembler
 	ProfileLimit     int
 	EpisodeLimit     int
 	MemoryScopes     []string
+	TransitionLogger TransitionLogger
+	EventHub         *observability.Hub
+	Artifacts        *artifacts.Service
+	Activity         *activity.Service
+}
+
+type PromptManager interface {
+	Get(context.Context) (promptmgmt.ConfigState, error)
+	Update(context.Context, promptmgmt.UpdateRequest) (promptmgmt.ConfigState, error)
+}
+
+type PromptAssembler interface {
+	Assemble(promptmgmt.ConfigState, promptmgmt.Context) promptmgmt.Assembly
 }
 
 type Service struct {
@@ -192,113 +208,18 @@ type preparedRun struct {
 	InputItems    []transport.InputItem
 	UserMessage   string
 	MemoryBundle  map[string]any
+	Prompt        promptmgmt.Assembly
+	ToolDefs      []transport.ToolDefinition
 	WorkingMemory *workingMemoryContext
 	InputPayload  map[string]any
 	SessionUserID string
 	Channel       string
-}
 
-type memoryBundleProfileStore struct{ store ProfileMemoryStore }
-
-func (a memoryBundleProfileStore) GetByScope(ctx context.Context, scopeType, scopeID string) ([]memoryservice.ProfileEntry, error) {
-	if a.store == nil {
-		return nil, nil
-	}
-	entries, err := a.store.GetByScope(ctx, scopeType, scopeID)
-	if err != nil {
-		return nil, err
-	}
-	result := make([]memoryservice.ProfileEntry, 0, len(entries))
-	for _, entry := range entries {
-		result = append(result, entry)
-	}
-	return result, nil
-}
-
-type memoryBundleEpisodeStore struct{ store EpisodicMemoryStore }
-
-func (a memoryBundleEpisodeStore) Search(ctx context.Context, scopeType, scopeID string, embedding []float32, limit int) ([]memoryservice.Episode, error) {
-	if a.store == nil {
-		return nil, nil
-	}
-	entries, err := a.store.Search(ctx, scopeType, scopeID, embedding, limit)
-	if err != nil {
-		return nil, err
-	}
-	result := make([]memoryservice.Episode, 0, len(entries))
-	for _, entry := range entries {
-		result = append(result, entry)
-	}
-	return result, nil
-}
-
-func (a memoryBundleEpisodeStore) FindBySummary(ctx context.Context, scopeType, scopeID, summary string) ([]memoryservice.Episode, error) {
-	if a.store == nil {
-		return nil, nil
-	}
-	entries, err := a.store.FindBySummary(ctx, scopeType, scopeID, summary)
-	if err != nil {
-		return nil, err
-	}
-	result := make([]memoryservice.Episode, 0, len(entries))
-	for _, entry := range entries {
-		result = append(result, entry)
-	}
-	return result, nil
-}
-
-type memoryBundleWorkingStore struct{ store WorkingMemoryStore }
-
-func (a memoryBundleWorkingStore) Get(ctx context.Context, sessionKey string) (memoryservice.WorkingSnapshot, error) {
-	if a.store == nil {
-		return memoryservice.WorkingSnapshot{}, ErrWorkingMemoryNotFound
-	}
-	snapshot, err := a.store.Get(ctx, sessionKey)
-	if err != nil {
-		return memoryservice.WorkingSnapshot{}, err
-	}
-	return memoryservice.WorkingSnapshot{Goal: snapshot.Goal, EntitiesJSON: snapshot.EntitiesJSON, PendingStepsJSON: snapshot.PendingStepsJSON, ScratchJSON: snapshot.ScratchJSON, Status: snapshot.Status}, nil
-}
-
-type memoryBundleChunkStore struct{ store ChunkMemoryStore }
-
-func (a memoryBundleChunkStore) Search(ctx context.Context, scopeType, scopeID string, embedding []float32, limit int) ([]memoryservice.Chunk, error) {
-	if a.store == nil {
-		return nil, nil
-	}
-	entries, err := a.store.Search(ctx, scopeType, scopeID, embedding, limit)
-	if err != nil {
-		return nil, err
-	}
-	result := make([]memoryservice.Chunk, 0, len(entries))
-	for _, entry := range entries {
-		result = append(result, entry)
-	}
-	return result, nil
-}
-
-func (a memoryBundleChunkStore) FindByTitle(ctx context.Context, scopeType, scopeID, title string, limit int) ([]memoryservice.Chunk, error) {
-	if a.store == nil {
-		return nil, nil
-	}
-	entries, err := a.store.FindByTitle(ctx, scopeType, scopeID, title, limit)
-	if err != nil {
-		return nil, err
-	}
-	result := make([]memoryservice.Chunk, 0, len(entries))
-	for _, entry := range entries {
-		result = append(result, entry)
-	}
-	return result, nil
-}
-
-type workingMemoryContext struct {
-	Goal           string
-	ActiveEntities any
-	PendingSteps   any
-	Scratch        map[string]any
-	Status         string
-	Policy         WorkingMemoryPolicy
+	// Deferred observability payloads — populated during prepareRun, emitted after CreateRun.
+	observabilityMemory  map[string]any
+	observabilityHistory map[string]any
+	observabilityTools   map[string]any
+	observabilityPrompt  map[string]any
 }
 
 func NewService(sessions SessionRepository, leases session.LeaseManager, runs RunManager, transcriptStore TranscriptStore, provider transport.ModelProvider, cfg Config, log *slog.Logger) *Service {
@@ -343,9 +264,9 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 	}
 	if cfg.MemoryBundles == nil {
 		cfg.MemoryBundles = memoryservice.New(memoryservice.Config{
-			ProfileStore:  memoryBundleProfileStore{store: cfg.ProfileStore},
-			EpisodeStore:  memoryBundleEpisodeStore{store: cfg.EpisodeStore},
-			ChunkStore:    memoryBundleChunkStore{store: cfg.ChunkStore},
+			ProfileStore:  cfg.ProfileStore,
+			EpisodeStore:  cfg.EpisodeStore,
+			ChunkStore:    cfg.ChunkStore,
 			WorkingStore:  memoryBundleWorkingStore{store: cfg.WorkingStore},
 			SummaryReader: cfg.SummaryReader,
 			Embeddings:    cfg.Embeddings,
@@ -356,6 +277,12 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 			Log:           log,
 			Metrics:       nil,
 		})
+	}
+	if cfg.PromptManager == nil {
+		cfg.PromptManager = promptmgmt.NewStaticManager()
+	}
+	if cfg.PromptAssembler == nil {
+		cfg.PromptAssembler = promptmgmt.NewAssembler()
 	}
 	return &Service{
 		sessions:   sessions,
@@ -401,6 +328,18 @@ func (s *Service) Execute(ctx context.Context, event ingress.InputEvent) (*Execu
 	}
 
 	runLog := logger.WithRunID(s.log, runRecord.GetRunId())
+
+	// Emit deferred observability events now that we have a run ID.
+	if prepared.observabilityMemory != nil {
+		s.emitEvent(runRecord.GetRunId(), event.SessionKey, observability.EventMemoryLoaded, prepared.observabilityMemory)
+	}
+	if prepared.observabilityTools != nil {
+		s.emitEvent(runRecord.GetRunId(), event.SessionKey, observability.EventToolsLoaded, prepared.observabilityTools)
+	}
+	if prepared.observabilityPrompt != nil {
+		s.emitEvent(runRecord.GetRunId(), event.SessionKey, observability.EventPromptAssembled, prepared.observabilityPrompt)
+	}
+
 	result, execErr := s.executeRun(ctx, runLog, runRecord, event, prepared)
 	if execErr != nil {
 		return nil, execErr
@@ -446,6 +385,15 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	}
 	current = next
 
+	// Notify channel immediately so the user sees that the bot is working.
+	if statusErr := s.config.Delivery.DeliverStatusEvent(ctx, StatusEvent{
+		RunID:      current.GetRunId(),
+		SessionKey: event.SessionKey,
+		Status:     "thinking",
+	}); statusErr != nil {
+		runLog.Warn("failed to deliver thinking status", slog.String("error", statusErr.Error()))
+	}
+
 	if _, err := s.transcript.AppendMessage(ctx, transcript.Message{
 		SessionKey:   event.SessionKey,
 		RunID:        current.GetRunId(),
@@ -462,6 +410,7 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	if err := s.saveTransientWorkingState(ctx, current.GetRunId(), event.SessionKey, "preparing", map[string]any{"goal": prepared.WorkingMemory.Goal}); err != nil {
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("save transient working memory: %w", err))
 	}
+	current = s.attachReusableProviderSessionRef(ctx, current, runLog)
 
 	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_MODEL_RUNNING, lease.LeaseID, "", "")
 	if err != nil {
@@ -474,7 +423,9 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("parse persisted provider session ref: %w", err))
 	}
 
-	stream, err := s.provider.StartRun(runCtx, transport.StartRunRequest{
+	transportCtx := transport.WithSessionKey(runCtx, event.SessionKey)
+
+	stream, err := s.provider.StartRun(transportCtx, transport.StartRunRequest{
 		Context: transport.TransportRunContext{
 			RunID:                  current.GetRunId(),
 			SessionKey:             event.SessionKey,
@@ -486,13 +437,14 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 			SupportsStatefulResume: true,
 		},
 		InputItems:       prepared.InputItems,
+		ToolDefinitions:  prepared.ToolDefs,
 		StreamingEnabled: true,
 	})
 	if err != nil {
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
 	}
 
-	finalMessage, current, err := s.consumeModelStream(runCtx, runLog, current, event.SessionKey, lease.LeaseID, stream)
+	finalMessage, current, err := s.consumeModelStream(transportCtx, runLog, current, event.SessionKey, lease.LeaseID, stream)
 	if err != nil {
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
 	}
@@ -518,6 +470,11 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 		MetadataJSON: `{"source":"model"}`,
 	}); err != nil {
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("append assistant transcript: %w", err))
+	}
+	if s.config.Artifacts != nil {
+		if _, saveErr := s.config.Artifacts.SaveAssistantFinal(ctx, current.GetRunId(), event.SessionKey, finalMessage, time.Now().UTC()); saveErr != nil {
+			runLog.Warn("failed to persist assistant_final artifact", slog.String("run_id", current.GetRunId()), slog.String("error", saveErr.Error()))
+		}
 	}
 
 	if err := s.finalizeWorkingMemory(ctx, event.SessionKey, current.GetRunId(), commonv1.RunState_RUN_STATE_COMPLETED, finalMessage); err != nil {
@@ -545,207 +502,83 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	}
 
 	runLog.Info("run completed", slog.String("session_key", event.SessionKey))
+	s.emitEvent(next.GetRunId(), event.SessionKey, observability.EventRunCompleted, map[string]any{
+		"response_length": len(finalMessage),
+	})
+
+	// Schedule EventHub cleanup to free subscriber maps after SSE clients have drained.
+	s.scheduleHubCleanup(next.GetRunId())
+
 	return &ExecutionResult{RunID: next.GetRunId(), SessionKey: event.SessionKey, CurrentState: next.GetCurrentState(), AssistantResponse: finalMessage}, nil
 }
 
-func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, sessionKey, leaseID string, stream transport.EventStream) (string, *sessionv1.RunRecord, error) {
+func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, sessionKey, leaseID string, initialStream transport.EventStream) (string, *sessionv1.RunRecord, error) {
 	var finalMessage string
-	for transportEvent := range stream {
-		var err error
-		if current, err = s.persistProviderSessionRef(ctx, current, transportEvent.ProviderSessionRef, runLog); err != nil {
-			return "", current, err
-		}
-		switch transportEvent.EventType {
-		case transport.EventTypeAssistantDelta:
-			if transportEvent.AssistantDelta != nil {
-				if err := s.config.Delivery.DeliverAssistantDelta(ctx, DeliveryEvent{RunID: current.GetRunId(), SessionKey: sessionKey, Content: transportEvent.AssistantDelta.Content, SequenceNo: transportEvent.AssistantDelta.SequenceNo}); err != nil {
-					return "", current, err
+	stream := initialStream
+
+	for stream != nil {
+		var nextStream transport.EventStream
+		for transportEvent := range stream {
+			var err error
+			if current, err = s.persistProviderSessionRef(ctx, current, transportEvent.ProviderSessionRef, runLog); err != nil {
+				return "", current, err
+			}
+			switch transportEvent.EventType {
+			case transport.EventTypeAssistantDelta:
+				if transportEvent.AssistantDelta != nil {
+					if err := s.config.Delivery.DeliverAssistantDelta(ctx, DeliveryEvent{RunID: current.GetRunId(), SessionKey: sessionKey, Content: transportEvent.AssistantDelta.Content, SequenceNo: transportEvent.AssistantDelta.SequenceNo}); err != nil {
+						return "", current, err
+					}
+					s.emitEvent(current.GetRunId(), sessionKey, observability.EventAssistantDelta, map[string]any{
+						"sequence_no":    transportEvent.AssistantDelta.SequenceNo,
+						"content_length": len(transportEvent.AssistantDelta.Content),
+					})
 				}
-			}
-		case transport.EventTypeAssistantFinal:
-			if transportEvent.AssistantFinal != nil {
-				finalMessage = transportEvent.AssistantFinal.Content
-				if err := s.config.Delivery.DeliverAssistantFinal(ctx, DeliveryEvent{RunID: current.GetRunId(), SessionKey: sessionKey, Content: finalMessage, Final: true}); err != nil {
-					return "", current, err
+			case transport.EventTypeAssistantFinal:
+				if transportEvent.AssistantFinal != nil {
+					finalMessage = transportEvent.AssistantFinal.Content
+					if err := s.config.Delivery.DeliverAssistantFinal(ctx, DeliveryEvent{RunID: current.GetRunId(), SessionKey: sessionKey, Content: finalMessage, Final: true}); err != nil {
+						return "", current, err
+					}
+					s.emitEvent(current.GetRunId(), sessionKey, observability.EventAssistantFinal, map[string]any{
+						"content_length": len(finalMessage),
+						"finish_reason":  transportEvent.AssistantFinal.FinishReason,
+					})
 				}
+			case transport.EventTypeToolCallRequested:
+				resumed, updated, err := s.handleToolCall(ctx, runLog, current, leaseID, transportEvent.ToolCall)
+				if err != nil {
+					return "", updated, err
+				}
+				current = updated
+				nextStream = resumed
+				break
+			case transport.EventTypeToolCallBatchRequested:
+				resumedFinal, updated, err := s.handleToolBatch(ctx, runLog, current, sessionKey, leaseID, transportEvent.ToolCallBatch)
+				if err != nil {
+					return "", updated, err
+				}
+				current = updated
+				if strings.TrimSpace(resumedFinal) != "" {
+					finalMessage = resumedFinal
+				}
+			case transport.EventTypeTransportError:
+				return "", current, transportError(transportEvent.TransportError)
+			case transport.EventTypeTransportWarning:
+				runLog.Warn("transport warning", slog.String("payload", transportEvent.PayloadJSON))
 			}
-		case transport.EventTypeToolCallRequested:
-			resumed, updated, err := s.handleToolCall(ctx, runLog, current, leaseID, transportEvent.ToolCall)
-			if err != nil {
-				return "", updated, err
-			}
-			current = updated
-			resumedFinal, updated, err := s.consumeModelStream(ctx, runLog, current, sessionKey, leaseID, resumed)
-			if err != nil {
-				return "", updated, err
-			}
-			current = updated
-			if strings.TrimSpace(resumedFinal) != "" {
-				finalMessage = resumedFinal
-			}
-		case transport.EventTypeToolCallBatchRequested:
-			resumedFinal, updated, err := s.handleToolBatch(ctx, runLog, current, sessionKey, leaseID, transportEvent.ToolCallBatch)
-			if err != nil {
-				return "", updated, err
-			}
-			current = updated
-			if strings.TrimSpace(resumedFinal) != "" {
-				finalMessage = resumedFinal
-			}
-		case transport.EventTypeTransportError:
-			return "", current, transportError(transportEvent.TransportError)
-		case transport.EventTypeTransportWarning:
-			runLog.Warn("transport warning", slog.String("payload", transportEvent.PayloadJSON))
 		}
+		stream = nextStream
 	}
 	return finalMessage, current, nil
-}
-
-func (s *Service) handleToolBatch(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, sessionKey, leaseID string, batch *transport.ToolCallBatch) (string, *sessionv1.RunRecord, error) {
-	if batch == nil || len(batch.ToolCalls) == 0 {
-		return "", current, nil
-	}
-	var finalMessage string
-	for _, toolCall := range batch.ToolCalls {
-		resumed, updated, err := s.handleToolCall(ctx, runLog, current, leaseID, &toolCall)
-		if err != nil {
-			return "", updated, err
-		}
-		current = updated
-		resumedFinal, updated, err := s.consumeModelStream(ctx, runLog, current, sessionKey, leaseID, resumed)
-		if err != nil {
-			return "", updated, err
-		}
-		current = updated
-		if strings.TrimSpace(resumedFinal) != "" {
-			finalMessage = resumedFinal
-		}
-	}
-	return finalMessage, current, nil
-}
-
-func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, leaseID string, requested *transport.ToolCallRequest) (transport.EventStream, *sessionv1.RunRecord, error) {
-	if requested == nil {
-		return nil, current, fmt.Errorf("tool call request is required")
-	}
-	if s.config.Tools == nil {
-		return nil, current, fmt.Errorf("tool executor is not configured")
-	}
-	next, err := s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_TOOL_PENDING, leaseID, "", "")
-	if err != nil {
-		return nil, current, fmt.Errorf("mark run tool_pending: %w", err)
-	}
-	current = next
-
-	toolCallID := requested.ToolCallRef
-	if strings.TrimSpace(toolCallID) == "" {
-		toolCallID = fmt.Sprintf("tool-%s-%d", current.GetRunId(), time.Now().UTC().UnixNano())
-	}
-	brokerCall := &toolbrokerv1.ToolCall{ToolCallId: toolCallID, RunId: current.GetRunId(), ToolName: requested.ToolName, ArgsJson: requested.ArgsJSON, Status: "requested", AutonomyMode: current.GetAutonomyMode()}
-
-	// Check if tool requires approval before execution.
-	if s.config.ApprovalChecker != nil && s.config.ApprovalGate != nil {
-		needsApproval, checkErr := s.config.ApprovalChecker.RequiresApproval(ctx, requested.ToolName)
-		if checkErr != nil {
-			runLog.Warn("approval check failed, proceeding without approval", slog.String("tool_name", requested.ToolName), slog.String("error", checkErr.Error()))
-		} else if needsApproval {
-			next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_AWAITING_APPROVAL, leaseID, "", "")
-			if err != nil {
-				return nil, current, fmt.Errorf("mark run awaiting_approval: %w", err)
-			}
-			current = next
-
-			if deliveryErr := s.config.Delivery.DeliverApprovalRequest(ctx, ApprovalRequest{
-				RunID:      current.GetRunId(),
-				SessionKey: current.GetSessionKey(),
-				ToolCallID: toolCallID,
-				ToolName:   requested.ToolName,
-				ArgsJSON:   requested.ArgsJSON,
-			}); deliveryErr != nil {
-				return nil, current, fmt.Errorf("deliver approval request: %w", deliveryErr)
-			}
-
-			resp, waitErr := s.config.ApprovalGate.Wait(ctx, toolCallID)
-			if waitErr != nil {
-				return nil, current, fmt.Errorf("wait for approval: %w", waitErr)
-			}
-			if !resp.Approved {
-				rejectedResult := &toolbrokerv1.ToolResult{
-					ToolCallId: toolCallID,
-					RunId:      current.GetRunId(),
-					ToolName:   requested.ToolName,
-					Status:     "rejected",
-					ResultJson: `{"rejected":true,"reason":"user rejected tool call"}`,
-				}
-				next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME, leaseID, "", "")
-				if err != nil {
-					return nil, current, fmt.Errorf("mark run awaiting_model_resume after rejection: %w", err)
-				}
-				current = next
-				stream, submitErr := s.provider.SubmitToolResult(ctx, transport.SubmitToolResultRequest{RunID: current.GetRunId(), ProviderSessionRef: providerSessionRefFromRun(current), ToolCallRef: requested.ToolCallRef, ToolResultJSON: toolResultEnvelope(rejectedResult)})
-				if submitErr != nil {
-					return nil, current, fmt.Errorf("submit rejected tool result: %w", submitErr)
-				}
-				next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_MODEL_RUNNING, leaseID, "", "")
-				if err != nil {
-					return nil, current, fmt.Errorf("mark run model_running after rejection: %w", err)
-				}
-				current = next
-				return stream, current, nil
-			}
-			runLog.Info("tool call approved", slog.String("tool_call_id", toolCallID), slog.String("tool_name", requested.ToolName))
-		}
-	}
-
-	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_TOOL_RUNNING, leaseID, "", "")
-	if err != nil {
-		return nil, current, fmt.Errorf("mark run tool_running: %w", err)
-	}
-	current = next
-
-	startedAt := time.Now().UTC()
-	workingStatus := "running"
-	if updateErr := s.updateWorkingMemoryCheckpoint(ctx, current.GetSessionKey(), current.GetRunId(), workingStatus, requested.ToolName, requested.ArgsJSON); updateErr != nil {
-		runLog.Warn("working memory update failed before tool execution", slog.String("error", updateErr.Error()))
-	}
-	if updateErr := s.saveTransientWorkingState(ctx, current.GetRunId(), current.GetSessionKey(), "tool_running", map[string]any{"tool_name": requested.ToolName, "args_json": normalizeJSON(requested.ArgsJSON, "{}")}); updateErr != nil {
-		runLog.Warn("transient working memory update failed before tool execution", slog.String("error", updateErr.Error()))
-	}
-	result, err := s.config.Tools.ExecuteToolCall(ctx, brokerCall)
-	if err != nil {
-		return nil, current, fmt.Errorf("execute tool call %s: %w", requested.ToolName, err)
-	}
-	finishedAt := time.Now().UTC()
-	if updateErr := s.updateWorkingMemoryCheckpoint(ctx, current.GetSessionKey(), current.GetRunId(), "active", requested.ToolName, toolResultPayload(result)); updateErr != nil {
-		runLog.Warn("working memory update failed after tool execution", slog.String("error", updateErr.Error()))
-	}
-	if updateErr := s.saveTransientWorkingState(ctx, current.GetRunId(), current.GetSessionKey(), "awaiting_model_resume", map[string]any{"tool_name": requested.ToolName, "result_json": toolResultPayload(result)}); updateErr != nil {
-		runLog.Warn("transient working memory update failed after tool execution", slog.String("error", updateErr.Error()))
-	}
-	if _, err := s.transcript.AppendToolCall(ctx, transcript.ToolCall{ToolCallID: toolCallID, RunID: current.GetRunId(), ToolName: requested.ToolName, ArgsJSON: normalizeJSON(requested.ArgsJSON, "{}"), Status: normalizeToolStatus(result.GetStatus()), RuntimeTarget: brokerCall.GetRuntimeTarget(), StartedAt: startedAt, FinishedAt: &finishedAt, ResultJSON: toolResultPayload(result), ErrorJSON: toolErrorPayload(result.GetError())}); err != nil {
-		return nil, current, fmt.Errorf("append tool transcript: %w", err)
-	}
-
-	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME, leaseID, "", "")
-	if err != nil {
-		return nil, current, fmt.Errorf("mark run awaiting_model_resume: %w", err)
-	}
-	current = next
-
-	stream, err := s.provider.SubmitToolResult(ctx, transport.SubmitToolResultRequest{RunID: current.GetRunId(), ProviderSessionRef: providerSessionRefFromRun(current), ToolCallRef: requested.ToolCallRef, ToolResultJSON: toolResultEnvelope(result)})
-	if err != nil {
-		return nil, current, fmt.Errorf("submit tool result: %w", err)
-	}
-	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_MODEL_RUNNING, leaseID, "", "")
-	if err != nil {
-		return nil, current, fmt.Errorf("mark run model_running after tool: %w", err)
-	}
-	current = next
-	return stream, current, nil
 }
 
 func (s *Service) failRun(ctx context.Context, current *sessionv1.RunRecord, leaseID string, runLog *slog.Logger, err error) error {
 	runLog.Error("run execution failed", slog.String("error", err.Error()))
+	s.emitEvent(current.GetRunId(), current.GetSessionKey(), observability.EventRunError, map[string]any{
+		"error_message": truncateForObservability(err.Error(), 500),
+		"error_type":    classifyExecutionError(err),
+	})
 	state := current.GetCurrentState()
 	if current != nil {
 		if finalizeErr := s.finalizeWorkingMemory(ctx, current.GetSessionKey(), current.GetRunId(), commonv1.RunState_RUN_STATE_FAILED, err.Error()); finalizeErr != nil {
@@ -761,158 +594,38 @@ func (s *Service) failRun(ctx context.Context, current *sessionv1.RunRecord, lea
 	if _, transitionErr := s.transition(ctx, current.GetRunId(), state, commonv1.RunState_RUN_STATE_FAILED, leaseID, classifyExecutionError(err), err.Error()); transitionErr != nil {
 		return fmt.Errorf("%w: additionally failed to transition run to failed: %v", err, transitionErr)
 	}
+	s.scheduleHubCleanup(current.GetRunId())
 	return err
 }
 
-func (s *Service) savePreparedWorkingMemory(ctx context.Context, runID, sessionKey string, prepared preparedRun) error {
-	if s.config.WorkingStore == nil || prepared.WorkingMemory == nil {
-		return nil
+func (s *Service) attachReusableProviderSessionRef(ctx context.Context, current *sessionv1.RunRecord, runLog *slog.Logger) *sessionv1.RunRecord {
+	if current == nil || s.runs == nil {
+		return current
 	}
-	updated := prepared.WorkingMemory.withInitialGoal(prepared.UserMessage)
-	_, err := s.config.WorkingStore.Save(ctx, WorkingMemorySnapshot{
-		MemoryType:       "working",
-		SessionKey:       sessionKey,
-		RunID:            runID,
-		Goal:             sanitize.Text(updated.Goal),
-		EntitiesJSON:     sanitize.JSON(mustMarshalJSON(updated.ActiveEntities)),
-		PendingStepsJSON: sanitize.JSON(mustMarshalJSON(updated.PendingSteps)),
-		ScratchJSON:      sanitize.JSON(mustMarshalJSON(updated.Scratch)),
-		Status:           normalizeWorkingStatus(updated.Status),
-		SourceType:       "run",
-		SourceID:         runID,
-	})
+	if strings.TrimSpace(current.GetProviderSessionRef()) != "" {
+		return current
+	}
+	runs, err := s.runs.ListRunsBySessionKey(ctx, current.GetSessionKey())
 	if err != nil {
-		return err
+		runLog.Warn("provider session reuse skipped; run lookup failed", slog.String("error", err.Error()))
+		return current
 	}
-	return nil
-}
-
-func (s *Service) updateWorkingMemoryCheckpoint(ctx context.Context, sessionKey, runID, status, toolName, payload string) error {
-	if s.config.WorkingStore == nil {
-		return nil
+	ref, sourceRunID := latestReusableProviderSessionRef(runs, current.GetRunId(), s.config.ProviderName)
+	if ref == nil {
+		return current
 	}
-	working, err := s.loadWorkingMemory(ctx, sessionKey)
+	encoded, err := transport.MarshalProviderSessionRef(ref)
 	if err != nil {
-		return err
+		runLog.Warn("provider session reuse skipped; marshal failed", slog.String("source_run_id", sourceRunID), slog.String("error", err.Error()))
+		return current
 	}
-	if working.Scratch == nil {
-		working.Scratch = map[string]any{}
-	}
-	working.Status = normalizeWorkingStatus(status)
-	if strings.TrimSpace(toolName) != "" {
-		working.Scratch["last_tool"] = map[string]any{"name": toolName, "payload": sanitize.JSON(normalizeJSON(payload, "{}"))}
-	}
-	_, err = s.config.WorkingStore.Save(ctx, WorkingMemorySnapshot{
-		MemoryType:       "working",
-		SessionKey:       sessionKey,
-		RunID:            runID,
-		Goal:             sanitize.Text(working.Goal),
-		EntitiesJSON:     sanitize.JSON(mustMarshalJSON(working.ActiveEntities)),
-		PendingStepsJSON: sanitize.JSON(mustMarshalJSON(working.PendingSteps)),
-		ScratchJSON:      sanitize.JSON(mustMarshalJSON(working.Scratch)),
-		Status:           working.Status,
-		SourceType:       "run",
-		SourceID:         runID,
-	})
-	return err
-}
-
-func (s *Service) finalizeWorkingMemory(ctx context.Context, sessionKey, runID string, state commonv1.RunState, note string) error {
-	if s.config.WorkingStore == nil || strings.TrimSpace(sessionKey) == "" {
-		return nil
-	}
-	action := s.workingMemoryAction(state)
-	if action == "clear" {
-		err := s.config.WorkingStore.Clear(ctx, sessionKey)
-		if err != nil && !errors.Is(err, ErrWorkingMemoryNotFound) {
-			return err
-		}
-		return nil
-	}
-	working, err := s.loadWorkingMemory(ctx, sessionKey)
+	updated, err := s.runs.PersistProviderSessionRef(ctx, current.GetRunId(), encoded)
 	if err != nil {
-		return err
+		runLog.Warn("provider session reuse skipped; persist failed", slog.String("source_run_id", sourceRunID), slog.String("error", err.Error()))
+		return current
 	}
-	if working.Scratch == nil {
-		working.Scratch = map[string]any{}
-	}
-	if trimmed := strings.TrimSpace(note); trimmed != "" {
-		working.Scratch["final_note"] = sanitize.Text(trimmed)
-	}
-	working.Status = normalizeWorkingStatus(action)
-	_, err = s.config.WorkingStore.Save(ctx, WorkingMemorySnapshot{
-		MemoryType:       "working",
-		SessionKey:       sessionKey,
-		RunID:            runID,
-		Goal:             sanitize.Text(working.Goal),
-		EntitiesJSON:     sanitize.JSON(mustMarshalJSON(working.ActiveEntities)),
-		PendingStepsJSON: sanitize.JSON(mustMarshalJSON(working.PendingSteps)),
-		ScratchJSON:      sanitize.JSON(mustMarshalJSON(working.Scratch)),
-		Status:           working.Status,
-		SourceType:       string(runStateSourceType(state)),
-		SourceID:         runID,
-	})
-	return err
-}
-
-func runStateSourceType(state commonv1.RunState) string {
-	switch state {
-	case commonv1.RunState_RUN_STATE_COMPLETED, commonv1.RunState_RUN_STATE_FAILED, commonv1.RunState_RUN_STATE_CANCELLED, commonv1.RunState_RUN_STATE_TIMED_OUT:
-		return "run"
-	default:
-		return "system_event"
-	}
-}
-
-func (s *Service) workingMemoryAction(state commonv1.RunState) string {
-	switch state {
-	case commonv1.RunState_RUN_STATE_COMPLETED:
-		return strings.ToLower(strings.TrimSpace(s.config.WorkingPolicy.OnCompleted))
-	case commonv1.RunState_RUN_STATE_CANCELLED:
-		return strings.ToLower(strings.TrimSpace(s.config.WorkingPolicy.OnCancelled))
-	case commonv1.RunState_RUN_STATE_TIMED_OUT:
-		return strings.ToLower(strings.TrimSpace(s.config.WorkingPolicy.OnTimedOut))
-	default:
-		return strings.ToLower(strings.TrimSpace(s.config.WorkingPolicy.OnFailed))
-	}
-}
-
-func (s *Service) saveTransientWorkingState(ctx context.Context, runID, sessionKey, status string, scratch map[string]any) error {
-	if s.config.TransientStore == nil {
-		return nil
-	}
-	if scratch == nil {
-		scratch = map[string]any{}
-	}
-	_, err := s.config.TransientStore.Save(ctx, TransientWorkingState{
-		SessionKey:  sessionKey,
-		RunID:       runID,
-		Status:      normalizeWorkingStatus(status),
-		ScratchJSON: mustMarshalJSON(scratch),
-		UpdatedAt:   time.Now().UTC().Format(time.RFC3339Nano),
-	}, s.config.TransientTTL)
-	return err
-}
-
-func (s *Service) finalizeTransientWorkingState(ctx context.Context, sessionKey, runID string, state commonv1.RunState, note string) error {
-	if s.config.TransientStore == nil {
-		return nil
-	}
-	action := s.workingMemoryAction(state)
-	switch action {
-	case "clear":
-		err := s.config.TransientStore.Clear(ctx, sessionKey, runID)
-		if err != nil && !errors.Is(err, ErrTransientWorkingStateNotFound) {
-			return err
-		}
-		return nil
-	default:
-		scratch := map[string]any{}
-		if trimmed := strings.TrimSpace(note); trimmed != "" {
-			scratch["final_note"] = trimmed
-		}
-		return s.saveTransientWorkingState(ctx, runID, sessionKey, action, scratch)
-	}
+	runLog.Info("provider session ref reused for new run", slog.String("source_run_id", sourceRunID), slog.String("run_id", current.GetRunId()))
+	return updated
 }
 
 func (s *Service) persistProviderSessionRef(ctx context.Context, current *sessionv1.RunRecord, ref *transport.ProviderSessionRef, runLog *slog.Logger) (*sessionv1.RunRecord, error) {
@@ -980,87 +693,49 @@ func drainRenewError(errCh <-chan error) error {
 	}
 }
 
-func (w *workingMemoryContext) withInitialGoal(userMessage string) *workingMemoryContext {
-	if w == nil {
-		return &workingMemoryContext{Goal: strings.TrimSpace(userMessage), Status: "active", Scratch: map[string]any{}}
+func latestReusableProviderSessionRef(runs []*sessionv1.RunRecord, currentRunID, providerName string) (*transport.ProviderSessionRef, string) {
+	var selected *transport.ProviderSessionRef
+	selectedRunID := ""
+	selectedAt := time.Time{}
+	for _, runRecord := range runs {
+		if runRecord == nil || strings.TrimSpace(runRecord.GetRunId()) == strings.TrimSpace(currentRunID) {
+			continue
+		}
+		if providerName != "" && !strings.EqualFold(strings.TrimSpace(runRecord.GetModelProvider()), strings.TrimSpace(providerName)) {
+			continue
+		}
+		if strings.TrimSpace(runRecord.GetProviderSessionRef()) == "" {
+			continue
+		}
+		ref, err := transport.ParseProviderSessionRef(runRecord.GetProviderSessionRef())
+		if err != nil || ref == nil {
+			continue
+		}
+		if providerName != "" && strings.TrimSpace(ref.ProviderName) != "" && !strings.EqualFold(strings.TrimSpace(ref.ProviderName), strings.TrimSpace(providerName)) {
+			continue
+		}
+		candidateAt := runRecordTime(runRecord)
+		if selected == nil || candidateAt.After(selectedAt) {
+			copied := *ref
+			selected = &copied
+			selectedRunID = runRecord.GetRunId()
+			selectedAt = candidateAt
+		}
 	}
-	if strings.TrimSpace(w.Goal) == "" {
-		w.Goal = strings.TrimSpace(userMessage)
-	}
-	w.Status = normalizeWorkingStatus(w.Status)
-	if w.Status == "idle" && strings.TrimSpace(w.Goal) != "" {
-		w.Status = "active"
-	}
-	if w.ActiveEntities == nil {
-		w.ActiveEntities = map[string]any{}
-	}
-	if w.PendingSteps == nil {
-		w.PendingSteps = []any{}
-	}
-	if w.Scratch == nil {
-		w.Scratch = map[string]any{}
-	}
-	return w
+	return selected, selectedRunID
 }
 
-func normalizeWorkingStatus(value string) string {
-	switch strings.ToLower(strings.TrimSpace(value)) {
-	case "", "idle":
-		return "idle"
-	case "active", "running", "completed", "abandoned", "failed", "cancelled", "timed_out", "retained":
-		return strings.ToLower(strings.TrimSpace(value))
-	default:
-		return strings.ToLower(strings.TrimSpace(value))
+func runRecordTime(runRecord *sessionv1.RunRecord) time.Time {
+	if runRecord == nil {
+		return time.Time{}
 	}
-}
-
-func decodeJSONValue(raw string, fallback any) any {
-	trimmed := strings.TrimSpace(raw)
-	if trimmed == "" || !json.Valid([]byte(trimmed)) {
-		return fallback
+	for _, value := range []string{runRecord.GetStartedAt(), runRecord.GetUpdatedAt(), runRecord.GetFinishedAt()} {
+		parsed, err := time.Parse(time.RFC3339Nano, strings.TrimSpace(value))
+		if err == nil {
+			return parsed.UTC()
+		}
 	}
-	var decoded any
-	if err := json.Unmarshal([]byte(trimmed), &decoded); err != nil {
-		return fallback
-	}
-	return decoded
-}
-
-func decodeJSONObject(raw string) map[string]any {
-	decoded := decodeJSONValue(raw, map[string]any{})
-	object, ok := decoded.(map[string]any)
-	if !ok {
-		return map[string]any{}
-	}
-	return object
-}
-
-func isEmptyJSONValue(value any) bool {
-	switch typed := value.(type) {
-	case nil:
-		return true
-	case map[string]any:
-		return len(typed) == 0
-	case []any:
-		return len(typed) == 0
-	case []string:
-		return len(typed) == 0
-	case string:
-		return strings.TrimSpace(typed) == ""
-	default:
-		return false
-	}
-}
-
-func formatJSONValueForPrompt(value any) string {
-	if isEmptyJSONValue(value) {
-		return ""
-	}
-	encoded, err := json.Marshal(value)
-	if err != nil {
-		return ""
-	}
-	return string(encoded)
+	return time.Time{}
 }
 
 func (s *Service) transition(ctx context.Context, runID string, from, to commonv1.RunState, leaseID, errorType, errorMessage string) (*sessionv1.RunRecord, error) {
@@ -1075,6 +750,41 @@ func (s *Service) transition(ctx context.Context, runID string, from, to commonv
 	if err != nil {
 		return nil, err
 	}
+
+	now := time.Now().UTC()
+	fromStr := runStateString(from)
+	toStr := runStateString(to)
+
+	// Log state transition to durable store (fire-and-forget).
+	if s.config.TransitionLogger != nil {
+		metaPayload := map[string]any{}
+		if leaseID != "" {
+			metaPayload["lease_id"] = leaseID
+		}
+		if errorType != "" {
+			metaPayload["error_type"] = errorType
+		}
+		if errorMessage != "" {
+			metaPayload["error_message"] = errorMessage
+		}
+		if logErr := s.config.TransitionLogger.InsertTransition(ctx, runservice.StateTransition{
+			RunID:          runID,
+			FromState:      fromStr,
+			ToState:        toStr,
+			TriggeredBy:    "orchestrator",
+			MetadataJSON:   mustMarshalJSON(metaPayload),
+			TransitionedAt: now,
+		}); logErr != nil {
+			s.log.Warn("failed to log state transition", slog.String("run_id", runID), slog.String("error", logErr.Error()))
+		}
+	}
+
+	// Publish observability event (non-blocking).
+	s.emitEvent(runID, resp.GetSessionKey(), observability.EventStateTransition, map[string]any{
+		"from_state": fromStr,
+		"to_state":   toStr,
+	})
+
 	return resp, nil
 }
 
@@ -1101,12 +811,22 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 		InputItems:    []transport.InputItem{{Role: "user", Content: message, ContentType: "text/plain"}},
 		UserMessage:   message,
 		MemoryBundle:  map[string]any{},
+		ToolDefs:      nil,
 		WorkingMemory: &workingMemoryContext{Status: "idle", Policy: s.config.WorkingPolicy, Scratch: map[string]any{}},
 		InputPayload:  payload,
 		SessionUserID: userID,
 		Channel:       channel,
 	}
 	if err := s.attachMemoryContext(ctx, event.SessionKey, prepared.SessionUserID, message, &prepared); err != nil {
+		return preparedRun{}, err
+	}
+	if err := s.attachTranscriptContext(ctx, event.SessionKey, &prepared); err != nil {
+		return preparedRun{}, err
+	}
+	if err := s.attachToolContext(ctx, &prepared); err != nil {
+		return preparedRun{}, err
+	}
+	if err := s.attachPromptContext(ctx, &prepared); err != nil {
 		return preparedRun{}, err
 	}
 	return prepared, nil
@@ -1133,234 +853,145 @@ func (s *Service) attachMemoryContext(ctx context.Context, sessionKey, userID, u
 	for key, value := range bundle.Items {
 		prepared.MemoryBundle[key] = value
 	}
-	if strings.TrimSpace(bundle.Prompt) != "" {
-		prepared.InputItems = append([]transport.InputItem{{Role: "system", Content: bundle.Prompt, ContentType: "text/plain"}}, prepared.InputItems...)
+
+	// Store memory_loaded observability payload for deferred emission after CreateRun.
+	bundleKeys := make([]string, 0, len(bundle.Items))
+	for key := range bundle.Items {
+		bundleKeys = append(bundleKeys, key)
+	}
+	prepared.observabilityMemory = map[string]any{
+		"bundle_keys":  bundleKeys,
+		"has_working":  !workingMemoryIsEmpty(workingMemory),
+		"has_prompt":   strings.TrimSpace(bundle.Prompt) != "",
+		"bundle_count": len(bundle.Items),
+	}
+
+	return nil
+}
+
+func (s *Service) attachToolContext(ctx context.Context, prepared *preparedRun) error {
+	if prepared == nil || s.config.ToolCatalog == nil {
+		return nil
+	}
+	contracts, err := s.config.ToolCatalog.ListTools(ctx)
+	if err != nil {
+		return fmt.Errorf("load tool contracts: %w", err)
+	}
+	prepared.ToolDefs = toolDefinitionsFromContracts(contracts)
+	if summary := toolSummaryFromContracts(contracts); strings.TrimSpace(summary) != "" {
+		prepared.MemoryBundle["tool_summary"] = summary
+	}
+
+	// Store tools_loaded observability payload for deferred emission after CreateRun.
+	toolNames := make([]string, 0, len(prepared.ToolDefs))
+	for _, td := range prepared.ToolDefs {
+		toolNames = append(toolNames, td.Name)
+	}
+	prepared.observabilityTools = map[string]any{
+		"tool_count": len(prepared.ToolDefs),
+		"tool_names": toolNames,
+	}
+
+	return nil
+}
+
+func (s *Service) attachTranscriptContext(ctx context.Context, sessionKey string, prepared *preparedRun) error {
+	if prepared == nil || s.transcript == nil {
+		return nil
+	}
+	if strings.TrimSpace(stringFromAny(prepared.MemoryBundle["session_summary"])) != "" {
+		return nil
+	}
+	full, err := s.transcript.GetTranscript(ctx, sessionKey)
+	if err != nil {
+		return nil
+	}
+	items := recentTranscriptInputItems(full, 10)
+	if len(items) == 0 {
+		return nil
+	}
+	prepared.InputItems = append(items, prepared.InputItems...)
+	prepared.observabilityHistory = map[string]any{
+		"replayed_message_count": len(items),
+		"fallback_used":          true,
 	}
 	return nil
 }
 
-func (s *Service) loadWorkingMemory(ctx context.Context, sessionKey string) (*workingMemoryContext, error) {
-	working := &workingMemoryContext{Status: "idle", Policy: s.config.WorkingPolicy, Scratch: map[string]any{}}
-	if s.config.WorkingStore == nil {
-		return working, nil
-	}
-	snapshot, err := s.config.WorkingStore.Get(ctx, sessionKey)
-	if err != nil {
-		if errors.Is(err, ErrWorkingMemoryNotFound) {
-			return working, nil
-		}
-		return nil, fmt.Errorf("load working memory: %w", err)
-	}
-	working.Goal = strings.TrimSpace(snapshot.Goal)
-	working.Status = normalizeWorkingStatus(snapshot.Status)
-	working.ActiveEntities = decodeJSONValue(snapshot.EntitiesJSON, map[string]any{})
-	working.PendingSteps = decodeJSONValue(snapshot.PendingStepsJSON, []any{})
-	working.Scratch = decodeJSONObject(snapshot.ScratchJSON)
-	return working, nil
-}
-
-func (w *workingMemoryContext) bundleMap() map[string]any {
-	if w == nil {
+func (s *Service) attachPromptContext(ctx context.Context, prepared *preparedRun) error {
+	if prepared == nil || s.config.PromptManager == nil || s.config.PromptAssembler == nil {
 		return nil
 	}
-	return map[string]any{
-		"goal":            w.Goal,
-		"active_entities": w.ActiveEntities,
-		"pending_steps":   w.PendingSteps,
-		"working_status":  w.Status,
+	state, err := s.config.PromptManager.Get(ctx)
+	if err != nil {
+		return fmt.Errorf("load prompt config: %w", err)
 	}
-}
+	prepared.Prompt = s.config.PromptAssembler.Assemble(state, promptmgmt.Context{
+		SessionSummary:  stringFromAny(prepared.MemoryBundle["session_summary"]),
+		Working:         workingContextToPromptContext(prepared.MemoryBundle["working"]),
+		Profile:         sliceOfMaps(prepared.MemoryBundle["profile"]),
+		Episodes:        sliceOfMaps(prepared.MemoryBundle["episodes"]),
+		Chunks:          sliceOfMaps(prepared.MemoryBundle["chunks"]),
+		ToolSummary:     stringFromAny(prepared.MemoryBundle["tool_summary"]),
+		BrowserStrategy: promptmgmt.BrowserStrategyContent,
+	})
+	if strings.TrimSpace(prepared.Prompt.FinalPrompt) != "" {
+		prepared.InputItems = append([]transport.InputItem{{Role: "system", Content: prepared.Prompt.FinalPrompt, ContentType: "text/plain"}}, prepared.InputItems...)
+	}
 
-func workingMemoryIsEmpty(w *workingMemoryContext) bool {
-	if w == nil {
-		return true
-	}
-	if strings.TrimSpace(w.Goal) != "" {
-		return false
-	}
-	if !isEmptyJSONValue(w.ActiveEntities) {
-		return false
-	}
-	if !isEmptyJSONValue(w.PendingSteps) {
-		return false
-	}
-	return strings.TrimSpace(normalizeWorkingStatus(w.Status)) == "idle"
-}
-
-func workingMemoryFromBundle(bundle memoryservice.WorkingContext, policy WorkingMemoryPolicy) *workingMemoryContext {
-	return (&workingMemoryContext{
-		Goal:           strings.TrimSpace(bundle.Goal),
-		ActiveEntities: bundle.ActiveEntities,
-		PendingSteps:   bundle.PendingSteps,
-		Scratch:        bundle.Scratch,
-		Status:         normalizeWorkingStatus(bundle.Status),
-		Policy:         policy,
-	}).withInitialGoal("")
-}
-
-func extractUserMessage(payload map[string]any) string {
-	for _, key := range []string{"text", "message", "content", "prompt"} {
-		if value := strings.TrimSpace(stringFromAny(payload[key])); value != "" {
-			return value
+	// Store prompt_assembled observability payload for deferred emission after CreateRun.
+	memorySections := make([]string, 0)
+	for _, key := range []string{"session_summary", "working", "profile", "episodes", "chunks", "tool_summary"} {
+		if _, ok := prepared.MemoryBundle[key]; ok {
+			memorySections = append(memorySections, key)
 		}
 	}
-	if message, ok := payload["message"].(map[string]any); ok {
-		for _, key := range []string{"text", "content"} {
-			if value := strings.TrimSpace(stringFromAny(message[key])); value != "" {
-				return value
-			}
-		}
+	prepared.observabilityPrompt = map[string]any{
+		"has_system_prompt": strings.TrimSpace(prepared.Prompt.FinalPrompt) != "",
+		"memory_sections":   memorySections,
+		"prompt_length":     len(prepared.Prompt.FinalPrompt),
 	}
-	return ""
-}
 
-func firstString(payload map[string]any, keys ...string) string {
-	for _, key := range keys {
-		if value := strings.TrimSpace(stringFromAny(payload[key])); value != "" {
-			return value
-		}
-	}
-	return ""
-}
-
-func stringFromAny(value any) string {
-	switch typed := value.(type) {
-	case string:
-		return typed
-	default:
-		return ""
-	}
-}
-
-func validateInputEvent(event ingress.InputEvent) error {
-	if strings.TrimSpace(event.EventID) == "" {
-		return fmt.Errorf("event_id is required")
-	}
-	if strings.TrimSpace(event.SessionKey) == "" {
-		return fmt.Errorf("session_key is required")
-	}
-	if strings.TrimSpace(event.Source) == "" {
-		return fmt.Errorf("source is required")
-	}
-	if event.EventType == runv1.InputEventType_INPUT_EVENT_TYPE_UNSPECIFIED {
-		return fmt.Errorf("event_type is required")
-	}
 	return nil
 }
 
-func mustMarshalJSON(value any) string {
-	encoded, err := json.Marshal(value)
-	if err != nil {
-		return "{}"
-	}
-	return string(encoded)
-}
-
-func transportError(err *transport.Error) error {
-	if err == nil {
-		return errors.New("transport error")
-	}
-	return err
-}
-
-func providerSessionRefFromRun(runRecord *sessionv1.RunRecord) *transport.ProviderSessionRef {
-	if runRecord == nil {
+func recentTranscriptInputItems(full transcript.Transcript, limit int) []transport.InputItem {
+	if limit <= 0 || len(full.Messages) == 0 {
 		return nil
 	}
-	ref, err := transport.ParseProviderSessionRef(runRecord.GetProviderSessionRef())
-	if err != nil {
-		return nil
-	}
-	return ref
-}
-
-func normalizeJSON(value, fallback string) string {
-	trimmed := strings.TrimSpace(value)
-	if trimmed == "" || !json.Valid([]byte(trimmed)) {
-		return fallback
-	}
-	return trimmed
-}
-
-func normalizeToolStatus(value string) string {
-	trimmed := strings.TrimSpace(value)
-	if trimmed == "" {
-		return "completed"
-	}
-	return trimmed
-}
-
-func toolResultEnvelope(result *toolbrokerv1.ToolResult) string {
-	payload := map[string]any{"status": normalizeToolStatus(result.GetStatus())}
-	if json.Valid([]byte(result.GetResultJson())) {
-		payload["result"] = json.RawMessage(result.GetResultJson())
-	}
-	if result.GetError() != nil {
-		payload["error"] = map[string]any{"error_class": result.GetError().GetErrorClass().String(), "message": result.GetError().GetMessage(), "retryable": result.GetError().GetRetryable(), "details_json": result.GetError().GetDetailsJson()}
-	}
-	return mustMarshalJSON(payload)
-}
-
-func toolResultPayload(result *toolbrokerv1.ToolResult) string {
-	return normalizeJSON(result.GetResultJson(), "{}")
-}
-
-func toolErrorPayload(toolErr *toolbrokerv1.ToolError) string {
-	if toolErr == nil {
-		return "{}"
-	}
-	payload := map[string]any{"error_class": toolErr.GetErrorClass().String(), "message": toolErr.GetMessage(), "retryable": toolErr.GetRetryable()}
-	if details := strings.TrimSpace(toolErr.GetDetailsJson()); details != "" {
-		if json.Valid([]byte(details)) {
-			payload["details"] = json.RawMessage(details)
-		} else {
-			payload["details"] = details
+	messages := make([]transcript.Message, 0, len(full.Messages))
+	for _, msg := range full.Messages {
+		role := strings.TrimSpace(strings.ToLower(msg.Role))
+		if role != "user" && role != "assistant" {
+			continue
 		}
+		content := strings.TrimSpace(sanitize.TranscriptMessageContent(msg.Content))
+		if content == "" {
+			continue
+		}
+		msg.Content = truncateTranscriptReplay(content, 1200)
+		messages = append(messages, msg)
 	}
-	return mustMarshalJSON(payload)
+	if len(messages) == 0 {
+		return nil
+	}
+	if len(messages) > limit {
+		messages = messages[len(messages)-limit:]
+	}
+	items := make([]transport.InputItem, 0, len(messages))
+	for _, msg := range messages {
+		items = append(items, transport.InputItem{Role: strings.ToLower(strings.TrimSpace(msg.Role)), Content: msg.Content, ContentType: "text/plain"})
+	}
+	return items
 }
 
-func toErrorClass(value string) commonv1.ErrorClass {
-	switch strings.TrimSpace(value) {
-	case "":
-		return commonv1.ErrorClass_ERROR_CLASS_UNSPECIFIED
-	case string(domain.ErrorClassValidation):
-		return commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR
-	case string(domain.ErrorClassTransport):
-		return commonv1.ErrorClass_ERROR_CLASS_TRANSPORT_ERROR
-	case string(domain.ErrorClassTool):
-		return commonv1.ErrorClass_ERROR_CLASS_TOOL_ERROR
-	case string(domain.ErrorClassPolicy):
-		return commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED
-	case string(domain.ErrorClassCredential):
-		return commonv1.ErrorClass_ERROR_CLASS_CREDENTIAL_ERROR
-	case string(domain.ErrorClassApproval):
-		return commonv1.ErrorClass_ERROR_CLASS_APPROVAL_ERROR
-	case string(domain.ErrorClassTimeout):
-		return commonv1.ErrorClass_ERROR_CLASS_TIMEOUT
-	case string(domain.ErrorClassCancelled):
-		return commonv1.ErrorClass_ERROR_CLASS_CANCELLED
-	case string(domain.ErrorClassInternal):
-		return commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR
-	default:
-		return commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR
+func truncateTranscriptReplay(value string, limit int) string {
+	value = strings.TrimSpace(value)
+	if limit <= 0 || len(value) <= limit {
+		return value
 	}
-}
-
-func classifyExecutionError(err error) string {
-	switch {
-	case err == nil:
-		return ""
-	case errors.Is(err, context.DeadlineExceeded):
-		return string(domain.ErrorClassTimeout)
-	case errors.Is(err, context.Canceled):
-		return string(domain.ErrorClassCancelled)
-	case errors.Is(err, errLeaseRenewalFailed), errors.Is(err, session.ErrLeaseConflict), errors.Is(err, session.ErrLeaseNotFound):
-		return string(domain.ErrorClassInternal)
+	if limit <= len("[truncated]") {
+		return value[:limit]
 	}
-	var transportErr *transport.Error
-	if errors.As(err, &transportErr) {
-		return string(domain.ErrorClassTransport)
-	}
-	return string(domain.ErrorClassInternal)
+	return strings.TrimSpace(value[:limit-len("[truncated]")-1]) + "\n[truncated]"
 }

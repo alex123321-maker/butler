@@ -1,7 +1,18 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  ssr: false,
   compatibilityDate: '2025-01-01',
-  devtools: { enabled: true },
+  devtools: { enabled: process.env.NUXT_DEVTOOLS_ENABLED === 'true' },
+
+  modules: ['@nuxtjs/tailwindcss', '@pinia/nuxt'],
+
+  alias: {
+    '@app': '~/app',
+    '@widgets': '~/widgets',
+    '@features': '~/features',
+    '@entities': '~/entities',
+    '@shared': '~/shared',
+  },
 
   app: {
     head: {
@@ -20,7 +31,10 @@ export default defineNuxtConfig({
     },
   },
 
-  css: ['~/assets/css/main.css'],
+  css: [
+    '~/app/styles/tokens.css',
+    '~/assets/css/main.css'
+  ],
 
   typescript: {
     strict: true,

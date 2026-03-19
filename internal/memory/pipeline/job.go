@@ -23,6 +23,7 @@ type Job struct {
 	RunID      string `json:"run_id"`
 	SessionKey string `json:"session_key"`
 	EnqueuedAt string `json:"enqueued_at"`
+	Retries    int    `json:"retries,omitempty"`
 }
 
 // Queue provides methods to enqueue and dequeue memory pipeline jobs via Redis.

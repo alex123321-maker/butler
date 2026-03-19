@@ -14,9 +14,15 @@ import (
 	"syscall"
 	"time"
 
+	activity "github.com/butler/butler/apps/orchestrator/internal/activity"
 	apiservice "github.com/butler/butler/apps/orchestrator/internal/api"
+	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
+	artifacts "github.com/butler/butler/apps/orchestrator/internal/artifacts"
 	telegramadapter "github.com/butler/butler/apps/orchestrator/internal/channel/telegram"
+	deliveryevents "github.com/butler/butler/apps/orchestrator/internal/deliveryevents"
+	"github.com/butler/butler/apps/orchestrator/internal/observability"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
+	promptmgmt "github.com/butler/butler/apps/orchestrator/internal/prompt"
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
@@ -28,10 +34,12 @@ import (
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/chunks"
 	memorydoctor "github.com/butler/butler/internal/memory/doctor"
+	"github.com/butler/butler/internal/memory/embeddings"
 	"github.com/butler/butler/internal/memory/episodic"
 	"github.com/butler/butler/internal/memory/pipeline"
 	"github.com/butler/butler/internal/memory/profile"
 	"github.com/butler/butler/internal/memory/provenance"
+	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/memory/working"
 	"github.com/butler/butler/internal/metrics"
@@ -44,27 +52,28 @@ import (
 )
 
 type App struct {
-	config     config.OrchestratorConfig
-	log        *slog.Logger
-	metrics    *metrics.Registry
-	health     *health.Service
-	postgres   *postgresstore.Store
-	redis      *redisstore.Store
-	httpServer *http.Server
-	grpcServer *grpc.Server
-	grpcListen net.Listener
-	telegram   *telegramadapter.Adapter
-	toolBroker *tools.BrokerClient
+	config         config.OrchestratorConfig
+	log            *slog.Logger
+	metrics        *metrics.Registry
+	health         *health.Service
+	postgres       *postgresstore.Store
+	redis          *redisstore.Store
+	httpServer     *http.Server
+	grpcServer     *grpc.Server
+	grpcListen     net.Listener
+	telegram       *telegramadapter.Adapter
+	toolBroker     *tools.BrokerClient
+	pipelineWorker *pipeline.Worker
 }
 
 type profileStoreAdapter struct{ store *profile.Store }
 
-func (a profileStoreAdapter) GetByScope(ctx context.Context, scopeType, scopeID string) ([]flow.MemoryProfileEntry, error) {
+func (a profileStoreAdapter) GetByScope(ctx context.Context, scopeType, scopeID string) ([]memoryservice.ProfileEntry, error) {
 	entries, err := a.store.GetByScope(ctx, scopeType, scopeID)
 	if err != nil {
 		return nil, err
 	}
-	result := make([]flow.MemoryProfileEntry, 0, len(entries))
+	result := make([]memoryservice.ProfileEntry, 0, len(entries))
 	for _, entry := range entries {
 		result = append(result, entry)
 	}
@@ -78,24 +87,24 @@ type memoryEpisodeExactMatch struct{ episodic.Episode }
 func (m memoryEpisodeExactMatch) EpisodeSummary() string   { return m.Summary }
 func (m memoryEpisodeExactMatch) EpisodeDistance() float64 { return 0.25 }
 
-func (a episodicStoreAdapter) Search(ctx context.Context, scopeType, scopeID string, embedding []float32, limit int) ([]flow.MemoryEpisode, error) {
+func (a episodicStoreAdapter) Search(ctx context.Context, scopeType, scopeID string, embedding []float32, limit int) ([]memoryservice.Episode, error) {
 	entries, err := a.store.Search(ctx, scopeType, scopeID, embedding, limit)
 	if err != nil {
 		return nil, err
 	}
-	result := make([]flow.MemoryEpisode, 0, len(entries))
+	result := make([]memoryservice.Episode, 0, len(entries))
 	for _, entry := range entries {
 		result = append(result, entry)
 	}
 	return result, nil
 }
 
-func (a episodicStoreAdapter) FindBySummary(ctx context.Context, scopeType, scopeID, summary string) ([]flow.MemoryEpisode, error) {
+func (a episodicStoreAdapter) FindBySummary(ctx context.Context, scopeType, scopeID, summary string) ([]memoryservice.Episode, error) {
 	entries, err := a.store.FindBySummary(ctx, scopeType, scopeID, summary)
 	if err != nil {
 		return nil, err
 	}
-	result := make([]flow.MemoryEpisode, 0, len(entries))
+	result := make([]memoryservice.Episode, 0, len(entries))
 	for _, entry := range entries {
 		result = append(result, memoryEpisodeExactMatch{Episode: entry})
 	}
@@ -110,24 +119,24 @@ func (m memoryChunkExactMatch) ChunkTitle() string     { return m.Title }
 func (m memoryChunkExactMatch) ChunkSummary() string   { return m.Summary }
 func (m memoryChunkExactMatch) ChunkDistance() float64 { return 0.25 }
 
-func (a chunkStoreAdapter) Search(ctx context.Context, scopeType, scopeID string, embedding []float32, limit int) ([]flow.MemoryChunk, error) {
+func (a chunkStoreAdapter) Search(ctx context.Context, scopeType, scopeID string, embedding []float32, limit int) ([]memoryservice.Chunk, error) {
 	entries, err := a.store.Search(ctx, scopeType, scopeID, embedding, limit)
 	if err != nil {
 		return nil, err
 	}
-	result := make([]flow.MemoryChunk, 0, len(entries))
+	result := make([]memoryservice.Chunk, 0, len(entries))
 	for _, entry := range entries {
 		result = append(result, entry)
 	}
 	return result, nil
 }
 
-func (a chunkStoreAdapter) FindByTitle(ctx context.Context, scopeType, scopeID, title string, limit int) ([]flow.MemoryChunk, error) {
+func (a chunkStoreAdapter) FindByTitle(ctx context.Context, scopeType, scopeID, title string, limit int) ([]memoryservice.Chunk, error) {
 	entries, err := a.store.FindByTitle(ctx, scopeType, scopeID, title, limit)
 	if err != nil {
 		return nil, err
 	}
-	result := make([]flow.MemoryChunk, 0, len(entries))
+	result := make([]memoryservice.Chunk, 0, len(entries))
 	for _, entry := range entries {
 		result = append(result, memoryChunkExactMatch{Chunk: entry})
 	}
@@ -307,9 +316,17 @@ func New(ctx context.Context) (*App, error) {
 		postgres.Close()
 		return nil, err
 	}
-	delivery := flow.NewCompositeDeliverySink(flow.NewLoggingDeliverySink(log))
+	var delivery flow.DeliverySink = flow.NewCompositeDeliverySink(flow.NewLoggingDeliverySink(log))
 	var telegram *telegramadapter.Adapter
 	approvalGate := flow.NewApprovalGate()
+	approvalRepo := approvals.NewPostgresRepository(postgres.Pool())
+	approvalService := approvals.NewService(approvalRepo, approvalGate)
+	artifactsRepo := artifacts.NewPostgresRepository(postgres.Pool())
+	artifactsService := artifacts.NewService(artifactsRepo)
+	activityRepo := activity.NewPostgresRepository(postgres.Pool())
+	activityService := activity.NewService(activityRepo)
+	deliveryEventsRepo := deliveryevents.NewPostgresRepository(postgres.Pool())
+	deliveryEventsService := deliveryevents.NewService(deliveryEventsRepo)
 	if strings.TrimSpace(cfg.TelegramBotToken) != "" {
 		telegramClient, err := telegramadapter.NewClient(cfg.TelegramBaseURL, cfg.TelegramBotToken, nil)
 		if err != nil {
@@ -328,6 +345,7 @@ func New(ctx context.Context) (*App, error) {
 		}
 		delivery = flow.NewCompositeDeliverySink(delivery, telegram)
 	}
+	delivery = flow.NewObservedDeliverySink(delivery, deliveryEventsService)
 	sessionRepo := session.NewPostgresRepository(postgres.Pool())
 	sessionLeaseManager := session.NewRedisLeaseManager(redis.Client(), logger.WithComponent(log, "session-lease-store"))
 	transcriptStore := transcript.NewStore(postgres.Pool())
@@ -335,6 +353,125 @@ func New(ctx context.Context) (*App, error) {
 	// Memory pipeline: enqueuer for async post-run extraction.
 	pipelineQueue := pipeline.NewQueue(redis.Client())
 	pipelineEnqueuer := pipeline.NewEnqueuer(pipelineQueue, m)
+
+	// Memory pipeline: embedding provider and worker for async memory extraction.
+	profileStore := profile.NewStore(postgres.Pool())
+	episodicStore := episodic.NewStore(postgres.Pool())
+	chunkStore := chunks.NewStore(postgres.Pool())
+
+	var embeddingProvider pipeline.EmbeddingProvider
+	var pipelineWorker *pipeline.Worker
+
+	// Set embedding vector dimensions from config (defaults to 1536 for OpenAI).
+	if cfg.MemoryEmbeddingDimensions > 0 {
+		embeddings.SetVectorDimensions(cfg.MemoryEmbeddingDimensions)
+	}
+
+	// Memory extraction can run either with a direct OpenAI API key or with
+	// OpenAI Codex provider auth. Embeddings can use OpenAI or Ollama.
+	openAIKey := strings.TrimSpace(cfg.OpenAIAPIKey)
+	if cfg.MemoryPipelineEnabled {
+		// --- Embedding provider setup ---
+		embProvider := strings.ToLower(strings.TrimSpace(cfg.MemoryEmbeddingProvider))
+		switch embProvider {
+		case "ollama":
+			op, embErr := embeddings.NewOllamaProvider(embeddings.OllamaConfig{
+				BaseURL: cfg.OllamaURL,
+				Model:   cfg.MemoryEmbeddingModel,
+				Timeout: 30 * time.Second,
+			}, nil)
+			if embErr != nil {
+				log.Warn("ollama embedding provider init failed; episodic/chunk memory disabled", slog.String("error", embErr.Error()))
+			} else {
+				embeddingProvider = op
+				log.Info("memory embedding provider configured (ollama)",
+					slog.String("embedding_model", cfg.MemoryEmbeddingModel),
+					slog.String("ollama_url", cfg.OllamaURL),
+					slog.Int("dimensions", embeddings.VectorDimensions()),
+				)
+			}
+		default: // "openai" or unset
+			if openAIKey != "" {
+				op, embErr := embeddings.NewProvider(embeddings.Config{
+					APIKey:  openAIKey,
+					Model:   cfg.MemoryEmbeddingModel,
+					BaseURL: cfg.OpenAIBaseURL,
+					Timeout: 30 * time.Second,
+				}, nil)
+				if embErr != nil {
+					log.Warn("embedding provider init failed; episodic/chunk memory disabled", slog.String("error", embErr.Error()))
+				} else {
+					embeddingProvider = op
+					log.Info("memory embedding provider configured (openai)", slog.String("embedding_model", cfg.MemoryEmbeddingModel))
+				}
+			} else {
+				log.Warn("memory embeddings disabled: no OpenAI API key configured and embedding provider is not ollama")
+			}
+		}
+
+		// --- LLM caller setup (for memory extraction) ---
+		var llmCaller pipeline.LLMCaller
+		if openAIKey != "" {
+			caller, callerErr := pipeline.NewOpenAICaller(pipeline.OpenAICallerConfig{
+				APIKey:  openAIKey,
+				Model:   cfg.MemoryExtractionModel,
+				BaseURL: cfg.OpenAIBaseURL,
+				Timeout: 90 * time.Second,
+			}, nil)
+			if callerErr != nil {
+				log.Warn("llm caller init failed; memory pipeline disabled", slog.String("error", callerErr.Error()))
+			} else {
+				llmCaller = caller
+			}
+		} else {
+			caller, callerErr := pipeline.NewOpenAICodexCaller(pipeline.OpenAICodexCallerConfig{
+				Model:      cfg.OpenAICodexModel,
+				BaseURL:    cfg.OpenAICodexBaseURL,
+				Timeout:    90 * time.Second,
+				AuthSource: authManager,
+			}, nil)
+			if callerErr != nil {
+				log.Warn("codex llm caller init failed; memory pipeline disabled", slog.String("error", callerErr.Error()))
+			} else {
+				llmCaller = caller
+				log.Info("memory extraction configured via codex auth", slog.String("extraction_model", cfg.OpenAICodexModel))
+			}
+		}
+		if llmCaller != nil {
+			extractor := pipeline.NewLLMExtractor(llmCaller)
+			pipelineWorker = pipeline.NewWorker(
+				pipelineQueue,
+				transcriptStore,
+				extractor,
+				profileStore,
+				episodicStore,
+				embeddingProvider,
+				sessionRepo,
+				pipeline.WorkerConfig{
+					PollTimeout: time.Duration(cfg.MemoryPipelinePollTimeoutSeconds) * time.Second,
+					MaxRetries:  cfg.MemoryPipelineMaxRetries,
+				},
+				m,
+				logger.WithComponent(log, "memory-pipeline"),
+			)
+			pipelineWorker.SetChunkStore(chunkStore)
+			log.Info("memory pipeline worker configured",
+				slog.String("extraction_model", cfg.MemoryExtractionModel),
+				slog.Bool("embeddings_enabled", embeddingProvider != nil),
+			)
+		}
+	} else {
+		log.Info("memory pipeline disabled by configuration")
+	}
+
+	var memoryEmbeddings memoryservice.EmbeddingProvider
+	if embeddingProvider != nil {
+		memoryEmbeddings = embeddingProvider
+	}
+
+	// Observability: transition repository and event hub for live SSE streaming.
+	transitionRepo := runservice.NewPostgresTransitionRepository(postgres.Pool())
+	eventHub := observability.NewHub()
 
 	executor := flow.NewService(
 		sessionRepo,
@@ -347,26 +484,37 @@ func New(ctx context.Context) (*App, error) {
 			ModelName:        providerResult.ModelName,
 			OwnerID:          cfg.Shared.ServiceName,
 			LeaseTTL:         int64(cfg.SessionLeaseTTLSeconds),
+			PromptManager:    promptmgmt.NewManager(settingsStore),
+			PromptAssembler:  promptmgmt.NewAssembler(),
 			ProfileLimit:     cfg.MemoryProfileLimit,
 			EpisodeLimit:     cfg.MemoryEpisodicLimit,
 			MemoryScopes:     cfg.MemoryScopeOrder,
 			Delivery:         delivery,
 			Tools:            toolBrokerClient,
+			ToolCatalog:      toolBrokerClient,
 			ApprovalChecker:  toolBrokerClient,
 			ApprovalGate:     approvalGate,
+			ApprovalService:  approvalService,
 			WorkingStore:     workingStoreAdapter{store: working.NewStore(postgres.Pool())},
 			TransientStore:   transientWorkingStoreAdapter{store: working.NewTransientStore(redis.Client())},
 			TransientTTL:     time.Duration(cfg.MemoryWorkingTransientTTLSeconds) * time.Second,
-			ProfileStore:     profileStoreAdapter{store: profile.NewStore(postgres.Pool())},
-			EpisodeStore:     episodicStoreAdapter{store: episodic.NewStore(postgres.Pool())},
-			ChunkStore:       chunkStoreAdapter{store: chunks.NewStore(postgres.Pool())},
+			ProfileStore:     profileStoreAdapter{store: profileStore},
+			EpisodeStore:     episodicStoreAdapter{store: episodicStore},
+			ChunkStore:       chunkStoreAdapter{store: chunkStore},
+			Embeddings:       memoryEmbeddings,
 			PipelineEnqueuer: pipelineEnqueuer,
 			SummaryReader:    sessionRepo,
+			TransitionLogger: transitionRepo,
+			EventHub:         eventHub,
+			Artifacts:        artifactsService,
+			Activity:         activityService,
 		},
 		logger.WithComponent(log, "executor"),
 	)
 	if telegram != nil {
 		telegram.SetExecutor(executor)
+		telegram.SetApprovalService(approvalService)
+		telegram.SetAuthManager(authManager)
 	}
 	apiServer := apiservice.NewServer(executor, logger.WithComponent(log, "api"))
 	viewServer := apiservice.NewViewServer(sessionRepo, runRepo, transcriptStore, logger.WithComponent(log, "view-api"))
@@ -384,15 +532,28 @@ func New(ctx context.Context) (*App, error) {
 		return result.GetResultJson(), nil
 	})
 	memoryDoctor := memorydoctor.NewReporter(pipelineQueue, postgres)
-	doctorServer := apiservice.NewDoctorServer(postgres.Pool(), doctorChecker, memoryDoctor, logger.WithComponent(log, "doctor-api"))
+	memoryDoctor.SetPipelineEnabled(pipelineWorker != nil)
+	memoryDoctor.SetEmbeddingConfigured(embeddingProvider != nil)
+	doctorServer := apiservice.NewDoctorServer(postgres.Pool(), doctorChecker, memoryDoctor, artifactsService, logger.WithComponent(log, "doctor-api"))
 	settingsService := config.NewSettingsService(settingsStore, hotConfig)
 	settingsServer := apiservice.NewSettingsServer(settingsService)
-	memoryServer := apiservice.NewMemoryServer(working.NewStore(postgres.Pool()), profile.NewStore(postgres.Pool()), episodic.NewStore(postgres.Pool()), chunks.NewStore(postgres.Pool()), provenance.NewStore(postgres.Pool()))
+	promptServer := apiservice.NewPromptServer(executor)
+	memoryServer := apiservice.NewMemoryServer(working.NewStore(postgres.Pool()), profileStore, episodicStore, chunkStore, provenance.NewStore(postgres.Pool()))
+	memoryServer.SetWriters(profileStore, episodicStore, chunkStore)
 	providerServer := apiservice.NewProviderServer(authManager, providerResult.ProviderName, map[string]string{
 		modelprovider.ProviderOpenAI:        cfg.OpenAIModel,
 		modelprovider.ProviderOpenAICodex:   cfg.OpenAICodexModel,
 		modelprovider.ProviderGitHubCopilot: cfg.GitHubCopilotModel,
 	}, strings.TrimSpace(cfg.OpenAIAPIKey) != "")
+	eventServer := apiservice.NewEventServer(transitionRepo, runRepo, eventHub, logger.WithComponent(log, "event-api"))
+	taskViewServer := apiservice.NewTaskViewServer(runRepo, runRepo, sessionRepo, transcriptStore, transitionRepo, artifactsRepo, deliveryEventsRepo)
+	overviewServer := apiservice.NewOverviewServer(runRepo, deliveryEventsRepo)
+	approvalsServer := apiservice.NewApprovalsServer(approvalRepo, approvalService)
+	artifactsServer := apiservice.NewArtifactsServer(artifactsRepo, activityRepo)
+	activityServer := apiservice.NewActivityServer(activityRepo)
+	systemServer := apiservice.NewSystemServer(postgres.Pool(), runRepo, approvalRepo, providerResult.ProviderName, strings.TrimSpace(cfg.OpenAIAPIKey) != "", pipelineWorker != nil)
+	taskDebugServer := apiservice.NewTasksDebugServer(runRepo, transcriptStore)
+	streamServer := apiservice.NewStreamServer(eventHub, taskViewServer, overviewServer, approvalsServer, systemServer, activityServer)
 
 	mux := http.NewServeMux()
 	mux.Handle("/health", h.Handler())
@@ -401,14 +562,97 @@ func New(ctx context.Context) (*App, error) {
 	mux.Handle("/api/v1/settings/restart", settingsServer.HandleRestart())
 	mux.Handle("/api/v1/settings", settingsServer.HandleList())
 	mux.Handle("/api/v1/settings/", settingsServer.HandleItem())
+	mux.Handle("/api/v1/prompts/system", promptServer.HandleConfig())
+	mux.Handle("/api/v1/prompts/system/preview", promptServer.HandlePreview())
 	mux.Handle("/api/v1/providers", providerServer.HandleList())
 	mux.Handle("/api/v1/providers/", providerServer.HandleItem())
 	mux.Handle("/api/v1/memory", memoryServer.HandleList())
+	mux.Handle("/api/v2/memory", memoryServer.HandleList())
+	mux.Handle("/api/v2/memory/item", memoryServer.HandleGet())
+	mux.Handle("/api/v2/memory/patch", memoryServer.HandlePatch())
+	mux.Handle("/api/v2/memory/delete", memoryServer.HandleDelete())
+	mux.Handle("/api/v2/memory/confirm", memoryServer.HandleConfirm())
+	mux.Handle("/api/v2/memory/reject", memoryServer.HandleReject())
+	mux.Handle("/api/v2/memory/suppress", memoryServer.HandleSuppress())
+	mux.Handle("/api/v2/memory/unsuppress", memoryServer.HandleUnsuppress())
+	mux.Handle("/api/tasks", taskViewServer.HandleListTasks())
+	mux.Handle("/api/tasks/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/debug") {
+			taskDebugServer.HandleGetTaskDebug("/api/tasks/").ServeHTTP(w, r)
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "/artifacts") {
+			artifactsServer.HandleListTaskArtifacts("/api/tasks/").ServeHTTP(w, r)
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "/activity") {
+			artifactsServer.HandleListTaskActivity("/api/tasks/").ServeHTTP(w, r)
+			return
+		}
+		taskViewServer.HandleGetTaskDetail("/api/tasks/").ServeHTTP(w, r)
+	}))
+	mux.Handle("/api/overview", overviewServer.HandleGetOverview())
+	mux.Handle("/api/approvals", approvalsServer.HandleListApprovals())
+	mux.Handle("/api/approvals/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/approve") {
+			approvalsServer.HandleApprove("/api/approvals/").ServeHTTP(w, r)
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "/reject") {
+			approvalsServer.HandleReject("/api/approvals/").ServeHTTP(w, r)
+			return
+		}
+		approvalsServer.HandleGetApproval("/api/approvals/").ServeHTTP(w, r)
+	}))
+	mux.Handle("/api/v2/tasks", taskViewServer.HandleListTasks())
+	mux.Handle("/api/v2/tasks/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/debug") {
+			taskDebugServer.HandleGetTaskDebug("/api/v2/tasks/").ServeHTTP(w, r)
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "/artifacts") {
+			artifactsServer.HandleListTaskArtifacts("/api/v2/tasks/").ServeHTTP(w, r)
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "/activity") {
+			artifactsServer.HandleListTaskActivity("/api/v2/tasks/").ServeHTTP(w, r)
+			return
+		}
+		taskViewServer.HandleGetTaskDetail("/api/v2/tasks/").ServeHTTP(w, r)
+	}))
+	mux.Handle("/api/v2/overview", overviewServer.HandleGetOverview())
+	mux.Handle("/api/v2/approvals", approvalsServer.HandleListApprovals())
+	mux.Handle("/api/v2/approvals/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/approve") {
+			approvalsServer.HandleApprove("/api/v2/approvals/").ServeHTTP(w, r)
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "/reject") {
+			approvalsServer.HandleReject("/api/v2/approvals/").ServeHTTP(w, r)
+			return
+		}
+		approvalsServer.HandleGetApproval("/api/v2/approvals/").ServeHTTP(w, r)
+	}))
+	mux.Handle("/api/v2/artifacts", artifactsServer.HandleListArtifacts())
+	mux.Handle("/api/v2/artifacts/", artifactsServer.HandleGetArtifact("/api/v2/artifacts/"))
+	mux.Handle("/api/v2/activity", activityServer.HandleListActivity())
+	mux.Handle("/api/v2/system", systemServer.HandleGetSystem())
+	mux.Handle("/api/system", systemServer.HandleGetSystem())
+	mux.Handle("/api/v2/stream", streamServer.HandleStream())
+	mux.Handle("/api/stream", streamServer.HandleStream())
 	mux.Handle("/api/v1/sessions", viewServer.HandleListSessions())
 	mux.Handle("/api/v1/sessions/", viewServer.HandleGetSession())
 	mux.Handle("/api/v1/runs/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "/transcript") {
 			viewServer.HandleGetRunTranscript().ServeHTTP(w, r)
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "/events") {
+			eventServer.HandleSSE().ServeHTTP(w, r)
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "/transitions") {
+			eventServer.HandleListTransitions().ServeHTTP(w, r)
 			return
 		}
 		viewServer.HandleGetRun().ServeHTTP(w, r)
@@ -449,17 +693,18 @@ func New(ctx context.Context) (*App, error) {
 	orchestratorv1.RegisterOrchestratorServiceServer(grpcServer, apiServer)
 
 	return &App{
-		config:     cfg,
-		log:        log,
-		metrics:    m,
-		health:     h,
-		postgres:   postgres,
-		redis:      redis,
-		httpServer: server,
-		grpcServer: grpcServer,
-		grpcListen: grpcListener,
-		telegram:   telegram,
-		toolBroker: toolBrokerClient,
+		config:         cfg,
+		log:            log,
+		metrics:        m,
+		health:         h,
+		postgres:       postgres,
+		redis:          redis,
+		httpServer:     server,
+		grpcServer:     grpcServer,
+		grpcListen:     grpcListener,
+		telegram:       telegram,
+		toolBroker:     toolBrokerClient,
+		pipelineWorker: pipelineWorker,
 	}, nil
 }
 
@@ -493,6 +738,18 @@ func (a *App) Run(ctx context.Context) error {
 				return
 			}
 			errCh <- nil
+		}()
+	}
+
+	if a.pipelineWorker != nil {
+		go func() {
+			a.log.Info("starting memory pipeline worker")
+			if err := a.pipelineWorker.Run(runCtx); err != nil && runCtx.Err() == nil {
+				a.log.Error("memory pipeline worker stopped with error", slog.String("error", err.Error()))
+				errCh <- err
+				return
+			}
+			a.log.Info("memory pipeline worker stopped")
 		}()
 	}
 

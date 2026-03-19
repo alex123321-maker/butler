@@ -91,10 +91,10 @@ watch(() => props.saving, (saving) => {
 <style scoped>
 .setting-row {
   display: flex;
-  gap: 18px;
+  gap: var(--space-4);
   justify-content: space-between;
-  padding: 18px;
-  border-radius: 14px;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -112,7 +112,7 @@ watch(() => props.saving, (saving) => {
 }
 
 .setting-head code {
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: rgba(255, 255, 255, 0.88);
 }
 
@@ -124,18 +124,18 @@ watch(() => props.saving, (saving) => {
 
 .badge {
   padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 11px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.12em;
 }
 
-.source-env { background: rgba(79, 140, 255, 0.16); color: #72a7ff; }
-.source-db { background: rgba(46, 204, 113, 0.16); color: #54d48a; }
-.source-default { background: rgba(148, 163, 184, 0.18); color: #cbd5e1; }
-.validation-valid { background: rgba(46, 204, 113, 0.16); color: #54d48a; }
-.validation-invalid, .validation-missing { background: rgba(231, 76, 60, 0.16); color: #ff8677; }
-.restart { background: rgba(243, 156, 18, 0.18); color: #f8bf60; }
+.source-env { background: var(--color-accent-primaryMuted); color: var(--color-accent-primaryHover); }
+.source-db { background: var(--color-state-successMuted); color: var(--color-state-success); }
+.source-default { background: var(--color-state-neutralMuted); color: var(--color-text-secondary); }
+.validation-valid { background: var(--color-state-successMuted); color: var(--color-state-success); }
+.validation-invalid, .validation-missing { background: var(--color-state-errorMuted); color: var(--color-state-error); }
+.restart { background: var(--color-state-warningMuted); color: var(--color-state-warning); }
 
 .setting-value {
   margin: 14px 0 0;
@@ -155,7 +155,7 @@ watch(() => props.saving, (saving) => {
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(7, 10, 18, 0.72);
-  color: #f8fafc;
+  color: var(--color-text-primary);
   padding: 12px 14px;
 }
 
@@ -175,8 +175,8 @@ watch(() => props.saving, (saving) => {
 
 .primary-btn {
   border: 0;
-  background: linear-gradient(135deg, #f97316, #fb7185);
-  color: #fff;
+  background: linear-gradient(135deg, var(--color-brand-orange), var(--color-accent-primary));
+  color: var(--color-text-inverse);
 }
 
 .ghost-btn {
@@ -186,13 +186,13 @@ watch(() => props.saving, (saving) => {
 }
 
 .danger {
-  color: #ff8677;
+  color: var(--color-state-error);
 }
 
 .setting-error {
   margin: 10px 0 0;
-  color: #ff8677;
-  font-size: 13px;
+  color: var(--color-state-error);
+  font-size: var(--text-sm);
 }
 
 @media (max-width: 860px) {

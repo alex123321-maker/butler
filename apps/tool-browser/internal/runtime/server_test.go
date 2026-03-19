@@ -527,6 +527,349 @@ func TestIntegrationNavigateFillClick(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
+// Enriched output: links and page_status (Phase 2)
+// ---------------------------------------------------------------------------
+
+func TestNavigateResultIncludesLinksAndPageStatus(t *testing.T) {
+	t.Parallel()
+
+	runner := &stubRunner{result: Result{
+		FinalURL:   "https://example.com",
+		Title:      "Example",
+		Text:       "Hello world",
+		PageStatus: "ok",
+		Links: []ResultLink{
+			{Text: "About", Href: "https://example.com/about"},
+			{Text: "Contact", Href: "https://example.com/contact"},
+		},
+	}}
+	server := NewServer(runner, nil)
+	resp, err := server.Execute(context.Background(), &runtimev1.ExecuteRequest{
+		Context:  &runtimev1.ExecutionContext{RunId: "run-1", ToolCallId: "tc-1"},
+		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-1", RunId: "run-1", ToolName: "browser.navigate", ArgsJson: `{"url":"https://example.com"}`},
+		Contract: &toolbrokerv1.ToolContract{ToolName: "browser.navigate", AllowedDomains: []string{}},
+	})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if resp.GetResult().GetStatus() != "completed" {
+		t.Fatalf("expected completed, got %+v", resp.GetResult())
+	}
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(resp.GetResult().GetResultJson()), &payload); err != nil {
+		t.Fatalf("decode result json: %v", err)
+	}
+	if payload["page_status"] != "ok" {
+		t.Fatalf("expected page_status=ok, got %v", payload["page_status"])
+	}
+	links, ok := payload["links"].([]any)
+	if !ok || len(links) != 2 {
+		t.Fatalf("expected 2 links, got %v", payload["links"])
+	}
+	first := links[0].(map[string]any)
+	if first["text"] != "About" || first["href"] != "https://example.com/about" {
+		t.Fatalf("unexpected first link: %+v", first)
+	}
+}
+
+func TestSnapshotResultIncludesLinksAndPageStatus(t *testing.T) {
+	t.Parallel()
+
+	runner := &stubRunner{result: Result{
+		FinalURL:   "https://example.com",
+		Title:      "Example",
+		Text:       "Content here",
+		PageStatus: "blocked",
+		Links:      []ResultLink{{Text: "Home", Href: "https://example.com/"}},
+	}}
+	server := NewServer(runner, nil)
+	resp, err := server.Execute(context.Background(), &runtimev1.ExecuteRequest{
+		Context:  &runtimev1.ExecutionContext{RunId: "run-1", ToolCallId: "tc-1"},
+		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-1", RunId: "run-1", ToolName: "browser.snapshot", ArgsJson: `{"url":"https://example.com"}`},
+		Contract: &toolbrokerv1.ToolContract{ToolName: "browser.snapshot", AllowedDomains: []string{}},
+	})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if resp.GetResult().GetStatus() != "completed" {
+		t.Fatalf("expected completed, got %+v", resp.GetResult())
+	}
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(resp.GetResult().GetResultJson()), &payload); err != nil {
+		t.Fatalf("decode result json: %v", err)
+	}
+	if payload["page_status"] != "blocked" {
+		t.Fatalf("expected page_status=blocked, got %v", payload["page_status"])
+	}
+	links, ok := payload["links"].([]any)
+	if !ok || len(links) != 1 {
+		t.Fatalf("expected 1 link, got %v", payload["links"])
+	}
+}
+
+func TestNavigateResultOmitsLinksWhenEmpty(t *testing.T) {
+	t.Parallel()
+
+	runner := &stubRunner{result: Result{
+		FinalURL:   "https://example.com",
+		Title:      "Example",
+		Text:       "No links here",
+		PageStatus: "ok",
+		Links:      nil,
+	}}
+	server := NewServer(runner, nil)
+	resp, err := server.Execute(context.Background(), &runtimev1.ExecuteRequest{
+		Context:  &runtimev1.ExecutionContext{RunId: "run-1", ToolCallId: "tc-1"},
+		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-1", RunId: "run-1", ToolName: "browser.navigate", ArgsJson: `{"url":"https://example.com"}`},
+		Contract: &toolbrokerv1.ToolContract{ToolName: "browser.navigate", AllowedDomains: []string{}},
+	})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(resp.GetResult().GetResultJson()), &payload); err != nil {
+		t.Fatalf("decode result json: %v", err)
+	}
+	if _, hasLinks := payload["links"]; hasLinks {
+		t.Fatalf("expected no links key when empty, got %v", payload["links"])
+	}
+	if payload["page_status"] != "ok" {
+		t.Fatalf("expected page_status=ok, got %v", payload["page_status"])
+	}
+}
+
+func TestBuildResultJSONNavigateWithEnrichedFields(t *testing.T) {
+	t.Parallel()
+
+	result := Result{
+		FinalURL:   "https://delivery.example.com",
+		Title:      "Menu",
+		Text:       "Pizza, Sushi, Burgers",
+		PageStatus: "ok",
+		Links: []ResultLink{
+			{Text: "Pizza", Href: "https://delivery.example.com/pizza"},
+		},
+	}
+	raw := buildResultJSON("browser.navigate", result)
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(raw), &payload); err != nil {
+		t.Fatalf("buildResultJSON decode: %v", err)
+	}
+	if payload["page_status"] != "ok" {
+		t.Fatalf("expected page_status=ok, got %v", payload["page_status"])
+	}
+	links, ok := payload["links"].([]any)
+	if !ok || len(links) != 1 {
+		t.Fatalf("expected 1 link, got %v", payload["links"])
+	}
+}
+
+func TestBuildResultJSONSnapshotBlockedStatus(t *testing.T) {
+	t.Parallel()
+
+	result := Result{
+		FinalURL:   "https://blocked.example.com",
+		Title:      "Access Denied",
+		Text:       "Please verify you are human",
+		PageStatus: "blocked",
+	}
+	raw := buildResultJSON("browser.snapshot", result)
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(raw), &payload); err != nil {
+		t.Fatalf("buildResultJSON decode: %v", err)
+	}
+	if payload["page_status"] != "blocked" {
+		t.Fatalf("expected page_status=blocked, got %v", payload["page_status"])
+	}
+	if _, hasLinks := payload["links"]; hasLinks {
+		t.Fatalf("expected no links key when empty, got %v", payload["links"])
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Error classification in buildResultJSON (Phase 6)
+// ---------------------------------------------------------------------------
+
+func TestBuildResultJSONNavigateWithError(t *testing.T) {
+	t.Parallel()
+
+	result := Result{
+		FinalURL:   "https://example.com",
+		Title:      "",
+		Text:       "",
+		PageStatus: "error",
+		Error: &ResultError{
+			ErrorType: "timeout",
+			Message:   "Navigation timeout exceeded",
+			Retryable: true,
+		},
+	}
+	raw := buildResultJSON("browser.navigate", result)
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(raw), &payload); err != nil {
+		t.Fatalf("buildResultJSON decode: %v", err)
+	}
+	if payload["page_status"] != "error" {
+		t.Fatalf("expected page_status=error, got %v", payload["page_status"])
+	}
+	errObj, ok := payload["error"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected error object, got %v", payload["error"])
+	}
+	if errObj["error_type"] != "timeout" {
+		t.Fatalf("expected error_type=timeout, got %v", errObj["error_type"])
+	}
+	if errObj["retryable"] != true {
+		t.Fatalf("expected retryable=true, got %v", errObj["retryable"])
+	}
+}
+
+func TestBuildResultJSONClickWithError(t *testing.T) {
+	t.Parallel()
+
+	result := Result{
+		OK: false,
+		Error: &ResultError{
+			ErrorType: "selector_not_found",
+			Message:   "locator.click: no element matches selector '#missing'",
+			Retryable: false,
+		},
+	}
+	raw := buildResultJSON("browser.click", result)
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(raw), &payload); err != nil {
+		t.Fatalf("buildResultJSON decode: %v", err)
+	}
+	if payload["ok"] != false {
+		t.Fatalf("expected ok=false, got %v", payload["ok"])
+	}
+	errObj, ok := payload["error"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected error object, got %v", payload["error"])
+	}
+	if errObj["error_type"] != "selector_not_found" {
+		t.Fatalf("expected error_type=selector_not_found, got %v", errObj["error_type"])
+	}
+	if errObj["retryable"] != false {
+		t.Fatalf("expected retryable=false, got %v", errObj["retryable"])
+	}
+}
+
+func TestBuildResultJSONFillWithError(t *testing.T) {
+	t.Parallel()
+
+	result := Result{
+		OK: false,
+		Error: &ResultError{
+			ErrorType: "timeout",
+			Message:   "Timeout 5000ms exceeded",
+			Retryable: true,
+		},
+	}
+	raw := buildResultJSON("browser.fill", result)
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(raw), &payload); err != nil {
+		t.Fatalf("buildResultJSON decode: %v", err)
+	}
+	if payload["ok"] != false {
+		t.Fatalf("expected ok=false, got %v", payload["ok"])
+	}
+	errObj, ok := payload["error"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected error object, got %v", payload["error"])
+	}
+	if errObj["error_type"] != "timeout" {
+		t.Fatalf("expected error_type=timeout, got %v", errObj["error_type"])
+	}
+}
+
+func TestBuildResultJSONExtractTextWithError(t *testing.T) {
+	t.Parallel()
+
+	result := Result{
+		Text: "",
+		Error: &ResultError{
+			ErrorType: "selector_not_found",
+			Message:   "locator.innerText: no element matches selector '.nonexistent'",
+			Retryable: false,
+		},
+	}
+	raw := buildResultJSON("browser.extract_text", result)
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(raw), &payload); err != nil {
+		t.Fatalf("buildResultJSON decode: %v", err)
+	}
+	errObj, ok := payload["error"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected error object, got %v", payload["error"])
+	}
+	if errObj["error_type"] != "selector_not_found" {
+		t.Fatalf("expected error_type=selector_not_found, got %v", errObj["error_type"])
+	}
+}
+
+func TestBuildResultJSONClickWithoutErrorOmitsErrorField(t *testing.T) {
+	t.Parallel()
+
+	result := Result{OK: true, Title: "Page Title"}
+	raw := buildResultJSON("browser.click", result)
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(raw), &payload); err != nil {
+		t.Fatalf("buildResultJSON decode: %v", err)
+	}
+	if payload["ok"] != true {
+		t.Fatalf("expected ok=true, got %v", payload["ok"])
+	}
+	if _, hasErr := payload["error"]; hasErr {
+		t.Fatalf("expected no error key when no error, got %v", payload["error"])
+	}
+}
+
+func TestExecuteNavigateWithRunnerError(t *testing.T) {
+	t.Parallel()
+
+	runner := &stubRunner{result: Result{
+		FinalURL:   "https://example.com",
+		Title:      "",
+		Text:       "",
+		PageStatus: "error",
+		Error: &ResultError{
+			ErrorType: "navigation_failed",
+			Message:   "net::ERR_NAME_NOT_RESOLVED",
+			Retryable: true,
+		},
+	}}
+	server := NewServer(runner, nil)
+	resp, err := server.Execute(context.Background(), &runtimev1.ExecuteRequest{
+		Context:  &runtimev1.ExecutionContext{RunId: "run-1", ToolCallId: "tc-1"},
+		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-1", RunId: "run-1", ToolName: "browser.navigate", ArgsJson: `{"url":"https://example.com"}`},
+		Contract: &toolbrokerv1.ToolContract{ToolName: "browser.navigate", AllowedDomains: []string{}},
+	})
+	if err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	// The runner succeeded (returned a Result), so the Execute status is "completed"
+	// — the error is inside the result JSON for the model to interpret.
+	if resp.GetResult().GetStatus() != "completed" {
+		t.Fatalf("expected completed, got %+v", resp.GetResult())
+	}
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(resp.GetResult().GetResultJson()), &payload); err != nil {
+		t.Fatalf("decode result json: %v", err)
+	}
+	if payload["page_status"] != "error" {
+		t.Fatalf("expected page_status=error, got %v", payload["page_status"])
+	}
+	errObj, ok := payload["error"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected error object in result, got %v", payload["error"])
+	}
+	if errObj["error_type"] != "navigation_failed" {
+		t.Fatalf("expected error_type=navigation_failed, got %v", errObj["error_type"])
+	}
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 

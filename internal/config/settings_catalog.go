@@ -102,15 +102,45 @@ func managedSettingsCatalog() []SettingCatalogItem {
 			Visible:      true,
 		},
 		{
+			Spec:         fieldSpec{key: "BUTLER_MEMORY_EMBEDDING_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "text-embedding-3-small", requiresRestart: true, validate: validateNonEmpty, assign: nil},
+			Group:        "Memory",
+			DisplayOrder: 106,
+			Visible:      true,
+		},
+		{
+			Spec:         fieldSpec{key: "BUTLER_MEMORY_PIPELINE_ENABLED", component: "orchestrator", typeName: "string", required: false, defaultValue: "true", allowedValues: []string{"true", "false"}, requiresRestart: true},
+			Group:        "Memory",
+			DisplayOrder: 107,
+			Visible:      true,
+		},
+		{
+			Spec:         fieldSpec{key: "BUTLER_MEMORY_PIPELINE_POLL_TIMEOUT_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "5", requiresRestart: true, validate: validatePositiveInt, assign: nil},
+			Group:        "Memory",
+			DisplayOrder: 108,
+			Visible:      false,
+		},
+		{
+			Spec:         fieldSpec{key: "BUTLER_MEMORY_PIPELINE_MAX_RETRIES", component: "orchestrator", typeName: "int", required: false, defaultValue: "3", requiresRestart: true, validate: validatePositiveInt, assign: nil},
+			Group:        "Memory",
+			DisplayOrder: 109,
+			Visible:      false,
+		},
+		{
+			Spec:         fieldSpec{key: "BUTLER_MEMORY_EXTRACTION_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-4o-mini", requiresRestart: true, validate: validateNonEmpty, assign: nil},
+			Group:        "Memory",
+			DisplayOrder: 110,
+			Visible:      true,
+		},
+		{
 			Spec:         fieldSpec{key: "BUTLER_TOOL_DEFAULT_TARGET", component: "tool-broker", typeName: "string", required: false, defaultValue: "local", requiresRestart: true, validate: validateNonEmpty, assign: nil},
 			Group:        "Tools",
-			DisplayOrder: 110,
+			DisplayOrder: 200,
 			Visible:      true,
 		},
 		{
 			Spec:         fieldSpec{key: "BUTLER_TOOL_REGISTRY_PATH", component: "tool-broker", typeName: "string", required: false, defaultValue: "configs/tools.json", requiresRestart: true, validate: validateNonEmpty, assign: nil},
 			Group:        "Tools",
-			DisplayOrder: 120,
+			DisplayOrder: 210,
 			Visible:      false,
 		},
 	}

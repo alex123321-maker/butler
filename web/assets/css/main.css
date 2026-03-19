@@ -1,17 +1,4 @@
-/* Butler Web UI — minimal baseline styles */
-
-:root {
-  --color-bg: #0f1117;
-  --color-surface: #1a1d27;
-  --color-border: #2a2d3a;
-  --color-text: #e1e4eb;
-  --color-text-muted: #8b8fa3;
-  --color-primary: #4f8cff;
-  --color-success: #34d399;
-  --color-danger: #f87171;
-  --color-warning: #fbbf24;
-  --sidebar-width: 220px;
-}
+/* Butler Web UI - token-first baseline styles */
 
 * {
   margin: 0;
@@ -20,14 +7,13 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--color-bg-canvas);
+  color: var(--color-text-primary);
   line-height: 1.5;
 }
 
 a {
-  color: var(--color-primary);
+  color: var(--color-accent-primary);
   text-decoration: none;
 }
 
@@ -38,21 +24,15 @@ a {
 }
 
 .sidebar {
-  width: var(--sidebar-width);
-  background: var(--color-surface);
-  border-right: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+  border-right: 1px solid var(--color-border-default);
   display: flex;
   flex-direction: column;
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  z-index: 10;
 }
 
 .sidebar-header {
-  padding: 20px 16px 16px;
-  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .sidebar-title {
@@ -63,7 +43,7 @@ a {
 }
 
 .sidebar-nav {
-  padding: 12px 8px;
+  padding: var(--space-3) var(--space-2);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -73,22 +53,22 @@ a {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
-  border-radius: 6px;
-  color: var(--color-text-muted);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
   font-size: 14px;
   font-weight: 500;
   transition: background 0.15s, color 0.15s;
 }
 
 .nav-link:hover {
-  background: var(--color-border);
-  color: var(--color-text);
+  background: var(--color-bg-surfaceMuted);
+  color: var(--color-text-primary);
 }
 
 .nav-link--active {
-  background: rgba(79, 140, 255, 0.12);
-  color: var(--color-primary);
+  background: var(--color-bg-elevated);
+  color: var(--color-accent-primary);
 }
 
 .nav-icon {
@@ -98,9 +78,8 @@ a {
 }
 
 .main-content {
-  margin-left: var(--sidebar-width);
   flex: 1;
-  padding: 24px 32px;
+  padding: var(--space-6) var(--space-8);
   min-height: 100vh;
 }
 
@@ -128,16 +107,16 @@ a {
 }
 
 .card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
   padding: 20px;
 }
 
 .card h3 {
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 12px;
@@ -158,13 +137,11 @@ a {
 }
 
 .status-indicator--green {
-  background: var(--color-success);
-  box-shadow: 0 0 6px var(--color-success);
+  background: var(--color-state-success);
 }
 
 .status-indicator--red {
-  background: var(--color-danger);
-  box-shadow: 0 0 6px var(--color-danger);
+  background: var(--color-state-error);
 }
 
 .status-indicator--grey {
@@ -186,12 +163,12 @@ a {
 .data-table td {
   padding: 10px 12px;
   text-align: left;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border-default);
   font-size: 13px;
 }
 
 .data-table th {
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -208,12 +185,12 @@ a {
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 500;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
 }
@@ -225,11 +202,11 @@ a {
 .btn--primary {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 
 .btn--primary:hover {
-  background: #3d7ae8;
+  background: var(--color-primary-hover);
 }
 
 /* State badge */

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	artifacts "github.com/butler/butler/apps/orchestrator/internal/artifacts"
 	"github.com/butler/butler/internal/logger"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -30,22 +31,24 @@ type MemoryDoctorReporter interface {
 
 // DoctorServer serves REST endpoints for doctor reports.
 type DoctorServer struct {
-	pool    *pgxpool.Pool
-	checker DoctorChecker
-	memory  MemoryDoctorReporter
-	log     *slog.Logger
+	pool      *pgxpool.Pool
+	checker   DoctorChecker
+	memory    MemoryDoctorReporter
+	artifacts *artifacts.Service
+	log       *slog.Logger
 }
 
 // NewDoctorServer creates a new DoctorServer.
-func NewDoctorServer(pool *pgxpool.Pool, checker DoctorChecker, memory MemoryDoctorReporter, log *slog.Logger) *DoctorServer {
+func NewDoctorServer(pool *pgxpool.Pool, checker DoctorChecker, memory MemoryDoctorReporter, artifactsService *artifacts.Service, log *slog.Logger) *DoctorServer {
 	if log == nil {
 		log = slog.Default()
 	}
 	return &DoctorServer{
-		pool:    pool,
-		checker: checker,
-		memory:  memory,
-		log:     logger.WithComponent(log, "doctor-api"),
+		pool:      pool,
+		checker:   checker,
+		memory:    memory,
+		artifacts: artifactsService,
+		log:       logger.WithComponent(log, "doctor-api"),
 	}
 }
 
@@ -77,6 +80,10 @@ func (d *DoctorServer) HandleRunCheck() http.Handler {
 					}
 				}
 			}
+		}
+
+		if d.artifacts != nil {
+			_, _ = d.artifacts.SaveDoctorReport(ctx, "system:doctor", "system:doctor", status, string(reportJSON), time.Now().UTC())
 		}
 
 		// Store the report
