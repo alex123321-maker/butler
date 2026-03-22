@@ -1,183 +1,253 @@
 <template>
-  <div class="memory-page">
-    <section class="memory-hero">
-      <div>
-        <p class="eyebrow">Memory Browser</p>
+  <main class="page">
+    <section class="page-header">
+      <div class="page-header__content">
+        <p class="page-kicker">Memory</p>
         <h2 class="page-title">Memory</h2>
-        <p class="hero-copy">Browse and manage durable profile, episodic, and chunk memory by scope.</p>
+        <p class="page-copy">
+          Inspect live task context and long-term memory without manually digging up internal scope ids first.
+        </p>
       </div>
-      <div class="memory-controls">
+      <div class="page-header__actions">
+        <AppButton variant="secondary" :disabled="pending" @click="showManualScope = !showManualScope">
+          {{ showManualScope ? 'Hide manual scope' : 'Manual scope' }}
+        </AppButton>
+        <AppButton variant="primary" :disabled="pending || !hasScope" @click="refresh">Refresh</AppButton>
+      </div>
+    </section>
+
+    <section class="page-section">
+      <div class="context-header">
+        <div>
+          <h3 class="section-title">Current context</h3>
+          <p class="section-copy">
+            Working memory lives on the session scope, so this page now defaults to the most recent session when possible.
+          </p>
+        </div>
+        <div class="pill-row" v-if="routeSourceTask || hasScope">
+          <span v-if="routeSourceTask" class="pill">From {{ routeSourceTask }}</span>
+          <span v-if="hasScope" class="pill">{{ selectedScopeLabel }}</span>
+        </div>
+      </div>
+
+      <div v-if="recentSessions.length" class="recent-contexts">
+        <button
+          v-for="session in recentSessions"
+          :key="session.session_key"
+          type="button"
+          class="context-card"
+          :class="{ 'context-card--active': filters.scopeType === 'session' && filters.scopeID === session.session_key }"
+          @click="selectSession(session.session_key)"
+        >
+          <p class="context-card__title">{{ session.channel }}</p>
+          <p class="context-card__meta">{{ session.session_key }}</p>
+          <p class="context-card__meta">Updated {{ formatDateTime(session.updated_at) }}</p>
+        </button>
+      </div>
+
+      <p v-else-if="sessionsPending" class="placeholder-text">Loading recent contexts…</p>
+      <p v-else-if="!hasScope" class="placeholder-text">No recent session context is available yet.</p>
+
+      <div v-if="showManualScope" class="manual-scope">
         <label>
           Scope type
           <AppSelect v-model="filters.scopeType">
-            <option value="session">session</option>
-            <option value="user">user</option>
-            <option value="global">global</option>
+            <option value="session">Session</option>
+            <option value="user">User</option>
+            <option value="global">Global</option>
           </AppSelect>
         </label>
         <label>
           Scope id
           <AppInput v-model="filters.scopeID" type="text" placeholder="telegram:chat:123 or user id" />
         </label>
-        <AppButton variant="primary" :disabled="pending" @click="refresh">Refresh</AppButton>
+        <div class="manual-scope__actions">
+          <AppButton variant="primary" :disabled="pending || !hasScope" @click="refresh">Load scope</AppButton>
+        </div>
       </div>
     </section>
 
-    <!-- Filters -->
-    <section v-if="hasScope" class="memory-filters">
-      <label>
-        Confirmation State
-        <AppSelect v-model="filters.confirmationState">
-          <option value="all">All</option>
-          <option value="pending">Pending</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="rejected">Rejected</option>
-          <option value="auto_confirmed">Auto-confirmed</option>
-        </AppSelect>
-      </label>
-      <label>
-        Effective Status
-        <AppSelect v-model="filters.effectiveStatus">
-          <option value="all">All</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-          <option value="suppressed">Suppressed</option>
-          <option value="expired">Expired</option>
-          <option value="deleted">Deleted</option>
-        </AppSelect>
-      </label>
-      <label class="checkbox-label">
-        <input v-model="filters.showSuppressed" type="checkbox" />
-        Show suppressed
-      </label>
+    <section v-if="hasScope" class="page-section">
+      <div class="memory-filters">
+        <label>
+          Confirmation
+          <AppSelect v-model="filters.confirmationState">
+            <option value="all">All</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="rejected">Rejected</option>
+            <option value="auto_confirmed">Auto-confirmed</option>
+          </AppSelect>
+        </label>
+        <label>
+          Status
+          <AppSelect v-model="filters.effectiveStatus">
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="suppressed">Suppressed</option>
+            <option value="expired">Expired</option>
+            <option value="deleted">Deleted</option>
+          </AppSelect>
+        </label>
+        <label class="memory-toggle">
+          <input v-model="filters.showSuppressed" type="checkbox" />
+          <span>Show suppressed entries</span>
+        </label>
+      </div>
     </section>
 
     <AppAlert v-if="error" tone="error">{{ error }}</AppAlert>
 
-    <p v-if="!hasScope" class="placeholder-text">Enter a scope id to browse memory.</p>
-    <p v-else-if="pending" class="placeholder-text">Loading memory...</p>
+    <AppEmptyState
+      v-if="!hasScope && !sessionsPending"
+      title="No memory context selected"
+      description="Pick a recent session above or open memory from a specific task."
+    />
+    <p v-else-if="pending" class="placeholder-text">Loading memory…</p>
 
-    <div v-else class="memory-grid">
-      <!-- Working Memory (read-only, no management) -->
-      <section class="memory-card">
-        <h3>Working Memory</h3>
-        <div v-if="memoryData?.working" class="memory-fields">
-          <MemoryField label="Goal" :value="memoryData.working.goal" />
-          <MemoryField label="Status" :value="memoryData.working.status" />
-          <MemoryField label="Source" :value="`${memoryData.working.source_type}:${memoryData.working.source_id}`" />
-          <MemoryField label="Provenance" :value="memoryData.working.provenance" block />
-          <MemoryField label="Entities" :value="memoryData.working.entities_json" block />
-          <MemoryField label="Pending steps" :value="memoryData.working.pending_steps_json" block />
-        </div>
-        <p v-else class="placeholder-text">No working memory for this scope.</p>
-      </section>
-
-      <!-- Profile Memory -->
-      <section class="memory-card">
-        <h3>Profile Memory <span class="count">({{ filteredProfile.length }})</span></h3>
-        <div v-if="filteredProfile.length" class="memory-list">
-          <article v-for="item in filteredProfile" :key="item.id" class="memory-item" :class="{ 'memory-item--suppressed': item.suppressed }">
-            <header>
-              <strong>{{ item.key }}</strong>
-              <div class="badges">
-                <AppBadge :tone="getConfirmationTone(item.confirmation_state)">{{ item.confirmation_state }}</AppBadge>
-                <AppBadge :tone="getEffectiveTone(item.effective_status)">{{ item.effective_status }}</AppBadge>
-              </div>
-            </header>
-            <p class="summary">{{ item.summary }}</p>
-            <MemoryField label="Value" :value="item.value_json" block />
-            <MemoryField label="Provenance" :value="item.provenance" block />
-            <MemoryField v-if="item.edited_by" label="Edited by" :value="`${item.edited_by} at ${item.edited_at}`" />
-            <MemoryField label="Links" :value="formatLinks(item.links)" block />
-
-            <!-- Actions -->
-            <div class="memory-actions">
-              <template v-if="item.capabilities.confirmable && item.confirmation_state === 'pending'">
-                <AppButton variant="primary" :disabled="actionPending" @click="handleConfirm('profile', item.id)">Confirm</AppButton>
-                <AppButton variant="danger" :disabled="actionPending" @click="handleReject('profile', item.id)">Reject</AppButton>
-              </template>
-              <template v-if="item.capabilities.suppressible">
-                <AppButton v-if="!item.suppressed" variant="secondary" :disabled="actionPending" @click="handleSuppress('profile', item.id)">Suppress</AppButton>
-                <AppButton v-else variant="secondary" :disabled="actionPending" @click="handleUnsuppress('profile', item.id)">Unsuppress</AppButton>
-              </template>
-              <AppButton v-if="item.capabilities.editable" variant="secondary" :disabled="actionPending" @click="openEditDialog(item)">Edit</AppButton>
-              <AppButton v-if="item.capabilities.deletable && item.effective_status !== 'deleted'" variant="danger" :disabled="actionPending" @click="handleDelete('profile', item.id)">Delete</AppButton>
+    <template v-else>
+      <section class="memory-layout">
+        <section class="memory-card memory-card--primary">
+          <div class="memory-card__header">
+            <div>
+              <h3>Working memory</h3>
+              <p class="memory-card__copy">Live context Butler is actively using for the selected session.</p>
             </div>
-          </article>
-        </div>
-        <p v-else class="placeholder-text">No profile memory entries.</p>
-      </section>
+            <span class="pill" v-if="memoryData?.working?.status">{{ memoryData.working.status }}</span>
+          </div>
 
-      <!-- Episodic Memory -->
-      <section class="memory-card">
-        <h3>Episodic Memory <span class="count">({{ filteredEpisodic.length }})</span></h3>
-        <div v-if="filteredEpisodic.length" class="memory-list">
-          <article v-for="item in filteredEpisodic" :key="item.id" class="memory-item" :class="{ 'memory-item--suppressed': item.suppressed }">
-            <header>
-              <strong>{{ item.summary }}</strong>
-              <div class="badges">
-                <AppBadge :tone="getConfirmationTone(item.confirmation_state)">{{ item.confirmation_state }}</AppBadge>
-                <AppBadge :tone="getEffectiveTone(item.effective_status)">{{ item.effective_status }}</AppBadge>
-              </div>
-            </header>
-            <p>{{ item.content }}</p>
-            <MemoryField label="Tags" :value="item.tags_json" block />
-            <MemoryField label="Provenance" :value="item.provenance" block />
-            <MemoryField v-if="item.edited_by" label="Edited by" :value="`${item.edited_by} at ${item.edited_at}`" />
-            <MemoryField label="Links" :value="formatLinks(item.links)" block />
+          <div v-if="memoryData?.working" class="memory-fields">
+            <MemoryField label="Goal" :value="memoryData.working.goal" />
+            <MemoryField label="Status" :value="memoryData.working.status" />
+            <MemoryField label="Source" :value="`${memoryData.working.source_type}:${memoryData.working.source_id}`" />
+            <MemoryField label="Pending steps" :value="memoryData.working.pending_steps_json" block />
+            <MemoryField label="Entities" :value="memoryData.working.entities_json" block />
+            <MemoryField label="Provenance" :value="memoryData.working.provenance" block />
+          </div>
+          <p v-else class="placeholder-text">
+            {{ filters.scopeType === 'session' ? 'No working memory is stored for this session yet.' : 'Working memory is only available on session context.' }}
+          </p>
+        </section>
 
-            <!-- Actions (episodic is not editable, but confirmable/suppressible/deletable) -->
-            <div class="memory-actions">
-              <template v-if="item.capabilities.confirmable && item.confirmation_state === 'pending'">
-                <AppButton variant="primary" :disabled="actionPending" @click="handleConfirm('episodic', item.id)">Confirm</AppButton>
-                <AppButton variant="danger" :disabled="actionPending" @click="handleReject('episodic', item.id)">Reject</AppButton>
-              </template>
-              <template v-if="item.capabilities.suppressible">
-                <AppButton v-if="!item.suppressed" variant="secondary" :disabled="actionPending" @click="handleSuppress('episodic', item.id)">Suppress</AppButton>
-                <AppButton v-else variant="secondary" :disabled="actionPending" @click="handleUnsuppress('episodic', item.id)">Unsuppress</AppButton>
-              </template>
-              <AppButton v-if="item.capabilities.deletable && item.effective_status !== 'deleted'" variant="danger" :disabled="actionPending" @click="handleDelete('episodic', item.id)">Delete</AppButton>
+        <section class="memory-card">
+          <div class="memory-card__header">
+            <div>
+              <h3>Profile memory</h3>
+              <p class="memory-card__copy">Long-lived facts and preferences Butler should remember about you.</p>
             </div>
-          </article>
-        </div>
-        <p v-else class="placeholder-text">No episodic memory entries.</p>
-      </section>
+            <span class="pill">{{ filteredProfile.length }}</span>
+          </div>
+          <div v-if="filteredProfile.length" class="memory-list">
+            <article v-for="item in filteredProfile" :key="item.id" class="memory-item" :class="{ 'memory-item--suppressed': item.suppressed }">
+              <header>
+                <strong>{{ item.key }}</strong>
+                <div class="badges">
+                  <AppBadge :tone="getConfirmationTone(item.confirmation_state)">{{ item.confirmation_state }}</AppBadge>
+                  <AppBadge :tone="getEffectiveTone(item.effective_status)">{{ item.effective_status }}</AppBadge>
+                </div>
+              </header>
+              <p class="summary">{{ item.summary }}</p>
+              <MemoryField label="Value" :value="item.value_json" block />
+              <MemoryField label="Provenance" :value="item.provenance" block />
+              <MemoryField v-if="item.edited_by" label="Edited by" :value="`${item.edited_by} at ${item.edited_at}`" />
+              <MemoryField label="Links" :value="formatLinks(item.links)" block />
 
-      <!-- Chunk Memory -->
-      <section class="memory-card">
-        <h3>Chunk Memory <span class="count">({{ filteredChunks.length }})</span></h3>
-        <div v-if="filteredChunks.length" class="memory-list">
-          <article v-for="item in filteredChunks" :key="item.id" class="memory-item" :class="{ 'memory-item--suppressed': item.suppressed }">
-            <header>
-              <strong>{{ item.title }}</strong>
-              <div class="badges">
-                <AppBadge :tone="getEffectiveTone(item.effective_status)">{{ item.effective_status }}</AppBadge>
+              <div class="memory-actions">
+                <template v-if="item.capabilities.confirmable && item.confirmation_state === 'pending'">
+                  <AppButton variant="primary" :disabled="actionPending" @click="handleConfirm('profile', item.id)">Confirm</AppButton>
+                  <AppButton variant="danger" :disabled="actionPending" @click="handleReject('profile', item.id)">Reject</AppButton>
+                </template>
+                <template v-if="item.capabilities.suppressible">
+                  <AppButton v-if="!item.suppressed" variant="secondary" :disabled="actionPending" @click="handleSuppress('profile', item.id)">Suppress</AppButton>
+                  <AppButton v-else variant="secondary" :disabled="actionPending" @click="handleUnsuppress('profile', item.id)">Unsuppress</AppButton>
+                </template>
+                <AppButton v-if="item.capabilities.editable" variant="secondary" :disabled="actionPending" @click="openEditDialog(item)">Edit</AppButton>
+                <AppButton v-if="item.capabilities.deletable && item.effective_status !== 'deleted'" variant="danger" :disabled="actionPending" @click="handleDelete('profile', item.id)">Delete</AppButton>
               </div>
-            </header>
-            <p class="summary">{{ item.summary }}</p>
-            <MemoryField label="Content" :value="item.content" block />
-            <MemoryField label="Tags" :value="item.tags_json" block />
-            <MemoryField label="Provenance" :value="item.provenance" block />
-            <MemoryField label="Links" :value="formatLinks(item.links)" block />
+            </article>
+          </div>
+          <p v-else class="placeholder-text">No profile memory entries for this scope.</p>
+        </section>
 
-            <!-- Actions (chunks: suppressible and hard-deletable only) -->
-            <div class="memory-actions">
-              <template v-if="item.capabilities.suppressible">
-                <AppButton v-if="!item.suppressed" variant="secondary" :disabled="actionPending" @click="handleSuppress('chunk', item.id)">Suppress</AppButton>
-                <AppButton v-else variant="secondary" :disabled="actionPending" @click="handleUnsuppress('chunk', item.id)">Unsuppress</AppButton>
-              </template>
-              <AppButton v-if="item.capabilities.deletable" variant="danger" :disabled="actionPending" @click="handleDelete('chunk', item.id)">Delete</AppButton>
+        <section class="memory-card">
+          <div class="memory-card__header">
+            <div>
+              <h3>Episodes</h3>
+              <p class="memory-card__copy">Important moments Butler extracted from past work and conversations.</p>
             </div>
-          </article>
-        </div>
-        <p v-else class="placeholder-text">No chunk memory entries.</p>
-      </section>
-    </div>
+            <span class="pill">{{ filteredEpisodic.length }}</span>
+          </div>
+          <div v-if="filteredEpisodic.length" class="memory-list">
+            <article v-for="item in filteredEpisodic" :key="item.id" class="memory-item" :class="{ 'memory-item--suppressed': item.suppressed }">
+              <header>
+                <strong>{{ item.summary }}</strong>
+                <div class="badges">
+                  <AppBadge :tone="getConfirmationTone(item.confirmation_state)">{{ item.confirmation_state }}</AppBadge>
+                  <AppBadge :tone="getEffectiveTone(item.effective_status)">{{ item.effective_status }}</AppBadge>
+                </div>
+              </header>
+              <p class="summary">{{ item.content }}</p>
+              <MemoryField label="Tags" :value="item.tags_json" block />
+              <MemoryField label="Provenance" :value="item.provenance" block />
+              <MemoryField v-if="item.edited_by" label="Edited by" :value="`${item.edited_by} at ${item.edited_at}`" />
+              <MemoryField label="Links" :value="formatLinks(item.links)" block />
 
-    <!-- Edit Dialog for Profile Memory -->
+              <div class="memory-actions">
+                <template v-if="item.capabilities.confirmable && item.confirmation_state === 'pending'">
+                  <AppButton variant="primary" :disabled="actionPending" @click="handleConfirm('episodic', item.id)">Confirm</AppButton>
+                  <AppButton variant="danger" :disabled="actionPending" @click="handleReject('episodic', item.id)">Reject</AppButton>
+                </template>
+                <template v-if="item.capabilities.suppressible">
+                  <AppButton v-if="!item.suppressed" variant="secondary" :disabled="actionPending" @click="handleSuppress('episodic', item.id)">Suppress</AppButton>
+                  <AppButton v-else variant="secondary" :disabled="actionPending" @click="handleUnsuppress('episodic', item.id)">Unsuppress</AppButton>
+                </template>
+                <AppButton v-if="item.capabilities.deletable && item.effective_status !== 'deleted'" variant="danger" :disabled="actionPending" @click="handleDelete('episodic', item.id)">Delete</AppButton>
+              </div>
+            </article>
+          </div>
+          <p v-else class="placeholder-text">No episodic memory entries for this scope.</p>
+        </section>
+
+        <section class="memory-card">
+          <div class="memory-card__header">
+            <div>
+              <h3>Reference chunks</h3>
+              <p class="memory-card__copy">Chunked long-form knowledge Butler can reuse later.</p>
+            </div>
+            <span class="pill">{{ filteredChunks.length }}</span>
+          </div>
+          <div v-if="filteredChunks.length" class="memory-list">
+            <article v-for="item in filteredChunks" :key="item.id" class="memory-item" :class="{ 'memory-item--suppressed': item.suppressed }">
+              <header>
+                <strong>{{ item.title }}</strong>
+                <div class="badges">
+                  <AppBadge :tone="getEffectiveTone(item.effective_status)">{{ item.effective_status }}</AppBadge>
+                </div>
+              </header>
+              <p class="summary">{{ item.summary }}</p>
+              <MemoryField label="Content" :value="item.content" block />
+              <MemoryField label="Tags" :value="item.tags_json" block />
+              <MemoryField label="Provenance" :value="item.provenance" block />
+              <MemoryField label="Links" :value="formatLinks(item.links)" block />
+
+              <div class="memory-actions">
+                <template v-if="item.capabilities.suppressible">
+                  <AppButton v-if="!item.suppressed" variant="secondary" :disabled="actionPending" @click="handleSuppress('chunk', item.id)">Suppress</AppButton>
+                  <AppButton v-else variant="secondary" :disabled="actionPending" @click="handleUnsuppress('chunk', item.id)">Unsuppress</AppButton>
+                </template>
+                <AppButton v-if="item.capabilities.deletable" variant="danger" :disabled="actionPending" @click="handleDelete('chunk', item.id)">Delete</AppButton>
+              </div>
+            </article>
+          </div>
+          <p v-else class="placeholder-text">No chunk memory entries for this scope.</p>
+        </section>
+      </section>
+    </template>
+
     <AppDialog :model-value="editDialogOpen" @update:model-value="onDialogToggle">
       <template #title>
-        <h3 class="dialog-title">Edit Profile Memory</h3>
+        <h3 class="dialog-title">Edit profile memory</h3>
       </template>
       <div class="edit-form">
         <label>
@@ -200,18 +270,21 @@
         </div>
       </template>
     </AppDialog>
-  </div>
+  </main>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useSessions } from '~/composables/useApi'
+import { formatDateTime } from '~/entities/task/presentation'
 import { useMemoryStore } from '~/shared/model/stores/memory'
 import type { MemoryLinkRecord, MemoryType, ConfirmationState, EffectiveStatus, ProfileMemoryRecord } from '~/entities/memory/api'
 import AppAlert from '~/shared/ui/AppAlert.vue'
 import AppBadge from '~/shared/ui/AppBadge.vue'
 import AppButton from '~/shared/ui/AppButton.vue'
 import AppDialog from '~/shared/ui/AppDialog.vue'
+import AppEmptyState from '~/shared/ui/AppEmptyState.vue'
 import AppInput from '~/shared/ui/AppInput.vue'
 import AppSelect from '~/shared/ui/AppSelect.vue'
 
@@ -219,10 +292,62 @@ useHead({ title: 'Memory - Butler' })
 
 const memoryStore = useMemoryStore()
 const { records: memoryData, pending, actionPending, error, filters, filteredProfile, filteredEpisodic, filteredChunks } = storeToRefs(memoryStore)
+const route = useRoute()
+const { data: sessionsData, pending: sessionsPending } = useSessions()
 
 const hasScope = computed(() => filters.value.scopeID.trim().length > 0)
+const showManualScope = ref(false)
+const initializedScope = ref(false)
+const routeSourceTask = computed(() => String(route.query.sourceTask || ''))
 
-// Edit dialog state
+const recentSessions = computed(() => {
+  return [...(sessionsData.value ?? [])]
+    .sort((left, right) => new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime())
+    .slice(0, 6)
+})
+
+const selectedScopeLabel = computed(() => {
+  if (!hasScope.value) {
+    return 'No scope selected'
+  }
+  return `${filters.value.scopeType}: ${filters.value.scopeID}`
+})
+
+const routeScopeType = computed(() => {
+  const value = route.query.scopeType ?? route.query.scope_type
+  return typeof value === 'string' ? value : ''
+})
+
+const routeScopeID = computed(() => {
+  const value = route.query.scopeId ?? route.query.scope_id
+  return typeof value === 'string' ? value : ''
+})
+
+watch(
+  [routeScopeType, routeScopeID, recentSessions],
+  async ([scopeType, scopeID, sessions]) => {
+    if (scopeType && scopeID) {
+      initializedScope.value = true
+      await memoryStore.load({
+        scopeType: scopeType as 'session' | 'user' | 'global',
+        scopeID,
+      })
+      return
+    }
+
+    if (initializedScope.value || hasScope.value || !sessions.length) {
+      return
+    }
+
+    initializedScope.value = true
+    await memoryStore.load({
+      scopeType: 'session',
+      scopeID: sessions[0].session_key,
+    })
+  },
+  { immediate: true },
+)
+
 const editDialogOpen = ref(false)
 const editingItem = ref<ProfileMemoryRecord | null>(null)
 const editForm = ref({
@@ -234,9 +359,9 @@ const refresh = async () => {
   await memoryStore.load()
 }
 
-onMounted(async () => {
-  await refresh()
-})
+async function selectSession(sessionKey: string) {
+  await memoryStore.load({ scopeType: 'session', scopeID: sessionKey })
+}
 
 function formatLinks(links: MemoryLinkRecord[]) {
   if (!links || links.length === 0) return '[]'
@@ -273,7 +398,6 @@ function getEffectiveTone(status: EffectiveStatus): 'default' | 'success' | 'war
   }
 }
 
-// Action handlers
 async function handleConfirm(type: MemoryType, id: number) {
   await memoryStore.confirm(type, id)
 }
@@ -296,7 +420,6 @@ async function handleDelete(type: MemoryType, id: number) {
   }
 }
 
-// Edit dialog handlers
 function openEditDialog(item: ProfileMemoryRecord) {
   editingItem.value = item
   editForm.value = {
@@ -329,51 +452,154 @@ async function submitEdit() {
 </script>
 
 <style scoped>
-.memory-page { display: grid; gap: 24px; }
-.memory-hero {
-  display: flex; justify-content: space-between; gap: 20px; padding: 24px; border-radius: 24px;
-  background: linear-gradient(145deg, rgba(14, 18, 30, 0.94), rgba(8, 12, 20, 0.98));
-  border: 1px solid rgba(255,255,255,0.08);
-}
-.eyebrow { margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.24em; font-size: 12px; color: rgba(255,255,255,0.5); }
-.hero-copy { max-width: 680px; color: rgba(255,255,255,0.72); }
-.memory-controls { display: grid; gap: 12px; min-width: 280px; }
-.memory-controls label { display: grid; gap: 6px; font-size: 13px; color: rgba(255,255,255,0.72); }
-
-.memory-filters {
+.context-header {
   display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: var(--space-4);
-  align-items: flex-end;
   flex-wrap: wrap;
-  padding: var(--space-4);
-  background: var(--color-bg-surface);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-default);
 }
-.memory-filters label {
+
+.recent-contexts {
   display: grid;
-  gap: var(--space-1);
-  font-size: 13px;
-  color: var(--color-text-secondary);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
 }
-.checkbox-label {
-  display: flex;
-  align-items: center;
+
+.context-card {
+  display: grid;
   gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surfaceMuted);
+  color: inherit;
+  text-align: left;
   cursor: pointer;
 }
 
-.memory-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 18px; }
-.memory-card { display: grid; gap: 14px; padding: 20px; border-radius: 20px; background: rgba(10, 16, 28, 0.88); border: 1px solid rgba(255,255,255,0.08); }
-.memory-card h3 { margin: 0; display: flex; align-items: center; gap: var(--space-2); }
-.memory-card .count { font-size: 14px; color: var(--color-text-secondary); font-weight: normal; }
-.memory-list { display: grid; gap: 12px; }
-.memory-item { display: grid; gap: 8px; padding: 14px; border-radius: 14px; background: rgba(255,255,255,0.04); }
-.memory-item--suppressed { opacity: 0.6; border-left: 3px solid var(--color-state-warning); }
-.memory-item header { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
-.memory-item .badges { display: flex; gap: var(--space-2); flex-wrap: wrap; }
-.memory-item .summary { color: var(--color-text-secondary); margin: 0; }
-.placeholder-text { color: rgba(255,255,255,0.64); }
+.context-card--active {
+  border-color: var(--color-accent-primary);
+  background: var(--color-accent-primaryMuted);
+}
+
+.context-card__title,
+.context-card__meta {
+  margin: 0;
+}
+
+.context-card__title {
+  font-weight: var(--font-semibold);
+}
+
+.context-card__meta {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.manual-scope {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-default);
+}
+
+.manual-scope label,
+.memory-filters label,
+.edit-form label {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.manual-scope__actions {
+  display: flex;
+  align-items: flex-end;
+}
+
+.memory-filters {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.memory-toggle {
+  display: inline-flex !important;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.memory-layout {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.memory-card {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+}
+
+.memory-card--primary {
+  background: var(--color-bg-elevated);
+}
+
+.memory-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.memory-card__header h3,
+.dialog-title {
+  margin: 0;
+}
+
+.memory-card__copy,
+.summary {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.memory-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.memory-item {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-surfaceMuted);
+}
+
+.memory-item--suppressed {
+  opacity: 0.7;
+  border-left: 3px solid var(--color-state-warning);
+}
+
+.memory-item header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.badges {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
 
 .memory-actions {
   display: flex;
@@ -388,12 +614,7 @@ async function submitEdit() {
   display: grid;
   gap: var(--space-4);
 }
-.edit-form label {
-  display: grid;
-  gap: var(--space-1);
-  font-size: 13px;
-  color: var(--color-text-secondary);
-}
+
 .json-textarea {
   width: 100%;
   min-width: 400px;
@@ -402,14 +623,9 @@ async function submitEdit() {
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-3);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
   resize: vertical;
-}
-
-.dialog-title {
-  margin: 0;
-  font-size: 16px;
 }
 
 .dialog-actions {
@@ -418,5 +634,13 @@ async function submitEdit() {
   justify-content: flex-end;
 }
 
-@media (max-width: 860px) { .memory-hero { flex-direction: column; } }
+@media (max-width: 860px) {
+  .memory-filters {
+    display: grid;
+  }
+
+  .json-textarea {
+    min-width: 100%;
+  }
+}
 </style>

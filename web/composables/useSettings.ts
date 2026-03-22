@@ -21,6 +21,11 @@ export interface SettingsComponent {
 export interface RestartState {
   components: string[]
   suggested_command: string
+  accepted?: boolean
+  project?: string
+  services?: string[]
+  scheduled_at?: string
+  delay_seconds?: number
 }
 
 export interface ProviderFlowState {

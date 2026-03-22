@@ -16,7 +16,7 @@ func TestSettingsServerHandleListGroupsAndMasksSecrets(t *testing.T) {
 	server := NewSettingsServer(fakeSettingsManager{list: []config.SettingState{
 		{Key: "BUTLER_LOG_LEVEL", Component: "orchestrator", Value: "debug", Source: "db", ValidationStatus: config.ValidationStatusValid},
 		{Key: "BUTLER_OPENAI_API_KEY", Component: "orchestrator", Value: "sk-abcdefghijkl1234", Source: "env", IsSecret: true, RequiresRestart: true, ValidationStatus: config.ValidationStatusValid},
-	}})
+	}}, nil)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/settings", nil)
 	rr := httptest.NewRecorder()
@@ -46,7 +46,7 @@ func TestSettingsServerHandleListGroupsAndMasksSecrets(t *testing.T) {
 }
 
 func TestSettingsServerHandleUpdateReturnsValidationErrors(t *testing.T) {
-	server := NewSettingsServer(fakeSettingsManager{updateErr: config.ErrInvalidSettingValue})
+	server := NewSettingsServer(fakeSettingsManager{updateErr: config.ErrInvalidSettingValue}, nil)
 	req := httptest.NewRequest(http.MethodPut, "/api/v1/settings/BUTLER_LOG_LEVEL", strings.NewReader(`{"value":"verbose"}`))
 	rr := httptest.NewRecorder()
 
@@ -58,7 +58,7 @@ func TestSettingsServerHandleUpdateReturnsValidationErrors(t *testing.T) {
 }
 
 func TestSettingsServerHandleUpdateReturnsRestartMetadata(t *testing.T) {
-	server := NewSettingsServer(fakeSettingsManager{update: config.SettingState{Key: "BUTLER_OPENAI_MODEL", Component: "orchestrator", Value: "gpt-4.1-mini", Source: "db", RequiresRestart: true, ValidationStatus: config.ValidationStatusValid}})
+	server := NewSettingsServer(fakeSettingsManager{update: config.SettingState{Key: "BUTLER_OPENAI_MODEL", Component: "orchestrator", Value: "gpt-4.1-mini", Source: "db", RequiresRestart: true, ValidationStatus: config.ValidationStatusValid}}, nil)
 	req := httptest.NewRequest(http.MethodPut, "/api/v1/settings/BUTLER_OPENAI_MODEL", strings.NewReader(`{"value":"gpt-4.1-mini"}`))
 	rr := httptest.NewRecorder()
 
@@ -81,7 +81,7 @@ func TestSettingsServerHandleUpdateReturnsRestartMetadata(t *testing.T) {
 }
 
 func TestSettingsServerHandleDeleteReturnsResolvedSetting(t *testing.T) {
-	server := NewSettingsServer(fakeSettingsManager{deleted: config.SettingState{Key: "BUTLER_LOG_LEVEL", Component: "orchestrator", Value: "info", Source: "default", ValidationStatus: config.ValidationStatusValid}})
+	server := NewSettingsServer(fakeSettingsManager{deleted: config.SettingState{Key: "BUTLER_LOG_LEVEL", Component: "orchestrator", Value: "info", Source: "default", ValidationStatus: config.ValidationStatusValid}}, nil)
 	req := httptest.NewRequest(http.MethodDelete, "/api/v1/settings/BUTLER_LOG_LEVEL", nil)
 	rr := httptest.NewRecorder()
 
@@ -94,7 +94,16 @@ func TestSettingsServerHandleDeleteReturnsResolvedSetting(t *testing.T) {
 
 func TestSettingsServerHandleRestartReturnsPendingComponents(t *testing.T) {
 	manager := &restartAwareManager{fakeSettingsManager: fakeSettingsManager{restarts: []string{"orchestrator", "tool-broker"}}}
-	server := NewSettingsServer(manager)
+	server := NewSettingsServer(manager, fakeRestartApplier{
+		result: RestartApplyResult{
+			Accepted:         true,
+			Project:          "butler",
+			Services:         []string{"orchestrator", "tool-broker"},
+			ScheduledAt:      "2026-03-22T10:00:00Z",
+			DelaySeconds:     2,
+			SuggestedCommand: "docker compose -f deploy/docker-compose.yml restart orchestrator tool-broker",
+		},
+	})
 
 	getReq := httptest.NewRequest(http.MethodGet, "/api/v1/settings/restart", nil)
 	getRR := httptest.NewRecorder()
@@ -118,8 +127,37 @@ func TestSettingsServerHandleRestartReturnsPendingComponents(t *testing.T) {
 	if postRR.Code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", postRR.Code)
 	}
+	var postPayload struct {
+		Accepted bool     `json:"accepted"`
+		Services []string `json:"services"`
+	}
+	if err := json.Unmarshal(postRR.Body.Bytes(), &postPayload); err != nil {
+		t.Fatalf("decode post response: %v", err)
+	}
+	if !postPayload.Accepted {
+		t.Fatal("expected accepted restart payload")
+	}
+	if !reflect.DeepEqual(postPayload.Services, []string{"orchestrator", "tool-broker"}) {
+		t.Fatalf("unexpected restarted services payload: %+v", postPayload.Services)
+	}
 	if !manager.cleared {
 		t.Fatal("expected pending restart state to be cleared")
+	}
+}
+
+func TestSettingsServerHandleRestartDoesNotClearPendingOnApplierError(t *testing.T) {
+	manager := &restartAwareManager{fakeSettingsManager: fakeSettingsManager{restarts: []string{"orchestrator"}}}
+	server := NewSettingsServer(manager, fakeRestartApplier{err: context.DeadlineExceeded})
+
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/settings/restart", nil)
+	rr := httptest.NewRecorder()
+	server.HandleRestart().ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusBadGateway {
+		t.Fatalf("expected 502, got %d", rr.Code)
+	}
+	if manager.cleared {
+		t.Fatal("expected pending restart state to remain when helper fails")
 	}
 }
 
@@ -166,6 +204,18 @@ type restartAwareManager struct {
 
 func (m *restartAwareManager) ClearPendingRestart() {
 	m.cleared = true
+}
+
+type fakeRestartApplier struct {
+	result RestartApplyResult
+	err    error
+}
+
+func (f fakeRestartApplier) Apply(context.Context, []string) (RestartApplyResult, error) {
+	if f.err != nil {
+		return RestartApplyResult{}, f.err
+	}
+	return f.result, nil
 }
 
 var _ SettingsManager = fakeSettingsManager{}

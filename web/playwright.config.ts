@@ -12,7 +12,7 @@ export default defineConfig({
     video: 'off',
   },
   webServer: {
-    command: 'set NUXT_DEVTOOLS_ENABLED=false&& npm run dev -- --host 127.0.0.1 --port 4173',
+    command: 'npm run build && npx nuxi preview --port 4173',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: true,
     timeout: 300000,

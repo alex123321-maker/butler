@@ -2,7 +2,9 @@
   <div class="app-layout">
     <WidgetSidebar />
     <div class="content-wrapper">
-      <slot />
+      <div class="content-shell">
+        <slot />
+      </div>
     </div>
   </div>
 </template>
@@ -22,6 +24,17 @@ import WidgetSidebar from '~/widgets/sidebar/ui/WidgetSidebar.vue'
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
+  padding: var(--space-6) var(--space-8);
+}
+
+.content-shell {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .content-wrapper {
+    padding: var(--space-4);
+  }
 }
 </style>

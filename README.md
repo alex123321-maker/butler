@@ -20,9 +20,15 @@ Sprint 0 through Sprint 7 are implemented in the repository backlog and reflecte
 ## Local workflow
 
 - Copy `.env.example` to `.env` before starting local infrastructure.
-- `make build` - build all Go packages.
-- `make test` - run the Go test suite.
-- `make lint` - run baseline static checks with `go vet`.
+- `make build` or `make build-go` - build Butler Go packages only (`apps/`, `internal/`, `scripts/`) without walking `web/`.
+- `make test` or `make test-go` - run the Go test suite without scanning frontend dependencies.
+- `make lint` or `make lint-go` - run baseline static checks with `go vet` on Butler Go packages.
+- `make build-web` - build the Nuxt frontend from `web/`.
+- `make lint-web` - run frontend ESLint and Stylelint checks.
+- `make test-web` - run Playwright end-to-end tests for the web UI.
+- `make test-orchestrator` - run orchestrator-only Go tests.
+- `make test-memory` - run memory subsystem Go tests.
+- `make test-transport` - run transport/provider Go tests.
 - `make proto` - regenerate the current gRPC bindings from `proto/`.
 - `make infra-up` - start only PostgreSQL and Redis for local `go run` workflows.
 - `make infra-down` - stop the local infrastructure services.
@@ -33,6 +39,7 @@ Sprint 0 through Sprint 7 are implemented in the repository backlog and reflecte
 ## Services
 
 - `apps/orchestrator/` - Butler core API and orchestration service.
+- `apps/restart-helper/` - allowlisted Docker Compose restart helper for Settings-driven service restarts.
 - `apps/tool-broker/` - validation and routing for tool calls.
 - `apps/tool-browser/` - browser automation runtime.
 - `apps/tool-http/` - HTTP runtime.
@@ -46,6 +53,7 @@ Sprint 0 through Sprint 7 are implemented in the repository backlog and reflecte
 - [Credential Management](docs/architecture/credential-management.md)
 - [Run Lifecycle Specification](docs/architecture/run-lifecycle-spec.md)
 - [Model Transport Contract](docs/architecture/model-transport-contract.md)
+- [AI Repo Map](docs/ai/repo-map.md)
 - [Implementation Roadmap](docs/planning/butler-implementation-roadmap.md)
 - [Sprint Backlog](docs/planning/butler-backlog.yaml)
 

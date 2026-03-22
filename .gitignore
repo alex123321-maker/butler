@@ -1,22 +1,30 @@
 # Dependencies
 node_modules/
+apps/tool-browser/node_modules/
 
 # Go
 bin/
 coverage.out
 vendor/
 *.test
+.cache/
 
 # Build output
 dist/
 build/
 out/
 *.exe
+web/.nuxt/
+web/.output/
+web/playwright-report/
+web/test-results/
+web/tests/e2e/*-snapshots/
 
 # Environment
 .env
 .env.*
 !.env.example
+!.env.codex-windows.example
 
 # IDE
 .idea/
@@ -32,6 +40,7 @@ Thumbs.db
 # Docker
 docker-compose.override.yml
 .docker/
+.opencode/node_modules/
 
 # Logs
 *.log

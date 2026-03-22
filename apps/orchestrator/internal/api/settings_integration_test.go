@@ -50,7 +50,7 @@ func TestSettingsFlowIntegration(t *testing.T) {
 	hot := config.NewHotConfig(config.Snapshot{})
 	settingsStore := config.NewPostgresSettingsStore(store.Pool())
 	service := config.NewSettingsService(settingsStore, hot)
-	server := NewSettingsServer(service)
+	server := NewSettingsServer(service, nil)
 
 	put(t, server.HandleItem(), "/api/v1/settings/BUTLER_LOG_LEVEL", `{"value":"debug"}`, http.StatusOK)
 	if value, ok := hot.Get("BUTLER_LOG_LEVEL"); !ok || value != "debug" {

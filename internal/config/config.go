@@ -88,6 +88,7 @@ type OrchestratorConfig struct {
 	MemoryPipelinePollTimeoutSeconds int
 	MemoryPipelineMaxRetries         int
 	MemoryExtractionModel            string
+	RestartHelperURL                 string
 }
 
 type ToolBrokerConfig struct {
@@ -117,6 +118,16 @@ type ToolDoctorConfig struct {
 	OpenAIBaseURL    string
 	OpenAIModel      string
 	ContainerTargets []DoctorContainerTarget
+}
+
+type RestartHelperConfig struct {
+	Shared                SharedConfig
+	DockerHost            string
+	DockerProject         string
+	AllowedServices       []string
+	SelfService           string
+	RestartDelaySeconds   int
+	RestartTimeoutSeconds int
 }
 
 type DoctorContainerTarget struct {
@@ -185,6 +196,10 @@ func LoadToolDoctorFromEnv() (ToolDoctorConfig, Snapshot, error) {
 	return loadToolDoctor(os.LookupEnv)
 }
 
+func LoadRestartHelperFromEnv() (RestartHelperConfig, Snapshot, error) {
+	return loadRestartHelper(os.LookupEnv)
+}
+
 func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 	cfg := OrchestratorConfig{}
 	sharedSpecs := sharedSpecs("orchestrator", &cfg.Shared)
@@ -223,6 +238,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_MEMORY_PIPELINE_POLL_TIMEOUT_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "5", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.MemoryPipelinePollTimeoutSeconds = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_MEMORY_PIPELINE_MAX_RETRIES", component: "orchestrator", typeName: "int", required: false, defaultValue: "3", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.MemoryPipelineMaxRetries = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_MEMORY_EXTRACTION_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-4o-mini", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.MemoryExtractionModel = v }},
+		fieldSpec{key: "BUTLER_RESTART_HELPER_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "http://restart-helper:8080", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.RestartHelperURL = v }},
 	)
 
 	snapshot, err := loadSpecs(get, specs)
@@ -282,6 +298,25 @@ func loadToolDoctor(get envGetter) (ToolDoctorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_POSTGRES_MIN_CONNS", component: "tool-doctor", typeName: "int", required: false, defaultValue: "1", requiresRestart: true, validate: validateNonNegativeInt, assign: func(v string) { cfg.Postgres.MinConns = mustParseInt32(v) }},
 		fieldSpec{key: "BUTLER_POSTGRES_MAX_CONN_LIFETIME_SECONDS", component: "tool-doctor", typeName: "int", required: false, defaultValue: "30", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.Postgres.MaxConnLifetime = mustParseInt(v) }},
 	)
+	snapshot, err := loadSpecs(get, specs)
+	return cfg, snapshot, err
+}
+
+func loadRestartHelper(get envGetter) (RestartHelperConfig, Snapshot, error) {
+	cfg := RestartHelperConfig{}
+	specs := []fieldSpec{
+		{key: "BUTLER_SERVICE_NAME", component: "restart-helper", typeName: "string", required: false, defaultValue: "restart-helper", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.Shared.ServiceName = v }},
+		{key: "BUTLER_LOG_LEVEL", component: "restart-helper", typeName: "string", required: false, defaultValue: "info", allowedValues: []string{"debug", "info", "warn", "error"}, requiresRestart: false, assign: func(v string) { cfg.Shared.LogLevel = strings.ToLower(v) }},
+		{key: "BUTLER_HTTP_ADDR", component: "restart-helper", typeName: "string", required: false, defaultValue: ":8080", requiresRestart: true, validate: validateListenAddr, assign: func(v string) { cfg.Shared.HTTPAddr = v }},
+		{key: "BUTLER_ENVIRONMENT", component: "restart-helper", typeName: "string", required: false, defaultValue: "development", allowedValues: []string{"development", "test", "production"}, requiresRestart: false, assign: func(v string) { cfg.Shared.Environment = strings.ToLower(v) }},
+		{key: "BUTLER_DOCKER_HOST", component: "restart-helper", typeName: "string", required: false, defaultValue: "unix:///var/run/docker.sock", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.DockerHost = v }},
+		{key: "BUTLER_RESTART_PROJECT", component: "restart-helper", typeName: "string", required: false, defaultValue: "butler", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.DockerProject = strings.TrimSpace(v) }},
+		{key: "BUTLER_RESTART_ALLOWED_SERVICES", component: "restart-helper", typeName: "csv", required: true, defaultValue: "", requiresRestart: true, validate: validateServiceNameCSV, assign: func(v string) { cfg.AllowedServices = parseCSV(v) }},
+		{key: "BUTLER_RESTART_SELF_SERVICE", component: "restart-helper", typeName: "string", required: false, defaultValue: "restart-helper", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.SelfService = strings.TrimSpace(v) }},
+		{key: "BUTLER_RESTART_DELAY_SECONDS", component: "restart-helper", typeName: "int", required: false, defaultValue: "2", requiresRestart: true, validate: validateNonNegativeInt, assign: func(v string) { cfg.RestartDelaySeconds = mustParseInt(v) }},
+		{key: "BUTLER_RESTART_TIMEOUT_SECONDS", component: "restart-helper", typeName: "int", required: false, defaultValue: "20", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.RestartTimeoutSeconds = mustParseInt(v) }},
+	}
+
 	snapshot, err := loadSpecs(get, specs)
 	return cfg, snapshot, err
 }
@@ -454,6 +489,23 @@ func validateOptionalDoctorContainerTargets(value string) error {
 		}
 		if err := validateNonEmptyURL(target.URL); err != nil {
 			return fmt.Errorf("doctor container target %q: %w", target.Name, err)
+		}
+	}
+	return nil
+}
+
+func validateServiceNameCSV(value string) error {
+	items := parseCSV(value)
+	if len(items) == 0 {
+		return fmt.Errorf("must contain at least one service")
+	}
+	for _, item := range items {
+		trimmed := strings.TrimSpace(item)
+		if trimmed == "" {
+			return fmt.Errorf("service names must not be empty")
+		}
+		if strings.ContainsAny(trimmed, " \t\r\n/\\") {
+			return fmt.Errorf("service name %q contains invalid characters", trimmed)
 		}
 	}
 	return nil

@@ -1,13 +1,24 @@
 <template>
   <main class="page">
-    <h2 class="page-title">Task {{ taskId }}</h2>
+    <section class="page-header">
+      <div class="page-header__content">
+        <p class="page-kicker">Task detail</p>
+        <h2 class="page-title">{{ formatTaskId(taskId) }}</h2>
+        <p class="page-copy">
+          Review the request, what Butler is waiting for, and the current result without diving into debug data first.
+        </p>
+      </div>
+      <div v-if="taskDetails" class="page-header__actions">
+        <NuxtLink class="text-link detail-link" :to="memoryLink">Open related memory</NuxtLink>
+      </div>
+    </section>
 
     <AppAlert v-if="loadError" tone="error">Unable to load task details.</AppAlert>
 
     <template v-else-if="pendingBase">
       <AppPanel title="Summary">
         <div class="summary-grid">
-          <div v-for="index in 4" :key="index" class="summary-item">
+          <div v-for="index in 5" :key="index" class="summary-item">
             <p class="summary-label">Loading</p>
             <AppSkeleton height="18px" />
           </div>
@@ -29,7 +40,7 @@
         <div class="summary-grid">
           <div class="summary-item">
             <p class="summary-label">Status</p>
-            <AppBadge :tone="statusTone(taskDetails.summary_bar.status)">{{ taskDetails.summary_bar.status }}</AppBadge>
+            <AppBadge :tone="taskTone(taskDetails.summary_bar.status)">{{ formatTaskStatus(taskDetails.summary_bar.status) }}</AppBadge>
           </div>
           <div class="summary-item">
             <p class="summary-label">Risk level</p>
@@ -40,8 +51,12 @@
             <p class="summary-value">{{ formatTiming(taskDetails.summary_bar.started_at, taskDetails.summary_bar.finished_at) }}</p>
           </div>
           <div class="summary-item">
-            <p class="summary-label">Source channel</p>
-            <p class="summary-value">{{ taskDetails.summary_bar.source_channel || '-' }}</p>
+            <p class="summary-label">Source</p>
+            <p class="summary-value">{{ formatChannel(taskDetails.summary_bar.source_channel || taskDetails.source.channel) }}</p>
+          </div>
+          <div class="summary-item">
+            <p class="summary-label">What Butler needs</p>
+            <p class="summary-value">{{ describeTaskState(taskDetails.task) }}</p>
           </div>
         </div>
       </AppPanel>
@@ -59,7 +74,66 @@
       </div>
 
       <div class="task-section">
-        <AppPanel v-if="activeTab === 'timeline'" title="Timeline">
+        <AppPanel v-if="activeTab === 'overview'" title="Overview">
+          <div class="overview-grid">
+            <section class="overview-card">
+              <h3>Original request</h3>
+              <p class="overview-copy">{{ taskDetails.source.source_message_full || taskDetails.source.source_message_preview || 'No source message available.' }}</p>
+            </section>
+            <section class="overview-card">
+              <h3>Waiting state</h3>
+              <p class="overview-copy">{{ taskDetails.waiting_state.note || formatWaitingReason(taskDetails.waiting_state.waiting_reason) }}</p>
+              <div class="pill-row">
+                <span class="pill">{{ formatWaitingReason(taskDetails.waiting_state.waiting_reason) }}</span>
+                <span v-if="taskDetails.waiting_state.user_action_channel" class="pill">
+                  {{ formatChannel(taskDetails.waiting_state.user_action_channel) }}
+                </span>
+              </div>
+            </section>
+            <section class="overview-card">
+              <h3>Memory context</h3>
+              <p class="overview-copy">
+                Working memory is stored on the session scope, so the related memory view is the fastest way to inspect live context.
+              </p>
+              <NuxtLink class="text-link" :to="memoryLink">Open session memory</NuxtLink>
+            </section>
+          </div>
+        </AppPanel>
+
+        <AppPanel v-else-if="activeTab === 'result'" title="Result">
+          <div class="overview-grid">
+            <section class="overview-card">
+              <h3>Outcome</h3>
+              <p class="overview-copy">{{ taskDetails.result.outcome_summary || 'No final result has been recorded yet.' }}</p>
+            </section>
+            <section class="overview-card">
+              <h3>Error state</h3>
+              <p class="overview-copy">{{ taskDetails.error.error_summary || 'No error is currently attached to this task.' }}</p>
+            </section>
+          </div>
+
+          <div class="artifacts-block">
+            <h4>Artifacts</h4>
+            <AppAlert v-if="artifactsError" tone="error">Failed to load task artifacts.</AppAlert>
+            <AppSkeleton v-else-if="artifactsPending" height="56px" />
+            <AppEmptyState
+              v-else-if="!artifacts.length"
+              title="No artifacts yet"
+              description="Butler has not attached result artifacts to this task."
+            />
+            <ul v-else class="artifact-list">
+              <li v-for="artifact in artifacts" :key="artifact.artifact_id" class="artifact-item">
+                <div>
+                  <p class="artifact-title">{{ artifact.title || artifact.artifact_type }}</p>
+                  <p class="artifact-summary">{{ artifact.summary || artifact.content_text || 'No summary' }}</p>
+                </div>
+                <p class="artifact-meta">{{ artifact.artifact_type }} • {{ formatDateTime(artifact.created_at) }}</p>
+              </li>
+            </ul>
+          </div>
+        </AppPanel>
+
+        <AppPanel v-else-if="activeTab === 'timeline'" title="Timeline">
           <AppAlert v-if="timelineError" tone="error">Failed to load activity timeline.</AppAlert>
           <AppSkeleton v-else-if="timelinePending" height="80px" />
           <AppEmptyState
@@ -74,29 +148,9 @@
                 <AppBadge :tone="severityTone(event.severity)">{{ event.severity || 'info' }}</AppBadge>
               </div>
               <p class="timeline-item__summary">{{ event.summary || 'No summary' }}</p>
-              <p class="timeline-item__meta">{{ event.actor_type }} • {{ formatDate(event.created_at) }}</p>
+              <p class="timeline-item__meta">{{ event.actor_type }} • {{ formatDateTime(event.created_at) }}</p>
             </li>
           </ol>
-
-          <div class="artifacts-block">
-            <h4>Artifacts</h4>
-            <AppAlert v-if="artifactsError" tone="error">Failed to load task artifacts.</AppAlert>
-            <AppSkeleton v-else-if="artifactsPending" height="56px" />
-            <AppEmptyState
-              v-else-if="!artifacts.length"
-              title="No artifacts"
-              description="No artifacts are linked to this task yet."
-            />
-            <ul v-else class="artifact-list">
-              <li v-for="artifact in artifacts" :key="artifact.artifact_id" class="artifact-item">
-                <div>
-                  <p class="artifact-title">{{ artifact.title || artifact.artifact_type }}</p>
-                  <p class="artifact-summary">{{ artifact.summary || 'No summary' }}</p>
-                </div>
-                <p class="artifact-meta">{{ artifact.artifact_type }} • {{ formatDate(artifact.created_at) }}</p>
-              </li>
-            </ul>
-          </div>
         </AppPanel>
 
         <AppPanel v-else-if="activeTab === 'conversation'" title="Conversation">
@@ -111,7 +165,7 @@
             <li v-for="message in conversationMessages" :key="message.message_id" class="conversation-item">
               <div class="conversation-item__row">
                 <AppBadge tone="info">{{ message.role }}</AppBadge>
-                <span class="conversation-item__time">{{ formatDate(message.created_at) }}</span>
+                <span class="conversation-item__time">{{ formatDateTime(message.created_at) }}</span>
               </div>
               <p class="conversation-item__text">{{ message.content }}</p>
             </li>
@@ -156,6 +210,15 @@ import {
   type TaskDetailResponse,
   type TranscriptMessage,
 } from '~/entities/task/api'
+import {
+  describeTaskState,
+  formatChannel,
+  formatDateTime,
+  formatTaskId,
+  formatTaskStatus,
+  formatWaitingReason,
+  taskTone,
+} from '~/entities/task/presentation'
 import { useTasksStore } from '~/shared/model/stores/tasks'
 
 const route = useRoute()
@@ -181,7 +244,7 @@ const artifactsError = ref<string | null>(null)
 const conversationError = ref<string | null>(null)
 const debugError = ref<string | null>(null)
 
-const activeTab = ref('timeline')
+const activeTab = ref('overview')
 
 const isDebugMode = computed(() => {
   const mode = String(route.query.mode || '').toLowerCase()
@@ -194,6 +257,8 @@ const isDebugMode = computed(() => {
 
 const tabs = computed(() => {
   const base = [
+    { label: 'Overview', value: 'overview' },
+    { label: 'Result', value: 'result' },
     { label: 'Timeline', value: 'timeline' },
     { label: 'Conversation', value: 'conversation' },
   ]
@@ -203,32 +268,22 @@ const tabs = computed(() => {
   return base
 })
 
-const formatDate = (value: string | null | undefined): string => {
-  if (!value) {
-    return '-'
+const memoryLink = computed(() => {
+  if (!taskDetails.value?.task.session_key) {
+    return '/memory'
   }
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return value
+  return {
+    path: '/memory',
+    query: {
+      scopeType: 'session',
+      scopeId: taskDetails.value.task.session_key,
+      sourceTask: taskDetails.value.task.task_id,
+    },
   }
-  return date.toLocaleString()
-}
+})
 
 const formatTiming = (startedAt: string, finishedAt?: string | null): string => {
-  return `${formatDate(startedAt)} -> ${finishedAt ? formatDate(finishedAt) : 'in progress'}`
-}
-
-const statusTone = (status: string): 'default' | 'success' | 'warning' | 'error' | 'info' => {
-  if (status.includes('error') || status.includes('failed')) {
-    return 'error'
-  }
-  if (status.includes('waiting') || status.includes('approval')) {
-    return 'warning'
-  }
-  if (status.includes('completed')) {
-    return 'success'
-  }
-  return 'info'
+  return `${formatDateTime(startedAt)} -> ${finishedAt ? formatDateTime(finishedAt) : 'in progress'}`
 }
 
 const riskTone = (riskLevel: string): 'default' | 'success' | 'warning' | 'error' | 'info' => {
@@ -351,7 +406,7 @@ watch(
   tabs,
   (value) => {
     if (!value.some((tab) => tab.value === activeTab.value)) {
-      activeTab.value = 'timeline'
+      activeTab.value = 'overview'
     }
   },
   { immediate: true },
@@ -370,7 +425,6 @@ watch(taskId, async () => {
 watch(
   () => filters.value,
   async () => {
-    // Reload detail when operator returns from task list with changed filtering context.
     await loadAll()
   },
   { deep: true },
@@ -384,7 +438,7 @@ onMounted(async () => {
 <style scoped>
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--space-4);
 }
 
@@ -397,7 +451,7 @@ onMounted(async () => {
 .summary-label {
   margin: 0;
   color: var(--color-text-secondary);
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 
 .summary-value {
@@ -406,6 +460,34 @@ onMounted(async () => {
 
 .task-section {
   margin-top: var(--space-4);
+}
+
+.detail-link {
+  align-self: flex-start;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+
+.overview-card {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surfaceMuted);
+}
+
+.overview-card h3 {
+  margin: 0;
+}
+
+.overview-copy {
+  margin: 0;
+  color: var(--color-text-secondary);
 }
 
 .timeline-list,
@@ -442,11 +524,13 @@ onMounted(async () => {
 .artifact-meta {
   margin: var(--space-2) 0 0;
   color: var(--color-text-secondary);
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 
 .artifacts-block {
   margin-top: var(--space-5);
+  display: grid;
+  gap: var(--space-3);
 }
 
 .artifact-title {
@@ -458,7 +542,7 @@ onMounted(async () => {
   margin: 0;
   white-space: pre-wrap;
   color: var(--color-text-secondary);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 @media (max-width: 900px) {

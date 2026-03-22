@@ -161,5 +161,6 @@ func layeredOrchestratorSpecs(cfg *OrchestratorConfig) []fieldSpec {
 		fieldSpec{key: "BUTLER_MEMORY_PIPELINE_POLL_TIMEOUT_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "5", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.MemoryPipelinePollTimeoutSeconds = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_MEMORY_PIPELINE_MAX_RETRIES", component: "orchestrator", typeName: "int", required: false, defaultValue: "3", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.MemoryPipelineMaxRetries = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_MEMORY_EXTRACTION_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-4o-mini", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.MemoryExtractionModel = v }},
+		fieldSpec{key: "BUTLER_RESTART_HELPER_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "http://restart-helper:8080", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.RestartHelperURL = v }},
 	)
 }

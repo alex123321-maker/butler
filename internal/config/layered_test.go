@@ -113,3 +113,21 @@ func TestLoadOrchestratorLayeredMemoryPipelineDefaultsToTrue(t *testing.T) {
 		t.Fatalf("expected effective value 'true', got %q", pipelineKey.EffectiveValue)
 	}
 }
+
+func TestLoadOrchestratorLayeredIncludesRestartHelperURL(t *testing.T) {
+	cfg, snapshot, err := loadOrchestratorLayered(envMap(map[string]string{
+		"BUTLER_POSTGRES_URL":       "postgres://localhost:5432/butler",
+		"BUTLER_REDIS_URL":          "redis://localhost:6379/0",
+		"BUTLER_RESTART_HELPER_URL": "http://restart-helper:18080",
+	}), nil)
+	if err != nil {
+		t.Fatalf("loadOrchestratorLayered returned error: %v", err)
+	}
+	if cfg.RestartHelperURL != "http://restart-helper:18080" {
+		t.Fatalf("expected restart helper URL override, got %q", cfg.RestartHelperURL)
+	}
+	restartHelperURL := findKey(t, snapshot.ListKeys(), "BUTLER_RESTART_HELPER_URL")
+	if restartHelperURL.Source != ConfigSourceEnv {
+		t.Fatalf("expected env source, got %q", restartHelperURL.Source)
+	}
+}

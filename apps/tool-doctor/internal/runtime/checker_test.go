@@ -2,6 +2,9 @@ package runtime
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 
 	"github.com/butler/butler/internal/config"
@@ -26,6 +29,30 @@ func TestCheckSystemIncludesConfigSourceMetadata(t *testing.T) {
 	}
 	if report.Status != health.StatusDegraded {
 		t.Fatalf("expected degraded status because external checks are not configured, got %q", report.Status)
+	}
+}
+
+func TestCheckContainerUsesConfiguredHealthEndpoint(t *testing.T) {
+	var hits atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits.Add(1)
+		if r.Method != http.MethodGet {
+			t.Fatalf("expected GET request, got %s", r.Method)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"status":"healthy","checks":[]}`))
+	}))
+	defer server.Close()
+
+	checker := NewChecker(config.ToolDoctorConfig{
+		ContainerTargets: []config.DoctorContainerTarget{{Name: "orchestrator", URL: server.URL}},
+	}, config.Snapshot{})
+	report := checker.CheckContainer(context.Background())
+	if report.Status != health.StatusHealthy {
+		t.Fatalf("expected healthy status, got %+v", report)
+	}
+	if hits.Load() != 1 {
+		t.Fatalf("expected exactly one health probe, got %d", hits.Load())
 	}
 }
 

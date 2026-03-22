@@ -2,9 +2,9 @@
   <div class="settings-page">
     <section class="settings-hero">
       <div>
-        <p class="eyebrow">Control Room</p>
+        <p class="eyebrow">Settings</p>
         <h2 class="page-title">Settings</h2>
-        <p class="hero-copy">Review effective configuration, trace where each value comes from, and apply overrides without leaving the dashboard.</p>
+        <p class="hero-copy">Manage integrations, policies, and prompts in the same workspace style as the rest of Butler.</p>
       </div>
       <div class="hero-actions">
         <button class="refresh-btn" type="button" :disabled="pending || busyKey !== null" @click="refreshAll">Refresh</button>
@@ -533,11 +533,13 @@ async function restartChanged() {
     const payload = await applyRestart()
     restartState.value = payload
     restartKeys.value = new Set()
-    if (payload.suggested_command) {
+    if (payload.accepted && payload.services?.length) {
+      toast.value = `Restart scheduled for ${payload.services.join(', ')}. Butler may be briefly unavailable while services come back.`
+    } else if (payload.suggested_command) {
       toast.value = `Run command to restart changed services: ${payload.suggested_command}`
     }
   } catch (err: unknown) {
-    toast.value = extractErrorMessage(err, 'Failed to build restart command.')
+    toast.value = extractErrorMessage(err, 'Failed to schedule restart.')
   } finally {
     restartBusy.value = false
   }
@@ -607,41 +609,39 @@ await runPromptPreview()
 <style scoped>
 .settings-page {
   display: grid;
-  gap: 24px;
+  gap: var(--space-5);
 }
 
 .settings-hero {
   display: flex;
   justify-content: space-between;
-  gap: 20px;
-  padding: 28px;
-  border-radius: 24px;
-  background:
-    radial-gradient(circle at top right, rgba(249, 115, 22, 0.28), transparent 32%),
-    linear-gradient(145deg, rgba(14, 18, 30, 0.94), rgba(8, 12, 20, 0.98));
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
 }
 
 .eyebrow {
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-2);
   text-transform: uppercase;
-  letter-spacing: 0.24em;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: var(--tracking-widest);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
 }
 
 .hero-copy {
   max-width: 640px;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--color-text-secondary);
 }
 
 .refresh-btn {
   align-self: flex-start;
-  border: 0;
-  border-radius: 999px;
-  padding: 12px 18px;
-  background: var(--color-brand-orange);
-  color: var(--color-text-inverse);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-full);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-surfaceMuted);
+  color: var(--color-text-primary);
   cursor: pointer;
 }
 
@@ -651,7 +651,9 @@ await runPromptPreview()
 }
 
 .restart-btn {
-  background: linear-gradient(135deg, var(--color-brand-orangeHover), var(--color-brand-orange));
+  background: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
+  color: var(--color-text-inverse);
 }
 
 .settings-grid {
@@ -662,11 +664,11 @@ await runPromptPreview()
 .settings-ia,
 .policy-panel {
   display: grid;
-  gap: 14px;
-  padding: 20px;
-  border-radius: 20px;
-  background: rgba(10, 16, 28, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
 }
 
 .settings-ia__header,
@@ -682,8 +684,8 @@ await runPromptPreview()
 }
 
 .settings-ia__header p {
-  margin: 8px 0 0;
-  color: rgba(255, 255, 255, 0.7);
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
 }
 
 .settings-ia__meta {
@@ -701,11 +703,12 @@ await runPromptPreview()
 .settings-ia__toggle {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.74);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 12px;
-  padding: 10px 12px;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  background: var(--color-bg-surfaceMuted);
 }
 
 .settings-ia__segments {
@@ -715,9 +718,9 @@ await runPromptPreview()
 }
 
 .placeholder-chip--active {
-  border-color: rgba(249, 115, 22, 0.7);
-  background: rgba(249, 115, 22, 0.16);
-  color: var(--color-brand-orange);
+  border-color: var(--color-accent-primary);
+  background: var(--color-accent-primaryMuted);
+  color: var(--color-accent-primaryHover);
 }
 
 .policy-grid {
@@ -728,35 +731,33 @@ await runPromptPreview()
 
 .policy-card {
   display: grid;
-  gap: 8px;
-  padding: 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surfaceMuted);
+  border: 1px solid var(--color-border-default);
 }
 
 .policy-card__key {
   margin: 0;
-  color: rgba(255, 255, 255, 0.9);
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  font-size: 12px;
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
 }
 
 .policy-card__meta,
 .policy-card__value {
   margin: 0;
-  color: rgba(255, 255, 255, 0.68);
+  color: var(--color-text-secondary);
 }
 
 .prompt-panel {
   display: grid;
-  gap: 16px;
-  padding: 24px;
-  border-radius: 24px;
-  background:
-    radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 28%),
-    linear-gradient(160deg, rgba(9, 14, 24, 0.96), rgba(13, 20, 34, 0.94));
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
 }
 
 .prompt-panel__header,
@@ -775,8 +776,8 @@ await runPromptPreview()
 
 .prompt-panel__header p,
 .prompt-card__titlebar p {
-  margin: 8px 0 0;
-  color: rgba(255, 255, 255, 0.7);
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
 }
 
 .prompt-panel__meta,
@@ -797,11 +798,11 @@ await runPromptPreview()
 
 .prompt-card {
   display: grid;
-  gap: 14px;
-  padding: 18px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surfaceMuted);
+  border: 1px solid var(--color-border-default);
 }
 
 .prompt-card--preview {
@@ -811,20 +812,20 @@ await runPromptPreview()
 .prompt-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.78);
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
 }
 
 .prompt-textarea,
 .preview-final pre,
 .preview-section pre {
   width: 100%;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(5, 8, 15, 0.88);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-canvas);
   color: var(--color-text-primary);
-  padding: 14px 16px;
-  font: 13px/1.6 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  padding: var(--space-4);
+  font: var(--text-sm)/1.6 var(--font-mono);
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -835,7 +836,7 @@ await runPromptPreview()
 }
 
 .prompt-budget {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-secondary);
 }
 
 .prompt-budget--warn {
@@ -848,11 +849,11 @@ await runPromptPreview()
 }
 
 .placeholder-chip {
-  border: 1px solid rgba(125, 211, 252, 0.24);
-  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-surfaceMuted);
   color: var(--color-state-info);
-  border-radius: 999px;
-  padding: 8px 12px;
+  border-radius: var(--radius-full);
+  padding: var(--space-2) var(--space-3);
   cursor: pointer;
 }
 
@@ -873,19 +874,19 @@ await runPromptPreview()
 }
 
 .preview-section__header span {
-  color: rgba(255, 255, 255, 0.52);
-  font-size: 12px;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-wider);
 }
 
 .provider-panel {
   display: grid;
-  gap: 16px;
-  padding: 24px;
-  border-radius: 24px;
-  background: rgba(10, 16, 28, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
 }
 
 .provider-panel__header h3 {
@@ -894,16 +895,16 @@ await runPromptPreview()
 }
 
 .provider-panel__header p {
-  margin: 8px 0 0;
-  color: rgba(255, 255, 255, 0.7);
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
 }
 
 .provider-panel__eyebrow {
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-2);
   text-transform: uppercase;
-  letter-spacing: 0.22em;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.48);
+  letter-spacing: var(--tracking-wider);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
 }
 
 .provider-list {
@@ -914,16 +915,16 @@ await runPromptPreview()
 
 .provider-card {
   display: grid;
-  gap: 14px;
-  padding: 18px;
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(17, 24, 39, 0.94), rgba(10, 15, 25, 0.92));
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surfaceMuted);
+  border: 1px solid var(--color-border-default);
 }
 
 .provider-card--active {
-  border-color: rgba(249, 115, 22, 0.55);
-  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.18);
+  border-color: var(--color-accent-primary);
+  box-shadow: inset 0 0 0 1px var(--color-accent-primaryMuted);
 }
 
 .provider-card__topline {
@@ -937,8 +938,8 @@ await runPromptPreview()
 }
 
 .provider-card__topline p {
-  margin: 4px 0 0;
-  color: rgba(255, 255, 255, 0.65);
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-secondary);
 }
 
 .provider-badge {
@@ -949,13 +950,13 @@ await runPromptPreview()
 }
 
 .provider-badge--connected {
-  background: rgba(34, 197, 94, 0.18);
+  background: var(--color-state-successMuted);
   color: var(--color-state-success);
 }
 
 .provider-badge--idle {
-  background: rgba(148, 163, 184, 0.16);
-  color: rgba(255, 255, 255, 0.72);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
 }
 
 .provider-meta {
@@ -963,14 +964,14 @@ await runPromptPreview()
   flex-wrap: wrap;
   gap: 8px;
   margin: 0;
-  color: rgba(255, 255, 255, 0.62);
-  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
 }
 
 .provider-meta span {
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-elevated);
 }
 
 .provider-actions {
@@ -980,18 +981,18 @@ await runPromptPreview()
 
 .provider-actions__hint {
   margin: 0;
-  color: rgba(255, 255, 255, 0.62);
-  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
 }
 
 .provider-input,
 .provider-textarea {
   width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surfaceMuted);
   color: var(--color-text-primary);
-  padding: 12px 14px;
+  padding: var(--space-3) var(--space-4);
 }
 
 .provider-textarea {
@@ -1000,16 +1001,18 @@ await runPromptPreview()
 }
 
 .provider-btn {
-  border: 0;
-  border-radius: 12px;
-  padding: 12px 14px;
-  background: var(--color-brand-orange);
+  border: 1px solid var(--color-accent-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-accent-primary);
   color: var(--color-text-inverse);
   cursor: pointer;
 }
 
 .provider-btn--ghost {
-  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--color-border-default);
+  background: var(--color-bg-surfaceMuted);
+  color: var(--color-text-primary);
 }
 
 .provider-btn:disabled,
@@ -1020,22 +1023,23 @@ await runPromptPreview()
 
 .provider-flow {
   display: grid;
-  gap: 10px;
-  padding: 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
 }
 
 .provider-flow__status {
   margin: 0;
   text-transform: capitalize;
-  color: var(--color-brand-orange);
+  color: var(--color-accent-primaryHover);
 }
 
 .provider-flow__text,
 .provider-flow__error {
   margin: 0;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--color-text-secondary);
 }
 
 .provider-flow__error {
@@ -1048,24 +1052,24 @@ await runPromptPreview()
 }
 
 .provider-flow__callout span {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.45);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-wider);
 }
 
 .provider-flow__callout a {
-  color: var(--color-state-warning);
+  color: var(--color-accent-primaryHover);
   word-break: break-all;
 }
 
 .provider-flow__code {
   display: inline-flex;
   width: fit-content;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: rgba(249, 115, 22, 0.16);
-  color: var(--color-brand-orange);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-primaryMuted);
+  color: var(--color-accent-primaryHover);
   font-weight: 600;
   letter-spacing: 0.08em;
 }
@@ -1077,9 +1081,9 @@ await runPromptPreview()
 
 .toast {
   margin: 0;
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: rgba(231, 76, 60, 0.16);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-state-errorMuted);
   color: var(--color-state-error);
 }
 

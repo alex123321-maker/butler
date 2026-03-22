@@ -250,6 +250,53 @@ async function installApiMocks(page: Page): Promise<void> {
     })
   })
 
+  await page.route('**/api/v1/sessions', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        sessions: [
+          {
+            session_key: 'telegram:chat:1',
+            user_id: 'owner',
+            channel: 'telegram',
+            created_at: '2026-03-19T00:00:00Z',
+            updated_at: '2026-03-19T00:00:00Z',
+          },
+        ],
+      }),
+    })
+  })
+
+  await page.route('**/api/v1/memory**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        scope_type: 'session',
+        scope_id: 'telegram:chat:1',
+        working: {
+          memory_type: 'working',
+          session_key: 'telegram:chat:1',
+          run_id: 'run-1',
+          goal: 'Deploy latest build',
+          entities_json: '{\"service\":\"api\"}',
+          pending_steps_json: '[\"Await approval\"]',
+          scratch_json: '{}',
+          status: 'active',
+          source_type: 'task',
+          source_id: 'run-1',
+          provenance: '{\"source\":\"task\"}',
+          created_at: '2026-03-19T00:00:00Z',
+          updated_at: '2026-03-19T00:00:00Z',
+        },
+        profile: [],
+        episodic: [],
+        chunks: [],
+      }),
+    })
+  })
+
   await page.route('**/api/v2/approvals', async (route) => {
     await route.fulfill({
       status: 200,
@@ -384,16 +431,16 @@ test.describe('Task-centric pages baseline', () => {
 
   test('smoke: all key pages render headings', async ({ page }) => {
     await page.goto('/')
-    await expect(page.getByRole('heading', { name: 'Overview' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Overview', exact: true })).toBeVisible()
 
     await page.goto('/tasks')
-    await expect(page.getByRole('heading', { name: 'Tasks' })).toBeVisible()
-    await page.getByRole('link', { name: 'run-1' }).click()
-    await expect(page.getByRole('heading', { name: 'Task run-1' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Tasks', exact: true })).toBeVisible()
+    await page.getByRole('link', { name: /Task run-1/i }).click()
+    await expect(page.getByRole('heading', { name: 'Task run-1', exact: true })).toBeVisible()
 
     for (const item of routeTitles.filter((route) => route.path !== '/tasks/run-1' && route.path !== '/tasks')) {
       await page.goto(item.path)
-      await expect(page.getByRole('heading', { name: item.title })).toBeVisible()
+      await expect(page.getByRole('heading', { name: item.title, exact: true })).toBeVisible()
     }
   })
 
@@ -406,16 +453,19 @@ test.describe('Task-centric pages baseline', () => {
     await page.getByRole('link', { name: 'Approvals' }).click()
     await expect(page.getByRole('heading', { name: 'Approvals' })).toBeVisible()
 
+    await page.getByRole('button', { name: 'Show advanced navigation' }).click()
     await page.getByRole('link', { name: 'System' }).click()
     await expect(page.getByRole('heading', { name: 'System' })).toBeVisible()
   })
 
   test('critical states: task waiting status, pending approval, degraded health', async ({ page }) => {
     await page.goto('/tasks')
-    await expect(page.getByRole('cell', { name: 'waiting_for_reply_in_telegram' })).toBeVisible()
+    await expect(page.getByText('Waiting for your reply')).toBeVisible()
+    await expect(page.getByText('Needs your action')).toBeVisible()
 
     await page.goto('/tasks/run-1')
     await expect(page.getByText('Action is available only through Telegram.')).toBeVisible()
+    await expect(page.getByText('Open related memory')).toBeVisible()
 
     await page.goto('/approvals')
     await expect(page.getByText('Need approval for HTTP request')).toBeVisible()

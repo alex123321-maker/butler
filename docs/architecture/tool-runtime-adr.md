@@ -284,6 +284,8 @@ Runtime:
 * doctor должен видеть effective configuration, sources, validation status и component bindings;
 * doctor не должен видеть секреты в открытом виде;
 * doctor должен работать через configuration introspection layer, а не через ручной разбор env/file sources.
+* `doctor.check_container` должен ограничиваться диагностикой через настроенные health/status endpoints сервисов, а не прямым Docker control.
+* runtime `tool-doctor` не должен получать Docker socket или выполнять restart/stop/container lifecycle operations; такие операции относятся к отдельному control-plane helper.
 
 ---
 
@@ -519,6 +521,7 @@ Doctor tools должны иметь полный доступ к конфигу
 * пароли;
 * токены;
 * cookies.
+* Docker socket и прямые container lifecycle controls.
 
 ## 16.4 Configuration Introspection Layer
 

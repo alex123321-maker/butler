@@ -167,7 +167,7 @@
     },
     {
       "tool_name": "doctor.check_container",
-      "description": "Inspect configured Butler container health endpoints.",
+      "description": "Inspect configured Butler service health endpoints without direct Docker control.",
       "tool_class": "doctor",
       "input_schema_json": "{\"type\":\"object\",\"additionalProperties\":false}",
       "output_schema_json": "{\"type\":\"object\",\"properties\":{\"status\":{\"type\":\"string\"},\"checked_at\":{\"type\":\"string\"},\"checks\":{\"type\":\"array\"}}}",

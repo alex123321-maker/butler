@@ -260,6 +260,31 @@ func TestLoadToolBrowserFromEnvUsesSharedDefaults(t *testing.T) {
 	}
 }
 
+func TestLoadRestartHelperFromEnvUsesAllowlistConfig(t *testing.T) {
+	cfg, snapshot, err := loadRestartHelper(envMap(map[string]string{
+		"BUTLER_RESTART_ALLOWED_SERVICES": "orchestrator,web,tool-broker",
+	}))
+	if err != nil {
+		t.Fatalf("loadRestartHelper returned error: %v", err)
+	}
+	if cfg.Shared.ServiceName != "restart-helper" {
+		t.Fatalf("expected restart-helper service name, got %q", cfg.Shared.ServiceName)
+	}
+	if cfg.DockerHost != "unix:///var/run/docker.sock" {
+		t.Fatalf("unexpected docker host %q", cfg.DockerHost)
+	}
+	if strings.Join(cfg.AllowedServices, ",") != "orchestrator,web,tool-broker" {
+		t.Fatalf("unexpected allowed services %v", cfg.AllowedServices)
+	}
+	if cfg.SelfService != "restart-helper" {
+		t.Fatalf("unexpected self service %q", cfg.SelfService)
+	}
+	allowed := findKey(t, snapshot.ListKeys(), "BUTLER_RESTART_ALLOWED_SERVICES")
+	if allowed.Source != ConfigSourceEnv {
+		t.Fatalf("expected env source, got %q", allowed.Source)
+	}
+}
+
 func TestLoadToolDoctorParsesContainerTargets(t *testing.T) {
 	cfg, snapshot, err := loadToolDoctor(envMap(map[string]string{
 		"BUTLER_DOCTOR_CONTAINER_TARGETS": "orchestrator=http://orchestrator:8080/health,tool-broker=http://tool-broker:8080/health",

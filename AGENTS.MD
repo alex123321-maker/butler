@@ -124,6 +124,17 @@ For non-trivial tasks, read the relevant architecture specs before making change
 - Keep structured logging and minimal metrics intact.
 - Do not introduce infrastructure that materially increases ops complexity without strong justification.
 
+## Codex Desktop on Windows
+
+- Prefer `pwsh -NoProfile -File scripts/dev/...` over ad-hoc shell setup when working from Codex Desktop on Windows.
+- Keep Go, npm, Playwright, and Docker client caches inside repo-local `.cache/` directories rather than user-profile paths.
+- Prefer a hybrid local workflow for iterative development:
+  - Docker Compose for PostgreSQL, Redis, Ollama, Tool Broker, and tool runtimes
+  - local `go run` for the Butler service currently under active development
+- Use `.env.codex-windows.example` as the starting point for a Codex Desktop host workflow.
+- Before broad validation, run the narrowest subsystem-specific checks that match the changed files.
+- Use `scripts/dev/verify-changed.ps1` to map changed paths to the relevant specs and targeted test commands.
+
 ## Final rule
 
 When in doubt, optimize for:

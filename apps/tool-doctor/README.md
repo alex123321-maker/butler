@@ -16,8 +16,13 @@ Local run:
 
 Intended responsibilities:
 - inspect effective configuration without exposing secrets
-- check infrastructure, provider, and container health
+- check infrastructure, provider, and container health via configured health endpoints
 - return actionable operator-safe diagnostic reports
+
+Explicit non-responsibilities:
+- no Docker socket access
+- no container restart, stop, or lifecycle control
+- no overlap with `restart-helper`, which owns allowlisted Docker restart operations
 
 Compose:
 - the Docker stack now includes `tool-doctor` and registers `doctor.check_system`, `doctor.check_database`, `doctor.check_container`, and `doctor.check_provider` in `configs/tools.json`

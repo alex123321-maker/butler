@@ -95,8 +95,8 @@ watch(() => props.saving, (saving) => {
   justify-content: space-between;
   padding: var(--space-4);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
 }
 
 .setting-main {
@@ -108,26 +108,26 @@ watch(() => props.saving, (saving) => {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .setting-head code {
   font-size: var(--text-xs);
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--color-text-primary);
 }
 
 .badges {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
 .badge {
-  padding: 4px 10px;
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-full);
   font-size: var(--text-xs);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-wider);
 }
 
 .source-env { background: var(--color-accent-primaryMuted); color: var(--color-accent-primaryHover); }
@@ -138,51 +138,51 @@ watch(() => props.saving, (saving) => {
 .restart { background: var(--color-state-warningMuted); color: var(--color-state-warning); }
 
 .setting-value {
-  margin: 14px 0 0;
-  color: rgba(255, 255, 255, 0.74);
+  margin: var(--space-4) 0 0;
+  color: var(--color-text-secondary);
   word-break: break-word;
 }
 
 .editor {
   display: flex;
-  gap: 10px;
-  margin-top: 14px;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
 }
 
 .setting-input {
   flex: 1;
   min-width: 0;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(7, 10, 18, 0.72);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-canvas);
   color: var(--color-text-primary);
-  padding: 12px 14px;
+  padding: var(--space-3) var(--space-4);
 }
 
 .setting-actions {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .primary-btn,
 .ghost-btn {
   min-width: 88px;
-  border-radius: 999px;
-  padding: 10px 14px;
+  border-radius: var(--radius-full);
+  padding: var(--space-3) var(--space-4);
   cursor: pointer;
 }
 
 .primary-btn {
-  border: 0;
-  background: linear-gradient(135deg, var(--color-brand-orange), var(--color-accent-primary));
+  border: 1px solid var(--color-accent-primary);
+  background: var(--color-accent-primary);
   color: var(--color-text-inverse);
 }
 
 .ghost-btn {
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: transparent;
-  color: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-surfaceMuted);
+  color: var(--color-text-primary);
 }
 
 .danger {
@@ -190,7 +190,7 @@ watch(() => props.saving, (saving) => {
 }
 
 .setting-error {
-  margin: 10px 0 0;
+  margin: var(--space-2) 0 0;
   color: var(--color-state-error);
   font-size: var(--text-sm);
 }

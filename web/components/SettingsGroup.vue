@@ -5,7 +5,7 @@
         <p class="group-label">{{ title }}</p>
         <h3>{{ group.name }}</h3>
       </div>
-      <span class="group-toggle">{{ open ? '−' : '+' }}</span>
+      <span class="group-toggle">{{ open ? '-' : '+' }}</span>
     </button>
 
     <div v-if="open" class="group-body">
@@ -44,9 +44,9 @@ const title = computed(() => `${props.group.settings.length} settings`)
 
 <style scoped>
 .settings-group {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(20, 28, 44, 0.92), rgba(14, 18, 30, 0.94));
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surfaceMuted);
   overflow: hidden;
 }
 
@@ -55,7 +55,7 @@ const title = computed(() => `${props.group.settings.length} settings`)
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 22px;
+  padding: var(--space-5);
   border: 0;
   background: transparent;
   color: inherit;
@@ -64,26 +64,26 @@ const title = computed(() => `${props.group.settings.length} settings`)
 }
 
 .group-label {
-  margin: 0 0 6px;
-  font-size: 11px;
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-xs);
   text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: rgba(255, 255, 255, 0.48);
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-text-muted);
 }
 
 .group-header h3 {
   margin: 0;
-  font-size: 22px;
+  font-size: var(--text-2xl);
 }
 
 .group-toggle {
-  font-size: 28px;
-  color: rgba(255, 255, 255, 0.65);
+  font-size: var(--text-3xl);
+  color: var(--color-text-secondary);
 }
 
 .group-body {
   display: grid;
-  gap: 12px;
-  padding: 0 18px 18px;
+  gap: var(--space-3);
+  padding: 0 var(--space-4) var(--space-4);
 }
 </style>

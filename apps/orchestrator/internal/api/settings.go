@@ -19,12 +19,26 @@ type SettingsManager interface {
 	ClearPendingRestart()
 }
 
-type SettingsServer struct {
-	manager SettingsManager
+type RestartApplier interface {
+	Apply(context.Context, []string) (RestartApplyResult, error)
 }
 
-func NewSettingsServer(manager SettingsManager) *SettingsServer {
-	return &SettingsServer{manager: manager}
+type RestartApplyResult struct {
+	Accepted         bool     `json:"accepted"`
+	Project          string   `json:"project"`
+	Services         []string `json:"services"`
+	ScheduledAt      string   `json:"scheduled_at,omitempty"`
+	DelaySeconds     int      `json:"delay_seconds,omitempty"`
+	SuggestedCommand string   `json:"suggested_command,omitempty"`
+}
+
+type SettingsServer struct {
+	manager SettingsManager
+	applier RestartApplier
+}
+
+func NewSettingsServer(manager SettingsManager, applier RestartApplier) *SettingsServer {
+	return &SettingsServer{manager: manager, applier: applier}
 }
 
 func (s *SettingsServer) HandleList() http.Handler {
@@ -86,11 +100,24 @@ func (s *SettingsServer) HandleRestart() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			writeJSON(w, http.StatusOK, restartResponse(s.manager.PendingRestartComponents()))
+			writeJSON(w, http.StatusOK, restartResponse(s.manager.PendingRestartComponents(), RestartApplyResult{}))
 		case http.MethodPost:
 			components := s.manager.PendingRestartComponents()
+			if len(components) == 0 {
+				writeJSON(w, http.StatusOK, restartResponse(nil, RestartApplyResult{}))
+				return
+			}
+			if s.applier == nil {
+				writeJSON(w, http.StatusServiceUnavailable, map[string]string{"error": "restart helper is not configured"})
+				return
+			}
+			result, err := s.applier.Apply(r.Context(), components)
+			if err != nil {
+				writeJSON(w, http.StatusBadGateway, map[string]string{"error": err.Error()})
+				return
+			}
 			s.manager.ClearPendingRestart()
-			writeJSON(w, http.StatusOK, restartResponse(components))
+			writeJSON(w, http.StatusOK, restartResponse(components, result))
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
@@ -152,13 +179,21 @@ func toSettingDTO(setting config.SettingState) settingDTO {
 	}
 }
 
-func restartResponse(components []string) map[string]any {
+func restartResponse(components []string, applyResult RestartApplyResult) map[string]any {
 	command := ""
 	if len(components) > 0 {
 		command = "docker compose -f deploy/docker-compose.yml restart " + strings.Join(components, " ")
 	}
+	if applyResult.SuggestedCommand == "" {
+		applyResult.SuggestedCommand = command
+	}
 	return map[string]any{
 		"components":        components,
-		"suggested_command": command,
+		"suggested_command": applyResult.SuggestedCommand,
+		"accepted":          applyResult.Accepted,
+		"project":           applyResult.Project,
+		"services":          applyResult.Services,
+		"scheduled_at":      applyResult.ScheduledAt,
+		"delay_seconds":     applyResult.DelaySeconds,
 	}
 }

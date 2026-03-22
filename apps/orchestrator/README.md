@@ -33,7 +33,7 @@ Current baseline:
 - optionally runs the in-process Telegram adapter using Bot API long polling, `/auth` provider connection prompts, and final-response delivery
 - progressively edits Telegram responses during assistant delta streaming and finalizes the same message on completion
 - exposes REST views for sessions, runs, transcripts, and doctor reports
-- exposes grouped settings management endpoints for layered config overrides, masked secret display, and restart planning
+- exposes grouped settings management endpoints for layered config overrides, masked secret display, restart planning, and helper-backed restart scheduling
 - exposes provider auth endpoints for GitHub Copilot device flow and OpenAI Codex OAuth completion
 - supports approval-gated tool execution with Telegram callback actions and formatted inline allow/deny prompts
 - exposes `GET /health` and `GET /metrics`
@@ -47,6 +47,7 @@ Dependencies:
 Configuration:
 - required: `BUTLER_POSTGRES_URL`, `BUTLER_REDIS_URL`
 - commonly used: `BUTLER_HTTP_ADDR`, `BUTLER_GRPC_ADDR`, `BUTLER_LOG_LEVEL`, `BUTLER_MODEL_PROVIDER`, `BUTLER_SESSION_LEASE_TTL_SECONDS`, `BUTLER_OPENAI_MODEL`, `BUTLER_OPENAI_CODEX_MODEL`, `BUTLER_GITHUB_COPILOT_MODEL`, `BUTLER_OPENAI_REALTIME_URL`, `BUTLER_OPENAI_TRANSPORT_MODE`, `BUTLER_TOOL_BROKER_ADDR`
+- restart integration: `BUTLER_RESTART_HELPER_URL` points to the internal restart-helper control-plane service
 - memory loading: `BUTLER_MEMORY_PROFILE_LIMIT`, `BUTLER_MEMORY_EPISODIC_LIMIT`, `BUTLER_MEMORY_SCOPE_ORDER`
 - memory loading: `BUTLER_MEMORY_PROFILE_LIMIT`, `BUTLER_MEMORY_EPISODIC_LIMIT`, `BUTLER_MEMORY_SCOPE_ORDER`, `BUTLER_MEMORY_WORKING_TRANSIENT_TTL_SECONDS`
 - Telegram adapter: `BUTLER_TELEGRAM_BOT_TOKEN`, `BUTLER_TELEGRAM_ALLOWED_CHAT_IDS`, `BUTLER_TELEGRAM_BASE_URL`, `BUTLER_TELEGRAM_POLL_TIMEOUT_SECONDS`
@@ -70,6 +71,12 @@ Entry points and APIs:
 - internal delivery seam: `apps/orchestrator/internal/orchestrator/delivery.go`
 - internal session/run boundary: `apps/orchestrator/internal/session` (gRPC server), `apps/orchestrator/internal/run` (run state machine and storage)
 - domain↔proto enum conversions: `internal/domain/convert` (shared by session, run, and orchestrator packages)
+
+Internal code map:
+- app bootstrap is split across `internal/app/bootstrap.go`, `internal/app/bootstrap_http.go`, `internal/app/runtime.go`, and `internal/app/memory_adapters.go`
+- run execution flow is split across `internal/orchestrator/service.go`, `internal/orchestrator/service_execute.go`, `internal/orchestrator/service_state.go`, and `internal/orchestrator/service_prepare.go`
+- tool execution and working-memory persistence remain in `internal/orchestrator/tool_handler.go` and `internal/orchestrator/working_memory.go`
+- HTTP endpoint groups stay under `internal/api/` with one file per endpoint family where practical
 
 Local run:
 - copy `.env.example` to `.env`

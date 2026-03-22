@@ -16,21 +16,21 @@ defineProps<{
 <style scoped>
 .memory-field {
   display: grid;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .memory-field__label {
-  font-size: 12px;
+  font-size: var(--text-xs);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: rgba(255,255,255,0.45);
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-text-muted);
 }
 
 .memory-field__value {
   margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
 }
 </style>

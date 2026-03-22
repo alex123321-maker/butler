@@ -2,8 +2,10 @@
 .gitignore
 .opencode/
 .ruff_cache/
+.cache/
 
 web/node_modules/
+apps/tool-browser/node_modules/
 web/.nuxt/
 web/.output/
 

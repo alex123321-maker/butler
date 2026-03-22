@@ -1,0 +1,18 @@
+# Dependencies and local tool state
+.git/
+.env
+.ruff_cache/
+.cache/
+web/node_modules/
+apps/tool-browser/node_modules/
+web/.nuxt/
+web/.output/
+.opencode/node_modules/
+
+# Generated code and derived artifacts
+internal/gen/
+coverage.out
+*.log
+web/playwright-report/
+web/test-results/
+web/tests/e2e/*-snapshots/
