@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package butler.browser.v1;
+
+option go_package = "github.com/butler/butler/internal/gen/browser/v1;browserv1";
+
+service SingleTabService {
+  rpc GetSessionStatus(GetSessionStatusRequest) returns (GetSessionStatusResponse);
+  rpc DispatchAction(DispatchSingleTabActionRequest) returns (DispatchSingleTabActionResponse);
+  rpc ReleaseSession(ReleaseSingleTabSessionRequest) returns (ReleaseSingleTabSessionResponse);
+}
+
+enum SingleTabSessionStatus {
+  SINGLE_TAB_SESSION_STATUS_UNSPECIFIED = 0;
+  SINGLE_TAB_SESSION_STATUS_PENDING_APPROVAL = 1;
+  SINGLE_TAB_SESSION_STATUS_ACTIVE = 2;
+  SINGLE_TAB_SESSION_STATUS_TAB_CLOSED = 3;
+  SINGLE_TAB_SESSION_STATUS_REVOKED_BY_USER = 4;
+  SINGLE_TAB_SESSION_STATUS_EXPIRED = 5;
+  SINGLE_TAB_SESSION_STATUS_HOST_DISCONNECTED = 6;
+}
+
+enum SingleTabActionType {
+  SINGLE_TAB_ACTION_TYPE_UNSPECIFIED = 0;
+  SINGLE_TAB_ACTION_TYPE_STATUS = 1;
+  SINGLE_TAB_ACTION_TYPE_NAVIGATE = 2;
+  SINGLE_TAB_ACTION_TYPE_RELOAD = 3;
+  SINGLE_TAB_ACTION_TYPE_GO_BACK = 4;
+  SINGLE_TAB_ACTION_TYPE_GO_FORWARD = 5;
+  SINGLE_TAB_ACTION_TYPE_CLICK = 6;
+  SINGLE_TAB_ACTION_TYPE_FILL = 7;
+  SINGLE_TAB_ACTION_TYPE_TYPE = 8;
+  SINGLE_TAB_ACTION_TYPE_PRESS_KEYS = 9;
+  SINGLE_TAB_ACTION_TYPE_SCROLL = 10;
+  SINGLE_TAB_ACTION_TYPE_WAIT_FOR = 11;
+  SINGLE_TAB_ACTION_TYPE_EXTRACT_TEXT = 12;
+  SINGLE_TAB_ACTION_TYPE_CAPTURE_VISIBLE = 13;
+  SINGLE_TAB_ACTION_TYPE_RELEASE = 14;
+}
+
+message GetSessionStatusRequest {
+  string single_tab_session_id = 1;
+}
+
+message GetSessionStatusResponse {
+  string single_tab_session_id = 1;
+  SingleTabSessionStatus session_status = 2;
+  string current_url = 3;
+  string current_title = 4;
+  string last_seen_at = 5;
+}
+
+message DispatchSingleTabActionRequest {
+  string request_id = 1;
+  string single_tab_session_id = 2;
+  SingleTabActionType action_type = 3;
+  string args_json = 4;
+}
+
+message DispatchSingleTabActionResponse {
+  string request_id = 1;
+  string single_tab_session_id = 2;
+  SingleTabSessionStatus session_status = 3;
+  string result_json = 4;
+  string error_code = 5;
+  string error_message = 6;
+}
+
+message ReleaseSingleTabSessionRequest {
+  string single_tab_session_id = 1;
+  string reason = 2;
+}
+
+message ReleaseSingleTabSessionResponse {
+  string single_tab_session_id = 1;
+  SingleTabSessionStatus session_status = 2;
+  string released_at = 3;
+}

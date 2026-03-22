@@ -122,6 +122,7 @@ function Get-ButlerAgentComposeServices {
     "ollama",
     "migrator",
     "tool-http",
+    "tool-webfetch",
     "tool-browser",
     "tool-doctor",
     "tool-broker"

@@ -31,6 +31,11 @@ foreach ($file in $files) {
       [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./apps/orchestrator/...")
       continue
     }
+    "^apps/browser-bridge/" {
+      [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./apps/browser-bridge/...")
+      continue
+    }
     "^apps/tool-broker/" {
       [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
       [void]$specs.Add("docs/architecture/credential-management.md")
@@ -43,9 +48,19 @@ foreach ($file in $files) {
       [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./apps/tool-browser/...")
       continue
     }
+    "^apps/tool-browser-local/" {
+      [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./apps/tool-browser-local/...")
+      continue
+    }
     "^apps/tool-http/" {
       [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
       [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./apps/tool-http/...")
+      continue
+    }
+    "^apps/tool-webfetch/" {
+      [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./apps/tool-webfetch/...")
       continue
     }
     "^apps/tool-doctor/" {

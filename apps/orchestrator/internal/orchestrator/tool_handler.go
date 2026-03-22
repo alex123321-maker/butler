@@ -71,20 +71,25 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 		if checkErr != nil {
 			runLog.Warn("approval check failed, proceeding without approval", slog.String("tool_name", requested.ToolName), slog.String("error", checkErr.Error()))
 		} else if needsApproval {
+			var approvalRecord approvals.Record
 			if s.config.ApprovalService != nil {
-				if _, createErr := s.config.ApprovalService.CreatePendingApproval(ctx, approvals.CreatePendingParams{
+				createdApproval, createErr := s.config.ApprovalService.CreatePendingApproval(ctx, approvals.CreatePendingParams{
 					RunID:        current.GetRunId(),
 					SessionKey:   current.GetSessionKey(),
 					ToolCallID:   toolCallID,
+					ApprovalType: approvals.ApprovalTypeToolCall,
 					RequestedVia: approvalRequestedViaForSession(current.GetSessionKey()),
 					ToolName:     requested.ToolName,
 					ArgsJSON:     requested.ArgsJSON,
+					PayloadJSON:  `{"kind":"tool_call"}`,
 					RiskLevel:    deriveApprovalRiskLevel(requested.ToolName),
 					Summary:      fmt.Sprintf("Approval required for tool %s", requested.ToolName),
 					RequestedAt:  time.Now().UTC(),
-				}); createErr != nil {
+				})
+				if createErr != nil {
 					return nil, current, fmt.Errorf("create pending approval: %w", createErr)
 				}
+				approvalRecord = createdApproval
 			}
 
 			next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_AWAITING_APPROVAL, leaseID, "", "")
@@ -94,11 +99,14 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 			current = next
 
 			if deliveryErr := s.config.Delivery.DeliverApprovalRequest(ctx, ApprovalRequest{
-				RunID:      current.GetRunId(),
-				SessionKey: current.GetSessionKey(),
-				ToolCallID: toolCallID,
-				ToolName:   requested.ToolName,
-				ArgsJSON:   requested.ArgsJSON,
+				RunID:        current.GetRunId(),
+				SessionKey:   current.GetSessionKey(),
+				ApprovalID:   approvalRecord.ApprovalID,
+				ApprovalType: approvalRecord.ApprovalType,
+				ToolCallID:   toolCallID,
+				ToolName:     requested.ToolName,
+				ArgsJSON:     requested.ArgsJSON,
+				PayloadJSON:  approvalRecord.PayloadJSON,
 			}); deliveryErr != nil {
 				return nil, current, fmt.Errorf("deliver approval request: %w", deliveryErr)
 			}

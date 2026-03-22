@@ -18,6 +18,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/restarthelper"
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
+	singletab "github.com/butler/butler/apps/orchestrator/internal/singletab"
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
 	"github.com/butler/butler/internal/config"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -57,6 +58,7 @@ type httpServerDeps struct {
 	eventHub           *observability.Hub
 	approvalRepo       *approvals.PostgresRepository
 	approvalService    *approvals.Service
+	singleTabService   *singletab.Service
 	artifactsRepo      *artifacts.PostgresRepository
 	artifactsService   *artifacts.Service
 	activityRepo       *activity.PostgresRepository
@@ -102,12 +104,27 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	eventServer := apiservice.NewEventServer(deps.transitionRepo, deps.runRepo, deps.eventHub, logger.WithComponent(deps.log, "event-api"))
 	taskViewServer := apiservice.NewTaskViewServer(deps.runRepo, deps.runRepo, deps.sessionRepo, deps.transcriptStore, deps.transitionRepo, deps.artifactsRepo, deps.deliveryEventsRepo)
 	overviewServer := apiservice.NewOverviewServer(deps.runRepo, deps.deliveryEventsRepo)
-	approvalsServer := apiservice.NewApprovalsServer(deps.approvalRepo, deps.approvalService)
-	artifactsServer := apiservice.NewArtifactsServer(deps.artifactsRepo, deps.activityRepo)
+	approvalsServer := apiservice.NewApprovalsServer(deps.approvalRepo, deps.approvalService, deps.singleTabService)
+	singleTabServer := apiservice.NewSingleTabServer(deps.singleTabService)
+	singleTabServer.SetRelayHeartbeatTTL(time.Duration(deps.cfg.SingleTabRelayHeartbeatTTLSeconds) * time.Second)
+	extensionAuth := apiservice.NewExtensionAuthMiddleware(deps.cfg.ExtensionAPITokens)
+	artifactsServer := apiservice.NewArtifactsServer(deps.artifactsRepo, deps.activityRepo, deps.artifactsService)
 	activityServer := apiservice.NewActivityServer(deps.activityRepo)
-	systemServer := apiservice.NewSystemServer(deps.postgres.Pool(), deps.runRepo, deps.approvalRepo, deps.providerResult.ProviderName, strings.TrimSpace(deps.cfg.OpenAIAPIKey) != "", deps.pipelineWorker != nil)
+	systemServer := apiservice.NewSystemServer(
+		deps.postgres.Pool(),
+		deps.runRepo,
+		deps.approvalRepo,
+		deps.providerResult.ProviderName,
+		strings.TrimSpace(deps.cfg.OpenAIAPIKey) != "",
+		deps.pipelineWorker != nil,
+		normalizeSingleTabTransportMode(deps.cfg.SingleTabTransportMode),
+		len(deps.cfg.ExtensionAPITokens) > 0,
+		deps.cfg.SingleTabRelayHeartbeatTTLSeconds,
+	)
 	taskDebugServer := apiservice.NewTasksDebugServer(deps.runRepo, deps.transcriptStore)
 	streamServer := apiservice.NewStreamServer(deps.eventHub, taskViewServer, overviewServer, approvalsServer, systemServer, activityServer)
+	singleTabTransportMode := normalizeSingleTabTransportMode(deps.cfg.SingleTabTransportMode)
+	remoteRelayEnabled := singleTabTransportMode != "native_only"
 
 	mux := http.NewServeMux()
 	mux.Handle("/health", deps.health.Handler())
@@ -148,6 +165,10 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	mux.Handle("/api/overview", overviewServer.HandleGetOverview())
 	mux.Handle("/api/approvals", approvalsServer.HandleListApprovals())
 	mux.Handle("/api/approvals/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/select-tab") {
+			approvalsServer.HandleSelectTab("/api/approvals/").ServeHTTP(w, r)
+			return
+		}
 		if strings.HasSuffix(r.URL.Path, "/approve") {
 			approvalsServer.HandleApprove("/api/approvals/").ServeHTTP(w, r)
 			return
@@ -176,7 +197,38 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	}))
 	mux.Handle("/api/v2/overview", overviewServer.HandleGetOverview())
 	mux.Handle("/api/v2/approvals", approvalsServer.HandleListApprovals())
+	mux.Handle("/api/v2/single-tab/bind-requests", singleTabServer.HandleCreateBindRequest())
+	mux.Handle("/api/v2/single-tab/session", singleTabServer.HandleGetActiveSession())
+	mux.Handle("/api/v2/single-tab/extension-instances", systemServer.HandleListExtensionInstances())
+	if remoteRelayEnabled {
+		mux.Handle("/api/v2/single-tab/actions/dispatch", singleTabServer.HandleRelayDispatchAction())
+		mux.Handle("/api/v2/extension/single-tab/bind-requests", extensionAuth(singleTabServer.HandleCreateBindRequest()))
+		mux.Handle("/api/v2/extension/single-tab/session", extensionAuth(singleTabServer.HandleGetActiveSession()))
+		mux.Handle("/api/v2/extension/single-tab/actions/next", extensionAuth(singleTabServer.HandleExtensionPollNextAction()))
+		mux.Handle("/api/v2/extension/single-tab/actions/", extensionAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if strings.HasSuffix(r.URL.Path, "/result") {
+				singleTabServer.HandleExtensionResolveAction("/api/v2/extension/single-tab/actions/").ServeHTTP(w, r)
+				return
+			}
+			w.WriteHeader(http.StatusNotFound)
+		})))
+	}
+	mux.Handle("/api/v2/single-tab/session/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/state") {
+			singleTabServer.HandleUpdateSessionState("/api/v2/single-tab/session/").ServeHTTP(w, r)
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "/release") {
+			singleTabServer.HandleReleaseSession("/api/v2/single-tab/session/").ServeHTTP(w, r)
+			return
+		}
+		singleTabServer.HandleGetSession("/api/v2/single-tab/session/").ServeHTTP(w, r)
+	}))
 	mux.Handle("/api/v2/approvals/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/select-tab") {
+			approvalsServer.HandleSelectTab("/api/v2/approvals/").ServeHTTP(w, r)
+			return
+		}
 		if strings.HasSuffix(r.URL.Path, "/approve") {
 			approvalsServer.HandleApprove("/api/v2/approvals/").ServeHTTP(w, r)
 			return
@@ -188,8 +240,23 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 		approvalsServer.HandleGetApproval("/api/v2/approvals/").ServeHTTP(w, r)
 	}))
 	mux.Handle("/api/v2/artifacts", artifactsServer.HandleListArtifacts())
+	mux.Handle("/api/v2/artifacts/browser-captures", artifactsServer.HandleCreateBrowserCapture())
 	mux.Handle("/api/v2/artifacts/", artifactsServer.HandleGetArtifact("/api/v2/artifacts/"))
 	mux.Handle("/api/v2/activity", activityServer.HandleListActivity())
+	mux.Handle("/api/single-tab/bind-requests", singleTabServer.HandleCreateBindRequest())
+	mux.Handle("/api/single-tab/session", singleTabServer.HandleGetActiveSession())
+	mux.Handle("/api/single-tab/extension-instances", systemServer.HandleListExtensionInstances())
+	mux.Handle("/api/single-tab/session/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/state") {
+			singleTabServer.HandleUpdateSessionState("/api/single-tab/session/").ServeHTTP(w, r)
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "/release") {
+			singleTabServer.HandleReleaseSession("/api/single-tab/session/").ServeHTTP(w, r)
+			return
+		}
+		singleTabServer.HandleGetSession("/api/single-tab/session/").ServeHTTP(w, r)
+	}))
 	mux.Handle("/api/v2/system", systemServer.HandleGetSystem())
 	mux.Handle("/api/system", systemServer.HandleGetSystem())
 	mux.Handle("/api/v2/stream", streamServer.HandleStream())
@@ -224,5 +291,14 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 		Addr:              deps.cfg.Shared.HTTPAddr,
 		Handler:           instrumentHTTP(deps.cfg.Shared.ServiceName, deps.metrics, corsMiddleware(mux)),
 		ReadHeaderTimeout: 5 * time.Second,
+	}
+}
+
+func normalizeSingleTabTransportMode(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "native_only", "remote_preferred":
+		return strings.ToLower(strings.TrimSpace(value))
+	default:
+		return "dual"
 	}
 }

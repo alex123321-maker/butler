@@ -242,6 +242,17 @@ Runtime:
 * должны работать поверх абстрактного browser contract;
 * должны быть переносимы между Playwright и CDP-based implementations.
 
+### Дополнительный режим: session-bound single-tab control
+
+Butler может поддерживать отдельную tool family `single_tab.*` для управления реальной пользовательской вкладкой, выбранной через explicit approval flow.
+
+Для этого режима действуют отдельные правила:
+
+* доступ привязывается к durable `single_tab_session`, а не к raw `tab_id` в model-visible contract;
+* у агента нет public tools для list/switch/open/close/focus tab и window operations;
+* `single_tab.*` не поддерживает `credential_ref`, cookie injection, `storage_state` restore и другие secret-bearing browser args;
+* policy boundary строится вокруг session-bound capability и broker-side prereq checks, а не вокруг domain allowlist.
+
 ---
 
 ## 8.2 HTTP / Web Tools
@@ -264,7 +275,28 @@ Runtime:
 
 ---
 
-## 8.3 Doctor / Self-Inspection Tools
+## 8.3 WebFetch Tools
+
+### Назначение
+
+Нормализованное извлечение HTML, текста и page-derived metadata через provider abstraction с self-hosted primary path.
+
+### Минимальный набор
+
+* `web.fetch`
+* `web.fetch_batch`
+* `web.extract`
+
+### Особенности
+
+* primary provider должен быть self-hosted;
+* внешние SaaS providers допустимы только как fallback;
+* output должен явно указывать выбранный provider, cache metadata и final URL;
+* реализация должна быть отделена от thin HTTP transport helpers, если retrieval semantics становятся существенно богаче `http.request`.
+
+---
+
+## 8.4 Doctor / Self-Inspection Tools
 
 ### Назначение
 
@@ -300,7 +332,10 @@ Butler использует стратегию `container per tool class`.
 * `butler-tool-broker`
 * `butler-tool-browser`
 * `butler-tool-http`
+* `butler-tool-webfetch` при выделенном retrieval runtime
 * `butler-tool-doctor`
+
+Host companion processes вроде browser bridge / native messaging host могут существовать вне Compose runtime set, если они нужны для локальной интеграции с пользовательским браузером, но они не отменяют broker-routed execution model.
 
 ## 9.2 Причины выбора
 
@@ -419,6 +454,7 @@ Tool Broker проверяет:
 * соответствует ли schema;
 * разрешён ли вызов;
 * нужен ли approval;
+* выполнены ли session-scoped prerequisites вроде активного capability session;
 * допустимы ли credential references.
 
 ### 13.4 Разрешение ссылок
@@ -616,6 +652,9 @@ Tool Broker:
 * допустимые endpoint classes;
 * допустимые browser navigation targets.
 
+Для session-bound browser tools вроде `single_tab.*` domain-level policy может быть не основной границей доступа.
+В таком режиме policy опирается на active capability session и explicit product rules, а не на domain allowlist.
+
 ## 19.3 Credential policy
 
 Определяет:
@@ -624,6 +663,8 @@ Tool Broker:
 * в каких tool classes;
 * для каких доменов;
 * с каким approval policy.
+
+Если tool family по контракту не поддерживает `credential_ref` (например, `single_tab.*`), credential policy к ней не применяется и broker обязан отклонять secret-bearing args на этапе валидации.
 
 ---
 
@@ -770,7 +811,7 @@ Tool Broker:
 2. Каждый вызов проходит через Tool Broker.
 3. Tool Broker валидирует, проверяет политику и маршрутизирует вызов.
 4. Исполнение происходит в runtime container соответствующего класса.
-5. Sensitive inputs передаются только через `credential_ref`.
+5. Sensitive inputs, когда они вообще поддерживаются данным tool contract, передаются только через `credential_ref`.
 6. Секреты разрешаются только в системном слое и только в момент исполнения.
 7. Doctor tools получают полный доступ к effective configuration Butler, кроме открытых секретов.
 8. Агент получает только безопасный и нормализованный результат.

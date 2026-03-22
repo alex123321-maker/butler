@@ -4,7 +4,7 @@ Service Dockerfiles live here.
 
 Current state:
 - multistage Dockerfiles exist for all current backend services plus the Nuxt web UI
-- `deploy/docker-compose.yml` wires the full local stack: `postgres`, `redis`, `migrator`, `orchestrator`, `tool-broker`, `tool-http`, `tool-browser`, `tool-doctor`, and `web`
+- `deploy/docker-compose.yml` wires the full local stack: `postgres`, `redis`, `migrator`, `orchestrator`, `tool-broker`, `tool-http`, `tool-webfetch`, `tool-browser`, `tool-doctor`, and `web`
 - Go services run as a non-root `butler` user in the final image
 - `tool-browser` uses the Playwright base image for browser automation support
 

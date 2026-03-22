@@ -2,6 +2,7 @@ package approval
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -15,6 +16,9 @@ const (
 	StatusRejected = "rejected"
 	StatusExpired  = "expired"
 	StatusFailed   = "failed"
+
+	ApprovalTypeToolCall            = "tool_call"
+	ApprovalTypeBrowserTabSelection = "browser_tab_selection"
 
 	RequestedViaTelegram = "telegram"
 	RequestedViaWeb      = "web"
@@ -30,11 +34,13 @@ type Record struct {
 	RunID            string
 	SessionKey       string
 	ToolCallID       string
+	ApprovalType     string
 	Status           string
 	RequestedVia     string
 	ResolvedVia      string
 	ToolName         string
 	ArgsJSON         string
+	PayloadJSON      string
 	RiskLevel        string
 	Summary          string
 	DetailsJSON      string
@@ -44,6 +50,20 @@ type Record struct {
 	ResolutionReason string
 	ExpiresAt        *time.Time
 	UpdatedAt        time.Time
+}
+
+type TabCandidate struct {
+	ApprovalID     string
+	CandidateToken string
+	InternalTabRef string
+	Title          string
+	Domain         string
+	CurrentURL     string
+	FaviconURL     string
+	DisplayLabel   string
+	Status         string
+	CreatedAt      time.Time
+	SelectedAt     *time.Time
 }
 
 type Event struct {
@@ -66,14 +86,28 @@ type CreateParams struct {
 	RunID        string
 	SessionKey   string
 	ToolCallID   string
+	ApprovalType string
 	RequestedVia string
 	ToolName     string
 	ArgsJSON     string
+	PayloadJSON  string
 	RiskLevel    string
 	Summary      string
 	DetailsJSON  string
 	ExpiresAt    *time.Time
 	RequestedAt  time.Time
+}
+
+type CreateTabCandidateParams struct {
+	ApprovalID     string
+	CandidateToken string
+	InternalTabRef string
+	Title          string
+	Domain         string
+	CurrentURL     string
+	FaviconURL     string
+	DisplayLabel   string
+	Status         string
 }
 
 type ResolveParams struct {
@@ -88,12 +122,16 @@ type ResolveParams struct {
 
 var ErrApprovalNotFound = fmt.Errorf("approval not found")
 var ErrApprovalStatusConflict = fmt.Errorf("approval status conflict")
+var ErrTabCandidateNotFound = fmt.Errorf("approval tab candidate not found")
 
 type Repository interface {
 	CreateApproval(ctx context.Context, params CreateParams) (Record, error)
 	GetApprovalByToolCallID(ctx context.Context, toolCallID string) (Record, error)
 	GetApprovalByID(ctx context.Context, approvalID string) (Record, error)
 	ListApprovals(ctx context.Context, status, runID, sessionKey string, limit, offset int) ([]Record, error)
+	CreateTabCandidates(ctx context.Context, params []CreateTabCandidateParams) error
+	ListTabCandidates(ctx context.Context, approvalID string) ([]TabCandidate, error)
+	SelectTabCandidate(ctx context.Context, approvalID, candidateToken string, selectedAt time.Time) (TabCandidate, error)
 	ResolveApproval(ctx context.Context, params ResolveParams) (Record, error)
 	InsertEvent(ctx context.Context, event Event) error
 }
@@ -113,11 +151,17 @@ func (r *PostgresRepository) CreateApproval(ctx context.Context, params CreatePa
 	if params.RequestedVia == "" {
 		params.RequestedVia = RequestedViaTelegram
 	}
+	if params.ApprovalType == "" {
+		params.ApprovalType = ApprovalTypeToolCall
+	}
 	if params.RiskLevel == "" {
 		params.RiskLevel = "medium"
 	}
 	if params.ArgsJSON == "" {
 		params.ArgsJSON = "{}"
+	}
+	if params.PayloadJSON == "" {
+		params.PayloadJSON = "{}"
 	}
 	if params.DetailsJSON == "" {
 		params.DetailsJSON = "{}"
@@ -125,13 +169,13 @@ func (r *PostgresRepository) CreateApproval(ctx context.Context, params CreatePa
 
 	const query = `
 		INSERT INTO approvals (
-			approval_id, run_id, session_key, tool_call_id, status, requested_via,
-			tool_name, args_json, risk_level, summary, details_json,
+			approval_id, run_id, session_key, tool_call_id, approval_type, status, requested_via,
+			tool_name, args_json, payload_json, risk_level, summary, details_json,
 			requested_at, expires_at, updated_at
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11::jsonb, $12, $13, $12)
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10::jsonb, $11, $12, $13::jsonb, $14, $15, $14)
 		ON CONFLICT (approval_id) DO NOTHING
-		RETURNING approval_id, run_id, session_key, tool_call_id, status, requested_via, COALESCE(resolved_via, ''), tool_name,
-			args_json::text, risk_level, summary, details_json::text, requested_at, resolved_at, resolved_by, resolution_reason, expires_at, updated_at
+		RETURNING approval_id, run_id, session_key, tool_call_id, approval_type, status, requested_via, COALESCE(resolved_via, ''), tool_name,
+			args_json::text, payload_json::text, risk_level, summary, details_json::text, requested_at, resolved_at, resolved_by, resolution_reason, expires_at, updated_at
 	`
 
 	record, err := scanRecord(r.pool.QueryRow(ctx, query,
@@ -139,10 +183,12 @@ func (r *PostgresRepository) CreateApproval(ctx context.Context, params CreatePa
 		params.RunID,
 		params.SessionKey,
 		params.ToolCallID,
+		params.ApprovalType,
 		StatusPending,
 		params.RequestedVia,
 		params.ToolName,
 		params.ArgsJSON,
+		params.PayloadJSON,
 		params.RiskLevel,
 		params.Summary,
 		params.DetailsJSON,
@@ -165,8 +211,8 @@ func (r *PostgresRepository) CreateApproval(ctx context.Context, params CreatePa
 
 func (r *PostgresRepository) GetApprovalByToolCallID(ctx context.Context, toolCallID string) (Record, error) {
 	const query = `
-		SELECT approval_id, run_id, session_key, tool_call_id, status, requested_via, COALESCE(resolved_via, ''), tool_name,
-			args_json::text, risk_level, summary, details_json::text, requested_at, resolved_at, resolved_by, resolution_reason, expires_at, updated_at
+		SELECT approval_id, run_id, session_key, tool_call_id, approval_type, status, requested_via, COALESCE(resolved_via, ''), tool_name,
+			args_json::text, payload_json::text, risk_level, summary, details_json::text, requested_at, resolved_at, resolved_by, resolution_reason, expires_at, updated_at
 		FROM approvals
 		WHERE tool_call_id = $1
 		ORDER BY requested_at DESC
@@ -184,8 +230,8 @@ func (r *PostgresRepository) GetApprovalByToolCallID(ctx context.Context, toolCa
 
 func (r *PostgresRepository) GetApprovalByID(ctx context.Context, approvalID string) (Record, error) {
 	const query = `
-		SELECT approval_id, run_id, session_key, tool_call_id, status, requested_via, COALESCE(resolved_via, ''), tool_name,
-			args_json::text, risk_level, summary, details_json::text, requested_at, resolved_at, resolved_by, resolution_reason, expires_at, updated_at
+		SELECT approval_id, run_id, session_key, tool_call_id, approval_type, status, requested_via, COALESCE(resolved_via, ''), tool_name,
+			args_json::text, payload_json::text, risk_level, summary, details_json::text, requested_at, resolved_at, resolved_by, resolution_reason, expires_at, updated_at
 		FROM approvals
 		WHERE approval_id = $1
 	`
@@ -211,8 +257,8 @@ func (r *PostgresRepository) ListApprovals(ctx context.Context, status, runID, s
 	}
 
 	const query = `
-		SELECT approval_id, run_id, session_key, tool_call_id, status, requested_via, COALESCE(resolved_via, ''), tool_name,
-			args_json::text, risk_level, summary, details_json::text, requested_at, resolved_at, resolved_by, resolution_reason, expires_at, updated_at
+		SELECT approval_id, run_id, session_key, tool_call_id, approval_type, status, requested_via, COALESCE(resolved_via, ''), tool_name,
+			args_json::text, payload_json::text, risk_level, summary, details_json::text, requested_at, resolved_at, resolved_by, resolution_reason, expires_at, updated_at
 		FROM approvals
 		WHERE ($1 = '' OR status = $1)
 		  AND ($2 = '' OR run_id = $2)
@@ -241,6 +287,126 @@ func (r *PostgresRepository) ListApprovals(ctx context.Context, status, runID, s
 	return items, nil
 }
 
+func (r *PostgresRepository) CreateTabCandidates(ctx context.Context, params []CreateTabCandidateParams) error {
+	if len(params) == 0 {
+		return nil
+	}
+
+	const query = `
+		INSERT INTO approval_tab_candidates (
+			approval_id, candidate_token, internal_tab_ref, title, domain,
+			current_url, favicon_url, display_label, status
+		) VALUES ($1, $2, NULLIF($3, ''), $4, $5, $6, $7, $8, $9)
+		ON CONFLICT (candidate_token) DO NOTHING
+	`
+
+	batch := &pgx.Batch{}
+	for _, candidate := range params {
+		status := candidate.Status
+		if status == "" {
+			status = "available"
+		}
+		batch.Queue(query,
+			candidate.ApprovalID,
+			candidate.CandidateToken,
+			candidate.InternalTabRef,
+			candidate.Title,
+			candidate.Domain,
+			candidate.CurrentURL,
+			candidate.FaviconURL,
+			candidate.DisplayLabel,
+			status,
+		)
+	}
+
+	results := r.pool.SendBatch(ctx, batch)
+	defer results.Close()
+
+	for range params {
+		if _, err := results.Exec(); err != nil {
+			return fmt.Errorf("create approval tab candidates: %w", err)
+		}
+	}
+	return nil
+}
+
+func (r *PostgresRepository) ListTabCandidates(ctx context.Context, approvalID string) ([]TabCandidate, error) {
+	const query = `
+		SELECT approval_id, candidate_token, COALESCE(internal_tab_ref, ''), title, domain,
+			current_url, favicon_url, display_label, status, created_at, selected_at
+		FROM approval_tab_candidates
+		WHERE approval_id = $1
+		ORDER BY created_at ASC, candidate_token ASC
+	`
+
+	rows, err := r.pool.Query(ctx, query, approvalID)
+	if err != nil {
+		return nil, fmt.Errorf("list approval tab candidates: %w", err)
+	}
+	defer rows.Close()
+
+	items := make([]TabCandidate, 0)
+	for rows.Next() {
+		candidate, scanErr := scanTabCandidate(rows)
+		if scanErr != nil {
+			return nil, fmt.Errorf("scan approval tab candidate: %w", scanErr)
+		}
+		items = append(items, candidate)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate approval tab candidates: %w", err)
+	}
+	return items, nil
+}
+
+func (r *PostgresRepository) SelectTabCandidate(ctx context.Context, approvalID, candidateToken string, selectedAt time.Time) (TabCandidate, error) {
+	if selectedAt.IsZero() {
+		selectedAt = time.Now().UTC()
+	}
+
+	tx, err := r.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return TabCandidate{}, fmt.Errorf("begin approval tab selection tx: %w", err)
+	}
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
+
+	const cancelOthersQuery = `
+		UPDATE approval_tab_candidates
+		SET status = 'cancelled'
+		WHERE approval_id = $1
+		  AND candidate_token <> $2
+		  AND status = 'available'
+	`
+	if _, err := tx.Exec(ctx, cancelOthersQuery, approvalID, candidateToken); err != nil {
+		return TabCandidate{}, fmt.Errorf("cancel other approval tab candidates: %w", err)
+	}
+
+	const selectQuery = `
+		UPDATE approval_tab_candidates
+		SET status = 'selected',
+			selected_at = $3
+		WHERE approval_id = $1
+		  AND candidate_token = $2
+		  AND status IN ('available', 'selected')
+		RETURNING approval_id, candidate_token, COALESCE(internal_tab_ref, ''), title, domain,
+			current_url, favicon_url, display_label, status, created_at, selected_at
+	`
+	candidate, err := scanTabCandidate(tx.QueryRow(ctx, selectQuery, approvalID, candidateToken, selectedAt))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return TabCandidate{}, ErrTabCandidateNotFound
+		}
+		return TabCandidate{}, fmt.Errorf("select approval tab candidate: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return TabCandidate{}, fmt.Errorf("commit approval tab selection tx: %w", err)
+	}
+	return candidate, nil
+}
+
 func (r *PostgresRepository) ResolveApproval(ctx context.Context, params ResolveParams) (Record, error) {
 	if params.ResolvedAt.IsZero() {
 		params.ResolvedAt = time.Now().UTC()
@@ -257,8 +423,8 @@ func (r *PostgresRepository) ResolveApproval(ctx context.Context, params Resolve
 			resolved_at = $7,
 			updated_at = $7
 		WHERE approval_id = $1 AND status = $2
-		RETURNING approval_id, run_id, session_key, tool_call_id, status, requested_via, COALESCE(resolved_via, ''), tool_name,
-			args_json::text, risk_level, summary, details_json::text, requested_at, resolved_at, resolved_by, resolution_reason, expires_at, updated_at
+		RETURNING approval_id, run_id, session_key, tool_call_id, approval_type, status, requested_via, COALESCE(resolved_via, ''), tool_name,
+			args_json::text, payload_json::text, risk_level, summary, details_json::text, requested_at, resolved_at, resolved_by, resolution_reason, expires_at, updated_at
 	`
 	rec, err := scanRecord(r.pool.QueryRow(ctx, query,
 		params.ApprovalID,
@@ -330,11 +496,13 @@ func scanRecord(scanner rowScanner) (Record, error) {
 		&rec.RunID,
 		&rec.SessionKey,
 		&rec.ToolCallID,
+		&rec.ApprovalType,
 		&rec.Status,
 		&rec.RequestedVia,
 		&rec.ResolvedVia,
 		&rec.ToolName,
 		&rec.ArgsJSON,
+		&rec.PayloadJSON,
 		&rec.RiskLevel,
 		&rec.Summary,
 		&rec.DetailsJSON,
@@ -349,4 +517,25 @@ func scanRecord(scanner rowScanner) (Record, error) {
 		return Record{}, err
 	}
 	return rec, nil
+}
+
+func scanTabCandidate(scanner rowScanner) (TabCandidate, error) {
+	var candidate TabCandidate
+	err := scanner.Scan(
+		&candidate.ApprovalID,
+		&candidate.CandidateToken,
+		&candidate.InternalTabRef,
+		&candidate.Title,
+		&candidate.Domain,
+		&candidate.CurrentURL,
+		&candidate.FaviconURL,
+		&candidate.DisplayLabel,
+		&candidate.Status,
+		&candidate.CreatedAt,
+		&candidate.SelectedAt,
+	)
+	if err != nil {
+		return TabCandidate{}, err
+	}
+	return candidate, nil
 }

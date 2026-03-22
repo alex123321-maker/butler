@@ -9,11 +9,25 @@ import (
 
 // ApprovalRequest represents a tool call that needs user approval before execution.
 type ApprovalRequest struct {
-	RunID      string
-	SessionKey string
-	ToolCallID string
-	ToolName   string
-	ArgsJSON   string
+	RunID         string
+	SessionKey    string
+	ApprovalID    string
+	ApprovalType  string
+	ToolCallID    string
+	ToolName      string
+	ArgsJSON      string
+	PayloadJSON   string
+	TabCandidates []ApprovalTabCandidate
+}
+
+type ApprovalTabCandidate struct {
+	CandidateToken string
+	Title          string
+	Domain         string
+	CurrentURL     string
+	FaviconURL     string
+	DisplayLabel   string
+	Status         string
 }
 
 // ApprovalResponse represents the user's decision on an approval request.
@@ -89,7 +103,14 @@ func (s LoggingDeliverySink) DeliverAssistantFinal(_ context.Context, event Deli
 }
 
 func (s LoggingDeliverySink) DeliverApprovalRequest(_ context.Context, req ApprovalRequest) error {
-	s.log.Info("approval request delivered", slog.String("run_id", req.RunID), slog.String("session_key", req.SessionKey), slog.String("tool_name", req.ToolName), slog.String("tool_call_id", req.ToolCallID))
+	s.log.Info("approval request delivered",
+		slog.String("run_id", req.RunID),
+		slog.String("session_key", req.SessionKey),
+		slog.String("approval_id", req.ApprovalID),
+		slog.String("approval_type", req.ApprovalType),
+		slog.String("tool_name", req.ToolName),
+		slog.String("tool_call_id", req.ToolCallID),
+	)
 	return nil
 }
 

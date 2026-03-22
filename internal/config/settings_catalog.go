@@ -78,6 +78,36 @@ func managedSettingsCatalog() []SettingCatalogItem {
 			Visible:      true,
 		},
 		{
+			Spec:         fieldSpec{key: "BUTLER_EXTENSION_API_TOKENS", component: "orchestrator", typeName: "csv", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmptyTokenList, assign: nil},
+			Group:        "Browser Control",
+			DisplayOrder: 74,
+			Visible:      true,
+		},
+		{
+			Spec:         fieldSpec{key: "BUTLER_SINGLE_TAB_TRANSPORT_MODE", component: "orchestrator", typeName: "string", required: false, defaultValue: "dual", allowedValues: []string{"native_only", "dual", "remote_preferred"}, requiresRestart: true, assign: nil},
+			Group:        "Browser Control",
+			DisplayOrder: 75,
+			Visible:      true,
+		},
+		{
+			Spec:         fieldSpec{key: "BUTLER_SINGLE_TAB_RELAY_HEARTBEAT_TTL_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "90", requiresRestart: true, validate: validatePositiveInt, assign: nil},
+			Group:        "Browser Control",
+			DisplayOrder: 76,
+			Visible:      true,
+		},
+		{
+			Spec:         fieldSpec{key: "BUTLER_TOOL_BROWSER_LOCAL_ROLLOUT_MODE", component: "tool-browser-local", typeName: "string", required: false, defaultValue: "native_only", allowedValues: []string{"native_only", "dual", "remote_preferred"}, requiresRestart: true, assign: nil},
+			Group:        "Browser Control",
+			DisplayOrder: 77,
+			Visible:      true,
+		},
+		{
+			Spec:         fieldSpec{key: "BUTLER_TOOL_BROWSER_LOCAL_DISPATCH_MODE", component: "tool-browser-local", typeName: "string", required: false, defaultValue: "browser_bridge", allowedValues: []string{"browser_bridge", "orchestrator_relay"}, requiresRestart: true, assign: nil},
+			Group:        "Browser Control",
+			DisplayOrder: 78,
+			Visible:      true,
+		},
+		{
 			Spec:         fieldSpec{key: "BUTLER_MEMORY_PROFILE_LIMIT", component: "orchestrator", typeName: "int", required: false, defaultValue: "20", requiresRestart: true, validate: validatePositiveInt, assign: nil},
 			Group:        "Memory",
 			DisplayOrder: 80,

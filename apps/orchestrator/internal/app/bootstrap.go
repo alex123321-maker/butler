@@ -20,6 +20,7 @@ import (
 	promptmgmt "github.com/butler/butler/apps/orchestrator/internal/prompt"
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
+	singletab "github.com/butler/butler/apps/orchestrator/internal/singletab"
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
 	"github.com/butler/butler/internal/config"
 	orchestratorv1 "github.com/butler/butler/internal/gen/orchestrator/v1"
@@ -126,6 +127,9 @@ func New(ctx context.Context) (*App, error) {
 	approvalGate := flow.NewApprovalGate()
 	approvalRepo := approvals.NewPostgresRepository(postgres.Pool())
 	approvalService := approvals.NewService(approvalRepo, approvalGate)
+	singleTabRepo := singletab.NewPostgresRepository(postgres.Pool())
+	singleTabService := singletab.NewService(approvalRepo, singleTabRepo, approvalGate)
+	singleTabService.SetApprovalCreator(approvalService)
 	artifactsRepo := artifacts.NewPostgresRepository(postgres.Pool())
 	artifactsService := artifacts.NewService(artifactsRepo)
 	activityRepo := activity.NewPostgresRepository(postgres.Pool())
@@ -151,6 +155,7 @@ func New(ctx context.Context) (*App, error) {
 		delivery = flow.NewCompositeDeliverySink(delivery, telegram)
 	}
 	delivery = flow.NewObservedDeliverySink(delivery, deliveryEventsService)
+	singleTabService.SetDeliverySink(delivery)
 
 	sessionRepo := session.NewPostgresRepository(postgres.Pool())
 	sessionLeaseManager := session.NewRedisLeaseManager(redis.Client(), logger.WithComponent(log, "session-lease-store"))
@@ -212,6 +217,7 @@ func New(ctx context.Context) (*App, error) {
 	if telegram != nil {
 		telegram.SetExecutor(executor)
 		telegram.SetApprovalService(approvalService)
+		telegram.SetSingleTabSelector(singleTabService)
 		telegram.SetAuthManager(authManager)
 	}
 
@@ -235,6 +241,7 @@ func New(ctx context.Context) (*App, error) {
 		eventHub:           eventHub,
 		approvalRepo:       approvalRepo,
 		approvalService:    approvalService,
+		singleTabService:   singleTabService,
 		artifactsRepo:      artifactsRepo,
 		artifactsService:   artifactsService,
 		activityRepo:       activityRepo,

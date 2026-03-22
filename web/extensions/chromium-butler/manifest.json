@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Butler Chromium Bridge",
+  "version": "0.1.0",
+  "description": "Collects browser tab candidates and forwards single-tab bind requests to the local Butler browser bridge.",
+  "permissions": [
+    "tabs",
+    "scripting",
+    "storage",
+    "nativeMessaging"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Butler Browser Bridge",
+    "default_popup": "popup.html"
+  }
+}

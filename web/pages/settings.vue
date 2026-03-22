@@ -77,6 +77,49 @@
       </div>
     </section>
 
+    <section class="policy-panel">
+      <div class="policy-panel__header">
+        <div>
+          <p class="provider-panel__eyebrow">Browser Extension Remote</p>
+          <h3>Remote onboarding checklist</h3>
+          <p>Use these values to connect the Chromium extension to a non-localhost Butler deployment.</p>
+        </div>
+      </div>
+      <div class="policy-grid extension-grid">
+        <article class="policy-card">
+          <p class="policy-card__key">Transport mode</p>
+          <p class="policy-card__value">{{ browserControl.transportMode }}</p>
+          <span class="provider-badge" :class="browserControl.transportMode === 'remote_preferred' ? 'provider-badge--connected' : 'provider-badge--idle'">
+            {{ browserControl.transportMode === 'remote_preferred' ? 'remote-first' : 'not remote-first' }}
+          </span>
+        </article>
+        <article class="policy-card">
+          <p class="policy-card__key">Extension API tokens</p>
+          <p class="policy-card__value">{{ browserControl.extensionAuthConfigured ? 'configured' : 'not configured' }}</p>
+          <span class="provider-badge" :class="browserControl.extensionAuthConfigured ? 'provider-badge--connected' : 'provider-badge--idle'">
+            {{ browserControl.extensionAuthConfigured ? 'ready' : 'required' }}
+          </span>
+        </article>
+        <article class="policy-card">
+          <p class="policy-card__key">Relay heartbeat TTL</p>
+          <p class="policy-card__value">{{ browserControl.heartbeatTTL }} seconds</p>
+          <p class="policy-card__meta">Key: `BUTLER_SINGLE_TAB_RELAY_HEARTBEAT_TTL_SECONDS`</p>
+        </article>
+        <article class="policy-card">
+          <p class="policy-card__key">Recommended extension values</p>
+          <p class="policy-card__meta">Rollout mode</p>
+          <p class="policy-card__value">`remote_preferred`</p>
+          <p class="policy-card__meta">Remote Butler URL</p>
+          <p class="policy-card__value">{{ extensionRemoteURL || 'Set public.apiBase in Web runtime config' }}</p>
+        </article>
+      </div>
+      <ul class="warning-list extension-steps">
+        <li>Set `BUTLER_EXTENSION_API_TOKENS` and copy one token into extension popup field “Remote API token”.</li>
+        <li>Set `BUTLER_SINGLE_TAB_TRANSPORT_MODE=remote_preferred` for remote-first rollout.</li>
+        <li>Set extension popup `Rollout mode = remote_preferred` and `Remote Butler URL` to this server.</li>
+      </ul>
+    </section>
+
     <div v-if="providerState.providers.length" class="provider-panel">
       <div class="provider-panel__header">
         <div>
@@ -380,6 +423,36 @@ const promptBudgetLabel = computed(() => promptDraft.value.length > 6000 ? 'Over
 const promptBudgetClass = computed(() => promptDraft.value.length > 6000 ? 'prompt-budget prompt-budget--danger' : promptDraft.value.length > 4000 ? 'prompt-budget prompt-budget--warn' : 'prompt-budget')
 const promptWarning = computed(() => promptDraft.value.length > 6000 ? 'Prompt is getting large. Consider moving details into placeholders and runtime memory sections.' : '')
 const visiblePreviewSections = computed(() => (previewData.value?.sections ?? []).filter((section) => !section.omitted))
+const runtimeConfig = useRuntimeConfig()
+
+const extensionRemoteURL = computed(() => {
+  const base = String(runtimeConfig.public.apiBase ?? '').trim()
+  if (!base) {
+    return ''
+  }
+  return base.replace(/\/+$/g, '')
+})
+
+function settingValueByKey(key: string): string {
+  for (const group of allGroups.value) {
+    const setting = group.settings.find((item) => item.key === key)
+    if (setting) {
+      return String(setting.value ?? '').trim()
+    }
+  }
+  return ''
+}
+
+const browserControl = computed(() => {
+  const transportMode = settingValueByKey('BUTLER_SINGLE_TAB_TRANSPORT_MODE') || 'dual'
+  const heartbeatTTL = settingValueByKey('BUTLER_SINGLE_TAB_RELAY_HEARTBEAT_TTL_SECONDS') || '90'
+  const extensionAuthConfigured = settingValueByKey('BUTLER_EXTENSION_API_TOKENS') !== ''
+  return {
+    transportMode,
+    heartbeatTTL,
+    extensionAuthConfigured,
+  }
+})
 
 function replaceSetting(nextSetting: SettingItem) {
   const nextGroups = (data.value ?? []).map((group) => ({
@@ -727,6 +800,18 @@ await runPromptPreview()
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 12px;
+}
+
+.extension-grid {
+  margin-bottom: var(--space-3);
+}
+
+.extension-steps {
+  margin: 0;
+  padding-left: var(--space-4);
+  color: var(--color-text-secondary);
+  display: grid;
+  gap: var(--space-2);
 }
 
 .policy-card {

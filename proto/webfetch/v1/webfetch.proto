@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package butler.webfetch.v1;
+
+option go_package = "github.com/butler/butler/internal/gen/webfetch/v1;webfetchv1";
+
+service WebFetchService {
+  rpc Fetch(WebFetchRequest) returns (WebFetchResponse);
+  rpc FetchBatch(WebFetchBatchRequest) returns (WebFetchBatchResponse);
+  rpc Extract(WebExtractRequest) returns (WebExtractResponse);
+}
+
+enum WebFetchProvider {
+  WEB_FETCH_PROVIDER_UNSPECIFIED = 0;
+  WEB_FETCH_PROVIDER_SELF_HOSTED_PRIMARY = 1;
+  WEB_FETCH_PROVIDER_JINA_READER_FALLBACK = 2;
+  WEB_FETCH_PROVIDER_PLAIN_HTTP_FALLBACK = 3;
+}
+
+message WebFetchRequest {
+  string url = 1;
+  bool prefer_cache = 2;
+  bool include_html = 3;
+  int64 timeout_ms = 4;
+}
+
+message WebFetchResponse {
+  WebFetchProvider provider = 1;
+  string requested_url = 2;
+  string final_url = 3;
+  int32 status_code = 4;
+  string content_type = 5;
+  string text_content = 6;
+  string html_content = 7;
+  bool cache_hit = 8;
+  string fetched_at = 9;
+  string metadata_json = 10;
+}
+
+message WebFetchBatchRequest {
+  repeated WebFetchRequest items = 1;
+}
+
+message WebFetchBatchResponse {
+  repeated WebFetchResponse items = 1;
+}
+
+message WebExtractRequest {
+  string url = 1;
+  string html_content = 2;
+  string selector = 3;
+  bool prefer_cache = 4;
+  int64 timeout_ms = 5;
+}
+
+message WebExtractResponse {
+  WebFetchProvider provider = 1;
+  string requested_url = 2;
+  string final_url = 3;
+  string selector = 4;
+  repeated string matches = 5;
+  int32 match_count = 6;
+  bool cache_hit = 7;
+  string fetched_at = 8;
+  string metadata_json = 9;
+}

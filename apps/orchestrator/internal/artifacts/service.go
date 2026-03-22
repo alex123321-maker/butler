@@ -93,6 +93,38 @@ func (s *Service) SaveDoctorReport(ctx context.Context, runID, sessionKey, statu
 	})
 }
 
+func (s *Service) SaveBrowserCapture(ctx context.Context, runID, sessionKey, toolCallID, singleTabSessionID, currentURL, currentTitle, imageDataURL string, createdAt time.Time) (Record, error) {
+	if strings.TrimSpace(imageDataURL) == "" {
+		return Record{}, nil
+	}
+	if createdAt.IsZero() {
+		createdAt = time.Now().UTC()
+	}
+
+	title := "Browser capture"
+	if trimmedTitle := strings.TrimSpace(currentTitle); trimmedTitle != "" {
+		title = fmt.Sprintf("Browser capture: %s", trimmedTitle)
+	}
+	summary := summarize(firstNonEmpty(currentURL, currentTitle, singleTabSessionID), 180)
+	sourceRef := firstNonEmpty(toolCallID, singleTabSessionID, runID)
+	contentJSON := fmt.Sprintf(`{"kind":"browser_capture","single_tab_session_id":%q,"tool_call_id":%q,"current_url":%q,"current_title":%q,"image_data_url":%q}`, singleTabSessionID, toolCallID, currentURL, currentTitle, imageDataURL)
+
+	return s.repo.CreateArtifact(ctx, CreateParams{
+		ArtifactID:    artifactID("capture", sourceRef),
+		RunID:         runID,
+		SessionKey:    sessionKey,
+		ArtifactType:  TypeBrowserCapture,
+		Title:         title,
+		Summary:       summary,
+		ContentText:   "",
+		ContentJSON:   contentJSON,
+		ContentFormat: "image_data_url",
+		SourceType:    "single_tab_capture",
+		SourceRef:     sourceRef,
+		CreatedAt:     createdAt,
+	})
+}
+
 func artifactID(prefix, seed string) string {
 	if strings.TrimSpace(seed) == "" {
 		seed = "unknown"
@@ -118,4 +150,13 @@ func summarize(value string, max int) string {
 		return trimmed
 	}
 	return trimmed[:max]
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, value := range values {
+		if strings.TrimSpace(value) != "" {
+			return value
+		}
+	}
+	return ""
 }

@@ -7,11 +7,12 @@ import (
 
 func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	get := envMap(map[string]string{
-		"BUTLER_POSTGRES_URL":   "postgres://butler:secret@localhost:5432/butler",
-		"BUTLER_REDIS_URL":      "redis://localhost:6379/0",
-		"BUTLER_LOG_LEVEL":      "warn",
-		"BUTLER_HTTP_ADDR":      "127.0.0.1:8088",
-		"BUTLER_OPENAI_API_KEY": "sk-test",
+		"BUTLER_POSTGRES_URL":         "postgres://butler:secret@localhost:5432/butler",
+		"BUTLER_REDIS_URL":            "redis://localhost:6379/0",
+		"BUTLER_LOG_LEVEL":            "warn",
+		"BUTLER_HTTP_ADDR":            "127.0.0.1:8088",
+		"BUTLER_OPENAI_API_KEY":       "sk-test",
+		"BUTLER_EXTENSION_API_TOKENS": "ext-token-a,ext-token-b",
 	})
 
 	cfg, snapshot, err := loadOrchestrator(get)
@@ -76,6 +77,15 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	if cfg.MemoryWorkingTransientTTLSeconds != 1800 {
 		t.Fatalf("expected default working transient ttl, got %d", cfg.MemoryWorkingTransientTTLSeconds)
 	}
+	if strings.Join(cfg.ExtensionAPITokens, ",") != "ext-token-a,ext-token-b" {
+		t.Fatalf("expected extension api tokens override, got %v", cfg.ExtensionAPITokens)
+	}
+	if cfg.SingleTabTransportMode != "dual" {
+		t.Fatalf("expected default single-tab transport mode, got %q", cfg.SingleTabTransportMode)
+	}
+	if cfg.SingleTabRelayHeartbeatTTLSeconds != 90 {
+		t.Fatalf("expected default single-tab relay heartbeat ttl, got %d", cfg.SingleTabRelayHeartbeatTTLSeconds)
+	}
 
 	keys := snapshot.ListKeys()
 	if len(keys) == 0 {
@@ -104,6 +114,18 @@ func TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides(t *testing.T) {
 	apiKey := findKey(t, keys, "BUTLER_OPENAI_API_KEY")
 	if apiKey.EffectiveValue != "[masked]" {
 		t.Fatalf("expected masked OpenAI API key, got %q", apiKey.EffectiveValue)
+	}
+	extensionTokens := findKey(t, keys, "BUTLER_EXTENSION_API_TOKENS")
+	if extensionTokens.EffectiveValue != "[masked]" {
+		t.Fatalf("expected masked extension API tokens, got %q", extensionTokens.EffectiveValue)
+	}
+	singleTabTransportMode := findKey(t, keys, "BUTLER_SINGLE_TAB_TRANSPORT_MODE")
+	if singleTabTransportMode.DefaultValue != "dual" {
+		t.Fatalf("expected single-tab transport mode default, got %q", singleTabTransportMode.DefaultValue)
+	}
+	heartbeatTTL := findKey(t, keys, "BUTLER_SINGLE_TAB_RELAY_HEARTBEAT_TTL_SECONDS")
+	if heartbeatTTL.DefaultValue != "90" {
+		t.Fatalf("expected relay heartbeat ttl default, got %q", heartbeatTTL.DefaultValue)
 	}
 
 	provider := findKey(t, keys, "BUTLER_MODEL_PROVIDER")
@@ -257,6 +279,107 @@ func TestLoadToolBrowserFromEnvUsesSharedDefaults(t *testing.T) {
 	}
 	if cfg.HelperScriptPath != "apps/tool-browser/scripts/browser_runtime.mjs" {
 		t.Fatalf("unexpected default browser script path %q", cfg.HelperScriptPath)
+	}
+}
+
+func TestLoadToolBrowserLocalFromEnvUsesDefaultsAndOverrides(t *testing.T) {
+	cfg, snapshot, err := loadToolBrowserLocal(envMap(map[string]string{
+		"BUTLER_TOOL_BROWSER_LOCAL_ORCHESTRATOR_URL": "http://localhost:28080",
+		"BUTLER_TOOL_BROWSER_LOCAL_DISPATCH_MODE":    "orchestrator_relay",
+		"BUTLER_TOOL_BROWSER_LOCAL_ROLLOUT_MODE":     "remote_preferred",
+	}))
+	if err != nil {
+		t.Fatalf("loadToolBrowserLocal returned error: %v", err)
+	}
+	if cfg.Shared.ServiceName != "tool-browser-local" {
+		t.Fatalf("expected tool-browser-local service name, got %q", cfg.Shared.ServiceName)
+	}
+	if cfg.OrchestratorBaseURL != "http://localhost:28080" {
+		t.Fatalf("unexpected orchestrator URL %q", cfg.OrchestratorBaseURL)
+	}
+	if cfg.BrowserBridgeURL != "http://127.0.0.1:29115" {
+		t.Fatalf("unexpected browser bridge URL %q", cfg.BrowserBridgeURL)
+	}
+	if cfg.DispatchMode != "orchestrator_relay" {
+		t.Fatalf("unexpected dispatch mode %q", cfg.DispatchMode)
+	}
+	if cfg.DispatchRolloutMode != "remote_preferred" {
+		t.Fatalf("unexpected dispatch rollout mode %q", cfg.DispatchRolloutMode)
+	}
+	if cfg.RequestTimeout != 15 {
+		t.Fatalf("expected default request timeout 15, got %d", cfg.RequestTimeout)
+	}
+	key := findKey(t, snapshot.ListKeys(), "BUTLER_TOOL_BROWSER_LOCAL_ORCHESTRATOR_URL")
+	if key.Source != ConfigSourceEnv {
+		t.Fatalf("expected env source, got %q", key.Source)
+	}
+	mode := findKey(t, snapshot.ListKeys(), "BUTLER_TOOL_BROWSER_LOCAL_DISPATCH_MODE")
+	if mode.DefaultValue != "browser_bridge" {
+		t.Fatalf("expected dispatch mode default, got %q", mode.DefaultValue)
+	}
+	rolloutMode := findKey(t, snapshot.ListKeys(), "BUTLER_TOOL_BROWSER_LOCAL_ROLLOUT_MODE")
+	if rolloutMode.DefaultValue != "native_only" {
+		t.Fatalf("expected rollout mode default, got %q", rolloutMode.DefaultValue)
+	}
+}
+
+func TestLoadToolWebFetchFromEnvUsesDefaultsAndOverrides(t *testing.T) {
+	cfg, snapshot, err := loadToolWebFetch(envMap(map[string]string{
+		"BUTLER_WEBFETCH_SELF_HOSTED_BASE_URL": "http://crawl4ai:11235",
+		"BUTLER_WEBFETCH_JINA_AUTH_TOKEN":      "jina-secret",
+	}))
+	if err != nil {
+		t.Fatalf("loadToolWebFetch returned error: %v", err)
+	}
+	if cfg.Shared.ServiceName != "tool-webfetch" {
+		t.Fatalf("expected tool-webfetch service name, got %q", cfg.Shared.ServiceName)
+	}
+	if cfg.SelfHostedBaseURL != "http://crawl4ai:11235" {
+		t.Fatalf("unexpected self-hosted base URL %q", cfg.SelfHostedBaseURL)
+	}
+	if cfg.JinaBaseURL != "" {
+		t.Fatalf("expected empty default Jina base URL, got %q", cfg.JinaBaseURL)
+	}
+	if cfg.JinaAuthToken != "jina-secret" {
+		t.Fatalf("expected Jina auth token override, got %q", cfg.JinaAuthToken)
+	}
+	if !cfg.PlainHTTPEnabled {
+		t.Fatal("expected plain HTTP fallback to default to enabled")
+	}
+
+	keys := snapshot.ListKeys()
+	jinaToken := findKey(t, keys, "BUTLER_WEBFETCH_JINA_AUTH_TOKEN")
+	if jinaToken.EffectiveValue != "[masked]" {
+		t.Fatalf("expected masked Jina auth token, got %q", jinaToken.EffectiveValue)
+	}
+	plainHTTP := findKey(t, keys, "BUTLER_WEBFETCH_PLAIN_HTTP_ENABLED")
+	if plainHTTP.DefaultValue != "true" {
+		t.Fatalf("expected plain HTTP default to be recorded, got %q", plainHTTP.DefaultValue)
+	}
+}
+
+func TestLoadBrowserBridgeFromEnvUsesDefaultsAndOverrides(t *testing.T) {
+	cfg, snapshot, err := loadBrowserBridge(envMap(map[string]string{
+		"BUTLER_BROWSER_BRIDGE_ORCHESTRATOR_URL": "http://localhost:18080",
+	}))
+	if err != nil {
+		t.Fatalf("loadBrowserBridge returned error: %v", err)
+	}
+	if cfg.Shared.ServiceName != "browser-bridge" {
+		t.Fatalf("expected browser-bridge service name, got %q", cfg.Shared.ServiceName)
+	}
+	if cfg.OrchestratorBaseURL != "http://localhost:18080" {
+		t.Fatalf("unexpected orchestrator base URL %q", cfg.OrchestratorBaseURL)
+	}
+	if cfg.ControlAddr != "127.0.0.1:29115" {
+		t.Fatalf("unexpected browser bridge control addr %q", cfg.ControlAddr)
+	}
+	if cfg.RequestTimeoutSeconds != 15 {
+		t.Fatalf("expected default request timeout, got %d", cfg.RequestTimeoutSeconds)
+	}
+	key := findKey(t, snapshot.ListKeys(), "BUTLER_BROWSER_BRIDGE_ORCHESTRATOR_URL")
+	if key.Source != ConfigSourceEnv {
+		t.Fatalf("expected env source, got %q", key.Source)
 	}
 }
 

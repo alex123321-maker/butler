@@ -11,6 +11,9 @@ Provides a browser-based interface for:
 - **Memory** — scope-based browser for durable working, profile, episodic, and chunk memory with provenance links
 - **Doctor** — system diagnostic reports (T-0605)
 - **Settings** — grouped runtime configuration management with source tracing plus provider auth flows for GitHub Copilot and OpenAI Codex
+- **Browser extension onboarding** — rollout and remote-extension readiness checklist in Settings + System pages
+  - System page also shows per-`browser_instance_id` remote instance state (`online`, `stale`, `disconnected`, `unknown`)
+  - System page now polls lightweight orchestrator endpoint `/api/v2/single-tab/extension-instances` for near real-time extension liveness updates and supports state/limit filters
 - **Prompt management** — operator base prompt editing, placeholder insertion, and effective prompt preview inside Settings
 
 ## Development
@@ -68,6 +71,7 @@ web/
 ├── features/                  # Reserved for task-level UI workflows and composed behaviors
 ├── layouts/                   # Nuxt layouts
 ├── pages/                     # Route entrypoints (`tasks`, `approvals`, `artifacts`, `system`, etc.)
+├── extensions/                # Standalone browser-extension assets for Chromium-based browser integration
 ├── shared/                    # API client, Pinia stores, design tokens, and reusable UI primitives
 ├── tests/e2e/                 # Playwright specs and snapshots
 └── widgets/                   # Route-level widgets such as the sidebar
@@ -78,3 +82,26 @@ Key routes:
 - `/tasks` and `/tasks/[id]` - normalized task list and detail views
 - `/approvals`, `/artifacts`, `/activity`, `/system` - operator visibility pages
 - `/sessions`, `/runs/[id]`, `/memory`, `/doctor`, `/settings` - legacy and operator workflows
+
+## Chromium Extension Scaffold
+
+`web/extensions/chromium-butler` contains a standalone Manifest V3 scaffold for the single-tab browser bridge flow.
+
+Current scope:
+- lists HTTP(S) tabs from the local Chromium browser
+- forwards tab candidates to the host-installed `browser-bridge` native messaging companion
+- creates `BROWSER_TAB_SELECTION` bind requests through Butler orchestrator
+- checks the active `single_tab_session` for a Butler session key
+- executes host-routed single-tab actions in the bound tab through a persistent native messaging port
+- supports rollout-aware connection strategy (`native_only`, `dual`, `remote_preferred`) for localhost and remote-hosted Butler deployments
+
+Current limitations:
+- native host installation is still manual and browser-specific
+
+Manual load for development:
+
+1. Open Chromium/Chrome/Edge extension settings and enable developer mode.
+2. Choose "Load unpacked" and point it at `web/extensions/chromium-butler`.
+3. Install the native messaging host manifest for `com.butler.browser_bridge` so the extension can reach the local `apps/browser-bridge` process.
+   Use `apps/browser-bridge/examples/chromium-native-host.manifest.json` as the starting template and replace the binary path plus extension ID.
+4. Start `apps/browser-bridge` and Butler orchestrator locally, then use the extension popup to create a bind request.

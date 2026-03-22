@@ -14,6 +14,7 @@ import (
 
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
+	singletab "github.com/butler/butler/apps/orchestrator/internal/singletab"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/logger"
@@ -23,6 +24,10 @@ var ErrIgnoredUpdate = errors.New("telegram update ignored")
 
 type Executor interface {
 	Execute(context.Context, ingress.InputEvent) (*flow.ExecutionResult, error)
+}
+
+type BrowserTabSelector interface {
+	ActivateFromApproval(ctx context.Context, params singletab.ActivateFromApprovalParams) (singletab.ActivationResult, error)
 }
 
 type Config struct {
@@ -38,6 +43,7 @@ type Adapter struct {
 	auth              ProviderAuthManager
 	approvalGate      *flow.ApprovalGate
 	approvalService   *approvals.Service
+	singleTabSelector BrowserTabSelector
 	log               *slog.Logger
 	nextOffset        int64
 	now               func() time.Time
@@ -95,6 +101,10 @@ func (a *Adapter) SetExecutor(executor Executor) {
 
 func (a *Adapter) SetApprovalService(service *approvals.Service) {
 	a.approvalService = service
+}
+
+func (a *Adapter) SetSingleTabSelector(selector BrowserTabSelector) {
+	a.singleTabSelector = selector
 }
 
 func (a *Adapter) Run(ctx context.Context) error {
@@ -472,6 +482,9 @@ func (a *Adapter) isAllowedChatID(chatID int64) bool {
 const (
 	approvalCallbackPrefix  = "approve:"
 	rejectionCallbackPrefix = "reject:"
+	tabSelectCallbackPrefix = "tabsel:"
+	tabDenyCallbackPrefix   = "tabdeny:"
+	tabCancelCallbackPrefix = "tabcancel:"
 )
 
 // DeliverApprovalRequest sends an inline keyboard to the Telegram chat with
@@ -481,6 +494,34 @@ func (a *Adapter) DeliverApprovalRequest(ctx context.Context, req flow.ApprovalR
 	if !ok || !a.isAllowedChatID(chatID) {
 		return nil
 	}
+	if req.ApprovalType == approvals.ApprovalTypeBrowserTabSelection && len(req.TabCandidates) > 0 {
+		text := "Выберите вкладку, к которой подключить агента"
+		rows := make([][]InlineKeyboardButton, 0, len(req.TabCandidates))
+		for _, candidate := range req.TabCandidates {
+			label := candidate.DisplayLabel
+			if strings.TrimSpace(label) == "" {
+				label = strings.TrimSpace(candidate.Title)
+			}
+			if strings.TrimSpace(label) == "" {
+				label = strings.TrimSpace(candidate.Domain)
+			}
+			rows = append(rows, []InlineKeyboardButton{{
+				Text:         label,
+				CallbackData: tabSelectCallbackPrefix + req.ApprovalID + ":" + candidate.CandidateToken,
+			}})
+		}
+		rows = append(rows,
+			[]InlineKeyboardButton{{Text: "Запретить", CallbackData: tabDenyCallbackPrefix + req.ApprovalID}},
+			[]InlineKeyboardButton{{Text: "Отмена", CallbackData: tabCancelCallbackPrefix + req.ApprovalID}},
+		)
+		markup := &InlineKeyboardMarkup{InlineKeyboard: rows}
+		if _, err := a.client.SendMessageWithReplyMarkup(ctx, chatID, text, markup); err != nil {
+			return fmt.Errorf("send browser tab selection request: %w", err)
+		}
+		a.log.Info("browser tab selection request sent", slog.String("approval_id", req.ApprovalID), slog.Int("candidate_count", len(req.TabCandidates)))
+		return nil
+	}
+
 	text := fmt.Sprintf("Tool call requires approval:\n\nTool: %s\nArgs: %s\n\nApprove or reject?", req.ToolName, req.ArgsJSON)
 	markup := &InlineKeyboardMarkup{
 		InlineKeyboard: [][]InlineKeyboardButton{
@@ -523,6 +564,30 @@ func (a *Adapter) handleCallbackQuery(ctx context.Context, query *CallbackQuery)
 			}
 		}
 		if err := a.client.AnswerCallbackQuery(ctx, query.ID, answerText); err != nil {
+			a.log.Warn("answer callback query failed", slog.String("error", err.Error()))
+		}
+		return
+	}
+
+	if strings.HasPrefix(query.Data, tabSelectCallbackPrefix) {
+		if err := a.handleTabSelectionCallback(ctx, query); err != nil {
+			a.log.Warn("browser tab selection callback failed", slog.String("error", err.Error()))
+			if err := a.client.AnswerCallbackQuery(ctx, query.ID, "Selection failed"); err != nil {
+				a.log.Warn("answer callback query failed", slog.String("error", err.Error()))
+			}
+		} else if err := a.client.AnswerCallbackQuery(ctx, query.ID, "Tab selected"); err != nil {
+			a.log.Warn("answer callback query failed", slog.String("error", err.Error()))
+		}
+		return
+	}
+
+	if strings.HasPrefix(query.Data, tabDenyCallbackPrefix) || strings.HasPrefix(query.Data, tabCancelCallbackPrefix) {
+		if err := a.handleTabRejectionCallback(ctx, query); err != nil {
+			a.log.Warn("browser tab rejection callback failed", slog.String("error", err.Error()))
+			if err := a.client.AnswerCallbackQuery(ctx, query.ID, "Action failed"); err != nil {
+				a.log.Warn("answer callback query failed", slog.String("error", err.Error()))
+			}
+		} else if err := a.client.AnswerCallbackQuery(ctx, query.ID, "Request closed"); err != nil {
 			a.log.Warn("answer callback query failed", slog.String("error", err.Error()))
 		}
 		return
@@ -585,9 +650,104 @@ func (a *Adapter) handleCallbackQuery(ctx context.Context, query *CallbackQuery)
 	a.log.Info("approval resolved via telegram", slog.String("tool_call_id", toolCallID), slog.String("action", action))
 }
 
+func (a *Adapter) handleTabSelectionCallback(ctx context.Context, query *CallbackQuery) error {
+	if a.singleTabSelector == nil {
+		return fmt.Errorf("single tab selector is not configured")
+	}
+	payload := strings.TrimPrefix(query.Data, tabSelectCallbackPrefix)
+	parts := strings.SplitN(payload, ":", 2)
+	if len(parts) != 2 || strings.TrimSpace(parts[0]) == "" || strings.TrimSpace(parts[1]) == "" {
+		return fmt.Errorf("invalid browser tab selection callback payload")
+	}
+
+	resolvedBy := "telegram"
+	if query.From != nil {
+		resolvedBy = fmt.Sprintf("telegram_user:%d", query.From.ID)
+	}
+
+	result, err := a.singleTabSelector.ActivateFromApproval(ctx, singletab.ActivateFromApprovalParams{
+		ApprovalID:     parts[0],
+		CandidateToken: parts[1],
+		ResolvedVia:    approvals.ResolvedViaTelegram,
+		ResolvedBy:     resolvedBy,
+		ActorType:      "telegram",
+		ActorID:        resolvedBy,
+		ResolvedAt:     time.Now().UTC(),
+	})
+	if err != nil {
+		return err
+	}
+
+	if query.Message != nil {
+		text := fmt.Sprintf("Агент подключён к вкладке: %s\nURL: %s\nSession: active", firstNonEmpty(result.Session.CurrentTitle, result.Candidate.Title), firstNonEmpty(result.Session.CurrentURL, result.Candidate.CurrentURL))
+		if _, sendErr := a.client.SendMessage(ctx, query.Message.Chat.ID, text); sendErr != nil {
+			a.log.Warn("send browser tab selection confirmation failed", slog.String("error", sendErr.Error()))
+		}
+	}
+	return nil
+}
+
+func (a *Adapter) handleTabRejectionCallback(ctx context.Context, query *CallbackQuery) error {
+	if a.approvalService == nil {
+		return fmt.Errorf("approval service is not configured")
+	}
+
+	data := query.Data
+	resolutionReason := "browser tab selection denied in telegram"
+	switch {
+	case strings.HasPrefix(data, tabDenyCallbackPrefix):
+		data = strings.TrimPrefix(data, tabDenyCallbackPrefix)
+	case strings.HasPrefix(data, tabCancelCallbackPrefix):
+		data = strings.TrimPrefix(data, tabCancelCallbackPrefix)
+		resolutionReason = "browser tab selection cancelled in telegram"
+	default:
+		return fmt.Errorf("invalid browser tab rejection callback payload")
+	}
+	approvalID := strings.TrimSpace(data)
+	if approvalID == "" {
+		return fmt.Errorf("approval id is required")
+	}
+
+	resolvedBy := "telegram"
+	if query.From != nil {
+		resolvedBy = fmt.Sprintf("telegram_user:%d", query.From.ID)
+	}
+
+	_, _, err := a.approvalService.ResolveByApprovalID(ctx, approvals.ResolveByApprovalIDParams{
+		ApprovalID:       approvalID,
+		Approved:         false,
+		ResolvedVia:      approvals.ResolvedViaTelegram,
+		ResolvedBy:       resolvedBy,
+		ResolutionReason: resolutionReason,
+		ResolvedAt:       time.Now().UTC(),
+		ActorType:        "telegram",
+		ActorID:          resolvedBy,
+	})
+	if err != nil {
+		return err
+	}
+
+	if query.Message != nil {
+		text := "Подключение агента к вкладке отменено."
+		if _, sendErr := a.client.SendMessage(ctx, query.Message.Chat.ID, text); sendErr != nil {
+			a.log.Warn("send browser tab rejection confirmation failed", slog.String("error", sendErr.Error()))
+		}
+	}
+	return nil
+}
+
 func telegramResolutionReason(approved bool) string {
 	if approved {
 		return "approved in telegram"
 	}
 	return "rejected in telegram"
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, value := range values {
+		if strings.TrimSpace(value) != "" {
+			return value
+		}
+	}
+	return ""
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -55,6 +56,32 @@ func (f *fakeArtifactsStore) GetArtifactByID(_ context.Context, artifactID strin
 	return item, nil
 }
 
+func (f *fakeArtifactsStore) SaveBrowserCapture(_ context.Context, runID, sessionKey, toolCallID, singleTabSessionID, currentURL, currentTitle, imageDataURL string, createdAt time.Time) (artifacts.Record, error) {
+	if f.err != nil {
+		return artifacts.Record{}, f.err
+	}
+	record := artifacts.Record{
+		ArtifactID:    "artifact-capture-1",
+		RunID:         runID,
+		SessionKey:    sessionKey,
+		ArtifactType:  artifacts.TypeBrowserCapture,
+		Title:         "Browser capture",
+		Summary:       currentURL,
+		ContentJSON:   `{"image_data_url":"` + imageDataURL + `"}`,
+		ContentFormat: "image_data_url",
+		SourceType:    "single_tab_capture",
+		SourceRef:     toolCallID,
+		CreatedAt:     createdAt,
+		UpdatedAt:     createdAt,
+	}
+	f.items = append(f.items, record)
+	if f.itemByID == nil {
+		f.itemByID = map[string]artifacts.Record{}
+	}
+	f.itemByID[record.ArtifactID] = record
+	return record, nil
+}
+
 func TestArtifactsEndpoints_ListGetAndTaskArtifacts(t *testing.T) {
 	t.Parallel()
 
@@ -63,6 +90,7 @@ func TestArtifactsEndpoints_ListGetAndTaskArtifacts(t *testing.T) {
 	server := NewArtifactsServer(
 		&fakeArtifactsStore{items: []artifacts.Record{record}, itemByID: map[string]artifacts.Record{"art-1": record}},
 		&fakeTaskActivityStore{items: []activity.Record{{ActivityID: 1, RunID: "run-1", SessionKey: "telegram:chat:1", ActivityType: activity.TypeTaskReceived, Title: "Task received", Summary: "Task context prepared", DetailsJSON: `{"source":"telegram"}`, ActorType: "system", Severity: activity.SeverityInfo, CreatedAt: now}}},
+		&fakeArtifactsStore{items: []artifacts.Record{record}, itemByID: map[string]artifacts.Record{"art-1": record}},
 	)
 
 	listReq := httptest.NewRequest(http.MethodGet, "/api/v2/artifacts?type=assistant_final", nil)
@@ -98,5 +126,20 @@ func TestArtifactsEndpoints_ListGetAndTaskArtifacts(t *testing.T) {
 	server.HandleListTaskActivity("/api/v2/tasks/").ServeHTTP(activityRes, activityReq)
 	if activityRes.Code != http.StatusOK {
 		t.Fatalf("expected 200 task activity, got %d", activityRes.Code)
+	}
+}
+
+func TestArtifactsEndpoint_CreateBrowserCapture(t *testing.T) {
+	t.Parallel()
+
+	store := &fakeArtifactsStore{}
+	server := NewArtifactsServer(store, &fakeTaskActivityStore{}, store)
+	body := strings.NewReader(`{"run_id":"run-1","session_key":"telegram:chat:1","tool_call_id":"call-1","single_tab_session_id":"single-tab-1","current_url":"https://example.com","current_title":"Example","image_data_url":"data:image/png;base64,abc"}`)
+
+	req := httptest.NewRequest(http.MethodPost, "/api/v2/artifacts/browser-captures", body)
+	res := httptest.NewRecorder()
+	server.HandleCreateBrowserCapture().ServeHTTP(res, req)
+	if res.Code != http.StatusCreated {
+		t.Fatalf("expected 201 create browser capture, got %d", res.Code)
 	}
 }

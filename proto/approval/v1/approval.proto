@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package butler.approval.v1;
+
+option go_package = "github.com/butler/butler/internal/gen/approval/v1;approvalv1";
+
+enum ApprovalType {
+  APPROVAL_TYPE_UNSPECIFIED = 0;
+  APPROVAL_TYPE_TOOL_CALL = 1;
+  APPROVAL_TYPE_BROWSER_TAB_SELECTION = 2;
+}
+
+message ApprovalPayload {
+  ApprovalType approval_type = 1;
+
+  oneof payload {
+    BrowserTabSelectionPayload browser_tab_selection = 10;
+  }
+}
+
+message BrowserTabSelectionPayload {
+  string prompt_title = 1;
+  string prompt_body = 2;
+  repeated BrowserTabCandidate candidates = 3;
+  bool allow_deny = 4;
+  bool allow_cancel = 5;
+}
+
+message BrowserTabCandidate {
+  string candidate_token = 1;
+  string title = 2;
+  string domain = 3;
+  string current_url = 4;
+  string favicon_url = 5;
+  string display_label = 6;
+}
+
+message BrowserTabSelectionDecision {
+  string approval_id = 1;
+  string candidate_token = 2;
+  string resolved_via = 3;
+  string resolved_by = 4;
+}

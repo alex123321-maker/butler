@@ -18,8 +18,8 @@ func TestStreamServer_InitialSnapshotAndFallback(t *testing.T) {
 	hub := observability.NewHub()
 	taskServer := NewTaskViewServer(&fakeTaskReader{}, nil, nil, nil, nil, nil, nil)
 	overviewServer := NewOverviewServer(&stagedTaskReader{byStatus: map[string][]run.TaskRow{}, errByKey: map[string]error{}}, nil)
-	approvalsServer := NewApprovalsServer(&fakeApprovalsStore{itemByID: map[string]approvals.Record{}}, &fakeApprovalsResolver{})
-	systemServer := NewSystemServer(nil, &fakeSystemTaskReader{byStatus: map[string][]run.TaskRow{}}, &fakeSystemApprovalsRepo{}, "openai", true, false)
+	approvalsServer := NewApprovalsServer(&fakeApprovalsStore{itemByID: map[string]approvals.Record{}}, &fakeApprovalsResolver{}, nil)
+	systemServer := NewSystemServer(nil, &fakeSystemTaskReader{byStatus: map[string][]run.TaskRow{}}, &fakeSystemApprovalsRepo{}, "openai", true, false, "dual", true, 90)
 	activityServer := NewActivityServer(&fakeActivityStore{})
 
 	server := NewStreamServer(hub, taskServer, overviewServer, approvalsServer, systemServer, activityServer)

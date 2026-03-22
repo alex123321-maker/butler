@@ -91,7 +91,15 @@ func TestArtifactsServiceSavesUsefulResults(t *testing.T) {
 		t.Fatalf("expected doctor_report, got %q", doctor.ArtifactType)
 	}
 
-	if len(repo.items) != 3 {
-		t.Fatalf("expected 3 artifacts persisted, got %d", len(repo.items))
+	capture, err := svc.SaveBrowserCapture(context.Background(), "run-1", "telegram:chat:1", "tool-call-1", "single-tab-1", "https://example.com", "Example", "data:image/png;base64,abc", now)
+	if err != nil {
+		t.Fatalf("SaveBrowserCapture returned error: %v", err)
+	}
+	if capture.ArtifactType != TypeBrowserCapture {
+		t.Fatalf("expected browser_capture, got %q", capture.ArtifactType)
+	}
+
+	if len(repo.items) != 4 {
+		t.Fatalf("expected 4 artifacts persisted, got %d", len(repo.items))
 	}
 }

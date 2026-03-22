@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"strconv"
 	"strings"
@@ -17,6 +18,10 @@ type artifactsStore interface {
 	GetArtifactByID(ctx context.Context, artifactID string) (artifacts.Record, error)
 }
 
+type artifactsWriter interface {
+	SaveBrowserCapture(ctx context.Context, runID, sessionKey, toolCallID, singleTabSessionID, currentURL, currentTitle, imageDataURL string, createdAt time.Time) (artifacts.Record, error)
+}
+
 type taskActivityStore interface {
 	ListActivities(ctx context.Context, params activity.ListParams) ([]activity.Record, error)
 }
@@ -24,10 +29,11 @@ type taskActivityStore interface {
 type ArtifactsServer struct {
 	store    artifactsStore
 	activity taskActivityStore
+	writer   artifactsWriter
 }
 
-func NewArtifactsServer(store artifactsStore, activityStore taskActivityStore) *ArtifactsServer {
-	return &ArtifactsServer{store: store, activity: activityStore}
+func NewArtifactsServer(store artifactsStore, activityStore taskActivityStore, writer artifactsWriter) *ArtifactsServer {
+	return &ArtifactsServer{store: store, activity: activityStore, writer: writer}
 }
 
 func (s *ArtifactsServer) HandleListArtifacts() http.Handler {
@@ -107,6 +113,46 @@ func (s *ArtifactsServer) HandleGetArtifact(prefix string) http.Handler {
 	})
 }
 
+func (s *ArtifactsServer) HandleCreateBrowserCapture() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		if s.writer == nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "artifacts writer is not configured"})
+			return
+		}
+
+		var request createBrowserCaptureRequest
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid JSON request body"})
+			return
+		}
+		if strings.TrimSpace(request.RunID) == "" || strings.TrimSpace(request.SessionKey) == "" || strings.TrimSpace(request.ImageDataURL) == "" {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "run_id, session_key, and image_data_url are required"})
+			return
+		}
+
+		record, err := s.writer.SaveBrowserCapture(
+			r.Context(),
+			request.RunID,
+			request.SessionKey,
+			request.ToolCallID,
+			request.SingleTabSessionID,
+			request.CurrentURL,
+			request.CurrentTitle,
+			request.ImageDataURL,
+			time.Now().UTC(),
+		)
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to create browser capture artifact"})
+			return
+		}
+		writeJSON(w, http.StatusCreated, map[string]any{"artifact": toArtifactDTO(record)})
+	})
+}
+
 func (s *ArtifactsServer) HandleListTaskArtifacts(prefix string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -150,6 +196,16 @@ type artifactDTO struct {
 	SourceRef     string `json:"source_ref"`
 	CreatedAt     string `json:"created_at"`
 	UpdatedAt     string `json:"updated_at"`
+}
+
+type createBrowserCaptureRequest struct {
+	RunID              string `json:"run_id"`
+	SessionKey         string `json:"session_key"`
+	ToolCallID         string `json:"tool_call_id"`
+	SingleTabSessionID string `json:"single_tab_session_id"`
+	CurrentURL         string `json:"current_url"`
+	CurrentTitle       string `json:"current_title"`
+	ImageDataURL       string `json:"image_data_url"`
 }
 
 func toArtifactDTO(rec artifacts.Record) artifactDTO {

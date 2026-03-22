@@ -1,0 +1,9 @@
+{
+  "name": "com.butler.browser_bridge",
+  "description": "Butler browser bridge native messaging host",
+  "path": "C:\\ABSOLUTE\\PATH\\TO\\browser-bridge.exe",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://REPLACE_WITH_EXTENSION_ID/"
+  ]
+}

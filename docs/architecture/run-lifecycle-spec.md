@@ -173,8 +173,8 @@ Memory Pipeline Worker отвечает за:
 Channel Adapter отвечает за:
 - доставку пользователю partial response events;
 - доставку final response;
-- доставку approval request;
-- приём user approval / reject action;
+- доставку approval request, включая typed selection approvals;
+- приём user approval / reject action или selection decision;
 - нормализацию channel-specific UX в единые input/output events.
 
 ---
@@ -403,6 +403,8 @@ Model interaction может быть многошаговым внутри од
 - run переводится в `awaiting_approval`;
 - orchestrator формирует approval request;
 - Channel Adapter доставляет approval request пользователю;
+- approval может быть не только бинарным approve/reject, но и typed selection payload;
+- для bind-like flows (например, выбор вкладки браузера) approval response может создать durable capability state до следующего tool execution шага;
 - при approve run переходит в `tool_running`;
 - при reject run переходит в `cancelled`;
 - при timeout run переходит в `timed_out`.
@@ -412,7 +414,7 @@ Model interaction может быть многошаговым внутри од
 Если approval не требуется или уже получен:
 - Tool Broker валидирует schema;
 - применяет policy;
-- разрешает credential refs при необходимости;
+- разрешает credential refs только для тех tool families, которые их поддерживают по контракту;
 - маршрутизирует вызов в runtime container;
 - run переводится в `tool_running`.
 
@@ -673,7 +675,21 @@ Resume допускается только если:
 - lease успешно восстановлен или переиздан;
 - terminal run уже не может быть корректно продолжен как тот же execution unit.
 
-### 22.2 Retry
+### 22.2 Session-scoped external capability state
+
+Некоторые operator-approved capability states могут жить дольше одного run и переиспользоваться следующими run внутри той же Butler session.
+
+Примеры:
+- active approval-derived capability;
+- session-bound browser access вроде `single_tab_session`.
+
+Для таких состояний действуют правила:
+- durable source of truth хранится вне run record;
+- resumed run получает только безопасную capability reference, а не низкоуровневый runtime handle;
+- потеря capability state не должна нарушать session ownership model;
+- run lifecycle остаётся run-centric даже если capability state переживает несколько runs.
+
+### 22.3 Retry
 
 Retry допускается не для всего run, а на уровне отдельных компонентов:
 - input event retry;

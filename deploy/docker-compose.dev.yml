@@ -26,6 +26,11 @@ services:
       - 11080:8080
       - 11090:9090
 
+  tool-webfetch:
+    ports:
+      - 11580:8080
+      - 11590:9090
+
   tool-browser:
     ports:
       - 12080:8080

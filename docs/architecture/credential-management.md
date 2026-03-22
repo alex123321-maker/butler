@@ -22,7 +22,7 @@
 1. Агент не видит секретные значения.
 2. Пользователь может явно разрешить использование конкретных учётных данных в конкретном запросе.
 3. Инструменты могут использовать секреты через единый механизм.
-4. Авторизация работает одинаково для browser tools и HTTP tools.
+4. Авторизация работает единообразно для credential-aware tool families, прежде всего `browser.*` и `http.*`.
 5. Использование секретов контролируется политиками, доменами и режимами автономности.
 6. Все обращения к учётным данным аудируются.
 
@@ -54,6 +54,16 @@ LLM не должен получать пароль, токен, cookie value, s
 
 Учётные данные model providers (например, OpenAI Codex refresh token или GitHub Copilot device-flow credentials) не должны смешиваться с user-facing credential aliases.
 Они хранятся и обновляются в системном control-plane слое Butler и выдаются transport слою только как runtime auth material.
+
+### 4.7 Non-credential-aware tool families are explicit
+
+Не все tool families обязаны поддерживать секретные инъекции.
+
+Если конкретный tool contract или tool family явно объявлены non-credential-aware, это означает:
+
+* `credential_ref` в их аргументах запрещён;
+* Tool Broker должен отклонять такие вызовы до runtime execution;
+* отсутствие secret injection считается частью security boundary, а не временным ограничением.
 
 ---
 
@@ -257,6 +267,9 @@ Lookup не возвращает секретные значения, approval p
 * runtime подставляет реальные значения;
 * результат возвращается без секрета.
 
+Это правило относится к credential-aware browser tooling вроде `browser.*`.
+Session-bound local browser control вроде `single_tab.*` может сознательно не поддерживать credential flows вообще.
+
 ### 7.2 HTTP / Web
 
 HTTP tool должен поддерживать auth references.
@@ -408,6 +421,17 @@ LLM никогда не получает:
 9. Агент отправляет форму.
 10. Runtime возвращает безопасный результат.
 
+### 12.2 Ограничение для session-bound single-tab browser control
+
+Если Butler использует отдельную tool family `single_tab.*` для доступа к одной локальной пользовательской вкладке, credential injection в этом режиме не поддерживается.
+
+Для такого режима действуют правила:
+
+1. `single_tab.fill` и `single_tab.type` принимают только обычные строки.
+2. `credential_ref` в `single_tab.*` считается contract violation.
+3. Tool Broker должен отклонять secret-bearing args до runtime routing.
+4. Browser bridge / local host не должен получать raw Butler credential material через `single_tab.*`.
+
 ---
 
 ## 13. Минимальный набор команд
@@ -499,7 +523,7 @@ Important constraints:
 
 1. Пользователь работает с alias.
 2. Агент видит только alias и метаданные.
-3. Агент передаёт в tools typed `credential_ref`.
+3. Агент передаёт в credential-aware tools typed `credential_ref`.
 4. Tool Broker и Credential Broker foundation проверяют допустимость использования по alias, tool, domain и autonomy mode.
 5. Credential Broker разрешает ссылку в runtime.
 6. Runtime использует секрет без раскрытия агенту.

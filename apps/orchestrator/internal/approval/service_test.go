@@ -9,6 +9,7 @@ import (
 type memoryRepo struct {
 	recordsByID       map[string]Record
 	recordsByToolCall map[string]Record
+	tabCandidates     map[string][]TabCandidate
 	events            []Event
 }
 
@@ -16,6 +17,7 @@ func newMemoryRepo() *memoryRepo {
 	return &memoryRepo{
 		recordsByID:       map[string]Record{},
 		recordsByToolCall: map[string]Record{},
+		tabCandidates:     map[string][]TabCandidate{},
 	}
 }
 
@@ -25,10 +27,12 @@ func (m *memoryRepo) CreateApproval(_ context.Context, params CreateParams) (Rec
 		RunID:        params.RunID,
 		SessionKey:   params.SessionKey,
 		ToolCallID:   params.ToolCallID,
+		ApprovalType: params.ApprovalType,
 		Status:       StatusPending,
 		RequestedVia: params.RequestedVia,
 		ToolName:     params.ToolName,
 		ArgsJSON:     params.ArgsJSON,
+		PayloadJSON:  params.PayloadJSON,
 		RiskLevel:    params.RiskLevel,
 		Summary:      params.Summary,
 		DetailsJSON:  params.DetailsJSON,
@@ -74,6 +78,50 @@ func (m *memoryRepo) ResolveApproval(_ context.Context, params ResolveParams) (R
 	m.recordsByID[params.ApprovalID] = rec
 	m.recordsByToolCall[rec.ToolCallID] = rec
 	return rec, nil
+}
+
+func (m *memoryRepo) CreateTabCandidates(_ context.Context, params []CreateTabCandidateParams) error {
+	for _, candidate := range params {
+		status := candidate.Status
+		if status == "" {
+			status = "available"
+		}
+		m.tabCandidates[candidate.ApprovalID] = append(m.tabCandidates[candidate.ApprovalID], TabCandidate{
+			ApprovalID:     candidate.ApprovalID,
+			CandidateToken: candidate.CandidateToken,
+			InternalTabRef: candidate.InternalTabRef,
+			Title:          candidate.Title,
+			Domain:         candidate.Domain,
+			CurrentURL:     candidate.CurrentURL,
+			FaviconURL:     candidate.FaviconURL,
+			DisplayLabel:   candidate.DisplayLabel,
+			Status:         status,
+			CreatedAt:      time.Now().UTC(),
+		})
+	}
+	return nil
+}
+
+func (m *memoryRepo) ListTabCandidates(_ context.Context, approvalID string) ([]TabCandidate, error) {
+	return append([]TabCandidate(nil), m.tabCandidates[approvalID]...), nil
+}
+
+func (m *memoryRepo) SelectTabCandidate(_ context.Context, approvalID, candidateToken string, selectedAt time.Time) (TabCandidate, error) {
+	items := m.tabCandidates[approvalID]
+	for index := range items {
+		if items[index].CandidateToken == candidateToken {
+			items[index].Status = "selected"
+			items[index].SelectedAt = &selectedAt
+			for other := range items {
+				if other != index && items[other].Status == "available" {
+					items[other].Status = "cancelled"
+				}
+			}
+			m.tabCandidates[approvalID] = items
+			return items[index], nil
+		}
+	}
+	return TabCandidate{}, ErrTabCandidateNotFound
 }
 
 func (m *memoryRepo) InsertEvent(_ context.Context, event Event) error {
@@ -122,6 +170,7 @@ func TestServiceCreateAndResolveApproval(t *testing.T) {
 		RunID:        "run-1",
 		SessionKey:   "telegram:chat:1",
 		ToolCallID:   "tool-1",
+		ApprovalType: ApprovalTypeToolCall,
 		RequestedVia: RequestedViaTelegram,
 		ToolName:     "http.request",
 		ArgsJSON:     `{"url":"https://example.com"}`,
@@ -175,6 +224,7 @@ func TestServiceResolveIdempotentAfterAlreadyResolved(t *testing.T) {
 		RunID:        "run-2",
 		SessionKey:   "telegram:chat:2",
 		ToolCallID:   "tool-2",
+		ApprovalType: ApprovalTypeToolCall,
 		RequestedVia: RequestedViaTelegram,
 		ToolName:     "http.request",
 		RequestedAt:  now,
@@ -193,5 +243,103 @@ func TestServiceResolveIdempotentAfterAlreadyResolved(t *testing.T) {
 	}
 	if gate.resolved["tool-2"] {
 		t.Fatal("expected gate to stay rejected from first resolution")
+	}
+}
+
+func TestServiceResolveByApprovalID(t *testing.T) {
+	t.Parallel()
+
+	repo := newMemoryRepo()
+	gate := &fakeGate{}
+	svc := NewService(repo, gate)
+	now := time.Now().UTC()
+
+	rec, err := svc.CreatePendingApproval(context.Background(), CreatePendingParams{
+		RunID:        "run-3",
+		SessionKey:   "web:session:3",
+		ToolCallID:   "tool-3",
+		ApprovalType: ApprovalTypeBrowserTabSelection,
+		RequestedVia: RequestedViaBoth,
+		ToolName:     "single_tab.bind",
+		RequestedAt:  now,
+		TabCandidates: []CreateTabCandidateParams{{
+			CandidateToken: "tok-1",
+			InternalTabRef: "browser-a:1",
+		}},
+	})
+	if err != nil {
+		t.Fatalf("CreatePendingApproval returned error: %v", err)
+	}
+
+	updated, changed, err := svc.ResolveByApprovalID(context.Background(), ResolveByApprovalIDParams{
+		ApprovalID:       rec.ApprovalID,
+		Approved:         false,
+		ResolvedVia:      ResolvedViaWeb,
+		ResolvedBy:       "web",
+		ResolutionReason: "cancelled in web ui",
+		ResolvedAt:       now.Add(time.Minute),
+		ActorType:        "web",
+		ActorID:          "web",
+	})
+	if err != nil {
+		t.Fatalf("ResolveByApprovalID returned error: %v", err)
+	}
+	if !changed {
+		t.Fatal("expected changed=true")
+	}
+	if updated.Status != StatusRejected {
+		t.Fatalf("expected rejected status, got %q", updated.Status)
+	}
+	if gate.resolved["tool-3"] {
+		t.Fatal("expected gate resolution to remain false")
+	}
+}
+
+func TestServiceCreateBrowserTabSelectionApprovalWithCandidates(t *testing.T) {
+	t.Parallel()
+
+	repo := newMemoryRepo()
+	svc := NewService(repo, nil)
+
+	now := time.Date(2026, 3, 22, 9, 0, 0, 0, time.UTC)
+	rec, err := svc.CreatePendingApproval(context.Background(), CreatePendingParams{
+		RunID:        "run-tab-1",
+		SessionKey:   "web:session:1",
+		ToolCallID:   "tool-bind-1",
+		ApprovalType: ApprovalTypeBrowserTabSelection,
+		RequestedVia: RequestedViaBoth,
+		ToolName:     "single_tab.bind",
+		PayloadJSON:  `{"selection_mode":"single"}`,
+		Summary:      "Select a browser tab",
+		RequestedAt:  now,
+		TabCandidates: []CreateTabCandidateParams{
+			{
+				CandidateToken: "tabtok-1",
+				InternalTabRef: "browser-a:41",
+				Title:          "Inbox",
+				Domain:         "mail.example.com",
+				CurrentURL:     "https://mail.example.com/inbox",
+				DisplayLabel:   "Inbox - mail.example.com",
+			},
+		},
+	})
+	if err != nil {
+		t.Fatalf("CreatePendingApproval returned error: %v", err)
+	}
+	if rec.ApprovalType != ApprovalTypeBrowserTabSelection {
+		t.Fatalf("expected browser_tab_selection approval type, got %q", rec.ApprovalType)
+	}
+	if rec.PayloadJSON != `{"selection_mode":"single"}` {
+		t.Fatalf("expected payload_json to be preserved, got %q", rec.PayloadJSON)
+	}
+	candidates, err := repo.ListTabCandidates(context.Background(), rec.ApprovalID)
+	if err != nil {
+		t.Fatalf("ListTabCandidates returned error: %v", err)
+	}
+	if len(candidates) != 1 {
+		t.Fatalf("expected 1 tab candidate, got %d", len(candidates))
+	}
+	if candidates[0].CandidateToken != "tabtok-1" {
+		t.Fatalf("expected candidate token tabtok-1, got %q", candidates[0].CandidateToken)
 	}
 }

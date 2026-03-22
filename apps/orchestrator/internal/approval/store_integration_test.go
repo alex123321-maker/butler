@@ -57,9 +57,11 @@ func TestApprovalRepositoryIntegration_CreateResolveAndEvents(t *testing.T) {
 		RunID:        runID,
 		SessionKey:   sessionKey,
 		ToolCallID:   "tool-int-1",
+		ApprovalType: ApprovalTypeToolCall,
 		RequestedVia: RequestedViaTelegram,
 		ToolName:     "http.request",
 		ArgsJSON:     `{"url":"https://example.com"}`,
+		PayloadJSON:  `{"kind":"tool_call"}`,
 		RequestedAt:  now,
 	})
 	if err != nil {
@@ -67,6 +69,12 @@ func TestApprovalRepositoryIntegration_CreateResolveAndEvents(t *testing.T) {
 	}
 	if rec.Status != StatusPending {
 		t.Fatalf("expected pending status, got %q", rec.Status)
+	}
+	if rec.ApprovalType != ApprovalTypeToolCall {
+		t.Fatalf("expected tool_call approval type, got %q", rec.ApprovalType)
+	}
+	if rec.PayloadJSON != `{"kind":"tool_call"}` {
+		t.Fatalf("expected payload_json to be preserved, got %q", rec.PayloadJSON)
 	}
 
 	updated, err := repo.ResolveApproval(ctx, ResolveParams{
@@ -83,6 +91,28 @@ func TestApprovalRepositoryIntegration_CreateResolveAndEvents(t *testing.T) {
 	}
 	if updated.Status != StatusApproved {
 		t.Fatalf("expected approved status, got %q", updated.Status)
+	}
+
+	if err := repo.CreateTabCandidates(ctx, []CreateTabCandidateParams{
+		{
+			ApprovalID:     rec.ApprovalID,
+			CandidateToken: "tab-int-1",
+			InternalTabRef: "native:99",
+			Title:          "Docs",
+			Domain:         "docs.example.com",
+			CurrentURL:     "https://docs.example.com",
+			DisplayLabel:   "Docs - docs.example.com",
+		},
+	}); err != nil {
+		t.Fatalf("CreateTabCandidates returned error: %v", err)
+	}
+
+	candidates, err := repo.ListTabCandidates(ctx, rec.ApprovalID)
+	if err != nil {
+		t.Fatalf("ListTabCandidates returned error: %v", err)
+	}
+	if len(candidates) != 1 {
+		t.Fatalf("expected 1 tab candidate, got %d", len(candidates))
 	}
 
 	if err := repo.InsertEvent(ctx, Event{

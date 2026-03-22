@@ -13,6 +13,7 @@ const (
 	TypeAssistantFinal = "assistant_final"
 	TypeDoctorReport   = "doctor_report"
 	TypeToolResult     = "tool_result"
+	TypeBrowserCapture = "browser_capture"
 	TypeSummary        = "summary"
 )
 

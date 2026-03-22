@@ -23,21 +23,35 @@ func NewService(repo Repository, gate Gate) *Service {
 }
 
 type CreatePendingParams struct {
-	RunID        string
-	SessionKey   string
-	ToolCallID   string
-	RequestedVia string
-	ToolName     string
-	ArgsJSON     string
-	RiskLevel    string
-	Summary      string
-	DetailsJSON  string
-	RequestedAt  time.Time
-	ExpiresAt    *time.Time
+	RunID         string
+	SessionKey    string
+	ToolCallID    string
+	ApprovalType  string
+	RequestedVia  string
+	ToolName      string
+	ArgsJSON      string
+	PayloadJSON   string
+	RiskLevel     string
+	Summary       string
+	DetailsJSON   string
+	TabCandidates []CreateTabCandidateParams
+	RequestedAt   time.Time
+	ExpiresAt     *time.Time
 }
 
 type ResolveByToolCallParams struct {
 	ToolCallID       string
+	Approved         bool
+	ResolvedVia      string
+	ResolvedBy       string
+	ResolutionReason string
+	ResolvedAt       time.Time
+	ActorType        string
+	ActorID          string
+}
+
+type ResolveByApprovalIDParams struct {
+	ApprovalID       string
 	Approved         bool
 	ResolvedVia      string
 	ResolvedBy       string
@@ -60,8 +74,17 @@ func (s *Service) CreatePendingApproval(ctx context.Context, params CreatePendin
 	if params.RequestedAt.IsZero() {
 		params.RequestedAt = time.Now().UTC()
 	}
+	if strings.TrimSpace(params.ApprovalType) == "" {
+		params.ApprovalType = ApprovalTypeToolCall
+	}
 	if strings.TrimSpace(params.RequestedVia) == "" {
 		params.RequestedVia = RequestedViaTelegram
+	}
+	if strings.TrimSpace(params.PayloadJSON) == "" {
+		params.PayloadJSON = "{}"
+	}
+	if params.ApprovalType == ApprovalTypeBrowserTabSelection && len(params.TabCandidates) == 0 {
+		return Record{}, fmt.Errorf("browser_tab_selection approvals require at least one tab candidate")
 	}
 
 	record, err := s.repo.CreateApproval(ctx, CreateParams{
@@ -69,9 +92,11 @@ func (s *Service) CreatePendingApproval(ctx context.Context, params CreatePendin
 		RunID:        params.RunID,
 		SessionKey:   params.SessionKey,
 		ToolCallID:   params.ToolCallID,
+		ApprovalType: params.ApprovalType,
 		RequestedVia: params.RequestedVia,
 		ToolName:     params.ToolName,
 		ArgsJSON:     params.ArgsJSON,
+		PayloadJSON:  params.PayloadJSON,
 		RiskLevel:    params.RiskLevel,
 		Summary:      params.Summary,
 		DetailsJSON:  params.DetailsJSON,
@@ -80,6 +105,15 @@ func (s *Service) CreatePendingApproval(ctx context.Context, params CreatePendin
 	})
 	if err != nil {
 		return Record{}, err
+	}
+
+	if len(params.TabCandidates) > 0 {
+		for index := range params.TabCandidates {
+			params.TabCandidates[index].ApprovalID = record.ApprovalID
+		}
+		if err := s.repo.CreateTabCandidates(ctx, params.TabCandidates); err != nil {
+			return Record{}, err
+		}
 	}
 
 	_ = s.repo.InsertEvent(ctx, Event{
@@ -92,7 +126,7 @@ func (s *Service) CreatePendingApproval(ctx context.Context, params CreatePendin
 		ActorType:    "system",
 		ActorID:      "orchestrator",
 		Reason:       "approval required before tool execution",
-		MetadataJSON: `{"phase":"pre_wait"}`,
+		MetadataJSON: fmt.Sprintf(`{"phase":"pre_wait","approval_type":%q}`, record.ApprovalType),
 		CreatedAt:    params.RequestedAt,
 	})
 
@@ -118,19 +152,51 @@ func (s *Service) ResolveByToolCall(ctx context.Context, params ResolveByToolCal
 	if actorType == "" {
 		actorType = "system"
 	}
-	status := StatusRejected
-	if params.Approved {
-		status = StatusApproved
-	}
-
 	record, err := s.repo.GetApprovalByToolCallID(ctx, toolCallID)
 	if err != nil {
 		return Record{}, false, err
 	}
 
+	return s.resolveRecord(ctx, record, params.Approved, resolvedVia, params.ResolvedBy, params.ResolutionReason, params.ResolvedAt, actorType, params.ActorID)
+}
+
+func (s *Service) ResolveByApprovalID(ctx context.Context, params ResolveByApprovalIDParams) (Record, bool, error) {
+	if s == nil || s.repo == nil {
+		return Record{}, false, fmt.Errorf("approval service is not configured")
+	}
+	approvalID := strings.TrimSpace(params.ApprovalID)
+	if approvalID == "" {
+		return Record{}, false, fmt.Errorf("approval_id is required")
+	}
+	if params.ResolvedAt.IsZero() {
+		params.ResolvedAt = time.Now().UTC()
+	}
+	resolvedVia := strings.TrimSpace(params.ResolvedVia)
+	if resolvedVia == "" {
+		resolvedVia = ResolvedViaSystem
+	}
+	actorType := strings.TrimSpace(params.ActorType)
+	if actorType == "" {
+		actorType = "system"
+	}
+
+	record, err := s.repo.GetApprovalByID(ctx, approvalID)
+	if err != nil {
+		return Record{}, false, err
+	}
+
+	return s.resolveRecord(ctx, record, params.Approved, resolvedVia, params.ResolvedBy, params.ResolutionReason, params.ResolvedAt, actorType, params.ActorID)
+}
+
+func (s *Service) resolveRecord(ctx context.Context, record Record, approved bool, resolvedVia, resolvedBy, resolutionReason string, resolvedAt time.Time, actorType, actorID string) (Record, bool, error) {
+	status := StatusRejected
+	if approved {
+		status = StatusApproved
+	}
+
 	if record.Status != StatusPending {
 		if s.gate != nil {
-			s.gate.Resolve(toolCallID, record.Status == StatusApproved)
+			s.gate.Resolve(record.ToolCallID, record.Status == StatusApproved)
 		}
 		return record, false, nil
 	}
@@ -140,9 +206,9 @@ func (s *Service) ResolveByToolCall(ctx context.Context, params ResolveByToolCal
 		ExpectedStatus:   StatusPending,
 		Status:           status,
 		ResolvedVia:      resolvedVia,
-		ResolvedBy:       params.ResolvedBy,
-		ResolutionReason: params.ResolutionReason,
-		ResolvedAt:       params.ResolvedAt,
+		ResolvedBy:       resolvedBy,
+		ResolutionReason: resolutionReason,
+		ResolvedAt:       resolvedAt,
 	})
 	if err != nil {
 		if err == ErrApprovalStatusConflict {
@@ -151,7 +217,7 @@ func (s *Service) ResolveByToolCall(ctx context.Context, params ResolveByToolCal
 				return Record{}, false, getErr
 			}
 			if s.gate != nil {
-				s.gate.Resolve(toolCallID, reloaded.Status == StatusApproved)
+				s.gate.Resolve(record.ToolCallID, reloaded.Status == StatusApproved)
 			}
 			return reloaded, false, nil
 		}
@@ -166,14 +232,14 @@ func (s *Service) ResolveByToolCall(ctx context.Context, params ResolveByToolCal
 		StatusBefore: StatusPending,
 		StatusAfter:  status,
 		ActorType:    actorType,
-		ActorID:      params.ActorID,
-		Reason:       params.ResolutionReason,
-		MetadataJSON: fmt.Sprintf(`{"resolved_via":%q,"approved":%t}`, resolvedVia, params.Approved),
-		CreatedAt:    params.ResolvedAt,
+		ActorID:      actorID,
+		Reason:       resolutionReason,
+		MetadataJSON: fmt.Sprintf(`{"resolved_via":%q,"approved":%t}`, resolvedVia, approved),
+		CreatedAt:    resolvedAt,
 	})
 
 	if s.gate != nil {
-		s.gate.Resolve(toolCallID, params.Approved)
+		s.gate.Resolve(record.ToolCallID, approved)
 	}
 
 	return updated, true, nil

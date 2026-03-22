@@ -7,7 +7,9 @@ import (
 	"testing"
 	"time"
 
+	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
+	singletab "github.com/butler/butler/apps/orchestrator/internal/singletab"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/modelprovider"
 	"github.com/butler/butler/internal/providerauth"
@@ -22,6 +24,126 @@ func (s stubExecutor) Execute(ctx context.Context, event ingress.InputEvent) (*f
 		return s.execute(ctx, event)
 	}
 	return &flow.ExecutionResult{}, nil
+}
+
+type fakeSingleTabSelector struct {
+	result singletab.ActivationResult
+	err    error
+}
+
+func (f *fakeSingleTabSelector) ActivateFromApproval(_ context.Context, params singletab.ActivateFromApprovalParams) (singletab.ActivationResult, error) {
+	if f.err != nil {
+		return singletab.ActivationResult{}, f.err
+	}
+	f.result.Candidate.CandidateToken = params.CandidateToken
+	return f.result, nil
+}
+
+type memoryApprovalRepo struct {
+	recordsByID       map[string]approvals.Record
+	recordsByToolCall map[string]approvals.Record
+	tabCandidates     map[string][]approvals.TabCandidate
+}
+
+func newMemoryApprovalRepo() *memoryApprovalRepo {
+	return &memoryApprovalRepo{
+		recordsByID:       map[string]approvals.Record{},
+		recordsByToolCall: map[string]approvals.Record{},
+		tabCandidates:     map[string][]approvals.TabCandidate{},
+	}
+}
+
+func (m *memoryApprovalRepo) CreateApproval(_ context.Context, params approvals.CreateParams) (approvals.Record, error) {
+	rec := approvals.Record{
+		ApprovalID:   params.ApprovalID,
+		RunID:        params.RunID,
+		SessionKey:   params.SessionKey,
+		ToolCallID:   params.ToolCallID,
+		ApprovalType: params.ApprovalType,
+		Status:       approvals.StatusPending,
+		RequestedVia: params.RequestedVia,
+		ToolName:     params.ToolName,
+		ArgsJSON:     params.ArgsJSON,
+		PayloadJSON:  params.PayloadJSON,
+		RequestedAt:  params.RequestedAt,
+		UpdatedAt:    params.RequestedAt,
+	}
+	m.recordsByID[rec.ApprovalID] = rec
+	m.recordsByToolCall[rec.ToolCallID] = rec
+	return rec, nil
+}
+
+func (m *memoryApprovalRepo) GetApprovalByToolCallID(_ context.Context, toolCallID string) (approvals.Record, error) {
+	rec, ok := m.recordsByToolCall[toolCallID]
+	if !ok {
+		return approvals.Record{}, approvals.ErrApprovalNotFound
+	}
+	return rec, nil
+}
+
+func (m *memoryApprovalRepo) GetApprovalByID(_ context.Context, approvalID string) (approvals.Record, error) {
+	rec, ok := m.recordsByID[approvalID]
+	if !ok {
+		return approvals.Record{}, approvals.ErrApprovalNotFound
+	}
+	return rec, nil
+}
+
+func (m *memoryApprovalRepo) ListApprovals(_ context.Context, status, runID, sessionKey string, limit, offset int) ([]approvals.Record, error) {
+	return nil, nil
+}
+
+func (m *memoryApprovalRepo) CreateTabCandidates(_ context.Context, params []approvals.CreateTabCandidateParams) error {
+	for _, candidate := range params {
+		m.tabCandidates[candidate.ApprovalID] = append(m.tabCandidates[candidate.ApprovalID], approvals.TabCandidate{
+			ApprovalID:     candidate.ApprovalID,
+			CandidateToken: candidate.CandidateToken,
+			InternalTabRef: candidate.InternalTabRef,
+			Status:         "available",
+			CreatedAt:      time.Now().UTC(),
+		})
+	}
+	return nil
+}
+
+func (m *memoryApprovalRepo) ListTabCandidates(_ context.Context, approvalID string) ([]approvals.TabCandidate, error) {
+	return append([]approvals.TabCandidate(nil), m.tabCandidates[approvalID]...), nil
+}
+
+func (m *memoryApprovalRepo) SelectTabCandidate(_ context.Context, approvalID, candidateToken string, selectedAt time.Time) (approvals.TabCandidate, error) {
+	return approvals.TabCandidate{}, approvals.ErrTabCandidateNotFound
+}
+
+func (m *memoryApprovalRepo) ResolveApproval(_ context.Context, params approvals.ResolveParams) (approvals.Record, error) {
+	rec, ok := m.recordsByID[params.ApprovalID]
+	if !ok {
+		return approvals.Record{}, approvals.ErrApprovalNotFound
+	}
+	rec.Status = params.Status
+	rec.ResolvedVia = params.ResolvedVia
+	rec.ResolvedBy = params.ResolvedBy
+	rec.ResolutionReason = params.ResolutionReason
+	rec.ResolvedAt = &params.ResolvedAt
+	rec.UpdatedAt = params.ResolvedAt
+	m.recordsByID[rec.ApprovalID] = rec
+	m.recordsByToolCall[rec.ToolCallID] = rec
+	return rec, nil
+}
+
+func (m *memoryApprovalRepo) InsertEvent(_ context.Context, event approvals.Event) error {
+	return nil
+}
+
+type fakeApprovalGate struct {
+	resolved map[string]bool
+}
+
+func (f *fakeApprovalGate) Resolve(toolCallID string, approved bool) bool {
+	if f.resolved == nil {
+		f.resolved = map[string]bool{}
+	}
+	f.resolved[toolCallID] = approved
+	return true
 }
 
 func TestNormalizeUpdateBuildsUserMessageEvent(t *testing.T) {
@@ -116,6 +238,44 @@ func TestDeliverApprovalRequestSendsInlineKeyboard(t *testing.T) {
 	}
 }
 
+func TestDeliverBrowserTabSelectionRequestSendsCandidateButtons(t *testing.T) {
+	t.Parallel()
+
+	client := &Client{}
+	var text string
+	var markup *InlineKeyboardMarkup
+	client.sendMessageMarkup = func(_ context.Context, _ int64, body string, m *InlineKeyboardMarkup) (Message, error) {
+		text = body
+		markup = m
+		return Message{MessageID: 1}, nil
+	}
+	adapter, err := NewAdapter(Config{AllowedChatIDs: []string{"777"}, PollTimeout: time.Second}, client, nil, nil)
+	if err != nil {
+		t.Fatalf("NewAdapter returned error: %v", err)
+	}
+
+	err = adapter.DeliverApprovalRequest(context.Background(), flow.ApprovalRequest{
+		RunID:        "run-1",
+		SessionKey:   "telegram:chat:777",
+		ApprovalID:   "approval-1",
+		ApprovalType: approvals.ApprovalTypeBrowserTabSelection,
+		ToolName:     "single_tab.bind",
+		TabCandidates: []flow.ApprovalTabCandidate{{
+			CandidateToken: "tok-1",
+			DisplayLabel:   "Inbox - mail.example.com",
+		}},
+	})
+	if err != nil {
+		t.Fatalf("DeliverApprovalRequest returned error: %v", err)
+	}
+	if !strings.Contains(text, "Выберите вкладку") {
+		t.Fatalf("expected browser tab selection prompt, got %q", text)
+	}
+	if markup == nil || len(markup.InlineKeyboard) != 3 || markup.InlineKeyboard[0][0].CallbackData != "tabsel:approval-1:tok-1" {
+		t.Fatalf("unexpected browser tab selection keyboard: %+v", markup)
+	}
+}
+
 func TestHandleCallbackQueryRejectsApproval(t *testing.T) {
 	t.Parallel()
 
@@ -145,6 +305,96 @@ func TestHandleCallbackQueryRejectsApproval(t *testing.T) {
 	}
 	if resp.Channel != "telegram" {
 		t.Fatalf("expected channel telegram, got %q", resp.Channel)
+	}
+}
+
+func TestHandleCallbackQuerySelectsBrowserTab(t *testing.T) {
+	t.Parallel()
+
+	client := &Client{}
+	client.answerCallback = func(_ context.Context, _ string, _ string) error { return nil }
+	var messages []string
+	client.sendMessage = func(_ context.Context, _ int64, text string) (Message, error) {
+		messages = append(messages, text)
+		return Message{MessageID: 1}, nil
+	}
+
+	adapter, err := NewAdapter(Config{AllowedChatIDs: []string{"777"}, PollTimeout: time.Second}, client, nil, nil)
+	if err != nil {
+		t.Fatalf("NewAdapter returned error: %v", err)
+	}
+	adapter.SetSingleTabSelector(&fakeSingleTabSelector{
+		result: singletab.ActivationResult{
+			Candidate: approvals.TabCandidate{CandidateToken: "tok-1", Title: "Inbox", CurrentURL: "https://mail.example.com/inbox"},
+			Session:   singletab.Record{SingleTabSessionID: "single-tab-1", CurrentTitle: "Inbox", CurrentURL: "https://mail.example.com/inbox"},
+		},
+	})
+
+	adapter.handleCallbackQuery(context.Background(), &CallbackQuery{
+		ID:      "cbq-tab-1",
+		Data:    "tabsel:approval-1:tok-1",
+		Message: &Message{Chat: Chat{ID: 777}},
+		From:    &User{ID: 42},
+	})
+
+	if len(messages) != 1 {
+		t.Fatalf("expected one confirmation message, got %d", len(messages))
+	}
+	if !containsAll(messages[0], "подключён", "Session: active") {
+		t.Fatalf("unexpected confirmation message: %q", messages[0])
+	}
+}
+
+func TestHandleCallbackQueryRejectsBrowserTabSelection(t *testing.T) {
+	t.Parallel()
+
+	client := &Client{}
+	client.answerCallback = func(_ context.Context, _ string, _ string) error { return nil }
+	var messages []string
+	client.sendMessage = func(_ context.Context, _ int64, text string) (Message, error) {
+		messages = append(messages, text)
+		return Message{MessageID: 1}, nil
+	}
+
+	repo := newMemoryApprovalRepo()
+	gate := &fakeApprovalGate{}
+	service := approvals.NewService(repo, gate)
+	now := time.Now().UTC()
+	rec, err := service.CreatePendingApproval(context.Background(), approvals.CreatePendingParams{
+		RunID:        "run-tab-2",
+		SessionKey:   "telegram:chat:777",
+		ToolCallID:   "tool-bind-2",
+		ApprovalType: approvals.ApprovalTypeBrowserTabSelection,
+		RequestedVia: approvals.RequestedViaBoth,
+		ToolName:     "single_tab.bind",
+		RequestedAt:  now,
+		TabCandidates: []approvals.CreateTabCandidateParams{{
+			CandidateToken: "tok-2",
+			InternalTabRef: "browser-a:2",
+		}},
+	})
+	if err != nil {
+		t.Fatalf("CreatePendingApproval returned error: %v", err)
+	}
+
+	adapter, err := NewAdapter(Config{AllowedChatIDs: []string{"777"}, PollTimeout: time.Second}, client, nil, nil)
+	if err != nil {
+		t.Fatalf("NewAdapter returned error: %v", err)
+	}
+	adapter.SetApprovalService(service)
+
+	adapter.handleCallbackQuery(context.Background(), &CallbackQuery{
+		ID:      "cbq-tab-reject",
+		Data:    "tabdeny:" + rec.ApprovalID,
+		Message: &Message{Chat: Chat{ID: 777}},
+		From:    &User{ID: 42},
+	})
+
+	if len(messages) != 1 || !containsAll(messages[0], "отменено") {
+		t.Fatalf("unexpected rejection confirmation messages: %+v", messages)
+	}
+	if gate.resolved["tool-bind-2"] {
+		t.Fatal("expected gate resolution to remain false")
 	}
 }
 

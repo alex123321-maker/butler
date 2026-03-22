@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Butler Browser Bridge</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <p class="eyebrow">Single-Tab Bind</p>
+        <h1>Butler Chromium Bridge</h1>
+        <p class="lede">Collect current browser tabs and send them to Butler for web and Telegram approval.</p>
+      </header>
+
+      <section class="card">
+        <label class="field">
+          <span>Rollout mode</span>
+          <select id="rollout-mode" name="rollout-mode">
+            <option value="native_only">Native only</option>
+            <option value="dual">Dual (manual mode choice)</option>
+            <option value="remote_preferred">Remote preferred</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Connection mode</span>
+          <select id="connection-mode" name="connection-mode">
+            <option value="native">Native host (localhost)</option>
+            <option value="remote">Remote Butler API</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Remote Butler URL</span>
+          <input id="remote-base-url" name="remote-base-url" type="url" autocomplete="off" spellcheck="false" placeholder="https://butler.example.com" />
+        </label>
+        <label class="field">
+          <span>Remote API token</span>
+          <input id="remote-api-token" name="remote-api-token" type="password" autocomplete="off" spellcheck="false" placeholder="ext_..." />
+        </label>
+        <label class="field">
+          <span>Run ID</span>
+          <input id="run-id" name="run-id" type="text" autocomplete="off" spellcheck="false" placeholder="run_..." />
+        </label>
+        <label class="field">
+          <span>Session Key</span>
+          <input id="session-key" name="session-key" type="text" autocomplete="off" spellcheck="false" placeholder="session_..." />
+        </label>
+        <div class="actions">
+          <button id="refresh-tabs" type="button" class="ghost">Refresh tabs</button>
+          <button id="check-session" type="button" class="ghost">Check session</button>
+          <button id="create-bind" type="button" class="primary">Create bind request</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <h2>Tab candidates</h2>
+          <p id="tab-count" class="meta">Loading...</p>
+        </div>
+        <ul id="tabs-list" class="tabs-list"></ul>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <h2>Status</h2>
+        </div>
+        <pre id="status-panel" class="status-panel">Ready.</pre>
+      </section>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

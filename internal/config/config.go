@@ -55,40 +55,43 @@ type SharedConfig struct {
 }
 
 type OrchestratorConfig struct {
-	Shared                           SharedConfig
-	Postgres                         PostgresConfig
-	Redis                            RedisConfig
-	PostgresURL                      string
-	RedisURL                         string
-	ModelProvider                    string
-	OpenAIAPIKey                     string
-	OpenAIModel                      string
-	OpenAIBaseURL                    string
-	OpenAIRealtimeURL                string
-	OpenAITransportMode              string
-	OpenAICodexModel                 string
-	OpenAICodexBaseURL               string
-	GitHubCopilotModel               string
-	OpenAITimeoutSeconds             int
-	ToolBrokerAddr                   string
-	TelegramBotToken                 string
-	TelegramAllowedChatIDs           []string
-	TelegramBaseURL                  string
-	TelegramPollTimeout              int
-	SessionLeaseTTLSeconds           int
-	MemoryProfileLimit               int
-	MemoryEpisodicLimit              int
-	MemoryScopeOrder                 []string
-	MemoryWorkingTransientTTLSeconds int
-	MemoryEmbeddingModel             string
-	MemoryEmbeddingProvider          string
-	MemoryEmbeddingDimensions        int
-	OllamaURL                        string
-	MemoryPipelineEnabled            bool
-	MemoryPipelinePollTimeoutSeconds int
-	MemoryPipelineMaxRetries         int
-	MemoryExtractionModel            string
-	RestartHelperURL                 string
+	Shared                            SharedConfig
+	Postgres                          PostgresConfig
+	Redis                             RedisConfig
+	PostgresURL                       string
+	RedisURL                          string
+	ExtensionAPITokens                []string
+	SingleTabTransportMode            string
+	SingleTabRelayHeartbeatTTLSeconds int
+	ModelProvider                     string
+	OpenAIAPIKey                      string
+	OpenAIModel                       string
+	OpenAIBaseURL                     string
+	OpenAIRealtimeURL                 string
+	OpenAITransportMode               string
+	OpenAICodexModel                  string
+	OpenAICodexBaseURL                string
+	GitHubCopilotModel                string
+	OpenAITimeoutSeconds              int
+	ToolBrokerAddr                    string
+	TelegramBotToken                  string
+	TelegramAllowedChatIDs            []string
+	TelegramBaseURL                   string
+	TelegramPollTimeout               int
+	SessionLeaseTTLSeconds            int
+	MemoryProfileLimit                int
+	MemoryEpisodicLimit               int
+	MemoryScopeOrder                  []string
+	MemoryWorkingTransientTTLSeconds  int
+	MemoryEmbeddingModel              string
+	MemoryEmbeddingProvider           string
+	MemoryEmbeddingDimensions         int
+	OllamaURL                         string
+	MemoryPipelineEnabled             bool
+	MemoryPipelinePollTimeoutSeconds  int
+	MemoryPipelineMaxRetries          int
+	MemoryExtractionModel             string
+	RestartHelperURL                  string
 }
 
 type ToolBrokerConfig struct {
@@ -104,8 +107,32 @@ type ToolBrowserConfig struct {
 	HelperScriptPath string
 }
 
+type ToolBrowserLocalConfig struct {
+	Shared              SharedConfig
+	OrchestratorBaseURL string
+	BrowserBridgeURL    string
+	DispatchRolloutMode string
+	DispatchMode        string
+	RequestTimeout      int
+}
+
 type ToolHTTPConfig struct {
 	Shared SharedConfig
+}
+
+type BrowserBridgeConfig struct {
+	Shared                SharedConfig
+	OrchestratorBaseURL   string
+	ControlAddr           string
+	RequestTimeoutSeconds int
+}
+
+type ToolWebFetchConfig struct {
+	Shared            SharedConfig
+	SelfHostedBaseURL string
+	JinaBaseURL       string
+	JinaAuthToken     string
+	PlainHTTPEnabled  bool
 }
 
 type ToolDoctorConfig struct {
@@ -162,6 +189,8 @@ type fieldSpec struct {
 	assign          func(string)
 }
 
+var singleTabRolloutModes = []string{"native_only", "dual", "remote_preferred"}
+
 func lookupNonEmptyEnv(get envGetter, key string) (string, bool) {
 	if get == nil {
 		return "", false
@@ -188,8 +217,20 @@ func LoadToolBrowserFromEnv() (ToolBrowserConfig, Snapshot, error) {
 	return loadToolBrowser(os.LookupEnv)
 }
 
+func LoadToolBrowserLocalFromEnv() (ToolBrowserLocalConfig, Snapshot, error) {
+	return loadToolBrowserLocal(os.LookupEnv)
+}
+
 func LoadToolHTTPFromEnv() (ToolHTTPConfig, Snapshot, error) {
 	return loadToolHTTP(os.LookupEnv)
+}
+
+func LoadBrowserBridgeFromEnv() (BrowserBridgeConfig, Snapshot, error) {
+	return loadBrowserBridge(os.LookupEnv)
+}
+
+func LoadToolWebFetchFromEnv() (ToolWebFetchConfig, Snapshot, error) {
+	return loadToolWebFetch(os.LookupEnv)
 }
 
 func LoadToolDoctorFromEnv() (ToolDoctorConfig, Snapshot, error) {
@@ -211,6 +252,9 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_POSTGRES_MIN_CONNS", component: "orchestrator", typeName: "int", required: false, defaultValue: "2", requiresRestart: true, validate: validateNonNegativeInt, assign: func(v string) { cfg.Postgres.MinConns = mustParseInt32(v) }},
 		fieldSpec{key: "BUTLER_POSTGRES_MAX_CONN_LIFETIME_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "1800", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.Postgres.MaxConnLifetime = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_POSTGRES_MIGRATIONS_DIR", component: "orchestrator", typeName: "string", required: false, defaultValue: "migrations", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.Postgres.MigrationsDir = v }},
+		fieldSpec{key: "BUTLER_EXTENSION_API_TOKENS", component: "orchestrator", typeName: "csv", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmptyTokenList, assign: func(v string) { cfg.ExtensionAPITokens = parseCSV(v) }},
+		fieldSpec{key: "BUTLER_SINGLE_TAB_TRANSPORT_MODE", component: "orchestrator", typeName: "string", required: false, defaultValue: "dual", allowedValues: singleTabRolloutModes, requiresRestart: true, assign: func(v string) { cfg.SingleTabTransportMode = strings.ToLower(strings.TrimSpace(v)) }},
+		fieldSpec{key: "BUTLER_SINGLE_TAB_RELAY_HEARTBEAT_TTL_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "90", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.SingleTabRelayHeartbeatTTLSeconds = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_MODEL_PROVIDER", component: "orchestrator", typeName: "string", required: false, defaultValue: modelprovider.ProviderOpenAI, allowedValues: modelprovider.SupportedProviders(), requiresRestart: true, assign: func(v string) { cfg.ModelProvider = strings.ToLower(strings.TrimSpace(v)) }},
 		fieldSpec{key: "BUTLER_OPENAI_API_KEY", component: "orchestrator", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: func(v string) { cfg.OpenAIAPIKey = v }},
 		fieldSpec{key: "BUTLER_OPENAI_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-4o-mini", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.OpenAIModel = v }},
@@ -278,9 +322,48 @@ func loadToolBrowser(get envGetter) (ToolBrowserConfig, Snapshot, error) {
 	return cfg, snapshot, err
 }
 
+func loadToolBrowserLocal(get envGetter) (ToolBrowserLocalConfig, Snapshot, error) {
+	cfg := ToolBrowserLocalConfig{}
+	specs := append(sharedSpecs("tool-browser-local", &cfg.Shared),
+		fieldSpec{key: "BUTLER_TOOL_BROWSER_LOCAL_ORCHESTRATOR_URL", component: "tool-browser-local", typeName: "string", required: false, defaultValue: "http://127.0.0.1:8080", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.OrchestratorBaseURL = strings.TrimSpace(v) }},
+		fieldSpec{key: "BUTLER_TOOL_BROWSER_LOCAL_BROWSER_BRIDGE_URL", component: "tool-browser-local", typeName: "string", required: false, defaultValue: "http://127.0.0.1:29115", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.BrowserBridgeURL = strings.TrimSpace(v) }},
+		fieldSpec{key: "BUTLER_TOOL_BROWSER_LOCAL_ROLLOUT_MODE", component: "tool-browser-local", typeName: "string", required: false, defaultValue: "native_only", allowedValues: singleTabRolloutModes, requiresRestart: true, assign: func(v string) { cfg.DispatchRolloutMode = strings.ToLower(strings.TrimSpace(v)) }},
+		fieldSpec{key: "BUTLER_TOOL_BROWSER_LOCAL_DISPATCH_MODE", component: "tool-browser-local", typeName: "string", required: false, defaultValue: "browser_bridge", allowedValues: []string{"browser_bridge", "orchestrator_relay"}, requiresRestart: true, assign: func(v string) { cfg.DispatchMode = strings.ToLower(strings.TrimSpace(v)) }},
+		fieldSpec{key: "BUTLER_TOOL_BROWSER_LOCAL_REQUEST_TIMEOUT_SECONDS", component: "tool-browser-local", typeName: "int", required: false, defaultValue: "15", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.RequestTimeout = mustParseInt(v) }},
+	)
+	snapshot, err := loadSpecs(get, specs)
+	return cfg, snapshot, err
+}
+
 func loadToolHTTP(get envGetter) (ToolHTTPConfig, Snapshot, error) {
 	cfg := ToolHTTPConfig{}
 	snapshot, err := loadSpecs(get, sharedSpecs("tool-http", &cfg.Shared))
+	return cfg, snapshot, err
+}
+
+func loadBrowserBridge(get envGetter) (BrowserBridgeConfig, Snapshot, error) {
+	cfg := BrowserBridgeConfig{}
+	specs := []fieldSpec{
+		{key: "BUTLER_SERVICE_NAME", component: "browser-bridge", typeName: "string", required: false, defaultValue: "browser-bridge", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.Shared.ServiceName = v }},
+		{key: "BUTLER_LOG_LEVEL", component: "browser-bridge", typeName: "string", required: false, defaultValue: "info", allowedValues: []string{"debug", "info", "warn", "error"}, requiresRestart: false, assign: func(v string) { cfg.Shared.LogLevel = strings.ToLower(v) }},
+		{key: "BUTLER_ENVIRONMENT", component: "browser-bridge", typeName: "string", required: false, defaultValue: "development", allowedValues: []string{"development", "test", "production"}, requiresRestart: false, assign: func(v string) { cfg.Shared.Environment = strings.ToLower(v) }},
+		{key: "BUTLER_BROWSER_BRIDGE_ORCHESTRATOR_URL", component: "browser-bridge", typeName: "string", required: false, defaultValue: "http://127.0.0.1:8080", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.OrchestratorBaseURL = strings.TrimSpace(v) }},
+		{key: "BUTLER_BROWSER_BRIDGE_CONTROL_ADDR", component: "browser-bridge", typeName: "string", required: false, defaultValue: "127.0.0.1:29115", requiresRestart: true, validate: validateListenAddr, assign: func(v string) { cfg.ControlAddr = strings.TrimSpace(v) }},
+		{key: "BUTLER_BROWSER_BRIDGE_REQUEST_TIMEOUT_SECONDS", component: "browser-bridge", typeName: "int", required: false, defaultValue: "15", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.RequestTimeoutSeconds = mustParseInt(v) }},
+	}
+	snapshot, err := loadSpecs(get, specs)
+	return cfg, snapshot, err
+}
+
+func loadToolWebFetch(get envGetter) (ToolWebFetchConfig, Snapshot, error) {
+	cfg := ToolWebFetchConfig{}
+	specs := append(sharedSpecs("tool-webfetch", &cfg.Shared),
+		fieldSpec{key: "BUTLER_WEBFETCH_SELF_HOSTED_BASE_URL", component: "tool-webfetch", typeName: "string", required: false, defaultValue: "", requiresRestart: true, validate: validateOptionalURL, assign: func(v string) { cfg.SelfHostedBaseURL = strings.TrimSpace(v) }},
+		fieldSpec{key: "BUTLER_WEBFETCH_JINA_BASE_URL", component: "tool-webfetch", typeName: "string", required: false, defaultValue: "", requiresRestart: true, validate: validateOptionalURL, assign: func(v string) { cfg.JinaBaseURL = strings.TrimSpace(v) }},
+		fieldSpec{key: "BUTLER_WEBFETCH_JINA_AUTH_TOKEN", component: "tool-webfetch", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: func(v string) { cfg.JinaAuthToken = v }},
+		fieldSpec{key: "BUTLER_WEBFETCH_PLAIN_HTTP_ENABLED", component: "tool-webfetch", typeName: "string", required: false, defaultValue: "true", allowedValues: []string{"true", "false"}, requiresRestart: true, assign: func(v string) { cfg.PlainHTTPEnabled = strings.ToLower(strings.TrimSpace(v)) == "true" }},
+	)
+	snapshot, err := loadSpecs(get, specs)
 	return cfg, snapshot, err
 }
 
@@ -467,6 +550,15 @@ func validateOptionalChatIDList(value string) error {
 	for _, item := range parseCSV(value) {
 		if _, err := strconv.ParseInt(item, 10, 64); err != nil {
 			return fmt.Errorf("must be a comma-separated list of Telegram chat ids")
+		}
+	}
+	return nil
+}
+
+func validateOptionalNonEmptyTokenList(value string) error {
+	for _, item := range parseCSV(value) {
+		if strings.TrimSpace(item) == "" {
+			return fmt.Errorf("must be a comma-separated list of non-empty tokens")
 		}
 	}
 	return nil

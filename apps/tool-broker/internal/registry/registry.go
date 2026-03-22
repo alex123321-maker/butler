@@ -163,6 +163,7 @@ type schemaNode struct {
 	Required             []string              `json:"required"`
 	Enum                 []any                 `json:"enum"`
 	Items                *schemaNode           `json:"items"`
+	OneOf                []schemaNode          `json:"oneOf"`
 	AdditionalProperties *bool                 `json:"additionalProperties"`
 }
 
@@ -182,6 +183,26 @@ func ValidateArgs(schemaJSON, argsJSON string) error {
 }
 
 func validateValue(value any, schema schemaNode, path string) error {
+	if len(schema.OneOf) > 0 {
+		var firstErr error
+		matched := false
+		for _, candidate := range schema.OneOf {
+			if err := validateValue(value, candidate, path); err == nil {
+				matched = true
+				firstErr = nil
+				break
+			} else if firstErr == nil {
+				firstErr = err
+			}
+		}
+		if firstErr != nil {
+			return fmt.Errorf("%s must match one of the allowed schemas", path)
+		}
+		if matched && schema.Type == "" && len(schema.Properties) == 0 && len(schema.Required) == 0 && len(schema.Enum) == 0 && schema.Items == nil {
+			return nil
+		}
+	}
+
 	typ := schema.Type
 	if typ == "" && len(schema.Properties) > 0 {
 		typ = "object"

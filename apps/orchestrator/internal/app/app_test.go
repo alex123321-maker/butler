@@ -79,6 +79,23 @@ func TestCORSMiddlewareHandlesSettingsPreflight(t *testing.T) {
 	}
 }
 
+func TestNormalizeSingleTabTransportMode(t *testing.T) {
+	t.Parallel()
+
+	if got := normalizeSingleTabTransportMode("native_only"); got != "native_only" {
+		t.Fatalf("expected native_only, got %q", got)
+	}
+	if got := normalizeSingleTabTransportMode("remote_preferred"); got != "remote_preferred" {
+		t.Fatalf("expected remote_preferred, got %q", got)
+	}
+	if got := normalizeSingleTabTransportMode("DUAL"); got != "dual" {
+		t.Fatalf("expected dual, got %q", got)
+	}
+	if got := normalizeSingleTabTransportMode(""); got != "dual" {
+		t.Fatalf("expected dual default, got %q", got)
+	}
+}
+
 func contains(haystack, needle string) bool {
 	return len(haystack) >= len(needle) && (haystack == needle || len(haystack) > len(needle) && (stringIndex(haystack, needle) >= 0))
 }

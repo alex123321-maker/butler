@@ -24,5 +24,7 @@ SQL migrations live here.
 - `023_artifacts` adds durable task artifacts (`assistant_final`, `doctor_report`, `tool_result`, `summary`) for task-centric result access.
 - `024_task_activity` adds process-level activity timeline storage separate from transcript events.
 - `025_channel_delivery_events` adds explicit delivery-state history for Telegram/Web channel visibility in task detail and overview.
+- `026_memory_management_fields` adds memory moderation and lifecycle management fields for task-centric UI operations.
+- `027_single_tab_sessions_and_web_fetch_cache` adds durable single-tab browser session state, browser tab selection candidates, and web-fetch cache entries.
 
 Use `make migrate-up` to apply all migrations and `make migrate-down` to roll them back in reverse order.

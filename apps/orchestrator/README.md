@@ -36,6 +36,12 @@ Current baseline:
 - exposes grouped settings management endpoints for layered config overrides, masked secret display, restart planning, and helper-backed restart scheduling
 - exposes provider auth endpoints for GitHub Copilot device flow and OpenAI Codex OAuth completion
 - supports approval-gated tool execution with Telegram callback actions and formatted inline allow/deny prompts
+- supports typed approval payloads, including browser tab selection with Web UI and Telegram delivery
+- exposes single-tab bind orchestration endpoints for creating bind requests, reading tab-bound sessions, updating session state, and releasing them by `session_id`
+- exposes extension-auth protected single-tab endpoints for remote browser-extension bind/session checks
+- enforces browser-instance ownership on remote extension relay dispatch polling and result callbacks
+- marks active remote single-tab sessions as `HOST_DISCONNECTED` when extension heartbeat is stale before dispatch
+- exposes `GET /api/v2/single-tab/extension-instances` for lightweight per-instance relay health polling
 - exposes `GET /health` and `GET /metrics`
 
 Dependencies:
@@ -47,6 +53,9 @@ Dependencies:
 Configuration:
 - required: `BUTLER_POSTGRES_URL`, `BUTLER_REDIS_URL`
 - commonly used: `BUTLER_HTTP_ADDR`, `BUTLER_GRPC_ADDR`, `BUTLER_LOG_LEVEL`, `BUTLER_MODEL_PROVIDER`, `BUTLER_SESSION_LEASE_TTL_SECONDS`, `BUTLER_OPENAI_MODEL`, `BUTLER_OPENAI_CODEX_MODEL`, `BUTLER_GITHUB_COPILOT_MODEL`, `BUTLER_OPENAI_REALTIME_URL`, `BUTLER_OPENAI_TRANSPORT_MODE`, `BUTLER_TOOL_BROKER_ADDR`
+- remote extension auth: `BUTLER_EXTENSION_API_TOKENS` enables `Authorization: Bearer` checks for `/api/v2/extension/single-tab/*`
+- single-tab transport rollout: `BUTLER_SINGLE_TAB_TRANSPORT_MODE` supports `native_only`, `dual`, `remote_preferred` (default `dual`)
+- relay liveness: `BUTLER_SINGLE_TAB_RELAY_HEARTBEAT_TTL_SECONDS` sets stale heartbeat threshold before dispatch marks session `HOST_DISCONNECTED`
 - restart integration: `BUTLER_RESTART_HELPER_URL` points to the internal restart-helper control-plane service
 - memory loading: `BUTLER_MEMORY_PROFILE_LIMIT`, `BUTLER_MEMORY_EPISODIC_LIMIT`, `BUTLER_MEMORY_SCOPE_ORDER`
 - memory loading: `BUTLER_MEMORY_PROFILE_LIMIT`, `BUTLER_MEMORY_EPISODIC_LIMIT`, `BUTLER_MEMORY_SCOPE_ORDER`, `BUTLER_MEMORY_WORKING_TRANSIENT_TTL_SECONDS`
@@ -66,7 +75,7 @@ Entry points and APIs:
 - binary entrypoint: `apps/orchestrator/main.go`
 - gRPC API: `SessionService` from `proto/session/v1/session.proto`
 - gRPC API: `OrchestratorService` from `proto/orchestrator/v1/orchestrator.proto`
-- HTTP endpoints: `/health`, `/metrics`, `/api/v1/events`, `/api/v1/settings`, `/api/v1/settings/{key}`, `/api/v1/settings/restart`, `/api/v1/prompts/system`, `/api/v1/prompts/system/preview`, `/api/v1/providers`, `/api/v1/providers/{provider}/auth`, `/api/v1/providers/{provider}/auth/start`, `/api/v1/providers/{provider}/auth/complete`, `/api/v1/memory`, `/api/v1/sessions`, `/api/v1/sessions/{key}`, `/api/v1/runs/{id}`, `/api/v1/runs/{id}/transcript`, `/api/v1/doctor/reports`, `/api/v1/doctor/check`, `/api/v2/overview`, `/api/v2/tasks`, `/api/v2/tasks/{id}`, `/api/v2/approvals`, `/api/v2/approvals/{id}`, `/api/v2/approvals/{id}/approve`, `/api/v2/approvals/{id}/reject`, plus compatibility aliases `/api/overview`, `/api/tasks`, `/api/tasks/{id}`, `/api/approvals`, `/api/approvals/{id}`, `/api/approvals/{id}/approve`, `/api/approvals/{id}/reject`.
+- HTTP endpoints: `/health`, `/metrics`, `/api/v1/events`, `/api/v1/settings`, `/api/v1/settings/{key}`, `/api/v1/settings/restart`, `/api/v1/prompts/system`, `/api/v1/prompts/system/preview`, `/api/v1/providers`, `/api/v1/providers/{provider}/auth`, `/api/v1/providers/{provider}/auth/start`, `/api/v1/providers/{provider}/auth/complete`, `/api/v1/memory`, `/api/v1/sessions`, `/api/v1/sessions/{key}`, `/api/v1/runs/{id}`, `/api/v1/runs/{id}/transcript`, `/api/v1/doctor/reports`, `/api/v1/doctor/check`, `/api/v2/overview`, `/api/v2/tasks`, `/api/v2/tasks/{id}`, `/api/v2/approvals`, `/api/v2/approvals/{id}`, `/api/v2/approvals/{id}/approve`, `/api/v2/approvals/{id}/reject`, `/api/v2/approvals/{id}/select-tab`, `/api/v2/single-tab/bind-requests`, `/api/v2/single-tab/session`, `/api/v2/single-tab/extension-instances`, `/api/v2/single-tab/session/{id}`, `/api/v2/single-tab/session/{id}/state`, `/api/v2/single-tab/session/{id}/release`, `/api/v2/single-tab/actions/dispatch`, `/api/v2/extension/single-tab/bind-requests`, `/api/v2/extension/single-tab/session`, `/api/v2/extension/single-tab/actions/next`, `/api/v2/extension/single-tab/actions/{dispatch_id}/result`, plus compatibility aliases `/api/overview`, `/api/tasks`, `/api/tasks/{id}`, `/api/approvals`, `/api/approvals/{id}`, `/api/approvals/{id}/approve`, `/api/approvals/{id}/reject`, `/api/approvals/{id}/select-tab`, `/api/single-tab/bind-requests`, `/api/single-tab/session`, `/api/single-tab/extension-instances`, `/api/single-tab/session/{id}`, `/api/single-tab/session/{id}/state`, `/api/single-tab/session/{id}/release`.
 - internal execution package: `apps/orchestrator/internal/orchestrator`
 - internal delivery seam: `apps/orchestrator/internal/orchestrator/delivery.go`
 - internal session/run boundary: `apps/orchestrator/internal/session` (gRPC server), `apps/orchestrator/internal/run` (run state machine and storage)
@@ -102,6 +111,7 @@ Related docs:
 - `docs/testing/sprint-2-smoke.md`
 - `docs/testing/telegram-manual.md`
 - `docs/testing/sprint-3-e2e.md`
+- `docs/testing/single-tab-browser-smoke.md`
 
 Current limitations:
 - the service executes the active model transport path synchronously inside request handling, so REST ingestion returns only after run completion
@@ -128,10 +138,20 @@ Durable approvals baseline (Wave 2 start):
   - `GET /api/v2/approvals/{id}`
   - `POST /api/v2/approvals/{id}/approve`
   - `POST /api/v2/approvals/{id}/reject`
+  - `POST /api/v2/approvals/{id}/select-tab`
   - resolve actions are idempotent and return `changed=false` with HTTP `409` if the approval is already terminal.
+- Single-tab bind API:
+  - `POST /api/v2/single-tab/bind-requests` creates a durable `browser_tab_selection` approval and fan-outs delivery to Web UI and Telegram.
+  - `GET /api/v2/single-tab/session?session_key=...` returns the active tab-bound session for the Butler session when present.
+  - `GET /api/v2/single-tab/session/{id}` returns one durable tab-bound session by `single_tab_session_id`.
+  - `POST /api/v2/single-tab/session/{id}/state` updates the current tab-derived status, URL, title, and heartbeat metadata.
+  - `POST /api/v2/single-tab/session/{id}/release` marks an active session as `REVOKED_BY_USER` and records the release in approval audit events.
+- Browser capture artifact API:
+  - `POST /api/v2/artifacts/browser-captures` stores a durable `browser_capture` artifact used by `single_tab.capture_visible`.
 
 Artifacts baseline (Wave 2 continuation):
 - Durable `artifacts` table stores user-meaningful outputs (`assistant_final`, `doctor_report`, `tool_result`, `summary`).
+- Durable `browser_capture` artifacts can now store single-tab screenshots as artifact-backed image references instead of inline tool payloads.
 - Artifact creation hooks are attached to:
   - assistant final persistence in orchestrator finalization,
   - completed tool calls,
@@ -155,6 +175,8 @@ Channel delivery visibility baseline:
 
 System and debug read APIs:
 - `GET /api/v2/system` (`/api/system` alias) returns operator summary with `health`, `doctor`, `providers`, `queues`, `pending_approvals`, `recent_failures`, `degraded_components`, and `partial_errors`.
+- system summary now includes `single_tab_extension` with rollout mode, relay heartbeat TTL, extension-auth readiness, and active/disconnected session counters for remote extension operations.
+- `GET /api/v2/single-tab/extension-instances` (`/api/single-tab/extension-instances` alias) returns lightweight per-browser extension instance health with state filtering (`state=online,stale,...`) and explicit liveness policy metadata for UI polling.
 - `GET /api/v2/tasks/{id}/debug` (`/api/tasks/{id}/debug` alias) returns low-level run + transcript + tool call payloads for operator/debug mode.
 - Supported filters: `status`, `needs_user_action`, `waiting_reason`, `source_channel`, `provider`, `from`, `to`, `query`, `limit`, `offset`, `sort`.
 - Supported `sort` values: `started_at_desc` (default), `started_at_asc`, `updated_at_desc`, `updated_at_asc`.

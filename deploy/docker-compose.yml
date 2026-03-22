@@ -79,6 +79,33 @@ services:
       - backend
       - tool-runtime
 
+  tool-webfetch:
+    build:
+      context: ..
+      dockerfile: docker/tool-webfetch/Dockerfile
+    restart: unless-stopped
+    environment:
+      - BUTLER_ENVIRONMENT
+      - BUTLER_LOG_LEVEL
+      - BUTLER_HTTP_ADDR
+      - BUTLER_GRPC_ADDR
+      - BUTLER_WEBFETCH_SELF_HOSTED_BASE_URL
+      - BUTLER_WEBFETCH_JINA_BASE_URL
+      - BUTLER_WEBFETCH_JINA_AUTH_TOKEN
+      - BUTLER_WEBFETCH_PLAIN_HTTP_ENABLED
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:8080/health >/dev/null || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    ports: []
+    networks:
+      - backend
+      - tool-runtime
+
   tool-browser:
     build:
       context: ..
@@ -112,7 +139,7 @@ services:
     environment:
       - BUTLER_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler?sslmode=disable
       - BUTLER_REDIS_URL=redis://redis:6379/0
-      - BUTLER_DOCTOR_CONTAINER_TARGETS=orchestrator=http://orchestrator:8080/health,tool-broker=http://tool-broker:8080/health,tool-browser=http://tool-browser:8080/health,tool-http=http://tool-http:8080/health,tool-doctor=http://tool-doctor:8080/health
+      - BUTLER_DOCTOR_CONTAINER_TARGETS=orchestrator=http://orchestrator:8080/health,tool-broker=http://tool-broker:8080/health,tool-browser=http://tool-browser:8080/health,tool-http=http://tool-http:8080/health,tool-webfetch=http://tool-webfetch:8080/health,tool-doctor=http://tool-doctor:8080/health
       - BUTLER_ENVIRONMENT
       - BUTLER_LOG_LEVEL
       - BUTLER_HTTP_ADDR
@@ -149,7 +176,7 @@ services:
       - BUTLER_HTTP_ADDR=:8080
       - BUTLER_DOCKER_HOST=unix:///var/run/docker.sock
       - BUTLER_RESTART_PROJECT=butler
-      - BUTLER_RESTART_ALLOWED_SERVICES=postgres,redis,ollama,tool-http,tool-browser,tool-doctor,tool-broker,migrator,orchestrator,web
+      - BUTLER_RESTART_ALLOWED_SERVICES=postgres,redis,ollama,tool-http,tool-webfetch,tool-browser,tool-doctor,tool-broker,migrator,orchestrator,web
       - BUTLER_RESTART_SELF_SERVICE=restart-helper
       - BUTLER_RESTART_DELAY_SECONDS=2
       - BUTLER_RESTART_TIMEOUT_SECONDS=20
@@ -176,6 +203,8 @@ services:
       postgres:
         condition: service_healthy
       tool-http:
+        condition: service_healthy
+      tool-webfetch:
         condition: service_healthy
       tool-browser:
         condition: service_healthy

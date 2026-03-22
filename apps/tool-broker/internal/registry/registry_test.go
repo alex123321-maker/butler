@@ -76,3 +76,64 @@ func TestValidateToolCallRejectsCredentialRefsWhenUnsupported(t *testing.T) {
 		t.Fatal("expected credential refs to be rejected for unsupported tool")
 	}
 }
+
+func TestValidateToolCallSupportsOneOf(t *testing.T) {
+	t.Parallel()
+
+	registry := &Registry{toolsByName: map[string]*toolbrokerv1.ToolContract{
+		"single_tab.press_keys": {
+			ToolName:        "single_tab.press_keys",
+			Status:          "enabled",
+			InputSchemaJson: `{"type":"object","required":["session_id","keys"],"properties":{"session_id":{"type":"string"},"keys":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}]}},"additionalProperties":false}`,
+		},
+	}}
+
+	valid, _, err := registry.Validate(&toolbrokerv1.ToolCall{
+		ToolName: "single_tab.press_keys",
+		ArgsJson: `{"session_id":"single-tab-1","keys":"Enter"}`,
+	})
+	if !valid || err != nil {
+		t.Fatalf("expected string keys payload to validate, got valid=%t err=%v", valid, err)
+	}
+
+	valid, _, err = registry.Validate(&toolbrokerv1.ToolCall{
+		ToolName: "single_tab.press_keys",
+		ArgsJson: `{"session_id":"single-tab-1","keys":["Control","Enter"]}`,
+	})
+	if !valid || err != nil {
+		t.Fatalf("expected array keys payload to validate, got valid=%t err=%v", valid, err)
+	}
+}
+
+func TestLoadActualProjectRegistry(t *testing.T) {
+	t.Parallel()
+
+	reg, err := Load(filepath.Clean(filepath.Join("..", "..", "..", "..", "configs", "tools.json")), "local")
+	if err != nil {
+		t.Fatalf("Load returned error: %v", err)
+	}
+
+	webFetch, ok := reg.Get("web.fetch")
+	if !ok {
+		t.Fatal("expected web.fetch contract in project registry")
+	}
+	if webFetch.GetRuntimeTarget() != "tool-webfetch:9090" {
+		t.Fatalf("unexpected web.fetch runtime target %q", webFetch.GetRuntimeTarget())
+	}
+
+	singleTabBind, ok := reg.Get("single_tab.bind")
+	if !ok {
+		t.Fatal("expected single_tab.bind contract in project registry")
+	}
+	if singleTabBind.GetStatus() != "disabled" {
+		t.Fatalf("expected single_tab.bind to be disabled, got %q", singleTabBind.GetStatus())
+	}
+
+	singleTabPressKeys, ok := reg.Get("single_tab.press_keys")
+	if !ok {
+		t.Fatal("expected single_tab.press_keys contract in project registry")
+	}
+	if singleTabPressKeys.GetRuntimeTarget() != "tool-browser-local:9090" {
+		t.Fatalf("unexpected single_tab.press_keys runtime target %q", singleTabPressKeys.GetRuntimeTarget())
+	}
+}

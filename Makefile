@@ -39,7 +39,7 @@ test-transport:
 	go test ./internal/transport/...
 
 proto:
-	protoc -I proto -I "$(CURDIR)" --go_out=. --go_opt=module=github.com/butler/butler --go-grpc_out=. --go-grpc_opt=module=github.com/butler/butler proto/common/v1/types.proto proto/run/v1/events.proto proto/session/v1/session.proto proto/orchestrator/v1/orchestrator.proto proto/toolbroker/v1/types.proto proto/toolbroker/v1/broker.proto proto/runtime/v1/runtime.proto proto/transport/v1/transport.proto
+	protoc -I proto -I "$(CURDIR)" --go_out=. --go_opt=module=github.com/butler/butler --go-grpc_out=. --go-grpc_opt=module=github.com/butler/butler proto/common/v1/types.proto proto/approval/v1/approval.proto proto/browser/v1/single_tab.proto proto/run/v1/events.proto proto/session/v1/session.proto proto/orchestrator/v1/orchestrator.proto proto/toolbroker/v1/types.proto proto/toolbroker/v1/broker.proto proto/runtime/v1/runtime.proto proto/transport/v1/transport.proto proto/webfetch/v1/webfetch.proto
 
 infra-up:
 	docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml up -d postgres redis

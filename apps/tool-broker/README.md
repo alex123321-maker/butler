@@ -27,6 +27,8 @@ Local run:
 - `go run ./apps/tool-broker`
 - service exposes HTTP health on `BUTLER_HTTP_ADDR` and gRPC on `BUTLER_GRPC_ADDR`
 - Compose stack wires the broker to `tool-http`, `tool-browser`, and `tool-doctor` over the internal runtime network
+- web retrieval tools can now route to `tool-webfetch`
+- `single_tab.*` contracts may exist in disabled state before the local browser runtime is available
 
 Testing:
 - run `go test ./apps/tool-broker/...`
