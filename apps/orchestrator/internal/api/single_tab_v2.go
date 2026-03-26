@@ -25,6 +25,7 @@ type singleTabCoordinator interface {
 type SingleTabServer struct {
 	coordinator       singleTabCoordinator
 	relay             *ExtensionActionRelay
+	bindRelay         *ExtensionBindRelay
 	relayHeartbeatTTL time.Duration
 }
 
@@ -32,6 +33,7 @@ func NewSingleTabServer(coordinator singleTabCoordinator) *SingleTabServer {
 	return &SingleTabServer{
 		coordinator:       coordinator,
 		relay:             NewExtensionActionRelay(),
+		bindRelay:         NewExtensionBindRelay(),
 		relayHeartbeatTTL: defaultRelayHeartbeatTTL,
 	}
 }
@@ -66,6 +68,15 @@ func (s *SingleTabServer) HandleCreateBindRequest() http.Handler {
 		if strings.TrimSpace(request.RunID) == "" || strings.TrimSpace(request.SessionKey) == "" {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "run_id and session_key are required"})
 			return
+		}
+		if len(request.TabCandidates) == 0 && request.DiscoverTabsViaExtension {
+			discoveredCandidates, discoveredHint, relayErr := s.collectTabCandidatesViaExtension(r.Context(), request)
+			if relayErr != nil {
+				writeJSON(w, mapRelayErrorStatus(relayErr.Code), map[string]string{"error": relayErr.Message, "code": relayErr.Code})
+				return
+			}
+			request.TabCandidates = discoveredCandidates
+			request.BrowserHint = firstNonEmptyAPI(request.BrowserHint, discoveredHint)
 		}
 		if len(request.TabCandidates) == 0 {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "tab_candidates are required"})
@@ -108,6 +119,33 @@ func (s *SingleTabServer) HandleCreateBindRequest() http.Handler {
 			"approval": toApprovalDTO(result.Approval, result.Candidates),
 		})
 	})
+}
+
+func (s *SingleTabServer) collectTabCandidatesViaExtension(ctx context.Context, request createBindRequest) ([]createBindCandidateEntry, string, *ExtensionRelayError) {
+	if s == nil || s.bindRelay == nil {
+		return nil, "", &ExtensionRelayError{Code: "host_unavailable", Message: "single tab extension bind relay is not configured"}
+	}
+
+	result, err := s.bindRelay.Dispatch(ctx, ExtensionBindDispatchParams{
+		RunID:             request.RunID,
+		SessionKey:        request.SessionKey,
+		ToolCallID:        request.ToolCallID,
+		RequestedVia:      request.RequestedVia,
+		RequestSource:     request.RequestSource,
+		BrowserHint:       request.BrowserHint,
+		BrowserInstanceID: request.BrowserInstanceID,
+	})
+	if err != nil {
+		relayErr := &ExtensionRelayError{Code: "host_unavailable", Message: "failed to collect tab candidates from extension"}
+		if errors.As(err, &relayErr) {
+			return nil, "", relayErr
+		}
+		return nil, "", relayErr
+	}
+	if len(result.TabCandidates) == 0 {
+		return nil, "", &ExtensionRelayError{Code: "invalid_request", Message: "extension did not return tab candidates"}
+	}
+	return result.TabCandidates, result.BrowserHint, nil
 }
 
 func (s *SingleTabServer) HandleGetActiveSession() http.Handler {
@@ -378,6 +416,105 @@ func (s *SingleTabServer) HandleRelayDispatchAction() http.Handler {
 	})
 }
 
+func (s *SingleTabServer) HandleExtensionPollNextBindRequest() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		if s.bindRelay == nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "single tab extension bind relay is not configured"})
+			return
+		}
+
+		browserInstanceID, _ := extensionIdentityFromRequest(r)
+		if browserInstanceID == "" {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "browser_instance_id is required", "code": "invalid_request"})
+			return
+		}
+		timeout := parsePollTimeout(r.URL.Query().Get("timeout_ms"))
+		ctx, cancel := context.WithTimeout(r.Context(), timeout)
+		defer cancel()
+
+		pending, ok, err := s.bindRelay.PollNext(ctx, browserInstanceID)
+		if err != nil {
+			relayErr := &ExtensionRelayError{Code: "host_unavailable", Message: "extension bind relay poll failed"}
+			if errors.As(err, &relayErr) {
+				writeJSON(w, mapRelayErrorStatus(relayErr.Code), map[string]string{"error": relayErr.Message, "code": relayErr.Code})
+				return
+			}
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "extension bind relay poll failed", "code": "poll_failed"})
+			return
+		}
+		if !ok {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"dispatch": pending})
+	})
+}
+
+func (s *SingleTabServer) HandleExtensionResolveBindRequest(prefix string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		if s.bindRelay == nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "single tab extension bind relay is not configured"})
+			return
+		}
+
+		dispatchID := extractPathParam(r.URL.Path, prefix)
+		dispatchID = strings.TrimSuffix(dispatchID, "/result")
+		if dispatchID == "" || strings.Contains(dispatchID, "/") {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "dispatch id is required", "code": "invalid_request"})
+			return
+		}
+		browserInstanceID, _ := extensionIdentityFromRequest(r)
+		if browserInstanceID == "" {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "browser_instance_id is required", "code": "invalid_request"})
+			return
+		}
+
+		var request extensionResolveBindRequest
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid JSON request body", "code": "invalid_request"})
+			return
+		}
+
+		var resolveErr error
+		if request.OK {
+			resolveErr = s.bindRelay.ResolveSuccess(dispatchID, browserInstanceID, ExtensionBindResolveResult{
+				BrowserInstanceID: browserInstanceID,
+				BrowserHint:       request.BrowserHint,
+				TabCandidates:     request.TabCandidates,
+			})
+		} else {
+			errCode := "runtime_error"
+			errMessage := "extension bind request failed"
+			if request.Error != nil {
+				if strings.TrimSpace(request.Error.Code) != "" {
+					errCode = strings.TrimSpace(request.Error.Code)
+				}
+				if strings.TrimSpace(request.Error.Message) != "" {
+					errMessage = strings.TrimSpace(request.Error.Message)
+				}
+			}
+			resolveErr = s.bindRelay.ResolveError(dispatchID, browserInstanceID, errCode, errMessage)
+		}
+		if resolveErr != nil {
+			if resolveErr == ErrExtensionDispatchNotFound {
+				writeJSON(w, http.StatusNotFound, map[string]string{"error": "dispatch not found", "code": "dispatch_not_found"})
+				return
+			}
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to resolve bind dispatch", "code": "dispatch_resolve_failed"})
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"accepted": true})
+	})
+}
+
 func (s *SingleTabServer) HandleExtensionPollNextAction() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -499,13 +636,15 @@ func (s *SingleTabServer) HandleExtensionResolveAction(prefix string) http.Handl
 }
 
 type createBindRequest struct {
-	RunID         string                     `json:"run_id"`
-	SessionKey    string                     `json:"session_key"`
-	ToolCallID    string                     `json:"tool_call_id"`
-	RequestedVia  string                     `json:"requested_via"`
-	BrowserHint   string                     `json:"browser_hint"`
-	RequestSource string                     `json:"request_source"`
-	TabCandidates []createBindCandidateEntry `json:"tab_candidates"`
+	RunID                    string                     `json:"run_id"`
+	SessionKey               string                     `json:"session_key"`
+	ToolCallID               string                     `json:"tool_call_id"`
+	RequestedVia             string                     `json:"requested_via"`
+	BrowserHint              string                     `json:"browser_hint"`
+	RequestSource            string                     `json:"request_source"`
+	BrowserInstanceID        string                     `json:"browser_instance_id"`
+	DiscoverTabsViaExtension bool                       `json:"discover_tabs_via_extension"`
+	TabCandidates            []createBindCandidateEntry `json:"tab_candidates"`
 }
 
 type createBindCandidateEntry struct {
@@ -539,6 +678,13 @@ type extensionResolveActionRequest struct {
 	OK     bool                         `json:"ok"`
 	Result map[string]any               `json:"result,omitempty"`
 	Error  *extensionResolveActionError `json:"error,omitempty"`
+}
+
+type extensionResolveBindRequest struct {
+	OK            bool                         `json:"ok"`
+	BrowserHint   string                       `json:"browser_hint,omitempty"`
+	TabCandidates []createBindCandidateEntry   `json:"tab_candidates,omitempty"`
+	Error         *extensionResolveActionError `json:"error,omitempty"`
 }
 
 type extensionResolveActionError struct {

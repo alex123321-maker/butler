@@ -203,6 +203,14 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	if remoteRelayEnabled {
 		mux.Handle("/api/v2/single-tab/actions/dispatch", singleTabServer.HandleRelayDispatchAction())
 		mux.Handle("/api/v2/extension/single-tab/bind-requests", extensionAuth(singleTabServer.HandleCreateBindRequest()))
+		mux.Handle("/api/v2/extension/single-tab/bind-requests/next", extensionAuth(singleTabServer.HandleExtensionPollNextBindRequest()))
+		mux.Handle("/api/v2/extension/single-tab/bind-requests/", extensionAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if strings.HasSuffix(r.URL.Path, "/result") {
+				singleTabServer.HandleExtensionResolveBindRequest("/api/v2/extension/single-tab/bind-requests/").ServeHTTP(w, r)
+				return
+			}
+			w.WriteHeader(http.StatusNotFound)
+		})))
 		mux.Handle("/api/v2/extension/single-tab/session", extensionAuth(singleTabServer.HandleGetActiveSession()))
 		mux.Handle("/api/v2/extension/single-tab/actions/next", extensionAuth(singleTabServer.HandleExtensionPollNextAction()))
 		mux.Handle("/api/v2/extension/single-tab/actions/", extensionAuth(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -31,6 +31,7 @@ The effective system prompt is assembled from these layers in order:
    - episodic memory
    - document chunks
    - optional tool summary derived from stable tool-contract metadata
+  - browser strategy guidance for browser-oriented runs, including short follow-up interpretation rules, single-tab approval continuity, and recovery guidance needed to continue browser tasks safely across turns
 3. Final transport-facing instruction payload
    - emitted by orchestrator as a normalized system instruction item
 

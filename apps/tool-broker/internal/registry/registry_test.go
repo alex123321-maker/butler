@@ -3,6 +3,7 @@ package registry
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -125,8 +126,14 @@ func TestLoadActualProjectRegistry(t *testing.T) {
 	if !ok {
 		t.Fatal("expected single_tab.bind contract in project registry")
 	}
-	if singleTabBind.GetStatus() != "disabled" {
-		t.Fatalf("expected single_tab.bind to be disabled, got %q", singleTabBind.GetStatus())
+	if singleTabBind.GetStatus() != "active" {
+		t.Fatalf("expected single_tab.bind to be active, got %q", singleTabBind.GetStatus())
+	}
+	if singleTabBind.GetRequiresApproval() {
+		t.Fatal("expected single_tab.bind to avoid generic pre-tool approval")
+	}
+	if !strings.Contains(singleTabBind.GetInputSchemaJson(), "wait_timeout_ms") {
+		t.Fatalf("expected single_tab.bind schema to expose wait_timeout_ms, got %q", singleTabBind.GetInputSchemaJson())
 	}
 
 	singleTabPressKeys, ok := reg.Get("single_tab.press_keys")

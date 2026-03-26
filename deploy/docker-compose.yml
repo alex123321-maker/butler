@@ -131,6 +131,35 @@ services:
       - backend
       - tool-runtime
 
+  tool-browser-local:
+    build:
+      context: ..
+      dockerfile: docker/tool-browser-local/Dockerfile
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - BUTLER_ENVIRONMENT
+      - BUTLER_LOG_LEVEL
+      - BUTLER_HTTP_ADDR
+      - BUTLER_GRPC_ADDR
+      - BUTLER_TOOL_BROWSER_LOCAL_ORCHESTRATOR_URL=http://host.docker.internal:8080
+      - BUTLER_TOOL_BROWSER_LOCAL_ROLLOUT_MODE=remote_preferred
+      - BUTLER_TOOL_BROWSER_LOCAL_DISPATCH_MODE=orchestrator_relay
+      - BUTLER_TOOL_BROWSER_LOCAL_REQUEST_TIMEOUT_SECONDS=60
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - wget -qO- http://127.0.0.1:8080/health >/dev/null || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    ports: []
+    networks:
+      - backend
+      - tool-runtime
+
   tool-doctor:
     build:
       context: ..
@@ -176,7 +205,7 @@ services:
       - BUTLER_HTTP_ADDR=:8080
       - BUTLER_DOCKER_HOST=unix:///var/run/docker.sock
       - BUTLER_RESTART_PROJECT=butler
-      - BUTLER_RESTART_ALLOWED_SERVICES=postgres,redis,ollama,tool-http,tool-webfetch,tool-browser,tool-doctor,tool-broker,migrator,orchestrator,web
+      - BUTLER_RESTART_ALLOWED_SERVICES=postgres,redis,ollama,tool-http,tool-webfetch,tool-browser,tool-browser-local,tool-doctor,tool-broker,migrator,orchestrator,web
       - BUTLER_RESTART_SELF_SERVICE=restart-helper
       - BUTLER_RESTART_DELAY_SECONDS=2
       - BUTLER_RESTART_TIMEOUT_SECONDS=20
@@ -207,6 +236,8 @@ services:
       tool-webfetch:
         condition: service_healthy
       tool-browser:
+        condition: service_healthy
+      tool-browser-local:
         condition: service_healthy
       tool-doctor:
         condition: service_healthy

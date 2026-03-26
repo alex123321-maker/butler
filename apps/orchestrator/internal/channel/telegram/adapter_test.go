@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -37,6 +38,11 @@ func (f *fakeSingleTabSelector) ActivateFromApproval(_ context.Context, params s
 	}
 	f.result.Candidate.CandidateToken = params.CandidateToken
 	return f.result, nil
+}
+
+func (f *fakeSingleTabSelector) ActivateFromCandidateToken(ctx context.Context, candidateToken string, params singletab.ActivateFromApprovalParams) (singletab.ActivationResult, error) {
+	params.CandidateToken = candidateToken
+	return f.ActivateFromApproval(ctx, params)
 }
 
 type memoryApprovalRepo struct {
@@ -89,6 +95,22 @@ func (m *memoryApprovalRepo) GetApprovalByID(_ context.Context, approvalID strin
 	return rec, nil
 }
 
+func (m *memoryApprovalRepo) GetApprovalByCandidateToken(_ context.Context, candidateToken string) (approvals.Record, error) {
+	for approvalID, candidates := range m.tabCandidates {
+		for _, candidate := range candidates {
+			if candidate.CandidateToken != candidateToken {
+				continue
+			}
+			rec, ok := m.recordsByID[approvalID]
+			if !ok {
+				return approvals.Record{}, approvals.ErrApprovalNotFound
+			}
+			return rec, nil
+		}
+	}
+	return approvals.Record{}, approvals.ErrApprovalNotFound
+}
+
 func (m *memoryApprovalRepo) ListApprovals(_ context.Context, status, runID, sessionKey string, limit, offset int) ([]approvals.Record, error) {
 	return nil, nil
 }
@@ -108,6 +130,17 @@ func (m *memoryApprovalRepo) CreateTabCandidates(_ context.Context, params []app
 
 func (m *memoryApprovalRepo) ListTabCandidates(_ context.Context, approvalID string) ([]approvals.TabCandidate, error) {
 	return append([]approvals.TabCandidate(nil), m.tabCandidates[approvalID]...), nil
+}
+
+func (m *memoryApprovalRepo) GetTabCandidateByToken(_ context.Context, candidateToken string) (approvals.TabCandidate, error) {
+	for _, candidates := range m.tabCandidates {
+		for _, candidate := range candidates {
+			if candidate.CandidateToken == candidateToken {
+				return candidate, nil
+			}
+		}
+	}
+	return approvals.TabCandidate{}, approvals.ErrTabCandidateNotFound
 }
 
 func (m *memoryApprovalRepo) SelectTabCandidate(_ context.Context, approvalID, candidateToken string, selectedAt time.Time) (approvals.TabCandidate, error) {
@@ -238,6 +271,131 @@ func TestDeliverApprovalRequestSendsInlineKeyboard(t *testing.T) {
 	}
 }
 
+func TestRunProcessesCallbackQueryWhileExecutorBusy(t *testing.T) {
+	t.Parallel()
+
+	client := &Client{}
+	var (
+		mu          sync.Mutex
+		getCalls    int
+		answered    = make(chan string, 1)
+		messageSent = make(chan string, 1)
+	)
+	client.getUpdates = func(ctx context.Context, offset int64, timeout int) ([]Update, error) {
+		mu.Lock()
+		defer mu.Unlock()
+		getCalls++
+		switch getCalls {
+		case 1:
+			return nil, nil
+		case 2:
+			return []Update{{
+				UpdateID: 1,
+				Message: &Message{
+					MessageID: 10,
+					Date:      time.Now().Unix(),
+					Text:      "bind please",
+					Chat:      Chat{ID: 777},
+				},
+			}}, nil
+		case 3:
+			return []Update{{
+				UpdateID: 2,
+				CallbackQuery: &CallbackQuery{
+					ID:      "cbq-1",
+					Data:    "tabsel:tok-1",
+					Message: &Message{Chat: Chat{ID: 777}},
+				},
+			}}, nil
+		default:
+			<-ctx.Done()
+			return nil, ctx.Err()
+		}
+	}
+	client.answerCallback = func(_ context.Context, callbackID, text string) error {
+		select {
+		case answered <- callbackID + "|" + text:
+		default:
+		}
+		return nil
+	}
+	client.sendMessage = func(_ context.Context, _ int64, text string) (Message, error) {
+		select {
+		case messageSent <- text:
+		default:
+		}
+		return Message{}, nil
+	}
+	client.sendChatAction = func(context.Context, int64, string) error { return nil }
+
+	adapter, err := NewAdapter(Config{AllowedChatIDs: []string{"777"}, PollTimeout: time.Second}, client, flow.NewApprovalGate(), nil)
+	if err != nil {
+		t.Fatalf("NewAdapter returned error: %v", err)
+	}
+
+	executorRelease := make(chan struct{})
+	adapter.SetExecutor(stubExecutor{
+		execute: func(ctx context.Context, event ingress.InputEvent) (*flow.ExecutionResult, error) {
+			if event.SessionKey != "telegram:chat:777" {
+				t.Fatalf("unexpected session key %q", event.SessionKey)
+			}
+			<-executorRelease
+			return &flow.ExecutionResult{RunID: "run-1", SessionKey: event.SessionKey}, nil
+		},
+	})
+	adapter.SetSingleTabSelector(&fakeSingleTabSelector{
+		result: singletab.ActivationResult{
+			Candidate: approvals.TabCandidate{
+				CandidateToken: "tok-1",
+				Title:          "Example tab",
+				CurrentURL:     "https://example.com",
+			},
+			Session: singletab.Record{
+				CurrentTitle: "Example tab",
+				CurrentURL:   "https://example.com",
+			},
+		},
+	})
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	done := make(chan error, 1)
+	go func() {
+		done <- adapter.Run(ctx)
+	}()
+
+	select {
+	case got := <-answered:
+		if !strings.Contains(got, "cbq-1|") {
+			t.Fatalf("unexpected callback ack %q", got)
+		}
+	case <-time.After(500 * time.Millisecond):
+		t.Fatal("expected callback query to be answered while executor is still busy")
+	}
+
+	select {
+	case got := <-messageSent:
+		if !strings.Contains(got, "Агент подключён к вкладке") {
+			t.Fatalf("unexpected confirmation message %q", got)
+		}
+	case <-time.After(500 * time.Millisecond):
+		t.Fatal("expected tab selection confirmation message")
+	}
+
+	close(executorRelease)
+	cancel()
+
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatalf("Run returned error: %v", err)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("Run did not stop after context cancellation")
+	}
+}
+
 func TestDeliverBrowserTabSelectionRequestSendsCandidateButtons(t *testing.T) {
 	t.Parallel()
 
@@ -271,7 +429,7 @@ func TestDeliverBrowserTabSelectionRequestSendsCandidateButtons(t *testing.T) {
 	if !strings.Contains(text, "Выберите вкладку") {
 		t.Fatalf("expected browser tab selection prompt, got %q", text)
 	}
-	if markup == nil || len(markup.InlineKeyboard) != 3 || markup.InlineKeyboard[0][0].CallbackData != "tabsel:approval-1:tok-1" {
+	if markup == nil || len(markup.InlineKeyboard) != 3 || markup.InlineKeyboard[0][0].CallbackData != "tabsel:tok-1" {
 		t.Fatalf("unexpected browser tab selection keyboard: %+v", markup)
 	}
 }
@@ -332,7 +490,7 @@ func TestHandleCallbackQuerySelectsBrowserTab(t *testing.T) {
 
 	adapter.handleCallbackQuery(context.Background(), &CallbackQuery{
 		ID:      "cbq-tab-1",
-		Data:    "tabsel:approval-1:tok-1",
+		Data:    "tabsel:tok-1",
 		Message: &Message{Chat: Chat{ID: 777}},
 		From:    &User{ID: 42},
 	})

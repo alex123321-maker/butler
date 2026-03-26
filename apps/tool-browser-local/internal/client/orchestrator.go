@@ -13,6 +13,7 @@ import (
 
 type APIError struct {
 	StatusCode int
+	Code       string
 	Message    string
 }
 
@@ -39,8 +40,27 @@ type SessionEnvelope struct {
 	SingleTabSession map[string]any `json:"single_tab_session"`
 }
 
+type RunEnvelope struct {
+	Run map[string]any `json:"run"`
+}
+
 type ArtifactEnvelope struct {
 	Artifact map[string]any `json:"artifact"`
+}
+
+type CreateBindRequestParams struct {
+	RunID                    string `json:"run_id"`
+	SessionKey               string `json:"session_key"`
+	ToolCallID               string `json:"tool_call_id,omitempty"`
+	RequestedVia             string `json:"requested_via,omitempty"`
+	BrowserHint              string `json:"browser_hint,omitempty"`
+	RequestSource            string `json:"request_source,omitempty"`
+	BrowserInstanceID        string `json:"browser_instance_id,omitempty"`
+	DiscoverTabsViaExtension bool   `json:"discover_tabs_via_extension"`
+}
+
+type CreateBindRequestEnvelope struct {
+	Approval map[string]any `json:"approval"`
 }
 
 type UpdateSessionStateParams struct {
@@ -68,6 +88,50 @@ func (c *Client) GetSession(ctx context.Context, sessionID string) (SessionEnvel
 		return SessionEnvelope{}, err
 	}
 	return c.doJSON(req)
+}
+
+func (c *Client) GetActiveSession(ctx context.Context, sessionKey string) (SessionEnvelope, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/api/v2/single-tab/session?session_key="+url.QueryEscape(strings.TrimSpace(sessionKey)), nil)
+	if err != nil {
+		return SessionEnvelope{}, err
+	}
+	return c.doJSON(req)
+}
+
+func (c *Client) GetRun(ctx context.Context, runID string) (RunEnvelope, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/api/v1/runs/"+url.PathEscape(strings.TrimSpace(runID)), nil)
+	if err != nil {
+		return RunEnvelope{}, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return RunEnvelope{}, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		apiErr := &APIError{StatusCode: resp.StatusCode}
+		var payload map[string]any
+		if err := json.NewDecoder(resp.Body).Decode(&payload); err == nil {
+			if code, ok := payload["code"].(string); ok {
+				apiErr.Code = code
+			}
+			if msg, ok := payload["error"].(string); ok && strings.TrimSpace(msg) != "" {
+				apiErr.Message = msg
+				return RunEnvelope{}, apiErr
+			}
+		}
+		if strings.TrimSpace(apiErr.Message) == "" {
+			apiErr.Message = fmt.Sprintf("orchestrator returned status %d", resp.StatusCode)
+		}
+		return RunEnvelope{}, apiErr
+	}
+
+	var envelope RunEnvelope
+	if err := json.NewDecoder(resp.Body).Decode(&envelope); err != nil {
+		return RunEnvelope{}, fmt.Errorf("decode orchestrator response: %w", err)
+	}
+	return envelope, nil
 }
 
 func (c *Client) ReleaseSession(ctx context.Context, sessionID string) (SessionEnvelope, bool, error) {
@@ -145,6 +209,47 @@ func (c *Client) CreateBrowserCaptureArtifact(ctx context.Context, params Create
 	return envelope, nil
 }
 
+func (c *Client) CreateBindRequest(ctx context.Context, params CreateBindRequestParams) (CreateBindRequestEnvelope, error) {
+	body, err := json.Marshal(params)
+	if err != nil {
+		return CreateBindRequestEnvelope{}, fmt.Errorf("marshal bind request: %w", err)
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/api/v2/single-tab/bind-requests", bytes.NewReader(body))
+	if err != nil {
+		return CreateBindRequestEnvelope{}, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return CreateBindRequestEnvelope{}, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		apiErr := &APIError{StatusCode: resp.StatusCode}
+		var payload map[string]any
+		if err := json.NewDecoder(resp.Body).Decode(&payload); err == nil {
+			if code, ok := payload["code"].(string); ok {
+				apiErr.Code = code
+			}
+			if msg, ok := payload["error"].(string); ok && strings.TrimSpace(msg) != "" {
+				apiErr.Message = msg
+				return CreateBindRequestEnvelope{}, apiErr
+			}
+		}
+		if strings.TrimSpace(apiErr.Message) == "" {
+			apiErr.Message = fmt.Sprintf("orchestrator returned status %d", resp.StatusCode)
+		}
+		return CreateBindRequestEnvelope{}, apiErr
+	}
+
+	var envelope CreateBindRequestEnvelope
+	if err := json.NewDecoder(resp.Body).Decode(&envelope); err != nil {
+		return CreateBindRequestEnvelope{}, fmt.Errorf("decode orchestrator response: %w", err)
+	}
+	return envelope, nil
+}
+
 func (c *Client) doJSON(req *http.Request) (SessionEnvelope, error) {
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -152,13 +257,21 @@ func (c *Client) doJSON(req *http.Request) (SessionEnvelope, error) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		apiErr := &APIError{StatusCode: resp.StatusCode}
 		var payload map[string]any
 		if err := json.NewDecoder(resp.Body).Decode(&payload); err == nil {
+			if code, ok := payload["code"].(string); ok {
+				apiErr.Code = code
+			}
 			if msg, ok := payload["error"].(string); ok && strings.TrimSpace(msg) != "" {
-				return SessionEnvelope{}, &APIError{StatusCode: resp.StatusCode, Message: msg}
+				apiErr.Message = msg
+				return SessionEnvelope{}, apiErr
 			}
 		}
-		return SessionEnvelope{}, &APIError{StatusCode: resp.StatusCode, Message: fmt.Sprintf("orchestrator returned status %d", resp.StatusCode)}
+		if strings.TrimSpace(apiErr.Message) == "" {
+			apiErr.Message = fmt.Sprintf("orchestrator returned status %d", resp.StatusCode)
+		}
+		return SessionEnvelope{}, apiErr
 	}
 	var envelope SessionEnvelope
 	if err := json.NewDecoder(resp.Body).Decode(&envelope); err != nil {

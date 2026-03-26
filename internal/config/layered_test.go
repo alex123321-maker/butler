@@ -131,3 +131,54 @@ func TestLoadOrchestratorLayeredIncludesRestartHelperURL(t *testing.T) {
 		t.Fatalf("expected env source, got %q", restartHelperURL.Source)
 	}
 }
+
+func TestLoadOrchestratorLayeredIncludesExtensionRelaySettings(t *testing.T) {
+	settings := []Setting{
+		{
+			Key:       "BUTLER_SINGLE_TAB_TRANSPORT_MODE",
+			Value:     "remote_preferred",
+			Component: "orchestrator",
+			UpdatedBy: "unit-test",
+		},
+		{
+			Key:       "BUTLER_SINGLE_TAB_RELAY_HEARTBEAT_TTL_SECONDS",
+			Value:     "120",
+			Component: "orchestrator",
+			UpdatedBy: "unit-test",
+		},
+	}
+
+	cfg, snapshot, err := loadOrchestratorLayered(envMap(map[string]string{
+		"BUTLER_POSTGRES_URL":         "postgres://localhost:5432/butler",
+		"BUTLER_REDIS_URL":            "redis://localhost:6379/0",
+		"BUTLER_EXTENSION_API_TOKENS": "ext-token-a,ext-token-b",
+	}), settings)
+	if err != nil {
+		t.Fatalf("loadOrchestratorLayered returned error: %v", err)
+	}
+	if cfg.SingleTabTransportMode != "remote_preferred" {
+		t.Fatalf("expected db transport mode override, got %q", cfg.SingleTabTransportMode)
+	}
+	if cfg.SingleTabRelayHeartbeatTTLSeconds != 120 {
+		t.Fatalf("expected db relay heartbeat ttl override, got %d", cfg.SingleTabRelayHeartbeatTTLSeconds)
+	}
+	if len(cfg.ExtensionAPITokens) != 2 || cfg.ExtensionAPITokens[0] != "ext-token-a" || cfg.ExtensionAPITokens[1] != "ext-token-b" {
+		t.Fatalf("expected extension api tokens from env, got %v", cfg.ExtensionAPITokens)
+	}
+
+	transportMode := findKey(t, snapshot.ListKeys(), "BUTLER_SINGLE_TAB_TRANSPORT_MODE")
+	if transportMode.Source != ConfigSourceDB {
+		t.Fatalf("expected transport mode source db, got %q", transportMode.Source)
+	}
+	relayTTL := findKey(t, snapshot.ListKeys(), "BUTLER_SINGLE_TAB_RELAY_HEARTBEAT_TTL_SECONDS")
+	if relayTTL.Source != ConfigSourceDB {
+		t.Fatalf("expected relay ttl source db, got %q", relayTTL.Source)
+	}
+	extensionTokens := findKey(t, snapshot.ListKeys(), "BUTLER_EXTENSION_API_TOKENS")
+	if extensionTokens.Source != ConfigSourceEnv {
+		t.Fatalf("expected extension tokens source env, got %q", extensionTokens.Source)
+	}
+	if extensionTokens.EffectiveValue != "[masked]" {
+		t.Fatalf("expected masked extension tokens value, got %q", extensionTokens.EffectiveValue)
+	}
+}

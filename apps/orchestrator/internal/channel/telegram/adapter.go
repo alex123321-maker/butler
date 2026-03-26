@@ -28,6 +28,7 @@ type Executor interface {
 
 type BrowserTabSelector interface {
 	ActivateFromApproval(ctx context.Context, params singletab.ActivateFromApprovalParams) (singletab.ActivationResult, error)
+	ActivateFromCandidateToken(ctx context.Context, candidateToken string, params singletab.ActivateFromApprovalParams) (singletab.ActivationResult, error)
 }
 
 type Config struct {
@@ -145,19 +146,25 @@ func (a *Adapter) Run(ctx context.Context) error {
 				a.nextOffset = update.UpdateID + 1
 			}
 
-			if update.CallbackQuery != nil {
-				a.handleCallbackQuery(ctx, update.CallbackQuery)
-				continue
-			}
-
-			if err := a.handleMessageUpdate(ctx, update); err != nil {
-				if errors.Is(err, ErrIgnoredUpdate) {
-					continue
-				}
-				a.log.Warn("telegram update handling failed", slog.Int64("update_id", update.UpdateID), slog.String("error", err.Error()))
-			}
+			a.dispatchUpdate(ctx, update)
 		}
 	}
+}
+
+func (a *Adapter) dispatchUpdate(ctx context.Context, update Update) {
+	go func() {
+		if update.CallbackQuery != nil {
+			a.handleCallbackQuery(ctx, update.CallbackQuery)
+			return
+		}
+
+		if err := a.handleMessageUpdate(ctx, update); err != nil {
+			if errors.Is(err, ErrIgnoredUpdate) {
+				return
+			}
+			a.log.Warn("telegram update handling failed", slog.Int64("update_id", update.UpdateID), slog.String("error", err.Error()))
+		}
+	}()
 }
 
 func (a *Adapter) handleMessageUpdate(ctx context.Context, update Update) error {
@@ -507,7 +514,7 @@ func (a *Adapter) DeliverApprovalRequest(ctx context.Context, req flow.ApprovalR
 			}
 			rows = append(rows, []InlineKeyboardButton{{
 				Text:         label,
-				CallbackData: tabSelectCallbackPrefix + req.ApprovalID + ":" + candidate.CandidateToken,
+				CallbackData: tabSelectCallbackPrefix + candidate.CandidateToken,
 			}})
 		}
 		rows = append(rows,
@@ -553,9 +560,8 @@ func (a *Adapter) handleCallbackQuery(ctx context.Context, query *CallbackQuery)
 
 	if strings.HasPrefix(query.Data, authStartCallbackPrefix) {
 		provider := strings.TrimPrefix(query.Data, authStartCallbackPrefix)
-		answerText := "Opening connection flow"
+		a.answerCallbackQuerySafe(ctx, query.ID, "Opening connection flow")
 		if err := a.handleAuthCallback(ctx, query, provider); err != nil {
-			answerText = "Connection failed"
 			a.log.Warn("provider auth callback failed", slog.String("provider", provider), slog.String("error", err.Error()))
 			if query.Message != nil {
 				if _, sendErr := a.client.SendMessage(ctx, query.Message.Chat.ID, "Could not start auth for "+providerLabel(provider)+"\n\nError: "+err.Error()); sendErr != nil {
@@ -563,32 +569,31 @@ func (a *Adapter) handleCallbackQuery(ctx context.Context, query *CallbackQuery)
 				}
 			}
 		}
-		if err := a.client.AnswerCallbackQuery(ctx, query.ID, answerText); err != nil {
-			a.log.Warn("answer callback query failed", slog.String("error", err.Error()))
-		}
 		return
 	}
 
 	if strings.HasPrefix(query.Data, tabSelectCallbackPrefix) {
+		a.answerCallbackQuerySafe(ctx, query.ID, "Обрабатываю выбор...")
 		if err := a.handleTabSelectionCallback(ctx, query); err != nil {
 			a.log.Warn("browser tab selection callback failed", slog.String("error", err.Error()))
-			if err := a.client.AnswerCallbackQuery(ctx, query.ID, "Selection failed"); err != nil {
-				a.log.Warn("answer callback query failed", slog.String("error", err.Error()))
+			if query.Message != nil {
+				if _, sendErr := a.client.SendMessage(ctx, query.Message.Chat.ID, "Не удалось выбрать вкладку.\n\nОшибка: "+err.Error()); sendErr != nil {
+					a.log.Warn("send browser tab selection failure failed", slog.String("error", sendErr.Error()))
+				}
 			}
-		} else if err := a.client.AnswerCallbackQuery(ctx, query.ID, "Tab selected"); err != nil {
-			a.log.Warn("answer callback query failed", slog.String("error", err.Error()))
 		}
 		return
 	}
 
 	if strings.HasPrefix(query.Data, tabDenyCallbackPrefix) || strings.HasPrefix(query.Data, tabCancelCallbackPrefix) {
+		a.answerCallbackQuerySafe(ctx, query.ID, "Закрываю запрос...")
 		if err := a.handleTabRejectionCallback(ctx, query); err != nil {
 			a.log.Warn("browser tab rejection callback failed", slog.String("error", err.Error()))
-			if err := a.client.AnswerCallbackQuery(ctx, query.ID, "Action failed"); err != nil {
-				a.log.Warn("answer callback query failed", slog.String("error", err.Error()))
+			if query.Message != nil {
+				if _, sendErr := a.client.SendMessage(ctx, query.Message.Chat.ID, "Не удалось закрыть запрос выбора вкладки.\n\nОшибка: "+err.Error()); sendErr != nil {
+					a.log.Warn("send browser tab rejection failure failed", slog.String("error", sendErr.Error()))
+				}
 			}
-		} else if err := a.client.AnswerCallbackQuery(ctx, query.ID, "Request closed"); err != nil {
-			a.log.Warn("answer callback query failed", slog.String("error", err.Error()))
 		}
 		return
 	}
@@ -607,13 +612,7 @@ func (a *Adapter) handleCallbackQuery(ctx context.Context, query *CallbackQuery)
 		return
 	}
 
-	answerText := "Approved"
-	if !approved {
-		answerText = "Rejected"
-	}
-	if err := a.client.AnswerCallbackQuery(ctx, query.ID, answerText); err != nil {
-		a.log.Warn("answer callback query failed", slog.String("error", err.Error()))
-	}
+	a.answerCallbackQuerySafe(ctx, query.ID, "Обрабатываю решение...")
 
 	if a.approvalGate == nil {
 		a.log.Error("approval gate not configured, cannot resolve approval")
@@ -650,13 +649,22 @@ func (a *Adapter) handleCallbackQuery(ctx context.Context, query *CallbackQuery)
 	a.log.Info("approval resolved via telegram", slog.String("tool_call_id", toolCallID), slog.String("action", action))
 }
 
+func (a *Adapter) answerCallbackQuerySafe(ctx context.Context, callbackQueryID, text string) {
+	if a == nil || a.client == nil || strings.TrimSpace(callbackQueryID) == "" {
+		return
+	}
+	if err := a.client.AnswerCallbackQuery(ctx, callbackQueryID, text); err != nil {
+		a.log.Warn("answer callback query failed", slog.String("error", err.Error()))
+	}
+}
+
 func (a *Adapter) handleTabSelectionCallback(ctx context.Context, query *CallbackQuery) error {
 	if a.singleTabSelector == nil {
 		return fmt.Errorf("single tab selector is not configured")
 	}
 	payload := strings.TrimPrefix(query.Data, tabSelectCallbackPrefix)
-	parts := strings.SplitN(payload, ":", 2)
-	if len(parts) != 2 || strings.TrimSpace(parts[0]) == "" || strings.TrimSpace(parts[1]) == "" {
+	candidateToken := strings.TrimSpace(payload)
+	if candidateToken == "" {
 		return fmt.Errorf("invalid browser tab selection callback payload")
 	}
 
@@ -665,9 +673,7 @@ func (a *Adapter) handleTabSelectionCallback(ctx context.Context, query *Callbac
 		resolvedBy = fmt.Sprintf("telegram_user:%d", query.From.ID)
 	}
 
-	result, err := a.singleTabSelector.ActivateFromApproval(ctx, singletab.ActivateFromApprovalParams{
-		ApprovalID:     parts[0],
-		CandidateToken: parts[1],
+	result, err := a.singleTabSelector.ActivateFromCandidateToken(ctx, candidateToken, singletab.ActivateFromApprovalParams{
 		ResolvedVia:    approvals.ResolvedViaTelegram,
 		ResolvedBy:     resolvedBy,
 		ActorType:      "telegram",

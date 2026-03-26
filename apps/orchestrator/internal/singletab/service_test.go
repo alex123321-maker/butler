@@ -22,11 +22,29 @@ func (m *memoryApprovalStore) GetApprovalByID(_ context.Context, approvalID stri
 	return m.record, nil
 }
 
+func (m *memoryApprovalStore) GetApprovalByCandidateToken(_ context.Context, candidateToken string) (approvals.Record, error) {
+	for _, candidate := range m.candidates {
+		if candidate.CandidateToken == candidateToken {
+			return m.record, nil
+		}
+	}
+	return approvals.Record{}, approvals.ErrApprovalNotFound
+}
+
 func (m *memoryApprovalStore) ListTabCandidates(_ context.Context, approvalID string) ([]approvals.TabCandidate, error) {
 	if m.record.ApprovalID != approvalID {
 		return nil, approvals.ErrApprovalNotFound
 	}
 	return append([]approvals.TabCandidate(nil), m.candidates...), nil
+}
+
+func (m *memoryApprovalStore) GetTabCandidateByToken(_ context.Context, candidateToken string) (approvals.TabCandidate, error) {
+	for _, candidate := range m.candidates {
+		if candidate.CandidateToken == candidateToken {
+			return candidate, nil
+		}
+	}
+	return approvals.TabCandidate{}, approvals.ErrTabCandidateNotFound
 }
 
 func (m *memoryApprovalStore) SelectTabCandidate(_ context.Context, approvalID, candidateToken string, selectedAt time.Time) (approvals.TabCandidate, error) {

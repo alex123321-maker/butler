@@ -14,12 +14,12 @@ Current Compose stack includes:
 - `orchestrator` for ingress, run execution, memory context loading, and transport
 - `restart-helper` for narrow helper-managed Docker Compose restarts of allowlisted Butler services
 - `tool-broker` for tool validation, credential policy checks, secret resolution, and runtime routing
-- `tool-http`, `tool-webfetch`, `tool-browser`, and `tool-doctor` as isolated runtime services
+- `tool-http`, `tool-webfetch`, `tool-browser`, `tool-browser-local`, and `tool-doctor` as isolated runtime services
 - `web` for the Nuxt operator UI
 
 Current behavior notes:
 - runtime isolation is network-based inside Compose through the internal `tool-runtime` network
-- `browser-bridge` and `tool-browser-local` are intentionally not part of Compose; both are host-side components for the local browser flow
+- `browser-bridge` stays host-side for native messaging mode; `tool-browser-local` is now part of Compose for `orchestrator_relay` single-tab flows
 - `restart-helper` is intentionally attached only to the internal backend network and uses an explicit allowlist plus self-exclusion before touching the Docker socket
 - `tool-doctor` does not get the Docker socket and limits `doctor.check_container` to probing configured service health URLs
 - for local browser usage, start Compose with both files or use `make up`; the base file alone does not publish the orchestrator REST API to the host

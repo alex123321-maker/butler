@@ -36,6 +36,11 @@ services:
       - 12080:8080
       - 12090:9090
 
+  tool-browser-local:
+    ports:
+      - 12180:8080
+      - 12190:9090
+
   tool-doctor:
     ports:
       - 13080:8080

@@ -329,7 +329,7 @@ func loadToolBrowserLocal(get envGetter) (ToolBrowserLocalConfig, Snapshot, erro
 		fieldSpec{key: "BUTLER_TOOL_BROWSER_LOCAL_BROWSER_BRIDGE_URL", component: "tool-browser-local", typeName: "string", required: false, defaultValue: "http://127.0.0.1:29115", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.BrowserBridgeURL = strings.TrimSpace(v) }},
 		fieldSpec{key: "BUTLER_TOOL_BROWSER_LOCAL_ROLLOUT_MODE", component: "tool-browser-local", typeName: "string", required: false, defaultValue: "native_only", allowedValues: singleTabRolloutModes, requiresRestart: true, assign: func(v string) { cfg.DispatchRolloutMode = strings.ToLower(strings.TrimSpace(v)) }},
 		fieldSpec{key: "BUTLER_TOOL_BROWSER_LOCAL_DISPATCH_MODE", component: "tool-browser-local", typeName: "string", required: false, defaultValue: "browser_bridge", allowedValues: []string{"browser_bridge", "orchestrator_relay"}, requiresRestart: true, assign: func(v string) { cfg.DispatchMode = strings.ToLower(strings.TrimSpace(v)) }},
-		fieldSpec{key: "BUTLER_TOOL_BROWSER_LOCAL_REQUEST_TIMEOUT_SECONDS", component: "tool-browser-local", typeName: "int", required: false, defaultValue: "15", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.RequestTimeout = mustParseInt(v) }},
+		fieldSpec{key: "BUTLER_TOOL_BROWSER_LOCAL_REQUEST_TIMEOUT_SECONDS", component: "tool-browser-local", typeName: "int", required: false, defaultValue: "60", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.RequestTimeout = mustParseInt(v) }},
 	)
 	snapshot, err := loadSpecs(get, specs)
 	return cfg, snapshot, err

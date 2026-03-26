@@ -7,13 +7,16 @@ const ROLLOUT_MODE_DUAL = "dual";
 const ROLLOUT_MODE_REMOTE_PREFERRED = "remote_preferred";
 const FORM_STORAGE_KEY = "butler.chromiumBridge.form";
 const BROWSER_INSTANCE_STORAGE_KEY = "butler.chromiumBridge.browserInstanceID";
+const REMOTE_RELAY_BOOTSTRAP_ALARM = "butler.remoteRelay.bootstrap";
 const pendingNativeRequests = new Map();
 const remoteRelayLoops = new Map();
+const remoteBindRelayLoops = new Map();
 
 let nativePort = null;
 
 chrome.runtime.onInstalled.addListener(() => {
   console.info("Butler Chromium Bridge installed");
+  ensureRelayBootstrapAlarm();
   void ensureNativePort().catch(() => {
     // Native host is optional when transport mode is remote.
   });
@@ -21,9 +24,24 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.runtime.onStartup.addListener(() => {
+  ensureRelayBootstrapAlarm();
   void ensureNativePort().catch(() => {
     // Native host is optional when transport mode is remote.
   });
+  void bootstrapRemoteRelayFromStorage();
+});
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== "local" || !changes?.[FORM_STORAGE_KEY]) {
+    return;
+  }
+  void bootstrapRemoteRelayFromStorage();
+});
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm?.name !== REMOTE_RELAY_BOOTSTRAP_ALARM) {
+    return;
+  }
   void bootstrapRemoteRelayFromStorage();
 });
 
@@ -39,13 +57,22 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   return true;
 });
 
+ensureRelayBootstrapAlarm();
 void ensureNativePort().catch(() => {
   // Native host is optional when transport mode is remote.
 });
 void bootstrapRemoteRelayFromStorage();
 
+function ensureRelayBootstrapAlarm() {
+  chrome.alarms.create(REMOTE_RELAY_BOOTSTRAP_ALARM, {
+    periodInMinutes: 1
+  });
+}
+
 async function handleMessage(message) {
   switch (message?.type) {
+    case "connect-remote":
+      return connectRemote(message.payload);
     case "list-tabs":
       return listTabs();
     case "create-bind-request":
@@ -55,6 +82,21 @@ async function handleMessage(message) {
     default:
       throw new Error(`Unsupported popup message: ${String(message?.type)}`);
   }
+}
+
+async function connectRemote(payload) {
+  const transport = normalizeTransport(payload?.transport);
+  if (transport.mode !== TRANSPORT_MODE_REMOTE) {
+    throw new Error("Connection mode must be remote to establish relay");
+  }
+  const browserInstanceID = await getOrCreateBrowserInstanceID();
+  ensureRemoteBindRelayLoop(transport, browserInstanceID);
+  await checkRemoteRelayAccess(transport, browserInstanceID);
+  return {
+    connected: true,
+    browser_instance_id: browserInstanceID,
+    relay: "bind_discovery_active"
+  };
 }
 
 async function listTabs() {
@@ -114,6 +156,7 @@ async function getActiveSession(payload) {
 
 async function createBindRequestRemote(runID, sessionKey, tabCandidates, transport) {
   const browserInstanceID = await getOrCreateBrowserInstanceID();
+  ensureRemoteBindRelayLoop(transport, browserInstanceID);
   const response = await remoteJSONRequest(transport, "/api/v2/extension/single-tab/bind-requests", {
     method: "POST",
     body: JSON.stringify({
@@ -132,6 +175,7 @@ async function createBindRequestRemote(runID, sessionKey, tabCandidates, transpo
 
 async function getActiveSessionRemote(sessionKey, transport) {
   const browserInstanceID = await getOrCreateBrowserInstanceID();
+  ensureRemoteBindRelayLoop(transport, browserInstanceID);
   ensureRemoteRelayLoop(transport, sessionKey, browserInstanceID);
   const baseURL = normalizeRemoteBaseURL(transport.remote_base_url);
   const endpoint = `${baseURL}/api/v2/extension/single-tab/session?session_key=${encodeURIComponent(sessionKey)}&browser_instance_id=${encodeURIComponent(browserInstanceID)}`;
@@ -251,6 +295,128 @@ async function parseRemoteResponse(response) {
   return payload;
 }
 
+async function checkRemoteRelayAccess(transport, browserInstanceID) {
+  const baseURL = normalizeRemoteBaseURL(transport.remote_base_url);
+  const endpoint = `${baseURL}/api/v2/extension/single-tab/bind-requests/next?browser_instance_id=${encodeURIComponent(browserInstanceID)}&timeout_ms=1000`;
+  const response = await fetch(endpoint, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${transport.remote_api_token}`,
+      "X-Butler-Browser-Instance": String(browserInstanceID ?? "").trim()
+    }
+  });
+  if (response.status === 204 || response.status === 200) {
+    return;
+  }
+  await parseRemoteResponse(response);
+}
+
+function ensureRemoteBindRelayLoop(transport, browserInstanceID) {
+  const normalizedBrowserInstanceID = String(browserInstanceID ?? "").trim();
+  if (!normalizedBrowserInstanceID) {
+    return;
+  }
+  const baseURL = normalizeRemoteBaseURL(transport.remote_base_url);
+  const loopKey = `${baseURL}|bind|${normalizedBrowserInstanceID}`;
+  const existing = remoteBindRelayLoops.get(loopKey);
+  if (existing && !existing.stopped) {
+    existing.transport = transport;
+    existing.browserInstanceID = normalizedBrowserInstanceID;
+    return;
+  }
+  if (existing?.stopped) {
+    remoteBindRelayLoops.delete(loopKey);
+  }
+
+  const state = {
+    stopped: false,
+    transport,
+    browserInstanceID: normalizedBrowserInstanceID
+  };
+  remoteBindRelayLoops.set(loopKey, state);
+  void runRemoteBindRelayLoop(loopKey, state);
+}
+
+async function runRemoteBindRelayLoop(loopKey, state) {
+  while (!state.stopped) {
+    let dispatchID = "";
+    try {
+      const pending = await pollRemoteBindDispatch(state.transport, state.browserInstanceID);
+      if (!pending) {
+        continue;
+      }
+      const dispatch = pending?.dispatch;
+      if (!dispatch || typeof dispatch !== "object") {
+        continue;
+      }
+      dispatchID = String(dispatch.dispatch_id ?? "").trim();
+      if (!dispatchID) {
+        continue;
+      }
+
+      const sessionKey = String(dispatch.session_key ?? "").trim();
+      if (sessionKey) {
+        ensureRemoteRelayLoop(state.transport, sessionKey, state.browserInstanceID);
+      }
+
+      const tabCandidates = await listTabs();
+      await postRemoteBindDispatchResult(state.transport, dispatchID, state.browserInstanceID, {
+        ok: true,
+        browser_hint: navigator.userAgent,
+        tab_candidates: tabCandidates
+      });
+    } catch (error) {
+      if (dispatchID) {
+        const coded = normalizeRuntimeError(error);
+        try {
+          await postRemoteBindDispatchResult(state.transport, dispatchID, state.browserInstanceID, {
+            ok: false,
+            error: coded
+          });
+        } catch (postError) {
+          console.warn("Failed to post remote bind dispatch error result", postError);
+        }
+      } else {
+        await sleep(1500);
+      }
+    }
+  }
+  if (remoteBindRelayLoops.get(loopKey) === state) {
+    remoteBindRelayLoops.delete(loopKey);
+  }
+}
+
+async function pollRemoteBindDispatch(transport, browserInstanceID) {
+  const baseURL = normalizeRemoteBaseURL(transport.remote_base_url);
+  const endpoint = `${baseURL}/api/v2/extension/single-tab/bind-requests/next?browser_instance_id=${encodeURIComponent(browserInstanceID)}&timeout_ms=25000`;
+  const response = await fetch(endpoint, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${transport.remote_api_token}`,
+      "X-Butler-Browser-Instance": String(browserInstanceID ?? "").trim()
+    }
+  });
+  if (response.status === 204) {
+    return null;
+  }
+  return parseRemoteResponse(response);
+}
+
+async function postRemoteBindDispatchResult(transport, dispatchID, browserInstanceID, payload) {
+  const safeDispatchID = encodeURIComponent(String(dispatchID ?? "").trim());
+  if (!safeDispatchID) {
+    throw new Error("dispatch id is required");
+  }
+  const safeBrowserInstanceID = encodeURIComponent(String(browserInstanceID ?? "").trim());
+  return remoteJSONRequest(transport, `/api/v2/extension/single-tab/bind-requests/${safeDispatchID}/result?browser_instance_id=${safeBrowserInstanceID}`, {
+    method: "POST",
+    headers: {
+      "X-Butler-Browser-Instance": String(browserInstanceID ?? "").trim()
+    },
+    body: JSON.stringify(payload)
+  });
+}
+
 function ensureRemoteRelayLoop(transport, sessionKey, browserInstanceID) {
   const normalizedSessionKey = String(sessionKey ?? "").trim();
   if (!normalizedSessionKey) {
@@ -262,8 +428,15 @@ function ensureRemoteRelayLoop(transport, sessionKey, browserInstanceID) {
   }
   const baseURL = normalizeRemoteBaseURL(transport.remote_base_url);
   const loopKey = `${baseURL}|${normalizedSessionKey}|${normalizedBrowserInstanceID}`;
-  if (remoteRelayLoops.has(loopKey)) {
+  const existing = remoteRelayLoops.get(loopKey);
+  if (existing && !existing.stopped) {
+    existing.transport = transport;
+    existing.sessionKey = normalizedSessionKey;
+    existing.browserInstanceID = normalizedBrowserInstanceID;
     return;
+  }
+  if (existing?.stopped) {
+    remoteRelayLoops.delete(loopKey);
   }
 
   const state = {
@@ -319,7 +492,9 @@ async function runRemoteRelayLoop(loopKey, state) {
       }
     }
   }
-  remoteRelayLoops.delete(loopKey);
+  if (remoteRelayLoops.get(loopKey) === state) {
+    remoteRelayLoops.delete(loopKey);
+  }
 }
 
 async function pollRemoteDispatch(transport, sessionKey, browserInstanceID) {
@@ -374,16 +549,14 @@ async function bootstrapRemoteRelayFromStorage() {
     const stored = await chrome.storage.local.get(FORM_STORAGE_KEY);
     const payload = stored?.[FORM_STORAGE_KEY];
     if (!payload || typeof payload !== "object") {
+      stopAllRemoteRelayLoops();
       return;
     }
     const mode = normalizeTransportMode(payload.connection_mode);
     const rolloutMode = normalizeRolloutMode(payload.rollout_mode);
     const effectiveMode = resolveTransportMode(mode, rolloutMode);
     if (effectiveMode !== TRANSPORT_MODE_REMOTE) {
-      return;
-    }
-    const sessionKey = String(payload.session_key ?? "").trim();
-    if (!sessionKey) {
+      stopAllRemoteRelayLoops();
       return;
     }
     const transport = normalizeTransport({
@@ -393,9 +566,47 @@ async function bootstrapRemoteRelayFromStorage() {
       remote_api_token: payload.remote_api_token
     });
     const browserInstanceID = await getOrCreateBrowserInstanceID();
-    ensureRemoteRelayLoop(transport, sessionKey, browserInstanceID);
+    const baseURL = normalizeRemoteBaseURL(transport.remote_base_url);
+    const bindLoopKey = `${baseURL}|bind|${browserInstanceID}`;
+    stopRemoteBindLoopsExcept(bindLoopKey);
+    ensureRemoteBindRelayLoop(transport, browserInstanceID);
+
+    const sessionKey = String(payload.session_key ?? "").trim();
+    if (sessionKey) {
+      const actionLoopKey = `${baseURL}|${sessionKey}|${browserInstanceID}`;
+      stopRemoteActionLoopsExcept(actionLoopKey);
+      ensureRemoteRelayLoop(transport, sessionKey, browserInstanceID);
+    } else {
+      stopRemoteActionLoopsExcept("");
+    }
   } catch (error) {
+    stopAllRemoteRelayLoops();
     console.warn("Failed to bootstrap remote relay from storage", error);
+  }
+}
+
+function stopAllRemoteRelayLoops() {
+  stopRemoteBindLoopsExcept("");
+  stopRemoteActionLoopsExcept("");
+}
+
+function stopRemoteBindLoopsExcept(allowedKey) {
+  for (const [loopKey, state] of remoteBindRelayLoops.entries()) {
+    if (loopKey === allowedKey) {
+      continue;
+    }
+    state.stopped = true;
+    remoteBindRelayLoops.delete(loopKey);
+  }
+}
+
+function stopRemoteActionLoopsExcept(allowedKey) {
+  for (const [loopKey, state] of remoteRelayLoops.entries()) {
+    if (loopKey === allowedKey) {
+      continue;
+    }
+    state.stopped = true;
+    remoteRelayLoops.delete(loopKey);
   }
 }
 

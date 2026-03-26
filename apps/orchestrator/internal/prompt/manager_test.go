@@ -130,6 +130,15 @@ func TestAssemblerIncludesBrowserStrategySection(t *testing.T) {
 	if !contains(result.FinalPrompt, "ALWAYS SNAPSHOT AFTER NAVIGATE") {
 		t.Fatalf("expected snapshot rule in browser strategy, got %q", result.FinalPrompt)
 	}
+	if !contains(result.FinalPrompt, "NUMBERED FOLLOW-UPS") {
+		t.Fatalf("expected numbered follow-up rule in browser strategy, got %q", result.FinalPrompt)
+	}
+	if !contains(result.FinalPrompt, "SINGLE-TAB AUTONOMY") {
+		t.Fatalf("expected single-tab autonomy rule in browser strategy, got %q", result.FinalPrompt)
+	}
+	if !contains(result.FinalPrompt, "NO RECOVERY MENUS BY DEFAULT") {
+		t.Fatalf("expected recovery-menu rule in browser strategy, got %q", result.FinalPrompt)
+	}
 }
 
 func TestAssemblerOmitsBrowserStrategySectionWhenEmpty(t *testing.T) {

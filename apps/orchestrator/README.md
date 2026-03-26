@@ -27,6 +27,7 @@ Current baseline:
 - skips episodic similarity retrieval unless a real query-embedding provider is configured, rather than emitting placeholder vectors
 - stores an operator-managed base system prompt in `system_settings` and assembles the effective prompt inside orchestrator during `preparing`
 - supports allowlisted prompt placeholders for safe runtime section injection, adds an informational tool capability summary, and provides a preview endpoint for effective prompt inspection
+- injects a built-in browser strategy section that survives operator prompt overrides and teaches browser-oriented follow-ups such as interpreting short numeric replies against the agent's most recent numbered browser options
 - reuses the most recent same-provider `provider_session_ref` for a session on new runs when available, so immediate follow-up turns can continue provider-side state before async summaries catch up
 - exposes an internal delivery sink for `assistant_delta` and `assistant_final` events without allowing channel adapters to mutate run state
 - exposes `SubmitEvent` over gRPC and synchronous `POST /api/v1/events` over REST for normalized event ingestion
@@ -38,7 +39,7 @@ Current baseline:
 - supports approval-gated tool execution with Telegram callback actions and formatted inline allow/deny prompts
 - supports typed approval payloads, including browser tab selection with Web UI and Telegram delivery
 - exposes single-tab bind orchestration endpoints for creating bind requests, reading tab-bound sessions, updating session state, and releasing them by `session_id`
-- exposes extension-auth protected single-tab endpoints for remote browser-extension bind/session checks
+- exposes extension-auth protected single-tab endpoints for remote browser-extension bind/session checks and bind-discovery relay polling
 - enforces browser-instance ownership on remote extension relay dispatch polling and result callbacks
 - marks active remote single-tab sessions as `HOST_DISCONNECTED` when extension heartbeat is stale before dispatch
 - exposes `GET /api/v2/single-tab/extension-instances` for lightweight per-instance relay health polling
@@ -75,7 +76,7 @@ Entry points and APIs:
 - binary entrypoint: `apps/orchestrator/main.go`
 - gRPC API: `SessionService` from `proto/session/v1/session.proto`
 - gRPC API: `OrchestratorService` from `proto/orchestrator/v1/orchestrator.proto`
-- HTTP endpoints: `/health`, `/metrics`, `/api/v1/events`, `/api/v1/settings`, `/api/v1/settings/{key}`, `/api/v1/settings/restart`, `/api/v1/prompts/system`, `/api/v1/prompts/system/preview`, `/api/v1/providers`, `/api/v1/providers/{provider}/auth`, `/api/v1/providers/{provider}/auth/start`, `/api/v1/providers/{provider}/auth/complete`, `/api/v1/memory`, `/api/v1/sessions`, `/api/v1/sessions/{key}`, `/api/v1/runs/{id}`, `/api/v1/runs/{id}/transcript`, `/api/v1/doctor/reports`, `/api/v1/doctor/check`, `/api/v2/overview`, `/api/v2/tasks`, `/api/v2/tasks/{id}`, `/api/v2/approvals`, `/api/v2/approvals/{id}`, `/api/v2/approvals/{id}/approve`, `/api/v2/approvals/{id}/reject`, `/api/v2/approvals/{id}/select-tab`, `/api/v2/single-tab/bind-requests`, `/api/v2/single-tab/session`, `/api/v2/single-tab/extension-instances`, `/api/v2/single-tab/session/{id}`, `/api/v2/single-tab/session/{id}/state`, `/api/v2/single-tab/session/{id}/release`, `/api/v2/single-tab/actions/dispatch`, `/api/v2/extension/single-tab/bind-requests`, `/api/v2/extension/single-tab/session`, `/api/v2/extension/single-tab/actions/next`, `/api/v2/extension/single-tab/actions/{dispatch_id}/result`, plus compatibility aliases `/api/overview`, `/api/tasks`, `/api/tasks/{id}`, `/api/approvals`, `/api/approvals/{id}`, `/api/approvals/{id}/approve`, `/api/approvals/{id}/reject`, `/api/approvals/{id}/select-tab`, `/api/single-tab/bind-requests`, `/api/single-tab/session`, `/api/single-tab/extension-instances`, `/api/single-tab/session/{id}`, `/api/single-tab/session/{id}/state`, `/api/single-tab/session/{id}/release`.
+- HTTP endpoints: `/health`, `/metrics`, `/api/v1/events`, `/api/v1/settings`, `/api/v1/settings/{key}`, `/api/v1/settings/restart`, `/api/v1/prompts/system`, `/api/v1/prompts/system/preview`, `/api/v1/providers`, `/api/v1/providers/{provider}/auth`, `/api/v1/providers/{provider}/auth/start`, `/api/v1/providers/{provider}/auth/complete`, `/api/v1/memory`, `/api/v1/sessions`, `/api/v1/sessions/{key}`, `/api/v1/runs/{id}`, `/api/v1/runs/{id}/transcript`, `/api/v1/doctor/reports`, `/api/v1/doctor/check`, `/api/v2/overview`, `/api/v2/tasks`, `/api/v2/tasks/{id}`, `/api/v2/approvals`, `/api/v2/approvals/{id}`, `/api/v2/approvals/{id}/approve`, `/api/v2/approvals/{id}/reject`, `/api/v2/approvals/{id}/select-tab`, `/api/v2/single-tab/bind-requests`, `/api/v2/single-tab/session`, `/api/v2/single-tab/extension-instances`, `/api/v2/single-tab/session/{id}`, `/api/v2/single-tab/session/{id}/state`, `/api/v2/single-tab/session/{id}/release`, `/api/v2/single-tab/actions/dispatch`, `/api/v2/extension/single-tab/bind-requests`, `/api/v2/extension/single-tab/bind-requests/next`, `/api/v2/extension/single-tab/bind-requests/{dispatch_id}/result`, `/api/v2/extension/single-tab/session`, `/api/v2/extension/single-tab/actions/next`, `/api/v2/extension/single-tab/actions/{dispatch_id}/result`, plus compatibility aliases `/api/overview`, `/api/tasks`, `/api/tasks/{id}`, `/api/approvals`, `/api/approvals/{id}`, `/api/approvals/{id}/approve`, `/api/approvals/{id}/reject`, `/api/approvals/{id}/select-tab`, `/api/single-tab/bind-requests`, `/api/single-tab/session`, `/api/single-tab/extension-instances`, `/api/single-tab/session/{id}`, `/api/single-tab/session/{id}/state`, `/api/single-tab/session/{id}/release`.
 - internal execution package: `apps/orchestrator/internal/orchestrator`
 - internal delivery seam: `apps/orchestrator/internal/orchestrator/delivery.go`
 - internal session/run boundary: `apps/orchestrator/internal/session` (gRPC server), `apps/orchestrator/internal/run` (run state machine and storage)
@@ -142,10 +143,14 @@ Durable approvals baseline (Wave 2 start):
   - resolve actions are idempotent and return `changed=false` with HTTP `409` if the approval is already terminal.
 - Single-tab bind API:
   - `POST /api/v2/single-tab/bind-requests` creates a durable `browser_tab_selection` approval and fan-outs delivery to Web UI and Telegram.
+  - `POST /api/v2/single-tab/bind-requests` also supports extension-driven candidate discovery with `discover_tabs_via_extension=true` when tab candidates are not provided directly.
   - `GET /api/v2/single-tab/session?session_key=...` returns the active tab-bound session for the Butler session when present.
   - `GET /api/v2/single-tab/session/{id}` returns one durable tab-bound session by `single_tab_session_id`.
   - `POST /api/v2/single-tab/session/{id}/state` updates the current tab-derived status, URL, title, and heartbeat metadata.
   - `POST /api/v2/single-tab/session/{id}/release` marks an active session as `REVOKED_BY_USER` and records the release in approval audit events.
+  - extension bind relay:
+    - `GET /api/v2/extension/single-tab/bind-requests/next`
+    - `POST /api/v2/extension/single-tab/bind-requests/{dispatch_id}/result`
 - Browser capture artifact API:
   - `POST /api/v2/artifacts/browser-captures` stores a durable `browser_capture` artifact used by `single_tab.capture_visible`.
 

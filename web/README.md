@@ -89,19 +89,24 @@ Key routes:
 
 Current scope:
 - lists HTTP(S) tabs from the local Chromium browser
-- forwards tab candidates to the host-installed `browser-bridge` native messaging companion
-- creates `BROWSER_TAB_SELECTION` bind requests through Butler orchestrator
+- keeps a long-lived remote relay connection to Butler API by default, with optional native-host fallback
+- answers orchestrator bind-discovery requests and returns current tab candidates for `BROWSER_TAB_SELECTION`
 - checks the active `single_tab_session` for a Butler session key
 - executes host-routed single-tab actions in the bound tab through a persistent native messaging port
 - supports rollout-aware connection strategy (`native_only`, `dual`, `remote_preferred`) for localhost and remote-hosted Butler deployments
 
 Current limitations:
-- native host installation is still manual and browser-specific
+- native host installation is still manual and browser-specific when `native` mode is used
 
 Manual load for development:
 
 1. Open Chromium/Chrome/Edge extension settings and enable developer mode.
 2. Choose "Load unpacked" and point it at `web/extensions/chromium-butler`.
-3. Install the native messaging host manifest for `com.butler.browser_bridge` so the extension can reach the local `apps/browser-bridge` process.
-   Use `apps/browser-bridge/examples/chromium-native-host.manifest.json` as the starting template and replace the binary path plus extension ID.
-4. Start `apps/browser-bridge` and Butler orchestrator locally, then use the extension popup to create a bind request.
+3. Configure orchestrator `BUTLER_EXTENSION_API_TOKENS` and keep extension popup in `remote_preferred` mode.
+4. Fill `Remote Butler URL` + `Remote API token` in popup.
+5. Click `Connect relay` in popup.
+6. Trigger `single_tab.bind` from Butler agent and approve tab selection in Web UI/Telegram.
+7. Optional native fallback: install `com.butler.browser_bridge` manifest and run `apps/browser-bridge`.
+
+Operator shortcut:
+- in Butler Web UI open `/settings`, use **Download extension (.zip)** in the Browser Extension Remote panel, unpack it, then use "Load unpacked" in Chromium/Edge.

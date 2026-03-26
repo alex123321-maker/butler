@@ -19,9 +19,12 @@ type fakeSingleTabCoordinator struct {
 	session      singletab.Record
 	sessionErr   error
 	lastUpdate   *singletab.UpdateSessionStateParams
+	lastCreate   *singletab.CreateBindRequestParams
 }
 
 func (f *fakeSingleTabCoordinator) CreateBindRequest(_ context.Context, params singletab.CreateBindRequestParams) (singletab.CreateBindRequestResult, error) {
+	copyParams := params
+	f.lastCreate = &copyParams
 	if f.createErr != nil {
 		return singletab.CreateBindRequestResult{}, f.createErr
 	}
@@ -139,6 +142,88 @@ func TestSingleTabCreateBindRequest(t *testing.T) {
 	approval := payload["approval"].(map[string]any)
 	if approval["approval_type"] != approvals.ApprovalTypeBrowserTabSelection {
 		t.Fatalf("expected browser tab selection approval type, got %v", approval["approval_type"])
+	}
+}
+
+func TestSingleTabCreateBindRequestViaExtensionDiscoveryRelay(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2026, 3, 22, 18, 5, 0, 0, time.UTC)
+	coordinator := &fakeSingleTabCoordinator{
+		createResult: singletab.CreateBindRequestResult{
+			Approval: approvals.Record{
+				ApprovalID:   "approval-bind-relay-5",
+				RunID:        "run-5",
+				SessionKey:   "telegram:chat:5",
+				ToolCallID:   "single-tab-bind-5",
+				ApprovalType: approvals.ApprovalTypeBrowserTabSelection,
+				Status:       approvals.StatusPending,
+				RequestedVia: approvals.RequestedViaBoth,
+				ToolName:     "single_tab.bind",
+				RequestedAt:  now,
+				UpdatedAt:    now,
+			},
+			Candidates: []approvals.TabCandidate{{
+				ApprovalID:     "approval-bind-relay-5",
+				CandidateToken: "tabtok-relay-5",
+				Title:          "Docs",
+				Domain:         "docs.example.com",
+				CurrentURL:     "https://docs.example.com",
+				DisplayLabel:   "Docs - docs.example.com",
+				Status:         "available",
+				CreatedAt:      now,
+			}},
+		},
+	}
+	server := NewSingleTabServer(coordinator)
+
+	createDone := make(chan *httptest.ResponseRecorder, 1)
+	go func() {
+		body := bytes.NewBufferString(`{"run_id":"run-5","session_key":"telegram:chat:5","tool_call_id":"single-tab-bind-5","discover_tabs_via_extension":true}`)
+		req := httptest.NewRequest(http.MethodPost, "/api/v2/single-tab/bind-requests", body)
+		res := httptest.NewRecorder()
+		server.HandleCreateBindRequest().ServeHTTP(res, req)
+		createDone <- res
+	}()
+
+	pollReq := httptest.NewRequest(http.MethodGet, "/api/v2/extension/single-tab/bind-requests/next?browser_instance_id=browser-bind-1&timeout_ms=5000", nil)
+	pollRes := httptest.NewRecorder()
+	server.HandleExtensionPollNextBindRequest().ServeHTTP(pollRes, pollReq)
+	if pollRes.Code != http.StatusOK {
+		t.Fatalf("expected 200 poll bind request, got %d", pollRes.Code)
+	}
+
+	var pollPayload map[string]any
+	if err := json.Unmarshal(pollRes.Body.Bytes(), &pollPayload); err != nil {
+		t.Fatalf("decode poll bind payload: %v", err)
+	}
+	dispatch := pollPayload["dispatch"].(map[string]any)
+	dispatchID := dispatch["dispatch_id"].(string)
+
+	resolveBody := bytes.NewBufferString(`{"ok":true,"browser_hint":"Chrome","tab_candidates":[{"internal_tab_ref":"52","title":"Docs","domain":"docs.example.com","current_url":"https://docs.example.com","display_label":"Docs - docs.example.com"}]}`)
+	resolveReq := httptest.NewRequest(http.MethodPost, "/api/v2/extension/single-tab/bind-requests/"+dispatchID+"/result?browser_instance_id=browser-bind-1", resolveBody)
+	resolveRes := httptest.NewRecorder()
+	server.HandleExtensionResolveBindRequest("/api/v2/extension/single-tab/bind-requests/").ServeHTTP(resolveRes, resolveReq)
+	if resolveRes.Code != http.StatusOK {
+		t.Fatalf("expected 200 resolve bind request, got %d", resolveRes.Code)
+	}
+
+	select {
+	case createRes := <-createDone:
+		if createRes.Code != http.StatusCreated {
+			t.Fatalf("expected 201 create bind request, got %d", createRes.Code)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for create bind request completion")
+	}
+	if coordinator.lastCreate == nil {
+		t.Fatal("expected create bind request params to be captured")
+	}
+	if got := len(coordinator.lastCreate.Candidates); got != 1 {
+		t.Fatalf("expected one discovered candidate, got %d", got)
+	}
+	if got := coordinator.lastCreate.Candidates[0].InternalTabRef; got != "52" {
+		t.Fatalf("unexpected discovered internal tab ref %q", got)
 	}
 }
 

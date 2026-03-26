@@ -15,7 +15,9 @@ import (
 
 type approvalStore interface {
 	GetApprovalByID(ctx context.Context, approvalID string) (approvals.Record, error)
+	GetApprovalByCandidateToken(ctx context.Context, candidateToken string) (approvals.Record, error)
 	ListTabCandidates(ctx context.Context, approvalID string) ([]approvals.TabCandidate, error)
+	GetTabCandidateByToken(ctx context.Context, candidateToken string) (approvals.TabCandidate, error)
 	SelectTabCandidate(ctx context.Context, approvalID, candidateToken string, selectedAt time.Time) (approvals.TabCandidate, error)
 	ResolveApproval(ctx context.Context, params approvals.ResolveParams) (approvals.Record, error)
 	InsertEvent(ctx context.Context, event approvals.Event) error
@@ -496,6 +498,26 @@ func (s *Service) ActivateFromApproval(ctx context.Context, params ActivateFromA
 		Session:   sessionRecord,
 		Changed:   true,
 	}, nil
+}
+
+func (s *Service) ActivateFromCandidateToken(ctx context.Context, candidateToken string, params ActivateFromApprovalParams) (ActivationResult, error) {
+	if s == nil || s.approvals == nil {
+		return ActivationResult{}, fmt.Errorf("single tab bind service is not configured")
+	}
+	candidateToken = strings.TrimSpace(candidateToken)
+	if candidateToken == "" {
+		return ActivationResult{}, fmt.Errorf("candidate_token is required")
+	}
+
+	candidate, err := s.approvals.GetTabCandidateByToken(ctx, candidateToken)
+	if err != nil {
+		return ActivationResult{}, err
+	}
+	if strings.TrimSpace(params.ApprovalID) == "" {
+		params.ApprovalID = candidate.ApprovalID
+	}
+	params.CandidateToken = candidateToken
+	return s.ActivateFromApproval(ctx, params)
 }
 
 func (s *Service) selectedCandidate(ctx context.Context, approvalID, candidateToken string) (approvals.TabCandidate, error) {

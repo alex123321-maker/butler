@@ -113,6 +113,21 @@
           <p class="policy-card__value">{{ extensionRemoteURL || 'Set public.apiBase in Web runtime config' }}</p>
         </article>
       </div>
+      <div class="extension-download">
+        <a class="provider-btn extension-download__button" href="/downloads/chromium-butler-extension.zip" download>
+          Download extension (.zip)
+        </a>
+        <p class="extension-download__hint">
+          Download, unpack, and load the folder in Chrome/Chromium/Edge as an unpacked extension.
+        </p>
+      </div>
+      <ol class="extension-install-steps">
+        <li>Open `chrome://extensions` (or `edge://extensions`) and enable Developer mode.</li>
+        <li>Click “Load unpacked” and select the extracted extension folder.</li>
+        <li>Open the extension popup and set `Rollout mode = remote_preferred`.</li>
+        <li>Fill `Remote Butler URL` and `Remote API token`, then click `Connect relay`.</li>
+        <li>Ask Butler agent to run `single_tab.bind`.</li>
+      </ol>
       <ul class="warning-list extension-steps">
         <li>Set `BUTLER_EXTENSION_API_TOKENS` and copy one token into extension popup field “Remote API token”.</li>
         <li>Set `BUTLER_SINGLE_TAB_TRANSPORT_MODE=remote_preferred` for remote-first rollout.</li>
@@ -804,6 +819,31 @@ await runPromptPreview()
 
 .extension-grid {
   margin-bottom: var(--space-3);
+}
+
+.extension-download {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.extension-download__button {
+  width: fit-content;
+  display: inline-flex;
+  text-decoration: none;
+}
+
+.extension-download__hint {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.extension-install-steps {
+  margin: 0 0 var(--space-3);
+  padding-left: var(--space-4);
+  color: var(--color-text-secondary);
+  display: grid;
+  gap: var(--space-2);
 }
 
 .extension-steps {

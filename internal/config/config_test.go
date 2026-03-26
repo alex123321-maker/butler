@@ -306,8 +306,8 @@ func TestLoadToolBrowserLocalFromEnvUsesDefaultsAndOverrides(t *testing.T) {
 	if cfg.DispatchRolloutMode != "remote_preferred" {
 		t.Fatalf("unexpected dispatch rollout mode %q", cfg.DispatchRolloutMode)
 	}
-	if cfg.RequestTimeout != 15 {
-		t.Fatalf("expected default request timeout 15, got %d", cfg.RequestTimeout)
+	if cfg.RequestTimeout != 60 {
+		t.Fatalf("expected default request timeout 60, got %d", cfg.RequestTimeout)
 	}
 	key := findKey(t, snapshot.ListKeys(), "BUTLER_TOOL_BROWSER_LOCAL_ORCHESTRATOR_URL")
 	if key.Source != ConfigSourceEnv {

@@ -124,6 +124,7 @@ function Get-ButlerAgentComposeServices {
     "tool-http",
     "tool-webfetch",
     "tool-browser",
+    "tool-browser-local",
     "tool-doctor",
     "tool-broker"
   )

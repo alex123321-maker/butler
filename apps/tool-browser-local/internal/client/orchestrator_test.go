@@ -13,9 +13,22 @@ func TestClientGetAndReleaseSession(t *testing.T) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case "/api/v1/runs/run-1":
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"run":{"run_id":"run-1","session_key":"telegram:chat:1","status":"running"}}`))
 		case "/api/v2/single-tab/session/single-tab-1":
 			w.Header().Set("Content-Type", "application/json")
 			_, _ = w.Write([]byte(`{"single_tab_session":{"single_tab_session_id":"single-tab-1","status":"ACTIVE"}}`))
+		case "/api/v2/single-tab/session":
+			if r.URL.Query().Get("session_key") == "telegram:chat:1" {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(`{"single_tab_session":{"single_tab_session_id":"single-tab-active-1","status":"ACTIVE"}}`))
+				return
+			}
+			http.NotFound(w, r)
+		case "/api/v2/single-tab/bind-requests":
+			w.Header().Set("Content-Type", "application/json")
+			_, _ = w.Write([]byte(`{"approval":{"approval_id":"approval-bind-1","run_id":"run-1","session_key":"telegram:chat:1","status":"pending"}}`))
 		case "/api/v2/single-tab/session/single-tab-1/state":
 			w.Header().Set("Content-Type", "application/json")
 			_, _ = w.Write([]byte(`{"single_tab_session":{"single_tab_session_id":"single-tab-1","status":"ACTIVE","current_url":"https://example.com/next"}}`))
@@ -32,6 +45,14 @@ func TestClientGetAndReleaseSession(t *testing.T) {
 	defer server.Close()
 
 	client := New(server.URL, 5*time.Second, nil)
+	run, err := client.GetRun(context.Background(), "run-1")
+	if err != nil {
+		t.Fatalf("GetRun returned error: %v", err)
+	}
+	if run.Run["session_key"] != "telegram:chat:1" {
+		t.Fatalf("unexpected run payload: %+v", run.Run)
+	}
+
 	session, err := client.GetSession(context.Background(), "single-tab-1")
 	if err != nil {
 		t.Fatalf("GetSession returned error: %v", err)
@@ -49,6 +70,27 @@ func TestClientGetAndReleaseSession(t *testing.T) {
 	}
 	if updated.SingleTabSession["current_url"] != "https://example.com/next" {
 		t.Fatalf("unexpected updated session payload: %+v", updated.SingleTabSession)
+	}
+
+	active, err := client.GetActiveSession(context.Background(), "telegram:chat:1")
+	if err != nil {
+		t.Fatalf("GetActiveSession returned error: %v", err)
+	}
+	if active.SingleTabSession["single_tab_session_id"] != "single-tab-active-1" {
+		t.Fatalf("unexpected active session payload: %+v", active.SingleTabSession)
+	}
+
+	bind, err := client.CreateBindRequest(context.Background(), CreateBindRequestParams{
+		RunID:                    "run-1",
+		SessionKey:               "telegram:chat:1",
+		ToolCallID:               "call-bind-1",
+		DiscoverTabsViaExtension: true,
+	})
+	if err != nil {
+		t.Fatalf("CreateBindRequest returned error: %v", err)
+	}
+	if bind.Approval["approval_id"] != "approval-bind-1" {
+		t.Fatalf("unexpected bind payload: %+v", bind.Approval)
 	}
 
 	artifact, err := client.CreateBrowserCaptureArtifact(context.Background(), CreateBrowserCaptureArtifactParams{

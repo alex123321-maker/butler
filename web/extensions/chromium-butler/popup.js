@@ -9,11 +9,8 @@ const rolloutModeSelect = document.querySelector("#rollout-mode");
 const connectionModeSelect = document.querySelector("#connection-mode");
 const remoteBaseURLInput = document.querySelector("#remote-base-url");
 const remoteAPITokenInput = document.querySelector("#remote-api-token");
-const runIDInput = document.querySelector("#run-id");
-const sessionKeyInput = document.querySelector("#session-key");
 const refreshTabsButton = document.querySelector("#refresh-tabs");
-const checkSessionButton = document.querySelector("#check-session");
-const createBindButton = document.querySelector("#create-bind");
+const connectRemoteButton = document.querySelector("#connect-remote");
 const tabsList = document.querySelector("#tabs-list");
 const tabCount = document.querySelector("#tab-count");
 const statusPanel = document.querySelector("#status-panel");
@@ -24,6 +21,7 @@ async function initialize() {
   await restoreFormState();
   attachEventHandlers();
   await refreshTabs();
+  setStatus("Remote relay is configured. Agent-initiated single_tab.bind will trigger tab selection automatically.");
 }
 
 function attachEventHandlers() {
@@ -37,11 +35,8 @@ function attachEventHandlers() {
   });
   remoteBaseURLInput.addEventListener("input", persistFormState);
   remoteAPITokenInput.addEventListener("input", persistFormState);
-  runIDInput.addEventListener("input", persistFormState);
-  sessionKeyInput.addEventListener("input", persistFormState);
   refreshTabsButton.addEventListener("click", () => void refreshTabs());
-  checkSessionButton.addEventListener("click", () => void checkSession());
-  createBindButton.addEventListener("click", () => void createBindRequest());
+  connectRemoteButton.addEventListener("click", () => void connectRemote());
 }
 
 async function restoreFormState() {
@@ -55,8 +50,6 @@ async function restoreFormState() {
   connectionModeSelect.value = normalizeConnectionMode(payload.connection_mode);
   remoteBaseURLInput.value = typeof payload.remote_base_url === "string" ? payload.remote_base_url : "";
   remoteAPITokenInput.value = typeof payload.remote_api_token === "string" ? payload.remote_api_token : "";
-  runIDInput.value = typeof payload.run_id === "string" ? payload.run_id : "";
-  sessionKeyInput.value = typeof payload.session_key === "string" ? payload.session_key : "";
   updateTransportFieldsState();
 }
 
@@ -66,9 +59,7 @@ async function persistFormState() {
       rollout_mode: normalizeRolloutMode(rolloutModeSelect.value),
       connection_mode: normalizeConnectionMode(connectionModeSelect.value),
       remote_base_url: remoteBaseURLInput.value.trim(),
-      remote_api_token: remoteAPITokenInput.value.trim(),
-      run_id: runIDInput.value.trim(),
-      session_key: sessionKeyInput.value.trim()
+      remote_api_token: remoteAPITokenInput.value.trim()
     }
   });
 }
@@ -84,32 +75,16 @@ async function refreshTabs() {
   }
 }
 
-async function createBindRequest() {
+async function connectRemote() {
   const payload = currentPayload();
-  setStatus(`Creating approval-backed bind request via ${payload.transport.mode} transport...`);
+  setStatus("Connecting remote extension relay...");
   try {
+    await persistFormState();
     const result = await sendMessage({
-      type: "create-bind-request",
+      type: "connect-remote",
       payload
     });
-    await persistFormState();
-    await refreshTabs();
-    setStatus(JSON.stringify(result, null, 2));
-  } catch (error) {
-    setStatus(formatError(error));
-  }
-}
-
-async function checkSession() {
-  const payload = currentPayload();
-  setStatus("Checking active single-tab session...");
-  try {
-    const result = await sendMessage({
-      type: "get-active-session",
-      payload
-    });
-    await persistFormState();
-    setStatus(JSON.stringify(result, null, 2));
+    setStatus(`Connected. Browser instance: ${result.browser_instance_id}`);
   } catch (error) {
     setStatus(formatError(error));
   }
@@ -124,9 +99,7 @@ function currentPayload() {
       mode: resolveTransportMode(connectionMode, rolloutMode),
       remote_base_url: remoteBaseURLInput.value.trim(),
       remote_api_token: remoteAPITokenInput.value.trim()
-    },
-    run_id: runIDInput.value.trim(),
-    session_key: sessionKeyInput.value.trim()
+    }
   };
 }
 
@@ -179,10 +152,10 @@ async function sendMessage(message) {
 
 function normalizeConnectionMode(value) {
   const normalized = String(value ?? "").trim().toLowerCase();
-  if (normalized === TRANSPORT_MODE_REMOTE) {
-    return TRANSPORT_MODE_REMOTE;
+  if (normalized === TRANSPORT_MODE_NATIVE) {
+    return TRANSPORT_MODE_NATIVE;
   }
-  return TRANSPORT_MODE_NATIVE;
+  return TRANSPORT_MODE_REMOTE;
 }
 
 function normalizeRolloutMode(value) {
@@ -190,10 +163,10 @@ function normalizeRolloutMode(value) {
   if (normalized === ROLLOUT_MODE_NATIVE_ONLY) {
     return ROLLOUT_MODE_NATIVE_ONLY;
   }
-  if (normalized === ROLLOUT_MODE_REMOTE_PREFERRED) {
-    return ROLLOUT_MODE_REMOTE_PREFERRED;
+  if (normalized === ROLLOUT_MODE_DUAL) {
+    return ROLLOUT_MODE_DUAL;
   }
-  return ROLLOUT_MODE_DUAL;
+  return ROLLOUT_MODE_REMOTE_PREFERRED;
 }
 
 function resolveTransportMode(connectionMode, rolloutMode) {

@@ -7,9 +7,12 @@ Purpose:
 Prerequisites:
 - copy `.env.codex-windows.example` or `.env.example` to `.env`
 - start backend services with `make up` or the hybrid host workflow used for Butler development
-- run `browser-bridge` and `tool-browser-local` on the host
+- run `tool-browser-local` on the host
 - load `web/extensions/chromium-butler` as an unpacked extension in Chrome/Chromium/Edge
-- install the native messaging host with:
+- configure remote extension auth and rollout on orchestrator:
+  - `BUTLER_EXTENSION_API_TOKENS=<token>`
+  - `BUTLER_SINGLE_TAB_TRANSPORT_MODE=remote_preferred` (or `dual` during migration)
+- optional native fallback only: install the native messaging host with:
 
 ```powershell
 pwsh -NoProfile -File scripts/dev/install-browser-bridge-host.ps1 -Browser Chrome -ExtensionId <extension_id>
@@ -23,26 +26,33 @@ Recommended host-side processes:
 
 ```powershell
 go run ./apps/orchestrator
-go run ./apps/browser-bridge
 go run ./apps/tool-browser-local
+```
+
+Optional native fallback process:
+
+```powershell
+go run ./apps/browser-bridge
 ```
 
 Manual smoke path:
 1. Open a few ordinary HTTP(S) tabs in the same Chromium profile.
 2. Open the Butler extension popup.
-3. Enter a real `run_id` and `session_key`, then create a bind request.
-4. Confirm a `browser_tab_selection` approval appears in Butler Web UI and, if configured, in Telegram.
-5. Select exactly one tab.
-6. Verify the chosen approval returns an active `single_tab_session`.
-7. Trigger representative actions through Butler:
+3. Keep `Rollout mode = remote_preferred`, fill `Remote Butler URL` + `Remote API token`.
+4. Click `Connect relay` and confirm extension reports connected state.
+5. Ask Butler agent to execute `single_tab.bind`.
+6. Confirm a `browser_tab_selection` approval appears in Butler Web UI and, if configured, in Telegram.
+7. Select exactly one tab.
+8. Verify the chosen approval returns an active `single_tab_session`.
+9. Trigger representative actions through Butler:
    - `single_tab.status`
    - `single_tab.navigate`
    - `single_tab.click`
    - `single_tab.fill` or `single_tab.type`
    - `single_tab.wait_for`
    - `single_tab.capture_visible`
-8. Confirm `capture_visible` returns an artifact-backed `image_ref`, not an inline data URL.
-9. Close the bound tab and confirm the next action fails with `TAB_CLOSED`.
+10. Confirm `capture_visible` returns an artifact-backed `image_ref`, not an inline data URL.
+11. Close the bound tab and confirm the next action fails with `TAB_CLOSED`.
 
 HTTP/API verification:
 

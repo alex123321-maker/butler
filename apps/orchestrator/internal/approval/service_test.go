@@ -61,6 +61,22 @@ func (m *memoryRepo) GetApprovalByID(_ context.Context, approvalID string) (Reco
 	return rec, nil
 }
 
+func (m *memoryRepo) GetApprovalByCandidateToken(_ context.Context, candidateToken string) (Record, error) {
+	for approvalID, candidates := range m.tabCandidates {
+		for _, candidate := range candidates {
+			if candidate.CandidateToken != candidateToken {
+				continue
+			}
+			rec, ok := m.recordsByID[approvalID]
+			if !ok {
+				return Record{}, ErrApprovalNotFound
+			}
+			return rec, nil
+		}
+	}
+	return Record{}, ErrApprovalNotFound
+}
+
 func (m *memoryRepo) ResolveApproval(_ context.Context, params ResolveParams) (Record, error) {
 	rec, ok := m.recordsByID[params.ApprovalID]
 	if !ok {
@@ -104,6 +120,17 @@ func (m *memoryRepo) CreateTabCandidates(_ context.Context, params []CreateTabCa
 
 func (m *memoryRepo) ListTabCandidates(_ context.Context, approvalID string) ([]TabCandidate, error) {
 	return append([]TabCandidate(nil), m.tabCandidates[approvalID]...), nil
+}
+
+func (m *memoryRepo) GetTabCandidateByToken(_ context.Context, candidateToken string) (TabCandidate, error) {
+	for _, candidates := range m.tabCandidates {
+		for _, candidate := range candidates {
+			if candidate.CandidateToken == candidateToken {
+				return candidate, nil
+			}
+		}
+	}
+	return TabCandidate{}, ErrTabCandidateNotFound
 }
 
 func (m *memoryRepo) SelectTabCandidate(_ context.Context, approvalID, candidateToken string, selectedAt time.Time) (TabCandidate, error) {

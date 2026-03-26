@@ -15,6 +15,7 @@ type Client struct {
 	baseURL           string
 	botToken          string
 	httpClient        *http.Client
+	getUpdates        func(context.Context, int64, int) ([]Update, error)
 	sendMessage       func(context.Context, int64, string) (Message, error)
 	sendMessageMarkup func(context.Context, int64, string, *InlineKeyboardMarkup) (Message, error)
 	editMessage       func(context.Context, int64, int64, string) (Message, error)
@@ -156,6 +157,9 @@ func NewClient(baseURL, botToken string, httpClient *http.Client) (*Client, erro
 }
 
 func (c *Client) GetUpdates(ctx context.Context, offset int64, timeoutSeconds int) ([]Update, error) {
+	if c.getUpdates != nil {
+		return c.getUpdates(ctx, offset, timeoutSeconds)
+	}
 	response, err := doTelegramRequest[[]Update](ctx, c, "getUpdates", getUpdatesRequest{
 		Offset:         offset,
 		Timeout:        timeoutSeconds,

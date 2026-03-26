@@ -128,9 +128,11 @@ type Repository interface {
 	CreateApproval(ctx context.Context, params CreateParams) (Record, error)
 	GetApprovalByToolCallID(ctx context.Context, toolCallID string) (Record, error)
 	GetApprovalByID(ctx context.Context, approvalID string) (Record, error)
+	GetApprovalByCandidateToken(ctx context.Context, candidateToken string) (Record, error)
 	ListApprovals(ctx context.Context, status, runID, sessionKey string, limit, offset int) ([]Record, error)
 	CreateTabCandidates(ctx context.Context, params []CreateTabCandidateParams) error
 	ListTabCandidates(ctx context.Context, approvalID string) ([]TabCandidate, error)
+	GetTabCandidateByToken(ctx context.Context, candidateToken string) (TabCandidate, error)
 	SelectTabCandidate(ctx context.Context, approvalID, candidateToken string, selectedAt time.Time) (TabCandidate, error)
 	ResolveApproval(ctx context.Context, params ResolveParams) (Record, error)
 	InsertEvent(ctx context.Context, event Event) error
@@ -241,6 +243,25 @@ func (r *PostgresRepository) GetApprovalByID(ctx context.Context, approvalID str
 			return Record{}, ErrApprovalNotFound
 		}
 		return Record{}, fmt.Errorf("get approval by id: %w", err)
+	}
+	return rec, nil
+}
+
+func (r *PostgresRepository) GetApprovalByCandidateToken(ctx context.Context, candidateToken string) (Record, error) {
+	const query = `
+		SELECT a.approval_id, a.run_id, a.session_key, a.tool_call_id, a.approval_type, a.status, a.requested_via, COALESCE(a.resolved_via, ''), a.tool_name,
+			a.args_json::text, a.payload_json::text, a.risk_level, a.summary, a.details_json::text, a.requested_at, a.resolved_at, a.resolved_by, a.resolution_reason, a.expires_at, a.updated_at
+		FROM approvals a
+		INNER JOIN approval_tab_candidates c ON c.approval_id = a.approval_id
+		WHERE c.candidate_token = $1
+		LIMIT 1
+	`
+	rec, err := scanRecord(r.pool.QueryRow(ctx, query, candidateToken))
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return Record{}, ErrApprovalNotFound
+		}
+		return Record{}, fmt.Errorf("get approval by candidate token: %w", err)
 	}
 	return rec, nil
 }
@@ -357,6 +378,24 @@ func (r *PostgresRepository) ListTabCandidates(ctx context.Context, approvalID s
 		return nil, fmt.Errorf("iterate approval tab candidates: %w", err)
 	}
 	return items, nil
+}
+
+func (r *PostgresRepository) GetTabCandidateByToken(ctx context.Context, candidateToken string) (TabCandidate, error) {
+	const query = `
+		SELECT approval_id, candidate_token, COALESCE(internal_tab_ref, ''), title, domain,
+			current_url, favicon_url, display_label, status, created_at, selected_at
+		FROM approval_tab_candidates
+		WHERE candidate_token = $1
+		LIMIT 1
+	`
+	candidate, err := scanTabCandidate(r.pool.QueryRow(ctx, query, candidateToken))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return TabCandidate{}, ErrTabCandidateNotFound
+		}
+		return TabCandidate{}, fmt.Errorf("get approval tab candidate by token: %w", err)
+	}
+	return candidate, nil
 }
 
 func (r *PostgresRepository) SelectTabCandidate(ctx context.Context, approvalID, candidateToken string, selectedAt time.Time) (TabCandidate, error) {

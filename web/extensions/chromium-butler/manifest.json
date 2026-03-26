@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "description": "Collects browser tab candidates and forwards single-tab bind requests to the local Butler browser bridge.",
   "permissions": [
+    "alarms",
     "tabs",
     "scripting",
     "storage",
