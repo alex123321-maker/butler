@@ -248,6 +248,8 @@ func New(ctx context.Context) (*App, error) {
 		logger.WithComponent(log, "executor"),
 	)
 	inputWorker := durableinput.NewService(inputStore, sessionRepo, executor, runManager, logger.WithComponent(log, "durable-input"))
+	taskControls := task.NewController(taskStore, sessionLeaseManager.Authority(), sessionLeaseManager, runRepo, approvalRepo, inputStore, transcriptStore)
+	inputWorker.SetTaskControls(taskControls)
 	inputWorker.SetMaintenance(approvalService.ExpireInvalidPending)
 	if telegram != nil {
 		telegram.SetExecutor(inputWorker)
@@ -289,6 +291,7 @@ func New(ctx context.Context) (*App, error) {
 		sessionRepo:            sessionRepo,
 		runRepo:                runRepo,
 		taskStore:              taskStore,
+		taskControls:           taskControls,
 		transcriptStore:        transcriptStore,
 		transitionRepo:         transitionRepo,
 		eventHub:               eventHub,

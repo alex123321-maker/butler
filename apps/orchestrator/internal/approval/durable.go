@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -18,22 +19,15 @@ import (
 var ErrUnauthorized = errors.New("authenticated owner and authorized approval channel required")
 var ErrActionInvalid = errors.New("approval action changed, expired or cancelled")
 
-type Actor struct {
-	OwnerID    string
-	Channel    string
-	SessionKey string
-	DeliveryID string
-}
-type actorKey struct{}
+type Actor = owneridentity.Actor
 type expirationReviewKey struct{}
 
 // WithActor is for an authenticated channel adapter, never model/caller args.
 func WithActor(ctx context.Context, actor Actor) context.Context {
-	return context.WithValue(ctx, actorKey{}, actor)
+	return owneridentity.WithActor(ctx, actor)
 }
 func ActorFromContext(ctx context.Context) (Actor, bool) {
-	a, ok := ctx.Value(actorKey{}).(Actor)
-	return a, ok
+	return owneridentity.FromContext(ctx)
 }
 
 type CheckpointHooks interface {

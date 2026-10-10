@@ -755,3 +755,6 @@ The memory doctor (`/api/v1/doctor/check`) now reports:
 * pgvector помогает находить релевантное, но не становится единственной правдой о памяти.
 
 Именно такая схема подходит для self-hosted, long-lived personal agent system (долгоживущей персональной агентной системы), которой должен стать Butler.
+
+
+Owner amendments are appended as user transcript data and preserved in full protected task constraints with provenance; obsolete working plans are archived before clearing the new revision. See [Owner Controls](task-owner-controls-spec.md).

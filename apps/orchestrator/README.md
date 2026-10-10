@@ -268,3 +268,5 @@ cannot undo a committed result; finalizing recovery retries only saved-answer
 persistence. `GET /api/v2/results/{run_id}` exposes final result, delivery and
 auxiliary job states; task detail/overview prefer durable outbox observations.
 See [atomic result and delivery](../../docs/architecture/atomic-result-delivery.md).
+
+Task mutations also require owner-control authentication. `/api/v3/tasks/{id}/control` applies a revisioned amendment, pause, resume or tree stop immediately, revoking old worker authority and preserving earlier observations. See [Owner Controls](../../docs/architecture/task-owner-controls-spec.md).

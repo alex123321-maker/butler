@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/butler/butler/apps/orchestrator/internal/task"
+	"github.com/butler/butler/internal/owneridentity"
 )
 
 type taskController interface {
@@ -23,7 +24,22 @@ type taskController interface {
 
 // TaskControlServer is a trusted owner control surface. It is deliberately absent
 // from the model tool catalog; model final events cannot call completion.
-type TaskControlServer struct{ tasks taskController }
+type TaskControlServer struct {
+	tasks     taskController
+	controls  *task.Controller
+	ownerAuth *OwnerControlAuth
+}
+
+func (s *TaskControlServer) SetOwnerControlAuth(auth *OwnerControlAuth) { s.ownerAuth = auth }
+func (s *TaskControlServer) SetControls(c *task.Controller)             { s.controls = c }
+func (s *TaskControlServer) authenticate(w http.ResponseWriter, r *http.Request) (*http.Request, bool) {
+	actor, ok := s.ownerAuth.Authenticate(r)
+	if !ok {
+		writeJSON(w, 401, map[string]string{"error": "authenticated task owner required"})
+		return r, false
+	}
+	return r.WithContext(owneridentity.WithActor(r.Context(), actor)), true
+}
 
 func NewTaskControlServer(tasks taskController) *TaskControlServer {
 	return &TaskControlServer{tasks: tasks}
@@ -40,10 +56,21 @@ func (s *TaskControlServer) HandleCollection() http.Handler {
 			}
 			writeJSON(w, 200, map[string]any{"tasks": items})
 		case http.MethodPost:
+			var authenticated bool
+			r, authenticated = s.authenticate(w, r)
+			if !authenticated {
+				return
+			}
 			var req task.CreateRequest
 			if err := decodeTaskBody(w, r, &req); err != nil {
 				return
 			}
+			actor, _ := owneridentity.FromContext(r.Context())
+			if req.OwnerID != "" && req.OwnerID != actor.OwnerID {
+				writeTaskError(w, task.ErrUnauthorized)
+				return
+			}
+			req.OwnerID = actor.OwnerID
 			record, err := s.tasks.Create(r.Context(), req)
 			if err != nil {
 				writeTaskError(w, err)
@@ -64,6 +91,15 @@ func (s *TaskControlServer) HandleItem(prefix string) http.Handler {
 			return
 		}
 		id := parts[0]
+		if len(parts) == 2 && parts[1] == "controls" && r.Method == http.MethodGet && s.controls != nil {
+			history, err := s.controls.History(r.Context(), id)
+			if err != nil {
+				writeTaskError(w, err)
+				return
+			}
+			writeJSON(w, 200, map[string]any{"controls": history})
+			return
+		}
 		if len(parts) == 1 && r.Method == http.MethodGet {
 			record, err := s.tasks.Get(r.Context(), id)
 			if err != nil {
@@ -87,21 +123,55 @@ func (s *TaskControlServer) HandleItem(prefix string) http.Handler {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
-		switch parts[1] {
-		case "working":
-			var req struct {
-				ExpectedWorkingRevision int64             `json:"expected_working_revision"`
-				Working                 task.WorkingState `json:"working"`
-			}
-			if decodeTaskBody(w, r, &req) != nil {
-				return
-			}
-			record, err := s.tasks.SaveWorking(r.Context(), id, req.ExpectedWorkingRevision, req.Working)
+		var authenticated bool
+		r, authenticated = s.authenticate(w, r)
+		if !authenticated {
+			return
+		}
+		if s.tasks != nil {
+			record, err := s.tasks.Get(r.Context(), id)
 			if err != nil {
 				writeTaskError(w, err)
 				return
 			}
-			writeJSON(w, 200, map[string]any{"task": record})
+			actor, _ := owneridentity.FromContext(r.Context())
+			if record.OwnerID != actor.OwnerID {
+				writeTaskError(w, task.ErrUnauthorized)
+				return
+			}
+		}
+		switch parts[1] {
+		case "control":
+			if s.controls == nil {
+				writeTaskError(w, task.ErrConflict)
+				return
+			}
+			if strings.TrimSpace(r.Header.Get("X-Butler-Delivery-ID")) == "" {
+				writeTaskError(w, task.ErrInvalid)
+				return
+			}
+			var req task.ControlRequest
+			if decodeTaskBody(w, r, &req) != nil {
+				return
+			}
+			if req.TaskID != "" && req.TaskID != id {
+				writeTaskError(w, task.ErrInvalid)
+				return
+			}
+			req.TaskID = id
+			if req.ExpectedRevision <= 0 {
+				writeTaskError(w, task.ErrInvalid)
+				return
+			}
+			result, err := s.controls.Apply(r.Context(), req)
+			if err != nil {
+				writeTaskError(w, err)
+				return
+			}
+			writeJSON(w, 200, result)
+		case "working":
+			writeJSON(w, 409, map[string]string{"error": "working state is execution-owned; use a versioned owner amendment"})
+			return
 		case "status":
 			var req struct {
 				ExpectedRevision int64  `json:"expected_revision"`
@@ -111,12 +181,25 @@ func (s *TaskControlServer) HandleItem(prefix string) http.Handler {
 			if decodeTaskBody(w, r, &req) != nil {
 				return
 			}
-			record, err := s.tasks.Transition(r.Context(), id, req.ExpectedRevision, req.Status, req.ResultID)
+			if s.controls == nil || req.ExpectedRevision <= 0 || strings.TrimSpace(r.Header.Get("X-Butler-Delivery-ID")) == "" {
+				writeTaskError(w, task.ErrInvalid)
+				return
+			}
+			kind := task.ControlStatus
+			switch req.Status {
+			case "cancelled":
+				kind = task.ControlStop
+			case "paused":
+				kind = task.ControlPause
+			case "active":
+				kind = task.ControlResume
+			}
+			result, err := s.controls.Apply(r.Context(), task.ControlRequest{TaskID: id, ExpectedRevision: req.ExpectedRevision, Kind: kind, Status: req.Status, ResultID: req.ResultID})
 			if err != nil {
 				writeTaskError(w, err)
 				return
 			}
-			writeJSON(w, 200, map[string]any{"task": record})
+			writeJSON(w, 200, result)
 		case "results":
 			var req struct {
 				TaskRevision     int64    `json:"task_revision"`
@@ -159,6 +242,9 @@ func writeTaskError(w http.ResponseWriter, err error) {
 	status := http.StatusInternalServerError
 	message := "task operation failed"
 	switch {
+	case errors.Is(err, task.ErrUnauthorized):
+		status = 403
+		message = err.Error()
 	case errors.Is(err, task.ErrNotFound):
 		status = 404
 		message = err.Error()

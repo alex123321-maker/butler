@@ -59,6 +59,7 @@ type httpServerDeps struct {
 	sessionRepo            *session.PostgresRepository
 	runRepo                *runservice.PostgresRepository
 	taskStore              *task.Store
+	taskControls           *task.Controller
 	transcriptStore        *transcript.Store
 	transitionRepo         *runservice.PostgresTransitionRepository
 	eventHub               *observability.Hub
@@ -83,6 +84,7 @@ type httpServerDeps struct {
 func newHTTPServer(deps httpServerDeps) *http.Server {
 	resultServer := apiservice.NewResultServer(deps.finalResults)
 	apiServer := apiservice.NewServer(deps.inputWorker, logger.WithComponent(deps.log, "api"))
+	apiServer.SetOwnerControlAuth(deps.ownerAuth)
 	inputServer := apiservice.NewInputServer(deps.inputStore)
 	viewServer := apiservice.NewViewServer(deps.sessionRepo, deps.runRepo, deps.transcriptStore, logger.WithComponent(deps.log, "view-api"))
 	doctorChecker := apiservice.NewToolBrokerDoctorChecker(func(ctx context.Context, toolName, argsJSON string) (string, error) {
@@ -120,6 +122,8 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 		taskViewServer.SetFinalResults(deps.finalResults, deps.finalResults.Outbox)
 	}
 	taskControlServer := apiservice.NewTaskControlServer(deps.taskStore)
+	taskControlServer.SetOwnerControlAuth(deps.ownerAuth)
+	taskControlServer.SetControls(deps.taskControls)
 	overviewServer := apiservice.NewOverviewServer(deps.runRepo, deps.deliveryEventsRepo)
 	if deps.finalResults != nil {
 		overviewServer.SetOutbox(deps.finalResults.Outbox)

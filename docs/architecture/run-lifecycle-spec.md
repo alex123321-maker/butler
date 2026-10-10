@@ -878,3 +878,6 @@ HTTP acceptance returns 202 independently of model execution; context is built
 under ownership. Waiting for the owner releases the worker, while unknown external
 outcomes are blocked instead of blindly replayed. The contract explicitly lists
 safe recovery boundaries, owner proof and delivery/reconciliation limitations.
+
+
+Owner amendments, tree cancellation and late-response fencing are specified in [Owner Controls](task-owner-controls-spec.md).

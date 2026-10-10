@@ -70,6 +70,12 @@ func randomID(prefix string) (string, error) {
 }
 
 func (s *Store) Accept(ctx context.Context, event ingress.InputEvent, ownerID, taskID string) (Record, bool, error) {
+	return s.accept(ctx, event, ownerID, taskID, "queued", "")
+}
+func (s *Store) AcceptWaiting(ctx context.Context, event ingress.InputEvent, ownerID string) (Record, bool, error) {
+	return s.accept(ctx, event, ownerID, "", "waiting_for_user", "task_target_required")
+}
+func (s *Store) accept(ctx context.Context, event ingress.InputEvent, ownerID, taskID, status, code string) (Record, bool, error) {
 	// Serialize admission before assigning sequence numbers. Otherwise an
 	// uncommitted earlier insert can become visible after a later head was claimed.
 	tx, err := s.pool.Begin(ctx)
@@ -100,10 +106,10 @@ func (s *Store) Accept(ctx context.Context, event ingress.InputEvent, ownerID, t
 		return Record{}, false, fmt.Errorf("event_id or idempotency_key required")
 	}
 	// Same delivery identity with a changed payload is a conflict, never a second job.
-	r, err := scan(tx.QueryRow(ctx, `INSERT INTO accepted_inputs(input_id,session_key,event_id,dedup_key,source,owner_id,event_json,task_id)
- SELECT $1,$2,$3,$4,$5,$6,$7::jsonb,NULLIF($8,'')
+	r, err := scan(tx.QueryRow(ctx, `INSERT INTO accepted_inputs(input_id,session_key,event_id,dedup_key,source,owner_id,event_json,task_id,status,error_code)
+ SELECT $1,$2,$3,$4,$5,$6,$7::jsonb,NULLIF($8,''),$9,$10
  WHERE $8='' OR EXISTS(SELECT 1 FROM tasks WHERE task_id=$8 AND session_key=$2 AND owner_id=$6 AND status='active')
- ON CONFLICT(session_key,source,dedup_key) DO NOTHING RETURNING `+columns, id, event.SessionKey, event.EventID, key, event.Source, ownerID, encoded, taskID))
+ ON CONFLICT(session_key,source,dedup_key) DO NOTHING RETURNING `+columns, id, event.SessionKey, event.EventID, key, event.Source, ownerID, encoded, taskID, status, code))
 	if err == nil {
 		return r, true, tx.Commit(ctx)
 	}

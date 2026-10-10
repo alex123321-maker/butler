@@ -12,6 +12,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
+	"github.com/butler/butler/internal/ownership"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -48,19 +49,54 @@ func (s *Service) startLeaseRenewer(parent context.Context, lease session.LeaseR
 	}
 	go func() {
 		defer close(done)
-		ticker := time.NewTicker(interval)
+		ticker := time.NewTicker(250 * time.Millisecond)
 		defer ticker.Stop()
+		nextRenew := time.Now().Add(interval)
 		for {
 			select {
 			case <-runCtx.Done():
 				return
 			case <-ticker.C:
+				if lease.FenceEpoch > 0 {
+					checkCtx, checkCancel := context.WithTimeout(runCtx, 750*time.Millisecond)
+					var current session.LeaseRecord
+					var checkErr error
+					if reader, ok := s.leases.(interface {
+						GetLease(context.Context, string) (session.LeaseRecord, error)
+					}); ok {
+						current, checkErr = reader.GetLease(checkCtx, lease.LeaseID)
+					} else {
+						checkErr = ownership.ErrStale
+					}
+					checkCancel()
+					if runCtx.Err() != nil {
+						return
+					}
+					if checkErr != nil || current.RunID != lease.RunID || current.SessionKey != lease.SessionKey || current.FenceEpoch != lease.FenceEpoch {
+						select {
+						case errCh <- ownership.ErrStale:
+						default:
+						}
+						cancel()
+						cleanup, cleanupCancel := context.WithTimeout(context.Background(), 2*time.Second)
+						_, cancelErr := s.provider.CancelRun(cleanup, transport.CancelRunRequest{RunID: lease.RunID, Reason: "owner authority revoked or unavailable"})
+						cleanupCancel()
+						if cancelErr != nil {
+							runLog.Warn("provider cancellation unavailable", slog.String("run_id", lease.RunID))
+						}
+						return
+					}
+				}
+				if time.Now().Before(nextRenew) {
+					continue
+				}
 				callCtx, callCancel := context.WithTimeout(runCtx, 5*time.Second)
 				_, err := s.leases.RenewLease(callCtx, lease.LeaseID, ttl)
 				callCancel()
 				if runCtx.Err() != nil {
 					return
 				}
+				nextRenew = time.Now().Add(interval)
 				if err != nil {
 					runLog.Error("lease renew failed", slog.String("lease_id", lease.LeaseID), slog.String("error", err.Error()))
 					select {
