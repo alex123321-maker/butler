@@ -3,6 +3,7 @@ package orchestrator
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -10,6 +11,7 @@ import (
 
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	"github.com/butler/butler/internal/ingress"
+	"github.com/butler/butler/internal/memory/summary"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/transport"
 )
@@ -54,6 +56,137 @@ func TestSummaryCannotHideRecentOwnerCorrection(t *testing.T) {
 	}
 }
 
+type coveredHistoryStore struct {
+	*memoryTranscriptStore
+	revision int64
+}
+
+func (s *coveredHistoryStore) GetTranscript(ctx context.Context, key string) (transcript.Transcript, error) {
+	source, err := s.memoryTranscriptStore.GetTranscript(ctx, key)
+	source.SourceRevision = s.revision
+	return source, err
+}
+
+type coveredSummaryReader struct {
+	snapshot summary.Snapshot
+	err      error
+}
+
+func (r coveredSummaryReader) GetSummary(context.Context, string) (string, error) {
+	return r.snapshot.Summary, r.err
+}
+func (r coveredSummaryReader) GetSummarySnapshot(context.Context, string) (summary.Snapshot, error) {
+	return r.snapshot, r.err
+}
+
+func TestCoveredSummaryReplaysOnlyCompleteUncompressedTail(t *testing.T) {
+	for _, providerName := range []string{"openai", "github_copilot"} {
+		for _, mode := range []string{"empty", "old", "current", "future", "edited"} {
+			t.Run(providerName+"/"+mode, func(t *testing.T) {
+				const key = "web:coverage"
+				correction := strings.Repeat("Длинное обсуждение 🦉. ", 180) + "Теперь только черновики; ничего не отправляй."
+				messages := []transcript.Message{{SessionKey: key, MessageID: "a", Sequence: 1, Role: "assistant", Content: "Можно отправлять автоматически."}}
+				// More than ten messages prevents regression to a fixed recent window.
+				for i := 2; i < 15; i++ {
+					messages = append(messages, transcript.Message{SessionKey: key, MessageID: fmt.Sprintf("m%d", i), Sequence: int64(i), Role: "assistant", Content: strings.Repeat("Ответ. ", 220)})
+				}
+				messages = append(messages, transcript.Message{SessionKey: key, MessageID: "correction", Sequence: 15, Role: "user", Content: correction})
+				snapshot := summary.Snapshot{SessionKey: key, Summary: "Можно отправлять автоматически.", ThroughMessageID: "a", ThroughSequence: 1, SourceRevision: 3, FormatVersion: 1}
+				switch mode {
+				case "empty":
+					snapshot = summary.Snapshot{}
+				case "current":
+					snapshot.ThroughMessageID = "m14"
+					snapshot.ThroughSequence = 14
+				case "future":
+					snapshot.ThroughMessageID = "future"
+					snapshot.ThroughSequence = 16
+				case "edited":
+					snapshot.SourceRevision = 2
+				}
+				store := &coveredHistoryStore{memoryTranscriptStore: &memoryTranscriptStore{messages: messages}, revision: 3}
+				provider := &mockProvider{startEvents: []transport.TransportEvent{transport.NewAssistantFinalEvent("", providerName, transport.AssistantFinal{Content: "Черновик"})}}
+				service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), store, provider, Config{ProviderName: providerName, SummaryReader: coveredSummaryReader{snapshot: snapshot}}, nil)
+				_, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "coverage", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: key, Source: "web", PayloadJSON: `{"text":"Продолжай"}`, CreatedAt: time.Now(), IdempotencyKey: "coverage"})
+				if err != nil {
+					t.Fatal(err)
+				}
+				req := provider.startRequests[0]
+				if req.Context.ProviderSessionRef != nil {
+					t.Fatal("provider state duplicated Butler history")
+				}
+				corrections, historyCount := 0, 0
+				for _, item := range req.InputItems {
+					if !utf8.ValidString(item.Content) {
+						t.Fatal("invalid UTF-8")
+					}
+					if item.Content == correction {
+						corrections++
+					}
+					if item.Role == "assistant" {
+						historyCount++
+						if item.Content == strings.TrimSpace(strings.Repeat("Ответ. ", 220)) {
+							continue
+						}
+						if item.Content != messages[0].Content {
+							t.Fatal("tail assistant text was compressed")
+						}
+					}
+				}
+				if corrections != 1 {
+					t.Fatalf("correction count=%d", corrections)
+				}
+				want := 14
+				if mode == "old" {
+					want = 13
+				}
+				if mode == "current" {
+					want = 0
+				}
+				if historyCount != want {
+					t.Fatalf("history count=%d want %d", historyCount, want)
+				}
+			})
+		}
+	}
+}
+
+func TestSummaryCoverageReadFailureBlocksModel(t *testing.T) {
+	provider := &mockProvider{}
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{SummaryReader: coveredSummaryReader{err: errors.New("coverage unavailable")}}, nil)
+	_, err := service.prepareRun(context.Background(), ingress.InputEvent{SessionKey: "s", PayloadJSON: `{"text":"continue"}`})
+	if err == nil || !strings.Contains(err.Error(), "load session summary coverage") || len(provider.startRequests) != 0 {
+		t.Fatalf("coverage read failure: %v", err)
+	}
+}
+
+func TestContextBudgetDropsOptionalMaterialBeforeMandatoryConstraints(t *testing.T) {
+	service := NewService(nil, nil, nil, nil, nil, Config{}, nil)
+	mandatory := transport.InputItem{Role: "system", Content: strings.Repeat("Точное ограничение. ", 100) + "НЕ ОТПРАВЛЯТЬ"}
+	prepared := preparedRun{InputItems: []transport.InputItem{mandatory, {Role: "user", Content: "продолжай"}}, MemoryBundle: map[string]any{"profile": []map[string]any{{"key": "background", "summary": strings.Repeat("Второстепенное. ", 300)}}}}
+	// Measure the mandatory-only baseline through the same assembly path.
+	baseline := prepared
+	baseline.MemoryBundle = map[string]any{}
+	if err := service.attachPromptContext(context.Background(), &baseline); err != nil {
+		t.Fatal(err)
+	}
+	service.config.ContextBudgetTokens = baseline.observabilityPrompt["context_token_estimate"].(int) + 16
+	if err := service.attachPromptContext(context.Background(), &prepared); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := prepared.MemoryBundle["profile"]; ok {
+		t.Fatal("optional profile displaced protected instructions")
+	}
+	if prepared.InputItems[1].Content != mandatory.Content {
+		t.Fatal("protected constraints truncated")
+	}
+	service.config.ContextBudgetTokens = 100
+	_, err := service.prepareRun(context.Background(), ingress.InputEvent{SessionKey: "s", PayloadJSON: `{"text":"Не отправляй"}`})
+	if err == nil || !strings.Contains(err.Error(), "context budget exceeded") {
+		t.Fatalf("oversized mandatory context silently dropped: %v", err)
+	}
+}
+
 func TestHistoryReadFailureBlocksModel(t *testing.T) {
 	for _, summary := range []string{"", "Old summary"} {
 		provider := &mockProvider{}
@@ -70,16 +203,10 @@ func TestHistoryReadFailureBlocksModel(t *testing.T) {
 	}
 }
 
-func TestTranscriptReplayTruncationPreservesUnicode(t *testing.T) {
+func TestTranscriptReplayPreservesCompleteUnicodeTail(t *testing.T) {
 	value := strings.Repeat("Привет🦉", 300)
-	for _, limit := range []int{1, 2, 12, 1200} {
-		got := truncateTranscriptReplay(value, limit)
-		if !utf8.ValidString(got) || utf8.RuneCountInString(got) > limit {
-			t.Fatalf("limit %d: malformed or oversized replay", limit)
-		}
-	}
-	items := recentTranscriptInputItems(transcript.Transcript{Messages: []transcript.Message{{Role: "assistant", Content: value}}}, 10)
-	if len(items) != 1 || !utf8.ValidString(items[0].Content) || utf8.RuneCountInString(items[0].Content) > 1200 {
-		t.Fatal("assistant replay limit did not preserve Unicode")
+	items := transcriptInputItems([]transcript.Message{{Role: "assistant", Content: value}})
+	if len(items) != 1 || !utf8.ValidString(items[0].Content) || items[0].Content != value {
+		t.Fatal("unsummarized assistant message was abbreviated or corrupted")
 	}
 }

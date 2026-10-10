@@ -130,37 +130,38 @@ type TransitionLogger interface {
 }
 
 type Config struct {
-	Tasks            task.Manager
-	ProviderName     string
-	ModelName        string
-	OwnerID          string
-	LeaseTTL         int64
-	Delivery         DeliverySink
-	Tools            ToolExecutor
-	ToolCatalog      ToolCatalog
-	ApprovalChecker  ApprovalChecker
-	ApprovalGate     *ApprovalGate
-	ApprovalService  *approvals.Service
-	ProfileStore     ProfileMemoryStore
-	EpisodeStore     EpisodicMemoryStore
-	ChunkStore       ChunkMemoryStore
-	Embeddings       EmbeddingProvider
-	PipelineEnqueuer PipelineEnqueuer
-	SummaryReader    SessionSummaryReader
-	WorkingStore     WorkingMemoryStore
-	WorkingPolicy    WorkingMemoryPolicy
-	TransientStore   TransientWorkingStore
-	TransientTTL     time.Duration
-	MemoryBundles    MemoryBundleService
-	PromptManager    PromptManager
-	PromptAssembler  PromptAssembler
-	ProfileLimit     int
-	EpisodeLimit     int
-	MemoryScopes     []string
-	TransitionLogger TransitionLogger
-	EventHub         *observability.Hub
-	Artifacts        *artifacts.Service
-	Activity         *activity.Service
+	Tasks               task.Manager
+	ProviderName        string
+	ModelName           string
+	OwnerID             string
+	LeaseTTL            int64
+	Delivery            DeliverySink
+	Tools               ToolExecutor
+	ToolCatalog         ToolCatalog
+	ApprovalChecker     ApprovalChecker
+	ApprovalGate        *ApprovalGate
+	ApprovalService     *approvals.Service
+	ProfileStore        ProfileMemoryStore
+	EpisodeStore        EpisodicMemoryStore
+	ChunkStore          ChunkMemoryStore
+	Embeddings          EmbeddingProvider
+	PipelineEnqueuer    PipelineEnqueuer
+	SummaryReader       SessionSummaryReader
+	ContextBudgetTokens int
+	WorkingStore        WorkingMemoryStore
+	WorkingPolicy       WorkingMemoryPolicy
+	TransientStore      TransientWorkingStore
+	TransientTTL        time.Duration
+	MemoryBundles       MemoryBundleService
+	PromptManager       PromptManager
+	PromptAssembler     PromptAssembler
+	ProfileLimit        int
+	EpisodeLimit        int
+	MemoryScopes        []string
+	TransitionLogger    TransitionLogger
+	EventHub            *observability.Hub
+	Artifacts           *artifacts.Service
+	Activity            *activity.Service
 }
 
 type PromptManager interface {
@@ -239,6 +240,9 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 	}
 	if cfg.EpisodeLimit <= 0 {
 		cfg.EpisodeLimit = 3
+	}
+	if cfg.ContextBudgetTokens <= 0 {
+		cfg.ContextBudgetTokens = 65536
 	}
 	if len(cfg.MemoryScopes) == 0 {
 		cfg.MemoryScopes = []string{"session", "user", "global"}

@@ -148,6 +148,10 @@ func managedSettingsCatalog() []SettingCatalogItem {
 			Visible:      true,
 		},
 		{
+			Spec:  fieldSpec{key: "BUTLER_CONTEXT_BUDGET_TOKENS", component: "orchestrator", typeName: "int", defaultValue: "65536", requiresRestart: true, validate: validatePositiveInt},
+			Group: "Memory", DisplayOrder: 107, Visible: true,
+		},
+		{
 			Spec:         fieldSpec{key: "BUTLER_MEMORY_PIPELINE_POLL_TIMEOUT_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "5", requiresRestart: true, validate: validatePositiveInt, assign: nil},
 			Group:        "Memory",
 			DisplayOrder: 108,

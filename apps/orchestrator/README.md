@@ -54,8 +54,9 @@ Current baseline:
 - supports allowlisted prompt placeholders for safe runtime section injection, adds an informational tool capability summary, and provides a preview endpoint for effective prompt inspection
 - injects a built-in browser strategy section that survives operator prompt overrides and teaches browser-oriented follow-ups such as interpreting short numeric replies against the agent's most recent numbered browser options
 - starts each new run with fresh provider state and Butler-owned context, preventing duplicate replay into an existing provider history; tool continuation within a run retains its own provider ref
-- includes recent user/assistant history even when a summary exists, preserves recent user instructions intact, and abbreviates assistant/prompt material by Unicode characters
-- stops model preparation explicitly if transcript retrieval fails; summary watermarks and monotonic updates remain pending in issue #10, constraint amendments in #9
+- loads a source-versioned session summary and the complete uncompressed user/assistant tail after its verified message boundary; unknown coverage replays full history
+- preserves durable task constraints separately from summaries; stops model preparation explicitly on history/coverage read errors or mandatory context overflow (constraint amendments remain in #9)
+- admits context with `BUTLER_CONTEXT_BUDGET_TOKENS` (default 65536), using a conservative encoded UTF-8 byte estimate plus protocol allowance, then removes chunks, episodes, profile and descriptive tool summaries before rejecting oversized mandatory context; this estimate is not provider billing or a native tokenizer count
 - exposes an internal delivery sink for `assistant_delta` and `assistant_final` events without allowing channel adapters to mutate run state
 - exposes `SubmitEvent` over gRPC and synchronous `POST /api/v1/events` over REST for normalized event ingestion
 - optionally runs the in-process Telegram adapter using Bot API long polling, `/auth` provider connection prompts, and final-response delivery

@@ -102,6 +102,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 		modelprovider.ProviderOpenAI:        deps.cfg.OpenAIModel,
 		modelprovider.ProviderOpenAICodex:   deps.cfg.OpenAICodexModel,
 		modelprovider.ProviderGitHubCopilot: deps.cfg.GitHubCopilotModel,
+		modelprovider.ProviderAntigravity:   deps.cfg.AntigravityModel,
 	}, strings.TrimSpace(deps.cfg.OpenAIAPIKey) != "")
 	eventServer := apiservice.NewEventServer(deps.transitionRepo, deps.runRepo, deps.eventHub, logger.WithComponent(deps.log, "event-api"))
 	taskViewServer := apiservice.NewTaskViewServer(deps.runRepo, deps.runRepo, deps.sessionRepo, deps.transcriptStore, deps.transitionRepo, deps.artifactsRepo, deps.deliveryEventsRepo)
