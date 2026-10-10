@@ -1,5 +1,12 @@
 # Memory source catalog
 
+`CreateDerivedTx` creates a fresh immutable `model_candidate` DATA source from
+exact current parents under an owned run/job or authenticated owner proof. It
+derives owner, scope and sensitivity, refuses secrets, and shares the caller's
+result CAS transaction. It neither manufactures an owner actor nor accepts a
+fact. Parent deletion/restore reconciliation removes the derived text. Voice and
+skill adapters may use this hook; model content remains data regardless of labels.
+
 PostgreSQL owns stable source identities, immutable revisions, event/extraction
 times, reported author, origin, scope/access revision and current source status.
 Profile/episodic/chunk stores remain the four-class memory model's class stores.
