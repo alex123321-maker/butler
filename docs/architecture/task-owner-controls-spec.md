@@ -107,24 +107,43 @@ connections per process. Broker tests reject new and previously approved mutatio
 under prepare-only. Browser fixtures exercise authentication, pinned revisions,
 consecutive amendment/stop and uncertainty presentation without token storage.
 
-These tests use deterministic provider streams and synthetic external observations;
-they do not prove remote-world rollback. Real journal-claim races require #11
-integration; result/outbox versus stop requires #12 integration. Validate them
-together before claiming all irreversible-boundary acceptance criteria.
+Provider-stream tests use deterministic events. Combined #9/#11/#12 tests also
+use real PostgreSQL approval/checkpoint stores, the private authenticated HTTP
+authority adapter, actual `actionauth.PostgresStore.ClaimGrant`, an HTTP recipient
+with key/fingerprint deduplication and receipt evidence, and the actual atomic
+`completion.Coordinator.Save`. They prove these implementation boundaries rather
+than claiming remote-world rollback or arbitrary third-party receipt guarantees.
 Migration 036 rollback refuses when control history or restrictions exist.
 
 The acceptance checks map to these boundaries:
 
-| Requirement | Verified boundary | Remaining combined check |
+| Requirement | Verified boundary | Combined evidence |
 | --- | --- | --- |
-| Stop or prepare-only prevents an unclaimed action | Current policy and old authorization rejected; amendment revokes the exact PostgreSQL fence | Real Broker journal claim racing this controller (#11) |
-| Old proposals and approvals cannot authorize the new version | Pending approval expires, approved audit stays, stale task revision/fence fails | None for the storage/authorization contract |
-| Stop bypasses ordinary execution | Accepted owner control interrupts an idle provider and a waiting approval without calling the normal executor | None |
-| All unfinished descendants stop | Complete same-session tree cancellation and inherited restrictions | Distributed delegation contexts must use the same task authority when introduced |
-| Already committed or uncertain effects remain | Historical tool observations remain; receipt reports uncertainty | Real journal reconciliation after the worker is cancelled (#11) |
-| Context follows admission and current task revision | Fresh continuation sees the complete protected amendment; late old final cannot append | Atomic result/outbox commit racing stop (#12) |
-| Ordering, pause/resume and ambiguity are explicit | Two-channel revision CAS, delivery deduplication, owner proof, ambiguous receipt and explicit clarification | None |
-| Dispatch/cancel linearization is documented | Ownership-first lock order also passes the cross-process transcript race | Real irreversible claim order (#11) |
+| Stop or prepare-only prevents an unclaimed action | Current policy and old authorization rejected; amendment revokes the exact PostgreSQL fence | Owner-first actual claim race rejects dispatch; recipient receives zero effects |
+| Old proposals and approvals cannot authorize the new version | Pending approval expires, approved audit stays, stale task revision/fence fails | Previously approved proposal cannot verify, reauthorize or claim after owner-first commit |
+| Stop bypasses ordinary execution | Accepted owner control interrupts an idle provider and a waiting approval without calling the normal executor | Idle-provider cancellation and late final rejection still pass with the required atomic coordinator |
+| All unfinished descendants stop | Complete same-session tree cancellation and inherited restrictions | Root stop revokes an actual approved grandchild grant; the recipient receives zero effects |
+| Already committed or uncertain effects remain | Historical tool observations remain; receipt reports uncertainty | Claim-first recipient response is saved after stop/amend; lost acknowledgement remains unknown with append-only evidence and no replay |
+| Context follows admission and current task revision | Fresh continuation sees the complete protected amendment; late old final cannot append | Stop-first actual coordinator saves no result/artifact/transcript/outbox; result-first retains all immutable components and revision-one journal evidence |
+| Ordering, pause/resume and ambiguity are explicit | Two-channel revision CAS, delivery deduplication, owner proof, ambiguous receipt and explicit clarification | Storage/kernel tests and functional Web controls |
+| Dispatch/cancel linearization is documented | Ownership-first lock order also passes the cross-process transcript race | Both actual claim/owner and final-result/owner commit orders use independent two-connection pools and observed PostgreSQL lock barriers |
+
+`authority_boundaries_integration_test.go` exercises nine combined cases:
+owner stop/amend before claim; claim before stop/amend with confirmed response or
+lost acknowledgement; each order of stop versus atomic result commit; and root
+stop revoking an actual grandchild grant. The
+claim-first test deliberately contacts the recipient after owner control commits,
+showing why a spent, earlier grant cannot imply guaranteed prevention. Broker
+outcome recording remains independent of the revoked worker. The final-result
+tests retain an actual confirmed effect in either order; only an earlier result
+commit creates immutable final components and a stored notification. Their
+notification is the Web `result_ready` record, not a claim of Telegram delivery.
+
+Barriers pause real PostgreSQL transactions or their real artifact writer before
+commit. `pg_stat_activity` confirms actual lock contention instead of assuming a
+goroutine reached its boundary. All waits have deadlines; each controller,
+authorization and execution pool has `MaxConns=2`. No live Compose deployment or
+model credentials are required by these tests.
 
 Validation on the isolated lab snapshot: all orchestrator packages plus action
 authorization, owner identity and transcript passed with PostgreSQL/Redis; the

@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
 	"github.com/butler/butler/apps/orchestrator/internal/run"
@@ -49,7 +50,7 @@ func (p *controlProvider) CancelRun(_ context.Context, r transport.CancelRunRequ
 	return nil, nil
 }
 func (f *controlsFixture) executor(p *controlProvider) *flow.Service {
-	return flow.NewService(session.NewPostgresRepository(f.pool), f.leases, run.NewService(run.NewPostgresRepository(f.pool), nil), transcript.NewStore(f.pool), p, flow.Config{Tasks: f.tasks, ProviderName: p.Name(), OwnerID: "worker", LeaseTTL: 60}, nil)
+	return flow.NewService(session.NewPostgresRepository(f.pool), f.leases, run.NewService(run.NewPostgresRepository(f.pool), nil), transcript.NewStore(f.pool), p, flow.Config{Tasks: f.tasks, Completion: completion.New(f.pool), ProviderName: p.Name(), OwnerID: "worker", LeaseTTL: 60}, nil)
 }
 func TestStopIdleProviderIgnoresLateFinalIntegration(t *testing.T) {
 	f := newControlsFixture(t)
