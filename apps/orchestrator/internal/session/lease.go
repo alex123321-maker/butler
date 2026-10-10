@@ -22,6 +22,7 @@ var (
 )
 
 type LeaseRecord struct {
+	FenceEpoch int64     `json:"fence_epoch"`
 	LeaseID    string    `json:"lease_id"`
 	SessionKey string    `json:"session_key"`
 	RunID      string    `json:"run_id"`

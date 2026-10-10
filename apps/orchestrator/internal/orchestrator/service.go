@@ -130,6 +130,8 @@ type TransitionLogger interface {
 }
 
 type Config struct {
+	AutonomyMode        commonv1.AutonomyMode
+	Checkpoints         CheckpointStore
 	Tasks               task.Manager
 	ProviderName        string
 	ModelName           string
@@ -184,6 +186,9 @@ type Service struct {
 }
 
 type ExecutionResult struct {
+	Accepted          bool
+	InputID           string
+	ReceiptStatus     string
 	TaskID            string
 	RunID             string
 	SessionKey        string
@@ -231,6 +236,9 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 	}
 	if cfg.LeaseTTL <= 0 {
 		cfg.LeaseTTL = 60
+	}
+	if cfg.AutonomyMode == commonv1.AutonomyMode_AUTONOMY_MODE_UNSPECIFIED {
+		cfg.AutonomyMode = commonv1.AutonomyMode_AUTONOMY_MODE_1
 	}
 	if cfg.Delivery == nil {
 		cfg.Delivery = NopDeliverySink{}

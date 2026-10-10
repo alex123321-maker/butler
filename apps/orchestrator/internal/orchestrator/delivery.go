@@ -9,6 +9,8 @@ import (
 
 // ApprovalRequest represents a tool call that needs user approval before execution.
 type ApprovalRequest struct {
+	Summary       string
+	RiskLevel     string
 	RunID         string
 	SessionKey    string
 	ApprovalID    string
