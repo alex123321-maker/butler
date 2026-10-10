@@ -9,6 +9,9 @@ export DOCKER_CONFIG="$root/.cache/docker"
 export BUTLER_ACTION_AUTHORITY_TOKEN_SOURCE="$root/secrets/action-authority.token"
 mkdir -p "$DOCKER_CONFIG" "$root/.cache/go-build" "$root/.cache/go-mod" "$root/reports"
 compose=(docker compose -p butler-lab --env-file "$root/lab.env" -f deploy/docker-compose.yml -f deploy/docker-compose.lab.yml)
+if [[ -f "$root/private-proxy/compose.env" ]]; then
+  compose+=(--env-file "$root/private-proxy/compose.env" -f deploy/docker-compose.antigravity-proxy.lab.yml)
+fi
 case "$action" in
   Up)
     if [[ ! -f "$BUTLER_ACTION_AUTHORITY_TOKEN_SOURCE" ]]; then

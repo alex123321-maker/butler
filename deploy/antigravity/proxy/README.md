@@ -26,3 +26,9 @@ Use this overlay together with the base and lab Compose files. Starting only
 Orchestrator with the overlay after verifying provider text/function/result
 turns, and select the provider separately. Successful proxy connectivity does
 not establish model entitlement or available quota.
+
+The lab helper includes the overlay when `/srv/storage/butler/private-proxy/compose.env`
+exists. This private operator file contains the two source-path variables above;
+the normal lab environment remains in `lab.env`. The helper does not create or
+download proxy credentials. Use `Status` to inspect the existing lab deployment
+and `Up` for a subsequent explicit deployment.
