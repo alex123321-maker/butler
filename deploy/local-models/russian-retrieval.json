@@ -1,0 +1,30 @@
+{
+  "documents": [
+    {"id":"durable","title":"Долговременная память","text":"Butler сохраняет долговременные записи, поручения, профиль и эпизоды в PostgreSQL. Это источник истины после перезапуска."},
+    {"id":"redis","title":"Кратковременное состояние","text":"Redis хранит только временные блокировки, очередь и execution state. Его содержимое допустимо потерять при перезапуске."},
+    {"id":"vector","title":"Семантическое извлечение","text":"pgvector служит слоем поиска похожих эпизодов и фрагментов. Структурированные данные памяти остаются в PostgreSQL."},
+    {"id":"broker","title":"Контроль инструментов","text":"Tool Broker проверяет правила и подтверждения, выбирает runtime и разрешает credential_ref. Модель не запускает инструменты напрямую."},
+    {"id":"session","title":"Порядок сообщений","text":"Session Service владеет идентификатором сессии, последовательностью входа и lease. Конкурирующие сообщения обрабатываются в правильном порядке."},
+    {"id":"stop","title":"Явная отмена","text":"Команда пользователя «стоп» отменяет активное поручение. Классификатор не вправе отзывать явную остановку или продолжать действия после неё."},
+    {"id":"secrets","title":"Защита учётных данных","text":"Пароли, токены и cookies не передаются модели. Программный слой разрешает типизированную ссылку credential_ref непосредственно перед исполнением."},
+    {"id":"gpu","title":"Недостаток видеопамяти","text":"При исчерпании VRAM менеджер уменьшает batch, выгружает собственную модель и повторяет вычисление на CPU. Весь исходный ввод сохраняется."},
+    {"id":"negative","title":"Ограничение обновлений","text":"До конца месяца запрещено обновлять рабочий сервер. Тестовый сервер обновлять разрешено. Разрешение для тестового не снимает запрет для рабочего."},
+    {"id":"code-cancel","title":"process.go","text":"func (b *Process) stop() { if b.cmd != nil { _ = b.cmd.Process.Kill(); _ = b.cmd.Wait() } } // cancellation waits for owned model process"},
+    {"id":"code-normalize","title":"embedding.go","text":"func normalizeVector(raw []float64) []float32 { norm := math.Sqrt(sumSquares(raw)); return divide(raw, norm) } // renormalize after MRL dimension truncation"},
+    {"id":"code-idempotency","title":"task_store.go","text":"INSERT INTO task_events(task_id, dedupe_key) VALUES ($1, $2) ON CONFLICT (task_id, dedupe_key) DO NOTHING; -- retries do not create duplicate events"}
+  ],
+  "queries": [
+    {"id":"q-durable","text":"Что переживёт рестарт и где хранится история поручений?","relevant":"durable"},
+    {"id":"q-redis","text":"В каком хранилище находятся эфемерные блокировки, которые можно потерять?","relevant":"redis"},
+    {"id":"q-vector","text":"Какой слой помогает искать похожие воспоминания по смыслу?","relevant":"vector"},
+    {"id":"q-broker","text":"Кто проверяет разрешения перед выполнением модельного вызова инструмента?","relevant":"broker"},
+    {"id":"q-order","text":"Кто гарантирует порядок сообщений одной сессии?","relevant":"session"},
+    {"id":"q-stop","text":"Можно ли игнорировать команду остановки, если классификатор считает задачу важной?","relevant":"stop"},
+    {"id":"q-secrets","text":"Как применять сохранённый пароль без помещения его в контекст модели?","relevant":"secrets"},
+    {"id":"q-gpu","text":"Как продолжить вычисление при нехватке памяти видеокарты, не потеряв входные данные?","relevant":"gpu"},
+    {"id":"q-exception","text":"Разрешение обновить тестовую машину позволяет обновить продуктивную?","relevant":"negative"},
+    {"id":"q-code-cancel","text":"Где отмена завершает дочерний модельный процесс и дожидается освобождения ресурсов?","relevant":"code-cancel","code":true},
+    {"id":"q-code-normalize","text":"Найди функцию повторной L2 нормализации после сокращения embedding vector.","relevant":"code-normalize","code":true},
+    {"id":"q-code-dedupe","text":"Где повторная попытка INSERT не создаст повторное событие?","relevant":"code-idempotency","code":true}
+  ]
+}

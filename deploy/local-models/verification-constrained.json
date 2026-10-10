@@ -1,0 +1,302 @@
+{
+  "authentication": "anonymous RPC rejected",
+  "cancellation": "cold-load deadline then successful inference",
+  "catalog": {
+    "models": [
+      {
+        "id": "embeddinggemma2-text-bf16-v1",
+        "model": "google/embeddinggemma-2",
+        "revision": "914f7f89142e33e77833254d9c9b90c3cef7303b",
+        "format": "safetensors",
+        "precision": "BF16",
+        "license": "Apache-2.0",
+        "sourceUrl": "https://huggingface.co/google/embeddinggemma-2",
+        "runtime": "torch-sentence-transformers",
+        "runtimeVersion": "torch2.10.0+cu128/transformers5.19.0/sentence-transformers6.1.0",
+        "capabilities": [
+          "CAPABILITY_EMBED"
+        ],
+        "maxBatch": 4,
+        "maxInputBytes": 8192,
+        "contextTokens": 2048,
+        "peakVramMib": 3072,
+        "cpuFallback": true,
+        "enabled": true,
+        "preprocessingVersion": "embeddinggemma2-retrieval-v1",
+        "dimensions": 768,
+        "licenseUrl": "https://ai.google.dev/gemma/apache_2"
+      }
+    ]
+  },
+  "context_limit": "explicit InvalidArgument; no truncation",
+  "cpu": "actual FP32 inference",
+  "external_network": "container launched with --network none",
+  "generated_at": "2026-10-10T18:38:41Z",
+  "idle_unload": true,
+  "large_batch": "4 documents, 8000 raw UTF-8 bytes",
+  "measurements": [
+    {
+      "id": "index-0",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 7598,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "index-4",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 328,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "index-8",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 368,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "q-durable",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 101,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "q-redis",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 106,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "q-vector",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 98,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "q-broker",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 98,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "q-order",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 97,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "q-stop",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 106,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "q-secrets",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 104,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "q-gpu",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 111,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "q-exception",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 103,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "q-code-cancel",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 106,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "q-code-normalize",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 101,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "q-code-dedupe",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 106,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "mrl-256",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 91,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "parallel-search",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 98,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "parallel-index",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 98,
+      "queue_ms": 98,
+      "peak_mib": 0
+    },
+    {
+      "id": "near-input-limit",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 8873,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "cpu-fp32",
+      "device": "cpu",
+      "latency_ms": 75,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "after-cancellation",
+      "device": "cpu",
+      "latency_ms": 7933,
+      "queue_ms": 0,
+      "peak_mib": 0
+    }
+  ],
+  "mrl": "768 and 256 finite L2-normalized",
+  "parallel_index_search": true,
+  "rankings": [
+    {
+      "correct": true,
+      "expected": "durable",
+      "first": "durable",
+      "query_id": "q-durable"
+    },
+    {
+      "correct": true,
+      "expected": "redis",
+      "first": "redis",
+      "query_id": "q-redis"
+    },
+    {
+      "correct": true,
+      "expected": "vector",
+      "first": "vector",
+      "query_id": "q-vector"
+    },
+    {
+      "correct": true,
+      "expected": "broker",
+      "first": "broker",
+      "query_id": "q-broker"
+    },
+    {
+      "correct": true,
+      "expected": "session",
+      "first": "session",
+      "query_id": "q-order"
+    },
+    {
+      "correct": true,
+      "expected": "stop",
+      "first": "stop",
+      "query_id": "q-stop"
+    },
+    {
+      "correct": true,
+      "expected": "secrets",
+      "first": "secrets",
+      "query_id": "q-secrets"
+    },
+    {
+      "correct": true,
+      "expected": "gpu",
+      "first": "gpu",
+      "query_id": "q-gpu"
+    },
+    {
+      "correct": true,
+      "expected": "negative",
+      "first": "negative",
+      "query_id": "q-exception"
+    },
+    {
+      "correct": true,
+      "expected": "code-cancel",
+      "first": "code-cancel",
+      "query_id": "q-code-cancel"
+    },
+    {
+      "correct": true,
+      "expected": "code-normalize",
+      "first": "code-normalize",
+      "query_id": "q-code-normalize"
+    },
+    {
+      "correct": true,
+      "expected": "code-idempotency",
+      "first": "code-idempotency",
+      "query_id": "q-code-dedupe"
+    }
+  ],
+  "retrieval_top1": 1,
+  "scope": "synthetic Russian/code smoke; not a production retrieval quality decision",
+  "status": {
+    "state": "idle",
+    "activeModel": "google/embeddinggemma-2",
+    "activeDevice": "cpu",
+    "gpu": {
+      "available": true,
+      "totalMib": 6144,
+      "usedMib": 20,
+      "freeMib": 5778,
+      "name": "NVIDIA GeForce RTX 3060 Laptop GPU",
+      "driver": "595.91.07"
+    },
+    "budgetMib": 1024,
+    "reserveMib": 512,
+    "completed": "21",
+    "failed": "2",
+    "cpuFallbacks": "19",
+    "backendHealthy": true
+  }
+}

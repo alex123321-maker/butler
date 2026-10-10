@@ -3,6 +3,7 @@
 Internal gRPC contracts live here.
 
 - `common/v1` defines shared enums and core typed values used across services.
+- `localmodels/v1` defines typed auxiliary inference, model catalog and resource status; it does not own actions or task state.
 - `approval/v1` defines typed approval payloads such as browser tab selection.
 - `browser/v1` defines session-bound single-tab browser control contracts.
 - `orchestrator/v1` defines the normalized ingress API exposed by the orchestrator.

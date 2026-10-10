@@ -266,6 +266,11 @@ The current Butler baseline now includes durable PostgreSQL tables for:
 
 ### 8.3 pgvector
 
+Opt-in auxiliary inference is specified in [Local Model Service](local-model-service.md).
+Its model/revision/preprocessing/dimension identity defines a separate embedding
+space; installing the service does not switch existing memory indexes or providers.
+Issue #25 still requires reversible side-by-side reindex and production evaluation.
+
 Migration 021 uses dimensionless vector columns to support different embedding
 providers. It removes the old fixed-dimension IVFFlat indexes; current semantic
 queries scan these columns. Future indexes require fixed-dimension expressions

@@ -1,0 +1,133 @@
+syntax = "proto3";
+package butler.localmodels.v1;
+option go_package = "github.com/butler/butler/internal/gen/localmodels/v1;localmodelsv1";
+
+// Auxiliary inference produces data, never authorizes actions or owns task state.
+service LocalModelsService {
+  rpc Describe(Empty) returns (Catalog);
+  rpc Status(Empty) returns (ManagerStatus);
+  rpc Infer(InferRequest) returns (InferResponse);
+}
+message Empty {}
+enum Capability {
+  CAPABILITY_UNSPECIFIED = 0;
+  CAPABILITY_EMBED = 1;
+  CAPABILITY_RERANK = 2;
+  CAPABILITY_EXTRACT = 3;
+  CAPABILITY_CLASSIFY = 4;
+  CAPABILITY_MEDIA = 5;
+}
+message ModelProfile {
+  string id = 1;
+  string model = 2;
+  string revision = 3;
+  string format = 4;
+  string precision = 5;
+  string license = 6;
+  string source_url = 7;
+  string runtime = 8;
+  string runtime_version = 9;
+  repeated Capability capabilities = 10;
+  uint32 max_batch = 11;
+  uint32 max_input_bytes = 12;
+  uint32 context_tokens = 13;
+  uint32 peak_vram_mib = 14;
+  bool cpu_fallback = 15;
+  bool enabled = 16;
+  string preprocessing_version = 17;
+  uint32 dimensions = 18;
+  string license_url = 19;
+}
+message Catalog { repeated ModelProfile models = 1; }
+message GPUStatus {
+  bool available = 1;
+  uint32 total_mib = 2;
+  uint32 used_mib = 3;
+  uint32 free_mib = 4;
+  string name = 5;
+  string driver = 6;
+}
+message ManagerStatus {
+  string state = 1;
+  uint32 queued = 2;
+  string active_model = 3;
+  string active_device = 4;
+  GPUStatus gpu = 5;
+  uint32 budget_mib = 6;
+  uint32 reserve_mib = 7;
+  uint64 completed = 8;
+  uint64 failed = 9;
+  uint64 cpu_fallbacks = 10;
+  uint64 oom_retries = 11;
+  uint32 observed_peak_mib = 12;
+  bool backend_healthy = 13;
+}
+message TextInput { string id = 1; string text = 2; string title = 3; }
+enum EmbeddingTask {
+  EMBEDDING_TASK_UNSPECIFIED = 0;
+  EMBEDDING_TASK_QUERY = 1;
+  EMBEDDING_TASK_DOCUMENT = 2;
+  EMBEDDING_TASK_CODE_QUERY = 3;
+}
+message EmbedInput {
+  repeated TextInput texts = 1;
+  EmbeddingTask task = 2;
+  uint32 dimensions = 3;
+}
+message RerankInput { string query = 1; repeated TextInput candidates = 2; }
+message ExtractInput {
+  string text = 1;
+  repeated string entity_types = 2;
+  string schema_version = 3;
+}
+message ClassifyInput { string text = 1; repeated string labels = 2; }
+message MediaInput { bytes content = 1; string mime_type = 2; }
+message InferRequest {
+  string request_id = 1;
+  string profile_id = 2;
+  // Applies to queueing and execution; the caller's shorter RPC deadline wins.
+  uint32 timeout_ms = 3;
+  bool cpu_only = 4;
+  oneof input {
+    EmbedInput embed = 10;
+    RerankInput rerank = 11;
+    ExtractInput extract = 12;
+    ClassifyInput classify = 13;
+    MediaInput media = 14;
+  }
+}
+message Vector { string id = 1; repeated float values = 2; }
+message EmbedOutput { repeated Vector vectors = 1; string index_space = 2; }
+message Score { string id = 1; double value = 2; }
+message RerankOutput { repeated Score scores = 1; }
+message Span {
+  string type = 1;
+  string text = 2;
+  uint32 start = 3;
+  uint32 end = 4;
+  double confidence = 5;
+}
+message ExtractOutput { repeated Span spans = 1; string schema_version = 2; }
+message ClassifyOutput {
+  repeated Score scores = 1;
+  bool insufficient_data = 2;
+  // Scores are model signals, not calibrated probabilities or permissions.
+}
+message MediaOutput { repeated float embedding = 1; }
+message InferResponse {
+  string request_id = 1;
+  string profile_id = 2;
+  string revision = 3;
+  string device = 4;
+  string fallback_reason = 5;
+  uint64 queue_ms = 6;
+  uint64 execution_ms = 7;
+  uint32 peak_device_mib = 8;
+  oneof output {
+    EmbedOutput embed = 10;
+    RerankOutput rerank = 11;
+    ExtractOutput extract = 12;
+    ClassifyOutput classify = 13;
+    MediaOutput media = 14;
+  }
+}
