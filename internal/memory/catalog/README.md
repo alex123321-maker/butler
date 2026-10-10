@@ -1,0 +1,35 @@
+# Memory source catalog
+
+PostgreSQL owns stable source identities, immutable revisions, event/extraction
+times, reported author, origin, scope/access revision and current source status.
+Profile/episodic/chunk stores remain the four-class memory model's class stores.
+The catalog links their object IDs to source revisions; vectors are derived.
+
+Owner decisions use `owneridentity.Actor`. Extracted claims are candidates even
+with high confidence. `Decide` locks an exact scope/key head and requires the
+current accepted claim ID; only that owner decision supersedes a prior value.
+Documents, model assumptions and subagent reports never change task authority.
+Provenance/dependencies retain original sources and sensitivity.
+
+`AccessTx` checks a live run ownership token or independent owned job proof,
+current task/goal assignment, exact permitted scope, source revision/hash/access
+and parent currentness. Source locks precede chunk/vector locks.
+`CheckObjectsTx` derives the source graph from PostgreSQL object IDs, not citation
+JSON. It uses the caller transaction and does not need a second pool connection.
+
+Deletion locks sorted affected sources, removes recursively derived class rows,
+redacts source/claim text, invalidates covered summaries, revokes scope grants and
+retains content-free tombstones. A typed private file manifest is fsynced before
+the PG commit. `CheckRestore` denies reads/indexing when PG's applied watermark
+differs from the manifest; `Reconcile` reapplies deletion before restore is usable.
+The operator initializes the manifest once, persists it outside ordinary PG
+backup rollback, and retains its complete history. Missing/truncated/wrong files
+deny access. A failed PG commit can cause extra deletion on replay; this is safer
+than resurrecting text. Backup files themselves still require private retention
+and erasure policy. The manifest contains opaque source IDs, hashed owner identity,
+deletion IDs/order/time and action only, never source text/URLs.
+
+Foundation tests use `BUTLER_TEST_MEMORY_POSTGRES_URL`, an isolated `_test` DB,
+private schemas, pgvector in public and pool size two. This foundation does not
+yet close #22: production read/API wiring, transcript/final-result privacy
+redaction, cache cleanup, legacy review/export and structured ingestion follow.
