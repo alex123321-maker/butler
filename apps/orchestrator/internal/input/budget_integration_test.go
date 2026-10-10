@@ -53,7 +53,10 @@ func TestRuntimeBudgetStopRetainsContinuationWithoutProviderOrFinalResultIntegra
 func TestRuntimeBudgetDeadlineCancelsIdleInferenceIntegration(t *testing.T) {
 	f := newLifecycleFixture(t)
 	policy := budget.DefaultPolicy()
-	policy.ModelMillis = 40
+	// The allowance includes PostgreSQL admission and checkpoint persistence.
+	// Leave those operations enough time on a shared lab so this test actually
+	// reaches idle inference; the assertion still requires deadline cancellation.
+	policy.ModelMillis = 1000
 	policy.Models["fixture:fixture"] = budget.ModelPrice{Basis: "local_no_billing"}
 	provider := &budgetFixtureProvider{idle: true}
 	executor := flow.NewService(f.sessions, session.NewPostgresLeaseManager(f.pool), f.runs, f.transcript, provider, flow.Config{Completion: completion.New(f.pool), ProviderName: "fixture", ModelName: "fixture", OwnerID: "worker", LeaseTTL: 30, Tasks: f.tasks, Checkpoints: f.store, Budgets: budget.NewController(f.pool, policy)}, nil)
