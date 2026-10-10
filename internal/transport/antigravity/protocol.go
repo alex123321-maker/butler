@@ -32,36 +32,36 @@ type functionCall struct {
 	Args json.RawMessage `json:"args"`
 }
 type generateRequest struct {
-	Contents          []content       `json:"contents"`
-	SystemInstruction *content        `json:"systemInstruction,omitempty"`
-	Tools             []functionTools `json:"tools,omitempty"`
-	ToolConfig        map[string]any  `json:"toolConfig,omitempty"`
+	Contents          []content        `json:"contents"`
+	SystemInstruction *content         `json:"systemInstruction,omitempty"`
+	Tools             []functionTools  `json:"tools,omitempty"`
+	ToolConfig        map[string]any   `json:"toolConfig,omitempty"`
+	GenerationConfig  generationConfig `json:"generationConfig"`
+}
+type generationConfig struct {
+	MaxOutputTokens int `json:"maxOutputTokens"`
+}
+type aicodeInference struct {
+	Experience string `json:"experience"`
 }
 type requestEnvelope struct {
-	Project            string          `json:"project"`
-	RequestID          string          `json:"requestId"`
-	Request            generateRequest `json:"request"`
-	Model              string          `json:"model"`
-	UserPromptID       string          `json:"userPromptId"`
-	UserAgent          string          `json:"userAgent"`
-	RequestType        string          `json:"requestType"`
-	EnabledCreditTypes []string        `json:"enabledCreditTypes"`
+	AICode aicodeInference `json:"aicode"`
+	generateRequest
 }
 type responseEnvelope struct {
-	Response *struct {
-		Candidates []struct {
-			Index        int     `json:"index"`
-			Content      content `json:"content"`
-			FinishReason string  `json:"finishReason"`
-		} `json:"candidates"`
-		UsageMetadata struct {
-			PromptTokenCount     int `json:"promptTokenCount"`
-			CandidatesTokenCount int `json:"candidatesTokenCount"`
-			TotalTokenCount      int `json:"totalTokenCount"`
-		} `json:"usageMetadata"`
-		AutomaticFunctionCallingHistory []json.RawMessage `json:"automaticFunctionCallingHistory"`
-	} `json:"response"`
-	Error json.RawMessage `json:"error"`
+	Candidates []struct {
+		Index        int     `json:"index"`
+		Content      content `json:"content"`
+		FinishReason string  `json:"finishReason"`
+	} `json:"candidates"`
+	UsageMetadata struct {
+		PromptTokenCount     int `json:"promptTokenCount"`
+		CandidatesTokenCount int `json:"candidatesTokenCount"`
+		TotalTokenCount      int `json:"totalTokenCount"`
+	} `json:"usageMetadata"`
+	ModelVersion                    string            `json:"modelVersion"`
+	AutomaticFunctionCallingHistory []json.RawMessage `json:"automaticFunctionCallingHistory"`
+	Error                           json.RawMessage   `json:"error"`
 }
 type modelAnswer struct {
 	Parts        []json.RawMessage
@@ -70,19 +70,18 @@ type modelAnswer struct {
 	Usage        *transport.Usage
 }
 
-func (p *Provider) invoke(ctx context.Context, model, runID string, turn int, body generateRequest, onText func(string) bool) (modelAnswer, error) {
+func (p *Provider) invoke(ctx context.Context, model string, body generateRequest, onText func(string) bool) (modelAnswer, error) {
 	auth, err := p.config.AuthSource.ResolveAntigravity(ctx)
 	if err != nil {
 		return modelAnswer{}, providerError(transport.ErrorTypeProviderUnavailable, "Antigravity authentication is unavailable; reconnect through the private control plane")
 	}
-	if strings.TrimSpace(auth.AccessToken) == "" || strings.ContainsAny(auth.AccessToken, "\r\n") || auth.ProjectID == "" || !auth.ExpiresAt.After(time.Now()) {
+	if strings.TrimSpace(auth.AccessToken) == "" || strings.ContainsAny(auth.AccessToken, "\r\n") || !auth.ExpiresAt.After(time.Now()) {
 		return modelAnswer{}, providerError(transport.ErrorTypeProviderUnavailable, "Antigravity authentication is incomplete or expired")
 	}
-	requestID, err := newReference()
-	if err != nil {
-		return modelAnswer{}, err
-	}
-	envelope := requestEnvelope{Project: auth.ProjectID, RequestID: "agent-" + requestID.SessionRef, Request: body, Model: model, UserPromptID: fmt.Sprintf("%s-%d", runID, turn), UserAgent: "antigravity", RequestType: "agent", EnabledCreditTypes: []string{}}
+	// AICode and model are a protobuf oneof. Subscription inference uses only
+	// aicode.experience; Cloud Code project/request wrappers and v1main-only
+	// sessionId/entitlement fields are not accepted by the production v1 API.
+	envelope := requestEnvelope{AICode: aicodeInference{Experience: model}, generateRequest: body}
 	encoded, err := json.Marshal(envelope)
 	if err != nil {
 		return modelAnswer{}, protocolError("invalid model request")
@@ -153,10 +152,10 @@ func readStream(reader io.Reader, onText func(string) bool) (modelAnswer, error)
 			return protocolError("invalid SSE response JSON")
 		}
 		var envelope responseEnvelope
-		if json.Unmarshal([]byte(data), &envelope) != nil || envelope.Response == nil || (len(envelope.Error) > 0 && string(envelope.Error) != "null") {
+		if json.Unmarshal([]byte(data), &envelope) != nil || (len(envelope.Error) > 0 && string(envelope.Error) != "null") {
 			return protocolError("invalid Antigravity response envelope")
 		}
-		response := envelope.Response
+		response := envelope
 		if len(response.AutomaticFunctionCallingHistory) > 0 {
 			return protocolError("provider attempted automatic function execution")
 		}

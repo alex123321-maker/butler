@@ -185,13 +185,19 @@ Orchestrator взаимодействует с Model Transport Layer через 
 
 ### 7.1 Native Antigravity subscription adapter
 
-`antigravity` uses Go HTTP/SSE directly against the production Cloud Code endpoint.
+`antigravity` uses Go HTTP/SSE directly against production AICode v1
+`https://aicode.googleapis.com/v1:streamGenerateContent?alt=sse`. Requests and SSE
+responses are flat. Subscription routing sends `aicode.experience` instead of the
+mutually exclusive `model` field. No Cloud Code project/request wrapper or
+v1main-only session/entitlement fields are sent. Output allowance is 8192 tokens.
 This is an experimental opt-in integration; Google's Antigravity FAQ declares
 third-party consumer integration unsupported. It is not official product support.
 The default model is `gemini-3.8-flash-tiered` (Gemini 3.8 Flash). CLI inference is
 removed; optional initial interactive sign-in stays outside Butler context.
 Control-plane `providerauth.Manager` imports a private operator stream into the
-encrypted PostgreSQL SecretStore and owns refresh/project discovery. Transport
+encrypted PostgreSQL SecretStore and owns refresh. Project discovery is removed;
+legacy imported project values are retained only for backward compatibility and
+are never returned to transport or used for inference. Transport
 receives only typed short-lived auth, never refresh tokens, credential files or CLI
 execution. No automatic API billing, credit overage or alternate endpoint exists.
 
@@ -208,7 +214,10 @@ Capabilities: text streaming, one function proposal per turn, cancellation, usag
 no batch calls or provider stateful restart. All HTTP redirects are rejected and
 errors are bounded/masked. Subscription model availability is distinct from stored
 credentials. A real text/proposal/continuation smoke is required before activation;
-current lab generation returns 429 despite successful auth/project/catalog probes.
+operator AICode unary and SSE text probes passed through the configured lab proxy.
+These probes do not establish that Go function/result continuation passed; keep
+activation gated on that separate smoke. Earlier Cloud Code 429 responses do not
+prove subscription quota exhaustion.
 See [protocol, operator import and validation status](../../deploy/antigravity/README.md).
 
 ---

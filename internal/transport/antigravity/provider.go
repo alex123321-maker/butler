@@ -1,4 +1,4 @@
-// Package antigravity implements the Cloud Code subscription HTTP/SSE protocol.
+// Package antigravity implements the AICode subscription HTTP/SSE protocol.
 // It proposes functions; only Butler's execution kernel can execute them.
 package antigravity
 
@@ -17,9 +17,10 @@ import (
 )
 
 const (
-	Name         = "antigravity"
-	DefaultModel = "gemini-3.8-flash-tiered"
-	endpoint     = "https://cloudcode-pa.googleapis.com/v1internal"
+	Name            = "antigravity"
+	DefaultModel    = "gemini-3.8-flash-tiered"
+	endpoint        = "https://aicode.googleapis.com/v1"
+	maxOutputTokens = 8192
 )
 
 type Config struct {
@@ -192,7 +193,7 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 	state.cancel = cancel
 	state.turn++
 	turn := state.turn
-	request := generateRequest{Contents: append([]content(nil), state.contents...), SystemInstruction: state.system}
+	request := generateRequest{Contents: append([]content(nil), state.contents...), SystemInstruction: state.system, GenerationConfig: generationConfig{MaxOutputTokens: maxOutputTokens}}
 	if len(state.tools) > 0 {
 		request.Tools = []functionTools{{FunctionDeclarations: state.tools}}
 		request.ToolConfig = map[string]any{"functionCallingConfig": map[string]any{"mode": "AUTO"}}
@@ -214,7 +215,7 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 			p.discard(runID, state)
 			return
 		}
-		answer, err := p.invoke(runCtx, state.model, runID, turn, request, func(delta string) bool {
+		answer, err := p.invoke(runCtx, state.model, request, func(delta string) bool {
 			return send(transport.NewAssistantDeltaEvent(runID, Name, transport.AssistantDelta{DeltaType: "text", Content: delta, SequenceNo: turn}))
 		})
 		p.mu.Lock()

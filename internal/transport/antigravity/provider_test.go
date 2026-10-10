@@ -18,7 +18,7 @@ import (
 	"github.com/butler/butler/internal/transport"
 )
 
-type authSource struct{}
+type authSource struct{ legacyProject string }
 
 func TestDurableRecoveryStartsFreshObservationsThenKeepsLiveSignatures(t *testing.T) {
 	var calls atomic.Int32
@@ -27,13 +27,13 @@ func TestDurableRecoveryStartsFreshObservationsThenKeepsLiveSignatures(t *testin
 		if err := json.NewDecoder(req.Body).Decode(&body); err != nil {
 			t.Error(err)
 		}
-		contents, _ := json.Marshal(body.Request.Contents)
-		system, _ := json.Marshal(body.Request.SystemInstruction)
+		contents, _ := json.Marshal(body.Contents)
+		system, _ := json.Marshal(body.SystemInstruction)
 		switch calls.Add(1) {
 		case 1:
 			return response(frame(`{"functionCall":{"id":"before-approval","name":"butler_tool_0","args":{"url":"https://example.com"}},"thoughtSignature":"discarded-signature"}`, "STOP")), nil
 		case 2:
-			if len(body.Request.Contents) != 3 || strings.Contains(string(contents), "functionCall") || strings.Contains(string(contents), "functionResponse") || strings.Contains(string(contents), "thoughtSignature") {
+			if len(body.Contents) != 3 || strings.Contains(string(contents), "functionCall") || strings.Contains(string(contents), "functionResponse") || strings.Contains(string(contents), "thoughtSignature") {
 				t.Error("fresh recovery reused native function/signature history")
 			}
 			if !strings.Contains(string(contents), "first-effect") || !strings.Contains(string(contents), "second-effect") || strings.Contains(string(system), "first-effect") || strings.Contains(string(system), "second-effect") {
@@ -112,8 +112,8 @@ func TestDurableRecoveryStartsFreshObservationsThenKeepsLiveSignatures(t *testin
 	}
 }
 
-func (authSource) ResolveAntigravity(context.Context) (providerauth.AntigravityAuth, error) {
-	return providerauth.AntigravityAuth{AccessToken: "private-access-fixture", ProjectID: "test-project", ExpiresAt: time.Now().Add(time.Hour)}, nil
+func (source authSource) ResolveAntigravity(context.Context) (providerauth.AntigravityAuth, error) {
+	return providerauth.AntigravityAuth{AccessToken: "private-access-fixture", ProjectID: source.legacyProject, ExpiresAt: time.Now().Add(time.Hour)}, nil
 }
 
 type roundTripFunc func(*http.Request) (*http.Response, error)
@@ -135,7 +135,7 @@ func response(sse string) *http.Response {
 	return &http.Response{StatusCode: http.StatusOK, Header: http.Header{"Content-Type": {"text/event-stream"}}, Body: io.NopCloser(strings.NewReader(sse))}
 }
 func frame(part, finish string) string {
-	return `data: {"response":{"candidates":[{"index":0,"content":{"role":"model","parts":[` + part + `]},"finishReason":"` + finish + `"}]}}` + "\n\n"
+	return `data: {"candidates":[{"index":0,"content":{"role":"model","parts":[` + part + `]},"finishReason":"` + finish + `"}],"modelVersion":"gemini-3.8-flash","usageMetadata":{"promptTokenCount":17,"candidatesTokenCount":14,"totalTokenCount":31}}` + "\n\n"
 }
 func collect(t *testing.T, stream transport.EventStream) []transport.TransportEvent {
 	t.Helper()
@@ -161,27 +161,38 @@ func TestNativeFunctionContinuationKeepsExactSignatureAndOnlyButlerTools(t *test
 			t.Error("incorrect private request")
 		}
 		var body requestEnvelope
-		if json.NewDecoder(req.Body).Decode(&body) != nil {
+		encodedRequest, err := io.ReadAll(req.Body)
+		if err != nil || json.Unmarshal(encodedRequest, &body) != nil {
 			t.Error("invalid request")
 		}
-		if body.Model != DefaultModel || body.Project != "test-project" || body.EnabledCreditTypes == nil || len(body.EnabledCreditTypes) != 0 || body.RequestType != "agent" {
-			t.Error("unexpected subscription envelope")
+		var fields map[string]json.RawMessage
+		_ = json.Unmarshal(encodedRequest, &fields)
+		for _, forbidden := range []string{"model", "project", "request", "requestId", "userPromptId", "userAgent", "requestType", "enabledCreditTypes", "sessionId", "entitlement"} {
+			if _, exists := fields[forbidden]; exists {
+				t.Errorf("unsupported AICode wire field: %s", forbidden)
+			}
 		}
-		if len(body.Request.Tools) != 1 || len(body.Request.Tools[0].FunctionDeclarations) != 1 || body.Request.Tools[0].FunctionDeclarations[0].Name != "butler_tool_0" {
+		if body.AICode.Experience != DefaultModel || body.GenerationConfig.MaxOutputTokens != 8192 || req.Header.Get("Accept") != "text/event-stream" || req.Header.Get("User-Agent") != "antigravity/1.3.3 butler/0.1" {
+			t.Error("unexpected subscription route or configuration")
+		}
+		if len(body.Tools) != 1 || len(body.Tools[0].FunctionDeclarations) != 1 || body.Tools[0].FunctionDeclarations[0].Name != "butler_tool_0" {
 			t.Error("native toolkit differs from Butler catalog")
 		}
 		if calls.Add(1) == 1 {
 			return response(frame(`{"text":"private reasoning","thought":true,"thoughtSignature":"opaque-signature"}`, "") + frame(`{"functionCall":{"id":"native-call","name":"butler_tool_0","args":{"url":"https://example.com"}},"thoughtSignature":"call-signature"}`, "STOP")), nil
 		}
-		if len(body.Request.Contents) != 3 || body.Request.Contents[1].Role != "model" {
+		if len(body.Contents) != 3 || body.Contents[1].Role != "model" {
 			t.Error("model content not replayed")
 		}
-		encoded, _ := json.Marshal(body.Request.Contents)
+		encoded, _ := json.Marshal(body.Contents)
 		if !strings.Contains(string(encoded), `"thoughtSignature":"call-signature"`) || !strings.Contains(string(encoded), `"id":"native-call","name":"butler_tool_0","response":{"result":{"title":"Example"},"status":"success"}`) {
 			t.Error("signature or correlated function response lost")
 		}
 		return response(frame(`{"text":"Готово"}`, "STOP")), nil
 	})
+	// Older typed sources can still carry a project, but it is never routed to
+	// AICode. All other fixtures resolve tokens without any project at all.
+	p.config.AuthSource = authSource{legacyProject: "test-project"}
 	stream, err := p.StartRun(context.Background(), request("run"))
 	if err != nil {
 		t.Fatal(err)
@@ -225,24 +236,51 @@ func TestNativeFunctionContinuationKeepsExactSignatureAndOnlyButlerTools(t *test
 	if len(events) != 4 || events[2].AssistantFinal == nil || events[2].AssistantFinal.Content != "Готово" || events[3].EventType != transport.EventTypeRunCompleted {
 		t.Fatal("missing final streaming result")
 	}
+	if usage := events[2].AssistantFinal.Usage; usage == nil || usage.InputTokens != 17 || usage.OutputTokens != 14 || usage.TotalTokens != 31 {
+		t.Fatal("flat usage metadata lost")
+	}
 	if _, err := p.SubmitToolResult(context.Background(), transport.SubmitToolResultRequest{RunID: "run", ToolCallRef: proposal.ToolCallRef, ToolResultJSON: `{}`}); err == nil {
 		t.Fatal("result replay accepted")
 	}
 }
 
+func TestTruncatedTextRetainsNativeFinishReason(t *testing.T) {
+	p := newFixture(t, func(*http.Request) (*http.Response, error) {
+		return response(frame(`{"text":"partial response"}`, "MAX_TOKENS")), nil
+	})
+	stream, err := p.StartRun(context.Background(), request("partial"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	events := collect(t, stream)
+	if err := findError(events); err != nil {
+		t.Fatal(err)
+	}
+	for _, event := range events {
+		if event.AssistantFinal != nil {
+			if event.AssistantFinal.FinishReason != "MAX_TOKENS" || event.AssistantFinal.Content != "partial response" {
+				t.Fatal("truncated answer misrepresented as a complete response")
+			}
+			return
+		}
+	}
+	t.Fatal("partial response finish reason missing")
+}
+
 func TestUnsafeOrIncompleteResponsesNeverProposeTools(t *testing.T) {
 	cases := map[string]string{
-		"foreign function":    frame(`{"functionCall":{"name":"run_shell_command","args":{}}}`, "STOP"),
-		"bad schema":          frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":42}}}`, "STOP"),
-		"extra argument":      frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"https://example.com","shell":"x"}}}`, "STOP"),
-		"duplicate key":       frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"good","url":"bad"}}}`, "STOP"),
-		"parallel calls":      frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"a"}}},{"functionCall":{"name":"butler_tool_0","args":{"url":"b"}}}`, "STOP"),
-		"server execution":    frame(`{"codeExecutionResult":{"output":"bad"}}`, "STOP"),
-		"incomplete":          frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"a"}}}`, ""),
-		"unterminated frame":  strings.TrimSuffix(frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"a"}}}`, "STOP"), "\n\n"),
-		"truncated":           frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"a"}}}`, "MAX_TOKENS"),
-		"automatic history":   `data: {"response":{"automaticFunctionCallingHistory":[{}],"candidates":[]}}` + "\n\n",
-		"multiple candidates": `data: {"response":{"candidates":[{},{}]}}` + "\n\n",
+		"foreign function":     frame(`{"functionCall":{"name":"run_shell_command","args":{}}}`, "STOP"),
+		"bad schema":           frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":42}}}`, "STOP"),
+		"extra argument":       frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"https://example.com","shell":"x"}}}`, "STOP"),
+		"duplicate key":        frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"good","url":"bad"}}}`, "STOP"),
+		"parallel calls":       frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"a"}}},{"functionCall":{"name":"butler_tool_0","args":{"url":"b"}}}`, "STOP"),
+		"server execution":     frame(`{"codeExecutionResult":{"output":"bad"}}`, "STOP"),
+		"incomplete":           frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"a"}}}`, ""),
+		"unterminated frame":   strings.TrimSuffix(frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"a"}}}`, "STOP"), "\n\n"),
+		"truncated":            frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"a"}}}`, "MAX_TOKENS"),
+		"automatic history":    `data: {"automaticFunctionCallingHistory":[{}],"candidates":[]}` + "\n\n",
+		"multiple candidates":  `data: {"candidates":[{},{}]}` + "\n\n",
+		"old wrapped response": `data: {"response":{"candidates":[{"content":{"role":"model","parts":[{"text":"wrong route"}]},"finishReason":"STOP"}]}}` + "\n\n",
 	}
 	for name, body := range cases {
 		t.Run(name, func(t *testing.T) {

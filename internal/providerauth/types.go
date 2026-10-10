@@ -68,8 +68,9 @@ type OpenAICodexTokenSource interface {
 // tokens and OAuth application credentials remain in the control plane.
 type AntigravityAuth struct {
 	AccessToken string
-	ProjectID   string
-	ExpiresAt   time.Time
+	// Deprecated: accepted by older callers only; AICode inference ignores it.
+	ProjectID string
+	ExpiresAt time.Time
 }
 
 type AntigravityTokenSource interface {

@@ -55,7 +55,7 @@ func execute(action string) error {
 		if _, err := m.ResolveAntigravity(ctx); err != nil {
 			return err
 		}
-		fmt.Println("Antigravity access token and subscription project resolved.")
+		fmt.Println("Antigravity access token resolved.")
 	case "state":
 		state, err := m.State(ctx, modelprovider.ProviderAntigravity)
 		if err != nil {
@@ -127,6 +127,9 @@ func collect(stream transport.EventStream) (string, *transport.ToolCallRequest, 
 			return "", nil, event.TransportError
 		}
 		if event.AssistantFinal != nil {
+			if event.AssistantFinal.FinishReason != "STOP" {
+				return "", nil, fmt.Errorf("native smoke response did not complete")
+			}
 			answer = event.AssistantFinal.Content
 		}
 		if event.ToolCall != nil {

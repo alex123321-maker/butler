@@ -17,7 +17,6 @@ import (
 const (
 	antigravityOAuthClientID = "1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com"
 	antigravityTokenURL      = "https://oauth2.googleapis.com/token"
-	antigravityCodeAssistURL = "https://cloudcode-pa.googleapis.com/v1internal:loadCodeAssist"
 )
 
 type antigravityCredentials struct {
@@ -98,16 +97,10 @@ func (m *Manager) ResolveAntigravity(ctx context.Context) (AntigravityAuth, erro
 			return AntigravityAuth{}, fmt.Errorf("Antigravity encrypted credential persistence failed")
 		}
 	}
-	if creds.ProjectID == "" {
-		creds.ProjectID, err = m.antigravityProject(ctx, creds.AccessToken)
-		if err != nil {
-			return AntigravityAuth{}, err
-		}
-		if err := saveSecretJSON(ctx, m.store, modelprovider.ProviderAntigravity, "provider-auth-refresh", creds); err != nil {
-			return AntigravityAuth{}, fmt.Errorf("Antigravity encrypted credential persistence failed")
-		}
-	}
-	return AntigravityAuth{AccessToken: creds.AccessToken, ProjectID: creds.ProjectID, ExpiresAt: creds.ExpiresAt}, nil
+	// AICode subscription inference needs only a Bearer token. A legacy imported
+	// project remains encrypted at rest for compatibility but is never discovered
+	// or passed to the runtime transport.
+	return AntigravityAuth{AccessToken: creds.AccessToken, ExpiresAt: creds.ExpiresAt}, nil
 }
 
 func (m *Manager) refreshAntigravity(ctx context.Context, creds antigravityCredentials) (antigravityCredentials, error) {
@@ -138,26 +131,6 @@ func (m *Manager) refreshAntigravity(ctx context.Context, creds antigravityCrede
 		creds.RefreshToken = token.RefreshToken
 	}
 	return creds, nil
-}
-func (m *Manager) antigravityProject(ctx context.Context, accessToken string) (string, error) {
-	data := `{"metadata":{"ideType":"ANTIGRAVITY","ideName":"Butler","platform":"LINUX_AMD64","pluginType":"GEMINI"}}`
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, antigravityCodeAssistURL, strings.NewReader(data))
-	if err != nil {
-		return "", fmt.Errorf("Antigravity project discovery failed")
-	}
-	req.Header.Set("Authorization", "Bearer "+accessToken)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "antigravity/1.3.3 butler/0.1")
-	var result struct {
-		ProjectID string `json:"cloudaicompanionProject"`
-	}
-	if err := m.antigravityJSON(req, &result); err != nil {
-		return "", err
-	}
-	if result.ProjectID == "" || strings.ContainsAny(result.ProjectID, "\r\n") {
-		return "", fmt.Errorf("Antigravity account has no subscription project")
-	}
-	return result.ProjectID, nil
 }
 
 // All responses/errors are bounded and masked; refresh material must not leak

@@ -34,15 +34,6 @@ func TestAntigravityEncryptedImportResolveRefreshAndSafeState(t *testing.T) {
 				t.Error("incorrect refresh control-plane request")
 			}
 			return jsonResponse(`{"access_token":"access-new","refresh_token":"refresh-rotated","token_type":"Bearer","expires_in":3600}`), nil
-		case antigravityCodeAssistURL:
-			if req.Header.Get("Authorization") != "Bearer access-new" {
-				t.Error("old access token reused")
-			}
-			data, _ := io.ReadAll(req.Body)
-			if !strings.Contains(string(data), `"ideType":"ANTIGRAVITY"`) {
-				t.Error("metadata missing")
-			}
-			return jsonResponse(`{"cloudaicompanionProject":"subscription-project","paidTier":{"id":"g1-pro-tier"}}`), nil
 		default:
 			return nil, fmt.Errorf("unexpected endpoint")
 		}
@@ -53,13 +44,13 @@ func TestAntigravityEncryptedImportResolveRefreshAndSafeState(t *testing.T) {
 		go func() {
 			defer group.Done()
 			auth, err := manager.ResolveAntigravity(context.Background())
-			if err != nil || auth.AccessToken != "access-new" || auth.ProjectID != "subscription-project" {
+			if err != nil || auth.AccessToken != "access-new" || auth.ProjectID != "" {
 				t.Error("resolve failed")
 			}
 		}()
 	}
 	group.Wait()
-	if calls.Load() != 2 {
+	if calls.Load() != 1 {
 		t.Fatalf("refresh stampede: %d", calls.Load())
 	}
 	setting, _ := store.Get(context.Background(), settingKeyAntigravity)
@@ -79,6 +70,25 @@ func TestAntigravityEncryptedImportResolveRefreshAndSafeState(t *testing.T) {
 	}
 	if _, err := manager.ResolveAntigravity(context.Background()); err != ErrNotConnected {
 		t.Fatal("disconnected provider resolved")
+	}
+}
+
+func TestAntigravityResolveNeedsNoSubscriptionProjectOrDiscovery(t *testing.T) {
+	for _, legacyProject := range []string{"", "legacy-project"} {
+		t.Run(legacyProject, func(t *testing.T) {
+			manager := NewManager(&memorySecretStore{})
+			if err := manager.ImportAntigravity(context.Background(), strings.NewReader(importFixture(time.Now().Add(time.Hour), legacyProject)), "operator"); err != nil {
+				t.Fatal(err)
+			}
+			manager.client.Transport = roundTripFunc(func(*http.Request) (*http.Response, error) {
+				t.Error("fresh token resolution unexpectedly requested project discovery")
+				return nil, fmt.Errorf("unexpected endpoint")
+			})
+			auth, err := manager.ResolveAntigravity(context.Background())
+			if err != nil || auth.AccessToken != "access-old" || auth.ProjectID != "" || !auth.ExpiresAt.After(time.Now()) {
+				t.Fatal("valid token without project did not resolve")
+			}
+		})
 	}
 }
 

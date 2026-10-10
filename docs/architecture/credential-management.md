@@ -578,12 +578,14 @@ access/refresh token, verified OAuth application ID, application credential,
 expiry and optional subscription project. Unknown/duplicate fields are rejected;
 no id token, account email or arbitrary endpoint is stored. It is never a model
 argument or Web UI/chat input. Optional official CLI initial sign-in does not grant
-runtime file access: inference transport receives only a typed short-lived token,
-project and expiry from providerauth.Manager, and launches no subprocess.
+runtime file access: inference transport receives only a typed short-lived token
+and expiry from providerauth.Manager, and launches no subprocess. The optional
+legacy project field remains encrypted for import compatibility but is neither
+discovered nor returned to the transport or included in AICode inference.
 
-Refresh and project discovery use fixed Google endpoints, explicit Antigravity
-metadata/versioned User-Agent, bounded masked responses and no HTTP redirects.
-Rotated tokens are encrypted before subsequent discovery can fail. Provider auth
+Refresh uses the fixed Google OAuth endpoint, bounded masked responses and no HTTP
+redirects. AICode inference uses its fixed production v1 endpoint and the versioned
+Antigravity User-Agent. Rotated tokens are encrypted before inference. Provider auth
 always uses a strict encrypted store, including deployments with a legacy
 plaintext setting fallback. Missing encryption prevents import/refresh persistence.
 The settings UI shows only connection/expiry metadata and supports disconnect;

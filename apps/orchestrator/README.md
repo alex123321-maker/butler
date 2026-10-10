@@ -14,7 +14,7 @@ independent reads use `browser.read`, sequences begin with `browser.open`, follo
 effects carry the current observation/URL, and lost state is reported explicitly.
 The separately approved `single_tab.*` flow retains its own capability boundary.
 
-The opt-in `antigravity` provider uses native Go HTTP/SSE for Gemini 3.8 Flash and
+The opt-in `antigravity` provider uses native Go AICode v1 HTTP/SSE for Gemini 3.8 Flash and
 normalizes native function proposals into the Orchestrator/Tool Broker flow.
 Control-plane authorization owns encrypted PostgreSQL OAuth import and refresh;
 transport reads no credential files and launches no CLI. The settings UI reports

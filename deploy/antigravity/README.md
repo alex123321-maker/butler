@@ -1,7 +1,7 @@
 # Native Antigravity with Google AI Pro
 
 Butler's `antigravity` provider uses Go HTTP/SSE directly against the production
-Cloud Code subscription endpoint. The default requested model is
+AICode subscription endpoint. The default requested model is
 `gemini-3.8-flash-tiered` (Gemini 3.8 Flash). Every model turn stays inside Butler's
 transport and execution loop. The official CLI is optional for initial interactive
 Google account sign-in; it is never launched for inference or mounted into the
@@ -16,14 +16,19 @@ the adapter does not establish Google backend entitlement or product support.
 
 ## Current verification status
 
-Private lab probes confirmed OAuth refresh HTTP 200, subscription project discovery
-HTTP 200 and the account's Google AI Pro paid tier. The model catalog advertises
-`gemini-3.8-flash-tiered`. Native generation currently returns HTTP 429 despite
-available catalog quota. A separate production native entitlement probe returns
-403 `LOCATION_NOT_ELIGIBLE`; that is not proof of the canonical generation 429's
-cause. Catalog availability and stored credentials do not prove
-model access. Keep this provider opt in and leave the deployment's active provider
-unchanged until a real text, function proposal and continuation smoke passes.
+Private operator probes confirmed OAuth refresh HTTP 200 and the account's Google
+AI Pro paid tier. Through the operator-configured lab proxy, production AICode v1
+unary generation and SSE streaming returned HTTP 200, the expected text marker,
+`modelVersion: gemini-3.8-flash` and usage metadata. The requested experience is
+`gemini-3.8-flash-tiered`; its verified configuration allows up to 65536 output
+tokens. Butler uses an explicit 8192-token allowance. The operator probes used
+512; they do not claim a maximum-length output test.
+
+Earlier Cloud Code generation returned 429 on the wrong inference route, and
+direct regional AICode probes were rejected before the authorized proxy was
+configured. Those observations do not establish exhausted subscription quota.
+Keep the provider opt in until the Go adapter's real text, function proposal and
+continuation smoke passes. Stored credentials alone do not prove model access.
 
 Lab tests use an HTTP fixture to verify native request/stream normalization,
 function schema guards, thought-signature replay, cancellation, isolated runs,
@@ -34,12 +39,12 @@ no external tool; deployed Broker validation remains a separate check.
 
 ## Authentication boundary
 
-`providerauth.Manager` owns import, refresh and subscription project discovery.
+`providerauth.Manager` owns import and refresh.
 Credentials live in the existing encrypted PostgreSQL SecretStore, under the
 hidden `BUTLER_PROVIDER_AUTH_ANTIGRAVITY` key. Provider OAuth uses a strict encrypted
 store even when unrelated legacy settings allow plaintext. An encryption key is
 required. The transport sees only `AntigravityTokenSource`, returning a short-lived
-access token, subscription project and expiry. It does not read files, launch a
+access token and expiry. It does not read files, launch a
 CLI, receive refresh tokens, or resolve arbitrary secrets.
 
 The private operator import accepts exactly this flat JSON shape on stdin:
@@ -51,7 +56,7 @@ The private operator import accepts exactly this flat JSON shape on stdin:
   "client_id": "1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com",
   "client_secret": "<private OAuth application credential>",
   "expires_at": "<RFC3339 timestamp>",
-  "project_id": "<subscription project, or empty for discovery>"
+  "project_id": "<optional legacy value; ignored by native inference>"
 }
 ```
 
@@ -62,9 +67,9 @@ source control, command arguments or logs. Build the input in a private operator
 location with mode `0600`; it must be outside synced source and model workspaces.
 
 Refresh runs 60 seconds before expiry using the fixed Google OAuth token endpoint.
-Rotated credentials are encrypted before another network request can fail. Missing
-projects resolve through `loadCodeAssist` using explicit Antigravity metadata and
-the versioned HTTP User-Agent. HTTP redirects are refused, bodies are bounded, and
+Rotated credentials are encrypted before inference. AICode needs no subscription
+project; legacy imports remain encrypted but are not discovered or passed to
+transport. HTTP redirects are refused, bodies are bounded, and
 raw provider errors never cross the transport/settings boundary. There is no
 implicit request retry. The settings UI reports stored credentials and allows
 disconnect; that state does not claim that model quota is available.
@@ -85,7 +90,7 @@ provider-auth -action disconnect
 
 Only `import` reads stdin. No credential is accepted as a flag. Output contains
 safe status/errors, no model answer, account identifiers or credential material.
-`resolve` refreshes and discovers the project but does not spend an inference turn.
+`resolve` refreshes the token if needed but does not spend an inference turn.
 `smoke` requests Gemini 3.8 Flash text, one native `web.fetch` proposal, and model
 continuation after an explicitly synthetic observation.
 
@@ -103,9 +108,15 @@ file. Preserve the user's requested Gemini 3.8 Flash model.
 
 ## Native function protocol
 
-The adapter sends the protobuf JSON Cloud Code envelope to
-`https://cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse`.
-`enabledCreditTypes` is an explicit empty array. Only Butler-supplied schemas become
+The adapter sends a flat protobuf JSON request to
+`https://aicode.googleapis.com/v1:streamGenerateContent?alt=sse` with
+`aicode: {experience: "gemini-3.8-flash-tiered"}`, `contents`, optional
+`systemInstruction`/`tools`/`toolConfig`, and `generationConfig.maxOutputTokens`.
+The `model` and `aicode` fields are a protobuf oneof: only `aicode` is sent.
+Cloud Code project/request envelopes, v1main `sessionId`/`entitlement` fields and
+credit controls are absent. Responses are flat SSE `candidates`, `modelVersion`
+and `usageMetadata`, without a `response` wrapper. The HTTP User-Agent is
+`antigravity/1.3.3 butler/0.1`. Only Butler-supplied schemas become
 `functionDeclarations`; stable per-run aliases avoid tool-name collisions. There
 are no provider native code, browser, shell, delegation or executable toolkits.
 
@@ -131,7 +142,9 @@ cancellation and usage. Batch functions and provider stateful restart are unsupp
 - [Optional official CLI sign-in](https://www.antigravity.google/docs/cli/install/)
 - [Antigravity integration support policy](https://www.antigravity.google/docs/faq/)
 
-The verified official Antigravity CLI 1.3.3 public protobuf descriptors confirm the
-camelCase envelope and Vertex `parametersJsonSchema`, `functionCall`,
-`functionResponse` and `thoughtSignature` fields. These are internal subscription
+The verified official Antigravity CLI 1.3.3 GCA PredictionService descriptors
+confirm `StreamGenerateContent` POST `/{$api_version}:streamGenerateContent` with
+body `*`, and native `parametersJsonSchema`, `functionCall`, `functionResponse`
+and `thoughtSignature` fields. Private production v1 probes confirmed the flat
+stream shape; v1main-only fields were rejected. These are internal subscription
 APIs and can change; unknown protocol behavior fails closed.

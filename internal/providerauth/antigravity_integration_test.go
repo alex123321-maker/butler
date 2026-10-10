@@ -58,7 +58,7 @@ func TestAntigravityImportEncryptedPostgresAndReconnect(t *testing.T) {
 	}
 	restarted := NewManager(config.NewPostgresSettingsStore(privatePool, config.WithSettingsCodec(codec)))
 	auth, err := restarted.ResolveAntigravity(ctx)
-	if err != nil || auth.AccessToken != "access-old" || auth.ProjectID != "project" {
+	if err != nil || auth.AccessToken != "access-old" || auth.ProjectID != "" {
 		t.Fatal("encrypted credentials did not survive restart")
 	}
 	if err := restarted.Delete(ctx, modelprovider.ProviderAntigravity); err != nil {
