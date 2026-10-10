@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
@@ -118,7 +119,7 @@ func TestExecuteIntegrationPersistsRunAndTranscript(t *testing.T) {
 
 	service := NewService(
 		session.NewPostgresRepository(postgres.Pool()),
-		session.NewRedisLeaseManager(redis.Client(), nil),
+		session.NewPostgresLeaseManager(postgres.Pool()),
 		runservice.NewService(runservice.NewPostgresRepository(postgres.Pool()), nil),
 		transcript.NewStore(postgres.Pool()),
 		&mockProvider{startEvents: []transport.TransportEvent{
@@ -127,7 +128,7 @@ func TestExecuteIntegrationPersistsRunAndTranscript(t *testing.T) {
 			transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "Hello integration", FinishReason: "completed"}),
 			transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
 		}},
-		Config{ProviderName: "openai", ModelName: "gpt-5-mini", OwnerID: "integration-test", LeaseTTL: 60, WorkingStore: workingIntegrationAdapter{store: working.NewStore(postgres.Pool())}, TransientStore: transientWorkingIntegrationAdapter{store: working.NewTransientStore(redis.Client())}, TransientTTL: 2 * time.Second},
+		Config{Completion: completion.New(postgres.Pool()), ProviderName: "openai", ModelName: "gpt-5-mini", OwnerID: "integration-test", LeaseTTL: 60, WorkingStore: workingIntegrationAdapter{store: working.NewStore(postgres.Pool())}, TransientStore: transientWorkingIntegrationAdapter{store: working.NewTransientStore(redis.Client())}, TransientTTL: 2 * time.Second},
 		nil,
 	)
 
@@ -170,6 +171,12 @@ func TestExecuteIntegrationPersistsRunAndTranscript(t *testing.T) {
 		t.Fatalf("unexpected assistant transcript content %q", transcriptRows.Messages[1].Content)
 	}
 
+	if err := working.NewStore(postgres.Pool()).ClearCompletedRun(ctx, sessionKey, result.RunID); err != nil {
+		t.Fatal(err)
+	}
+	if err := working.NewTransientStore(redis.Client()).Clear(ctx, sessionKey, result.RunID); err != nil {
+		t.Fatal(err)
+	}
 	var workingCount int
 	if err := postgres.Pool().QueryRow(ctx, `SELECT COUNT(*) FROM memory_working WHERE session_key = $1`, sessionKey).Scan(&workingCount); err != nil {
 		t.Fatalf("query working memory count: %v", err)

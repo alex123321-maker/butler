@@ -278,9 +278,9 @@ Tool call требует пользовательского подтвержде
 Tool result уже получен, orchestrator готовит продолжение модельного цикла.
 
 #### `finalizing`
-Run завершает transcript persistence, final response delivery guarantee и постановку post-run задач.
+Run атомарно сохраняет transcript, обязательный final artifact, unverified результат попытки, outbox и post-run jobs.
 
-Если на этом этапе возникает техническая ошибка persistence или delivery guarantee, run должен переходить в `failed`, а не зависать в `finalizing`.
+Transient persistence error сохраняет `finalizing` checkpoint для ограниченного повторного сохранения ответа. Delivery и auxiliary failures не меняют сохранённый результат или `completed`; отсутствие artifact не допускает `completed`.
 
 #### `completed`
 Run завершён успешно.
@@ -323,7 +323,7 @@ Run остановлен из-за превышения допустимого �
 - `model_running -> failed`
 - `tool_running -> failed`
 - `awaiting_approval -> failed` при технической ошибке approval flow
-- `finalizing -> failed` при ошибке transcript persistence или final delivery guarantee
+- `finalizing -> failed` только по явной terminal policy; transient persistence recovery повторяет сохранение ответа без model/tools
 - `any active state -> cancelled`
 - `any active state -> timed_out`
 
@@ -473,7 +473,7 @@ never grants permission.
 
 ### 13.2 Final response delivery
 
-В `finalizing` orchestrator обязан гарантировать, что итоговый final response доставлен пользователю или зафиксирована ошибка доставки.
+В `finalizing` orchestrator сохраняет результат и durable outbox одной транзакцией. После commit отдельный worker доставляет только сохранённое уведомление. Telegram unknown send не повторяется автоматически; Web `result_ready` означает доступность PostgreSQL результата, а не прочтение клиентом. См. [atomic result and delivery](atomic-result-delivery.md).
 
 ### 13.3 Approval delivery
 
@@ -530,7 +530,7 @@ Transcript Store должен получить:
 Для transient Working Memory текущий baseline использует отдельный Redis-backed store:
 - transient state привязан к `session_key + run_id`, а не заменяет durable snapshot;
 - orchestrator пишет transient checkpoints в `preparing`, `tool_running`, `awaiting_model_resume` и terminal paths;
-- successful completion очищает transient state сразу;
+- successful completion создаёт durable auxiliary cleanup job, ограниченный текущим run_id;
 - failed/abandoned paths оставляют transient state только на ограниченный TTL, после чего Redis очищает его автоматически.
 
 ---
@@ -809,8 +809,8 @@ Run record должен содержать минимум:
 13. Model produces final answer.
 14. Partial streaming may be delivered during `model_running`.
 15. Run enters `finalizing`.
-16. Transcript is persisted and final response delivery is guaranteed.
-17. Async memory pipeline is scheduled.
+16. Required final artifact, transcript, unverified attempt result, outbox and auxiliary jobs are committed atomically.
+17. Durable auxiliary memory work is scheduled independently of notification delivery.
 18. Run enters `completed`.
 19. Lease is released.
 
@@ -878,3 +878,6 @@ HTTP acceptance returns 202 independently of model execution; context is built
 under ownership. Waiting for the owner releases the worker, while unknown external
 outcomes are blocked instead of blindly replayed. The contract explicitly lists
 safe recovery boundaries, owner proof and delivery/reconciliation limitations.
+
+
+Owner amendments, tree cancellation and late-response fencing are specified in [Owner Controls](task-owner-controls-spec.md).

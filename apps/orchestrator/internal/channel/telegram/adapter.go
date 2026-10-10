@@ -182,7 +182,9 @@ func (a *Adapter) handleMessageUpdate(ctx context.Context, update Update) error 
 	if handled {
 		return nil
 	}
-	handled, err = a.handlePendingAuthInput(ctx, update.Message)
+	if !isOwnerControlText(update.Message.Text) {
+		handled, err = a.handlePendingAuthInput(ctx, update.Message)
+	}
 	if err != nil {
 		return err
 	}
@@ -199,6 +201,9 @@ func (a *Adapter) handleMessageUpdate(ctx context.Context, update Update) error 
 		a.log.Warn("send typing action failed", slog.String("error", actionErr.Error()))
 	}
 
+	if update.Message.From != nil && update.Message.From.ID != 0 {
+		ctx = approvals.WithActor(ctx, approvals.Actor{OwnerID: strconv.FormatInt(update.Message.From.ID, 10), Channel: approvals.ResolvedViaTelegram, SessionKey: event.SessionKey, DeliveryID: event.EventID})
+	}
 	result, execErr := a.executor.Execute(ctx, event)
 	if execErr != nil {
 		if a.shouldPromptForAuth(execErr) {
@@ -215,6 +220,9 @@ func (a *Adapter) handleMessageUpdate(ctx context.Context, update Update) error 
 		return nil
 	}
 	a.log.Info("telegram update executed", slog.Int64("update_id", update.UpdateID), slog.String("run_id", result.RunID), slog.String("session_key", result.SessionKey))
+	if result.RunID == "" && result.AssistantResponse != "" {
+		return a.sendFinalMessage(ctx, update.Message.Chat.ID, result.AssistantResponse)
+	}
 	return nil
 }
 
@@ -423,6 +431,7 @@ func NormalizeUpdate(update Update) (ingress.InputEvent, error) {
 		payload["username"] = update.Message.From.Username
 		payload["first_name"] = update.Message.From.FirstName
 	}
+	ownerControlPayload(update.Message.Text, payload)
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
 		return ingress.InputEvent{}, fmt.Errorf("marshal telegram payload: %w", err)

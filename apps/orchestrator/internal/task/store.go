@@ -19,7 +19,7 @@ type Store struct{ pool *pgxpool.Pool }
 func NewStore(pool *pgxpool.Pool) *Store { return &Store{pool: pool} }
 
 const columns = `task_id, session_key, owner_id, COALESCE(parent_task_id,''), goal, source_json,
- status, revision, constraints_revision, constraints_json, completion_criteria_json, working_json,
+ status, revision, constraints_revision, execution_policy, constraints_json, completion_criteria_json, working_json,
  working_revision, COALESCE(last_run_id,''), COALESCE(completion_result_id,''), legacy, created_at, updated_at, finished_at`
 
 type scanner interface{ Scan(...any) error }
@@ -27,7 +27,7 @@ type scanner interface{ Scan(...any) error }
 func scan(row scanner) (Record, error) {
 	var r Record
 	var source, constraints, criteria, working []byte
-	err := row.Scan(&r.TaskID, &r.SessionKey, &r.OwnerID, &r.ParentTaskID, &r.Goal, &source, &r.Status, &r.Revision, &r.ConstraintsRevision, &constraints, &criteria, &working, &r.WorkingRevision, &r.LastRunID, &r.CompletionResultID, &r.Legacy, &r.CreatedAt, &r.UpdatedAt, &r.FinishedAt)
+	err := row.Scan(&r.TaskID, &r.SessionKey, &r.OwnerID, &r.ParentTaskID, &r.Goal, &source, &r.Status, &r.Revision, &r.ConstraintsRevision, &r.ExecutionPolicy, &constraints, &criteria, &working, &r.WorkingRevision, &r.LastRunID, &r.CompletionResultID, &r.Legacy, &r.CreatedAt, &r.UpdatedAt, &r.FinishedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Record{}, ErrNotFound
 	}
@@ -101,6 +101,7 @@ func (s *Store) Create(ctx context.Context, req CreateRequest) (Record, error) {
 	if len(req.Source) == 0 {
 		req.Source = map[string]any{"type": "owner_request", "channel": channel, "session_key": req.SessionKey}
 	}
+	policy := PolicyNormal
 	if req.ParentTaskID != "" {
 		parent, err := scan(tx.QueryRow(ctx, `SELECT `+columns+` FROM tasks WHERE task_id=$1 FOR SHARE`, req.ParentTaskID))
 		if err != nil {
@@ -108,6 +109,10 @@ func (s *Store) Create(ctx context.Context, req CreateRequest) (Record, error) {
 		}
 		if parent.OwnerID != req.OwnerID || parent.SessionKey != req.SessionKey || parent.Status == "completed" || parent.Status == "cancelled" {
 			return Record{}, ErrConflict
+		}
+		policy = parent.ExecutionPolicy
+		for _, constraint := range parent.Constraints {
+			req.Constraints = appendUnique(req.Constraints, constraint)
 		}
 	}
 	id, err := newID("task")
@@ -120,8 +125,8 @@ func (s *Store) Create(ctx context.Context, req CreateRequest) (Record, error) {
 	}
 	constraints, _ := json.Marshal(req.Constraints)
 	criteria, _ := json.Marshal(req.CompletionCriteria)
-	record, err := scan(tx.QueryRow(ctx, `INSERT INTO tasks(task_id,session_key,owner_id,parent_task_id,goal,source_json,constraints_json,completion_criteria_json)
- VALUES($1,$2,$3,NULLIF($4,''),$5,$6::jsonb,$7::jsonb,$8::jsonb) RETURNING `+columns, id, req.SessionKey, req.OwnerID, req.ParentTaskID, strings.TrimSpace(req.Goal), source, constraints, criteria))
+	record, err := scan(tx.QueryRow(ctx, `INSERT INTO tasks(task_id,session_key,owner_id,parent_task_id,goal,source_json,constraints_json,completion_criteria_json,execution_policy)
+ VALUES($1,$2,$3,NULLIF($4,''),$5,$6::jsonb,$7::jsonb,$8::jsonb,$9) RETURNING `+columns, id, req.SessionKey, req.OwnerID, req.ParentTaskID, strings.TrimSpace(req.Goal), source, constraints, criteria, policy))
 	if err != nil {
 		return Record{}, err
 	}

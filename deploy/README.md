@@ -55,13 +55,16 @@ configure a model provider or channel credentials; source uploads do not touch
 it. Memory extraction is disabled until a provider is configured. Ollama has a
 6 GiB container limit; this is a deployment limit, not a model scheduling policy.
 Go checks and deployment logs are retained in `BUTLER_LAB_ROOT/reports`.
-Integration checks use the separate `butler_test` database and Redis database
-1; they do not run destructive fixtures against the deployed application data.
-Web checks run lint, functional Playwright fixtures, and a read-only browser
+Integration and race checks use `butler_test`, `butler_lab_actionauth_test` and
+`butler_lab_completion_test`, plus Redis database 1. The completion environment
+is explicitly supplied so its PostgreSQL fault fixtures cannot silently skip.
+Destructive migration fixtures use additional dedicated databases; deployed
+application data is excluded.
+Web checks run Vue/TypeScript checks, lint, functional Playwright fixtures, and a read-only browser
 smoke against the deployed services. Screenshot baselines have no committed
 references, so the visual-baseline test is excluded; the live smoke saves a
 current UI screenshot in `.cache/lab-ui.png` on the lab.
-Race checks install the C toolchain only in a disposable Go container and run
-tests as UID 1000, keeping build/module caches on the storage disk.
+Race checks use the C toolchain already included in a disposable Go Debian
+container and run tests as UID 1000, keeping build/module caches on the storage disk.
 - browser, HTTP, webfetch, and doctor runtimes are runnable V1 services rather than skeleton placeholders
 - for Windows local-browser testing, install the native messaging host with `pwsh -NoProfile -File scripts/dev/install-browser-bridge-host.ps1 -Browser Chrome -ExtensionId <extension_id>`

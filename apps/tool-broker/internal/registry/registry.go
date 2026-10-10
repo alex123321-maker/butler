@@ -11,6 +11,7 @@ import (
 
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 type Registry struct {
@@ -22,19 +23,21 @@ type fileConfig struct {
 }
 
 type toolConfig struct {
-	ToolName               string   `json:"tool_name"`
-	Description            string   `json:"description"`
-	ToolClass              string   `json:"tool_class"`
-	InputSchemaJSON        string   `json:"input_schema_json"`
-	OutputSchemaJSON       string   `json:"output_schema_json"`
-	RuntimeTarget          string   `json:"runtime_target"`
-	RiskLevel              string   `json:"risk_level"`
-	SupportsCredentialRefs bool     `json:"supports_credential_refs"`
-	RequiresApproval       bool     `json:"requires_approval"`
-	SupportsStreaming      bool     `json:"supports_streaming"`
-	Status                 string   `json:"status"`
-	AllowedDomains         []string `json:"allowed_domains"`
-	AllowedTools           []string `json:"allowed_tools"`
+	ToolName               string                       `json:"tool_name"`
+	Description            string                       `json:"description"`
+	ToolClass              string                       `json:"tool_class"`
+	InputSchemaJSON        string                       `json:"input_schema_json"`
+	OutputSchemaJSON       string                       `json:"output_schema_json"`
+	RuntimeTarget          string                       `json:"runtime_target"`
+	RiskLevel              string                       `json:"risk_level"`
+	SupportsCredentialRefs bool                         `json:"supports_credential_refs"`
+	RequiresApproval       bool                         `json:"requires_approval"`
+	SupportsStreaming      bool                         `json:"supports_streaming"`
+	Status                 string                       `json:"status"`
+	AllowedDomains         []string                     `json:"allowed_domains"`
+	AllowedTools           []string                     `json:"allowed_tools"`
+	ContractRevision       string                       `json:"contract_revision"`
+	EffectContract         *toolbrokerv1.EffectContract `json:"effect_contract"`
 }
 
 func Load(path string, defaultTarget string) (*Registry, error) {
@@ -81,6 +84,7 @@ func Load(path string, defaultTarget string) (*Registry, error) {
 			Status:                 status,
 			AllowedDomains:         append([]string(nil), item.AllowedDomains...),
 			AllowedTools:           append([]string(nil), item.AllowedTools...),
+			ContractRevision:       strings.TrimSpace(item.ContractRevision), EffectContract: item.EffectContract,
 		}
 	}
 	return registry, nil
@@ -147,10 +151,7 @@ func cloneContract(contract *toolbrokerv1.ToolContract) *toolbrokerv1.ToolContra
 	if contract == nil {
 		return nil
 	}
-	clone := *contract
-	clone.AllowedDomains = append([]string(nil), contract.GetAllowedDomains()...)
-	clone.AllowedTools = append([]string(nil), contract.GetAllowedTools()...)
-	return &clone
+	return proto.Clone(contract).(*toolbrokerv1.ToolContract)
 }
 
 func validationError(message string) *toolbrokerv1.ToolError {

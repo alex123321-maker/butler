@@ -54,7 +54,7 @@ func TestTaskCompletionEndpointRequiresExplicitOwnerVerdict(t *testing.T) {
 	server := NewTaskControlServer(nil)
 	recorder := httptest.NewRecorder()
 	server.HandleItem("/api/v3/tasks/").ServeHTTP(recorder, httptest.NewRequest(http.MethodPost, "/api/v3/tasks/task-1/results", strings.NewReader(`{"task_revision":1,"summary":"model says finished","owner_confirmed":false}`)))
-	if recorder.Code != 400 {
+	if recorder.Code != 401 {
 		t.Fatalf("model final accepted as owner verdict: %d", recorder.Code)
 	}
 }

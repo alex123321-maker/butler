@@ -40,10 +40,10 @@ Redis — сигнал пробуждения, ограниченный по в�
 | Input event | Идентификатор источника, actor, trust class, session sequence, receipt, привязка к поручению | Ingress вместе с Session Service |
 | Task / поручение | Цель, источник, owner, статус, revision, constraints revision, критерии приёмки, result refs, parent | Task module оркестратора |
 | Run | Одна попытка продвинуть поручение либо ответить в разговоре; task ref необязателен, pinned revision, бюджет, checkpoint | Run module оркестратора |
-| Action | Конкретное намерение: task revision, tool/schema version, canonical args hash, target/resource, credential refs, effect state | Action journal оркестратора |
+| Action | Конкретное намерение: task revision, tool/schema version, canonical args hash, target/resource, credential refs, effect state | Action journal Tool Broker |
 | Authorization | Решение по точному действию, ограничения, authority version, expiry, revocation, одноразовость | Policy module Tool Broker |
 | Approval | Запрос и решение владельца по action hash/revision; actor, expiry, audit и durable resume event | Approval module оркестратора |
-| Observation | Результат чтения/действия, источник, время, observation/resource version, safe evidence refs | Transcript / action journal; runtime только поставляет данные |
+| Observation | Результат чтения/действия, источник, время, observation/resource version, safe evidence refs | Transcript оркестратора / action journal Broker; runtime только поставляет данные |
 | Result | Сохранённый пользовательский результат и evidence, completion verdict, artifact refs | Result module оркестратора |
 | Delivery | Отдельная запись outbox по result/channel/recipient, попытки, receipt и last error | Channel delivery module |
 | Goal | Постоянная цель владельца, область, актуальность, расписание проверки, budget refs | Goal module оркестратора |
@@ -103,8 +103,12 @@ flowchart LR
 
 Постоянное поручение, task-owned working state, multiple runs и owner-confirmed
 completion реализованы в [Durable task implementation](durable-tasks-spec.md).
-Этот baseline не реализует durable run recovery, exact-action authority,
-constraints amendment или отмену дерева; они остаются целевыми требованиями ниже.
+Durable ingress и восстановление описаны в [Durable Execution](durable-execution-spec.md),
+точные разрешения и эффекты — в [Action Authorization](action-authorization-contract.md)
+и [External Effect Journal](external-effect-journal.md), уточнения и отмена дерева —
+в [Owner Controls](task-owner-controls-spec.md). Атомарный итог и отдельная доставка
+следуют [Atomic Result Delivery](atomic-result-delivery.md). Постоянные цели,
+делегирование и дальнейшие расширения остаются целевыми требованиями ниже.
 
 Статусы поручения: `active`, `waiting_for_user`, `blocked`, `paused`, `cancelled`,
 `completed`. Переход в `completed` требует сохранённого результата, verdict

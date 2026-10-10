@@ -147,8 +147,25 @@ func (s *Server) executeRequest(ctx context.Context, req *runtimev1.ExecuteReque
 	if err := applyResolvedAuth(httpReq, args.Auth, req.GetResolvedCredentials()); err != nil {
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_CREDENTIAL_ERROR, err.Error(), mustJSON(map[string]any{"tool_name": call.GetToolName()}))}, nil
 	}
+	client := s.httpClient
+	if key := req.GetContext().GetIdempotencyKey(); key != "" {
+		policy := contract.GetEffectContract()
+		origin := parsedURL.Scheme + "://" + parsedURL.Host
+		if policy.GetRetrySafety() != "external_idempotency" || policy.GetVerificationMethod() != "external_receipt_v1" || policy.GetScopeOrigin() != origin || req.GetContext().GetActionId() == "" || req.GetContext().GetActionFingerprint() == "" || (policy.GetIdempotencyHeader() != "Idempotency-Key" && policy.GetIdempotencyHeader() != "X-Idempotency-Key") || method == http.MethodGet {
+			return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "system idempotency requires an exact recipient contract", "{}")}, nil
+		}
+		if httpReq.Header.Get("Idempotency-Key") != "" || httpReq.Header.Get("X-Idempotency-Key") != "" || httpReq.Header.Get("Butler-Action-Fingerprint") != "" {
+			return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "caller headers cannot replace system effect identity", "{}")}, nil
+		}
+		httpReq.Header.Set(policy.GetIdempotencyHeader(), key)
+		httpReq.Header.Set("Butler-Action-Fingerprint", req.GetContext().GetActionFingerprint())
+		// Redirects could send the permanent key or mutation to another recipient.
+		copy := *s.httpClient
+		copy.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+		client = &copy
+	}
 
-	resp, err := s.httpClient.Do(httpReq)
+	resp, err := client.Do(httpReq)
 	if err != nil {
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, fmt.Sprintf("execute request: %v", err), mustJSON(map[string]any{"domain": parsedURL.Hostname()}))}, nil
 	}

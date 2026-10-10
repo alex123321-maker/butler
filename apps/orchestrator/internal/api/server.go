@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -10,10 +11,12 @@ import (
 	"time"
 
 	"github.com/butler/butler/apps/orchestrator/internal/orchestrator"
+	"github.com/butler/butler/apps/orchestrator/internal/task"
 	orchestratorv1 "github.com/butler/butler/internal/gen/orchestrator/v1"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/logger"
+	"github.com/butler/butler/internal/owneridentity"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -25,9 +28,12 @@ type Executor interface {
 type Server struct {
 	orchestratorv1.UnimplementedOrchestratorServiceServer
 
-	executor Executor
-	log      *slog.Logger
+	executor  Executor
+	log       *slog.Logger
+	ownerAuth *OwnerControlAuth
 }
+
+func (s *Server) SetOwnerControlAuth(auth *OwnerControlAuth) { s.ownerAuth = auth }
 
 func NewServer(executor Executor, log *slog.Logger) *Server {
 	if log == nil {
@@ -47,6 +53,12 @@ func (s *Server) SubmitEvent(ctx context.Context, req *orchestratorv1.SubmitEven
 	result, err := s.executor.Execute(ctx, event)
 	if err != nil {
 		s.log.Error("submit event failed", slog.String("session_key", event.SessionKey), slog.String("error", err.Error()))
+		if errors.Is(err, task.ErrUnauthorized) {
+			return nil, status.Error(codes.PermissionDenied, err.Error())
+		}
+		if errors.Is(err, task.ErrConflict) {
+			return nil, status.Error(codes.Aborted, err.Error())
+		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &orchestratorv1.SubmitEventResponse{
@@ -79,9 +91,26 @@ func (s *Server) HTTPHandler() http.Handler {
 			return
 		}
 
-		result, err := s.executor.Execute(r.Context(), event)
+		ctx := r.Context()
+		if actor, ok := s.ownerAuth.Authenticate(r); ok {
+			if event.Source != "web" {
+				writeJSON(w, 403, map[string]string{"error": "owner-control bearer is restricted to web ingress"})
+				return
+			}
+			actor.SessionKey = event.SessionKey
+			actor.DeliveryID = event.IdempotencyKey
+			if actor.DeliveryID == "" {
+				actor.DeliveryID = event.EventID
+			}
+			ctx = owneridentity.WithActor(ctx, actor)
+		}
+		result, err := s.executor.Execute(ctx, event)
 		if err != nil {
 			s.log.Error("rest submit event failed", slog.String("session_key", event.SessionKey), slog.String("error", err.Error()))
+			if errors.Is(err, task.ErrUnauthorized) || errors.Is(err, task.ErrConflict) || errors.Is(err, task.ErrInvalid) {
+				writeTaskError(w, err)
+				return
+			}
 			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 			return
 		}

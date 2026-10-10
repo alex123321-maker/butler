@@ -42,7 +42,7 @@ func TestRecoveryReplaysEveryKnownActionAndThenUsesLiveTransport(t *testing.T) {
 		{RunID: "run", ToolCallID: "second", ToolName: "http.request", ArgsJSON: `{}`, Status: "completed", ResultJSON: `{"receipt":"second-effect"}`, FinishedAt: &finished},
 	}}
 	provider := &mockProvider{}
-	service := NewService(nil, nil, nil, store, provider, Config{ProviderName: "fixture", ModelName: "fixture"}, nil)
+	service := newFixtureService(nil, nil, nil, store, provider, Config{ProviderName: "fixture", ModelName: "fixture"}, nil)
 	ctx := context.WithValue(context.Background(), recoveredApprovalKey{}, approvalContinuation{Prepared: preparedRun{InputItems: []transport.InputItem{{Role: "user", Content: "finish both actions"}}}, ToolCall: &transport.ToolCallRequest{ToolCallRef: "second", ToolName: "http.request", ArgsJSON: `{}`}})
 	current := &sessionv1.RunRecord{RunId: "run", SessionKey: "session", ProviderSessionRef: `{"provider_name":"fixture","opaque_ref":"live"}`}
 	if _, err := service.resumeProviderWithToolResult(ctx, current, "second", `{"status":"completed","result":{"receipt":"second-effect"}}`); err != nil {

@@ -1,0 +1,41 @@
+package orchestrator
+
+import (
+	"context"
+	"errors"
+	"strings"
+)
+
+var ErrResultPersistencePending = errors.New("final result persistence pending; saved answer only may be retried")
+
+type answerKey struct{}
+type answerSnapshot struct{ state string }
+
+func withAnswerState(ctx context.Context, state string) context.Context {
+	if state == "" {
+		state = "final"
+	}
+	return context.WithValue(ctx, answerKey{}, &answerSnapshot{state: state})
+}
+func answerState(ctx context.Context) string {
+	if s, ok := ctx.Value(answerKey{}).(*answerSnapshot); ok {
+		return s.state
+	}
+	return "final"
+}
+func setPartialAnswer(ctx context.Context) {
+	if s, ok := ctx.Value(answerKey{}).(*answerSnapshot); ok {
+		s.state = "partial"
+	}
+}
+
+// Providers retain their native finish reason in the logical final event.
+// A token limit or explicitly incomplete response is still a saved result,
+// but must never be presented as a complete answer.
+func partialFinishReason(reason string) bool {
+	switch strings.ToLower(strings.TrimSpace(reason)) {
+	case "max_tokens", "length", "incomplete", "content_filter", "cancelled":
+		return true
+	}
+	return false
+}

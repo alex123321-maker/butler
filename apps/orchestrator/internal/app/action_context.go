@@ -67,6 +67,7 @@ func (r *actionContextReader) GetActionContext(ctx context.Context, runID string
 		c.TaskRevision = record.Revision
 		c.ConstraintsRevision = record.ConstraintsRevision
 		c.TaskStatus = record.Status
+		c.ExecutionPolicy = record.ExecutionPolicy
 	}
 	return c, nil
 }

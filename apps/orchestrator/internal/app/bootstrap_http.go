@@ -12,6 +12,7 @@ import (
 	apiservice "github.com/butler/butler/apps/orchestrator/internal/api"
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	artifacts "github.com/butler/butler/apps/orchestrator/internal/artifacts"
+	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	deliveryevents "github.com/butler/butler/apps/orchestrator/internal/deliveryevents"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
@@ -42,6 +43,7 @@ import (
 )
 
 type httpServerDeps struct {
+	finalResults           *completion.Coordinator
 	actionAuthorityHandler http.Handler
 	cfg                    config.OrchestratorConfig
 	log                    *slog.Logger
@@ -57,6 +59,7 @@ type httpServerDeps struct {
 	sessionRepo            *session.PostgresRepository
 	runRepo                *runservice.PostgresRepository
 	taskStore              *task.Store
+	taskControls           *task.Controller
 	transcriptStore        *transcript.Store
 	transitionRepo         *runservice.PostgresTransitionRepository
 	eventHub               *observability.Hub
@@ -79,7 +82,9 @@ type httpServerDeps struct {
 }
 
 func newHTTPServer(deps httpServerDeps) *http.Server {
+	resultServer := apiservice.NewResultServer(deps.finalResults)
 	apiServer := apiservice.NewServer(deps.inputWorker, logger.WithComponent(deps.log, "api"))
+	apiServer.SetOwnerControlAuth(deps.ownerAuth)
 	inputServer := apiservice.NewInputServer(deps.inputStore)
 	viewServer := apiservice.NewViewServer(deps.sessionRepo, deps.runRepo, deps.transcriptStore, logger.WithComponent(deps.log, "view-api"))
 	doctorChecker := apiservice.NewToolBrokerDoctorChecker(func(ctx context.Context, toolName, argsJSON string) (string, error) {
@@ -113,8 +118,16 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	eventServer := apiservice.NewEventServer(deps.transitionRepo, deps.runRepo, deps.eventHub, logger.WithComponent(deps.log, "event-api"))
 	taskViewServer := apiservice.NewTaskViewServer(deps.runRepo, deps.runRepo, deps.sessionRepo, deps.transcriptStore, deps.transitionRepo, deps.artifactsRepo, deps.deliveryEventsRepo)
 	taskViewServer.SetDurableTasks(deps.taskStore)
+	if deps.finalResults != nil {
+		taskViewServer.SetFinalResults(deps.finalResults, deps.finalResults.Outbox)
+	}
 	taskControlServer := apiservice.NewTaskControlServer(deps.taskStore)
+	taskControlServer.SetOwnerControlAuth(deps.ownerAuth)
+	taskControlServer.SetControls(deps.taskControls)
 	overviewServer := apiservice.NewOverviewServer(deps.runRepo, deps.deliveryEventsRepo)
+	if deps.finalResults != nil {
+		overviewServer.SetOutbox(deps.finalResults.Outbox)
+	}
 	approvalsServer := apiservice.NewApprovalsServer(deps.approvalRepo, deps.approvalService, deps.singleTabService)
 	approvalsServer.SetOwnerControlAuth(deps.ownerAuth)
 	singleTabServer := apiservice.NewSingleTabServer(deps.singleTabService)
@@ -156,6 +169,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	mux.Handle("/api/v1/prompts/system", promptServer.HandleConfig())
 	mux.Handle("/api/v1/prompts/system/preview", promptServer.HandlePreview())
 	mux.Handle("/api/v1/providers", providerServer.HandleList())
+	mux.Handle("/api/v2/results/", resultServer.HandleByRun("/api/v2/results/"))
 	mux.Handle("/api/v1/providers/", providerServer.HandleItem())
 	mux.Handle("/api/v1/memory", memoryServer.HandleList())
 	mux.Handle("/api/v2/memory", memoryServer.HandleList())

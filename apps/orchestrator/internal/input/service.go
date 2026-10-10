@@ -12,9 +12,11 @@ import (
 
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
+	"github.com/butler/butler/apps/orchestrator/internal/task"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	"github.com/butler/butler/internal/ingress"
+	"github.com/butler/butler/internal/owneridentity"
 )
 
 type Executor interface {
@@ -37,7 +39,10 @@ type Service struct {
 	claimTTL         time.Duration
 	executionTimeout time.Duration
 	maintenance      func(context.Context) error
+	controls         *task.Controller
 }
+
+func (s *Service) SetTaskControls(c *task.Controller) { s.controls = c }
 
 func (s *Service) SetMaintenance(fn func(context.Context) error) { s.maintenance = fn }
 
@@ -62,6 +67,15 @@ func (s *Service) Execute(ctx context.Context, event ingress.InputEvent) (*flow.
 	if owner == "" {
 		owner = event.SessionKey
 	}
+	if actor, ok := owneridentity.FromContext(ctx); ok {
+		if actor.Channel != event.Source || actor.SessionKey != event.SessionKey {
+			return nil, task.ErrUnauthorized
+		}
+		owner = actor.OwnerID
+		payload["user_id"] = owner
+		encoded, _ := json.Marshal(payload)
+		event.PayloadJSON = string(encoded)
+	}
 	taskID := firstString(payload, "task_id")
 	sessionRecord, _, err := s.sessions.CreateSession(ctx, session.CreateSessionParams{SessionKey: event.SessionKey, UserID: owner, Channel: event.Source, MetadataJSON: `{}`})
 	if err != nil {
@@ -69,6 +83,74 @@ func (s *Service) Execute(ctx context.Context, event ingress.InputEvent) (*flow.
 	}
 	if sessionRecord.UserID != owner {
 		return nil, fmt.Errorf("session owner mismatch")
+	}
+	if s.controls != nil {
+		kind := firstString(payload, "intent")
+		explicitConversation := kind == "conversation"
+		policy := ""
+		if kind == "conversation" {
+			kind = ""
+		} else if kind == "" {
+			if _, ok := owneridentity.FromContext(ctx); ok {
+				kind, policy = task.ClassifyOwnerText(firstString(payload, "text", "message", "content"))
+			}
+		}
+		switch kind {
+		case task.ControlAmend, task.ControlStop, task.ControlPause, task.ControlResume:
+			actor, ok := owneridentity.FromContext(ctx)
+			if !ok || actor.OwnerID != owner || actor.Channel != event.Source || (actor.Channel == "telegram" && actor.SessionKey != event.SessionKey) {
+				return nil, task.ErrUnauthorized
+			}
+			if taskID == "" {
+				previous, err := s.controls.DeliveryTarget(ctx)
+				if err != nil {
+					return nil, err
+				}
+				taskID = previous
+			}
+			target, resolveErr := s.controls.ResolveTarget(ctx, taskID)
+			if errors.Is(resolveErr, task.ErrConflict) {
+				receipt, _, err := s.store.AcceptWaiting(ctx, event, owner)
+				if err != nil {
+					return nil, err
+				}
+				return &flow.ExecutionResult{Accepted: true, InputID: receipt.InputID, SessionKey: receipt.SessionKey, ReceiptStatus: receipt.Status, ErrorCode: receipt.ErrorCode, AssistantResponse: "Specify the task to change; no task authority was changed."}, nil
+			}
+			if resolveErr != nil {
+				return nil, resolveErr
+			}
+			if policy == "" {
+				policy = firstString(payload, "execution_policy")
+			}
+			expected := int64(0)
+			if raw, exists := payload["expected_revision"]; exists {
+				v, ok := raw.(float64)
+				if !ok || v < 0 || v > float64(1<<53) || float64(int64(v)) != v {
+					return nil, task.ErrInvalid
+				}
+				expected = int64(v)
+			}
+			control, err := s.controls.Apply(ctx, task.ControlRequest{TaskID: target.TaskID, ExpectedRevision: expected, Kind: kind, Instruction: firstString(payload, "text", "message", "content"), ExecutionPolicy: policy})
+			if err != nil {
+				return nil, err
+			}
+			return &flow.ExecutionResult{Accepted: true, InputID: control.InputID, TaskID: target.TaskID, SessionKey: target.SessionKey, ReceiptStatus: "completed", AssistantResponse: "Owner control applied: " + kind + ". " + control.EffectBoundary}, nil
+		case "", "new_task":
+			if kind == "new_task" || explicitConversation {
+				actor, ok := owneridentity.FromContext(ctx)
+				if !ok {
+					return nil, task.ErrUnauthorized
+				}
+				if kind == "new_task" && taskID == "" {
+					return nil, fmt.Errorf("create a task with explicit goal and criteria via /api/v3/tasks before submitting its task_id")
+				}
+				if err := s.store.ResolveConversationAmbiguity(ctx, event.SessionKey, actor.OwnerID); err != nil {
+					return nil, err
+				}
+			}
+		default:
+			return nil, fmt.Errorf("unsupported input intent")
+		}
 	}
 	r, _, err := s.store.Accept(ctx, event, owner, taskID)
 	if err != nil {
@@ -215,6 +297,10 @@ func (s *Service) process(parent context.Context, r Record) {
 		return
 	}
 	if err != nil {
+		if errors.Is(err, flow.ErrResultPersistencePending) && r.Attempts < r.MaxAttempts && time.Now().Before(r.ExpiresAt) {
+			s.finish(parent, r, "queued", "result_persistence_pending", "saved final answer awaits durable persistence", time.Duration(1<<min(r.Attempts, 6))*time.Second)
+			return
+		}
 		code := "execution_stopped"
 		if errors.Is(err, context.DeadlineExceeded) {
 			code = "execution_deadline_exceeded"

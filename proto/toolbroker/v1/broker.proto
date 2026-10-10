@@ -31,7 +31,11 @@ message ExecuteToolCallRequest {
   string authorization_id = 2;
 }
 
-message PrepareToolCallRequest { ToolCall tool_call = 1; }
+message PrepareToolCallRequest {
+ ToolCall tool_call = 1;
+ // Optional trusted checkpoint identity. Never included in the tool schema.
+ string logical_action_ref = 2;
+}
 message PreparedAction {
  string action_id = 1;
  string action_hash = 2;
@@ -39,6 +43,7 @@ message PreparedAction {
  bool requires_approval = 4;
  string summary = 5;
  string expires_at = 6;
+ string effect_id = 7;
 }
 message PrepareToolCallResponse { PreparedAction action = 1; ToolError error = 2; }
 message AuthorizeToolCallRequest {

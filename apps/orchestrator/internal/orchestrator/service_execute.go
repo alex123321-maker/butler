@@ -9,8 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
+	"github.com/butler/butler/apps/orchestrator/internal/task"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	"github.com/butler/butler/internal/ingress"
@@ -200,6 +202,7 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	}
 
 	transportCtx := transport.WithSessionKey(runCtx, event.SessionKey)
+	transportCtx = withAnswerState(transportCtx, "final")
 	stream, err := s.provider.StartRun(transportCtx, transport.StartRunRequest{
 		Context: transport.TransportRunContext{
 			RunID:                  current.GetRunId(),
@@ -237,7 +240,7 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	if renewErr := drainRenewError(renewErrs); renewErr != nil {
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, renewErr)
 	}
-	return s.finalizeExecution(ctx, runLog, current, event, prepared, lease.LeaseID, finalMessage)
+	return s.finalizeExecution(transportCtx, runLog, current, event, prepared, lease.LeaseID, finalMessage)
 }
 
 func (s *Service) blockTaskRun(ctx context.Context, runID, reason string) {
@@ -262,65 +265,32 @@ func (s *Service) finalizeExecution(ctx context.Context, runLog *slog.Logger, cu
 		}
 		current = next
 	}
-	if err := s.checkpoint(ctx, current.GetRunId(), "finalizing", map[string]any{"final_message": finalMessage}); err != nil {
+	if err := s.checkpoint(ctx, current.GetRunId(), "finalizing", map[string]any{"final_message": finalMessage, "answer_state": answerState(ctx)}); err != nil {
 		return nil, err
 	}
-
-	history, err := s.transcript.GetTranscript(ctx, event.SessionKey)
+	if s.config.Completion == nil {
+		return nil, fmt.Errorf("atomic result persistence unavailable")
+	}
+	request := completion.Request{RunID: current.GetRunId(), SessionKey: event.SessionKey, Content: finalMessage, AnswerState: answerState(ctx), PipelineEnabled: s.config.DurableMemoryPipeline}
+	if prepared.Task != nil {
+		request.TaskID = prepared.Task.TaskID
+		request.TaskRevision = prepared.Task.Revision
+		request.ConstraintsRevision = prepared.Task.ConstraintsRevision
+	}
+	saved, err := s.config.Completion.Save(ctx, request)
+	// Keep the finalizing checkpoint on persistence failure. Recovery may save
+	// this answer again; it must not call the model or replay external effects.
 	if err != nil {
-		return nil, err
-	}
-	alreadyFinal := false
-	for _, message := range history.Messages {
-		if message.RunID == current.GetRunId() && message.Role == "assistant" {
-			if message.Content != finalMessage {
-				return nil, fmt.Errorf("final checkpoint conflicts with persisted assistant result")
-			}
-			alreadyFinal = true
+		if errors.Is(err, ownership.ErrStale) || errors.Is(err, task.ErrConflict) {
+			return nil, err
 		}
+		return nil, fmt.Errorf("%w: %w", ErrResultPersistencePending, err)
 	}
-	if !alreadyFinal {
-		if _, err := s.transcript.AppendMessage(ctx, transcript.Message{
-			SessionKey:   event.SessionKey,
-			RunID:        current.GetRunId(),
-			Role:         "assistant",
-			Content:      finalMessage,
-			MetadataJSON: `{"source":"model"}`,
-		}); err != nil {
-			return nil, s.failRun(ctx, current, leaseID, runLog, fmt.Errorf("append assistant transcript: %w", err))
-		}
-	}
-	if s.config.Artifacts != nil {
-		if _, saveErr := s.config.Artifacts.SaveAssistantFinal(ctx, current.GetRunId(), event.SessionKey, finalMessage, time.Now().UTC()); saveErr != nil {
-			runLog.Warn("failed to persist assistant_final artifact", slog.String("run_id", current.GetRunId()), slog.String("error", saveErr.Error()))
-		}
-	}
-
-	if err := s.finalizeWorkingMemory(ctx, event.SessionKey, current.GetRunId(), commonv1.RunState_RUN_STATE_COMPLETED, finalMessage); err != nil {
-		return nil, s.failRun(ctx, current, leaseID, runLog, fmt.Errorf("finalize working memory: %w", err))
-	}
-	if err := s.finalizeTransientWorkingState(ctx, event.SessionKey, current.GetRunId(), commonv1.RunState_RUN_STATE_COMPLETED, finalMessage); err != nil {
-		return nil, s.failRun(ctx, current, leaseID, runLog, fmt.Errorf("finalize transient working memory: %w", err))
-	}
-
-	if s.config.PipelineEnqueuer != nil {
-		if enqueueErr := s.config.PipelineEnqueuer.EnqueuePostRun(ctx, current.GetRunId(), event.SessionKey); enqueueErr != nil {
-			runLog.Warn("failed to enqueue memory pipeline job", slog.String("run_id", current.GetRunId()), slog.String("error", enqueueErr.Error()))
-		} else {
-			runLog.Info("memory pipeline job enqueued", slog.String("run_id", current.GetRunId()))
-		}
-	}
-
-	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_COMPLETED, leaseID, "", "")
-	if err != nil {
-		return nil, s.failRun(ctx, current, leaseID, runLog, fmt.Errorf("mark run completed: %w", err))
-	}
-
 	runLog.Info("run completed", slog.String("session_key", event.SessionKey))
-	s.emitEvent(ctx, next.GetRunId(), event.SessionKey, observability.EventRunCompleted, map[string]any{"response_length": len(finalMessage)})
-	s.scheduleHubCleanup(next.GetRunId())
-
-	result := &ExecutionResult{RunID: next.GetRunId(), SessionKey: event.SessionKey, CurrentState: next.GetCurrentState(), AssistantResponse: finalMessage}
+	s.emitEvent(ctx, current.GetRunId(), event.SessionKey, observability.EventAssistantFinal, map[string]any{"result_id": saved.ResultID, "answer_state": saved.AnswerState, "verdict": saved.Verdict, "content_length": len(finalMessage)})
+	s.emitEvent(ctx, current.GetRunId(), event.SessionKey, observability.EventRunCompleted, map[string]any{"result_id": saved.ResultID, "delivery": "stored_outbox"})
+	s.scheduleHubCleanup(current.GetRunId())
+	result := &ExecutionResult{RunID: current.GetRunId(), SessionKey: event.SessionKey, CurrentState: commonv1.RunState_RUN_STATE_COMPLETED, AssistantResponse: finalMessage, ResultID: saved.ResultID, AnswerState: saved.AnswerState, Verdict: saved.Verdict}
 	if prepared.Task != nil {
 		result.TaskID = prepared.Task.TaskID
 	}
@@ -330,6 +300,7 @@ func (s *Service) finalizeExecution(ctx context.Context, runLog *slog.Logger, cu
 func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, sessionKey, leaseID string, initialStream transport.EventStream) (string, *sessionv1.RunRecord, error) {
 	var finalMessage string
 	stream := initialStream
+	partialDelivery := true
 
 	for stream != nil {
 		var nextStream transport.EventStream
@@ -352,18 +323,20 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 			switch transportEvent.EventType {
 			case transport.EventTypeAssistantDelta:
 				if transportEvent.AssistantDelta != nil {
-					if err := s.config.Delivery.DeliverAssistantDelta(ctx, DeliveryEvent{RunID: current.GetRunId(), SessionKey: sessionKey, Content: transportEvent.AssistantDelta.Content, SequenceNo: transportEvent.AssistantDelta.SequenceNo}); err != nil {
-						return "", current, err
+					if partialDelivery {
+						if err := s.config.Delivery.DeliverAssistantDelta(ctx, DeliveryEvent{RunID: current.GetRunId(), SessionKey: sessionKey, Content: transportEvent.AssistantDelta.Content, SequenceNo: transportEvent.AssistantDelta.SequenceNo}); err != nil {
+							partialDelivery = false
+							runLog.Warn("partial channel unavailable; work continues")
+						}
 					}
 					s.emitEvent(ctx, current.GetRunId(), sessionKey, observability.EventAssistantDelta, map[string]any{"sequence_no": transportEvent.AssistantDelta.SequenceNo, "content_length": len(transportEvent.AssistantDelta.Content)})
 				}
 			case transport.EventTypeAssistantFinal:
 				if transportEvent.AssistantFinal != nil {
 					finalMessage = transportEvent.AssistantFinal.Content
-					if err := s.config.Delivery.DeliverAssistantFinal(ctx, DeliveryEvent{RunID: current.GetRunId(), SessionKey: sessionKey, Content: finalMessage, Final: true}); err != nil {
-						return "", current, err
+					if partialFinishReason(transportEvent.AssistantFinal.FinishReason) {
+						setPartialAnswer(ctx)
 					}
-					s.emitEvent(ctx, current.GetRunId(), sessionKey, observability.EventAssistantFinal, map[string]any{"content_length": len(finalMessage), "finish_reason": transportEvent.AssistantFinal.FinishReason})
 				}
 			case transport.EventTypeToolCallRequested:
 				resumed, updated, err := s.handleToolCall(ctx, runLog, current, leaseID, transportEvent.ToolCall)

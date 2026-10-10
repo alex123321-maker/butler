@@ -16,3 +16,6 @@ See [durable execution contract](../../../../docs/architecture/durable-execution
 Tests require an isolated `BUTLER_TEST_POSTGRES_URL`; run them on the lab. The
 lifecycle suite uses real stores and fault-injected provider/tool adapters, and
 does not claim real external reconciliation or exactly-once delivery.
+
+
+Authenticated owner controls bypass the normal FIFO and atomically cancel old task inputs. Ambiguous targets are saved as `waiting_for_user`; explicit conversation/new-task selection or an explicit target control resolves them. See [Owner Controls](../../../../docs/architecture/task-owner-controls-spec.md).

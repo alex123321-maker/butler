@@ -86,12 +86,19 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	if s.config.ActionAuthorizer == nil {
 		return nil, current, fmt.Errorf("tool authorization unavailable: exact action authorizer is not configured")
 	}
+	ctx, err = s.prepareActionSlot(ctx, brokerCall)
+	if err != nil {
+		return nil, current, fmt.Errorf("persist trusted action slot before preparation: %w", err)
+	}
 	prepared, checkErr := s.config.ActionAuthorizer.PrepareAction(ctx, brokerCall)
 	if checkErr != nil {
 		return nil, current, fmt.Errorf("prepare exact action authorization: %w", checkErr)
 	}
 	if prepared.Binding.RunID != brokerCall.GetRunId() || prepared.Binding.ToolCallID != toolCallID || prepared.Binding.ToolName != brokerCall.GetToolName() || prepared.Binding.ActionID == "" || prepared.Binding.ActionHash == "" {
 		return nil, current, fmt.Errorf("action authorizer returned an incompatible binding")
+	}
+	if recovered, ok := ctx.Value(recoveredApprovalKey{}).(approvalContinuation); ok && approvalID != "" && recovered.EffectID != "" && prepared.EffectID != recovered.EffectID {
+		return nil, current, fmt.Errorf("continuation external-effect identity changed")
 	}
 	{
 		if prepared.RequiresApproval && approvalID == "" {
@@ -283,7 +290,7 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	if updateErr := s.saveTransientWorkingState(ctx, current.GetRunId(), current.GetSessionKey(), "tool_running", map[string]any{"tool_name": requested.ToolName, "args_json": normalizeJSON(requested.ArgsJSON, "{}")}); updateErr != nil {
 		runLog.Warn("transient working memory update failed before tool execution", slog.String("error", updateErr.Error()))
 	}
-	if err := s.checkpoint(ctx, current.GetRunId(), "tool_dispatching", map[string]any{"tool_call_id": toolCallID, "action_id": prepared.Binding.ActionID, "authorization_id": grantID}); err != nil {
+	if err := s.checkpoint(ctx, current.GetRunId(), "tool_dispatching", map[string]any{"tool_call_id": toolCallID, "action_id": prepared.Binding.ActionID, "effect_id": prepared.EffectID, "authorization_id": grantID}); err != nil {
 		return nil, current, fmt.Errorf("persist tool dispatch checkpoint: %w", err)
 	}
 	result, err := executor.ExecuteAuthorizedToolCall(ctx, brokerCall, grantID)
@@ -291,20 +298,22 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		return nil, current, fmt.Errorf("%w: execute tool call %s: %v", ErrActionOutcomeUnknown, requested.ToolName, err)
 	}
 	finishedAt := time.Now().UTC()
+	// Persist the known observation before auxiliary memory/Redis IO so a slow
+	// cache or process failure cannot discard the dispatch's durable result.
+	if _, err := s.transcript.AppendToolCall(ctx, transcriptToolCallFromExecution(toolCallID, current.GetRunId(), requested, brokerCall, result, startedAt, finishedAt)); err != nil {
+		return nil, current, fmt.Errorf("%w: append tool transcript: %v", ErrActionOutcomeUnknown, err)
+	}
+	if err := s.checkpoint(ctx, current.GetRunId(), "tool_result_recorded", map[string]any{"tool_call_id": toolCallID, "action_id": prepared.Binding.ActionID, "effect_id": result.GetActionId(), "effect_state": result.GetEffectState(), "evidence_refs": result.GetEvidenceRefs(), "status": result.GetStatus()}); err != nil {
+		return nil, current, fmt.Errorf("persist known tool result checkpoint: %w", err)
+	}
+	if result.GetStatus() == "effect_unknown" {
+		return nil, current, ErrActionOutcomeUnknown
+	}
 	if updateErr := s.updateWorkingMemoryCheckpoint(ctx, current.GetSessionKey(), current.GetRunId(), "active", requested.ToolName, toolResultPayload(result)); updateErr != nil {
 		runLog.Warn("working memory update failed after tool execution", slog.String("error", updateErr.Error()))
 	}
 	if updateErr := s.saveTransientWorkingState(ctx, current.GetRunId(), current.GetSessionKey(), "awaiting_model_resume", map[string]any{"tool_name": requested.ToolName, "result_json": toolResultPayload(result)}); updateErr != nil {
 		runLog.Warn("transient working memory update failed after tool execution", slog.String("error", updateErr.Error()))
-	}
-	if _, err := s.transcript.AppendToolCall(ctx, transcriptToolCallFromExecution(toolCallID, current.GetRunId(), requested, brokerCall, result, startedAt, finishedAt)); err != nil {
-		return nil, current, fmt.Errorf("%w: append tool transcript: %v", ErrActionOutcomeUnknown, err)
-	}
-	if err := s.checkpoint(ctx, current.GetRunId(), "tool_result_recorded", map[string]any{"tool_call_id": toolCallID, "action_id": prepared.Binding.ActionID, "status": result.GetStatus()}); err != nil {
-		return nil, current, fmt.Errorf("persist known tool result checkpoint: %w", err)
-	}
-	if result.GetStatus() == "effect_unknown" {
-		return nil, current, ErrActionOutcomeUnknown
 	}
 	if s.config.Artifacts != nil {
 		if _, saveErr := s.config.Artifacts.SaveToolResult(ctx, current.GetRunId(), current.GetSessionKey(), toolCallID, requested.ToolName, normalizeToolStatus(result.GetStatus()), toolResultPayload(result), finishedAt); saveErr != nil {

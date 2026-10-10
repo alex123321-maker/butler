@@ -32,7 +32,7 @@ export const apiRequest = async <T>(path: string, options: ApiRequestOptions = {
 
   return await $fetch<T>(`${baseUrl}${path}${query}`, {
     method: options.method ?? 'GET',
-    body: options.body,
+    body: options.body === undefined ? undefined : JSON.stringify(options.body),
     headers: {
       'Content-Type': 'application/json',
       ...options.headers,

@@ -113,3 +113,6 @@ claim that an external message was delivered or an arbitrary model followed a
 procedure correctly. Durable ingress/restart of an executing run (#5), durable
 approvals (#6), exact action authorization (#7), constraint amendments/tree
 cancellation (#9) and outbox delivery (#12) remain separate issues.
+
+
+Versioned owner amendments, inherited restrictions and cancellation are implemented by [Owner Controls](task-owner-controls-spec.md).

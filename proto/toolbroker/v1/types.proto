@@ -42,6 +42,10 @@ message ToolResult {
   string result_json = 5;
   ToolError error = 6;
   string finished_at = 7;
+  // Broker-owned journal metadata. A runtime response alone is not evidence.
+  string action_id = 8;
+  string effect_state = 9;
+  repeated string evidence_refs = 10;
 }
 
 message ToolContract {
@@ -58,4 +62,15 @@ message ToolContract {
   string status = 11;
   repeated string allowed_domains = 12;
   repeated string allowed_tools = 13;
+  string contract_revision = 14;
+  EffectContract effect_contract = 15;
+}
+
+// Operator-owned capabilities, never model args. Missing values are unsafe.
+message EffectContract {
+  string retry_safety = 1;
+  string idempotency_header = 2;
+  string verification_method = 3;
+  string scope_origin = 4;
+  string verification_url = 5;
 }

@@ -26,6 +26,12 @@ npm run dev
 
 The dev server starts on `http://localhost:3000`.
 
+`npm run typecheck` checks TypeScript and Vue templates with a pinned Vue
+compiler. It runs in the lab Web checks before lint and functional browser
+tests. Custom aliases resolve to absolute project directories so generated
+Nuxt TypeScript paths work without a global `baseUrl`. Both API clients
+serialize supplied request bodies as JSON and retain absent bodies.
+
 ### Environment variables
 
 | Variable | Default | Description |
@@ -151,3 +157,6 @@ memory, and submits a new delivery identity plus Bearer proof. Configure the tok
 and matching owner on the server as described in
 [Durable Execution](../docs/architecture/durable-execution-spec.md); retrieve the
 secret through the lab terminal, never through model chat or browser storage.
+
+
+Durable task details expose owner amendment, prepare-only restriction, pause/resume and tree stop. Controls require the owner token in page memory and the displayed task revision; missing/stale proof is refused. A dispatch uncertainty notice preserves the distinction between stopped execution and a committed external effect.

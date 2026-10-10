@@ -13,6 +13,19 @@ compose=(docker compose -p butler-lab --env-file "$root/lab.env" -f deploy/docke
 if [[ -f "$root/private-proxy/compose.env" ]]; then
   compose+=(--env-file "$root/private-proxy/compose.env" -f deploy/docker-compose.antigravity-proxy.lab.yml)
 fi
+test_options=()
+if [[ "$action" == Integration || "$action" == Race ]]; then
+  for database in butler_test butler_lab_actionauth_test butler_lab_completion_test; do
+    if [[ "$(docker exec butler-lab-postgres-1 psql -U butler -d postgres -Atc "SELECT 1 FROM pg_database WHERE datname = '$database'")" != 1 ]]; then
+      docker exec butler-lab-postgres-1 createdb -U butler "$database"
+    fi
+  done
+  test_options=(--network butler-lab_backend
+    --env BUTLER_TEST_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_test?sslmode=disable
+    --env BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_actionauth_test?sslmode=disable
+    --env BUTLER_TEST_COMPLETION_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_completion_test?sslmode=disable
+    --env BUTLER_TEST_REDIS_URL=redis://redis:6379/1)
+fi
 case "$action" in
   Up)
     if [[ ! -f "$BUTLER_ACTION_AUTHORITY_TOKEN_SOURCE" ]]; then
@@ -49,19 +62,6 @@ case "$action" in
   Test|Integration)
     (( $# > 0 )) || set -- ./apps/orchestrator/...
     report="$root/reports/go-$(date -u +%Y%m%dT%H%M%SZ).log"
-    test_options=()
-    if [[ "$action" == Integration ]]; then
-      if [[ "$(docker exec butler-lab-postgres-1 psql -U butler -d postgres -Atc "SELECT 1 FROM pg_database WHERE datname = 'butler_test'")" != 1 ]]; then
-        docker exec butler-lab-postgres-1 createdb -U butler butler_test
-      fi
-      if [[ "$(docker exec butler-lab-postgres-1 psql -U butler -d postgres -Atc "SELECT 1 FROM pg_database WHERE datname = 'butler_lab_actionauth_test'")" != 1 ]]; then
-        docker exec butler-lab-postgres-1 createdb -U butler butler_lab_actionauth_test
-      fi
-      test_options=(--network butler-lab_backend
-        --env BUTLER_TEST_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_test?sslmode=disable
-        --env BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_actionauth_test?sslmode=disable
-        --env BUTLER_TEST_REDIS_URL=redis://redis:6379/1)
-    fi
     docker run --rm --user "$(id -u):$(id -g)" \
       --volume "$PWD:/src:ro" --volume "$root/.cache:/cache" --workdir /src \
       --env GOCACHE=/cache/go-build --env GOMODCACHE=/cache/go-mod \
@@ -96,7 +96,7 @@ case "$action" in
     docker run --rm --user "$(id -u):$(id -g)" \
       --volume "$PWD:/src:ro" --volume "$root/.cache:/cache" --workdir /src \
       --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod \
-      golang:1.24-bookworm go test -race -p 1 -count=1 "$@" 2>&1 | tee "$report"
+      "${test_options[@]}" golang:1.24-bookworm go test -race -p 1 -count=1 "$@" 2>&1 | tee "$report"
     ;;
   Web)
     mkdir -p "$root/.cache/npm" "$root/.cache/ms-playwright"
@@ -106,7 +106,7 @@ case "$action" in
       --env NPM_CONFIG_CACHE=/cache/npm --env PLAYWRIGHT_BROWSERS_PATH=/cache/ms-playwright \
       --env BUTLER_LAB_SMOKE_BASE_URL=http://web:3000 --env BUTLER_LAB_SMOKE_SCREENSHOT=/cache/lab-ui.png \
       --entrypoint bash butler-lab-tool-browser -c \
-      'set -eu; npm ci; npm run lint; npx playwright install chromium; npm run test:e2e -- --grep-invert screenshots; node /src/scripts/dev/lab-web-smoke.mjs' \
+      'set -eu; npm ci; npm run typecheck; npm run lint; npx --no-install playwright install chromium; npm run test:e2e -- --grep-invert screenshots; node /src/scripts/dev/lab-web-smoke.mjs' \
       2>&1 | tee "$report"
     ;;
   *) printf 'Unknown action: %s\n' "$action" >&2; exit 2 ;;

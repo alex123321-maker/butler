@@ -48,6 +48,23 @@ func actionDatabase(t *testing.T) *pgxpool.Pool {
 	if _, err := pool.Exec(ctx, string(data)); err != nil {
 		t.Fatal(err)
 	}
+	data, err = os.ReadFile(filepath.Join("..", "..", "migrations", "035_external_effect_journal.up.sql"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, string(data)); err != nil {
+		t.Fatal(err)
+	}
+	// Narrow dispatch-authority fixtures use the production column names. The
+	// journal migration and every fault/CAS operation execute against real PG.
+	if _, err = pool.Exec(ctx, `CREATE TABLE session_ownership(session_key TEXT PRIMARY KEY,run_id TEXT NOT NULL,lease_id TEXT NOT NULL,fence_epoch BIGINT NOT NULL,expires_at TIMESTAMPTZ NOT NULL);
+ CREATE TABLE runs(run_id TEXT PRIMARY KEY,task_id TEXT,task_revision BIGINT);
+ CREATE TABLE tasks(task_id TEXT PRIMARY KEY,owner_id TEXT NOT NULL,status TEXT NOT NULL,revision BIGINT NOT NULL,constraints_revision BIGINT NOT NULL,execution_policy TEXT NOT NULL DEFAULT 'normal');
+ INSERT INTO tasks(task_id,owner_id,status,revision,constraints_revision) VALUES('task','owner','active',7,2);
+ INSERT INTO runs VALUES('run','task',7);
+ INSERT INTO session_ownership VALUES('web:owner','run','lease',4,clock_timestamp()+INTERVAL '1 hour');`); err != nil {
+		t.Fatal(err)
+	}
 	return pool
 }
 func TestPostgresDispatchCASAndUnknownOutcome(t *testing.T) {

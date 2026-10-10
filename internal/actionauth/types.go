@@ -28,6 +28,7 @@ type ActionBinding struct {
 	ToolCallID             string          `json:"tool_call_id"`
 	ToolName               string          `json:"tool_name"`
 	ContractHash           string          `json:"contract_hash"`
+	ContractRevision       string          `json:"contract_revision,omitempty"`
 	ArgsHash               string          `json:"args_hash"`
 	Resource               string          `json:"resource"`
 	CredentialRefs         []CredentialRef `json:"credential_refs"`
@@ -52,6 +53,7 @@ type ContextSnapshot struct {
 	TaskRevision        int64     `json:"task_revision"`
 	ConstraintsRevision int64     `json:"constraints_revision"`
 	TaskStatus          string    `json:"task_status"`
+	ExecutionPolicy     string    `json:"execution_policy"`
 	LeaseEpoch          int64     `json:"lease_epoch"`
 	LeaseID             string    `json:"lease_id"`
 	LeaseExpiresAt      time.Time `json:"lease_expires_at"`
@@ -75,6 +77,7 @@ type ApprovalSnapshot struct {
 
 type PreparedAction struct {
 	Binding          ActionBinding `json:"binding"`
+	EffectID         string        `json:"effect_id"`
 	RequiresApproval bool          `json:"requires_approval"`
 	Summary          string        `json:"summary"`
 	ExpiresAt        time.Time     `json:"expires_at"`

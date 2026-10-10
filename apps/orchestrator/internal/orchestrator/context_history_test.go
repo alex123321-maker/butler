@@ -27,7 +27,7 @@ func TestSummaryCannotHideRecentOwnerCorrection(t *testing.T) {
 					{SessionKey: sessionKey, Role: "user", Content: correction},
 				}}
 				provider := &mockProvider{startEvents: []transport.TransportEvent{transport.NewAssistantFinalEvent("", providerName, transport.AssistantFinal{Content: "Черновик."})}}
-				service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), store, provider, Config{
+				service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), store, provider, Config{
 					ProviderName:  providerName,
 					SummaryReader: &stubSummaryReader{summaries: map[string]string{sessionKey: summary}},
 				}, nil)
@@ -106,7 +106,7 @@ func TestCoveredSummaryReplaysOnlyCompleteUncompressedTail(t *testing.T) {
 				}
 				store := &coveredHistoryStore{memoryTranscriptStore: &memoryTranscriptStore{messages: messages}, revision: 3}
 				provider := &mockProvider{startEvents: []transport.TransportEvent{transport.NewAssistantFinalEvent("", providerName, transport.AssistantFinal{Content: "Черновик"})}}
-				service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), store, provider, Config{ProviderName: providerName, SummaryReader: coveredSummaryReader{snapshot: snapshot}}, nil)
+				service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), store, provider, Config{ProviderName: providerName, SummaryReader: coveredSummaryReader{snapshot: snapshot}}, nil)
 				_, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "coverage", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: key, Source: "web", PayloadJSON: `{"text":"Продолжай"}`, CreatedAt: time.Now(), IdempotencyKey: "coverage"})
 				if err != nil {
 					t.Fatal(err)
@@ -153,7 +153,7 @@ func TestCoveredSummaryReplaysOnlyCompleteUncompressedTail(t *testing.T) {
 
 func TestSummaryCoverageReadFailureBlocksModel(t *testing.T) {
 	provider := &mockProvider{}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{SummaryReader: coveredSummaryReader{err: errors.New("coverage unavailable")}}, nil)
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{SummaryReader: coveredSummaryReader{err: errors.New("coverage unavailable")}}, nil)
 	_, err := service.prepareRun(context.Background(), ingress.InputEvent{SessionKey: "s", PayloadJSON: `{"text":"continue"}`})
 	if err == nil || !strings.Contains(err.Error(), "load session summary coverage") || len(provider.startRequests) != 0 {
 		t.Fatalf("coverage read failure: %v", err)
@@ -174,7 +174,7 @@ func TestPreparationRecoveryKeepsVerifiedFullTailAndCurrentInputOnce(t *testing.
 				snapshot = summary.Snapshot{SessionKey: key, Summary: "verified old summary", ThroughMessageID: "boundary", ThroughSequence: 1, SourceRevision: 7, FormatVersion: 1}
 			}
 			store := &coveredHistoryStore{memoryTranscriptStore: &memoryTranscriptStore{messages: messages}, revision: 7}
-			service := NewService(nil, nil, nil, store, nil, Config{SummaryReader: coveredSummaryReader{snapshot: snapshot}}, nil)
+			service := newFixtureService(nil, nil, nil, store, nil, Config{SummaryReader: coveredSummaryReader{snapshot: snapshot}}, nil)
 			prepared := preparedRun{CurrentRunID: "current", InputItems: []transport.InputItem{{Role: "user", Content: "current input"}}, MemoryBundle: map[string]any{}}
 			if err := service.attachTranscriptContext(context.Background(), key, &prepared); err != nil {
 				t.Fatal(err)
@@ -206,7 +206,7 @@ func TestPreparationRecoveryKeepsVerifiedFullTailAndCurrentInputOnce(t *testing.
 }
 
 func TestContextBudgetDropsOptionalMaterialBeforeMandatoryConstraints(t *testing.T) {
-	service := NewService(nil, nil, nil, nil, nil, Config{}, nil)
+	service := newFixtureService(nil, nil, nil, nil, nil, Config{}, nil)
 	mandatory := transport.InputItem{Role: "system", Content: strings.Repeat("Точное ограничение. ", 100) + "НЕ ОТПРАВЛЯТЬ"}
 	prepared := preparedRun{InputItems: []transport.InputItem{mandatory, {Role: "user", Content: "продолжай"}}, MemoryBundle: map[string]any{"profile": []map[string]any{{"key": "background", "summary": strings.Repeat("Второстепенное. ", 300)}}}}
 	// Measure the mandatory-only baseline through the same assembly path.
@@ -235,7 +235,7 @@ func TestContextBudgetDropsOptionalMaterialBeforeMandatoryConstraints(t *testing
 func TestHistoryReadFailureBlocksModel(t *testing.T) {
 	for _, summary := range []string{"", "Old summary"} {
 		provider := &mockProvider{}
-		service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{failHistory: errors.New("history unavailable")}, provider, Config{
+		service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{failHistory: errors.New("history unavailable")}, provider, Config{
 			SummaryReader: &stubSummaryReader{summaries: map[string]string{"web:1": summary}},
 		}, nil)
 		_, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "history", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "web:1", Source: "web", PayloadJSON: `{"text":"continue"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "history"})

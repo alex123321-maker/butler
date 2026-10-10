@@ -21,11 +21,13 @@ type authFixture struct {
 	intents      map[string]actionauth.Intent
 	grants       map[string]actionauth.Grant
 	approvals    map[string]actionauth.ApprovalSnapshot
+	effects      map[string]actionauth.EffectRecord
+	evidence     map[string]actionauth.EffectEvidence
 	contextError error
 }
 
 func newAuthFixture() *authFixture {
-	return &authFixture{intents: map[string]actionauth.Intent{}, grants: map[string]actionauth.Grant{}, approvals: map[string]actionauth.ApprovalSnapshot{}}
+	return &authFixture{intents: map[string]actionauth.Intent{}, grants: map[string]actionauth.Grant{}, approvals: map[string]actionauth.ApprovalSnapshot{}, effects: map[string]actionauth.EffectRecord{}, evidence: map[string]actionauth.EffectEvidence{}}
 }
 func (f *authFixture) PutIntent(_ context.Context, i actionauth.Intent) error {
 	f.mu.Lock()
@@ -34,6 +36,12 @@ func (f *authFixture) PutIntent(_ context.Context, i actionauth.Intent) error {
 		return fmt.Errorf("intent changed")
 	}
 	f.intents[i.Binding.ActionID] = i
+	if old, ok := f.effects[i.EffectID]; ok && old.Fingerprint != i.EffectFingerprint {
+		return fmt.Errorf("effect changed")
+	}
+	if _, ok := f.effects[i.EffectID]; !ok {
+		f.effects[i.EffectID] = actionauth.EffectRecord{ActionID: i.EffectID, Fingerprint: i.EffectFingerprint, Binding: i.Binding, Policy: i.EffectPolicy, State: actionauth.StatePrepared}
+	}
 	return nil
 }
 func (f *authFixture) GetIntent(_ context.Context, id string) (actionauth.Intent, error) {
@@ -57,6 +65,11 @@ func (f *authFixture) PutGrant(_ context.Context, g actionauth.Grant) (actionaut
 		}
 	}
 	f.grants[g.ID] = g
+	i := f.intents[g.Binding.ActionID]
+	e := f.effects[i.EffectID]
+	e.State = actionauth.StateAllowed
+	e.AuthorizationID = g.ID
+	f.effects[i.EffectID] = e
 	return g, nil
 }
 func (f *authFixture) GetGrant(_ context.Context, id string) (actionauth.Grant, error) {
@@ -77,7 +90,46 @@ func (f *authFixture) ClaimGrant(_ context.Context, id string) error {
 	}
 	g.State = "inflight"
 	f.grants[id] = g
+	i := f.intents[g.Binding.ActionID]
+	e := f.effects[i.EffectID]
+	e.State = actionauth.StateExecuting
+	f.effects[i.EffectID] = e
 	return nil
+}
+
+func (f *authFixture) GetEffect(_ context.Context, id string) (actionauth.EffectRecord, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	e, ok := f.effects[id]
+	if !ok {
+		return e, fmt.Errorf("missing effect")
+	}
+	return e, nil
+}
+func (f *authFixture) RecordDispatchOutcome(_ context.Context, id, outcome string, e actionauth.EffectEvidence) (actionauth.EffectRecord, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	g := f.grants[id]
+	g.State = outcome
+	f.grants[id] = g
+	r := f.effects[e.ActionID]
+	r.State = e.Verdict
+	r.DispatchOutcome = outcome
+	r.EvidenceRefs = append(r.EvidenceRefs, e.EvidenceID)
+	f.effects[e.ActionID] = r
+	f.evidence[e.EvidenceID] = e
+	return r, nil
+}
+func (f *authFixture) GetEffectEvidence(_ context.Context, id string) (actionauth.EffectEvidence, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.evidence[id], nil
+}
+func (f *authFixture) ReconcileEffect(context.Context, string, string, actionauth.EffectEvidence) (actionauth.EffectRecord, error) {
+	return actionauth.EffectRecord{}, fmt.Errorf("test observation unavailable")
+}
+func (f *authFixture) MarkInterruptedEffect(context.Context, string) error {
+	return fmt.Errorf("test interruption unavailable")
 }
 func (f *authFixture) FinishGrant(_ context.Context, id, state string) error {
 	f.mu.Lock()

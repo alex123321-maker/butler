@@ -64,6 +64,8 @@
 
       <p v-if="taskDetails.run_ids" class="overview-copy">Attempts: {{ taskDetails.run_ids.length }}. Latest attempt: {{ taskDetails.task.run_state || 'not started' }}.</p>
 
+      <TaskOwnerControls v-if="taskDetails.run_ids" :task-id="taskId" @changed="refreshOwnerState" />
+
       <AppAlert
         v-if="taskDetails.waiting_state.user_action_channel === 'telegram'"
         class="task-section"
@@ -319,13 +321,13 @@ const severityTone = (severity: string): 'default' | 'success' | 'warning' | 'er
   return 'info'
 }
 
-const loadBase = async () => {
+const loadBase = async (background = false) => {
   if (!taskId.value) {
     taskDetails.value = null
     return
   }
 
-  pendingBase.value = true
+  if (!background) pendingBase.value = true
   loadError.value = null
 
   try {
@@ -334,7 +336,7 @@ const loadBase = async () => {
     loadError.value = err instanceof Error ? err.message : 'Failed to load task details'
     taskDetails.value = null
   } finally {
-    pendingBase.value = false
+    if (!background) pendingBase.value = false
   }
 }
 
@@ -410,6 +412,12 @@ const loadAll = async () => {
     return
   }
 
+  await Promise.all([loadTimeline(), loadConversation(), loadArtifacts()])
+}
+
+const refreshOwnerState = async () => {
+  debugData.value = null
+  await loadBase(true)
   await Promise.all([loadTimeline(), loadConversation(), loadArtifacts()])
 }
 

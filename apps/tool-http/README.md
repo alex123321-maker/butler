@@ -24,3 +24,10 @@ Related docs:
 - `docs/architecture/tool-runtime-adr.md`
 - `docs/architecture/credential-management.md`
 - `docs/planning/butler-implementation-roadmap.md`
+
+An explicitly scoped `external_receipt_v1` contract can receive a Broker-owned
+idempotency key and fingerprint through private execution context. The runtime
+injects fixed headers, rejects caller overrides and does not follow redirects
+for these mutations. It performs no implicit retry. Generic HTTP success does
+not verify an external write; Broker owns receipt validation and reconciliation.
+See [the effect contract](../../docs/architecture/external-effect-journal.md).

@@ -21,7 +21,7 @@ func TestExecuteStopsInFlightRenewalBeforeReleasingLease(t *testing.T) {
 		}},
 		started: leases.started,
 	}
-	service := NewService(&memorySessionRepo{}, leases, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", LeaseTTL: 1}, nil)
+	service := newFixtureService(&memorySessionRepo{}, leases, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", LeaseTTL: 1}, nil)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	_, err := service.Execute(ctx, ingress.InputEvent{

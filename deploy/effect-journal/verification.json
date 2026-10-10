@@ -1,0 +1,55 @@
+{
+  "verified_at_utc": "2026-10-10T19:48:07Z",
+  "lab": "ssh laba",
+  "isolated_source_root": "/srv/storage/butler/agents/effect-journal",
+  "base": "404f2bc with task policy foundation 5808c5b",
+  "databases": {
+    "journal_and_broker": "separate *_test database with disposable per-test schemas",
+    "durable_input": "existing lab butler_test fixture database; production database untouched"
+  },
+  "packages": [
+    "./internal/actionauth/...",
+    "./apps/tool-broker/...",
+    "./apps/tool-http/...",
+    "./apps/orchestrator/internal/input",
+    "./apps/orchestrator/internal/orchestrator",
+    "./apps/orchestrator/internal/tools"
+  ],
+  "integration_command": "pwsh -NoProfile -Command \"& ./scripts/dev/lab.ps1 -Action Integration -RemoteRoot /srv/storage/butler/agents/effect-journal -Packages @('./internal/actionauth/...','./apps/tool-broker/...','./apps/tool-http/...','./apps/orchestrator/internal/input','./apps/orchestrator/internal/orchestrator','./apps/orchestrator/internal/tools')\"",
+  "integration_result": "PASS",
+  "race_command": "On the lab: isolated golang:1.24-alpine container, build-base+su-exec, storage-only GOCACHE/GOMODCACHE, same six packages with go test -race -p 1 -count=1 and BUTLER_TEST_POSTGRES_URL/BUTLER_TEST_ACTIONAUTH_POSTGRES_URL pointing only at test databases",
+  "race_result": "PASS",
+  "real_postgres_faults": [
+    "24 concurrent dispatch claims produce one winner",
+    "journal commit fails before dispatch; no recipient request",
+    "recipient accepts mutation then closes connection before acknowledgement",
+    "recipient response arrives but evidence insert fails; atomic outcome rollback",
+    "service recreated against durable executing/unknown state; no repeat dispatch",
+    "independent authorized read reconciles actual recipient artifact",
+    "independent authorized read proves absence; no implicit new grant",
+    "invented verifier output differs from captured digest and is denied",
+    "evidence UPDATE rejected by PostgreSQL append-only trigger",
+    "legacy completed dispatch migrates to unknown; rollback preserves spent grant",
+    "cancellation/constraints/owner/prepare_only mutation locks serialize with claim",
+    "known logical intent reused from another run cannot execute again",
+    "changed arguments cannot replace a permanent intent",
+    "compensation requires a new intent and its separate approval",
+    "accepted input persists random slot before preparation",
+    "approval recovery retains same slot and permanent effect identity",
+    "checkpoint_data replacement preserves action_slots",
+    "distinct explicit proposals with identical arguments get fresh slots"
+  ],
+  "runtime_contract_checks": [
+    "system key/fingerprint headers only for exact scoped recipient contract",
+    "caller key overrides and unrelated origins denied before HTTP",
+    "scoped mutations never follow redirects",
+    "generic 2xx/201, wrong key/fingerprint, absent artifact or truncated body cannot confirm writes",
+    "repeated Broker RPC after actual HTTP acceptance returns effect_unknown and does not call runtime"
+  ],
+  "limits": [
+    "The local HTTP fixture implements the declared external_receipt_v1 key guarantee; unrelated websites do not acquire it",
+    "Browser/Telegram/generic HTTP writes without external evidence stay unknown and are never automatically replayed",
+    "No automatic cross-run argument deduplication; explicit trusted parent-slot linkage only",
+    "No claim of externally unsupported exactly-once effects"
+  ]
+}

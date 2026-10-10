@@ -38,7 +38,7 @@ func (s *Service) attachTaskContext(ctx context.Context, sessionKey string, prep
 	prepared.MemoryBundle["working"] = prepared.WorkingMemory.bundleMap()
 	prepared.InputItems = append([]transport.InputItem{{Role: "system", Content: "Butler task context (durable task state; a final model response only ends this attempt):\n" + sanitize.JSON(mustMarshalJSON(map[string]any{
 		"task_id": record.TaskID, "revision": record.Revision, "goal": sanitize.Text(record.Goal), "constraints": record.Constraints, "constraints_revision": record.ConstraintsRevision,
-		"completion_criteria": record.CompletionCriteria, "working": record.Working,
+		"completion_criteria": record.CompletionCriteria, "working": record.Working, "execution_policy": record.ExecutionPolicy, "source": record.Source,
 	})), ContentType: "text/plain"}}, prepared.InputItems...)
 	return nil
 }
