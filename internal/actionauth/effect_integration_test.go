@@ -440,8 +440,12 @@ func TestEffectJournalLegacyCompletedMigrationRemainsUnverified(t *testing.T) {
 	if _, err = service.Authorize(ctx, call, contract, grant.Binding.ActionID, "approval", ""); err == nil {
 		t.Fatal("legacy completed grant became replayable")
 	}
-	if _, err = pool.Exec(ctx, string(down)); err != nil {
-		t.Fatal(err)
+	if _, err = pool.Exec(ctx, string(down)); err == nil {
+		t.Fatal("populated journal downgrade discarded historical effect authority")
+	}
+	retained, err := NewPostgresStore(pool).GetEffect(ctx, grant.Binding.ActionID)
+	if err != nil || retained.State != StateUnknown {
+		t.Fatal("refused rollback changed historical effect state")
 	}
 	stored, err := service.store.GetGrant(ctx, grant.ID)
 	if err != nil || stored.State != "dispatch_completed" {
