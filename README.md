@@ -46,11 +46,13 @@ Sprint 0 through Sprint 7 are implemented in the repository backlog and reflecte
 - `apps/tool-doctor/` - self-diagnostics runtime.
 - `apps/tool-extension/` - optional reviewed HTTP-JSON executor with separate
   runtime authentication, public resource bounds and no package-code execution.
+- `apps/memory-parser/` - optional fixed PDF/text/OCR parser in a separate no-egress sandbox.
 
 ## Documentation
 
 - [PRD + Architecture Specification](docs/architecture/butler-prd-architecture.md)
 - [Memory Model](docs/architecture/memory-model.md)
+- [Versioned memory sources, privacy and structured ingestion](docs/architecture/versioned-memory-sources.md)
 - [Tooling and Execution Specification](docs/architecture/tool-runtime-adr.md)
 - [Credential Management](docs/architecture/credential-management.md)
 - [Run Lifecycle Specification](docs/architecture/run-lifecycle-spec.md)

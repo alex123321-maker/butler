@@ -88,6 +88,7 @@ message ExtractInput {
   string text = 1;
   repeated string entity_types = 2;
   string schema_version = 3;
+  // butler-memory-v1 selects a reviewed fixed schema; entity_types must be empty.
 }
 message ClassifyInput { string text = 1; repeated string labels = 2; }
 message MediaInput { bytes content = 1; string mime_type = 2; }
@@ -118,7 +119,18 @@ message Span {
   uint32 end = 4;
   double confidence = 5;
 }
-message ExtractOutput { repeated Span spans = 1; string schema_version = 2; }
+message ExtractRelation { string type = 1; Span head = 2; Span tail = 3; }
+message ExtractRecord {
+  string type = 1;
+  repeated Span fields = 2;
+  repeated string unresolved_fields = 3;
+}
+message ExtractOutput {
+  repeated Span spans = 1;
+  string schema_version = 2;
+  repeated ExtractRelation relations = 3;
+  repeated ExtractRecord records = 4;
+}
 message ClassifyOutput {
   repeated Score scores = 1;
   bool insufficient_data = 2;

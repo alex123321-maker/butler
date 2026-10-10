@@ -7,6 +7,8 @@ PostgreSQL is authoritative; public installation text remains DATA.
 `BindAction` denies stale capabilities before credential inspection;
 `CheckActionTx` repeats admission within irreversible Broker dispatch.
 `ManifestByHash` reads historical provenance and grants no authority.
+`ManifestByHashTx` performs the same immutable lookup on an existing transaction
+without borrowing a second connection or acquiring capability/authority locks.
 The only out-of-task egress is owner-only fixed budgeted readiness GET.
 
 See [the lifecycle contract](../../docs/architecture/reviewed-extension-lifecycle.md).

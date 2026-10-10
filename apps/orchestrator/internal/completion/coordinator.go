@@ -52,6 +52,8 @@ type FinalRecord struct {
 	Effects             []Effect  `json:"effects"`
 	Limitations         []string  `json:"limitations"`
 	CreatedAt           time.Time `json:"created_at"`
+	PrivacyRedacted     bool      `json:"privacy_redacted"`
+	RedactionID         string    `json:"redaction_id,omitempty"`
 }
 type Writer interface {
 	Save(context.Context, Request) (FinalRecord, error)
@@ -73,8 +75,9 @@ type Coordinator struct {
 	Transcript interface {
 		AppendFinalTx(context.Context, pgx.Tx, transcript.Message) (transcript.Message, error)
 	}
-	Outbox   *deliveryoutbox.Store
-	Evidence EvidenceReader
+	Outbox    *deliveryoutbox.Store
+	Evidence  EvidenceReader
+	DataGuard func(context.Context, pgx.Tx, string) error
 }
 
 func New(pool *pgxpool.Pool) *Coordinator {
@@ -169,6 +172,11 @@ func (c *Coordinator) Save(ctx context.Context, q Request) (FinalRecord, error) 
 	if err != nil {
 		return r, err
 	}
+	if c.DataGuard != nil {
+		if err = c.DataGuard(ctx, tx, q.RunID); err != nil {
+			return r, err
+		}
+	}
 	message, err := c.Transcript.AppendFinalTx(ctx, tx, transcript.Message{MessageID: r.MessageID, RunID: r.RunID, SessionKey: r.SessionKey, Content: r.Content, MetadataJSON: `{"source":"model","authoritative_result":true}`, CreatedAt: now})
 	if err != nil {
 		return r, err
@@ -223,7 +231,7 @@ type queryer interface {
 func get(ctx context.Context, q queryer, runID string) (FinalRecord, error) {
 	var r FinalRecord
 	var effects, limits []byte
-	err := q.QueryRow(ctx, `SELECT result_id,run_id,session_key,COALESCE(task_id,''),task_revision,constraints_revision,artifact_id,message_id,content,content_hash,answer_state,verdict,effects_json,limitations_json,created_at FROM run_final_results WHERE run_id=$1`, runID).Scan(&r.ResultID, &r.RunID, &r.SessionKey, &r.TaskID, &r.TaskRevision, &r.ConstraintsRevision, &r.ArtifactID, &r.MessageID, &r.Content, &r.ContentHash, &r.AnswerState, &r.Verdict, &effects, &limits, &r.CreatedAt)
+	err := q.QueryRow(ctx, `SELECT result_id,run_id,session_key,COALESCE(task_id,''),task_revision,constraints_revision,artifact_id,message_id,content,content_hash,answer_state,verdict,effects_json,limitations_json,created_at,COALESCE((to_jsonb(r)->>'privacy_redacted')::BOOLEAN,FALSE),COALESCE(to_jsonb(r)->>'redaction_id','') FROM run_final_results r WHERE run_id=$1`, runID).Scan(&r.ResultID, &r.RunID, &r.SessionKey, &r.TaskID, &r.TaskRevision, &r.ConstraintsRevision, &r.ArtifactID, &r.MessageID, &r.Content, &r.ContentHash, &r.AnswerState, &r.Verdict, &effects, &limits, &r.CreatedAt, &r.PrivacyRedacted, &r.RedactionID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return r, ErrNotFound
 	}

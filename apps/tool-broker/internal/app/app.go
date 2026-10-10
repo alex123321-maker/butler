@@ -24,6 +24,7 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
+	"github.com/butler/butler/internal/memory/catalog"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	"google.golang.org/grpc"
 )
@@ -81,6 +82,8 @@ func New(ctx context.Context) (*App, error) {
 			return nil, err
 		}
 		authorizationStore := actionauth.NewPostgresStore(postgres.Pool())
+		sourceCatalog := catalog.New(postgres.Pool(), catalog.NewFileManifest(strings.TrimSpace(os.Getenv("BUTLER_MEMORY_DELETION_MANIFEST_FILE"))))
+		authorizationStore.SetRunDataGuard(sourceCatalog.CheckRunSourcesTx)
 		budgetPolicy, policyErr := budget.ParsePolicy(cfg.ExecutionBudgetPolicyJSON)
 		if policyErr != nil {
 			postgres.Close()

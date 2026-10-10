@@ -83,6 +83,23 @@ func (s *Store) accept(ctx context.Context, event ingress.InputEvent, ownerID, t
 		return Record{}, false, err
 	}
 	defer tx.Rollback(context.Background())
+	r, created, err := s.acceptTx(ctx, tx, event, ownerID, taskID, status, code)
+	if err != nil {
+		return Record{}, false, err
+	}
+	return r, created, tx.Commit(ctx)
+}
+
+// AcceptTx joins an owned admission transaction. The caller can create a task
+// and its ordered receipt atomically, without writing another subsystem's rows.
+// Callers checking goal/mandate authority first must already hold the session
+// row lock, preserving admission's session-before-authority lock order.
+func (s *Store) AcceptTx(ctx context.Context, tx pgx.Tx, event ingress.InputEvent, ownerID, taskID string) (Record, bool, error) {
+	return s.acceptTx(ctx, tx, event, ownerID, taskID, "queued", "")
+}
+
+func (s *Store) acceptTx(ctx context.Context, tx pgx.Tx, event ingress.InputEvent, ownerID, taskID, status, code string) (Record, bool, error) {
+	var err error
 	var storedOwner string
 	if err = tx.QueryRow(ctx, `SELECT user_id FROM sessions WHERE session_key=$1 FOR UPDATE`, event.SessionKey).Scan(&storedOwner); err != nil {
 		return Record{}, false, err
@@ -111,7 +128,7 @@ func (s *Store) accept(ctx context.Context, event ingress.InputEvent, ownerID, t
  WHERE $8='' OR EXISTS(SELECT 1 FROM tasks WHERE task_id=$8 AND session_key=$2 AND owner_id=$6 AND status='active')
  ON CONFLICT(session_key,source,dedup_key) DO NOTHING RETURNING `+columns, id, event.SessionKey, event.EventID, key, event.Source, ownerID, encoded, taskID, status, code))
 	if err == nil {
-		return r, true, tx.Commit(ctx)
+		return r, true, nil
 	}
 	if !errors.Is(err, ErrNotFound) {
 		return Record{}, false, err
@@ -123,7 +140,7 @@ func (s *Store) accept(ctx context.Context, event ingress.InputEvent, ownerID, t
 	if r.OwnerID != ownerID || r.TaskID != taskID || r.Event.PayloadJSON != event.PayloadJSON || r.Event.EventType != event.EventType {
 		return Record{}, false, fmt.Errorf("delivery identity conflicts with accepted payload")
 	}
-	return r, false, tx.Commit(ctx)
+	return r, false, nil
 }
 func (s *Store) Get(ctx context.Context, id string) (Record, error) {
 	return scan(s.pool.QueryRow(ctx, `SELECT `+columns+` FROM accepted_inputs WHERE input_id=$1`, id))

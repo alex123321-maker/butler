@@ -857,7 +857,7 @@ type ExtractInput struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Text          string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
 	EntityTypes   []string               `protobuf:"bytes,2,rep,name=entity_types,json=entityTypes,proto3" json:"entity_types,omitempty"`
-	SchemaVersion string                 `protobuf:"bytes,3,opt,name=schema_version,json=schemaVersion,proto3" json:"schema_version,omitempty"`
+	SchemaVersion string                 `protobuf:"bytes,3,opt,name=schema_version,json=schemaVersion,proto3" json:"schema_version,omitempty"` // butler-memory-v1 selects a reviewed fixed schema; entity_types must be empty.
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1465,17 +1465,139 @@ func (x *Span) GetConfidence() float64 {
 	return 0
 }
 
+type ExtractRelation struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Type          string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+	Head          *Span                  `protobuf:"bytes,2,opt,name=head,proto3" json:"head,omitempty"`
+	Tail          *Span                  `protobuf:"bytes,3,opt,name=tail,proto3" json:"tail,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ExtractRelation) Reset() {
+	*x = ExtractRelation{}
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExtractRelation) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExtractRelation) ProtoMessage() {}
+
+func (x *ExtractRelation) ProtoReflect() protoreflect.Message {
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExtractRelation.ProtoReflect.Descriptor instead.
+func (*ExtractRelation) Descriptor() ([]byte, []int) {
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *ExtractRelation) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *ExtractRelation) GetHead() *Span {
+	if x != nil {
+		return x.Head
+	}
+	return nil
+}
+
+func (x *ExtractRelation) GetTail() *Span {
+	if x != nil {
+		return x.Tail
+	}
+	return nil
+}
+
+type ExtractRecord struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Type             string                 `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+	Fields           []*Span                `protobuf:"bytes,2,rep,name=fields,proto3" json:"fields,omitempty"`
+	UnresolvedFields []string               `protobuf:"bytes,3,rep,name=unresolved_fields,json=unresolvedFields,proto3" json:"unresolved_fields,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *ExtractRecord) Reset() {
+	*x = ExtractRecord{}
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExtractRecord) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExtractRecord) ProtoMessage() {}
+
+func (x *ExtractRecord) ProtoReflect() protoreflect.Message {
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExtractRecord.ProtoReflect.Descriptor instead.
+func (*ExtractRecord) Descriptor() ([]byte, []int) {
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *ExtractRecord) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *ExtractRecord) GetFields() []*Span {
+	if x != nil {
+		return x.Fields
+	}
+	return nil
+}
+
+func (x *ExtractRecord) GetUnresolvedFields() []string {
+	if x != nil {
+		return x.UnresolvedFields
+	}
+	return nil
+}
+
 type ExtractOutput struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Spans         []*Span                `protobuf:"bytes,1,rep,name=spans,proto3" json:"spans,omitempty"`
 	SchemaVersion string                 `protobuf:"bytes,2,opt,name=schema_version,json=schemaVersion,proto3" json:"schema_version,omitempty"`
+	Relations     []*ExtractRelation     `protobuf:"bytes,3,rep,name=relations,proto3" json:"relations,omitempty"`
+	Records       []*ExtractRecord       `protobuf:"bytes,4,rep,name=records,proto3" json:"records,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ExtractOutput) Reset() {
 	*x = ExtractOutput{}
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[17]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1487,7 +1609,7 @@ func (x *ExtractOutput) String() string {
 func (*ExtractOutput) ProtoMessage() {}
 
 func (x *ExtractOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[17]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1500,7 +1622,7 @@ func (x *ExtractOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExtractOutput.ProtoReflect.Descriptor instead.
 func (*ExtractOutput) Descriptor() ([]byte, []int) {
-	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{17}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ExtractOutput) GetSpans() []*Span {
@@ -1517,6 +1639,20 @@ func (x *ExtractOutput) GetSchemaVersion() string {
 	return ""
 }
 
+func (x *ExtractOutput) GetRelations() []*ExtractRelation {
+	if x != nil {
+		return x.Relations
+	}
+	return nil
+}
+
+func (x *ExtractOutput) GetRecords() []*ExtractRecord {
+	if x != nil {
+		return x.Records
+	}
+	return nil
+}
+
 type ClassifyOutput struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	Scores           []*Score               `protobuf:"bytes,1,rep,name=scores,proto3" json:"scores,omitempty"`
@@ -1527,7 +1663,7 @@ type ClassifyOutput struct {
 
 func (x *ClassifyOutput) Reset() {
 	*x = ClassifyOutput{}
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[18]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1539,7 +1675,7 @@ func (x *ClassifyOutput) String() string {
 func (*ClassifyOutput) ProtoMessage() {}
 
 func (x *ClassifyOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[18]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1552,7 +1688,7 @@ func (x *ClassifyOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClassifyOutput.ProtoReflect.Descriptor instead.
 func (*ClassifyOutput) Descriptor() ([]byte, []int) {
-	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{18}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ClassifyOutput) GetScores() []*Score {
@@ -1578,7 +1714,7 @@ type MediaOutput struct {
 
 func (x *MediaOutput) Reset() {
 	*x = MediaOutput{}
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[19]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1590,7 +1726,7 @@ func (x *MediaOutput) String() string {
 func (*MediaOutput) ProtoMessage() {}
 
 func (x *MediaOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[19]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1603,7 +1739,7 @@ func (x *MediaOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MediaOutput.ProtoReflect.Descriptor instead.
 func (*MediaOutput) Descriptor() ([]byte, []int) {
-	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{19}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *MediaOutput) GetEmbedding() []float32 {
@@ -1638,7 +1774,7 @@ type InferResponse struct {
 
 func (x *InferResponse) Reset() {
 	*x = InferResponse{}
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[20]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1650,7 +1786,7 @@ func (x *InferResponse) String() string {
 func (*InferResponse) ProtoMessage() {}
 
 func (x *InferResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[20]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1663,7 +1799,7 @@ func (x *InferResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InferResponse.ProtoReflect.Descriptor instead.
 func (*InferResponse) Descriptor() ([]byte, []int) {
-	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{20}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *InferResponse) GetRequestId() string {
@@ -1943,10 +2079,20 @@ const file_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\x03end\x18\x04 \x01(\rR\x03end\x12\x1e\n" +
 	"\n" +
 	"confidence\x18\x05 \x01(\x01R\n" +
-	"confidence\"i\n" +
+	"confidence\"\x87\x01\n" +
+	"\x0fExtractRelation\x12\x12\n" +
+	"\x04type\x18\x01 \x01(\tR\x04type\x12/\n" +
+	"\x04head\x18\x02 \x01(\v2\x1b.butler.localmodels.v1.SpanR\x04head\x12/\n" +
+	"\x04tail\x18\x03 \x01(\v2\x1b.butler.localmodels.v1.SpanR\x04tail\"\x85\x01\n" +
+	"\rExtractRecord\x12\x12\n" +
+	"\x04type\x18\x01 \x01(\tR\x04type\x123\n" +
+	"\x06fields\x18\x02 \x03(\v2\x1b.butler.localmodels.v1.SpanR\x06fields\x12+\n" +
+	"\x11unresolved_fields\x18\x03 \x03(\tR\x10unresolvedFields\"\xef\x01\n" +
 	"\rExtractOutput\x121\n" +
 	"\x05spans\x18\x01 \x03(\v2\x1b.butler.localmodels.v1.SpanR\x05spans\x12%\n" +
-	"\x0eschema_version\x18\x02 \x01(\tR\rschemaVersion\"s\n" +
+	"\x0eschema_version\x18\x02 \x01(\tR\rschemaVersion\x12D\n" +
+	"\trelations\x18\x03 \x03(\v2&.butler.localmodels.v1.ExtractRelationR\trelations\x12>\n" +
+	"\arecords\x18\x04 \x03(\v2$.butler.localmodels.v1.ExtractRecordR\arecords\"s\n" +
 	"\x0eClassifyOutput\x124\n" +
 	"\x06scores\x18\x01 \x03(\v2\x1c.butler.localmodels.v1.ScoreR\x06scores\x12+\n" +
 	"\x11insufficient_data\x18\x02 \x01(\bR\x10insufficientData\"+\n" +
@@ -2003,31 +2149,33 @@ func file_localmodels_v1_localmodels_proto_rawDescGZIP() []byte {
 }
 
 var file_localmodels_v1_localmodels_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_localmodels_v1_localmodels_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_localmodels_v1_localmodels_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_localmodels_v1_localmodels_proto_goTypes = []any{
-	(Capability)(0),        // 0: butler.localmodels.v1.Capability
-	(EmbeddingTask)(0),     // 1: butler.localmodels.v1.EmbeddingTask
-	(*Empty)(nil),          // 2: butler.localmodels.v1.Empty
-	(*ModelProfile)(nil),   // 3: butler.localmodels.v1.ModelProfile
-	(*Catalog)(nil),        // 4: butler.localmodels.v1.Catalog
-	(*GPUStatus)(nil),      // 5: butler.localmodels.v1.GPUStatus
-	(*ManagerStatus)(nil),  // 6: butler.localmodels.v1.ManagerStatus
-	(*TextInput)(nil),      // 7: butler.localmodels.v1.TextInput
-	(*EmbedInput)(nil),     // 8: butler.localmodels.v1.EmbedInput
-	(*RerankInput)(nil),    // 9: butler.localmodels.v1.RerankInput
-	(*ExtractInput)(nil),   // 10: butler.localmodels.v1.ExtractInput
-	(*ClassifyInput)(nil),  // 11: butler.localmodels.v1.ClassifyInput
-	(*MediaInput)(nil),     // 12: butler.localmodels.v1.MediaInput
-	(*InferRequest)(nil),   // 13: butler.localmodels.v1.InferRequest
-	(*Vector)(nil),         // 14: butler.localmodels.v1.Vector
-	(*EmbedOutput)(nil),    // 15: butler.localmodels.v1.EmbedOutput
-	(*Score)(nil),          // 16: butler.localmodels.v1.Score
-	(*RerankOutput)(nil),   // 17: butler.localmodels.v1.RerankOutput
-	(*Span)(nil),           // 18: butler.localmodels.v1.Span
-	(*ExtractOutput)(nil),  // 19: butler.localmodels.v1.ExtractOutput
-	(*ClassifyOutput)(nil), // 20: butler.localmodels.v1.ClassifyOutput
-	(*MediaOutput)(nil),    // 21: butler.localmodels.v1.MediaOutput
-	(*InferResponse)(nil),  // 22: butler.localmodels.v1.InferResponse
+	(Capability)(0),         // 0: butler.localmodels.v1.Capability
+	(EmbeddingTask)(0),      // 1: butler.localmodels.v1.EmbeddingTask
+	(*Empty)(nil),           // 2: butler.localmodels.v1.Empty
+	(*ModelProfile)(nil),    // 3: butler.localmodels.v1.ModelProfile
+	(*Catalog)(nil),         // 4: butler.localmodels.v1.Catalog
+	(*GPUStatus)(nil),       // 5: butler.localmodels.v1.GPUStatus
+	(*ManagerStatus)(nil),   // 6: butler.localmodels.v1.ManagerStatus
+	(*TextInput)(nil),       // 7: butler.localmodels.v1.TextInput
+	(*EmbedInput)(nil),      // 8: butler.localmodels.v1.EmbedInput
+	(*RerankInput)(nil),     // 9: butler.localmodels.v1.RerankInput
+	(*ExtractInput)(nil),    // 10: butler.localmodels.v1.ExtractInput
+	(*ClassifyInput)(nil),   // 11: butler.localmodels.v1.ClassifyInput
+	(*MediaInput)(nil),      // 12: butler.localmodels.v1.MediaInput
+	(*InferRequest)(nil),    // 13: butler.localmodels.v1.InferRequest
+	(*Vector)(nil),          // 14: butler.localmodels.v1.Vector
+	(*EmbedOutput)(nil),     // 15: butler.localmodels.v1.EmbedOutput
+	(*Score)(nil),           // 16: butler.localmodels.v1.Score
+	(*RerankOutput)(nil),    // 17: butler.localmodels.v1.RerankOutput
+	(*Span)(nil),            // 18: butler.localmodels.v1.Span
+	(*ExtractRelation)(nil), // 19: butler.localmodels.v1.ExtractRelation
+	(*ExtractRecord)(nil),   // 20: butler.localmodels.v1.ExtractRecord
+	(*ExtractOutput)(nil),   // 21: butler.localmodels.v1.ExtractOutput
+	(*ClassifyOutput)(nil),  // 22: butler.localmodels.v1.ClassifyOutput
+	(*MediaOutput)(nil),     // 23: butler.localmodels.v1.MediaOutput
+	(*InferResponse)(nil),   // 24: butler.localmodels.v1.InferResponse
 }
 var file_localmodels_v1_localmodels_proto_depIdxs = []int32{
 	0,  // 0: butler.localmodels.v1.ModelProfile.capabilities:type_name -> butler.localmodels.v1.Capability
@@ -2044,24 +2192,29 @@ var file_localmodels_v1_localmodels_proto_depIdxs = []int32{
 	12, // 11: butler.localmodels.v1.InferRequest.media:type_name -> butler.localmodels.v1.MediaInput
 	14, // 12: butler.localmodels.v1.EmbedOutput.vectors:type_name -> butler.localmodels.v1.Vector
 	16, // 13: butler.localmodels.v1.RerankOutput.scores:type_name -> butler.localmodels.v1.Score
-	18, // 14: butler.localmodels.v1.ExtractOutput.spans:type_name -> butler.localmodels.v1.Span
-	16, // 15: butler.localmodels.v1.ClassifyOutput.scores:type_name -> butler.localmodels.v1.Score
-	15, // 16: butler.localmodels.v1.InferResponse.embed:type_name -> butler.localmodels.v1.EmbedOutput
-	17, // 17: butler.localmodels.v1.InferResponse.rerank:type_name -> butler.localmodels.v1.RerankOutput
-	19, // 18: butler.localmodels.v1.InferResponse.extract:type_name -> butler.localmodels.v1.ExtractOutput
-	20, // 19: butler.localmodels.v1.InferResponse.classify:type_name -> butler.localmodels.v1.ClassifyOutput
-	21, // 20: butler.localmodels.v1.InferResponse.media:type_name -> butler.localmodels.v1.MediaOutput
-	2,  // 21: butler.localmodels.v1.LocalModelsService.Describe:input_type -> butler.localmodels.v1.Empty
-	2,  // 22: butler.localmodels.v1.LocalModelsService.Status:input_type -> butler.localmodels.v1.Empty
-	13, // 23: butler.localmodels.v1.LocalModelsService.Infer:input_type -> butler.localmodels.v1.InferRequest
-	4,  // 24: butler.localmodels.v1.LocalModelsService.Describe:output_type -> butler.localmodels.v1.Catalog
-	6,  // 25: butler.localmodels.v1.LocalModelsService.Status:output_type -> butler.localmodels.v1.ManagerStatus
-	22, // 26: butler.localmodels.v1.LocalModelsService.Infer:output_type -> butler.localmodels.v1.InferResponse
-	24, // [24:27] is the sub-list for method output_type
-	21, // [21:24] is the sub-list for method input_type
-	21, // [21:21] is the sub-list for extension type_name
-	21, // [21:21] is the sub-list for extension extendee
-	0,  // [0:21] is the sub-list for field type_name
+	18, // 14: butler.localmodels.v1.ExtractRelation.head:type_name -> butler.localmodels.v1.Span
+	18, // 15: butler.localmodels.v1.ExtractRelation.tail:type_name -> butler.localmodels.v1.Span
+	18, // 16: butler.localmodels.v1.ExtractRecord.fields:type_name -> butler.localmodels.v1.Span
+	18, // 17: butler.localmodels.v1.ExtractOutput.spans:type_name -> butler.localmodels.v1.Span
+	19, // 18: butler.localmodels.v1.ExtractOutput.relations:type_name -> butler.localmodels.v1.ExtractRelation
+	20, // 19: butler.localmodels.v1.ExtractOutput.records:type_name -> butler.localmodels.v1.ExtractRecord
+	16, // 20: butler.localmodels.v1.ClassifyOutput.scores:type_name -> butler.localmodels.v1.Score
+	15, // 21: butler.localmodels.v1.InferResponse.embed:type_name -> butler.localmodels.v1.EmbedOutput
+	17, // 22: butler.localmodels.v1.InferResponse.rerank:type_name -> butler.localmodels.v1.RerankOutput
+	21, // 23: butler.localmodels.v1.InferResponse.extract:type_name -> butler.localmodels.v1.ExtractOutput
+	22, // 24: butler.localmodels.v1.InferResponse.classify:type_name -> butler.localmodels.v1.ClassifyOutput
+	23, // 25: butler.localmodels.v1.InferResponse.media:type_name -> butler.localmodels.v1.MediaOutput
+	2,  // 26: butler.localmodels.v1.LocalModelsService.Describe:input_type -> butler.localmodels.v1.Empty
+	2,  // 27: butler.localmodels.v1.LocalModelsService.Status:input_type -> butler.localmodels.v1.Empty
+	13, // 28: butler.localmodels.v1.LocalModelsService.Infer:input_type -> butler.localmodels.v1.InferRequest
+	4,  // 29: butler.localmodels.v1.LocalModelsService.Describe:output_type -> butler.localmodels.v1.Catalog
+	6,  // 30: butler.localmodels.v1.LocalModelsService.Status:output_type -> butler.localmodels.v1.ManagerStatus
+	24, // 31: butler.localmodels.v1.LocalModelsService.Infer:output_type -> butler.localmodels.v1.InferResponse
+	29, // [29:32] is the sub-list for method output_type
+	26, // [26:29] is the sub-list for method input_type
+	26, // [26:26] is the sub-list for extension type_name
+	26, // [26:26] is the sub-list for extension extendee
+	0,  // [0:26] is the sub-list for field type_name
 }
 
 func init() { file_localmodels_v1_localmodels_proto_init() }
@@ -2076,7 +2229,7 @@ func file_localmodels_v1_localmodels_proto_init() {
 		(*InferRequest_Classify)(nil),
 		(*InferRequest_Media)(nil),
 	}
-	file_localmodels_v1_localmodels_proto_msgTypes[20].OneofWrappers = []any{
+	file_localmodels_v1_localmodels_proto_msgTypes[22].OneofWrappers = []any{
 		(*InferResponse_Embed)(nil),
 		(*InferResponse_Rerank)(nil),
 		(*InferResponse_Extract)(nil),
@@ -2089,7 +2242,7 @@ func file_localmodels_v1_localmodels_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_localmodels_v1_localmodels_proto_rawDesc), len(file_localmodels_v1_localmodels_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   21,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

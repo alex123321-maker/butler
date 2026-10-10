@@ -7,6 +7,8 @@ from huggingface_hub import snapshot_download
 root = pathlib.Path(sys.argv[1])
 catalog = pathlib.Path(__file__).with_name("models.json")
 for profile in json.loads(catalog.read_text())["models"]:
+    if not profile.get('enabled', False):
+        continue
     revision=profile["revision"]
     if len(revision)!=40 or any(c not in "0123456789abcdef" for c in revision):
         raise ValueError("full revision required")

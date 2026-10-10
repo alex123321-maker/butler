@@ -3,17 +3,23 @@ package goal
 import (
 	"context"
 	"errors"
+	"regexp"
 	"time"
 
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/jackc/pgx/v5"
 )
 
+var projectDigest = regexp.MustCompile("^[a-f0-9]{64}$")
+var projectReference = regexp.MustCompile("^[a-zA-Z0-9][a-zA-Z0-9_.:/-]{0,199}$")
+
 type TaskRequest struct {
 	SessionKey         string   `json:"session_key"`
 	GoalID             string   `json:"goal_id"`
 	MandateID          string   `json:"mandate_id"`
 	Purpose            string   `json:"purpose"`
+	ProjectRef         string   `json:"project_ref,omitempty"`
+	ProjectRevision    string   `json:"project_revision,omitempty"`
 	Goal               string   `json:"goal"`
 	Constraints        []string `json:"constraints"`
 	CompletionCriteria []string `json:"completion_criteria"`
@@ -25,6 +31,9 @@ type TaskRequest struct {
 // initiative coordinators instead use CheckAdmissionTx + task.CreateTx in their
 // own atomic candidate/input/budget transaction.
 func (m *Manager) CreateOwnerTask(ctx context.Context, req TaskRequest) (task.Record, error) {
+	if (req.ProjectRef == "") != (req.ProjectRevision == "") || (req.ProjectRef != "" && !projectReference.MatchString(req.ProjectRef)) || (req.ProjectRevision != "" && !projectDigest.MatchString(req.ProjectRevision)) {
+		return task.Record{}, ErrInvalid
+	}
 	a, err := actor(ctx)
 	if err != nil {
 		return task.Record{}, err
@@ -66,7 +75,11 @@ func (m *Manager) CreateOwnerTask(ctx context.Context, req TaskRequest) (task.Re
 	if err != nil {
 		return task.Record{}, err
 	}
-	r, err := m.tasks.CreateTx(ctx, tx, task.CreateRequest{SessionKey: req.SessionKey, OwnerID: a.OwnerID, Goal: req.Goal, Constraints: req.Constraints, CompletionCriteria: req.CompletionCriteria, Authority: &assignment, Source: map[string]any{"type": "owner_goal_task", "owner_delivery_id": a.Channel + ":" + a.DeliveryID, "owner_request_hash": fingerprint(req), "channel": a.Channel}})
+	source := map[string]any{"type": "owner_goal_task", "owner_delivery_id": a.Channel + ":" + a.DeliveryID, "owner_request_hash": fingerprint(req), "channel": a.Channel}
+	if req.ProjectRef != "" {
+		source["project_ref"], source["project_revision"] = req.ProjectRef, req.ProjectRevision
+	}
+	r, err := m.tasks.CreateTx(ctx, tx, task.CreateRequest{SessionKey: req.SessionKey, OwnerID: a.OwnerID, Goal: req.Goal, Constraints: req.Constraints, CompletionCriteria: req.CompletionCriteria, Authority: &assignment, Source: source})
 	if err != nil {
 		return r, err
 	}

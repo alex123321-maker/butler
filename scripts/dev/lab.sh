@@ -25,6 +25,12 @@ fi
 if [[ -f "$root/local-models/compose.env" ]]; then
   compose+=(--env-file "$root/local-models/compose.env" -f deploy/docker-compose.local-models.lab.yml --profile local-models)
 fi
+if [[ -f "$root/memory-semantic/compose.env" ]]; then
+  compose+=(--env-file "$root/memory-semantic/compose.env" -f deploy/docker-compose.memory-semantic.yml)
+fi
+if [[ -f "$root/memory-parser/compose.env" ]]; then
+  compose+=(--env-file "$root/memory-parser/compose.env" -f deploy/docker-compose.memory-parser.yml --profile memory-parser)
+fi
 test_options=()
 if [[ "$action" == Integration || "$action" == Race ]]; then
   for database in butler_lab_core_test butler_lab_actionauth_test butler_lab_completion_test; do
@@ -35,6 +41,7 @@ if [[ "$action" == Integration || "$action" == Race ]]; then
   test_options=(--network butler-lab_backend
     --env BUTLER_TEST_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_core_test?sslmode=disable
     --env BUTLER_TEST_GOALS_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_core_test?sslmode=disable
+    --env BUTLER_TEST_INITIATIVE_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_core_test?sslmode=disable
     --env BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_core_test?sslmode=disable
     --env BUTLER_TEST_SEMANTIC_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_core_test?sslmode=disable
     --env BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_actionauth_test?sslmode=disable

@@ -60,6 +60,11 @@ result/verdict → delivery outbox. HTTP disconnect не отменяет при
 поздний worker ограничен fencing epoch. Ожидание человека освобождает активное
 исполнение и возобновляется durable event, а не только in-memory channel.
 
+Typed [initiative admission](initiative-contract.md) creates the task and its
+ordered input atomically after current goal/mandate and prospective budget
+checks. Source observations never grant authority. Actual run execution retains
+the same approval, budgeting, stop and verified-completion boundaries.
+
 До реализации соответствующих миграций существующие API представляют run как
 task. Это переходный read model, а не подтверждение долговечности поручения.
 

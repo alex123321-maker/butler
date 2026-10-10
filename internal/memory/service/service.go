@@ -42,6 +42,24 @@ type EmbeddingProvider interface {
 	EmbedQuery(context.Context, string) ([]float32, error)
 }
 
+// SemanticReader is an optional separately versioned local retrieval path.
+// Its caller must provide trusted admission; retrieved text is evidence, never
+// an authorization or a replacement for current structured owner constraints.
+type SemanticReader interface {
+	Search(context.Context, []Scope, string, int) ([]SemanticHit, error)
+}
+type SemanticHit struct {
+	Title, Summary                                                   string
+	Distance                                                         float64
+	SourceRef, OriginType, OriginID, Revision, GenerationID, SpaceID string
+	Origin                                                           content.Origin
+	ExcerptClipped                                                   bool
+}
+
+func (h SemanticHit) MemoryOrigin() content.Origin {
+	return content.Derive(content.MemoryDerived, h.Origin)
+}
+
 type ProfileEntry interface {
 	ProfileKey() string
 	ProfileSummary() string
@@ -73,12 +91,16 @@ type Config struct {
 	WorkingStore  WorkingStore
 	SummaryReader SummaryReader
 	Embeddings    EmbeddingProvider
+	Semantic      SemanticReader
 	ProfileLimit  int
 	EpisodeLimit  int
 	ChunkLimit    int
 	BundleBudget  int
 	KeywordLimit  int
 	ScopeOrder    []string
+	// ScopeResolver is trusted composition derived from current task ownership
+	// and exact owner grants; request/model text cannot populate extra scopes.
+	ScopeResolver func(context.Context) ([]Scope, error)
 	Log           *slog.Logger
 	Metrics       *metrics.Registry
 }
@@ -150,6 +172,24 @@ func New(cfg Config) *Service {
 func (s *Service) BuildBundle(ctx context.Context, req BundleRequest) (Bundle, error) {
 	req.UserMessage = sanitize.Text(req.UserMessage)
 	scopes := s.scopes(req.SessionKey, req.UserID)
+	if s.config.ScopeResolver != nil {
+		extra, e := s.config.ScopeResolver(ctx)
+		if e != nil {
+			return Bundle{}, e
+		}
+		if len(extra) > 9 {
+			return Bundle{}, fmt.Errorf("too many current memory scopes")
+		}
+		seen := map[Scope]bool{}
+		combined := make([]Scope, 0, len(scopes)+len(extra))
+		for _, scope := range append(extra, scopes...) {
+			if !seen[scope] {
+				combined = append(combined, scope)
+				seen[scope] = true
+			}
+		}
+		scopes = combined
+	}
 	profileEntries, err := s.loadProfile(ctx, scopes)
 	if err != nil {
 		return Bundle{}, err
@@ -210,7 +250,7 @@ func (s *Service) loadProfile(ctx context.Context, scopes []Scope) ([]map[string
 			if origin.Sensitivity == content.Secret {
 				continue
 			}
-			result = append(result, map[string]any{"key": entry.ProfileKey(), "summary": entry.ProfileSummary(), "scope_type": scope.Type, "origin": origin})
+			result = append(result, map[string]any{"key": entry.ProfileKey(), "summary": entry.ProfileSummary(), "scope_type": scope.Type, "scope_id": scope.ID, "origin": origin})
 			if len(result) >= s.config.ProfileLimit {
 				return result, nil
 			}
@@ -337,6 +377,21 @@ func (s *Service) loadWorking(ctx context.Context, sessionKey string) (WorkingCo
 }
 
 func (s *Service) loadChunks(ctx context.Context, scopes []Scope, userMessage string, includeQuery bool) ([]map[string]any, error) {
+	if s.config.Semantic != nil && includeQuery && strings.TrimSpace(userMessage) != "" {
+		hits, err := s.config.Semantic.Search(ctx, scopes, userMessage, min(4, s.config.ChunkLimit))
+		if err != nil {
+			s.log.Warn("local semantic retrieval unavailable")
+			return nil, nil
+		}
+		items := make([]map[string]any, 0, len(hits))
+		for _, h := range hits {
+			if h.MemoryOrigin().Sensitivity == content.Secret {
+				continue
+			}
+			items = append(items, map[string]any{"title": h.Title, "summary": h.Summary, "distance": h.Distance, "source": "local_semantic", "source_ref": h.SourceRef, "origin_type": h.OriginType, "origin_id": h.OriginID, "source_revision": h.Revision, "index_generation": h.GenerationID, "index_space": h.SpaceID, "origin": h.MemoryOrigin(), "excerpt_clipped": h.ExcerptClipped})
+		}
+		return items, nil
+	}
 	if !includeQuery || s.config.ChunkStore == nil || s.config.ChunkLimit <= 0 || strings.TrimSpace(userMessage) == "" {
 		return nil, nil
 	}
@@ -448,7 +503,11 @@ func FormatPrompt(working WorkingContext, profileEntries, episodes, chunks []map
 	if len(chunks) > 0 {
 		lines := make([]string, 0, len(chunks))
 		for _, entry := range chunks {
-			lines = append(lines, fmt.Sprintf("- %s: %s", entry["title"], entry["summary"]))
+			line := fmt.Sprintf("- %s: %s", entry["title"], entry["summary"])
+			if ref, ok := entry["source_ref"].(string); ok && ref != "" {
+				line += fmt.Sprintf(" (source %s; revision %s; retrieved evidence)", ref, entry["source_revision"])
+			}
+			lines = append(lines, line)
 		}
 		sections = append(sections, "Relevant document chunks:\n"+strings.Join(lines, "\n"))
 	}

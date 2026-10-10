@@ -19,6 +19,7 @@ import (
 	deliveryevents "github.com/butler/butler/apps/orchestrator/internal/deliveryevents"
 	"github.com/butler/butler/apps/orchestrator/internal/deliveryoutbox"
 	"github.com/butler/butler/apps/orchestrator/internal/goal"
+	"github.com/butler/butler/apps/orchestrator/internal/initiative"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
@@ -35,6 +36,7 @@ import (
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
+	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/chunks"
 	"github.com/butler/butler/internal/memory/embeddings"
 	"github.com/butler/butler/internal/memory/episodic"
@@ -196,6 +198,21 @@ func New(ctx context.Context) (*App, error) {
 	profileStore := profile.NewStore(postgres.Pool())
 	episodicStore := episodic.NewStore(postgres.Pool())
 	chunkStore := chunks.NewStore(postgres.Pool())
+	sourceCatalog := catalog.New(postgres.Pool(), catalog.NewFileManifest(strings.TrimSpace(os.Getenv("BUTLER_MEMORY_DELETION_MANIFEST_FILE"))))
+	if restoreErr := sourceCatalog.Reconcile(ctx); restoreErr != nil {
+		log.Warn("memory unavailable: deletion anchor requires operator reconciliation")
+	}
+	ownedSemantic, closeOwnedSemantic := configureOwnedSemantic(log, sourceCatalog, budgetController)
+	semanticReady := false
+	defer func() {
+		if !semanticReady && closeOwnedSemantic != nil {
+			closeOwnedSemantic()
+		}
+	}()
+	var semanticReader memoryservice.SemanticReader
+	if ownedSemantic != nil {
+		semanticReader = ownedSemantic.Reader
+	}
 
 	memoryRuntimeConfig := cfg
 	if memoryRuntimeConfig.MemoryPipelineEnabled {
@@ -206,6 +223,7 @@ func New(ctx context.Context) (*App, error) {
 	}
 	embeddingProvider, pipelineWorker := configureMemoryPipeline(log, memoryRuntimeConfig, authManager, m, pipelineQueue, transcriptStore, summaryStore, profileStore, episodicStore, chunkStore)
 	finalResults := completion.New(postgres.Pool())
+	finalResults.DataGuard = sourceCatalog.CheckRunSourcesTx
 	finalResults.Evidence = effectEvidence{journal: actionauth.NewPostgresStore(postgres.Pool())}
 	outboxWorker := &deliveryoutbox.Worker{Store: finalResults.Outbox}
 	if telegram != nil {
@@ -228,6 +246,19 @@ func New(ctx context.Context) (*App, error) {
 		transcriptStore,
 		providerResult.Provider,
 		flow.Config{
+			MemoryScopeResolver: func(ctx context.Context) ([]memoryservice.Scope, error) {
+				scopes, e := sourceCatalog.ExtraScopes(ctx, "memory_read")
+				if e != nil {
+					return nil, e
+				}
+				out := make([]memoryservice.Scope, len(scopes))
+				for i, scope := range scopes {
+					out[i] = memoryservice.Scope{Type: scope.Type, ID: scope.ID}
+				}
+				return out, nil
+			},
+			SemanticMemory:        semanticReader,
+			MemorySources:         sourceCatalog,
 			Budgets:               budgetController,
 			Completion:            finalResults,
 			DurableMemoryPipeline: pipelineWorker != nil,
@@ -253,11 +284,11 @@ func New(ctx context.Context) (*App, error) {
 			ApprovalGate:          approvalGate,
 			ApprovalService:       approvalService,
 			WorkingStore:          workingStoreAdapter{store: working.NewStore(postgres.Pool())},
-			TransientStore:        transientWorkingStoreAdapter{store: working.NewTransientStore(redis.Client())},
+			TransientStore:        transientWorkingStoreAdapter{store: working.NewTransientStore(redis.Client()), sources: sourceCatalog},
 			TransientTTL:          time.Duration(cfg.MemoryWorkingTransientTTLSeconds) * time.Second,
-			ProfileStore:          profileStoreAdapter{store: profileStore},
-			EpisodeStore:          episodicStoreAdapter{store: episodicStore},
-			ChunkStore:            chunkStoreAdapter{store: chunkStore},
+			ProfileStore:          profileStoreAdapter{store: profileStore, sources: sourceCatalog},
+			EpisodeStore:          episodicStoreAdapter{store: episodicStore, sources: sourceCatalog},
+			ChunkStore:            chunkStoreAdapter{store: chunkStore, sources: sourceCatalog},
 			Embeddings:            memoryEmbeddings,
 			PipelineEnqueuer:      pipelineEnqueuer,
 			SummaryReader:         summaryStore,
@@ -273,11 +304,27 @@ func New(ctx context.Context) (*App, error) {
 	taskControls := task.NewController(taskStore, sessionLeaseManager.Authority(), sessionLeaseManager, runRepo, approvalRepo, inputStore, transcriptStore)
 	ownerGoals.SetControls(taskControls)
 	inputWorker.SetTaskControls(taskControls)
+	initiativeStore := initiative.NewStore(postgres.Pool())
+	initiativeStore.RunDataGuardTx = sourceCatalog.CheckRunSourcesTx
+	initiativeDeliveryWorker := &deliveryoutbox.Worker{Store: initiative.DigestStore{Store: initiativeStore}}
+	if telegram != nil {
+		initiativeDeliveryWorker.Sender = telegram
+	}
+	allowance := budget.ModelAllowance{Provider: providerResult.ProviderName, Model: providerResult.ModelName}
+	if limits, ok := providerResult.Provider.(interface{ InferenceLimits() (int64, int64) }); ok {
+		allowance.InputTokens, allowance.OutputTokens = limits.InferenceLimits()
+	}
+	initiativeWorker := &initiative.Worker{Store: initiativeStore, Observer: initiative.ProjectObserver{Store: initiativeStore, RunDataGuard: func(ctx context.Context, runID string) error {
+		return checkRecordedInitiativeSources(ctx, postgres.Pool(), sourceCatalog, runID)
+	}}, Promoter: &initiative.Promoter{Store: initiativeStore, Goals: ownerGoals, Tasks: taskStore, Inputs: inputStore, Budgets: budgetController, Allowance: allowance}}
 	inputWorker.SetMaintenance(func(ctx context.Context) error {
 		if err := approvalService.ExpireInvalidPending(ctx); err != nil {
 			return err
 		}
-		return ownerGoals.Sweep(ctx)
+		if err := ownerGoals.Sweep(ctx); err != nil {
+			return err
+		}
+		return initiativeWorker.Sweep(ctx)
 	})
 	if telegram != nil {
 		telegram.SetExecutor(inputWorker)
@@ -300,6 +347,8 @@ func New(ctx context.Context) (*App, error) {
 	}
 	apiServer := apiservice.NewServer(inputWorker, logger.WithComponent(log, "api"))
 	httpServer := newHTTPServer(httpServerDeps{
+		memoryIndexing:         ownedSemantic,
+		sourceCatalog:          sourceCatalog,
 		cfg:                    cfg,
 		finalResults:           finalResults,
 		actionAuthorityHandler: actionAuthorityHandler,
@@ -321,6 +370,7 @@ func New(ctx context.Context) (*App, error) {
 		taskStore:              taskStore,
 		taskControls:           taskControls,
 		ownerGoals:             ownerGoals,
+		initiativeStore:        initiativeStore,
 		transcriptStore:        transcriptStore,
 		transitionRepo:         transitionRepo,
 		eventHub:               eventHub,
@@ -359,22 +409,27 @@ func New(ctx context.Context) (*App, error) {
 	)
 	orchestratorv1.RegisterOrchestratorServiceServer(grpcServer, apiServer)
 
+	semanticReady = true
 	return &App{
-		config:          cfg,
-		log:             log,
-		metrics:         m,
-		health:          h,
-		postgres:        postgres,
-		redis:           redis,
-		httpServer:      httpServer,
-		grpcServer:      grpcServer,
-		grpcListen:      grpcListener,
-		telegram:        telegram,
-		toolBroker:      toolBrokerClient,
-		pipelineWorker:  pipelineWorker,
-		inputWorker:     inputWorker,
-		outboxWorker:    outboxWorker,
-		auxiliaryWorker: auxiliaryWorker,
+		config:                   cfg,
+		log:                      log,
+		metrics:                  m,
+		health:                   h,
+		postgres:                 postgres,
+		redis:                    redis,
+		httpServer:               httpServer,
+		grpcServer:               grpcServer,
+		grpcListen:               grpcListener,
+		telegram:                 telegram,
+		toolBroker:               toolBrokerClient,
+		pipelineWorker:           pipelineWorker,
+		inputWorker:              inputWorker,
+		outboxWorker:             outboxWorker,
+		initiativeDeliveryWorker: initiativeDeliveryWorker,
+		auxiliaryWorker:          auxiliaryWorker,
+		memoryCleanup:            &catalog.CleanupWorker{Store: sourceCatalog, Cleaner: privacyCacheCleaner{store: working.NewTransientStore(redis.Client())}},
+		memoryIndexing:           ownedSemantic,
+		memoryIndexingClose:      closeOwnedSemantic,
 	}, nil
 }
 

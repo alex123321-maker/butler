@@ -6,6 +6,7 @@ import (
 	"time"
 
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
+	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/chunks"
 	"github.com/butler/butler/internal/memory/episodic"
 	"github.com/butler/butler/internal/memory/profile"
@@ -13,7 +14,10 @@ import (
 	"github.com/butler/butler/internal/memory/working"
 )
 
-type profileStoreAdapter struct{ store *profile.Store }
+type profileStoreAdapter struct {
+	store   *profile.Store
+	sources *catalog.Store
+}
 
 func (a profileStoreAdapter) GetByScope(ctx context.Context, scopeType, scopeID string) ([]memoryservice.ProfileEntry, error) {
 	entries, err := a.store.GetByScope(ctx, scopeType, scopeID)
@@ -22,12 +26,22 @@ func (a profileStoreAdapter) GetByScope(ctx context.Context, scopeType, scopeID 
 	}
 	result := make([]memoryservice.ProfileEntry, 0, len(entries))
 	for _, entry := range entries {
+		allowed, e := memoryObjectAllowed(ctx, a.sources, "profile", entry.ID)
+		if e != nil {
+			return nil, e
+		}
+		if !allowed || entry.ConfirmationState != "confirmed" && entry.ConfirmationState != "auto_confirmed" {
+			continue
+		}
 		result = append(result, entry)
 	}
 	return result, nil
 }
 
-type episodicStoreAdapter struct{ store *episodic.Store }
+type episodicStoreAdapter struct {
+	store   *episodic.Store
+	sources *catalog.Store
+}
 
 type memoryEpisodeExactMatch struct{ episodic.Episode }
 
@@ -41,6 +55,13 @@ func (a episodicStoreAdapter) Search(ctx context.Context, scopeType, scopeID str
 	}
 	result := make([]memoryservice.Episode, 0, len(entries))
 	for _, entry := range entries {
+		allowed, e := memoryObjectAllowed(ctx, a.sources, "episodic", entry.ID)
+		if e != nil {
+			return nil, e
+		}
+		if !allowed || entry.ConfirmationState != "confirmed" && entry.ConfirmationState != "auto_confirmed" {
+			continue
+		}
 		result = append(result, entry)
 	}
 	return result, nil
@@ -53,12 +74,22 @@ func (a episodicStoreAdapter) FindBySummary(ctx context.Context, scopeType, scop
 	}
 	result := make([]memoryservice.Episode, 0, len(entries))
 	for _, entry := range entries {
+		allowed, e := memoryObjectAllowed(ctx, a.sources, "episodic", entry.ID)
+		if e != nil {
+			return nil, e
+		}
+		if !allowed || entry.ConfirmationState != "confirmed" && entry.ConfirmationState != "auto_confirmed" {
+			continue
+		}
 		result = append(result, memoryEpisodeExactMatch{Episode: entry})
 	}
 	return result, nil
 }
 
-type chunkStoreAdapter struct{ store *chunks.Store }
+type chunkStoreAdapter struct {
+	store   *chunks.Store
+	sources *catalog.Store
+}
 
 type memoryChunkExactMatch struct{ chunks.Chunk }
 
@@ -73,6 +104,13 @@ func (a chunkStoreAdapter) Search(ctx context.Context, scopeType, scopeID string
 	}
 	result := make([]memoryservice.Chunk, 0, len(entries))
 	for _, entry := range entries {
+		allowed, e := memoryObjectAllowed(ctx, a.sources, "chunk", entry.ID)
+		if e != nil {
+			return nil, e
+		}
+		if !allowed {
+			continue
+		}
 		result = append(result, entry)
 	}
 	return result, nil
@@ -85,6 +123,13 @@ func (a chunkStoreAdapter) FindByTitle(ctx context.Context, scopeType, scopeID, 
 	}
 	result := make([]memoryservice.Chunk, 0, len(entries))
 	for _, entry := range entries {
+		allowed, e := memoryObjectAllowed(ctx, a.sources, "chunk", entry.ID)
+		if e != nil {
+			return nil, e
+		}
+		if !allowed {
+			continue
+		}
 		result = append(result, memoryChunkExactMatch{Chunk: entry})
 	}
 	return result, nil
@@ -155,9 +200,17 @@ func (a workingStoreAdapter) Clear(ctx context.Context, sessionKey string) error
 	return err
 }
 
-type transientWorkingStoreAdapter struct{ store *working.TransientStore }
+type transientWorkingStoreAdapter struct {
+	store   *working.TransientStore
+	sources *catalog.Store
+}
 
 func (a transientWorkingStoreAdapter) Get(ctx context.Context, sessionKey, runID string) (flow.TransientWorkingState, error) {
+	if a.sources != nil {
+		if e := a.sources.CheckRunSources(ctx, runID); e != nil {
+			return flow.TransientWorkingState{}, e
+		}
+	}
 	state, err := a.store.Get(ctx, sessionKey, runID)
 	if err != nil {
 		if errors.Is(err, working.ErrTransientStateNotFound) {
@@ -175,13 +228,24 @@ func (a transientWorkingStoreAdapter) Get(ctx context.Context, sessionKey, runID
 }
 
 func (a transientWorkingStoreAdapter) Save(ctx context.Context, state flow.TransientWorkingState, ttl time.Duration) (flow.TransientWorkingState, error) {
-	saved, err := a.store.Save(ctx, working.TransientState{
-		SessionKey:  state.SessionKey,
-		RunID:       state.RunID,
-		Status:      state.Status,
-		ScratchJSON: state.ScratchJSON,
-		UpdatedAt:   state.UpdatedAt,
-	}, ttl)
+	var saved working.TransientState
+	write := func(c context.Context) error {
+		var err error
+		saved, err = a.store.Save(c, working.TransientState{
+			SessionKey:  state.SessionKey,
+			RunID:       state.RunID,
+			Status:      state.Status,
+			ScratchJSON: state.ScratchJSON,
+			UpdatedAt:   state.UpdatedAt,
+		}, ttl)
+		return err
+	}
+	var err error
+	if a.sources != nil {
+		err = a.sources.GuardCacheWrite(ctx, state.RunID, write)
+	} else {
+		err = write(ctx)
+	}
 	if err != nil {
 		return flow.TransientWorkingState{}, err
 	}
@@ -192,6 +256,30 @@ func (a transientWorkingStoreAdapter) Save(ctx context.Context, state flow.Trans
 		ScratchJSON: saved.ScratchJSON,
 		UpdatedAt:   saved.UpdatedAt,
 	}, nil
+}
+
+func memoryObjectAllowed(ctx context.Context, s *catalog.Store, typ string, id int64) (bool, error) {
+	if s == nil {
+		return true, nil
+	}
+	e := s.CheckObjects(ctx, []catalog.ObjectRef{{Type: typ, ID: id}}, "memory_read")
+	if e == nil {
+		return true, nil
+	}
+	if errors.Is(e, catalog.ErrDenied) || errors.Is(e, catalog.ErrStale) {
+		return false, nil
+	}
+	return false, e
+}
+
+type privacyCacheCleaner struct{ store *working.TransientStore }
+
+func (c privacyCacheCleaner) PurgeWorking(ctx context.Context, r catalog.CacheRef) error {
+	e := c.store.Clear(ctx, r.SessionKey, r.RunID)
+	if errors.Is(e, working.ErrTransientStateNotFound) {
+		return nil
+	}
+	return e
 }
 
 func (a transientWorkingStoreAdapter) Clear(ctx context.Context, sessionKey, runID string) error {

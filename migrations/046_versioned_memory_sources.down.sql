@@ -1,0 +1,10 @@
+DROP TRIGGER IF EXISTS memory_profile_source_fence ON memory_profile;
+DROP TRIGGER IF EXISTS memory_episodes_source_fence ON memory_episodes;
+DROP TRIGGER IF EXISTS memory_chunks_source_fence ON memory_chunks;
+DROP TRIGGER IF EXISTS memory_profile_object_link ON memory_profile;
+DROP TRIGGER IF EXISTS memory_episodes_object_link ON memory_episodes;
+DROP TRIGGER IF EXISTS memory_chunks_object_link ON memory_chunks;
+DROP FUNCTION IF EXISTS butler_memory_source_fence();
+DROP FUNCTION IF EXISTS butler_memory_object_link();
+DROP FUNCTION IF EXISTS butler_memory_source_visible(TEXT,BIGINT);
+DROP TABLE IF EXISTS memory_restore_state,memory_deletions,memory_scope_grants,memory_claims,memory_fact_heads,memory_object_sources,memory_source_dependencies,memory_source_revisions,memory_sources;

@@ -1,0 +1,1188 @@
+{
+  "admitted_calls": 108,
+  "admitted_input_bytes": 113602,
+  "cases": [
+    {
+      "QueryID": "q-tab",
+      "Expected": "tab-authority",
+      "Lexical": "tab-observation",
+      "Keyword": "",
+      "Top768": "tab-authority",
+      "Top256": "tab-authority",
+      "Rank768": "tab-authority",
+      "Rank256": "tab-authority",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-observe",
+      "Expected": "tab-observation",
+      "Lexical": "tab-observation",
+      "Keyword": "",
+      "Top768": "tab-observation",
+      "Top256": "tab-observation",
+      "Rank768": "tab-observation",
+      "Rank256": "tab-observation",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-intent",
+      "Expected": "intent-dedupe",
+      "Lexical": "effect-rejected",
+      "Keyword": "",
+      "Top768": "intent-dedupe",
+      "Top256": "intent-dedupe",
+      "Rank768": "effect-unknown",
+      "Rank256": "effect-unknown",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-ingress",
+      "Expected": "input-dedupe",
+      "Lexical": "input-dedupe",
+      "Keyword": "",
+      "Top768": "input-dedupe",
+      "Top256": "input-dedupe",
+      "Rank768": "input-dedupe",
+      "Rank256": "input-dedupe",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-capacity",
+      "Expected": "quota-capacity",
+      "Lexical": "quota-capacity",
+      "Keyword": "",
+      "Top768": "quota-capacity",
+      "Top256": "quota-capacity",
+      "Rank768": "quota-capacity",
+      "Rank256": "quota-capacity",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-budget",
+      "Expected": "budget-exhausted",
+      "Lexical": "tab-authority",
+      "Keyword": "",
+      "Top768": "owner-amend",
+      "Top256": "owner-amend",
+      "Rank768": "owner-amend",
+      "Rank256": "owner-amend",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-approval",
+      "Expected": "approval-binding",
+      "Lexical": "approval-binding",
+      "Keyword": "",
+      "Top768": "approval-binding",
+      "Top256": "approval-binding",
+      "Rank768": "approval-binding",
+      "Rank256": "approval-binding",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-amend",
+      "Expected": "owner-amend",
+      "Lexical": "deadline-error",
+      "Keyword": "",
+      "Top768": "owner-amend",
+      "Top256": "owner-amend",
+      "Rank768": "owner-amend",
+      "Rank256": "owner-amend",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-unknown",
+      "Expected": "effect-unknown",
+      "Lexical": "delivery-retry",
+      "Keyword": "",
+      "Top768": "effect-unknown",
+      "Top256": "effect-unknown",
+      "Rank768": "effect-unknown",
+      "Rank256": "effect-unknown",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-reject",
+      "Expected": "effect-rejected",
+      "Lexical": "effect-rejected",
+      "Keyword": "",
+      "Top768": "effect-rejected",
+      "Top256": "effect-rejected",
+      "Rank768": "effect-rejected",
+      "Rank256": "effect-rejected",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-cert",
+      "Expected": "tls-error",
+      "Lexical": "tls-error",
+      "Keyword": "",
+      "Top768": "tls-error",
+      "Top256": "tls-error",
+      "Rank768": "tls-error",
+      "Rank256": "tls-error",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-timeout",
+      "Expected": "deadline-error",
+      "Lexical": "deadline-error",
+      "Keyword": "",
+      "Top768": "deadline-error",
+      "Top256": "deadline-error",
+      "Rank768": "deadline-error",
+      "Rank256": "deadline-error",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-stale",
+      "Expected": "memory-stale",
+      "Lexical": "code-root",
+      "Keyword": "",
+      "Top768": "memory-stale",
+      "Top256": "memory-stale",
+      "Rank768": "memory-stale",
+      "Rank256": "memory-stale",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-reindex",
+      "Expected": "memory-reindex",
+      "Lexical": "memory-reindex",
+      "Keyword": "",
+      "Top768": "memory-reindex",
+      "Top256": "memory-reindex",
+      "Rank768": "memory-reindex",
+      "Rank256": "memory-reindex",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-secret",
+      "Expected": "secret-boundary",
+      "Lexical": "tab-observation",
+      "Keyword": "",
+      "Top768": "secret-boundary",
+      "Top256": "secret-boundary",
+      "Rank768": "secret-boundary",
+      "Rank256": "secret-boundary",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-vram",
+      "Expected": "local-memory",
+      "Lexical": "memory-stale",
+      "Keyword": "",
+      "Top768": "local-memory",
+      "Top256": "local-memory",
+      "Rank768": "local-memory",
+      "Rank256": "local-memory",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-verify",
+      "Expected": "final-evidence",
+      "Lexical": "owner-amend",
+      "Keyword": "",
+      "Top768": "final-evidence",
+      "Top256": "final-evidence",
+      "Rank768": "final-evidence",
+      "Rank256": "final-evidence",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-delivery",
+      "Expected": "delivery-retry",
+      "Lexical": "delivery-retry",
+      "Keyword": "",
+      "Top768": "delivery-retry",
+      "Top256": "delivery-retry",
+      "Rank768": "delivery-retry",
+      "Rank256": "delivery-retry",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-fence",
+      "Expected": "code-fence",
+      "Lexical": "owner-amend",
+      "Keyword": "",
+      "Top768": "owner-amend",
+      "Top256": "owner-amend",
+      "Rank768": "owner-amend",
+      "Rank256": "owner-amend",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-vector",
+      "Expected": "code-vector",
+      "Lexical": "code-claim",
+      "Keyword": "",
+      "Top768": "code-vector",
+      "Top256": "memory-stale",
+      "Rank768": "code-vector",
+      "Rank256": "code-vector",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-claim",
+      "Expected": "code-claim",
+      "Lexical": "tls-error",
+      "Keyword": "",
+      "Top768": "code-claim",
+      "Top256": "budget-exhausted",
+      "Rank768": "code-claim",
+      "Rank256": "delivery-retry",
+      "Recall4_768": true,
+      "Recall4_256": false
+    },
+    {
+      "QueryID": "q-prepare",
+      "Expected": "code-prepare",
+      "Lexical": "code-prepare",
+      "Keyword": "",
+      "Top768": "code-prepare",
+      "Top256": "code-prepare",
+      "Rank768": "code-prepare",
+      "Rank256": "code-prepare",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-root",
+      "Expected": "code-root",
+      "Lexical": "code-root",
+      "Keyword": "",
+      "Top768": "code-root",
+      "Top256": "code-root",
+      "Rank768": "code-root",
+      "Rank256": "code-root",
+      "Recall4_768": true,
+      "Recall4_256": true
+    },
+    {
+      "QueryID": "q-files",
+      "Expected": "code-files",
+      "Lexical": "tab-authority",
+      "Keyword": "",
+      "Top768": "code-files",
+      "Top256": "code-files",
+      "Rank768": "code-files",
+      "Rank256": "code-files",
+      "Recall4_768": true,
+      "Recall4_256": true
+    }
+  ],
+  "corpus_sha256": "33122f239f0814467c09d03420869c2d00705b5323ee7c7670bf5b1d194c5308",
+  "corpus_version": "butler-russian-code-quality-v1",
+  "current_cloud_semantic_baseline": "unavailable; no claimed comparison",
+  "current_exact_title_keyword_top1": 0,
+  "embedding_gain_over_bm25": true,
+  "indexing": [
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 12967,
+      "VRAMMiB": 735,
+      "RAMMiB": 1718
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 310,
+      "VRAMMiB": 767,
+      "RAMMiB": 1725
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 296,
+      "VRAMMiB": 767,
+      "RAMMiB": 1728
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 281,
+      "VRAMMiB": 767,
+      "RAMMiB": 1729
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 247,
+      "VRAMMiB": 767,
+      "RAMMiB": 1729
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 246,
+      "VRAMMiB": 767,
+      "RAMMiB": 1730
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 191,
+      "VRAMMiB": 767,
+      "RAMMiB": 1730
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 217,
+      "VRAMMiB": 767,
+      "RAMMiB": 1730
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 270,
+      "VRAMMiB": 767,
+      "RAMMiB": 1731
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 243,
+      "VRAMMiB": 767,
+      "RAMMiB": 1730
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 307,
+      "VRAMMiB": 767,
+      "RAMMiB": 1731
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 277,
+      "VRAMMiB": 767,
+      "RAMMiB": 1731
+    }
+  ],
+  "indexing_ms_both_spaces": 16280,
+  "inference": [
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 287,
+      "VRAMMiB": 767,
+      "RAMMiB": 1753
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 257,
+      "VRAMMiB": 767,
+      "RAMMiB": 1753
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 249,
+      "VRAMMiB": 767,
+      "RAMMiB": 1753
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 208,
+      "VRAMMiB": 767,
+      "RAMMiB": 1754
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 265,
+      "VRAMMiB": 767,
+      "RAMMiB": 1754
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 240,
+      "VRAMMiB": 767,
+      "RAMMiB": 1754
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 251,
+      "VRAMMiB": 767,
+      "RAMMiB": 1754
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 228,
+      "VRAMMiB": 767,
+      "RAMMiB": 1754
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 281,
+      "VRAMMiB": 767,
+      "RAMMiB": 1755
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 232,
+      "VRAMMiB": 767,
+      "RAMMiB": 1755
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 268,
+      "VRAMMiB": 767,
+      "RAMMiB": 1755
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 243,
+      "VRAMMiB": 767,
+      "RAMMiB": 1755
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 268,
+      "VRAMMiB": 767,
+      "RAMMiB": 1755
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 231,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 197,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 262,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 212,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 248,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 234,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 238,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 266,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 257,
+      "VRAMMiB": 767,
+      "RAMMiB": 1755
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 285,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 231,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 253,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 246,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 254,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 222,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 121,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 108,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 109,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 119,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 111,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 267,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 288,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 155,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 145,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 133,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 91,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 136,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 103,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 97,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 103,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 99,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 101,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 97,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 90,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 94,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 9448,
+      "VRAMMiB": 1581,
+      "RAMMiB": 1989
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 120,
+      "VRAMMiB": 1581,
+      "RAMMiB": 1513
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 114,
+      "VRAMMiB": 1763,
+      "RAMMiB": 1514
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 113,
+      "VRAMMiB": 1763,
+      "RAMMiB": 1514
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 119,
+      "VRAMMiB": 1955,
+      "RAMMiB": 1516
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 121,
+      "VRAMMiB": 1955,
+      "RAMMiB": 1516
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 119,
+      "VRAMMiB": 2149,
+      "RAMMiB": 1516
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 119,
+      "VRAMMiB": 2149,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 120,
+      "VRAMMiB": 2149,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 120,
+      "VRAMMiB": 2149,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 121,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 122,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 119,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1516
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 119,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1516
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 119,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 119,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 119,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 120,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 119,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 118,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 119,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 120,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 107,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 109,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 120,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 119,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 126,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 129,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 112,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 112,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 124,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 119,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 114,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 111,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 119,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 120,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 121,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 121,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 121,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 118,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 121,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 120,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 108,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 125,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 122,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 111,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 121,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 120,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    }
+  ],
+  "lexical_bm25_top1": 0.4583333333333333,
+  "metrics": {
+    "256": {
+      "Top1": 0.8333333333333334,
+      "MRR": 0.8958333333333334,
+      "Recall4": 0.9583333333333334,
+      "RerankedTop1": 0.8333333333333334
+    },
+    "768": {
+      "Top1": 0.9166666666666666,
+      "MRR": 0.9513888888888888,
+      "Recall4": 1,
+      "RerankedTop1": 0.875
+    }
+  },
+  "precision": "BF16 GPU or FP32 CPU, never FP16",
+  "production": "disabled; trusted run/job admission and #22/#23 integration pending",
+  "query_ms_48_requests": 9905,
+  "rerank_ms_48_requests": 15103,
+  "scope": "public synthetic fixtures fixed before model evaluation; not private owner memory"
+}

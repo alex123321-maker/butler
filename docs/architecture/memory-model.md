@@ -269,7 +269,56 @@ The current Butler baseline now includes durable PostgreSQL tables for:
 Opt-in auxiliary inference is specified in [Local Model Service](local-model-service.md).
 Its model/revision/preprocessing/dimension identity defines a separate embedding
 space; installing the service does not switch existing memory indexes or providers.
-Issue #25 still requires reversible side-by-side reindex and production evaluation.
+Migration041 and `internal/memory/semantic` add separate immutable embedding spaces
+and staged generations with source revision/hash, scope and live-state filtering.
+They support reviewed coverage/quality verification, activation CAS, reversible
+selection of still-current ready generations, and restart-resumable indexing.
+Unchanged title/content hashes can reuse exact-space vectors across new generations
+after citation/path changes; current source revisions and access are still checked.
+Deleting a chunk removes its derived vectors; incompatible dimensions/revisions
+never enter the legacy columns. Source refs and private data origin accompany
+retrieval; Secret-class inputs cannot reach embedding/reranking IPC.
+
+Every source read/publication requires a typed `SourceGuard`, default denied. Its
+`CatalogGuard` derives catalog links and current owner/run/job authority from actual
+PostgreSQL chunk IDs, not provenance JSON. Catalog/authority rows are locked in
+sorted order before chunks in the caller transaction; no second connection is
+needed. Optional catalog provenance fields are citations rather than permissions.
+
+Typed `LiveAdmission` and `JobAdmission` now reserve each actual local query/rank
+or indexing attempt through current ownership/independent job authority and shared
+root/mandate/owner-day budgets. A pinned internal service proves locality separately
+from explicit local_no_billing pricing. The optional bundle reader remains disabled
+until the production #22/#23 composition installs these adapters and schedules
+owned jobs. It does not revive completed run ownership. The source guard and current
+metadata checks do not replace #22 contradiction, acceptance or backup tombstone
+semantics. Fixed Russian/code fixture quality is measured separately from
+production acceptance; reranking is optional and default-off.
+
+The optional `HybridReader` adds current exact identifier/path/version matching
+and Russian/simple PostgreSQL full-text search (derived GIN migration042), then
+reciprocal rank fusion with separate vector candidates. Only positions are fused;
+exact technical hits stay protected. Bare absent identifiers return no source.
+Duplicate content and per-source caps preserve a diverse bounded candidate set.
+Every candidate needs current source authority before text-model IPC. Optional
+Qwen reranking has complete correlated outputs and per-scope sorting; unavailable
+or oversized ranking keeps base evidence with fixed diagnostics. Authority/budget
+denial, Secret data, cancellation or corrupt/partial scores cannot use that fallback.
+The adapter uses the admission's returned bounded context and rejects late results.
+Index/rank IPC binds chunk ID/scope/revision, full content/citation hash and embedding
+payload hash; the exact text/title must match the snapshot. Current catalog plus
+live chunk identity is checked after allowance waits and before returned output is
+accepted. Periodic cancellation bounds queued/in-flight revocation; publication
+still needs fresh transactional proof. The all-migration owned-admission smoke
+exercises actual local-only mandate, independent index job, live query/rank,
+reservations, current citations and physical vector deletion on the same service.
+
+Final citations include original chunk/document refs and current revision, with
+explicit clipped UTF-8 excerpts and a finite serialized byte/token allowance.
+This allowance covers retrieved evidence; the caller's full prompt has its own
+transport/budget checks. Retrieval never changes structured owner rules. The
+fixed real suite measures support-source coverage; it does not verify generative
+answers or justify activating the still-unwired production reader.
 
 Migration 021 uses dimensionless vector columns to support different embedding
 providers. It removes the old fixed-dimension IVFFlat indexes; current semantic
@@ -735,7 +784,7 @@ The memory doctor (`/api/v1/doctor/check`) now reports:
 1. ~~Точная SQL schema для memory tables.~~ — **Текущий baseline реализован** через `memory_working`, `memory_profile`, `memory_episodes`, `memory_chunks`, `memory_links`; дальнейшая эволюция schema остаётся допустимой отдельными миграциями.
 2. ~~Политика дедупликации episodic memory.~~ — **Решено:** near-duplicate эпизоды подавляются, materially different варианты сохраняются как variants по canonical summary policy.
 3. ~~Политика сохранения doctor outputs.~~ — **Решено:** doctor/tool-derived long-form data допускается только через явную allowlist-style ingestion policy с предварительной sanitization и записью в chunk memory.
-4. Формат session summary и точные правила его обновления остаются частично открытыми; текущий baseline использует compact async-updated summary path через memory worker.
+4. Session summary uses versioned verified transcript coverage and source/deletion fences. Legacy model summary workers remain disabled until independently owned admission; summaries never replace current authority.
 5. ~~Приоритет retrieval между profile, episodic и document memory.~~ — **Решено:** bundle assembly применяет явный порядок summary → working → profile → episodic → chunks в пределах budget policy.
 6. Использовать ли отдельный reranking layer (слой переранжирования) в будущем.
 
@@ -761,4 +810,13 @@ Owner amendments are appended as user transcript data and preserved in full prot
 
 ## Source sensitivity and derived authority
 
-Persistent provenance retains transcript/tool/child/document references. A stored claim of owner instruction/public classification cannot mint authority: extracted/retrieved material is private data by default. Secret-class sources fail before extraction, summaries, model input and retrieval; logs/parser errors cannot echo model output. Sensitivity is inherited by derivatives. Suppression/expiry is distinct from physical deletion; source removal must include derived records and backups under the retention policy in [agent security boundaries](agent-security-boundaries.md). Full automated transitive deletion remains #22. Production extraction/query embedding is disabled pending durable auxiliary budget admission, while profile/working/covered-summary reads remain available.
+Persistent provenance retains transcript/tool/child/document references. A stored claim of owner instruction/public classification cannot mint authority: extracted/retrieved material is private data by default. Secret-class sources fail before extraction, summaries, model input and retrieval; logs/parser errors cannot echo model output. Sensitivity is inherited by derivatives. Suppression/expiry is distinct from physical deletion; source removal must include derived records and backups under the retention policy in [agent security boundaries](agent-security-boundaries.md). Migrations046–049 implement versioned source/claim decisions, authenticated owner correction/export, structured original assets and transitive privacy redaction with a persistent anti-rollback deletion anchor. See [versioned sources](versioned-memory-sources.md), which supersedes the legacy pipeline operational description above. Production legacy model extraction/summary jobs remain disabled. Opt-in owned local indexing and current-run query use exact sources, independent current claims and shared budget admission; completion never borrows an old lease.
+
+Optional [structured local extraction](structured-memory-extraction.md) publishes
+only source-bound candidates under current durable job admission. Exact literal
+fields, fragment-scoped rule evidence and unresolved action/exception scope are
+separate; extraction scores cannot accept a belief or grant a mandate. Empty
+results are durably complete, retries preserve IDs, and publication rechecks the
+source graph. The measured Russian quality gate fails, so production scheduling
+remains off despite the separate source-preservation acceptance test.
+

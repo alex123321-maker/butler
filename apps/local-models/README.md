@@ -1,5 +1,23 @@
 # Local auxiliary models
 
+Two text-only decision profiles are present but disabled in the default catalog.
+The separate operator evaluation catalog enables pinned GLiNER Decide and d1
+CPU FP32 solely for shadow comparison. Reviewed d1 code/config hashes are checked
+before its local offline loader; complete prompt encoding must fit without
+truncation. There are no decision-driven task/tool/verification hooks. See
+`deploy/local-models/decision-code-review.md`; runtime support alone is not
+Russian quality acceptance or a production model selection. The owned Go
+shadow caller now has a fixed Russian comparison and complete actual CPU
+artifacts; no model passes selection and d1 also refuses repeat loading under
+the conservative RAM policy. Ordinary profiles remain disabled. See
+[the caller contract](../../docs/architecture/local-decision-signals.md).
+
+The optional versioned memory adapter is in `internal/memory/semantic`; it uses
+this shared service with explicit query/document/code modes and 768/256d identity.
+Production memory query/indexing stays disabled pending trusted run/job admission
+and current-source access guards. A fixed Russian/code fixture and reproducible
+quality/reindex checks are in `deploy/local-models/verify-quality-lab.sh`.
+
 Go service for versioned embedding/ranking/extraction/classification/media
 contracts and bounded local inference resources. It does not execute tools,
 change memory facts, authorize actions or own durable tasks. Callers retain the
@@ -11,6 +29,12 @@ gRPC auth, capability routing, round-robin caller queues, validation, cancellati
 GPU/RAM admission, idle unload and lifecycle remain Go. One serialized GPU lane
 and a separate CPU GLiNER lane reuse workers across callers. Audio/video and
 unsupported profiles return Unavailable; no empty successful fallback is invented.
+
+The additive `butler-memory-v1` extraction schema returns source-span entities,
+relations and action-anchored records with unresolved optional fields. It uses
+the same pinned CPU GLiNER worker. Caller-owned extraction jobs and source checks
+must publish only neutral candidates; the service cannot accept a profile fact or
+authorize a mandate. See the architecture contract for Unicode span validation.
 
 ## Run on the lab
 

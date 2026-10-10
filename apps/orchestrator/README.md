@@ -291,7 +291,22 @@ The owner token stays outside model context and browser storage. Ordinary tasks
 and conversation remain possible without goal assignments. See
 [owner goals and mandates](../../docs/architecture/owner-goals-mandates-spec.md).
 
-Only typed kernel/operator/current owner policies are system instructions. Retrieved content, full transcript history, summary, task scratch and child observations remain data with source references; recovered known tool results do not become native orphan function responses. Provenance protection wraps the budgeted native provider. Production auxiliary extraction/summary/embedding jobs currently fail closed because they lack durable job-owned budget admission; profile/working/covered-summary reads remain available. Prompt preview/update and settings/provider mutations require owner proof. See [security boundaries](../../docs/architecture/agent-security-boundaries.md).
+Owner-defined initiative sources and schedules have durable normalized event
+ingress and a bounded owner view at `/api/v3/initiatives`. Maintenance coalesces
+missed ticks and atomically admits ordinary tasks only under current owner
+authority and execution budgets. An owner-configured PostgreSQL `task_project`
+observer follows exact current project/task revisions, deduplicates distinct
+attempts, suppresses own origin and recognizes only verified healthy results.
+An optional session-matched digest channel groups count-only admitted/verified
+changes with active-hours and daily limits; uncertain Telegram delivery is not
+repeated. The unconfigured heartbeat is an empty check. The `broker_project`
+observer additionally reads confirmed reviewed extension checks and rechecks
+current Catalog source pins and the independent deletion anchor. Historical
+observations never reuse old leases. Digest authorization repeats current source,
+goal and mandate checks immediately before sending. Actual Broker/executor lab
+acceptance verifies an admitted prepared patch and owner result; live generative
+planning remains pending. See [initiative admission](../../docs/architecture/initiative-contract.md)
+and [lab evidence](../../docs/architecture/initiative-acceptance.md).
 
 The optional `/extensions` page and owner-only `/api/v4/extensions` forward typed
 verified owner provenance to the private Broker control endpoint configured by
@@ -303,3 +318,23 @@ retain the attempt and block it before inference; they never claim completion.
 Fresh approval recovery reloads permitted definitions and manifest DATA while
 preserving recorded observations without redispatch. See the
 [reviewed lifecycle](../../docs/architecture/reviewed-extension-lifecycle.md).
+Only typed kernel/operator/current owner policies are system instructions. Retrieved content, full transcript history, summary, task scratch and child observations remain data with source references; recovered known tool results do not become native orphan function responses. Provenance protection wraps the budgeted native provider. Legacy auxiliary extraction/summary/embedding jobs fail closed because they lack durable job-owned budget admission; profile/working/covered-summary reads remain available. Separately owned local indexing and live query use the explicit composition below. Prompt preview/update and settings/provider mutations require owner proof. See [security boundaries](../../docs/architecture/agent-security-boundaries.md).
+
+Migrations 046–049 add authenticated `/api/v4/memory` inspection, candidates,
+revisioned correction, exact supersession, export and recursive privacy deletion.
+Provider release/final events and atomic results recheck prepared transcript/source
+pins. The scoped restartable Redis cleanup worker never flushes unrelated keys.
+Deploy only after provisioning the private persistent deletion anchor shared with
+Broker; missing/wrong anchors fail closed. See [versioned memory sources](../../docs/architecture/versioned-memory-sources.md).
+
+The private memory page now inspects revision/claim history, corrects, supersedes,
+exports and deletes owner sources. Selected original files use bounded Go
+structured parsers with a separately sandboxed optional PDF/OCR service. Failed
+files retain diagnostics and publish no partial chunks. `/source`, `/original`,
+`/ingest`, `/index` and `/index-review` keep owner proof/no-store headers and exact
+source/claim versions. Owned local indexing is opt-in; its job context wraps every
+read/publication and actual IPC, and live retrieval uses the current run token.
+See the [indexing composition](../../internal/memory/indexing/README.md) and
+[parser confinement](../memory-parser/README.md). Missing model token, fixed local
+identity or declared local price disables only that owned semantic path; legacy
+cloud memory model jobs remain denied.

@@ -52,9 +52,9 @@ func extensionDB(t *testing.T) *pgxpool.Pool {
 		admin.Close()
 	})
 	if _, err = pool.Exec(ctx, `CREATE TABLE tasks(task_id text PRIMARY KEY,owner_id text NOT NULL,status text NOT NULL,revision bigint NOT NULL,constraints_revision bigint NOT NULL,execution_policy text NOT NULL DEFAULT 'normal'); INSERT INTO tasks(task_id,owner_id,status,revision,constraints_revision) VALUES('task','owner','active',1,1);
- CREATE TABLE runs(run_id text PRIMARY KEY,task_id text,task_revision bigint);
+ CREATE TABLE runs(run_id text PRIMARY KEY,task_id text,task_revision bigint,current_state text NOT NULL DEFAULT 'tool_pending',status text NOT NULL DEFAULT 'active');
  CREATE TABLE session_ownership(session_key text PRIMARY KEY,run_id text NOT NULL,lease_id text NOT NULL,fence_epoch bigint NOT NULL,expires_at timestamptz NOT NULL);
- INSERT INTO runs VALUES('run','task',1);
+ INSERT INTO runs(run_id,task_id,task_revision) VALUES('run','task',1);
  INSERT INTO session_ownership VALUES('web:owner','run','lease',1,clock_timestamp()+interval '1 hour')`); err != nil {
 		t.Fatal(err)
 	}

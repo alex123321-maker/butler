@@ -1,0 +1,14 @@
+# Optional owner-proved local memory. Add docker-compose.local-models.lab.yml too.
+# Models must already be pinned/prepared; this file does not download assets.
+services:
+  orchestrator:
+    environment:
+      BUTLER_MEMORY_SEMANTIC_ENABLED: "true"
+      BUTLER_MEMORY_LOCAL_SERVICE_ID: ${BUTLER_MEMORY_LOCAL_SERVICE_ID:?set reviewed local service identity}
+      BUTLER_MEMORY_LOCAL_TOKEN_FILE: /private-memory-models/token
+    volumes:
+      - ${BUTLER_LOCAL_MODELS_ROOT:?set private model storage root}/private/token:/private-memory-models/token:ro
+    networks: [backend, diagnostics, local-inference]
+networks:
+  local-inference:
+    internal: true

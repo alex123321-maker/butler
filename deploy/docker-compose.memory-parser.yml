@@ -1,0 +1,27 @@
+# Optional deterministic PDF/OCR sandbox, internal ingress only, no credentials.
+services:
+  memory-parser:
+    profiles: [memory-parser]
+    build:
+      context: ..
+      dockerfile: docker/memory-parser/Dockerfile
+    user: "10001:10001"
+    init: true
+    read_only: true
+    restart: unless-stopped
+    mem_limit: 512m
+    memswap_limit: 512m
+    cpus: 1
+    pids_limit: 32
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,noexec,size=128m,uid=10001,gid=10001
+    networks: [memory-parsing]
+  orchestrator:
+    environment:
+      BUTLER_MEMORY_PDF_PARSER_ENABLED: "true"
+    networks: [backend, diagnostics, memory-parsing]
+networks:
+  memory-parsing:
+    internal: true

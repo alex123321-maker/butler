@@ -114,10 +114,67 @@ classification during GPU ranking, and on-demand vision loading. The checked-in
 12-case embedding smoke and small capability signals are not a held-out production
 evaluation and do not justify enabling a new memory index or closing #25–#28.
 Quality comparisons, durable caller/index integration and reversible reindex
-remain separate acceptance work. Service restarts lose no durable task state:
-callers retain pending operations in PostgreSQL, receive retryable RPC failure and
+remain separate acceptance work.
+The optional semantic/hybrid caller now has reproducible fixed Russian/code
+quality artifacts, versioned staged pgvector spaces and bounded exact/full-text
+RRF retrieval. The paired Qwen stage regresses top1 on this fixture and remains
+off. Current source/job/live-run admission is required before enabling it;
+the shared model service itself never grants that authority. See the semantic
+module README and memory spec for these caller-owned contracts.
+
+The semantic caller now supplies actual catalog-derived source guards, independent
+owned indexing job admission and a dedicated local live-run budget boundary.
+Source stamps pin chunk ID/scope/revision/full-content and embedding hashes across
+batch waits; current state is checked before IPC and before returned output is
+accepted. Local-only mandate privacy is allowed only on the composed internal
+service, independently of an explicit local_no_billing quote. The real
+`verification-owned-semantic.json` artifact covers three actual calls on the same
+deployed service with shared reservations, citations and deletion fences. This
+does not automatically enable production ingestion or grant completed-task jobs.
+
+Service restarts lose no durable task state: callers retain pending operations in PostgreSQL, receive retryable RPC failure and
 resubmit the full input; this service does not claim a durable work queue.
 Full-local inference is tested with `--network none`; the production overlay has
 an internal-only network and no published ports. A hybrid caller's cloud privacy
 decision remains at its owned authorization/admission boundary. No service path
 can route these inputs to a cloud provider, irrespective of caller/model output.
+
+## Structured extraction contract
+
+Two optional text-only classification profiles support a default-off decision
+experiment. GLiNER Decide uses the existing pinned SDK; d1 uses one explicitly
+reviewed immutable upstream revision with exact code/config hashes checked
+through bounded contained reads before the offline local loader. Its complete
+state/options encoding is compared with upstream encoding so silent truncation
+is refused. CPU-only FP32 is configured, with no image/audio interface or cloud
+fallback. Only an operator evaluation catalog enables these profiles. Signals
+cannot change task control, action authority or result verdict; Russian quality
+and model selection remain separate measured caller work.
+
+`ExtractInput.schema_version=butler-memory-v1` selects a fixed reviewed data
+schema and requires an empty `entity_types` list. It returns additive typed
+entity spans, action/resource/deadline/exception and project/component relations,
+and action-anchored constraint records. Every field is a literal half-open
+Unicode-character span with an uncalibrated score; malformed, generated or
+missing-anchor records are rejected. Optional/ambiguous fields remain absent or
+explicitly unresolved. This is independent decoding, not a guarantee that every
+relationship is correct, and all output stays candidate data. The worker uses the
+already pinned GLiNER2.5 revision/runtime without new dependencies or remote code.
+Existing generic entity extraction remains compatible. Caller source/job/budget
+checks and owner acceptance are separate; this contract alone enables no memory
+pipeline. Real Russian quality and production integration require caller evidence.
+
+The optional Go extraction caller now has current source/job admission, atomic
+candidate publication and literal fragment evidence. Its fixed Russian model
+quality gate fails, so automatic scheduling remains disabled. A separate
+source-aware constraint-fragment candidate preserves literal restrictions when
+model record grouping fails, with action polarity and exception scope explicitly
+unresolved. Model field metrics exclude that protection layer. See
+[structured candidate extraction](structured-memory-extraction.md).
+
+The default-off decision caller now records real source/job-admitted CPU signals
+from all three pinned models on a frozen Russian corpus. None passes selection;
+the exact repeat also records conservative d1 RAM admission refusals. Signals
+cannot suppress events or acquire task/grant/verification authority. See
+[local decision observations](local-decision-signals.md) and the checked-in
+acceptance matrix for remaining current-controller baseline work.

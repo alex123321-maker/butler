@@ -153,6 +153,20 @@ func (s *Store) Claim(ctx context.Context, ttl time.Duration) (*Message, error) 
 	return &m, nil
 }
 func (s *Store) Finish(ctx context.Context, m Message, o Outcome) error {
+	status, code, delay := DeliveryOutcome(m, o)
+	tag, err := s.pool.Exec(ctx, `UPDATE delivery_outbox SET status=$3,channel_ack=$4,error_code=$5,next_attempt_at=clock_timestamp()+$6::interval,claim_id='',claim_until=NULL,updated_at=NOW() WHERE notification_id=$1 AND claim_id=$2 AND status='sending' AND claim_until>clock_timestamp()`, m.NotificationID, m.ClaimID, status, o.ACK, code, delay.String())
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() != 1 {
+		return ErrClaimLost
+	}
+	return nil
+}
+
+// DeliveryOutcome is shared by durable notification kinds. Unknown acceptance
+// never becomes an automatic retry; an explicit absence may retry with bounds.
+func DeliveryOutcome(m Message, o Outcome) (string, string, time.Duration) {
 	status := o.Status
 	if status != "sent" && status != "absent" {
 		status = "delivery_unknown"
@@ -174,14 +188,7 @@ func (s *Store) Finish(ctx context.Context, m Message, o Outcome) error {
 			status = "pending"
 		}
 	}
-	tag, err := s.pool.Exec(ctx, `UPDATE delivery_outbox SET status=$3,channel_ack=$4,error_code=$5,next_attempt_at=clock_timestamp()+$6::interval,claim_id='',claim_until=NULL,updated_at=NOW() WHERE notification_id=$1 AND claim_id=$2 AND status='sending' AND claim_until>clock_timestamp()`, m.NotificationID, m.ClaimID, status, o.ACK, safeCode(o.ErrorCode), delay.String())
-	if err != nil {
-		return err
-	}
-	if tag.RowsAffected() != 1 {
-		return ErrClaimLost
-	}
-	return nil
+	return status, safeCode(o.ErrorCode), delay
 }
 func safeCode(code string) string {
 	switch code {
@@ -191,10 +198,29 @@ func safeCode(code string) string {
 	return "channel_error"
 }
 
+// ClaimStore allows other durable notification kinds to reuse the channel
+// worker without representing a digest as an immutable model final result.
+type ClaimStore interface {
+	Claim(context.Context, time.Duration) (*Message, error)
+	AuthorizeSend(context.Context, Message) error
+	Finish(context.Context, Message, Outcome) error
+}
+
 type Worker struct {
-	Store        *Store
+	Store        ClaimStore
 	Sender       Sender
 	PollInterval time.Duration
+}
+
+// AuthorizeSend checks the current stored claim/payload immediately before the
+// channel boundary. A previously copied payload cannot send after redaction.
+func (s *Store) AuthorizeSend(ctx context.Context, m Message) error {
+	var live bool
+	e := s.pool.QueryRow(ctx, `SELECT TRUE FROM delivery_outbox d WHERE notification_id=$1 AND claim_id=$2 AND status='sending' AND claim_until>clock_timestamp() AND content=$3 AND NOT COALESCE((to_jsonb(d)->>'privacy_redacted')::BOOLEAN,FALSE)`, m.NotificationID, m.ClaimID, m.Content).Scan(&live)
+	if e != nil {
+		return ErrClaimLost
+	}
+	return nil
 }
 
 func (w *Worker) ProcessOne(ctx context.Context) (bool, error) {
@@ -204,6 +230,9 @@ func (w *Worker) ProcessOne(ctx context.Context) (bool, error) {
 	}
 	outcome := Outcome{Status: "absent", ErrorCode: "telegram_unconfigured", Retryable: true}
 	if w.Sender != nil {
+		if err = w.Store.AuthorizeSend(ctx, *m); err != nil {
+			return true, err
+		}
 		sendCtx, cancel := context.WithTimeout(ctx, 20*time.Second)
 		outcome = w.Sender.SendStored(sendCtx, *m)
 		cancel()
