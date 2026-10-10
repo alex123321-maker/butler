@@ -84,6 +84,8 @@ Orchestrator forwards typed verified owner provenance through existing private
 backend service-auth to `/internal/extensions`, without the channel token.
 `BUTLER_EXTENSION_CONTROL_URL` is an operator environment setting, retained by
 layered startup. Database settings cannot choose this service-auth destination.
+Both startup paths require HTTP(S), a host and the exact `/internal/extensions`
+path, with no URL credentials, query, fragment or encoded path.
 Operations: list, stage, review, versions, configure, rollback, probe, enable,
 disable, grant_task, task_access. There is no generic URL/tool control action.
 Mutations use exact installation generations/task permission revisions; JSON
