@@ -63,6 +63,7 @@ func New(ctx context.Context) (*App, error) {
 	router := runtimeclient.New(log)
 	server := broker.NewServer(registryStore, router, credentialResolver, log)
 	var mandateHandler http.Handler
+	var effectHandler http.Handler
 	serviceToken := ""
 	if cfg.ActionAuthorityTokenFile != "" && postgres != nil {
 		token, err := actionauth.ReadServiceToken(cfg.ActionAuthorityTokenFile)
@@ -77,7 +78,9 @@ func New(ctx context.Context) (*App, error) {
 			return nil, err
 		}
 		authorizationStore := actionauth.NewPostgresStore(postgres.Pool())
-		server.SetActionAuthorizer(actionauth.NewService(authorizationStore, reader, credentialResolver))
+		authorizer := actionauth.NewService(authorizationStore, reader, credentialResolver)
+		server.SetActionAuthorizer(authorizer)
+		effectHandler = actionauth.NewEffectHandler(token, authorizer, authorizationStore)
 		mandateHandler = actionauth.NewMandateHandler(token, authorizationStore, reader)
 	} else {
 		log.Warn("action authorization unavailable; tool execution will fail closed")
@@ -86,6 +89,9 @@ func New(ctx context.Context) (*App, error) {
 	httpMux := http.NewServeMux()
 	if mandateHandler != nil {
 		httpMux.Handle("/internal/action-mandates", mandateHandler)
+	}
+	if effectHandler != nil {
+		httpMux.Handle("/internal/action-effects", effectHandler)
 	}
 	httpMux.Handle("/health", health.New(cfg.Shared.ServiceName).Handler())
 	httpMux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("tool-broker")) })

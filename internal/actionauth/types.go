@@ -28,6 +28,7 @@ type ActionBinding struct {
 	ToolCallID             string          `json:"tool_call_id"`
 	ToolName               string          `json:"tool_name"`
 	ContractHash           string          `json:"contract_hash"`
+	ContractRevision       string          `json:"contract_revision,omitempty"`
 	ArgsHash               string          `json:"args_hash"`
 	Resource               string          `json:"resource"`
 	CredentialRefs         []CredentialRef `json:"credential_refs"`
@@ -76,6 +77,7 @@ type ApprovalSnapshot struct {
 
 type PreparedAction struct {
 	Binding          ActionBinding `json:"binding"`
+	EffectID         string        `json:"effect_id"`
 	RequiresApproval bool          `json:"requires_approval"`
 	Summary          string        `json:"summary"`
 	ExpiresAt        time.Time     `json:"expires_at"`

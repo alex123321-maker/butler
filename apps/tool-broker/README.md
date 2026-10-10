@@ -56,3 +56,12 @@ Related docs:
 - `docs/architecture/tool-runtime-adr.md`
 - `docs/architecture/credential-management.md`
 - `docs/planning/butler-implementation-roadmap.md`
+
+External effects use migration035's PostgreSQL journal. Preparation accepts an
+optional trusted logical slot; grants commit only under live ownership/task
+locks. Runtime completion without supported external evidence returns
+`effect_unknown`, including repeated RPCs after restart, and never enables
+replay. Private `/internal/action-effects` supplies typed journal snapshots and
+reconciliation from an independently captured authorized read. Defaults declare
+no recipient idempotency guarantee. See
+[the effect contract](../../docs/architecture/external-effect-journal.md).

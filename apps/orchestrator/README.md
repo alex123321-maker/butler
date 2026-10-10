@@ -252,3 +252,10 @@ Web decisions require `BUTLER_OWNER_CONTROL_OWNER_ID` plus an operator-provision
 Without this authority approve/reject deny access. Generate/read the token on the
 lab terminal; never place it in model context or chat. The configured owner must
 match the saved web session owner. Telegram uses the allowed chat and numeric owner.
+
+Before preparing a tool proposal, the durable input checkpoint repository
+allocates a random logical action slot with pinned task/constraints versions.
+Approval continuation and recovery preserve this system reference; it never
+comes from model args. Effect IDs/states/evidence references accompany dispatch
+and result checkpoints. Generic write completion remains uncertain; recovery
+does not repeat it. See [the effect journal](../../docs/architecture/external-effect-journal.md).

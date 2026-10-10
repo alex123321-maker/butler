@@ -19,10 +19,12 @@ import (
 var ErrApprovalSuspended = errors.New("execution suspended for durable owner decision")
 
 type approvalContinuation struct {
-	Version  int                        `json:"version"`
-	Prepared preparedRun                `json:"prepared"`
-	ToolCall *transport.ToolCallRequest `json:"tool_call"`
-	Binding  actionauth.ActionBinding   `json:"binding"`
+	Version          int                        `json:"version"`
+	Prepared         preparedRun                `json:"prepared"`
+	ToolCall         *transport.ToolCallRequest `json:"tool_call"`
+	Binding          actionauth.ActionBinding   `json:"binding"`
+	LogicalActionRef string                     `json:"logical_action_ref,omitempty"`
+	EffectID         string                     `json:"effect_id,omitempty"`
 }
 type recoveredApprovalKey struct{}
 
@@ -44,7 +46,7 @@ func (s *Service) suspendApproval(ctx context.Context, current *sessionv1.RunRec
 	if err = json.Unmarshal([]byte(payload), &prepared); err != nil {
 		return current, err
 	}
-	continuation := approvalContinuation{Version: 1, Prepared: prepared, ToolCall: requested, Binding: action.Binding}
+	continuation := approvalContinuation{Version: 1, Prepared: prepared, ToolCall: requested, Binding: action.Binding, LogicalActionRef: actionauth.LogicalReference(ctx), EffectID: action.EffectID}
 	expires := action.ExpiresAt
 	if expires.IsZero() {
 		expires = time.Now().UTC().Add(15 * time.Minute)

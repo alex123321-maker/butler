@@ -103,9 +103,11 @@ verified external effect. Timeout, runtime failure, missing result or outcome
 write failure leaves a non-reusable grant and returns `effect_unknown`.
 Orchestrator records this result then stops before model continuation with
 `ErrActionOutcomeUnknown`. Owner verification is required before a new attempt.
-Dispatch/result checkpoints preserve this boundary during recovery. Full
-external-effect journals and evidence-based verification are a separate layer;
-this contract does not claim exactly-once effects for arbitrary remote services.
+Dispatch/result checkpoints preserve this boundary during recovery. Migration
+035 adds the [external effect journal](external-effect-journal.md), permanent
+trusted intent slots, declared recipient protocols and independent evidence.
+Technical completion without supported evidence remains unknown. This contract
+does not claim exactly-once effects for arbitrary remote services.
 
 Revocation cannot undo effects already sent to an external service. Browser
 sessions remain transient/run-local across process loss; approval cannot

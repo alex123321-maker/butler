@@ -19,7 +19,7 @@ type BrokerClient struct {
 }
 
 func (c *BrokerClient) PrepareAction(ctx context.Context, call *toolbrokerv1.ToolCall) (actionauth.PreparedAction, error) {
-	response, err := c.client.PrepareToolCall(ctx, &toolbrokerv1.PrepareToolCallRequest{ToolCall: call})
+	response, err := c.client.PrepareToolCall(ctx, &toolbrokerv1.PrepareToolCallRequest{ToolCall: call, LogicalActionRef: actionauth.LogicalReference(ctx)})
 	if err != nil {
 		return actionauth.PreparedAction{}, err
 	}
@@ -30,6 +30,9 @@ func (c *BrokerClient) PrepareAction(ctx context.Context, call *toolbrokerv1.Too
 	if a == nil {
 		return actionauth.PreparedAction{}, fmt.Errorf("tool broker omitted exact action policy")
 	}
+	if actionauth.LogicalReference(ctx) != "" && a.GetEffectId() == "" {
+		return actionauth.PreparedAction{}, fmt.Errorf("tool broker omitted durable effect identity")
+	}
 	var binding actionauth.ActionBinding
 	if json.Unmarshal([]byte(a.GetBindingJson()), &binding) != nil || binding.ActionID != a.GetActionId() || binding.ActionHash != a.GetActionHash() || binding.RunID != call.GetRunId() || binding.ToolCallID != call.GetToolCallId() {
 		return actionauth.PreparedAction{}, fmt.Errorf("tool broker returned incompatible action binding")
@@ -38,7 +41,7 @@ func (c *BrokerClient) PrepareAction(ctx context.Context, call *toolbrokerv1.Too
 	if err != nil {
 		return actionauth.PreparedAction{}, fmt.Errorf("tool broker omitted action expiry")
 	}
-	return actionauth.PreparedAction{Binding: binding, RequiresApproval: a.GetRequiresApproval(), Summary: a.GetSummary(), ExpiresAt: expiry}, nil
+	return actionauth.PreparedAction{Binding: binding, EffectID: a.GetEffectId(), RequiresApproval: a.GetRequiresApproval(), Summary: a.GetSummary(), ExpiresAt: expiry}, nil
 }
 func (c *BrokerClient) AuthorizeAction(ctx context.Context, call *toolbrokerv1.ToolCall, actionID, approvalID, mandateID string) (string, error) {
 	response, err := c.client.AuthorizeToolCall(ctx, &toolbrokerv1.AuthorizeToolCallRequest{ToolCall: call, ActionId: actionID, ApprovalId: approvalID, MandateId: mandateID})

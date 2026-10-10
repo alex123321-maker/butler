@@ -17,6 +17,9 @@ message ExecutionContext {
   string tool_name = 4;
   string runtime_target = 5;
   int64 timeout_ms = 6;
+  string action_id = 7;
+  string idempotency_key = 8;
+  string action_fingerprint = 9;
 }
 
 message ResolvedCredential {

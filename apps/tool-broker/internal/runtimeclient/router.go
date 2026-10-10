@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/credentials"
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -113,6 +114,7 @@ func (r *Router) clientFor(target string) (runtimev1.ToolRuntimeServiceClient, e
 }
 
 func executionContext(ctx context.Context, toolCall *toolbrokerv1.ToolCall, contract *toolbrokerv1.ToolContract, target string) *runtimev1.ExecutionContext {
+	identity := actionauth.DispatchIdentityFromContext(ctx)
 	timeoutMS := int64(0)
 	if deadline, ok := ctx.Deadline(); ok {
 		remaining := time.Until(deadline)
@@ -127,5 +129,6 @@ func executionContext(ctx context.Context, toolCall *toolbrokerv1.ToolCall, cont
 		ToolName:      contract.GetToolName(),
 		RuntimeTarget: target,
 		TimeoutMs:     timeoutMS,
+		ActionId:      identity.ActionID, IdempotencyKey: identity.IdempotencyKey, ActionFingerprint: identity.Fingerprint,
 	}
 }

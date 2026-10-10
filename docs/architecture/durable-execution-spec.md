@@ -169,3 +169,13 @@ Transport/tool fakes isolate lifecycle faults; the separate Broker suite uses
 actual private gRPC/HTTP authority, PostgreSQL approval and Chromium credential
 effects. Production-model login and real remote-site reconciliation are separate
 deployment validations and are not implied by these tests.
+
+Accepted inputs retain random trusted action slots in a separate
+`checkpoint_json.action_slots` object before Broker preparation. Later
+`checkpoint_data` replacement preserves it; approval continuations retain the
+logical reference and permanent effect ID. New identical proposals get fresh
+slots. Cross-run reuse requires an explicit trusted parent-slot link and unchanged
+task/constraints/argument binding. Dispatch checkpoints include effect IDs;
+result checkpoints retain typed effect state and evidence references. See the
+[external effect journal](external-effect-journal.md) for cancellation ordering,
+recipient guarantees and evidence-based reconciliation.

@@ -12,9 +12,12 @@ import (
 )
 
 type Intent struct {
-	Binding          ActionBinding
-	RequiresApproval bool
-	ExpiresAt        time.Time
+	Binding           ActionBinding
+	RequiresApproval  bool
+	ExpiresAt         time.Time
+	EffectID          string
+	EffectFingerprint string
+	EffectPolicy      EffectPolicy
 }
 type Store interface {
 	PutIntent(context.Context, Intent) error
@@ -96,6 +99,9 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	return b, requires, nil
 }
 func (s *Service) Prepare(ctx context.Context, call *toolbrokerv1.ToolCall, contract *toolbrokerv1.ToolContract) (PreparedAction, error) {
+	return s.PrepareWithLogicalRef(ctx, call, contract, "")
+}
+func (s *Service) PrepareWithLogicalRef(ctx context.Context, call *toolbrokerv1.ToolCall, contract *toolbrokerv1.ToolContract, logicalRef string) (PreparedAction, error) {
 	c, err := s.liveContext(ctx, call)
 	if err != nil {
 		return PreparedAction{}, err
@@ -120,6 +126,14 @@ func (s *Service) Prepare(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	}
 	expires := s.now().Add(24 * time.Hour)
 	intent := Intent{Binding: b, RequiresApproval: requires, ExpiresAt: expires}
+	intent.EffectID, intent.EffectFingerprint, err = EffectIdentity(b, logicalRef)
+	if err != nil {
+		return PreparedAction{}, err
+	}
+	intent.EffectPolicy, err = ResolveEffectPolicy(b, contract)
+	if err != nil {
+		return PreparedAction{}, err
+	}
 	if err := s.store.PutIntent(ctx, intent); err != nil {
 		return PreparedAction{}, fmt.Errorf("exact action intent could not be persisted or its identity changed")
 	}
@@ -128,7 +142,7 @@ func (s *Service) Prepare(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 		return PreparedAction{}, fmt.Errorf("persisted action intent is unavailable")
 	}
 	expires = stored.ExpiresAt
-	return PreparedAction{Binding: b, RequiresApproval: requires, Summary: fmt.Sprintf("%s (%s) on %s", b.ToolName, b.Effect, safeResource(b.Resource)), ExpiresAt: expires}, nil
+	return PreparedAction{Binding: b, EffectID: stored.EffectID, RequiresApproval: requires, Summary: fmt.Sprintf("%s (%s) on %s", b.ToolName, b.Effect, safeResource(b.Resource)), ExpiresAt: expires}, nil
 }
 func safeResource(resource string) string {
 	if i := strings.IndexByte(resource, '?'); i >= 0 {

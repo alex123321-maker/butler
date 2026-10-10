@@ -139,7 +139,9 @@ func ContractHash(contract *toolbrokerv1.ToolContract) (string, error) {
 		Name, Class, Input, Output, Target, Risk, Status string
 		CredentialRefs, Approval                         bool
 		Domains, Tools                                   []string
-	}{contract.GetToolName(), contract.GetToolClass(), input, output, contract.GetRuntimeTarget(), contract.GetRiskLevel(), contract.GetStatus(), contract.GetSupportsCredentialRefs(), contract.GetRequiresApproval(), domains, tools})
+		Revision                                         string                       `json:",omitempty"`
+		EffectContract                                   *toolbrokerv1.EffectContract `json:",omitempty"`
+	}{contract.GetToolName(), contract.GetToolClass(), input, output, contract.GetRuntimeTarget(), contract.GetRiskLevel(), contract.GetStatus(), contract.GetSupportsCredentialRefs(), contract.GetRequiresApproval(), domains, tools, contract.GetContractRevision(), contract.GetEffectContract()})
 	return digest(string(encoded)), nil
 }
 
@@ -186,7 +188,7 @@ func BuildBinding(actionID string, call *toolbrokerv1.ToolCall, contract *toolbr
 	if err != nil {
 		return ActionBinding{}, "", err
 	}
-	binding := ActionBinding{ActionID: actionID, RunID: call.GetRunId(), ToolCallID: call.GetToolCallId(), ToolName: call.GetToolName(), ContractHash: contractHash, ArgsHash: digest(args), Resource: resource, CredentialRefs: refs, TaskID: context.TaskID, TaskRevision: context.TaskRevision, ConstraintsRevision: context.ConstraintsRevision, OwnerID: context.OwnerID, Effect: classifyEffect(call.GetToolName(), object)}
+	binding := ActionBinding{ActionID: actionID, RunID: call.GetRunId(), ToolCallID: call.GetToolCallId(), ToolName: call.GetToolName(), ContractHash: contractHash, ContractRevision: contract.GetContractRevision(), ArgsHash: digest(args), Resource: resource, CredentialRefs: refs, TaskID: context.TaskID, TaskRevision: context.TaskRevision, ConstraintsRevision: context.ConstraintsRevision, OwnerID: context.OwnerID, Effect: classifyEffect(call.GetToolName(), object)}
 	encoded, _ := json.Marshal(binding)
 	binding.ActionHash = digest(string(encoded))
 	return binding, args, nil

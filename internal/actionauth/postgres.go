@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -17,25 +18,58 @@ func (s *PostgresStore) PutIntent(ctx context.Context, i Intent) error {
 	if err != nil {
 		return err
 	}
-	var hash string
-	err = s.pool.QueryRow(ctx, `INSERT INTO action_intents(action_id,run_id,tool_call_id,action_hash,binding,requires_approval,expires_at)
- VALUES($1,$2,$3,$4,$5::jsonb,$6,$7) ON CONFLICT(action_id) DO UPDATE SET action_id=EXCLUDED.action_id RETURNING action_hash`, i.Binding.ActionID, i.Binding.RunID, i.Binding.ToolCallID, i.Binding.ActionHash, string(encoded), i.RequiresApproval, i.ExpiresAt).Scan(&hash)
+	if i.EffectID == "" || i.EffectFingerprint == "" {
+		return fmt.Errorf("durable effect identity is required")
+	}
+	policy, err := json.Marshal(i.EffectPolicy)
+	if err != nil {
+		return err
+	}
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	key := ""
+	if i.EffectPolicy.RetrySafety == "external_idempotency" {
+		key = "butler_" + digest(i.EffectID+"\x00"+i.EffectFingerprint)
+	}
+	var fingerprint string
+	err = tx.QueryRow(ctx, `INSERT INTO action_effects(action_id,fingerprint,initial_binding,policy,state,idempotency_key)
+ VALUES($1,$2,$3::jsonb,$4::jsonb,'prepared',$5) ON CONFLICT(action_id) DO UPDATE SET action_id=EXCLUDED.action_id RETURNING fingerprint`, i.EffectID, i.EffectFingerprint, string(encoded), string(policy), key).Scan(&fingerprint)
+	if err != nil {
+		return err
+	}
+	// Upgrade only untouched legacy intents whose exact binding still matches.
+	if fingerprint != i.EffectFingerprint {
+		tag, e := tx.Exec(ctx, `UPDATE action_effects e SET fingerprint=$2,policy=$3::jsonb,idempotency_key=$4 WHERE action_id=$1 AND fingerprint=$5 AND state IN ('prepared','allowed') AND EXISTS(SELECT 1 FROM action_intents i WHERE i.action_id=$1 AND i.action_hash=$5 AND i.effect_id=$1)`, i.EffectID, i.EffectFingerprint, string(policy), key, i.Binding.ActionHash)
+		if e != nil || tag.RowsAffected() != 1 {
+			return fmt.Errorf("logical action identity already binds a different effect")
+		}
+	}
+	var hash, effectID string
+	err = tx.QueryRow(ctx, `INSERT INTO action_intents(action_id,run_id,tool_call_id,action_hash,binding,requires_approval,expires_at,effect_id,effect_fingerprint,effect_policy)
+ VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9,$10::jsonb) ON CONFLICT(action_id) DO UPDATE SET effect_fingerprint=EXCLUDED.effect_fingerprint,effect_policy=EXCLUDED.effect_policy WHERE action_intents.action_hash=EXCLUDED.action_hash AND action_intents.effect_id=EXCLUDED.effect_id RETURNING action_hash,effect_id`, i.Binding.ActionID, i.Binding.RunID, i.Binding.ToolCallID, i.Binding.ActionHash, string(encoded), i.RequiresApproval, i.ExpiresAt, i.EffectID, i.EffectFingerprint, string(policy)).Scan(&hash, &effectID)
 	if err != nil {
 		return err
 	}
 	if hash != i.Binding.ActionHash {
 		return fmt.Errorf("tool call identity already binds a different action")
 	}
-	return nil
+	return tx.Commit(ctx)
 }
 func (s *PostgresStore) GetIntent(ctx context.Context, id string) (Intent, error) {
 	var i Intent
 	var encoded string
-	err := s.pool.QueryRow(ctx, `SELECT binding::text,requires_approval,expires_at FROM action_intents WHERE action_id=$1`, id).Scan(&encoded, &i.RequiresApproval, &i.ExpiresAt)
+	var policy string
+	err := s.pool.QueryRow(ctx, `SELECT binding::text,requires_approval,expires_at,effect_id,effect_fingerprint,effect_policy::text FROM action_intents WHERE action_id=$1`, id).Scan(&encoded, &i.RequiresApproval, &i.ExpiresAt, &i.EffectID, &i.EffectFingerprint, &policy)
 	if err != nil {
 		return i, err
 	}
 	err = json.Unmarshal([]byte(encoded), &i.Binding)
+	if err == nil {
+		err = json.Unmarshal([]byte(policy), &i.EffectPolicy)
+	}
 	return i, err
 }
 func (s *PostgresStore) PutGrant(ctx context.Context, g Grant) (Grant, error) {
@@ -43,10 +77,21 @@ func (s *PostgresStore) PutGrant(ctx context.Context, g Grant) (Grant, error) {
 	if err != nil {
 		return Grant{}, err
 	}
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return Grant{}, err
+	}
+	defer tx.Rollback(ctx)
+	var state string
+	var effectID string
+	err = tx.QueryRow(ctx, `SELECT e.action_id,e.state FROM action_effects e JOIN action_intents i ON i.effect_id=e.action_id WHERE i.action_id=$1 AND i.action_hash=$2 FOR UPDATE OF e`, g.Binding.ActionID, g.Binding.ActionHash).Scan(&effectID, &state)
+	if err != nil || (state != string(StatePrepared) && state != string(StateAllowed)) {
+		return Grant{}, fmt.Errorf("external effect already dispatched; reconcile before any new attempt")
+	}
 	var stored string
 	// Only an unused grant may be refreshed after worker takeover. Once dispatch
 	// begins, even a timeout cannot turn this action into a reusable permission.
-	err = s.pool.QueryRow(ctx, `INSERT INTO action_authorizations(authorization_id,action_id,action_hash,grant_data,mandate_id,mandate_revision,expires_at,state)
+	err = tx.QueryRow(ctx, `INSERT INTO action_authorizations(authorization_id,action_id,action_hash,grant_data,mandate_id,mandate_revision,expires_at,state)
  VALUES($1,$2,$3,$4::jsonb,NULLIF($5,''),$6,$7,'authorized') ON CONFLICT(action_id) DO UPDATE
  SET authorization_id=EXCLUDED.authorization_id,grant_data=EXCLUDED.grant_data,mandate_id=EXCLUDED.mandate_id,mandate_revision=EXCLUDED.mandate_revision,expires_at=EXCLUDED.expires_at
  WHERE action_authorizations.state='authorized' AND action_authorizations.action_hash=EXCLUDED.action_hash RETURNING grant_data::text`, g.ID, g.Binding.ActionID, g.Binding.ActionHash, string(encoded), g.MandateID, g.MandateRevision, g.ExpiresAt).Scan(&stored)
@@ -54,7 +99,14 @@ func (s *PostgresStore) PutGrant(ctx context.Context, g Grant) (Grant, error) {
 		return Grant{}, fmt.Errorf("action authorization cannot be refreshed after dispatch")
 	}
 	err = json.Unmarshal([]byte(stored), &g)
-	return g, err
+	if err != nil {
+		return Grant{}, err
+	}
+	_, err = tx.Exec(ctx, `UPDATE action_effects SET state='allowed',authorization_id=$2,updated_at=NOW() WHERE action_id=$1`, effectID, g.ID)
+	if err != nil {
+		return Grant{}, err
+	}
+	return g, tx.Commit(ctx)
 }
 func (s *PostgresStore) GetGrant(ctx context.Context, id string) (Grant, error) {
 	var g Grant
@@ -69,14 +121,75 @@ func (s *PostgresStore) GetGrant(ctx context.Context, id string) (Grant, error) 
 	return g, err
 }
 func (s *PostgresStore) ClaimGrant(ctx context.Context, id string) error {
-	tag, err := s.pool.Exec(ctx, `UPDATE action_authorizations a SET state='inflight',dispatched_at=NOW()
- WHERE authorization_id=$1 AND state='authorized' AND expires_at>NOW()
- AND (mandate_id IS NULL OR EXISTS(SELECT 1 FROM action_mandates m WHERE m.mandate_id=a.mandate_id AND m.revision=a.mandate_revision AND m.revoked_at IS NULL AND m.expires_at>NOW()))`, id)
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	g, err := grantInTx(ctx, tx, id)
+	if err != nil {
+		return err
+	}
+	if err = s.guardDispatch(ctx, tx, g); err != nil {
+		return err
+	}
+	var effectID string
+	err = tx.QueryRow(ctx, `SELECT e.action_id FROM action_effects e JOIN action_intents i ON i.effect_id=e.action_id WHERE i.action_id=$1 AND e.state='allowed' AND e.authorization_id=$2 FOR UPDATE OF e`, g.Binding.ActionID, id).Scan(&effectID)
+	if err != nil {
+		return fmt.Errorf("external effect is already executing or uncertain; do not replay")
+	}
+	tag, err := tx.Exec(ctx, `UPDATE action_authorizations a SET state='inflight',dispatched_at=NOW()
+ WHERE authorization_id=$1 AND state='authorized' AND expires_at>clock_timestamp()
+ AND (mandate_id IS NULL OR EXISTS(SELECT 1 FROM action_mandates m WHERE m.mandate_id=a.mandate_id AND m.revision=a.mandate_revision AND m.revoked_at IS NULL AND m.expires_at>clock_timestamp()))`, id)
 	if err != nil {
 		return err
 	}
 	if tag.RowsAffected() != 1 {
 		return fmt.Errorf("authorization already dispatched, expired or revoked; do not replay the action")
+	}
+	if _, err = tx.Exec(ctx, `UPDATE action_effects SET state='executing',dispatch_outcome='executing',updated_at=NOW() WHERE action_id=$1`, effectID); err != nil {
+		return err
+	}
+	if _, err = tx.Exec(ctx, `INSERT INTO action_effect_dispatches(authorization_id,action_id,execution_action_id,outcome) VALUES($1,$2,$3,'executing')`, id, effectID, g.Binding.ActionID); err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+func grantInTx(ctx context.Context, tx pgx.Tx, id string) (Grant, error) {
+	var g Grant
+	var data, state string
+	err := tx.QueryRow(ctx, `SELECT grant_data::text,state FROM action_authorizations WHERE authorization_id=$1`, id).Scan(&data, &state)
+	if err != nil {
+		return g, err
+	}
+	err = json.Unmarshal([]byte(data), &g)
+	g.State = state
+	return g, err
+}
+
+// Live ownership and task locks serialize cancellation/amendment with the
+// irreversible journal commit. They are released before contacting the runtime.
+func (s *PostgresStore) guardDispatch(ctx context.Context, tx pgx.Tx, g Grant) error {
+	var session string
+	err := tx.QueryRow(ctx, `SELECT session_key FROM session_ownership WHERE run_id=$1 AND lease_id=$2 AND fence_epoch=$3 AND expires_at>clock_timestamp() FOR SHARE`, g.Binding.RunID, g.LeaseID, g.LeaseEpoch).Scan(&session)
+	if err != nil {
+		return fmt.Errorf("live execution ownership is required at dispatch commit")
+	}
+	if g.Binding.TaskID != "" {
+		var status, owner, policy string
+		var revision, constraints, pinned int64
+		err = tx.QueryRow(ctx, `SELECT task_revision FROM runs WHERE run_id=$1 AND task_id=$2 FOR SHARE`, g.Binding.RunID, g.Binding.TaskID).Scan(&pinned)
+		if err != nil {
+			return fmt.Errorf("pinned task run is unavailable")
+		}
+		err = tx.QueryRow(ctx, `SELECT status,revision,constraints_revision,owner_id,execution_policy FROM tasks WHERE task_id=$1 FOR SHARE`, g.Binding.TaskID).Scan(&status, &revision, &constraints, &owner, &policy)
+		if err != nil || status != "active" || revision != g.Binding.TaskRevision || pinned != revision || constraints != g.Binding.ConstraintsRevision || owner != g.Binding.OwnerID {
+			return fmt.Errorf("task authority changed before dispatch commit")
+		}
+		if err = CheckExecutionPolicy(ContextSnapshot{ExecutionPolicy: policy}, g.Binding.Effect); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -84,14 +197,17 @@ func (s *PostgresStore) FinishGrant(ctx context.Context, id, state string) error
 	if state != "dispatch_completed" && state != "unknown" {
 		return fmt.Errorf("unsupported dispatch outcome")
 	}
-	tag, err := s.pool.Exec(ctx, `UPDATE action_authorizations SET state=$2,finished_at=NOW() WHERE authorization_id=$1 AND state='inflight'`, id, state)
+	g, err := s.GetGrant(ctx, id)
 	if err != nil {
 		return err
 	}
-	if tag.RowsAffected() != 1 {
-		return fmt.Errorf("dispatch outcome cannot be recorded")
+	i, err := s.GetIntent(ctx, g.Binding.ActionID)
+	if err != nil {
+		return err
 	}
-	return nil
+	now := time.Now().UTC()
+	_, err = s.RecordDispatchOutcome(ctx, id, state, EffectEvidence{EvidenceID: "evidence_" + randomID(), ActionID: i.EffectID, SourceActionID: g.Binding.ActionID, SourceRunID: g.Binding.RunID, SourceToolCallID: g.Binding.ToolCallID, Source: "runtime_response", Method: i.EffectPolicy.VerificationMethod, Verdict: StateUnknown, ObservedAt: now, RecordedAt: now})
+	return err
 }
 func (s *PostgresStore) GetMandate(ctx context.Context, id string) (Mandate, error) {
 	var m Mandate

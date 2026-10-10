@@ -69,8 +69,8 @@ func TestExecuteToolCallRoutesToRuntime(t *testing.T) {
 	server := NewServer(reg, runtimeclient.New(nil), nil, nil)
 	fixture := setTestAuthority(server, nil)
 	result := dispatchForTest(t, server, fixture, &toolbrokerv1.ToolCall{ToolCallId: "tool-1", RunId: "run-1", ToolName: "browser.navigate", ArgsJson: `{"url":"https://example.com"}`}, true)
-	if result.GetStatus() != "completed" {
-		t.Fatalf("expected completed result, got %+v", result)
+	if result.GetStatus() != "effect_unknown" || result.GetEffectState() != "effect_unknown" {
+		t.Fatalf("navigation dispatch cannot prove an external effect, got %+v", result)
 	}
 }
 

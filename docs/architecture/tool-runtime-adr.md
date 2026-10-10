@@ -845,3 +845,16 @@ Tool Broker:
 6. Секреты разрешаются только в системном слое и только в момент исполнения.
 7. Doctor tools получают полный доступ к effective configuration Butler, кроме открытых секретов.
 8. Агент получает только безопасный и нормализованный результат.
+
+## 27. Журнал внешних эффектов
+
+ToolContract содержит версию и effect_contract. Broker сохраняет постоянный ID
+намерения, отпечаток точных аргументов/контракта и разрешение до вызова runtime.
+ExecutionContext передаёт системные action_id, idempotency_key и fingerprint
+вне model-visible args. Только явно объявленный HTTP recipient protocol может
+получить такой ключ; общий HTTP/browser/Telegram контракт безопасный повтор не
+обещает. Runtime не повторяет запрос и не принимает решение об orchestration.
+ToolResult возвращает action_id, effect_state и ссылки на доказательства;
+технический completed без доказательства внешней записи становится
+effect_unknown и останавливает продолжение модели. Подробный контракт и
+независимая сверка: [external-effect-journal.md](external-effect-journal.md).

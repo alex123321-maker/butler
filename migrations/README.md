@@ -40,3 +40,4 @@ Use `make migrate-up` to apply all migrations and `make migrate-down` to roll th
 - `031_action_authorization` persists exact Broker intents, bounded mandates and single-dispatch grants.
 - `032_durable_ingress` persists ordered acceptance receipts, checkpoints and expiring monotonic session ownership.
 - `033_approval_continuations` persists exact data-only continuations and owner decision input identities; legacy unbound tool waits expire without inventing authority.
+- `035_external_effect_journal` persists permanent exact-intent effect states, spent dispatches and immutable evidence; old technical completions migrate to unknown.

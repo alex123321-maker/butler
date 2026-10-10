@@ -123,7 +123,7 @@ func TestBrokerBrowserSequenceE2E(t *testing.T) {
 	var observation map[string]any
 	accept := func(result *toolbrokerv1.ToolResult) {
 		t.Helper()
-		if result.GetStatus() != "completed" {
+		if result.GetStatus() != "completed" && (result.GetStatus() != "effect_unknown" || result.GetEffectState() != "effect_unknown" || result.GetActionId() == "" || result.GetError().GetRetryable()) {
 			t.Fatalf("broker sequence failed: %+v", result)
 		}
 		if err := json.Unmarshal([]byte(result.GetResultJson()), &observation); err != nil {
