@@ -53,6 +53,7 @@ type SemanticHit struct {
 	Distance                                                         float64
 	SourceRef, OriginType, OriginID, Revision, GenerationID, SpaceID string
 	Origin                                                           content.Origin
+	ExcerptClipped                                                   bool
 }
 
 func (h SemanticHit) MemoryOrigin() content.Origin {
@@ -366,7 +367,7 @@ func (s *Service) loadChunks(ctx context.Context, scopes []Scope, userMessage st
 			if h.MemoryOrigin().Sensitivity == content.Secret {
 				continue
 			}
-			items = append(items, map[string]any{"title": h.Title, "summary": h.Summary, "distance": h.Distance, "source": "local_semantic", "source_ref": h.SourceRef, "origin_type": h.OriginType, "origin_id": h.OriginID, "source_revision": h.Revision, "index_generation": h.GenerationID, "index_space": h.SpaceID, "origin": h.MemoryOrigin()})
+			items = append(items, map[string]any{"title": h.Title, "summary": h.Summary, "distance": h.Distance, "source": "local_semantic", "source_ref": h.SourceRef, "origin_type": h.OriginType, "origin_id": h.OriginID, "source_revision": h.Revision, "index_generation": h.GenerationID, "index_space": h.SpaceID, "origin": h.MemoryOrigin(), "excerpt_clipped": h.ExcerptClipped})
 		}
 		return items, nil
 	}

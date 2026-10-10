@@ -1,0 +1,976 @@
+{
+  "absent_identifier": "no source; no invented semantic nearest answer",
+  "actual_serial_query_rerank_ms": 14811,
+  "admitted_calls": 56,
+  "admitted_input_bytes": 58676,
+  "answer_grounding": "retrieval expected-source coverage only; no generative answer correctness claim",
+  "cases": [
+    {
+      "QueryID": "q-tab",
+      "Expected": "tab-authority",
+      "EmbeddingTop": "tab-authority",
+      "HybridTop": "tab-authority",
+      "RankedTop": "tab-authority",
+      "HybridSources": [
+        "tab-authority",
+        "tab-observation",
+        "approval-binding",
+        "owner-amend"
+      ],
+      "RankedSources": [
+        "tab-authority",
+        "tab-observation",
+        "approval-binding",
+        "owner-amend"
+      ],
+      "ContextBytes": 3567
+    },
+    {
+      "QueryID": "q-observe",
+      "Expected": "tab-observation",
+      "EmbeddingTop": "tab-observation",
+      "HybridTop": "tab-observation",
+      "RankedTop": "tab-observation",
+      "HybridSources": [
+        "tab-observation",
+        "tab-authority",
+        "memory-stale",
+        "memory-reindex"
+      ],
+      "RankedSources": [
+        "tab-observation",
+        "tab-authority",
+        "memory-stale",
+        "memory-reindex"
+      ],
+      "ContextBytes": 3514
+    },
+    {
+      "QueryID": "q-intent",
+      "Expected": "intent-dedupe",
+      "EmbeddingTop": "intent-dedupe",
+      "HybridTop": "intent-dedupe",
+      "RankedTop": "effect-unknown",
+      "HybridSources": [
+        "intent-dedupe",
+        "effect-unknown",
+        "effect-rejected",
+        "memory-reindex"
+      ],
+      "RankedSources": [
+        "effect-unknown",
+        "effect-rejected",
+        "intent-dedupe",
+        "memory-reindex"
+      ],
+      "ContextBytes": 3776
+    },
+    {
+      "QueryID": "q-ingress",
+      "Expected": "input-dedupe",
+      "EmbeddingTop": "input-dedupe",
+      "HybridTop": "input-dedupe",
+      "RankedTop": "input-dedupe",
+      "HybridSources": [
+        "input-dedupe",
+        "delivery-retry",
+        "intent-dedupe",
+        "effect-rejected"
+      ],
+      "RankedSources": [
+        "input-dedupe",
+        "delivery-retry",
+        "intent-dedupe",
+        "effect-rejected"
+      ],
+      "ContextBytes": 3635
+    },
+    {
+      "QueryID": "q-capacity",
+      "Expected": "quota-capacity",
+      "EmbeddingTop": "quota-capacity",
+      "HybridTop": "quota-capacity",
+      "RankedTop": "quota-capacity",
+      "HybridSources": [
+        "quota-capacity",
+        "local-memory",
+        "delivery-retry",
+        "memory-reindex"
+      ],
+      "RankedSources": [
+        "quota-capacity",
+        "delivery-retry",
+        "local-memory",
+        "memory-reindex"
+      ],
+      "ContextBytes": 3743
+    },
+    {
+      "QueryID": "q-budget",
+      "Expected": "budget-exhausted",
+      "EmbeddingTop": "owner-amend",
+      "HybridTop": "owner-amend",
+      "RankedTop": "owner-amend",
+      "HybridSources": [
+        "owner-amend",
+        "intent-dedupe",
+        "budget-exhausted",
+        "code-prepare"
+      ],
+      "RankedSources": [
+        "owner-amend",
+        "budget-exhausted",
+        "intent-dedupe",
+        "code-prepare"
+      ],
+      "ContextBytes": 3702
+    },
+    {
+      "QueryID": "q-approval",
+      "Expected": "approval-binding",
+      "EmbeddingTop": "approval-binding",
+      "HybridTop": "approval-binding",
+      "RankedTop": "approval-binding",
+      "HybridSources": [
+        "approval-binding",
+        "owner-amend",
+        "final-evidence",
+        "effect-unknown"
+      ],
+      "RankedSources": [
+        "approval-binding",
+        "owner-amend",
+        "effect-unknown",
+        "final-evidence"
+      ],
+      "ContextBytes": 3819
+    },
+    {
+      "QueryID": "q-amend",
+      "Expected": "owner-amend",
+      "EmbeddingTop": "owner-amend",
+      "HybridTop": "owner-amend",
+      "RankedTop": "owner-amend",
+      "HybridSources": [
+        "owner-amend",
+        "code-prepare",
+        "approval-binding",
+        "code-claim"
+      ],
+      "RankedSources": [
+        "owner-amend",
+        "code-prepare",
+        "approval-binding",
+        "code-claim"
+      ],
+      "ContextBytes": 3651
+    },
+    {
+      "QueryID": "q-unknown",
+      "Expected": "effect-unknown",
+      "EmbeddingTop": "effect-unknown",
+      "HybridTop": "effect-unknown",
+      "RankedTop": "effect-unknown",
+      "HybridSources": [
+        "effect-unknown",
+        "delivery-retry",
+        "effect-rejected",
+        "intent-dedupe"
+      ],
+      "RankedSources": [
+        "effect-unknown",
+        "effect-rejected",
+        "delivery-retry",
+        "intent-dedupe"
+      ],
+      "ContextBytes": 3769
+    },
+    {
+      "QueryID": "q-reject",
+      "Expected": "effect-rejected",
+      "EmbeddingTop": "effect-rejected",
+      "HybridTop": "effect-rejected",
+      "RankedTop": "effect-rejected",
+      "HybridSources": [
+        "effect-rejected",
+        "effect-unknown",
+        "delivery-retry",
+        "intent-dedupe"
+      ],
+      "RankedSources": [
+        "effect-rejected",
+        "effect-unknown",
+        "delivery-retry",
+        "intent-dedupe"
+      ],
+      "ContextBytes": 3771
+    },
+    {
+      "QueryID": "q-cert",
+      "Expected": "tls-error",
+      "EmbeddingTop": "tls-error",
+      "HybridTop": "tls-error",
+      "RankedTop": "tls-error",
+      "HybridSources": [
+        "tls-error",
+        "deadline-error",
+        "final-evidence",
+        "approval-binding"
+      ],
+      "RankedSources": [
+        "tls-error",
+        "deadline-error",
+        "approval-binding",
+        "final-evidence"
+      ],
+      "ContextBytes": 3712
+    },
+    {
+      "QueryID": "q-timeout",
+      "Expected": "deadline-error",
+      "EmbeddingTop": "deadline-error",
+      "HybridTop": "deadline-error",
+      "RankedTop": "deadline-error",
+      "HybridSources": [
+        "deadline-error",
+        "tls-error",
+        "final-evidence",
+        "intent-dedupe"
+      ],
+      "RankedSources": [
+        "deadline-error",
+        "tls-error",
+        "intent-dedupe",
+        "final-evidence"
+      ],
+      "ContextBytes": 3710
+    },
+    {
+      "QueryID": "q-stale",
+      "Expected": "memory-stale",
+      "EmbeddingTop": "memory-stale",
+      "HybridTop": "memory-stale",
+      "RankedTop": "memory-stale",
+      "HybridSources": [
+        "memory-stale",
+        "intent-dedupe",
+        "memory-reindex",
+        "approval-binding"
+      ],
+      "RankedSources": [
+        "memory-stale",
+        "memory-reindex",
+        "intent-dedupe",
+        "approval-binding"
+      ],
+      "ContextBytes": 3734
+    },
+    {
+      "QueryID": "q-reindex",
+      "Expected": "memory-reindex",
+      "EmbeddingTop": "memory-reindex",
+      "HybridTop": "memory-reindex",
+      "RankedTop": "memory-reindex",
+      "HybridSources": [
+        "memory-reindex",
+        "code-vector",
+        "intent-dedupe",
+        "memory-stale"
+      ],
+      "RankedSources": [
+        "memory-reindex",
+        "intent-dedupe",
+        "memory-stale",
+        "code-vector"
+      ],
+      "ContextBytes": 3615
+    },
+    {
+      "QueryID": "q-secret",
+      "Expected": "secret-boundary",
+      "EmbeddingTop": "secret-boundary",
+      "HybridTop": "secret-boundary",
+      "RankedTop": "secret-boundary",
+      "HybridSources": [
+        "secret-boundary",
+        "intent-dedupe",
+        "tab-observation",
+        "approval-binding"
+      ],
+      "RankedSources": [
+        "secret-boundary",
+        "tab-observation",
+        "approval-binding",
+        "intent-dedupe"
+      ],
+      "ContextBytes": 3586
+    },
+    {
+      "QueryID": "q-vram",
+      "Expected": "local-memory",
+      "EmbeddingTop": "local-memory",
+      "HybridTop": "local-memory",
+      "RankedTop": "local-memory",
+      "HybridSources": [
+        "local-memory",
+        "memory-stale",
+        "code-vector",
+        "quota-capacity"
+      ],
+      "RankedSources": [
+        "local-memory",
+        "memory-stale",
+        "code-vector",
+        "quota-capacity"
+      ],
+      "ContextBytes": 3622
+    },
+    {
+      "QueryID": "q-verify",
+      "Expected": "final-evidence",
+      "EmbeddingTop": "final-evidence",
+      "HybridTop": "final-evidence",
+      "RankedTop": "final-evidence",
+      "HybridSources": [
+        "final-evidence",
+        "approval-binding",
+        "intent-dedupe",
+        "code-prepare"
+      ],
+      "RankedSources": [
+        "final-evidence",
+        "approval-binding",
+        "intent-dedupe",
+        "code-prepare"
+      ],
+      "ContextBytes": 3652
+    },
+    {
+      "QueryID": "q-delivery",
+      "Expected": "delivery-retry",
+      "EmbeddingTop": "delivery-retry",
+      "HybridTop": "delivery-retry",
+      "RankedTop": "delivery-retry",
+      "HybridSources": [
+        "delivery-retry",
+        "final-evidence",
+        "input-dedupe",
+        "memory-reindex"
+      ],
+      "RankedSources": [
+        "delivery-retry",
+        "final-evidence",
+        "input-dedupe",
+        "memory-reindex"
+      ],
+      "ContextBytes": 3640
+    },
+    {
+      "QueryID": "q-fence",
+      "Expected": "code-fence",
+      "EmbeddingTop": "owner-amend",
+      "HybridTop": "owner-amend",
+      "RankedTop": "owner-amend",
+      "HybridSources": [
+        "owner-amend",
+        "code-fence",
+        "budget-exhausted",
+        "approval-binding"
+      ],
+      "RankedSources": [
+        "owner-amend",
+        "code-fence",
+        "budget-exhausted",
+        "approval-binding"
+      ],
+      "ContextBytes": 3722
+    },
+    {
+      "QueryID": "q-vector",
+      "Expected": "code-vector",
+      "EmbeddingTop": "code-vector",
+      "HybridTop": "code-vector",
+      "RankedTop": "code-vector",
+      "HybridSources": [
+        "code-vector",
+        "memory-stale",
+        "memory-reindex",
+        "local-memory"
+      ],
+      "RankedSources": [
+        "code-vector",
+        "memory-stale",
+        "memory-reindex",
+        "local-memory"
+      ],
+      "ContextBytes": 3573
+    },
+    {
+      "QueryID": "q-claim",
+      "Expected": "code-claim",
+      "EmbeddingTop": "code-claim",
+      "HybridTop": "code-claim",
+      "RankedTop": "code-claim",
+      "HybridSources": [
+        "code-claim",
+        "final-evidence",
+        "delivery-retry",
+        "budget-exhausted"
+      ],
+      "RankedSources": [
+        "code-claim",
+        "delivery-retry",
+        "final-evidence",
+        "budget-exhausted"
+      ],
+      "ContextBytes": 3676
+    },
+    {
+      "QueryID": "q-prepare",
+      "Expected": "code-prepare",
+      "EmbeddingTop": "code-prepare",
+      "HybridTop": "code-prepare",
+      "RankedTop": "code-prepare",
+      "HybridSources": [
+        "code-prepare",
+        "intent-dedupe",
+        "approval-binding",
+        "code-fence"
+      ],
+      "RankedSources": [
+        "code-prepare",
+        "approval-binding",
+        "intent-dedupe",
+        "code-fence"
+      ],
+      "ContextBytes": 3610
+    },
+    {
+      "QueryID": "q-root",
+      "Expected": "code-root",
+      "EmbeddingTop": "code-root",
+      "HybridTop": "code-root",
+      "RankedTop": "code-root",
+      "HybridSources": [
+        "code-root",
+        "owner-amend",
+        "code-fence",
+        "budget-exhausted"
+      ],
+      "RankedSources": [
+        "code-root",
+        "budget-exhausted",
+        "owner-amend",
+        "code-fence"
+      ],
+      "ContextBytes": 3642
+    },
+    {
+      "QueryID": "q-files",
+      "Expected": "code-files",
+      "EmbeddingTop": "code-files",
+      "HybridTop": "code-files",
+      "RankedTop": "code-files",
+      "HybridSources": [
+        "code-files",
+        "tab-observation",
+        "quota-capacity",
+        "approval-binding"
+      ],
+      "RankedSources": [
+        "code-files",
+        "tab-observation",
+        "approval-binding",
+        "quota-capacity"
+      ],
+      "ContextBytes": 3627
+    }
+  ],
+  "context": "4 cited UTF8 excerpts \u003c=6144 serialized bytes; conservative byte token allowance",
+  "corpus_sha256": "33122f239f0814467c09d03420869c2d00705b5323ee7c7670bf5b1d194c5308",
+  "corpus_version": "butler-russian-code-quality-v1",
+  "exact_identifiers": {
+    "BudgetRoot": true,
+    "ClaimGrant": true,
+    "PrepareWithLogicalRef": true,
+    "ReadRegular": true,
+    "normalizeVector": true
+  },
+  "grouped_query_ms_24": 2090,
+  "grouped_rerank_ms_24": 9790,
+  "indexing": [
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 8213,
+      "VRAMMiB": 735,
+      "RAMMiB": 1728
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 90,
+      "VRAMMiB": 767,
+      "RAMMiB": 1729
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 88,
+      "VRAMMiB": 767,
+      "RAMMiB": 1729
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 84,
+      "VRAMMiB": 767,
+      "RAMMiB": 1731
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 84,
+      "VRAMMiB": 767,
+      "RAMMiB": 1731
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 85,
+      "VRAMMiB": 767,
+      "RAMMiB": 1732
+    }
+  ],
+  "indexing_ms": 8710,
+  "inference": [
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 93,
+      "VRAMMiB": 767,
+      "RAMMiB": 1755
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 79,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 79,
+      "VRAMMiB": 767,
+      "RAMMiB": 1756
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 79,
+      "VRAMMiB": 767,
+      "RAMMiB": 1757
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 79,
+      "VRAMMiB": 767,
+      "RAMMiB": 1757
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 83,
+      "VRAMMiB": 767,
+      "RAMMiB": 1758
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 80,
+      "VRAMMiB": 767,
+      "RAMMiB": 1758
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 79,
+      "VRAMMiB": 767,
+      "RAMMiB": 1758
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 80,
+      "VRAMMiB": 767,
+      "RAMMiB": 1758
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 80,
+      "VRAMMiB": 767,
+      "RAMMiB": 1758
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 84,
+      "VRAMMiB": 767,
+      "RAMMiB": 1759
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 84,
+      "VRAMMiB": 767,
+      "RAMMiB": 1759
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 81,
+      "VRAMMiB": 767,
+      "RAMMiB": 1759
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 80,
+      "VRAMMiB": 767,
+      "RAMMiB": 1759
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 80,
+      "VRAMMiB": 767,
+      "RAMMiB": 1759
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 79,
+      "VRAMMiB": 767,
+      "RAMMiB": 1759
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 80,
+      "VRAMMiB": 767,
+      "RAMMiB": 1759
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 79,
+      "VRAMMiB": 767,
+      "RAMMiB": 1759
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 83,
+      "VRAMMiB": 767,
+      "RAMMiB": 1760
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 79,
+      "VRAMMiB": 767,
+      "RAMMiB": 1760
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 79,
+      "VRAMMiB": 767,
+      "RAMMiB": 1760
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 80,
+      "VRAMMiB": 767,
+      "RAMMiB": 1760
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 79,
+      "VRAMMiB": 767,
+      "RAMMiB": 1760
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 81,
+      "VRAMMiB": 767,
+      "RAMMiB": 1761
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 7011,
+      "VRAMMiB": 1581,
+      "RAMMiB": 1984
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 109,
+      "VRAMMiB": 1763,
+      "RAMMiB": 1513
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 120,
+      "VRAMMiB": 1955,
+      "RAMMiB": 1514
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 119,
+      "VRAMMiB": 2149,
+      "RAMMiB": 1515
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 121,
+      "VRAMMiB": 2149,
+      "RAMMiB": 1515
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 121,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1516
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 120,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1516
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 121,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1516
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 119,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 120,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1517
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 119,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 108,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 122,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1518
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 121,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1519
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 110,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1519
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 121,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1515
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 110,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1515
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 120,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1515
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 120,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1516
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 121,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1516
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 123,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1516
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 109,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1516
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 122,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1516
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 121,
+      "VRAMMiB": 2353,
+      "RAMMiB": 1514
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 8413,
+      "VRAMMiB": 709,
+      "RAMMiB": 1722
+    },
+    {
+      "Device": "gpu",
+      "Fallback": "",
+      "QueueMS": 0,
+      "ExecutionMS": 6391,
+      "VRAMMiB": 1581,
+      "RAMMiB": 1516
+    }
+  ],
+  "metrics": {
+    "embedding768": {
+      "Top1": 0.9166666666666666,
+      "MRR": 0.9513888888888888,
+      "Recall4": 1
+    },
+    "hybrid_reranked": {
+      "Top1": 0.875,
+      "MRR": 0.9305555555555557,
+      "Recall4": 1
+    },
+    "hybrid_rrf": {
+      "Top1": 0.9166666666666666,
+      "MRR": 0.9513888888888888,
+      "Recall4": 1
+    }
+  },
+  "production": "disabled pending source/job/current local-run admission from22/23",
+  "rank_fusion": "RRF k=60 plus protected exact technical hits; no score addition",
+  "rerank_default": false,
+  "rerank_improves_top1": false,
+  "scope": "public synthetic fixtures fixed before model evaluation; not private owner memory"
+}

@@ -43,13 +43,13 @@ type labAdmission struct {
 	calls, bytes int
 }
 
-func (a *labAdmission) Admit(ctx context.Context, o Operation) (func(), error) {
+func (a *labAdmission) Admit(ctx context.Context, o Operation) (context.Context, func(), error) {
 	if ctx.Err() != nil || o.Scope != a.scope || time.Now().After(a.deadline) || a.calls >= 160 || a.bytes+o.InputBytes > 2*1024*1024 || o.Origin.Sensitivity == content.Secret {
-		return nil, ErrAdmission
+		return nil, nil, ErrAdmission
 	}
 	a.calls++
 	a.bytes += o.InputBytes
-	return func() {}, nil
+	return ctx, func() {}, nil
 }
 
 type qualityCase struct {

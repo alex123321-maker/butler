@@ -128,6 +128,37 @@ run/auxiliary-job integration from #22/#23 is verified; the fixture gate cannot
 grant production authority. The optional adapter is documented in
 `internal/memory/semantic/README.md`.
 
+## Hybrid retrieval evidence (2026-10-10 UTC)
+
+The same helper's second argument `hybrid` runs `HybridReader` through the actual
+shared service and disposable pgvector fixture. It keeps the previously fixed
+24 documents/queries and unchanged reference answers. `verification-hybrid-quality.json`
+compares actual 768d embedding order with exact/simple-Russian full-text RRF and
+the optional Qwen stage. Five exact function-name lookups succeed; a nonexistent
+method returns no source and performs no semantic nearest-neighbor substitution.
+
+| Mode | Top1 | MRR | Recall at4 |
+|---|---:|---:|---:|
+| 768d embedding | 22/24 | 0.951 | 1.000 |
+| Protected exact + full-text + vector RRF | 22/24 | 0.951 | 1.000 |
+| Hybrid + Qwen reranking | 21/24 | 0.931 | 1.000 |
+
+The hybrid preserves paraphrased retrieval quality and adds exact technical
+lookup/absence behavior; this corpus shows no natural-query top1 improvement.
+Qwen is default-off because it regresses order. Expected-source recall measures
+retrieval support; no generative answer accuracy or factual verification is
+claimed. Task constraints and permissions still come from structured authority.
+
+The recorded run used 8.7 seconds indexing, 2.1 seconds for 24 query calls and
+9.8 seconds for 24 ranking calls with models grouped to profile quality. One full
+serial query/rerank also ran through the public method and took 14.8 seconds,
+including both GPU model switches; grouped timing is not the per-query production
+latency. Whole-device peak 2353 MiB, full process RSS 1984 MiB, final GPU 17 MiB.
+The largest cited context was 3819 serialized bytes against the 6144-byte budget.
+Ranking transmits only bounded authorized text; clipped final evidence is marked
+and does not silently shorten model input. Production stays disabled pending
+current source/job/live local-run admission integration.
+
 ## Tensor runtime exception
 
 [Google's official card](https://huggingface.co/google/embeddinggemma-2) supports

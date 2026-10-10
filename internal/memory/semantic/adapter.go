@@ -35,7 +35,7 @@ func operationOrigin(ctx context.Context) content.Origin {
 }
 
 type Admission interface {
-	Admit(context.Context, Operation) (func(), error)
+	Admit(context.Context, Operation) (context.Context, func(), error)
 }
 type Backend interface {
 	Describe(context.Context, *pb.Empty) (*pb.Catalog, error)
@@ -115,7 +115,7 @@ func (a *Adapter) Embeddings(ctx context.Context, scope Scope, texts []*pb.TextI
 	if task == pb.EmbeddingTask_EMBEDDING_TASK_DOCUMENT {
 		kind = "index"
 	}
-	release, err := a.Admission.Admit(ctx, Operation{ID: id, Kind: kind, Scope: scope, Items: len(texts), InputBytes: bytes, Timeout: 60 * time.Second, Origin: origin})
+	callCtx, release, err := a.Admission.Admit(ctx, Operation{ID: id, Kind: kind, Scope: scope, Items: len(texts), InputBytes: bytes, Timeout: 60 * time.Second, Origin: origin})
 	if err != nil {
 		return nil, Stats{}, err
 	}
@@ -123,7 +123,16 @@ func (a *Adapter) Embeddings(ctx context.Context, scope Scope, texts []*pb.TextI
 		return nil, Stats{}, ErrAdmission
 	}
 	defer release()
-	r, err := a.Backend.Infer(ctx, &pb.InferRequest{RequestId: id, ProfileId: a.Space.ProfileID, CallerId: "memory-" + kind, TimeoutMs: 60000, Input: &pb.InferRequest_Embed{Embed: &pb.EmbedInput{Texts: texts, Task: task, Dimensions: uint32(a.Space.Dimensions)}}})
+	if callCtx == nil {
+		return nil, Stats{}, ErrAdmission
+	}
+	if err := validCallContext(ctx, callCtx); err != nil {
+		return nil, Stats{}, err
+	}
+	r, err := a.Backend.Infer(callCtx, &pb.InferRequest{RequestId: id, ProfileId: a.Space.ProfileID, CallerId: "memory-" + kind, TimeoutMs: 60000, Input: &pb.InferRequest_Embed{Embed: &pb.EmbedInput{Texts: texts, Task: task, Dimensions: uint32(a.Space.Dimensions)}}})
+	if callCtx.Err() != nil {
+		return nil, Stats{}, callCtx.Err()
+	}
 	if err != nil {
 		if ctx.Err() != nil {
 			return nil, Stats{}, ctx.Err()
@@ -171,7 +180,7 @@ func (a *Adapter) Rerank(ctx context.Context, scope Scope, query string, hits []
 	}
 	revision := ""
 	for _, p := range catalog.Models {
-		if p.Id == a.RerankerID && p.Enabled && p.Model == "Qwen/Qwen3-Reranker-0.6B" && p.Revision == "e61197ed45024b0ed8a2d74b80b4d909f1255473" && p.PreprocessingVersion == "qwen3-rerank-yesno-v1" && p.Format == "safetensors" && (p.Precision == "BF16" || p.Precision == "FP32") {
+		if p.Id == a.RerankerID && p.Enabled && p.Model == "Qwen/Qwen3-Reranker-0.6B" && p.Revision == "e61197ed45024b0ed8a2d74b80b4d909f1255473" && p.PreprocessingVersion == "qwen3-rerank-yesno-v1" && p.RuntimeVersion == "torch2.10.0+cu128/transformers5.19.0" && p.SourceUrl == "https://huggingface.co/Qwen/Qwen3-Reranker-0.6B" && p.Format == "safetensors" && (p.Precision == "BF16" || p.Precision == "FP32") {
 			revision = p.Revision
 		}
 	}
@@ -194,7 +203,7 @@ func (a *Adapter) Rerank(ctx context.Context, scope Scope, query string, hits []
 		return nil, Stats{}, ErrInvalid
 	}
 	id := freshID()
-	release, err := a.Admission.Admit(ctx, Operation{ID: id, Kind: "rerank", Scope: scope, Items: len(hits), InputBytes: bytes, Timeout: 60 * time.Second, Origin: origin})
+	callCtx, release, err := a.Admission.Admit(ctx, Operation{ID: id, Kind: "rerank", Scope: scope, Items: len(hits), InputBytes: bytes, Timeout: 60 * time.Second, Origin: origin})
 	if err != nil {
 		return nil, Stats{}, err
 	}
@@ -202,7 +211,16 @@ func (a *Adapter) Rerank(ctx context.Context, scope Scope, query string, hits []
 		return nil, Stats{}, ErrAdmission
 	}
 	defer release()
-	r, err := a.Backend.Infer(ctx, &pb.InferRequest{RequestId: id, ProfileId: a.RerankerID, CallerId: "memory-rerank", TimeoutMs: 60000, Input: &pb.InferRequest_Rerank{Rerank: &pb.RerankInput{Query: query, Candidates: items}}})
+	if callCtx == nil {
+		return nil, Stats{}, ErrAdmission
+	}
+	if err := validCallContext(ctx, callCtx); err != nil {
+		return nil, Stats{}, err
+	}
+	r, err := a.Backend.Infer(callCtx, &pb.InferRequest{RequestId: id, ProfileId: a.RerankerID, CallerId: "memory-rerank", TimeoutMs: 60000, Input: &pb.InferRequest_Rerank{Rerank: &pb.RerankInput{Query: query, Candidates: items}}})
+	if callCtx.Err() != nil {
+		return nil, Stats{}, callCtx.Err()
+	}
 	if err != nil {
 		if ctx.Err() != nil {
 			return nil, Stats{}, ctx.Err()
@@ -220,4 +238,19 @@ func (a *Adapter) Rerank(ctx context.Context, scope Scope, query string, hits []
 		values[i] = s.Value
 	}
 	return values, stats(r), nil
+}
+
+func validCallContext(parent, admitted context.Context) error {
+	if parent.Err() != nil {
+		return parent.Err()
+	}
+	if admitted.Err() != nil {
+		return admitted.Err()
+	}
+	parentDeadline, pok := parent.Deadline()
+	callDeadline, cok := admitted.Deadline()
+	if !pok || !cok || callDeadline.After(parentDeadline) {
+		return ErrAdmission
+	}
+	return nil
 }

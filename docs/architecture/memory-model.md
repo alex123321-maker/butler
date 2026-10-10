@@ -292,6 +292,24 @@ metadata checks do not replace #22 contradiction, acceptance or backup tombstone
 semantics. Fixed Russian/code fixture quality is measured separately from
 production acceptance; reranking is optional and default-off.
 
+The optional `HybridReader` adds current exact identifier/path/version matching
+and Russian/simple PostgreSQL full-text search (derived GIN migration042), then
+reciprocal rank fusion with separate vector candidates. Only positions are fused;
+exact technical hits stay protected. Bare absent identifiers return no source.
+Duplicate content and per-source caps preserve a diverse bounded candidate set.
+Every candidate needs current source authority before text-model IPC. Optional
+Qwen reranking has complete correlated outputs and per-scope sorting; unavailable
+or oversized ranking keeps base evidence with fixed diagnostics. Authority/budget
+denial, Secret data, cancellation or corrupt/partial scores cannot use that fallback.
+The adapter uses the admission's returned bounded context and rejects late results.
+
+Final citations include original chunk/document refs and current revision, with
+explicit clipped UTF-8 excerpts and a finite serialized byte/token allowance.
+This allowance covers retrieved evidence; the caller's full prompt has its own
+transport/budget checks. Retrieval never changes structured owner rules. The
+fixed real suite measures support-source coverage; it does not verify generative
+answers or justify activating the still-unwired production reader.
+
 Migration 021 uses dimensionless vector columns to support different embedding
 providers. It removes the old fixed-dimension IVFFlat indexes; current semantic
 queries scan these columns. Future indexes require fixed-dimension expressions

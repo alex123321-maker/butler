@@ -114,8 +114,15 @@ classification during GPU ranking, and on-demand vision loading. The checked-in
 12-case embedding smoke and small capability signals are not a held-out production
 evaluation and do not justify enabling a new memory index or closing #25–#28.
 Quality comparisons, durable caller/index integration and reversible reindex
-remain separate acceptance work. Service restarts lose no durable task state:
-callers retain pending operations in PostgreSQL, receive retryable RPC failure and
+remain separate acceptance work.
+The optional semantic/hybrid caller now has reproducible fixed Russian/code
+quality artifacts, versioned staged pgvector spaces and bounded exact/full-text
+RRF retrieval. The paired Qwen stage regresses top1 on this fixture and remains
+off. Current source/job/live-run admission is still required before enabling it;
+the shared model service itself never grants that authority. See the semantic
+module README and memory spec for these caller-owned contracts.
+
+Service restarts lose no durable task state: callers retain pending operations in PostgreSQL, receive retryable RPC failure and
 resubmit the full input; this service does not claim a durable work queue.
 Full-local inference is tested with `--network none`; the production overlay has
 an internal-only network and no published ports. A hybrid caller's cloud privacy

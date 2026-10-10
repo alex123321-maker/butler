@@ -21,12 +21,12 @@ type testAdmission struct {
 	deny  bool
 }
 
-func (a *testAdmission) Admit(_ context.Context, o Operation) (func(), error) {
+func (a *testAdmission) Admit(ctx context.Context, o Operation) (context.Context, func(), error) {
 	a.calls++
 	if a.deny || o.InputBytes <= 0 {
-		return nil, ErrAdmission
+		return nil, nil, ErrAdmission
 	}
-	return func() {}, nil
+	return ctx, func() {}, nil
 }
 
 type fakeModel struct {

@@ -59,3 +59,4 @@ Use `make migrate-up` to apply all migrations and `make migrate-down` to roll th
   assignments receive no invented review. Down refuses saved assignments or
   confirmed policy history. See `docs/architecture/owner-goals-mandates-spec.md`.
 - `041_semantic_memory_indexes` stores immutable separate embedding spaces/generations, revision-bound derivative vectors, exact-space title/content hashes for reuse after citation changes, reviewed quality manifests and atomic active pointers. Source deletion cascades to vectors; down refuses retained generation/activation history. Reads/publications require a supplied current-source authority guard.
+- `042_hybrid_retrieval_indexes` adds a derived simple/Russian GIN full-text expression index for guarded hybrid retrieval. Down only removes this rebuildable lexical index; durable memory, vectors and current authority remain.

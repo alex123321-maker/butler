@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 root=${1:-/srv/storage/butler/agents/local-models}
+mode=${2:-embedding}
+testname=TestActualLocalRetrievalQuality
+report=verification-retrieval-quality.json
+if [[ "$mode" == hybrid ]]; then testname=TestActualHybridRetrievalQuality;report=verification-hybrid-quality.json;elif [[ "$mode" != embedding ]];then exit 2;fi
 [[ "$root" == /srv/storage/butler/agents/* && "$root" != *..* ]] || exit 2
 image=python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
 network=butler-local-models-quality
@@ -43,9 +47,9 @@ done
 docker exec --workdir /src/internal/memory/semantic \
   --env BUTLER_TEST_SEMANTIC_POSTGRES_URL=postgres://butler:local-model-fixture-only@semantic-postgres:5432/semantic_test?sslmode=disable \
   --env BUTLER_TEST_LOCAL_MODELS_ENDPOINT=127.0.0.1:9090 --env BUTLER_TEST_LOCAL_MODELS_TOKEN_FILE=/private/token \
-  --env BUTLER_TEST_SEMANTIC_REPORT=/reports/verification-retrieval-quality.json \
-  "$service" /runtime/semantic.test -test.run '^TestActualLocalRetrievalQuality$' -test.v -test.timeout 10m
+  --env "BUTLER_TEST_SEMANTIC_REPORT=/reports/$report" \
+  "$service" /runtime/semantic.test -test.run "^${testname}$" -test.v -test.timeout 10m
 docker logs "$service" > "$root/reports/service-retrieval-quality.log" 2>&1
 cleanup
 nvidia-smi --query-gpu=name,memory.total,memory.used,memory.free,driver_version --format=csv > "$root/reports/quality-gpu-after.csv"
-printf 'Quality artifact: %s/reports/verification-retrieval-quality.json\n' "$root"
+printf 'Quality artifact: %s/reports/%s\n' "$root" "$report"

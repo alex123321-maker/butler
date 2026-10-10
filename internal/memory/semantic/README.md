@@ -4,6 +4,9 @@
 or calls a cloud endpoint. The composition root must provide the internal local
 connection and a trusted `Admission`; its absence blocks every inference. Each
 operation carries source origin, scope, fresh call ID, bytes, items and timeout.
+Admission returns the bounded context used by the actual IPC as well as a release
+function. A missing/expired or weakened deadline denies the call; a late result
+after admitted cancellation is rejected.
 Secret origins and known credential patterns are denied before model IPC.
 Legacy origins remain private data; provenance never grants instruction authority.
 
@@ -48,3 +51,45 @@ indexes authorized memory chunks; it does not independently scan the computer.
 Real fixture evaluation and replay are in `deploy/local-models/`; production
 quality across private documents or comparison to unavailable cloud embeddings
 is not claimed. Reranking is optional and default-off.
+
+## Hybrid retrieval
+
+`HybridReader` combines current PostgreSQL exact identifiers/paths/versions and
+Russian/simple full-text candidates with versioned vector candidates. Migration042
+adds the derived GIN expression index. Scope/live-state/Secret checks and the
+source guard precede transmission of candidates. A bare technical identifier
+uses exact matching only; an absent method does not produce a nearest unrelated
+semantic answer. Identifier case and Unicode paths are preserved.
+
+Lists are merged by reciprocal rank positions (`k=60`), with exact hits protected,
+not by adding PostgreSQL ranks, cosine distances or model scores. Equal content
+is deduplicated without folding code case. A source contributes at most two of
+four final candidates. Candidate lists are each bounded at 16 per scope (at most
+three scopes); reranking uses at most four candidates and 8192 input bytes under
+the shared service's measured 2048-token context. Larger packs keep base results
+and report `reranker_input_limit`; model input is never silently truncated.
+
+Reranking is per authorized scope; cross-scope RRF positions remain. Unavailable
+embedding/ranking produces fixed observable degradation reasons and permitted
+lexical/base results. Admission/access/Secret denial, cancellation, malformed
+dimensions or partial/corrupt model scores remain errors and never fall back.
+Sources are checked again before ranking and before publishing its result.
+Only text representations enter the text reranker; raw media has no request field.
+
+Final evidence carries chunk/document refs and a current revision. Explicit
+UTF-8-safe excerpts are at most 1024 bytes each; retrieved JSON is bounded at 6144
+bytes by default (operator can lower it, hard maximum 8192). Its UTF-8 byte count
+is a conservative token allowance for byte-token encodings, not actual tokenizer
+usage or the entire model prompt budget. Caller prompt serialization still needs
+the independent provider/budget guard. Clipped excerpts are marked in the bundle.
+
+`SearchDetailed` returns diagnostics and resource observations. The bundle-facing
+`Search` also logs fixed degradation enums without queries/source text. The fixed
+real Russian/code evaluation preserves 22/24 top1 and 24/24 recall at 4; Qwen lowers
+top1 to 21/24 and remains off. Expected-source coverage measures retrieval support,
+not generative answer correctness. Current source/job/live local-run integration
+is still a prerequisite for production activation.
+
+Sources: [PostgreSQL full-text controls](https://www.postgresql.org/docs/17/textsearch-controls.html),
+[RRF paper](https://plg.uwaterloo.ca/~gvcormac/cormacksigir09-rrf.pdf),
+[official Qwen card](https://huggingface.co/Qwen/Qwen3-Reranker-0.6B).
