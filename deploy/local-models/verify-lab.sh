@@ -5,11 +5,11 @@ image=python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a
 mode_filter=${2:-all}
 [[ "$mode_filter" == all || "$mode_filter" == gpu || "$mode_filter" == constrained ]] || exit 2
 [[ "$root" == /srv/storage/butler/agents/* && "$root" != *..* ]] || exit 2
-mkdir -p "$root/runtime" "$root/private" "$root/reports"
+mkdir -p "$root/.cache/go-tmp" "$root/runtime" "$root/private" "$root/reports"
 docker run --rm --user "$(id -u):$(id -g)" --volume "$root/current:/src:ro" \
   --volume "$root/.cache:/cache" --volume "$root/runtime:/runtime" --workdir /src \
-  --env GOCACHE=/cache/go-build --env GOMODCACHE=/cache/go-mod \
-  --entrypoint sh golang:1.24-alpine -c 'set -eu; CGO_ENABLED=0 go build -o /runtime/local-models ./apps/local-models; CGO_ENABLED=0 go build -o /runtime/smoke ./scripts/dev/local-models-smoke.go'
+  --env GOCACHE=/cache/go-build --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp \
+  --entrypoint sh golang:1.27.2-alpine -c 'set -eu; CGO_ENABLED=0 go build -o /runtime/local-models ./apps/local-models; CGO_ENABLED=0 go build -o /runtime/smoke ./scripts/dev/local-models-smoke.go'
 docker run --rm --user 0:0 --volume "$root/private:/private" --volume "$root/reports:/reports" \
   --entrypoint python "$image" -c '
 import os, pathlib, secrets

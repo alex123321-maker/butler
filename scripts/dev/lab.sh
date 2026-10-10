@@ -8,7 +8,13 @@ export BUTLER_LAB_ROOT="$root"
 export DOCKER_CONFIG="$root/.cache/docker"
 export BUTLER_ACTION_AUTHORITY_TOKEN_SOURCE="$root/secrets/action-authority.token"
 export BUTLER_OWNER_CONTROL_TOKEN_SOURCE="$root/secrets/owner-control.token"
-mkdir -p "$DOCKER_CONFIG" "$root/.cache/go-build" "$root/.cache/go-mod" "$root/reports"
+mkdir -p "$DOCKER_CONFIG" "$root/.cache/go-build" "$root/.cache/go-mod" "$root/.cache/go-tmp" "$root/reports"
+# These suites intentionally share disposable PostgreSQL fixtures. Separate
+# invocations must not reset approval deliveries while another suite is running.
+if [[ "$action" == Integration || "$action" == Race || "$action" == Migrations ]]; then
+  exec 9>"$root/.cache/postgres-tests.lock"
+  flock 9
+fi
 compose=(docker compose -p butler-lab --env-file "$root/lab.env" -f deploy/docker-compose.yml -f deploy/docker-compose.lab.yml)
 if [[ -f "$root/private-proxy/compose.env" ]]; then
   compose+=(--env-file "$root/private-proxy/compose.env" -f deploy/docker-compose.antigravity-proxy.lab.yml)
@@ -28,6 +34,8 @@ if [[ "$action" == Integration || "$action" == Race ]]; then
 fi
 case "$action" in
   Up)
+    BUILDX_BUILDER=$(bash scripts/dev/lab-builder.sh "$root")
+    export BUILDX_BUILDER
     if [[ ! -f "$BUTLER_ACTION_AUTHORITY_TOKEN_SOURCE" ]]; then
       install -d -m 700 "$root/secrets"
       (umask 077; openssl rand -hex 48 > "$BUTLER_ACTION_AUTHORITY_TOKEN_SOURCE")
@@ -65,7 +73,8 @@ case "$action" in
     docker run --rm --user "$(id -u):$(id -g)" \
       --volume "$PWD:/src:ro" --volume "$root/.cache:/cache" --workdir /src \
       --env GOCACHE=/cache/go-build --env GOMODCACHE=/cache/go-mod \
-      "${test_options[@]}" golang:1.24-alpine go test -p 1 -count=1 "$@" 2>&1 | tee "$report"
+      --env GOTMPDIR=/cache/go-tmp \
+      "${test_options[@]}" golang:1.27.2-alpine go test -p 1 -count=1 "$@" 2>&1 | tee "$report"
     ;;
   Migrations)
     # Upgrade/rollback fixtures must never share the app or integration database.
@@ -78,9 +87,10 @@ case "$action" in
     docker run --rm --user "$(id -u):$(id -g)" --network butler-lab_backend \
       --volume "$PWD:/src:ro" --volume "$root/.cache:/cache" --workdir /src \
       --env GOCACHE=/cache/go-build --env GOMODCACHE=/cache/go-mod \
+      --env GOTMPDIR=/cache/go-tmp \
       --env BUTLER_TASK_MIGRATION_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_task_migrations_test?sslmode=disable \
       --env BUTLER_SUMMARY_MIGRATION_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_summary_migrations_test?sslmode=disable \
-      golang:1.24-alpine go test -p 1 -count=1 -run MigrationIntegration \
+      golang:1.27.2-alpine go test -p 1 -count=1 -run MigrationIntegration \
       ./apps/orchestrator/internal/task ./internal/memory/summary 2>&1 | tee "$report"
     bash scripts/smoke/durable-migration-audit.sh "$PWD" butler-lab-postgres-1 \
       "butler_durable_migrations_$(date -u +%Y%m%d%H%M%S)_$$" 2>&1 | tee -a "$report"
@@ -96,7 +106,8 @@ case "$action" in
     docker run --rm --user "$(id -u):$(id -g)" \
       --volume "$PWD:/src:ro" --volume "$root/.cache:/cache" --workdir /src \
       --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod \
-      "${test_options[@]}" golang:1.24-bookworm go test -race -p 1 -count=1 "$@" 2>&1 | tee "$report"
+      --env GOTMPDIR=/cache/go-tmp \
+      "${test_options[@]}" golang:1.27.2-bookworm go test -race -p 1 -count=1 "$@" 2>&1 | tee "$report"
     ;;
   Web)
     mkdir -p "$root/.cache/npm" "$root/.cache/ms-playwright"

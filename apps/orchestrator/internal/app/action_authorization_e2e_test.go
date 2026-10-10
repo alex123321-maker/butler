@@ -245,6 +245,23 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 		}
 		return approval.ApprovalID
 	}
+	assertRecordedDispatch := func(result *toolbrokerv1.ToolResult, err error) {
+		t.Helper()
+		if err != nil || result == nil || result.GetActionId() == "" || len(result.GetEvidenceRefs()) != 1 || result.GetError().GetRetryable() {
+			t.Fatalf("approved Broker dispatch was not recorded: %+v %v", result, err)
+		}
+		// A browser DOM response proves runtime execution, not an external
+		// recipient receipt. The fixture may inspect it without claiming that
+		// an autonomous run has verified or completed an external effect.
+		if (result.GetStatus() != "completed" || result.GetEffectState() != string(actionauth.StateConfirmed)) &&
+			(result.GetStatus() != "effect_unknown" || result.GetEffectState() != string(actionauth.StateUnknown)) {
+			t.Fatalf("incorrect dispatch/effect classification: %+v", result)
+		}
+		recorded, journalErr := actionauth.NewPostgresStore(pool).GetEffect(ctx, result.GetActionId())
+		if journalErr != nil || string(recorded.State) != result.GetEffectState() || recorded.DispatchOutcome != "dispatch_completed" {
+			t.Fatalf("durable journal differs from Broker response: %+v %v", recorded, journalErr)
+		}
+	}
 	dispatch := func(call *toolbrokerv1.ToolCall) *toolbrokerv1.ToolResult {
 		t.Helper()
 		p, err := client.PrepareAction(ctx, call)
@@ -260,9 +277,7 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 			t.Fatal(err)
 		}
 		result, err := client.ExecuteAuthorizedToolCall(ctx, call, grant)
-		if err != nil || result.GetStatus() != "completed" {
-			t.Fatalf("approved Broker action failed: %+v %v", result, err)
-		}
+		assertRecordedDispatch(result, err)
 		if strings.Contains(result.GetResultJson(), secret) {
 			t.Fatal("resolved secret leaked to model observation")
 		}
@@ -323,15 +338,19 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 		t.Fatal("changed action reached submit")
 	}
 	result, err := client.ExecuteAuthorizedToolCall(ctx, buy, grant)
-	if err != nil || result.GetStatus() != "completed" {
-		t.Fatalf("approved submit failed: %+v %v", result, err)
+	assertRecordedDispatch(result, err)
+	if result.GetStatus() != "effect_unknown" || result.GetEffectState() != string(actionauth.StateUnknown) {
+		t.Fatal("DOM acknowledgement incorrectly proved the external submit")
 	}
 	if strings.Contains(result.GetResultJson(), secret) || !strings.Contains(result.GetResultJson(), "authenticated one two") {
 		t.Fatal("authenticated session failed or secret leaked")
 	}
 	repeated, err := client.ExecuteAuthorizedToolCall(ctx, buy, grant)
-	if err != nil || repeated.GetStatus() != "failed" || submits.Load() != 1 {
-		t.Fatal("approved action replayed")
+	if err != nil || repeated.GetStatus() != "effect_unknown" || repeated.GetEffectState() != string(actionauth.StateUnknown) || repeated.GetError().GetRetryable() || repeated.GetActionId() != result.GetActionId() || submits.Load() != 1 {
+		t.Fatal("approved action replayed or its uncertainty was hidden")
+	}
+	if len(repeated.GetEvidenceRefs()) != 1 || repeated.GetEvidenceRefs()[0] != result.GetEvidenceRefs()[0] {
+		t.Fatal("repeated request created new dispatch evidence")
 	}
 	var leaks int
 	if err := pool.QueryRow(ctx, `SELECT count(*) FROM approval_actions WHERE binding_json::text LIKE $1 OR continuation_json::text LIKE $1`, "%"+secret+"%").Scan(&leaks); err != nil || leaks != 0 {
