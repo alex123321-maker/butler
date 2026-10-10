@@ -1,3 +1,9 @@
+DO $$
+BEGIN
+ IF EXISTS(SELECT 1 FROM run_final_results) THEN
+  RAISE EXCEPTION 'durable final results exist; downgrade would discard result and delivery history';
+ END IF;
+END $$;
 DROP TABLE completion_aux_jobs;
 DROP TABLE delivery_outbox;
 DROP FUNCTION butler_immutable_notification();

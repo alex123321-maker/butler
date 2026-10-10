@@ -4,8 +4,9 @@ SQL migrations live here.
 
 `034_atomic_results_outbox` atomically separates immutable attempt results,
 required final artifacts/transcript, stable notification chunks and durable
-auxiliary jobs. Back up results and unknown sending outcomes before rollback;
-removing these records cannot prove an outside effect or message was absent.
+auxiliary jobs. Down refuses existing results instead of removing result and
+delivery history. An operational downgrade needs an explicit preservation plan;
+missing records cannot prove an outside effect or message was absent.
 
 `031_action_authorization` stores canonical action intents, irreversible
 dispatch grant states and versioned bounded mandates. Down removes these
@@ -45,5 +46,5 @@ Use `make migrate-up` to apply all migrations and `make migrate-down` to roll th
 - `031_action_authorization` persists exact Broker intents, bounded mandates and single-dispatch grants.
 - `032_durable_ingress` persists ordered acceptance receipts, checkpoints and expiring monotonic session ownership.
 - `033_approval_continuations` persists exact data-only continuations and owner decision input identities; legacy unbound tool waits expire without inventing authority.
-- `035_external_effect_journal` persists permanent exact-intent effect states, spent dispatches and immutable evidence; old technical completions migrate to unknown.
+- `035_external_effect_journal` persists permanent exact-intent effect states, spent dispatches and immutable evidence; old technical completions migrate to unknown. Down refuses existing effect history.
 - `036_task_owner_controls` adds typed task execution policy and owner-control history/archived working state. Rollback refuses existing control history or prepare-only authority instead of discarding it.

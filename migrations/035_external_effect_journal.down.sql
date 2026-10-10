@@ -1,3 +1,9 @@
+DO $$
+BEGIN
+ IF EXISTS(SELECT 1 FROM action_effects) THEN
+  RAISE EXCEPTION 'external effect history exists; downgrade would discard irreversible action evidence';
+ END IF;
+END $$;
 DROP TABLE action_effect_evidence;
 DROP FUNCTION reject_effect_evidence_mutation();
 DROP TABLE action_effect_dispatches;
