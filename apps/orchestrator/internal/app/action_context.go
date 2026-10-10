@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"time"
 
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
@@ -68,6 +69,36 @@ func (r *actionContextReader) GetActionContext(ctx context.Context, runID string
 		c.ConstraintsRevision = record.ConstraintsRevision
 		c.TaskStatus = record.Status
 		c.ExecutionPolicy = record.ExecutionPolicy
+		tx, err := r.pool.Begin(ctx)
+		if err != nil {
+			return c, err
+		}
+		defer tx.Rollback(ctx)
+		var at time.Time
+		if err = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&at); err != nil {
+			return c, err
+		}
+		a, err := actionauth.CheckTaskAuthorityTx(ctx, tx, record.TaskID, record.OwnerID, nil, at)
+		if err != nil {
+			return c, err
+		}
+		if a.TaskID != "" {
+			m, g, err := actionauth.CheckAssignmentTx(ctx, tx, a, at)
+			if err != nil {
+				return c, err
+			}
+			c.Authority = &a
+			c.MandateID = a.MandateID
+			c.ModelPrivacy = m.Privacy
+			c.AuthorityDeadline, err = actionauth.AuthorityDeadline(m, g, at)
+			if err != nil {
+				return c, err
+			}
+			c.DenyTools, c.DenyResources, err = actionauth.ReadGoalDenialsTx(ctx, tx, a.GoalID, a.OwnerID, at)
+			if err != nil {
+				return c, err
+			}
+		}
 	}
 	return c, nil
 }

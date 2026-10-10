@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/butler/butler/internal/memory/profile"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/metrics"
+	"github.com/butler/butler/internal/security/content"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	redisstore "github.com/butler/butler/internal/storage/redis"
 )
@@ -123,7 +125,9 @@ func TestPipelineWorkerIntegration(t *testing.T) {
 	}
 	if _, err := transcriptStore.AppendMessage(ctx, transcript.Message{
 		SessionKey: sessionKey, RunID: runID, Role: "assistant",
-		Content: "Got it, Alice! I will remember your preference for Go on the backend.",
+		// A derived child cannot upgrade itself by claiming owner authority.
+		MetadataJSON: `{"butler_provenance":{"kind":"owner_policy","source_refs":["child:untrusted-summary","document:untrusted-source"],"sensitivity":"public"}}`,
+		Content:      "Got it, Alice! I will remember your preference for Go on the backend.",
 	}); err != nil {
 		t.Fatalf("append assistant message: %v", err)
 	}
@@ -210,7 +214,14 @@ func TestPipelineWorkerIntegration(t *testing.T) {
 		t.Fatalf("expected at least 2 profile entries, got %d", len(profiles))
 	}
 	profileKeys := map[string]bool{}
+	assertDerived := func(origin content.Origin) {
+		t.Helper()
+		if origin.IsInstruction() || origin.Sensitivity != content.Private || !strings.Contains(strings.Join(origin.ParentRefs, "|"), "document:untrusted-source") {
+			t.Fatal("durable extraction laundered child authority or discarded provenance")
+		}
+	}
 	for _, p := range profiles {
+		assertDerived(p.MemoryOrigin())
 		profileKeys[p.Key] = true
 		if p.Status != profile.StatusActive {
 			t.Errorf("expected active profile, got %q for key %q", p.Status, p.Key)
@@ -234,6 +245,7 @@ func TestPipelineWorkerIntegration(t *testing.T) {
 	if episodes[0].SourceType != "memory_pipeline" {
 		t.Errorf("expected episode source_type 'memory_pipeline', got %q", episodes[0].SourceType)
 	}
+	assertDerived(episodes[0].MemoryOrigin())
 
 	// --- Verify: session summary was written ---
 	if summaryStore.updated == nil || summaryStore.updated[sessionKey] == "" {
@@ -251,6 +263,7 @@ func TestPipelineWorkerIntegration(t *testing.T) {
 	if len(chunkResults) < 1 {
 		t.Fatalf("expected at least 1 chunk, got %d", len(chunkResults))
 	}
+	assertDerived(chunkResults[0].MemoryOrigin())
 
 	// --- Verify: queue is empty after processing ---
 	postDepth, err := queue.Depth(ctx)

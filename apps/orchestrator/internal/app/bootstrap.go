@@ -18,6 +18,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	deliveryevents "github.com/butler/butler/apps/orchestrator/internal/deliveryevents"
 	"github.com/butler/butler/apps/orchestrator/internal/deliveryoutbox"
+	"github.com/butler/butler/apps/orchestrator/internal/goal"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
@@ -28,6 +29,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/config"
 	orchestratorv1 "github.com/butler/butler/internal/gen/orchestrator/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
@@ -129,6 +131,16 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	taskStore := task.NewStore(postgres.Pool())
+	ownerGoals := goal.New(postgres.Pool(), taskStore, nil)
+	budgetPolicy, policyErr := budget.ParsePolicy(cfg.ExecutionBudgetPolicyJSON)
+	if policyErr != nil {
+		redis.Close()
+		postgres.Close()
+		return nil, policyErr
+	}
+	budgetController := budget.NewController(postgres.Pool(), budgetPolicy)
+	budgetController.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
+	taskStore.SetBudgets(budgetController, cfg.ActionMandateID)
 	runRepo := runservice.NewPostgresRepository(postgres.Pool())
 	runManager := runservice.NewService(runRepo, logger.WithComponent(log, "run-service"))
 	toolBrokerClient, err := tools.DialWithTokenFile(cfg.ToolBrokerAddr, cfg.ActionAuthorityTokenFile)
@@ -185,7 +197,14 @@ func New(ctx context.Context) (*App, error) {
 	episodicStore := episodic.NewStore(postgres.Pool())
 	chunkStore := chunks.NewStore(postgres.Pool())
 
-	embeddingProvider, pipelineWorker := configureMemoryPipeline(log, cfg, authManager, m, pipelineQueue, transcriptStore, summaryStore, profileStore, episodicStore, chunkStore)
+	memoryRuntimeConfig := cfg
+	if memoryRuntimeConfig.MemoryPipelineEnabled {
+		// Completed-run jobs need their own durable admission; they cannot
+		// borrow a historical live lease. The legacy cloud path has none yet.
+		log.Warn("memory model calls denied: durable auxiliary budget admission is unavailable")
+		memoryRuntimeConfig.MemoryPipelineEnabled = false
+	}
+	embeddingProvider, pipelineWorker := configureMemoryPipeline(log, memoryRuntimeConfig, authManager, m, pipelineQueue, transcriptStore, summaryStore, profileStore, episodicStore, chunkStore)
 	finalResults := completion.New(postgres.Pool())
 	finalResults.Evidence = effectEvidence{journal: actionauth.NewPostgresStore(postgres.Pool())}
 	outboxWorker := &deliveryoutbox.Worker{Store: finalResults.Outbox}
@@ -209,6 +228,7 @@ func New(ctx context.Context) (*App, error) {
 		transcriptStore,
 		providerResult.Provider,
 		flow.Config{
+			Budgets:               budgetController,
 			Completion:            finalResults,
 			DurableMemoryPipeline: pipelineWorker != nil,
 			AutonomyMode:          autonomyMode(cfg.AutonomyMode),
@@ -216,6 +236,7 @@ func New(ctx context.Context) (*App, error) {
 			ActionMandateID:       cfg.ActionMandateID,
 			Checkpoints:           inputStore,
 			Tasks:                 taskStore,
+			OwnerGoals:            ownerGoals,
 			ProviderName:          providerResult.ProviderName,
 			ModelName:             providerResult.ModelName,
 			OwnerID:               cfg.Shared.ServiceName,
@@ -250,8 +271,14 @@ func New(ctx context.Context) (*App, error) {
 	)
 	inputWorker := durableinput.NewService(inputStore, sessionRepo, executor, runManager, logger.WithComponent(log, "durable-input"))
 	taskControls := task.NewController(taskStore, sessionLeaseManager.Authority(), sessionLeaseManager, runRepo, approvalRepo, inputStore, transcriptStore)
+	ownerGoals.SetControls(taskControls)
 	inputWorker.SetTaskControls(taskControls)
-	inputWorker.SetMaintenance(approvalService.ExpireInvalidPending)
+	inputWorker.SetMaintenance(func(ctx context.Context) error {
+		if err := approvalService.ExpireInvalidPending(ctx); err != nil {
+			return err
+		}
+		return ownerGoals.Sweep(ctx)
+	})
 	if telegram != nil {
 		telegram.SetExecutor(inputWorker)
 		telegram.SetApprovalService(approvalService)
@@ -293,6 +320,7 @@ func New(ctx context.Context) (*App, error) {
 		runRepo:                runRepo,
 		taskStore:              taskStore,
 		taskControls:           taskControls,
+		ownerGoals:             ownerGoals,
 		transcriptStore:        transcriptStore,
 		transitionRepo:         transitionRepo,
 		eventHub:               eventHub,

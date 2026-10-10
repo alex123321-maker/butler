@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -29,6 +28,7 @@ import (
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/memory/working"
 	"github.com/butler/butler/internal/ownership"
+	"github.com/butler/butler/internal/security/content"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	"github.com/butler/butler/internal/transport"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -56,11 +56,20 @@ func (p *lifecycleProvider) StartRun(_ context.Context, r transport.StartRunRequ
 	stream := make(chan transport.TransportEvent, 3)
 	recovered := false
 	for _, item := range r.InputItems {
-		if strings.Contains(item.Content, "Recorded Butler action observation") {
+		if content.ItemOrigin(item).Kind == content.ToolOutput {
 			if item.Role != "user" {
 				return nil, errors.New("recorded observation became a provider instruction")
 			}
-			recovered = true
+			var observation struct {
+				Data struct {
+					AlreadyExecuted bool   `json:"already_executed"`
+					ToolCallID      string `json:"tool_call_id"`
+				} `json:"data"`
+			}
+			if json.Unmarshal([]byte(item.Content), &observation) != nil {
+				return nil, errors.New("recorded observation is invalid")
+			}
+			recovered = observation.Data.AlreadyExecuted && observation.Data.ToolCallID == "stable-call"
 		}
 	}
 	if recovered {

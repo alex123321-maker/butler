@@ -142,6 +142,18 @@ func prependEventStream(ctx context.Context, first transport.TransportEvent, rem
 }
 
 func (p *Provider) executeRealtimeRequest(ctx context.Context, runID, modelName string, messages []map[string]any) (transport.EventStream, error) {
+	// Check the complete sequence before any frame or connection is sent.
+	totalBytes := 0
+	for _, message := range messages {
+		encoded, err := json.Marshal(message)
+		if err != nil {
+			return nil, err
+		}
+		totalBytes += len(encoded)
+		if err := transport.CheckSerializedInput(ctx, totalBytes); err != nil {
+			return nil, err
+		}
+	}
 	sessionKey := p.sessionKeyForRun(ctx, runID)
 
 	// Try to reuse an existing session for this session key.
@@ -158,7 +170,7 @@ func (p *Provider) executeRealtimeRequest(ctx context.Context, runID, modelName 
 			p.log.Warn("openai realtime session send failed, creating new session",
 				slog.String("run_id", runID),
 				slog.String("session_key", sessionKey),
-				slog.String("error", err.Error()),
+				slog.String("error", transport.NormalizeError(err, providerName).Error()),
 			)
 			p.removeSession(sessionKey, session)
 			session.closeConn()
@@ -250,7 +262,7 @@ func (p *Provider) dialRealtime(runID, modelName string) (*websocket.Conn, strin
 		p.log.Warn("openai realtime websocket dial failed",
 			slog.String("run_id", runID),
 			slog.String("path", parsed.Path),
-			slog.String("error", err.Error()),
+			slog.String("error", transport.NormalizeError(err, providerName).Error()),
 		)
 		return nil, parsed.Path, transport.NormalizeError(err, providerName)
 	}
@@ -292,7 +304,7 @@ func (p *Provider) setupPingPong(session *realtimeSession) {
 			if err := c.WriteControl(websocket.PingMessage, nil, time.Now().Add(pongDeadline)); err != nil {
 				p.log.Debug("openai realtime ping failed",
 					slog.String("session_key", session.sessionKey),
-					slog.String("error", err.Error()),
+					slog.String("error", transport.NormalizeError(err, providerName).Error()),
 				)
 				return
 			}
@@ -330,13 +342,13 @@ func (p *Provider) streamRealtime(ctx context.Context, runID, sessionKey string,
 			p.log.Warn("openai realtime connection lost",
 				slog.String("run_id", runID),
 				slog.String("session_key", sessionKey),
-				slog.String("error", err.Error()),
+				slog.String("error", transport.NormalizeError(err, providerName).Error()),
 			)
 			p.removeSession(sessionKey, session)
 			session.closeConn()
 			stream <- transport.NewTransportErrorEvent(runID, providerName, &transport.Error{
 				Type:         transport.ErrorTypeStatefulSessionLost,
-				Message:      fmt.Sprintf("openai realtime session lost: %v", err),
+				Message:      "openai realtime session lost",
 				Retryable:    true,
 				ProviderName: providerName,
 			})

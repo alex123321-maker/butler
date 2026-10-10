@@ -48,3 +48,13 @@ Use `make migrate-up` to apply all migrations and `make migrate-down` to roll th
 - `033_approval_continuations` persists exact data-only continuations and owner decision input identities; legacy unbound tool waits expire without inventing authority.
 - `035_external_effect_journal` persists permanent exact-intent effect states, spent dispatches and immutable evidence; old technical completions migrate to unknown. Down refuses existing effect history.
 - `036_task_owner_controls` adds typed task execution policy and owner-control history/archived working state. Rollback refuses existing control history or prepare-only authority instead of discarding it.
+- `037_execution_budgets` persists immutable shared scope policies, conservative idempotent reservations, model attempt/usage observations and normalized loop observations. Production model, effect and child admission charge these scopes atomically; run/task revision changes cannot reset them. Down refuses any durable scope, reservation, attempt or loop observation, including unspent zero-limit policy. See `docs/architecture/execution-budget-contract.md`.
+- `038_owner_goals_mandates` adds confirmed owner intent, separate assumptions,
+  broad versioned authority, immutable decisions, task assignments and pending
+  propagation jobs. Legacy task mandates and ordinary tasks receive no new
+  permission. Down refuses existing authority/history instead of discarding it.
+- `038_owner_purpose_policies` is an additive second step, ordered by the full
+  filename after the foundation. It versions confirmed owner preferences and
+  constraints by exact purpose and adds assignment policy revisions. Existing
+  assignments receive no invented review. Down refuses saved assignments or
+  confirmed policy history. See `docs/architecture/owner-goals-mandates-spec.md`.

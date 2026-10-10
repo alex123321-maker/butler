@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"github.com/butler/butler/internal/budget"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	artifacts "github.com/butler/butler/apps/orchestrator/internal/artifacts"
 	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	deliveryevents "github.com/butler/butler/apps/orchestrator/internal/deliveryevents"
+	"github.com/butler/butler/apps/orchestrator/internal/goal"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
@@ -43,6 +45,7 @@ import (
 )
 
 type httpServerDeps struct {
+	ownerGoals             *goal.Manager
 	finalResults           *completion.Coordinator
 	actionAuthorityHandler http.Handler
 	cfg                    config.OrchestratorConfig
@@ -82,6 +85,7 @@ type httpServerDeps struct {
 }
 
 func newHTTPServer(deps httpServerDeps) *http.Server {
+	goalServer := apiservice.NewGoalServer(deps.ownerGoals, deps.ownerAuth)
 	resultServer := apiservice.NewResultServer(deps.finalResults)
 	apiServer := apiservice.NewServer(deps.inputWorker, logger.WithComponent(deps.log, "api"))
 	apiServer.SetOwnerControlAuth(deps.ownerAuth)
@@ -107,6 +111,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	settingsService := config.NewSettingsService(deps.settingsStore, deps.hotConfig)
 	settingsServer := apiservice.NewSettingsServer(settingsService, restarthelper.NewClient(deps.cfg.RestartHelperURL))
 	promptServer := apiservice.NewPromptServer(deps.executor)
+	promptServer.SetOwnerControlAuth(deps.ownerAuth)
 	memoryServer := apiservice.NewMemoryServer(working.NewStore(deps.postgres.Pool()), deps.profileStore, deps.episodicStore, deps.chunkStore, provenance.NewStore(deps.postgres.Pool()))
 	memoryServer.SetWriters(deps.profileStore, deps.episodicStore, deps.chunkStore)
 	providerServer := apiservice.NewProviderServer(deps.authManager, deps.providerResult.ProviderName, map[string]string{
@@ -154,6 +159,8 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	remoteRelayEnabled := singleTabTransportMode != "native_only"
 
 	mux := http.NewServeMux()
+	mux.Handle("/api/v3/execution-budgets", apiservice.NewBudgetHandler(budget.NewLedger(deps.postgres.Pool()), deps.ownerAuth))
+	mux.Handle("/internal/diagnostics", coreDiagnostics(deps))
 	if deps.actionAuthorityHandler != nil {
 		mux.Handle("/internal/action-context", deps.actionAuthorityHandler)
 	}
@@ -161,16 +168,20 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	mux.Handle("/metrics", deps.metrics.Handler())
 	mux.Handle("/api/v1/events", apiServer.HTTPHandler())
 	mux.Handle("/api/v3/inputs/", inputServer.HandleItem())
+	mux.Handle("/api/v3/owner-authority", goalServer.Handle())
+	mux.Handle("/api/v3/owner-goals", goalServer.Handle())
+	mux.Handle("/api/v3/owner-mandates", goalServer.Handle())
+	mux.Handle("/api/v3/owner-goals/tasks", goalServer.Handle())
 	mux.Handle("/api/v3/tasks", taskControlServer.HandleCollection())
 	mux.Handle("/api/v3/tasks/", taskControlServer.HandleItem("/api/v3/tasks/"))
-	mux.Handle("/api/v1/settings/restart", settingsServer.HandleRestart())
+	mux.Handle("/api/v1/settings/restart", apiservice.OwnerMaintenance(deps.ownerAuth, settingsServer.HandleRestart()))
 	mux.Handle("/api/v1/settings", settingsServer.HandleList())
-	mux.Handle("/api/v1/settings/", settingsServer.HandleItem())
+	mux.Handle("/api/v1/settings/", apiservice.OwnerMaintenance(deps.ownerAuth, settingsServer.HandleItem()))
 	mux.Handle("/api/v1/prompts/system", promptServer.HandleConfig())
 	mux.Handle("/api/v1/prompts/system/preview", promptServer.HandlePreview())
 	mux.Handle("/api/v1/providers", providerServer.HandleList())
 	mux.Handle("/api/v2/results/", resultServer.HandleByRun("/api/v2/results/"))
-	mux.Handle("/api/v1/providers/", providerServer.HandleItem())
+	mux.Handle("/api/v1/providers/", apiservice.OwnerMaintenance(deps.ownerAuth, providerServer.HandleItem()))
 	mux.Handle("/api/v1/memory", memoryServer.HandleList())
 	mux.Handle("/api/v2/memory", memoryServer.HandleList())
 	mux.Handle("/api/v2/memory/item", memoryServer.HandleGet())

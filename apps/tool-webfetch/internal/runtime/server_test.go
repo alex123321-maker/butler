@@ -10,6 +10,8 @@ import (
 
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/security/egress"
+	"github.com/butler/butler/internal/security/egress/egresstest"
 )
 
 type fakeProvider struct {
@@ -30,7 +32,7 @@ func (f fakeProvider) Fetch(context.Context, string, bool) (FetchResult, error) 
 func TestProviderChainFallsBackToNextProvider(t *testing.T) {
 	t.Parallel()
 
-	chain := NewProviderChain(
+	chain := NewProviderChainWithPolicy(egress.Policy{Resolver: egresstest.Resolver{}},
 		fakeProvider{name: "self_hosted_primary", err: fmt.Errorf("boom")},
 		fakeProvider{name: "plain_http_fallback", result: FetchResult{Provider: "plain_http_fallback", RequestedURL: "https://example.com", FinalURL: "https://example.com", StatusCode: 200, ContentText: "hello"}},
 	)
@@ -46,7 +48,7 @@ func TestProviderChainFallsBackToNextProvider(t *testing.T) {
 func TestExecuteWebFetchReturnsNormalizedPayload(t *testing.T) {
 	t.Parallel()
 
-	server := NewServer(NewProviderChain(fakeProvider{
+	server := NewServer(NewProviderChainWithPolicy(egress.Policy{Resolver: egresstest.Resolver{}}, fakeProvider{
 		name: "self_hosted_primary",
 		result: FetchResult{
 			Provider:     "self_hosted_primary",
@@ -86,9 +88,9 @@ func TestExecuteWebExtractFetchesAndExtractsText(t *testing.T) {
 	}))
 	defer httpServer.Close()
 
-	server := NewServer(NewProviderChain(NewPlainHTTPProvider(httpServer.Client(), true)), nil)
+	server := NewServer(NewProviderChainWithPolicy(egress.Policy{Resolver: egresstest.Resolver{}}, NewPlainHTTPProvider(egresstest.Client(httpServer), true)), nil)
 	resp, err := server.Execute(context.Background(), &runtimev1.ExecuteRequest{
-		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-2", RunId: "run-1", ToolName: "web.extract", ArgsJson: `{"url":"` + httpServer.URL + `"}`},
+		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-2", RunId: "run-1", ToolName: "web.extract", ArgsJson: `{"url":"` + egresstest.Origin + `"}`},
 	})
 	if err != nil {
 		t.Fatalf("Execute returned error: %v", err)

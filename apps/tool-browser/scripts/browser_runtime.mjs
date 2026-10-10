@@ -26,7 +26,7 @@ async function closeSession(id) {
 
 async function ensureBrowser() {
   if (browser?.isConnected()) return browser
-  browser = await chromium.launch({ headless: true })
+  browser = await chromium.launch({ headless: true, args: ['--disable-quic', '--disable-background-networking', '--force-webrtc-ip-handling-policy=disable_non_proxied_udp', '--proxy-bypass-list=<-loopback>'] })
   browser.on('disconnected', () => {
     for (const session of sessions.values()) { clearTimeout(session.expiryTimer); session.secrets.clear() }
     sessions.clear()
@@ -38,8 +38,9 @@ function redact(session, value) {
   let text = String(value ?? '')
   for (const secret of session.secrets) {
     if (!secret) continue
-    text = text.split(secret).join('[REDACTED]')
-    text = text.split(encodeURIComponent(secret)).join('[REDACTED]')
+    const b64 = Buffer.from(secret).toString('base64')
+    const variants = new Set([secret, encodeURIComponent(secret), encodeURIComponent(secret).replaceAll('%20', '+'), b64, b64.replace(/=+$/, ''), Buffer.from(secret).toString('base64url')])
+    for (const variant of variants) text = text.split(variant).join('[REDACTED]')
   }
   return text.replace(/([?&#](?:access_token|refresh_token|token|password|api_key|secret|code)=)[^&#]*/gi, '$1[REDACTED]')
 }
@@ -60,15 +61,17 @@ async function collectSecretState(session) {
 
 async function newSession(request) {
   const browser = await ensureBrowser()
-  const context = await browser.newContext({ serviceWorkers: 'block', acceptDownloads: false })
+  if (!request.proxy_url) throw new Error('private egress proxy missing')
+  const context = await browser.newContext({ serviceWorkers: 'block', acceptDownloads: false, proxy: { server: request.proxy_url, bypass: '' } })
   const session = { context, page: undefined, scope: request.scope_origin || origin(request.url),
-    version: 0, dirty: true, secrets: new Set(), expires: Date.parse(request.expires_at), expiryTimer: undefined }
+    version: 0, dirty: true, secrets: new Set(), expires: Date.parse(request.expires_at), expiryTimer: undefined, allowWriteRequests: false, networkFrozen: false }
   // Restrict all page requests, redirects, iframe resources, and popups to the
   // fixed origin. Opening a session cannot grant wider network capabilities.
   await context.route('**/*', async route => {
-    if (origin(route.request().url()) !== session.scope) await route.abort('blockedbyclient')
+    if (session.networkFrozen || origin(route.request().url()) !== session.scope || (!session.allowWriteRequests && !['GET', 'HEAD'].includes(route.request().method()))) await route.abort('blockedbyclient')
     else await route.continue()
   })
+  await context.routeWebSocket('**/*', socket => socket.close())
   await context.addInitScript(() => {
     window.__butlerRevision = 0
     window.__butlerDocumentID = Array.from(crypto.getRandomValues(new Uint8Array(16)), value => value.toString(16).padStart(2, '0')).join('')
@@ -109,7 +112,7 @@ async function observe(session, selector = 'body') {
   session.dirty = false
   const cleanText = Array.from(redact(session, text)).slice(0, 12000).join('')
   const page_status = /captcha|verify you are human|access denied|checking your browser|403 forbidden/i.test(cleanText + title) ? 'blocked' : 'ok'
-  return { ok: true, observation_version: session.version, final_url, title: redact(session, title), text: cleanText, page_status,
+  return { ok: true, observation_version: session.version, final_url, title: redact(session, title), text: cleanText, page_status, network_state: session.networkFrozen ? 'frozen' : 'read_only',
     links: links.map(link => ({ text: redact(session, link.text), href: redact(session, link.href) })) }
 }
 
@@ -136,6 +139,11 @@ async function execute(request) {
   if (!session) return errorResult('session_lost', 'browser session was closed, expired, or lost; explicitly open a new session')
   if (Date.now() >= session.expires) { await closeSession(request.browser_session_id); return errorResult('session_expired', 'browser session expired') }
   if (tool === 'browser.close') { await closeSession(request.browser_session_id); return { ok: true } }
+  const localPreparation = ['browser.prepare_fill', 'browser.prepare_type'].includes(tool)
+  // Freeze before reading the live guards or injecting any new value. A stale
+  // preparation can fail safely without resuming background page requests.
+  if (localPreparation) session.networkFrozen = true
+  if (session.networkFrozen && ['browser.navigate', 'browser.fill', 'browser.type'].includes(tool)) return errorResult('network_frozen', 'prepared context permits local preparation, observation, close or separately authorized click only')
   if (origin(session.page.url()) !== session.scope || request.scope_origin !== session.scope) return errorResult('scope_denied', 'current page is outside the fixed browser origin')
   if (tool === 'browser.snapshot') return await observe(session)
   if (tool === 'browser.extract_text') return await observe(session, request.selector)
@@ -147,6 +155,10 @@ async function execute(request) {
   if (request.expected_url !== redact(session, session.page.url())) return errorResult('page_changed', 'current page does not match expected_url; take a new snapshot')
   for (const secret of request.secret_values || []) if (secret) session.secrets.add(secret)
   const timeout = request.timeout || 5000
+  session.allowWriteRequests = ['browser.click', 'browser.fill', 'browser.type'].includes(tool)
+  // The Go proxy opens a bounded click window, but page traffic remains frozen
+  // until the exact live observation and URL guards above succeed.
+  if (tool === 'browser.click') session.networkFrozen = false
   try {
     switch (tool) {
       case 'browser.navigate':
@@ -156,11 +168,13 @@ async function execute(request) {
         await session.page.locator(request.selector).click({ timeout });
         await session.page.waitForLoadState('domcontentloaded', { timeout }); break
       case 'browser.fill':
-      case 'browser.type': {
+      case 'browser.type':
+      case 'browser.prepare_fill':
+      case 'browser.prepare_type': {
         const locator = session.page.locator(request.selector)
         const password = await locator.evaluate(element => element instanceof HTMLInputElement && element.type === 'password', null, { timeout })
         if (password && !request.secret_values?.length) return errorResult('credential_required', 'password inputs require a broker-resolved credential_ref')
-        if (tool === 'browser.fill') await locator.fill(request.value || '', { timeout })
+        if (tool === 'browser.fill' || tool === 'browser.prepare_fill') await locator.fill(request.value || '', { timeout })
         else await locator.pressSequentially(request.text || '', { timeout })
         break
       }
@@ -189,11 +203,15 @@ async function execute(request) {
     }
     // A new observation is returned after effects, so fill A -> fill B -> click
     // can use each returned version without silently reloading the page.
-    return await observe(session)
+    if (tool === 'browser.click') session.networkFrozen = true
+    return { ...await observe(session), ...(localPreparation ? { local_preparation: true } : {}) }
   } catch (err) {
     session.version++
     session.dirty = true
     return { ...safeError(err), observation_version: session.version, final_url: redact(session, session.page.url()) }
+  } finally {
+    session.allowWriteRequests = false
+    if (tool === 'browser.click' || localPreparation) session.networkFrozen = true
   }
 }
 

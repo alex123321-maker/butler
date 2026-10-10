@@ -15,6 +15,7 @@ import (
 	"github.com/butler/butler/internal/memory/sanitize"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/metrics"
+	"github.com/butler/butler/internal/security/content"
 )
 
 // TranscriptReader reads transcripts for a given run.
@@ -53,6 +54,12 @@ type WorkerConfig struct {
 	PollTimeout time.Duration
 	// MaxRetries is the number of times to retry a failed job before dropping it.
 	MaxRetries int
+	// DataReleaseGuard is trusted current owner policy, never extractor output.
+	DataReleaseGuard func(context.Context, string) error
+}
+
+func (w *Worker) SetDataReleaseGuard(guard func(context.Context, string) error) {
+	w.config.DataReleaseGuard = guard
 }
 
 // Worker is the async memory pipeline worker that processes post-run jobs.
@@ -140,7 +147,7 @@ func (w *Worker) Run(ctx context.Context) error {
 			if ctx.Err() != nil {
 				return ctx.Err()
 			}
-			w.log.Error("dequeue failed", slog.String("error", err.Error()))
+			w.log.Error("dequeue failed", slog.String("error_class", fmt.Sprintf("%T", err)))
 			continue
 		}
 		if job == nil {
@@ -167,13 +174,13 @@ func (w *Worker) processJob(ctx context.Context, job *Job) {
 		if err := w.processPostRun(ctx, jobLog, job); err != nil {
 			w.recordMemoryJobMetric(job.JobType, "error")
 			jobLog.Error("post-run extraction failed",
-				slog.String("error", err.Error()),
+				slog.String("error_class", fmt.Sprintf("%T", err)),
 				slog.Duration("duration", time.Since(started)),
 			)
 			job.Retries++
 			if job.Retries <= w.config.MaxRetries {
 				if enqErr := w.queue.Enqueue(context.Background(), *job); enqErr != nil {
-					jobLog.Error("failed to re-enqueue job", slog.String("error", enqErr.Error()))
+					jobLog.Error("failed to re-enqueue job", slog.String("error_class", fmt.Sprintf("%T", enqErr)))
 				} else {
 					jobLog.Info("job re-enqueued", slog.Int("retries", job.Retries))
 				}
@@ -194,10 +201,18 @@ func (w *Worker) processJob(ctx context.Context, job *Job) {
 }
 
 func (w *Worker) processPostRun(ctx context.Context, log *slog.Logger, job *Job) error {
+	if w.config.DataReleaseGuard != nil {
+		if err := w.config.DataReleaseGuard(ctx, job.RunID); err != nil {
+			return fmt.Errorf("memory data-release policy denied extraction")
+		}
+	}
 	// 1. Read the run transcript.
 	t, err := w.transcripts.GetRunTranscript(ctx, job.RunID)
 	if err != nil {
 		return fmt.Errorf("read transcript: %w", err)
+	}
+	if transcriptOrigin(t, job.RunID).Sensitivity == content.Secret {
+		return content.ErrSecret
 	}
 	for idx := range t.Messages {
 		t.Messages[idx].Content = sanitize.TranscriptMessageContent(t.Messages[idx].Content)
@@ -231,13 +246,13 @@ func (w *Worker) processPostRun(ctx context.Context, log *slog.Logger, job *Job)
 	)
 
 	// 3. Write profile updates (with conflict resolution via Supersede).
-	profileCount, err := w.writeProfileUpdates(ctx, log, job, resolved.Profiles)
+	profileCount, err := w.writeProfileUpdates(ctx, log, job, resolved.Profiles, t)
 	if err != nil {
 		return fmt.Errorf("write profiles: %w", err)
 	}
 
 	// 4. Write episodic memories (with embeddings).
-	episodeCount, err := w.writeEpisodes(ctx, log, job, resolved.Episodes)
+	episodeCount, err := w.writeEpisodes(ctx, log, job, resolved.Episodes, t)
 	if err != nil {
 		return fmt.Errorf("write episodes: %w", err)
 	}
@@ -265,7 +280,7 @@ func (w *Worker) processPostRun(ctx context.Context, log *slog.Logger, job *Job)
 	return nil
 }
 
-func (w *Worker) writeProfileUpdates(ctx context.Context, log *slog.Logger, job *Job, candidates []ResolvedProfile) (int, error) {
+func (w *Worker) writeProfileUpdates(ctx context.Context, log *slog.Logger, job *Job, candidates []ResolvedProfile, source ...transcript.Transcript) (int, error) {
 	if w.profileStore == nil {
 		return 0, nil
 	}
@@ -287,14 +302,15 @@ func (w *Worker) writeProfileUpdates(ctx context.Context, log *slog.Logger, job 
 		valueJSON = sanitize.JSON(valueJSON)
 
 		entry := profile.Entry{
-			ScopeType:  scopeType,
-			ScopeID:    scopeID,
-			Key:        candidate.Candidate.Key,
-			ValueJSON:  valueJSON,
-			Summary:    sanitize.Text(candidate.Candidate.Summary),
-			SourceType: "memory_pipeline",
-			SourceID:   job.RunID,
-			Confidence: candidate.Candidate.Confidence,
+			ScopeType:      scopeType,
+			ScopeID:        scopeID,
+			Key:            candidate.Candidate.Key,
+			ValueJSON:      valueJSON,
+			Summary:        sanitize.Text(candidate.Candidate.Summary),
+			SourceType:     "memory_pipeline",
+			SourceID:       job.RunID,
+			Confidence:     candidate.Candidate.Confidence,
+			ProvenanceJSON: originJSON(firstTranscript(source), job.RunID),
 		}
 
 		// Conflict resolution: check if an active entry with this key exists.
@@ -303,7 +319,6 @@ func (w *Worker) writeProfileUpdates(ctx context.Context, log *slog.Logger, job 
 			// Supersede the existing entry.
 			if candidate.Policy == "same_value_higher_confidence" {
 				log.Info("profile entry reaffirmed",
-					slog.String("key", candidate.Candidate.Key),
 					slog.String("scope_type", scopeType),
 					slog.String("resolution_action", candidate.Action),
 				)
@@ -312,13 +327,11 @@ func (w *Worker) writeProfileUpdates(ctx context.Context, log *slog.Logger, job 
 			}
 			if _, err := w.profileStore.Supersede(ctx, existing.ID, entry); err != nil {
 				log.Warn("supersede profile entry failed",
-					slog.String("key", candidate.Candidate.Key),
-					slog.String("error", err.Error()),
+					slog.String("error_class", fmt.Sprintf("%T", err)),
 				)
 				continue
 			}
 			log.Info("profile entry superseded",
-				slog.String("key", candidate.Candidate.Key),
 				slog.String("scope_type", scopeType),
 				slog.String("resolution_action", candidate.Action),
 				slog.String("resolution_policy", candidate.Policy),
@@ -327,21 +340,18 @@ func (w *Worker) writeProfileUpdates(ctx context.Context, log *slog.Logger, job 
 			// Create new entry.
 			if _, err := w.profileStore.Save(ctx, entry); err != nil {
 				log.Warn("save profile entry failed",
-					slog.String("key", candidate.Candidate.Key),
-					slog.String("error", err.Error()),
+					slog.String("error_class", fmt.Sprintf("%T", err)),
 				)
 				continue
 			}
 			log.Info("profile entry created",
-				slog.String("key", candidate.Candidate.Key),
 				slog.String("scope_type", scopeType),
 				slog.String("resolution_action", candidate.Action),
 				slog.String("resolution_policy", candidate.Policy),
 			)
 		} else {
 			log.Warn("check existing profile entry failed",
-				slog.String("key", candidate.Candidate.Key),
-				slog.String("error", err.Error()),
+				slog.String("error_class", fmt.Sprintf("%T", err)),
 			)
 			continue
 		}
@@ -350,7 +360,7 @@ func (w *Worker) writeProfileUpdates(ctx context.Context, log *slog.Logger, job 
 	return written, nil
 }
 
-func (w *Worker) writeEpisodes(ctx context.Context, log *slog.Logger, job *Job, candidates []ResolvedEpisode) (int, error) {
+func (w *Worker) writeEpisodes(ctx context.Context, log *slog.Logger, job *Job, candidates []ResolvedEpisode, source ...transcript.Transcript) (int, error) {
 	if w.episodicStore == nil {
 		return 0, nil
 	}
@@ -370,8 +380,7 @@ func (w *Worker) writeEpisodes(ctx context.Context, log *slog.Logger, job *Job, 
 			emb, err := w.embeddings.EmbedQuery(ctx, sanitizedSummary)
 			if err != nil {
 				log.Warn("episode embedding failed, skipping",
-					slog.String("summary", truncate(candidate.Candidate.Summary, 80)),
-					slog.String("error", err.Error()),
+					slog.String("error_class", fmt.Sprintf("%T", err)),
 				)
 				continue
 			}
@@ -384,9 +393,7 @@ func (w *Worker) writeEpisodes(ctx context.Context, log *slog.Logger, job *Job, 
 			}
 			embedding = emb
 		} else {
-			log.Warn("no embedding provider configured, skipping episode",
-				slog.String("summary", truncate(candidate.Candidate.Summary, 80)),
-			)
+			log.Warn("no embedding provider configured, skipping episode")
 			continue
 		}
 
@@ -398,6 +405,7 @@ func (w *Worker) writeEpisodes(ctx context.Context, log *slog.Logger, job *Job, 
 			Content:        sanitize.Text(candidate.Candidate.Content),
 			SourceType:     "memory_pipeline",
 			SourceID:       job.RunID,
+			ProvenanceJSON: originJSON(firstTranscript(source), job.RunID),
 			Confidence:     candidate.Candidate.Confidence,
 			Embedding:      embedding,
 			EpisodeStartAt: &now,
@@ -405,13 +413,11 @@ func (w *Worker) writeEpisodes(ctx context.Context, log *slog.Logger, job *Job, 
 
 		if _, err := w.episodicStore.Save(ctx, ep); err != nil {
 			log.Warn("save episode failed",
-				slog.String("summary", truncate(candidate.Candidate.Summary, 80)),
-				slog.String("error", err.Error()),
+				slog.String("error_class", fmt.Sprintf("%T", err)),
 			)
 			continue
 		}
 		log.Info("episode created",
-			slog.String("summary", truncate(candidate.Candidate.Summary, 80)),
 			slog.String("scope_type", scopeType),
 			slog.String("resolution_action", candidate.Action),
 			slog.Bool("variant_link", candidate.LinkVariant),
@@ -419,10 +425,7 @@ func (w *Worker) writeEpisodes(ctx context.Context, log *slog.Logger, job *Job, 
 		if candidate.LinkVariant {
 			matches, matchErr := w.episodicStore.FindBySummary(ctx, scopeType, scopeID, candidate.CanonicalRef)
 			if matchErr == nil && len(matches) > 0 {
-				log.Info("episode variant linked",
-					slog.String("summary", truncate(candidate.Candidate.Summary, 80)),
-					slog.String("canonical_ref", truncate(candidate.CanonicalRef, 80)),
-				)
+				log.Info("episode variant linked")
 			}
 		}
 		written++
@@ -462,7 +465,7 @@ func (w *Worker) writeDocumentChunks(ctx context.Context, log *slog.Logger, job 
 		}
 		embedding, err := w.embedChunkContent(ctx, candidate.Candidate.Title, content)
 		if err != nil {
-			log.Warn("chunk embedding failed", slog.String("title", candidate.Candidate.Title), slog.String("error", err.Error()))
+			log.Warn("chunk embedding failed")
 			continue
 		}
 		if _, err := w.chunkStore.Save(ctx, chunks.Chunk{
@@ -473,12 +476,12 @@ func (w *Worker) writeDocumentChunks(ctx context.Context, log *slog.Logger, job 
 			Summary:        sanitize.Text(candidate.Candidate.Content),
 			SourceType:     "memory_pipeline",
 			SourceID:       job.RunID,
-			ProvenanceJSON: mustJSON(map[string]any{"source_type": "memory_pipeline", "source_id": job.RunID}),
+			ProvenanceJSON: originJSON(t, job.RunID),
 			TagsJSON:       tagsForChunk(candidate.Candidate.Title, t),
 			Confidence:     candidate.Candidate.Confidence,
 			Embedding:      embedding,
 		}); err != nil {
-			log.Warn("save chunk failed", slog.String("title", candidate.Candidate.Title), slog.String("error", err.Error()))
+			log.Warn("save chunk failed")
 			continue
 		}
 		written++
@@ -486,7 +489,7 @@ func (w *Worker) writeDocumentChunks(ctx context.Context, log *slog.Logger, job 
 	if doctorChunk, ok := doctorChunkCandidate(job.SessionKey, t); ok {
 		embedding, err := w.embedChunkContent(ctx, doctorChunk.Title, doctorChunk.Content)
 		if err == nil {
-			if _, err := w.chunkStore.Save(ctx, chunks.Chunk{ScopeType: "session", ScopeID: job.SessionKey, Title: doctorChunk.Title, Content: doctorChunk.Content, Summary: doctorChunk.Summary, SourceType: doctorChunk.SourceType, SourceID: doctorChunk.SourceID, TagsJSON: doctorChunk.TagsJSON, Confidence: 0.9, Embedding: embedding}); err == nil {
+			if _, err := w.chunkStore.Save(ctx, chunks.Chunk{ScopeType: "session", ScopeID: job.SessionKey, Title: doctorChunk.Title, Content: doctorChunk.Content, Summary: doctorChunk.Summary, SourceType: doctorChunk.SourceType, SourceID: doctorChunk.SourceID, ProvenanceJSON: originJSON(t, job.RunID), TagsJSON: doctorChunk.TagsJSON, Confidence: 0.9, Embedding: embedding}); err == nil {
 				written++
 			}
 		}

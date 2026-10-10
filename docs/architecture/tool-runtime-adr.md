@@ -8,6 +8,12 @@ Broker RPCs require service authentication; direct/batch calls cannot bypass
 the same policy. Browser navigation/interactions have conservative unknown
 effects. Uncertain external outcomes stop automatic continuation.
 
+[Execution budgets](execution-budget-contract.md) reserve call/time/egress in the
+same transaction as permanent dispatch. Unknown non-read effects block tool
+switching within the task tree. Runtime output schemas gate evidence; malformed
+completed responses stay uncertain. Batch execution is rejected before the first
+dispatch, and no partial result set is supplied as completed model input.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Tooling Specification
@@ -858,3 +864,27 @@ ToolResult возвращает action_id, effect_state и ссылки на д�
 технический completed без доказательства внешней записи становится
 effect_unknown и останавливает продолжение модели. Подробный контракт и
 независимая сверка: [external-effect-journal.md](external-effect-journal.md).
+
+## 28. Недоверенные данные и среда выполнения
+
+Наблюдения инструмента не становятся системными инструкциями, включая их
+сводки и сохранённую память. HTTP/Chromium проверяют публичный адрес и все DNS
+ответы до отправки, не следуют перенаправлениям и ограничивают исходящие байты.
+Chromium использует отдельный origin-scoped proxy, запрещает WebSocket и
+service workers; helper исполняется только из встроенных проверенных байтов.
+Doctor получает фиксированный read-only ответ ядра без учётных данных.
+Подробные гарантии и ограничения:
+[agent-security-boundaries.md](agent-security-boundaries.md).
+
+## 29. Локальная подготовка браузерной формы
+
+`browser.prepare_fill` и `browser.prepare_type` — отдельные revision 2 contracts.
+Runtime замораживает все HTTP/CONNECT соединения и page routes до ввода; последующие
+наблюдения сохраняют запрет, включая delayed GET/POST autosave. Только отдельно
+авторизованный click получает ограниченное окно после live DOM/URL guards, затем
+сеть снова замораживается. `local_browser_preparation_v1` подтверждает только
+локальное состояние с точным session/URL/новой observation version; не отправку
+формы. Legacy live fill/type и click сохраняют неизвестный внешний эффект без
+recipient proof. Read/open/navigate revision 2 имеют enforced GET/HEAD contract;
+старые navigation contracts не наследуют это право. Подробности и evidence:
+[browser-session-contract.md](browser-session-contract.md).

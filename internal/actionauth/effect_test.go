@@ -63,3 +63,67 @@ func TestEffectPolicyPinsVersionAndRecipientGuarantee(t *testing.T) {
 		t.Fatal("independent observation escaped pinned origin")
 	}
 }
+
+func TestLocalBrowserPreparationProofPinsOnlyFrozenLocalState(t *testing.T) {
+	for _, tool := range []string{"browser.prepare_fill", "browser.prepare_type"} {
+		call := &toolbrokerv1.ToolCall{ToolName: tool, ArgsJson: `{"browser_session_id":"context","expected_url":"https://example.com/form","observation_version":7,"selector":"#input","value":"draft"}`}
+		b := ActionBinding{ToolName: tool, Effect: EffectPrepare, ContractRevision: "2", Resource: "browser:context:https://example.com/form"}
+		b.ArgsHash, _ = ArgumentsHash(call.ArgsJson)
+		contract := &toolbrokerv1.ToolContract{EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "unsafe", VerificationMethod: "local_browser_preparation_v1"}}
+		policy, err := ResolveEffectPolicy(b, contract, call)
+		if err != nil {
+			t.Fatal(err)
+		}
+		base := map[string]any{"ok": true, "local_preparation": true, "network_state": "frozen", "browser_session_id": "context", "final_url": "https://example.com/form", "observation_version": 8}
+		raw, _ := json.Marshal(base)
+		if localPreparationVerdict(policy, b, string(raw)) != StateConfirmed {
+			t.Fatal("valid local proof rejected")
+		}
+		for _, field := range []string{"ok", "local_preparation", "network_state", "browser_session_id", "final_url", "observation_version"} {
+			copy := map[string]any{}
+			for k, v := range base {
+				copy[k] = v
+			}
+			delete(copy, field)
+			raw, _ := json.Marshal(copy)
+			if localPreparationVerdict(policy, b, string(raw)) != StateUnknown {
+				t.Fatalf("missing %s accepted", field)
+			}
+		}
+		for key, value := range map[string]any{"browser_session_id": "other", "final_url": "https://example.com/other", "observation_version": 7, "network_state": "read_only", "error": map[string]any{}, "truncated": true} {
+			copy := map[string]any{}
+			for k, v := range base {
+				copy[k] = v
+			}
+			copy[key] = value
+			raw, _ := json.Marshal(copy)
+			if localPreparationVerdict(policy, b, string(raw)) != StateUnknown {
+				t.Fatalf("wrong %s accepted", key)
+			}
+		}
+		b.ToolName = "browser.click"
+		if localPreparationVerdict(policy, b, string(raw)) != StateUnknown {
+			t.Fatal("local proof confirmed external click")
+		}
+		if _, err := ResolveEffectPolicy(b, contract, call); err == nil {
+			t.Fatal("click borrowed local verification")
+		}
+	}
+}
+
+func TestBrowserReadContractsRequireEnforcedRevision(t *testing.T) {
+	for _, tool := range []string{"browser.read", "browser.open", "browser.navigate"} {
+		if classifyEffect(tool, nil) != EffectRead {
+			t.Fatal("enforced browser read remains opaque")
+		}
+		binding := ActionBinding{ToolName: tool, Effect: EffectRead, ContractRevision: "1"}
+		contract := &toolbrokerv1.ToolContract{EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "read_result"}}
+		if _, err := ResolveEffectPolicy(binding, contract); err == nil {
+			t.Fatal("old read contract inherited new enforcement")
+		}
+		binding.ContractRevision = "2"
+		if _, err := ResolveEffectPolicy(binding, contract); err != nil {
+			t.Fatal(err)
+		}
+	}
+}

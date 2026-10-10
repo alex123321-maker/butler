@@ -3,12 +3,14 @@ package broker
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
 
 	"github.com/butler/butler/apps/tool-broker/internal/registry"
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/credentials"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -20,14 +22,18 @@ import (
 type Server struct {
 	toolbrokerv1.UnimplementedToolBrokerServiceServer
 
-	registry   *registry.Registry
-	executor   RuntimeExecutor
-	creds      CredentialResolver
-	authorizer *actionauth.Service
-	log        *slog.Logger
+	registry      *registry.Registry
+	executor      RuntimeExecutor
+	creds         CredentialResolver
+	authorizer    *actionauth.Service
+	log           *slog.Logger
+	budgetTimeout time.Duration
+	budgets       *budget.Controller
 }
 
 func (s *Server) SetActionAuthorizer(authorizer *actionauth.Service) { s.authorizer = authorizer }
+func (s *Server) SetBudgetTimeout(d time.Duration)                   { s.budgetTimeout = d }
+func (s *Server) SetBudgets(c *budget.Controller)                    { s.budgets = c }
 
 func (s *Server) PrepareToolCall(ctx context.Context, req *toolbrokerv1.PrepareToolCallRequest) (*toolbrokerv1.PrepareToolCallResponse, error) {
 	valid, contract, toolErr := s.registry.Validate(req.GetToolCall())
@@ -119,11 +125,56 @@ func (s *Server) ExecuteToolCall(ctx context.Context, req *toolbrokerv1.ExecuteT
 	if _, err = s.authorizer.Verify(ctx, req.GetToolCall(), contract, grant.ID); err != nil {
 		return &toolbrokerv1.ExecuteToolCallResponse{Result: authorizationErrorResult(req.GetToolCall(), err.Error())}, nil
 	}
+	ctx, err = budget.WithCanonicalArguments(ctx, req.GetToolCall().GetArgsJson())
+	if err != nil {
+		return &toolbrokerv1.ExecuteToolCallResponse{Result: authorizationErrorResult(req.GetToolCall(), "tool arguments cannot be normalized")}, nil
+	}
 	if err = s.authorizer.Claim(ctx, grant.ID); err != nil {
+		var exhausted *budget.ExhaustedError
+		var loop *budget.LoopError
+		reason := ""
+		if errors.As(err, &exhausted) {
+			reason = "budget_" + exhausted.Dimension + "_" + exhausted.Kind
+		} else if errors.As(err, &loop) {
+			reason = loop.Reason
+		}
+		if reason != "" {
+			result := authorizationErrorResult(req.GetToolCall(), reason)
+			result.Status = "execution_stopped"
+			data, _ := json.Marshal(map[string]string{"reason": reason})
+			result.Error.DetailsJson = string(data)
+			return &toolbrokerv1.ExecuteToolCallResponse{Result: result}, nil
+		}
 		return &toolbrokerv1.ExecuteToolCallResponse{Result: authorizationErrorResult(req.GetToolCall(), "authorization already dispatched, expired or revoked; do not replay")}, nil
 	}
 	dispatchCtx := actionauth.WithDispatchIdentity(ctx, actionauth.DispatchIdentity{ActionID: effect.ActionID, IdempotencyKey: effect.IdempotencyKey, Fingerprint: effect.Fingerprint})
+	// The grant includes the earlier owner-policy/active-hours bound. Persisted
+	// budget periods remain immutable and cannot widen this call's authority.
+	dispatchCtx, cancelAuthority := context.WithDeadline(dispatchCtx, grant.ExpiresAt)
+	defer cancelAuthority()
+	if s.budgets != nil {
+		deadline, deadlineErr := s.budgets.ToolDeadline(ctx, grant.Binding.OwnerID, effect.ActionID)
+		if deadlineErr != nil || !deadline.After(time.Now()) {
+			return &toolbrokerv1.ExecuteToolCallResponse{Result: unknownResult(req.GetToolCall(), effect.ActionID)}, nil
+		}
+		var cancel context.CancelFunc
+		dispatchCtx, cancel = context.WithDeadline(dispatchCtx, deadline)
+		defer cancel()
+	}
+	if s.budgetTimeout > 0 {
+		var cancel context.CancelFunc
+		dispatchCtx, cancel = context.WithTimeout(dispatchCtx, s.budgetTimeout)
+		defer cancel()
+	}
 	result, err := s.executor.Execute(dispatchCtx, req.GetToolCall(), contract, resolved)
+	if result != nil && result.GetStatus() == "completed" {
+		if schemaErr := registry.ValidateArgs(contract.GetOutputSchemaJson(), result.GetResultJson()); schemaErr != nil || result.GetError() != nil {
+			result.Status = "failed"
+			result.ResultJson = "{}"
+			result.Error = &toolbrokerv1.ToolError{ErrorClass: commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, Message: "runtime result does not satisfy tool output schema", Retryable: false}
+			err = fmt.Errorf("runtime result schema invalid")
+		}
+	}
 	result = redactResult(result, resolved)
 	finishCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 3*time.Second)
 	defer cancel()

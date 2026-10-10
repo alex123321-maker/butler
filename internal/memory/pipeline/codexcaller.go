@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/butler/butler/internal/transport"
 	"io"
 	"net/http"
 	"strings"
@@ -47,13 +48,16 @@ func NewOpenAICodexCaller(cfg OpenAICodexCallerConfig, httpClient *http.Client) 
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: cfg.Timeout}
 	}
+	copyClient := *httpClient
+	copyClient.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	httpClient = &copyClient
 	return &OpenAICodexCaller{model: cfg.Model, baseURL: cfg.BaseURL, httpClient: httpClient, authSource: cfg.AuthSource}, nil
 }
 
 func (c *OpenAICodexCaller) Complete(ctx context.Context, systemPrompt, userPrompt string) (string, error) {
 	auth, err := c.authSource.ResolveOpenAICodex(ctx)
 	if err != nil {
-		return "", fmt.Errorf("codexcaller: resolve auth: %w", err)
+		return "", fmt.Errorf("codexcaller: resolve auth failed")
 	}
 	payload, err := json.Marshal(map[string]any{
 		"model":        c.model,
@@ -66,11 +70,14 @@ func (c *OpenAICodexCaller) Complete(ctx context.Context, systemPrompt, userProm
 		}},
 	})
 	if err != nil {
-		return "", fmt.Errorf("codexcaller: marshal request: %w", err)
+		return "", fmt.Errorf("codexcaller: marshal request failed")
+	}
+	if err := transport.CheckSerializedInput(ctx, len(payload)); err != nil {
+		return "", err
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, strings.TrimRight(c.baseURL, "/")+"/codex/responses", bytes.NewReader(payload))
 	if err != nil {
-		return "", fmt.Errorf("codexcaller: create request: %w", err)
+		return "", fmt.Errorf("codexcaller: create request failed")
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "text/event-stream")
@@ -81,12 +88,11 @@ func (c *OpenAICodexCaller) Complete(ctx context.Context, systemPrompt, userProm
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("codexcaller: http request: %w", err)
+		return "", fmt.Errorf("codexcaller: http request failed")
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		body, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
-		return "", fmt.Errorf("codexcaller: API error (HTTP %d): %s", resp.StatusCode, strings.TrimSpace(string(body)))
+	if err := transport.ProviderHTTPError(resp); err != nil {
+		return "", err
 	}
 	return decodeCodexCompletionStream(ctx, resp.Body)
 }
@@ -100,7 +106,7 @@ func decodeCodexCompletionStream(ctx context.Context, body io.Reader) (string, e
 			if err == io.EOF {
 				break
 			}
-			return "", fmt.Errorf("codexcaller: read stream: %w", err)
+			return "", fmt.Errorf("codexcaller: read stream failed")
 		}
 		trimmed := strings.TrimSpace(message.Data)
 		if trimmed == "" || trimmed == "[DONE]" {
@@ -108,7 +114,7 @@ func decodeCodexCompletionStream(ctx context.Context, body io.Reader) (string, e
 		}
 		var payload map[string]any
 		if err := json.Unmarshal([]byte(trimmed), &payload); err != nil {
-			return "", fmt.Errorf("codexcaller: decode event: %w", err)
+			return "", fmt.Errorf("codexcaller: decode event failed")
 		}
 		eventType := strings.TrimSpace(message.Event)
 		if eventType == "" {

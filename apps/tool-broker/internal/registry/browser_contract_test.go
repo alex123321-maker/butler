@@ -17,7 +17,7 @@ func TestBrowserContractsRequireExplicitSessionAndSafeAuth(t *testing.T) {
 			t.Fatalf("independent/open contract %s: %v", name, err)
 		}
 	}
-	for _, name := range []string{"browser.navigate", "browser.snapshot", "browser.click", "browser.fill", "browser.type", "browser.wait_for", "browser.extract_text", "browser.set_cookie", "browser.restore_storage_state"} {
+	for _, name := range []string{"browser.navigate", "browser.snapshot", "browser.click", "browser.fill", "browser.type", "browser.prepare_fill", "browser.prepare_type", "browser.wait_for", "browser.extract_text", "browser.set_cookie", "browser.restore_storage_state"} {
 		valid, _, _ := reg.Validate(&toolbrokerv1.ToolCall{ToolName: name, ArgsJson: `{"url":"https://example.com","selector":"#a","value":"value","text":"text"}`})
 		if valid {
 			t.Fatalf("%s accepted implicit continuation", name)
@@ -45,5 +45,11 @@ func TestBrowserContractsRequireExplicitSessionAndSafeAuth(t *testing.T) {
 	bind, _ := reg.Get("single_tab.bind")
 	if bind.GetRuntimeTarget() != "tool-browser-local:9090" || bind.GetSupportsCredentialRefs() || bind.GetRequiresApproval() {
 		t.Fatal("single-tab approval boundary changed")
+	}
+	for _, name := range []string{"browser.prepare_fill", "browser.prepare_type"} {
+		contract, ok := reg.Get(name)
+		if !ok || contract.GetContractRevision() != "2" || contract.GetEffectContract().GetVerificationMethod() != "local_browser_preparation_v1" || !contract.GetSupportsCredentialRefs() {
+			t.Fatalf("local preparation contract incomplete: %s", name)
+		}
 	}
 }

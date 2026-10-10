@@ -31,3 +31,5 @@ injects fixed headers, rejects caller overrides and does not follow redirects
 for these mutations. It performs no implicit retry. Generic HTTP success does
 not verify an external write; Broker owns receipt validation and reconciliation.
 See [the effect contract](../../docs/architecture/external-effect-journal.md).
+
+Public network execution pins checked DNS, rejects internal/ambiguous destinations, denies redirects and caller routing/auth headers, and bounds the serialized request including mediated headers to 4 MiB before sending. Broker requires exact release approval or current scoped owner purpose even for arbitrary GET. Reflected resolved secrets and cookie values are masked; response headers and network errors are bounded safe data. See [security boundaries](../../docs/architecture/agent-security-boundaries.md).

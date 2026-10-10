@@ -22,3 +22,10 @@ See [the operator guide](../../../deploy/antigravity/README.md) for private impo
 the unsupported third-party integration policy, proxy configuration and real
 validation status. Fixtures verify wire shape, safe failure handling, signatures,
 schema guards and cancellation; they do not prove Google model access.
+
+`InferenceLimits` declares 1,048,576 input plus 8,192 output tokens for conservative
+kernel admission. Private `transport.WithInputByteLimit` bounds the exact complete
+serialized request, including private retained history, schemas and tool results,
+before HTTP write; unset callers use a fixed 8MiB cap. Operator subscription cost
+basis is separately required by production execution budgets. Neither this quote
+nor model availability proves a successful authenticated request.

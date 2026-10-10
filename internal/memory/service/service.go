@@ -11,7 +11,9 @@ import (
 
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/embeddings"
+	"github.com/butler/butler/internal/memory/sanitize"
 	"github.com/butler/butler/internal/metrics"
+	"github.com/butler/butler/internal/security/content"
 )
 
 type ProfileStore interface {
@@ -116,6 +118,7 @@ type episodeItem struct {
 	Summary  string
 	Distance float64
 	Source   string
+	Origin   content.Origin
 }
 
 func New(cfg Config) *Service {
@@ -145,6 +148,7 @@ func New(cfg Config) *Service {
 }
 
 func (s *Service) BuildBundle(ctx context.Context, req BundleRequest) (Bundle, error) {
+	req.UserMessage = sanitize.Text(req.UserMessage)
 	scopes := s.scopes(req.SessionKey, req.UserID)
 	profileEntries, err := s.loadProfile(ctx, scopes)
 	if err != nil {
@@ -202,7 +206,11 @@ func (s *Service) loadProfile(ctx context.Context, scopes []Scope) ([]map[string
 			return nil, fmt.Errorf("load profile memory: %w", err)
 		}
 		for _, entry := range entries {
-			result = append(result, map[string]any{"key": entry.ProfileKey(), "summary": entry.ProfileSummary(), "scope_type": scope.Type})
+			origin := memoryOrigin(entry)
+			if origin.Sensitivity == content.Secret {
+				continue
+			}
+			result = append(result, map[string]any{"key": entry.ProfileKey(), "summary": entry.ProfileSummary(), "scope_type": scope.Type, "origin": origin})
 			if len(result) >= s.config.ProfileLimit {
 				return result, nil
 			}
@@ -221,7 +229,7 @@ func (s *Service) loadEpisodes(ctx context.Context, scopes []Scope, userMessage 
 	}
 	queryEmbedding, err := s.config.Embeddings.EmbedQuery(ctx, userMessage)
 	if err != nil {
-		s.log.Warn("episodic retrieval skipped; embedding query failed", slog.String("error", err.Error()))
+		s.log.Warn("episodic retrieval skipped; embedding query failed", slog.String("error_class", fmt.Sprintf("%T", err)))
 		return nil, nil
 	}
 	if len(queryEmbedding) != embeddings.VectorDimensions() {
@@ -241,11 +249,15 @@ func (s *Service) loadEpisodes(ctx context.Context, scopes []Scope, userMessage 
 				continue
 			}
 			seen[key] = struct{}{}
-			items = append(items, episodeItem{Summary: item.EpisodeSummary(), Distance: item.EpisodeDistance(), Source: "vector"})
+			origin := memoryOrigin(item)
+			if origin.Sensitivity == content.Secret {
+				continue
+			}
+			items = append(items, episodeItem{Summary: item.EpisodeSummary(), Distance: item.EpisodeDistance(), Source: "vector", Origin: origin})
 		}
 		keywordMatches, keywordErr := s.loadKeywordEpisodes(ctx, scope, userMessage)
 		if keywordErr != nil {
-			s.log.Warn("episodic keyword retrieval skipped", slog.String("scope_type", scope.Type), slog.String("error", keywordErr.Error()))
+			s.log.Warn("episodic keyword retrieval skipped", slog.String("scope_type", scope.Type), slog.String("error_class", fmt.Sprintf("%T", keywordErr)))
 			continue
 		}
 		for _, item := range keywordMatches {
@@ -268,7 +280,7 @@ func (s *Service) loadEpisodes(ctx context.Context, scopes []Scope, userMessage 
 	}
 	result := make([]map[string]any, 0, len(items))
 	for _, item := range items {
-		result = append(result, map[string]any{"summary": item.Summary, "distance": item.Distance, "source": item.Source})
+		result = append(result, map[string]any{"summary": item.Summary, "distance": item.Distance, "source": item.Source, "origin": item.Origin})
 	}
 	return result, nil
 }
@@ -294,7 +306,11 @@ func (s *Service) loadKeywordEpisodes(ctx context.Context, scope Scope, userMess
 				continue
 			}
 			seen[key] = struct{}{}
-			matches = append(matches, episodeItem{Summary: entry.EpisodeSummary(), Distance: 0.25, Source: "keyword"})
+			origin := memoryOrigin(entry)
+			if origin.Sensitivity == content.Secret {
+				continue
+			}
+			matches = append(matches, episodeItem{Summary: entry.EpisodeSummary(), Distance: 0.25, Source: "keyword", Origin: origin})
 			if len(matches) >= s.config.KeywordLimit {
 				return matches, nil
 			}
@@ -344,7 +360,11 @@ func (s *Service) loadChunks(ctx context.Context, scopes []Scope, userMessage st
 				continue
 			}
 			seen[key] = struct{}{}
-			items = append(items, map[string]any{"title": item.ChunkTitle(), "summary": item.ChunkSummary(), "distance": item.ChunkDistance(), "source": "vector"})
+			origin := memoryOrigin(item)
+			if origin.Sensitivity == content.Secret {
+				continue
+			}
+			items = append(items, map[string]any{"title": item.ChunkTitle(), "summary": item.ChunkSummary(), "distance": item.ChunkDistance(), "source": "vector", "origin": origin})
 			if len(items) >= s.config.ChunkLimit {
 				return items, nil
 			}
@@ -360,7 +380,11 @@ func (s *Service) loadChunks(ctx context.Context, scopes []Scope, userMessage st
 					continue
 				}
 				seen[key] = struct{}{}
-				items = append(items, map[string]any{"title": match.ChunkTitle(), "summary": match.ChunkSummary(), "distance": 0.25, "source": "keyword"})
+				origin := memoryOrigin(match)
+				if origin.Sensitivity == content.Secret {
+					continue
+				}
+				items = append(items, map[string]any{"title": match.ChunkTitle(), "summary": match.ChunkSummary(), "distance": 0.25, "source": "keyword", "origin": origin})
 				if len(items) >= s.config.ChunkLimit {
 					return items, nil
 				}
@@ -376,7 +400,7 @@ func (s *Service) loadSummary(ctx context.Context, sessionKey string) string {
 	}
 	summary, err := s.config.SummaryReader.GetSummary(ctx, sessionKey)
 	if err != nil {
-		s.log.Warn("session summary retrieval failed", slog.String("session_key", sessionKey), slog.String("error", err.Error()))
+		s.log.Warn("session summary retrieval failed", slog.String("session_key", sessionKey), slog.String("error_class", fmt.Sprintf("%T", err)))
 		return ""
 	}
 	return strings.TrimSpace(summary)

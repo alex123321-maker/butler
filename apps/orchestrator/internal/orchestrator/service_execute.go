@@ -13,6 +13,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
+	"github.com/butler/butler/internal/budget"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	"github.com/butler/butler/internal/ingress"
@@ -219,11 +220,17 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 		StreamingEnabled: true,
 	})
 	if err != nil {
+		if _, stopped := budgetStopReason(err); stopped {
+			return s.stopBudget(ctx, current, err)
+		}
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
 	}
 
 	finalMessage, current, err := s.consumeModelStream(transportCtx, runLog, current, event.SessionKey, lease.LeaseID, stream)
 	if err != nil {
+		if _, stopped := budgetStopReason(err); stopped {
+			return s.stopBudget(ctx, current, err)
+		}
 		if errors.Is(err, ErrApprovalSuspended) {
 			result := &ExecutionResult{RunID: current.GetRunId(), SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "waiting_for_user"}
 			if prepared.Task != nil {
@@ -356,6 +363,9 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 					finalMessage = resumedFinal
 				}
 			case transport.EventTypeTransportError:
+				if transportEvent.TransportError != nil && (transportEvent.TransportError.Type == "execution_budget_deadline" || transportEvent.TransportError.Type == "execution_budget_tokens" || transportEvent.TransportError.Type == transport.ErrorTypeInputBytesExceeded) {
+					return "", current, &budget.LoopError{Reason: string(transportEvent.TransportError.Type)}
+				}
 				return "", current, transportError(transportEvent.TransportError)
 			case transport.EventTypeTransportWarning:
 				runLog.Warn("transport warning", slog.String("payload", transportEvent.PayloadJSON))

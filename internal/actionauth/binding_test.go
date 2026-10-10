@@ -59,7 +59,7 @@ func TestCredentialRefsMustMatchExactArgs(t *testing.T) {
 	}
 }
 func TestOpaqueBrowserEffectsRequireExplicitAuthority(t *testing.T) {
-	for _, tool := range []string{"browser.open", "browser.navigate", "browser.fill", "browser.type", "browser.click", "single_tab.click", "single_tab.press_keys", "plugin.operation"} {
+	for _, tool := range []string{"browser.fill", "browser.type", "browser.click", "single_tab.click", "single_tab.press_keys", "plugin.operation"} {
 		if classifyEffect(tool, nil) != EffectUnknown {
 			t.Fatalf("%s opaque site effects treated as known safe", tool)
 		}

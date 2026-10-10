@@ -1,0 +1,57 @@
+{
+  "issue": 13,
+  "checked_at_utc": "2026-10-10T20:37:53Z",
+  "source_snapshot": "20261011-033425-286",
+  "lab_root": "/srv/storage/butler/agents/execution-budgets",
+  "test_database": "butler_execution_budget_v2_test",
+  "go_version": "1.27.2",
+  "result": "passed_for_supported_admission_paths",
+  "real_postgres_and_race_packages": [
+    "internal/budget", "internal/actionauth", "apps/tool-broker/internal/broker",
+    "apps/orchestrator/internal/task", "apps/orchestrator/internal/input",
+    "apps/orchestrator/internal/orchestrator", "apps/orchestrator/internal/api",
+    "apps/orchestrator/internal/completion", "internal/config", "internal/transport/..."
+  ],
+  "checks": {
+    "parallel_shared_scopes_two_connection_pool": "passed",
+    "atomic_grant_and_budget_before_real_http_recipient": "passed",
+    "unknown_external_acknowledgement_no_duplicate_dispatch": "passed",
+    "run_child_restart_and_revision_do_not_reset_spend": "passed",
+    "assigned_mandate_shared_across_independent_root_tasks": "passed",
+    "local_privacy_and_paused_goal_deny_before_inference": "passed",
+    "saved_zero_budget_and_deadline_stops": "passed",
+    "normalized_equivalent_arguments_results_and_errors": "passed",
+    "unknown_non_read_effect_blocks_tool_switching": "passed",
+    "runtime_schema_failure_never_confirmed": "passed",
+    "whole_batch_denied_before_first_dispatch": "passed",
+    "frozen_finalization_and_unverified_model_only_verdict": "passed",
+    "owner_only_budget_read_model": "passed",
+    "provider_full_serialized_history_byte_limit": "passed",
+    "immutable_policy_and_history_rollback_refusal": "passed",
+    "root_promotion_preflight_no_model_charge": "passed",
+    "compose_config_quiet": "passed"
+  },
+  "billing": {
+    "default_exact_model_basis": "unknown_admission_denied",
+    "native_operator_basis_example": "subscription_no_overage",
+    "observed_usage": "separate_from_conservative_reserved_allowance",
+    "missing_actual_usage": "null",
+    "automatic_refunds": false,
+    "automatic_model_fallback": false
+  },
+  "capabilities_and_limits": {
+    "declared_inference_adapter": "antigravity",
+    "selected_model": "gemini-3.8-flash-tiered",
+    "batch_tool_calls": false,
+    "other_inference_adapters": "fail_closed_until_limits_are_declared",
+    "tool_egress_wire_enforcement": "separate_issue31_runtime_work",
+    "broad_goal_api_and_revoke_jobs": "separate_issue14_work",
+    "google_model_requests_in_this_suite": 0,
+    "shared_compose_up_or_source_pointer_changes": false
+  },
+  "test_run_notes": [
+    "Package suites combine successful real-PostgreSQL/race runs; changed boundary tests were rerun after fixes.",
+    "Final preflight used existing golang:1.27.2-bookworm after temporary Alpine package installation stalled before Go started.",
+    "Deterministic model streams verify kernel behavior; authenticated native access is a separate root-agent smoke."
+  ]
+}

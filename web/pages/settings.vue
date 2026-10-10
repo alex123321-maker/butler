@@ -14,6 +14,11 @@
       </div>
     </section>
 
+    <label class="owner-maintenance-token">Owner control token
+      <input v-model="ownerToken" type="password" autocomplete="off" aria-label="Owner control token" />
+      <span>Required to change settings, provider authentication or system instructions.</span>
+    </label>
+
     <p v-if="toast" class="toast">{{ toast }}</p>
     <p v-if="pending" class="placeholder-text">Loading settings...</p>
     <p v-else-if="error" class="placeholder-text">Failed to load settings.</p>
@@ -357,7 +362,9 @@ import { useSettingsData, type PromptConfig, type PromptPreview, type ProviderIt
 
 useHead({ title: 'Settings — Butler' })
 
-const { data, pending, error, refresh, updateSetting, deleteSetting, getRestartState, applyRestart, getProviders, startProviderAuth, completeProviderAuth, deleteProviderAuth, getPrompt, updatePrompt, previewPrompt } = useSettingsData()
+const ownerToken = ref('')
+onBeforeUnmount(() => { ownerToken.value = '' })
+const { data, pending, error, refresh, updateSetting, deleteSetting, getRestartState, applyRestart, getProviders, startProviderAuth, completeProviderAuth, deleteProviderAuth, getPrompt, updatePrompt, previewPrompt } = useSettingsData(ownerToken)
 const busyKey = ref<string | null>(null)
 const providerBusy = ref<string | null>(null)
 const toast = ref('')

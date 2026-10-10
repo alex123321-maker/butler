@@ -65,6 +65,20 @@ func actionDatabase(t *testing.T) *pgxpool.Pool {
  INSERT INTO session_ownership VALUES('web:owner','run','lease',4,clock_timestamp()+INTERVAL '1 hour');`); err != nil {
 		t.Fatal(err)
 	}
+	data, err = os.ReadFile(filepath.Join("..", "..", "migrations", "038_owner_goals_mandates.up.sql"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, string(data)); err != nil {
+		t.Fatal(err)
+	}
+	data, err = os.ReadFile(filepath.Join("..", "..", "migrations", "038_owner_purpose_policies.up.sql"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, string(data)); err != nil {
+		t.Fatal(err)
+	}
 	return pool
 }
 func TestPostgresDispatchCASAndUnknownOutcome(t *testing.T) {
@@ -107,6 +121,8 @@ func TestPostgresRefreshFenceAndRevokeMandate(t *testing.T) {
 	s, _, reader, _, call, contract := fixture(t)
 	s.store = store
 	reader.current.MandateID = "mandate"
+	// This test exercises legacy mandate fencing, not arbitrary data release.
+	contract.AllowedDomains = []string{"example.com"}
 	m := Mandate{ID: "mandate", OwnerID: "owner", TaskID: "task", TaskRevision: 7, ConstraintsRevision: 2, Revision: 1, Tools: []string{"http.request"}, Resources: []string{"https://example.com"}, Effects: []Effect{EffectCommit}, ExpiresAt: time.Now().Add(time.Hour)}
 	if err := store.PutMandate(ctx, m); err != nil {
 		t.Fatal(err)

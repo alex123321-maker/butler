@@ -68,10 +68,13 @@ func TestAppControlDispatchAction(t *testing.T) {
 	t.Setenv("BUTLER_BROWSER_BRIDGE_CONTROL_ADDR", "127.0.0.1:29125")
 
 	inputReader, inputWriter := io.Pipe()
+	defer inputReader.Close()
 	defer inputWriter.Close()
-	var output bytes.Buffer
+	outputReader, outputWriter := io.Pipe()
+	defer outputReader.Close()
+	defer outputWriter.Close()
 
-	application, err := New(context.Background(), inputReader, &output, os.Stderr)
+	application, err := New(context.Background(), inputReader, outputWriter, os.Stderr)
 	if err != nil {
 		t.Fatalf("New returned error: %v", err)
 	}
@@ -86,7 +89,7 @@ func TestAppControlDispatchAction(t *testing.T) {
 	responseDone := make(chan struct{})
 	go func() {
 		defer close(responseDone)
-		request := readNativeRequestFrame(t, &output)
+		request := readNativeRequestFrame(t, outputReader)
 		if request.Method != "action.dispatch" {
 			t.Errorf("expected action.dispatch request, got %q", request.Method)
 			return
@@ -110,7 +113,8 @@ func TestAppControlDispatchAction(t *testing.T) {
 	if err != nil {
 		t.Fatalf("POST dispatch failed: %v", err)
 	}
-	defer resp.Body.Close()
+	_, _ = io.Copy(io.Discard, resp.Body)
+	_ = resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("expected 200, got %d", resp.StatusCode)
 	}
@@ -181,18 +185,14 @@ func readResponseFrame(t *testing.T, r *bytes.Buffer) protocol.Response {
 	return response
 }
 
-func readNativeRequestFrame(t *testing.T, r *bytes.Buffer) protocol.Request {
+func readNativeRequestFrame(t *testing.T, r io.Reader) protocol.Request {
 	t.Helper()
-	deadline := time.Now().Add(2 * time.Second)
-	for r.Len() < 4 && time.Now().Before(deadline) {
-		time.Sleep(10 * time.Millisecond)
-	}
 	var length uint32
 	if err := binary.Read(r, binary.LittleEndian, &length); err != nil {
 		t.Fatalf("read request length: %v", err)
 	}
 	payload := make([]byte, length)
-	if _, err := r.Read(payload); err != nil {
+	if _, err := io.ReadFull(r, payload); err != nil {
 		t.Fatalf("read request payload: %v", err)
 	}
 	var request protocol.Request

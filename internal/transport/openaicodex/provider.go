@@ -99,6 +99,9 @@ func NewProvider(cfg Config, client *http.Client) (*Provider, error) {
 	if client == nil {
 		client = newStreamingHTTPClient(cfg.Timeout)
 	}
+	clientCopy := *client
+	clientCopy.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	client = &clientCopy
 	log := cfg.Logger
 	if log == nil {
 		log = slog.Default()
@@ -194,6 +197,9 @@ func (p *Provider) CancelRun(_ context.Context, req transport.CancelRunRequest) 
 }
 
 func (p *Provider) executeStreamingRequest(parent context.Context, runID, sessionID string, body []byte) (transport.EventStream, error) {
+	if err := transport.CheckSerializedInput(parent, len(body)); err != nil {
+		return nil, err
+	}
 	ctx, cancel := context.WithCancel(parent)
 	p.registerCancel(runID, cancel)
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, p.endpoint("/codex/responses"), bytes.NewReader(body))
@@ -765,31 +771,11 @@ func normalizeSchema(value any) {
 }
 
 func decodeAPIError(resp *http.Response) error {
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		return nil
-	}
-	defer resp.Body.Close()
-	body, _ := io.ReadAll(resp.Body)
-	message := strings.TrimSpace(string(body))
-	code := ""
-	var payload map[string]any
-	if json.Unmarshal(body, &payload) == nil {
-		if errPayload, ok := payload["error"].(map[string]any); ok {
-			message = stringValue(errPayload["message"])
-			code = stringValue(errPayload["code"])
-			payload = errPayload
-		}
-	}
-	return &transport.HTTPStatusError{StatusCode: resp.StatusCode, Message: message, Code: code, Details: payload}
+	return transport.ProviderHTTPError(resp)
 }
 
-func errorFromPayload(payload map[string]any) error {
-	errPayload := mapValue(payload["error"])
-	message := stringValue(errPayload["message"])
-	if message == "" {
-		message = stringValue(payload["message"])
-	}
-	return &transport.Error{Type: transport.ErrorTypeProviderProtocolError, Message: message, ProviderName: providerName, ProviderCode: stringValue(errPayload["code"]), ProviderDetails: errPayload}
+func errorFromPayload(_ map[string]any) error {
+	return transport.ProviderProtocolError(providerName)
 }
 
 func extractOutputText(response map[string]any) string {

@@ -6,11 +6,18 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/butler/butler/internal/budget"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type PostgresStore struct{ pool *pgxpool.Pool }
+type PostgresStore struct {
+	pool    *pgxpool.Pool
+	budgets *budget.Controller
+}
+
+// SetBudgets is trusted deployment wiring, never a model-selectable option.
+func (s *PostgresStore) SetBudgets(c *budget.Controller) { s.budgets = c }
 
 func NewPostgresStore(pool *pgxpool.Pool) *PostgresStore { return &PostgresStore{pool: pool} }
 func (s *PostgresStore) PutIntent(ctx context.Context, i Intent) error {
@@ -138,6 +145,22 @@ func (s *PostgresStore) ClaimGrant(ctx context.Context, id string) error {
 	if err != nil {
 		return fmt.Errorf("external effect is already executing or uncertain; do not replay")
 	}
+	if s.budgets != nil {
+		if err = s.budgets.ReserveToolTx(ctx, tx, toolBudgetIdentity(g, effectID)); err != nil {
+			return err
+		}
+	}
+	// Budget row contention can cross a policy deadline or active-hours boundary.
+	// Reuse the authority locks already held; never acquire a new authority set.
+	if g.Binding.TaskID != "" {
+		var at time.Time
+		if err = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&at); err != nil {
+			return err
+		}
+		if err = CheckTaskActionTx(ctx, tx, g.Binding, at); err != nil {
+			return err
+		}
+	}
 	tag, err := tx.Exec(ctx, `UPDATE action_authorizations a SET state='inflight',dispatched_at=NOW()
  WHERE authorization_id=$1 AND state='authorized' AND expires_at>clock_timestamp()
  AND (mandate_id IS NULL OR EXISTS(SELECT 1 FROM action_mandates m WHERE m.mandate_id=a.mandate_id AND m.revision=a.mandate_revision AND m.revoked_at IS NULL AND m.expires_at>clock_timestamp()))`, id)
@@ -190,6 +213,9 @@ func (s *PostgresStore) guardDispatch(ctx context.Context, tx pgx.Tx, g Grant) e
 		if err = CheckExecutionPolicy(ContextSnapshot{ExecutionPolicy: policy}, g.Binding.Effect); err != nil {
 			return err
 		}
+		if err = CheckTaskActionTx(ctx, tx, g.Binding, time.Now().UTC()); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -212,16 +238,21 @@ func (s *PostgresStore) FinishGrant(ctx context.Context, id, state string) error
 func (s *PostgresStore) GetMandate(ctx context.Context, id string) (Mandate, error) {
 	var m Mandate
 	var encoded string
-	err := s.pool.QueryRow(ctx, `SELECT mandate_data::text,revision,revoked_at FROM action_mandates WHERE mandate_id=$1`, id).Scan(&encoded, &m.Revision, &m.RevokedAt)
+	err := s.pool.QueryRow(ctx, `SELECT mandate_data::text,revision,revoked_at,status,expires_at FROM action_mandates WHERE mandate_id=$1`, id).Scan(&encoded, &m.Revision, &m.RevokedAt, &m.Status, &m.ExpiresAt)
 	if err != nil {
 		return m, err
 	}
 	revision, revoked := m.Revision, m.RevokedAt
+	status, expires := m.Status, m.ExpiresAt
 	err = json.Unmarshal([]byte(encoded), &m)
 	m.Revision, m.RevokedAt = revision, revoked
+	m.Status, m.ExpiresAt = status, expires
 	return m, err
 }
 func (s *PostgresStore) PutMandate(ctx context.Context, m Mandate) error {
+	if m.ScopeKind == "owner_goal" {
+		return fmt.Errorf("broad owner authority requires authenticated owner goal service")
+	}
 	if err := ValidateMandate(m, time.Now().UTC()); err != nil {
 		return err
 	}
@@ -231,7 +262,7 @@ func (s *PostgresStore) PutMandate(ctx context.Context, m Mandate) error {
 	}
 	tag, err := s.pool.Exec(ctx, `INSERT INTO action_mandates(mandate_id,owner_id,task_id,revision,mandate_data,expires_at) VALUES($1,$2,$3,$4,$5::jsonb,$6)
  ON CONFLICT(mandate_id) DO UPDATE SET revision=EXCLUDED.revision,mandate_data=EXCLUDED.mandate_data,expires_at=EXCLUDED.expires_at
- WHERE action_mandates.owner_id=EXCLUDED.owner_id AND action_mandates.task_id=EXCLUDED.task_id AND action_mandates.revision+1=EXCLUDED.revision AND action_mandates.revoked_at IS NULL`, m.ID, m.OwnerID, m.TaskID, m.Revision, string(encoded), m.ExpiresAt)
+ WHERE action_mandates.scope_kind='task' AND action_mandates.owner_id=EXCLUDED.owner_id AND action_mandates.task_id=EXCLUDED.task_id AND action_mandates.revision+1=EXCLUDED.revision AND action_mandates.revoked_at IS NULL`, m.ID, m.OwnerID, m.TaskID, m.Revision, string(encoded), m.ExpiresAt)
 	if err != nil {
 		return err
 	}
@@ -241,7 +272,7 @@ func (s *PostgresStore) PutMandate(ctx context.Context, m Mandate) error {
 	return nil
 }
 func (s *PostgresStore) RevokeMandate(ctx context.Context, id, owner string, revision int64) error {
-	tag, err := s.pool.Exec(ctx, `UPDATE action_mandates SET revoked_at=NOW(),revision=revision+1 WHERE mandate_id=$1 AND owner_id=$2 AND revision=$3 AND revoked_at IS NULL`, id, owner, revision)
+	tag, err := s.pool.Exec(ctx, `UPDATE action_mandates SET revoked_at=NOW(),status='revoked',revision=revision+1 WHERE mandate_id=$1 AND owner_id=$2 AND revision=$3 AND scope_kind='task' AND revoked_at IS NULL`, id, owner, revision)
 	if err != nil {
 		return err
 	}

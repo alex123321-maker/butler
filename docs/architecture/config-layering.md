@@ -49,3 +49,10 @@ Database overrides cannot assign these fields. Missing authority denies Web
 approval decisions; the token is scoped to owner decisions and separate from
 extension/private-service authentication. See the
 [durable execution contract](durable-execution-spec.md) for provisioning.
+
+`BUTLER_EXECUTION_BUDGET_POLICY_JSON` is validated deployment operator policy,
+outside the editable managed settings catalog. Environment overrides any legacy
+database row; Orchestrator and Broker must resolve identical policy. Finite defaults
+remain for omitted fields, but exact model price basis defaults to unknown and
+denies inference. Changed defaults cannot reset or replace immutable PostgreSQL
+scope policy. See [execution budgets](execution-budget-contract.md).

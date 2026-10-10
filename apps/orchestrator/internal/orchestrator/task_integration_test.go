@@ -108,7 +108,7 @@ func TestDurableTaskExecutionIntegration(t *testing.T) {
 	}
 	var taskContext string
 	for _, input := range provider.startRequests[len(provider.startRequests)-1].InputItems {
-		if strings.Contains(input.Content, "Butler task context") {
+		if strings.Contains(input.Content, "Butler task authority") {
 			taskContext = input.Content
 		}
 	}

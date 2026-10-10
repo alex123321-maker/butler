@@ -16,12 +16,15 @@ import (
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
+	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/budget"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/logger"
 	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/transcript"
+	"github.com/butler/butler/internal/security/content"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -131,6 +134,10 @@ type TransitionLogger interface {
 }
 
 type Config struct {
+	OwnerGoals interface {
+		ReadTaskAuthority(context.Context, string) (actionauth.Assignment, actionauth.Mandate, actionauth.GoalPolicy, error)
+	}
+	Budgets               *budget.Controller
 	Completion            completion.Writer
 	DurableMemoryPipeline bool
 	ActionAuthorizer      ActionAuthorizer
@@ -311,7 +318,7 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 	if transcriptStore != nil {
 		transcriptStore = fencedTranscript{transcriptStore}
 	}
-	return &Service{
+	service := &Service{
 		sessions:   sessions,
 		leases:     leases,
 		runs:       runs,
@@ -320,4 +327,11 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 		config:     cfg,
 		log:        logger.WithComponent(log, "orchestrator-run"),
 	}
+	if cfg.Budgets != nil {
+		service.provider = &budgetedProvider{ModelProvider: provider, service: service}
+	}
+	// Provenance validation precedes admission; admission still sees the raw
+	// adapter's declared inference limits before its actual transport request.
+	service.provider = content.Protect(service.provider)
+	return service
 }

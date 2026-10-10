@@ -86,6 +86,9 @@ func (p *Provider) invoke(ctx context.Context, model string, body generateReques
 	if err != nil {
 		return modelAnswer{}, protocolError("invalid model request")
 	}
+	if err = transport.CheckSerializedInput(ctx, len(encoded)); err != nil {
+		return modelAnswer{}, err
+	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint+":streamGenerateContent?alt=sse", bytes.NewReader(encoded))
 	if err != nil {
 		return modelAnswer{}, protocolError("cannot build model request")

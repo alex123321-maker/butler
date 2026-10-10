@@ -23,3 +23,5 @@ Intended responsibilities:
 Related docs:
 - `docs/architecture/tool-runtime-adr.md`
 - `docs/planning/butler_single_tab_browser_webfetch_backlog.md`
+
+Requested resources pass public-IP/DNS checks before delegation; checked clients deny redirects and share a private 4 MiB counter across batch/fallback requests. The fixed operator self-hosted service is a network exception and must enforce equivalent DNS policy itself. Private query/path disclosure needs Broker release authority; public DNS alone grants none. Reflected Jina tokens and unsafe error bodies are excluded. See [security boundaries](../../docs/architecture/agent-security-boundaries.md).

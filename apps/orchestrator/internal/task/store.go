@@ -8,13 +8,25 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Store struct{ pool *pgxpool.Pool }
+type Store struct {
+	pool          *pgxpool.Pool
+	budgets       *budget.Controller
+	budgetMandate string
+}
+
+func (s *Store) SetBudgets(c *budget.Controller, mandateID string) {
+	s.budgets = c
+	s.budgetMandate = mandateID
+}
 
 func NewStore(pool *pgxpool.Pool) *Store { return &Store{pool: pool} }
 
@@ -49,6 +61,10 @@ func (s *Store) Get(ctx context.Context, id string) (Record, error) {
 	return scan(s.pool.QueryRow(ctx, `SELECT `+columns+` FROM tasks WHERE task_id=$1`, id))
 }
 
+func (s *Store) GetTx(ctx context.Context, tx pgx.Tx, id string) (Record, error) {
+	return scan(tx.QueryRow(ctx, `SELECT `+columns+` FROM tasks WHERE task_id=$1`, id))
+}
+
 func (s *Store) GetByRun(ctx context.Context, runID string) (Record, error) {
 	return scan(s.pool.QueryRow(ctx, `SELECT `+columns+` FROM tasks WHERE task_id=(SELECT task_id FROM runs WHERE run_id=$1)`, runID))
 }
@@ -74,6 +90,23 @@ func (s *Store) List(ctx context.Context, sessionKey string, limit int) ([]Recor
 }
 
 func (s *Store) Create(ctx context.Context, req CreateRequest) (Record, error) {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return Record{}, err
+	}
+	defer tx.Rollback(ctx)
+	record, err := s.CreateTx(ctx, tx, req)
+	if err != nil {
+		return record, err
+	}
+	return record, tx.Commit(ctx)
+}
+
+// CreateTx admits a task inside an owned transaction. Existing session and
+// parent rows are locked before goal/mandate authority. A caller that already
+// checked authority may insert only a new root (never lock an existing parent).
+func (s *Store) CreateTx(ctx context.Context, tx pgx.Tx, req CreateRequest) (Record, error) {
+
 	if err := ValidateCreate(req); err != nil {
 		return Record{}, err
 	}
@@ -86,11 +119,6 @@ func (s *Store) Create(ctx context.Context, req CreateRequest) (Record, error) {
 	if req.Constraints == nil {
 		req.Constraints = []string{}
 	}
-	tx, err := s.pool.Begin(ctx)
-	if err != nil {
-		return Record{}, err
-	}
-	defer tx.Rollback(ctx)
 	var owner, channel string
 	if err := tx.QueryRow(ctx, `SELECT user_id,channel FROM sessions WHERE session_key=$1 FOR SHARE`, req.SessionKey).Scan(&owner, &channel); err != nil {
 		return Record{}, fmt.Errorf("%w: task session does not exist", ErrInvalid)
@@ -102,6 +130,9 @@ func (s *Store) Create(ctx context.Context, req CreateRequest) (Record, error) {
 		req.Source = map[string]any{"type": "owner_request", "channel": channel, "session_key": req.SessionKey}
 	}
 	policy := PolicyNormal
+	if req.InitialExecutionPolicy != "" {
+		policy = req.InitialExecutionPolicy
+	}
 	if req.ParentTaskID != "" {
 		parent, err := scan(tx.QueryRow(ctx, `SELECT `+columns+` FROM tasks WHERE task_id=$1 FOR SHARE`, req.ParentTaskID))
 		if err != nil {
@@ -111,13 +142,40 @@ func (s *Store) Create(ctx context.Context, req CreateRequest) (Record, error) {
 			return Record{}, ErrConflict
 		}
 		policy = parent.ExecutionPolicy
+		if req.InitialExecutionPolicy != "" && req.InitialExecutionPolicy != policy {
+			return Record{}, ErrConflict
+		}
+		a, err := actionauth.CheckTaskAuthorityTx(ctx, tx, parent.TaskID, parent.OwnerID, nil, time.Now())
+		if err != nil {
+			return Record{}, err
+		}
+		if a.TaskID != "" {
+			a.TaskID = ""
+			req.Authority = &a
+		} else if req.Authority != nil {
+			return Record{}, ErrConflict
+		}
 		for _, constraint := range parent.Constraints {
 			req.Constraints = appendUnique(req.Constraints, constraint)
 		}
 	}
+	if req.Authority != nil {
+		if req.Authority.OwnerID != owner {
+			return Record{}, ErrConflict
+		}
+		if _, _, err := actionauth.CheckAssignmentTx(ctx, tx, *req.Authority, time.Now()); err != nil {
+			return Record{}, err
+		}
+		req.Source["owner_authority"] = req.Authority
+	}
 	id, err := newID("task")
 	if err != nil {
 		return Record{}, err
+	}
+	if req.ParentTaskID != "" && s.budgets != nil {
+		if err = s.budgets.ReserveChildTx(ctx, tx, req.ParentTaskID, s.budgetMandate, id); err != nil {
+			return Record{}, err
+		}
 	}
 	source, err := json.Marshal(req.Source)
 	if err != nil {
@@ -130,8 +188,21 @@ func (s *Store) Create(ctx context.Context, req CreateRequest) (Record, error) {
 	if err != nil {
 		return Record{}, err
 	}
-	if err = tx.Commit(ctx); err != nil {
-		return Record{}, err
+	if req.Authority != nil {
+		a := *req.Authority
+		a.TaskID = id
+		if err = BindAuthorityTx(ctx, tx, a); err != nil {
+			return Record{}, err
+		}
+		// A budget or insert lock may have crossed a purpose/hours deadline.
+		// These authority rows are already held; recheck the DB clock before commit.
+		var at time.Time
+		if err = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&at); err != nil {
+			return Record{}, err
+		}
+		if _, _, err = actionauth.CheckAssignmentTx(ctx, tx, a, at); err != nil {
+			return Record{}, err
+		}
 	}
 	return record, nil
 }
@@ -164,6 +235,9 @@ func (s *Store) AttachRun(ctx context.Context, taskID string, revision int64, ru
 	if tag.RowsAffected() != 1 {
 		return ErrConflict
 	}
+	if _, err = actionauth.CheckTaskAuthorityTx(ctx, tx, record.TaskID, record.OwnerID, nil, time.Now()); err != nil {
+		return err
+	}
 	_, err = tx.Exec(ctx, `UPDATE tasks SET last_run_id=$2,updated_at=NOW() WHERE task_id=$1`, taskID, runID)
 	if err != nil {
 		return err
@@ -191,12 +265,23 @@ func (s *Store) SaveWorking(ctx context.Context, id string, revision int64, stat
 	if err != nil {
 		return Record{}, fmt.Errorf("%w: working state is not JSON", ErrInvalid)
 	}
-	record, err := scan(s.pool.QueryRow(ctx, `UPDATE tasks SET working_json=$3::jsonb,working_revision=working_revision+1,updated_at=NOW()
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return Record{}, err
+	}
+	defer tx.Rollback(ctx)
+	if err = guardTaskWrite(ctx, tx, id); err != nil {
+		return Record{}, err
+	}
+	record, err := scan(tx.QueryRow(ctx, `UPDATE tasks SET working_json=$3::jsonb,working_revision=working_revision+1,updated_at=NOW()
  WHERE task_id=$1 AND working_revision=$2 AND status NOT IN ('completed','cancelled') RETURNING `+columns, id, revision, data))
 	if errors.Is(err, ErrNotFound) {
 		return Record{}, ErrConflict
 	}
-	return record, err
+	if err != nil {
+		return record, err
+	}
+	return record, tx.Commit(ctx)
 }
 
 func (s *Store) CheckpointRun(ctx context.Context, runID string, revision int64, state WorkingState) (Record, error) {
@@ -210,12 +295,27 @@ func (s *Store) CheckpointRun(ctx context.Context, runID string, revision int64,
 	if err != nil {
 		return Record{}, err
 	}
-	record, err := scan(s.pool.QueryRow(ctx, `UPDATE tasks SET working_json=$3::jsonb,working_revision=working_revision+1,updated_at=NOW()
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return Record{}, err
+	}
+	defer tx.Rollback(ctx)
+	var id string
+	if err = tx.QueryRow(ctx, `SELECT task_id FROM runs WHERE run_id=$1 FOR SHARE`, runID).Scan(&id); err != nil {
+		return Record{}, err
+	}
+	if err = guardTaskWrite(ctx, tx, id); err != nil {
+		return Record{}, err
+	}
+	record, err := scan(tx.QueryRow(ctx, `UPDATE tasks SET working_json=$3::jsonb,working_revision=working_revision+1,updated_at=NOW()
  WHERE working_revision=$2 AND status='active' AND EXISTS(SELECT 1 FROM runs WHERE run_id=$1 AND runs.task_id=tasks.task_id AND runs.task_revision=tasks.revision) RETURNING `+columns, runID, revision, data))
 	if errors.Is(err, ErrNotFound) {
 		return Record{}, ErrConflict
 	}
-	return record, err
+	if err != nil {
+		return record, err
+	}
+	return record, tx.Commit(ctx)
 }
 
 // Transition is a trusted owner control operation, never a model finish event.
@@ -231,6 +331,11 @@ func (s *Store) Transition(ctx context.Context, id string, revision int64, statu
 	}
 	if record.Revision != revision {
 		return Record{}, ErrConflict
+	}
+	if status != "cancelled" && status != "paused" {
+		if _, err = actionauth.CheckTaskAuthorityTx(ctx, tx, id, record.OwnerID, nil, time.Now()); err != nil {
+			return Record{}, err
+		}
 	}
 	if err := ValidateTransition(record.Status, status); err != nil {
 		return Record{}, err
@@ -291,6 +396,9 @@ func (s *Store) SaveVerifiedResult(ctx context.Context, result Result) (Result, 
 	}
 	if record.Status == "completed" || record.Status == "cancelled" {
 		return Result{}, ErrConflict
+	}
+	if _, err = actionauth.CheckTaskAuthorityTx(ctx, tx, record.TaskID, record.OwnerID, nil, time.Now()); err != nil {
+		return Result{}, err
 	}
 	if err = ValidateVerification(record, result); err != nil {
 		return Result{}, err
@@ -374,6 +482,13 @@ func (s *Store) SaveRunOutcome(ctx context.Context, runID, state, note string) e
 		return nil
 	}
 	if err != nil {
+		return err
+	}
+	var owner string
+	if err = tx.QueryRow(ctx, `SELECT owner_id FROM tasks WHERE task_id=$1 AND revision=$2 FOR UPDATE`, id, revision).Scan(&owner); err != nil {
+		return ErrConflict
+	}
+	if _, err = actionauth.CheckTaskAuthorityTx(ctx, tx, id, owner, nil, time.Now()); err != nil {
 		return err
 	}
 	if strings.TrimSpace(note) != "" {

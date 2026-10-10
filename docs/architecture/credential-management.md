@@ -570,6 +570,14 @@ owner, observation and fixed origin are rechecked before injection. Auth state
 is never exported into ordinary browser artifacts; reflected installed values
 are masked in visible observations. Closing, expiry or helper loss destroys it.
 
+`browser.prepare_fill/prepare_type` retain the same deferred credential path
+and mutation authority while freezing all page/proxy network before input.
+Their local proof does not authorize submission or export the field value.
+Credential aliases must explicitly permit the new tool names; old live fill/type
+permissions do not transfer automatically. A separate approved click may release
+the prepared draft within its fixed origin/window and remains externally unknown
+without recipient proof.
+
 ### Antigravity provider credentials
 
 Antigravity OAuth is control-plane state in the encrypted PostgreSQL SecretStore,
@@ -613,3 +621,7 @@ Minimum covered categories:
 * common credential-like JSON/header fields such as `authorization`, `access_token`, `refresh_token`, `api_key`, `client_secret`, `cookie`, and `connection_string`.
 
 This sanitization is intended to protect memory stores and extraction prompts. It does not change Transcript Store raw audit semantics, which remain the source-of-truth history layer.
+
+## Runtime release and error boundary
+
+Public network reachability is not permission to disclose private context. Arbitrary reads require exact owner approval or current purpose-bound owner mandate unless the operator explicitly declares the domain. Broker validates current policy before inspection, then revalidates exact binding before deferred release. HTTP/browser mask reflected private credential/cookie/storage values; provider HTTP error bodies/codes/details are discarded. Ordinary model context, memory vectors and runtime logs never receive SecretStore values. Pattern sanitization supplements mediation and does not authorize an action. See [agent security boundaries](agent-security-boundaries.md).

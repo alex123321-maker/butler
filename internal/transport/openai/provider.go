@@ -73,6 +73,9 @@ func NewProvider(cfg Config, client *http.Client) (*Provider, error) {
 	if client == nil {
 		client = &http.Client{Timeout: cfg.Timeout}
 	}
+	clientCopy := *client
+	clientCopy.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	client = &clientCopy
 	log := cfg.Logger
 	if log == nil {
 		log = slog.Default()
@@ -160,7 +163,7 @@ func (p *Provider) CancelRun(ctx context.Context, req transport.CancelRunRequest
 	p.log.Info("cancelling openai run", slog.String("run_id", req.RunID))
 	if active := p.activeRealtimeSession(req.RunID); active != nil {
 		if err := active.sendJSON(map[string]any{"type": "response.cancel"}); err != nil {
-			p.log.Warn("openai realtime cancel message failed", slog.String("run_id", req.RunID), slog.String("error", err.Error()))
+			p.log.Warn("openai realtime cancel message failed", slog.String("run_id", req.RunID), slog.String("error", transport.NormalizeError(err, providerName).Error()))
 		}
 		active.closeConn()
 		event := transport.NewTerminalEvent(req.RunID, transport.EventTypeRunCancelled, providerName)
@@ -183,12 +186,12 @@ func (p *Provider) CancelRun(ctx context.Context, req transport.CancelRunRequest
 
 	resp, err := p.httpClient.Do(httpReq)
 	if err != nil {
-		p.log.Error("openai cancel request failed", slog.String("run_id", req.RunID), slog.String("error", err.Error()))
+		p.log.Error("openai cancel request failed", slog.String("run_id", req.RunID), slog.String("error", transport.NormalizeError(err, providerName).Error()))
 		return nil, transport.NormalizeError(err, providerName)
 	}
 	defer resp.Body.Close()
 	if err := decodeAPIError(resp); err != nil {
-		p.log.Error("openai cancel request rejected", slog.String("run_id", req.RunID), slog.Int("status_code", resp.StatusCode), slog.String("error", err.Error()))
+		p.log.Error("openai cancel request rejected", slog.String("run_id", req.RunID), slog.Int("status_code", resp.StatusCode), slog.String("error", transport.NormalizeError(err, providerName).Error()))
 		return nil, transport.NormalizeError(err, providerName)
 	}
 	event := transport.NewTerminalEvent(req.RunID, transport.EventTypeRunCancelled, providerName)
@@ -197,10 +200,13 @@ func (p *Provider) CancelRun(ctx context.Context, req transport.CancelRunRequest
 }
 
 func (p *Provider) executeStreamingRequest(ctx context.Context, runID, method, url string, body []byte) (transport.EventStream, error) {
+	if err := transport.CheckSerializedInput(ctx, len(body)); err != nil {
+		return nil, err
+	}
 	path := strings.TrimPrefix(url, strings.TrimRight(p.config.BaseURL, "/"))
 	httpReq, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(body))
 	if err != nil {
-		p.log.Error("failed to create openai request", slog.String("run_id", runID), slog.String("method", method), slog.String("path", path), slog.String("error", err.Error()))
+		p.log.Error("failed to create openai request", slog.String("run_id", runID), slog.String("method", method), slog.String("path", path), slog.String("error", transport.NormalizeError(err, providerName).Error()))
 		return nil, transport.NormalizeError(err, providerName)
 	}
 	p.applyHeaders(httpReq)
@@ -209,12 +215,12 @@ func (p *Provider) executeStreamingRequest(ctx context.Context, runID, method, u
 	p.log.Info("opening openai stream", slog.String("run_id", runID), slog.String("method", method), slog.String("path", path))
 	resp, err := p.httpClient.Do(httpReq)
 	if err != nil {
-		p.log.Error("openai stream request failed", slog.String("run_id", runID), slog.String("path", path), slog.String("error", err.Error()))
+		p.log.Error("openai stream request failed", slog.String("run_id", runID), slog.String("path", path), slog.String("error", transport.NormalizeError(err, providerName).Error()))
 		return nil, transport.NormalizeError(err, providerName)
 	}
 	if err := decodeAPIError(resp); err != nil {
 		resp.Body.Close()
-		p.log.Error("openai stream request rejected", slog.String("run_id", runID), slog.String("path", path), slog.Int("status_code", resp.StatusCode), slog.String("error", err.Error()))
+		p.log.Error("openai stream request rejected", slog.String("run_id", runID), slog.String("path", path), slog.Int("status_code", resp.StatusCode), slog.String("error", transport.NormalizeError(err, providerName).Error()))
 		return nil, transport.NormalizeError(err, providerName)
 	}
 	p.log.Info("openai stream opened", slog.String("run_id", runID), slog.String("path", path), slog.Int("status_code", resp.StatusCode))
@@ -238,14 +244,14 @@ func (p *Provider) streamResponse(ctx context.Context, runID, path string, body 
 				p.log.Info("openai stream closed", slog.String("run_id", runID), slog.String("path", path), slog.Int("events_emitted", eventsEmitted))
 				return
 			}
-			p.log.Error("openai stream decode failed", slog.String("run_id", runID), slog.String("path", path), slog.String("error", err.Error()))
+			p.log.Error("openai stream decode failed", slog.String("run_id", runID), slog.String("path", path), slog.String("error", transport.NormalizeError(err, providerName).Error()))
 			stream <- transport.NewTransportErrorEvent(runID, providerName, err)
 			return
 		}
 
 		events, stop, err := p.normalizeMessage(runID, message, &state)
 		if err != nil {
-			p.log.Error("openai event normalization failed", slog.String("run_id", runID), slog.String("path", path), slog.String("error", err.Error()))
+			p.log.Error("openai event normalization failed", slog.String("run_id", runID), slog.String("path", path), slog.String("error", transport.NormalizeError(err, providerName).Error()))
 			stream <- transport.NewTransportErrorEvent(runID, providerName, err)
 			return
 		}
@@ -603,38 +609,11 @@ func encodeTools(tools []transport.ToolDefinition) []map[string]any {
 }
 
 func decodeAPIError(resp *http.Response) error {
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		return nil
-	}
-	defer resp.Body.Close()
-	body, _ := io.ReadAll(resp.Body)
-	message := strings.TrimSpace(string(body))
-	code := ""
-	var payload map[string]any
-	if json.Unmarshal(body, &payload) == nil {
-		if errPayload, ok := payload["error"].(map[string]any); ok {
-			message = stringValue(errPayload["message"])
-			code = stringValue(errPayload["code"])
-			payload = errPayload
-		}
-	}
-	return &transport.HTTPStatusError{StatusCode: resp.StatusCode, Message: message, Code: code, Details: payload}
+	return transport.ProviderHTTPError(resp)
 }
 
-func errorFromPayload(payload map[string]any) error {
-	errPayload := mapValue(payload["error"])
-	message := stringValue(errPayload["message"])
-	if message == "" {
-		message = stringValue(payload["message"])
-	}
-	code := stringValue(errPayload["code"])
-	return &transport.Error{
-		Type:            transport.ErrorTypeProviderProtocolError,
-		Message:         message,
-		ProviderName:    providerName,
-		ProviderCode:    code,
-		ProviderDetails: errPayload,
-	}
+func errorFromPayload(_ map[string]any) error {
+	return transport.ProviderProtocolError(providerName)
 }
 
 func extractOutputText(response map[string]any) string {

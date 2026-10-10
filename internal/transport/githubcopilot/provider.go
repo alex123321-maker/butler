@@ -99,6 +99,9 @@ func NewProvider(cfg Config, client *http.Client) (*Provider, error) {
 	if client == nil {
 		client = &http.Client{Timeout: cfg.Timeout}
 	}
+	clientCopy := *client
+	clientCopy.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	client = &clientCopy
 	log := cfg.Logger
 	if log == nil {
 		log = slog.Default()
@@ -201,6 +204,9 @@ func (p *Provider) execute(parent context.Context, runID string, session *conver
 	}
 	body, err := p.requestBody(session)
 	if err != nil {
+		return nil, err
+	}
+	if err := transport.CheckSerializedInput(parent, len(body)); err != nil {
 		return nil, err
 	}
 	ctx, cancel := context.WithCancel(parent)
@@ -525,22 +531,7 @@ func sessionIDFromRef(ref *transport.ProviderSessionRef) string {
 }
 
 func decodeAPIError(resp *http.Response) error {
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		return nil
-	}
-	defer resp.Body.Close()
-	body, _ := io.ReadAll(resp.Body)
-	message := strings.TrimSpace(string(body))
-	code := ""
-	var payload map[string]any
-	if json.Unmarshal(body, &payload) == nil {
-		if errPayload, ok := payload["error"].(map[string]any); ok {
-			message = stringValue(errPayload["message"])
-			code = stringValue(errPayload["code"])
-			payload = errPayload
-		}
-	}
-	return &transport.HTTPStatusError{StatusCode: resp.StatusCode, Message: message, Code: code, Details: payload}
+	return transport.ProviderHTTPError(resp)
 }
 
 func mapValue(value any) map[string]any {

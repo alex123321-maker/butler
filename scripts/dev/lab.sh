@@ -21,13 +21,14 @@ if [[ -f "$root/private-proxy/compose.env" ]]; then
 fi
 test_options=()
 if [[ "$action" == Integration || "$action" == Race ]]; then
-  for database in butler_test butler_lab_actionauth_test butler_lab_completion_test; do
+  for database in butler_lab_core_test butler_lab_actionauth_test butler_lab_completion_test; do
     if [[ "$(docker exec butler-lab-postgres-1 psql -U butler -d postgres -Atc "SELECT 1 FROM pg_database WHERE datname = '$database'")" != 1 ]]; then
       docker exec butler-lab-postgres-1 createdb -U butler "$database"
     fi
   done
   test_options=(--network butler-lab_backend
-    --env BUTLER_TEST_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_test?sslmode=disable
+    --env BUTLER_TEST_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_core_test?sslmode=disable
+    --env BUTLER_TEST_GOALS_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_core_test?sslmode=disable
     --env BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_actionauth_test?sslmode=disable
     --env BUTLER_TEST_COMPLETION_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_completion_test?sslmode=disable
     --env BUTLER_TEST_REDIS_URL=redis://redis:6379/1)

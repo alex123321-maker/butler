@@ -22,6 +22,7 @@ var supportedTools = map[string]bool{
 	"browser.read": true, "browser.open": true, "browser.close": true,
 	"browser.navigate": true, "browser.snapshot": true, "browser.click": true,
 	"browser.fill": true, "browser.type": true, "browser.wait_for": true,
+	"browser.prepare_fill": true, "browser.prepare_type": true,
 	"browser.extract_text": true, "browser.set_cookie": true, "browser.restore_storage_state": true,
 }
 
@@ -49,6 +50,7 @@ type Request struct {
 	Timeout            int64         `json:"timeout,omitempty"`
 	ScopeOrigin        string        `json:"scope_origin,omitempty"`
 	ExpiresAt          string        `json:"expires_at,omitempty"`
+	ProxyURL           string        `json:"proxy_url,omitempty"`
 	SecretValues       []string      `json:"secret_values,omitempty"`
 	Cookie             *Cookie       `json:"cookie,omitempty"`
 	StorageState       *StorageState `json:"storage_state,omitempty"`
@@ -94,6 +96,8 @@ type Result struct {
 	OK                 bool         `json:"ok"`
 	Links              []ResultLink `json:"links,omitempty"`
 	PageStatus         string       `json:"page_status,omitempty"`
+	LocalPreparation   bool         `json:"local_preparation,omitempty"`
+	NetworkState       string       `json:"network_state,omitempty"`
 	Error              *ResultError `json:"error,omitempty"`
 }
 
@@ -126,6 +130,9 @@ func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*r
 	}
 	if contract.GetToolName() != args.ToolName {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "contract_mismatch", "browser tool contract does not match call")
+	}
+	if (args.ToolName == "browser.prepare_fill" || args.ToolName == "browser.prepare_type") && (contract.GetContractRevision() != "2" || contract.GetEffectContract().GetRetrySafety() != "unsafe" || contract.GetEffectContract().GetVerificationMethod() != "local_browser_preparation_v1") {
+		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "contract_mismatch", "local preparation requires its pinned revision 2 contract")
 	}
 	if err := validateSelectorRequired(args); err != nil {
 		return fail(commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "invalid_selector", err.Error())
@@ -258,7 +265,7 @@ func isGuardedAction(tool string) bool {
 }
 func validateSelectorRequired(args Request) error {
 	switch args.ToolName {
-	case "browser.click", "browser.fill", "browser.type", "browser.wait_for", "browser.extract_text":
+	case "browser.click", "browser.fill", "browser.type", "browser.prepare_fill", "browser.prepare_type", "browser.wait_for", "browser.extract_text":
 		if strings.TrimSpace(args.Selector) == "" {
 			return fmt.Errorf("selector is required")
 		}

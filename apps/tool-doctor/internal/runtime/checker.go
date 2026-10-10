@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"sort"
 	"strings"
@@ -11,8 +12,6 @@ import (
 
 	"github.com/butler/butler/internal/config"
 	"github.com/butler/butler/internal/health"
-	postgresstore "github.com/butler/butler/internal/storage/postgres"
-	redisstore "github.com/butler/butler/internal/storage/redis"
 )
 
 type SystemReport struct {
@@ -41,7 +40,7 @@ type Checker struct {
 }
 
 func NewChecker(cfg config.ToolDoctorConfig, snapshot config.Introspector) *Checker {
-	checker := &Checker{cfg: cfg, snapshot: snapshot, now: time.Now, httpClient: &http.Client{Timeout: 5 * time.Second}}
+	checker := &Checker{cfg: cfg, snapshot: snapshot, now: time.Now, httpClient: &http.Client{Timeout: 5 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}
 	checker.postgresCheck = checker.defaultPostgresCheck
 	checker.redisCheck = checker.defaultRedisCheck
 	checker.providerCheck = checker.defaultProviderCheck
@@ -69,14 +68,14 @@ func (c *Checker) CheckContainer(ctx context.Context) SystemReport {
 }
 
 func (c *Checker) CheckProvider(ctx context.Context) SystemReport {
-	checks := []health.CheckResult{c.runCheck(ctx, "provider.openai", strings.TrimSpace(c.cfg.OpenAIAPIKey) != "", c.providerCheck)}
+	checks := []health.CheckResult{c.runCheck(ctx, "provider", strings.TrimSpace(c.cfg.CoreDiagnosticsURL) != "", c.providerCheck)}
 	return SystemReport{Status: aggregateStatus(checks), CheckedAt: c.now().UTC().Format(time.RFC3339), Checks: checks}
 }
 
 func (c *Checker) databaseChecks(ctx context.Context) []health.CheckResult {
 	return []health.CheckResult{
-		c.runCheck(ctx, "postgres", c.cfg.Postgres.URL != "", c.postgresCheck),
-		c.runCheck(ctx, "redis", c.cfg.Redis.URL != "", c.redisCheck),
+		c.runCheck(ctx, "postgres", c.cfg.CoreDiagnosticsURL != "", c.postgresCheck),
+		c.runCheck(ctx, "redis", c.cfg.CoreDiagnosticsURL != "", c.redisCheck),
 	}
 }
 
@@ -133,7 +132,7 @@ func (c *Checker) runCheck(ctx context.Context, name string, configured bool, fn
 	result.CheckedAt = finished.UTC().Format(time.RFC3339)
 	if err != nil {
 		result.Status = health.StatusUnhealthy
-		result.Message = err.Error()
+		result.Message = "diagnostic check failed"
 		return result
 	}
 	result.Status = health.StatusHealthy
@@ -142,38 +141,43 @@ func (c *Checker) runCheck(ctx context.Context, name string, configured bool, fn
 }
 
 func (c *Checker) defaultPostgresCheck(ctx context.Context) error {
-	store, err := postgresstore.Open(ctx, postgresstore.ConfigFromShared(c.cfg.Postgres), nil)
-	if err != nil {
-		return err
-	}
-	defer store.Close()
-	return store.HealthCheck(ctx)
+	return c.coreCheck(ctx, "postgres")
 }
 
 func (c *Checker) defaultRedisCheck(ctx context.Context) error {
-	store, err := redisstore.Open(ctx, redisstore.ConfigFromShared(c.cfg.Redis), nil)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = store.Close() }()
-	return store.HealthCheck(ctx)
+	return c.coreCheck(ctx, "redis")
 }
 
 func (c *Checker) defaultProviderCheck(ctx context.Context) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, strings.TrimRight(c.cfg.OpenAIBaseURL, "/")+"/models", nil)
+	return c.coreCheck(ctx, "provider")
+}
+
+func (c *Checker) coreCheck(ctx context.Context, name string) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.cfg.CoreDiagnosticsURL, nil)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", "Bearer "+c.cfg.OpenAIAPIKey)
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("provider returned status %d", resp.StatusCode)
+		return fmt.Errorf("core diagnostic unavailable")
 	}
-	return nil
+	var report health.Report
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 32*1024)).Decode(&report); err != nil {
+		return fmt.Errorf("core diagnostic unavailable")
+	}
+	for _, check := range report.Checks {
+		if check.Name == name {
+			if check.Status == health.StatusHealthy {
+				return nil
+			}
+			return fmt.Errorf("core diagnostic not healthy")
+		}
+	}
+	return fmt.Errorf("core diagnostic not present")
 }
 
 func (c *Checker) defaultContainerCheck(ctx context.Context, target config.DoctorContainerTarget) error {
@@ -190,7 +194,7 @@ func (c *Checker) defaultContainerCheck(ctx context.Context, target config.Docto
 		return fmt.Errorf("health endpoint returned status %d", resp.StatusCode)
 	}
 	var report health.Report
-	if err := json.NewDecoder(resp.Body).Decode(&report); err == nil && report.Status == health.StatusUnhealthy {
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 32*1024)).Decode(&report); err == nil && report.Status == health.StatusUnhealthy {
 		return fmt.Errorf("health endpoint reported unhealthy")
 	}
 	return nil

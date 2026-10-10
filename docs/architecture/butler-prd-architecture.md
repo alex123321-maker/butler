@@ -787,3 +787,10 @@ restart. See [Durable Execution](durable-execution-spec.md) for the implemented
 PostgreSQL ordering/fencing, checkpoint recovery and authenticated reply contracts.
 Session Service remains the ownership authority, Orchestrator owns continuation,
 Approval Service owns durable decisions, and Broker rechecks exact permission.
+
+Confirmed owner goals and broad autonomy use typed, versioned PostgreSQL
+assignments across tasks, with separate unconfirmed assumptions. Owner edits
+synchronously invalidate old authority and persist restartable branch-propagation
+jobs; Broker dispatch and atomic final results check those versions at commit.
+See [owner goals and mandates](owner-goals-mandates-spec.md) for the exact scope,
+budget, provenance, extension-permission and owner read/edit contracts.

@@ -758,3 +758,7 @@ The memory doctor (`/api/v1/doctor/check`) now reports:
 
 
 Owner amendments are appended as user transcript data and preserved in full protected task constraints with provenance; obsolete working plans are archived before clearing the new revision. See [Owner Controls](task-owner-controls-spec.md).
+
+## Source sensitivity and derived authority
+
+Persistent provenance retains transcript/tool/child/document references. A stored claim of owner instruction/public classification cannot mint authority: extracted/retrieved material is private data by default. Secret-class sources fail before extraction, summaries, model input and retrieval; logs/parser errors cannot echo model output. Sensitivity is inherited by derivatives. Suppression/expiry is distinct from physical deletion; source removal must include derived records and backups under the retention policy in [agent security boundaries](agent-security-boundaries.md). Full automated transitive deletion remains #22. Production extraction/query embedding is disabled pending durable auxiliary budget admission, while profile/working/covered-summary reads remain available.

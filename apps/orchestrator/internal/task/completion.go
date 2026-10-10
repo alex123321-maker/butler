@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
+	"time"
 )
 
 func (s *Store) SaveResultTx(ctx context.Context, tx pgx.Tx, result Result, expectedConstraints int64) (int64, error) {
@@ -24,6 +26,13 @@ func (s *Store) SaveResultTx(ctx context.Context, tx pgx.Tx, result Result, expe
 	}
 	if revision != result.TaskRevision || constraints != expectedConstraints || status != "active" {
 		return 0, fmt.Errorf("%w: task authority changed before final result", ErrConflict)
+	}
+	var owner string
+	if err = tx.QueryRow(ctx, `SELECT owner_id FROM tasks WHERE task_id=$1`, result.TaskID).Scan(&owner); err != nil {
+		return 0, err
+	}
+	if _, err = actionauth.CheckTaskAuthorityTx(ctx, tx, result.TaskID, owner, nil, time.Now()); err != nil {
+		return 0, err
 	}
 	refs, _ := json.Marshal(result.EvidenceRefs)
 	if result.EvidenceRefs == nil {

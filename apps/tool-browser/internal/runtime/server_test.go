@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	browserscripts "github.com/butler/butler/apps/tool-browser/scripts"
 	"os"
 	"path/filepath"
 	"strings"
@@ -40,10 +41,34 @@ func (s *stubRunner) Run(_ context.Context, req Request) (Result, error) {
 	return result, nil
 }
 func browserCall(tool, owner string, args map[string]any) *runtimev1.ExecuteRequest {
+	contract := &toolbrokerv1.ToolContract{ToolName: tool, AllowedDomains: []string{"example.com"}}
+	if tool == "browser.prepare_fill" || tool == "browser.prepare_type" {
+		contract.ContractRevision = "2"
+		contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "unsafe", VerificationMethod: "local_browser_preparation_v1"}
+	}
 	return &runtimev1.ExecuteRequest{
 		Context:  &runtimev1.ExecutionContext{RunId: owner},
 		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "call-1", RunId: owner, ToolName: tool, ArgsJson: mustJSON(args)},
-		Contract: &toolbrokerv1.ToolContract{ToolName: tool, AllowedDomains: []string{"example.com"}},
+		Contract: contract,
+	}
+}
+
+func TestLocalPreparationRequiresPinnedContractBeforeRunner(t *testing.T) {
+	runner := &stubRunner{result: Result{OK: true}}
+	server := NewServer(runner, nil)
+	obs := openTest(t, server)
+	for _, tool := range []string{"browser.prepare_fill", "browser.prepare_type"} {
+		args := actionArgs(obs)
+		args["value"], args["text"] = "local", "local"
+		req := browserCall(tool, "run-1", args)
+		req.Contract.ContractRevision = "1"
+		assertCode(t, executeTest(t, server, req), "contract_mismatch")
+		req.Contract.ContractRevision = "2"
+		req.Contract.EffectContract.VerificationMethod = "none"
+		assertCode(t, executeTest(t, server, req), "contract_mismatch")
+	}
+	if len(runner.requests) != 1 {
+		t.Fatal("invalid local contract reached helper")
 	}
 }
 func executeTest(t *testing.T, server *Server, req *runtimev1.ExecuteRequest) *toolbrokerv1.ToolResult {
@@ -275,14 +300,28 @@ func TestURLAndUnicodeValidation(t *testing.T) {
 	}
 }
 func TestResolveBrowserScriptPath(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "browser_runtime.mjs")
-	if err := os.WriteFile(path, []byte("export {}\n"), 0600); err != nil {
+	root := t.TempDir()
+	path := filepath.Join(root, "browser_runtime.mjs")
+	if err := os.WriteFile(path, []byte(browserscripts.Runtime), 0600); err != nil {
 		t.Fatal(err)
 	}
-	if resolved, err := resolveBrowserScriptPath(path); err != nil || resolved != path {
+	if resolved, err := resolveBrowserScriptPathFrom(root, path); err != nil || resolved != path {
 		t.Fatalf("path=%q err=%v", resolved, err)
 	}
-	if _, err := resolveBrowserScriptPath(path + ".missing"); err == nil {
+	if _, err := resolveBrowserScriptPathFrom(root, path+".missing"); err == nil {
 		t.Fatal("missing script accepted")
+	}
+	if err := os.WriteFile(path, []byte("unreviewed extension update"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolveBrowserScriptPathFrom(root, path); err == nil {
+		t.Fatal("swapped extension revision was executed")
+	}
+	other := filepath.Join(t.TempDir(), "outside.mjs")
+	if err := os.WriteFile(other, []byte(browserscripts.Runtime), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolveBrowserScriptPathFrom(root, other); err == nil {
+		t.Fatal("external workspace file was read")
 	}
 }

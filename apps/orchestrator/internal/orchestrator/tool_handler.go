@@ -10,34 +10,18 @@ import (
 
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
+	"github.com/butler/butler/internal/budget"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/transport"
 )
 
-// handleToolBatch processes a batch of tool calls sequentially.
+// handleToolBatch rejects a batch before any tool can run.
 func (s *Service) handleToolBatch(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, sessionKey, leaseID string, batch *transport.ToolCallBatch) (string, *sessionv1.RunRecord, error) {
-	if batch == nil || len(batch.ToolCalls) == 0 {
-		return "", current, nil
-	}
-	var finalMessage string
-	for _, toolCall := range batch.ToolCalls {
-		resumed, updated, err := s.handleToolCall(ctx, runLog, current, leaseID, &toolCall)
-		if err != nil {
-			return "", updated, err
-		}
-		current = updated
-		resumedFinal, updated, err := s.consumeModelStream(ctx, runLog, current, sessionKey, leaseID, resumed)
-		if err != nil {
-			return "", updated, err
-		}
-		current = updated
-		if strings.TrimSpace(resumedFinal) != "" {
-			finalMessage = resumedFinal
-		}
-	}
-	return finalMessage, current, nil
+	// The transport contract currently submits one correlated result. Consuming
+	// a new model turn after the first member would expose an incomplete batch.
+	return "", current, &budget.LoopError{Reason: "batch_tool_calls_unsupported"}
 }
 
 // handleToolCall executes a single tool call, including approval flow if configured.
@@ -249,7 +233,11 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 			})
 		}
 	}
-	grantID, authorizeErr := s.config.ActionAuthorizer.AuthorizeAction(ctx, brokerCall, prepared.Binding.ActionID, approvalID, s.config.ActionMandateID)
+	mandateID := s.config.ActionMandateID
+	if prepared.Binding.MandateID != "" {
+		mandateID = prepared.Binding.MandateID
+	}
+	grantID, authorizeErr := s.config.ActionAuthorizer.AuthorizeAction(ctx, brokerCall, prepared.Binding.ActionID, approvalID, mandateID)
 	if authorizeErr != nil {
 		return nil, current, fmt.Errorf("authorize exact action dispatch: %w", authorizeErr)
 	}
@@ -305,6 +293,15 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	}
 	if err := s.checkpoint(ctx, current.GetRunId(), "tool_result_recorded", map[string]any{"tool_call_id": toolCallID, "action_id": prepared.Binding.ActionID, "effect_id": result.GetActionId(), "effect_state": result.GetEffectState(), "evidence_refs": result.GetEvidenceRefs(), "status": result.GetStatus()}); err != nil {
 		return nil, current, fmt.Errorf("persist known tool result checkpoint: %w", err)
+	}
+	if result.GetStatus() == "execution_stopped" {
+		var detail struct {
+			Reason string `json:"reason"`
+		}
+		if result.GetError() == nil || json.Unmarshal([]byte(result.GetError().GetDetailsJson()), &detail) != nil || detail.Reason == "" {
+			return nil, current, fmt.Errorf("invalid budget stop result")
+		}
+		return nil, current, &budget.LoopError{Reason: detail.Reason}
 	}
 	if result.GetStatus() == "effect_unknown" {
 		return nil, current, ErrActionOutcomeUnknown

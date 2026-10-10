@@ -28,9 +28,9 @@ func decodeRequest(tool, payload string, resolved []*runtimev1.ResolvedCredentia
 	req.ToolName = tool
 	field := ""
 	switch tool {
-	case "browser.fill":
+	case "browser.fill", "browser.prepare_fill":
 		field = "value"
-	case "browser.type":
+	case "browser.type", "browser.prepare_type":
 		field = "text"
 	case "browser.set_cookie":
 		field = "cookie"

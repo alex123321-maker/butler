@@ -20,6 +20,7 @@ import (
 	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/transport"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestExecuteRunsHappyPath(t *testing.T) {
@@ -344,8 +345,8 @@ func TestExecuteIncludesMemoryAwareContext(t *testing.T) {
 	if provider.startRequests[0].InputItems[0].Role != "system" {
 		t.Fatalf("expected first input item to be system memory prompt, got %+v", provider.startRequests[0].InputItems)
 	}
-	if !strings.Contains(provider.startRequests[0].InputItems[0].Content, "Working memory:") {
-		t.Fatalf("expected working memory in prompt, got %q", provider.startRequests[0].InputItems[0].Content)
+	if !strings.Contains(fixtureContextText(provider.startRequests[0].InputItems), "Working memory:") {
+		t.Fatalf("expected working memory in prompt, got %q", fixtureContextText(provider.startRequests[0].InputItems))
 	}
 	if episodeStore.calls != 0 {
 		t.Fatalf("expected episodic retrieval to be skipped without embeddings, got %d calls", episodeStore.calls)
@@ -378,7 +379,7 @@ func TestExecuteIncludesToolSummaryAndStructuredToolDefinitions(t *testing.T) {
 	if got := provider.startRequests[0].ToolDefinitions; len(got) != 2 || got[0].Name != "http.request" {
 		t.Fatalf("expected structured tool definitions, got %+v", got)
 	}
-	prompt := provider.startRequests[0].InputItems[0].Content
+	prompt := fixtureContextText(provider.startRequests[0].InputItems)
 	if !strings.Contains(prompt, "Available tools:") || !strings.Contains(prompt, "http.request [http]") {
 		t.Fatalf("expected tool summary in prompt, got %q", prompt)
 	}
@@ -435,8 +436,8 @@ func TestExecuteUsesConfiguredMemoryBundleService(t *testing.T) {
 	if len(provider.startRequests) != 1 || provider.startRequests[0].InputItems[0].Role != "system" {
 		t.Fatalf("expected memory prompt to be injected, got %+v", provider.startRequests)
 	}
-	if !strings.Contains(provider.startRequests[0].InputItems[0].Content, "deployment checklist") {
-		t.Fatalf("expected memory prompt from bundle service, got %q", provider.startRequests[0].InputItems[0].Content)
+	if !strings.Contains(fixtureContextText(provider.startRequests[0].InputItems), "deployment checklist") {
+		t.Fatalf("expected memory prompt from bundle service, got %q", fixtureContextText(provider.startRequests[0].InputItems))
 	}
 	metadata := runsMetadata(t, service, result.RunID)
 	workingBundle, ok := metadata["memory_bundle"].(map[string]any)["working"].(map[string]any)
@@ -522,7 +523,7 @@ func TestExecuteRetainsWorkingMemoryOnFailure(t *testing.T) {
 	if snapshot.Status != "retain" {
 		t.Fatalf("expected retained working memory status, got %+v", snapshot)
 	}
-	if !strings.Contains(snapshot.ScratchJSON, "provider down") {
+	if !strings.Contains(snapshot.ScratchJSON, "provider operation failed") || strings.Contains(snapshot.ScratchJSON, "provider down") {
 		t.Fatalf("expected failure note in scratch payload, got %q", snapshot.ScratchJSON)
 	}
 	transient := transientStore.states["telegram:chat:failure:run-1"]
@@ -621,8 +622,8 @@ func TestExecuteUsesEmbeddingProviderForEpisodicRetrieval(t *testing.T) {
 	if len(provider.startRequests) != 1 || provider.startRequests[0].InputItems[0].Role != "system" {
 		t.Fatalf("expected memory prompt plus user input, got %+v", provider.startRequests)
 	}
-	if !strings.Contains(provider.startRequests[0].InputItems[0].Content, "Recovered Postgres connection before") {
-		t.Fatalf("expected episodic memory prompt, got %q", provider.startRequests[0].InputItems[0].Content)
+	if !strings.Contains(fixtureContextText(provider.startRequests[0].InputItems), "Recovered Postgres connection before") {
+		t.Fatalf("expected episodic memory prompt, got %q", fixtureContextText(provider.startRequests[0].InputItems))
 	}
 	if episodeStore.lastLimit != 3 {
 		t.Fatalf("expected default episodic limit 3, got %d", episodeStore.lastLimit)
@@ -670,10 +671,10 @@ func TestExecuteIncludesSessionSummaryInContext(t *testing.T) {
 	if items[0].Role != "system" {
 		t.Fatalf("expected first input item to be system memory prompt, got %q", items[0].Role)
 	}
-	if !strings.Contains(items[0].Content, "Session summary:") {
+	if !strings.Contains(fixtureContextText(items), "Session summary:") {
 		t.Fatalf("expected session summary section in memory prompt, got %q", items[0].Content)
 	}
-	if !strings.Contains(items[0].Content, "deploy new service") {
+	if !strings.Contains(fixtureContextText(items), "deploy new service") {
 		t.Fatalf("expected summary content in memory prompt, got %q", items[0].Content)
 	}
 }
@@ -824,7 +825,7 @@ func TestExecuteSessionSummaryWithProfileAndEpisodes(t *testing.T) {
 	if result.AssistantResponse != "full context" {
 		t.Fatalf("unexpected response %q", result.AssistantResponse)
 	}
-	prompt := provider.startRequests[0].InputItems[0].Content
+	prompt := fixtureContextText(provider.startRequests[0].InputItems)
 	// Session summary should come first in the prompt.
 	summaryIdx := strings.Index(prompt, "Session summary:")
 	profileIdx := strings.Index(prompt, "Profile memory:")
@@ -1131,7 +1132,7 @@ func TestExecuteRenewsLeaseDuringLongRun(t *testing.T) {
 
 	leases := &memoryLeaseManager{}
 	runs := newMemoryRunManager()
-	provider := &delayedProvider{delay: 1200 * time.Millisecond}
+	provider := &delayedProvider{delay: 1600 * time.Millisecond}
 	service := newFixtureService(&memorySessionRepo{}, leases, runs, &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", LeaseTTL: 1}, nil)
 
 	result, err := service.Execute(context.Background(), ingress.InputEvent{
@@ -1595,7 +1596,7 @@ func (m *mockToolExecutor) ExecuteToolCall(_ context.Context, call *toolbrokerv1
 	if m.result == nil {
 		return &toolbrokerv1.ToolResult{ToolCallId: call.GetToolCallId(), RunId: call.GetRunId(), ToolName: call.GetToolName(), Status: "completed", ResultJson: `{}`}, nil
 	}
-	result := *m.result
+	result := proto.Clone(m.result).(*toolbrokerv1.ToolResult)
 	if result.ToolCallId == "" {
 		result.ToolCallId = call.GetToolCallId()
 	}
@@ -1605,7 +1606,7 @@ func (m *mockToolExecutor) ExecuteToolCall(_ context.Context, call *toolbrokerv1
 	if result.ToolName == "" {
 		result.ToolName = call.GetToolName()
 	}
-	return &result, nil
+	return result, nil
 }
 
 func (m *mockToolExecutor) ExecuteAuthorizedToolCall(ctx context.Context, call *toolbrokerv1.ToolCall, grantID string) (*toolbrokerv1.ToolResult, error) {

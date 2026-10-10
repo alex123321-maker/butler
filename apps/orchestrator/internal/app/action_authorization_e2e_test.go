@@ -29,8 +29,10 @@ import (
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/ownership"
+	"github.com/butler/butler/internal/security/egress/egresstest"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/protobuf/proto"
 )
 
 // This fixture isolates the Broker/approval/credential contract. Restartable
@@ -99,7 +101,11 @@ func freeAddress(t *testing.T) string {
 }
 func childService(t *testing.T, binary, address string, environment ...string) {
 	t.Helper()
-	cmd := exec.Command(binary)
+	var arguments []string
+	if binary == os.Getenv("BUTLER_BROWSER_E2E_BINARY") {
+		arguments = []string{"-test.run=^TestBrowserRuntimeEgressHarness$"}
+	}
+	cmd := exec.Command(binary, arguments...)
 	cmd.Env = append(os.Environ(), append(environment, "BUTLER_ENVIRONMENT=test", "BUTLER_GRPC_ADDR="+address, "BUTLER_HTTP_ADDR=127.0.0.1:0")...)
 	cmd.Stdout, cmd.Stderr = io.Discard, io.Discard
 	if err := cmd.Start(); err != nil {
@@ -147,7 +153,7 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 		t.Fatal(err)
 	}
 	tasks := task.NewStore(pool)
-	record, err := tasks.Create(ctx, task.CreateRequest{SessionKey: sessionKey, OwnerID: "owner", Goal: "test authenticated multi-step form", Constraints: []string{"only the local fixture origin"}, CompletionCriteria: []string{"one form submission"}})
+	record, err := tasks.Create(ctx, task.CreateRequest{SessionKey: sessionKey, OwnerID: "owner", Goal: "test authenticated multi-step form", Constraints: []string{"only the disposable fixture origin"}, CompletionCriteria: []string{"one form submission"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -163,7 +169,7 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 	authority := httptest.NewServer(actionauth.NewContextHandler(token, reader))
 	defer authority.Close()
 	secret := "private-browser-password-7"
-	_, err = credentials.NewStore(pool).Create(ctx, credentials.Record{Alias: "browser-account", SecretType: "password", TargetType: "browser", Status: credentials.StatusActive, AllowedDomains: []string{"127.0.0.1"}, AllowedTools: []string{"browser.fill"}, ApprovalPolicy: credentials.ApprovalPolicyAlwaysConfirm, SecretRef: "env://BUTLER_BROWSER_TEST_SECRET", MetadataJSON: "{}"})
+	_, err = credentials.NewStore(pool).Create(ctx, credentials.Record{Alias: "browser-account", SecretType: "password", TargetType: "browser", Status: credentials.StatusActive, AllowedDomains: []string{"external.test"}, AllowedTools: []string{"browser.prepare_fill"}, ApprovalPolicy: credentials.ApprovalPolicyAlwaysConfirm, SecretRef: "env://BUTLER_BROWSER_TEST_SECRET", MetadataJSON: "{}"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -184,7 +190,7 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 	}))
 	defer site.Close()
 	browserAddress := freeAddress(t)
-	childService(t, os.Getenv("BUTLER_BROWSER_E2E_BINARY"), browserAddress, "BUTLER_TOOL_BROWSER_SCRIPT_PATH="+os.Getenv("BUTLER_BROWSER_E2E_SCRIPT"))
+	childService(t, os.Getenv("BUTLER_BROWSER_E2E_BINARY"), browserAddress, "BUTLER_BROWSER_EGRESS_HARNESS=1", "BUTLER_BROWSER_FIXTURE_ENDPOINT="+site.URL)
 	var catalog struct {
 		Tools []map[string]any `json:"tools"`
 	}
@@ -284,6 +290,11 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 		if json.Unmarshal([]byte(result.GetResultJson()), &observation) != nil {
 			t.Fatal("invalid observation")
 		}
+		if strings.HasPrefix(call.GetToolName(), "browser.prepare_") &&
+			(result.GetStatus() != "completed" || result.GetEffectState() != string(actionauth.StateConfirmed) ||
+				observation["local_preparation"] != true || observation["network_state"] != "frozen" || submits.Load() != 0) {
+			t.Fatal("local preparation lacks frozen-network proof or produced an external submission")
+		}
 		if _, err := pool.Exec(ctx, `UPDATE runs SET status='tool_pending',current_state='tool_pending' WHERE run_id=$1`, run.GetRunId()); err != nil {
 			t.Fatal(err)
 		}
@@ -292,11 +303,11 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 	args := func(selector string) map[string]any {
 		return map[string]any{"browser_session_id": observation["browser_session_id"], "expected_url": observation["final_url"], "observation_version": observation["observation_version"], "selector": selector}
 	}
-	dispatch(newCall("browser.open", map[string]any{"url": site.URL + "/form"}))
+	dispatch(newCall("browser.open", map[string]any{"url": egresstest.Origin + "/form"}))
 	password := args("#password")
 	password["value"] = map[string]string{"type": "credential_ref", "alias": "browser-account", "field": "password"}
 	ref := &toolbrokerv1.CredentialRef{Type: "credential_ref", Alias: "browser-account", Field: "password"}
-	denied := newCall("browser.fill", password, ref)
+	denied := newCall("browser.prepare_fill", password, ref)
 	prepared, err := client.PrepareAction(ctx, denied)
 	if err != nil || !prepared.RequiresApproval {
 		t.Fatal("credential preparation did not require approval")
@@ -304,12 +315,12 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 	if _, err := client.AuthorizeAction(ctx, denied, prepared.Binding.ActionID, "", ""); err == nil {
 		t.Fatal("unapproved credential action allowed")
 	}
-	passwordCall := newCall("browser.fill", password, ref)
+	passwordCall := newCall("browser.prepare_fill", password, ref)
 	dispatch(passwordCall)
 	for _, field := range []struct{ id, value string }{{"a", "one"}, {"b", "two"}} {
 		request := args("#" + field.id)
 		request["value"] = field.value
-		dispatch(newCall("browser.fill", request))
+		dispatch(newCall("browser.prepare_fill", request))
 	}
 	buy := newCall("browser.click", args("#submit"))
 	p, err := client.PrepareAction(ctx, buy)
@@ -329,9 +340,9 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	changed := *buy
+	changed := proto.Clone(buy).(*toolbrokerv1.ToolCall)
 	changed.ArgsJson = strings.Replace(buy.GetArgsJson(), "#submit", "#password", 1)
-	if _, err := client.ExecuteAuthorizedToolCall(ctx, &changed, grant); err != nil {
+	if _, err := client.ExecuteAuthorizedToolCall(ctx, changed, grant); err != nil {
 		t.Fatal(err)
 	}
 	if submits.Load() != 0 {

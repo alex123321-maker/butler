@@ -25,6 +25,7 @@ Current behavior notes:
 - for local browser usage, start Compose with both files or use `make up`; the base file alone does not publish the orchestrator REST API to the host
 - the stack wires fixed internal Compose URLs for PostgreSQL, Redis, Tool Broker, and web-to-orchestrator connectivity; optional Butler settings are passed through only when they exist in the host environment
 - optional variables such as `BUTLER_OPENAI_API_KEY` and Telegram credentials are passed through only when they exist in the host environment, so missing values do not appear as empty env overrides inside containers
+- Antigravity selection uses `BUTLER_MODEL_PROVIDER=antigravity` and forwards `BUTLER_ANTIGRAVITY_MODEL` to the orchestrator. OAuth credentials stay in the encrypted provider-auth setting; they are not Compose model arguments.
 
 ## Separate SSH lab
 
@@ -64,13 +65,16 @@ dedicated Docker Buildx container driver with its state volume bound to
 Exported service images still use the Docker daemon's configured image storage.
 The builder is selected only for that Compose command; other projects keep their
 Docker builder. Existing cache volumes with a different path are refused.
-Integration and race checks use `butler_test`, `butler_lab_actionauth_test` and
+Integration and race checks use `butler_lab_core_test`, `butler_lab_actionauth_test` and
 `butler_lab_completion_test`, plus Redis database 1. The completion environment
 is explicitly supplied so its PostgreSQL fault fixtures cannot silently skip.
 Integration, race, migration and browser approval suites take a common lab lock
 before touching shared test fixtures, so concurrent invocations run in sequence.
 Destructive migration fixtures use additional dedicated databases; deployed
 application data is excluded.
+The older experimental `butler_test` database is retained and excluded from
+these checks because its applied migration history can contain superseded
+development schemas. The new core fixture starts from the checked-in migrations.
 Web checks run Vue/TypeScript checks, lint, functional Playwright fixtures, and a read-only browser
 smoke against the deployed services. Screenshot baselines have no committed
 references, so the visual-baseline test is excluded; the live smoke saves a
@@ -82,3 +86,5 @@ Race checks use the C toolchain already included in a disposable Go Debian
 container and run tests as UID 1000, keeping build/module caches on the storage disk.
 - browser, HTTP, webfetch, and doctor runtimes are runnable V1 services rather than skeleton placeholders
 - for Windows local-browser testing, install the native messaging host with `pwsh -NoProfile -File scripts/dev/install-browser-bridge-host.ps1 -Browser Chrome -ExtensionId <extension_id>`
+
+Network tool images use read-only filesystems, dropped capabilities, no-new-privileges and bounded PIDs/memory. HTTP/webfetch/Chromium join tool-runtime plus tool-egress, without the core backend. Doctor uses fixed read-only core diagnostics and no longer receives PG/Redis/model credentials. Operator restart-helper and separately approved user-tab relay are explicit exceptions. Apply the Compose changes before claiming runtime isolation; code tests do not alter a running deployment. See [security boundaries](../docs/architecture/agent-security-boundaries.md).

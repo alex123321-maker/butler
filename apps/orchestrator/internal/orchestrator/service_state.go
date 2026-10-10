@@ -68,6 +68,13 @@ func (s *Service) startLeaseRenewer(parent context.Context, lease session.LeaseR
 					} else {
 						checkErr = ownership.ErrStale
 					}
+					if checkErr == nil {
+						if guard, ok := s.config.Tasks.(interface {
+							ValidateRunAuthority(context.Context, string) error
+						}); ok {
+							checkErr = guard.ValidateRunAuthority(checkCtx, lease.RunID)
+						}
+					}
 					checkCancel()
 					if runCtx.Err() != nil {
 						return
