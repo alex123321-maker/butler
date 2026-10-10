@@ -551,6 +551,18 @@ Transport должен уметь нормализовать multiple tool calls
 
 ## 14. Provider-side session semantics
 
+В [Persistent Assistant Spec](persistent-assistant-spec.md) модельный управляющий
+и ограниченный исполнитель используют один logical transport contract.
+Task identity, completion verdict, approvals, constraints и budget принадлежат
+Butler. WebSocket-first — предпочтение при наличии capability; оно не требует
+конкретной модели и не меняет продуктовую семантику. Выбор provider учитывает
+качество, инструменты, confidentiality и общий бюджет.
+
+При повторном использовании provider session нельзя повторно добавлять уже
+принятые сообщения без проверяемой replay boundary. При потере такой границы
+нужна новая модельная сессия с контекстом из Butler. Проверки включают stateless
+локальный и cloud adapter, смену provider и свежий owner constraint после summary.
+
 ### 14.1 Принцип
 
 Provider-side session является внешней оптимизацией transport слоя.

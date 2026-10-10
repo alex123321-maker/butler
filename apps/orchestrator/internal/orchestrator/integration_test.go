@@ -2,9 +2,9 @@ package orchestrator
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
@@ -182,8 +182,15 @@ func TestExecuteIntegrationPersistsRunAndTranscript(t *testing.T) {
 	if err := postgres.Pool().QueryRow(ctx, `SELECT metadata_json::text FROM runs WHERE run_id = $1`, result.RunID).Scan(&metadataJSON); err != nil {
 		t.Fatalf("query run metadata: %v", err)
 	}
-	if !strings.Contains(metadataJSON, "memory_bundle") || !strings.Contains(metadataJSON, "working") {
-		t.Fatalf("expected working memory bundle in run metadata, got %s", metadataJSON)
+	var metadata struct {
+		InputPayload map[string]any `json:"input_payload"`
+		MemoryBundle map[string]any `json:"memory_bundle"`
+	}
+	if err := json.Unmarshal([]byte(metadataJSON), &metadata); err != nil || metadata.MemoryBundle == nil || metadata.InputPayload["text"] != "hello integration" {
+		t.Fatalf("expected input and prepared memory bundle in run metadata, got %s", metadataJSON)
+	}
+	if _, exists := metadata.MemoryBundle["working"]; exists {
+		t.Fatal("new session must not claim an existing working-memory snapshot")
 	}
 	transientStore := working.NewTransientStore(redis.Client())
 	if _, err := transientStore.Get(ctx, sessionKey, result.RunID); err != working.ErrTransientStateNotFound {

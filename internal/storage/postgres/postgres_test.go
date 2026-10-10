@@ -149,6 +149,15 @@ func TestRunMigrationsIntegration(t *testing.T) {
 	dir := t.TempDir()
 	writeFile(t, filepath.Join(dir, "001_create_t004_probe.up.sql"), `DROP TABLE IF EXISTS t004_probe; CREATE TABLE t004_probe (id INT PRIMARY KEY);`)
 	writeFile(t, filepath.Join(dir, "002_insert_t004_probe.up.sql"), `INSERT INTO t004_probe (id) VALUES (1) ON CONFLICT DO NOTHING;`)
+	writeFile(t, filepath.Join(dir, "002_insert_t004_probe.down.sql"), `DELETE FROM t004_probe WHERE id = 1;`)
+	writeFile(t, filepath.Join(dir, "001_create_t004_probe.down.sql"), `DROP TABLE t004_probe;`)
+	// Clean stale probe migrations from a previously interrupted test run.
+	cleanup := func() {
+		_, _ = store.Pool().Exec(context.Background(), `DROP TABLE IF EXISTS t004_probe`)
+		_, _ = store.Pool().Exec(context.Background(), `DELETE FROM schema_migrations WHERE version IN ('001_create_t004_probe.up.sql', '002_insert_t004_probe.up.sql')`)
+	}
+	cleanup()
+	defer cleanup()
 
 	if err := store.RunMigrations(ctx, dir); err != nil {
 		t.Fatalf("RunMigrations returned error: %v", err)

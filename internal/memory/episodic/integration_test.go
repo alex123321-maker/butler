@@ -79,12 +79,13 @@ func TestEpisodicStoreIntegration(t *testing.T) {
 	if len(results) == 0 || results[0].Summary != "Resolved Redis outage" {
 		t.Fatalf("unexpected search results: %+v", results)
 	}
-	var indexCount int
-	if err := store.Pool().QueryRow(ctx, `SELECT COUNT(*) FROM pg_indexes WHERE tablename = 'memory_episodes' AND indexname = 'idx_memory_episodes_embedding_cosine'`).Scan(&indexCount); err != nil {
-		t.Fatalf("query pg_indexes returned error: %v", err)
+	// Migration 021 intentionally permits provider-specific vector dimensions.
+	var dimensions int
+	if err := store.Pool().QueryRow(ctx, `SELECT atttypmod FROM pg_attribute WHERE attrelid = 'memory_episodes'::regclass AND attname = 'embedding'`).Scan(&dimensions); err != nil {
+		t.Fatalf("query embedding dimensions returned error: %v", err)
 	}
-	if indexCount != 1 {
-		t.Fatalf("expected similarity index to exist, got %d", indexCount)
+	if dimensions != -1 {
+		t.Fatalf("expected flexible embedding dimensions, got %d", dimensions)
 	}
 }
 

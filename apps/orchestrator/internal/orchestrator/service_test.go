@@ -110,7 +110,7 @@ func TestExecuteRunsSequentialToolLoop(t *testing.T) {
 	}
 	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{"status_code":200}`}}
 
-	service := NewService(sessions, leases, runs, transcripts, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools}, nil)
+	service := NewService(sessions, leases, runs, transcripts, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, ApprovalChecker: &mockApprovalChecker{}}, nil)
 	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:1", Source: "telegram", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
 	if err != nil {
 		t.Fatalf("Execute returned error: %v", err)
@@ -161,7 +161,7 @@ func TestExecuteToolCallWithEmptyRefPropagatesFallbackToSubmit(t *testing.T) {
 	}
 	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{"ok":true}`}}
 
-	service := NewService(sessions, leases, runs, transcripts, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools}, nil)
+	service := NewService(sessions, leases, runs, transcripts, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, ApprovalChecker: &mockApprovalChecker{}}, nil)
 	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:1", Source: "telegram", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
 	if err != nil {
 		t.Fatalf("Execute returned error: %v", err)
@@ -551,7 +551,7 @@ func TestExecuteSanitizesWorkingMemoryToolPayloads(t *testing.T) {
 	}
 	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{"access_token":"abc","cookie":"session=abc123"}`}}
 	workingStore := &stubWorkingStore{snapshots: map[string]WorkingMemorySnapshot{}}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, WorkingStore: workingStore}, nil)
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, WorkingStore: workingStore, ApprovalChecker: &mockApprovalChecker{}}, nil)
 
 	_, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-sanitize-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:sanitize", Source: "telegram", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-sanitize-1"})
 	if err != nil {
@@ -586,7 +586,7 @@ func TestExecuteStoresTransientWorkingStateDuringToolLifecycle(t *testing.T) {
 	}
 	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{"status_code":200}`}}
 	transientStore := &stubTransientWorkingStore{}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, TransientStore: transientStore}, nil)
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, TransientStore: transientStore, ApprovalChecker: &mockApprovalChecker{}}, nil)
 
 	_, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-transient-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:transient", Source: "telegram", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-transient-1"})
 	if err != nil {

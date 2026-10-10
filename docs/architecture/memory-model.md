@@ -266,6 +266,11 @@ The current Butler baseline now includes durable PostgreSQL tables for:
 
 ### 8.3 pgvector
 
+Migration 021 uses dimensionless vector columns to support different embedding
+providers. It removes the old fixed-dimension IVFFlat indexes; current semantic
+queries scan these columns. Future indexes require fixed-dimension expressions
+and provider-specific predicates. HNSW does not remove that requirement.
+
 pgvector используется для semantic retrieval (семантического извлечения) по:
 
 * episodic memory summaries;
@@ -319,6 +324,19 @@ Retrieval должен быть hybrid (гибридным), а не чисто 
    полезен для технических ключей, логов, конфигурационных строк.
 
 ### 10.3 Сбор памяти перед run
+
+Целевой контракт [Persistent Assistant Spec](persistent-assistant-spec.md)
+сохраняет четыре класса памяти. Working Memory принадлежит поручению, если run
+с ним связан, и не очищается при окончании незавершившей поручение попытки.
+Session хранит transcript и порядок; task state, approvals и mandates —
+операционные записи PostgreSQL, а не результат semantic retrieval.
+
+Summary должна иметь source revision и проверяемую границу message sequence.
+Контекст содержит summary, хвост после границы и отдельные действующие ограничения
+с source refs. Старый worker не перезаписывает более новую границу. Обязательные
+ограничения и свежий ввод имеют приоритет над второстепенной памятью; overflow и
+ошибки чтения обрабатываются явно. Эти требования относятся к целевой реализации
+#4, #9, #10; текущий baseline ниже не заявляет их выполненными.
 
 Перед запуском model loop (цикла модели) orchestrator должен запросить у memory service memory bundle (пакет памяти):
 

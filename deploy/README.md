@@ -25,5 +25,40 @@ Current behavior notes:
 - for local browser usage, start Compose with both files or use `make up`; the base file alone does not publish the orchestrator REST API to the host
 - the stack wires fixed internal Compose URLs for PostgreSQL, Redis, Tool Broker, and web-to-orchestrator connectivity; optional Butler settings are passed through only when they exist in the host environment
 - optional variables such as `BUTLER_OPENAI_API_KEY` and Telegram credentials are passed through only when they exist in the host environment, so missing values do not appear as empty env overrides inside containers
+
+## Separate SSH lab
+
+`docker-compose.lab.yml` overlays the base stack for a dedicated machine. It
+uses Compose project `butler-lab`, publishes the UI on port 3080 and API on
+8088, keeps PostgreSQL/Redis/runtime ports private, and binds durable data to
+`BUTLER_LAB_ROOT/data` on the lab's storage disk. Compose 2.24.4 or newer is
+required. The local-browser relay addresses the container orchestrator.
+
+From Windows, after creating a writable `/srv/storage/butler` on `ssh laba`:
+
+```powershell
+pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Sync
+pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Test
+pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Integration -Packages ./...
+pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Web
+pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Up
+pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Status
+```
+
+Source snapshots and dependency caches are separate from durable data. Sync
+uploads tracked and nonignored source files into a fresh snapshot, so removed
+files cannot survive from an earlier build. It preserves previous snapshots.
+Deployment generates settings encryption and extension access keys on the lab
+in a mode-0600 `lab.env`, without printing them. Edit that file on the lab to
+configure a model provider or channel credentials; source uploads do not touch
+it. Memory extraction is disabled until a provider is configured. Ollama has a
+6 GiB container limit; this is a deployment limit, not a model scheduling policy.
+Go checks and deployment logs are retained in `BUTLER_LAB_ROOT/reports`.
+Integration checks use the separate `butler_test` database and Redis database
+1; they do not run destructive fixtures against the deployed application data.
+Web checks run lint, functional Playwright fixtures, and a read-only browser
+smoke against the deployed services. Screenshot baselines have no committed
+references, so the visual-baseline test is excluded; the live smoke saves a
+current UI screenshot in `.cache/lab-ui.png` on the lab.
 - browser, HTTP, webfetch, and doctor runtimes are runnable V1 services rather than skeleton placeholders
 - for Windows local-browser testing, install the native messaging host with `pwsh -NoProfile -File scripts/dev/install-browser-bridge-host.ps1 -Browser Chrome -ExtensionId <extension_id>`

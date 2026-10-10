@@ -66,10 +66,10 @@
         <label>
           Sort
           <AppSelect v-model="filters.sort">
-            <option value="-updated_at">Most recently updated</option>
-            <option value="updated_at">Oldest updated first</option>
-            <option value="-started_at">Newest started first</option>
-            <option value="started_at">Oldest started first</option>
+            <option value="updated_at_desc">Most recently updated</option>
+            <option value="updated_at_asc">Oldest updated first</option>
+            <option value="started_at_desc">Newest started first</option>
+            <option value="started_at_asc">Oldest started first</option>
           </AppSelect>
         </label>
         <label>
@@ -228,7 +228,7 @@ const resetFilters = async () => {
   filters.value.from = ''
   filters.value.to = ''
   filters.value.query = ''
-  filters.value.sort = '-updated_at'
+  filters.value.sort = 'updated_at_desc'
   filters.value.limit = 50
   showAdvanced.value = false
   await tasksStore.load({ offset: 0 })

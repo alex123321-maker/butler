@@ -2,6 +2,7 @@ package approval
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
@@ -73,7 +74,8 @@ func TestApprovalRepositoryIntegration_CreateResolveAndEvents(t *testing.T) {
 	if rec.ApprovalType != ApprovalTypeToolCall {
 		t.Fatalf("expected tool_call approval type, got %q", rec.ApprovalType)
 	}
-	if rec.PayloadJSON != `{"kind":"tool_call"}` {
+	var payload map[string]string
+	if err := json.Unmarshal([]byte(rec.PayloadJSON), &payload); err != nil || len(payload) != 1 || payload["kind"] != "tool_call" {
 		t.Fatalf("expected payload_json to be preserved, got %q", rec.PayloadJSON)
 	}
 

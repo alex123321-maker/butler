@@ -1,5 +1,9 @@
 # Orchestrator
 
+Tool execution fails closed when the approval policy cannot be checked. A tool
+requiring approval also requires a configured approval gate. These guarantees
+apply to single calls and batch members; policy failures do not become permission.
+
 Butler core API and orchestration service.
 
 Current baseline:
