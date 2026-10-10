@@ -187,3 +187,19 @@ change; final full tests and focused budget/task race checks passed afterward.
 Full #31 closure must account for its #18/#22 and model-loader integration
 dependencies; this matrix does not mark them complete merely because the
 current catalog cannot run dynamic code or auxiliary cloud jobs.
+
+## Packaged Web runtime
+
+The operator UI also runs as UID10001 with a read-only filesystem, dropped
+capabilities, no-new-privileges and finite RAM/PID limits. It receives public API
+locations, not the owner token or encryption key as server-side credentials.
+Its image includes only Nuxt `.output`; dependency installation and the reviewed
+Nuxt preparation/build lifecycle occur in a separate build stage.
+
+The reviewed selector-parser override pins published 7.1.6, removing vulnerable
+6.x transitive copies. Upstream node-forge/braces have no published fix for the
+current advisories and remain explicit lockfile findings. A lab output inventory
+checks shipped package names and selected known module references without
+printing source. Empty matches in a particular artifact are limited packaging
+evidence, not a general exploit-reachability proof. Build/dev tools must not take
+untrusted patterns/certificates, and audit findings are not silently suppressed.

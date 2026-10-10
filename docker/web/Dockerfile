@@ -20,6 +20,8 @@ ENV HOST=0.0.0.0
 ENV PORT=3000
 ENV NITRO_PORT=3000
 
+USER 10001:10001
+
 EXPOSE 3000
 
 CMD ["node", ".output/server/index.mjs"]
