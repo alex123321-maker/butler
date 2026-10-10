@@ -148,15 +148,16 @@ type ToolWebFetchConfig struct {
 }
 
 type ToolDoctorConfig struct {
-	Shared           SharedConfig
-	Postgres         PostgresConfig
-	Redis            RedisConfig
-	PostgresURL      string
-	RedisURL         string
-	OpenAIAPIKey     string
-	OpenAIBaseURL    string
-	OpenAIModel      string
-	ContainerTargets []DoctorContainerTarget
+	Shared             SharedConfig
+	CoreDiagnosticsURL string
+	Postgres           PostgresConfig
+	Redis              RedisConfig
+	PostgresURL        string
+	RedisURL           string
+	OpenAIAPIKey       string
+	OpenAIBaseURL      string
+	OpenAIModel        string
+	ContainerTargets   []DoctorContainerTarget
 }
 
 type RestartHelperConfig struct {
@@ -395,15 +396,8 @@ func loadToolDoctor(get envGetter) (ToolDoctorConfig, Snapshot, error) {
 	cfg := ToolDoctorConfig{}
 	shared := sharedSpecs("tool-doctor", &cfg.Shared)
 	specs := append(shared,
-		fieldSpec{key: "BUTLER_POSTGRES_URL", component: "tool-doctor", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalURL, assign: func(v string) { cfg.PostgresURL = v; cfg.Postgres.URL = v }},
-		fieldSpec{key: "BUTLER_REDIS_URL", component: "tool-doctor", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalURL, assign: func(v string) { cfg.RedisURL = v; cfg.Redis.URL = v }},
-		fieldSpec{key: "BUTLER_OPENAI_API_KEY", component: "tool-doctor", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: func(v string) { cfg.OpenAIAPIKey = v }},
-		fieldSpec{key: "BUTLER_OPENAI_BASE_URL", component: "tool-doctor", typeName: "string", required: false, defaultValue: "https://api.openai.com/v1", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.OpenAIBaseURL = v }},
-		fieldSpec{key: "BUTLER_OPENAI_MODEL", component: "tool-doctor", typeName: "string", required: false, defaultValue: "gpt-4o-mini", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.OpenAIModel = v }},
+		fieldSpec{key: "BUTLER_DOCTOR_CORE_DIAGNOSTICS_URL", component: "tool-doctor", typeName: "string", required: false, defaultValue: "", requiresRestart: true, validate: validateOptionalURL, assign: func(v string) { cfg.CoreDiagnosticsURL = v }},
 		fieldSpec{key: "BUTLER_DOCTOR_CONTAINER_TARGETS", component: "tool-doctor", typeName: "csv", required: false, defaultValue: "", requiresRestart: true, validate: validateOptionalDoctorContainerTargets, assign: func(v string) { cfg.ContainerTargets = parseDoctorContainerTargets(v) }},
-		fieldSpec{key: "BUTLER_POSTGRES_MAX_CONNS", component: "tool-doctor", typeName: "int", required: false, defaultValue: "4", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.Postgres.MaxConns = mustParseInt32(v) }},
-		fieldSpec{key: "BUTLER_POSTGRES_MIN_CONNS", component: "tool-doctor", typeName: "int", required: false, defaultValue: "1", requiresRestart: true, validate: validateNonNegativeInt, assign: func(v string) { cfg.Postgres.MinConns = mustParseInt32(v) }},
-		fieldSpec{key: "BUTLER_POSTGRES_MAX_CONN_LIFETIME_SECONDS", component: "tool-doctor", typeName: "int", required: false, defaultValue: "30", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.Postgres.MaxConnLifetime = mustParseInt(v) }},
 	)
 	snapshot, err := loadSpecs(get, specs)
 	return cfg, snapshot, err

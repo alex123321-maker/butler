@@ -419,8 +419,8 @@ func TestLoadToolDoctorParsesContainerTargets(t *testing.T) {
 	if len(cfg.ContainerTargets) != 2 {
 		t.Fatalf("expected container targets to parse, got %+v", cfg.ContainerTargets)
 	}
-	if cfg.OpenAIAPIKey != "sk-test" {
-		t.Fatalf("expected OpenAI API key override, got %q", cfg.OpenAIAPIKey)
+	if cfg.OpenAIAPIKey != "" {
+		t.Fatal("Doctor loaded model credentials")
 	}
 	key := findKey(t, snapshot.ListKeys(), "BUTLER_DOCTOR_CONTAINER_TARGETS")
 	if key.DefaultValue != "" {

@@ -1,4 +1,5 @@
 import { useApiClient } from './useApi'
+import type { Ref } from 'vue'
 
 export interface SettingItem {
   key: string
@@ -86,8 +87,9 @@ export interface PromptPreview {
   sections: PromptSection[]
 }
 
-export function useSettingsData() {
+export function useSettingsData(ownerToken: Ref<string>) {
   const { get, baseURL } = useApiClient()
+  const ownerHeaders = () => ({ Authorization: `Bearer ${ownerToken.value}` })
 
   const data = useAsyncData<SettingsComponent[]>('settings', async () => {
     const response = await get<{ components: SettingsComponent[] }>('/api/v1/settings')
@@ -100,6 +102,7 @@ export function useSettingsData() {
   async function updateSetting(key: string, value: string): Promise<SettingItem> {
     const response = await $fetch<{ setting: SettingItem }>(`${baseURL}/api/v1/settings/${key}`, {
       method: 'PUT',
+      headers: ownerHeaders(),
       body: { value },
     })
     return response.setting
@@ -108,6 +111,7 @@ export function useSettingsData() {
   async function deleteSetting(key: string): Promise<SettingItem> {
     const response = await $fetch<{ setting: SettingItem }>(`${baseURL}/api/v1/settings/${key}`, {
       method: 'DELETE',
+      headers: ownerHeaders(),
     })
     return response.setting
   }
@@ -119,6 +123,7 @@ export function useSettingsData() {
   async function applyRestart(): Promise<RestartState> {
     return await $fetch<RestartState>(`${baseURL}/api/v1/settings/restart`, {
       method: 'POST',
+      headers: ownerHeaders(),
     })
   }
 
@@ -134,6 +139,7 @@ export function useSettingsData() {
   async function startProviderAuth(name: string, enterpriseURL = ''): Promise<{ provider: ProviderItem, flow?: ProviderFlowState }> {
     return await $fetch<{ provider: ProviderItem, flow?: ProviderFlowState }>(`${baseURL}/api/v1/providers/${name}/auth/start`, {
       method: 'POST',
+      headers: ownerHeaders(),
       body: { enterprise_url: enterpriseURL },
     })
   }
@@ -141,6 +147,7 @@ export function useSettingsData() {
   async function completeProviderAuth(name: string, flowId: string, input: string): Promise<ProviderItem> {
     const response = await $fetch<{ provider: ProviderItem }>(`${baseURL}/api/v1/providers/${name}/auth/complete`, {
       method: 'POST',
+      headers: ownerHeaders(),
       body: { flow_id: flowId, input },
     })
     return response.provider
@@ -149,6 +156,7 @@ export function useSettingsData() {
   async function deleteProviderAuth(name: string): Promise<ProviderItem> {
     const response = await $fetch<{ provider: ProviderItem }>(`${baseURL}/api/v1/providers/${name}/auth`, {
       method: 'DELETE',
+      headers: ownerHeaders(),
     })
     return response.provider
   }
@@ -161,6 +169,7 @@ export function useSettingsData() {
 	async function updatePrompt(basePrompt: string, enabled: boolean): Promise<PromptConfig> {
 	  const response = await $fetch<{ prompt: PromptConfig }>(`${baseURL}/api/v1/prompts/system`, {
 		method: 'PUT',
+      headers: ownerHeaders(),
 		body: { base_prompt: basePrompt, enabled },
 	  })
 	  return response.prompt
@@ -169,6 +178,7 @@ export function useSettingsData() {
 	async function previewPrompt(sessionKey: string, userMessage: string): Promise<PromptPreview> {
 	  const response = await $fetch<{ preview: PromptPreview }>(`${baseURL}/api/v1/prompts/system/preview`, {
 		method: 'POST',
+      headers: ownerHeaders(),
 		body: { session_key: sessionKey, user_message: userMessage },
 	  })
 	  return response.preview

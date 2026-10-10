@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"github.com/butler/butler/internal/security/egress/egresstest"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
@@ -22,13 +23,13 @@ func TestSystemEffectKeyIsScopedAndNeverRedirected(t *testing.T) {
 		http.Redirect(w, r, other.URL, http.StatusTemporaryRedirect)
 	}))
 	defer origin.Close()
-	server := NewServer(origin.Client(), nil)
-	request := &runtimev1.ExecuteRequest{Context: &runtimev1.ExecutionContext{ActionId: "effect-id", IdempotencyKey: "system-key", ActionFingerprint: "system-fingerprint"}, ToolCall: &toolbrokerv1.ToolCall{ToolName: "http.request", ArgsJson: `{"method":"POST","url":"` + origin.URL + `"}`}, Contract: &toolbrokerv1.ToolContract{ToolName: "http.request", EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "external_idempotency", VerificationMethod: "external_receipt_v1", IdempotencyHeader: "Idempotency-Key", ScopeOrigin: origin.URL}}}
+	server := NewServer(egresstest.Client(origin), nil)
+	request := &runtimev1.ExecuteRequest{Context: &runtimev1.ExecutionContext{ActionId: "effect-id", IdempotencyKey: "system-key", ActionFingerprint: "system-fingerprint"}, ToolCall: &toolbrokerv1.ToolCall{ToolName: "http.request", ArgsJson: `{"method":"POST","url":"` + egresstest.Origin + `"}`}, Contract: &toolbrokerv1.ToolContract{ToolName: "http.request", EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "external_idempotency", VerificationMethod: "external_receipt_v1", IdempotencyHeader: "Idempotency-Key", ScopeOrigin: egresstest.Origin}}}
 	response, err := server.Execute(context.Background(), request)
 	if err != nil || response.GetResult().GetStatus() != "completed" || received.Load() != 0 {
 		t.Fatal("scoped mutation followed a redirect")
 	}
-	for _, args := range []string{`{"method":"POST","url":"` + origin.URL + `","headers":{"Idempotency-Key":"caller-key"}}`, `{"method":"POST","url":"` + other.URL + `"}`} {
+	for _, args := range []string{`{"method":"POST","url":"` + egresstest.Origin + `","headers":{"Idempotency-Key":"caller-key"}}`, `{"method":"POST","url":"` + other.URL + `"}`} {
 		request.ToolCall.ArgsJson = args
 		response, err = server.Execute(context.Background(), request)
 		if err != nil || response.GetResult().GetStatus() != "failed" || received.Load() != 0 {

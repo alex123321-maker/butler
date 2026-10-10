@@ -17,8 +17,11 @@ type PromptManager interface {
 }
 
 type PromptServer struct {
-	manager PromptManager
+	manager   PromptManager
+	ownerAuth *OwnerControlAuth
 }
+
+func (s *PromptServer) SetOwnerControlAuth(auth *OwnerControlAuth) { s.ownerAuth = auth }
 
 func NewPromptServer(manager PromptManager) *PromptServer {
 	return &PromptServer{manager: manager}
@@ -35,6 +38,11 @@ func (s *PromptServer) HandleConfig() http.Handler {
 			}
 			writeJSON(w, http.StatusOK, map[string]any{"prompt": toPromptConfigDTO(state)})
 		case http.MethodPut:
+			actor, ok := s.ownerAuth.Authenticate(r)
+			if !ok {
+				writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "owner authentication required"})
+				return
+			}
 			var request struct {
 				BasePrompt string `json:"base_prompt"`
 				Enabled    *bool  `json:"enabled"`
@@ -43,7 +51,7 @@ func (s *PromptServer) HandleConfig() http.Handler {
 				writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid JSON request body"})
 				return
 			}
-			state, err := s.manager.UpdatePromptConfig(r.Context(), promptmgmt.UpdateRequest{BasePrompt: request.BasePrompt, Enabled: request.Enabled})
+			state, err := s.manager.UpdatePromptConfig(r.Context(), promptmgmt.UpdateRequest{BasePrompt: request.BasePrompt, Enabled: request.Enabled, UpdatedBy: actor.OwnerID})
 			if err != nil {
 				status := http.StatusInternalServerError
 				if strings.Contains(err.Error(), "secret-like") || strings.Contains(err.Error(), "exceeds") {
@@ -65,6 +73,11 @@ func (s *PromptServer) HandlePreview() http.Handler {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
+		actor, ok := s.ownerAuth.Authenticate(r)
+		if !ok {
+			writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "owner authentication required"})
+			return
+		}
 		var request struct {
 			SessionKey  string `json:"session_key"`
 			UserID      string `json:"user_id"`
@@ -74,7 +87,7 @@ func (s *PromptServer) HandlePreview() http.Handler {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid JSON request body"})
 			return
 		}
-		preview, err := s.manager.PreviewPrompt(r.Context(), flow.PromptPreviewRequest{SessionKey: request.SessionKey, UserID: request.UserID, UserMessage: request.UserMessage})
+		preview, err := s.manager.PreviewPrompt(r.Context(), flow.PromptPreviewRequest{SessionKey: request.SessionKey, UserID: actor.OwnerID, UserMessage: request.UserMessage})
 		if err != nil {
 			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 			return

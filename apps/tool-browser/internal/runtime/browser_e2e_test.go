@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/butler/butler/internal/security/egress/egresstest"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -60,7 +61,11 @@ func TestBrowserSessionE2E(t *testing.T) {
 	if script == "" {
 		script = filepath.Join("..", "..", "scripts", "browser_runtime.mjs")
 	}
-	runner := NewPlaywrightRunner("node", script)
+	runner := NewPlaywrightRunnerWithPolicy("node", script, egresstest.Policy(pageServer))
+	runner.workspaceRoot, _ = filepath.Abs(filepath.Join("..", "..", "..", ".."))
+	if filepath.IsAbs(script) {
+		runner.workspaceRoot = filepath.Clean(filepath.Join(filepath.Dir(script), "..", "..", ".."))
+	}
 	server := NewServer(runner, nil)
 	defer server.Close()
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
@@ -80,7 +85,7 @@ func TestBrowserSessionE2E(t *testing.T) {
 	invoke := func(tool string, args map[string]any, resolved ...*runtimev1.ResolvedCredential) Result {
 		t.Helper()
 		req := browserCall(tool, "run-1", args)
-		req.Contract.AllowedDomains = []string{"127.0.0.1"}
+		req.Contract.AllowedDomains = []string{"external.test"}
 		req.ResolvedCredentials = resolved
 		ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
 		defer cancel()
@@ -100,7 +105,9 @@ func TestBrowserSessionE2E(t *testing.T) {
 		}
 		return obs
 	}
-	open := func(path string) Result { return invoke("browser.open", map[string]any{"url": pageServer.URL + path}) }
+	open := func(path string) Result {
+		return invoke("browser.open", map[string]any{"url": egresstest.Origin + path})
+	}
 	fill := func(obs Result, selector, value string) Result {
 		args := actionArgs(obs)
 		args["selector"], args["value"] = selector, value
@@ -136,11 +143,11 @@ func TestBrowserSessionE2E(t *testing.T) {
 		args = actionArgs(obs)
 		delete(args, "selector")
 		args["storage_state"] = map[string]string{"type": "credential_ref", "alias": "login", "field": "storage_state"}
-		storageJSON := mustJSON(StorageState{Origins: []OriginStorage{{Origin: pageServer.URL, LocalStorage: []StorageEntry{{Name: "auth", Value: "private-storage-fixture"}}}}})
+		storageJSON := mustJSON(StorageState{Origins: []OriginStorage{{Origin: egresstest.Origin, LocalStorage: []StorageEntry{{Name: "auth", Value: "private-storage-fixture"}}}}})
 		obs = invoke("browser.restore_storage_state", args, &runtimev1.ResolvedCredential{Alias: "login", Field: "storage_state", Value: storageJSON})
 		args = actionArgs(obs)
 		delete(args, "selector")
-		args["url"] = pageServer.URL + "/auth"
+		args["url"] = egresstest.Origin + "/auth"
 		obs = invoke("browser.navigate", args)
 		if !strings.Contains(obs.Text, "Authorized") || !strings.Contains(obs.Text, "[REDACTED]") {
 			t.Fatal("authorization did not persist or reflection was unmasked")
@@ -160,7 +167,7 @@ func TestBrowserSessionE2E(t *testing.T) {
 		if !obs.Matched || forms.Load() != before {
 			t.Fatal("wait navigated or did not observe selector")
 		}
-		independent := invoke("browser.read", map[string]any{"url": pageServer.URL + "/form"})
+		independent := invoke("browser.read", map[string]any{"url": egresstest.Origin + "/form"})
 		if independent.SessionID != "" || forms.Load() != before+1 {
 			t.Fatal("independent read did not isolate its navigation")
 		}
@@ -230,12 +237,12 @@ func TestBrowserSessionE2E(t *testing.T) {
 	t.Run("helper timer destroys idle expired context", func(t *testing.T) {
 		// Exercise autonomous cleanup as well as the Go expiry guard. The
 		// shortened deadline is private test execution data, not a public tool arg.
-		result, err := runner.Run(context.Background(), Request{ToolName: "browser.open", SessionID: "expiry-fixture", URL: pageServer.URL + "/form", ScopeOrigin: pageServer.URL, ExpiresAt: time.Now().Add(time.Second).UTC().Format(time.RFC3339Nano)})
+		result, err := runner.Run(context.Background(), Request{ToolName: "browser.open", SessionID: "expiry-fixture", URL: egresstest.Origin + "/form", ScopeOrigin: egresstest.Origin, ExpiresAt: time.Now().Add(time.Second).UTC().Format(time.RFC3339Nano)})
 		if err != nil || result.Error != nil {
 			t.Fatalf("private timer fixture failed: result=%+v error=%v", result, err)
 		}
 		time.Sleep(1100 * time.Millisecond)
-		result, err = runner.Run(context.Background(), Request{ToolName: "browser.snapshot", SessionID: "expiry-fixture", ScopeOrigin: pageServer.URL})
+		result, err = runner.Run(context.Background(), Request{ToolName: "browser.snapshot", SessionID: "expiry-fixture", ScopeOrigin: egresstest.Origin})
 		if err != nil || result.Error == nil || result.Error.ErrorType != "session_lost" {
 			t.Fatal("idle expired context survived helper cleanup")
 		}

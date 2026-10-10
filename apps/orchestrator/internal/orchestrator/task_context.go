@@ -8,6 +8,7 @@ import (
 
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/internal/memory/sanitize"
+	"github.com/butler/butler/internal/security/content"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -39,10 +40,13 @@ func (s *Service) attachTaskContext(ctx context.Context, sessionKey string, prep
 	}
 	prepared.WorkingMemory = &workingMemoryContext{Goal: record.Goal, PendingSteps: record.Working.Plan, ActiveEntities: map[string]any{}, Scratch: record.Working.Scratch, Status: "active", Policy: s.config.WorkingPolicy}
 	prepared.MemoryBundle["working"] = prepared.WorkingMemory.bundleMap()
-	prepared.InputItems = append([]transport.InputItem{{Role: "system", Content: "Butler task context (durable task state; a final model response only ends this attempt):\n" + sanitize.JSON(mustMarshalJSON(map[string]any{
+	ref := fmt.Sprintf("task:%s:revision:%d:constraints:%d", record.TaskID, record.Revision, record.ConstraintsRevision)
+	policy := content.Instruction("Butler task authority (authenticated durable owner state; a final model response only ends this attempt):\n"+sanitize.JSON(mustMarshalJSON(map[string]any{
 		"task_id": record.TaskID, "revision": record.Revision, "goal": sanitize.Text(record.Goal), "constraints": record.Constraints, "constraints_revision": record.ConstraintsRevision,
-		"completion_criteria": record.CompletionCriteria, "working": record.Working, "execution_policy": record.ExecutionPolicy, "source": record.Source,
-	})), ContentType: "text/plain"}}, prepared.InputItems...)
+		"completion_criteria": record.CompletionCriteria, "execution_policy": record.ExecutionPolicy,
+	})), content.Origin{Kind: content.OwnerPolicy, SourceRefs: []string{ref}, Sensitivity: content.Private})
+	working := content.Data(map[string]any{"task_working": record.Working, "task_source": record.Source}, content.Origin{Kind: content.MemoryDerived, SourceRefs: []string{ref}, Sensitivity: content.Private})
+	prepared.InputItems = append([]transport.InputItem{policy, working}, prepared.InputItems...)
 	return nil
 }
 

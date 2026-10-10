@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	browserscripts "github.com/butler/butler/apps/tool-browser/scripts"
 	"os"
 	"path/filepath"
 	"strings"
@@ -275,14 +276,28 @@ func TestURLAndUnicodeValidation(t *testing.T) {
 	}
 }
 func TestResolveBrowserScriptPath(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "browser_runtime.mjs")
-	if err := os.WriteFile(path, []byte("export {}\n"), 0600); err != nil {
+	root := t.TempDir()
+	path := filepath.Join(root, "browser_runtime.mjs")
+	if err := os.WriteFile(path, []byte(browserscripts.Runtime), 0600); err != nil {
 		t.Fatal(err)
 	}
-	if resolved, err := resolveBrowserScriptPath(path); err != nil || resolved != path {
+	if resolved, err := resolveBrowserScriptPathFrom(root, path); err != nil || resolved != path {
 		t.Fatalf("path=%q err=%v", resolved, err)
 	}
-	if _, err := resolveBrowserScriptPath(path + ".missing"); err == nil {
+	if _, err := resolveBrowserScriptPathFrom(root, path+".missing"); err == nil {
 		t.Fatal("missing script accepted")
+	}
+	if err := os.WriteFile(path, []byte("unreviewed extension update"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolveBrowserScriptPathFrom(root, path); err == nil {
+		t.Fatal("swapped extension revision was executed")
+	}
+	other := filepath.Join(t.TempDir(), "outside.mjs")
+	if err := os.WriteFile(other, []byte(browserscripts.Runtime), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolveBrowserScriptPathFrom(root, other); err == nil {
+		t.Fatal("external workspace file was read")
 	}
 }

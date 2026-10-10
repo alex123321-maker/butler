@@ -111,6 +111,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	settingsService := config.NewSettingsService(deps.settingsStore, deps.hotConfig)
 	settingsServer := apiservice.NewSettingsServer(settingsService, restarthelper.NewClient(deps.cfg.RestartHelperURL))
 	promptServer := apiservice.NewPromptServer(deps.executor)
+	promptServer.SetOwnerControlAuth(deps.ownerAuth)
 	memoryServer := apiservice.NewMemoryServer(working.NewStore(deps.postgres.Pool()), deps.profileStore, deps.episodicStore, deps.chunkStore, provenance.NewStore(deps.postgres.Pool()))
 	memoryServer.SetWriters(deps.profileStore, deps.episodicStore, deps.chunkStore)
 	providerServer := apiservice.NewProviderServer(deps.authManager, deps.providerResult.ProviderName, map[string]string{
@@ -159,6 +160,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 
 	mux := http.NewServeMux()
 	mux.Handle("/api/v3/execution-budgets", apiservice.NewBudgetHandler(budget.NewLedger(deps.postgres.Pool()), deps.ownerAuth))
+	mux.Handle("/internal/diagnostics", coreDiagnostics(deps))
 	if deps.actionAuthorityHandler != nil {
 		mux.Handle("/internal/action-context", deps.actionAuthorityHandler)
 	}
@@ -172,14 +174,14 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	mux.Handle("/api/v3/owner-goals/tasks", goalServer.Handle())
 	mux.Handle("/api/v3/tasks", taskControlServer.HandleCollection())
 	mux.Handle("/api/v3/tasks/", taskControlServer.HandleItem("/api/v3/tasks/"))
-	mux.Handle("/api/v1/settings/restart", settingsServer.HandleRestart())
+	mux.Handle("/api/v1/settings/restart", apiservice.OwnerMaintenance(deps.ownerAuth, settingsServer.HandleRestart()))
 	mux.Handle("/api/v1/settings", settingsServer.HandleList())
-	mux.Handle("/api/v1/settings/", settingsServer.HandleItem())
+	mux.Handle("/api/v1/settings/", apiservice.OwnerMaintenance(deps.ownerAuth, settingsServer.HandleItem()))
 	mux.Handle("/api/v1/prompts/system", promptServer.HandleConfig())
 	mux.Handle("/api/v1/prompts/system/preview", promptServer.HandlePreview())
 	mux.Handle("/api/v1/providers", providerServer.HandleList())
 	mux.Handle("/api/v2/results/", resultServer.HandleByRun("/api/v2/results/"))
-	mux.Handle("/api/v1/providers/", providerServer.HandleItem())
+	mux.Handle("/api/v1/providers/", apiservice.OwnerMaintenance(deps.ownerAuth, providerServer.HandleItem()))
 	mux.Handle("/api/v1/memory", memoryServer.HandleList())
 	mux.Handle("/api/v2/memory", memoryServer.HandleList())
 	mux.Handle("/api/v2/memory/item", memoryServer.HandleGet())

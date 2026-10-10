@@ -12,7 +12,11 @@ Current state:
 Local run:
 - `go run ./apps/tool-doctor`
 - service exposes HTTP health on `BUTLER_HTTP_ADDR` and runtime gRPC on `BUTLER_GRPC_ADDR`
-- optional dependency checks use `BUTLER_POSTGRES_URL`, `BUTLER_REDIS_URL`, `BUTLER_OPENAI_API_KEY`, and `BUTLER_DOCTOR_CONTAINER_TARGETS`
+- dependency checks use fixed `BUTLER_DOCTOR_CORE_DIAGNOSTICS_URL` and
+  `BUTLER_DOCTOR_CONTAINER_TARGETS`; Doctor receives no PostgreSQL, Redis or model
+  credentials. Core performs its own dependency checks and returns bounded,
+  secret-free status enums. Provider status means credentials are configured,
+  not that real inference has been tested. Redirects are denied.
 
 Intended responsibilities:
 - inspect effective configuration without exposing secrets

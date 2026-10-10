@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/butler/butler/internal/memory/sanitize"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -47,7 +48,7 @@ func (o Origin) normalized() Origin {
 	if o.Kind == "" {
 		o.Kind = LegacyUnknown
 	}
-	if o.Sensitivity == "" {
+	if o.Sensitivity != Public && o.Sensitivity != Private && o.Sensitivity != Secret {
 		o.Sensitivity = Private
 	}
 	o.SourceRefs = unique(o.SourceRefs)
@@ -87,7 +88,16 @@ func Instruction(text string, origin Origin) transport.InputItem {
 }
 
 func CurrentOwnerMessage(text, inputRef string) transport.InputItem {
-	return transport.InputItem{Role: "user", Content: text, ContentType: "text/plain", Metadata: metadata(Origin{Kind: OwnerInput, SourceRefs: []string{inputRef}, Sensitivity: Private}.normalized())}
+	return transport.InputItem{Role: "user", Content: sanitize.Text(text), ContentType: "text/plain", Metadata: metadata(Origin{Kind: OwnerInput, SourceRefs: []string{inputRef}, Sensitivity: Private}.normalized())}
+}
+
+// HistoricalMessage preserves complete transcript text and its conversational
+// role while marking it derived data. Neither role grants durable authority.
+func HistoricalMessage(role, text, sourceRef string) transport.InputItem {
+	if role != "assistant" {
+		role = "user"
+	}
+	return transport.InputItem{Role: role, Content: sanitize.Text(text), ContentType: "text/plain", Metadata: metadata(Origin{Kind: MemoryDerived, SourceRefs: []string{sourceRef}, Sensitivity: Private}.normalized())}
 }
 
 func Data(value any, origin Origin) transport.InputItem {
@@ -138,6 +148,10 @@ func Normalize(items []transport.InputItem) ([]transport.InputItem, error) {
 			continue
 		}
 		if origin.Kind == OwnerInput && len(origin.SourceRefs) > 0 && item.Role == "user" {
+			result = append(result, item)
+			continue
+		}
+		if !origin.IsInstruction() && origin.Kind != LegacyUnknown && len(origin.SourceRefs) > 0 && (item.Role == "user" || item.Role == "assistant") {
 			result = append(result, item)
 			continue
 		}

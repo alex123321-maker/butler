@@ -3,14 +3,19 @@ package runtime
 import (
 	"bufio"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	browserscripts "github.com/butler/butler/apps/tool-browser/scripts"
+	"github.com/butler/butler/internal/security/egress"
+	"github.com/butler/butler/internal/security/workspace"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 )
 
 const defaultBrowserScriptPath = "apps/tool-browser/scripts/browser_runtime.mjs"
@@ -18,12 +23,15 @@ const defaultBrowserScriptPath = "apps/tool-browser/scripts/browser_runtime.mjs"
 // PlaywrightRunner owns one helper process. Runtime-only secrets use its
 // private stdin, never command arguments or helper stderr.
 type PlaywrightRunner struct {
-	nodeBinary string
-	scriptPath string
-	mu         sync.Mutex
-	cmd        *exec.Cmd
-	stdin      io.WriteCloser
-	responses  <-chan helperResponse
+	nodeBinary    string
+	scriptPath    string
+	mu            sync.Mutex
+	cmd           *exec.Cmd
+	stdin         io.WriteCloser
+	responses     <-chan helperResponse
+	policy        egress.Policy
+	proxies       map[string]*egress.ScopedProxy
+	workspaceRoot string
 }
 type helperResponse struct {
 	result Result
@@ -37,14 +45,34 @@ func NewPlaywrightRunner(nodeBinary, scriptPath string) *PlaywrightRunner {
 	if strings.TrimSpace(scriptPath) == "" {
 		scriptPath = defaultBrowserScriptPath
 	}
-	return &PlaywrightRunner{nodeBinary: nodeBinary, scriptPath: scriptPath}
+	return &PlaywrightRunner{nodeBinary: nodeBinary, scriptPath: scriptPath, proxies: map[string]*egress.ScopedProxy{}}
+}
+
+func NewPlaywrightRunnerWithPolicy(nodeBinary, scriptPath string, policy egress.Policy) *PlaywrightRunner {
+	runner := NewPlaywrightRunner(nodeBinary, scriptPath)
+	runner.policy = policy
+	return runner
 }
 func (r *PlaywrightRunner) start() error {
-	path, err := resolveBrowserScriptPath(r.scriptPath)
+	root := r.workspaceRoot
+	if root == "" {
+		var err error
+		root, err = os.Getwd()
+		if err != nil {
+			return fmt.Errorf("browser helper unavailable")
+		}
+	}
+	path, err := resolveBrowserScriptPathFrom(root, r.scriptPath)
 	if err != nil {
 		return err
 	}
-	cmd := exec.Command(r.nodeBinary, path)
+	cmd := exec.Command(r.nodeBinary, "--input-type=module", "--eval", browserscripts.Runtime)
+	cmd.Dir = filepath.Dir(path)
+	for _, name := range []string{"PATH", "HOME", "PLAYWRIGHT_BROWSERS_PATH", "NODE_ENV"} {
+		if value, ok := os.LookupEnv(name); ok {
+			cmd.Env = append(cmd.Env, name+"="+value)
+		}
+	}
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		return fmt.Errorf("open browser helper input: %w", err)
@@ -83,6 +111,52 @@ func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error)
 	if err := ctx.Err(); err != nil {
 		return Result{}, err
 	}
+	for id, proxy := range r.proxies {
+		if proxy.Expired() {
+			_ = proxy.Close()
+			delete(r.proxies, id)
+		}
+	}
+	if req.ToolName == "browser.open" || req.ToolName == "browser.read" {
+		expires := time.Now().Add(30 * time.Second)
+		if req.ToolName == "browser.open" {
+			var err error
+			expires, err = time.Parse(time.RFC3339Nano, req.ExpiresAt)
+			if err != nil {
+				return Result{}, egress.ErrDenied
+			}
+		}
+		origin := req.ScopeOrigin
+		if origin == "" {
+			parsed, err := r.policy.ValidateURL(req.URL)
+			if err != nil {
+				return Result{}, err
+			}
+			origin = parsed.Scheme + "://" + parsed.Host
+		}
+		proxy, err := egress.NewScopedProxy(r.policy, origin, expires, egress.MaxRequestBytes)
+		if err != nil {
+			return Result{}, err
+		}
+		req.ProxyURL = proxy.URL()
+		if req.ToolName == "browser.read" {
+			defer proxy.Close()
+		} else {
+			if _, exists := r.proxies[req.SessionID]; exists {
+				_ = proxy.Close()
+				return Result{}, egress.ErrDenied
+			}
+			r.proxies[req.SessionID] = proxy
+		}
+	}
+	if req.ToolName == "browser.close" {
+		defer func() {
+			if proxy := r.proxies[req.SessionID]; proxy != nil {
+				_ = proxy.Close()
+				delete(r.proxies, req.SessionID)
+			}
+		}()
+	}
 	if r.cmd == nil {
 		if req.ToolName != "browser.open" && req.ToolName != "browser.read" {
 			return Result{Error: &ResultError{ErrorType: "session_lost", Message: "browser process lost; explicitly open a new session"}}, nil
@@ -113,6 +187,10 @@ func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error)
 	}
 }
 func (r *PlaywrightRunner) stop() {
+	for id, proxy := range r.proxies {
+		_ = proxy.Close()
+		delete(r.proxies, id)
+	}
 	if r.cmd != nil {
 		_ = r.stdin.Close()
 		_ = r.cmd.Process.Kill()
@@ -124,6 +202,14 @@ func (r *PlaywrightRunner) stop() {
 }
 func (r *PlaywrightRunner) Close() error { r.mu.Lock(); defer r.mu.Unlock(); r.stop(); return nil }
 func resolveBrowserScriptPath(configuredPath string) (string, error) {
+	root, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("browser helper unavailable")
+	}
+	return resolveBrowserScriptPathFrom(root, configuredPath)
+}
+
+func resolveBrowserScriptPathFrom(root, configuredPath string) (string, error) {
 	path := strings.TrimSpace(configuredPath)
 	if path == "" {
 		path = defaultBrowserScriptPath
@@ -136,8 +222,13 @@ func resolveBrowserScriptPath(configuredPath string) (string, error) {
 		path = absPath
 	}
 	path = filepath.Clean(path)
-	if _, err := os.Stat(path); err != nil {
-		return "", fmt.Errorf("browser script is not available: %w", err)
+	name, err := filepath.Rel(root, path)
+	if err != nil {
+		return "", fmt.Errorf("browser helper unavailable")
+	}
+	data, err := workspace.ReadRegular(root, filepath.ToSlash(name), 1024*1024)
+	if err != nil || sha256.Sum256(data) != sha256.Sum256([]byte(browserscripts.Runtime)) {
+		return "", fmt.Errorf("browser helper is outside its workspace or is not the reviewed binary version")
 	}
 	return path, nil
 }

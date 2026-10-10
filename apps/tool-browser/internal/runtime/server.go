@@ -49,6 +49,7 @@ type Request struct {
 	Timeout            int64         `json:"timeout,omitempty"`
 	ScopeOrigin        string        `json:"scope_origin,omitempty"`
 	ExpiresAt          string        `json:"expires_at,omitempty"`
+	ProxyURL           string        `json:"proxy_url,omitempty"`
 	SecretValues       []string      `json:"secret_values,omitempty"`
 	Cookie             *Cookie       `json:"cookie,omitempty"`
 	StorageState       *StorageState `json:"storage_state,omitempty"`

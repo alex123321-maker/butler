@@ -61,6 +61,11 @@ services:
       context: ..
       dockerfile: docker/tool-http/Dockerfile
     restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 256m
     environment:
       - BUTLER_ENVIRONMENT
       - BUTLER_LOG_LEVEL
@@ -76,14 +81,19 @@ services:
       start_period: 15s
     ports: []
     networks:
-      - backend
       - tool-runtime
+      - tool-egress
 
   tool-webfetch:
     build:
       context: ..
       dockerfile: docker/tool-webfetch/Dockerfile
     restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 256m
     environment:
       - BUTLER_ENVIRONMENT
       - BUTLER_LOG_LEVEL
@@ -103,14 +113,22 @@ services:
       start_period: 15s
     ports: []
     networks:
-      - backend
       - tool-runtime
+      - tool-egress
 
   tool-browser:
     build:
       context: ..
       dockerfile: docker/tool-browser/Dockerfile
     restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 256
+    mem_limit: 1g
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=256m,mode=1777
+      - /home/butler:rw,noexec,nosuid,size=64m,uid=10001,gid=10001,mode=700
     environment:
       - BUTLER_ENVIRONMENT
       - BUTLER_LOG_LEVEL
@@ -128,8 +146,8 @@ services:
       start_period: 20s
     ports: []
     networks:
-      - backend
       - tool-runtime
+      - tool-egress
 
   tool-browser-local:
     build:
@@ -165,21 +183,18 @@ services:
       context: ..
       dockerfile: docker/tool-doctor/Dockerfile
     restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 128m
     environment:
-      - BUTLER_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler?sslmode=disable
-      - BUTLER_REDIS_URL=redis://redis:6379/0
+      - BUTLER_DOCTOR_CORE_DIAGNOSTICS_URL=http://orchestrator:8080/internal/diagnostics
       - BUTLER_DOCTOR_CONTAINER_TARGETS=orchestrator=http://orchestrator:8080/health,tool-broker=http://tool-broker:8080/health,tool-browser=http://tool-browser:8080/health,tool-http=http://tool-http:8080/health,tool-webfetch=http://tool-webfetch:8080/health,tool-doctor=http://tool-doctor:8080/health
       - BUTLER_ENVIRONMENT
       - BUTLER_LOG_LEVEL
       - BUTLER_HTTP_ADDR
       - BUTLER_GRPC_ADDR
-      - BUTLER_MODEL_PROVIDER
-      - BUTLER_OPENAI_API_KEY
-      - BUTLER_OPENAI_BASE_URL
-      - BUTLER_OPENAI_MODEL
-      - BUTLER_OPENAI_CODEX_MODEL
-      - BUTLER_OPENAI_CODEX_BASE_URL
-      - BUTLER_GITHUB_COPILOT_MODEL
     healthcheck:
       test:
         - CMD-SHELL
@@ -190,8 +205,8 @@ services:
       start_period: 15s
     ports: []
     networks:
-      - backend
       - tool-runtime
+      - diagnostics
 
   restart-helper:
     build:
@@ -355,6 +370,7 @@ services:
       - "8080:8080"
     networks:
       - backend
+      - diagnostics
 
   web:
     build:
@@ -383,6 +399,9 @@ services:
 networks:
   backend:
   tool-runtime:
+    internal: true
+  tool-egress:
+  diagnostics:
     internal: true
 
 volumes:

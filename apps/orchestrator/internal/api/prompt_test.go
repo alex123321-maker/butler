@@ -44,7 +44,9 @@ func TestPromptServerHandleConfigRejectsInvalidPrompt(t *testing.T) {
 	t.Parallel()
 
 	server := NewPromptServer(fakePromptManager{updateErr: errors.New("base prompt contains secret-like content")})
+	server.SetOwnerControlAuth(NewOwnerControlAuth(strings.Repeat("p", 32), "owner"))
 	req := httptest.NewRequest(http.MethodPut, "/api/v1/prompts/system", strings.NewReader(`{"base_prompt":"password=secret"}`))
+	req.Header.Set("Authorization", "Bearer "+strings.Repeat("p", 32))
 	rr := httptest.NewRecorder()
 
 	server.HandleConfig().ServeHTTP(rr, req)
@@ -67,6 +69,8 @@ func TestPromptServerHandlePreviewReturnsAssembledPrompt(t *testing.T) {
 		},
 	}})
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/prompts/system/preview", strings.NewReader(`{"session_key":"session-1","user_message":"hello"}`))
+	server.SetOwnerControlAuth(NewOwnerControlAuth(strings.Repeat("p", 32), "owner"))
+	req.Header.Set("Authorization", "Bearer "+strings.Repeat("p", 32))
 	rr := httptest.NewRecorder()
 
 	server.HandlePreview().ServeHTTP(rr, req)

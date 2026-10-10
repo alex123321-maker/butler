@@ -24,6 +24,7 @@ import (
 	"github.com/butler/butler/internal/logger"
 	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/transcript"
+	"github.com/butler/butler/internal/security/content"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -329,5 +330,8 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 	if cfg.Budgets != nil {
 		service.provider = &budgetedProvider{ModelProvider: provider, service: service}
 	}
+	// Provenance validation precedes admission; admission still sees the raw
+	// adapter's declared inference limits before its actual transport request.
+	service.provider = content.Protect(service.provider)
 	return service
 }

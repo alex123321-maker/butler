@@ -15,6 +15,9 @@ import (
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/logger"
+	"github.com/butler/butler/internal/memory/sanitize"
+	"github.com/butler/butler/internal/security/egress"
+	"github.com/butler/butler/internal/security/redact"
 	"golang.org/x/net/html"
 )
 
@@ -42,6 +45,13 @@ type FetchResult struct {
 
 type ProviderChain struct {
 	providers []Provider
+	policy    egress.Policy
+}
+
+func NewProviderChainWithPolicy(policy egress.Policy, providers ...Provider) *ProviderChain {
+	chain := NewProviderChain(providers...)
+	chain.policy = policy
+	return chain
 }
 
 func NewProviderChain(providers ...Provider) *ProviderChain {
@@ -55,6 +65,13 @@ func NewProviderChain(providers ...Provider) *ProviderChain {
 }
 
 func (c *ProviderChain) Fetch(ctx context.Context, rawURL string, includeHTML bool) (FetchResult, error) {
+	parsed, err := c.policy.ValidateURL(rawURL)
+	if err != nil {
+		return FetchResult{}, egress.ErrDenied
+	}
+	if _, err := c.policy.Resolve(ctx, parsed.Hostname()); err != nil {
+		return FetchResult{}, egress.ErrDenied
+	}
 	var lastErr error
 	for _, provider := range c.providers {
 		result, err := provider.Fetch(ctx, rawURL, includeHTML)
@@ -62,14 +79,14 @@ func (c *ProviderChain) Fetch(ctx context.Context, rawURL string, includeHTML bo
 			if result.Provider == "" {
 				result.Provider = provider.Name()
 			}
-			return result, nil
+			return sanitizeFetchResult(result), nil
 		}
 		lastErr = err
 	}
 	if lastErr == nil {
 		lastErr = fmt.Errorf("no webfetch providers are configured")
 	}
-	return FetchResult{}, lastErr
+	return FetchResult{}, fmt.Errorf("webfetch providers unavailable")
 }
 
 type Server struct {
@@ -107,6 +124,7 @@ func NewServer(fetcher *ProviderChain, log *slog.Logger) *Server {
 }
 
 func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*runtimev1.ExecuteResponse, error) {
+	ctx = egress.WithCounter(ctx, egress.NewCounter(egress.MaxRequestBytes))
 	call := req.GetToolCall()
 	if call == nil {
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "tool_call is required")}, nil
@@ -148,15 +166,15 @@ func (s *Server) executeFetchBatch(ctx context.Context, req *runtimev1.ExecuteRe
 	if err := json.Unmarshal([]byte(req.GetToolCall().GetArgsJson()), &args); err != nil {
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "args_json must decode into web.fetch_batch args")}, nil
 	}
-	if len(args.URLs) == 0 {
-		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "urls is required")}, nil
+	if len(args.URLs) == 0 || len(args.URLs) > 8 {
+		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "urls must contain 1 to 8 entries")}, nil
 	}
 
 	items := make([]map[string]any, 0, len(args.URLs))
 	for _, itemURL := range args.URLs {
 		result, err := s.fetcher.Fetch(ctx, itemURL, args.IncludeHTML)
 		if err != nil {
-			items = append(items, map[string]any{"requested_url": itemURL, "error": err.Error()})
+			items = append(items, map[string]any{"error": "web resource unavailable or denied"})
 			continue
 		}
 		items = append(items, map[string]any{
@@ -218,10 +236,16 @@ type SelfHostedProvider struct {
 }
 
 func NewSelfHostedProvider(baseURL string, client *http.Client) *SelfHostedProvider {
-	if strings.TrimSpace(baseURL) == "" {
+	endpoint, err := url.Parse(strings.TrimSpace(baseURL))
+	if err != nil || endpoint.Host == "" || endpoint.User != nil || (endpoint.Scheme != "http" && endpoint.Scheme != "https") || endpoint.RawQuery != "" || endpoint.Fragment != "" {
 		return nil
 	}
-	return &SelfHostedProvider{baseURL: strings.TrimRight(strings.TrimSpace(baseURL), "/"), client: client}
+	if client == nil {
+		client = &http.Client{Timeout: 30 * time.Second}
+	}
+	copyClient := *client
+	copyClient.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	return &SelfHostedProvider{baseURL: strings.TrimRight(endpoint.String(), "/"), client: &copyClient}
 }
 
 func (p *SelfHostedProvider) Name() string { return "self_hosted_primary" }
@@ -233,14 +257,16 @@ func (p *SelfHostedProvider) Fetch(ctx context.Context, rawURL string, includeHT
 		return FetchResult{}, err
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
+	if err := egress.TakeRequest(ctx, httpReq); err != nil {
+		return FetchResult{}, egress.ErrLimit
+	}
 	resp, err := p.client.Do(httpReq)
 	if err != nil {
 		return FetchResult{}, err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode >= 400 {
-		body, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
-		return FetchResult{}, fmt.Errorf("self-hosted webfetch returned status %d: %s", resp.StatusCode, strings.TrimSpace(string(body)))
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return FetchResult{}, fmt.Errorf("self-hosted webfetch returned status %d", resp.StatusCode)
 	}
 
 	var payload struct {
@@ -251,7 +277,7 @@ func (p *SelfHostedProvider) Fetch(ctx context.Context, rawURL string, includeHT
 		ContentHTML string         `json:"content_html"`
 		Metadata    map[string]any `json:"metadata"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 2*1024*1024)).Decode(&payload); err != nil {
 		return FetchResult{}, err
 	}
 	return FetchResult{
@@ -276,7 +302,7 @@ func NewJinaReaderProvider(baseURL, token string, client *http.Client) *JinaRead
 	if strings.TrimSpace(baseURL) == "" {
 		return nil
 	}
-	return &JinaReaderProvider{baseURL: strings.TrimRight(strings.TrimSpace(baseURL), "/"), token: strings.TrimSpace(token), client: client}
+	return &JinaReaderProvider{baseURL: strings.TrimRight(strings.TrimSpace(baseURL), "/"), token: strings.TrimSpace(token), client: egress.SecureClient(client)}
 }
 
 func (p *JinaReaderProvider) Name() string { return "jina_reader_fallback" }
@@ -307,7 +333,7 @@ func (p *JinaReaderProvider) Fetch(ctx context.Context, rawURL string, includeHT
 		FinalURL:     rawURL,
 		StatusCode:   resp.StatusCode,
 		MIMEType:     resp.Header.Get("Content-Type"),
-		ContentText:  string(body),
+		ContentText:  redact.Values(sanitize.Text(string(body)), p.token),
 		ContentHTML:  mapHTML(includeHTML, ""),
 		Metadata:     map[string]any{},
 	}, nil
@@ -319,7 +345,7 @@ type PlainHTTPProvider struct {
 }
 
 func NewPlainHTTPProvider(client *http.Client, enabled bool) *PlainHTTPProvider {
-	return &PlainHTTPProvider{client: client, enabled: enabled}
+	return &PlainHTTPProvider{client: egress.SecureClient(client), enabled: enabled}
 }
 
 func (p *PlainHTTPProvider) Name() string { return "plain_http_fallback" }
@@ -392,6 +418,20 @@ func mapHTML(include bool, htmlContent string) string {
 		return htmlContent
 	}
 	return ""
+}
+
+// Provider responses are observations, including metadata and returned URLs.
+// Operator service credentials and cookies never become model-visible fields.
+func sanitizeFetchResult(result FetchResult) FetchResult {
+	encoded, err := json.Marshal(result)
+	if err != nil {
+		return FetchResult{Provider: result.Provider}
+	}
+	var cleaned FetchResult
+	if json.Unmarshal([]byte(sanitize.JSON(string(encoded))), &cleaned) != nil {
+		return FetchResult{Provider: result.Provider}
+	}
+	return cleaned
 }
 
 func completedResult(req *runtimev1.ExecuteRequest, resultJSON string) *toolbrokerv1.ToolResult {

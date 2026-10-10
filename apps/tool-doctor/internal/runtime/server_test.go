@@ -22,7 +22,7 @@ func TestCheckerCheckSystem(t *testing.T) {
 	checker.postgresCheck = func(context.Context) error { return nil }
 	checker.redisCheck = func(context.Context) error { return errors.New("redis unavailable") }
 	checker.providerCheck = func(context.Context) error { return nil }
-	checker.cfg.Postgres.URL = "postgres://doctor@localhost/butler"
+	checker.cfg.CoreDiagnosticsURL = "http://orchestrator/internal/diagnostics"
 	checker.cfg.Redis.URL = "redis://localhost:6379/0"
 	report := checker.CheckSystem(context.Background())
 	if report.Status != health.StatusUnhealthy {
@@ -51,17 +51,17 @@ func TestCheckerCheckContainer(t *testing.T) {
 func TestCheckerCheckProviderUsesHTTPProbe(t *testing.T) {
 	t.Parallel()
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if got := r.Header.Get("Authorization"); got != "Bearer sk-test" {
-			t.Fatalf("unexpected authorization header %q", got)
+		if got := r.Header.Get("Authorization"); got != "" {
+			t.Fatal("Doctor used a provider credential")
 		}
-		if r.URL.Path != "/models" {
+		if r.URL.Path != "/internal/diagnostics" {
 			t.Fatalf("unexpected path %q", r.URL.Path)
 		}
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"data":[]}`))
+		_, _ = w.Write([]byte(`{"checks":[{"name":"provider","status":"healthy"}]}`))
 	}))
 	defer server.Close()
-	checker := NewChecker(config.ToolDoctorConfig{OpenAIAPIKey: "sk-test", OpenAIBaseURL: server.URL}, config.Snapshot{})
+	checker := NewChecker(config.ToolDoctorConfig{CoreDiagnosticsURL: server.URL + "/internal/diagnostics", OpenAIAPIKey: "sk-test", OpenAIBaseURL: server.URL}, config.Snapshot{})
 	report := checker.CheckProvider(context.Background())
 	if report.Status != health.StatusHealthy {
 		t.Fatalf("expected healthy provider report, got %+v", report)

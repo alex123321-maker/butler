@@ -16,6 +16,7 @@ import (
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/logger"
+	"github.com/butler/butler/internal/security/egress"
 	"golang.org/x/net/html"
 )
 
@@ -74,7 +75,7 @@ func NewServer(httpClient *http.Client, log *slog.Logger) *Server {
 	if log == nil {
 		log = slog.Default()
 	}
-	return &Server{httpClient: httpClient, log: logger.WithComponent(log, "tool-http-runtime")}
+	return &Server{httpClient: egress.SecureClient(httpClient), log: logger.WithComponent(log, "tool-http-runtime")}
 }
 
 func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*runtimev1.ExecuteResponse, error) {
@@ -142,6 +143,9 @@ func (s *Server) executeRequest(ctx context.Context, req *runtimev1.ExecuteReque
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, fmt.Sprintf("build request: %v", err), "{}")}, nil
 	}
 	for key, value := range args.Headers {
+		if !callerHeaderAllowed(key) || strings.ContainsAny(value, "\r\n") {
+			return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "caller header is not allowed", "{}")}, nil
+		}
 		httpReq.Header.Set(key, value)
 	}
 	if err := applyResolvedAuth(httpReq, args.Auth, req.GetResolvedCredentials()); err != nil {
@@ -167,21 +171,21 @@ func (s *Server) executeRequest(ctx context.Context, req *runtimev1.ExecuteReque
 
 	resp, err := client.Do(httpReq)
 	if err != nil {
-		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, fmt.Sprintf("execute request: %v", err), mustJSON(map[string]any{"domain": parsedURL.Hostname()}))}, nil
+		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "outbound request failed or was denied by policy", "{}")}, nil
 	}
 	defer resp.Body.Close()
 	body, truncated, err := readBody(resp.Body, maxBodyBytes)
 	if err != nil {
-		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, fmt.Sprintf("read response body: %v", err), "{}")}, nil
+		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, "response body unavailable", "{}")}, nil
 	}
 
 	resultJSON := mustJSON(map[string]any{
 		"status_code": resp.StatusCode,
-		"headers":     flattenHeaders(resp.Header),
-		"body":        body,
+		"headers":     publicResponseHeaders(resp, req.GetResolvedCredentials()),
+		"body":        privateResponseText(resp, body, req.GetResolvedCredentials()),
 		"truncated":   truncated,
 	})
-	s.log.Info("http request executed", slog.String("tool_call_id", call.GetToolCallId()), slog.String("method", method), slog.String("url", parsedURL.String()), slog.Int("status_code", resp.StatusCode))
+	s.log.Info("http request executed", slog.String("tool_call_id", call.GetToolCallId()), slog.String("method", method), slog.Int("status_code", resp.StatusCode))
 	return &runtimev1.ExecuteResponse{Result: &toolbrokerv1.ToolResult{ToolCallId: call.GetToolCallId(), RunId: call.GetRunId(), ToolName: call.GetToolName(), Status: "completed", ResultJson: resultJSON, FinishedAt: time.Now().UTC().Format(time.RFC3339Nano)}}, nil
 }
 
@@ -226,13 +230,13 @@ func (s *Server) executeDownload(ctx context.Context, req *runtimev1.ExecuteRequ
 
 	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
-		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, fmt.Sprintf("download request failed: %v", err), mustJSON(map[string]any{"domain": parsedURL.Hostname()}))}, nil
+		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "outbound download failed or was denied by policy", "{}")}, nil
 	}
 	defer resp.Body.Close()
 
 	body, truncated, err := readBody(resp.Body, maxSize)
 	if err != nil {
-		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, fmt.Sprintf("read download body: %v", err), "{}")}, nil
+		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, "download body unavailable", "{}")}, nil
 	}
 
 	contentType := resp.Header.Get("Content-Type")
@@ -241,9 +245,9 @@ func (s *Server) executeDownload(ctx context.Context, req *runtimev1.ExecuteRequ
 		"content_type": contentType,
 		"size":         len(body),
 		"truncated":    truncated,
-		"body":         body,
+		"body":         privateResponseText(resp, body, req.GetResolvedCredentials()),
 	})
-	s.log.Info("http download executed", slog.String("tool_call_id", call.GetToolCallId()), slog.String("url", parsedURL.String()), slog.Int("status_code", resp.StatusCode), slog.Int("size", len(body)))
+	s.log.Info("http download executed", slog.String("tool_call_id", call.GetToolCallId()), slog.Int("status_code", resp.StatusCode), slog.Int("size", len(body)))
 	return &runtimev1.ExecuteResponse{Result: &toolbrokerv1.ToolResult{ToolCallId: call.GetToolCallId(), RunId: call.GetRunId(), ToolName: call.GetToolName(), Status: "completed", ResultJson: resultJSON, FinishedAt: time.Now().UTC().Format(time.RFC3339Nano)}}, nil
 }
 
@@ -289,14 +293,14 @@ func (s *Server) executeParseHTML(ctx context.Context, req *runtimev1.ExecuteReq
 		}
 		resp, err := s.httpClient.Do(httpReq)
 		if err != nil {
-			return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, fmt.Sprintf("fetch html: %v", err), mustJSON(map[string]any{"domain": parsedURL.Hostname()}))}, nil
+			return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "outbound HTML fetch failed or was denied by policy", "{}")}, nil
 		}
 		defer resp.Body.Close()
 		body, _, err := readBody(resp.Body, maxHTMLParseContent)
 		if err != nil {
-			return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, fmt.Sprintf("read html body: %v", err), "{}")}, nil
+			return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, "HTML body unavailable", "{}")}, nil
 		}
-		htmlContent = body
+		htmlContent = privateResponseText(resp, body, req.GetResolvedCredentials())
 	} else {
 		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "url or content is required", "{}")}, nil
 	}

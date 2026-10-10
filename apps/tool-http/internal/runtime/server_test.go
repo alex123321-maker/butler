@@ -11,6 +11,7 @@ import (
 
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/security/egress/egresstest"
 )
 
 // ---------------------------------------------------------------------------
@@ -29,11 +30,11 @@ func TestExecutePerformsHTTPRequest(t *testing.T) {
 	}))
 	defer server.Close()
 
-	runtimeServer := NewServer(server.Client(), nil)
+	runtimeServer := NewServer(egresstest.Client(server), nil)
 	resp, err := runtimeServer.Execute(context.Background(), &runtimev1.ExecuteRequest{
 		Context:  &runtimev1.ExecutionContext{RunId: "run-1", ToolCallId: "tool-1"},
-		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tool-1", RunId: "run-1", ToolName: "http.request", ArgsJson: `{"method":"POST","url":"` + server.URL + `"}`},
-		Contract: &toolbrokerv1.ToolContract{ToolName: "http.request", AllowedDomains: []string{"127.0.0.1"}},
+		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tool-1", RunId: "run-1", ToolName: "http.request", ArgsJson: `{"method":"POST","url":"` + egresstest.Origin + `"}`},
+		Contract: &toolbrokerv1.ToolContract{ToolName: "http.request", AllowedDomains: []string{"external.test"}},
 	})
 	if err != nil {
 		t.Fatalf("Execute returned error: %v", err)
@@ -65,11 +66,11 @@ func TestExecuteAppliesResolvedCredentialAuth(t *testing.T) {
 	}))
 	defer server.Close()
 
-	runtimeServer := NewServer(server.Client(), nil)
+	runtimeServer := NewServer(egresstest.Client(server), nil)
 	resp, err := runtimeServer.Execute(context.Background(), &runtimev1.ExecuteRequest{
 		Context:             &runtimev1.ExecutionContext{RunId: "run-1", ToolCallId: "tool-1"},
-		ToolCall:            &toolbrokerv1.ToolCall{ToolCallId: "tool-1", RunId: "run-1", ToolName: "http.request", ArgsJson: `{"method":"GET","url":"` + server.URL + `","auth":{"type":"credential_ref","alias":"github","field":"token"}}`},
-		Contract:            &toolbrokerv1.ToolContract{ToolName: "http.request", AllowedDomains: []string{"127.0.0.1"}},
+		ToolCall:            &toolbrokerv1.ToolCall{ToolCallId: "tool-1", RunId: "run-1", ToolName: "http.request", ArgsJson: `{"method":"GET","url":"` + egresstest.Origin + `","auth":{"type":"credential_ref","alias":"github","field":"token"}}`},
+		Contract:            &toolbrokerv1.ToolContract{ToolName: "http.request", AllowedDomains: []string{"external.test"}},
 		ResolvedCredentials: []*runtimev1.ResolvedCredential{{Alias: "github", Field: "token", Value: "secret-token"}},
 	})
 	if err != nil {
@@ -105,10 +106,10 @@ func TestExecuteWithEmptyAllowlistPermitsAll(t *testing.T) {
 	}))
 	defer server.Close()
 
-	runtimeServer := NewServer(server.Client(), nil)
+	runtimeServer := NewServer(egresstest.Client(server), nil)
 	resp, err := runtimeServer.Execute(context.Background(), &runtimev1.ExecuteRequest{
 		Context:  &runtimev1.ExecutionContext{RunId: "run-1", ToolCallId: "tool-1"},
-		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tool-1", RunId: "run-1", ToolName: "http.request", ArgsJson: `{"method":"GET","url":"` + server.URL + `"}`},
+		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tool-1", RunId: "run-1", ToolName: "http.request", ArgsJson: `{"method":"GET","url":"` + egresstest.Origin + `"}`},
 		Contract: &toolbrokerv1.ToolContract{ToolName: "http.request", AllowedDomains: []string{}},
 	})
 	if err != nil {
@@ -181,10 +182,10 @@ func TestExecuteDownload(t *testing.T) {
 	}))
 	defer server.Close()
 
-	runtimeServer := NewServer(server.Client(), nil)
+	runtimeServer := NewServer(egresstest.Client(server), nil)
 	resp, err := runtimeServer.Execute(context.Background(), &runtimev1.ExecuteRequest{
 		Context:  &runtimev1.ExecutionContext{RunId: "run-1", ToolCallId: "tc-1"},
-		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-1", RunId: "run-1", ToolName: "http.download", ArgsJson: `{"url":"` + server.URL + `"}`},
+		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-1", RunId: "run-1", ToolName: "http.download", ArgsJson: `{"url":"` + egresstest.Origin + `"}`},
 		Contract: &toolbrokerv1.ToolContract{ToolName: "http.download", AllowedDomains: []string{}},
 	})
 	if err != nil {
@@ -214,10 +215,10 @@ func TestExecuteDownloadEnforcesMaxSize(t *testing.T) {
 	}))
 	defer server.Close()
 
-	runtimeServer := NewServer(server.Client(), nil)
+	runtimeServer := NewServer(egresstest.Client(server), nil)
 	resp, err := runtimeServer.Execute(context.Background(), &runtimev1.ExecuteRequest{
 		Context:  &runtimev1.ExecutionContext{RunId: "run-1", ToolCallId: "tc-1"},
-		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-1", RunId: "run-1", ToolName: "http.download", ArgsJson: `{"url":"` + server.URL + `","max_size":1024}`},
+		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-1", RunId: "run-1", ToolName: "http.download", ArgsJson: `{"url":"` + egresstest.Origin + `","max_size":1024}`},
 		Contract: &toolbrokerv1.ToolContract{ToolName: "http.download", AllowedDomains: []string{}},
 	})
 	if err != nil {
@@ -284,10 +285,10 @@ func TestExecuteParseHTMLFromURL(t *testing.T) {
 	}))
 	defer server.Close()
 
-	runtimeServer := NewServer(server.Client(), nil)
+	runtimeServer := NewServer(egresstest.Client(server), nil)
 	resp, err := runtimeServer.Execute(context.Background(), &runtimev1.ExecuteRequest{
 		Context:  &runtimev1.ExecutionContext{RunId: "run-1", ToolCallId: "tc-1"},
-		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-1", RunId: "run-1", ToolName: "http.parse_html", ArgsJson: `{"url":"` + server.URL + `","selector":"p.content"}`},
+		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-1", RunId: "run-1", ToolName: "http.parse_html", ArgsJson: `{"url":"` + egresstest.Origin + `","selector":"p.content"}`},
 		Contract: &toolbrokerv1.ToolContract{ToolName: "http.parse_html", AllowedDomains: []string{}},
 	})
 	if err != nil {
@@ -455,13 +456,13 @@ func TestIntegrationRequestDownloadParseHTML(t *testing.T) {
 	}))
 	defer server.Close()
 
-	runtimeServer := NewServer(server.Client(), nil)
+	runtimeServer := NewServer(egresstest.Client(server), nil)
 	contract := &toolbrokerv1.ToolContract{AllowedDomains: []string{}}
 
 	// Step 1: http.request
 	resp, err := runtimeServer.Execute(context.Background(), &runtimev1.ExecuteRequest{
 		Context:  &runtimev1.ExecutionContext{RunId: "run-1", ToolCallId: "tc-1"},
-		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-1", RunId: "run-1", ToolName: "http.request", ArgsJson: `{"method":"GET","url":"` + server.URL + `/api"}`},
+		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-1", RunId: "run-1", ToolName: "http.request", ArgsJson: `{"method":"GET","url":"` + egresstest.Origin + `/api"}`},
 		Contract: contract,
 	})
 	if err != nil || resp.GetResult().GetStatus() != "completed" {
@@ -471,7 +472,7 @@ func TestIntegrationRequestDownloadParseHTML(t *testing.T) {
 	// Step 2: http.download
 	resp, err = runtimeServer.Execute(context.Background(), &runtimev1.ExecuteRequest{
 		Context:  &runtimev1.ExecutionContext{RunId: "run-1", ToolCallId: "tc-2"},
-		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-2", RunId: "run-1", ToolName: "http.download", ArgsJson: `{"url":"` + server.URL + `/file"}`},
+		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-2", RunId: "run-1", ToolName: "http.download", ArgsJson: `{"url":"` + egresstest.Origin + `/file"}`},
 		Contract: contract,
 	})
 	if err != nil || resp.GetResult().GetStatus() != "completed" {
@@ -486,7 +487,7 @@ func TestIntegrationRequestDownloadParseHTML(t *testing.T) {
 	// Step 3: http.parse_html
 	resp, err = runtimeServer.Execute(context.Background(), &runtimev1.ExecuteRequest{
 		Context:  &runtimev1.ExecutionContext{RunId: "run-1", ToolCallId: "tc-3"},
-		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-3", RunId: "run-1", ToolName: "http.parse_html", ArgsJson: `{"url":"` + server.URL + `/page","selector":"p.info"}`},
+		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tc-3", RunId: "run-1", ToolName: "http.parse_html", ArgsJson: `{"url":"` + egresstest.Origin + `/page","selector":"p.info"}`},
 		Contract: contract,
 	})
 	if err != nil || resp.GetResult().GetStatus() != "completed" {
