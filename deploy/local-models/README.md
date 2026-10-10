@@ -86,6 +86,111 @@ quality; the Russian scores are runtime signals, not calibrated decisions or a
 held-out evaluation. Audio/video remain unavailable. Production embedding,
 reranking and extraction quality decisions belong to #25–#28.
 
+## Versioned retrieval quality (2026-10-10 UTC)
+
+Run `bash deploy/local-models/verify-quality-lab.sh /srv/storage/butler/agents/local-models`
+after preparing the models/framework/private token above. It uses a separate
+internal network, PostgreSQL fixture and bounded inference container. It checks
+real pgvector storage, staged reindex/activation, and exact 768/256d query/document
+spaces. Main memory, databases and active index pointers are untouched.
+
+`retrieval-quality.json` fixes 24 public synthetic documents and 24 Russian/code
+queries before tensor evaluation, including six code questions. The reference
+answers distinguish changed agreements, similar but different errors, exact
+approvals, ingress deduplication and permanent effect identities. This small
+fixture is not a held-out benchmark or a claim about private owner documents.
+
+| Retrieval mode | Expected source first | MRR | Recall at 4 |
+|---|---:|---:|---:|
+| Standard BM25 lexical control | 11/24 (45.8%) | — | — |
+| EmbeddingGemma2 768d | 22/24 (91.7%) | 0.951 | 1.000 |
+| EmbeddingGemma2 256d, normalized | 20/24 (83.3%) | 0.896 | 0.958 |
+| 768d followed by Qwen reranking | 21/24 (87.5%) | — | — |
+| 256d followed by Qwen reranking | 20/24 (83.3%) | — | — |
+
+The real current title-keyword fallback found no first expected result in this
+paraphrased fixture; the stronger standard BM25 control is reported separately.
+The current cloud semantic backend is unavailable, so no comparison to its vector
+quality is claimed. Embedding gain is reproducible; reranking regresses the 768d
+result and stays optional/default-off. Similarity never establishes truth or
+permission. Source refs, current revision/hash and typed data origin accompany
+retrieved memory.
+
+Latest `verification-retrieval-quality.json` records both-space indexing in
+16.3 seconds including cold load, 48 query requests in 9.9 seconds and 48 rerank
+requests in 15.1 seconds including a model switch. Earlier repeats took
+9.9/4.0/12.1 seconds respectively; these totals include RPC/PostgreSQL validation
+and host contention, rather than a promised latency. The final run admitted 108
+calls and 113602 input bytes under a test-only 160-call/2MiB/eight-minute gate.
+Whole-device peak was 2353 MiB and full process RSS 1989 MiB; device usage returned
+to the same 17 MiB baseline. Concurrent GLiNER/GPU RSS evidence is recorded
+separately in `verification-capabilities.json` above.
+
+Actual PostgreSQL/race tests cover stale edits during publication, suppressed,
+pending, expired and Secret sources, cross-scope exclusion, missing access
+authority, restart-resumable batches, citation-only vector reuse, dimension
+changes, activation CAS, still-current rollback and deletion cascades. Production
+query/index admission and source access guards remain disabled until the owned
+run/auxiliary-job integration from #22/#23 is verified; the fixture gate cannot
+grant production authority. The optional adapter is documented in
+`internal/memory/semantic/README.md`.
+
+## Hybrid retrieval evidence (2026-10-10 UTC)
+
+The same helper's second argument `hybrid` runs `HybridReader` through the actual
+shared service and disposable pgvector fixture. It keeps the previously fixed
+24 documents/queries and unchanged reference answers. `verification-hybrid-quality.json`
+compares actual 768d embedding order with exact/simple-Russian full-text RRF and
+the optional Qwen stage. Five exact function-name lookups succeed; a nonexistent
+method returns no source and performs no semantic nearest-neighbor substitution.
+
+| Mode | Top1 | MRR | Recall at4 |
+|---|---:|---:|---:|
+| 768d embedding | 22/24 | 0.951 | 1.000 |
+| Protected exact + full-text + vector RRF | 22/24 | 0.951 | 1.000 |
+| Hybrid + Qwen reranking | 21/24 | 0.931 | 1.000 |
+
+The hybrid preserves paraphrased retrieval quality and adds exact technical
+lookup/absence behavior; this corpus shows no natural-query top1 improvement.
+Qwen is default-off because it regresses order. Expected-source recall measures
+retrieval support; no generative answer accuracy or factual verification is
+claimed. Task constraints and permissions still come from structured authority.
+
+The recorded run used 8.7 seconds indexing, 2.1 seconds for 24 query calls and
+9.8 seconds for 24 ranking calls with models grouped to profile quality. One full
+serial query/rerank also ran through the public method and took 14.8 seconds,
+including both GPU model switches; grouped timing is not the per-query production
+latency. Whole-device peak 2353 MiB, full process RSS 1984 MiB, final GPU 17 MiB.
+The largest cited context was 3819 serialized bytes against the 6144-byte budget.
+Ranking transmits only bounded authorized text; clipped final evidence is marked
+and does not silently shorten model input. Production stays disabled pending
+the production source/job/live local-run composition.
+
+## Owned semantic caller acceptance
+
+`verification-owned-semantic.json` replays actual index/query/rank calls against
+the already-deployed internal service. Every call has a committed shared budget
+reservation; indexing uses an independent durable job claim, query/rank uses a
+current live lease and confirmed local_only owner mandate. Catalog-derived chunk
+links and revision/content stamps precede IPC and late output acceptance. The
+smoke also verifies current citations, source deletion/vector cascade and denial
+of publication into a still-building generation after deletion. This is a small
+authority integration smoke, separate from the fixed24 quality evaluation.
+
+Run `bash deploy/local-models/verify-owned-admission-lab.sh` on the lab with the
+existing main service, isolated quality PostgreSQL, own source/cache root and
+private single-file token mount. It launches no second tensor worker, attaches
+only the disposable PostgreSQL to the internal network temporarily, disconnects
+it afterward and writes a sanitized artifact. GPU idle unload remains the shared
+service's normal policy. The main PostgreSQL/Compose source pointer is untouched.
+
+The production #22 worker must wrap all Rebuild reads/publications in
+`JobAdmission.Context`; bundle retrieval needs the live admission plus catalog
+guard, exact local profile pricing and pinned internal connection. Missing hooks
+remain denied. Post-run work retains original task/owner/source/authority pins;
+completed-task indexing needs a new finite owner policy and remains unsupported.
+
+## Main Compose verification
 The main Compose service was exercised on 2026-10-10 at 22:01 UTC with actual
 768/256-dimensional text embeddings, Russian extraction/classification, ranking
 and image loading. See `verification-compose-capabilities.json`. GPU peaked at
@@ -96,6 +201,29 @@ isolation and blocked public TCP egress. Vision initially received an explicit
 resource refusal while the CPU extractor remained resident, then succeeded
 after the ordinary 30-second idle unload with the same input and policy.
 The artifact records this retry instead of reporting a false empty success.
+## Structured extraction evaluation
+
+`russian-extraction.json` fixes 24 public synthetic cases (6 development, 18
+held-out), threshold 0.5 and known UTC event time. On the persistent internal
+service, `verify-extraction-lab.sh` runs 24 structured CPU calls and 24 calls to
+the existing generic entity adapter through actual finite owned-job admission.
+Each complete source publication is retried from cache without another call.
+All cases, including misses/errors, remain in the report; no cloud baseline call
+is authorized by this script. Coordinate the shared inference window first.
+
+The held-out structured model has precision 0.484/recall 0.564 versus generic
+0.319/0.273 and rules 0.975/0.709. Five model prohibition omissions remain. The
+predeclared quality gate fails and production scheduling stays off. Literal
+constraint-fragment preservation is checked separately and excluded from these
+metrics. A passed test runner/authority smoke is not quality approval. The
+original empty-result and record-grouping failures are retained in earlier
+artifacts; corrected storage and source-fragment handling do not tune the model.
+
+The original run's cold call took 19.2s and warm structured calls 440–494ms versus
+generic 136–158ms; whole process peak 2859MiB, GPU 0. Read the current artifact for
+the repeated measurement, queue wait and every case, rather than treating grouped
+warm calls as production latency. Exact exception/action polarity remains
+unresolved; owner acceptance is separate. See the structured extraction contract.
 
 ## Tensor runtime exception
 

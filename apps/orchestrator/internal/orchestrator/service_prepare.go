@@ -177,6 +177,11 @@ func (s *Service) attachTranscriptContext(ctx context.Context, sessionKey string
 	if err != nil {
 		return fmt.Errorf("load session transcript: %w", err)
 	}
+	if s.config.MemorySources != nil {
+		if err = s.config.MemorySources.PinTranscript(ctx, sessionKey, full.SourceRevision); err != nil {
+			return err
+		}
+	}
 	// Check the complete source before summary coverage removes its prefix.
 	// A historical secret label cannot be laundered through a covered summary.
 	for _, message := range full.Messages {

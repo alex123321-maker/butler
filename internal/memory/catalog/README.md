@@ -1,0 +1,50 @@
+# Memory source catalog
+
+PostgreSQL owns stable source identities, immutable revisions, event/extraction
+times, reported author, origin, scope/access revision and current source status.
+Profile/episodic/chunk stores remain the four-class memory model's class stores.
+The catalog links their object IDs to source revisions; vectors are derived.
+
+Owner decisions use `owneridentity.Actor`. Extracted claims are candidates even
+with high confidence. `Decide` locks an exact scope/key head and requires the
+current accepted claim ID; only that owner decision supersedes a prior value.
+Documents, model assumptions and subagent reports never change task authority.
+Provenance/dependencies retain original sources and sensitivity.
+
+`AccessTx` checks a live run ownership token or independent owned job proof,
+current task/goal assignment, exact permitted scope, source revision/hash/access
+and parent currentness. Source locks precede chunk/vector locks.
+`CheckObjectsTx` derives the source graph from PostgreSQL object IDs, not citation
+JSON. It uses the caller transaction and does not need a second pool connection.
+
+Deletion locks sorted affected sources, removes recursively derived class rows,
+redacts source/claim text, invalidates covered summaries, revokes scope grants and
+retains content-free tombstones. A typed private file manifest is fsynced before
+the PG commit. `CheckRestore` denies reads/indexing when PG's applied watermark
+differs from the manifest; `Reconcile` reapplies deletion before restore is usable.
+The operator initializes the manifest once, persists it outside ordinary PG
+backup rollback, and retains its complete history. Missing/truncated/wrong files
+deny access. A failed PG commit can cause extra deletion on replay; this is safer
+than resurrecting text. Backup files themselves still require private retention
+and erasure policy. The manifest contains opaque source IDs, hashed owner identity,
+deletion IDs/order/time and action only, never source text/URLs.
+
+Production adapters and authenticated `/api/v4/memory` use the catalog. Transcript
+preparation/model release, Broker grant claim and atomic results pin current
+sources; deletion has a one-way typed privacy path retaining evidence hashes and
+verdicts. Scoped cache cleanup persists progress and task scratch revisions prevent
+late republishing. Full manifest identity is checked on restore, not just its count.
+
+Tests use `BUTLER_TEST_MEMORY_POSTGRES_URL`, an isolated `_test` DB, private schemas,
+pgvector in public and pool size two. Actual race tests cover privacy/backup replay,
+cache restart, stale provider/final/dispatch writes and owner correction/export.
+Structured ingestion, owner UI and semantic owned-job production adapters remain
+follow-up work. See [the contract](../../../docs/architecture/versioned-memory-sources.md)
+for the required private persistent anchor setup before deployment.
+
+`ProposeTx` supports trusted structured extraction checkpoints and exact retry
+keys in the caller transaction. It rechecks current owner/job/source access,
+publishes only candidates and rejects a changed body under an existing key.
+`DedupKey` is not an HTTP/model field; ordinary owner manual proposals keep their
+random identity. Migration043 preserves only opaque IDs/hashes/times separately
+from source/claim text, including after catalog deletion.

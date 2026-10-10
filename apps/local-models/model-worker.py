@@ -3,6 +3,8 @@ import contextlib
 import base64
 import io
 import importlib.metadata
+import hashlib
+import stat
 import json
 import os
 import pathlib
@@ -17,6 +19,95 @@ def bounded_tokens(text):
     if len(tokenizer(text, add_special_tokens=True)['input_ids']) > int(profile['context_tokens']):
         raise ValueError('input too long')
 
+MEMORY_FIELDS = {
+    'project': 'Named project', 'component': 'Named software component',
+    'task': 'Task or goal explicitly stated in the text', 'resource': 'Server or other resource',
+    'action': 'Action verb or requested operation', 'deadline': 'Deadline or time expression',
+    'prohibition': 'Explicit negation or prohibition', 'exception': 'Explicit exception or allowed alternative',
+    'condition': 'Condition that must hold', 'temporal_qualifier': 'Earlier or now qualifier',
+}
+MEMORY_RELATIONS = {
+    'action_resource': ('action', 'resource', 'Action applies to resource'),
+    'action_deadline': ('action', 'deadline', 'Action has deadline'),
+    'action_exception': ('action', 'exception', 'Action has exception'),
+    'project_component': ('project', 'component', 'Project contains component'),
+}
+
+def memory_schema(model):
+    schema = model.create_schema().entities(MEMORY_FIELDS).relations(
+        {key: value[2] for key, value in MEMORY_RELATIONS.items()})
+    builder = schema.structure('constraint', mode='natural', anchor='action')
+    for field in ('action', 'resource', 'deadline', 'prohibition', 'exception', 'condition', 'temporal_qualifier'):
+        # Optional fields never require the decoder to invent missing content.
+        builder.field(field, dtype='str', description=MEMORY_FIELDS[field],
+                      cardinality='required_one' if field == 'action' else 'optional_one')
+    return builder.build()
+
+def memory_output(result):
+    def span(label, item):
+        return {'type': label, 'text': item['text'], 'start': item['start'],
+                'end': item['end'], 'confidence': item['confidence']}
+    spans = [span(label, item) for label, items in result.get('entities', {}).items() for item in items]
+    relations = []
+    for label, items in result.get('relation_extraction', {}).items():
+        head, tail, _ = MEMORY_RELATIONS[label]
+        for item in items:
+            relations.append({'type': label, 'head': span(head, item['head']), 'tail': span(tail, item['tail'])})
+    records = []
+    for item in result.get('constraint', []):
+        fields, unresolved = [], []
+        for label, value in item.items():
+            if label == 'confidence':
+                # Upstream record-level score is metadata, not a schema field.
+                continue
+            if label not in MEMORY_FIELDS:
+                raise ValueError('unexpected record field')
+            if isinstance(value, list):
+                if len(value) != 1:
+                    unresolved.append(label)
+                    continue
+                value = value[0]
+            if isinstance(value, dict) and all(key in value for key in ('text','start','end','confidence')):
+                fields.append(span(label, value))
+            else:
+                unresolved.append(label)
+        if any(field['type'] == 'action' for field in fields):
+            records.append({'type': 'constraint', 'fields': fields, 'unresolved_fields': unresolved})
+    return {'kind': 'spans', 'spans': spans, 'relations': relations, 'records': records}
+
+# SHA-256 of every reviewed executable/config file in one immutable upstream
+# revision. No runtime caller can supply code or choose another revision.
+D1_REVIEW = {
+ 'audio.py':'c5ff09d52d6a079e79d0505c89dbd0582ba2bc9abf2b26595d8d5b1d0c347bdf',
+ 'encoder.py':'5f2e20319ee42a7367febf06c7653d7b3f9b28ef99a64cb9ec7739563dcfcffe',
+ 'modeling_d1.py':'2b71a5c909ec5d3aa6307378a41a0fd24af1e17d5c1c1f8d510582147051a686',
+ 'prompt.py':'a6b29a55ec8345f1fc1fdbfcc4b64d80d473dc4316f095a62c51cb6cce1194cf',
+ 'vision.py':'43ad71029f82e20fd26b97574627773d47639d7a3742c8b04fe5bf55f41c4c28',
+ 'config.json':'dfccae241822f81752426629c88c8b8d7efdd03dd19418b6645c604fad43d619',
+ 'tokenizer_config.json':'03efc74b752b899b6292ff7e607738be59e6f206fec9aca32bbc05e9184090fc',
+}
+
+def d1_exact_input(model, text, labels, limit):
+    # Verify that the upstream encoder would serialize ALL state/options. Its
+    # default per-option/right truncation is not an allowed Butler fallback.
+    import importlib
+    prompt = importlib.import_module(type(model).__module__.rsplit('.', 1)[0]+'.prompt')
+    q = prompt.as_question({'type':'choice','instructions':'Classify the event.',
+                            'criteria':{label:'' for label in labels}})
+    tok = model.tokenizer
+    enc = lambda s: tok(prompt.escape(s), add_special_tokens=False)['input_ids']
+    ids = [tok.bos_token_id, tok.convert_tokens_to_ids(prompt.DELIM['state'])]
+    ids += enc(prompt.serialize(text))
+    ids += [tok.convert_tokens_to_ids(prompt.DELIM['q'])]+enc(q.instructions)
+    for option in prompt.render_options(q):
+        ids += [tok.convert_tokens_to_ids(prompt.DELIM['opt']),tok.convert_tokens_to_ids(prompt.MARKER)]
+        ids += enc(' '+option)+[tok.convert_tokens_to_ids(prompt.DELIM['opt_end'])]
+    ids += [tok.convert_tokens_to_ids(prompt.DELIM['decide'])]
+    actual,_ = prompt.encode(tok,text,q,limit)
+    if len(ids)>limit or ids!=actual:
+        raise ValueError('decision input would be truncated')
+    return {'category':{'type':'choice','instructions':q.instructions,'criteria':q.criteria}}
+
 try:
     init = json.loads(sys.stdin.readline(65536))
     if init.get('op') != 'init':
@@ -26,6 +117,8 @@ try:
         'google/embeddinggemma-2': 'torch2.10.0+cu128/transformers5.19.0/sentence-transformers6.1.0',
         'Qwen/Qwen3-Reranker-0.6B': 'torch2.10.0+cu128/transformers5.19.0',
         'fastino/gliner2.5-multi-v1': 'torch2.10.0+cu128/transformers5.19.0/gliner2.1.0',
+        'fastino/GLiNER2.5-multi-Decide': 'torch2.10.0+cu128/transformers5.19.0/gliner2.1.0',
+        'LiquidAI/d1-omni-600M': 'torch2.10.0+cu128/transformers5.19.0/d1code02b55d7',
     }
     name = profile['model']
     if runtimes.get(name) != profile['runtime_version']:
@@ -64,6 +157,18 @@ try:
             tokenizer = transformers.AutoTokenizer.from_pretrained(str(path), padding_side='left', local_files_only=True, trust_remote_code=False)
             model = transformers.AutoModelForCausalLM.from_pretrained(str(path), torch_dtype=dtype, use_safetensors=True, local_files_only=True, trust_remote_code=False).to(target)
             yes, no = tokenizer.convert_tokens_to_ids('yes'), tokenizer.convert_tokens_to_ids('no')
+        elif name == 'LiquidAI/d1-omni-600M':
+            if device!='cpu' or revision!='02b55d7076f15129e59ab3f94783f32c4b088674':
+                raise ValueError('unsupported decision profile')
+            for filename,digest in D1_REVIEW.items():
+                file = path/filename
+                if not stat.S_ISREG(file.lstat().st_mode) or file.stat().st_size>1024*1024 or hashlib.sha256(file.read_bytes()).hexdigest()!=digest:
+                    raise ValueError('reviewed code mismatch')
+            model = transformers.AutoModel.from_pretrained(str(path),trust_remote_code=True,
+                local_files_only=True,use_safetensors=True,dtype=torch.float32).to('cpu')
+            tokenizer = transformers.AutoTokenizer.from_pretrained(str(path),local_files_only=True,trust_remote_code=False)
+            model.__dict__['tokenizer'] = tokenizer
+            model.config.max_length = int(profile['context_tokens'])
         else:
             if device != 'cpu' or importlib.metadata.version('gliner2') != '2.1.0':
                 raise ValueError('unsupported extraction device')
@@ -109,18 +214,45 @@ try:
                     inputs = tokenizer(pairs, padding=True, truncation=False, return_tensors='pt').to(target)
                     logits = model(**inputs).logits[:, -1, [no, yes]].float()
                     output = {'kind': 'scores', 'scores': torch.softmax(logits, dim=1)[:, 1].cpu().tolist()}
-                elif op in ('extract', 'classify') and name == 'fastino/gliner2.5-multi-v1':
-                    text, labels = request['text'], request['labels']
+                elif op == 'classify' and name == 'LiquidAI/d1-omni-600M':
+                    text, labels = request['text'],request['labels']
+                    questions = d1_exact_input(model,text,labels,int(profile['context_tokens']))
+                    result = model.system_one(text,questions)['answers']['category']['probabilities']
+                    output = {'kind':'classes','labels':labels,'scores':[result[label] for label in labels]}
+                elif op in ('extract', 'classify') and name in ('fastino/gliner2.5-multi-v1','fastino/GLiNER2.5-multi-Decide'):
+                    text, labels = request['text'], request.get('labels') or []
                     bounded_tokens(text + ' ' + ' '.join(labels))
                     if op == 'extract':
-                        result = model.extract_entities(text, labels, include_confidence=True, include_spans=True)
-                        spans = []
-                        for label, items in result['entities'].items():
-                            for item in items:
-                                spans.append({'type': label, 'text': item['text'], 'start': item['start'], 'end': item['end'], 'confidence': item['confidence']})
-                        output = {'kind': 'spans', 'spans': spans}
+                        if request.get('schema_version') == 'butler-memory-v1':
+                            schema = memory_schema(model)
+                            # Public upstream preprocessing checks the real schema
+                            # plus text encoding, without truncation or fallback.
+                            prepared = model.processor.collate_fn_inference(
+                                [(text, schema)], max_len=None,
+                                error_policy='raise', architecture='boundary')
+                            if prepared.input_ids.shape[-1] > int(profile['context_tokens']):
+                                raise ValueError('encoded schema plus text too long')
+                            previous_strict = model.strict_extraction
+                            try:
+                                model.strict_extraction = True
+                                result = model.extract(text, schema, threshold=0.5, include_confidence=True, include_spans=True, max_len=None)
+                            finally:
+                                model.strict_extraction = previous_strict
+                            output = memory_output(result)
+                        else:
+                            result = model.extract_entities(text, labels, include_confidence=True, include_spans=True)
+                            spans = []
+                            for label, items in result['entities'].items():
+                                for item in items:
+                                    spans.append({'type': label, 'text': item['text'], 'start': item['start'], 'end': item['end'], 'confidence': item['confidence']})
+                            output = {'kind': 'spans', 'spans': spans}
                     else:
-                        result = model.classify_text(text, {'category': labels}, include_confidence=True)
+                        schema = model.create_schema().classification('category',labels).build()
+                        prepared = model.processor.collate_fn_inference([(text,schema)],max_len=None,
+                            error_policy='raise',architecture='boundary')
+                        if prepared.input_ids.shape[-1]>int(profile['context_tokens']):
+                            raise ValueError('classification schema plus text too long')
+                        result = model.classify_text(text, {'category': labels}, include_confidence=True,max_len=None)
                         category = result.get('category')
                         output = {'kind': 'classes', 'labels': [] if category is None else [category['label']], 'scores': [] if category is None else [category['confidence']]}
                 else:

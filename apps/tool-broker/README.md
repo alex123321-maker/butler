@@ -98,3 +98,8 @@ filter scoped catalogs and are repeated before credentials/dispatch. The separat
 Go executor receives only a dedicated runtime token and deferred authorized inputs;
 fixed readiness GETs use existing owner/admin budgets and never completion proof.
 See [extension lifecycle](../../docs/architecture/reviewed-extension-lifecycle.md).
+Grant claim also rejects terminal/finalizing run state and checks current memory
+source/transcript/privacy-watermark pins in the same transaction before budget
+spend or dispatch. Broker reads the private deletion anchor volume read-only;
+missing or stale restore history denies a new release. Existing spent journal
+observations remain intact. See [versioned memory sources](../../docs/architecture/versioned-memory-sources.md).

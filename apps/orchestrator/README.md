@@ -316,3 +316,10 @@ retain the attempt and block it before inference; they never claim completion.
 Fresh approval recovery reloads permitted definitions and manifest DATA while
 preserving recorded observations without redispatch. See the
 [reviewed lifecycle](../../docs/architecture/reviewed-extension-lifecycle.md).
+
+Migrations046–048 add authenticated `/api/v4/memory` inspection, candidates,
+revisioned correction, exact supersession, export and recursive privacy deletion.
+Provider release/final events and atomic results recheck prepared transcript/source
+pins. The scoped restartable Redis cleanup worker never flushes unrelated keys.
+Deploy only after provisioning the private persistent deletion anchor shared with
+Broker; missing/wrong anchors fail closed. See [versioned memory sources](../../docs/architecture/versioned-memory-sources.md).

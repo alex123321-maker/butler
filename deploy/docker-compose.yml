@@ -267,6 +267,9 @@ services:
       - BUTLER_EXECUTION_BUDGET_POLICY_JSON
       - BUTLER_ACTION_CONTEXT_URL=http://orchestrator:8080/internal/action-context
       - BUTLER_ACTION_AUTHORITY_TOKEN_FILE=/run/secrets/butler-action-authority-token
+      - BUTLER_MEMORY_DELETION_MANIFEST_FILE=/var/lib/butler-memory/deletions.log
+    volumes:
+      - memory-deletion-anchor:/var/lib/butler-memory:ro
     secrets:
       - source: action-authority
         target: butler-action-authority-token
@@ -356,6 +359,9 @@ services:
       - BUTLER_ACTION_MANDATE_ID
       - BUTLER_EXECUTION_BUDGET_POLICY_JSON
       - BUTLER_ACTION_AUTHORITY_TOKEN_FILE=/run/secrets/butler-action-authority-token
+      - BUTLER_MEMORY_DELETION_MANIFEST_FILE=/var/lib/butler-memory/deletions.log
+    volumes:
+      - memory-deletion-anchor:/var/lib/butler-memory
     secrets:
       - source: action-authority
         target: butler-action-authority-token
@@ -412,6 +418,7 @@ networks:
 
 volumes:
   ollama-data:
+  memory-deletion-anchor:
 
 secrets:
   action-authority:
