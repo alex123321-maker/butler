@@ -61,7 +61,28 @@ perfect scorer unit fixture are not model quality evidence.
 
 ## Recorded lab runs
 
-The final run record will include exact artifact path, commit/snapshot/corpus and
-schema hashes, selected pass/fail/pending counts and measured environment. Private
-raw outputs/dumps are not committed to the repository. Earlier failed reports
-remain in the agent root for audit and are not overwritten or relabelled PASS.
+The final Full run passed **20 groups / 104 required top-level executions** on
+the lab, including 13 core Go/PG/Redis groups with race detection, actual
+Chromium, Broker/credential and installed extension processes, and the three
+actual dump/delete/restore phases. These are 104 executions (the same restore
+test is required in each phase), not 104 independent statistical observations.
+Seven available scenarios passed; six required product scenarios remain PENDING.
+`selected_passed=true`, `issue_33_ready=false`, model status `NO_GO`, actual model
+calls **0**. The harness's own policy/scorer tests also passed under `-race`.
+
+The content-free record is
+[`lab-release-20261011.json`](../../testdata/acceptance/lab-release-20261011.json).
+It pins tested commit `189320fb8b789c0c4cb76fa0a0f2cc5c70cd259b`, source snapshot
+`20261011-065339-408`, source/schema/corpus/criteria digests, recorded container
+and hardware identities, per-group event hashes, and the genuine backup hash.
+Private artifacts remain at
+`/srv/storage/butler/agents/durable-tasks/reports/fault-20261010T235341Z-2382388`.
+The observed host has 12 logical CPUs and about 15GiB RAM; tests reserve bounded
+container allowances. Stored Docker stats are a point-in-time sample, not a peak
+measurement or model cost. No hardware OOM or model accuracy is inferred.
+
+The earlier release-snapshot Full also passed at
+`fault-20261010T235103Z-2366627` (commit `9d03de6`, 19 groups, before the separate
+extension-process group). Earlier failed reports remain in the agent root and
+are never overwritten or relabelled PASS. Private raw events, PG data, dumps and
+anchor contents are not committed to the repository.

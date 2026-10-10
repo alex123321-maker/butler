@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/acceptance/|cmd/acceptance/|testdata/acceptance/|scripts/dev/fault-lab[.]|apps/orchestrator/internal/input/process_fault_integration_test[.]go$)" {
+      [void]$specs.Add("docs/ai/fault-scenario-acceptance.md")
+      [void]$specs.Add("docs/architecture/durable-execution-acceptance.md")
+      [void]$specs.Add("docs/architecture/owner-goals-mandates-acceptance.md")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/fault-lab.ps1 -Profile Full -RemoteRoot /srv/storage/butler/agents/durable-tasks")
+      continue
+    }
     "^(apps/orchestrator/internal/initiative/|apps/orchestrator/internal/api/initiatives.*[.]go$|migrations/040_initiative_schedules[.])" {
       [void]$specs.Add("docs/architecture/initiative-contract.md")
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
