@@ -136,9 +136,32 @@ func (c *Controller) Apply(ctx context.Context, req ControlRequest) (ControlResu
 	if initial.OwnerID != actor.OwnerID {
 		return result, ErrUnauthorized
 	}
-	// Children are constrained to their parent's session. This admission lock also
-	// prevents concurrent child creation while the complete tree is captured.
-	sessions := []string{initial.SessionKey}
+	// Stabilize the entire branch before collecting its independent execution
+	// sessions. Every child admission takes this tree barrier before session locks.
+	if _, err = lockTreeTx(ctx, tx, initial.TaskID); err != nil {
+		return result, err
+	}
+	rows, err := tx.Query(ctx, `WITH RECURSIVE tree AS (
+ SELECT task_id,session_key FROM tasks WHERE task_id=$1
+ UNION SELECT t.task_id,t.session_key FROM tasks t JOIN tree b ON t.parent_task_id=b.task_id
+) SELECT DISTINCT session_key FROM tree ORDER BY session_key`, initial.TaskID)
+	if err != nil {
+		return result, err
+	}
+	sessions := []string{}
+	for rows.Next() {
+		var key string
+		if err = rows.Scan(&key); err != nil {
+			rows.Close()
+			return result, err
+		}
+		sessions = append(sessions, key)
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return result, err
+	}
 	if actor.SessionKey != "" && actor.SessionKey != initial.SessionKey {
 		sessions = append(sessions, actor.SessionKey)
 	}
@@ -175,7 +198,7 @@ func (c *Controller) Apply(ctx context.Context, req ControlRequest) (ControlResu
 	if !errors.Is(err, pgx.ErrNoRows) {
 		return result, err
 	}
-	rows, err := tx.Query(ctx, `WITH RECURSIVE tree AS(SELECT task_id FROM tasks WHERE task_id=$1 UNION ALL SELECT t.task_id FROM tasks t JOIN tree ON t.parent_task_id=tree.task_id) SELECT t.task_id FROM tasks t JOIN tree USING(task_id) WHERE t.status NOT IN ('completed','cancelled') ORDER BY t.task_id`, req.TaskID)
+	rows, err = tx.Query(ctx, `WITH RECURSIVE tree AS(SELECT task_id FROM tasks WHERE task_id=$1 UNION ALL SELECT t.task_id FROM tasks t JOIN tree ON t.parent_task_id=tree.task_id) SELECT t.task_id FROM tasks t JOIN tree USING(task_id) WHERE t.status NOT IN ('completed','cancelled') ORDER BY t.task_id`, req.TaskID)
 	if err != nil {
 		return result, err
 	}

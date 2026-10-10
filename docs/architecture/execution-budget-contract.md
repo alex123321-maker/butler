@@ -11,7 +11,10 @@ Applicable scopes are root task, current assigned mandate and owner UTC calendar
 day. Conversation uses session/day and owner/day without planner/critic overhead.
 Restart, worker/run ID change, delegation and amendments do not reset root or
 mandate spending. Daily counters change at midnight UTC; root/mandate counters
-continue. Child limits may restrict these scopes further, never replace them.
+continue. Migration057 delegation contracts add exact immutable child scopes to
+every reservation on that branch. Their limits/deadlines restrict existing scopes
+further, never replace them. Scheduling acceptance is tracked separately in
+`delegation-contract.md`.
 
 Finite counters cover turns, conservative tokens, monetary micros, calls,
 children, reserved active milliseconds, tool egress and provider input bytes.

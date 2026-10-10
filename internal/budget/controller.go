@@ -8,6 +8,8 @@ import (
 	"sort"
 	"time"
 
+	"encoding/json"
+	"github.com/butler/butler/internal/delegation"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -109,6 +111,41 @@ func (c *Controller) scopesTx(ctx context.Context, tx pgx.Tx, runID, taskID, man
 		}
 	}
 	specs = append(specs, ScopeSpec{Kind: "owner_day", OwnerID: owner, SubjectID: day.Format("2006-01-02"), Limits: c.Policy.Day, Deadline: day.Add(24 * time.Hour)})
+	if taskID != "" {
+		branch, e := delegation.LoadTx(ctx, tx, taskID)
+		if e != nil {
+			return "", nil, e
+		}
+		if branch != nil {
+			rows, e := tx.Query(ctx, `WITH RECURSIVE parents AS (
+ SELECT task_id,parent_task_id FROM tasks WHERE task_id=$1
+ UNION SELECT t.task_id,t.parent_task_id FROM tasks t JOIN parents p ON t.task_id=p.parent_task_id
+) SELECT d.task_id,d.budget_json,d.deadline FROM task_delegations d JOIN parents USING(task_id) ORDER BY d.task_id`, taskID)
+			if e != nil {
+				return "", nil, e
+			}
+			for rows.Next() {
+				var id string
+				var raw []byte
+				var expiry time.Time
+				var limits Units
+				if e = rows.Scan(&id, &raw, &expiry); e != nil {
+					rows.Close()
+					return "", nil, e
+				}
+				if json.Unmarshal(raw, &limits) != nil || limits.validate() != nil {
+					rows.Close()
+					return "", nil, ErrInvalid
+				}
+				specs = append(specs, ScopeSpec{Kind: "delegation", OwnerID: owner, SubjectID: id, Limits: limits, Deadline: expiry})
+			}
+			e = rows.Err()
+			rows.Close()
+			if e != nil {
+				return "", nil, e
+			}
+		}
+	}
 	// Consistent insert/lock ordering also matters when previously absent scopes
 	// are first created by parallel model/tool/child admissions.
 	sort.Slice(specs, func(i, j int) bool {

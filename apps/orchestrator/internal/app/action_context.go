@@ -10,6 +10,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/delegation"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -79,6 +80,10 @@ func (r *actionContextReader) GetActionContext(ctx context.Context, runID string
 			return c, err
 		}
 		a, err := actionauth.CheckTaskAuthorityTx(ctx, tx, record.TaskID, record.OwnerID, nil, at)
+		if err != nil {
+			return c, err
+		}
+		c.Delegation, err = delegation.LoadTx(ctx, tx, record.TaskID)
 		if err != nil {
 			return c, err
 		}

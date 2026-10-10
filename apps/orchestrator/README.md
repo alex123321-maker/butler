@@ -338,3 +338,10 @@ See the [indexing composition](../../internal/memory/indexing/README.md) and
 [parser confinement](../memory-parser/README.md). Missing model token, fixed local
 identity or declared local price disables only that owned semantic path; legacy
 cloud memory model jobs remain denied.
+# Delegation foundation
+
+The internal delegation contract and tree admission/owner-control barrier are
+implemented behind Task Service. The executor manager and Broker control adapter
+remain in progress; no delegation endpoint or model tool is enabled yet. See
+`docs/architecture/delegation-contract.md` before deploying migration057.
+

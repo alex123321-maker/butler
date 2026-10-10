@@ -11,6 +11,7 @@ import (
 	"time"
 	_ "time/tzdata"
 
+	"github.com/butler/butler/internal/delegation"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -32,6 +33,9 @@ func GetTaskAssignment(ctx context.Context, q interface {
 // remain until the caller commits its dispatch, result or admission transaction.
 // No binding preserves ordinary task/conversation behavior.
 func CheckTaskAuthorityTx(ctx context.Context, tx pgx.Tx, taskID, ownerID string, expected *Assignment, at time.Time) (Assignment, error) {
+	if err := delegation.CheckTaskTx(ctx, tx, taskID); err != nil {
+		return Assignment{}, err
+	}
 	a, err := GetTaskAssignment(ctx, tx, taskID)
 	if err != nil {
 		return a, err
@@ -351,6 +355,13 @@ func CheckDenyOverrides(b ActionBinding, tools []string, resources []ResourceSco
 // for this exact goal. The already shared-locked goal serializes mutations of
 // this set; no semantic similarity or model-supplied mandate selection occurs.
 func CheckTaskActionTx(ctx context.Context, tx pgx.Tx, b ActionBinding, at time.Time) error {
+	d, err := delegation.LoadTx(ctx, tx, b.TaskID)
+	if err != nil {
+		return err
+	}
+	if !delegationAllows(d, b) {
+		return delegation.ErrDenied
+	}
 	a, err := CheckTaskAuthorityTx(ctx, tx, b.TaskID, b.OwnerID, &Assignment{GoalID: b.GoalID, GoalRevision: b.GoalRevision, MandateID: b.MandateID, MandateRevision: b.MandateRevision, Purpose: b.Purpose, PolicyRevision: b.OwnerPolicyRevision}, at)
 	if err != nil || a.TaskID == "" {
 		return err

@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"github.com/butler/butler/internal/delegation"
 	"strings"
 	"time"
 
@@ -91,6 +92,9 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	}
 	if err := CheckExecutionPolicy(c, b.Effect); err != nil {
 		return b, false, err
+	}
+	if !delegationAllows(c.Delegation, b) {
+		return b, false, delegation.ErrDenied
 	}
 	if contract.GetExtension() != nil || strings.HasPrefix(call.GetToolName(), "extension.") {
 		if s.capabilities == nil {

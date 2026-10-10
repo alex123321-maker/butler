@@ -3,7 +3,10 @@
 // they do not supply trusted context, approval decisions or execution grants.
 package actionauth
 
-import "time"
+import (
+	"github.com/butler/butler/internal/delegation"
+	"time"
+)
 
 type Effect string
 
@@ -53,26 +56,27 @@ type ActionBinding struct {
 
 // ContextSnapshot must come from Session/Task/Run Service, never tool arguments.
 type ContextSnapshot struct {
-	RunID               string          `json:"run_id"`
-	RunState            string          `json:"run_state"`
-	SessionKey          string          `json:"session_key"`
-	OwnerID             string          `json:"owner_id"`
-	AutonomyMode        int32           `json:"autonomy_mode"`
-	MandateID           string          `json:"mandate_id"`
-	TaskID              string          `json:"task_id"`
-	PinnedTaskRevision  int64           `json:"pinned_task_revision"`
-	TaskRevision        int64           `json:"task_revision"`
-	ConstraintsRevision int64           `json:"constraints_revision"`
-	TaskStatus          string          `json:"task_status"`
-	ExecutionPolicy     string          `json:"execution_policy"`
-	LeaseEpoch          int64           `json:"lease_epoch"`
-	LeaseID             string          `json:"lease_id"`
-	LeaseExpiresAt      time.Time       `json:"lease_expires_at"`
-	Authority           *Assignment     `json:"authority,omitempty"`
-	AuthorityDeadline   time.Time       `json:"authority_deadline,omitempty"`
-	ModelPrivacy        string          `json:"model_privacy,omitempty"`
-	DenyTools           []string        `json:"deny_tools,omitempty"`
-	DenyResources       []ResourceScope `json:"deny_resources,omitempty"`
+	Delegation          *delegation.Contract `json:"delegation,omitempty"`
+	RunID               string               `json:"run_id"`
+	RunState            string               `json:"run_state"`
+	SessionKey          string               `json:"session_key"`
+	OwnerID             string               `json:"owner_id"`
+	AutonomyMode        int32                `json:"autonomy_mode"`
+	MandateID           string               `json:"mandate_id"`
+	TaskID              string               `json:"task_id"`
+	PinnedTaskRevision  int64                `json:"pinned_task_revision"`
+	TaskRevision        int64                `json:"task_revision"`
+	ConstraintsRevision int64                `json:"constraints_revision"`
+	TaskStatus          string               `json:"task_status"`
+	ExecutionPolicy     string               `json:"execution_policy"`
+	LeaseEpoch          int64                `json:"lease_epoch"`
+	LeaseID             string               `json:"lease_id"`
+	LeaseExpiresAt      time.Time            `json:"lease_expires_at"`
+	Authority           *Assignment          `json:"authority,omitempty"`
+	AuthorityDeadline   time.Time            `json:"authority_deadline,omitempty"`
+	ModelPrivacy        string               `json:"model_privacy,omitempty"`
+	DenyTools           []string             `json:"deny_tools,omitempty"`
+	DenyResources       []ResourceScope      `json:"deny_resources,omitempty"`
 }
 
 type ApprovalRequest struct {

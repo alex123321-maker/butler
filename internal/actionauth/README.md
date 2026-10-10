@@ -26,3 +26,11 @@ See [action authorization](../../docs/architecture/action-authorization-contract
 Unit tests and isolated PostgreSQL suites cover hashes, exact scopes,
 credentials, lease/task/owner changes, authority revocation, single dispatch,
 uncertain effects and conservative shared reservations.
+# Delegated permissions
+
+Delegated tasks also require exact contract hashes, resources, effects and typed
+credential references from their current bounded contract, before credential
+inspection and again at dispatch. Parent versions/deadlines remain authoritative.
+See `docs/architecture/delegation-contract.md` for the current implementation and
+pending scheduling acceptance.
+

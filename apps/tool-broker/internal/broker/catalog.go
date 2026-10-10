@@ -9,6 +9,7 @@ import (
 
 	"github.com/butler/butler/apps/tool-broker/internal/registry"
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/delegation"
 	"github.com/butler/butler/internal/extensions"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 )
@@ -61,6 +62,21 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 	terms := strings.Fields(strings.ToLower(query))
 	result := []*toolbrokerv1.ToolContract{}
 	for _, contract := range c.Registry.List("", false) {
+		if a.Delegation != nil {
+			hash, e := actionauth.ContractHash(contract)
+			matched := false
+			if e == nil {
+				for _, p := range a.Delegation.Permissions {
+					if p.Tool == contract.GetToolName() && p.ContractHash == hash {
+						matched = true
+						break
+					}
+				}
+			}
+			if !matched {
+				continue
+			}
+		}
 		effect := actionauth.CatalogEffect(contract)
 		if actionauth.CheckExecutionPolicy(a, effect) != nil || a.AutonomyMode == 1 && effect != actionauth.EffectRead {
 			continue
@@ -86,6 +102,22 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 			return nil, e
 		}
 		result = append(result, installed...)
+	}
+	if a.Delegation != nil {
+		filtered := result[:0]
+		for _, contract := range result {
+			hash, e := actionauth.ContractHash(contract)
+			if e != nil {
+				continue
+			}
+			for _, p := range a.Delegation.Permissions {
+				if p.Tool == contract.GetToolName() && p.ContractHash == hash && len(p.Resources) > 0 && len(p.Effects) > 0 && delegation.Allows(a.Delegation, p.Tool, hash, p.Resources[0], p.Effects[0], nil) {
+					filtered = append(filtered, contract)
+					break
+				}
+			}
+		}
+		result = filtered
 	}
 	sort.Slice(result, func(i, j int) bool { return result[i].GetToolName() < result[j].GetToolName() })
 	if limit <= 0 || limit > 64 {

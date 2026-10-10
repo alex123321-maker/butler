@@ -108,7 +108,7 @@ func validateScope(spec ScopeSpec) error {
 		return ErrInvalid
 	}
 	switch spec.Kind {
-	case "task", "mandate", "owner_day", "conversation", "auxiliary":
+	case "task", "mandate", "owner_day", "conversation", "auxiliary", "delegation":
 	default:
 		return ErrInvalid
 	}
