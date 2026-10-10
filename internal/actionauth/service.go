@@ -146,7 +146,7 @@ func (s *Service) PrepareWithLogicalRef(ctx context.Context, call *toolbrokerv1.
 	if err != nil {
 		return PreparedAction{}, err
 	}
-	intent.EffectPolicy, err = ResolveEffectPolicy(b, contract)
+	intent.EffectPolicy, err = ResolveEffectPolicy(b, contract, call)
 	if err != nil {
 		return PreparedAction{}, err
 	}

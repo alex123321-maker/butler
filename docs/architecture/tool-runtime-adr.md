@@ -875,3 +875,16 @@ service workers; helper исполняется только из встроен�
 Doctor получает фиксированный read-only ответ ядра без учётных данных.
 Подробные гарантии и ограничения:
 [agent-security-boundaries.md](agent-security-boundaries.md).
+
+## 29. Локальная подготовка браузерной формы
+
+`browser.prepare_fill` и `browser.prepare_type` — отдельные revision 2 contracts.
+Runtime замораживает все HTTP/CONNECT соединения и page routes до ввода; последующие
+наблюдения сохраняют запрет, включая delayed GET/POST autosave. Только отдельно
+авторизованный click получает ограниченное окно после live DOM/URL guards, затем
+сеть снова замораживается. `local_browser_preparation_v1` подтверждает только
+локальное состояние с точным session/URL/новой observation version; не отправку
+формы. Legacy live fill/type и click сохраняют неизвестный внешний эффект без
+recipient proof. Read/open/navigate revision 2 имеют enforced GET/HEAD contract;
+старые navigation contracts не наследуют это право. Подробности и evidence:
+[browser-session-contract.md](browser-session-contract.md).

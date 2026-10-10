@@ -43,6 +43,14 @@ owner, exact current URL, observation version, scope and exclusive ownership.
 Proxy expiry destroys open tunnels. The session shares a 4 MiB outbound cap;
 HTTP requests and a webfetch batch also enforce a 4 MiB cap before sending.
 
+Browser local preparation freezes both page routes and the proxy persistently,
+including established CONNECT tunnels and in-flight HTTP. Delayed autosave cannot
+send the newly injected draft during later observations. Only a separately
+authorized click opens a bounded window after live guards, then refreezes; its
+DOM acknowledgement still cannot prove external submission. Read/open/navigate
+revision 2 enforce GET/HEAD, while legacy live fill/type remain opaque. See the
+[browser session contract](browser-session-contract.md) for exact proof semantics.
+
 Resolved credential and cookie values, including common URL/base64 variants,
 are masked from returned HTTP/browser observations. Cookies and arbitrary
 response headers do not appear in HTTP results. Helper stderr and network errors

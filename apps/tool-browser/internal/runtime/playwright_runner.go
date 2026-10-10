@@ -157,6 +157,23 @@ func (r *PlaywrightRunner) Run(ctx context.Context, req Request) (Result, error)
 			}
 		}()
 	}
+	if req.ToolName == "browser.prepare_fill" || req.ToolName == "browser.prepare_type" {
+		if proxy := r.proxies[req.SessionID]; proxy != nil {
+			proxy.Freeze()
+		}
+	}
+	if req.ToolName == "browser.click" {
+		if proxy := r.proxies[req.SessionID]; proxy != nil {
+			deadline := time.Now().Add(35 * time.Second)
+			if owned, ok := ctx.Deadline(); ok && owned.Before(deadline) {
+				deadline = owned
+			}
+			if err := proxy.AllowUntil(deadline); err != nil {
+				return Result{}, err
+			}
+			defer proxy.Freeze()
+		}
+	}
 	if r.cmd == nil {
 		if req.ToolName != "browser.open" && req.ToolName != "browser.read" {
 			return Result{Error: &ResultError{ErrorType: "session_lost", Message: "browser process lost; explicitly open a new session"}}, nil

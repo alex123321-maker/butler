@@ -82,3 +82,11 @@ on the already held authority rows; expiry rolls back allowance without spending
 the grant or contacting a runtime. Original budget periods remain immutable.
 
 The release guard treats arbitrary network paths/queries/headers/body as potentially private. Reads outside an explicit operator domain declaration require exact owner approval or a live assigned owner-goal mandate with confirmed purpose/resource scope. Changed arguments cannot reuse the canonical proof; revoked authority is denied before secret inspection/DNS. This composes with the037 immutable byte reservation, not a model-controlled privacy scanner. See [security boundaries](../../docs/architecture/agent-security-boundaries.md).
+
+Revision 2 browser preparation uses a narrow `local_browser_preparation_v1`
+verifier derived from exact call args and persisted with the policy. It requires
+matching session/current URL, increased observation version, successful local
+acknowledgement and frozen network. This confirms only local browser state;
+generic fill/type/click do not inherit it and external submission remains
+unknown without recipient proof. Navigation/read revision 2 enforce GET/HEAD;
+old contracts fail closed. The root unknown-effect budget guard is unchanged.

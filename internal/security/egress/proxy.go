@@ -23,8 +23,13 @@ type ScopedProxy struct {
 	inbound  *Counter
 	mu       sync.Mutex
 	tunnels  map[net.Conn]bool
+	requests map[uint64]context.CancelFunc
+	epoch    uint64
+	next     uint64
+	frozen   bool
 	closed   bool
 	timer    *time.Timer
+	window   *time.Timer
 }
 
 func NewScopedProxy(policy Policy, origin string, expires time.Time, limit int64) (*ScopedProxy, error) {
@@ -37,7 +42,7 @@ func NewScopedProxy(policy Policy, origin string, expires time.Time, limit int64
 	if err != nil {
 		return nil, ErrDenied
 	}
-	proxy := &ScopedProxy{listener: listener, policy: policy, origin: parsed, expires: expires, counter: NewCounter(limit), inbound: NewCounter(20 * 1024 * 1024), tunnels: map[net.Conn]bool{}}
+	proxy := &ScopedProxy{listener: listener, policy: policy, origin: parsed, expires: expires, counter: NewCounter(limit), inbound: NewCounter(20 * 1024 * 1024), tunnels: map[net.Conn]bool{}, requests: map[uint64]context.CancelFunc{}}
 	proxy.server = &http.Server{Handler: proxy, ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 10 * time.Second, MaxHeaderBytes: 32 * 1024}
 	proxy.timer = time.AfterFunc(time.Until(expires), func() { _ = proxy.Close() })
 	go func() { _ = proxy.server.Serve(listener) }()
@@ -46,6 +51,73 @@ func NewScopedProxy(policy Policy, origin string, expires time.Time, limit int64
 
 func (p *ScopedProxy) URL() string   { return "http://" + p.listener.Addr().String() }
 func (p *ScopedProxy) Expired() bool { return !time.Now().Before(p.expires) }
+
+// Freeze survives subsequent observations. Cancel requests and close existing
+// CONNECT tunnels too; blocking only new connections would leave draft release
+// possible through an established browser connection.
+func (p *ScopedProxy) Freeze() {
+	p.mu.Lock()
+	p.freezeLocked()
+	p.mu.Unlock()
+}
+func (p *ScopedProxy) freezeLocked() {
+	p.frozen = true
+	p.epoch++
+	if p.window != nil {
+		p.window.Stop()
+	}
+	for _, cancel := range p.requests {
+		cancel()
+	}
+	for connection := range p.tunnels {
+		_ = connection.Close()
+	}
+}
+
+// AllowUntil is a private runner capability for a separately authorized click.
+// It never resets byte allowance or session expiry. The reviewed page route
+// stays frozen until its live observation guards have passed.
+func (p *ScopedProxy) AllowUntil(deadline time.Time) error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if deadline.After(p.expires) {
+		deadline = p.expires
+	}
+	if p.closed || !deadline.After(time.Now()) {
+		return ErrDenied
+	}
+	if p.window != nil {
+		p.window.Stop()
+	}
+	p.epoch++
+	epoch := p.epoch
+	p.frozen = false
+	p.window = time.AfterFunc(time.Until(deadline), func() {
+		p.mu.Lock()
+		if p.epoch == epoch {
+			p.freezeLocked()
+		}
+		p.mu.Unlock()
+	})
+	return nil
+}
+func (p *ScopedProxy) begin(ctx context.Context) (context.Context, uint64, func(), bool) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.closed || p.frozen || p.Expired() {
+		return ctx, 0, func() {}, false
+	}
+	ctx, cancel := context.WithDeadline(ctx, p.expires)
+	p.next++
+	id, epoch := p.next, p.epoch
+	p.requests[id] = cancel
+	return ctx, epoch, func() {
+		cancel()
+		p.mu.Lock()
+		delete(p.requests, id)
+		p.mu.Unlock()
+	}, true
+}
 func (p *ScopedProxy) Close() error {
 	p.mu.Lock()
 	if p.closed {
@@ -53,19 +125,17 @@ func (p *ScopedProxy) Close() error {
 		return nil
 	}
 	p.closed = true
+	p.freezeLocked()
 	if p.timer != nil {
 		p.timer.Stop()
-	}
-	for connection := range p.tunnels {
-		_ = connection.Close()
 	}
 	p.mu.Unlock()
 	return p.server.Close()
 }
-func (p *ScopedProxy) track(connection net.Conn) bool {
+func (p *ScopedProxy) track(connection net.Conn, epoch uint64) bool {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	if p.closed {
+	if p.closed || p.frozen || p.epoch != epoch {
 		return false
 	}
 	p.tunnels[connection] = true
@@ -88,12 +158,15 @@ func portFor(origin *url.URL) string {
 }
 
 func (p *ScopedProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if p.Expired() {
-		http.Error(w, "proxy expired", http.StatusForbidden)
+	ctx, epoch, done, allowed := p.begin(r.Context())
+	if !allowed {
+		http.Error(w, "proxy unavailable", http.StatusForbidden)
 		return
 	}
+	defer done()
+	r = r.WithContext(ctx)
 	if r.Method == http.MethodConnect {
-		p.connect(w, r)
+		p.connect(w, r, epoch)
 		return
 	}
 	if p.origin.Scheme != "http" || r.URL.Scheme != "http" || !strings.EqualFold(r.URL.Host, p.origin.Host) || r.URL.User != nil {
@@ -127,7 +200,7 @@ func (p *ScopedProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	_, _ = io.Copy(w, io.LimitReader(response.Body, 20*1024*1024))
 }
 
-func (p *ScopedProxy) connect(w http.ResponseWriter, r *http.Request) {
+func (p *ScopedProxy) connect(w http.ResponseWriter, r *http.Request, epoch uint64) {
 	if p.origin.Scheme != "https" || !strings.EqualFold(r.Host, net.JoinHostPort(p.origin.Hostname(), portFor(p.origin))) {
 		http.Error(w, "destination denied", http.StatusForbidden)
 		return
@@ -140,7 +213,7 @@ func (p *ScopedProxy) connect(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "destination denied", http.StatusForbidden)
 		return
 	}
-	if !p.track(remote) {
+	if !p.track(remote, epoch) {
 		_ = remote.Close()
 		return
 	}
@@ -154,7 +227,7 @@ func (p *ScopedProxy) connect(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	if !p.track(client) {
+	if !p.track(client, epoch) {
 		_ = client.Close()
 		return
 	}

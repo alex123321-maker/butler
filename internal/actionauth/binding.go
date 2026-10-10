@@ -287,11 +287,12 @@ func classifyEffect(tool string, args map[string]any) Effect {
 			return EffectCommit
 		}
 		return EffectUnknown
-	case "browser.snapshot", "browser.extract_text", "browser.wait_for", "browser.close", "single_tab.status", "single_tab.capture_visible", "single_tab.extract_text", "doctor.check_system", "doctor.check_container", "doctor.check_database", "doctor.check_provider", "web.fetch", "web.fetch_batch", "web.extract", "http.download", "http.parse_html":
+	case "browser.read", "browser.open", "browser.navigate", "browser.snapshot", "browser.extract_text", "browser.wait_for", "browser.close", "single_tab.status", "single_tab.capture_visible", "single_tab.extract_text", "doctor.check_system", "doctor.check_container", "doctor.check_database", "doctor.check_provider", "web.fetch", "web.fetch_batch", "web.extract", "http.download", "http.parse_html":
 		return EffectRead
-	case "single_tab.bind", "browser.set_cookie", "browser.restore_storage_state", "doctor.generate_report":
+	case "browser.prepare_fill", "browser.prepare_type", "single_tab.bind", "browser.set_cookie", "browser.restore_storage_state", "doctor.generate_report":
 		return EffectPrepare
-	// Live-page interactions can submit, purchase or autosave through site JS;
+	// Reads enforce GET/HEAD. Local preparation freezes all network persistently.
+	// Other live interactions can submit, purchase or autosave through site JS;
 	// their effect is opaque even when the tool name looks like preparation.
 	default:
 		return EffectUnknown

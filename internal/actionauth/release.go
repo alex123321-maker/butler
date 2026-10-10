@@ -35,7 +35,7 @@ func NetworkReleaseRequired(call *toolbrokerv1.ToolCall, contract *toolbrokerv1.
 			}
 			resources = append(resources, resource)
 		}
-	case "browser.fill", "browser.type", "browser.click", "browser.set_cookie", "browser.restore_storage_state":
+	case "browser.fill", "browser.type", "browser.prepare_fill", "browser.prepare_type", "browser.click", "browser.set_cookie", "browser.restore_storage_state":
 		if resource, ok := args["expected_url"].(string); ok && resource != "" {
 			resources = append(resources, resource)
 		}

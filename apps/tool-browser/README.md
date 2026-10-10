@@ -6,6 +6,9 @@ Current state:
 - runtime exposes the internal `ToolRuntimeService` gRPC contract
 - `browser.read` independently reads and destroys a temporary context; `browser.open` creates an explicit run-owned session for sequences, and `browser.close` destroys it
 - navigate/click/fill/type/wait/auth actions require the returned session ID, latest observation version and expected current URL; snapshot/extract never navigate
+- `browser.prepare_fill/prepare_type` freeze all routes and private HTTP/CONNECT connections before input; snapshot/extract/wait keep the freeze, including delayed autosave
+- a separately authorized click opens a bounded window only after live guards, then freezes again; navigation/live fill/type cannot thaw a prepared draft
+- revision 2 read/open/navigate enforce GET/HEAD; local preparation proof confirms only local state, while a DOM submit without recipient evidence remains an unknown external effect and blocks later effects
 - each context has a fixed origin, 15-minute TTL and exclusive operation lock; 32 live contexts maximum, with no cross-run transfer or implicit crash recovery
 - one long-lived Playwright helper keeps contexts between calls through private stdin/stdout messages; resolved secrets are never process arguments or diagnostics
 - URL and selector validation are enforced before execution, and extracted text is truncated to safe response sizes

@@ -155,11 +155,11 @@ func toolExecutionMetadata(call *toolbrokerv1.ToolCall) (targetURL string, mutat
 			method = "GET"
 		}
 		mutating = method != "GET" && method != "HEAD" && method != "OPTIONS"
-	case "browser.open", "browser.navigate", "browser.click", "browser.fill", "browser.type", "browser.set_cookie", "browser.restore_storage_state":
+	case "browser.click", "browser.fill", "browser.type", "browser.prepare_fill", "browser.prepare_type", "browser.set_cookie", "browser.restore_storage_state":
 		mutating = true
 	default:
 		// Unknown runtime effects never receive read-only credential authority.
-		mutating = call.GetToolName() != "browser.read" && call.GetToolName() != "browser.snapshot" && call.GetToolName() != "browser.extract_text" && call.GetToolName() != "browser.wait_for"
+		mutating = call.GetToolName() != "browser.read" && call.GetToolName() != "browser.open" && call.GetToolName() != "browser.navigate" && call.GetToolName() != "browser.snapshot" && call.GetToolName() != "browser.extract_text" && call.GetToolName() != "browser.wait_for"
 	}
 	return targetURL, mutating
 }
