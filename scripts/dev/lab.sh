@@ -41,8 +41,12 @@ case "$action" in
       if [[ "$(docker exec butler-lab-postgres-1 psql -U butler -d postgres -Atc "SELECT 1 FROM pg_database WHERE datname = 'butler_test'")" != 1 ]]; then
         docker exec butler-lab-postgres-1 createdb -U butler butler_test
       fi
+      if [[ "$(docker exec butler-lab-postgres-1 psql -U butler -d postgres -Atc "SELECT 1 FROM pg_database WHERE datname = 'butler_lab_actionauth_test'")" != 1 ]]; then
+        docker exec butler-lab-postgres-1 createdb -U butler butler_lab_actionauth_test
+      fi
       test_options=(--network butler-lab_backend
         --env BUTLER_TEST_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_test?sslmode=disable
+        --env BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_actionauth_test?sslmode=disable
         --env BUTLER_TEST_REDIS_URL=redis://redis:6379/1)
     fi
     docker run --rm --user "$(id -u):$(id -g)" \

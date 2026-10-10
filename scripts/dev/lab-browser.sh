@@ -47,7 +47,7 @@ docker run --rm --user 1000:1000 --network butler-lab_backend \
   -v "$source_dir/apps/tool-browser/scripts:/app/apps/tool-browser/scripts:ro" -w /src \
   -e BUTLER_ACTIONAUTH_E2E=1 -e BUTLER_BROWSER_E2E_SCRIPT=/app/apps/tool-browser/scripts/browser_runtime.mjs \
   -e BUTLER_BROWSER_E2E_BINARY=/cache/browser-runtime -e BUTLER_BROKER_E2E_BINARY=/cache/action-broker \
-  -e 'BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_actionauth_test?sslmode=disable' \
+  -e "BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=${BUTLER_TEST_ACTIONAUTH_POSTGRES_URL:-postgres://butler:butler-dev-password@postgres:5432/butler_lab_actionauth_test?sslmode=disable}" \
   --entrypoint /cache/action-authority.test butler-lab-tool-browser \
   -test.v -test.run '^TestApprovedCredentialBrokerBrowserE2E$' \
   | tee "$root/reports/browser-approval-e2e-$(date -u +%Y%m%dT%H%M%SZ).log"
