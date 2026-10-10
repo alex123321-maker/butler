@@ -91,7 +91,7 @@ func init() {
 
 func NewProvider(cfg Config) (*Provider, error) {
 	if cfg.Model == "" {
-		cfg.Model = "gemini-3.1-pro-high"
+		cfg.Model = "gemini-3.8-flash-tiered"
 	}
 	if cfg.BinaryPath == "" {
 		cfg.BinaryPath = "agy"
@@ -296,8 +296,14 @@ func readResult(reader io.Reader, tools []transport.ToolDefinition) (decision, *
 		}
 		switch event.Event {
 		case "init":
-			if initialized || event.Init == nil || event.Init.Tools == nil || len(event.Init.Tools) != 0 || event.Init.Agent != "butler-model" {
+			if initialized || event.Init == nil || event.Init.Tools == nil {
 				return decision{}, nil, protocolError("CLI did not establish the model-only agent with an empty toolkit")
+			}
+			if len(event.Init.Tools) != 0 {
+				return decision{}, nil, protocolError("CLI advertised executable tools instead of an empty toolkit")
+			}
+			if event.Init.Agent != "butler-model" {
+				return decision{}, nil, protocolError("CLI did not report the expected model-only agent identity")
 			}
 			initialized = true
 		case "step_update":

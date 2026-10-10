@@ -82,7 +82,7 @@ func TestProviderProposalIsExternalAndCorrelated(t *testing.T) {
 	toolResult := `{"event":"result","result":{"status":"SUCCESS","structured_output":{"kind":"tool_call","answer":"","tool_name":"web.fetch","arguments":{"url":"https://example.com"}}}}` + "\n"
 	binary := fakeCLI(t, emptyInit+toolResult)
 	p, _ := NewProvider(Config{BinaryPath: binary, ProfileDir: profile, WorkspaceRoot: t.TempDir(), Timeout: time.Second})
-	stream, err := p.StartRun(context.Background(), transport.StartRunRequest{Context: transport.TransportRunContext{RunID: "run-1", SessionKey: "session-1", ProviderName: Name, ModelName: "gemini-3.1-pro-high"}, InputItems: []transport.InputItem{{Role: "user", Content: "fetch it"}}, ToolDefinitions: []transport.ToolDefinition{{Name: "web.fetch", SchemaJSON: `{"type":"object"}`}}})
+	stream, err := p.StartRun(context.Background(), transport.StartRunRequest{Context: transport.TransportRunContext{RunID: "run-1", SessionKey: "session-1", ProviderName: Name, ModelName: "gemini-3.8-flash-tiered"}, InputItems: []transport.InputItem{{Role: "user", Content: "fetch it"}}, ToolDefinitions: []transport.ToolDefinition{{Name: "web.fetch", SchemaJSON: `{"type":"object"}`}}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -164,13 +164,36 @@ func TestProfileRejectsPermissivePolicyAndGlobalCustomizations(t *testing.T) {
 	if err := validateProfile(profile); err != nil {
 		t.Fatal(err)
 	}
+	loginPolicy := strings.TrimSuffix(strings.TrimSpace(string(isolationSettings)), "}") + `,"trustedWorkspaces":["/work"],"model":"gemini-3.8-flash-tiered"}`
+	settingsPathForLogin := filepath.Join(profile, ".gemini", "antigravity-cli", "settings.json")
+	if err := os.WriteFile(settingsPathForLogin, []byte(loginPolicy), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := validateProfile(profile); err != nil {
+		t.Fatalf("safe login metadata: %v", err)
+	}
+	if err := os.WriteFile(settingsPathForLogin, []byte(strings.Replace(loginPolicy, `"/work"`, `"/"`, 1)), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := validateProfile(profile); err == nil {
+		t.Fatal("arbitrary trusted host workspace accepted")
+	}
+	if err := os.WriteFile(settingsPathForLogin, isolationSettings, 0600); err != nil {
+		t.Fatal(err)
+	}
 	settingsPath := filepath.Join(profile, ".gemini", "antigravity-cli", "settings.json")
-	canonical := `{"toolPermission":"strict","enableTerminalSandbox":true,"permissions":{"deny":["command(*)","read_file(*)","write_file(*)","read_url(*)","execute_url(*)","mcp(*)"]}}`
+	canonical := `{"toolPermission":"strict","enableTerminalSandbox":true,"permissions":{"deny":["command(*)","unsandboxed(*)","read_file(*)","write_file(*)","read_url(*)","execute_url(*)","mcp(*)"]}}`
 	if err := os.WriteFile(settingsPath, []byte(canonical), 0600); err != nil {
 		t.Fatal(err)
 	}
 	if err := validateProfile(profile); err != nil {
 		t.Fatalf("official CLI settings canonicalization rejected: %v", err)
+	}
+	if err := os.WriteFile(settingsPath, []byte(strings.Replace(canonical, `"unsandboxed(*)",`, "", 1)), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := validateProfile(profile); err == nil {
+		t.Fatal("missing outside-sandbox execution restriction accepted")
 	}
 	if err := os.WriteFile(settingsPath, []byte(`{"toolPermission":"always-proceed"}`), 0600); err != nil {
 		t.Fatal(err)

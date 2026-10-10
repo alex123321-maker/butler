@@ -39,20 +39,30 @@ func validateProfile(profile string) error {
 			Ask   []string `json:"ask"`
 			Deny  []string `json:"deny"`
 		} `json:"permissions"`
-		ArtifactReviewPolicy    string `json:"artifactReviewPolicy"`
-		AllowNonWorkspaceAccess bool   `json:"allowNonWorkspaceAccess"`
-		UseG1Credits            bool   `json:"useG1Credits"`
-		EnableTelemetry         bool   `json:"enableTelemetry"`
+		ArtifactReviewPolicy    string   `json:"artifactReviewPolicy"`
+		AllowNonWorkspaceAccess bool     `json:"allowNonWorkspaceAccess"`
+		UseG1Credits            bool     `json:"useG1Credits"`
+		EnableTelemetry         bool     `json:"enableTelemetry"`
+		TrustedWorkspaces       []string `json:"trustedWorkspaces"`
+		Model                   string   `json:"model"`
 	}
 	decoder := json.NewDecoder(bytes.NewReader(settings))
 	decoder.DisallowUnknownFields()
 	if decoder.Decode(&policy) != nil || policy.ToolPermission != "strict" || !policy.EnableTerminalSandbox || len(policy.Permissions.Allow) != 0 || len(policy.Permissions.Ask) != 0 || policy.AllowNonWorkspaceAccess || policy.UseG1Credits || policy.EnableTelemetry || (policy.ArtifactReviewPolicy != "" && policy.ArtifactReviewPolicy != "asks-for-review") {
 		return protocolError("Antigravity profile policy differs from the required model-only policy")
 	}
+	// Interactive login records the empty read-only /work mount as trusted.
+	// Runtime turns use a different fresh workspace. Never accept arbitrary
+	// host directories, a wildcard, or the profile itself as trusted workspaces.
+	for _, workspace := range policy.TrustedWorkspaces {
+		if workspace != "/work" {
+			return protocolError("Antigravity profile contains an unsupported trusted workspace")
+		}
+	}
 	// CLI 1.3.3 canonicalizes the settings file by omitting empty lists and
 	// default-valued optional fields. Require the actual execution restrictions,
 	// rather than byte equality with the initial JSON/IDE-oriented settings.
-	for _, required := range []string{"command(*)", "read_file(*)", "write_file(*)", "read_url(*)", "execute_url(*)", "mcp(*)"} {
+	for _, required := range []string{"command(*)", "unsandboxed(*)", "read_file(*)", "write_file(*)", "read_url(*)", "execute_url(*)", "mcp(*)"} {
 		present := false
 		for _, denied := range policy.Permissions.Deny {
 			if denied == required {

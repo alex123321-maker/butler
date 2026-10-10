@@ -7,13 +7,13 @@ func TestAntigravityConfigurationIsExplicitAndNonSecret(t *testing.T) {
 		"BUTLER_POSTGRES_URL":            "postgres://butler:password@localhost/butler",
 		"BUTLER_REDIS_URL":               "redis://localhost:6379/0",
 		"BUTLER_MODEL_PROVIDER":          "antigravity",
-		"BUTLER_ANTIGRAVITY_MODEL":       "gemini-3.1-pro-high",
+		"BUTLER_ANTIGRAVITY_MODEL":       "gemini-3.8-flash-tiered",
 		"BUTLER_ANTIGRAVITY_BINARY_PATH": "/opt/antigravity/agy",
 	}))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cfg.ModelProvider != "antigravity" || cfg.AntigravityModel != "gemini-3.1-pro-high" || cfg.AntigravityProfileDir != "/home/butler" {
+	if cfg.ModelProvider != "antigravity" || cfg.AntigravityModel != "gemini-3.8-flash-tiered" || cfg.AntigravityProfileDir != "/home/butler" {
 		t.Fatalf("incorrect config: %s %s %s", cfg.ModelProvider, cfg.AntigravityModel, cfg.AntigravityProfileDir)
 	}
 	for _, key := range snapshot.ListKeys() {

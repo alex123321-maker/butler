@@ -57,7 +57,7 @@ func (f *Factory) Build(_ context.Context, cfg BuildConfig) (Result, error) {
 	}
 	switch provider {
 	case modelprovider.ProviderAntigravity:
-		instance, err := antigravity.NewProvider(antigravity.Config{Model: cfg.AntigravityModel, BinaryPath: cfg.AntigravityBinaryPath, ProfileDir: cfg.AntigravityProfileDir, Timeout: cfg.Timeout})
+		instance, err := antigravity.NewProvider(antigravity.Config{Model: cfg.AntigravityModel, BinaryPath: cfg.AntigravityBinaryPath, ProfileDir: cfg.AntigravityProfileDir})
 		if err != nil {
 			return Result{}, err
 		}

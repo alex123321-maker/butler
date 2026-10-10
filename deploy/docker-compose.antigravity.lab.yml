@@ -4,7 +4,7 @@ services:
   orchestrator:
     environment:
       BUTLER_MODEL_PROVIDER: antigravity
-      BUTLER_ANTIGRAVITY_MODEL: ${BUTLER_ANTIGRAVITY_MODEL:-gemini-3.1-pro-high}
+      BUTLER_ANTIGRAVITY_MODEL: ${BUTLER_ANTIGRAVITY_MODEL:-gemini-3.8-flash-tiered}
       BUTLER_ANTIGRAVITY_BINARY_PATH: /opt/antigravity/agy
       BUTLER_ANTIGRAVITY_PROFILE_DIR: /home/butler
     volumes:

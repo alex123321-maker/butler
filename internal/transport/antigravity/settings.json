@@ -10,6 +10,7 @@
     "ask": [],
     "deny": [
       "command(*)",
+      "unsandboxed(*)",
       "read_file(*)",
       "write_file(*)",
       "read_url(*)",

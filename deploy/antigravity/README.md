@@ -6,7 +6,11 @@ Gemini API keys and Google Cloud consumption billing are separate access paths.
 The SDK quickstart uses Gemini API/Vertex credentials and does not establish a
 Google AI Pro subscription login for Butler.
 
-This is an opt-in adapter pending a real logged-in smoke on the lab. Contract tests
+This is an opt-in adapter pending a real logged-in smoke on the lab. CLI 1.3.3
+advertises a nonempty native toolkit even with this agent's empty tool list, so
+the lab guard rejects it and the adapter must remain disabled. Native Go API
+transport is being implemented to retain Butler's exclusive tool execution.
+Contract tests
 exercise a fake subprocess; they do not prove the Google backend accepted a model
 request or that the installed CLI honors the empty toolkit. Do not activate it
 until the real `init.tools=[]` check and answer/tool-proposal roundtrip succeed.
@@ -61,8 +65,11 @@ ssh -t laba 'bash /srv/storage/butler/agents/antigravity-provider/login.sh'
 Select your personal Google account, open the official authorization URL in your
 browser, and paste the authorization code directly into that SSH terminal. Never
 send it through Butler/chat. Exit with `/exit` when login completes. The same
-command allows `/logout`. Additional AI credit overages are disabled by the
-profile's `useG1Credits: false` setting.
+command allows `/logout`. Setup requests `useG1Credits: false`, but CLI settings
+canonicalization omits this field. Check the effective account credit/overage
+policy during login; an omitted field alone does not prove charging is disabled.
+The login's empty read-only `/work` mount is the only permitted trusted workspace.
+Model invocations use fresh separate directories and a five-minute timeout.
 
 Run the model-only smoke after login, from the synced source checkout on the lab:
 
@@ -80,7 +87,7 @@ After the real smoke passes, add `deploy/docker-compose.antigravity.lab.yml` as 
 last Compose file in the lab deployment command. It mounts the verified musl
 binary read-only and the same private UID `10001` profile into Orchestrator.
 Keep `BUTLER_ANTIGRAVITY_MODEL` set to a model slug available to your account
-(`agy models`); the initial default is `gemini-3.1-pro-high`.
+(`agy models`); the initial default is `gemini-3.8-flash-tiered`.
 
 The active provider and model slug are managed through existing Butler settings.
 Binary/profile paths are environment-only operational configuration. A missing

@@ -66,7 +66,7 @@ func managedSettingsCatalog() []SettingCatalogItem {
 			Visible:      true,
 		},
 		{
-			Spec:  fieldSpec{key: "BUTLER_ANTIGRAVITY_MODEL", component: "orchestrator", typeName: "string", defaultValue: "gemini-3.1-pro-high", requiresRestart: true, validate: validateNonEmpty},
+			Spec:  fieldSpec{key: "BUTLER_ANTIGRAVITY_MODEL", component: "orchestrator", typeName: "string", defaultValue: "gemini-3.8-flash-tiered", requiresRestart: true, validate: validateNonEmpty},
 			Group: "Model", DisplayOrder: 58, Visible: true,
 		},
 		{

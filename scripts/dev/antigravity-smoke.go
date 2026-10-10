@@ -26,7 +26,7 @@ func smoke() error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
-	base := transport.TransportRunContext{RunID: "antigravity-smoke-text", SessionKey: "smoke:antigravity", ProviderName: antigravity.Name, ModelName: "gemini-3.1-pro-high"}
+	base := transport.TransportRunContext{RunID: "antigravity-smoke-text", SessionKey: "smoke:antigravity", ProviderName: antigravity.Name, ModelName: "gemini-3.8-flash-tiered"}
 	stream, err := p.StartRun(ctx, transport.StartRunRequest{Context: base, InputItems: []transport.InputItem{{Role: "user", Content: "Ответь коротко по-русски: что такое контрольная сумма? Используй answer, пустой tool_name и пустой arguments."}}})
 	if err != nil {
 		return err
