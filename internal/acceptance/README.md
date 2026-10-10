@@ -27,6 +27,10 @@ newest independent deletion anchor: old contents are denied before reconciliatio
 then original and derived text/binary are physically erased and reindex is denied.
 Installed extension tests become required when their package is present. An older
 snapshot without that package reports PENDING, never PASS, for that boundary.
+Full also starts the actual Broker and separate HTTP extension runtime against
+fresh PG, binds the initialized private anchor and pins each run's transcript.
+Current reviewed version, approval, readiness, changed version, rollback and
+deferred credentials are exercised without weakening source or dispatch guards.
 
 Each required named top-level test must run exactly once and pass with package
 completion. Missing, skipped, failed, duplicate, foreign-package or malformed

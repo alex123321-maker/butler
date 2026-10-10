@@ -44,11 +44,13 @@ matching the mandatory memory barrier; it does not disable that guard.
 | Reproducible version pins | Exact code commit and snapshot hash, migration/corpus/criteria hashes, Go/container IDs, hardware manifest; raw private artifacts retained on lab |
 | Observation before model release | Export/scoring cannot execute an action; secret sources excluded before input; no model connected for this corpus and NO_GO cannot promote one |
 
-Installed extensions already have separately accepted release `8d82b6c`
-(issue #18). The matrix requires their exact current-version/readiness/revocation
-tests when an integrated snapshot contains `internal/extensions`; this older memory
-branch marks absent source PENDING. The full isolated adapter development/review/
-release/rollback chain is not proven by those lifecycle tests.
+The current matrix is based on published main release
+`dfff7f7fc8ee6c8ad23fe093175b85a6d2b4e041`, which combines #18 and the
+memory/ingestion/source guards. It requires exact installed-version/readiness/
+revocation PG tests and the actual separate Broker/extension runtime fixture with
+current transcript pins and private deletion anchor. An older snapshot without
+the installed package reports PENDING. Isolated adapter development with an
+independent reviewer, and self-repair release, still require #20/#21.
 
 **Issue #33 remains open.** Required #16/#17 real delegated tab/file conflicts and
 child provenance, #19 reusable procedures, #20/#21 isolated development/repair with

@@ -46,7 +46,7 @@ for attempt in $(seq 1 60); do
   [[ "$attempt" != 60 ]] || { printf 'Disposable PostgreSQL not ready\n' >&2; exit 1; }
   sleep 1
 done
-for group in template ownership approval owner_stop authority effects delivery budget context memory source_index auxiliary model_pressure credential_e2e extensions; do
+for group in template ownership approval owner_stop authority effects delivery budget context memory source_index auxiliary model_pressure credential_e2e extensions extension_e2e; do
   docker exec "$pg" createdb -U fixture "butler_acceptance_${group}_test"
 done
 docker exec "$pg" createdb -U fixture butler_memory_backup_test
@@ -94,6 +94,7 @@ if [[ "$profile" == full ]]; then
   "${go_container[@]}" golang:1.27.2-bookworm go test -c -race -o /proof/bin/browser.test ./apps/tool-browser/internal/runtime
   "${go_container[@]}" golang:1.27.2-bookworm go test -c -race -o /proof/bin/broker.test ./apps/tool-broker/internal/broker
   "${go_container[@]}" golang:1.27.2-bookworm go test -c -race -o /proof/bin/app.test ./apps/orchestrator/internal/app
+  "${go_container[@]}" golang:1.27.2-bookworm go test -c -race -o /proof/bin/extension.test ./apps/tool-extension/internal/runtime
   "${go_container[@]}" golang:1.27.2-bookworm go build -o /proof/bin/tool-broker ./apps/tool-broker
   browser_image=$(docker image inspect butler-lab-tool-browser:latest --format '{{.Id}}')
   printf '%s\n' "$browser_image" > "$proof/browser-image-id.txt"
@@ -119,6 +120,11 @@ if [[ "$profile" == full ]]; then
     '-test.run=^(TestBrokerBrowserSequenceE2E|TestDirectBrokerCallsCannotBypassActionAuthorization|TestReflectedCredentialIsMaskedBeforeModelBoundary)$' > "$proof/events/broker-browser.jsonl"
   "${browser_container[@]}" "$browser_image" -t -p github.com/butler/butler/apps/orchestrator/internal/app \
     /proof/bin/app.test -test.v=test2json -test.timeout=120s '-test.run=^TestApprovedCredentialBrokerBrowserE2E$' > "$proof/events/credential-e2e.jsonl"
+  "${go_container[@]}" --env BUTLER_EXTENSION_E2E=1 --env BUTLER_EXTENSION_E2E_BINARY=/proof/bin/extension.test \
+    --env BUTLER_BROKER_E2E_BINARY=/proof/bin/tool-broker \
+    --env 'BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=postgres://fixture:acceptance-fixture@acceptance-postgres:5432/butler_acceptance_extension_e2e_test?sslmode=disable' \
+    golang:1.27.2-bookworm /proof/bin/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app \
+    /proof/bin/app.test -test.v=test2json -test.timeout=150s '-test.run=^TestInstalledProjectExtensionRealBrokerApprovalE2E$' > "$proof/events/extension-e2e.jsonl"
   set -e
 
   # Actual backup before deletion, then restore the old PG contents while keeping
