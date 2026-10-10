@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 )
 
 type fakeSingleTabCoordinator struct {
+	mu           sync.Mutex
 	createResult singletab.CreateBindRequestResult
 	createErr    error
 	session      singletab.Record
@@ -23,6 +25,8 @@ type fakeSingleTabCoordinator struct {
 }
 
 func (f *fakeSingleTabCoordinator) CreateBindRequest(_ context.Context, params singletab.CreateBindRequestParams) (singletab.CreateBindRequestResult, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	copyParams := params
 	f.lastCreate = &copyParams
 	if f.createErr != nil {
@@ -36,6 +40,8 @@ func (f *fakeSingleTabCoordinator) CreateBindRequest(_ context.Context, params s
 }
 
 func (f *fakeSingleTabCoordinator) GetActiveSession(_ context.Context, sessionKey string) (singletab.Record, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	if f.sessionErr != nil {
 		return singletab.Record{}, f.sessionErr
 	}
@@ -45,6 +51,8 @@ func (f *fakeSingleTabCoordinator) GetActiveSession(_ context.Context, sessionKe
 }
 
 func (f *fakeSingleTabCoordinator) GetSession(_ context.Context, sessionID string) (singletab.Record, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	if f.sessionErr != nil {
 		return singletab.Record{}, f.sessionErr
 	}
@@ -54,6 +62,8 @@ func (f *fakeSingleTabCoordinator) GetSession(_ context.Context, sessionID strin
 }
 
 func (f *fakeSingleTabCoordinator) ReleaseSession(_ context.Context, params singletab.ReleaseSessionParams) (singletab.Record, bool, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	if f.sessionErr != nil {
 		return singletab.Record{}, false, f.sessionErr
 	}
@@ -70,6 +80,8 @@ func (f *fakeSingleTabCoordinator) ReleaseSession(_ context.Context, params sing
 }
 
 func (f *fakeSingleTabCoordinator) UpdateSessionState(_ context.Context, params singletab.UpdateSessionStateParams) (singletab.Record, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	if f.sessionErr != nil {
 		return singletab.Record{}, f.sessionErr
 	}

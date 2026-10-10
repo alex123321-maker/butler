@@ -82,9 +82,11 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 		return nil, s.failRun(ctx, current, "", runLog, fmt.Errorf("acquire lease: %w", err))
 	}
 	runCtx, stopRenewing, renewErrs := s.startLeaseRenewer(ctx, lease, runLog)
-	defer stopRenewing()
 	defer func() {
-		if _, releaseErr := s.leases.ReleaseLease(context.Background(), lease.LeaseID); releaseErr != nil {
+		stopRenewing()
+		releaseCtx, releaseCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer releaseCancel()
+		if _, releaseErr := s.leases.ReleaseLease(releaseCtx, lease.LeaseID); releaseErr != nil {
 			runLog.Error("release lease failed", slog.String("lease_id", lease.LeaseID), slog.String("error", releaseErr.Error()))
 		}
 	}()
@@ -125,7 +127,9 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	if err := s.saveTransientWorkingState(ctx, current.GetRunId(), event.SessionKey, "preparing", map[string]any{"goal": prepared.WorkingMemory.Goal}); err != nil {
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("save transient working memory: %w", err))
 	}
-	current = s.attachReusableProviderSessionRef(ctx, current, runLog)
+	// New runs replay Butler-owned context into a fresh provider session. There
+	// is no durable provider replay boundary yet, so cross-run reuse can duplicate
+	// messages. Tool-result continuation within this run still uses its own ref.
 
 	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_MODEL_RUNNING, lease.LeaseID, "", "")
 	if err != nil {

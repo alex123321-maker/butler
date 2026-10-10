@@ -367,6 +367,15 @@ Current bundle assembly now combines:
 
 When embeddings or optional keyword matches are unavailable, bundle assembly degrades gracefully and still returns deterministic summary / working / profile context within budget.
 
+Current context safety baseline also replays the latest ten non-empty user/assistant
+messages alongside any session summary. Summary presence never suppresses this
+history. Recent user messages remain intact; assistant replay and prompt sections
+are shortened by Unicode characters, preserving Russian text. Transcript read
+failure blocks model preparation with an explicit error. This conservative replay
+has no coverage watermark yet and can overlap summary content; source-versioned
+summary updates, full unsummarized tails, protected task constraints and model-aware
+token admission are still required by #9–#10.
+
 ---
 
 ## 11. Memory pipeline (конвейер памяти)

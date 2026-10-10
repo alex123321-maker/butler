@@ -39,9 +39,10 @@ From Windows, after creating a writable `/srv/storage/butler` on `ssh laba`:
 ```powershell
 pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Sync
 pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Test
-pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Integration -Packages ./...
-pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Web
 pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Up
+pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Integration -Packages ./...
+pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Race
+pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Web
 pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Status
 ```
 
@@ -60,5 +61,7 @@ Web checks run lint, functional Playwright fixtures, and a read-only browser
 smoke against the deployed services. Screenshot baselines have no committed
 references, so the visual-baseline test is excluded; the live smoke saves a
 current UI screenshot in `.cache/lab-ui.png` on the lab.
+Race checks install the C toolchain only in a disposable Go container and run
+tests as UID 1000, keeping build/module caches on the storage disk.
 - browser, HTTP, webfetch, and doctor runtimes are runnable V1 services rather than skeleton placeholders
 - for Windows local-browser testing, install the native messaging host with `pwsh -NoProfile -File scripts/dev/install-browser-bridge-host.ps1 -Browser Chrome -ExtensionId <extension_id>`

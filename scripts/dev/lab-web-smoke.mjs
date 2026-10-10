@@ -24,6 +24,7 @@ try {
   }
   await page.goto(baseURL)
   await page.getByRole('heading', { name: 'Overview', exact: true }).waitFor()
+  await page.waitForLoadState('networkidle')
   await page.screenshot({ path: process.env.BUTLER_LAB_SMOKE_SCREENSHOT || '/cache/lab-ui.png', fullPage: true })
   if (failures.length) throw new Error(`Live lab smoke failed: ${failures.join(', ')}`)
   console.log('Live lab browser smoke passed')

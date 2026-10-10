@@ -62,8 +62,8 @@ func (h *Hub) Subscribe(runID string) (<-chan Event, func()) {
 // Non-blocking: if a subscriber's buffer is full, the event is dropped for that subscriber.
 func (h *Hub) Publish(runID string, event Event) {
 	h.mu.RLock()
+	defer h.mu.RUnlock()
 	subs := h.subscribers[runID]
-	h.mu.RUnlock()
 
 	for sub := range subs {
 		select {

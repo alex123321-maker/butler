@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/butler/butler/internal/config"
 	"github.com/butler/butler/internal/memory/sanitize"
@@ -415,13 +416,13 @@ func formatBool(value bool) string {
 
 func truncate(value string, limit int) (string, bool) {
 	trimmed := strings.TrimSpace(value)
-	if limit <= 0 || len(trimmed) <= limit {
+	if limit <= 0 || utf8.RuneCountInString(trimmed) <= limit {
 		return trimmed, false
 	}
 	if limit <= len("[truncated]") {
-		return trimmed[:limit], true
+		return string([]rune(trimmed)[:limit]), true
 	}
-	return strings.TrimSpace(trimmed[:limit-len("[truncated]")-1]) + "\n[truncated]", true
+	return strings.TrimSpace(string([]rune(trimmed)[:limit-len("[truncated]")-1])) + "\n[truncated]", true
 }
 
 func sectionByName(sections []Section, name string) (*Section, bool) {

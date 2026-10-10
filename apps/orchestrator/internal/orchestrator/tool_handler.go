@@ -77,6 +77,13 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 			if s.config.ApprovalGate == nil {
 				return nil, current, fmt.Errorf("tool authorization unavailable: approval gate is not configured")
 			}
+			// Register before durable publication and notification, so an immediate
+			// user response cannot arrive before the waiter exists.
+			pendingApproval, registerErr := s.config.ApprovalGate.Register(ctx, toolCallID)
+			if registerErr != nil {
+				return nil, current, fmt.Errorf("register approval: %w", registerErr)
+			}
+			defer pendingApproval.Close()
 			var approvalRecord approvals.Record
 			if s.config.ApprovalService != nil {
 				createdApproval, createErr := s.config.ApprovalService.CreatePendingApproval(ctx, approvals.CreatePendingParams{
@@ -123,7 +130,7 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 				"args_preview": truncateForObservability(requested.ArgsJSON, 200),
 			})
 
-			resp, waitErr := s.config.ApprovalGate.Wait(ctx, toolCallID)
+			resp, waitErr := pendingApproval.Wait()
 			if waitErr != nil {
 				if s.config.ApprovalService != nil {
 					_, _, _ = s.config.ApprovalService.ResolveByToolCall(ctx, approvals.ResolveByToolCallParams{
@@ -150,7 +157,7 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 						actorID = resp.ResolvedBy
 					}
 				}
-				_, _, resolveErr := s.config.ApprovalService.ResolveByToolCall(ctx, approvals.ResolveByToolCallParams{
+				resolvedApproval, _, resolveErr := s.config.ApprovalService.ResolveByToolCall(ctx, approvals.ResolveByToolCallParams{
 					ToolCallID:       toolCallID,
 					Approved:         resp.Approved,
 					ResolvedVia:      resolvedVia,
@@ -163,6 +170,8 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 				if resolveErr != nil {
 					return nil, current, fmt.Errorf("resolve durable approval: %w", resolveErr)
 				}
+				// PostgreSQL is authoritative if another channel already decided.
+				resp.Approved = resolvedApproval.Status == approvals.StatusApproved
 			}
 			if !resp.Approved {
 				s.emitEvent(current.GetRunId(), current.GetSessionKey(), observability.EventApprovalResolved, map[string]any{
