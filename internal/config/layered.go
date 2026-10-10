@@ -53,9 +53,6 @@ func (r LayeredResolver) Resolve(specs []fieldSpec) (Snapshot, error) {
 		if value, ok := lookupNonEmptyEnv(r.env, spec.key); ok {
 			return value, ConfigSourceEnv, true
 		}
-		if spec.key == "BUTLER_ANTIGRAVITY_BINARY_PATH" || spec.key == "BUTLER_ANTIGRAVITY_PROFILE_DIR" {
-			return "", "", false // Executable/profile boundaries are operator environment only.
-		}
 		setting, ok := r.settings[spec.key]
 		if !ok {
 			return "", "", false
@@ -151,8 +148,6 @@ func layeredOrchestratorSpecs(cfg *OrchestratorConfig) []fieldSpec {
 		fieldSpec{key: "BUTLER_OPENAI_CODEX_BASE_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "https://chatgpt.com/backend-api", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.OpenAICodexBaseURL = v }},
 		fieldSpec{key: "BUTLER_GITHUB_COPILOT_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-4o", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.GitHubCopilotModel = v }},
 		fieldSpec{key: "BUTLER_ANTIGRAVITY_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gemini-3.8-flash-tiered", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityModel = v }},
-		fieldSpec{key: "BUTLER_ANTIGRAVITY_BINARY_PATH", component: "orchestrator", typeName: "string", required: false, defaultValue: "/opt/antigravity/agy", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityBinaryPath = v }},
-		fieldSpec{key: "BUTLER_ANTIGRAVITY_PROFILE_DIR", component: "orchestrator", typeName: "string", required: false, defaultValue: "/home/butler", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityProfileDir = v }},
 		fieldSpec{key: "BUTLER_OPENAI_TIMEOUT_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "60", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.OpenAITimeoutSeconds = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_TOOL_BROKER_ADDR", component: "orchestrator", typeName: "string", required: false, defaultValue: "127.0.0.1:10090", requiresRestart: true, validate: validateListenAddr, assign: func(v string) { cfg.ToolBrokerAddr = v }},
 		fieldSpec{key: "BUTLER_AUTONOMY_MODE", component: "orchestrator", typeName: "string", defaultValue: "mode_1", allowedValues: []string{"mode_0", "mode_1", "mode_2", "mode_3"}, requiresRestart: true, assign: func(v string) { cfg.AutonomyMode = v }},

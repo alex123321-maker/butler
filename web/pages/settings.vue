@@ -152,7 +152,7 @@
               <p>{{ provider.model }}</p>
             </div>
             <span class="provider-badge" :class="provider.connected ? 'provider-badge--connected' : 'provider-badge--idle'">
-              {{ provider.auth_kind === 'external_cli' ? 'CLI profile' : provider.connected ? 'Connected' : provider.auth_kind === 'api_key' ? 'Config only' : 'Not connected' }}
+              {{ provider.connected ? 'Connected' : provider.auth_kind === 'api_key' ? 'Config only' : 'Not connected' }}
             </span>
           </div>
 
@@ -200,7 +200,8 @@
               <p class="provider-actions__hint">Managed through `BUTLER_OPENAI_API_KEY` and grouped settings.</p>
             </template>
             <template v-else-if="provider.name === 'antigravity'">
-              <p class="provider-actions__hint">Sign in to Google AI Pro using the private Antigravity CLI terminal. Login is checked when a model turn starts; account codes never belong in chat.</p>
+              <p class="provider-actions__hint">Google AI Pro credentials are installed by the operator through a private sign-in and encrypted import. Connected means credentials are stored; model access also depends on your subscription quota.</p>
+              <button v-if="provider.connected" class="provider-btn" type="button" :disabled="providerBusy === provider.name" @click="disconnectProvider(provider.name)">Disconnect</button>
             </template>
             <template v-else-if="provider.name === 'github-copilot'">
               <input

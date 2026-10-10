@@ -82,10 +82,11 @@ func TestProviderServerStartsOAuthFlow(t *testing.T) {
 	}
 }
 
-func TestAntigravityProviderReportsExternalLoginAndRejectsWebAuth(t *testing.T) {
+func TestAntigravityProviderReportsStoredCredentialsAndRejectsWebImport(t *testing.T) {
 	t.Parallel()
-	manager := &fakeProviderAuthManager{}
-	server := NewProviderServer(manager, modelprovider.ProviderAntigravity, map[string]string{modelprovider.ProviderAntigravity: "gemini-3.1-pro-high"}, false)
+	state := providerauth.ProviderState{Provider: modelprovider.ProviderAntigravity, AuthKind: providerauth.AuthKindOperatorImport, Connected: true}
+	manager := &fakeProviderAuthManager{listState: []providerauth.ProviderState{state}, state: state}
+	server := NewProviderServer(manager, modelprovider.ProviderAntigravity, map[string]string{modelprovider.ProviderAntigravity: "gemini-3.8-flash-tiered"}, false)
 	resp := httptest.NewRecorder()
 	server.HandleList().ServeHTTP(resp, httptest.NewRequest(http.MethodGet, "/api/v1/providers", nil))
 	var payload struct {
@@ -100,17 +101,22 @@ func TestAntigravityProviderReportsExternalLoginAndRejectsWebAuth(t *testing.T) 
 			external = &payload.Providers[i]
 		}
 	}
-	if external == nil || !external.Active || external.Connected || external.AuthKind != "external_cli" {
+	if external == nil || !external.Active || !external.Connected || external.AuthKind != providerauth.AuthKindOperatorImport {
 		t.Fatalf("incorrect external auth state: %#v", external)
 	}
-	for _, method := range []string{http.MethodPost, http.MethodDelete} {
+	for _, method := range []string{http.MethodPost} {
 		resp = httptest.NewRecorder()
 		server.HandleItem().ServeHTTP(resp, httptest.NewRequest(method, "/api/v1/providers/antigravity/auth/start", strings.NewReader(`{}`)))
 		if resp.Code != http.StatusBadRequest {
-			t.Fatalf("external CLI auth mutation accepted: %d", resp.Code)
+			t.Fatalf("public credential import accepted: %d", resp.Code)
 		}
 	}
 	if manager.startCalled {
-		t.Fatal("CLI login delegated to an unrelated OAuth manager")
+		t.Fatal("operator import delegated to a web OAuth flow")
+	}
+	resp = httptest.NewRecorder()
+	server.HandleItem().ServeHTTP(resp, httptest.NewRequest(http.MethodDelete, "/api/v1/providers/antigravity/auth", nil))
+	if resp.Code != http.StatusOK {
+		t.Fatalf("disconnect failed: %d", resp.Code)
 	}
 }

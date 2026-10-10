@@ -83,7 +83,9 @@ func New(ctx context.Context) (*App, error) {
 	}
 	log.Info("loaded layered orchestrator config", slog.String("config_summary", configSummary(snapshot)))
 	hotConfig := config.NewHotConfig(snapshot)
-	authManager := providerauth.NewManager(settingsStore)
+	// Provider OAuth credentials always require encrypted persistence, including
+	// installations that permit plaintext storage for unrelated legacy settings.
+	authManager := providerauth.NewManager(config.NewPostgresSettingsStore(postgres.Pool()))
 
 	redis, err := redisstore.Open(ctx, redisstore.ConfigFromShared(cfg.Redis), logger.WithComponent(log, "redis"))
 	if err != nil {
@@ -100,19 +102,17 @@ func New(ctx context.Context) (*App, error) {
 
 	providerBuilder := providerfactory.New(authManager, log)
 	providerResult, err := providerBuilder.Build(ctx, providerfactory.BuildConfig{
-		ActiveProvider:        cfg.ModelProvider,
-		OpenAIAPIKey:          cfg.OpenAIAPIKey,
-		OpenAIModel:           cfg.OpenAIModel,
-		OpenAIBaseURL:         cfg.OpenAIBaseURL,
-		OpenAIRealtimeURL:     cfg.OpenAIRealtimeURL,
-		OpenAITransportMode:   cfg.OpenAITransportMode,
-		OpenAICodexModel:      cfg.OpenAICodexModel,
-		OpenAICodexBaseURL:    cfg.OpenAICodexBaseURL,
-		GitHubCopilotModel:    cfg.GitHubCopilotModel,
-		AntigravityModel:      cfg.AntigravityModel,
-		AntigravityBinaryPath: cfg.AntigravityBinaryPath,
-		AntigravityProfileDir: cfg.AntigravityProfileDir,
-		Timeout:               time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
+		ActiveProvider:      cfg.ModelProvider,
+		OpenAIAPIKey:        cfg.OpenAIAPIKey,
+		OpenAIModel:         cfg.OpenAIModel,
+		OpenAIBaseURL:       cfg.OpenAIBaseURL,
+		OpenAIRealtimeURL:   cfg.OpenAIRealtimeURL,
+		OpenAITransportMode: cfg.OpenAITransportMode,
+		OpenAICodexModel:    cfg.OpenAICodexModel,
+		OpenAICodexBaseURL:  cfg.OpenAICodexBaseURL,
+		GitHubCopilotModel:  cfg.GitHubCopilotModel,
+		AntigravityModel:    cfg.AntigravityModel,
+		Timeout:             time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
 	})
 	if err != nil {
 		redis.Close()

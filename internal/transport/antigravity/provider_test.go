@@ -3,256 +3,308 @@ package antigravity
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"os"
-	"path/filepath"
-	"runtime"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/butler/butler/internal/providerauth"
 	"github.com/butler/butler/internal/transport"
 )
 
-const emptyInit = `{"event":"init","init":{"tools":[],"agent":"butler-model"}}` + "\n"
-const answerResult = `{"event":"result","result":{"status":"SUCCESS","structured_output":{"kind":"answer","answer":"Привет 👋","tool_name":"","arguments":{}},"usage":{"input_tokens":11,"output_tokens":5,"total_tokens":16}}}` + "\n"
+type authSource struct{}
 
-func TestReadResultRejectsUnsafeOrIncompleteCLI(t *testing.T) {
-	cases := map[string]string{
-		"enabled builtin":             `{"event":"init","init":{"tools":["run_command"],"agent":"butler-model"}}`,
-		"implicit toolkit":            `{"event":"init","init":{"agent":"butler-model"}}`,
-		"wrong agent":                 `{"event":"init","init":{"tools":[],"agent":"default"}}`,
-		"missing init":                answerResult,
-		"duplicate init":              emptyInit + emptyInit + answerResult,
-		"tool step":                   emptyInit + `{"event":"step_update","step_update":{"step_type":"tool"}}`,
-		"delegation":                  emptyInit + `{"event":"step_update","step_update":{"step_type":"agent_response","subagent_info":{"subagents":[]}}}`,
-		"missing result":              emptyInit,
-		"duplicate result":            emptyInit + answerResult + answerResult,
-		"malformed JSON":              emptyInit + "not-json",
-		"unsupported event":           emptyInit + `{"event":"control_request"}`,
-		"free text instead of schema": emptyInit + `{"event":"result","result":{"status":"SUCCESS","response":"hello"}}`,
-		"schema unknown fields":       emptyInit + `{"event":"result","result":{"status":"SUCCESS","structured_output":{"kind":"answer","answer":"x","tool_name":"","arguments":{},"authorized":true}}}`,
-		"tool not supplied":           emptyInit + `{"event":"result","result":{"status":"SUCCESS","structured_output":{"kind":"tool_call","answer":"","tool_name":"shell.execute","arguments":{}}}}`,
-		"missing object arguments":    emptyInit + `{"event":"result","result":{"status":"SUCCESS","structured_output":{"kind":"tool_call","answer":"","tool_name":"web.fetch","arguments":null}}}`,
+func (authSource) ResolveAntigravity(context.Context) (providerauth.AntigravityAuth, error) {
+	return providerauth.AntigravityAuth{AccessToken: "private-access-fixture", ProjectID: "test-project", ExpiresAt: time.Now().Add(time.Hour)}, nil
+}
+
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (fn roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) { return fn(req) }
+func newFixture(t *testing.T, fn roundTripFunc) *Provider {
+	t.Helper()
+	p, err := NewProvider(Config{AuthSource: authSource{}})
+	if err != nil {
+		t.Fatal(err)
 	}
-	for name, stream := range cases {
+	p.client.Transport = fn
+	return p
+}
+func request(runID string) transport.StartRunRequest {
+	return transport.StartRunRequest{Context: transport.TransportRunContext{RunID: runID, SessionKey: "session:" + runID, ProviderName: Name, ModelName: DefaultModel}, InputItems: []transport.InputItem{{Role: "system", Content: "Butler owns actions"}, {Role: "user", Content: "Read example"}}, ToolDefinitions: []transport.ToolDefinition{{Name: "web.fetch", Description: "Read public URL", SchemaJSON: `{"type":"object","properties":{"url":{"type":"string"}},"required":["url"],"additionalProperties":false}`}}, StreamingEnabled: true}
+}
+func response(sse string) *http.Response {
+	return &http.Response{StatusCode: http.StatusOK, Header: http.Header{"Content-Type": {"text/event-stream"}}, Body: io.NopCloser(strings.NewReader(sse))}
+}
+func frame(part, finish string) string {
+	return `data: {"response":{"candidates":[{"index":0,"content":{"role":"model","parts":[` + part + `]},"finishReason":"` + finish + `"}]}}` + "\n\n"
+}
+func collect(t *testing.T, stream transport.EventStream) []transport.TransportEvent {
+	t.Helper()
+	var events []transport.TransportEvent
+	for event := range stream {
+		events = append(events, event)
+	}
+	return events
+}
+func findError(events []transport.TransportEvent) *transport.Error {
+	for _, event := range events {
+		if event.TransportError != nil {
+			return event.TransportError
+		}
+	}
+	return nil
+}
+
+func TestNativeFunctionContinuationKeepsExactSignatureAndOnlyButlerTools(t *testing.T) {
+	var calls atomic.Int32
+	p := newFixture(t, func(req *http.Request) (*http.Response, error) {
+		if req.URL.String() != endpoint+":streamGenerateContent?alt=sse" || req.Header.Get("Authorization") != "Bearer private-access-fixture" {
+			t.Error("incorrect private request")
+		}
+		var body requestEnvelope
+		if json.NewDecoder(req.Body).Decode(&body) != nil {
+			t.Error("invalid request")
+		}
+		if body.Model != DefaultModel || body.Project != "test-project" || body.EnabledCreditTypes == nil || len(body.EnabledCreditTypes) != 0 || body.RequestType != "agent" {
+			t.Error("unexpected subscription envelope")
+		}
+		if len(body.Request.Tools) != 1 || len(body.Request.Tools[0].FunctionDeclarations) != 1 || body.Request.Tools[0].FunctionDeclarations[0].Name != "butler_tool_0" {
+			t.Error("native toolkit differs from Butler catalog")
+		}
+		if calls.Add(1) == 1 {
+			return response(frame(`{"text":"private reasoning","thought":true,"thoughtSignature":"opaque-signature"}`, "") + frame(`{"functionCall":{"id":"native-call","name":"butler_tool_0","args":{"url":"https://example.com"}},"thoughtSignature":"call-signature"}`, "STOP")), nil
+		}
+		if len(body.Request.Contents) != 3 || body.Request.Contents[1].Role != "model" {
+			t.Error("model content not replayed")
+		}
+		encoded, _ := json.Marshal(body.Request.Contents)
+		if !strings.Contains(string(encoded), `"thoughtSignature":"call-signature"`) || !strings.Contains(string(encoded), `"id":"native-call","name":"butler_tool_0","response":{"result":{"title":"Example"},"status":"success"}`) {
+			t.Error("signature or correlated function response lost")
+		}
+		return response(frame(`{"text":"Готово"}`, "STOP")), nil
+	})
+	stream, err := p.StartRun(context.Background(), request("run"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	events := collect(t, stream)
+	if err := findError(events); err != nil {
+		t.Fatal(err)
+	}
+	var proposal *transport.ToolCallRequest
+	var ref *transport.ProviderSessionRef
+	for _, event := range events {
+		if event.ToolCall != nil {
+			proposal = event.ToolCall
+		}
+		if event.ProviderSessionRef != nil {
+			ref = event.ProviderSessionRef
+		}
+		if event.AssistantDelta != nil {
+			t.Fatal("private thought text exposed")
+		}
+	}
+	if proposal == nil || proposal.ToolName != "web.fetch" || ref == nil {
+		t.Fatal("missing Butler proposal/context")
+	}
+	if _, err := p.SubmitToolResult(context.Background(), transport.SubmitToolResultRequest{RunID: "run", ToolCallRef: "foreign-call", ToolResultJSON: `{}`}); err == nil {
+		t.Fatal("foreign call accepted")
+	}
+	foreign := *ref
+	foreign.SessionRef = "foreign-run"
+	if _, err := p.SubmitToolResult(context.Background(), transport.SubmitToolResultRequest{RunID: "run", ProviderSessionRef: &foreign, ToolCallRef: proposal.ToolCallRef, ToolResultJSON: `{}`}); err == nil {
+		t.Fatal("foreign context accepted")
+	}
+	stream, err = p.SubmitToolResult(context.Background(), transport.SubmitToolResultRequest{RunID: "run", ProviderSessionRef: ref, ToolCallRef: proposal.ToolCallRef, ToolResultJSON: `{"status":"success","result":{"title":"Example"}}`})
+	if err != nil {
+		t.Fatal(err)
+	}
+	events = collect(t, stream)
+	if err := findError(events); err != nil {
+		t.Fatal(err)
+	}
+	if len(events) != 4 || events[2].AssistantFinal == nil || events[2].AssistantFinal.Content != "Готово" || events[3].EventType != transport.EventTypeRunCompleted {
+		t.Fatal("missing final streaming result")
+	}
+	if _, err := p.SubmitToolResult(context.Background(), transport.SubmitToolResultRequest{RunID: "run", ToolCallRef: proposal.ToolCallRef, ToolResultJSON: `{}`}); err == nil {
+		t.Fatal("result replay accepted")
+	}
+}
+
+func TestUnsafeOrIncompleteResponsesNeverProposeTools(t *testing.T) {
+	cases := map[string]string{
+		"foreign function":    frame(`{"functionCall":{"name":"run_shell_command","args":{}}}`, "STOP"),
+		"bad schema":          frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":42}}}`, "STOP"),
+		"extra argument":      frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"https://example.com","shell":"x"}}}`, "STOP"),
+		"duplicate key":       frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"good","url":"bad"}}}`, "STOP"),
+		"parallel calls":      frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"a"}}},{"functionCall":{"name":"butler_tool_0","args":{"url":"b"}}}`, "STOP"),
+		"server execution":    frame(`{"codeExecutionResult":{"output":"bad"}}`, "STOP"),
+		"incomplete":          frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"a"}}}`, ""),
+		"unterminated frame":  strings.TrimSuffix(frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"a"}}}`, "STOP"), "\n\n"),
+		"truncated":           frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"a"}}}`, "MAX_TOKENS"),
+		"automatic history":   `data: {"response":{"automaticFunctionCallingHistory":[{}],"candidates":[]}}` + "\n\n",
+		"multiple candidates": `data: {"response":{"candidates":[{},{}]}}` + "\n\n",
+	}
+	for name, body := range cases {
 		t.Run(name, func(t *testing.T) {
-			if _, _, err := readResult(strings.NewReader(stream), []transport.ToolDefinition{{Name: "web.fetch"}}); err == nil {
-				t.Fatal("unsafe CLI response accepted")
+			p := newFixture(t, func(*http.Request) (*http.Response, error) { return response(body), nil })
+			stream, err := p.StartRun(context.Background(), request("run"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			events := collect(t, stream)
+			if findError(events) == nil {
+				t.Fatal("unsafe response accepted")
+			}
+			for _, event := range events {
+				if event.ToolCall != nil || event.ToolCallBatch != nil {
+					t.Fatal("unsafe proposal exposed")
+				}
 			}
 		})
 	}
 }
 
-func TestReadResultPreservesAnswerAndUsage(t *testing.T) {
-	choice, usage, err := readResult(strings.NewReader(emptyInit+answerResult), nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if choice.Answer != "Привет 👋" || usage.InputTokens != 11 || usage.TotalTokens != 16 {
-		t.Fatalf("incorrect normalized answer: %#v %#v", choice, usage)
-	}
-}
-
-func TestCLIErrorsNeverExposeRawDiagnostics(t *testing.T) {
-	for _, raw := range []string{"authentication failed access_token=secret-sentinel", "quota exhausted refresh_token=secret-sentinel", "unknown error cookie=secret-sentinel"} {
-		encoded, _ := json.Marshal(map[string]any{"event": "result", "result": map[string]string{"status": "ERROR", "error": raw}})
-		_, _, err := readResult(strings.NewReader(string(encoded)), nil)
-		if err == nil || strings.Contains(err.Error(), "secret-sentinel") {
-			t.Fatalf("unsafe normalized error: %v", err)
-		}
-	}
-}
-
-func TestCLIEnvironmentExcludesServiceCredentials(t *testing.T) {
-	t.Setenv("BUTLER_POSTGRES_URL", "postgres-secret-sentinel")
-	t.Setenv("GEMINI_API_KEY", "gemini-secret-sentinel")
-	t.Setenv("BUTLER_OPENAI_API_KEY", "openai-secret-sentinel")
-	for _, value := range cliEnvironment() {
-		if strings.Contains(value, "secret-sentinel") {
-			t.Fatalf("credential inherited by CLI: %s", strings.SplitN(value, "=", 2)[0])
-		}
+func TestHTTPFailuresMaskedNoRetryOrAuthRedirect(t *testing.T) {
+	for _, status := range []int{302, 401, 403, 429, 500} {
+		t.Run(fmt.Sprint(status), func(t *testing.T) {
+			var calls atomic.Int32
+			p := newFixture(t, func(*http.Request) (*http.Response, error) {
+				calls.Add(1)
+				return &http.Response{StatusCode: status, Header: http.Header{"Location": {"https://foreign.invalid/steal"}}, Body: io.NopCloser(strings.NewReader(`{"error":"private-access-fixture account@email.test"}`))}, nil
+			})
+			stream, err := p.StartRun(context.Background(), request("run"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			errorEvent := findError(collect(t, stream))
+			if errorEvent == nil || strings.Contains(errorEvent.Message, "private-access") || strings.Contains(errorEvent.Message, "email") || errorEvent.Retryable || calls.Load() != 1 {
+				t.Fatal("error leaked or retried")
+			}
+			if status == 429 && errorEvent.Type != transport.ErrorTypeRateLimited {
+				t.Fatal("quota not normalized")
+			}
+		})
 	}
 }
 
-func TestProviderProposalIsExternalAndCorrelated(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("subprocess contract test runs on the Linux lab")
-	}
-	profile := restrictedTestProfile(t)
-	toolResult := `{"event":"result","result":{"status":"SUCCESS","structured_output":{"kind":"tool_call","answer":"","tool_name":"web.fetch","arguments":{"url":"https://example.com"}}}}` + "\n"
-	binary := fakeCLI(t, emptyInit+toolResult)
-	p, _ := NewProvider(Config{BinaryPath: binary, ProfileDir: profile, WorkspaceRoot: t.TempDir(), Timeout: time.Second})
-	stream, err := p.StartRun(context.Background(), transport.StartRunRequest{Context: transport.TransportRunContext{RunID: "run-1", SessionKey: "session-1", ProviderName: Name, ModelName: "gemini-3.8-flash-tiered"}, InputItems: []transport.InputItem{{Role: "user", Content: "fetch it"}}, ToolDefinitions: []transport.ToolDefinition{{Name: "web.fetch", SchemaJSON: `{"type":"object"}`}}})
+func TestCancellationClosesHTTPAndIsolatedRuns(t *testing.T) {
+	started := make(chan struct{}, 2)
+	stopped := make(chan struct{}, 2)
+	p := newFixture(t, func(req *http.Request) (*http.Response, error) {
+		started <- struct{}{}
+		<-req.Context().Done()
+		stopped <- struct{}{}
+		return nil, req.Context().Err()
+	})
+	streamA, err := p.StartRun(context.Background(), request("a"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	var proposal *transport.ToolCallRequest
-	for event := range stream {
-		if event.TransportError != nil {
-			t.Fatal(event.TransportError)
-		}
-		if event.ToolCall != nil {
-			proposal = event.ToolCall
-		}
-	}
-	if proposal == nil || proposal.ToolName != "web.fetch" || proposal.ToolCallRef != "agy-run-1-1" {
-		t.Fatalf("missing proposal: %#v", proposal)
-	}
-	if _, err := p.SubmitToolResult(context.Background(), transport.SubmitToolResultRequest{RunID: "run-1", ToolCallRef: "foreign", ToolResultJSON: `{}`}); err == nil {
-		t.Fatal("foreign tool result accepted")
-	}
-	if err := os.WriteFile(binary, []byte("#!/bin/sh\ncat >/dev/null\ncat <<'BUTLER_RESULT'\n"+emptyInit+answerResult+"BUTLER_RESULT\n"), 0700); err != nil {
-		t.Fatal(err)
-	}
-	stream, err = p.SubmitToolResult(context.Background(), transport.SubmitToolResultRequest{RunID: "run-1", ToolCallRef: proposal.ToolCallRef, ToolResultJSON: `{"status":"success"}`})
+	streamB, err := p.StartRun(context.Background(), request("b"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	final := ""
-	for event := range stream {
-		if event.TransportError != nil {
-			t.Fatal(event.TransportError)
-		}
-		if event.AssistantFinal != nil {
-			final = event.AssistantFinal.Content
-		}
+	<-started
+	<-started
+	if _, err := p.StartRun(context.Background(), request("a")); err == nil {
+		t.Fatal("duplicate active run accepted")
 	}
-	if final != "Привет 👋" {
-		t.Fatalf("missing final answer: %q", final)
-	}
-	p.mu.Lock()
-	remaining := len(p.runs)
-	p.mu.Unlock()
-	if remaining != 0 {
-		t.Fatal("terminal run state retained")
-	}
-}
-
-func TestProviderCancellationStopsCLI(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("subprocess contract test runs on the Linux lab")
-	}
-	profile := restrictedTestProfile(t)
-	path := filepath.Join(t.TempDir(), "agy")
-	if err := os.WriteFile(path, []byte("#!/bin/sh\ncat >/dev/null\nexec sleep 30\n"), 0700); err != nil {
+	if _, err := p.CancelRun(context.Background(), transport.CancelRunRequest{RunID: "a"}); err != nil {
 		t.Fatal(err)
 	}
-	p, _ := NewProvider(Config{BinaryPath: path, ProfileDir: profile, WorkspaceRoot: t.TempDir()})
-	stream, err := p.StartRun(context.Background(), transport.StartRunRequest{Context: transport.TransportRunContext{RunID: "cancel", SessionKey: "s", ProviderName: Name, ModelName: "gemini"}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	<-stream
-	if _, err := p.CancelRun(context.Background(), transport.CancelRunRequest{RunID: "cancel"}); err != nil {
-		t.Fatal(err)
-	}
-	done := make(chan struct{})
-	go func() {
-		for range stream {
-		}
-		close(done)
-	}()
 	select {
-	case <-done:
-	case <-time.After(2 * time.Second):
-		t.Fatal("CLI cancellation did not complete")
+	case <-stopped:
+	case <-time.After(time.Second):
+		t.Fatal("HTTP not cancelled")
+	}
+	collect(t, streamA)
+	p.mu.Lock()
+	_, bAlive := p.runs["b"]
+	p.mu.Unlock()
+	if !bAlive {
+		t.Fatal("cross-run cancellation")
+	}
+	_, _ = p.CancelRun(context.Background(), transport.CancelRunRequest{RunID: "b"})
+	collect(t, streamB)
+	if _, err := p.ContinueRun(context.Background(), transport.ContinueRunRequest{RunID: "a"}); err == nil {
+		t.Fatal("lost context resumed")
 	}
 }
 
-func TestProfileRejectsPermissivePolicyAndGlobalCustomizations(t *testing.T) {
-	profile := restrictedTestProfile(t)
-	if err := validateProfile(profile); err != nil {
+func TestCatalogSchemasAreSupported(t *testing.T) {
+	data, err := os.ReadFile("../../../configs/tools.json")
+	if err != nil {
 		t.Fatal(err)
 	}
-	loginPolicy := strings.TrimSuffix(strings.TrimSpace(string(isolationSettings)), "}") + `,"trustedWorkspaces":["/work"],"model":"gemini-3.8-flash-tiered"}`
-	settingsPathForLogin := filepath.Join(profile, ".gemini", "antigravity-cli", "settings.json")
-	if err := os.WriteFile(settingsPathForLogin, []byte(loginPolicy), 0600); err != nil {
+	var catalog struct {
+		Tools []struct {
+			Name   string `json:"tool_name"`
+			Schema string `json:"input_schema_json"`
+		} `json:"tools"`
+	}
+	if json.Unmarshal(data, &catalog) != nil {
+		t.Fatal("invalid catalog fixture")
+	}
+	for _, tool := range catalog.Tools {
+		if err := validateSchema(tool.Schema); err != nil {
+			t.Fatalf("unsupported current schema %s: %v", tool.Name, err)
+		}
+	}
+	// Representative typed credential ref used by broker-aware browser fields.
+	schema := `{"type":"object","properties":{"value":{"oneOf":[{"type":"string"},{"type":"object","properties":{"type":{"type":"string","enum":["credential_ref"]},"alias":{"type":"string"},"field":{"type":"string"}},"required":["type","alias","field"],"additionalProperties":false}]}},"required":["value"],"additionalProperties":false}`
+	if err := validateSchema(schema); err != nil {
 		t.Fatal(err)
 	}
-	if err := validateProfile(profile); err != nil {
-		t.Fatalf("safe login metadata: %v", err)
-	}
-	if err := os.WriteFile(settingsPathForLogin, []byte(strings.Replace(loginPolicy, `"/work"`, `"/"`, 1)), 0600); err != nil {
+	if err := validateArguments(schema, json.RawMessage(`{"value":{"type":"credential_ref","alias":"Login","field":"password"}}`)); err != nil {
 		t.Fatal(err)
 	}
-	if err := validateProfile(profile); err == nil {
-		t.Fatal("arbitrary trusted host workspace accepted")
+	if err := validateSchema(`{"type":"object","$ref":"file:///secret"}`); err == nil {
+		t.Fatal("unsupported schema accepted")
 	}
-	if err := os.WriteFile(settingsPathForLogin, isolationSettings, 0600); err != nil {
-		t.Fatal(err)
-	}
-	settingsPath := filepath.Join(profile, ".gemini", "antigravity-cli", "settings.json")
-	canonical := `{"toolPermission":"strict","enableTerminalSandbox":true,"permissions":{"deny":["command(*)","unsandboxed(*)","read_file(*)","write_file(*)","read_url(*)","execute_url(*)","mcp(*)"]}}`
-	if err := os.WriteFile(settingsPath, []byte(canonical), 0600); err != nil {
-		t.Fatal(err)
-	}
-	if err := validateProfile(profile); err != nil {
-		t.Fatalf("official CLI settings canonicalization rejected: %v", err)
-	}
-	if err := os.WriteFile(settingsPath, []byte(strings.Replace(canonical, `"unsandboxed(*)",`, "", 1)), 0600); err != nil {
-		t.Fatal(err)
-	}
-	if err := validateProfile(profile); err == nil {
-		t.Fatal("missing outside-sandbox execution restriction accepted")
-	}
-	if err := os.WriteFile(settingsPath, []byte(`{"toolPermission":"always-proceed"}`), 0600); err != nil {
-		t.Fatal(err)
-	}
-	if err := validateProfile(profile); err == nil {
-		t.Fatal("permissive profile accepted")
-	}
-	if err := os.WriteFile(settingsPath, isolationSettings, 0600); err != nil {
-		t.Fatal(err)
-	}
-	customDir := filepath.Join(profile, ".gemini", "config")
-	if err := os.MkdirAll(customDir, 0700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(customDir, "mcp_config.json"), nil, 0600); err != nil {
-		t.Fatal(err)
-	}
-	if err := validateProfile(profile); err != nil {
-		t.Fatalf("CLI empty MCP metadata rejected: %v", err)
-	}
-	if err := os.WriteFile(filepath.Join(customDir, "mcp_config.json"), []byte(`{"mcpServers":{"shell":{"command":"sh"}}}`), 0600); err != nil {
-		t.Fatal(err)
-	}
-	if err := validateProfile(profile); err == nil {
-		t.Fatal("configured global MCP server accepted")
-	}
-	if err := os.WriteFile(filepath.Join(customDir, "mcp_config.json"), nil, 0600); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(customDir, "hooks.json"), []byte(`{}`), 0600); err != nil {
-		t.Fatal(err)
-	}
-	if err := validateProfile(profile); err == nil {
-		t.Fatal("global hooks accepted")
+	if err := validateArguments(`{"type":"object","properties":{"n":{"type":"integer"}}}`, json.RawMessage(`{"n":9007199254740993}`)); err != nil {
+		t.Fatal("integer precision lost")
 	}
 }
 
-func restrictedTestProfile(t *testing.T) string {
-	t.Helper()
-	profile := t.TempDir()
-	t.Setenv("HOME", profile)
-	if err := os.Chmod(profile, 0700); err != nil {
+func TestCancellationClosesRealSSEConnection(t *testing.T) {
+	started := make(chan struct{})
+	cancelled := make(chan struct{})
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		fmt.Fprint(w, frame(`{"text":"partial"}`, ""))
+		w.(http.Flusher).Flush()
+		close(started)
+		<-r.Context().Done()
+		close(cancelled)
+	}))
+	defer server.Close()
+	target, _ := url.Parse(server.URL)
+	p := newFixture(t, func(req *http.Request) (*http.Response, error) {
+		clone := req.Clone(req.Context())
+		clone.URL.Scheme = target.Scheme
+		clone.URL.Host = target.Host
+		return http.DefaultTransport.RoundTrip(clone)
+	})
+	stream, err := p.StartRun(context.Background(), request("cancel-sse"))
+	if err != nil {
 		t.Fatal(err)
 	}
-	settingsDir := filepath.Join(profile, ".gemini", "antigravity-cli")
-	if err := os.MkdirAll(settingsDir, 0700); err != nil {
+	<-started
+	if _, err := p.CancelRun(context.Background(), transport.CancelRunRequest{RunID: "cancel-sse"}); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(settingsDir, "settings.json"), isolationSettings, 0600); err != nil {
-		t.Fatal(err)
+	select {
+	case <-cancelled:
+	case <-time.After(time.Second):
+		t.Fatal("real SSE connection was not cancelled")
 	}
-	return profile
-}
-
-func fakeCLI(t *testing.T, events string) string {
-	t.Helper()
-	path := filepath.Join(t.TempDir(), "agy")
-	if err := os.WriteFile(path, []byte("#!/bin/sh\ncat >/dev/null\ncat <<'BUTLER_RESULT'\n"+events+"BUTLER_RESULT\n"), 0700); err != nil {
-		t.Fatal(err)
-	}
-	return path
+	collect(t, stream)
 }

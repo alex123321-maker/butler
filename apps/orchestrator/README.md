@@ -14,13 +14,14 @@ independent reads use `browser.read`, sequences begin with `browser.open`, follo
 effects carry the current observation/URL, and lost state is reported explicitly.
 The separately approved `single_tab.*` flow retains its own capability boundary.
 
-The opt-in `antigravity` model provider normalizes the official Google Antigravity
-CLI's schema-constrained decisions using a private Google AI Pro login. It supplies
-no executable tools to the CLI: proposals follow the existing Orchestrator/Tool
-Broker flow. [Setup and validation status](../../deploy/antigravity/README.md) describe
-the isolated profile, runtime-only paths, and the required real login smoke. The
-Web UI labels this provider `CLI profile` and does not claim a verified connection
-based on a token file or an installed binary.
+The opt-in `antigravity` provider uses native Go HTTP/SSE for Gemini 3.8 Flash and
+normalizes native function proposals into the Orchestrator/Tool Broker flow.
+Control-plane authorization owns encrypted PostgreSQL OAuth import and refresh;
+transport reads no credential files and launches no CLI. The settings UI reports
+stored credentials without claiming model quota. [Operator setup and validation
+status](../../deploy/antigravity/README.md) document the private import and real
+text/function/continuation gate. Current Google generation returns HTTP 429;
+activation remains pending that gate.
 
 Tool execution fails closed when the approval policy cannot be checked. A tool
 requiring approval also requires a configured approval gate. These guarantees

@@ -21,6 +21,7 @@ type SecretStore interface {
 const (
 	settingKeyGitHubCopilot = "BUTLER_PROVIDER_AUTH_GITHUB_COPILOT"
 	settingKeyOpenAICodex   = "BUTLER_PROVIDER_AUTH_OPENAI_CODEX"
+	settingKeyAntigravity   = "BUTLER_PROVIDER_AUTH_ANTIGRAVITY"
 )
 
 var (
@@ -50,6 +51,8 @@ func providerSettingKey(provider string) (string, error) {
 		return settingKeyGitHubCopilot, nil
 	case modelprovider.ProviderOpenAICodex:
 		return settingKeyOpenAICodex, nil
+	case modelprovider.ProviderAntigravity:
+		return settingKeyAntigravity, nil
 	default:
 		return "", ErrUnknownProvider
 	}

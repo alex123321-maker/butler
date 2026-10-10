@@ -22,19 +22,17 @@ type Factory struct {
 }
 
 type BuildConfig struct {
-	ActiveProvider        string
-	OpenAIAPIKey          string
-	OpenAIModel           string
-	OpenAIBaseURL         string
-	OpenAIRealtimeURL     string
-	OpenAITransportMode   string
-	OpenAICodexModel      string
-	OpenAICodexBaseURL    string
-	GitHubCopilotModel    string
-	AntigravityModel      string
-	AntigravityBinaryPath string
-	AntigravityProfileDir string
-	Timeout               time.Duration
+	ActiveProvider      string
+	OpenAIAPIKey        string
+	OpenAIModel         string
+	OpenAIBaseURL       string
+	OpenAIRealtimeURL   string
+	OpenAITransportMode string
+	OpenAICodexModel    string
+	OpenAICodexBaseURL  string
+	GitHubCopilotModel  string
+	AntigravityModel    string
+	Timeout             time.Duration
 }
 
 type Result struct {
@@ -57,13 +55,16 @@ func (f *Factory) Build(_ context.Context, cfg BuildConfig) (Result, error) {
 	}
 	switch provider {
 	case modelprovider.ProviderAntigravity:
-		instance, err := antigravity.NewProvider(antigravity.Config{Model: cfg.AntigravityModel, BinaryPath: cfg.AntigravityBinaryPath, ProfileDir: cfg.AntigravityProfileDir})
+		if f.auth == nil {
+			return Result{}, fmt.Errorf("antigravity requires the provider auth manager")
+		}
+		instance, err := antigravity.NewProvider(antigravity.Config{Model: cfg.AntigravityModel, AuthSource: f.auth, Timeout: cfg.Timeout})
 		if err != nil {
 			return Result{}, err
 		}
 		model := cfg.AntigravityModel
 		if model == "" {
-			model = "gemini-3.1-pro-high"
+			model = antigravity.DefaultModel
 		}
 		return Result{Provider: instance, ProviderName: provider, ModelName: model}, nil
 	case modelprovider.ProviderOpenAI:
