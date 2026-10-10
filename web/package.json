@@ -40,6 +40,7 @@
     "vue-tsc": "3.3.13"
   },
   "overrides": {
+    "postcss-selector-parser": "7.1.6",
     "simple-git": {
       ".": "4.0.1",
       "@simple-git/argv-parser": "2.0.1"

@@ -101,3 +101,9 @@ joins that private network. The private model token stays in the mounted file.
 Installing this service grants no auxiliary-job authority and does not turn on
 the memory pipeline or switch the generative provider. See the
 [model preparation and verification guide](local-models/README.md).
+
+The Web image ships the compiled Nuxt output and runs as UID10001 with a read-only
+filesystem, no capabilities/new privileges and bounded RAM/PIDs. It does not
+receive model/owner credentials or build caches. The
+[Web dependency and packaging notes](../web/README.md) document the patched CSS
+parser and remaining upstream build dependency findings.
