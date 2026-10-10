@@ -32,6 +32,7 @@ import (
 	"github.com/butler/butler/internal/security/egress/egresstest"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/protobuf/proto"
 )
 
 // This fixture isolates the Broker/approval/credential contract. Restartable
@@ -339,9 +340,9 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	changed := *buy
+	changed := proto.Clone(buy).(*toolbrokerv1.ToolCall)
 	changed.ArgsJson = strings.Replace(buy.GetArgsJson(), "#submit", "#password", 1)
-	if _, err := client.ExecuteAuthorizedToolCall(ctx, &changed, grant); err != nil {
+	if _, err := client.ExecuteAuthorizedToolCall(ctx, changed, grant); err != nil {
 		t.Fatal(err)
 	}
 	if submits.Load() != 0 {

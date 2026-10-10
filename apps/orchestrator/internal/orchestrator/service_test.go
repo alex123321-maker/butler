@@ -20,6 +20,7 @@ import (
 	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/transport"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestExecuteRunsHappyPath(t *testing.T) {
@@ -1595,7 +1596,7 @@ func (m *mockToolExecutor) ExecuteToolCall(_ context.Context, call *toolbrokerv1
 	if m.result == nil {
 		return &toolbrokerv1.ToolResult{ToolCallId: call.GetToolCallId(), RunId: call.GetRunId(), ToolName: call.GetToolName(), Status: "completed", ResultJson: `{}`}, nil
 	}
-	result := *m.result
+	result := proto.Clone(m.result).(*toolbrokerv1.ToolResult)
 	if result.ToolCallId == "" {
 		result.ToolCallId = call.GetToolCallId()
 	}
@@ -1605,7 +1606,7 @@ func (m *mockToolExecutor) ExecuteToolCall(_ context.Context, call *toolbrokerv1
 	if result.ToolName == "" {
 		result.ToolName = call.GetToolName()
 	}
-	return &result, nil
+	return result, nil
 }
 
 func (m *mockToolExecutor) ExecuteAuthorizedToolCall(ctx context.Context, call *toolbrokerv1.ToolCall, grantID string) (*toolbrokerv1.ToolResult, error) {

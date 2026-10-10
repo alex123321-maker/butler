@@ -157,8 +157,4 @@ func TestToolBrokerDoctorChecker_InvalidJSON(t *testing.T) {
 	}
 }
 
-var errTestFail = json.Unmarshal([]byte("invalid"), nil)
-
-func init() {
-	errTestFail = http.ErrAbortHandler // use a known error for testing
-}
+var errTestFail = http.ErrAbortHandler
