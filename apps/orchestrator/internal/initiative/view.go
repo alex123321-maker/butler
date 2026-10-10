@@ -13,18 +13,28 @@ type AuditEvent struct {
 	ObservedAt  time.Time `json:"observed_at"`
 }
 type View struct {
-	Sources        []Source     `json:"sources"`
-	Schedules      []Schedule   `json:"schedules"`
-	Candidates     []Candidate  `json:"initiatives"`
-	Events         []AuditEvent `json:"events"`
-	AttentionUsed  int          `json:"attention_used_today"`
-	AttentionLimit int          `json:"attention_daily_limit"`
+	Sources        []Source       `json:"sources"`
+	Schedules      []Schedule     `json:"schedules"`
+	Candidates     []Candidate    `json:"initiatives"`
+	Events         []AuditEvent   `json:"events"`
+	Digests        []DigestNotice `json:"digests"`
+	AttentionUsed  int            `json:"attention_used_today"`
+	AttentionLimit int            `json:"attention_daily_limit"`
+}
+
+type DigestNotice struct {
+	ID        string `json:"notification_id"`
+	Channel   string `json:"channel"`
+	Content   string `json:"content"`
+	Status    string `json:"status"`
+	Attempts  int    `json:"attempt_count"`
+	ErrorCode string `json:"error_code,omitempty"`
 }
 
 // View is a quiet owner pull/digest. It never queues notifications for empty
 // checks, proposed low-confidence work, duplicates or scheduler bookkeeping.
 func (s *Store) View(ctx context.Context, owner string) (View, error) {
-	v := View{Sources: []Source{}, Schedules: []Schedule{}, Events: []AuditEvent{}, AttentionLimit: 20}
+	v := View{Sources: []Source{}, Schedules: []Schedule{}, Events: []AuditEvent{}, Digests: []DigestNotice{}, AttentionLimit: 20}
 	rows, err := s.pool.Query(ctx, `SELECT source_json,revision,enabled FROM initiative_sources WHERE owner_id=$1 ORDER BY source_id LIMIT 200`, owner)
 	if err != nil {
 		return v, err
@@ -71,6 +81,22 @@ func (s *Store) View(ctx context.Context, owner string) (View, error) {
 			return v, err
 		}
 		v.Events = append(v.Events, a)
+	}
+	rows.Close()
+	if err = rows.Err(); err != nil {
+		return v, err
+	}
+	rows, err = s.pool.Query(ctx, `SELECT notification_id,channel,content,status,attempt_count,error_code FROM initiative_digest_outbox WHERE owner_id=$1 ORDER BY created_at DESC,notification_id LIMIT 50`, owner)
+	if err != nil {
+		return v, err
+	}
+	for rows.Next() {
+		var d DigestNotice
+		if err = rows.Scan(&d.ID, &d.Channel, &d.Content, &d.Status, &d.Attempts, &d.ErrorCode); err != nil {
+			rows.Close()
+			return v, err
+		}
+		v.Digests = append(v.Digests, d)
 	}
 	rows.Close()
 	if err = rows.Err(); err != nil {

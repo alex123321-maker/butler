@@ -1,5 +1,11 @@
 # Confirmed owner goals and broad durable autonomy
 
+Authenticated manual task admission accepts an optional `project_ref` plus
+SHA-256 `project_revision` pair. The typed owner metadata allows the installed
+initiative observer to follow current project attempts; it supplies no resource,
+tool or credential authority. Invalid or incomplete pairs are refused and replay
+hashes include the pair. Goal/mandate checks retain their existing contract.
+
 Issue #14's implementation lives in the Orchestrator `goal` module. PostgreSQL
 owns confirmed objectives, preferences, constraints, proposed assumptions,
 versioned owner mandates, task assignments and authority-change jobs. Tool Broker

@@ -34,14 +34,35 @@ creates one task per missed interval. Owner changes invalidate old tick/source
 revisions before their observations are recorded. A late claim cannot acknowledge
 a new worker's lease.
 
-Quiet checks/proposals are exposed through an owner-authenticated pull digest;
+Quiet checks/proposals are exposed through an owner-authenticated pull view;
 source active hours, confidence/importance, cooldown and an immutable UTC-day
 attention cap of 20 admitted tasks limit interruption. Expected model calls and
 attention are candidate estimates; real model and external-effect charges remain
 separate execution-budget dimensions.
 
-Current scope: authenticated normalized event ingress, durable schedules and
-atomic ordinary-task admission. The default heartbeat is an empty check. Fixed
-external source adapters, active channel digest delivery and the repeated-error
-to verified prepared-project-fix acceptance are not yet complete. This contract
+The installed `task_project` observer reads only current owner-bound Task/Run
+state in PostgreSQL. Owner task admission supplies an optional exact project
+reference and SHA-256 resource revision; source configuration pins the same pair.
+Distinct failed/timed-out attempt identities count once. Raw run error text is
+never selected. Newer verified project results clear the condition; provider
+final answers cannot. Initiative-origin attempts are suppressed. Promotion checks
+current attempt/revision and absence of a newer verified result again after
+budget waits. An observation is still data and cannot grant a tool permission.
+
+An owner may opt into `digest_channel` matching the source's stored Web/Telegram
+session. The separate migration056 outbox groups admitted/verified-result changes
+into count-only immutable notices: one batch per six-hour UTC window and at most
+four batches per owner UTC day. Empty checks, proposals and duplicate observations
+produce no notice. Configuration, goal/mandate and active hours are rechecked
+before delivery. Changed authority fails the pending notice; inactive hours defer
+it. The channel worker shares the existing bounded absent/ACK/unknown semantics,
+including no automatic repeat after an uncertain send. These notices are not model
+final results, effect evidence or claims of user read. Owner view exposes their
+delivery states separately. All template/project/error contents are excluded.
+
+Current scope: authenticated normalized event ingress, durable schedules, the
+installed PostgreSQL project-attempt observer, grouped digest delivery and atomic
+ordinary-task admission. An unconfigured heartbeat remains an empty check. Fixed
+external source adapters and the repeated-error to verified prepared-project-fix
+acceptance remain outstanding. This contract
 does not claim issue #15 acceptance from foundational tests alone.

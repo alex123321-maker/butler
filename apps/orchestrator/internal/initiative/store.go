@@ -96,8 +96,8 @@ func (s *Store) SaveSource(ctx context.Context, source Source, expectedRevision 
 	if previous != nil {
 		return *previous, tx.Commit(ctx)
 	}
-	var owner string
-	if err = tx.QueryRow(ctx, `SELECT user_id FROM sessions WHERE session_key=$1 FOR SHARE`, source.SessionKey).Scan(&owner); err != nil || owner != a.OwnerID {
+	var owner, channel string
+	if err = tx.QueryRow(ctx, `SELECT user_id,channel FROM sessions WHERE session_key=$1 FOR SHARE`, source.SessionKey).Scan(&owner, &channel); err != nil || owner != a.OwnerID || (source.DigestChannel != "" && source.DigestChannel != channel) {
 		return ConfigReceipt{}, ErrInvalid
 	}
 	source.Revision = expectedRevision + 1

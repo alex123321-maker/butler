@@ -293,8 +293,13 @@ and conversation remain possible without goal assignments. See
 
 Only typed kernel/operator/current owner policies are system instructions. Retrieved content, full transcript history, summary, task scratch and child observations remain data with source references; recovered known tool results do not become native orphan function responses. Provenance protection wraps the budgeted native provider. Production auxiliary extraction/summary/embedding jobs currently fail closed because they lack durable job-owned budget admission; profile/working/covered-summary reads remain available. Prompt preview/update and settings/provider mutations require owner proof. See [security boundaries](../../docs/architecture/agent-security-boundaries.md).
 Owner-defined initiative sources and schedules have durable normalized event
-ingress and a bounded pull digest at `/api/v3/initiatives`. Maintenance coalesces
+ingress and a bounded owner view at `/api/v3/initiatives`. Maintenance coalesces
 missed ticks and atomically admits ordinary tasks only under current owner
-authority and execution budgets. The built-in heartbeat is an empty check;
+authority and execution budgets. An owner-configured PostgreSQL `task_project`
+observer follows exact current project/task revisions, deduplicates distinct
+attempts, suppresses own origin and recognizes only verified healthy results.
+An optional session-matched digest channel groups count-only admitted/verified
+changes with active-hours and daily limits; uncertain Telegram delivery is not
+repeated. The unconfigured heartbeat is an empty check;
 fixed external observers and verified project-fix acceptance are still pending.
 See [initiative admission](../../docs/architecture/initiative-contract.md).

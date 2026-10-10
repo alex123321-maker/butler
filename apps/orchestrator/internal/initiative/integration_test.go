@@ -121,7 +121,7 @@ func (f *fixture) errors(t *testing.T) Candidate {
 		e.ID = fmt.Sprintf("failure:%d", i)
 		e.EvidenceDigest = hash(i)
 		var err error
-		c, _, err = f.store.Observe(f.ctx, f.source.OwnerID, e, 1, time.Now().UTC())
+		c, _, err = f.store.Observe(f.ctx, f.source.OwnerID, e, f.source.Revision, time.Now().UTC())
 		if err != nil {
 			t.Fatal(err)
 		}

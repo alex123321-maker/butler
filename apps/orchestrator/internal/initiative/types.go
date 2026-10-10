@@ -29,6 +29,9 @@ type Source struct {
 	MandateID           string   `json:"mandate_id"`
 	SessionKey          string   `json:"session_key"`
 	ProjectRef          string   `json:"project_ref"`
+	ProjectRevision     string   `json:"project_revision,omitempty"`
+	ObserverKind        string   `json:"observer_kind,omitempty"`
+	DigestChannel       string   `json:"digest_channel,omitempty"`
 	Purpose             string   `json:"purpose"`
 	TimeZone            string   `json:"time_zone"`
 	TaskGoal            string   `json:"task_goal"`
@@ -45,6 +48,15 @@ type Source struct {
 }
 
 func (s Source) Validate() error {
+	if s.DigestChannel != "" && s.DigestChannel != "web" && s.DigestChannel != "telegram" {
+		return ErrInvalid
+	}
+	if s.ObserverKind != "" && s.ObserverKind != "task_project" {
+		return ErrInvalid
+	}
+	if (s.ObserverKind == "task_project" && !digest.MatchString(s.ProjectRevision)) || (s.ProjectRevision != "" && !digest.MatchString(s.ProjectRevision)) {
+		return ErrInvalid
+	}
 	for _, v := range []string{s.ID, s.OwnerID, s.GoalID, s.MandateID, s.SessionKey, s.ProjectRef, s.Purpose} {
 		if !identifier.MatchString(v) {
 			return ErrInvalid
@@ -77,19 +89,23 @@ func (s Source) Validate() error {
 // Event contains a typed observation and hashes, never a raw error, URL or secret.
 // The observer subsystem supplies ProducedByButler; it is not model metadata.
 type Event struct {
-	ID               string    `json:"event_id"`
-	SourceID         string    `json:"source_id"`
-	Kind             string    `json:"kind"`
-	ConditionDigest  string    `json:"condition_digest"`
-	ResourceRevision string    `json:"resource_revision"`
-	EvidenceDigest   string    `json:"evidence_digest"`
-	Confidence       int       `json:"confidence"`
-	Importance       int       `json:"importance"`
-	ProducedByButler bool      `json:"produced_by_butler"`
-	ObservedAt       time.Time `json:"observed_at"`
+	ID                string    `json:"event_id"`
+	SourceID          string    `json:"source_id"`
+	Kind              string    `json:"kind"`
+	ConditionDigest   string    `json:"condition_digest"`
+	ResourceRevision  string    `json:"resource_revision"`
+	EvidenceDigest    string    `json:"evidence_digest"`
+	Confidence        int       `json:"confidence"`
+	Importance        int       `json:"importance"`
+	ProducedByButler  bool      `json:"produced_by_butler"`
+	ObservedAttemptID string    `json:"observed_attempt_id,omitempty"`
+	ObservedAt        time.Time `json:"observed_at"`
 }
 
 func (e Event) Validate() error {
+	if e.ObservedAttemptID != "" && !identifier.MatchString(e.ObservedAttemptID) {
+		return ErrInvalid
+	}
 	if !identifier.MatchString(e.ID) || !identifier.MatchString(e.SourceID) ||
 		!digest.MatchString(e.ConditionDigest) || !digest.MatchString(e.ResourceRevision) ||
 		!digest.MatchString(e.EvidenceDigest) || e.ObservedAt.IsZero() ||

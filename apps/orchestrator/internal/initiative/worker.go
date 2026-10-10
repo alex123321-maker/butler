@@ -50,7 +50,10 @@ func (w *Worker) Sweep(ctx context.Context) error {
 			return err
 		}
 	}
-	return w.Store.RefreshCompleted(ctx)
+	if err := w.Store.RefreshCompleted(ctx); err != nil {
+		return err
+	}
+	return w.Store.QueueDigests(ctx)
 }
 
 func (w *Worker) check(ctx context.Context, tick ClaimedTick) error {

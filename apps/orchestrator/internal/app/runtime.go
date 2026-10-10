@@ -21,7 +21,7 @@ func (a *App) Run(ctx context.Context) error {
 	completionDone := make(chan struct{})
 	go func() {
 		defer close(completionDone)
-		done := make(chan struct{}, 2)
+		done := make(chan struct{}, 3)
 		workers := 0
 		if a.outboxWorker != nil {
 			workers++
@@ -30,6 +30,10 @@ func (a *App) Run(ctx context.Context) error {
 		if a.auxiliaryWorker != nil {
 			workers++
 			go func() { _ = a.auxiliaryWorker.Run(runCtx); done <- struct{}{} }()
+		}
+		if a.initiativeDeliveryWorker != nil {
+			workers++
+			go func() { _ = a.initiativeDeliveryWorker.Run(runCtx); done <- struct{}{} }()
 		}
 		for range workers {
 			<-done

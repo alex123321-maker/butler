@@ -275,11 +275,15 @@ func New(ctx context.Context) (*App, error) {
 	ownerGoals.SetControls(taskControls)
 	inputWorker.SetTaskControls(taskControls)
 	initiativeStore := initiative.NewStore(postgres.Pool())
+	initiativeDeliveryWorker := &deliveryoutbox.Worker{Store: initiative.DigestStore{Store: initiativeStore}}
+	if telegram != nil {
+		initiativeDeliveryWorker.Sender = telegram
+	}
 	allowance := budget.ModelAllowance{Provider: providerResult.ProviderName, Model: providerResult.ModelName}
 	if limits, ok := providerResult.Provider.(interface{ InferenceLimits() (int64, int64) }); ok {
 		allowance.InputTokens, allowance.OutputTokens = limits.InferenceLimits()
 	}
-	initiativeWorker := &initiative.Worker{Store: initiativeStore, Promoter: &initiative.Promoter{Store: initiativeStore, Goals: ownerGoals, Tasks: taskStore, Inputs: inputStore, Budgets: budgetController, Allowance: allowance}}
+	initiativeWorker := &initiative.Worker{Store: initiativeStore, Observer: initiative.TaskObserver{Store: initiativeStore}, Promoter: &initiative.Promoter{Store: initiativeStore, Goals: ownerGoals, Tasks: taskStore, Inputs: inputStore, Budgets: budgetController, Allowance: allowance}}
 	inputWorker.SetMaintenance(func(ctx context.Context) error {
 		if err := approvalService.ExpireInvalidPending(ctx); err != nil {
 			return err
@@ -371,21 +375,22 @@ func New(ctx context.Context) (*App, error) {
 	orchestratorv1.RegisterOrchestratorServiceServer(grpcServer, apiServer)
 
 	return &App{
-		config:          cfg,
-		log:             log,
-		metrics:         m,
-		health:          h,
-		postgres:        postgres,
-		redis:           redis,
-		httpServer:      httpServer,
-		grpcServer:      grpcServer,
-		grpcListen:      grpcListener,
-		telegram:        telegram,
-		toolBroker:      toolBrokerClient,
-		pipelineWorker:  pipelineWorker,
-		inputWorker:     inputWorker,
-		outboxWorker:    outboxWorker,
-		auxiliaryWorker: auxiliaryWorker,
+		config:                   cfg,
+		log:                      log,
+		metrics:                  m,
+		health:                   h,
+		postgres:                 postgres,
+		redis:                    redis,
+		httpServer:               httpServer,
+		grpcServer:               grpcServer,
+		grpcListen:               grpcListener,
+		telegram:                 telegram,
+		toolBroker:               toolBrokerClient,
+		pipelineWorker:           pipelineWorker,
+		inputWorker:              inputWorker,
+		outboxWorker:             outboxWorker,
+		initiativeDeliveryWorker: initiativeDeliveryWorker,
+		auxiliaryWorker:          auxiliaryWorker,
 	}, nil
 }
 

@@ -18,7 +18,8 @@ authority and shared execution budget. It creates a task and ordered receipt
 atomically through their owning services. No model turn is spent until actual
 inference. Source cooldown and a durable cap of 20 admitted initiative tasks per
 owner UTC day bound interruption. Empty checks and proposals have no delivery
-outbox message. The owner pulls a bounded digest/audit at `/api/v3/initiatives`.
+outbox message. The owner pulls a bounded audit and digest delivery states at
+`/api/v3/initiatives`.
 
 Sources and schedules are configured at `/api/v3/initiatives/sources` and
 `/api/v3/initiatives/schedules`. The initial observation adapter at
@@ -28,10 +29,24 @@ tool can call these control-plane APIs with that bearer.
 
 Application maintenance advances schedules and consumes leased ticks. An
 installed `Observer` may report a bounded typed condition; the default heartbeat
-is an empty check and performs no external request. External source adapters
+is an empty check and performs no external request. `observer_kind=task_project`
+instead reads current owner Task/Run state for the configured `project_ref` and
+SHA-256 `project_revision`. Owner task creation may bind the same typed pair.
+Distinct failures count once, initiative origin is suppressed, and a newer
+verified project result clears the condition. Raw run errors are never selected.
+External source adapters
 must use Broker-mediated, fixed-target observation rather than arbitrary URLs.
 That installed adapter/project-fix execution acceptance is still outstanding:
-this implementation alone does not close issue #15 or prove an autonomous repair.
+issue #15 remains active until the prepared correction scenario is verified.
+
+`digest_channel` is optional and must match the stored session channel. A separate
+durable outbox coalesces only admitted/verified-result changes into count-only
+notices, at most one per six-hour window and four per owner UTC day. Active hours
+and current source/goal/mandate are rechecked before Telegram delivery. Explicit
+absence may retry within six attempts/24 hours; uncertain acceptance is retained
+as `delivery_unknown` and never automatically sent twice. Web `result_ready`
+means a stored notice is available in the owner view, not that it was read.
+Migration056 refuses rollback after any notification history.
 
 Daily schedules skip nonexistent local minutes, choose the first repeated minute
 and deduplicate on calendar date. Interval schedules retain their phase. Downtime
