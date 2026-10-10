@@ -201,6 +201,29 @@ isolation and blocked public TCP egress. Vision initially received an explicit
 resource refusal while the CPU extractor remained resident, then succeeded
 after the ordinary 30-second idle unload with the same input and policy.
 The artifact records this retry instead of reporting a false empty success.
+## Structured extraction evaluation
+
+`russian-extraction.json` fixes 24 public synthetic cases (6 development, 18
+held-out), threshold 0.5 and known UTC event time. On the persistent internal
+service, `verify-extraction-lab.sh` runs 24 structured CPU calls and 24 calls to
+the existing generic entity adapter through actual finite owned-job admission.
+Each complete source publication is retried from cache without another call.
+All cases, including misses/errors, remain in the report; no cloud baseline call
+is authorized by this script. Coordinate the shared inference window first.
+
+The held-out structured model has precision 0.484/recall 0.564 versus generic
+0.319/0.273 and rules 0.975/0.709. Five model prohibition omissions remain. The
+predeclared quality gate fails and production scheduling stays off. Literal
+constraint-fragment preservation is checked separately and excluded from these
+metrics. A passed test runner/authority smoke is not quality approval. The
+original empty-result and record-grouping failures are retained in earlier
+artifacts; corrected storage and source-fragment handling do not tune the model.
+
+The original run's cold call took 19.2s and warm structured calls 440–494ms versus
+generic 136–158ms; whole process peak 2859MiB, GPU 0. Read the current artifact for
+the repeated measurement, queue wait and every case, rather than treating grouped
+warm calls as production latency. Exact exception/action polarity remains
+unresolved; owner acceptance is separate. See the structured extraction contract.
 
 ## Tensor runtime exception
 

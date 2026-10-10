@@ -1,0 +1,1143 @@
+{
+  "acceptance_source_constraint_preserved": false,
+  "actual_calls": 48,
+  "candidate_suggestion_gate": {
+    "negation_missing_max": 0,
+    "passed": false,
+    "precision_min": 0.9,
+    "recall_min": 0.8,
+    "runtime_errors_max": 0,
+    "set_before_final_test": true
+  },
+  "cases": [
+    {
+      "id": "dev-condition",
+      "split": "dev",
+      "structured": {
+        "tp": 2,
+        "fp": 5,
+        "fn": 1,
+        "precision": 0.2857142857142857,
+        "recall": 0.6666666666666666
+      },
+      "current_generic_adapter": {
+        "tp": 1,
+        "fp": 3,
+        "fn": 2,
+        "precision": 0.25,
+        "recall": 0.3333333333333333
+      },
+      "rules": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1,
+        "recall": 0.6666666666666666
+      },
+      "grouped_records": 1,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "dev-constraint",
+      "split": "dev",
+      "structured": {
+        "tp": 3,
+        "fp": 3,
+        "fn": 2,
+        "precision": 0.5,
+        "recall": 0.6
+      },
+      "current_generic_adapter": {
+        "tp": 2,
+        "fp": 1,
+        "fn": 3,
+        "precision": 0.6666666666666666,
+        "recall": 0.4
+      },
+      "rules": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1,
+        "recall": 0.8
+      },
+      "grouped_records": 2,
+      "negation_missing": true,
+      "repeat_cached": true
+    },
+    {
+      "id": "dev-deadline",
+      "split": "dev",
+      "structured": {
+        "tp": 3,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0.75,
+        "recall": 1
+      },
+      "current_generic_adapter": {
+        "tp": 2,
+        "fp": 2,
+        "fn": 1,
+        "precision": 0.5,
+        "recall": 0.6666666666666666
+      },
+      "rules": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1
+      },
+      "grouped_records": 1,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "dev-empty",
+      "split": "dev",
+      "structured": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0
+      },
+      "current_generic_adapter": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0
+      },
+      "rules": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0
+      },
+      "grouped_records": 0,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "dev-project",
+      "split": "dev",
+      "structured": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1
+      },
+      "current_generic_adapter": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1
+      },
+      "rules": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1
+      },
+      "grouped_records": 0,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "dev-task",
+      "split": "dev",
+      "structured": {
+        "tp": 1,
+        "fp": 1,
+        "fn": 1,
+        "precision": 0.5,
+        "recall": 0.5
+      },
+      "current_generic_adapter": {
+        "tp": 1,
+        "fp": 1,
+        "fn": 1,
+        "precision": 0.5,
+        "recall": 0.5
+      },
+      "rules": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1,
+        "recall": 0.5
+      },
+      "grouped_records": 0,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-ambiguous",
+      "split": "test",
+      "structured": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1,
+        "recall": 0.5
+      },
+      "current_generic_adapter": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1,
+        "recall": 0.5
+      },
+      "rules": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 2,
+        "precision": 0,
+        "recall": 0
+      },
+      "grouped_records": 1,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-code",
+      "split": "test",
+      "structured": {
+        "tp": 2,
+        "fp": 2,
+        "fn": 2,
+        "precision": 0.5,
+        "recall": 0.5
+      },
+      "current_generic_adapter": {
+        "tp": 2,
+        "fp": 1,
+        "fn": 2,
+        "precision": 0.6666666666666666,
+        "recall": 0.5
+      },
+      "rules": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1
+      },
+      "grouped_records": 1,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-condition",
+      "split": "test",
+      "structured": {
+        "tp": 1,
+        "fp": 5,
+        "fn": 2,
+        "precision": 0.16666666666666666,
+        "recall": 0.3333333333333333
+      },
+      "current_generic_adapter": {
+        "tp": 0,
+        "fp": 4,
+        "fn": 3,
+        "precision": 0,
+        "recall": 0
+      },
+      "rules": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1,
+        "recall": 0.6666666666666666
+      },
+      "grouped_records": 1,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-exact-date",
+      "split": "test",
+      "structured": {
+        "tp": 3,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0.75,
+        "recall": 1
+      },
+      "current_generic_adapter": {
+        "tp": 2,
+        "fp": 2,
+        "fn": 1,
+        "precision": 0.5,
+        "recall": 0.6666666666666666
+      },
+      "rules": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1
+      },
+      "grouped_records": 1,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-exception",
+      "split": "test",
+      "structured": {
+        "tp": 2,
+        "fp": 2,
+        "fn": 2,
+        "precision": 0.5,
+        "recall": 0.5
+      },
+      "current_generic_adapter": {
+        "tp": 0,
+        "fp": 2,
+        "fn": 4,
+        "precision": 0,
+        "recall": 0
+      },
+      "rules": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 2,
+        "precision": 1,
+        "recall": 0.5
+      },
+      "grouped_records": 0,
+      "negation_missing": true,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-external-injection",
+      "split": "test",
+      "structured": {
+        "tp": 0,
+        "fp": 3,
+        "fn": 3,
+        "precision": 0,
+        "recall": 0
+      },
+      "current_generic_adapter": {
+        "tp": 0,
+        "fp": 4,
+        "fn": 3,
+        "precision": 0,
+        "recall": 0
+      },
+      "rules": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 3,
+        "precision": 0,
+        "recall": 0
+      },
+      "grouped_records": 0,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-historical",
+      "split": "test",
+      "structured": {
+        "tp": 4,
+        "fp": 2,
+        "fn": 2,
+        "precision": 0.6666666666666666,
+        "recall": 0.6666666666666666
+      },
+      "current_generic_adapter": {
+        "tp": 1,
+        "fp": 4,
+        "fn": 5,
+        "precision": 0.2,
+        "recall": 0.16666666666666666
+      },
+      "rules": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 3,
+        "precision": 1,
+        "recall": 0.5
+      },
+      "grouped_records": 2,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-month",
+      "split": "test",
+      "structured": {
+        "tp": 2,
+        "fp": 2,
+        "fn": 1,
+        "precision": 0.5,
+        "recall": 0.6666666666666666
+      },
+      "current_generic_adapter": {
+        "tp": 2,
+        "fp": 2,
+        "fn": 1,
+        "precision": 0.5,
+        "recall": 0.6666666666666666
+      },
+      "rules": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1
+      },
+      "grouped_records": 2,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-negation",
+      "split": "test",
+      "structured": {
+        "tp": 1,
+        "fp": 2,
+        "fn": 2,
+        "precision": 0.3333333333333333,
+        "recall": 0.3333333333333333
+      },
+      "current_generic_adapter": {
+        "tp": 0,
+        "fp": 2,
+        "fn": 3,
+        "precision": 0,
+        "recall": 0
+      },
+      "rules": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1
+      },
+      "grouped_records": 1,
+      "negation_missing": true,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-negation-substring",
+      "split": "test",
+      "structured": {
+        "tp": 0,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0
+      },
+      "current_generic_adapter": {
+        "tp": 0,
+        "fp": 1,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0
+      },
+      "rules": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0
+      },
+      "grouped_records": 0,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-no-facts",
+      "split": "test",
+      "structured": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0
+      },
+      "current_generic_adapter": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0
+      },
+      "rules": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": 0,
+        "recall": 0
+      },
+      "grouped_records": 0,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-prepare",
+      "split": "test",
+      "structured": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 3,
+        "precision": 1,
+        "recall": 0.4
+      },
+      "current_generic_adapter": {
+        "tp": 1,
+        "fp": 2,
+        "fn": 4,
+        "precision": 0.3333333333333333,
+        "recall": 0.2
+      },
+      "rules": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1,
+        "recall": 0.8
+      },
+      "grouped_records": 0,
+      "negation_missing": true,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-proposal",
+      "split": "test",
+      "structured": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1
+      },
+      "current_generic_adapter": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1,
+        "recall": 0.5
+      },
+      "rules": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1
+      },
+      "grouped_records": 1,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-relative",
+      "split": "test",
+      "structured": {
+        "tp": 2,
+        "fp": 1,
+        "fn": 1,
+        "precision": 0.6666666666666666,
+        "recall": 0.6666666666666666
+      },
+      "current_generic_adapter": {
+        "tp": 1,
+        "fp": 2,
+        "fn": 2,
+        "precision": 0.3333333333333333,
+        "recall": 0.3333333333333333
+      },
+      "rules": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1
+      },
+      "grouped_records": 1,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-tomorrow",
+      "split": "test",
+      "structured": {
+        "tp": 2,
+        "fp": 2,
+        "fn": 2,
+        "precision": 0.5,
+        "recall": 0.5
+      },
+      "current_generic_adapter": {
+        "tp": 2,
+        "fp": 1,
+        "fn": 2,
+        "precision": 0.6666666666666666,
+        "recall": 0.5
+      },
+      "rules": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1,
+        "recall": 0.75
+      },
+      "grouped_records": 1,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-two-resources",
+      "split": "test",
+      "structured": {
+        "tp": 3,
+        "fp": 4,
+        "fn": 2,
+        "precision": 0.42857142857142855,
+        "recall": 0.6
+      },
+      "current_generic_adapter": {
+        "tp": 0,
+        "fp": 4,
+        "fn": 5,
+        "precision": 0,
+        "recall": 0
+      },
+      "rules": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1,
+        "recall": 0.8
+      },
+      "grouped_records": 2,
+      "negation_missing": true,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-uncertain",
+      "split": "test",
+      "structured": {
+        "tp": 2,
+        "fp": 4,
+        "fn": 0,
+        "precision": 0.3333333333333333,
+        "recall": 1
+      },
+      "current_generic_adapter": {
+        "tp": 1,
+        "fp": 1,
+        "fn": 1,
+        "precision": 0.5,
+        "recall": 0.5
+      },
+      "rules": {
+        "tp": 1,
+        "fp": 1,
+        "fn": 1,
+        "precision": 0.5,
+        "recall": 0.5
+      },
+      "grouped_records": 1,
+      "negation_missing": false,
+      "repeat_cached": true
+    },
+    {
+      "id": "test-version",
+      "split": "test",
+      "structured": {
+        "tp": 2,
+        "fp": 2,
+        "fn": 1,
+        "precision": 0.5,
+        "recall": 0.6666666666666666
+      },
+      "current_generic_adapter": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 2,
+        "precision": 1,
+        "recall": 0.3333333333333333
+      },
+      "rules": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 1,
+        "precision": 1,
+        "recall": 0.6666666666666666
+      },
+      "grouped_records": 1,
+      "negation_missing": false,
+      "repeat_cached": true
+    }
+  ],
+  "cloud_baseline": "legacy cloud extractor disabled; no authorized unbudgeted comparison",
+  "corpus": "ru-structured-extraction-v1",
+  "corpus_sha256": "b4ad4c8feb0428cd355aef7a3a94e87776a04b0f870c569219ed650f08c76ea9",
+  "generated_at": "2026-10-10T22:48:36.751190331Z",
+  "held_out_counts": {
+    "dev": 6,
+    "test": 18
+  },
+  "measurements": [
+    {
+      "case": "dev-constraint",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 23183,
+      "peak_ram_mib": 3171,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "dev-constraint",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 152,
+      "peak_ram_mib": 2456,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "dev-project",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 517,
+      "peak_ram_mib": 2456,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "dev-project",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 146,
+      "peak_ram_mib": 2456,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "dev-deadline",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 497,
+      "peak_ram_mib": 2456,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "dev-deadline",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 147,
+      "peak_ram_mib": 2457,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "dev-condition",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 460,
+      "peak_ram_mib": 2457,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "dev-condition",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 144,
+      "peak_ram_mib": 2457,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "dev-task",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 457,
+      "peak_ram_mib": 2457,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "dev-task",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 141,
+      "peak_ram_mib": 2458,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "dev-empty",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 461,
+      "peak_ram_mib": 2481,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "dev-empty",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 153,
+      "peak_ram_mib": 2458,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-negation",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 496,
+      "peak_ram_mib": 2458,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-negation",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 147,
+      "peak_ram_mib": 2459,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-exception",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 490,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-exception",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 178,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-ambiguous",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 467,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-ambiguous",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 156,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-historical",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 502,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-historical",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 164,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-proposal",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 531,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-proposal",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 168,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-condition",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 514,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-condition",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 152,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-relative",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 525,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-relative",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 161,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-code",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 488,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-code",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 160,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-two-resources",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 511,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-two-resources",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 156,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-version",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 499,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-version",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 157,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-month",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 499,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-month",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 158,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-tomorrow",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 506,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-tomorrow",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 146,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-exact-date",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 495,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-exact-date",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 146,
+      "peak_ram_mib": 2465,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-external-injection",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 509,
+      "peak_ram_mib": 2467,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-external-injection",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 170,
+      "peak_ram_mib": 2467,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-no-facts",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 465,
+      "peak_ram_mib": 2467,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-no-facts",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 151,
+      "peak_ram_mib": 2467,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-negation-substring",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 485,
+      "peak_ram_mib": 2467,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-negation-substring",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 144,
+      "peak_ram_mib": 2467,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-uncertain",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 503,
+      "peak_ram_mib": 2468,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-uncertain",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 158,
+      "peak_ram_mib": 2468,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-prepare",
+      "mode": "structured",
+      "queue_ms": 0,
+      "execution_ms": 508,
+      "peak_ram_mib": 2469,
+      "peak_gpu_mib": 0
+    },
+    {
+      "case": "test-prepare",
+      "mode": "current_generic_adapter",
+      "queue_ms": 0,
+      "execution_ms": 156,
+      "peak_ram_mib": 2469,
+      "peak_gpu_mib": 0
+    }
+  ],
+  "metrics_include_literal_rules": false,
+  "mode": "candidate_only",
+  "model": "fastino/gliner2.5-multi-v1",
+  "negation_missing_cases": 5,
+  "network": "persistent internal-only service",
+  "normalizer": "butler-russian-time-cues-v1",
+  "owner_acceptance_required": true,
+  "production_enabled": false,
+  "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+  "runtime": "torch2.10.0+cu128/transformers5.19.0/gliner2.1.0",
+  "runtime_error_count": 0,
+  "schema": "butler-memory-v1",
+  "score_is_calibrated_probability": false,
+  "threshold": 0.5,
+  "threshold_tuned_on_test": false,
+  "totals": {
+    "dev": {
+      "generic": {
+        "tp": 8,
+        "fp": 7,
+        "fn": 7,
+        "precision": 0.5333333333333333,
+        "recall": 0.5333333333333333
+      },
+      "rules": {
+        "tp": 12,
+        "fp": 0,
+        "fn": 3,
+        "precision": 1,
+        "recall": 0.8
+      },
+      "structured": {
+        "tp": 11,
+        "fp": 10,
+        "fn": 4,
+        "precision": 0.5238095238095238,
+        "recall": 0.7333333333333333
+      }
+    },
+    "test": {
+      "generic": {
+        "tp": 15,
+        "fp": 32,
+        "fn": 40,
+        "precision": 0.3191489361702128,
+        "recall": 0.2727272727272727
+      },
+      "rules": {
+        "tp": 39,
+        "fp": 1,
+        "fn": 16,
+        "precision": 0.975,
+        "recall": 0.7090909090909091
+      },
+      "structured": {
+        "tp": 31,
+        "fp": 33,
+        "fn": 24,
+        "precision": 0.484375,
+        "recall": 0.5636363636363636
+      }
+    }
+  }
+}

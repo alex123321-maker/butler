@@ -83,6 +83,8 @@ type ClaimRequest struct {
 	Value          json.RawMessage `json:"value"`
 	Summary        string          `json:"summary"`
 	Confidence     float64         `json:"extraction_confidence"`
+	// Trusted extractor fingerprint; a model/HTTP body cannot select retry identity.
+	DedupKey string `json:"-"`
 }
 type Decision struct {
 	ClaimID          string `json:"claim_id"`

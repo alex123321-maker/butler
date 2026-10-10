@@ -153,3 +153,11 @@ already pinned GLiNER2.5 revision/runtime without new dependencies or remote cod
 Existing generic entity extraction remains compatible. Caller source/job/budget
 checks and owner acceptance are separate; this contract alone enables no memory
 pipeline. Real Russian quality and production integration require caller evidence.
+
+The optional Go extraction caller now has current source/job admission, atomic
+candidate publication and literal fragment evidence. Its fixed Russian model
+quality gate fails, so automatic scheduling remains disabled. A separate
+source-aware constraint-fragment candidate preserves literal restrictions when
+model record grouping fails, with action polarity and exception scope explicitly
+unresolved. Model field metrics exclude that protection layer. See
+[structured candidate extraction](structured-memory-extraction.md).

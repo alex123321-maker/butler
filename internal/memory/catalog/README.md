@@ -41,3 +41,10 @@ cache restart, stale provider/final/dispatch writes and owner correction/export.
 Structured ingestion, owner UI and semantic owned-job production adapters remain
 follow-up work. See [the contract](../../../docs/architecture/versioned-memory-sources.md)
 for the required private persistent anchor setup before deployment.
+
+`ProposeTx` supports trusted structured extraction checkpoints and exact retry
+keys in the caller transaction. It rechecks current owner/job/source access,
+publishes only candidates and rejects a changed body under an existing key.
+`DedupKey` is not an HTTP/model field; ordinary owner manual proposals keep their
+random identity. Migration043 preserves only opaque IDs/hashes/times separately
+from source/claim text, including after catalog deletion.
