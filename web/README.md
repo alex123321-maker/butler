@@ -140,3 +140,14 @@ Manual load for development:
 
 Operator shortcut:
 - in Butler Web UI open `/settings`, use **Download extension (.zip)** in the Browser Extension Remote panel, unpack it, then use "Load unpacked" in Chromium/Edge.
+
+## Accepted inputs and owner approvals
+
+`/inputs/{input_id}` observes a durable ingress receipt and links its task/attempt.
+An attempt finishing does not verify completion of its task. Approval lists use
+`approvals[].approval_id` from the backend envelope. The Approvals page requires
+an operator-provisioned owner-control token for decisions, keeps it only in page
+memory, and submits a new delivery identity plus Bearer proof. Configure the token
+and matching owner on the server as described in
+[Durable Execution](../docs/architecture/durable-execution-spec.md); retrieve the
+secret through the lab terminal, never through model chat or browser storage.

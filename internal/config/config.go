@@ -55,6 +55,9 @@ type SharedConfig struct {
 }
 
 type OrchestratorConfig struct {
+	OwnerControlToken                 string
+	OwnerControlTokenFile             string
+	OwnerControlOwnerID               string
 	Shared                            SharedConfig
 	Postgres                          PostgresConfig
 	Redis                             RedisConfig
@@ -73,10 +76,11 @@ type OrchestratorConfig struct {
 	OpenAICodexBaseURL                string
 	GitHubCopilotModel                string
 	AntigravityModel                  string
-	AntigravityBinaryPath             string
-	AntigravityProfileDir             string
 	OpenAITimeoutSeconds              int
 	ToolBrokerAddr                    string
+	AutonomyMode                      string
+	ActionMandateID                   string
+	ActionAuthorityTokenFile          string
 	TelegramBotToken                  string
 	TelegramAllowedChatIDs            []string
 	TelegramBaseURL                   string
@@ -99,10 +103,12 @@ type OrchestratorConfig struct {
 }
 
 type ToolBrokerConfig struct {
-	Shared        SharedConfig
-	Postgres      PostgresConfig
-	RegistryPath  string
-	DefaultTarget string
+	Shared                   SharedConfig
+	Postgres                 PostgresConfig
+	RegistryPath             string
+	DefaultTarget            string
+	ActionContextURL         string
+	ActionAuthorityTokenFile string
 }
 
 type ToolBrowserConfig struct {
@@ -249,6 +255,9 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 	cfg := OrchestratorConfig{}
 	sharedSpecs := sharedSpecs("orchestrator", &cfg.Shared)
 	specs := append(sharedSpecs,
+		fieldSpec{key: "BUTLER_OWNER_CONTROL_TOKEN", component: "orchestrator", typeName: "string", required: false, isSecret: true, requiresRestart: true, assign: func(v string) { cfg.OwnerControlToken = v }},
+		fieldSpec{key: "BUTLER_OWNER_CONTROL_TOKEN_FILE", component: "orchestrator", typeName: "string", required: false, requiresRestart: true, assign: func(v string) { cfg.OwnerControlTokenFile = v }},
+		fieldSpec{key: "BUTLER_OWNER_CONTROL_OWNER_ID", component: "orchestrator", typeName: "string", required: false, requiresRestart: true, assign: func(v string) { cfg.OwnerControlOwnerID = v }},
 		fieldSpec{key: "BUTLER_POSTGRES_URL", component: "orchestrator", typeName: "string", required: true, isSecret: true, requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.PostgresURL = v; cfg.Postgres.URL = v }},
 		fieldSpec{key: "BUTLER_REDIS_URL", component: "orchestrator", typeName: "string", required: true, isSecret: true, requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.RedisURL = v; cfg.Redis.URL = v }},
 		fieldSpec{key: "BUTLER_SESSION_LEASE_TTL_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "60", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.SessionLeaseTTLSeconds = mustParseInt(v) }},
@@ -269,11 +278,12 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_OPENAI_CODEX_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-5.1-codex", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.OpenAICodexModel = v }},
 		fieldSpec{key: "BUTLER_OPENAI_CODEX_BASE_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "https://chatgpt.com/backend-api", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.OpenAICodexBaseURL = v }},
 		fieldSpec{key: "BUTLER_GITHUB_COPILOT_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-4o", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.GitHubCopilotModel = v }},
-		fieldSpec{key: "BUTLER_ANTIGRAVITY_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gemini-3.1-pro-high", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityModel = v }},
-		fieldSpec{key: "BUTLER_ANTIGRAVITY_BINARY_PATH", component: "orchestrator", typeName: "string", required: false, defaultValue: "/opt/antigravity/agy", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityBinaryPath = v }},
-		fieldSpec{key: "BUTLER_ANTIGRAVITY_PROFILE_DIR", component: "orchestrator", typeName: "string", required: false, defaultValue: "/home/butler", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityProfileDir = v }},
+		fieldSpec{key: "BUTLER_ANTIGRAVITY_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gemini-3.8-flash-tiered", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityModel = v }},
 		fieldSpec{key: "BUTLER_OPENAI_TIMEOUT_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "60", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.OpenAITimeoutSeconds = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_TOOL_BROKER_ADDR", component: "orchestrator", typeName: "string", required: false, defaultValue: "127.0.0.1:10090", requiresRestart: true, validate: validateListenAddr, assign: func(v string) { cfg.ToolBrokerAddr = v }},
+		fieldSpec{key: "BUTLER_AUTONOMY_MODE", component: "orchestrator", typeName: "string", defaultValue: "mode_1", allowedValues: []string{"mode_0", "mode_1", "mode_2", "mode_3"}, requiresRestart: true, assign: func(v string) { cfg.AutonomyMode = v }},
+		fieldSpec{key: "BUTLER_ACTION_MANDATE_ID", component: "orchestrator", typeName: "string", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ActionMandateID = strings.TrimSpace(v) }},
+		fieldSpec{key: "BUTLER_ACTION_AUTHORITY_TOKEN_FILE", component: "orchestrator", typeName: "string", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ActionAuthorityTokenFile = strings.TrimSpace(v) }},
 		fieldSpec{key: "BUTLER_TELEGRAM_BOT_TOKEN", component: "orchestrator", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: func(v string) { cfg.TelegramBotToken = v }},
 		fieldSpec{key: "BUTLER_TELEGRAM_ALLOWED_CHAT_IDS", component: "orchestrator", typeName: "csv", required: false, defaultValue: "", requiresRestart: true, validate: validateOptionalChatIDList, assign: func(v string) { cfg.TelegramAllowedChatIDs = parseCSV(v) }},
 		fieldSpec{key: "BUTLER_TELEGRAM_BASE_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "https://api.telegram.org", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.TelegramBaseURL = v }},
@@ -314,6 +324,8 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_POSTGRES_MIGRATIONS_DIR", component: "tool-broker", typeName: "string", required: false, defaultValue: "migrations", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.Postgres.MigrationsDir = v }},
 		fieldSpec{key: "BUTLER_TOOL_REGISTRY_PATH", component: "tool-broker", typeName: "string", required: false, defaultValue: "configs/tools.json", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.RegistryPath = v }},
 		fieldSpec{key: "BUTLER_TOOL_DEFAULT_TARGET", component: "tool-broker", typeName: "string", required: false, defaultValue: "local", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.DefaultTarget = v }},
+		fieldSpec{key: "BUTLER_ACTION_CONTEXT_URL", component: "tool-broker", typeName: "string", defaultValue: "http://127.0.0.1:8080/internal/action-context", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.ActionContextURL = v }},
+		fieldSpec{key: "BUTLER_ACTION_AUTHORITY_TOKEN_FILE", component: "tool-broker", typeName: "string", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ActionAuthorityTokenFile = strings.TrimSpace(v) }},
 	)
 
 	snapshot, err := loadSpecs(get, specs)

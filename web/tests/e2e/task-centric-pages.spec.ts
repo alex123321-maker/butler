@@ -308,9 +308,9 @@ async function installApiMocks(page: Page): Promise<void> {
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
-        items: [
+        approvals: [
           {
-            id: 'approval-1',
+            approval_id: 'approval-1',
             run_id: 'run-1',
             status: 'pending',
             tool_name: 'http.request',

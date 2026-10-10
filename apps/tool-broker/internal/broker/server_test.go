@@ -67,13 +67,10 @@ func TestExecuteToolCallRoutesToRuntime(t *testing.T) {
 	}
 
 	server := NewServer(reg, runtimeclient.New(nil), nil, nil)
-
-	resp, err := server.ExecuteToolCall(context.Background(), &toolbrokerv1.ExecuteToolCallRequest{ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tool-1", RunId: "run-1", ToolName: "browser.navigate", ArgsJson: `{"url":"https://example.com"}`}})
-	if err != nil {
-		t.Fatalf("ExecuteToolCall returned error: %v", err)
-	}
-	if resp.GetResult().GetStatus() != "completed" {
-		t.Fatalf("expected completed result, got %+v", resp.GetResult())
+	fixture := setTestAuthority(server, nil)
+	result := dispatchForTest(t, server, fixture, &toolbrokerv1.ToolCall{ToolCallId: "tool-1", RunId: "run-1", ToolName: "browser.navigate", ArgsJson: `{"url":"https://example.com"}`}, true)
+	if result.GetStatus() != "completed" {
+		t.Fatalf("expected completed result, got %+v", result)
 	}
 }
 
@@ -102,13 +99,12 @@ func TestExecuteToolCallResolvesCredentials(t *testing.T) {
 		t.Fatalf("registry.Load returned error: %v", err)
 	}
 
-	server := NewServer(reg, runtimeclient.New(nil), stubCredentialResolver{}, nil)
-	resp, err := server.ExecuteToolCall(context.Background(), &toolbrokerv1.ExecuteToolCallRequest{ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "tool-1", RunId: "run-1", ToolName: "http.request", ArgsJson: `{"method":"GET","url":"https://example.com"}`, CredentialRefs: []*toolbrokerv1.CredentialRef{{Type: "credential_ref", Alias: "github", Field: "token"}}}})
-	if err != nil {
-		t.Fatalf("ExecuteToolCall returned error: %v", err)
-	}
-	if resp.GetResult().GetStatus() != "completed" {
-		t.Fatalf("expected completed result, got %+v", resp.GetResult())
+	credentialBroker := credentials.NewToolCallBroker(credentials.NewBroker(metadataFixture{}), secretFixture{})
+	server := NewServer(reg, runtimeclient.New(nil), credentialBroker, nil)
+	fixture := setTestAuthority(server, credentialBroker)
+	result := dispatchForTest(t, server, fixture, &toolbrokerv1.ToolCall{ToolCallId: "tool-1", RunId: "run-1", ToolName: "http.request", ArgsJson: `{"method":"GET","url":"https://example.com","headers":{"Authorization":{"type":"credential_ref","alias":"github","field":"token"}}}`, CredentialRefs: []*toolbrokerv1.CredentialRef{{Type: "credential_ref", Alias: "github", Field: "token"}}}, false)
+	if result.GetStatus() != "completed" {
+		t.Fatalf("expected completed result, got %+v", result)
 	}
 }
 

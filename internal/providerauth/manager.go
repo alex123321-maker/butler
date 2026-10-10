@@ -51,7 +51,7 @@ func NewManager(store SecretStore) *Manager {
 }
 
 func (m *Manager) List(ctx context.Context) ([]ProviderState, error) {
-	providers := []string{modelprovider.ProviderGitHubCopilot, modelprovider.ProviderOpenAICodex}
+	providers := []string{modelprovider.ProviderGitHubCopilot, modelprovider.ProviderOpenAICodex, modelprovider.ProviderAntigravity}
 	states := make([]ProviderState, 0, len(providers))
 	for _, provider := range providers {
 		state, err := m.State(ctx, provider)
@@ -65,6 +65,17 @@ func (m *Manager) List(ctx context.Context) ([]ProviderState, error) {
 
 func (m *Manager) State(ctx context.Context, provider string) (ProviderState, error) {
 	switch strings.TrimSpace(provider) {
+	case modelprovider.ProviderAntigravity:
+		var creds antigravityCredentials
+		connected, err := loadSecretJSON(ctx, m.store, provider, &creds)
+		if err != nil {
+			return ProviderState{}, fmt.Errorf("Antigravity credential store is unavailable")
+		}
+		state := ProviderState{Provider: provider, AuthKind: AuthKindOperatorImport, Connected: connected && validateAntigravityCredentials(creds) == nil}
+		if state.Connected {
+			state.ExpiresAt = timePointer(creds.ExpiresAt)
+		}
+		return state, nil
 	case modelprovider.ProviderGitHubCopilot:
 		var creds githubCopilotCredentials
 		connected, err := loadSecretJSON(ctx, m.store, provider, &creds)
@@ -124,6 +135,10 @@ func (m *Manager) Complete(ctx context.Context, provider, flowID, input string) 
 }
 
 func (m *Manager) Delete(ctx context.Context, provider string) error {
+	if provider == modelprovider.ProviderAntigravity {
+		m.refresh.Lock()
+		defer m.refresh.Unlock()
+	}
 	m.cancelPending(provider)
 	return deleteSecret(ctx, m.store, provider)
 }

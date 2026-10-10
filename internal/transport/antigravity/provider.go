@@ -1,83 +1,55 @@
-// Package antigravity normalizes the official Google Antigravity CLI's
-// schema-constrained output. The CLI never receives executable Butler tools.
+// Package antigravity implements the AICode subscription HTTP/SSE protocol.
+// It proposes functions; only Butler's execution kernel can execute them.
 package antigravity
 
 import (
-	"bufio"
-	"bytes"
 	"context"
-	_ "embed"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strings"
+	"net/http"
 	"sync"
 	"time"
 
+	"github.com/butler/butler/internal/providerauth"
 	"github.com/butler/butler/internal/transport"
 )
 
-const Name = "antigravity"
-
-//go:embed agent.md
-var agentDefinition []byte
+const (
+	Name            = "antigravity"
+	DefaultModel    = "gemini-3.8-flash-tiered"
+	endpoint        = "https://aicode.googleapis.com/v1"
+	maxOutputTokens = 8192
+)
 
 type Config struct {
-	Model         string
-	BinaryPath    string
-	ProfileDir    string
-	WorkspaceRoot string
-	Timeout       time.Duration
+	Model      string
+	Timeout    time.Duration
+	AuthSource providerauth.AntigravityTokenSource
 }
 
 type Provider struct {
 	config Config
+	client *http.Client
 	mu     sync.Mutex
 	runs   map[string]*runState
 }
 
 type runState struct {
-	model   string
-	inputs  []transport.InputItem
-	tools   []transport.ToolDefinition
-	pending *transport.ToolCallRequest
-	turn    int
-	cancel  context.CancelFunc
+	model         string
+	ref           transport.ProviderSessionRef
+	system        *content
+	contents      []content
+	tools         []functionDeclaration
+	definitions   map[string]transport.ToolDefinition
+	pending       *transport.ToolCallRequest
+	pendingNative functionCall
+	turn          int
+	cancel        context.CancelFunc
 }
 
-type decision struct {
-	Kind      string          `json:"kind"`
-	Answer    string          `json:"answer"`
-	ToolName  string          `json:"tool_name"`
-	Arguments json.RawMessage `json:"arguments"`
-}
-
-type cliEvent struct {
-	Event string `json:"event"`
-	Init  *struct {
-		Tools []string `json:"tools"`
-		Agent string   `json:"agent"`
-	} `json:"init"`
-	Step *struct {
-		StepType     string          `json:"step_type"`
-		SubagentInfo json.RawMessage `json:"subagent_info"`
-	} `json:"step_update"`
-	Result *struct {
-		Status           string          `json:"status"`
-		Error            string          `json:"error"`
-		StructuredOutput json.RawMessage `json:"structured_output"`
-		Usage            struct {
-			InputTokens  int `json:"input_tokens"`
-			OutputTokens int `json:"output_tokens"`
-			TotalTokens  int `json:"total_tokens"`
-		} `json:"usage"`
-	} `json:"result"`
-}
-
-var capabilities = transport.CapabilitySnapshot{SupportsToolCalls: true, SupportsCancel: true, SupportsUsageMetadata: true}
+var capabilities = transport.CapabilitySnapshot{SupportsStreaming: true, SupportsToolCalls: true, SupportsCancel: true, SupportsUsageMetadata: true}
 
 func init() {
 	transport.RegisterProvider(Name, func(raw any) (transport.ModelProvider, error) {
@@ -91,21 +63,17 @@ func init() {
 
 func NewProvider(cfg Config) (*Provider, error) {
 	if cfg.Model == "" {
-		cfg.Model = "gemini-3.1-pro-high"
-	}
-	if cfg.BinaryPath == "" {
-		cfg.BinaryPath = "agy"
+		cfg.Model = DefaultModel
 	}
 	if cfg.Timeout <= 0 {
 		cfg.Timeout = 5 * time.Minute
 	}
-	if cfg.WorkspaceRoot == "" {
-		cfg.WorkspaceRoot = filepath.Join(os.TempDir(), "butler-antigravity")
+	if cfg.AuthSource == nil {
+		return nil, providerError(transport.ErrorTypeProviderUnavailable, "Antigravity authentication source is required")
 	}
-	if cfg.ProfileDir == "" {
-		cfg.ProfileDir = "/home/butler"
-	}
-	return &Provider{config: cfg, runs: make(map[string]*runState)}, nil
+	client := &http.Client{Transport: http.DefaultTransport.(*http.Transport).Clone()}
+	client.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	return &Provider{config: cfg, client: client, runs: make(map[string]*runState)}, nil
 }
 
 func (p *Provider) Name() string { return Name }
@@ -117,50 +85,86 @@ func (p *Provider) StartRun(ctx context.Context, req transport.StartRunRequest) 
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
+	if req.Context.ProviderName != Name || req.Context.ProviderSessionRef != nil {
+		return nil, protocolError("Antigravity requires a fresh Butler-owned context")
+	}
+	if len(req.TransportOptions) > 0 || req.TransportOptionsJSON != "" {
+		return nil, protocolError("Antigravity transport options are unsupported")
+	}
+	system, contents, err := convertInputs(req.InputItems)
+	if err != nil {
+		return nil, err
+	}
+	declarations, definitions, err := convertTools(req.ToolDefinitions)
+	if err != nil {
+		return nil, err
+	}
+	ref, err := newReference()
+	if err != nil {
+		return nil, err
+	}
+	state := &runState{model: req.Context.ModelName, ref: ref, system: system, contents: contents, tools: declarations, definitions: definitions}
 	p.mu.Lock()
+	defer p.mu.Unlock()
 	if _, exists := p.runs[req.Context.RunID]; exists {
-		p.mu.Unlock()
 		return nil, protocolError("run is already active")
 	}
-	model := req.Context.ModelName
-	if model == "" {
-		model = p.config.Model
-	}
-	state := &runState{model: model, inputs: append([]transport.InputItem(nil), req.InputItems...), tools: append([]transport.ToolDefinition(nil), req.ToolDefinitions...)}
 	p.runs[req.Context.RunID] = state
-	p.mu.Unlock()
-	return p.execute(ctx, req.Context.RunID)
+	return p.executeLocked(ctx, req.Context.RunID, state), nil
 }
 
 func (p *Provider) ContinueRun(ctx context.Context, req transport.ContinueRunRequest) (transport.EventStream, error) {
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
-	p.mu.Lock()
-	state := p.runs[req.RunID]
-	if state == nil || state.cancel != nil || state.pending != nil {
-		p.mu.Unlock()
-		return nil, protocolError("run cannot continue")
+	if len(req.TransportOptions) > 0 || req.TransportOptionsJSON != "" {
+		return nil, protocolError("Antigravity transport options are unsupported")
 	}
-	state.inputs = append(state.inputs, req.InputItems...)
-	p.mu.Unlock()
-	return p.execute(ctx, req.RunID)
+	system, items, err := convertInputs(req.InputItems)
+	if err != nil {
+		return nil, err
+	}
+	if system != nil {
+		return nil, protocolError("continuation cannot replace system instructions")
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	state := p.runs[req.RunID]
+	if state == nil || state.cancel != nil || state.pending != nil || !matchesReference(state, req.ProviderSessionRef) {
+		return nil, protocolError("run cannot continue with this context")
+	}
+	state.contents = append(state.contents, items...)
+	return p.executeLocked(ctx, req.RunID, state), nil
 }
 
 func (p *Provider) SubmitToolResult(ctx context.Context, req transport.SubmitToolResultRequest) (transport.EventStream, error) {
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
-	p.mu.Lock()
-	state := p.runs[req.RunID]
-	if state == nil || state.cancel != nil || state.pending == nil || state.pending.ToolCallRef != req.ToolCallRef {
-		p.mu.Unlock()
-		return nil, protocolError("tool result does not match the pending proposal")
+	if len(req.TransportOptions) > 0 || req.TransportOptionsJSON != "" {
+		return nil, protocolError("Antigravity transport options are unsupported")
 	}
-	state.inputs = append(state.inputs, transport.InputItem{Role: "tool", Name: state.pending.ToolName, Content: req.ToolResultJSON, ContentType: "application/json"})
+	result, err := strictJSON([]byte(req.ToolResultJSON))
+	if err != nil {
+		return nil, protocolError("invalid function result")
+	}
+	if _, ok := result.(map[string]any); !ok {
+		result = map[string]any{"result": result}
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	state := p.runs[req.RunID]
+	if state == nil || state.cancel != nil || state.pending == nil || state.pending.ToolCallRef != req.ToolCallRef || !matchesReference(state, req.ProviderSessionRef) {
+		return nil, protocolError("tool result does not match the pending Butler proposal")
+	}
+	encoded, _ := json.Marshal(result)
+	response := map[string]any{"name": state.pendingNative.Name, "response": json.RawMessage(encoded)}
+	if state.pendingNative.ID != "" {
+		response["id"] = state.pendingNative.ID
+	}
+	state.contents = append(state.contents, content{Role: "user", Parts: []json.RawMessage{marshalPart(map[string]any{"functionResponse": response})}})
 	state.pending = nil
-	p.mu.Unlock()
-	return p.execute(ctx, req.RunID)
+	return p.executeLocked(ctx, req.RunID, state), nil
 }
 
 func (p *Provider) CancelRun(_ context.Context, req transport.CancelRunRequest) (*transport.TransportEvent, error) {
@@ -168,39 +172,54 @@ func (p *Provider) CancelRun(_ context.Context, req transport.CancelRunRequest) 
 		return nil, err
 	}
 	p.mu.Lock()
+	defer p.mu.Unlock()
 	if state := p.runs[req.RunID]; state != nil {
+		if !matchesReference(state, req.ProviderSessionRef) {
+			return nil, protocolError("foreign provider context")
+		}
 		if state.cancel != nil {
 			state.cancel()
 		}
 		delete(p.runs, req.RunID)
+	} else if req.ProviderSessionRef != nil {
+		return nil, protocolError("provider context is lost")
 	}
-	p.mu.Unlock()
 	event := transport.NewTerminalEvent(req.RunID, transport.EventTypeRunCancelled, Name)
 	return &event, nil
 }
 
-func (p *Provider) execute(ctx context.Context, runID string) (transport.EventStream, error) {
-	p.mu.Lock()
-	state := p.runs[runID]
-	if state == nil || state.cancel != nil {
-		p.mu.Unlock()
-		return nil, protocolError("run is absent or already executing")
-	}
+func (p *Provider) executeLocked(ctx context.Context, runID string, state *runState) transport.EventStream {
 	runCtx, cancel := context.WithTimeout(ctx, p.config.Timeout)
 	state.cancel = cancel
 	state.turn++
-	model, turn := state.model, state.turn
-	inputs, tools := append([]transport.InputItem(nil), state.inputs...), append([]transport.ToolDefinition(nil), state.tools...)
-	p.mu.Unlock()
-	out := make(chan transport.TransportEvent, 4)
+	turn := state.turn
+	request := generateRequest{Contents: append([]content(nil), state.contents...), SystemInstruction: state.system, GenerationConfig: generationConfig{MaxOutputTokens: maxOutputTokens}}
+	if len(state.tools) > 0 {
+		request.Tools = []functionTools{{FunctionDeclarations: state.tools}}
+		request.ToolConfig = map[string]any{"functionCallingConfig": map[string]any{"mode": "AUTO"}}
+	}
+	out := make(chan transport.TransportEvent, 8)
 	go func() {
 		defer close(out)
 		defer cancel()
-		out <- transport.NewRunStartedEvent(runID, Name, capabilities, nil)
-		choice, usage, err := p.invoke(runCtx, model, inputs, tools)
+		send := func(event transport.TransportEvent) bool {
+			select {
+			case out <- event:
+				return true
+			case <-runCtx.Done():
+				return false
+			}
+		}
+		ref := state.ref // Event consumers cannot mutate the provider's private identity.
+		if !send(transport.NewRunStartedEvent(runID, Name, capabilities, &ref)) {
+			p.discard(runID, state)
+			return
+		}
+		answer, err := p.invoke(runCtx, state.model, request, func(delta string) bool {
+			return send(transport.NewAssistantDeltaEvent(runID, Name, transport.AssistantDelta{DeltaType: "text", Content: delta, SequenceNo: turn}))
+		})
 		p.mu.Lock()
-		current := p.runs[runID]
-		if current != state {
+		if p.runs[runID] != state {
 			p.mu.Unlock()
 			return
 		}
@@ -208,189 +227,66 @@ func (p *Provider) execute(ctx context.Context, runID string) (transport.EventSt
 		if err != nil {
 			delete(p.runs, runID)
 			p.mu.Unlock()
-			out <- transport.NewTransportErrorEvent(runID, Name, err)
+			// Cancellation may already have closed runCtx. Deliver a buffered safe
+			// terminal error when possible, without blocking an abandoned consumer.
+			select {
+			case out <- transport.NewTransportErrorEvent(runID, Name, err):
+			default:
+			}
 			return
 		}
-		if choice.Kind == "tool_call" {
-			call := transport.ToolCallRequest{ToolCallRef: fmt.Sprintf("agy-%s-%d", runID, turn), ToolName: choice.ToolName, ArgsJSON: string(choice.Arguments), SequenceNo: turn}
-			state.pending = &call
-			encoded, _ := json.Marshal(choice)
-			state.inputs = append(state.inputs, transport.InputItem{Role: "assistant", Content: string(encoded), ContentType: "application/json"})
+		call, err := validateFunctionCalls(answer.Parts, state.definitions)
+		if err != nil {
+			delete(p.runs, runID)
 			p.mu.Unlock()
-			out <- transport.NewToolCallRequestedEvent(runID, Name, call)
+			send(transport.NewTransportErrorEvent(runID, Name, err))
+			return
+		}
+		if call != nil {
+			definition := state.definitions[call.Name]
+			proposal := transport.ToolCallRequest{ToolCallRef: fmt.Sprintf("agy-%s-%d", state.ref.SessionRef, turn), ToolName: definition.Name, ArgsJSON: string(call.Args), SequenceNo: turn}
+			state.contents = append(state.contents, content{Role: "model", Parts: answer.Parts})
+			state.pending = &proposal
+			state.pendingNative = *call
+			p.mu.Unlock()
+			if !send(transport.NewToolCallRequestedEvent(runID, Name, proposal)) {
+				p.discard(runID, state)
+			}
 			return
 		}
 		delete(p.runs, runID)
 		p.mu.Unlock()
-		out <- transport.NewAssistantFinalEvent(runID, Name, transport.AssistantFinal{Content: choice.Answer, FinishReason: "stop", Usage: usage})
-		out <- transport.NewTerminalEvent(runID, transport.EventTypeRunCompleted, Name)
+		if answer.Text == "" {
+			send(transport.NewTransportErrorEvent(runID, Name, protocolError("model returned no usable text or function")))
+			return
+		}
+		send(transport.NewAssistantFinalEvent(runID, Name, transport.AssistantFinal{Content: answer.Text, FinishReason: answer.FinishReason, Usage: answer.Usage}))
+		send(transport.NewTerminalEvent(runID, transport.EventTypeRunCompleted, Name))
 	}()
-	return out, nil
+	return out
 }
 
-func (p *Provider) invoke(ctx context.Context, model string, inputs []transport.InputItem, tools []transport.ToolDefinition) (decision, *transport.Usage, error) {
-	if err := validateProfile(p.config.ProfileDir); err != nil {
-		return decision{}, nil, err
+func (p *Provider) discard(runID string, state *runState) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.runs[runID] == state {
+		delete(p.runs, runID)
 	}
-	if err := os.MkdirAll(p.config.WorkspaceRoot, 0700); err != nil {
-		return decision{}, nil, protocolError("cannot create isolated CLI workspace")
-	}
-	workspace, err := os.MkdirTemp(p.config.WorkspaceRoot, "turn-")
-	if err != nil {
-		return decision{}, nil, protocolError("cannot create isolated CLI workspace")
-	}
-	defer os.RemoveAll(workspace)
-	agentDir := filepath.Join(workspace, ".agents", "agents")
-	if err := os.MkdirAll(agentDir, 0700); err != nil {
-		return decision{}, nil, protocolError("cannot create model-only agent")
-	}
-	if err := os.WriteFile(filepath.Join(agentDir, "butler-model.md"), agentDefinition, 0400); err != nil {
-		return decision{}, nil, protocolError("cannot create model-only agent")
-	}
-	envelope, err := json.Marshal(struct {
-		Messages []transport.InputItem      `json:"messages"`
-		Tools    []transport.ToolDefinition `json:"tool_definitions"`
-	}{inputs, tools})
-	if err != nil {
-		return decision{}, nil, protocolError("invalid model input")
-	}
-	message, _ := json.Marshal(map[string]any{"event": "user", "message": map[string]string{"content": string(envelope)}})
-	cmd := exec.CommandContext(ctx, p.config.BinaryPath, "--agent", "butler-model", "--model", model, "--input-format", "stream-json", "--output-format", "stream-json", "--json-schema", decisionSchema(tools), "--disable-slash-commands", "--print-timeout", p.config.Timeout.String())
-	cmd.Dir = workspace
-	cmd.Env = cliEnvironment()
-	cmd.Stdin = bytes.NewReader(append(message, '\n'))
-	cmd.Stderr = io.Discard // CLI diagnostics can contain credential/account material.
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		return decision{}, nil, protocolError("cannot open CLI stream")
-	}
-	if err := cmd.Start(); err != nil {
-		return decision{}, nil, &transport.Error{Type: transport.ErrorTypeProviderUnavailable, ProviderName: Name, Message: "Antigravity CLI could not start; check its installed binary"}
-	}
-	choice, usage, streamErr := readResult(stdout, tools)
-	if streamErr != nil {
-		_ = cmd.Process.Kill()
-	}
-	waitErr := cmd.Wait()
-	if ctx.Err() != nil {
-		return decision{}, nil, ctx.Err()
-	}
-	if streamErr != nil {
-		return decision{}, nil, streamErr
-	}
-	if waitErr != nil {
-		return decision{}, nil, protocolError("Antigravity CLI exited unsuccessfully")
-	}
-	return choice, usage, nil
 }
-
-func readResult(reader io.Reader, tools []transport.ToolDefinition) (decision, *transport.Usage, error) {
-	scanner := bufio.NewScanner(reader)
-	scanner.Buffer(make([]byte, 4096), 2*1024*1024)
-	initialized := false
-	var result *cliEvent
-	for scanner.Scan() {
-		var event cliEvent
-		if err := json.Unmarshal(scanner.Bytes(), &event); err != nil {
-			return decision{}, nil, protocolError("invalid CLI event")
-		}
-		switch event.Event {
-		case "init":
-			if initialized || event.Init == nil || event.Init.Tools == nil || len(event.Init.Tools) != 0 || event.Init.Agent != "butler-model" {
-				return decision{}, nil, protocolError("CLI did not establish the model-only agent with an empty toolkit")
-			}
-			initialized = true
-		case "step_update":
-			if !initialized || event.Step == nil || event.Step.StepType == "tool" || len(event.Step.SubagentInfo) != 0 {
-				return decision{}, nil, protocolError("CLI attempted an unsupported autonomous step")
-			}
-		case "result":
-			if event.Result == nil || result != nil {
-				return decision{}, nil, protocolError("invalid terminal CLI event")
-			}
-			if event.Result.Status != "SUCCESS" {
-				return decision{}, nil, cliFailure(event.Result.Error)
-			}
-			if !initialized {
-				return decision{}, nil, protocolError("CLI result arrived before isolation confirmation")
-			}
-			copyEvent := event
-			result = &copyEvent
-		default:
-			return decision{}, nil, protocolError("unsupported CLI event")
-		}
+func newReference() (transport.ProviderSessionRef, error) {
+	var raw [16]byte
+	if _, err := rand.Read(raw[:]); err != nil {
+		return transport.ProviderSessionRef{}, protocolError("cannot create isolated provider context")
 	}
-	if scanner.Err() != nil || result == nil {
-		return decision{}, nil, protocolError("CLI stream ended without a complete result")
-	}
-	var choice decision
-	decoder := json.NewDecoder(bytes.NewReader(result.Result.StructuredOutput))
-	decoder.DisallowUnknownFields()
-	if err := decoder.Decode(&choice); err != nil {
-		return decision{}, nil, protocolError("invalid structured model decision")
-	}
-	if err := validateDecision(choice, tools); err != nil {
-		return decision{}, nil, err
-	}
-	u := result.Result.Usage
-	return choice, &transport.Usage{InputTokens: u.InputTokens, OutputTokens: u.OutputTokens, TotalTokens: u.TotalTokens}, nil
+	now := time.Now().UTC()
+	return transport.ProviderSessionRef{ProviderName: Name, SessionRef: hex.EncodeToString(raw[:]), CreatedAt: now, LastUsedAt: now}, nil
 }
-
-func validateDecision(choice decision, tools []transport.ToolDefinition) error {
-	switch choice.Kind {
-	case "answer":
-		var args map[string]json.RawMessage
-		if strings.TrimSpace(choice.Answer) == "" || choice.ToolName != "" || json.Unmarshal(choice.Arguments, &args) != nil || args == nil || len(args) != 0 {
-			return protocolError("invalid answer decision")
-		}
-	case "tool_call":
-		if choice.Answer != "" || !json.Valid(choice.Arguments) || len(bytes.TrimSpace(choice.Arguments)) == 0 || bytes.TrimSpace(choice.Arguments)[0] != '{' {
-			return protocolError("invalid tool proposal")
-		}
-		for _, tool := range tools {
-			if tool.Name == choice.ToolName {
-				return nil
-			}
-		}
-		return &transport.Error{Type: transport.ErrorTypeInvalidToolRequest, ProviderName: Name, Message: "Antigravity proposed a tool outside the supplied tool definitions"}
-	default:
-		return protocolError("unknown model decision")
-	}
-	return nil
+func matchesReference(state *runState, ref *transport.ProviderSessionRef) bool {
+	return ref == nil || (ref.ProviderName == Name && ref.SessionRef == state.ref.SessionRef && ref.ResponseRef == "")
 }
-
-func decisionSchema(tools []transport.ToolDefinition) string {
-	kinds := []string{"answer"}
-	if len(tools) > 0 {
-		kinds = append(kinds, "tool_call")
-	}
-	encoded, _ := json.Marshal(map[string]any{"type": "object", "additionalProperties": false, "required": []string{"kind", "answer", "tool_name", "arguments"}, "properties": map[string]any{
-		"kind": map[string]any{"type": "string", "enum": kinds}, "answer": map[string]any{"type": "string"}, "tool_name": map[string]any{"type": "string"}, "arguments": map[string]any{"type": "object"},
-	}})
-	return string(encoded)
-}
-
-func cliEnvironment() []string {
-	env := []string{"AGY_CLI_DISABLE_AUTO_UPDATE=true"}
-	for _, key := range []string{"HOME", "PATH", "LANG", "LC_ALL", "TMPDIR", "SSH_CONNECTION", "SSL_CERT_FILE", "SSL_CERT_DIR"} {
-		if value, ok := os.LookupEnv(key); ok {
-			env = append(env, key+"="+value)
-		}
-	}
-	return env
-}
-
-func cliFailure(raw string) error {
-	message := strings.ToLower(raw)
-	if strings.Contains(message, "auth") {
-		return &transport.Error{Type: transport.ErrorTypeProviderUnavailable, ProviderName: Name, ProviderCode: "authentication_required", Message: "Antigravity requires Google account sign-in in its private CLI profile"}
-	}
-	if strings.Contains(message, "quota") || strings.Contains(message, "rate limit") {
-		return &transport.Error{Type: transport.ErrorTypeRateLimited, ProviderName: Name, Message: "Antigravity subscription quota is unavailable", Retryable: false}
-	}
-	return protocolError("Antigravity CLI failed; review diagnostics outside Butler chat")
-}
-
 func protocolError(message string) error {
-	return &transport.Error{Type: transport.ErrorTypeProviderProtocolError, ProviderName: Name, Message: message}
+	return providerError(transport.ErrorTypeProviderProtocolError, message)
+}
+func providerError(kind transport.ErrorType, message string) error {
+	return &transport.Error{Type: kind, ProviderName: Name, Message: message, Retryable: false}
 }

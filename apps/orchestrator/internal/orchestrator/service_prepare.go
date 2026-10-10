@@ -12,6 +12,7 @@ import (
 	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/summary"
 	"github.com/butler/butler/internal/memory/transcript"
+	"github.com/butler/butler/internal/ownership"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -42,6 +43,9 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 		InputPayload:  payload,
 		SessionUserID: userID,
 		Channel:       channel,
+	}
+	if token, ok := ownership.TokenFromContext(ctx); ok {
+		prepared.CurrentRunID = token.RunID
 	}
 	if err := s.attachMemoryContext(ctx, event.SessionKey, prepared.SessionUserID, message, &prepared); err != nil {
 		return preparedRun{}, err
@@ -153,6 +157,22 @@ func (s *Service) attachTranscriptContext(ctx context.Context, sessionKey string
 		} else {
 			coverageMode = "full_history_unverified_summary"
 		}
+	}
+	// Validate summary coverage against the complete source first. A recovery
+	// reuses its durable input rather than appending or replaying it twice.
+	if prepared.CurrentRunID != "" {
+		for _, message := range full.Messages {
+			if message.RunID == prepared.CurrentRunID && message.Role == "user" {
+				prepared.InputAlreadyRecorded = true
+			}
+		}
+		filtered := make([]transcript.Message, 0, len(tail))
+		for _, message := range tail {
+			if message.RunID != prepared.CurrentRunID || message.Role != "user" {
+				filtered = append(filtered, message)
+			}
+		}
+		tail = filtered
 	}
 	items := transcriptInputItems(tail)
 	if summaryItem != nil {

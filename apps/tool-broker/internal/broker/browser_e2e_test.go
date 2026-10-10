@@ -100,6 +100,7 @@ func TestBrokerBrowserSequenceE2E(t *testing.T) {
 	// intentionally requires approval and is denied before reading the secret.
 	credentialBroker := credentials.NewToolCallBroker(credentials.NewBroker(browserCredentialMetadata{}), browserFixtureSecret{})
 	server := NewServer(reg, router, credentialBroker, nil)
+	fixture := setTestAuthority(server, credentialBroker)
 	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/submit" {
 			_ = r.ParseForm()
@@ -109,16 +110,15 @@ func TestBrokerBrowserSequenceE2E(t *testing.T) {
 		_, _ = fmt.Fprint(w, `<body><form action="/submit" method="post"><input name="a" id="a"><input name="b" id="b"><input type="password" id="password"><button id="submit">Send</button></form></body>`)
 	}))
 	defer site.Close()
+	sequence := 0
 	invoke := func(tool string, args map[string]any, refs ...*toolbrokerv1.CredentialRef) *toolbrokerv1.ToolResult {
 		t.Helper()
 		payload, _ := json.Marshal(args)
 		ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
 		defer cancel()
-		resp, err := server.ExecuteToolCall(ctx, &toolbrokerv1.ExecuteToolCallRequest{ToolCall: &toolbrokerv1.ToolCall{RunId: "broker-run", ToolCallId: "broker-call", ToolName: tool, ArgsJson: string(payload), AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2, CredentialRefs: refs}})
-		if err != nil {
-			t.Fatal(err)
-		}
-		return resp.GetResult()
+		_ = ctx
+		sequence++
+		return dispatchForTest(t, server, fixture, &toolbrokerv1.ToolCall{RunId: "broker-run", ToolCallId: fmt.Sprintf("broker-call-%d", sequence), ToolName: tool, ArgsJson: string(payload), AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2, CredentialRefs: refs}, len(refs) == 0)
 	}
 	var observation map[string]any
 	accept := func(result *toolbrokerv1.ToolResult) {

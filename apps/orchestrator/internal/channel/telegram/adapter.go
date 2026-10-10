@@ -622,11 +622,10 @@ func (a *Adapter) handleCallbackQuery(ctx context.Context, query *CallbackQuery)
 	if query.From != nil {
 		resolvedBy = fmt.Sprintf("telegram_user:%d", query.From.ID)
 	}
-	if !a.approvalGate.ResolveWithChannel(toolCallID, approved, "telegram", resolvedBy) {
-		a.log.Warn("no pending approval found for tool call", slog.String("tool_call_id", toolCallID))
-	}
-
 	if a.approvalService != nil {
+		if query.From != nil && query.Message != nil {
+			ctx = approvals.WithActor(ctx, approvals.Actor{OwnerID: strconv.FormatInt(query.From.ID, 10), Channel: approvals.ResolvedViaTelegram, SessionKey: fmt.Sprintf("telegram:chat:%d", query.Message.Chat.ID), DeliveryID: query.ID})
+		}
 		_, _, err := a.approvalService.ResolveByToolCall(ctx, approvals.ResolveByToolCallParams{
 			ToolCallID:       toolCallID,
 			Approved:         approved,
@@ -639,7 +638,11 @@ func (a *Adapter) handleCallbackQuery(ctx context.Context, query *CallbackQuery)
 		})
 		if err != nil {
 			a.log.Warn("resolve durable approval via telegram failed", slog.String("tool_call_id", toolCallID), slog.String("error", err.Error()))
+			return
 		}
+	}
+	if !a.approvalGate.ResolveWithChannel(toolCallID, approved, "telegram", resolvedBy) {
+		a.log.Debug("durable approval has no process waiter", slog.String("tool_call_id", toolCallID))
 	}
 
 	action := "approved"
@@ -674,11 +677,11 @@ func (a *Adapter) handleTabSelectionCallback(ctx context.Context, query *Callbac
 	}
 
 	result, err := a.singleTabSelector.ActivateFromCandidateToken(ctx, candidateToken, singletab.ActivateFromApprovalParams{
-		ResolvedVia:    approvals.ResolvedViaTelegram,
-		ResolvedBy:     resolvedBy,
-		ActorType:      "telegram",
-		ActorID:        resolvedBy,
-		ResolvedAt:     time.Now().UTC(),
+		ResolvedVia: approvals.ResolvedViaTelegram,
+		ResolvedBy:  resolvedBy,
+		ActorType:   "telegram",
+		ActorID:     resolvedBy,
+		ResolvedAt:  time.Now().UTC(),
 	})
 	if err != nil {
 		return err

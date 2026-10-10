@@ -20,6 +20,7 @@ import (
 	"github.com/butler/butler/internal/ingress"
 	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/transcript"
+	"github.com/butler/butler/internal/ownership"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -314,11 +315,16 @@ func runStateString(state commonv1.RunState) string {
 }
 
 // emitEvent publishes an observability event if the EventHub is configured.
-// This is non-blocking and fire-and-forget — it never blocks the run.
-func (s *Service) emitEvent(runID, sessionKey, eventType string, payload map[string]any) {
+// Authority is rechecked before publishing worker-owned progress.
+func (s *Service) emitEvent(ctx context.Context, runID, sessionKey, eventType string, payload map[string]any) {
+	ctx, release, err := ownership.Begin(ctx)
+	if err != nil {
+		return
+	}
+	defer release()
 	event := observability.NewEvent(runID, sessionKey, eventType, payload)
 	if s.config.Activity != nil {
-		_ = s.config.Activity.RecordFromObservabilityEvent(context.Background(), event)
+		_ = s.config.Activity.RecordFromObservabilityEvent(ctx, event)
 	}
 	if s.config.EventHub == nil {
 		return

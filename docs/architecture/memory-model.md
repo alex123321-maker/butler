@@ -379,6 +379,12 @@ any message is edited/deleted, invalidating summaries that could retain its cont
 Message identity, session and sequence are immutable. This metadata belongs to
 the Transcript Store and does not transfer run ordering/leases from Session Service.
 
+Execution-owned transcript writes carry Session Service's PostgreSQL ownership
+token. Appending a message or tool call checks its run/session binding and holds
+a shared ownership-row lock across the write. Superseded or expired workers
+cannot append delayed model output or tool results after a new epoch takes over.
+Administrative/background audit writes remain separate from run execution.
+
 `internal/memory/summary` owns `session_summaries`: summary text, format version,
 source revision, last covered message ID and sequence. Publication checks the
 source identity/revision and uses a monotonic boundary CAS under the same head

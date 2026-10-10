@@ -1,5 +1,11 @@
 # Butler — Run Lifecycle Specification
 
+Tool preparation and dispatch follow
+[exact action authorization](action-authorization-contract.md). The approved
+intent retains stable IDs across durable suspension, while a resumed worker
+must obtain a fresh current lease/fence grant. Dispatch/result checkpoints and
+non-reusable unknown outcomes prevent recovery from repeating external effects.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Run Lifecycle  
@@ -862,3 +868,13 @@ Run в Butler — это строго управляемая execution unit (е�
 Главный принцип lifecycle Butler:
 
 **Session Service отвечает за владение и порядок, Orchestrator — за ход исполнения и взаимодействие с transport/tools/channels, approval встроен в lifecycle как отдельная pause-фаза, а memory enrichment и tool execution вынесены за пределы основного пользовательского критического пути там, где это возможно.**
+
+## Durable acceptance and continuation implementation
+
+The implemented acceptance/ownership/approval boundaries are specified in
+[Durable Execution](durable-execution-spec.md). PostgreSQL stores ordered input
+receipts, monotonic expiring leases and versioned data-only approval continuations.
+HTTP acceptance returns 202 independently of model execution; context is built
+under ownership. Waiting for the owner releases the worker, while unknown external
+outcomes are blocked instead of blindly replayed. The contract explicitly lists
+safe recovery boundaries, owner proof and delivery/reconciliation limitations.

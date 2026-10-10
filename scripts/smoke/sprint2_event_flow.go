@@ -14,6 +14,8 @@ import (
 )
 
 type submitResponse struct {
+	Accepted   bool   `json:"accepted"`
+	InputID    string `json:"input_id"`
 	RunID      string `json:"run_id"`
 	SessionKey string `json:"session_key"`
 }
@@ -45,6 +47,9 @@ func main() {
 	}
 
 	result := postEvent(ctx, baseURL+"/api/v1/events", body)
+	if result.Accepted {
+		result.RunID = waitForAcceptedRun(ctx, baseURL, result.InputID)
+	}
 	fmt.Printf("submitted run %s for session %s\n", result.RunID, result.SessionKey)
 
 	pool, err := pgxpool.New(ctx, postgresURL)
@@ -76,17 +81,53 @@ func postEvent(ctx context.Context, url string, payload map[string]any) submitRe
 		fail("post event: %v", err)
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusAccepted {
 		fail("unexpected response status: %s", resp.Status)
 	}
 	var result submitResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		fail("decode response: %v", err)
 	}
-	if strings.TrimSpace(result.RunID) == "" {
+	if strings.TrimSpace(result.RunID) == "" && (!result.Accepted || result.InputID == "") {
 		fail("response missing run_id")
 	}
 	return result
+}
+
+func waitForAcceptedRun(ctx context.Context, baseURL, inputID string) string {
+	timer := time.NewTicker(250 * time.Millisecond)
+	defer timer.Stop()
+	for {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, baseURL+"/api/v3/inputs/"+inputID, nil)
+		if err != nil {
+			fail("create receipt request: %v", err)
+		}
+		response, err := http.DefaultClient.Do(req)
+		if err != nil {
+			fail("read receipt: %v", err)
+		}
+		var receipt struct {
+			RunID     string `json:"run_id"`
+			Status    string `json:"status"`
+			ErrorCode string `json:"error_code"`
+		}
+		err = json.NewDecoder(response.Body).Decode(&receipt)
+		_ = response.Body.Close()
+		if err != nil || response.StatusCode != http.StatusOK {
+			fail("invalid receipt response")
+		}
+		switch receipt.Status {
+		case "completed":
+			return receipt.RunID
+		case "failed", "blocked", "waiting_for_user", "expired", "cancelled":
+			fail("accepted input stopped at %s (%s)", receipt.Status, receipt.ErrorCode)
+		}
+		select {
+		case <-ctx.Done():
+			fail("timed out waiting for accepted input")
+		case <-timer.C:
+		}
+	}
 }
 
 func waitForCompletedRun(ctx context.Context, pool *pgxpool.Pool, runID string) string {

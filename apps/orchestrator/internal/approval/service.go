@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"github.com/butler/butler/internal/actionauth"
 	"strings"
 	"time"
 )
@@ -23,23 +24,26 @@ func NewService(repo Repository, gate Gate) *Service {
 }
 
 type CreatePendingParams struct {
-	RunID         string
-	SessionKey    string
-	ToolCallID    string
-	ApprovalType  string
-	RequestedVia  string
-	ToolName      string
-	ArgsJSON      string
-	PayloadJSON   string
-	RiskLevel     string
-	Summary       string
-	DetailsJSON   string
-	TabCandidates []CreateTabCandidateParams
-	RequestedAt   time.Time
-	ExpiresAt     *time.Time
+	ActionBinding    actionauth.ActionBinding
+	ContinuationJSON string
+	RunID            string
+	SessionKey       string
+	ToolCallID       string
+	ApprovalType     string
+	RequestedVia     string
+	ToolName         string
+	ArgsJSON         string
+	PayloadJSON      string
+	RiskLevel        string
+	Summary          string
+	DetailsJSON      string
+	TabCandidates    []CreateTabCandidateParams
+	RequestedAt      time.Time
+	ExpiresAt        *time.Time
 }
 
 type ResolveByToolCallParams struct {
+	DeliveryID       string
 	ToolCallID       string
 	Approved         bool
 	ResolvedVia      string
@@ -51,6 +55,7 @@ type ResolveByToolCallParams struct {
 }
 
 type ResolveByApprovalIDParams struct {
+	DeliveryID       string
 	ApprovalID       string
 	Approved         bool
 	ResolvedVia      string
@@ -64,6 +69,13 @@ type ResolveByApprovalIDParams struct {
 func (s *Service) CreatePendingApproval(ctx context.Context, params CreatePendingParams) (Record, error) {
 	if s == nil || s.repo == nil {
 		return Record{}, fmt.Errorf("approval service is not configured")
+	}
+	if params.ActionBinding.ActionID != "" {
+		repo, ok := s.repo.(*PostgresRepository)
+		if !ok {
+			return Record{}, fmt.Errorf("durable approval repository required")
+		}
+		return repo.CreateDurable(ctx, params)
 	}
 	if strings.TrimSpace(params.RunID) == "" || strings.TrimSpace(params.SessionKey) == "" || strings.TrimSpace(params.ToolCallID) == "" {
 		return Record{}, fmt.Errorf("run_id, session_key and tool_call_id are required")
@@ -189,6 +201,19 @@ func (s *Service) ResolveByApprovalID(ctx context.Context, params ResolveByAppro
 }
 
 func (s *Service) resolveRecord(ctx context.Context, record Record, approved bool, resolvedVia, resolvedBy, resolutionReason string, resolvedAt time.Time, actorType, actorID string) (Record, bool, error) {
+	if repo, ok := s.repo.(*PostgresRepository); ok {
+		durable, err := repo.HasDurableAction(ctx, record.ApprovalID)
+		if err != nil {
+			return Record{}, false, err
+		}
+		if durable {
+			actor, ok := ActorFromContext(ctx)
+			if !ok {
+				return Record{}, false, ErrUnauthorized
+			}
+			return repo.ResolveDurable(ctx, record, approved, actor, resolutionReason)
+		}
+	}
 	status := StatusRejected
 	if approved {
 		status = StatusApproved

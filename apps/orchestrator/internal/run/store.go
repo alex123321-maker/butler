@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/domain"
+	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -160,6 +161,12 @@ func (r *PostgresRepository) FindRunByIdempotencyKey(ctx context.Context, sessio
 }
 
 func (r *PostgresRepository) UpdateRun(ctx context.Context, params UpdateParams) (Record, error) {
+	ctx, release, err := ownership.Begin(ctx)
+	if err != nil {
+		return Record{}, err
+	}
+	defer release()
+
 	const query = `
 		UPDATE runs
 		SET status = $1,
@@ -196,6 +203,12 @@ func (r *PostgresRepository) UpdateRun(ctx context.Context, params UpdateParams)
 }
 
 func (r *PostgresRepository) UpdateProviderSessionRef(ctx context.Context, params UpdateProviderSessionRefParams) (Record, error) {
+	ctx, release, err := ownership.Begin(ctx)
+	if err != nil {
+		return Record{}, err
+	}
+	defer release()
+
 	const query = `
 		UPDATE runs
 		SET provider_session_ref = $1,

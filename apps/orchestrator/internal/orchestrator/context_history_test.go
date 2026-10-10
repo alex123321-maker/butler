@@ -160,6 +160,51 @@ func TestSummaryCoverageReadFailureBlocksModel(t *testing.T) {
 	}
 }
 
+func TestPreparationRecoveryKeepsVerifiedFullTailAndCurrentInputOnce(t *testing.T) {
+	const key = "web:preparation-recovery"
+	for _, covered := range []bool{false, true} {
+		t.Run(fmt.Sprint(covered), func(t *testing.T) {
+			messages := []transcript.Message{{SessionKey: key, MessageID: "boundary", Sequence: 1, Role: "assistant", Content: "covered text"}}
+			for i := 2; i <= 15; i++ {
+				messages = append(messages, transcript.Message{SessionKey: key, MessageID: fmt.Sprint(i), Sequence: int64(i), Role: "assistant", Content: fmt.Sprintf("complete prior response %d", i)})
+			}
+			messages = append(messages, transcript.Message{SessionKey: key, RunID: "current", MessageID: "input", Sequence: 16, Role: "user", Content: "current input"})
+			snapshot := summary.Snapshot{}
+			if covered {
+				snapshot = summary.Snapshot{SessionKey: key, Summary: "verified old summary", ThroughMessageID: "boundary", ThroughSequence: 1, SourceRevision: 7, FormatVersion: 1}
+			}
+			store := &coveredHistoryStore{memoryTranscriptStore: &memoryTranscriptStore{messages: messages}, revision: 7}
+			service := NewService(nil, nil, nil, store, nil, Config{SummaryReader: coveredSummaryReader{snapshot: snapshot}}, nil)
+			prepared := preparedRun{CurrentRunID: "current", InputItems: []transport.InputItem{{Role: "user", Content: "current input"}}, MemoryBundle: map[string]any{}}
+			if err := service.attachTranscriptContext(context.Background(), key, &prepared); err != nil {
+				t.Fatal(err)
+			}
+			if !prepared.InputAlreadyRecorded || len(prepared.InputItems) != 16 {
+				t.Fatalf("lost history or repeated input: %#v", prepared)
+			}
+			users, assistants := 0, 0
+			for _, item := range prepared.InputItems {
+				if item.Role == "user" && item.Content == "current input" {
+					users++
+				}
+				if item.Role == "assistant" {
+					assistants++
+				}
+			}
+			wantAssistants := 15
+			if covered {
+				wantAssistants = 14
+				if prepared.observabilityHistory["coverage_mode"] != "verified_summary_and_full_tail" {
+					t.Fatal("recovery filtering invalidated legitimate summary coverage")
+				}
+			}
+			if users != 1 || assistants != wantAssistants {
+				t.Fatalf("users=%d assistants=%d", users, assistants)
+			}
+		})
+	}
+}
+
 func TestContextBudgetDropsOptionalMaterialBeforeMandatoryConstraints(t *testing.T) {
 	service := NewService(nil, nil, nil, nil, nil, Config{}, nil)
 	mandatory := transport.InputItem{Role: "system", Content: strings.Repeat("Точное ограничение. ", 100) + "НЕ ОТПРАВЛЯТЬ"}

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -51,6 +52,15 @@ func NewStore(pool *pgxpool.Pool) *Store {
 }
 
 func (s *Store) AppendMessage(ctx context.Context, message Message) (Message, error) {
+	if token, ok := ownership.TokenFromContext(ctx); ok && (token.SessionKey != message.SessionKey || token.RunID != message.RunID) {
+		return Message{}, ownership.ErrStale
+	}
+	ctx, release, fenceErr := ownership.Begin(ctx)
+	if fenceErr != nil {
+		return Message{}, fenceErr
+	}
+	defer release()
+
 	if message.MessageID == "" {
 		message.MessageID = newID("msg")
 	}
@@ -95,6 +105,15 @@ func (s *Store) AppendMessage(ctx context.Context, message Message) (Message, er
 }
 
 func (s *Store) AppendToolCall(ctx context.Context, toolCall ToolCall) (ToolCall, error) {
+	if token, ok := ownership.TokenFromContext(ctx); ok && token.RunID != toolCall.RunID {
+		return ToolCall{}, ownership.ErrStale
+	}
+	ctx, release, fenceErr := ownership.Begin(ctx)
+	if fenceErr != nil {
+		return ToolCall{}, fenceErr
+	}
+	defer release()
+
 	if toolCall.ToolCallID == "" {
 		toolCall.ToolCallID = newID("tool")
 	}

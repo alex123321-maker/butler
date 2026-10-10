@@ -2,6 +2,8 @@ package orchestrator
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -14,6 +16,7 @@ import (
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/transcript"
+	"github.com/butler/butler/internal/ownership"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -21,15 +24,21 @@ func (s *Service) Execute(ctx context.Context, event ingress.InputEvent) (*Execu
 	if err := validateInputEvent(event); err != nil {
 		return nil, err
 	}
-	prepared, err := s.prepareRun(ctx, event)
-	if err != nil {
+	// Identity is needed for durable acceptance; model context is built only
+	// after exclusive session ownership has been obtained.
+	payload := map[string]any{}
+	if err := json.Unmarshal([]byte(event.PayloadJSON), &payload); err != nil {
 		return nil, err
+	}
+	userID := firstString(payload, "user_id", "external_user_id", "author_id")
+	if userID == "" {
+		userID = event.SessionKey
 	}
 
 	if _, _, err := s.sessions.CreateSession(ctx, session.CreateSessionParams{
 		SessionKey:   event.SessionKey,
-		UserID:       prepared.SessionUserID,
-		Channel:      prepared.Channel,
+		UserID:       userID,
+		Channel:      event.Source,
 		MetadataJSON: mustMarshalJSON(map[string]any{"source": event.Source}),
 	}); err != nil {
 		return nil, fmt.Errorf("ensure session: %w", err)
@@ -38,11 +47,10 @@ func (s *Service) Execute(ctx context.Context, event ingress.InputEvent) (*Execu
 	runRecord, err := s.runs.CreateRun(ctx, &sessionv1.CreateRunRequest{
 		SessionKey:    event.SessionKey,
 		InputEvent:    event.ToProto(),
-		AutonomyMode:  commonv1.AutonomyMode_AUTONOMY_MODE_1,
+		AutonomyMode:  s.config.AutonomyMode,
 		ModelProvider: s.config.ProviderName,
 		MetadataJson: mustMarshalJSON(map[string]any{
-			"input_payload": prepared.InputPayload,
-			"memory_bundle": prepared.MemoryBundle,
+			"input_payload": payload,
 		}),
 	})
 	if err != nil {
@@ -50,32 +58,24 @@ func (s *Service) Execute(ctx context.Context, event ingress.InputEvent) (*Execu
 	}
 
 	runLog := logger.WithRunID(s.log, runRecord.GetRunId())
-	if prepared.Task != nil {
-		if err := s.config.Tasks.AttachRun(ctx, prepared.Task.TaskID, prepared.Task.Revision, runRecord.GetRunId(), event.SessionKey); err != nil {
-			return nil, s.failRun(ctx, runRecord, "", runLog, fmt.Errorf("attach task run: %w", err))
-		}
+	if err := s.checkpoint(ctx, runRecord.GetRunId(), "run_created", map[string]any{}); err != nil {
+		return nil, err
 	}
-	if prepared.observabilityMemory != nil {
-		s.emitEvent(runRecord.GetRunId(), event.SessionKey, observability.EventMemoryLoaded, prepared.observabilityMemory)
-	}
-	if prepared.observabilityTools != nil {
-		s.emitEvent(runRecord.GetRunId(), event.SessionKey, observability.EventToolsLoaded, prepared.observabilityTools)
-	}
-	if prepared.observabilityPrompt != nil {
-		s.emitEvent(runRecord.GetRunId(), event.SessionKey, observability.EventPromptAssembled, prepared.observabilityPrompt)
-	}
-
-	return s.executeRun(ctx, runLog, runRecord, event, prepared)
+	return s.executeRun(ctx, runLog, runRecord, event, preparedRun{})
 }
 
 func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord *sessionv1.RunRecord, event ingress.InputEvent, prepared preparedRun) (*ExecutionResult, error) {
 	current := runRecord
 
-	next, err := s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_QUEUED, "", "", "")
-	if err != nil {
-		return nil, s.failRun(ctx, current, "", runLog, fmt.Errorf("queue run: %w", err))
+	var next *sessionv1.RunRecord
+	var err error
+	if current.GetCurrentState() == commonv1.RunState_RUN_STATE_CREATED {
+		next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_QUEUED, "", "", "")
+		if err != nil {
+			return nil, s.failRun(ctx, current, "", runLog, err)
+		}
+		current = next
 	}
-	current = next
 
 	lease, err := s.leases.AcquireLease(ctx, session.AcquireLeaseParams{
 		SessionKey: event.SessionKey,
@@ -84,9 +84,16 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 		TTL:        time.Duration(s.config.LeaseTTL) * time.Second,
 	})
 	if err != nil {
-		return nil, s.failRun(ctx, current, "", runLog, fmt.Errorf("acquire lease: %w", err))
+		if !errors.Is(err, session.ErrLeaseConflict) {
+			return nil, s.failRun(ctx, current, "", runLog, err)
+		}
+		return nil, fmt.Errorf("acquire lease: %w", err)
+	}
+	if durable, ok := s.leases.(interface{ Authority() *ownership.Authority }); ok {
+		ctx = ownership.WithToken(ctx, durable.Authority(), ownership.Token{SessionKey: lease.SessionKey, RunID: lease.RunID, LeaseID: lease.LeaseID, FenceEpoch: lease.FenceEpoch})
 	}
 	runCtx, stopRenewing, renewErrs := s.startLeaseRenewer(ctx, lease, runLog)
+	ctx = runCtx
 	defer func() {
 		stopRenewing()
 		releaseCtx, releaseCancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -95,6 +102,18 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 			runLog.Error("release lease failed", slog.String("lease_id", lease.LeaseID), slog.String("error", releaseErr.Error()))
 		}
 	}()
+	if current.GetCurrentState() == commonv1.RunState_RUN_STATE_ACQUIRED || current.GetCurrentState() == commonv1.RunState_RUN_STATE_PREPARING {
+		recoverer, ok := s.runs.(interface {
+			RecoverPreparation(context.Context, string, string) (*sessionv1.RunRecord, error)
+		})
+		if !ok {
+			return nil, fmt.Errorf("safe checkpoint recovery unavailable")
+		}
+		current, err = recoverer.RecoverPreparation(ctx, current.GetRunId(), lease.LeaseID)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_ACQUIRED, lease.LeaseID, "", "")
 	if err != nil {
@@ -108,6 +127,34 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	}
 	current = next
 
+	prepared, err = s.prepareRun(ctx, event)
+	if err != nil {
+		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
+	}
+	if writer, ok := s.runs.(interface {
+		PersistPreparation(context.Context, string, string) error
+	}); ok {
+		if err = writer.PersistPreparation(ctx, current.GetRunId(), mustMarshalJSON(map[string]any{"input_payload": prepared.InputPayload, "memory_bundle": prepared.MemoryBundle})); err != nil {
+			return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
+		}
+	}
+	if prepared.Task != nil {
+		if err := s.config.Tasks.AttachRun(ctx, prepared.Task.TaskID, prepared.Task.Revision, current.GetRunId(), event.SessionKey); err != nil {
+			return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
+		}
+	}
+	for _, item := range []struct {
+		kind    string
+		payload map[string]any
+	}{{observability.EventMemoryLoaded, prepared.observabilityMemory}, {observability.EventToolsLoaded, prepared.observabilityTools}, {observability.EventPromptAssembled, prepared.observabilityPrompt}} {
+		if item.payload != nil {
+			s.emitEvent(ctx, current.GetRunId(), event.SessionKey, item.kind, item.payload)
+		}
+	}
+	if err := s.checkpoint(ctx, current.GetRunId(), "prepared", prepared); err != nil {
+		return nil, err
+	}
+
 	if statusErr := s.config.Delivery.DeliverStatusEvent(ctx, StatusEvent{
 		RunID:      current.GetRunId(),
 		SessionKey: event.SessionKey,
@@ -116,14 +163,16 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 		runLog.Warn("failed to deliver thinking status", slog.String("error", statusErr.Error()))
 	}
 
-	if _, err := s.transcript.AppendMessage(ctx, transcript.Message{
-		SessionKey:   event.SessionKey,
-		RunID:        current.GetRunId(),
-		Role:         "user",
-		Content:      prepared.UserMessage,
-		MetadataJSON: mustMarshalJSON(map[string]any{"event_id": event.EventID, "source": event.Source}),
-	}); err != nil {
-		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("append user transcript: %w", err))
+	if !prepared.InputAlreadyRecorded {
+		if _, err := s.transcript.AppendMessage(ctx, transcript.Message{
+			SessionKey:   event.SessionKey,
+			RunID:        current.GetRunId(),
+			Role:         "user",
+			Content:      prepared.UserMessage,
+			MetadataJSON: mustMarshalJSON(map[string]any{"event_id": event.EventID, "source": event.Source}),
+		}); err != nil {
+			return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("append user transcript: %w", err))
+		}
 	}
 
 	if err := s.savePreparedWorkingMemory(ctx, current.GetRunId(), event.SessionKey, prepared); err != nil {
@@ -141,6 +190,9 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("mark run model_running: %w", err))
 	}
 	current = next
+	if err := s.checkpoint(ctx, current.GetRunId(), "model_started", prepared); err != nil {
+		return nil, err
+	}
 
 	existingProviderSessionRef, err := transport.ParseProviderSessionRef(current.GetProviderSessionRef())
 	if err != nil {
@@ -169,29 +221,74 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 
 	finalMessage, current, err := s.consumeModelStream(transportCtx, runLog, current, event.SessionKey, lease.LeaseID, stream)
 	if err != nil {
+		if errors.Is(err, ErrApprovalSuspended) {
+			result := &ExecutionResult{RunID: current.GetRunId(), SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "waiting_for_user"}
+			if prepared.Task != nil {
+				result.TaskID = prepared.Task.TaskID
+			}
+			return result, nil
+		}
+		if errors.Is(err, ErrActionOutcomeUnknown) {
+			s.blockTaskRun(ctx, current.GetRunId(), "effect_unknown")
+			return &ExecutionResult{RunID: current.GetRunId(), SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "blocked", ErrorCode: "effect_unknown"}, nil
+		}
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
 	}
 	if renewErr := drainRenewError(renewErrs); renewErr != nil {
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, renewErr)
 	}
+	return s.finalizeExecution(ctx, runLog, current, event, prepared, lease.LeaseID, finalMessage)
+}
+
+func (s *Service) blockTaskRun(ctx context.Context, runID, reason string) {
+	if tasks, ok := s.config.Tasks.(interface {
+		BlockRun(context.Context, string, string) error
+	}); ok {
+		_ = tasks.BlockRun(ctx, runID, reason)
+	}
+}
+
+func (s *Service) finalizeExecution(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, event ingress.InputEvent, prepared preparedRun, leaseID, finalMessage string) (*ExecutionResult, error) {
+	var next *sessionv1.RunRecord
+	var err error
 	if strings.TrimSpace(finalMessage) == "" {
-		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("model run completed without assistant_final event"))
+		return nil, s.failRun(ctx, current, leaseID, runLog, fmt.Errorf("model run completed without assistant_final event"))
 	}
 
-	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_FINALIZING, lease.LeaseID, "", "")
+	if current.GetCurrentState() != commonv1.RunState_RUN_STATE_FINALIZING {
+		next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_FINALIZING, leaseID, "", "")
+		if err != nil {
+			return nil, s.failRun(ctx, current, leaseID, runLog, fmt.Errorf("mark run finalizing: %w", err))
+		}
+		current = next
+	}
+	if err := s.checkpoint(ctx, current.GetRunId(), "finalizing", map[string]any{"final_message": finalMessage}); err != nil {
+		return nil, err
+	}
+
+	history, err := s.transcript.GetTranscript(ctx, event.SessionKey)
 	if err != nil {
-		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("mark run finalizing: %w", err))
+		return nil, err
 	}
-	current = next
-
-	if _, err := s.transcript.AppendMessage(ctx, transcript.Message{
-		SessionKey:   event.SessionKey,
-		RunID:        current.GetRunId(),
-		Role:         "assistant",
-		Content:      finalMessage,
-		MetadataJSON: `{"source":"model"}`,
-	}); err != nil {
-		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("append assistant transcript: %w", err))
+	alreadyFinal := false
+	for _, message := range history.Messages {
+		if message.RunID == current.GetRunId() && message.Role == "assistant" {
+			if message.Content != finalMessage {
+				return nil, fmt.Errorf("final checkpoint conflicts with persisted assistant result")
+			}
+			alreadyFinal = true
+		}
+	}
+	if !alreadyFinal {
+		if _, err := s.transcript.AppendMessage(ctx, transcript.Message{
+			SessionKey:   event.SessionKey,
+			RunID:        current.GetRunId(),
+			Role:         "assistant",
+			Content:      finalMessage,
+			MetadataJSON: `{"source":"model"}`,
+		}); err != nil {
+			return nil, s.failRun(ctx, current, leaseID, runLog, fmt.Errorf("append assistant transcript: %w", err))
+		}
 	}
 	if s.config.Artifacts != nil {
 		if _, saveErr := s.config.Artifacts.SaveAssistantFinal(ctx, current.GetRunId(), event.SessionKey, finalMessage, time.Now().UTC()); saveErr != nil {
@@ -200,10 +297,10 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	}
 
 	if err := s.finalizeWorkingMemory(ctx, event.SessionKey, current.GetRunId(), commonv1.RunState_RUN_STATE_COMPLETED, finalMessage); err != nil {
-		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("finalize working memory: %w", err))
+		return nil, s.failRun(ctx, current, leaseID, runLog, fmt.Errorf("finalize working memory: %w", err))
 	}
 	if err := s.finalizeTransientWorkingState(ctx, event.SessionKey, current.GetRunId(), commonv1.RunState_RUN_STATE_COMPLETED, finalMessage); err != nil {
-		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("finalize transient working memory: %w", err))
+		return nil, s.failRun(ctx, current, leaseID, runLog, fmt.Errorf("finalize transient working memory: %w", err))
 	}
 
 	if s.config.PipelineEnqueuer != nil {
@@ -214,13 +311,13 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 		}
 	}
 
-	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_COMPLETED, lease.LeaseID, "", "")
+	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_COMPLETED, leaseID, "", "")
 	if err != nil {
-		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, fmt.Errorf("mark run completed: %w", err))
+		return nil, s.failRun(ctx, current, leaseID, runLog, fmt.Errorf("mark run completed: %w", err))
 	}
 
 	runLog.Info("run completed", slog.String("session_key", event.SessionKey))
-	s.emitEvent(next.GetRunId(), event.SessionKey, observability.EventRunCompleted, map[string]any{"response_length": len(finalMessage)})
+	s.emitEvent(ctx, next.GetRunId(), event.SessionKey, observability.EventRunCompleted, map[string]any{"response_length": len(finalMessage)})
 	s.scheduleHubCleanup(next.GetRunId())
 
 	result := &ExecutionResult{RunID: next.GetRunId(), SessionKey: event.SessionKey, CurrentState: next.GetCurrentState(), AssistantResponse: finalMessage}
@@ -236,7 +333,18 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 
 	for stream != nil {
 		var nextStream transport.EventStream
-		for transportEvent := range stream {
+	eventLoop:
+		for {
+			var transportEvent transport.TransportEvent
+			select {
+			case <-ctx.Done():
+				return "", current, ctx.Err()
+			case event, ok := <-stream:
+				if !ok {
+					break eventLoop
+				}
+				transportEvent = event
+			}
 			var err error
 			if current, err = s.persistProviderSessionRef(ctx, current, transportEvent.ProviderSessionRef, runLog); err != nil {
 				return "", current, err
@@ -247,7 +355,7 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 					if err := s.config.Delivery.DeliverAssistantDelta(ctx, DeliveryEvent{RunID: current.GetRunId(), SessionKey: sessionKey, Content: transportEvent.AssistantDelta.Content, SequenceNo: transportEvent.AssistantDelta.SequenceNo}); err != nil {
 						return "", current, err
 					}
-					s.emitEvent(current.GetRunId(), sessionKey, observability.EventAssistantDelta, map[string]any{"sequence_no": transportEvent.AssistantDelta.SequenceNo, "content_length": len(transportEvent.AssistantDelta.Content)})
+					s.emitEvent(ctx, current.GetRunId(), sessionKey, observability.EventAssistantDelta, map[string]any{"sequence_no": transportEvent.AssistantDelta.SequenceNo, "content_length": len(transportEvent.AssistantDelta.Content)})
 				}
 			case transport.EventTypeAssistantFinal:
 				if transportEvent.AssistantFinal != nil {
@@ -255,7 +363,7 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 					if err := s.config.Delivery.DeliverAssistantFinal(ctx, DeliveryEvent{RunID: current.GetRunId(), SessionKey: sessionKey, Content: finalMessage, Final: true}); err != nil {
 						return "", current, err
 					}
-					s.emitEvent(current.GetRunId(), sessionKey, observability.EventAssistantFinal, map[string]any{"content_length": len(finalMessage), "finish_reason": transportEvent.AssistantFinal.FinishReason})
+					s.emitEvent(ctx, current.GetRunId(), sessionKey, observability.EventAssistantFinal, map[string]any{"content_length": len(finalMessage), "finish_reason": transportEvent.AssistantFinal.FinishReason})
 				}
 			case transport.EventTypeToolCallRequested:
 				resumed, updated, err := s.handleToolCall(ctx, runLog, current, leaseID, transportEvent.ToolCall)
@@ -264,7 +372,7 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 				}
 				current = updated
 				nextStream = resumed
-				break
+				break eventLoop
 			case transport.EventTypeToolCallBatchRequested:
 				resumedFinal, updated, err := s.handleToolBatch(ctx, runLog, current, sessionKey, leaseID, transportEvent.ToolCallBatch)
 				if err != nil {
@@ -287,7 +395,7 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 
 func (s *Service) failRun(ctx context.Context, current *sessionv1.RunRecord, leaseID string, runLog *slog.Logger, err error) error {
 	runLog.Error("run execution failed", slog.String("error", err.Error()))
-	s.emitEvent(current.GetRunId(), current.GetSessionKey(), observability.EventRunError, map[string]any{
+	s.emitEvent(ctx, current.GetRunId(), current.GetSessionKey(), observability.EventRunError, map[string]any{
 		"error_message": truncateForObservability(err.Error(), 500),
 		"error_type":    classifyExecutionError(err),
 	})

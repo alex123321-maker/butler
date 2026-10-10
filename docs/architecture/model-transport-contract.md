@@ -183,32 +183,44 @@ Orchestrator взаимодействует с Model Transport Layer через 
 Для OpenAI API baseline V1 transport backend должен предпочитать Realtime WebSocket (`wss`) и переходить на HTTP SSE fallback, если WebSocket backend недоступен на раннем этапе запуска, не меняя logical contract, видимый Orchestrator.
 Для OpenAI Codex и GitHub Copilot допускается HTTP streaming backend, если provider не поддерживает совместимый WebSocket path.
 
-### 7.1 Opt-in Antigravity CLI adapter
+### 7.1 Native Antigravity subscription adapter
 
-`antigravity` uses the official Google Antigravity CLI with a personal Google
-account/Google AI Pro subscription. This path is separate from Gemini API billing
-and from the SDK's API-key/Vertex quickstart. Login is performed directly in the
-CLI's isolated terminal/profile, outside Butler model context.
+`antigravity` uses Go HTTP/SSE directly against production AICode v1
+`https://aicode.googleapis.com/v1:streamGenerateContent?alt=sse`. Requests and SSE
+responses are flat. Subscription routing sends `aicode.experience` instead of the
+mutually exclusive `model` field. No Cloud Code project/request wrapper or
+v1main-only session/entitlement fields are sent. Output allowance is 8192 tokens.
+This is an experimental opt-in integration; Google's Antigravity FAQ declares
+third-party consumer integration unsupported. It is not official product support.
+The default model is `gemini-3.8-flash-tiered` (Gemini 3.8 Flash). CLI inference is
+removed; optional initial interactive sign-in stays outside Butler context.
+Control-plane `providerauth.Manager` imports a private operator stream into the
+encrypted PostgreSQL SecretStore and owns refresh. Project discovery is removed;
+legacy imported project values are retained only for backward compatibility and
+are never returned to transport or used for inference. Transport
+receives only typed short-lived auth, never refresh tokens, credential files or CLI
+execution. No automatic API billing, credit overage or alternate endpoint exists.
 
-The CLI is constrained to a custom `butler-model` agent with an empty executable
-toolkit and one structured decision per invocation. The adapter requires an
-explicit `init.tools=[]` plus the expected agent; native tool/delegation steps,
-missing initialization, unsafe profile configuration and unexpected protocol
-events fail closed. Tool calls are **schema-based proposals**, normalized to the
-existing `tool_call_requested` contract; only Orchestrator/Tool Broker execute
-them. No nested CLI tool loop or Broker-bypassing execution is supported.
+Only supplied Butler functions are advertised. Complete native function proposals
+must match the exact per-run alias and schema before becoming `tool_call_requested`.
+No automatic provider tool execution is supported. Butler executes through Broker
+and submits a correlated native functionResponse; transport replays original model
+parts and opaque thought signatures without exposing thought text/signatures to
+assistant output. Foreign/lost refs, duplicate results, ambiguous calls, unsupported
+parts and incomplete streams fail closed. Provider context is transient; Butler
+replays its durable context after restart instead of trusting provider references.
 
-Initial capabilities: single tool proposals, cancellation, usage metadata;
-no assistant text deltas, batch calls, or provider stateful resume. Butler replays
-the assembled messages and correlated tool results for each turn. The CLI receives
-an environment allowlist and a fresh owned workspace, and no raw service secrets.
-Its credentials remain opaque to Butler. Raw CLI diagnostics/errors are never
-copied into model-visible transport events.
-
-See [setup, primary references and validation status](../../deploy/antigravity/README.md).
-Unit tests prove the normalization/security contract using a fake process. A real
-signed-in text and tool-proposal roundtrip is still required before declaring the
-subscription provider operational or activating it on the lab.
+Capabilities: text streaming, one function proposal per turn, cancellation, usage;
+no batch calls or provider stateful restart. All HTTP redirects are rejected and
+errors are bounded/masked. Subscription model availability is distinct from stored
+credentials. A real text/proposal/continuation smoke is required before activation;
+operator AICode unary and SSE text probes passed through the configured lab proxy.
+These probes do not establish that Go function/result continuation passed; keep
+activation gated on that separate smoke. Earlier Cloud Code 429 responses do not
+prove subscription quota exhaustion.
+Production AICode 429 with bounded, recognized `HIGH_DEMAND` reports temporary
+model capacity; no raw error metadata or automatic retry crosses this boundary.
+See [protocol, operator import and validation status](../../deploy/antigravity/README.md).
 
 ---
 

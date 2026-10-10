@@ -126,6 +126,6 @@ func (s *Service) transition(ctx context.Context, runID string, from, to commonv
 			s.log.Warn("failed to log state transition", slog.String("run_id", runID), slog.String("error", logErr.Error()))
 		}
 	}
-	s.emitEvent(runID, resp.GetSessionKey(), observability.EventStateTransition, map[string]any{"from_state": fromStr, "to_state": toStr})
+	s.emitEvent(ctx, runID, resp.GetSessionKey(), observability.EventStateTransition, map[string]any{"from_state": fromStr, "to_state": toStr})
 	return resp, nil
 }

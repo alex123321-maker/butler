@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -37,6 +38,12 @@ func NewPostgresTransitionRepository(pool *pgxpool.Pool) *PostgresTransitionRepo
 
 // InsertTransition inserts a state transition record.
 func (r *PostgresTransitionRepository) InsertTransition(ctx context.Context, t StateTransition) error {
+	ctx, release, err := ownership.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
 	const query = `
 		INSERT INTO run_state_transitions (run_id, from_state, to_state, triggered_by, metadata_json, transitioned_at)
 		VALUES ($1, $2, $3, $4, $5::jsonb, $6)

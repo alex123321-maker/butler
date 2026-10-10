@@ -1,5 +1,12 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+Credential release now follows the
+[exact action authorization contract](action-authorization-contract.md).
+One-time approval binds canonical args, concrete resource, alias/field and
+credential metadata version; it never weakens global alias policy. Broker
+revalidates current owner/task/lease and durable decision before each release
+and dispatch, then masks reflected resolved values at the model result boundary.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Security and Tooling
@@ -563,21 +570,37 @@ owner, observation and fixed origin are rechecked before injection. Auth state
 is never exported into ordinary browser artifacts; reflected installed values
 are masked in visible observations. Closing, expiry or helper loss destroys it.
 
-### Antigravity CLI credentials
+### Antigravity provider credentials
 
-The opt-in Antigravity provider delegates personal Google sign-in to the official
-CLI in its own private profile. Butler does not import/extract token files or use
-the Google account as a tool credential alias. CLI auth codes are entered directly
-in the interactive SSH terminal. The lab profile is outside source snapshots,
-owned by the service UID `10001`, and mounted only into the model transport process.
-Butler reads only the non-secret isolation policy to verify a model-only toolkit;
-raw diagnostics and credential-bearing provider errors are never propagated to
-transcript, prompt, or transport error details. Missing auth produces a fixed
-safe error directing the operator to CLI sign-in.
+Antigravity OAuth is control-plane state in the encrypted PostgreSQL SecretStore,
+separate from tool credential aliases. A private operator stdin import supplies
+access/refresh token, verified OAuth application ID, application credential,
+expiry and optional subscription project. Unknown/duplicate fields are rejected;
+no id token, account email or arbitrary endpoint is stored. It is never a model
+argument or Web UI/chat input. Optional official CLI initial sign-in does not grant
+runtime file access: inference transport receives only a typed short-lived token
+and expiry from providerauth.Manager, and launches no subprocess. The optional
+legacy project field remains encrypted for import compatibility but is neither
+discovered nor returned to the transport or included in AICode inference.
 
-The official CLI owns credential encryption/keyring behavior; this adapter does
-not claim PostgreSQL-backed OAuth storage or a Butler Web UI OAuth flow. Subscription
-access must be validated with a real login and model turn before activation.
+Refresh uses the fixed Google OAuth endpoint, bounded masked responses and no HTTP
+redirects. AICode inference uses its fixed production v1 endpoint and the versioned
+Antigravity User-Agent. Rotated tokens are encrypted before inference. Provider auth
+always uses a strict encrypted store, including deployments with a legacy
+plaintext setting fallback. Missing encryption prevents import/refresh persistence.
+The settings UI shows only connection/expiry metadata and supports disconnect;
+connected credentials do not prove subscription quota. No automatic paid-credit,
+API billing, account rotation or alternate endpoint fallback is implemented.
+See the [native Antigravity operator guide](../../deploy/antigravity/README.md).
+
+An optional lab network proxy keeps its subscription and full configuration in a
+private operator directory outside synced source and model workspaces. Only the
+proxy container reads the selected config file; the Orchestrator receives a
+public internal `HTTPS_PROXY` endpoint, without proxy credentials or subscription
+material. Its file is mode `0600`, readable by the proxy service UID. It does not
+use model-provided tool arguments or provide arbitrary secret access. The
+[proxy operator guide](../../deploy/antigravity/proxy/README.md) describes the
+isolated Compose service and loopback-only published port.
 
 Current Butler baseline now applies memory-focused sanitization before memory extraction prompts and before durable memory persistence for memory-derived records.
 

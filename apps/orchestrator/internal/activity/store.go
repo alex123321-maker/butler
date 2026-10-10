@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -72,6 +73,12 @@ func NewPostgresRepository(pool *pgxpool.Pool) *PostgresRepository {
 }
 
 func (r *PostgresRepository) CreateActivity(ctx context.Context, params CreateParams) (Record, error) {
+	ctx, release, err := ownership.Begin(ctx)
+	if err != nil {
+		return Record{}, err
+	}
+	defer release()
+
 	if params.CreatedAt.IsZero() {
 		params.CreatedAt = time.Now().UTC()
 	}
@@ -91,7 +98,7 @@ func (r *PostgresRepository) CreateActivity(ctx context.Context, params CreatePa
 		RETURNING activity_id, run_id, session_key, activity_type, title, summary, details_json::text, actor_type, severity, created_at
 	`
 	rec := Record{}
-	err := r.pool.QueryRow(ctx, query,
+	err = r.pool.QueryRow(ctx, query,
 		params.RunID,
 		params.SessionKey,
 		params.ActivityType,

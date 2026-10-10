@@ -7,6 +7,9 @@ option go_package = "github.com/butler/butler/internal/gen/toolbroker/v1;toolbro
 import "toolbroker/v1/types.proto";
 
 service ToolBrokerService {
+	// These RPCs use complete actions and trusted run context, never model policy.
+	rpc PrepareToolCall(PrepareToolCallRequest) returns (PrepareToolCallResponse);
+	rpc AuthorizeToolCall(AuthorizeToolCallRequest) returns (AuthorizeToolCallResponse);
   rpc ValidateToolCall(ValidateToolCallRequest) returns (ValidateToolCallResponse);
   rpc ExecuteToolCall(ExecuteToolCallRequest) returns (ExecuteToolCallResponse);
   rpc ListTools(ListToolsRequest) returns (ListToolsResponse);
@@ -25,7 +28,26 @@ message ValidateToolCallResponse {
 
 message ExecuteToolCallRequest {
   ToolCall tool_call = 1;
+  string authorization_id = 2;
 }
+
+message PrepareToolCallRequest { ToolCall tool_call = 1; }
+message PreparedAction {
+ string action_id = 1;
+ string action_hash = 2;
+ string binding_json = 3;
+ bool requires_approval = 4;
+ string summary = 5;
+ string expires_at = 6;
+}
+message PrepareToolCallResponse { PreparedAction action = 1; ToolError error = 2; }
+message AuthorizeToolCallRequest {
+ ToolCall tool_call = 1;
+ string action_id = 2;
+ string approval_id = 3;
+ string mandate_id = 4;
+}
+message AuthorizeToolCallResponse { string authorization_id = 1; ToolError error = 2; }
 
 message ExecuteToolCallResponse {
   ToolResult result = 1;

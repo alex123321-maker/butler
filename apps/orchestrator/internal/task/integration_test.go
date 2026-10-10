@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -176,12 +177,25 @@ func TestLegacyTaskMigrationIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	rollbackDir := t.TempDir()
-	down, err := os.ReadFile(filepath.Join(dir, "029_durable_tasks.down.sql"))
+	entries, err := os.ReadDir(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = os.WriteFile(filepath.Join(rollbackDir, "029_durable_tasks.down.sql"), down, 0600); err != nil {
-		t.Fatal(err)
+	// Return the exclusive fixture database to the pre-task version in reverse
+	// migration order. Later authority/ingress tables reference tasks; rolling
+	// back only 029 would violate those dependencies.
+	for _, entry := range entries {
+		name := entry.Name()
+		if entry.IsDir() || name < "029_" || !strings.HasSuffix(name, ".down.sql") {
+			continue
+		}
+		down, readErr := os.ReadFile(filepath.Join(dir, name))
+		if readErr != nil {
+			t.Fatal(readErr)
+		}
+		if err = os.WriteFile(filepath.Join(rollbackDir, name), down, 0600); err != nil {
+			t.Fatal(err)
+		}
 	}
 	if err = db.RunDownMigrations(ctx, rollbackDir); err != nil {
 		t.Fatal(err)

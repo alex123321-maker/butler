@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/butler/butler/internal/ownership"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -139,7 +140,8 @@ type Repository interface {
 }
 
 type PostgresRepository struct {
-	pool *pgxpool.Pool
+	pool        *pgxpool.Pool
+	checkpoints CheckpointHooks
 }
 
 func NewPostgresRepository(pool *pgxpool.Pool) *PostgresRepository {
@@ -147,6 +149,11 @@ func NewPostgresRepository(pool *pgxpool.Pool) *PostgresRepository {
 }
 
 func (r *PostgresRepository) CreateApproval(ctx context.Context, params CreateParams) (Record, error) {
+	ctx, release, guardErr := ownership.Begin(ctx)
+	if guardErr != nil {
+		return Record{}, guardErr
+	}
+	defer release()
 	if params.RequestedAt.IsZero() {
 		params.RequestedAt = time.Now().UTC()
 	}
@@ -180,7 +187,7 @@ func (r *PostgresRepository) CreateApproval(ctx context.Context, params CreatePa
 			args_json::text, payload_json::text, risk_level, summary, details_json::text, requested_at, resolved_at, resolved_by, resolution_reason, expires_at, updated_at
 	`
 
-	record, err := scanRecord(r.pool.QueryRow(ctx, query,
+	record, err := scanRecord(r.db(ctx).QueryRow(ctx, query,
 		params.ApprovalID,
 		params.RunID,
 		params.SessionKey,
@@ -237,7 +244,7 @@ func (r *PostgresRepository) GetApprovalByID(ctx context.Context, approvalID str
 		FROM approvals
 		WHERE approval_id = $1
 	`
-	rec, err := scanRecord(r.pool.QueryRow(ctx, query, approvalID))
+	rec, err := scanRecord(r.db(ctx).QueryRow(ctx, query, approvalID))
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return Record{}, ErrApprovalNotFound
@@ -465,7 +472,7 @@ func (r *PostgresRepository) ResolveApproval(ctx context.Context, params Resolve
 		RETURNING approval_id, run_id, session_key, tool_call_id, approval_type, status, requested_via, COALESCE(resolved_via, ''), tool_name,
 			args_json::text, payload_json::text, risk_level, summary, details_json::text, requested_at, resolved_at, resolved_by, resolution_reason, expires_at, updated_at
 	`
-	rec, err := scanRecord(r.pool.QueryRow(ctx, query,
+	rec, err := scanRecord(r.db(ctx).QueryRow(ctx, query,
 		params.ApprovalID,
 		params.ExpectedStatus,
 		params.Status,
@@ -494,6 +501,11 @@ func (r *PostgresRepository) ResolveApproval(ctx context.Context, params Resolve
 }
 
 func (r *PostgresRepository) InsertEvent(ctx context.Context, event Event) error {
+	ctx, release, guardErr := ownership.Begin(ctx)
+	if guardErr != nil {
+		return guardErr
+	}
+	defer release()
 	if event.MetadataJSON == "" {
 		event.MetadataJSON = "{}"
 	}
@@ -506,7 +518,7 @@ func (r *PostgresRepository) InsertEvent(ctx context.Context, event Event) error
 			actor_type, actor_id, reason, metadata_json, created_at
 		) VALUES ($1, $2, $3, $4, NULLIF($5, ''), NULLIF($6, ''), $7, $8, $9, $10::jsonb, $11)
 	`
-	if _, err := r.pool.Exec(ctx, query,
+	if _, err := r.db(ctx).Exec(ctx, query,
 		event.ApprovalID,
 		event.RunID,
 		event.SessionKey,

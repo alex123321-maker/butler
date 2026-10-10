@@ -103,6 +103,21 @@ Then add subsystem specs as needed:
 Use `scripts/dev/lab.ps1` with the configured SSH alias `laba` to synchronize a
 source snapshot, run Go/Chromium checks and deploy Compose on `/srv/storage/butler`.
 `Integration` uses a separate test database; `Migrations` verifies task and summary
-upgrade/rollback on exclusive disposable databases. `Race` runs the race detector;
+upgrade/rollback on exclusive disposable databases. `Race` uses the Debian Go
+image with its installed C compiler and runs as the workspace user; it does not
+install compiler packages on each invocation. Go caches remain on the lab storage
+disk. `Race` runs the race detector;
 `Web` runs lint, functional fixtures and a live UI smoke. Keep provider sign-in
 interactive and private; see `deploy/antigravity/README.md` for the opt-in adapter.
+An optional isolated lab HTTPS proxy is described in
+`deploy/antigravity/proxy/README.md`. Its subscription and configuration stay in a
+private operator directory outside source snapshots; connectivity is verified
+before recreating the Orchestrator with that overlay.
+
+Lab `Up` provisions distinct mode-0600 action-authority and owner-control files,
+readable by service UID `10001`. Web owner decisions use the configured
+`BUTLER_OWNER_CONTROL_OWNER_ID` (lab default `owner`) and the private owner token;
+extension and service credentials do not provide owner proof. Keep token values
+out of chat/logs and provide them only through the owner's local terminal/UI.
+Migration validation also covers durable ingress/approval 032/033 up/down/up in
+a fresh dedicated database, without deleting historical state.

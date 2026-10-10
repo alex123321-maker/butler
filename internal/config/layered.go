@@ -39,6 +39,11 @@ func loadOrchestratorLayered(get envGetter, settings []Setting) (OrchestratorCon
 	cfg := OrchestratorConfig{}
 	resolver := NewLayeredResolver(get, settings)
 	snapshot, err := resolver.Resolve(layeredOrchestratorSpecs(&cfg))
+	// Owner authority is provisioned by the operator and cannot be reassigned
+	// through the unauthenticated settings surface or a database override.
+	cfg.OwnerControlToken, _ = get("BUTLER_OWNER_CONTROL_TOKEN")
+	cfg.OwnerControlTokenFile, _ = get("BUTLER_OWNER_CONTROL_TOKEN_FILE")
+	cfg.OwnerControlOwnerID, _ = get("BUTLER_OWNER_CONTROL_OWNER_ID")
 	if conditionalErr := validateOrchestratorConditionalConfig(cfg); conditionalErr != nil {
 		if err != nil {
 			return cfg, snapshot, fmt.Errorf("%v; %v", err, conditionalErr)
@@ -52,9 +57,6 @@ func (r LayeredResolver) Resolve(specs []fieldSpec) (Snapshot, error) {
 	return loadSpecsWithResolver(specs, func(spec fieldSpec) (string, string, bool) {
 		if value, ok := lookupNonEmptyEnv(r.env, spec.key); ok {
 			return value, ConfigSourceEnv, true
-		}
-		if spec.key == "BUTLER_ANTIGRAVITY_BINARY_PATH" || spec.key == "BUTLER_ANTIGRAVITY_PROFILE_DIR" {
-			return "", "", false // Executable/profile boundaries are operator environment only.
 		}
 		setting, ok := r.settings[spec.key]
 		if !ok {
@@ -150,11 +152,12 @@ func layeredOrchestratorSpecs(cfg *OrchestratorConfig) []fieldSpec {
 		fieldSpec{key: "BUTLER_OPENAI_CODEX_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-5.1-codex", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.OpenAICodexModel = v }},
 		fieldSpec{key: "BUTLER_OPENAI_CODEX_BASE_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "https://chatgpt.com/backend-api", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.OpenAICodexBaseURL = v }},
 		fieldSpec{key: "BUTLER_GITHUB_COPILOT_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-4o", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.GitHubCopilotModel = v }},
-		fieldSpec{key: "BUTLER_ANTIGRAVITY_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gemini-3.1-pro-high", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityModel = v }},
-		fieldSpec{key: "BUTLER_ANTIGRAVITY_BINARY_PATH", component: "orchestrator", typeName: "string", required: false, defaultValue: "/opt/antigravity/agy", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityBinaryPath = v }},
-		fieldSpec{key: "BUTLER_ANTIGRAVITY_PROFILE_DIR", component: "orchestrator", typeName: "string", required: false, defaultValue: "/home/butler", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityProfileDir = v }},
+		fieldSpec{key: "BUTLER_ANTIGRAVITY_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gemini-3.8-flash-tiered", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityModel = v }},
 		fieldSpec{key: "BUTLER_OPENAI_TIMEOUT_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "60", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.OpenAITimeoutSeconds = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_TOOL_BROKER_ADDR", component: "orchestrator", typeName: "string", required: false, defaultValue: "127.0.0.1:10090", requiresRestart: true, validate: validateListenAddr, assign: func(v string) { cfg.ToolBrokerAddr = v }},
+		fieldSpec{key: "BUTLER_AUTONOMY_MODE", component: "orchestrator", typeName: "string", defaultValue: "mode_1", allowedValues: []string{"mode_0", "mode_1", "mode_2", "mode_3"}, requiresRestart: true, assign: func(v string) { cfg.AutonomyMode = v }},
+		fieldSpec{key: "BUTLER_ACTION_MANDATE_ID", component: "orchestrator", typeName: "string", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ActionMandateID = strings.TrimSpace(v) }},
+		fieldSpec{key: "BUTLER_ACTION_AUTHORITY_TOKEN_FILE", component: "orchestrator", typeName: "string", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ActionAuthorityTokenFile = strings.TrimSpace(v) }},
 		fieldSpec{key: "BUTLER_TELEGRAM_BOT_TOKEN", component: "orchestrator", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: func(v string) { cfg.TelegramBotToken = v }},
 		fieldSpec{key: "BUTLER_TELEGRAM_ALLOWED_CHAT_IDS", component: "orchestrator", typeName: "csv", required: false, defaultValue: "", requiresRestart: true, validate: validateOptionalChatIDList, assign: func(v string) { cfg.TelegramAllowedChatIDs = parseCSV(v) }},
 		fieldSpec{key: "BUTLER_TELEGRAM_BASE_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "https://api.telegram.org", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.TelegramBaseURL = v }},

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -15,6 +16,7 @@ import (
 	artifacts "github.com/butler/butler/apps/orchestrator/internal/artifacts"
 	telegramadapter "github.com/butler/butler/apps/orchestrator/internal/channel/telegram"
 	deliveryevents "github.com/butler/butler/apps/orchestrator/internal/deliveryevents"
+	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
 	promptmgmt "github.com/butler/butler/apps/orchestrator/internal/prompt"
@@ -23,6 +25,7 @@ import (
 	singletab "github.com/butler/butler/apps/orchestrator/internal/singletab"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
+	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/config"
 	orchestratorv1 "github.com/butler/butler/internal/gen/orchestrator/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
@@ -81,7 +84,14 @@ func New(ctx context.Context) (*App, error) {
 	}
 	log.Info("loaded layered orchestrator config", slog.String("config_summary", configSummary(snapshot)))
 	hotConfig := config.NewHotConfig(snapshot)
-	authManager := providerauth.NewManager(settingsStore)
+	ownerAuth, err := ownerControlAuth(cfg)
+	if err != nil {
+		postgres.Close()
+		return nil, err
+	}
+	// Provider OAuth credentials always require encrypted persistence, including
+	// installations that permit plaintext storage for unrelated legacy settings.
+	authManager := providerauth.NewManager(config.NewPostgresSettingsStore(postgres.Pool()))
 
 	redis, err := redisstore.Open(ctx, redisstore.ConfigFromShared(cfg.Redis), logger.WithComponent(log, "redis"))
 	if err != nil {
@@ -98,19 +108,17 @@ func New(ctx context.Context) (*App, error) {
 
 	providerBuilder := providerfactory.New(authManager, log)
 	providerResult, err := providerBuilder.Build(ctx, providerfactory.BuildConfig{
-		ActiveProvider:        cfg.ModelProvider,
-		OpenAIAPIKey:          cfg.OpenAIAPIKey,
-		OpenAIModel:           cfg.OpenAIModel,
-		OpenAIBaseURL:         cfg.OpenAIBaseURL,
-		OpenAIRealtimeURL:     cfg.OpenAIRealtimeURL,
-		OpenAITransportMode:   cfg.OpenAITransportMode,
-		OpenAICodexModel:      cfg.OpenAICodexModel,
-		OpenAICodexBaseURL:    cfg.OpenAICodexBaseURL,
-		GitHubCopilotModel:    cfg.GitHubCopilotModel,
-		AntigravityModel:      cfg.AntigravityModel,
-		AntigravityBinaryPath: cfg.AntigravityBinaryPath,
-		AntigravityProfileDir: cfg.AntigravityProfileDir,
-		Timeout:               time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
+		ActiveProvider:      cfg.ModelProvider,
+		OpenAIAPIKey:        cfg.OpenAIAPIKey,
+		OpenAIModel:         cfg.OpenAIModel,
+		OpenAIBaseURL:       cfg.OpenAIBaseURL,
+		OpenAIRealtimeURL:   cfg.OpenAIRealtimeURL,
+		OpenAITransportMode: cfg.OpenAITransportMode,
+		OpenAICodexModel:    cfg.OpenAICodexModel,
+		OpenAICodexBaseURL:  cfg.OpenAICodexBaseURL,
+		GitHubCopilotModel:  cfg.GitHubCopilotModel,
+		AntigravityModel:    cfg.AntigravityModel,
+		Timeout:             time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
 	})
 	if err != nil {
 		redis.Close()
@@ -121,7 +129,7 @@ func New(ctx context.Context) (*App, error) {
 	taskStore := task.NewStore(postgres.Pool())
 	runRepo := runservice.NewPostgresRepository(postgres.Pool())
 	runManager := runservice.NewService(runRepo, logger.WithComponent(log, "run-service"))
-	toolBrokerClient, err := tools.Dial(cfg.ToolBrokerAddr)
+	toolBrokerClient, err := tools.DialWithTokenFile(cfg.ToolBrokerAddr, cfg.ActionAuthorityTokenFile)
 	if err != nil {
 		redis.Close()
 		postgres.Close()
@@ -164,7 +172,9 @@ func New(ctx context.Context) (*App, error) {
 	singleTabService.SetDeliverySink(delivery)
 
 	sessionRepo := session.NewPostgresRepository(postgres.Pool())
-	sessionLeaseManager := session.NewRedisLeaseManager(redis.Client(), logger.WithComponent(log, "session-lease-store"))
+	sessionLeaseManager := session.NewPostgresLeaseManager(postgres.Pool())
+	inputStore := durableinput.NewStore(postgres.Pool())
+	approvalRepo.SetCheckpointHooks(inputStore)
 	transcriptStore := transcript.NewStore(postgres.Pool())
 	summaryStore := summary.NewStore(postgres.Pool())
 	pipelineQueue := pipeline.NewQueue(redis.Client())
@@ -190,6 +200,10 @@ func New(ctx context.Context) (*App, error) {
 		transcriptStore,
 		providerResult.Provider,
 		flow.Config{
+			AutonomyMode:        autonomyMode(cfg.AutonomyMode),
+			ActionAuthorizer:    toolBrokerClient,
+			ActionMandateID:     cfg.ActionMandateID,
+			Checkpoints:         inputStore,
 			Tasks:               taskStore,
 			ProviderName:        providerResult.ProviderName,
 			ModelName:           providerResult.ModelName,
@@ -223,45 +237,63 @@ func New(ctx context.Context) (*App, error) {
 		},
 		logger.WithComponent(log, "executor"),
 	)
+	inputWorker := durableinput.NewService(inputStore, sessionRepo, executor, runManager, logger.WithComponent(log, "durable-input"))
+	inputWorker.SetMaintenance(approvalService.ExpireInvalidPending)
 	if telegram != nil {
-		telegram.SetExecutor(executor)
+		telegram.SetExecutor(inputWorker)
 		telegram.SetApprovalService(approvalService)
 		telegram.SetSingleTabSelector(singleTabService)
 		telegram.SetAuthManager(authManager)
 	}
 
-	apiServer := apiservice.NewServer(executor, logger.WithComponent(log, "api"))
+	var actionAuthorityHandler http.Handler
+	if cfg.ActionAuthorityTokenFile != "" {
+		token, readErr := actionauth.ReadServiceToken(cfg.ActionAuthorityTokenFile)
+		if readErr != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, readErr
+		}
+		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID})
+	} else {
+		log.Warn("private action authority unavailable; Tool Broker will deny execution")
+	}
+	apiServer := apiservice.NewServer(inputWorker, logger.WithComponent(log, "api"))
 	httpServer := newHTTPServer(httpServerDeps{
-		cfg:                cfg,
-		log:                log,
-		settingsStore:      settingsStore,
-		hotConfig:          hotConfig,
-		postgres:           postgres,
-		metrics:            m,
-		health:             h,
-		toolBrokerClient:   toolBrokerClient,
-		authManager:        authManager,
-		providerResult:     providerResult,
-		executor:           executor,
-		sessionRepo:        sessionRepo,
-		runRepo:            runRepo,
-		taskStore:          taskStore,
-		transcriptStore:    transcriptStore,
-		transitionRepo:     transitionRepo,
-		eventHub:           eventHub,
-		approvalRepo:       approvalRepo,
-		approvalService:    approvalService,
-		singleTabService:   singleTabService,
-		artifactsRepo:      artifactsRepo,
-		artifactsService:   artifactsService,
-		activityRepo:       activityRepo,
-		deliveryEventsRepo: deliveryEventsRepo,
-		pipelineQueue:      pipelineQueue,
-		pipelineWorker:     pipelineWorker,
-		embeddingProvider:  embeddingProvider,
-		profileStore:       profileStore,
-		episodicStore:      episodicStore,
-		chunkStore:         chunkStore,
+		cfg:                    cfg,
+		actionAuthorityHandler: actionAuthorityHandler,
+		log:                    log,
+		settingsStore:          settingsStore,
+		hotConfig:              hotConfig,
+		postgres:               postgres,
+		metrics:                m,
+		health:                 h,
+		toolBrokerClient:       toolBrokerClient,
+		authManager:            authManager,
+		providerResult:         providerResult,
+		executor:               executor,
+		inputWorker:            inputWorker,
+		inputStore:             inputStore,
+		ownerAuth:              ownerAuth,
+		sessionRepo:            sessionRepo,
+		runRepo:                runRepo,
+		taskStore:              taskStore,
+		transcriptStore:        transcriptStore,
+		transitionRepo:         transitionRepo,
+		eventHub:               eventHub,
+		approvalRepo:           approvalRepo,
+		approvalService:        approvalService,
+		singleTabService:       singleTabService,
+		artifactsRepo:          artifactsRepo,
+		artifactsService:       artifactsService,
+		activityRepo:           activityRepo,
+		deliveryEventsRepo:     deliveryEventsRepo,
+		pipelineQueue:          pipelineQueue,
+		pipelineWorker:         pipelineWorker,
+		embeddingProvider:      embeddingProvider,
+		profileStore:           profileStore,
+		episodicStore:          episodicStore,
+		chunkStore:             chunkStore,
 	})
 
 	grpcListener, err := net.Listen("tcp", cfg.Shared.GRPCAddr)
@@ -297,6 +329,7 @@ func New(ctx context.Context) (*App, error) {
 		telegram:       telegram,
 		toolBroker:     toolBrokerClient,
 		pipelineWorker: pipelineWorker,
+		inputWorker:    inputWorker,
 	}, nil
 }
 

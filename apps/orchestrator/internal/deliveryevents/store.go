@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -70,6 +71,12 @@ func NewPostgresRepository(pool *pgxpool.Pool) *PostgresRepository {
 }
 
 func (r *PostgresRepository) CreateEvent(ctx context.Context, params CreateParams) (Record, error) {
+	ctx, release, err := ownership.Begin(ctx)
+	if err != nil {
+		return Record{}, err
+	}
+	defer release()
+
 	if params.CreatedAt.IsZero() {
 		params.CreatedAt = time.Now().UTC()
 	}
@@ -83,7 +90,7 @@ func (r *PostgresRepository) CreateEvent(ctx context.Context, params CreateParam
 		RETURNING event_id, run_id, session_key, channel, delivery_type, state, error_message, details_json::text, created_at
 	`
 	rec := Record{}
-	err := r.pool.QueryRow(ctx, query,
+	err = r.pool.QueryRow(ctx, query,
 		params.RunID,
 		params.SessionKey,
 		params.Channel,

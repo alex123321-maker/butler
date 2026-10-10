@@ -4,6 +4,7 @@ export interface ApiRequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   query?: Record<string, QueryValue>
   body?: unknown
+  headers?: Record<string, string>
 }
 
 const buildQuery = (query?: Record<string, QueryValue>): string => {
@@ -34,6 +35,7 @@ export const apiRequest = async <T>(path: string, options: ApiRequestOptions = {
     body: options.body,
     headers: {
       'Content-Type': 'application/json',
+      ...options.headers,
     },
   })
 }

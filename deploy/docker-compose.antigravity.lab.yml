@@ -1,12 +1,6 @@
-# Optional overlay after interactive login and the real model-only smoke passes.
-# CLI 1.3.3 musl build matches the existing Alpine orchestrator image.
+# Opt in only after private credential import and native text/tool smoke pass.
 services:
   orchestrator:
     environment:
       BUTLER_MODEL_PROVIDER: antigravity
-      BUTLER_ANTIGRAVITY_MODEL: ${BUTLER_ANTIGRAVITY_MODEL:-gemini-3.1-pro-high}
-      BUTLER_ANTIGRAVITY_BINARY_PATH: /opt/antigravity/agy
-      BUTLER_ANTIGRAVITY_PROFILE_DIR: /home/butler
-    volumes:
-      - /srv/storage/butler/agents/antigravity-provider/runtime/agy-musl:/opt/antigravity/agy:ro
-      - /srv/storage/butler/agents/antigravity-provider/profile:/home/butler
+      BUTLER_ANTIGRAVITY_MODEL: ${BUTLER_ANTIGRAVITY_MODEL:-gemini-3.8-flash-tiered}

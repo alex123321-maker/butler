@@ -1,5 +1,13 @@
 # Butler — Tooling and Execution Specification
 
+Current execution policy is defined by
+[exact action authorization](action-authorization-contract.md): the complete
+action, current contract/resource/task versions and credential metadata are
+prepared and verified before secret release and runtime dispatch. Private
+Broker RPCs require service authentication; direct/batch calls cannot bypass
+the same policy. Browser navigation/interactions have conservative unknown
+effects. Uncertain external outcomes stop automatic continuation.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Tooling Specification

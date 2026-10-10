@@ -1,18 +1,27 @@
 # Orchestrator
 
+Tool execution prepares the exact action through Broker, records required
+owner approval, then obtains a private dispatch grant tied to current task and
+worker versions. `/internal/action-context` validates PostgreSQL ownership and
+delegates durable approval checks. Configure `BUTLER_ACTION_AUTHORITY_TOKEN_FILE`,
+`BUTLER_AUTONOMY_MODE` (default `mode_1`) and, when explicitly assigned,
+`BUTLER_ACTION_MANDATE_ID`. Unknown effects stop before model continuation. See
+[action authorization](../../docs/architecture/action-authorization-contract.md).
+
 Browser guidance matches the explicit
 [`browser.*` session contract](../../docs/architecture/browser-session-contract.md):
 independent reads use `browser.read`, sequences begin with `browser.open`, follow-up
 effects carry the current observation/URL, and lost state is reported explicitly.
 The separately approved `single_tab.*` flow retains its own capability boundary.
 
-The opt-in `antigravity` model provider normalizes the official Google Antigravity
-CLI's schema-constrained decisions using a private Google AI Pro login. It supplies
-no executable tools to the CLI: proposals follow the existing Orchestrator/Tool
-Broker flow. [Setup and validation status](../../deploy/antigravity/README.md) describe
-the isolated profile, runtime-only paths, and the required real login smoke. The
-Web UI labels this provider `CLI profile` and does not claim a verified connection
-based on a token file or an installed binary.
+The opt-in `antigravity` provider uses native Go AICode v1 HTTP/SSE for Gemini 3.8 Flash and
+normalizes native function proposals into the Orchestrator/Tool Broker flow.
+Control-plane authorization owns encrypted PostgreSQL OAuth import and refresh;
+transport reads no credential files and launches no CLI. The settings UI reports
+stored credentials without claiming model quota. [Operator setup and validation
+status](../../deploy/antigravity/README.md) document the private import and real
+text/function/continuation gate. Current Google generation returns HTTP 429;
+activation remains pending that gate.
 
 Tool execution fails closed when the approval policy cannot be checked. A tool
 requiring approval also requires a configured approval gate. These guarantees
@@ -58,7 +67,7 @@ Current baseline:
 - preserves durable task constraints separately from summaries; stops model preparation explicitly on history/coverage read errors or mandatory context overflow (constraint amendments remain in #9)
 - admits context with `BUTLER_CONTEXT_BUDGET_TOKENS` (default 65536), using a conservative encoded UTF-8 byte estimate plus protocol allowance, then removes chunks, episodes, profile and descriptive tool summaries before rejecting oversized mandatory context; this estimate is not provider billing or a native tokenizer count
 - exposes an internal delivery sink for `assistant_delta` and `assistant_final` events without allowing channel adapters to mutate run state
-- exposes `SubmitEvent` over gRPC and synchronous `POST /api/v1/events` over REST for normalized event ingestion
+- exposes durable acceptance through gRPC `SubmitEvent` and HTTP 202 `POST /api/v1/events`; `/api/v3/inputs/{id}` observes asynchronous execution
 - optionally runs the in-process Telegram adapter using Bot API long polling, `/auth` provider connection prompts, and final-response delivery
 - progressively edits Telegram responses during assistant delta streaming and finalizes the same message on completion
 - exposes REST views for sessions, runs, transcripts, and doctor reports
@@ -224,3 +233,22 @@ System and debug read APIs:
   - `awaiting_approval` + Telegram source -> `waiting_for_reply_in_telegram`
   - `awaiting_approval` + non-Telegram source -> `waiting_for_approval`
   - `completed|failed|cancelled|timed_out` -> `completed|failed|cancelled|completed_with_issues`
+
+## Durable execution and owner decisions
+
+Production ingress persists acceptance before returning and executes in the app
+worker context. PostgreSQL provides ordered claims and expiring fenced session
+ownership. Context preparation follows ownership. Durable approval continuations
+release the worker and resume the same run/action after an authenticated owner
+reply; a missing or uncertain external result blocks recovery without replay.
+Suspension discards private provider context. Fresh recovery replays every known
+tool observation as data and preserves exact native signatures only for new live
+tool continuations; it never reconstructs signatures from transcript evidence.
+See [the contract](../../docs/architecture/durable-execution-spec.md) for deadlines,
+checkpoint boundaries, migration policy and the explicit delivery limitations.
+
+Web decisions require `BUTLER_OWNER_CONTROL_OWNER_ID` plus an operator-provisioned
+`BUTLER_OWNER_CONTROL_TOKEN` or `BUTLER_OWNER_CONTROL_TOKEN_FILE` (at least 32 bytes).
+Without this authority approve/reject deny access. Generate/read the token on the
+lab terminal; never place it in model context or chat. The configured owner must
+match the saved web session owner. Telegram uses the allowed chat and numeric owner.

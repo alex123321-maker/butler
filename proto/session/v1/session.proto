@@ -37,6 +37,7 @@ message Lease {
   int64 ttl_seconds = 5;
   string acquired_at = 6;
   string expires_at = 7;
+  int64 fence_epoch = 8;
 }
 
 message RunRecord {

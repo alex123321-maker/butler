@@ -10,6 +10,8 @@ Resolution order:
 Operational notes:
 - secret overrides can be encrypted at rest with `BUTLER_SETTINGS_ENCRYPTION_KEY`
 - when the encryption key is unset, Butler falls back to plaintext storage and emits a startup warning
+- provider OAuth uses a separate strict encrypted store; private Antigravity import
+  and refresh persistence require the encryption key and have no plaintext fallback
 - hot settings update the in-process hot config container immediately
 - cold settings are persisted and surfaced as `requires_restart=true` until the service restarts
 - prompt-management settings follow the same env > database > default layering, and the operator base prompt uses hot updates so the next run sees the new value without restart
@@ -33,3 +35,17 @@ available through layered environment/database settings and requires a restart.
 It caps the conservative initial request estimate described in the memory model;
 it does not report native provider usage or guarantee output-token headroom.
 Operators should set it below their chosen model's effective context capacity.
+
+`BUTLER_ANTIGRAVITY_MODEL` defaults to `gemini-3.8-flash-tiered`. Native Go transport
+has no configurable CLI executable/profile or caller-controlled endpoint. OAuth
+material is a hidden provider-auth record, outside the editable settings catalog.
+Selecting the provider requires an operator-verified real text/tool continuation;
+stored credentials alone do not establish subscription model availability.
+
+Owner decision authority is operator-owned rather than a database setting.
+`BUTLER_OWNER_CONTROL_OWNER_ID` and exactly one of `BUTLER_OWNER_CONTROL_TOKEN`
+or `BUTLER_OWNER_CONTROL_TOKEN_FILE` are read only from the environment/file.
+Database overrides cannot assign these fields. Missing authority denies Web
+approval decisions; the token is scoped to owner decisions and separate from
+extension/private-service authentication. See the
+[durable execution contract](durable-execution-spec.md) for provisioning.

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -133,6 +134,12 @@ func (s *Store) Create(ctx context.Context, req CreateRequest) (Record, error) {
 // AttachRun pins the exact revision before execution. It rejects task attempts
 // after a pause, cancellation, completion or concurrent status revision.
 func (s *Store) AttachRun(ctx context.Context, taskID string, revision int64, runID, sessionKey string) error {
+	ctx, release, err := ownership.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return err
@@ -160,6 +167,12 @@ func (s *Store) AttachRun(ctx context.Context, taskID string, revision int64, ru
 }
 
 func (s *Store) SaveWorking(ctx context.Context, id string, revision int64, state WorkingState) (Record, error) {
+	ctx, release, err := ownership.Begin(ctx)
+	if err != nil {
+		return Record{}, err
+	}
+	defer release()
+
 	if state.Plan == nil {
 		state.Plan = []string{}
 	}
@@ -182,6 +195,12 @@ func (s *Store) SaveWorking(ctx context.Context, id string, revision int64, stat
 }
 
 func (s *Store) CheckpointRun(ctx context.Context, runID string, revision int64, state WorkingState) (Record, error) {
+	ctx, release, err := ownership.Begin(ctx)
+	if err != nil {
+		return Record{}, err
+	}
+	defer release()
+
 	data, err := json.Marshal(state)
 	if err != nil {
 		return Record{}, err
@@ -332,6 +351,12 @@ func (s *Store) RunIDs(ctx context.Context, id string) ([]string, error) {
 }
 
 func (s *Store) SaveRunOutcome(ctx context.Context, runID, state, note string) error {
+	ctx, release, err := ownership.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return err

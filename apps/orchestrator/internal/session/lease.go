@@ -22,6 +22,7 @@ var (
 )
 
 type LeaseRecord struct {
+	FenceEpoch int64     `json:"fence_epoch"`
 	LeaseID    string    `json:"lease_id"`
 	SessionKey string    `json:"session_key"`
 	RunID      string    `json:"run_id"`
@@ -233,6 +234,7 @@ func leaseToProto(record LeaseRecord) *sessionv1.Lease {
 		TtlSeconds: record.TTLSeconds,
 		AcquiredAt: record.AcquiredAt.UTC().Format(time.RFC3339Nano),
 		ExpiresAt:  record.ExpiresAt.UTC().Format(time.RFC3339Nano),
+		FenceEpoch: record.FenceEpoch,
 	}
 }
 

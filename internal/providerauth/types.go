@@ -6,8 +6,9 @@ import (
 )
 
 const (
-	AuthKindDeviceCode = "device_code"
-	AuthKindPKCE       = "pkce"
+	AuthKindDeviceCode     = "device_code"
+	AuthKindPKCE           = "pkce"
+	AuthKindOperatorImport = "operator_import"
 
 	FlowStatusPending       = "pending"
 	FlowStatusAwaitingInput = "awaiting_input"
@@ -61,4 +62,17 @@ type GitHubCopilotTokenSource interface {
 
 type OpenAICodexTokenSource interface {
 	ResolveOpenAICodex(context.Context) (OpenAICodexAuth, error)
+}
+
+// Only short-lived runtime material crosses the transport boundary. Refresh
+// tokens and OAuth application credentials remain in the control plane.
+type AntigravityAuth struct {
+	AccessToken string
+	// Deprecated: accepted by older callers only; AICode inference ignores it.
+	ProjectID string
+	ExpiresAt time.Time
+}
+
+type AntigravityTokenSource interface {
+	ResolveAntigravity(context.Context) (AntigravityAuth, error)
 }

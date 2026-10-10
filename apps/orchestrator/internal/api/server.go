@@ -54,6 +54,10 @@ func (s *Server) SubmitEvent(ctx context.Context, req *orchestratorv1.SubmitEven
 		SessionKey:        result.SessionKey,
 		CurrentState:      result.CurrentState,
 		AssistantResponse: result.AssistantResponse,
+		Accepted:          result.Accepted,
+		InputId:           result.InputID,
+		ReceiptStatus:     result.ReceiptStatus,
+		TaskId:            result.TaskID,
 	}, nil
 }
 
@@ -82,7 +86,15 @@ func (s *Server) HTTPHandler() http.Handler {
 			return
 		}
 
-		writeJSON(w, http.StatusOK, map[string]any{
+		statusCode := http.StatusOK
+		if result.Accepted {
+			statusCode = http.StatusAccepted
+			w.Header().Set("Location", "/api/v3/inputs/"+result.InputID)
+		}
+		writeJSON(w, statusCode, map[string]any{
+			"accepted":           result.Accepted,
+			"input_id":           result.InputID,
+			"receipt_status":     result.ReceiptStatus,
 			"task_id":            result.TaskID,
 			"run_id":             result.RunID,
 			"session_key":        result.SessionKey,
