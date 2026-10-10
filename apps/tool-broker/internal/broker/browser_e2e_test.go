@@ -29,7 +29,7 @@ func (browserCredentialMetadata) GetByAlias(_ context.Context, alias string) (cr
 	if alias != "browser-fixture" {
 		return credentials.Record{}, credentials.ErrRecordNotFound
 	}
-	return credentials.Record{Alias: alias, Status: credentials.StatusActive, AllowedDomains: []string{"external.test"}, AllowedTools: []string{"browser.fill"}, ApprovalPolicy: credentials.ApprovalPolicyAlwaysConfirm, SecretRef: "fixture://browser-password"}, nil
+	return credentials.Record{Alias: alias, Status: credentials.StatusActive, AllowedDomains: []string{"external.test"}, AllowedTools: []string{"browser.prepare_fill"}, ApprovalPolicy: credentials.ApprovalPolicyAlwaysConfirm, SecretRef: "fixture://browser-password"}, nil
 }
 
 type browserFixtureSecret struct{}
@@ -137,14 +137,17 @@ func TestBrokerBrowserSequenceE2E(t *testing.T) {
 	accept(invoke("browser.open", map[string]any{"url": egresstest.Origin + "/form"}))
 	secretArgs := args("#password")
 	secretArgs["value"] = map[string]string{"type": "credential_ref", "alias": "browser-fixture", "field": "password"}
-	denied := invoke("browser.fill", secretArgs, &toolbrokerv1.CredentialRef{Type: "credential_ref", Alias: "browser-fixture", Field: "password"})
+	denied := invoke("browser.prepare_fill", secretArgs, &toolbrokerv1.CredentialRef{Type: "credential_ref", Alias: "browser-fixture", Field: "password"})
 	if denied.GetStatus() != "failed" || !strings.Contains(denied.GetError().GetMessage(), "requires approval") {
 		t.Fatal("credential approval was bypassed")
 	}
 	for _, field := range []string{"a", "b"} {
 		request := args("#" + field)
 		request["value"] = "value-" + field
-		accept(invoke("browser.fill", request))
+		accept(invoke("browser.prepare_fill", request))
+		if observation["local_preparation"] != true || observation["network_state"] != "frozen" {
+			t.Fatal("local preparation lacks frozen-network proof")
+		}
 	}
 	accept(invoke("browser.snapshot", map[string]any{"browser_session_id": observation["browser_session_id"]}))
 	accept(invoke("browser.click", args("#submit")))
