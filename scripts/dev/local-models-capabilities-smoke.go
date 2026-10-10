@@ -1,4 +1,6 @@
 // Lab-only proof of real local capabilities, shared queues and parallel lanes.
+//go:build ignore
+
 package main
 
 import (
