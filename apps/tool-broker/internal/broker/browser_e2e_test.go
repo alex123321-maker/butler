@@ -20,6 +20,7 @@ import (
 	"github.com/butler/butler/internal/credentials"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/security/egress/egresstest"
 )
 
 type browserCredentialMetadata struct{}
@@ -28,7 +29,7 @@ func (browserCredentialMetadata) GetByAlias(_ context.Context, alias string) (cr
 	if alias != "browser-fixture" {
 		return credentials.Record{}, credentials.ErrRecordNotFound
 	}
-	return credentials.Record{Alias: alias, Status: credentials.StatusActive, AllowedDomains: []string{"127.0.0.1"}, AllowedTools: []string{"browser.fill"}, ApprovalPolicy: credentials.ApprovalPolicyAlwaysConfirm, SecretRef: "fixture://browser-password"}, nil
+	return credentials.Record{Alias: alias, Status: credentials.StatusActive, AllowedDomains: []string{"external.test"}, AllowedTools: []string{"browser.fill"}, ApprovalPolicy: credentials.ApprovalPolicyAlwaysConfirm, SecretRef: "fixture://browser-password"}, nil
 }
 
 type browserFixtureSecret struct{}
@@ -51,8 +52,17 @@ func TestBrokerBrowserSequenceE2E(t *testing.T) {
 	}
 	addr := listener.Addr().String()
 	_ = listener.Close()
-	cmd := exec.Command(binary)
-	cmd.Env = append(os.Environ(), "BUTLER_GRPC_ADDR="+addr, "BUTLER_HTTP_ADDR=127.0.0.1:0", "BUTLER_ENVIRONMENT=test", "BUTLER_TOOL_BROWSER_SCRIPT_PATH="+os.Getenv("BUTLER_BROWSER_E2E_SCRIPT"))
+	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/submit" {
+			_ = r.ParseForm()
+			_, _ = fmt.Fprintf(w, "<body>%s|%s</body>", r.Form.Get("a"), r.Form.Get("b"))
+			return
+		}
+		_, _ = fmt.Fprint(w, `<body><form action="/submit" method="post"><input name="a" id="a"><input name="b" id="b"><input type="password" id="password"><button id="submit">Send</button></form></body>`)
+	}))
+	defer site.Close()
+	cmd := exec.Command(binary, "-test.run=^TestBrowserRuntimeEgressHarness$")
+	cmd.Env = append(os.Environ(), "BUTLER_GRPC_ADDR="+addr, "BUTLER_BROWSER_EGRESS_HARNESS=1", "BUTLER_BROWSER_FIXTURE_ENDPOINT="+site.URL)
 	cmd.Stdout, cmd.Stderr = io.Discard, io.Discard
 	if err := cmd.Start(); err != nil {
 		t.Fatal(err)
@@ -101,15 +111,6 @@ func TestBrokerBrowserSequenceE2E(t *testing.T) {
 	credentialBroker := credentials.NewToolCallBroker(credentials.NewBroker(browserCredentialMetadata{}), browserFixtureSecret{})
 	server := NewServer(reg, router, credentialBroker, nil)
 	fixture := setTestAuthority(server, credentialBroker)
-	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/submit" {
-			_ = r.ParseForm()
-			_, _ = fmt.Fprintf(w, "<body>%s|%s</body>", r.Form.Get("a"), r.Form.Get("b"))
-			return
-		}
-		_, _ = fmt.Fprint(w, `<body><form action="/submit" method="post"><input name="a" id="a"><input name="b" id="b"><input type="password" id="password"><button id="submit">Send</button></form></body>`)
-	}))
-	defer site.Close()
 	sequence := 0
 	invoke := func(tool string, args map[string]any, refs ...*toolbrokerv1.CredentialRef) *toolbrokerv1.ToolResult {
 		t.Helper()
@@ -133,7 +134,7 @@ func TestBrokerBrowserSequenceE2E(t *testing.T) {
 	args := func(selector string) map[string]any {
 		return map[string]any{"browser_session_id": observation["browser_session_id"], "observation_version": observation["observation_version"], "expected_url": observation["final_url"], "selector": selector}
 	}
-	accept(invoke("browser.open", map[string]any{"url": site.URL + "/form"}))
+	accept(invoke("browser.open", map[string]any{"url": egresstest.Origin + "/form"}))
 	secretArgs := args("#password")
 	secretArgs["value"] = map[string]string{"type": "credential_ref", "alias": "browser-fixture", "field": "password"}
 	denied := invoke("browser.fill", secretArgs, &toolbrokerv1.CredentialRef{Type: "credential_ref", Alias: "browser-fixture", Field: "password"})
