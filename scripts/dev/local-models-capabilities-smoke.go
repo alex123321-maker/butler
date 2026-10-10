@@ -69,7 +69,7 @@ func runCapabilities(addr, tokenFile, report string) error {
 		out, err := client.Infer(ctx, input)
 		m := measure{Operation: name, Start: started, End: time.Now()}
 		if err != nil {
-			return nil, m, fmt.Errorf("%s rejected", name)
+			return nil, m, status.Errorf(status.Code(err), "%s rejected", name)
 		}
 		m.Device = out.Device
 		m.Fallback = out.FallbackReason
@@ -178,7 +178,21 @@ func runCapabilities(addr, tokenFile, report string) error {
 	if png.Encode(&encoded, img) != nil {
 		return fmt.Errorf("fixture image")
 	}
-	out, m, err = invoke("vision-load", "media", &pb.InferRequest{Input: &pb.InferRequest_Media{Media: &pb.MediaInput{Content: encoded.Bytes(), MimeType: "image/png"}}})
+	visionInput := &pb.InferRequest{Input: &pb.InferRequest_Media{Media: &pb.MediaInput{Content: encoded.Bytes(), MimeType: "image/png"}}}
+	out, m, err = invoke("vision-load", "media", visionInput)
+	visionAdmission := "immediate"
+	if status.Code(err) == codes.ResourceExhausted {
+		// The conservative complete-process allowance may refuse vision while
+		// the CPU extractor is resident. Preserve the full request and wait for
+		// this proof's 30-second idle unload; do not widen its RAM/GPU policy.
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("vision retry canceled")
+		case <-time.After(31 * time.Second):
+		}
+		out, m, err = invoke("vision-after-idle-unload", "media", visionInput)
+		visionAdmission = "resource_refusal_then_retry_after_idle_unload"
+	}
 	if err != nil {
 		return err
 	}
@@ -202,7 +216,7 @@ func runCapabilities(addr, tokenFile, report string) error {
 	}
 	statusJSON, _ := protojson.Marshal(status)
 	catalogJSON, _ := protojson.Marshal(catalog)
-	artifact := map[string]any{"generated_at": time.Now().UTC().Format(time.RFC3339), "scope": "actual pinned model mechanics + small public Russian signals; not production quality acceptance", "catalog": json.RawMessage(catalogJSON), "status": json.RawMessage(statusJSON), "measurements": measurements, "cpu_gpu_overlap": overlap, "russian_spans": spans, "rank_scores": rankScores, "classification_scores": classScores, "vision": "actual 440M text+vision loading; synthetic RGB768 normalized; audio omitted", "network": "all models local_files_only; deployment helper separately verifies network isolation"}
+	artifact := map[string]any{"generated_at": time.Now().UTC().Format(time.RFC3339), "scope": "actual pinned model mechanics + small public Russian signals; not production quality acceptance", "catalog": json.RawMessage(catalogJSON), "status": json.RawMessage(statusJSON), "measurements": measurements, "cpu_gpu_overlap": overlap, "russian_spans": spans, "rank_scores": rankScores, "classification_scores": classScores, "vision": "actual 440M text+vision loading; synthetic RGB768 normalized; audio omitted", "vision_admission": visionAdmission, "network": "all models local_files_only; deployment helper separately verifies network isolation"}
 	data, _ := json.MarshalIndent(artifact, "", "  ")
 	if os.WriteFile(report, data, 0644) != nil {
 		return fmt.Errorf("artifact")
