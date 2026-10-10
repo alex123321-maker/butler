@@ -810,6 +810,8 @@ Owner amendments are appended as user transcript data and preserved in full prot
 
 ## Source sensitivity and derived authority
 
+Persistent provenance retains transcript/tool/child/document references. A stored claim of owner instruction/public classification cannot mint authority: extracted/retrieved material is private data by default. Secret-class sources fail before extraction, summaries, model input and retrieval; logs/parser errors cannot echo model output. Sensitivity is inherited by derivatives. Suppression/expiry is distinct from physical deletion; source removal must include derived records and backups under the retention policy in [agent security boundaries](agent-security-boundaries.md). Migrations046–049 implement versioned source/claim decisions, authenticated owner correction/export, structured original assets and transitive privacy redaction with a persistent anti-rollback deletion anchor. See [versioned sources](versioned-memory-sources.md), which supersedes the legacy pipeline operational description above. Production legacy model extraction/summary jobs remain disabled. Opt-in owned local indexing and current-run query use exact sources, independent current claims and shared budget admission; completion never borrows an old lease.
+
 Optional [structured local extraction](structured-memory-extraction.md) publishes
 only source-bound candidates under current durable job admission. Exact literal
 fields, fragment-scoped rule evidence and unresolved action/exception scope are

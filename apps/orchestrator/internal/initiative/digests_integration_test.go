@@ -157,3 +157,36 @@ func TestEmptyObservationsNeverCreateDigestIntegration(t *testing.T) {
 		t.Fatal("empty check produced notification", err)
 	}
 }
+
+func TestClaimedDigestRechecksOwnerAuthorityAtSendIntegration(t *testing.T) {
+	for _, kind := range []string{"revoked", "goal_revision", "source_changed", "payload_changed"} {
+		t.Run(kind, func(t *testing.T) {
+			f := digestFixture(t, "telegram")
+			if err := f.store.QueueDigests(f.ctx); err != nil {
+				t.Fatal(err)
+			}
+			d := DigestStore{Store: f.store}
+			m, err := d.Claim(f.ctx, time.Minute)
+			if err != nil || m == nil || d.AuthorizeSend(f.ctx, *m) != nil {
+				t.Fatal("current stored digest was unavailable", err)
+			}
+			switch kind {
+			case "revoked":
+				_, err = f.pool.Exec(f.ctx, `UPDATE action_mandates SET status='revoked',revoked_at=clock_timestamp() WHERE mandate_id=$1`, f.source.MandateID)
+			case "goal_revision":
+				_, err = f.pool.Exec(f.ctx, `UPDATE owner_goals SET revision=revision+1 WHERE goal_id=$1`, f.source.GoalID)
+			case "source_changed":
+				f.source.Enabled = false
+				_, err = f.store.SaveSource(f.actor("stop-after-claim"), f.source, 2)
+			case "payload_changed":
+				m.Content += " stale"
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if d.AuthorizeSend(f.ctx, *m) != deliveryoutbox.ErrClaimLost {
+				t.Fatal("copied claim sent after source/owner/payload change")
+			}
+		})
+	}
+}

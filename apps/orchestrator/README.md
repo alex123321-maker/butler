@@ -299,12 +299,13 @@ observer follows exact current project/task revisions, deduplicates distinct
 attempts, suppresses own origin and recognizes only verified healthy results.
 An optional session-matched digest channel groups count-only admitted/verified
 changes with active-hours and daily limits; uncertain Telegram delivery is not
-repeated. The unconfigured heartbeat is an empty check;
-The staged `broker_project` observer additionally reads confirmed reviewed
-extension checks; it fails closed without current-source guard hooks. Actual
-Broker/executor lab acceptance verifies an admitted prepared patch and owner
-result, while production source-hook and generative-planning integration remain
-pending. See [initiative admission](../../docs/architecture/initiative-contract.md)
+repeated. The unconfigured heartbeat is an empty check. The `broker_project`
+observer additionally reads confirmed reviewed extension checks and rechecks
+current Catalog source pins and the independent deletion anchor. Historical
+observations never reuse old leases. Digest authorization repeats current source,
+goal and mandate checks immediately before sending. Actual Broker/executor lab
+acceptance verifies an admitted prepared patch and owner result; live generative
+planning remains pending. See [initiative admission](../../docs/architecture/initiative-contract.md)
 and [lab evidence](../../docs/architecture/initiative-acceptance.md).
 
 The optional `/extensions` page and owner-only `/api/v4/extensions` forward typed

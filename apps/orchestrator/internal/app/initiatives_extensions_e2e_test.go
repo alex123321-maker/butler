@@ -31,11 +31,11 @@ import (
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/butler/butler/internal/security/egress/egresstest"
-	"github.com/jackc/pgx/v5"
 )
 
 // The public-origin recipient, exact owner approvals, durable Broker journal,
@@ -48,6 +48,15 @@ func TestInitiativeProjectChecksRealBrokerE2E(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	pool, dsn := e2eDatabase(t)
+	manifestPath := filepath.Join(t.TempDir(), "deletions.log")
+	manifest := catalog.NewFileManifest(manifestPath)
+	if err := manifest.Initialize(); err != nil {
+		t.Fatal(err)
+	}
+	sourceCatalog := catalog.New(pool, manifest)
+	if err := sourceCatalog.Reconcile(ctx); err != nil {
+		t.Fatal(err)
+	}
 	sessions := session.NewPostgresRepository(pool)
 	const sessionKey, owner = "web:initiative-fixture", "owner"
 	if _, _, err := sessions.CreateSession(ctx, session.CreateSessionParams{SessionKey: sessionKey, UserID: owner, Channel: "web", MetadataJSON: "{}"}); err != nil {
@@ -99,7 +108,7 @@ func TestInitiativeProjectChecksRealBrokerE2E(t *testing.T) {
 	}
 	coreFile, runtimeFile := file("core.token", coreToken), file("runtime.token", runtimeToken)
 	extensionChild(t, runtimeBinary, runtimeAddress, "127.0.0.1:0", []string{"-test.run=^TestExtensionRuntimeEgressHarness$"}, "BUTLER_EXTENSION_EGRESS_HARNESS=1", "BUTLER_EXTENSION_FIXTURE_ENDPOINT="+site.URL, "BUTLER_EXTENSION_PROFILES_JSON="+string(profileJSON), "BUTLER_EXTENSION_RUNTIME_TOKEN_FILE="+runtimeFile)
-	extensionChild(t, os.Getenv("BUTLER_BROKER_E2E_BINARY"), brokerAddress, brokerHTTP, nil, "BUTLER_POSTGRES_URL="+dsn, "BUTLER_TOOL_REGISTRY_PATH=configs/tools.json", "BUTLER_ACTION_CONTEXT_URL="+authority.URL, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+coreFile, "BUTLER_EXTENSION_PROFILES_JSON="+string(profileJSON), "BUTLER_EXTENSION_RUNTIME_TOKEN_FILE="+runtimeFile, "BUTLER_OWNER_CONTROL_OWNER_ID="+owner)
+	extensionChild(t, os.Getenv("BUTLER_BROKER_E2E_BINARY"), brokerAddress, brokerHTTP, nil, "BUTLER_POSTGRES_URL="+dsn, "BUTLER_TOOL_REGISTRY_PATH=configs/tools.json", "BUTLER_ACTION_CONTEXT_URL="+authority.URL, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+coreFile, "BUTLER_EXTENSION_PROFILES_JSON="+string(profileJSON), "BUTLER_EXTENSION_RUNTIME_TOKEN_FILE="+runtimeFile, "BUTLER_OWNER_CONTROL_OWNER_ID="+owner, "BUTLER_MEMORY_DELETION_MANIFEST_FILE="+manifestPath)
 	controlServer := httptest.NewServer(api.ReviewedExtensions(api.NewOwnerControlAuth(ownerToken, owner), extensions.NewControlClient("http://"+brokerHTTP+"/internal/extensions", coreToken)))
 	defer controlServer.Close()
 	controlSequence := 0
@@ -139,10 +148,10 @@ func TestInitiativeProjectChecksRealBrokerE2E(t *testing.T) {
 		t.Fatal(err)
 	}
 	store := initiative.NewStore(pool)
-	// This recipient has only synthetic public data, with no private source
-	// lifecycle records. Separate catalog tests cover revoked-source rejection.
-	store.RunDataGuardTx = func(context.Context, pgx.Tx, string) error { return nil }
-	observer := initiative.ProjectObserver{Store: store, RunDataGuard: func(context.Context, string) error { return nil }}
+	store.RunDataGuardTx = sourceCatalog.CheckRunSourcesTx
+	observer := initiative.ProjectObserver{Store: store, RunDataGuard: func(ctx context.Context, runID string) error {
+		return checkRecordedInitiativeSources(ctx, pool, sourceCatalog, runID)
+	}}
 	source := initiative.Source{ID: "project-fixture-checks", OwnerID: owner, GoalID: goalResponse.SubjectID, MandateID: mandateResponse.SubjectID, SessionKey: sessionKey, ProjectRef: projectfixture.ProjectRef, ProjectRevision: projectfixture.Revision(), ObserverKind: "broker_project", CheckManifestHash: p.Digest, CheckToolName: "extension.project.inspect", CheckResource: egresstest.Origin + "/project", DigestChannel: "web", Purpose: "fixture_maintenance", TimeZone: "UTC", TaskGoal: "Prepare the exact synthetic README correction and check the stored patch, leaving the project unapplied", ExecutionPolicy: "normal", CompletionCriteria: []string{"stored prepared patch checks pass", "original project remains unapplied"}, ActiveStart: now.Hour(), ActiveEnd: (now.Hour() + 23) % 24, FailureThreshold: 3, ConfidenceThreshold: 90, MinimumImportance: 60, CooldownSeconds: 3600, Enabled: true}
 	if _, err = store.SaveSource(actor("fixture-source"), source, 0); err != nil {
 		t.Fatal(err)
@@ -178,6 +187,9 @@ func TestInitiativeProjectChecksRealBrokerE2E(t *testing.T) {
 			t.Fatal(err)
 		}
 		owned = ownership.WithToken(ctx, leases.Authority(), ownership.Token{SessionKey: sessionKey, RunID: runID, LeaseID: lease.LeaseID, FenceEpoch: lease.FenceEpoch})
+		if err = sourceCatalog.PinTranscript(owned, sessionKey, 0); err != nil {
+			t.Fatal(err)
+		}
 		control(extensions.ControlRequest{Operation: "grant_task", ExtensionID: "project", Access: extensions.TaskAccess{TaskID: record.TaskID, TaskRevision: record.Revision, ConstraintsRevision: record.ConstraintsRevision, ManifestHash: p.Digest, Generation: state.Generation, Tools: selected, Resources: []actionauth.ResourceScope{{Origin: egresstest.Origin, PathPrefix: "/project"}}, ExpiresAt: now.Add(time.Hour)}})
 	}
 	finish := func() {

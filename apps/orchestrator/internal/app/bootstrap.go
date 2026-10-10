@@ -305,6 +305,7 @@ func New(ctx context.Context) (*App, error) {
 	ownerGoals.SetControls(taskControls)
 	inputWorker.SetTaskControls(taskControls)
 	initiativeStore := initiative.NewStore(postgres.Pool())
+	initiativeStore.RunDataGuardTx = sourceCatalog.CheckRunSourcesTx
 	initiativeDeliveryWorker := &deliveryoutbox.Worker{Store: initiative.DigestStore{Store: initiativeStore}}
 	if telegram != nil {
 		initiativeDeliveryWorker.Sender = telegram
@@ -313,7 +314,9 @@ func New(ctx context.Context) (*App, error) {
 	if limits, ok := providerResult.Provider.(interface{ InferenceLimits() (int64, int64) }); ok {
 		allowance.InputTokens, allowance.OutputTokens = limits.InferenceLimits()
 	}
-	initiativeWorker := &initiative.Worker{Store: initiativeStore, Observer: initiative.ProjectObserver{Store: initiativeStore}, Promoter: &initiative.Promoter{Store: initiativeStore, Goals: ownerGoals, Tasks: taskStore, Inputs: inputStore, Budgets: budgetController, Allowance: allowance}}
+	initiativeWorker := &initiative.Worker{Store: initiativeStore, Observer: initiative.ProjectObserver{Store: initiativeStore, RunDataGuard: func(ctx context.Context, runID string) error {
+		return checkRecordedInitiativeSources(ctx, postgres.Pool(), sourceCatalog, runID)
+	}}, Promoter: &initiative.Promoter{Store: initiativeStore, Goals: ownerGoals, Tasks: taskStore, Inputs: inputStore, Budgets: budgetController, Allowance: allowance}}
 	inputWorker.SetMaintenance(func(ctx context.Context) error {
 		if err := approvalService.ExpireInvalidPending(ctx); err != nil {
 			return err

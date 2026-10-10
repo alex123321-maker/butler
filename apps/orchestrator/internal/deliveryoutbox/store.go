@@ -202,6 +202,7 @@ func safeCode(code string) string {
 // worker without representing a digest as an immutable model final result.
 type ClaimStore interface {
 	Claim(context.Context, time.Duration) (*Message, error)
+	AuthorizeSend(context.Context, Message) error
 	Finish(context.Context, Message, Outcome) error
 }
 

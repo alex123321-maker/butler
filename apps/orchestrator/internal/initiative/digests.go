@@ -242,6 +242,48 @@ func (d DigestStore) Claim(ctx context.Context, ttl time.Duration) (*deliveryout
 	return &m, nil
 }
 
+// AuthorizeSend repeats current claim and source authority immediately before
+// channel delivery; a copied claim is not permission after owner revocation.
+func (d DigestStore) AuthorizeSend(ctx context.Context, m deliveryoutbox.Message) error {
+	if d.Store == nil {
+		return deliveryoutbox.ErrClaimLost
+	}
+	tx, err := d.Store.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	var encoded []byte
+	var owner string
+	err = tx.QueryRow(ctx, `SELECT source_ids_json,owner_id FROM initiative_digest_outbox
+	 WHERE notification_id=$1 AND claim_id=$2 AND status='sending' AND claim_until>clock_timestamp()
+	 AND deadline_at>clock_timestamp() AND content=$3 AND session_key=$4 AND channel=$5 FOR SHARE`, m.NotificationID, m.ClaimID, m.Content, m.SessionKey, m.Channel).Scan(&encoded, &owner)
+	if err != nil {
+		return deliveryoutbox.ErrClaimLost
+	}
+	var stamps []digestSource
+	if json.Unmarshal(encoded, &stamps) != nil || len(stamps) == 0 || len(stamps) > 100 {
+		return deliveryoutbox.ErrClaimLost
+	}
+	var now time.Time
+	if err = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now); err != nil {
+		return err
+	}
+	for _, stamp := range stamps {
+		source, err := scanSource(tx.QueryRow(ctx, `SELECT s.source_json,s.revision,s.enabled FROM initiative_sources s
+	 JOIN sessions q ON q.session_key=s.session_key AND q.user_id=s.owner_id
+	 JOIN owner_goals g ON g.goal_id=s.goal_id AND g.owner_id=s.owner_id
+	 JOIN action_mandates a ON a.mandate_id=s.mandate_id AND a.owner_id=s.owner_id AND a.goal_id=g.goal_id
+	 WHERE s.source_id=$1 AND s.owner_id=$2 AND s.session_key=$3 AND s.enabled AND q.channel=$4 AND s.source_json->>'digest_channel'=$4
+	 AND g.status='active' AND g.expires_at>clock_timestamp() AND a.status='active' AND a.goal_revision=g.revision
+	 AND a.revoked_at IS NULL AND a.expires_at>clock_timestamp() FOR SHARE OF s,q,g,a`, stamp.ID, owner, m.SessionKey, m.Channel))
+		if err != nil || source.Revision != stamp.Revision || !active(source, now) {
+			return deliveryoutbox.ErrClaimLost
+		}
+	}
+	return tx.Commit(ctx)
+}
+
 func (d DigestStore) Finish(ctx context.Context, m deliveryoutbox.Message, o deliveryoutbox.Outcome) error {
 	status, code, delay := deliveryoutbox.DeliveryOutcome(m, o)
 	tag, err := d.Store.pool.Exec(ctx, `UPDATE initiative_digest_outbox SET status=$3,channel_ack=$4,error_code=$5,next_attempt_at=clock_timestamp()+$6::interval,claim_id='',claim_until=NULL,updated_at=clock_timestamp() WHERE notification_id=$1 AND claim_id=$2 AND status='sending' AND claim_until>clock_timestamp()`, m.NotificationID, m.ClaimID, status, o.ACK, code, delay.String())
