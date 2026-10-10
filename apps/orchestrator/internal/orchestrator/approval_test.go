@@ -2,9 +2,76 @@ package orchestrator
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 )
+
+func TestRegisteredApprovalKeepsFastDecisionAndRejectsDuplicates(t *testing.T) {
+	gate := NewApprovalGate()
+	waiter, err := gate.Register(context.Background(), "fast")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer waiter.Close()
+	if _, err := gate.Register(context.Background(), "fast"); err == nil {
+		t.Fatal("duplicate registration replaced an existing waiter")
+	}
+	if !gate.Resolve("fast", true) {
+		t.Fatal("decision before Wait was lost")
+	}
+	resp, err := waiter.Wait()
+	if err != nil || !resp.Approved {
+		t.Fatalf("fast response: %+v, %v", resp, err)
+	}
+	// Consuming the buffered response must not allow a second decision.
+	if gate.Resolve("fast", false) {
+		t.Fatal("conflicting duplicate decision accepted")
+	}
+	waiter.Close()
+	if gate.Resolve("fast", true) {
+		t.Fatal("decision accepted after cleanup")
+	}
+}
+
+func TestApprovalCancellationWinsOverBufferedDecision(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	gate := NewApprovalGate()
+	waiter, err := gate.Register(ctx, "cancelled")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer waiter.Close()
+	if !gate.Resolve("cancelled", true) {
+		t.Fatal("expected registered approval")
+	}
+	cancel()
+	if _, err := waiter.Wait(); !errors.Is(err, context.Canceled) {
+		t.Fatalf("buffered approval survived cancellation: %v", err)
+	}
+	if gate.Resolve("cancelled", true) {
+		t.Fatal("cancelled waiter accepted a decision")
+	}
+}
+
+func TestApprovalGateConcurrentDecisionsAcceptsExactlyOne(t *testing.T) {
+	gate := NewApprovalGate()
+	waiter, err := gate.Register(context.Background(), "race")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer waiter.Close()
+	accepted := make(chan bool, 2)
+	go func() { accepted <- gate.Resolve("race", true) }()
+	go func() { accepted <- gate.Resolve("race", false) }()
+	first, second := <-accepted, <-accepted
+	if first == second {
+		t.Fatalf("expected one accepted decision, got %v/%v", first, second)
+	}
+	if _, err := waiter.Wait(); err != nil {
+		t.Fatal(err)
+	}
+}
 
 func TestApprovalGateWaitAndResolveApproved(t *testing.T) {
 	t.Parallel()

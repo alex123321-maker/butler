@@ -186,6 +186,41 @@ func TestHub_CleanupThenCancelNoPanic(t *testing.T) {
 	}
 }
 
+func TestHub_PublishDuringSubscriptionChurnAndCleanup(t *testing.T) {
+	hub := NewHub()
+	start := make(chan struct{})
+	var wg sync.WaitGroup
+	wg.Add(3)
+	go func() {
+		defer wg.Done()
+		<-start
+		for i := 0; i < 1000; i++ {
+			hub.Publish("run-1", NewEvent("run-1", "s", EventAssistantDelta, nil))
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		<-start
+		for i := 0; i < 1000; i++ {
+			_, cancel := hub.Subscribe("run-1")
+			cancel()
+			cancel()
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		<-start
+		for i := 0; i < 1000; i++ {
+			hub.CleanupRun("run-1")
+		}
+	}()
+	close(start)
+	wg.Wait()
+	if count := hub.SubscriberCount("run-1"); count != 0 {
+		t.Fatalf("subscription churn leaked %d subscribers", count)
+	}
+}
+
 func TestHub_DoubleCancelNoPanic(t *testing.T) {
 	hub := NewHub()
 

@@ -1,6 +1,8 @@
 package api
 
 import (
+	"bufio"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -23,19 +25,36 @@ func TestStreamServer_InitialSnapshotAndFallback(t *testing.T) {
 	activityServer := NewActivityServer(&fakeActivityStore{})
 
 	server := NewStreamServer(hub, taskServer, overviewServer, approvalsServer, systemServer, activityServer)
-	request := httptest.NewRequest(http.MethodGet, "/api/v2/stream?topics=overview,tasks,approvals,system,activity&type=overview.updated", nil)
-	recorder := httptest.NewRecorder()
-
-	done := make(chan struct{})
-	go func() {
-		server.HandleStream().ServeHTTP(recorder, request)
-		close(done)
-	}()
-
-	time.Sleep(120 * time.Millisecond)
-	_ = request.Context().Err()
-
-	body := recorder.Body.String()
+	httpServer := httptest.NewServer(server.HandleStream())
+	defer httpServer.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, httpServer.URL+"/api/v2/stream?topics=overview,tasks,approvals,system,activity&type=overview.updated", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response, err := httpServer.Client().Do(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		t.Fatalf("unexpected stream status: %d", response.StatusCode)
+	}
+	var received strings.Builder
+	scanner := bufio.NewScanner(response.Body)
+	for scanner.Scan() {
+		line := scanner.Text()
+		received.WriteString(line + "\n")
+		if strings.Contains(line, "manual_refresh_or_polling") {
+			break
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		t.Fatalf("read initial stream snapshots: %v", err)
+	}
+	cancel()
+	body := received.String()
 	if !strings.Contains(body, "event: overview.updated") {
 		t.Fatalf("expected overview.updated snapshot event, got body: %s", body)
 	}

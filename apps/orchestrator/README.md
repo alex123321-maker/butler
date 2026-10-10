@@ -3,6 +3,10 @@
 Tool execution fails closed when the approval policy cannot be checked. A tool
 requiring approval also requires a configured approval gate. These guarantees
 apply to single calls and batch members; policy failures do not become permission.
+Approval waiters are registered before publication and notification, accept one
+decision, and reject decisions after cancellation. A durable denial overrides an
+in-memory approval. Restart recovery and version-bound authorization remain
+tracked in issues #5–#7; an in-memory waiter is not durable execution state.
 
 Butler core API and orchestration service.
 
@@ -13,6 +17,8 @@ Current baseline:
 - serves the Session Service gRPC contract on `BUTLER_GRPC_ADDR`
 - implements `CreateSession`, `GetSession`, and `ResolveSessionKey` inside the orchestrator process
 - implements Redis-backed `AcquireLease`, `RenewLease`, and `ReleaseLease`
+- cancels and joins the lease renewal worker before releasing ownership; in-flight renewal follows run cancellation and release has a bounded timeout
+- synchronizes live event publication with subscriber removal and cleanup, preventing sends to closed SSE channels while keeping delivery nonblocking
 - implements durable run creation, lookup, state transitions, and input-event deduplication
 - implements the internal event-to-run execution flow for normalized `InputEvent` values using the transport layer and transcript store
 - loads durable Working Memory snapshots into the run memory bundle and applies explicit save/update/clear policy across prepare, tool checkpoints, and finalize paths
@@ -32,7 +38,9 @@ Current baseline:
 - stores an operator-managed base system prompt in `system_settings` and assembles the effective prompt inside orchestrator during `preparing`
 - supports allowlisted prompt placeholders for safe runtime section injection, adds an informational tool capability summary, and provides a preview endpoint for effective prompt inspection
 - injects a built-in browser strategy section that survives operator prompt overrides and teaches browser-oriented follow-ups such as interpreting short numeric replies against the agent's most recent numbered browser options
-- reuses the most recent same-provider `provider_session_ref` for a session on new runs when available, so immediate follow-up turns can continue provider-side state before async summaries catch up
+- starts each new run with fresh provider state and Butler-owned context, preventing duplicate replay into an existing provider history; tool continuation within a run retains its own provider ref
+- includes recent user/assistant history even when a summary exists, preserves recent user instructions intact, and abbreviates assistant/prompt material by Unicode characters
+- stops model preparation explicitly if transcript retrieval fails; summary watermarks, monotonic updates and durable task constraints remain pending in issues #9–#10
 - exposes an internal delivery sink for `assistant_delta` and `assistant_final` events without allowing channel adapters to mutate run state
 - exposes `SubmitEvent` over gRPC and synchronous `POST /api/v1/events` over REST for normalized event ingestion
 - optionally runs the in-process Telegram adapter using Bot API long polling, `/auth` provider connection prompts, and final-response delivery

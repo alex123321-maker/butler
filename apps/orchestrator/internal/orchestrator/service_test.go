@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -217,16 +218,13 @@ func TestExecuteToolWithApprovalApproved(t *testing.T) {
 		Delivery:        delivery,
 	}, nil)
 
-	// Approve asynchronously when approval request arrives.
-	go func() {
-		for {
-			if len(delivery.approvalRequests) > 0 {
-				gate.Resolve(delivery.approvalRequests[0].ToolCallID, true)
-				return
-			}
-			time.Sleep(5 * time.Millisecond)
+	// Resolve inside delivery: this response precedes the wait call.
+	delivery.onApproval = func(req ApprovalRequest) error {
+		if !gate.Resolve(req.ToolCallID, true) {
+			return fmt.Errorf("fast approval was lost")
 		}
-	}()
+		return nil
+	}
 
 	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:1", Source: "telegram", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
 	if err != nil {
@@ -289,16 +287,12 @@ func TestExecuteToolWithApprovalRejected(t *testing.T) {
 		Delivery:        delivery,
 	}, nil)
 
-	// Reject asynchronously when approval request arrives.
-	go func() {
-		for {
-			if len(delivery.approvalRequests) > 0 {
-				gate.Resolve(delivery.approvalRequests[0].ToolCallID, false)
-				return
-			}
-			time.Sleep(5 * time.Millisecond)
+	delivery.onApproval = func(req ApprovalRequest) error {
+		if !gate.Resolve(req.ToolCallID, false) {
+			return fmt.Errorf("fast rejection was lost")
 		}
-	}()
+		return nil
+	}
 
 	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:1", Source: "telegram", PayloadJSON: `{"text":"do something dangerous"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
 	if err != nil {
@@ -683,7 +677,7 @@ func TestExecuteIncludesSessionSummaryInContext(t *testing.T) {
 	}
 }
 
-func TestExecuteReusesProviderSessionRefAcrossRuns(t *testing.T) {
+func TestExecuteStartsFreshProviderSessionAcrossRuns(t *testing.T) {
 	t.Parallel()
 
 	provider := &mockProvider{startEvents: []transport.TransportEvent{
@@ -712,8 +706,12 @@ func TestExecuteReusesProviderSessionRefAcrossRuns(t *testing.T) {
 		t.Fatalf("expected 2 provider start requests, got %d", len(provider.startRequests))
 	}
 	ref := provider.startRequests[1].Context.ProviderSessionRef
-	if ref == nil || ref.ResponseRef != "resp_123" {
-		t.Fatalf("expected previous provider session ref on second run, got %+v", ref)
+	if ref != nil {
+		t.Fatalf("replayed history must use a fresh provider session, got %+v", ref)
+	}
+	items := provider.startRequests[1].InputItems
+	if len(items) < 3 || items[len(items)-3].Content != "open site" || items[len(items)-2].Content != "first" {
+		t.Fatalf("fresh provider session lost Butler transcript context: %+v", items)
 	}
 }
 
@@ -1255,6 +1253,7 @@ type memoryTranscriptStore struct {
 	messages      []transcript.Message
 	toolCalls     []transcript.ToolCall
 	failAssistant error
+	failHistory   error
 }
 
 func (m *memoryTranscriptStore) AppendMessage(_ context.Context, message transcript.Message) (transcript.Message, error) {
@@ -1271,6 +1270,9 @@ func (m *memoryTranscriptStore) AppendToolCall(_ context.Context, call transcrip
 }
 
 func (m *memoryTranscriptStore) GetTranscript(_ context.Context, sessionKey string) (transcript.Transcript, error) {
+	if m.failHistory != nil {
+		return transcript.Transcript{}, m.failHistory
+	}
 	filtered := make([]transcript.Message, 0)
 	for _, message := range m.messages {
 		if message.SessionKey == sessionKey {
@@ -1617,6 +1619,7 @@ type recordingDeliverySink struct {
 	approvalRequests []ApprovalRequest
 	toolCallEvents   []ToolCallEvent
 	statusEvents     []StatusEvent
+	onApproval       func(ApprovalRequest) error
 }
 
 func (r *recordingDeliverySink) DeliverAssistantDelta(_ context.Context, event DeliveryEvent) error {
@@ -1631,6 +1634,9 @@ func (r *recordingDeliverySink) DeliverAssistantFinal(_ context.Context, event D
 
 func (r *recordingDeliverySink) DeliverApprovalRequest(_ context.Context, req ApprovalRequest) error {
 	r.approvalRequests = append(r.approvalRequests, req)
+	if r.onApproval != nil {
+		return r.onApproval(req)
+	}
 	return nil
 }
 

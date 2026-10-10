@@ -593,11 +593,13 @@ Transport обязан:
 
 #### Current baseline
 
-Текущий baseline orchestrator повторно использует последний валидный `provider_session_ref` того же `model_provider` для новых run внутри той же session на best-effort основе.
-
-Это нужно, чтобы immediate follow-up turns могли продолжать provider-side state даже до того, как async memory pipeline успеет обновить session summary.
-
-Если ссылка отсутствует, невалидна или provider-side session потеряна, Butler продолжает run без неё и полагается на собственный prompt/memory context.
+Текущий orchestrator начинает каждый новый run с новой provider session и
+собственным контекстом Butler. Это исключает повторную вставку истории в
+provider chain, для которого пока нет durable replay boundary. После первого
+ответа ссылки этого run сохраняются и используются для его tool-result/resume
+циклов. Возврат cross-run reuse допускается только с проверяемой границей
+отправленных сообщений и тестом потери provider state. Цена текущего решения —
+повторная передача контекста и возможная потеря provider-side caching.
 
 ---
 

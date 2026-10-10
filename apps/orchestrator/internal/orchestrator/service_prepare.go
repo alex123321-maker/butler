@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	promptmgmt "github.com/butler/butler/apps/orchestrator/internal/prompt"
 	"github.com/butler/butler/internal/ingress"
@@ -120,12 +121,9 @@ func (s *Service) attachTranscriptContext(ctx context.Context, sessionKey string
 	if prepared == nil || s.transcript == nil {
 		return nil
 	}
-	if strings.TrimSpace(stringFromAny(prepared.MemoryBundle["session_summary"])) != "" {
-		return nil
-	}
 	full, err := s.transcript.GetTranscript(ctx, sessionKey)
 	if err != nil {
-		return nil
+		return fmt.Errorf("load session transcript: %w", err)
 	}
 	items := recentTranscriptInputItems(full, 10)
 	if len(items) == 0 {
@@ -134,7 +132,8 @@ func (s *Service) attachTranscriptContext(ctx context.Context, sessionKey string
 	prepared.InputItems = append(items, prepared.InputItems...)
 	prepared.observabilityHistory = map[string]any{
 		"replayed_message_count": len(items),
-		"fallback_used":          true,
+		"summary_present":        strings.TrimSpace(stringFromAny(prepared.MemoryBundle["session_summary"])) != "",
+		"coverage_mode":          "recent_history_unversioned",
 	}
 	return nil
 }
@@ -188,7 +187,12 @@ func recentTranscriptInputItems(full transcript.Transcript, limit int) []transpo
 		if content == "" {
 			continue
 		}
-		msg.Content = truncateTranscriptReplay(content, 1200)
+		// Recent owner instructions must survive intact, including a prohibition
+		// at the end of a long message. Only assistant material is abbreviated.
+		msg.Content = content
+		if role == "assistant" {
+			msg.Content = truncateTranscriptReplay(content, 1200)
+		}
 		messages = append(messages, msg)
 	}
 	if len(messages) == 0 {
@@ -206,11 +210,11 @@ func recentTranscriptInputItems(full transcript.Transcript, limit int) []transpo
 
 func truncateTranscriptReplay(value string, limit int) string {
 	value = strings.TrimSpace(value)
-	if limit <= 0 || len(value) <= limit {
+	if limit <= 0 || utf8.RuneCountInString(value) <= limit {
 		return value
 	}
 	if limit <= len("[truncated]") {
-		return value[:limit]
+		return string([]rune(value)[:limit])
 	}
-	return strings.TrimSpace(value[:limit-len("[truncated]")-1]) + "\n[truncated]"
+	return strings.TrimSpace(string([]rune(value)[:limit-len("[truncated]")-1])) + "\n[truncated]"
 }

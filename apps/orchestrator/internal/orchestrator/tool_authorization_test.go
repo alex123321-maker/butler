@@ -7,11 +7,67 @@ import (
 	"testing"
 	"time"
 
+	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/transport"
 )
+
+type previouslyDecidedApprovalRepo struct {
+	approvals.Repository
+	status string
+	record approvals.Record
+}
+
+func (r *previouslyDecidedApprovalRepo) CreateApproval(_ context.Context, params approvals.CreateParams) (approvals.Record, error) {
+	r.record = approvals.Record{ApprovalID: params.ApprovalID, RunID: params.RunID, SessionKey: params.SessionKey, ToolCallID: params.ToolCallID, Status: approvals.StatusPending}
+	return r.record, nil
+}
+
+func (r *previouslyDecidedApprovalRepo) InsertEvent(context.Context, approvals.Event) error {
+	return nil
+}
+
+func (r *previouslyDecidedApprovalRepo) GetApprovalByToolCallID(context.Context, string) (approvals.Record, error) {
+	r.record.Status = r.status
+	return r.record, nil
+}
+
+func TestToolApprovalUsesDurableDecision(t *testing.T) {
+	for _, status := range []string{approvals.StatusRejected, approvals.StatusExpired, approvals.StatusFailed} {
+		t.Run(status, func(t *testing.T) {
+			gate := NewApprovalGate()
+			repo := &previouslyDecidedApprovalRepo{status: status}
+			tools := &mockToolExecutor{}
+			provider := &mockProvider{
+				startEvents:  []transport.TransportEvent{transport.NewToolCallRequestedEvent("", "openai", transport.ToolCallRequest{ToolCallRef: "call-1", ToolName: "http.request", ArgsJSON: `{}`})},
+				submitEvents: []transport.TransportEvent{transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "rejected"})},
+			}
+			delivery := &recordingDeliverySink{onApproval: func(req ApprovalRequest) error {
+				gate.Resolve(req.ToolCallID, true)
+				return nil
+			}}
+			service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+				Tools: tools, Delivery: delivery, ApprovalGate: gate,
+				ApprovalChecker: &mockApprovalChecker{toolsRequiringApproval: map[string]bool{"http.request": true}},
+				ApprovalService: approvals.NewService(repo, gate),
+			}, nil)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			_, err := service.Execute(ctx, ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "web:1", Source: "web", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(tools.calls) != 0 {
+				t.Fatal("in-memory approval overrode durable denial")
+			}
+			if len(provider.submittedResults) != 1 || !strings.Contains(provider.submittedResults[0].ToolResultJSON, "rejected") {
+				t.Fatal("model did not receive rejection")
+			}
+		})
+	}
+}
 
 type unavailableApprovalChecker struct{}
 

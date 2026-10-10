@@ -679,6 +679,11 @@ Lease должен иметь:
 
 ### 21.3 Потеря lease
 
+При завершении run Orchestrator сначала отменяет и дожидается остановки
+renewal worker, включая незавершённый `RenewLease`, затем вызывает
+`ReleaseLease` с ограниченным таймаутом. Renewal использует контекст run;
+его штатная отмена при cleanup не превращает успешный run в failed.
+
 Если lease истёк или был потерян:
 - run должен быть остановлен или переведён в recovery path;
 - Session Service должен предотвратить конкурентное продолжение двумя owners.
@@ -815,6 +820,14 @@ Run Lifecycle V1 обязательно включает:
 ---
 
 ## 27. Открытые решения
+
+Current fast-response guarantee: Orchestrator registers the approval waiter before
+creating the visible approval record or delivering its notification. Duplicate
+registration cannot replace it, only one decision is accepted, and cancellation
+wins over a buffered response. Where a durable approval exists, its final status
+is authoritative over the in-memory response. This fixes the registration race;
+durable worker resume after restart and task/action-version binding remain pending
+in #5–#7 and must not be inferred from this guarantee.
 
 1. Формальный transport contract между Orchestrator и Model Transport Layer.
 2. Формальный transport contract между Tool Broker и runtime containers.

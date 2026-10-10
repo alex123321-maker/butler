@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-  [ValidateSet('Sync', 'Up', 'Test', 'Integration', 'Web', 'Status')][string]$Action = 'Status',
+  [ValidateSet('Sync', 'Up', 'Test', 'Integration', 'Race', 'Web', 'Status')][string]$Action = 'Status',
   [string]$HostAlias = 'laba',
   [string]$RemoteRoot = '/srv/storage/butler',
   [string[]]$Packages = @('./apps/orchestrator/...')
