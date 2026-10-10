@@ -6,7 +6,11 @@ CPU FP32 solely for shadow comparison. Reviewed d1 code/config hashes are checke
 before its local offline loader; complete prompt encoding must fit without
 truncation. There are no decision-driven task/tool/verification hooks. See
 `deploy/local-models/decision-code-review.md`; runtime support alone is not
-Russian quality acceptance or a production model selection.
+Russian quality acceptance or a production model selection. The owned Go
+shadow caller now has a fixed Russian comparison and complete actual CPU
+artifacts; no model passes selection and d1 also refuses repeat loading under
+the conservative RAM policy. Ordinary profiles remain disabled. See
+[the caller contract](../../docs/architecture/local-decision-signals.md).
 
 The optional versioned memory adapter is in `internal/memory/semantic`; it uses
 this shared service with explicit query/document/code modes and 768/256d identity.

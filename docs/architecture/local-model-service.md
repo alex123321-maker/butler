@@ -171,3 +171,10 @@ source-aware constraint-fragment candidate preserves literal restrictions when
 model record grouping fails, with action polarity and exception scope explicitly
 unresolved. Model field metrics exclude that protection layer. See
 [structured candidate extraction](structured-memory-extraction.md).
+
+The default-off decision caller now records real source/job-admitted CPU signals
+from all three pinned models on a frozen Russian corpus. None passes selection;
+the exact repeat also records conservative d1 RAM admission refusals. Signals
+cannot suppress events or acquire task/grant/verification authority. See
+[local decision observations](local-decision-signals.md) and the checked-in
+acceptance matrix for remaining current-controller baseline work.

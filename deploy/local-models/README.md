@@ -225,6 +225,48 @@ the repeated measurement, queue wait and every case, rather than treating groupe
 warm calls as production latency. Exact exception/action polarity remains
 unresolved; owner acceptance is separate. See the structured extraction contract.
 
+## Default-off decision comparison
+
+Run `verify-decisions-lab.sh` only after the deployment owner temporarily selects
+`models.decisions-evaluation.json` for the same persistent service. The runner
+uses the single private token file and an isolated PostgreSQL database; it does
+not start another tensor service or touch the main database/Compose. Its
+40-case public Russian corpus is frozen before evaluation: 10 dev, 30 held-out,
+score 0.65, margin 0.15, accuracy 90% and zero critical errors. Each of 120 calls
+uses a current source/job claim and a fresh shared reservation. Every error is
+recorded, with insufficient-data escalation and preserved original events.
+
+Original successful CPU measurements:
+
+| Model | Held-out accuracy | Important misses / stop misses | False initiative / success | First load ms | Warm p50 / p95 ms | Peak RSS MiB |
+|---|---:|---:|---:|---:|---:|---:|
+| Existing GLiNER extractor | 5/30 | 1 / 1 | 1 / 0 | 19319 | 177 / 186 | 2431 |
+| GLiNER Decide | 14/30 | 1 / 0 | 0 / 2 | 19957 | 187 / 215 | 2473 |
+| d1 CPU FP32 | 2/30 | 2 / 3 | 0 / 3 | 9026 | 390 / 419 | 2142 |
+
+No model passes selection. GLiNER one-class scores have no measured margin, so
+all escalate. A full exact-input replay fixes a CPU-sampler output permission
+bug and records peak CPU 370.91%, mean 175.69% (100%=one core), GPU allocation
+0 MiB, one first GLiNER Unavailable and 40 d1 ResourceExhausted refusals. The
+conservative cgroup available-memory calculation includes cached weight files;
+repeat d1 loading does not fit its unchanged peak+reserve allowance. The
+original successful model results and every refusal remain separate artifacts.
+No resource cap was weakened and no global cache flush was used.
+
+The selected mode remains disabled. Literal rules outperform models on this
+small synthetic corpus; this is not population reliability. The report's
+current-controller entry is a typed control/proof fixture, not a live cloud
+benchmark. No cloud calls or monetary savings are claimed. Personal local
+inference uses an explicit no-billing basis; electricity/hardware cost is not
+invented. See [decision contract](../../docs/architecture/local-decision-signals.md),
+[code/license audit](decision-code-review.md) and
+[all-criteria matrix](acceptance-extraction-decisions.md).
+
+Restore the ordinary catalog after the coordinated window; both new profiles
+are disabled there. New label descriptions/precision/model versions need a new
+dev round and fresh held-out corpus. No live controller/extraction scheduler
+is enabled by this experiment.
+
 ## Tensor runtime exception
 
 [Google's official card](https://huggingface.co/google/embeddinggemma-2) supports

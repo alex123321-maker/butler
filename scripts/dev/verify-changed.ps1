@@ -42,6 +42,14 @@ foreach ($file in $files) {
       [void]$tests.Add("ssh laba: scripts/dev/lab-extensions.sh with own read-only snapshot and test database")
       continue
     }
+    "^(internal/decisions/|deploy/local-models/(russian-decisions[.]json|verification-decisions|verify-decisions-lab[.]sh|sample-decisions[.]py))" {
+      [void]$specs.Add("docs/architecture/local-decision-signals.md")
+      [void]$specs.Add("docs/architecture/local-model-service.md")
+      [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
+      [void]$tests.Add("Targeted Go race tests: ./internal/decisions with isolated BUTLER_TEST_MEMORY_POSTGRES_URL on laba")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/local-models/current/deploy/local-models/verify-decisions-lab.sh /srv/storage/butler/agents/local-models' (operator evaluation catalog/window required)")
+      continue
+    }
     "^(internal/memory/extraction/|internal/memory/catalog/extraction|migrations/043_memory_extraction_dedup[.]|deploy/local-models/(russian-extraction[.]json|verification-structured-extraction|verify-extraction-lab[.]sh))" {
       [void]$specs.Add("docs/architecture/memory-model.md")
       [void]$specs.Add("docs/architecture/structured-memory-extraction.md")
