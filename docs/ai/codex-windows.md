@@ -113,3 +113,11 @@ An optional isolated lab HTTPS proxy is described in
 `deploy/antigravity/proxy/README.md`. Its subscription and configuration stay in a
 private operator directory outside source snapshots; connectivity is verified
 before recreating the Orchestrator with that overlay.
+
+Lab `Up` provisions distinct mode-0600 action-authority and owner-control files,
+readable by service UID `10001`. Web owner decisions use the configured
+`BUTLER_OWNER_CONTROL_OWNER_ID` (lab default `owner`) and the private owner token;
+extension and service credentials do not provide owner proof. Keep token values
+out of chat/logs and provide them only through the owner's local terminal/UI.
+Migration validation also covers durable ingress/approval 032/033 up/down/up in
+a fresh dedicated database, without deleting historical state.

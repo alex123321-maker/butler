@@ -7,6 +7,7 @@ cd "$root/current"
 export BUTLER_LAB_ROOT="$root"
 export DOCKER_CONFIG="$root/.cache/docker"
 export BUTLER_ACTION_AUTHORITY_TOKEN_SOURCE="$root/secrets/action-authority.token"
+export BUTLER_OWNER_CONTROL_TOKEN_SOURCE="$root/secrets/owner-control.token"
 mkdir -p "$DOCKER_CONFIG" "$root/.cache/go-build" "$root/.cache/go-mod" "$root/reports"
 compose=(docker compose -p butler-lab --env-file "$root/lab.env" -f deploy/docker-compose.yml -f deploy/docker-compose.lab.yml)
 if [[ -f "$root/private-proxy/compose.env" ]]; then
@@ -18,11 +19,15 @@ case "$action" in
       install -d -m 700 "$root/secrets"
       (umask 077; openssl rand -hex 48 > "$BUTLER_ACTION_AUTHORITY_TOKEN_SOURCE")
     fi
+    if [[ ! -f "$BUTLER_OWNER_CONTROL_TOKEN_SOURCE" ]]; then
+      install -d -m 700 "$root/secrets"
+      (umask 077; openssl rand -hex 48 > "$BUTLER_OWNER_CONTROL_TOKEN_SOURCE")
+    fi
     # Compose file-backed secrets preserve host ownership. Both core services
     # run as UID10001 and need to read this private file without widening mode.
     docker run --rm --user 0:0 --volume "$root/secrets:/private" \
       --entrypoint sh alpine:3.21 -c \
-      'chown 10001:10001 /private/action-authority.token; chmod 600 /private/action-authority.token'
+      'chown 10001:10001 /private/action-authority.token /private/owner-control.token; chmod 600 /private/action-authority.token /private/owner-control.token'
     if [[ ! -f "$root/lab.env" ]]; then
       umask 077
       {
@@ -77,6 +82,8 @@ case "$action" in
       --env BUTLER_SUMMARY_MIGRATION_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_summary_migrations_test?sslmode=disable \
       golang:1.24-alpine go test -p 1 -count=1 -run MigrationIntegration \
       ./apps/orchestrator/internal/task ./internal/memory/summary 2>&1 | tee "$report"
+    bash scripts/smoke/durable-migration-audit.sh "$PWD" butler-lab-postgres-1 \
+      "butler_durable_migrations_$(date -u +%Y%m%d%H%M%S)_$$" 2>&1 | tee -a "$report"
     ;;
   Status)
     "${compose[@]}" ps

@@ -23,8 +23,17 @@ services:
     environment:
       BUTLER_EXTENSION_API_TOKENS: ${BUTLER_EXTENSION_API_TOKENS:-}
       BUTLER_MEMORY_PIPELINE_ENABLED: ${BUTLER_MEMORY_PIPELINE_ENABLED:-false}
+      BUTLER_OWNER_CONTROL_TOKEN_FILE: /run/secrets/butler-owner-control-token
+      BUTLER_OWNER_CONTROL_OWNER_ID: ${BUTLER_OWNER_CONTROL_OWNER_ID:-owner}
+    secrets:
+      - source: owner-control
+        target: butler-owner-control-token
   web:
     ports: !override
       - ${BUTLER_LAB_WEB_PORT:-3080}:3000
     environment:
       NUXT_PUBLIC_API_BASE: ${BUTLER_LAB_API_PUBLIC_URL:?set BUTLER_LAB_API_PUBLIC_URL}
+
+secrets:
+  owner-control:
+    file: ${BUTLER_OWNER_CONTROL_TOKEN_SOURCE:?set private owner control token path}
