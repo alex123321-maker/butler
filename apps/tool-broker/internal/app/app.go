@@ -20,6 +20,7 @@ import (
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/config"
 	"github.com/butler/butler/internal/credentials"
+	"github.com/butler/butler/internal/extensions"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
@@ -65,6 +66,7 @@ func New(ctx context.Context) (*App, error) {
 	server := broker.NewServer(registryStore, router, credentialResolver, log)
 	var mandateHandler http.Handler
 	var effectHandler http.Handler
+	var extensionHandler http.Handler
 	serviceToken := ""
 	if cfg.ActionAuthorityTokenFile != "" && postgres != nil {
 		token, err := actionauth.ReadServiceToken(cfg.ActionAuthorityTokenFile)
@@ -87,10 +89,44 @@ func New(ctx context.Context) (*App, error) {
 		budgetController := budget.NewController(postgres.Pool(), budgetPolicy)
 		budgetController.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 		authorizationStore.SetBudgets(budgetController)
+		profiles, profileErr := extensions.ParseProfiles(cfg.ExtensionProfilesJSON)
+		if profileErr != nil {
+			postgres.Close()
+			return nil, profileErr
+		}
+		if len(profiles) > 0 {
+			runtimeToken, tokenErr := actionauth.ReadServiceToken(cfg.ExtensionRuntimeTokenFile)
+			if tokenErr != nil {
+				postgres.Close()
+				return nil, tokenErr
+			}
+			for _, profile := range profiles {
+				if tokenErr = router.SetTargetAuthentication(profile.Target, runtimeToken); tokenErr != nil {
+					postgres.Close()
+					return nil, tokenErr
+				}
+			}
+		}
+		extensionStore := extensions.NewStore(postgres.Pool(), cfg.ExtensionOwnerID, profiles, budgetController)
+		if len(profiles) > 0 {
+			if cfg.ExtensionOwnerID == "" {
+				postgres.Close()
+				return nil, fmt.Errorf("configured extension owner is required")
+			}
+			if err = extensionStore.RecoverProbes(context.Background()); err != nil {
+				postgres.Close()
+				return nil, fmt.Errorf("extension readiness recovery unavailable")
+			}
+		}
+		registryStore.SetExtensions(extensionStore)
+		authorizationStore.SetContractGuard(extensionStore)
 		server.SetBudgets(budgetController)
 		server.SetBudgetTimeout(time.Duration(budgetPolicy.ToolMillis) * time.Millisecond)
 		authorizer := actionauth.NewService(authorizationStore, reader, credentialResolver)
+		authorizer.SetCapabilities(extensionStore)
 		server.SetActionAuthorizer(authorizer)
+		server.SetScopedCatalog(&broker.TaskCatalog{Registry: registryStore, Contexts: reader, Mandates: authorizationStore, Extensions: extensionStore})
+		extensionHandler = extensions.NewControlHandler(token, extensionStore, router)
 		effectHandler = actionauth.NewEffectHandler(token, authorizer, authorizationStore)
 		mandateHandler = actionauth.NewMandateHandler(token, authorizationStore, reader)
 	} else {
@@ -98,6 +134,9 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	httpMux := http.NewServeMux()
+	if extensionHandler != nil {
+		httpMux.Handle("/internal/extensions", extensionHandler)
+	}
 	if mandateHandler != nil {
 		httpMux.Handle("/internal/action-mandates", mandateHandler)
 	}

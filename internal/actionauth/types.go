@@ -22,28 +22,33 @@ type CredentialRef struct {
 // ActionBinding is the exact intent approved by the owner. A refreshed worker
 // lease does not change this intent, but each dispatch grant pins its live fence.
 type ActionBinding struct {
-	ActionID               string          `json:"action_id"`
-	ActionHash             string          `json:"action_hash"`
-	RunID                  string          `json:"run_id"`
-	ToolCallID             string          `json:"tool_call_id"`
-	ToolName               string          `json:"tool_name"`
-	ContractHash           string          `json:"contract_hash"`
-	ContractRevision       string          `json:"contract_revision,omitempty"`
-	ArgsHash               string          `json:"args_hash"`
-	Resource               string          `json:"resource"`
-	CredentialRefs         []CredentialRef `json:"credential_refs"`
-	CredentialMetadataHash string          `json:"credential_metadata_hash"`
-	TaskID                 string          `json:"task_id"`
-	TaskRevision           int64           `json:"task_revision"`
-	ConstraintsRevision    int64           `json:"constraints_revision"`
-	OwnerID                string          `json:"owner_id"`
-	Effect                 Effect          `json:"effect"`
-	GoalID                 string          `json:"goal_id,omitempty"`
-	GoalRevision           int64           `json:"goal_revision,omitempty"`
-	MandateID              string          `json:"owner_mandate_id,omitempty"`
-	MandateRevision        int64           `json:"owner_mandate_revision,omitempty"`
-	Purpose                string          `json:"purpose,omitempty"`
-	OwnerPolicyRevision    int64           `json:"owner_policy_revision,omitempty"`
+	ActionID                 string          `json:"action_id"`
+	ActionHash               string          `json:"action_hash"`
+	RunID                    string          `json:"run_id"`
+	ToolCallID               string          `json:"tool_call_id"`
+	ToolName                 string          `json:"tool_name"`
+	ContractHash             string          `json:"contract_hash"`
+	ContractRevision         string          `json:"contract_revision,omitempty"`
+	ArgsHash                 string          `json:"args_hash"`
+	Resource                 string          `json:"resource"`
+	CredentialRefs           []CredentialRef `json:"credential_refs"`
+	CredentialMetadataHash   string          `json:"credential_metadata_hash"`
+	TaskID                   string          `json:"task_id"`
+	TaskRevision             int64           `json:"task_revision"`
+	ConstraintsRevision      int64           `json:"constraints_revision"`
+	OwnerID                  string          `json:"owner_id"`
+	Effect                   Effect          `json:"effect"`
+	GoalID                   string          `json:"goal_id,omitempty"`
+	GoalRevision             int64           `json:"goal_revision,omitempty"`
+	MandateID                string          `json:"owner_mandate_id,omitempty"`
+	MandateRevision          int64           `json:"owner_mandate_revision,omitempty"`
+	Purpose                  string          `json:"purpose,omitempty"`
+	OwnerPolicyRevision      int64           `json:"owner_policy_revision,omitempty"`
+	ExtensionID              string          `json:"extension_id,omitempty"`
+	ExtensionManifestHash    string          `json:"extension_manifest_hash,omitempty"`
+	ExtensionGeneration      int64           `json:"extension_generation,omitempty"`
+	ExtensionAccessRevision  int64           `json:"extension_access_revision,omitempty"`
+	ExtensionAccessExpiresAt *time.Time      `json:"extension_access_expires_at,omitempty"`
 }
 
 // ContextSnapshot must come from Session/Task/Run Service, never tool arguments.

@@ -10,6 +10,7 @@ import (
 
 	"github.com/butler/butler/internal/budget"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 type EffectState string
@@ -146,7 +147,9 @@ func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract, c
 			return p, fmt.Errorf("external effect requires a supported receipt contract")
 		}
 	case "external_idempotency":
-		if b.ToolName != "http.request" || b.Effect != EffectCommit || p.VerificationMethod != "external_receipt_v1" || (p.IdempotencyHeader != "Idempotency-Key" && p.IdempotencyHeader != "X-Idempotency-Key") {
+		extension := contract.GetExtension()
+		reviewedExtension := extension != nil && b.ExtensionID == extension.GetExtensionId() && b.ExtensionManifestHash == extension.GetManifestHash() && b.ExtensionGeneration == extension.GetGeneration() && b.ExtensionAccessRevision > 0 && strings.HasPrefix(b.ToolName, "extension."+extension.GetExtensionId()+".") && extension.GetEffect() == "commit" && proto.Equal(extension.GetReceipt(), contract.GetEffectContract())
+		if b.ToolName != "http.request" && !reviewedExtension || b.Effect != EffectCommit || p.VerificationMethod != "external_receipt_v1" || (p.IdempotencyHeader != "Idempotency-Key" && p.IdempotencyHeader != "X-Idempotency-Key") {
 			return p, fmt.Errorf("unsupported external idempotency contract")
 		}
 		resource, err := url.Parse(b.Resource)

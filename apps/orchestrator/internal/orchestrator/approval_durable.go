@@ -81,6 +81,14 @@ func (s *Service) resumeProviderWithToolResult(ctx context.Context, current *ses
 		return s.provider.SubmitToolResult(ctx, transport.SubmitToolResultRequest{RunID: current.GetRunId(), ProviderSessionRef: providerSessionRefFromRun(current), ToolCallRef: toolCallID, ToolResultJSON: resultJSON})
 	}
 	inputs := append([]transport.InputItem(nil), continuation.Prepared.InputItems...)
+	// Saved package data and definitions describe a past catalog. Reload current
+	// task-scoped capabilities before a fresh provider attempt, never resurrect a
+	// disabled/upgraded extension through a durable continuation.
+	refreshed, err := s.refreshRecoveredToolContext(ctx, current.GetRunId(), inputs, continuation.Prepared.ToolDefs)
+	if err != nil {
+		return nil, err
+	}
+	inputs = refreshed.InputItems
 	history, err := s.transcript.GetTranscript(ctx, current.GetSessionKey())
 	if err != nil {
 		return nil, fmt.Errorf("load recorded action history: %w", err)
@@ -113,7 +121,7 @@ func (s *Service) resumeProviderWithToolResult(ctx context.Context, current *ses
 	if err := s.discardProviderContext(ctx, current.GetRunId()); err != nil {
 		return nil, err
 	}
-	return s.provider.StartRun(ctx, transport.StartRunRequest{Context: transport.TransportRunContext{RunID: current.GetRunId(), SessionKey: current.GetSessionKey(), ProviderName: s.config.ProviderName, ModelName: s.config.ModelName, SupportsStreaming: true, SupportsToolCalls: true}, InputItems: inputs, ToolDefinitions: continuation.Prepared.ToolDefs, StreamingEnabled: true})
+	return s.provider.StartRun(ctx, transport.StartRunRequest{Context: transport.TransportRunContext{RunID: current.GetRunId(), SessionKey: current.GetSessionKey(), ProviderName: s.config.ProviderName, ModelName: s.config.ModelName, SupportsStreaming: true, SupportsToolCalls: true}, InputItems: inputs, ToolDefinitions: refreshed.ToolDefs, StreamingEnabled: true})
 }
 
 func (s *Service) discardProviderContext(ctx context.Context, runID string) error {

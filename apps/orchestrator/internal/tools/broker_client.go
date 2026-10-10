@@ -18,6 +18,17 @@ type BrokerClient struct {
 	client toolbrokerv1.ToolBrokerServiceClient
 }
 
+func (c *BrokerClient) ListToolsForRun(ctx context.Context, runID string) ([]*toolbrokerv1.ToolContract, error) {
+	if strings.TrimSpace(runID) == "" {
+		return c.ListTools(ctx)
+	}
+	response, err := c.client.ListTools(ctx, &toolbrokerv1.ListToolsRequest{RunId: runID, Limit: 64})
+	if err != nil {
+		return nil, err
+	}
+	return response.GetTools(), nil
+}
+
 func (c *BrokerClient) PrepareAction(ctx context.Context, call *toolbrokerv1.ToolCall) (actionauth.PreparedAction, error) {
 	response, err := c.client.PrepareToolCall(ctx, &toolbrokerv1.PrepareToolCallRequest{ToolCall: call, LogicalActionRef: actionauth.LogicalReference(ctx)})
 	if err != nil {

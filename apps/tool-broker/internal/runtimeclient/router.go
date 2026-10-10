@@ -18,16 +18,39 @@ import (
 )
 
 type Router struct {
-	log   *slog.Logger
-	mu    sync.Mutex
-	conns map[string]*grpc.ClientConn
+	log    *slog.Logger
+	mu     sync.Mutex
+	conns  map[string]*grpc.ClientConn
+	tokens map[string]string
 }
 
 func New(log *slog.Logger) *Router {
 	if log == nil {
 		log = slog.Default()
 	}
-	return &Router{log: logger.WithComponent(log, "runtime-router"), conns: make(map[string]*grpc.ClientConn)}
+	return &Router{log: logger.WithComponent(log, "runtime-router"), conns: make(map[string]*grpc.ClientConn), tokens: map[string]string{}}
+}
+
+// SetTargetAuthentication is immutable operator bootstrap wiring.
+func (r *Router) SetTargetAuthentication(target, token string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if target == "" || len(token) < 32 || r.conns[target] != nil {
+		return fmt.Errorf("invalid runtime authentication configuration")
+	}
+	r.tokens[target] = token
+	return nil
+}
+func (r *Router) ProbeExtension(ctx context.Context, target string, req *runtimev1.ProbeExtensionRequest) (*runtimev1.ProbeExtensionResponse, error) {
+	client, err := r.clientFor(target)
+	if err != nil {
+		return nil, err
+	}
+	result, err := client.ProbeExtension(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("reviewed extension readiness runtime unavailable")
+	}
+	return result, nil
 }
 
 func (r *Router) Execute(ctx context.Context, toolCall *toolbrokerv1.ToolCall, contract *toolbrokerv1.ToolContract, resolved []credentials.ResolvedSecret) (*toolbrokerv1.ToolResult, error) {
@@ -104,7 +127,11 @@ func (r *Router) clientFor(target string) (runtimev1.ToolRuntimeServiceClient, e
 	if conn, ok := r.conns[target]; ok {
 		return runtimev1.NewToolRuntimeServiceClient(conn), nil
 	}
-	conn, err := grpc.NewClient(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	options := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	if token := r.tokens[target]; token != "" {
+		options = append(options, grpc.WithPerRPCCredentials(actionauth.ServiceTokenCredentials{Token: token}))
+	}
+	conn, err := grpc.NewClient(target, options...)
 	if err != nil {
 		return nil, fmt.Errorf("dial runtime target %s: %w", target, err)
 	}

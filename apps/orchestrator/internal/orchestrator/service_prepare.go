@@ -9,6 +9,7 @@ import (
 
 	promptmgmt "github.com/butler/butler/apps/orchestrator/internal/prompt"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
+	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/memory/sanitize"
 	memoryservice "github.com/butler/butler/internal/memory/service"
@@ -135,11 +136,24 @@ func (s *Service) attachToolContext(ctx context.Context, prepared *preparedRun) 
 	if prepared == nil || s.config.ToolCatalog == nil {
 		return nil
 	}
-	contracts, err := s.config.ToolCatalog.ListTools(ctx)
+	var contracts []*toolbrokerv1.ToolContract
+	var err error
+	if scoped, ok := s.config.ToolCatalog.(interface {
+		ListToolsForRun(context.Context, string) ([]*toolbrokerv1.ToolContract, error)
+	}); ok && prepared.CurrentRunID != "" {
+		contracts, err = scoped.ListToolsForRun(ctx, prepared.CurrentRunID)
+	} else {
+		contracts, err = s.config.ToolCatalog.ListTools(ctx)
+	}
 	if err != nil {
 		return fmt.Errorf("load tool contracts: %w", err)
 	}
 	prepared.ToolDefs = toolDefinitionsFromContracts(contracts)
+	for _, contract := range contracts {
+		if extension := contract.GetExtension(); extension != nil {
+			prepared.InputItems = append(prepared.InputItems, content.Data(map[string]any{"extension_operation": contract.GetToolName(), "package_description": contract.GetDescription(), "manifest_source": extension.GetSource(), "manifest_version": extension.GetVersion()}, content.Origin{Kind: content.Document, Sensitivity: content.Private, SourceRefs: []string{"extension-manifest:" + extension.GetManifestHash()}}))
+		}
+	}
 	if summary := toolSummaryFromContracts(contracts); strings.TrimSpace(summary) != "" {
 		prepared.MemoryBundle["tool_summary"] = summary
 	}

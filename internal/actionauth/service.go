@@ -38,17 +38,25 @@ type ContextReader interface {
 type CredentialInspector interface {
 	InspectToolCall(context.Context, *toolbrokerv1.ToolCall) (metadataHash string, requiresApproval bool, err error)
 }
+
+// CapabilityGuard validates reviewed extension state and exact task attachment
+// before credential metadata is inspected. Missing guards fail closed.
+type CapabilityGuard interface {
+	BindAction(context.Context, *toolbrokerv1.ToolCall, *toolbrokerv1.ToolContract, ActionBinding, ContextSnapshot) (ActionBinding, error)
+}
 type Service struct {
-	store       Store
-	contexts    ContextReader
-	credentials CredentialInspector
-	now         func() time.Time
+	store        Store
+	contexts     ContextReader
+	credentials  CredentialInspector
+	capabilities CapabilityGuard
+	now          func() time.Time
 }
 
 func NewService(store Store, contexts ContextReader, credentials CredentialInspector) *Service {
 	return &Service{store: store, contexts: contexts, credentials: credentials, now: func() time.Time { return time.Now().UTC() }}
 }
-func StableActionID(runID, callID string) string { return "action_" + digest(runID+"\x00"+callID) }
+func (s *Service) SetCapabilities(guard CapabilityGuard) { s.capabilities = guard }
+func StableActionID(runID, callID string) string         { return "action_" + digest(runID+"\x00"+callID) }
 func (s *Service) liveContext(ctx context.Context, call *toolbrokerv1.ToolCall) (ContextSnapshot, error) {
 	if s == nil || s.store == nil || s.contexts == nil || call == nil {
 		return ContextSnapshot{}, fmt.Errorf("action authorization is not configured")
@@ -83,6 +91,15 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	}
 	if err := CheckExecutionPolicy(c, b.Effect); err != nil {
 		return b, false, err
+	}
+	if contract.GetExtension() != nil || strings.HasPrefix(call.GetToolName(), "extension.") {
+		if s.capabilities == nil {
+			return b, false, fmt.Errorf("reviewed capability admission is unavailable")
+		}
+		b, err = s.capabilities.BindAction(ctx, call, contract, b, c)
+		if err != nil {
+			return b, false, err
+		}
 	}
 	if _, err := NetworkReleaseRequired(call, contract); err != nil {
 		return b, false, err
@@ -201,6 +218,9 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 	}
 	if !c.AuthorityDeadline.IsZero() && c.AuthorityDeadline.Before(g.ExpiresAt) {
 		g.ExpiresAt = c.AuthorityDeadline
+	}
+	if b.ExtensionAccessExpiresAt != nil && b.ExtensionAccessExpiresAt.Before(g.ExpiresAt) {
+		g.ExpiresAt = *b.ExtensionAccessExpiresAt
 	}
 	if !g.ExpiresAt.After(s.now()) {
 		return Grant{}, ErrOwnerAuthority

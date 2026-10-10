@@ -1,6 +1,7 @@
 package registry
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -16,7 +17,13 @@ import (
 
 type Registry struct {
 	toolsByName map[string]*toolbrokerv1.ToolContract
+	extensions  ExtensionSource
 }
+type ExtensionSource interface {
+	GetContract(context.Context, string) (*toolbrokerv1.ToolContract, error)
+}
+
+func (r *Registry) SetExtensions(source ExtensionSource) { r.extensions = source }
 
 type fileConfig struct {
 	Tools []toolConfig `json:"tools"`
@@ -119,8 +126,21 @@ func (r *Registry) Get(toolName string) (*toolbrokerv1.ToolContract, bool) {
 	}
 	return cloneContract(contract), true
 }
+func (r *Registry) GetContext(ctx context.Context, toolName string) (*toolbrokerv1.ToolContract, bool) {
+	if strings.HasPrefix(toolName, "extension.") {
+		if r == nil || r.extensions == nil {
+			return nil, false
+		}
+		contract, err := r.extensions.GetContract(ctx, toolName)
+		return contract, err == nil
+	}
+	return r.Get(toolName)
+}
 
 func (r *Registry) Validate(call *toolbrokerv1.ToolCall) (bool, *toolbrokerv1.ToolContract, *toolbrokerv1.ToolError) {
+	return r.ValidateContext(context.Background(), call)
+}
+func (r *Registry) ValidateContext(ctx context.Context, call *toolbrokerv1.ToolCall) (bool, *toolbrokerv1.ToolContract, *toolbrokerv1.ToolError) {
 	if call == nil {
 		return false, nil, validationError("tool_call is required")
 	}
@@ -128,7 +148,7 @@ func (r *Registry) Validate(call *toolbrokerv1.ToolCall) (bool, *toolbrokerv1.To
 	if toolName == "" {
 		return false, nil, validationError("tool_name is required")
 	}
-	contract, ok := r.Get(toolName)
+	contract, ok := r.GetContext(ctx, toolName)
 	if !ok {
 		return false, nil, validationError("tool contract not found")
 	}
@@ -185,21 +205,16 @@ func ValidateArgs(schemaJSON, argsJSON string) error {
 
 func validateValue(value any, schema schemaNode, path string) error {
 	if len(schema.OneOf) > 0 {
-		var firstErr error
-		matched := false
+		matched := 0
 		for _, candidate := range schema.OneOf {
 			if err := validateValue(value, candidate, path); err == nil {
-				matched = true
-				firstErr = nil
-				break
-			} else if firstErr == nil {
-				firstErr = err
+				matched++
 			}
 		}
-		if firstErr != nil {
-			return fmt.Errorf("%s must match one of the allowed schemas", path)
+		if matched != 1 {
+			return fmt.Errorf("%s must match exactly one allowed schema", path)
 		}
-		if matched && schema.Type == "" && len(schema.Properties) == 0 && len(schema.Required) == 0 && len(schema.Enum) == 0 && schema.Items == nil {
+		if schema.Type == "" && len(schema.Properties) == 0 && len(schema.Required) == 0 && len(schema.Enum) == 0 && schema.Items == nil {
 			return nil
 		}
 	}

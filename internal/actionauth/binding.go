@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"sort"
 	"strings"
+	"time"
 
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 )
@@ -139,9 +140,10 @@ func ContractHash(contract *toolbrokerv1.ToolContract) (string, error) {
 		Name, Class, Input, Output, Target, Risk, Status string
 		CredentialRefs, Approval                         bool
 		Domains, Tools                                   []string
-		Revision                                         string                       `json:",omitempty"`
-		EffectContract                                   *toolbrokerv1.EffectContract `json:",omitempty"`
-	}{contract.GetToolName(), contract.GetToolClass(), input, output, contract.GetRuntimeTarget(), contract.GetRiskLevel(), contract.GetStatus(), contract.GetSupportsCredentialRefs(), contract.GetRequiresApproval(), domains, tools, contract.GetContractRevision(), contract.GetEffectContract()})
+		Revision                                         string                          `json:",omitempty"`
+		EffectContract                                   *toolbrokerv1.EffectContract    `json:",omitempty"`
+		Extension                                        *toolbrokerv1.ExtensionContract `json:",omitempty"`
+	}{contract.GetToolName(), contract.GetToolClass(), input, output, contract.GetRuntimeTarget(), contract.GetRiskLevel(), contract.GetStatus(), contract.GetSupportsCredentialRefs(), contract.GetRequiresApproval(), domains, tools, contract.GetContractRevision(), contract.GetEffectContract(), contract.GetExtension()})
 	return digest(string(encoded)), nil
 }
 
@@ -189,6 +191,26 @@ func BuildBinding(actionID string, call *toolbrokerv1.ToolCall, contract *toolbr
 		return ActionBinding{}, "", err
 	}
 	binding := ActionBinding{ActionID: actionID, RunID: call.GetRunId(), ToolCallID: call.GetToolCallId(), ToolName: call.GetToolName(), ContractHash: contractHash, ContractRevision: contract.GetContractRevision(), ArgsHash: digest(args), Resource: resource, CredentialRefs: refs, TaskID: context.TaskID, TaskRevision: context.TaskRevision, ConstraintsRevision: context.ConstraintsRevision, OwnerID: context.OwnerID, Effect: classifyEffect(call.GetToolName(), object)}
+	if extension := contract.GetExtension(); extension != nil {
+		if !strings.HasPrefix(call.GetToolName(), "extension."+extension.GetExtensionId()+".") || extension.GetGeneration() <= 0 || extension.GetManifestHash() == "" {
+			return ActionBinding{}, "", fmt.Errorf("reviewed extension contract is invalid")
+		}
+		switch extension.GetMethod() {
+		case "GET", "HEAD":
+			if extension.GetEffect() != "read" {
+				return ActionBinding{}, "", fmt.Errorf("extension read effect is invalid")
+			}
+			binding.Effect = EffectRead
+		case "POST", "PUT", "PATCH", "DELETE":
+			if extension.GetEffect() != "commit" {
+				return ActionBinding{}, "", fmt.Errorf("extension mutation effect is invalid")
+			}
+			binding.Effect = EffectCommit
+		default:
+			return ActionBinding{}, "", fmt.Errorf("extension operation is unsupported")
+		}
+		binding.ExtensionID, binding.ExtensionManifestHash, binding.ExtensionGeneration = extension.GetExtensionId(), extension.GetManifestHash(), extension.GetGeneration()
+	}
 	if a := context.Authority; a != nil {
 		if a.TaskID != context.TaskID || a.OwnerID != context.OwnerID {
 			return ActionBinding{}, "", ErrOwnerAuthority
@@ -199,6 +221,15 @@ func BuildBinding(actionID string, call *toolbrokerv1.ToolCall, contract *toolbr
 	encoded, _ := json.Marshal(binding)
 	binding.ActionHash = digest(string(encoded))
 	return binding, args, nil
+}
+
+// BindExtensionAccess is trusted catalog metadata, not a model-selected grant.
+func BindExtensionAccess(binding ActionBinding, revision int64, expiresAt time.Time) ActionBinding {
+	binding.ExtensionAccessRevision, binding.ExtensionAccessExpiresAt = revision, &expiresAt
+	binding.ActionHash = ""
+	encoded, _ := json.Marshal(binding)
+	binding.ActionHash = digest(string(encoded))
+	return binding
 }
 
 func argumentRefs(value any) ([]CredentialRef, error) {
@@ -297,4 +328,13 @@ func classifyEffect(tool string, args map[string]any) Effect {
 	default:
 		return EffectUnknown
 	}
+}
+
+// CatalogEffect is advisory capability filtering only. Exact action args still
+// determine and authorize HTTP methods during preparation/dispatch.
+func CatalogEffect(contract *toolbrokerv1.ToolContract) Effect {
+	if e := contract.GetExtension(); e != nil {
+		return Effect(e.GetEffect())
+	}
+	return classifyEffect(contract.GetToolName(), nil)
 }

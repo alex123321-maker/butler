@@ -44,6 +44,8 @@ Sprint 0 through Sprint 7 are implemented in the repository backlog and reflecte
 - `apps/tool-browser/` - browser automation runtime.
 - `apps/tool-http/` - HTTP runtime.
 - `apps/tool-doctor/` - self-diagnostics runtime.
+- `apps/tool-extension/` - optional reviewed HTTP-JSON executor with separate
+  runtime authentication, public resource bounds and no package-code execution.
 
 ## Documentation
 
@@ -58,6 +60,13 @@ Sprint 0 through Sprint 7 are implemented in the repository backlog and reflecte
 - [Sprint Backlog](docs/planning/butler-backlog.yaml)
 
 All architecture documents are written in Russian with English technical terms.
+
+Reviewed extension installation is available through the authenticated
+`/extensions` owner page. Installation, review, enablement, readiness and task
+access stay separate. Start with the [optional installation guide](deploy/extensions/README.md)
+and [lifecycle contract](docs/architecture/reviewed-extension-lifecycle.md).
+The reference project connector prepares one synthetic README artifact with
+recipient proof; it does not modify a real repository or run a build.
 
 ## License
 

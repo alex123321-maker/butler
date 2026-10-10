@@ -1,5 +1,10 @@
 # Butler — Tooling and Execution Specification
 
+Installed declarative capability admission is specified in
+[reviewed extension lifecycle](reviewed-extension-lifecycle.md). Immutable
+version/review state and current task permission are checked before credential
+inspection and within irreversible dispatch; package code is never installed.
+
 Current execution policy is defined by
 [exact action authorization](action-authorization-contract.md): the complete
 action, current contract/resource/task versions and credential metadata are

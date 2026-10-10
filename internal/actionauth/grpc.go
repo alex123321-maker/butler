@@ -15,8 +15,12 @@ import (
 // boundary. Knowing a run_id is not evidence of being its Butler worker.
 func ExecutionUnaryInterceptor(token string) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, request any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+		scopedList := false
+		if r, ok := request.(interface{ GetRunId() string }); ok && strings.HasSuffix(info.FullMethod, "/ListTools") {
+			scopedList = r.GetRunId() != ""
+		}
 		switch {
-		case strings.HasSuffix(info.FullMethod, "/PrepareToolCall"), strings.HasSuffix(info.FullMethod, "/AuthorizeToolCall"), strings.HasSuffix(info.FullMethod, "/ExecuteToolCall"):
+		case strings.HasSuffix(info.FullMethod, "/PrepareToolCall"), strings.HasSuffix(info.FullMethod, "/AuthorizeToolCall"), strings.HasSuffix(info.FullMethod, "/ExecuteToolCall"), scopedList:
 			values := metadata.ValueFromIncomingContext(ctx, "authorization")
 			if len(token) < 32 || len(values) != 1 || subtle.ConstantTimeCompare([]byte(values[0]), []byte("Bearer "+token)) != 1 {
 				return nil, status.Error(codes.Unauthenticated, "private action service authentication required")

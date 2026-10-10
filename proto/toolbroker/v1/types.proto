@@ -64,6 +64,37 @@ message ToolContract {
   repeated string allowed_tools = 13;
   string contract_revision = 14;
   EffectContract effect_contract = 15;
+  // Reviewed installed capability metadata, set only by the durable catalog.
+  ExtensionContract extension = 16;
+}
+
+message ExtensionResource {
+  string origin = 1;
+  string path_prefix = 2;
+}
+
+message ExtensionCredential {
+  string input = 1;
+  string field = 2;
+  bool required = 3;
+}
+
+message ExtensionContract {
+  string extension_id = 1;
+  string manifest_hash = 2;
+  string version = 3;
+  string source = 4;
+  int64 generation = 5;
+  string profile_pin = 6;
+  string method = 7;
+  string effect = 8;
+  repeated ExtensionResource resources = 9;
+  repeated ExtensionCredential credentials = 10;
+  int64 timeout_ms = 11;
+  int64 egress_bytes = 12;
+  int64 output_bytes = 13;
+  // Optional reviewed recipient guarantee, exact copy of ToolContract policy.
+  EffectContract receipt = 14;
 }
 
 // Operator-owned capabilities, never model args. Missing values are unsafe.

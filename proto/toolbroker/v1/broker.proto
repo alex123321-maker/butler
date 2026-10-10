@@ -61,6 +61,10 @@ message ExecuteToolCallResponse {
 message ListToolsRequest {
   string tool_class = 1;
   bool include_disabled = 2;
+  // Private worker context. Missing run_id lists builtin diagnostics only.
+  string run_id = 3;
+  string query = 4;
+  int32 limit = 5;
 }
 
 message ListToolsResponse {
