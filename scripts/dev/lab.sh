@@ -15,6 +15,11 @@ case "$action" in
       install -d -m 700 "$root/secrets"
       (umask 077; openssl rand -hex 48 > "$BUTLER_ACTION_AUTHORITY_TOKEN_SOURCE")
     fi
+    # Compose file-backed secrets preserve host ownership. Both core services
+    # run as UID10001 and need to read this private file without widening mode.
+    docker run --rm --user 0:0 --volume "$root/secrets:/private" \
+      --entrypoint sh alpine:3.21 -c \
+      'chown 10001:10001 /private/action-authority.token; chmod 600 /private/action-authority.token'
     if [[ ! -f "$root/lab.env" ]]; then
       umask 077
       {
