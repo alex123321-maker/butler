@@ -61,5 +61,7 @@ permits confirmation/reconciliation.
 The reviewed release was subsequently deployed to the main lab. A private
 pre-migration PostgreSQL dump preceded migration050. Startup now runs the current
 migrator before Broker readiness recovery; the executor, Broker, Orchestrator and
-Web report healthy. Live owner listing, anonymous rejection and Web/API browser
-checks are required separately from the synthetic recipient fixture above.
+Web report healthy. Live authenticated owner listing through the private Broker
+relay, anonymous rejection and read-only Web/API browser checks all passed. They
+are separate from the synthetic recipient fixture above and installed no owner
+package or real project action on the main deployment.
