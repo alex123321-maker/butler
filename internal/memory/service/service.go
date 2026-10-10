@@ -98,6 +98,9 @@ type Config struct {
 	BundleBudget  int
 	KeywordLimit  int
 	ScopeOrder    []string
+	// ScopeResolver is trusted composition derived from current task ownership
+	// and exact owner grants; request/model text cannot populate extra scopes.
+	ScopeResolver func(context.Context) ([]Scope, error)
 	Log           *slog.Logger
 	Metrics       *metrics.Registry
 }
@@ -169,6 +172,24 @@ func New(cfg Config) *Service {
 func (s *Service) BuildBundle(ctx context.Context, req BundleRequest) (Bundle, error) {
 	req.UserMessage = sanitize.Text(req.UserMessage)
 	scopes := s.scopes(req.SessionKey, req.UserID)
+	if s.config.ScopeResolver != nil {
+		extra, e := s.config.ScopeResolver(ctx)
+		if e != nil {
+			return Bundle{}, e
+		}
+		if len(extra) > 9 {
+			return Bundle{}, fmt.Errorf("too many current memory scopes")
+		}
+		seen := map[Scope]bool{}
+		combined := make([]Scope, 0, len(scopes)+len(extra))
+		for _, scope := range append(extra, scopes...) {
+			if !seen[scope] {
+				combined = append(combined, scope)
+				seen[scope] = true
+			}
+		}
+		scopes = combined
+	}
 	profileEntries, err := s.loadProfile(ctx, scopes)
 	if err != nil {
 		return Bundle{}, err
@@ -229,7 +250,7 @@ func (s *Service) loadProfile(ctx context.Context, scopes []Scope) ([]map[string
 			if origin.Sensitivity == content.Secret {
 				continue
 			}
-			result = append(result, map[string]any{"key": entry.ProfileKey(), "summary": entry.ProfileSummary(), "scope_type": scope.Type, "origin": origin})
+			result = append(result, map[string]any{"key": entry.ProfileKey(), "summary": entry.ProfileSummary(), "scope_type": scope.Type, "scope_id": scope.ID, "origin": origin})
 			if len(result) >= s.config.ProfileLimit {
 				return result, nil
 			}

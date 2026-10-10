@@ -70,7 +70,7 @@ func (r *HybridReader) SearchDetailed(ctx context.Context, scopes []memoryservic
 	if r == nil || r.Store == nil || r.Store.Guard == nil {
 		return report, ErrAccess
 	}
-	if strings.TrimSpace(query) == "" || len(query) > 2048 || len(scopes) == 0 || len(scopes) > 3 || limit < 1 || limit > 4 {
+	if strings.TrimSpace(query) == "" || len(query) > 2048 || len(scopes) == 0 || len(scopes) > 12 || limit < 1 || limit > 4 {
 		return report, ErrInvalid
 	}
 	if operationOrigin(ctx).Sensitivity == content.Secret {

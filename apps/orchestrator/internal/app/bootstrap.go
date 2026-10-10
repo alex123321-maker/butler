@@ -202,6 +202,17 @@ func New(ctx context.Context) (*App, error) {
 	if restoreErr := sourceCatalog.Reconcile(ctx); restoreErr != nil {
 		log.Warn("memory unavailable: deletion anchor requires operator reconciliation")
 	}
+	ownedSemantic, closeOwnedSemantic := configureOwnedSemantic(log, sourceCatalog, budgetController)
+	semanticReady := false
+	defer func() {
+		if !semanticReady && closeOwnedSemantic != nil {
+			closeOwnedSemantic()
+		}
+	}()
+	var semanticReader memoryservice.SemanticReader
+	if ownedSemantic != nil {
+		semanticReader = ownedSemantic.Reader
+	}
 
 	memoryRuntimeConfig := cfg
 	if memoryRuntimeConfig.MemoryPipelineEnabled {
@@ -235,6 +246,18 @@ func New(ctx context.Context) (*App, error) {
 		transcriptStore,
 		providerResult.Provider,
 		flow.Config{
+			MemoryScopeResolver: func(ctx context.Context) ([]memoryservice.Scope, error) {
+				scopes, e := sourceCatalog.ExtraScopes(ctx, "memory_read")
+				if e != nil {
+					return nil, e
+				}
+				out := make([]memoryservice.Scope, len(scopes))
+				for i, scope := range scopes {
+					out[i] = memoryservice.Scope{Type: scope.Type, ID: scope.ID}
+				}
+				return out, nil
+			},
+			SemanticMemory:        semanticReader,
 			MemorySources:         sourceCatalog,
 			Budgets:               budgetController,
 			Completion:            finalResults,
@@ -321,6 +344,7 @@ func New(ctx context.Context) (*App, error) {
 	}
 	apiServer := apiservice.NewServer(inputWorker, logger.WithComponent(log, "api"))
 	httpServer := newHTTPServer(httpServerDeps{
+		memoryIndexing:         ownedSemantic,
 		sourceCatalog:          sourceCatalog,
 		cfg:                    cfg,
 		finalResults:           finalResults,
@@ -382,6 +406,7 @@ func New(ctx context.Context) (*App, error) {
 	)
 	orchestratorv1.RegisterOrchestratorServiceServer(grpcServer, apiServer)
 
+	semanticReady = true
 	return &App{
 		config:                   cfg,
 		log:                      log,
@@ -400,6 +425,8 @@ func New(ctx context.Context) (*App, error) {
 		initiativeDeliveryWorker: initiativeDeliveryWorker,
 		auxiliaryWorker:          auxiliaryWorker,
 		memoryCleanup:            &catalog.CleanupWorker{Store: sourceCatalog, Cleaner: privacyCacheCleaner{store: working.NewTransientStore(redis.Client())}},
+		memoryIndexing:           ownedSemantic,
+		memoryIndexingClose:      closeOwnedSemantic,
 	}, nil
 }
 

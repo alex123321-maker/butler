@@ -6,6 +6,7 @@ import (
 	"github.com/butler/butler/internal/budget"
 	"log/slog"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -36,6 +37,8 @@ import (
 	"github.com/butler/butler/internal/memory/chunks"
 	memorydoctor "github.com/butler/butler/internal/memory/doctor"
 	"github.com/butler/butler/internal/memory/episodic"
+	"github.com/butler/butler/internal/memory/indexing"
+	"github.com/butler/butler/internal/memory/ingestion"
 	"github.com/butler/butler/internal/memory/pipeline"
 	"github.com/butler/butler/internal/memory/profile"
 	"github.com/butler/butler/internal/memory/provenance"
@@ -50,6 +53,7 @@ import (
 
 type httpServerDeps struct {
 	initiativeStore        *initiative.Store
+	memoryIndexing         *indexing.Runtime
 	sourceCatalog          *catalog.Store
 	ownerGoals             *goal.Manager
 	finalResults           *completion.Coordinator
@@ -121,7 +125,11 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	promptServer.SetOwnerControlAuth(deps.ownerAuth)
 	memoryServer := apiservice.NewMemoryServer(working.NewStore(deps.postgres.Pool()), deps.profileStore, deps.episodicStore, deps.chunkStore, provenance.NewStore(deps.postgres.Pool()))
 	memoryServer.SetWriters(deps.profileStore, deps.episodicStore, deps.chunkStore)
-	memoryCatalogServer := &apiservice.MemoryCatalogServer{Store: deps.sourceCatalog, Auth: deps.ownerAuth}
+	parser := ingestion.Parser{}
+	if strings.TrimSpace(os.Getenv("BUTLER_MEMORY_PDF_PARSER_ENABLED")) == "true" {
+		parser.Pages = ingestion.NewPDFClient()
+	}
+	memoryCatalogServer := &apiservice.MemoryCatalogServer{Store: deps.sourceCatalog, Auth: deps.ownerAuth, Ingestion: &ingestion.Store{Catalog: deps.sourceCatalog, Parser: parser}, Indexing: deps.memoryIndexing}
 	providerServer := apiservice.NewProviderServer(deps.authManager, deps.providerResult.ProviderName, map[string]string{
 		modelprovider.ProviderOpenAI:        deps.cfg.OpenAIModel,
 		modelprovider.ProviderOpenAICodex:   deps.cfg.OpenAICodexModel,

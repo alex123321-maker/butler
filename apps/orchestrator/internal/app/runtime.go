@@ -21,7 +21,7 @@ func (a *App) Run(ctx context.Context) error {
 	completionDone := make(chan struct{})
 	go func() {
 		defer close(completionDone)
-		done := make(chan struct{}, 3)
+		done := make(chan struct{}, 4)
 		workers := 0
 		if a.outboxWorker != nil {
 			workers++
@@ -38,6 +38,10 @@ func (a *App) Run(ctx context.Context) error {
 		if a.memoryCleanup != nil {
 			workers++
 			go func() { _ = a.memoryCleanup.Run(runCtx); done <- struct{}{} }()
+		}
+		if a.memoryIndexing != nil {
+			workers++
+			go func() { _ = a.memoryIndexing.Run(runCtx); done <- struct{}{} }()
 		}
 		for range workers {
 			<-done
@@ -115,6 +119,9 @@ func (a *App) Run(ctx context.Context) error {
 }
 
 func (a *App) shutdown(runErr error) error {
+	if a.memoryIndexingClose != nil {
+		a.memoryIndexingClose()
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 

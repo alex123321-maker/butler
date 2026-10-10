@@ -1,646 +1,99 @@
 <template>
   <main class="page">
-    <section class="page-header">
-      <div class="page-header__content">
-        <p class="page-kicker">Memory</p>
-        <h2 class="page-title">Memory</h2>
-        <p class="page-copy">
-          Inspect live task context and long-term memory without manually digging up internal scope ids first.
-        </p>
-      </div>
-      <div class="page-header__actions">
-        <AppButton variant="secondary" :disabled="pending" @click="showManualScope = !showManualScope">
-          {{ showManualScope ? 'Hide manual scope' : 'Manual scope' }}
-        </AppButton>
-        <AppButton variant="primary" :disabled="pending || !hasScope" @click="refresh">Refresh</AppButton>
-      </div>
-    </section>
-
-    <section class="page-section">
-      <div class="context-header">
-        <div>
-          <h3 class="section-title">Current context</h3>
-          <p class="section-copy">
-            Working memory lives on the session scope, so this page now defaults to the most recent session when possible.
-          </p>
-        </div>
-        <div class="pill-row" v-if="routeSourceTask || hasScope">
-          <span v-if="routeSourceTask" class="pill">From {{ routeSourceTask }}</span>
-          <span v-if="hasScope" class="pill">{{ selectedScopeLabel }}</span>
-        </div>
-      </div>
-
-      <div v-if="recentSessions.length" class="recent-contexts">
-        <button
-          v-for="session in recentSessions"
-          :key="session.session_key"
-          type="button"
-          class="context-card"
-          :class="{ 'context-card--active': filters.scopeType === 'session' && filters.scopeID === session.session_key }"
-          @click="selectSession(session.session_key)"
-        >
-          <p class="context-card__title">{{ session.channel }}</p>
-          <p class="context-card__meta">{{ session.session_key }}</p>
-          <p class="context-card__meta">Updated {{ formatDateTime(session.updated_at) }}</p>
-        </button>
-      </div>
-
-      <p v-else-if="sessionsPending" class="placeholder-text">Loading recent contexts…</p>
-      <p v-else-if="!hasScope" class="placeholder-text">No recent session context is available yet.</p>
-
-      <div v-if="showManualScope" class="manual-scope">
-        <label>
-          Scope type
-          <AppSelect v-model="filters.scopeType">
-            <option value="session">Session</option>
-            <option value="user">User</option>
-            <option value="global">Global</option>
-          </AppSelect>
-        </label>
-        <label>
-          Scope id
-          <AppInput v-model="filters.scopeID" type="text" placeholder="telegram:chat:123 or user id" />
-        </label>
-        <div class="manual-scope__actions">
-          <AppButton variant="primary" :disabled="pending || !hasScope" @click="refresh">Load scope</AppButton>
-        </div>
-      </div>
-    </section>
-
-    <section v-if="hasScope" class="page-section">
-      <div class="memory-filters">
-        <label>
-          Confirmation
-          <AppSelect v-model="filters.confirmationState">
-            <option value="all">All</option>
-            <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="rejected">Rejected</option>
-            <option value="auto_confirmed">Auto-confirmed</option>
-          </AppSelect>
-        </label>
-        <label>
-          Status
-          <AppSelect v-model="filters.effectiveStatus">
-            <option value="all">All</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="suppressed">Suppressed</option>
-            <option value="expired">Expired</option>
-            <option value="deleted">Deleted</option>
-          </AppSelect>
-        </label>
-        <label class="memory-toggle">
-          <input v-model="filters.showSuppressed" type="checkbox" />
-          <span>Show suppressed entries</span>
-        </label>
-      </div>
-    </section>
-
-    <AppAlert v-if="error" tone="error">{{ error }}</AppAlert>
-
-    <AppEmptyState
-      v-if="!hasScope && !sessionsPending"
-      title="No memory context selected"
-      description="Pick a recent session above or open memory from a specific task."
-    />
-    <p v-else-if="pending" class="placeholder-text">Loading memory…</p>
-
-    <template v-else>
-      <section class="memory-layout">
-        <section class="memory-card memory-card--primary">
-          <div class="memory-card__header">
-            <div>
-              <h3>Working memory</h3>
-              <p class="memory-card__copy">Live context Butler is actively using for the selected session.</p>
-            </div>
-            <span class="pill" v-if="memoryData?.working?.status">{{ memoryData.working.status }}</span>
-          </div>
-
-          <div v-if="memoryData?.working" class="memory-fields">
-            <MemoryField label="Goal" :value="memoryData.working.goal" />
-            <MemoryField label="Status" :value="memoryData.working.status" />
-            <MemoryField label="Source" :value="`${memoryData.working.source_type}:${memoryData.working.source_id}`" />
-            <MemoryField label="Pending steps" :value="memoryData.working.pending_steps_json" block />
-            <MemoryField label="Entities" :value="memoryData.working.entities_json" block />
-            <MemoryField label="Provenance" :value="memoryData.working.provenance" block />
-          </div>
-          <p v-else class="placeholder-text">
-            {{ filters.scopeType === 'session' ? 'No working memory is stored for this session yet.' : 'Working memory is only available on session context.' }}
-          </p>
-        </section>
-
-        <section class="memory-card">
-          <div class="memory-card__header">
-            <div>
-              <h3>Profile memory</h3>
-              <p class="memory-card__copy">Long-lived facts and preferences Butler should remember about you.</p>
-            </div>
-            <span class="pill">{{ filteredProfile.length }}</span>
-          </div>
-          <div v-if="filteredProfile.length" class="memory-list">
-            <article v-for="item in filteredProfile" :key="item.id" class="memory-item" :class="{ 'memory-item--suppressed': item.suppressed }">
-              <header>
-                <strong>{{ item.key }}</strong>
-                <div class="badges">
-                  <AppBadge :tone="getConfirmationTone(item.confirmation_state)">{{ item.confirmation_state }}</AppBadge>
-                  <AppBadge :tone="getEffectiveTone(item.effective_status)">{{ item.effective_status }}</AppBadge>
-                </div>
-              </header>
-              <p class="summary">{{ item.summary }}</p>
-              <MemoryField label="Value" :value="item.value_json" block />
-              <MemoryField label="Provenance" :value="item.provenance" block />
-              <MemoryField v-if="item.edited_by" label="Edited by" :value="`${item.edited_by} at ${item.edited_at}`" />
-              <MemoryField label="Links" :value="formatLinks(item.links)" block />
-
-              <div class="memory-actions">
-                <template v-if="item.capabilities.confirmable && item.confirmation_state === 'pending'">
-                  <AppButton variant="primary" :disabled="actionPending" @click="handleConfirm('profile', item.id)">Confirm</AppButton>
-                  <AppButton variant="danger" :disabled="actionPending" @click="handleReject('profile', item.id)">Reject</AppButton>
-                </template>
-                <template v-if="item.capabilities.suppressible">
-                  <AppButton v-if="!item.suppressed" variant="secondary" :disabled="actionPending" @click="handleSuppress('profile', item.id)">Suppress</AppButton>
-                  <AppButton v-else variant="secondary" :disabled="actionPending" @click="handleUnsuppress('profile', item.id)">Unsuppress</AppButton>
-                </template>
-                <AppButton v-if="item.capabilities.editable" variant="secondary" :disabled="actionPending" @click="openEditDialog(item)">Edit</AppButton>
-                <AppButton v-if="item.capabilities.deletable && item.effective_status !== 'deleted'" variant="danger" :disabled="actionPending" @click="handleDelete('profile', item.id)">Delete</AppButton>
-              </div>
-            </article>
-          </div>
-          <p v-else class="placeholder-text">No profile memory entries for this scope.</p>
-        </section>
-
-        <section class="memory-card">
-          <div class="memory-card__header">
-            <div>
-              <h3>Episodes</h3>
-              <p class="memory-card__copy">Important moments Butler extracted from past work and conversations.</p>
-            </div>
-            <span class="pill">{{ filteredEpisodic.length }}</span>
-          </div>
-          <div v-if="filteredEpisodic.length" class="memory-list">
-            <article v-for="item in filteredEpisodic" :key="item.id" class="memory-item" :class="{ 'memory-item--suppressed': item.suppressed }">
-              <header>
-                <strong>{{ item.summary }}</strong>
-                <div class="badges">
-                  <AppBadge :tone="getConfirmationTone(item.confirmation_state)">{{ item.confirmation_state }}</AppBadge>
-                  <AppBadge :tone="getEffectiveTone(item.effective_status)">{{ item.effective_status }}</AppBadge>
-                </div>
-              </header>
-              <p class="summary">{{ item.content }}</p>
-              <MemoryField label="Tags" :value="item.tags_json" block />
-              <MemoryField label="Provenance" :value="item.provenance" block />
-              <MemoryField v-if="item.edited_by" label="Edited by" :value="`${item.edited_by} at ${item.edited_at}`" />
-              <MemoryField label="Links" :value="formatLinks(item.links)" block />
-
-              <div class="memory-actions">
-                <template v-if="item.capabilities.confirmable && item.confirmation_state === 'pending'">
-                  <AppButton variant="primary" :disabled="actionPending" @click="handleConfirm('episodic', item.id)">Confirm</AppButton>
-                  <AppButton variant="danger" :disabled="actionPending" @click="handleReject('episodic', item.id)">Reject</AppButton>
-                </template>
-                <template v-if="item.capabilities.suppressible">
-                  <AppButton v-if="!item.suppressed" variant="secondary" :disabled="actionPending" @click="handleSuppress('episodic', item.id)">Suppress</AppButton>
-                  <AppButton v-else variant="secondary" :disabled="actionPending" @click="handleUnsuppress('episodic', item.id)">Unsuppress</AppButton>
-                </template>
-                <AppButton v-if="item.capabilities.deletable && item.effective_status !== 'deleted'" variant="danger" :disabled="actionPending" @click="handleDelete('episodic', item.id)">Delete</AppButton>
-              </div>
-            </article>
-          </div>
-          <p v-else class="placeholder-text">No episodic memory entries for this scope.</p>
-        </section>
-
-        <section class="memory-card">
-          <div class="memory-card__header">
-            <div>
-              <h3>Reference chunks</h3>
-              <p class="memory-card__copy">Chunked long-form knowledge Butler can reuse later.</p>
-            </div>
-            <span class="pill">{{ filteredChunks.length }}</span>
-          </div>
-          <div v-if="filteredChunks.length" class="memory-list">
-            <article v-for="item in filteredChunks" :key="item.id" class="memory-item" :class="{ 'memory-item--suppressed': item.suppressed }">
-              <header>
-                <strong>{{ item.title }}</strong>
-                <div class="badges">
-                  <AppBadge :tone="getEffectiveTone(item.effective_status)">{{ item.effective_status }}</AppBadge>
-                </div>
-              </header>
-              <p class="summary">{{ item.summary }}</p>
-              <MemoryField label="Content" :value="item.content" block />
-              <MemoryField label="Tags" :value="item.tags_json" block />
-              <MemoryField label="Provenance" :value="item.provenance" block />
-              <MemoryField label="Links" :value="formatLinks(item.links)" block />
-
-              <div class="memory-actions">
-                <template v-if="item.capabilities.suppressible">
-                  <AppButton v-if="!item.suppressed" variant="secondary" :disabled="actionPending" @click="handleSuppress('chunk', item.id)">Suppress</AppButton>
-                  <AppButton v-else variant="secondary" :disabled="actionPending" @click="handleUnsuppress('chunk', item.id)">Unsuppress</AppButton>
-                </template>
-                <AppButton v-if="item.capabilities.deletable" variant="danger" :disabled="actionPending" @click="handleDelete('chunk', item.id)">Delete</AppButton>
-              </div>
-            </article>
-          </div>
-          <p v-else class="placeholder-text">No chunk memory entries for this scope.</p>
-        </section>
-      </section>
+    <section class="page-header"><div><h2 class="page-title">Memory and sources</h2><p class="page-copy">Source versions, owner decisions and derived search indexes.</p></div></section>
+    <AppPanel title="Owner access">
+      <label>Owner control token <input v-model="token" type="password" autocomplete="off" aria-label="Owner control token" /></label>
+      <p>Personal memory requires authenticated access. The token stays in this page's memory.</p>
+      <div class="actions"><AppButton :disabled="!token || pending" @click="load">Load private memory</AppButton><AppButton :disabled="!view || pending" @click="download('/api/v4/memory/export', 'butler-memory.ndjson')">Export all memory</AppButton></div>
+      <AppAlert v-if="error" tone="error">{{ error }}</AppAlert><AppAlert v-if="receipt" tone="info">{{ receipt }}</AppAlert>
+    </AppPanel>
+    <template v-if="view">
+      <AppPanel title="Source catalogue">
+        <p>Showing at most {{ view.source_list_limit }} sources and {{ view.claim_list_limit }} claims. Export includes all revisions. Source text never grants permissions; <NuxtLink to="/goals">current goals and mandates</NuxtLink> control execution.</p>
+        <label>Filter sources <input v-model="filter" aria-label="Filter sources" /></label>
+        <div v-for="s in filtered" :key="s.source_id" class="memory-row"><div><strong>{{ s.title || s.external_key }}</strong><p>{{ s.source_kind }} · {{ s.status }} · revision {{ s.revision }} · {{ s.scope_type }}:{{ s.scope_id }}</p><p>{{ s.author || 'Unknown author' }} · event {{ s.event_time || 'unknown' }} · ingested {{ s.extracted_at }}</p><p>{{ s.origin?.kind }} · {{ s.origin?.sensitivity }} · parents {{ s.origin?.parent_refs?.join(', ') }}</p></div><AppButton :disabled="pending" @click="inspect(s.source_id)">Inspect source</AppButton></div>
+      </AppPanel>
+      <AppPanel v-if="detail" title="Source detail">
+        <p>{{ detail.source.source_id }} · revision {{ detail.source.revision }} · {{ detail.source.status }}</p>
+        <p>Retained versions {{ detail.revisions.length }} (view limit {{ detail.revision_limit }}). Deleted content is purged; identifiers and deletion evidence remain.</p>
+        <details v-for="r in detail.revisions" :key="r.revision"><summary>Revision {{ r.revision }} · {{ r.author }} · event {{ r.event_time || 'unknown' }}</summary><pre>{{ r.body }}</pre><p>Hash {{ r.content_hash }}</p></details>
+        <div v-for="a in detail.assets" :key="a.source_revision" class="memory-row"><div><p>{{ a.path || 'Deleted original' }} · {{ a.format }} · revision {{ a.source_revision }} · {{ a.status }} {{ a.error_code }}</p><p>{{ a.parser_version }} · {{ a.method }} · {{ a.uncertain ? 'OCR is uncertain' : 'Structured text' }} · repository {{ a.repository_revision }}</p></div><AppButton :disabled="pending || a.status === 'deleted'" @click="download(`/api/v4/memory/original?source_id=${encodeURIComponent(detail.source.source_id)}&revision=${a.source_revision}`, a.path || 'original')">Download original</AppButton></div>
+        <div v-for="f in detail.fragments" :key="f.chunk_id" class="fragment"><strong>{{ f.title }}</strong><pre>{{ f.text }}</pre><p>{{ JSON.stringify(f.locator) }}</p><AppButton :disabled="pending" @click="openCitation(f.chunk_id)">Open fragment context</AppButton></div>
+        <template v-if="citation"><h3>Original fragment and neighbours</h3><p>{{ citation.source.title }} · revision {{ citation.source.revision }} · {{ citation.source.author }} · {{ citation.source.event_time || 'Unknown event time' }}</p><pre>{{ citation.fragment.Text }}</pre><pre v-for="n in citation.neighbors || []" :key="n.Key">{{ n.Text }}</pre></template>
+        <form v-if="!tombstoned" class="memory-form" @submit.prevent="correct">
+          <h3>Correct this source</h3><p>The displayed revision is checked before saving. Old versions remain historical; affected derived records must be rebuilt.</p>
+          <label>Source title <input v-model="editTitle" required aria-label="Source title" /></label><label>Source text <textarea v-model="editBody" rows="6" aria-label="Source text" /></label><label>Source author <input v-model="editAuthor" aria-label="Source author" /></label><label>Original event time <input v-model="editTime" type="datetime-local" aria-label="Original event time" /></label>
+          <label v-if="detail.source.status === 'quarantined'"><input v-model="reviewLegacy" type="checkbox" /> I reviewed this legacy source; extracted values remain candidates</label><AppButton :disabled="pending || (detail.source.status === 'quarantined' && !reviewLegacy)" type="submit">Save source correction</AppButton>
+        </form>
+        <form v-if="detail.source.status === 'active'" class="memory-form" @submit.prevent="propose"><h3>Propose a scoped claim</h3><label>Claim key <input v-model="claimKey" required aria-label="Claim key" /></label><label>Claim value as JSON <textarea v-model="claimValue" required aria-label="Claim value as JSON" /></label><label>Claim summary <input v-model="claimSummary" required aria-label="Claim summary" /></label><p>Extraction confidence is not factual truth. Confirmation requires an explicit owner decision.</p><AppButton type="submit" :disabled="pending">Save candidate</AppButton></form>
+        <div v-if="!tombstoned" class="actions"><AppButton variant="danger" :disabled="pending" @click="remove('delete')">Delete source and derivatives</AppButton><AppButton :disabled="pending" @click="remove('revoke')">Revoke source access and purge content</AppButton></div>
+      </AppPanel>
+      <AppPanel title="Scoped claims and history">
+        <p>Conflicting candidates remain separate. Confirmation replaces only the displayed current claim in the same scope/key; a concurrent change requires reloading.</p>
+        <div v-for="c in view.claims" :key="c.claim_id" class="memory-row"><div><strong>{{ c.key }} · {{ c.status }}</strong><p>{{ c.scope_type }}:{{ c.scope_id }} · {{ c.summary }}</p><pre>{{ JSON.stringify(c.value) }}</pre><p>Source {{ c.source_id }} revision {{ c.source_revision }} · extraction confidence {{ c.extraction_confidence }} · replaces {{ c.supersedes_id || 'none' }}</p></div><div v-if="c.status === 'candidate'" class="actions"><AppButton :disabled="pending" @click="decide(c, false)">Confirm candidate</AppButton><AppButton :disabled="pending" @click="decide(c, true)">Reject candidate</AppButton></div></div>
+      </AppPanel>
+      <AppPanel title="Upload a selected source">
+        <p>Up to 8 MiB and 2,000 fragments. Document content is data. PDF/OCR uses the optional isolated parser; failed files retain a diagnostic and are not indexed.</p>
+        <form class="memory-form" @submit.prevent="upload">
+          <label>File <input type="file" aria-label="Source file" @change="chooseFile" /></label><label>Stable source key <input v-model="uploadKey" required aria-label="Stable source key" placeholder="repository:logical-file" /></label><label>Expected source revision <input v-model.number="uploadRevision" type="number" min="0" required aria-label="Expected source revision" /></label>
+          <label>Format <select v-model="format" aria-label="Source format"><option v-for="f in formats" :key="f" :value="f">{{ f }}</option></select></label><label>Scope <select v-model="scopeType"><option value="user">Owner</option><option value="project">Project</option><option value="task">Task</option><option value="session">Conversation</option></select></label><label>Scope ID <input v-model="scopeId" required aria-label="Source scope ID" /></label><label>File path / title <input v-model="uploadPath" required aria-label="File path" /></label><label>Repository revision <input v-model="repoRevision" aria-label="Repository revision" /></label><label>Author <input v-model="uploadAuthor" aria-label="Upload author" /></label><label>Event time <input v-model="uploadTime" type="datetime-local" aria-label="Upload event time" /></label><AppButton type="submit" :disabled="pending || !file">Parse and save source</AppButton>
+        </form>
+      </AppPanel>
+      <AppPanel title="Task access and owned local indexing">
+        <p>{{ view.semantic_enabled ? 'Owned local worker available.' : 'Semantic worker is disabled until its private local service and finite budget policy are configured.' }} Index completion does not confirm claims or activate search automatically.</p>
+        <label>Operation <select v-model="operation" aria-label="Memory operation"><option value="grants">Grant exact source access to a current task</option><option v-if="view.semantic_enabled" value="index">Enqueue bounded local index</option><option v-if="view.semantic_enabled" value="index-review">Activate reviewed index</option></select></label>
+        <form class="memory-form" @submit.prevent="applyOperation"><label>Versioned operation JSON <textarea v-model="operationJSON" rows="9" required aria-label="Versioned operation JSON" /></label><p>{{ operationHint }}</p><AppButton type="submit" :disabled="pending">Apply versioned memory operation</AppButton></form>
+        <div v-for="j in view.index_jobs" :key="j.job_id" class="memory-row"><div><strong>{{ j.job_id }} · {{ j.status }}</strong><p>Generation {{ j.generation_id }} · attempts {{ j.attempts }} · {{ j.error_code }} · deadline {{ j.deadline }}</p><p>Purpose {{ j.purpose }} · original task {{ j.task_id || 'owner finite grant' }} · original run {{ j.original_run_id || 'none' }}</p></div></div>
+      </AppPanel>
     </template>
-
-    <AppDialog :model-value="editDialogOpen" @update:model-value="onDialogToggle">
-      <template #title>
-        <h3 class="dialog-title">Edit profile memory</h3>
-      </template>
-      <div class="edit-form">
-        <label>
-          Key
-          <AppInput :model-value="editingItem?.key" disabled />
-        </label>
-        <label>
-          Summary
-          <AppInput v-model="editForm.summary" type="text" placeholder="Summary" />
-        </label>
-        <label>
-          Value (JSON)
-          <textarea v-model="editForm.value_json" class="json-textarea" rows="6" placeholder='{"key": "value"}'></textarea>
-        </label>
-      </div>
-      <template #footer>
-        <div class="dialog-actions">
-          <AppButton variant="secondary" @click="closeEditDialog">Cancel</AppButton>
-          <AppButton variant="primary" :disabled="actionPending" @click="submitEdit">Save</AppButton>
-        </div>
-      </template>
-    </AppDialog>
   </main>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useSessions } from '~/composables/useApi'
-import { formatDateTime } from '~/entities/task/presentation'
-import { useMemoryStore } from '~/shared/model/stores/memory'
-import type { MemoryLinkRecord, MemoryType, ConfirmationState, EffectiveStatus, ProfileMemoryRecord } from '~/entities/memory/api'
-import AppAlert from '~/shared/ui/AppAlert.vue'
-import AppBadge from '~/shared/ui/AppBadge.vue'
+import AppPanel from '~/shared/ui/AppPanel.vue'
 import AppButton from '~/shared/ui/AppButton.vue'
-import AppDialog from '~/shared/ui/AppDialog.vue'
-import AppEmptyState from '~/shared/ui/AppEmptyState.vue'
-import AppInput from '~/shared/ui/AppInput.vue'
-import AppSelect from '~/shared/ui/AppSelect.vue'
-
-useHead({ title: 'Memory - Butler' })
-
-const memoryStore = useMemoryStore()
-const { records: memoryData, pending, actionPending, error, filters, filteredProfile, filteredEpisodic, filteredChunks } = storeToRefs(memoryStore)
-const route = useRoute()
-const { data: sessionsData, pending: sessionsPending } = useSessions()
-
-const hasScope = computed(() => filters.value.scopeID.trim().length > 0)
-const showManualScope = ref(false)
-const initializedScope = ref(false)
-const routeSourceTask = computed(() => String(route.query.sourceTask || ''))
-
-const recentSessions = computed(() => {
-  return [...(sessionsData.value ?? [])]
-    .sort((left, right) => new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime())
-    .slice(0, 6)
-})
-
-const selectedScopeLabel = computed(() => {
-  if (!hasScope.value) {
-    return 'No scope selected'
-  }
-  return `${filters.value.scopeType}: ${filters.value.scopeID}`
-})
-
-const routeScopeType = computed(() => {
-  const value = route.query.scopeType ?? route.query.scope_type
-  return typeof value === 'string' ? value : ''
-})
-
-const routeScopeID = computed(() => {
-  const value = route.query.scopeId ?? route.query.scope_id
-  return typeof value === 'string' ? value : ''
-})
-
-watch(
-  [routeScopeType, routeScopeID, recentSessions],
-  async ([scopeType, scopeID, sessions]) => {
-    if (scopeType && scopeID) {
-      initializedScope.value = true
-      await memoryStore.load({
-        scopeType: scopeType as 'session' | 'user' | 'global',
-        scopeID,
-      })
-      return
-    }
-
-    if (initializedScope.value || hasScope.value || !sessions.length) {
-      return
-    }
-
-    initializedScope.value = true
-    await memoryStore.load({
-      scopeType: 'session',
-      scopeID: sessions[0].session_key,
-    })
-  },
-  { immediate: true },
-)
-
-const editDialogOpen = ref(false)
-const editingItem = ref<ProfileMemoryRecord | null>(null)
-const editForm = ref({
-  summary: '',
-  value_json: '',
-})
-
-const refresh = async () => {
-  await memoryStore.load()
-}
-
-async function selectSession(sessionKey: string) {
-  await memoryStore.load({ scopeType: 'session', scopeID: sessionKey })
-}
-
-function formatLinks(links: MemoryLinkRecord[]) {
-  if (!links || links.length === 0) return '[]'
-  return JSON.stringify(links, null, 2)
-}
-
-function getConfirmationTone(state: ConfirmationState): 'default' | 'success' | 'warning' | 'error' | 'info' {
-  switch (state) {
-    case 'confirmed':
-    case 'auto_confirmed':
-      return 'success'
-    case 'pending':
-      return 'warning'
-    case 'rejected':
-      return 'error'
-    default:
-      return 'default'
-  }
-}
-
-function getEffectiveTone(status: EffectiveStatus): 'default' | 'success' | 'warning' | 'error' | 'info' {
-  switch (status) {
-    case 'active':
-      return 'success'
-    case 'inactive':
-      return 'default'
-    case 'suppressed':
-      return 'warning'
-    case 'expired':
-    case 'deleted':
-      return 'error'
-    default:
-      return 'default'
-  }
-}
-
-async function handleConfirm(type: MemoryType, id: number) {
-  await memoryStore.confirm(type, id)
-}
-
-async function handleReject(type: MemoryType, id: number) {
-  await memoryStore.reject(type, id)
-}
-
-async function handleSuppress(type: MemoryType, id: number) {
-  await memoryStore.suppress(type, id)
-}
-
-async function handleUnsuppress(type: MemoryType, id: number) {
-  await memoryStore.unsuppress(type, id)
-}
-
-async function handleDelete(type: MemoryType, id: number) {
-  if (confirm('Are you sure you want to delete this memory entry?')) {
-    await memoryStore.remove(type, id)
-  }
-}
-
-function openEditDialog(item: ProfileMemoryRecord) {
-  editingItem.value = item
-  editForm.value = {
-    summary: item.summary,
-    value_json: item.value_json,
-  }
-  editDialogOpen.value = true
-}
-
-function closeEditDialog() {
-  editDialogOpen.value = false
-  editingItem.value = null
-  editForm.value = { summary: '', value_json: '' }
-}
-
-function onDialogToggle(value: boolean) {
-  if (!value) {
-    closeEditDialog()
-  }
-}
-
-async function submitEdit() {
-  if (!editingItem.value) return
-  await memoryStore.patch('profile', editingItem.value.id, {
-    summary: editForm.value.summary,
-    value_json: editForm.value.value_json,
-  })
-  closeEditDialog()
-}
+import AppAlert from '~/shared/ui/AppAlert.vue'
+import { ownerAuthorityRequest } from '~/shared/api/owner-goals'
+interface Source { source_id: string; external_key: string; source_kind: string; scope_type: string; scope_id: string; revision: number; status: string; title: string; body: string; author: string; event_time: string | null; extracted_at: string; origin?: { kind: string; sensitivity: string; parent_refs?: string[] } }
+interface Claim { claim_id: string; key: string; scope_type: string; scope_id: string; summary: string; value: unknown; status: string; source_id: string; source_revision: number; extraction_confidence: number; supersedes_id: string }
+interface Asset { source_revision: number; path: string; format: string; repository_revision: string; parser_version: string; method: string; status: string; uncertain: boolean; error_code: string }
+interface Fragment { Key: string; Text: string }
+interface Inspection { source: Source; revisions: { revision: number; body: string; author: string; event_time: string; content_hash: string }[]; fragments: { chunk_id: number; title: string; text: string; locator: unknown }[]; assets: Asset[]; revision_limit: number }
+interface View { sources: Source[]; claims: Claim[]; source_list_limit: number; claim_list_limit: number; semantic_enabled: boolean; index_jobs: { job_id: string; status: string; generation_id: string; attempts: number; error_code: string; purpose: string; deadline: string; task_id: string; original_run_id: string }[] }
+const token = ref(''); const pending = ref(false); const error = ref(''); const receipt = ref(''); const view = ref<View | null>(null); const detail = ref<Inspection | null>(null); const citation = ref<{ source: Source; fragment: Fragment; neighbors: Fragment[] } | null>(null)
+const filter = ref(''); const editTitle = ref(''); const editBody = ref(''); const editAuthor = ref(''); const editTime = ref(''); const reviewLegacy = ref(false); const claimKey = ref(''); const claimValue = ref('""'); const claimSummary = ref('')
+const file = ref<File | null>(null); const uploadKey = ref(''); const uploadRevision = ref(0); const format = ref('text'); const formats = ['text', 'markdown', 'go', 'csv', 'tsv', 'messages', 'docx', 'pdf']; const scopeType = ref('user'); const scopeId = ref(''); const uploadPath = ref(''); const repoRevision = ref(''); const uploadAuthor = ref(''); const uploadTime = ref(''); const operation = ref('grants'); const operationJSON = ref('')
+const operationHint = computed(() => operation.value === 'grants' ? 'Fields: source_id, task_id, task_revision, purpose. The task and source must belong to this owner.' : operation.value === 'index' ? 'Fields: job {job_id, kind:index, purpose, task_id, original_run_id, sources [{source_id, revision, access_revision, content_hash}], allowance {model_turns,tokens,active_millis,provider_input_bytes}, deadline}, scope_type, scope_id, max_chunks. A completed session lease cannot authorize this worker.' : 'Fields: generation_id, expected_previous, proof {artifact_ref,artifact_sha256,corpus_version,cases,baseline_top1,candidate_top1}. Reviewed quality evidence is required.')
+const filtered = computed(() => view.value?.sources.filter(s => `${s.title} ${s.external_key} ${s.scope_id}`.toLowerCase().includes(filter.value.toLowerCase())) || [])
+const tombstoned = computed(() => detail.value?.source.status === 'deleted' || detail.value?.source.status === 'revoked')
+onBeforeUnmount(() => { token.value = ''; view.value = null; detail.value = null; citation.value = null; file.value = null })
+const request = <T,>(path: string, body?: unknown) => ownerAuthorityRequest<T>(path, token.value, body)
+const localTime = (v: string | null) => v ? new Date(new Date(v).getTime() - new Date(v).getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''
+const eventTime = (v: string) => v ? new Date(v).toISOString() : null
+const loadView = async () => { view.value = await request<View>('/api/v4/memory') }
+const run = async (fn: () => Promise<void>) => { pending.value = true; error.value = ''; receipt.value = ''; try { await fn() } catch { error.value = 'Memory request rejected. Check owner access, current revision, scope or deletion anchor; reload before retrying.' } finally { pending.value = false } }
+const load = () => run(loadView)
+const loadDetail = async (id: string) => { detail.value = await request<Inspection>(`/api/v4/memory/source?source_id=${encodeURIComponent(id)}`); const s = detail.value.source; editTitle.value = s.title; editBody.value = s.body; editAuthor.value = s.author; editTime.value = localTime(s.event_time); reviewLegacy.value = false; citation.value = null }
+const inspect = (id: string) => run(() => loadDetail(id))
+const mutate = async (path: string, body: unknown) => { await request(path, body); await loadView(); if (detail.value) await loadDetail(detail.value.source.source_id); receipt.value = 'Saved with the current source revision. Historical evidence remains separate from current authority.' }
+const correct = () => run(() => mutate('/api/v4/memory/correct', { source_id: detail.value?.source.source_id, expected_revision: detail.value?.source.revision, title: editTitle.value, body: editBody.value, author: editAuthor.value, event_time: eventTime(editTime.value), review_legacy: reviewLegacy.value }))
+const propose = () => run(() => mutate('/api/v4/memory/claims', { source_id: detail.value?.source.source_id, source_revision: detail.value?.source.revision, key: claimKey.value, value: JSON.parse(claimValue.value), summary: claimSummary.value, extraction_confidence: 1 }))
+const decide = (c: Claim, reject: boolean) => run(() => { const a = view.value?.claims.find(a => a.status === 'confirmed' && a.scope_type === c.scope_type && a.scope_id === c.scope_id && a.key === c.key); return mutate('/api/v4/memory/decisions', { claim_id: c.claim_id, expected_active_id: a?.claim_id || '', reject }) })
+const remove = (action: string) => run(() => mutate('/api/v4/memory/delete', { source_id: detail.value?.source.source_id, expected_revision: detail.value?.source.revision, action }))
+const openCitation = (id: number) => run(async () => { citation.value = await request(`/api/v4/memory/citation?chunk_id=${id}`) })
+const chooseFile = (e: Event) => { file.value = (e.target as HTMLInputElement).files?.[0] || null; uploadPath.value = file.value?.name || '' }
+const upload = () => run(async () => { if (!file.value || file.value.size > 8 * 1024 * 1024) throw new Error('file limit'); const bytes = new Uint8Array(await file.value.arrayBuffer()); let binary = ''; for (let i = 0; i < bytes.length; i += 16384) binary += String.fromCharCode(...bytes.subarray(i, i + 16384)); const r = await request<{ source: Source; status: string; error_code: string; uncertain: boolean }>('/api/v4/memory/ingest', { external_key: uploadKey.value, expected_revision: uploadRevision.value, scope_type: scopeType.value, scope_id: scopeId.value, format: format.value, path: uploadPath.value, repository_revision: repoRevision.value, author: uploadAuthor.value, event_time: eventTime(uploadTime.value), original_bytes: btoa(binary) }); await loadView(); await loadDetail(r.source.source_id); receipt.value = `Source revision ${r.source.revision}: ${r.status} ${r.error_code || ''}${r.uncertain ? ' · OCR is uncertain' : ''}` })
+const applyOperation = () => run(() => mutate(`/api/v4/memory/${operation.value}`, JSON.parse(operationJSON.value)))
+const download = (path: string, filename: string) => run(async () => { const config = useRuntimeConfig(); const r = await fetch(`${String(config.public.apiBase || '').replace(/\/$/, '')}${path}`, { headers: { Authorization: `Bearer ${token.value}` }, cache: 'no-store' }); if (!r.ok) throw new Error('access'); const url = URL.createObjectURL(await r.blob()); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url) })
 </script>
 
 <style scoped>
-.context-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-4);
-  flex-wrap: wrap;
-}
-
-.recent-contexts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-3);
-}
-
-.context-card {
-  display: grid;
-  gap: var(--space-2);
-  padding: var(--space-4);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
-  background: var(--color-bg-surfaceMuted);
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.context-card--active {
-  border-color: var(--color-accent-primary);
-  background: var(--color-accent-primaryMuted);
-}
-
-.context-card__title,
-.context-card__meta {
-  margin: 0;
-}
-
-.context-card__title {
-  font-weight: var(--font-semibold);
-}
-
-.context-card__meta {
-  color: var(--color-text-secondary);
-  font-size: var(--text-sm);
-}
-
-.manual-scope {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--space-3);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--color-border-default);
-}
-
-.manual-scope label,
-.memory-filters label,
-.edit-form label {
-  display: grid;
-  gap: var(--space-2);
-  color: var(--color-text-secondary);
-  font-size: var(--text-sm);
-}
-
-.manual-scope__actions {
-  display: flex;
-  align-items: flex-end;
-}
-
-.memory-filters {
-  display: flex;
-  gap: var(--space-3);
-  align-items: flex-end;
-  flex-wrap: wrap;
-}
-
-.memory-toggle {
-  display: inline-flex !important;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.memory-layout {
-  display: grid;
-  gap: var(--space-4);
-}
-
-.memory-card {
-  display: grid;
-  gap: var(--space-4);
-  padding: var(--space-5);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-surface);
-}
-
-.memory-card--primary {
-  background: var(--color-bg-elevated);
-}
-
-.memory-card__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
-.memory-card__header h3,
-.dialog-title {
-  margin: 0;
-}
-
-.memory-card__copy,
-.summary {
-  margin: 0;
-  color: var(--color-text-secondary);
-}
-
-.memory-list {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.memory-item {
-  display: grid;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-default);
-  background: var(--color-bg-surfaceMuted);
-}
-
-.memory-item--suppressed {
-  opacity: 0.7;
-  border-left: 3px solid var(--color-state-warning);
-}
-
-.memory-item header {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-3);
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-
-.badges {
-  display: flex;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-}
-
-.memory-actions {
-  display: flex;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-  margin-top: var(--space-2);
-  padding-top: var(--space-2);
-  border-top: 1px solid var(--color-border-default);
-}
-
-.edit-form {
-  display: grid;
-  gap: var(--space-4);
-}
-
-.json-textarea {
-  width: 100%;
-  min-width: 400px;
-  background: var(--color-bg-surfaceMuted);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2) var(--space-3);
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  resize: vertical;
-}
-
-.dialog-actions {
-  display: flex;
-  gap: var(--space-2);
-  justify-content: flex-end;
-}
-
-@media (max-width: 860px) {
-  .memory-filters {
-    display: grid;
-  }
-
-  .json-textarea {
-    min-width: 100%;
-  }
-}
+.memory-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) 0; border-bottom: 1px solid var(--color-border-default); }
+.memory-form { display: grid; gap: var(--space-3); margin: var(--space-4) 0; }
+.actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+label { display: grid; gap: var(--space-2); }
+input, select, textarea { max-width: 100%; padding: var(--space-2); background: var(--color-bg-surfaceMuted); color: var(--color-text-primary); border: 1px solid var(--color-border-default); border-radius: var(--radius-sm); }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 24rem; overflow: auto; }
+.fragment { padding: var(--space-3); border: 1px solid var(--color-border-default); margin: var(--space-3) 0; }
+@media (max-width: 860px) { .memory-row { display: grid; } }
 </style>

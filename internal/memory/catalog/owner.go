@@ -145,6 +145,7 @@ func (s *Store) Export(ctx context.Context, emit func(any) error) error {
 		{"claim", `SELECT to_jsonb(c) FROM memory_claims c WHERE owner_id=$1 ORDER BY claim_id`},
 		{"dependency", `SELECT to_jsonb(d) FROM memory_source_dependencies d JOIN memory_sources s ON s.source_id=d.child_source_id WHERE s.owner_id=$1 ORDER BY d.child_source_id,d.parent_source_id`},
 		{"deletion", `SELECT to_jsonb(d) FROM memory_deletions d WHERE owner_id=$1 ORDER BY watermark`},
+		{"original_asset", `SELECT (to_jsonb(a)-'original_bytes')||jsonb_build_object('original_bytes_base64',encode(a.original_bytes,'base64')) FROM memory_source_assets a JOIN memory_sources s USING(source_id) WHERE s.owner_id=$1 ORDER BY source_id,source_revision`},
 	}
 	for _, q := range queries {
 		rows, e := tx.Query(ctx, q.sql, own)

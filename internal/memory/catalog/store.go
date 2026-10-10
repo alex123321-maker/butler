@@ -463,7 +463,7 @@ func (s *Store) View(ctx context.Context) ([]Source, error) {
 	if e != nil {
 		return nil, e
 	}
-	var result []Source
+	result := []Source{}
 	for _, id := range ids {
 		v, e := getSourceTx(ctx, s.pool, id, false)
 		if e != nil {

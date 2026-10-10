@@ -13,6 +13,7 @@ import (
 	"github.com/butler/butler/internal/config"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/indexing"
 	"github.com/butler/butler/internal/memory/pipeline"
 	"github.com/butler/butler/internal/metrics"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
@@ -38,4 +39,6 @@ type App struct {
 	initiativeDeliveryWorker *deliveryoutbox.Worker
 	auxiliaryWorker          *completion.AuxiliaryWorker
 	memoryCleanup            *catalog.CleanupWorker
+	memoryIndexing           *indexing.Runtime
+	memoryIndexingClose      func()
 }

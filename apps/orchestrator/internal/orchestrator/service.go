@@ -171,6 +171,8 @@ type Config struct {
 	TransientStore        TransientWorkingStore
 	TransientTTL          time.Duration
 	MemoryBundles         MemoryBundleService
+	SemanticMemory        memoryservice.SemanticReader
+	MemoryScopeResolver   func(context.Context) ([]memoryservice.Scope, error)
 	PromptManager         PromptManager
 	PromptAssembler       PromptAssembler
 	ProfileLimit          int
@@ -305,10 +307,12 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 			WorkingStore:  bundleWorkingStore,
 			SummaryReader: cfg.SummaryReader,
 			Embeddings:    cfg.Embeddings,
+			Semantic:      cfg.SemanticMemory,
 			ProfileLimit:  cfg.ProfileLimit,
 			EpisodeLimit:  cfg.EpisodeLimit,
 			ChunkLimit:    2,
 			ScopeOrder:    cfg.MemoryScopes,
+			ScopeResolver: cfg.MemoryScopeResolver,
 			Log:           log,
 			Metrics:       nil,
 		})

@@ -6,7 +6,10 @@ import (
 )
 
 type FragmentResult struct {
-	Inserted, Updated, Unchanged, Deleted int `json:"-"`
+	Inserted  int `json:"inserted"`
+	Updated   int `json:"updated"`
+	Unchanged int `json:"unchanged"`
+	Deleted   int `json:"deleted"`
 }
 
 // PublishFragments is a current-source replacement. Stable semantic keys retain
@@ -59,11 +62,11 @@ func (s *Store) PublishFragments(ctx context.Context, ref SourceRef, fragments [
 	if e != nil {
 		return result, e
 	}
-	for _, f := range fragments {
+	for ordinal, f := range fragments {
 		sum := hash([]string{f.Title, f.Text})
 		old, exists := existing[f.Key]
 		var id int64
-		origin := mustJSON(map[string]any{"kind": "document", "sensitivity": src.Origin.Sensitivity, "source_refs": []string{src.ID}, "parent_refs": append(src.Origin.SourceRefs, src.Origin.ParentRefs...), "catalog": map[string]any{"source_id": src.ID, "revision": src.Revision, "access_revision": src.AccessRevision, "fragment_key": f.Key}})
+		origin := mustJSON(map[string]any{"kind": "document", "sensitivity": src.Origin.Sensitivity, "source_refs": []string{src.ID}, "parent_refs": append(src.Origin.SourceRefs, src.Origin.ParentRefs...), "locator": f.Locator, "catalog": map[string]any{"source_id": src.ID, "revision": src.Revision, "access_revision": src.AccessRevision, "fragment_key": f.Key}})
 		if exists {
 			id = old.id
 			if sum == old.sum {
@@ -80,7 +83,7 @@ func (s *Store) PublishFragments(ctx context.Context, ref SourceRef, fragments [
 				return result, e
 			}
 		}
-		if _, e = tx.Exec(ctx, `UPDATE memory_object_sources SET source_revision=$3,fragment_key=$4,fragment_hash=$5,locator=$6 WHERE memory_type='chunk' AND object_id=$1 AND source_id=$2`, id, src.ID, src.Revision, f.Key, sum, f.Locator); e != nil {
+		if _, e = tx.Exec(ctx, `UPDATE memory_object_sources SET source_revision=$3,fragment_key=$4,fragment_hash=$5,locator=$6,fragment_ordinal=$7 WHERE memory_type='chunk' AND object_id=$1 AND source_id=$2`, id, src.ID, src.Revision, f.Key, sum, f.Locator, ordinal); e != nil {
 			return result, e
 		}
 		delete(existing, f.Key)
@@ -126,7 +129,7 @@ func (s *Store) Citation(ctx context.Context, chunkID int64) (Citation, error) {
 	if e != nil {
 		return c, e
 	}
-	rows, e := tx.Query(ctx, `SELECT o.fragment_key,p.title,p.content,o.locator FROM memory_object_sources o JOIN memory_chunks p ON p.id=o.object_id WHERE o.memory_type='chunk' AND o.source_id=$1 AND o.object_id<>$2 ORDER BY abs(o.object_id-$2),o.object_id LIMIT 2`, sid, chunkID)
+	rows, e := tx.Query(ctx, `SELECT o.fragment_key,p.title,p.content,o.locator FROM memory_object_sources o JOIN memory_chunks p ON p.id=o.object_id WHERE o.memory_type='chunk' AND o.source_id=$1 AND o.object_id<>$2 ORDER BY abs(o.fragment_ordinal-(SELECT fragment_ordinal FROM memory_object_sources WHERE memory_type='chunk' AND object_id=$2)),o.fragment_ordinal LIMIT 2`, sid, chunkID)
 	if e != nil {
 		return c, e
 	}

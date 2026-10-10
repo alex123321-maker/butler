@@ -57,7 +57,7 @@ func exactOnlyQuery(query string, terms []string) bool {
 	return len(terms) == 1 && strings.Trim(strings.TrimSpace(query), "`\"'()?!") == terms[0]
 }
 
-const lexicalDocument = `coalesce(title,'')||' '||coalesce(content,'')||' '||coalesce(source_id,'')`
+const lexicalDocument = `coalesce(title,'')||' '||coalesce(content,'')||' '||coalesce(source_id,'')||' '||coalesce(provenance->'locator'->>'path','')||' '||coalesce(provenance->'locator'->>'repository_revision','')`
 const lexicalBounds = `octet_length(title)<=1024 AND octet_length(content)<=32768 AND octet_length(summary)<=32768 AND octet_length(source_id)<=2048 AND octet_length(provenance::text)<=16384`
 
 // Lexical uses current chunks rather than stale index text. The guard validates

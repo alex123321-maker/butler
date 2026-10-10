@@ -150,7 +150,7 @@ func (s *Store) Claims(ctx context.Context) ([]Claim, error) {
 	if e != nil {
 		return nil, e
 	}
-	var result []Claim
+	result := []Claim{}
 	for _, id := range ids {
 		c, e := getClaim(ctx, s.pool, id, false)
 		if e != nil {

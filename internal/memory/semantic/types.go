@@ -57,7 +57,7 @@ func (s Space) WireID() string {
 type Scope struct{ Type, ID string }
 
 func (s Scope) valid() bool {
-	return (s.Type == "session" || s.Type == "user" || s.Type == "global") && strings.TrimSpace(s.ID) != "" && len(s.ID) <= 256
+	return (s.Type == "session" || s.Type == "user" || s.Type == "global" || s.Type == "project" || s.Type == "task") && strings.TrimSpace(s.ID) != "" && len(s.ID) <= 256
 }
 
 type Source struct {

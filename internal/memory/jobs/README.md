@@ -24,8 +24,9 @@ access or budget initialization. Context copies its source slice and claim time.
 Ancestor revisions are included in the durable manifest, so a parent correction
 also invalidates an unchanged report or chunk.
 
-Production legacy auxiliary workers remain disabled. Semantic/parser adapters
-and completion scheduling are follow-up wiring; this package alone does not
-claim completed issue #22/#23/#25. Actual PG/race tests prove post-run independent
+Production legacy cloud auxiliary workers remain disabled. The indexing Runtime
+uses `EnqueueWithPublication` to save job and generation projection atomically;
+`ClaimKind` isolates workers. Every model read/publication uses the current job
+context, independently of old leases. Actual PG/race tests prove post-run independent
 ownership, stale takeover/task/source rejection, per-attempt concurrent allowance
 and local/cloud/secret fail-closed boundaries with pool size two.

@@ -81,6 +81,15 @@ func canonical(refs []catalog.SourceRef) ([]catalog.SourceRef, string, error) {
 	return refs, hex.EncodeToString(sum[:]), nil
 }
 func (s *Store) Enqueue(ctx context.Context, r Request) (Job, error) {
+	return s.enqueue(ctx, r, nil)
+}
+
+// EnqueueWithPublication atomically persists trusted owning-module metadata.
+// The callback uses this transaction; it cannot borrow another pool connection.
+func (s *Store) EnqueueWithPublication(ctx context.Context, r Request, publish func(context.Context, pgx.Tx, Job) error) (Job, error) {
+	return s.enqueue(ctx, r, publish)
+}
+func (s *Store) enqueue(ctx context.Context, r Request, publish func(context.Context, pgx.Tx, Job) error) (Job, error) {
 	r.Deadline = r.Deadline.UTC().Truncate(time.Microsecond)
 	a, ok := owneridentity.FromContext(ctx)
 	if !ok {
@@ -165,6 +174,11 @@ func (s *Store) Enqueue(ctx context.Context, r Request) (Job, error) {
 	if old.OwnerID != j.OwnerID || old.Fingerprint != j.Fingerprint || old.Kind != j.Kind || old.Purpose != j.Purpose || old.TaskID != j.TaskID || old.TaskRevision != j.TaskRevision || old.ConstraintsRevision != j.ConstraintsRevision || !old.Deadline.Equal(j.Deadline) || old.Allowance != j.Allowance || old.OriginalRunID != j.OriginalRunID {
 		return Job{}, ErrClaim
 	}
+	if publish != nil {
+		if e = publish(ctx, tx, old); e != nil {
+			return Job{}, e
+		}
+	}
 	return old, tx.Commit(ctx)
 }
 func jsonBytes(v any) []byte { b, _ := json.Marshal(v); return b }
@@ -189,6 +203,14 @@ func load(ctx context.Context, q interface {
 // Claim is a bounded durable queue claim, not execution permission. Every
 // actual inference/publication subsequently checks current source authority.
 func (s *Store) Claim(ctx context.Context) (Job, bool, error) {
+	return s.ClaimKind(ctx, "")
+}
+func (s *Store) ClaimKind(ctx context.Context, kind string) (Job, bool, error) {
+	switch kind {
+	case "", "index", "extract", "summary", "ingest":
+	default:
+		return Job{}, false, ErrClaim
+	}
 	if e := s.catalog.CheckRestore(ctx); e != nil {
 		return Job{}, false, e
 	}
@@ -206,7 +228,7 @@ func (s *Store) Claim(ctx context.Context) (Job, bool, error) {
 		return Job{}, false, e
 	}
 	var jid string
-	e = tx.QueryRow(ctx, `UPDATE memory_aux_jobs SET status='running',claim_id=$1,claim_epoch=claim_epoch+1,claim_until=LEAST(deadline,clock_timestamp()+INTERVAL '2 minutes'),attempts=attempts+1,updated_at=clock_timestamp() WHERE job_id=(SELECT job_id FROM memory_aux_jobs WHERE status='pending' AND next_attempt_at<=clock_timestamp() AND deadline>clock_timestamp() AND attempts<max_attempts ORDER BY next_attempt_at,job_id FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING job_id`, id).Scan(&jid)
+	e = tx.QueryRow(ctx, `UPDATE memory_aux_jobs SET status='running',claim_id=$1,claim_epoch=claim_epoch+1,claim_until=LEAST(deadline,clock_timestamp()+INTERVAL '2 minutes'),attempts=attempts+1,updated_at=clock_timestamp() WHERE job_id=(SELECT job_id FROM memory_aux_jobs WHERE status='pending' AND ($2='' OR kind=$2) AND next_attempt_at<=clock_timestamp() AND deadline>clock_timestamp() AND attempts<max_attempts ORDER BY next_attempt_at,job_id FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING job_id`, id, kind).Scan(&jid)
 	if e == pgx.ErrNoRows {
 		return Job{}, false, tx.Commit(ctx)
 	}

@@ -784,7 +784,7 @@ The memory doctor (`/api/v1/doctor/check`) now reports:
 1. ~~Точная SQL schema для memory tables.~~ — **Текущий baseline реализован** через `memory_working`, `memory_profile`, `memory_episodes`, `memory_chunks`, `memory_links`; дальнейшая эволюция schema остаётся допустимой отдельными миграциями.
 2. ~~Политика дедупликации episodic memory.~~ — **Решено:** near-duplicate эпизоды подавляются, materially different варианты сохраняются как variants по canonical summary policy.
 3. ~~Политика сохранения doctor outputs.~~ — **Решено:** doctor/tool-derived long-form data допускается только через явную allowlist-style ingestion policy с предварительной sanitization и записью в chunk memory.
-4. Формат session summary и точные правила его обновления остаются частично открытыми; текущий baseline использует compact async-updated summary path через memory worker.
+4. Session summary uses versioned verified transcript coverage and source/deletion fences. Legacy model summary workers remain disabled until independently owned admission; summaries never replace current authority.
 5. ~~Приоритет retrieval между profile, episodic и document memory.~~ — **Решено:** bundle assembly применяет явный порядок summary → working → profile → episodic → chunks в пределах budget policy.
 6. Использовать ли отдельный reranking layer (слой переранжирования) в будущем.
 
@@ -818,4 +818,3 @@ results are durably complete, retries preserve IDs, and publication rechecks the
 source graph. The measured Russian quality gate fails, so production scheduling
 remains off despite the separate source-preservation acceptance test.
 
-Persistent provenance retains transcript/tool/child/document references. A stored claim of owner instruction/public classification cannot mint authority: extracted/retrieved material is private data by default. Secret-class sources fail before extraction, summaries, model input and retrieval; logs/parser errors cannot echo model output. Sensitivity is inherited by derivatives. Suppression/expiry is distinct from physical deletion; source removal must include derived records and backups under the retention policy in [agent security boundaries](agent-security-boundaries.md). Migrations046–048 implement versioned source/claim decisions, authenticated owner correction/export and transitive privacy redaction with a persistent anti-rollback deletion anchor. See [versioned sources](versioned-memory-sources.md), which supersedes the legacy pipeline operational description above. Production legacy model auxiliary jobs remain disabled until owned adapter/scheduling integration is complete.

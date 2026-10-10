@@ -38,8 +38,9 @@ late republishing. Full manifest identity is checked on restore, not just its co
 Tests use `BUTLER_TEST_MEMORY_POSTGRES_URL`, an isolated `_test` DB, private schemas,
 pgvector in public and pool size two. Actual race tests cover privacy/backup replay,
 cache restart, stale provider/final/dispatch writes and owner correction/export.
-Structured ingestion, owner UI and semantic owned-job production adapters remain
-follow-up work. See [the contract](../../../docs/architecture/versioned-memory-sources.md)
+Structured ingestion, private owner UI and opt-in semantic job/live adapters use
+this same catalog. Inspect retains original revisions/fragments/adjacent context;
+export includes original assets without list caps. See [the contract](../../../docs/architecture/versioned-memory-sources.md)
 for the required private persistent anchor setup before deployment.
 
 `ProposeTx` supports trusted structured extraction checkpoints and exact retry

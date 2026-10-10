@@ -1,7 +1,7 @@
 # Versioned memory sources and privacy
 
 PostgreSQL remains authoritative for Transcript, Working, Episodic and Profile
-Memory. Migrations046–048 add a catalog of stable source IDs, immutable content
+Memory. Migrations 046–049 add a catalog of stable source IDs, immutable content
 revisions, reported author/event time, extraction time, scope, inherited private
 provenance, current access revision and active/quarantined/revoked/deleted status.
 The original message or document and its fragment locator remain separate from
@@ -10,7 +10,7 @@ mandates and approvals continue to use their typed operational stores.
 
 ## Decisions and current access
 
-An extraction is a candidate even at confidence1. Owner acceptance locks the
+An extraction is a candidate even at confidence 1. Owner acceptance locks the
 scope/key head and names its current accepted claim. A conflicting proposal cannot
 replace a preference because its document was uploaded later or ranked higher.
 Explicit supersession preserves the old historical claim and original sources.
@@ -38,7 +38,7 @@ Publication uses the same transaction and fresh proof after local inference.
 
 Preparing model context pins transcript source revision and deletion watermark.
 Retrieval additionally pins every source ancestor. Each provider release and its
-event stream rechecks current source proof; a250ms supervisor cancels idle calls.
+event stream rechecks current source proof; a 250 ms supervisor cancels idle calls.
 Broker grant claim and atomic final-result publication check the same pins inside
 their existing transaction, with no extra pool connection. Completed, cancelled,
 failed or finalizing runs cannot claim a fresh external dispatch. Earlier spent
@@ -58,7 +58,7 @@ owner. Task goal/constraints/mandates remain intact, while task scratch is clear
 with a bumped working revision and content-free deletion reason. Old prepared
 contexts cannot restore durable or Redis working data. Every transcript head and
 global deletion watermark changes, so late summaries cannot republish old text.
-The idempotent cache worker persists a500-key cursor per deletion and removes only
+The idempotent cache worker persists a 500-key cursor per deletion and removes only
 the owner's known session/run working keys. A Redis failure leaves cleanup pending
 for restart; current reads already deny the stale data. No global cache flush runs.
 
@@ -78,13 +78,19 @@ release. Orchestrator startup replays pending deletions before memory becomes us
 Initialize once with `memory-admin -initialize-manifest /private/deletions.log`.
 Compose mounts the `memory-deletion-anchor` volume read/write in Orchestrator and
 read-only in Broker at `/var/lib/butler-memory`; set both processes to the same
-`BUTLER_MEMORY_DELETION_MANIFEST_FILE`. Provision directory0700 and file0600 for
-container UID10001 before rollout. Initialization requires a new nonexistent file;
+`BUTLER_MEMORY_DELETION_MANIFEST_FILE`. Provision directory 0700 and file 0600 for
+container UID 10001 before rollout. Initialization requires a new nonexistent file;
 never generate an empty replacement after loss or restore. Keep the full newest
 anchor outside PG backup rollback and retain private independent copies. Restore
 that anchor first, restore PG second, then run reconciliation before access.
 Missing setup is logged generically and fails closed even if HTTP health responds.
 
+The deployment retention policy is at most 30 days for content-bearing PG backups
+unless the owner explicitly defines a stricter period. Operator backup rotation
+must erase expired copies; Butler cannot manage unknown offline media. Restoration
+of any retained backup requires the newest independent anchor and reconciliation
+before access. Tombstones/anchor copies are retained as long as any content backup
+or source derivative may exist; do not expire them with the PG content backup.
 Application replay prevents reappearance through Butler. Old backup media and
 already exported/delivered external copies require the owner's separate retention
 and erasure procedure; no application can retract an offline copy it does not own.
@@ -104,16 +110,40 @@ Only the operator-pinned internal local model service identity/endpoint can be
 used. `local_no_billing` is a price declaration, not proof of locality. Secret or
 cloud auxiliary processing fails closed. Task jobs retain original assignment and
 require an active current task; a completed task needs a separate explicit owner
-policy, not dropped task IDs or a revived lease. Production legacy extraction,
-summary and embedding workers remain disabled pending adapter/job scheduling;
-this catalog/privacy implementation alone is not full structured ingestion.
+policy, not dropped task IDs or a revived lease. Legacy model extraction and
+summary workers remain disabled. Owned local indexing is separately opt-in and
+uses current job-owned authority for all reads/inference/publication; live query
+uses current run ownership. See the indexing Runtime README for exact composition.
 
-## Verification and remaining integration
+## Structured ingestion and owner UI
+
+The owner memory page uses only versioned private APIs. It displays source/event
+and ingestion dates, immutable revisions, candidates/confirmed/superseded history,
+original assets, failure diagnostics and fragment/neighbour context. Corrections,
+acceptance, grants and deletion check current versions; no vector score or source
+recency silently resolves conflicts. The token remains only in page memory.
+
+Owner-selected Go, Markdown/text, CSV/TSV, messages and DOCX use bounded standard
+Go parsers. The optional dedicated Poppler/Tesseract rus+eng sandbox handles real
+PDF text and scanned OCR. Stable keys preserve unchanged entities/citation-only
+renames; original bytes and locators remain available until deletion. Tables
+preserve header/row context; OCR keeps method/uncertainty. No Python dependency
+was added. See [structured ingestion](../../internal/memory/ingestion/README.md)
+and [parser isolation](../../apps/memory-parser/README.md) for format/size limits.
+
+## Verification
 
 Actual PostgreSQL tests use isolated schemas and MaxConns2. Catalog/job/API,
 idle-provider cancellation, Controller/Coordinator boundaries, immutable privacy,
 backup replay, wrong history, cache restart and stale publication run under race.
 The acceptance cases also prove candidate supersession CAS, foreign-owner denial,
 parent correction, forged job manifests/allowance/deadlines and terminal-run grant
-denial. Structured Go parsers/upload lifecycle, owner UI and production semantic
-job adapters remain separate follow-up work before full memory issue acceptance.
+denial. Structured upload tests prove Russian tables/messages/long Go entities,
+duplicate/rename/single-function change, original access/revoke and corrupt-file
+isolation. Owned-runtime tests prove atomic admission/projection rollback, bounded
+retry/restart without repeated prefix inference, kind-specific claims, pool2 and
+delete during model callback. Actual PDF text/scanned OCR runs use the fixed native
+image; mocked PageAdapter tests only cover selection/error logic. Browser fixtures
+exercise owner proof, supersession history, correction/export/delete and upload
+with original context. Retrieval/index quality is independently measured; none
+of these checks establishes truth of extracted claims or new action permission.
