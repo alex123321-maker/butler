@@ -74,19 +74,27 @@ func (r *actionContextReader) GetActionContext(ctx context.Context, runID string
 			return c, err
 		}
 		defer tx.Rollback(ctx)
-		a, err := actionauth.CheckTaskAuthorityTx(ctx, tx, record.TaskID, record.OwnerID, nil, time.Now())
+		var at time.Time
+		if err = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&at); err != nil {
+			return c, err
+		}
+		a, err := actionauth.CheckTaskAuthorityTx(ctx, tx, record.TaskID, record.OwnerID, nil, at)
 		if err != nil {
 			return c, err
 		}
 		if a.TaskID != "" {
-			m, _, err := actionauth.CheckAssignmentTx(ctx, tx, a, time.Now())
+			m, g, err := actionauth.CheckAssignmentTx(ctx, tx, a, at)
 			if err != nil {
 				return c, err
 			}
 			c.Authority = &a
 			c.MandateID = a.MandateID
 			c.ModelPrivacy = m.Privacy
-			c.DenyTools, c.DenyResources, err = actionauth.ReadGoalDenialsTx(ctx, tx, a.GoalID, a.OwnerID, time.Now())
+			c.AuthorityDeadline, err = actionauth.AuthorityDeadline(m, g, at)
+			if err != nil {
+				return c, err
+			}
+			c.DenyTools, c.DenyResources, err = actionauth.ReadGoalDenialsTx(ctx, tx, a.GoalID, a.OwnerID, at)
 			if err != nil {
 				return c, err
 			}

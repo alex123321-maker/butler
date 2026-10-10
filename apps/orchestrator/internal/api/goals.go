@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/butler/butler/apps/orchestrator/internal/goal"
-	"github.com/butler/butler/internal/actionauth"
-	"github.com/butler/butler/internal/owneridentity"
+	"io"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/butler/butler/apps/orchestrator/internal/goal"
+	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/owneridentity"
 )
 
 type GoalServer struct {
@@ -55,7 +57,7 @@ func (s *GoalServer) Handle() http.Handler {
 		switch r.URL.Path {
 		case "/api/v3/owner-goals":
 			var req goal.GoalRequest
-			if decoder.Decode(&req) != nil {
+			if decodeOwnerRequest(decoder, &req) != nil {
 				writeGoalError(w, goal.ErrInvalid)
 				return
 			}
@@ -67,7 +69,7 @@ func (s *GoalServer) Handle() http.Handler {
 			writeJSON(w, 200, v)
 		case "/api/v3/owner-mandates":
 			var req goal.MandateRequest
-			if decoder.Decode(&req) != nil {
+			if decodeOwnerRequest(decoder, &req) != nil {
 				writeGoalError(w, goal.ErrInvalid)
 				return
 			}
@@ -79,7 +81,7 @@ func (s *GoalServer) Handle() http.Handler {
 			writeJSON(w, 200, v)
 		case "/api/v3/owner-goals/tasks":
 			var req goal.TaskRequest
-			if decoder.Decode(&req) != nil {
+			if decodeOwnerRequest(decoder, &req) != nil {
 				writeGoalError(w, goal.ErrInvalid)
 				return
 			}
@@ -93,6 +95,16 @@ func (s *GoalServer) Handle() http.Handler {
 			w.WriteHeader(404)
 		}
 	})
+}
+func decodeOwnerRequest(decoder *json.Decoder, target any) error {
+	if err := decoder.Decode(target); err != nil {
+		return err
+	}
+	var trailing any
+	if err := decoder.Decode(&trailing); err != io.EOF {
+		return goal.ErrInvalid
+	}
+	return nil
 }
 func writeGoalError(w http.ResponseWriter, err error) {
 	status := 409

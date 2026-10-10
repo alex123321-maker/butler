@@ -160,3 +160,13 @@ secret through the lab terminal, never through model chat or browser storage.
 
 
 Durable task details expose owner amendment, prepare-only restriction, pause/resume and tree stop. Controls require the owner token in page memory and the displayed task revision; missing/stale proof is refused. A dispatch uncertainty notice preserves the distinction between stopped execution and a committed external effect.
+
+`/goals` exposes confirmed objectives, preferences/constraints and separate
+unconfirmed assumptions, bounded autonomy mandates and current obligations.
+Owners can explicitly confirm a proposed assumption, amend exact mandate JSON,
+pause/resume/revoke authority and see pending branch propagation. Advanced policy
+includes active hours, deny scopes and reviewed extension permissions. Immutable
+allowance limits/deadlines cannot be replenished by editing. Tokens remain in
+page memory and are cleared on unmount. The Chromium fixture verifies visible
+authority distinctions, amendment/revocation and absence of token storage; Vue
+template/type checking uses `npm run typecheck` on the lab.

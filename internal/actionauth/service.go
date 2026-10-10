@@ -188,6 +188,12 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 	if c.LeaseExpiresAt.Before(g.ExpiresAt) {
 		g.ExpiresAt = c.LeaseExpiresAt
 	}
+	if !c.AuthorityDeadline.IsZero() && c.AuthorityDeadline.Before(g.ExpiresAt) {
+		g.ExpiresAt = c.AuthorityDeadline
+	}
+	if !g.ExpiresAt.After(s.now()) {
+		return Grant{}, ErrOwnerAuthority
+	}
 	if approvalID != "" {
 		if err := s.verifyApproval(ctx, b, approvalID); err != nil {
 			return Grant{}, err
@@ -206,8 +212,14 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 		}
 		g.MandateID = m.ID
 		g.MandateRevision = m.Revision
+		if m.ExpiresAt.Before(g.ExpiresAt) {
+			g.ExpiresAt = m.ExpiresAt
+		}
 	} else if requiresApproval {
 		return Grant{}, fmt.Errorf("exact action approval or a compatible bounded mandate is required")
+	}
+	if !g.ExpiresAt.After(s.now()) {
+		return Grant{}, ErrOwnerAuthority
 	}
 	return s.store.PutGrant(ctx, g)
 }

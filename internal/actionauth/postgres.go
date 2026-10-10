@@ -150,6 +150,17 @@ func (s *PostgresStore) ClaimGrant(ctx context.Context, id string) error {
 			return err
 		}
 	}
+	// Budget row contention can cross a policy deadline or active-hours boundary.
+	// Reuse the authority locks already held; never acquire a new authority set.
+	if g.Binding.TaskID != "" {
+		var at time.Time
+		if err = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&at); err != nil {
+			return err
+		}
+		if err = CheckTaskActionTx(ctx, tx, g.Binding, at); err != nil {
+			return err
+		}
+	}
 	tag, err := tx.Exec(ctx, `UPDATE action_authorizations a SET state='inflight',dispatched_at=NOW()
  WHERE authorization_id=$1 AND state='authorized' AND expires_at>clock_timestamp()
  AND (mandate_id IS NULL OR EXISTS(SELECT 1 FROM action_mandates m WHERE m.mandate_id=a.mandate_id AND m.revision=a.mandate_revision AND m.revoked_at IS NULL AND m.expires_at>clock_timestamp()))`, id)

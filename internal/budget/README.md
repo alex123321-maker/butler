@@ -11,6 +11,11 @@ An owning AuthorityResolver checks current assignments on the same transaction
 and returns immutable mandate limits/deadline. Model arguments cannot supply
 scope, owner, quote, reservation ID, monetary rates or authority.
 
+The resolver also returns a transient AuthorityDeadline from the current goal,
+purpose policy and active-hours window. Model/child admission rechecks it on the
+same transaction after budget contention. It clamps release contexts and never
+replaces persisted scope Deadline or replenishes spent counters.
+
 Eight finite counters cover turns, tokens, monetary micros, external calls,
 children, active milliseconds, tool egress bytes and provider input bytes. Zero
 is a hard limit. Default root/conversation/mandate policy permits 64 turns,

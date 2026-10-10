@@ -102,7 +102,7 @@ func setup(t *testing.T) *fixture {
 	f.g.ID = receipt.SubjectID
 	f.g.Revision = receipt.Revision
 	f.g.OwnerID = f.owner
-	f.m = actionauth.Mandate{GoalID: f.g.ID, GoalRevision: 1, Status: "active", Purpose: f.g.Purpose, Tools: []string{"http.request"}, ResourceScopes: []actionauth.ResourceScope{{Origin: "https://example.invalid", PathPrefix: "/test-service"}}, Effects: []actionauth.Effect{actionauth.EffectRead, actionauth.EffectCommit}, Privacy: "cloud_allowed", Budget: actionauth.MandateBudget{ModelTurns: 20, Tokens: 20000, ExternalCalls: 10, Children: 5, ActiveMillis: 600000, ProviderInputBytes: 100000, EgressBytes: 100000}, ExpiresAt: time.Now().Add(24 * time.Hour), AllowInitiative: true, Intervention: []string{"scope_change", "effect_unknown", "budget_exhausted"}, Reporting: "exceptions"}
+	f.m = actionauth.Mandate{GoalID: f.g.ID, GoalRevision: 1, Status: "active", Purpose: f.g.Purpose, Tools: []string{"http.request"}, ResourceScopes: []actionauth.ResourceScope{{Origin: "https://example.invalid", PathPrefix: "/test-service"}}, Effects: []actionauth.Effect{actionauth.EffectRead, actionauth.EffectCommit}, Privacy: "cloud_allowed", Budget: actionauth.MandateBudget{ModelTurns: 20, Tokens: 20000, ExternalCalls: 10, Children: 5, ActiveMillis: 600000, ProviderInputBytes: 100000000, EgressBytes: 100000000}, ExpiresAt: time.Now().Add(24 * time.Hour), AllowInitiative: true, Intervention: []string{"scope_change", "effect_unknown", "budget_exhausted"}, Reporting: "exceptions"}
 	receipt, err = f.manager.PutMandate(f.actor("mandate-create"), goal.MandateRequest{Mandate: f.m})
 	if err != nil {
 		t.Fatal(err)
@@ -161,6 +161,14 @@ func TestOwnerAuthorityProofAndDeliveryIntegration(t *testing.T) {
 	server.ServeHTTP(response, request)
 	if response.Code != 401 {
 		t.Fatal("personal goal read unauthenticated", response.Code)
+	}
+	request = httptest.NewRequest("POST", "/api/v3/owner-goals", strings.NewReader(body+` {"goal":{}}`))
+	request.Header.Set("Authorization", "Bearer "+strings.Repeat("x", 40))
+	request.Header.Set("X-Butler-Delivery-ID", "trailing-request")
+	response = httptest.NewRecorder()
+	server.ServeHTTP(response, request)
+	if response.Code != http.StatusBadRequest {
+		t.Fatal("multiple owner decisions accepted as one delivery", response.Code)
 	}
 	req := goal.GoalRequest{Goal: actionauth.GoalPolicy{Kind: "preference", Status: "active", Title: "Prefer verified outcomes", Purpose: f.g.Purpose, ExpiresAt: f.g.ExpiresAt}}
 	r, err := f.manager.PutGoal(f.actor("same-delivery"), req)

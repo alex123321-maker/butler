@@ -92,7 +92,7 @@ func CheckAssignmentTx(ctx context.Context, tx pgx.Tx, a Assignment, at time.Tim
 	if err = tx.QueryRow(ctx, `SELECT revision FROM owner_purpose_policies WHERE owner_id=$1 AND purpose=$2 FOR SHARE`, a.OwnerID, a.Purpose).Scan(&policyRevision); err != nil || policyRevision != a.PolicyRevision {
 		return m, g, ErrOwnerAuthority
 	}
-	rows, err := tx.Query(ctx, `SELECT goal_data FROM owner_goals WHERE owner_id=$1 AND goal_data->>'purpose'=$2 AND kind IN ('preference','constraint') AND status='active' ORDER BY goal_id`, a.OwnerID, a.Purpose)
+	rows, err := tx.Query(ctx, `SELECT goal_id,kind,revision,expires_at,goal_data FROM owner_goals WHERE owner_id=$1 AND goal_data->>'purpose'=$2 AND kind IN ('preference','constraint') AND status='active' ORDER BY goal_id`, a.OwnerID, a.Purpose)
 	if err != nil {
 		return m, g, err
 	}
@@ -100,12 +100,17 @@ func CheckAssignmentTx(ctx context.Context, tx pgx.Tx, a Assignment, at time.Tim
 	for rows.Next() {
 		var data []byte
 		var policy GoalPolicy
-		if err = rows.Scan(&data); err != nil {
+		var id, kind string
+		var revision int64
+		var expires time.Time
+		if err = rows.Scan(&id, &kind, &revision, &expires, &data); err != nil {
 			return m, g, err
 		}
-		if json.Unmarshal(data, &policy) != nil || !policy.ExpiresAt.After(at) {
+		if json.Unmarshal(data, &policy) != nil || !expires.After(at) {
 			return m, g, ErrOwnerAuthority
 		}
+		policy.ID, policy.Kind, policy.Revision, policy.ExpiresAt = id, kind, revision, expires
+		policy.OwnerID, policy.Status = a.OwnerID, "active"
 		policy.Policies = nil
 		g.Policies = append(g.Policies, policy)
 	}
@@ -123,6 +128,10 @@ func WithinActiveHours(h *ActiveHours, at time.Time) bool {
 	if err != nil {
 		return false
 	}
+	return withinHours(h, loc, at)
+}
+
+func withinHours(h *ActiveHours, loc *time.Location, at time.Time) bool {
 	local := at.In(loc)
 	minute := local.Hour()*60 + local.Minute()
 	dayOK := false
@@ -182,9 +191,11 @@ func ValidateOwnerMandate(m Mandate, now time.Time) error {
 	if m.Status != "active" && m.Status != "paused" && m.Status != "revoked" {
 		return ErrOwnerAuthority
 	}
-	if m.Status == "active" && !m.ExpiresAt.After(now) || m.ExpiresAt.After(now.Add(366*24*time.Hour)) || m.BudgetDeadline.IsZero() || m.BudgetDeadline.After(m.ExpiresAt) {
+	if m.Status == "active" && !m.ExpiresAt.After(now) || m.ExpiresAt.After(now.Add(366*24*time.Hour)) || m.BudgetDeadline.IsZero() || m.Revision == 1 && m.BudgetDeadline.After(m.ExpiresAt) {
 		return fmt.Errorf("mandate requires a finite deadline within one year and immutable budget deadline")
 	}
+	// Owner revisions may shorten current authority without changing the original
+	// quota period. The goal service pins that period and all limits to the old row.
 	if m.Privacy != "local_only" && m.Privacy != "cloud_allowed" {
 		return fmt.Errorf("explicit model privacy policy required")
 	}

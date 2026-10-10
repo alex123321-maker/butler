@@ -64,6 +64,7 @@ type ContextSnapshot struct {
 	LeaseID             string          `json:"lease_id"`
 	LeaseExpiresAt      time.Time       `json:"lease_expires_at"`
 	Authority           *Assignment     `json:"authority,omitempty"`
+	AuthorityDeadline   time.Time       `json:"authority_deadline,omitempty"`
 	ModelPrivacy        string          `json:"model_privacy,omitempty"`
 	DenyTools           []string        `json:"deny_tools,omitempty"`
 	DenyResources       []ResourceScope `json:"deny_resources,omitempty"`

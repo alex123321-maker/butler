@@ -36,6 +36,14 @@ code reads trusted identity but writes only its own tables. EnsureTx/ReserveTx
 never take another connection. An owned savepoint rolls back partial charges and
 reservation placeholders without discarding other caller work.
 
+The assigned authority adapter also supplies a transient AuthorityDeadline from
+the current mandate, goal, confirmed purpose-policy expiry and active-hours end.
+It is separate from the original immutable scope Deadline. Model/child admission
+and effect Claim recheck the DB clock after budget waits, retaining the same held
+authority rows, and reject expiry before permission is spent. Model/runtime
+contexts use the earlier bound; a model context already expired is refused before
+transport. Owner shortening a mandate deadline does not reset its allowance.
+
 System operation identity is permanent EffectID for tools, durable child ID for
 children, and fresh committed random ID for every actual model attempt. Replaying
 a quote is idempotent; changing scope or charge conflicts. Reservation replay is

@@ -53,6 +53,10 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 		return nil, err
 	}
 	turn, cancel := context.WithDeadline(ctx, a.Deadline)
+	if turn.Err() != nil {
+		cancel()
+		return nil, &budget.LoopError{Reason: "owner_authority_deadline"}
+	}
 	turn = transport.WithInputByteLimit(turn, s.config.Budgets.Policy.ModelInputBytes)
 	stream, err := call(turn)
 	if err != nil {

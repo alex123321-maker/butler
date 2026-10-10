@@ -887,3 +887,10 @@ safe recovery boundaries, owner proof and delivery/reconciliation limitations.
 
 
 Owner amendments, tree cancellation and late-response fencing are specified in [Owner Controls](task-owner-controls-spec.md).
+
+Assigned goal/mandate authority is also checked at model admission, tool dispatch,
+task state and atomic final-result commits. Owner authority edits synchronously
+fence old assignments; bounded durable jobs then pause/stop their branches. The
+lease supervisor cancels an idle provider before branch propagation completes.
+Committed results/effect evidence remain historical facts. See
+[owner goals and mandates](owner-goals-mandates-spec.md).

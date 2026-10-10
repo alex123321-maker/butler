@@ -84,6 +84,17 @@ invalidate incompatible permissions before the next secret/effect boundary.
 
 ## Secrets and uncertain outcomes
 
+Broad `owner_goal` mandates are a separate authenticated owner-service contract,
+specified in [owner goals](owner-goals-mandates-spec.md). They do not use Broker's
+legacy task-mandate writer. Trusted task assignments pin goal, mandate and
+purpose-policy versions; canonical bindings retain those versions and exact
+purpose. Scope/status/hours and deny checks occur before credential inspection;
+actual dispatch rechecks current authority in its ownership/run/task transaction
+before atomic budget reservation and grant spend. Models cannot choose an
+arbitrary broad mandate through args. Original finite limits/deadline survive
+edits and fresh runs. An expired, paused or revoked assignment denies exact
+approval reuse as well as autonomous execution.
+
 Secrets remain outside bindings/grants/notifications/model args. Only metadata
 digests and references cross these boundaries. Credential Broker checks
 metadata again before resolution. Browser runtime checks actual current URL,

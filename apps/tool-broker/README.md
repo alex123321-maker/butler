@@ -75,3 +75,8 @@ before becoming evidence. Budget rejection returns `execution_stopped` with a
 typed reason and invokes no runtime. Configure the same operator
 `BUTLER_EXECUTION_BUDGET_POLICY_JSON` as Orchestrator. See
 [execution budgets](../../docs/architecture/execution-budget-contract.md).
+
+Current owner goal/purpose-policy and active-hours deadlines also cap the exact
+grant and runtime context. Claim rechecks the database clock after budget waits
+on the already held authority rows; expiry rolls back allowance without spending
+the grant or contacting a runtime. Original budget periods remain immutable.

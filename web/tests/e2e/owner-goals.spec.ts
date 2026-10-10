@@ -6,17 +6,22 @@ test('owner goals distinguish assumptions and revoke current mandate authority',
   const assumption = { ...goal, goal_id: 'assumption-fixture', kind: 'assumption', status: 'proposed', title: 'An unconfirmed guess' }
   const mandate = { mandate_id: 'mandate-fixture', revision: 1, goal_id: goal.goal_id, goal_revision: 1, status: 'active', purpose: goal.purpose, tools: ['http.request'], effects: ['read', 'commit'], resource_scopes: [{ origin: 'https://test.example.invalid', path_prefix: '/test-service' }], privacy: 'cloud_allowed', expires_at: goal.expires_at, budget: { model_turns: 20, tokens: 20000, external_calls: 10, children: 2 }, reporting: 'exceptions' }
   let revoked = false
+  let mandateRevision = 1
+  let reporting = mandate.reporting
   await page.route('**/api/v3/owner-authority', async route => {
     expect(route.request().headers().authorization).toBe(`Bearer ${token}`)
-    await route.fulfill({ json: { goals: [goal, assumption], mandates: [{ ...mandate, status: revoked ? 'revoked' : 'active', revision: revoked ? 2 : 1 }], obligations: [{ task_id: 'task-fixture', goal_id: goal.goal_id, goal_revision: 1, mandate_id: mandate.mandate_id, mandate_revision: 1, initiative_reason: 'Recover test service within agreed procedures', observation_ref: 'observation:fixture', task_status: revoked ? 'paused' : 'active', authority_current: !revoked }], pending_propagation: revoked ? 1 : 0 } })
+    await route.fulfill({ json: { goals: [goal, assumption], mandates: [{ ...mandate, reporting, status: revoked ? 'revoked' : 'active', revision: mandateRevision }], obligations: [{ task_id: 'task-fixture', goal_id: goal.goal_id, goal_revision: 1, mandate_id: mandate.mandate_id, mandate_revision: 1, initiative_reason: 'Recover test service within agreed procedures', observation_ref: 'observation:fixture', task_status: 'active', authority_current: !revoked && mandateRevision === 1 }], pending_propagation: mandateRevision > 1 ? 1 : 0 } })
   })
   await page.route('**/api/v3/owner-mandates', async route => {
     const req = route.request().postDataJSON()
-    expect(req.expected_revision).toBe(1)
-    expect(req.mandate.status).toBe('revoked')
+    expect(req.expected_revision).toBe(mandateRevision)
+    expect(req.mandate.mandate_id).toBe(mandate.mandate_id)
+    expect(req.mandate.budget).toEqual(mandate.budget)
     expect(route.request().headers()['x-butler-delivery-id']).toBeTruthy()
-    revoked = true
-    await route.fulfill({ json: { subject_id: mandate.mandate_id, revision: 2, propagation: 'pending' } })
+    revoked = req.mandate.status === 'revoked'
+    reporting = req.mandate.reporting
+    mandateRevision++
+    await route.fulfill({ json: { subject_id: mandate.mandate_id, revision: mandateRevision, propagation: 'pending' } })
   })
   await page.goto('/goals')
   await expect(page.getByRole('button', { name: 'Load owner authority' })).toBeDisabled()
@@ -25,6 +30,13 @@ test('owner goals distinguish assumptions and revoke current mandate authority',
   await expect(page.getByText('assumption · proposed · version 1', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Confirm as new objective' })).toBeVisible()
   await expect(page.getByText('Recover test service within agreed procedures')).toBeVisible()
+  await page.getByRole('button', { name: 'Edit mandate', exact: true }).click()
+  await page.getByLabel('Mandate policy').fill(JSON.stringify({ ...mandate, reporting: 'each_result' }))
+  await page.getByRole('button', { name: 'Save mandate amendment', exact: true }).click()
+  await expect(page.getByText('Authority version 2 saved.', { exact: false })).toBeVisible()
+  await expect(page.getByText('reports each_result', { exact: false })).toBeVisible()
+  await expect(page.getByText('Authority stale or inactive', { exact: false })).toBeVisible()
+  await page.getByRole('button', { name: 'Close editor', exact: true }).click()
   await page.getByRole('button', { name: 'Revoke mandate', exact: true }).click()
   await expect(page.getByText('New actions under old authority are already denied.', { exact: false })).toBeVisible()
   await expect(page.getByText('Authority stale or inactive', { exact: false })).toBeVisible()

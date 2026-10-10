@@ -306,10 +306,16 @@ func (m *Manager) PutMandate(ctx context.Context, req MandateRequest) (Receipt, 
 	return r, tx.Commit(ctx)
 }
 
-// CheckAdmissionTx is a read/lock boundary for an already trusted scheduler or
-// authenticated owner. Callers lock ownership/session before calling it, then
+// CheckAdmissionTx is a read/lock boundary for an already trusted scheduler.
+// It requires initiative permission. Callers lock ownership/session first, then
 // insert new task/input rows in the same transaction. It never acquires tasks.
 func (m *Manager) CheckAdmissionTx(ctx context.Context, tx pgx.Tx, req AdmissionRequest, at time.Time) (actionauth.Assignment, error) {
+	return m.checkTaskAdmissionTx(ctx, tx, req, at, true)
+}
+
+// requireInitiative is service-owned: only CreateOwnerTask may choose false,
+// after proving an authenticated owner request. It is never an ingress field.
+func (m *Manager) checkTaskAdmissionTx(ctx context.Context, tx pgx.Tx, req AdmissionRequest, at time.Time, requireInitiative bool) (actionauth.Assignment, error) {
 	a := actionauth.Assignment{OwnerID: req.OwnerID, GoalID: req.GoalID, Purpose: req.Purpose, InitiativeReason: req.InitiativeReason, ObservationRef: req.ObservationRef}
 	if req.OwnerID == "" || req.GoalID == "" || req.Purpose == "" || strings.TrimSpace(req.InitiativeReason) == "" || strings.TrimSpace(req.ObservationRef) == "" || len(req.InitiativeReason) > 8192 || len(req.ObservationRef) > 512 {
 		return a, ErrInvalid
@@ -354,7 +360,7 @@ func (m *Manager) CheckAdmissionTx(ctx context.Context, tx pgx.Tx, req Admission
 	if err != nil {
 		return a, err
 	}
-	if !mandate.AllowInitiative {
+	if requireInitiative && !mandate.AllowInitiative {
 		return a, actionauth.ErrOwnerAuthority
 	}
 	return a, nil

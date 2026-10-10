@@ -15,6 +15,7 @@ export interface OwnerMandate {
   privacy: string; expires_at: string; budget_deadline?: string
   budget: Record<string, number>; allow_initiative: boolean; intervention: string[]; reporting: string
   active_hours?: { timezone: string; start_minute: number; end_minute: number; weekdays: number[] }
+  deny_tools?: string[]; deny_resources?: { origin: string; path_prefix: string }[]
   extensions?: { source: string; extension_id: string; manifest_hash: string; tools: string[] }[]
   source?: { author: string; channel: string; delivery_id: string }
 }

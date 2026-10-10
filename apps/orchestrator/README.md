@@ -281,3 +281,12 @@ finalization does not reserve another model turn. Owner-proved
 actual usage. Native Antigravity currently declares inference limits; undeclared
 adapters and all batches fail closed. See
 [execution budgets](../../docs/architecture/execution-budget-contract.md).
+
+Authenticated owner goals and broad autonomy are available at `/goals` and the
+`/api/v3/owner-goals`, `/api/v3/owner-mandates`, `/api/v3/owner-authority` routes.
+Goal/mandate amendments persist exact revisions, source and restartable branch
+propagation jobs. Current assignment guards deny dispatch, model admission and
+atomic results immediately after revocation even if propagation is pending.
+The owner token stays outside model context and browser storage. Ordinary tasks
+and conversation remain possible without goal assignments. See
+[owner goals and mandates](../../docs/architecture/owner-goals-mandates-spec.md).

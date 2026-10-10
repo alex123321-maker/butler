@@ -3,9 +3,10 @@ package goal
 import (
 	"context"
 	"errors"
+	"time"
+
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/jackc/pgx/v5"
-	"time"
 )
 
 type TaskRequest struct {
@@ -59,7 +60,9 @@ func (m *Manager) CreateOwnerTask(ctx context.Context, req TaskRequest) (task.Re
 	if err = tx.QueryRow(ctx, `SELECT user_id FROM sessions WHERE session_key=$1 FOR SHARE`, req.SessionKey).Scan(&owner); err != nil || owner != a.OwnerID {
 		return task.Record{}, ErrUnauthorized
 	}
-	assignment, err := m.CheckAdmissionTx(ctx, tx, AdmissionRequest{OwnerID: a.OwnerID, GoalID: req.GoalID, MandateID: req.MandateID, Purpose: req.Purpose, ObservationRef: req.ObservationRef, InitiativeReason: req.InitiativeReason}, time.Now())
+	// Explicit owner work needs the same current exact assignment, but is not a
+	// spontaneous initiative. Only this authenticated surface may skip that flag.
+	assignment, err := m.checkTaskAdmissionTx(ctx, tx, AdmissionRequest{OwnerID: a.OwnerID, GoalID: req.GoalID, MandateID: req.MandateID, Purpose: req.Purpose, ObservationRef: req.ObservationRef, InitiativeReason: req.InitiativeReason}, time.Now(), false)
 	if err != nil {
 		return task.Record{}, err
 	}

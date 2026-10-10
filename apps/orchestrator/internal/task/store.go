@@ -194,6 +194,15 @@ func (s *Store) CreateTx(ctx context.Context, tx pgx.Tx, req CreateRequest) (Rec
 		if err = BindAuthorityTx(ctx, tx, a); err != nil {
 			return Record{}, err
 		}
+		// A budget or insert lock may have crossed a purpose/hours deadline.
+		// These authority rows are already held; recheck the DB clock before commit.
+		var at time.Time
+		if err = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&at); err != nil {
+			return Record{}, err
+		}
+		if _, _, err = actionauth.CheckAssignmentTx(ctx, tx, a, at); err != nil {
+			return Record{}, err
+		}
 	}
 	return record, nil
 }

@@ -27,7 +27,10 @@ type MandateScope struct {
 	ID, OwnerID string
 	Privacy     string
 	Limits      Units
-	Deadline    time.Time
+	Deadline    time.Time // immutable persisted allowance period
+	// AuthorityDeadline is a transient release bound, never persisted as scope
+	// policy or used to refill allowance after a goal/mandate revision.
+	AuthorityDeadline time.Time
 }
 type AuthorityResolver func(context.Context, pgx.Tx, string, string) (MandateScope, error)
 
@@ -145,6 +148,9 @@ func (c *Controller) ReserveChildTx(ctx context.Context, tx pgx.Tx, parentID, ma
 		return err
 	}
 	_, _, err = c.Ledger.ReserveTx(ctx, tx, Request{OwnerID: owner, OperationID: "child:" + childID, ScopeIDs: ids, Charge: Units{Children: 1}, CostKnown: true})
+	if err == nil && c.resolveAuthority != nil {
+		_, err = c.resolveAuthority(ctx, tx, parentID, owner)
+	}
 	return err
 }
 
@@ -207,6 +213,16 @@ func (c *Controller) AdmitModel(ctx context.Context, runID, mandateID, provider,
 	if err != nil {
 		return ModelAdmission{}, err
 	}
+	var authorityDeadline time.Time
+	if taskID != "" && c.resolveAuthority != nil {
+		// Initial resolution already locked this assignment's authority rows.
+		// Recheck time after budget waits without changing persisted scope limits.
+		a, err := c.resolveAuthority(ctx, tx, taskID, owner)
+		if err != nil {
+			return ModelAdmission{}, err
+		}
+		authorityDeadline = a.AuthorityDeadline
+	}
 	if _, err = tx.Exec(ctx, `INSERT INTO execution_model_attempts(operation_id,run_id,reservation_id,provider,model,input_allowance,output_allowance) VALUES($1,$2,$3,$4,$5,$6,$7)`, op, runID, r.ID, provider, model, inputTokens, c.Policy.OutputTokens); err != nil {
 		return ModelAdmission{}, err
 	}
@@ -214,6 +230,9 @@ func (c *Controller) AdmitModel(ctx context.Context, runID, mandateID, provider,
 		return ModelAdmission{}, err
 	}
 	deadline := r.CreatedAt.Add(time.Duration(c.Policy.ModelMillis) * time.Millisecond)
+	if !authorityDeadline.IsZero() && authorityDeadline.Before(deadline) {
+		deadline = authorityDeadline
+	}
 	for _, id := range ids {
 		scope, err := c.Ledger.Get(ctx, id)
 		if err != nil {

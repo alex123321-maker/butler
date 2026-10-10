@@ -148,6 +148,10 @@ func (s *Server) ExecuteToolCall(ctx context.Context, req *toolbrokerv1.ExecuteT
 		return &toolbrokerv1.ExecuteToolCallResponse{Result: authorizationErrorResult(req.GetToolCall(), "authorization already dispatched, expired or revoked; do not replay")}, nil
 	}
 	dispatchCtx := actionauth.WithDispatchIdentity(ctx, actionauth.DispatchIdentity{ActionID: effect.ActionID, IdempotencyKey: effect.IdempotencyKey, Fingerprint: effect.Fingerprint})
+	// The grant includes the earlier owner-policy/active-hours bound. Persisted
+	// budget periods remain immutable and cannot widen this call's authority.
+	dispatchCtx, cancelAuthority := context.WithDeadline(dispatchCtx, grant.ExpiresAt)
+	defer cancelAuthority()
 	if s.budgets != nil {
 		deadline, deadlineErr := s.budgets.ToolDeadline(ctx, grant.Binding.OwnerID, effect.ActionID)
 		if deadlineErr != nil || !deadline.After(time.Now()) {
