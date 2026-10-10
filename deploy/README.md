@@ -48,8 +48,13 @@ pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Status
 ```
 
 Source snapshots and dependency caches are separate from durable data. Sync
-uploads tracked and nonignored source files into a fresh snapshot, so removed
-files cannot survive from an earlier build. It preserves previous snapshots.
+creates its requested remote source directory, then uploads tracked and
+nonignored source files into a fresh snapshot, so removed files cannot survive
+from an earlier build. It preserves previous snapshots. Integration/race
+checks enable the versioned-memory and semantic PostgreSQL fixtures in isolated
+schemas of the lab test database; model inference tests still require explicit
+operator endpoint/token-file configuration. Standalone Go smoke programs use
+the `ignore` build tag and remain executable by explicit filename.
 Deployment generates settings encryption and extension access keys on the lab
 in a mode-0600 `lab.env`, without printing them. Edit that file on the lab to
 configure a model provider or channel credentials; source uploads do not touch

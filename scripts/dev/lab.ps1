@@ -32,6 +32,8 @@ if ($Action -eq 'Sync') {
     & tar -czf $archive -T $fileList
     Assert-LastExitCode -Action 'source archive'
   } finally { Pop-Location }
+  & ssh -o BatchMode=yes $HostAlias "mkdir -p '$RemoteRoot'"
+  Assert-LastExitCode -Action 'remote source directory'
   & scp $archive "${HostAlias}:${RemoteRoot}/source.tar.gz"
   Assert-LastExitCode -Action 'source upload'
   & ssh -o BatchMode=yes $HostAlias "set -eu; mkdir -p '$RemoteRoot/snapshots/$snapshot'; tar -xzf '$RemoteRoot/source.tar.gz' -C '$RemoteRoot/snapshots/$snapshot'; ln -sfn '$RemoteRoot/snapshots/$snapshot' '$RemoteRoot/current'; printf '%s\n' '$snapshot'"
