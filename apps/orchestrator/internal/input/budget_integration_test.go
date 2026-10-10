@@ -64,6 +64,6 @@ func TestRuntimeBudgetDeadlineCancelsIdleInferenceIntegration(t *testing.T) {
 	worker.process(f.ctx, f.claim(t))
 	receipt := f.assertReceipt(t, "blocked")
 	if receipt.ErrorCode != "execution_budget_deadline" || provider.starts != 1 || provider.cancellations != 1 {
-		t.Fatal("idle inference did not stop honestly", receipt.ErrorCode, provider.starts, provider.cancellations)
+		t.Fatal("idle inference did not stop honestly", receipt.ErrorCode, receipt.ErrorMessage, provider.starts, provider.cancellations)
 	}
 }
