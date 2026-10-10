@@ -9,8 +9,10 @@ import (
 	"fmt"
 	pb "github.com/butler/butler/internal/gen/localmodels/v1"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"image"
 	"image/color"
@@ -29,28 +31,32 @@ type measure struct {
 }
 
 func main() {
+	addr := flag.String("addr", "127.0.0.1:9090", "private gRPC address")
 	tokenFile := flag.String("token-file", "/private/token", "private bearer source")
 	report := flag.String("report", "/reports/verification-capabilities.json", "safe measurement report")
 	flag.Parse()
-	if err := runCapabilities(*tokenFile, *report); err != nil {
+	if err := runCapabilities(*addr, *tokenFile, *report); err != nil {
 		fmt.Fprintln(os.Stderr, "Capability proof failed:", err)
 		os.Exit(1)
 	}
 }
-func runCapabilities(tokenFile, report string) error {
+func runCapabilities(addr, tokenFile, report string) error {
 	token, err := os.ReadFile(tokenFile)
 	if err != nil {
 		return fmt.Errorf("private token source")
 	}
-	conn, err := grpc.NewClient("127.0.0.1:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return fmt.Errorf("local connection")
 	}
 	defer conn.Close()
 	root, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
-	ctx := metadata.AppendToOutgoingContext(root, "authorization", "Bearer "+strings.TrimSpace(string(token)))
 	client := pb.NewLocalModelsServiceClient(conn)
+	if _, err := client.Describe(root, &pb.Empty{}); status.Code(err) != codes.Unauthenticated {
+		return fmt.Errorf("anonymous catalog access not rejected")
+	}
+	ctx := metadata.AppendToOutgoingContext(root, "authorization", "Bearer "+strings.TrimSpace(string(token)))
 	catalog, err := client.Describe(ctx, &pb.Empty{})
 	if err != nil || len(catalog.Models) != 4 {
 		return fmt.Errorf("catalog")

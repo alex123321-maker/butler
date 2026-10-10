@@ -39,9 +39,7 @@ services:
     networks: [local-inference]
   orchestrator:
     networks:
-      - default
       - local-inference
 networks:
-  default: {}
   local-inference:
     internal: true
