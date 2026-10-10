@@ -166,8 +166,15 @@ try:
                     if op == 'extract':
                         if request.get('schema_version') == 'butler-memory-v1':
                             schema = memory_schema(model)
-                            bounded_tokens(text + ' ' + ' '.join(MEMORY_FIELDS) + ' ' + ' '.join(MEMORY_RELATIONS))
-                            output = memory_output(model.extract(text, schema, threshold=0.5, include_confidence=True, include_spans=True))
+                            # Public upstream preprocessing checks the real schema
+                            # plus text encoding, without truncation or fallback.
+                            prepared = model.processor.collate_fn_inference(
+                                [(text, schema)], max_len=None,
+                                error_policy='raise', architecture='boundary')
+                            if prepared.input_ids.shape[-1] > int(profile['context_tokens']):
+                                raise ValueError('encoded schema plus text too long')
+                            model.strict_extraction = True
+                            output = memory_output(model.extract(text, schema, threshold=0.5, include_confidence=True, include_spans=True, max_len=None))
                         else:
                             result = model.extract_entities(text, labels, include_confidence=True, include_spans=True)
                             spans = []
