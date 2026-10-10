@@ -7,6 +7,12 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+func (s *Store) HasRunToolCallsTx(ctx context.Context, tx pgx.Tx, runID string) (bool, error) {
+	var exists bool
+	err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM tool_calls WHERE run_id=$1)`, runID).Scan(&exists)
+	return exists, err
+}
+
 func (s *Store) AppendFinalTx(ctx context.Context, tx pgx.Tx, m Message) (Message, error) {
 	token, ok := ownership.TokenFromContext(ctx)
 	if !ok || token.RunID != m.RunID || token.SessionKey != m.SessionKey {

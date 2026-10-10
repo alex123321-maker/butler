@@ -187,6 +187,7 @@ func New(ctx context.Context) (*App, error) {
 
 	embeddingProvider, pipelineWorker := configureMemoryPipeline(log, cfg, authManager, m, pipelineQueue, transcriptStore, summaryStore, profileStore, episodicStore, chunkStore)
 	finalResults := completion.New(postgres.Pool())
+	finalResults.Evidence = effectEvidence{journal: actionauth.NewPostgresStore(postgres.Pool())}
 	outboxWorker := &deliveryoutbox.Worker{Store: finalResults.Outbox}
 	if telegram != nil {
 		outboxWorker.Sender = telegram

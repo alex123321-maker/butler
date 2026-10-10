@@ -144,6 +144,17 @@ func (c *Coordinator) Save(ctx context.Context, q Request) (FinalRecord, error) 
 		r.Limitations = append(r.Limitations, "model_output_incomplete")
 	}
 	r.Effects = effects
+	if !evidenceUnavailable && len(effects) == 0 {
+		if reader, ok := c.Transcript.(interface {
+			HasRunToolCallsTx(context.Context, pgx.Tx, string) (bool, error)
+		}); ok {
+			hasTools, e := reader.HasRunToolCallsTx(ctx, tx, q.RunID)
+			if e != nil {
+				return r, e
+			}
+			evidenceUnavailable = hasTools
+		}
+	}
 	if evidenceUnavailable {
 		r.Limitations = append(r.Limitations, "effect_evidence_unavailable")
 	}
