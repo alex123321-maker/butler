@@ -14,6 +14,10 @@ thought signatures remain private and run-local. Durable recovery starts fresh
 with Butler observations as data, while live continuation correlates the original
 native call and function response. Cancellation closes HTTP and discards context.
 
+HTTP 429 with the bounded, recognized `HIGH_DEMAND` reason reports temporary model
+capacity loss. Other 429 responses remain generic; neither proves exhausted
+subscription quota. Raw Google diagnostics stay private and no implicit retry runs.
+
 See [the operator guide](../../../deploy/antigravity/README.md) for private import,
 the unsupported third-party integration policy, proxy configuration and real
 validation status. Fixtures verify wire shape, safe failure handling, signatures,

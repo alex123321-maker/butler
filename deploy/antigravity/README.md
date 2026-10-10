@@ -30,6 +30,13 @@ configured. Those observations do not establish exhausted subscription quota.
 Keep the provider opt in until the Go adapter's real text, function proposal and
 continuation smoke passes. Stored credentials alone do not prove model access.
 
+Subsequent Go and Node requests both returned production AICode HTTP 429 with
+`RESOURCE_EXHAUSTED` / `HIGH_DEMAND`, identifying temporary backend model capacity.
+The identical private token and expiry were checked in the operator backend.
+This is not evidence of a Go-only transport failure or depleted subscription.
+The adapter exposes only a fixed capacity diagnostic, performs no implicit retry,
+and remains inactive until the separate real Go smoke succeeds.
+
 Lab tests use an HTTP fixture to verify native request/stream normalization,
 function schema guards, thought-signature replay, cancellation, isolated runs,
 redirect rejection and masked HTTP failures. PostgreSQL integration verifies

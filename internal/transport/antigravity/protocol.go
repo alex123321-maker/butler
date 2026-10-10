@@ -103,7 +103,7 @@ func (p *Provider) invoke(ctx context.Context, model string, body generateReques
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return modelAnswer{}, statusError(resp.StatusCode)
+		return modelAnswer{}, statusError(resp.StatusCode, resp.Body)
 	}
 	if !strings.HasPrefix(strings.ToLower(resp.Header.Get("Content-Type")), "text/event-stream") {
 		return modelAnswer{}, protocolError("Antigravity returned a non-SSE response")
@@ -111,9 +111,14 @@ func (p *Provider) invoke(ctx context.Context, model string, body generateReques
 	return readStream(resp.Body, onText)
 }
 
-func statusError(status int) error {
+func statusError(status int, body io.Reader) error {
 	switch status {
 	case http.StatusTooManyRequests:
+		// Only a fixed reason changes the safe diagnostic. Raw error messages,
+		// metadata and account identifiers never leave this transport boundary.
+		if hasHighDemandReason(body) {
+			return providerError(transport.ErrorTypeRateLimited, "Antigravity model capacity is temporarily unavailable (HTTP 429)")
+		}
 		return providerError(transport.ErrorTypeRateLimited, "Antigravity upstream rejected the request (HTTP 429)")
 	case http.StatusUnauthorized, http.StatusForbidden:
 		return providerError(transport.ErrorTypeProviderUnavailable, "Antigravity account access was rejected; reconnect through the private control plane")
@@ -125,6 +130,30 @@ func statusError(status int) error {
 		}
 		return protocolError("Antigravity rejected the model request")
 	}
+}
+
+func hasHighDemandReason(body io.Reader) bool {
+	const limit = 64 * 1024
+	data, err := io.ReadAll(io.LimitReader(body, limit+1))
+	if err != nil || len(data) > limit {
+		return false
+	}
+	var envelope struct {
+		Error struct {
+			Details []struct {
+				Reason string `json:"reason"`
+			} `json:"details"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(data, &envelope) != nil {
+		return false
+	}
+	for _, detail := range envelope.Error.Details {
+		if detail.Reason == "HIGH_DEMAND" {
+			return true
+		}
+	}
+	return false
 }
 
 // Decode complete SSE frames before exposing any function. Incomplete streams

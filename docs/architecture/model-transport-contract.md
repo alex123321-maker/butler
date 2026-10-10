@@ -218,6 +218,8 @@ operator AICode unary and SSE text probes passed through the configured lab prox
 These probes do not establish that Go function/result continuation passed; keep
 activation gated on that separate smoke. Earlier Cloud Code 429 responses do not
 prove subscription quota exhaustion.
+Production AICode 429 with bounded, recognized `HIGH_DEMAND` reports temporary
+model capacity; no raw error metadata or automatic retry crosses this boundary.
 See [protocol, operator import and validation status](../../deploy/antigravity/README.md).
 
 ---

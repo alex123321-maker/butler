@@ -325,6 +325,37 @@ func TestHTTPFailuresMaskedNoRetryOrAuthRedirect(t *testing.T) {
 	}
 }
 
+func TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry(t *testing.T) {
+	for _, tc := range []struct {
+		name, body string
+		capacity   bool
+	}{
+		{"capacity", `{"error":{"message":"private-access-fixture account@email.test","details":[{"reason":"HIGH_DEMAND","metadata":{"account":"private-access-fixture"}}]}}`, true},
+		{"quota", `{"error":{"details":[{"reason":"QUOTA_EXCEEDED"}]}}`, false},
+		{"malformed", `{"error":{"details":[{"reason":"HIGH_DEMAND"}]`, false},
+		{"oversized", `{"padding":"` + strings.Repeat("x", 64*1024) + `","error":{"details":[{"reason":"HIGH_DEMAND"}]}}`, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var calls atomic.Int32
+			p := newFixture(t, func(*http.Request) (*http.Response, error) {
+				calls.Add(1)
+				return &http.Response{StatusCode: 429, Body: io.NopCloser(strings.NewReader(tc.body))}, nil
+			})
+			stream, err := p.StartRun(context.Background(), request("run"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			event := findError(collect(t, stream))
+			if event == nil || event.Type != transport.ErrorTypeRateLimited || event.Retryable || calls.Load() != 1 {
+				t.Fatal("capacity rejection must remain a single normalized failure")
+			}
+			if strings.Contains(event.Message, "capacity") != tc.capacity || strings.Contains(event.Message, "private-access") || strings.Contains(event.Message, "email") {
+				t.Fatal("capacity classification leaked or accepted invalid diagnostics")
+			}
+		})
+	}
+}
+
 func TestCancellationClosesHTTPAndIsolatedRuns(t *testing.T) {
 	started := make(chan struct{}, 2)
 	stopped := make(chan struct{}, 2)
