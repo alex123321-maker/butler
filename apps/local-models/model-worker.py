@@ -173,8 +173,13 @@ try:
                                 error_policy='raise', architecture='boundary')
                             if prepared.input_ids.shape[-1] > int(profile['context_tokens']):
                                 raise ValueError('encoded schema plus text too long')
-                            model.strict_extraction = True
-                            output = memory_output(model.extract(text, schema, threshold=0.5, include_confidence=True, include_spans=True, max_len=None))
+                            previous_strict = model.strict_extraction
+                            try:
+                                model.strict_extraction = True
+                                result = model.extract(text, schema, threshold=0.5, include_confidence=True, include_spans=True, max_len=None)
+                            finally:
+                                model.strict_extraction = previous_strict
+                            output = memory_output(result)
                         else:
                             result = model.extract_entities(text, labels, include_confidence=True, include_spans=True)
                             spans = []
