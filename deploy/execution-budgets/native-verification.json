@@ -1,0 +1,27 @@
+{
+  "verified_at_utc": "2026-10-10T21:38:34Z",
+  "host": "ssh laba",
+  "candidate_commit": "4bc6170f0812fcacaa22b6487dab757c1ef62656",
+  "provider": "antigravity",
+  "model": "gemini-3.8-flash-tiered",
+  "endpoint_host": "aicode.googleapis.com",
+  "transport": "direct_http_sse",
+  "cli_inference": false,
+  "billing_basis": "subscription_no_overage",
+  "autonomy_mode": "mode_1",
+  "checks": {
+    "session_service_owned_isolated_session": true,
+    "manual_task_with_initiatives_disabled": true,
+    "durable_ordered_input_bound_to_task": true,
+    "exact_owner_approval_only_get_example_com": true,
+    "one_real_broker_http_call": true,
+    "page_title_observed_example_domain": true,
+    "native_tool_continuation_answer": true,
+    "durable_actual_model_attempts": 2,
+    "input_allowance_per_attempt": 1048576,
+    "output_allowance_per_attempt": 8192,
+    "model_final_did_not_verify_task": true,
+    "diagnostic_task_stopped": true,
+    "diagnostic_goal_revoked": true
+  }
+}
