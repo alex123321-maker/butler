@@ -1,5 +1,11 @@
 # Local auxiliary models
 
+The optional versioned memory adapter is in `internal/memory/semantic`; it uses
+this shared service with explicit query/document/code modes and 768/256d identity.
+Production memory query/indexing stays disabled pending trusted run/job admission
+and current-source access guards. A fixed Russian/code fixture and reproducible
+quality/reindex checks are in `deploy/local-models/verify-quality-lab.sh`.
+
 Go service for versioned embedding/ranking/extraction/classification/media
 contracts and bounded local inference resources. It does not execute tools,
 change memory facts, authorize actions or own durable tasks. Callers retain the

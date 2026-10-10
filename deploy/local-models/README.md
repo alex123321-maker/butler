@@ -79,6 +79,55 @@ quality; the Russian scores are runtime signals, not calibrated decisions or a
 held-out evaluation. Audio/video remain unavailable. Production embedding,
 reranking and extraction quality decisions belong to #25–#28.
 
+## Versioned retrieval quality (2026-10-10 UTC)
+
+Run `bash deploy/local-models/verify-quality-lab.sh /srv/storage/butler/agents/local-models`
+after preparing the models/framework/private token above. It uses a separate
+internal network, PostgreSQL fixture and bounded inference container. It checks
+real pgvector storage, staged reindex/activation, and exact 768/256d query/document
+spaces. Main memory, databases and active index pointers are untouched.
+
+`retrieval-quality.json` fixes 24 public synthetic documents and 24 Russian/code
+queries before tensor evaluation, including six code questions. The reference
+answers distinguish changed agreements, similar but different errors, exact
+approvals, ingress deduplication and permanent effect identities. This small
+fixture is not a held-out benchmark or a claim about private owner documents.
+
+| Retrieval mode | Expected source first | MRR | Recall at 4 |
+|---|---:|---:|---:|
+| Standard BM25 lexical control | 11/24 (45.8%) | — | — |
+| EmbeddingGemma2 768d | 22/24 (91.7%) | 0.951 | 1.000 |
+| EmbeddingGemma2 256d, normalized | 20/24 (83.3%) | 0.896 | 0.958 |
+| 768d followed by Qwen reranking | 21/24 (87.5%) | — | — |
+| 256d followed by Qwen reranking | 20/24 (83.3%) | — | — |
+
+The real current title-keyword fallback found no first expected result in this
+paraphrased fixture; the stronger standard BM25 control is reported separately.
+The current cloud semantic backend is unavailable, so no comparison to its vector
+quality is claimed. Embedding gain is reproducible; reranking regresses the 768d
+result and stays optional/default-off. Similarity never establishes truth or
+permission. Source refs, current revision/hash and typed data origin accompany
+retrieved memory.
+
+Latest `verification-retrieval-quality.json` records both-space indexing in
+16.3 seconds including cold load, 48 query requests in 9.9 seconds and 48 rerank
+requests in 15.1 seconds including a model switch. Earlier repeats took
+9.9/4.0/12.1 seconds respectively; these totals include RPC/PostgreSQL validation
+and host contention, rather than a promised latency. The final run admitted 108
+calls and 113602 input bytes under a test-only 160-call/2MiB/eight-minute gate.
+Whole-device peak was 2353 MiB and full process RSS 1989 MiB; device usage returned
+to the same 17 MiB baseline. Concurrent GLiNER/GPU RSS evidence is recorded
+separately in `verification-capabilities.json` above.
+
+Actual PostgreSQL/race tests cover stale edits during publication, suppressed,
+pending, expired and Secret sources, cross-scope exclusion, missing access
+authority, restart-resumable batches, citation-only vector reuse, dimension
+changes, activation CAS, still-current rollback and deletion cascades. Production
+query/index admission and source access guards remain disabled until the owned
+run/auxiliary-job integration from #22/#23 is verified; the fixture gate cannot
+grant production authority. The optional adapter is documented in
+`internal/memory/semantic/README.md`.
+
 ## Tensor runtime exception
 
 [Google's official card](https://huggingface.co/google/embeddinggemma-2) supports

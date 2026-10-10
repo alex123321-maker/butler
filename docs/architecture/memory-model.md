@@ -269,7 +269,28 @@ The current Butler baseline now includes durable PostgreSQL tables for:
 Opt-in auxiliary inference is specified in [Local Model Service](local-model-service.md).
 Its model/revision/preprocessing/dimension identity defines a separate embedding
 space; installing the service does not switch existing memory indexes or providers.
-Issue #25 still requires reversible side-by-side reindex and production evaluation.
+Migration041 and `internal/memory/semantic` add separate immutable embedding spaces
+and staged generations with source revision/hash, scope and live-state filtering.
+They support reviewed coverage/quality verification, activation CAS, reversible
+selection of still-current ready generations, and restart-resumable indexing.
+Unchanged title/content hashes can reuse exact-space vectors across new generations
+after citation/path changes; current source revisions and access are still checked.
+Deleting a chunk removes its derived vectors; incompatible dimensions/revisions
+never enter the legacy columns. Source refs and private data origin accompany
+retrieval; Secret-class inputs cannot reach embedding/reranking IPC.
+
+Every source read/publication requires a typed `SourceGuard`, default denied. Its
+#22 adapter derives catalog links and current owner/run/job authority from actual
+PostgreSQL chunk IDs, not provenance JSON. Catalog/authority rows are locked in
+sorted order before chunks in the caller transaction; no second connection is
+needed. Optional catalog provenance fields are citations rather than permissions.
+
+The optional bundle reader remains disabled until trusted run-owned local query
+admission and durable auxiliary job-owned index admission are integrated with
+#22/#23. It does not revive completed run ownership. The source guard and current
+metadata checks do not replace #22 contradiction, acceptance or backup tombstone
+semantics. Fixed Russian/code fixture quality is measured separately from
+production acceptance; reranking is optional and default-off.
 
 Migration 021 uses dimensionless vector columns to support different embedding
 providers. It removes the old fixed-dimension IVFFlat indexes; current semantic

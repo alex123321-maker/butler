@@ -26,6 +26,12 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/memory/semantic/|migrations/041_semantic_memory_indexes[.]|deploy/local-models/(retrieval-quality[.]json|verification-retrieval-quality[.]json|verify-quality-lab[.]sh))" {
+      [void]$specs.Add("docs/architecture/memory-model.md")
+      [void]$specs.Add("docs/architecture/local-model-service.md")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/local-models/current/deploy/local-models/verify-quality-lab.sh /srv/storage/butler/agents/local-models'")
+      continue
+    }
     "^(apps/local-models/|internal/localmodels/|internal/gen/localmodels/|proto/localmodels/|deploy/local-models/|docker/local-models/|deploy/docker-compose[.]local-models[.]lab[.]yml$|scripts/dev/local-models(?:-capabilities)?-smoke[.]go$)" {
       [void]$specs.Add("docs/architecture/local-model-service.md")
       [void]$specs.Add("docs/architecture/memory-model.md")
