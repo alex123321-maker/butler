@@ -25,10 +25,22 @@ func (s *Store) CreateDerivedTx(ctx context.Context, tx pgx.Tx, parents []Source
 	if e != nil {
 		return Source{}, e
 	}
-	first := sources[0]
+	// AccessTx returns rows in lock order, not in the trusted parent's order.
+	// Anchor scope to the first requested parent; an output or API body cannot
+	// choose a wider scope. Every parent still needs independent current access.
+	var first Source
+	for _, src := range sources {
+		if src.ID == parents[0].ID {
+			first = src
+			break
+		}
+	}
+	if first.ID == "" {
+		return Source{}, ErrDenied
+	}
 	origins := make([]content.Origin, 0, len(sources))
 	for _, src := range sources {
-		if src.OwnerID != first.OwnerID || src.ScopeType != first.ScopeType || src.ScopeID != first.ScopeID || src.Origin.Sensitivity == content.Secret {
+		if src.OwnerID != first.OwnerID || src.Origin.Sensitivity == content.Secret {
 			return Source{}, ErrDenied
 		}
 		origins = append(origins, src.Origin)
