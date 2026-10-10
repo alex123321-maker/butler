@@ -6,7 +6,7 @@ const routeTitles: Array<{ path: string; title: string; shot: string }> = [
   { path: '/tasks/run-1', title: 'Task run-1', shot: 'task-detail.png' },
   { path: '/approvals', title: 'Approvals', shot: 'approvals.png' },
   { path: '/artifacts', title: 'Artifacts', shot: 'artifacts.png' },
-  { path: '/memory', title: 'Memory', shot: 'memory.png' },
+  { path: '/memory', title: 'Memory and sources', shot: 'memory.png' },
   { path: '/activity', title: 'Activity', shot: 'activity.png' },
   { path: '/system', title: 'System', shot: 'system.png' },
 ]
