@@ -73,3 +73,21 @@ func TestSemanticIdentityRetainsOwnerAuthorityAndResourceRevision(t *testing.T) 
 		}
 	}
 }
+
+func TestBrokerObservationResourceIsExactCredentialFreeData(t *testing.T) {
+	s := testSource()
+	s.ObserverKind, s.ProjectRevision = "broker_project", hash("revision")
+	s.CheckManifestHash, s.CheckToolName = hash("manifest"), "extension.project.inspect"
+	for _, resource := range []string{"https://example.invalid/project", "http://external.test/project"} {
+		s.CheckResource = resource
+		if s.Validate() != nil {
+			t.Fatal("recorded approved HTTP(S) resource was rejected")
+		}
+	}
+	for _, resource := range []string{"file:///project", "https://owner:secret@example.invalid/project", "https://example.invalid/project?token=secret", "https://example.invalid/project#secret", "https://example.invalid/pro%6aect", "https://example.invalid"} {
+		s.CheckResource = resource
+		if s.Validate() == nil {
+			t.Fatal("credential-bearing or ambiguous observation resource accepted")
+		}
+	}
+}

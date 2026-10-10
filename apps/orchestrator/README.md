@@ -301,8 +301,12 @@ attempts, suppresses own origin and recognizes only verified healthy results.
 An optional session-matched digest channel groups count-only admitted/verified
 changes with active-hours and daily limits; uncertain Telegram delivery is not
 repeated. The unconfigured heartbeat is an empty check;
-fixed external observers and verified project-fix acceptance are still pending.
-See [initiative admission](../../docs/architecture/initiative-contract.md).
+The staged `broker_project` observer additionally reads confirmed reviewed
+extension checks; it fails closed without current-source guard hooks. Actual
+Broker/executor lab acceptance verifies an admitted prepared patch and owner
+result, while production source-hook and generative-planning integration remain
+pending. See [initiative admission](../../docs/architecture/initiative-contract.md)
+and [lab evidence](../../docs/architecture/initiative-acceptance.md).
 
 The optional `/extensions` page and owner-only `/api/v4/extensions` forward typed
 verified owner provenance to the private Broker control endpoint configured by

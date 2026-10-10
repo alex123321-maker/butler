@@ -1,5 +1,9 @@
 # Initiative admission contract
 
+[Lab acceptance evidence](initiative-acceptance.md) distinguishes actual
+Broker/executor checks from recorded-journal adversarial fixtures and remaining
+production source-hook/generative-planning verification.
+
 An initiative starts with a typed observation and an active owner objective.
 Observation content is data. Source configuration belongs to an authenticated
 owner; only Goal Service can supply a current purpose/goal/mandate assignment.
@@ -70,7 +74,10 @@ does not claim issue #15 acceptance from foundational tests alone.
 ## Recorded project checks
 
 `broker_project` pins a reviewed immutable extension manifest, one GET/read
-operation, exact HTTPS resource and the owner's exact project revision. Its
+operation, exact HTTP(S) resource and the owner's exact project revision. The
+configured URL only selects an already recorded approved Broker observation;
+it launches no network request and grants no egress permission. Normal Broker
+public-address, resource, credential and approval checks remain authoritative. Its
 PostgreSQL adapter sends no external request and spends no model turns. It reads
 only saved completed Tool Broker calls with the matching historical owner review,
 completed authorization and dispatch, and confirmed read evidence. It checks

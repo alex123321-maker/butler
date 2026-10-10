@@ -1,5 +1,9 @@
 # Initiatives
 
+Actual Broker/executor prepared-patch acceptance and its remaining integration
+limits are recorded in `docs/architecture/initiative-acceptance.md`. The fixture
+uses owner verification, not a model's final text, to complete the admitted task.
+
 Go control-plane subsystem for durable observations, daily/interval schedules,
 candidate coalescing and ordinary task admission. PostgreSQL owns sources,
 source revisions, tick leases, normalized event identities, candidates, audit

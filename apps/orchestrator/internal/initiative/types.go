@@ -63,7 +63,7 @@ func (s Source) Validate() error {
 	}
 	if s.ObserverKind == "broker_project" {
 		u, err := url.Parse(s.CheckResource)
-		if !digest.MatchString(s.CheckManifestHash) || !identifier.MatchString(s.CheckToolName) || !strings.HasPrefix(s.CheckToolName, "extension.") || len(s.CheckResource) > 2048 || err != nil || u.Scheme != "https" || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || u.RawPath != "" || u.Path == "" || u.String() != s.CheckResource {
+		if !digest.MatchString(s.CheckManifestHash) || !identifier.MatchString(s.CheckToolName) || !strings.HasPrefix(s.CheckToolName, "extension.") || len(s.CheckResource) > 2048 || err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || u.RawPath != "" || u.Path == "" || u.String() != s.CheckResource {
 			return ErrInvalid
 		}
 	} else if s.CheckManifestHash != "" || s.CheckToolName != "" || s.CheckResource != "" {
