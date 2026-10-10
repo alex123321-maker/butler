@@ -57,3 +57,11 @@ must deploy/review/pin the actual image, and packages cannot alter its target or
 privileges. Reads still need normal network-release authorization. Generic writes
 retain unknown-effect semantics; only the existing verified recipient protocol
 permits confirmation/reconciliation.
+
+The reviewed release was subsequently deployed to the main lab. A private
+pre-migration PostgreSQL dump preceded migration050. Startup now runs the current
+migrator before Broker readiness recovery; the executor, Broker, Orchestrator and
+Web report healthy. Live authenticated owner listing through the private Broker
+relay, anonymous rejection and read-only Web/API browser checks all passed. They
+are separate from the synthetic recipient fixture above and installed no owner
+package or real project action on the main deployment.

@@ -25,6 +25,9 @@ services:
     networks: [tool-runtime, tool-egress]
 
   tool-broker:
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
     environment:
       BUTLER_EXTENSION_PROFILES_JSON: ${BUTLER_EXTENSION_PROFILES_JSON:?Explicit reviewed executor profiles are required}
       BUTLER_EXTENSION_RUNTIME_TOKEN_FILE: /run/secrets/extension-runtime

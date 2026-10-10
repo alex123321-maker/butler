@@ -112,3 +112,9 @@ filesystem, no capabilities/new privileges and bounded RAM/PIDs. It does not
 receive model/owner credentials or build caches. The
 [Web dependency and packaging notes](../web/README.md) document the patched CSS
 parser and remaining upstream build dependency findings.
+
+The optional reviewed extension overlay makes Tool Broker wait for successful
+migration completion before recovering readiness probes. For selective releases
+using `up --no-deps`, build and run the current migrator first and verify its exit
+status before starting the executor, Broker, Orchestrator and Web. Otherwise the
+Broker can start before migration 050 creates the durable extension catalog.

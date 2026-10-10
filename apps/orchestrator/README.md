@@ -311,6 +311,8 @@ and [lab evidence](../../docs/architecture/initiative-acceptance.md).
 The optional `/extensions` page and owner-only `/api/v4/extensions` forward typed
 verified owner provenance to the private Broker control endpoint configured by
 `BUTLER_EXTENSION_CONTROL_URL`. The channel token never reaches that endpoint.
+Layered startup reads that private endpoint from the operator environment only;
+database settings cannot redirect the service-authenticated control relay.
 Task attempts are fenced and pinned before scoped tool discovery. Catalog errors
 retain the attempt and block it before inference; they never claim completion.
 Fresh approval recovery reloads permitted definitions and manifest DATA while

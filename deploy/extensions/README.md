@@ -5,6 +5,12 @@ optional overlay. Back up durable state first; its down migration refuses to
 discard installed history. Nothing installs a remote package or starts a service
 from a manifest. Deployment and package review are operator actions.
 
+The lab helper preserves the optional overlay whenever its operator descriptor
+exists at `$RemoteRoot/extensions/compose.env`. That file records only the fixed
+profile, configured owner and private runtime-token path; raw tokens remain in
+the separate mode-600 file. Do not print resolved Compose configuration, which
+may contain credentials from unrelated environment files. Use `config --quiet`.
+
 1. Build the reviewed `docker/tool-extension/Dockerfile`, inspect its source and
    measure the resulting `/usr/local/bin/tool-extension` SHA-256. Pin your image
    digest in your deployment. A profile descriptor records the measured artifact
