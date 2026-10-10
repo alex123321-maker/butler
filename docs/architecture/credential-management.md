@@ -591,6 +591,15 @@ connected credentials do not prove subscription quota. No automatic paid-credit,
 API billing, account rotation or alternate endpoint fallback is implemented.
 See the [native Antigravity operator guide](../../deploy/antigravity/README.md).
 
+An optional lab network proxy keeps its subscription and full configuration in a
+private operator directory outside synced source and model workspaces. Only the
+proxy container reads the selected config file; the Orchestrator receives a
+public internal `HTTPS_PROXY` endpoint, without proxy credentials or subscription
+material. Its file is mode `0600`, readable by the proxy service UID. It does not
+use model-provided tool arguments or provide arbitrary secret access. The
+[proxy operator guide](../../deploy/antigravity/proxy/README.md) describes the
+isolated Compose service and loopback-only published port.
+
 Current Butler baseline now applies memory-focused sanitization before memory extraction prompts and before durable memory persistence for memory-derived records.
 
 Minimum covered categories:

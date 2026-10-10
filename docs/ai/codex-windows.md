@@ -109,3 +109,7 @@ install compiler packages on each invocation. Go caches remain on the lab storag
 disk. `Race` runs the race detector;
 `Web` runs lint, functional fixtures and a live UI smoke. Keep provider sign-in
 interactive and private; see `deploy/antigravity/README.md` for the opt-in adapter.
+An optional isolated lab HTTPS proxy is described in
+`deploy/antigravity/proxy/README.md`. Its subscription and configuration stay in a
+private operator directory outside source snapshots; connectivity is verified
+before recreating the Orchestrator with that overlay.
