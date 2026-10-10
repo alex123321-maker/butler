@@ -25,7 +25,9 @@ import (
 	singletab "github.com/butler/butler/apps/orchestrator/internal/singletab"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
+	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/config"
+	"github.com/butler/butler/internal/extensions"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
@@ -160,6 +162,16 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 
 	mux := http.NewServeMux()
 	mux.Handle("/api/v3/execution-budgets", apiservice.NewBudgetHandler(budget.NewLedger(deps.postgres.Pool()), deps.ownerAuth))
+	var extensionClient *extensions.ControlClient
+	if deps.cfg.ExtensionControlURL != "" {
+		token, tokenErr := actionauth.ReadServiceToken(deps.cfg.ActionAuthorityTokenFile)
+		if tokenErr == nil {
+			extensionClient = extensions.NewControlClient(deps.cfg.ExtensionControlURL, token)
+		} else {
+			deps.log.Warn("reviewed extension control disabled: service authentication unavailable")
+		}
+	}
+	mux.Handle("/api/v4/extensions", apiservice.ReviewedExtensions(deps.ownerAuth, extensionClient))
 	mux.Handle("/internal/diagnostics", coreDiagnostics(deps))
 	if deps.actionAuthorityHandler != nil {
 		mux.Handle("/internal/action-context", deps.actionAuthorityHandler)

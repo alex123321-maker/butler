@@ -29,14 +29,20 @@ type Server struct {
 	log           *slog.Logger
 	budgetTimeout time.Duration
 	budgets       *budget.Controller
+	scopedCatalog ScopedCatalog
 }
+type ScopedCatalog interface {
+	ListForRun(context.Context, string, string, int) ([]*toolbrokerv1.ToolContract, error)
+}
+
+func (s *Server) SetScopedCatalog(c ScopedCatalog) { s.scopedCatalog = c }
 
 func (s *Server) SetActionAuthorizer(authorizer *actionauth.Service) { s.authorizer = authorizer }
 func (s *Server) SetBudgetTimeout(d time.Duration)                   { s.budgetTimeout = d }
 func (s *Server) SetBudgets(c *budget.Controller)                    { s.budgets = c }
 
 func (s *Server) PrepareToolCall(ctx context.Context, req *toolbrokerv1.PrepareToolCallRequest) (*toolbrokerv1.PrepareToolCallResponse, error) {
-	valid, contract, toolErr := s.registry.Validate(req.GetToolCall())
+	valid, contract, toolErr := s.registry.ValidateContext(ctx, req.GetToolCall())
 	if !valid {
 		return &toolbrokerv1.PrepareToolCallResponse{Error: toolErr}, nil
 	}
@@ -51,7 +57,7 @@ func (s *Server) PrepareToolCall(ctx context.Context, req *toolbrokerv1.PrepareT
 	return &toolbrokerv1.PrepareToolCallResponse{Action: &toolbrokerv1.PreparedAction{ActionId: prepared.Binding.ActionID, EffectId: prepared.EffectID, ActionHash: prepared.Binding.ActionHash, BindingJson: string(encoded), RequiresApproval: prepared.RequiresApproval, Summary: prepared.Summary, ExpiresAt: prepared.ExpiresAt.Format(time.RFC3339Nano)}}, nil
 }
 func (s *Server) AuthorizeToolCall(ctx context.Context, req *toolbrokerv1.AuthorizeToolCallRequest) (*toolbrokerv1.AuthorizeToolCallResponse, error) {
-	valid, contract, toolErr := s.registry.Validate(req.GetToolCall())
+	valid, contract, toolErr := s.registry.ValidateContext(ctx, req.GetToolCall())
 	if !valid {
 		return &toolbrokerv1.AuthorizeToolCallResponse{Error: toolErr}, nil
 	}
@@ -80,8 +86,8 @@ func NewServer(registry *registry.Registry, executor RuntimeExecutor, creds Cred
 	return &Server{registry: registry, executor: executor, creds: creds, log: logger.WithComponent(log, "tool-broker")}
 }
 
-func (s *Server) ValidateToolCall(_ context.Context, req *toolbrokerv1.ValidateToolCallRequest) (*toolbrokerv1.ValidateToolCallResponse, error) {
-	valid, contract, toolErr := s.registry.Validate(req.GetToolCall())
+func (s *Server) ValidateToolCall(ctx context.Context, req *toolbrokerv1.ValidateToolCallRequest) (*toolbrokerv1.ValidateToolCallResponse, error) {
+	valid, contract, toolErr := s.registry.ValidateContext(ctx, req.GetToolCall())
 	return &toolbrokerv1.ValidateToolCallResponse{Valid: valid, Contract: contract, Error: toolErr}, nil
 }
 
@@ -89,7 +95,7 @@ func (s *Server) ExecuteToolCall(ctx context.Context, req *toolbrokerv1.ExecuteT
 	if s.executor == nil {
 		return nil, status.Error(codes.FailedPrecondition, "tool execution routing is not configured")
 	}
-	valid, contract, toolErr := s.registry.Validate(req.GetToolCall())
+	valid, contract, toolErr := s.registry.ValidateContext(ctx, req.GetToolCall())
 	if !valid {
 		return &toolbrokerv1.ExecuteToolCallResponse{Result: invalidResult(req.GetToolCall(), toolErr)}, nil
 	}
@@ -230,7 +236,23 @@ func authorizationErrorResult(call *toolbrokerv1.ToolCall, message string) *tool
 	return &toolbrokerv1.ToolResult{ToolCallId: call.GetToolCallId(), RunId: call.GetRunId(), ToolName: call.GetToolName(), Status: "failed", Error: &toolbrokerv1.ToolError{ErrorClass: commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, Message: message, Retryable: false}}
 }
 
-func (s *Server) ListTools(_ context.Context, req *toolbrokerv1.ListToolsRequest) (*toolbrokerv1.ListToolsResponse, error) {
+func (s *Server) ListTools(ctx context.Context, req *toolbrokerv1.ListToolsRequest) (*toolbrokerv1.ListToolsResponse, error) {
+	if req.GetRunId() != "" {
+		if s.scopedCatalog == nil {
+			return nil, status.Error(codes.FailedPrecondition, "current task catalog is unavailable")
+		}
+		tools, err := s.scopedCatalog.ListForRun(ctx, req.GetRunId(), req.GetQuery(), int(req.GetLimit()))
+		if err != nil {
+			return nil, status.Error(codes.PermissionDenied, "current task catalog is unavailable")
+		}
+		filtered := tools[:0]
+		for _, tool := range tools {
+			if req.GetToolClass() == "" || req.GetToolClass() == tool.GetToolClass() {
+				filtered = append(filtered, tool)
+			}
+		}
+		return &toolbrokerv1.ListToolsResponse{Tools: filtered}, nil
+	}
 	tools := s.registry.List(req.GetToolClass(), req.GetIncludeDisabled())
 	return &toolbrokerv1.ListToolsResponse{Tools: tools}, nil
 }

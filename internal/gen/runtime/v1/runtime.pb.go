@@ -22,6 +22,118 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type ProbeExtensionRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ProbeId       string                 `protobuf:"bytes,1,opt,name=probe_id,json=probeId,proto3" json:"probe_id,omitempty"`
+	Url           string                 `protobuf:"bytes,2,opt,name=url,proto3" json:"url,omitempty"`
+	Extension     *v1.ExtensionContract  `protobuf:"bytes,3,opt,name=extension,proto3" json:"extension,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ProbeExtensionRequest) Reset() {
+	*x = ProbeExtensionRequest{}
+	mi := &file_runtime_v1_runtime_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ProbeExtensionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ProbeExtensionRequest) ProtoMessage() {}
+
+func (x *ProbeExtensionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_runtime_v1_runtime_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ProbeExtensionRequest.ProtoReflect.Descriptor instead.
+func (*ProbeExtensionRequest) Descriptor() ([]byte, []int) {
+	return file_runtime_v1_runtime_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *ProbeExtensionRequest) GetProbeId() string {
+	if x != nil {
+		return x.ProbeId
+	}
+	return ""
+}
+
+func (x *ProbeExtensionRequest) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+func (x *ProbeExtensionRequest) GetExtension() *v1.ExtensionContract {
+	if x != nil {
+		return x.Extension
+	}
+	return nil
+}
+
+type ProbeExtensionResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Ready          bool                   `protobuf:"varint,1,opt,name=ready,proto3" json:"ready,omitempty"`
+	ResponseDigest string                 `protobuf:"bytes,2,opt,name=response_digest,json=responseDigest,proto3" json:"response_digest,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ProbeExtensionResponse) Reset() {
+	*x = ProbeExtensionResponse{}
+	mi := &file_runtime_v1_runtime_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ProbeExtensionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ProbeExtensionResponse) ProtoMessage() {}
+
+func (x *ProbeExtensionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_runtime_v1_runtime_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ProbeExtensionResponse.ProtoReflect.Descriptor instead.
+func (*ProbeExtensionResponse) Descriptor() ([]byte, []int) {
+	return file_runtime_v1_runtime_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ProbeExtensionResponse) GetReady() bool {
+	if x != nil {
+		return x.Ready
+	}
+	return false
+}
+
+func (x *ProbeExtensionResponse) GetResponseDigest() string {
+	if x != nil {
+		return x.ResponseDigest
+	}
+	return ""
+}
+
 type ExecutionContext struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	RequestId         string                 `protobuf:"bytes,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
@@ -39,7 +151,7 @@ type ExecutionContext struct {
 
 func (x *ExecutionContext) Reset() {
 	*x = ExecutionContext{}
-	mi := &file_runtime_v1_runtime_proto_msgTypes[0]
+	mi := &file_runtime_v1_runtime_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -51,7 +163,7 @@ func (x *ExecutionContext) String() string {
 func (*ExecutionContext) ProtoMessage() {}
 
 func (x *ExecutionContext) ProtoReflect() protoreflect.Message {
-	mi := &file_runtime_v1_runtime_proto_msgTypes[0]
+	mi := &file_runtime_v1_runtime_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -64,7 +176,7 @@ func (x *ExecutionContext) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecutionContext.ProtoReflect.Descriptor instead.
 func (*ExecutionContext) Descriptor() ([]byte, []int) {
-	return file_runtime_v1_runtime_proto_rawDescGZIP(), []int{0}
+	return file_runtime_v1_runtime_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ExecutionContext) GetRequestId() string {
@@ -141,7 +253,7 @@ type ResolvedCredential struct {
 
 func (x *ResolvedCredential) Reset() {
 	*x = ResolvedCredential{}
-	mi := &file_runtime_v1_runtime_proto_msgTypes[1]
+	mi := &file_runtime_v1_runtime_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -153,7 +265,7 @@ func (x *ResolvedCredential) String() string {
 func (*ResolvedCredential) ProtoMessage() {}
 
 func (x *ResolvedCredential) ProtoReflect() protoreflect.Message {
-	mi := &file_runtime_v1_runtime_proto_msgTypes[1]
+	mi := &file_runtime_v1_runtime_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -166,7 +278,7 @@ func (x *ResolvedCredential) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResolvedCredential.ProtoReflect.Descriptor instead.
 func (*ResolvedCredential) Descriptor() ([]byte, []int) {
-	return file_runtime_v1_runtime_proto_rawDescGZIP(), []int{1}
+	return file_runtime_v1_runtime_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ResolvedCredential) GetAlias() string {
@@ -202,7 +314,7 @@ type ExecuteRequest struct {
 
 func (x *ExecuteRequest) Reset() {
 	*x = ExecuteRequest{}
-	mi := &file_runtime_v1_runtime_proto_msgTypes[2]
+	mi := &file_runtime_v1_runtime_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -214,7 +326,7 @@ func (x *ExecuteRequest) String() string {
 func (*ExecuteRequest) ProtoMessage() {}
 
 func (x *ExecuteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_runtime_v1_runtime_proto_msgTypes[2]
+	mi := &file_runtime_v1_runtime_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -227,7 +339,7 @@ func (x *ExecuteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteRequest.ProtoReflect.Descriptor instead.
 func (*ExecuteRequest) Descriptor() ([]byte, []int) {
-	return file_runtime_v1_runtime_proto_rawDescGZIP(), []int{2}
+	return file_runtime_v1_runtime_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ExecuteRequest) GetContext() *ExecutionContext {
@@ -267,7 +379,7 @@ type ExecuteResponse struct {
 
 func (x *ExecuteResponse) Reset() {
 	*x = ExecuteResponse{}
-	mi := &file_runtime_v1_runtime_proto_msgTypes[3]
+	mi := &file_runtime_v1_runtime_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -279,7 +391,7 @@ func (x *ExecuteResponse) String() string {
 func (*ExecuteResponse) ProtoMessage() {}
 
 func (x *ExecuteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_runtime_v1_runtime_proto_msgTypes[3]
+	mi := &file_runtime_v1_runtime_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -292,7 +404,7 @@ func (x *ExecuteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteResponse.ProtoReflect.Descriptor instead.
 func (*ExecuteResponse) Descriptor() ([]byte, []int) {
-	return file_runtime_v1_runtime_proto_rawDescGZIP(), []int{3}
+	return file_runtime_v1_runtime_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ExecuteResponse) GetResult() *v1.ToolResult {
@@ -306,7 +418,14 @@ var File_runtime_v1_runtime_proto protoreflect.FileDescriptor
 
 const file_runtime_v1_runtime_proto_rawDesc = "" +
 	"\n" +
-	"\x18runtime/v1/runtime.proto\x12\x11butler.runtime.v1\x1a\x19toolbroker/v1/types.proto\"\xc2\x02\n" +
+	"\x18runtime/v1/runtime.proto\x12\x11butler.runtime.v1\x1a\x19toolbroker/v1/types.proto\"\x8b\x01\n" +
+	"\x15ProbeExtensionRequest\x12\x19\n" +
+	"\bprobe_id\x18\x01 \x01(\tR\aprobeId\x12\x10\n" +
+	"\x03url\x18\x02 \x01(\tR\x03url\x12E\n" +
+	"\textension\x18\x03 \x01(\v2'.butler.toolbroker.v1.ExtensionContractR\textension\"W\n" +
+	"\x16ProbeExtensionResponse\x12\x14\n" +
+	"\x05ready\x18\x01 \x01(\bR\x05ready\x12'\n" +
+	"\x0fresponse_digest\x18\x02 \x01(\tR\x0eresponseDigest\"\xc2\x02\n" +
 	"\x10ExecutionContext\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x12\x15\n" +
@@ -330,9 +449,10 @@ const file_runtime_v1_runtime_proto_rawDesc = "" +
 	"\bcontract\x18\x03 \x01(\v2\".butler.toolbroker.v1.ToolContractR\bcontract\x12X\n" +
 	"\x14resolved_credentials\x18\x04 \x03(\v2%.butler.runtime.v1.ResolvedCredentialR\x13resolvedCredentials\"K\n" +
 	"\x0fExecuteResponse\x128\n" +
-	"\x06result\x18\x01 \x01(\v2 .butler.toolbroker.v1.ToolResultR\x06result2f\n" +
+	"\x06result\x18\x01 \x01(\v2 .butler.toolbroker.v1.ToolResultR\x06result2\xcd\x01\n" +
 	"\x12ToolRuntimeService\x12P\n" +
-	"\aExecute\x12!.butler.runtime.v1.ExecuteRequest\x1a\".butler.runtime.v1.ExecuteResponseB<Z:github.com/butler/butler/internal/gen/runtime/v1;runtimev1b\x06proto3"
+	"\aExecute\x12!.butler.runtime.v1.ExecuteRequest\x1a\".butler.runtime.v1.ExecuteResponse\x12e\n" +
+	"\x0eProbeExtension\x12(.butler.runtime.v1.ProbeExtensionRequest\x1a).butler.runtime.v1.ProbeExtensionResponseB<Z:github.com/butler/butler/internal/gen/runtime/v1;runtimev1b\x06proto3"
 
 var (
 	file_runtime_v1_runtime_proto_rawDescOnce sync.Once
@@ -346,29 +466,35 @@ func file_runtime_v1_runtime_proto_rawDescGZIP() []byte {
 	return file_runtime_v1_runtime_proto_rawDescData
 }
 
-var file_runtime_v1_runtime_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_runtime_v1_runtime_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_runtime_v1_runtime_proto_goTypes = []any{
-	(*ExecutionContext)(nil),   // 0: butler.runtime.v1.ExecutionContext
-	(*ResolvedCredential)(nil), // 1: butler.runtime.v1.ResolvedCredential
-	(*ExecuteRequest)(nil),     // 2: butler.runtime.v1.ExecuteRequest
-	(*ExecuteResponse)(nil),    // 3: butler.runtime.v1.ExecuteResponse
-	(*v1.ToolCall)(nil),        // 4: butler.toolbroker.v1.ToolCall
-	(*v1.ToolContract)(nil),    // 5: butler.toolbroker.v1.ToolContract
-	(*v1.ToolResult)(nil),      // 6: butler.toolbroker.v1.ToolResult
+	(*ProbeExtensionRequest)(nil),  // 0: butler.runtime.v1.ProbeExtensionRequest
+	(*ProbeExtensionResponse)(nil), // 1: butler.runtime.v1.ProbeExtensionResponse
+	(*ExecutionContext)(nil),       // 2: butler.runtime.v1.ExecutionContext
+	(*ResolvedCredential)(nil),     // 3: butler.runtime.v1.ResolvedCredential
+	(*ExecuteRequest)(nil),         // 4: butler.runtime.v1.ExecuteRequest
+	(*ExecuteResponse)(nil),        // 5: butler.runtime.v1.ExecuteResponse
+	(*v1.ExtensionContract)(nil),   // 6: butler.toolbroker.v1.ExtensionContract
+	(*v1.ToolCall)(nil),            // 7: butler.toolbroker.v1.ToolCall
+	(*v1.ToolContract)(nil),        // 8: butler.toolbroker.v1.ToolContract
+	(*v1.ToolResult)(nil),          // 9: butler.toolbroker.v1.ToolResult
 }
 var file_runtime_v1_runtime_proto_depIdxs = []int32{
-	0, // 0: butler.runtime.v1.ExecuteRequest.context:type_name -> butler.runtime.v1.ExecutionContext
-	4, // 1: butler.runtime.v1.ExecuteRequest.tool_call:type_name -> butler.toolbroker.v1.ToolCall
-	5, // 2: butler.runtime.v1.ExecuteRequest.contract:type_name -> butler.toolbroker.v1.ToolContract
-	1, // 3: butler.runtime.v1.ExecuteRequest.resolved_credentials:type_name -> butler.runtime.v1.ResolvedCredential
-	6, // 4: butler.runtime.v1.ExecuteResponse.result:type_name -> butler.toolbroker.v1.ToolResult
-	2, // 5: butler.runtime.v1.ToolRuntimeService.Execute:input_type -> butler.runtime.v1.ExecuteRequest
-	3, // 6: butler.runtime.v1.ToolRuntimeService.Execute:output_type -> butler.runtime.v1.ExecuteResponse
-	6, // [6:7] is the sub-list for method output_type
-	5, // [5:6] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	6, // 0: butler.runtime.v1.ProbeExtensionRequest.extension:type_name -> butler.toolbroker.v1.ExtensionContract
+	2, // 1: butler.runtime.v1.ExecuteRequest.context:type_name -> butler.runtime.v1.ExecutionContext
+	7, // 2: butler.runtime.v1.ExecuteRequest.tool_call:type_name -> butler.toolbroker.v1.ToolCall
+	8, // 3: butler.runtime.v1.ExecuteRequest.contract:type_name -> butler.toolbroker.v1.ToolContract
+	3, // 4: butler.runtime.v1.ExecuteRequest.resolved_credentials:type_name -> butler.runtime.v1.ResolvedCredential
+	9, // 5: butler.runtime.v1.ExecuteResponse.result:type_name -> butler.toolbroker.v1.ToolResult
+	4, // 6: butler.runtime.v1.ToolRuntimeService.Execute:input_type -> butler.runtime.v1.ExecuteRequest
+	0, // 7: butler.runtime.v1.ToolRuntimeService.ProbeExtension:input_type -> butler.runtime.v1.ProbeExtensionRequest
+	5, // 8: butler.runtime.v1.ToolRuntimeService.Execute:output_type -> butler.runtime.v1.ExecuteResponse
+	1, // 9: butler.runtime.v1.ToolRuntimeService.ProbeExtension:output_type -> butler.runtime.v1.ProbeExtensionResponse
+	8, // [8:10] is the sub-list for method output_type
+	6, // [6:8] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_runtime_v1_runtime_proto_init() }
@@ -382,7 +508,7 @@ func file_runtime_v1_runtime_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_runtime_v1_runtime_proto_rawDesc), len(file_runtime_v1_runtime_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

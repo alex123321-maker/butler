@@ -35,6 +35,13 @@ func (s *Service) attachTaskContext(ctx context.Context, sessionKey string, prep
 		return fmt.Errorf("%w: task is not active for this session owner", task.ErrConflict)
 	}
 	prepared.Task = &record
+	// Pin the fenced task attempt before the private scoped catalog reads it.
+	// Preparation failure still leaves a truthful task/run history binding.
+	if prepared.CurrentRunID != "" {
+		if err = s.config.Tasks.AttachRun(ctx, record.TaskID, record.Revision, prepared.CurrentRunID, sessionKey); err != nil {
+			return err
+		}
+	}
 	if err := s.attachOwnerGoalContext(ctx, record.TaskID, prepared); err != nil {
 		return err
 	}

@@ -12,9 +12,18 @@ import (
 )
 
 type PostgresStore struct {
-	pool    *pgxpool.Pool
-	budgets *budget.Controller
+	pool          *pgxpool.Pool
+	budgets       *budget.Controller
+	contractGuard ContractGuard
 }
+
+// ContractGuard joins current capability admission to the irreversible dispatch
+// transaction after task/owner authority and before effect/budget writes.
+type ContractGuard interface {
+	CheckActionTx(context.Context, pgx.Tx, ActionBinding) error
+}
+
+func (s *PostgresStore) SetContractGuard(guard ContractGuard) { s.contractGuard = guard }
 
 // SetBudgets is trusted deployment wiring, never a model-selectable option.
 func (s *PostgresStore) SetBudgets(c *budget.Controller) { s.budgets = c }
@@ -214,6 +223,14 @@ func (s *PostgresStore) guardDispatch(ctx context.Context, tx pgx.Tx, g Grant) e
 			return err
 		}
 		if err = CheckTaskActionTx(ctx, tx, g.Binding, time.Now().UTC()); err != nil {
+			return err
+		}
+	}
+	if g.Binding.ExtensionID != "" {
+		if s.contractGuard == nil {
+			return fmt.Errorf("reviewed capability admission is unavailable at dispatch")
+		}
+		if err = s.contractGuard.CheckActionTx(ctx, tx, g.Binding); err != nil {
 			return err
 		}
 	}

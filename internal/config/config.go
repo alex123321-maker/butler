@@ -82,6 +82,7 @@ type OrchestratorConfig struct {
 	AutonomyMode                      string
 	ActionMandateID                   string
 	ActionAuthorityTokenFile          string
+	ExtensionControlURL               string
 	TelegramBotToken                  string
 	TelegramAllowedChatIDs            []string
 	TelegramBaseURL                   string
@@ -111,6 +112,9 @@ type ToolBrokerConfig struct {
 	DefaultTarget             string
 	ActionContextURL          string
 	ActionAuthorityTokenFile  string
+	ExtensionProfilesJSON     string
+	ExtensionRuntimeTokenFile string
+	ExtensionOwnerID          string
 }
 
 type ToolBrowserConfig struct {
@@ -288,6 +292,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_ACTION_MANDATE_ID", component: "orchestrator", typeName: "string", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ActionMandateID = strings.TrimSpace(v) }},
 		fieldSpec{key: "BUTLER_EXECUTION_BUDGET_POLICY_JSON", component: "orchestrator", typeName: "json", requiresRestart: true, validate: validateBudgetPolicy, assign: func(v string) { cfg.ExecutionBudgetPolicyJSON = v }},
 		fieldSpec{key: "BUTLER_ACTION_AUTHORITY_TOKEN_FILE", component: "orchestrator", typeName: "string", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ActionAuthorityTokenFile = strings.TrimSpace(v) }},
+		fieldSpec{key: "BUTLER_EXTENSION_CONTROL_URL", component: "orchestrator", typeName: "string", defaultValue: "", requiresRestart: true, validate: validateOptionalURL, assign: func(v string) { cfg.ExtensionControlURL = strings.TrimSpace(v) }},
 		fieldSpec{key: "BUTLER_TELEGRAM_BOT_TOKEN", component: "orchestrator", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: func(v string) { cfg.TelegramBotToken = v }},
 		fieldSpec{key: "BUTLER_TELEGRAM_ALLOWED_CHAT_IDS", component: "orchestrator", typeName: "csv", required: false, defaultValue: "", requiresRestart: true, validate: validateOptionalChatIDList, assign: func(v string) { cfg.TelegramAllowedChatIDs = parseCSV(v) }},
 		fieldSpec{key: "BUTLER_TELEGRAM_BASE_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "https://api.telegram.org", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.TelegramBaseURL = v }},
@@ -330,6 +335,9 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_TOOL_DEFAULT_TARGET", component: "tool-broker", typeName: "string", required: false, defaultValue: "local", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.DefaultTarget = v }},
 		fieldSpec{key: "BUTLER_ACTION_CONTEXT_URL", component: "tool-broker", typeName: "string", defaultValue: "http://127.0.0.1:8080/internal/action-context", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.ActionContextURL = v }},
 		fieldSpec{key: "BUTLER_ACTION_AUTHORITY_TOKEN_FILE", component: "tool-broker", typeName: "string", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ActionAuthorityTokenFile = strings.TrimSpace(v) }},
+		fieldSpec{key: "BUTLER_EXTENSION_PROFILES_JSON", component: "tool-broker", typeName: "json", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ExtensionProfilesJSON = v }},
+		fieldSpec{key: "BUTLER_EXTENSION_RUNTIME_TOKEN_FILE", component: "tool-broker", typeName: "string", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ExtensionRuntimeTokenFile = strings.TrimSpace(v) }},
+		fieldSpec{key: "BUTLER_OWNER_CONTROL_OWNER_ID", component: "tool-broker", typeName: "string", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ExtensionOwnerID = strings.TrimSpace(v) }},
 		fieldSpec{key: "BUTLER_EXECUTION_BUDGET_POLICY_JSON", component: "tool-broker", typeName: "json", requiresRestart: true, validate: validateBudgetPolicy, assign: func(v string) { cfg.ExecutionBudgetPolicyJSON = v }},
 	)
 

@@ -8,6 +8,18 @@ import "toolbroker/v1/types.proto";
 
 service ToolRuntimeService {
   rpc Execute(ExecuteRequest) returns (ExecuteResponse);
+  // Fixed GET reviewed readiness, private authenticated controlplane only.
+  rpc ProbeExtension(ProbeExtensionRequest) returns (ProbeExtensionResponse);
+}
+
+message ProbeExtensionRequest {
+  string probe_id = 1;
+  string url = 2;
+  butler.toolbroker.v1.ExtensionContract extension = 3;
+}
+message ProbeExtensionResponse {
+  bool ready = 1;
+  string response_digest = 2;
 }
 
 message ExecutionContext {
