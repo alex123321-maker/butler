@@ -2,6 +2,7 @@ package localmodels
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -30,6 +31,44 @@ func processFixture(t *testing.T, body string) *Process {
 	}
 	t.Cleanup(func() { _ = b.Unload(context.Background(), "model") })
 	return b
+}
+func TestPinnedMetadataIsBoundedAndContained(t *testing.T) {
+	b := processFixture(t, "exit 0\n")
+	p := profile()
+	p.Model = "google/embeddinggemma-2"
+	p.Runtime = "torch-sentence-transformers"
+	p.SourceUrl = "https://huggingface.co/" + p.Model
+	p.Revision = strings.Repeat("a", 40)
+	directory := filepath.Join(b.cfg.ModelRoot, p.Revision)
+	if err := os.Mkdir(directory, 0700); err != nil {
+		t.Fatal(err)
+	}
+	meta, _ := json.Marshal(map[string]string{"model": p.Model, "revision": p.Revision, "runtime_version": p.RuntimeVersion})
+	path := filepath.Join(directory, "butler-model.json")
+	if err := os.WriteFile(path, meta, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := b.Verify(context.Background(), p); err != nil {
+		t.Fatal(err)
+	}
+	p.SourceUrl += "?token=credential"
+	if err := b.Verify(context.Background(), p); !isFault(err, Unavailable) {
+		t.Fatal("untrusted source accepted")
+	}
+	p.SourceUrl = "https://huggingface.co/" + p.Model
+	if err := os.Remove(path); err != nil {
+		t.Fatal(err)
+	}
+	outside := filepath.Join(t.TempDir(), "metadata")
+	if err := os.WriteFile(outside, meta, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(outside, path); err != nil {
+		t.Fatal(err)
+	}
+	if err := b.Verify(context.Background(), p); !isFault(err, Unavailable) {
+		t.Fatal("metadata escaped model root")
+	}
 }
 func TestProcessCancellationKillsAndWaitsForOwnedRuntime(t *testing.T) {
 	b := processFixture(t, "read init\nprintf '%s\\n' '{\"kind\":\"ready\",\"vram_mib\":0}'\nread job\nwhile :; do :; done\n")

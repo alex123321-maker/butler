@@ -65,7 +65,19 @@ func run(log *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	manager, err := localmodels.New(localmodels.Config{BudgetMiB: uint32(budget), ReserveMiB: uint32(reserve), IdleTimeout: time.Duration(idle) * time.Second, QueueSize: queue}, catalog.Models, backend, localmodels.NvidiaSMI{Device: uint32(device)})
+	cpuBackend, err := localmodels.NewProcess(localmodels.ProcessConfig{Python: env("BUTLER_LOCAL_MODELS_PYTHON", "/data/venv/bin/python"), Script: env("BUTLER_LOCAL_MODELS_WORKER", "/app/model-worker.py"), ModelRoot: env("BUTLER_LOCAL_MODELS_MODEL_ROOT", "/data/models"), GPUIndex: uint32(device)})
+	if err != nil {
+		return err
+	}
+	ramBudget, err := number("BUTLER_LOCAL_MODELS_RAM_BUDGET_MIB", 6144, 512, 65536)
+	if err != nil {
+		return err
+	}
+	ramReserve, err := number("BUTLER_LOCAL_MODELS_RAM_RESERVE_MIB", 512, 1, 65536)
+	if err != nil {
+		return err
+	}
+	manager, err := localmodels.NewRouter(localmodels.Config{BudgetMiB: uint32(budget), ReserveMiB: uint32(reserve), RAMBudgetMiB: uint32(ramBudget), RAMReserveMiB: uint32(ramReserve), RAMTelemetry: localmodels.ProcMemory{}, IdleTimeout: time.Duration(idle) * time.Second, QueueSize: queue}, catalog.Models, backend, cpuBackend, localmodels.NvidiaSMI{Device: uint32(device)})
 	if err != nil {
 		return err
 	}
@@ -93,7 +105,7 @@ func run(log *slog.Logger) error {
 		defer cancel()
 		s := manager.Status(ctx)
 		w.Header().Set("Content-Type", "text/plain; version=0.0.4")
-		_, _ = fmt.Fprintf(w, "butler_local_models_completed_total %d\nbutler_local_models_failed_total %d\nbutler_local_models_queue %d\nbutler_local_models_cpu_fallbacks_total %d\nbutler_local_models_oom_retries_total %d\nbutler_local_models_device_peak_mib %d\n", s.Completed, s.Failed, s.Queued, s.CpuFallbacks, s.OomRetries, s.ObservedPeakMib)
+		_, _ = fmt.Fprintf(w, "butler_local_models_completed_total %d\nbutler_local_models_failed_total %d\nbutler_local_models_queue %d\nbutler_local_models_cpu_fallbacks_total %d\nbutler_local_models_oom_retries_total %d\nbutler_local_models_device_peak_mib %d\nbutler_local_models_ram_peak_mib %d\n", s.Completed+s.CpuLane.Completed, s.Failed+s.CpuLane.Failed, s.Queued+s.CpuLane.Queued, s.CpuFallbacks, s.OomRetries, s.ObservedPeakMib, max(s.ObservedPeakRamMib, s.CpuLane.ObservedPeakRamMib))
 	})
 	httpServer := &http.Server{Addr: env("BUTLER_LOCAL_MODELS_HTTP_ADDR", ":8080"), Handler: mux, ReadHeaderTimeout: 5 * time.Second}
 	errCh := make(chan error, 2)

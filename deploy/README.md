@@ -88,3 +88,16 @@ container and run tests as UID 1000, keeping build/module caches on the storage 
 - for Windows local-browser testing, install the native messaging host with `pwsh -NoProfile -File scripts/dev/install-browser-bridge-host.ps1 -Browser Chrome -ExtensionId <extension_id>`
 
 Network tool images use read-only filesystems, dropped capabilities, no-new-privileges and bounded PIDs/memory. HTTP/webfetch/Chromium join tool-runtime plus tool-egress, without the core backend. Doctor uses fixed read-only core diagnostics and no longer receives PG/Redis/model credentials. Operator restart-helper and separately approved user-tab relay are explicit exceptions. Apply the Compose changes before claiming runtime isolation; code tests do not alter a running deployment. See [security boundaries](../docs/architecture/agent-security-boundaries.md).
+
+The prepared shared auxiliary models can be enabled independently of memory
+index activation. On the lab, create mode-0600
+`BUTLER_LAB_ROOT/local-models/compose.env` containing only the operator-selected
+`BUTLER_LOCAL_MODELS_ROOT` prepared storage path, then run the normal `Up` command.
+The wrapper includes the optional overlay/profile whenever this file exists,
+including subsequent deployments and status checks. Weights/dependencies stay on
+the storage disk; inference has only the internal `local-inference` network and
+no published ports. Orchestrator keeps its existing networks and additionally
+joins that private network. The private model token stays in the mounted file.
+Installing this service grants no auxiliary-job authority and does not turn on
+the memory pipeline or switch the generative provider. See the
+[model preparation and verification guide](local-models/README.md).
