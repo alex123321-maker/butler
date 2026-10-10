@@ -2,11 +2,13 @@ package transcript
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/butler/butler/internal/ownership"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 )
 
@@ -80,5 +82,34 @@ func TestTranscriptStoreIntegration(t *testing.T) {
 	}
 	if runTranscript.Messages[0].Content != "hello password=supersecret" || runTranscript.ToolCalls[0].ArgsJSON == "" {
 		t.Fatalf("expected transcript store to preserve raw transcript for source-of-truth audit, got %+v", runTranscript)
+	}
+
+	// A resumed worker may still receive delayed model/tool output from an older
+	// ownership epoch. Neither output may enter the durable transcript.
+	if _, err := store.Pool().Exec(ctx, `INSERT INTO session_ownership(session_key,lease_id,run_id,owner_id,fence_epoch,expires_at) VALUES($1,'transcript-lease',$2,'worker',1,clock_timestamp()+interval '1 minute')`, sessionKey, runID); err != nil {
+		t.Fatal(err)
+	}
+	fenced := ownership.WithToken(ctx, ownership.NewAuthority(store.Pool()), ownership.Token{SessionKey: sessionKey, RunID: runID, LeaseID: "transcript-lease", FenceEpoch: 1})
+	if _, err := transcriptStore.AppendMessage(fenced, Message{SessionKey: sessionKey, RunID: "foreign-run", Role: "assistant", Content: "wrong run"}); !errors.Is(err, ownership.ErrStale) {
+		t.Fatalf("foreign run transcript accepted: %v", err)
+	}
+	if _, err := transcriptStore.AppendToolCall(fenced, ToolCall{RunID: "foreign-run", ToolName: "web.fetch"}); !errors.Is(err, ownership.ErrStale) {
+		t.Fatalf("foreign run tool accepted: %v", err)
+	}
+	if _, err := transcriptStore.AppendMessage(fenced, Message{SessionKey: sessionKey, RunID: runID, Role: "assistant", Content: "current epoch"}); err != nil {
+		t.Fatalf("current fenced write: %v", err)
+	}
+	if _, err := store.Pool().Exec(ctx, `UPDATE session_ownership SET fence_epoch=2,lease_id='new-transcript-lease' WHERE session_key=$1`, sessionKey); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := transcriptStore.AppendMessage(fenced, Message{SessionKey: sessionKey, RunID: runID, Role: "assistant", Content: "late stale output"}); !errors.Is(err, ownership.ErrStale) {
+		t.Fatalf("stale model output accepted: %v", err)
+	}
+	if _, err := transcriptStore.AppendToolCall(fenced, ToolCall{RunID: runID, ToolName: "web.fetch", Status: "completed"}); !errors.Is(err, ownership.ErrStale) {
+		t.Fatalf("stale tool output accepted: %v", err)
+	}
+	final, err := transcriptStore.GetRunTranscript(ctx, runID)
+	if err != nil || len(final.Messages) != 2 || len(final.ToolCalls) != 1 {
+		t.Fatalf("stale output changed durable transcript: messages=%d tools=%d err=%v", len(final.Messages), len(final.ToolCalls), err)
 	}
 }
