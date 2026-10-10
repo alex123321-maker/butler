@@ -1,5 +1,12 @@
 # Butler (дворецкий) — Product Requirements + Architecture Specification
 
+Action/credential permission is implemented as a single
+[versioned exact-action contract](action-authorization-contract.md).
+PostgreSQL owns intents, grants and bounded mandates. Explicit autonomy input,
+private service authentication, exact owner approval and repeated current
+task/ownership checks govern execution and secret release. Unknown effects
+cannot acquire read authority from tool names or model descriptions.
+
 ## 1. Статус документа
 
 **Тип документа:** PRD + Architecture (продукт + архитектура)  

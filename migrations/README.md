@@ -2,6 +2,11 @@
 
 SQL migrations live here.
 
+`031_action_authorization` stores canonical action intents, irreversible
+dispatch grant states and versioned bounded mandates. Down removes these
+permission/outcome records; preserve them before operational rollback because
+their absence cannot safely imply that an external action was never dispatched.
+
 - `001_sessions` creates the session store baseline.
 - `002_runs` creates run lifecycle persistence per the lifecycle spec.
 - `003_messages` creates transcript message storage.

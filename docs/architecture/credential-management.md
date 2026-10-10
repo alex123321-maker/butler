@@ -1,5 +1,12 @@
 # Butler — Credential Management and Deferred Secret Resolution
 
+Credential release now follows the
+[exact action authorization contract](action-authorization-contract.md).
+One-time approval binds canonical args, concrete resource, alias/field and
+credential metadata version; it never weakens global alias policy. Broker
+revalidates current owner/task/lease and durable decision before each release
+and dispatch, then masks reflected resolved values at the model result boundary.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Security and Tooling

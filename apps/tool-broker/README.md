@@ -1,5 +1,17 @@
 # Tool Broker
 
+Every dispatch now uses `PrepareToolCall` and `AuthorizeToolCall` for the complete
+action, followed by `ExecuteToolCall.authorization_id`. PostgreSQL retains exact
+intent, grant state and bounded mandates. Approval is revalidated before secrets
+and dispatch; uncertain effects cannot reuse a grant. Reflected resolved secrets
+are masked before results reach the model. See
+[action authorization](../../docs/architecture/action-authorization-contract.md).
+
+Private execution RPCs and `/internal/action-mandates` require a service token
+from `BUTLER_ACTION_AUTHORITY_TOKEN_FILE`. Configure `BUTLER_ACTION_CONTEXT_URL`
+to the authenticated orchestrator authority endpoint. Missing wiring fails
+closed. Compose mounts the token as a secret, outside model/tool arguments.
+
 Browser contracts now separate independent `browser.read` from run-owned
 `browser.open`/`browser.close` and explicit continuation. Stateful effects require
 the latest observation version and expected current URL; the runtime validates
@@ -10,7 +22,7 @@ use typed credential refs only, with their separate approvals preserved. See
 Tool Broker service for Butler tool validation, policy enforcement, credential mediation, and runtime routing.
 
 Current state:
-- gRPC server exposes `ListTools`, `GetToolContract`, `ValidateToolCall`, and routed `ExecuteToolCall`
+- gRPC exposes catalog/schema inspection and private exact-action preparation, authorization and execution
 - in-memory Tool Registry is loaded from `configs/tools.json`
 - schema validation is performed against tool `input_schema_json`
 - execution routing dials the per-tool `runtime_target` over the internal runtime gRPC contract

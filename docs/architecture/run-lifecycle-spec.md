@@ -1,5 +1,11 @@
 # Butler — Run Lifecycle Specification
 
+Tool preparation and dispatch follow
+[exact action authorization](action-authorization-contract.md). The approved
+intent retains stable IDs across durable suspension, while a resumed worker
+must obtain a fresh current lease/fence grant. Dispatch/result checkpoints and
+non-reusable unknown outcomes prevent recovery from repeating external effects.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Run Lifecycle  

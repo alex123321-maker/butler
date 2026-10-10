@@ -76,14 +76,12 @@ Cookie credentials resolve to JSON with `name`, `value`, `domain`, optional `pat
 host; origin entries must match its fixed origin. Cookie path is preserved.
 Installed state remains available to later calls in the **same live context**.
 
-Current integration dependency: the existing Credential Broker rejects every
-mutating credential use that requires approval, because a verified action-level
-approval proof is not yet forwarded after the orchestrator's approval. This is
-the separate issue #7; the browser change keeps that safe refusal and does not
-invent authorization. Runtime e2e uses trusted resolved-credential fixtures to
-prove same-context persistence; Broker e2e proves required approval is refused.
-Successful production credential approval must be verified after #7 before
-claiming the complete approved-auth flow or closing #8.
+Credential use follows the [exact action authorization contract](action-authorization-contract.md).
+An owner decision binds alias/field, resource, arguments, tool and task versions.
+Broker verifies it before secret release; runtime verifies its actual page
+before injection. Unapproved/stale decisions fail closed. Real Broker/Approval
+Service/Chromium e2e verifies successful approved password use, form continuity,
+secret masking and refusal before approval. User-tab approval remains separate.
 
 Go sends these runtime-only values through a private stdin/stdout JSON-lines
 channel to one long-lived Playwright helper. Values are never put in process
@@ -125,7 +123,10 @@ unguarded effects and raw auth objects. Real Chromium e2e exercises a multi-inpu
 form without reloading, private password/cookie/storage persistence and masking,
 independent DOM mutation blocking a POST, expiry and process loss.
 An additional Broker-to-runtime-to-Chromium e2e loads the real tool catalog,
-completes the form sequence and confirms credential approval blocks execution.
+completes the form sequence and confirms unapproved credentials block execution.
+A further e2e starts the actual Broker process, real PostgreSQL approval and
+credential services, and the authenticated private authority endpoint; it
+completes an approved password/form flow once and rejects changed args/replay.
 Idle expiry cleanup is exercised against the real helper timer too.
 
 Run all checks on the lab with the repository helper and an isolated agent root:
@@ -138,4 +139,5 @@ ssh laba 'bash /srv/storage/butler/agents/browser-sessions/current/scripts/dev/l
 
 The browser command compiles test binaries in a disposable Go container and runs
 them in the existing Playwright image. It does not start/change Compose services
-or durable database volumes.
+or production database tables. Approval e2e uses disposable schemas in the
+separate `butler_actionauth_test` database.

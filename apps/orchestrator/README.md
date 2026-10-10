@@ -1,5 +1,13 @@
 # Orchestrator
 
+Tool execution prepares the exact action through Broker, records required
+owner approval, then obtains a private dispatch grant tied to current task and
+worker versions. `/internal/action-context` validates PostgreSQL ownership and
+delegates durable approval checks. Configure `BUTLER_ACTION_AUTHORITY_TOKEN_FILE`,
+`BUTLER_AUTONOMY_MODE` (default `mode_1`) and, when explicitly assigned,
+`BUTLER_ACTION_MANDATE_ID`. Unknown effects stop before model continuation. See
+[action authorization](../../docs/architecture/action-authorization-contract.md).
+
 Browser guidance matches the explicit
 [`browser.*` session contract](../../docs/architecture/browser-session-contract.md):
 independent reads use `browser.read`, sequences begin with `browser.open`, follow-up
