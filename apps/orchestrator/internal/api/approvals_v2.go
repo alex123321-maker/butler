@@ -27,10 +27,13 @@ type approvalsSelector interface {
 }
 
 type ApprovalsServer struct {
-	store    approvalsStore
-	resolver approvalsResolver
-	selector approvalsSelector
+	store     approvalsStore
+	resolver  approvalsResolver
+	selector  approvalsSelector
+	ownerAuth *OwnerControlAuth
 }
+
+func (s *ApprovalsServer) SetOwnerControlAuth(auth *OwnerControlAuth) { s.ownerAuth = auth }
 
 func NewApprovalsServer(store approvalsStore, resolver approvalsResolver, selector approvalsSelector) *ApprovalsServer {
 	return &ApprovalsServer{store: store, resolver: resolver, selector: selector}
@@ -153,7 +156,16 @@ func (s *ApprovalsServer) HandleSelectTab(prefix string) http.Handler {
 		}
 
 		actorID := "web"
-		if user := strings.TrimSpace(r.Header.Get("X-Butler-Actor")); user != "" {
+		if s.ownerAuth != nil {
+			actor, ok := s.ownerAuth.Authenticate(r)
+			if !ok {
+				writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "owner control authentication required"})
+				return
+			}
+			r = r.WithContext(approvals.WithActor(r.Context(), actor))
+			actorID = actor.OwnerID
+		}
+		if user := strings.TrimSpace(r.Header.Get("X-Butler-Actor")); user != "" && s.ownerAuth == nil {
 			actorID = user
 		}
 
@@ -223,7 +235,16 @@ func (s *ApprovalsServer) handleResolve(prefix, actionSuffix string, approved bo
 		}
 
 		actorID := "web"
-		if user := strings.TrimSpace(r.Header.Get("X-Butler-Actor")); user != "" {
+		if s.ownerAuth != nil {
+			actor, ok := s.ownerAuth.Authenticate(r)
+			if !ok {
+				writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "owner control authentication required"})
+				return
+			}
+			r = r.WithContext(approvals.WithActor(r.Context(), actor))
+			actorID = actor.OwnerID
+		}
+		if user := strings.TrimSpace(r.Header.Get("X-Butler-Actor")); user != "" && s.ownerAuth == nil {
 			actorID = user
 		}
 
@@ -238,6 +259,10 @@ func (s *ApprovalsServer) handleResolve(prefix, actionSuffix string, approved bo
 			ActorID:          actorID,
 		})
 		if resolveErr != nil {
+			if resolveErr == approvals.ErrUnauthorized {
+				writeJSON(w, http.StatusForbidden, map[string]string{"error": "authenticated owner/channel mismatch"})
+				return
+			}
 			if resolveErr == approvals.ErrApprovalNotFound {
 				writeJSON(w, http.StatusNotFound, map[string]string{"error": "approval not found"})
 				return

@@ -35,3 +35,8 @@ their absence cannot safely imply that an external action was never dispatched.
 - `027_single_tab_sessions_and_web_fetch_cache` adds durable single-tab browser session state, browser tab selection candidates, and web-fetch cache entries.
 
 Use `make migrate-up` to apply all migrations and `make migrate-down` to roll them back in reverse order.
+
+- `029_durable_tasks` separates owner tasks, working state and unverified/verified results from execution attempts.
+- `031_action_authorization` persists exact Broker intents, bounded mandates and single-dispatch grants.
+- `032_durable_ingress` persists ordered acceptance receipts, checkpoints and expiring monotonic session ownership.
+- `033_approval_continuations` persists exact data-only continuations and owner decision input identities; legacy unbound tool waits expire without inventing authority.

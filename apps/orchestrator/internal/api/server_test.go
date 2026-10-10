@@ -62,6 +62,20 @@ func TestHTTPHandler(t *testing.T) {
 	}
 }
 
+func TestAcceptedHTTPAndGRPCReceipt(t *testing.T) {
+	server := NewServer(fakeExecutor{result: &orchestrator.ExecutionResult{Accepted: true, InputID: "input-1", TaskID: "task-explicit", SessionKey: "web:owner", CurrentState: commonv1.RunState_RUN_STATE_QUEUED, ReceiptStatus: "queued"}}, nil)
+	r := httptest.NewRequest(http.MethodPost, "/api/v1/events", strings.NewReader(`{"event_id":"delivery-1","event_type":"user_message","session_key":"web:owner","source":"web","payload":{"text":"hello"}}`))
+	w := httptest.NewRecorder()
+	server.HTTPHandler().ServeHTTP(w, r)
+	if w.Code != http.StatusAccepted || w.Header().Get("Location") != "/api/v3/inputs/input-1" {
+		t.Fatalf("acceptance response: %d %s", w.Code, w.Body.String())
+	}
+	response, err := server.SubmitEvent(context.Background(), &orchestratorv1.SubmitEventRequest{Event: &runv1.InputEvent{EventId: "delivery-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "web:owner", Source: "web", PayloadJson: `{"text":"hello"}`}})
+	if err != nil || !response.GetAccepted() || response.GetInputId() != "input-1" || response.GetTaskId() != "task-explicit" || response.GetRunId() != "" {
+		t.Fatalf("grpc accepted independently of run creation: %#v %v", response, err)
+	}
+}
+
 type fakeExecutor struct {
 	result *orchestrator.ExecutionResult
 	err    error

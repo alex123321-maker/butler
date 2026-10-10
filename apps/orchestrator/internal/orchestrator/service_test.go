@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/butler/butler/internal/actionauth"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/butler/butler/apps/orchestrator/internal/session"
+	"github.com/butler/butler/internal/actionauth"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
@@ -1025,7 +1025,7 @@ func TestExecuteFailsRunOnTransportError(t *testing.T) {
 	}
 }
 
-func TestExecuteFailsRunWhenLeaseAcquireFails(t *testing.T) {
+func TestExecuteKeepsBusySessionQueued(t *testing.T) {
 	t.Parallel()
 
 	runs := newMemoryRunManager()
@@ -1044,8 +1044,8 @@ func TestExecuteFailsRunWhenLeaseAcquireFails(t *testing.T) {
 		t.Fatal("expected Execute error")
 	}
 	states := runs.statesFor("run-1")
-	if states[len(states)-1] != commonv1.RunState_RUN_STATE_FAILED {
-		t.Fatalf("expected failed terminal state after lease acquire failure, got %v", states)
+	if states[len(states)-1] != commonv1.RunState_RUN_STATE_QUEUED {
+		t.Fatalf("expected pending work while session is busy, got %v", states)
 	}
 }
 
@@ -1234,6 +1234,11 @@ func (m *memoryRunManager) PersistProviderSessionRef(_ context.Context, runID, p
 	record := m.records[runID]
 	record.ProviderSessionRef = providerSessionRef
 	return record, nil
+}
+
+func (m *memoryRunManager) PersistPreparation(_ context.Context, runID, metadata string) error {
+	m.records[runID].MetadataJson = metadata
+	return nil
 }
 
 func (m *memoryRunManager) ListRunsBySessionKey(_ context.Context, sessionKey string) ([]*sessionv1.RunRecord, error) {

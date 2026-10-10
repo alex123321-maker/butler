@@ -779,3 +779,11 @@ Butler (дворецкий) проектируется как self-hosted, docke
 - система умеет не только помогать пользователю, но и объяснять собственное состояние и помогать себя настраивать.
 
 Это делает Butler не клоном обычного chat agent (чат-агента), а архитектурно самостоятельной агентной системой с упором на долговременность, управляемость и self-hosted эксплуатацию.
+
+## Durable ingress and owner control
+
+Accepted work and saved approvals now survive request disconnection and executor
+restart. See [Durable Execution](durable-execution-spec.md) for the implemented
+PostgreSQL ordering/fencing, checkpoint recovery and authenticated reply contracts.
+Session Service remains the ownership authority, Orchestrator owns continuation,
+Approval Service owns durable decisions, and Broker rechecks exact permission.

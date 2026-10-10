@@ -149,7 +149,7 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 				return nil, current, fmt.Errorf("deliver approval request: %w", deliveryErr)
 			}
 
-			s.emitEvent(current.GetRunId(), current.GetSessionKey(), observability.EventApprovalRequested, map[string]any{
+			s.emitEvent(ctx, current.GetRunId(), current.GetSessionKey(), observability.EventApprovalRequested, map[string]any{
 				"tool_call_id": toolCallID,
 				"tool_name":    requested.ToolName,
 				"args_preview": truncateForObservability(requested.ArgsJSON, 200),
@@ -200,7 +200,7 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 				approvalID = resolvedApproval.ApprovalID
 			}
 			if !resp.Approved {
-				s.emitEvent(current.GetRunId(), current.GetSessionKey(), observability.EventApprovalResolved, map[string]any{
+				s.emitEvent(ctx, current.GetRunId(), current.GetSessionKey(), observability.EventApprovalResolved, map[string]any{
 					"tool_call_id": toolCallID,
 					"tool_name":    requested.ToolName,
 					"approved":     false,
@@ -235,7 +235,7 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 				return stream, current, nil
 			}
 			runLog.Info("tool call approved", slog.String("tool_call_id", toolCallID), slog.String("tool_name", requested.ToolName))
-			s.emitEvent(current.GetRunId(), current.GetSessionKey(), observability.EventApprovalResolved, map[string]any{
+			s.emitEvent(ctx, current.GetRunId(), current.GetSessionKey(), observability.EventApprovalResolved, map[string]any{
 				"tool_call_id": toolCallID,
 				"tool_name":    requested.ToolName,
 				"approved":     true,
@@ -258,7 +258,7 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	current = next
 
 	startedAt := time.Now().UTC()
-	s.emitEvent(current.GetRunId(), current.GetSessionKey(), observability.EventToolStarted, map[string]any{
+	s.emitEvent(ctx, current.GetRunId(), current.GetSessionKey(), observability.EventToolStarted, map[string]any{
 		"tool_call_id": toolCallID,
 		"tool_name":    requested.ToolName,
 		"args_preview": truncateForObservability(requested.ArgsJSON, 200),
@@ -288,7 +288,7 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	}
 	result, err := executor.ExecuteAuthorizedToolCall(ctx, brokerCall, grantID)
 	if err != nil {
-		return nil, current, fmt.Errorf("execute tool call %s: %w", requested.ToolName, err)
+		return nil, current, fmt.Errorf("%w: execute tool call %s: %v", ErrActionOutcomeUnknown, requested.ToolName, err)
 	}
 	finishedAt := time.Now().UTC()
 	if updateErr := s.updateWorkingMemoryCheckpoint(ctx, current.GetSessionKey(), current.GetRunId(), "active", requested.ToolName, toolResultPayload(result)); updateErr != nil {
@@ -298,9 +298,9 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		runLog.Warn("transient working memory update failed after tool execution", slog.String("error", updateErr.Error()))
 	}
 	if _, err := s.transcript.AppendToolCall(ctx, transcriptToolCallFromExecution(toolCallID, current.GetRunId(), requested, brokerCall, result, startedAt, finishedAt)); err != nil {
-		return nil, current, fmt.Errorf("append tool transcript: %w", err)
+		return nil, current, fmt.Errorf("%w: append tool transcript: %v", ErrActionOutcomeUnknown, err)
 	}
-	if err := s.checkpoint(ctx, current.GetRunId(), "tool_result_recorded", map[string]any{"tool_call_id": toolCallID, "action_id": prepared.Binding.ActionID}); err != nil {
+	if err := s.checkpoint(ctx, current.GetRunId(), "tool_result_recorded", map[string]any{"tool_call_id": toolCallID, "action_id": prepared.Binding.ActionID, "status": result.GetStatus()}); err != nil {
 		return nil, current, fmt.Errorf("persist known tool result checkpoint: %w", err)
 	}
 	if result.GetStatus() == "effect_unknown" {
@@ -312,7 +312,7 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		}
 	}
 
-	s.emitEvent(current.GetRunId(), current.GetSessionKey(), observability.EventToolCompleted, map[string]any{
+	s.emitEvent(ctx, current.GetRunId(), current.GetSessionKey(), observability.EventToolCompleted, map[string]any{
 		"tool_call_id":   toolCallID,
 		"tool_name":      requested.ToolName,
 		"status":         normalizeToolStatus(result.GetStatus()),

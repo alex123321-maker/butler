@@ -16,6 +16,7 @@ import (
 	artifacts "github.com/butler/butler/apps/orchestrator/internal/artifacts"
 	telegramadapter "github.com/butler/butler/apps/orchestrator/internal/channel/telegram"
 	deliveryevents "github.com/butler/butler/apps/orchestrator/internal/deliveryevents"
+	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
 	promptmgmt "github.com/butler/butler/apps/orchestrator/internal/prompt"
@@ -83,6 +84,11 @@ func New(ctx context.Context) (*App, error) {
 	}
 	log.Info("loaded layered orchestrator config", slog.String("config_summary", configSummary(snapshot)))
 	hotConfig := config.NewHotConfig(snapshot)
+	ownerAuth, err := ownerControlAuth(cfg)
+	if err != nil {
+		postgres.Close()
+		return nil, err
+	}
 	// Provider OAuth credentials always require encrypted persistence, including
 	// installations that permit plaintext storage for unrelated legacy settings.
 	authManager := providerauth.NewManager(config.NewPostgresSettingsStore(postgres.Pool()))
@@ -167,6 +173,8 @@ func New(ctx context.Context) (*App, error) {
 
 	sessionRepo := session.NewPostgresRepository(postgres.Pool())
 	sessionLeaseManager := session.NewPostgresLeaseManager(postgres.Pool())
+	inputStore := durableinput.NewStore(postgres.Pool())
+	approvalRepo.SetCheckpointHooks(inputStore)
 	transcriptStore := transcript.NewStore(postgres.Pool())
 	summaryStore := summary.NewStore(postgres.Pool())
 	pipelineQueue := pipeline.NewQueue(redis.Client())
@@ -195,6 +203,7 @@ func New(ctx context.Context) (*App, error) {
 			AutonomyMode:        autonomyMode(cfg.AutonomyMode),
 			ActionAuthorizer:    toolBrokerClient,
 			ActionMandateID:     cfg.ActionMandateID,
+			Checkpoints:         inputStore,
 			Tasks:               taskStore,
 			ProviderName:        providerResult.ProviderName,
 			ModelName:           providerResult.ModelName,
@@ -228,8 +237,10 @@ func New(ctx context.Context) (*App, error) {
 		},
 		logger.WithComponent(log, "executor"),
 	)
+	inputWorker := durableinput.NewService(inputStore, sessionRepo, executor, runManager, logger.WithComponent(log, "durable-input"))
+	inputWorker.SetMaintenance(approvalService.ExpireInvalidPending)
 	if telegram != nil {
-		telegram.SetExecutor(executor)
+		telegram.SetExecutor(inputWorker)
 		telegram.SetApprovalService(approvalService)
 		telegram.SetSingleTabSelector(singleTabService)
 		telegram.SetAuthManager(authManager)
@@ -247,7 +258,7 @@ func New(ctx context.Context) (*App, error) {
 	} else {
 		log.Warn("private action authority unavailable; Tool Broker will deny execution")
 	}
-	apiServer := apiservice.NewServer(executor, logger.WithComponent(log, "api"))
+	apiServer := apiservice.NewServer(inputWorker, logger.WithComponent(log, "api"))
 	httpServer := newHTTPServer(httpServerDeps{
 		cfg:                    cfg,
 		actionAuthorityHandler: actionAuthorityHandler,
@@ -261,6 +272,9 @@ func New(ctx context.Context) (*App, error) {
 		authManager:            authManager,
 		providerResult:         providerResult,
 		executor:               executor,
+		inputWorker:            inputWorker,
+		inputStore:             inputStore,
+		ownerAuth:              ownerAuth,
 		sessionRepo:            sessionRepo,
 		runRepo:                runRepo,
 		taskStore:              taskStore,
@@ -315,6 +329,7 @@ func New(ctx context.Context) (*App, error) {
 		telegram:       telegram,
 		toolBroker:     toolBrokerClient,
 		pipelineWorker: pipelineWorker,
+		inputWorker:    inputWorker,
 	}, nil
 }
 

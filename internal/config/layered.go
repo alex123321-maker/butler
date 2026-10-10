@@ -39,6 +39,11 @@ func loadOrchestratorLayered(get envGetter, settings []Setting) (OrchestratorCon
 	cfg := OrchestratorConfig{}
 	resolver := NewLayeredResolver(get, settings)
 	snapshot, err := resolver.Resolve(layeredOrchestratorSpecs(&cfg))
+	// Owner authority is provisioned by the operator and cannot be reassigned
+	// through the unauthenticated settings surface or a database override.
+	cfg.OwnerControlToken, _ = get("BUTLER_OWNER_CONTROL_TOKEN")
+	cfg.OwnerControlTokenFile, _ = get("BUTLER_OWNER_CONTROL_TOKEN_FILE")
+	cfg.OwnerControlOwnerID, _ = get("BUTLER_OWNER_CONTROL_OWNER_ID")
 	if conditionalErr := validateOrchestratorConditionalConfig(cfg); conditionalErr != nil {
 		if err != nil {
 			return cfg, snapshot, fmt.Errorf("%v; %v", err, conditionalErr)

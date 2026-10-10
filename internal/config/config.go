@@ -55,6 +55,9 @@ type SharedConfig struct {
 }
 
 type OrchestratorConfig struct {
+	OwnerControlToken                 string
+	OwnerControlTokenFile             string
+	OwnerControlOwnerID               string
 	Shared                            SharedConfig
 	Postgres                          PostgresConfig
 	Redis                             RedisConfig
@@ -252,6 +255,9 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 	cfg := OrchestratorConfig{}
 	sharedSpecs := sharedSpecs("orchestrator", &cfg.Shared)
 	specs := append(sharedSpecs,
+		fieldSpec{key: "BUTLER_OWNER_CONTROL_TOKEN", component: "orchestrator", typeName: "string", required: false, isSecret: true, requiresRestart: true, assign: func(v string) { cfg.OwnerControlToken = v }},
+		fieldSpec{key: "BUTLER_OWNER_CONTROL_TOKEN_FILE", component: "orchestrator", typeName: "string", required: false, requiresRestart: true, assign: func(v string) { cfg.OwnerControlTokenFile = v }},
+		fieldSpec{key: "BUTLER_OWNER_CONTROL_OWNER_ID", component: "orchestrator", typeName: "string", required: false, requiresRestart: true, assign: func(v string) { cfg.OwnerControlOwnerID = v }},
 		fieldSpec{key: "BUTLER_POSTGRES_URL", component: "orchestrator", typeName: "string", required: true, isSecret: true, requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.PostgresURL = v; cfg.Postgres.URL = v }},
 		fieldSpec{key: "BUTLER_REDIS_URL", component: "orchestrator", typeName: "string", required: true, isSecret: true, requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.RedisURL = v; cfg.Redis.URL = v }},
 		fieldSpec{key: "BUTLER_SESSION_LEASE_TTL_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "60", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.SessionLeaseTTLSeconds = mustParseInt(v) }},

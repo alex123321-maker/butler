@@ -67,7 +67,7 @@ Current baseline:
 - preserves durable task constraints separately from summaries; stops model preparation explicitly on history/coverage read errors or mandatory context overflow (constraint amendments remain in #9)
 - admits context with `BUTLER_CONTEXT_BUDGET_TOKENS` (default 65536), using a conservative encoded UTF-8 byte estimate plus protocol allowance, then removes chunks, episodes, profile and descriptive tool summaries before rejecting oversized mandatory context; this estimate is not provider billing or a native tokenizer count
 - exposes an internal delivery sink for `assistant_delta` and `assistant_final` events without allowing channel adapters to mutate run state
-- exposes `SubmitEvent` over gRPC and synchronous `POST /api/v1/events` over REST for normalized event ingestion
+- exposes durable acceptance through gRPC `SubmitEvent` and HTTP 202 `POST /api/v1/events`; `/api/v3/inputs/{id}` observes asynchronous execution
 - optionally runs the in-process Telegram adapter using Bot API long polling, `/auth` provider connection prompts, and final-response delivery
 - progressively edits Telegram responses during assistant delta streaming and finalizes the same message on completion
 - exposes REST views for sessions, runs, transcripts, and doctor reports
@@ -233,3 +233,22 @@ System and debug read APIs:
   - `awaiting_approval` + Telegram source -> `waiting_for_reply_in_telegram`
   - `awaiting_approval` + non-Telegram source -> `waiting_for_approval`
   - `completed|failed|cancelled|timed_out` -> `completed|failed|cancelled|completed_with_issues`
+
+## Durable execution and owner decisions
+
+Production ingress persists acceptance before returning and executes in the app
+worker context. PostgreSQL provides ordered claims and expiring fenced session
+ownership. Context preparation follows ownership. Durable approval continuations
+release the worker and resume the same run/action after an authenticated owner
+reply; a missing or uncertain external result blocks recovery without replay.
+Suspension discards private provider context. Fresh recovery replays every known
+tool observation as data and preserves exact native signatures only for new live
+tool continuations; it never reconstructs signatures from transcript evidence.
+See [the contract](../../docs/architecture/durable-execution-spec.md) for deadlines,
+checkpoint boundaries, migration policy and the explicit delivery limitations.
+
+Web decisions require `BUTLER_OWNER_CONTROL_OWNER_ID` plus an operator-provisioned
+`BUTLER_OWNER_CONTROL_TOKEN` or `BUTLER_OWNER_CONTROL_TOKEN_FILE` (at least 32 bytes).
+Without this authority approve/reject deny access. Generate/read the token on the
+lab terminal; never place it in model context or chat. The configured owner must
+match the saved web session owner. Telegram uses the allowed chat and numeric owner.

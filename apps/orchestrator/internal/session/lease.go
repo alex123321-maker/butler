@@ -234,6 +234,7 @@ func leaseToProto(record LeaseRecord) *sessionv1.Lease {
 		TtlSeconds: record.TTLSeconds,
 		AcquiredAt: record.AcquiredAt.UTC().Format(time.RFC3339Nano),
 		ExpiresAt:  record.ExpiresAt.UTC().Format(time.RFC3339Nano),
+		FenceEpoch: record.FenceEpoch,
 	}
 }
 

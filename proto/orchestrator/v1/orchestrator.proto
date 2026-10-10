@@ -20,4 +20,8 @@ message SubmitEventResponse {
   string session_key = 2;
   butler.common.v1.RunState current_state = 3;
   string assistant_response = 4;
+  bool accepted = 5;
+  string input_id = 6;
+  string receipt_status = 7;
+  string task_id = 8;
 }

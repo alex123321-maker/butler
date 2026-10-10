@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	telegramadapter "github.com/butler/butler/apps/orchestrator/internal/channel/telegram"
+	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
 	"github.com/butler/butler/internal/config"
 	"github.com/butler/butler/internal/health"
@@ -29,4 +30,5 @@ type App struct {
 	telegram       *telegramadapter.Adapter
 	toolBroker     *tools.BrokerClient
 	pipelineWorker *pipeline.Worker
+	inputWorker    *durableinput.Service
 }

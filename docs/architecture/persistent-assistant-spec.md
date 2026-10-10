@@ -229,3 +229,8 @@ fast approval не теряется; старый approval не разрешае
 Фактическая готовность каждой возможности подтверждается кодом, миграцией,
 целевыми тестами и lab evidence в её issue. Документ закрывает проектное решение
 #3, но не критерии реализации зависимых issues.
+
+Durable acceptance and resumable owner approvals are described in
+[Durable Execution](durable-execution-spec.md). Prepared context and task-owned
+constraints are distinct from transient provider/Redis references; recovered
+execution uses durable known results without replaying external tools.

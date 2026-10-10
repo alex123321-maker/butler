@@ -15,9 +15,20 @@ import (
 )
 
 func (a *App) Run(ctx context.Context) error {
-	errCh := make(chan error, 3)
+	errCh := make(chan error, 5)
 	runCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
+	inputDone := make(chan struct{})
+	if a.inputWorker != nil {
+		go func() {
+			defer close(inputDone)
+			if err := a.inputWorker.Run(runCtx); err != nil && runCtx.Err() == nil {
+				errCh <- err
+			}
+		}()
+	} else {
+		close(inputDone)
+	}
 
 	go func() {
 		a.log.Info("starting orchestrator http server", slog.String("http_addr", a.config.Shared.HTTPAddr))
@@ -66,9 +77,11 @@ func (a *App) Run(ctx context.Context) error {
 	select {
 	case err := <-errCh:
 		cancel()
+		<-inputDone
 		return a.shutdown(err)
 	case <-sigCtx.Done():
 		cancel()
+		<-inputDone
 		a.log.Info("received shutdown signal")
 		return a.shutdown(nil)
 	}

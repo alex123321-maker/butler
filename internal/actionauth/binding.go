@@ -15,6 +15,15 @@ import (
 
 const maxArgumentBytes = 256 * 1024
 
+// ArgumentsHash uses the same unambiguous representation as prepared actions.
+func ArgumentsHash(raw string) (string, error) {
+	canonical, err := canonicalJSON(raw)
+	if err != nil {
+		return "", err
+	}
+	return digest(canonical), nil
+}
+
 func canonicalJSON(raw string) (string, error) {
 	if len(raw) > maxArgumentBytes {
 		return "", fmt.Errorf("action arguments exceed the supported limit")

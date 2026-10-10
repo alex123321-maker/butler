@@ -188,6 +188,7 @@ type Service struct {
 }
 
 type ExecutionResult struct {
+	ErrorCode         string
 	Accepted          bool
 	InputID           string
 	ReceiptStatus     string
@@ -209,16 +210,18 @@ type DeliveryEvent struct {
 var errLeaseRenewalFailed = errors.New("lease renewal failed")
 
 type preparedRun struct {
-	Task          *task.Record
-	InputItems    []transport.InputItem
-	UserMessage   string
-	MemoryBundle  map[string]any
-	Prompt        promptmgmt.Assembly
-	ToolDefs      []transport.ToolDefinition
-	WorkingMemory *workingMemoryContext
-	InputPayload  map[string]any
-	SessionUserID string
-	Channel       string
+	CurrentRunID         string
+	InputAlreadyRecorded bool
+	Task                 *task.Record
+	InputItems           []transport.InputItem
+	UserMessage          string
+	MemoryBundle         map[string]any
+	Prompt               promptmgmt.Assembly
+	ToolDefs             []transport.ToolDefinition
+	WorkingMemory        *workingMemoryContext
+	InputPayload         map[string]any
+	SessionUserID        string
+	Channel              string
 
 	observabilityMemory  map[string]any
 	observabilityHistory map[string]any
@@ -245,6 +248,7 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 	if cfg.Delivery == nil {
 		cfg.Delivery = NopDeliverySink{}
 	}
+	cfg.Delivery = fencedDeliverySink{base: cfg.Delivery}
 	if cfg.ProfileLimit <= 0 {
 		cfg.ProfileLimit = 20
 	}
@@ -297,6 +301,9 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 	}
 	if cfg.PromptAssembler == nil {
 		cfg.PromptAssembler = promptmgmt.NewAssembler()
+	}
+	if transcriptStore != nil {
+		transcriptStore = fencedTranscript{transcriptStore}
 	}
 	return &Service{
 		sessions:   sessions,

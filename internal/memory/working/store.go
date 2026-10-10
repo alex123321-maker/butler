@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -42,6 +43,11 @@ func (s *Store) Save(ctx context.Context, snapshot Snapshot) (Snapshot, error) {
 	if s == nil || s.pool == nil {
 		return Snapshot{}, ErrStoreNotConfigured
 	}
+	ctx, release, guardErr := ownership.Begin(ctx)
+	if guardErr != nil {
+		return Snapshot{}, guardErr
+	}
+	defer release()
 	if strings.TrimSpace(snapshot.SessionKey) == "" {
 		return Snapshot{}, fmt.Errorf("session_key is required")
 	}
@@ -124,6 +130,11 @@ func (s *Store) Clear(ctx context.Context, sessionKey string) error {
 	if s == nil || s.pool == nil {
 		return ErrStoreNotConfigured
 	}
+	ctx, release, guardErr := ownership.Begin(ctx)
+	if guardErr != nil {
+		return guardErr
+	}
+	defer release()
 	commandTag, err := s.pool.Exec(ctx, `DELETE FROM memory_working WHERE session_key = $1`, strings.TrimSpace(sessionKey))
 	if err != nil {
 		return fmt.Errorf("clear working memory snapshot: %w", err)

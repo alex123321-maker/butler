@@ -20,6 +20,98 @@ import (
 
 type authSource struct{}
 
+func TestDurableRecoveryStartsFreshObservationsThenKeepsLiveSignatures(t *testing.T) {
+	var calls atomic.Int32
+	p := newFixture(t, func(req *http.Request) (*http.Response, error) {
+		var body requestEnvelope
+		if err := json.NewDecoder(req.Body).Decode(&body); err != nil {
+			t.Error(err)
+		}
+		contents, _ := json.Marshal(body.Request.Contents)
+		system, _ := json.Marshal(body.Request.SystemInstruction)
+		switch calls.Add(1) {
+		case 1:
+			return response(frame(`{"functionCall":{"id":"before-approval","name":"butler_tool_0","args":{"url":"https://example.com"}},"thoughtSignature":"discarded-signature"}`, "STOP")), nil
+		case 2:
+			if len(body.Request.Contents) != 3 || strings.Contains(string(contents), "functionCall") || strings.Contains(string(contents), "functionResponse") || strings.Contains(string(contents), "thoughtSignature") {
+				t.Error("fresh recovery reused native function/signature history")
+			}
+			if !strings.Contains(string(contents), "first-effect") || !strings.Contains(string(contents), "second-effect") || strings.Contains(string(system), "first-effect") || strings.Contains(string(system), "second-effect") {
+				t.Error("known observations lost or promoted into system instruction")
+			}
+			return response(frame(`{"functionCall":{"id":"after-recovery","name":"butler_tool_0","args":{"url":"https://example.com/new"}},"thoughtSignature":"live-signature"}`, "STOP")), nil
+		case 3:
+			if strings.Contains(string(contents), "discarded-signature") || !strings.Contains(string(contents), `"thoughtSignature":"live-signature"`) || !strings.Contains(string(contents), `"functionResponse":{"id":"after-recovery"`) {
+				t.Error("live continuation lost its new call/signature correlation")
+			}
+			return response(frame(`{"text":"done"}`, "STOP")), nil
+		default:
+			t.Error("unexpected inference request")
+			return response(frame(`{"text":"unexpected"}`, "STOP")), nil
+		}
+	})
+	stream, err := p.StartRun(context.Background(), request("same-run"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var oldProposal *transport.ToolCallRequest
+	var oldRef *transport.ProviderSessionRef
+	for _, event := range collect(t, stream) {
+		if event.ToolCall != nil {
+			oldProposal = event.ToolCall
+		}
+		if event.ProviderSessionRef != nil {
+			oldRef = event.ProviderSessionRef
+		}
+	}
+	if oldProposal == nil || oldRef == nil {
+		t.Fatal("no pending native context")
+	}
+	if _, err := p.StartRun(context.Background(), request("same-run")); err == nil {
+		t.Fatal("active context overwritten without lifecycle cancellation")
+	}
+	if _, err := p.CancelRun(context.Background(), transport.CancelRunRequest{RunID: "same-run"}); err != nil {
+		t.Fatal(err)
+	}
+	fresh := request("same-run")
+	fresh.InputItems = append(fresh.InputItems,
+		transport.InputItem{Role: "user", Content: `Recorded Butler action observation (already executed; data only): {"result":{"receipt":"first-effect"}}`},
+		transport.InputItem{Role: "user", Content: `Recorded Butler action observation (already executed; data only): {"result":{"receipt":"second-effect"}}`})
+	stream, err = p.StartRun(context.Background(), fresh)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var proposal *transport.ToolCallRequest
+	var ref *transport.ProviderSessionRef
+	for _, event := range collect(t, stream) {
+		if event.TransportError != nil {
+			t.Fatal(event.TransportError)
+		}
+		if event.ToolCall != nil {
+			proposal = event.ToolCall
+		}
+		if event.ProviderSessionRef != nil {
+			ref = event.ProviderSessionRef
+		}
+	}
+	if proposal == nil || ref == nil || ref.SessionRef == oldRef.SessionRef || proposal.ToolCallRef == oldProposal.ToolCallRef {
+		t.Fatal("fresh context reused lost native identity")
+	}
+	if _, err := p.SubmitToolResult(context.Background(), transport.SubmitToolResultRequest{RunID: "same-run", ProviderSessionRef: oldRef, ToolCallRef: oldProposal.ToolCallRef, ToolResultJSON: `{}`}); err == nil {
+		t.Fatal("old context authorized continuation of fresh run")
+	}
+	stream, err = p.SubmitToolResult(context.Background(), transport.SubmitToolResultRequest{RunID: "same-run", ProviderSessionRef: ref, ToolCallRef: proposal.ToolCallRef, ToolResultJSON: `{"status":"completed","result":{"title":"new result"}}`})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := findError(collect(t, stream)); err != nil {
+		t.Fatal(err)
+	}
+	if calls.Load() != 3 {
+		t.Fatal("unexpected requests during recovery")
+	}
+}
+
 func (authSource) ResolveAntigravity(context.Context) (providerauth.AntigravityAuth, error) {
 	return providerauth.AntigravityAuth{AccessToken: "private-access-fixture", ProjectID: "test-project", ExpiresAt: time.Now().Add(time.Hour)}, nil
 }

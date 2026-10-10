@@ -41,3 +41,11 @@ has no configurable CLI executable/profile or caller-controlled endpoint. OAuth
 material is a hidden provider-auth record, outside the editable settings catalog.
 Selecting the provider requires an operator-verified real text/tool continuation;
 stored credentials alone do not establish subscription model availability.
+
+Owner decision authority is operator-owned rather than a database setting.
+`BUTLER_OWNER_CONTROL_OWNER_ID` and exactly one of `BUTLER_OWNER_CONTROL_TOKEN`
+or `BUTLER_OWNER_CONTROL_TOKEN_FILE` are read only from the environment/file.
+Database overrides cannot assign these fields. Missing authority denies Web
+approval decisions; the token is scoped to owner decisions and separate from
+extension/private-service authentication. See the
+[durable execution contract](durable-execution-spec.md) for provisioning.

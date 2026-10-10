@@ -25,6 +25,7 @@ type Actor struct {
 	DeliveryID string
 }
 type actorKey struct{}
+type expirationReviewKey struct{}
 
 // WithActor is for an authenticated channel adapter, never model/caller args.
 func WithActor(ctx context.Context, actor Actor) context.Context {
@@ -62,6 +63,10 @@ func (r *PostgresRepository) CreateDurable(ctx context.Context, p CreatePendingP
 	}
 	defer release()
 	b := p.ActionBinding
+	argsHash, hashErr := actionauth.ArgumentsHash(p.ArgsJSON)
+	if hashErr != nil || argsHash != b.ArgsHash {
+		return Record{}, ErrActionInvalid
+	}
 	if b.ActionID == "" || b.ActionHash == "" || b.RunID != p.RunID || b.ToolCallID != p.ToolCallID || b.ToolName != p.ToolName || b.OwnerID == "" || b.ArgsHash == "" || r.checkpoints == nil {
 		return Record{}, fmt.Errorf("exact durable action and checkpoint hooks required")
 	}
@@ -98,7 +103,8 @@ func (r *PostgresRepository) CreateDurable(ctx context.Context, p CreatePendingP
 			return Record{}, ErrActionInvalid
 		}
 	}
-	record, err := r.CreateApproval(ctx, CreateParams{ApprovalID: newApprovalID(), RunID: p.RunID, SessionKey: p.SessionKey, ToolCallID: p.ToolCallID, ApprovalType: ApprovalTypeToolCall, RequestedVia: p.RequestedVia, ToolName: p.ToolName, ArgsJSON: p.ArgsJSON, PayloadJSON: p.PayloadJSON, RiskLevel: p.RiskLevel, Summary: p.Summary, DetailsJSON: p.DetailsJSON, ExpiresAt: p.ExpiresAt, RequestedAt: p.RequestedAt})
+	exactDetails, _ := json.Marshal(map[string]any{"action_binding": b})
+	record, err := r.CreateApproval(ctx, CreateParams{ApprovalID: newApprovalID(), RunID: p.RunID, SessionKey: p.SessionKey, ToolCallID: p.ToolCallID, ApprovalType: ApprovalTypeToolCall, RequestedVia: p.RequestedVia, ToolName: p.ToolName, ArgsJSON: p.ArgsJSON, PayloadJSON: p.PayloadJSON, RiskLevel: p.RiskLevel, Summary: p.Summary, DetailsJSON: string(exactDetails), ExpiresAt: p.ExpiresAt, RequestedAt: p.RequestedAt})
 	if err != nil {
 		return Record{}, err
 	}
@@ -128,6 +134,23 @@ func (r *PostgresRepository) CreateDurable(ctx context.Context, p CreatePendingP
 		return Record{}, err
 	}
 	return record, nil
+}
+
+func (s *Service) MarkActionCheckpoint(ctx context.Context, runID, toolCallID, state string) error {
+	if state != "dispatching" && state != "completed" && state != "blocked" {
+		return fmt.Errorf("unsupported continuation state")
+	}
+	repo, ok := s.repo.(*PostgresRepository)
+	if !ok {
+		return nil
+	}
+	ctx, release, err := ownership.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer release()
+	_, err = repo.pool.Exec(ctx, `UPDATE approval_actions d SET state=$3,updated_at=clock_timestamp() FROM approvals a WHERE a.approval_id=d.approval_id AND a.run_id=$1 AND a.tool_call_id=$2 AND a.status='approved' AND d.state IN ('ready','dispatching')`, runID, toolCallID, state)
+	return err
 }
 
 func (s *Service) VerifyActionApproval(ctx context.Context, request actionauth.ApprovalRequest) (actionauth.ApprovalSnapshot, error) {
@@ -178,7 +201,8 @@ func (r *PostgresRepository) ResolveDurable(ctx context.Context, record Record, 
 	if err != nil {
 		return Record{}, false, err
 	}
-	if actor.OwnerID != owner || actor.Channel != channel || (channel == ResolvedViaTelegram && actor.SessionKey != sessionKey) {
+	systemReview, _ := ctx.Value(expirationReviewKey{}).(bool)
+	if actor.OwnerID != owner || (!systemReview && (actor.Channel != channel || (channel == ResolvedViaTelegram && actor.SessionKey != sessionKey))) || (systemReview && approved) {
 		return Record{}, false, ErrUnauthorized
 	}
 	current, err := r.GetApprovalByID(ctx, record.ApprovalID)
@@ -193,6 +217,9 @@ func (r *PostgresRepository) ResolveDurable(ctx context.Context, record Record, 
 		return Record{}, false, ErrActionInvalid
 	}
 	snapshot, verificationErr := r.verifyAction(ctx, actionauth.ApprovalRequest{ApprovalID: record.ApprovalID, Binding: b})
+	if systemReview && verificationErr == nil {
+		return current, false, nil
+	}
 	status := StatusRejected
 	if approved {
 		status = StatusApproved
@@ -211,6 +238,14 @@ func (r *PostgresRepository) ResolveDurable(ctx context.Context, record Record, 
 		return Record{}, false, err
 	}
 	if tag.RowsAffected() == 0 {
+		var existingApproval, existingOwner string
+		var existingDecision bool
+		if err = tx.QueryRow(ctx, `SELECT approval_id,owner_id,approved FROM approval_decision_inputs WHERE source=$1 AND delivery_id=$2`, actor.Channel, actor.DeliveryID).Scan(&existingApproval, &existingOwner, &existingDecision); err != nil {
+			return Record{}, false, err
+		}
+		if existingApproval != record.ApprovalID || existingOwner != actor.OwnerID || existingDecision != approved {
+			return Record{}, false, fmt.Errorf("decision delivery identity conflicts with accepted decision")
+		}
 		return current, false, nil
 	}
 	_ = snapshot
@@ -230,7 +265,7 @@ func (r *PostgresRepository) ResolveDurable(ctx context.Context, record Record, 
 		if status != StatusApproved {
 			taskStatus = "blocked"
 		}
-		if _, err = tx.Exec(ctx, `UPDATE tasks SET status=$2,updated_at=clock_timestamp() WHERE task_id=$1 AND revision=$3 AND status='waiting_for_user'`, taskID, taskStatus, b.TaskRevision); err != nil {
+		if _, err = tx.Exec(ctx, `UPDATE tasks SET status=$2,working_json=CASE WHEN $2='blocked' THEN jsonb_set(working_json,'{scratch}',COALESCE(working_json->'scratch','{}'::jsonb)||jsonb_build_object('block_reason',$4::text)) ELSE working_json END,working_revision=working_revision+CASE WHEN $2='blocked' THEN 1 ELSE 0 END,updated_at=clock_timestamp() WHERE task_id=$1 AND revision=$3 AND status='waiting_for_user'`, taskID, taskStatus, b.TaskRevision, "approval_"+status); err != nil {
 			return Record{}, false, err
 		}
 	}
@@ -244,6 +279,45 @@ func (r *PostgresRepository) ResolveDurable(ctx context.Context, record Record, 
 		return Record{}, false, err
 	}
 	return updated, true, nil
+}
+
+// ExpireInvalidPending is a bounded controller sweep. Its private authority can
+// only expire an invalid pending action; it cannot approve a valid one.
+func (s *Service) ExpireInvalidPending(ctx context.Context) error {
+	repo, ok := s.repo.(*PostgresRepository)
+	if !ok {
+		return nil
+	}
+	rows, err := repo.pool.Query(ctx, `SELECT a.approval_id,d.owner_id FROM approvals a JOIN approval_actions d USING(approval_id) JOIN runs r ON r.run_id=a.run_id LEFT JOIN tasks t ON t.task_id=d.task_id WHERE a.status='pending' AND (a.expires_at<=clock_timestamp() OR r.current_state<>'awaiting_approval' OR (d.task_id IS NOT NULL AND (t.revision<>d.task_revision OR t.constraints_revision<>d.constraints_revision OR t.status NOT IN ('active','waiting_for_user')))) ORDER BY a.requested_at LIMIT 100`)
+	if err != nil {
+		return err
+	}
+	type due struct{ id, owner string }
+	var actions []due
+	for rows.Next() {
+		var a due
+		if err = rows.Scan(&a.id, &a.owner); err != nil {
+			rows.Close()
+			return err
+		}
+		actions = append(actions, a)
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return err
+	}
+	for _, action := range actions {
+		record, err := repo.GetApprovalByID(ctx, action.id)
+		if err != nil {
+			return err
+		}
+		_, _, err = repo.ResolveDurable(context.WithValue(ctx, expirationReviewKey{}, true), record, false, Actor{OwnerID: action.owner, Channel: ResolvedViaSystem, DeliveryID: "invalid-approval:" + action.id}, "approval expired or intended task changed")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 func (r *PostgresRepository) HasDurableAction(ctx context.Context, id string) (bool, error) {
 	var yes bool

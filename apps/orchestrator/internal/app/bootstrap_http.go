@@ -13,6 +13,7 @@ import (
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	artifacts "github.com/butler/butler/apps/orchestrator/internal/artifacts"
 	deliveryevents "github.com/butler/butler/apps/orchestrator/internal/deliveryevents"
+	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
 	"github.com/butler/butler/apps/orchestrator/internal/restarthelper"
@@ -72,10 +73,14 @@ type httpServerDeps struct {
 	profileStore           *profile.Store
 	episodicStore          *episodic.Store
 	chunkStore             *chunks.Store
+	inputWorker            *durableinput.Service
+	inputStore             *durableinput.Store
+	ownerAuth              *apiservice.OwnerControlAuth
 }
 
 func newHTTPServer(deps httpServerDeps) *http.Server {
-	apiServer := apiservice.NewServer(deps.executor, logger.WithComponent(deps.log, "api"))
+	apiServer := apiservice.NewServer(deps.inputWorker, logger.WithComponent(deps.log, "api"))
+	inputServer := apiservice.NewInputServer(deps.inputStore)
 	viewServer := apiservice.NewViewServer(deps.sessionRepo, deps.runRepo, deps.transcriptStore, logger.WithComponent(deps.log, "view-api"))
 	doctorChecker := apiservice.NewToolBrokerDoctorChecker(func(ctx context.Context, toolName, argsJSON string) (string, error) {
 		result, err := deps.toolBrokerClient.ExecuteToolCall(ctx, &toolbrokerv1.ToolCall{
@@ -111,6 +116,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	taskControlServer := apiservice.NewTaskControlServer(deps.taskStore)
 	overviewServer := apiservice.NewOverviewServer(deps.runRepo, deps.deliveryEventsRepo)
 	approvalsServer := apiservice.NewApprovalsServer(deps.approvalRepo, deps.approvalService, deps.singleTabService)
+	approvalsServer.SetOwnerControlAuth(deps.ownerAuth)
 	singleTabServer := apiservice.NewSingleTabServer(deps.singleTabService)
 	singleTabServer.SetRelayHeartbeatTTL(time.Duration(deps.cfg.SingleTabRelayHeartbeatTTLSeconds) * time.Second)
 	extensionAuth := apiservice.NewExtensionAuthMiddleware(deps.cfg.ExtensionAPITokens)
@@ -141,6 +147,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	mux.Handle("/health", deps.health.Handler())
 	mux.Handle("/metrics", deps.metrics.Handler())
 	mux.Handle("/api/v1/events", apiServer.HTTPHandler())
+	mux.Handle("/api/v3/inputs/", inputServer.HandleItem())
 	mux.Handle("/api/v3/tasks", taskControlServer.HandleCollection())
 	mux.Handle("/api/v3/tasks/", taskControlServer.HandleItem("/api/v3/tasks/"))
 	mux.Handle("/api/v1/settings/restart", settingsServer.HandleRestart())

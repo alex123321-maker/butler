@@ -21,12 +21,12 @@ export const useApprovalsStore = defineStore('approvals', () => {
     }
   }
 
-  const approve = async (id: string) => {
+  const approve = async (id: string, ownerToken: string) => {
     actionPending.value = true
     error.value = null
 
     try {
-      await approveById(id)
+      await approveById(id, ownerToken)
       await load()
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to approve request'
@@ -35,12 +35,12 @@ export const useApprovalsStore = defineStore('approvals', () => {
     }
   }
 
-  const reject = async (id: string) => {
+  const reject = async (id: string, ownerToken: string) => {
     actionPending.value = true
     error.value = null
 
     try {
-      await rejectById(id)
+      await rejectById(id, ownerToken)
       await load()
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to reject request'
