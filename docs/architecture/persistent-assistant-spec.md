@@ -101,6 +101,11 @@ flowchart LR
 
 ## 4. Поручение, уточнение и завершение
 
+Постоянное поручение, task-owned working state, multiple runs и owner-confirmed
+completion реализованы в [Durable task implementation](durable-tasks-spec.md).
+Этот baseline не реализует durable run recovery, exact-action authority,
+constraints amendment или отмену дерева; они остаются целевыми требованиями ниже.
+
 Статусы поручения: `active`, `waiting_for_user`, `blocked`, `paused`, `cancelled`,
 `completed`. Переход в `completed` требует сохранённого результата, verdict
 по актуальным критериям и evidence refs. Завершение run со статусом `completed`

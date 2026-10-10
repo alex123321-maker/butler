@@ -516,6 +516,31 @@ test.describe('Task-centric pages baseline', () => {
     await expect(page.getByText('Pending approvals: 1')).toBeVisible()
   })
 
+  test('durable task keeps completed attempts separate from verified work', async ({ page }) => {
+    await page.route('**/api/v2/tasks/task-durable/*', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ artifacts: [], activity: [] }) })
+    })
+    await page.route('**/api/v2/tasks/task-durable', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+        task: { task_id: 'task-durable', run_id: 'run-2', session_key: 'web:owner', status: 'waiting_for_user', run_state: 'completed', needs_user_action: true, user_action_channel: 'web' },
+        summary_bar: { status: 'waiting_for_user', risk_level: 'low', source_channel: 'web', started_at: '2026-03-19T00:00:00Z' },
+        source: { channel: 'web', source_message_full: 'Prepare, approve and send' },
+        waiting_state: { user_action_channel: 'web', waiting_reason: 'owner_input_required' },
+        result: { has_result: true, verified: false, outcome_summary: 'Draft ready, waiting for approval' },
+        error: { has_error: false }, timeline_preview: [], artifacts: [], run_ids: ['run-1', 'run-2'],
+        durable_task: { goal: 'Prepare, approve and send', constraints: ['Do not send before approval'], working: { plan: ['Prepare', 'Review', 'Send'], pending_actions: ['Send approved draft'], scratch: {} } },
+      }) })
+    })
+    await page.goto('/tasks/task-durable')
+    await expect(page.getByText('Waiting for your input', { exact: true })).toBeVisible()
+    await expect(page.getByText('Attempts: 2. Latest attempt: completed.')).toBeVisible()
+    await expect(page.getByText('Plan: Prepare → Review → Send')).toBeVisible()
+    await expect(page.getByText('Constraints: Do not send before approval')).toBeVisible()
+    await page.getByRole('button', { name: 'Result', exact: true }).click()
+    await expect(page.getByText('Unverified model response', { exact: true })).toBeVisible()
+    await expect(page.getByText('Draft ready, waiting for approval', { exact: true })).toBeVisible()
+  })
+
   test('screenshots: key pages visual baseline', async ({ page }) => {
     for (const item of routeTitles) {
       await page.goto(item.path)

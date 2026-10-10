@@ -26,3 +26,10 @@ Display masking:
 - passwords and connection strings are rendered as `••••••••`
 - API keys are rendered as `...XXXX`
 - Telegram bot tokens are rendered as `XXXXXX:...XXX`
+# Context admission
+
+`BUTLER_CONTEXT_BUDGET_TOKENS` is a positive integer, defaults to `65536`, is
+available through layered environment/database settings and requires a restart.
+It caps the conservative initial request estimate described in the memory model;
+it does not report native provider usage or guarantee output-token headroom.
+Operators should set it below their chosen model's effective context capacity.

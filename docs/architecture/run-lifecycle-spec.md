@@ -735,6 +735,14 @@ Retry допускается не для всего run, а на уровне о
 
 ## 23. Минимальные поля run record
 
+Реализован optional `task_id` и pinned `task_revision` в PostgreSQL. Один task
+имеет несколько attempts; ordinary conversation run допускает NULL task ref.
+`completed` у run означает окончание модельного хода, а не проверенный результат
+поручения. Финал сохраняется как unverified task result без очистки рабочей
+области. Owner lifecycle и verified completion описаны в
+[Durable tasks](durable-tasks-spec.md). Proto run record сохраняет переходную
+совместимость; task API возвращает product state отдельно от run state.
+
 Run record должен содержать минимум:
 - `run_id`
 - `session_key`

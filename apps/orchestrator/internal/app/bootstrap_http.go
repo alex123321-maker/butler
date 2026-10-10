@@ -19,6 +19,7 @@ import (
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	singletab "github.com/butler/butler/apps/orchestrator/internal/singletab"
+	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
 	"github.com/butler/butler/internal/config"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -53,6 +54,7 @@ type httpServerDeps struct {
 	executor           *flow.Service
 	sessionRepo        *session.PostgresRepository
 	runRepo            *runservice.PostgresRepository
+	taskStore          *task.Store
 	transcriptStore    *transcript.Store
 	transitionRepo     *runservice.PostgresTransitionRepository
 	eventHub           *observability.Hub
@@ -100,15 +102,19 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 		modelprovider.ProviderOpenAI:        deps.cfg.OpenAIModel,
 		modelprovider.ProviderOpenAICodex:   deps.cfg.OpenAICodexModel,
 		modelprovider.ProviderGitHubCopilot: deps.cfg.GitHubCopilotModel,
+		modelprovider.ProviderAntigravity:   deps.cfg.AntigravityModel,
 	}, strings.TrimSpace(deps.cfg.OpenAIAPIKey) != "")
 	eventServer := apiservice.NewEventServer(deps.transitionRepo, deps.runRepo, deps.eventHub, logger.WithComponent(deps.log, "event-api"))
 	taskViewServer := apiservice.NewTaskViewServer(deps.runRepo, deps.runRepo, deps.sessionRepo, deps.transcriptStore, deps.transitionRepo, deps.artifactsRepo, deps.deliveryEventsRepo)
+	taskViewServer.SetDurableTasks(deps.taskStore)
+	taskControlServer := apiservice.NewTaskControlServer(deps.taskStore)
 	overviewServer := apiservice.NewOverviewServer(deps.runRepo, deps.deliveryEventsRepo)
 	approvalsServer := apiservice.NewApprovalsServer(deps.approvalRepo, deps.approvalService, deps.singleTabService)
 	singleTabServer := apiservice.NewSingleTabServer(deps.singleTabService)
 	singleTabServer.SetRelayHeartbeatTTL(time.Duration(deps.cfg.SingleTabRelayHeartbeatTTLSeconds) * time.Second)
 	extensionAuth := apiservice.NewExtensionAuthMiddleware(deps.cfg.ExtensionAPITokens)
 	artifactsServer := apiservice.NewArtifactsServer(deps.artifactsRepo, deps.activityRepo, deps.artifactsService)
+	artifactsServer.SetDurableTasks(deps.taskStore)
 	activityServer := apiservice.NewActivityServer(deps.activityRepo)
 	systemServer := apiservice.NewSystemServer(
 		deps.postgres.Pool(),
@@ -122,6 +128,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 		deps.cfg.SingleTabRelayHeartbeatTTLSeconds,
 	)
 	taskDebugServer := apiservice.NewTasksDebugServer(deps.runRepo, deps.transcriptStore)
+	taskDebugServer.SetDurableTasks(deps.taskStore)
 	streamServer := apiservice.NewStreamServer(deps.eventHub, taskViewServer, overviewServer, approvalsServer, systemServer, activityServer)
 	singleTabTransportMode := normalizeSingleTabTransportMode(deps.cfg.SingleTabTransportMode)
 	remoteRelayEnabled := singleTabTransportMode != "native_only"
@@ -130,6 +137,8 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	mux.Handle("/health", deps.health.Handler())
 	mux.Handle("/metrics", deps.metrics.Handler())
 	mux.Handle("/api/v1/events", apiServer.HTTPHandler())
+	mux.Handle("/api/v3/tasks", taskControlServer.HandleCollection())
+	mux.Handle("/api/v3/tasks/", taskControlServer.HandleItem("/api/v3/tasks/"))
 	mux.Handle("/api/v1/settings/restart", settingsServer.HandleRestart())
 	mux.Handle("/api/v1/settings", settingsServer.HandleList())
 	mux.Handle("/api/v1/settings/", settingsServer.HandleItem())

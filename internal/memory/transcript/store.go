@@ -15,14 +15,16 @@ type Store struct {
 }
 
 type Message struct {
-	MessageID    string
-	SessionKey   string
-	RunID        string
-	Role         string
-	Content      string
-	ToolCallID   string
-	MetadataJSON string
-	CreatedAt    time.Time
+	MessageID      string
+	Sequence       int64
+	SourceRevision int64
+	SessionKey     string
+	RunID          string
+	Role           string
+	Content        string
+	ToolCallID     string
+	MetadataJSON   string
+	CreatedAt      time.Time
 }
 
 type ToolCall struct {
@@ -39,8 +41,9 @@ type ToolCall struct {
 }
 
 type Transcript struct {
-	Messages  []Message
-	ToolCalls []ToolCall
+	Messages       []Message
+	ToolCalls      []ToolCall
+	SourceRevision int64
 }
 
 func NewStore(pool *pgxpool.Pool) *Store {
@@ -61,7 +64,7 @@ func (s *Store) AppendMessage(ctx context.Context, message Message) (Message, er
 	const query = `
 		INSERT INTO messages (message_id, session_key, run_id, role, content, tool_call_id, metadata, created_at)
 		VALUES ($1, $2, NULLIF($3, ''), $4, $5, NULLIF($6, ''), $7::jsonb, $8)
-		RETURNING message_id, session_key, COALESCE(run_id, ''), role, content, COALESCE(tool_call_id, ''), metadata::text, created_at
+		RETURNING message_id, session_key, COALESCE(run_id, ''), role, content, COALESCE(tool_call_id, ''), metadata::text, created_at, message_sequence
 	`
 
 	stored := Message{}
@@ -83,6 +86,7 @@ func (s *Store) AppendMessage(ctx context.Context, message Message) (Message, er
 		&stored.ToolCallID,
 		&stored.MetadataJSON,
 		&stored.CreatedAt,
+		&stored.Sequence,
 	)
 	if err != nil {
 		return Message{}, fmt.Errorf("append message: %w", err)
@@ -145,10 +149,10 @@ func (s *Store) AppendToolCall(ctx context.Context, toolCall ToolCall) (ToolCall
 
 func (s *Store) GetTranscript(ctx context.Context, sessionKey string) (Transcript, error) {
 	messages, err := s.loadMessages(ctx, `
-		SELECT message_id, session_key, COALESCE(run_id, ''), role, content, COALESCE(tool_call_id, ''), metadata::text, created_at
-		FROM messages
-		WHERE session_key = $1
-		ORDER BY created_at ASC
+		SELECT m.message_id, m.session_key, COALESCE(m.run_id, ''), m.role, m.content, COALESCE(m.tool_call_id, ''), m.metadata::text, m.created_at, m.message_sequence, h.source_revision
+		FROM messages m JOIN transcript_heads h ON h.session_key = m.session_key
+		WHERE m.session_key = $1
+		ORDER BY m.message_sequence ASC
 	`, sessionKey)
 	if err != nil {
 		return Transcript{}, err
@@ -163,15 +167,15 @@ func (s *Store) GetTranscript(ctx context.Context, sessionKey string) (Transcrip
 	if err != nil {
 		return Transcript{}, err
 	}
-	return Transcript{Messages: messages, ToolCalls: toolCalls}, nil
+	return transcriptSnapshot(messages, toolCalls), nil
 }
 
 func (s *Store) GetRunTranscript(ctx context.Context, runID string) (Transcript, error) {
 	messages, err := s.loadMessages(ctx, `
-		SELECT message_id, session_key, COALESCE(run_id, ''), role, content, COALESCE(tool_call_id, ''), metadata::text, created_at
-		FROM messages
-		WHERE run_id = $1
-		ORDER BY created_at ASC
+		SELECT m.message_id, m.session_key, COALESCE(m.run_id, ''), m.role, m.content, COALESCE(m.tool_call_id, ''), m.metadata::text, m.created_at, m.message_sequence, h.source_revision
+		FROM messages m JOIN transcript_heads h ON h.session_key = m.session_key
+		WHERE m.run_id = $1
+		ORDER BY m.message_sequence ASC
 	`, runID)
 	if err != nil {
 		return Transcript{}, err
@@ -185,7 +189,15 @@ func (s *Store) GetRunTranscript(ctx context.Context, runID string) (Transcript,
 	if err != nil {
 		return Transcript{}, err
 	}
-	return Transcript{Messages: messages, ToolCalls: toolCalls}, nil
+	return transcriptSnapshot(messages, toolCalls), nil
+}
+
+func transcriptSnapshot(messages []Message, toolCalls []ToolCall) Transcript {
+	result := Transcript{Messages: messages, ToolCalls: toolCalls}
+	if len(messages) > 0 {
+		result.SourceRevision = messages[0].SourceRevision
+	}
+	return result
 }
 
 func (s *Store) loadMessages(ctx context.Context, query, arg string) ([]Message, error) {
@@ -198,7 +210,7 @@ func (s *Store) loadMessages(ctx context.Context, query, arg string) ([]Message,
 	var messages []Message
 	for rows.Next() {
 		var message Message
-		if err := rows.Scan(&message.MessageID, &message.SessionKey, &message.RunID, &message.Role, &message.Content, &message.ToolCallID, &message.MetadataJSON, &message.CreatedAt); err != nil {
+		if err := rows.Scan(&message.MessageID, &message.SessionKey, &message.RunID, &message.Role, &message.Content, &message.ToolCallID, &message.MetadataJSON, &message.CreatedAt, &message.Sequence, &message.SourceRevision); err != nil {
 			return nil, fmt.Errorf("scan transcript message: %w", err)
 		}
 		messages = append(messages, message)

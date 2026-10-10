@@ -98,3 +98,11 @@ Then add subsystem specs as needed:
 - tools and runtimes: `docs/architecture/tool-runtime-adr.md`
 - credentials: `docs/architecture/credential-management.md`
 - config: `docs/architecture/config-layering.md`
+## Remote lab verification
+
+Use `scripts/dev/lab.ps1` with the configured SSH alias `laba` to synchronize a
+source snapshot, run Go/Chromium checks and deploy Compose on `/srv/storage/butler`.
+`Integration` uses a separate test database; `Migrations` verifies task and summary
+upgrade/rollback on exclusive disposable databases. `Race` runs the race detector;
+`Web` runs lint, functional fixtures and a live UI smoke. Keep provider sign-in
+interactive and private; see `deploy/antigravity/README.md` for the opt-in adapter.

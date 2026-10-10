@@ -2,6 +2,10 @@ export type Tone = 'default' | 'success' | 'warning' | 'error' | 'info'
 
 const statusLabels: Record<string, string> = {
   in_progress: 'In progress',
+  active: 'Active',
+  waiting_for_user: 'Waiting for your input',
+  blocked: 'Blocked',
+  paused: 'Paused',
   waiting_for_approval: 'Waiting for approval',
   waiting_for_reply_in_telegram: 'Waiting for your reply',
   completed: 'Completed',
@@ -14,6 +18,7 @@ const waitingReasonLabels: Record<string, string> = {
   approval_required: 'Approval required',
   telegram_reply_required: 'Reply needed in Telegram',
   user_reply_required: 'Waiting for your reply',
+  owner_input_required: 'Owner input required',
 }
 
 export function formatTaskStatus(status: string): string {
@@ -28,7 +33,7 @@ export function formatWaitingReason(reason: string): string {
 }
 
 export function taskTone(status: string): Tone {
-  if (status.includes('failed')) {
+  if (status.includes('failed') || status === 'blocked') {
     return 'error'
   }
   if (status.includes('approval') || status.includes('waiting')) {
@@ -50,6 +55,15 @@ export function describeTaskState(task: {
   user_action_channel?: string
   source_channel?: string
 }): string {
+  if (task.status === 'paused') {
+    return 'This task is paused. Its plan and unfinished actions are saved.'
+  }
+  if (task.status === 'blocked') {
+    return 'This task is blocked. Review the last attempt before explicitly continuing it.'
+  }
+  if (task.status === 'cancelled') {
+    return 'This task was cancelled.'
+  }
   if (task.status === 'waiting_for_reply_in_telegram') {
     return 'The assistant is waiting for you in Telegram before it can continue.'
   }

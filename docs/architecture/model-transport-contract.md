@@ -183,6 +183,33 @@ Orchestrator взаимодействует с Model Transport Layer через 
 Для OpenAI API baseline V1 transport backend должен предпочитать Realtime WebSocket (`wss`) и переходить на HTTP SSE fallback, если WebSocket backend недоступен на раннем этапе запуска, не меняя logical contract, видимый Orchestrator.
 Для OpenAI Codex и GitHub Copilot допускается HTTP streaming backend, если provider не поддерживает совместимый WebSocket path.
 
+### 7.1 Opt-in Antigravity CLI adapter
+
+`antigravity` uses the official Google Antigravity CLI with a personal Google
+account/Google AI Pro subscription. This path is separate from Gemini API billing
+and from the SDK's API-key/Vertex quickstart. Login is performed directly in the
+CLI's isolated terminal/profile, outside Butler model context.
+
+The CLI is constrained to a custom `butler-model` agent with an empty executable
+toolkit and one structured decision per invocation. The adapter requires an
+explicit `init.tools=[]` plus the expected agent; native tool/delegation steps,
+missing initialization, unsafe profile configuration and unexpected protocol
+events fail closed. Tool calls are **schema-based proposals**, normalized to the
+existing `tool_call_requested` contract; only Orchestrator/Tool Broker execute
+them. No nested CLI tool loop or Broker-bypassing execution is supported.
+
+Initial capabilities: single tool proposals, cancellation, usage metadata;
+no assistant text deltas, batch calls, or provider stateful resume. Butler replays
+the assembled messages and correlated tool results for each turn. The CLI receives
+an environment allowlist and a fresh owned workspace, and no raw service secrets.
+Its credentials remain opaque to Butler. Raw CLI diagnostics/errors are never
+copied into model-visible transport events.
+
+See [setup, primary references and validation status](../../deploy/antigravity/README.md).
+Unit tests prove the normalization/security contract using a fake process. A real
+signed-in text and tool-proposal roundtrip is still required before declaring the
+subscription provider operational or activating it on the lab.
+
 ---
 
 ## 8. Core transport entities

@@ -36,6 +36,7 @@
     />
 
     <template v-else>
+      <AppAlert v-if="taskDetails.task.legacy" tone="warning">Legacy work: historical model responses have not been verified as user results.</AppAlert>
       <AppPanel title="Summary">
         <div class="summary-grid">
           <div class="summary-item">
@@ -60,6 +61,8 @@
           </div>
         </div>
       </AppPanel>
+
+      <p v-if="taskDetails.run_ids" class="overview-copy">Attempts: {{ taskDetails.run_ids.length }}. Latest attempt: {{ taskDetails.task.run_state || 'not started' }}.</p>
 
       <AppAlert
         v-if="taskDetails.waiting_state.user_action_channel === 'telegram'"
@@ -92,9 +95,13 @@
             </section>
             <section class="overview-card">
               <h3>Memory context</h3>
-              <p class="overview-copy">
-                Working memory is stored on the session scope, so the related memory view is the fastest way to inspect live context.
-              </p>
+              <template v-if="taskDetails.durable_task">
+                <p class="overview-copy">The plan and unfinished actions belong to this task and survive each model response.</p>
+                <p class="overview-copy">Plan: {{ taskDetails.durable_task.working.plan.join(' → ') || 'No plan saved' }}</p>
+                <p class="overview-copy">Pending actions: {{ taskDetails.durable_task.working.pending_actions.join('; ') || 'None saved' }}</p>
+                <p class="overview-copy">Constraints: {{ taskDetails.durable_task.constraints.join('; ') || 'None saved' }}</p>
+              </template>
+              <p v-else class="overview-copy">Session history is available in the related memory view.</p>
               <NuxtLink class="text-link" :to="memoryLink">Open session memory</NuxtLink>
             </section>
           </div>
@@ -104,6 +111,9 @@
           <div class="overview-grid">
             <section class="overview-card">
               <h3>Outcome</h3>
+              <AppBadge v-if="taskDetails.result.verified !== undefined" :tone="taskDetails.result.verified ? 'success' : 'warning'">
+                {{ taskDetails.result.verified ? 'Verified user result' : 'Unverified model response' }}
+              </AppBadge>
               <p class="overview-copy">{{ taskDetails.result.outcome_summary || 'No final result has been recorded yet.' }}</p>
             </section>
             <section class="overview-card">
@@ -363,7 +373,8 @@ const loadConversation = async () => {
   conversationError.value = null
 
   try {
-    const response = await fetchTaskTranscript(taskId.value)
+    const runId = taskDetails.value?.task.run_id || taskId.value
+    const response = await fetchTaskTranscript(runId)
     conversationMessages.value = response.messages
   } catch (err) {
     conversationError.value = err instanceof Error ? err.message : 'Failed to load conversation'

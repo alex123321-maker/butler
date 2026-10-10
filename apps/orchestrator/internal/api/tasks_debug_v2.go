@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/apps/orchestrator/internal/run"
+	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/internal/memory/transcript"
 )
 
@@ -19,9 +20,12 @@ type tasksDebugTranscriptReader interface {
 }
 
 type TasksDebugServer struct {
+	durable     durableTaskReader
 	runs        tasksDebugRunReader
 	transcripts tasksDebugTranscriptReader
 }
+
+func (s *TasksDebugServer) SetDurableTasks(tasks durableTaskReader) { s.durable = tasks }
 
 func NewTasksDebugServer(runs tasksDebugRunReader, transcripts tasksDebugTranscriptReader) *TasksDebugServer {
 	return &TasksDebugServer{runs: runs, transcripts: transcripts}
@@ -42,6 +46,15 @@ func (s *TasksDebugServer) HandleGetTaskDebug(prefix string) http.Handler {
 		if runID == "" || strings.Contains(runID, "/") {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "task id is required"})
 			return
+		}
+		if s.durable != nil {
+			record, err := s.durable.Get(r.Context(), runID)
+			if err == nil {
+				runID = record.LastRunID
+			} else if err != task.ErrNotFound {
+				writeJSON(w, 500, map[string]string{"error": "failed to load task"})
+				return
+			}
 		}
 		rec, err := s.runs.GetRun(r.Context(), runID)
 		if err != nil {

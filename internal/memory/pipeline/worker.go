@@ -57,20 +57,21 @@ type WorkerConfig struct {
 
 // Worker is the async memory pipeline worker that processes post-run jobs.
 type Worker struct {
-	queue         *Queue
-	transcripts   TranscriptReader
-	extractor     Extractor
-	classifier    *Classifier
-	resolver      *ConflictResolver
-	chunkStore    ChunkStore
-	doctorReports DoctorReportReader
-	profileStore  *profile.Store
-	episodicStore *episodic.Store
-	embeddings    EmbeddingProvider
-	summaryWriter SessionSummaryWriter
-	config        WorkerConfig
-	log           *slog.Logger
-	metrics       *metrics.Registry
+	queue             *Queue
+	transcripts       TranscriptReader
+	extractor         Extractor
+	classifier        *Classifier
+	resolver          *ConflictResolver
+	chunkStore        ChunkStore
+	doctorReports     DoctorReportReader
+	profileStore      *profile.Store
+	episodicStore     *episodic.Store
+	embeddings        EmbeddingProvider
+	summaryWriter     SessionSummaryWriter
+	sessionSummarizer SessionSummarizer
+	config            WorkerConfig
+	log               *slog.Logger
+	metrics           *metrics.Registry
 }
 
 // NewWorker creates a new memory pipeline worker.
@@ -430,6 +431,9 @@ func (w *Worker) writeEpisodes(ctx context.Context, log *slog.Logger, job *Job, 
 }
 
 func (w *Worker) updateSessionSummary(ctx context.Context, log *slog.Logger, job *Job, summary string) error {
+	if store, ok := w.summaryWriter.(coveredSummaryStore); ok {
+		return w.updateCoveredSummary(ctx, log, job, store)
+	}
 	summary = strings.TrimSpace(summary)
 	summary = sanitize.Text(summary)
 	if summary == "" {

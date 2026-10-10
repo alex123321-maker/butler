@@ -64,6 +64,11 @@ func toolExecutionMetadata(call *toolbrokerv1.ToolCall) (targetURL string, mutat
 	if rawURL, ok := args["url"].(string); ok {
 		targetURL = strings.TrimSpace(rawURL)
 	}
+	if strings.HasPrefix(call.GetToolName(), "browser.") {
+		if observedURL, ok := args["expected_url"].(string); ok {
+			targetURL = strings.TrimSpace(observedURL)
+		}
+	}
 	switch strings.TrimSpace(call.GetToolName()) {
 	case "http.request":
 		method, _ := args["method"].(string)
@@ -72,6 +77,8 @@ func toolExecutionMetadata(call *toolbrokerv1.ToolCall) (targetURL string, mutat
 			method = "GET"
 		}
 		mutating = method != "GET"
+	case "browser.navigate", "browser.click", "browser.fill", "browser.type", "browser.set_cookie", "browser.restore_storage_state":
+		mutating = true
 	default:
 		mutating = false
 	}

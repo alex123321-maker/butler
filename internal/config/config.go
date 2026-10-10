@@ -72,6 +72,9 @@ type OrchestratorConfig struct {
 	OpenAICodexModel                  string
 	OpenAICodexBaseURL                string
 	GitHubCopilotModel                string
+	AntigravityModel                  string
+	AntigravityBinaryPath             string
+	AntigravityProfileDir             string
 	OpenAITimeoutSeconds              int
 	ToolBrokerAddr                    string
 	TelegramBotToken                  string
@@ -79,6 +82,7 @@ type OrchestratorConfig struct {
 	TelegramBaseURL                   string
 	TelegramPollTimeout               int
 	SessionLeaseTTLSeconds            int
+	ContextBudgetTokens               int
 	MemoryProfileLimit                int
 	MemoryEpisodicLimit               int
 	MemoryScopeOrder                  []string
@@ -256,6 +260,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_SINGLE_TAB_TRANSPORT_MODE", component: "orchestrator", typeName: "string", required: false, defaultValue: "dual", allowedValues: singleTabRolloutModes, requiresRestart: true, assign: func(v string) { cfg.SingleTabTransportMode = strings.ToLower(strings.TrimSpace(v)) }},
 		fieldSpec{key: "BUTLER_SINGLE_TAB_RELAY_HEARTBEAT_TTL_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "90", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.SingleTabRelayHeartbeatTTLSeconds = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_MODEL_PROVIDER", component: "orchestrator", typeName: "string", required: false, defaultValue: modelprovider.ProviderOpenAI, allowedValues: modelprovider.SupportedProviders(), requiresRestart: true, assign: func(v string) { cfg.ModelProvider = strings.ToLower(strings.TrimSpace(v)) }},
+		fieldSpec{key: "BUTLER_CONTEXT_BUDGET_TOKENS", component: "orchestrator", typeName: "int", defaultValue: "65536", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.ContextBudgetTokens = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_OPENAI_API_KEY", component: "orchestrator", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: func(v string) { cfg.OpenAIAPIKey = v }},
 		fieldSpec{key: "BUTLER_OPENAI_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-4o-mini", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.OpenAIModel = v }},
 		fieldSpec{key: "BUTLER_OPENAI_BASE_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "https://api.openai.com/v1", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.OpenAIBaseURL = v }},
@@ -264,6 +269,9 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_OPENAI_CODEX_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-5.1-codex", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.OpenAICodexModel = v }},
 		fieldSpec{key: "BUTLER_OPENAI_CODEX_BASE_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "https://chatgpt.com/backend-api", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.OpenAICodexBaseURL = v }},
 		fieldSpec{key: "BUTLER_GITHUB_COPILOT_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-4o", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.GitHubCopilotModel = v }},
+		fieldSpec{key: "BUTLER_ANTIGRAVITY_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gemini-3.1-pro-high", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityModel = v }},
+		fieldSpec{key: "BUTLER_ANTIGRAVITY_BINARY_PATH", component: "orchestrator", typeName: "string", required: false, defaultValue: "/opt/antigravity/agy", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityBinaryPath = v }},
+		fieldSpec{key: "BUTLER_ANTIGRAVITY_PROFILE_DIR", component: "orchestrator", typeName: "string", required: false, defaultValue: "/home/butler", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityProfileDir = v }},
 		fieldSpec{key: "BUTLER_OPENAI_TIMEOUT_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "60", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.OpenAITimeoutSeconds = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_TOOL_BROKER_ADDR", component: "orchestrator", typeName: "string", required: false, defaultValue: "127.0.0.1:10090", requiresRestart: true, validate: validateListenAddr, assign: func(v string) { cfg.ToolBrokerAddr = v }},
 		fieldSpec{key: "BUTLER_TELEGRAM_BOT_TOKEN", component: "orchestrator", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: func(v string) { cfg.TelegramBotToken = v }},

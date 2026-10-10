@@ -125,14 +125,14 @@ Butler использует 4 основных класса памяти.
 
 * short-lived (краткоживущая);
 * допускает перезапись и обновление;
-* связана с конкретной session или run;
+* рабочая область поручения связана с конкретным task; transcript остаётся у session, transient scratch — у run;
 * не должна автоматически становиться долгосрочной памятью.
 
 #### Два слоя хранения
 
 Working Memory физически разделена на два слоя:
 
-* **Durable layer (PostgreSQL, таблица `memory_working`)** — логический snapshot рабочего состояния задачи: текущая цель, активные сущности, незавершённые шаги. Сохраняется при каждом значимом обновлении состояния и переживает перезапуск системы.
+* **Durable layer (PostgreSQL, `tasks.working_json`)** — план, незавершённые действия и scratch конкретного поручения, с compare-and-swap `working_revision`. Цель, критерии и версионированные ограничения хранятся отдельно в той же task record. Финальный ответ модели не очищает эту область. `memory_working` сохраняется как legacy session snapshot для совместимости и аудита; новые task runs и обычный разговор не наследуют его цель. Реализованный контракт: [Durable tasks](durable-tasks-spec.md).
 * **Transient layer (Redis)** — эфемерное состояние в процессе исполнения: in-progress execution state, task scratchpads, промежуточные данные текущего run. Теряется при перезапуске и не считается источником истины.
 
 Durable layer отвечает на вопрос "где мы остановились", transient layer — "что происходит прямо сейчас внутри выполнения".
@@ -262,7 +262,7 @@ The current Butler baseline now includes durable PostgreSQL tables for:
 * short-lived execution caches;
 * active task scratchpads.
 
-**Примечание:** Redis не хранит durable working memory. Логический snapshot рабочего состояния задачи сохраняется в PostgreSQL (`memory_working`). Redis содержит только эфемерный execution state, который допустимо потерять при перезапуске.
+**Примечание:** Redis не хранит durable working memory. Рабочая область поручения сохраняется в PostgreSQL (`tasks.working_json`); `memory_working` — legacy session view. Redis содержит только эфемерный execution state, который допустимо потерять при перезапуске.
 
 ### 8.3 pgvector
 
@@ -335,8 +335,8 @@ Summary должна иметь source revision и проверяемую гра
 Контекст содержит summary, хвост после границы и отдельные действующие ограничения
 с source refs. Старый worker не перезаписывает более новую границу. Обязательные
 ограничения и свежий ввод имеют приоритет над второстепенной памятью; overflow и
-ошибки чтения обрабатываются явно. Эти требования относятся к целевой реализации
-#4, #9, #10; текущий baseline ниже не заявляет их выполненными.
+ошибки чтения обрабатываются явно. Базовое разделение tasks/runs (#4) и сборка
+контекста (#10) реализованы ниже; изменение ограничений относится к #9.
 
 Перед запуском model loop (цикла модели) orchestrator должен запросить у memory service memory bundle (пакет памяти):
 
@@ -367,14 +367,42 @@ Current bundle assembly now combines:
 
 When embeddings or optional keyword matches are unavailable, bundle assembly degrades gracefully and still returns deterministic summary / working / profile context within budget.
 
-Current context safety baseline also replays the latest ten non-empty user/assistant
-messages alongside any session summary. Summary presence never suppresses this
-history. Recent user messages remain intact; assistant replay and prompt sections
-are shortened by Unicode characters, preserving Russian text. Transcript read
-failure blocks model preparation with an explicit error. This conservative replay
-has no coverage watermark yet and can overlap summary content; source-versioned
-summary updates, full unsummarized tails, protected task constraints and model-aware
-token admission are still required by #9–#10.
+The Transcript Store assigns a durable per-session `message_sequence` using the
+locked `transcript_heads` row; ordering does not depend on client timestamps or
+on commit order of a global sequence. A separate `source_revision` changes when
+any message is edited/deleted, invalidating summaries that could retain its content.
+Message identity, session and sequence are immutable. This metadata belongs to
+the Transcript Store and does not transfer run ordering/leases from Session Service.
+
+`internal/memory/summary` owns `session_summaries`: summary text, format version,
+source revision, last covered message ID and sequence. Publication checks the
+source identity/revision and uses a monotonic boundary CAS under the same head
+lock as append/source invalidation. A late inference cannot replace newer coverage.
+The memory worker summarizes the previous verified prefix plus the complete new
+session message tail, separately from per-run profile/episode extraction. It skips
+already covered history. Empty/oversized summary input leaves coverage unchanged;
+it never assigns full coverage to abbreviated or per-run-only input.
+
+Run preparation validates that boundary against its loaded transcript snapshot.
+Missing/legacy/edited/future boundaries replay the complete history; verified
+coverage supplies the full sanitized summary plus every nonempty user/assistant
+message after it, without a fixed ten-message window or assistant abbreviation.
+The legacy `sessions.summary` field remains for rollback/audit and is not trusted
+as coverage. Durable task goal, constraints/revision, criteria and working state
+are attached separately and cannot be replaced by a model summary. Each new run
+starts with fresh provider state; tool continuation within a run retains its ref.
+
+History or coverage read failure blocks model preparation explicitly. Context
+admission uses `BUTLER_CONTEXT_BUDGET_TOKENS` (default 65536): one conservative
+token unit per encoded UTF-8 byte, a 1024-unit protocol allowance and per-item/tool
+overhead. Observability records estimator, estimate, allowance and removed optional
+sections. This is an admission estimate, not a provider-native token count or bill;
+operators must account for provider-specific wrappers and model/output capacity.
+Retrieved chunks, episodes, profile and tool descriptions are removed first. If
+mandatory history, covered summary, task constraints and base context cannot fit,
+the run fails with an explicit budget error rather than losing a prohibition.
+Optional prompt shortening and pipeline logging remain Unicode-safe. Amendment
+and authority revocation semantics belong to #9; cumulative turn limits to #13.
 
 ---
 
@@ -478,7 +506,7 @@ Current pipeline baseline now suppresses near-duplicate episodic candidates with
 
 ### 13.3 Working Memory replacement
 
-Working Memory всегда может быть обновлена или очищена без необходимости хранить все её промежуточные версии как долгосрочную память.
+Рабочая область обновляется с явной версией. Завершение run не очищает незавершённое поручение; состояние меняется через task module. Хранить каждый scratch checkpoint как Episodic Memory не требуется.
 
 ---
 

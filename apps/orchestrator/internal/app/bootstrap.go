@@ -21,6 +21,7 @@ import (
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	singletab "github.com/butler/butler/apps/orchestrator/internal/singletab"
+	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
 	"github.com/butler/butler/internal/config"
 	orchestratorv1 "github.com/butler/butler/internal/gen/orchestrator/v1"
@@ -33,6 +34,7 @@ import (
 	"github.com/butler/butler/internal/memory/pipeline"
 	"github.com/butler/butler/internal/memory/profile"
 	memoryservice "github.com/butler/butler/internal/memory/service"
+	"github.com/butler/butler/internal/memory/summary"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/memory/working"
 	"github.com/butler/butler/internal/metrics"
@@ -96,16 +98,19 @@ func New(ctx context.Context) (*App, error) {
 
 	providerBuilder := providerfactory.New(authManager, log)
 	providerResult, err := providerBuilder.Build(ctx, providerfactory.BuildConfig{
-		ActiveProvider:      cfg.ModelProvider,
-		OpenAIAPIKey:        cfg.OpenAIAPIKey,
-		OpenAIModel:         cfg.OpenAIModel,
-		OpenAIBaseURL:       cfg.OpenAIBaseURL,
-		OpenAIRealtimeURL:   cfg.OpenAIRealtimeURL,
-		OpenAITransportMode: cfg.OpenAITransportMode,
-		OpenAICodexModel:    cfg.OpenAICodexModel,
-		OpenAICodexBaseURL:  cfg.OpenAICodexBaseURL,
-		GitHubCopilotModel:  cfg.GitHubCopilotModel,
-		Timeout:             time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
+		ActiveProvider:        cfg.ModelProvider,
+		OpenAIAPIKey:          cfg.OpenAIAPIKey,
+		OpenAIModel:           cfg.OpenAIModel,
+		OpenAIBaseURL:         cfg.OpenAIBaseURL,
+		OpenAIRealtimeURL:     cfg.OpenAIRealtimeURL,
+		OpenAITransportMode:   cfg.OpenAITransportMode,
+		OpenAICodexModel:      cfg.OpenAICodexModel,
+		OpenAICodexBaseURL:    cfg.OpenAICodexBaseURL,
+		GitHubCopilotModel:    cfg.GitHubCopilotModel,
+		AntigravityModel:      cfg.AntigravityModel,
+		AntigravityBinaryPath: cfg.AntigravityBinaryPath,
+		AntigravityProfileDir: cfg.AntigravityProfileDir,
+		Timeout:               time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
 	})
 	if err != nil {
 		redis.Close()
@@ -113,6 +118,7 @@ func New(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 
+	taskStore := task.NewStore(postgres.Pool())
 	runRepo := runservice.NewPostgresRepository(postgres.Pool())
 	runManager := runservice.NewService(runRepo, logger.WithComponent(log, "run-service"))
 	toolBrokerClient, err := tools.Dial(cfg.ToolBrokerAddr)
@@ -160,13 +166,14 @@ func New(ctx context.Context) (*App, error) {
 	sessionRepo := session.NewPostgresRepository(postgres.Pool())
 	sessionLeaseManager := session.NewRedisLeaseManager(redis.Client(), logger.WithComponent(log, "session-lease-store"))
 	transcriptStore := transcript.NewStore(postgres.Pool())
+	summaryStore := summary.NewStore(postgres.Pool())
 	pipelineQueue := pipeline.NewQueue(redis.Client())
 	pipelineEnqueuer := pipeline.NewEnqueuer(pipelineQueue, m)
 	profileStore := profile.NewStore(postgres.Pool())
 	episodicStore := episodic.NewStore(postgres.Pool())
 	chunkStore := chunks.NewStore(postgres.Pool())
 
-	embeddingProvider, pipelineWorker := configureMemoryPipeline(log, cfg, authManager, m, pipelineQueue, transcriptStore, sessionRepo, profileStore, episodicStore, chunkStore)
+	embeddingProvider, pipelineWorker := configureMemoryPipeline(log, cfg, authManager, m, pipelineQueue, transcriptStore, summaryStore, profileStore, episodicStore, chunkStore)
 
 	var memoryEmbeddings memoryservice.EmbeddingProvider
 	if embeddingProvider != nil {
@@ -183,34 +190,36 @@ func New(ctx context.Context) (*App, error) {
 		transcriptStore,
 		providerResult.Provider,
 		flow.Config{
-			ProviderName:     providerResult.ProviderName,
-			ModelName:        providerResult.ModelName,
-			OwnerID:          cfg.Shared.ServiceName,
-			LeaseTTL:         int64(cfg.SessionLeaseTTLSeconds),
-			PromptManager:    promptmgmt.NewManager(settingsStore),
-			PromptAssembler:  promptmgmt.NewAssembler(),
-			ProfileLimit:     cfg.MemoryProfileLimit,
-			EpisodeLimit:     cfg.MemoryEpisodicLimit,
-			MemoryScopes:     cfg.MemoryScopeOrder,
-			Delivery:         delivery,
-			Tools:            toolBrokerClient,
-			ToolCatalog:      toolBrokerClient,
-			ApprovalChecker:  toolBrokerClient,
-			ApprovalGate:     approvalGate,
-			ApprovalService:  approvalService,
-			WorkingStore:     workingStoreAdapter{store: working.NewStore(postgres.Pool())},
-			TransientStore:   transientWorkingStoreAdapter{store: working.NewTransientStore(redis.Client())},
-			TransientTTL:     time.Duration(cfg.MemoryWorkingTransientTTLSeconds) * time.Second,
-			ProfileStore:     profileStoreAdapter{store: profileStore},
-			EpisodeStore:     episodicStoreAdapter{store: episodicStore},
-			ChunkStore:       chunkStoreAdapter{store: chunkStore},
-			Embeddings:       memoryEmbeddings,
-			PipelineEnqueuer: pipelineEnqueuer,
-			SummaryReader:    sessionRepo,
-			TransitionLogger: transitionRepo,
-			EventHub:         eventHub,
-			Artifacts:        artifactsService,
-			Activity:         activityService,
+			Tasks:               taskStore,
+			ProviderName:        providerResult.ProviderName,
+			ModelName:           providerResult.ModelName,
+			OwnerID:             cfg.Shared.ServiceName,
+			LeaseTTL:            int64(cfg.SessionLeaseTTLSeconds),
+			PromptManager:       promptmgmt.NewManager(settingsStore),
+			PromptAssembler:     promptmgmt.NewAssembler(),
+			ProfileLimit:        cfg.MemoryProfileLimit,
+			EpisodeLimit:        cfg.MemoryEpisodicLimit,
+			MemoryScopes:        cfg.MemoryScopeOrder,
+			Delivery:            delivery,
+			Tools:               toolBrokerClient,
+			ToolCatalog:         toolBrokerClient,
+			ApprovalChecker:     toolBrokerClient,
+			ApprovalGate:        approvalGate,
+			ApprovalService:     approvalService,
+			WorkingStore:        workingStoreAdapter{store: working.NewStore(postgres.Pool())},
+			TransientStore:      transientWorkingStoreAdapter{store: working.NewTransientStore(redis.Client())},
+			TransientTTL:        time.Duration(cfg.MemoryWorkingTransientTTLSeconds) * time.Second,
+			ProfileStore:        profileStoreAdapter{store: profileStore},
+			EpisodeStore:        episodicStoreAdapter{store: episodicStore},
+			ChunkStore:          chunkStoreAdapter{store: chunkStore},
+			Embeddings:          memoryEmbeddings,
+			PipelineEnqueuer:    pipelineEnqueuer,
+			SummaryReader:       summaryStore,
+			ContextBudgetTokens: cfg.ContextBudgetTokens,
+			TransitionLogger:    transitionRepo,
+			EventHub:            eventHub,
+			Artifacts:           artifactsService,
+			Activity:            activityService,
 		},
 		logger.WithComponent(log, "executor"),
 	)
@@ -236,6 +245,7 @@ func New(ctx context.Context) (*App, error) {
 		executor:           executor,
 		sessionRepo:        sessionRepo,
 		runRepo:            runRepo,
+		taskStore:          taskStore,
 		transcriptStore:    transcriptStore,
 		transitionRepo:     transitionRepo,
 		eventHub:           eventHub,
@@ -297,7 +307,7 @@ func configureMemoryPipeline(
 	m *metrics.Registry,
 	pipelineQueue *pipeline.Queue,
 	transcriptStore *transcript.Store,
-	sessionRepo *session.PostgresRepository,
+	summaryStore *summary.Store,
 	profileStore *profile.Store,
 	episodicStore *episodic.Store,
 	chunkStore *chunks.Store,
@@ -391,7 +401,7 @@ func configureMemoryPipeline(
 		profileStore,
 		episodicStore,
 		embeddingProvider,
-		sessionRepo,
+		summaryStore,
 		pipeline.WorkerConfig{
 			PollTimeout: time.Duration(cfg.MemoryPipelinePollTimeoutSeconds) * time.Second,
 			MaxRetries:  cfg.MemoryPipelineMaxRetries,
@@ -399,6 +409,7 @@ func configureMemoryPipeline(
 		m,
 		logger.WithComponent(log, "memory-pipeline"),
 	)
+	pipelineWorker.SetSessionSummarizer(extractor)
 	pipelineWorker.SetChunkStore(chunkStore)
 	log.Info("memory pipeline worker configured",
 		slog.String("extraction_model", cfg.MemoryExtractionModel),

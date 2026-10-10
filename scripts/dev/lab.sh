@@ -45,6 +45,22 @@ case "$action" in
       --env GOCACHE=/cache/go-build --env GOMODCACHE=/cache/go-mod \
       "${test_options[@]}" golang:1.24-alpine go test -p 1 -count=1 "$@" 2>&1 | tee "$report"
     ;;
+  Migrations)
+    # Upgrade/rollback fixtures must never share the app or integration database.
+    for database in butler_lab_task_migrations_test butler_lab_summary_migrations_test; do
+      if [[ "$(docker exec butler-lab-postgres-1 psql -U butler -d postgres -Atc "SELECT 1 FROM pg_database WHERE datname = '$database'")" != 1 ]]; then
+        docker exec butler-lab-postgres-1 createdb -U butler "$database"
+      fi
+    done
+    report="$root/reports/migrations-$(date -u +%Y%m%dT%H%M%SZ).log"
+    docker run --rm --user "$(id -u):$(id -g)" --network butler-lab_backend \
+      --volume "$PWD:/src:ro" --volume "$root/.cache:/cache" --workdir /src \
+      --env GOCACHE=/cache/go-build --env GOMODCACHE=/cache/go-mod \
+      --env BUTLER_TASK_MIGRATION_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_task_migrations_test?sslmode=disable \
+      --env BUTLER_SUMMARY_MIGRATION_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_lab_summary_migrations_test?sslmode=disable \
+      golang:1.24-alpine go test -p 1 -count=1 -run MigrationIntegration \
+      ./apps/orchestrator/internal/task ./internal/memory/summary 2>&1 | tee "$report"
+    ;;
   Status)
     "${compose[@]}" ps
     df -h "$root" /

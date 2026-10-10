@@ -127,16 +127,21 @@ func TestAssemblerIncludesBrowserStrategySection(t *testing.T) {
 	if !contains(result.FinalPrompt, "DIRECT NAVIGATION FIRST") {
 		t.Fatalf("expected browser strategy content in prompt, got %q", result.FinalPrompt)
 	}
-	if !contains(result.FinalPrompt, "ALWAYS SNAPSHOT AFTER NAVIGATE") {
+	for _, required := range []string{"EXPLICIT CONTEXT", "observation_version", "PRIVATE AUTH STATE", "USER TAB", "CONTINUITY"} {
+		if !contains(result.FinalPrompt, required) {
+			t.Fatalf("browser rule %q was truncated from assembled prompt", required)
+		}
+	}
+	if !contains(result.FinalPrompt, "browser.snapshot observes the current page without navigating") {
 		t.Fatalf("expected snapshot rule in browser strategy, got %q", result.FinalPrompt)
 	}
-	if !contains(result.FinalPrompt, "NUMBERED FOLLOW-UPS") {
+	if !contains(result.FinalPrompt, "A numeric reply selects an unambiguous option") {
 		t.Fatalf("expected numbered follow-up rule in browser strategy, got %q", result.FinalPrompt)
 	}
-	if !contains(result.FinalPrompt, "SINGLE-TAB AUTONOMY") {
+	if !contains(result.FinalPrompt, "For the user's current tab prefer single_tab.*") {
 		t.Fatalf("expected single-tab autonomy rule in browser strategy, got %q", result.FinalPrompt)
 	}
-	if !contains(result.FinalPrompt, "NO RECOVERY MENUS BY DEFAULT") {
+	if !contains(result.FinalPrompt, "avoid unnecessary recovery menus") {
 		t.Fatalf("expected recovery-menu rule in browser strategy, got %q", result.FinalPrompt)
 	}
 }

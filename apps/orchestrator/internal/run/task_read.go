@@ -34,6 +34,11 @@ type TaskListParams struct {
 
 // TaskRow is a normalized read row for task-centric APIs.
 type TaskRow struct {
+	TaskStatus     string
+	TaskRevision   int64
+	Goal           string
+	Legacy         bool
+	ResultVerified bool
 	TaskID         string
 	RunID          string
 	SessionKey     string
@@ -67,6 +72,7 @@ func (r *PostgresRepository) ListTasks(ctx context.Context, params TaskListParam
 	for rows.Next() {
 		var item TaskRow
 		if err := rows.Scan(
+			&item.TaskStatus, &item.TaskRevision, &item.Goal, &item.Legacy, &item.ResultVerified,
 			&item.TaskID,
 			&item.RunID,
 			&item.SessionKey,
@@ -104,14 +110,14 @@ func buildTaskListQuery(params TaskListParams) (string, []any) {
 		params.Offset = 0
 	}
 
-	sortClause := "r.started_at DESC"
+	sortClause := "t.created_at DESC"
 	switch params.Sort {
 	case TaskSortStartedAtAsc:
-		sortClause = "r.started_at ASC"
+		sortClause = "t.created_at ASC"
 	case TaskSortUpdatedAtDesc:
-		sortClause = "r.updated_at DESC"
+		sortClause = "t.updated_at DESC"
 	case TaskSortUpdatedAtAsc:
-		sortClause = "r.updated_at ASC"
+		sortClause = "t.updated_at ASC"
 	}
 
 	riskLevelExpr := `(
@@ -125,22 +131,25 @@ func buildTaskListQuery(params TaskListParams) (string, []any) {
 	query := strings.Builder{}
 	query.WriteString(`
 		SELECT
-			r.run_id AS task_id,
-			r.run_id,
-			r.session_key,
+			t.status, t.revision, t.goal, t.legacy, (t.completion_result_id IS NOT NULL),
+			t.task_id,
+			COALESCE(r.run_id, ''),
+			t.session_key,
 			s.channel AS source_channel,
 			s.channel AS session_channel,
-			r.current_state AS run_state,
-			r.started_at,
-			r.updated_at,
-			r.finished_at,
-			r.model_provider,
-			r.autonomy_mode,
-			COALESCE(last_assistant.content, '') AS outcome_summary,
+			COALESCE(r.current_state, '') AS run_state,
+			t.created_at,
+			t.updated_at,
+			t.finished_at,
+			COALESCE(r.model_provider, ''),
+			COALESCE(r.autonomy_mode, ''),
+			COALESCE(completion_result.summary, last_assistant.content, '') AS outcome_summary,
 			COALESCE(r.error_message, '') AS error_summary,
 			` + riskLevelExpr + ` AS risk_level
-		FROM runs r
-		INNER JOIN sessions s ON s.session_key = r.session_key
+		FROM tasks t
+		INNER JOIN sessions s ON s.session_key = t.session_key
+		LEFT JOIN runs r ON r.run_id = t.last_run_id
+		LEFT JOIN task_results completion_result ON completion_result.result_id = t.completion_result_id
 		LEFT JOIN LATERAL (
 			SELECT m.content
 			FROM messages m
@@ -166,9 +175,9 @@ func buildTaskListQuery(params TaskListParams) (string, []any) {
 	}
 	if params.NeedsUserAction != nil {
 		if *params.NeedsUserAction {
-			query.WriteString(" AND r.current_state = 'awaiting_approval'")
+			query.WriteString(" AND (t.status = 'waiting_for_user' OR r.current_state = 'awaiting_approval')")
 		} else {
-			query.WriteString(" AND r.current_state <> 'awaiting_approval'")
+			query.WriteString(" AND t.status <> 'waiting_for_user' AND COALESCE(r.current_state, '') <> 'awaiting_approval'")
 		}
 	}
 	if value := strings.TrimSpace(strings.ToLower(params.WaitingReason)); value != "" {
@@ -182,14 +191,14 @@ func buildTaskListQuery(params TaskListParams) (string, []any) {
 		add("LOWER(r.model_provider) = $%d", strings.ToLower(value))
 	}
 	if params.From != nil {
-		add("r.started_at >= $%d", params.From.UTC())
+		add("t.created_at >= $%d", params.From.UTC())
 	}
 	if params.To != nil {
-		add("r.started_at <= $%d", params.To.UTC())
+		add("t.created_at <= $%d", params.To.UTC())
 	}
 	if value := strings.TrimSpace(params.Query); value != "" {
 		search := "%" + value + "%"
-		query.WriteString(fmt.Sprintf(" AND (r.run_id ILIKE $%d OR r.session_key ILIKE $%d OR COALESCE(last_assistant.content, '') ILIKE $%d OR COALESCE(r.error_message, '') ILIKE $%d)", argIndex, argIndex, argIndex, argIndex))
+		query.WriteString(fmt.Sprintf(" AND (t.task_id ILIKE $%d OR t.session_key ILIKE $%d OR t.goal ILIKE $%d OR COALESCE(last_assistant.content, '') ILIKE $%d OR COALESCE(r.error_message, '') ILIKE $%d)", argIndex, argIndex, argIndex, argIndex, argIndex))
 		args = append(args, search)
 		argIndex++
 	}
@@ -205,19 +214,21 @@ func buildTaskListQuery(params TaskListParams) (string, []any) {
 func statusFilterSQL(status string) string {
 	switch status {
 	case "in_progress":
-		return "r.current_state IN ('created','queued','acquired','preparing','model_running','tool_pending','tool_running','awaiting_model_resume','finalizing')"
+		return "t.status = 'active' AND COALESCE(r.current_state, '') <> 'awaiting_approval'"
 	case "waiting_for_approval":
-		return "(r.current_state = 'awaiting_approval' AND LOWER(s.channel) <> 'telegram')"
+		return "((t.status = 'waiting_for_user' OR r.current_state = 'awaiting_approval') AND LOWER(s.channel) <> 'telegram')"
 	case "waiting_for_reply_in_telegram":
-		return "(r.current_state = 'awaiting_approval' AND LOWER(s.channel) = 'telegram')"
+		return "((t.status = 'waiting_for_user' OR r.current_state = 'awaiting_approval') AND LOWER(s.channel) = 'telegram')"
 	case "completed":
-		return "r.current_state = 'completed'"
+		return "t.status = 'completed' AND t.completion_result_id IS NOT NULL"
 	case "failed":
-		return "r.current_state = 'failed'"
+		return "t.status = 'blocked'"
 	case "cancelled":
-		return "r.current_state = 'cancelled'"
+		return "t.status = 'cancelled'"
 	case "completed_with_issues":
-		return "r.current_state = 'timed_out'"
+		return "t.status = 'blocked' AND r.current_state = 'timed_out'"
+	case "active", "waiting_for_user", "blocked", "paused":
+		return "t.status = '" + status + "'"
 	default:
 		return "1=0"
 	}

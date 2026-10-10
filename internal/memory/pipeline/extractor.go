@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/butler/butler/internal/memory/sanitize"
 	"github.com/butler/butler/internal/memory/transcript"
@@ -173,8 +174,8 @@ func parseExtractionResponse(response string) (*ExtractionResult, error) {
 }
 
 func truncate(s string, maxLen int) string {
-	if len(s) <= maxLen {
+	if maxLen <= 0 || utf8.RuneCountInString(s) <= maxLen {
 		return s
 	}
-	return s[:maxLen] + "..."
+	return string([]rune(s)[:maxLen]) + "..."
 }

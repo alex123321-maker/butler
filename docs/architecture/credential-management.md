@@ -554,6 +554,31 @@ transcript или result. Installer mandate не даёт право менят�
 
 ## 18. Current masking baseline for memory safety
 
+Browser execution additionally follows the
+[Explicit Browser Session Contract](browser-session-contract.md): cookie/storage
+inputs use typed refs exclusively; secrets travel over a private helper stdin,
+not process arguments, and stay in ephemeral session memory. Authorization uses
+the observed page URL and classifies browser changes as mutations. Actual page,
+owner, observation and fixed origin are rechecked before injection. Auth state
+is never exported into ordinary browser artifacts; reflected installed values
+are masked in visible observations. Closing, expiry or helper loss destroys it.
+
+### Antigravity CLI credentials
+
+The opt-in Antigravity provider delegates personal Google sign-in to the official
+CLI in its own private profile. Butler does not import/extract token files or use
+the Google account as a tool credential alias. CLI auth codes are entered directly
+in the interactive SSH terminal. The lab profile is outside source snapshots,
+owned by the service UID `10001`, and mounted only into the model transport process.
+Butler reads only the non-secret isolation policy to verify a model-only toolkit;
+raw diagnostics and credential-bearing provider errors are never propagated to
+transcript, prompt, or transport error details. Missing auth produces a fixed
+safe error directing the operator to CLI sign-in.
+
+The official CLI owns credential encryption/keyring behavior; this adapter does
+not claim PostgreSQL-backed OAuth storage or a Butler Web UI OAuth flow. Subscription
+access must be validated with a real login and model turn before activation.
+
 Current Butler baseline now applies memory-focused sanitization before memory extraction prompts and before durable memory persistence for memory-derived records.
 
 Minimum covered categories:

@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
@@ -17,57 +18,41 @@ import (
 
 const maxSnapshotTextLen = 12000
 
-// supportedTools lists all browser tools the runtime can execute.
 var supportedTools = map[string]bool{
-	"browser.navigate":              true,
-	"browser.snapshot":              true,
-	"browser.click":                 true,
-	"browser.fill":                  true,
-	"browser.type":                  true,
-	"browser.wait_for":              true,
-	"browser.extract_text":          true,
-	"browser.set_cookie":            true,
-	"browser.restore_storage_state": true,
-}
-
-// toolsRequiringURL lists tools that require a valid URL.
-var toolsRequiringURL = map[string]bool{
-	"browser.navigate":   true,
-	"browser.snapshot":   true,
-	"browser.set_cookie": true,
-}
-
-// toolsSupportingCredentialRef lists tools whose value/text field
-// may contain a credential_ref that is resolved by the broker.
-var toolsSupportingCredentialRef = map[string]bool{
-	"browser.fill": true,
-	"browser.type": true,
+	"browser.read": true, "browser.open": true, "browser.close": true,
+	"browser.navigate": true, "browser.snapshot": true, "browser.click": true,
+	"browser.fill": true, "browser.type": true, "browser.wait_for": true,
+	"browser.extract_text": true, "browser.set_cookie": true, "browser.restore_storage_state": true,
 }
 
 type Runner interface {
 	Run(context.Context, Request) (Result, error)
 }
-
 type Server struct {
 	runtimev1.UnimplementedToolRuntimeServiceServer
-
-	runner Runner
-	log    *slog.Logger
+	runner   Runner
+	sessions *sessionStore
+	log      *slog.Logger
 }
 
-// Request represents a browser tool invocation passed to the Playwright runner.
+// Request is a private execution message. Scope and expiry come from Go,
+// not the model. Auth data is only broker-resolved material.
 type Request struct {
-	ToolName     string        `json:"tool_name"`
-	URL          string        `json:"url,omitempty"`
-	Selector     string        `json:"selector,omitempty"`
-	Value        string        `json:"value,omitempty"`
-	Text         string        `json:"text,omitempty"`
-	Timeout      int64         `json:"timeout,omitempty"`
-	Cookie       *Cookie       `json:"cookie,omitempty"`
-	StorageState *StorageState `json:"storage_state,omitempty"`
+	ToolName           string        `json:"tool_name"`
+	SessionID          string        `json:"browser_session_id,omitempty"`
+	URL                string        `json:"url,omitempty"`
+	ExpectedURL        string        `json:"expected_url,omitempty"`
+	ObservationVersion uint64        `json:"observation_version,omitempty"`
+	Selector           string        `json:"selector,omitempty"`
+	Value              string        `json:"value,omitempty"`
+	Text               string        `json:"text,omitempty"`
+	Timeout            int64         `json:"timeout,omitempty"`
+	ScopeOrigin        string        `json:"scope_origin,omitempty"`
+	ExpiresAt          string        `json:"expires_at,omitempty"`
+	SecretValues       []string      `json:"secret_values,omitempty"`
+	Cookie             *Cookie       `json:"cookie,omitempty"`
+	StorageState       *StorageState `json:"storage_state,omitempty"`
 }
-
-// Cookie represents a browser cookie for browser.set_cookie.
 type Cookie struct {
 	Name     string `json:"name"`
 	Value    string `json:"value"`
@@ -76,238 +61,240 @@ type Cookie struct {
 	Secure   bool   `json:"secure,omitempty"`
 	HTTPOnly bool   `json:"http_only,omitempty"`
 }
-
-// StorageState captures cookies and local storage for browser.restore_storage_state.
 type StorageState struct {
 	Cookies []Cookie        `json:"cookies,omitempty"`
 	Origins []OriginStorage `json:"origins,omitempty"`
 }
-
-// OriginStorage holds local storage entries for a single origin.
 type OriginStorage struct {
 	Origin       string         `json:"origin"`
 	LocalStorage []StorageEntry `json:"local_storage,omitempty"`
 }
-
-// StorageEntry is a single key/value local storage entry.
 type StorageEntry struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }
-
-// ResultLink represents a single navigation link extracted from a page.
 type ResultLink struct {
 	Text string `json:"text"`
 	Href string `json:"href"`
 }
-
-// ResultError contains structured error information from the browser runtime.
 type ResultError struct {
 	ErrorType string `json:"error_type"`
 	Message   string `json:"message"`
 	Retryable bool   `json:"retryable"`
 }
-
-// Result represents normalized output from the Playwright runner.
 type Result struct {
-	FinalURL   string       `json:"final_url,omitempty"`
-	Title      string       `json:"title,omitempty"`
-	Text       string       `json:"text,omitempty"`
-	Matched    bool         `json:"matched,omitempty"`
-	OK         bool         `json:"ok,omitempty"`
-	Links      []ResultLink `json:"links,omitempty"`
-	PageStatus string       `json:"page_status,omitempty"`
-	Error      *ResultError `json:"error,omitempty"`
+	SessionID          string       `json:"browser_session_id,omitempty"`
+	ObservationVersion uint64       `json:"observation_version,omitempty"`
+	ScopeOrigin        string       `json:"scope_origin,omitempty"`
+	ExpiresAt          string       `json:"expires_at,omitempty"`
+	FinalURL           string       `json:"final_url,omitempty"`
+	Title              string       `json:"title,omitempty"`
+	Text               string       `json:"text,omitempty"`
+	Matched            bool         `json:"matched"`
+	OK                 bool         `json:"ok"`
+	Links              []ResultLink `json:"links,omitempty"`
+	PageStatus         string       `json:"page_status,omitempty"`
+	Error              *ResultError `json:"error,omitempty"`
 }
 
 func NewServer(runner Runner, log *slog.Logger) *Server {
 	if log == nil {
 		log = slog.Default()
 	}
-	return &Server{runner: runner, log: logger.WithComponent(log, "tool-browser-runtime")}
+	return &Server{runner: runner, sessions: newSessionStore(), log: logger.WithComponent(log, "tool-browser-runtime")}
 }
-
+func (s *Server) Close() error {
+	if closer, ok := s.runner.(interface{ Close() error }); ok {
+		return closer.Close()
+	}
+	return nil
+}
 func (s *Server) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*runtimev1.ExecuteResponse, error) {
-	call := req.GetToolCall()
-	contract := req.GetContract()
-	if call == nil {
-		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "tool_call is required", "{}")}, nil
+	fail := func(class commonv1.ErrorClass, code, message string) (*runtimev1.ExecuteResponse, error) {
+		return &runtimev1.ExecuteResponse{Result: failedResult(req, class, message, mustJSON(map[string]string{"error_type": code}))}, nil
 	}
-	if contract == nil {
-		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "tool contract is required", "{}")}, nil
+	call, contract := req.GetToolCall(), req.GetContract()
+	if call == nil || contract == nil || s.runner == nil {
+		return fail(commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "invalid_request", "tool call, contract and browser runner are required")
 	}
-	if s.runner == nil {
-		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, "browser runner is not configured", "{}")}, nil
+	args, err := decodeRequest(call.GetToolName(), call.GetArgsJson(), req.GetResolvedCredentials())
+	if err != nil {
+		return fail(commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "invalid_args", err.Error())
 	}
-
-	var args Request
-	if err := json.Unmarshal([]byte(call.GetArgsJson()), &args); err != nil {
-		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "args_json must decode into browser request args", "{}")}, nil
-	}
-	args.ToolName = call.GetToolName()
-
 	if !supportedTools[args.ToolName] {
-		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "unsupported tool for browser runtime", mustJSON(map[string]any{"tool_name": args.ToolName}))}, nil
+		return fail(commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "unsupported_tool", "unsupported browser tool")
 	}
-
-	// Validate URL for tools that need it.
-	if toolsRequiringURL[args.ToolName] {
-		parsedURL, err := url.Parse(strings.TrimSpace(args.URL))
-		if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
-			return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "url is invalid", "{}")}, nil
-		}
-		if !domainAllowed(parsedURL.Hostname(), contract.GetAllowedDomains()) {
-			return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "target domain is not allowed", mustJSON(map[string]any{"domain": parsedURL.Hostname()}))}, nil
-		}
+	if contract.GetToolName() != args.ToolName {
+		return fail(commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "contract_mismatch", "browser tool contract does not match call")
 	}
-
-	// Validate selector for tools that require it.
 	if err := validateSelectorRequired(args); err != nil {
-		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, err.Error(), "{}")}, nil
+		return fail(commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "invalid_selector", err.Error())
 	}
-
-	// Resolve credential_ref values for fill/type tools.
-	if toolsSupportingCredentialRef[args.ToolName] {
-		resolveCredentialValue(&args, req.GetResolvedCredentials())
+	if args.Timeout < 0 || args.Timeout > 30000 {
+		return fail(commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "invalid_timeout", "timeout must be between 0 and 30000 milliseconds")
 	}
-
-	// Validate cookie for set_cookie.
-	if args.ToolName == "browser.set_cookie" && (args.Cookie == nil || args.Cookie.Name == "" || args.Cookie.Domain == "") {
-		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "cookie with name and domain is required", "{}")}, nil
+	if args.ToolName == "browser.read" || args.ToolName == "browser.open" || args.ToolName == "browser.navigate" {
+		parsed, err := parseWebURL(args.URL)
+		if err != nil {
+			return fail(commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "invalid_url", err.Error())
+		}
+		if !domainAllowed(parsed.Hostname(), contract.GetAllowedDomains()) {
+			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "scope_denied", "target domain is not allowed")
+		}
 	}
-
-	// Validate storage_state for restore_storage_state.
-	if args.ToolName == "browser.restore_storage_state" && args.StorageState == nil {
-		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, "storage_state is required", "{}")}, nil
+	if args.ToolName != "browser.read" && strings.TrimSpace(call.GetRunId()) == "" {
+		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "owner_missing", "browser session requires a trusted run owner")
 	}
-
-	runCtx := ctx
-	if timeoutMS := req.GetContext().GetTimeoutMs(); timeoutMS > 0 {
-		var cancel context.CancelFunc
-		runCtx, cancel = context.WithTimeout(ctx, time.Duration(timeoutMS)*time.Millisecond)
-		defer cancel()
+	if req.GetContext().GetRunId() != call.GetRunId() {
+		return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "owner_mismatch", "execution context does not match run owner")
 	}
+	var session *browserSession
+	if args.ToolName == "browser.open" {
+		session, err = s.sessions.open(call.GetRunId(), args.URL)
+		if err != nil {
+			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "session_limit", err.Error())
+		}
+		session.mu.Lock()
+		defer session.mu.Unlock()
+		args.SessionID, args.ScopeOrigin, args.ExpiresAt = session.id, session.origin, session.expires.UTC().Format(time.RFC3339Nano)
+	} else if args.ToolName != "browser.read" {
+		var code string
+		session, code = s.sessions.acquire(args.SessionID, call.GetRunId())
+		if code != "" {
+			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, code, "browser session is unavailable: "+code)
+		}
+		defer session.mu.Unlock()
+		if session.closed {
+			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "session_lost", "browser session was closed or lost")
+		}
+		if !time.Now().Before(session.expires) {
+			session.closed = true
+			_, _ = s.runner.Run(ctx, Request{ToolName: "browser.close", SessionID: session.id})
+			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "session_expired", "browser session expired; explicitly open a new session")
+		}
+		parsed, _ := url.Parse(session.currentURL)
+		if args.ToolName != "browser.close" && (parsed == nil || !domainAllowed(parsed.Hostname(), contract.GetAllowedDomains())) {
+			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "scope_denied", "current domain is not allowed by tool contract")
+		}
+		if args.ToolName != "browser.close" && originOf(session.currentURL) != session.origin {
+			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "scope_denied", "observed page is outside the fixed browser origin")
+		}
+		if isGuardedAction(args.ToolName) {
+			if args.ObservationVersion == 0 || args.ObservationVersion != session.version {
+				return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "stale_observation", "observe the current page before acting")
+			}
+			if args.ExpectedURL == "" || args.ExpectedURL != session.currentURL {
+				return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "page_changed", "expected_url does not match the observed page")
+			}
+		}
+		if args.ToolName == "browser.navigate" && originOf(args.URL) != session.origin {
+			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "scope_denied", "navigation cannot expand the session origin")
+		}
+		args.ScopeOrigin, args.ExpiresAt = session.origin, session.expires.UTC().Format(time.RFC3339Nano)
+		if err := validateAuthScope(args, session.origin); err != nil {
+			return fail(commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, "scope_denied", err.Error())
+		}
+	}
+	runCtx, cancel := context.WithTimeout(ctx, 35*time.Second)
+	defer cancel()
 	result, err := s.runner.Run(runCtx, args)
 	if err != nil {
-		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, err.Error(), mustJSON(map[string]any{"tool_name": args.ToolName}))}, nil
+		s.sessions.invalidateAll()
+		return fail(commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, "session_lost", "browser process failed; prior sessions are invalid and any in-flight effect is unknown")
+	}
+	if session != nil {
+		if result.Error != nil && (result.Error.ErrorType == "session_lost" || result.Error.ErrorType == "session_expired") {
+			session.closed = true
+			if result.Error.ErrorType == "session_lost" {
+				s.sessions.invalidateAll()
+			}
+		}
+		if args.ToolName == "browser.close" {
+			session.closed = true
+			s.sessions.remove(session.id)
+		}
+		if result.FinalURL != "" {
+			session.currentURL = result.FinalURL
+		}
+		if result.ObservationVersion > 0 {
+			session.version = result.ObservationVersion
+		}
+		if args.ToolName == "browser.open" && result.Error != nil {
+			session.closed = true
+			s.sessions.remove(session.id)
+		}
+		result.SessionID, result.ScopeOrigin, result.ExpiresAt = session.id, session.origin, session.expires.UTC().Format(time.RFC3339Nano)
 	}
 	result.Text = truncate(result.Text, maxSnapshotTextLen)
-
-	resultJSON := buildResultJSON(args.ToolName, result)
+	if result.Error != nil {
+		return &runtimev1.ExecuteResponse{Result: failedResult(req, commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, result.Error.Message, buildResultJSON(args.ToolName, result))}, nil
+	}
 	s.log.Info("browser request executed", slog.String("tool_call_id", call.GetToolCallId()), slog.String("tool_name", call.GetToolName()))
-	return &runtimev1.ExecuteResponse{Result: &toolbrokerv1.ToolResult{ToolCallId: call.GetToolCallId(), RunId: call.GetRunId(), ToolName: call.GetToolName(), Status: "completed", ResultJson: resultJSON, FinishedAt: time.Now().UTC().Format(time.RFC3339Nano)}}, nil
+	return &runtimev1.ExecuteResponse{Result: &toolbrokerv1.ToolResult{ToolCallId: call.GetToolCallId(), RunId: call.GetRunId(), ToolName: call.GetToolName(), Status: "completed", ResultJson: buildResultJSON(args.ToolName, result), FinishedAt: time.Now().UTC().Format(time.RFC3339Nano)}}, nil
 }
-
-// validateSelectorRequired returns an error if the tool requires a selector but none is provided.
+func parseWebURL(raw string) (*url.URL, error) {
+	u, err := url.Parse(strings.TrimSpace(raw))
+	if err != nil || u == nil || u.Hostname() == "" || (u.Scheme != "http" && u.Scheme != "https") || u.User != nil {
+		return nil, fmt.Errorf("url must be an absolute HTTP(S) URL without embedded credentials")
+	}
+	return u, nil
+}
+func originOf(raw string) string {
+	u, err := parseWebURL(raw)
+	if err != nil {
+		return ""
+	}
+	host := strings.ToLower(u.Host)
+	if u.Scheme == "https" && u.Port() == "443" {
+		host = strings.TrimSuffix(host, ":443")
+	}
+	if u.Scheme == "http" && u.Port() == "80" {
+		host = strings.TrimSuffix(host, ":80")
+	}
+	return strings.ToLower(u.Scheme) + "://" + host
+}
+func isGuardedAction(tool string) bool {
+	return tool != "browser.read" && tool != "browser.open" && tool != "browser.snapshot" && tool != "browser.extract_text" && tool != "browser.close"
+}
 func validateSelectorRequired(args Request) error {
 	switch args.ToolName {
 	case "browser.click", "browser.fill", "browser.type", "browser.wait_for", "browser.extract_text":
 		if strings.TrimSpace(args.Selector) == "" {
-			return fmt.Errorf("selector is required for %s", args.ToolName)
+			return fmt.Errorf("selector is required")
 		}
 	}
 	return nil
 }
-
-// resolveCredentialValue replaces the value/text field with the resolved credential
-// when the model passes a credential_ref placeholder. The broker resolves the secret
-// and places it in resolved_credentials; this function applies it to the request.
-func resolveCredentialValue(args *Request, resolved []*runtimev1.ResolvedCredential) {
-	if len(resolved) == 0 {
-		return
-	}
-	// For browser.fill, the secret goes into Value; for browser.type, into Text.
-	// Use the first resolved credential — the broker provides exactly the needed secret.
-	cred := resolved[0]
-	if cred == nil || cred.GetValue() == "" {
-		return
-	}
-	switch args.ToolName {
-	case "browser.fill":
-		args.Value = cred.GetValue()
-	case "browser.type":
-		args.Text = cred.GetValue()
-	}
-}
-
-// buildResultJSON produces a normalized JSON result for the given tool.
-func buildResultJSON(toolName string, result Result) string {
-	switch toolName {
-	case "browser.navigate", "browser.snapshot":
-		out := map[string]any{"final_url": result.FinalURL, "title": result.Title, "text": result.Text, "page_status": result.PageStatus}
-		if len(result.Links) > 0 {
-			out["links"] = result.Links
-		}
-		if result.Error != nil {
-			out["error"] = result.Error
-		}
-		return mustJSON(out)
-	case "browser.click":
-		out := map[string]any{"ok": result.OK, "title": result.Title}
-		if result.Error != nil {
-			out["error"] = result.Error
-		}
-		return mustJSON(out)
-	case "browser.fill", "browser.type":
-		out := map[string]any{"ok": result.OK}
-		if result.Error != nil {
-			out["error"] = result.Error
-		}
-		return mustJSON(out)
-	case "browser.wait_for":
-		return mustJSON(map[string]any{"matched": result.Matched})
-	case "browser.extract_text":
-		out := map[string]any{"text": result.Text}
-		if result.Error != nil {
-			out["error"] = result.Error
-		}
-		return mustJSON(out)
-	case "browser.set_cookie", "browser.restore_storage_state":
-		return mustJSON(map[string]any{"ok": result.OK})
-	default:
-		return mustJSON(map[string]any{"ok": result.OK, "text": result.Text})
-	}
-}
-
+func buildResultJSON(_ string, result Result) string { return mustJSON(result) }
 func failedResult(req *runtimev1.ExecuteRequest, class commonv1.ErrorClass, message, detailsJSON string) *toolbrokerv1.ToolResult {
-	call := req.GetToolCall()
 	result := &toolbrokerv1.ToolResult{Status: "failed", FinishedAt: time.Now().UTC().Format(time.RFC3339Nano), Error: &toolbrokerv1.ToolError{ErrorClass: class, Message: message, Retryable: false, DetailsJson: detailsJSON}}
-	if call != nil {
-		result.ToolCallId = call.GetToolCallId()
-		result.RunId = call.GetRunId()
-		result.ToolName = call.GetToolName()
+	if call := req.GetToolCall(); call != nil {
+		result.ToolCallId, result.RunId, result.ToolName = call.GetToolCallId(), call.GetRunId(), call.GetToolName()
 	}
 	return result
 }
-
 func domainAllowed(host string, allowed []string) bool {
 	host = strings.ToLower(strings.TrimSpace(host))
 	if host == "" {
 		return false
 	}
-	// Empty allowlist means unrestricted — operators populate the list to restrict domains.
 	if len(allowed) == 0 {
 		return true
 	}
 	for _, candidate := range allowed {
 		candidate = strings.ToLower(strings.TrimSpace(candidate))
-		if candidate == "" {
-			continue
-		}
-		if candidate == "*" || host == candidate || strings.HasSuffix(host, "."+candidate) {
+		if candidate != "" && (candidate == "*" || host == candidate || strings.HasSuffix(host, "."+candidate)) {
 			return true
 		}
 	}
 	return false
 }
-
 func truncate(value string, limit int) string {
-	if limit <= 0 || len(value) <= limit {
+	if limit <= 0 || utf8.RuneCountInString(value) <= limit {
 		return value
 	}
-	return value[:limit]
+	return string([]rune(value)[:limit])
 }
-
 func mustJSON(value any) string {
 	encoded, err := json.Marshal(value)
 	if err != nil {

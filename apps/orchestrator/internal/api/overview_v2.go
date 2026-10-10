@@ -53,7 +53,7 @@ func (s *OverviewServer) HandleGetOverview() http.Handler {
 		}
 
 		attentionItems := make([]overviewTaskItemDTO, 0)
-		for _, status := range []string{"waiting_for_approval", "waiting_for_reply_in_telegram", "failed"} {
+		for _, status := range []string{"waiting_for_approval", "waiting_for_reply_in_telegram", "failed", "waiting_for_user"} {
 			items, listErr := s.tasks.ListTasks(r.Context(), run.TaskListParams{
 				Status: status,
 				Sort:   run.TaskSortUpdatedAtDesc,
@@ -88,7 +88,8 @@ func (s *OverviewServer) HandleGetOverview() http.Handler {
 
 		pendingApprovals := countStatus(attentionItems, "waiting_for_approval") + countStatus(attentionItems, "waiting_for_reply_in_telegram")
 		telegramWaits := countStatus(attentionItems, "waiting_for_reply_in_telegram")
-		failedTasks := countStatus(attentionItems, "failed") + countStatus(recentResults, "failed") + countStatus(recentResults, "completed_with_issues")
+		failureItems := uniqueOverviewItems(append(append([]overviewTaskItemDTO{}, attentionItems...), recentResults...))
+		failedTasks := countStatus(failureItems, "failed") + countStatus(failureItems, "blocked") + countStatus(failureItems, "completed_with_issues")
 
 		systemState := "healthy"
 		if len(degradedComponents) > 0 || failedTasks > 0 {
@@ -174,7 +175,7 @@ func toOverviewItems(rows []run.TaskRow) []overviewTaskItemDTO {
 }
 
 func toOverviewTaskItemDTO(item run.TaskRow) overviewTaskItemDTO {
-	status, needsUserAction, actionChannel, waitingReason := mapTaskPresentation(item.RunState, item.SessionChannel)
+	status, needsUserAction, actionChannel, waitingReason := mapTaskRowPresentation(item)
 	outcomeSummary := strings.TrimSpace(item.OutcomeSummary)
 	if len(outcomeSummary) > 220 {
 		outcomeSummary = outcomeSummary[:220]

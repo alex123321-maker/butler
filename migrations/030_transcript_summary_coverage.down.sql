@@ -1,0 +1,10 @@
+DROP TRIGGER IF EXISTS preserve_message_identity ON messages;
+DROP FUNCTION IF EXISTS butler_preserve_message_identity();
+DROP TRIGGER IF EXISTS invalidate_summary_source ON messages;
+DROP FUNCTION IF EXISTS butler_invalidate_summary_source();
+DROP TRIGGER IF EXISTS assign_message_sequence ON messages;
+DROP FUNCTION IF EXISTS butler_assign_message_sequence();
+DROP TABLE IF EXISTS session_summaries;
+DROP TABLE IF EXISTS transcript_heads;
+DROP INDEX IF EXISTS idx_messages_session_sequence;
+ALTER TABLE messages DROP COLUMN IF EXISTS message_sequence;

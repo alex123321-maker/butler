@@ -83,6 +83,7 @@ func (s *Server) HTTPHandler() http.Handler {
 		}
 
 		writeJSON(w, http.StatusOK, map[string]any{
+			"task_id":            result.TaskID,
 			"run_id":             result.RunID,
 			"session_key":        result.SessionKey,
 			"current_state":      result.CurrentState.String(),

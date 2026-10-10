@@ -37,7 +37,7 @@ Butler (дворецкий) — это личный долгоживущий а�
 1. Построить личного долгоживущего агента с устойчивой памятью и длительным контекстом.
 2. Сделать систему self-hosted по умолчанию и docker-oriented (ориентированной на Docker) на всех уровнях.
 3. Использовать WebSocket-first transport для уменьшения накладных расходов, снижения latency (задержки) и улучшения tool-heavy flows (сценариев с большим числом вызовов инструментов).
-4. Обеспечить поддержку облачных провайдеров OpenAI API, OpenAI Codex / ChatGPT OAuth, GitHub Copilot, а также локальных моделей.
+4. Обеспечить поддержку облачных провайдеров OpenAI API, OpenAI Codex / ChatGPT OAuth, GitHub Copilot, а также локальных моделей. Opt-in адаптер Google Antigravity использует официальный CLI и личную подписку Google AI Pro; его включение требует реальной проверки входа и model-only режима, описанной в Model Transport Contract.
 5. Построить архитектуру, пригодную для дальнейшего роста: новые инструменты, новые режимы автономности, новые каналы.
 
 ### 3.2 Дополнительные цели
@@ -462,6 +462,11 @@ Secret Store не должен раскрывать секреты orchestrator,
 
 Browser tooling и HTTP tooling должны поддерживать deferred credential references вместо передачи секретов literal values.
 
+Обычный browser runtime теперь разделяет независимое `browser.read` и явные
+run-owned контексты `browser.open` с TTL, origin scope и проверкой наблюдения
+перед эффектами; снимок не навигирует. Контракт и ограничения текущей реализации
+описаны в [Browser Session Contract](browser-session-contract.md).
+
 Базовые требования:
 - пользователь работает с credential aliases;
 - агент видит только alias и metadata / capability hints;
@@ -707,7 +712,7 @@ Web UI должен стать основной точкой эксплуата�
 - базовая наблюдаемость.
 
 ### Последующие этапы целевого продукта
-- постоянные поручения, durable approvals и result outbox;
+- durable approvals и result outbox; постоянные поручения и task-owned working state уже реализованы в [Durable tasks](durable-tasks-spec.md);
 - инициативность в пределах целей и мандатов;
 - ограниченная delegation с общими бюджетами;
 - проверенные навыки и self-extending tools через catalog admission;

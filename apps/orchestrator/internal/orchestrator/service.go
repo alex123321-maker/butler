@@ -14,6 +14,7 @@ import (
 	promptmgmt "github.com/butler/butler/apps/orchestrator/internal/prompt"
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
+	"github.com/butler/butler/apps/orchestrator/internal/task"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -129,36 +130,38 @@ type TransitionLogger interface {
 }
 
 type Config struct {
-	ProviderName     string
-	ModelName        string
-	OwnerID          string
-	LeaseTTL         int64
-	Delivery         DeliverySink
-	Tools            ToolExecutor
-	ToolCatalog      ToolCatalog
-	ApprovalChecker  ApprovalChecker
-	ApprovalGate     *ApprovalGate
-	ApprovalService  *approvals.Service
-	ProfileStore     ProfileMemoryStore
-	EpisodeStore     EpisodicMemoryStore
-	ChunkStore       ChunkMemoryStore
-	Embeddings       EmbeddingProvider
-	PipelineEnqueuer PipelineEnqueuer
-	SummaryReader    SessionSummaryReader
-	WorkingStore     WorkingMemoryStore
-	WorkingPolicy    WorkingMemoryPolicy
-	TransientStore   TransientWorkingStore
-	TransientTTL     time.Duration
-	MemoryBundles    MemoryBundleService
-	PromptManager    PromptManager
-	PromptAssembler  PromptAssembler
-	ProfileLimit     int
-	EpisodeLimit     int
-	MemoryScopes     []string
-	TransitionLogger TransitionLogger
-	EventHub         *observability.Hub
-	Artifacts        *artifacts.Service
-	Activity         *activity.Service
+	Tasks               task.Manager
+	ProviderName        string
+	ModelName           string
+	OwnerID             string
+	LeaseTTL            int64
+	Delivery            DeliverySink
+	Tools               ToolExecutor
+	ToolCatalog         ToolCatalog
+	ApprovalChecker     ApprovalChecker
+	ApprovalGate        *ApprovalGate
+	ApprovalService     *approvals.Service
+	ProfileStore        ProfileMemoryStore
+	EpisodeStore        EpisodicMemoryStore
+	ChunkStore          ChunkMemoryStore
+	Embeddings          EmbeddingProvider
+	PipelineEnqueuer    PipelineEnqueuer
+	SummaryReader       SessionSummaryReader
+	ContextBudgetTokens int
+	WorkingStore        WorkingMemoryStore
+	WorkingPolicy       WorkingMemoryPolicy
+	TransientStore      TransientWorkingStore
+	TransientTTL        time.Duration
+	MemoryBundles       MemoryBundleService
+	PromptManager       PromptManager
+	PromptAssembler     PromptAssembler
+	ProfileLimit        int
+	EpisodeLimit        int
+	MemoryScopes        []string
+	TransitionLogger    TransitionLogger
+	EventHub            *observability.Hub
+	Artifacts           *artifacts.Service
+	Activity            *activity.Service
 }
 
 type PromptManager interface {
@@ -181,6 +184,7 @@ type Service struct {
 }
 
 type ExecutionResult struct {
+	TaskID            string
 	RunID             string
 	SessionKey        string
 	CurrentState      commonv1.RunState
@@ -198,6 +202,7 @@ type DeliveryEvent struct {
 var errLeaseRenewalFailed = errors.New("lease renewal failed")
 
 type preparedRun struct {
+	Task          *task.Record
 	InputItems    []transport.InputItem
 	UserMessage   string
 	MemoryBundle  map[string]any
@@ -236,6 +241,9 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 	if cfg.EpisodeLimit <= 0 {
 		cfg.EpisodeLimit = 3
 	}
+	if cfg.ContextBudgetTokens <= 0 {
+		cfg.ContextBudgetTokens = 65536
+	}
 	if len(cfg.MemoryScopes) == 0 {
 		cfg.MemoryScopes = []string{"session", "user", "global"}
 	}
@@ -255,11 +263,15 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 		cfg.WorkingPolicy.OnTimedOut = "retain"
 	}
 	if cfg.MemoryBundles == nil {
+		var bundleWorkingStore memoryservice.WorkingStore
+		if cfg.Tasks == nil {
+			bundleWorkingStore = memoryBundleWorkingStore{store: cfg.WorkingStore}
+		}
 		cfg.MemoryBundles = memoryservice.New(memoryservice.Config{
 			ProfileStore:  cfg.ProfileStore,
 			EpisodeStore:  cfg.EpisodeStore,
 			ChunkStore:    cfg.ChunkStore,
-			WorkingStore:  memoryBundleWorkingStore{store: cfg.WorkingStore},
+			WorkingStore:  bundleWorkingStore,
 			SummaryReader: cfg.SummaryReader,
 			Embeddings:    cfg.Embeddings,
 			ProfileLimit:  cfg.ProfileLimit,

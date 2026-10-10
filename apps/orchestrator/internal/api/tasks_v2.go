@@ -12,6 +12,7 @@ import (
 	deliveryevents "github.com/butler/butler/apps/orchestrator/internal/deliveryevents"
 	"github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
+	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/internal/memory/transcript"
 )
 
@@ -24,7 +25,16 @@ type TaskViewServer struct {
 	transitions TransitionLister
 	artifacts   taskArtifactsReader
 	delivery    taskDeliveryReader
+	durable     durableTaskReader
 }
+
+type durableTaskReader interface {
+	Get(context.Context, string) (task.Record, error)
+	RunIDs(context.Context, string) ([]string, error)
+	Results(context.Context, string) ([]task.Result, error)
+}
+
+func (s *TaskViewServer) SetDurableTasks(tasks durableTaskReader) { s.durable = tasks }
 
 type taskArtifactsReader interface {
 	ListArtifactsByRun(ctx context.Context, runID string, limit int) ([]artifacts.Record, error)
@@ -82,7 +92,7 @@ func (s *TaskViewServer) HandleGetTaskDetail(prefix string) http.Handler {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
-		if s.runs == nil {
+		if s.runs == nil && s.durable == nil {
 			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "task detail dependencies are not configured"})
 			return
 		}
@@ -91,6 +101,17 @@ func (s *TaskViewServer) HandleGetTaskDetail(prefix string) http.Handler {
 		if taskID == "" || strings.Contains(taskID, "/") {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "task id is required"})
 			return
+		}
+		if s.durable != nil {
+			record, err := s.durable.Get(r.Context(), taskID)
+			if err == nil {
+				s.writeDurableTaskDetail(w, r, record)
+				return
+			}
+			if err != task.ErrNotFound {
+				writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to load durable task"})
+				return
+			}
 		}
 
 		runRecord, err := s.runs.GetRun(r.Context(), taskID)
@@ -252,6 +273,11 @@ func (s *TaskViewServer) loadTaskArtifacts(r *http.Request, runID string) []map[
 }
 
 type taskListItemDTO struct {
+	TaskStatus        string  `json:"task_status,omitempty"`
+	TaskRevision      int64   `json:"task_revision,omitempty"`
+	Goal              string  `json:"goal,omitempty"`
+	Legacy            bool    `json:"legacy"`
+	ResultVerified    bool    `json:"result_verified"`
 	TaskID            string  `json:"task_id"`
 	RunID             string  `json:"run_id"`
 	SessionKey        string  `json:"session_key"`
@@ -272,8 +298,9 @@ type taskListItemDTO struct {
 }
 
 func toTaskListItemDTO(item run.TaskRow) taskListItemDTO {
-	status, needsUserAction, actionChannel, waitingReason := mapTaskPresentation(item.RunState, item.SessionChannel)
+	status, needsUserAction, actionChannel, waitingReason := mapTaskRowPresentation(item)
 	dto := taskListItemDTO{
+		TaskStatus: item.TaskStatus, TaskRevision: item.TaskRevision, Goal: item.Goal, Legacy: item.Legacy, ResultVerified: item.ResultVerified,
 		TaskID:            item.TaskID,
 		RunID:             item.RunID,
 		SessionKey:        item.SessionKey,
@@ -296,6 +323,68 @@ func toTaskListItemDTO(item run.TaskRow) taskListItemDTO {
 		dto.FinishedAt = &value
 	}
 	return dto
+}
+
+func mapTaskRowPresentation(item run.TaskRow) (string, bool, string, string) {
+	if item.TaskStatus == "" {
+		return mapTaskPresentation(item.RunState, item.SessionChannel)
+	}
+	switch item.TaskStatus {
+	case "active":
+		if item.RunState == "awaiting_approval" {
+			return mapTaskPresentation(item.RunState, item.SessionChannel)
+		}
+		return "in_progress", false, "none", ""
+	case "waiting_for_user":
+		channel := "web"
+		if strings.EqualFold(item.SessionChannel, "telegram") {
+			channel = "telegram"
+		}
+		return "waiting_for_user", true, channel, "owner_input_required"
+	default:
+		return item.TaskStatus, false, "none", ""
+	}
+}
+
+func (s *TaskViewServer) writeDurableTaskDetail(w http.ResponseWriter, r *http.Request, record task.Record) {
+	ids, err := s.durable.RunIDs(r.Context(), record.TaskID)
+	if err != nil {
+		writeJSON(w, 500, map[string]string{"error": "failed to load task attempts"})
+		return
+	}
+	results, err := s.durable.Results(r.Context(), record.TaskID)
+	if err != nil {
+		writeJSON(w, 500, map[string]string{"error": "failed to load task results"})
+		return
+	}
+	row := run.TaskRow{TaskStatus: record.Status, SessionChannel: inferSourceChannel(record.SessionKey)}
+	var attempt run.Record
+	if record.LastRunID != "" && s.runs != nil {
+		attempt, err = s.runs.GetRun(r.Context(), record.LastRunID)
+		if err != nil {
+			writeJSON(w, 500, map[string]string{"error": "failed to load task attempt"})
+			return
+		}
+		row.RunState = attempt.CurrentState
+	}
+	outcome := ""
+	for _, result := range results {
+		if result.ResultID == record.CompletionResultID || record.CompletionResultID == "" {
+			outcome = result.Summary
+		}
+	}
+	status, needs, channel, reason := mapTaskRowPresentation(row)
+	responseTask := map[string]any{"task_id": record.TaskID, "run_id": record.LastRunID, "session_key": record.SessionKey, "status": status, "task_status": record.Status, "revision": record.Revision,
+		"goal": record.Goal, "legacy": record.Legacy, "needs_user_action": needs, "user_action_channel": channel, "waiting_reason": reason,
+		"started_at": record.CreatedAt, "updated_at": record.UpdatedAt, "finished_at": record.FinishedAt, "result_verified": record.CompletionResultID != "",
+		"run_state": attempt.CurrentState, "current_stage": attempt.CurrentState, "risk_level": deriveRiskLevel(attempt.CurrentState), "source_channel": row.SessionChannel,
+		"model_provider": attempt.ModelProvider, "autonomy_mode": attempt.AutonomyMode, "outcome_summary": outcome, "error_summary": attempt.ErrorMessage}
+	writeJSON(w, 200, map[string]any{"task": responseTask, "durable_task": record, "run_ids": ids, "results": results,
+		"summary_bar": responseTask, "source": map[string]any{"channel": row.SessionChannel, "session_key": record.SessionKey, "source_message_full": record.Goal, "source_message_preview": record.Goal},
+		"waiting_state": map[string]any{"needs_user_action": needs, "user_action_channel": channel, "waiting_reason": reason},
+		"result":        map[string]any{"has_result": len(results) > 0, "verified": record.CompletionResultID != "", "outcome_summary": outcome},
+		"error":         map[string]any{"has_error": attempt.ErrorMessage != "", "error_summary": attempt.ErrorMessage, "error_type": attempt.ErrorType}, "timeline_preview": s.loadTimelinePreview(r, record.LastRunID), "artifacts": s.loadTaskArtifacts(r, record.LastRunID), "delivery": s.loadDeliveryState(r, record.LastRunID),
+		"debug_refs": map[string]any{"run": fmt.Sprintf("/api/v1/runs/%s", record.LastRunID)}})
 }
 
 func (s *TaskViewServer) loadTimelinePreview(r *http.Request, runID string) []map[string]any {
