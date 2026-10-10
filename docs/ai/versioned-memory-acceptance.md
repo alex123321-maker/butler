@@ -95,3 +95,28 @@ Runtime enablement still requires the operator's exact local pricing/profile,
 private token and optional Compose files. Parser/indexer default off until those
 conditions are configured. Deployment acceptance belongs to the integrating root
 agent; passing isolated tests alone does not certify its running main stack.
+
+## Integrated main lab release
+
+The integrating root deployed the combined source snapshot
+`20261011-063812-543` after a private current PostgreSQL dump and separate newest
+deletion-anchor copy. Migrations040–043,046–049,050 and056 are applied. Broker,
+Orchestrator, Web and the single shared local model worker are healthy; the
+optional PDF/OCR image runs as UID10001, read-only, cap0, 512MiB and32PIDs.
+Authenticated owner memory/extension/initiative reads and anonymous rejection
+passed, with source bodies excluded from operator logs. The owned semantic worker
+is configured using a single mounted private token, fixed local endpoint and
+finite exact local pricing added alongside the preserved native provider policy.
+
+`TestActualPinnedOwnedIndexRuntimeIntegration` then passed under race against an
+isolated fresh test database using the deployed production model service: two
+actual embedding calls produced five vectors, the generation remained building
+until owner review, and deleting its source removed all five. Main application
+memory was not altered by that proof. Production legacy extraction/summary jobs,
+decision profiles and automatic candidate acceptance remain disabled. Qwen
+reranking remains off after its measured regression against the embedding
+baseline.
+
+Combined Web typecheck/lint/build and all16 Chromium cases passed, including
+eight visually inspected updated Linux baselines. The earlier Win32 baselines
+were preserved. Live read-only Web/API browser smoke passed after deployment.
