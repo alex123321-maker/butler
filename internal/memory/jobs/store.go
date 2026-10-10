@@ -134,6 +134,23 @@ func (s *Store) Enqueue(ctx context.Context, r Request) (Job, error) {
 			return Job{}, ErrClaim
 		}
 	}
+	refs, e = s.catalog.CanonicalSourcesTx(ctx, tx, refs)
+	if e != nil {
+		return Job{}, e
+	}
+	current, e := s.catalog.AccessTx(ctx, tx, refs, "memory_job_create")
+	if e != nil {
+		return Job{}, e
+	}
+	refs = make([]catalog.SourceRef, 0, len(current))
+	for _, source := range current {
+		refs = append(refs, catalog.SourceRef{ID: source.ID, Revision: source.Revision, AccessRevision: source.AccessRevision, Hash: source.Hash})
+	}
+	refs, sum, e = canonical(refs)
+	if e != nil {
+		return Job{}, e
+	}
+	j.Sources, j.Fingerprint = refs, sum
 	if _, e = s.catalog.AccessTx(ctx, tx, refs, "memory_job_create"); e != nil {
 		return Job{}, e
 	}
@@ -226,13 +243,47 @@ type claimChecker struct {
 }
 
 func (s *Store) Context(ctx context.Context, j Job) context.Context {
+	j = copyJob(j)
 	return catalog.WithAccessChecker(owneridentity.WithActor(ctx, owneridentity.Actor{}), &claimChecker{s, j})
+}
+
+func copyJob(j Job) Job {
+	j.Sources = append([]catalog.SourceRef(nil), j.Sources...)
+	if j.ClaimUntil != nil {
+		until := *j.ClaimUntil
+		j.ClaimUntil = &until
+	}
+	return j
+}
+
+// A private caller's Job is a pinned snapshot, never a policy input. Verify its
+// complete manifest before using any field, then compare the live row without
+// locking it ahead of source rows. Finalize locks and repeats this comparison.
+func (c *claimChecker) checkSnapshot(ctx context.Context, tx pgx.Tx, lock bool) (Job, error) {
+	j := c.j
+	_, sum, e := canonical(j.Sources)
+	if e != nil || sum != j.Fingerprint {
+		return Job{}, ErrClaim
+	}
+	live, e := load(ctx, tx, j.ID, lock)
+	if e != nil {
+		return Job{}, ErrClaim
+	}
+	_, liveSum, e := canonical(live.Sources)
+	var now time.Time
+	if e != nil || tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now) != nil || liveSum != live.Fingerprint || live.Status != "running" || live.ClaimID != j.ClaimID || live.ClaimEpoch != j.ClaimEpoch || live.ClaimUntil == nil || j.ClaimUntil == nil || !live.ClaimUntil.Equal(*j.ClaimUntil) || !live.ClaimUntil.After(now) || !live.Deadline.After(now) || !live.Deadline.Equal(j.Deadline) || live.Fingerprint != j.Fingerprint || live.OwnerID != j.OwnerID || live.TaskID != j.TaskID || live.Authority != j.Authority || live.TaskRevision != j.TaskRevision || live.ConstraintsRevision != j.ConstraintsRevision || live.Purpose != j.Purpose || live.Kind != j.Kind || live.Allowance != j.Allowance || live.OriginalRunID != j.OriginalRunID {
+		return Job{}, ErrClaim
+	}
+	return live, nil
 }
 func (c *claimChecker) PinnedMemorySources() []catalog.SourceRef {
 	return append([]catalog.SourceRef(nil), c.j.Sources...)
 }
 func (c *claimChecker) CheckMemoryAccessTx(ctx context.Context, tx pgx.Tx, refs []catalog.SourceRef, purpose string) (string, error) {
 	j := c.j
+	if _, e := c.checkSnapshot(ctx, tx, false); e != nil {
+		return "", e
+	}
 	if j.TaskID != "" {
 		var own, status string
 		var revision, constraints int64
@@ -258,14 +309,9 @@ func (c *claimChecker) CheckMemoryAccessTx(ctx context.Context, tx pgx.Tx, refs 
 	return j.OwnerID, nil
 }
 func (c *claimChecker) FinalizeMemoryAccessTx(ctx context.Context, tx pgx.Tx, refs []catalog.SourceRef, purpose string) error {
-	live, e := load(ctx, tx, c.j.ID, true)
+	live, e := c.checkSnapshot(ctx, tx, true)
 	if e != nil {
-		return ErrClaim
-	}
-	var now time.Time
-	_ = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now)
-	if live.Status != "running" || live.ClaimID != c.j.ClaimID || live.ClaimEpoch != c.j.ClaimEpoch || live.ClaimUntil == nil || !live.ClaimUntil.After(now) || !live.Deadline.After(now) || live.Fingerprint != c.j.Fingerprint || live.OwnerID != c.j.OwnerID || live.TaskID != c.j.TaskID || live.Authority != c.j.Authority || live.TaskRevision != c.j.TaskRevision || live.ConstraintsRevision != c.j.ConstraintsRevision || live.Purpose != c.j.Purpose || live.Kind != c.j.Kind {
-		return ErrClaim
+		return e
 	}
 	// Read full pinned manifest again so caller cannot omit changed source hashes
 	// from a publication subset or invent a job using a correct claim ID.

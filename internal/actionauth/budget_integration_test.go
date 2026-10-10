@@ -92,7 +92,7 @@ func TestBudgetUsesCurrentAssignedMandateAcrossIndependentTasksIntegration(t *te
 	if _, err = pool.Exec(ctx, string(raw)); err != nil {
 		t.Fatal(err)
 	}
-	_, err = pool.Exec(ctx, `CREATE TABLE sessions(session_key TEXT PRIMARY KEY,user_id TEXT);INSERT INTO sessions VALUES('web:owner','owner');ALTER TABLE runs ADD COLUMN session_key TEXT DEFAULT 'web:owner',ADD COLUMN current_state TEXT DEFAULT 'model_running';ALTER TABLE tasks ADD COLUMN parent_task_id TEXT,ADD COLUMN session_key TEXT DEFAULT 'web:owner',ADD COLUMN created_at TIMESTAMPTZ DEFAULT clock_timestamp();INSERT INTO tasks(task_id,owner_id,status,revision,constraints_revision) VALUES('second-task','owner','active',7,2);INSERT INTO runs(run_id,task_id,task_revision) VALUES('second-run','second-task',7)`)
+	_, err = pool.Exec(ctx, `CREATE TABLE sessions(session_key TEXT PRIMARY KEY,user_id TEXT);INSERT INTO sessions VALUES('web:owner','owner');ALTER TABLE runs ADD COLUMN session_key TEXT DEFAULT 'web:owner';ALTER TABLE tasks ADD COLUMN parent_task_id TEXT,ADD COLUMN session_key TEXT DEFAULT 'web:owner',ADD COLUMN created_at TIMESTAMPTZ DEFAULT clock_timestamp();INSERT INTO tasks(task_id,owner_id,status,revision,constraints_revision) VALUES('second-task','owner','active',7,2);INSERT INTO runs(run_id,task_id,task_revision) VALUES('second-run','second-task',7)`)
 	if err != nil {
 		t.Fatal(err)
 	}

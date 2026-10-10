@@ -27,6 +27,7 @@ func actionDatabase(t *testing.T) *pgxpool.Pool {
 	if !strings.HasSuffix(cfg.ConnConfig.Database, "_test") {
 		t.Fatal("action authorization tests require a separate *_test database")
 	}
+	cfg.MaxConns = 2
 	admin, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		t.Fatal(err)
@@ -58,10 +59,10 @@ func actionDatabase(t *testing.T) *pgxpool.Pool {
 	// Narrow dispatch-authority fixtures use the production column names. The
 	// journal migration and every fault/CAS operation execute against real PG.
 	if _, err = pool.Exec(ctx, `CREATE TABLE session_ownership(session_key TEXT PRIMARY KEY,run_id TEXT NOT NULL,lease_id TEXT NOT NULL,fence_epoch BIGINT NOT NULL,expires_at TIMESTAMPTZ NOT NULL);
- CREATE TABLE runs(run_id TEXT PRIMARY KEY,task_id TEXT,task_revision BIGINT);
+ CREATE TABLE runs(run_id TEXT PRIMARY KEY,task_id TEXT,task_revision BIGINT,current_state TEXT DEFAULT 'tool_running',status TEXT DEFAULT 'tool_running');
  CREATE TABLE tasks(task_id TEXT PRIMARY KEY,owner_id TEXT NOT NULL,status TEXT NOT NULL,revision BIGINT NOT NULL,constraints_revision BIGINT NOT NULL,execution_policy TEXT NOT NULL DEFAULT 'normal');
  INSERT INTO tasks(task_id,owner_id,status,revision,constraints_revision) VALUES('task','owner','active',7,2);
- INSERT INTO runs VALUES('run','task',7);
+ INSERT INTO runs(run_id,task_id,task_revision) VALUES('run','task',7);
  INSERT INTO session_ownership VALUES('web:owner','run','lease',4,clock_timestamp()+INTERVAL '1 hour');`); err != nil {
 		t.Fatal(err)
 	}
@@ -80,6 +81,33 @@ func actionDatabase(t *testing.T) *pgxpool.Pool {
 		t.Fatal(err)
 	}
 	return pool
+}
+
+func TestUnassignedTerminalRunCannotDispatchWithStillCurrentLeaseIntegration(t *testing.T) {
+	for _, state := range []string{"completed", "failed", "cancelled", "finalizing"} {
+		t.Run(state, func(t *testing.T) {
+			pool := actionDatabase(t)
+			store := NewPostgresStore(pool)
+			s, _, reader, _, call, contract := fixture(t)
+			s.store = store
+			reader.current.TaskID = ""
+			reader.current.TaskRevision = 0
+			reader.current.PinnedTaskRevision = 0
+			reader.current.ConstraintsRevision = 0
+			g := prepareApproved(t, s, reader, call, contract)
+			ctx := context.Background()
+			if _, e := pool.Exec(ctx, `UPDATE runs SET current_state=$1,status=$1,task_id=NULL,task_revision=NULL WHERE run_id='run'`, state); e != nil {
+				t.Fatal(e)
+			}
+			if e := store.ClaimGrant(ctx, g.ID); e == nil {
+				t.Fatal("terminal conversation dispatched using a still-current lease")
+			}
+			var actual string
+			if e := pool.QueryRow(ctx, `SELECT state FROM action_authorizations WHERE authorization_id=$1`, g.ID).Scan(&actual); e != nil || actual != "authorized" {
+				t.Fatal(actual, e)
+			}
+		})
+	}
 }
 func TestPostgresDispatchCASAndUnknownOutcome(t *testing.T) {
 	pool := actionDatabase(t)

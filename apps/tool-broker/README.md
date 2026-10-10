@@ -90,3 +90,9 @@ acknowledgement and frozen network. This confirms only local browser state;
 generic fill/type/click do not inherit it and external submission remains
 unknown without recipient proof. Navigation/read revision 2 enforce GET/HEAD;
 old contracts fail closed. The root unknown-effect budget guard is unchanged.
+
+Grant claim also rejects terminal/finalizing run state and checks current memory
+source/transcript/privacy-watermark pins in the same transaction before budget
+spend or dispatch. Broker reads the private deletion anchor volume read-only;
+missing or stale restore history denies a new release. Existing spent journal
+observations remain intact. See [versioned memory sources](../../docs/architecture/versioned-memory-sources.md).

@@ -54,7 +54,7 @@ func (s *Store) CheckRestore(ctx context.Context) error {
 	if mark != int64(len(rows)) {
 		return ErrRestore
 	}
-	return nil
+	return checkManifestRows(ctx, s.pool, rows)
 }
 func (s *Store) CheckRestoreTx(ctx context.Context, tx pgx.Tx) error {
 	if s == nil || s.manifest == nil {
@@ -69,6 +69,39 @@ func (s *Store) CheckRestoreTx(ctx context.Context, tx pgx.Tx) error {
 		return e
 	}
 	if mark != int64(len(records)) {
+		return ErrRestore
+	}
+	return checkManifestRows(ctx, tx, records)
+}
+
+func checkManifestRows(ctx context.Context, q interface {
+	Query(context.Context, string, ...any) (pgx.Rows, error)
+}, records []ManifestRecord) error {
+	rows, e := q.Query(ctx, `SELECT deletion_id,source_id,owner_id,action,watermark FROM memory_deletions ORDER BY watermark`)
+	if e != nil {
+		return e
+	}
+	defer rows.Close()
+	index := 0
+	for rows.Next() {
+		var id, sourceID, own, action string
+		var mark int64
+		if e = rows.Scan(&id, &sourceID, &own, &action, &mark); e != nil {
+			return e
+		}
+		if index >= len(records) {
+			return ErrRestore
+		}
+		r := records[index]
+		if r.ID != id || r.SourceID != sourceID || r.Action != action || r.Sequence != mark || own != "" && r.OwnerHash != hash(own) {
+			return ErrRestore
+		}
+		index++
+	}
+	if e = rows.Err(); e != nil {
+		return e
+	}
+	if index != len(records) {
 		return ErrRestore
 	}
 	return nil
@@ -269,7 +302,7 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 	if e := s.CheckRestoreTx(ctx, tx); e != nil {
 		return nil, e
 	}
-	var own, taskID, session string
+	var own, taskID, session, liveRun string
 	if a, ok := owneridentity.FromContext(ctx); ok {
 		own = a.OwnerID
 	} else if c, ok := ctx.Value(checkerKey{}).(AccessChecker); ok {
@@ -279,6 +312,7 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 			return nil, e
 		}
 	} else if tok, ok := ownership.TokenFromContext(ctx); ok {
+		liveRun = tok.RunID
 		var valid bool
 		if tx.QueryRow(ctx, `SELECT TRUE FROM session_ownership WHERE session_key=$1 AND run_id=$2 AND lease_id=$3 AND fence_epoch=$4 AND expires_at>clock_timestamp() FOR SHARE`, tok.SessionKey, tok.RunID, tok.LeaseID, tok.FenceEpoch).Scan(&valid) != nil {
 			return nil, ErrDenied
@@ -319,7 +353,12 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 			}
 		}
 	}
-	sort.Slice(ordered, func(i, j int) bool { return ordered[i].ID < ordered[j].ID })
+	var graphErr error
+	graphRoots := append([]SourceRef(nil), ordered...)
+	ordered, graphErr = s.CanonicalSourcesTx(ctx, tx, ordered)
+	if graphErr != nil {
+		return nil, graphErr
+	}
 	result := make([]Source, 0, len(ordered))
 	for _, ref := range ordered {
 		write, _ := ctx.Value(writeSourcesKey{}).(bool)
@@ -348,11 +387,29 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 		if src.Origin.Sensitivity == content.Secret {
 			return nil, ErrDenied
 		}
+		if liveRun != "" {
+			if _, e = tx.Exec(ctx, `INSERT INTO memory_run_sources(run_id,source_id,source_revision,access_revision,content_hash) VALUES($1,$2,$3,$4,$5) ON CONFLICT(run_id,source_id) DO NOTHING`, liveRun, src.ID, src.Revision, src.AccessRevision, src.Hash); e != nil {
+				return nil, e
+			}
+			var current bool
+			if e = tx.QueryRow(ctx, `SELECT source_revision=$3 AND access_revision=$4 AND content_hash=$5 FROM memory_run_sources WHERE run_id=$1 AND source_id=$2`, liveRun, src.ID, src.Revision, src.AccessRevision, src.Hash).Scan(&current); e != nil || !current {
+				return nil, ErrStale
+			}
+		}
 		for _, requested := range refs {
 			if requested.ID == src.ID {
 				result = append(result, src)
 				break
 			}
+		}
+	}
+	currentGraph, e := s.CanonicalSourcesTx(ctx, tx, graphRoots)
+	if e != nil || len(currentGraph) != len(ordered) {
+		return nil, ErrStale
+	}
+	for i, r := range currentGraph {
+		if r != ordered[i] {
+			return nil, ErrStale
 		}
 	}
 	if c, ok := ctx.Value(checkerKey{}).(AccessChecker); ok {

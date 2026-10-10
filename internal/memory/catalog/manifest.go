@@ -47,7 +47,16 @@ func (f *FileManifest) Initialize() error {
 	if _, e = file.WriteString("butler-memory-deletions-v1\n"); e != nil {
 		return e
 	}
-	return file.Sync()
+	if e = file.Sync(); e != nil {
+		return e
+	}
+	// Persist the newly created directory entry as well as the file contents.
+	dir, e := os.Open(filepath.Dir(f.path))
+	if e != nil {
+		return e
+	}
+	defer dir.Close()
+	return dir.Sync()
 }
 func (f *FileManifest) Load(ctx context.Context) ([]ManifestRecord, error) {
 	f.mu.Lock()
@@ -61,7 +70,11 @@ func (f *FileManifest) load(ctx context.Context) ([]ManifestRecord, error) {
 	}
 	defer file.Close()
 	info, e := file.Stat()
-	if e != nil || !info.Mode().IsRegular() || info.Size() > 64*1024*1024 {
+	if e != nil || !info.Mode().IsRegular() || info.Mode().Perm()&0077 != 0 || info.Size() > 64*1024*1024 || info.Size() == 0 {
+		return nil, ErrRestore
+	}
+	var last [1]byte
+	if _, e = file.ReadAt(last[:], info.Size()-1); e != nil || last[0] != '\n' {
 		return nil, ErrRestore
 	}
 	scanner := bufio.NewScanner(file)

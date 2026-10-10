@@ -204,3 +204,18 @@ func TestMissingManifestFailsClosedIntegration(t *testing.T) {
 		t.Fatal(e)
 	}
 }
+
+func TestMatchingWatermarkCannotHideWrongDeletionHistoryIntegration(t *testing.T) {
+	s, ctx := fixture(t)
+	src := put(t, s, ctx, "original", "private original")
+	other := put(t, s, ctx, "other", "other text")
+	if _, e := s.Delete(ctx, src.ID, "delete", src.Revision); e != nil {
+		t.Fatal(e)
+	}
+	if _, e := s.pool.Exec(ctx, `UPDATE memory_deletions SET source_id=$1`, other.ID); e != nil {
+		t.Fatal(e)
+	}
+	if e := s.CheckRestore(ctx); !errors.Is(e, ErrRestore) {
+		t.Fatal("equal watermark accepted wrong tombstone history", e)
+	}
+}

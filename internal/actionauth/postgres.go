@@ -12,12 +12,19 @@ import (
 )
 
 type PostgresStore struct {
-	pool    *pgxpool.Pool
-	budgets *budget.Controller
+	pool         *pgxpool.Pool
+	budgets      *budget.Controller
+	runDataGuard func(context.Context, pgx.Tx, string) error
 }
 
 // SetBudgets is trusted deployment wiring, never a model-selectable option.
 func (s *PostgresStore) SetBudgets(c *budget.Controller) { s.budgets = c }
+
+// SetRunDataGuard is a trusted owning-memory adapter; the implementation uses
+// the same caller transaction and locks current source rows after task authority.
+func (s *PostgresStore) SetRunDataGuard(guard func(context.Context, pgx.Tx, string) error) {
+	s.runDataGuard = guard
+}
 
 func NewPostgresStore(pool *pgxpool.Pool) *PostgresStore { return &PostgresStore{pool: pool} }
 func (s *PostgresStore) PutIntent(ctx context.Context, i Intent) error {
@@ -199,6 +206,16 @@ func (s *PostgresStore) guardDispatch(ctx context.Context, tx pgx.Tx, g Grant) e
 	if err != nil {
 		return fmt.Errorf("live execution ownership is required at dispatch commit")
 	}
+	var state, status string
+	if err = tx.QueryRow(ctx, `SELECT current_state,status FROM runs WHERE run_id=$1 FOR SHARE`, g.Binding.RunID).Scan(&state, &status); err != nil {
+		return fmt.Errorf("live run is required at dispatch commit")
+	}
+	for _, value := range []string{state, status} {
+		switch value {
+		case "", "completed", "failed", "cancelled", "finalizing":
+			return fmt.Errorf("run is terminal or finalizing before dispatch commit")
+		}
+	}
 	if g.Binding.TaskID != "" {
 		var status, owner, policy string
 		var revision, constraints, pinned int64
@@ -216,6 +233,9 @@ func (s *PostgresStore) guardDispatch(ctx context.Context, tx pgx.Tx, g Grant) e
 		if err = CheckTaskActionTx(ctx, tx, g.Binding, time.Now().UTC()); err != nil {
 			return err
 		}
+	}
+	if s.runDataGuard != nil {
+		return s.runDataGuard(ctx, tx, g.Binding.RunID)
 	}
 	return nil
 }

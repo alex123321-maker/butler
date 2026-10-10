@@ -134,6 +134,10 @@ type TransitionLogger interface {
 }
 
 type Config struct {
+	MemorySources interface {
+		PinTranscript(context.Context, string, int64) error
+		CheckRunSources(context.Context, string) error
+	}
 	OwnerGoals interface {
 		ReadTaskAuthority(context.Context, string) (actionauth.Assignment, actionauth.Mandate, actionauth.GoalPolicy, error)
 	}
@@ -327,8 +331,11 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 		config:     cfg,
 		log:        logger.WithComponent(log, "orchestrator-run"),
 	}
+	if cfg.MemorySources != nil {
+		service.provider = &sourceGuardedProvider{ModelProvider: service.provider, sources: cfg.MemorySources}
+	}
 	if cfg.Budgets != nil {
-		service.provider = &budgetedProvider{ModelProvider: provider, service: service}
+		service.provider = &budgetedProvider{ModelProvider: service.provider, service: service}
 	}
 	// Provenance validation precedes admission; admission still sees the raw
 	// adapter's declared inference limits before its actual transport request.

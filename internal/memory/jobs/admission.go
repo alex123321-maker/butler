@@ -21,6 +21,7 @@ type Operation struct {
 // service identity come from the configured transport adapter, not model input.
 // Cloud and secret-derived auxiliary calls are deliberately unsupported.
 func (s *Store) Admit(ctx context.Context, j Job, o Operation) (context.Context, func(), error) {
+	j = copyJob(j)
 	if s.target == nil || s.budgets == nil || s.target.Identity == "" || o.ServiceIdentity != s.target.Identity || o.Endpoint != s.target.Endpoint || strings.Contains(o.Endpoint, "://") || !(strings.HasPrefix(o.Endpoint, "local-models:") || strings.HasPrefix(o.Endpoint, "unix:")) || o.Kind != j.Kind || o.ID == "" || o.Origin.Sensitivity == content.Secret || o.InputBytes < 1 || o.InputBytes > 8*1024*1024 || o.Tokens < 1 || o.Timeout <= 0 || o.Timeout > 2*time.Minute {
 		return nil, nil, ErrClaim
 	}

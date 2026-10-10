@@ -186,3 +186,79 @@ func TestTaskAmendmentImmediatelyDeniesPostRunAuxiliaryIntegration(t *testing.T)
 		t.Fatal("denied job spent budget", count, e)
 	}
 }
+
+func TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration(t *testing.T) {
+	s, c, ctx, src := fixture(t)
+	other, e := c.Put(ctx, catalog.PutSource{ExternalKey: "not-permitted", Kind: "document", ScopeType: "user", ScopeID: "owner", Body: "outside the owned manifest", Title: "other"})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = s.Enqueue(ctx, request(src)); e != nil {
+		t.Fatal(e)
+	}
+	j := claim(t, s)
+	mutations := map[string]func(*Job){
+		"extra source": func(j *Job) {
+			j.Sources = append(j.Sources, catalog.SourceRef{ID: other.ID, Revision: other.Revision, AccessRevision: other.AccessRevision, Hash: other.Hash})
+		},
+		"rewritten fingerprint": func(j *Job) {
+			j.Sources = append(j.Sources, catalog.SourceRef{ID: other.ID, Revision: other.Revision, AccessRevision: other.AccessRevision, Hash: other.Hash})
+			j.Sources, j.Fingerprint, _ = canonical(j.Sources)
+		},
+		"allowance":      func(j *Job) { j.Allowance.ModelTurns++ },
+		"deadline":       func(j *Job) { j.Deadline = j.Deadline.Add(time.Hour) },
+		"claim deadline": func(j *Job) { until := j.ClaimUntil.Add(time.Hour); j.ClaimUntil = &until },
+		"original run":   func(j *Job) { j.OriginalRunID = "invented-completed-run" },
+	}
+	for name, mutate := range mutations {
+		t.Run(name, func(t *testing.T) {
+			forged := copyJob(j)
+			mutate(&forged)
+			if _, e := c.Get(s.Context(context.Background(), forged), other.ID); !errors.Is(e, ErrClaim) {
+				t.Fatal("forged snapshot read a source", e)
+			}
+			if _, release, e := s.Admit(context.Background(), forged, operation("forged")); !errors.Is(e, ErrClaim) {
+				if release != nil {
+					release()
+				}
+				t.Fatal("forged snapshot admitted an attempt", e)
+			}
+		})
+	}
+	var count int
+	if e := s.pool.QueryRow(ctx, `SELECT count(*) FROM execution_budget_reservations`).Scan(&count); e != nil || count != 0 {
+		t.Fatal("forged policy touched budget ledger", count, e)
+	}
+	// Mutating the caller's slice/pointer after Context cannot change its proof.
+	proof := s.Context(context.Background(), j)
+	j.Sources[0].ID = other.ID
+	*j.ClaimUntil = time.Now().Add(time.Hour)
+	if _, e := c.Get(proof, src.ID); e != nil {
+		t.Fatal("context retained mutable caller state", e)
+	}
+	if _, e := c.Get(proof, other.ID); !errors.Is(e, ErrClaim) {
+		t.Fatal("context permission was widened", e)
+	}
+}
+
+func TestAuxiliaryManifestPinsOriginalAncestorsIntegration(t *testing.T) {
+	s, c, ctx, original := fixture(t)
+	report, e := c.Put(ctx, catalog.PutSource{ExternalKey: "subagent-report", Kind: "model_candidate", ScopeType: "user", ScopeID: "owner", Body: "reported conclusion", Title: "report", Parents: []catalog.SourceRef{{ID: original.ID, Revision: original.Revision, AccessRevision: original.AccessRevision, Hash: original.Hash}}})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = s.Enqueue(ctx, request(report)); e != nil {
+		t.Fatal(e)
+	}
+	j := claim(t, s)
+	if len(j.Sources) != 2 {
+		t.Fatal("job omitted original provenance", j.Sources)
+	}
+	if _, e = c.Correct(ctx, catalog.Correction{SourceID: original.ID, ExpectedRevision: original.Revision, Body: "owner correction", Title: "source"}); e != nil {
+		t.Fatal(e)
+	}
+	if _, release, e := s.Admit(context.Background(), j, operation("late-report")); e == nil {
+		release()
+		t.Fatal("derived job survived original correction")
+	}
+}

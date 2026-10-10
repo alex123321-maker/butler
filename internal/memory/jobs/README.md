@@ -18,6 +18,11 @@ sorted complete source manifest, current job claim, budget. A 250ms supervisor
 cancels in-flight local requests after revocation; every publication also checks
 fresh PG proof, so late callbacks cannot regain authority. Claim deadlines bound
 crash recovery. Attempt and allowance limits remain immutable across retries.
+Private caller snapshots are compared against the complete canonical manifest,
+allowance, original references, deadline and exact live claim deadline before
+access or budget initialization. Context copies its source slice and claim time.
+Ancestor revisions are included in the durable manifest, so a parent correction
+also invalidates an unchanged report or chunk.
 
 Production legacy auxiliary workers remain disabled. Semantic/parser adapters
 and completion scheduling are follow-up wiring; this package alone does not

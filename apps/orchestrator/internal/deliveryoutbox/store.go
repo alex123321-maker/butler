@@ -197,6 +197,17 @@ type Worker struct {
 	PollInterval time.Duration
 }
 
+// AuthorizeSend checks the current stored claim/payload immediately before the
+// channel boundary. A previously copied payload cannot send after redaction.
+func (s *Store) AuthorizeSend(ctx context.Context, m Message) error {
+	var live bool
+	e := s.pool.QueryRow(ctx, `SELECT TRUE FROM delivery_outbox d WHERE notification_id=$1 AND claim_id=$2 AND status='sending' AND claim_until>clock_timestamp() AND content=$3 AND NOT COALESCE((to_jsonb(d)->>'privacy_redacted')::BOOLEAN,FALSE)`, m.NotificationID, m.ClaimID, m.Content).Scan(&live)
+	if e != nil {
+		return ErrClaimLost
+	}
+	return nil
+}
+
 func (w *Worker) ProcessOne(ctx context.Context) (bool, error) {
 	m, err := w.Store.Claim(ctx, 30*time.Second)
 	if err != nil || m == nil {
@@ -204,6 +215,9 @@ func (w *Worker) ProcessOne(ctx context.Context) (bool, error) {
 	}
 	outcome := Outcome{Status: "absent", ErrorCode: "telegram_unconfigured", Retryable: true}
 	if w.Sender != nil {
+		if err = w.Store.AuthorizeSend(ctx, *m); err != nil {
+			return true, err
+		}
 		sendCtx, cancel := context.WithTimeout(ctx, 20*time.Second)
 		outcome = w.Sender.SendStored(sendCtx, *m)
 		cancel()

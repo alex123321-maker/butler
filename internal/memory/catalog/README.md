@@ -29,7 +29,15 @@ than resurrecting text. Backup files themselves still require private retention
 and erasure policy. The manifest contains opaque source IDs, hashed owner identity,
 deletion IDs/order/time and action only, never source text/URLs.
 
-Foundation tests use `BUTLER_TEST_MEMORY_POSTGRES_URL`, an isolated `_test` DB,
-private schemas, pgvector in public and pool size two. This foundation does not
-yet close #22: production read/API wiring, transcript/final-result privacy
-redaction, cache cleanup, legacy review/export and structured ingestion follow.
+Production adapters and authenticated `/api/v4/memory` use the catalog. Transcript
+preparation/model release, Broker grant claim and atomic results pin current
+sources; deletion has a one-way typed privacy path retaining evidence hashes and
+verdicts. Scoped cache cleanup persists progress and task scratch revisions prevent
+late republishing. Full manifest identity is checked on restore, not just its count.
+
+Tests use `BUTLER_TEST_MEMORY_POSTGRES_URL`, an isolated `_test` DB, private schemas,
+pgvector in public and pool size two. Actual race tests cover privacy/backup replay,
+cache restart, stale provider/final/dispatch writes and owner correction/export.
+Structured ingestion, owner UI and semantic owned-job production adapters remain
+follow-up work. See [the contract](../../../docs/architecture/versioned-memory-sources.md)
+for the required private persistent anchor setup before deployment.

@@ -68,9 +68,9 @@ func brokerEffectDatabase(t *testing.T) *pgxpool.Pool {
 		}
 	}
 	_, err = pool.Exec(ctx, `CREATE TABLE session_ownership(session_key TEXT PRIMARY KEY,run_id TEXT,lease_id TEXT,fence_epoch BIGINT,expires_at TIMESTAMPTZ);
- CREATE TABLE runs(run_id TEXT PRIMARY KEY,task_id TEXT,task_revision BIGINT);
+ CREATE TABLE runs(run_id TEXT PRIMARY KEY,task_id TEXT,task_revision BIGINT,current_state TEXT DEFAULT 'tool_running',status TEXT DEFAULT 'tool_running');
  CREATE TABLE tasks(task_id TEXT PRIMARY KEY,owner_id TEXT,status TEXT,revision BIGINT,constraints_revision BIGINT,execution_policy TEXT NOT NULL DEFAULT 'normal');
- INSERT INTO runs VALUES('run','task',1);INSERT INTO tasks(task_id,owner_id,status,revision,constraints_revision) VALUES('task','owner','active',1,1);
+ INSERT INTO runs(run_id,task_id,task_revision) VALUES('run','task',1);INSERT INTO tasks(task_id,owner_id,status,revision,constraints_revision) VALUES('task','owner','active',1,1);
  INSERT INTO session_ownership VALUES('web:owner','run','fixture-lease',1,clock_timestamp()+INTERVAL '1 hour')`)
 	if err != nil {
 		t.Fatal(err)

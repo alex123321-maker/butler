@@ -29,6 +29,7 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
+	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/chunks"
 	memorydoctor "github.com/butler/butler/internal/memory/doctor"
 	"github.com/butler/butler/internal/memory/episodic"
@@ -45,6 +46,7 @@ import (
 )
 
 type httpServerDeps struct {
+	sourceCatalog          *catalog.Store
 	ownerGoals             *goal.Manager
 	finalResults           *completion.Coordinator
 	actionAuthorityHandler http.Handler
@@ -114,6 +116,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	promptServer.SetOwnerControlAuth(deps.ownerAuth)
 	memoryServer := apiservice.NewMemoryServer(working.NewStore(deps.postgres.Pool()), deps.profileStore, deps.episodicStore, deps.chunkStore, provenance.NewStore(deps.postgres.Pool()))
 	memoryServer.SetWriters(deps.profileStore, deps.episodicStore, deps.chunkStore)
+	memoryCatalogServer := &apiservice.MemoryCatalogServer{Store: deps.sourceCatalog, Auth: deps.ownerAuth}
 	providerServer := apiservice.NewProviderServer(deps.authManager, deps.providerResult.ProviderName, map[string]string{
 		modelprovider.ProviderOpenAI:        deps.cfg.OpenAIModel,
 		modelprovider.ProviderOpenAICodex:   deps.cfg.OpenAICodexModel,
@@ -182,15 +185,17 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	mux.Handle("/api/v1/providers", providerServer.HandleList())
 	mux.Handle("/api/v2/results/", resultServer.HandleByRun("/api/v2/results/"))
 	mux.Handle("/api/v1/providers/", apiservice.OwnerMaintenance(deps.ownerAuth, providerServer.HandleItem()))
-	mux.Handle("/api/v1/memory", memoryServer.HandleList())
-	mux.Handle("/api/v2/memory", memoryServer.HandleList())
-	mux.Handle("/api/v2/memory/item", memoryServer.HandleGet())
-	mux.Handle("/api/v2/memory/patch", memoryServer.HandlePatch())
-	mux.Handle("/api/v2/memory/delete", memoryServer.HandleDelete())
-	mux.Handle("/api/v2/memory/confirm", memoryServer.HandleConfirm())
-	mux.Handle("/api/v2/memory/reject", memoryServer.HandleReject())
-	mux.Handle("/api/v2/memory/suppress", memoryServer.HandleSuppress())
-	mux.Handle("/api/v2/memory/unsuppress", memoryServer.HandleUnsuppress())
+	mux.Handle("/api/v4/memory", memoryCatalogServer.Handle())
+	mux.Handle("/api/v4/memory/", memoryCatalogServer.Handle())
+	mux.Handle("/api/v1/memory", memoryCatalogServer.LegacyRead(memoryServer.HandleList()))
+	mux.Handle("/api/v2/memory", memoryCatalogServer.LegacyRead(memoryServer.HandleList()))
+	mux.Handle("/api/v2/memory/item", memoryCatalogServer.LegacyRead(memoryServer.HandleGet()))
+	mux.Handle("/api/v2/memory/patch", memoryCatalogServer.LegacyRead(memoryServer.HandlePatch()))
+	mux.Handle("/api/v2/memory/delete", memoryCatalogServer.LegacyRead(memoryServer.HandleDelete()))
+	mux.Handle("/api/v2/memory/confirm", memoryCatalogServer.LegacyRead(memoryServer.HandleConfirm()))
+	mux.Handle("/api/v2/memory/reject", memoryCatalogServer.LegacyRead(memoryServer.HandleReject()))
+	mux.Handle("/api/v2/memory/suppress", memoryCatalogServer.LegacyRead(memoryServer.HandleSuppress()))
+	mux.Handle("/api/v2/memory/unsuppress", memoryCatalogServer.LegacyRead(memoryServer.HandleUnsuppress()))
 	mux.Handle("/api/tasks", taskViewServer.HandleListTasks())
 	mux.Handle("/api/tasks/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "/debug") {

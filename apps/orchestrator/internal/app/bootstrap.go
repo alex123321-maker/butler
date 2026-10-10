@@ -35,6 +35,7 @@ import (
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
+	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/chunks"
 	"github.com/butler/butler/internal/memory/embeddings"
 	"github.com/butler/butler/internal/memory/episodic"
@@ -196,6 +197,10 @@ func New(ctx context.Context) (*App, error) {
 	profileStore := profile.NewStore(postgres.Pool())
 	episodicStore := episodic.NewStore(postgres.Pool())
 	chunkStore := chunks.NewStore(postgres.Pool())
+	sourceCatalog := catalog.New(postgres.Pool(), catalog.NewFileManifest(strings.TrimSpace(os.Getenv("BUTLER_MEMORY_DELETION_MANIFEST_FILE"))))
+	if restoreErr := sourceCatalog.Reconcile(ctx); restoreErr != nil {
+		log.Warn("memory unavailable: deletion anchor requires operator reconciliation")
+	}
 
 	memoryRuntimeConfig := cfg
 	if memoryRuntimeConfig.MemoryPipelineEnabled {
@@ -206,6 +211,7 @@ func New(ctx context.Context) (*App, error) {
 	}
 	embeddingProvider, pipelineWorker := configureMemoryPipeline(log, memoryRuntimeConfig, authManager, m, pipelineQueue, transcriptStore, summaryStore, profileStore, episodicStore, chunkStore)
 	finalResults := completion.New(postgres.Pool())
+	finalResults.DataGuard = sourceCatalog.CheckRunSourcesTx
 	finalResults.Evidence = effectEvidence{journal: actionauth.NewPostgresStore(postgres.Pool())}
 	outboxWorker := &deliveryoutbox.Worker{Store: finalResults.Outbox}
 	if telegram != nil {
@@ -228,6 +234,7 @@ func New(ctx context.Context) (*App, error) {
 		transcriptStore,
 		providerResult.Provider,
 		flow.Config{
+			MemorySources:         sourceCatalog,
 			Budgets:               budgetController,
 			Completion:            finalResults,
 			DurableMemoryPipeline: pipelineWorker != nil,
@@ -253,11 +260,11 @@ func New(ctx context.Context) (*App, error) {
 			ApprovalGate:          approvalGate,
 			ApprovalService:       approvalService,
 			WorkingStore:          workingStoreAdapter{store: working.NewStore(postgres.Pool())},
-			TransientStore:        transientWorkingStoreAdapter{store: working.NewTransientStore(redis.Client())},
+			TransientStore:        transientWorkingStoreAdapter{store: working.NewTransientStore(redis.Client()), sources: sourceCatalog},
 			TransientTTL:          time.Duration(cfg.MemoryWorkingTransientTTLSeconds) * time.Second,
-			ProfileStore:          profileStoreAdapter{store: profileStore},
-			EpisodeStore:          episodicStoreAdapter{store: episodicStore},
-			ChunkStore:            chunkStoreAdapter{store: chunkStore},
+			ProfileStore:          profileStoreAdapter{store: profileStore, sources: sourceCatalog},
+			EpisodeStore:          episodicStoreAdapter{store: episodicStore, sources: sourceCatalog},
+			ChunkStore:            chunkStoreAdapter{store: chunkStore, sources: sourceCatalog},
 			Embeddings:            memoryEmbeddings,
 			PipelineEnqueuer:      pipelineEnqueuer,
 			SummaryReader:         summaryStore,
@@ -300,6 +307,7 @@ func New(ctx context.Context) (*App, error) {
 	}
 	apiServer := apiservice.NewServer(inputWorker, logger.WithComponent(log, "api"))
 	httpServer := newHTTPServer(httpServerDeps{
+		sourceCatalog:          sourceCatalog,
 		cfg:                    cfg,
 		finalResults:           finalResults,
 		actionAuthorityHandler: actionAuthorityHandler,
@@ -375,6 +383,7 @@ func New(ctx context.Context) (*App, error) {
 		inputWorker:     inputWorker,
 		outboxWorker:    outboxWorker,
 		auxiliaryWorker: auxiliaryWorker,
+		memoryCleanup:   &catalog.CleanupWorker{Store: sourceCatalog, Cleaner: privacyCacheCleaner{store: working.NewTransientStore(redis.Client())}},
 	}, nil
 }
 

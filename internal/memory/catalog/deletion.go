@@ -103,7 +103,32 @@ func (s *Store) Reconcile(ctx context.Context) error {
 	return tx.Commit(ctx)
 }
 func (s *Store) applyDeletionTx(ctx context.Context, tx pgx.Tx, r ManifestRecord, own string) error {
-	rows, e := tx.Query(ctx, `WITH RECURSIVE affected AS(SELECT source_id FROM memory_sources WHERE source_id=$1 UNION SELECT d.child_source_id FROM memory_source_dependencies d JOIN affected a ON a.source_id=d.parent_source_id) SELECT s.source_id FROM memory_sources s JOIN affected a USING(source_id) ORDER BY s.source_id FOR UPDATE OF s`, r.SourceID)
+	// Transcript append/finalization lock sessions/heads before publication source
+	// rows. Take the same order before redacting messages or covered summaries.
+	if _, e := tx.Exec(ctx, `SELECT session_key FROM sessions ORDER BY session_key FOR UPDATE`); e != nil {
+		return e
+	}
+	if _, e := tx.Exec(ctx, `SELECT task_id FROM tasks WHERE owner_id=$1 ORDER BY task_id FOR UPDATE`, own); e != nil {
+		return e
+	}
+	if _, e := tx.Exec(ctx, `SELECT session_key FROM transcript_heads ORDER BY session_key FOR UPDATE`); e != nil {
+		return e
+	}
+	if _, e := tx.Exec(ctx, `INSERT INTO memory_deletions(deletion_id,source_id,owner_id,action,watermark) OVERRIDING SYSTEM VALUE VALUES($1,$2,$3,$4,$5) ON CONFLICT(deletion_id) DO NOTHING`, r.ID, r.SourceID, own, r.Action, r.Sequence); e != nil {
+		return e
+	}
+	if _, e := tx.Exec(ctx, `SELECT set_config('butler.memory_redaction',$1,TRUE)`, r.ID); e != nil {
+		return e
+	}
+	if _, e := tx.Exec(ctx, `DELETE FROM memory_working WHERE session_key IN(SELECT session_key FROM sessions WHERE user_id=$1)`, own); e != nil {
+		return e
+	}
+	if _, e := tx.Exec(ctx, `UPDATE tasks SET working_json=jsonb_build_object('plan','[]'::jsonb,'pending_actions','[]'::jsonb,'scratch',jsonb_build_object('privacy_redacted',TRUE,'deletion_id',$2::TEXT)),working_revision=working_revision+1,updated_at=clock_timestamp() WHERE owner_id=$1`, own, r.ID); e != nil {
+		return e
+	}
+	// Old extraction rows can lack original-message edges. Conservatively purge
+	// this owner's quarantined legacy data rather than leave an untraceable copy.
+	rows, e := tx.Query(ctx, `WITH RECURSIVE affected AS(SELECT source_id FROM memory_sources WHERE source_id=$1 OR (owner_id=$2 AND source_kind='legacy' AND status='quarantined') UNION SELECT d.child_source_id FROM memory_source_dependencies d JOIN affected a ON a.source_id=d.parent_source_id) SELECT s.source_id FROM memory_sources s JOIN affected a USING(source_id) ORDER BY s.source_id FOR UPDATE OF s`, r.SourceID, own)
 	if e != nil {
 		return e
 	}
@@ -124,6 +149,17 @@ func (s *Store) applyDeletionTx(ctx context.Context, tx pgx.Tx, r ManifestRecord
 	status := "deleted"
 	if r.Action == "revoke" {
 		status = "revoked"
+	}
+	if e = redactMessagesTx(ctx, tx, ids, r.ID); e != nil {
+		return e
+	}
+	if _, e = tx.Exec(ctx, `UPDATE memory_aux_jobs SET status='cancelled',claim_id='',claim_until=NULL,error_code='source_deleted',updated_at=clock_timestamp() WHERE owner_id=$1 AND status IN ('pending','running') AND EXISTS(SELECT 1 FROM jsonb_array_elements(sources) x WHERE x->>'source_id'=ANY($2))`, own, ids); e != nil {
+		return e
+	}
+	for _, table := range []string{"memory_profile", "memory_episodes", "memory_chunks"} {
+		if _, e = tx.Exec(ctx, `DELETE FROM `+table+` p WHERE NOT EXISTS(SELECT 1 FROM memory_object_sources o WHERE o.object_id=p.id AND o.memory_type=p.memory_type) AND ((p.scope_type='user' AND p.scope_id=$1) OR (p.scope_type='session' AND EXISTS(SELECT 1 FROM sessions s WHERE s.session_key=p.scope_id AND s.user_id=$1)))`, own); e != nil {
+			return e
+		}
 	}
 	for _, id := range ids {
 		// Purge vectors/chunks before source text. Retain only audit IDs and hashes.
@@ -153,10 +189,7 @@ func (s *Store) applyDeletionTx(ctx context.Context, tx pgx.Tx, r ManifestRecord
 	}
 	// A legacy summary may lack fine-grained source refs. Conservative invalidation
 	// is preferable to retaining any potentially deleted derived text.
-	if _, e = tx.Exec(ctx, `DELETE FROM session_summaries; UPDATE sessions SET summary=''`); e != nil {
-		return e
-	}
-	if _, e = tx.Exec(ctx, `INSERT INTO memory_deletions(deletion_id,source_id,owner_id,action,watermark) OVERRIDING SYSTEM VALUE VALUES($1,$2,$3,$4,$5) ON CONFLICT(deletion_id) DO NOTHING`, r.ID, r.SourceID, own, r.Action, r.Sequence); e != nil {
+	if _, e = tx.Exec(ctx, `UPDATE transcript_heads SET source_revision=source_revision+1; DELETE FROM session_summaries; UPDATE sessions SET summary=''`); e != nil {
 		return e
 	}
 	_, e = tx.Exec(ctx, `UPDATE memory_restore_state SET watermark=$1 WHERE singleton`, r.Sequence)
