@@ -5,3 +5,6 @@ sentence-transformers==6.1.0
 # The model's standard processor imports these even with modality encoders off.
 torchvision==0.25.0
 pillow==12.3.0
+# Official multilingual schema extractor; reuses the existing Torch stack.
+gliner2==2.1.0
+peft==0.21.2

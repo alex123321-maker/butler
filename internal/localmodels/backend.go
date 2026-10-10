@@ -33,6 +33,12 @@ func isFault(err error, kind ErrorKind) bool {
 type Resident struct {
 	Model   string
 	VRAMMiB uint32
+	RAMMiB  uint32
+}
+
+type RAMStatus struct{ UsedMiB, AvailableMiB uint32 }
+type RAMTelemetry interface {
+	SnapshotRAM(context.Context) (RAMStatus, error)
 }
 type Backend interface {
 	Healthy(context.Context) bool

@@ -10,6 +10,9 @@ services:
     init: true
     restart: unless-stopped
     read_only: true
+    mem_limit: 8g
+    memswap_limit: 8g
+    pids_limit: 256
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
     tmpfs:
@@ -20,6 +23,8 @@ services:
       BUTLER_LOCAL_MODELS_CATALOG: /app/models.json
       BUTLER_LOCAL_MODELS_BUDGET_MIB: "6144"
       BUTLER_LOCAL_MODELS_RESERVE_MIB: "512"
+      BUTLER_LOCAL_MODELS_RAM_BUDGET_MIB: "6144"
+      BUTLER_LOCAL_MODELS_RAM_RESERVE_MIB: "512"
       BUTLER_LOCAL_MODELS_IDLE_SECONDS: "30"
       NVIDIA_DRIVER_CAPABILITIES: compute,utility
     volumes:
@@ -34,7 +39,9 @@ services:
     networks: [local-inference]
   orchestrator:
     networks:
+      - default
       - local-inference
 networks:
+  default: {}
   local-inference:
     internal: true

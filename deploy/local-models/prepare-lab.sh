@@ -15,6 +15,8 @@ python -m venv /data/venv
 /data/venv/bin/python -c "import json; p=json.load(open(\"/data/torch-download-plan.json\")); print(\"Pinned Torch/CUDA wheel dependencies:\", len(p[\"install\"]))"
 /data/venv/bin/pip install torch==2.10.0 torchvision==0.25.0 --index-url https://download.pytorch.org/whl/cu128 >/data/torch-install.log 2>&1
 /data/venv/bin/pip install -r /src/deploy/local-models/requirements.lock.txt >/data/model-libraries-install.log 2>&1
+/data/venv/bin/pip install --no-deps -r /src/deploy/local-models/extension.lock.txt >/data/extension-install.log 2>&1
+/data/venv/bin/pip check
 /data/venv/bin/pip freeze > /data/requirements.lock.txt
 /data/venv/bin/python /src/deploy/local-models/download.py /data/models
 ' > "$root/reports/model-prepare.log" 2>&1

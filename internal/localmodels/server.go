@@ -17,7 +17,11 @@ import (
 
 type Server struct {
 	pb.UnimplementedLocalModelsServiceServer
-	Manager *Manager
+	Manager interface {
+		Catalog() *pb.Catalog
+		Status(context.Context) *pb.ManagerStatus
+		Infer(context.Context, *pb.InferRequest) (*pb.InferResponse, error)
+	}
 }
 
 func (s *Server) Describe(context.Context, *pb.Empty) (*pb.Catalog, error) {

@@ -1,0 +1,249 @@
+{
+  "catalog": {
+    "models": [
+      {
+        "id": "embeddinggemma2-image-bf16-v1",
+        "model": "google/embeddinggemma-2",
+        "revision": "914f7f89142e33e77833254d9c9b90c3cef7303b",
+        "format": "safetensors",
+        "precision": "BF16",
+        "license": "Apache-2.0",
+        "sourceUrl": "https://huggingface.co/google/embeddinggemma-2",
+        "runtime": "torch-sentence-transformers",
+        "runtimeVersion": "torch2.10.0+cu128/transformers5.19.0/sentence-transformers6.1.0",
+        "capabilities": [
+          "CAPABILITY_MEDIA"
+        ],
+        "maxBatch": 1,
+        "maxInputBytes": 1048576,
+        "contextTokens": 2048,
+        "peakVramMib": 4096,
+        "cpuFallback": true,
+        "enabled": true,
+        "preprocessingVersion": "embeddinggemma2-image-v1",
+        "dimensions": 768,
+        "licenseUrl": "https://ai.google.dev/gemma/apache_2",
+        "peakRamMib": 3072,
+        "peakCpuRamMib": 5120
+      },
+      {
+        "id": "embeddinggemma2-text-bf16-v1",
+        "model": "google/embeddinggemma-2",
+        "revision": "914f7f89142e33e77833254d9c9b90c3cef7303b",
+        "format": "safetensors",
+        "precision": "BF16",
+        "license": "Apache-2.0",
+        "sourceUrl": "https://huggingface.co/google/embeddinggemma-2",
+        "runtime": "torch-sentence-transformers",
+        "runtimeVersion": "torch2.10.0+cu128/transformers5.19.0/sentence-transformers6.1.0",
+        "capabilities": [
+          "CAPABILITY_EMBED"
+        ],
+        "maxBatch": 4,
+        "maxInputBytes": 8192,
+        "contextTokens": 2048,
+        "peakVramMib": 3072,
+        "cpuFallback": true,
+        "enabled": true,
+        "preprocessingVersion": "embeddinggemma2-retrieval-v1",
+        "dimensions": 768,
+        "licenseUrl": "https://ai.google.dev/gemma/apache_2",
+        "peakRamMib": 2560,
+        "peakCpuRamMib": 4096
+      },
+      {
+        "id": "qwen3-reranker-0.6b-bf16-v1",
+        "model": "Qwen/Qwen3-Reranker-0.6B",
+        "revision": "e61197ed45024b0ed8a2d74b80b4d909f1255473",
+        "format": "safetensors",
+        "precision": "BF16",
+        "license": "Apache-2.0",
+        "sourceUrl": "https://huggingface.co/Qwen/Qwen3-Reranker-0.6B",
+        "runtime": "torch-transformers",
+        "runtimeVersion": "torch2.10.0+cu128/transformers5.19.0",
+        "capabilities": [
+          "CAPABILITY_RERANK"
+        ],
+        "maxBatch": 4,
+        "maxInputBytes": 8192,
+        "contextTokens": 2048,
+        "peakVramMib": 4096,
+        "cpuFallback": true,
+        "enabled": true,
+        "preprocessingVersion": "qwen3-rerank-yesno-v1",
+        "licenseUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+        "peakRamMib": 2048,
+        "peakCpuRamMib": 4096
+      },
+      {
+        "id": "gliner2.5-multi-cpu-v1",
+        "model": "fastino/gliner2.5-multi-v1",
+        "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "format": "safetensors",
+        "precision": "FP32",
+        "license": "Apache-2.0",
+        "sourceUrl": "https://huggingface.co/fastino/gliner2.5-multi-v1",
+        "runtime": "torch-gliner2",
+        "runtimeVersion": "torch2.10.0+cu128/transformers5.19.0/gliner2.1.0",
+        "capabilities": [
+          "CAPABILITY_EXTRACT",
+          "CAPABILITY_CLASSIFY"
+        ],
+        "maxBatch": 1,
+        "maxInputBytes": 2048,
+        "contextTokens": 512,
+        "cpuFallback": true,
+        "enabled": true,
+        "preprocessingVersion": "gliner2.5-schema-v1",
+        "licenseUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+        "preferredDevice": "cpu",
+        "peakRamMib": 3072
+      }
+    ]
+  },
+  "classification_scores": [
+    {
+      "id": "чтение",
+      "value": 0.9999102354049683
+    }
+  ],
+  "cpu_gpu_overlap": true,
+  "generated_at": "2026-10-10T21:07:50Z",
+  "measurements": [
+    {
+      "Operation": "extract-russian",
+      "Device": "cpu",
+      "Fallback": "",
+      "Start": "2026-10-10T21:06:58.204335589Z",
+      "End": "2026-10-10T21:07:31.381319026Z",
+      "QueueMS": 0,
+      "ExecutionMS": 33175,
+      "GPUPeak": 0,
+      "RAMPeak": 3189
+    },
+    {
+      "Operation": "rank-russian",
+      "Device": "gpu",
+      "Fallback": "",
+      "Start": "2026-10-10T21:07:31.381322797Z",
+      "End": "2026-10-10T21:07:39.529960635Z",
+      "QueueMS": 0,
+      "ExecutionMS": 8147,
+      "GPUPeak": 1427,
+      "RAMPeak": 4336
+    },
+    {
+      "Operation": "classify-russian",
+      "Device": "cpu",
+      "Fallback": "",
+      "Start": "2026-10-10T21:07:39.529965385Z",
+      "End": "2026-10-10T21:07:39.660347104Z",
+      "QueueMS": 0,
+      "ExecutionMS": 129,
+      "GPUPeak": 0,
+      "RAMPeak": 3849
+    },
+    {
+      "Operation": "concurrent-classify",
+      "Device": "cpu",
+      "Fallback": "",
+      "Start": "2026-10-10T21:07:39.660853735Z",
+      "End": "2026-10-10T21:07:39.799827993Z",
+      "QueueMS": 0,
+      "ExecutionMS": 137,
+      "GPUPeak": 0,
+      "RAMPeak": 3851
+    },
+    {
+      "Operation": "concurrent-rank",
+      "Device": "gpu",
+      "Fallback": "",
+      "Start": "2026-10-10T21:07:39.660864839Z",
+      "End": "2026-10-10T21:07:39.864240992Z",
+      "QueueMS": 0,
+      "ExecutionMS": 202,
+      "GPUPeak": 1935,
+      "RAMPeak": 3851
+    },
+    {
+      "Operation": "vision-load",
+      "Device": "gpu",
+      "Fallback": "",
+      "Start": "2026-10-10T21:07:39.884888187Z",
+      "End": "2026-10-10T21:07:50.093792501Z",
+      "QueueMS": 0,
+      "ExecutionMS": 10208,
+      "GPUPeak": 1121,
+      "RAMPeak": 4394
+    }
+  ],
+  "network": "network none; all models local_files_only",
+  "rank_scores": [
+    {
+      "id": "postgres",
+      "value": 0.9999667406082153
+    },
+    {
+      "id": "other",
+      "value": 0.000037052966945338994
+    }
+  ],
+  "russian_spans": [
+    {
+      "type": "person",
+      "text": "Анна",
+      "end": 4,
+      "confidence": 0.9962610602378845
+    },
+    {
+      "type": "company",
+      "text": "Яндекс",
+      "start": 25,
+      "end": 31,
+      "confidence": 0.9876179695129395
+    },
+    {
+      "type": "location",
+      "text": "Москве",
+      "start": 34,
+      "end": 40,
+      "confidence": 0.9980159997940063
+    }
+  ],
+  "scope": "actual pinned model mechanics + small public Russian signals; not production quality acceptance",
+  "status": {
+    "state": "idle",
+    "activeModel": "google/embeddinggemma-2",
+    "activeDevice": "gpu",
+    "gpu": {
+      "available": true,
+      "totalMib": 6144,
+      "usedMib": 1121,
+      "freeMib": 4677,
+      "name": "NVIDIA GeForce RTX 3060 Laptop GPU",
+      "driver": "595.91.07"
+    },
+    "budgetMib": 6144,
+    "reserveMib": 512,
+    "completed": "3",
+    "observedPeakMib": 1935,
+    "backendHealthy": true,
+    "cpuLane": {
+      "state": "idle",
+      "activeModel": "fastino/gliner2.5-multi-v1",
+      "activeDevice": "cpu",
+      "gpu": {},
+      "budgetMib": 6144,
+      "reserveMib": 512,
+      "completed": "3",
+      "backendHealthy": true,
+      "processRamMib": 4336,
+      "observedPeakRamMib": 3851,
+      "ramBudgetMib": 6144
+    },
+    "processRamMib": 4336,
+    "observedPeakRamMib": 4394,
+    "ramBudgetMib": 6144
+  },
+  "vision": "actual 440M text+vision loading; synthetic RGB768 normalized; audio omitted"
+}
