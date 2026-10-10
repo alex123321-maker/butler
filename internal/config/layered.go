@@ -44,6 +44,13 @@ func loadOrchestratorLayered(get envGetter, settings []Setting) (OrchestratorCon
 	cfg.OwnerControlToken, _ = get("BUTLER_OWNER_CONTROL_TOKEN")
 	cfg.OwnerControlTokenFile, _ = get("BUTLER_OWNER_CONTROL_TOKEN_FILE")
 	cfg.OwnerControlOwnerID, _ = get("BUTLER_OWNER_CONTROL_OWNER_ID")
+	// This private service endpoint carries service authentication. Only the
+	// operator environment may choose its destination, never stored settings.
+	cfg.ExtensionControlURL, _ = get("BUTLER_EXTENSION_CONTROL_URL")
+	cfg.ExtensionControlURL = strings.TrimSpace(cfg.ExtensionControlURL)
+	if validationErr := validateOptionalURL(cfg.ExtensionControlURL); validationErr != nil {
+		return cfg, snapshot, fmt.Errorf("invalid operator extension control endpoint")
+	}
 	if conditionalErr := validateOrchestratorConditionalConfig(cfg); conditionalErr != nil {
 		if err != nil {
 			return cfg, snapshot, fmt.Errorf("%v; %v", err, conditionalErr)
