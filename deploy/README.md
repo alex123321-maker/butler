@@ -65,13 +65,16 @@ dedicated Docker Buildx container driver with its state volume bound to
 Exported service images still use the Docker daemon's configured image storage.
 The builder is selected only for that Compose command; other projects keep their
 Docker builder. Existing cache volumes with a different path are refused.
-Integration and race checks use `butler_test`, `butler_lab_actionauth_test` and
+Integration and race checks use `butler_lab_core_test`, `butler_lab_actionauth_test` and
 `butler_lab_completion_test`, plus Redis database 1. The completion environment
 is explicitly supplied so its PostgreSQL fault fixtures cannot silently skip.
 Integration, race, migration and browser approval suites take a common lab lock
 before touching shared test fixtures, so concurrent invocations run in sequence.
 Destructive migration fixtures use additional dedicated databases; deployed
 application data is excluded.
+The older experimental `butler_test` database is retained and excluded from
+these checks because its applied migration history can contain superseded
+development schemas. The new core fixture starts from the checked-in migrations.
 Web checks run Vue/TypeScript checks, lint, functional Playwright fixtures, and a read-only browser
 smoke against the deployed services. Screenshot baselines have no committed
 references, so the visual-baseline test is excluded; the live smoke saves a
