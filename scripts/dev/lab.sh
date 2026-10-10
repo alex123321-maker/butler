@@ -106,7 +106,7 @@ case "$action" in
       --env NPM_CONFIG_CACHE=/cache/npm --env PLAYWRIGHT_BROWSERS_PATH=/cache/ms-playwright \
       --env BUTLER_LAB_SMOKE_BASE_URL=http://web:3000 --env BUTLER_LAB_SMOKE_SCREENSHOT=/cache/lab-ui.png \
       --entrypoint bash butler-lab-tool-browser -c \
-      'set -eu; npm ci; npm run lint; npx playwright install chromium; npm run test:e2e -- --grep-invert screenshots; node /src/scripts/dev/lab-web-smoke.mjs' \
+      'set -eu; npm ci; npm run typecheck; npm run lint; npx --no-install playwright install chromium; npm run test:e2e -- --grep-invert screenshots; node /src/scripts/dev/lab-web-smoke.mjs' \
       2>&1 | tee "$report"
     ;;
   *) printf 'Unknown action: %s\n' "$action" >&2; exit 2 ;;

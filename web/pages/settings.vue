@@ -353,7 +353,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import SettingsGroup from '~/components/SettingsGroup.vue'
-import { useSettingsData, type PromptPreview, type ProviderItem, type SettingItem, type SettingsComponent } from '~/composables/useSettings'
+import { useSettingsData, type PromptConfig, type PromptPreview, type ProviderItem, type SettingItem, type SettingsComponent } from '~/composables/useSettings'
 
 useHead({ title: 'Settings — Butler' })
 
@@ -369,7 +369,7 @@ const enterpriseInput = ref('')
 const codexInput = ref('')
 const promptBusy = ref(false)
 const previewBusy = ref(false)
-const promptState = ref({ configured_prompt: '', effective_prompt: '', enabled: true, source: 'default', updated_at: '', updated_by: '', available_placeholders: [] as string[] })
+const promptState = ref<PromptConfig>({ configured_prompt: '', effective_prompt: '', enabled: true, source: 'default', available_placeholders: [] })
 const promptDraft = ref('')
 const promptEnabled = ref(true)
 const previewSessionKey = ref('')

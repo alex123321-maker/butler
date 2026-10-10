@@ -9,6 +9,7 @@
     "lint": "npm run lint:ts && npm run lint:css",
     "lint:ts": "eslint .",
     "lint:css": "stylelint \"app/**/*.{css,vue}\" \"widgets/**/*.vue\" \"features/**/*.vue\" \"entities/**/*.vue\" \"shared/**/*.vue\" \"layouts/**/*.vue\" \"pages/**/*.vue\" \"components/**/*.vue\" \"assets/css/**/*.css\"",
+    "typecheck": "vue-tsc --noEmit",
     "preview": "nuxt preview",
     "test:e2e": "playwright test",
     "test:e2e:list": "playwright test --list",
@@ -35,7 +36,8 @@
     "stylelint-config-standard-vue": "^2.0.0",
     "tailwindcss": "^3.4.19",
     "typescript": "^5.8.2",
-    "vue-eslint-parser": "^10.4.0"
+    "vue-eslint-parser": "^10.4.0",
+    "vue-tsc": "3.3.13"
   },
   "overrides": {
     "simple-git": {

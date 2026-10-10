@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   ssr: false,
@@ -7,11 +9,11 @@ export default defineNuxtConfig({
   modules: ['@nuxtjs/tailwindcss', '@pinia/nuxt'],
 
   alias: {
-    '@app': '~/app',
-    '@widgets': '~/widgets',
-    '@features': '~/features',
-    '@entities': '~/entities',
-    '@shared': '~/shared',
+    '@app': fileURLToPath(new URL('./app', import.meta.url)),
+    '@widgets': fileURLToPath(new URL('./widgets', import.meta.url)),
+    '@features': fileURLToPath(new URL('./features', import.meta.url)),
+    '@entities': fileURLToPath(new URL('./entities', import.meta.url)),
+    '@shared': fileURLToPath(new URL('./shared', import.meta.url)),
   },
 
   app: {

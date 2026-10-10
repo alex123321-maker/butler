@@ -96,6 +96,7 @@ foreach ($file in $files) {
       continue
     }
     "^web/" {
+      [void]$tests.Add("cd web; npm run typecheck")
       [void]$tests.Add("cd web; npm run lint")
       [void]$tests.Add("cd web; npm run test:e2e")
       continue

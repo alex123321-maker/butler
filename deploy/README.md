@@ -60,7 +60,7 @@ Integration and race checks use `butler_test`, `butler_lab_actionauth_test` and
 is explicitly supplied so its PostgreSQL fault fixtures cannot silently skip.
 Destructive migration fixtures use additional dedicated databases; deployed
 application data is excluded.
-Web checks run lint, functional Playwright fixtures, and a read-only browser
+Web checks run Vue/TypeScript checks, lint, functional Playwright fixtures, and a read-only browser
 smoke against the deployed services. Screenshot baselines have no committed
 references, so the visual-baseline test is excluded; the live smoke saves a
 current UI screenshot in `.cache/lab-ui.png` on the lab.

@@ -150,7 +150,11 @@ export function useApiClient() {
   }
 
   async function post<T>(path: string, body?: unknown): Promise<T> {
-    return await $fetch<T>(`${baseURL}${path}`, { method: 'POST', body })
+    return await $fetch<T>(`${baseURL}${path}`, {
+      method: 'POST',
+      body: body === undefined ? undefined : JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 
   return { get, post, baseURL }
@@ -238,7 +242,7 @@ export interface DoctorReportData {
   status: string
   checked_at: string
   checks: DoctorCheckResult[]
-  config?: Array<{ key: string; effective_value: string; validation_status: string }>
+  config?: Array<{ key: string; effective_value: string; source: string; validation_status: string }>
 }
 
 export interface DoctorReport {

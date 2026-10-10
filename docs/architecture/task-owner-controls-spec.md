@@ -149,6 +149,6 @@ Validation on the isolated lab snapshot: all orchestrator packages plus action
 authorization, owner identity and transcript passed with PostgreSQL/Redis; the
 affected controller/ingress/execution/approval/API/Telegram/authorization/transcript
 packages passed under the Go race detector. Web lint and all eight functional
-Chromium fixtures passed. A full TypeScript check remains blocked by existing
-API client body typing, alias resolution and unrelated doctor/settings DTO errors;
-this change does not claim that check passed.
+Chromium fixtures passed. The integrated branch fixes baseline API body typing,
+alias resolution and doctor/settings DTOs; its pinned Vue/TypeScript check passed
+on the lab too.
