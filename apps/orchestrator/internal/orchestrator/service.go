@@ -138,6 +138,7 @@ type Config struct {
 		PinTranscript(context.Context, string, int64) error
 		CheckRunSources(context.Context, string) error
 	}
+	Skills     SkillCatalog
 	OwnerGoals interface {
 		ReadTaskAuthority(context.Context, string) (actionauth.Assignment, actionauth.Mandate, actionauth.GoalPolicy, error)
 	}
@@ -340,6 +341,9 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 	}
 	if cfg.Budgets != nil {
 		service.provider = &budgetedProvider{ModelProvider: service.provider, service: service}
+	}
+	if cfg.Skills != nil {
+		service.provider = &skillProtectedProvider{ModelProvider: service.provider, catalog: cfg.Skills}
 	}
 	// Provenance validation precedes admission; admission still sees the raw
 	// adapter's declared inference limits before its actual transport request.

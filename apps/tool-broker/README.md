@@ -1,5 +1,11 @@
 # Tool Broker
 
+The optional [reviewed procedural catalog](../../../docs/architecture/reviewed-skills.md)
+adds fixed local `skills.search/load/propose` operations. Skill text remains
+DATA and actual tools retain current action/approval/budget/source admission.
+Full skill deletion/restore and procedure acceptance is still pending; keep the
+operator flag disabled until its separate release gate passes.
+
 Every dispatch now uses `PrepareToolCall` and `AuthorizeToolCall` for the complete
 action, followed by `ExecuteToolCall.authorization_id`. PostgreSQL retains exact
 intent, grant state and bounded mandates. Approval is revalidated before secrets

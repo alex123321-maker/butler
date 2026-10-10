@@ -1,5 +1,10 @@
 # Orchestrator
 
+[Reviewed skills](../../docs/architecture/reviewed-skills.md) use descriptions
+before selected procedural DATA and reload current pins during recovery.
+The private evidence API reads owned task/result/effect/transcript/budget APIs;
+model verdicts never activate skills. Feature acceptance remains pending.
+
 Tool execution prepares the exact action through Broker, records required
 owner approval, then obtains a private dispatch grant tied to current task and
 worker versions. `/internal/action-context` validates PostgreSQL ownership and
