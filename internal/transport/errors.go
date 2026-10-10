@@ -90,7 +90,7 @@ func NormalizeError(err error, providerName string) *Error {
 
 	result := &Error{
 		Type:         ErrorTypeInternalTransportError,
-		Message:      err.Error(),
+		Message:      "provider operation failed",
 		Retryable:    false,
 		ProviderName: providerName,
 	}
@@ -107,9 +107,9 @@ func NormalizeError(err error, providerName string) *Error {
 
 	var httpErr *HTTPStatusError
 	if errors.As(err, &httpErr) {
-		result.ProviderCode = httpErr.Code
-		result.ProviderDetails = httpErr.Details
-		result.Message = httpErr.Error()
+		// HTTP error text, codes and details originate in an untrusted response.
+		// Status is the complete safe diagnostic contract.
+		result.Message = fmt.Sprintf("provider returned HTTP %d", httpErr.StatusCode)
 		switch httpErr.StatusCode {
 		case http.StatusTooManyRequests:
 			result.Type = ErrorTypeRateLimited

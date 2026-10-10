@@ -82,3 +82,5 @@ Race checks use the C toolchain already included in a disposable Go Debian
 container and run tests as UID 1000, keeping build/module caches on the storage disk.
 - browser, HTTP, webfetch, and doctor runtimes are runnable V1 services rather than skeleton placeholders
 - for Windows local-browser testing, install the native messaging host with `pwsh -NoProfile -File scripts/dev/install-browser-bridge-host.ps1 -Browser Chrome -ExtensionId <extension_id>`
+
+Network tool images use read-only filesystems, dropped capabilities, no-new-privileges and bounded PIDs/memory. HTTP/webfetch/Chromium join tool-runtime plus tool-egress, without the core backend. Doctor uses fixed read-only core diagnostics and no longer receives PG/Redis/model credentials. Operator restart-helper and separately approved user-tab relay are explicit exceptions. Apply the Compose changes before claiming runtime isolation; code tests do not alter a running deployment. See [security boundaries](../docs/architecture/agent-security-boundaries.md).

@@ -522,7 +522,7 @@ func TestExecuteRetainsWorkingMemoryOnFailure(t *testing.T) {
 	if snapshot.Status != "retain" {
 		t.Fatalf("expected retained working memory status, got %+v", snapshot)
 	}
-	if !strings.Contains(snapshot.ScratchJSON, "provider down") {
+	if !strings.Contains(snapshot.ScratchJSON, "provider operation failed") || strings.Contains(snapshot.ScratchJSON, "provider down") {
 		t.Fatalf("expected failure note in scratch payload, got %q", snapshot.ScratchJSON)
 	}
 	transient := transientStore.states["telegram:chat:failure:run-1"]

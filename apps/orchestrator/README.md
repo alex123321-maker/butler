@@ -290,3 +290,5 @@ atomic results immediately after revocation even if propagation is pending.
 The owner token stays outside model context and browser storage. Ordinary tasks
 and conversation remain possible without goal assignments. See
 [owner goals and mandates](../../docs/architecture/owner-goals-mandates-spec.md).
+
+Only typed kernel/operator/current owner policies are system instructions. Retrieved content, full transcript history, summary, task scratch and child observations remain data with source references; recovered known tool results do not become native orphan function responses. Provenance protection wraps the budgeted native provider. Production auxiliary extraction/summary/embedding jobs currently fail closed because they lack durable job-owned budget admission; profile/working/covered-summary reads remain available. Prompt preview/update and settings/provider mutations require owner proof. See [security boundaries](../../docs/architecture/agent-security-boundaries.md).

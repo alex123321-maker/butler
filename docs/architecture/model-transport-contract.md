@@ -806,3 +806,7 @@ Model Transport Layer в Butler — это provider-normalizing execution channe
 Главный принцип transport слоя Butler:
 
 **WebSocket-first там, где это возможно; единый logical contract всегда; внутреннее состояние Butler всегда важнее внешнего session state провайдера.**
+
+## Security and admitted serialization
+
+Only typed code-owned instructions carry system role; external/context/derived observations carry provenance as data. Secret-class inputs fail before serialization. Budget037 passes a private input byte cap and the native provider checks its complete actual request, including prior function calls, thought signatures and tool results, before HTTP. Other adapters have serialization guards but need verified capacity/cost declarations before budgeted production inference. HTTP error status is retained without untrusted body/code/details; no raw network error or response content enters durable error events. Production auxiliary model/embed adapters have no durable job-owned admission and remain disabled. See [agent security boundaries](agent-security-boundaries.md).

@@ -16,6 +16,7 @@ import (
 	"time"
 
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/security/egress/egresstest"
 )
 
 // This receiver implements an explicit key+fingerprint contract. Generic HTTP
@@ -84,9 +85,10 @@ func receiptFixture(t *testing.T) (*Service, *PostgresStore, *contexts, *toolbro
 	receiver := &receiptReceiver{created: map[string]string{}}
 	server := httptest.NewServer(http.HandlerFunc(receiver.serve))
 	t.Cleanup(server.Close)
-	call.ArgsJson = fmt.Sprintf(`{"method":"POST","url":%q}`, server.URL+"/create")
+	call.ArgsJson = fmt.Sprintf(`{"method":"POST","url":%q}`, egresstest.Origin+"/create")
+	contract.AllowedDomains = []string{"external.test"}
 	contract.ContractRevision = "receipt-fixture-v1"
-	contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "external_idempotency", VerificationMethod: "external_receipt_v1", IdempotencyHeader: "Idempotency-Key", ScopeOrigin: server.URL, VerificationUrl: server.URL + "/effects/{idempotency_key}"}
+	contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "external_idempotency", VerificationMethod: "external_receipt_v1", IdempotencyHeader: "Idempotency-Key", ScopeOrigin: egresstest.Origin, VerificationUrl: egresstest.Origin + "/effects/{idempotency_key}"}
 	return s, store, reader, call, contract, receiver, server
 }
 func logicalGrant(t *testing.T, s *Service, c *contexts, call *toolbrokerv1.ToolCall, contract *toolbrokerv1.ToolContract, ref string) Grant {
@@ -104,10 +106,10 @@ func logicalGrant(t *testing.T, s *Service, c *contexts, call *toolbrokerv1.Tool
 }
 func postReceipt(t *testing.T, server *httptest.Server, call *toolbrokerv1.ToolCall, e EffectRecord) *toolbrokerv1.ToolResult {
 	t.Helper()
-	q, _ := http.NewRequest(http.MethodPost, server.URL+"/create", strings.NewReader("fixture"))
+	q, _ := http.NewRequest(http.MethodPost, egresstest.Origin+"/create", strings.NewReader("fixture"))
 	q.Header.Set("Idempotency-Key", e.IdempotencyKey)
 	q.Header.Set("Butler-Action-Fingerprint", e.Fingerprint)
-	response, err := server.Client().Do(q)
+	response, err := egresstest.Client(server).Do(q)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -129,7 +131,7 @@ func observeEffect(t *testing.T, s *Service, store *PostgresStore, c *contexts, 
 	}
 	q, _ := http.NewRequest(http.MethodGet, verificationResource(e), nil)
 	q.Header.Set("Expected-Fingerprint", e.Fingerprint)
-	response, err := server.Client().Do(q)
+	response, err := egresstest.Client(server).Do(q)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -156,10 +158,10 @@ func TestEffectJournalLostAcknowledgementReconcilesWithoutReplay(t *testing.T) {
 			var result *toolbrokerv1.ToolResult
 			if fault == "after_accept_before_response" {
 				receiver.dropAck.Store(true)
-				q, _ := http.NewRequest(http.MethodPost, server.URL+"/create", strings.NewReader("fixture"))
+				q, _ := http.NewRequest(http.MethodPost, egresstest.Origin+"/create", strings.NewReader("fixture"))
 				q.Header.Set("Idempotency-Key", e.IdempotencyKey)
 				q.Header.Set("Butler-Action-Fingerprint", e.Fingerprint)
-				response, requestErr := server.Client().Do(q)
+				response, requestErr := egresstest.Client(server).Do(q)
 				if requestErr == nil {
 					response.Body.Close()
 					t.Fatal("recipient intentionally lost its acknowledgement")
@@ -282,7 +284,7 @@ func TestEffectJournalLogicalIdentityAndRecipientKey(t *testing.T) {
 		t.Fatal("known effect dispatched from another run")
 	}
 	call.ToolCallId = "changed-call"
-	call.ArgsJson = fmt.Sprintf(`{"method":"POST","url":%q,"body":"different"}`, server.URL+"/create")
+	call.ArgsJson = fmt.Sprintf(`{"method":"POST","url":%q,"body":"different"}`, egresstest.Origin+"/create")
 	if _, err = s.PrepareWithLogicalRef(ctx, call, contract, "permanent-slot"); err == nil {
 		t.Fatal("permanent identity accepted changed arguments")
 	}
@@ -381,7 +383,7 @@ func TestEffectCompensationIsASeparateApprovedIntent(t *testing.T) {
 		t.Fatal(err)
 	}
 	call.ToolCallId = "compensation-call"
-	call.ArgsJson = fmt.Sprintf(`{"method":"POST","url":%q,"body":"owner-requested-compensation"}`, server.URL+"/create")
+	call.ArgsJson = fmt.Sprintf(`{"method":"POST","url":%q,"body":"owner-requested-compensation"}`, egresstest.Origin+"/create")
 	prepared, err := s.PrepareWithLogicalRef(ctx, call, contract, "compensation-intent")
 	if err != nil {
 		t.Fatal(err)

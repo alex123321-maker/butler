@@ -613,3 +613,7 @@ Minimum covered categories:
 * common credential-like JSON/header fields such as `authorization`, `access_token`, `refresh_token`, `api_key`, `client_secret`, `cookie`, and `connection_string`.
 
 This sanitization is intended to protect memory stores and extraction prompts. It does not change Transcript Store raw audit semantics, which remain the source-of-truth history layer.
+
+## Runtime release and error boundary
+
+Public network reachability is not permission to disclose private context. Arbitrary reads require exact owner approval or current purpose-bound owner mandate unless the operator explicitly declares the domain. Broker validates current policy before inspection, then revalidates exact binding before deferred release. HTTP/browser mask reflected private credential/cookie/storage values; provider HTTP error bodies/codes/details are discarded. Ordinary model context, memory vectors and runtime logs never receive SecretStore values. Pattern sanitization supplements mediation and does not authorize an action. See [agent security boundaries](agent-security-boundaries.md).

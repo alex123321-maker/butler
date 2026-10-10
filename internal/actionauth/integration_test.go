@@ -121,6 +121,8 @@ func TestPostgresRefreshFenceAndRevokeMandate(t *testing.T) {
 	s, _, reader, _, call, contract := fixture(t)
 	s.store = store
 	reader.current.MandateID = "mandate"
+	// This test exercises legacy mandate fencing, not arbitrary data release.
+	contract.AllowedDomains = []string{"example.com"}
 	m := Mandate{ID: "mandate", OwnerID: "owner", TaskID: "task", TaskRevision: 7, ConstraintsRevision: 2, Revision: 1, Tools: []string{"http.request"}, Resources: []string{"https://example.com"}, Effects: []Effect{EffectCommit}, ExpiresAt: time.Now().Add(time.Hour)}
 	if err := store.PutMandate(ctx, m); err != nil {
 		t.Fatal(err)

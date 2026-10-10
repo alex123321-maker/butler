@@ -47,7 +47,7 @@ func TestCompletedRuntimeResultMustSatisfySchemaBeforeEvidence(t *testing.T) {
 			}
 			server := NewServer(reg, schemaResultExecutor{runtimeResult}, nil, nil)
 			fixture := setTestAuthority(server, nil)
-			result := dispatchForTest(t, server, fixture, &toolbrokerv1.ToolCall{ToolCallId: "call", RunId: "run", ToolName: "http.request", ArgsJson: `{"method":"GET","url":"https://example.com"}`}, false)
+			result := dispatchForTest(t, server, fixture, &toolbrokerv1.ToolCall{ToolCallId: "call", RunId: "run", ToolName: "http.request", ArgsJson: `{"method":"GET","url":"https://example.com"}`}, true)
 			if result.GetStatus() != "effect_unknown" || result.GetEffectState() != "effect_unknown" || result.GetResultJson() != "{}" {
 				t.Fatalf("invalid success became confirmed evidence: %+v", result)
 			}

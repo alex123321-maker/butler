@@ -2,6 +2,7 @@ package redact
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"net/url"
 	"sort"
 	"strings"
@@ -17,6 +18,12 @@ func Values(text string, values ...string) string {
 		}
 		for _, variant := range []string{value, url.QueryEscape(value), url.PathEscape(value), base64.StdEncoding.EncodeToString([]byte(value)), base64.RawStdEncoding.EncodeToString([]byte(value)), base64.URLEncoding.EncodeToString([]byte(value)), base64.RawURLEncoding.EncodeToString([]byte(value))} {
 			variants[variant] = true
+		}
+		// A normal tool result is JSON. Quotes, slashes and newlines in a
+		// resolved value must not evade the final Broker reflection boundary.
+		encoded, _ := json.Marshal(value)
+		if len(encoded) >= 2 {
+			variants[string(encoded[1:len(encoded)-1])] = true
 		}
 	}
 	ordered := make([]string, 0, len(variants))

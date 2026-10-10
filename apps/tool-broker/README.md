@@ -80,3 +80,5 @@ Current owner goal/purpose-policy and active-hours deadlines also cap the exact
 grant and runtime context. Claim rechecks the database clock after budget waits
 on the already held authority rows; expiry rolls back allowance without spending
 the grant or contacting a runtime. Original budget periods remain immutable.
+
+The release guard treats arbitrary network paths/queries/headers/body as potentially private. Reads outside an explicit operator domain declaration require exact owner approval or a live assigned owner-goal mandate with confirmed purpose/resource scope. Changed arguments cannot reuse the canonical proof; revoked authority is denied before secret inspection/DNS. This composes with the037 immutable byte reservation, not a model-controlled privacy scanner. See [security boundaries](../../docs/architecture/agent-security-boundaries.md).

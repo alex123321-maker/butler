@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/butler/butler/internal/transport"
 	"io"
 	"net/http"
 	"strings"
@@ -43,6 +44,9 @@ func NewOllamaProvider(cfg OllamaConfig, httpClient *http.Client) (*OllamaProvid
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: cfg.Timeout}
 	}
+	copyClient := *httpClient
+	copyClient.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	httpClient = &copyClient
 	return &OllamaProvider{config: cfg, client: httpClient}, nil
 }
 
@@ -68,38 +72,41 @@ func (p *OllamaProvider) EmbedQuery(ctx context.Context, text string) ([]float32
 		Input: text,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("embeddings/ollama: marshal request: %w", err)
+		return nil, fmt.Errorf("embeddings/ollama: marshal request failed")
 	}
 
+	if err := transport.CheckSerializedInput(ctx, len(body)); err != nil {
+		return nil, err
+	}
 	url := strings.TrimRight(p.config.BaseURL, "/") + "/api/embed"
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
-		return nil, fmt.Errorf("embeddings/ollama: create request: %w", err)
+		return nil, fmt.Errorf("embeddings/ollama: create request failed")
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := p.client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("embeddings/ollama: http request: %w", err)
+		return nil, fmt.Errorf("embeddings/ollama: http request failed")
 	}
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(io.LimitReader(resp.Body, 4<<20)) // 4 MB limit
 	if err != nil {
-		return nil, fmt.Errorf("embeddings/ollama: read response: %w", err)
+		return nil, fmt.Errorf("embeddings/ollama: read response failed")
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("embeddings/ollama: API error (HTTP %d): %s", resp.StatusCode, string(respBody))
+	if err := transport.ProviderHTTPError(resp); err != nil {
+		return nil, err
 	}
 
 	var result ollamaEmbedResponse
 	if err := json.Unmarshal(respBody, &result); err != nil {
-		return nil, fmt.Errorf("embeddings/ollama: decode response: %w", err)
+		return nil, fmt.Errorf("embeddings/ollama: decode response failed")
 	}
 
 	if result.Error != "" {
-		return nil, fmt.Errorf("embeddings/ollama: API error: %s", result.Error)
+		return nil, fmt.Errorf("embeddings/ollama: provider rejected the operation")
 	}
 
 	if len(result.Embeddings) == 0 {

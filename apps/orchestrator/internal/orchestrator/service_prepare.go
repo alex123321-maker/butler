@@ -2,6 +2,7 @@ package orchestrator
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -83,11 +84,27 @@ func (s *Service) attachMemoryContext(ctx context.Context, sessionKey, userID, u
 	if prepared == nil {
 		return nil
 	}
+	includeQuery := true
+	if s.config.OwnerGoals != nil && s.config.Tasks != nil {
+		if id := firstString(prepared.InputPayload, "task_id"); id != "" {
+			record, err := s.config.Tasks.Get(ctx, id)
+			if err != nil || record.SessionKey != sessionKey || record.OwnerID != userID || record.Status != "active" {
+				return fmt.Errorf("current memory task authority is required")
+			}
+			a, m, _, err := s.config.OwnerGoals.ReadTaskAuthority(ctx, id)
+			if err != nil {
+				return fmt.Errorf("memory data-release authority is unavailable")
+			}
+			if a.TaskID != "" && m.Privacy != "cloud_allowed" {
+				includeQuery = false
+			}
+		}
+	}
 	bundle, err := s.config.MemoryBundles.BuildBundle(ctx, memoryservice.BundleRequest{
 		SessionKey:   sessionKey,
 		UserID:       userID,
 		UserMessage:  userMessage,
-		IncludeQuery: true,
+		IncludeQuery: includeQuery,
 	})
 	if err != nil {
 		return err
@@ -145,6 +162,13 @@ func (s *Service) attachTranscriptContext(ctx context.Context, sessionKey string
 	full, err := s.transcript.GetTranscript(ctx, sessionKey)
 	if err != nil {
 		return fmt.Errorf("load session transcript: %w", err)
+	}
+	// Check the complete source before summary coverage removes its prefix.
+	// A historical secret label cannot be laundered through a covered summary.
+	for _, message := range full.Messages {
+		if historicalMessageOrigin(message).Sensitivity == content.Secret {
+			return content.ErrSecret
+		}
 	}
 	tail := full.Messages
 	coverageMode := "full_history_unversioned"
@@ -223,7 +247,9 @@ func (s *Service) attachPromptContext(ctx context.Context, prepared *preparedRun
 	}
 	prepared.Prompt = assemble()
 	modelItems := func() []transport.InputItem {
-		items := []transport.InputItem{content.Instruction(prepared.Prompt.TrustedInstructions(), content.Origin{Kind: content.OperatorInstruction, SourceRefs: []string{"operator:base_prompt:" + state.Source}, Sensitivity: content.Private})}
+		instructions := prepared.Prompt.TrustedInstructions()
+		ref := fmt.Sprintf("operator:base_prompt:%s:sha256:%x", state.Source, sha256.Sum256([]byte(instructions)))
+		items := []transport.InputItem{content.Instruction(instructions, content.Origin{Kind: content.OperatorInstruction, SourceRefs: []string{ref}, Sensitivity: content.Private})}
 		for _, section := range prepared.Prompt.Sections {
 			if section.Omitted || section.Name == "browser_strategy" {
 				continue

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/butler/butler/internal/transport"
 	"io"
 	"net/http"
 	"strings"
@@ -47,6 +48,9 @@ func NewProvider(cfg Config, httpClient *http.Client) (*Provider, error) {
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: cfg.Timeout}
 	}
+	copyClient := *httpClient
+	copyClient.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	httpClient = &copyClient
 	return &Provider{config: cfg, client: httpClient}, nil
 }
 
@@ -82,39 +86,38 @@ func (p *Provider) EmbedQuery(ctx context.Context, text string) ([]float32, erro
 		Input: text,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("embeddings: marshal request: %w", err)
+		return nil, fmt.Errorf("embeddings: marshal request failed")
 	}
 
+	if err := transport.CheckSerializedInput(ctx, len(body)); err != nil {
+		return nil, err
+	}
 	url := strings.TrimRight(p.config.BaseURL, "/") + "/embeddings"
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
-		return nil, fmt.Errorf("embeddings: create request: %w", err)
+		return nil, fmt.Errorf("embeddings: create request failed")
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+p.config.APIKey)
 
 	resp, err := p.client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("embeddings: http request: %w", err)
+		return nil, fmt.Errorf("embeddings: http request failed")
 	}
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(io.LimitReader(resp.Body, 2<<20)) // 2 MB limit
 	if err != nil {
-		return nil, fmt.Errorf("embeddings: read response: %w", err)
+		return nil, fmt.Errorf("embeddings: read response failed")
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		var apiErr embeddingResponse
-		if json.Unmarshal(respBody, &apiErr) == nil && apiErr.Error != nil {
-			return nil, fmt.Errorf("embeddings: API error (HTTP %d): %s", resp.StatusCode, apiErr.Error.Message)
-		}
-		return nil, fmt.Errorf("embeddings: API error (HTTP %d): %s", resp.StatusCode, string(respBody))
+	if err := transport.ProviderHTTPError(resp); err != nil {
+		return nil, err
 	}
 
 	var result embeddingResponse
 	if err := json.Unmarshal(respBody, &result); err != nil {
-		return nil, fmt.Errorf("embeddings: decode response: %w", err)
+		return nil, fmt.Errorf("embeddings: decode response failed")
 	}
 
 	if len(result.Data) == 0 {

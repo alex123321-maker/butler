@@ -102,7 +102,7 @@ func TestExecuteToolCallResolvesCredentials(t *testing.T) {
 	credentialBroker := credentials.NewToolCallBroker(credentials.NewBroker(metadataFixture{}), secretFixture{})
 	server := NewServer(reg, runtimeclient.New(nil), credentialBroker, nil)
 	fixture := setTestAuthority(server, credentialBroker)
-	result := dispatchForTest(t, server, fixture, &toolbrokerv1.ToolCall{ToolCallId: "tool-1", RunId: "run-1", ToolName: "http.request", ArgsJson: `{"method":"GET","url":"https://example.com","headers":{"Authorization":{"type":"credential_ref","alias":"github","field":"token"}}}`, CredentialRefs: []*toolbrokerv1.CredentialRef{{Type: "credential_ref", Alias: "github", Field: "token"}}}, false)
+	result := dispatchForTest(t, server, fixture, &toolbrokerv1.ToolCall{ToolCallId: "tool-1", RunId: "run-1", ToolName: "http.request", ArgsJson: `{"method":"GET","url":"https://example.com","headers":{"Authorization":{"type":"credential_ref","alias":"github","field":"token"}}}`, CredentialRefs: []*toolbrokerv1.CredentialRef{{Type: "credential_ref", Alias: "github", Field: "token"}}}, true)
 	if result.GetStatus() != "completed" {
 		t.Fatalf("expected completed result, got %+v", result)
 	}

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/butler/butler/internal/transport"
 	"io"
 	"net/http"
 	"strings"
@@ -47,6 +48,9 @@ func NewOpenAICaller(cfg OpenAICallerConfig, httpClient *http.Client) (*OpenAICa
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: cfg.Timeout}
 	}
+	copyClient := *httpClient
+	copyClient.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	httpClient = &copyClient
 	return &OpenAICaller{
 		apiKey:  cfg.APIKey,
 		model:   cfg.Model,
@@ -94,39 +98,38 @@ func (c *OpenAICaller) Complete(ctx context.Context, systemPrompt, userPrompt st
 		Temperature: 0.2,
 	})
 	if err != nil {
-		return "", fmt.Errorf("llmcaller: marshal request: %w", err)
+		return "", fmt.Errorf("llmcaller: marshal request failed")
 	}
 
+	if err := transport.CheckSerializedInput(ctx, len(body)); err != nil {
+		return "", err
+	}
 	url := strings.TrimRight(c.baseURL, "/") + "/chat/completions"
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
-		return "", fmt.Errorf("llmcaller: create request: %w", err)
+		return "", fmt.Errorf("llmcaller: create request failed")
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("llmcaller: http request: %w", err)
+		return "", fmt.Errorf("llmcaller: http request failed")
 	}
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(io.LimitReader(resp.Body, 4<<20)) // 4 MB limit
 	if err != nil {
-		return "", fmt.Errorf("llmcaller: read response: %w", err)
+		return "", fmt.Errorf("llmcaller: read response failed")
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		var apiErr chatCompletionResponse
-		if json.Unmarshal(respBody, &apiErr) == nil && apiErr.Error != nil {
-			return "", fmt.Errorf("llmcaller: API error (HTTP %d): %s", resp.StatusCode, apiErr.Error.Message)
-		}
-		return "", fmt.Errorf("llmcaller: API error (HTTP %d): %s", resp.StatusCode, string(respBody))
+	if err := transport.ProviderHTTPError(resp); err != nil {
+		return "", err
 	}
 
 	var result chatCompletionResponse
 	if err := json.Unmarshal(respBody, &result); err != nil {
-		return "", fmt.Errorf("llmcaller: decode response: %w", err)
+		return "", fmt.Errorf("llmcaller: decode response failed")
 	}
 
 	if len(result.Choices) == 0 {

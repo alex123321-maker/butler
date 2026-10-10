@@ -170,3 +170,5 @@ allowance limits/deadlines cannot be replenished by editing. Tokens remain in
 page memory and are cleared on unmount. The Chromium fixture verifies visible
 authority distinctions, amendment/revocation and absence of token storage; Vue
 template/type checking uses `npm run typecheck` on the lab.
+
+Settings and prompt writes/previews, provider login/logout and restart actions require the owner-control token. The Settings page keeps it only in page memory and sends Bearer proof; no token is persisted in browser storage. Read pages retain the existing deployment perimeter. Prompt preview is a human inspection artifact: interpolated documents/memory are not promoted into model system instructions.

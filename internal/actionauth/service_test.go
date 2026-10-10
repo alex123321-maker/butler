@@ -105,12 +105,14 @@ func (c *contexts) VerifyActionApproval(context.Context, ApprovalRequest) (Appro
 }
 
 type inspector struct {
+	calls    int
 	hash     string
 	approval bool
 	err      error
 }
 
 func (i *inspector) InspectToolCall(context.Context, *toolbrokerv1.ToolCall) (string, bool, error) {
+	i.calls++
 	return i.hash, i.approval, i.err
 }
 func fixture(t *testing.T) (*Service, *memoryStore, *contexts, *inspector, *toolbrokerv1.ToolCall, *toolbrokerv1.ToolContract) {
@@ -262,6 +264,7 @@ func TestGrantNeverReplaysAfterUnknownDispatch(t *testing.T) {
 }
 func TestBoundedMandateAndRevocation(t *testing.T) {
 	s, store, c, _, call, contract := fixture(t)
+	contract.AllowedDomains = []string{"example.com"}
 	c.current.MandateID = "mandate"
 	m := Mandate{ID: "mandate", OwnerID: "owner", TaskID: "task", TaskRevision: 7, ConstraintsRevision: 2, Revision: 1, Tools: []string{"http.request"}, Resources: []string{"https://example.com"}, Effects: []Effect{EffectCommit}, ExpiresAt: s.now().Add(time.Hour)}
 	if err := ValidateMandate(m, s.now()); err != nil {
@@ -303,6 +306,7 @@ func TestDuplicateJSONKeysAreDenied(t *testing.T) {
 
 func TestChangedAutonomyRechecksCurrentPolicyAtAuthorization(t *testing.T) {
 	s, _, c, _, call, contract := fixture(t)
+	contract.AllowedDomains = []string{"example.com"}
 	call.ArgsJson = `{"method":"GET","url":"https://example.com"}`
 	prepared, err := s.Prepare(context.Background(), call, contract)
 	if err != nil || prepared.RequiresApproval {

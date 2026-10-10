@@ -15,6 +15,7 @@ import (
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/credentials"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/security/egress/egresstest"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -25,15 +26,15 @@ type acceptedThenLostExecutor struct {
 
 func (e *acceptedThenLostExecutor) Execute(ctx context.Context, call *toolbrokerv1.ToolCall, _ *toolbrokerv1.ToolContract, _ []credentials.ResolvedSecret) (*toolbrokerv1.ToolResult, error) {
 	e.calls.Add(1)
-	request, _ := http.NewRequestWithContext(ctx, http.MethodPost, e.site.URL, nil)
-	response, err := e.site.Client().Do(request)
+	request, _ := http.NewRequestWithContext(ctx, http.MethodPost, egresstest.Origin, nil)
+	response, err := egresstest.Client(e.site).Do(request)
 	if err != nil {
 		return nil, err
 	}
 	response.Body.Close()
 	return nil, errors.New("injected response loss after external acceptance")
 }
-func TestBrokerPostgresLostExternalAcknowledgementStopsDuplicateDispatch(t *testing.T) {
+func brokerEffectDatabase(t *testing.T) *pgxpool.Pool {
 	dsn := os.Getenv("BUTLER_TEST_ACTIONAUTH_POSTGRES_URL")
 	if dsn == "" {
 		t.Skip("isolated PostgreSQL required")
@@ -74,7 +75,6 @@ func TestBrokerPostgresLostExternalAcknowledgementStopsDuplicateDispatch(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
-	var effects atomic.Int32
 	data, err := os.ReadFile(filepath.Join("..", "..", "..", "..", "migrations", "038_owner_goals_mandates.up.sql"))
 	if err != nil {
 		t.Fatal(err)
@@ -89,6 +89,12 @@ func TestBrokerPostgresLostExternalAcknowledgementStopsDuplicateDispatch(t *test
 	if _, err = pool.Exec(ctx, string(data)); err != nil {
 		t.Fatal(err)
 	}
+	return pool
+}
+func TestBrokerPostgresLostExternalAcknowledgementStopsDuplicateDispatch(t *testing.T) {
+	pool := brokerEffectDatabase(t)
+	ctx := context.Background()
+	var effects atomic.Int32
 	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { effects.Add(1); w.WriteHeader(201) }))
 	defer site.Close()
 	executor := &acceptedThenLostExecutor{site: site}
@@ -96,7 +102,7 @@ func TestBrokerPostgresLostExternalAcknowledgementStopsDuplicateDispatch(t *test
 	authority := newAuthFixture()
 	store := actionauth.NewPostgresStore(pool)
 	server.SetActionAuthorizer(actionauth.NewService(store, authority, nil))
-	call := &toolbrokerv1.ToolCall{RunId: "run", ToolCallId: "call", ToolName: "http.request", AutonomyMode: 3, ArgsJson: `{"method":"POST","url":"` + site.URL + `"}`}
+	call := &toolbrokerv1.ToolCall{RunId: "run", ToolCallId: "call", ToolName: "http.request", AutonomyMode: 3, ArgsJson: `{"method":"POST","url":"` + egresstest.Origin + `"}`}
 	prepared, err := server.PrepareToolCall(ctx, &toolbrokerv1.PrepareToolCallRequest{ToolCall: call, LogicalActionRef: "trusted-task-slot"})
 	if err != nil {
 		t.Fatal(err)

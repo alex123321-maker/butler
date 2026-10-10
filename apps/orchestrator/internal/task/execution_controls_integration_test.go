@@ -116,7 +116,7 @@ func TestAmendContinuationUsesCurrentProtectedContextIntegration(t *testing.T) {
 	request := <-p.started
 	var contextText string
 	for _, item := range request.InputItems {
-		if strings.Contains(item.Content, "Butler task context") {
+		if item.Role == "system" && strings.Contains(item.Content, "Butler task authority") {
 			contextText = item.Content
 		}
 	}

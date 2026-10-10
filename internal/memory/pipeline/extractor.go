@@ -9,6 +9,7 @@ import (
 
 	"github.com/butler/butler/internal/memory/sanitize"
 	"github.com/butler/butler/internal/memory/transcript"
+	"github.com/butler/butler/internal/security/content"
 )
 
 // ExtractionResult holds the structured output of LLM-based memory extraction.
@@ -111,6 +112,9 @@ Rules:
 
 // Extract processes a transcript and returns memory extraction candidates.
 func (e *LLMExtractor) Extract(ctx context.Context, sessionKey string, t transcript.Transcript) (*ExtractionResult, error) {
+	if transcriptOrigin(t, "").Sensitivity == content.Secret {
+		return nil, content.ErrSecret
+	}
 	userPrompt := formatTranscriptForExtraction(sessionKey, t)
 	if strings.TrimSpace(userPrompt) == "" {
 		return &ExtractionResult{}, nil
@@ -168,7 +172,7 @@ func parseExtractionResponse(response string) (*ExtractionResult, error) {
 
 	var result ExtractionResult
 	if err := json.Unmarshal([]byte(response), &result); err != nil {
-		return nil, fmt.Errorf("json decode: %w (response: %s)", err, truncate(response, 200))
+		return nil, fmt.Errorf("memory extraction response is invalid JSON")
 	}
 	return &result, nil
 }

@@ -84,6 +84,9 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	if err := CheckExecutionPolicy(c, b.Effect); err != nil {
 		return b, false, err
 	}
+	if _, err := NetworkReleaseRequired(call, contract); err != nil {
+		return b, false, err
+	}
 	if c.Authority != nil {
 		m, err := s.store.GetMandate(ctx, c.Authority.MandateID)
 		if err != nil || CheckAssignedAction(m, b, s.now()) != nil {
@@ -123,13 +126,17 @@ func (s *Service) PrepareWithLogicalRef(ctx context.Context, call *toolbrokerv1.
 	if c.AutonomyMode == 1 && (b.Effect != EffectRead || len(b.CredentialRefs) > 0) {
 		return PreparedAction{}, fmt.Errorf("mode_0 permits only actions with verified read effects without credentials")
 	}
-	requires := c.AutonomyMode == 2 || contract.GetRequiresApproval() || b.Effect != EffectRead || credentialApproval
+	release, err := NetworkReleaseRequired(call, contract)
+	if err != nil {
+		return PreparedAction{}, err
+	}
+	requires := c.AutonomyMode == 2 || contract.GetRequiresApproval() || b.Effect != EffectRead || credentialApproval || release
 	if c.MandateID != "" && c.AutonomyMode >= 3 && !contract.GetRequiresApproval() && !credentialApproval {
 		m, err := s.store.GetMandate(ctx, c.MandateID)
 		if err != nil {
 			return PreparedAction{}, fmt.Errorf("configured mandate is unavailable")
 		}
-		if mandateAllows(m, b, s.now()) {
+		if releaseMandateAllowed(m, b, release, s.now()) {
 			requires = false
 		}
 	}
@@ -179,7 +186,11 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 	if c.AutonomyMode == 1 && (b.Effect != EffectRead || len(b.CredentialRefs) > 0) {
 		return Grant{}, fmt.Errorf("current mode_0 policy forbids this action")
 	}
-	requiresApproval := c.AutonomyMode == 2 || contract.GetRequiresApproval() || b.Effect != EffectRead || credentialApproval
+	release, err := NetworkReleaseRequired(call, contract)
+	if err != nil {
+		return Grant{}, err
+	}
+	requiresApproval := c.AutonomyMode == 2 || contract.GetRequiresApproval() || b.Effect != EffectRead || credentialApproval || release
 	i, err := s.store.GetIntent(ctx, actionID)
 	if err != nil || b.ActionID != actionID || i.Binding.ActionHash != b.ActionHash || !i.ExpiresAt.After(s.now()) {
 		return Grant{}, fmt.Errorf("prepared action is missing, stale or changed")
@@ -207,7 +218,7 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 			return Grant{}, fmt.Errorf("this action requires exact user approval")
 		}
 		m, err := s.store.GetMandate(ctx, mandateID)
-		if err != nil || !mandateAllows(m, b, s.now()) {
+		if err != nil || !releaseMandateAllowed(m, b, release, s.now()) {
 			return Grant{}, fmt.Errorf("mandate does not authorize this action")
 		}
 		g.MandateID = m.ID
@@ -253,12 +264,19 @@ func (s *Service) Verify(ctx context.Context, call *toolbrokerv1.ToolCall, contr
 			return Grant{}, err
 		}
 	}
+	release, err := NetworkReleaseRequired(call, contract)
+	if err != nil {
+		return Grant{}, err
+	}
+	if release && g.ApprovalID == "" && g.MandateID == "" {
+		return Grant{}, fmt.Errorf("current data-release authorization is required")
+	}
 	if g.MandateID != "" {
 		if g.MandateID != c.MandateID {
 			return Grant{}, fmt.Errorf("mandate assignment changed")
 		}
 		m, err := s.store.GetMandate(ctx, g.MandateID)
-		if err != nil || m.Revision != g.MandateRevision || !mandateAllows(m, b, s.now()) {
+		if err != nil || m.Revision != g.MandateRevision || !releaseMandateAllowed(m, b, release, s.now()) {
 			return Grant{}, fmt.Errorf("mandate is stale or revoked")
 		}
 	}

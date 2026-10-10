@@ -197,7 +197,14 @@ func New(ctx context.Context) (*App, error) {
 	episodicStore := episodic.NewStore(postgres.Pool())
 	chunkStore := chunks.NewStore(postgres.Pool())
 
-	embeddingProvider, pipelineWorker := configureMemoryPipeline(log, cfg, authManager, m, pipelineQueue, transcriptStore, summaryStore, profileStore, episodicStore, chunkStore)
+	memoryRuntimeConfig := cfg
+	if memoryRuntimeConfig.MemoryPipelineEnabled {
+		// Completed-run jobs need their own durable admission; they cannot
+		// borrow a historical live lease. The legacy cloud path has none yet.
+		log.Warn("memory model calls denied: durable auxiliary budget admission is unavailable")
+		memoryRuntimeConfig.MemoryPipelineEnabled = false
+	}
+	embeddingProvider, pipelineWorker := configureMemoryPipeline(log, memoryRuntimeConfig, authManager, m, pipelineQueue, transcriptStore, summaryStore, profileStore, episodicStore, chunkStore)
 	finalResults := completion.New(postgres.Pool())
 	finalResults.Evidence = effectEvidence{journal: actionauth.NewPostgresStore(postgres.Pool())}
 	outboxWorker := &deliveryoutbox.Worker{Store: finalResults.Outbox}

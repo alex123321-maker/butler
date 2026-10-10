@@ -11,6 +11,7 @@ import (
 
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/embeddings"
+	"github.com/butler/butler/internal/memory/sanitize"
 	"github.com/butler/butler/internal/metrics"
 	"github.com/butler/butler/internal/security/content"
 )
@@ -147,6 +148,7 @@ func New(cfg Config) *Service {
 }
 
 func (s *Service) BuildBundle(ctx context.Context, req BundleRequest) (Bundle, error) {
+	req.UserMessage = sanitize.Text(req.UserMessage)
 	scopes := s.scopes(req.SessionKey, req.UserID)
 	profileEntries, err := s.loadProfile(ctx, scopes)
 	if err != nil {
@@ -227,7 +229,7 @@ func (s *Service) loadEpisodes(ctx context.Context, scopes []Scope, userMessage 
 	}
 	queryEmbedding, err := s.config.Embeddings.EmbedQuery(ctx, userMessage)
 	if err != nil {
-		s.log.Warn("episodic retrieval skipped; embedding query failed", slog.String("error", err.Error()))
+		s.log.Warn("episodic retrieval skipped; embedding query failed", slog.String("error_class", fmt.Sprintf("%T", err)))
 		return nil, nil
 	}
 	if len(queryEmbedding) != embeddings.VectorDimensions() {
@@ -255,7 +257,7 @@ func (s *Service) loadEpisodes(ctx context.Context, scopes []Scope, userMessage 
 		}
 		keywordMatches, keywordErr := s.loadKeywordEpisodes(ctx, scope, userMessage)
 		if keywordErr != nil {
-			s.log.Warn("episodic keyword retrieval skipped", slog.String("scope_type", scope.Type), slog.String("error", keywordErr.Error()))
+			s.log.Warn("episodic keyword retrieval skipped", slog.String("scope_type", scope.Type), slog.String("error_class", fmt.Sprintf("%T", keywordErr)))
 			continue
 		}
 		for _, item := range keywordMatches {
@@ -398,7 +400,7 @@ func (s *Service) loadSummary(ctx context.Context, sessionKey string) string {
 	}
 	summary, err := s.config.SummaryReader.GetSummary(ctx, sessionKey)
 	if err != nil {
-		s.log.Warn("session summary retrieval failed", slog.String("session_key", sessionKey), slog.String("error", err.Error()))
+		s.log.Warn("session summary retrieval failed", slog.String("session_key", sessionKey), slog.String("error_class", fmt.Sprintf("%T", err)))
 		return ""
 	}
 	return strings.TrimSpace(summary)

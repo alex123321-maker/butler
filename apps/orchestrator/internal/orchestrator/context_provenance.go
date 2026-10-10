@@ -1,6 +1,7 @@
 package orchestrator
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/security/content"
@@ -8,11 +9,21 @@ import (
 )
 
 func historicalMessageItem(message transcript.Message, role, text string) transport.InputItem {
+	item := content.HistoricalMessage(role, text, "transcript:"+message.MessageID)
+	item.Metadata["butler_provenance"] = historicalMessageOrigin(message)
+	return item
+}
+
+func historicalMessageOrigin(message transcript.Message) content.Origin {
 	ref := "transcript:" + message.MessageID
 	if message.MessageID == "" {
 		ref = fmt.Sprintf("session:%s:run:%s:sequence:%d", message.SessionKey, message.RunID, message.Sequence)
 	}
-	return content.HistoricalMessage(role, text, ref)
+	var metadata struct {
+		Provenance json.RawMessage `json:"butler_provenance"`
+	}
+	_ = json.Unmarshal([]byte(message.MetadataJSON), &metadata)
+	return content.StoredDataOrigin(content.MemoryDerived, ref, string(metadata.Provenance))
 }
 
 func memorySourceRefs(bundle map[string]any, section string) []string {
