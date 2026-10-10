@@ -34,6 +34,27 @@ The dev server starts on `http://localhost:3000`.
 
 ## Production build
 
+The dependency baseline uses patched Nuxt 3 and Vue 3 releases and matching
+`postcss-html` / Vue Stylelint configuration major versions.
+The temporary `simple-git` override selects 4.0.1 and its patched argv parser
+2.0.1 because stable DevTools still requests the affected 3.x branch. Remove
+this override once its upstream dependency range admits the fixed versions.
+DevTools is disabled and its redundant direct dependency is removed: its stable
+Git helper integration expects an export removed in simple-git 4. It can be
+enabled again after upstream supports the patched helper. Docker uses `npm ci`
+with Nuxt configuration present, so installation respects this setting and the
+reviewed lockfile before application source is built.
+See the upstream [DevTools advisory](https://github.com/nuxt/nuxt/security/advisories/GHSA-279x-mwfv-vcqv)
+and [argv parser advisory](https://github.com/steveukx/git-js/security/advisories/GHSA-v5rq-49vh-5v5c).
+
+On 2026-10-11, the lab lockfile audit reported zero critical findings, down from
+five in the previous lockfile. Four moderate and twenty high findings remain,
+including unfixed dependency chains in the development/build tooling. The audit
+is an inventory, not a claim that every package is exploitable in the deployed
+application. Recheck with `npm audit --json`; do not force incompatible downgrades
+suggested by the audit tool. Broader runtime isolation and credential protection
+remain tracked separately in issue #31.
+
 ```bash
 npm run build
 node .output/server/index.mjs

@@ -4,7 +4,8 @@ FROM node:22-alpine AS build
 WORKDIR /app
 
 COPY web/package.json web/package-lock.json* ./
-RUN --mount=type=cache,target=/root/.npm npm install
+COPY web/nuxt.config.ts ./
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 COPY web/ .
 RUN npm run build
