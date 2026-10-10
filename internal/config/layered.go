@@ -48,7 +48,7 @@ func loadOrchestratorLayered(get envGetter, settings []Setting) (OrchestratorCon
 	// operator environment may choose its destination, never stored settings.
 	cfg.ExtensionControlURL, _ = get("BUTLER_EXTENSION_CONTROL_URL")
 	cfg.ExtensionControlURL = strings.TrimSpace(cfg.ExtensionControlURL)
-	if validationErr := validateOptionalURL(cfg.ExtensionControlURL); validationErr != nil {
+	if validationErr := validateOperatorControlEndpoint(cfg.ExtensionControlURL, "/internal/extensions"); validationErr != nil {
 		return cfg, snapshot, fmt.Errorf("invalid operator extension control endpoint")
 	}
 	if conditionalErr := validateOrchestratorConditionalConfig(cfg); conditionalErr != nil {
