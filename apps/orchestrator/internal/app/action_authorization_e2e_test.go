@@ -216,6 +216,14 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer client.Close()
+	untrusted, err := tools.Dial(brokerAddress)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer untrusted.Close()
+	if _, err := untrusted.PrepareAction(ctx, &toolbrokerv1.ToolCall{RunId: run.GetRunId(), ToolCallId: "forged-worker", ToolName: "browser.open", ArgsJson: `{"url":"https://example.com"}`, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2}); err == nil {
+		t.Fatal("knowing run_id allowed untrusted caller to prepare actions")
+	}
 	var observation map[string]any
 	sequence := 0
 	newCall := func(name string, args map[string]any, refs ...*toolbrokerv1.CredentialRef) *toolbrokerv1.ToolCall {

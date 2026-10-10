@@ -106,6 +106,7 @@ func (s *Server) ExecuteToolCall(ctx context.Context, req *toolbrokerv1.ExecuteT
 		return &toolbrokerv1.ExecuteToolCallResponse{Result: authorizationErrorResult(req.GetToolCall(), "authorization already dispatched, expired or revoked; do not replay")}, nil
 	}
 	result, err := s.executor.Execute(ctx, req.GetToolCall(), contract, resolved)
+	result = redactResult(result, resolved)
 	// Dispatch completion is not evidence of the external effect. A runtime
 	// failure or timeout retains an unknown outcome and never permits replay.
 	outcome := "dispatch_completed"
@@ -116,14 +117,29 @@ func (s *Server) ExecuteToolCall(ctx context.Context, req *toolbrokerv1.ExecuteT
 	defer cancel()
 	if finishErr := s.authorizer.Finish(finishCtx, grant.ID, outcome); finishErr != nil {
 		s.log.Error("action dispatch outcome recording failed", slog.String("authorization_id", grant.ID))
-		return &toolbrokerv1.ExecuteToolCallResponse{Result: authorizationErrorResult(req.GetToolCall(), "dispatch outcome is unknown; do not replay")}, nil
+		return &toolbrokerv1.ExecuteToolCallResponse{Result: unknownResult(req.GetToolCall(), grant.Binding.ActionID)}, nil
 	}
 	if err != nil {
-		s.log.Error("tool execution failed", slog.String("tool_name", req.GetToolCall().GetToolName()), slog.String("tool_call_id", req.GetToolCall().GetToolCallId()), slog.String("error", err.Error()))
-		return &toolbrokerv1.ExecuteToolCallResponse{Result: runtimeErrorResult(req.GetToolCall(), contract, err)}, nil
+		s.log.Error("tool execution outcome unknown", slog.String("tool_name", req.GetToolCall().GetToolName()), slog.String("tool_call_id", req.GetToolCall().GetToolCallId()))
+		return &toolbrokerv1.ExecuteToolCallResponse{Result: unknownResult(req.GetToolCall(), grant.Binding.ActionID)}, nil
+	}
+	if outcome == "unknown" {
+		if result == nil {
+			result = unknownResult(req.GetToolCall(), grant.Binding.ActionID)
+		} else {
+			result.Status = "effect_unknown"
+			result.Error = &toolbrokerv1.ToolError{ErrorClass: commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR, Message: "external effect outcome is unknown; verify before any new attempt", Retryable: false, DetailsJson: fmt.Sprintf(`{"action_id":%q,"dispatch_outcome":"unknown"}`, grant.Binding.ActionID)}
+		}
 	}
 	s.log.Info("tool execution routed", slog.String("tool_name", req.GetToolCall().GetToolName()), slog.String("tool_call_id", req.GetToolCall().GetToolCallId()), slog.String("runtime_target", contract.GetRuntimeTarget()))
 	return &toolbrokerv1.ExecuteToolCallResponse{Result: result}, nil
+}
+
+func unknownResult(call *toolbrokerv1.ToolCall, actionID string) *toolbrokerv1.ToolResult {
+	result := authorizationErrorResult(call, "external effect outcome is unknown; verify before any new attempt")
+	result.Status = "effect_unknown"
+	result.Error.DetailsJson = fmt.Sprintf(`{"action_id":%q,"dispatch_outcome":"unknown"}`, actionID)
+	return result
 }
 
 func (s *Server) resolveAuthorizedCredentials(ctx context.Context, call *toolbrokerv1.ToolCall, grant actionauth.Grant, contract *toolbrokerv1.ToolContract) ([]credentials.ResolvedSecret, error) {

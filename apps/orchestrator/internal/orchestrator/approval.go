@@ -2,6 +2,7 @@ package orchestrator
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/butler/butler/internal/actionauth"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -9,6 +10,8 @@ import (
 	"sync"
 	"time"
 )
+
+var ErrActionOutcomeUnknown = errors.New("external action outcome is unknown; owner verification required before any new attempt")
 
 type ActionAuthorizer interface {
 	PrepareAction(context.Context, *toolbrokerv1.ToolCall) (actionauth.PreparedAction, error)

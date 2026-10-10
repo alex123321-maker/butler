@@ -303,6 +303,9 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	if err := s.checkpoint(ctx, current.GetRunId(), "tool_result_recorded", map[string]any{"tool_call_id": toolCallID, "action_id": prepared.Binding.ActionID}); err != nil {
 		return nil, current, fmt.Errorf("persist known tool result checkpoint: %w", err)
 	}
+	if result.GetStatus() == "effect_unknown" {
+		return nil, current, ErrActionOutcomeUnknown
+	}
 	if s.config.Artifacts != nil {
 		if _, saveErr := s.config.Artifacts.SaveToolResult(ctx, current.GetRunId(), current.GetSessionKey(), toolCallID, requested.ToolName, normalizeToolStatus(result.GetStatus()), toolResultPayload(result), finishedAt); saveErr != nil {
 			runLog.Warn("failed to persist tool_result artifact", slog.String("tool_call_id", toolCallID), slog.String("error", saveErr.Error()))
