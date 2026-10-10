@@ -21,6 +21,7 @@ import (
 	"github.com/butler/butler/internal/budget"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/owneridentity"
+	"github.com/butler/butler/internal/security/egress/egresstest"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -215,7 +216,7 @@ func newAllowedAction(t *testing.T, f *fixture, pool *pgxpool.Pool, loseACK bool
 	}))
 	t.Cleanup(recipient.Close)
 	m := f.m
-	m.ResourceScopes = []actionauth.ResourceScope{{Origin: recipient.URL, PathPrefix: "/test-service"}}
+	m.ResourceScopes = []actionauth.ResourceScope{{Origin: egresstest.Origin, PathPrefix: "/test-service"}}
 	r, err := f.manager.PutMandate(f.actor("recipient-scope"), goal.MandateRequest{Mandate: m, ExpectedRevision: m.Revision})
 	if err != nil {
 		t.Fatal(err)
@@ -237,8 +238,8 @@ func newAllowedAction(t *testing.T, f *fixture, pool *pgxpool.Pool, loseACK bool
 	c.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	store.SetBudgets(c)
 	s := actionauth.NewService(store, reader, nil)
-	call := &toolbrokerv1.ToolCall{RunId: id, ToolCallId: "recover-synthetic-service", ToolName: "http.request", AutonomyMode: 3, ArgsJson: fmt.Sprintf(`{"method":"POST","url":%q}`, recipient.URL+"/test-service/recover?procedure=test")}
-	contract := &toolbrokerv1.ToolContract{ToolName: "http.request", Status: "enabled", InputSchemaJson: `{"type":"object"}`, ContractRevision: "synthetic-procedure-v1", RuntimeTarget: "fixture:http", EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "external_idempotency", VerificationMethod: "external_receipt_v1", IdempotencyHeader: "Idempotency-Key", ScopeOrigin: recipient.URL}}
+	call := &toolbrokerv1.ToolCall{RunId: id, ToolCallId: "recover-synthetic-service", ToolName: "http.request", AutonomyMode: 3, ArgsJson: fmt.Sprintf(`{"method":"POST","url":%q}`, egresstest.Origin+"/test-service/recover?procedure=test")}
+	contract := &toolbrokerv1.ToolContract{ToolName: "http.request", Status: "enabled", InputSchemaJson: `{"type":"object"}`, ContractRevision: "synthetic-procedure-v1", RuntimeTarget: "fixture:http", EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "external_idempotency", VerificationMethod: "external_receipt_v1", IdempotencyHeader: "Idempotency-Key", ScopeOrigin: egresstest.Origin}}
 	prepared, err := s.PrepareWithLogicalRef(f.ctx, call, contract, "trusted-recovery-slot")
 	if err != nil {
 		t.Fatal(err)
@@ -264,7 +265,7 @@ func (a allowedAction) dispatch(t *testing.T, ctx context.Context, loseACK bool)
 	}
 	request.Header.Set("Idempotency-Key", a.effect.IdempotencyKey)
 	request.Header.Set("Butler-Action-Fingerprint", a.effect.Fingerprint)
-	response, err := a.recipient.Client().Do(request)
+	response, err := egresstest.Client(a.recipient).Do(request)
 	var result *toolbrokerv1.ToolResult
 	if loseACK {
 		if err == nil {

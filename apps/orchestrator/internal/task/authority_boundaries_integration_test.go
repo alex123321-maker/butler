@@ -24,6 +24,7 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/ownership"
+	"github.com/butler/butler/internal/security/egress/egresstest"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -195,8 +196,8 @@ func newBoundaryAction(t *testing.T, f *controlsFixture, pool *pgxpool.Pool, run
 	}
 	store := actionauth.NewPostgresStore(pool)
 	service := actionauth.NewService(store, reader, nil)
-	call := &toolbrokerv1.ToolCall{RunId: runID, ToolCallId: "send-once", ToolName: "http.request", AutonomyMode: 3, ArgsJson: fmt.Sprintf(`{"method":"POST","url":%q}`, receiver.URL+"/send")}
-	contract := &toolbrokerv1.ToolContract{ToolName: call.ToolName, Status: "enabled", InputSchemaJson: `{"type":"object"}`, ContractRevision: "owner-boundary-receipt-v1", RuntimeTarget: "fixture:http", EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "external_idempotency", VerificationMethod: "external_receipt_v1", IdempotencyHeader: "Idempotency-Key", ScopeOrigin: receiver.URL}}
+	call := &toolbrokerv1.ToolCall{RunId: runID, ToolCallId: "send-once", ToolName: "http.request", AutonomyMode: 3, ArgsJson: fmt.Sprintf(`{"method":"POST","url":%q}`, egresstest.Origin+"/send")}
+	contract := &toolbrokerv1.ToolContract{ToolName: call.ToolName, Status: "enabled", InputSchemaJson: `{"type":"object"}`, ContractRevision: "owner-boundary-receipt-v1", RuntimeTarget: "fixture:http", EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "external_idempotency", VerificationMethod: "external_receipt_v1", IdempotencyHeader: "Idempotency-Key", ScopeOrigin: egresstest.Origin}}
 	prepared, err := service.PrepareWithLogicalRef(f.ctx, call, contract, "trusted-send-slot")
 	if err != nil {
 		t.Fatal(err)
@@ -235,13 +236,13 @@ func newBoundaryAction(t *testing.T, f *controlsFixture, pool *pgxpool.Pool, run
 // contacts a real HTTP recipient; no model verdict supplies outcome evidence.
 func (a boundaryAction) dispatch(t *testing.T, ctx context.Context, loseACK bool) actionauth.EffectRecord {
 	t.Helper()
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, a.receiver.URL+"/send", strings.NewReader("fixture-send"))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, a.grant.Binding.Resource, strings.NewReader("fixture-send"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	request.Header.Set("Idempotency-Key", a.effect.IdempotencyKey)
 	request.Header.Set("Butler-Action-Fingerprint", a.effect.Fingerprint)
-	response, err := a.receiver.Client().Do(request)
+	response, err := egresstest.Client(a.receiver).Do(request)
 	var result *toolbrokerv1.ToolResult
 	if loseACK {
 		if err == nil {

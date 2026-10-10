@@ -14,6 +14,7 @@ import (
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/budget"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/security/egress/egresstest"
 )
 
 func TestBroadMandateRejectsForeignAccountAndExhaustedAllowanceIntegration(t *testing.T) {
@@ -36,7 +37,7 @@ func TestBroadMandateRejectsForeignAccountAndExhaustedAllowanceIntegration(t *te
 	a := newAllowedAction(t, f, worker, false)
 	outside := *a.call
 	outside.ToolCallId = "foreign-account"
-	outside.ArgsJson = fmt.Sprintf(`{"method":"POST","url":%q}`, a.recipient.URL+"/work-account/recover")
+	outside.ArgsJson = fmt.Sprintf(`{"method":"POST","url":%q}`, egresstest.Origin+"/work-account/recover")
 	if _, err = a.service.PrepareWithLogicalRef(f.ctx, &outside, a.contract, "foreign-account-slot"); !errors.Is(err, actionauth.ErrOwnerAuthority) {
 		t.Fatal("broad service authority escaped into foreign account", err)
 	}
