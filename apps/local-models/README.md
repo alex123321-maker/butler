@@ -1,5 +1,13 @@
 # Local auxiliary models
 
+Two text-only decision profiles are present but disabled in the default catalog.
+The separate operator evaluation catalog enables pinned GLiNER Decide and d1
+CPU FP32 solely for shadow comparison. Reviewed d1 code/config hashes are checked
+before its local offline loader; complete prompt encoding must fit without
+truncation. There are no decision-driven task/tool/verification hooks. See
+`deploy/local-models/decision-code-review.md`; runtime support alone is not
+Russian quality acceptance or a production model selection.
+
 The optional versioned memory adapter is in `internal/memory/semantic`; it uses
 this shared service with explicit query/document/code modes and 768/256d identity.
 Production memory query/indexing stays disabled pending trusted run/job admission

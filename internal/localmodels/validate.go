@@ -69,15 +69,17 @@ func validateRequest(p *pb.ModelProfile, r *pb.InferRequest) error {
 		}
 	case *pb.InferRequest_Classify:
 		cap = pb.Capability_CAPABILITY_CLASSIFY
-		if input.Classify == nil || !validText(input.Classify.Text) || len(input.Classify.Labels) < 2 {
+		if input.Classify == nil || !validText(input.Classify.Text) || len(input.Classify.Labels) < 2 || len(input.Classify.Labels) > 16 {
 			return fault(Invalid)
 		}
 		count = 1
 		bytes = len(input.Classify.Text)
+		seen := map[string]bool{}
 		for _, label := range input.Classify.Labels {
-			if !validText(label) {
+			if !validText(label) || len(label) > 128 || seen[label] {
 				return fault(Invalid)
 			}
+			seen[label] = true
 			bytes += len(label)
 		}
 	case *pb.InferRequest_Media:

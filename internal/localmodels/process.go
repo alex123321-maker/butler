@@ -63,7 +63,7 @@ func (b *Process) Healthy(context.Context) bool {
 	return true
 }
 func (b *Process) Verify(_ context.Context, p *pb.ModelProfile) error {
-	runtime := map[string]string{"google/embeddinggemma-2": "torch-sentence-transformers", "Qwen/Qwen3-Reranker-0.6B": "torch-transformers", "fastino/gliner2.5-multi-v1": "torch-gliner2"}[p.Model]
+	runtime := map[string]string{"google/embeddinggemma-2": "torch-sentence-transformers", "Qwen/Qwen3-Reranker-0.6B": "torch-transformers", "fastino/gliner2.5-multi-v1": "torch-gliner2", "fastino/GLiNER2.5-multi-Decide": "torch-gliner2", "LiquidAI/d1-omni-600M": "torch-d1-reviewed"}[p.Model]
 	if runtime == "" || p.Runtime != runtime || p.Format != "safetensors" || (p.Precision != "BF16" && p.Precision != "FP32") || len(p.Revision) != 40 {
 		return fault(Unavailable)
 	}
@@ -85,6 +85,12 @@ func (b *Process) Verify(_ context.Context, p *pb.ModelProfile) error {
 		RuntimeVersion string `json:"runtime_version"`
 	}
 	if json.Unmarshal(data, &meta) != nil || meta.Model != p.Model || meta.Revision != p.Revision || meta.RuntimeVersion != p.RuntimeVersion {
+		return fault(Unavailable)
+	}
+	if p.Model == "LiquidAI/d1-omni-600M" {
+		return b.verifyDecisionCode(p)
+	}
+	if p.Model == "fastino/GLiNER2.5-multi-Decide" && (p.Revision != DecideRevision || p.RuntimeVersion != "torch2.10.0+cu128/transformers5.19.0/gliner2.1.0" || p.Precision != "FP32" || p.PreferredDevice != "cpu" || p.PreprocessingVersion != "gliner2.5-decision-v1") {
 		return fault(Unavailable)
 	}
 	return nil
@@ -311,7 +317,8 @@ func (b *Process) rank(ctx context.Context, p *pb.ModelProfile, input *pb.Rerank
 }
 func validScore(s float64) bool { return !math.IsNaN(s) && !math.IsInf(s, 0) && s >= 0 && s <= 1 }
 func (b *Process) extract(ctx context.Context, p *pb.ModelProfile, r *pb.InferRequest, device string) (*pb.InferResponse, error) {
-	if p.Model != "fastino/gliner2.5-multi-v1" || device != "cpu" || p.PreprocessingVersion != "gliner2.5-schema-v1" {
+	supported := p.Model == "fastino/gliner2.5-multi-v1" && p.PreprocessingVersion == "gliner2.5-schema-v1" || p.Model == "fastino/GLiNER2.5-multi-Decide" && p.PreprocessingVersion == "gliner2.5-decision-v1" || p.Model == "LiquidAI/d1-omni-600M" && p.PreprocessingVersion == "d1-text-choice-v1"
+	if !supported || device != "cpu" || r.GetExtract() != nil && p.Model != "fastino/gliner2.5-multi-v1" {
 		return nil, fault(Unavailable)
 	}
 	if err := b.ensure(ctx, p, device); err != nil {
@@ -357,10 +364,12 @@ func (b *Process) extract(ctx context.Context, p *pb.ModelProfile, r *pb.InferRe
 		labels[s] = true
 	}
 	out := &pb.ClassifyOutput{}
+	seen := map[string]bool{}
 	for i, label := range response.Labels {
-		if !labels[label] || !validScore(response.Scores[i]) {
+		if !labels[label] || seen[label] || !validScore(response.Scores[i]) {
 			return nil, fault(Protocol)
 		}
+		seen[label] = true
 		out.Scores = append(out.Scores, &pb.Score{Id: label, Value: response.Scores[i]})
 	}
 	out.InsufficientData = len(out.Scores) == 0

@@ -141,6 +141,16 @@ can route these inputs to a cloud provider, irrespective of caller/model output.
 
 ## Structured extraction contract
 
+Two optional text-only classification profiles support a default-off decision
+experiment. GLiNER Decide uses the existing pinned SDK; d1 uses one explicitly
+reviewed immutable upstream revision with exact code/config hashes checked
+through bounded contained reads before the offline local loader. Its complete
+state/options encoding is compared with upstream encoding so silent truncation
+is refused. CPU-only FP32 is configured, with no image/audio interface or cloud
+fallback. Only an operator evaluation catalog enables these profiles. Signals
+cannot change task control, action authority or result verdict; Russian quality
+and model selection remain separate measured caller work.
+
 `ExtractInput.schema_version=butler-memory-v1` selects a fixed reviewed data
 schema and requires an empty `entity_types` list. It returns additive typed
 entity spans, action/resource/deadline/exception and project/component relations,
