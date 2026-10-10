@@ -83,12 +83,10 @@ case "$action" in
     (( $# > 0 )) || set -- ./apps/orchestrator/internal/orchestrator
     mkdir -p "$root/.cache/go-race"
     report="$root/reports/race-$(date -u +%Y%m%dT%H%M%SZ).log"
-    docker run --rm --user 0 \
+    docker run --rm --user "$(id -u):$(id -g)" \
       --volume "$PWD:/src:ro" --volume "$root/.cache:/cache" --workdir /src \
       --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod \
-      golang:1.24-alpine sh -c \
-      'apk add --no-cache build-base su-exec >/dev/null; exec su-exec 1000:1000 go test -race -p 1 -count=1 "$@"' \
-      -- "$@" 2>&1 | tee "$report"
+      golang:1.24-bookworm go test -race -p 1 -count=1 "$@" 2>&1 | tee "$report"
     ;;
   Web)
     mkdir -p "$root/.cache/npm" "$root/.cache/ms-playwright"

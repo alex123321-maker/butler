@@ -103,6 +103,9 @@ Then add subsystem specs as needed:
 Use `scripts/dev/lab.ps1` with the configured SSH alias `laba` to synchronize a
 source snapshot, run Go/Chromium checks and deploy Compose on `/srv/storage/butler`.
 `Integration` uses a separate test database; `Migrations` verifies task and summary
-upgrade/rollback on exclusive disposable databases. `Race` runs the race detector;
+upgrade/rollback on exclusive disposable databases. `Race` uses the Debian Go
+image with its installed C compiler and runs as the workspace user; it does not
+install compiler packages on each invocation. Go caches remain on the lab storage
+disk. `Race` runs the race detector;
 `Web` runs lint, functional fixtures and a live UI smoke. Keep provider sign-in
 interactive and private; see `deploy/antigravity/README.md` for the opt-in adapter.
