@@ -21,7 +21,8 @@ type ControlRequest struct {
 	ExtensionID    string                              `json:"extension_id"`
 	ManifestHash   string                              `json:"manifest_hash"`
 	Generation     int64                               `json:"generation"`
-	ManifestJSON   json.RawMessage                     `json:"manifest_json"`
+	ManifestJSON   json.RawMessage                     `json:"manifest_json,omitempty"`
+	ManifestText   string                              `json:"manifest_text,omitempty"`
 	Configuration  map[string]string                   `json:"configuration"`
 	CredentialRefs map[string]actionauth.CredentialRef `json:"credential_refs"`
 	Tools          []string                            `json:"tools"`
@@ -136,7 +137,14 @@ func (s *Store) Control(ctx context.Context, request ControlRequest, prober Prob
 		}
 		return result, nil
 	case "stage":
-		p, e := Parse(bytes.NewReader(request.ManifestJSON))
+		manifest := request.ManifestJSON
+		if request.ManifestText != "" {
+			if len(manifest) != 0 {
+				return result, ErrManifest
+			}
+			manifest = []byte(request.ManifestText)
+		}
+		p, e := Parse(bytes.NewReader(manifest))
 		if e != nil {
 			return result, e
 		}

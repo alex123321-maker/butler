@@ -24,3 +24,10 @@ construction and is not selectable by environment, model args or packages.
 
 See [the lifecycle spec](../../docs/architecture/reviewed-extension-lifecycle.md)
 and optional installation instructions under `deploy/extensions`.
+
+The optional container uses UID10001, a read-only root, no capabilities,
+no-new-privileges, fixed process/RAM bounds, no host/Docker mount and no backend
+PG network. The only secret mount authenticates private Broker RPCs. An isolated
+real-process acceptance uses `scripts/dev/lab-extensions.sh`; the separate
+`lab-extension-container.sh` checks actual image confinement with networking
+disabled. Those tests do not provide a production private-address bypass.

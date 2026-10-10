@@ -11,6 +11,7 @@ import (
 	"github.com/butler/butler/internal/budget"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"google.golang.org/protobuf/proto"
 )
 
 type actionReader struct {
@@ -86,9 +87,9 @@ func TestExtensionCatalogAndDispatchUseCurrentPermissionIntegration(t *testing.T
 	if err != nil || len(items) != 1 || items[0].ToolName != call.ToolName {
 		t.Fatalf("scoped lexical catalog unavailable: %d %v", len(items), err)
 	}
-	changed := *call
+	changed := proto.Clone(call).(*toolbrokerv1.ToolCall)
 	changed.ArgsJson = `{"url":"https://extension.example/notes/other"}`
-	if _, err = auth.Prepare(context.Background(), &changed, contract); err == nil || inspector.calls != 0 {
+	if _, err = auth.Prepare(context.Background(), changed, contract); err == nil || inspector.calls != 0 {
 		t.Fatal("out-of-task resource reached credential inspection")
 	}
 	g := approvedGrant(t, auth, reader, call, contract)

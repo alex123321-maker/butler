@@ -303,3 +303,12 @@ changes with active-hours and daily limits; uncertain Telegram delivery is not
 repeated. The unconfigured heartbeat is an empty check;
 fixed external observers and verified project-fix acceptance are still pending.
 See [initiative admission](../../docs/architecture/initiative-contract.md).
+
+The optional `/extensions` page and owner-only `/api/v4/extensions` forward typed
+verified owner provenance to the private Broker control endpoint configured by
+`BUTLER_EXTENSION_CONTROL_URL`. The channel token never reaches that endpoint.
+Task attempts are fenced and pinned before scoped tool discovery. Catalog errors
+retain the attempt and block it before inference; they never claim completion.
+Fresh approval recovery reloads permitted definitions and manifest DATA while
+preserving recorded observations without redispatch. See the
+[reviewed lifecycle](../../docs/architecture/reviewed-extension-lifecycle.md).

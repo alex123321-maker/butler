@@ -25,6 +25,11 @@ from the reviewed manifest and approved configuration, reserves the existing
 owner-day/admin-conversation budget and persists the attempt before egress.
 There are no credentials, body or redirects. Only a verdict/digest for the same
 generation/configuration is published. Health expires after 15 minutes.
+Only one validation can be executing per installation; conflicting requests do
+not consume another budget charge. Configuration/disable abandons old validation.
+Startup recovery locks installations before marking attempts older than one minute
+unknown; an owner may request a fresh validation after that boundary. Recent
+interrupted attempts remain unavailable until timeout/recovery or reconfiguration.
 Lost/interrupted responses remain unknown and are never replayed. Readiness
 never proves task completion or an external effect.
 
@@ -81,9 +86,18 @@ Operations: list, stage, review, versions, configure, rollback, probe, enable,
 disable, grant_task, task_access. There is no generic URL/tool control action.
 Mutations use exact installation generations/task permission revisions; JSON
 rejects duplicate/unknown members. UI retains owner token only in page memory.
+`stage.manifest_text` preserves exact local JSON bytes across the private relay,
+including whitespace; Broker parses them without normalizing duplicate members.
+The legacy object `manifest_json` is still accepted separately and is normalized
+by JSON transport before its stored digest; callers must not supply both fields.
 
 The optional Compose overlay deploys a separate executor with read-only root,
 non-root user, no capabilities, no-new-privileges, bounded RAM/processes, only
 tool networks and one runtime-auth file. Installing data starts no executor.
 Production has no localhost bypass. Test binaries may use a trusted public
 resolver/fixed fixture dial while retaining the same policy validation.
+
+Admission and disable serialize on the current installation row. Disable first
+prevents claim/effect dispatch. An already committed claim remains a truthful
+executing/unknown effect even if the owner disables later; it is never rewritten
+as absent or automatically replayed. The bounded runtime deadline still applies.

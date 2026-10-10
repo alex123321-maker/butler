@@ -610,6 +610,17 @@ Butler. WebSocket-first — предпочтение при наличии capab
 нужна новая модельная сессия с контекстом из Butler. Проверки включают stateless
 локальный и cloud adapter, смену provider и свежий owner constraint после summary.
 
+### Reviewed capability catalog
+
+Before inference, the Orchestrator pins the owned current task attempt and asks
+Broker for its current scoped catalog. Extension schemas omit package descriptions;
+fixed core descriptions identify their methods/effects. Source/version/manifest
+documentation is separate provenance-tagged DATA, never provider instructions.
+Fresh recovery reloads the catalog rather than restoring stale definitions. Known
+tool observations stay context data and do not cause external dispatch. A future
+semantic selector may only rank the already authorized catalog and needs its own
+admitted inference budget; it cannot add tool IDs or promote package text to policy.
+
 ### 14.1 Принцип
 
 Provider-side session является внешней оптимизацией transport слоя.
