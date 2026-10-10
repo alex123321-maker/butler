@@ -334,7 +334,7 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 			case transport.EventTypeAssistantFinal:
 				if transportEvent.AssistantFinal != nil {
 					finalMessage = transportEvent.AssistantFinal.Content
-					if strings.EqualFold(transportEvent.AssistantFinal.FinishReason, "MAX_TOKENS") {
+					if partialFinishReason(transportEvent.AssistantFinal.FinishReason) {
 						setPartialAnswer(ctx)
 					}
 				}

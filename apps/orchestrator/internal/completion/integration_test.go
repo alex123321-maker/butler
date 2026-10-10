@@ -94,6 +94,38 @@ func (evidenceFixture) ReadRunEffects(context.Context, string) ([]Effect, error)
 	return []Effect{{ActionID: "effect:1", EffectState: "effect_confirmed", EvidenceRefs: []string{"receipt:sha256:fixture"}}, {ActionID: "effect:2", EffectState: "effect_unknown"}}, nil
 }
 
+type emptyEvidence struct{}
+
+func (emptyEvidence) ReadRunEffects(context.Context, string) ([]Effect, error) {
+	return []Effect{}, nil
+}
+
+func TestEmptyJournalCannotConfirmLegacyToolCompletionIntegration(t *testing.T) {
+	for _, legacyTool := range []bool{false, true} {
+		t.Run(fmt.Sprintf("legacy_tool_%t", legacyTool), func(t *testing.T) {
+			f := setup(t, "web")
+			f.c.Evidence = emptyEvidence{}
+			if legacyTool {
+				_, err := f.pool.Exec(f.ctx, `INSERT INTO tool_calls(tool_call_id,run_id,tool_name,status,runtime_target,started_at,result) VALUES($1,$2,'legacy.write','completed','legacy',NOW(),'{"status":"completed"}')`, "legacy:"+f.q.RunID, f.q.RunID)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			saved, err := f.c.Save(f.ctx, f.q)
+			if err != nil {
+				t.Fatal(err)
+			}
+			missing := false
+			for _, limitation := range saved.Limitations {
+				missing = missing || limitation == "effect_evidence_unavailable"
+			}
+			if missing != legacyTool || saved.Verdict != "unverified" || len(saved.Effects) != 0 {
+				t.Fatalf("legacy technical success invented effect evidence: %#v", saved)
+			}
+		})
+	}
+}
+
 func TestAtomicResultAndRestartIntegration(t *testing.T) {
 	f := setup(t, "telegram")
 	f.c.Evidence = evidenceFixture{}

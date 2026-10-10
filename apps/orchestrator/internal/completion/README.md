@@ -10,4 +10,7 @@ verification.
 
 See [atomic result/delivery contract](../../../../docs/architecture/atomic-result-delivery.md).
 Integration tests require `BUTLER_TEST_COMPLETION_POSTGRES_URL`; run them on the
-isolated lab database with migrations 001–034 applied.
+isolated lab database with all checked-in migrations applied. Result persistence
+requires migration 034; the configured permanent effect reader requires 035.
+The PostgreSQL fixture limits the pool to two connections to check ownership
+guard/evidence-read/transaction sequencing.

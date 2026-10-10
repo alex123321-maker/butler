@@ -13,6 +13,13 @@ run, and task in that order. The session lock precedes the transcript revision
 trigger. A cancelled/expired/taken-over lease, changed task revision, or inactive
 task rejects the transaction.
 
+The typed permanent journal reader completes and closes its queries under the
+ownership guard before the result transaction opens. This sequencing needs two
+pool connections, even when the guard occupies one. Final results retain the
+effect/evidence snapshot observed at save time; later reconciliation belongs to
+the permanent journal and does not rewrite the immutable saved result. A legacy
+technical tool completion with no journal coverage remains explicitly unverified.
+
 One transaction inserts the required `assistant_final` artifact, final transcript,
 immutable `run_final_results` record, an **unverified** `task_results` row when
 attached to a task, stable outbox chunks, auxiliary jobs, and the run's completed
@@ -28,7 +35,8 @@ existing assistant transcript rather than appending it twice; conflicting
 history fails closed. Result, referenced artifact, and referenced message cannot
 be updated. Required objects cannot be deleted independently of the result.
 
-`answer_state=partial` preserves truncated output (including `MAX_TOKENS`), with
+`answer_state=partial` preserves truncated output (`MAX_TOKENS`, `length`, or
+explicitly incomplete/filtered/cancelled final events), with
 an explicit incomplete-output limitation. Every result retains the unverified
 task verdict plus the typed action-journal effect/evidence snapshot. Missing
 effect evidence remains an explicit limitation. Tool dispatch completion is not
