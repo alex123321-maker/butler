@@ -215,6 +215,10 @@ func (s *Service) process(parent context.Context, r Record) {
 		return
 	}
 	if err != nil {
+		if errors.Is(err, flow.ErrResultPersistencePending) && r.Attempts < r.MaxAttempts && time.Now().Before(r.ExpiresAt) {
+			s.finish(parent, r, "queued", "result_persistence_pending", "saved final answer awaits durable persistence", time.Duration(1<<min(r.Attempts, 6))*time.Second)
+			return
+		}
 		code := "execution_stopped"
 		if errors.Is(err, context.DeadlineExceeded) {
 			code = "execution_deadline_exceeded"

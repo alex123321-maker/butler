@@ -37,7 +37,7 @@ func TestExecuteRunsHappyPath(t *testing.T) {
 		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
 	}}
 
-	service := NewService(sessions, leases, runs, transcripts, provider, Config{
+	service := newFixtureService(sessions, leases, runs, transcripts, provider, Config{
 		ProviderName: "openai",
 		ModelName:    "gpt-5-mini",
 		Delivery:     delivery,
@@ -112,7 +112,7 @@ func TestExecuteRunsSequentialToolLoop(t *testing.T) {
 	}
 	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{"status_code":200}`}}
 
-	service := NewService(sessions, leases, runs, transcripts, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, ActionAuthorizer: &mockApprovalChecker{}}, nil)
+	service := newFixtureService(sessions, leases, runs, transcripts, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, ActionAuthorizer: &mockApprovalChecker{}}, nil)
 	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:1", Source: "telegram", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
 	if err != nil {
 		t.Fatalf("Execute returned error: %v", err)
@@ -163,7 +163,7 @@ func TestExecuteToolCallWithEmptyRefPropagatesFallbackToSubmit(t *testing.T) {
 	}
 	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{"ok":true}`}}
 
-	service := NewService(sessions, leases, runs, transcripts, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, ActionAuthorizer: &mockApprovalChecker{}}, nil)
+	service := newFixtureService(sessions, leases, runs, transcripts, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, ActionAuthorizer: &mockApprovalChecker{}}, nil)
 	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:1", Source: "telegram", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
 	if err != nil {
 		t.Fatalf("Execute returned error: %v", err)
@@ -210,7 +210,7 @@ func TestExecuteToolWithApprovalApproved(t *testing.T) {
 	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{"status_code":200}`}}
 	checker := &mockApprovalChecker{toolsRequiringApproval: map[string]bool{"http.request": true}}
 
-	service := NewService(sessions, leases, runs, transcripts, provider, Config{
+	service := newFixtureService(sessions, leases, runs, transcripts, provider, Config{
 		ProviderName:     "openai",
 		ModelName:        "gpt-5-mini",
 		Tools:            tools,
@@ -279,7 +279,7 @@ func TestExecuteToolWithApprovalRejected(t *testing.T) {
 	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{}`}}
 	checker := &mockApprovalChecker{toolsRequiringApproval: map[string]bool{"http.request": true}}
 
-	service := NewService(sessions, leases, runs, transcripts, provider, Config{
+	service := newFixtureService(sessions, leases, runs, transcripts, provider, Config{
 		ProviderName:     "openai",
 		ModelName:        "gpt-5-mini",
 		Tools:            tools,
@@ -323,7 +323,7 @@ func TestExecuteIncludesMemoryAwareContext(t *testing.T) {
 	workingStore := &stubWorkingStore{snapshots: map[string]WorkingMemorySnapshot{
 		"telegram:chat:1": {SessionKey: "telegram:chat:1", Goal: "Stabilize Redis", EntitiesJSON: `{"service":"redis"}`, PendingStepsJSON: `["check health"]`, Status: "active"},
 	}}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
 		ProviderName: "openai",
 		ModelName:    "gpt-5-mini",
 		ProfileStore: stubProfileStore{entries: []memoryservice.ProfileEntry{stubProfileEntry{key: "language", summary: "User prefers Russian"}}},
@@ -359,7 +359,7 @@ func TestExecuteIncludesToolSummaryAndStructuredToolDefinitions(t *testing.T) {
 		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "tool aware", FinishReason: "completed"}),
 		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
 	}}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
 		ProviderName: "openai",
 		ModelName:    "gpt-5-mini",
 		ToolCatalog:  stubToolCatalog{contracts: []*toolbrokerv1.ToolContract{{ToolName: "http.request", ToolClass: "http", Description: "Perform an outbound HTTP request through the HTTP runtime.", InputSchemaJson: `{"type":"object"}`, SupportsCredentialRefs: true}, {ToolName: "browser.set_cookie", ToolClass: "browser", Description: "Set a cookie on the browser context for the specified domain.", InputSchemaJson: `{"type":"object"}`, RequiresApproval: true}}},
@@ -413,7 +413,7 @@ func TestExecuteUsesConfiguredMemoryBundleService(t *testing.T) {
 			Status:         "active",
 		},
 	}}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
 		ProviderName:  "openai",
 		ModelName:     "gpt-5-mini",
 		MemoryBundles: bundles,
@@ -460,7 +460,7 @@ func TestExecuteLoadsAndClearsWorkingMemoryOnCompletion(t *testing.T) {
 		"telegram:chat:working": {SessionKey: "telegram:chat:working", Goal: "Existing goal", EntitiesJSON: `{"service":"postgres"}`, PendingStepsJSON: `["inspect logs"]`, Status: "active"},
 	}}
 	transientStore := &stubTransientWorkingStore{}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
 		ProviderName:   "openai",
 		ModelName:      "gpt-5-mini",
 		WorkingStore:   workingStore,
@@ -507,7 +507,7 @@ func TestExecuteRetainsWorkingMemoryOnFailure(t *testing.T) {
 		"telegram:chat:failure": {SessionKey: "telegram:chat:failure", Goal: "Recover service", EntitiesJSON: `{"service":"api"}`, PendingStepsJSON: `["restart"]`, Status: "active"},
 	}}
 	transientStore := &stubTransientWorkingStore{}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{}, &mockProvider{startEvents: []transport.TransportEvent{
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{}, &mockProvider{startEvents: []transport.TransportEvent{
 		transport.NewTransportErrorEvent("", "openai", errors.New("provider down")),
 	}}, Config{ProviderName: "openai", ModelName: "gpt-5-mini", WorkingStore: workingStore, TransientStore: transientStore}, nil)
 
@@ -546,7 +546,7 @@ func TestExecuteSanitizesWorkingMemoryToolPayloads(t *testing.T) {
 	}
 	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{"access_token":"abc","cookie":"session=abc123"}`}}
 	workingStore := &stubWorkingStore{snapshots: map[string]WorkingMemorySnapshot{}}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, WorkingStore: workingStore, ActionAuthorizer: &mockApprovalChecker{}}, nil)
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, WorkingStore: workingStore, ActionAuthorizer: &mockApprovalChecker{}}, nil)
 
 	_, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-sanitize-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:sanitize", Source: "telegram", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-sanitize-1"})
 	if err != nil {
@@ -581,7 +581,7 @@ func TestExecuteStoresTransientWorkingStateDuringToolLifecycle(t *testing.T) {
 	}
 	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{"status_code":200}`}}
 	transientStore := &stubTransientWorkingStore{}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, TransientStore: transientStore, ActionAuthorizer: &mockApprovalChecker{}}, nil)
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, TransientStore: transientStore, ActionAuthorizer: &mockApprovalChecker{}}, nil)
 
 	_, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-transient-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:transient", Source: "telegram", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-transient-1"})
 	if err != nil {
@@ -602,7 +602,7 @@ func TestExecuteUsesEmbeddingProviderForEpisodicRetrieval(t *testing.T) {
 		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
 	}}
 	episodeStore := &stubEpisodeStore{entries: []memoryservice.Episode{stubEpisode{summary: "Recovered Postgres connection before", distance: 0.01}}}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
 		ProviderName: "openai",
 		ModelName:    "gpt-5-mini",
 		EpisodeStore: episodeStore,
@@ -639,7 +639,7 @@ func TestExecuteIncludesSessionSummaryInContext(t *testing.T) {
 	summaryReader := &stubSummaryReader{summaries: map[string]string{
 		"telegram:chat:1": "Current goal: deploy new service. Recent events: fixed Redis connection. Open tasks: update Docker config.",
 	}}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
 		ProviderName:  "openai",
 		ModelName:     "gpt-5-mini",
 		SummaryReader: summaryReader,
@@ -687,7 +687,7 @@ func TestExecuteStartsFreshProviderSessionAcrossRuns(t *testing.T) {
 		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
 	}}
 	runs := newMemoryRunManager()
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{}, provider, Config{
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{}, provider, Config{
 		ProviderName: "openai",
 		ModelName:    "gpt-5-mini",
 	}, nil)
@@ -736,7 +736,7 @@ func TestExecuteSkipsInvalidPreviousProviderSessionRef(t *testing.T) {
 		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "ok", FinishReason: "completed"}),
 		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
 	}}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini"}, nil)
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini"}, nil)
 
 	if _, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:invalid-ref", Source: "telegram", PayloadJSON: `{"text":"hello"}`, CreatedAt: now, IdempotencyKey: "event-1"}); err != nil {
 		t.Fatalf("Execute returned error: %v", err)
@@ -760,7 +760,7 @@ func TestExecuteReplaysRecentTranscriptWhenSummaryUnavailable(t *testing.T) {
 		{SessionKey: "telegram:chat:history", Role: "user", Content: "Я хочу пиццу из makelovepizza с печёной картошкой"},
 		{SessionKey: "telegram:chat:history", Role: "assistant", Content: "Открыл сайт Make Love Pizza для Томска"},
 	}}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), transcripts, provider, Config{
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), transcripts, provider, Config{
 		ProviderName: "openai",
 		ModelName:    "gpt-5-mini",
 	}, nil)
@@ -802,7 +802,7 @@ func TestExecuteSessionSummaryWithProfileAndEpisodes(t *testing.T) {
 	summaryReader := &stubSummaryReader{summaries: map[string]string{
 		"telegram:chat:1": "Working on deployment pipeline.",
 	}}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
 		ProviderName:  "openai",
 		ModelName:     "gpt-5-mini",
 		SummaryReader: summaryReader,
@@ -847,7 +847,7 @@ func TestExecuteSkipsSummaryWhenEmpty(t *testing.T) {
 		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
 	}}
 	summaryReader := &stubSummaryReader{summaries: map[string]string{}}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
 		ProviderName:  "openai",
 		ModelName:     "gpt-5-mini",
 		SummaryReader: summaryReader,
@@ -889,7 +889,7 @@ func TestExecuteSummaryReaderErrorDoesNotBlockRun(t *testing.T) {
 		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
 	}}
 	summaryReader := &stubSummaryReader{err: errors.New("database error")}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
 		ProviderName:  "openai",
 		ModelName:     "gpt-5-mini",
 		SummaryReader: summaryReader,
@@ -1000,7 +1000,7 @@ func TestExecuteFailsRunOnTransportError(t *testing.T) {
 
 	runs := newMemoryRunManager()
 	leases := &memoryLeaseManager{}
-	service := NewService(&memorySessionRepo{}, leases, runs, &memoryTranscriptStore{}, &mockProvider{startEvents: []transport.TransportEvent{
+	service := newFixtureService(&memorySessionRepo{}, leases, runs, &memoryTranscriptStore{}, &mockProvider{startEvents: []transport.TransportEvent{
 		transport.NewTransportErrorEvent("", "openai", errors.New("provider down")),
 	}}, Config{ProviderName: "openai", ModelName: "gpt-5-mini"}, nil)
 
@@ -1029,7 +1029,7 @@ func TestExecuteKeepsBusySessionQueued(t *testing.T) {
 	t.Parallel()
 
 	runs := newMemoryRunManager()
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{acquireErr: session.ErrLeaseConflict}, runs, &memoryTranscriptStore{}, &mockProvider{}, Config{ProviderName: "openai", ModelName: "gpt-5-mini"}, nil)
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{acquireErr: session.ErrLeaseConflict}, runs, &memoryTranscriptStore{}, &mockProvider{}, Config{ProviderName: "openai", ModelName: "gpt-5-mini"}, nil)
 
 	_, err := service.Execute(context.Background(), ingress.InputEvent{
 		EventID:        "event-1",
@@ -1054,7 +1054,7 @@ func TestExecuteFailsRunWhenQueueTransitionFails(t *testing.T) {
 
 	runs := newMemoryRunManager()
 	runs.transitionErrs = map[commonv1.RunState]error{commonv1.RunState_RUN_STATE_QUEUED: errors.New("queue write failed")}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{}, &mockProvider{}, Config{ProviderName: "openai", ModelName: "gpt-5-mini"}, nil)
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{}, &mockProvider{}, Config{ProviderName: "openai", ModelName: "gpt-5-mini"}, nil)
 
 	_, err := service.Execute(context.Background(), ingress.InputEvent{
 		EventID:        "event-1",
@@ -1074,11 +1074,11 @@ func TestExecuteFailsRunWhenQueueTransitionFails(t *testing.T) {
 	}
 }
 
-func TestExecuteFailsRunFromFinalizing(t *testing.T) {
+func TestExecuteKeepsFinalizingWhenResultPersistenceFails(t *testing.T) {
 	t.Parallel()
 
 	runs := newMemoryRunManager()
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{failAssistant: errors.New("persist assistant failed")}, &mockProvider{startEvents: []transport.TransportEvent{
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{failAssistant: errors.New("persist assistant failed")}, &mockProvider{startEvents: []transport.TransportEvent{
 		transport.NewAssistantFinalEvent("", "openai", transport.AssistantFinal{Content: "Hello world", FinishReason: "completed"}),
 		transport.NewTerminalEvent("", transport.EventTypeRunCompleted, "openai"),
 	}}, Config{ProviderName: "openai", ModelName: "gpt-5-mini"}, nil)
@@ -1096,8 +1096,8 @@ func TestExecuteFailsRunFromFinalizing(t *testing.T) {
 		t.Fatal("expected Execute error")
 	}
 	states := runs.statesFor("run-1")
-	if states[len(states)-1] != commonv1.RunState_RUN_STATE_FAILED {
-		t.Fatalf("expected finalizing failure to end in failed, got %v", states)
+	if states[len(states)-1] != commonv1.RunState_RUN_STATE_FINALIZING {
+		t.Fatalf("expected persistence failure to keep finalizing, got %v", states)
 	}
 }
 
@@ -1106,7 +1106,7 @@ func TestExecuteFailsRunWhenModelRunningTransitionFails(t *testing.T) {
 
 	runs := newMemoryRunManager()
 	runs.transitionErrs = map[commonv1.RunState]error{commonv1.RunState_RUN_STATE_MODEL_RUNNING: errors.New("transition to model running failed")}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{}, &mockProvider{}, Config{ProviderName: "openai", ModelName: "gpt-5-mini"}, nil)
+	service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, runs, &memoryTranscriptStore{}, &mockProvider{}, Config{ProviderName: "openai", ModelName: "gpt-5-mini"}, nil)
 
 	_, err := service.Execute(context.Background(), ingress.InputEvent{
 		EventID:        "event-1",
@@ -1132,7 +1132,7 @@ func TestExecuteRenewsLeaseDuringLongRun(t *testing.T) {
 	leases := &memoryLeaseManager{}
 	runs := newMemoryRunManager()
 	provider := &delayedProvider{delay: 1200 * time.Millisecond}
-	service := NewService(&memorySessionRepo{}, leases, runs, &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", LeaseTTL: 1}, nil)
+	service := newFixtureService(&memorySessionRepo{}, leases, runs, &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", LeaseTTL: 1}, nil)
 
 	result, err := service.Execute(context.Background(), ingress.InputEvent{
 		EventID:        "event-1",

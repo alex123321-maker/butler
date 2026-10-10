@@ -18,6 +18,23 @@ func (a *App) Run(ctx context.Context) error {
 	errCh := make(chan error, 5)
 	runCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
+	completionDone := make(chan struct{})
+	go func() {
+		defer close(completionDone)
+		done := make(chan struct{}, 2)
+		workers := 0
+		if a.outboxWorker != nil {
+			workers++
+			go func() { _ = a.outboxWorker.Run(runCtx); done <- struct{}{} }()
+		}
+		if a.auxiliaryWorker != nil {
+			workers++
+			go func() { _ = a.auxiliaryWorker.Run(runCtx); done <- struct{}{} }()
+		}
+		for range workers {
+			<-done
+		}
+	}()
 	inputDone := make(chan struct{})
 	if a.inputWorker != nil {
 		go func() {
@@ -78,10 +95,12 @@ func (a *App) Run(ctx context.Context) error {
 	case err := <-errCh:
 		cancel()
 		<-inputDone
+		<-completionDone
 		return a.shutdown(err)
 	case <-sigCtx.Done():
 		cancel()
 		<-inputDone
+		<-completionDone
 		a.log.Info("received shutdown signal")
 		return a.shutdown(nil)
 	}

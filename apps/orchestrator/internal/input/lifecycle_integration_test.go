@@ -15,6 +15,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/activity"
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	"github.com/butler/butler/apps/orchestrator/internal/artifacts"
+	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	"github.com/butler/butler/apps/orchestrator/internal/deliveryevents"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
 	"github.com/butler/butler/apps/orchestrator/internal/run"
@@ -248,7 +249,7 @@ func TestCrashAfterUserTranscriptRecoversPreparationOnceIntegration(t *testing.T
 	f := newLifecycleFixture(t)
 	crashCtx, crash := context.WithCancel(f.ctx)
 	p := &lifecycleProvider{}
-	executor := flow.NewService(f.sessions, session.NewPostgresLeaseManager(f.pool), f.runs, crashAfterUserTranscript{Store: f.transcript, crash: crash}, p, flow.Config{ProviderName: "fixture", ModelName: "fixture", OwnerID: "worker", LeaseTTL: 30, Tasks: f.tasks, Checkpoints: f.store, ApprovalService: f.approvals, ActionAuthorizer: f.tools, Tools: f.tools}, nil)
+	executor := flow.NewService(f.sessions, session.NewPostgresLeaseManager(f.pool), f.runs, crashAfterUserTranscript{Store: f.transcript, crash: crash}, p, flow.Config{Completion: completion.New(f.pool), ProviderName: "fixture", ModelName: "fixture", OwnerID: "worker", LeaseTTL: 30, Tasks: f.tasks, Checkpoints: f.store, ApprovalService: f.approvals, ActionAuthorizer: f.tools, Tools: f.tools}, nil)
 	worker := NewService(f.store, f.sessions, executor, f.runs, nil)
 	worker.process(crashCtx, f.claim(t))
 	r := f.assertReceipt(t, "running")
@@ -346,7 +347,7 @@ func newLifecycleFixture(t *testing.T) *lifecycleFixture {
 }
 func (f *lifecycleFixture) worker(checkpoints flow.CheckpointStore, delivery flow.DeliverySink) (*Service, *lifecycleProvider) {
 	p := &lifecycleProvider{}
-	executor := flow.NewService(f.sessions, session.NewPostgresLeaseManager(f.pool), f.runs, f.transcript, p, flow.Config{ProviderName: "fixture", ModelName: "fixture", OwnerID: "worker", LeaseTTL: 30, Tasks: f.tasks, Checkpoints: checkpoints, ApprovalService: f.approvals, ActionAuthorizer: f.tools, Tools: f.tools, Delivery: delivery}, nil)
+	executor := flow.NewService(f.sessions, session.NewPostgresLeaseManager(f.pool), f.runs, f.transcript, p, flow.Config{Completion: completion.New(f.pool), ProviderName: "fixture", ModelName: "fixture", OwnerID: "worker", LeaseTTL: 30, Tasks: f.tasks, Checkpoints: checkpoints, ApprovalService: f.approvals, ActionAuthorizer: f.tools, Tools: f.tools, Delivery: delivery}, nil)
 	return NewService(f.store, f.sessions, executor, f.runs, nil), p
 }
 func (f *lifecycleFixture) claim(t *testing.T) Record {

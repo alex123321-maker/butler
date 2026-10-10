@@ -15,7 +15,9 @@ import (
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	artifacts "github.com/butler/butler/apps/orchestrator/internal/artifacts"
 	telegramadapter "github.com/butler/butler/apps/orchestrator/internal/channel/telegram"
+	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	deliveryevents "github.com/butler/butler/apps/orchestrator/internal/deliveryevents"
+	"github.com/butler/butler/apps/orchestrator/internal/deliveryoutbox"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
@@ -184,6 +186,12 @@ func New(ctx context.Context) (*App, error) {
 	chunkStore := chunks.NewStore(postgres.Pool())
 
 	embeddingProvider, pipelineWorker := configureMemoryPipeline(log, cfg, authManager, m, pipelineQueue, transcriptStore, summaryStore, profileStore, episodicStore, chunkStore)
+	finalResults := completion.New(postgres.Pool())
+	outboxWorker := &deliveryoutbox.Worker{Store: finalResults.Outbox}
+	if telegram != nil {
+		outboxWorker.Sender = telegram
+	}
+	auxiliaryWorker := &completion.AuxiliaryWorker{Coordinator: finalResults, Handler: completionAuxiliary{Working: working.NewStore(postgres.Pool()), Transient: working.NewTransientStore(redis.Client()), Pipeline: pipelineWorker}}
 
 	var memoryEmbeddings memoryservice.EmbeddingProvider
 	if embeddingProvider != nil {
@@ -200,40 +208,42 @@ func New(ctx context.Context) (*App, error) {
 		transcriptStore,
 		providerResult.Provider,
 		flow.Config{
-			AutonomyMode:        autonomyMode(cfg.AutonomyMode),
-			ActionAuthorizer:    toolBrokerClient,
-			ActionMandateID:     cfg.ActionMandateID,
-			Checkpoints:         inputStore,
-			Tasks:               taskStore,
-			ProviderName:        providerResult.ProviderName,
-			ModelName:           providerResult.ModelName,
-			OwnerID:             cfg.Shared.ServiceName,
-			LeaseTTL:            int64(cfg.SessionLeaseTTLSeconds),
-			PromptManager:       promptmgmt.NewManager(settingsStore),
-			PromptAssembler:     promptmgmt.NewAssembler(),
-			ProfileLimit:        cfg.MemoryProfileLimit,
-			EpisodeLimit:        cfg.MemoryEpisodicLimit,
-			MemoryScopes:        cfg.MemoryScopeOrder,
-			Delivery:            delivery,
-			Tools:               toolBrokerClient,
-			ToolCatalog:         toolBrokerClient,
-			ApprovalChecker:     toolBrokerClient,
-			ApprovalGate:        approvalGate,
-			ApprovalService:     approvalService,
-			WorkingStore:        workingStoreAdapter{store: working.NewStore(postgres.Pool())},
-			TransientStore:      transientWorkingStoreAdapter{store: working.NewTransientStore(redis.Client())},
-			TransientTTL:        time.Duration(cfg.MemoryWorkingTransientTTLSeconds) * time.Second,
-			ProfileStore:        profileStoreAdapter{store: profileStore},
-			EpisodeStore:        episodicStoreAdapter{store: episodicStore},
-			ChunkStore:          chunkStoreAdapter{store: chunkStore},
-			Embeddings:          memoryEmbeddings,
-			PipelineEnqueuer:    pipelineEnqueuer,
-			SummaryReader:       summaryStore,
-			ContextBudgetTokens: cfg.ContextBudgetTokens,
-			TransitionLogger:    transitionRepo,
-			EventHub:            eventHub,
-			Artifacts:           artifactsService,
-			Activity:            activityService,
+			Completion:            finalResults,
+			DurableMemoryPipeline: pipelineWorker != nil,
+			AutonomyMode:          autonomyMode(cfg.AutonomyMode),
+			ActionAuthorizer:      toolBrokerClient,
+			ActionMandateID:       cfg.ActionMandateID,
+			Checkpoints:           inputStore,
+			Tasks:                 taskStore,
+			ProviderName:          providerResult.ProviderName,
+			ModelName:             providerResult.ModelName,
+			OwnerID:               cfg.Shared.ServiceName,
+			LeaseTTL:              int64(cfg.SessionLeaseTTLSeconds),
+			PromptManager:         promptmgmt.NewManager(settingsStore),
+			PromptAssembler:       promptmgmt.NewAssembler(),
+			ProfileLimit:          cfg.MemoryProfileLimit,
+			EpisodeLimit:          cfg.MemoryEpisodicLimit,
+			MemoryScopes:          cfg.MemoryScopeOrder,
+			Delivery:              delivery,
+			Tools:                 toolBrokerClient,
+			ToolCatalog:           toolBrokerClient,
+			ApprovalChecker:       toolBrokerClient,
+			ApprovalGate:          approvalGate,
+			ApprovalService:       approvalService,
+			WorkingStore:          workingStoreAdapter{store: working.NewStore(postgres.Pool())},
+			TransientStore:        transientWorkingStoreAdapter{store: working.NewTransientStore(redis.Client())},
+			TransientTTL:          time.Duration(cfg.MemoryWorkingTransientTTLSeconds) * time.Second,
+			ProfileStore:          profileStoreAdapter{store: profileStore},
+			EpisodeStore:          episodicStoreAdapter{store: episodicStore},
+			ChunkStore:            chunkStoreAdapter{store: chunkStore},
+			Embeddings:            memoryEmbeddings,
+			PipelineEnqueuer:      pipelineEnqueuer,
+			SummaryReader:         summaryStore,
+			ContextBudgetTokens:   cfg.ContextBudgetTokens,
+			TransitionLogger:      transitionRepo,
+			EventHub:              eventHub,
+			Artifacts:             artifactsService,
+			Activity:              activityService,
 		},
 		logger.WithComponent(log, "executor"),
 	)
@@ -261,6 +271,7 @@ func New(ctx context.Context) (*App, error) {
 	apiServer := apiservice.NewServer(inputWorker, logger.WithComponent(log, "api"))
 	httpServer := newHTTPServer(httpServerDeps{
 		cfg:                    cfg,
+		finalResults:           finalResults,
 		actionAuthorityHandler: actionAuthorityHandler,
 		log:                    log,
 		settingsStore:          settingsStore,
@@ -317,19 +328,21 @@ func New(ctx context.Context) (*App, error) {
 	orchestratorv1.RegisterOrchestratorServiceServer(grpcServer, apiServer)
 
 	return &App{
-		config:         cfg,
-		log:            log,
-		metrics:        m,
-		health:         h,
-		postgres:       postgres,
-		redis:          redis,
-		httpServer:     httpServer,
-		grpcServer:     grpcServer,
-		grpcListen:     grpcListener,
-		telegram:       telegram,
-		toolBroker:     toolBrokerClient,
-		pipelineWorker: pipelineWorker,
-		inputWorker:    inputWorker,
+		config:          cfg,
+		log:             log,
+		metrics:         m,
+		health:          h,
+		postgres:        postgres,
+		redis:           redis,
+		httpServer:      httpServer,
+		grpcServer:      grpcServer,
+		grpcListen:      grpcListener,
+		telegram:        telegram,
+		toolBroker:      toolBrokerClient,
+		pipelineWorker:  pipelineWorker,
+		inputWorker:     inputWorker,
+		outboxWorker:    outboxWorker,
+		auxiliaryWorker: auxiliaryWorker,
 	}, nil
 }
 

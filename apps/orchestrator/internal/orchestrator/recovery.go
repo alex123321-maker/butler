@@ -23,6 +23,7 @@ type storedCheckpoint struct {
 	Prepared preparedRun `json:"prepared"`
 	Data     struct {
 		FinalMessage string `json:"final_message"`
+		AnswerState  string `json:"answer_state"`
 		ToolCallID   string `json:"tool_call_id"`
 	} `json:"checkpoint_data"`
 }
@@ -82,6 +83,7 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		return nil, fmt.Errorf("durable ownership required for recovery")
 	}
 	ctx = ownership.WithToken(ctx, durable.Authority(), ownership.Token{SessionKey: lease.SessionKey, RunID: runID, LeaseID: lease.LeaseID, FenceEpoch: lease.FenceEpoch})
+	ctx = withAnswerState(ctx, checkpoint.Data.AnswerState)
 	runLog := logger.WithRunID(s.log, runID)
 	ctx, stop, renewErrs := s.startLeaseRenewer(ctx, lease, runLog)
 	defer stop()

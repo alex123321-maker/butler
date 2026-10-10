@@ -10,6 +10,7 @@ import (
 	activity "github.com/butler/butler/apps/orchestrator/internal/activity"
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	artifacts "github.com/butler/butler/apps/orchestrator/internal/artifacts"
+	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
 	promptmgmt "github.com/butler/butler/apps/orchestrator/internal/prompt"
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
@@ -130,42 +131,44 @@ type TransitionLogger interface {
 }
 
 type Config struct {
-	ActionAuthorizer    ActionAuthorizer
-	ActionMandateID     string
-	AutonomyMode        commonv1.AutonomyMode
-	Checkpoints         CheckpointStore
-	Tasks               task.Manager
-	ProviderName        string
-	ModelName           string
-	OwnerID             string
-	LeaseTTL            int64
-	Delivery            DeliverySink
-	Tools               ToolExecutor
-	ToolCatalog         ToolCatalog
-	ApprovalChecker     ApprovalChecker
-	ApprovalGate        *ApprovalGate
-	ApprovalService     *approvals.Service
-	ProfileStore        ProfileMemoryStore
-	EpisodeStore        EpisodicMemoryStore
-	ChunkStore          ChunkMemoryStore
-	Embeddings          EmbeddingProvider
-	PipelineEnqueuer    PipelineEnqueuer
-	SummaryReader       SessionSummaryReader
-	ContextBudgetTokens int
-	WorkingStore        WorkingMemoryStore
-	WorkingPolicy       WorkingMemoryPolicy
-	TransientStore      TransientWorkingStore
-	TransientTTL        time.Duration
-	MemoryBundles       MemoryBundleService
-	PromptManager       PromptManager
-	PromptAssembler     PromptAssembler
-	ProfileLimit        int
-	EpisodeLimit        int
-	MemoryScopes        []string
-	TransitionLogger    TransitionLogger
-	EventHub            *observability.Hub
-	Artifacts           *artifacts.Service
-	Activity            *activity.Service
+	Completion            completion.Writer
+	DurableMemoryPipeline bool
+	ActionAuthorizer      ActionAuthorizer
+	ActionMandateID       string
+	AutonomyMode          commonv1.AutonomyMode
+	Checkpoints           CheckpointStore
+	Tasks                 task.Manager
+	ProviderName          string
+	ModelName             string
+	OwnerID               string
+	LeaseTTL              int64
+	Delivery              DeliverySink
+	Tools                 ToolExecutor
+	ToolCatalog           ToolCatalog
+	ApprovalChecker       ApprovalChecker
+	ApprovalGate          *ApprovalGate
+	ApprovalService       *approvals.Service
+	ProfileStore          ProfileMemoryStore
+	EpisodeStore          EpisodicMemoryStore
+	ChunkStore            ChunkMemoryStore
+	Embeddings            EmbeddingProvider
+	PipelineEnqueuer      PipelineEnqueuer
+	SummaryReader         SessionSummaryReader
+	ContextBudgetTokens   int
+	WorkingStore          WorkingMemoryStore
+	WorkingPolicy         WorkingMemoryPolicy
+	TransientStore        TransientWorkingStore
+	TransientTTL          time.Duration
+	MemoryBundles         MemoryBundleService
+	PromptManager         PromptManager
+	PromptAssembler       PromptAssembler
+	ProfileLimit          int
+	EpisodeLimit          int
+	MemoryScopes          []string
+	TransitionLogger      TransitionLogger
+	EventHub              *observability.Hub
+	Artifacts             *artifacts.Service
+	Activity              *activity.Service
 }
 
 type PromptManager interface {
@@ -188,6 +191,9 @@ type Service struct {
 }
 
 type ExecutionResult struct {
+	ResultID          string
+	AnswerState       string
+	Verdict           string
 	ErrorCode         string
 	Accepted          bool
 	InputID           string

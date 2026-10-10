@@ -69,7 +69,7 @@ Current baseline:
 - exposes an internal delivery sink for `assistant_delta` and `assistant_final` events without allowing channel adapters to mutate run state
 - exposes durable acceptance through gRPC `SubmitEvent` and HTTP 202 `POST /api/v1/events`; `/api/v3/inputs/{id}` observes asynchronous execution
 - optionally runs the in-process Telegram adapter using Bot API long polling, `/auth` provider connection prompts, and final-response delivery
-- progressively edits Telegram responses during assistant delta streaming and finalizes the same message on completion
+- sends best-effort partial Telegram drafts and delivers saved final notifications through the PostgreSQL outbox with per-chunk acknowledgement and explicit unknown outcomes
 - exposes REST views for sessions, runs, transcripts, and doctor reports
 - exposes grouped settings management endpoints for layered config overrides, masked secret display, restart planning, and helper-backed restart scheduling
 - exposes provider auth endpoints for GitHub Copilot device flow and OpenAI Codex OAuth completion
@@ -84,7 +84,7 @@ Current baseline:
 
 Dependencies:
 - PostgreSQL for durable sessions, runs, and transcript state
-- Redis for session leases and transient ownership state
+- PostgreSQL for authoritative ownership fencing, results, final-notification outbox and auxiliary jobs; Redis for transient working state and legacy memory operator jobs
 - generated gRPC bindings from `proto/`
 - Tool Broker gRPC service for tool execution and runtime routing
 
@@ -259,3 +259,12 @@ Approval continuation and recovery preserve this system reference; it never
 comes from model args. Effect IDs/states/evidence references accompany dispatch
 and result checkpoints. Generic write completion remains uncertain; recovery
 does not repeat it. See [the effect journal](../../docs/architecture/external-effect-journal.md).
+
+Finalization requires migration `034_atomic_results_outbox`. One fenced transaction
+saves the required assistant artifact, final transcript, immutable attempt result,
+unverified task result, run completion, notification chunks and auxiliary jobs.
+A model final never marks user work verified. Delivery errors and memory failures
+cannot undo a committed result; finalizing recovery retries only saved-answer
+persistence. `GET /api/v2/results/{run_id}` exposes final result, delivery and
+auxiliary job states; task detail/overview prefer durable outbox observations.
+See [atomic result and delivery](../../docs/architecture/atomic-result-delivery.md).

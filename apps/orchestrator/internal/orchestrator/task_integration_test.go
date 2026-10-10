@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	"github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
@@ -45,7 +46,7 @@ func TestDurableTaskExecutionIntegration(t *testing.T) {
 	provider := &mockProvider{startEvents: []transport.TransportEvent{transport.NewAssistantFinalEvent("", "test", transport.AssistantFinal{Content: "Draft ready, waiting for approval"})}}
 	legacyWorking := &stubWorkingStore{snapshots: map[string]WorkingMemorySnapshot{sessionKey: {SessionKey: sessionKey, Goal: "OLD FAILED GOAL A", Status: "failed", PendingStepsJSON: `["old action A"]`}}}
 	newService := func() *Service {
-		return NewService(repo, &memoryLeaseManager{}, run.NewService(runs, nil), transcript.NewStore(db.Pool()), provider, Config{Tasks: tasks, WorkingStore: legacyWorking, WorkingPolicy: WorkingMemoryPolicy{OnCompleted: "clear"}}, nil)
+		return NewService(repo, session.NewPostgresLeaseManager(db.Pool()), run.NewService(runs, nil), transcript.NewStore(db.Pool()), provider, Config{Completion: completion.New(db.Pool()), Tasks: tasks, WorkingStore: legacyWorking, WorkingPolicy: WorkingMemoryPolicy{OnCompleted: "clear"}}, nil)
 	}
 	service := newService()
 	execute := func(id, text, eventID string) (*ExecutionResult, error) {

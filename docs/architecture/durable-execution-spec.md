@@ -81,12 +81,15 @@ can finish persistence without asking the provider again. Existing assistant
 transcript content is checked before appending, preventing a duplicate final row.
 Interrupted model execution with no safe boundary is conservatively blocked.
 
-These boundaries do not claim exactly-once network effects, durable delivery
-outbox semantics, or reconciliation of every external system. A failed response
-after dispatch can remain uncertain even if the outside system performed the
-action. Delivery attempts already observed by a user can repeat after a crash;
-outbox delivery is a separate contract. Artifacts/results use their existing
-persistence behavior. Recovery never turns missing evidence into success.
+Final result persistence, required artifacts, run completion, notification outbox
+and auxiliary jobs commit atomically under the current PostgreSQL ownership
+fence. A transient final-save failure may retry only the frozen answer; tool and
+model execution never replay from this boundary. A completed run does not imply
+verified task completion or successful channel delivery. Telegram unknown send
+is retained without automatic retry; Web readiness means stored availability.
+See [atomic result and delivery](atomic-result-delivery.md) for channel ACK,
+claim expiry, stable chunk IDs, artifact failures and memory recovery semantics.
+Exactly-once outside effects or non-idempotent notifications are not promised.
 
 ## Durable exact approval
 

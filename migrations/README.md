@@ -2,6 +2,11 @@
 
 SQL migrations live here.
 
+`034_atomic_results_outbox` atomically separates immutable attempt results,
+required final artifacts/transcript, stable notification chunks and durable
+auxiliary jobs. Back up results and unknown sending outcomes before rollback;
+removing these records cannot prove an outside effect or message was absent.
+
 `031_action_authorization` stores canonical action intents, irreversible
 dispatch grant states and versioned bounded mandates. Down removes these
 permission/outcome records; preserve them before operational rollback because

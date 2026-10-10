@@ -18,14 +18,16 @@ import (
 
 // TaskViewServer serves task-centric read endpoints for Web UI.
 type TaskViewServer struct {
-	tasks       run.TaskReader
-	runs        RunLister
-	sessions    SessionLister
-	transcripts TranscriptReader
-	transitions TransitionLister
-	artifacts   taskArtifactsReader
-	delivery    taskDeliveryReader
-	durable     durableTaskReader
+	tasks        run.TaskReader
+	runs         RunLister
+	sessions     SessionLister
+	transcripts  TranscriptReader
+	transitions  TransitionLister
+	artifacts    taskArtifactsReader
+	delivery     taskDeliveryReader
+	durable      durableTaskReader
+	finalResults finalResultReader
+	outbox       outboxReader
 }
 
 type durableTaskReader interface {
@@ -210,6 +212,7 @@ func (s *TaskViewServer) HandleGetTaskDetail(prefix string) http.Handler {
 			"timeline_preview": timelinePreview,
 			"artifacts":        s.loadTaskArtifacts(r, runRecord.RunID),
 			"delivery":         deliveryState,
+			"final_result":     s.loadFinalResult(r, runRecord.RunID),
 			"debug_refs": map[string]any{
 				"run":         fmt.Sprintf("/api/v1/runs/%s", runRecord.RunID),
 				"transcript":  fmt.Sprintf("/api/v1/runs/%s/transcript", runRecord.RunID),
@@ -223,6 +226,9 @@ func (s *TaskViewServer) HandleGetTaskDetail(prefix string) http.Handler {
 }
 
 func (s *TaskViewServer) loadDeliveryState(r *http.Request, runID string) map[string]any {
+	if outbox, ok := s.loadOutboxState(r, runID); ok {
+		return outbox
+	}
 	if s.delivery == nil {
 		return map[string]any{"channel": "", "state": "", "delivery_type": "", "error_message": ""}
 	}
@@ -380,7 +386,8 @@ func (s *TaskViewServer) writeDurableTaskDetail(w http.ResponseWriter, r *http.R
 		"run_state": attempt.CurrentState, "current_stage": attempt.CurrentState, "risk_level": deriveRiskLevel(attempt.CurrentState), "source_channel": row.SessionChannel,
 		"model_provider": attempt.ModelProvider, "autonomy_mode": attempt.AutonomyMode, "outcome_summary": outcome, "error_summary": attempt.ErrorMessage}
 	writeJSON(w, 200, map[string]any{"task": responseTask, "durable_task": record, "run_ids": ids, "results": results,
-		"summary_bar": responseTask, "source": map[string]any{"channel": row.SessionChannel, "session_key": record.SessionKey, "source_message_full": record.Goal, "source_message_preview": record.Goal},
+		"final_result": s.loadFinalResult(r, record.LastRunID),
+		"summary_bar":  responseTask, "source": map[string]any{"channel": row.SessionChannel, "session_key": record.SessionKey, "source_message_full": record.Goal, "source_message_preview": record.Goal},
 		"waiting_state": map[string]any{"needs_user_action": needs, "user_action_channel": channel, "waiting_reason": reason},
 		"result":        map[string]any{"has_result": len(results) > 0, "verified": record.CompletionResultID != "", "outcome_summary": outcome},
 		"error":         map[string]any{"has_error": attempt.ErrorMessage != "", "error_summary": attempt.ErrorMessage, "error_type": attempt.ErrorType}, "timeline_preview": s.loadTimelinePreview(r, record.LastRunID), "artifacts": s.loadTaskArtifacts(r, record.LastRunID), "delivery": s.loadDeliveryState(r, record.LastRunID),

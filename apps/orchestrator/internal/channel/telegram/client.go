@@ -35,10 +35,7 @@ func (e *apiError) Error() string {
 	if e == nil {
 		return ""
 	}
-	if e.Description == "" {
-		return fmt.Sprintf("telegram api error (%d)", e.StatusCode)
-	}
-	return e.Description
+	return fmt.Sprintf("telegram api rejected request (%d)", e.StatusCode)
 }
 
 type Update struct {
@@ -149,10 +146,12 @@ func NewClient(baseURL, botToken string, httpClient *http.Client) (*Client, erro
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: 40 * time.Second}
 	}
+	safeClient := *httpClient
+	safeClient.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
 	return &Client{
 		baseURL:    strings.TrimRight(baseURL, "/"),
 		botToken:   botToken,
-		httpClient: httpClient,
+		httpClient: &safeClient,
 	}, nil
 }
 
@@ -231,30 +230,33 @@ func doTelegramRequest[T any](ctx context.Context, client *Client, method string
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, client.endpoint(method), bytes.NewReader(body))
 	if err != nil {
-		return zero, fmt.Errorf("create telegram %s request: %w", method, err)
+		return zero, fmt.Errorf("telegram request invalid")
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := client.httpClient.Do(req)
 	if err != nil {
-		return zero, err
+		return zero, fmt.Errorf("telegram transport failed")
 	}
 	defer resp.Body.Close()
 
-	bodyBytes, err := io.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(io.LimitReader(resp.Body, (1<<20)+1))
 	if err != nil {
-		return zero, fmt.Errorf("read telegram %s response: %w", method, err)
+		return zero, fmt.Errorf("telegram response read failed")
+	}
+	if len(bodyBytes) > 1<<20 {
+		return zero, fmt.Errorf("telegram response too large")
 	}
 
 	var envelope apiEnvelope[T]
 	if err := json.Unmarshal(bodyBytes, &envelope); err != nil {
-		return zero, fmt.Errorf("decode telegram %s response: %w", method, err)
+		return zero, fmt.Errorf("telegram response invalid")
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 || !envelope.OK {
 		retryAfter := time.Duration(envelope.Parameters.RetryAfter) * time.Second
 		return zero, &apiError{
 			StatusCode:  resp.StatusCode,
-			Description: strings.TrimSpace(envelope.Description),
+			Description: "telegram request rejected",
 			Retryable:   resp.StatusCode >= 500 || resp.StatusCode == http.StatusTooManyRequests,
 			RetryAfter:  retryAfter,
 		}

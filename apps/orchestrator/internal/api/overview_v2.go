@@ -15,6 +15,7 @@ import (
 type OverviewServer struct {
 	tasks    run.TaskReader
 	delivery overviewDeliveryReader
+	outbox   outboxReader
 }
 
 type overviewDeliveryReader interface {
@@ -66,6 +67,7 @@ func (s *OverviewServer) HandleGetOverview() http.Handler {
 			}
 			for _, item := range items {
 				dto := toOverviewTaskItemDTO(item)
+				dto.DeliveryState = s.outboxStatus(r, item.RunID)
 				if s.delivery != nil {
 					if latest, err := s.delivery.LatestByRun(r.Context(), item.RunID); err == nil && latest != nil && latest.Channel == deliveryevents.ChannelTelegram && latest.State == deliveryevents.StateWaiting {
 						dto.Status = "waiting_for_reply_in_telegram"
@@ -134,7 +136,9 @@ func (s *OverviewServer) loadRecentResults(r *http.Request) ([]overviewTaskItemD
 			return nil, err
 		}
 		for _, item := range items {
-			all = append(all, toOverviewTaskItemDTO(item))
+			dto := toOverviewTaskItemDTO(item)
+			dto.DeliveryState = s.outboxStatus(r, item.RunID)
+			all = append(all, dto)
 		}
 	}
 	all = uniqueOverviewItems(all)
@@ -150,6 +154,7 @@ func (s *OverviewServer) loadRecentResults(r *http.Request) ([]overviewTaskItemD
 }
 
 type overviewTaskItemDTO struct {
+	DeliveryState     string `json:"delivery_state,omitempty"`
 	TaskID            string `json:"task_id"`
 	RunID             string `json:"run_id"`
 	SessionKey        string `json:"session_key"`

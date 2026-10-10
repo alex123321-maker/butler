@@ -49,7 +49,7 @@ func TestToolApprovalUsesDurableDecision(t *testing.T) {
 				gate.Resolve(req.ToolCallID, true)
 				return nil
 			}}
-			service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
+			service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
 				Tools: tools, Delivery: delivery, ApprovalGate: gate,
 				ActionAuthorizer: &mockApprovalChecker{toolsRequiringApproval: map[string]bool{"http.request": true}},
 				ApprovalService:  approvals.NewService(repo, gate),
@@ -104,7 +104,7 @@ func TestToolAuthorizationFailsClosed(t *testing.T) {
 					event.ToolCallBatch = &transport.ToolCallBatch{ToolCalls: []transport.ToolCallRequest{call}}
 				}
 				provider := &mockProvider{startEvents: []transport.TransportEvent{event}}
-				service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{Tools: tools, ActionAuthorizer: tc.checker}, nil)
+				service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{Tools: tools, ActionAuthorizer: tc.checker}, nil)
 				_, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "web:1", Source: "web", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
 				if err == nil || !strings.Contains(err.Error(), tc.want) {
 					t.Fatalf("batch=%v: expected %q, got %v", batch, tc.want, err)
