@@ -6,6 +6,13 @@ Nuxt.js frontend for the Butler self-hosted AI agent platform.
 
 Provides a browser-based interface for:
 - **Dashboard** — system health overview
+- **Initiatives** — authenticated source/schedule controls, observation decisions,
+  ordinary-task links and grouped notice states. Empty checks stay quiet. The owner
+  token remains in page memory and is cleared on navigation; changing it clears
+  the loaded private view. New project sources start paused and pin current goal,
+  mandate, exact project revision and the selected conversation. Schedules use the
+  source's IANA time zone and an explicit downtime policy. These controls do not
+  grant tools or bypass normal task result verification.
 - **Sessions** — session list and run history (T-0604)
 - **Run detail** — transcript timeline for a selected run
 - **Memory** — scope-based browser for durable working, profile, episodic, and chunk memory with provenance links

@@ -13,6 +13,7 @@ const guardedFiles = [
   "pages/index.vue",
   "pages/tasks.vue",
   "pages/goals.vue",
+  "pages/initiatives.vue",
   "pages/tasks/**/*.vue",
   "pages/approvals.vue",
   "pages/artifacts.vue",
