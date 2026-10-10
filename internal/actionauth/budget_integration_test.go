@@ -110,6 +110,9 @@ func TestBudgetUsesCurrentAssignedMandateAcrossIndependentTasksIntegration(t *te
 		t.Fatal(err)
 	}
 	// The fixture seeds the authenticated goal service's durable projection.
+	if _, err = pool.Exec(ctx, `INSERT INTO owner_purpose_policies(owner_id,purpose,revision) VALUES($1,$2,0)`, goal.OwnerID, goal.Purpose); err != nil {
+		t.Fatal(err)
+	}
 	// Broker's legacy PutMandate deliberately cannot grant broad owner authority.
 	if err = ValidateMandate(m, time.Now()); err != nil {
 		t.Fatal(err)

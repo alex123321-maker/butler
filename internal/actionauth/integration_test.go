@@ -72,6 +72,13 @@ func actionDatabase(t *testing.T) *pgxpool.Pool {
 	if _, err = pool.Exec(ctx, string(data)); err != nil {
 		t.Fatal(err)
 	}
+	data, err = os.ReadFile(filepath.Join("..", "..", "migrations", "038_owner_purpose_policies.up.sql"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, string(data)); err != nil {
+		t.Fatal(err)
+	}
 	return pool
 }
 func TestPostgresDispatchCASAndUnknownOutcome(t *testing.T) {

@@ -82,6 +82,13 @@ func TestBrokerPostgresLostExternalAcknowledgementStopsDuplicateDispatch(t *test
 	if _, err = pool.Exec(ctx, string(data)); err != nil {
 		t.Fatal(err)
 	}
+	data, err = os.ReadFile(filepath.Join("..", "..", "..", "..", "migrations", "038_owner_purpose_policies.up.sql"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, string(data)); err != nil {
+		t.Fatal(err)
+	}
 	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { effects.Add(1); w.WriteHeader(201) }))
 	defer site.Close()
 	executor := &acceptedThenLostExecutor{site: site}
