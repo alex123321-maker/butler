@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/butler/butler/internal/budget"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 )
 
@@ -49,18 +50,20 @@ type EffectRecord struct {
 // Evidence contains provenance and digests only. Raw output, credential values,
 // receipt IDs, cookies and URL queries are not copied into the journal.
 type EffectEvidence struct {
-	EvidenceID       string      `json:"evidence_id"`
-	ActionID         string      `json:"action_id"`
-	SourceActionID   string      `json:"source_action_id"`
-	SourceToolCallID string      `json:"source_tool_call_id"`
-	SourceRunID      string      `json:"source_run_id"`
-	Source           string      `json:"source"`
-	Method           string      `json:"method"`
-	Verdict          EffectState `json:"verdict"`
-	ResultDigest     string      `json:"result_digest"`
-	ArtifactDigest   string      `json:"artifact_digest,omitempty"`
-	ObservedAt       time.Time   `json:"observed_at"`
-	RecordedAt       time.Time   `json:"recorded_at"`
+	EvidenceID             string      `json:"evidence_id"`
+	ActionID               string      `json:"action_id"`
+	SourceActionID         string      `json:"source_action_id"`
+	SourceToolCallID       string      `json:"source_tool_call_id"`
+	SourceRunID            string      `json:"source_run_id"`
+	Source                 string      `json:"source"`
+	Method                 string      `json:"method"`
+	Verdict                EffectState `json:"verdict"`
+	ResultDigest           string      `json:"result_digest"`
+	ArtifactDigest         string      `json:"artifact_digest,omitempty"`
+	NormalizedResultDigest string      `json:"normalized_result_digest,omitempty"`
+	ErrorCategory          string      `json:"error_category,omitempty"`
+	ObservedAt             time.Time   `json:"observed_at"`
+	RecordedAt             time.Time   `json:"recorded_at"`
 }
 
 type EffectStore interface {
@@ -199,6 +202,12 @@ func (s *Service) Outcome(ctx context.Context, g Grant, result *toolbrokerv1.Too
 		return record, err
 	}
 	e := EffectEvidence{EvidenceID: "evidence_" + randomID(), ActionID: record.ActionID, SourceActionID: g.Binding.ActionID, SourceToolCallID: g.Binding.ToolCallID, SourceRunID: g.Binding.RunID, Source: "runtime_response", Method: record.Policy.VerificationMethod, Verdict: StateUnknown, ObservedAt: s.now(), RecordedAt: s.now()}
+	if result != nil {
+		e.NormalizedResultDigest, _ = budget.NormalizeResult(result.GetResultJson())
+		if result.GetError() != nil {
+			e.ErrorCategory = result.GetError().GetErrorClass().String()
+		}
+	}
 	outcome := "unknown"
 	if !runtimeError && result != nil && result.GetRunId() == g.Binding.RunID && result.GetToolCallId() == g.Binding.ToolCallID && result.GetToolName() == g.Binding.ToolName && result.GetStatus() == "completed" {
 		outcome = "dispatch_completed"

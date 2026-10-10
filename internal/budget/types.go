@@ -21,12 +21,14 @@ var (
 )
 
 type Units struct {
-	ModelTurns    int64 `json:"model_turns"`
-	Tokens        int64 `json:"tokens"`
-	CostMicros    int64 `json:"cost_micros"`
-	ExternalCalls int64 `json:"external_calls"`
-	Children      int64 `json:"children"`
-	ActiveMillis  int64 `json:"active_millis"`
+	ModelTurns         int64 `json:"model_turns"`
+	Tokens             int64 `json:"tokens"`
+	CostMicros         int64 `json:"cost_micros"`
+	ExternalCalls      int64 `json:"external_calls"`
+	Children           int64 `json:"children"`
+	ActiveMillis       int64 `json:"active_millis"`
+	EgressBytes        int64 `json:"egress_bytes"`
+	ProviderInputBytes int64 `json:"provider_input_bytes"`
 }
 
 type ScopeSpec struct {
@@ -79,10 +81,10 @@ func (u Units) validate() error {
 	}
 	return nil
 }
-func (u Units) values() [6]int64 {
-	return [6]int64{u.ModelTurns, u.Tokens, u.CostMicros, u.ExternalCalls, u.Children, u.ActiveMillis}
+func (u Units) values() [8]int64 {
+	return [8]int64{u.ModelTurns, u.Tokens, u.CostMicros, u.ExternalCalls, u.Children, u.ActiveMillis, u.EgressBytes, u.ProviderInputBytes}
 }
-func fromValues(v [6]int64) Units { return Units{v[0], v[1], v[2], v[3], v[4], v[5]} }
+func fromValues(v [8]int64) Units { return Units{v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7]} }
 func addWithin(scope Scope, charge Units, now time.Time) (Units, error) {
 	if scope.Used.validate() != nil || scope.Limits.validate() != nil || charge.validate() != nil {
 		return Units{}, ErrInvalid
@@ -91,7 +93,7 @@ func addWithin(scope Scope, charge Units, now time.Time) (Units, error) {
 		return Units{}, &ExhaustedError{scope.Kind, "deadline"}
 	}
 	used, limits, amounts := scope.Used.values(), scope.Limits.values(), charge.values()
-	names := [6]string{"model_turns", "tokens", "cost_micros", "external_calls", "children", "active_millis"}
+	names := [8]string{"model_turns", "tokens", "cost_micros", "external_calls", "children", "active_millis", "egress_bytes", "provider_input_bytes"}
 	for i, amount := range amounts {
 		// Subtraction avoids integer overflow even for an untrusted large quote.
 		if used[i] > limits[i] || amount > limits[i]-used[i] {

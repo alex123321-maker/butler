@@ -4,35 +4,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
+
 	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
-
-	postgresstore "github.com/butler/butler/internal/storage/postgres"
 )
 
 func TestSharedReservationsSurviveRestartAndRejectParallelOverspendIntegration(t *testing.T) {
-	dsn := os.Getenv("BUTLER_TEST_POSTGRES_URL")
-	if dsn == "" {
-		t.Skip("BUTLER_TEST_POSTGRES_URL is not set")
-	}
+	pool := controllerDB(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	db, err := postgresstore.Open(ctx, postgresstore.Config{URL: dsn, MaxConns: 2, MinConns: 1}, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Close()
-	if err = db.RunMigrations(ctx, filepath.Join("..", "..", "migrations")); err != nil {
-		t.Fatal(err)
-	}
 	owner := fmt.Sprintf("budget-test-%d", time.Now().UnixNano())
-	defer db.Pool().Exec(context.Background(), `DELETE FROM execution_budget_reservations WHERE owner_id=$1`, owner)
-	defer db.Pool().Exec(context.Background(), `DELETE FROM execution_budget_scopes WHERE owner_id=$1`, owner)
-	ledger := NewLedger(db.Pool())
+	defer pool.Exec(context.Background(), `DELETE FROM execution_budget_reservations WHERE owner_id=$1`, owner)
+	defer pool.Exec(context.Background(), `DELETE FROM execution_budget_scopes WHERE owner_id=$1`, owner)
+	var err error
+	ledger := NewLedger(pool)
 	deadline := time.Now().Add(time.Hour).Truncate(time.Microsecond)
 	limits := Units{ModelTurns: 4, Tokens: 40, ExternalCalls: 4, Children: 4, ActiveMillis: 40}
 	var ids []string
@@ -69,7 +56,7 @@ func TestSharedReservationsSurviveRestartAndRejectParallelOverspendIntegration(t
 	if accepted.Load() != 4 {
 		t.Fatalf("shared scopes overspent or starved: %d", accepted.Load())
 	}
-	restarted := NewLedger(db.Pool())
+	restarted := NewLedger(pool)
 	for _, id := range ids {
 		s, err := restarted.Get(ctx, id)
 		if err != nil || s.Used != limits {
@@ -78,7 +65,7 @@ func TestSharedReservationsSurviveRestartAndRejectParallelOverspendIntegration(t
 	}
 	// Stable operation identity survives a new Ledger and unordered scope list.
 	var operation string
-	if err = db.Pool().QueryRow(ctx, `SELECT operation_id FROM execution_budget_reservations WHERE owner_id=$1 LIMIT 1`, owner).Scan(&operation); err != nil {
+	if err = pool.QueryRow(ctx, `SELECT operation_id FROM execution_budget_reservations WHERE owner_id=$1 LIMIT 1`, owner).Scan(&operation); err != nil {
 		t.Fatal(err)
 	}
 	req := Request{OwnerID: owner, OperationID: operation, ScopeIDs: []string{ids[2], ids[0], ids[1]}, Charge: Units{ModelTurns: 1, Tokens: 10, ExternalCalls: 1, Children: 1, ActiveMillis: 10}, CostKnown: true}
@@ -93,7 +80,7 @@ func TestSharedReservationsSurviveRestartAndRejectParallelOverspendIntegration(t
 	// when its caller commits an otherwise useful outer transaction.
 	req.OperationID = "failed-outer"
 	req.Charge.Tokens = 10
-	tx, err := db.Pool().Begin(ctx)
+	tx, err := pool.Begin(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -105,7 +92,7 @@ func TestSharedReservationsSurviveRestartAndRejectParallelOverspendIntegration(t
 		t.Fatal(err)
 	}
 	var leaked bool
-	if err = db.Pool().QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM execution_budget_reservations WHERE owner_id=$1 AND operation_id=$2)`, owner, req.OperationID).Scan(&leaked); err != nil || leaked {
+	if err = pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM execution_budget_reservations WHERE owner_id=$1 AND operation_id=$2)`, owner, req.OperationID).Scan(&leaked); err != nil || leaked {
 		t.Fatalf("failed admission persisted placeholder: %v %v", leaked, err)
 	}
 	// The second sorted scope denies after the first was charged inside the

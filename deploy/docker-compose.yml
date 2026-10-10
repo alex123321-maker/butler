@@ -249,6 +249,7 @@ services:
       - BUTLER_GRPC_ADDR
       - BUTLER_TOOL_REGISTRY_PATH
       - BUTLER_TOOL_DEFAULT_TARGET
+      - BUTLER_EXECUTION_BUDGET_POLICY_JSON
       - BUTLER_ACTION_CONTEXT_URL=http://orchestrator:8080/internal/action-context
       - BUTLER_ACTION_AUTHORITY_TOKEN_FILE=/run/secrets/butler-action-authority-token
     secrets:
@@ -337,6 +338,7 @@ services:
       - BUTLER_SETTINGS_ENCRYPTION_KEY
       - BUTLER_AUTONOMY_MODE
       - BUTLER_ACTION_MANDATE_ID
+      - BUTLER_EXECUTION_BUDGET_POLICY_JSON
       - BUTLER_ACTION_AUTHORITY_TOKEN_FILE=/run/secrets/butler-action-authority-token
     secrets:
       - source: action-authority

@@ -1,5 +1,13 @@
 # Butler — Model Transport Contract
 
+[Execution budgets](execution-budget-contract.md) reserve declared conservative
+input/output/time before each actual inference request. Exact operator cost basis
+and current assigned privacy policy are required. Private
+`transport.WithInputByteLimit` constrains complete native serialized history and
+tool declarations before HTTP write; unset cap is finite. Native Antigravity
+declares inference limits; undeclared adapters fail closed in admitted production
+execution. No automatic model fallback or overage follows from a budget quote.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Model Transport Contract

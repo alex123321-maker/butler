@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"github.com/butler/butler/internal/budget"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -157,6 +158,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	remoteRelayEnabled := singleTabTransportMode != "native_only"
 
 	mux := http.NewServeMux()
+	mux.Handle("/api/v3/execution-budgets", apiservice.NewBudgetHandler(budget.NewLedger(deps.postgres.Pool()), deps.ownerAuth))
 	if deps.actionAuthorityHandler != nil {
 		mux.Handle("/internal/action-context", deps.actionAuthorityHandler)
 	}

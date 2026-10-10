@@ -29,6 +29,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/config"
 	orchestratorv1 "github.com/butler/butler/internal/gen/orchestrator/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
@@ -131,6 +132,15 @@ func New(ctx context.Context) (*App, error) {
 
 	taskStore := task.NewStore(postgres.Pool())
 	ownerGoals := goal.New(postgres.Pool(), taskStore, nil)
+	budgetPolicy, policyErr := budget.ParsePolicy(cfg.ExecutionBudgetPolicyJSON)
+	if policyErr != nil {
+		redis.Close()
+		postgres.Close()
+		return nil, policyErr
+	}
+	budgetController := budget.NewController(postgres.Pool(), budgetPolicy)
+	budgetController.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
+	taskStore.SetBudgets(budgetController, cfg.ActionMandateID)
 	runRepo := runservice.NewPostgresRepository(postgres.Pool())
 	runManager := runservice.NewService(runRepo, logger.WithComponent(log, "run-service"))
 	toolBrokerClient, err := tools.DialWithTokenFile(cfg.ToolBrokerAddr, cfg.ActionAuthorityTokenFile)
@@ -211,6 +221,7 @@ func New(ctx context.Context) (*App, error) {
 		transcriptStore,
 		providerResult.Provider,
 		flow.Config{
+			Budgets:               budgetController,
 			Completion:            finalResults,
 			DurableMemoryPipeline: pipelineWorker != nil,
 			AutonomyMode:          autonomyMode(cfg.AutonomyMode),

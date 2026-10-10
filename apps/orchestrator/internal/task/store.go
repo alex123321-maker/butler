@@ -11,12 +11,22 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Store struct{ pool *pgxpool.Pool }
+type Store struct {
+	pool          *pgxpool.Pool
+	budgets       *budget.Controller
+	budgetMandate string
+}
+
+func (s *Store) SetBudgets(c *budget.Controller, mandateID string) {
+	s.budgets = c
+	s.budgetMandate = mandateID
+}
 
 func NewStore(pool *pgxpool.Pool) *Store { return &Store{pool: pool} }
 
@@ -155,6 +165,11 @@ func (s *Store) CreateTx(ctx context.Context, tx pgx.Tx, req CreateRequest) (Rec
 	id, err := newID("task")
 	if err != nil {
 		return Record{}, err
+	}
+	if req.ParentTaskID != "" && s.budgets != nil {
+		if err = s.budgets.ReserveChildTx(ctx, tx, req.ParentTaskID, s.budgetMandate, id); err != nil {
+			return Record{}, err
+		}
 	}
 	source, err := json.Marshal(req.Source)
 	if err != nil {

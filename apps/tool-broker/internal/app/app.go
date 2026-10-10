@@ -17,6 +17,7 @@ import (
 	"github.com/butler/butler/apps/tool-broker/internal/registry"
 	"github.com/butler/butler/apps/tool-broker/internal/runtimeclient"
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/config"
 	"github.com/butler/butler/internal/credentials"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -78,6 +79,16 @@ func New(ctx context.Context) (*App, error) {
 			return nil, err
 		}
 		authorizationStore := actionauth.NewPostgresStore(postgres.Pool())
+		budgetPolicy, policyErr := budget.ParsePolicy(cfg.ExecutionBudgetPolicyJSON)
+		if policyErr != nil {
+			postgres.Close()
+			return nil, policyErr
+		}
+		budgetController := budget.NewController(postgres.Pool(), budgetPolicy)
+		budgetController.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
+		authorizationStore.SetBudgets(budgetController)
+		server.SetBudgets(budgetController)
+		server.SetBudgetTimeout(time.Duration(budgetPolicy.ToolMillis) * time.Millisecond)
 		authorizer := actionauth.NewService(authorizationStore, reader, credentialResolver)
 		server.SetActionAuthorizer(authorizer)
 		effectHandler = actionauth.NewEffectHandler(token, authorizer, authorizationStore)

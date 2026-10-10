@@ -1,36 +1,77 @@
 # Durable execution budgets
 
-This package owns PostgreSQL budget scopes and conservative reservations.
-Migration 037 creates the tables. This foundation is not yet wired into the
-production model loop, Broker claims or child admission; issue #13 stays open.
+This Go package owns migration037's PostgreSQL policies, conservative reservations,
+model attempts and normalized loop observations. Production Orchestrator, Broker
+and Task Store bootstraps install its controller.
 
-Each scope has immutable limits, an absolute deadline and spent reservations.
-Kinds are root task, mandate, owner UTC day, and conversation. Scope identities
-exclude run IDs and task revisions so new attempts and amendments cannot reset a
-task or mandate allowance. A caller derives the root task through Task Service;
-it must include every applicable parent/mandate/day scope for child work.
-Identity and quote inputs come from trusted control-plane state, never model args.
+Root task, assigned mandate and owner UTC-day scopes share counters across runs,
+children and amendments. Conversation uses session/day plus owner/day without a
+separate planner or critic. Identity comes from durable run/session/task ancestry.
+An owning AuthorityResolver checks current assignments on the same transaction
+and returns immutable mandate limits/deadline. Model arguments cannot supply
+scope, owner, quote, reservation ID, monetary rates or authority.
 
-Counters cover model turns, tokens, integer monetary micros, external calls,
-child tasks and active milliseconds. Zero is a hard limit, not unlimited.
-Unknown monetary quotes fail closed; the ledger does not guess model prices or
-interpret a subscription as an API billing permission. Callers must provide a
-conservative, explicit cost basis and bounded token/time allowance.
+Eight finite counters cover turns, tokens, monetary micros, external calls,
+children, active milliseconds, tool egress bytes and provider input bytes. Zero
+is a hard limit. Default root/conversation/mandate policy permits 64 turns,
+67,108,864 token allowance, 128 calls, 8 children, one hour reserved active time,
+128MiB tool egress, 256MiB provider input and zero monetary charge. Owner/day limits
+are four times these values. Root deadline is seven days from original creation;
+conversation/day ends at midnight UTC. Per model/tool reservation is 120 seconds.
+Runtime contexts use the earliest reserved time or applicable absolute deadline.
 
-`Ensure` creates one immutable policy; conflicting defaults do not replace it.
-`Reserve` charges all scopes in one transaction under sorted row locks. The stable
-system operation ID makes recovery idempotent; changed scope or quote data is a
-conflict. `ReserveTx` exposes an owned savepoint for atomic effect/child admission
-without taking another pool connection. Failed admission rolls back its own
-placeholder and charges even if a caller commits its outer transaction.
+BUTLER_EXECUTION_BUDGET_POLICY_JSON is deployment operator configuration, identical
+in Orchestrator and Broker. Omitted fields retain finite defaults. Model cost basis
+defaults to unknown and stops inference until the exact provider/model declares
+operator_rate (nonzero integer micros per token), subscription_no_overage, or
+local_no_billing (both zero rates). A basis is not proof of entitlement or credit
+purchase permission. Native Antigravity sends no credits and has no model fallback.
+For the explicitly selected Google AI Pro subscription, an operator can configure:
 
-Reservations are conservative charges, not proof that a provider used every
-reserved token. No timeout/crash automatically refunds a quote: an unknown
-model/tool effect cannot release allowance and repeat indefinitely. Actual usage,
-normalized loop detection, execution hooks, saved budget stops and owner-visible
-read models will be added by the remaining issue #13 implementation.
+```json
+{"models":{"antigravity:gemini-3.8-flash-tiered":{"basis":"subscription_no_overage"}}}
+```
 
-Tests exercise deadline/zero/overflow/unknown-cost guards and a real PostgreSQL
-pool with two connections: sixteen parallel child attempts share task, mandate
-and day limits, restart cannot reset spending, replay cannot double-charge, and
-failed nested admission cannot persist an idempotency placeholder.
+EnsureTx and ReserveTx share the caller's connection. Sorted scope locks and an
+owned savepoint prevent partial spending and leaked reservation placeholders.
+Broker reserves effect:<permanent EffectID> before journal dispatch commit; Task
+Store reserves child:<system child ID> before insertion. Each actual model attempt
+gets a fresh committed random operation ID even after recovery. Live ownership,
+run/task and mandate/goal locks precede budget locks. Unknown effects, provider
+failure and crashes never refund allowance. Actual provider usage stays separate;
+missing observations remain null. Immutable policies cannot be reset by a revision
+or changed defaults. Down refuses any scope, reservation, attempt or loop history,
+including an unspent zero-limit policy.
+
+Loops bind root, pinned task/constraints revisions, exact tool/contract and
+canonical arguments. Equivalent finite numbers/object order compare without float
+rounding. Typed errors ignore free-text wording; successful observations strip
+only known volatile metadata. Three matching observations stop the next call.
+Unknown non-read effects block new non-read actions throughout the tree, including
+a different tool. Independent reads can reconcile; compensation is a new action.
+
+Stops persist execution_stopped, a concrete reason and preceding continuation,
+block task/input and cancel transport. They do not create a verified final result.
+Atomic finalization retains artifact/criteria/evidence and model-only results stay
+unverified. A malformed runtime output schema or completed result carrying an
+error cannot become confirmed evidence. Batches advertise false and fail entirely
+before the first tool executes; no partial result set continues the model.
+
+Native Antigravity currently declares conservative limits: 1,048,576 context plus
+8,192 output tokens reserved per attempt. Other adapters without declared limits
+fail closed. Private transport.WithInputByteLimit checks the complete native
+serialized history, system input, schemas and results before HTTP. Unset cap is
+8MiB; tool egress reserves 4MiB per call. Actual wire/session egress enforcement and
+other cloud adapter byte guards belong to issue31; a reservation alone does not
+prove an unchecked runtime obeyed its quote. Assigned local_only denies the
+currently supported cloud provider.
+
+GET /api/v3/execution-budgets requires owner proof and reports the proved owner's
+latest scope/attempt observations. Caller owner IDs are ignored. Read data cannot
+mutate policy or replenish counters. Reproducible lab PostgreSQL/race checks and
+current acceptance boundaries are in deploy/execution-budgets.
+
+`CheckRootAdmissionTx` is an owned initiative promotion preflight on the caller's
+transaction. It checks declared model cost/limits and current shared scope
+capacity without creating scopes or charging a model turn. Actual inference
+still reserves atomically; later depletion cannot authorize a network call.

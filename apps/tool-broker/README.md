@@ -65,3 +65,13 @@ replay. Private `/internal/action-effects` supplies typed journal snapshots and
 reconciliation from an independently captured authorized read. Defaults declare
 no recipient idempotency guarantee. See
 [the effect contract](../../docs/architecture/external-effect-journal.md).
+
+Migration037 admission reserves permanent-effect call/time/egress allowance in
+the same PostgreSQL transaction as the irreversible grant/journal claim, after
+live task and assigned authority checks. Normalized loops and unknown non-read
+effects block fresh non-read dispatches. Runtime deadline is capped by every scope
+deadline. Completed output must pass the registry schema and contain no error
+before becoming evidence. Budget rejection returns `execution_stopped` with a
+typed reason and invokes no runtime. Configure the same operator
+`BUTLER_EXECUTION_BUDGET_POLICY_JSON` as Orchestrator. See
+[execution budgets](../../docs/architecture/execution-budget-contract.md).

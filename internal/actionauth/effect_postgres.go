@@ -157,6 +157,17 @@ func (s *PostgresStore) RecordDispatchOutcome(ctx context.Context, id, outcome s
 	}
 	r.State, r.DispatchOutcome = e.Verdict, outcome
 	r.EvidenceRefs = append(r.EvidenceRefs, e.EvidenceID)
+	if s.budgets != nil {
+		category := string(e.Verdict)
+		resultDigest := e.NormalizedResultDigest
+		if e.ErrorCategory != "" {
+			category = e.ErrorCategory
+			resultDigest = ""
+		}
+		if err = s.budgets.ObserveToolTx(ctx, tx, toolBudgetIdentity(g, r.ActionID), category, resultDigest); err != nil {
+			return r, err
+		}
+	}
 	if err = tx.Commit(ctx); err != nil {
 		return r, err
 	}

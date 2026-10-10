@@ -105,8 +105,12 @@ func TestToolAuthorizationFailsClosed(t *testing.T) {
 				}
 				provider := &mockProvider{startEvents: []transport.TransportEvent{event}}
 				service := newFixtureService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{Tools: tools, ActionAuthorizer: tc.checker}, nil)
-				_, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "web:1", Source: "web", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
-				if err == nil || !strings.Contains(err.Error(), tc.want) {
+				result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "web:1", Source: "web", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
+				if batch {
+					if err != nil || result == nil || result.ReceiptStatus != "blocked" || result.ErrorCode != "batch_tool_calls_unsupported" {
+						t.Fatalf("batch did not fail closed before any call: %+v %v", result, err)
+					}
+				} else if err == nil || !strings.Contains(err.Error(), tc.want) {
 					t.Fatalf("batch=%v: expected %q, got %v", batch, tc.want, err)
 				}
 				if len(tools.calls) != 0 || len(provider.submittedResults) != 0 {

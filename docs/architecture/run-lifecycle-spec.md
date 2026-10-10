@@ -6,6 +6,12 @@ intent retains stable IDs across durable suspension, while a resumed worker
 must obtain a fresh current lease/fence grant. Dispatch/result checkpoints and
 non-reusable unknown outcomes prevent recovery from repeating external effects.
 
+[Execution budgets](execution-budget-contract.md) admit each actual model turn,
+effect claim and child creation against shared durable scopes. Exhaustion/loops
+save a concrete `execution_stopped` checkpoint and prior continuation, block
+input/task and cancel transport. A frozen finalizing checkpoint never invokes
+another model/effect; a budget stop cannot become verified completion.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Run Lifecycle  

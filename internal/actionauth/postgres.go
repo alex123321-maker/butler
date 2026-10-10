@@ -6,11 +6,18 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/butler/butler/internal/budget"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type PostgresStore struct{ pool *pgxpool.Pool }
+type PostgresStore struct {
+	pool    *pgxpool.Pool
+	budgets *budget.Controller
+}
+
+// SetBudgets is trusted deployment wiring, never a model-selectable option.
+func (s *PostgresStore) SetBudgets(c *budget.Controller) { s.budgets = c }
 
 func NewPostgresStore(pool *pgxpool.Pool) *PostgresStore { return &PostgresStore{pool: pool} }
 func (s *PostgresStore) PutIntent(ctx context.Context, i Intent) error {
@@ -138,6 +145,11 @@ func (s *PostgresStore) ClaimGrant(ctx context.Context, id string) error {
 	if err != nil {
 		return fmt.Errorf("external effect is already executing or uncertain; do not replay")
 	}
+	if s.budgets != nil {
+		if err = s.budgets.ReserveToolTx(ctx, tx, toolBudgetIdentity(g, effectID)); err != nil {
+			return err
+		}
+	}
 	tag, err := tx.Exec(ctx, `UPDATE action_authorizations a SET state='inflight',dispatched_at=NOW()
  WHERE authorization_id=$1 AND state='authorized' AND expires_at>clock_timestamp()
  AND (mandate_id IS NULL OR EXISTS(SELECT 1 FROM action_mandates m WHERE m.mandate_id=a.mandate_id AND m.revision=a.mandate_revision AND m.revoked_at IS NULL AND m.expires_at>clock_timestamp()))`, id)
@@ -188,6 +200,9 @@ func (s *PostgresStore) guardDispatch(ctx context.Context, tx pgx.Tx, g Grant) e
 			return fmt.Errorf("task authority changed before dispatch commit")
 		}
 		if err = CheckExecutionPolicy(ContextSnapshot{ExecutionPolicy: policy}, g.Binding.Effect); err != nil {
+			return err
+		}
+		if err = CheckTaskActionTx(ctx, tx, g.Binding, time.Now().UTC()); err != nil {
 			return err
 		}
 	}

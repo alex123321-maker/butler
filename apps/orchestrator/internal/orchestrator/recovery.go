@@ -151,6 +151,9 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		}
 	}
 	if err != nil {
+		if _, stopped := budgetStopReason(err); stopped {
+			return s.stopBudget(ctx, current, err)
+		}
 		if errors.Is(err, ErrActionOutcomeUnknown) {
 			s.blockTaskRun(ctx, runID, "effect_unknown")
 			return uncertainResult(current), nil
@@ -159,6 +162,9 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		return nil, err
 	}
 	final, current, err := s.consumeModelStream(ctx, runLog, current, event.SessionKey, lease.LeaseID, stream)
+	if _, stopped := budgetStopReason(err); stopped {
+		return s.stopBudget(ctx, current, err)
+	}
 	if errors.Is(err, ErrApprovalSuspended) {
 		return &ExecutionResult{RunID: runID, SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "waiting_for_user"}, nil
 	}

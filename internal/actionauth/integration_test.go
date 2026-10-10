@@ -65,6 +65,13 @@ func actionDatabase(t *testing.T) *pgxpool.Pool {
  INSERT INTO session_ownership VALUES('web:owner','run','lease',4,clock_timestamp()+INTERVAL '1 hour');`); err != nil {
 		t.Fatal(err)
 	}
+	data, err = os.ReadFile(filepath.Join("..", "..", "migrations", "038_owner_goals_mandates.up.sql"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, string(data)); err != nil {
+		t.Fatal(err)
+	}
 	return pool
 }
 func TestPostgresDispatchCASAndUnknownOutcome(t *testing.T) {

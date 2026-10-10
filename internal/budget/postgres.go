@@ -40,17 +40,32 @@ const scopeColumns = `scope_id,kind,owner_id,subject_id,limits_json,used_json,de
 // Ensure creates an immutable policy once. Restart/revision/changed defaults
 // cannot reset spending or silently expand an existing owner's allowance.
 func (l *Ledger) Ensure(ctx context.Context, spec ScopeSpec) (Scope, error) {
+	tx, err := l.pool.Begin(ctx)
+	if err != nil {
+		return Scope{}, err
+	}
+	defer tx.Rollback(ctx)
+	s, err := l.EnsureTx(ctx, tx, spec)
+	if err != nil {
+		return Scope{}, err
+	}
+	return s, tx.Commit(ctx)
+}
+
+// EnsureTx never acquires another connection. It is safe inside effect/child
+// admission transactions, including a pool limited to two connections.
+func (l *Ledger) EnsureTx(ctx context.Context, tx pgx.Tx, spec ScopeSpec) (Scope, error) {
 	if err := validateScope(spec); err != nil {
 		return Scope{}, err
 	}
 	id := ScopeID(spec.Kind, spec.OwnerID, spec.SubjectID)
 	limits, _ := json.Marshal(spec.Limits)
 	zero, _ := json.Marshal(Units{})
-	_, err := l.pool.Exec(ctx, `INSERT INTO execution_budget_scopes(scope_id,kind,owner_id,subject_id,limits_json,used_json,deadline) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(scope_id) DO NOTHING`, id, spec.Kind, spec.OwnerID, spec.SubjectID, limits, zero, spec.Deadline)
+	_, err := tx.Exec(ctx, `INSERT INTO execution_budget_scopes(scope_id,kind,owner_id,subject_id,limits_json,used_json,deadline) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(scope_id) DO NOTHING`, id, spec.Kind, spec.OwnerID, spec.SubjectID, limits, zero, spec.Deadline)
 	if err != nil {
 		return Scope{}, err
 	}
-	s, err := l.Get(ctx, id)
+	s, err := scanScope(tx.QueryRow(ctx, `SELECT `+scopeColumns+` FROM execution_budget_scopes WHERE scope_id=$1`, id))
 	if err != nil {
 		return Scope{}, err
 	}

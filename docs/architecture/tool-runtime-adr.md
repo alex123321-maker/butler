@@ -8,6 +8,12 @@ Broker RPCs require service authentication; direct/batch calls cannot bypass
 the same policy. Browser navigation/interactions have conservative unknown
 effects. Uncertain external outcomes stop automatic continuation.
 
+[Execution budgets](execution-budget-contract.md) reserve call/time/egress in the
+same transaction as permanent dispatch. Unknown non-read effects block tool
+switching within the task tree. Runtime output schemas gate evidence; malformed
+completed responses stay uncertain. Batch execution is rejected before the first
+dispatch, and no partial result set is supplied as completed model input.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Tooling Specification
