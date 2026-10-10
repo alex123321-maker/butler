@@ -6,6 +6,11 @@ independently of the request context. Orchestrator owns execution and recovery;
 Session Service owns expiring fenced ownership. Approval Service uses the typed
 transaction hooks to suspend and ready an input without writing the queue ad hoc.
 
+`AcceptTx` joins an owning service's admission transaction, so an initiative's
+task and receipt become visible together. The caller locks the session before
+checking goal/mandate authority. Rolling back also rolls back the receipt;
+`Accept` retains the standalone transaction boundary for ordinary ingress.
+
 Defaults: two workers, 250 ms polling, 60-second renewed claims, ten-minute
 execution deadline, 24-hour acceptance deadline and three recovery attempts.
 Busy-session retries and approved continuations do not consume recovery attempts.

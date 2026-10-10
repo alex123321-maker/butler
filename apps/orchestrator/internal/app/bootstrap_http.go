@@ -16,6 +16,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	deliveryevents "github.com/butler/butler/apps/orchestrator/internal/deliveryevents"
 	"github.com/butler/butler/apps/orchestrator/internal/goal"
+	"github.com/butler/butler/apps/orchestrator/internal/initiative"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
@@ -45,6 +46,7 @@ import (
 )
 
 type httpServerDeps struct {
+	initiativeStore        *initiative.Store
 	ownerGoals             *goal.Manager
 	finalResults           *completion.Coordinator
 	actionAuthorityHandler http.Handler
@@ -85,6 +87,7 @@ type httpServerDeps struct {
 }
 
 func newHTTPServer(deps httpServerDeps) *http.Server {
+	initiativeServer := apiservice.NewInitiativeServer(deps.initiativeStore, deps.ownerAuth)
 	goalServer := apiservice.NewGoalServer(deps.ownerGoals, deps.ownerAuth)
 	resultServer := apiservice.NewResultServer(deps.finalResults)
 	apiServer := apiservice.NewServer(deps.inputWorker, logger.WithComponent(deps.log, "api"))
@@ -169,6 +172,8 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	mux.Handle("/api/v1/events", apiServer.HTTPHandler())
 	mux.Handle("/api/v3/inputs/", inputServer.HandleItem())
 	mux.Handle("/api/v3/owner-authority", goalServer.Handle())
+	mux.Handle("/api/v3/initiatives", initiativeServer.Handle())
+	mux.Handle("/api/v3/initiatives/", initiativeServer.Handle())
 	mux.Handle("/api/v3/owner-goals", goalServer.Handle())
 	mux.Handle("/api/v3/owner-mandates", goalServer.Handle())
 	mux.Handle("/api/v3/owner-goals/tasks", goalServer.Handle())

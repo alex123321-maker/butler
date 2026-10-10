@@ -58,3 +58,4 @@ Use `make migrate-up` to apply all migrations and `make migrate-down` to roll th
   constraints by exact purpose and adds assignment policy revisions. Existing
   assignments receive no invented review. Down refuses saved assignments or
   confirmed policy history. See `docs/architecture/owner-goals-mandates-spec.md`.
+- `040_initiative_schedules` persists owner-defined sources, revisioned schedules, coalesced/fenced observation ticks, semantic candidates, normalized event/config audit and immutable owner UTC-day attention counts. Rollback refuses any configured source or history, including an unused attention row. Fixed external observers and verified project-repair acceptance remain outstanding; see `docs/architecture/initiative-contract.md`.

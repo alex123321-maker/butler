@@ -19,6 +19,7 @@ import (
 	deliveryevents "github.com/butler/butler/apps/orchestrator/internal/deliveryevents"
 	"github.com/butler/butler/apps/orchestrator/internal/deliveryoutbox"
 	"github.com/butler/butler/apps/orchestrator/internal/goal"
+	"github.com/butler/butler/apps/orchestrator/internal/initiative"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
@@ -273,11 +274,20 @@ func New(ctx context.Context) (*App, error) {
 	taskControls := task.NewController(taskStore, sessionLeaseManager.Authority(), sessionLeaseManager, runRepo, approvalRepo, inputStore, transcriptStore)
 	ownerGoals.SetControls(taskControls)
 	inputWorker.SetTaskControls(taskControls)
+	initiativeStore := initiative.NewStore(postgres.Pool())
+	allowance := budget.ModelAllowance{Provider: providerResult.ProviderName, Model: providerResult.ModelName}
+	if limits, ok := providerResult.Provider.(interface{ InferenceLimits() (int64, int64) }); ok {
+		allowance.InputTokens, allowance.OutputTokens = limits.InferenceLimits()
+	}
+	initiativeWorker := &initiative.Worker{Store: initiativeStore, Promoter: &initiative.Promoter{Store: initiativeStore, Goals: ownerGoals, Tasks: taskStore, Inputs: inputStore, Budgets: budgetController, Allowance: allowance}}
 	inputWorker.SetMaintenance(func(ctx context.Context) error {
 		if err := approvalService.ExpireInvalidPending(ctx); err != nil {
 			return err
 		}
-		return ownerGoals.Sweep(ctx)
+		if err := ownerGoals.Sweep(ctx); err != nil {
+			return err
+		}
+		return initiativeWorker.Sweep(ctx)
 	})
 	if telegram != nil {
 		telegram.SetExecutor(inputWorker)
@@ -321,6 +331,7 @@ func New(ctx context.Context) (*App, error) {
 		taskStore:              taskStore,
 		taskControls:           taskControls,
 		ownerGoals:             ownerGoals,
+		initiativeStore:        initiativeStore,
 		transcriptStore:        transcriptStore,
 		transitionRepo:         transitionRepo,
 		eventHub:               eventHub,
