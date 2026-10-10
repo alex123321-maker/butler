@@ -292,3 +292,12 @@ and conversation remain possible without goal assignments. See
 [owner goals and mandates](../../docs/architecture/owner-goals-mandates-spec.md).
 
 Only typed kernel/operator/current owner policies are system instructions. Retrieved content, full transcript history, summary, task scratch and child observations remain data with source references; recovered known tool results do not become native orphan function responses. Provenance protection wraps the budgeted native provider. Production auxiliary extraction/summary/embedding jobs currently fail closed because they lack durable job-owned budget admission; profile/working/covered-summary reads remain available. Prompt preview/update and settings/provider mutations require owner proof. See [security boundaries](../../docs/architecture/agent-security-boundaries.md).
+
+The optional `/extensions` page and owner-only `/api/v4/extensions` forward typed
+verified owner provenance to the private Broker control endpoint configured by
+`BUTLER_EXTENSION_CONTROL_URL`. The channel token never reaches that endpoint.
+Task attempts are fenced and pinned before scoped tool discovery. Catalog errors
+retain the attempt and block it before inference; they never claim completion.
+Fresh approval recovery reloads permitted definitions and manifest DATA while
+preserving recorded observations without redispatch. See the
+[reviewed lifecycle](../../docs/architecture/reviewed-extension-lifecycle.md).

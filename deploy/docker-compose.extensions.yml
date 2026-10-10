@@ -1,0 +1,40 @@
+# Optional reviewed executor. Installing manifest DATA never deploys this service.
+services:
+  tool-extension:
+    build:
+      context: ..
+      dockerfile: docker/tool-extension/Dockerfile
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 256m
+    environment:
+      BUTLER_HTTP_ADDR: ':8080'
+      BUTLER_GRPC_ADDR: ':9090'
+      BUTLER_EXTENSION_PROFILES_JSON: ${BUTLER_EXTENSION_PROFILES_JSON:?Explicit reviewed executor profiles are required}
+      BUTLER_EXTENSION_RUNTIME_TOKEN_FILE: /run/secrets/extension-runtime
+    secrets: [extension-runtime]
+    healthcheck:
+      test: [CMD-SHELL, 'wget -qO- http://127.0.0.1:8080/health >/dev/null || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    ports: []
+    networks: [tool-runtime, tool-egress]
+
+  tool-broker:
+    environment:
+      BUTLER_EXTENSION_PROFILES_JSON: ${BUTLER_EXTENSION_PROFILES_JSON:?Explicit reviewed executor profiles are required}
+      BUTLER_EXTENSION_RUNTIME_TOKEN_FILE: /run/secrets/extension-runtime
+      BUTLER_OWNER_CONTROL_OWNER_ID: ${BUTLER_OWNER_CONTROL_OWNER_ID:?Configured owner is required}
+    secrets: [extension-runtime]
+
+  orchestrator:
+    environment:
+      BUTLER_EXTENSION_CONTROL_URL: http://tool-broker:8080/internal/extensions
+
+secrets:
+  extension-runtime:
+    file: ${BUTLER_EXTENSION_RUNTIME_TOKEN_SOURCE:-../.secrets/extension-runtime.token}

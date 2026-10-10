@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -272,5 +274,87 @@ func TestConfigurationRejectsSecretAndInternalTargetsBeforeProbeIntegration(t *t
 	}
 	if _, err := s.Configure(ctx, r.ID, p.Digest, r.Generation, r.Configuration, map[string]actionauth.CredentialRef{"unknown": {Alias: "private", Field: "token"}}, r.AllowedTools); err == nil {
 		t.Fatal("undeclared secret slot accepted")
+	}
+}
+
+func TestConcurrentProbeAdmissionAndInterruptedHealthIntegration(t *testing.T) {
+	pool := extensionDB(t)
+	s, p := extensionFixture(t, pool, budget.DefaultPolicy())
+	r := configuredFixture(t, s, p)
+	start := make(chan struct{})
+	results := make(chan error, 8)
+	var workers sync.WaitGroup
+	for range 8 {
+		workers.Add(1)
+		go func() {
+			defer workers.Done()
+			<-start
+			_, _, err := s.BeginProbe(ownerContext(), r.ID, r.Generation)
+			results <- err
+		}()
+	}
+	close(start)
+	workers.Wait()
+	close(results)
+	admitted := 0
+	for err := range results {
+		if err == nil {
+			admitted++
+		} else if !errors.Is(err, ErrConflict) {
+			t.Fatal(err)
+		}
+	}
+	var probes, reservations int
+	if err := pool.QueryRow(ownerContext(), `SELECT count(*) FROM extension_probes`).Scan(&probes); err != nil {
+		t.Fatal(err)
+	}
+	if err := pool.QueryRow(ownerContext(), `SELECT count(*) FROM execution_budget_reservations`).Scan(&reservations); err != nil || admitted != 1 || probes != 1 || reservations != 1 {
+		t.Fatalf("parallel probes created multiple health attempts/charges: admitted=%d probes=%d reservations=%d error=%v", admitted, probes, reservations, err)
+	}
+	if _, err := pool.Exec(ownerContext(), `UPDATE extension_probes SET started_at=clock_timestamp()-interval '2 minutes'`); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.RecoverProbes(ownerContext()); err != nil {
+		t.Fatal(err)
+	}
+	r, err := s.Get(ownerContext(), r.ID)
+	if err != nil || r.Available || r.HealthReason != "probe_unknown" {
+		t.Fatal("recovery published ambiguous readiness")
+	}
+	probe, _, err := s.BeginProbe(ownerContext(), r.ID, r.Generation)
+	if err != nil {
+		t.Fatal("fresh owner validation could not replace interrupted attempt")
+	}
+	if err := s.FinishProbe(ownerContext(), probe, true, strings.Repeat("b", 64)); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestControlManifestTextPreservesExactReviewedBytesIntegration(t *testing.T) {
+	pool := extensionDB(t)
+	s, p := extensionFixture(t, pool, budget.DefaultPolicy())
+	raw := "\n " + strings.ReplaceAll(string(p.Raw), ",", ",\n ") + "\n"
+	exact, err := Parse(strings.NewReader(raw))
+	if err != nil || exact.Digest == p.Digest {
+		t.Fatal("fixture did not distinguish exact reviewed bytes")
+	}
+	token := strings.Repeat("private-fixture-service-", 2)
+	backend := httptest.NewServer(NewControlHandler(token, s, nil))
+	defer backend.Close()
+	client := NewControlClient(backend.URL, token)
+	response, err := client.Control(ownerContext(), ControlRequest{Operation: "stage", ManifestText: raw})
+	if err != nil || response.StagedHash != exact.Digest {
+		t.Fatal("private relay normalized manifest bytes")
+	}
+	historical, err := s.ManifestByHash(context.Background(), response.StagedHash)
+	if err != nil || string(historical.Raw) != raw {
+		t.Fatal("stored provenance lost exact bytes")
+	}
+	if _, err = s.Control(ownerContext(), ControlRequest{Operation: "stage", ManifestText: raw, ManifestJSON: p.Raw}, nil); !errors.Is(err, ErrManifest) {
+		t.Fatal("ambiguous manifest source accepted")
+	}
+	duplicate := strings.Replace(raw, `"format":`, `"format":"forged","format":`, 1)
+	if _, err = s.Control(ownerContext(), ControlRequest{Operation: "stage", ManifestText: duplicate}, nil); !errors.Is(err, ErrManifest) {
+		t.Fatal("text transport erased duplicate manifest member")
 	}
 }

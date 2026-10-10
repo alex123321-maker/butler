@@ -265,6 +265,9 @@ func (s *Store) Configure(ctx context.Context, id, digest string, generation int
 	if err = selectedTools(p.Manifest, tools); err != nil {
 		return r, err
 	}
+	if _, err = tx.Exec(ctx, `UPDATE extension_probes SET state='unknown',finished_at=clock_timestamp() WHERE extension_id=$1 AND state='executing'`, id); err != nil {
+		return r, err
+	}
 	_, err = tx.Exec(ctx, `UPDATE extension_installations SET manifest_hash=$2,generation=generation+1,status='disabled',config_json=$3::jsonb,credential_refs_json=$4::jsonb,allowed_tools_json=$5::jsonb,health='unknown',health_reason='not_validated',healthy_until=NULL,updated_at=clock_timestamp() WHERE extension_id=$1`, id, digest, encoded(config), encoded(refs), encoded(tools))
 	if err != nil {
 		return r, err
@@ -302,6 +305,11 @@ func (s *Store) SetEnabled(ctx context.Context, id string, generation int64, ena
 			return r, ErrUnavailable
 		}
 		state, kind = "enabled", "enabled"
+	}
+	if !enable {
+		if _, err = tx.Exec(ctx, `UPDATE extension_probes SET state='unknown',finished_at=clock_timestamp() WHERE extension_id=$1 AND state='executing'`, id); err != nil {
+			return r, err
+		}
 	}
 	_, err = tx.Exec(ctx, `UPDATE extension_installations SET status=$2,generation=generation+1,updated_at=clock_timestamp() WHERE extension_id=$1`, id, state)
 	if err != nil {
@@ -350,6 +358,18 @@ func (s *Store) BeginProbe(ctx context.Context, id string, generation int64) (Pr
 	var now time.Time
 	if err = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now); err != nil {
 		return Probe{}, r, err
+	}
+	// The installation lock serializes admission. Parallel validations cannot
+	// overwrite newer health, and an interrupted attempt is never replayed.
+	if _, err = tx.Exec(ctx, `UPDATE extension_probes SET state='unknown',finished_at=clock_timestamp() WHERE extension_id=$1 AND state='executing' AND started_at<$2::timestamptz-interval '1 minute'`, id, now); err != nil {
+		return Probe{}, r, err
+	}
+	var active bool
+	if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM extension_probes WHERE extension_id=$1 AND state='executing')`, id).Scan(&active); err != nil {
+		return Probe{}, r, err
+	}
+	if active {
+		return Probe{}, r, ErrConflict
 	}
 	day := now.UTC().Format("2006-01-02")
 	deadline := time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, time.UTC)
@@ -416,9 +436,55 @@ func (s *Store) FinishProbe(ctx context.Context, p Probe, ready bool, resultDige
 	return tx.Commit(ctx)
 }
 func (s *Store) RecoverProbes(ctx context.Context) error {
-	// This is trusted startup maintenance; interrupted probes are never replayed.
-	_, err := s.pool.Exec(ctx, `UPDATE extension_probes SET state='unknown',finished_at=clock_timestamp() WHERE state='executing' AND started_at<clock_timestamp()-interval '1 minute'`)
-	return err
+	// Close the cursor before taking per-installation locks so MaxConns2 remains
+	// sufficient. Lock order matches admission/configuration/finish.
+	rows, err := s.pool.Query(ctx, `SELECT DISTINCT extension_id FROM extension_probes WHERE state='executing' AND started_at<clock_timestamp()-interval '1 minute' ORDER BY extension_id`)
+	if err != nil {
+		return err
+	}
+	ids := []string{}
+	for rows.Next() {
+		var id string
+		if err = rows.Scan(&id); err != nil {
+			rows.Close()
+			return err
+		}
+		ids = append(ids, id)
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return err
+	}
+	for _, id := range ids {
+		if err = s.recoverProbe(ctx, id); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *Store) recoverProbe(ctx context.Context, id string) error {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	r, err := s.read(ctx, tx, id, "FOR UPDATE OF i")
+	if err != nil {
+		return err
+	}
+	var changed bool
+	err = tx.QueryRow(ctx, `WITH abandoned AS (UPDATE extension_probes SET state='unknown',finished_at=clock_timestamp() WHERE extension_id=$1 AND state='executing' AND started_at<clock_timestamp()-interval '1 minute' RETURNING generation,manifest_hash) SELECT EXISTS(SELECT 1 FROM abandoned WHERE generation=$2 AND manifest_hash=$3)`, id, r.Generation, r.ManifestHash).Scan(&changed)
+	if err != nil {
+		return err
+	}
+	if changed {
+		if _, err = tx.Exec(ctx, `UPDATE extension_installations SET health='unknown',health_reason='probe_unknown',healthy_until=NULL,updated_at=clock_timestamp() WHERE extension_id=$1`, id); err != nil {
+			return err
+		}
+	}
+	return tx.Commit(ctx)
 }
 func (s *Store) GrantTask(ctx context.Context, id string, access TaskAccess) error {
 	source, err := s.actor(ctx)

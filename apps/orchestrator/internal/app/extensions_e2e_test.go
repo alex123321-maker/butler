@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -24,6 +25,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/credentials"
 	"github.com/butler/butler/internal/extensions"
 	"github.com/butler/butler/internal/extensions/projectfixture"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
@@ -35,6 +37,8 @@ import (
 	"github.com/butler/butler/internal/security/egress/egresstest"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/proto"
 )
 
 func extensionChild(t *testing.T, binary, grpcAddress, httpAddress string, args []string, environment ...string) {
@@ -109,7 +113,20 @@ func TestInstalledProjectExtensionRealBrokerApprovalE2E(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer fixture.Close()
-	site := httptest.NewServer(fixture)
+	fixtureSecret := "synthetic-extension-private-token"
+	var contacted atomic.Int32
+	site := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
+		contacted.Add(1)
+		if request.URL.Path == "/project/private" {
+			if request.Header.Get("Authorization") != "Bearer "+fixtureSecret {
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"checks_passed": false, "reflected_token": fixtureSecret})
+			return
+		}
+		fixture.ServeHTTP(w, request)
+	}))
 	defer site.Close()
 	runtimeAddress, brokerAddress, brokerHTTP := freeAddress(t), freeAddress(t), freeAddress(t)
 	runtimeBinary := os.Getenv("BUTLER_EXTENSION_E2E_BINARY")
@@ -141,7 +158,7 @@ func TestInstalledProjectExtensionRealBrokerApprovalE2E(t *testing.T) {
 	if _, err = runtimev1.NewToolRuntimeServiceClient(unauthorized).ProbeExtension(ctx, &runtimev1.ProbeExtensionRequest{ProbeId: "forged"}); err == nil {
 		t.Fatal("external executor accepted unauthenticated RPC")
 	}
-	extensionChild(t, os.Getenv("BUTLER_BROKER_E2E_BINARY"), brokerAddress, brokerHTTP, nil, "BUTLER_POSTGRES_URL="+dsn, "BUTLER_TOOL_REGISTRY_PATH=configs/tools.json", "BUTLER_ACTION_CONTEXT_URL="+authority.URL, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+coreFile, "BUTLER_EXTENSION_PROFILES_JSON="+string(profileJSON), "BUTLER_EXTENSION_RUNTIME_TOKEN_FILE="+runtimeFile, "BUTLER_OWNER_CONTROL_OWNER_ID=owner")
+	extensionChild(t, os.Getenv("BUTLER_BROKER_E2E_BINARY"), brokerAddress, brokerHTTP, nil, "BUTLER_POSTGRES_URL="+dsn, "BUTLER_TOOL_REGISTRY_PATH=configs/tools.json", "BUTLER_ACTION_CONTEXT_URL="+authority.URL, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+coreFile, "BUTLER_EXTENSION_PROFILES_JSON="+string(profileJSON), "BUTLER_EXTENSION_RUNTIME_TOKEN_FILE="+runtimeFile, "BUTLER_OWNER_CONTROL_OWNER_ID=owner", "BUTLER_EXTENSION_TEST_SECRET="+fixtureSecret)
 	controlServer := httptest.NewServer(api.ReviewedExtensions(api.NewOwnerControlAuth(ownerToken, "owner"), extensions.NewControlClient("http://"+brokerHTTP+"/internal/extensions", coreToken)))
 	defer controlServer.Close()
 	control := func(req extensions.ControlRequest) extensions.ControlResponse {
@@ -204,6 +221,36 @@ func TestInstalledProjectExtensionRealBrokerApprovalE2E(t *testing.T) {
 	}
 	if count != 3 {
 		t.Fatal("current reviewed extension catalog unavailable")
+	}
+	var inspectContract *toolbrokerv1.ToolContract
+	for _, contract := range catalog {
+		if contract.ToolName == "extension.project.inspect" {
+			inspectContract = contract
+		}
+	}
+	if inspectContract == nil {
+		t.Fatal("reviewed inspect contract absent")
+	}
+	// These probes use the authenticated real subprocess, not an in-process
+	// mock. Even a malformed private RPC cannot acquire a shell/workspace sink
+	// or contact an internal/out-of-contract recipient.
+	runtimeClient := runtimev1.NewToolRuntimeServiceClient(unauthorized)
+	runtimeContext := metadata.AppendToOutgoingContext(ctx, "authorization", "Bearer "+runtimeToken)
+	for _, args := range []string{
+		`{"url":"http://127.0.0.1/private"}`,
+		`{"url":"` + egresstest.Origin + `/project-other"}`,
+		`{"url":"` + egresstest.Origin + `/project/%2e%2e/admin"}`,
+		`{"url":"` + egresstest.Origin + `/project","command":"sh"}`,
+		`{"url":"` + egresstest.Origin + `/project","workspace":"/srv/storage"}`,
+		`{"url":"` + egresstest.Origin + `/project","authorization":"raw-secret"}`,
+		`{"url":"` + egresstest.Origin + `/project","url":"http://127.0.0.1/private"}`,
+	} {
+		before := contacted.Load()
+		forged := &toolbrokerv1.ToolCall{RunId: run.GetRunId(), ToolCallId: "malicious-runtime-probe", ToolName: inspectContract.ToolName, ArgsJson: args}
+		response, err := runtimeClient.Execute(runtimeContext, &runtimev1.ExecuteRequest{ToolCall: forged, Contract: proto.Clone(inspectContract).(*toolbrokerv1.ToolContract), Context: &runtimev1.ExecutionContext{RunId: forged.RunId, ToolCallId: forged.ToolCallId, ToolName: forged.ToolName, ActionId: "fixture-action", ActionFingerprint: "fixture-fingerprint", TimeoutMs: 5000}})
+		if err != nil || response.GetResult().GetStatus() != "failed" || contacted.Load() != before {
+			t.Fatal("real executor accepted a dangerous proposal or contacted recipient")
+		}
 	}
 	sequence := 0
 	call := func(name, path string, body any) *toolbrokerv1.ToolCall {
@@ -269,12 +316,105 @@ func TestInstalledProjectExtensionRealBrokerApprovalE2E(t *testing.T) {
 	}
 	pending := call("extension.project.inspect", "/project", nil)
 	saved, approvalID := prepare(pending)
+	updated := p.Manifest
+	updated.Version = "2.0.0"
+	updated.Description = "Reviewed version two of the same bounded fixture"
+	updated.Credentials = []extensions.Credential{{Input: "authorization", Field: "token"}}
+	for i := range updated.Operations {
+		var schema map[string]any
+		if err = json.Unmarshal(updated.Operations[i].InputSchema, &schema); err != nil {
+			t.Fatal(err)
+		}
+		properties := schema["properties"].(map[string]any)
+		properties["authorization"] = map[string]any{"type": "object", "required": []string{"type", "alias", "field"}, "properties": map[string]any{"type": map[string]any{"type": "string", "enum": []string{"credential_ref"}}, "alias": map[string]any{"type": "string"}, "field": map[string]any{"type": "string", "enum": []string{"token"}}}, "additionalProperties": false}
+		updated.Operations[i].InputSchema, _ = json.Marshal(schema)
+	}
+	updatedRaw, _ := json.Marshal(updated)
+	control(extensions.ControlRequest{Operation: "stage", ManifestJSON: updatedRaw})
+	versionTwo, err := extensions.Parse(strings.NewReader(string(updatedRaw)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	control(extensions.ControlRequest{Operation: "review", ExtensionID: "project", ManifestHash: versionTwo.Digest})
+	credential := actionauth.CredentialRef{Alias: "extension-account", Field: "token"}
+	if _, err = credentials.NewStore(pool).Create(ctx, credentials.Record{Alias: credential.Alias, SecretType: "api_token", TargetType: "http", Status: credentials.StatusActive, AllowedDomains: []string{"external.test"}, AllowedTools: []string{"extension.project.inspect"}, ApprovalPolicy: credentials.ApprovalPolicyAlwaysConfirm, SecretRef: "env://BUTLER_EXTENSION_TEST_SECRET", MetadataJSON: "{}"}); err != nil {
+		t.Fatal(err)
+	}
+	state = control(extensions.ControlRequest{Operation: "configure", ExtensionID: "project", ManifestHash: versionTwo.Digest, Generation: state.Generation, Configuration: map[string]string{"origin": egresstest.Origin}, CredentialRefs: map[string]actionauth.CredentialRef{"authorization": credential}, Tools: selected}).Item.Record
+	if state.Available || state.Status != "disabled" || state.Health == "healthy" {
+		t.Fatal("updated manifest inherited readiness/enablement")
+	}
+	if _, err = client.AuthorizeAction(ctx, pending, saved.Binding.ActionID, approvalID, ""); err == nil {
+		t.Fatal("updated capability reused old approved manifest")
+	}
+	// A stale suspended action ends its attempt. Updating an extension never
+	// reopens that continuation or converts its old approval into a new intent.
+	if err = approvalService.MarkActionCheckpoint(owned, run.GetRunId(), pending.ToolCallId, "blocked"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = runs.TransitionRun(owned, &sessionv1.UpdateRunStateRequest{RunId: run.GetRunId(), FromState: commonv1.RunState_RUN_STATE_AWAITING_APPROVAL, ToState: commonv1.RunState_RUN_STATE_FAILED, LeaseId: lease.LeaseID, ErrorType: commonv1.ErrorClass_ERROR_CLASS_POLICY_DENIED, ErrorMessage: "saved action is no longer authorized"}); err != nil {
+		t.Fatal(err)
+	}
+	if released, e := leases.ReleaseLease(ctx, lease.LeaseID); e != nil || !released {
+		t.Fatal("stale attempt lease was not released")
+	}
+	run, err = runs.CreateRun(ctx, &sessionv1.CreateRunRequest{SessionKey: sessionKey, InputEvent: &runv1.InputEvent{EventId: "extension-updated-fixture-input"}, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2, ModelProvider: "fixture", MetadataJson: "{}"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	lease, err = leases.AcquireLease(ctx, session.AcquireLeaseParams{SessionKey: sessionKey, RunID: run.GetRunId(), OwnerID: "worker", TTL: 3 * time.Minute})
+	if err != nil {
+		t.Fatal(err)
+	}
+	owned = ownership.WithToken(ctx, leases.Authority(), ownership.Token{SessionKey: sessionKey, RunID: run.GetRunId(), LeaseID: lease.LeaseID, FenceEpoch: lease.FenceEpoch})
+	if err = tasks.AttachRun(owned, record.TaskID, record.Revision, run.GetRunId(), sessionKey); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, `UPDATE runs SET status='tool_pending',current_state='tool_pending',lease_id=$2 WHERE run_id=$1`, run.GetRunId(), lease.LeaseID); err != nil {
+		t.Fatal(err)
+	}
+	control(extensions.ControlRequest{Operation: "probe", ExtensionID: "project", Generation: state.Generation})
+	state = control(extensions.ControlRequest{Operation: "enable", ExtensionID: "project", Generation: state.Generation}).Item.Record
+	stale := call("extension.project.inspect", "/project", nil)
+	if _, err = client.PrepareAction(ctx, stale); err == nil {
+		t.Fatal("updated generation inherited prior task permission")
+	}
+	control(extensions.ControlRequest{Operation: "grant_task", ExtensionID: "project", Access: extensions.TaskAccess{TaskID: record.TaskID, TaskRevision: record.Revision, ConstraintsRevision: record.ConstraintsRevision, ManifestHash: versionTwo.Digest, Generation: state.Generation, Revision: 1, Tools: selected, Resources: []actionauth.ResourceScope{{Origin: egresstest.Origin, PathPrefix: "/project"}}, CredentialRefs: []actionauth.CredentialRef{credential}, ExpiresAt: time.Now().Add(time.Hour)}})
+	dispatch(call("extension.project.inspect", "/project", nil))
+	privateCall := call("extension.project.inspect", "/project/private", nil)
+	privateCall.ArgsJson = `{"url":"` + egresstest.Origin + `/project/private","authorization":{"type":"credential_ref","alias":"extension-account","field":"token"}}`
+	privateCall.CredentialRefs = []*toolbrokerv1.CredentialRef{{Type: "credential_ref", Alias: credential.Alias, Field: credential.Field}}
+	privatePrepared, err := client.PrepareAction(ctx, privateCall)
+	beforePrivate := contacted.Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = client.AuthorizeAction(ctx, privateCall, privatePrepared.Binding.ActionID, "", ""); err == nil || contacted.Load() != beforePrivate {
+		t.Fatal("unapproved extension credential reached recipient")
+	}
+	privateObservation := dispatch(privateCall)
+	if privateObservation["reflected_token"] == fixtureSecret || privateObservation["checks_passed"] != false {
+		t.Fatal("approved deferred extension credential was exposed or not used")
+	}
+	state = control(extensions.ControlRequest{Operation: "rollback", ExtensionID: "project", ManifestHash: p.Digest, Generation: state.Generation, Configuration: map[string]string{"origin": egresstest.Origin}, Tools: selected}).Item.Record
+	if state.ManifestHash != p.Digest || state.Available || state.Health == "healthy" {
+		t.Fatal("rollback silently restored prior authority")
+	}
+	control(extensions.ControlRequest{Operation: "probe", ExtensionID: "project", Generation: state.Generation})
+	state = control(extensions.ControlRequest{Operation: "enable", ExtensionID: "project", Generation: state.Generation}).Item.Record
+	control(extensions.ControlRequest{Operation: "grant_task", ExtensionID: "project", Access: extensions.TaskAccess{TaskID: record.TaskID, TaskRevision: record.Revision, ConstraintsRevision: record.ConstraintsRevision, ManifestHash: p.Digest, Generation: state.Generation, Revision: 2, Tools: selected, Resources: []actionauth.ResourceScope{{Origin: egresstest.Origin, PathPrefix: "/project"}}, ExpiresAt: time.Now().Add(time.Hour)}})
+	checked = dispatch(call("extension.project.check", "/project/patches/"+artifact+"/checks", nil))
+	if checked["checks_passed"] != true {
+		t.Fatal("rollback lost recipient artifact history")
+	}
+	pending = call("extension.project.inspect", "/project", nil)
+	saved, approvalID = prepare(pending)
 	state = control(extensions.ControlRequest{Operation: "disable", ExtensionID: "project", Generation: state.Generation}).Item.Record
 	if _, err = client.AuthorizeAction(ctx, pending, saved.Binding.ActionID, approvalID, ""); err == nil {
 		t.Fatal("disabled installed capability reused saved owner approval")
 	}
 	versions := control(extensions.ControlRequest{Operation: "versions", ExtensionID: "project"}).Versions
-	if len(versions) != 1 || versions[0].Digest != p.Digest {
+	if len(versions) != 2 || versions[0].Digest != p.Digest {
 		t.Fatal("disable lost immutable version history")
 	}
 }
