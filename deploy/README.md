@@ -25,6 +25,7 @@ Current behavior notes:
 - for local browser usage, start Compose with both files or use `make up`; the base file alone does not publish the orchestrator REST API to the host
 - the stack wires fixed internal Compose URLs for PostgreSQL, Redis, Tool Broker, and web-to-orchestrator connectivity; optional Butler settings are passed through only when they exist in the host environment
 - optional variables such as `BUTLER_OPENAI_API_KEY` and Telegram credentials are passed through only when they exist in the host environment, so missing values do not appear as empty env overrides inside containers
+- Antigravity selection uses `BUTLER_MODEL_PROVIDER=antigravity` and forwards `BUTLER_ANTIGRAVITY_MODEL` to the orchestrator. OAuth credentials stay in the encrypted provider-auth setting; they are not Compose model arguments.
 
 ## Separate SSH lab
 
