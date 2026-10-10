@@ -66,6 +66,10 @@ func managedSettingsCatalog() []SettingCatalogItem {
 			Visible:      true,
 		},
 		{
+			Spec:  fieldSpec{key: "BUTLER_ANTIGRAVITY_MODEL", component: "orchestrator", typeName: "string", defaultValue: "gemini-3.1-pro-high", requiresRestart: true, validate: validateNonEmpty},
+			Group: "Model", DisplayOrder: 58, Visible: true,
+		},
+		{
 			Spec:         fieldSpec{key: "BUTLER_TELEGRAM_BOT_TOKEN", component: "orchestrator", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: nil},
 			Group:        "Telegram",
 			DisplayOrder: 60,

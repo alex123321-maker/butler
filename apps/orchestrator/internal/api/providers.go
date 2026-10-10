@@ -64,6 +64,10 @@ func (s *ProviderServer) HandleItem() http.Handler {
 			return
 		}
 		provider := parts[0]
+		if provider == modelprovider.ProviderAntigravity && r.Method != http.MethodGet {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Antigravity login and logout are managed in its private CLI terminal"})
+			return
+		}
 		switch {
 		case len(parts) == 2 && r.Method == http.MethodGet:
 			state, err := s.state(r.Context(), provider)
@@ -146,6 +150,9 @@ func (s *ProviderServer) HandleItem() http.Handler {
 func (s *ProviderServer) states(ctx context.Context) ([]providerDTO, error) {
 	items := make([]providerDTO, 0, 3)
 	items = append(items, providerDTO{Name: modelprovider.ProviderOpenAI, Model: s.models[modelprovider.ProviderOpenAI], Active: s.activeProvider == modelprovider.ProviderOpenAI, Connected: s.openAIReady, AuthKind: "api_key"})
+	if _, configured := s.models[modelprovider.ProviderAntigravity]; configured {
+		items = append(items, s.antigravityState())
+	}
 	states, err := s.manager.List(ctx)
 	if err != nil {
 		return nil, err
@@ -157,6 +164,9 @@ func (s *ProviderServer) states(ctx context.Context) ([]providerDTO, error) {
 }
 
 func (s *ProviderServer) state(ctx context.Context, provider string) (providerDTO, error) {
+	if provider == modelprovider.ProviderAntigravity {
+		return s.antigravityState(), nil
+	}
 	if provider == modelprovider.ProviderOpenAI {
 		return providerDTO{Name: provider, Model: s.models[provider], Active: s.activeProvider == provider, Connected: s.openAIReady, AuthKind: "api_key"}, nil
 	}
@@ -165,6 +175,12 @@ func (s *ProviderServer) state(ctx context.Context, provider string) (providerDT
 		return providerDTO{}, err
 	}
 	return toProviderDTO(state, s.models[state.Provider], state.Provider == s.activeProvider), nil
+}
+
+func (s *ProviderServer) antigravityState() providerDTO {
+	// Butler never reads the CLI keyring or spends a model request merely to render
+	// settings. The runtime verifies login on the next user-requested model turn.
+	return providerDTO{Name: modelprovider.ProviderAntigravity, Model: s.models[modelprovider.ProviderAntigravity], Active: s.activeProvider == modelprovider.ProviderAntigravity, AuthKind: "external_cli"}
 }
 
 type providerDTO struct {

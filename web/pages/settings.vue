@@ -152,7 +152,7 @@
               <p>{{ provider.model }}</p>
             </div>
             <span class="provider-badge" :class="provider.connected ? 'provider-badge--connected' : 'provider-badge--idle'">
-              {{ provider.connected ? 'Connected' : provider.auth_kind === 'api_key' ? 'Config only' : 'Not connected' }}
+              {{ provider.auth_kind === 'external_cli' ? 'CLI profile' : provider.connected ? 'Connected' : provider.auth_kind === 'api_key' ? 'Config only' : 'Not connected' }}
             </span>
           </div>
 
@@ -198,6 +198,9 @@
           <div class="provider-actions">
             <template v-if="provider.name === 'openai'">
               <p class="provider-actions__hint">Managed through `BUTLER_OPENAI_API_KEY` and grouped settings.</p>
+            </template>
+            <template v-else-if="provider.name === 'antigravity'">
+              <p class="provider-actions__hint">Sign in to Google AI Pro using the private Antigravity CLI terminal. Login is checked when a model turn starts; account codes never belong in chat.</p>
             </template>
             <template v-else-if="provider.name === 'github-copilot'">
               <input
@@ -545,6 +548,8 @@ async function refreshAll() {
 
 function providerTitle(name: string) {
   switch (name) {
+    case 'antigravity':
+      return 'Google Antigravity · Google AI Pro'
     case 'github-copilot':
       return 'GitHub Copilot'
     case 'openai-codex':

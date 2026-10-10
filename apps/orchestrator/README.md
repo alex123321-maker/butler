@@ -6,6 +6,14 @@ independent reads use `browser.read`, sequences begin with `browser.open`, follo
 effects carry the current observation/URL, and lost state is reported explicitly.
 The separately approved `single_tab.*` flow retains its own capability boundary.
 
+The opt-in `antigravity` model provider normalizes the official Google Antigravity
+CLI's schema-constrained decisions using a private Google AI Pro login. It supplies
+no executable tools to the CLI: proposals follow the existing Orchestrator/Tool
+Broker flow. [Setup and validation status](../../deploy/antigravity/README.md) describe
+the isolated profile, runtime-only paths, and the required real login smoke. The
+Web UI labels this provider `CLI profile` and does not claim a verified connection
+based on a token file or an installed binary.
+
 Tool execution fails closed when the approval policy cannot be checked. A tool
 requiring approval also requires a configured approval gate. These guarantees
 apply to single calls and batch members; policy failures do not become permission.

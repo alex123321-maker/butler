@@ -81,3 +81,36 @@ func TestProviderServerStartsOAuthFlow(t *testing.T) {
 		t.Fatal("expected auth flow start to be delegated to manager")
 	}
 }
+
+func TestAntigravityProviderReportsExternalLoginAndRejectsWebAuth(t *testing.T) {
+	t.Parallel()
+	manager := &fakeProviderAuthManager{}
+	server := NewProviderServer(manager, modelprovider.ProviderAntigravity, map[string]string{modelprovider.ProviderAntigravity: "gemini-3.1-pro-high"}, false)
+	resp := httptest.NewRecorder()
+	server.HandleList().ServeHTTP(resp, httptest.NewRequest(http.MethodGet, "/api/v1/providers", nil))
+	var payload struct {
+		Providers []providerDTO `json:"providers"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&payload); err != nil {
+		t.Fatal(err)
+	}
+	var external *providerDTO
+	for i := range payload.Providers {
+		if payload.Providers[i].Name == modelprovider.ProviderAntigravity {
+			external = &payload.Providers[i]
+		}
+	}
+	if external == nil || !external.Active || external.Connected || external.AuthKind != "external_cli" {
+		t.Fatalf("incorrect external auth state: %#v", external)
+	}
+	for _, method := range []string{http.MethodPost, http.MethodDelete} {
+		resp = httptest.NewRecorder()
+		server.HandleItem().ServeHTTP(resp, httptest.NewRequest(method, "/api/v1/providers/antigravity/auth/start", strings.NewReader(`{}`)))
+		if resp.Code != http.StatusBadRequest {
+			t.Fatalf("external CLI auth mutation accepted: %d", resp.Code)
+		}
+	}
+	if manager.startCalled {
+		t.Fatal("CLI login delegated to an unrelated OAuth manager")
+	}
+}

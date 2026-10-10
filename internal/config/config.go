@@ -72,6 +72,9 @@ type OrchestratorConfig struct {
 	OpenAICodexModel                  string
 	OpenAICodexBaseURL                string
 	GitHubCopilotModel                string
+	AntigravityModel                  string
+	AntigravityBinaryPath             string
+	AntigravityProfileDir             string
 	OpenAITimeoutSeconds              int
 	ToolBrokerAddr                    string
 	TelegramBotToken                  string
@@ -264,6 +267,9 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_OPENAI_CODEX_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-5.1-codex", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.OpenAICodexModel = v }},
 		fieldSpec{key: "BUTLER_OPENAI_CODEX_BASE_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "https://chatgpt.com/backend-api", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.OpenAICodexBaseURL = v }},
 		fieldSpec{key: "BUTLER_GITHUB_COPILOT_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gpt-4o", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.GitHubCopilotModel = v }},
+		fieldSpec{key: "BUTLER_ANTIGRAVITY_MODEL", component: "orchestrator", typeName: "string", required: false, defaultValue: "gemini-3.1-pro-high", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityModel = v }},
+		fieldSpec{key: "BUTLER_ANTIGRAVITY_BINARY_PATH", component: "orchestrator", typeName: "string", required: false, defaultValue: "/opt/antigravity/agy", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityBinaryPath = v }},
+		fieldSpec{key: "BUTLER_ANTIGRAVITY_PROFILE_DIR", component: "orchestrator", typeName: "string", required: false, defaultValue: "/home/butler", requiresRestart: true, validate: validateNonEmpty, assign: func(v string) { cfg.AntigravityProfileDir = v }},
 		fieldSpec{key: "BUTLER_OPENAI_TIMEOUT_SECONDS", component: "orchestrator", typeName: "int", required: false, defaultValue: "60", requiresRestart: true, validate: validatePositiveInt, assign: func(v string) { cfg.OpenAITimeoutSeconds = mustParseInt(v) }},
 		fieldSpec{key: "BUTLER_TOOL_BROKER_ADDR", component: "orchestrator", typeName: "string", required: false, defaultValue: "127.0.0.1:10090", requiresRestart: true, validate: validateListenAddr, assign: func(v string) { cfg.ToolBrokerAddr = v }},
 		fieldSpec{key: "BUTLER_TELEGRAM_BOT_TOKEN", component: "orchestrator", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: func(v string) { cfg.TelegramBotToken = v }},

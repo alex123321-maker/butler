@@ -1,0 +1,20 @@
+{
+  "toolPermission": "strict",
+  "artifactReviewPolicy": "asks-for-review",
+  "allowNonWorkspaceAccess": false,
+  "enableTerminalSandbox": true,
+  "useG1Credits": false,
+  "enableTelemetry": false,
+  "permissions": {
+    "allow": [],
+    "ask": [],
+    "deny": [
+      "command(*)",
+      "read_file(*)",
+      "write_file(*)",
+      "read_url(*)",
+      "execute_url(*)",
+      "mcp(*)"
+    ]
+  }
+}
