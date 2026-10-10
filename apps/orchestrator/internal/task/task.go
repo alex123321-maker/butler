@@ -46,14 +46,15 @@ type Record struct {
 }
 
 type CreateRequest struct {
-	Authority          *actionauth.Assignment `json:"-"`
-	SessionKey         string                 `json:"session_key"`
-	OwnerID            string                 `json:"owner_id"`
-	ParentTaskID       string                 `json:"parent_task_id,omitempty"`
-	Goal               string                 `json:"goal"`
-	Source             map[string]any         `json:"source"`
-	Constraints        []string               `json:"constraints"`
-	CompletionCriteria []string               `json:"completion_criteria"`
+	InitialExecutionPolicy string                 `json:"-"`
+	Authority              *actionauth.Assignment `json:"-"`
+	SessionKey             string                 `json:"session_key"`
+	OwnerID                string                 `json:"owner_id"`
+	ParentTaskID           string                 `json:"parent_task_id,omitempty"`
+	Goal                   string                 `json:"goal"`
+	Source                 map[string]any         `json:"source"`
+	Constraints            []string               `json:"constraints"`
+	CompletionCriteria     []string               `json:"completion_criteria"`
 }
 
 type Result struct {
@@ -81,6 +82,9 @@ type Manager interface {
 }
 
 func ValidateCreate(req CreateRequest) error {
+	if err := ValidatePolicy(req.InitialExecutionPolicy); err != nil {
+		return err
+	}
 	if strings.TrimSpace(req.SessionKey) == "" || strings.TrimSpace(req.OwnerID) == "" || strings.TrimSpace(req.Goal) == "" {
 		return fmt.Errorf("%w: session_key, owner_id and goal are required", ErrInvalid)
 	}

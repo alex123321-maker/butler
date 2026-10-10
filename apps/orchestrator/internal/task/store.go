@@ -130,6 +130,9 @@ func (s *Store) CreateTx(ctx context.Context, tx pgx.Tx, req CreateRequest) (Rec
 		req.Source = map[string]any{"type": "owner_request", "channel": channel, "session_key": req.SessionKey}
 	}
 	policy := PolicyNormal
+	if req.InitialExecutionPolicy != "" {
+		policy = req.InitialExecutionPolicy
+	}
 	if req.ParentTaskID != "" {
 		parent, err := scan(tx.QueryRow(ctx, `SELECT `+columns+` FROM tasks WHERE task_id=$1 FOR SHARE`, req.ParentTaskID))
 		if err != nil {
@@ -139,6 +142,9 @@ func (s *Store) CreateTx(ctx context.Context, tx pgx.Tx, req CreateRequest) (Rec
 			return Record{}, ErrConflict
 		}
 		policy = parent.ExecutionPolicy
+		if req.InitialExecutionPolicy != "" && req.InitialExecutionPolicy != policy {
+			return Record{}, ErrConflict
+		}
 		a, err := actionauth.CheckTaskAuthorityTx(ctx, tx, parent.TaskID, parent.OwnerID, nil, time.Now())
 		if err != nil {
 			return Record{}, err
