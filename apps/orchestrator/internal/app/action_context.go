@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"time"
 
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
@@ -68,6 +69,24 @@ func (r *actionContextReader) GetActionContext(ctx context.Context, runID string
 		c.ConstraintsRevision = record.ConstraintsRevision
 		c.TaskStatus = record.Status
 		c.ExecutionPolicy = record.ExecutionPolicy
+		tx, err := r.pool.Begin(ctx)
+		if err != nil {
+			return c, err
+		}
+		defer tx.Rollback(ctx)
+		a, err := actionauth.CheckTaskAuthorityTx(ctx, tx, record.TaskID, record.OwnerID, nil, time.Now())
+		if err != nil {
+			return c, err
+		}
+		if a.TaskID != "" {
+			m, _, err := actionauth.CheckAssignmentTx(ctx, tx, a, time.Now())
+			if err != nil {
+				return c, err
+			}
+			c.Authority = &a
+			c.MandateID = a.MandateID
+			c.ModelPrivacy = m.Privacy
+		}
 	}
 	return c, nil
 }

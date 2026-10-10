@@ -84,6 +84,12 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	if err := CheckExecutionPolicy(c, b.Effect); err != nil {
 		return b, false, err
 	}
+	if c.Authority != nil {
+		m, err := s.store.GetMandate(ctx, c.Authority.MandateID)
+		if err != nil || CheckAssignedAction(m, b, s.now()) != nil {
+			return b, false, ErrOwnerAuthority
+		}
+	}
 	requires := false
 	if len(b.CredentialRefs) > 0 {
 		if s.credentials == nil {
@@ -158,6 +164,14 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 	b, credentialApproval, err := s.binding(ctx, call, contract, c)
 	if err != nil {
 		return Grant{}, err
+	}
+	// Empty client metadata may use the server-derived assignment. A nonempty
+	// conflicting ID is never allowed to select another broad permission.
+	if c.Authority != nil {
+		if mandateID != "" && mandateID != c.Authority.MandateID {
+			return Grant{}, ErrOwnerAuthority
+		}
+		mandateID = c.Authority.MandateID
 	}
 	if c.AutonomyMode == 1 && (b.Effect != EffectRead || len(b.CredentialRefs) > 0) {
 		return Grant{}, fmt.Errorf("current mode_0 policy forbids this action")

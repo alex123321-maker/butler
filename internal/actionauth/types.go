@@ -38,25 +38,32 @@ type ActionBinding struct {
 	ConstraintsRevision    int64           `json:"constraints_revision"`
 	OwnerID                string          `json:"owner_id"`
 	Effect                 Effect          `json:"effect"`
+	GoalID                 string          `json:"goal_id,omitempty"`
+	GoalRevision           int64           `json:"goal_revision,omitempty"`
+	MandateID              string          `json:"owner_mandate_id,omitempty"`
+	MandateRevision        int64           `json:"owner_mandate_revision,omitempty"`
+	Purpose                string          `json:"purpose,omitempty"`
 }
 
 // ContextSnapshot must come from Session/Task/Run Service, never tool arguments.
 type ContextSnapshot struct {
-	RunID               string    `json:"run_id"`
-	RunState            string    `json:"run_state"`
-	SessionKey          string    `json:"session_key"`
-	OwnerID             string    `json:"owner_id"`
-	AutonomyMode        int32     `json:"autonomy_mode"`
-	MandateID           string    `json:"mandate_id"`
-	TaskID              string    `json:"task_id"`
-	PinnedTaskRevision  int64     `json:"pinned_task_revision"`
-	TaskRevision        int64     `json:"task_revision"`
-	ConstraintsRevision int64     `json:"constraints_revision"`
-	TaskStatus          string    `json:"task_status"`
-	ExecutionPolicy     string    `json:"execution_policy"`
-	LeaseEpoch          int64     `json:"lease_epoch"`
-	LeaseID             string    `json:"lease_id"`
-	LeaseExpiresAt      time.Time `json:"lease_expires_at"`
+	RunID               string      `json:"run_id"`
+	RunState            string      `json:"run_state"`
+	SessionKey          string      `json:"session_key"`
+	OwnerID             string      `json:"owner_id"`
+	AutonomyMode        int32       `json:"autonomy_mode"`
+	MandateID           string      `json:"mandate_id"`
+	TaskID              string      `json:"task_id"`
+	PinnedTaskRevision  int64       `json:"pinned_task_revision"`
+	TaskRevision        int64       `json:"task_revision"`
+	ConstraintsRevision int64       `json:"constraints_revision"`
+	TaskStatus          string      `json:"task_status"`
+	ExecutionPolicy     string      `json:"execution_policy"`
+	LeaseEpoch          int64       `json:"lease_epoch"`
+	LeaseID             string      `json:"lease_id"`
+	LeaseExpiresAt      time.Time   `json:"lease_expires_at"`
+	Authority           *Assignment `json:"authority,omitempty"`
+	ModelPrivacy        string      `json:"model_privacy,omitempty"`
 }
 
 type ApprovalRequest struct {
@@ -99,16 +106,33 @@ type Grant struct {
 }
 
 type Mandate struct {
-	ID                  string          `json:"mandate_id"`
-	OwnerID             string          `json:"owner_id"`
-	TaskID              string          `json:"task_id"`
-	TaskRevision        int64           `json:"task_revision"`
-	ConstraintsRevision int64           `json:"constraints_revision"`
-	Revision            int64           `json:"revision"`
-	Tools               []string        `json:"tools"`
-	Resources           []string        `json:"resources"`
-	Effects             []Effect        `json:"effects"`
-	CredentialRefs      []CredentialRef `json:"credential_refs"`
-	ExpiresAt           time.Time       `json:"expires_at"`
-	RevokedAt           *time.Time      `json:"revoked_at,omitempty"`
+	ScopeKind           string                `json:"scope_kind,omitempty"`
+	GoalID              string                `json:"goal_id,omitempty"`
+	GoalRevision        int64                 `json:"goal_revision,omitempty"`
+	Status              string                `json:"status,omitempty"`
+	Purpose             string                `json:"purpose,omitempty"`
+	ResourceScopes      []ResourceScope       `json:"resource_scopes,omitempty"`
+	DenyTools           []string              `json:"deny_tools,omitempty"`
+	DenyResources       []ResourceScope       `json:"deny_resources,omitempty"`
+	Privacy             string                `json:"privacy,omitempty"`
+	Budget              MandateBudget         `json:"budget,omitempty"`
+	BudgetDeadline      time.Time             `json:"budget_deadline,omitempty"`
+	Hours               *ActiveHours          `json:"active_hours,omitempty"`
+	AllowInitiative     bool                  `json:"allow_initiative,omitempty"`
+	Intervention        []string              `json:"intervention,omitempty"`
+	Reporting           string                `json:"reporting,omitempty"`
+	Extensions          []ExtensionPermission `json:"extensions,omitempty"`
+	Source              map[string]string     `json:"source,omitempty"`
+	ID                  string                `json:"mandate_id"`
+	OwnerID             string                `json:"owner_id"`
+	TaskID              string                `json:"task_id"`
+	TaskRevision        int64                 `json:"task_revision"`
+	ConstraintsRevision int64                 `json:"constraints_revision"`
+	Revision            int64                 `json:"revision"`
+	Tools               []string              `json:"tools"`
+	Resources           []string              `json:"resources"`
+	Effects             []Effect              `json:"effects"`
+	CredentialRefs      []CredentialRef       `json:"credential_refs"`
+	ExpiresAt           time.Time             `json:"expires_at"`
+	RevokedAt           *time.Time            `json:"revoked_at,omitempty"`
 }

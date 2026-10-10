@@ -189,6 +189,12 @@ func BuildBinding(actionID string, call *toolbrokerv1.ToolCall, contract *toolbr
 		return ActionBinding{}, "", err
 	}
 	binding := ActionBinding{ActionID: actionID, RunID: call.GetRunId(), ToolCallID: call.GetToolCallId(), ToolName: call.GetToolName(), ContractHash: contractHash, ContractRevision: contract.GetContractRevision(), ArgsHash: digest(args), Resource: resource, CredentialRefs: refs, TaskID: context.TaskID, TaskRevision: context.TaskRevision, ConstraintsRevision: context.ConstraintsRevision, OwnerID: context.OwnerID, Effect: classifyEffect(call.GetToolName(), object)}
+	if a := context.Authority; a != nil {
+		if a.TaskID != context.TaskID || a.OwnerID != context.OwnerID {
+			return ActionBinding{}, "", ErrOwnerAuthority
+		}
+		binding.GoalID, binding.GoalRevision, binding.MandateID, binding.MandateRevision, binding.Purpose = a.GoalID, a.GoalRevision, a.MandateID, a.MandateRevision, a.Purpose
+	}
 	encoded, _ := json.Marshal(binding)
 	binding.ActionHash = digest(string(encoded))
 	return binding, args, nil

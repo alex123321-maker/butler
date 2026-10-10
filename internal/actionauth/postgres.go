@@ -212,16 +212,21 @@ func (s *PostgresStore) FinishGrant(ctx context.Context, id, state string) error
 func (s *PostgresStore) GetMandate(ctx context.Context, id string) (Mandate, error) {
 	var m Mandate
 	var encoded string
-	err := s.pool.QueryRow(ctx, `SELECT mandate_data::text,revision,revoked_at FROM action_mandates WHERE mandate_id=$1`, id).Scan(&encoded, &m.Revision, &m.RevokedAt)
+	err := s.pool.QueryRow(ctx, `SELECT mandate_data::text,revision,revoked_at,status,expires_at FROM action_mandates WHERE mandate_id=$1`, id).Scan(&encoded, &m.Revision, &m.RevokedAt, &m.Status, &m.ExpiresAt)
 	if err != nil {
 		return m, err
 	}
 	revision, revoked := m.Revision, m.RevokedAt
+	status, expires := m.Status, m.ExpiresAt
 	err = json.Unmarshal([]byte(encoded), &m)
 	m.Revision, m.RevokedAt = revision, revoked
+	m.Status, m.ExpiresAt = status, expires
 	return m, err
 }
 func (s *PostgresStore) PutMandate(ctx context.Context, m Mandate) error {
+	if m.ScopeKind == "owner_goal" {
+		return fmt.Errorf("broad owner authority requires authenticated owner goal service")
+	}
 	if err := ValidateMandate(m, time.Now().UTC()); err != nil {
 		return err
 	}
@@ -231,7 +236,7 @@ func (s *PostgresStore) PutMandate(ctx context.Context, m Mandate) error {
 	}
 	tag, err := s.pool.Exec(ctx, `INSERT INTO action_mandates(mandate_id,owner_id,task_id,revision,mandate_data,expires_at) VALUES($1,$2,$3,$4,$5::jsonb,$6)
  ON CONFLICT(mandate_id) DO UPDATE SET revision=EXCLUDED.revision,mandate_data=EXCLUDED.mandate_data,expires_at=EXCLUDED.expires_at
- WHERE action_mandates.owner_id=EXCLUDED.owner_id AND action_mandates.task_id=EXCLUDED.task_id AND action_mandates.revision+1=EXCLUDED.revision AND action_mandates.revoked_at IS NULL`, m.ID, m.OwnerID, m.TaskID, m.Revision, string(encoded), m.ExpiresAt)
+ WHERE action_mandates.scope_kind='task' AND action_mandates.owner_id=EXCLUDED.owner_id AND action_mandates.task_id=EXCLUDED.task_id AND action_mandates.revision+1=EXCLUDED.revision AND action_mandates.revoked_at IS NULL`, m.ID, m.OwnerID, m.TaskID, m.Revision, string(encoded), m.ExpiresAt)
 	if err != nil {
 		return err
 	}
@@ -241,7 +246,7 @@ func (s *PostgresStore) PutMandate(ctx context.Context, m Mandate) error {
 	return nil
 }
 func (s *PostgresStore) RevokeMandate(ctx context.Context, id, owner string, revision int64) error {
-	tag, err := s.pool.Exec(ctx, `UPDATE action_mandates SET revoked_at=NOW(),revision=revision+1 WHERE mandate_id=$1 AND owner_id=$2 AND revision=$3 AND revoked_at IS NULL`, id, owner, revision)
+	tag, err := s.pool.Exec(ctx, `UPDATE action_mandates SET revoked_at=NOW(),status='revoked',revision=revision+1 WHERE mandate_id=$1 AND owner_id=$2 AND revision=$3 AND scope_kind='task' AND revoked_at IS NULL`, id, owner, revision)
 	if err != nil {
 		return err
 	}

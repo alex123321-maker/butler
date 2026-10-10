@@ -10,6 +10,9 @@ import (
 // ValidateMandate accepts a bounded owner decision. A model cannot create a
 // mandate through a tool. Changes create a new revision and invalidate grants.
 func ValidateMandate(m Mandate, now time.Time) error {
+	if m.ScopeKind == "owner_goal" {
+		return ValidateOwnerMandate(m, now)
+	}
 	if m.ID == "" || m.OwnerID == "" || m.TaskID == "" || m.TaskRevision <= 0 || m.ConstraintsRevision <= 0 || m.Revision <= 0 {
 		return fmt.Errorf("mandate identity and current task versions are required")
 	}
@@ -51,6 +54,9 @@ func ValidateMandate(m Mandate, now time.Time) error {
 	return nil
 }
 func mandateAllows(m Mandate, b ActionBinding, now time.Time) bool {
+	if m.ScopeKind == "owner_goal" {
+		return ownerMandateAllows(m, b, now)
+	}
 	if m.RevokedAt != nil || !m.ExpiresAt.After(now) || m.OwnerID != b.OwnerID || m.TaskID != b.TaskID || m.TaskRevision != b.TaskRevision || m.ConstraintsRevision != b.ConstraintsRevision {
 		return false
 	}

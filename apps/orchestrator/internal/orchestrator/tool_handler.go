@@ -249,7 +249,11 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 			})
 		}
 	}
-	grantID, authorizeErr := s.config.ActionAuthorizer.AuthorizeAction(ctx, brokerCall, prepared.Binding.ActionID, approvalID, s.config.ActionMandateID)
+	mandateID := s.config.ActionMandateID
+	if prepared.Binding.MandateID != "" {
+		mandateID = prepared.Binding.MandateID
+	}
+	grantID, authorizeErr := s.config.ActionAuthorizer.AuthorizeAction(ctx, brokerCall, prepared.Binding.ActionID, approvalID, mandateID)
 	if authorizeErr != nil {
 		return nil, current, fmt.Errorf("authorize exact action dispatch: %w", authorizeErr)
 	}

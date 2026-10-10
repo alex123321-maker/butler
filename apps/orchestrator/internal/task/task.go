@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/butler/butler/internal/actionauth"
 	"strings"
 	"time"
 )
@@ -45,13 +46,14 @@ type Record struct {
 }
 
 type CreateRequest struct {
-	SessionKey         string         `json:"session_key"`
-	OwnerID            string         `json:"owner_id"`
-	ParentTaskID       string         `json:"parent_task_id,omitempty"`
-	Goal               string         `json:"goal"`
-	Source             map[string]any `json:"source"`
-	Constraints        []string       `json:"constraints"`
-	CompletionCriteria []string       `json:"completion_criteria"`
+	Authority          *actionauth.Assignment `json:"-"`
+	SessionKey         string                 `json:"session_key"`
+	OwnerID            string                 `json:"owner_id"`
+	ParentTaskID       string                 `json:"parent_task_id,omitempty"`
+	Goal               string                 `json:"goal"`
+	Source             map[string]any         `json:"source"`
+	Constraints        []string               `json:"constraints"`
+	CompletionCriteria []string               `json:"completion_criteria"`
 }
 
 type Result struct {
