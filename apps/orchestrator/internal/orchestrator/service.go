@@ -130,6 +130,8 @@ type TransitionLogger interface {
 }
 
 type Config struct {
+	ActionAuthorizer    ActionAuthorizer
+	ActionMandateID     string
 	AutonomyMode        commonv1.AutonomyMode
 	Checkpoints         CheckpointStore
 	Tasks               task.Manager

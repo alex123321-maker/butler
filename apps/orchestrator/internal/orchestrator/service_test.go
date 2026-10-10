@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/butler/butler/internal/actionauth"
 	"strings"
 	"testing"
 	"time"
@@ -111,7 +112,7 @@ func TestExecuteRunsSequentialToolLoop(t *testing.T) {
 	}
 	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{"status_code":200}`}}
 
-	service := NewService(sessions, leases, runs, transcripts, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, ApprovalChecker: &mockApprovalChecker{}}, nil)
+	service := NewService(sessions, leases, runs, transcripts, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, ActionAuthorizer: &mockApprovalChecker{}}, nil)
 	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:1", Source: "telegram", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
 	if err != nil {
 		t.Fatalf("Execute returned error: %v", err)
@@ -162,7 +163,7 @@ func TestExecuteToolCallWithEmptyRefPropagatesFallbackToSubmit(t *testing.T) {
 	}
 	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{"ok":true}`}}
 
-	service := NewService(sessions, leases, runs, transcripts, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, ApprovalChecker: &mockApprovalChecker{}}, nil)
+	service := NewService(sessions, leases, runs, transcripts, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, ActionAuthorizer: &mockApprovalChecker{}}, nil)
 	result, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:1", Source: "telegram", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
 	if err != nil {
 		t.Fatalf("Execute returned error: %v", err)
@@ -210,12 +211,12 @@ func TestExecuteToolWithApprovalApproved(t *testing.T) {
 	checker := &mockApprovalChecker{toolsRequiringApproval: map[string]bool{"http.request": true}}
 
 	service := NewService(sessions, leases, runs, transcripts, provider, Config{
-		ProviderName:    "openai",
-		ModelName:       "gpt-5-mini",
-		Tools:           tools,
-		ApprovalChecker: checker,
-		ApprovalGate:    gate,
-		Delivery:        delivery,
+		ProviderName:     "openai",
+		ModelName:        "gpt-5-mini",
+		Tools:            tools,
+		ActionAuthorizer: checker,
+		ApprovalGate:     gate,
+		Delivery:         delivery,
 	}, nil)
 
 	// Resolve inside delivery: this response precedes the wait call.
@@ -279,12 +280,12 @@ func TestExecuteToolWithApprovalRejected(t *testing.T) {
 	checker := &mockApprovalChecker{toolsRequiringApproval: map[string]bool{"http.request": true}}
 
 	service := NewService(sessions, leases, runs, transcripts, provider, Config{
-		ProviderName:    "openai",
-		ModelName:       "gpt-5-mini",
-		Tools:           tools,
-		ApprovalChecker: checker,
-		ApprovalGate:    gate,
-		Delivery:        delivery,
+		ProviderName:     "openai",
+		ModelName:        "gpt-5-mini",
+		Tools:            tools,
+		ActionAuthorizer: checker,
+		ApprovalGate:     gate,
+		Delivery:         delivery,
 	}, nil)
 
 	delivery.onApproval = func(req ApprovalRequest) error {
@@ -545,7 +546,7 @@ func TestExecuteSanitizesWorkingMemoryToolPayloads(t *testing.T) {
 	}
 	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{"access_token":"abc","cookie":"session=abc123"}`}}
 	workingStore := &stubWorkingStore{snapshots: map[string]WorkingMemorySnapshot{}}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, WorkingStore: workingStore, ApprovalChecker: &mockApprovalChecker{}}, nil)
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, WorkingStore: workingStore, ActionAuthorizer: &mockApprovalChecker{}}, nil)
 
 	_, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-sanitize-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:sanitize", Source: "telegram", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-sanitize-1"})
 	if err != nil {
@@ -580,7 +581,7 @@ func TestExecuteStoresTransientWorkingStateDuringToolLifecycle(t *testing.T) {
 	}
 	tools := &mockToolExecutor{result: &toolbrokerv1.ToolResult{Status: "completed", ResultJson: `{"status_code":200}`}}
 	transientStore := &stubTransientWorkingStore{}
-	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, TransientStore: transientStore, ApprovalChecker: &mockApprovalChecker{}}, nil)
+	service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{ProviderName: "openai", ModelName: "gpt-5-mini", Tools: tools, TransientStore: transientStore, ActionAuthorizer: &mockApprovalChecker{}}, nil)
 
 	_, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-transient-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "telegram:chat:transient", Source: "telegram", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-transient-1"})
 	if err != nil {
@@ -1602,12 +1603,26 @@ func (m *mockToolExecutor) ExecuteToolCall(_ context.Context, call *toolbrokerv1
 	return &result, nil
 }
 
+func (m *mockToolExecutor) ExecuteAuthorizedToolCall(ctx context.Context, call *toolbrokerv1.ToolCall, grantID string) (*toolbrokerv1.ToolResult, error) {
+	if grantID == "" {
+		return nil, fmt.Errorf("dispatch grant required")
+	}
+	return m.ExecuteToolCall(ctx, call)
+}
+
 func (p *delayedProvider) CancelRun(context.Context, transport.CancelRunRequest) (*transport.TransportEvent, error) {
 	return nil, nil
 }
 
 type mockApprovalChecker struct {
 	toolsRequiringApproval map[string]bool
+}
+
+func (m *mockApprovalChecker) PrepareAction(_ context.Context, call *toolbrokerv1.ToolCall) (actionauth.PreparedAction, error) {
+	return actionauth.PreparedAction{Binding: actionauth.ActionBinding{ActionID: "action-" + call.GetToolCallId(), ActionHash: "fixture-hash", RunID: call.GetRunId(), ToolCallID: call.GetToolCallId(), ToolName: call.GetToolName()}, RequiresApproval: m.toolsRequiringApproval[call.GetToolName()], ExpiresAt: time.Now().Add(time.Hour)}, nil
+}
+func (m *mockApprovalChecker) AuthorizeAction(context.Context, *toolbrokerv1.ToolCall, string, string, string) (string, error) {
+	return "fixture-verified-grant", nil
 }
 
 func (m *mockApprovalChecker) RequiresApproval(_ context.Context, toolName string) (bool, error) {

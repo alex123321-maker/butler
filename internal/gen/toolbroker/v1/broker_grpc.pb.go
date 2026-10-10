@@ -19,16 +19,21 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ToolBrokerService_ValidateToolCall_FullMethodName = "/butler.toolbroker.v1.ToolBrokerService/ValidateToolCall"
-	ToolBrokerService_ExecuteToolCall_FullMethodName  = "/butler.toolbroker.v1.ToolBrokerService/ExecuteToolCall"
-	ToolBrokerService_ListTools_FullMethodName        = "/butler.toolbroker.v1.ToolBrokerService/ListTools"
-	ToolBrokerService_GetToolContract_FullMethodName  = "/butler.toolbroker.v1.ToolBrokerService/GetToolContract"
+	ToolBrokerService_PrepareToolCall_FullMethodName   = "/butler.toolbroker.v1.ToolBrokerService/PrepareToolCall"
+	ToolBrokerService_AuthorizeToolCall_FullMethodName = "/butler.toolbroker.v1.ToolBrokerService/AuthorizeToolCall"
+	ToolBrokerService_ValidateToolCall_FullMethodName  = "/butler.toolbroker.v1.ToolBrokerService/ValidateToolCall"
+	ToolBrokerService_ExecuteToolCall_FullMethodName   = "/butler.toolbroker.v1.ToolBrokerService/ExecuteToolCall"
+	ToolBrokerService_ListTools_FullMethodName         = "/butler.toolbroker.v1.ToolBrokerService/ListTools"
+	ToolBrokerService_GetToolContract_FullMethodName   = "/butler.toolbroker.v1.ToolBrokerService/GetToolContract"
 )
 
 // ToolBrokerServiceClient is the client API for ToolBrokerService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ToolBrokerServiceClient interface {
+	// These RPCs use complete actions and trusted run context, never model policy.
+	PrepareToolCall(ctx context.Context, in *PrepareToolCallRequest, opts ...grpc.CallOption) (*PrepareToolCallResponse, error)
+	AuthorizeToolCall(ctx context.Context, in *AuthorizeToolCallRequest, opts ...grpc.CallOption) (*AuthorizeToolCallResponse, error)
 	ValidateToolCall(ctx context.Context, in *ValidateToolCallRequest, opts ...grpc.CallOption) (*ValidateToolCallResponse, error)
 	ExecuteToolCall(ctx context.Context, in *ExecuteToolCallRequest, opts ...grpc.CallOption) (*ExecuteToolCallResponse, error)
 	ListTools(ctx context.Context, in *ListToolsRequest, opts ...grpc.CallOption) (*ListToolsResponse, error)
@@ -41,6 +46,26 @@ type toolBrokerServiceClient struct {
 
 func NewToolBrokerServiceClient(cc grpc.ClientConnInterface) ToolBrokerServiceClient {
 	return &toolBrokerServiceClient{cc}
+}
+
+func (c *toolBrokerServiceClient) PrepareToolCall(ctx context.Context, in *PrepareToolCallRequest, opts ...grpc.CallOption) (*PrepareToolCallResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PrepareToolCallResponse)
+	err := c.cc.Invoke(ctx, ToolBrokerService_PrepareToolCall_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *toolBrokerServiceClient) AuthorizeToolCall(ctx context.Context, in *AuthorizeToolCallRequest, opts ...grpc.CallOption) (*AuthorizeToolCallResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AuthorizeToolCallResponse)
+	err := c.cc.Invoke(ctx, ToolBrokerService_AuthorizeToolCall_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *toolBrokerServiceClient) ValidateToolCall(ctx context.Context, in *ValidateToolCallRequest, opts ...grpc.CallOption) (*ValidateToolCallResponse, error) {
@@ -87,6 +112,9 @@ func (c *toolBrokerServiceClient) GetToolContract(ctx context.Context, in *GetTo
 // All implementations must embed UnimplementedToolBrokerServiceServer
 // for forward compatibility.
 type ToolBrokerServiceServer interface {
+	// These RPCs use complete actions and trusted run context, never model policy.
+	PrepareToolCall(context.Context, *PrepareToolCallRequest) (*PrepareToolCallResponse, error)
+	AuthorizeToolCall(context.Context, *AuthorizeToolCallRequest) (*AuthorizeToolCallResponse, error)
 	ValidateToolCall(context.Context, *ValidateToolCallRequest) (*ValidateToolCallResponse, error)
 	ExecuteToolCall(context.Context, *ExecuteToolCallRequest) (*ExecuteToolCallResponse, error)
 	ListTools(context.Context, *ListToolsRequest) (*ListToolsResponse, error)
@@ -101,6 +129,12 @@ type ToolBrokerServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedToolBrokerServiceServer struct{}
 
+func (UnimplementedToolBrokerServiceServer) PrepareToolCall(context.Context, *PrepareToolCallRequest) (*PrepareToolCallResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PrepareToolCall not implemented")
+}
+func (UnimplementedToolBrokerServiceServer) AuthorizeToolCall(context.Context, *AuthorizeToolCallRequest) (*AuthorizeToolCallResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AuthorizeToolCall not implemented")
+}
 func (UnimplementedToolBrokerServiceServer) ValidateToolCall(context.Context, *ValidateToolCallRequest) (*ValidateToolCallResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ValidateToolCall not implemented")
 }
@@ -132,6 +166,42 @@ func RegisterToolBrokerServiceServer(s grpc.ServiceRegistrar, srv ToolBrokerServ
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&ToolBrokerService_ServiceDesc, srv)
+}
+
+func _ToolBrokerService_PrepareToolCall_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrepareToolCallRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ToolBrokerServiceServer).PrepareToolCall(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ToolBrokerService_PrepareToolCall_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ToolBrokerServiceServer).PrepareToolCall(ctx, req.(*PrepareToolCallRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ToolBrokerService_AuthorizeToolCall_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthorizeToolCallRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ToolBrokerServiceServer).AuthorizeToolCall(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ToolBrokerService_AuthorizeToolCall_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ToolBrokerServiceServer).AuthorizeToolCall(ctx, req.(*AuthorizeToolCallRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _ToolBrokerService_ValidateToolCall_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -213,6 +283,14 @@ var ToolBrokerService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "butler.toolbroker.v1.ToolBrokerService",
 	HandlerType: (*ToolBrokerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "PrepareToolCall",
+			Handler:    _ToolBrokerService_PrepareToolCall_Handler,
+		},
+		{
+			MethodName: "AuthorizeToolCall",
+			Handler:    _ToolBrokerService_AuthorizeToolCall_Handler,
+		},
 		{
 			MethodName: "ValidateToolCall",
 			Handler:    _ToolBrokerService_ValidateToolCall_Handler,

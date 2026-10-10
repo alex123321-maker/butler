@@ -16,6 +16,7 @@ import (
 	"github.com/butler/butler/apps/tool-broker/internal/broker"
 	"github.com/butler/butler/apps/tool-broker/internal/registry"
 	"github.com/butler/butler/apps/tool-broker/internal/runtimeclient"
+	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/config"
 	"github.com/butler/butler/internal/credentials"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -61,8 +62,31 @@ func New(ctx context.Context) (*App, error) {
 	}
 	router := runtimeclient.New(log)
 	server := broker.NewServer(registryStore, router, credentialResolver, log)
+	var mandateHandler http.Handler
+	serviceToken := ""
+	if cfg.ActionAuthorityTokenFile != "" && postgres != nil {
+		token, err := actionauth.ReadServiceToken(cfg.ActionAuthorityTokenFile)
+		if err != nil {
+			postgres.Close()
+			return nil, err
+		}
+		serviceToken = token
+		reader, err := actionauth.NewHTTPContextReader(cfg.ActionContextURL, token)
+		if err != nil {
+			postgres.Close()
+			return nil, err
+		}
+		authorizationStore := actionauth.NewPostgresStore(postgres.Pool())
+		server.SetActionAuthorizer(actionauth.NewService(authorizationStore, reader, credentialResolver))
+		mandateHandler = actionauth.NewMandateHandler(token, authorizationStore, reader)
+	} else {
+		log.Warn("action authorization unavailable; tool execution will fail closed")
+	}
 
 	httpMux := http.NewServeMux()
+	if mandateHandler != nil {
+		httpMux.Handle("/internal/action-mandates", mandateHandler)
+	}
 	httpMux.Handle("/health", health.New(cfg.Shared.ServiceName).Handler())
 	httpMux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("tool-broker")) })
 	httpServer := &http.Server{Addr: cfg.Shared.HTTPAddr, Handler: httpMux, ReadHeaderTimeout: 5 * time.Second}
@@ -71,7 +95,7 @@ func New(ctx context.Context) (*App, error) {
 	if err != nil {
 		return nil, fmt.Errorf("listen on grpc addr %s: %w", cfg.Shared.GRPCAddr, err)
 	}
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(actionauth.ExecutionUnaryInterceptor(serviceToken)))
 	toolbrokerv1.RegisterToolBrokerServiceServer(grpcServer, server)
 
 	return &App{config: cfg, log: log, httpServer: httpServer, grpcServer: grpcServer, grpcListen: grpcListener, router: router, postgres: postgres}, nil

@@ -41,36 +41,37 @@ import (
 )
 
 type httpServerDeps struct {
-	cfg                config.OrchestratorConfig
-	log                *slog.Logger
-	settingsStore      *config.PostgresSettingsStore
-	hotConfig          *config.HotConfig
-	postgres           *postgresstore.Store
-	metrics            *metrics.Registry
-	health             *health.Service
-	toolBrokerClient   *tools.BrokerClient
-	authManager        *providerauth.Manager
-	providerResult     providerfactory.Result
-	executor           *flow.Service
-	sessionRepo        *session.PostgresRepository
-	runRepo            *runservice.PostgresRepository
-	taskStore          *task.Store
-	transcriptStore    *transcript.Store
-	transitionRepo     *runservice.PostgresTransitionRepository
-	eventHub           *observability.Hub
-	approvalRepo       *approvals.PostgresRepository
-	approvalService    *approvals.Service
-	singleTabService   *singletab.Service
-	artifactsRepo      *artifacts.PostgresRepository
-	artifactsService   *artifacts.Service
-	activityRepo       *activity.PostgresRepository
-	deliveryEventsRepo *deliveryevents.PostgresRepository
-	pipelineQueue      *pipeline.Queue
-	pipelineWorker     *pipeline.Worker
-	embeddingProvider  pipeline.EmbeddingProvider
-	profileStore       *profile.Store
-	episodicStore      *episodic.Store
-	chunkStore         *chunks.Store
+	actionAuthorityHandler http.Handler
+	cfg                    config.OrchestratorConfig
+	log                    *slog.Logger
+	settingsStore          *config.PostgresSettingsStore
+	hotConfig              *config.HotConfig
+	postgres               *postgresstore.Store
+	metrics                *metrics.Registry
+	health                 *health.Service
+	toolBrokerClient       *tools.BrokerClient
+	authManager            *providerauth.Manager
+	providerResult         providerfactory.Result
+	executor               *flow.Service
+	sessionRepo            *session.PostgresRepository
+	runRepo                *runservice.PostgresRepository
+	taskStore              *task.Store
+	transcriptStore        *transcript.Store
+	transitionRepo         *runservice.PostgresTransitionRepository
+	eventHub               *observability.Hub
+	approvalRepo           *approvals.PostgresRepository
+	approvalService        *approvals.Service
+	singleTabService       *singletab.Service
+	artifactsRepo          *artifacts.PostgresRepository
+	artifactsService       *artifacts.Service
+	activityRepo           *activity.PostgresRepository
+	deliveryEventsRepo     *deliveryevents.PostgresRepository
+	pipelineQueue          *pipeline.Queue
+	pipelineWorker         *pipeline.Worker
+	embeddingProvider      pipeline.EmbeddingProvider
+	profileStore           *profile.Store
+	episodicStore          *episodic.Store
+	chunkStore             *chunks.Store
 }
 
 func newHTTPServer(deps httpServerDeps) *http.Server {
@@ -134,6 +135,9 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	remoteRelayEnabled := singleTabTransportMode != "native_only"
 
 	mux := http.NewServeMux()
+	if deps.actionAuthorityHandler != nil {
+		mux.Handle("/internal/action-context", deps.actionAuthorityHandler)
+	}
 	mux.Handle("/health", deps.health.Handler())
 	mux.Handle("/metrics", deps.metrics.Handler())
 	mux.Handle("/api/v1/events", apiServer.HTTPHandler())

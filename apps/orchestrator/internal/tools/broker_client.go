@@ -2,9 +2,12 @@ package tools
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/butler/butler/internal/actionauth"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -15,12 +18,77 @@ type BrokerClient struct {
 	client toolbrokerv1.ToolBrokerServiceClient
 }
 
+func (c *BrokerClient) PrepareAction(ctx context.Context, call *toolbrokerv1.ToolCall) (actionauth.PreparedAction, error) {
+	response, err := c.client.PrepareToolCall(ctx, &toolbrokerv1.PrepareToolCallRequest{ToolCall: call})
+	if err != nil {
+		return actionauth.PreparedAction{}, err
+	}
+	if response.GetError() != nil {
+		return actionauth.PreparedAction{}, fmt.Errorf("action preparation denied: %s", response.GetError().GetMessage())
+	}
+	a := response.GetAction()
+	if a == nil {
+		return actionauth.PreparedAction{}, fmt.Errorf("tool broker omitted exact action policy")
+	}
+	var binding actionauth.ActionBinding
+	if json.Unmarshal([]byte(a.GetBindingJson()), &binding) != nil || binding.ActionID != a.GetActionId() || binding.ActionHash != a.GetActionHash() || binding.RunID != call.GetRunId() || binding.ToolCallID != call.GetToolCallId() {
+		return actionauth.PreparedAction{}, fmt.Errorf("tool broker returned incompatible action binding")
+	}
+	expiry, err := time.Parse(time.RFC3339Nano, a.GetExpiresAt())
+	if err != nil {
+		return actionauth.PreparedAction{}, fmt.Errorf("tool broker omitted action expiry")
+	}
+	return actionauth.PreparedAction{Binding: binding, RequiresApproval: a.GetRequiresApproval(), Summary: a.GetSummary(), ExpiresAt: expiry}, nil
+}
+func (c *BrokerClient) AuthorizeAction(ctx context.Context, call *toolbrokerv1.ToolCall, actionID, approvalID, mandateID string) (string, error) {
+	response, err := c.client.AuthorizeToolCall(ctx, &toolbrokerv1.AuthorizeToolCallRequest{ToolCall: call, ActionId: actionID, ApprovalId: approvalID, MandateId: mandateID})
+	if err != nil {
+		return "", err
+	}
+	if response.GetError() != nil {
+		return "", fmt.Errorf("action authorization denied: %s", response.GetError().GetMessage())
+	}
+	if response.GetAuthorizationId() == "" {
+		return "", fmt.Errorf("tool broker omitted dispatch authorization")
+	}
+	return response.GetAuthorizationId(), nil
+}
+func (c *BrokerClient) ExecuteAuthorizedToolCall(ctx context.Context, call *toolbrokerv1.ToolCall, grantID string) (*toolbrokerv1.ToolResult, error) {
+	resp, err := c.client.ExecuteToolCall(ctx, &toolbrokerv1.ExecuteToolCallRequest{ToolCall: call, AuthorizationId: grantID})
+	if err != nil {
+		return nil, err
+	}
+	if resp.GetResult() == nil {
+		return nil, fmt.Errorf("tool broker returned empty dispatch result")
+	}
+	return resp.GetResult(), nil
+}
+
 func Dial(address string) (*BrokerClient, error) {
+	return dial(address, "")
+}
+
+func DialWithTokenFile(address, path string) (*BrokerClient, error) {
+	if strings.TrimSpace(path) == "" {
+		return Dial(address)
+	}
+	token, err := actionauth.ReadServiceToken(path)
+	if err != nil {
+		return nil, err
+	}
+	return dial(address, token)
+}
+
+func dial(address, token string) (*BrokerClient, error) {
 	address = strings.TrimSpace(address)
 	if address == "" {
 		return nil, fmt.Errorf("tool broker address is required")
 	}
-	conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	options := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	if token != "" {
+		options = append(options, grpc.WithPerRPCCredentials(actionauth.ServiceTokenCredentials{Token: token}))
+	}
+	conn, err := grpc.NewClient(address, options...)
 	if err != nil {
 		return nil, fmt.Errorf("dial tool broker %s: %w", address, err)
 	}

@@ -6,10 +6,15 @@ shift 2
 cd "$root/current"
 export BUTLER_LAB_ROOT="$root"
 export DOCKER_CONFIG="$root/.cache/docker"
+export BUTLER_ACTION_AUTHORITY_TOKEN_SOURCE="$root/secrets/action-authority.token"
 mkdir -p "$DOCKER_CONFIG" "$root/.cache/go-build" "$root/.cache/go-mod" "$root/reports"
 compose=(docker compose -p butler-lab --env-file "$root/lab.env" -f deploy/docker-compose.yml -f deploy/docker-compose.lab.yml)
 case "$action" in
   Up)
+    if [[ ! -f "$BUTLER_ACTION_AUTHORITY_TOKEN_SOURCE" ]]; then
+      install -d -m 700 "$root/secrets"
+      (umask 077; openssl rand -hex 48 > "$BUTLER_ACTION_AUTHORITY_TOKEN_SOURCE")
+    fi
     if [[ ! -f "$root/lab.env" ]]; then
       umask 077
       {

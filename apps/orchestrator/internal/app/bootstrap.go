@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -23,6 +24,7 @@ import (
 	singletab "github.com/butler/butler/apps/orchestrator/internal/singletab"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
+	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/config"
 	orchestratorv1 "github.com/butler/butler/internal/gen/orchestrator/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
@@ -121,7 +123,7 @@ func New(ctx context.Context) (*App, error) {
 	taskStore := task.NewStore(postgres.Pool())
 	runRepo := runservice.NewPostgresRepository(postgres.Pool())
 	runManager := runservice.NewService(runRepo, logger.WithComponent(log, "run-service"))
-	toolBrokerClient, err := tools.Dial(cfg.ToolBrokerAddr)
+	toolBrokerClient, err := tools.DialWithTokenFile(cfg.ToolBrokerAddr, cfg.ActionAuthorityTokenFile)
 	if err != nil {
 		redis.Close()
 		postgres.Close()
@@ -164,7 +166,7 @@ func New(ctx context.Context) (*App, error) {
 	singleTabService.SetDeliverySink(delivery)
 
 	sessionRepo := session.NewPostgresRepository(postgres.Pool())
-	sessionLeaseManager := session.NewRedisLeaseManager(redis.Client(), logger.WithComponent(log, "session-lease-store"))
+	sessionLeaseManager := session.NewPostgresLeaseManager(postgres.Pool())
 	transcriptStore := transcript.NewStore(postgres.Pool())
 	summaryStore := summary.NewStore(postgres.Pool())
 	pipelineQueue := pipeline.NewQueue(redis.Client())
@@ -190,6 +192,9 @@ func New(ctx context.Context) (*App, error) {
 		transcriptStore,
 		providerResult.Provider,
 		flow.Config{
+			AutonomyMode:        autonomyMode(cfg.AutonomyMode),
+			ActionAuthorizer:    toolBrokerClient,
+			ActionMandateID:     cfg.ActionMandateID,
 			Tasks:               taskStore,
 			ProviderName:        providerResult.ProviderName,
 			ModelName:           providerResult.ModelName,
@@ -230,38 +235,51 @@ func New(ctx context.Context) (*App, error) {
 		telegram.SetAuthManager(authManager)
 	}
 
+	var actionAuthorityHandler http.Handler
+	if cfg.ActionAuthorityTokenFile != "" {
+		token, readErr := actionauth.ReadServiceToken(cfg.ActionAuthorityTokenFile)
+		if readErr != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, readErr
+		}
+		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID})
+	} else {
+		log.Warn("private action authority unavailable; Tool Broker will deny execution")
+	}
 	apiServer := apiservice.NewServer(executor, logger.WithComponent(log, "api"))
 	httpServer := newHTTPServer(httpServerDeps{
-		cfg:                cfg,
-		log:                log,
-		settingsStore:      settingsStore,
-		hotConfig:          hotConfig,
-		postgres:           postgres,
-		metrics:            m,
-		health:             h,
-		toolBrokerClient:   toolBrokerClient,
-		authManager:        authManager,
-		providerResult:     providerResult,
-		executor:           executor,
-		sessionRepo:        sessionRepo,
-		runRepo:            runRepo,
-		taskStore:          taskStore,
-		transcriptStore:    transcriptStore,
-		transitionRepo:     transitionRepo,
-		eventHub:           eventHub,
-		approvalRepo:       approvalRepo,
-		approvalService:    approvalService,
-		singleTabService:   singleTabService,
-		artifactsRepo:      artifactsRepo,
-		artifactsService:   artifactsService,
-		activityRepo:       activityRepo,
-		deliveryEventsRepo: deliveryEventsRepo,
-		pipelineQueue:      pipelineQueue,
-		pipelineWorker:     pipelineWorker,
-		embeddingProvider:  embeddingProvider,
-		profileStore:       profileStore,
-		episodicStore:      episodicStore,
-		chunkStore:         chunkStore,
+		cfg:                    cfg,
+		actionAuthorityHandler: actionAuthorityHandler,
+		log:                    log,
+		settingsStore:          settingsStore,
+		hotConfig:              hotConfig,
+		postgres:               postgres,
+		metrics:                m,
+		health:                 h,
+		toolBrokerClient:       toolBrokerClient,
+		authManager:            authManager,
+		providerResult:         providerResult,
+		executor:               executor,
+		sessionRepo:            sessionRepo,
+		runRepo:                runRepo,
+		taskStore:              taskStore,
+		transcriptStore:        transcriptStore,
+		transitionRepo:         transitionRepo,
+		eventHub:               eventHub,
+		approvalRepo:           approvalRepo,
+		approvalService:        approvalService,
+		singleTabService:       singleTabService,
+		artifactsRepo:          artifactsRepo,
+		artifactsService:       artifactsService,
+		activityRepo:           activityRepo,
+		deliveryEventsRepo:     deliveryEventsRepo,
+		pipelineQueue:          pipelineQueue,
+		pipelineWorker:         pipelineWorker,
+		embeddingProvider:      embeddingProvider,
+		profileStore:           profileStore,
+		episodicStore:          episodicStore,
+		chunkStore:             chunkStore,
 	})
 
 	grpcListener, err := net.Listen("tcp", cfg.Shared.GRPCAddr)

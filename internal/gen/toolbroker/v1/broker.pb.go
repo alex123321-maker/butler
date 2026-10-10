@@ -126,10 +126,11 @@ func (x *ValidateToolCallResponse) GetContract() *ToolContract {
 }
 
 type ExecuteToolCallRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	ToolCall      *ToolCall              `protobuf:"bytes,1,opt,name=tool_call,json=toolCall,proto3" json:"tool_call,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	ToolCall        *ToolCall              `protobuf:"bytes,1,opt,name=tool_call,json=toolCall,proto3" json:"tool_call,omitempty"`
+	AuthorizationId string                 `protobuf:"bytes,2,opt,name=authorization_id,json=authorizationId,proto3" json:"authorization_id,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *ExecuteToolCallRequest) Reset() {
@@ -169,6 +170,313 @@ func (x *ExecuteToolCallRequest) GetToolCall() *ToolCall {
 	return nil
 }
 
+func (x *ExecuteToolCallRequest) GetAuthorizationId() string {
+	if x != nil {
+		return x.AuthorizationId
+	}
+	return ""
+}
+
+type PrepareToolCallRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ToolCall      *ToolCall              `protobuf:"bytes,1,opt,name=tool_call,json=toolCall,proto3" json:"tool_call,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrepareToolCallRequest) Reset() {
+	*x = PrepareToolCallRequest{}
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrepareToolCallRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrepareToolCallRequest) ProtoMessage() {}
+
+func (x *PrepareToolCallRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrepareToolCallRequest.ProtoReflect.Descriptor instead.
+func (*PrepareToolCallRequest) Descriptor() ([]byte, []int) {
+	return file_toolbroker_v1_broker_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *PrepareToolCallRequest) GetToolCall() *ToolCall {
+	if x != nil {
+		return x.ToolCall
+	}
+	return nil
+}
+
+type PreparedAction struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	ActionId         string                 `protobuf:"bytes,1,opt,name=action_id,json=actionId,proto3" json:"action_id,omitempty"`
+	ActionHash       string                 `protobuf:"bytes,2,opt,name=action_hash,json=actionHash,proto3" json:"action_hash,omitempty"`
+	BindingJson      string                 `protobuf:"bytes,3,opt,name=binding_json,json=bindingJson,proto3" json:"binding_json,omitempty"`
+	RequiresApproval bool                   `protobuf:"varint,4,opt,name=requires_approval,json=requiresApproval,proto3" json:"requires_approval,omitempty"`
+	Summary          string                 `protobuf:"bytes,5,opt,name=summary,proto3" json:"summary,omitempty"`
+	ExpiresAt        string                 `protobuf:"bytes,6,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *PreparedAction) Reset() {
+	*x = PreparedAction{}
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PreparedAction) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PreparedAction) ProtoMessage() {}
+
+func (x *PreparedAction) ProtoReflect() protoreflect.Message {
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PreparedAction.ProtoReflect.Descriptor instead.
+func (*PreparedAction) Descriptor() ([]byte, []int) {
+	return file_toolbroker_v1_broker_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *PreparedAction) GetActionId() string {
+	if x != nil {
+		return x.ActionId
+	}
+	return ""
+}
+
+func (x *PreparedAction) GetActionHash() string {
+	if x != nil {
+		return x.ActionHash
+	}
+	return ""
+}
+
+func (x *PreparedAction) GetBindingJson() string {
+	if x != nil {
+		return x.BindingJson
+	}
+	return ""
+}
+
+func (x *PreparedAction) GetRequiresApproval() bool {
+	if x != nil {
+		return x.RequiresApproval
+	}
+	return false
+}
+
+func (x *PreparedAction) GetSummary() string {
+	if x != nil {
+		return x.Summary
+	}
+	return ""
+}
+
+func (x *PreparedAction) GetExpiresAt() string {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return ""
+}
+
+type PrepareToolCallResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Action        *PreparedAction        `protobuf:"bytes,1,opt,name=action,proto3" json:"action,omitempty"`
+	Error         *ToolError             `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PrepareToolCallResponse) Reset() {
+	*x = PrepareToolCallResponse{}
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PrepareToolCallResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PrepareToolCallResponse) ProtoMessage() {}
+
+func (x *PrepareToolCallResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PrepareToolCallResponse.ProtoReflect.Descriptor instead.
+func (*PrepareToolCallResponse) Descriptor() ([]byte, []int) {
+	return file_toolbroker_v1_broker_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *PrepareToolCallResponse) GetAction() *PreparedAction {
+	if x != nil {
+		return x.Action
+	}
+	return nil
+}
+
+func (x *PrepareToolCallResponse) GetError() *ToolError {
+	if x != nil {
+		return x.Error
+	}
+	return nil
+}
+
+type AuthorizeToolCallRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ToolCall      *ToolCall              `protobuf:"bytes,1,opt,name=tool_call,json=toolCall,proto3" json:"tool_call,omitempty"`
+	ActionId      string                 `protobuf:"bytes,2,opt,name=action_id,json=actionId,proto3" json:"action_id,omitempty"`
+	ApprovalId    string                 `protobuf:"bytes,3,opt,name=approval_id,json=approvalId,proto3" json:"approval_id,omitempty"`
+	MandateId     string                 `protobuf:"bytes,4,opt,name=mandate_id,json=mandateId,proto3" json:"mandate_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AuthorizeToolCallRequest) Reset() {
+	*x = AuthorizeToolCallRequest{}
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AuthorizeToolCallRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AuthorizeToolCallRequest) ProtoMessage() {}
+
+func (x *AuthorizeToolCallRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AuthorizeToolCallRequest.ProtoReflect.Descriptor instead.
+func (*AuthorizeToolCallRequest) Descriptor() ([]byte, []int) {
+	return file_toolbroker_v1_broker_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *AuthorizeToolCallRequest) GetToolCall() *ToolCall {
+	if x != nil {
+		return x.ToolCall
+	}
+	return nil
+}
+
+func (x *AuthorizeToolCallRequest) GetActionId() string {
+	if x != nil {
+		return x.ActionId
+	}
+	return ""
+}
+
+func (x *AuthorizeToolCallRequest) GetApprovalId() string {
+	if x != nil {
+		return x.ApprovalId
+	}
+	return ""
+}
+
+func (x *AuthorizeToolCallRequest) GetMandateId() string {
+	if x != nil {
+		return x.MandateId
+	}
+	return ""
+}
+
+type AuthorizeToolCallResponse struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	AuthorizationId string                 `protobuf:"bytes,1,opt,name=authorization_id,json=authorizationId,proto3" json:"authorization_id,omitempty"`
+	Error           *ToolError             `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *AuthorizeToolCallResponse) Reset() {
+	*x = AuthorizeToolCallResponse{}
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AuthorizeToolCallResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AuthorizeToolCallResponse) ProtoMessage() {}
+
+func (x *AuthorizeToolCallResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AuthorizeToolCallResponse.ProtoReflect.Descriptor instead.
+func (*AuthorizeToolCallResponse) Descriptor() ([]byte, []int) {
+	return file_toolbroker_v1_broker_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *AuthorizeToolCallResponse) GetAuthorizationId() string {
+	if x != nil {
+		return x.AuthorizationId
+	}
+	return ""
+}
+
+func (x *AuthorizeToolCallResponse) GetError() *ToolError {
+	if x != nil {
+		return x.Error
+	}
+	return nil
+}
+
 type ExecuteToolCallResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Result        *ToolResult            `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
@@ -178,7 +486,7 @@ type ExecuteToolCallResponse struct {
 
 func (x *ExecuteToolCallResponse) Reset() {
 	*x = ExecuteToolCallResponse{}
-	mi := &file_toolbroker_v1_broker_proto_msgTypes[3]
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -190,7 +498,7 @@ func (x *ExecuteToolCallResponse) String() string {
 func (*ExecuteToolCallResponse) ProtoMessage() {}
 
 func (x *ExecuteToolCallResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_toolbroker_v1_broker_proto_msgTypes[3]
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -203,7 +511,7 @@ func (x *ExecuteToolCallResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExecuteToolCallResponse.ProtoReflect.Descriptor instead.
 func (*ExecuteToolCallResponse) Descriptor() ([]byte, []int) {
-	return file_toolbroker_v1_broker_proto_rawDescGZIP(), []int{3}
+	return file_toolbroker_v1_broker_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ExecuteToolCallResponse) GetResult() *ToolResult {
@@ -223,7 +531,7 @@ type ListToolsRequest struct {
 
 func (x *ListToolsRequest) Reset() {
 	*x = ListToolsRequest{}
-	mi := &file_toolbroker_v1_broker_proto_msgTypes[4]
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -235,7 +543,7 @@ func (x *ListToolsRequest) String() string {
 func (*ListToolsRequest) ProtoMessage() {}
 
 func (x *ListToolsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_toolbroker_v1_broker_proto_msgTypes[4]
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -248,7 +556,7 @@ func (x *ListToolsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListToolsRequest.ProtoReflect.Descriptor instead.
 func (*ListToolsRequest) Descriptor() ([]byte, []int) {
-	return file_toolbroker_v1_broker_proto_rawDescGZIP(), []int{4}
+	return file_toolbroker_v1_broker_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ListToolsRequest) GetToolClass() string {
@@ -274,7 +582,7 @@ type ListToolsResponse struct {
 
 func (x *ListToolsResponse) Reset() {
 	*x = ListToolsResponse{}
-	mi := &file_toolbroker_v1_broker_proto_msgTypes[5]
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -286,7 +594,7 @@ func (x *ListToolsResponse) String() string {
 func (*ListToolsResponse) ProtoMessage() {}
 
 func (x *ListToolsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_toolbroker_v1_broker_proto_msgTypes[5]
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -299,7 +607,7 @@ func (x *ListToolsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListToolsResponse.ProtoReflect.Descriptor instead.
 func (*ListToolsResponse) Descriptor() ([]byte, []int) {
-	return file_toolbroker_v1_broker_proto_rawDescGZIP(), []int{5}
+	return file_toolbroker_v1_broker_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ListToolsResponse) GetTools() []*ToolContract {
@@ -318,7 +626,7 @@ type GetToolContractRequest struct {
 
 func (x *GetToolContractRequest) Reset() {
 	*x = GetToolContractRequest{}
-	mi := &file_toolbroker_v1_broker_proto_msgTypes[6]
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -330,7 +638,7 @@ func (x *GetToolContractRequest) String() string {
 func (*GetToolContractRequest) ProtoMessage() {}
 
 func (x *GetToolContractRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_toolbroker_v1_broker_proto_msgTypes[6]
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -343,7 +651,7 @@ func (x *GetToolContractRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetToolContractRequest.ProtoReflect.Descriptor instead.
 func (*GetToolContractRequest) Descriptor() ([]byte, []int) {
-	return file_toolbroker_v1_broker_proto_rawDescGZIP(), []int{6}
+	return file_toolbroker_v1_broker_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetToolContractRequest) GetToolName() string {
@@ -362,7 +670,7 @@ type GetToolContractResponse struct {
 
 func (x *GetToolContractResponse) Reset() {
 	*x = GetToolContractResponse{}
-	mi := &file_toolbroker_v1_broker_proto_msgTypes[7]
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -374,7 +682,7 @@ func (x *GetToolContractResponse) String() string {
 func (*GetToolContractResponse) ProtoMessage() {}
 
 func (x *GetToolContractResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_toolbroker_v1_broker_proto_msgTypes[7]
+	mi := &file_toolbroker_v1_broker_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -387,7 +695,7 @@ func (x *GetToolContractResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetToolContractResponse.ProtoReflect.Descriptor instead.
 func (*GetToolContractResponse) Descriptor() ([]byte, []int) {
-	return file_toolbroker_v1_broker_proto_rawDescGZIP(), []int{7}
+	return file_toolbroker_v1_broker_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetToolContractResponse) GetContract() *ToolContract {
@@ -407,9 +715,34 @@ const file_toolbroker_v1_broker_proto_rawDesc = "" +
 	"\x18ValidateToolCallResponse\x12\x14\n" +
 	"\x05valid\x18\x01 \x01(\bR\x05valid\x125\n" +
 	"\x05error\x18\x02 \x01(\v2\x1f.butler.toolbroker.v1.ToolErrorR\x05error\x12>\n" +
-	"\bcontract\x18\x03 \x01(\v2\".butler.toolbroker.v1.ToolContractR\bcontract\"U\n" +
+	"\bcontract\x18\x03 \x01(\v2\".butler.toolbroker.v1.ToolContractR\bcontract\"\x80\x01\n" +
 	"\x16ExecuteToolCallRequest\x12;\n" +
-	"\ttool_call\x18\x01 \x01(\v2\x1e.butler.toolbroker.v1.ToolCallR\btoolCall\"S\n" +
+	"\ttool_call\x18\x01 \x01(\v2\x1e.butler.toolbroker.v1.ToolCallR\btoolCall\x12)\n" +
+	"\x10authorization_id\x18\x02 \x01(\tR\x0fauthorizationId\"U\n" +
+	"\x16PrepareToolCallRequest\x12;\n" +
+	"\ttool_call\x18\x01 \x01(\v2\x1e.butler.toolbroker.v1.ToolCallR\btoolCall\"\xd7\x01\n" +
+	"\x0ePreparedAction\x12\x1b\n" +
+	"\taction_id\x18\x01 \x01(\tR\bactionId\x12\x1f\n" +
+	"\vaction_hash\x18\x02 \x01(\tR\n" +
+	"actionHash\x12!\n" +
+	"\fbinding_json\x18\x03 \x01(\tR\vbindingJson\x12+\n" +
+	"\x11requires_approval\x18\x04 \x01(\bR\x10requiresApproval\x12\x18\n" +
+	"\asummary\x18\x05 \x01(\tR\asummary\x12\x1d\n" +
+	"\n" +
+	"expires_at\x18\x06 \x01(\tR\texpiresAt\"\x8e\x01\n" +
+	"\x17PrepareToolCallResponse\x12<\n" +
+	"\x06action\x18\x01 \x01(\v2$.butler.toolbroker.v1.PreparedActionR\x06action\x125\n" +
+	"\x05error\x18\x02 \x01(\v2\x1f.butler.toolbroker.v1.ToolErrorR\x05error\"\xb4\x01\n" +
+	"\x18AuthorizeToolCallRequest\x12;\n" +
+	"\ttool_call\x18\x01 \x01(\v2\x1e.butler.toolbroker.v1.ToolCallR\btoolCall\x12\x1b\n" +
+	"\taction_id\x18\x02 \x01(\tR\bactionId\x12\x1f\n" +
+	"\vapproval_id\x18\x03 \x01(\tR\n" +
+	"approvalId\x12\x1d\n" +
+	"\n" +
+	"mandate_id\x18\x04 \x01(\tR\tmandateId\"}\n" +
+	"\x19AuthorizeToolCallResponse\x12)\n" +
+	"\x10authorization_id\x18\x01 \x01(\tR\x0fauthorizationId\x125\n" +
+	"\x05error\x18\x02 \x01(\v2\x1f.butler.toolbroker.v1.ToolErrorR\x05error\"S\n" +
 	"\x17ExecuteToolCallResponse\x128\n" +
 	"\x06result\x18\x01 \x01(\v2 .butler.toolbroker.v1.ToolResultR\x06result\"\\\n" +
 	"\x10ListToolsRequest\x12\x1d\n" +
@@ -421,8 +754,10 @@ const file_toolbroker_v1_broker_proto_rawDesc = "" +
 	"\x16GetToolContractRequest\x12\x1b\n" +
 	"\ttool_name\x18\x01 \x01(\tR\btoolName\"Y\n" +
 	"\x17GetToolContractResponse\x12>\n" +
-	"\bcontract\x18\x01 \x01(\v2\".butler.toolbroker.v1.ToolContractR\bcontract2\xc4\x03\n" +
-	"\x11ToolBrokerService\x12q\n" +
+	"\bcontract\x18\x01 \x01(\v2\".butler.toolbroker.v1.ToolContractR\bcontract2\xaa\x05\n" +
+	"\x11ToolBrokerService\x12n\n" +
+	"\x0fPrepareToolCall\x12,.butler.toolbroker.v1.PrepareToolCallRequest\x1a-.butler.toolbroker.v1.PrepareToolCallResponse\x12t\n" +
+	"\x11AuthorizeToolCall\x12..butler.toolbroker.v1.AuthorizeToolCallRequest\x1a/.butler.toolbroker.v1.AuthorizeToolCallResponse\x12q\n" +
 	"\x10ValidateToolCall\x12-.butler.toolbroker.v1.ValidateToolCallRequest\x1a..butler.toolbroker.v1.ValidateToolCallResponse\x12n\n" +
 	"\x0fExecuteToolCall\x12,.butler.toolbroker.v1.ExecuteToolCallRequest\x1a-.butler.toolbroker.v1.ExecuteToolCallResponse\x12\\\n" +
 	"\tListTools\x12&.butler.toolbroker.v1.ListToolsRequest\x1a'.butler.toolbroker.v1.ListToolsResponse\x12n\n" +
@@ -440,42 +775,56 @@ func file_toolbroker_v1_broker_proto_rawDescGZIP() []byte {
 	return file_toolbroker_v1_broker_proto_rawDescData
 }
 
-var file_toolbroker_v1_broker_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_toolbroker_v1_broker_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_toolbroker_v1_broker_proto_goTypes = []any{
-	(*ValidateToolCallRequest)(nil),  // 0: butler.toolbroker.v1.ValidateToolCallRequest
-	(*ValidateToolCallResponse)(nil), // 1: butler.toolbroker.v1.ValidateToolCallResponse
-	(*ExecuteToolCallRequest)(nil),   // 2: butler.toolbroker.v1.ExecuteToolCallRequest
-	(*ExecuteToolCallResponse)(nil),  // 3: butler.toolbroker.v1.ExecuteToolCallResponse
-	(*ListToolsRequest)(nil),         // 4: butler.toolbroker.v1.ListToolsRequest
-	(*ListToolsResponse)(nil),        // 5: butler.toolbroker.v1.ListToolsResponse
-	(*GetToolContractRequest)(nil),   // 6: butler.toolbroker.v1.GetToolContractRequest
-	(*GetToolContractResponse)(nil),  // 7: butler.toolbroker.v1.GetToolContractResponse
-	(*ToolCall)(nil),                 // 8: butler.toolbroker.v1.ToolCall
-	(*ToolError)(nil),                // 9: butler.toolbroker.v1.ToolError
-	(*ToolContract)(nil),             // 10: butler.toolbroker.v1.ToolContract
-	(*ToolResult)(nil),               // 11: butler.toolbroker.v1.ToolResult
+	(*ValidateToolCallRequest)(nil),   // 0: butler.toolbroker.v1.ValidateToolCallRequest
+	(*ValidateToolCallResponse)(nil),  // 1: butler.toolbroker.v1.ValidateToolCallResponse
+	(*ExecuteToolCallRequest)(nil),    // 2: butler.toolbroker.v1.ExecuteToolCallRequest
+	(*PrepareToolCallRequest)(nil),    // 3: butler.toolbroker.v1.PrepareToolCallRequest
+	(*PreparedAction)(nil),            // 4: butler.toolbroker.v1.PreparedAction
+	(*PrepareToolCallResponse)(nil),   // 5: butler.toolbroker.v1.PrepareToolCallResponse
+	(*AuthorizeToolCallRequest)(nil),  // 6: butler.toolbroker.v1.AuthorizeToolCallRequest
+	(*AuthorizeToolCallResponse)(nil), // 7: butler.toolbroker.v1.AuthorizeToolCallResponse
+	(*ExecuteToolCallResponse)(nil),   // 8: butler.toolbroker.v1.ExecuteToolCallResponse
+	(*ListToolsRequest)(nil),          // 9: butler.toolbroker.v1.ListToolsRequest
+	(*ListToolsResponse)(nil),         // 10: butler.toolbroker.v1.ListToolsResponse
+	(*GetToolContractRequest)(nil),    // 11: butler.toolbroker.v1.GetToolContractRequest
+	(*GetToolContractResponse)(nil),   // 12: butler.toolbroker.v1.GetToolContractResponse
+	(*ToolCall)(nil),                  // 13: butler.toolbroker.v1.ToolCall
+	(*ToolError)(nil),                 // 14: butler.toolbroker.v1.ToolError
+	(*ToolContract)(nil),              // 15: butler.toolbroker.v1.ToolContract
+	(*ToolResult)(nil),                // 16: butler.toolbroker.v1.ToolResult
 }
 var file_toolbroker_v1_broker_proto_depIdxs = []int32{
-	8,  // 0: butler.toolbroker.v1.ValidateToolCallRequest.tool_call:type_name -> butler.toolbroker.v1.ToolCall
-	9,  // 1: butler.toolbroker.v1.ValidateToolCallResponse.error:type_name -> butler.toolbroker.v1.ToolError
-	10, // 2: butler.toolbroker.v1.ValidateToolCallResponse.contract:type_name -> butler.toolbroker.v1.ToolContract
-	8,  // 3: butler.toolbroker.v1.ExecuteToolCallRequest.tool_call:type_name -> butler.toolbroker.v1.ToolCall
-	11, // 4: butler.toolbroker.v1.ExecuteToolCallResponse.result:type_name -> butler.toolbroker.v1.ToolResult
-	10, // 5: butler.toolbroker.v1.ListToolsResponse.tools:type_name -> butler.toolbroker.v1.ToolContract
-	10, // 6: butler.toolbroker.v1.GetToolContractResponse.contract:type_name -> butler.toolbroker.v1.ToolContract
-	0,  // 7: butler.toolbroker.v1.ToolBrokerService.ValidateToolCall:input_type -> butler.toolbroker.v1.ValidateToolCallRequest
-	2,  // 8: butler.toolbroker.v1.ToolBrokerService.ExecuteToolCall:input_type -> butler.toolbroker.v1.ExecuteToolCallRequest
-	4,  // 9: butler.toolbroker.v1.ToolBrokerService.ListTools:input_type -> butler.toolbroker.v1.ListToolsRequest
-	6,  // 10: butler.toolbroker.v1.ToolBrokerService.GetToolContract:input_type -> butler.toolbroker.v1.GetToolContractRequest
-	1,  // 11: butler.toolbroker.v1.ToolBrokerService.ValidateToolCall:output_type -> butler.toolbroker.v1.ValidateToolCallResponse
-	3,  // 12: butler.toolbroker.v1.ToolBrokerService.ExecuteToolCall:output_type -> butler.toolbroker.v1.ExecuteToolCallResponse
-	5,  // 13: butler.toolbroker.v1.ToolBrokerService.ListTools:output_type -> butler.toolbroker.v1.ListToolsResponse
-	7,  // 14: butler.toolbroker.v1.ToolBrokerService.GetToolContract:output_type -> butler.toolbroker.v1.GetToolContractResponse
-	11, // [11:15] is the sub-list for method output_type
-	7,  // [7:11] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	13, // 0: butler.toolbroker.v1.ValidateToolCallRequest.tool_call:type_name -> butler.toolbroker.v1.ToolCall
+	14, // 1: butler.toolbroker.v1.ValidateToolCallResponse.error:type_name -> butler.toolbroker.v1.ToolError
+	15, // 2: butler.toolbroker.v1.ValidateToolCallResponse.contract:type_name -> butler.toolbroker.v1.ToolContract
+	13, // 3: butler.toolbroker.v1.ExecuteToolCallRequest.tool_call:type_name -> butler.toolbroker.v1.ToolCall
+	13, // 4: butler.toolbroker.v1.PrepareToolCallRequest.tool_call:type_name -> butler.toolbroker.v1.ToolCall
+	4,  // 5: butler.toolbroker.v1.PrepareToolCallResponse.action:type_name -> butler.toolbroker.v1.PreparedAction
+	14, // 6: butler.toolbroker.v1.PrepareToolCallResponse.error:type_name -> butler.toolbroker.v1.ToolError
+	13, // 7: butler.toolbroker.v1.AuthorizeToolCallRequest.tool_call:type_name -> butler.toolbroker.v1.ToolCall
+	14, // 8: butler.toolbroker.v1.AuthorizeToolCallResponse.error:type_name -> butler.toolbroker.v1.ToolError
+	16, // 9: butler.toolbroker.v1.ExecuteToolCallResponse.result:type_name -> butler.toolbroker.v1.ToolResult
+	15, // 10: butler.toolbroker.v1.ListToolsResponse.tools:type_name -> butler.toolbroker.v1.ToolContract
+	15, // 11: butler.toolbroker.v1.GetToolContractResponse.contract:type_name -> butler.toolbroker.v1.ToolContract
+	3,  // 12: butler.toolbroker.v1.ToolBrokerService.PrepareToolCall:input_type -> butler.toolbroker.v1.PrepareToolCallRequest
+	6,  // 13: butler.toolbroker.v1.ToolBrokerService.AuthorizeToolCall:input_type -> butler.toolbroker.v1.AuthorizeToolCallRequest
+	0,  // 14: butler.toolbroker.v1.ToolBrokerService.ValidateToolCall:input_type -> butler.toolbroker.v1.ValidateToolCallRequest
+	2,  // 15: butler.toolbroker.v1.ToolBrokerService.ExecuteToolCall:input_type -> butler.toolbroker.v1.ExecuteToolCallRequest
+	9,  // 16: butler.toolbroker.v1.ToolBrokerService.ListTools:input_type -> butler.toolbroker.v1.ListToolsRequest
+	11, // 17: butler.toolbroker.v1.ToolBrokerService.GetToolContract:input_type -> butler.toolbroker.v1.GetToolContractRequest
+	5,  // 18: butler.toolbroker.v1.ToolBrokerService.PrepareToolCall:output_type -> butler.toolbroker.v1.PrepareToolCallResponse
+	7,  // 19: butler.toolbroker.v1.ToolBrokerService.AuthorizeToolCall:output_type -> butler.toolbroker.v1.AuthorizeToolCallResponse
+	1,  // 20: butler.toolbroker.v1.ToolBrokerService.ValidateToolCall:output_type -> butler.toolbroker.v1.ValidateToolCallResponse
+	8,  // 21: butler.toolbroker.v1.ToolBrokerService.ExecuteToolCall:output_type -> butler.toolbroker.v1.ExecuteToolCallResponse
+	10, // 22: butler.toolbroker.v1.ToolBrokerService.ListTools:output_type -> butler.toolbroker.v1.ListToolsResponse
+	12, // 23: butler.toolbroker.v1.ToolBrokerService.GetToolContract:output_type -> butler.toolbroker.v1.GetToolContractResponse
+	18, // [18:24] is the sub-list for method output_type
+	12, // [12:18] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_toolbroker_v1_broker_proto_init() }
@@ -490,7 +839,7 @@ func file_toolbroker_v1_broker_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_toolbroker_v1_broker_proto_rawDesc), len(file_toolbroker_v1_broker_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

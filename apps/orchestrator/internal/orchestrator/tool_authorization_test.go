@@ -3,6 +3,7 @@ package orchestrator
 import (
 	"context"
 	"errors"
+	"github.com/butler/butler/internal/actionauth"
 	"strings"
 	"testing"
 	"time"
@@ -50,8 +51,8 @@ func TestToolApprovalUsesDurableDecision(t *testing.T) {
 			}}
 			service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{
 				Tools: tools, Delivery: delivery, ApprovalGate: gate,
-				ApprovalChecker: &mockApprovalChecker{toolsRequiringApproval: map[string]bool{"http.request": true}},
-				ApprovalService: approvals.NewService(repo, gate),
+				ActionAuthorizer: &mockApprovalChecker{toolsRequiringApproval: map[string]bool{"http.request": true}},
+				ApprovalService:  approvals.NewService(repo, gate),
 			}, nil)
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
@@ -71,6 +72,13 @@ func TestToolApprovalUsesDurableDecision(t *testing.T) {
 
 type unavailableApprovalChecker struct{}
 
+func (unavailableApprovalChecker) PrepareAction(context.Context, *toolbrokerv1.ToolCall) (actionauth.PreparedAction, error) {
+	return actionauth.PreparedAction{}, errors.New("policy service unavailable")
+}
+func (unavailableApprovalChecker) AuthorizeAction(context.Context, *toolbrokerv1.ToolCall, string, string, string) (string, error) {
+	return "", errors.New("policy service unavailable")
+}
+
 func (unavailableApprovalChecker) RequiresApproval(context.Context, string) (bool, error) {
 	return false, errors.New("policy service unavailable")
 }
@@ -78,10 +86,10 @@ func (unavailableApprovalChecker) RequiresApproval(context.Context, string) (boo
 func TestToolAuthorizationFailsClosed(t *testing.T) {
 	for _, tc := range []struct {
 		name    string
-		checker ApprovalChecker
+		checker ActionAuthorizer
 		want    string
 	}{
-		{"missing policy", nil, "approval checker is not configured"},
+		{"missing policy", nil, "exact action authorizer is not configured"},
 		{"failed policy", unavailableApprovalChecker{}, "policy service unavailable"},
 		{"missing approval gate", &mockApprovalChecker{toolsRequiringApproval: map[string]bool{"http.request": true}}, "approval gate is not configured"},
 	} {
@@ -96,7 +104,7 @@ func TestToolAuthorizationFailsClosed(t *testing.T) {
 					event.ToolCallBatch = &transport.ToolCallBatch{ToolCalls: []transport.ToolCallRequest{call}}
 				}
 				provider := &mockProvider{startEvents: []transport.TransportEvent{event}}
-				service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{Tools: tools, ApprovalChecker: tc.checker}, nil)
+				service := NewService(&memorySessionRepo{}, &memoryLeaseManager{}, newMemoryRunManager(), &memoryTranscriptStore{}, provider, Config{Tools: tools, ActionAuthorizer: tc.checker}, nil)
 				_, err := service.Execute(context.Background(), ingress.InputEvent{EventID: "event-1", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, SessionKey: "web:1", Source: "web", PayloadJSON: `{"text":"fetch"}`, CreatedAt: time.Now().UTC(), IdempotencyKey: "event-1"})
 				if err == nil || !strings.Contains(err.Error(), tc.want) {
 					t.Fatalf("batch=%v: expected %q, got %v", batch, tc.want, err)

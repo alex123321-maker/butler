@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/url"
 	"sort"
 	"strings"
@@ -18,15 +19,85 @@ func canonicalJSON(raw string) (string, error) {
 	if len(raw) > maxArgumentBytes {
 		return "", fmt.Errorf("action arguments exceed the supported limit")
 	}
-	var value any
-	if err := json.Unmarshal([]byte(raw), &value); err != nil {
+	decoder := json.NewDecoder(strings.NewReader(raw))
+	decoder.UseNumber()
+	value, err := decodeUnique(decoder, 0)
+	if err != nil {
 		return "", fmt.Errorf("action arguments must be valid JSON")
+	}
+	if _, err := decoder.Token(); err != io.EOF {
+		return "", fmt.Errorf("action arguments must contain one JSON value")
 	}
 	encoded, err := json.Marshal(value)
 	if err != nil {
 		return "", fmt.Errorf("action arguments cannot be normalized")
 	}
 	return string(encoded), nil
+}
+
+// Reject duplicate keys before parsing can discard one interpretation. The
+// runtime, schema validator and authorization hash must see the same object.
+func decodeUnique(d *json.Decoder, depth int) (any, error) {
+	if depth > 64 {
+		return nil, fmt.Errorf("JSON nesting exceeds limit")
+	}
+	token, err := d.Token()
+	if err != nil {
+		return nil, err
+	}
+	switch token {
+	case json.Delim('{'):
+		object := map[string]any{}
+		for d.More() {
+			keyToken, err := d.Token()
+			if err != nil {
+				return nil, err
+			}
+			key, ok := keyToken.(string)
+			if !ok {
+				return nil, fmt.Errorf("invalid JSON key")
+			}
+			if _, exists := object[key]; exists {
+				return nil, fmt.Errorf("duplicate JSON key")
+			}
+			value, err := decodeUnique(d, depth+1)
+			if err != nil {
+				return nil, err
+			}
+			object[key] = value
+		}
+		end, err := d.Token()
+		if err != nil || end != json.Delim('}') {
+			return nil, fmt.Errorf("invalid JSON object")
+		}
+		return object, nil
+	case json.Delim('['):
+		values := []any{}
+		for d.More() {
+			value, err := decodeUnique(d, depth+1)
+			if err != nil {
+				return nil, err
+			}
+			values = append(values, value)
+		}
+		end, err := d.Token()
+		if err != nil || end != json.Delim(']') {
+			return nil, fmt.Errorf("invalid JSON array")
+		}
+		return values, nil
+	}
+	if _, ok := token.(json.Delim); ok {
+		return nil, fmt.Errorf("invalid JSON delimiter")
+	}
+	return token, nil
+}
+
+func BindCredentialMetadata(binding ActionBinding, hash string) ActionBinding {
+	binding.CredentialMetadataHash = hash
+	binding.ActionHash = ""
+	encoded, _ := json.Marshal(binding)
+	binding.ActionHash = digest(string(encoded))
+	return binding
 }
 func digest(value string) string {
 	hash := sha256.Sum256([]byte(value))

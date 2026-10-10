@@ -42,15 +42,32 @@ func (s *Service) handleToolBatch(ctx context.Context, runLog *slog.Logger, curr
 
 // handleToolCall executes a single tool call, including approval flow if configured.
 func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, leaseID string, requested *transport.ToolCallRequest) (transport.EventStream, *sessionv1.RunRecord, error) {
+	return s.handleActionToolCall(ctx, runLog, current, leaseID, requested, "")
+}
+
+func (s *Service) resumeApprovedToolCall(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, leaseID string, requested *transport.ToolCallRequest, approvalID string) (transport.EventStream, *sessionv1.RunRecord, error) {
+	if approvalID == "" {
+		return nil, current, fmt.Errorf("durable action approval is required to resume")
+	}
+	return s.handleActionToolCall(ctx, runLog, current, leaseID, requested, approvalID)
+}
+
+func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, leaseID string, requested *transport.ToolCallRequest, approvalID string) (transport.EventStream, *sessionv1.RunRecord, error) {
 	if requested == nil {
 		return nil, current, fmt.Errorf("tool call request is required")
 	}
 	if s.config.Tools == nil {
 		return nil, current, fmt.Errorf("tool executor is not configured")
 	}
-	next, err := s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_TOOL_PENDING, leaseID, "", "")
-	if err != nil {
-		return nil, current, fmt.Errorf("mark run tool_pending: %w", err)
+	next := current
+	var err error
+	if approvalID == "" {
+		next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_TOOL_PENDING, leaseID, "", "")
+		if err != nil {
+			return nil, current, fmt.Errorf("mark run tool_pending: %w", err)
+		}
+	} else if current.GetCurrentState() != commonv1.RunState_RUN_STATE_AWAITING_APPROVAL {
+		return nil, current, fmt.Errorf("approved resume requires a durably suspended run")
 	}
 	current = next
 
@@ -66,14 +83,22 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 	}
 
 	// A missing or unavailable policy service cannot authorize execution.
-	if s.config.ApprovalChecker == nil {
-		return nil, current, fmt.Errorf("tool authorization unavailable: approval checker is not configured")
+	if s.config.ActionAuthorizer == nil {
+		return nil, current, fmt.Errorf("tool authorization unavailable: exact action authorizer is not configured")
+	}
+	prepared, checkErr := s.config.ActionAuthorizer.PrepareAction(ctx, brokerCall)
+	if checkErr != nil {
+		return nil, current, fmt.Errorf("prepare exact action authorization: %w", checkErr)
+	}
+	if prepared.Binding.RunID != brokerCall.GetRunId() || prepared.Binding.ToolCallID != toolCallID || prepared.Binding.ToolName != brokerCall.GetToolName() || prepared.Binding.ActionID == "" || prepared.Binding.ActionHash == "" {
+		return nil, current, fmt.Errorf("action authorizer returned an incompatible binding")
 	}
 	{
-		needsApproval, checkErr := s.config.ApprovalChecker.RequiresApproval(ctx, requested.ToolName)
-		if checkErr != nil {
-			return nil, current, fmt.Errorf("check tool approval policy: %w", checkErr)
-		} else if needsApproval {
+		if prepared.RequiresApproval && approvalID == "" {
+			if s.config.Checkpoints != nil {
+				suspended, suspendErr := s.suspendApproval(ctx, current, requested, prepared)
+				return nil, suspended, suspendErr
+			}
 			if s.config.ApprovalGate == nil {
 				return nil, current, fmt.Errorf("tool authorization unavailable: approval gate is not configured")
 			}
@@ -172,6 +197,7 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 				}
 				// PostgreSQL is authoritative if another channel already decided.
 				resp.Approved = resolvedApproval.Status == approvals.StatusApproved
+				approvalID = resolvedApproval.ApprovalID
 			}
 			if !resp.Approved {
 				s.emitEvent(current.GetRunId(), current.GetSessionKey(), observability.EventApprovalResolved, map[string]any{
@@ -216,6 +242,14 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 			})
 		}
 	}
+	grantID, authorizeErr := s.config.ActionAuthorizer.AuthorizeAction(ctx, brokerCall, prepared.Binding.ActionID, approvalID, s.config.ActionMandateID)
+	if authorizeErr != nil {
+		return nil, current, fmt.Errorf("authorize exact action dispatch: %w", authorizeErr)
+	}
+	executor, ok := s.config.Tools.(AuthorizedToolExecutor)
+	if !ok || grantID == "" {
+		return nil, current, fmt.Errorf("authorized tool executor is not configured")
+	}
 
 	next, err = s.transition(ctx, current.GetRunId(), current.GetCurrentState(), commonv1.RunState_RUN_STATE_TOOL_RUNNING, leaseID, "", "")
 	if err != nil {
@@ -249,7 +283,7 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 	if updateErr := s.saveTransientWorkingState(ctx, current.GetRunId(), current.GetSessionKey(), "tool_running", map[string]any{"tool_name": requested.ToolName, "args_json": normalizeJSON(requested.ArgsJSON, "{}")}); updateErr != nil {
 		runLog.Warn("transient working memory update failed before tool execution", slog.String("error", updateErr.Error()))
 	}
-	result, err := s.config.Tools.ExecuteToolCall(ctx, brokerCall)
+	result, err := executor.ExecuteAuthorizedToolCall(ctx, brokerCall, grantID)
 	if err != nil {
 		return nil, current, fmt.Errorf("execute tool call %s: %w", requested.ToolName, err)
 	}
@@ -300,7 +334,7 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 	}
 	current = next
 
-	stream, err := s.provider.SubmitToolResult(ctx, transport.SubmitToolResultRequest{RunID: current.GetRunId(), ProviderSessionRef: providerSessionRefFromRun(current), ToolCallRef: toolCallID, ToolResultJSON: toolResultEnvelope(result)})
+	stream, err := s.resumeProviderWithToolResult(ctx, current, toolCallID, toolResultEnvelope(result))
 	if err != nil {
 		return nil, current, fmt.Errorf("submit tool result: %w", err)
 	}

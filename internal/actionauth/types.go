@@ -46,6 +46,7 @@ type ContextSnapshot struct {
 	SessionKey          string    `json:"session_key"`
 	OwnerID             string    `json:"owner_id"`
 	AutonomyMode        int32     `json:"autonomy_mode"`
+	MandateID           string    `json:"mandate_id"`
 	TaskID              string    `json:"task_id"`
 	PinnedTaskRevision  int64     `json:"pinned_task_revision"`
 	TaskRevision        int64     `json:"task_revision"`

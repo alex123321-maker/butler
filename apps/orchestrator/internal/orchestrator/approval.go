@@ -3,10 +3,20 @@ package orchestrator
 import (
 	"context"
 	"fmt"
+	"github.com/butler/butler/internal/actionauth"
+	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"strings"
 	"sync"
 	"time"
 )
+
+type ActionAuthorizer interface {
+	PrepareAction(context.Context, *toolbrokerv1.ToolCall) (actionauth.PreparedAction, error)
+	AuthorizeAction(context.Context, *toolbrokerv1.ToolCall, string, string, string) (string, error)
+}
+type AuthorizedToolExecutor interface {
+	ExecuteAuthorizedToolCall(context.Context, *toolbrokerv1.ToolCall, string) (*toolbrokerv1.ToolResult, error)
+}
 
 // ApprovalChecker determines whether a tool requires human approval before execution.
 type ApprovalChecker interface {
