@@ -1,0 +1,40 @@
+# Optional profile: inference has no egress and shares one local worker per manager.
+# Install pinned dependencies/models with deploy/local-models/prepare-lab.sh first.
+services:
+  local-models:
+    profiles: [local-models]
+    build:
+      context: ..
+      dockerfile: docker/local-models/Dockerfile
+    user: "10001:10001"
+    init: true
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,size=256m,uid=10001,gid=10001
+    gpus: all
+    environment:
+      BUTLER_LOCAL_MODELS_TOKEN_FILE: /private/token
+      BUTLER_LOCAL_MODELS_CATALOG: /app/models.json
+      BUTLER_LOCAL_MODELS_BUDGET_MIB: "6144"
+      BUTLER_LOCAL_MODELS_RESERVE_MIB: "512"
+      BUTLER_LOCAL_MODELS_IDLE_SECONDS: "30"
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    volumes:
+      - ${BUTLER_LOCAL_MODELS_ROOT:?set private model storage root}/data:/data:ro
+      - ${BUTLER_LOCAL_MODELS_ROOT:?set private model storage root}/private:/private:ro
+      - ./local-models/models.json:/app/models.json:ro
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health',timeout=2)"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+    networks: [local-inference]
+  orchestrator:
+    networks:
+      - local-inference
+networks:
+  local-inference:
+    internal: true

@@ -1,0 +1,25 @@
+{
+  "models": [
+    {
+      "id": "embeddinggemma2-text-bf16-v1",
+      "model": "google/embeddinggemma-2",
+      "revision": "914f7f89142e33e77833254d9c9b90c3cef7303b",
+      "format": "safetensors",
+      "precision": "BF16",
+      "license": "Apache-2.0",
+      "licenseUrl": "https://ai.google.dev/gemma/apache_2",
+      "sourceUrl": "https://huggingface.co/google/embeddinggemma-2",
+      "runtime": "torch-sentence-transformers",
+      "runtimeVersion": "torch2.10.0+cu128/transformers5.19.0/sentence-transformers6.1.0",
+      "capabilities": ["CAPABILITY_EMBED"],
+      "maxBatch": 4,
+      "maxInputBytes": 8192,
+      "contextTokens": 2048,
+      "peakVramMib": 3072,
+      "cpuFallback": true,
+      "enabled": true,
+      "preprocessingVersion": "embeddinggemma2-retrieval-v1",
+      "dimensions": 768
+    }
+  ]
+}
