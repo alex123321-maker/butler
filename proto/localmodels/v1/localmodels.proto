@@ -16,6 +16,9 @@ enum Capability {
   CAPABILITY_EXTRACT = 3;
   CAPABILITY_CLASSIFY = 4;
   CAPABILITY_MEDIA = 5;
+  CAPABILITY_ASR = 6;
+  CAPABILITY_VAD = 7;
+  CAPABILITY_TTS = 8;
 }
 message ModelProfile {
   string id = 1;
@@ -92,6 +95,12 @@ message ExtractInput {
 }
 message ClassifyInput { string text = 1; repeated string labels = 2; }
 message MediaInput { bytes content = 1; string mime_type = 2; }
+// Audio is bounded PCM16 little-endian mono WAV. No URL, codec or file path.
+message AudioInput { bytes wav = 1; }
+// One VAD-bounded segment, at most 15 seconds, fixed Russian decoding.
+message ASRInput { bytes wav = 1; }
+// Fixed voice/language; no reference speaker recording or cloning.
+message TTSInput { string text = 1; }
 message InferRequest {
   string request_id = 1;
   string profile_id = 2;
@@ -106,6 +115,9 @@ message InferRequest {
     ExtractInput extract = 12;
     ClassifyInput classify = 13;
     MediaInput media = 14;
+    ASRInput asr = 15;
+    AudioInput vad = 16;
+    TTSInput tts = 17;
   }
 }
 message Vector { string id = 1; repeated float values = 2; }
@@ -137,6 +149,14 @@ message ClassifyOutput {
   // Scores are model signals, not calibrated probabilities or permissions.
 }
 message MediaOutput { repeated float embedding = 1; }
+message ASROutput {
+  string text = 1;
+  // Decoder reached EOS. This is not a claim of transcription accuracy.
+  bool decoder_complete = 2;
+}
+message SpeechRegion { uint32 start_sample = 1; uint32 end_sample = 2; }
+message VADOutput { repeated SpeechRegion regions = 1; uint32 sample_rate = 2; }
+message TTSOutput { bytes wav = 1; }
 message InferResponse {
   string request_id = 1;
   string profile_id = 2;
@@ -153,5 +173,8 @@ message InferResponse {
     ExtractOutput extract = 12;
     ClassifyOutput classify = 13;
     MediaOutput media = 14;
+    ASROutput asr = 15;
+    VADOutput vad = 16;
+    TTSOutput tts = 17;
   }
 }

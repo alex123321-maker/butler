@@ -143,6 +143,77 @@
       "cpuFallback": true,
       "enabled": false,
       "preprocessingVersion": "d1-text-choice-v1"
+    },
+    {
+      "cpuFallback": true,
+      "contextTokens": 2048,
+      "maxInputBytes": 480044,
+      "runtime": "torch-voice",
+      "revision": "5eb144179a02acc5e5ba31e748d22b0cf3e303b0",
+      "id": "qwen3-asr-ru-bf16-v1",
+      "peakRamMib": 3072,
+      "peakCpuRamMib": 5632,
+      "runtimeVersion": "torch2.10.0+cu128/transformers4.57.6/qwen-asr0.0.6",
+      "preprocessingVersion": "qwen3-asr-ru-pcm-v1",
+      "precision": "BF16",
+      "capabilities": [
+        "CAPABILITY_ASR"
+      ],
+      "model": "Qwen/Qwen3-ASR-0.6B",
+      "sourceUrl": "https://huggingface.co/Qwen/Qwen3-ASR-0.6B",
+      "maxBatch": 1,
+      "enabled": false,
+      "peakVramMib": 3072,
+      "license": "Apache-2.0",
+      "format": "safetensors",
+      "licenseUrl": "https://www.apache.org/licenses/LICENSE-2.0"
+    },
+    {
+      "cpuFallback": true,
+      "contextTokens": 512,
+      "maxInputBytes": 1024,
+      "runtime": "torch-voice",
+      "revision": "85e237c12c027371202489a0ec509ded67b5e4b5",
+      "id": "qwen3-tts-ru-ryan-bf16-v1",
+      "peakRamMib": 3584,
+      "peakCpuRamMib": 6144,
+      "runtimeVersion": "torch2.10.0+cu128/transformers4.57.3/qwen-tts0.1.1",
+      "preprocessingVersion": "qwen3-tts-ru-ryan-v1",
+      "precision": "BF16",
+      "capabilities": [
+        "CAPABILITY_TTS"
+      ],
+      "model": "Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice",
+      "sourceUrl": "https://huggingface.co/Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice",
+      "maxBatch": 1,
+      "enabled": false,
+      "peakVramMib": 4096,
+      "license": "Apache-2.0",
+      "format": "safetensors",
+      "licenseUrl": "https://www.apache.org/licenses/LICENSE-2.0"
+    },
+    {
+      "cpuFallback": true,
+      "contextTokens": 1,
+      "maxInputBytes": 3840044,
+      "runtime": "torch-voice",
+      "revision": "5cd7945676eb32225748052e2e6a0580e4686a08",
+      "id": "silero-vad-pcm-cpu-v1",
+      "peakRamMib": 1024,
+      "runtimeVersion": "torch2.10.0+cu128/silero-vad6.2.3",
+      "preprocessingVersion": "silero-pcm16-v1",
+      "precision": "FP32",
+      "maxBatch": 1,
+      "capabilities": [
+        "CAPABILITY_VAD"
+      ],
+      "model": "snakers4/silero-vad",
+      "sourceUrl": "https://github.com/snakers4/silero-vad",
+      "preferredDevice": "cpu",
+      "enabled": false,
+      "license": "MIT",
+      "format": "torchscript",
+      "licenseUrl": "https://github.com/snakers4/silero-vad/blob/5cd7945676eb32225748052e2e6a0580e4686a08/LICENSE"
     }
   ]
 }

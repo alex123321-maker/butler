@@ -178,3 +178,23 @@ the exact repeat also records conservative d1 RAM admission refusals. Signals
 cannot suppress events or acquire task/grant/verification authority. See
 [local decision observations](local-decision-signals.md) and the checked-in
 acceptance matrix for remaining current-controller baseline work.
+
+Default-disabled voice profiles add fixed `ASR`, `VAD` and `TTS` typed operations.
+Inputs use canonical mono PCM16 WAV at 16 kHz; ASR is bounded to 15 seconds per
+actual request and VAD to 120 seconds. TTS accepts at most 200 Unicode characters
+and returns canonical 24 kHz PCM16 with a 20-second output bound. No compressed
+codec, arbitrary sample rate, reference voice, cloning, model path, speaker or
+runtime setting is supplied by a request. Qwen ASR/TTS revisions and the Silero
+Git revision are pinned; all libraries, weights and preparation caches remain on
+the storage bind. Offline SDK library overlays resolve upstream incompatible
+Transformers/NumPy versions without changing the existing embedding runtime.
+The optional Python worker is justified by official Qwen/Silero inference SDKs;
+Go owns admission, routing, deadlines and typed response validation.
+
+`decoder_complete` only records a decoder EOS. It is neither a correctness claim
+nor owner authentication. The local service never accepts a transcript as an
+ordinary input or action authorization. Voice source persistence, explicit owner
+review and the normal durable input/Stop contracts belong to the separate caller.
+All three profiles remain disabled until their caller and real quality/resource
+acceptance are complete. The evaluation catalog enables only those three optional
+profiles; it must be deliberately staged and then removed by the operator.

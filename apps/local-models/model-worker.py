@@ -119,6 +119,9 @@ try:
         'fastino/gliner2.5-multi-v1': 'torch2.10.0+cu128/transformers5.19.0/gliner2.1.0',
         'fastino/GLiNER2.5-multi-Decide': 'torch2.10.0+cu128/transformers5.19.0/gliner2.1.0',
         'LiquidAI/d1-omni-600M': 'torch2.10.0+cu128/transformers5.19.0/d1code02b55d7',
+        'Qwen/Qwen3-ASR-0.6B': 'torch2.10.0+cu128/transformers4.57.6/qwen-asr0.0.6',
+        'Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice': 'torch2.10.0+cu128/transformers4.57.3/qwen-tts0.1.1',
+        'snakers4/silero-vad': 'torch2.10.0+cu128/silero-vad6.2.3',
     }
     name = profile['model']
     if runtimes.get(name) != profile['runtime_version']:
@@ -130,6 +133,12 @@ try:
     metadata = json.loads((path / 'butler-model.json').read_text())
     if any(metadata[k] != profile[k] for k in ('model', 'revision', 'runtime_version')):
         raise ValueError('model identity mismatch')
+    if name in ('Qwen/Qwen3-ASR-0.6B','Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice','snakers4/silero-vad'):
+        import importlib.util
+        spec=importlib.util.spec_from_file_location('butler_voice',pathlib.Path(__file__).with_name('voice-worker.py'))
+        voice=importlib.util.module_from_spec(spec);spec.loader.exec_module(voice)
+        voice.run(init,path)
+        sys.exit(0)
     with contextlib.redirect_stdout(sys.stderr):
         import torch
         import transformers

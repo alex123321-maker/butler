@@ -104,6 +104,12 @@ func requestCapability(r *pb.InferRequest) pb.Capability {
 		return pb.Capability_CAPABILITY_CLASSIFY
 	case *pb.InferRequest_Media:
 		return pb.Capability_CAPABILITY_MEDIA
+	case *pb.InferRequest_Asr:
+		return pb.Capability_CAPABILITY_ASR
+	case *pb.InferRequest_Vad:
+		return pb.Capability_CAPABILITY_VAD
+	case *pb.InferRequest_Tts:
+		return pb.Capability_CAPABILITY_TTS
 	}
 	return pb.Capability_CAPABILITY_UNSPECIFIED
 }

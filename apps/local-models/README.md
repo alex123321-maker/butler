@@ -77,3 +77,9 @@ classification, concurrent CPU/GPU lanes and on-demand image model loading.
 Issue #25 still requires a production retrieval comparison,
 versioned index migration, reversible reindex and larger held-out Russian/code
 evaluation. It is not a claim that #24–#28 are all complete.
+
+Optional typed PCM voice operations have three pinned default-disabled profiles.
+See [voice preparation](../../deploy/local-models/VOICE.md) for public checkpoint
+integrity checks, isolated SDK overlays, fixed audio/text bounds and the remaining
+real quality/resource acceptance. ASR decoder completion carries no owner or
+action authority. The service performs no microphone capture or input admission.
