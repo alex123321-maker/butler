@@ -86,6 +86,17 @@ quality; the Russian scores are runtime signals, not calibrated decisions or a
 held-out evaluation. Audio/video remain unavailable. Production embedding,
 reranking and extraction quality decisions belong to #25–#28.
 
+The main Compose service was exercised on 2026-10-10 at 22:01 UTC with actual
+768/256-dimensional text embeddings, Russian extraction/classification, ranking
+and image loading. See `verification-compose-capabilities.json`. GPU peaked at
+1935 MiB and full service RSS at 4441 MiB; CPU classification overlapped GPU
+ranking. Anonymous RPC access was rejected and the deployment helper verified
+the sole internal network, no published ports, UID10001/read-only/capability
+isolation and blocked public TCP egress. Vision initially received an explicit
+resource refusal while the CPU extractor remained resident, then succeeded
+after the ordinary 30-second idle unload with the same input and policy.
+The artifact records this retry instead of reporting a false empty success.
+
 ## Tensor runtime exception
 
 [Google's official card](https://huggingface.co/google/embeddinggemma-2) supports
