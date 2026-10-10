@@ -138,3 +138,18 @@ Full-local inference is tested with `--network none`; the production overlay has
 an internal-only network and no published ports. A hybrid caller's cloud privacy
 decision remains at its owned authorization/admission boundary. No service path
 can route these inputs to a cloud provider, irrespective of caller/model output.
+
+## Structured extraction contract
+
+`ExtractInput.schema_version=butler-memory-v1` selects a fixed reviewed data
+schema and requires an empty `entity_types` list. It returns additive typed
+entity spans, action/resource/deadline/exception and project/component relations,
+and action-anchored constraint records. Every field is a literal half-open
+Unicode-character span with an uncalibrated score; malformed, generated or
+missing-anchor records are rejected. Optional/ambiguous fields remain absent or
+explicitly unresolved. This is independent decoding, not a guarantee that every
+relationship is correct, and all output stays candidate data. The worker uses the
+already pinned GLiNER2.5 revision/runtime without new dependencies or remote code.
+Existing generic entity extraction remains compatible. Caller source/job/budget
+checks and owner acceptance are separate; this contract alone enables no memory
+pipeline. Real Russian quality and production integration require caller evidence.

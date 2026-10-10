@@ -18,6 +18,12 @@ GPU/RAM admission, idle unload and lifecycle remain Go. One serialized GPU lane
 and a separate CPU GLiNER lane reuse workers across callers. Audio/video and
 unsupported profiles return Unavailable; no empty successful fallback is invented.
 
+The additive `butler-memory-v1` extraction schema returns source-span entities,
+relations and action-anchored records with unresolved optional fields. It uses
+the same pinned CPU GLiNER worker. Caller-owned extraction jobs and source checks
+must publish only neutral candidates; the service cannot accept a profile fact or
+authorize a mandate. See the architecture contract for Unicode span validation.
+
 ## Run on the lab
 
 Use [the architecture contract](../../docs/architecture/local-model-service.md)

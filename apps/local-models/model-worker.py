@@ -17,6 +17,57 @@ def bounded_tokens(text):
     if len(tokenizer(text, add_special_tokens=True)['input_ids']) > int(profile['context_tokens']):
         raise ValueError('input too long')
 
+MEMORY_FIELDS = {
+    'project': 'Named project', 'component': 'Named software component',
+    'task': 'Task or goal explicitly stated in the text', 'resource': 'Server or other resource',
+    'action': 'Action verb or requested operation', 'deadline': 'Deadline or time expression',
+    'prohibition': 'Explicit negation or prohibition', 'exception': 'Explicit exception or allowed alternative',
+    'condition': 'Condition that must hold', 'temporal_qualifier': 'Earlier or now qualifier',
+}
+MEMORY_RELATIONS = {
+    'action_resource': ('action', 'resource', 'Action applies to resource'),
+    'action_deadline': ('action', 'deadline', 'Action has deadline'),
+    'action_exception': ('action', 'exception', 'Action has exception'),
+    'project_component': ('project', 'component', 'Project contains component'),
+}
+
+def memory_schema(model):
+    schema = model.create_schema().entities(MEMORY_FIELDS).relations(
+        {key: value[2] for key, value in MEMORY_RELATIONS.items()})
+    builder = schema.structure('constraint', mode='natural', anchor='action')
+    for field in ('action', 'resource', 'deadline', 'prohibition', 'exception', 'condition', 'temporal_qualifier'):
+        # Optional fields never require the decoder to invent missing content.
+        builder.field(field, dtype='str', description=MEMORY_FIELDS[field],
+                      cardinality='required_one' if field == 'action' else 'optional_one')
+    return builder.build()
+
+def memory_output(result):
+    def span(label, item):
+        return {'type': label, 'text': item['text'], 'start': item['start'],
+                'end': item['end'], 'confidence': item['confidence']}
+    spans = [span(label, item) for label, items in result.get('entities', {}).items() for item in items]
+    relations = []
+    for label, items in result.get('relation_extraction', {}).items():
+        head, tail, _ = MEMORY_RELATIONS[label]
+        for item in items:
+            relations.append({'type': label, 'head': span(head, item['head']), 'tail': span(tail, item['tail'])})
+    records = []
+    for item in result.get('constraint', []):
+        fields, unresolved = [], []
+        for label, value in item.items():
+            if isinstance(value, list):
+                if len(value) != 1:
+                    unresolved.append(label)
+                    continue
+                value = value[0]
+            if isinstance(value, dict) and all(key in value for key in ('text','start','end','confidence')):
+                fields.append(span(label, value))
+            else:
+                unresolved.append(label)
+        if any(field['type'] == 'action' for field in fields):
+            records.append({'type': 'constraint', 'fields': fields, 'unresolved_fields': unresolved})
+    return {'kind': 'spans', 'spans': spans, 'relations': relations, 'records': records}
+
 try:
     init = json.loads(sys.stdin.readline(65536))
     if init.get('op') != 'init':
@@ -113,12 +164,17 @@ try:
                     text, labels = request['text'], request['labels']
                     bounded_tokens(text + ' ' + ' '.join(labels))
                     if op == 'extract':
-                        result = model.extract_entities(text, labels, include_confidence=True, include_spans=True)
-                        spans = []
-                        for label, items in result['entities'].items():
-                            for item in items:
-                                spans.append({'type': label, 'text': item['text'], 'start': item['start'], 'end': item['end'], 'confidence': item['confidence']})
-                        output = {'kind': 'spans', 'spans': spans}
+                        if request.get('schema_version') == 'butler-memory-v1':
+                            schema = memory_schema(model)
+                            bounded_tokens(text + ' ' + ' '.join(MEMORY_FIELDS) + ' ' + ' '.join(MEMORY_RELATIONS))
+                            output = memory_output(model.extract(text, schema, threshold=0.5, include_confidence=True, include_spans=True))
+                        else:
+                            result = model.extract_entities(text, labels, include_confidence=True, include_spans=True)
+                            spans = []
+                            for label, items in result['entities'].items():
+                                for item in items:
+                                    spans.append({'type': label, 'text': item['text'], 'start': item['start'], 'end': item['end'], 'confidence': item['confidence']})
+                            output = {'kind': 'spans', 'spans': spans}
                     else:
                         result = model.classify_text(text, {'category': labels}, include_confidence=True)
                         category = result.get('category')

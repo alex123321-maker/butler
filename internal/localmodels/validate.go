@@ -49,13 +49,20 @@ func validateRequest(p *pb.ModelProfile, r *pb.InferRequest) error {
 		}
 	case *pb.InferRequest_Extract:
 		cap = pb.Capability_CAPABILITY_EXTRACT
-		if input.Extract == nil || !validText(input.Extract.Text) || input.Extract.SchemaVersion == "" || len(input.Extract.EntityTypes) == 0 {
+		if input.Extract == nil || !validText(input.Extract.Text) || input.Extract.SchemaVersion == "" || len(input.Extract.SchemaVersion) > 128 {
+			return fault(Invalid)
+		}
+		if input.Extract.SchemaVersion == "butler-memory-v1" {
+			if len(input.Extract.EntityTypes) != 0 {
+				return fault(Invalid)
+			}
+		} else if len(input.Extract.EntityTypes) == 0 || len(input.Extract.EntityTypes) > 32 {
 			return fault(Invalid)
 		}
 		count = 1
 		bytes = len(input.Extract.Text)
 		for _, label := range input.Extract.EntityTypes {
-			if !validText(label) {
+			if !validText(label) || len(label) > 128 {
 				return fault(Invalid)
 			}
 			bytes += len(label)

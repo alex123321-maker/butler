@@ -37,13 +37,15 @@ type Process struct {
 	pid           int
 }
 type workerMessage struct {
-	Kind       string      `json:"kind"`
-	Code       string      `json:"code"`
-	VRAM       uint32      `json:"vram_mib"`
-	Embeddings [][]float64 `json:"embeddings"`
-	Scores     []float64   `json:"scores"`
-	Spans      []*pb.Span  `json:"spans"`
-	Labels     []string    `json:"labels"`
+	Kind       string                `json:"kind"`
+	Code       string                `json:"code"`
+	VRAM       uint32                `json:"vram_mib"`
+	Embeddings [][]float64           `json:"embeddings"`
+	Scores     []float64             `json:"scores"`
+	Spans      []*pb.Span            `json:"spans"`
+	Labels     []string              `json:"labels"`
+	Relations  []*pb.ExtractRelation `json:"relations"`
+	Records    []*pb.ExtractRecord   `json:"records"`
 }
 
 func NewProcess(cfg ProcessConfig) (*Process, error) {
@@ -316,12 +318,19 @@ func (b *Process) extract(ctx context.Context, p *pb.ModelProfile, r *pb.InferRe
 		return nil, err
 	}
 	if input := r.GetExtract(); input != nil {
-		response, err := b.exchange(ctx, map[string]any{"op": "extract", "text": input.Text, "labels": input.EntityTypes})
+		response, err := b.exchange(ctx, map[string]any{"op": "extract", "text": input.Text, "labels": input.EntityTypes, "schema_version": input.SchemaVersion})
 		if err != nil {
 			return nil, err
 		}
 		if response.Kind != "spans" {
 			return nil, fault(Protocol)
+		}
+		if input.SchemaVersion == MemorySchema {
+			out := &pb.ExtractOutput{Spans: response.Spans, SchemaVersion: MemorySchema, Relations: response.Relations, Records: response.Records}
+			if err := ValidateMemoryExtraction(input.Text, out); err != nil {
+				return nil, err
+			}
+			return &pb.InferResponse{Output: &pb.InferResponse_Extract{Extract: out}}, nil
 		}
 		labels := map[string]bool{}
 		for _, s := range input.EntityTypes {
