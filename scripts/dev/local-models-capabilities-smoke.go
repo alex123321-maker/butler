@@ -79,6 +79,27 @@ func runCapabilities(addr, tokenFile, report string) error {
 		m.RAMPeak = out.PeakRamMib
 		return out, m, nil
 	}
+	for _, dimensions := range []uint32{768, 256} {
+		name := fmt.Sprintf("embed-russian-%d", dimensions)
+		out, m, err := invoke(name, "index", &pb.InferRequest{Input: &pb.InferRequest_Embed{Embed: &pb.EmbedInput{Task: pb.EmbeddingTask_EMBEDDING_TASK_DOCUMENT, Dimensions: dimensions, Texts: []*pb.TextInput{{Id: "public", Text: "Butler хранит долговременную память в PostgreSQL."}}}}})
+		if err != nil {
+			return err
+		}
+		measurements = append(measurements, m)
+		if out.GetEmbed() == nil || len(out.GetEmbed().Vectors) != 1 || len(out.GetEmbed().Vectors[0].Values) != int(dimensions) || out.Device != "gpu" {
+			return fmt.Errorf("actual text embedding dimensions/device")
+		}
+		var norm float64
+		for _, value := range out.GetEmbed().Vectors[0].Values {
+			if math.IsNaN(float64(value)) || math.IsInf(float64(value), 0) {
+				return fmt.Errorf("nonfinite text embedding")
+			}
+			norm += float64(value) * float64(value)
+		}
+		if math.Abs(math.Sqrt(norm)-1) > 0.01 {
+			return fmt.Errorf("unnormalized text embedding")
+		}
+	}
 	extraction := &pb.InferRequest{Input: &pb.InferRequest_Extract{Extract: &pb.ExtractInput{Text: "Анна работает в компании Яндекс в Москве.", EntityTypes: []string{"person", "company", "location"}, SchemaVersion: "proof-v1"}}}
 	out, m, err := invoke("extract-russian", "extractor", extraction)
 	if err != nil {
@@ -181,7 +202,7 @@ func runCapabilities(addr, tokenFile, report string) error {
 	}
 	statusJSON, _ := protojson.Marshal(status)
 	catalogJSON, _ := protojson.Marshal(catalog)
-	artifact := map[string]any{"generated_at": time.Now().UTC().Format(time.RFC3339), "scope": "actual pinned model mechanics + small public Russian signals; not production quality acceptance", "catalog": json.RawMessage(catalogJSON), "status": json.RawMessage(statusJSON), "measurements": measurements, "cpu_gpu_overlap": overlap, "russian_spans": spans, "rank_scores": rankScores, "classification_scores": classScores, "vision": "actual 440M text+vision loading; synthetic RGB768 normalized; audio omitted", "network": "network none; all models local_files_only"}
+	artifact := map[string]any{"generated_at": time.Now().UTC().Format(time.RFC3339), "scope": "actual pinned model mechanics + small public Russian signals; not production quality acceptance", "catalog": json.RawMessage(catalogJSON), "status": json.RawMessage(statusJSON), "measurements": measurements, "cpu_gpu_overlap": overlap, "russian_spans": spans, "rank_scores": rankScores, "classification_scores": classScores, "vision": "actual 440M text+vision loading; synthetic RGB768 normalized; audio omitted", "network": "all models local_files_only; deployment helper separately verifies network isolation"}
 	data, _ := json.MarshalIndent(artifact, "", "  ")
 	if os.WriteFile(report, data, 0644) != nil {
 		return fmt.Errorf("artifact")
