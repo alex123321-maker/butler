@@ -68,6 +68,8 @@ For non-trivial tasks, read the relevant architecture specs before making change
 
 - General architecture:
   - `docs/architecture/butler-prd-architecture.md`
+  - `docs/architecture/persistent-assistant-spec.md` for the target product model,
+    task/run separation, mandates, initiative, delegation, and extension lifecycle
 - Memory:
   - `docs/architecture/memory-model.md`
 - Run execution / orchestration:
@@ -82,6 +84,13 @@ For non-trivial tasks, read the relevant architecture specs before making change
   - `docs/ai/engineering-rules.md`
 
 ## Tooling and credential rules
+
+- Product delegation and extension proposals must go through Butler's execution
+  kernel. Models, skills, and child results do not grant authorization.
+- Keep task completion, run completion, action effect, and delivery status distinct.
+- Preserve task/constraint/authority versions across approval and execution.
+- Clearly distinguish target architecture from implemented behavior in docs and
+  issue reports; close implementation issues only with evidence for their criteria.
 
 - Never pass raw secrets in tool args visible to the model.
 - Use typed references such as `credential_ref` for secret-backed inputs.

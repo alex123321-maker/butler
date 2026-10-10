@@ -33,6 +33,24 @@
 
 ## 3. Основные определения
 
+### 3.0 Поручение и попытка исполнения
+
+Целевой контракт [Persistent Assistant Spec](persistent-assistant-spec.md)
+разделяет постоянное поручение и run. Run — ограниченная попытка; task ref может
+отсутствовать для разговора. Final answer и `run.completed` не подтверждают
+завершение поручения. Его статус, план, constraints revision, checkpoints и
+evidence сохраняются отдельно и переживают рестарт и несколько runs.
+
+Целевая последовательность: durable ingress receipt → session ordering/lease →
+task revision и context → model proposal → durable action intent → exact-action
+authorization/approval → Broker execution → observation/effect reconciliation →
+result/verdict → delivery outbox. HTTP disconnect не отменяет принятое событие;
+поздний worker ограничен fencing epoch. Ожидание человека освобождает активное
+исполнение и возобновляется durable event, а не только in-memory channel.
+
+До реализации соответствующих миграций существующие API представляют run как
+task. Это переходный read model, а не подтверждение долговечности поручения.
+
 ### 3.1 Run
 
 `Run` — это одно исполнение агентного цикла внутри конкретной session context (контекста сессии).
@@ -411,6 +429,11 @@ Model interaction может быть многошаговым внутри од
 
 ### 12.3 Исполнение
 
+Missing approval checker, policy lookup failure, or a missing approval gate for
+an action requiring approval stops execution before contacting the Tool Broker.
+The same rule applies to every member of a batch. A technical policy failure
+never grants permission.
+
 Если approval не требуется или уже получен:
 - Tool Broker валидирует schema;
 - применяет policy;
@@ -566,6 +589,10 @@ Session summary обновляется post-run через memory pipeline worke
 ---
 
 ## 18. Cancel и timeout semantics
+
+An expired Redis session lease is reported as `ErrLeaseNotFound`, including
+Redis Lua's nil response. The executor must stop renewal and execution after
+this signal; expiry is not a successful renewal or a generic backend outage.
 
 ## 18.1 Cancel
 

@@ -125,6 +125,9 @@ func (m *RedisLeaseManager) RenewLease(ctx context.Context, leaseID string, ttl 
 	}
 
 	result, err := renewLeaseScript.Run(ctx, m.client, []string{leaseIndexKey(leaseID)}, leaseID, ttl.Milliseconds(), int64(ttl/time.Second)).Result()
+	if errors.Is(err, redislib.Nil) {
+		return LeaseRecord{}, ErrLeaseNotFound
+	}
 	if err != nil {
 		return LeaseRecord{}, fmt.Errorf("renew lease: %w", err)
 	}

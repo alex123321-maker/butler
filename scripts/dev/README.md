@@ -24,6 +24,7 @@ Available scripts:
 - `run-orchestrator.ps1` - run the orchestrator locally against the Docker-side dependencies
 - `test-go.ps1` - run Go tests with repo-local cache isolation
 - `verify-changed.ps1` - map changed paths to the relevant specs and targeted verification commands
+- `lab.ps1` / `lab.sh` - upload source snapshots, run Go checks, deploy, and inspect the isolated SSH lab; see `deploy/README.md`
 
 Optional dependency install:
 

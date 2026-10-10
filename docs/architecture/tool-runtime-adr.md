@@ -43,11 +43,21 @@
 
 Подсистема инструментов в текущем объёме не включает:
 
-* fully autonomous self-extending tools;
+* self-extending tools без независимой проверки и catalog admission;
 * произвольную загрузку стороннего кода в runtime;
 * прямой доступ LLM к секретам;
 * исполнение инструментов без централизованного broker layer;
 * смешение execution layer и memory layer.
+
+Целевой контракт [Persistent Assistant Spec](persistent-assistant-spec.md)
+допускает staged/validated/versioned расширения и навыки, автоматически
+подключаемые в пределах installer mandate. Tool Broker остаётся единственным
+путём effect authorization, schema validation, routing и credential mediation.
+Модель и runtime не расширяют capabilities. Policy повторно проверяет task,
+mandate и tool/schema versions непосредственно перед эффектом; action journal
+отличает intent, confirmed effect и unknown outcome. Параллельные исполнители
+используют ресурсные аренды и общий бюджет поручения. Новые возможности требуют
+отдельных миграций/тестов и не считаются реализованными этим уточнением ADR.
 
 ---
 

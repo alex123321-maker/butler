@@ -1,8 +1,12 @@
 <template>
-  <select class="app-select" v-bind="$attrs">
+  <select v-model="model" class="app-select" v-bind="$attrs">
     <slot />
   </select>
 </template>
+
+<script setup lang="ts">
+const model = defineModel<string | number | null>()
+</script>
 
 <style scoped>
 .app-select {

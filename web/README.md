@@ -59,6 +59,14 @@ The dev overlay also publishes the orchestrator API on `http://localhost:8080`, 
 - **Layout:** Nuxt layouts plus shared UI primitives and sidebar widget composition
 - **Testing:** Playwright end-to-end coverage in `tests/e2e`
 
+Task filters send the API's explicit `updated_at_desc`, `updated_at_asc`,
+`started_at_desc`, and `started_at_asc` sort values. Date bounds entered in the
+browser's local timezone are converted to UTC RFC3339 before the request.
+The lab workflow in `scripts/dev/lab.ps1 -Action Web` checks these contracts and
+loads the deployed UI against the real API.
+Shared `AppInput` and `AppSelect` controls implement Vue's `modelValue` contract
+so user edits and programmatic resets both update the displayed value.
+
 ## File structure
 
 ```

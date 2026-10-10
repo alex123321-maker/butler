@@ -521,6 +521,18 @@ Important constraints:
 
 ## 16. Итоговая модель
 
+Целевой контракт [Persistent Assistant Spec](persistent-assistant-spec.md)
+объединяет action и credential authorization в Tool Broker. Разрешение связано
+с owner, task/constraints revision, canonical args hash, credential refs, target,
+tool/schema version и expiry. Уточнение/отзыв полномочий требует повторной проверки
+перед эффектом. Более узкий deny ограничивает широкий mandate; ошибка policy
+не превращается в allow даже в расширенном autonomy mode.
+
+Подзадачи получают только подмножество полномочий parent. Skill, наблюдение и
+дочерний отчёт не могут выдать credential capability. Секрет разрешается после
+policy проверки в системном пути, не копируется в модельный prompt, action args,
+transcript или result. Installer mandate не даёт право менять защитное ядро.
+
 1. Пользователь работает с alias.
 2. Агент видит только alias и метаданные.
 3. Агент передаёт в credential-aware tools typed `credential_ref`.

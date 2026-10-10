@@ -184,6 +184,12 @@ async function installApiMocks(page: Page): Promise<void> {
       return
     }
 
+    const sort = requestUrl.searchParams.get('sort')
+    if (sort) expect(['updated_at_desc', 'updated_at_asc', 'started_at_desc', 'started_at_asc']).toContain(sort)
+    for (const key of ['from', 'to']) {
+      const value = requestUrl.searchParams.get(key)
+      if (value) expect(value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
+    }
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -408,6 +414,15 @@ async function installApiMocks(page: Page): Promise<void> {
         },
         providers: [{ name: 'openai', active: true, configured: true }],
         queues: { memory_pipeline: { enabled: true, status: 'running' } },
+        single_tab_extension: {
+          transport_mode: 'native_only',
+          relay_enabled: false,
+          extension_auth_configured: true,
+          relay_heartbeat_ttl_seconds: 60,
+          active_sessions: 0,
+          host_disconnected_sessions: 0,
+          instances: [],
+        },
         pending_approvals: 1,
         recent_failures: [
           {
@@ -425,7 +440,11 @@ async function installApiMocks(page: Page): Promise<void> {
 }
 
 test.describe('Task-centric pages baseline', () => {
+  test.use({ timezoneId: 'Asia/Tomsk' })
   test.beforeEach(async ({ page }) => {
+    page.on('pageerror', (error) => {
+      throw error
+    })
     await installApiMocks(page)
   })
 
@@ -456,6 +475,28 @@ test.describe('Task-centric pages baseline', () => {
     await page.getByRole('button', { name: 'Show advanced navigation' }).click()
     await page.getByRole('link', { name: 'System' }).click()
     await expect(page.getByRole('heading', { name: 'System' })).toBeVisible()
+  })
+
+  test('task filters use API sort values and UTC date bounds', async ({ page }) => {
+    await page.goto('/tasks')
+    await expect(page.getByText('Waiting for your reply')).toBeVisible()
+    await page.getByRole('button', { name: 'Advanced filters' }).click()
+    await page.getByRole('combobox', { name: 'Sort', exact: true }).selectOption('started_at_asc')
+    await page.getByLabel('From', { exact: true }).fill('2026-03-19T12:30')
+    await page.getByLabel('To', { exact: true }).fill('2026-03-20T13:45')
+    const request = page.waitForRequest((request) => {
+      const url = new URL(request.url())
+      return url.pathname === '/api/v2/tasks' && url.searchParams.has('from')
+    })
+    await page.getByRole('button', { name: 'Apply filters' }).click()
+    const url = new URL((await request).url())
+    expect(url.searchParams.get('sort')).toBe('started_at_asc')
+    expect(url.searchParams.get('from')).toBe('2026-03-19T05:30:00.000Z')
+    expect(url.searchParams.get('to')).toBe('2026-03-20T06:45:00.000Z')
+    await expect(page.getByText('Waiting for your reply')).toBeVisible()
+    await page.getByRole('button', { name: 'Reset', exact: true }).click()
+    await page.getByRole('button', { name: 'Advanced filters' }).click()
+    await expect(page.getByRole('combobox', { name: 'Sort', exact: true })).toHaveValue('updated_at_desc')
   })
 
   test('critical states: task waiting status, pending approval, degraded health', async ({ page }) => {

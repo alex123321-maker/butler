@@ -2,6 +2,7 @@ package run
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
@@ -84,7 +85,8 @@ func TestRunLifecycleIntegration(t *testing.T) {
 	if fetched.GetFinishedAt() == "" {
 		t.Fatal("expected finished_at after completed transition")
 	}
-	if fetched.GetMetadataJson() != `{"origin":"integration"}` {
+	var storedMetadata map[string]string
+	if err := json.Unmarshal([]byte(fetched.GetMetadataJson()), &storedMetadata); err != nil || len(storedMetadata) != 1 || storedMetadata["origin"] != "integration" {
 		t.Fatalf("expected metadata_json to round-trip, got %q", fetched.GetMetadataJson())
 	}
 

@@ -104,8 +104,12 @@ func TestPipelineWorkerIntegration(t *testing.T) {
 	transcriptStore := transcript.NewStore(pg.Pool())
 
 	// We need a session + run row to satisfy FK constraints on messages.
-	_, _ = pg.Pool().Exec(ctx, `INSERT INTO sessions (session_key, channel, created_at, updated_at) VALUES ($1, 'test', NOW(), NOW()) ON CONFLICT (session_key) DO NOTHING`, sessionKey)
-	_, _ = pg.Pool().Exec(ctx, `INSERT INTO runs (run_id, session_key, current_state, created_at, updated_at) VALUES ($1, $2, 'completed', NOW(), NOW()) ON CONFLICT (run_id) DO NOTHING`, runID, sessionKey)
+	if _, err := pg.Pool().Exec(ctx, `INSERT INTO sessions (session_key, user_id, channel) VALUES ($1, 'pipeline-test-user', 'test') ON CONFLICT (session_key) DO NOTHING`, sessionKey); err != nil {
+		t.Fatalf("seed session: %v", err)
+	}
+	if _, err := pg.Pool().Exec(ctx, `INSERT INTO runs (run_id, session_key, input_event_id, status, autonomy_mode, current_state, model_provider, started_at, updated_at) VALUES ($1, $2, 'pipeline-event', 'completed', 'mode_1', 'completed', 'test', NOW(), NOW()) ON CONFLICT (run_id) DO NOTHING`, runID, sessionKey); err != nil {
+		t.Fatalf("seed run: %v", err)
+	}
 	defer func() {
 		_, _ = pg.Pool().Exec(context.Background(), `DELETE FROM runs WHERE run_id=$1`, runID)
 		_, _ = pg.Pool().Exec(context.Background(), `DELETE FROM sessions WHERE session_key=$1`, sessionKey)

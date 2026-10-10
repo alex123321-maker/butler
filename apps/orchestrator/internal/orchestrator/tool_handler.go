@@ -65,12 +65,18 @@ func (s *Service) handleToolCall(ctx context.Context, runLog *slog.Logger, curre
 		brokerCall.CredentialRefs = refs
 	}
 
-	// Check if tool requires approval before execution.
-	if s.config.ApprovalChecker != nil && s.config.ApprovalGate != nil {
+	// A missing or unavailable policy service cannot authorize execution.
+	if s.config.ApprovalChecker == nil {
+		return nil, current, fmt.Errorf("tool authorization unavailable: approval checker is not configured")
+	}
+	{
 		needsApproval, checkErr := s.config.ApprovalChecker.RequiresApproval(ctx, requested.ToolName)
 		if checkErr != nil {
-			runLog.Warn("approval check failed, proceeding without approval", slog.String("tool_name", requested.ToolName), slog.String("error", checkErr.Error()))
+			return nil, current, fmt.Errorf("check tool approval policy: %w", checkErr)
 		} else if needsApproval {
+			if s.config.ApprovalGate == nil {
+				return nil, current, fmt.Errorf("tool authorization unavailable: approval gate is not configured")
+			}
 			var approvalRecord approvals.Record
 			if s.config.ApprovalService != nil {
 				createdApproval, createErr := s.config.ApprovalService.CreatePendingApproval(ctx, approvals.CreatePendingParams{

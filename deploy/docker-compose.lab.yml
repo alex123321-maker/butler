@@ -1,0 +1,30 @@
+# Use with docker-compose.yml; requires Compose 2.24.4+ for !override.
+# Persistent state lives outside source snapshots on the lab's storage disk.
+services:
+  postgres:
+    volumes:
+      - ${BUTLER_LAB_ROOT:?set BUTLER_LAB_ROOT}/data/postgres:/var/lib/postgresql/data
+  redis:
+    volumes:
+      - ${BUTLER_LAB_ROOT:?set BUTLER_LAB_ROOT}/data/redis:/data
+  ollama:
+    volumes: !override
+      - ${BUTLER_LAB_ROOT:?set BUTLER_LAB_ROOT}/data/ollama:/root/.ollama
+    mem_limit: 6g
+  restart-helper:
+    environment:
+      BUTLER_RESTART_PROJECT: butler-lab
+  tool-browser-local:
+    environment:
+      BUTLER_TOOL_BROWSER_LOCAL_ORCHESTRATOR_URL: http://orchestrator:8080
+  orchestrator:
+    ports: !override
+      - ${BUTLER_LAB_API_PORT:-8088}:8080
+    environment:
+      BUTLER_EXTENSION_API_TOKENS: ${BUTLER_EXTENSION_API_TOKENS:-}
+      BUTLER_MEMORY_PIPELINE_ENABLED: ${BUTLER_MEMORY_PIPELINE_ENABLED:-false}
+  web:
+    ports: !override
+      - ${BUTLER_LAB_WEB_PORT:-3080}:3000
+    environment:
+      NUXT_PUBLIC_API_BASE: ${BUTLER_LAB_API_PUBLIC_URL:?set BUTLER_LAB_API_PUBLIC_URL}

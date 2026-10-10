@@ -1,7 +1,8 @@
 -- Migration 021: Make vector columns dimensionless to support multiple
 -- embedding providers (OpenAI 1536d, Ollama nomic-embed-text 768d, etc.).
--- IVFFlat indexes require fixed dimensions, so we drop and recreate them
--- as HNSW indexes which support variable-dimension vectors.
+-- Vector indexes require a fixed dimension. Drop the old fixed-dimension
+-- indexes; searches currently scan the dimensionless columns. Future indexes
+-- must use provider/dimension-specific expressions and predicates.
 
 -- memory_episodes: change embedding from vector(1536) to vector (untyped)
 -- and rebuild the index.

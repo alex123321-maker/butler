@@ -773,6 +773,10 @@ Activity feed (лента активности) отвечает на вопро
 - `offset`
 - `sort`
 
+`sort` accepts `updated_at_desc`, `updated_at_asc`, `started_at_desc`, and
+`started_at_asc`. Date bounds use RFC3339 with an explicit timezone. The Web UI
+converts local date input to UTC before sending these filters.
+
 ### `GET /api/v2/tasks/{id}`
 
 Возвращает нормализованную детальную карточку задачи.

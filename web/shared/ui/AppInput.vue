@@ -1,6 +1,10 @@
 <template>
-  <input class="app-input" v-bind="$attrs" />
+  <input v-model="model" class="app-input" v-bind="$attrs" />
 </template>
+
+<script setup lang="ts">
+const model = defineModel<string | number>()
+</script>
 
 <style scoped>
 .app-input {

@@ -39,6 +39,13 @@ func (f *fakeSystemApprovalsRepo) GetApprovalByToolCallID(ctx context.Context, t
 func (f *fakeSystemApprovalsRepo) GetApprovalByID(ctx context.Context, approvalID string) (approvals.Record, error) {
 	return approvals.Record{}, approvals.ErrApprovalNotFound
 }
+
+func (f *fakeSystemApprovalsRepo) GetApprovalByCandidateToken(ctx context.Context, candidateToken string) (approvals.Record, error) {
+	return approvals.Record{}, approvals.ErrApprovalNotFound
+}
+func (f *fakeSystemApprovalsRepo) GetTabCandidateByToken(ctx context.Context, candidateToken string) (approvals.TabCandidate, error) {
+	return approvals.TabCandidate{}, approvals.ErrTabCandidateNotFound
+}
 func (f *fakeSystemApprovalsRepo) ListApprovals(ctx context.Context, status, runID, sessionKey string, limit, offset int) ([]approvals.Record, error) {
 	if f.err != nil {
 		return nil, f.err
