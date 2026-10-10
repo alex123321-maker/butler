@@ -120,6 +120,11 @@ func (s *Service) Prepare(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	if err := s.store.PutIntent(ctx, intent); err != nil {
 		return PreparedAction{}, fmt.Errorf("exact action intent could not be persisted or its identity changed")
 	}
+	stored, err := s.store.GetIntent(ctx, b.ActionID)
+	if err != nil || stored.Binding.ActionHash != b.ActionHash {
+		return PreparedAction{}, fmt.Errorf("persisted action intent is unavailable")
+	}
+	expires = stored.ExpiresAt
 	return PreparedAction{Binding: b, RequiresApproval: requires, Summary: fmt.Sprintf("%s (%s) on %s", b.ToolName, b.Effect, safeResource(b.Resource)), ExpiresAt: expires}, nil
 }
 func safeResource(resource string) string {
@@ -137,6 +142,10 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 	if err != nil {
 		return Grant{}, err
 	}
+	if c.AutonomyMode == 1 && (b.Effect != EffectRead || len(b.CredentialRefs) > 0) {
+		return Grant{}, fmt.Errorf("current mode_0 policy forbids this action")
+	}
+	requiresApproval := c.AutonomyMode == 2 || contract.GetRequiresApproval() || b.Effect != EffectRead || credentialApproval
 	i, err := s.store.GetIntent(ctx, actionID)
 	if err != nil || b.ActionID != actionID || i.Binding.ActionHash != b.ActionHash || !i.ExpiresAt.After(s.now()) {
 		return Grant{}, fmt.Errorf("prepared action is missing, stale or changed")
@@ -163,7 +172,7 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 		}
 		g.MandateID = m.ID
 		g.MandateRevision = m.Revision
-	} else if i.RequiresApproval {
+	} else if requiresApproval {
 		return Grant{}, fmt.Errorf("exact action approval or a compatible bounded mandate is required")
 	}
 	return s.store.PutGrant(ctx, g)
@@ -199,6 +208,9 @@ func (s *Service) Verify(ctx context.Context, call *toolbrokerv1.ToolCall, contr
 		}
 	}
 	if g.MandateID != "" {
+		if g.MandateID != c.MandateID {
+			return Grant{}, fmt.Errorf("mandate assignment changed")
+		}
 		m, err := s.store.GetMandate(ctx, g.MandateID)
 		if err != nil || m.Revision != g.MandateRevision || !mandateAllows(m, b, s.now()) {
 			return Grant{}, fmt.Errorf("mandate is stale or revoked")

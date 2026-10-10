@@ -300,3 +300,24 @@ func TestDuplicateJSONKeysAreDenied(t *testing.T) {
 		}
 	}
 }
+
+func TestChangedAutonomyRechecksCurrentPolicyAtAuthorization(t *testing.T) {
+	s, _, c, _, call, contract := fixture(t)
+	call.ArgsJson = `{"method":"GET","url":"https://example.com"}`
+	prepared, err := s.Prepare(context.Background(), call, contract)
+	if err != nil || prepared.RequiresApproval {
+		t.Fatal("read preparation failed")
+	}
+	c.current.AutonomyMode = 2
+	call.AutonomyMode = commonv1.AutonomyMode_AUTONOMY_MODE_1
+	if _, err := s.Authorize(context.Background(), call, contract, prepared.Binding.ActionID, "", ""); err == nil {
+		t.Fatal("old read intent bypassed current propose-mode approval")
+	}
+	s, _, c, _, call, contract = fixture(t)
+	g := prepareApproved(t, s, c, call, contract)
+	c.current.AutonomyMode = 1
+	call.AutonomyMode = commonv1.AutonomyMode_AUTONOMY_MODE_0
+	if _, err := s.Authorize(context.Background(), call, contract, g.Binding.ActionID, "approval", ""); err == nil {
+		t.Fatal("old approval bypassed current read-only mode")
+	}
+}
