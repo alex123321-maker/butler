@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   ssr: false,
   compatibilityDate: '2025-01-01',
-  devtools: { enabled: process.env.NUXT_DEVTOOLS_ENABLED === 'true' },
+  devtools: { enabled: false },
 
   modules: ['@nuxtjs/tailwindcss', '@pinia/nuxt'],
 
