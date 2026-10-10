@@ -78,6 +78,9 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	if err != nil {
 		return b, false, err
 	}
+	if err := CheckExecutionPolicy(c, b.Effect); err != nil {
+		return b, false, err
+	}
 	requires := false
 	if len(b.CredentialRefs) > 0 {
 		if s.credentials == nil {

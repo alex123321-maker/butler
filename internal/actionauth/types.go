@@ -52,6 +52,7 @@ type ContextSnapshot struct {
 	TaskRevision        int64     `json:"task_revision"`
 	ConstraintsRevision int64     `json:"constraints_revision"`
 	TaskStatus          string    `json:"task_status"`
+	ExecutionPolicy     string    `json:"execution_policy"`
 	LeaseEpoch          int64     `json:"lease_epoch"`
 	LeaseID             string    `json:"lease_id"`
 	LeaseExpiresAt      time.Time `json:"lease_expires_at"`

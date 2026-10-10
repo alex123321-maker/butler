@@ -31,6 +31,7 @@ type Record struct {
 	Status              string         `json:"status"`
 	Revision            int64          `json:"revision"`
 	ConstraintsRevision int64          `json:"constraints_revision"`
+	ExecutionPolicy     string         `json:"execution_policy"`
 	Constraints         []string       `json:"constraints"`
 	CompletionCriteria  []string       `json:"completion_criteria"`
 	Working             WorkingState   `json:"working"`
