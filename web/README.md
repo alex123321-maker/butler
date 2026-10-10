@@ -109,6 +109,7 @@ web/
 Key routes:
 - `/` - task-centric overview dashboard
 - `/tasks` and `/tasks/[id]` - normalized task list and detail views
+- Durable task views distinguish waiting/blocked/paused work, completed model attempts, and verified user results. Task detail shows attempt count and task-owned plan/constraints; legacy history is labelled unverified. Conversations remain accessible through run views.
 - `/approvals`, `/artifacts`, `/activity`, `/system` - operator visibility pages
 - `/sessions`, `/runs/[id]`, `/memory`, `/doctor`, `/settings` - legacy and operator workflows
 

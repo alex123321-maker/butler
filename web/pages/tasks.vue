@@ -129,6 +129,7 @@
             <p class="task-card__summary">{{ describeTaskState(task) }}</p>
           </div>
           <AppBadge :tone="taskTone(task.status)">{{ formatTaskStatus(task.status) }}</AppBadge>
+          <AppBadge v-if="task.legacy" tone="warning">Legacy · unverified</AppBadge>
         </div>
 
         <div class="task-card__meta">
@@ -179,6 +180,9 @@ const quickStatusChips = [
   { value: 'in_progress', label: 'In progress' },
   { value: 'waiting_for_approval', label: 'Waiting approval' },
   { value: 'waiting_for_reply_in_telegram', label: 'Waiting on me' },
+  { value: 'waiting_for_user', label: 'Waiting for input' },
+  { value: 'blocked', label: 'Blocked' },
+  { value: 'paused', label: 'Paused' },
   { value: 'completed', label: 'Completed' },
   { value: 'failed', label: 'Failed' },
 ]

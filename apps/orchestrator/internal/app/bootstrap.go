@@ -21,6 +21,7 @@ import (
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	singletab "github.com/butler/butler/apps/orchestrator/internal/singletab"
+	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
 	"github.com/butler/butler/internal/config"
 	orchestratorv1 "github.com/butler/butler/internal/gen/orchestrator/v1"
@@ -113,6 +114,7 @@ func New(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 
+	taskStore := task.NewStore(postgres.Pool())
 	runRepo := runservice.NewPostgresRepository(postgres.Pool())
 	runManager := runservice.NewService(runRepo, logger.WithComponent(log, "run-service"))
 	toolBrokerClient, err := tools.Dial(cfg.ToolBrokerAddr)
@@ -183,6 +185,7 @@ func New(ctx context.Context) (*App, error) {
 		transcriptStore,
 		providerResult.Provider,
 		flow.Config{
+			Tasks:            taskStore,
 			ProviderName:     providerResult.ProviderName,
 			ModelName:        providerResult.ModelName,
 			OwnerID:          cfg.Shared.ServiceName,
@@ -236,6 +239,7 @@ func New(ctx context.Context) (*App, error) {
 		executor:           executor,
 		sessionRepo:        sessionRepo,
 		runRepo:            runRepo,
+		taskStore:          taskStore,
 		transcriptStore:    transcriptStore,
 		transitionRepo:     transitionRepo,
 		eventHub:           eventHub,

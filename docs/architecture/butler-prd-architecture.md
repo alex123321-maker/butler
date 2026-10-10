@@ -712,7 +712,7 @@ Web UI должен стать основной точкой эксплуата�
 - базовая наблюдаемость.
 
 ### Последующие этапы целевого продукта
-- постоянные поручения, durable approvals и result outbox;
+- durable approvals и result outbox; постоянные поручения и task-owned working state уже реализованы в [Durable tasks](durable-tasks-spec.md);
 - инициативность в пределах целей и мандатов;
 - ограниченная delegation с общими бюджетами;
 - проверенные навыки и self-extending tools через catalog admission;

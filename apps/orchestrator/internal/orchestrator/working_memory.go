@@ -97,6 +97,9 @@ func normalizeWorkingStatus(value string) string {
 
 // savePreparedWorkingMemory persists the initial working memory snapshot at run start.
 func (s *Service) savePreparedWorkingMemory(ctx context.Context, runID, sessionKey string, prepared preparedRun) error {
+	if s.config.Tasks != nil {
+		return nil
+	}
 	if s.config.WorkingStore == nil || prepared.WorkingMemory == nil {
 		return nil
 	}
@@ -121,6 +124,9 @@ func (s *Service) savePreparedWorkingMemory(ctx context.Context, runID, sessionK
 
 // updateWorkingMemoryCheckpoint saves a checkpoint during tool execution.
 func (s *Service) updateWorkingMemoryCheckpoint(ctx context.Context, sessionKey, runID, status, toolName, payload string) error {
+	if s.config.Tasks != nil {
+		return s.checkpointTaskWorking(ctx, runID, status, toolName, payload)
+	}
 	if s.config.WorkingStore == nil {
 		return nil
 	}
@@ -152,6 +158,9 @@ func (s *Service) updateWorkingMemoryCheckpoint(ctx context.Context, sessionKey,
 
 // finalizeWorkingMemory applies the configured working memory policy at run terminal state.
 func (s *Service) finalizeWorkingMemory(ctx context.Context, sessionKey, runID string, state commonv1.RunState, note string) error {
+	if s.config.Tasks != nil {
+		return s.config.Tasks.SaveRunOutcome(ctx, runID, strings.ToLower(strings.TrimPrefix(state.String(), "RUN_STATE_")), sanitize.Text(note))
+	}
 	if s.config.WorkingStore == nil || strings.TrimSpace(sessionKey) == "" {
 		return nil
 	}

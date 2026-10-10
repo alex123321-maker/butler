@@ -50,6 +50,11 @@ func (s *Service) Execute(ctx context.Context, event ingress.InputEvent) (*Execu
 	}
 
 	runLog := logger.WithRunID(s.log, runRecord.GetRunId())
+	if prepared.Task != nil {
+		if err := s.config.Tasks.AttachRun(ctx, prepared.Task.TaskID, prepared.Task.Revision, runRecord.GetRunId(), event.SessionKey); err != nil {
+			return nil, s.failRun(ctx, runRecord, "", runLog, fmt.Errorf("attach task run: %w", err))
+		}
+	}
 	if prepared.observabilityMemory != nil {
 		s.emitEvent(runRecord.GetRunId(), event.SessionKey, observability.EventMemoryLoaded, prepared.observabilityMemory)
 	}
@@ -218,7 +223,11 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	s.emitEvent(next.GetRunId(), event.SessionKey, observability.EventRunCompleted, map[string]any{"response_length": len(finalMessage)})
 	s.scheduleHubCleanup(next.GetRunId())
 
-	return &ExecutionResult{RunID: next.GetRunId(), SessionKey: event.SessionKey, CurrentState: next.GetCurrentState(), AssistantResponse: finalMessage}, nil
+	result := &ExecutionResult{RunID: next.GetRunId(), SessionKey: event.SessionKey, CurrentState: next.GetCurrentState(), AssistantResponse: finalMessage}
+	if prepared.Task != nil {
+		result.TaskID = prepared.Task.TaskID
+	}
+	return result, nil
 }
 
 func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, sessionKey, leaseID string, initialStream transport.EventStream) (string, *sessionv1.RunRecord, error) {

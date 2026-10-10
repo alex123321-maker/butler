@@ -27,7 +27,8 @@ Current baseline:
 - synchronizes live event publication with subscriber removal and cleanup, preventing sends to closed SSE channels while keeping delivery nonblocking
 - implements durable run creation, lookup, state transitions, and input-event deduplication
 - implements the internal event-to-run execution flow for normalized `InputEvent` values using the transport layer and transcript store
-- loads durable Working Memory snapshots into the run memory bundle and applies explicit save/update/clear policy across prepare, tool checkpoints, and finalize paths
+- owns durable tasks separately from attempts; explicit task references load task-owned goal, criteria, constraints, plan and pending actions from PostgreSQL
+- model final responses save unverified task results and never clear unfinished task work or mark the task completed
 - stores transient Working Memory scratch state in Redis with TTL-based cleanup separate from durable PostgreSQL snapshots
 - requests memory bundles from `internal/memory/service`, which owns scope ordering plus profile, episodic, working, and session-summary retrieval during run preparation
 - writes durable working-memory provenance metadata tied to the active run and supports provenance-safe memory links for downstream profile/episodic records
@@ -46,7 +47,7 @@ Current baseline:
 - injects a built-in browser strategy section that survives operator prompt overrides and teaches browser-oriented follow-ups such as interpreting short numeric replies against the agent's most recent numbered browser options
 - starts each new run with fresh provider state and Butler-owned context, preventing duplicate replay into an existing provider history; tool continuation within a run retains its own provider ref
 - includes recent user/assistant history even when a summary exists, preserves recent user instructions intact, and abbreviates assistant/prompt material by Unicode characters
-- stops model preparation explicitly if transcript retrieval fails; summary watermarks, monotonic updates and durable task constraints remain pending in issues #9–#10
+- stops model preparation explicitly if transcript retrieval fails; summary watermarks and monotonic updates remain pending in issue #10, constraint amendments in #9
 - exposes an internal delivery sink for `assistant_delta` and `assistant_final` events without allowing channel adapters to mutate run state
 - exposes `SubmitEvent` over gRPC and synchronous `POST /api/v1/events` over REST for normalized event ingestion
 - optionally runs the in-process Telegram adapter using Bot API long polling, `/auth` provider connection prompts, and final-response delivery
@@ -139,11 +140,17 @@ Current limitations:
 - some dashboard cards are still intentionally placeholder content, but the `/memory` view now browses durable memory records through the orchestrator API
 
 Task-centric API v2 (Wave 1 start):
-- `GET /api/v2/tasks` returns normalized task rows derived from run/session/message data without changing execution core ownership.
+- `GET /api/v2/tasks` reads durable task rows with independent `task_status`, `run_state`, `legacy` and `result_verified` fields. Conversation attempts remain in `/api/v1/runs`.
 - `GET /api/v2/tasks/{id}` returns an aggregated task detail payload with `task`, `summary_bar`, `source`, `waiting_state`, `result`, `error`, `timeline_preview`, and `debug_refs`.
 - `GET /api/v2/overview` returns aggregated `attention_items`, `active_tasks`, `recent_results`, `system_summary`, and `counts` so Web UI does not compose business overview from many client-side calls.
 - `GET /api/tasks` is a compatibility alias with identical response shape.
 - `GET /api/tasks/{id}` is a compatibility alias for the detail response.
+
+Durable task owner controls use `/api/v3/tasks`, `/{id}/working`, `/{id}/status`
+and `/{id}/results`; continuation uses explicit `payload.task_id` on the existing
+event API. See `docs/architecture/durable-tasks-spec.md` for request fields,
+verification, trusted API assumptions and migration semantics. Session working
+memory remains a legacy audit view; current task work belongs to the task module.
 - `GET /api/overview` is a compatibility alias for the overview response.
 
 Durable approvals baseline (Wave 2 start):

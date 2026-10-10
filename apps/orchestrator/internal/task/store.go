@@ -1,0 +1,373 @@
+package task
+
+import (
+	"context"
+	"crypto/rand"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"strings"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+type Store struct{ pool *pgxpool.Pool }
+
+func NewStore(pool *pgxpool.Pool) *Store { return &Store{pool: pool} }
+
+const columns = `task_id, session_key, owner_id, COALESCE(parent_task_id,''), goal, source_json,
+ status, revision, constraints_revision, constraints_json, completion_criteria_json, working_json,
+ working_revision, COALESCE(last_run_id,''), COALESCE(completion_result_id,''), legacy, created_at, updated_at, finished_at`
+
+type scanner interface{ Scan(...any) error }
+
+func scan(row scanner) (Record, error) {
+	var r Record
+	var source, constraints, criteria, working []byte
+	err := row.Scan(&r.TaskID, &r.SessionKey, &r.OwnerID, &r.ParentTaskID, &r.Goal, &source, &r.Status, &r.Revision, &r.ConstraintsRevision, &constraints, &criteria, &working, &r.WorkingRevision, &r.LastRunID, &r.CompletionResultID, &r.Legacy, &r.CreatedAt, &r.UpdatedAt, &r.FinishedAt)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Record{}, ErrNotFound
+	}
+	if err != nil {
+		return Record{}, err
+	}
+	for _, pair := range []struct {
+		data   []byte
+		target any
+	}{{source, &r.Source}, {constraints, &r.Constraints}, {criteria, &r.CompletionCriteria}, {working, &r.Working}} {
+		if err := json.Unmarshal(pair.data, pair.target); err != nil {
+			return Record{}, fmt.Errorf("decode task state: %w", err)
+		}
+	}
+	return r, nil
+}
+
+func (s *Store) Get(ctx context.Context, id string) (Record, error) {
+	return scan(s.pool.QueryRow(ctx, `SELECT `+columns+` FROM tasks WHERE task_id=$1`, id))
+}
+
+func (s *Store) GetByRun(ctx context.Context, runID string) (Record, error) {
+	return scan(s.pool.QueryRow(ctx, `SELECT `+columns+` FROM tasks WHERE task_id=(SELECT task_id FROM runs WHERE run_id=$1)`, runID))
+}
+
+func (s *Store) List(ctx context.Context, sessionKey string, limit int) ([]Record, error) {
+	if limit <= 0 || limit > 200 {
+		limit = 50
+	}
+	rows, err := s.pool.Query(ctx, `SELECT `+columns+` FROM tasks WHERE ($1='' OR session_key=$1) ORDER BY updated_at DESC, task_id LIMIT $2`, sessionKey, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := make([]Record, 0)
+	for rows.Next() {
+		item, err := scan(rows)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
+}
+
+func (s *Store) Create(ctx context.Context, req CreateRequest) (Record, error) {
+	if err := ValidateCreate(req); err != nil {
+		return Record{}, err
+	}
+	if err := validateStrings(req.Constraints); err != nil {
+		return Record{}, err
+	}
+	if req.Source == nil {
+		req.Source = map[string]any{}
+	}
+	if req.Constraints == nil {
+		req.Constraints = []string{}
+	}
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return Record{}, err
+	}
+	defer tx.Rollback(ctx)
+	var owner, channel string
+	if err := tx.QueryRow(ctx, `SELECT user_id,channel FROM sessions WHERE session_key=$1 FOR SHARE`, req.SessionKey).Scan(&owner, &channel); err != nil {
+		return Record{}, fmt.Errorf("%w: task session does not exist", ErrInvalid)
+	}
+	if owner != req.OwnerID {
+		return Record{}, fmt.Errorf("%w: session owner mismatch", ErrInvalid)
+	}
+	if len(req.Source) == 0 {
+		req.Source = map[string]any{"type": "owner_request", "channel": channel, "session_key": req.SessionKey}
+	}
+	if req.ParentTaskID != "" {
+		parent, err := scan(tx.QueryRow(ctx, `SELECT `+columns+` FROM tasks WHERE task_id=$1 FOR SHARE`, req.ParentTaskID))
+		if err != nil {
+			return Record{}, err
+		}
+		if parent.OwnerID != req.OwnerID || parent.SessionKey != req.SessionKey || parent.Status == "completed" || parent.Status == "cancelled" {
+			return Record{}, ErrConflict
+		}
+	}
+	id, err := newID("task")
+	if err != nil {
+		return Record{}, err
+	}
+	source, err := json.Marshal(req.Source)
+	if err != nil {
+		return Record{}, fmt.Errorf("%w: source is not JSON", ErrInvalid)
+	}
+	constraints, _ := json.Marshal(req.Constraints)
+	criteria, _ := json.Marshal(req.CompletionCriteria)
+	record, err := scan(tx.QueryRow(ctx, `INSERT INTO tasks(task_id,session_key,owner_id,parent_task_id,goal,source_json,constraints_json,completion_criteria_json)
+ VALUES($1,$2,$3,NULLIF($4,''),$5,$6::jsonb,$7::jsonb,$8::jsonb) RETURNING `+columns, id, req.SessionKey, req.OwnerID, req.ParentTaskID, strings.TrimSpace(req.Goal), source, constraints, criteria))
+	if err != nil {
+		return Record{}, err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return Record{}, err
+	}
+	return record, nil
+}
+
+// AttachRun pins the exact revision before execution. It rejects task attempts
+// after a pause, cancellation, completion or concurrent status revision.
+func (s *Store) AttachRun(ctx context.Context, taskID string, revision int64, runID, sessionKey string) error {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	record, err := scan(tx.QueryRow(ctx, `SELECT `+columns+` FROM tasks WHERE task_id=$1 FOR UPDATE`, taskID))
+	if err != nil {
+		return err
+	}
+	if record.Revision != revision || record.Status != "active" || record.SessionKey != sessionKey {
+		return ErrConflict
+	}
+	tag, err := tx.Exec(ctx, `UPDATE runs SET task_id=$1,task_revision=$2 WHERE run_id=$3 AND session_key=$4 AND (task_id IS NULL OR (task_id=$1 AND task_revision=$2))`, taskID, revision, runID, sessionKey)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() != 1 {
+		return ErrConflict
+	}
+	_, err = tx.Exec(ctx, `UPDATE tasks SET last_run_id=$2,updated_at=NOW() WHERE task_id=$1`, taskID, runID)
+	if err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+func (s *Store) SaveWorking(ctx context.Context, id string, revision int64, state WorkingState) (Record, error) {
+	if state.Plan == nil {
+		state.Plan = []string{}
+	}
+	if state.PendingActions == nil {
+		state.PendingActions = []string{}
+	}
+	if state.Scratch == nil {
+		state.Scratch = map[string]any{}
+	}
+	data, err := json.Marshal(state)
+	if err != nil {
+		return Record{}, fmt.Errorf("%w: working state is not JSON", ErrInvalid)
+	}
+	record, err := scan(s.pool.QueryRow(ctx, `UPDATE tasks SET working_json=$3::jsonb,working_revision=working_revision+1,updated_at=NOW()
+ WHERE task_id=$1 AND working_revision=$2 AND status NOT IN ('completed','cancelled') RETURNING `+columns, id, revision, data))
+	if errors.Is(err, ErrNotFound) {
+		return Record{}, ErrConflict
+	}
+	return record, err
+}
+
+func (s *Store) CheckpointRun(ctx context.Context, runID string, revision int64, state WorkingState) (Record, error) {
+	data, err := json.Marshal(state)
+	if err != nil {
+		return Record{}, err
+	}
+	record, err := scan(s.pool.QueryRow(ctx, `UPDATE tasks SET working_json=$3::jsonb,working_revision=working_revision+1,updated_at=NOW()
+ WHERE working_revision=$2 AND status='active' AND EXISTS(SELECT 1 FROM runs WHERE run_id=$1 AND runs.task_id=tasks.task_id AND runs.task_revision=tasks.revision) RETURNING `+columns, runID, revision, data))
+	if errors.Is(err, ErrNotFound) {
+		return Record{}, ErrConflict
+	}
+	return record, err
+}
+
+// Transition is a trusted owner control operation, never a model finish event.
+func (s *Store) Transition(ctx context.Context, id string, revision int64, status, resultID string) (Record, error) {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return Record{}, err
+	}
+	defer tx.Rollback(ctx)
+	record, err := scan(tx.QueryRow(ctx, `SELECT `+columns+` FROM tasks WHERE task_id=$1 FOR UPDATE`, id))
+	if err != nil {
+		return Record{}, err
+	}
+	if record.Revision != revision {
+		return Record{}, ErrConflict
+	}
+	if err := ValidateTransition(record.Status, status); err != nil {
+		return Record{}, err
+	}
+	if status == "completed" {
+		result, err := scanResult(tx.QueryRow(ctx, `SELECT `+resultColumns+` FROM task_results WHERE task_id=$1 AND result_id=$2`, id, resultID))
+		if err != nil {
+			return Record{}, err
+		}
+		if result.Verdict != "verified" {
+			return Record{}, ErrInvalid
+		}
+		if err = ValidateVerification(record, result); err != nil {
+			return Record{}, err
+		}
+	}
+	stored, err := scan(tx.QueryRow(ctx, `UPDATE tasks SET status=$3,revision=revision+1,completion_result_id=CASE WHEN $3='completed' THEN NULLIF($4,'') ELSE completion_result_id END,
+ finished_at=CASE WHEN $3 IN ('completed','cancelled') THEN NOW() ELSE NULL END,updated_at=NOW() WHERE task_id=$1 AND revision=$2 RETURNING `+columns, id, revision, status, resultID))
+	if err != nil {
+		return Record{}, err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return Record{}, err
+	}
+	return stored, nil
+}
+
+const resultColumns = `result_id,task_id,task_revision,COALESCE(run_id,''),summary,evidence_refs_json,verified_criteria_json,verdict,verifier,created_at`
+
+func scanResult(row scanner) (Result, error) {
+	var result Result
+	var evidence, criteria []byte
+	err := row.Scan(&result.ResultID, &result.TaskID, &result.TaskRevision, &result.RunID, &result.Summary, &evidence, &criteria, &result.Verdict, &result.Verifier, &result.CreatedAt)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return Result{}, ErrNotFound
+	}
+	if err != nil {
+		return Result{}, err
+	}
+	if err = json.Unmarshal(evidence, &result.EvidenceRefs); err != nil {
+		return Result{}, err
+	}
+	if err = json.Unmarshal(criteria, &result.VerifiedCriteria); err != nil {
+		return Result{}, err
+	}
+	return result, nil
+}
+
+func (s *Store) SaveVerifiedResult(ctx context.Context, result Result) (Result, error) {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return Result{}, err
+	}
+	defer tx.Rollback(ctx)
+	record, err := scan(tx.QueryRow(ctx, `SELECT `+columns+` FROM tasks WHERE task_id=$1 FOR UPDATE`, result.TaskID))
+	if err != nil {
+		return Result{}, err
+	}
+	if record.Status == "completed" || record.Status == "cancelled" {
+		return Result{}, ErrConflict
+	}
+	if err = ValidateVerification(record, result); err != nil {
+		return Result{}, err
+	}
+	if result.RunID != "" {
+		var belongs bool
+		if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM runs WHERE run_id=$1 AND task_id=$2)`, result.RunID, result.TaskID).Scan(&belongs); err != nil {
+			return Result{}, err
+		}
+		if !belongs {
+			return Result{}, ErrInvalid
+		}
+	}
+	result.ResultID, err = newID("result")
+	if err != nil {
+		return Result{}, err
+	}
+	evidence, _ := json.Marshal(result.EvidenceRefs)
+	criteria, _ := json.Marshal(result.VerifiedCriteria)
+	stored, err := scanResult(tx.QueryRow(ctx, `INSERT INTO task_results(result_id,task_id,task_revision,run_id,summary,evidence_refs_json,verified_criteria_json,verdict,verifier)
+ VALUES($1,$2,$3,NULLIF($4,''),$5,$6::jsonb,$7::jsonb,'verified','owner') RETURNING `+resultColumns, result.ResultID, result.TaskID, result.TaskRevision, result.RunID, result.Summary, evidence, criteria))
+	if err != nil {
+		return Result{}, err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return Result{}, err
+	}
+	return stored, nil
+}
+
+func (s *Store) Results(ctx context.Context, id string) ([]Result, error) {
+	rows, err := s.pool.Query(ctx, `SELECT `+resultColumns+` FROM task_results WHERE task_id=$1 ORDER BY created_at,result_id`, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	results := make([]Result, 0)
+	for rows.Next() {
+		result, err := scanResult(rows)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, result)
+	}
+	return results, rows.Err()
+}
+
+func (s *Store) RunIDs(ctx context.Context, id string) ([]string, error) {
+	rows, err := s.pool.Query(ctx, `SELECT run_id FROM runs WHERE task_id=$1 ORDER BY started_at,run_id`, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	ids := make([]string, 0)
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
+}
+
+func (s *Store) SaveRunOutcome(ctx context.Context, runID, state, note string) error {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	var id string
+	var revision int64
+	err = tx.QueryRow(ctx, `SELECT task_id,task_revision FROM runs WHERE run_id=$1 AND task_id IS NOT NULL`, runID).Scan(&id, &revision)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if strings.TrimSpace(note) != "" {
+		_, err = tx.Exec(ctx, `INSERT INTO task_results(result_id,task_id,task_revision,run_id,summary,verdict,verifier)
+ VALUES($1,$2,$3,$4,$5,'unverified','model_run') ON CONFLICT(result_id) DO NOTHING`, "run:"+runID, id, revision, runID, note)
+		if err != nil {
+			return err
+		}
+	}
+	// A failed attempt blocks this task only; successful model final leaves all
+	// work intact. No transition can reopen an already cancelled/completed task.
+	_, err = tx.Exec(ctx, `UPDATE tasks SET status=CASE WHEN $3 IN ('failed','timed_out') AND status='active' THEN 'blocked' ELSE status END,
+ revision=revision+CASE WHEN $3 IN ('failed','timed_out') AND status='active' THEN 1 ELSE 0 END,updated_at=NOW()
+ WHERE task_id=$1 AND revision=$2`, id, revision, state)
+	if err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+
+func newID(prefix string) (string, error) {
+	var raw [16]byte
+	if _, err := rand.Read(raw[:]); err != nil {
+		return "", err
+	}
+	return prefix + "_" + hex.EncodeToString(raw[:]), nil
+}

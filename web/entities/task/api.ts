@@ -1,6 +1,11 @@
 import { apiRequest } from '@shared/api/client'
 
 export interface TaskItem {
+  task_status?: string
+  task_revision?: number
+  legacy?: boolean
+  result_verified?: boolean
+  goal?: string
   task_id: string
   run_id: string
   session_key: string
@@ -31,6 +36,9 @@ export interface TaskSummaryBar {
 }
 
 export interface TaskDetailRecord {
+  legacy?: boolean
+  task_status?: string
+  result_verified?: boolean
   task_id: string
   run_id: string
   session_key: string
@@ -66,6 +74,7 @@ export interface TaskSource {
 }
 
 export interface TaskResult {
+  verified?: boolean
   outcome_summary: string
   has_result: boolean
 }
@@ -100,6 +109,12 @@ export interface TaskArtifact {
 }
 
 export interface TaskDetailResponse {
+  run_ids?: string[]
+  durable_task?: {
+    goal: string
+    constraints: string[]
+    working: { plan: string[]; pending_actions: string[]; scratch: Record<string, unknown> }
+  }
   task: TaskDetailRecord
   summary_bar: TaskSummaryBar
   source: TaskSource
@@ -179,8 +194,10 @@ export interface TaskTranscriptResponse {
   tool_calls: TranscriptToolCall[]
 }
 
-export const fetchTasks = (query: Record<string, string | number | boolean | undefined> = {}) => {
-  return apiRequest<TaskListResponse>('/api/v2/tasks', { query })
+export const fetchTasks = async (query: Record<string, string | number | boolean | undefined> = {}) => {
+  const response = await apiRequest<Partial<TaskListResponse> & { tasks?: TaskItem[] }>('/api/v2/tasks', { query })
+  const items = response.tasks ?? response.items ?? []
+  return { items, total: response.total ?? items.length, limit: response.limit ?? Number(query.limit ?? 50), offset: response.offset ?? Number(query.offset ?? 0) }
 }
 
 export const fetchTaskById = (taskId: string) => {

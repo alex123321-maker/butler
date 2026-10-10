@@ -11,16 +11,16 @@ func TestBuildTaskListQuery_DefaultsAndCoreFields(t *testing.T) {
 
 	query, args := buildTaskListQuery(TaskListParams{})
 
-	if !strings.Contains(query, "FROM runs r") {
-		t.Fatalf("expected runs source in query: %s", query)
+	if !strings.Contains(query, "FROM tasks t") || strings.Contains(query, "r.run_id AS task_id") {
+		t.Fatalf("expected durable task source in query: %s", query)
 	}
 	if !strings.Contains(query, "s.channel AS source_channel") {
 		t.Fatalf("expected source_channel projection: %s", query)
 	}
-	if !strings.Contains(query, "COALESCE(last_assistant.content, '') AS outcome_summary") {
+	if !strings.Contains(query, "COALESCE(completion_result.summary, last_assistant.content, '') AS outcome_summary") {
 		t.Fatalf("expected outcome summary projection: %s", query)
 	}
-	if !strings.Contains(query, "ORDER BY r.started_at DESC") {
+	if !strings.Contains(query, "ORDER BY t.created_at DESC") {
 		t.Fatalf("expected default sort started_at desc: %s", query)
 	}
 	if len(args) != 2 || args[0] != 50 || args[1] != 0 {
@@ -58,7 +58,7 @@ func TestBuildTaskListQuery_FiltersAndPaging(t *testing.T) {
 	if !strings.Contains(query, "r.current_state = 'awaiting_approval'") {
 		t.Fatalf("expected awaiting_approval filter in query: %s", query)
 	}
-	if !strings.Contains(query, "ORDER BY r.updated_at ASC") {
+	if !strings.Contains(query, "ORDER BY t.updated_at ASC") {
 		t.Fatalf("expected updated_at asc sort in query: %s", query)
 	}
 	if len(args) < 7 {

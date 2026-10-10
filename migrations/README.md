@@ -10,6 +10,7 @@ SQL migrations live here.
 - `006_runs_idempotency_key` adds durable input-event deduplication on runs.
 - `007_runs_metadata_json` adds durable run metadata storage.
 - `008_memory_working` adds the durable working-memory snapshot store.
+- `029_durable_tasks` separates persistent tasks/results from run attempts, adds optional run/task revision links, preserves historical run URLs as explicitly unverified legacy work, and copies only matching legacy working snapshots. Down migration preserves original run/transcript/session working data but removes new task-only state; back it up before operational rollback.
 - `009_sessions_session_id` adds UUID session identifiers alongside stable session keys.
 - `010_credentials` adds credential metadata storage.
 - `011_memory_profile` adds profile-memory storage.

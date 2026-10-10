@@ -49,6 +49,9 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 	if err := s.attachTranscriptContext(ctx, event.SessionKey, &prepared); err != nil {
 		return preparedRun{}, err
 	}
+	if err := s.attachTaskContext(ctx, event.SessionKey, &prepared); err != nil {
+		return preparedRun{}, err
+	}
 	if err := s.attachToolContext(ctx, &prepared); err != nil {
 		return preparedRun{}, err
 	}

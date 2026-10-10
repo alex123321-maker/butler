@@ -125,14 +125,14 @@ Butler использует 4 основных класса памяти.
 
 * short-lived (краткоживущая);
 * допускает перезапись и обновление;
-* связана с конкретной session или run;
+* рабочая область поручения связана с конкретным task; transcript остаётся у session, transient scratch — у run;
 * не должна автоматически становиться долгосрочной памятью.
 
 #### Два слоя хранения
 
 Working Memory физически разделена на два слоя:
 
-* **Durable layer (PostgreSQL, таблица `memory_working`)** — логический snapshot рабочего состояния задачи: текущая цель, активные сущности, незавершённые шаги. Сохраняется при каждом значимом обновлении состояния и переживает перезапуск системы.
+* **Durable layer (PostgreSQL, `tasks.working_json`)** — план, незавершённые действия и scratch конкретного поручения, с compare-and-swap `working_revision`. Цель, критерии и версионированные ограничения хранятся отдельно в той же task record. Финальный ответ модели не очищает эту область. `memory_working` сохраняется как legacy session snapshot для совместимости и аудита; новые task runs и обычный разговор не наследуют его цель. Реализованный контракт: [Durable tasks](durable-tasks-spec.md).
 * **Transient layer (Redis)** — эфемерное состояние в процессе исполнения: in-progress execution state, task scratchpads, промежуточные данные текущего run. Теряется при перезапуске и не считается источником истины.
 
 Durable layer отвечает на вопрос "где мы остановились", transient layer — "что происходит прямо сейчас внутри выполнения".
@@ -262,7 +262,7 @@ The current Butler baseline now includes durable PostgreSQL tables for:
 * short-lived execution caches;
 * active task scratchpads.
 
-**Примечание:** Redis не хранит durable working memory. Логический snapshot рабочего состояния задачи сохраняется в PostgreSQL (`memory_working`). Redis содержит только эфемерный execution state, который допустимо потерять при перезапуске.
+**Примечание:** Redis не хранит durable working memory. Рабочая область поручения сохраняется в PostgreSQL (`tasks.working_json`); `memory_working` — legacy session view. Redis содержит только эфемерный execution state, который допустимо потерять при перезапуске.
 
 ### 8.3 pgvector
 
@@ -478,7 +478,7 @@ Current pipeline baseline now suppresses near-duplicate episodic candidates with
 
 ### 13.3 Working Memory replacement
 
-Working Memory всегда может быть обновлена или очищена без необходимости хранить все её промежуточные версии как долгосрочную память.
+Рабочая область обновляется с явной версией. Завершение run не очищает незавершённое поручение; состояние меняется через task module. Хранить каждый scratch checkpoint как Episodic Memory не требуется.
 
 ---
 

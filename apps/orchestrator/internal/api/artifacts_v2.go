@@ -10,6 +10,7 @@ import (
 
 	activity "github.com/butler/butler/apps/orchestrator/internal/activity"
 	artifacts "github.com/butler/butler/apps/orchestrator/internal/artifacts"
+	"github.com/butler/butler/apps/orchestrator/internal/task"
 )
 
 type artifactsStore interface {
@@ -27,9 +28,25 @@ type taskActivityStore interface {
 }
 
 type ArtifactsServer struct {
+	durable  durableTaskReader
 	store    artifactsStore
 	activity taskActivityStore
 	writer   artifactsWriter
+}
+
+func (s *ArtifactsServer) SetDurableTasks(tasks durableTaskReader) { s.durable = tasks }
+
+func (s *ArtifactsServer) taskRunIDs(ctx context.Context, id string) ([]string, error) {
+	if s.durable != nil {
+		record, err := s.durable.Get(ctx, id)
+		if err == nil {
+			return s.durable.RunIDs(ctx, record.TaskID)
+		}
+		if err != task.ErrNotFound {
+			return nil, err
+		}
+	}
+	return []string{id}, nil
 }
 
 func NewArtifactsServer(store artifactsStore, activityStore taskActivityStore, writer artifactsWriter) *ArtifactsServer {
@@ -169,7 +186,20 @@ func (s *ArtifactsServer) HandleListTaskArtifacts(prefix string) http.Handler {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "task id is required"})
 			return
 		}
-		items, err := s.store.ListArtifactsByRun(r.Context(), runID, 100)
+		ids, err := s.taskRunIDs(r.Context(), runID)
+		if err != nil {
+			writeJSON(w, 500, map[string]string{"error": "failed to load task attempts"})
+			return
+		}
+		items := make([]artifacts.Record, 0)
+		for _, id := range ids {
+			var attempt []artifacts.Record
+			attempt, err = s.store.ListArtifactsByRun(r.Context(), id, 100)
+			if err != nil {
+				break
+			}
+			items = append(items, attempt...)
+		}
 		if err != nil {
 			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to list task artifacts"})
 			return
@@ -242,7 +272,20 @@ func (s *ArtifactsServer) HandleListTaskActivity(prefix string) http.Handler {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "task id is required"})
 			return
 		}
-		items, err := s.activity.ListActivities(r.Context(), activity.ListParams{RunID: runID, Limit: 200, Offset: 0})
+		ids, err := s.taskRunIDs(r.Context(), runID)
+		if err != nil {
+			writeJSON(w, 500, map[string]string{"error": "failed to load task attempts"})
+			return
+		}
+		items := make([]activity.Record, 0)
+		for _, id := range ids {
+			var attempt []activity.Record
+			attempt, err = s.activity.ListActivities(r.Context(), activity.ListParams{RunID: id, Limit: 200, Offset: 0})
+			if err != nil {
+				break
+			}
+			items = append(items, attempt...)
+		}
 		if err != nil {
 			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to list task activity"})
 			return
