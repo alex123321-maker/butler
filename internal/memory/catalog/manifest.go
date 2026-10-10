@@ -64,7 +64,7 @@ func (f *FileManifest) Load(ctx context.Context) ([]ManifestRecord, error) {
 	return f.load(ctx)
 }
 func (f *FileManifest) load(ctx context.Context) ([]ManifestRecord, error) {
-	file, e := os.Open(f.path)
+	file, e := f.openPrivate(os.O_RDONLY)
 	if e != nil {
 		return nil, ErrRestore
 	}
@@ -100,6 +100,27 @@ func (f *FileManifest) load(ctx context.Context) ([]ManifestRecord, error) {
 	}
 	return records, nil
 }
+
+// The private anchor is a regular file, never a symbolic alias. Check the leaf
+// before and after opening and compare the opened inode against both snapshots.
+// The containing operator-private directory remains the filesystem trust boundary.
+func (f *FileManifest) openPrivate(flags int) (*os.File, error) {
+	before, e := os.Lstat(f.path)
+	if e != nil || !before.Mode().IsRegular() || before.Mode().Perm()&0077 != 0 {
+		return nil, ErrRestore
+	}
+	file, e := os.OpenFile(f.path, flags, 0600)
+	if e != nil {
+		return nil, ErrRestore
+	}
+	opened, e := file.Stat()
+	after, pathErr := os.Lstat(f.path)
+	if e != nil || pathErr != nil || !opened.Mode().IsRegular() || opened.Mode().Perm()&0077 != 0 || !after.Mode().IsRegular() || !os.SameFile(before, opened) || !os.SameFile(after, opened) {
+		_ = file.Close()
+		return nil, ErrRestore
+	}
+	return file, nil
+}
 func (f *FileManifest) Append(ctx context.Context, r ManifestRecord) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
@@ -123,7 +144,7 @@ func (f *FileManifest) Append(ctx context.Context, r ManifestRecord) error {
 		return e
 	}
 	b = append(b, '\n')
-	file, e := os.OpenFile(f.path, os.O_WRONLY|os.O_APPEND, 0600)
+	file, e := f.openPrivate(os.O_WRONLY | os.O_APPEND)
 	if e != nil {
 		return e
 	}
