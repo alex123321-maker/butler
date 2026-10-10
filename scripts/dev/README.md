@@ -25,6 +25,7 @@ Available scripts:
 - `test-go.ps1` - run Go tests with repo-local cache isolation
 - `verify-changed.ps1` - map changed paths to the relevant specs and targeted verification commands
 - `lab.ps1` / `lab.sh` - upload source snapshots, run Go checks, deploy, and inspect the isolated SSH lab; see `deploy/README.md`
+- `fault-lab.ps1` / `fault-lab.sh` - disposable lab-only acceptance matrix, actual Chromium and backup/restore; see `internal/acceptance/README.md`. Pending product scenarios remain pending even when selected core checks pass.
 
 Optional dependency install:
 

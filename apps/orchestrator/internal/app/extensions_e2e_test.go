@@ -33,6 +33,7 @@ import (
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	memorycatalog "github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/butler/butler/internal/security/egress/egresstest"
 	"google.golang.org/grpc"
@@ -99,6 +100,15 @@ func TestInstalledProjectExtensionRealBrokerApprovalE2E(t *testing.T) {
 		t.Fatal(err)
 	}
 	owned := ownership.WithToken(ctx, leases.Authority(), ownership.Token{SessionKey: sessionKey, RunID: run.GetRunId(), LeaseID: lease.LeaseID, FenceEpoch: lease.FenceEpoch})
+	manifestPath := filepath.Join(t.TempDir(), "deletions.log")
+	manifest := memorycatalog.NewFileManifest(manifestPath)
+	if err = manifest.Initialize(); err != nil {
+		t.Fatal(err)
+	}
+	sourceCatalog := memorycatalog.New(pool, manifest)
+	if err = sourceCatalog.PinTranscript(owned, sessionKey, 0); err != nil {
+		t.Fatal("owned extension transcript source pin", err)
+	}
 	repo := approvals.NewPostgresRepository(pool)
 	repo.SetCheckpointHooks(boundaryCheckpointHooks{})
 	approvalService := approvals.NewService(repo, nil)
@@ -158,7 +168,7 @@ func TestInstalledProjectExtensionRealBrokerApprovalE2E(t *testing.T) {
 	if _, err = runtimev1.NewToolRuntimeServiceClient(unauthorized).ProbeExtension(ctx, &runtimev1.ProbeExtensionRequest{ProbeId: "forged"}); err == nil {
 		t.Fatal("external executor accepted unauthenticated RPC")
 	}
-	extensionChild(t, os.Getenv("BUTLER_BROKER_E2E_BINARY"), brokerAddress, brokerHTTP, nil, "BUTLER_POSTGRES_URL="+dsn, "BUTLER_TOOL_REGISTRY_PATH=configs/tools.json", "BUTLER_ACTION_CONTEXT_URL="+authority.URL, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+coreFile, "BUTLER_EXTENSION_PROFILES_JSON="+string(profileJSON), "BUTLER_EXTENSION_RUNTIME_TOKEN_FILE="+runtimeFile, "BUTLER_OWNER_CONTROL_OWNER_ID=owner", "BUTLER_EXTENSION_TEST_SECRET="+fixtureSecret)
+	extensionChild(t, os.Getenv("BUTLER_BROKER_E2E_BINARY"), brokerAddress, brokerHTTP, nil, "BUTLER_POSTGRES_URL="+dsn, "BUTLER_TOOL_REGISTRY_PATH=configs/tools.json", "BUTLER_ACTION_CONTEXT_URL="+authority.URL, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+coreFile, "BUTLER_EXTENSION_PROFILES_JSON="+string(profileJSON), "BUTLER_EXTENSION_RUNTIME_TOKEN_FILE="+runtimeFile, "BUTLER_OWNER_CONTROL_OWNER_ID=owner", "BUTLER_EXTENSION_TEST_SECRET="+fixtureSecret, "BUTLER_MEMORY_DELETION_MANIFEST_FILE="+manifestPath)
 	controlServer := httptest.NewServer(api.ReviewedExtensions(api.NewOwnerControlAuth(ownerToken, "owner"), extensions.NewControlClient("http://"+brokerHTTP+"/internal/extensions", coreToken)))
 	defer controlServer.Close()
 	control := func(req extensions.ControlRequest) extensions.ControlResponse {
@@ -372,6 +382,9 @@ func TestInstalledProjectExtensionRealBrokerApprovalE2E(t *testing.T) {
 	}
 	if _, err = pool.Exec(ctx, `UPDATE runs SET status='tool_pending',current_state='tool_pending',lease_id=$2 WHERE run_id=$1`, run.GetRunId(), lease.LeaseID); err != nil {
 		t.Fatal(err)
+	}
+	if err = sourceCatalog.PinTranscript(owned, sessionKey, 0); err != nil {
+		t.Fatal("fresh extension attempt transcript source pin", err)
 	}
 	control(extensions.ControlRequest{Operation: "probe", ExtensionID: "project", Generation: state.Generation})
 	state = control(extensions.ControlRequest{Operation: "enable", ExtensionID: "project", Generation: state.Generation}).Item.Record
