@@ -4,6 +4,9 @@
 or calls a cloud endpoint. The composition root must provide the internal local
 connection and a trusted `Admission`; its absence blocks every inference. Each
 operation carries source origin, scope, fresh call ID, bytes, items and timeout.
+Index/rank operations additionally bind each chunk's ID, scope, revision, full
+content/citation hash and title/text embedding hash. Rebuild supplies the typed
+snapshots from its pending batch; the exact serialized payload must match.
 Admission returns the bounded context used by the actual IPC as well as a release
 function. A missing/expired or weakened deadline denies the call; a late result
 after admitted cancellation is rejected.
@@ -17,7 +20,7 @@ accepts BF16 GPU or FP32 CPU, and checks every vector's correlated ID, dimension
 finite components and L2 norm. The existing memory vector columns are untouched.
 
 Every source read, ranking candidate and publication also requires `SourceGuard`;
-its absence denies access. The #22 adapter must derive current catalog links and
+its absence denies access. `CatalogGuard` derives current catalog links and
 owner/run/job authority from PostgreSQL chunk IDs. Stored `catalog` provenance
 fields only describe citations. The transaction hook locks sorted catalog and
 authority rows before this store locks chunks, using the supplied transaction
@@ -41,10 +44,14 @@ The artifact reference/hash is a review record, not an automatic external proof
 reader or a declaration that similarity establishes factual truth.
 
 `Reader` optionally plugs into the memory bundle with source refs/revisions and
-typed private origin. No bootstrap enables it yet: current run-owned local query
-admission and durable auxiliary job-owned indexing admission are #22 integration
-dependencies. A completed run lease must never be resurrected for a memory job.
-The source guard implementation and full acceptance/contradiction/tombstone/restore semantics and
+typed private origin. `LiveAdmission` now reserves current run-owned local query
+and ranking attempts; `JobAdmission` reserves independent durable job-owned
+index attempts. Both use current PostgreSQL authority and check source snapshots
+before IPC, after allowance waits, during in-flight calls and before accepting
+returned vectors/scores. A completed run lease is never resurrected for a job;
+completed-task jobs still require a separate finite owner policy and are denied.
+No bootstrap enables this module automatically. The production job worker/bundle
+composition and full acceptance/contradiction/tombstone/restore semantics and
 structured ingestion remain #22/#23 responsibilities. This module currently
 indexes authorized memory chunks; it does not independently scan the computer.
 
@@ -87,8 +94,35 @@ the independent provider/budget guard. Clipped excerpts are marked in the bundle
 `Search` also logs fixed degradation enums without queries/source text. The fixed
 real Russian/code evaluation preserves 22/24 top1 and 24/24 recall at 4; Qwen lowers
 top1 to 21/24 and remains off. Expected-source coverage measures retrieval support,
-not generative answer correctness. Current source/job/live local-run integration
-is still a prerequisite for production activation.
+not generative answer correctness. The checked-in owned-admission smoke proves
+real index/query/rank calls through current catalog, local-only owner mandate,
+independent job/live lease and shared durable allowances on the same deployed
+service. Production activation still requires explicit #22 worker/bundle wiring.
+
+## Trusted composition
+
+The composition root creates `budget.NewLocalTarget("local-models:9090", identity)`
+from fixed deployment configuration, and `NewPinnedBackend(target, tokenFile)`
+using a single private mode0600 regular token file. The token stays in RPC metadata;
+symlinks, public permissions and oversized files are rejected. The Docker internal
+network plus pinned deployed service/profile is the locality trust boundary; this
+is not a claim of public TLS endpoint attestation.
+
+Create `NewCatalogGuard(catalogStore, purpose)` and assign it to `Store.Guard`.
+The budget controller installs the task owner's `ResolveBudgetAuthority` and
+declares exact `local:google/embeddinggemma-2` / `local:Qwen/Qwen3-Reranker-0.6B`
+prices with explicit `local_no_billing`. That monetary declaration grants neither
+locality nor task/source authority. `NewLiveAdmission` is query/rank only. For an
+index worker, `NewJobAdmission` binds the actual claimed job and its fixed purpose;
+use its `Context` for **all** Rebuild reads/publications, and pass it as the
+adapter Admission. Unknown/missing pricing, target, claim, lease, current source
+or assignment fails closed. Rerank remains default-off.
+
+All authority acceptance tests apply every migration in isolated schemas with
+MaxConns2. Earlier index/quality tests use separate pre-catalog schemas and an
+explicit fixture-only guard; they do not count as production authorization proof.
+`deploy/local-models/verify-owned-admission-lab.sh` replays the real same-service
+smoke without launching another inference worker or touching main PostgreSQL.
 
 Sources: [PostgreSQL full-text controls](https://www.postgresql.org/docs/17/textsearch-controls.html),
 [RRF paper](https://plg.uwaterloo.ca/~gvcormac/cormacksigir09-rrf.pdf),

@@ -3,6 +3,7 @@ package semantic
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -10,8 +11,8 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/memory/chunks"
-	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func database(t *testing.T) (context.Context, *Store, *chunks.Store) {
@@ -22,20 +23,51 @@ func database(t *testing.T) (context.Context, *Store, *chunks.Store) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	t.Cleanup(cancel)
-	pg, err := postgresstore.Open(ctx, postgresstore.Config{URL: dsn, MaxConns: 2, MinConns: 1}, nil)
+	cfg, err := pgxpool.ParseConfig(dsn)
+	if err != nil || !strings.HasSuffix(cfg.ConnConfig.Database, "_test") {
+		t.Fatal("isolated semantic test database required")
+	}
+	cfg.MaxConns = 2
+	admin, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(pg.Close)
-	if err := pg.RunMigrations(ctx, filepath.Join("..", "..", "..", "migrations")); err != nil {
+	schema := fmt.Sprintf("semantic_%d", time.Now().UnixNano())
+	if _, err = admin.Exec(ctx, "CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;CREATE SCHEMA "+schema); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := pg.Pool().Exec(ctx, `TRUNCATE semantic_index_active,semantic_index_entries,semantic_index_generations,memory_chunks CASCADE`); err != nil {
+	cfg.ConnConfig.RuntimeParams["search_path"] = schema + ",public"
+	pool, err := pgxpool.NewWithConfig(ctx, cfg)
+	if err != nil {
 		t.Fatal(err)
 	}
-	s := NewStore(pg.Pool())
+	t.Cleanup(func() {
+		pool.Close()
+		_, _ = admin.Exec(context.Background(), "DROP SCHEMA "+schema+" CASCADE")
+		admin.Close()
+	})
+	// These foundation/retrieval tests intentionally use the fixture guard and
+	// pre-catalog chunks. Owned authority tests apply ALL migrations through
+	// memorytest.Database and publish only current catalog-bound chunks.
+	paths, err := filepath.Glob(filepath.Join("..", "..", "..", "migrations", "*.up.sql"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range paths {
+		if filepath.Base(path) >= "046" {
+			continue
+		}
+		raw, e := os.ReadFile(path)
+		if e != nil {
+			t.Fatal(e)
+		}
+		if _, e = pool.Exec(ctx, string(raw)); e != nil {
+			t.Fatal(filepath.Base(path), e)
+		}
+	}
+	s := NewStore(pool)
 	s.Guard = labSourceGuard{}
-	return ctx, s, chunks.NewStore(pg.Pool())
+	return ctx, s, chunks.NewStore(pool)
 }
 
 type labSourceGuard struct{ deny bool }

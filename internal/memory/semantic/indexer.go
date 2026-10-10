@@ -41,7 +41,7 @@ func Rebuild(ctx context.Context, store *Store, adapter *Adapter, id string, max
 		for i, src := range pending {
 			origins[i] = src.MemoryOrigin()
 		}
-		vectors, stats, err := adapter.Embeddings(WithOrigin(ctx, content.Derive(content.MemoryDerived, origins...)), g.Scope, texts, pb.EmbeddingTask_EMBEDDING_TASK_DOCUMENT)
+		vectors, stats, err := adapter.Embeddings(withSourceStamps(WithOrigin(ctx, content.Derive(content.MemoryDerived, origins...)), pending), g.Scope, texts, pb.EmbeddingTask_EMBEDDING_TASK_DOCUMENT)
 		if err != nil {
 			return err
 		}

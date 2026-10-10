@@ -1,0 +1,28 @@
+{
+  "Generated": "2026-10-10T22:13:34Z",
+  "Contract": "all-migrations/current-PG-source+local-only-mandate/owned-job+live-lease/pinned-internal-gRPC",
+  "InferenceCalls": 3,
+  "Index": {
+    "Device": "gpu",
+    "Fallback": "",
+    "QueueMS": 0,
+    "ExecutionMS": 8602,
+    "VRAMMiB": 707,
+    "RAMMiB": 1765
+  },
+  "Rank": {
+    "Device": "gpu",
+    "Fallback": "",
+    "QueueMS": 0,
+    "ExecutionMS": 6325,
+    "VRAMMiB": 1361,
+    "RAMMiB": 1433
+  },
+  "SourceAuthority": true,
+  "LocalOnly": true,
+  "JobIndependent": true,
+  "SharedAllowance": true,
+  "Citation": true,
+  "DeletedVectors": true,
+  "LatePublicationDenied": true
+}

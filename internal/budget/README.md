@@ -85,3 +85,21 @@ current acceptance boundaries are in deploy/execution-budgets.
 transaction. It checks declared model cost/limits and current shared scope
 capacity without creating scopes or charging a model turn. Actual inference
 still reserves atomically; later depletion cannot authorize a network call.
+
+`AdmitLocalModel` is a separate live query/rank boundary. Its private typed
+`LocalTarget` is fixed to the composed internal service at local-models:9090;
+requests cannot choose endpoint/model/locality. Exact local profile pricing must
+explicitly declare `local_no_billing`, independently of locality/permissions.
+Current lease, unfinished run, active pinned task and current goal/mandate privacy
+precede source snapshot checks and root/mandate/UTC-day allowance rows. local_only
+and cloud_allowed support this local path; unknown policies deny. Cloud admission
+is unchanged and cannot treat local pricing as permission to leave the network.
+
+Each actual local inference gets a fresh reservation plus a finite auxiliary
+scope named live:<runID>; root/day/mandate spending persists across new runs and
+children. 2048 tokens per item plus one template/query allowance is conservative
+reserved capacity, not measured usage. Source/authority are rechecked after budget
+waits and every250ms during IPC. `CheckLocalAuthority` rejects late results without
+charging a second turn. Indexing uses the separately claimed durable auxiliary
+job contract. No completed lease, failed attempt or changed revision refunds
+allowance or resets an existing immutable scope.

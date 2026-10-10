@@ -164,7 +164,31 @@ latency. Whole-device peak 2353 MiB, full process RSS 1984 MiB, final GPU 17 MiB
 The largest cited context was 3819 serialized bytes against the 6144-byte budget.
 Ranking transmits only bounded authorized text; clipped final evidence is marked
 and does not silently shorten model input. Production stays disabled pending
-current source/job/live local-run admission integration.
+the production source/job/live local-run composition.
+
+## Owned semantic caller acceptance
+
+`verification-owned-semantic.json` replays actual index/query/rank calls against
+the already-deployed internal service. Every call has a committed shared budget
+reservation; indexing uses an independent durable job claim, query/rank uses a
+current live lease and confirmed local_only owner mandate. Catalog-derived chunk
+links and revision/content stamps precede IPC and late output acceptance. The
+smoke also verifies current citations, source deletion/vector cascade and denial
+of publication into a still-building generation after deletion. This is a small
+authority integration smoke, separate from the fixed24 quality evaluation.
+
+Run `bash deploy/local-models/verify-owned-admission-lab.sh` on the lab with the
+existing main service, isolated quality PostgreSQL, own source/cache root and
+private single-file token mount. It launches no second tensor worker, attaches
+only the disposable PostgreSQL to the internal network temporarily, disconnects
+it afterward and writes a sanitized artifact. GPU idle unload remains the shared
+service's normal policy. The main PostgreSQL/Compose source pointer is untouched.
+
+The production #22 worker must wrap all Rebuild reads/publications in
+`JobAdmission.Context`; bundle retrieval needs the live admission plus catalog
+guard, exact local profile pricing and pinned internal connection. Missing hooks
+remain denied. Post-run work retains original task/owner/source/authority pins;
+completed-task indexing needs a new finite owner policy and remains unsupported.
 
 ## Main Compose verification
 The main Compose service was exercised on 2026-10-10 at 22:01 UTC with actual

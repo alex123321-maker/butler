@@ -2,12 +2,15 @@ package semantic
 
 import (
 	"context"
-	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/butler/butler/internal/budget"
 	pb "github.com/butler/butler/internal/gen/localmodels/v1"
+	"github.com/butler/butler/internal/security/workspace"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -19,16 +22,11 @@ type AuthenticatedBackend struct {
 }
 
 func NewAuthenticatedBackend(conn grpc.ClientConnInterface, tokenFile string) (*AuthenticatedBackend, error) {
-	info, err := os.Stat(tokenFile)
-	if err != nil || !info.Mode().IsRegular() || info.Size() > 4096 {
+	info, err := os.Lstat(tokenFile)
+	if err != nil || !info.Mode().IsRegular() || info.Mode().Perm()&0077 != 0 || info.Size() > 4096 {
 		return nil, ErrUnavailable
 	}
-	file, err := os.Open(tokenFile)
-	if err != nil {
-		return nil, ErrUnavailable
-	}
-	defer file.Close()
-	raw, err := io.ReadAll(io.LimitReader(file, 4097))
+	raw, err := workspace.ReadRegular(filepath.Dir(tokenFile), filepath.Base(tokenFile), 4096)
 	if err != nil {
 		return nil, ErrUnavailable
 	}
@@ -36,10 +34,29 @@ func NewAuthenticatedBackend(conn grpc.ClientConnInterface, tokenFile string) (*
 		return nil, ErrUnavailable
 	}
 	token := strings.TrimSpace(string(raw))
-	if token == "" || strings.ContainsAny(token, "\r\n") {
+	if len(token) < 32 || len(token) > 256 || strings.ContainsAny(token, "\r\n") {
 		return nil, ErrUnavailable
 	}
 	return &AuthenticatedBackend{client: pb.NewLocalModelsServiceClient(conn), token: token}, nil
+}
+
+// NewPinnedBackend is the production composition path. It dials only the
+// operator-pinned internal target; token bytes stay in RPC metadata. Docker's
+// private local-inference network is the trust boundary, not public gRPC TLS.
+func NewPinnedBackend(target budget.LocalTarget, tokenFile string) (*AuthenticatedBackend, func(), error) {
+	if target.Endpoint() != "local-models:9090" || target.Identity() == "" {
+		return nil, nil, ErrUnavailable
+	}
+	conn, err := grpc.NewClient(target.Endpoint(), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(8<<20), grpc.MaxCallSendMsgSize(5<<20)))
+	if err != nil {
+		return nil, nil, ErrUnavailable
+	}
+	backend, err := NewAuthenticatedBackend(conn, tokenFile)
+	if err != nil {
+		_ = conn.Close()
+		return nil, nil, err
+	}
+	return backend, func() { _ = conn.Close() }, nil
 }
 func (b *AuthenticatedBackend) ctx(ctx context.Context) context.Context {
 	md, _ := metadata.FromOutgoingContext(ctx)

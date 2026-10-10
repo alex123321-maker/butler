@@ -280,14 +280,17 @@ never enter the legacy columns. Source refs and private data origin accompany
 retrieval; Secret-class inputs cannot reach embedding/reranking IPC.
 
 Every source read/publication requires a typed `SourceGuard`, default denied. Its
-#22 adapter derives catalog links and current owner/run/job authority from actual
+`CatalogGuard` derives catalog links and current owner/run/job authority from actual
 PostgreSQL chunk IDs, not provenance JSON. Catalog/authority rows are locked in
 sorted order before chunks in the caller transaction; no second connection is
 needed. Optional catalog provenance fields are citations rather than permissions.
 
-The optional bundle reader remains disabled until trusted run-owned local query
-admission and durable auxiliary job-owned index admission are integrated with
-#22/#23. It does not revive completed run ownership. The source guard and current
+Typed `LiveAdmission` and `JobAdmission` now reserve each actual local query/rank
+or indexing attempt through current ownership/independent job authority and shared
+root/mandate/owner-day budgets. A pinned internal service proves locality separately
+from explicit local_no_billing pricing. The optional bundle reader remains disabled
+until the production #22/#23 composition installs these adapters and schedules
+owned jobs. It does not revive completed run ownership. The source guard and current
 metadata checks do not replace #22 contradiction, acceptance or backup tombstone
 semantics. Fixed Russian/code fixture quality is measured separately from
 production acceptance; reranking is optional and default-off.
@@ -302,6 +305,13 @@ Qwen reranking has complete correlated outputs and per-scope sorting; unavailabl
 or oversized ranking keeps base evidence with fixed diagnostics. Authority/budget
 denial, Secret data, cancellation or corrupt/partial scores cannot use that fallback.
 The adapter uses the admission's returned bounded context and rejects late results.
+Index/rank IPC binds chunk ID/scope/revision, full content/citation hash and embedding
+payload hash; the exact text/title must match the snapshot. Current catalog plus
+live chunk identity is checked after allowance waits and before returned output is
+accepted. Periodic cancellation bounds queued/in-flight revocation; publication
+still needs fresh transactional proof. The all-migration owned-admission smoke
+exercises actual local-only mandate, independent index job, live query/rank,
+reservations, current citations and physical vector deletion on the same service.
 
 Final citations include original chunk/document refs and current revision, with
 explicit clipped UTF-8 excerpts and a finite serialized byte/token allowance.

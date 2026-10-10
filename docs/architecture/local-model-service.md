@@ -118,9 +118,19 @@ remain separate acceptance work.
 The optional semantic/hybrid caller now has reproducible fixed Russian/code
 quality artifacts, versioned staged pgvector spaces and bounded exact/full-text
 RRF retrieval. The paired Qwen stage regresses top1 on this fixture and remains
-off. Current source/job/live-run admission is still required before enabling it;
+off. Current source/job/live-run admission is required before enabling it;
 the shared model service itself never grants that authority. See the semantic
 module README and memory spec for these caller-owned contracts.
+
+The semantic caller now supplies actual catalog-derived source guards, independent
+owned indexing job admission and a dedicated local live-run budget boundary.
+Source stamps pin chunk ID/scope/revision/full-content and embedding hashes across
+batch waits; current state is checked before IPC and before returned output is
+accepted. Local-only mandate privacy is allowed only on the composed internal
+service, independently of an explicit local_no_billing quote. The real
+`verification-owned-semantic.json` artifact covers three actual calls on the same
+deployed service with shared reservations, citations and deletion fences. This
+does not automatically enable production ingestion or grant completed-task jobs.
 
 Service restarts lose no durable task state: callers retain pending operations in PostgreSQL, receive retryable RPC failure and
 resubmit the full input; this service does not claim a durable work queue.

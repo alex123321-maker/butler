@@ -21,6 +21,9 @@ type Operation struct {
 	Items, InputBytes int
 	Timeout           time.Duration
 	Origin            content.Origin
+	// ChunkIDs come from validated index/rerank candidates, never provenance.
+	ChunkIDs []int64
+	Sources  []SourceStamp
 }
 type originKey struct{}
 
@@ -112,10 +115,32 @@ func (a *Adapter) Embeddings(ctx context.Context, scope Scope, texts []*pb.TextI
 	}
 	id := freshID()
 	kind := "query"
+	var chunkIDs []int64
+	var sourceStamps []SourceStamp
 	if task == pb.EmbeddingTask_EMBEDDING_TASK_DOCUMENT {
 		kind = "index"
+		for _, text := range texts {
+			chunkID, parseErr := strconv.ParseInt(text.Id, 10, 64)
+			if parseErr != nil || chunkID <= 0 {
+				return nil, Stats{}, ErrInvalid
+			}
+			chunkIDs = append(chunkIDs, chunkID)
+		}
+		if bound, ok := ctx.Value(sourceStampsKey{}).([]SourceStamp); ok {
+			if len(bound) != len(texts) {
+				return nil, Stats{}, ErrStale
+			}
+			for i, s := range bound {
+				payload := Source{Title: texts[i].Title, Content: texts[i].Text}
+				if s.ID != chunkIDs[i] || s.Scope != scope || s.EmbeddingHash != payload.EmbeddingHash() {
+					return nil, Stats{}, ErrStale
+				}
+			}
+			sourceStamps = append([]SourceStamp(nil), bound...)
+		}
 	}
-	callCtx, release, err := a.Admission.Admit(ctx, Operation{ID: id, Kind: kind, Scope: scope, Items: len(texts), InputBytes: bytes, Timeout: 60 * time.Second, Origin: origin})
+	op := Operation{ID: id, Kind: kind, Scope: scope, Items: len(texts), InputBytes: bytes, Timeout: 60 * time.Second, Origin: origin, ChunkIDs: chunkIDs, Sources: sourceStamps}
+	callCtx, release, err := a.Admission.Admit(ctx, op)
 	if err != nil {
 		return nil, Stats{}, err
 	}
@@ -132,6 +157,13 @@ func (a *Adapter) Embeddings(ctx context.Context, scope Scope, texts []*pb.TextI
 	r, err := a.Backend.Infer(callCtx, &pb.InferRequest{RequestId: id, ProfileId: a.Space.ProfileID, CallerId: "memory-" + kind, TimeoutMs: 60000, Input: &pb.InferRequest_Embed{Embed: &pb.EmbedInput{Texts: texts, Task: task, Dimensions: uint32(a.Space.Dimensions)}}})
 	if callCtx.Err() != nil {
 		return nil, Stats{}, callCtx.Err()
+	}
+	if checker, ok := a.Admission.(interface {
+		CheckResult(context.Context, Operation) error
+	}); ok {
+		if checkErr := checker.CheckResult(callCtx, op); checkErr != nil {
+			return nil, Stats{}, checkErr
+		}
 	}
 	if err != nil {
 		if ctx.Err() != nil {
@@ -188,6 +220,8 @@ func (a *Adapter) Rerank(ctx context.Context, scope Scope, query string, hits []
 		return nil, Stats{}, ErrUnavailable
 	}
 	items := make([]*pb.TextInput, len(hits))
+	chunkIDs := make([]int64, len(hits))
+	sourceStamps := make([]SourceStamp, len(hits))
 	bytes := len(query)
 	for i, h := range hits {
 		if sanitize.Text(h.Source.Content) != h.Source.Content || sanitize.Text(h.Source.Title) != h.Source.Title {
@@ -197,13 +231,16 @@ func (a *Adapter) Rerank(ctx context.Context, scope Scope, query string, hits []
 			return nil, Stats{}, ErrInvalid
 		}
 		items[i] = &pb.TextInput{Id: strconv.FormatInt(h.Source.ID, 10) + ":" + h.Source.Hash(), Title: h.Source.Title, Text: h.Source.Content}
+		chunkIDs[i] = h.Source.ID
+		sourceStamps[i] = stamp(h.Source)
 		bytes += len(h.Source.Title) + len(h.Source.Content)
 	}
 	if bytes > 8192 {
 		return nil, Stats{}, ErrInvalid
 	}
 	id := freshID()
-	callCtx, release, err := a.Admission.Admit(ctx, Operation{ID: id, Kind: "rerank", Scope: scope, Items: len(hits), InputBytes: bytes, Timeout: 60 * time.Second, Origin: origin})
+	op := Operation{ID: id, Kind: "rerank", Scope: scope, Items: len(hits), InputBytes: bytes, Timeout: 60 * time.Second, Origin: origin, ChunkIDs: chunkIDs, Sources: sourceStamps}
+	callCtx, release, err := a.Admission.Admit(ctx, op)
 	if err != nil {
 		return nil, Stats{}, err
 	}
@@ -220,6 +257,13 @@ func (a *Adapter) Rerank(ctx context.Context, scope Scope, query string, hits []
 	r, err := a.Backend.Infer(callCtx, &pb.InferRequest{RequestId: id, ProfileId: a.RerankerID, CallerId: "memory-rerank", TimeoutMs: 60000, Input: &pb.InferRequest_Rerank{Rerank: &pb.RerankInput{Query: query, Candidates: items}}})
 	if callCtx.Err() != nil {
 		return nil, Stats{}, callCtx.Err()
+	}
+	if checker, ok := a.Admission.(interface {
+		CheckResult(context.Context, Operation) error
+	}); ok {
+		if checkErr := checker.CheckResult(callCtx, op); checkErr != nil {
+			return nil, Stats{}, checkErr
+		}
 	}
 	if err != nil {
 		if ctx.Err() != nil {
