@@ -4,6 +4,31 @@
   "catalog": {
     "models": [
       {
+        "id": "embeddinggemma2-image-bf16-v1",
+        "model": "google/embeddinggemma-2",
+        "revision": "914f7f89142e33e77833254d9c9b90c3cef7303b",
+        "format": "safetensors",
+        "precision": "BF16",
+        "license": "Apache-2.0",
+        "sourceUrl": "https://huggingface.co/google/embeddinggemma-2",
+        "runtime": "torch-sentence-transformers",
+        "runtimeVersion": "torch2.10.0+cu128/transformers5.19.0/sentence-transformers6.1.0",
+        "capabilities": [
+          "CAPABILITY_MEDIA"
+        ],
+        "maxBatch": 1,
+        "maxInputBytes": 1048576,
+        "contextTokens": 2048,
+        "peakVramMib": 4096,
+        "cpuFallback": true,
+        "enabled": true,
+        "preprocessingVersion": "embeddinggemma2-image-v1",
+        "dimensions": 768,
+        "licenseUrl": "https://ai.google.dev/gemma/apache_2",
+        "peakRamMib": 3072,
+        "peakCpuRamMib": 5120
+      },
+      {
         "id": "embeddinggemma2-text-bf16-v1",
         "model": "google/embeddinggemma-2",
         "revision": "914f7f89142e33e77833254d9c9b90c3cef7303b",
@@ -24,14 +49,64 @@
         "enabled": true,
         "preprocessingVersion": "embeddinggemma2-retrieval-v1",
         "dimensions": 768,
-        "licenseUrl": "https://ai.google.dev/gemma/apache_2"
+        "licenseUrl": "https://ai.google.dev/gemma/apache_2",
+        "peakRamMib": 2560,
+        "peakCpuRamMib": 4096
+      },
+      {
+        "id": "qwen3-reranker-0.6b-bf16-v1",
+        "model": "Qwen/Qwen3-Reranker-0.6B",
+        "revision": "e61197ed45024b0ed8a2d74b80b4d909f1255473",
+        "format": "safetensors",
+        "precision": "BF16",
+        "license": "Apache-2.0",
+        "sourceUrl": "https://huggingface.co/Qwen/Qwen3-Reranker-0.6B",
+        "runtime": "torch-transformers",
+        "runtimeVersion": "torch2.10.0+cu128/transformers5.19.0",
+        "capabilities": [
+          "CAPABILITY_RERANK"
+        ],
+        "maxBatch": 4,
+        "maxInputBytes": 8192,
+        "contextTokens": 2048,
+        "peakVramMib": 4096,
+        "cpuFallback": true,
+        "enabled": true,
+        "preprocessingVersion": "qwen3-rerank-yesno-v1",
+        "licenseUrl": "https://github.com/QwenLM/Qwen3-Embedding/blob/main/LICENSE",
+        "peakRamMib": 2048,
+        "peakCpuRamMib": 4096
+      },
+      {
+        "id": "gliner2.5-multi-cpu-v1",
+        "model": "fastino/gliner2.5-multi-v1",
+        "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "format": "safetensors",
+        "precision": "FP32",
+        "license": "Apache-2.0",
+        "sourceUrl": "https://huggingface.co/fastino/gliner2.5-multi-v1",
+        "runtime": "torch-gliner2",
+        "runtimeVersion": "torch2.10.0+cu128/transformers5.19.0/gliner2.1.0",
+        "capabilities": [
+          "CAPABILITY_EXTRACT",
+          "CAPABILITY_CLASSIFY"
+        ],
+        "maxBatch": 1,
+        "maxInputBytes": 2048,
+        "contextTokens": 512,
+        "cpuFallback": true,
+        "enabled": true,
+        "preprocessingVersion": "gliner2.5-schema-v1",
+        "licenseUrl": "https://github.com/fastino-ai/GLiNER2/blob/main/LICENSE",
+        "preferredDevice": "cpu",
+        "peakRamMib": 3072
       }
     ]
   },
   "context_limit": "explicit InvalidArgument; no truncation",
   "cpu": "actual FP32 inference",
   "external_network": "container launched with --network none",
-  "generated_at": "2026-10-10T18:38:41Z",
+  "generated_at": "2026-10-10T21:03:39Z",
   "idle_unload": true,
   "large_batch": "4 documents, 8000 raw UTF-8 bytes",
   "measurements": [
@@ -39,7 +114,7 @@
       "id": "index-0",
       "device": "cpu",
       "fallback": "insufficient_gpu_resources",
-      "latency_ms": 7598,
+      "latency_ms": 7769,
       "queue_ms": 0,
       "peak_mib": 0
     },
@@ -47,7 +122,7 @@
       "id": "index-4",
       "device": "cpu",
       "fallback": "insufficient_gpu_resources",
-      "latency_ms": 328,
+      "latency_ms": 338,
       "queue_ms": 0,
       "peak_mib": 0
     },
@@ -55,7 +130,7 @@
       "id": "index-8",
       "device": "cpu",
       "fallback": "insufficient_gpu_resources",
-      "latency_ms": 368,
+      "latency_ms": 362,
       "queue_ms": 0,
       "peak_mib": 0
     },
@@ -63,7 +138,7 @@
       "id": "q-durable",
       "device": "cpu",
       "fallback": "insufficient_gpu_resources",
-      "latency_ms": 101,
+      "latency_ms": 102,
       "queue_ms": 0,
       "peak_mib": 0
     },
@@ -71,7 +146,7 @@
       "id": "q-redis",
       "device": "cpu",
       "fallback": "insufficient_gpu_resources",
-      "latency_ms": 106,
+      "latency_ms": 105,
       "queue_ms": 0,
       "peak_mib": 0
     },
@@ -79,7 +154,7 @@
       "id": "q-vector",
       "device": "cpu",
       "fallback": "insufficient_gpu_resources",
-      "latency_ms": 98,
+      "latency_ms": 97,
       "queue_ms": 0,
       "peak_mib": 0
     },
@@ -95,7 +170,7 @@
       "id": "q-order",
       "device": "cpu",
       "fallback": "insufficient_gpu_resources",
-      "latency_ms": 97,
+      "latency_ms": 96,
       "queue_ms": 0,
       "peak_mib": 0
     },
@@ -103,7 +178,7 @@
       "id": "q-stop",
       "device": "cpu",
       "fallback": "insufficient_gpu_resources",
-      "latency_ms": 106,
+      "latency_ms": 104,
       "queue_ms": 0,
       "peak_mib": 0
     },
@@ -111,7 +186,7 @@
       "id": "q-secrets",
       "device": "cpu",
       "fallback": "insufficient_gpu_resources",
-      "latency_ms": 104,
+      "latency_ms": 100,
       "queue_ms": 0,
       "peak_mib": 0
     },
@@ -127,7 +202,7 @@
       "id": "q-exception",
       "device": "cpu",
       "fallback": "insufficient_gpu_resources",
-      "latency_ms": 103,
+      "latency_ms": 106,
       "queue_ms": 0,
       "peak_mib": 0
     },
@@ -135,7 +210,7 @@
       "id": "q-code-cancel",
       "device": "cpu",
       "fallback": "insufficient_gpu_resources",
-      "latency_ms": 106,
+      "latency_ms": 107,
       "queue_ms": 0,
       "peak_mib": 0
     },
@@ -143,7 +218,7 @@
       "id": "q-code-normalize",
       "device": "cpu",
       "fallback": "insufficient_gpu_resources",
-      "latency_ms": 101,
+      "latency_ms": 106,
       "queue_ms": 0,
       "peak_mib": 0
     },
@@ -151,7 +226,7 @@
       "id": "q-code-dedupe",
       "device": "cpu",
       "fallback": "insufficient_gpu_resources",
-      "latency_ms": 106,
+      "latency_ms": 105,
       "queue_ms": 0,
       "peak_mib": 0
     },
@@ -159,7 +234,7 @@
       "id": "mrl-256",
       "device": "cpu",
       "fallback": "insufficient_gpu_resources",
-      "latency_ms": 91,
+      "latency_ms": 95,
       "queue_ms": 0,
       "peak_mib": 0
     },
@@ -167,7 +242,7 @@
       "id": "parallel-search",
       "device": "cpu",
       "fallback": "insufficient_gpu_resources",
-      "latency_ms": 98,
+      "latency_ms": 99,
       "queue_ms": 0,
       "peak_mib": 0
     },
@@ -175,29 +250,37 @@
       "id": "parallel-index",
       "device": "cpu",
       "fallback": "insufficient_gpu_resources",
-      "latency_ms": 98,
-      "queue_ms": 98,
+      "latency_ms": 100,
+      "queue_ms": 99,
       "peak_mib": 0
     },
     {
       "id": "near-input-limit",
       "device": "cpu",
       "fallback": "insufficient_gpu_resources",
-      "latency_ms": 8873,
+      "latency_ms": 8845,
+      "queue_ms": 0,
+      "peak_mib": 0
+    },
+    {
+      "id": "near-context-limit",
+      "device": "cpu",
+      "fallback": "insufficient_gpu_resources",
+      "latency_ms": 11817,
       "queue_ms": 0,
       "peak_mib": 0
     },
     {
       "id": "cpu-fp32",
       "device": "cpu",
-      "latency_ms": 75,
+      "latency_ms": 101,
       "queue_ms": 0,
       "peak_mib": 0
     },
     {
       "id": "after-cancellation",
       "device": "cpu",
-      "latency_ms": 7933,
+      "latency_ms": 8432,
       "queue_ms": 0,
       "peak_mib": 0
     }
@@ -294,9 +377,21 @@
     },
     "budgetMib": 1024,
     "reserveMib": 512,
-    "completed": "21",
+    "completed": "22",
     "failed": "2",
-    "cpuFallbacks": "19",
-    "backendHealthy": true
+    "cpuFallbacks": "20",
+    "backendHealthy": true,
+    "cpuLane": {
+      "state": "idle",
+      "gpu": {},
+      "budgetMib": 1024,
+      "reserveMib": 512,
+      "backendHealthy": true,
+      "processRamMib": 2157,
+      "ramBudgetMib": 6144
+    },
+    "processRamMib": 2157,
+    "observedPeakRamMib": 2754,
+    "ramBudgetMib": 6144
   }
 }

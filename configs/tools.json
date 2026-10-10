@@ -2,8 +2,8 @@
   "tools": [
     {
       "tool_name": "browser.read",
-      "contract_revision": "1",
-      "effect_contract": { "retry_safety": "unsafe", "verification_method": "none" },
+      "contract_revision": "2",
+      "effect_contract": { "retry_safety": "read_only", "verification_method": "read_result" },
       "description": "Read one URL in an isolated temporary context. Returns text, links and status, then destroys the context. No continuation or auth state.",
       "tool_class": "browser",
       "input_schema_json": "{\"required\":[\"url\"],\"properties\":{\"url\":{\"type\":\"string\"}},\"type\":\"object\",\"additionalProperties\":false}",
@@ -19,8 +19,8 @@
     },
     {
       "tool_name": "browser.open",
-      "contract_revision": "1",
-      "effect_contract": { "retry_safety": "unsafe", "verification_method": "none" },
+      "contract_revision": "2",
+      "effect_contract": { "retry_safety": "read_only", "verification_method": "read_result" },
       "description": "Open a run-owned browser session in a fixed origin for 15 minutes. Returns session ID, expiry, current page and observation version. Never transfers a user tab.",
       "tool_class": "browser",
       "input_schema_json": "{\"required\":[\"url\"],\"properties\":{\"url\":{\"type\":\"string\"}},\"type\":\"object\",\"additionalProperties\":false}",
@@ -53,8 +53,8 @@
     },
     {
       "tool_name": "browser.navigate",
-      "contract_revision": "1",
-      "effect_contract": { "retry_safety": "unsafe", "verification_method": "none" },
+      "contract_revision": "2",
+      "effect_contract": { "retry_safety": "read_only", "verification_method": "read_result" },
       "description": "Navigate the existing session within its fixed origin. Requires latest observation_version and expected_url; returns a fresh observation.",
       "tool_class": "browser",
       "input_schema_json": "{\"required\":[\"browser_session_id\",\"url\",\"observation_version\",\"expected_url\"],\"properties\":{\"url\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"expected_url\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"}},\"type\":\"object\",\"additionalProperties\":false}",
@@ -87,7 +87,7 @@
     },
     {
       "tool_name": "browser.click",
-      "contract_revision": "1",
+      "contract_revision": "2",
       "effect_contract": { "retry_safety": "unsafe", "verification_method": "none" },
       "description": "Click in the existing session after checking latest observation and expected_url. Returns a fresh observation; failed effects require observation before retry.",
       "tool_class": "browser",
@@ -120,6 +120,26 @@
       "allowed_tools": []
     },
     {
+      "tool_name": "browser.prepare_fill",
+      "contract_revision": "2",
+      "effect_contract": {
+        "retry_safety": "unsafe",
+        "verification_method": "local_browser_preparation_v1"
+      },
+      "description": "Prepare an input locally with ALL page network frozen persistently, including delayed callbacks. Use credential_ref for secrets. Returns local_preparation:true and network_state:frozen with fresh observation. Only a separately authorized click may release the prepared draft; it may have an unknown external outcome.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"required\":[\"browser_session_id\",\"selector\",\"value\",\"observation_version\",\"expected_url\"],\"properties\":{\"expected_url\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"value\":{\"oneOf\":[{\"type\":\"string\"},{\"required\":[\"type\",\"alias\",\"field\"],\"properties\":{\"alias\":{\"type\":\"string\"},\"type\":{\"type\":\"string\",\"enum\":[\"credential_ref\"]},\"field\":{\"type\":\"string\"}},\"type\":\"object\",\"additionalProperties\":false}]},\"observation_version\":{\"type\":\"integer\"},\"selector\":{\"type\":\"string\"}},\"type\":\"object\",\"additionalProperties\":false}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"links\":{\"items\":{\"type\":\"object\",\"properties\":{\"text\":{\"type\":\"string\"},\"href\":{\"type\":\"string\"}}},\"type\":\"array\"},\"ok\":{\"type\":\"boolean\"},\"expires_at\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"error\":{\"type\":\"object\",\"properties\":{\"retryable\":{\"type\":\"boolean\"},\"error_type\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}},\"page_status\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"matched\":{\"type\":\"boolean\"},\"text\":{\"type\":\"string\"},\"scope_origin\":{\"type\":\"string\"},\"network_state\":{\"type\":\"string\",\"enum\":[\"frozen\"]},\"local_preparation\":{\"type\":\"boolean\",\"enum\":[true]}},\"required\":[\"ok\",\"browser_session_id\",\"observation_version\",\"final_url\",\"local_preparation\",\"network_state\"]}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "medium",
+      "supports_credential_refs": true,
+      "requires_approval": false,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
       "tool_name": "browser.type",
       "contract_revision": "1",
       "effect_contract": { "retry_safety": "unsafe", "verification_method": "none" },
@@ -127,6 +147,26 @@
       "tool_class": "browser",
       "input_schema_json": "{\"required\":[\"browser_session_id\",\"selector\",\"text\",\"observation_version\",\"expected_url\"],\"properties\":{\"expected_url\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"text\":{\"oneOf\":[{\"type\":\"string\"},{\"required\":[\"type\",\"alias\",\"field\"],\"properties\":{\"alias\":{\"type\":\"string\"},\"type\":{\"type\":\"string\",\"enum\":[\"credential_ref\"]},\"field\":{\"type\":\"string\"}},\"type\":\"object\",\"additionalProperties\":false}]},\"observation_version\":{\"type\":\"integer\"},\"selector\":{\"type\":\"string\"}},\"type\":\"object\",\"additionalProperties\":false}",
       "output_schema_json": "{\"type\":\"object\",\"properties\":{\"links\":{\"items\":{\"type\":\"object\",\"properties\":{\"text\":{\"type\":\"string\"},\"href\":{\"type\":\"string\"}}},\"type\":\"array\"},\"ok\":{\"type\":\"boolean\"},\"expires_at\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"error\":{\"type\":\"object\",\"properties\":{\"retryable\":{\"type\":\"boolean\"},\"error_type\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}},\"page_status\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"matched\":{\"type\":\"boolean\"},\"text\":{\"type\":\"string\"},\"scope_origin\":{\"type\":\"string\"}}}",
+      "runtime_target": "tool-browser:9090",
+      "risk_level": "medium",
+      "supports_credential_refs": true,
+      "requires_approval": false,
+      "supports_streaming": false,
+      "status": "active",
+      "allowed_domains": [],
+      "allowed_tools": []
+    },
+    {
+      "tool_name": "browser.prepare_type",
+      "contract_revision": "2",
+      "effect_contract": {
+        "retry_safety": "unsafe",
+        "verification_method": "local_browser_preparation_v1"
+      },
+      "description": "Prepare an input locally with ALL page network frozen persistently, including delayed callbacks. Use credential_ref for secrets. Returns local_preparation:true and network_state:frozen with fresh observation. Only a separately authorized click may release the prepared draft; it may have an unknown external outcome.",
+      "tool_class": "browser",
+      "input_schema_json": "{\"required\":[\"browser_session_id\",\"selector\",\"text\",\"observation_version\",\"expected_url\"],\"properties\":{\"expected_url\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"text\":{\"oneOf\":[{\"type\":\"string\"},{\"required\":[\"type\",\"alias\",\"field\"],\"properties\":{\"alias\":{\"type\":\"string\"},\"type\":{\"type\":\"string\",\"enum\":[\"credential_ref\"]},\"field\":{\"type\":\"string\"}},\"type\":\"object\",\"additionalProperties\":false}]},\"observation_version\":{\"type\":\"integer\"},\"selector\":{\"type\":\"string\"}},\"type\":\"object\",\"additionalProperties\":false}",
+      "output_schema_json": "{\"type\":\"object\",\"properties\":{\"links\":{\"items\":{\"type\":\"object\",\"properties\":{\"text\":{\"type\":\"string\"},\"href\":{\"type\":\"string\"}}},\"type\":\"array\"},\"ok\":{\"type\":\"boolean\"},\"expires_at\":{\"type\":\"string\"},\"browser_session_id\":{\"type\":\"string\"},\"final_url\":{\"type\":\"string\"},\"observation_version\":{\"type\":\"integer\"},\"error\":{\"type\":\"object\",\"properties\":{\"retryable\":{\"type\":\"boolean\"},\"error_type\":{\"type\":\"string\"},\"message\":{\"type\":\"string\"}}},\"page_status\":{\"type\":\"string\"},\"title\":{\"type\":\"string\"},\"matched\":{\"type\":\"boolean\"},\"text\":{\"type\":\"string\"},\"scope_origin\":{\"type\":\"string\"},\"network_state\":{\"type\":\"string\",\"enum\":[\"frozen\"]},\"local_preparation\":{\"type\":\"boolean\",\"enum\":[true]}},\"required\":[\"ok\",\"browser_session_id\",\"observation_version\",\"final_url\",\"local_preparation\",\"network_state\"]}",
       "runtime_target": "tool-browser:9090",
       "risk_level": "medium",
       "supports_credential_refs": true,

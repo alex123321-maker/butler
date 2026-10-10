@@ -65,13 +65,16 @@ dedicated Docker Buildx container driver with its state volume bound to
 Exported service images still use the Docker daemon's configured image storage.
 The builder is selected only for that Compose command; other projects keep their
 Docker builder. Existing cache volumes with a different path are refused.
-Integration and race checks use `butler_test`, `butler_lab_actionauth_test` and
+Integration and race checks use `butler_lab_core_test`, `butler_lab_actionauth_test` and
 `butler_lab_completion_test`, plus Redis database 1. The completion environment
 is explicitly supplied so its PostgreSQL fault fixtures cannot silently skip.
 Integration, race, migration and browser approval suites take a common lab lock
 before touching shared test fixtures, so concurrent invocations run in sequence.
 Destructive migration fixtures use additional dedicated databases; deployed
 application data is excluded.
+The older experimental `butler_test` database is retained and excluded from
+these checks because its applied migration history can contain superseded
+development schemas. The new core fixture starts from the checked-in migrations.
 Web checks run Vue/TypeScript checks, lint, functional Playwright fixtures, and a read-only browser
 smoke against the deployed services. Screenshot baselines have no committed
 references, so the visual-baseline test is excluded; the live smoke saves a
@@ -85,3 +88,22 @@ container and run tests as UID 1000, keeping build/module caches on the storage 
 - for Windows local-browser testing, install the native messaging host with `pwsh -NoProfile -File scripts/dev/install-browser-bridge-host.ps1 -Browser Chrome -ExtensionId <extension_id>`
 
 Network tool images use read-only filesystems, dropped capabilities, no-new-privileges and bounded PIDs/memory. HTTP/webfetch/Chromium join tool-runtime plus tool-egress, without the core backend. Doctor uses fixed read-only core diagnostics and no longer receives PG/Redis/model credentials. Operator restart-helper and separately approved user-tab relay are explicit exceptions. Apply the Compose changes before claiming runtime isolation; code tests do not alter a running deployment. See [security boundaries](../docs/architecture/agent-security-boundaries.md).
+
+The prepared shared auxiliary models can be enabled independently of memory
+index activation. On the lab, create mode-0600
+`BUTLER_LAB_ROOT/local-models/compose.env` containing only the operator-selected
+`BUTLER_LOCAL_MODELS_ROOT` prepared storage path, then run the normal `Up` command.
+The wrapper includes the optional overlay/profile whenever this file exists,
+including subsequent deployments and status checks. Weights/dependencies stay on
+the storage disk; inference has only the internal `local-inference` network and
+no published ports. Orchestrator keeps its existing networks and additionally
+joins that private network. The private model token stays in the mounted file.
+Installing this service grants no auxiliary-job authority and does not turn on
+the memory pipeline or switch the generative provider. See the
+[model preparation and verification guide](local-models/README.md).
+
+The Web image ships the compiled Nuxt output and runs as UID10001 with a read-only
+filesystem, no capabilities/new privileges and bounded RAM/PIDs. It does not
+receive model/owner credentials or build caches. The
+[Web dependency and packaging notes](../web/README.md) document the patched CSS
+parser and remaining upstream build dependency findings.

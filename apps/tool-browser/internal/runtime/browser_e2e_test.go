@@ -27,10 +27,25 @@ func TestBrowserSessionE2E(t *testing.T) {
 		t.Skip("real Chromium e2e requires the lab browser image")
 	}
 	var forms, posts, escapes, allowedReads atomic.Int64
+	var draftRequests, preparedSubmits atomic.Int64
+	var preparedValue atomic.Value
 	var received atomic.Value
 	var privateOrigin string
 	pageServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case "/draft":
+			_, _ = fmt.Fprint(w, `<html><body><form action="/prepared-submit" method="post"><input id="a" name="a"><input id="b" name="b"><input id="password" type="password"><button id="submit">Send</button></form><span id="reflection"></span><script>
+const release=()=>{fetch('/draft-release?value='+encodeURIComponent(document.getElementById('a').value)).catch(()=>{});fetch('/draft-release',{method:'POST',body:document.getElementById('a').value}).catch(()=>{})};
+document.addEventListener('input',()=>{document.getElementById('reflection').textContent=document.getElementById('password').value;release();setTimeout(release,250);setTimeout(()=>document.getElementById('reflection').dataset.changed=String(Math.random()),600)});
+</script></body></html>`)
+		case "/draft-release":
+			draftRequests.Add(1)
+			_, _ = fmt.Fprint(w, "released")
+		case "/prepared-submit":
+			preparedSubmits.Add(1)
+			_ = r.ParseForm()
+			preparedValue.Store(r.Form.Get("a") + "|" + r.Form.Get("b"))
+			_, _ = fmt.Fprint(w, `<html><body>Prepared form submitted<script>setTimeout(()=>{fetch('/draft-release').catch(()=>{});fetch('/draft-release',{method:'POST'}).catch(()=>{})},250)</script></body></html>`)
 		case "/form":
 			forms.Add(1)
 			_, _ = fmt.Fprint(w, `<html><title>Form</title><body><form action="/submit" method="post"><input id="a" name="a"><input id="b" name="b"><input type="password" id="password"><button id="submit">Send</button></form><a href="/auth">Auth</a></body></html>`)
@@ -138,6 +153,81 @@ new WebSocket('ws://external.test/escape');
 		obs = invoke("browser.snapshot", map[string]any{"browser_session_id": obs.SessionID})
 		if posts.Load() != beforePosts || escapes.Load() != beforeEscapes || allowedReads.Load() != beforeReads+1 || !strings.Contains(obs.Text, "External instructions") {
 			t.Fatal("ordinary read widened network authority or permitted GET was lost")
+		}
+		invoke("browser.close", map[string]any{"browser_session_id": obs.SessionID})
+	})
+	t.Run("local preparation freezes immediate and delayed autosave through observations and stale clicks", func(t *testing.T) {
+		obs := open("/draft")
+		before := draftRequests.Load()
+		args := actionArgs(obs)
+		args["selector"], args["value"] = "#a", "first"
+		obs = invoke("browser.prepare_fill", args)
+		if !obs.LocalPreparation || obs.NetworkState != "frozen" {
+			t.Fatal("preparation proof missing")
+		}
+		args = actionArgs(obs)
+		args["selector"], args["text"] = "#b", "second"
+		obs = invoke("browser.prepare_type", args)
+		args = actionArgs(obs)
+		args["selector"] = "#password"
+		args["value"] = map[string]string{"type": "credential_ref", "alias": "login", "field": "password"}
+		obs = invoke("browser.prepare_fill", args, &runtimev1.ResolvedCredential{Alias: "login", Field: "password", Value: "private-password-fixture"})
+		if !strings.Contains(obs.Text, "[REDACTED]") {
+			t.Fatal("prepared secret reflection was not masked")
+		}
+		time.Sleep(350 * time.Millisecond)
+		obs = invoke("browser.snapshot", map[string]any{"browser_session_id": obs.SessionID})
+		obs = invoke("browser.extract_text", map[string]any{"browser_session_id": obs.SessionID, "selector": "body"})
+		obs = invoke("browser.wait_for", actionArgs(obs))
+		if obs.NetworkState != "frozen" || draftRequests.Load() != before {
+			t.Fatal("observation thawed autosave")
+		}
+		for _, tool := range []string{"browser.navigate", "browser.fill", "browser.type"} {
+			args = actionArgs(obs)
+			args["url"], args["selector"], args["value"], args["text"] = egresstest.Origin+"/form", "#a", "forbidden", "forbidden"
+			req := browserCall(tool, "run-1", args)
+			req.Contract.AllowedDomains = []string{"external.test"}
+			resp, err := client.Execute(context.Background(), req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			assertCode(t, resp.GetResult(), "network_frozen")
+		}
+		// A stale click cannot resume the persistent route or leak the draft.
+		args = actionArgs(obs)
+		args["observation_version"] = obs.ObservationVersion - 1
+		req := browserCall("browser.click", "run-1", args)
+		req.Contract.AllowedDomains = []string{"external.test"}
+		resp, err := client.Execute(context.Background(), req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assertCode(t, resp.GetResult(), "stale_observation")
+		time.Sleep(350 * time.Millisecond)
+		if draftRequests.Load() != before || preparedSubmits.Load() != 0 {
+			t.Fatal("stale click released draft")
+		}
+		// This version still matches the Go record. The helper's live DOM guard
+		// must reject before its route thaws, even while the proxy window exists.
+		req = browserCall("browser.click", "run-1", actionArgs(obs))
+		req.Contract.AllowedDomains = []string{"external.test"}
+		resp, err = client.Execute(context.Background(), req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		assertCode(t, resp.GetResult(), "stale_observation")
+		if draftRequests.Load() != before || preparedSubmits.Load() != 0 {
+			t.Fatal("live stale guard thawed prepared context")
+		}
+		obs = invoke("browser.snapshot", map[string]any{"browser_session_id": obs.SessionID})
+		obs = invoke("browser.click", actionArgs(obs))
+		if preparedSubmits.Load() != 1 || preparedValue.Load() != "first|second" || obs.NetworkState != "frozen" {
+			t.Fatal("authorized click did not preserve draft or refreeze")
+		}
+		time.Sleep(350 * time.Millisecond)
+		obs = invoke("browser.snapshot", map[string]any{"browser_session_id": obs.SessionID})
+		if draftRequests.Load() != before || obs.NetworkState != "frozen" {
+			t.Fatal("late callback after click released data")
 		}
 		invoke("browser.close", map[string]any{"browser_session_id": obs.SessionID})
 	})

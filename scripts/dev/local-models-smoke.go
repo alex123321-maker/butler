@@ -89,10 +89,18 @@ func run(addr, tokenPath, fixturePath, reportPath string, expectGPU bool) error 
 	}
 	ctx := metadata.AppendToOutgoingContext(timeoutCtx, "authorization", "Bearer "+string(token))
 	catalog, err := client.Describe(ctx, &pb.Empty{})
-	if err != nil || len(catalog.Models) != 1 {
+	if err != nil || len(catalog.Models) != 4 {
 		return fmt.Errorf("catalog unavailable")
 	}
-	p := catalog.Models[0]
+	var p *pb.ModelProfile
+	for _, candidate := range catalog.Models {
+		if candidate.PreprocessingVersion == "embeddinggemma2-retrieval-v1" {
+			p = candidate
+		}
+	}
+	if p == nil {
+		return fmt.Errorf("embedding profile unavailable")
+	}
 	data, err := os.ReadFile(fixturePath)
 	if err != nil {
 		return fmt.Errorf("read fixture")
@@ -224,6 +232,10 @@ func run(addr, tokenPath, fixturePath, reportPath string, expectGPU bool) error 
 	if _, err := embed("near-input-limit", longBatch, pb.EmbeddingTask_EMBEDDING_TASK_DOCUMENT, 768, false); err != nil {
 		return err
 	}
+	nearContext := []*pb.TextInput{{Id: "context-a", Text: strings.Repeat("a ", 2028)}, {Id: "context-b", Text: strings.Repeat("a ", 2028)}}
+	if _, err := embed("near-context-limit", nearContext, pb.EmbeddingTask_EMBEDDING_TASK_DOCUMENT, 768, false); err != nil {
+		return err
+	}
 	_, err = client.Infer(ctx, &pb.InferRequest{RequestId: "context-limit", ProfileId: p.Id, Input: &pb.InferRequest_Embed{Embed: &pb.EmbedInput{Task: pb.EmbeddingTask_EMBEDDING_TASK_QUERY, Dimensions: 768, Texts: []*pb.TextInput{{Id: "over-context", Text: strings.Repeat("a ", 3000)}}}}})
 	if status.Code(err) != codes.InvalidArgument {
 		return fmt.Errorf("over-context input was not explicitly rejected: %s", status.Code(err))
@@ -231,7 +243,7 @@ func run(addr, tokenPath, fixturePath, reportPath string, expectGPU bool) error 
 	if _, err := embed("cpu-fp32", []*pb.TextInput{{Id: "cpu", Text: "Где хранится долговременная память?"}}, pb.EmbeddingTask_EMBEDDING_TASK_QUERY, 768, true); err != nil {
 		return err
 	}
-	// Unsupported capabilities must explicitly fail, never produce an empty success.
+	// A capability cannot be routed into a profile for a different model.
 	_, err = client.Infer(ctx, &pb.InferRequest{RequestId: "unsupported-rank", ProfileId: p.Id, Input: &pb.InferRequest_Rerank{Rerank: &pb.RerankInput{Query: "память", Candidates: []*pb.TextInput{{Id: "c", Text: "PostgreSQL"}}}}})
 	if status.Code(err) != codes.Unavailable {
 		return fmt.Errorf("unsupported rank did not fail safely")

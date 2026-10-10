@@ -15,6 +15,7 @@ import (
 	"github.com/butler/butler/internal/budget"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/security/egress/egresstest"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestBroadMandateRejectsForeignAccountAndExhaustedAllowanceIntegration(t *testing.T) {
@@ -35,23 +36,23 @@ func TestBroadMandateRejectsForeignAccountAndExhaustedAllowanceIntegration(t *te
 	}
 	worker, _ := processPool(t, f, "limited_dispatch")
 	a := newAllowedAction(t, f, worker, false)
-	outside := *a.call
+	outside := proto.Clone(a.call).(*toolbrokerv1.ToolCall)
 	outside.ToolCallId = "foreign-account"
 	outside.ArgsJson = fmt.Sprintf(`{"method":"POST","url":%q}`, egresstest.Origin+"/work-account/recover")
-	if _, err = a.service.PrepareWithLogicalRef(f.ctx, &outside, a.contract, "foreign-account-slot"); !errors.Is(err, actionauth.ErrOwnerAuthority) {
+	if _, err = a.service.PrepareWithLogicalRef(f.ctx, outside, a.contract, "foreign-account-slot"); !errors.Is(err, actionauth.ErrOwnerAuthority) {
 		t.Fatal("broad service authority escaped into foreign account", err)
 	}
 	if err = a.store.ClaimGrant(f.ctx, a.grant.ID); err != nil {
 		t.Fatal(err)
 	}
 	a.dispatch(t, f.ctx, false)
-	second := *a.call
+	second := proto.Clone(a.call).(*toolbrokerv1.ToolCall)
 	second.ToolCallId = "second-recovery"
-	prepared, err := a.service.PrepareWithLogicalRef(f.ctx, &second, a.contract, "second-recovery-slot")
+	prepared, err := a.service.PrepareWithLogicalRef(f.ctx, second, a.contract, "second-recovery-slot")
 	if err != nil {
 		t.Fatal(err)
 	}
-	grant, err := a.service.Authorize(f.ctx, &second, a.contract, prepared.Binding.ActionID, "", "")
+	grant, err := a.service.Authorize(f.ctx, second, a.contract, prepared.Binding.ActionID, "", "")
 	if err != nil {
 		t.Fatal(err)
 	}

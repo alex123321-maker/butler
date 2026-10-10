@@ -91,7 +91,7 @@ func TestToolExecutionMetadata(t *testing.T) {
 }
 
 func TestBrowserCredentialMetadataUsesObservedPageAndMutation(t *testing.T) {
-	for _, tool := range []string{"browser.fill", "browser.type", "browser.set_cookie", "browser.restore_storage_state"} {
+	for _, tool := range []string{"browser.fill", "browser.type", "browser.prepare_fill", "browser.prepare_type", "browser.set_cookie", "browser.restore_storage_state"} {
 		url, mutating := toolExecutionMetadata(&toolbrokerv1.ToolCall{ToolName: tool, ArgsJson: `{"url":"https://untrusted.example","expected_url":"https://allowed.example/form"}`})
 		if url != "https://allowed.example/form" || !mutating {
 			t.Fatalf("%s metadata url=%q mutating=%v", tool, url, mutating)

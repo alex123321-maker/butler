@@ -17,6 +17,7 @@ import (
 
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/security/egress/egresstest"
+	"google.golang.org/protobuf/proto"
 )
 
 // This receiver implements an explicit key+fingerprint contract. Generic HTTP
@@ -196,9 +197,9 @@ func TestEffectJournalLostAcknowledgementReconcilesWithoutReplay(t *testing.T) {
 				t.Fatal("uncertain effect replayed")
 			}
 			observation, observed := observeEffect(t, restarted, store, c, contract, e, server)
-			forged := *observed
+			forged := proto.Clone(observed).(*toolbrokerv1.ToolResult)
 			forged.ResultJson = strings.ReplaceAll(observed.ResultJson, "fixture-created-item", "invented-item")
-			if _, err = restarted.Reconcile(ctx, e.ActionID, observation, &forged); err == nil {
+			if _, err = restarted.Reconcile(ctx, e.ActionID, observation, forged); err == nil {
 				t.Fatal("verifier invented uncaptured external evidence")
 			}
 			reconciled, err := restarted.Reconcile(ctx, e.ActionID, observation, observed)

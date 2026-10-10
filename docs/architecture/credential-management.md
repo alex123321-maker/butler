@@ -570,6 +570,14 @@ owner, observation and fixed origin are rechecked before injection. Auth state
 is never exported into ordinary browser artifacts; reflected installed values
 are masked in visible observations. Closing, expiry or helper loss destroys it.
 
+`browser.prepare_fill/prepare_type` retain the same deferred credential path
+and mutation authority while freezing all page/proxy network before input.
+Their local proof does not authorize submission or export the field value.
+Credential aliases must explicitly permit the new tool names; old live fill/type
+permissions do not transfer automatically. A separate approved click may release
+the prepared draft within its fixed origin/window and remains externally unknown
+without recipient proof.
+
 ### Antigravity provider credentials
 
 Antigravity OAuth is control-plane state in the encrypted PostgreSQL SecretStore,

@@ -8,7 +8,7 @@ import (
 )
 
 func validateRequest(p *pb.ModelProfile, r *pb.InferRequest) error {
-	if r.RequestId == "" || len(r.RequestId) > 128 || !utf8.ValidString(r.RequestId) || r.ProfileId == "" {
+	if r.RequestId == "" || len(r.RequestId) > 128 || !utf8.ValidString(r.RequestId) || r.ProfileId == "" || len(r.CallerId) > 128 || !utf8.ValidString(r.CallerId) {
 		return fault(Invalid)
 	}
 	cap := pb.Capability_CAPABILITY_UNSPECIFIED

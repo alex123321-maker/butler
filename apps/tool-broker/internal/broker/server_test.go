@@ -57,7 +57,7 @@ func TestExecuteToolCallRoutesToRuntime(t *testing.T) {
 
 	dir := t.TempDir()
 	path := filepath.Join(dir, "tools.json")
-	registryJSON := `{"tools":[{"tool_name":"browser.navigate","tool_class":"browser","runtime_target":"` + listener.Addr().String() + `","input_schema_json":"{\"type\":\"object\",\"required\":[\"url\"],\"properties\":{\"url\":{\"type\":\"string\"}},\"additionalProperties\":false}","status":"enabled"}]}`
+	registryJSON := `{"tools":[{"tool_name":"browser.navigate","tool_class":"browser","contract_revision":"2","effect_contract":{"retry_safety":"read_only","verification_method":"read_result"},"runtime_target":"` + listener.Addr().String() + `","input_schema_json":"{\"type\":\"object\",\"required\":[\"url\"],\"properties\":{\"url\":{\"type\":\"string\"}},\"additionalProperties\":false}","status":"enabled"}]}`
 	if err := os.WriteFile(path, []byte(registryJSON), 0o600); err != nil {
 		t.Fatalf("write registry file: %v", err)
 	}
@@ -69,8 +69,8 @@ func TestExecuteToolCallRoutesToRuntime(t *testing.T) {
 	server := NewServer(reg, runtimeclient.New(nil), nil, nil)
 	fixture := setTestAuthority(server, nil)
 	result := dispatchForTest(t, server, fixture, &toolbrokerv1.ToolCall{ToolCallId: "tool-1", RunId: "run-1", ToolName: "browser.navigate", ArgsJson: `{"url":"https://example.com"}`}, true)
-	if result.GetStatus() != "effect_unknown" || result.GetEffectState() != "effect_unknown" {
-		t.Fatalf("navigation dispatch cannot prove an external effect, got %+v", result)
+	if result.GetStatus() != "completed" || result.GetEffectState() != "effect_confirmed" {
+		t.Fatalf("read-only navigation observation was not recorded, got %+v", result)
 	}
 }
 

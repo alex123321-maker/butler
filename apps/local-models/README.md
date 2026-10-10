@@ -5,11 +5,12 @@ contracts and bounded local inference resources. It does not execute tools,
 change memory facts, authorize actions or own durable tasks. Callers retain the
 request in PostgreSQL and retry explicit Unavailable/ResourceExhausted responses.
 
-The initial executable adapter is official EmbeddingGemma2 text inference through
-a subordinate Python tensor worker. gRPC auth, queueing, validation, cancellation,
-GPU admission, idle unload and lifecycle remain Go. Ranking, extraction,
-classification and media inputs are typed but return Unavailable until a reviewed
-adapter/profile is installed; there are no fabricated empty successful results.
+Reviewed executable adapters are official EmbeddingGemma2 text/image vectors,
+Qwen3-Reranker-0.6B and GLiNER2.5-multi-v1 through subordinate Python tensor workers.
+gRPC auth, capability routing, round-robin caller queues, validation, cancellation,
+GPU/RAM admission, idle unload and lifecycle remain Go. One serialized GPU lane
+and a separate CPU GLiNER lane reuse workers across callers. Audio/video and
+unsupported profiles return Unavailable; no empty successful fallback is invented.
 
 ## Run on the lab
 
@@ -29,6 +30,10 @@ gRPC :9090; diagnostic HTTP :8080; 6144 MiB device budget; 512 MiB reserve; queu
 `BUTLER_LOCAL_MODELS_QUEUE_SIZE`, `BUTLER_LOCAL_MODELS_IDLE_SECONDS`,
 `BUTLER_LOCAL_MODELS_GPU_INDEX`, `BUTLER_LOCAL_MODELS_PYTHON`,
 `BUTLER_LOCAL_MODELS_WORKER`, `BUTLER_LOCAL_MODELS_MODEL_ROOT`.
+RAM defaults to 6144 MiB with 512 MiB reserve; configure with
+`BUTLER_LOCAL_MODELS_RAM_BUDGET_MIB`/`BUTLER_LOCAL_MODELS_RAM_RESERVE_MIB`.
+Profiles require full-process peak RAM allowances; both lanes share an atomic
+admission gate and sample total service RSS, host availability and cgroup headroom.
 
 `/health` reports worker paths/backend availability; model availability is checked
 per request against pinned metadata. `/metrics` has request/failure/queue/fallback,
@@ -43,6 +48,8 @@ The checked-in synthetic artifacts exercise real BF16 CUDA/FP32 CPU computation,
 768/256 dimensions, auth, idle unload, cancel/recovery, concurrent index/search,
 an 8000-byte batch, context rejection without truncation, and resource admission
 fallback in a network namespace with no external interface. This is preliminary
-runtime evidence; issue #25 still requires a production retrieval comparison,
+runtime evidence; capability proof also checks genuine Russian ranking, spans,
+classification, concurrent CPU/GPU lanes and on-demand image model loading.
+Issue #25 still requires a production retrieval comparison,
 versioned index migration, reversible reindex and larger held-out Russian/code
 evaluation. It is not a claim that #24–#28 are all complete.

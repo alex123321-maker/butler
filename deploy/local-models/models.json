@@ -16,10 +16,46 @@
       "maxInputBytes": 8192,
       "contextTokens": 2048,
       "peakVramMib": 3072,
+      "peakRamMib": 2560,
+      "peakCpuRamMib": 4096,
       "cpuFallback": true,
       "enabled": true,
       "preprocessingVersion": "embeddinggemma2-retrieval-v1",
       "dimensions": 768
+    },
+    {
+      "id":"qwen3-reranker-0.6b-bf16-v1",
+      "model":"Qwen/Qwen3-Reranker-0.6B",
+      "revision":"e61197ed45024b0ed8a2d74b80b4d909f1255473",
+      "format":"safetensors","precision":"BF16","license":"Apache-2.0",
+      "licenseUrl":"https://www.apache.org/licenses/LICENSE-2.0",
+      "sourceUrl":"https://huggingface.co/Qwen/Qwen3-Reranker-0.6B",
+      "runtime":"torch-transformers","runtimeVersion":"torch2.10.0+cu128/transformers5.19.0",
+      "capabilities":["CAPABILITY_RERANK"],"maxBatch":4,"maxInputBytes":8192,"contextTokens":2048,
+      "peakVramMib":4096,"peakRamMib":2048,"peakCpuRamMib":4096,"cpuFallback":true,"enabled":true,
+      "preprocessingVersion":"qwen3-rerank-yesno-v1"
+    },
+    {
+      "id":"gliner2.5-multi-cpu-v1",
+      "model":"fastino/gliner2.5-multi-v1",
+      "revision":"cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+      "format":"safetensors","precision":"FP32","license":"Apache-2.0",
+      "licenseUrl":"https://www.apache.org/licenses/LICENSE-2.0",
+      "sourceUrl":"https://huggingface.co/fastino/gliner2.5-multi-v1",
+      "runtime":"torch-gliner2","runtimeVersion":"torch2.10.0+cu128/transformers5.19.0/gliner2.1.0",
+      "capabilities":["CAPABILITY_EXTRACT","CAPABILITY_CLASSIFY"],"preferredDevice":"cpu",
+      "maxBatch":1,"maxInputBytes":2048,"contextTokens":512,"peakRamMib":3072,"cpuFallback":true,"enabled":true,
+      "preprocessingVersion":"gliner2.5-schema-v1"
+    },
+    {
+      "id":"embeddinggemma2-image-bf16-v1","model":"google/embeddinggemma-2",
+      "revision":"914f7f89142e33e77833254d9c9b90c3cef7303b","format":"safetensors","precision":"BF16",
+      "license":"Apache-2.0","licenseUrl":"https://ai.google.dev/gemma/apache_2",
+      "sourceUrl":"https://huggingface.co/google/embeddinggemma-2",
+      "runtime":"torch-sentence-transformers","runtimeVersion":"torch2.10.0+cu128/transformers5.19.0/sentence-transformers6.1.0",
+      "capabilities":["CAPABILITY_MEDIA"],"maxBatch":1,"maxInputBytes":1048576,"contextTokens":2048,
+      "peakVramMib":4096,"peakRamMib":3072,"peakCpuRamMib":5120,"cpuFallback":true,"enabled":true,
+      "preprocessingVersion":"embeddinggemma2-image-v1","dimensions":768
     }
   ]
 }

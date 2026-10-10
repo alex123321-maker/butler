@@ -39,6 +39,7 @@ PostgreSQL are not used to claim that a live DOM can be restored.
 | `browser.navigate` | Navigate the same context inside the fixed origin | Latest version and exact `expected_url`, plus session checks |
 | `browser.click` | Click on the current page | Latest version and `expected_url`, plus session checks |
 | `browser.fill` / `browser.type` | Change the current input | Latest version and `expected_url`; credential refs for secrets |
+| `browser.prepare_fill` / `browser.prepare_type` | Change input locally with all network frozen persistently | Same latest observation/URL/owner checks; exact approval or current mandate; credential refs for secrets |
 | `browser.wait_for` | Wait for visible selector in the current page; **no navigation** | Latest version and `expected_url`, timeout 0–30000 ms |
 | `browser.set_cookie` | Install broker-resolved cookie into the same context | Latest version and `expected_url`, typed ref, separate approval, exact cookie host |
 | `browser.restore_storage_state` | Install broker-resolved cookies/local storage in the same context | Latest version and `expected_url`, typed ref, separate approval, same origin/host |
@@ -53,6 +54,42 @@ The helper also checks the **live** URL and a DOM/input mutation revision just
 before an effect. Independent DOM changes therefore cause `stale_observation`.
 Take a new snapshot and reassess the intended action; do not blindly replay it.
 
+### Bounded local preparation and truthful external outcomes
+
+For a multi-step form use `open -> prepare_fill/prepare_type -> snapshot/wait ->
+separately authorized click`. Preparation freezes **all** page requests before
+input events run. The Go proxy cancels in-flight HTTP and closes established
+CONNECT tunnels; the reviewed helper also aborts every route. Immediate and
+delayed GET/POST autosave cannot release the new draft. Snapshot, extraction,
+waiting, cookie/storage operations and later preparations never thaw it.
+Navigation and legacy live fill/type in a frozen context return `network_frozen`.
+Close/open creates a new empty context; it cannot restore a private draft.
+
+Only a separately authorized click opens a bounded network window, clipped to
+the trusted dispatch deadline and context expiry. The helper keeps its route
+frozen until the live DOM/version/URL guards pass. Stale clicks therefore cannot
+thaw a prepared draft. Success or failure freezes the context again; expiry,
+cancellation or process loss closes connections. A click permits the site's
+opaque effects inside that origin/window, including callbacks; it is not proof
+that one particular remote effect occurred.
+
+Revision 2 `browser.read/open/navigate` contracts classify their enforced
+GET/HEAD observation as `read` (`read_only/read_result`). This is the same method
+boundary as HTTP reads, not a claim that an arbitrary application cannot mutate
+state on GET. Broker rejects older navigation contracts instead of granting
+them the new guarantee. Privacy, resource and approval checks still apply.
+
+The new preparation tools use revision 2 `prepare` contracts and
+`local_browser_preparation_v1`. Their response contains `local_preparation:true`,
+`network_state:"frozen"`, session ID, exact observed URL and a newer observation
+version. Private journal policy pins the original session/URL/version; missing,
+mismatched, failed or truncated proof stays unknown. Confirmed evidence means
+**only local prepared browser state**, not remote submission. Local preparation
+has no automatic retry/crash-recovery guarantee. Existing live fill/type and
+click stay opaque: a DOM acknowledgement without an independent recipient
+receipt becomes `effect_unknown`, and the durable unknown-effect guard blocks
+later effects. Approval is execution authority, not retrospective evidence.
+
 All page requests, redirects and frame/resource requests are constrained to the
 fixed origin; service workers and downloads are disabled. Popups are closed and
 do not grant another page capability. Sites requiring another origin, including
@@ -62,7 +99,7 @@ separate context; it does not share auth or expand the previous context.
 
 ## Private credential state
 
-Fill/type accept either ordinary text or `{type:"credential_ref",alias,field}`.
+Live and local-preparation fill/type accept ordinary text or `{type:"credential_ref",alias,field}`.
 Password inputs require a broker-resolved reference. Cookie and storage-state
 arguments accept **only** a typed reference, not raw cookie/storage objects.
 Credential Broker checks the observed `expected_url`, tool and autonomy mode;
@@ -128,6 +165,16 @@ A further e2e starts the actual Broker process, real PostgreSQL approval and
 credential services, and the authenticated private authority endpoint; it
 completes an approved password/form flow once and rejects changed args/replay.
 Idle expiry cleanup is exercised against the real helper timer too.
+
+The local-preparation Chromium fixture checks immediate and delayed GET/POST
+autosave, preserved freeze across snapshot/extract/wait, stale Go and live-DOM
+click guards, masked password reflections, exactly one intended form POST and
+post-click callback suppression. Proxy fixtures verify HTTP cancellation,
+established CONNECT shutdown, no DNS/dial after freeze and automatic window
+expiry. Real PostgreSQL journal/budget tests permit read plus two local
+preparations, retain the final click as unknown across restart, and reject a
+follow-up without spending another reservation. These are synthetic public-DNS
+fixtures in disposable containers, not real external writes.
 
 Run all checks on the lab with the repository helper and an isolated agent root:
 

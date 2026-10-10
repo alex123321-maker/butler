@@ -53,13 +53,32 @@ reviewed lockfile before application source is built.
 See the upstream [DevTools advisory](https://github.com/nuxt/nuxt/security/advisories/GHSA-279x-mwfv-vcqv)
 and [argv parser advisory](https://github.com/steveukx/git-js/security/advisories/GHSA-v5rq-49vh-5v5c).
 
-On 2026-10-11, the lab lockfile audit reported zero critical findings, down from
-five in the previous lockfile. Four moderate and twenty high findings remain,
-including unfixed dependency chains in the development/build tooling. The audit
-is an inventory, not a claim that every package is exploitable in the deployed
-application. Recheck with `npm audit --json`; do not force incompatible downgrades
-suggested by the audit tool. Broader runtime isolation and credential protection
-remain tracked separately in issue #31.
+The `postcss-selector-parser` override selects the published 7.1.6 fix for
+[quadratic selector parsing](https://github.com/advisories/GHSA-rj75-hqrm-r3gf).
+Older transitive 6.x requests are explicitly overridden; lab lint, build and
+functional browser checks validate the application's current CSS usage.
+Remove the override once upstream ranges admit a patched parser.
+
+The lockfile still contains the upstream unfixed
+[node-forge advisory](https://github.com/advisories/GHSA-86w9-cpqp-85rv) and
+[braces advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm).
+Recheck with `npm audit --json`; do not force unrelated major changes or invent a
+patched release. Nuxt/listhen's development TLS generation and build/lint globs
+must not process untrusted certificates or patterns. The production image copies
+only Nuxt `.output`, rather than the build's node_modules. Run
+`scripts/dev/audit-web-output.mjs` on the lab against that actual output to
+inventory shipped package names and selected code references. This limited
+inventory does not establish general absence of exploitable code. Issue #31
+remains active for the complete security acceptance checks.
+
+The lab verification on 2026-10-10 ran TypeScript/Vue checks, lint, all ten
+Playwright tests, the production build and a browser smoke test against the
+deployed API. The deployed output contained 19 named packages and 94 JavaScript
+files; none of the three selected package names or checked code references were
+present. The limited inventory is recorded in
+[the deployment artifact](../deploy/security/web-runtime-audit.json).
+The complete dependency audit still reports 21 high findings propagated from
+the two unfixed upstream advisories, with zero moderate or critical findings.
 
 ```bash
 npm run build
@@ -75,6 +94,9 @@ docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.dev.yml up 
 ```
 
 The web service is exposed on port 3000 in the Compose dev stack.
+It runs as UID10001 with a read-only filesystem, dropped capabilities,
+no-new-privileges and finite process/RAM limits. No build cache, private token or
+settings encryption key is mounted into its production container.
 The dev overlay also publishes the orchestrator API on `http://localhost:8080`, which the browser UI uses by default.
 
 ## Architecture

@@ -18,6 +18,10 @@ type Config struct {
 	IdleTimeout    time.Duration
 	RequestTimeout time.Duration
 	SampleInterval time.Duration
+	RAMBudgetMiB   uint32
+	RAMReserveMiB  uint32
+	RAMTelemetry   RAMTelemetry
+	RAMGate        *RAMGate
 }
 type job struct {
 	ctx       context.Context
@@ -30,17 +34,20 @@ type result struct {
 	err      error
 }
 type Manager struct {
-	cfg       Config
-	profiles  map[string]*pb.ModelProfile
-	backend   Backend
-	telemetry Telemetry
-	queue     chan job
-	ctx       context.Context
-	cancel    context.CancelFunc
-	done      chan struct{}
-	mu        sync.Mutex
-	status    pb.ManagerStatus
-	lastUsed  time.Time
+	cfg        Config
+	profiles   map[string]*pb.ModelProfile
+	backend    Backend
+	telemetry  Telemetry
+	queue      chan job
+	slots      chan struct{}
+	pending    []job
+	lastCaller string
+	ctx        context.Context
+	cancel     context.CancelFunc
+	done       chan struct{}
+	mu         sync.Mutex
+	status     pb.ManagerStatus
+	lastUsed   time.Time
 }
 
 func New(cfg Config, profiles []*pb.ModelProfile, backend Backend, telemetry Telemetry) (*Manager, error) {
@@ -82,7 +89,22 @@ func New(cfg Config, profiles []*pb.ModelProfile, backend Backend, telemetry Tel
 		catalog[p.Id] = proto.Clone(p).(*pb.ModelProfile)
 	}
 	ctx, cancel := context.WithCancel(context.Background())
-	m := &Manager{cfg: cfg, profiles: catalog, backend: backend, telemetry: telemetry, queue: make(chan job, cfg.QueueSize), ctx: ctx, cancel: cancel, done: make(chan struct{}), status: pb.ManagerStatus{State: "idle", BudgetMib: cfg.BudgetMiB, ReserveMib: cfg.ReserveMiB}}
+	if cfg.RAMTelemetry != nil {
+		if cfg.RAMBudgetMiB == 0 {
+			cfg.RAMBudgetMiB = 6144
+		}
+		if cfg.RAMReserveMiB == 0 {
+			cfg.RAMReserveMiB = 512
+		}
+		if cfg.RAMReserveMiB >= cfg.RAMBudgetMiB {
+			cancel()
+			return nil, fmt.Errorf("RAM reserve must be smaller than budget")
+		}
+		if cfg.RAMGate == nil {
+			cfg.RAMGate = &RAMGate{}
+		}
+	}
+	m := &Manager{cfg: cfg, profiles: catalog, backend: backend, telemetry: telemetry, queue: make(chan job, cfg.QueueSize), slots: make(chan struct{}, cfg.QueueSize), ctx: ctx, cancel: cancel, done: make(chan struct{}), status: pb.ManagerStatus{State: "idle", BudgetMib: cfg.BudgetMiB, ReserveMib: cfg.ReserveMiB, RamBudgetMib: cfg.RAMBudgetMiB}}
 	go m.loop()
 	return m, nil
 }
@@ -99,13 +121,18 @@ func (m *Manager) Status(ctx context.Context) *pb.ManagerStatus {
 	m.mu.Lock()
 	s := proto.Clone(&m.status).(*pb.ManagerStatus)
 	m.mu.Unlock()
-	s.Queued = uint32(len(m.queue))
+	s.Queued = uint32(len(m.slots))
 	s.BackendHealthy = m.backend.Healthy(ctx)
 	if m.telemetry != nil {
 		s.Gpu, _ = m.telemetry.Snapshot(ctx)
 	}
 	if s.Gpu == nil {
 		s.Gpu = &pb.GPUStatus{}
+	}
+	if m.cfg.RAMTelemetry != nil {
+		if ram, err := m.cfg.RAMTelemetry.SnapshotRAM(ctx); err == nil {
+			s.ProcessRamMib = ram.UsedMiB
+		}
 	}
 	return s
 }
@@ -137,9 +164,18 @@ func (m *Manager) Infer(ctx context.Context, request *pb.InferRequest) (*pb.Infe
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
-	case m.queue <- j:
+	case m.slots <- struct{}{}:
 	default:
 		return nil, fault(QueueFull)
+	}
+	select {
+	case m.queue <- j:
+	case <-m.ctx.Done():
+		<-m.slots
+		return nil, fault(Closed)
+	case <-ctx.Done():
+		<-m.slots
+		return nil, ctx.Err()
 	}
 	select {
 	case <-m.ctx.Done():
@@ -156,6 +192,21 @@ func (m *Manager) loop() {
 	defer tick.Stop()
 	defer m.unload()
 	for {
+		if m.ctx.Err() != nil {
+			return
+		}
+		// Take the complete accepted waiting set before choosing a caller. New
+		// arrivals cannot overtake earlier work for the same caller or fill more
+		// than QueueSize slots while the previous operation is executing.
+		for len(m.queue) > 0 {
+			m.pending = append(m.pending, <-m.queue)
+		}
+		if len(m.pending) > 0 {
+			j := m.nextJob()
+			<-m.slots
+			m.executeJob(j)
+			continue
+		}
 		select {
 		case <-m.ctx.Done():
 			return
@@ -164,34 +215,65 @@ func (m *Manager) loop() {
 				m.unload()
 			}
 		case j := <-m.queue:
-			if j.ctx.Err() != nil {
-				continue
-			}
-			started := time.Now()
-			ctx, cancel := context.WithCancel(j.ctx)
-			stop := context.AfterFunc(m.ctx, cancel)
-			response, err := m.execute(ctx, m.profiles[j.request.ProfileId], j.request)
-			stop()
-			cancel()
-			m.lastUsed = time.Now()
-			m.mu.Lock()
-			m.status.State = "idle"
-			if err != nil {
-				m.status.Failed++
-			} else {
-				m.status.Completed++
-			}
-			m.mu.Unlock()
-			if response != nil {
-				response.RequestId = j.request.RequestId
-				response.ProfileId = j.request.ProfileId
-				response.Revision = m.profiles[j.request.ProfileId].Revision
-				response.QueueMs = uint64(started.Sub(j.submitted).Milliseconds())
-				response.ExecutionMs = uint64(time.Since(started).Milliseconds())
-			}
-			j.reply <- result{response: response, err: err}
+			m.pending = append(m.pending, j)
 		}
 	}
+}
+func (m *Manager) nextJob() job {
+	callers := []string{}
+	seen := map[string]bool{}
+	for _, j := range m.pending {
+		if !seen[j.request.CallerId] {
+			callers = append(callers, j.request.CallerId)
+			seen[j.request.CallerId] = true
+		}
+	}
+	caller := callers[0]
+	for i, c := range callers {
+		if c == m.lastCaller {
+			caller = callers[(i+1)%len(callers)]
+			break
+		}
+	}
+	index := 0
+	for i, j := range m.pending {
+		if j.request.CallerId == caller {
+			index = i
+			break
+		}
+	}
+	j := m.pending[index]
+	m.pending = append(m.pending[:index], m.pending[index+1:]...)
+	m.lastCaller = j.request.CallerId
+	return j
+}
+func (m *Manager) executeJob(j job) {
+	if j.ctx.Err() != nil {
+		return
+	}
+	started := time.Now()
+	ctx, cancel := context.WithCancel(j.ctx)
+	stop := context.AfterFunc(m.ctx, cancel)
+	response, err := m.execute(ctx, m.profiles[j.request.ProfileId], j.request)
+	stop()
+	cancel()
+	m.lastUsed = time.Now()
+	m.mu.Lock()
+	m.status.State = "idle"
+	if err != nil {
+		m.status.Failed++
+	} else {
+		m.status.Completed++
+	}
+	m.mu.Unlock()
+	if response != nil {
+		response.RequestId = j.request.RequestId
+		response.ProfileId = j.request.ProfileId
+		response.Revision = m.profiles[j.request.ProfileId].Revision
+		response.QueueMs = uint64(started.Sub(j.submitted).Milliseconds())
+		response.ExecutionMs = uint64(time.Since(started).Milliseconds())
+	}
+	j.reply <- result{response: response, err: err}
 }
 func (m *Manager) unload() error {
 	m.mu.Lock()
@@ -317,6 +399,11 @@ func (m *Manager) admitGPU(ctx context.Context, p *pb.ModelProfile) bool {
 	return gpu.UsedMib <= limit && required <= limit-gpu.UsedMib && required <= gpu.FreeMib
 }
 func (m *Manager) run(ctx context.Context, p *pb.ModelProfile, r *pb.InferRequest, device string, batch uint32) (*pb.InferResponse, error) {
+	release, admitted := m.acquireRAM(ctx, p, device)
+	if !admitted {
+		return nil, fault(Resources)
+	}
+	defer release()
 	m.mu.Lock()
 	m.status.ActiveModel = p.Model
 	m.status.ActiveDevice = device
@@ -325,26 +412,45 @@ func (m *Manager) run(ctx context.Context, p *pb.ModelProfile, r *pb.InferReques
 	runCtx, cancel := context.WithCancelCause(ctx)
 	defer cancel(nil)
 	peak := uint32(0)
+	ramPeak := uint32(0)
 	done := make(chan struct{})
 	joined := make(chan struct{})
-	if device == "gpu" {
+	if device == "gpu" || m.cfg.RAMTelemetry != nil {
 		go func() {
 			defer close(joined)
 			ticker := time.NewTicker(m.cfg.SampleInterval)
 			defer ticker.Stop()
 			for {
 				sampleCtx, stop := context.WithTimeout(runCtx, 2*time.Second)
-				gpu, err := m.telemetry.Snapshot(sampleCtx)
+				var gpu *pb.GPUStatus
+				var err error
+				if device == "gpu" {
+					gpu, err = m.telemetry.Snapshot(sampleCtx)
+				}
+				if m.cfg.RAMTelemetry != nil {
+					ram, ramErr := m.cfg.RAMTelemetry.SnapshotRAM(sampleCtx)
+					if ramErr == nil {
+						ramPeak = max(ramPeak, ram.UsedMiB)
+					}
+					if ramErr != nil || ram.UsedMiB+m.cfg.RAMReserveMiB > m.cfg.RAMBudgetMiB || ram.AvailableMiB < m.cfg.RAMReserveMiB {
+						stop()
+						cancel(fault(Resources))
+						return
+					}
+					ramPeak = max(ramPeak, ram.UsedMiB)
+				}
 				stop()
 				if runCtx.Err() != nil {
 					return
 				}
-				if err != nil || gpu == nil || !gpu.Available {
+				if device == "gpu" && (err != nil || gpu == nil || !gpu.Available) {
 					cancel(fault(Resources))
 					return
 				}
-				peak = max(peak, gpu.UsedMib)
-				if gpu.UsedMib+m.cfg.ReserveMiB > min(m.cfg.BudgetMiB, gpu.TotalMib) {
+				if device == "gpu" {
+					peak = max(peak, gpu.UsedMib)
+				}
+				if device == "gpu" && gpu.UsedMib+m.cfg.ReserveMiB > min(m.cfg.BudgetMiB, gpu.TotalMib) {
 					cancel(fault(Resources))
 					return
 				}
@@ -363,6 +469,17 @@ func (m *Manager) run(ctx context.Context, p *pb.ModelProfile, r *pb.InferReques
 	response, err := m.backend.Infer(runCtx, p, r, device, batch)
 	close(done)
 	<-joined
+	if m.cfg.RAMTelemetry != nil && runCtx.Err() == nil {
+		ram, ramErr := m.cfg.RAMTelemetry.SnapshotRAM(runCtx)
+		if ramErr == nil {
+			ramPeak = max(ramPeak, ram.UsedMiB)
+		}
+		if ramErr != nil || ram.UsedMiB+m.cfg.RAMReserveMiB > m.cfg.RAMBudgetMiB || ram.AvailableMiB < m.cfg.RAMReserveMiB {
+			cancel(fault(Resources))
+		} else {
+			ramPeak = max(ramPeak, ram.UsedMiB)
+		}
+	}
 	if device == "gpu" && runCtx.Err() == nil {
 		// A short inference can finish between periodic samples. Include residency
 		// after execution, when the allocator still owns its cached buffers.
@@ -380,12 +497,58 @@ func (m *Manager) run(ctx context.Context, p *pb.ModelProfile, r *pb.InferReques
 	}
 	if cause := context.Cause(runCtx); cause != nil {
 		err = cause
+		// Release even a warm worker when final sampling discovers an overrun.
+		// Cancellation must not leave tensors resident until an idle timeout.
+		_ = m.unload()
 	}
 	m.mu.Lock()
 	m.status.ObservedPeakMib = max(m.status.ObservedPeakMib, peak)
+	m.status.ObservedPeakRamMib = max(m.status.ObservedPeakRamMib, ramPeak)
 	m.mu.Unlock()
 	if response != nil {
 		response.PeakDeviceMib = peak
+		response.PeakRamMib = ramPeak
 	}
 	return response, err
+}
+
+type RAMGate struct {
+	mu       sync.Mutex
+	reserved uint32
+}
+
+func (m *Manager) acquireRAM(ctx context.Context, p *pb.ModelProfile, device string) (func(), bool) {
+	if m.cfg.RAMTelemetry == nil {
+		return func() {}, true
+	}
+	m.cfg.RAMGate.mu.Lock()
+	defer m.cfg.RAMGate.mu.Unlock()
+	peak := p.PeakRamMib
+	if device == "cpu" && p.PeakCpuRamMib > 0 {
+		peak = p.PeakCpuRamMib
+	}
+	if peak == 0 {
+		return func() {}, false
+	}
+	ram, err := m.cfg.RAMTelemetry.SnapshotRAM(ctx)
+	if err != nil || ram.UsedMiB > m.cfg.RAMBudgetMiB-m.cfg.RAMReserveMiB {
+		return func() {}, false
+	}
+	resident, err := m.backend.Resident(ctx)
+	if err != nil {
+		return func() {}, false
+	}
+	var own uint32
+	for _, r := range resident {
+		if r.Model == p.Model {
+			own += r.RAMMiB
+		}
+	}
+	needed := peak - min(peak, own)
+	available := m.cfg.RAMBudgetMiB - m.cfg.RAMReserveMiB - ram.UsedMiB
+	if m.cfg.RAMGate.reserved > available || needed > available-m.cfg.RAMGate.reserved || needed+m.cfg.RAMGate.reserved+m.cfg.RAMReserveMiB > ram.AvailableMiB {
+		return func() {}, false
+	}
+	m.cfg.RAMGate.reserved += needed
+	return func() { m.cfg.RAMGate.mu.Lock(); m.cfg.RAMGate.reserved -= needed; m.cfg.RAMGate.mu.Unlock() }, true
 }

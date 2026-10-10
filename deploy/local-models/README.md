@@ -10,6 +10,9 @@ pointer or start the shared Compose stack from this directory.
    allowed only during preparation. Public checkpoint download explicitly uses
    `token=False`, a full immutable HF revision, safetensors and data/config files;
    no remote Python code is downloaded or trusted.
+   For a previously prepared embedding-only environment, use `extend-lab.sh`
+   instead: the extra GLiNER libraries reuse installed Torch/CUDA wheels. The
+   dry-run dependency plan and installation logs stay on the storage bind.
 3. Run `bash current/deploy/local-models/verify-lab.sh`. It builds Go binaries on
    the lab and launches only `butler-local-models-proof`, using `--network none`,
    UID10001, read-only source/dependency/model mounts, no capabilities and private
@@ -18,13 +21,21 @@ pointer or start the shared Compose stack from this directory.
 4. Review `reports/verification-gpu.json`, `verification-constrained.json`, GPU
    CSVs and service logs. The helper unloads its own worker/container and records
    the device before/after. `constrained` or `gpu` as the second argument selects
-   one mode. It never unloads other applications' GPU processes.
+   one mode; `capabilities` runs the complete reviewed model routing proof.
+   It never unloads other applications' GPU processes.
 
 The scripts use existing `butler-local-models-ollama` only for `ollama ps` evidence
 from the isolated compatibility probe; it is not the inference backend. For a
 fresh lab without that probe container, the helper records its absence. The
 shared Butler Ollama is untouched. The optional Compose overlay is integrated
 separately by the deployment owner after preparation; its service stays opt-in.
+
+For the main lab stack, enable the overlay/profile using the private
+`local-models/compose.env` file described in [deployment](../README.md).
+`verify-compose-lab.sh` exercises authenticated RPC routing against that actual
+service, verifies that anonymous catalog access is rejected, and checks its
+internal-only network, absent published ports and runtime isolation. It reads
+the token from a mounted file and contains only public synthetic inputs.
 
 ## Recorded hardware and results (2026-10-10 UTC)
 
@@ -50,7 +61,43 @@ returns to the same 17 MiB baseline after workers stop. Periodic telemetry inclu
 other applications; finite/norm/dimension validation and explicit failure states
 prevent a false successful empty embedding.
 
-## Why an isolated Python exception is necessary
+## Shared capability verification (2026-10-10 UTC)
+
+The complete selected profile now includes the actual official
+[Qwen3-Reranker-0.6B](https://huggingface.co/Qwen/Qwen3-Reranker-0.6B), revision
+`e61197ed45024b0ed8a2d74b80b4d909f1255473`, and
+[GLiNER2.5-multi-v1](https://huggingface.co/fastino/gliner2.5-multi-v1), revision
+`cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3`, alongside the existing Gemma2 checkpoint.
+All weights occupy 3.7 GiB; the reused framework environment remains 7.4 GiB.
+Additional libraries/dependencies are pinned in `extension.lock.txt` and the
+complete installed `requirements.lock.txt`. No CUDA library is copied into an image.
+
+`verification-capabilities.json` records real CPU Russian entity spans and label
+scores, BF16 GPU ranking, overlapping CPU classification/GPU ranking (137/202 ms),
+and loading Gemma2 text+vision 440M for a finite normalized 768d image vector.
+Cold calls took 33.2 seconds GLiNER, 8.1 seconds Qwen and 10.2 seconds vision.
+Peak whole-device use was 1935 MiB; full process RSS including both worker runtimes
+peaked at 4394 MiB. The 6144 MiB RSS/device budgets each retain a 512 MiB reserve.
+The service uses an 8 GiB hard container limit to include reclaimable file cache.
+GPU returned to its unchanged 17 MiB baseline after container shutdown.
+
+The image proof uses a synthetic public RGB image, not a claim of OCR/vision
+quality; the Russian scores are runtime signals, not calibrated decisions or a
+held-out evaluation. Audio/video remain unavailable. Production embedding,
+reranking and extraction quality decisions belong to #25–#28.
+
+The main Compose service was exercised on 2026-10-10 at 22:01 UTC with actual
+768/256-dimensional text embeddings, Russian extraction/classification, ranking
+and image loading. See `verification-compose-capabilities.json`. GPU peaked at
+1935 MiB and full service RSS at 4441 MiB; CPU classification overlapped GPU
+ranking. Anonymous RPC access was rejected and the deployment helper verified
+the sole internal network, no published ports, UID10001/read-only/capability
+isolation and blocked public TCP egress. Vision initially received an explicit
+resource refusal while the CPU extractor remained resident, then succeeded
+after the ordinary 30-second idle unload with the same input and policy.
+The artifact records this retry instead of reporting a false empty success.
+
+## Tensor runtime exception
 
 [Google's official card](https://huggingface.co/google/embeddinggemma-2) supports
 Transformers/SentenceTransformers, text-only encoder selection and BF16/FP32;

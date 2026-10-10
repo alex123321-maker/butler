@@ -37,6 +37,11 @@ message ModelProfile {
   string preprocessing_version = 17;
   uint32 dimensions = 18;
   string license_url = 19;
+  // Operator-selected lane; empty/gpu is the serialized GPU lane, cpu is separate.
+  string preferred_device = 20;
+  // Conservative full-process peak including framework, CPU tensors and workspaces.
+  uint32 peak_ram_mib = 21;
+  uint32 peak_cpu_ram_mib = 22;
 }
 message Catalog { repeated ModelProfile models = 1; }
 message GPUStatus {
@@ -61,6 +66,10 @@ message ManagerStatus {
   uint64 oom_retries = 11;
   uint32 observed_peak_mib = 12;
   bool backend_healthy = 13;
+  ManagerStatus cpu_lane = 14;
+  uint32 process_ram_mib = 15;
+  uint32 observed_peak_ram_mib = 16;
+  uint32 ram_budget_mib = 17;
 }
 message TextInput { string id = 1; string text = 2; string title = 3; }
 enum EmbeddingTask {
@@ -88,6 +97,8 @@ message InferRequest {
   // Applies to queueing and execution; the caller's shorter RPC deadline wins.
   uint32 timeout_ms = 3;
   bool cpu_only = 4;
+  // Internal caller identity used solely for bounded round-robin scheduling.
+  string caller_id = 5;
   oneof input {
     EmbedInput embed = 10;
     RerankInput rerank = 11;
@@ -123,6 +134,7 @@ message InferResponse {
   uint64 queue_ms = 6;
   uint64 execution_ms = 7;
   uint32 peak_device_mib = 8;
+  uint32 peak_ram_mib = 9;
   oneof output {
     EmbedOutput embed = 10;
     RerankOutput rerank = 11;

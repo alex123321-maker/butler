@@ -43,6 +43,14 @@ owner, exact current URL, observation version, scope and exclusive ownership.
 Proxy expiry destroys open tunnels. The session shares a 4 MiB outbound cap;
 HTTP requests and a webfetch batch also enforce a 4 MiB cap before sending.
 
+Browser local preparation freezes both page routes and the proxy persistently,
+including established CONNECT tunnels and in-flight HTTP. Delayed autosave cannot
+send the newly injected draft during later observations. Only a separately
+authorized click opens a bounded window after live guards, then refreezes; its
+DOM acknowledgement still cannot prove external submission. Read/open/navigate
+revision 2 enforce GET/HEAD, while legacy live fill/type remain opaque. See the
+[browser session contract](browser-session-contract.md) for exact proof semantics.
+
 Resolved credential and cookie values, including common URL/base64 variants,
 are masked from returned HTTP/browser observations. Cookies and arbitrary
 response headers do not appear in HTTP results. Helper stderr and network errors
@@ -179,3 +187,19 @@ change; final full tests and focused budget/task race checks passed afterward.
 Full #31 closure must account for its #18/#22 and model-loader integration
 dependencies; this matrix does not mark them complete merely because the
 current catalog cannot run dynamic code or auxiliary cloud jobs.
+
+## Packaged Web runtime
+
+The operator UI also runs as UID10001 with a read-only filesystem, dropped
+capabilities, no-new-privileges and finite RAM/PID limits. It receives public API
+locations, not the owner token or encryption key as server-side credentials.
+Its image includes only Nuxt `.output`; dependency installation and the reviewed
+Nuxt preparation/build lifecycle occur in a separate build stage.
+
+The reviewed selector-parser override pins published 7.1.6, removing vulnerable
+6.x transitive copies. Upstream node-forge/braces have no published fix for the
+current advisories and remain explicit lockfile findings. A lab output inventory
+checks shipped package names and selected known module references without
+printing source. Empty matches in a particular artifact are limited packaging
+evidence, not a general exploit-reachability proof. Build/dev tools must not take
+untrusted patterns/certificates, and audit findings are not silently suppressed.

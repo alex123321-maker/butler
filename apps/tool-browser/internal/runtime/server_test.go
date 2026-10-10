@@ -41,10 +41,34 @@ func (s *stubRunner) Run(_ context.Context, req Request) (Result, error) {
 	return result, nil
 }
 func browserCall(tool, owner string, args map[string]any) *runtimev1.ExecuteRequest {
+	contract := &toolbrokerv1.ToolContract{ToolName: tool, AllowedDomains: []string{"example.com"}}
+	if tool == "browser.prepare_fill" || tool == "browser.prepare_type" {
+		contract.ContractRevision = "2"
+		contract.EffectContract = &toolbrokerv1.EffectContract{RetrySafety: "unsafe", VerificationMethod: "local_browser_preparation_v1"}
+	}
 	return &runtimev1.ExecuteRequest{
 		Context:  &runtimev1.ExecutionContext{RunId: owner},
 		ToolCall: &toolbrokerv1.ToolCall{ToolCallId: "call-1", RunId: owner, ToolName: tool, ArgsJson: mustJSON(args)},
-		Contract: &toolbrokerv1.ToolContract{ToolName: tool, AllowedDomains: []string{"example.com"}},
+		Contract: contract,
+	}
+}
+
+func TestLocalPreparationRequiresPinnedContractBeforeRunner(t *testing.T) {
+	runner := &stubRunner{result: Result{OK: true}}
+	server := NewServer(runner, nil)
+	obs := openTest(t, server)
+	for _, tool := range []string{"browser.prepare_fill", "browser.prepare_type"} {
+		args := actionArgs(obs)
+		args["value"], args["text"] = "local", "local"
+		req := browserCall(tool, "run-1", args)
+		req.Contract.ContractRevision = "1"
+		assertCode(t, executeTest(t, server, req), "contract_mismatch")
+		req.Contract.ContractRevision = "2"
+		req.Contract.EffectContract.VerificationMethod = "none"
+		assertCode(t, executeTest(t, server, req), "contract_mismatch")
+	}
+	if len(runner.requests) != 1 {
+		t.Fatal("invalid local contract reached helper")
 	}
 }
 func executeTest(t *testing.T, server *Server, req *runtimev1.ExecuteRequest) *toolbrokerv1.ToolResult {

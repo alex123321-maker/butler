@@ -26,11 +26,21 @@ const (
 // EffectPolicy is pinned with the exact contract, not inferred from model text
 // or a caller-supplied HTTP header. ExternalReceipt is a recipient protocol.
 type EffectPolicy struct {
-	RetrySafety        string `json:"retry_safety"`
-	VerificationMethod string `json:"verification_method"`
-	IdempotencyHeader  string `json:"idempotency_header,omitempty"`
-	ScopeOrigin        string `json:"scope_origin,omitempty"`
-	VerificationURL    string `json:"verification_url,omitempty"`
+	RetrySafety        string                   `json:"retry_safety"`
+	VerificationMethod string                   `json:"verification_method"`
+	IdempotencyHeader  string                   `json:"idempotency_header,omitempty"`
+	ScopeOrigin        string                   `json:"scope_origin,omitempty"`
+	VerificationURL    string                   `json:"verification_url,omitempty"`
+	LocalPreparation   *LocalPreparationBinding `json:"local_preparation,omitempty"`
+}
+
+// LocalPreparationBinding is private pinned policy, derived from the exact
+// call before approval. It verifies only browser-local state, never a recipient
+// effect or form submission. No credential values are stored here.
+type LocalPreparationBinding struct {
+	SessionID          string `json:"browser_session_id"`
+	ExpectedURL        string `json:"expected_url"`
+	ObservationVersion uint64 `json:"observation_version"`
 }
 
 type EffectRecord struct {
@@ -93,10 +103,10 @@ func EffectIdentity(b ActionBinding, logicalRef string) (string, string, error) 
 	return "effect_" + digest(b.OwnerID+"\x00"+b.TaskID+"\x00"+logicalRef), digest(string(encoded)), nil
 }
 
-func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract) (EffectPolicy, error) {
+func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract, calls ...*toolbrokerv1.ToolCall) (EffectPolicy, error) {
 	p := EffectPolicy{RetrySafety: "unsafe", VerificationMethod: "none"}
 	if c := contract.GetEffectContract(); c != nil {
-		p = EffectPolicy{c.GetRetrySafety(), c.GetVerificationMethod(), c.GetIdempotencyHeader(), c.GetScopeOrigin(), c.GetVerificationUrl()}
+		p = EffectPolicy{RetrySafety: c.GetRetrySafety(), VerificationMethod: c.GetVerificationMethod(), IdempotencyHeader: c.GetIdempotencyHeader(), ScopeOrigin: c.GetScopeOrigin(), VerificationURL: c.GetVerificationUrl()}
 	}
 	if p.RetrySafety == "" {
 		p.RetrySafety = "unsafe"
@@ -105,10 +115,26 @@ func ResolveEffectPolicy(b ActionBinding, contract *toolbrokerv1.ToolContract) (
 		p.VerificationMethod = "none"
 	}
 	if b.Effect == EffectRead {
+		if (b.ToolName == "browser.read" || b.ToolName == "browser.open" || b.ToolName == "browser.navigate") && (b.ContractRevision != "2" || p.RetrySafety != "read_only" || p.VerificationMethod != "read_result") {
+			return p, fmt.Errorf("browser navigation requires the enforced read-only revision 2 contract")
+		}
 		if p.RetrySafety != "unsafe" && p.RetrySafety != "read_only" && p.RetrySafety != "external_idempotency" {
 			return p, fmt.Errorf("read effect contract is incompatible")
 		}
 		p.RetrySafety, p.VerificationMethod, p.IdempotencyHeader = "read_only", "read_result", ""
+		return p, nil
+	}
+	if p.VerificationMethod == "local_browser_preparation_v1" {
+		if (b.ToolName != "browser.prepare_fill" && b.ToolName != "browser.prepare_type") || b.Effect != EffectPrepare || b.ContractRevision != "2" || p.RetrySafety != "unsafe" || p.IdempotencyHeader != "" || p.ScopeOrigin != "" || p.VerificationURL != "" || len(calls) != 1 || calls[0] == nil || calls[0].GetToolName() != b.ToolName {
+			return p, fmt.Errorf("local preparation requires its exact browser contract and call")
+		}
+		call := calls[0]
+		hash, err := ArgumentsHash(call.GetArgsJson())
+		var args LocalPreparationBinding
+		if err != nil || hash != b.ArgsHash || json.Unmarshal([]byte(call.GetArgsJson()), &args) != nil || args.SessionID == "" || args.ObservationVersion == 0 || args.ExpectedURL == "" || b.Resource != "browser:"+args.SessionID+":"+args.ExpectedURL {
+			return p, fmt.Errorf("local preparation binding is invalid")
+		}
+		p.LocalPreparation = &args
 		return p, nil
 	}
 	switch p.RetrySafety {
@@ -221,11 +247,36 @@ func (s *Service) Outcome(ctx context.Context, g Grant, result *toolbrokerv1.Too
 			if g.Binding.Effect == EffectPrepare {
 				e.Verdict = StateConfirmed
 			}
+		case "local_browser_preparation_v1":
+			e.Verdict = localPreparationVerdict(record.Policy, g.Binding, result.GetResultJson())
 		case "external_receipt_v1":
 			e.Verdict, e.ArtifactDigest = receiptVerdict(record, result.GetResultJson(), false)
 		}
 	}
 	return store.RecordDispatchOutcome(ctx, g.ID, outcome, e)
+}
+
+func localPreparationVerdict(policy EffectPolicy, binding ActionBinding, raw string) EffectState {
+	pinned := policy.LocalPreparation
+	if pinned == nil || binding.Effect != EffectPrepare || binding.ContractRevision != "2" || (binding.ToolName != "browser.prepare_fill" && binding.ToolName != "browser.prepare_type") || len(raw) > 512*1024 {
+		return StateUnknown
+	}
+	if _, err := canonicalJSON(raw); err != nil {
+		return StateUnknown
+	}
+	var response struct {
+		LocalPreparationBinding
+		OK               bool            `json:"ok"`
+		LocalPreparation bool            `json:"local_preparation"`
+		NetworkState     string          `json:"network_state"`
+		FinalURL         string          `json:"final_url"`
+		Error            json.RawMessage `json:"error"`
+		Truncated        bool            `json:"truncated"`
+	}
+	if json.Unmarshal([]byte(raw), &response) != nil || !response.OK || !response.LocalPreparation || response.NetworkState != "frozen" || len(response.Error) != 0 || response.Truncated || response.SessionID != pinned.SessionID || response.FinalURL != pinned.ExpectedURL || response.ObservationVersion <= pinned.ObservationVersion {
+		return StateUnknown
+	}
+	return StateConfirmed
 }
 
 // The explicitly contracted recipient returns this envelope in an HTTP body.

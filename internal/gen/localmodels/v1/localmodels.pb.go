@@ -188,8 +188,13 @@ type ModelProfile struct {
 	PreprocessingVersion string                 `protobuf:"bytes,17,opt,name=preprocessing_version,json=preprocessingVersion,proto3" json:"preprocessing_version,omitempty"`
 	Dimensions           uint32                 `protobuf:"varint,18,opt,name=dimensions,proto3" json:"dimensions,omitempty"`
 	LicenseUrl           string                 `protobuf:"bytes,19,opt,name=license_url,json=licenseUrl,proto3" json:"license_url,omitempty"`
-	unknownFields        protoimpl.UnknownFields
-	sizeCache            protoimpl.SizeCache
+	// Operator-selected lane; empty/gpu is the serialized GPU lane, cpu is separate.
+	PreferredDevice string `protobuf:"bytes,20,opt,name=preferred_device,json=preferredDevice,proto3" json:"preferred_device,omitempty"`
+	// Conservative full-process peak including framework, CPU tensors and workspaces.
+	PeakRamMib    uint32 `protobuf:"varint,21,opt,name=peak_ram_mib,json=peakRamMib,proto3" json:"peak_ram_mib,omitempty"`
+	PeakCpuRamMib uint32 `protobuf:"varint,22,opt,name=peak_cpu_ram_mib,json=peakCpuRamMib,proto3" json:"peak_cpu_ram_mib,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ModelProfile) Reset() {
@@ -355,6 +360,27 @@ func (x *ModelProfile) GetLicenseUrl() string {
 	return ""
 }
 
+func (x *ModelProfile) GetPreferredDevice() string {
+	if x != nil {
+		return x.PreferredDevice
+	}
+	return ""
+}
+
+func (x *ModelProfile) GetPeakRamMib() uint32 {
+	if x != nil {
+		return x.PeakRamMib
+	}
+	return 0
+}
+
+func (x *ModelProfile) GetPeakCpuRamMib() uint32 {
+	if x != nil {
+		return x.PeakCpuRamMib
+	}
+	return 0
+}
+
 type Catalog struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Models        []*ModelProfile        `protobuf:"bytes,1,rep,name=models,proto3" json:"models,omitempty"`
@@ -484,22 +510,26 @@ func (x *GPUStatus) GetDriver() string {
 }
 
 type ManagerStatus struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	State           string                 `protobuf:"bytes,1,opt,name=state,proto3" json:"state,omitempty"`
-	Queued          uint32                 `protobuf:"varint,2,opt,name=queued,proto3" json:"queued,omitempty"`
-	ActiveModel     string                 `protobuf:"bytes,3,opt,name=active_model,json=activeModel,proto3" json:"active_model,omitempty"`
-	ActiveDevice    string                 `protobuf:"bytes,4,opt,name=active_device,json=activeDevice,proto3" json:"active_device,omitempty"`
-	Gpu             *GPUStatus             `protobuf:"bytes,5,opt,name=gpu,proto3" json:"gpu,omitempty"`
-	BudgetMib       uint32                 `protobuf:"varint,6,opt,name=budget_mib,json=budgetMib,proto3" json:"budget_mib,omitempty"`
-	ReserveMib      uint32                 `protobuf:"varint,7,opt,name=reserve_mib,json=reserveMib,proto3" json:"reserve_mib,omitempty"`
-	Completed       uint64                 `protobuf:"varint,8,opt,name=completed,proto3" json:"completed,omitempty"`
-	Failed          uint64                 `protobuf:"varint,9,opt,name=failed,proto3" json:"failed,omitempty"`
-	CpuFallbacks    uint64                 `protobuf:"varint,10,opt,name=cpu_fallbacks,json=cpuFallbacks,proto3" json:"cpu_fallbacks,omitempty"`
-	OomRetries      uint64                 `protobuf:"varint,11,opt,name=oom_retries,json=oomRetries,proto3" json:"oom_retries,omitempty"`
-	ObservedPeakMib uint32                 `protobuf:"varint,12,opt,name=observed_peak_mib,json=observedPeakMib,proto3" json:"observed_peak_mib,omitempty"`
-	BackendHealthy  bool                   `protobuf:"varint,13,opt,name=backend_healthy,json=backendHealthy,proto3" json:"backend_healthy,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	State              string                 `protobuf:"bytes,1,opt,name=state,proto3" json:"state,omitempty"`
+	Queued             uint32                 `protobuf:"varint,2,opt,name=queued,proto3" json:"queued,omitempty"`
+	ActiveModel        string                 `protobuf:"bytes,3,opt,name=active_model,json=activeModel,proto3" json:"active_model,omitempty"`
+	ActiveDevice       string                 `protobuf:"bytes,4,opt,name=active_device,json=activeDevice,proto3" json:"active_device,omitempty"`
+	Gpu                *GPUStatus             `protobuf:"bytes,5,opt,name=gpu,proto3" json:"gpu,omitempty"`
+	BudgetMib          uint32                 `protobuf:"varint,6,opt,name=budget_mib,json=budgetMib,proto3" json:"budget_mib,omitempty"`
+	ReserveMib         uint32                 `protobuf:"varint,7,opt,name=reserve_mib,json=reserveMib,proto3" json:"reserve_mib,omitempty"`
+	Completed          uint64                 `protobuf:"varint,8,opt,name=completed,proto3" json:"completed,omitempty"`
+	Failed             uint64                 `protobuf:"varint,9,opt,name=failed,proto3" json:"failed,omitempty"`
+	CpuFallbacks       uint64                 `protobuf:"varint,10,opt,name=cpu_fallbacks,json=cpuFallbacks,proto3" json:"cpu_fallbacks,omitempty"`
+	OomRetries         uint64                 `protobuf:"varint,11,opt,name=oom_retries,json=oomRetries,proto3" json:"oom_retries,omitempty"`
+	ObservedPeakMib    uint32                 `protobuf:"varint,12,opt,name=observed_peak_mib,json=observedPeakMib,proto3" json:"observed_peak_mib,omitempty"`
+	BackendHealthy     bool                   `protobuf:"varint,13,opt,name=backend_healthy,json=backendHealthy,proto3" json:"backend_healthy,omitempty"`
+	CpuLane            *ManagerStatus         `protobuf:"bytes,14,opt,name=cpu_lane,json=cpuLane,proto3" json:"cpu_lane,omitempty"`
+	ProcessRamMib      uint32                 `protobuf:"varint,15,opt,name=process_ram_mib,json=processRamMib,proto3" json:"process_ram_mib,omitempty"`
+	ObservedPeakRamMib uint32                 `protobuf:"varint,16,opt,name=observed_peak_ram_mib,json=observedPeakRamMib,proto3" json:"observed_peak_ram_mib,omitempty"`
+	RamBudgetMib       uint32                 `protobuf:"varint,17,opt,name=ram_budget_mib,json=ramBudgetMib,proto3" json:"ram_budget_mib,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *ManagerStatus) Reset() {
@@ -621,6 +651,34 @@ func (x *ManagerStatus) GetBackendHealthy() bool {
 		return x.BackendHealthy
 	}
 	return false
+}
+
+func (x *ManagerStatus) GetCpuLane() *ManagerStatus {
+	if x != nil {
+		return x.CpuLane
+	}
+	return nil
+}
+
+func (x *ManagerStatus) GetProcessRamMib() uint32 {
+	if x != nil {
+		return x.ProcessRamMib
+	}
+	return 0
+}
+
+func (x *ManagerStatus) GetObservedPeakRamMib() uint32 {
+	if x != nil {
+		return x.ObservedPeakRamMib
+	}
+	return 0
+}
+
+func (x *ManagerStatus) GetRamBudgetMib() uint32 {
+	if x != nil {
+		return x.RamBudgetMib
+	}
+	return 0
 }
 
 type TextInput struct {
@@ -966,6 +1024,8 @@ type InferRequest struct {
 	// Applies to queueing and execution; the caller's shorter RPC deadline wins.
 	TimeoutMs uint32 `protobuf:"varint,3,opt,name=timeout_ms,json=timeoutMs,proto3" json:"timeout_ms,omitempty"`
 	CpuOnly   bool   `protobuf:"varint,4,opt,name=cpu_only,json=cpuOnly,proto3" json:"cpu_only,omitempty"`
+	// Internal caller identity used solely for bounded round-robin scheduling.
+	CallerId string `protobuf:"bytes,5,opt,name=caller_id,json=callerId,proto3" json:"caller_id,omitempty"`
 	// Types that are valid to be assigned to Input:
 	//
 	//	*InferRequest_Embed
@@ -1034,6 +1094,13 @@ func (x *InferRequest) GetCpuOnly() bool {
 		return x.CpuOnly
 	}
 	return false
+}
+
+func (x *InferRequest) GetCallerId() string {
+	if x != nil {
+		return x.CallerId
+	}
+	return ""
 }
 
 func (x *InferRequest) GetInput() isInferRequest_Input {
@@ -1556,6 +1623,7 @@ type InferResponse struct {
 	QueueMs        uint64                 `protobuf:"varint,6,opt,name=queue_ms,json=queueMs,proto3" json:"queue_ms,omitempty"`
 	ExecutionMs    uint64                 `protobuf:"varint,7,opt,name=execution_ms,json=executionMs,proto3" json:"execution_ms,omitempty"`
 	PeakDeviceMib  uint32                 `protobuf:"varint,8,opt,name=peak_device_mib,json=peakDeviceMib,proto3" json:"peak_device_mib,omitempty"`
+	PeakRamMib     uint32                 `protobuf:"varint,9,opt,name=peak_ram_mib,json=peakRamMib,proto3" json:"peak_ram_mib,omitempty"`
 	// Types that are valid to be assigned to Output:
 	//
 	//	*InferResponse_Embed
@@ -1654,6 +1722,13 @@ func (x *InferResponse) GetPeakDeviceMib() uint32 {
 	return 0
 }
 
+func (x *InferResponse) GetPeakRamMib() uint32 {
+	if x != nil {
+		return x.PeakRamMib
+	}
+	return 0
+}
+
 func (x *InferResponse) GetOutput() isInferResponse_Output {
 	if x != nil {
 		return x.Output
@@ -1745,7 +1820,7 @@ var File_localmodels_v1_localmodels_proto protoreflect.FileDescriptor
 const file_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\n" +
 	" localmodels/v1/localmodels.proto\x12\x15butler.localmodels.v1\"\a\n" +
-	"\x05Empty\"\x8c\x05\n" +
+	"\x05Empty\"\x82\x06\n" +
 	"\fModelProfile\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05model\x18\x02 \x01(\tR\x05model\x12\x1a\n" +
@@ -1770,7 +1845,11 @@ const file_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"dimensions\x18\x12 \x01(\rR\n" +
 	"dimensions\x12\x1f\n" +
 	"\vlicense_url\x18\x13 \x01(\tR\n" +
-	"licenseUrl\"F\n" +
+	"licenseUrl\x12)\n" +
+	"\x10preferred_device\x18\x14 \x01(\tR\x0fpreferredDevice\x12 \n" +
+	"\fpeak_ram_mib\x18\x15 \x01(\rR\n" +
+	"peakRamMib\x12'\n" +
+	"\x10peak_cpu_ram_mib\x18\x16 \x01(\rR\rpeakCpuRamMib\"F\n" +
 	"\aCatalog\x12;\n" +
 	"\x06models\x18\x01 \x03(\v2#.butler.localmodels.v1.ModelProfileR\x06models\"\xa8\x01\n" +
 	"\tGPUStatus\x12\x1c\n" +
@@ -1779,7 +1858,7 @@ const file_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\bused_mib\x18\x03 \x01(\rR\ausedMib\x12\x19\n" +
 	"\bfree_mib\x18\x04 \x01(\rR\afreeMib\x12\x12\n" +
 	"\x04name\x18\x05 \x01(\tR\x04name\x12\x16\n" +
-	"\x06driver\x18\x06 \x01(\tR\x06driver\"\xca\x03\n" +
+	"\x06driver\x18\x06 \x01(\tR\x06driver\"\x8c\x05\n" +
 	"\rManagerStatus\x12\x14\n" +
 	"\x05state\x18\x01 \x01(\tR\x05state\x12\x16\n" +
 	"\x06queued\x18\x02 \x01(\rR\x06queued\x12!\n" +
@@ -1797,7 +1876,11 @@ const file_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\voom_retries\x18\v \x01(\x04R\n" +
 	"oomRetries\x12*\n" +
 	"\x11observed_peak_mib\x18\f \x01(\rR\x0fobservedPeakMib\x12'\n" +
-	"\x0fbackend_healthy\x18\r \x01(\bR\x0ebackendHealthy\"E\n" +
+	"\x0fbackend_healthy\x18\r \x01(\bR\x0ebackendHealthy\x12?\n" +
+	"\bcpu_lane\x18\x0e \x01(\v2$.butler.localmodels.v1.ManagerStatusR\acpuLane\x12&\n" +
+	"\x0fprocess_ram_mib\x18\x0f \x01(\rR\rprocessRamMib\x121\n" +
+	"\x15observed_peak_ram_mib\x18\x10 \x01(\rR\x12observedPeakRamMib\x12$\n" +
+	"\x0eram_budget_mib\x18\x11 \x01(\rR\framBudgetMib\"E\n" +
 	"\tTextInput\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04text\x18\x02 \x01(\tR\x04text\x12\x14\n" +
@@ -1824,7 +1907,7 @@ const file_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\n" +
 	"MediaInput\x12\x18\n" +
 	"\acontent\x18\x01 \x01(\fR\acontent\x12\x1b\n" +
-	"\tmime_type\x18\x02 \x01(\tR\bmimeType\"\xc8\x03\n" +
+	"\tmime_type\x18\x02 \x01(\tR\bmimeType\"\xe5\x03\n" +
 	"\fInferRequest\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x12\x1d\n" +
@@ -1832,7 +1915,8 @@ const file_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"profile_id\x18\x02 \x01(\tR\tprofileId\x12\x1d\n" +
 	"\n" +
 	"timeout_ms\x18\x03 \x01(\rR\ttimeoutMs\x12\x19\n" +
-	"\bcpu_only\x18\x04 \x01(\bR\acpuOnly\x129\n" +
+	"\bcpu_only\x18\x04 \x01(\bR\acpuOnly\x12\x1b\n" +
+	"\tcaller_id\x18\x05 \x01(\tR\bcallerId\x129\n" +
 	"\x05embed\x18\n" +
 	" \x01(\v2!.butler.localmodels.v1.EmbedInputH\x00R\x05embed\x12<\n" +
 	"\x06rerank\x18\v \x01(\v2\".butler.localmodels.v1.RerankInputH\x00R\x06rerank\x12?\n" +
@@ -1867,7 +1951,7 @@ const file_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\x06scores\x18\x01 \x03(\v2\x1c.butler.localmodels.v1.ScoreR\x06scores\x12+\n" +
 	"\x11insufficient_data\x18\x02 \x01(\bR\x10insufficientData\"+\n" +
 	"\vMediaOutput\x12\x1c\n" +
-	"\tembedding\x18\x01 \x03(\x02R\tembedding\"\xd8\x04\n" +
+	"\tembedding\x18\x01 \x03(\x02R\tembedding\"\xfa\x04\n" +
 	"\rInferResponse\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x12\x1d\n" +
@@ -1878,7 +1962,9 @@ const file_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\x0ffallback_reason\x18\x05 \x01(\tR\x0efallbackReason\x12\x19\n" +
 	"\bqueue_ms\x18\x06 \x01(\x04R\aqueueMs\x12!\n" +
 	"\fexecution_ms\x18\a \x01(\x04R\vexecutionMs\x12&\n" +
-	"\x0fpeak_device_mib\x18\b \x01(\rR\rpeakDeviceMib\x12:\n" +
+	"\x0fpeak_device_mib\x18\b \x01(\rR\rpeakDeviceMib\x12 \n" +
+	"\fpeak_ram_mib\x18\t \x01(\rR\n" +
+	"peakRamMib\x12:\n" +
 	"\x05embed\x18\n" +
 	" \x01(\v2\".butler.localmodels.v1.EmbedOutputH\x00R\x05embed\x12=\n" +
 	"\x06rerank\x18\v \x01(\v2#.butler.localmodels.v1.RerankOutputH\x00R\x06rerank\x12@\n" +
@@ -1947,34 +2033,35 @@ var file_localmodels_v1_localmodels_proto_depIdxs = []int32{
 	0,  // 0: butler.localmodels.v1.ModelProfile.capabilities:type_name -> butler.localmodels.v1.Capability
 	3,  // 1: butler.localmodels.v1.Catalog.models:type_name -> butler.localmodels.v1.ModelProfile
 	5,  // 2: butler.localmodels.v1.ManagerStatus.gpu:type_name -> butler.localmodels.v1.GPUStatus
-	7,  // 3: butler.localmodels.v1.EmbedInput.texts:type_name -> butler.localmodels.v1.TextInput
-	1,  // 4: butler.localmodels.v1.EmbedInput.task:type_name -> butler.localmodels.v1.EmbeddingTask
-	7,  // 5: butler.localmodels.v1.RerankInput.candidates:type_name -> butler.localmodels.v1.TextInput
-	8,  // 6: butler.localmodels.v1.InferRequest.embed:type_name -> butler.localmodels.v1.EmbedInput
-	9,  // 7: butler.localmodels.v1.InferRequest.rerank:type_name -> butler.localmodels.v1.RerankInput
-	10, // 8: butler.localmodels.v1.InferRequest.extract:type_name -> butler.localmodels.v1.ExtractInput
-	11, // 9: butler.localmodels.v1.InferRequest.classify:type_name -> butler.localmodels.v1.ClassifyInput
-	12, // 10: butler.localmodels.v1.InferRequest.media:type_name -> butler.localmodels.v1.MediaInput
-	14, // 11: butler.localmodels.v1.EmbedOutput.vectors:type_name -> butler.localmodels.v1.Vector
-	16, // 12: butler.localmodels.v1.RerankOutput.scores:type_name -> butler.localmodels.v1.Score
-	18, // 13: butler.localmodels.v1.ExtractOutput.spans:type_name -> butler.localmodels.v1.Span
-	16, // 14: butler.localmodels.v1.ClassifyOutput.scores:type_name -> butler.localmodels.v1.Score
-	15, // 15: butler.localmodels.v1.InferResponse.embed:type_name -> butler.localmodels.v1.EmbedOutput
-	17, // 16: butler.localmodels.v1.InferResponse.rerank:type_name -> butler.localmodels.v1.RerankOutput
-	19, // 17: butler.localmodels.v1.InferResponse.extract:type_name -> butler.localmodels.v1.ExtractOutput
-	20, // 18: butler.localmodels.v1.InferResponse.classify:type_name -> butler.localmodels.v1.ClassifyOutput
-	21, // 19: butler.localmodels.v1.InferResponse.media:type_name -> butler.localmodels.v1.MediaOutput
-	2,  // 20: butler.localmodels.v1.LocalModelsService.Describe:input_type -> butler.localmodels.v1.Empty
-	2,  // 21: butler.localmodels.v1.LocalModelsService.Status:input_type -> butler.localmodels.v1.Empty
-	13, // 22: butler.localmodels.v1.LocalModelsService.Infer:input_type -> butler.localmodels.v1.InferRequest
-	4,  // 23: butler.localmodels.v1.LocalModelsService.Describe:output_type -> butler.localmodels.v1.Catalog
-	6,  // 24: butler.localmodels.v1.LocalModelsService.Status:output_type -> butler.localmodels.v1.ManagerStatus
-	22, // 25: butler.localmodels.v1.LocalModelsService.Infer:output_type -> butler.localmodels.v1.InferResponse
-	23, // [23:26] is the sub-list for method output_type
-	20, // [20:23] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	6,  // 3: butler.localmodels.v1.ManagerStatus.cpu_lane:type_name -> butler.localmodels.v1.ManagerStatus
+	7,  // 4: butler.localmodels.v1.EmbedInput.texts:type_name -> butler.localmodels.v1.TextInput
+	1,  // 5: butler.localmodels.v1.EmbedInput.task:type_name -> butler.localmodels.v1.EmbeddingTask
+	7,  // 6: butler.localmodels.v1.RerankInput.candidates:type_name -> butler.localmodels.v1.TextInput
+	8,  // 7: butler.localmodels.v1.InferRequest.embed:type_name -> butler.localmodels.v1.EmbedInput
+	9,  // 8: butler.localmodels.v1.InferRequest.rerank:type_name -> butler.localmodels.v1.RerankInput
+	10, // 9: butler.localmodels.v1.InferRequest.extract:type_name -> butler.localmodels.v1.ExtractInput
+	11, // 10: butler.localmodels.v1.InferRequest.classify:type_name -> butler.localmodels.v1.ClassifyInput
+	12, // 11: butler.localmodels.v1.InferRequest.media:type_name -> butler.localmodels.v1.MediaInput
+	14, // 12: butler.localmodels.v1.EmbedOutput.vectors:type_name -> butler.localmodels.v1.Vector
+	16, // 13: butler.localmodels.v1.RerankOutput.scores:type_name -> butler.localmodels.v1.Score
+	18, // 14: butler.localmodels.v1.ExtractOutput.spans:type_name -> butler.localmodels.v1.Span
+	16, // 15: butler.localmodels.v1.ClassifyOutput.scores:type_name -> butler.localmodels.v1.Score
+	15, // 16: butler.localmodels.v1.InferResponse.embed:type_name -> butler.localmodels.v1.EmbedOutput
+	17, // 17: butler.localmodels.v1.InferResponse.rerank:type_name -> butler.localmodels.v1.RerankOutput
+	19, // 18: butler.localmodels.v1.InferResponse.extract:type_name -> butler.localmodels.v1.ExtractOutput
+	20, // 19: butler.localmodels.v1.InferResponse.classify:type_name -> butler.localmodels.v1.ClassifyOutput
+	21, // 20: butler.localmodels.v1.InferResponse.media:type_name -> butler.localmodels.v1.MediaOutput
+	2,  // 21: butler.localmodels.v1.LocalModelsService.Describe:input_type -> butler.localmodels.v1.Empty
+	2,  // 22: butler.localmodels.v1.LocalModelsService.Status:input_type -> butler.localmodels.v1.Empty
+	13, // 23: butler.localmodels.v1.LocalModelsService.Infer:input_type -> butler.localmodels.v1.InferRequest
+	4,  // 24: butler.localmodels.v1.LocalModelsService.Describe:output_type -> butler.localmodels.v1.Catalog
+	6,  // 25: butler.localmodels.v1.LocalModelsService.Status:output_type -> butler.localmodels.v1.ManagerStatus
+	22, // 26: butler.localmodels.v1.LocalModelsService.Infer:output_type -> butler.localmodels.v1.InferResponse
+	24, // [24:27] is the sub-list for method output_type
+	21, // [21:24] is the sub-list for method input_type
+	21, // [21:21] is the sub-list for extension type_name
+	21, // [21:21] is the sub-list for extension extendee
+	0,  // [0:21] is the sub-list for field type_name
 }
 
 func init() { file_localmodels_v1_localmodels_proto_init() }

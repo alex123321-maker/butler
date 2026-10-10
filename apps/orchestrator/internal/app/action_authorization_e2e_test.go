@@ -32,6 +32,7 @@ import (
 	"github.com/butler/butler/internal/security/egress/egresstest"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/protobuf/proto"
 )
 
 // This fixture isolates the Broker/approval/credential contract. Restartable
@@ -168,7 +169,7 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 	authority := httptest.NewServer(actionauth.NewContextHandler(token, reader))
 	defer authority.Close()
 	secret := "private-browser-password-7"
-	_, err = credentials.NewStore(pool).Create(ctx, credentials.Record{Alias: "browser-account", SecretType: "password", TargetType: "browser", Status: credentials.StatusActive, AllowedDomains: []string{"external.test"}, AllowedTools: []string{"browser.fill"}, ApprovalPolicy: credentials.ApprovalPolicyAlwaysConfirm, SecretRef: "env://BUTLER_BROWSER_TEST_SECRET", MetadataJSON: "{}"})
+	_, err = credentials.NewStore(pool).Create(ctx, credentials.Record{Alias: "browser-account", SecretType: "password", TargetType: "browser", Status: credentials.StatusActive, AllowedDomains: []string{"external.test"}, AllowedTools: []string{"browser.prepare_fill"}, ApprovalPolicy: credentials.ApprovalPolicyAlwaysConfirm, SecretRef: "env://BUTLER_BROWSER_TEST_SECRET", MetadataJSON: "{}"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -289,6 +290,11 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 		if json.Unmarshal([]byte(result.GetResultJson()), &observation) != nil {
 			t.Fatal("invalid observation")
 		}
+		if strings.HasPrefix(call.GetToolName(), "browser.prepare_") &&
+			(result.GetStatus() != "completed" || result.GetEffectState() != string(actionauth.StateConfirmed) ||
+				observation["local_preparation"] != true || observation["network_state"] != "frozen" || submits.Load() != 0) {
+			t.Fatal("local preparation lacks frozen-network proof or produced an external submission")
+		}
 		if _, err := pool.Exec(ctx, `UPDATE runs SET status='tool_pending',current_state='tool_pending' WHERE run_id=$1`, run.GetRunId()); err != nil {
 			t.Fatal(err)
 		}
@@ -301,7 +307,7 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 	password := args("#password")
 	password["value"] = map[string]string{"type": "credential_ref", "alias": "browser-account", "field": "password"}
 	ref := &toolbrokerv1.CredentialRef{Type: "credential_ref", Alias: "browser-account", Field: "password"}
-	denied := newCall("browser.fill", password, ref)
+	denied := newCall("browser.prepare_fill", password, ref)
 	prepared, err := client.PrepareAction(ctx, denied)
 	if err != nil || !prepared.RequiresApproval {
 		t.Fatal("credential preparation did not require approval")
@@ -309,12 +315,12 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 	if _, err := client.AuthorizeAction(ctx, denied, prepared.Binding.ActionID, "", ""); err == nil {
 		t.Fatal("unapproved credential action allowed")
 	}
-	passwordCall := newCall("browser.fill", password, ref)
+	passwordCall := newCall("browser.prepare_fill", password, ref)
 	dispatch(passwordCall)
 	for _, field := range []struct{ id, value string }{{"a", "one"}, {"b", "two"}} {
 		request := args("#" + field.id)
 		request["value"] = field.value
-		dispatch(newCall("browser.fill", request))
+		dispatch(newCall("browser.prepare_fill", request))
 	}
 	buy := newCall("browser.click", args("#submit"))
 	p, err := client.PrepareAction(ctx, buy)
@@ -334,9 +340,9 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	changed := *buy
+	changed := proto.Clone(buy).(*toolbrokerv1.ToolCall)
 	changed.ArgsJson = strings.Replace(buy.GetArgsJson(), "#submit", "#password", 1)
-	if _, err := client.ExecuteAuthorizedToolCall(ctx, &changed, grant); err != nil {
+	if _, err := client.ExecuteAuthorizedToolCall(ctx, changed, grant); err != nil {
 		t.Fatal(err)
 	}
 	if submits.Load() != 0 {

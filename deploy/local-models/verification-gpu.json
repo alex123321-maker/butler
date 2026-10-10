@@ -4,6 +4,30 @@
   "catalog": {
     "models": [
       {
+        "id": "embeddinggemma2-image-bf16-v1",
+        "model": "google/embeddinggemma-2",
+        "revision": "914f7f89142e33e77833254d9c9b90c3cef7303b",
+        "format": "safetensors",
+        "precision": "BF16",
+        "license": "Apache-2.0",
+        "sourceUrl": "https://huggingface.co/google/embeddinggemma-2",
+        "runtime": "torch-sentence-transformers",
+        "runtimeVersion": "torch2.10.0+cu128/transformers5.19.0/sentence-transformers6.1.0",
+        "capabilities": [
+          "CAPABILITY_MEDIA"
+        ],
+        "maxBatch": 1,
+        "maxInputBytes": 1048576,
+        "contextTokens": 2048,
+        "peakVramMib": 4096,
+        "cpuFallback": true,
+        "enabled": true,
+        "preprocessingVersion": "embeddinggemma2-image-v1",
+        "dimensions": 768,
+        "licenseUrl": "https://ai.google.dev/gemma/apache_2",
+        "peakRamMib": 3072
+      },
+      {
         "id": "embeddinggemma2-text-bf16-v1",
         "model": "google/embeddinggemma-2",
         "revision": "914f7f89142e33e77833254d9c9b90c3cef7303b",
@@ -24,21 +48,69 @@
         "enabled": true,
         "preprocessingVersion": "embeddinggemma2-retrieval-v1",
         "dimensions": 768,
-        "licenseUrl": "https://ai.google.dev/gemma/apache_2"
+        "licenseUrl": "https://ai.google.dev/gemma/apache_2",
+        "peakRamMib": 2560
+      },
+      {
+        "id": "qwen3-reranker-0.6b-bf16-v1",
+        "model": "Qwen/Qwen3-Reranker-0.6B",
+        "revision": "e61197ed45024b0ed8a2d74b80b4d909f1255473",
+        "format": "safetensors",
+        "precision": "BF16",
+        "license": "Apache-2.0",
+        "sourceUrl": "https://huggingface.co/Qwen/Qwen3-Reranker-0.6B",
+        "runtime": "torch-transformers",
+        "runtimeVersion": "torch2.10.0+cu128/transformers5.19.0",
+        "capabilities": [
+          "CAPABILITY_RERANK"
+        ],
+        "maxBatch": 4,
+        "maxInputBytes": 8192,
+        "contextTokens": 2048,
+        "peakVramMib": 4096,
+        "cpuFallback": true,
+        "enabled": true,
+        "preprocessingVersion": "qwen3-rerank-yesno-v1",
+        "licenseUrl": "https://github.com/QwenLM/Qwen3-Embedding/blob/main/LICENSE",
+        "peakRamMib": 2048
+      },
+      {
+        "id": "gliner2.5-multi-cpu-v1",
+        "model": "fastino/gliner2.5-multi-v1",
+        "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "format": "safetensors",
+        "precision": "FP32",
+        "license": "Apache-2.0",
+        "sourceUrl": "https://huggingface.co/fastino/gliner2.5-multi-v1",
+        "runtime": "torch-gliner2",
+        "runtimeVersion": "torch2.10.0+cu128/transformers5.19.0/gliner2.1.0",
+        "capabilities": [
+          "CAPABILITY_EXTRACT",
+          "CAPABILITY_CLASSIFY"
+        ],
+        "maxBatch": 1,
+        "maxInputBytes": 2048,
+        "contextTokens": 512,
+        "cpuFallback": true,
+        "enabled": true,
+        "preprocessingVersion": "gliner2.5-schema-v1",
+        "licenseUrl": "https://github.com/fastino-ai/GLiNER2/blob/main/LICENSE",
+        "preferredDevice": "cpu",
+        "peakRamMib": 3072
       }
     ]
   },
   "context_limit": "explicit InvalidArgument; no truncation",
   "cpu": "actual FP32 inference",
   "external_network": "container launched with --network none",
-  "generated_at": "2026-10-10T18:42:17Z",
+  "generated_at": "2026-10-10T20:57:22Z",
   "idle_unload": true,
   "large_batch": "4 documents, 8000 raw UTF-8 bytes",
   "measurements": [
     {
       "id": "index-0",
       "device": "gpu",
-      "latency_ms": 8687,
+      "latency_ms": 9191,
       "queue_ms": 0,
       "peak_mib": 729
     },
@@ -52,14 +124,14 @@
     {
       "id": "index-8",
       "device": "gpu",
-      "latency_ms": 85,
+      "latency_ms": 86,
       "queue_ms": 0,
       "peak_mib": 751
     },
     {
       "id": "q-durable",
       "device": "gpu",
-      "latency_ms": 84,
+      "latency_ms": 90,
       "queue_ms": 0,
       "peak_mib": 751
     },
@@ -73,28 +145,28 @@
     {
       "id": "q-vector",
       "device": "gpu",
-      "latency_ms": 82,
+      "latency_ms": 80,
       "queue_ms": 0,
       "peak_mib": 751
     },
     {
       "id": "q-broker",
       "device": "gpu",
-      "latency_ms": 82,
+      "latency_ms": 79,
       "queue_ms": 0,
       "peak_mib": 751
     },
     {
       "id": "q-order",
       "device": "gpu",
-      "latency_ms": 78,
+      "latency_ms": 81,
       "queue_ms": 0,
       "peak_mib": 751
     },
     {
       "id": "q-stop",
       "device": "gpu",
-      "latency_ms": 84,
+      "latency_ms": 85,
       "queue_ms": 0,
       "peak_mib": 751
     },
@@ -115,7 +187,7 @@
     {
       "id": "q-exception",
       "device": "gpu",
-      "latency_ms": 79,
+      "latency_ms": 80,
       "queue_ms": 0,
       "peak_mib": 751
     },
@@ -129,56 +201,63 @@
     {
       "id": "q-code-normalize",
       "device": "gpu",
-      "latency_ms": 78,
+      "latency_ms": 81,
       "queue_ms": 0,
       "peak_mib": 751
     },
     {
       "id": "q-code-dedupe",
       "device": "gpu",
-      "latency_ms": 84,
+      "latency_ms": 80,
       "queue_ms": 0,
       "peak_mib": 751
     },
     {
       "id": "mrl-256",
       "device": "gpu",
-      "latency_ms": 138,
+      "latency_ms": 126,
       "queue_ms": 0,
       "peak_mib": 751
     },
     {
       "id": "parallel-index",
       "device": "gpu",
-      "latency_ms": 80,
+      "latency_ms": 81,
       "queue_ms": 0,
       "peak_mib": 751
     },
     {
       "id": "parallel-search",
       "device": "gpu",
-      "latency_ms": 80,
-      "queue_ms": 80,
+      "latency_ms": 78,
+      "queue_ms": 81,
       "peak_mib": 751
     },
     {
       "id": "near-input-limit",
       "device": "gpu",
-      "latency_ms": 280,
+      "latency_ms": 281,
       "queue_ms": 0,
       "peak_mib": 1323
     },
     {
+      "id": "near-context-limit",
+      "device": "gpu",
+      "latency_ms": 315,
+      "queue_ms": 0,
+      "peak_mib": 1707
+    },
+    {
       "id": "cpu-fp32",
       "device": "cpu",
-      "latency_ms": 7710,
+      "latency_ms": 8178,
       "queue_ms": 0,
       "peak_mib": 0
     },
     {
       "id": "after-cancellation",
       "device": "cpu",
-      "latency_ms": 8136,
+      "latency_ms": 7782,
       "queue_ms": 0,
       "peak_mib": 0
     }
@@ -275,9 +354,21 @@
     },
     "budgetMib": 6144,
     "reserveMib": 512,
-    "completed": "21",
+    "completed": "22",
     "failed": "2",
-    "observedPeakMib": 1323,
-    "backendHealthy": true
+    "observedPeakMib": 1707,
+    "backendHealthy": true,
+    "cpuLane": {
+      "state": "idle",
+      "gpu": {},
+      "budgetMib": 6144,
+      "reserveMib": 512,
+      "backendHealthy": true,
+      "processRamMib": 2158,
+      "ramBudgetMib": 6144
+    },
+    "processRamMib": 2158,
+    "observedPeakRamMib": 2263,
+    "ramBudgetMib": 6144
   }
 }
