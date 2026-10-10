@@ -1,4 +1,6 @@
 // Run only on the lab against the private auxiliary model service.
+//go:build ignore
+
 package main
 
 import (
