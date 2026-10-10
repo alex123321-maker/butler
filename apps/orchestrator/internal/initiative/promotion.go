@@ -94,7 +94,7 @@ func (p *Promoter) Promote(ctx context.Context, id, ownerID string) (Candidate, 
 	if latest.fingerprint(source) != c.Fingerprint || latest.Kind == "project_healthy" || c.LastObservedAt.Before(now.Add(-24*time.Hour)) {
 		return finish("rejected", "condition_obsolete", now)
 	}
-	current, err := currentTaskCondition(ctx, tx, source, latest)
+	current, err := p.Store.currentConditionTx(ctx, tx, source, latest)
 	if err != nil {
 		return c, err
 	}
@@ -166,7 +166,7 @@ func (p *Promoter) Promote(ctx context.Context, id, ownerID string) (Candidate, 
 		}
 		return c, err
 	}
-	if current, err = currentTaskCondition(ctx, tx, source, latest); err != nil {
+	if current, err = p.Store.currentConditionTx(ctx, tx, source, latest); err != nil {
 		return c, err
 	} else if !current {
 		return finish("rejected", "condition_obsolete", now)

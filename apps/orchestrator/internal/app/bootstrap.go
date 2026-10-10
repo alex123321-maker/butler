@@ -283,7 +283,7 @@ func New(ctx context.Context) (*App, error) {
 	if limits, ok := providerResult.Provider.(interface{ InferenceLimits() (int64, int64) }); ok {
 		allowance.InputTokens, allowance.OutputTokens = limits.InferenceLimits()
 	}
-	initiativeWorker := &initiative.Worker{Store: initiativeStore, Observer: initiative.TaskObserver{Store: initiativeStore}, Promoter: &initiative.Promoter{Store: initiativeStore, Goals: ownerGoals, Tasks: taskStore, Inputs: inputStore, Budgets: budgetController, Allowance: allowance}}
+	initiativeWorker := &initiative.Worker{Store: initiativeStore, Observer: initiative.ProjectObserver{Store: initiativeStore}, Promoter: &initiative.Promoter{Store: initiativeStore, Goals: ownerGoals, Tasks: taskStore, Inputs: inputStore, Budgets: budgetController, Allowance: allowance}}
 	inputWorker.SetMaintenance(func(ctx context.Context) error {
 		if err := approvalService.ExpireInvalidPending(ctx); err != nil {
 			return err

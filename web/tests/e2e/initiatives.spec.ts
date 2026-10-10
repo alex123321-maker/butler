@@ -9,6 +9,8 @@ test('initiative controls preserve quiet decisions, source revisions and current
   const candidate = { initiative_id: 'initiative-fixture', source_id: source.source_id, status: 'deferred', reason: 'owner_day_budget_exhausted', occurrences: 3, confidence: 100, importance: 70, expected_model_calls: 2, attention_cost: 1, not_before: '2026-10-12T00:00:00Z' }
   const sources = [source]
   let created = false
+  const manifestHash = 'b'.repeat(64)
+  await page.route('**/api/v4/extensions', route => route.fulfill({ json: { items: [{ state: { manifest_hash: manifestHash, reviewed: true }, manifest: { id: 'project', version: '1.0.0', operations: [{ name: 'extension.project.inspect', method: 'GET', effect: 'read' }] } }] } }))
   await page.route('**/api/v3/owner-authority', async route => {
     expect(route.request().headers().authorization).toBe(`Bearer ${token}`)
     await route.fulfill({ json: { goals: [goal], mandates: [mandate], obligations: [], pending_propagation: 0 } })
@@ -25,6 +27,10 @@ test('initiative controls preserve quiet decisions, source revisions and current
       expect(request.source.goal_id).toBe(goal.goal_id)
       expect(request.source.mandate_id).toBe(mandate.mandate_id)
       expect(request.source.project_revision).toBe(revision)
+      expect(request.source.observer_kind).toBe('broker_project')
+      expect(request.source.check_manifest_hash).toBe(manifestHash)
+      expect(request.source.check_tool_name).toBe('extension.project.inspect')
+      expect(request.source.check_resource).toBe('https://example.invalid/project')
       expect(request.source.enabled).toBe(false)
       expect(request.source.execution_policy).toBe('prepare_only')
       sources.push({ ...request.source, revision: 1 })
@@ -56,6 +62,9 @@ test('initiative controls preserve quiet decisions, source revisions and current
   await page.getByRole('button', { name: 'Pause checks', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Enable checks', exact: true })).toBeVisible()
   await page.getByLabel('Active mandate').selectOption(mandate.mandate_id)
+  await page.getByLabel('Observation', { exact: true }).selectOption('broker_project')
+  await page.getByLabel('Reviewed check', { exact: true }).selectOption(`${manifestHash}:extension.project.inspect`)
+  await page.getByLabel('Exact check URL').fill('https://example.invalid/project')
   await page.getByLabel('Project reference', { exact: true }).fill('second-fixture')
   await page.getByLabel('Project revision', { exact: true }).fill(revision)
   await page.getByLabel('Conversation reference').fill(source.session_key)
@@ -75,6 +84,7 @@ test('a late initiative response does not restore data after owner proof changes
   let release: () => void = () => undefined
   const received = new Promise<void>(resolve => { release = resolve })
   let requested = false
+  await page.route('**/api/v4/extensions', route => route.fulfill({ json: { items: [] } }))
   await page.route('**/api/v3/owner-authority', route => route.fulfill({ json: { goals: [], mandates: [], obligations: [], pending_propagation: 0 } }))
   await page.route('**/api/v3/initiatives', async route => {
     requested = true

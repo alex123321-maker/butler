@@ -48,6 +48,17 @@ as `delivery_unknown` and never automatically sent twice. Web `result_ready`
 means a stored notice is available in the owner view, not that it was read.
 Migration056 refuses rollback after any notification history.
 
+`broker_project` reads already-saved authorized GET/read observations, pinned by
+`check_manifest_hash`, `check_tool_name`, `check_resource` and project revision.
+The live source guard is mandatory before/after reading and inside promotion,
+including its final check after budget waits. One run is one independent attempt;
+the response's claimed origin is ignored. Confirmed historical Broker dispatch
+and intent/argument hashes are required. It performs no external request itself.
+Configure it in `/initiatives` using a reviewed connector operation; templates
+and schedules remain owner administration, outside the model tool catalog.
+The mixed staged integration still requires source-lifecycle bootstrap hooks and
+the full repeated-check-to-verified-prepared-correction E2E before rollout.
+
 Daily schedules skip nonexistent local minutes, choose the first repeated minute
 and deduplicate on calendar date. Interval schedules retain their phase. Downtime
 coalesces to one latest tick, or skips a missed window; pending leased checks

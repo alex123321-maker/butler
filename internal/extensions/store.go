@@ -111,11 +111,21 @@ type querier interface {
 // ManifestByHash reads immutable package history for trusted provenance readers.
 // It grants no installation, readiness, task access or execution permission.
 func (s *Store) ManifestByHash(ctx context.Context, digest string) (Package, error) {
+	return s.manifestByHash(ctx, s.pool, digest)
+}
+
+// ManifestByHashTx keeps immutable provenance reads on the caller's connection.
+// It grants no current capability and takes no installation or authority locks.
+func (s *Store) ManifestByHashTx(ctx context.Context, tx pgx.Tx, digest string) (Package, error) {
+	return s.manifestByHash(ctx, tx, digest)
+}
+
+func (s *Store) manifestByHash(ctx context.Context, q querier, digest string) (Package, error) {
 	if !digestName.MatchString(digest) {
 		return Package{}, ErrUnavailable
 	}
 	var raw string
-	if err := s.pool.QueryRow(ctx, `SELECT manifest_text FROM extension_versions WHERE manifest_hash=$1`, digest).Scan(&raw); err != nil {
+	if err := q.QueryRow(ctx, `SELECT manifest_text FROM extension_versions WHERE manifest_hash=$1`, digest).Scan(&raw); err != nil {
 		return Package{}, ErrUnavailable
 	}
 	p, err := Parse(strings.NewReader(raw))

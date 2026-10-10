@@ -65,6 +65,9 @@ func (o TaskObserver) Check(ctx context.Context, source Source, _ ClaimedTick) (
 }
 
 func currentTaskCondition(ctx context.Context, tx pgx.Tx, source Source, event Event) (bool, error) {
+	if source.ObserverKind == "broker_project" {
+		return currentBrokerCondition(ctx, tx, source, event)
+	}
 	if source.ObserverKind != "task_project" {
 		return true, nil
 	}

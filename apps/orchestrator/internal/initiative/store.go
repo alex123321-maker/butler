@@ -13,7 +13,12 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Store struct{ pool *pgxpool.Pool }
+type Store struct {
+	pool *pgxpool.Pool
+	// RunDataGuardTx is installed by the source lifecycle owner at bootstrap.
+	// It uses the same transaction as promotion, with no nested pool borrowing.
+	RunDataGuardTx func(context.Context, pgx.Tx, string) error
+}
 
 func NewStore(pool *pgxpool.Pool) *Store { return &Store{pool: pool} }
 

@@ -66,3 +66,36 @@ ordinary-task admission. An unconfigured heartbeat remains an empty check. Fixed
 external source adapters and the repeated-error to verified prepared-project-fix
 acceptance remain outstanding. This contract
 does not claim issue #15 acceptance from foundational tests alone.
+
+## Recorded project checks
+
+`broker_project` pins a reviewed immutable extension manifest, one GET/read
+operation, exact HTTPS resource and the owner's exact project revision. Its
+PostgreSQL adapter sends no external request and spends no model turns. It reads
+only saved completed Tool Broker calls with the matching historical owner review,
+completed authorization and dispatch, and confirmed read evidence. It checks
+the exact intent/action/argument hashes and current task/constraint/project
+revisions. Responses must carry bounded unique-key `project_check_v1` JSON.
+Only condition/evidence hashes and identifiers leave the parser. Raw error text,
+package instructions, unknown JSON members and `produced_by_butler` in a response
+cannot grant authority or set origin. Origin comes from Task Service.
+
+One run counts as one attempt, even if the provider asks for the same check
+several times. A stable check identity/error class on the same source revision
+coalesces three distinct attempts. A passing newer check, different latest
+condition, or a newer verified prepared-correction result invalidates an older
+candidate before promotion. The exact stored fact is checked again after budget
+waits. Source lifecycle deployment must wire `catalog.CheckRunSources` into
+the observer and `catalog.CheckRunSourcesTx` into its store's `RunDataGuardTx`.
+The recorded-check adapter and promotion fail closed without these hooks; this
+staged branch needs the source-lifecycle bootstrap integration before
+production acceptance. Immutable manifest lookup during promotion uses the same
+owned transaction and cannot borrow an additional connection while locks are held.
+
+The owner UI exposes inspection, pause/enable controls, active hours, templates,
+source revisions, daily/interval schedules, deterministic decision reasons and
+separate grouped notice delivery states. Connector checks are selected from
+reviewed read operations; source setup pins the selected manifest rather than
+acquiring any new capability. The token stays in page memory. Changing proof
+clears the view and stale asynchronous responses cannot restore it. New sources
+start paused. This UI does not mark tasks completed or authorize an action.

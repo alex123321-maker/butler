@@ -1,6 +1,7 @@
 export interface InitiativeSource {
   source_id: string; owner_id?: string; goal_id: string; mandate_id: string; session_key: string
   project_ref: string; project_revision?: string; observer_kind?: string; digest_channel?: string
+  check_manifest_hash?: string; check_tool_name?: string; check_resource?: string
   purpose: string; time_zone: string; task_goal: string; execution_policy: string
   completion_criteria: string[]; active_start_hour: number; active_end_hour: number
   failure_threshold: number; confidence_threshold: number; minimum_importance: number

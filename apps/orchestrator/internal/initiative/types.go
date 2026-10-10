@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -31,6 +32,9 @@ type Source struct {
 	ProjectRef          string   `json:"project_ref"`
 	ProjectRevision     string   `json:"project_revision,omitempty"`
 	ObserverKind        string   `json:"observer_kind,omitempty"`
+	CheckManifestHash   string   `json:"check_manifest_hash,omitempty"`
+	CheckToolName       string   `json:"check_tool_name,omitempty"`
+	CheckResource       string   `json:"check_resource,omitempty"`
 	DigestChannel       string   `json:"digest_channel,omitempty"`
 	Purpose             string   `json:"purpose"`
 	TimeZone            string   `json:"time_zone"`
@@ -51,10 +55,18 @@ func (s Source) Validate() error {
 	if s.DigestChannel != "" && s.DigestChannel != "web" && s.DigestChannel != "telegram" {
 		return ErrInvalid
 	}
-	if s.ObserverKind != "" && s.ObserverKind != "task_project" {
+	if s.ObserverKind != "" && s.ObserverKind != "task_project" && s.ObserverKind != "broker_project" {
 		return ErrInvalid
 	}
-	if (s.ObserverKind == "task_project" && !digest.MatchString(s.ProjectRevision)) || (s.ProjectRevision != "" && !digest.MatchString(s.ProjectRevision)) {
+	if (s.ObserverKind != "" && !digest.MatchString(s.ProjectRevision)) || (s.ProjectRevision != "" && !digest.MatchString(s.ProjectRevision)) {
+		return ErrInvalid
+	}
+	if s.ObserverKind == "broker_project" {
+		u, err := url.Parse(s.CheckResource)
+		if !digest.MatchString(s.CheckManifestHash) || !identifier.MatchString(s.CheckToolName) || !strings.HasPrefix(s.CheckToolName, "extension.") || len(s.CheckResource) > 2048 || err != nil || u.Scheme != "https" || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || u.RawPath != "" || u.Path == "" || u.String() != s.CheckResource {
+			return ErrInvalid
+		}
+	} else if s.CheckManifestHash != "" || s.CheckToolName != "" || s.CheckResource != "" {
 		return ErrInvalid
 	}
 	for _, v := range []string{s.ID, s.OwnerID, s.GoalID, s.MandateID, s.SessionKey, s.ProjectRef, s.Purpose} {
@@ -89,21 +101,25 @@ func (s Source) Validate() error {
 // Event contains a typed observation and hashes, never a raw error, URL or secret.
 // The observer subsystem supplies ProducedByButler; it is not model metadata.
 type Event struct {
-	ID                string    `json:"event_id"`
-	SourceID          string    `json:"source_id"`
-	Kind              string    `json:"kind"`
-	ConditionDigest   string    `json:"condition_digest"`
-	ResourceRevision  string    `json:"resource_revision"`
-	EvidenceDigest    string    `json:"evidence_digest"`
-	Confidence        int       `json:"confidence"`
-	Importance        int       `json:"importance"`
-	ProducedByButler  bool      `json:"produced_by_butler"`
-	ObservedAttemptID string    `json:"observed_attempt_id,omitempty"`
-	ObservedAt        time.Time `json:"observed_at"`
+	ID                 string    `json:"event_id"`
+	SourceID           string    `json:"source_id"`
+	Kind               string    `json:"kind"`
+	ConditionDigest    string    `json:"condition_digest"`
+	ResourceRevision   string    `json:"resource_revision"`
+	EvidenceDigest     string    `json:"evidence_digest"`
+	Confidence         int       `json:"confidence"`
+	Importance         int       `json:"importance"`
+	ProducedByButler   bool      `json:"produced_by_butler"`
+	ObservedAttemptID  string    `json:"observed_attempt_id,omitempty"`
+	ObservedToolCallID string    `json:"observed_tool_call_id,omitempty"`
+	ObservedAt         time.Time `json:"observed_at"`
 }
 
 func (e Event) Validate() error {
 	if e.ObservedAttemptID != "" && !identifier.MatchString(e.ObservedAttemptID) {
+		return ErrInvalid
+	}
+	if e.ObservedToolCallID != "" && (!identifier.MatchString(e.ObservedToolCallID) || e.ObservedAttemptID == "") {
 		return ErrInvalid
 	}
 	if !identifier.MatchString(e.ID) || !identifier.MatchString(e.SourceID) ||
