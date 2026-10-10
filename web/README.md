@@ -68,7 +68,17 @@ must not process untrusted certificates or patterns. The production image copies
 only Nuxt `.output`, rather than the build's node_modules. Run
 `scripts/dev/audit-web-output.mjs` on the lab against that actual output to
 inventory shipped package names and selected code references. This limited
-inventory does not establish general absence of exploitable code or close #31.
+inventory does not establish general absence of exploitable code. Issue #31
+remains active for the complete security acceptance checks.
+
+The lab verification on 2026-10-10 ran TypeScript/Vue checks, lint, all ten
+Playwright tests, the production build and a browser smoke test against the
+deployed API. The deployed output contained 19 named packages and 94 JavaScript
+files; none of the three selected package names or checked code references were
+present. The limited inventory is recorded in
+[the deployment artifact](../deploy/security/web-runtime-audit.json).
+The complete dependency audit still reports 21 high findings propagated from
+the two unfixed upstream advisories, with zero moderate or critical findings.
 
 ```bash
 npm run build
