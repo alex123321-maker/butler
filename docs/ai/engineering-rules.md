@@ -17,6 +17,11 @@ The goals are:
 
 ### Backend
 - Primary language: Go
+- Build and validation baseline: Go 1.27.2, pinned in Docker builders and lab scripts.
+  Earlier Go 1.24 builders are unsupported and affected by the standard-library
+  filesystem containment issue [GO-2026-4970](https://pkg.go.dev/vuln/GO-2026-4970).
+  `os.Root` is a path-containment primitive, not a process sandbox or protection
+  from uncontrolled mounts/devices; runtime isolation and policy remain required.
 - Python: exception-only, must be justified
 
 ### Frontend
