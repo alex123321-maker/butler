@@ -55,6 +55,7 @@ const toggleSidebar = () => {
 const workspaceItems = [
   { path: '/', label: 'Home', icon: 'H' },
   { path: '/tasks', label: 'Tasks', icon: 'T' },
+  { path: '/goals', label: 'Goals and autonomy', icon: 'G' },
   { path: '/approvals', label: 'Approvals', icon: 'A' },
   { path: '/artifacts', label: 'Results', icon: 'R' },
   { path: '/memory', label: 'Memory', icon: 'M' },

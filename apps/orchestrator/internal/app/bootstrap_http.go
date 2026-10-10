@@ -14,6 +14,7 @@ import (
 	artifacts "github.com/butler/butler/apps/orchestrator/internal/artifacts"
 	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	deliveryevents "github.com/butler/butler/apps/orchestrator/internal/deliveryevents"
+	"github.com/butler/butler/apps/orchestrator/internal/goal"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
@@ -43,6 +44,7 @@ import (
 )
 
 type httpServerDeps struct {
+	ownerGoals             *goal.Manager
 	finalResults           *completion.Coordinator
 	actionAuthorityHandler http.Handler
 	cfg                    config.OrchestratorConfig
@@ -82,6 +84,7 @@ type httpServerDeps struct {
 }
 
 func newHTTPServer(deps httpServerDeps) *http.Server {
+	goalServer := apiservice.NewGoalServer(deps.ownerGoals, deps.ownerAuth)
 	resultServer := apiservice.NewResultServer(deps.finalResults)
 	apiServer := apiservice.NewServer(deps.inputWorker, logger.WithComponent(deps.log, "api"))
 	apiServer.SetOwnerControlAuth(deps.ownerAuth)
@@ -161,6 +164,10 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	mux.Handle("/metrics", deps.metrics.Handler())
 	mux.Handle("/api/v1/events", apiServer.HTTPHandler())
 	mux.Handle("/api/v3/inputs/", inputServer.HandleItem())
+	mux.Handle("/api/v3/owner-authority", goalServer.Handle())
+	mux.Handle("/api/v3/owner-goals", goalServer.Handle())
+	mux.Handle("/api/v3/owner-mandates", goalServer.Handle())
+	mux.Handle("/api/v3/owner-goals/tasks", goalServer.Handle())
 	mux.Handle("/api/v3/tasks", taskControlServer.HandleCollection())
 	mux.Handle("/api/v3/tasks/", taskControlServer.HandleItem("/api/v3/tasks/"))
 	mux.Handle("/api/v1/settings/restart", settingsServer.HandleRestart())

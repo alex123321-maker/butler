@@ -11,7 +11,7 @@ func BindAuthorityTx(ctx context.Context, tx pgx.Tx, a actionauth.Assignment) er
 	if a.TaskID == "" || a.OwnerID == "" || a.InitiativeReason == "" || a.ObservationRef == "" {
 		return ErrInvalid
 	}
-	_, err := tx.Exec(ctx, `INSERT INTO task_authority_bindings(task_id,owner_id,goal_id,goal_revision,mandate_id,mandate_revision,purpose,initiative_reason,observation_ref) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`, a.TaskID, a.OwnerID, a.GoalID, a.GoalRevision, a.MandateID, a.MandateRevision, a.Purpose, a.InitiativeReason, a.ObservationRef)
+	_, err := tx.Exec(ctx, `INSERT INTO task_authority_bindings(task_id,owner_id,goal_id,goal_revision,mandate_id,mandate_revision,purpose,initiative_reason,observation_ref,policy_revision) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, a.TaskID, a.OwnerID, a.GoalID, a.GoalRevision, a.MandateID, a.MandateRevision, a.Purpose, a.InitiativeReason, a.ObservationRef, a.PolicyRevision)
 	return err
 }
 

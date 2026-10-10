@@ -34,6 +34,9 @@ func (s *Service) attachTaskContext(ctx context.Context, sessionKey string, prep
 		return fmt.Errorf("%w: task is not active for this session owner", task.ErrConflict)
 	}
 	prepared.Task = &record
+	if err := s.attachOwnerGoalContext(ctx, record.TaskID, prepared); err != nil {
+		return err
+	}
 	prepared.WorkingMemory = &workingMemoryContext{Goal: record.Goal, PendingSteps: record.Working.Plan, ActiveEntities: map[string]any{}, Scratch: record.Working.Scratch, Status: "active", Policy: s.config.WorkingPolicy}
 	prepared.MemoryBundle["working"] = prepared.WorkingMemory.bundleMap()
 	prepared.InputItems = append([]transport.InputItem{{Role: "system", Content: "Butler task context (durable task state; a final model response only ends this attempt):\n" + sanitize.JSON(mustMarshalJSON(map[string]any{

@@ -14,6 +14,7 @@ type Assignment struct {
 	Purpose          string `json:"purpose"`
 	InitiativeReason string `json:"initiative_reason"`
 	ObservationRef   string `json:"observation_ref"`
+	PolicyRevision   int64  `json:"policy_revision,omitempty"`
 }
 
 type MandateBudget struct {
@@ -51,13 +52,14 @@ type ExtensionPermission struct {
 // GoalPolicy is the typed durable owner projection shared with authorization.
 // Assumptions remain proposed data and cannot supply this permission boundary.
 type GoalPolicy struct {
-	ID          string    `json:"goal_id"`
-	OwnerID     string    `json:"owner_id"`
-	Kind        string    `json:"kind"`
-	Status      string    `json:"status"`
-	Revision    int64     `json:"revision"`
-	Title       string    `json:"title"`
-	Purpose     string    `json:"purpose"`
-	Constraints []string  `json:"constraints"`
-	ExpiresAt   time.Time `json:"expires_at"`
+	ID          string       `json:"goal_id"`
+	OwnerID     string       `json:"owner_id"`
+	Kind        string       `json:"kind"`
+	Status      string       `json:"status"`
+	Revision    int64        `json:"revision"`
+	Title       string       `json:"title"`
+	Purpose     string       `json:"purpose"`
+	Constraints []string     `json:"constraints"`
+	ExpiresAt   time.Time    `json:"expires_at"`
+	Policies    []GoalPolicy `json:"policies,omitempty"`
 }

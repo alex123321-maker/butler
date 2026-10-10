@@ -16,6 +16,7 @@ import (
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
+	"github.com/butler/butler/internal/actionauth"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -131,6 +132,9 @@ type TransitionLogger interface {
 }
 
 type Config struct {
+	OwnerGoals interface {
+		ReadTaskAuthority(context.Context, string) (actionauth.Assignment, actionauth.Mandate, actionauth.GoalPolicy, error)
+	}
 	Completion            completion.Writer
 	DurableMemoryPipeline bool
 	ActionAuthorizer      ActionAuthorizer

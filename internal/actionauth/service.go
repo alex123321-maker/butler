@@ -89,6 +89,9 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 		if err != nil || CheckAssignedAction(m, b, s.now()) != nil {
 			return b, false, ErrOwnerAuthority
 		}
+		if err = CheckDenyOverrides(b, c.DenyTools, c.DenyResources); err != nil {
+			return b, false, err
+		}
 	}
 	requires := false
 	if len(b.CredentialRefs) > 0 {

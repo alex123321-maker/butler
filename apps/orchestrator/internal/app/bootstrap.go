@@ -18,6 +18,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	deliveryevents "github.com/butler/butler/apps/orchestrator/internal/deliveryevents"
 	"github.com/butler/butler/apps/orchestrator/internal/deliveryoutbox"
+	"github.com/butler/butler/apps/orchestrator/internal/goal"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/observability"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
@@ -129,6 +130,7 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	taskStore := task.NewStore(postgres.Pool())
+	ownerGoals := goal.New(postgres.Pool(), taskStore, nil)
 	runRepo := runservice.NewPostgresRepository(postgres.Pool())
 	runManager := runservice.NewService(runRepo, logger.WithComponent(log, "run-service"))
 	toolBrokerClient, err := tools.DialWithTokenFile(cfg.ToolBrokerAddr, cfg.ActionAuthorityTokenFile)
@@ -216,6 +218,7 @@ func New(ctx context.Context) (*App, error) {
 			ActionMandateID:       cfg.ActionMandateID,
 			Checkpoints:           inputStore,
 			Tasks:                 taskStore,
+			OwnerGoals:            ownerGoals,
 			ProviderName:          providerResult.ProviderName,
 			ModelName:             providerResult.ModelName,
 			OwnerID:               cfg.Shared.ServiceName,
@@ -250,8 +253,14 @@ func New(ctx context.Context) (*App, error) {
 	)
 	inputWorker := durableinput.NewService(inputStore, sessionRepo, executor, runManager, logger.WithComponent(log, "durable-input"))
 	taskControls := task.NewController(taskStore, sessionLeaseManager.Authority(), sessionLeaseManager, runRepo, approvalRepo, inputStore, transcriptStore)
+	ownerGoals.SetControls(taskControls)
 	inputWorker.SetTaskControls(taskControls)
-	inputWorker.SetMaintenance(approvalService.ExpireInvalidPending)
+	inputWorker.SetMaintenance(func(ctx context.Context) error {
+		if err := approvalService.ExpireInvalidPending(ctx); err != nil {
+			return err
+		}
+		return ownerGoals.Sweep(ctx)
+	})
 	if telegram != nil {
 		telegram.SetExecutor(inputWorker)
 		telegram.SetApprovalService(approvalService)
@@ -293,6 +302,7 @@ func New(ctx context.Context) (*App, error) {
 		runRepo:                runRepo,
 		taskStore:              taskStore,
 		taskControls:           taskControls,
+		ownerGoals:             ownerGoals,
 		transcriptStore:        transcriptStore,
 		transitionRepo:         transitionRepo,
 		eventHub:               eventHub,

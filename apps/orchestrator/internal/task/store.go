@@ -51,6 +51,10 @@ func (s *Store) Get(ctx context.Context, id string) (Record, error) {
 	return scan(s.pool.QueryRow(ctx, `SELECT `+columns+` FROM tasks WHERE task_id=$1`, id))
 }
 
+func (s *Store) GetTx(ctx context.Context, tx pgx.Tx, id string) (Record, error) {
+	return scan(tx.QueryRow(ctx, `SELECT `+columns+` FROM tasks WHERE task_id=$1`, id))
+}
+
 func (s *Store) GetByRun(ctx context.Context, runID string) (Record, error) {
 	return scan(s.pool.QueryRow(ctx, `SELECT `+columns+` FROM tasks WHERE task_id=(SELECT task_id FROM runs WHERE run_id=$1)`, runID))
 }

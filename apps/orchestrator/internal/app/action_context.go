@@ -86,6 +86,10 @@ func (r *actionContextReader) GetActionContext(ctx context.Context, runID string
 			c.Authority = &a
 			c.MandateID = a.MandateID
 			c.ModelPrivacy = m.Privacy
+			c.DenyTools, c.DenyResources, err = actionauth.ReadGoalDenialsTx(ctx, tx, a.GoalID, a.OwnerID, time.Now())
+			if err != nil {
+				return c, err
+			}
 		}
 	}
 	return c, nil

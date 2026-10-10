@@ -27,6 +27,7 @@ type Manager struct {
 func New(pool *pgxpool.Pool, tasks *task.Store, controls *task.Controller) *Manager {
 	return &Manager{pool: pool, tasks: tasks, controls: controls}
 }
+func (m *Manager) SetControls(controls *task.Controller) { m.controls = controls }
 func newID(prefix string) string {
 	var b [16]byte
 	if _, err := rand.Read(b[:]); err != nil {
@@ -92,7 +93,7 @@ func saveDecision(ctx context.Context, tx pgx.Tx, a owneridentity.Actor, kind, i
 }
 
 func validateGoal(g actionauth.GoalPolicy, now time.Time) error {
-	if strings.TrimSpace(g.Title) == "" || len(g.Title) > 8192 || len(g.Constraints) > 64 || g.Purpose == "" || len(g.Purpose) > 128 || strings.ContainsAny(g.Purpose, "*? \n\r") || !g.ExpiresAt.After(now) || g.ExpiresAt.After(now.Add(366*24*time.Hour)) {
+	if strings.TrimSpace(g.Title) == "" || len(g.Title) > 8192 || len(g.Constraints) > 64 || g.Purpose == "" || len(g.Purpose) > 128 || strings.ContainsAny(g.Purpose, "*? \n\r") || (g.Status == "active" || g.Status == "proposed") && !g.ExpiresAt.After(now) || g.ExpiresAt.After(now.Add(366*24*time.Hour)) {
 		return ErrInvalid
 	}
 	switch g.Kind {
@@ -124,9 +125,6 @@ func (m *Manager) PutGoal(ctx context.Context, req GoalRequest) (Receipt, error)
 	if g.OwnerID != "" && g.OwnerID != a.OwnerID {
 		return Receipt{}, ErrUnauthorized
 	}
-	if err = validateGoal(g, time.Now()); err != nil {
-		return Receipt{}, err
-	}
 	hash := fingerprint(req)
 	tx, replay, err := beginDecision(ctx, m.pool, a, hash)
 	if err != nil {
@@ -135,6 +133,11 @@ func (m *Manager) PutGoal(ctx context.Context, req GoalRequest) (Receipt, error)
 	defer tx.Rollback(ctx)
 	if replay != nil {
 		return *replay, tx.Commit(ctx)
+	}
+	g.ExpiresAt = g.ExpiresAt.UTC().Truncate(time.Microsecond)
+	g.Policies = nil
+	if err = validateGoal(g, time.Now()); err != nil {
+		return Receipt{}, err
 	}
 	if g.ID == "" {
 		if req.ExpectedRevision != 0 {
@@ -177,6 +180,9 @@ func (m *Manager) PutGoal(ctx context.Context, req GoalRequest) (Receipt, error)
 		if json.Unmarshal(data, &old) != nil {
 			return Receipt{}, ErrInvalid
 		}
+		if (g.Kind == "preference" || g.Kind == "constraint") && g.Purpose != old.Purpose {
+			return Receipt{}, ErrConflict
+		}
 	}
 	if req.ParentRef != "" {
 		var kind, owner string
@@ -193,9 +199,24 @@ func (m *Manager) PutGoal(ctx context.Context, req GoalRequest) (Receipt, error)
 	if err != nil {
 		return Receipt{}, err
 	}
-	r, err := saveDecision(ctx, tx, a, "goal", g.ID, g.Revision, hash, Record{GoalPolicy: g, Source: source}, req.ExpectedRevision > 0, g.Status == "revoked")
+	if _, err = tx.Exec(ctx, `INSERT INTO owner_purpose_policies(owner_id,purpose) VALUES($1,$2) ON CONFLICT DO NOTHING`, a.OwnerID, g.Purpose); err != nil {
+		return Receipt{}, err
+	}
+	var policyRevision int64
+	isPolicy := g.Kind == "preference" || g.Kind == "constraint"
+	if isPolicy {
+		if err = tx.QueryRow(ctx, `UPDATE owner_purpose_policies SET revision=revision+1 WHERE owner_id=$1 AND purpose=$2 RETURNING revision`, a.OwnerID, g.Purpose).Scan(&policyRevision); err != nil {
+			return Receipt{}, err
+		}
+	}
+	r, err := saveDecision(ctx, tx, a, "goal", g.ID, g.Revision, hash, Record{GoalPolicy: g, Source: source}, req.ExpectedRevision > 0 || isPolicy, g.Status == "revoked" && !isPolicy)
 	if err != nil {
 		return r, err
+	}
+	if isPolicy {
+		if _, err = tx.Exec(ctx, `UPDATE owner_authority_jobs SET subject_kind='policy',subject_id=$2,current_revision=$3 WHERE event_id=$1`, r.EventID, g.Purpose, policyRevision); err != nil {
+			return r, err
+		}
 	}
 	return r, tx.Commit(ctx)
 }
@@ -218,6 +239,7 @@ func (m *Manager) PutMandate(ctx context.Context, req MandateRequest) (Receipt, 
 	if replay != nil {
 		return *replay, tx.Commit(ctx)
 	}
+	mandate.ExpiresAt = mandate.ExpiresAt.UTC().Truncate(time.Microsecond)
 	if mandate.ID == "" {
 		if req.ExpectedRevision != 0 {
 			return Receipt{}, ErrConflict
@@ -251,7 +273,7 @@ func (m *Manager) PutMandate(ctx context.Context, req MandateRequest) (Receipt, 
 	var expiry time.Time
 	var goalData []byte
 	err = tx.QueryRow(ctx, `SELECT owner_id,kind,status,revision,expires_at,goal_data FROM owner_goals WHERE goal_id=$1 FOR UPDATE`, mandate.GoalID).Scan(&owner, &kind, &status, &goalRevision, &expiry, &goalData)
-	if err != nil || owner != a.OwnerID || kind != "objective" || status != "active" || !expiry.After(time.Now()) || goalRevision != mandate.GoalRevision {
+	if err != nil || owner != a.OwnerID || kind != "objective" || mandate.Status == "active" && (status != "active" || !expiry.After(time.Now()) || goalRevision != mandate.GoalRevision) {
 		return Receipt{}, actionauth.ErrOwnerAuthority
 	}
 	var g actionauth.GoalPolicy
@@ -259,7 +281,7 @@ func (m *Manager) PutMandate(ctx context.Context, req MandateRequest) (Receipt, 
 		return Receipt{}, ErrInvalid
 	}
 	purpose = g.Purpose
-	if mandate.Purpose != purpose || mandate.ExpiresAt.After(expiry) {
+	if mandate.Status == "active" && (mandate.Purpose != purpose || mandate.ExpiresAt.After(expiry)) {
 		return Receipt{}, ErrInvalid
 	}
 	mandate.OwnerID = a.OwnerID
@@ -324,6 +346,9 @@ func (m *Manager) CheckAdmissionTx(ctx context.Context, tx pgx.Tx, req Admission
 		if a.MandateID == "" {
 			return a, actionauth.ErrOwnerAuthority
 		}
+	}
+	if err = tx.QueryRow(ctx, `SELECT revision FROM owner_purpose_policies WHERE owner_id=$1 AND purpose=$2`, a.OwnerID, a.Purpose).Scan(&a.PolicyRevision); err != nil {
+		return a, err
 	}
 	mandate, _, err := actionauth.CheckAssignmentTx(ctx, tx, a, at)
 	if err != nil {

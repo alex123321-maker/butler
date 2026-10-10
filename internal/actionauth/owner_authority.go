@@ -20,7 +20,7 @@ func GetTaskAssignment(ctx context.Context, q interface {
 	QueryRow(context.Context, string, ...any) pgx.Row
 }, taskID string) (Assignment, error) {
 	var a Assignment
-	err := q.QueryRow(ctx, `SELECT task_id,owner_id,goal_id,goal_revision,mandate_id,mandate_revision,purpose,initiative_reason,observation_ref FROM task_authority_bindings WHERE task_id=$1`, taskID).Scan(&a.TaskID, &a.OwnerID, &a.GoalID, &a.GoalRevision, &a.MandateID, &a.MandateRevision, &a.Purpose, &a.InitiativeReason, &a.ObservationRef)
+	err := q.QueryRow(ctx, `SELECT task_id,owner_id,goal_id,goal_revision,mandate_id,mandate_revision,purpose,initiative_reason,observation_ref,policy_revision FROM task_authority_bindings WHERE task_id=$1`, taskID).Scan(&a.TaskID, &a.OwnerID, &a.GoalID, &a.GoalRevision, &a.MandateID, &a.MandateRevision, &a.Purpose, &a.InitiativeReason, &a.ObservationRef, &a.PolicyRevision)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Assignment{}, nil
 	}
@@ -42,7 +42,7 @@ func CheckTaskAuthorityTx(ctx context.Context, tx pgx.Tx, taskID, ownerID string
 		}
 		return a, nil
 	}
-	if a.OwnerID != ownerID || expected != nil && (expected.GoalID != a.GoalID || expected.GoalRevision != a.GoalRevision || expected.MandateID != a.MandateID || expected.MandateRevision != a.MandateRevision || expected.Purpose != a.Purpose) {
+	if a.OwnerID != ownerID || expected != nil && (expected.GoalID != a.GoalID || expected.GoalRevision != a.GoalRevision || expected.MandateID != a.MandateID || expected.MandateRevision != a.MandateRevision || expected.Purpose != a.Purpose || expected.PolicyRevision != a.PolicyRevision) {
 		return a, ErrOwnerAuthority
 	}
 	_, _, err = CheckAssignmentTx(ctx, tx, a, at)
@@ -87,6 +87,30 @@ func CheckAssignmentTx(ctx context.Context, tx pgx.Tx, a Assignment, at time.Tim
 	g.ExpiresAt = goalExpiry
 	if owner != a.OwnerID || g.Kind != "objective" || g.Status != "active" || g.Revision != a.GoalRevision || !g.ExpiresAt.After(at) || g.Purpose != a.Purpose {
 		return m, g, ErrOwnerAuthority
+	}
+	var policyRevision int64
+	if err = tx.QueryRow(ctx, `SELECT revision FROM owner_purpose_policies WHERE owner_id=$1 AND purpose=$2 FOR SHARE`, a.OwnerID, a.Purpose).Scan(&policyRevision); err != nil || policyRevision != a.PolicyRevision {
+		return m, g, ErrOwnerAuthority
+	}
+	rows, err := tx.Query(ctx, `SELECT goal_data FROM owner_goals WHERE owner_id=$1 AND goal_data->>'purpose'=$2 AND kind IN ('preference','constraint') AND status='active' ORDER BY goal_id`, a.OwnerID, a.Purpose)
+	if err != nil {
+		return m, g, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var data []byte
+		var policy GoalPolicy
+		if err = rows.Scan(&data); err != nil {
+			return m, g, err
+		}
+		if json.Unmarshal(data, &policy) != nil || !policy.ExpiresAt.After(at) {
+			return m, g, ErrOwnerAuthority
+		}
+		policy.Policies = nil
+		g.Policies = append(g.Policies, policy)
+	}
+	if err = rows.Err(); err != nil {
+		return m, g, err
 	}
 	return m, g, nil
 }
@@ -277,11 +301,46 @@ func CheckAssignedAction(m Mandate, b ActionBinding, at time.Time) error {
 	return nil
 }
 
+func ReadGoalDenialsTx(ctx context.Context, tx pgx.Tx, goalID, ownerID string, at time.Time) ([]string, []ResourceScope, error) {
+	rows, err := tx.Query(ctx, `SELECT mandate_data FROM action_mandates WHERE goal_id=$1 AND owner_id=$2 AND scope_kind='owner_goal' AND status='active' AND revoked_at IS NULL AND expires_at>$3 ORDER BY mandate_id`, goalID, ownerID, at)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer rows.Close()
+	var tools []string
+	var resources []ResourceScope
+	for rows.Next() {
+		var data []byte
+		var m Mandate
+		if err = rows.Scan(&data); err != nil {
+			return nil, nil, err
+		}
+		if json.Unmarshal(data, &m) != nil {
+			return nil, nil, ErrOwnerAuthority
+		}
+		tools = append(tools, m.DenyTools...)
+		resources = append(resources, m.DenyResources...)
+	}
+	return tools, resources, rows.Err()
+}
+
+func CheckDenyOverrides(b ActionBinding, tools []string, resources []ResourceScope) error {
+	if contains(tools, b.ToolName) {
+		return ErrOwnerAuthority
+	}
+	for _, scope := range resources {
+		if resourceWithin(scope, b.Resource) {
+			return ErrOwnerAuthority
+		}
+	}
+	return nil
+}
+
 // CheckTaskActionTx includes deny overrides from every current active mandate
 // for this exact goal. The already shared-locked goal serializes mutations of
 // this set; no semantic similarity or model-supplied mandate selection occurs.
 func CheckTaskActionTx(ctx context.Context, tx pgx.Tx, b ActionBinding, at time.Time) error {
-	a, err := CheckTaskAuthorityTx(ctx, tx, b.TaskID, b.OwnerID, &Assignment{GoalID: b.GoalID, GoalRevision: b.GoalRevision, MandateID: b.MandateID, MandateRevision: b.MandateRevision, Purpose: b.Purpose}, at)
+	a, err := CheckTaskAuthorityTx(ctx, tx, b.TaskID, b.OwnerID, &Assignment{GoalID: b.GoalID, GoalRevision: b.GoalRevision, MandateID: b.MandateID, MandateRevision: b.MandateRevision, Purpose: b.Purpose, PolicyRevision: b.OwnerPolicyRevision}, at)
 	if err != nil || a.TaskID == "" {
 		return err
 	}
@@ -292,30 +351,11 @@ func CheckTaskActionTx(ctx context.Context, tx pgx.Tx, b ActionBinding, at time.
 	if err = CheckAssignedAction(m, b, at); err != nil {
 		return err
 	}
-	rows, err := tx.Query(ctx, `SELECT mandate_data FROM action_mandates WHERE goal_id=$1 AND owner_id=$2 AND scope_kind='owner_goal' AND status='active' AND revoked_at IS NULL AND expires_at>$3`, a.GoalID, a.OwnerID, at)
+	tools, resources, err := ReadGoalDenialsTx(ctx, tx, a.GoalID, a.OwnerID, at)
 	if err != nil {
 		return err
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var data []byte
-		var other Mandate
-		if err = rows.Scan(&data); err != nil {
-			return err
-		}
-		if json.Unmarshal(data, &other) != nil {
-			return ErrOwnerAuthority
-		}
-		if contains(other.DenyTools, b.ToolName) {
-			return ErrOwnerAuthority
-		}
-		for _, r := range other.DenyResources {
-			if resourceWithin(r, b.Resource) {
-				return ErrOwnerAuthority
-			}
-		}
-	}
-	return rows.Err()
+	return CheckDenyOverrides(b, tools, resources)
 }
 
 func CheckExtensionAttachment(m Mandate, source, id, manifestHash string, tools []string, at time.Time) error {

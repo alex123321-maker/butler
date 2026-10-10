@@ -71,7 +71,7 @@ func TestCORSMiddlewareHandlesSettingsPreflight(t *testing.T) {
 	if got := RR.Header().Get("Access-Control-Allow-Methods"); got != "GET, POST, PUT, DELETE, OPTIONS" {
 		t.Fatalf("unexpected allowed methods header: %q", got)
 	}
-	if got := RR.Header().Get("Access-Control-Allow-Headers"); got != "Content-Type, Authorization" {
+	if got := RR.Header().Get("Access-Control-Allow-Headers"); got != "Content-Type, Authorization, X-Butler-Delivery-ID" {
 		t.Fatalf("unexpected allowed headers: %q", got)
 	}
 	if got := RR.Header().Get("Access-Control-Allow-Origin"); got != "*" {

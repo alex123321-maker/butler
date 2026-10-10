@@ -194,6 +194,7 @@ func BuildBinding(actionID string, call *toolbrokerv1.ToolCall, contract *toolbr
 			return ActionBinding{}, "", ErrOwnerAuthority
 		}
 		binding.GoalID, binding.GoalRevision, binding.MandateID, binding.MandateRevision, binding.Purpose = a.GoalID, a.GoalRevision, a.MandateID, a.MandateRevision, a.Purpose
+		binding.OwnerPolicyRevision = a.PolicyRevision
 	}
 	encoded, _ := json.Marshal(binding)
 	binding.ActionHash = digest(string(encoded))

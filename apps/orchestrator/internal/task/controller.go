@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/butler/butler/internal/actionauth"
 	"sort"
 	"strings"
 	"time"
@@ -254,6 +255,9 @@ func (c *Controller) Apply(ctx context.Context, req ControlRequest) (ControlResu
 		}
 		if inactiveAncestor {
 			return result, ErrConflict
+		}
+		if _, err = actionauth.CheckTaskAuthorityTx(ctx, tx, root.TaskID, root.OwnerID, nil, time.Now()); err != nil {
+			return result, err
 		}
 	}
 	controlID, err := newID("control")
