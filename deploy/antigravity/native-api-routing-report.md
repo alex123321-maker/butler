@@ -7,7 +7,8 @@ production native `aicode.googleapis.com/v1:generateContent` then returned HTTP
 200 for Gemini 3.8 Flash, with the exact synthetic expected reply, finish `STOP`
 and modelVersion `gemini-3.8-flash`. No CLI inference, external tools, credits,
 alternate model or staging service was used. This proves a real native text turn;
-streaming and function-call continuation still require the Go adapter smoke.
+the same native request also passed the wire streaming probe. Function-call
+continuation still requires the Go adapter smoke.
 
 Successful request body uses only the experience and the standard content fields:
 
@@ -35,6 +36,16 @@ Headers are bearer authorization inside the closed backend resolver,
 The old Cloudcode route still returned generic 429 through the working proxy,
 while its catalog advertised remainingFraction 0.9999. That route's failure must
 not be presented as exhausted native subscription quota.
+
+The verified official CLI descriptor's `StreamGenerateContent` HTTP annotation
+is POST `/{$api_version}:streamGenerateContent`, body `*`. The corresponding
+production `/v1:streamGenerateContent?alt=sse` replay returned HTTP 200 with
+`Content-Type: text/event-stream` and two SSE `data:` frames. Their flat
+candidates produced the exact expected synthetic marker, modelVersion
+`gemini-3.8-flash`, finish `STOP`, prompt tokens 17 and output tokens 14.
+`native-stream-smoke.mjs` reproduces this one request with the same private
+auth/proxy/response-file boundary. It parses bounded frames but does not execute
+function proposals or print text/thoughts.
 
 `native-inference-smoke.mjs` reproduces one native text-only request through an
 operator-configured HTTP/HTTPS CONNECT proxy. It reads the private import and
