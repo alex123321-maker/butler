@@ -162,16 +162,6 @@ func authorizationErrorResult(call *toolbrokerv1.ToolCall, message string) *tool
 	return &toolbrokerv1.ToolResult{ToolCallId: call.GetToolCallId(), RunId: call.GetRunId(), ToolName: call.GetToolName(), Status: "failed", Error: &toolbrokerv1.ToolError{ErrorClass: commonv1.ErrorClass_ERROR_CLASS_VALIDATION_ERROR, Message: message, Retryable: false}}
 }
 
-func (s *Server) resolveCredentials(ctx context.Context, call *toolbrokerv1.ToolCall) ([]credentials.ResolvedSecret, error) {
-	if call == nil || len(call.GetCredentialRefs()) == 0 {
-		return nil, nil
-	}
-	if s.creds == nil {
-		return nil, fmt.Errorf("credential resolution is not configured")
-	}
-	return s.creds.ResolveToolCall(ctx, call)
-}
-
 func (s *Server) ListTools(_ context.Context, req *toolbrokerv1.ListToolsRequest) (*toolbrokerv1.ListToolsResponse, error) {
 	tools := s.registry.List(req.GetToolClass(), req.GetIncludeDisabled())
 	return &toolbrokerv1.ListToolsResponse{Tools: tools}, nil
@@ -192,27 +182,6 @@ func invalidResult(call *toolbrokerv1.ToolCall, toolErr *toolbrokerv1.ToolError)
 		ToolName:   call.GetToolName(),
 		Status:     "failed",
 		Error:      toolErr,
-	}
-}
-
-func runtimeErrorResult(call *toolbrokerv1.ToolCall, contract *toolbrokerv1.ToolContract, err error) *toolbrokerv1.ToolResult {
-	runtimeTarget := ""
-	if contract != nil {
-		runtimeTarget = contract.GetRuntimeTarget()
-	}
-	return &toolbrokerv1.ToolResult{
-		ToolCallId: call.GetToolCallId(),
-		RunId:      call.GetRunId(),
-		ToolName:   call.GetToolName(),
-		Status:     "failed",
-		Error: &toolbrokerv1.ToolError{
-			ErrorClass: commonv1.ErrorClass_ERROR_CLASS_INTERNAL_ERROR,
-			Message:    fmt.Sprintf("runtime execution failed: %v", err),
-			Retryable:  false,
-			DetailsJson: fmt.Sprintf(`{"runtime_target":%q}`,
-				runtimeTarget,
-			),
-		},
 	}
 }
 
