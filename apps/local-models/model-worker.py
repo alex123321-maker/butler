@@ -55,6 +55,11 @@ def memory_output(result):
     for item in result.get('constraint', []):
         fields, unresolved = [], []
         for label, value in item.items():
+            if label == 'confidence':
+                # Upstream record-level score is metadata, not a schema field.
+                continue
+            if label not in MEMORY_FIELDS:
+                raise ValueError('unexpected record field')
             if isinstance(value, list):
                 if len(value) != 1:
                     unresolved.append(label)
@@ -161,7 +166,7 @@ try:
                     logits = model(**inputs).logits[:, -1, [no, yes]].float()
                     output = {'kind': 'scores', 'scores': torch.softmax(logits, dim=1)[:, 1].cpu().tolist()}
                 elif op in ('extract', 'classify') and name == 'fastino/gliner2.5-multi-v1':
-                    text, labels = request['text'], request['labels']
+                    text, labels = request['text'], request.get('labels') or []
                     bounded_tokens(text + ' ' + ' '.join(labels))
                     if op == 'extract':
                         if request.get('schema_version') == 'butler-memory-v1':
