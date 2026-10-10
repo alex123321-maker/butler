@@ -21,11 +21,12 @@ import (
 )
 
 type App struct {
-	config     config.ToolBrowserConfig
-	log        *slog.Logger
-	httpServer *http.Server
-	grpcServer *grpc.Server
-	grpcListen net.Listener
+	config        config.ToolBrowserConfig
+	log           *slog.Logger
+	httpServer    *http.Server
+	grpcServer    *grpc.Server
+	grpcListen    net.Listener
+	browserServer *runtime.Server
 }
 
 func New(context.Context) (*App, error) {
@@ -40,14 +41,15 @@ func New(context.Context) (*App, error) {
 		return nil, fmt.Errorf("listen on grpc addr %s: %w", cfg.Shared.GRPCAddr, err)
 	}
 	grpcServer := grpc.NewServer()
-	runtimev1.RegisterToolRuntimeServiceServer(grpcServer, runtime.NewServer(runtime.NewPlaywrightRunner(cfg.NodeBinary, cfg.HelperScriptPath), log))
+	browserServer := runtime.NewServer(runtime.NewPlaywrightRunner(cfg.NodeBinary, cfg.HelperScriptPath), log)
+	runtimev1.RegisterToolRuntimeServiceServer(grpcServer, browserServer)
 
 	httpMux := http.NewServeMux()
 	httpMux.Handle("/health", health.New(cfg.Shared.ServiceName).Handler())
 	httpMux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write([]byte("tool-browser")) })
 	httpServer := &http.Server{Addr: cfg.Shared.HTTPAddr, Handler: httpMux, ReadHeaderTimeout: 5 * time.Second}
 
-	return &App{config: cfg, log: log, httpServer: httpServer, grpcServer: grpcServer, grpcListen: grpcListener}, nil
+	return &App{config: cfg, log: log, httpServer: httpServer, grpcServer: grpcServer, grpcListen: grpcListener, browserServer: browserServer}, nil
 }
 
 func (a *App) Run(ctx context.Context) error {
@@ -87,6 +89,9 @@ func (a *App) shutdown(runErr error) error {
 		runErr = err
 	}
 	a.grpcServer.GracefulStop()
+	if err := a.browserServer.Close(); err != nil && runErr == nil {
+		runErr = err
+	}
 	if a.grpcListen != nil {
 		if err := a.grpcListen.Close(); err != nil && !errors.Is(err, net.ErrClosed) && runErr == nil {
 			runErr = err

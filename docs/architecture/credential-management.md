@@ -554,6 +554,15 @@ transcript или result. Installer mandate не даёт право менят�
 
 ## 18. Current masking baseline for memory safety
 
+Browser execution additionally follows the
+[Explicit Browser Session Contract](browser-session-contract.md): cookie/storage
+inputs use typed refs exclusively; secrets travel over a private helper stdin,
+not process arguments, and stay in ephemeral session memory. Authorization uses
+the observed page URL and classifies browser changes as mutations. Actual page,
+owner, observation and fixed origin are rechecked before injection. Auth state
+is never exported into ordinary browser artifacts; reflected installed values
+are masked in visible observations. Closing, expiry or helper loss destroys it.
+
 Current Butler baseline now applies memory-focused sanitization before memory extraction prompts and before durable memory persistence for memory-derived records.
 
 Minimum covered categories:

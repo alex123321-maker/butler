@@ -1,5 +1,12 @@
 # Tool Broker
 
+Browser contracts now separate independent `browser.read` from run-owned
+`browser.open`/`browser.close` and explicit continuation. Stateful effects require
+the latest observation version and expected current URL; the runtime validates
+actual state, ownership and fixed origin before effects. Cookie/storage inputs
+use typed credential refs only, with their separate approvals preserved. See
+[`browser-session-contract.md`](../../docs/architecture/browser-session-contract.md).
+
 Tool Broker service for Butler tool validation, policy enforcement, credential mediation, and runtime routing.
 
 Current state:

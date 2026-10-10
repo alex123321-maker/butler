@@ -1,250 +1,211 @@
 import { chromium } from 'playwright'
+import { createInterface } from 'node:readline'
 
-const raw = process.argv[2]
-if (!raw) {
-  console.error('missing browser request payload')
-  process.exit(1)
+// Private JSON-lines protocol. Never print page diagnostics, request bodies,
+// cookies, storage state, passwords or Playwright exceptions.
+const sessions = new Map()
+let browser
+
+const errorResult = (error_type, message) => ({ ok: false, error: { error_type, message, retryable: false } })
+const origin = value => { try { return new URL(value).origin } catch { return '' } }
+const safeError = err => {
+  const message = String(err?.message || '')
+  if (message.toLowerCase().includes('timeout')) return errorResult('timeout', 'browser operation timed out; observe before another action')
+  if (message.toLowerCase().includes('closed')) return errorResult('session_lost', 'browser context was lost; explicitly open a new session')
+  return errorResult('operation_failed', 'browser operation failed; observe before another action')
 }
 
-const request = JSON.parse(raw)
-const browser = await chromium.launch({ headless: true })
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-// CAPTCHA / anti-bot indicator patterns (case-insensitive substrings).
-const blockedPatterns = [
-  'verify you are human',
-  'are you a robot',
-  'captcha',
-  'access denied',
-  'checking your browser',
-  'enable javascript',
-  '403 forbidden',
-  'just a moment',
-  'attention required',
-  'please wait while we verify',
-  'ddos protection',
-  'security check',
-]
-
-/**
- * Classify the page based on its visible text.
- * Returns "blocked" when CAPTCHA / anti-bot patterns are detected,
- * "error" for very short content on pages that should have substance,
- * or "ok" otherwise.
- */
-function classifyPage(text, title) {
-  const lower = (text || '').toLowerCase()
-  const lowerTitle = (title || '').toLowerCase()
-  for (const pattern of blockedPatterns) {
-    if (lower.includes(pattern) || lowerTitle.includes(pattern)) {
-      return 'blocked'
-    }
-  }
-  return 'ok'
+async function closeSession(id) {
+  const session = sessions.get(id)
+  if (!session) return
+  sessions.delete(id)
+  clearTimeout(session.expiryTimer)
+  await session.context.close().catch(() => {})
+  session.secrets.clear()
 }
 
-/**
- * Classify a Playwright error into a structured error type.
- * Returns { error_type, message, retryable }.
- */
-function classifyError(err) {
-  const msg = (err && err.message) || String(err)
-  const lower = msg.toLowerCase()
-
-  if (lower.includes('timeout') || lower.includes('exceeded the time')) {
-    return { error_type: 'timeout', message: msg, retryable: true }
-  }
-  if (lower.includes('waiting for locator') || lower.includes('no element') ||
-      lower.includes('strict mode violation') || lower.includes('resolved to') ||
-      lower.includes('locator.click') || lower.includes('locator.fill') ||
-      lower.includes('locator.innertext') || lower.includes('locator.presssequentially')) {
-    return { error_type: 'selector_not_found', message: msg, retryable: false }
-  }
-  if (lower.includes('net::err_') || lower.includes('dns') ||
-      lower.includes('econnrefused') || lower.includes('enotfound') ||
-      lower.includes('navigation failed') || lower.includes('page.goto')) {
-    return { error_type: 'navigation_failed', message: msg, retryable: true }
-  }
-  if (lower.includes('context or page has been closed') || lower.includes('target closed') ||
-      lower.includes('browser has been closed')) {
-    return { error_type: 'browser_closed', message: msg, retryable: true }
-  }
-  return { error_type: 'runtime_error', message: msg, retryable: false }
+async function ensureBrowser() {
+  if (browser?.isConnected()) return browser
+  browser = await chromium.launch({ headless: true })
+  browser.on('disconnected', () => {
+    for (const session of sessions.values()) { clearTimeout(session.expiryTimer); session.secrets.clear() }
+    sessions.clear()
+  })
+  return browser
 }
 
-/**
- * Extract up to `limit` navigation links from the page.
- * Returns an array of { text, href } objects.
- */
-async function extractLinks(page, limit = 30) {
-  try {
-    return await page.evaluate((maxLinks) => {
-      const anchors = Array.from(document.querySelectorAll('a[href]'))
-      const seen = new Set()
-      const results = []
-      for (const a of anchors) {
-        if (results.length >= maxLinks) break
-        const href = a.href
-        const text = (a.innerText || '').trim().substring(0, 120)
-        if (!href || href === 'javascript:void(0)' || href.startsWith('javascript:')) continue
-        if (!text) continue
-        const key = href + '|' + text
-        if (seen.has(key)) continue
-        seen.add(key)
-        results.push({ text, href })
-      }
-      return results
-    }, limit)
-  } catch {
-    return []
+function redact(session, value) {
+  let text = String(value ?? '')
+  for (const secret of session.secrets) {
+    if (!secret) continue
+    text = text.split(secret).join('[REDACTED]')
+    text = text.split(encodeURIComponent(secret)).join('[REDACTED]')
   }
+  return text.replace(/([?&#](?:access_token|refresh_token|token|password|api_key|secret|code)=)[^&#]*/gi, '$1[REDACTED]')
 }
 
-try {
-  const context = await browser.newContext()
+async function collectSecretState(session) {
+  // Values stay exclusively in process memory. Page-derived output is masked
+  // against auth data even when a page reflects a cookie or local storage value.
+  for (const cookie of await session.context.cookies()) if (cookie.value) session.secrets.add(cookie.value)
+  const values = await session.page.evaluate(() => {
+    const values = []
+    for (const input of document.querySelectorAll('input[type=password]')) if (input.value) values.push(input.value)
+    try { for (let i = 0; i < localStorage.length; i++) values.push(localStorage.getItem(localStorage.key(i))) } catch {}
+    try { for (let i = 0; i < sessionStorage.length; i++) values.push(sessionStorage.getItem(sessionStorage.key(i))) } catch {}
+    return values
+  }).catch(() => [])
+  for (const value of values) if (value) session.secrets.add(value)
+}
 
-  // Restore storage state if requested.
-  if (request.tool_name === 'browser.restore_storage_state' && request.storage_state) {
-    if (request.storage_state.cookies && request.storage_state.cookies.length > 0) {
-      const cookies = request.storage_state.cookies.map(c => ({
-        name: c.name,
-        value: c.value,
-        domain: c.domain,
-        path: c.path || '/',
-        secure: c.secure || false,
-        httpOnly: c.http_only || false,
-      }))
-      await context.addCookies(cookies)
-    }
-    // Origins / local storage would require navigating to each origin, which
-    // is deferred to a future enhancement.
-    process.stdout.write(JSON.stringify({ ok: true }))
-    await browser.close()
-    process.exit(0)
-  }
-
-  // Set cookie on the context before navigating.
-  if (request.tool_name === 'browser.set_cookie' && request.cookie) {
-    const c = request.cookie
-    await context.addCookies([{
-      name: c.name,
-      value: c.value,
-      domain: c.domain,
-      path: c.path || '/',
-      secure: c.secure || false,
-      httpOnly: c.http_only || false,
-    }])
-    process.stdout.write(JSON.stringify({ ok: true }))
-    await browser.close()
-    process.exit(0)
-  }
-
+async function newSession(request) {
+  const browser = await ensureBrowser()
+  const context = await browser.newContext({ serviceWorkers: 'block', acceptDownloads: false })
+  const session = { context, page: undefined, scope: request.scope_origin || origin(request.url),
+    version: 0, dirty: true, secrets: new Set(), expires: Date.parse(request.expires_at), expiryTimer: undefined }
+  // Restrict all page requests, redirects, iframe resources, and popups to the
+  // fixed origin. Opening a session cannot grant wider network capabilities.
+  await context.route('**/*', async route => {
+    if (origin(route.request().url()) !== session.scope) await route.abort('blockedbyclient')
+    else await route.continue()
+  })
+  await context.addInitScript(() => {
+    window.__butlerRevision = 0
+    window.__butlerDocumentID = Array.from(crypto.getRandomValues(new Uint8Array(16)), value => value.toString(16).padStart(2, '0')).join('')
+    const changed = () => { window.__butlerRevision++ }
+    new MutationObserver(changed).observe(document, { subtree: true, childList: true, attributes: true, characterData: true })
+    document.addEventListener('input', changed, true)
+    document.addEventListener('change', changed, true)
+    window.addEventListener('popstate', changed)
+    window.addEventListener('hashchange', changed)
+  })
   const page = await context.newPage()
+  session.page = page
+  page.on('framenavigated', () => { session.dirty = true })
+  context.on('page', other => { if (other !== page) void other.close() })
+  return session
+}
 
-  // For tools that operate on an existing page (click, fill, type, wait_for,
-  // extract_text), the page must first be navigated to the target URL.
-  if (request.url) {
-    try {
-      await page.goto(request.url, { waitUntil: 'domcontentloaded', timeout: 15000 })
-    } catch (e) {
-      const classified = classifyError(e)
-      // For navigate/snapshot, return a structured result with the error.
-      // For other tools, the navigation failure is fatal to the operation.
-      const toolName = request.tool_name
-      if (toolName === 'browser.navigate' || toolName === 'browser.snapshot') {
-        process.stdout.write(JSON.stringify({ final_url: request.url, title: '', text: '', page_status: 'error', links: [], error: classified }))
-      } else {
-        process.stdout.write(JSON.stringify({ ok: false, error: classified }))
-      }
-      await browser.close()
-      process.exit(0)
-    }
+async function observe(session, selector = 'body') {
+  await collectSecretState(session)
+  // Read visible text only. Never serialize inputs, HTML attributes, cookies,
+  // storage, screenshot pixels or full DOM into a normal tool artifact.
+  // Capture text, URL and DOM revision in one JavaScript turn. A mutation
+  // between separate reads must not validate an older text snapshot.
+  const captured = await session.page.evaluate(selector => {
+    const element = document.querySelector(selector)
+    if (!element) throw new Error('requested selector is not present')
+    const links = selector === 'body' ? Array.from(document.querySelectorAll('a[href]')).slice(0, 30)
+      .map(a => ({ text: (a.innerText || '').slice(0, 120), href: a.href })).filter(a => a.text && /^https?:/.test(a.href)) : []
+    return { text: element.innerText || '', links, title: document.title, url: location.href,
+      revision: window.__butlerRevision, documentID: window.__butlerDocumentID }
+  }, selector)
+  await collectSecretState(session)
+  const { text, links, title } = captured
+  const final_url = redact(session, captured.url)
+  session.observedRevision = captured.revision
+  session.observedDocumentID = captured.documentID
+  session.version++
+  session.dirty = false
+  const cleanText = Array.from(redact(session, text)).slice(0, 12000).join('')
+  const page_status = /captcha|verify you are human|access denied|checking your browser|403 forbidden/i.test(cleanText + title) ? 'blocked' : 'ok'
+  return { ok: true, observation_version: session.version, final_url, title: redact(session, title), text: cleanText, page_status,
+    links: links.map(link => ({ text: redact(session, link.text), href: redact(session, link.href) })) }
+}
+
+async function execute(request) {
+  const tool = request.tool_name
+  if (tool === 'browser.read') {
+    const session = await newSession(request)
+    try { await session.page.goto(request.url, { waitUntil: 'domcontentloaded', timeout: 15000 }); return await observe(session) }
+    finally { await session.context.close(); session.secrets.clear() }
   }
-
-  const toolName = request.tool_name
+  if (tool === 'browser.open') {
+    if (!request.browser_session_id || sessions.has(request.browser_session_id)) return errorResult('invalid_session', 'browser session identifier is invalid')
+    const session = await newSession(request)
+    sessions.set(request.browser_session_id, session)
+    session.expiryTimer = setTimeout(() => { void closeSession(request.browser_session_id) }, Math.max(0, session.expires - Date.now()))
+    session.expiryTimer.unref()
+    try {
+      await session.page.goto(request.url, { waitUntil: 'domcontentloaded', timeout: 15000 })
+      if (origin(session.page.url()) !== session.scope) throw new Error('scope')
+      return await observe(session)
+    } catch (err) { await closeSession(request.browser_session_id); return safeError(err) }
+  }
+  const session = sessions.get(request.browser_session_id)
+  if (!session) return errorResult('session_lost', 'browser session was closed, expired, or lost; explicitly open a new session')
+  if (Date.now() >= session.expires) { await closeSession(request.browser_session_id); return errorResult('session_expired', 'browser session expired') }
+  if (tool === 'browser.close') { await closeSession(request.browser_session_id); return { ok: true } }
+  if (origin(session.page.url()) !== session.scope || request.scope_origin !== session.scope) return errorResult('scope_denied', 'current page is outside the fixed browser origin')
+  if (tool === 'browser.snapshot') return await observe(session)
+  if (tool === 'browser.extract_text') return await observe(session, request.selector)
+  // Re-check live page state immediately before every effect. Go already
+  // checks trusted ownership, exclusive control, and the last observed state.
+  await collectSecretState(session)
+  const live = await session.page.evaluate(() => ({ revision: window.__butlerRevision, documentID: window.__butlerDocumentID }))
+  if (request.observation_version !== session.version || session.dirty || live.revision !== session.observedRevision || live.documentID !== session.observedDocumentID) return errorResult('stale_observation', 'page changed since observation; take a new snapshot')
+  if (request.expected_url !== redact(session, session.page.url())) return errorResult('page_changed', 'current page does not match expected_url; take a new snapshot')
+  for (const secret of request.secret_values || []) if (secret) session.secrets.add(secret)
   const timeout = request.timeout || 5000
-
-  if (toolName === 'browser.navigate') {
-    try {
-      const title = await page.title()
-      const finalURL = page.url()
-      const text = await page.locator('body').innerText().catch(() => '')
-      const pageStatus = classifyPage(text, title)
-      const links = await extractLinks(page)
-      process.stdout.write(JSON.stringify({ final_url: finalURL, title, text, page_status: pageStatus, links }))
-    } catch (e) {
-      const classified = classifyError(e)
-      process.stdout.write(JSON.stringify({ final_url: page.url(), title: '', text: '', page_status: 'error', links: [], error: classified }))
+  try {
+    switch (tool) {
+      case 'browser.navigate':
+        if (origin(request.url) !== session.scope) return errorResult('scope_denied', 'navigation cannot expand browser origin')
+        await session.page.goto(request.url, { waitUntil: 'domcontentloaded', timeout }); break
+      case 'browser.click':
+        await session.page.locator(request.selector).click({ timeout });
+        await session.page.waitForLoadState('domcontentloaded', { timeout }); break
+      case 'browser.fill':
+      case 'browser.type': {
+        const locator = session.page.locator(request.selector)
+        const password = await locator.evaluate(element => element instanceof HTMLInputElement && element.type === 'password', null, { timeout })
+        if (password && !request.secret_values?.length) return errorResult('credential_required', 'password inputs require a broker-resolved credential_ref')
+        if (tool === 'browser.fill') await locator.fill(request.value || '', { timeout })
+        else await locator.pressSequentially(request.text || '', { timeout })
+        break
+      }
+      case 'browser.wait_for':
+        await session.page.locator(request.selector).waitFor({ state: 'visible', timeout });
+        return { ...await observe(session), matched: true }
+      case 'browser.set_cookie': {
+        const c = request.cookie
+        if (!c || c.domain.replace(/^\./, '').toLowerCase() !== new URL(session.scope).hostname.toLowerCase()) return errorResult('scope_denied', 'cookie cannot expand browser origin')
+        await session.context.addCookies([{ name: c.name, value: c.value, domain: new URL(session.scope).hostname, path: c.path || '/', secure: !!c.secure, httpOnly: !!c.http_only }]); break
+      }
+      case 'browser.restore_storage_state': {
+        const state = request.storage_state
+        if (!state) return errorResult('invalid_auth_state', 'storage state was not broker-resolved')
+        for (const cookie of state.cookies || []) {
+          if (cookie.domain.replace(/^\./, '').toLowerCase() !== new URL(session.scope).hostname.toLowerCase()) return errorResult('scope_denied', 'storage cookie cannot expand browser origin')
+        }
+        for (const entry of state.origins || []) if (origin(entry.origin) !== session.scope) return errorResult('scope_denied', 'storage origin cannot expand browser scope')
+        await session.context.addCookies((state.cookies || []).map(c => ({ name: c.name, value: c.value, domain: new URL(session.scope).hostname, path: c.path || '/', secure: !!c.secure, httpOnly: !!c.http_only })))
+        for (const entry of state.origins || []) await session.page.evaluate(entries => {
+          for (const item of entries) localStorage.setItem(item.name, item.value)
+        }, entry.local_storage || [])
+        break
+      }
+      default: return errorResult('unsupported_tool', 'unsupported browser tool')
     }
-
-  } else if (toolName === 'browser.snapshot') {
-    try {
-      const title = await page.title()
-      const finalURL = page.url()
-      const text = await page.locator('body').innerText().catch(() => '')
-      const pageStatus = classifyPage(text, title)
-      const links = await extractLinks(page)
-      process.stdout.write(JSON.stringify({ final_url: finalURL, title, text, page_status: pageStatus, links }))
-    } catch (e) {
-      const classified = classifyError(e)
-      process.stdout.write(JSON.stringify({ final_url: page.url(), title: '', text: '', page_status: 'error', links: [], error: classified }))
-    }
-
-  } else if (toolName === 'browser.click') {
-    try {
-      await page.locator(request.selector).click({ timeout })
-      // Wait briefly for any navigation or re-render.
-      await page.waitForLoadState('domcontentloaded').catch(() => {})
-      const title = await page.title()
-      process.stdout.write(JSON.stringify({ ok: true, title }))
-    } catch (e) {
-      const classified = classifyError(e)
-      process.stdout.write(JSON.stringify({ ok: false, error: classified }))
-    }
-
-  } else if (toolName === 'browser.fill') {
-    try {
-      await page.locator(request.selector).fill(request.value || '', { timeout })
-      process.stdout.write(JSON.stringify({ ok: true }))
-    } catch (e) {
-      const classified = classifyError(e)
-      process.stdout.write(JSON.stringify({ ok: false, error: classified }))
-    }
-
-  } else if (toolName === 'browser.type') {
-    try {
-      await page.locator(request.selector).pressSequentially(request.text || '', { timeout, delay: 20 })
-      process.stdout.write(JSON.stringify({ ok: true }))
-    } catch (e) {
-      const classified = classifyError(e)
-      process.stdout.write(JSON.stringify({ ok: false, error: classified }))
-    }
-
-  } else if (toolName === 'browser.wait_for') {
-    try {
-      await page.locator(request.selector).waitFor({ state: 'visible', timeout })
-      process.stdout.write(JSON.stringify({ matched: true }))
-    } catch {
-      process.stdout.write(JSON.stringify({ matched: false }))
-    }
-
-  } else if (toolName === 'browser.extract_text') {
-    try {
-      const text = await page.locator(request.selector).innerText({ timeout })
-      process.stdout.write(JSON.stringify({ text }))
-    } catch (e) {
-      const classified = classifyError(e)
-      process.stdout.write(JSON.stringify({ text: '', error: classified }))
-    }
-
-  } else {
-    console.error(`unsupported tool: ${toolName}`)
-    process.exit(1)
+    // A new observation is returned after effects, so fill A -> fill B -> click
+    // can use each returned version without silently reloading the page.
+    return await observe(session)
+  } catch (err) {
+    session.version++
+    session.dirty = true
+    return { ...safeError(err), observation_version: session.version, final_url: redact(session, session.page.url()) }
   }
+}
 
+const lines = createInterface({ input: process.stdin, crlfDelay: Infinity })
+try {
+  for await (const line of lines) {
+    let result
+    try { result = await execute(JSON.parse(line)) }
+    catch { result = errorResult('operation_failed', 'browser execution failed; observe before another action') }
+    process.stdout.write(JSON.stringify(result) + '\n')
+  }
 } finally {
-  await browser.close()
+  for (const id of sessions.keys()) await closeSession(id)
+  await browser?.close().catch(() => {})
 }

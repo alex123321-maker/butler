@@ -462,6 +462,11 @@ Secret Store не должен раскрывать секреты orchestrator,
 
 Browser tooling и HTTP tooling должны поддерживать deferred credential references вместо передачи секретов literal values.
 
+Обычный browser runtime теперь разделяет независимое `browser.read` и явные
+run-owned контексты `browser.open` с TTL, origin scope и проверкой наблюдения
+перед эффектами; снимок не навигирует. Контракт и ограничения текущей реализации
+описаны в [Browser Session Contract](browser-session-contract.md).
+
 Базовые требования:
 - пользователь работает с credential aliases;
 - агент видит только alias и metadata / capability hints;

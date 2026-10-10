@@ -1,5 +1,11 @@
 # Orchestrator
 
+Browser guidance matches the explicit
+[`browser.*` session contract](../../docs/architecture/browser-session-contract.md):
+independent reads use `browser.read`, sequences begin with `browser.open`, follow-up
+effects carry the current observation/URL, and lost state is reported explicitly.
+The separately approved `single_tab.*` flow retains its own capability boundary.
+
 Tool execution fails closed when the approval policy cannot be checked. A tool
 requiring approval also requires a configured approval gate. These guarantees
 apply to single calls and batch members; policy failures do not become permission.
