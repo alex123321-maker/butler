@@ -141,11 +141,6 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 			return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
 		}
 	}
-	if prepared.Task != nil {
-		if err := s.config.Tasks.AttachRun(ctx, prepared.Task.TaskID, prepared.Task.Revision, current.GetRunId(), event.SessionKey); err != nil {
-			return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
-		}
-	}
 	for _, item := range []struct {
 		kind    string
 		payload map[string]any

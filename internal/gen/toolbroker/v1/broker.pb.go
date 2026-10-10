@@ -542,8 +542,12 @@ type ListToolsRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	ToolClass       string                 `protobuf:"bytes,1,opt,name=tool_class,json=toolClass,proto3" json:"tool_class,omitempty"`
 	IncludeDisabled bool                   `protobuf:"varint,2,opt,name=include_disabled,json=includeDisabled,proto3" json:"include_disabled,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// Private worker context. Missing run_id lists builtin diagnostics only.
+	RunId         string `protobuf:"bytes,3,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
+	Query         string `protobuf:"bytes,4,opt,name=query,proto3" json:"query,omitempty"`
+	Limit         int32  `protobuf:"varint,5,opt,name=limit,proto3" json:"limit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListToolsRequest) Reset() {
@@ -588,6 +592,27 @@ func (x *ListToolsRequest) GetIncludeDisabled() bool {
 		return x.IncludeDisabled
 	}
 	return false
+}
+
+func (x *ListToolsRequest) GetRunId() string {
+	if x != nil {
+		return x.RunId
+	}
+	return ""
+}
+
+func (x *ListToolsRequest) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+func (x *ListToolsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
 }
 
 type ListToolsResponse struct {
@@ -763,11 +788,14 @@ const file_toolbroker_v1_broker_proto_rawDesc = "" +
 	"\x10authorization_id\x18\x01 \x01(\tR\x0fauthorizationId\x125\n" +
 	"\x05error\x18\x02 \x01(\v2\x1f.butler.toolbroker.v1.ToolErrorR\x05error\"S\n" +
 	"\x17ExecuteToolCallResponse\x128\n" +
-	"\x06result\x18\x01 \x01(\v2 .butler.toolbroker.v1.ToolResultR\x06result\"\\\n" +
+	"\x06result\x18\x01 \x01(\v2 .butler.toolbroker.v1.ToolResultR\x06result\"\x9f\x01\n" +
 	"\x10ListToolsRequest\x12\x1d\n" +
 	"\n" +
 	"tool_class\x18\x01 \x01(\tR\ttoolClass\x12)\n" +
-	"\x10include_disabled\x18\x02 \x01(\bR\x0fincludeDisabled\"M\n" +
+	"\x10include_disabled\x18\x02 \x01(\bR\x0fincludeDisabled\x12\x15\n" +
+	"\x06run_id\x18\x03 \x01(\tR\x05runId\x12\x14\n" +
+	"\x05query\x18\x04 \x01(\tR\x05query\x12\x14\n" +
+	"\x05limit\x18\x05 \x01(\x05R\x05limit\"M\n" +
 	"\x11ListToolsResponse\x128\n" +
 	"\x05tools\x18\x01 \x03(\v2\".butler.toolbroker.v1.ToolContractR\x05tools\"5\n" +
 	"\x16GetToolContractRequest\x12\x1b\n" +

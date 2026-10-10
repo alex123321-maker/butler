@@ -18,6 +18,13 @@ func NetworkReleaseRequired(call *toolbrokerv1.ToolCall, contract *toolbrokerv1.
 		return false, fmt.Errorf("release policy requires validated arguments")
 	}
 	var resources []string
+	if contract.GetExtension() != nil {
+		resource, ok := args["url"].(string)
+		if !ok || resource == "" {
+			return false, fmt.Errorf("extension resource is invalid")
+		}
+		resources = append(resources, resource)
+	}
 	switch call.GetToolName() {
 	case "http.request", "http.download", "http.parse_html", "web.fetch", "web.extract", "browser.read", "browser.open", "browser.navigate":
 		if resource, ok := args["url"].(string); ok && resource != "" {

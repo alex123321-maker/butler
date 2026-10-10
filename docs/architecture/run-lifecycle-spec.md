@@ -899,3 +899,9 @@ fence old assignments; bounded durable jobs then pause/stop their branches. The
 lease supervisor cancels an idle provider before branch propagation completes.
 Committed results/effect evidence remain historical facts. See
 [owner goals and mandates](owner-goals-mandates-spec.md).
+
+Reviewed extensions use the current task/run binding before scoped catalog
+loading. Preparation failure retains that truthful attempt association. Fresh
+approval recovery reloads current capabilities, replacing stale package data
+while retaining known observations without redispatch. See
+[extension lifecycle](reviewed-extension-lifecycle.md).

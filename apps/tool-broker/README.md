@@ -90,3 +90,11 @@ acknowledgement and frozen network. This confirms only local browser state;
 generic fill/type/click do not inherit it and external submission remains
 unknown without recipient proof. Navigation/read revision 2 enforce GET/HEAD;
 old contracts fail closed. The root unknown-effect budget guard is unchanged.
+
+Reviewed local extension manifests are durable data in migration050. Owner
+control is private and separate from ordinary tool execution. Exact versions,
+operator profile review, fresh readiness and bounded current task attachment
+filter scoped catalogs and are repeated before credentials/dispatch. The separate
+Go executor receives only a dedicated runtime token and deferred authorized inputs;
+fixed readiness GETs use existing owner/admin budgets and never completion proof.
+See [extension lifecycle](../../docs/architecture/reviewed-extension-lifecycle.md).

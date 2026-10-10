@@ -416,8 +416,10 @@ type ToolContract struct {
 	AllowedTools           []string               `protobuf:"bytes,13,rep,name=allowed_tools,json=allowedTools,proto3" json:"allowed_tools,omitempty"`
 	ContractRevision       string                 `protobuf:"bytes,14,opt,name=contract_revision,json=contractRevision,proto3" json:"contract_revision,omitempty"`
 	EffectContract         *EffectContract        `protobuf:"bytes,15,opt,name=effect_contract,json=effectContract,proto3" json:"effect_contract,omitempty"`
-	unknownFields          protoimpl.UnknownFields
-	sizeCache              protoimpl.SizeCache
+	// Reviewed installed capability metadata, set only by the durable catalog.
+	Extension     *ExtensionContract `protobuf:"bytes,16,opt,name=extension,proto3" json:"extension,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ToolContract) Reset() {
@@ -555,6 +557,274 @@ func (x *ToolContract) GetEffectContract() *EffectContract {
 	return nil
 }
 
+func (x *ToolContract) GetExtension() *ExtensionContract {
+	if x != nil {
+		return x.Extension
+	}
+	return nil
+}
+
+type ExtensionResource struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Origin        string                 `protobuf:"bytes,1,opt,name=origin,proto3" json:"origin,omitempty"`
+	PathPrefix    string                 `protobuf:"bytes,2,opt,name=path_prefix,json=pathPrefix,proto3" json:"path_prefix,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ExtensionResource) Reset() {
+	*x = ExtensionResource{}
+	mi := &file_toolbroker_v1_types_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExtensionResource) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExtensionResource) ProtoMessage() {}
+
+func (x *ExtensionResource) ProtoReflect() protoreflect.Message {
+	mi := &file_toolbroker_v1_types_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExtensionResource.ProtoReflect.Descriptor instead.
+func (*ExtensionResource) Descriptor() ([]byte, []int) {
+	return file_toolbroker_v1_types_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ExtensionResource) GetOrigin() string {
+	if x != nil {
+		return x.Origin
+	}
+	return ""
+}
+
+func (x *ExtensionResource) GetPathPrefix() string {
+	if x != nil {
+		return x.PathPrefix
+	}
+	return ""
+}
+
+type ExtensionCredential struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Input         string                 `protobuf:"bytes,1,opt,name=input,proto3" json:"input,omitempty"`
+	Field         string                 `protobuf:"bytes,2,opt,name=field,proto3" json:"field,omitempty"`
+	Required      bool                   `protobuf:"varint,3,opt,name=required,proto3" json:"required,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ExtensionCredential) Reset() {
+	*x = ExtensionCredential{}
+	mi := &file_toolbroker_v1_types_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExtensionCredential) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExtensionCredential) ProtoMessage() {}
+
+func (x *ExtensionCredential) ProtoReflect() protoreflect.Message {
+	mi := &file_toolbroker_v1_types_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExtensionCredential.ProtoReflect.Descriptor instead.
+func (*ExtensionCredential) Descriptor() ([]byte, []int) {
+	return file_toolbroker_v1_types_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ExtensionCredential) GetInput() string {
+	if x != nil {
+		return x.Input
+	}
+	return ""
+}
+
+func (x *ExtensionCredential) GetField() string {
+	if x != nil {
+		return x.Field
+	}
+	return ""
+}
+
+func (x *ExtensionCredential) GetRequired() bool {
+	if x != nil {
+		return x.Required
+	}
+	return false
+}
+
+type ExtensionContract struct {
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	ExtensionId  string                 `protobuf:"bytes,1,opt,name=extension_id,json=extensionId,proto3" json:"extension_id,omitempty"`
+	ManifestHash string                 `protobuf:"bytes,2,opt,name=manifest_hash,json=manifestHash,proto3" json:"manifest_hash,omitempty"`
+	Version      string                 `protobuf:"bytes,3,opt,name=version,proto3" json:"version,omitempty"`
+	Source       string                 `protobuf:"bytes,4,opt,name=source,proto3" json:"source,omitempty"`
+	Generation   int64                  `protobuf:"varint,5,opt,name=generation,proto3" json:"generation,omitempty"`
+	ProfilePin   string                 `protobuf:"bytes,6,opt,name=profile_pin,json=profilePin,proto3" json:"profile_pin,omitempty"`
+	Method       string                 `protobuf:"bytes,7,opt,name=method,proto3" json:"method,omitempty"`
+	Effect       string                 `protobuf:"bytes,8,opt,name=effect,proto3" json:"effect,omitempty"`
+	Resources    []*ExtensionResource   `protobuf:"bytes,9,rep,name=resources,proto3" json:"resources,omitempty"`
+	Credentials  []*ExtensionCredential `protobuf:"bytes,10,rep,name=credentials,proto3" json:"credentials,omitempty"`
+	TimeoutMs    int64                  `protobuf:"varint,11,opt,name=timeout_ms,json=timeoutMs,proto3" json:"timeout_ms,omitempty"`
+	EgressBytes  int64                  `protobuf:"varint,12,opt,name=egress_bytes,json=egressBytes,proto3" json:"egress_bytes,omitempty"`
+	OutputBytes  int64                  `protobuf:"varint,13,opt,name=output_bytes,json=outputBytes,proto3" json:"output_bytes,omitempty"`
+	// Optional reviewed recipient guarantee, exact copy of ToolContract policy.
+	Receipt       *EffectContract `protobuf:"bytes,14,opt,name=receipt,proto3" json:"receipt,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ExtensionContract) Reset() {
+	*x = ExtensionContract{}
+	mi := &file_toolbroker_v1_types_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExtensionContract) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExtensionContract) ProtoMessage() {}
+
+func (x *ExtensionContract) ProtoReflect() protoreflect.Message {
+	mi := &file_toolbroker_v1_types_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExtensionContract.ProtoReflect.Descriptor instead.
+func (*ExtensionContract) Descriptor() ([]byte, []int) {
+	return file_toolbroker_v1_types_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ExtensionContract) GetExtensionId() string {
+	if x != nil {
+		return x.ExtensionId
+	}
+	return ""
+}
+
+func (x *ExtensionContract) GetManifestHash() string {
+	if x != nil {
+		return x.ManifestHash
+	}
+	return ""
+}
+
+func (x *ExtensionContract) GetVersion() string {
+	if x != nil {
+		return x.Version
+	}
+	return ""
+}
+
+func (x *ExtensionContract) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *ExtensionContract) GetGeneration() int64 {
+	if x != nil {
+		return x.Generation
+	}
+	return 0
+}
+
+func (x *ExtensionContract) GetProfilePin() string {
+	if x != nil {
+		return x.ProfilePin
+	}
+	return ""
+}
+
+func (x *ExtensionContract) GetMethod() string {
+	if x != nil {
+		return x.Method
+	}
+	return ""
+}
+
+func (x *ExtensionContract) GetEffect() string {
+	if x != nil {
+		return x.Effect
+	}
+	return ""
+}
+
+func (x *ExtensionContract) GetResources() []*ExtensionResource {
+	if x != nil {
+		return x.Resources
+	}
+	return nil
+}
+
+func (x *ExtensionContract) GetCredentials() []*ExtensionCredential {
+	if x != nil {
+		return x.Credentials
+	}
+	return nil
+}
+
+func (x *ExtensionContract) GetTimeoutMs() int64 {
+	if x != nil {
+		return x.TimeoutMs
+	}
+	return 0
+}
+
+func (x *ExtensionContract) GetEgressBytes() int64 {
+	if x != nil {
+		return x.EgressBytes
+	}
+	return 0
+}
+
+func (x *ExtensionContract) GetOutputBytes() int64 {
+	if x != nil {
+		return x.OutputBytes
+	}
+	return 0
+}
+
+func (x *ExtensionContract) GetReceipt() *EffectContract {
+	if x != nil {
+		return x.Receipt
+	}
+	return nil
+}
+
 // Operator-owned capabilities, never model args. Missing values are unsafe.
 type EffectContract struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
@@ -569,7 +839,7 @@ type EffectContract struct {
 
 func (x *EffectContract) Reset() {
 	*x = EffectContract{}
-	mi := &file_toolbroker_v1_types_proto_msgTypes[5]
+	mi := &file_toolbroker_v1_types_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -581,7 +851,7 @@ func (x *EffectContract) String() string {
 func (*EffectContract) ProtoMessage() {}
 
 func (x *EffectContract) ProtoReflect() protoreflect.Message {
-	mi := &file_toolbroker_v1_types_proto_msgTypes[5]
+	mi := &file_toolbroker_v1_types_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -594,7 +864,7 @@ func (x *EffectContract) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EffectContract.ProtoReflect.Descriptor instead.
 func (*EffectContract) Descriptor() ([]byte, []int) {
-	return file_toolbroker_v1_types_proto_rawDescGZIP(), []int{5}
+	return file_toolbroker_v1_types_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *EffectContract) GetRetrySafety() string {
@@ -680,7 +950,7 @@ const file_toolbroker_v1_types_proto_rawDesc = "" +
 	"\taction_id\x18\b \x01(\tR\bactionId\x12!\n" +
 	"\feffect_state\x18\t \x01(\tR\veffectState\x12#\n" +
 	"\revidence_refs\x18\n" +
-	" \x03(\tR\fevidenceRefs\"\x84\x05\n" +
+	" \x03(\tR\fevidenceRefs\"\xcb\x05\n" +
 	"\fToolContract\x12\x1b\n" +
 	"\ttool_name\x18\x01 \x01(\tR\btoolName\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1d\n" +
@@ -699,7 +969,36 @@ const file_toolbroker_v1_types_proto_rawDesc = "" +
 	"\x0fallowed_domains\x18\f \x03(\tR\x0eallowedDomains\x12#\n" +
 	"\rallowed_tools\x18\r \x03(\tR\fallowedTools\x12+\n" +
 	"\x11contract_revision\x18\x0e \x01(\tR\x10contractRevision\x12M\n" +
-	"\x0feffect_contract\x18\x0f \x01(\v2$.butler.toolbroker.v1.EffectContractR\x0eeffectContract\"\xe1\x01\n" +
+	"\x0feffect_contract\x18\x0f \x01(\v2$.butler.toolbroker.v1.EffectContractR\x0eeffectContract\x12E\n" +
+	"\textension\x18\x10 \x01(\v2'.butler.toolbroker.v1.ExtensionContractR\textension\"L\n" +
+	"\x11ExtensionResource\x12\x16\n" +
+	"\x06origin\x18\x01 \x01(\tR\x06origin\x12\x1f\n" +
+	"\vpath_prefix\x18\x02 \x01(\tR\n" +
+	"pathPrefix\"]\n" +
+	"\x13ExtensionCredential\x12\x14\n" +
+	"\x05input\x18\x01 \x01(\tR\x05input\x12\x14\n" +
+	"\x05field\x18\x02 \x01(\tR\x05field\x12\x1a\n" +
+	"\brequired\x18\x03 \x01(\bR\brequired\"\xb7\x04\n" +
+	"\x11ExtensionContract\x12!\n" +
+	"\fextension_id\x18\x01 \x01(\tR\vextensionId\x12#\n" +
+	"\rmanifest_hash\x18\x02 \x01(\tR\fmanifestHash\x12\x18\n" +
+	"\aversion\x18\x03 \x01(\tR\aversion\x12\x16\n" +
+	"\x06source\x18\x04 \x01(\tR\x06source\x12\x1e\n" +
+	"\n" +
+	"generation\x18\x05 \x01(\x03R\n" +
+	"generation\x12\x1f\n" +
+	"\vprofile_pin\x18\x06 \x01(\tR\n" +
+	"profilePin\x12\x16\n" +
+	"\x06method\x18\a \x01(\tR\x06method\x12\x16\n" +
+	"\x06effect\x18\b \x01(\tR\x06effect\x12E\n" +
+	"\tresources\x18\t \x03(\v2'.butler.toolbroker.v1.ExtensionResourceR\tresources\x12K\n" +
+	"\vcredentials\x18\n" +
+	" \x03(\v2).butler.toolbroker.v1.ExtensionCredentialR\vcredentials\x12\x1d\n" +
+	"\n" +
+	"timeout_ms\x18\v \x01(\x03R\ttimeoutMs\x12!\n" +
+	"\fegress_bytes\x18\f \x01(\x03R\vegressBytes\x12!\n" +
+	"\foutput_bytes\x18\r \x01(\x03R\voutputBytes\x12>\n" +
+	"\areceipt\x18\x0e \x01(\v2$.butler.toolbroker.v1.EffectContractR\areceipt\"\xe1\x01\n" +
 	"\x0eEffectContract\x12!\n" +
 	"\fretry_safety\x18\x01 \x01(\tR\vretrySafety\x12-\n" +
 	"\x12idempotency_header\x18\x02 \x01(\tR\x11idempotencyHeader\x12/\n" +
@@ -719,29 +1018,36 @@ func file_toolbroker_v1_types_proto_rawDescGZIP() []byte {
 	return file_toolbroker_v1_types_proto_rawDescData
 }
 
-var file_toolbroker_v1_types_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_toolbroker_v1_types_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_toolbroker_v1_types_proto_goTypes = []any{
-	(*CredentialRef)(nil),  // 0: butler.toolbroker.v1.CredentialRef
-	(*ToolError)(nil),      // 1: butler.toolbroker.v1.ToolError
-	(*ToolCall)(nil),       // 2: butler.toolbroker.v1.ToolCall
-	(*ToolResult)(nil),     // 3: butler.toolbroker.v1.ToolResult
-	(*ToolContract)(nil),   // 4: butler.toolbroker.v1.ToolContract
-	(*EffectContract)(nil), // 5: butler.toolbroker.v1.EffectContract
-	(v1.ErrorClass)(0),     // 6: butler.common.v1.ErrorClass
-	(v1.AutonomyMode)(0),   // 7: butler.common.v1.AutonomyMode
+	(*CredentialRef)(nil),       // 0: butler.toolbroker.v1.CredentialRef
+	(*ToolError)(nil),           // 1: butler.toolbroker.v1.ToolError
+	(*ToolCall)(nil),            // 2: butler.toolbroker.v1.ToolCall
+	(*ToolResult)(nil),          // 3: butler.toolbroker.v1.ToolResult
+	(*ToolContract)(nil),        // 4: butler.toolbroker.v1.ToolContract
+	(*ExtensionResource)(nil),   // 5: butler.toolbroker.v1.ExtensionResource
+	(*ExtensionCredential)(nil), // 6: butler.toolbroker.v1.ExtensionCredential
+	(*ExtensionContract)(nil),   // 7: butler.toolbroker.v1.ExtensionContract
+	(*EffectContract)(nil),      // 8: butler.toolbroker.v1.EffectContract
+	(v1.ErrorClass)(0),          // 9: butler.common.v1.ErrorClass
+	(v1.AutonomyMode)(0),        // 10: butler.common.v1.AutonomyMode
 }
 var file_toolbroker_v1_types_proto_depIdxs = []int32{
-	6, // 0: butler.toolbroker.v1.ToolError.error_class:type_name -> butler.common.v1.ErrorClass
-	1, // 1: butler.toolbroker.v1.ToolCall.error:type_name -> butler.toolbroker.v1.ToolError
-	0, // 2: butler.toolbroker.v1.ToolCall.credential_refs:type_name -> butler.toolbroker.v1.CredentialRef
-	7, // 3: butler.toolbroker.v1.ToolCall.autonomy_mode:type_name -> butler.common.v1.AutonomyMode
-	1, // 4: butler.toolbroker.v1.ToolResult.error:type_name -> butler.toolbroker.v1.ToolError
-	5, // 5: butler.toolbroker.v1.ToolContract.effect_contract:type_name -> butler.toolbroker.v1.EffectContract
-	6, // [6:6] is the sub-list for method output_type
-	6, // [6:6] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	9,  // 0: butler.toolbroker.v1.ToolError.error_class:type_name -> butler.common.v1.ErrorClass
+	1,  // 1: butler.toolbroker.v1.ToolCall.error:type_name -> butler.toolbroker.v1.ToolError
+	0,  // 2: butler.toolbroker.v1.ToolCall.credential_refs:type_name -> butler.toolbroker.v1.CredentialRef
+	10, // 3: butler.toolbroker.v1.ToolCall.autonomy_mode:type_name -> butler.common.v1.AutonomyMode
+	1,  // 4: butler.toolbroker.v1.ToolResult.error:type_name -> butler.toolbroker.v1.ToolError
+	8,  // 5: butler.toolbroker.v1.ToolContract.effect_contract:type_name -> butler.toolbroker.v1.EffectContract
+	7,  // 6: butler.toolbroker.v1.ToolContract.extension:type_name -> butler.toolbroker.v1.ExtensionContract
+	5,  // 7: butler.toolbroker.v1.ExtensionContract.resources:type_name -> butler.toolbroker.v1.ExtensionResource
+	6,  // 8: butler.toolbroker.v1.ExtensionContract.credentials:type_name -> butler.toolbroker.v1.ExtensionCredential
+	8,  // 9: butler.toolbroker.v1.ExtensionContract.receipt:type_name -> butler.toolbroker.v1.EffectContract
+	10, // [10:10] is the sub-list for method output_type
+	10, // [10:10] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_toolbroker_v1_types_proto_init() }
@@ -755,7 +1061,7 @@ func file_toolbroker_v1_types_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_toolbroker_v1_types_proto_rawDesc), len(file_toolbroker_v1_types_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
