@@ -61,7 +61,10 @@ func (l *Ledger) EnsureTx(ctx context.Context, tx pgx.Tx, spec ScopeSpec) (Scope
 	id := ScopeID(spec.Kind, spec.OwnerID, spec.SubjectID)
 	limits, _ := json.Marshal(spec.Limits)
 	zero, _ := json.Marshal(Units{})
-	_, err := tx.Exec(ctx, `INSERT INTO execution_budget_scopes(scope_id,kind,owner_id,subject_id,limits_json,used_json,deadline) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(scope_id) DO NOTHING`, id, spec.Kind, spec.OwnerID, spec.SubjectID, limits, zero, spec.Deadline)
+	// Concurrent initialization can meet either the canonical primary key or
+	// the (kind, owner, subject) unique index. Both identify the same immutable
+	// policy; still read by canonical ID and verify every field below.
+	_, err := tx.Exec(ctx, `INSERT INTO execution_budget_scopes(scope_id,kind,owner_id,subject_id,limits_json,used_json,deadline) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING`, id, spec.Kind, spec.OwnerID, spec.SubjectID, limits, zero, spec.Deadline)
 	if err != nil {
 		return Scope{}, err
 	}
@@ -122,7 +125,7 @@ func (l *Ledger) reserve(ctx context.Context, tx pgx.Tx, req Request) (Reservati
 	id := digest([]string{req.OwnerID, req.OperationID})
 	fingerprint := digest(req)
 	data, _ := json.Marshal(req)
-	tag, err := tx.Exec(ctx, `INSERT INTO execution_budget_reservations(reservation_id,owner_id,operation_id,fingerprint,request_json) VALUES($1,$2,$3,$4,$5) ON CONFLICT(reservation_id) DO NOTHING`, id, req.OwnerID, req.OperationID, fingerprint, data)
+	tag, err := tx.Exec(ctx, `INSERT INTO execution_budget_reservations(reservation_id,owner_id,operation_id,fingerprint,request_json) VALUES($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING`, id, req.OwnerID, req.OperationID, fingerprint, data)
 	if err != nil {
 		return Reservation{}, false, err
 	}

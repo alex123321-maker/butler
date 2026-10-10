@@ -16,6 +16,11 @@ purpose policy and active-hours window. Model/child admission rechecks it on the
 same transaction after budget contention. It clamps release contexts and never
 replaces persisted scope Deadline or replenishes spent counters.
 
+Concurrent scope and reservation initialization handles both canonical IDs and
+their owner/subject or owner/operation unique keys. Existing rows must still match
+the canonical ID and complete immutable policy/fingerprint. A conflict never
+updates limits, resets spending or charges a replay a second time.
+
 Eight finite counters cover turns, tokens, monetary micros, external calls,
 children, active milliseconds, tool egress bytes and provider input bytes. Zero
 is a hard limit. Default root/conversation/mandate policy permits 64 turns,
