@@ -19,6 +19,9 @@ compose=(docker compose -p butler-lab --env-file "$root/lab.env" -f deploy/docke
 if [[ -f "$root/private-proxy/compose.env" ]]; then
   compose+=(--env-file "$root/private-proxy/compose.env" -f deploy/docker-compose.antigravity-proxy.lab.yml)
 fi
+if [[ -f "$root/local-models/compose.env" ]]; then
+  compose+=(--env-file "$root/local-models/compose.env" -f deploy/docker-compose.local-models.lab.yml --profile local-models)
+fi
 test_options=()
 if [[ "$action" == Integration || "$action" == Race ]]; then
   for database in butler_lab_core_test butler_lab_actionauth_test butler_lab_completion_test; do

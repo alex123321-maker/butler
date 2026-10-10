@@ -30,6 +30,13 @@ fresh lab without that probe container, the helper records its absence. The
 shared Butler Ollama is untouched. The optional Compose overlay is integrated
 separately by the deployment owner after preparation; its service stays opt-in.
 
+For the main lab stack, enable the overlay/profile using the private
+`local-models/compose.env` file described in [deployment](../README.md).
+`verify-compose-lab.sh` exercises authenticated RPC routing against that actual
+service, verifies that anonymous catalog access is rejected, and checks its
+internal-only network, absent published ports and runtime isolation. It reads
+the token from a mounted file and contains only public synthetic inputs.
+
 ## Recorded hardware and results (2026-10-10 UTC)
 
 Lab: Ubuntu kernel 7.0.0-34, RTX3060 Laptop 6144 MiB, driver595.91.07/CUDA13.2.
