@@ -31,8 +31,8 @@ var functionRuntimeManifest []byte
 // accepts no executable/model/server path in inference input. No independent
 // server/queue/admission is exposed; the Manager owns every request and unload.
 type FunctionBackend struct {
-	Base                  Backend
-	Executable, ModelRoot string
+	base                  Backend
+	executable, modelRoot string
 	mu                    sync.Mutex
 	cmd                   *exec.Cmd
 	wait                  chan error
@@ -45,14 +45,14 @@ func NewFunctionBackend(base Backend, executable, models string) (*FunctionBacke
 	if base == nil || (executable == "") != (models == "") || executable != "" && (runtime.GOOS != "linux" || !filepath.IsAbs(executable) || !filepath.IsAbs(models)) {
 		return nil, fault(Invalid)
 	}
-	return &FunctionBackend{Base: base, Executable: executable, ModelRoot: models, client: &http.Client{Transport: &http.Transport{Proxy: nil, DialContext: (&net.Dialer{Timeout: 2 * time.Second}).DialContext}, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}, nil
+	return &FunctionBackend{base: base, executable: executable, modelRoot: models, client: &http.Client{Transport: &http.Transport{Proxy: nil, DialContext: (&net.Dialer{Timeout: 2 * time.Second}).DialContext}, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}, nil
 }
-func (b *FunctionBackend) Healthy(ctx context.Context) bool { return b.Base.Healthy(ctx) } // optional runtime absence is not base-service outage
+func (b *FunctionBackend) Healthy(ctx context.Context) bool { return b.base.Healthy(ctx) } // optional runtime absence is not base-service outage
 func (b *FunctionBackend) Verify(ctx context.Context, p *pb.ModelProfile) error {
 	if p.Model != FunctionModel {
-		return b.Base.Verify(ctx, p)
+		return b.base.Verify(ctx, p)
 	}
-	if p.Id != FunctionProfile || p.Revision != FunctionRevision || p.Runtime != "ollama-owned-cpu" || p.RuntimeVersion != FunctionRuntime || p.Format != "gguf" || p.Precision != "Q8_0" || p.PreferredDevice != "cpu" || p.PreprocessingVersion != FunctionCatalogVersion || p.SourceUrl != "https://ollama.com/library/functiongemma:270m-it-q8_0" || p.License != "Gemma-Terms-2025-03-24" || p.ContextTokens != 2048 || p.MaxInputBytes > 2048 || p.MaxBatch != 1 || b.Executable == "" || !p.CpuFallback {
+	if p.Id != FunctionProfile || p.Revision != FunctionRevision || p.Runtime != "ollama-owned-cpu" || p.RuntimeVersion != FunctionRuntime || p.Format != "gguf" || p.Precision != "Q8_0" || p.PreferredDevice != "cpu" || p.PreprocessingVersion != FunctionCatalogVersion || p.SourceUrl != "https://ollama.com/library/functiongemma:270m-it-q8_0" || p.License != "Gemma-Terms-2025-03-24" || p.ContextTokens != 2048 || p.MaxInputBytes > 2048 || p.MaxBatch != 1 || b.executable == "" || !p.CpuFallback {
 		return fault(Unavailable)
 	}
 	b.mu.Lock()
@@ -60,13 +60,13 @@ func (b *FunctionBackend) Verify(ctx context.Context, p *pb.ModelProfile) error 
 	if b.verified {
 		return nil
 	}
-	if e := verifyFunctionRuntime(ctx, b.Executable); e != nil {
+	if e := verifyFunctionRuntime(ctx, b.executable); e != nil {
 		return e
 	}
-	if e := hashRegular(ctx, filepath.Dir(b.Executable), filepath.Base(b.Executable), functionBinaryHash, 40<<20); e != nil {
+	if e := hashRegular(ctx, filepath.Dir(b.executable), filepath.Base(b.executable), functionBinaryHash, 40<<20); e != nil {
 		return e
 	}
-	manifest, e := workspace.ReadRegular(b.ModelRoot, "manifests/registry.ollama.ai/library/functiongemma/270m-it-q8_0", 65536)
+	manifest, e := workspace.ReadRegular(b.modelRoot, "manifests/registry.ollama.ai/library/functiongemma/270m-it-q8_0", 65536)
 	if e != nil {
 		return fault(Unavailable)
 	}
@@ -95,7 +95,7 @@ func (b *FunctionBackend) Verify(ctx context.Context, p *pb.ModelProfile) error 
 		if len(digest) != 71 || digest[:7] != "sha256:" || size <= 0 || size > 350<<20 {
 			return fault(Unavailable)
 		}
-		if e := hashRegular(ctx, b.ModelRoot, "blobs/sha256-"+digest[7:], digest[7:], size); e != nil {
+		if e := hashRegular(ctx, b.modelRoot, "blobs/sha256-"+digest[7:], digest[7:], size); e != nil {
 			return e
 		}
 	}
@@ -175,7 +175,7 @@ func hashRegular(ctx context.Context, root, name, want string, maxBytes int64) e
 	return nil
 }
 func (b *FunctionBackend) Resident(ctx context.Context) ([]Resident, error) {
-	base, e := b.Base.Resident(ctx)
+	base, e := b.base.Resident(ctx)
 	if e != nil {
 		return nil, e
 	}
@@ -200,7 +200,7 @@ func (b *FunctionBackend) stop() {
 }
 func (b *FunctionBackend) Unload(ctx context.Context, model string) error {
 	if model != FunctionModel {
-		return b.Base.Unload(ctx, model)
+		return b.base.Unload(ctx, model)
 	}
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -229,8 +229,8 @@ func (b *FunctionBackend) ensure(ctx context.Context) error {
 	if e != nil {
 		return fault(Unavailable)
 	}
-	cmd := exec.Command(b.Executable, "serve")
-	cmd.Env = []string{"PATH=/usr/local/bin:/usr/bin:/bin", "HOME=" + home, "TMPDIR=" + home, "OLLAMA_HOST=" + functionAddress, "OLLAMA_MODELS=" + b.ModelRoot, "OLLAMA_NO_CLOUD=1", "OLLAMA_NOHISTORY=1", "OLLAMA_DEBUG_LOG_REQUESTS=0", "OLLAMA_NOPRUNE=1", "OLLAMA_NUM_PARALLEL=1", "OLLAMA_MAX_LOADED_MODELS=1", "OLLAMA_MAX_QUEUE=1", "OLLAMA_LOAD_TIMEOUT=45s", "OLLAMA_KEEP_ALIVE=30s", "OLLAMA_CONTEXT_LENGTH=2048", "OLLAMA_VULKAN=0", "CUDA_VISIBLE_DEVICES=-1", "HIP_VISIBLE_DEVICES=-1", "ROCR_VISIBLE_DEVICES=-1"}
+	cmd := exec.Command(b.executable, "serve")
+	cmd.Env = []string{"PATH=/usr/local/bin:/usr/bin:/bin", "HOME=" + home, "TMPDIR=" + home, "OLLAMA_HOST=" + functionAddress, "OLLAMA_MODELS=" + b.modelRoot, "OLLAMA_NO_CLOUD=1", "OLLAMA_NOHISTORY=1", "OLLAMA_DEBUG_LOG_REQUESTS=0", "OLLAMA_NOPRUNE=1", "OLLAMA_NUM_PARALLEL=1", "OLLAMA_MAX_LOADED_MODELS=1", "OLLAMA_MAX_QUEUE=1", "OLLAMA_LOAD_TIMEOUT=45s", "OLLAMA_KEEP_ALIVE=30s", "OLLAMA_CONTEXT_LENGTH=2048", "OLLAMA_VULKAN=0", "CUDA_VISIBLE_DEVICES=-1", "HIP_VISIBLE_DEVICES=-1", "ROCR_VISIBLE_DEVICES=-1"}
 	cmd.Stdout = io.Discard
 	cmd.Stderr = io.Discard
 	setOwnedGroup(cmd)
@@ -268,7 +268,7 @@ func (b *FunctionBackend) ensure(ctx context.Context) error {
 }
 func (b *FunctionBackend) Infer(ctx context.Context, p *pb.ModelProfile, r *pb.InferRequest, device string, batch uint32) (*pb.InferResponse, error) {
 	if p.Model != FunctionModel {
-		return b.Base.Infer(ctx, p, r, device, batch)
+		return b.base.Infer(ctx, p, r, device, batch)
 	}
 	if device != "cpu" || batch != 1 || r.GetFunction() == nil || r.GetFunction().CatalogVersion != FunctionCatalogVersion {
 		return nil, fault(Invalid)

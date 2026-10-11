@@ -108,14 +108,27 @@ func TestOwnedFunctionGroupCancellation(t *testing.T) {
 	}
 	dir := t.TempDir()
 	marker := filepath.Join(dir, "late")
-	cmd := exec.Command("sh", "-c", "(sleep 0.2; touch \"$1\") & wait", "owned", marker)
+	pidFile := filepath.Join(dir, "runner-pid")
+	cmd := exec.Command("sh", "-c", "(sleep 0.3; touch \"$1\") & echo $! > \"$2\"; wait", "owned", marker, pidFile)
 	setOwnedGroup(cmd)
 	if e := cmd.Start(); e != nil {
 		t.Fatal(e)
 	}
+	deadline := time.Now().Add(time.Second)
+	for {
+		if raw, e := os.ReadFile(pidFile); e == nil && len(raw) > 0 {
+			break
+		}
+		if time.Now().After(deadline) {
+			killOwnedGroup(cmd)
+			_ = cmd.Wait()
+			t.Fatal("runner did not spawn")
+		}
+		time.Sleep(time.Millisecond)
+	}
 	killOwnedGroup(cmd)
 	_ = cmd.Wait()
-	time.Sleep(300 * time.Millisecond)
+	time.Sleep(400 * time.Millisecond)
 	if _, e := os.Stat(marker); !os.IsNotExist(e) {
 		t.Fatal("owned runner outlived cancellation")
 	}
@@ -182,6 +195,7 @@ func (f functionTrace) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 	_, parseError := parseFunctionText(data.Response)
 	f.t.Logf("native function response: http=%d json=%v model_matches=%v done=%v reason=%s call_markers=%d output_valid=%v", response.StatusCode, valid, data.Model == FunctionModel, data.Done, reason, strings.Count(data.Response, "<start_function_call>"), parseError == nil)
+	f.t.Logf("public synthetic raw shape: bytes=%d bare_call=%v known_system_name=%v closes_object=%v", len(data.Response), strings.HasPrefix(strings.TrimSpace(data.Response), "call:"), strings.Contains(data.Response, "check_system"), strings.HasSuffix(strings.TrimSpace(data.Response), "}"))
 	return response, e
 }
 
