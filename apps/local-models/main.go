@@ -69,6 +69,10 @@ func run(log *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	functionBackend, err := localmodels.NewFunctionBackend(cpuBackend, os.Getenv("BUTLER_LOCAL_MODELS_FUNCTION_EXECUTABLE"), os.Getenv("BUTLER_LOCAL_MODELS_FUNCTION_MODELS"))
+	if err != nil {
+		return err
+	}
 	ramBudget, err := number("BUTLER_LOCAL_MODELS_RAM_BUDGET_MIB", 6144, 512, 65536)
 	if err != nil {
 		return err
@@ -77,7 +81,7 @@ func run(log *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	manager, err := localmodels.NewRouter(localmodels.Config{BudgetMiB: uint32(budget), ReserveMiB: uint32(reserve), RAMBudgetMiB: uint32(ramBudget), RAMReserveMiB: uint32(ramReserve), RAMTelemetry: localmodels.ProcMemory{}, IdleTimeout: time.Duration(idle) * time.Second, QueueSize: queue}, catalog.Models, backend, cpuBackend, localmodels.NvidiaSMI{Device: uint32(device)})
+	manager, err := localmodels.NewRouter(localmodels.Config{BudgetMiB: uint32(budget), ReserveMiB: uint32(reserve), RAMBudgetMiB: uint32(ramBudget), RAMReserveMiB: uint32(ramReserve), RAMTelemetry: localmodels.ProcMemory{}, IdleTimeout: time.Duration(idle) * time.Second, QueueSize: queue}, catalog.Models, backend, functionBackend, localmodels.NvidiaSMI{Device: uint32(device)})
 	if err != nil {
 		return err
 	}

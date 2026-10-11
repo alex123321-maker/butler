@@ -110,6 +110,8 @@ func requestCapability(r *pb.InferRequest) pb.Capability {
 		return pb.Capability_CAPABILITY_VAD
 	case *pb.InferRequest_Tts:
 		return pb.Capability_CAPABILITY_TTS
+	case *pb.InferRequest_Function:
+		return pb.Capability_CAPABILITY_FUNCTION_PROPOSE
 	}
 	return pb.Capability_CAPABILITY_UNSPECIFIED
 }

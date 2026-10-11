@@ -86,3 +86,15 @@ See [voice preparation](../../deploy/local-models/VOICE.md) for public checkpoin
 integrity checks, isolated SDK overlays, fixed audio/text bounds and the remaining
 real quality/resource acceptance. ASR decoder completion carries no owner or
 action authority. The service performs no microphone capture or input admission.
+
+Optional `CAPABILITY_FUNCTION_PROPOSE` adds one fixed default-disabled CPU Q8_0
+FunctionGemma catalog. It accepts bounded text/catalog version and returns only
+candidate function/arguments, never executes tools. Operator-only
+`BUTLER_LOCAL_MODELS_FUNCTION_EXECUTABLE` and `BUTLER_LOCAL_MODELS_FUNCTION_MODELS`
+must point to prepared read-only pinned CPU/runtime and registry-model binds.
+Absent configuration refuses this optional capability while ordinary tensor
+health remains available. The Go-owned loopback child runs inside the existing
+CPU fair queue, shared RAM gate and cgroup; cancellation kills its entire Linux
+process group, idle unload removes it, and no inference pulls/cloud route exist.
+See [function proposal experiment](../../docs/architecture/function-proposals.md)
+for exact grammar, license, integrity and remaining quality/activation criteria.

@@ -214,6 +214,30 @@
       "license": "MIT",
       "format": "torchscript",
       "licenseUrl": "https://github.com/snakers4/silero-vad/blob/5cd7945676eb32225748052e2e6a0580e4686a08/LICENSE"
+    },
+    {
+      "id": "functiongemma-270m-q8-cpu-v1",
+      "model": "functiongemma:270m-it-q8_0",
+      "revision": "f6078f93a342963cabae694fd53e09d885801a6e82157c73f0edf67a7e879020",
+      "format": "gguf",
+      "precision": "Q8_0",
+      "license": "Gemma-Terms-2025-03-24",
+      "licenseUrl": "https://ai.google.dev/gemma/terms",
+      "sourceUrl": "https://ollama.com/library/functiongemma:270m-it-q8_0",
+      "runtime": "ollama-owned-cpu",
+      "runtimeVersion": "ollama0.40.2/cpu-q8_0",
+      "capabilities": [
+        "CAPABILITY_FUNCTION_PROPOSE"
+      ],
+      "preferredDevice": "cpu",
+      "maxBatch": 1,
+      "maxInputBytes": 2048,
+      "contextTokens": 2048,
+      "peakRamMib": 1536,
+      "peakCpuRamMib": 1536,
+      "cpuFallback": true,
+      "enabled": false,
+      "preprocessingVersion": "butler-read-diagnostics-v1"
     }
   ]
 }

@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v6.31.1
-// source: proto/localmodels/v1/localmodels.proto
+// source: localmodels/v1/localmodels.proto
 
 package localmodelsv1
 
@@ -24,15 +24,16 @@ const (
 type Capability int32
 
 const (
-	Capability_CAPABILITY_UNSPECIFIED Capability = 0
-	Capability_CAPABILITY_EMBED       Capability = 1
-	Capability_CAPABILITY_RERANK      Capability = 2
-	Capability_CAPABILITY_EXTRACT     Capability = 3
-	Capability_CAPABILITY_CLASSIFY    Capability = 4
-	Capability_CAPABILITY_MEDIA       Capability = 5
-	Capability_CAPABILITY_ASR         Capability = 6
-	Capability_CAPABILITY_VAD         Capability = 7
-	Capability_CAPABILITY_TTS         Capability = 8
+	Capability_CAPABILITY_UNSPECIFIED      Capability = 0
+	Capability_CAPABILITY_EMBED            Capability = 1
+	Capability_CAPABILITY_RERANK           Capability = 2
+	Capability_CAPABILITY_EXTRACT          Capability = 3
+	Capability_CAPABILITY_CLASSIFY         Capability = 4
+	Capability_CAPABILITY_MEDIA            Capability = 5
+	Capability_CAPABILITY_ASR              Capability = 6
+	Capability_CAPABILITY_VAD              Capability = 7
+	Capability_CAPABILITY_TTS              Capability = 8
+	Capability_CAPABILITY_FUNCTION_PROPOSE Capability = 9
 )
 
 // Enum value maps for Capability.
@@ -47,17 +48,19 @@ var (
 		6: "CAPABILITY_ASR",
 		7: "CAPABILITY_VAD",
 		8: "CAPABILITY_TTS",
+		9: "CAPABILITY_FUNCTION_PROPOSE",
 	}
 	Capability_value = map[string]int32{
-		"CAPABILITY_UNSPECIFIED": 0,
-		"CAPABILITY_EMBED":       1,
-		"CAPABILITY_RERANK":      2,
-		"CAPABILITY_EXTRACT":     3,
-		"CAPABILITY_CLASSIFY":    4,
-		"CAPABILITY_MEDIA":       5,
-		"CAPABILITY_ASR":         6,
-		"CAPABILITY_VAD":         7,
-		"CAPABILITY_TTS":         8,
+		"CAPABILITY_UNSPECIFIED":      0,
+		"CAPABILITY_EMBED":            1,
+		"CAPABILITY_RERANK":           2,
+		"CAPABILITY_EXTRACT":          3,
+		"CAPABILITY_CLASSIFY":         4,
+		"CAPABILITY_MEDIA":            5,
+		"CAPABILITY_ASR":              6,
+		"CAPABILITY_VAD":              7,
+		"CAPABILITY_TTS":              8,
+		"CAPABILITY_FUNCTION_PROPOSE": 9,
 	}
 )
 
@@ -72,11 +75,11 @@ func (x Capability) String() string {
 }
 
 func (Capability) Descriptor() protoreflect.EnumDescriptor {
-	return file_proto_localmodels_v1_localmodels_proto_enumTypes[0].Descriptor()
+	return file_localmodels_v1_localmodels_proto_enumTypes[0].Descriptor()
 }
 
 func (Capability) Type() protoreflect.EnumType {
-	return &file_proto_localmodels_v1_localmodels_proto_enumTypes[0]
+	return &file_localmodels_v1_localmodels_proto_enumTypes[0]
 }
 
 func (x Capability) Number() protoreflect.EnumNumber {
@@ -85,7 +88,7 @@ func (x Capability) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Capability.Descriptor instead.
 func (Capability) EnumDescriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{0}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{0}
 }
 
 type EmbeddingTask int32
@@ -124,11 +127,11 @@ func (x EmbeddingTask) String() string {
 }
 
 func (EmbeddingTask) Descriptor() protoreflect.EnumDescriptor {
-	return file_proto_localmodels_v1_localmodels_proto_enumTypes[1].Descriptor()
+	return file_localmodels_v1_localmodels_proto_enumTypes[1].Descriptor()
 }
 
 func (EmbeddingTask) Type() protoreflect.EnumType {
-	return &file_proto_localmodels_v1_localmodels_proto_enumTypes[1]
+	return &file_localmodels_v1_localmodels_proto_enumTypes[1]
 }
 
 func (x EmbeddingTask) Number() protoreflect.EnumNumber {
@@ -137,7 +140,7 @@ func (x EmbeddingTask) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use EmbeddingTask.Descriptor instead.
 func (EmbeddingTask) EnumDescriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{1}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{1}
 }
 
 type Empty struct {
@@ -148,7 +151,7 @@ type Empty struct {
 
 func (x *Empty) Reset() {
 	*x = Empty{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[0]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -160,7 +163,7 @@ func (x *Empty) String() string {
 func (*Empty) ProtoMessage() {}
 
 func (x *Empty) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[0]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -173,7 +176,7 @@ func (x *Empty) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Empty.ProtoReflect.Descriptor instead.
 func (*Empty) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{0}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{0}
 }
 
 type ModelProfile struct {
@@ -208,7 +211,7 @@ type ModelProfile struct {
 
 func (x *ModelProfile) Reset() {
 	*x = ModelProfile{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[1]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -220,7 +223,7 @@ func (x *ModelProfile) String() string {
 func (*ModelProfile) ProtoMessage() {}
 
 func (x *ModelProfile) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[1]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -233,7 +236,7 @@ func (x *ModelProfile) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ModelProfile.ProtoReflect.Descriptor instead.
 func (*ModelProfile) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{1}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ModelProfile) GetId() string {
@@ -399,7 +402,7 @@ type Catalog struct {
 
 func (x *Catalog) Reset() {
 	*x = Catalog{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[2]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -411,7 +414,7 @@ func (x *Catalog) String() string {
 func (*Catalog) ProtoMessage() {}
 
 func (x *Catalog) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[2]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -424,7 +427,7 @@ func (x *Catalog) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Catalog.ProtoReflect.Descriptor instead.
 func (*Catalog) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{2}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Catalog) GetModels() []*ModelProfile {
@@ -448,7 +451,7 @@ type GPUStatus struct {
 
 func (x *GPUStatus) Reset() {
 	*x = GPUStatus{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[3]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -460,7 +463,7 @@ func (x *GPUStatus) String() string {
 func (*GPUStatus) ProtoMessage() {}
 
 func (x *GPUStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[3]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -473,7 +476,7 @@ func (x *GPUStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GPUStatus.ProtoReflect.Descriptor instead.
 func (*GPUStatus) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{3}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GPUStatus) GetAvailable() bool {
@@ -543,7 +546,7 @@ type ManagerStatus struct {
 
 func (x *ManagerStatus) Reset() {
 	*x = ManagerStatus{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[4]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -555,7 +558,7 @@ func (x *ManagerStatus) String() string {
 func (*ManagerStatus) ProtoMessage() {}
 
 func (x *ManagerStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[4]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -568,7 +571,7 @@ func (x *ManagerStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ManagerStatus.ProtoReflect.Descriptor instead.
 func (*ManagerStatus) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{4}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ManagerStatus) GetState() string {
@@ -701,7 +704,7 @@ type TextInput struct {
 
 func (x *TextInput) Reset() {
 	*x = TextInput{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[5]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -713,7 +716,7 @@ func (x *TextInput) String() string {
 func (*TextInput) ProtoMessage() {}
 
 func (x *TextInput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[5]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -726,7 +729,7 @@ func (x *TextInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TextInput.ProtoReflect.Descriptor instead.
 func (*TextInput) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{5}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *TextInput) GetId() string {
@@ -761,7 +764,7 @@ type EmbedInput struct {
 
 func (x *EmbedInput) Reset() {
 	*x = EmbedInput{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[6]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -773,7 +776,7 @@ func (x *EmbedInput) String() string {
 func (*EmbedInput) ProtoMessage() {}
 
 func (x *EmbedInput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[6]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -786,7 +789,7 @@ func (x *EmbedInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EmbedInput.ProtoReflect.Descriptor instead.
 func (*EmbedInput) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{6}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *EmbedInput) GetTexts() []*TextInput {
@@ -820,7 +823,7 @@ type RerankInput struct {
 
 func (x *RerankInput) Reset() {
 	*x = RerankInput{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[7]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -832,7 +835,7 @@ func (x *RerankInput) String() string {
 func (*RerankInput) ProtoMessage() {}
 
 func (x *RerankInput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[7]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -845,7 +848,7 @@ func (x *RerankInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RerankInput.ProtoReflect.Descriptor instead.
 func (*RerankInput) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{7}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *RerankInput) GetQuery() string {
@@ -873,7 +876,7 @@ type ExtractInput struct {
 
 func (x *ExtractInput) Reset() {
 	*x = ExtractInput{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[8]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -885,7 +888,7 @@ func (x *ExtractInput) String() string {
 func (*ExtractInput) ProtoMessage() {}
 
 func (x *ExtractInput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[8]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -898,7 +901,7 @@ func (x *ExtractInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExtractInput.ProtoReflect.Descriptor instead.
 func (*ExtractInput) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{8}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ExtractInput) GetText() string {
@@ -932,7 +935,7 @@ type ClassifyInput struct {
 
 func (x *ClassifyInput) Reset() {
 	*x = ClassifyInput{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[9]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -944,7 +947,7 @@ func (x *ClassifyInput) String() string {
 func (*ClassifyInput) ProtoMessage() {}
 
 func (x *ClassifyInput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[9]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -957,7 +960,7 @@ func (x *ClassifyInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClassifyInput.ProtoReflect.Descriptor instead.
 func (*ClassifyInput) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{9}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ClassifyInput) GetText() string {
@@ -984,7 +987,7 @@ type MediaInput struct {
 
 func (x *MediaInput) Reset() {
 	*x = MediaInput{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[10]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -996,7 +999,7 @@ func (x *MediaInput) String() string {
 func (*MediaInput) ProtoMessage() {}
 
 func (x *MediaInput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[10]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1009,7 +1012,7 @@ func (x *MediaInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MediaInput.ProtoReflect.Descriptor instead.
 func (*MediaInput) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{10}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *MediaInput) GetContent() []byte {
@@ -1036,7 +1039,7 @@ type AudioInput struct {
 
 func (x *AudioInput) Reset() {
 	*x = AudioInput{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[11]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1048,7 +1051,7 @@ func (x *AudioInput) String() string {
 func (*AudioInput) ProtoMessage() {}
 
 func (x *AudioInput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[11]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1061,7 +1064,7 @@ func (x *AudioInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AudioInput.ProtoReflect.Descriptor instead.
 func (*AudioInput) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{11}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *AudioInput) GetWav() []byte {
@@ -1081,7 +1084,7 @@ type ASRInput struct {
 
 func (x *ASRInput) Reset() {
 	*x = ASRInput{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[12]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1093,7 +1096,7 @@ func (x *ASRInput) String() string {
 func (*ASRInput) ProtoMessage() {}
 
 func (x *ASRInput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[12]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1106,7 +1109,7 @@ func (x *ASRInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ASRInput.ProtoReflect.Descriptor instead.
 func (*ASRInput) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{12}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ASRInput) GetWav() []byte {
@@ -1126,7 +1129,7 @@ type TTSInput struct {
 
 func (x *TTSInput) Reset() {
 	*x = TTSInput{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[13]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1138,7 +1141,7 @@ func (x *TTSInput) String() string {
 func (*TTSInput) ProtoMessage() {}
 
 func (x *TTSInput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[13]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1151,12 +1154,65 @@ func (x *TTSInput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TTSInput.ProtoReflect.Descriptor instead.
 func (*TTSInput) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{13}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *TTSInput) GetText() string {
 	if x != nil {
 		return x.Text
+	}
+	return ""
+}
+
+// Fixed reviewed catalog only. Output is candidate data, never execution.
+type FunctionInput struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Text           string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	CatalogVersion string                 `protobuf:"bytes,2,opt,name=catalog_version,json=catalogVersion,proto3" json:"catalog_version,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *FunctionInput) Reset() {
+	*x = FunctionInput{}
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FunctionInput) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FunctionInput) ProtoMessage() {}
+
+func (x *FunctionInput) ProtoReflect() protoreflect.Message {
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FunctionInput.ProtoReflect.Descriptor instead.
+func (*FunctionInput) Descriptor() ([]byte, []int) {
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *FunctionInput) GetText() string {
+	if x != nil {
+		return x.Text
+	}
+	return ""
+}
+
+func (x *FunctionInput) GetCatalogVersion() string {
+	if x != nil {
+		return x.CatalogVersion
 	}
 	return ""
 }
@@ -1180,6 +1236,7 @@ type InferRequest struct {
 	//	*InferRequest_Asr
 	//	*InferRequest_Vad
 	//	*InferRequest_Tts
+	//	*InferRequest_Function
 	Input         isInferRequest_Input `protobuf_oneof:"input"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1187,7 +1244,7 @@ type InferRequest struct {
 
 func (x *InferRequest) Reset() {
 	*x = InferRequest{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[14]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1199,7 +1256,7 @@ func (x *InferRequest) String() string {
 func (*InferRequest) ProtoMessage() {}
 
 func (x *InferRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[14]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1212,7 +1269,7 @@ func (x *InferRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InferRequest.ProtoReflect.Descriptor instead.
 func (*InferRequest) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{14}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *InferRequest) GetRequestId() string {
@@ -1329,6 +1386,15 @@ func (x *InferRequest) GetTts() *TTSInput {
 	return nil
 }
 
+func (x *InferRequest) GetFunction() *FunctionInput {
+	if x != nil {
+		if x, ok := x.Input.(*InferRequest_Function); ok {
+			return x.Function
+		}
+	}
+	return nil
+}
+
 type isInferRequest_Input interface {
 	isInferRequest_Input()
 }
@@ -1365,6 +1431,10 @@ type InferRequest_Tts struct {
 	Tts *TTSInput `protobuf:"bytes,17,opt,name=tts,proto3,oneof"`
 }
 
+type InferRequest_Function struct {
+	Function *FunctionInput `protobuf:"bytes,18,opt,name=function,proto3,oneof"`
+}
+
 func (*InferRequest_Embed) isInferRequest_Input() {}
 
 func (*InferRequest_Rerank) isInferRequest_Input() {}
@@ -1381,6 +1451,8 @@ func (*InferRequest_Vad) isInferRequest_Input() {}
 
 func (*InferRequest_Tts) isInferRequest_Input() {}
 
+func (*InferRequest_Function) isInferRequest_Input() {}
+
 type Vector struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -1391,7 +1463,7 @@ type Vector struct {
 
 func (x *Vector) Reset() {
 	*x = Vector{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[15]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1403,7 +1475,7 @@ func (x *Vector) String() string {
 func (*Vector) ProtoMessage() {}
 
 func (x *Vector) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[15]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1416,7 +1488,7 @@ func (x *Vector) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Vector.ProtoReflect.Descriptor instead.
 func (*Vector) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{15}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *Vector) GetId() string {
@@ -1443,7 +1515,7 @@ type EmbedOutput struct {
 
 func (x *EmbedOutput) Reset() {
 	*x = EmbedOutput{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[16]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1455,7 +1527,7 @@ func (x *EmbedOutput) String() string {
 func (*EmbedOutput) ProtoMessage() {}
 
 func (x *EmbedOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[16]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1468,7 +1540,7 @@ func (x *EmbedOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EmbedOutput.ProtoReflect.Descriptor instead.
 func (*EmbedOutput) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{16}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *EmbedOutput) GetVectors() []*Vector {
@@ -1495,7 +1567,7 @@ type Score struct {
 
 func (x *Score) Reset() {
 	*x = Score{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[17]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1507,7 +1579,7 @@ func (x *Score) String() string {
 func (*Score) ProtoMessage() {}
 
 func (x *Score) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[17]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1520,7 +1592,7 @@ func (x *Score) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Score.ProtoReflect.Descriptor instead.
 func (*Score) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{17}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *Score) GetId() string {
@@ -1546,7 +1618,7 @@ type RerankOutput struct {
 
 func (x *RerankOutput) Reset() {
 	*x = RerankOutput{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[18]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1558,7 +1630,7 @@ func (x *RerankOutput) String() string {
 func (*RerankOutput) ProtoMessage() {}
 
 func (x *RerankOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[18]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1571,7 +1643,7 @@ func (x *RerankOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RerankOutput.ProtoReflect.Descriptor instead.
 func (*RerankOutput) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{18}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *RerankOutput) GetScores() []*Score {
@@ -1594,7 +1666,7 @@ type Span struct {
 
 func (x *Span) Reset() {
 	*x = Span{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[19]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1606,7 +1678,7 @@ func (x *Span) String() string {
 func (*Span) ProtoMessage() {}
 
 func (x *Span) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[19]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1619,7 +1691,7 @@ func (x *Span) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Span.ProtoReflect.Descriptor instead.
 func (*Span) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{19}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *Span) GetType() string {
@@ -1668,7 +1740,7 @@ type ExtractRelation struct {
 
 func (x *ExtractRelation) Reset() {
 	*x = ExtractRelation{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[20]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1680,7 +1752,7 @@ func (x *ExtractRelation) String() string {
 func (*ExtractRelation) ProtoMessage() {}
 
 func (x *ExtractRelation) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[20]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1693,7 +1765,7 @@ func (x *ExtractRelation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExtractRelation.ProtoReflect.Descriptor instead.
 func (*ExtractRelation) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{20}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *ExtractRelation) GetType() string {
@@ -1728,7 +1800,7 @@ type ExtractRecord struct {
 
 func (x *ExtractRecord) Reset() {
 	*x = ExtractRecord{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[21]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1740,7 +1812,7 @@ func (x *ExtractRecord) String() string {
 func (*ExtractRecord) ProtoMessage() {}
 
 func (x *ExtractRecord) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[21]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1753,7 +1825,7 @@ func (x *ExtractRecord) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExtractRecord.ProtoReflect.Descriptor instead.
 func (*ExtractRecord) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{21}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *ExtractRecord) GetType() string {
@@ -1789,7 +1861,7 @@ type ExtractOutput struct {
 
 func (x *ExtractOutput) Reset() {
 	*x = ExtractOutput{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[22]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1801,7 +1873,7 @@ func (x *ExtractOutput) String() string {
 func (*ExtractOutput) ProtoMessage() {}
 
 func (x *ExtractOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[22]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1814,7 +1886,7 @@ func (x *ExtractOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExtractOutput.ProtoReflect.Descriptor instead.
 func (*ExtractOutput) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{22}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *ExtractOutput) GetSpans() []*Span {
@@ -1855,7 +1927,7 @@ type ClassifyOutput struct {
 
 func (x *ClassifyOutput) Reset() {
 	*x = ClassifyOutput{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[23]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1867,7 +1939,7 @@ func (x *ClassifyOutput) String() string {
 func (*ClassifyOutput) ProtoMessage() {}
 
 func (x *ClassifyOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[23]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1880,7 +1952,7 @@ func (x *ClassifyOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClassifyOutput.ProtoReflect.Descriptor instead.
 func (*ClassifyOutput) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{23}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *ClassifyOutput) GetScores() []*Score {
@@ -1906,7 +1978,7 @@ type MediaOutput struct {
 
 func (x *MediaOutput) Reset() {
 	*x = MediaOutput{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[24]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1918,7 +1990,7 @@ func (x *MediaOutput) String() string {
 func (*MediaOutput) ProtoMessage() {}
 
 func (x *MediaOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[24]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1931,7 +2003,7 @@ func (x *MediaOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MediaOutput.ProtoReflect.Descriptor instead.
 func (*MediaOutput) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{24}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *MediaOutput) GetEmbedding() []float32 {
@@ -1952,7 +2024,7 @@ type ASROutput struct {
 
 func (x *ASROutput) Reset() {
 	*x = ASROutput{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[25]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1964,7 +2036,7 @@ func (x *ASROutput) String() string {
 func (*ASROutput) ProtoMessage() {}
 
 func (x *ASROutput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[25]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1977,7 +2049,7 @@ func (x *ASROutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ASROutput.ProtoReflect.Descriptor instead.
 func (*ASROutput) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{25}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *ASROutput) GetText() string {
@@ -2004,7 +2076,7 @@ type SpeechRegion struct {
 
 func (x *SpeechRegion) Reset() {
 	*x = SpeechRegion{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[26]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2016,7 +2088,7 @@ func (x *SpeechRegion) String() string {
 func (*SpeechRegion) ProtoMessage() {}
 
 func (x *SpeechRegion) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[26]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2029,7 +2101,7 @@ func (x *SpeechRegion) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SpeechRegion.ProtoReflect.Descriptor instead.
 func (*SpeechRegion) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{26}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *SpeechRegion) GetStartSample() uint32 {
@@ -2056,7 +2128,7 @@ type VADOutput struct {
 
 func (x *VADOutput) Reset() {
 	*x = VADOutput{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[27]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2068,7 +2140,7 @@ func (x *VADOutput) String() string {
 func (*VADOutput) ProtoMessage() {}
 
 func (x *VADOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[27]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2081,7 +2153,7 @@ func (x *VADOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VADOutput.ProtoReflect.Descriptor instead.
 func (*VADOutput) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{27}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *VADOutput) GetRegions() []*SpeechRegion {
@@ -2107,7 +2179,7 @@ type TTSOutput struct {
 
 func (x *TTSOutput) Reset() {
 	*x = TTSOutput{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[28]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2119,7 +2191,7 @@ func (x *TTSOutput) String() string {
 func (*TTSOutput) ProtoMessage() {}
 
 func (x *TTSOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[28]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2132,7 +2204,7 @@ func (x *TTSOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TTSOutput.ProtoReflect.Descriptor instead.
 func (*TTSOutput) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{28}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *TTSOutput) GetWav() []byte {
@@ -2140,6 +2212,118 @@ func (x *TTSOutput) GetWav() []byte {
 		return x.Wav
 	}
 	return nil
+}
+
+type FunctionCall struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	ArgumentsJson string                 `protobuf:"bytes,2,opt,name=arguments_json,json=argumentsJson,proto3" json:"arguments_json,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FunctionCall) Reset() {
+	*x = FunctionCall{}
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FunctionCall) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FunctionCall) ProtoMessage() {}
+
+func (x *FunctionCall) ProtoReflect() protoreflect.Message {
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FunctionCall.ProtoReflect.Descriptor instead.
+func (*FunctionCall) Descriptor() ([]byte, []int) {
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *FunctionCall) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *FunctionCall) GetArgumentsJson() string {
+	if x != nil {
+		return x.ArgumentsJson
+	}
+	return ""
+}
+
+type FunctionOutput struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Calls            []*FunctionCall        `protobuf:"bytes,1,rep,name=calls,proto3" json:"calls,omitempty"`
+	CatalogVersion   string                 `protobuf:"bytes,2,opt,name=catalog_version,json=catalogVersion,proto3" json:"catalog_version,omitempty"`
+	InsufficientData bool                   `protobuf:"varint,3,opt,name=insufficient_data,json=insufficientData,proto3" json:"insufficient_data,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *FunctionOutput) Reset() {
+	*x = FunctionOutput{}
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FunctionOutput) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FunctionOutput) ProtoMessage() {}
+
+func (x *FunctionOutput) ProtoReflect() protoreflect.Message {
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FunctionOutput.ProtoReflect.Descriptor instead.
+func (*FunctionOutput) Descriptor() ([]byte, []int) {
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *FunctionOutput) GetCalls() []*FunctionCall {
+	if x != nil {
+		return x.Calls
+	}
+	return nil
+}
+
+func (x *FunctionOutput) GetCatalogVersion() string {
+	if x != nil {
+		return x.CatalogVersion
+	}
+	return ""
+}
+
+func (x *FunctionOutput) GetInsufficientData() bool {
+	if x != nil {
+		return x.InsufficientData
+	}
+	return false
 }
 
 type InferResponse struct {
@@ -2163,6 +2347,7 @@ type InferResponse struct {
 	//	*InferResponse_Asr
 	//	*InferResponse_Vad
 	//	*InferResponse_Tts
+	//	*InferResponse_Function
 	Output        isInferResponse_Output `protobuf_oneof:"output"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2170,7 +2355,7 @@ type InferResponse struct {
 
 func (x *InferResponse) Reset() {
 	*x = InferResponse{}
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[29]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2182,7 +2367,7 @@ func (x *InferResponse) String() string {
 func (*InferResponse) ProtoMessage() {}
 
 func (x *InferResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_localmodels_v1_localmodels_proto_msgTypes[29]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2195,7 +2380,7 @@ func (x *InferResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InferResponse.ProtoReflect.Descriptor instead.
 func (*InferResponse) Descriptor() ([]byte, []int) {
-	return file_proto_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{29}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *InferResponse) GetRequestId() string {
@@ -2340,6 +2525,15 @@ func (x *InferResponse) GetTts() *TTSOutput {
 	return nil
 }
 
+func (x *InferResponse) GetFunction() *FunctionOutput {
+	if x != nil {
+		if x, ok := x.Output.(*InferResponse_Function); ok {
+			return x.Function
+		}
+	}
+	return nil
+}
+
 type isInferResponse_Output interface {
 	isInferResponse_Output()
 }
@@ -2376,6 +2570,10 @@ type InferResponse_Tts struct {
 	Tts *TTSOutput `protobuf:"bytes,17,opt,name=tts,proto3,oneof"`
 }
 
+type InferResponse_Function struct {
+	Function *FunctionOutput `protobuf:"bytes,18,opt,name=function,proto3,oneof"`
+}
+
 func (*InferResponse_Embed) isInferResponse_Output() {}
 
 func (*InferResponse_Rerank) isInferResponse_Output() {}
@@ -2392,11 +2590,13 @@ func (*InferResponse_Vad) isInferResponse_Output() {}
 
 func (*InferResponse_Tts) isInferResponse_Output() {}
 
-var File_proto_localmodels_v1_localmodels_proto protoreflect.FileDescriptor
+func (*InferResponse_Function) isInferResponse_Output() {}
 
-const file_proto_localmodels_v1_localmodels_proto_rawDesc = "" +
+var File_localmodels_v1_localmodels_proto protoreflect.FileDescriptor
+
+const file_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\n" +
-	"&proto/localmodels/v1/localmodels.proto\x12\x15butler.localmodels.v1\"\a\n" +
+	" localmodels/v1/localmodels.proto\x12\x15butler.localmodels.v1\"\a\n" +
 	"\x05Empty\"\x82\x06\n" +
 	"\fModelProfile\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
@@ -2491,7 +2691,10 @@ const file_proto_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\bASRInput\x12\x10\n" +
 	"\x03wav\x18\x01 \x01(\fR\x03wav\"\x1e\n" +
 	"\bTTSInput\x12\x12\n" +
-	"\x04text\x18\x01 \x01(\tR\x04text\"\x86\x05\n" +
+	"\x04text\x18\x01 \x01(\tR\x04text\"L\n" +
+	"\rFunctionInput\x12\x12\n" +
+	"\x04text\x18\x01 \x01(\tR\x04text\x12'\n" +
+	"\x0fcatalog_version\x18\x02 \x01(\tR\x0ecatalogVersion\"\xca\x05\n" +
 	"\fInferRequest\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x12\x1d\n" +
@@ -2509,7 +2712,8 @@ const file_proto_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\x05media\x18\x0e \x01(\v2!.butler.localmodels.v1.MediaInputH\x00R\x05media\x123\n" +
 	"\x03asr\x18\x0f \x01(\v2\x1f.butler.localmodels.v1.ASRInputH\x00R\x03asr\x125\n" +
 	"\x03vad\x18\x10 \x01(\v2!.butler.localmodels.v1.AudioInputH\x00R\x03vad\x123\n" +
-	"\x03tts\x18\x11 \x01(\v2\x1f.butler.localmodels.v1.TTSInputH\x00R\x03ttsB\a\n" +
+	"\x03tts\x18\x11 \x01(\v2\x1f.butler.localmodels.v1.TTSInputH\x00R\x03tts\x12B\n" +
+	"\bfunction\x18\x12 \x01(\v2$.butler.localmodels.v1.FunctionInputH\x00R\bfunctionB\a\n" +
 	"\x05input\"0\n" +
 	"\x06Vector\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
@@ -2561,7 +2765,14 @@ const file_proto_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\vsample_rate\x18\x02 \x01(\rR\n" +
 	"sampleRate\"\x1d\n" +
 	"\tTTSOutput\x12\x10\n" +
-	"\x03wav\x18\x01 \x01(\fR\x03wav\"\x9c\x06\n" +
+	"\x03wav\x18\x01 \x01(\fR\x03wav\"I\n" +
+	"\fFunctionCall\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12%\n" +
+	"\x0earguments_json\x18\x02 \x01(\tR\rargumentsJson\"\xa1\x01\n" +
+	"\x0eFunctionOutput\x129\n" +
+	"\x05calls\x18\x01 \x03(\v2#.butler.localmodels.v1.FunctionCallR\x05calls\x12'\n" +
+	"\x0fcatalog_version\x18\x02 \x01(\tR\x0ecatalogVersion\x12+\n" +
+	"\x11insufficient_data\x18\x03 \x01(\bR\x10insufficientData\"\xe1\x06\n" +
 	"\rInferResponse\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x12\x1d\n" +
@@ -2583,8 +2794,9 @@ const file_proto_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\x05media\x18\x0e \x01(\v2\".butler.localmodels.v1.MediaOutputH\x00R\x05media\x124\n" +
 	"\x03asr\x18\x0f \x01(\v2 .butler.localmodels.v1.ASROutputH\x00R\x03asr\x124\n" +
 	"\x03vad\x18\x10 \x01(\v2 .butler.localmodels.v1.VADOutputH\x00R\x03vad\x124\n" +
-	"\x03tts\x18\x11 \x01(\v2 .butler.localmodels.v1.TTSOutputH\x00R\x03ttsB\b\n" +
-	"\x06output*\xd8\x01\n" +
+	"\x03tts\x18\x11 \x01(\v2 .butler.localmodels.v1.TTSOutputH\x00R\x03tts\x12C\n" +
+	"\bfunction\x18\x12 \x01(\v2%.butler.localmodels.v1.FunctionOutputH\x00R\bfunctionB\b\n" +
+	"\x06output*\xf9\x01\n" +
 	"\n" +
 	"Capability\x12\x1a\n" +
 	"\x16CAPABILITY_UNSPECIFIED\x10\x00\x12\x14\n" +
@@ -2595,7 +2807,8 @@ const file_proto_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\x10CAPABILITY_MEDIA\x10\x05\x12\x12\n" +
 	"\x0eCAPABILITY_ASR\x10\x06\x12\x12\n" +
 	"\x0eCAPABILITY_VAD\x10\a\x12\x12\n" +
-	"\x0eCAPABILITY_TTS\x10\b*\x85\x01\n" +
+	"\x0eCAPABILITY_TTS\x10\b\x12\x1f\n" +
+	"\x1bCAPABILITY_FUNCTION_PROPOSE\x10\t*\x85\x01\n" +
 	"\rEmbeddingTask\x12\x1e\n" +
 	"\x1aEMBEDDING_TASK_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14EMBEDDING_TASK_QUERY\x10\x01\x12\x1b\n" +
@@ -2607,20 +2820,20 @@ const file_proto_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\x05Infer\x12#.butler.localmodels.v1.InferRequest\x1a$.butler.localmodels.v1.InferResponseBDZBgithub.com/butler/butler/internal/gen/localmodels/v1;localmodelsv1b\x06proto3"
 
 var (
-	file_proto_localmodels_v1_localmodels_proto_rawDescOnce sync.Once
-	file_proto_localmodels_v1_localmodels_proto_rawDescData []byte
+	file_localmodels_v1_localmodels_proto_rawDescOnce sync.Once
+	file_localmodels_v1_localmodels_proto_rawDescData []byte
 )
 
-func file_proto_localmodels_v1_localmodels_proto_rawDescGZIP() []byte {
-	file_proto_localmodels_v1_localmodels_proto_rawDescOnce.Do(func() {
-		file_proto_localmodels_v1_localmodels_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_localmodels_v1_localmodels_proto_rawDesc), len(file_proto_localmodels_v1_localmodels_proto_rawDesc)))
+func file_localmodels_v1_localmodels_proto_rawDescGZIP() []byte {
+	file_localmodels_v1_localmodels_proto_rawDescOnce.Do(func() {
+		file_localmodels_v1_localmodels_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_localmodels_v1_localmodels_proto_rawDesc), len(file_localmodels_v1_localmodels_proto_rawDesc)))
 	})
-	return file_proto_localmodels_v1_localmodels_proto_rawDescData
+	return file_localmodels_v1_localmodels_proto_rawDescData
 }
 
-var file_proto_localmodels_v1_localmodels_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_proto_localmodels_v1_localmodels_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
-var file_proto_localmodels_v1_localmodels_proto_goTypes = []any{
+var file_localmodels_v1_localmodels_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_localmodels_v1_localmodels_proto_msgTypes = make([]protoimpl.MessageInfo, 33)
+var file_localmodels_v1_localmodels_proto_goTypes = []any{
 	(Capability)(0),         // 0: butler.localmodels.v1.Capability
 	(EmbeddingTask)(0),      // 1: butler.localmodels.v1.EmbeddingTask
 	(*Empty)(nil),           // 2: butler.localmodels.v1.Empty
@@ -2637,24 +2850,27 @@ var file_proto_localmodels_v1_localmodels_proto_goTypes = []any{
 	(*AudioInput)(nil),      // 13: butler.localmodels.v1.AudioInput
 	(*ASRInput)(nil),        // 14: butler.localmodels.v1.ASRInput
 	(*TTSInput)(nil),        // 15: butler.localmodels.v1.TTSInput
-	(*InferRequest)(nil),    // 16: butler.localmodels.v1.InferRequest
-	(*Vector)(nil),          // 17: butler.localmodels.v1.Vector
-	(*EmbedOutput)(nil),     // 18: butler.localmodels.v1.EmbedOutput
-	(*Score)(nil),           // 19: butler.localmodels.v1.Score
-	(*RerankOutput)(nil),    // 20: butler.localmodels.v1.RerankOutput
-	(*Span)(nil),            // 21: butler.localmodels.v1.Span
-	(*ExtractRelation)(nil), // 22: butler.localmodels.v1.ExtractRelation
-	(*ExtractRecord)(nil),   // 23: butler.localmodels.v1.ExtractRecord
-	(*ExtractOutput)(nil),   // 24: butler.localmodels.v1.ExtractOutput
-	(*ClassifyOutput)(nil),  // 25: butler.localmodels.v1.ClassifyOutput
-	(*MediaOutput)(nil),     // 26: butler.localmodels.v1.MediaOutput
-	(*ASROutput)(nil),       // 27: butler.localmodels.v1.ASROutput
-	(*SpeechRegion)(nil),    // 28: butler.localmodels.v1.SpeechRegion
-	(*VADOutput)(nil),       // 29: butler.localmodels.v1.VADOutput
-	(*TTSOutput)(nil),       // 30: butler.localmodels.v1.TTSOutput
-	(*InferResponse)(nil),   // 31: butler.localmodels.v1.InferResponse
+	(*FunctionInput)(nil),   // 16: butler.localmodels.v1.FunctionInput
+	(*InferRequest)(nil),    // 17: butler.localmodels.v1.InferRequest
+	(*Vector)(nil),          // 18: butler.localmodels.v1.Vector
+	(*EmbedOutput)(nil),     // 19: butler.localmodels.v1.EmbedOutput
+	(*Score)(nil),           // 20: butler.localmodels.v1.Score
+	(*RerankOutput)(nil),    // 21: butler.localmodels.v1.RerankOutput
+	(*Span)(nil),            // 22: butler.localmodels.v1.Span
+	(*ExtractRelation)(nil), // 23: butler.localmodels.v1.ExtractRelation
+	(*ExtractRecord)(nil),   // 24: butler.localmodels.v1.ExtractRecord
+	(*ExtractOutput)(nil),   // 25: butler.localmodels.v1.ExtractOutput
+	(*ClassifyOutput)(nil),  // 26: butler.localmodels.v1.ClassifyOutput
+	(*MediaOutput)(nil),     // 27: butler.localmodels.v1.MediaOutput
+	(*ASROutput)(nil),       // 28: butler.localmodels.v1.ASROutput
+	(*SpeechRegion)(nil),    // 29: butler.localmodels.v1.SpeechRegion
+	(*VADOutput)(nil),       // 30: butler.localmodels.v1.VADOutput
+	(*TTSOutput)(nil),       // 31: butler.localmodels.v1.TTSOutput
+	(*FunctionCall)(nil),    // 32: butler.localmodels.v1.FunctionCall
+	(*FunctionOutput)(nil),  // 33: butler.localmodels.v1.FunctionOutput
+	(*InferResponse)(nil),   // 34: butler.localmodels.v1.InferResponse
 }
-var file_proto_localmodels_v1_localmodels_proto_depIdxs = []int32{
+var file_localmodels_v1_localmodels_proto_depIdxs = []int32{
 	0,  // 0: butler.localmodels.v1.ModelProfile.capabilities:type_name -> butler.localmodels.v1.Capability
 	3,  // 1: butler.localmodels.v1.Catalog.models:type_name -> butler.localmodels.v1.ModelProfile
 	5,  // 2: butler.localmodels.v1.ManagerStatus.gpu:type_name -> butler.localmodels.v1.GPUStatus
@@ -2670,43 +2886,46 @@ var file_proto_localmodels_v1_localmodels_proto_depIdxs = []int32{
 	14, // 12: butler.localmodels.v1.InferRequest.asr:type_name -> butler.localmodels.v1.ASRInput
 	13, // 13: butler.localmodels.v1.InferRequest.vad:type_name -> butler.localmodels.v1.AudioInput
 	15, // 14: butler.localmodels.v1.InferRequest.tts:type_name -> butler.localmodels.v1.TTSInput
-	17, // 15: butler.localmodels.v1.EmbedOutput.vectors:type_name -> butler.localmodels.v1.Vector
-	19, // 16: butler.localmodels.v1.RerankOutput.scores:type_name -> butler.localmodels.v1.Score
-	21, // 17: butler.localmodels.v1.ExtractRelation.head:type_name -> butler.localmodels.v1.Span
-	21, // 18: butler.localmodels.v1.ExtractRelation.tail:type_name -> butler.localmodels.v1.Span
-	21, // 19: butler.localmodels.v1.ExtractRecord.fields:type_name -> butler.localmodels.v1.Span
-	21, // 20: butler.localmodels.v1.ExtractOutput.spans:type_name -> butler.localmodels.v1.Span
-	22, // 21: butler.localmodels.v1.ExtractOutput.relations:type_name -> butler.localmodels.v1.ExtractRelation
-	23, // 22: butler.localmodels.v1.ExtractOutput.records:type_name -> butler.localmodels.v1.ExtractRecord
-	19, // 23: butler.localmodels.v1.ClassifyOutput.scores:type_name -> butler.localmodels.v1.Score
-	28, // 24: butler.localmodels.v1.VADOutput.regions:type_name -> butler.localmodels.v1.SpeechRegion
-	18, // 25: butler.localmodels.v1.InferResponse.embed:type_name -> butler.localmodels.v1.EmbedOutput
-	20, // 26: butler.localmodels.v1.InferResponse.rerank:type_name -> butler.localmodels.v1.RerankOutput
-	24, // 27: butler.localmodels.v1.InferResponse.extract:type_name -> butler.localmodels.v1.ExtractOutput
-	25, // 28: butler.localmodels.v1.InferResponse.classify:type_name -> butler.localmodels.v1.ClassifyOutput
-	26, // 29: butler.localmodels.v1.InferResponse.media:type_name -> butler.localmodels.v1.MediaOutput
-	27, // 30: butler.localmodels.v1.InferResponse.asr:type_name -> butler.localmodels.v1.ASROutput
-	29, // 31: butler.localmodels.v1.InferResponse.vad:type_name -> butler.localmodels.v1.VADOutput
-	30, // 32: butler.localmodels.v1.InferResponse.tts:type_name -> butler.localmodels.v1.TTSOutput
-	2,  // 33: butler.localmodels.v1.LocalModelsService.Describe:input_type -> butler.localmodels.v1.Empty
-	2,  // 34: butler.localmodels.v1.LocalModelsService.Status:input_type -> butler.localmodels.v1.Empty
-	16, // 35: butler.localmodels.v1.LocalModelsService.Infer:input_type -> butler.localmodels.v1.InferRequest
-	4,  // 36: butler.localmodels.v1.LocalModelsService.Describe:output_type -> butler.localmodels.v1.Catalog
-	6,  // 37: butler.localmodels.v1.LocalModelsService.Status:output_type -> butler.localmodels.v1.ManagerStatus
-	31, // 38: butler.localmodels.v1.LocalModelsService.Infer:output_type -> butler.localmodels.v1.InferResponse
-	36, // [36:39] is the sub-list for method output_type
-	33, // [33:36] is the sub-list for method input_type
-	33, // [33:33] is the sub-list for extension type_name
-	33, // [33:33] is the sub-list for extension extendee
-	0,  // [0:33] is the sub-list for field type_name
+	16, // 15: butler.localmodels.v1.InferRequest.function:type_name -> butler.localmodels.v1.FunctionInput
+	18, // 16: butler.localmodels.v1.EmbedOutput.vectors:type_name -> butler.localmodels.v1.Vector
+	20, // 17: butler.localmodels.v1.RerankOutput.scores:type_name -> butler.localmodels.v1.Score
+	22, // 18: butler.localmodels.v1.ExtractRelation.head:type_name -> butler.localmodels.v1.Span
+	22, // 19: butler.localmodels.v1.ExtractRelation.tail:type_name -> butler.localmodels.v1.Span
+	22, // 20: butler.localmodels.v1.ExtractRecord.fields:type_name -> butler.localmodels.v1.Span
+	22, // 21: butler.localmodels.v1.ExtractOutput.spans:type_name -> butler.localmodels.v1.Span
+	23, // 22: butler.localmodels.v1.ExtractOutput.relations:type_name -> butler.localmodels.v1.ExtractRelation
+	24, // 23: butler.localmodels.v1.ExtractOutput.records:type_name -> butler.localmodels.v1.ExtractRecord
+	20, // 24: butler.localmodels.v1.ClassifyOutput.scores:type_name -> butler.localmodels.v1.Score
+	29, // 25: butler.localmodels.v1.VADOutput.regions:type_name -> butler.localmodels.v1.SpeechRegion
+	32, // 26: butler.localmodels.v1.FunctionOutput.calls:type_name -> butler.localmodels.v1.FunctionCall
+	19, // 27: butler.localmodels.v1.InferResponse.embed:type_name -> butler.localmodels.v1.EmbedOutput
+	21, // 28: butler.localmodels.v1.InferResponse.rerank:type_name -> butler.localmodels.v1.RerankOutput
+	25, // 29: butler.localmodels.v1.InferResponse.extract:type_name -> butler.localmodels.v1.ExtractOutput
+	26, // 30: butler.localmodels.v1.InferResponse.classify:type_name -> butler.localmodels.v1.ClassifyOutput
+	27, // 31: butler.localmodels.v1.InferResponse.media:type_name -> butler.localmodels.v1.MediaOutput
+	28, // 32: butler.localmodels.v1.InferResponse.asr:type_name -> butler.localmodels.v1.ASROutput
+	30, // 33: butler.localmodels.v1.InferResponse.vad:type_name -> butler.localmodels.v1.VADOutput
+	31, // 34: butler.localmodels.v1.InferResponse.tts:type_name -> butler.localmodels.v1.TTSOutput
+	33, // 35: butler.localmodels.v1.InferResponse.function:type_name -> butler.localmodels.v1.FunctionOutput
+	2,  // 36: butler.localmodels.v1.LocalModelsService.Describe:input_type -> butler.localmodels.v1.Empty
+	2,  // 37: butler.localmodels.v1.LocalModelsService.Status:input_type -> butler.localmodels.v1.Empty
+	17, // 38: butler.localmodels.v1.LocalModelsService.Infer:input_type -> butler.localmodels.v1.InferRequest
+	4,  // 39: butler.localmodels.v1.LocalModelsService.Describe:output_type -> butler.localmodels.v1.Catalog
+	6,  // 40: butler.localmodels.v1.LocalModelsService.Status:output_type -> butler.localmodels.v1.ManagerStatus
+	34, // 41: butler.localmodels.v1.LocalModelsService.Infer:output_type -> butler.localmodels.v1.InferResponse
+	39, // [39:42] is the sub-list for method output_type
+	36, // [36:39] is the sub-list for method input_type
+	36, // [36:36] is the sub-list for extension type_name
+	36, // [36:36] is the sub-list for extension extendee
+	0,  // [0:36] is the sub-list for field type_name
 }
 
-func init() { file_proto_localmodels_v1_localmodels_proto_init() }
-func file_proto_localmodels_v1_localmodels_proto_init() {
-	if File_proto_localmodels_v1_localmodels_proto != nil {
+func init() { file_localmodels_v1_localmodels_proto_init() }
+func file_localmodels_v1_localmodels_proto_init() {
+	if File_localmodels_v1_localmodels_proto != nil {
 		return
 	}
-	file_proto_localmodels_v1_localmodels_proto_msgTypes[14].OneofWrappers = []any{
+	file_localmodels_v1_localmodels_proto_msgTypes[15].OneofWrappers = []any{
 		(*InferRequest_Embed)(nil),
 		(*InferRequest_Rerank)(nil),
 		(*InferRequest_Extract)(nil),
@@ -2715,8 +2934,9 @@ func file_proto_localmodels_v1_localmodels_proto_init() {
 		(*InferRequest_Asr)(nil),
 		(*InferRequest_Vad)(nil),
 		(*InferRequest_Tts)(nil),
+		(*InferRequest_Function)(nil),
 	}
-	file_proto_localmodels_v1_localmodels_proto_msgTypes[29].OneofWrappers = []any{
+	file_localmodels_v1_localmodels_proto_msgTypes[32].OneofWrappers = []any{
 		(*InferResponse_Embed)(nil),
 		(*InferResponse_Rerank)(nil),
 		(*InferResponse_Extract)(nil),
@@ -2725,23 +2945,24 @@ func file_proto_localmodels_v1_localmodels_proto_init() {
 		(*InferResponse_Asr)(nil),
 		(*InferResponse_Vad)(nil),
 		(*InferResponse_Tts)(nil),
+		(*InferResponse_Function)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_localmodels_v1_localmodels_proto_rawDesc), len(file_proto_localmodels_v1_localmodels_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_localmodels_v1_localmodels_proto_rawDesc), len(file_localmodels_v1_localmodels_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   30,
+			NumMessages:   33,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_proto_localmodels_v1_localmodels_proto_goTypes,
-		DependencyIndexes: file_proto_localmodels_v1_localmodels_proto_depIdxs,
-		EnumInfos:         file_proto_localmodels_v1_localmodels_proto_enumTypes,
-		MessageInfos:      file_proto_localmodels_v1_localmodels_proto_msgTypes,
+		GoTypes:           file_localmodels_v1_localmodels_proto_goTypes,
+		DependencyIndexes: file_localmodels_v1_localmodels_proto_depIdxs,
+		EnumInfos:         file_localmodels_v1_localmodels_proto_enumTypes,
+		MessageInfos:      file_localmodels_v1_localmodels_proto_msgTypes,
 	}.Build()
-	File_proto_localmodels_v1_localmodels_proto = out.File
-	file_proto_localmodels_v1_localmodels_proto_goTypes = nil
-	file_proto_localmodels_v1_localmodels_proto_depIdxs = nil
+	File_localmodels_v1_localmodels_proto = out.File
+	file_localmodels_v1_localmodels_proto_goTypes = nil
+	file_localmodels_v1_localmodels_proto_depIdxs = nil
 }

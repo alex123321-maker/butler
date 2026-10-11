@@ -19,6 +19,7 @@ enum Capability {
   CAPABILITY_ASR = 6;
   CAPABILITY_VAD = 7;
   CAPABILITY_TTS = 8;
+  CAPABILITY_FUNCTION_PROPOSE = 9;
 }
 message ModelProfile {
   string id = 1;
@@ -101,6 +102,8 @@ message AudioInput { bytes wav = 1; }
 message ASRInput { bytes wav = 1; }
 // Fixed voice/language; no reference speaker recording or cloning.
 message TTSInput { string text = 1; }
+// Fixed reviewed catalog only. Output is candidate data, never execution.
+message FunctionInput { string text = 1; string catalog_version = 2; }
 message InferRequest {
   string request_id = 1;
   string profile_id = 2;
@@ -118,6 +121,7 @@ message InferRequest {
     ASRInput asr = 15;
     AudioInput vad = 16;
     TTSInput tts = 17;
+    FunctionInput function = 18;
   }
 }
 message Vector { string id = 1; repeated float values = 2; }
@@ -157,6 +161,12 @@ message ASROutput {
 message SpeechRegion { uint32 start_sample = 1; uint32 end_sample = 2; }
 message VADOutput { repeated SpeechRegion regions = 1; uint32 sample_rate = 2; }
 message TTSOutput { bytes wav = 1; }
+message FunctionCall { string name = 1; string arguments_json = 2; }
+message FunctionOutput {
+  repeated FunctionCall calls = 1;
+  string catalog_version = 2;
+  bool insufficient_data = 3;
+}
 message InferResponse {
   string request_id = 1;
   string profile_id = 2;
@@ -176,5 +186,6 @@ message InferResponse {
     ASROutput asr = 15;
     VADOutput vad = 16;
     TTSOutput tts = 17;
+    FunctionOutput function = 18;
   }
 }

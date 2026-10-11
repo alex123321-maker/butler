@@ -117,6 +117,13 @@ func validateRequest(p *pb.ModelProfile, r *pb.InferRequest) error {
 		}
 		count = 1
 		bytes = len(input.Tts.Text)
+	case *pb.InferRequest_Function:
+		cap = pb.Capability_CAPABILITY_FUNCTION_PROPOSE
+		if input.Function == nil || !validText(input.Function.Text) || input.Function.CatalogVersion != FunctionCatalogVersion {
+			return fault(Invalid)
+		}
+		count = 1
+		bytes = len(input.Function.Text)
 	default:
 		return fault(Invalid)
 	}

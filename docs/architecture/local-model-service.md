@@ -212,3 +212,15 @@ still apply. No cache flushing is performed. The accounting follows the
 and the [Docker inactive-file accounting convention](https://docs.docker.com/reference/cli/docker/container/stats/),
 with an additional conservative dirty/writeback subtraction. Earlier voice
 attempts rejected under raw cgroup charges remain recorded as resource refusals.
+
+The optional fixed `FUNCTION_PROPOSE` operation uses a pinned public FunctionGemma
+Q8_0 registry release and a Go-owned Ollama CPU subprocess inside the existing
+service PID namespace/cgroup. It shares the ordinary serialized CPU lane, fair
+queue, RAM reservations, deadline cancellation and idle unload. It does not use
+the separately deployed Ollama service. A fixed Google control-token formatter
+and complete-set output validator normalize candidates only. Model/runtime paths
+are operator composition, never request fields; runtime/model blobs and library
+symlinks are checked against pins before the read-only offline load. The normal
+profile remains disabled and no orchestrator command route is enabled. Current
+source/job admission, Broker schema/permission/task revision and measured Russian
+quality belong to its caller; see [function proposals](function-proposals.md).
