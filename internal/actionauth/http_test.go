@@ -4,7 +4,9 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
+	"sync/atomic"
 	"testing"
 )
 
@@ -41,5 +43,36 @@ func TestPrivateAuthorityDeniesFailureAndRedirect(t *testing.T) {
 				t.Fatal("unavailable authority allowed")
 			}
 		})
+	}
+}
+
+func TestPrivateAuthorityDoesNotUseAmbientProxy(t *testing.T) {
+	var proxyCalls atomic.Int32
+	proxy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		proxyCalls.Add(1)
+		w.WriteHeader(http.StatusForbidden)
+	}))
+	defer proxy.Close()
+	proxyURL, err := url.Parse(proxy.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := http.DefaultTransport
+	configured := original.(*http.Transport).Clone()
+	configured.Proxy = http.ProxyURL(proxyURL)
+	http.DefaultTransport = configured
+	t.Cleanup(func() { http.DefaultTransport = original; configured.CloseIdleConnections() })
+
+	_, _, reader, _, _, _ := fixture(t)
+	token := strings.Repeat("t", 48)
+	server := httptest.NewServer(NewContextHandler(token, reader))
+	defer server.Close()
+	client, err := NewHTTPContextReader(server.URL, token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := client.GetActionContext(context.Background(), "run")
+	if err != nil || got.OwnerID != "owner" || proxyCalls.Load() != 0 {
+		t.Fatalf("private authority must bypass ambient proxy: %v", err)
 	}
 }
