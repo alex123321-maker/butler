@@ -166,6 +166,9 @@ func (g *DelegationGuards) reportTx(ctx context.Context, tx pgx.Tx, parent, chil
 	if err = loadDelegationActions(ctx, tx, child, final, &actual); err != nil {
 		return delegationReportEvidence{}, err
 	}
+	if err = retainDelegationFinalLimitations(&actual); err != nil {
+		return delegationReportEvidence{}, err
+	}
 	if err = loadDelegationBudget(ctx, tx, child, &actual); err != nil {
 		return delegationReportEvidence{}, err
 	}

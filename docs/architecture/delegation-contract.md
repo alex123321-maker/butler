@@ -94,6 +94,14 @@ same source; deletion or current authority failure rolls back publication.
 Unknown effects and incomplete answers retain uncertainty, and generating a
 report never verifies or completes either task.
 
+An immutable historical final cannot free executor width while another attempt
+for the same child revision remains nonterminal. Collection checks that boundary
+under the existing task/session tree locks. Maintenance selects the newest final
+for each eligible child and leaves a live attempt occupying its slot. Final
+limitations remain conservative: independently unavailable effect evidence is
+still missing after a separate task verification; unknown limitation kinds or
+unresolved-action references that do not match that final deny collection.
+
 The optional owned-context lifecycle adapter marks execution using the actual
 child fence before releasing prepared input. Bounded kernel maintenance collects
 committed finals first, then advances previously admitted waiting children using

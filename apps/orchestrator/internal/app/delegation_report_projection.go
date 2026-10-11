@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"sort"
+	"strings"
 
 	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
@@ -48,6 +49,9 @@ func (g *DelegationGuards) CreateReportTx(ctx context.Context, tx pgx.Tx, parent
 		a.reasons["execution_failed"] = true
 	}
 	if err = loadDelegationActions(ctx, tx, child, final, &a); err != nil {
+		return delegation.SourceRef{}, err
+	}
+	if err = retainDelegationFinalLimitations(&a); err != nil {
 		return delegation.SourceRef{}, err
 	}
 	if err = loadDelegationBudget(ctx, tx, child, &a); err != nil {
@@ -161,4 +165,32 @@ func equalDelegationActions(a, b []delegation.ActionObservation) bool {
 		seen[v.ActionID] = true
 	}
 	return true
+}
+
+func retainDelegationFinalLimitations(a *delegationReportEvidence) error {
+	for _, limit := range a.final.Limitations {
+		switch limit {
+		case "task_completion_not_verified":
+			// Current independently persisted verification is checked separately.
+		case "model_output_incomplete":
+			a.reasons["execution_failed"] = true
+		case "effect_evidence_unavailable":
+			a.reasons["verification_missing"] = true
+		default:
+			if !strings.HasPrefix(limit, "unresolved_action:") {
+				return delegation.ErrDenied
+			}
+			id := strings.TrimPrefix(limit, "unresolved_action:")
+			found := false
+			for _, effect := range a.final.Effects {
+				if effect.ActionID == id && effect.EffectState != "effect_confirmed" && effect.EffectState != "effect_absent" {
+					found = true
+				}
+			}
+			if !found {
+				return delegation.ErrDenied
+			}
+		}
+	}
+	return nil
 }

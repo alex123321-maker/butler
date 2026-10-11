@@ -261,6 +261,13 @@ func (m *DelegationManager) resultTx(ctx context.Context, tx pgx.Tx, child Recor
 	if err != nil || !valid {
 		return r, ErrConflict
 	}
+	// A historical final cannot free this executor's slot while another actual
+	// attempt of the same task revision is still live. Session admission is
+	// already locked by begin, so no new child attempt can race this check.
+	err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM runs WHERE task_id=$1 AND task_revision=$2 AND current_state NOT IN ('completed','failed','cancelled','timed_out'))`, child.TaskID, child.Revision).Scan(&valid)
+	if err != nil || valid {
+		return r, ErrConflict
+	}
 	return r, nil
 }
 

@@ -29,7 +29,7 @@ func (w *delegationMaintenance) Sweep(ctx context.Context) error {
 	var failures []error
 	// Four per phase bounds PG work and per-manager five-second authority waits.
 	// Do not keep a pooled query connection while invoking the owning manager.
-	rows, err := w.pool.Query(ctx, `SELECT d.task_id,d.parent_task_id,f.result_id FROM task_delegations d JOIN tasks c ON c.task_id=d.task_id JOIN tasks p ON p.task_id=d.parent_task_id JOIN run_final_results f ON f.task_id=c.task_id AND f.task_revision=c.revision JOIN runs r ON r.run_id=f.run_id WHERE d.state IN ('queued','executing') AND c.status='active' AND p.status='active' AND r.current_state='completed' AND NOT f.privacy_redacted AND d.task_id>$1 ORDER BY d.task_id,f.created_at,f.result_id LIMIT 4`, w.afterChild)
+	rows, err := w.pool.Query(ctx, `SELECT DISTINCT ON (d.task_id) d.task_id,d.parent_task_id,f.result_id FROM task_delegations d JOIN tasks c ON c.task_id=d.task_id JOIN tasks p ON p.task_id=d.parent_task_id JOIN run_final_results f ON f.task_id=c.task_id AND f.task_revision=c.revision JOIN runs r ON r.run_id=f.run_id WHERE d.state IN ('queued','executing') AND c.status='active' AND p.status='active' AND r.current_state='completed' AND NOT f.privacy_redacted AND d.task_id>$1 AND NOT EXISTS(SELECT 1 FROM runs live WHERE live.task_id=c.task_id AND live.task_revision=c.revision AND live.current_state NOT IN ('completed','failed','cancelled','timed_out')) ORDER BY d.task_id,f.created_at DESC,f.result_id DESC LIMIT 4`, w.afterChild)
 	if err != nil {
 		return err
 	}

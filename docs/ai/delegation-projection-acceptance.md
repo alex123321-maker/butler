@@ -11,6 +11,16 @@ and race tests for Orchestrator app/task plus action authorization. The earlier
 lab's separate `_test` databases with schema isolation and two pooled
 connections, never the main application database or model credentials.
 
+The independent review fixes passed on actual snapshot
+`20261011-084409-844`: Orchestrator app `-race` 13.257s and task `-race` 7.037s.
+The PostgreSQL regression releases a completed child's actual lease, acquires
+a separate live attempt and proves both direct collection and maintenance keep
+the waiting sibling unqueued, the active slot occupied, and report publication
+absent. Unit policy checks retain independently missing effect evidence after
+task verification and deny unknown or unrelated final limitations. The review
+found no additional confirmed issue in the generated-report/approval delta;
+the production composition and larger concurrency limitations below remain.
+
 The generated-report tests use actual child admission, independent fenced run,
 Catalog grants and original pins, atomic final/message/artifact/result/outbox,
 action journal and branch budget reservations. The fixture's independently
