@@ -34,3 +34,12 @@ scripts/dev/lab-converter-container.sh after explicit Sync. It includes actual
 queued developer/parent workers with production Broker/runtime and app race
 checks. Explicit owner continuations/scripted proposals establish process
 integration; autonomous native-model acceptance remains a separate release gate.
+
+Migration055 binds two once-only parent continuation identities at actual053
+admission. `CheckContinuationRunTx` repeats current original graph, accepted role,
+actual return/activation and fresh worker claim/fence after Catalog source checks
+on Broker/provider/recovery/final paths. Converter publication also repeats it
+locally. The owning scheduler and private input verifier live in Orchestrator;
+no body/owner authority is inferred from technical readiness. Automatic ordinary
+process integration passed with one owner input; native planning remains pending.
+See [055 contract](../../docs/architecture/converter-continuations.md).

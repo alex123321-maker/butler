@@ -139,6 +139,7 @@ type Config struct {
 	// ownership. The adapter loads durable bindings, not caller-selected refs.
 	InputSourcePreparation func(context.Context, ingress.InputEvent) (ingress.InputEvent, error)
 	DelegationContexts     DelegatedContextReader
+	ConverterContinuations ConverterContinuationReader
 	MemorySources          interface {
 		PinTranscript(context.Context, string, int64) error
 		CheckRunSources(context.Context, string) error

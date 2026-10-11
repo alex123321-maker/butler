@@ -943,3 +943,11 @@ actual tested child final/report and its full privacy graph on provider/recovery
 and atomic final paths. Parent collection grants only the candidate DATA source
 through a separate ordinary Broker action. Technical result readiness cannot
 accept the child or complete the semantic parent task.
+
+Migration055 optionally schedules two once-only technical continuations of the
+same original task after confirmed053/054 and then actual parent activation.
+Queue/CAS is atomic; original document/source pins, current owner authority,
+budget and private input claim/fence remain mandatory. Opaque readiness is DATA;
+no synthetic owner message or semantic acceptance is created. Recovery, Broker
+and atomic final repeat the guard. See
+[owned converter continuations](converter-continuations.md).

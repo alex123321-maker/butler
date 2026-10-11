@@ -33,18 +33,21 @@ type collectionAccess struct {
 
 func (c collectionAccess) CheckMemoryAccessTx(ctx context.Context, tx pgx.Tx, refs []catalog.SourceRef, purpose string) (string, error) {
 	if purpose != "memory_read" || !reflect.DeepEqual(refs, developerReturnSources(c.projection)) {
-		return "", ErrAccess
+		return "", fmt.Errorf("collection selected refs: %w", ErrAccess)
 	}
 	if _, _, err := c.store.guardRunTx(ctx, tx, c.current); err != nil {
-		return "", err
+		return "", fmt.Errorf("collection current run: %w", err)
 	}
 	s, err := ReadDeveloperSnapshotTx(ctx, tx, c.store.sources, c.current.OwnerID, c.snapshot.ChildTaskID)
-	if err != nil || s == nil || Hash(*s) != Hash(c.snapshot) {
-		return "", ErrAccess
+	if err != nil {
+		return "", fmt.Errorf("collection snapshot read: %w", err)
+	}
+	if s == nil || Hash(*s) != Hash(c.snapshot) {
+		return "", fmt.Errorf("collection snapshot: %w", ErrAccess)
 	}
 	p, err := ReadDeveloperReturnTx(ctx, tx, *s)
 	if err != nil || Hash(p) != Hash(c.projection) {
-		return "", ErrAccess
+		return "", fmt.Errorf("collection projection: %w", ErrAccess)
 	}
 	return c.current.OwnerID, nil
 }

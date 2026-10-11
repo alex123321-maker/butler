@@ -3,6 +3,7 @@ package generatedtools
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -57,7 +58,7 @@ func (s *Store) guardRunTx(ctx context.Context, tx pgx.Tx, c actionauth.ContextS
 	var epoch int64
 	var expires, now time.Time
 	if tx.QueryRow(ctx, `SELECT lease_id,run_id,fence_epoch,expires_at FROM session_ownership WHERE session_key=$1 FOR SHARE`, c.SessionKey).Scan(&lease, &run, &epoch, &expires) != nil || lease != c.LeaseID || run != c.RunID || epoch != c.LeaseEpoch {
-		return actionauth.Mandate{}, now, ErrAccess
+		return actionauth.Mandate{}, now, fmt.Errorf("converter ownership: %w", ErrAccess)
 	}
 	if tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now) != nil || !expires.After(now) {
 		return actionauth.Mandate{}, now, ErrAccess
@@ -68,7 +69,7 @@ func (s *Store) guardRunTx(ctx context.Context, tx pgx.Tx, c actionauth.ContextS
 	var pinned, status, state string
 	var pinnedRevision int64
 	if tx.QueryRow(ctx, `SELECT COALESCE(task_id,''),COALESCE(task_revision,0),status,current_state FROM runs WHERE run_id=$1 FOR UPDATE`, c.RunID).Scan(&pinned, &pinnedRevision, &status, &state) != nil || pinned != c.TaskID || pinnedRevision != c.TaskRevision || status == "completed" || status == "failed" || status == "cancelled" || state != strings.ToLower(strings.TrimPrefix(c.RunState, "RUN_STATE_")) {
-		return actionauth.Mandate{}, now, ErrAccess
+		return actionauth.Mandate{}, now, fmt.Errorf("converter current run: %w", ErrAccess)
 	}
 	var owner, taskStatus, policy string
 	var revision, constraints int64
@@ -80,13 +81,16 @@ func (s *Store) guardRunTx(ctx context.Context, tx pgx.Tx, c actionauth.ContextS
 	}
 	a, e := actionauth.CheckTaskAuthorityTx(ctx, tx, c.TaskID, c.OwnerID, c.Authority, now)
 	if e != nil || a.TaskID == "" {
-		return actionauth.Mandate{}, now, ErrAccess
+		return actionauth.Mandate{}, now, fmt.Errorf("converter current task authority: %w", ErrAccess)
 	}
 	m, _, e := actionauth.CheckAssignmentTx(ctx, tx, a, now)
 	if e != nil {
 		return m, now, e
 	}
 	if e = s.sources.CheckRunSourcesTx(ctx, tx, c.RunID); e != nil {
+		return m, now, e
+	}
+	if e = CheckContinuationRunTx(ctx, tx, s.sources, c.RunID); e != nil {
 		return m, now, e
 	}
 	return m, now, nil

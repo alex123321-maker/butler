@@ -248,5 +248,11 @@ it offers no creation/activation bypass. Output review rechecks current Catalog
 source revision/access/hash and raw SHA256, displays escaped text, and retains no
 owner token across navigation. All generated bodies and results remain DATA.
 
-See the [acceptance matrix](generated-converters-acceptance.md) for actual evidence
-and the remaining delegated-child gate.
+The [owned continuation contract](converter-continuations.md) adds two055
+once-only ordinary parent attempts after current tested return and confirmed
+activation. It retains the complete original privacy graph, current authority,
+finite budgets and private worker claim; it creates no owner input or semantic
+acceptance. The actual production Broker/network-none runtime process gate passed
+with one original owner input and both internal continuations. See the
+[acceptance matrix](generated-converters-acceptance.md) for evidence and the
+remaining native-quality/deployed acceptance gates.

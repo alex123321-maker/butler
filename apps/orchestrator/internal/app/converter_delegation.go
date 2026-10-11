@@ -33,9 +33,10 @@ type converterDelegationProof struct {
 }
 type converterDelegationKey struct{}
 type converterDelegationReader struct {
-	sources DelegationCatalog
-	profile generatedtools.Profile
-	hash    string
+	sources       DelegationCatalog
+	profile       generatedtools.Profile
+	hash          string
+	continuations bool
 }
 type converterDelegationGuard struct {
 	*DelegationGuards
@@ -180,5 +181,8 @@ func (g *converterDelegationGuard) BindContractSourcesTx(ctx context.Context, tx
 	}
 	b := snapshot.Binding
 	_, err = tx.Exec(ctx, `INSERT INTO converter_developer_snapshots(task_id,owner_id,parent_task_id,parent_revision,parent_constraints_revision,execution_action_id,effect_id,authorization_id,action_hash,args_hash,contract_hash,snapshot_hash,accepted_json) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`, child.TaskID, parent.OwnerID, parent.TaskID, parent.Revision, parent.ConstraintsRevision, b.ActionID, snapshot.EffectID, snapshot.AuthorizationID, b.ActionHash, b.ArgsHash, g.reader.hash, generatedtools.Hash(snapshot), raw)
+	if err == nil && g.reader.continuations {
+		err = generatedtools.WriteContinuationIntentsTx(ctx, tx, snapshot)
+	}
 	return err
 }

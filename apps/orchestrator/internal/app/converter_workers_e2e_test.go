@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -42,8 +43,8 @@ import (
 
 // The fixture provider only proposes ordinary tools and consumes their actual
 // results. It cannot read PG, grant sources, publish finals or run converters.
-// Explicit owner continuation inputs separate this process gate from an
-// autonomous waiting-parent scheduler or native model quality acceptance.
+// The two process gates exercise explicit owner continuations and separately
+// owned automatic055 continuations; neither establishes native model quality.
 type converterWorkerProvider struct {
 	mu          sync.Mutex
 	need, spec  catalog.SourceRef
@@ -82,6 +83,25 @@ func (p *converterWorkerProvider) StartRun(ctx context.Context, q transport.Star
 				}
 			}
 		}
+		o := content.ItemOrigin(item)
+		if o.Kind == content.SubagentOutput && len(o.SourceRefs) == 1 && strings.HasPrefix(o.SourceRefs[0], "converter-continuation:") {
+			var wrapped struct {
+				Data struct {
+					Purpose string `json:"purpose"`
+					Child   string `json:"child_task_id"`
+				} `json:"data"`
+			}
+			if json.Unmarshal([]byte(item.Content), &wrapped) != nil || wrapped.Data.Child != p.child {
+				return nil, fmt.Errorf("current technical continuation DATA missing")
+			}
+			if wrapped.Data.Purpose == generatedtools.CandidateReturn {
+				state.phase = "collect"
+			} else if wrapped.Data.Purpose == generatedtools.ActivatedCatalog {
+				state.phase = "convert"
+			} else {
+				return nil, fmt.Errorf("unknown continuation purpose")
+			}
+		}
 	}
 	for _, tool := range q.ToolDefinitions {
 		state.tools[tool.Name] = true
@@ -91,7 +111,7 @@ func (p *converterWorkerProvider) StartRun(ctx context.Context, q transport.Star
 			return nil, fmt.Errorf("developer child did not receive exactly three reviewed tools")
 		}
 		encoded, _ := json.Marshal(q.InputItems)
-		if strings.Contains(string(encoded), "private-original-document") || strings.Contains(string(encoded), p.document.ID) || strings.Contains(string(encoded), "converter-worker:admit") {
+		if strings.Contains(string(encoded), "private-original-document") || strings.Contains(string(encoded), "converter-worker:admit") {
 			return nil, fmt.Errorf("developer child received unselected parent document or conversation")
 		}
 		if !strings.Contains(string(encoded), p.need.ID) || !strings.Contains(string(encoded), p.spec.ID) {
@@ -220,6 +240,14 @@ func converterWorkerBytes(ctx context.Context, value any) error {
 }
 
 func TestConverterDeveloperRealBrokerWorkersContainerE2E(t *testing.T) {
+	testConverterDeveloperWorkers(t, false)
+}
+
+func TestConverterDeveloperAutomaticParentContainerE2E(t *testing.T) {
+	testConverterDeveloperWorkers(t, true)
+}
+
+func testConverterDeveloperWorkers(t *testing.T, automatic bool) {
 	if os.Getenv("BUTLER_CONVERTER_DEVELOPER_E2E") != "1" {
 		t.Skip("explicit isolated production Broker and network-none converter required")
 	}
@@ -339,10 +367,23 @@ func TestConverterDeveloperRealBrokerWorkersContainerE2E(t *testing.T) {
 	sessions := session.NewPostgresRepository(f.f.pool)
 	runs := run.NewService(run.NewPostgresRepository(f.f.pool), log)
 	inputs := durableinput.NewStore(f.f.pool)
+	var continuations *ConverterContinuations
+	if automatic {
+		continuations, err = NewConverterContinuations(f.f.pool, f.f.store, inputs, f.f.sources, f.f.budgets, budget.ModelAllowance{Provider: provider.Name(), Model: "converter-worker-fixture", InputTokens: 8192, OutputTokens: 128}, profile)
+		if err != nil {
+			t.Fatal("owning continuation composition", err)
+		}
+		if err = f.service.EnableContinuations(continuations); err != nil {
+			t.Fatal(err)
+		}
+	}
 	finalizer := completion.New(f.f.pool)
 	finalizer.Evidence = effectEvidence{journal: f.journal}
 	finalizer.DataGuard = func(ctx context.Context, tx pgx.Tx, runID string) error {
 		if e := f.f.sources.CheckRunSourcesTx(ctx, tx, runID); e != nil {
+			return e
+		}
+		if e := generatedtools.CheckContinuationRunTx(ctx, tx, f.f.sources, runID); e != nil {
 			return e
 		}
 		if e := generatedtools.CheckDeveloperLifecycleTx(ctx, tx, f.f.sources, runID); e != nil {
@@ -355,9 +396,22 @@ func TestConverterDeveloperRealBrokerWorkersContainerE2E(t *testing.T) {
 	}
 	executor := flow.NewService(sessions, f.f.leases, runs, transcript.NewStore(f.f.pool), provider, flow.Config{ProviderName: provider.Name(), ModelName: "converter-worker-fixture", OwnerID: "converter-worker", LeaseTTL: 60, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2,
 		Tasks: f.f.store, Checkpoints: inputs, Budgets: f.f.budgets, OwnerGoals: f.goals, Completion: finalizer, Tools: client, ActionAuthorizer: client, ToolCatalog: client,
-		MemorySources: converterSources{f.f.sources, f.f.pool}, DelegationContexts: delegatedContextReader{f.f.sources, manager}}, log)
+		MemorySources: converterSources{f.f.sources, f.f.pool}, DelegationContexts: delegatedContextReader{f.f.sources, manager}, ConverterContinuations: continuations}, log)
 	worker := durableinput.NewService(inputs, sessions, executor, runs, log)
-	worker.SetMaintenance((&delegationMaintenance{pool: f.f.pool, manager: manager}).Sweep)
+	maintenance := &delegationMaintenance{pool: f.f.pool, manager: manager}
+	var maintenanceMu sync.Mutex
+	var maintenanceError error
+	worker.SetMaintenance(func(ctx context.Context) error {
+		first := maintenance.Sweep(ctx)
+		if continuations != nil {
+			result := errors.Join(first, continuations.Sweep(ctx))
+			maintenanceMu.Lock()
+			maintenanceError = result
+			maintenanceMu.Unlock()
+			return result
+		}
+		return first
+	})
 	workerCtx, stop := context.WithCancel(f.f.ctx)
 	done := make(chan struct{})
 	go func() { defer close(done); _ = worker.Run(workerCtx) }()
@@ -408,8 +462,39 @@ func TestConverterDeveloperRealBrokerWorkersContainerE2E(t *testing.T) {
 		e := f.f.pool.QueryRow(f.f.ctx, `SELECT d.state='result_ready' AND r.verdict='unverified' FROM task_delegations d JOIN converter_developer_returns ret ON ret.child_task_id=d.task_id JOIN run_final_results r ON r.task_id=d.task_id WHERE d.task_id=$1`, childID).Scan(&ready)
 		return e == nil && ready
 	}, "ordinary child final, common maintenance report and immutable054")
-	ownerAttempt("collect")
-	ownerAttempt("convert")
+	if automatic {
+		automaticStarted := time.Now()
+		waitConverterWorkerFor(t, 30*time.Second, func() bool {
+			maintenanceMu.Lock()
+			sweepError := maintenanceError
+			maintenanceMu.Unlock()
+			if sweepError != nil {
+				t.Fatal("automatic fresh catalog admission", sweepError)
+			}
+			if time.Since(automaticStarted) > 25*time.Second {
+				var states string
+				_ = f.f.pool.QueryRow(f.f.ctx, `SELECT string_agg(c.purpose||':'||c.state||':'||COALESCE(i.status,'no_input')||':'||COALESCE(r.current_state,'no_run'),', ' ORDER BY c.purpose) FROM converter_parent_continuations c LEFT JOIN accepted_inputs i ON i.input_id=c.input_id LEFT JOIN runs r ON r.run_id=i.run_id`).Scan(&states)
+				t.Fatal("bounded automatic state", states)
+			}
+			var failed int
+			if f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM accepted_inputs WHERE source='converter-return' AND status IN ('blocked','failed')`).Scan(&failed) == nil && failed != 0 {
+				var code, message string
+				_ = f.f.pool.QueryRow(f.f.ctx, `SELECT error_code,error_message FROM accepted_inputs WHERE source='converter-return' AND status IN ('blocked','failed') LIMIT 1`).Scan(&code, &message)
+				t.Fatal("automatic parent continuation blocked", code, message)
+			}
+			provider.mu.Lock()
+			defer provider.mu.Unlock()
+			return provider.output != nil
+		}, "same-task automatic parent collection and fresh catalog conversion")
+		waitConverterWorker(t, func() bool {
+			var done int
+			_ = f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM accepted_inputs WHERE source='converter-return' AND status='completed'`).Scan(&done)
+			return done == 2
+		}, "both automatic continuation receipts complete")
+	} else {
+		ownerAttempt("collect")
+		ownerAttempt("convert")
+	}
 	provider.mu.Lock()
 	output, childStarts := provider.output, provider.childStarts
 	provider.mu.Unlock()
@@ -434,12 +519,27 @@ func TestConverterDeveloperRealBrokerWorkersContainerE2E(t *testing.T) {
 	if f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM memory_scope_grants g JOIN converter_developer_returns ret ON ret.parent_task_id=g.task_id WHERE g.source_id IN(ret.projection_json->'report_source'->>'source_id',ret.projection_json->'final_source'->>'source_id')`).Scan(&outputGrants) != nil || outputGrants != 0 {
 		t.Fatal("candidate collection widened parent to child report or final body")
 	}
-	t.Log("PASS: actual production Broker and network-none converter, ordinary parent/child workers, exact three child tools, immutable final/report/054, parent collect/check/trial/activation and original conversion; explicit owner continuations, native calls 0, both semantic tasks unverified")
+	if automatic {
+		var ownerInputs, systemInputs int
+		if f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FILTER(WHERE source='web'),count(*) FILTER(WHERE source='converter-return') FROM accepted_inputs WHERE task_id=$1`, f.f.parent.TaskID).Scan(&ownerInputs, &systemInputs) != nil || ownerInputs != 1 || systemInputs != 2 {
+			t.Fatal("automatic workflow invented another owner input", ownerInputs, systemInputs)
+		}
+		var modelAttempts int
+		if f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM execution_model_attempts WHERE run_id IN(SELECT run_id FROM runs WHERE task_id IN($1,$2))`, f.f.parent.TaskID, childID).Scan(&modelAttempts) != nil || modelAttempts != 14 {
+			t.Fatal("automatic model admission lost/duplicated bounded turns", modelAttempts)
+		}
+		t.Log("PASS: same-task original document conversion via actual production Broker/network-none converter, ordinary parent/child workers and two055 once-only internal continuations; one owner input, independent parent checks, no semantic auto-verification, native calls 0")
+	} else {
+		t.Log("PASS: actual production Broker and network-none converter, ordinary parent/child workers, exact three child tools, immutable final/report/054, parent collect/check/trial/activation and original conversion; explicit owner continuations, native calls 0, both semantic tasks unverified")
+	}
 }
 
 func waitConverterWorker(t *testing.T, check func() bool, label string) {
+	waitConverterWorkerFor(t, 15*time.Second, check, label)
+}
+func waitConverterWorkerFor(t *testing.T, timeout time.Duration, check func() bool, label string) {
 	t.Helper()
-	until := time.Now().Add(15 * time.Second)
+	until := time.Now().Add(timeout)
 	for !check() {
 		if time.Now().After(until) {
 			t.Fatal("timed out waiting for", label)

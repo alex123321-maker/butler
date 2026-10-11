@@ -28,6 +28,7 @@ Available scripts:
 - `fault-lab.ps1` / `fault-lab.sh` - disposable lab-only acceptance matrix, actual Chromium and backup/restore; see `internal/acceptance/README.md`. Pending product scenarios remain pending even when selected core checks pass.
 - `workspace-lab.sh <isolated-agent-root>` - disposable PG/filesystem race proof for task-bound code copies and exact version/hash patch CAS; no shared Compose or production tool wiring.
 - `delegation-lab.sh` - disposable PostgreSQL manager proof on a synced isolated agent root: real bounded receipts, shared budget reservations, dependency decisions and stop races with two pool connections; no production delegation enablement or model comparison claim.
+- `lab-converter-container.sh <isolated-agent-root>` - actual production Broker and network-none converter proof, including ordinary parent/child workers with explicit and automatic055 continuations. Run `lab.ps1 -Action Sync` first; tests use that fixed snapshot, no native inference or shared deployment changes.
 
 Optional dependency install:
 

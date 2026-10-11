@@ -174,3 +174,10 @@ not enter tools, approvals or results. This change leaves bootstrap/registry and
 deployment disabled. All pieces, including the guarded actual runtime and
 independent owner reconciliation, must be composed together before readiness.
 See [resource adapter](../../internal/resourceexec/README.md).
+
+For owning converter continuations055, compose
+`generatedtools.CheckContinuationRunTx` after the Catalog source guard for every
+action. The owning check repeats exact queued input/fence/current authority and
+complete original privacy dependencies; converter publication also repeats it.
+An internal readiness input never creates owner permission, tool capability or
+semantic completion. See the [contract](../../docs/architecture/converter-continuations.md).

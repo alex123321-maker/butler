@@ -95,6 +95,7 @@ type developerFixture struct {
 	journal                    *actionauth.PostgresStore
 	parentRun                  string
 	next                       int
+	deadline                   time.Time
 }
 
 func newDeveloperFixture(t *testing.T) *developerFixture {
@@ -113,7 +114,9 @@ func newDeveloperWorkerFixture(t *testing.T, profile generatedtools.Profile, man
 	}
 	if modelWorkflow {
 		f.budgets.Policy.OutputTokens = 128
-		f.budgets.Policy.ModelMillis = 1000
+		// Includes compound current Catalog/055 checks within the same admitted
+		// turn; this finite fixture quote changes no production policy.
+		f.budgets.Policy.ModelMillis = 5000
 		f.budgets.Policy.ModelInputBytes = 128 << 10
 		f.budgets.Policy.Models["ollama:converter-worker-fixture"] = budget.ModelPrice{Basis: "local_no_billing"}
 	}
@@ -154,12 +157,16 @@ func newDeveloperWorkerFixture(t *testing.T, profile generatedtools.Profile, man
 	if e = f.sources.PinTranscript(owned, f.parent.SessionKey, 0); e != nil {
 		t.Fatal(e)
 	}
+	document := catalog.SourceRef(f.source(t, "original-document", "task", f.parent.TaskID, "name,count\nprivate-original-document,2\n", nil))
+	var needParents []catalog.SourceRef
+	if modelWorkflow {
+		needParents = []catalog.SourceRef{document}
+	}
 	raw, _ := json.Marshal(n)
-	needRef := catalog.SourceRef(f.source(t, "developer-need", "task", f.parent.TaskID, string(raw), nil))
+	needRef := catalog.SourceRef(f.source(t, "developer-need", "task", f.parent.TaskID, string(raw), needParents))
 	spec := generatedtools.DeveloperSpec{Format: generatedtools.DeveloperFormat, NeedHash: generatedtools.Hash(n), Version: "1.0.0", Checker: generatedtools.Checker}
 	raw, _ = json.Marshal(spec)
 	specRef := catalog.SourceRef(f.source(t, "developer-spec", "task", f.parent.TaskID, string(raw), nil))
-	document := catalog.SourceRef(f.source(t, "original-document", "task", f.parent.TaskID, "name,count\nprivate-original-document,2\n", nil))
 	s, e := NewConverterDelegation(f.pool, f.store, session.NewPostgresRepository(f.pool), durableinput.NewStore(f.pool), f.sources, task.DefaultDelegationLimits(), profile)
 	if e != nil {
 		t.Fatal(e)
@@ -235,7 +242,11 @@ func (f *developerFixture) dispatch(t *testing.T, runID, name string, args any) 
 	return result, prepared, grant
 }
 func (f *developerFixture) args() generatedtools.DeveloperArgs {
-	return generatedtools.DeveloperArgs{NeedSource: f.needRef, ContractSource: f.specRef, Budget: budget.Units{ModelTurns: 2, Tokens: 10000, ExternalCalls: 4, ActiveMillis: 600000, EgressBytes: 16 << 20, ProviderInputBytes: 16 << 20}, Deadline: time.Now().Add(5 * time.Minute).UTC().Truncate(time.Microsecond), Dependencies: []string{}}
+	deadline := f.deadline
+	if deadline.IsZero() {
+		deadline = time.Now().Add(5 * time.Minute).UTC().Truncate(time.Microsecond)
+	}
+	return generatedtools.DeveloperArgs{NeedSource: f.needRef, ContractSource: f.specRef, Budget: budget.Units{ModelTurns: 2, Tokens: 10000, ExternalCalls: 4, ActiveMillis: 600000, EgressBytes: 16 << 20, ProviderInputBytes: 16 << 20}, Deadline: deadline, Dependencies: []string{}}
 }
 
 func TestConverterDeveloperMissingParentReceiptIntegration(t *testing.T) {

@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/memory/catalog"
@@ -15,6 +17,8 @@ type converterSources struct {
 	*catalog.Store
 	pool *pgxpool.Pool
 }
+
+func (converterSources) MemorySourceCheckTimeout() time.Duration { return 2 * time.Second }
 
 func (s converterSources) CheckRunSources(ctx context.Context, id string) error {
 	t, ok := ownership.TokenFromContext(ctx)
@@ -32,14 +36,17 @@ func (s converterSources) CheckRunSources(ctx context.Context, id string) error 
 	if e = s.Store.CheckRunSourcesTx(ctx, tx, id); e != nil {
 		return e
 	}
+	if e = generatedtools.CheckContinuationRunTx(ctx, tx, s.Store, id); e != nil {
+		return fmt.Errorf("converter continuation: %w", e)
+	}
 	if e = generatedtools.CheckDeveloperLifecycleTx(ctx, tx, s.Store, id); e != nil {
-		return e
+		return fmt.Errorf("converter child lifecycle: %w", e)
 	}
 	if e = generatedtools.CheckDeveloperReturnLifecycleTx(ctx, tx, s.Store, id); e != nil {
-		return e
+		return fmt.Errorf("converter return lifecycle: %w", e)
 	}
 	if e = generatedtools.CheckPinnedLifecycleTx(ctx, tx, id); e != nil {
-		return e
+		return fmt.Errorf("converter catalog lifecycle: %w", e)
 	}
 	return tx.Commit(ctx)
 }

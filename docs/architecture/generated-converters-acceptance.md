@@ -15,7 +15,7 @@ was changed. Every snapshot was explicitly synchronized before execution.
 | Bounded trials/restart | Actual PG concurrent independent task runs, unknown/failed slots spent, late stale responses rejected, grant replay refused | Passed; no automatic refund/replay |
 | Versioning/rollback/failure | Actual PG v1→v2→v1 generation transitions and owner revoke; bad candidate leaves prior task/catalog intact; empty migration down/up and retained-history down denial | Passed |
 | Owner result | Actual authenticated owner relay metadata, current checked-output SourceRef/SHA256, atomic unverified final record then explicit fixture owner verification; Chromium escaped/current output review | Passed; no model verdict promoted to task truth |
-| Delegated developer task | Actual PG accepted053 role, exact3 rights; production Broker/network-none converter and ordinary queued child worker, atomic final/report/054; parent collect/check/trial/activation/original conversion | Process/race passed with explicit owner continuations; autonomous/native workflow pending |
+| Delegated developer task | Actual PG accepted053 role, exact3 rights; production Broker/network-none converter and ordinary queued child worker, atomic final/report/054; parent collect/check/trial/activation/original conversion | Automatic055 process/race passed with one owner input; native quality and deployed acceptance pending |
 
 `20261011-083442-054` passed complete `go test -p 1 -count=1 ./...` with actual
 isolated core/goals/memory/semantic/initiative/actionauth/completion PostgreSQL
@@ -147,3 +147,34 @@ and historical-accounting delta: generatedtools race1.087s, actual-PG app
 converter/developer/lifecycle and zero-inference native preparation race54.291s,
 plus narrow vet. No native model was invoked. See
 [receipt verification](../../deploy/delegation/integrated-receipt-verification.json).
+
+## Owned automatic parent process
+
+Migration055 and the [current continuation contract](converter-continuations.md)
+replace the extra owner messages with two immutable owning intents. Fresh snapshot
+`20261011-110401-019` passed the actual production Broker/network-none converter
+and ordinary input workers with the race detector. The automatic same-task gate
+passed26.18s, alongside explicit-owner9.18s and direct Broker1.28s. One owner input
+produced two internal receipts, exact original JSON, ten confirmed actions and
+four unverified finals. Both semantic tasks remained active. No child report/final
+body grant or native model call was introduced.
+
+Snapshot `20261011-110304-210` passed actual-PG MaxConns2/race budget, generatedtools
+and full converter app cases (app136.116s). The055 faults include concurrent
+once-only/restart, unchanged ledger, queue/CAS rollback, original/report deletion,
+stop/amend, exhausted budget, unfinished input, live parent, unknown dispatch,
+expiry after waits, private-claim/payload/fence denial, current recovery and late
+final denial. The held-run-lock check proves live maintenance skips before taking
+session/run locks. A fixed owning verification bound allows a compound check
+beyond200ms; deadline/cancellation, invalid bounds and deletion during a slow
+final check still deny release.
+
+Final snapshot `20261011-111023-895` repeated all actual container/process gates:
+automatic28.42s, explicit8.94s, direct Broker1.76s. Its automatic assertions also
+require exactly14 finite durable model attempts across the four authoritative
+runs. Actual-PG/race once-only/restart, unchanged ledger and held-run-lock checks
+passed10.782s; affected `go vet` passed.
+
+These proofs establish the automatic production process path with a scripted
+provider that has no PG/network API. Native same-task planning, independently
+measured quality/cost improvement and final deployed acceptance remain pending.

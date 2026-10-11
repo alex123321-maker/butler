@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"reflect"
 	"time"
 
@@ -260,10 +261,10 @@ func ReadDeveloperSnapshotTx(ctx context.Context, tx pgx.Tx, sources DeveloperSo
 		return nil, ErrAccess
 	}
 	if e = checkDeveloperPolicyTx(ctx, tx, s.Binding); e != nil {
-		return nil, e
+		return nil, fmt.Errorf("developer current policy: %w", e)
 	}
 	if e = sources.CheckDelegationSourcesTx(ctx, tx, childID, []catalog.SourceRef{args.NeedSource, args.ContractSource}, "memory_read"); e != nil {
-		return nil, e
+		return nil, fmt.Errorf("developer source ancestry: %w", e)
 	}
 	var now time.Time
 	if tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now) != nil || !args.Deadline.After(now) {

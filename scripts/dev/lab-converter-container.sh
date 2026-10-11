@@ -94,6 +94,6 @@ docker run --rm --user 10001:10001 --network butler-lab_backend \
   --env BUTLER_CONVERTER_RUNTIME_TOKEN_FILE=/run/secrets/converter-runtime \
   --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_security_test?sslmode=disable' \
   golang:1.27.2-bookworm /cache/converter-app.test -test.v -test.timeout=90s \
-  -test.run '^TestConverterDeveloperRealBrokerWorkersContainerE2E$'
+  -test.run '^TestConverterDeveloper(RealBrokerWorkers|AutomaticParent)ContainerE2E$'
 test -z "$(docker exec "$converter_container" ls -A /tmp)"
 printf 'PASS: actual pure-IR developer/checker/converter; UID10001, no capabilities/escalation/hostFS/Docker/PG/model/owner credentials; network none; bounded noexec workspace removed\n'

@@ -7,15 +7,22 @@ import (
 	"strings"
 
 	"github.com/butler/butler/internal/delegation"
+	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/security/content"
 	"github.com/butler/butler/internal/transport"
 )
 
 func opaqueSourceInput(event ingress.InputEvent) bool {
-	return event.Source == "delegation" || strings.HasPrefix(event.EventID, "voice-reviewed:") || strings.HasPrefix(event.EventID, "delegated-owned:")
+	return event.Source == "delegation" || event.Source == "converter-return" || strings.HasPrefix(event.EventID, "converter-return:") || strings.HasPrefix(event.EventID, "voice-reviewed:") || strings.HasPrefix(event.EventID, "delegated-owned:")
 }
 func (s *Service) prepareSourceInput(ctx context.Context, event ingress.InputEvent) (ingress.InputEvent, error) {
+	if event.Source == "converter-return" {
+		if s.config.ConverterContinuations == nil {
+			return ingress.InputEvent{}, generatedtools.ErrAccess
+		}
+		return event, nil // Current private claim/context is verified in prepareRun.
+	}
 	if event.Source == "delegation" {
 		if s.config.DelegationContexts == nil {
 			return ingress.InputEvent{}, delegation.ErrDenied
@@ -74,6 +81,9 @@ func durableSourcePreparation(prepared preparedRun) preparedRun {
 func (s *Service) rehydrateSourcePreparation(ctx context.Context, prepared *preparedRun) error {
 	if prepared.SourceInputEvent == nil {
 		return s.rehydrateDelegatedContext(ctx, prepared)
+	}
+	if prepared.SourceInputEvent.Source == "converter-return" {
+		return s.attachConverterContinuation(ctx, *prepared.SourceInputEvent, prepared)
 	}
 	if prepared.SourceInputEvent.Source == "delegation" {
 		d, err := s.delegatedContext(ctx, prepared.SourceInputEvent.SessionKey)

@@ -51,7 +51,7 @@ func NewOperationID() (string, error) {
 
 // scopesTx resolves identity only through durable Butler records. Caller holds
 // live authority/domain locks; this routine touches budget rows last.
-func (c *Controller) scopesTx(ctx context.Context, tx pgx.Tx, runID, taskID, mandateID string) (string, []string, error) {
+func (c *Controller) scopeSpecsTx(ctx context.Context, tx pgx.Tx, runID, taskID, mandateID string) (string, []ScopeSpec, error) {
 	var owner, session string
 	if runID != "" {
 		if err := tx.QueryRow(ctx, `SELECT s.user_id,r.session_key,COALESCE(r.task_id,'') FROM runs r JOIN sessions s ON s.session_key=r.session_key WHERE r.run_id=$1`, runID).Scan(&owner, &session, &taskID); err != nil {
@@ -151,6 +151,14 @@ func (c *Controller) scopesTx(ctx context.Context, tx pgx.Tx, runID, taskID, man
 	sort.Slice(specs, func(i, j int) bool {
 		return ScopeID(specs[i].Kind, owner, specs[i].SubjectID) < ScopeID(specs[j].Kind, owner, specs[j].SubjectID)
 	})
+	return owner, specs, nil
+}
+
+func (c *Controller) scopesTx(ctx context.Context, tx pgx.Tx, runID, taskID, mandateID string) (string, []string, error) {
+	owner, specs, err := c.scopeSpecsTx(ctx, tx, runID, taskID, mandateID)
+	if err != nil {
+		return "", nil, err
+	}
 	var ids []string
 	for _, spec := range specs {
 		s, err := c.Ledger.EnsureTx(ctx, tx, spec)

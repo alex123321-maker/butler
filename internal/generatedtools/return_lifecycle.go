@@ -2,6 +2,7 @@ package generatedtools
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/memory/catalog"
@@ -38,15 +39,18 @@ func (s *Store) checkReturnedPackageTx(ctx context.Context, tx pgx.Tx, c actiona
 	}
 	snapshot, err := ReadDeveloperSnapshotTx(ctx, tx, s.sources, c.OwnerID, childID)
 	if err != nil || snapshot == nil || snapshot.Binding.TaskID != c.TaskID || snapshot.Binding.TaskRevision != c.TaskRevision || snapshot.Binding.ConstraintsRevision != c.ConstraintsRevision {
-		return ErrAccess
+		return fmt.Errorf("returned snapshot: %w", ErrAccess)
 	}
 	p, err := ReadDeveloperReturnTx(ctx, tx, *snapshot)
 	if err != nil || p.Candidate.BodySource != r.BodySource || p.Candidate.Digest != r.Digest || p.Candidate.ProfilePin != r.ProfilePin {
-		return ErrAccess
+		return fmt.Errorf("returned projection: %w", ErrAccess)
 	}
 	checker := collectionAccess{s, c, *snapshot, p}
 	_, err = s.sources.AccessTx(catalog.WithAccessChecker(ctx, checker), tx, developerReturnSources(p), "memory_read")
-	return err
+	if err != nil {
+		return fmt.Errorf("returned access: %w", err)
+	}
+	return nil
 }
 
 // Compose after current run/source authority on provider/recovery/final paths.

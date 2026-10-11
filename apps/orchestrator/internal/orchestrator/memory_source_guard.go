@@ -33,8 +33,19 @@ func (p *sourceGuardedProvider) SubmitToolResult(ctx context.Context, r transpor
 }
 
 func (p *sourceGuardedProvider) guard(ctx context.Context, runID string, call func(context.Context) (transport.EventStream, error)) (transport.EventStream, error) {
+	// Compound owning lifecycle checks retain all current source/authority
+	// barriers. Their explicit trusted bound cannot exceed the private skill
+	// verifier's existing two-second bound, and never changes event admission.
+	checkTimeout := 200 * time.Millisecond
+	if bounded, ok := p.sources.(interface{ MemorySourceCheckTimeout() time.Duration }); ok {
+		requested := bounded.MemorySourceCheckTimeout()
+		if requested < checkTimeout || requested > 2*time.Second {
+			return nil, errors.New("invalid owning memory source verification bound")
+		}
+		checkTimeout = requested
+	}
 	check := func(ctx context.Context) error {
-		bounded, cancel := context.WithTimeout(ctx, 200*time.Millisecond)
+		bounded, cancel := context.WithTimeout(ctx, checkTimeout)
 		defer cancel()
 		return p.sources.CheckRunSources(bounded, runID)
 	}

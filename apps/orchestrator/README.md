@@ -479,3 +479,13 @@ converter guards. A child report or local acknowledgement never completes a task
 See [generated converters](../../docs/architecture/generated-converters.md).
 Compose operators add the explicit delegation and converter-delegation overlays
 alongside the existing converters overlay; the base stack keeps both roles off.
+
+
+The optional owning055 continuation service atomically queues two once-only
+technical phases on the original task after confirmed developer return and
+actual parent activation. Ordinary workers/leases/Broker execute them; inputs
+carry opaque references and current readiness stays DATA. Full original document
+pins and current private claim/fence/authority repeat at provider/recovery/final.
+Its compound source verifier has a static2s bound (ordinary checks200ms), with
+uncached proposal/final/periodic checks. See
+[composition and evidence](../../docs/architecture/converter-continuations.md).

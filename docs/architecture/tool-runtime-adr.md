@@ -922,6 +922,12 @@ delegation. Exact053 capabilities are only discover/develop/test. Immutable054
 return proof and ordinary parent `converters.collect` yield references only;
 parent original trials and activation retain separate current action grants.
 
+Optional055 owning continuations schedule only those previously permitted parent
+phases and fresh-catalog original work, after actual confirmed receipts. They
+cannot grant runtime rights or owner authority. Exact source/claim/fence guards
+remain before Broker dispatch and final. See
+[converter-continuations.md](converter-continuations.md).
+
 ## 31. Необязательная ресурсная граница управляемого браузера
 
 `internal/resourceexec` связывает существующие grant/journal/budget с конечной
