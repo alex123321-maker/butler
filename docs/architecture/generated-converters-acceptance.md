@@ -178,3 +178,15 @@ passed10.782s; affected `go vet` passed.
 These proofs establish the automatic production process path with a scripted
 provider that has no PG/network API. Native same-task planning, independently
 measured quality/cost improvement and final deployed acceptance remain pending.
+
+Final root code `6c0d5f19579497bcdf3610c7bde90519dca3b4c0`, snapshot
+`20261011-111438-763`, passed the integrated actual-PG/Redis/race and affected vet
+suite: 367 distinct passed package/test names including subtests, seven explicit
+skips for separately selected browser/runtime fixtures and private subprocess
+entries. All1443 tracked source file hashes matched the tested snapshot. The
+converter/lifecycle/055 and zero-inference delegation app selection passed155.995s;
+input9.401s, execution6.355s and Broker7.939s. Root enabled no production feature
+or native request. See
+[final verification](../../deploy/delegation/integrated-final-verification.json)
+and [handoff](../ai/handoff-2026-10-11.md) for the exact separate actual process
+proofs and unverified gates.

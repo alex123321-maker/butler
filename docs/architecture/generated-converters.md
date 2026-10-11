@@ -84,7 +84,9 @@ Broker requires enabled converters and the fixed operator-only
 `BUTLER_CONVERTER_DELEGATION_CONTROL_URL` ending in
 `/internal/converter-delegation`. The existing061 endpoint remains
 `/internal/delegation`. Both sides verify immutable053/054 readiness before
-advertising the developer contract. Core composes the common lifecycle manager
+advertising the developer contract. Core also requires immutable055 readiness,
+composes its two once-only parent continuations and checks that actual provider
+request limits fit the existing execution policy. It composes the common lifecycle manager
 for selected context and collection through ordinary input workers, and all
 current developer/return guards before setting `converter_delegation_ready`.
 Catalog discovery and preparation deny absent readiness, task or ordinary
