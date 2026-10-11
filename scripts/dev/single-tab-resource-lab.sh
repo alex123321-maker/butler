@@ -28,7 +28,7 @@ docker run --rm --user "$(id -u):$(id -g)" --network "$network" --memory 1536m -
  --volume "$source_dir:/src:ro" --volume /srv/storage/butler/.cache:/cache --volume "$proof/go-tmp:/private-tmp" --workdir /src \
  --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp \
  --env TMPDIR=/private-tmp \
- --env "BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=$dsn" --env "BUTLER_TEST_POSTGRES_URL=$dsn" \
+ --env "BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=$dsn" --env "BUTLER_TEST_POSTGRES_URL=$dsn" --env "BUTLER_TEST_MEMORY_POSTGRES_URL=$dsn" \
  golang:1.27.2-bookworm go test -json -race -p=1 -count=1 -timeout=120s \
  -run '^TestSingleTabResource|^TestRuntimePrivate|^TestAuthorityHTTP|^TestDispatcher|^TestGuarded' \
  ./internal/resourceexec ./internal/singletabcontrol ./apps/tool-broker/internal/broker ./apps/orchestrator/internal/singletab \

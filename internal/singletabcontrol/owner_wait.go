@@ -24,6 +24,17 @@ func NewWaiting(pool *pgxpool.Pool, metadata Metadata, sources resourceexec.Sour
 	return &WaitingController{controller: c}, nil
 }
 
+func NewWaitingDurable(pool *pgxpool.Pool, metadata Metadata, sources resourceexec.SourceGuard, host string, checkpoints SelectionCheckpoints) (*WaitingController, error) {
+	if checkpoints == nil {
+		return nil, ErrDenied
+	}
+	w, err := NewWaiting(pool, metadata, sources, host)
+	if err == nil {
+		w.controller.checkpoints = checkpoints
+	}
+	return w, err
+}
+
 // The binding is read from immutable owning records, never channel arguments.
 // LeaseEpoch=0 is deliberate: this is no execution proof, expired or otherwise.
 func (w *WaitingController) binding(ctx context.Context, id string) (resources.Binding, error) {

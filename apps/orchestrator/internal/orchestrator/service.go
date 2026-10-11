@@ -134,6 +134,10 @@ type TransitionLogger interface {
 	InsertTransition(ctx context.Context, t runservice.StateTransition) error
 }
 
+type GuardedTabRecovery interface {
+	ResumeSelection(context.Context, string, string) (string, error)
+}
+
 type Config struct {
 	// Trusted composition resolves opaque source-bound inputs only after live
 	// ownership. The adapter loads durable bindings, not caller-selected refs.
@@ -141,6 +145,7 @@ type Config struct {
 	DelegationContexts       DelegatedContextReader
 	FailedDelegationAttempts FailedDelegationAttemptReader
 	ConverterContinuations   ConverterContinuationReader
+	GuardedTabRecovery       GuardedTabRecovery
 	MemorySources            interface {
 		PinTranscript(context.Context, string, int64) error
 		CheckRunSources(context.Context, string) error

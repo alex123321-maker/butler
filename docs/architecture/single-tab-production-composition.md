@@ -1,8 +1,10 @@
 # Optional guarded single-tab production composition
 
 Root application bootstrap now composes optional waiting-owner decisions behind
-an operator-only, default-false flag. Registry, executing worker and private
+an operator-only, default-false flag. Registry, worker request creation and private
 runtime composition remain pending; the endpoint is not an enabled tool route.
+Durable selection/checkpoint queueing and fresh core recovery are composed under
+the same optional flag.
 No model calls are needed to validate this owner boundary.
 
 ## Operator and owning setup
@@ -45,8 +47,18 @@ and no live executor. It repeats those checks under the owning barrier after
 metadata RPC. Original expiry is never extended; elapsed requests deny. Its
 LeaseEpoch=0 binding confers no execution authority. Resuming execution must
 acquire a new Session lease and pass ordinary WorkerGuard/Broker checks.
-Actual PG tests cover this adapter; Web/Telegram delivery, resume, and production
-request/runtime wiring remain pending. The Web decision API itself is composed
+Actual PG tests cover this adapter. `NewDurable` composes the owning input
+checkpoint hook, publishing finite choices, run/task waiting state and actual
+claimed input suspension in one transaction. The bootstrap uses
+`NewWaitingDurable`: select/revoke queues that exact stored continuation, including
+when an earlier decision precedes the old worker's finish. Old requests without
+the accepted-input selection marker deny. Core `Resume` acquires a new Session
+lease, reloads current definitions, validates the actual input claim and current
+Catalog/task/guarded selection, then emits the opaque selection as private DATA
+into a fresh provider context. Original deadline stays finite; advanced tool
+checkpoints cannot replay an effect through this path. Request creation through
+the ordinary worker, channel delivery and production runtime wiring remain pending.
+The Web decision API itself is composed
 at `POST /api/v3/tab-choices/{approval_id}/select` (`candidate_token` only) and
 `/revoke` (`{}` only), with mandatory configured Bearer owner proof. Unknown,
 duplicate, null, case-alias and oversized request fields deny. The only return
@@ -71,7 +83,7 @@ tab. Requests predating this metadata have no reconstructed view. The Approvals
 page uses this protected read and the existing select/revoke route; generic
 approval cannot substitute for the guarded choice. Owner proof stays only in
 page memory; proof changes fence late responses. Executing worker request
-creation, actual channel delivery/resumption and private runtime composition
+creation, actual channel delivery and private runtime composition
 remain independent activation gates.
 
 ## Broker and runtime composition

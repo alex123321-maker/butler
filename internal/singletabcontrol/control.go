@@ -144,6 +144,10 @@ func (c *Controller) Request(ctx context.Context, b resources.Binding) (Selectio
 	if e = c.finalCheck(ctx, tx, b, expiry); e != nil {
 		return Selection{}, ErrDenied
 	}
+	out.ApprovalID, out.ExpiresAt = id, expiry
+	if c.checkpoints != nil && c.checkpoints.SuspendSelectionTx(ctx, tx, b, out) != nil {
+		return Selection{}, ErrDenied
+	}
 	if e = tx.Commit(ctx); e != nil {
 		return Selection{}, e
 	}
@@ -276,6 +280,12 @@ func (c *Controller) Select(ctx context.Context, b resources.Binding, id, token 
 	if e = c.finalCheck(ctx, tx, b, expiry); e != nil {
 		return "", ErrDenied
 	}
+	if c.checkpoints != nil && c.checkpoints.ResolveSelectionTx(ctx, tx, b, id, false) != nil {
+		return "", ErrDenied
+	}
+	if e = c.finalCheck(ctx, tx, b, expiry); e != nil {
+		return "", ErrDenied
+	}
 	if e = tx.Commit(ctx); e != nil {
 		return "", e
 	}
@@ -304,6 +314,12 @@ func (c *Controller) Revoke(ctx context.Context, b resources.Binding, id string)
 	_, e = tx.Exec(ctx, `UPDATE guarded_single_tab_requests SET state='revoked' WHERE approval_id=$1`, id)
 	if e != nil {
 		return e
+	}
+	if e = c.finalCheck(ctx, tx, b, expiry); e != nil {
+		return ErrDenied
+	}
+	if c.checkpoints != nil && c.checkpoints.ResolveSelectionTx(ctx, tx, b, id, true) != nil {
+		return ErrDenied
 	}
 	if e = c.finalCheck(ctx, tx, b, expiry); e != nil {
 		return ErrDenied

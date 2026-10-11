@@ -16,12 +16,18 @@ import (
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/ownership"
+	"github.com/butler/butler/internal/security/content"
 	"github.com/butler/butler/internal/transport"
 )
 
 type storedCheckpoint struct {
-	Prepared preparedRun `json:"prepared"`
-	Data     struct {
+	Prepared     preparedRun `json:"prepared"`
+	Continuation struct {
+		Kind       string `json:"kind"`
+		Version    int    `json:"version"`
+		ApprovalID string `json:"approval_id"`
+	} `json:"continuation"`
+	Data struct {
 		FinalMessage string `json:"final_message"`
 		AnswerState  string `json:"answer_state"`
 		ToolCallID   string `json:"tool_call_id"`
@@ -49,7 +55,11 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	}
 	var continuation approvalContinuation
 	var decision approvals.Record
-	if current.GetCurrentState() == commonv1.RunState_RUN_STATE_AWAITING_APPROVAL {
+	guardedSelection := checkpoint.Continuation.Kind == "guarded_tab_selection"
+	if guardedSelection && (checkpoint.Continuation.Version != 1 || checkpoint.Continuation.ApprovalID == "" || s.config.GuardedTabRecovery == nil || stage != "approval_ready") {
+		return blockedApprovalResult(current, "guarded_selection_not_resumable"), nil
+	}
+	if current.GetCurrentState() == commonv1.RunState_RUN_STATE_AWAITING_APPROVAL && !guardedSelection {
 		if s.config.ApprovalService == nil {
 			return nil, fmt.Errorf("approval recovery unavailable")
 		}
@@ -97,7 +107,7 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	if err != nil {
 		return nil, err
 	}
-	if current.GetCurrentState() != commonv1.RunState_RUN_STATE_AWAITING_APPROVAL && stage != "tool_result_recorded" && stage != "finalizing" && stage != "tool_dispatching" {
+	if !guardedSelection && current.GetCurrentState() != commonv1.RunState_RUN_STATE_AWAITING_APPROVAL && stage != "tool_result_recorded" && stage != "finalizing" && stage != "tool_dispatching" {
 		s.blockTaskRun(ctx, runID, "checkpoint_not_resumable")
 		return &ExecutionResult{RunID: runID, SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "blocked", ErrorCode: "checkpoint_not_resumable"}, nil
 	}
@@ -114,7 +124,41 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		continuation.Prepared = checkpoint.Prepared
 	}
 	var stream transport.EventStream
-	if current.GetCurrentState() == commonv1.RunState_RUN_STATE_AWAITING_APPROVAL {
+	if guardedSelection {
+		// Reload capability DATA before task activation. Catalog changes during
+		// reload are then checked by the atomic owning selection/source guard.
+		refreshed, refreshErr := s.refreshRecoveredToolContext(ctx, runID, checkpoint.Prepared.InputItems, checkpoint.Prepared.ToolDefs)
+		if refreshErr != nil {
+			return nil, refreshErr
+		}
+		sessionID, resumeErr := s.config.GuardedTabRecovery.ResumeSelection(ctx, runID, checkpoint.Continuation.ApprovalID)
+		if resumeErr != nil {
+			return blockedApprovalResult(current, "guarded_selection_invalidated"), nil
+		}
+		inputs := append([]transport.InputItem(nil), refreshed.InputItems...)
+		inputs = append(inputs, content.Data(map[string]any{"kind": "guarded_tab_selection", "single_tab_session_id": sessionID}, content.Origin{Kind: content.ToolOutput, SourceRefs: []string{"approval:" + checkpoint.Continuation.ApprovalID}, Sensitivity: content.Private}))
+		if current.GetCurrentState() == commonv1.RunState_RUN_STATE_AWAITING_APPROVAL {
+			current, err = s.transition(ctx, runID, current.GetCurrentState(), commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME, lease.LeaseID, "", "")
+			if err != nil {
+				return nil, err
+			}
+		}
+		if current.GetCurrentState() != commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME && current.GetCurrentState() != commonv1.RunState_RUN_STATE_MODEL_RUNNING {
+			return blockedApprovalResult(current, "guarded_selection_not_resumable"), nil
+		}
+		if err = s.discardProviderContext(ctx, runID); err != nil {
+			return nil, err
+		}
+		providerCtx, release, beginErr := ownership.Begin(ctx)
+		if beginErr != nil {
+			return nil, beginErr
+		}
+		stream, err = s.provider.StartRun(providerCtx, transport.StartRunRequest{Context: transport.TransportRunContext{RunID: runID, SessionKey: event.SessionKey, ProviderName: s.config.ProviderName, ModelName: s.config.ModelName, SupportsStreaming: true, SupportsToolCalls: true}, InputItems: inputs, ToolDefinitions: refreshed.ToolDefs, StreamingEnabled: true})
+		release()
+		if err == nil && current.GetCurrentState() == commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME {
+			current, err = s.transition(ctx, runID, current.GetCurrentState(), commonv1.RunState_RUN_STATE_MODEL_RUNNING, lease.LeaseID, "", "")
+		}
+	} else if current.GetCurrentState() == commonv1.RunState_RUN_STATE_AWAITING_APPROVAL {
 		if _, err = s.config.ApprovalService.VerifyActionApproval(ctx, actionauth.ApprovalRequest{ApprovalID: decision.ApprovalID, Binding: continuation.Binding}); err != nil {
 			s.blockTaskRun(ctx, runID, "approval_invalidated")
 			return blockedApprovalResult(current, "approval_invalidated"), nil

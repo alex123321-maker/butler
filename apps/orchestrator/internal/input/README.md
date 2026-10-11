@@ -5,6 +5,11 @@ adapter `Execute` commits admission and returns a receipt; `Run` owns execution
 independently of the request context. Orchestrator owns execution and recovery;
 Session Service owns expiring fenced ownership. Approval Service uses the typed
 transaction hooks to suspend and ready an input without writing the queue ad hoc.
+Guarded owner tab selection uses the same transaction hooks with a distinct
+version1 selection marker. Its exact ready hook permits revocation while already
+queued, retains the original run/input and deadline, and preserves an immediate
+decision until the previous worker finishes. `CheckSelectionClaimTx` requires
+the current live input claim and exact stored selection marker before recovery.
 
 `AcceptTx` joins an owning service's admission transaction, so an initiative's
 task and receipt become visible together. The caller locks the session before

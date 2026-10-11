@@ -373,6 +373,17 @@ func New(ctx context.Context) (*App, error) {
 
 	transitionRepo := runservice.NewPostgresTransitionRepository(postgres.Pool())
 	eventHub := observability.NewHub()
+	var guardedRecovery flow.GuardedTabRecovery
+	var guardedCheckpoints *singletab.SelectionCheckpoints
+	if cfg.GuardedTabOwnerEnabled {
+		guardedCheckpoints, err = singletab.NewSelectionCheckpoints(postgres.Pool(), inputStore, finalResults.DataGuard, cfg.GuardedTabHost)
+		if err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, err
+		}
+		guardedRecovery = guardedCheckpoints
+	}
 
 	executor := flow.NewService(
 		sessionRepo,
@@ -405,6 +416,7 @@ func New(ctx context.Context) (*App, error) {
 			ActionAuthorizer:         toolBrokerClient,
 			ActionMandateID:          cfg.ActionMandateID,
 			Checkpoints:              inputStore,
+			GuardedTabRecovery:       guardedRecovery,
 			Tasks:                    taskStore,
 			OwnerGoals:               ownerGoals,
 			ProviderName:             providerResult.ProviderName,
@@ -513,7 +525,7 @@ func New(ctx context.Context) (*App, error) {
 		log.Warn("private action authority unavailable; Tool Broker will deny execution")
 	}
 	apiServer := apiservice.NewServer(inputWorker, logger.WithComponent(log, "api"))
-	guardedTabOwner, err := configureGuardedTabOwner(ctx, postgres.Pool(), cfg, finalResults.DataGuard)
+	guardedTabOwner, err := configureGuardedTabOwner(ctx, postgres.Pool(), cfg, finalResults.DataGuard, guardedCheckpoints)
 	if err != nil {
 		redis.Close()
 		postgres.Close()
