@@ -22,6 +22,10 @@ checks precede credential inspection and repeat at irreversible dispatch. Curren
 parent authority is checked at model/budget, task writes and final result commits.
 An empty allowlist denies all tools. Root/mandate/day budgets remain shared;
 delegation scopes add restrictions rather than refill the root allowance.
+Reviewed-capability metadata binding also repeats the exact child permission
+check before credential inspection; a catalog adapter cannot widen the original
+resource, effect or credential-reference subset during binding. Installed
+converters are appended before the final delegated catalog filter.
 
 Catalog owns initial delegated source grants in the child-admission transaction.
 Only selected source roots, immutable contract DATA and the child's own separate

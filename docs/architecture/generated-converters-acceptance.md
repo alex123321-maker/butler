@@ -41,3 +41,15 @@ Narrow vet passed after lifecycle/atomic-result changes. No broader generated
 language, measured cost reduction, live model planning or completed child
 experiment is inferred from these tests. The issue remains pending its combined
 delegation acceptance and final integrated-head deployment checks.
+
+The root delegation/resource/converter union passed actual lab PostgreSQL/race
+checks on `20261011-084737-350`: generatedtools, converter runtime, actionauth,
+config, Orchestrator app/task/goal/execution, Broker and Catalog. The goal suite
+took44.716s; Catalog12.578s. The union retains the delegated allowlist after all
+installed converter contracts are appended, and checks the child permission
+again after reviewed-capability binding before credential inspection.
+The independently owned task-derived publication prerequisite passed Catalog
+race13.933s on `20261011-085102-724`. Exact binding-widening regressions passed
+actionauth race4.316s on `20261011-085211-622`. Read-only independent review found
+no additional confirmed defect in this converter union. These component checks
+do not close the developer-child or final combined Docker/runtime gate above.
