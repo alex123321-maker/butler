@@ -1,5 +1,34 @@
 # Opt-in native delegation experiment
 
+## Current owner-directed continuation — 2026-10-11
+
+The owner's new request to finish the open issues supersedes the old chat's
+stopping boundary. This current preparation preserves all three hash-pinned
+failed reports: nine historical attempts, two known usage pairs, seven unknown.
+The known input11770/output190 subtotal is not a full cost measurement.
+
+The current limiter starts at nine and caps one new window at twelve attempts,
+twenty-one total. Every provider method revalidates all three immutable files
+before admission. PG constraints/trigger prevent changing hashes, lowering
+spending or increasing limits; retries and process reconstruction still charge.
+Production root/child/day budgets independently retain their existing bounds.
+The runner atomically seals `/srv/storage/butler/native-acceptance-windows/baseline9`
+before the sole actual invocation; later roots/restarts cannot reset that window.
+A committed `native-scenario-fourth.json` also denies further execution before
+auth metadata/Docker. No automatic retries or fallback inference are permitted.
+
+Preparation on snapshot `20261011-115208-052` passed the zero-inference PG/race
+and UID10001 private-file checks. Proof:
+`/srv/storage/butler/agents/issue-native/reports/delegation-native-prepare-20261011T045211Z-3726204`.
+Current failure diagnostics preserve only a fixed transport subtype; raw provider
+material remains excluded. One actual execute remains pending at preparation.
+Main source pointer, PG state and optional deployment flags stay separate.
+
+The earlier baseline5 instructions and failed-window observations below are
+historical evidence, superseded by this section and the current runner.
+
+## Earlier experiment and failures
+
 Reviewable opt-in preparation and failed execution evidence for issue16. The
 first coordinated native experiment failed after three requests. The separately
 reviewed follow-up failed after two new requests, retaining all five attempted

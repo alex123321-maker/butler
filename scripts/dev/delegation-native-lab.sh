@@ -7,17 +7,17 @@ phase=${2:-prepare}
 [[ "$phase" == prepare || "$phase" == execute ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/apps/orchestrator/internal/app/delegation_native_scenario_test.go" ]] || exit 2
-if [[ "$phase" == execute && ( -e "$source_dir/deploy/delegation/native-scenario-third-failed.json" || -L "$source_dir/deploy/delegation/native-scenario-third-failed.json" ) ]]; then
-  # Fixed public artifact presence closes the reviewed baseline5 window before
-  # any auth metadata, Docker process, import, proxy or provider entry. It cannot
-  # authorize a fresh allowance or silently reset the observed nine attempts.
-  printf '{"status":"denied","reason":"native_window_completed_history_superseded","new_native_attempts":0,"historical_observed_native_attempts":9}\n'
+window=/srv/storage/butler/native-acceptance-windows/baseline9
+if [[ "$phase" == execute && ( -e "$source_dir/deploy/delegation/native-scenario-fourth.json" || -L "$source_dir/deploy/delegation/native-scenario-fourth.json" || -e "$window" || -L "$window" ) ]]; then
+  # A global atomic marker prevents a fresh disposable DB/root from resetting
+  # this window. A fourth committed report also seals it before auth/Docker.
+  printf '{"status":"denied","reason":"native_window_already_attempted","new_native_attempts":0,"historical_observed_native_attempts":9}\n'
   exit 2
 fi
 export DOCKER_CONFIG="$root/.cache/docker"
 if [[ "$phase" == execute ]]; then
   if [[ ${BUTLER_DELEGATION_NATIVE_ACCEPTANCE:-} != 1 ]]; then
-    printf '{"status":"skipped","reason":"native_opt_in_unset","new_native_attempts":0,"historical_native_attempts":5,"total_native_attempts":5}\n'
+    printf '{"status":"skipped","reason":"native_opt_in_unset","new_native_attempts":0,"historical_native_attempts":9,"total_native_attempts":9}\n'
     exit 0
   fi
   [[ ${BUTLER_DELEGATION_NATIVE_RELEASE:-} =~ ^[a-f0-9]{40}$ ]] || exit 2
@@ -84,7 +84,7 @@ docker run --rm --user "$(id -u):$(id -g)" --network "$network" --memory 1536m -
 go test -race -c -o /binaries/broker.test ./apps/tool-broker/internal/broker
 chmod 555 /binaries/orchestrator.test /binaries/broker.test
 export BUTLER_DELEGATION_BROKER_BINARY=/binaries/broker.test
-go test -json -race -run "^TestNativeDelegation(ObjectiveFixtureRejectsNarrativeAuthority|TwelveAttemptBoundIntegration|CarryoverBaselineRejectsMismatch|EveryReservationRevalidatesBothArtifactsIntegration|ProviderMethodsAreChargedBeforeValidationIntegration|PrivateRuntimeFiles|EncryptedFixtureImportWithoutInferenceIntegration|CompositionWithoutInferenceIntegration|BrokerPreflightWithoutInferenceIntegration)$" -count=1 -timeout=90s ./apps/orchestrator/internal/app' > "$proof/tests.jsonl"
+go test -json -race -run "^TestNativeDelegation(ObjectiveFixtureRejectsNarrativeAuthority|TwelveAttemptBoundIntegration|CarryoverBaselineRejectsMismatch|EveryReservationRevalidatesAllArtifactsIntegration|ProviderMethodsAreChargedBeforeValidationIntegration|PrivateRuntimeFiles|EncryptedFixtureImportWithoutInferenceIntegration|CompositionWithoutInferenceIntegration|BrokerPreflightWithoutInferenceIntegration)$" -count=1 -timeout=90s ./apps/orchestrator/internal/app' > "$proof/tests.jsonl"
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
 docker run --rm --network none --user 0:0 --volume "$proof/runtime:/private" alpine:3.22 \
   sh -eu -c 'chown 10001:10001 /private; chmod 700 /private'
@@ -95,7 +95,7 @@ docker run --rm --network none --user 10001:10001 --read-only --cap-drop ALL \
   > "$proof/runtime-files.txt"
 sha256sum "$proof/runtime-files.txt" > "$proof/runtime-files.sha256"
 if [[ "$phase" == prepare ]]; then
-  printf '{"status":"preparation_passed","new_native_attempts":0,"historical_native_attempts":5,"total_native_attempts":5,"maximum_total_native_attempts":17,"maximum_new_native_attempts":12,"model_acceptance":"pending"}\n'
+  printf '{"status":"preparation_passed","new_native_attempts":0,"historical_native_attempts":9,"total_native_attempts":9,"maximum_total_native_attempts":21,"maximum_new_native_attempts":12,"model_acceptance":"pending"}\n'
   exit 0
 fi
 # The preparation probe already verified executable/private-file access as the
@@ -117,10 +117,14 @@ docker create --name "$name-runtime" --user 10001:10001 --network "$network" \
 created_runtime=true
 docker network connect butler-lab_backend "$name-runtime"
 # A single invocation. Nonzero status is retained, never retried.
+mkdir -p /srv/storage/butler/native-acceptance-windows
+mkdir "$window" || exit 2
+printf '%s\n' "$proof" > "$window/proof-ref"
+printf '%s\n' "$BUTLER_DELEGATION_NATIVE_RELEASE" > "$window/release-ref"
 status=0
 docker start -a "$name-runtime" > "$proof/native-events.txt" 2>&1 || status=$?
 docker run --rm --network none --user 10001:10001 --volume "$proof/runtime:/private:ro" alpine:3.22 \
   cat /private/scenario.json > "$proof/scenario.json" || status=1
 sha256sum "$proof/scenario.json" "$proof/native-events.txt" > "$proof/native-evidence.sha256"
 [[ "$status" == 0 ]] || exit "$status"
-printf '{"status":"experiment_passed","historical_native_attempts":5,"maximum_total_native_attempts":17,"maximum_new_native_attempts":12,"issue_closure":"pending_audit"}\n'
+printf '{"status":"experiment_passed","historical_native_attempts":9,"maximum_total_native_attempts":21,"maximum_new_native_attempts":12,"issue_closure":"pending_audit"}\n'
