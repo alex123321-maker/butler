@@ -1,5 +1,11 @@
 # Orchestrator
 
+The bounded [delegation manager](internal/task/README.md) provides transactional
+child admission, dependency scheduling, durable result/report metadata and explicit
+guarded decisions. It is an unenabled component until the owning Catalog/Broker
+adapters and isolated child context are wired and verified. It does not turn a
+model report or manager acceptance into task completion.
+
 Tool execution prepares the exact action through Broker, records required
 owner approval, then obtains a private dispatch grant tied to current task and
 worker versions. `/internal/action-context` validates PostgreSQL ownership and

@@ -10,7 +10,9 @@ fence on the caller's transaction. A present but broken schema fails closed.
 Model admission, Broker prepare/dispatch and result persistence retain their
 existing independent ownership and owner authority checks.
 
-The owning orchestration manager and private Broker control adapter are still
-being implemented. No child scheduler, runtime tool or new owner endpoint is
-enabled by merely importing these types. Do not treat this foundation as issue16
-acceptance. See `docs/architecture/delegation-contract.md`.
+The owning Task manager now has atomic child/session/input admission, bounded
+dependencies, result collection and guarded decisions. Report is a strict DATA
+projection of actual evidence references; shape validity is not verification.
+No runtime tool or owner endpoint is enabled here. Production Catalog/Broker/
+context composition and actual model comparison remain pending acceptance.
+See `docs/architecture/delegation-contract.md`.

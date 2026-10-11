@@ -47,3 +47,26 @@ dependency/width/depth bounds, independent and conflicting result collection,
 parent crash and revision/stop races, resource/workspace arbitration, and an actual
 single-versus-bounded-parallel experiment using the same shared model worker.
 No criterion is satisfied by agreeing model outputs or a simulated effect.
+
+## Owning manager component
+
+`task.DelegationManager` admits an independent child/session, exact contract,
+source grants, shared budget charge and bounded input on one PG transaction.
+Owning adapters are mandatory; bodies stay in Catalog, handoffs use references.
+Immutable proposal source/version and parent revision make replay repeat-safe.
+One executor can explicitly expand to two; depth/tree/dependency caps stay finite.
+
+Waiting children advance after a parent process disappears through trusted kernel
+maintenance with current task/source/owner authority, never its ended lease.
+Execution requires the child's own run/fence. Dependency edges stay within
+sibling branches and refuse cycles; rejected dependencies block their dependents.
+
+Actual completed-run results bind to strict Catalog reports containing action/
+evidence/budget references, uncertainty and reason enums. Acceptance requires an
+independent verifier adapter and never completes the task. Decision metadata has
+only pinned references, not narrative or model authority. Conflicting reports
+remain distinct. The [Task README](../../apps/orchestrator/internal/task/README.md)
+documents constructor/adapters and lock order. Actual PG/source/budget tests use
+two pooled connections; no model inference/effect is claimed. Production explicit
+source context without ambient profile/retrieval, Broker/scheduler and the shared
+model experiment above remain pending.

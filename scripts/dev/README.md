@@ -27,6 +27,7 @@ Available scripts:
 - `lab.ps1` / `lab.sh` - upload source snapshots, run Go checks, deploy, and inspect the isolated SSH lab; see `deploy/README.md`
 - `fault-lab.ps1` / `fault-lab.sh` - disposable lab-only acceptance matrix, actual Chromium and backup/restore; see `internal/acceptance/README.md`. Pending product scenarios remain pending even when selected core checks pass.
 - `workspace-lab.sh <isolated-agent-root>` - disposable PG/filesystem race proof for task-bound code copies and exact version/hash patch CAS; no shared Compose or production tool wiring.
+- `delegation-lab.sh` - disposable PostgreSQL manager proof on a synced isolated agent root: real bounded receipts, shared budget reservations, dependency decisions and stop races with two pool connections; no production delegation enablement or model comparison claim.
 
 Optional dependency install:
 

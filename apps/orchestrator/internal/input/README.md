@@ -11,6 +11,13 @@ task and receipt become visible together. The caller locks the session before
 checking goal/mandate authority. Rolling back also rolls back the receipt;
 `Accept` retains the standalone transaction boundary for ordinary ingress.
 
+`AcceptBoundedTx` is the manager-owned delegated handoff: it saves only the child
+task ID and exact versioned contract source, with an immutable deadline and one
+to three attempts. A replay cannot extend either bound. Session and task creation,
+shared child allowance, source grants and this receipt commit together; the normal
+input worker still owns claims and run execution. No parent prose/provider session
+is copied. Production delegated context/Broker composition remains separate.
+
 Defaults: two workers, 250 ms polling, 60-second renewed claims, ten-minute
 execution deadline, 24-hour acceptance deadline and three recovery attempts.
 Busy-session retries and approved continuations do not consume recovery attempts.
