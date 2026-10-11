@@ -100,6 +100,40 @@ and acceptance requires an existing independent verified result ID. Request
 owner IDs, worker proofs, host/resource overrides and narrative verdicts deny.
 No delegation composition means unavailable, not an alternate execution route.
 
+An explicit versioned Catalog contract can further constrain numeric research
+acceptance. Its contract-source body is
+`{"kind":"delegation_numeric_observation_v1","source_ref":<exact selected SourceRef>}`.
+The marker lives in the preserved source TEXT, because PostgreSQL JSONB locators
+normalize duplicate keys and could hide conflicting schema selection.
+This DATA selects an additional
+objective check; it grants no execution, verification or owner authority.
+The referenced witness must already occur in the child's selected source list,
+and in the independently verified result and decision evidence. The witness body
+has exactly `observed_value` (int64) and `observed_date` (valid `YYYY-MM-DD`).
+The immutable child final must strictly contain `source_id`, `source_revision`,
+`source_hash`, `observed_value`, `observed_date` and `uncertainty:"source_only"`.
+The value and date must match that original witness, preserving the difference
+between a source-relative observation and general truth. Agreement between
+children does not enter this comparison.
+
+`DelegationGuards.CheckDecisionTx` reads the current contract source and selected
+original through guarded Catalog access on the existing manager transaction;
+the final's owning task/run, content hash, current source/access pins, lifecycle
+and DB time are checked by the ordinary report guard. The numeric checker only
+tightens the existing authenticated owner accept path, including
+`AcceptVerified`. Even a persisted owner-verified result cannot override a
+contradictory typed final. Missing/null/ambiguous/oversized JSON, unknown schema
+versions and an unselected witness deny acceptance; explicit zero remains valid.
+A duplicate contract kind cannot hide the opt-in with a later legacy kind.
+Unverified or unsupported finals remain collectable and rejectable as original
+observations. Narrative contracts without this marker retain their behavior;
+malformed JSON object contracts deny acceptance rather than acquire an ambiguous
+meaning.
+There is no automatic decision or broader contradiction solver for arbitrary
+research reports.
+See [the actual numeric acceptance checks](../ai/delegation-numeric-acceptance.md)
+for the PG conflict scenario and its source-relative limits.
+
 The [Task README](../../apps/orchestrator/internal/task/README.md)
 documents constructor/adapters and lock order. Actual PG/source/budget tests use
 two pooled connections; no model inference/effect is claimed. The optional

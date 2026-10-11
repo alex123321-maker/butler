@@ -4,7 +4,7 @@ set -euo pipefail
 root=${1:?isolated agent root required}
 [[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ ]] || exit 2
 check_mode=${2:-full}
-[[ "$check_mode" == full || "$check_mode" == narrow || "$check_mode" == verification ]] || exit 2
+[[ "$check_mode" == full || "$check_mode" == narrow || "$check_mode" == verification || "$check_mode" == numeric ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* ]] || exit 2
 run_id="$(date -u +%Y%m%dT%H%M%SZ)-$$"
@@ -43,8 +43,11 @@ docker run --rm --runtime runc --user "$(id -u):$(id -g)" --network "$network" \
   --env "BUTLER_ATTEMPT_CHECK_MODE=$check_mode" \
   --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:attempt-fixture@attempt-postgres:5432/butler_attempt_test?sslmode=disable' \
   golang:1.27.2-bookworm bash -eu -c '
-if [[ "$BUTLER_ATTEMPT_CHECK_MODE" == verification ]]; then
-go test -json -race -p 1 -count=1 -run "^TestDelegation(ConflictingReports|IndependentVerification|VerifiedPromotion)" ./apps/orchestrator/internal/app
+if [[ "$BUTLER_ATTEMPT_CHECK_MODE" == numeric ]]; then
+go test -json -race -p 1 -count=1 ./internal/delegation
+go test -json -race -p 1 -count=1 -run "^TestDelegation(ConflictingReports|NumericAcceptance)" ./apps/orchestrator/internal/app
+elif [[ "$BUTLER_ATTEMPT_CHECK_MODE" == verification ]]; then
+go test -json -race -p 1 -count=1 -run "^TestDelegation(ConflictingReports|NumericAcceptance|IndependentVerification|VerifiedPromotion)" ./apps/orchestrator/internal/app
 go test -json -race -p 1 -count=1 -run "^TestDelegationOwnerDecision" ./apps/orchestrator/internal/api
 go test -json -race -p 1 -count=1 ./internal/delegation
 go test -json -race -p 1 -count=1 -run "^TestCapacityFailure" ./internal/transport/antigravity
@@ -63,4 +66,8 @@ fi
 go vet ./apps/orchestrator/internal/task ./apps/orchestrator/internal/app ./apps/orchestrator/internal/api ./apps/orchestrator/internal/orchestrator ./internal/delegation ./internal/transport/antigravity
 ' > "$proof/tests.jsonl"
 sha256sum "$proof/tests.jsonl"
-printf '{"status":"delegation_attempt_observations_passed","model_calls":0}\n'
+if [[ "$check_mode" == numeric ]]; then
+  printf '{"status":"delegation_numeric_acceptance_passed","model_calls":0}\n'
+else
+  printf '{"status":"delegation_attempt_observations_passed","model_calls":0}\n'
+fi

@@ -19,6 +19,17 @@ No runtime tool or owner endpoint is enabled here. Production Catalog/Broker/
 context composition and actual model comparison remain pending acceptance.
 See `docs/architecture/delegation-contract.md`.
 
+An opt-in `delegation_numeric_observation_v1` Catalog contract adds an objective
+acceptance constraint for a selected structured numeric/date witness.
+`VerifyNumericObservation` compares exact source identity/revision/hash, value,
+date and `source_only` uncertainty after the owning guard reads the current
+original and immutable final. Duplicate keys, omitted/null fields, unknown fields
+and trailing JSON deny; integer zero is a real value only when explicitly given.
+The production owner acceptance guard requires that witness in both the child's
+exact selected sources and the owner's pinned decision evidence. Other reports
+cannot vote it into agreement. This constrained source-relative check does not
+verify arbitrary prose, auto-accept a result or complete a task.
+
 `AdmissionContract` now defines the optional fixed `task.delegate` prepare route.
 Strict decoding accepts only current Catalog references, finite allocation,
 deadline and dependency IDs; it cannot express owner/task/lease/permission or

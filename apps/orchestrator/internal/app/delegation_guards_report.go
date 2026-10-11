@@ -19,6 +19,9 @@ import (
 type delegationReportEvidence struct {
 	report       delegation.Report
 	final        completion.FinalRecord
+	finalText    string
+	contract     delegation.Contract
+	sources      map[string]catalog.Source
 	refs         map[string]delegation.EvidenceRef
 	confirmed    map[string]bool
 	reasons      map[string]bool
@@ -125,7 +128,17 @@ func (g *DelegationGuards) reportTx(ctx context.Context, tx pgx.Tx, parent, chil
 			return fail()
 		}
 	}
-	checker := delegationReportAccess{guard: g, parent: parent, child: child, contract: *c, requested: append(catalogRefs([]delegation.SourceRef{ref}), catalogRefs(extra)...), pins: roots}
+	requested := append(catalogRefs([]delegation.SourceRef{ref}), catalogRefs(extra)...)
+	contractRequested := false
+	for _, p := range requested {
+		if p.ID == c.ContractSource.ID {
+			contractRequested = true
+		}
+	}
+	if !contractRequested {
+		requested = append(requested, catalogRefs([]delegation.SourceRef{c.ContractSource})...)
+	}
+	checker := delegationReportAccess{guard: g, parent: parent, child: child, contract: *c, requested: requested, pins: roots}
 	accessCtx := catalog.WithAccessChecker(ctx, checker)
 	sources, err := g.sources.AccessTx(accessCtx, tx, checker.requested, "delegation_report")
 	if err != nil {
@@ -147,7 +160,10 @@ func (g *DelegationGuards) reportTx(ctx context.Context, tx pgx.Tx, parent, chil
 	if parsed.TaskID != child.TaskID || parsed.TaskRevision != child.Revision || parsed.ContractRevision != c.Revision || parsed.ResultID != stored.ResultID {
 		return fail()
 	}
-	actual := delegationReportEvidence{report: parsed, final: final, refs: map[string]delegation.EvidenceRef{}, confirmed: map[string]bool{}, reasons: map[string]bool{}}
+	actual := delegationReportEvidence{report: parsed, final: final, finalText: artifactText, contract: *c, sources: map[string]catalog.Source{}, refs: map[string]delegation.EvidenceRef{}, confirmed: map[string]bool{}, reasons: map[string]bool{}}
+	for _, source := range sources {
+		actual.sources[source.ID] = source
+	}
 	for _, p := range append(allowed, catalogRefs(extra)...) {
 		// Actual source pins carry all four fields. Ancestors without a supplied
 		// hash are privacy dependencies, never hashless report evidence.
@@ -282,6 +298,9 @@ func (g *DelegationGuards) CheckDecisionTx(ctx context.Context, tx pgx.Tx, paren
 					return delegation.ErrDenied
 				}
 			}
+		}
+		if err = checkNumericResearchAcceptance(a, d); err != nil {
+			return err
 		}
 	}
 	return nil
