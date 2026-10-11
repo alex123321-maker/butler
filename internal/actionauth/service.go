@@ -226,10 +226,14 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 		return Grant{}, ErrOwnerAuthority
 	}
 	if approvalID != "" {
-		if err := s.verifyApproval(ctx, b, approvalID); err != nil {
+		approval, err := s.verifiedApproval(ctx, b, approvalID)
+		if err != nil {
 			return Grant{}, err
 		}
 		g.ApprovalID = approvalID
+		if approval.ExpiresAt.Before(g.ExpiresAt) {
+			g.ExpiresAt = approval.ExpiresAt
+		}
 	} else if mandateID != "" {
 		if mandateID != c.MandateID {
 			return Grant{}, fmt.Errorf("mandate is not assigned by trusted run policy")
@@ -254,12 +258,12 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 	}
 	return s.store.PutGrant(ctx, g)
 }
-func (s *Service) verifyApproval(ctx context.Context, b ActionBinding, id string) error {
+func (s *Service) verifiedApproval(ctx context.Context, b ActionBinding, id string) (ApprovalSnapshot, error) {
 	a, err := s.contexts.VerifyActionApproval(ctx, ApprovalRequest{ApprovalID: id, Binding: b})
 	if err != nil || a.ApprovalID != id || a.Status != "approved" || a.Binding.ActionHash != b.ActionHash || a.Binding.OwnerID != b.OwnerID || !a.ExpiresAt.After(s.now()) || a.ResolvedAt.IsZero() {
-		return fmt.Errorf("exact action approval is unavailable, expired or incompatible")
+		return ApprovalSnapshot{}, fmt.Errorf("exact action approval is unavailable, expired or incompatible")
 	}
-	return nil
+	return a, nil
 }
 
 // Verify is called before secret release and again immediately before dispatch.
@@ -280,7 +284,7 @@ func (s *Service) Verify(ctx context.Context, call *toolbrokerv1.ToolCall, contr
 		return Grant{}, fmt.Errorf("dispatch grant is stale, changed, revoked or already dispatched")
 	}
 	if g.ApprovalID != "" {
-		if err := s.verifyApproval(ctx, b, g.ApprovalID); err != nil {
+		if _, err := s.verifiedApproval(ctx, b, g.ApprovalID); err != nil {
 			return Grant{}, err
 		}
 	}
