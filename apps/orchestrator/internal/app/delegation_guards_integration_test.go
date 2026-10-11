@@ -138,6 +138,14 @@ func (f *delegationGuardFixture) admit(t *testing.T, key string) (delegation.Con
 	return r.Contract, child
 }
 func (f *delegationGuardFixture) worker(t *testing.T, child task.Record, id string) context.Context {
+	ctx := f.leasedWorker(t, child, id)
+	if _, err := f.manager.MarkExecuting(ctx, child.TaskID); err != nil {
+		t.Fatal(err)
+	}
+	return ctx
+}
+
+func (f *delegationGuardFixture) leasedWorker(t *testing.T, child task.Record, id string) context.Context {
 	t.Helper()
 	if _, err := f.pool.Exec(f.ctx, `INSERT INTO runs(run_id,session_key,input_event_id,status,current_state,autonomy_mode,model_provider,started_at,updated_at,task_id,task_revision) VALUES($1,$2,'fixture','model_running','model_running','mode_1','fixture',clock_timestamp(),clock_timestamp(),$3,$4)`, id, child.SessionKey, child.TaskID, child.Revision); err != nil {
 		t.Fatal(err)
@@ -150,9 +158,6 @@ func (f *delegationGuardFixture) worker(t *testing.T, child task.Record, id stri
 		t.Fatal(err)
 	}
 	ctx := ownership.WithToken(f.ctx, f.leases.Authority(), ownership.Token{SessionKey: child.SessionKey, RunID: id, LeaseID: l.LeaseID, FenceEpoch: l.FenceEpoch})
-	if _, err = f.manager.MarkExecuting(ctx, child.TaskID); err != nil {
-		t.Fatal(err)
-	}
 	return ctx
 }
 func (f *delegationGuardFixture) complete(t *testing.T, c delegation.Contract, child task.Record, unknown, partial bool) (task.Result, delegation.Report, []catalog.SourceRef) {

@@ -56,6 +56,11 @@ No inference or external effect occurs in these tests. Production source-only
 context without ambient profile/retrieval, Catalog/Broker/endpoints and shared
 model comparison remain required before full issue16/33 acceptance.
 
+`CollectGenerated` requires the optional trusted report-creator adapter. It
+derives a fresh report from actual owning records and publishes it together with
+the collection CAS; ordinary explicit-report collection still compares every
+observation. Replay reuses the pinned report. Neither form verifies task success.
+
 ```powershell
 pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Sync -RemoteRoot /srv/storage/butler/agents/durable-tasks
 ssh laba 'bash /srv/storage/butler/agents/durable-tasks/current/scripts/dev/delegation-lab.sh /srv/storage/butler/agents/durable-tasks'

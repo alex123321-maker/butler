@@ -168,11 +168,22 @@ func (m *DelegationManager) MarkExecuting(ctx context.Context, childID string) (
 // Collect binds an already durable run result to a versioned structured report.
 // It neither invents a result nor trusts the report as objective verification.
 func (m *DelegationManager) Collect(ctx context.Context, parentID, childID, resultID string, report delegation.SourceRef) (DelegationRecord, error) {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
 	if !delegation.ValidSource(report) {
 		return DelegationRecord{}, ErrInvalid
 	}
+	return m.collect(ctx, parentID, childID, resultID, report, false)
+}
+
+// CollectGenerated publishes a strict kernel projection of the actual final and
+// collects it atomically. Maintenance needs current task/source authority, not
+// the completed child's or a disappeared parent's worker lease.
+func (m *DelegationManager) CollectGenerated(ctx context.Context, parentID, childID, resultID string) (DelegationRecord, error) {
+	return m.collect(ctx, parentID, childID, resultID, delegation.SourceRef{}, true)
+}
+
+func (m *DelegationManager) collect(ctx context.Context, parentID, childID, resultID string, report delegation.SourceRef, generated bool) (DelegationRecord, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 	tx, _, parent, err := m.begin(ctx, parentID)
 	if err != nil {
 		return DelegationRecord{}, err
@@ -192,12 +203,31 @@ func (m *DelegationManager) Collect(ctx context.Context, parentID, childID, resu
 	if v.Contract.State != "queued" && v.Contract.State != "executing" && v.Contract.State != "result_ready" {
 		return v, ErrConflict
 	}
-	if v.ResultID != "" && (v.ResultID != resultID || v.Report == nil || *v.Report != report) {
+	if generated && v.Report != nil {
+		report = *v.Report
+	}
+	if v.ResultID != "" && v.ResultID != resultID {
 		return v, ErrConflict
 	}
 	r, err := m.resultTx(ctx, tx, child, resultID)
 	if err != nil {
 		return v, err
+	}
+	if generated && v.Report == nil {
+		creator, ok := m.guard.(DelegationReportCreator)
+		if !ok {
+			return v, delegation.ErrDenied
+		}
+		report, err = creator.CreateReportTx(ctx, tx, parent, child, r)
+		if err != nil || !delegation.ValidSource(report) {
+			if err == nil {
+				err = delegation.ErrDenied
+			}
+			return v, err
+		}
+	}
+	if v.ResultID != "" && (v.ResultID != resultID || v.Report == nil || *v.Report != report) {
+		return v, ErrConflict
 	}
 	if err = m.guard.CheckLifecycleTx(ctx, tx, parent, child, v.Contract); err != nil {
 		return v, err

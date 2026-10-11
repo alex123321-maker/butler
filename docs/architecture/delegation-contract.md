@@ -85,6 +85,22 @@ Broker/scheduler and the shared model experiment above remain pending. Explicit
 selected-source context is integrated in the ordinary preparation/recovery path;
 actual Catalog and core projection/recovery checks are covered separately.
 
+Trusted collection can generate a strict report on the same transaction from
+the actual immutable final, current journal and conservative branch budget
+reservations. No caller supplies accomplishments, action/evidence lists or cost
+counters in that path. Its fresh Catalog DATA source is anchored in the child's
+final-message graph and retains all originals. Repeated collection reuses the
+same source; deletion or current authority failure rolls back publication.
+Unknown effects and incomplete answers retain uncertainty, and generating a
+report never verifies or completes either task.
+
+The optional owned-context lifecycle adapter marks execution using the actual
+child fence before releasing prepared input. Bounded kernel maintenance collects
+committed finals first, then advances previously admitted waiting children using
+the same existing durable input workers. Scan cursors affect fairness only;
+they never replace PostgreSQL lifecycle or authority. These adapters still
+require explicit production composition with the Broker admission boundary.
+
 ## Current capability and result guards
 
 `app.DelegationGuards` composes actual Catalog grant/source validation with a

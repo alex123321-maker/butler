@@ -17,11 +17,14 @@ import (
 )
 
 type delegationReportEvidence struct {
-	report    delegation.Report
-	final     completion.FinalRecord
-	refs      map[string]delegation.EvidenceRef
-	confirmed map[string]bool
-	reasons   map[string]bool
+	report       delegation.Report
+	final        completion.FinalRecord
+	refs         map[string]delegation.EvidenceRef
+	confirmed    map[string]bool
+	reasons      map[string]bool
+	actions      []delegation.ActionObservation
+	used         delegation.Limits
+	reservations []string
 }
 
 func (g *DelegationGuards) CheckReportTx(ctx context.Context, tx pgx.Tx, parent, child task.Record, result task.Result, report delegation.SourceRef) error {
@@ -165,6 +168,9 @@ func (g *DelegationGuards) reportTx(ctx context.Context, tx pgx.Tx, parent, chil
 	}
 	if err = loadDelegationBudget(ctx, tx, child, &actual); err != nil {
 		return delegationReportEvidence{}, err
+	}
+	if !equalDelegationActions(parsed.Actions, actual.actions) || parsed.Budget.Used != actual.used || !equalStrings(parsed.Budget.ReservationIDs, actual.reservations) {
+		return fail()
 	}
 	for _, r := range append(append([]delegation.EvidenceRef(nil), parsed.Evidence...), parsed.Accomplished...) {
 		if !actual.validRef(r) {

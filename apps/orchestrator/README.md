@@ -384,3 +384,11 @@ and current policy. The private Broker adapter/storage and model experiment
 remain pending; no delegation tool is enabled here. Active completed partial
 finals are distinct from blocked/failed attempts, whose historical collection
 bridge is still pending. See `docs/ai/delegation-guard-acceptance.md`.
+
+Trusted report projection and bounded maintenance now collect actual committed
+finals atomically before advancing already admitted waiting branches. Generated
+reports contain only owning source/result/journal/reservation references and
+current uncertainty, with no model-authored success verdict. Replay keeps one
+report source; a revoked original rolls publication back. The optional context
+lifecycle adapter marks execution under the actual child fence before input
+release. These components still await the private Broker admission composition.

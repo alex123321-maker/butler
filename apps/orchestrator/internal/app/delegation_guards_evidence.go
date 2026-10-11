@@ -50,13 +50,6 @@ func loadDelegationActions(ctx context.Context, tx pgx.Tx, child task.Record, fi
 	if err != nil {
 		return err
 	}
-	if len(actual) != len(a.report.Actions) {
-		return delegation.ErrDenied
-	}
-	reported := map[string]delegation.ActionObservation{}
-	for _, r := range a.report.Actions {
-		reported[r.ActionID] = r
-	}
 	snapshots := map[string]completion.Effect{}
 	for _, s := range final.Effects {
 		if _, ok := snapshots[s.ActionID]; ok {
@@ -68,10 +61,6 @@ func loadDelegationActions(ctx context.Context, tx pgx.Tx, child task.Record, fi
 	calls := map[string]bool{}
 	for _, item := range actual {
 		b := item.binding
-		r, ok := reported[b.ActionID]
-		if !ok || r.EffectID != item.effectID || r.State != item.state {
-			return delegation.ErrDenied
-		}
 		seenEffects[item.effectID] = true
 		calls[b.ToolCallID] = true
 		a.refs["action:"+b.ActionID] = delegation.EvidenceRef{Kind: "action", ID: b.ActionID, Hash: b.ActionHash}
@@ -130,9 +119,7 @@ func loadDelegationActions(ctx context.Context, tx pgx.Tx, child task.Record, fi
 		if !ok || snapshot.EffectState != item.state || !equalStrings(snapshot.EvidenceRefs, ids) {
 			return delegation.ErrDenied
 		}
-		if !equalEvidence(r.Evidence, proofs) {
-			return delegation.ErrDenied
-		}
+		a.actions = append(a.actions, delegation.ActionObservation{ActionID: b.ActionID, EffectID: item.effectID, State: item.state, Evidence: proofs})
 		if item.state == string(actionauth.StateConfirmed) && len(proofs) == 0 {
 			return delegation.ErrDenied
 		}
@@ -238,9 +225,10 @@ func loadDelegationBudget(ctx context.Context, tx pgx.Tx, child task.Record, a *
 	if err != nil {
 		return err
 	}
-	if summed != delegationUnits(used) || used != a.report.Budget.Used || !equalStrings(ids, a.report.Budget.ReservationIDs) {
+	if summed != delegationUnits(used) {
 		return delegation.ErrDenied
 	}
+	a.used, a.reservations = used, ids
 	// All actual child-run inference and dispatched effect reservations must
 	// be included; a forged/missing branch scope cannot make usage disappear.
 	rows, err = tx.Query(ctx, `SELECT reservation_id FROM execution_model_attempts WHERE run_id=$1 UNION SELECT r.reservation_id FROM execution_budget_reservations r JOIN action_intents i ON r.operation_id='effect:'||i.effect_id WHERE i.run_id=$1 AND r.owner_id=$2`, a.final.RunID, child.OwnerID)

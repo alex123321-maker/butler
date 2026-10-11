@@ -25,6 +25,13 @@ type DelegationGuard interface {
 	CheckDecisionTx(context.Context, pgx.Tx, Record, Record, Result, DelegationDecision) error
 }
 
+// DelegationReportCreator is trusted composition for a reference-only report
+// derived from an actual immutable final. It joins the collection transaction;
+// it cannot invent results or independently accept the model's claims.
+type DelegationReportCreator interface {
+	CreateReportTx(context.Context, pgx.Tx, Record, Record, Result) (delegation.SourceRef, error)
+}
+
 type DelegationLimits struct{ MaxDepth, MaxChildren, MaxParallel, MaxDependencies int }
 
 func DefaultDelegationLimits() DelegationLimits { return DelegationLimits{3, 8, 1, 8} }
