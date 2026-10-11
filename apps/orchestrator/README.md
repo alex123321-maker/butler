@@ -95,6 +95,12 @@ independent reads use `browser.read`, sequences begin with `browser.open`, follo
 effects carry the current observation/URL, and lost state is reported explicitly.
 The separately approved `single_tab.*` flow retains its own capability boundary.
 
+The separate issue16 native acceptance fixture carries all four immutable failed
+windows (13 attempted calls) into one newly owner-directed window: at most12 new
+attempts,25 overall. Its durable counter and global baseline13 marker prevent
+replay/reset; no failed provider call triggers retry or fallback. See the
+[experiment plan](../../docs/ai/delegation-native-scenario-plan.md) for evidence.
+
 The opt-in `antigravity` provider uses native Go AICode v1 HTTP/SSE for Gemini 3.8 Flash and
 normalizes native function proposals into the Orchestrator/Tool Broker flow.
 Control-plane authorization owns encrypted PostgreSQL OAuth import and refresh;

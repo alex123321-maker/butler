@@ -1,6 +1,26 @@
 # Opt-in native delegation experiment
 
-## Current owner-directed continuation — 2026-10-11
+## Current owner-directed fifth window — 2026-10-11
+
+The renewed owner instruction explicitly prioritizes finishing issues16/17.
+One new bounded window carries forward all four immutable failed reports:
+thirteen attempted native calls, three known usage pairs and ten unknown.
+Known input16810/output280 remains a subtotal. No previous evidence is reset.
+
+The limiter starts at13, admits at most12 new attempts and caps the series at25.
+Every Start/Continue/Submit revalidates all four pinned artifacts and charges a
+durable attempt before the native call. Each nested historical record must equal
+the preceding window's accounting. Parallel workers, replay and reconstruction
+share that counter; production task/root/mandate/day limits remain independent.
+
+The single execute invocation atomically seals
+`/srv/storage/butler/native-acceptance-windows/baseline13` before inference.
+The previous baseline9 marker remains closed. A committed
+`native-scenario-fifth.json` also seals this window before auth/Docker.
+Failures are retained without retries or fallback. Preparation and actual
+model results must be recorded separately; preparation is not model acceptance.
+
+## Historical fourth window — 2026-10-11
 
 The owner's new request to finish the open issues supersedes the old chat's
 stopping boundary. This current preparation preserves all three hash-pinned

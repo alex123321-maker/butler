@@ -7,17 +7,17 @@ phase=${2:-prepare}
 [[ "$phase" == prepare || "$phase" == execute ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/apps/orchestrator/internal/app/delegation_native_scenario_test.go" ]] || exit 2
-window=/srv/storage/butler/native-acceptance-windows/baseline9
-if [[ "$phase" == execute && ( -e "$source_dir/deploy/delegation/native-scenario-fourth.json" || -L "$source_dir/deploy/delegation/native-scenario-fourth.json" || -e "$window" || -L "$window" ) ]]; then
+window=/srv/storage/butler/native-acceptance-windows/baseline13
+if [[ "$phase" == execute && ( -e "$source_dir/deploy/delegation/native-scenario-fifth.json" || -L "$source_dir/deploy/delegation/native-scenario-fifth.json" || -e "$window" || -L "$window" ) ]]; then
   # A global atomic marker prevents a fresh disposable DB/root from resetting
-  # this window. A fourth committed report also seals it before auth/Docker.
-  printf '{"status":"denied","reason":"native_window_already_attempted","new_native_attempts":0,"historical_observed_native_attempts":9}\n'
+  # this window. A fifth committed report also seals it before auth/Docker.
+  printf '{"status":"denied","reason":"native_window_already_attempted","new_native_attempts":0,"historical_observed_native_attempts":13}\n'
   exit 2
 fi
 export DOCKER_CONFIG="$root/.cache/docker"
 if [[ "$phase" == execute ]]; then
   if [[ ${BUTLER_DELEGATION_NATIVE_ACCEPTANCE:-} != 1 ]]; then
-    printf '{"status":"skipped","reason":"native_opt_in_unset","new_native_attempts":0,"historical_native_attempts":9,"total_native_attempts":9}\n'
+    printf '{"status":"skipped","reason":"native_opt_in_unset","new_native_attempts":0,"historical_native_attempts":13,"total_native_attempts":13}\n'
     exit 0
   fi
   [[ ${BUTLER_DELEGATION_NATIVE_RELEASE:-} =~ ^[a-f0-9]{40}$ ]] || exit 2
@@ -95,7 +95,7 @@ docker run --rm --network none --user 10001:10001 --read-only --cap-drop ALL \
   > "$proof/runtime-files.txt"
 sha256sum "$proof/runtime-files.txt" > "$proof/runtime-files.sha256"
 if [[ "$phase" == prepare ]]; then
-  printf '{"status":"preparation_passed","new_native_attempts":0,"historical_native_attempts":9,"total_native_attempts":9,"maximum_total_native_attempts":21,"maximum_new_native_attempts":12,"model_acceptance":"pending"}\n'
+  printf '{"status":"preparation_passed","new_native_attempts":0,"historical_native_attempts":13,"total_native_attempts":13,"maximum_total_native_attempts":25,"maximum_new_native_attempts":12,"model_acceptance":"pending"}\n'
   exit 0
 fi
 # The preparation probe already verified executable/private-file access as the
@@ -127,4 +127,4 @@ docker run --rm --network none --user 10001:10001 --volume "$proof/runtime:/priv
   cat /private/scenario.json > "$proof/scenario.json" || status=1
 sha256sum "$proof/scenario.json" "$proof/native-events.txt" > "$proof/native-evidence.sha256"
 [[ "$status" == 0 ]] || exit "$status"
-printf '{"status":"experiment_passed","historical_native_attempts":9,"maximum_total_native_attempts":21,"maximum_new_native_attempts":12,"issue_closure":"pending_audit"}\n'
+printf '{"status":"experiment_passed","historical_native_attempts":13,"maximum_total_native_attempts":25,"maximum_new_native_attempts":12,"issue_closure":"pending_audit"}\n'
