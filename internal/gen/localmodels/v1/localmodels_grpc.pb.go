@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v6.31.1
-// source: localmodels/v1/localmodels.proto
+// source: proto/localmodels/v1/localmodels.proto
 
 package localmodelsv1
 
@@ -197,5 +197,5 @@ var LocalModelsService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "localmodels/v1/localmodels.proto",
+	Metadata: "proto/localmodels/v1/localmodels.proto",
 }

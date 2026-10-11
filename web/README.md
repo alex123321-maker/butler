@@ -229,3 +229,13 @@ authority distinctions, amendment/revocation and absence of token storage; Vue
 template/type checking uses `npm run typecheck` on the lab.
 
 Settings and prompt writes/previews, provider login/logout and restart actions require the owner-control token. The Settings page keeps it only in page memory and sends Bearer proof; no token is persisted in browser storage. Read pages retain the existing deployment perimeter. Prompt preview is a human inspection artifact: interpolated documents/memory are not promoted into model system instructions.
+
+`/voice` is an optional default-off Russian voice experiment. Microphone permission
+is requested only on an explicit click; visible capture, a 120-second PCM16 bound
+and device release are covered with Chromium's fake microphone. Stored originals
+can be reopened by opaque ID. External/partial speech cannot confirm commands,
+and owner proof plus explicit critical-details review is required. Text Stop remains
+available independently. Synthesis is abortable presentation and preserves text
+on failure. Tokens stay only in page memory. The frozen human quality gate failed;
+see [voice evidence](../docs/architecture/russian-voice.md). Server composition is
+optional and exposing this page alone enables no worker or microphone.

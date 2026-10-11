@@ -63,6 +63,11 @@ Use `make migrate-up` to apply all migrations and `make migrate-down` to roll th
 - `041_semantic_memory_indexes` stores immutable separate embedding spaces/generations, revision-bound derivative vectors, exact-space title/content hashes for reuse after citation changes, reviewed quality manifests and atomic active pointers. Source deletion cascades to vectors; down refuses retained generation/activation history. Reads/publications require a supplied current-source authority guard.
 - `042_hybrid_retrieval_indexes` adds a derived simple/Russian GIN full-text expression index for guarded hybrid retrieval. Down only removes this rebuildable lexical index; durable memory, vectors and current authority remain.
 - `043_memory_extraction_dedup` persists content-free source/version/pipeline checkpoints and exact candidate retry bindings. It deliberately has no foreign keys to the later046 source/claim tables. Source/claim text remains in the catalog and follows deletion policy; only hashes/opaque IDs/times remain here. Down refuses populated history rather than resetting retry identity.
+- `044_voice_records` stores content-free recording/review/control/input bindings,
+  roles, current revisions and finite voice-access lifetimes. Originals and derived
+  prose remain in later catalog assets/sources; there are no forward foreign keys.
+  Down refuses retained voice history instead of discarding input/control identity.
+  The optional voice caller remains disabled and its human quality gate failed.
 - `046_versioned_memory_sources` quarantines legacy memory, versions source/claim acceptance/access and transitive provenance/tombstones. Current task/goal authority remains separate.
 - `047_owned_memory_auxiliary_jobs` stores independently owned finite auxiliary claims/attempts and complete original source/authority manifests; old session leases cannot authorize them.
 - `048_memory_transcript_privacy` pins transcript/model/dispatch/result sources, adds one-way privacy redaction and restartable scoped cache cleanup. Missing/wrong independent deletion anchors fail closed.

@@ -820,3 +820,12 @@ results are durably complete, retries preserve IDs, and publication rechecks the
 source graph. The measured Russian quality gate fails, so production scheduling
 remains off despite the separate source-preservation acceptance test.
 
+Optional [voice data](russian-voice.md) uses the same catalog original assets and
+transitive immutable derivatives. ASR text is a preview, not a confirmed fact or
+permission. Owner-reviewed ordinary input is queued by opaque binding and resolved
+under the new current lease/source pins; privacy deletion includes prepared runs
+before their first transcript message. Voice endpoints enforce their own finite
+access lifetime, including audio ancestors of presented text. Owner catalog
+administration retains/export-controls the source until explicit physical deletion;
+expiry itself does not promise purging assets or backups.
+

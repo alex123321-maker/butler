@@ -58,6 +58,9 @@ RAM defaults to 6144 MiB with 512 MiB reserve; configure with
 `BUTLER_LOCAL_MODELS_RAM_BUDGET_MIB`/`BUTLER_LOCAL_MODELS_RAM_RESERVE_MIB`.
 Profiles require full-process peak RAM allowances; both lanes share an atomic
 admission gate and sample total service RSS, host availability and cgroup headroom.
+The latter credits only validated clean inactive file cache, subtracting dirty and
+writeback bytes; missing or inconsistent counters deny admission. Hard container
+and RSS limits and reservations remain in force; this performs no cache flush.
 
 `/health` reports worker paths/backend availability; model availability is checked
 per request against pinned metadata. `/metrics` has request/failure/queue/fallback,
@@ -77,3 +80,21 @@ classification, concurrent CPU/GPU lanes and on-demand image model loading.
 Issue #25 still requires a production retrieval comparison,
 versioned index migration, reversible reindex and larger held-out Russian/code
 evaluation. It is not a claim that #24–#28 are all complete.
+
+Optional typed PCM voice operations have three pinned default-disabled profiles.
+See [voice preparation](../../deploy/local-models/VOICE.md) for public checkpoint
+integrity checks, isolated SDK overlays, fixed audio/text bounds and the remaining
+real quality/resource acceptance. ASR decoder completion carries no owner or
+action authority. The service performs no microphone capture or input admission.
+
+Optional `CAPABILITY_FUNCTION_PROPOSE` adds one fixed default-disabled CPU Q8_0
+FunctionGemma catalog. It accepts bounded text/catalog version and returns only
+candidate function/arguments, never executes tools. Operator-only
+`BUTLER_LOCAL_MODELS_FUNCTION_EXECUTABLE` and `BUTLER_LOCAL_MODELS_FUNCTION_MODELS`
+must point to prepared read-only pinned CPU/runtime and registry-model binds.
+Absent configuration refuses this optional capability while ordinary tensor
+health remains available. The Go-owned loopback child runs inside the existing
+CPU fair queue, shared RAM gate and cgroup; cancellation kills its entire Linux
+process group, idle unload removes it, and no inference pulls/cloud route exist.
+See [function proposal experiment](../../docs/architecture/function-proposals.md)
+for exact grammar, license, integrity and remaining quality/activation criteria.

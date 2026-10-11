@@ -24,12 +24,16 @@ const (
 type Capability int32
 
 const (
-	Capability_CAPABILITY_UNSPECIFIED Capability = 0
-	Capability_CAPABILITY_EMBED       Capability = 1
-	Capability_CAPABILITY_RERANK      Capability = 2
-	Capability_CAPABILITY_EXTRACT     Capability = 3
-	Capability_CAPABILITY_CLASSIFY    Capability = 4
-	Capability_CAPABILITY_MEDIA       Capability = 5
+	Capability_CAPABILITY_UNSPECIFIED      Capability = 0
+	Capability_CAPABILITY_EMBED            Capability = 1
+	Capability_CAPABILITY_RERANK           Capability = 2
+	Capability_CAPABILITY_EXTRACT          Capability = 3
+	Capability_CAPABILITY_CLASSIFY         Capability = 4
+	Capability_CAPABILITY_MEDIA            Capability = 5
+	Capability_CAPABILITY_ASR              Capability = 6
+	Capability_CAPABILITY_VAD              Capability = 7
+	Capability_CAPABILITY_TTS              Capability = 8
+	Capability_CAPABILITY_FUNCTION_PROPOSE Capability = 9
 )
 
 // Enum value maps for Capability.
@@ -41,14 +45,22 @@ var (
 		3: "CAPABILITY_EXTRACT",
 		4: "CAPABILITY_CLASSIFY",
 		5: "CAPABILITY_MEDIA",
+		6: "CAPABILITY_ASR",
+		7: "CAPABILITY_VAD",
+		8: "CAPABILITY_TTS",
+		9: "CAPABILITY_FUNCTION_PROPOSE",
 	}
 	Capability_value = map[string]int32{
-		"CAPABILITY_UNSPECIFIED": 0,
-		"CAPABILITY_EMBED":       1,
-		"CAPABILITY_RERANK":      2,
-		"CAPABILITY_EXTRACT":     3,
-		"CAPABILITY_CLASSIFY":    4,
-		"CAPABILITY_MEDIA":       5,
+		"CAPABILITY_UNSPECIFIED":      0,
+		"CAPABILITY_EMBED":            1,
+		"CAPABILITY_RERANK":           2,
+		"CAPABILITY_EXTRACT":          3,
+		"CAPABILITY_CLASSIFY":         4,
+		"CAPABILITY_MEDIA":            5,
+		"CAPABILITY_ASR":              6,
+		"CAPABILITY_VAD":              7,
+		"CAPABILITY_TTS":              8,
+		"CAPABILITY_FUNCTION_PROPOSE": 9,
 	}
 )
 
@@ -1017,6 +1029,194 @@ func (x *MediaInput) GetMimeType() string {
 	return ""
 }
 
+// Audio is bounded PCM16 little-endian mono WAV. No URL, codec or file path.
+type AudioInput struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Wav           []byte                 `protobuf:"bytes,1,opt,name=wav,proto3" json:"wav,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AudioInput) Reset() {
+	*x = AudioInput{}
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AudioInput) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AudioInput) ProtoMessage() {}
+
+func (x *AudioInput) ProtoReflect() protoreflect.Message {
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AudioInput.ProtoReflect.Descriptor instead.
+func (*AudioInput) Descriptor() ([]byte, []int) {
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *AudioInput) GetWav() []byte {
+	if x != nil {
+		return x.Wav
+	}
+	return nil
+}
+
+// One VAD-bounded segment, at most 15 seconds, fixed Russian decoding.
+type ASRInput struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Wav           []byte                 `protobuf:"bytes,1,opt,name=wav,proto3" json:"wav,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ASRInput) Reset() {
+	*x = ASRInput{}
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ASRInput) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ASRInput) ProtoMessage() {}
+
+func (x *ASRInput) ProtoReflect() protoreflect.Message {
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ASRInput.ProtoReflect.Descriptor instead.
+func (*ASRInput) Descriptor() ([]byte, []int) {
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ASRInput) GetWav() []byte {
+	if x != nil {
+		return x.Wav
+	}
+	return nil
+}
+
+// Fixed voice/language; no reference speaker recording or cloning.
+type TTSInput struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Text          string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TTSInput) Reset() {
+	*x = TTSInput{}
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TTSInput) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TTSInput) ProtoMessage() {}
+
+func (x *TTSInput) ProtoReflect() protoreflect.Message {
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TTSInput.ProtoReflect.Descriptor instead.
+func (*TTSInput) Descriptor() ([]byte, []int) {
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *TTSInput) GetText() string {
+	if x != nil {
+		return x.Text
+	}
+	return ""
+}
+
+// Fixed reviewed catalog only. Output is candidate data, never execution.
+type FunctionInput struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Text           string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	CatalogVersion string                 `protobuf:"bytes,2,opt,name=catalog_version,json=catalogVersion,proto3" json:"catalog_version,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *FunctionInput) Reset() {
+	*x = FunctionInput{}
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FunctionInput) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FunctionInput) ProtoMessage() {}
+
+func (x *FunctionInput) ProtoReflect() protoreflect.Message {
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FunctionInput.ProtoReflect.Descriptor instead.
+func (*FunctionInput) Descriptor() ([]byte, []int) {
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *FunctionInput) GetText() string {
+	if x != nil {
+		return x.Text
+	}
+	return ""
+}
+
+func (x *FunctionInput) GetCatalogVersion() string {
+	if x != nil {
+		return x.CatalogVersion
+	}
+	return ""
+}
+
 type InferRequest struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	RequestId string                 `protobuf:"bytes,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
@@ -1033,6 +1233,10 @@ type InferRequest struct {
 	//	*InferRequest_Extract
 	//	*InferRequest_Classify
 	//	*InferRequest_Media
+	//	*InferRequest_Asr
+	//	*InferRequest_Vad
+	//	*InferRequest_Tts
+	//	*InferRequest_Function
 	Input         isInferRequest_Input `protobuf_oneof:"input"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1040,7 +1244,7 @@ type InferRequest struct {
 
 func (x *InferRequest) Reset() {
 	*x = InferRequest{}
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[11]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1052,7 +1256,7 @@ func (x *InferRequest) String() string {
 func (*InferRequest) ProtoMessage() {}
 
 func (x *InferRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[11]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1065,7 +1269,7 @@ func (x *InferRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InferRequest.ProtoReflect.Descriptor instead.
 func (*InferRequest) Descriptor() ([]byte, []int) {
-	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{11}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *InferRequest) GetRequestId() string {
@@ -1155,6 +1359,42 @@ func (x *InferRequest) GetMedia() *MediaInput {
 	return nil
 }
 
+func (x *InferRequest) GetAsr() *ASRInput {
+	if x != nil {
+		if x, ok := x.Input.(*InferRequest_Asr); ok {
+			return x.Asr
+		}
+	}
+	return nil
+}
+
+func (x *InferRequest) GetVad() *AudioInput {
+	if x != nil {
+		if x, ok := x.Input.(*InferRequest_Vad); ok {
+			return x.Vad
+		}
+	}
+	return nil
+}
+
+func (x *InferRequest) GetTts() *TTSInput {
+	if x != nil {
+		if x, ok := x.Input.(*InferRequest_Tts); ok {
+			return x.Tts
+		}
+	}
+	return nil
+}
+
+func (x *InferRequest) GetFunction() *FunctionInput {
+	if x != nil {
+		if x, ok := x.Input.(*InferRequest_Function); ok {
+			return x.Function
+		}
+	}
+	return nil
+}
+
 type isInferRequest_Input interface {
 	isInferRequest_Input()
 }
@@ -1179,6 +1419,22 @@ type InferRequest_Media struct {
 	Media *MediaInput `protobuf:"bytes,14,opt,name=media,proto3,oneof"`
 }
 
+type InferRequest_Asr struct {
+	Asr *ASRInput `protobuf:"bytes,15,opt,name=asr,proto3,oneof"`
+}
+
+type InferRequest_Vad struct {
+	Vad *AudioInput `protobuf:"bytes,16,opt,name=vad,proto3,oneof"`
+}
+
+type InferRequest_Tts struct {
+	Tts *TTSInput `protobuf:"bytes,17,opt,name=tts,proto3,oneof"`
+}
+
+type InferRequest_Function struct {
+	Function *FunctionInput `protobuf:"bytes,18,opt,name=function,proto3,oneof"`
+}
+
 func (*InferRequest_Embed) isInferRequest_Input() {}
 
 func (*InferRequest_Rerank) isInferRequest_Input() {}
@@ -1188,6 +1444,14 @@ func (*InferRequest_Extract) isInferRequest_Input() {}
 func (*InferRequest_Classify) isInferRequest_Input() {}
 
 func (*InferRequest_Media) isInferRequest_Input() {}
+
+func (*InferRequest_Asr) isInferRequest_Input() {}
+
+func (*InferRequest_Vad) isInferRequest_Input() {}
+
+func (*InferRequest_Tts) isInferRequest_Input() {}
+
+func (*InferRequest_Function) isInferRequest_Input() {}
 
 type Vector struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -1199,7 +1463,7 @@ type Vector struct {
 
 func (x *Vector) Reset() {
 	*x = Vector{}
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[12]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1211,7 +1475,7 @@ func (x *Vector) String() string {
 func (*Vector) ProtoMessage() {}
 
 func (x *Vector) ProtoReflect() protoreflect.Message {
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[12]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1224,7 +1488,7 @@ func (x *Vector) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Vector.ProtoReflect.Descriptor instead.
 func (*Vector) Descriptor() ([]byte, []int) {
-	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{12}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *Vector) GetId() string {
@@ -1251,7 +1515,7 @@ type EmbedOutput struct {
 
 func (x *EmbedOutput) Reset() {
 	*x = EmbedOutput{}
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[13]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1263,7 +1527,7 @@ func (x *EmbedOutput) String() string {
 func (*EmbedOutput) ProtoMessage() {}
 
 func (x *EmbedOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[13]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1276,7 +1540,7 @@ func (x *EmbedOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EmbedOutput.ProtoReflect.Descriptor instead.
 func (*EmbedOutput) Descriptor() ([]byte, []int) {
-	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{13}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *EmbedOutput) GetVectors() []*Vector {
@@ -1303,7 +1567,7 @@ type Score struct {
 
 func (x *Score) Reset() {
 	*x = Score{}
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[14]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1315,7 +1579,7 @@ func (x *Score) String() string {
 func (*Score) ProtoMessage() {}
 
 func (x *Score) ProtoReflect() protoreflect.Message {
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[14]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1328,7 +1592,7 @@ func (x *Score) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Score.ProtoReflect.Descriptor instead.
 func (*Score) Descriptor() ([]byte, []int) {
-	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{14}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *Score) GetId() string {
@@ -1354,7 +1618,7 @@ type RerankOutput struct {
 
 func (x *RerankOutput) Reset() {
 	*x = RerankOutput{}
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[15]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1366,7 +1630,7 @@ func (x *RerankOutput) String() string {
 func (*RerankOutput) ProtoMessage() {}
 
 func (x *RerankOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[15]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1379,7 +1643,7 @@ func (x *RerankOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RerankOutput.ProtoReflect.Descriptor instead.
 func (*RerankOutput) Descriptor() ([]byte, []int) {
-	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{15}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *RerankOutput) GetScores() []*Score {
@@ -1402,7 +1666,7 @@ type Span struct {
 
 func (x *Span) Reset() {
 	*x = Span{}
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[16]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1414,7 +1678,7 @@ func (x *Span) String() string {
 func (*Span) ProtoMessage() {}
 
 func (x *Span) ProtoReflect() protoreflect.Message {
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[16]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1427,7 +1691,7 @@ func (x *Span) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Span.ProtoReflect.Descriptor instead.
 func (*Span) Descriptor() ([]byte, []int) {
-	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{16}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *Span) GetType() string {
@@ -1476,7 +1740,7 @@ type ExtractRelation struct {
 
 func (x *ExtractRelation) Reset() {
 	*x = ExtractRelation{}
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[17]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1488,7 +1752,7 @@ func (x *ExtractRelation) String() string {
 func (*ExtractRelation) ProtoMessage() {}
 
 func (x *ExtractRelation) ProtoReflect() protoreflect.Message {
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[17]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1501,7 +1765,7 @@ func (x *ExtractRelation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExtractRelation.ProtoReflect.Descriptor instead.
 func (*ExtractRelation) Descriptor() ([]byte, []int) {
-	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{17}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *ExtractRelation) GetType() string {
@@ -1536,7 +1800,7 @@ type ExtractRecord struct {
 
 func (x *ExtractRecord) Reset() {
 	*x = ExtractRecord{}
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[18]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1548,7 +1812,7 @@ func (x *ExtractRecord) String() string {
 func (*ExtractRecord) ProtoMessage() {}
 
 func (x *ExtractRecord) ProtoReflect() protoreflect.Message {
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[18]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1561,7 +1825,7 @@ func (x *ExtractRecord) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExtractRecord.ProtoReflect.Descriptor instead.
 func (*ExtractRecord) Descriptor() ([]byte, []int) {
-	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{18}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *ExtractRecord) GetType() string {
@@ -1597,7 +1861,7 @@ type ExtractOutput struct {
 
 func (x *ExtractOutput) Reset() {
 	*x = ExtractOutput{}
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[19]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1609,7 +1873,7 @@ func (x *ExtractOutput) String() string {
 func (*ExtractOutput) ProtoMessage() {}
 
 func (x *ExtractOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[19]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1622,7 +1886,7 @@ func (x *ExtractOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExtractOutput.ProtoReflect.Descriptor instead.
 func (*ExtractOutput) Descriptor() ([]byte, []int) {
-	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{19}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *ExtractOutput) GetSpans() []*Span {
@@ -1663,7 +1927,7 @@ type ClassifyOutput struct {
 
 func (x *ClassifyOutput) Reset() {
 	*x = ClassifyOutput{}
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[20]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1675,7 +1939,7 @@ func (x *ClassifyOutput) String() string {
 func (*ClassifyOutput) ProtoMessage() {}
 
 func (x *ClassifyOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[20]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1688,7 +1952,7 @@ func (x *ClassifyOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ClassifyOutput.ProtoReflect.Descriptor instead.
 func (*ClassifyOutput) Descriptor() ([]byte, []int) {
-	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{20}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *ClassifyOutput) GetScores() []*Score {
@@ -1714,7 +1978,7 @@ type MediaOutput struct {
 
 func (x *MediaOutput) Reset() {
 	*x = MediaOutput{}
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[21]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1726,7 +1990,7 @@ func (x *MediaOutput) String() string {
 func (*MediaOutput) ProtoMessage() {}
 
 func (x *MediaOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[21]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1739,7 +2003,7 @@ func (x *MediaOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MediaOutput.ProtoReflect.Descriptor instead.
 func (*MediaOutput) Descriptor() ([]byte, []int) {
-	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{21}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *MediaOutput) GetEmbedding() []float32 {
@@ -1747,6 +2011,319 @@ func (x *MediaOutput) GetEmbedding() []float32 {
 		return x.Embedding
 	}
 	return nil
+}
+
+type ASROutput struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Text  string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	// Decoder reached EOS. This is not a claim of transcription accuracy.
+	DecoderComplete bool `protobuf:"varint,2,opt,name=decoder_complete,json=decoderComplete,proto3" json:"decoder_complete,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *ASROutput) Reset() {
+	*x = ASROutput{}
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ASROutput) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ASROutput) ProtoMessage() {}
+
+func (x *ASROutput) ProtoReflect() protoreflect.Message {
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ASROutput.ProtoReflect.Descriptor instead.
+func (*ASROutput) Descriptor() ([]byte, []int) {
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *ASROutput) GetText() string {
+	if x != nil {
+		return x.Text
+	}
+	return ""
+}
+
+func (x *ASROutput) GetDecoderComplete() bool {
+	if x != nil {
+		return x.DecoderComplete
+	}
+	return false
+}
+
+type SpeechRegion struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StartSample   uint32                 `protobuf:"varint,1,opt,name=start_sample,json=startSample,proto3" json:"start_sample,omitempty"`
+	EndSample     uint32                 `protobuf:"varint,2,opt,name=end_sample,json=endSample,proto3" json:"end_sample,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SpeechRegion) Reset() {
+	*x = SpeechRegion{}
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SpeechRegion) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SpeechRegion) ProtoMessage() {}
+
+func (x *SpeechRegion) ProtoReflect() protoreflect.Message {
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SpeechRegion.ProtoReflect.Descriptor instead.
+func (*SpeechRegion) Descriptor() ([]byte, []int) {
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *SpeechRegion) GetStartSample() uint32 {
+	if x != nil {
+		return x.StartSample
+	}
+	return 0
+}
+
+func (x *SpeechRegion) GetEndSample() uint32 {
+	if x != nil {
+		return x.EndSample
+	}
+	return 0
+}
+
+type VADOutput struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Regions       []*SpeechRegion        `protobuf:"bytes,1,rep,name=regions,proto3" json:"regions,omitempty"`
+	SampleRate    uint32                 `protobuf:"varint,2,opt,name=sample_rate,json=sampleRate,proto3" json:"sample_rate,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VADOutput) Reset() {
+	*x = VADOutput{}
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VADOutput) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VADOutput) ProtoMessage() {}
+
+func (x *VADOutput) ProtoReflect() protoreflect.Message {
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VADOutput.ProtoReflect.Descriptor instead.
+func (*VADOutput) Descriptor() ([]byte, []int) {
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *VADOutput) GetRegions() []*SpeechRegion {
+	if x != nil {
+		return x.Regions
+	}
+	return nil
+}
+
+func (x *VADOutput) GetSampleRate() uint32 {
+	if x != nil {
+		return x.SampleRate
+	}
+	return 0
+}
+
+type TTSOutput struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Wav           []byte                 `protobuf:"bytes,1,opt,name=wav,proto3" json:"wav,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TTSOutput) Reset() {
+	*x = TTSOutput{}
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TTSOutput) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TTSOutput) ProtoMessage() {}
+
+func (x *TTSOutput) ProtoReflect() protoreflect.Message {
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TTSOutput.ProtoReflect.Descriptor instead.
+func (*TTSOutput) Descriptor() ([]byte, []int) {
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *TTSOutput) GetWav() []byte {
+	if x != nil {
+		return x.Wav
+	}
+	return nil
+}
+
+type FunctionCall struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	ArgumentsJson string                 `protobuf:"bytes,2,opt,name=arguments_json,json=argumentsJson,proto3" json:"arguments_json,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FunctionCall) Reset() {
+	*x = FunctionCall{}
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FunctionCall) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FunctionCall) ProtoMessage() {}
+
+func (x *FunctionCall) ProtoReflect() protoreflect.Message {
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FunctionCall.ProtoReflect.Descriptor instead.
+func (*FunctionCall) Descriptor() ([]byte, []int) {
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *FunctionCall) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *FunctionCall) GetArgumentsJson() string {
+	if x != nil {
+		return x.ArgumentsJson
+	}
+	return ""
+}
+
+type FunctionOutput struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Calls            []*FunctionCall        `protobuf:"bytes,1,rep,name=calls,proto3" json:"calls,omitempty"`
+	CatalogVersion   string                 `protobuf:"bytes,2,opt,name=catalog_version,json=catalogVersion,proto3" json:"catalog_version,omitempty"`
+	InsufficientData bool                   `protobuf:"varint,3,opt,name=insufficient_data,json=insufficientData,proto3" json:"insufficient_data,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *FunctionOutput) Reset() {
+	*x = FunctionOutput{}
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FunctionOutput) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FunctionOutput) ProtoMessage() {}
+
+func (x *FunctionOutput) ProtoReflect() protoreflect.Message {
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FunctionOutput.ProtoReflect.Descriptor instead.
+func (*FunctionOutput) Descriptor() ([]byte, []int) {
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *FunctionOutput) GetCalls() []*FunctionCall {
+	if x != nil {
+		return x.Calls
+	}
+	return nil
+}
+
+func (x *FunctionOutput) GetCatalogVersion() string {
+	if x != nil {
+		return x.CatalogVersion
+	}
+	return ""
+}
+
+func (x *FunctionOutput) GetInsufficientData() bool {
+	if x != nil {
+		return x.InsufficientData
+	}
+	return false
 }
 
 type InferResponse struct {
@@ -1767,6 +2344,10 @@ type InferResponse struct {
 	//	*InferResponse_Extract
 	//	*InferResponse_Classify
 	//	*InferResponse_Media
+	//	*InferResponse_Asr
+	//	*InferResponse_Vad
+	//	*InferResponse_Tts
+	//	*InferResponse_Function
 	Output        isInferResponse_Output `protobuf_oneof:"output"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1774,7 +2355,7 @@ type InferResponse struct {
 
 func (x *InferResponse) Reset() {
 	*x = InferResponse{}
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[22]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1786,7 +2367,7 @@ func (x *InferResponse) String() string {
 func (*InferResponse) ProtoMessage() {}
 
 func (x *InferResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_localmodels_v1_localmodels_proto_msgTypes[22]
+	mi := &file_localmodels_v1_localmodels_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1799,7 +2380,7 @@ func (x *InferResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InferResponse.ProtoReflect.Descriptor instead.
 func (*InferResponse) Descriptor() ([]byte, []int) {
-	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{22}
+	return file_localmodels_v1_localmodels_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *InferResponse) GetRequestId() string {
@@ -1917,6 +2498,42 @@ func (x *InferResponse) GetMedia() *MediaOutput {
 	return nil
 }
 
+func (x *InferResponse) GetAsr() *ASROutput {
+	if x != nil {
+		if x, ok := x.Output.(*InferResponse_Asr); ok {
+			return x.Asr
+		}
+	}
+	return nil
+}
+
+func (x *InferResponse) GetVad() *VADOutput {
+	if x != nil {
+		if x, ok := x.Output.(*InferResponse_Vad); ok {
+			return x.Vad
+		}
+	}
+	return nil
+}
+
+func (x *InferResponse) GetTts() *TTSOutput {
+	if x != nil {
+		if x, ok := x.Output.(*InferResponse_Tts); ok {
+			return x.Tts
+		}
+	}
+	return nil
+}
+
+func (x *InferResponse) GetFunction() *FunctionOutput {
+	if x != nil {
+		if x, ok := x.Output.(*InferResponse_Function); ok {
+			return x.Function
+		}
+	}
+	return nil
+}
+
 type isInferResponse_Output interface {
 	isInferResponse_Output()
 }
@@ -1941,6 +2558,22 @@ type InferResponse_Media struct {
 	Media *MediaOutput `protobuf:"bytes,14,opt,name=media,proto3,oneof"`
 }
 
+type InferResponse_Asr struct {
+	Asr *ASROutput `protobuf:"bytes,15,opt,name=asr,proto3,oneof"`
+}
+
+type InferResponse_Vad struct {
+	Vad *VADOutput `protobuf:"bytes,16,opt,name=vad,proto3,oneof"`
+}
+
+type InferResponse_Tts struct {
+	Tts *TTSOutput `protobuf:"bytes,17,opt,name=tts,proto3,oneof"`
+}
+
+type InferResponse_Function struct {
+	Function *FunctionOutput `protobuf:"bytes,18,opt,name=function,proto3,oneof"`
+}
+
 func (*InferResponse_Embed) isInferResponse_Output() {}
 
 func (*InferResponse_Rerank) isInferResponse_Output() {}
@@ -1950,6 +2583,14 @@ func (*InferResponse_Extract) isInferResponse_Output() {}
 func (*InferResponse_Classify) isInferResponse_Output() {}
 
 func (*InferResponse_Media) isInferResponse_Output() {}
+
+func (*InferResponse_Asr) isInferResponse_Output() {}
+
+func (*InferResponse_Vad) isInferResponse_Output() {}
+
+func (*InferResponse_Tts) isInferResponse_Output() {}
+
+func (*InferResponse_Function) isInferResponse_Output() {}
 
 var File_localmodels_v1_localmodels_proto protoreflect.FileDescriptor
 
@@ -2043,7 +2684,17 @@ const file_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\n" +
 	"MediaInput\x12\x18\n" +
 	"\acontent\x18\x01 \x01(\fR\acontent\x12\x1b\n" +
-	"\tmime_type\x18\x02 \x01(\tR\bmimeType\"\xe5\x03\n" +
+	"\tmime_type\x18\x02 \x01(\tR\bmimeType\"\x1e\n" +
+	"\n" +
+	"AudioInput\x12\x10\n" +
+	"\x03wav\x18\x01 \x01(\fR\x03wav\"\x1c\n" +
+	"\bASRInput\x12\x10\n" +
+	"\x03wav\x18\x01 \x01(\fR\x03wav\"\x1e\n" +
+	"\bTTSInput\x12\x12\n" +
+	"\x04text\x18\x01 \x01(\tR\x04text\"L\n" +
+	"\rFunctionInput\x12\x12\n" +
+	"\x04text\x18\x01 \x01(\tR\x04text\x12'\n" +
+	"\x0fcatalog_version\x18\x02 \x01(\tR\x0ecatalogVersion\"\xca\x05\n" +
 	"\fInferRequest\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x12\x1d\n" +
@@ -2058,7 +2709,11 @@ const file_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\x06rerank\x18\v \x01(\v2\".butler.localmodels.v1.RerankInputH\x00R\x06rerank\x12?\n" +
 	"\aextract\x18\f \x01(\v2#.butler.localmodels.v1.ExtractInputH\x00R\aextract\x12B\n" +
 	"\bclassify\x18\r \x01(\v2$.butler.localmodels.v1.ClassifyInputH\x00R\bclassify\x129\n" +
-	"\x05media\x18\x0e \x01(\v2!.butler.localmodels.v1.MediaInputH\x00R\x05mediaB\a\n" +
+	"\x05media\x18\x0e \x01(\v2!.butler.localmodels.v1.MediaInputH\x00R\x05media\x123\n" +
+	"\x03asr\x18\x0f \x01(\v2\x1f.butler.localmodels.v1.ASRInputH\x00R\x03asr\x125\n" +
+	"\x03vad\x18\x10 \x01(\v2!.butler.localmodels.v1.AudioInputH\x00R\x03vad\x123\n" +
+	"\x03tts\x18\x11 \x01(\v2\x1f.butler.localmodels.v1.TTSInputH\x00R\x03tts\x12B\n" +
+	"\bfunction\x18\x12 \x01(\v2$.butler.localmodels.v1.FunctionInputH\x00R\bfunctionB\a\n" +
 	"\x05input\"0\n" +
 	"\x06Vector\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
@@ -2097,7 +2752,27 @@ const file_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\x06scores\x18\x01 \x03(\v2\x1c.butler.localmodels.v1.ScoreR\x06scores\x12+\n" +
 	"\x11insufficient_data\x18\x02 \x01(\bR\x10insufficientData\"+\n" +
 	"\vMediaOutput\x12\x1c\n" +
-	"\tembedding\x18\x01 \x03(\x02R\tembedding\"\xfa\x04\n" +
+	"\tembedding\x18\x01 \x03(\x02R\tembedding\"J\n" +
+	"\tASROutput\x12\x12\n" +
+	"\x04text\x18\x01 \x01(\tR\x04text\x12)\n" +
+	"\x10decoder_complete\x18\x02 \x01(\bR\x0fdecoderComplete\"P\n" +
+	"\fSpeechRegion\x12!\n" +
+	"\fstart_sample\x18\x01 \x01(\rR\vstartSample\x12\x1d\n" +
+	"\n" +
+	"end_sample\x18\x02 \x01(\rR\tendSample\"k\n" +
+	"\tVADOutput\x12=\n" +
+	"\aregions\x18\x01 \x03(\v2#.butler.localmodels.v1.SpeechRegionR\aregions\x12\x1f\n" +
+	"\vsample_rate\x18\x02 \x01(\rR\n" +
+	"sampleRate\"\x1d\n" +
+	"\tTTSOutput\x12\x10\n" +
+	"\x03wav\x18\x01 \x01(\fR\x03wav\"I\n" +
+	"\fFunctionCall\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12%\n" +
+	"\x0earguments_json\x18\x02 \x01(\tR\rargumentsJson\"\xa1\x01\n" +
+	"\x0eFunctionOutput\x129\n" +
+	"\x05calls\x18\x01 \x03(\v2#.butler.localmodels.v1.FunctionCallR\x05calls\x12'\n" +
+	"\x0fcatalog_version\x18\x02 \x01(\tR\x0ecatalogVersion\x12+\n" +
+	"\x11insufficient_data\x18\x03 \x01(\bR\x10insufficientData\"\xe1\x06\n" +
 	"\rInferResponse\x12\x1d\n" +
 	"\n" +
 	"request_id\x18\x01 \x01(\tR\trequestId\x12\x1d\n" +
@@ -2116,8 +2791,12 @@ const file_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\x06rerank\x18\v \x01(\v2#.butler.localmodels.v1.RerankOutputH\x00R\x06rerank\x12@\n" +
 	"\aextract\x18\f \x01(\v2$.butler.localmodels.v1.ExtractOutputH\x00R\aextract\x12C\n" +
 	"\bclassify\x18\r \x01(\v2%.butler.localmodels.v1.ClassifyOutputH\x00R\bclassify\x12:\n" +
-	"\x05media\x18\x0e \x01(\v2\".butler.localmodels.v1.MediaOutputH\x00R\x05mediaB\b\n" +
-	"\x06output*\x9c\x01\n" +
+	"\x05media\x18\x0e \x01(\v2\".butler.localmodels.v1.MediaOutputH\x00R\x05media\x124\n" +
+	"\x03asr\x18\x0f \x01(\v2 .butler.localmodels.v1.ASROutputH\x00R\x03asr\x124\n" +
+	"\x03vad\x18\x10 \x01(\v2 .butler.localmodels.v1.VADOutputH\x00R\x03vad\x124\n" +
+	"\x03tts\x18\x11 \x01(\v2 .butler.localmodels.v1.TTSOutputH\x00R\x03tts\x12C\n" +
+	"\bfunction\x18\x12 \x01(\v2%.butler.localmodels.v1.FunctionOutputH\x00R\bfunctionB\b\n" +
+	"\x06output*\xf9\x01\n" +
 	"\n" +
 	"Capability\x12\x1a\n" +
 	"\x16CAPABILITY_UNSPECIFIED\x10\x00\x12\x14\n" +
@@ -2125,7 +2804,11 @@ const file_localmodels_v1_localmodels_proto_rawDesc = "" +
 	"\x11CAPABILITY_RERANK\x10\x02\x12\x16\n" +
 	"\x12CAPABILITY_EXTRACT\x10\x03\x12\x17\n" +
 	"\x13CAPABILITY_CLASSIFY\x10\x04\x12\x14\n" +
-	"\x10CAPABILITY_MEDIA\x10\x05*\x85\x01\n" +
+	"\x10CAPABILITY_MEDIA\x10\x05\x12\x12\n" +
+	"\x0eCAPABILITY_ASR\x10\x06\x12\x12\n" +
+	"\x0eCAPABILITY_VAD\x10\a\x12\x12\n" +
+	"\x0eCAPABILITY_TTS\x10\b\x12\x1f\n" +
+	"\x1bCAPABILITY_FUNCTION_PROPOSE\x10\t*\x85\x01\n" +
 	"\rEmbeddingTask\x12\x1e\n" +
 	"\x1aEMBEDDING_TASK_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14EMBEDDING_TASK_QUERY\x10\x01\x12\x1b\n" +
@@ -2149,7 +2832,7 @@ func file_localmodels_v1_localmodels_proto_rawDescGZIP() []byte {
 }
 
 var file_localmodels_v1_localmodels_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_localmodels_v1_localmodels_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
+var file_localmodels_v1_localmodels_proto_msgTypes = make([]protoimpl.MessageInfo, 33)
 var file_localmodels_v1_localmodels_proto_goTypes = []any{
 	(Capability)(0),         // 0: butler.localmodels.v1.Capability
 	(EmbeddingTask)(0),      // 1: butler.localmodels.v1.EmbeddingTask
@@ -2164,18 +2847,28 @@ var file_localmodels_v1_localmodels_proto_goTypes = []any{
 	(*ExtractInput)(nil),    // 10: butler.localmodels.v1.ExtractInput
 	(*ClassifyInput)(nil),   // 11: butler.localmodels.v1.ClassifyInput
 	(*MediaInput)(nil),      // 12: butler.localmodels.v1.MediaInput
-	(*InferRequest)(nil),    // 13: butler.localmodels.v1.InferRequest
-	(*Vector)(nil),          // 14: butler.localmodels.v1.Vector
-	(*EmbedOutput)(nil),     // 15: butler.localmodels.v1.EmbedOutput
-	(*Score)(nil),           // 16: butler.localmodels.v1.Score
-	(*RerankOutput)(nil),    // 17: butler.localmodels.v1.RerankOutput
-	(*Span)(nil),            // 18: butler.localmodels.v1.Span
-	(*ExtractRelation)(nil), // 19: butler.localmodels.v1.ExtractRelation
-	(*ExtractRecord)(nil),   // 20: butler.localmodels.v1.ExtractRecord
-	(*ExtractOutput)(nil),   // 21: butler.localmodels.v1.ExtractOutput
-	(*ClassifyOutput)(nil),  // 22: butler.localmodels.v1.ClassifyOutput
-	(*MediaOutput)(nil),     // 23: butler.localmodels.v1.MediaOutput
-	(*InferResponse)(nil),   // 24: butler.localmodels.v1.InferResponse
+	(*AudioInput)(nil),      // 13: butler.localmodels.v1.AudioInput
+	(*ASRInput)(nil),        // 14: butler.localmodels.v1.ASRInput
+	(*TTSInput)(nil),        // 15: butler.localmodels.v1.TTSInput
+	(*FunctionInput)(nil),   // 16: butler.localmodels.v1.FunctionInput
+	(*InferRequest)(nil),    // 17: butler.localmodels.v1.InferRequest
+	(*Vector)(nil),          // 18: butler.localmodels.v1.Vector
+	(*EmbedOutput)(nil),     // 19: butler.localmodels.v1.EmbedOutput
+	(*Score)(nil),           // 20: butler.localmodels.v1.Score
+	(*RerankOutput)(nil),    // 21: butler.localmodels.v1.RerankOutput
+	(*Span)(nil),            // 22: butler.localmodels.v1.Span
+	(*ExtractRelation)(nil), // 23: butler.localmodels.v1.ExtractRelation
+	(*ExtractRecord)(nil),   // 24: butler.localmodels.v1.ExtractRecord
+	(*ExtractOutput)(nil),   // 25: butler.localmodels.v1.ExtractOutput
+	(*ClassifyOutput)(nil),  // 26: butler.localmodels.v1.ClassifyOutput
+	(*MediaOutput)(nil),     // 27: butler.localmodels.v1.MediaOutput
+	(*ASROutput)(nil),       // 28: butler.localmodels.v1.ASROutput
+	(*SpeechRegion)(nil),    // 29: butler.localmodels.v1.SpeechRegion
+	(*VADOutput)(nil),       // 30: butler.localmodels.v1.VADOutput
+	(*TTSOutput)(nil),       // 31: butler.localmodels.v1.TTSOutput
+	(*FunctionCall)(nil),    // 32: butler.localmodels.v1.FunctionCall
+	(*FunctionOutput)(nil),  // 33: butler.localmodels.v1.FunctionOutput
+	(*InferResponse)(nil),   // 34: butler.localmodels.v1.InferResponse
 }
 var file_localmodels_v1_localmodels_proto_depIdxs = []int32{
 	0,  // 0: butler.localmodels.v1.ModelProfile.capabilities:type_name -> butler.localmodels.v1.Capability
@@ -2190,31 +2883,41 @@ var file_localmodels_v1_localmodels_proto_depIdxs = []int32{
 	10, // 9: butler.localmodels.v1.InferRequest.extract:type_name -> butler.localmodels.v1.ExtractInput
 	11, // 10: butler.localmodels.v1.InferRequest.classify:type_name -> butler.localmodels.v1.ClassifyInput
 	12, // 11: butler.localmodels.v1.InferRequest.media:type_name -> butler.localmodels.v1.MediaInput
-	14, // 12: butler.localmodels.v1.EmbedOutput.vectors:type_name -> butler.localmodels.v1.Vector
-	16, // 13: butler.localmodels.v1.RerankOutput.scores:type_name -> butler.localmodels.v1.Score
-	18, // 14: butler.localmodels.v1.ExtractRelation.head:type_name -> butler.localmodels.v1.Span
-	18, // 15: butler.localmodels.v1.ExtractRelation.tail:type_name -> butler.localmodels.v1.Span
-	18, // 16: butler.localmodels.v1.ExtractRecord.fields:type_name -> butler.localmodels.v1.Span
-	18, // 17: butler.localmodels.v1.ExtractOutput.spans:type_name -> butler.localmodels.v1.Span
-	19, // 18: butler.localmodels.v1.ExtractOutput.relations:type_name -> butler.localmodels.v1.ExtractRelation
-	20, // 19: butler.localmodels.v1.ExtractOutput.records:type_name -> butler.localmodels.v1.ExtractRecord
-	16, // 20: butler.localmodels.v1.ClassifyOutput.scores:type_name -> butler.localmodels.v1.Score
-	15, // 21: butler.localmodels.v1.InferResponse.embed:type_name -> butler.localmodels.v1.EmbedOutput
-	17, // 22: butler.localmodels.v1.InferResponse.rerank:type_name -> butler.localmodels.v1.RerankOutput
-	21, // 23: butler.localmodels.v1.InferResponse.extract:type_name -> butler.localmodels.v1.ExtractOutput
-	22, // 24: butler.localmodels.v1.InferResponse.classify:type_name -> butler.localmodels.v1.ClassifyOutput
-	23, // 25: butler.localmodels.v1.InferResponse.media:type_name -> butler.localmodels.v1.MediaOutput
-	2,  // 26: butler.localmodels.v1.LocalModelsService.Describe:input_type -> butler.localmodels.v1.Empty
-	2,  // 27: butler.localmodels.v1.LocalModelsService.Status:input_type -> butler.localmodels.v1.Empty
-	13, // 28: butler.localmodels.v1.LocalModelsService.Infer:input_type -> butler.localmodels.v1.InferRequest
-	4,  // 29: butler.localmodels.v1.LocalModelsService.Describe:output_type -> butler.localmodels.v1.Catalog
-	6,  // 30: butler.localmodels.v1.LocalModelsService.Status:output_type -> butler.localmodels.v1.ManagerStatus
-	24, // 31: butler.localmodels.v1.LocalModelsService.Infer:output_type -> butler.localmodels.v1.InferResponse
-	29, // [29:32] is the sub-list for method output_type
-	26, // [26:29] is the sub-list for method input_type
-	26, // [26:26] is the sub-list for extension type_name
-	26, // [26:26] is the sub-list for extension extendee
-	0,  // [0:26] is the sub-list for field type_name
+	14, // 12: butler.localmodels.v1.InferRequest.asr:type_name -> butler.localmodels.v1.ASRInput
+	13, // 13: butler.localmodels.v1.InferRequest.vad:type_name -> butler.localmodels.v1.AudioInput
+	15, // 14: butler.localmodels.v1.InferRequest.tts:type_name -> butler.localmodels.v1.TTSInput
+	16, // 15: butler.localmodels.v1.InferRequest.function:type_name -> butler.localmodels.v1.FunctionInput
+	18, // 16: butler.localmodels.v1.EmbedOutput.vectors:type_name -> butler.localmodels.v1.Vector
+	20, // 17: butler.localmodels.v1.RerankOutput.scores:type_name -> butler.localmodels.v1.Score
+	22, // 18: butler.localmodels.v1.ExtractRelation.head:type_name -> butler.localmodels.v1.Span
+	22, // 19: butler.localmodels.v1.ExtractRelation.tail:type_name -> butler.localmodels.v1.Span
+	22, // 20: butler.localmodels.v1.ExtractRecord.fields:type_name -> butler.localmodels.v1.Span
+	22, // 21: butler.localmodels.v1.ExtractOutput.spans:type_name -> butler.localmodels.v1.Span
+	23, // 22: butler.localmodels.v1.ExtractOutput.relations:type_name -> butler.localmodels.v1.ExtractRelation
+	24, // 23: butler.localmodels.v1.ExtractOutput.records:type_name -> butler.localmodels.v1.ExtractRecord
+	20, // 24: butler.localmodels.v1.ClassifyOutput.scores:type_name -> butler.localmodels.v1.Score
+	29, // 25: butler.localmodels.v1.VADOutput.regions:type_name -> butler.localmodels.v1.SpeechRegion
+	32, // 26: butler.localmodels.v1.FunctionOutput.calls:type_name -> butler.localmodels.v1.FunctionCall
+	19, // 27: butler.localmodels.v1.InferResponse.embed:type_name -> butler.localmodels.v1.EmbedOutput
+	21, // 28: butler.localmodels.v1.InferResponse.rerank:type_name -> butler.localmodels.v1.RerankOutput
+	25, // 29: butler.localmodels.v1.InferResponse.extract:type_name -> butler.localmodels.v1.ExtractOutput
+	26, // 30: butler.localmodels.v1.InferResponse.classify:type_name -> butler.localmodels.v1.ClassifyOutput
+	27, // 31: butler.localmodels.v1.InferResponse.media:type_name -> butler.localmodels.v1.MediaOutput
+	28, // 32: butler.localmodels.v1.InferResponse.asr:type_name -> butler.localmodels.v1.ASROutput
+	30, // 33: butler.localmodels.v1.InferResponse.vad:type_name -> butler.localmodels.v1.VADOutput
+	31, // 34: butler.localmodels.v1.InferResponse.tts:type_name -> butler.localmodels.v1.TTSOutput
+	33, // 35: butler.localmodels.v1.InferResponse.function:type_name -> butler.localmodels.v1.FunctionOutput
+	2,  // 36: butler.localmodels.v1.LocalModelsService.Describe:input_type -> butler.localmodels.v1.Empty
+	2,  // 37: butler.localmodels.v1.LocalModelsService.Status:input_type -> butler.localmodels.v1.Empty
+	17, // 38: butler.localmodels.v1.LocalModelsService.Infer:input_type -> butler.localmodels.v1.InferRequest
+	4,  // 39: butler.localmodels.v1.LocalModelsService.Describe:output_type -> butler.localmodels.v1.Catalog
+	6,  // 40: butler.localmodels.v1.LocalModelsService.Status:output_type -> butler.localmodels.v1.ManagerStatus
+	34, // 41: butler.localmodels.v1.LocalModelsService.Infer:output_type -> butler.localmodels.v1.InferResponse
+	39, // [39:42] is the sub-list for method output_type
+	36, // [36:39] is the sub-list for method input_type
+	36, // [36:36] is the sub-list for extension type_name
+	36, // [36:36] is the sub-list for extension extendee
+	0,  // [0:36] is the sub-list for field type_name
 }
 
 func init() { file_localmodels_v1_localmodels_proto_init() }
@@ -2222,19 +2925,27 @@ func file_localmodels_v1_localmodels_proto_init() {
 	if File_localmodels_v1_localmodels_proto != nil {
 		return
 	}
-	file_localmodels_v1_localmodels_proto_msgTypes[11].OneofWrappers = []any{
+	file_localmodels_v1_localmodels_proto_msgTypes[15].OneofWrappers = []any{
 		(*InferRequest_Embed)(nil),
 		(*InferRequest_Rerank)(nil),
 		(*InferRequest_Extract)(nil),
 		(*InferRequest_Classify)(nil),
 		(*InferRequest_Media)(nil),
+		(*InferRequest_Asr)(nil),
+		(*InferRequest_Vad)(nil),
+		(*InferRequest_Tts)(nil),
+		(*InferRequest_Function)(nil),
 	}
-	file_localmodels_v1_localmodels_proto_msgTypes[22].OneofWrappers = []any{
+	file_localmodels_v1_localmodels_proto_msgTypes[32].OneofWrappers = []any{
 		(*InferResponse_Embed)(nil),
 		(*InferResponse_Rerank)(nil),
 		(*InferResponse_Extract)(nil),
 		(*InferResponse_Classify)(nil),
 		(*InferResponse_Media)(nil),
+		(*InferResponse_Asr)(nil),
+		(*InferResponse_Vad)(nil),
+		(*InferResponse_Tts)(nil),
+		(*InferResponse_Function)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -2242,7 +2953,7 @@ func file_localmodels_v1_localmodels_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_localmodels_v1_localmodels_proto_rawDesc), len(file_localmodels_v1_localmodels_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   23,
+			NumMessages:   33,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
