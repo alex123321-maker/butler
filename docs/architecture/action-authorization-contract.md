@@ -24,6 +24,9 @@ cannot supply owners, task versions, decisions, worker fences or grants.
 6. `AuthorizeToolCall` verifies the current exact decision or mandate and creates
    a short-lived private grant. `ExecuteToolCall.authorization_id` is system
    metadata outside the model's tool schema.
+   Its deadline also cannot outlive the verified exact approval. This bound is
+   persisted with the grant and survives a wait between verification and claim;
+   approval expiry cannot become a longer dispatch window.
 7. Broker revalidates before each secret release, then again directly before
    dispatch. The grant is claimed atomically immediately before runtime entry.
 

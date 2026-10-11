@@ -142,6 +142,67 @@ func TestPostgresDispatchCASAndUnknownOutcome(t *testing.T) {
 		t.Fatal("unknown outcome lost")
 	}
 }
+
+func TestPostgresApprovalExpiryDuringAuthorityWaitDeniesClaim(t *testing.T) {
+	pool := actionDatabase(t)
+	store := NewPostgresStore(pool)
+	s, _, reader, _, call, contract := fixture(t)
+	s.store = store
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	p, err := s.Prepare(ctx, call, contract)
+	if err != nil {
+		t.Fatal(err)
+	}
+	until := time.Now().UTC().Truncate(time.Microsecond).Add(time.Second)
+	reader.approved = ApprovalSnapshot{ApprovalID: "approval", Status: "approved", Binding: p.Binding, ExpiresAt: until, ResolvedAt: s.now()}
+	g, err := s.Authorize(ctx, call, contract, p.Binding.ActionID, "approval", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	stored, err := store.GetGrant(ctx, g.ID)
+	if err != nil || !stored.ExpiresAt.Equal(until) {
+		t.Fatal("PostgreSQL did not retain exact approval expiry", stored, err)
+	}
+	blocker, err := pool.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer blocker.Rollback(context.Background())
+	if _, err = blocker.Exec(ctx, `SELECT task_id FROM tasks WHERE task_id='task' FOR UPDATE`); err != nil {
+		t.Fatal(err)
+	}
+	done := make(chan error, 1)
+	go func() { done <- store.ClaimGrant(ctx, g.ID) }()
+	// A real PG authority row blocks the claim past its approval deadline. No
+	// policy clock or SQL grant expiry is forged to simulate this boundary.
+	timer := time.NewTimer(time.Until(until) + 100*time.Millisecond)
+	defer timer.Stop()
+	select {
+	case err = <-done:
+		t.Fatal("claim bypassed the held authority row", err)
+	case <-timer.C:
+	}
+	if err = blocker.Commit(ctx); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case err = <-done:
+		if err == nil {
+			t.Fatal("approval expiry during authority wait dispatched an effect")
+		}
+	case <-ctx.Done():
+		t.Fatal("claim failed to release its pooled connection")
+	}
+	var state string
+	var dispatches int
+	if err = pool.QueryRow(ctx, `SELECT state FROM action_authorizations WHERE authorization_id=$1`, g.ID).Scan(&state); err != nil || state != "authorized" {
+		t.Fatal("denied claim spent the permission", state, err)
+	}
+	if err = pool.QueryRow(ctx, `SELECT count(*) FROM action_effect_dispatches WHERE authorization_id=$1`, g.ID).Scan(&dispatches); err != nil || dispatches != 0 {
+		t.Fatal("denied claim entered the effect journal", dispatches, err)
+	}
+}
 func TestPostgresRefreshFenceAndRevokeMandate(t *testing.T) {
 	pool := actionDatabase(t)
 	store := NewPostgresStore(pool)
