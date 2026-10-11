@@ -32,25 +32,9 @@ type antigravityCredentials struct {
 // or chat message. The caller supplies a strict encrypted PostgreSQL SecretStore.
 // No account identifiers, id tokens, token endpoint or filesystem paths survive.
 func (m *Manager) ImportAntigravity(ctx context.Context, reader io.Reader, updatedBy string) error {
-	if reader == nil {
-		return fmt.Errorf("invalid Antigravity operator import")
-	}
-	data, err := io.ReadAll(io.LimitReader(reader, 64*1024+1))
-	if err != nil || len(data) > 64*1024 {
-		return fmt.Errorf("invalid Antigravity operator import")
-	}
-	defer clear(data)
-	if err := rejectDuplicateImportKeys(data); err != nil {
+	creds, err := readAntigravityPrivateInput(reader)
+	if err != nil {
 		return err
-	}
-	decoder := json.NewDecoder(bytes.NewReader(data))
-	decoder.DisallowUnknownFields()
-	var creds antigravityCredentials
-	if decoder.Decode(&creds) != nil || validateAntigravityCredentials(creds) != nil {
-		return fmt.Errorf("invalid Antigravity operator import")
-	}
-	if err := decoder.Decode(new(any)); err != io.EOF {
-		return fmt.Errorf("invalid Antigravity operator import")
 	}
 	m.refresh.Lock()
 	defer m.refresh.Unlock()
@@ -58,6 +42,30 @@ func (m *Manager) ImportAntigravity(ctx context.Context, reader io.Reader, updat
 		return fmt.Errorf("Antigravity encrypted credential persistence failed")
 	}
 	return nil
+}
+
+func readAntigravityPrivateInput(reader io.Reader) (antigravityCredentials, error) {
+	if reader == nil {
+		return antigravityCredentials{}, fmt.Errorf("invalid Antigravity operator import")
+	}
+	data, err := io.ReadAll(io.LimitReader(reader, 64*1024+1))
+	if err != nil || len(data) > 64*1024 {
+		return antigravityCredentials{}, fmt.Errorf("invalid Antigravity operator import")
+	}
+	defer clear(data)
+	if err := rejectDuplicateImportKeys(data); err != nil {
+		return antigravityCredentials{}, err
+	}
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.DisallowUnknownFields()
+	var creds antigravityCredentials
+	if decoder.Decode(&creds) != nil || validateAntigravityCredentials(creds) != nil {
+		return antigravityCredentials{}, fmt.Errorf("invalid Antigravity operator import")
+	}
+	if err := decoder.Decode(new(any)); err != io.EOF {
+		return antigravityCredentials{}, fmt.Errorf("invalid Antigravity operator import")
+	}
+	return creds, nil
 }
 
 func validateAntigravityCredentials(creds antigravityCredentials) error {
@@ -170,6 +178,7 @@ func rejectDuplicateImportKeys(data []byte) error {
 			return fmt.Errorf("invalid Antigravity operator import")
 		}
 		name, ok := key.(string)
+		name = strings.ToLower(name)
 		if !ok || seen[name] {
 			return fmt.Errorf("invalid Antigravity operator import")
 		}

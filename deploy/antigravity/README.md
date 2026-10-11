@@ -29,6 +29,15 @@ direct regional AICode probes were rejected before the authorized proxy was
 configured. Those observations do not establish exhausted subscription quota.
 Stored credentials alone do not prove model access.
 
+The private `provider-auth -action audit-origin` command reads a bounded reference
+import on stdin and compares it with current encrypted PostgreSQL credentials.
+It emits only stored/application/credential/refresh-match booleans, with no raw
+secrets or hashes. It never refreshes or changes stored authorization and makes
+zero OAuth/inference requests. Invoke it only in the existing private operator
+environment with the reference file mounted read-only; no model or channel can
+supply that stream. A refresh mismatch may be rotation rather than another account.
+See [the current quota investigation](../../docs/ai/antigravity-quota-diagnosis.md).
+
 Subsequent Go and Node requests both returned production AICode HTTP 429 with
 `RESOURCE_EXHAUSTED` / `HIGH_DEMAND`, identifying temporary backend model capacity.
 The identical private token and expiry were checked in the operator backend.
