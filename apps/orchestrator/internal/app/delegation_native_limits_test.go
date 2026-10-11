@@ -73,10 +73,14 @@ func (l *nativeDelegationLimiter) reserve(ctx context.Context, kind, runID strin
 // counter across widths and worker reconstruction. Cancellation spends no turn.
 type limitedNativeDelegationProvider struct {
 	*antigravity.Provider
-	limit *nativeDelegationLimiter
+	limit   *nativeDelegationLimiter
+	observe func(context.Context, transport.StartRunRequest) error
 }
 
 func (p *limitedNativeDelegationProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
+	if p != nil && p.observe != nil && p.observe(ctx, r) != nil {
+		return nil, errNativeFixtureDenied
+	}
 	if p == nil || p.Provider == nil || p.limit.reserve(ctx, "start", r.Context.RunID, r) != nil {
 		return nil, errNativeFixtureDenied
 	}

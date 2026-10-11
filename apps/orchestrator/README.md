@@ -382,6 +382,9 @@ Disabling the feature prevents new admission/maintenance; use owner task/tree
 stop or mandate revocation for already accepted durable child inputs.
 Native model comparison and deployment acceptance remain pending. See
 `docs/architecture/delegation-contract.md` before enabling the route.
+The separate opt-in native lab runner and its twelve-attempt spending cap are
+described in `docs/ai/delegation-native-scenario-plan.md`. Its zero-inference
+preflight is distinct from coordinated actual model acceptance.
 
 Ordinary preparation/recovery now derives selected delegated context from the
 actual fenced run, after pinning its task. It skips ambient memory bundles and
