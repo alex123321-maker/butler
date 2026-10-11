@@ -39,6 +39,11 @@ func (s *Store) ProposeTx(ctx context.Context, tx pgx.Tx, p ClaimRequest) (Claim
 	if priorHash != sum {
 		return Claim{}, ErrStale
 	}
+	// INSERT/FOR UPDATE can wait past a run lease or independent job deadline.
+	// Do not return even an existing candidate to an expired extraction worker.
+	if e = s.finalizeAccessTx(ctx, tx, []SourceRef{{ID: p.SourceID, Revision: p.SourceRevision}}, "memory_extract"); e != nil {
+		return Claim{}, e
+	}
 	if tag.RowsAffected() == 0 {
 		return getClaim(ctx, tx, priorID, false)
 	}
