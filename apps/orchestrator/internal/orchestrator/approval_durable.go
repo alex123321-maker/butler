@@ -47,7 +47,7 @@ func (s *Service) suspendApproval(ctx context.Context, current *sessionv1.RunRec
 	if err = json.Unmarshal([]byte(payload), &prepared); err != nil {
 		return current, err
 	}
-	continuation := approvalContinuation{Version: 1, Prepared: durableSkillPreparation(prepared), ToolCall: requested, Binding: action.Binding, LogicalActionRef: actionauth.LogicalReference(ctx), EffectID: action.EffectID}
+	continuation := approvalContinuation{Version: 1, Prepared: durableSourcePreparation(durableSkillPreparation(prepared)), ToolCall: requested, Binding: action.Binding, LogicalActionRef: actionauth.LogicalReference(ctx), EffectID: action.EffectID}
 	expires := action.ExpiresAt
 	if expires.IsZero() {
 		expires = time.Now().UTC().Add(15 * time.Minute)

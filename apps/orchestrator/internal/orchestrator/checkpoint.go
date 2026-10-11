@@ -14,7 +14,7 @@ func (s *Service) checkpoint(ctx context.Context, runID, stage string, payload a
 		return nil
 	}
 	if prepared, ok := payload.(preparedRun); ok {
-		payload = durableSkillPreparation(prepared)
+		payload = durableSourcePreparation(durableSkillPreparation(prepared))
 	}
 	if err := s.config.Checkpoints.SaveCheckpoint(ctx, runID, stage, mustMarshalJSON(payload)); err != nil {
 		return err
