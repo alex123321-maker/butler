@@ -104,6 +104,15 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	if stage == "finalizing" && checkpoint.Data.FinalMessage != "" && current.GetCurrentState() == commonv1.RunState_RUN_STATE_FINALIZING {
 		return s.finalizeExecution(ctx, runLog, current, event, checkpoint.Prepared, lease.LeaseID, checkpoint.Data.FinalMessage)
 	}
+	if err = validateSourceCheckpoint(event, checkpoint.Prepared); err != nil {
+		return nil, err
+	}
+	if err = s.rehydrateSourcePreparation(ctx, &checkpoint.Prepared); err != nil {
+		return nil, err
+	}
+	if continuation.Prepared.SourceInputEvent != nil {
+		continuation.Prepared = checkpoint.Prepared
+	}
 	var stream transport.EventStream
 	if current.GetCurrentState() == commonv1.RunState_RUN_STATE_AWAITING_APPROVAL {
 		if _, err = s.config.ApprovalService.VerifyActionApproval(ctx, actionauth.ApprovalRequest{ApprovalID: decision.ApprovalID, Binding: continuation.Binding}); err != nil {

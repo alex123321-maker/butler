@@ -905,3 +905,19 @@ loading. Preparation failure retains that truthful attempt association. Fresh
 approval recovery reloads current capabilities, replacing stale package data
 while retaining known observations without redispatch. See
 [extension lifecycle](reviewed-extension-lifecycle.md).
+## Optional source-bound ingress recovery
+
+An internally accepted voice/delegation event may carry only an opaque stored
+source binding. Its optional trusted `InputSourcePreparation` callback resolves
+current content after the new live lease, preserving event/session/type/source,
+timestamp and idempotency identity. Missing composition or a replaced checkpoint
+binding fails closed before inference. Selected source bodies are not queued.
+
+`SourceInputEvent` retains that original opaque event; `SourceDataRefs` identifies
+exact DATA items for durable projection only. Checkpoints and approval continuations
+remove current source prose, preserve refs/digests and keep instructions and actual
+tool/effect observations intact. Recovery resolves current input again; a delegation
+reader must independently reload selected roots from the current authoritative
+contract, rather than treating stored selected IDs as permission. The saved-final
+retry path remains separate and never calls the model/source preparation again.
+
