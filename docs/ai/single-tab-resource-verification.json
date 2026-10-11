@@ -1,0 +1,205 @@
+{
+  "status": "isolated component PASS; issue17 remains active; production disabled",
+  "created_at": "2026-10-11T03:59:42.783867+00:00",
+  "snapshot": "20261011-105734-678",
+  "base_commit": "7348934aeee5eef7f8d3dee252f90f24303ba8f8",
+  "go": "1.27.2",
+  "durable_test_pools_max_connections": 2,
+  "suites": {
+    "new_boundary_pg_race": {
+      "log": "/srv/storage/butler/agents/resource-runtime-bridge/reports/single-tab-20261011T035744Z-3528284/pg-race.jsonl",
+      "sha256": "4e8818d90ed773ce437552b1e580e2548fee84f7e35c899ee7da525b3d895353",
+      "package_pass": 8,
+      "top_level_pass": 23,
+      "subtest_pass": 24,
+      "skipped_tests": [
+        "github.com/butler/butler/apps/tool-broker/internal/broker:TestSingleTabResourceActualChromiumNativeHostIntegration"
+      ],
+      "failed": 0
+    },
+    "all_bridge_race": {
+      "log": "/srv/storage/butler/agents/resource-runtime-bridge/reports/single-tab-20261011T035744Z-3528284/bridge-race.jsonl",
+      "sha256": "20fe0786d106126755df91e6c631438782a115fc753013fc4b0a22d752c365a0",
+      "package_pass": 5,
+      "top_level_pass": 11,
+      "subtest_pass": 0,
+      "skipped_tests": [],
+      "failed": 0
+    },
+    "resource_boundary_pg_race": {
+      "log": "/srv/storage/butler/agents/resource-runtime-bridge/reports/resource-runtime-20261011T035853Z-3528283/tests.jsonl",
+      "sha256": "a2e044f4aec479b51ba8838f8d7c4f845c2e8aa3f769ce9d3ff593ba648f7e21",
+      "package_pass": 2,
+      "top_level_pass": 13,
+      "subtest_pass": 6,
+      "skipped_tests": [
+        "github.com/butler/butler/apps/tool-broker/internal/broker:TestResourceBrokerActualChromiumPageCASIntegration"
+      ],
+      "failed": 0
+    },
+    "seven_package_regression_pg_race": {
+      "log": "/srv/storage/butler/agents/resource-runtime-bridge/reports/resource-runtime-20261011T035853Z-3528283/regression.jsonl",
+      "sha256": "8afd008ae369c9826ff60ee0dbf07ea12182e887b2f2bc1c48c6226763c55796",
+      "package_pass": 6,
+      "top_level_pass": 114,
+      "subtest_pass": 82,
+      "skipped_tests": [
+        "github.com/butler/butler/apps/tool-broker/internal/broker:TestBrokerBrowserSequenceE2E",
+        "github.com/butler/butler/apps/tool-broker/internal/broker:TestResourceBrokerActualChromiumPageCASIntegration",
+        "github.com/butler/butler/apps/tool-broker/internal/broker:TestSingleTabResourceActualChromiumNativeHostIntegration",
+        "github.com/butler/butler/apps/tool-browser/internal/runtime:TestBrowserSessionE2E",
+        "github.com/butler/butler/apps/tool-browser/internal/runtime:TestBrowserRuntimeEgressHarness"
+      ],
+      "failed": 0
+    }
+  },
+  "actual_chromium": {
+    "log": "/srv/storage/butler/agents/resource-runtime-bridge/reports/single-tab-20261011T035744Z-3528284/chromium.log",
+    "sha256": "2028fea9fdb98980a77d6867d65c25b687f31825d51e3a0477ab3fe5dde4f16e",
+    "instrumentation": "static non-race Go host/Broker binaries; nine fault cases use test-only native frame forwarder; installed_native case uses actual Chrome connectNative, Linux manifest and private host subprocess",
+    "scenarios": [
+      {
+        "scenario": "valid",
+        "recipient_calls": 1,
+        "reservations": 2,
+        "result": "PASS"
+      },
+      {
+        "scenario": "manual_input",
+        "recipient_calls": 0,
+        "reservations": 2,
+        "result": "PASS"
+      },
+      {
+        "scenario": "manual_new_observation",
+        "recipient_calls": 0,
+        "reservations": 3,
+        "result": "PASS"
+      },
+      {
+        "scenario": "dom_mutation",
+        "recipient_calls": 0,
+        "reservations": 2,
+        "result": "PASS"
+      },
+      {
+        "scenario": "navigation",
+        "recipient_calls": 0,
+        "reservations": 2,
+        "result": "PASS"
+      },
+      {
+        "scenario": "foreign_origin",
+        "recipient_calls": 0,
+        "reservations": 2,
+        "result": "PASS"
+      },
+      {
+        "scenario": "foreign_host",
+        "recipient_calls": 0,
+        "reservations": 2,
+        "result": "PASS"
+      },
+      {
+        "scenario": "lost_ack_restart",
+        "recipient_calls": 1,
+        "reservations": 3,
+        "result": "PASS"
+      },
+      {
+        "scenario": "two_executors",
+        "recipient_calls": 1,
+        "reservations": 2,
+        "result": "PASS"
+      },
+      {
+        "scenario": "installed_native",
+        "recipient_calls": 1,
+        "reservations": 2,
+        "result": "PASS"
+      }
+    ],
+    "manual_observation_version_advanced": true,
+    "cold_browser_profile_restart": true,
+    "frozen_tab_id_retained": false,
+    "installed_native_manifest": true,
+    "atomic_authenticated_owner_library_selection": true,
+    "same_origin_tabs_distinguished": true,
+    "synchronous_live_lease_only": true,
+    "human_or_channel_acceptance": false
+  },
+  "controlled_browser_regression": {
+    "log": "/srv/storage/butler/agents/resource-runtime-bridge/reports/resource-runtime-20261011T035853Z-3528283/chromium.log",
+    "sha256": "8dba209a46a1f197b5d4e914df7f4f44d866a7b8cbaeba0c1a89e15ad922c31f",
+    "status": "PASS"
+  },
+  "owner_broker_serial_orders": [
+    {
+      "order": "claim_before_revoke",
+      "reservations": 1,
+      "result": "PASS"
+    },
+    {
+      "order": "revoke_before_claim",
+      "reservations": 0,
+      "result": "PASS"
+    },
+    {
+      "order": "selection_replay_before_claim",
+      "reservations": 1,
+      "result": "PASS"
+    }
+  ],
+  "deadline_after_row_waits": "PASS; exact replay binding, candidate/session and shortened approval; current PG clock",
+  "model_calls": 0,
+  "main_changes": false,
+  "source_file_sha256": {
+    "apps/browser-bridge/cmd/guarded/main.go": "319cda38361d2f9aabbcdf0f1b2711ef06fd07886773b2f71f61c869ca2df450",
+    "apps/browser-bridge/cmd/guarded/main_test.go": "b23d38192e2d0613dacdecadd72c20f0f9f09c4b0b95839863e92af2cbccda13",
+    "apps/browser-bridge/internal/app/app_test.go": "420d527be04595fccc7b984863beb010a6fde398639dece86d0ffcf15ce29476",
+    "apps/browser-bridge/internal/app/guarded.go": "9449d74dd4a2f8e04e89f090fa0c6d96c7eef342afbfc94d2d23e3961c2c8672",
+    "apps/browser-bridge/internal/bridge/dispatcher.go": "aa8bebf1228ef6b04a1e57c9ef6992d4690f5197d028282e25a57f5ea3097e4a",
+    "apps/browser-bridge/internal/bridge/guarded.go": "c97c4859c5ad304e4b70f6553e8bbe56569f97df042e72252936484ce862580c",
+    "apps/browser-bridge/internal/bridge/guarded_metadata.go": "d7a559e72debb0772f04505e8ef787786a77618f8d1b1354ea45b988345dfe3f",
+    "apps/browser-bridge/internal/protocol/codec.go": "b3900cf3fcb1cec1cbb4bc5b971083d9191e9ac575979797cd3bd28366473d43",
+    "apps/browser-bridge/internal/protocol/guarded.go": "bf9bfb65c56260c020a0f4883f1585774a8af4b868fa348ff308cfc676e01256",
+    "apps/browser-bridge/internal/protocol/guarded_test.go": "d2be3dde4805d0ebc0435caf4eca4079694ae9e0260aefb408f9c1108f240b01",
+    "apps/browser-bridge/scripts/guarded_chromium_fixture.mjs": "6e99b8a477743adc03a0baedfb2a7268910950326204b648383b57968f8202ec",
+    "apps/orchestrator/internal/singletab/guarded_selection_test.go": "9e0067b350126a27f5b5cff91212cccadfc36c1851c324d5d16e990d2eaf1824",
+    "apps/orchestrator/internal/singletab/resource_guard.go": "b9e2f00b6d64b42922ecbe3c0bb1ed1c4d4033b51543a47379d1393f3e49eb97",
+    "apps/orchestrator/internal/singletab/resource_guard_integration_test.go": "278e829c3bff6e8adaf5020e8d0f573417c964de0751b3013b6ff4a4c7618afa",
+    "apps/orchestrator/internal/singletab/service.go": "12ec685189c58530a798fb40881680debba4e44889ed781900a04b8ec8d62adf",
+    "apps/tool-broker/internal/broker/resource_integration_test.go": "c6b3d567e27ba2437ca6bd79dc7bea5d587327b63a2cca45ed22b51c36d392be",
+    "apps/tool-broker/internal/broker/single_tab_chromium_test.go": "d0d66818891f8a588ce53bd6ac246f6a0685c671966119052099ac9c843fd320",
+    "apps/tool-broker/internal/broker/single_tab_control_integration_test.go": "83783827e5ee6817e7cc155ccbea5b556291103520de4c2674d4336924d2baae",
+    "apps/tool-broker/internal/broker/single_tab_resource_integration_test.go": "8242427a790d5ec470a3d41771e569a19903afb47dedec60764b38242e7eca43",
+    "internal/resourceexec/authority.go": "3ef56c53ce729fd8e399924ce134294c78666daa659a2afc1af37551f8ee764f",
+    "internal/resourceexec/runtime.go": "cf27855c7e4a434fd829c77b205d4c5c2e7a7994c362f5470b244cddeab55ba4",
+    "internal/resourceexec/runtime_test.go": "057a28c237b1a608aa6422d4187bfefc0a82a38f9f34c4f94f324fe764e16065",
+    "internal/resourceexec/single_tab.go": "12108030c2da27ec22ecb96b4262a1e55b8c07393f2a64ddbba0c330994989c8",
+    "internal/resourceexec/single_tab_test.go": "2f9790fb15998c981c00df784c202b804b06a1ce20d117f6732470b85aac528c",
+    "internal/resourceexec/store.go": "0c571a47771305c13c42d82765b0300066592184c9ec21e092dc5600ac72fd35",
+    "internal/resourceexec/types.go": "cfe27b1192531e070c40dcc980e8cf74b457b060601ba91afb94a2084242d623",
+    "internal/singletabcontrol/control.go": "cda1710d78e735e1f50bb53aa68c0c6624c0bb6700cdc926e800606fb129b802",
+    "internal/singletabcontrol/guard.go": "6c184d6c423dfd4a5bb7c977f8a304a4c1504254a840ba0ec6a2ff4767a5eade",
+    "internal/singletabcontrol/metadata_http.go": "b488608e19e26937d982a70af88dd1f98da2e4c81887c26cb95b00b358214241",
+    "internal/singletabcontrol/metadata_http_test.go": "4e27d5ef48d1fa59382baeb1a32f73cf9e692f6514ae0e42ab85312a734ae831",
+    "internal/singletabcontrol/types.go": "315f8a5857e9bdf7ba30d2ddc0a2a6da94e7c28154f82d8b938e14a2369f509c",
+    "migrations/063_single_tab_resource_binding.down.sql": "bd5481f90f9fc6d2f5e915a3864197e56e22acd0c3cc9a638e47f61b1cc9045e",
+    "migrations/063_single_tab_resource_binding.up.sql": "dfcc05fdf9fda1f7beac01fbd47009874961d2c5c49e95a90d80746f4c7f9906",
+    "scripts/dev/single-tab-resource-lab.sh": "87c2df74a3b56e2fdd7bb980fdef66457953281d582a5fa1b983ab009160f33b",
+    "scripts/dev/verify-changed.ps1": "da8a1ccfbbe91d8096579022a9cb00c49cb1b80f2a2ca1b68d62f26c96747dd8",
+    "web/extensions/chromium-butler/background.js": "9c5659d9b9f300dd6434ee824e4d1c1539665a86746e1d5329a2111412fe46ff",
+    "web/extensions/chromium-butler/guarded.js": "f2226cc526e80757cbe57f044945ae9e6ec4a544dcb7c3da98a3f723b7f41101"
+  },
+  "remaining_gates": [
+    "guarded-only production startup/contracts/private routing; no raw alternative",
+    "production Web/Telegram selection with current suspended-run authority after worker lease release; actual channel/manual acceptance",
+    "owner effect reconciliation; no automatic quarantine cleanup",
+    "workspace/runtime integration, shared local weights and memory-conflict admission; aggregate user-browser network privacy",
+    "observation cannot prove hidden JS/server/canvas/shadow-root state"
+  ],
+  "platform_limits": [
+    "Windows private-file ACL and installed native host are unproven; Linux actual manifest launch is measured"
+  ]
+}

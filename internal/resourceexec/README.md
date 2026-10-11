@@ -1,5 +1,10 @@
 # Guarded controlled-browser resource dispatch
 
+`NewSingleTab` is a separate optional composition for exact approved user-tab
+status/click contracts, with a mandatory owning selection guard. Original `New`
+still accepts only controlled `browser.*` profiles. No legacy single-tab route is
+registered by it. See [native-host/CAS and gates](../../docs/architecture/single-tab-resource-boundary.md).
+
 `resourceexec` is an optional boundary between the existing Tool Broker journal,
 finite shared budget and `resources.Store`. It protects the controlled
 `browser.*` runtime. No production flag, bootstrap, registry or Compose change

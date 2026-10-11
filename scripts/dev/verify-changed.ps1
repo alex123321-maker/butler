@@ -34,6 +34,15 @@ foreach ($file in $files) {
       [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/durable-tasks/current/scripts/dev/delegation-admission-lab.sh /srv/storage/butler/agents/durable-tasks' after isolated source Sync (actual private Broker, disposable PostgreSQL, pool2 and race)")
       continue
     }
+    "^(internal/singletabcontrol/|apps/browser-bridge/|apps/orchestrator/internal/singletab/|apps/tool-broker/internal/broker/single_tab|web/extensions/chromium-butler/|migrations/063_single_tab_resource_binding[.]|scripts/dev/single-tab-resource-lab[.]sh$)" {
+      [void]$specs.Add("docs/architecture/single-tab-resource-boundary.md")
+      [void]$specs.Add("docs/architecture/resource-lease-contract.md")
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/resource-runtime-bridge/current/scripts/dev/single-tab-resource-lab.sh /srv/storage/butler/agents/resource-runtime-bridge' after isolated Sync (actual PG/pool2, private native host and synthetic Chromium extension)")
+      continue
+    }
     "^(internal/resources/|internal/resourceexec/|migrations/(058_execution_resource_leases|062_resource_dispatches)[.]|scripts/dev/resource-runtime-lab[.]sh$|apps/tool-broker/internal/broker/resources[.]go$|apps/tool-broker/internal/broker/resource_integration_test[.]go$|internal/actionauth/resource_claim[.]go$|internal/budget/tool_deadline[.]go$)" {
       [void]$specs.Add("docs/architecture/resource-lease-contract.md")
       [void]$specs.Add("docs/architecture/execution-budget-contract.md")

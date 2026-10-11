@@ -8,6 +8,13 @@ parent action after current immutable final/report and tested-package proof.
 Original trials/activation remain ordinary parent grants. Routing constructors
 do not enable the feature or grant authority.
 
+Optional resource admission also accepts the separate guarded user-tab adapter
+when exact status/click contracts, current approved selection, finite shared
+budget and complete source authority are composed. Tickets remain private gRPC
+metadata. Successful local click ACK still leaves the external effect unknown.
+No guarded user-tab registration is enabled by this change; see the
+[boundary and remaining gates](../../docs/architecture/single-tab-resource-boundary.md).
+
 The optional [reviewed procedural catalog](../../docs/architecture/reviewed-skills.md)
 adds fixed local `skills.search/load/propose` operations. Skill text remains
 DATA and actual tools retain current action/approval/budget/source admission.

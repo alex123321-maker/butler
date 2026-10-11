@@ -78,7 +78,7 @@ func (r *Runtime) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*
 		return fail()
 	}
 	l.fence = admitted.Fence
-	runCtx, cancel := context.WithDeadline(ctx, admitted.Deadline)
+	runCtx, cancel := context.WithDeadline(context.WithValue(ctx, runtimeSpecKey{}, admitted), admitted.Deadline)
 	defer cancel()
 	response, runErr := r.backend.Execute(runCtx, req)
 	result := response.GetResult()
@@ -102,6 +102,13 @@ func (r *Runtime) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*
 	defer cancelFinish()
 	if e = r.authority.Finish(finishCtx, receipt); e != nil || !completed {
 		return fail()
+	}
+	if confirmed, ok := r.backend.(interface {
+		ConfirmRuntime(context.Context, RuntimeSpec) error
+	}); ok {
+		if e = confirmed.ConfirmRuntime(finishCtx, admitted); e != nil {
+			return fail()
+		}
 	}
 	return response, nil
 }

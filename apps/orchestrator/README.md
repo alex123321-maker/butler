@@ -16,6 +16,16 @@ durable input workers, production Broker and a network-none actual runtime with
 the app race detector. Parent continuations are explicit owner inputs; native
 model planning and autonomous waiting-parent scheduling are separate gates.
 
+The optional `singletab.ResourceGuard` locks the actual approved selection for
+the separately guarded native-host status/click contracts. It requires prior
+current worker/owner/task/source authority on the same transaction and the
+immutable guarded request/selection marker; legacy approval/session activation
+cannot create this proof. The owning `internal/singletabcontrol` library performs
+atomic owner selection, with metadata RPC outside transaction locks. Its tested
+composition requires a live worker lease; suspended human waiting/resume is a
+separate pending authority adapter. No bootstrap/registry route is enabled by it;
+see [guarded user-tab contract](../../docs/architecture/single-tab-resource-boundary.md).
+
 The bounded [delegation manager](internal/task/README.md) provides transactional
 child admission, dependency scheduling, durable result/report metadata and explicit
 guarded decisions. It is an unenabled component until the owning Catalog/Broker

@@ -93,6 +93,11 @@ remain run-owned and cannot be handed to another task by this adapter.
 See [composition and limitations](../../internal/resourceexec/README.md) and
 [actual PG/Broker/Chromium evidence](../ai/resource-runtime-acceptance.md).
 
+Migration063 adds the separately disabled [guarded user-tab boundary](single-tab-resource-boundary.md).
+Current selection, authority and finite budget remain necessary. Native-host and
+extension CAS/ACK quarantine supplement arbitration; real user/channel acceptance
+remains pending.
+
 ## Current lab evidence
 
 Read-only source snapshot `20261011-071207-877` on `ssh laba` passed

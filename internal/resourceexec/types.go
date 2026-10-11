@@ -30,13 +30,18 @@ type Profile struct {
 	ContractHashes map[string]string
 }
 
-type selection struct{ profile, target, tool, contract, args, resource, authorization string }
+type selection struct {
+	profile, target, tool, contract, args, resource, authorization string
+	single                                                         *singleTabSelection
+}
 type selectionKey struct{}
 type ticketKey struct{}
 
 const ticketHeader = "butler-resource-ticket"
 
-func Protected(tool string) bool { return strings.HasPrefix(tool, "browser.") }
+func Protected(tool string) bool {
+	return strings.HasPrefix(tool, "browser.") || strings.HasPrefix(tool, "single_tab.")
+}
 
 func WithTicket(ctx context.Context, ticket string) context.Context {
 	return context.WithValue(ctx, ticketKey{}, ticket)
@@ -92,9 +97,12 @@ func browserSelection(p Profile, call *toolbrokerv1.ToolCall, contract *toolbrok
 // RuntimeSpec is private authority metadata. Backend runtimes still validate
 // actual session ownership, origin, credential scope and page observation CAS.
 type RuntimeSpec struct {
-	Lane     string    `json:"lane"`
-	Fence    int64     `json:"fence"`
-	Deadline time.Time `json:"deadline"`
+	Lane        string            `json:"lane"`
+	Fence       int64             `json:"fence"`
+	Deadline    time.Time         `json:"deadline"`
+	SingleTab   *SingleTabSession `json:"single_tab,omitempty"`
+	Observation string            `json:"observation,omitempty"`
+	DispatchID  string            `json:"dispatch_id,omitempty"`
 }
 type RuntimeRequest struct {
 	Ticket       string `json:"ticket"`
@@ -140,4 +148,5 @@ type dispatch struct {
 	binding                                                                     resources.Binding
 	proof                                                                       resources.Proof
 	ownerLease                                                                  string
+	single                                                                      *singleTabSelection
 }

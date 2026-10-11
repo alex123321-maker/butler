@@ -23,6 +23,16 @@ func (s *Store) load(ctx context.Context, tx pgx.Tx, ticket string) (dispatch, a
 	if e != nil {
 		return d, g, ErrDenied
 	}
+	if s.singleTab != nil {
+		var value []byte
+		if e = tx.QueryRow(ctx, `SELECT single_tab_binding FROM execution_resource_dispatches WHERE ticket_id=$1`, ticket).Scan(&value); e != nil || json.Unmarshal(value, &d.single) != nil || d.single == nil {
+			return d, g, ErrDenied
+		}
+		resource, err := singleResource(s.profile.ID, d.single.Session)
+		if err != nil || resource != d.proof.ResourceID || !singleTabTool(d.tool) || (d.tool == "single_tab.click" && !validObservation(d.single.Observation)) {
+			return d, g, ErrDenied
+		}
+	}
 	d.proof.RunID, d.proof.SessionKey, d.proof.TaskID = d.binding.RunID, d.binding.SessionKey, d.binding.TaskID
 	e = tx.QueryRow(ctx, `SELECT grant_data FROM action_authorizations WHERE authorization_id=$1`, d.authorization).Scan(&raw)
 	if e != nil || json.Unmarshal(raw, &g) != nil || g.ID != d.authorization || g.Binding.ActionID != d.action || g.Binding.RunID != d.binding.RunID || g.Binding.ToolName != d.tool || g.Binding.ContractHash != d.contract || g.Binding.ArgsHash != d.args || g.LeaseID != d.ownerLease || g.LeaseEpoch != d.binding.LeaseEpoch || g.Binding.OwnerID != d.binding.OwnerID || g.Binding.TaskID != d.binding.TaskID || g.Binding.TaskRevision != d.binding.TaskRevision || g.Binding.ConstraintsRevision != d.binding.ConstraintsRevision || s.profile.ID != d.profile || s.profile.ContractHashes[d.tool] != d.contract {
@@ -73,6 +83,7 @@ func (s *Store) admit(ctx context.Context, r RuntimeRequest, begin bool) (Runtim
 		return RuntimeSpec{}, ErrDenied
 	}
 	ctx = ownership.WithToken(ctx, nil, ownership.Token{SessionKey: d.binding.SessionKey, RunID: d.binding.RunID, LeaseID: d.ownerLease, FenceEpoch: d.binding.LeaseEpoch})
+	ctx = s.dispatchContext(ctx, d)
 	if e = s.checkAuthority(ctx, tx, g, d.binding); e != nil {
 		return RuntimeSpec{}, e
 	}
@@ -94,7 +105,13 @@ func (s *Store) admit(ctx context.Context, r RuntimeRequest, begin bool) (Runtim
 	if e = tx.Commit(ctx); e != nil {
 		return RuntimeSpec{}, e
 	}
-	return RuntimeSpec{Lane: d.proof.ResourceID, Fence: d.proof.FenceEpoch, Deadline: d.binding.Deadline}, nil
+	spec := RuntimeSpec{Lane: d.proof.ResourceID, Fence: d.proof.FenceEpoch, Deadline: d.binding.Deadline, DispatchID: d.ticket}
+	if d.single != nil {
+		value := d.single.Session
+		spec.SingleTab = &value
+		spec.Observation = d.single.Observation
+	}
+	return spec, nil
 }
 
 // Match outcome recording's effect-before-grant/dispatch order. Stabilize the
@@ -137,6 +154,7 @@ func (s *Store) Finish(ctx context.Context, r Receipt) error {
 	phase := "unknown"
 	if r.Completed {
 		ctx = ownership.WithToken(ctx, nil, ownership.Token{SessionKey: d.binding.SessionKey, RunID: d.binding.RunID, LeaseID: d.ownerLease, FenceEpoch: d.binding.LeaseEpoch})
+		ctx = s.dispatchContext(ctx, d)
 		if e = s.checkAuthority(ctx, tx, g, d.binding); e != nil {
 			return e
 		}

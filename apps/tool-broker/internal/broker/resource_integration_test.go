@@ -28,6 +28,7 @@ import (
 	"github.com/butler/butler/internal/resourceexec"
 	"github.com/butler/butler/internal/resources"
 	"github.com/butler/butler/internal/security/egress/egresstest"
+	"github.com/butler/butler/internal/singletabcontrol"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
@@ -113,14 +114,16 @@ func (loseResourceFinish) Finish(context.Context, resourceexec.Receipt) error {
 }
 
 type resourceBrokerFixture struct {
-	pool    *pgxpool.Pool
-	server  *Server
-	auth    *actionauth.PostgresStore
-	reader  resourceReader
-	store   *resourceexec.Store
-	budgets *budget.Controller
-	backend *resourcePageBackend
-	router  *runtimeclient.Router
+	selectedTab string
+	selection   *singletabcontrol.Controller
+	pool        *pgxpool.Pool
+	server      *Server
+	auth        *actionauth.PostgresStore
+	reader      resourceReader
+	store       *resourceexec.Store
+	budgets     *budget.Controller
+	backend     *resourcePageBackend
+	router      *runtimeclient.Router
 }
 
 func resourceBroker(t *testing.T, backend *resourcePageBackend, loseReceipt bool) *resourceBrokerFixture {
@@ -268,7 +271,7 @@ func resourceBroker(t *testing.T, backend *resourcePageBackend, loseReceipt bool
 	server.SetActionAuthorizer(actionauth.NewService(auth, reader, nil))
 	server.SetBudgets(c)
 	server.SetResourceAdmission(rs)
-	return &resourceBrokerFixture{pool, server, auth, reader, rs, c, backend, router}
+	return &resourceBrokerFixture{pool: pool, server: server, auth: auth, reader: reader, store: rs, budgets: c, backend: backend, router: router}
 }
 func (f *resourceBrokerFixture) request(t *testing.T, run, id string) *toolbrokerv1.ExecuteToolCallRequest {
 	t.Helper()

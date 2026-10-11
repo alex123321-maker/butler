@@ -11,6 +11,7 @@ import (
 
 	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	flow "github.com/butler/butler/apps/orchestrator/internal/orchestrator"
+	"github.com/butler/butler/internal/singletabcontrol"
 )
 
 type approvalStore interface {
@@ -394,6 +395,9 @@ func (s *Service) ActivateFromApproval(ctx context.Context, params ActivateFromA
 	approvalRecord, err := s.approvals.GetApprovalByID(ctx, params.ApprovalID)
 	if err != nil {
 		return ActivationResult{}, err
+	}
+	if approvalRecord.ToolName == singletabcontrol.BindTool {
+		return ActivationResult{}, singletabcontrol.ErrDenied
 	}
 	if approvalRecord.ApprovalType != approvals.ApprovalTypeBrowserTabSelection {
 		return ActivationResult{}, fmt.Errorf("approval %s is not a browser tab selection", params.ApprovalID)

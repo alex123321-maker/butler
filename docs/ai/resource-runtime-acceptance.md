@@ -2,7 +2,10 @@
 
 Contributes to #17. The issue remains active. This proof covers the optional
 controlled-browser Broker/runtime boundary; production composition and the
-user's Chrome `single_tab` protocol remain separate acceptance gates.
+user's Chrome `single_tab` protocol remain separate acceptance gates. The later
+[guarded user-tab component report](single-tab-resource-acceptance.md) adds real
+synthetic Chrome/native-host proofs; installed user/channel acceptance remains
+pending.
 
 ## Reproduction
 
@@ -65,7 +68,7 @@ into `effect_confirmed`. The ordinary action journal remains authoritative.
 | --- | --- |
 | Stable trusted resource identities, bounded leases/fence/version, sorted all-or-none foundation | Existing058 foundation plus this exact browser adapter |
 | Real Broker grant/budget/resource same-TX composition and guarded runtime | Passed isolated optional adapter; production bootstrap/readiness still pending |
-| One executor on user's real Chrome tab; manual owner interference advances observation | Pending legacy `single_tab` protocol and real user-tab acceptance |
+| One executor on a selected real Chrome tab; manual interference invalidates observation | Optional guarded native/owner-library component proved separately; production human-channel composition remains pending; see single-tab report |
 | Two code fixes in separate copies and conflicting file writes | Existing isolated workspace/storage proof; production Broker/runtime callbacks pending |
 | Mutual multi-resource wait and crashed-owner recovery | Existing resource foundation proofs; no complete production tree/runtime scenario claimed |
 | Task-tree stop of workspaces/shared workers | Pending concrete production callbacks; this runtime propagates cancellation/deadline only |

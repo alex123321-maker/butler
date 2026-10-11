@@ -291,7 +291,7 @@ Butler может поддерживать отдельную tool family `singl
 * доступ привязывается к durable `single_tab_session`, а не к raw `tab_id` в model-visible contract;
 * у агента нет public tools для list/switch/open/close/focus tab и window operations;
 * follow-up `single_tab.*` action contracts могут разрешать активную durable session из текущего Butler session context, чтобы агенту не приходилось повторно передавать raw tab/session identifiers после успешного bind-flow;
-* runtime single-tab follow-up actions могут выполнять один локальный recovery-проход через `single_tab.bind` semantics при `host_unavailable`, `tab_closed` или эквивалентной потере привязки, чтобы минимизировать лишние model turns и повторные вопросы пользователю;
+* legacy single-tab runtime содержит recovery через `single_tab.bind`, но не является защищённой ресурсной границей; [guarded user-tab runtime](single-tab-resource-boundary.md) запрещает recovery/повтор и сохраняет uncertain outcome при потере ответа;
 * `single_tab.*` не поддерживает `credential_ref`, cookie injection, `storage_state` restore и другие secret-bearing browser args;
 * policy boundary строится вокруг session-bound capability и broker-side prereq checks, а не вокруг domain allowlist.
 * `single_tab.bind` использует typed `browser_tab_selection` approval: runtime запрашивает tab candidates у extension через orchestrator relay и создаёт durable approval request для Web UI + Telegram.

@@ -23,11 +23,11 @@ type fixtureAuthority struct {
 }
 
 func (a *fixtureAuthority) Inspect(context.Context, RuntimeRequest) (RuntimeSpec, error) {
-	return RuntimeSpec{"browser-tab:fixture", a.fence, a.deadline}, nil
+	return RuntimeSpec{Lane: "browser-tab:fixture", Fence: a.fence, Deadline: a.deadline}, nil
 }
 func (a *fixtureAuthority) Begin(context.Context, RuntimeRequest) (RuntimeSpec, error) {
 	a.calls.Add(1)
-	return RuntimeSpec{"browser-tab:fixture", a.fence, a.deadline}, nil
+	return RuntimeSpec{Lane: "browser-tab:fixture", Fence: a.fence, Deadline: a.deadline}, nil
 }
 func (a *fixtureAuthority) Finish(context.Context, Receipt) error {
 	if a.finishErr {
