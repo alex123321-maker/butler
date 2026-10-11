@@ -29,6 +29,7 @@ import (
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/skills"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
+	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc"
 )
 
@@ -108,7 +109,14 @@ func New(ctx context.Context) (*App, error) {
 		}
 		authorizationStore := actionauth.NewPostgresStore(postgres.Pool())
 		sourceCatalog := catalog.New(postgres.Pool(), catalog.NewFileManifest(strings.TrimSpace(os.Getenv("BUTLER_MEMORY_DELETION_MANIFEST_FILE"))))
-		authorizationStore.SetRunDataGuard(sourceCatalog.CheckRunSourcesTx)
+		authorizationStore.SetRunDataGuard(func(ctx context.Context, tx pgx.Tx, run string) error {
+			if err := sourceCatalog.CheckRunSourcesTx(ctx, tx, run); err != nil {
+				return err
+			}
+			// Accepted technical inputs retain their lifecycle guard even when
+			// new developer admissions are disabled by a later operator rollout.
+			return generatedtools.CheckContinuationRunTx(ctx, tx, sourceCatalog, run)
+		})
 		budgetPolicy, policyErr := budget.ParsePolicy(cfg.ExecutionBudgetPolicyJSON)
 		if policyErr != nil {
 			postgres.Close()

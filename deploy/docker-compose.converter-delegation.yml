@@ -1,4 +1,4 @@
-# Requires base + converters + delegation overlays, immutable053/054 schemas
+# Requires base + converters + delegation overlays, immutable053/054/055 schemas
 # and the same operator-pinned runtime profile on both sides. No new runtime.
 services:
   orchestrator:

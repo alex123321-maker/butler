@@ -164,6 +164,12 @@ these signals do not grant permissions or allow recursive child admission.
 The optional delegation and converter-delegation Compose overlays supply only
 these fixed routes/flags; use them with the existing converters overlay.
 
+The global current-source data guard also repeats immutable055 continuation
+authority before a tool claim. Already accepted `converter-return` inputs retain
+this check after new developer admission is disabled. Ordinary inputs require no
+055 record and gain no continuation authority. Core requires055 readiness before
+advertising its composed developer route.
+
 Optional controlled-browser resource admission now has explicit startup hooks:
 `SetResourceAdmission`, the same-TX actionauth `SetDispatchClaimGuard` and
 `NewResourceExecutor` around the actual private runtime router. Exact contract,

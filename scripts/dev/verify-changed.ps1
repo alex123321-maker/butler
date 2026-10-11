@@ -70,10 +70,20 @@ foreach ($file in $files) {
       [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/durable-tasks/current/scripts/dev/workspace-lab.sh /srv/storage/butler/agents/durable-tasks' after isolated source Sync")
 	  continue
 	}
-    "^(internal/generatedtools/|apps/tool-converter/|docker/tool-converter/|migrations/05[234]_|apps/orchestrator/internal/.*/.*converter|apps/tool-broker/internal/broker/converter.*[.]go$|deploy/docker-compose[.](converters|converter-delegation)[.]yml$|scripts/dev/lab-converter-container[.]sh$)" {
+    "^(apps/orchestrator/internal/orchestrator/memory_source_guard.*[.]go$|internal/budget/continuation[.]go$)" {
+      [void]$specs.Add("docs/architecture/generated-converters.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: isolated PostgreSQL go test -race ./internal/budget ./apps/orchestrator/internal/orchestrator; source checks must retain revocation, cancellation and finite deadline tests")
+      continue
+    }
+    "^(internal/generatedtools/|apps/tool-converter/|docker/tool-converter/|migrations/05[2345]_|apps/orchestrator/internal/.*/.*converter|apps/tool-broker/internal/broker/converter.*[.]go$|deploy/docker-compose[.](converters|converter-delegation)[.]yml$|scripts/dev/lab-converter-container[.]sh$)" {
       [void]$specs.Add("docs/architecture/generated-converters.md")
       [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
       [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
       [void]$tests.Add("ssh laba: actual isolated PostgreSQL go test -race ./internal/generatedtools/... ./apps/tool-converter/... ./internal/actionauth/... ./internal/skills/... ./apps/tool-broker/... ./apps/orchestrator/internal/goal")
       [void]$tests.Add("ssh laba: scripts/dev/lab-converter-container.sh /srv/storage/butler/agents/browser-sessions after explicit Sync")
       continue

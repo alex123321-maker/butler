@@ -93,8 +93,13 @@ opt-in and immutable053/054/055 readiness, compose:
 Allowance must match actual enforceable provider request limits. A smaller policy
 than a provider's declared output cannot be represented by a bookkeeping number
 alone: enforce the finite request cap or deny admission. Current main declared8192
-matches policy. Bootstrap/routing/deployment remain separate integration changes;
-no model-visible continuation endpoint or permission field is introduced.
+matches policy. Core bootstrap now composes these adapters under the existing
+developer opt-in and immutable055 readiness. A provider whose enforced output
+limit is below policy gets the same conservative policy quote as ordinary model
+admission; an output limit above policy denies startup instead of being relabeled.
+Broker's global data guard and atomic completion retain055 checks independently
+of new-admission enablement. Final deployed acceptance remains separate; no
+model-visible continuation endpoint or permission field is introduced.
 
 ## Evidence and limits
 

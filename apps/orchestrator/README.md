@@ -13,8 +13,9 @@ No constructor enables routing or deployment. See
 [the bounded converter contract](../../docs/architecture/generated-converters.md).
 The isolated converter lab helper exercises this composition through ordinary
 durable input workers, production Broker and a network-none actual runtime with
-the app race detector. Parent continuations are explicit owner inputs; native
-model planning and autonomous waiting-parent scheduling are separate gates.
+the app race detector. The earlier proof used explicit owner inputs; the055
+process proof now covers two automatic same-task continuations. Native model
+planning and final deployed acceptance remain separate gates.
 
 The optional `singletab.ResourceGuard` locks the actual approved selection for
 the separately guarded native-host status/click contracts. It requires prior
@@ -471,7 +472,7 @@ criteria are recorded in `docs/ai/delegation-admission-acceptance.md`.
 `BUTLER_CONVERTER_DELEGATION_ENABLED`, default false, adds a separate fixed
 `/internal/converter-delegation` private handler. It requires ordinary delegation,
 the guarded converter control endpoint, the exact operator runtime profile and
-immutable053/054 readiness. Both accepted roles use the same current lifecycle
+immutable053/054/055 readiness. Both accepted roles use the same current lifecycle
 manager and ordinary input workers; the context reader advertises the distinct
 developer readiness only after this composition. Provider/recovery and atomic
 completion repeat source, developer and technical-return guards before installed
@@ -489,3 +490,11 @@ pins and current private claim/fence/authority repeat at provider/recovery/final
 Its compound source verifier has a static2s bound (ordinary checks200ms), with
 uncached proposal/final/periodic checks. See
 [composition and evidence](../../docs/architecture/converter-continuations.md).
+
+Bootstrap composes this service under the existing converter-delegation flag,
+advertises readiness only after immutable055 checks, installs its opaque input
+reader, and joins continuation maintenance with existing lifecycle review.
+Its prospective allowance requires finite declared provider limits that fit the
+actual execution policy; a bookkeeping quote cannot reduce a request limit.
+Atomic final guards retain055 checks even if later new admission is disabled.
+This composition adds no default enablement or semantic completion authority.
