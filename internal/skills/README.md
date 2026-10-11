@@ -2,6 +2,10 @@
 
 This Broker-owned module stores version digests, independent validation,
 activation generations, correction grants and run usage pins in PostgreSQL.
+Procedure text lives only in the deletion-aware memory catalog as immutable
+derived DATA. Its actual verified final-message parent retains all original
+source dependencies. Deletion physically redacts derived text; history keeps
+content-free identities. A missing or restored stale deletion anchor denies reads.
 Skill prose is procedural DATA. It does not replace the operator prompt, create
 tool permissions, resolve credentials, execute scripts or fetch package URLs.
 
@@ -18,7 +22,7 @@ The fixed v1 validator checks stop/reconcile behavior and compatibility. Its
 report is not evidence that arbitrary natural-language steps ran automatically;
 an actual independently verified source trial supplies that evidence.
 
-Owner operations use `/api/v4/skills` and the owner-control token. The backend
+Owner operations use the `/skills` page, `/api/v4/skills` and the owner-control token. The backend
 relay uses separate service authentication and a fixed private endpoint. Versions
 progress candidate → tested → active. Changing the active pointer retires the
 old version; loaded runs remain pinned until revoke or incompatible dependencies.
@@ -30,7 +34,17 @@ Only description/step intent wording may differ. Inputs, source proofs, dependen
 tools, step order, checks and retry/approval rules remain exact. Other proposals
 await owner review. A procedure cannot grant capabilities by its wording.
 
-Full acceptance remains pending: derived-source deletion/restore integration and
-the actual Broker procedure/approval/restart scenario are under implementation.
-Keep `BUTLER_SKILLS_ENABLED=false` and `BUTLER_SKILL_CONTROL_URL` unset until
-combined acceptance passes. Isolated unit/PG checks are not the full release gate.
+Enable deliberately after migration 051, the shared persistent deletion anchor
+and private service authentication are configured: `BUTLER_SKILLS_ENABLED=true`
+on Broker and `BUTLER_SKILL_CONTROL_URL=http://tool-broker:8081/internal/skills`
+on Orchestrator. Defaults remain disabled. Database settings cannot redirect the
+fixed private relay. Source/result evidence is served only on the authenticated
+internal endpoint; the owner token never reaches the model or runtime.
+
+`TestReviewedSkillRealBrokerDurableApprovalE2E` runs the production Broker and
+separate reviewed runtime, actual PostgreSQL, fresh Orchestrator/provider
+instances at each approval, recipient receipts and owner-verified outcomes.
+Inference is scripted proposals; this tests control flow, not model planning
+quality. PG tests cover concurrent pins, incompatible updates, rollback,
+descriptive correction/revocation, physical source deletion and backup restore.
+See the [acceptance matrix](../../docs/architecture/reviewed-skills-acceptance.md).

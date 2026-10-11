@@ -1,6 +1,7 @@
 CREATE TABLE skill_versions (
  digest text PRIMARY KEY CHECK(digest ~ '^[a-f0-9]{64}$'), skill_id text NOT NULL,
- version text NOT NULL, owner_id text NOT NULL, manifest_text text NOT NULL,
+ version text NOT NULL, owner_id text NOT NULL, source_ref_json jsonb NOT NULL,
+ dependencies_json jsonb NOT NULL, correction_shape text NOT NULL,
  created_at timestamptz NOT NULL DEFAULT clock_timestamp(), UNIQUE(owner_id,skill_id,version)
 );
 CREATE TABLE skill_states (

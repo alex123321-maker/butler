@@ -2,15 +2,14 @@ package skills
 
 import (
 	"context"
-	"fmt"
 	"github.com/butler/butler/internal/actionauth"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/memorytest"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -32,48 +31,10 @@ func (f *fixtureAuthority) GetSkillContractTx(ctx context.Context, _ pgx.Tx, nam
 }
 func skillDB(t *testing.T) *pgxpool.Pool {
 	t.Helper()
-	dsn := os.Getenv("BUTLER_TEST_POSTGRES_URL")
-	if dsn == "" {
-		t.Skip("requires isolated PostgreSQL")
-	}
-	cfg, err := pgxpool.ParseConfig(dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !strings.HasSuffix(cfg.ConnConfig.Database, "_test") {
-		t.Fatal("requires isolated *_test DB")
-	}
+	pool := memorytest.Database(t)
 	ctx := context.Background()
-	admin, err := pgxpool.NewWithConfig(ctx, cfg)
-	if err != nil {
+	if _, err := pool.Exec(ctx, `INSERT INTO sessions(session_key,user_id,channel) VALUES('web:owner','owner','web');INSERT INTO tasks(task_id,owner_id,session_key,goal) VALUES('task','owner','web:owner','Use checked procedure');INSERT INTO runs(run_id,session_key,input_event_id,status,autonomy_mode,current_state,model_provider,started_at,updated_at,task_id,task_revision) VALUES('run','web:owner','input','running','mode_1','model_running','fixture',clock_timestamp(),clock_timestamp(),'task',1);INSERT INTO session_ownership(session_key,run_id,owner_id,lease_id,fence_epoch,expires_at) VALUES('web:owner','run','owner','lease',1,clock_timestamp()+interval '1 hour')`); err != nil {
 		t.Fatal(err)
-	}
-	schema := fmt.Sprintf("skills_%d", time.Now().UnixNano())
-	if _, err = admin.Exec(ctx, "CREATE SCHEMA "+schema); err != nil {
-		t.Fatal(err)
-	}
-	cfg.MaxConns = 2
-	cfg.ConnConfig.RuntimeParams["search_path"] = schema
-	pool, err := pgxpool.NewWithConfig(ctx, cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		pool.Close()
-		_, _ = admin.Exec(context.Background(), "DROP SCHEMA "+schema+" CASCADE")
-		admin.Close()
-	})
-	if _, err = pool.Exec(ctx, `CREATE TABLE tasks(task_id text PRIMARY KEY,owner_id text NOT NULL,status text NOT NULL,revision bigint NOT NULL,constraints_revision bigint NOT NULL,execution_policy text NOT NULL DEFAULT 'normal');INSERT INTO tasks VALUES('task','owner','active',1,1,'normal');CREATE TABLE runs(run_id text PRIMARY KEY,task_id text,task_revision bigint);INSERT INTO runs VALUES('run','task',1);CREATE TABLE session_ownership(session_key text PRIMARY KEY,run_id text NOT NULL,lease_id text NOT NULL,fence_epoch bigint NOT NULL,expires_at timestamptz NOT NULL);INSERT INTO session_ownership VALUES('web:owner','run','lease',1,clock_timestamp()+interval '1 hour')`); err != nil {
-		t.Fatal(err)
-	}
-	for _, name := range []string{"031_action_authorization.up.sql", "035_external_effect_journal.up.sql", "037_execution_budgets.up.sql", "038_owner_goals_mandates.up.sql", "038_owner_purpose_policies.up.sql", "050_reviewed_extensions.up.sql", "051_reviewed_skills.up.sql"} {
-		raw, e := os.ReadFile(filepath.Join("..", "..", "migrations", name))
-		if e != nil {
-			t.Fatal(e)
-		}
-		if _, e = pool.Exec(ctx, string(raw)); e != nil {
-			t.Fatal(e)
-		}
 	}
 	return pool
 }
@@ -83,6 +44,16 @@ func skillFixture(t *testing.T) (*Store, Manifest, *fixtureAuthority, *skillEnvi
 	env := &skillEnvironment{context: actionauth.ContextSnapshot{RunID: "run", RunState: "model_running", SessionKey: "web:owner", OwnerID: "owner", TaskID: "task", TaskStatus: "active", TaskRevision: 1, PinnedTaskRevision: 1, ConstraintsRevision: 1, LeaseID: "lease", LeaseEpoch: 1, LeaseExpiresAt: time.Now().Add(time.Hour)}, contract: a}
 	s := NewStore(skillDB(t), "owner", a, a, env)
 	ctx := owneridentity.WithActor(context.Background(), owneridentity.Actor{OwnerID: "owner", Channel: "web", DeliveryID: "owner-delivery"})
+	manifest := catalog.NewFileManifest(filepath.Join(t.TempDir(), "deletions"))
+	if err := manifest.Initialize(); err != nil {
+		t.Fatal(err)
+	}
+	s.SetSources(catalog.New(s.pool, manifest))
+	parent, err := s.sources.Put(ctx, catalog.PutSource{Kind: "document", ScopeType: "user", ScopeID: "owner", ExternalKey: "checked-result", Body: "Source proof fixture"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	a.parents = []catalog.SourceRef{{ID: parent.ID, Revision: parent.Revision, AccessRevision: parent.AccessRevision, Hash: parent.Hash}}
 	return s, m, a, env, ctx
 }
 func activeFixture(t *testing.T, s *Store, m Manifest, ctx context.Context) Record {
@@ -214,7 +185,7 @@ func TestSkillLeaseAndTaskRevocationIntegration(t *testing.T) {
 	if _, err := s.Load(ctx, "run", r.Digest, 8192); err != ErrAccess {
 		t.Fatalf("stale constraints accepted: %v", err)
 	}
-	if _, err := s.pool.Exec(ctx, `UPDATE skill_versions SET manifest_text='{}'`); err == nil {
+	if _, err := s.pool.Exec(ctx, `UPDATE skill_versions SET dependencies_json='[]'`); err == nil {
 		t.Fatal("immutable procedure changed")
 	}
 }

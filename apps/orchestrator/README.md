@@ -3,7 +3,11 @@
 [Reviewed skills](../../docs/architecture/reviewed-skills.md) use descriptions
 before selected procedural DATA and reload current pins during recovery.
 The private evidence API reads owned task/result/effect/transcript/budget APIs;
-model verdicts never activate skills. Feature acceptance remains pending.
+model verdicts never activate skills. The optional authenticated `/skills` page
+relays owner decisions to the fixed private `BUTLER_SKILL_CONTROL_URL` endpoint.
+Source access/deletion guards run before skill lifecycle and dependency guards
+through inference, dispatch and final-result admission. See the
+[actual acceptance and limits](../../docs/architecture/reviewed-skills-acceptance.md).
 
 Tool execution prepares the exact action through Broker, records required
 owner approval, then obtains a private dispatch grant tied to current task and

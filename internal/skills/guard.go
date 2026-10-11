@@ -2,6 +2,7 @@ package skills
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/extensions"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
@@ -23,17 +24,34 @@ func sortedDependencies(deps map[string]Dependency) []string {
 	return names
 }
 
+func (s *Store) checkDependenciesTx(ctx context.Context, tx pgx.Tx, deps map[string]Dependency) error {
+	reader, ok := s.contracts.(TransactionContractReader)
+	if !ok {
+		return ErrUnavailable
+	}
+	for _, name := range sortedDependencies(deps) {
+		d := deps[name]
+		c, e := reader.GetSkillContractTx(ctx, tx, name)
+		hash, he := actionauth.ContractHash(c)
+		if e != nil || he != nil || hash != d.ContractHash || c.GetContractRevision() != d.ContractRevision {
+			return ErrConflict
+		}
+	}
+	return nil
+}
+
 // CheckPinnedLifecycleTx composes after the owned source guard in the final
 // result transaction. It never performs a broker RPC while locks are held.
 func CheckPinnedLifecycleTx(ctx context.Context, tx pgx.Tx, runID string) error {
-	rows, err := tx.Query(ctx, `SELECT st.status,v.owner_id,v.manifest_text FROM skill_usages u JOIN skill_versions v USING(digest) JOIN skill_states st USING(digest) WHERE u.run_id=$1 ORDER BY u.digest FOR SHARE OF st`, runID)
+	rows, err := tx.Query(ctx, `SELECT st.status,v.owner_id,v.dependencies_json FROM skill_usages u JOIN skill_versions v USING(digest) JOIN skill_states st USING(digest) WHERE u.run_id=$1 ORDER BY u.digest FOR SHARE OF st`, runID)
 	if err != nil {
 		return err
 	}
 	deps := map[string]Dependency{}
 	owner := ""
 	for rows.Next() {
-		var state, raw, currentOwner string
+		var state, currentOwner string
+		var raw []byte
 		if err = rows.Scan(&state, &currentOwner, &raw); err != nil {
 			rows.Close()
 			return err
@@ -47,12 +65,12 @@ func CheckPinnedLifecycleTx(ctx context.Context, tx pgx.Tx, runID string) error 
 			return ErrAccess
 		}
 		owner = currentOwner
-		pack, e := Parse([]byte(raw))
-		if e != nil {
+		var dependencies []Dependency
+		if json.Unmarshal(raw, &dependencies) != nil || len(dependencies) == 0 {
 			rows.Close()
-			return e
+			return ErrUnavailable
 		}
-		for _, d := range pack.Manifest.Dependencies {
+		for _, d := range dependencies {
 			if old, ok := deps[d.Tool]; ok && old != d {
 				rows.Close()
 				return ErrConflict
@@ -78,13 +96,14 @@ func CheckPinnedLifecycleTx(ctx context.Context, tx pgx.Tx, runID string) error 
 // CheckRunTx runs after ownership/run/task/goal/source locks and before effect
 // admission. No HTTP, provider call or second pool query occurs under these locks.
 func (s *Store) CheckRunTx(ctx context.Context, tx pgx.Tx, run, owner string) error {
-	rows, err := tx.Query(ctx, `SELECT u.digest,st.status,v.manifest_text FROM skill_usages u JOIN skill_versions v USING(digest) JOIN skill_states st USING(digest) WHERE u.run_id=$1 ORDER BY u.digest FOR SHARE OF st`, run)
+	rows, err := tx.Query(ctx, `SELECT u.digest,st.status,v.dependencies_json FROM skill_usages u JOIN skill_versions v USING(digest) JOIN skill_states st USING(digest) WHERE u.run_id=$1 ORDER BY u.digest FOR SHARE OF st`, run)
 	if err != nil {
 		return err
 	}
 	packages := []Package{}
 	for rows.Next() {
-		var hash, status, raw string
+		var hash, status string
+		var raw []byte
 		if err = rows.Scan(&hash, &status, &raw); err != nil {
 			rows.Close()
 			return err
@@ -93,12 +112,12 @@ func (s *Store) CheckRunTx(ctx context.Context, tx pgx.Tx, run, owner string) er
 			rows.Close()
 			return ErrUnavailable
 		}
-		p, e := Parse([]byte(raw))
-		if e != nil || p.Digest != hash {
+		var dependencies []Dependency
+		if json.Unmarshal(raw, &dependencies) != nil || len(dependencies) == 0 {
 			rows.Close()
 			return ErrUnavailable
 		}
-		packages = append(packages, p)
+		packages = append(packages, Package{Manifest: Manifest{Dependencies: dependencies}})
 	}
 	err = rows.Err()
 	rows.Close()
@@ -111,10 +130,6 @@ func (s *Store) CheckRunTx(ctx context.Context, tx pgx.Tx, run, owner string) er
 	if owner != s.owner {
 		return ErrAccess
 	}
-	reader, ok := s.contracts.(TransactionContractReader)
-	if !ok {
-		return ErrUnavailable
-	}
 	// Stable dependency lock order across multiple loaded skills.
 	deps := map[string]Dependency{}
 	for _, p := range packages {
@@ -125,14 +140,5 @@ func (s *Store) CheckRunTx(ctx context.Context, tx pgx.Tx, run, owner string) er
 			deps[d.Tool] = d
 		}
 	}
-	names := sortedDependencies(deps)
-	for _, name := range names {
-		d := deps[name]
-		c, e := reader.GetSkillContractTx(ctx, tx, name)
-		hash, he := actionauth.ContractHash(c)
-		if e != nil || he != nil || hash != d.ContractHash || c.GetContractRevision() != d.ContractRevision {
-			return ErrConflict
-		}
-	}
-	return nil
+	return s.checkDependenciesTx(ctx, tx, deps)
 }

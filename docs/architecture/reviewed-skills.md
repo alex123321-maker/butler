@@ -56,14 +56,44 @@ source trials. Unverified attempts stay separate. Missing observations do not
 become zero billed cost; created-skill counts are not success metrics. Quality
 cannot promote a skill automatically.
 
-## Release status
+## Source privacy and publication
 
-Unit/lifecycle checks passed on isolated PG, including MaxConns=2 concurrent
-loads, stale fence/revision, interface change, rollback/revoke and immutable
-history. Full release still requires catalog-owned derived-source deletion and
-restore integration, plus an actual extension procedure across durable approval
-and restart, followed by independent outcome verification. Operator flags remain
-disabled until those pass.
+`skill_versions` stores digest, immutable dependency identities, correction shape
+and an exact catalog source reference, with no procedure prose. The private
+evidence reader binds a verified task result to its actual immutable final run
+and assistant message. The catalog expands that message's original source graph;
+citations cannot omit dependencies or authorize another scope. Stage requires a
+current owner or owned run/job proof for the complete graph. Same-owner sources
+in different scopes still require access to every parent.
+
+The raw reviewed manifest is a catalog-derived `model_candidate` DATA source.
+Deleting an original message/source recursively redacts the procedure body;
+historical version hashes, usage and lifecycle events remain inspectable.
+Restoring an older database cannot recover readable procedure text before
+deletion-anchor reconciliation. Missing anchors and missing graph edges deny
+publication or loading. Validation stores content-free owner-evidence digests.
+
+Loads pin exact source and skill versions. Source guards run before lifecycle
+and dynamic dependency guards in provider release, irreversible Broker admission
+and atomic final-result admission. Revoked skills cannot resume or dispatch;
+obsolete pins may continue only with current sources and compatible contracts.
+The source graph union is locked in catalog order before correction lifecycle
+locks. Current grant, mandate and database time are checked after lock waits.
+
+## Operations and evidence
+
+Migration 051 and the persistent memory deletion anchor are required. Broker's
+`BUTLER_SKILLS_ENABLED` and Orchestrator's fixed private
+`BUTLER_SKILL_CONTROL_URL` are explicit operator opt-ins. The authenticated
+`/skills` page stages raw manifests, shows test/lifecycle history and usage,
+reviews measured outcomes and revokes bounded correction grants. It retains the
+owner token only in page memory. Source deletion leaves metadata history without
+serving procedure text.
+
+The [acceptance matrix](reviewed-skills-acceptance.md) records actual PG,
+production Broker/recipient approval/restart and UI tests and their limits.
+The fixture does not establish a reduction in inference cost or real model
+planning errors; its measured extra load turn remains visible in quality data.
 
 The reference [Hermes skill discovery](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills/)
 uses short discovery before selected detail. Butler preserves immutable versions,

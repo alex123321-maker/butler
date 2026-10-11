@@ -147,6 +147,7 @@ func New(ctx context.Context) (*App, error) {
 				return nil, endpointErr
 			}
 			skillStore := skills.NewStore(postgres.Pool(), cfg.ExtensionOwnerID, skills.NewClient(evidenceURL, token), broker.SkillContracts{Registry: registryStore, Extensions: extensionStore}, broker.SkillEnvironment{Contexts: reader, Catalog: catalog})
+			skillStore.SetSources(sourceCatalog)
 			server.SetCatalogExecutor(&skills.RoutedExecutor{Store: skillStore, Next: router})
 			authorizationStore.SetContractGuard(broker.CatalogGuards{Extensions: extensionStore, Skills: skillStore})
 			skillHandler = skills.NewHandler(token, skillStore)

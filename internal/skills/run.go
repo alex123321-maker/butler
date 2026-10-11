@@ -9,6 +9,9 @@ import (
 
 	"github.com/butler/butler/internal/actionauth"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/owneridentity"
+	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -37,6 +40,10 @@ func (s *Store) checkRunTx(ctx context.Context, tx pgx.Tx, c actionauth.ContextS
 	if err := tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&at); err != nil || !expires.After(at) {
 		return ErrAccess
 	}
+	var sessionOwner string
+	if err := tx.QueryRow(ctx, `SELECT user_id FROM sessions WHERE session_key=$1 FOR KEY SHARE`, c.SessionKey).Scan(&sessionOwner); err != nil || sessionOwner != c.OwnerID {
+		return ErrAccess
+	}
 	var pinned string
 	var pinnedRev int64
 	// Exclusive run lock also serializes bounded usage insertion. Acquire it
@@ -51,6 +58,12 @@ func (s *Store) checkRunTx(ctx context.Context, tx pgx.Tx, c actionauth.ContextS
 	}
 	_, err := actionauth.CheckTaskAuthorityTx(ctx, tx, c.TaskID, c.OwnerID, c.Authority, at)
 	return err
+}
+func runContext(ctx context.Context, c actionauth.ContextSnapshot) context.Context {
+	// Even an owner control call routed to a run must use current run authority,
+	// not accidentally inherit the actor's unrestricted owner memory view.
+	ctx = owneridentity.WithActor(ctx, owneridentity.Actor{})
+	return ownership.WithToken(ctx, nil, ownership.Token{SessionKey: c.SessionKey, RunID: c.RunID, LeaseID: c.LeaseID, FenceEpoch: c.LeaseEpoch})
 }
 func dependenciesMatch(p Package, contracts []*toolbrokerv1.ToolContract) bool {
 	byName := map[string]*toolbrokerv1.ToolContract{}
@@ -70,6 +83,18 @@ func (s *Store) Index(ctx context.Context, run, query string, limit int) ([]Desc
 	c, err := s.run(ctx, run)
 	if err != nil || len(query) > 256 {
 		return nil, ErrAccess
+	}
+	ctx = runContext(ctx, c)
+	tx, e := s.pool.Begin(ctx)
+	if e != nil {
+		return nil, e
+	}
+	if e = s.checkRunTx(ctx, tx, c); e != nil {
+		_ = tx.Rollback(ctx)
+		return nil, e
+	}
+	if e = tx.Commit(ctx); e != nil {
+		return nil, e
 	}
 	contracts, err := s.environment.ContractsForRun(ctx, run)
 	if err != nil {
@@ -124,22 +149,15 @@ func (s *Store) Load(ctx context.Context, run, hash string, maxBytes int) (Packa
 	if err != nil {
 		return Package{}, err
 	}
-	r, err := s.Get(ctx, hash)
-	if err != nil {
-		return Package{}, err
-	}
+	ctx = runContext(ctx, c)
 	contracts, err := s.environment.ContractsForRun(ctx, run)
-	if err != nil || !dependenciesMatch(r.Package, contracts) {
+	if err != nil {
 		return Package{}, ErrConflict
 	}
 	if maxBytes <= 0 {
 		maxBytes = 8192
 	}
 	if maxBytes > 16384 {
-		return Package{}, ErrManifest
-	}
-	data, _ := json.Marshal(r.Package.Manifest)
-	if len(data) > maxBytes {
 		return Package{}, ErrManifest
 	}
 	tx, err := s.pool.Begin(ctx)
@@ -149,6 +167,17 @@ func (s *Store) Load(ctx context.Context, run, hash string, maxBytes int) (Packa
 	defer tx.Rollback(ctx)
 	if err = s.checkRunTx(ctx, tx, c); err != nil {
 		return Package{}, err
+	}
+	r, err := s.read(ctx, tx, hash)
+	if err != nil {
+		return Package{}, err
+	}
+	if !dependenciesMatch(r.Package, contracts) {
+		return Package{}, ErrConflict
+	}
+	data, _ := json.Marshal(r.Package.Manifest)
+	if len(data) > maxBytes {
+		return Package{}, ErrManifest
 	}
 	var status string
 	var active, pinned bool
@@ -209,6 +238,7 @@ func (s *Store) Propose(ctx context.Context, run string, p Package) (Record, err
 	if err != nil {
 		return Record{}, err
 	}
+	ctx = runContext(ctx, c)
 	contracts, err := s.environment.ContractsForRun(ctx, run)
 	if err != nil || !dependenciesMatch(p, contracts) {
 		return Record{}, ErrAccess
@@ -251,22 +281,68 @@ func (s *Store) autoPromote(ctx context.Context, c actionauth.ContextSnapshot, h
 	if _, _, err = actionauth.CheckAssignmentTx(ctx, tx, *c.Authority, at); err != nil {
 		return Record{}, err
 	}
-	r, err := s.read(ctx, tx, hash)
+	r, err := s.metadata(ctx, tx, hash)
 	if err != nil {
 		return r, err
 	}
 	var parent string
 	var generation int64
-	if err = tx.QueryRow(ctx, `SELECT COALESCE(active_digest,''),generation FROM skill_catalog WHERE skill_id=$1 FOR UPDATE`, r.ID).Scan(&parent, &generation); err != nil || parent == "" {
+	if err = tx.QueryRow(ctx, `SELECT COALESCE(active_digest,''),generation FROM skill_catalog WHERE skill_id=$1`, r.ID).Scan(&parent, &generation); err != nil || parent == "" {
 		return r, ErrConflict
 	}
-	old, err := s.read(ctx, tx, parent)
-	if err != nil || CorrectionShape(old.Package.Manifest) != CorrectionShape(r.Package.Manifest) {
+	old, err := s.metadata(ctx, tx, parent)
+	if err != nil || old.shape != r.shape {
 		return r, ErrConflict
 	}
-	var grants int
-	if err = tx.QueryRow(ctx, `SELECT count(*) FROM skill_correction_grants WHERE skill_id=$1 AND parent_digest=$2 AND owner_id=$3 AND class='descriptive_correction_v1' AND mandate_id=$4 AND mandate_revision=$5 AND purpose=$6 AND NOT revoked AND expires_at>$7`, r.ID, parent, c.OwnerID, c.Authority.MandateID, c.Authority.MandateRevision, c.Authority.Purpose, at).Scan(&grants); err != nil || grants != 1 {
+	// Lock the complete union in catalog order before reading either body. Two
+	// corrections with different derived roots must not lock shared parents in
+	// opposite orders. Publication still needs current run/source authority.
+	if _, err = s.sources.AccessTx(ctx, tx, []catalog.SourceRef{r.BodySource, old.BodySource}, "memory_read"); err != nil {
+		return r, ErrUnavailable
+	}
+	if r, err = s.read(ctx, tx, hash); err != nil {
+		return r, err
+	}
+	if _, err = s.read(ctx, tx, parent); err != nil {
+		return r, err
+	}
+	// Both source graphs are validated before acquiring catalog/state locks.
+	var currentParent string
+	var currentGeneration int64
+	if err = tx.QueryRow(ctx, `SELECT COALESCE(active_digest,''),generation FROM skill_catalog WHERE skill_id=$1 FOR UPDATE`, r.ID).Scan(&currentParent, &currentGeneration); err != nil || currentParent != parent || currentGeneration != generation {
+		return r, ErrConflict
+	}
+	if err = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&at); err != nil {
+		return r, err
+	}
+	if _, _, err = actionauth.CheckAssignmentTx(ctx, tx, *c.Authority, at); err != nil {
+		return r, err
+	}
+	rows, err := tx.Query(ctx, `SELECT expires_at FROM skill_correction_grants WHERE skill_id=$1 AND parent_digest=$2 AND owner_id=$3 AND class='descriptive_correction_v1' AND mandate_id=$4 AND mandate_revision=$5 AND purpose=$6 AND NOT revoked AND expires_at>$7 FOR SHARE`, r.ID, parent, c.OwnerID, c.Authority.MandateID, c.Authority.MandateRevision, c.Authority.Purpose, at)
+	if err != nil {
+		return r, err
+	}
+	grants := 0
+	var grantExpiry time.Time
+	for rows.Next() {
+		grants++
+		if err = rows.Scan(&grantExpiry); err != nil {
+			rows.Close()
+			return r, err
+		}
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil || grants != 1 {
 		return r, ErrAccess
+	}
+	// A grant lock can wait for concurrent revocation. Recheck database time
+	// and the complete mandate after that wait, before changing active state.
+	if err = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&at); err != nil || !grantExpiry.After(at) {
+		return r, ErrAccess
+	}
+	if _, _, err = actionauth.CheckAssignmentTx(ctx, tx, *c.Authority, at); err != nil {
+		return r, err
 	}
 	r, err = s.activate(ctx, tx, hash, generation, map[string]any{"kind": "mandated_descriptive_correction", "run_id": c.RunID, "assignment": c.Authority})
 	if err != nil {

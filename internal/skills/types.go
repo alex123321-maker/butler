@@ -5,6 +5,7 @@ import (
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/budget"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/memory/catalog"
 	"time"
 )
 
@@ -12,16 +13,17 @@ import (
 // model verdict. Text/effect evidence is omitted: only stable references enter.
 type SourceProof struct {
 	EvidenceRef
-	OwnerID            string             `json:"owner_id"`
-	Verifier           string             `json:"verifier"`
-	Verdict            string             `json:"verdict"`
-	EvidenceRefs       []string           `json:"evidence_refs"`
-	ConfirmedTools     []string           `json:"confirmed_tools"`
-	ConfirmedContracts []Dependency       `json:"confirmed_contracts"`
-	ConfirmedActions   []string           `json:"confirmed_actions"`
-	Failures           int64              `json:"failures"`
-	ModelAttempts      int64              `json:"model_attempts"`
-	ModelUsage         *budget.ModelUsage `json:"model_usage,omitempty"`
+	OwnerID            string              `json:"owner_id"`
+	Verifier           string              `json:"verifier"`
+	Verdict            string              `json:"verdict"`
+	EvidenceRefs       []string            `json:"evidence_refs"`
+	ConfirmedTools     []string            `json:"confirmed_tools"`
+	ConfirmedContracts []Dependency        `json:"confirmed_contracts"`
+	ConfirmedActions   []string            `json:"confirmed_actions"`
+	Failures           int64               `json:"failures"`
+	ModelAttempts      int64               `json:"model_attempts"`
+	ModelUsage         *budget.ModelUsage  `json:"model_usage,omitempty"`
+	ContentParents     []catalog.SourceRef `json:"content_parents"`
 }
 type EvidenceVerifier interface {
 	VerifySkillSources(context.Context, string, []EvidenceRef) ([]SourceProof, error)
@@ -40,13 +42,18 @@ type Validation struct {
 	Sources   []SourceProof `json:"sources"`
 }
 type Record struct {
-	ID         string  `json:"skill_id"`
-	OwnerID    string  `json:"owner_id"`
-	Digest     string  `json:"digest"`
-	Generation int64   `json:"generation"`
-	Status     string  `json:"status"`
-	Active     bool    `json:"active"`
-	Package    Package `json:"package"`
+	ID            string            `json:"skill_id"`
+	OwnerID       string            `json:"owner_id"`
+	Digest        string            `json:"digest"`
+	Generation    int64             `json:"generation"`
+	Status        string            `json:"status"`
+	Active        bool              `json:"active"`
+	Package       Package           `json:"package"`
+	Version       string            `json:"version"`
+	BodySource    catalog.SourceRef `json:"body_source"`
+	BodyAvailable bool              `json:"body_available"`
+	dependencies  []Dependency
+	shape         string
 }
 type Descriptor struct {
 	ID          string `json:"skill_id"`

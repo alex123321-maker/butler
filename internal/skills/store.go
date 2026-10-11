@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,6 +20,7 @@ type Store struct {
 	verifier    EvidenceVerifier
 	contracts   ContractReader
 	environment RunEnvironment
+	sources     *catalog.Store
 }
 
 type proposalAuthorityKey struct{}
@@ -31,8 +33,11 @@ func (s *Store) guardProposalTx(ctx context.Context, tx pgx.Tx) error {
 }
 
 func NewStore(pool *pgxpool.Pool, owner string, verifier EvidenceVerifier, contracts ContractReader, environment RunEnvironment) *Store {
-	return &Store{pool, owner, verifier, contracts, environment}
+	return &Store{pool: pool, owner: owner, verifier: verifier, contracts: contracts, environment: environment}
 }
+
+// SetSources is startup-only wiring to the owned deletion-aware catalog.
+func (s *Store) SetSources(sources *catalog.Store) { s.sources = sources }
 func (s *Store) actor(ctx context.Context) (owneridentity.Actor, error) {
 	a, ok := owneridentity.FromContext(ctx)
 	if !ok || s == nil || s.pool == nil || s.owner == "" || a.OwnerID != s.owner || a.DeliveryID == "" {
@@ -46,22 +51,49 @@ type query interface {
 	QueryRow(context.Context, string, ...any) pgx.Row
 }
 
-func (s *Store) read(ctx context.Context, q query, hash string) (Record, error) {
+func (s *Store) metadata(ctx context.Context, q query, hash string) (Record, error) {
 	var r Record
-	var raw string
-	err := q.QueryRow(ctx, `SELECT v.skill_id,v.owner_id,v.digest,c.generation,s.status,COALESCE(c.active_digest=v.digest,false),v.manifest_text FROM skill_versions v JOIN skill_states s USING(digest) JOIN skill_catalog c ON c.skill_id=v.skill_id WHERE v.digest=$1 AND v.owner_id=$2`, hash, s.owner).Scan(&r.ID, &r.OwnerID, &r.Digest, &r.Generation, &r.Status, &r.Active, &raw)
+	var ref, deps []byte
+	err := q.QueryRow(ctx, `SELECT v.skill_id,v.owner_id,v.digest,c.generation,s.status,COALESCE(c.active_digest=v.digest,false),v.version,v.source_ref_json,v.dependencies_json,v.correction_shape FROM skill_versions v JOIN skill_states s USING(digest) JOIN skill_catalog c ON c.skill_id=v.skill_id WHERE v.digest=$1 AND v.owner_id=$2`, hash, s.owner).Scan(&r.ID, &r.OwnerID, &r.Digest, &r.Generation, &r.Status, &r.Active, &r.Version, &ref, &deps, &r.shape)
 	if err != nil {
 		return r, ErrUnavailable
 	}
-	p, err := Parse([]byte(raw))
-	if err != nil || p.Digest != hash {
+	if json.Unmarshal(ref, &r.BodySource) != nil || json.Unmarshal(deps, &r.dependencies) != nil || r.BodySource.ID == "" || len(r.dependencies) == 0 {
+		return r, ErrUnavailable
+	}
+	return r, nil
+}
+func (s *Store) read(ctx context.Context, tx pgx.Tx, hash string) (Record, error) {
+	r, err := s.metadata(ctx, tx, hash)
+	if err != nil {
+		return r, err
+	}
+	if s.sources == nil {
+		return r, ErrUnavailable
+	}
+	data, err := s.sources.AccessTx(ctx, tx, []catalog.SourceRef{r.BodySource}, "memory_read")
+	if err != nil || len(data) != 1 {
+		return r, ErrUnavailable
+	}
+	p, err := Parse([]byte(data[0].Body))
+	if err != nil || p.Digest != hash || p.Manifest.ID != r.ID || p.Manifest.Version != r.Version || encoded(p.Manifest.Dependencies) != encoded(r.dependencies) || CorrectionShape(p.Manifest) != r.shape {
 		return r, ErrUnavailable
 	}
 	r.Package = p
+	r.BodyAvailable = true
 	return r, nil
 }
 func (s *Store) Get(ctx context.Context, hash string) (Record, error) {
-	return s.read(ctx, s.pool, hash)
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return Record{}, err
+	}
+	defer tx.Rollback(ctx)
+	r, err := s.read(ctx, tx, hash)
+	if err != nil {
+		return r, err
+	}
+	return r, tx.Commit(ctx)
 }
 func event(ctx context.Context, tx pgx.Tx, r Record, kind string, source any) error {
 	_, err := tx.Exec(ctx, `INSERT INTO skill_events(skill_id,digest,generation,kind,source_json) VALUES($1,$2,$3,$4,$5::jsonb)`, r.ID, r.Digest, r.Generation, kind, encoded(source))
@@ -79,6 +111,32 @@ func (s *Store) stage(ctx context.Context, p Package, source any) (Record, error
 	if err != nil || fresh.Digest != p.Digest {
 		return Record{}, ErrManifest
 	}
+	if s.sources == nil {
+		return Record{}, ErrUnavailable
+	}
+	// Provenance is independently resolved before opening the publication
+	// transaction. Submitted task IDs or caller test reports grant no access.
+	report, err := Validate(ctx, p, s.owner, s.verifier, s.contracts)
+	if err != nil {
+		return Record{}, err
+	}
+	parents := []catalog.SourceRef{}
+	seen := map[string]catalog.SourceRef{}
+	for _, proof := range report.Sources {
+		for _, ref := range proof.ContentParents {
+			if old, ok := seen[ref.ID]; ok {
+				if old != ref {
+					return Record{}, ErrEvidence
+				}
+				continue
+			}
+			seen[ref.ID] = ref
+			parents = append(parents, ref)
+		}
+	}
+	if len(parents) == 0 || len(parents) > 64 {
+		return Record{}, ErrEvidence
+	}
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return Record{}, err
@@ -87,6 +145,26 @@ func (s *Store) stage(ctx context.Context, p Package, source any) (Record, error
 	if err = s.guardProposalTx(ctx, tx); err != nil {
 		return Record{}, err
 	}
+	// Source graph locks precede skill lifecycle locks. Text exists only in the
+	// deletion-aware catalog; immutable skill history contains no procedure prose.
+	var bodyRef catalog.SourceRef
+	var existing []byte
+	if e := tx.QueryRow(ctx, `SELECT source_ref_json FROM skill_versions WHERE digest=$1 AND owner_id=$2`, p.Digest, s.owner).Scan(&existing); e == nil {
+		if json.Unmarshal(existing, &bodyRef) != nil {
+			return Record{}, ErrUnavailable
+		}
+		if _, e = s.sources.AccessTx(ctx, tx, []catalog.SourceRef{bodyRef}, "memory_read"); e != nil {
+			return Record{}, ErrUnavailable
+		}
+	} else if e == pgx.ErrNoRows {
+		body, e := s.sources.CreateDerivedTx(ctx, tx, parents, "memory_read", p.Manifest.ID, string(p.Raw), json.RawMessage(encoded(map[string]string{"kind": "reviewed_skill_v1", "digest": p.Digest})))
+		if e != nil {
+			return Record{}, e
+		}
+		bodyRef = catalog.SourceRef{ID: body.ID, Revision: body.Revision, AccessRevision: body.AccessRevision, Hash: body.Hash}
+	} else {
+		return Record{}, e
+	}
 	if _, err = tx.Exec(ctx, `INSERT INTO skill_catalog(skill_id,owner_id,generation) VALUES($1,$2,1) ON CONFLICT DO NOTHING`, p.Manifest.ID, s.owner); err != nil {
 		return Record{}, err
 	}
@@ -94,7 +172,7 @@ func (s *Store) stage(ctx context.Context, p Package, source any) (Record, error
 	if err = tx.QueryRow(ctx, `SELECT owner_id FROM skill_catalog WHERE skill_id=$1 FOR UPDATE`, p.Manifest.ID).Scan(&owner); err != nil || owner != s.owner {
 		return Record{}, ErrAccess
 	}
-	if _, err = tx.Exec(ctx, `INSERT INTO skill_versions(digest,skill_id,version,owner_id,manifest_text) VALUES($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING`, p.Digest, p.Manifest.ID, p.Manifest.Version, s.owner, string(p.Raw)); err != nil {
+	if _, err = tx.Exec(ctx, `INSERT INTO skill_versions(digest,skill_id,version,owner_id,source_ref_json,dependencies_json,correction_shape) VALUES($1,$2,$3,$4,$5::jsonb,$6::jsonb,$7) ON CONFLICT DO NOTHING`, p.Digest, p.Manifest.ID, p.Manifest.Version, s.owner, encoded(bodyRef), encoded(p.Manifest.Dependencies), CorrectionShape(p.Manifest)); err != nil {
 		return Record{}, err
 	}
 	// A conflicting semantic version cannot silently point at new raw bytes.
@@ -105,10 +183,12 @@ func (s *Store) stage(ctx context.Context, p Package, source any) (Record, error
 	if _, err = tx.Exec(ctx, `INSERT INTO skill_states(digest,status) VALUES($1,'candidate') ON CONFLICT DO NOTHING`, p.Digest); err != nil {
 		return Record{}, err
 	}
-	r, err := s.read(ctx, tx, p.Digest)
+	r, err := s.metadata(ctx, tx, p.Digest)
 	if err != nil {
 		return r, err
 	}
+	r.Package = p
+	r.BodyAvailable = true
 	if err = event(ctx, tx, r, "candidate", source); err != nil {
 		return r, err
 	}
@@ -133,6 +213,9 @@ func (s *Store) test(ctx context.Context, hash string, source any) (Validation, 
 	}
 	defer tx.Rollback(ctx)
 	if err = s.guardProposalTx(ctx, tx); err != nil {
+		return report, err
+	}
+	if _, err = s.read(ctx, tx, hash); err != nil {
 		return report, err
 	}
 	var status string
@@ -193,6 +276,15 @@ func (s *Store) activate(ctx context.Context, tx pgx.Tx, hash string, generation
 	if err = tx.QueryRow(ctx, `SELECT status,COALESCE((SELECT (report_json->>'passed')::boolean FROM skill_validations WHERE digest=$1 ORDER BY validation_id DESC LIMIT 1),false) FROM skill_states WHERE digest=$1 FOR UPDATE`, hash).Scan(&status, &passed); err != nil || !passed || status == "candidate" || status == "revoked" {
 		return r, ErrEvidence
 	}
+	deps := map[string]Dependency{}
+	for _, d := range r.dependencies {
+		deps[d.Tool] = d
+	}
+	// A previous HTTP validation does not authorize activation after a
+	// concurrent interface change. Check current owned contracts in this TX.
+	if err = s.checkDependenciesTx(ctx, tx, deps); err != nil {
+		return r, err
+	}
 	if old != "" && old != hash {
 		if _, err = tx.Exec(ctx, `UPDATE skill_states SET status='obsolete' WHERE digest=$1 AND status='active'`, old); err != nil {
 			return r, err
@@ -225,7 +317,7 @@ func (s *Store) Disable(ctx context.Context, hash string, generation int64, revo
 		return Record{}, err
 	}
 	defer tx.Rollback(ctx)
-	r, err := s.read(ctx, tx, hash)
+	r, err := s.metadata(ctx, tx, hash)
 	if err != nil || r.Status == "revoked" {
 		if err == nil {
 			err = ErrUnavailable
@@ -280,7 +372,12 @@ func (s *Store) List(ctx context.Context) ([]Record, error) {
 	for _, id := range ids {
 		r, e := s.Get(ctx, id)
 		if e != nil {
-			return nil, e
+			// Content removal keeps digest/lifecycle audit inspectable, while no
+			// body can be returned from a deleted or restored stale source.
+			r, e = s.metadata(ctx, s.pool, id)
+			if e != nil {
+				return nil, e
+			}
 		}
 		result = append(result, r)
 	}
@@ -299,7 +396,7 @@ func (s *Store) GrantCorrection(ctx context.Context, g CorrectionGrant) error {
 		return err
 	}
 	defer tx.Rollback(ctx)
-	r, err := s.read(ctx, tx, g.ParentDigest)
+	r, err := s.metadata(ctx, tx, g.ParentDigest)
 	if err != nil || !r.Active || r.ID != g.SkillID {
 		return ErrConflict
 	}
@@ -326,7 +423,7 @@ func (s *Store) RevokeCorrection(ctx context.Context, id string) error {
 	if err = tx.QueryRow(ctx, `UPDATE skill_correction_grants SET revoked=true WHERE grant_id=$1 AND owner_id=$2 RETURNING parent_digest`, id, s.owner).Scan(&hash); err != nil {
 		return ErrUnavailable
 	}
-	r, err := s.read(ctx, tx, hash)
+	r, err := s.metadata(ctx, tx, hash)
 	if err != nil {
 		return err
 	}

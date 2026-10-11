@@ -2,11 +2,15 @@ package app
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"sort"
 
+	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/budget"
+	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/skills"
 )
@@ -18,6 +22,8 @@ type skillEvidence struct {
 	journal    *actionauth.PostgresStore
 	transcript *transcript.Store
 	budgets    *budget.Ledger
+	results    *completion.Coordinator
+	sources    *catalog.Store
 }
 
 func skillCatalogIfEnabled(client *skills.Client) interface {
@@ -57,7 +63,27 @@ func (v *skillEvidence) VerifySkillSources(ctx context.Context, owner string, re
 		if err != nil {
 			return nil, skills.ErrEvidence
 		}
-		p := skills.SourceProof{EvidenceRef: ref, OwnerID: owner, Verifier: result.Verifier, Verdict: result.Verdict, EvidenceRefs: append([]string(nil), result.EvidenceRefs...), ConfirmedTools: []string{}, ConfirmedActions: []string{}}
+		p := skills.SourceProof{EvidenceRef: ref, OwnerID: owner, Verifier: result.Verifier, Verdict: result.Verdict, ConfirmedTools: []string{}, ConfirmedActions: []string{}}
+		// Owner evidence labels can contain private prose. Validation history
+		// stores content-free identities; the original result/source graph owns
+		// access and deletion of the actual text.
+		for _, ref := range result.EvidenceRefs {
+			sum := sha256.Sum256([]byte(ref))
+			p.EvidenceRefs = append(p.EvidenceRefs, "owner-evidence-sha256:"+hex.EncodeToString(sum[:]))
+		}
+		if v.results == nil || v.sources == nil {
+			return nil, skills.ErrEvidence
+		}
+		// Owner verification is a separate immutable task result, not an UPDATE
+		// of the model final. Bind it to the same actual final run/task revision.
+		final, err := v.results.GetByRun(ctx, result.RunID)
+		if err != nil || final.RunID != result.RunID || final.TaskID != ref.TaskID || final.TaskRevision != ref.TaskRevision {
+			return nil, skills.ErrEvidence
+		}
+		p.ContentParents, err = v.sources.VerifiedResultParents(ctx, owner, final.MessageID, final.RunID)
+		if err != nil || len(p.ContentParents) == 0 {
+			return nil, skills.ErrEvidence
+		}
 		seen := map[string]bool{}
 		for _, effect := range effects {
 			if effect.EffectState != actionauth.StateConfirmed || len(effect.EvidenceRefs) == 0 {

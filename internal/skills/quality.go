@@ -33,7 +33,8 @@ func (s *Store) Quality(ctx context.Context, hash string) (QualityReport, error)
 		return r, ErrUnavailable
 	}
 	for i, o := range r.Outcomes {
-		if o.Usage != usages[i] {
+		u := usages[i]
+		if o.Usage.RunID != u.RunID || o.Usage.TaskID != u.TaskID || o.Usage.TaskRevision != u.TaskRevision || o.Usage.ConstraintsRevision != u.ConstraintsRevision || o.Usage.Digest != u.Digest || !o.Usage.LoadedAt.Equal(u.LoadedAt) {
 			return r, ErrEvidence
 		}
 		if o.Verdict == "verified" {

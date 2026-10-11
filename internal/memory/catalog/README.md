@@ -56,3 +56,10 @@ publishes only candidates and rejects a changed body under an existing key.
 `DedupKey` is not an HTTP/model field; ordinary owner manual proposals keep their
 random identity. Migration043 preserves only opaque IDs/hashes/times separately
 from source/claim text, including after catalog deletion.
+
+`VerifiedResultParents` is a content-free historical evidence bridge for reviewed
+skills. It binds the actual assistant message to its run, checks restore identity
+and every original run/source edge, and returns the exact final-message root.
+It grants no publication authority. `CreateDerivedTx` requires a fresh current
+owner/run/job proof for all parents; deletion of any original dependency erases
+the procedure body while content-free skill audit remains in migration051.

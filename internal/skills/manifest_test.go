@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/butler/butler/internal/actionauth"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/memory/catalog"
 	"strings"
 	"testing"
 )
@@ -12,6 +13,7 @@ import (
 type fixtureAuthority struct {
 	contract *toolbrokerv1.ToolContract
 	invalid  bool
+	parents  []catalog.SourceRef
 }
 
 func (f *fixtureAuthority) GetSkillContract(context.Context, string) (*toolbrokerv1.ToolContract, error) {
@@ -25,7 +27,11 @@ func (f *fixtureAuthority) VerifySkillSources(_ context.Context, owner string, r
 		if f.invalid {
 			verdict = "unverified"
 		}
-		r = append(r, SourceProof{EvidenceRef: ref, OwnerID: owner, Verifier: "owner", Verdict: verdict, EvidenceRefs: []string{"receipt:confirmed"}, ConfirmedTools: []string{f.contract.ToolName}, ConfirmedContracts: []Dependency{{f.contract.ToolName, hash, f.contract.ContractRevision}}, ConfirmedActions: []string{"action-confirmed"}})
+		parents := f.parents
+		if len(parents) == 0 {
+			parents = []catalog.SourceRef{{ID: "source:fixture", Revision: 1, AccessRevision: 1, Hash: strings.Repeat("a", 64)}}
+		}
+		r = append(r, SourceProof{EvidenceRef: ref, OwnerID: owner, Verifier: "owner", Verdict: verdict, EvidenceRefs: []string{"receipt:confirmed"}, ConfirmedTools: []string{f.contract.ToolName}, ConfirmedContracts: []Dependency{{f.contract.ToolName, hash, f.contract.ContractRevision}}, ConfirmedActions: []string{"action-confirmed"}, ContentParents: parents})
 	}
 	return r, nil
 }

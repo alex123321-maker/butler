@@ -17,7 +17,7 @@ func Validate(ctx context.Context, p Package, owner string, verifier EvidenceVer
 	}
 	covered := map[string]bool{}
 	for i, proof := range proofs {
-		if proof.EvidenceRef != p.Manifest.Sources[i] || proof.OwnerID != owner || proof.Verifier != "owner" || proof.Verdict != "verified" || len(proof.EvidenceRefs) == 0 || len(proof.ConfirmedActions) == 0 {
+		if proof.EvidenceRef != p.Manifest.Sources[i] || proof.OwnerID != owner || proof.Verifier != "owner" || proof.Verdict != "verified" || len(proof.EvidenceRefs) == 0 || len(proof.ConfirmedActions) == 0 || len(proof.ContentParents) == 0 {
 			return report, ErrEvidence
 		}
 		for _, d := range proof.ConfirmedContracts {
