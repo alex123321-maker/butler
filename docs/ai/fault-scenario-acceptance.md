@@ -61,6 +61,16 @@ perfect scorer unit fixture are not model quality evidence.
 
 ## Recorded lab runs
 
+The later integrated Full run on `7b1e1e2bd703d33357a9b1ce0bd420f2813eef13`
+passed 28 groups / 137 required top-level executions, with eight scenarios PASS
+and five PENDING. It makes programmatic security/provenance tests mandatory,
+including child source grants and fixed transport failure diagnostics. The
+[content-free report](../../deploy/security/acceptance-20261011.json) and
+[security audit](security-acceptance.md) pin exact evidence. Actual model calls
+remain zero, `selected_passed=true`, `issue_33_ready=false`. Private proof:
+`/srv/storage/butler/agents/issue-completion/reports/fault-20261011T043536Z-3667778`.
+The older runs below remain their original measurements.
+
 The final Full run passed **20 groups / 104 required top-level executions** on
 the lab, including 13 core Go/PG/Redis groups with race detection, actual
 Chromium, Broker/credential and installed extension processes, and the three
