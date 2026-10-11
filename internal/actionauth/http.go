@@ -46,7 +46,9 @@ func NewHTTPContextReader(endpoint, token string) (*HTTPContextReader, error) {
 	if err != nil || u.Hostname() == "" || u.User != nil || (u.Scheme != "http" && u.Scheme != "https") || token == "" {
 		return nil, fmt.Errorf("private action authority endpoint and token are required")
 	}
-	return &HTTPContextReader{endpoint: endpoint, token: token, client: &http.Client{Timeout: 3 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}, nil
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.Proxy = nil // provider proxy configuration cannot receive private service credentials
+	return &HTTPContextReader{endpoint: endpoint, token: token, client: &http.Client{Transport: transport, Timeout: 3 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}, nil
 }
 func (c *HTTPContextReader) read(ctx context.Context, request contextRequest) (contextResponse, error) {
 	var response contextResponse
