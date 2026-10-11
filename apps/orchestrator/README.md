@@ -452,3 +452,5 @@ developer readiness only after this composition. Provider/recovery and atomic
 completion repeat source, developer and technical-return guards before installed
 converter guards. A child report or local acknowledgement never completes a task.
 See [generated converters](../../docs/architecture/generated-converters.md).
+Compose operators add the explicit delegation and converter-delegation overlays
+alongside the existing converters overlay; the base stack keeps both roles off.

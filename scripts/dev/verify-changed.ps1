@@ -26,7 +26,7 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "^(apps/orchestrator/internal/app/delegation_admission.*[.]go$|apps/tool-broker/internal/broker/delegation.*[.]go$|migrations/061_delegation_admission[.]|scripts/dev/delegation-admission-lab[.]sh$)" {
+    "^(apps/orchestrator/internal/app/delegation_admission.*[.]go$|apps/tool-broker/internal/broker/delegation.*[.]go$|migrations/061_delegation_admission[.]|deploy/docker-compose[.]delegation[.]yml$|scripts/dev/delegation-admission-lab[.]sh$)" {
       [void]$specs.Add("docs/architecture/delegation-contract.md")
       [void]$specs.Add("docs/architecture/action-authorization-contract.md")
       [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
@@ -61,7 +61,7 @@ foreach ($file in $files) {
       [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/durable-tasks/current/scripts/dev/workspace-lab.sh /srv/storage/butler/agents/durable-tasks' after isolated source Sync")
 	  continue
 	}
-    "^(internal/generatedtools/|apps/tool-converter/|docker/tool-converter/|migrations/052_|apps/orchestrator/internal/.*/.*converter|apps/tool-broker/internal/broker/converters[.]go$|deploy/docker-compose[.]converters[.]yml$|scripts/dev/lab-converter-container[.]sh$)" {
+    "^(internal/generatedtools/|apps/tool-converter/|docker/tool-converter/|migrations/05[234]_|apps/orchestrator/internal/.*/.*converter|apps/tool-broker/internal/broker/converter.*[.]go$|deploy/docker-compose[.](converters|converter-delegation)[.]yml$|scripts/dev/lab-converter-container[.]sh$)" {
       [void]$specs.Add("docs/architecture/generated-converters.md")
       [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
       [void]$specs.Add("docs/architecture/credential-management.md")

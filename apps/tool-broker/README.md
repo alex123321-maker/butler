@@ -154,6 +154,8 @@ registers only the fixed developer contract and composes its authenticated
 control executor around the existing routes. Catalog and preparation require a
 current task and the core's separate developer and converter lifecycle readiness;
 these signals do not grant permissions or allow recursive child admission.
+The optional delegation and converter-delegation Compose overlays supply only
+these fixed routes/flags; use them with the existing converters overlay.
 
 Optional controlled-browser resource admission now has explicit startup hooks:
 `SetResourceAdmission`, the same-TX actionauth `SetDispatchClaimGuard` and

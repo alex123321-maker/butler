@@ -96,6 +96,13 @@ dispatched effects. Keep the composition available while the owner stops or
 resolves these tasks, before disabling it. Runtime process proof, native model
 planning and independent original-document acceptance remain separate gates.
 
+Docker Compose operators explicitly add `docker-compose.converters.yml`,
+`docker-compose.delegation.yml` and `docker-compose.converter-delegation.yml`
+after the base files. The last overlay passes the same exact runtime profile
+to core; fixed private routes are code/deployment owned. No overlay adds a
+model worker or changes existing converter isolation. The base deployment
+does not include these overlays. Applying migrations is not feature enablement.
+
 ## Independent need and code
 
 The trusted need fixes the converter ID, class, input dialect/header/columns,

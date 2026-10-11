@@ -1,0 +1,11 @@
+# Requires base + converters + delegation overlays, immutable053/054 schemas
+# and the same operator-pinned runtime profile on both sides. No new runtime.
+services:
+  orchestrator:
+    environment:
+      BUTLER_CONVERTER_DELEGATION_ENABLED: 'true'
+      BUTLER_CONVERTER_PROFILE_JSON: ${BUTLER_CONVERTER_PROFILE_JSON:?Exact shared converter runtime profile is required}
+  tool-broker:
+    environment:
+      BUTLER_CONVERTER_DELEGATION_ENABLED: 'true'
+      BUTLER_CONVERTER_DELEGATION_CONTROL_URL: http://orchestrator:8080/internal/converter-delegation

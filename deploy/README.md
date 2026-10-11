@@ -128,3 +128,13 @@ without replacing native provider prices. Neither descriptor holds a raw token.
 Provision the private independent deletion anchor before migrations046–049 and
 retain a separate newest anchor copy alongside every retained content backup.
 Initialize only a nonexistent manifest, never an empty replacement after loss.
+
+Optional bounded delegation uses `docker-compose.delegation.yml` after the base
+files. Apply migrations057/061 and configure current owner authority and finite
+budgets before enabling it. Context-only children have no tools. The separate
+reviewed developer role adds `docker-compose.converters.yml` and
+`docker-compose.converter-delegation.yml`, requires053/054 and passes the same
+exact runtime profile to core and Broker. Runtime isolation remains network-none
+with a fixed Unix socket. Neither overlay is included by the base stack or
+automatically selected by `lab.ps1`; acceptance and operator opt-in are separate.
+See [generated converters](../docs/architecture/generated-converters.md).

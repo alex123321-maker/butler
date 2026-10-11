@@ -1,4 +1,4 @@
-# Opt-in pure converter: migration 052 + reviewed skills 051 + persistent privacy
+# Opt-in pure converter: migrations052/053/054 + reviewed skills051 + persistent privacy
 # anchor are prerequisites. The package never grants deployment or capabilities.
 services:
   tool-converter:
