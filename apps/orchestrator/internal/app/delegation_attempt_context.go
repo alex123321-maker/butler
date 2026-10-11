@@ -50,7 +50,7 @@ func (a failedDelegationAttemptReader) LoadFailedDelegationAttempts(ctx context.
 	if err = tx.QueryRow(ctx, `SELECT t.constraints_revision FROM tasks t JOIN sessions s USING(session_key) WHERE t.task_id=$1 AND t.session_key=$2 AND t.revision=$3 AND t.owner_id=s.user_id AND t.status='active' FOR SHARE OF t`, parentID, token.SessionKey, revision).Scan(&constraints); err != nil {
 		return nil, delegation.ErrDenied
 	}
-	rows, err := tx.Query(ctx, `SELECT c.task_id FROM task_delegations d JOIN tasks c ON c.task_id=d.task_id JOIN tasks p ON p.task_id=d.parent_task_id WHERE p.task_id=$1 AND d.parent_revision=$2 AND d.parent_constraints_revision=$3 AND c.parent_task_id=p.task_id AND c.owner_id=p.owner_id AND c.status='blocked' AND EXISTS(SELECT 1 FROM runs r WHERE r.task_id=c.task_id AND r.task_revision=c.revision AND r.session_key=c.session_key AND r.current_state IN ('failed','cancelled','timed_out')) ORDER BY c.task_id LIMIT 9`, parentID, revision, constraints)
+	rows, err := tx.Query(ctx, `SELECT c.task_id FROM task_delegations d JOIN tasks c ON c.task_id=d.task_id JOIN tasks p ON p.task_id=d.parent_task_id WHERE p.task_id=$1 AND d.parent_revision=$2 AND d.parent_constraints_revision=$3 AND c.parent_task_id=p.task_id AND c.owner_id=p.owner_id AND c.status='blocked' AND EXISTS(SELECT 1 FROM runs r WHERE r.task_id=c.task_id AND r.task_revision BETWEEN 1 AND c.revision AND r.session_key=c.session_key AND r.current_state IN ('failed','cancelled','timed_out')) ORDER BY c.task_id LIMIT 9`, parentID, revision, constraints)
 	if err != nil {
 		return nil, err
 	}

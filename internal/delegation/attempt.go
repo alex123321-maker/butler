@@ -27,15 +27,17 @@ type AttemptReport struct {
 }
 type FailedAttempt struct {
 	RunID          string `json:"run_id"`
+	TaskRevision   int64  `json:"task_revision"`
 	State          string `json:"state"`
 	ErrorCode      string `json:"error_code"`
 	DiagnosticCode string `json:"diagnostic_code"`
 }
 type AttemptAction struct {
-	RunID    string `json:"run_id"`
-	ActionID string `json:"action_id"`
-	EffectID string `json:"effect_id"`
-	State    string `json:"state"`
+	RunID        string `json:"run_id"`
+	TaskRevision int64  `json:"task_revision"`
+	ActionID     string `json:"action_id"`
+	EffectID     string `json:"effect_id"`
+	State        string `json:"state"`
 }
 type AttemptUsage struct {
 	RunID         string `json:"run_id"`

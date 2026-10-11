@@ -15,9 +15,24 @@ import (
 	"github.com/butler/butler/internal/ownership"
 )
 
-func failedDelegationFixture(t *testing.T, diagnostic string, release bool) (*delegationGuardFixture, delegation.Contract, task.Record, string) {
+func failedDelegationFixture(t *testing.T, diagnostic string, release bool, parentConstraints ...int64) (*delegationGuardFixture, delegation.Contract, task.Record, string) {
 	t.Helper()
 	f := newDelegationGuardFixture(t)
+	if len(parentConstraints) > 1 {
+		t.Fatal("one parent constraints revision required")
+	}
+	if len(parentConstraints) == 1 {
+		if tag, err := f.pool.Exec(f.ctx, `UPDATE tasks SET constraints_revision=$2 WHERE task_id=$1`, f.parent.TaskID, parentConstraints[0]); err != nil || tag.RowsAffected() != 1 {
+			t.Fatal("parent constraints fixture did not apply", err)
+		}
+		var err error
+		f.parent, err = f.store.Get(f.ctx, f.parent.TaskID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		f.caps.ConstraintsRevision = f.parent.ConstraintsRevision
+		f.saveCaps(t)
+	}
 	c, child := f.admit(t, "failed-attempt-contract")
 	runID := "failed-child:" + child.TaskID
 	ctx := f.worker(t, child, runID)
@@ -66,8 +81,14 @@ func failedDelegationFixture(t *testing.T, diagnostic string, release bool) (*de
 	if _, err = f.pool.Exec(ctx, `UPDATE runs SET current_state='failed',status='failed',error_type='transport_error',error_message=$2 WHERE run_id=$1`, runID, diagnostic); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = f.pool.Exec(ctx, `UPDATE tasks SET status='blocked' WHERE task_id=$1`, child.TaskID); err != nil {
+	// Use the actual failed-run lifecycle: it blocks the task and advances its
+	// semantic revision. The terminal run and journal retain the old revision.
+	if err = f.store.SaveRunOutcome(ctx, runID, "failed", ""); err != nil {
 		t.Fatal(err)
+	}
+	current, err := f.store.Get(f.ctx, child.TaskID)
+	if err != nil || current.Status != "blocked" || current.Revision != child.Revision+1 {
+		t.Fatal("actual failure lifecycle did not advance task revision", err, current)
 	}
 	if release {
 		if _, err = f.leases.ReleaseLease(f.ctx, token.LeaseID); err != nil {
@@ -75,6 +96,14 @@ func failedDelegationFixture(t *testing.T, diagnostic string, release bool) (*de
 		}
 	}
 	return f, c, child, runID
+}
+
+func TestDelegationFailedAttemptParentConstraintsIndependentIntegration(t *testing.T) {
+	f, c, child, _ := failedDelegationFixture(t, "rate_limited", true, 2)
+	r, err := f.manager.ObserveFailedAttempts(f.owner, f.parent.TaskID, child.TaskID)
+	if err != nil || c.ConstraintsRevision != 2 || r.ConstraintsRevision != 1 || r.TaskRevision != 2 || len(r.Attempts) != 1 || r.Attempts[0].TaskRevision != 1 {
+		t.Fatal("parent and child constraints identities were conflated", err, r)
+	}
 }
 
 func TestDelegationFailedAttemptObservationIntegration(t *testing.T) {
@@ -89,7 +118,7 @@ func TestDelegationFailedAttemptObservationIntegration(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if r.TaskStatus != "blocked" || len(r.Attempts) != 1 || r.Attempts[0].RunID != runID || r.Attempts[0].State != "failed" || len(r.Actions) != 1 || r.Actions[0].State != "effect_unknown" || r.Reserved.ModelTurns != 2 || r.Reserved.ExternalCalls != 1 || len(r.ModelUsage) != 2 || r.ModelUsage[0].InputTokens == nil || *r.ModelUsage[0].InputTokens != 7 || r.ModelUsage[1].InputTokens != nil || r.ModelUsage[1].OutputTokens != nil {
+			if r.TaskStatus != "blocked" || r.TaskRevision != child.Revision+1 || len(r.Attempts) != 1 || r.Attempts[0].TaskRevision != child.Revision || r.Attempts[0].RunID != runID || r.Attempts[0].State != "failed" || len(r.Actions) != 1 || r.Actions[0].TaskRevision != child.Revision || r.Actions[0].State != "effect_unknown" || r.Reserved.ModelTurns != 2 || r.Reserved.ExternalCalls != 1 || len(r.ModelUsage) != 2 || r.ModelUsage[0].InputTokens == nil || *r.ModelUsage[0].InputTokens != 7 || r.ModelUsage[1].InputTokens != nil || r.ModelUsage[1].OutputTokens != nil {
 				t.Fatal("lost real attempt/effect/reservation/unknown usage", r)
 			}
 			if diagnostic == "rate_limited" && r.Attempts[0].DiagnosticCode != "rate_limited" {
@@ -124,7 +153,7 @@ func TestDelegationFailedAttemptObservationIntegration(t *testing.T) {
 }
 
 func TestDelegationFailedAttemptObservationDenialsIntegration(t *testing.T) {
-	for _, name := range []string{"no-actor", "foreign-owner", "live-child-lease", "parent-stopped", "parent-revised", "child-revised", "child-cancelled", "source-corrected", "source-deleted", "new-live-attempt", "raw-error-code", "expired-parent-lease", "mixed-actor-worker"} {
+	for _, name := range []string{"no-actor", "foreign-owner", "live-child-lease", "parent-stopped", "parent-revised", "child-constraints-revised", "child-cancelled", "source-corrected", "source-deleted", "new-live-attempt", "raw-error-code", "expired-parent-lease", "mixed-actor-worker"} {
 		t.Run(name, func(t *testing.T) {
 			f, c, child, runID := failedDelegationFixture(t, "rate_limited", name != "live-child-lease")
 			ctx := f.owner
@@ -143,8 +172,8 @@ func TestDelegationFailedAttemptObservationDenialsIntegration(t *testing.T) {
 				exec(`UPDATE tasks SET status='cancelled' WHERE task_id=$1`, f.parent.TaskID)
 			case "parent-revised":
 				exec(`UPDATE tasks SET revision=revision+1 WHERE task_id=$1`, f.parent.TaskID)
-			case "child-revised":
-				exec(`UPDATE tasks SET revision=revision+1 WHERE task_id=$1`, child.TaskID)
+			case "child-constraints-revised":
+				exec(`UPDATE tasks SET constraints_revision=constraints_revision+1 WHERE task_id=$1`, child.TaskID)
 			case "child-cancelled":
 				exec(`UPDATE tasks SET status='cancelled' WHERE task_id=$1`, child.TaskID)
 			case "source-corrected":
@@ -156,7 +185,9 @@ func TestDelegationFailedAttemptObservationDenialsIntegration(t *testing.T) {
 					t.Fatal(err)
 				}
 			case "new-live-attempt":
-				exec(`UPDATE runs SET current_state='model_running',status='model_running' WHERE run_id=$1`, runID)
+				// Another unfinished run on the earlier revision must not disappear
+				// behind SaveRunOutcome's blocked-task revision increment.
+				exec(`INSERT INTO runs(run_id,session_key,input_event_id,status,current_state,autonomy_mode,model_provider,started_at,updated_at,task_id,task_revision) VALUES('unfinished-old-revision',$1,'fixture','model_running','model_running','mode_1','fixture',clock_timestamp(),clock_timestamp(),$2,$3)`, child.SessionKey, child.TaskID, child.Revision)
 			case "raw-error-code":
 				exec(`UPDATE runs SET error_type='SECRET_DIAGNOSTIC_MARKER',error_message='fixture-private' WHERE run_id=$1`, runID)
 			case "expired-parent-lease":

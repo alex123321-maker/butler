@@ -46,13 +46,15 @@ func (m *DelegationManager) ObserveFailedAttempts(ctx context.Context, parentID,
 		return delegation.AttemptReport{}, err
 	}
 	c := v.Contract
-	if child.ParentTaskID != parent.TaskID || child.OwnerID != parent.OwnerID || c.TaskID != child.TaskID || c.ParentTaskID != parent.TaskID || c.ParentRevision != parent.Revision || c.ConstraintsRevision != parent.ConstraintsRevision || child.Status != "blocked" {
+	// Admit creates the child at constraints revision1. Contract constraints
+	// pin the parent instead; a parent's revision2 is not a child's revision2.
+	if child.ParentTaskID != parent.TaskID || child.OwnerID != parent.OwnerID || c.TaskID != child.TaskID || c.ParentTaskID != parent.TaskID || c.ParentRevision != parent.Revision || c.ConstraintsRevision != parent.ConstraintsRevision || child.ConstraintsRevision != 1 || child.Status != "blocked" {
 		return delegation.AttemptReport{}, ErrConflict
 	}
 	var live bool
 	// Holding the tree/session admission barrier prevents a new child attempt
 	// racing this observation. A still-live failed worker is never borrowed.
-	if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM session_ownership WHERE session_key=$1 AND lease_id<>'' AND expires_at>clock_timestamp()) OR EXISTS(SELECT 1 FROM runs WHERE task_id=$2 AND task_revision=$3 AND current_state NOT IN ('completed','failed','cancelled','timed_out'))`, child.SessionKey, child.TaskID, child.Revision).Scan(&live); err != nil || live {
+	if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM session_ownership WHERE session_key=$1 AND lease_id<>'' AND expires_at>clock_timestamp()) OR EXISTS(SELECT 1 FROM runs WHERE task_id=$2 AND current_state NOT IN ('completed','failed','cancelled','timed_out'))`, child.SessionKey, child.TaskID).Scan(&live); err != nil || live {
 		return delegation.AttemptReport{}, ErrConflict
 	}
 	report, err := observer.ObserveAttemptsTx(ctx, tx, parent, child, c)

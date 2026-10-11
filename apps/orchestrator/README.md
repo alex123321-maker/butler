@@ -463,7 +463,9 @@ The initial `task.delegate` admits children with an empty tool allowlist.
 Active completed partial finals remain distinct from blocked/failed attempts.
 With delegation enabled, the parent's ordinary preparation/recovery now reads
 typed failed-attempt observations under its own current lease and source access.
-They remain private SubagentOutput DATA with nullable actual usage, journal
+Historical runs/actions retain their actual task revision even when the ordinary
+failure outcome advances the blocked task revision. Changed child constraints
+or any unfinished child run deny the read. They remain private SubagentOutput DATA with nullable actual usage, journal
 uncertainty and no completed result. Checkpoints retain reload markers and fresh
 reads preserve later reconciliation/deletion. Observation does not wake the
 parent, accept a child or free execution width. See
