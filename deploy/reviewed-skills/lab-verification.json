@@ -1,0 +1,25 @@
+{
+  "verified_on": "2026-10-11",
+  "host": "ssh laba",
+  "tested_code_commit": "920126889d0704b518fbee3e689cf024f1471fda",
+  "source_snapshot": "20261011-073037-559",
+  "migration": "051_reviewed_skills.up.sql",
+  "deployment_report": "/srv/storage/butler/reports/reviewed-skills-deploy-20261011T003202Z.log",
+  "private_backup": "/srv/storage/butler/backups/before-reviewed-skills-20261011T003202Z.dump",
+  "checks": {
+    "actual_pg_and_race": true,
+    "actual_broker_reviewed_runtime_and_approval_recovery": true,
+    "independent_stored_artifact_check": true,
+    "failed_objective_check_cannot_publish_success": true,
+    "authenticated_live_skills_memory_extensions_initiatives": true,
+    "anonymous_private_routes_rejected": true,
+    "invalid_live_candidate_rejected": true,
+    "actual_chromium_skills_owner_list": true,
+    "owner_token_not_persisted_in_browser_storage": true,
+    "existing_overview_tasks_approvals_memory_pages": true,
+    "pre_message_preparation_erasure_and_manifest_replay": true
+  },
+  "fixture_scope": "isolated databases and synthetic reviewed project",
+  "live_automatic_procedure_activation": false,
+  "model_quality_improvement_or_cost_reduction_claim": false
+}

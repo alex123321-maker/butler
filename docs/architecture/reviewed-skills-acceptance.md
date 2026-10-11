@@ -2,7 +2,12 @@
 
 Checks run on the isolated laba agent snapshot and test databases, with no main
 deployment, private account reads or real external writes. Go 1.27.2 is used.
-Migration 051 has not been deployed by this agent.
+The primary integration deployed migration 051 and the procedure-enabled Broker,
+Orchestrator and Web UI on laba on 2026-10-11. Its [live verification](../../deploy/reviewed-skills/lab-verification.json)
+records authenticated/anonymous API checks, rejection of an invalid candidate,
+and Chromium against the actual deployed pages. Synthetic accepted procedures
+remain in isolated test databases; no procedure was automatically accepted in
+the owner's live catalog.
 
 | Requirement | Evidence |
 | --- | --- |
