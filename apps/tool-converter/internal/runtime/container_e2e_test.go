@@ -30,7 +30,11 @@ func TestContainerConverterSmoke(t *testing.T) {
 	if e != nil {
 		t.Fatal("synthetic runtime token unavailable")
 	}
-	c, e := grpc.NewClient("127.0.0.1:9090", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	target := "127.0.0.1:9090"
+	if os.Getenv("BUTLER_CONVERTER_UNIX_SOCKET") == generatedtools.UnixSocket {
+		target = generatedtools.RuntimeTarget
+	}
+	c, e := grpc.NewClient(target, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -53,6 +57,18 @@ func TestContainerConverterSmoke(t *testing.T) {
 	var report generatedtools.Report
 	if e != nil || json.Unmarshal([]byte(r.GetReportJson()), &report) != nil || !report.Passed {
 		t.Fatal("actual fixed checker failed", e)
+	}
+	bad := p.Manifest
+	bad.Code.Columns[0].InputIndex = 1
+	badRaw, _ := json.Marshal(bad)
+	badPackage, e := generatedtools.Parse(badRaw)
+	if e != nil {
+		t.Fatal(e)
+	}
+	badReport, e := client.TestPackage(ctx, &converterv1.TestPackageRequest{Proof: proof, PackageSource: data("synthetic-bad-package", badRaw), NeedSource: data("synthetic-need", needJSON), PackageHash: badPackage.Digest, NeedHash: generatedtools.Hash(n), ProfilePin: generatedtools.Hash(profile)})
+	var rejected generatedtools.Report
+	if e != nil || json.Unmarshal([]byte(badReport.GetReportJson()), &rejected) != nil || rejected.Passed {
+		t.Fatal("production independent checker accepted the author's wrong mapping", e)
 	}
 	converted, e := client.Convert(ctx, &converterv1.ConvertRequest{Proof: proof, PackageSource: data("synthetic-package", p.Raw), NeedSource: data("synthetic-need", needJSON), InputSource: data("synthetic-document", []byte("name,count,enabled\ncontainer-proof,2,true\n")), PackageHash: p.Digest, NeedHash: generatedtools.Hash(n), ProfilePin: generatedtools.Hash(profile)})
 	if e != nil || string(converted.GetOutput()) != `[{"count":2,"enabled":true,"name":"container-proof"}]` {

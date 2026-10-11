@@ -904,3 +904,15 @@ Runtime замораживает все HTTP/CONNECT соединения и pag
 recipient proof. Read/open/navigate revision 2 имеют enforced GET/HEAD contract;
 старые navigation contracts не наследуют это право. Подробности и evidence:
 [browser-session-contract.md](browser-session-contract.md).
+
+## 30. Ограниченные создаваемые конвертеры
+
+Первый класс `delimited_json_v1` — чистая конечная IR без shell, произвольного
+компилятора, process/network/filesystem операций. Broker сохраняет discovery,
+candidate, независимые проверки, расходуемые trials, active digest/generation и
+usage в052. Отдельный Go runtime работает без сети через фиксированный Unix socket;
+ему не передаются основные учётные данные или PostgreSQL. Every call remains an
+ordinary exact grant/journal action. Source/owner guards precede lifecycle/effect
+guards; activation requires current ConverterPermission and independent passed
+checks plus trial. Local acknowledgement proves preparation only. See
+[generated-converters.md](generated-converters.md).

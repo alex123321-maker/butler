@@ -635,3 +635,11 @@ only in the private RPC field and masks reflected values from observations.
 Its dedicated RPC token is distinct from owner/core/provider tokens. Readiness
 uses no credentials. Installation text, settings and dependencies never grant
 arbitrary secret-store access; see [reviewed extensions](reviewed-extension-lifecycle.md).
+
+Generated pure converters support no credential slot. Their exact typed owner
+permission cannot select a credential alias, account, executable, runtime target
+or secret path. Broker passes non-Secret authorized Catalog DATA only after current
+source/authority/budget Claim. The no-network runtime has only its distinct RPC
+token and operator profile; developer tests receive no working document. Known
+credential patterns are denied additionally before workspace/IPC, without granting
+authority from pattern classification. See [generated converters](generated-converters.md).

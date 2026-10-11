@@ -12,6 +12,7 @@ import (
 	"github.com/butler/butler/internal/delegation"
 	"github.com/butler/butler/internal/extensions"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/generatedtools"
 )
 
 // TaskCatalog uses the same private live projection as action authorization.
@@ -23,6 +24,7 @@ type TaskCatalog struct {
 		GetMandate(context.Context, string) (actionauth.Mandate, error)
 	}
 	Extensions *extensions.Store
+	Converters *generatedtools.Store
 }
 
 func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit int) ([]*toolbrokerv1.ToolContract, error) {
@@ -62,7 +64,7 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 	terms := strings.Fields(strings.ToLower(query))
 	result := []*toolbrokerv1.ToolContract{}
 	for _, contract := range c.Registry.List("", false) {
-		if strings.HasPrefix(contract.GetToolName(), "skills.") && a.TaskID == "" {
+		if (strings.HasPrefix(contract.GetToolName(), "skills.") || strings.HasPrefix(contract.GetToolName(), "converters.")) && a.TaskID == "" {
 			continue
 		}
 		effect := actionauth.CatalogEffect(contract)
@@ -86,6 +88,13 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 	}
 	if c.Extensions != nil {
 		installed, e := c.Extensions.Catalog(ctx, a, query, 64)
+		if e != nil {
+			return nil, e
+		}
+		result = append(result, installed...)
+	}
+	if c.Converters != nil {
+		installed, e := c.Converters.Catalog(ctx, a, query, 64)
 		if e != nil {
 			return nil, e
 		}

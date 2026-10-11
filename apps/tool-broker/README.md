@@ -111,3 +111,13 @@ source/transcript/privacy-watermark pins in the same transaction before budget
 spend or dispatch. Broker reads the private deletion anchor volume read-only;
 missing or stale restore history denies a new release. Existing spent journal
 observations remain intact. See [versioned memory sources](../../docs/architecture/versioned-memory-sources.md).
+
+Optional migration052 pure converters use owned `converters.*` lifecycle contracts
+and dynamic exact `converter.<id>.convert`. They require current reviewed skill
+search, an exact schema/profile/finite-limit ConverterPermission, source access,
+budgets and ordinary journal grants. Development/checker sees only Need/synthetic
+data; working input is released only after separately authorized Claim. Active
+digest/generation and source guards are repeated before publication and use.
+The production runtime has no network and uses a dedicated fixed Unix socket/token;
+the private owner endpoint only lists/revokes, never bypasses activation. See
+[generated converter contract](../../docs/architecture/generated-converters.md).

@@ -18,12 +18,14 @@ import (
 type Registry struct {
 	toolsByName map[string]*toolbrokerv1.ToolContract
 	extensions  ExtensionSource
+	converters  ExtensionSource
 }
 type ExtensionSource interface {
 	GetContract(context.Context, string) (*toolbrokerv1.ToolContract, error)
 }
 
 func (r *Registry) SetExtensions(source ExtensionSource) { r.extensions = source }
+func (r *Registry) SetConverters(source ExtensionSource) { r.converters = source }
 
 // RegisterOwned is immutable startup wiring for fixed kernel catalog contracts.
 // An operator registry cannot replace their schema, effect or runtime target.
@@ -144,6 +146,13 @@ func (r *Registry) Get(toolName string) (*toolbrokerv1.ToolContract, bool) {
 	return cloneContract(contract), true
 }
 func (r *Registry) GetContext(ctx context.Context, toolName string) (*toolbrokerv1.ToolContract, bool) {
+	if strings.HasPrefix(toolName, "converter.") {
+		if r == nil || r.converters == nil {
+			return nil, false
+		}
+		c, e := r.converters.GetContract(ctx, toolName)
+		return c, e == nil
+	}
 	if strings.HasPrefix(toolName, "extension.") {
 		if r == nil || r.extensions == nil {
 			return nil, false

@@ -34,6 +34,7 @@ import (
 	"github.com/butler/butler/internal/config"
 	orchestratorv1 "github.com/butler/butler/internal/gen/orchestrator/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
+	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/catalog"
@@ -243,6 +244,33 @@ func New(ctx context.Context) (*App, error) {
 			return skills.CheckPinnedLifecycleTx(ctx, tx, run)
 		}
 	}
+	var converterClient *generatedtools.Client
+	var memorySources interface {
+		PinTranscript(context.Context, string, int64) error
+		CheckRunSources(context.Context, string) error
+	} = sourceCatalog
+	if cfg.ConverterControlURL != "" {
+		token, tokenErr := actionauth.ReadServiceToken(cfg.ActionAuthorityTokenFile)
+		if tokenErr != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, tokenErr
+		}
+		converterClient, err = generatedtools.NewClient(cfg.ConverterControlURL, token)
+		if err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, err
+		}
+		previousGuard := finalResults.DataGuard
+		finalResults.DataGuard = func(ctx context.Context, tx pgx.Tx, run string) error {
+			if e := previousGuard(ctx, tx, run); e != nil {
+				return e
+			}
+			return generatedtools.CheckPinnedLifecycleTx(ctx, tx, run)
+		}
+		memorySources = converterSources{Store: sourceCatalog, pool: postgres.Pool()}
+	}
 	outboxWorker := &deliveryoutbox.Worker{Store: finalResults.Outbox}
 	if telegram != nil {
 		outboxWorker.Sender = telegram
@@ -276,7 +304,7 @@ func New(ctx context.Context) (*App, error) {
 				return out, nil
 			},
 			SemanticMemory:        semanticReader,
-			MemorySources:         sourceCatalog,
+			MemorySources:         memorySources,
 			DelegationContexts:    delegatedContextReader{sources: sourceCatalog},
 			Skills:                skillCatalogIfEnabled(skillClient),
 			Budgets:               budgetController,
@@ -362,7 +390,7 @@ func New(ctx context.Context) (*App, error) {
 			postgres.Close()
 			return nil, readErr
 		}
-		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID})
+		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil})
 		skillEvidenceHandler = skills.NewEvidenceHandler(token, &skillEvidence{tasks: taskStore, journal: actionauth.NewPostgresStore(postgres.Pool()), transcript: transcriptStore, budgets: budget.NewLedger(postgres.Pool()), results: finalResults, sources: sourceCatalog})
 	} else {
 		log.Warn("private action authority unavailable; Tool Broker will deny execution")
@@ -376,6 +404,7 @@ func New(ctx context.Context) (*App, error) {
 		actionAuthorityHandler: actionAuthorityHandler,
 		skillEvidenceHandler:   skillEvidenceHandler,
 		skillClient:            skillClient,
+		converterClient:        converterClient,
 		log:                    log,
 		settingsStore:          settingsStore,
 		hotConfig:              hotConfig,

@@ -6,6 +6,7 @@ import (
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/extensions"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/generatedtools"
 	"github.com/jackc/pgx/v5"
 	"sort"
 	"strings"
@@ -84,6 +85,11 @@ func CheckPinnedLifecycleTx(ctx context.Context, tx pgx.Tx, runID string) error 
 		return err
 	}
 	for _, name := range sortedDependencies(deps) {
+		if strings.HasPrefix(name, "converter.") {
+			if err = generatedtools.CheckInstalledRevisionTx(ctx, tx, owner, name, deps[name].ContractRevision); err != nil {
+				return err
+			}
+		}
 		if strings.HasPrefix(name, "extension.") {
 			if err = extensions.CheckInstalledRevisionTx(ctx, tx, owner, name, deps[name].ContractRevision); err != nil {
 				return err

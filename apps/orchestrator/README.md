@@ -392,3 +392,12 @@ current uncertainty, with no model-authored success verdict. Replay keeps one
 report source; a revoked original rolls publication back. The optional context
 lifecycle adapter marks execution under the actual child fence before input
 release. These components still await the private Broker admission composition.
+
+Optional `/api/v4/converters` and `/converters` relay only owner-proof metadata
+inspection and exact-version revocation to the fixed operator/environment private
+Broker endpoint. Provider release/recovery and atomic completion compose current
+source/task/owner checks before converter use/lifecycle guards; old observations
+cannot revive a revoked digest/generation. Bodies remain Catalog DATA and only
+SourceRefs/hashes enter saved actions or final-result summaries. Technical conversion
+does not complete semantic task criteria. See the
+[generated converter contract](../../docs/architecture/generated-converters.md).

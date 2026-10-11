@@ -18,13 +18,14 @@ import (
 // The private reader assembles authority from service-owned state. Tool Broker
 // cannot mint owners, task versions or worker fences from model arguments.
 type actionContextReader struct {
-	runs      flow.RunManager
-	sessions  session.Repository
-	leases    *session.PostgresLeaseManager
-	tasks     task.Manager
-	approvals *approvals.Service
-	pool      *pgxpool.Pool
-	mandateID string
+	runs                    flow.RunManager
+	sessions                session.Repository
+	leases                  *session.PostgresLeaseManager
+	tasks                   task.Manager
+	approvals               *approvals.Service
+	pool                    *pgxpool.Pool
+	mandateID               string
+	converterLifecycleReady bool
 }
 
 func (r *actionContextReader) GetActionContext(ctx context.Context, runID string) (actionauth.ContextSnapshot, error) {
@@ -49,6 +50,7 @@ func (r *actionContextReader) GetActionContext(ctx context.Context, runID string
 		return c, fmt.Errorf("run ownership is expired or replaced")
 	}
 	c = actionauth.ContextSnapshot{RunID: runID, RunState: run.GetCurrentState().String(), SessionKey: run.GetSessionKey(), OwnerID: sessionRecord.UserID, AutonomyMode: int32(run.GetAutonomyMode()), MandateID: r.mandateID, LeaseID: lease.LeaseID, LeaseEpoch: lease.FenceEpoch, LeaseExpiresAt: lease.ExpiresAt}
+	c.ConverterLifecycleReady = r.converterLifecycleReady
 	// This projection stays inside orchestrator; it is a read of Run Service's
 	// admission binding, never a Broker write into another service's tables.
 	var id string

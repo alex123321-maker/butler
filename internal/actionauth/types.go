@@ -22,6 +22,15 @@ type CredentialRef struct {
 	Field string `json:"field"`
 }
 
+// DataRef is content-free exact Catalog metadata bound by an owned capability
+// guard. It grants no access and never contains document/program/secret bytes.
+type DataRef struct {
+	ID             string `json:"source_id"`
+	Revision       int64  `json:"revision"`
+	AccessRevision int64  `json:"access_revision"`
+	Hash           string `json:"content_hash"`
+}
+
 // ActionBinding is the exact intent approved by the owner. A refreshed worker
 // lease does not change this intent, but each dispatch grant pins its live fence.
 type ActionBinding struct {
@@ -52,31 +61,37 @@ type ActionBinding struct {
 	ExtensionGeneration      int64           `json:"extension_generation,omitempty"`
 	ExtensionAccessRevision  int64           `json:"extension_access_revision,omitempty"`
 	ExtensionAccessExpiresAt *time.Time      `json:"extension_access_expires_at,omitempty"`
+	ConverterID              string          `json:"converter_id,omitempty"`
+	ConverterPackageHash     string          `json:"converter_package_hash,omitempty"`
+	ConverterNeedHash        string          `json:"converter_need_hash,omitempty"`
+	ConverterGeneration      int64           `json:"converter_generation,omitempty"`
+	DataSources              []DataRef       `json:"data_sources,omitempty"`
 }
 
 // ContextSnapshot must come from Session/Task/Run Service, never tool arguments.
 type ContextSnapshot struct {
-	Delegation          *delegation.Contract `json:"delegation,omitempty"`
-	RunID               string               `json:"run_id"`
-	RunState            string               `json:"run_state"`
-	SessionKey          string               `json:"session_key"`
-	OwnerID             string               `json:"owner_id"`
-	AutonomyMode        int32                `json:"autonomy_mode"`
-	MandateID           string               `json:"mandate_id"`
-	TaskID              string               `json:"task_id"`
-	PinnedTaskRevision  int64                `json:"pinned_task_revision"`
-	TaskRevision        int64                `json:"task_revision"`
-	ConstraintsRevision int64                `json:"constraints_revision"`
-	TaskStatus          string               `json:"task_status"`
-	ExecutionPolicy     string               `json:"execution_policy"`
-	LeaseEpoch          int64                `json:"lease_epoch"`
-	LeaseID             string               `json:"lease_id"`
-	LeaseExpiresAt      time.Time            `json:"lease_expires_at"`
-	Authority           *Assignment          `json:"authority,omitempty"`
-	AuthorityDeadline   time.Time            `json:"authority_deadline,omitempty"`
-	ModelPrivacy        string               `json:"model_privacy,omitempty"`
-	DenyTools           []string             `json:"deny_tools,omitempty"`
-	DenyResources       []ResourceScope      `json:"deny_resources,omitempty"`
+	Delegation              *delegation.Contract `json:"delegation,omitempty"`
+	RunID                   string               `json:"run_id"`
+	RunState                string               `json:"run_state"`
+	SessionKey              string               `json:"session_key"`
+	OwnerID                 string               `json:"owner_id"`
+	AutonomyMode            int32                `json:"autonomy_mode"`
+	MandateID               string               `json:"mandate_id"`
+	TaskID                  string               `json:"task_id"`
+	PinnedTaskRevision      int64                `json:"pinned_task_revision"`
+	TaskRevision            int64                `json:"task_revision"`
+	ConstraintsRevision     int64                `json:"constraints_revision"`
+	TaskStatus              string               `json:"task_status"`
+	ExecutionPolicy         string               `json:"execution_policy"`
+	LeaseEpoch              int64                `json:"lease_epoch"`
+	LeaseID                 string               `json:"lease_id"`
+	LeaseExpiresAt          time.Time            `json:"lease_expires_at"`
+	Authority               *Assignment          `json:"authority,omitempty"`
+	AuthorityDeadline       time.Time            `json:"authority_deadline,omitempty"`
+	ModelPrivacy            string               `json:"model_privacy,omitempty"`
+	DenyTools               []string             `json:"deny_tools,omitempty"`
+	DenyResources           []ResourceScope      `json:"deny_resources,omitempty"`
+	ConverterLifecycleReady bool                 `json:"converter_lifecycle_ready,omitempty"`
 }
 
 type ApprovalRequest struct {

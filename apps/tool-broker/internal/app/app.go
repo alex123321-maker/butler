@@ -22,6 +22,7 @@ import (
 	"github.com/butler/butler/internal/credentials"
 	"github.com/butler/butler/internal/extensions"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/catalog"
@@ -31,13 +32,14 @@ import (
 )
 
 type App struct {
-	config     config.ToolBrokerConfig
-	log        *slog.Logger
-	httpServer *http.Server
-	grpcServer *grpc.Server
-	grpcListen net.Listener
-	router     *runtimeclient.Router
-	postgres   *postgresstore.Store
+	config        config.ToolBrokerConfig
+	log           *slog.Logger
+	httpServer    *http.Server
+	grpcServer    *grpc.Server
+	grpcListen    net.Listener
+	router        *runtimeclient.Router
+	postgres      *postgresstore.Store
+	converterConn *grpc.ClientConn
 }
 
 func New(ctx context.Context) (*App, error) {
@@ -70,6 +72,14 @@ func New(ctx context.Context) (*App, error) {
 	var effectHandler http.Handler
 	var extensionHandler http.Handler
 	var skillHandler http.Handler
+	var converterHandler http.Handler
+	var converterConn *grpc.ClientConn
+	ready := false
+	defer func() {
+		if !ready && converterConn != nil {
+			_ = converterConn.Close()
+		}
+	}()
 	serviceToken := ""
 	if cfg.ActionAuthorityTokenFile != "" && postgres != nil {
 		token, err := actionauth.ReadServiceToken(cfg.ActionAuthorityTokenFile)
@@ -132,6 +142,8 @@ func New(ctx context.Context) (*App, error) {
 		server.SetActionAuthorizer(authorizer)
 		catalog := &broker.TaskCatalog{Registry: registryStore, Contexts: reader, Mandates: authorizationStore, Extensions: extensionStore}
 		server.SetScopedCatalog(catalog)
+		var skillStore *skills.Store
+		var executor broker.RuntimeExecutor = router
 		if cfg.SkillsEnabled {
 			if cfg.ExtensionOwnerID == "" {
 				postgres.Close()
@@ -146,12 +158,51 @@ func New(ctx context.Context) (*App, error) {
 				postgres.Close()
 				return nil, endpointErr
 			}
-			skillStore := skills.NewStore(postgres.Pool(), cfg.ExtensionOwnerID, skills.NewClient(evidenceURL, token), broker.SkillContracts{Registry: registryStore, Extensions: extensionStore}, broker.SkillEnvironment{Contexts: reader, Catalog: catalog})
+			skillStore = skills.NewStore(postgres.Pool(), cfg.ExtensionOwnerID, skills.NewClient(evidenceURL, token), broker.SkillContracts{Registry: registryStore, Extensions: extensionStore}, broker.SkillEnvironment{Contexts: reader, Catalog: catalog})
 			skillStore.SetSources(sourceCatalog)
-			server.SetCatalogExecutor(&skills.RoutedExecutor{Store: skillStore, Next: router})
+			executor = &skills.RoutedExecutor{Store: skillStore, Next: router}
 			authorizationStore.SetContractGuard(broker.CatalogGuards{Extensions: extensionStore, Skills: skillStore})
 			skillHandler = skills.NewHandler(token, skillStore)
 		}
+		var converterStore *generatedtools.Store
+		if cfg.ConvertersEnabled {
+			if cfg.ExtensionOwnerID == "" || skillStore == nil {
+				postgres.Close()
+				return nil, fmt.Errorf("converter development requires a configured owner and current reviewed skill search")
+			}
+			profile, profileErr := generatedtools.DecodeProfile([]byte(cfg.ConverterProfileJSON))
+			if profileErr != nil {
+				postgres.Close()
+				return nil, profileErr
+			}
+			runtimeToken, tokenErr := actionauth.ReadServiceToken(cfg.ConverterRuntimeTokenFile)
+			if tokenErr != nil {
+				postgres.Close()
+				return nil, tokenErr
+			}
+			runtimeClient, conn, clientErr := generatedtools.NewRuntimeClient(cfg.ConverterRuntimeTarget, runtimeToken)
+			if clientErr != nil {
+				postgres.Close()
+				return nil, clientErr
+			}
+			converterConn = conn
+			if err = registryStore.RegisterOwned(generatedtools.Contracts()); err != nil {
+				postgres.Close()
+				return nil, err
+			}
+			environment := &broker.ConverterEnvironment{Contexts: reader, Catalog: catalog, Skills: skillStore}
+			converterStore = generatedtools.NewStore(postgres.Pool(), cfg.ExtensionOwnerID, profile, sourceCatalog, environment, runtimeClient)
+			catalog.Converters = converterStore
+			registryStore.SetConverters(converterStore)
+			// Skill dependencies resolve current generated contracts on the same
+			// owned transaction; no nested RPC/pool acquisition is permitted.
+			skillStore.SetContracts(broker.SkillContracts{Registry: registryStore, Extensions: extensionStore, Converters: converterStore})
+			executor = &generatedtools.RoutedExecutor{Store: converterStore, Next: executor}
+			converterHandler = generatedtools.NewHandler(token, converterStore)
+		}
+		server.SetCatalogExecutor(executor)
+		authorizer.SetCapabilities(broker.CapabilityGuards{Extensions: extensionStore, Converters: converterStore})
+		authorizationStore.SetContractGuard(broker.CatalogGuards{Extensions: extensionStore, Skills: skillStore, Converters: converterStore})
 		extensionHandler = extensions.NewControlHandler(token, extensionStore, router)
 		effectHandler = actionauth.NewEffectHandler(token, authorizer, authorizationStore)
 		mandateHandler = actionauth.NewMandateHandler(token, authorizationStore, reader)
@@ -160,6 +211,9 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	httpMux := http.NewServeMux()
+	if converterHandler != nil {
+		httpMux.Handle("/internal/converters", converterHandler)
+	}
 	if skillHandler != nil {
 		httpMux.Handle("/internal/skills", skillHandler)
 	}
@@ -183,7 +237,8 @@ func New(ctx context.Context) (*App, error) {
 	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(actionauth.ExecutionUnaryInterceptor(serviceToken)))
 	toolbrokerv1.RegisterToolBrokerServiceServer(grpcServer, server)
 
-	return &App{config: cfg, log: log, httpServer: httpServer, grpcServer: grpcServer, grpcListen: grpcListener, router: router, postgres: postgres}, nil
+	ready = true
+	return &App{config: cfg, log: log, httpServer: httpServer, grpcServer: grpcServer, grpcListen: grpcListener, router: router, postgres: postgres, converterConn: converterConn}, nil
 }
 
 func (a *App) Run(ctx context.Context) error {
@@ -235,6 +290,11 @@ func (a *App) shutdown(runErr error) error {
 	}
 	if a.postgres != nil {
 		a.postgres.Close()
+	}
+	if a.converterConn != nil {
+		if err := a.converterConn.Close(); err != nil && runErr == nil {
+			runErr = err
+		}
 	}
 	if runErr != nil {
 		a.log.Error("tool broker stopped with error", slog.String("error", runErr.Error()))

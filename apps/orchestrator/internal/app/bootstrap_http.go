@@ -31,6 +31,7 @@ import (
 	"github.com/butler/butler/internal/config"
 	"github.com/butler/butler/internal/extensions"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/catalog"
@@ -61,6 +62,7 @@ type httpServerDeps struct {
 	actionAuthorityHandler http.Handler
 	skillEvidenceHandler   http.Handler
 	skillClient            *skills.Client
+	converterClient        *generatedtools.Client
 	cfg                    config.OrchestratorConfig
 	log                    *slog.Logger
 	settingsStore          *config.PostgresSettingsStore
@@ -190,6 +192,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	}
 	mux.Handle("/api/v4/extensions", apiservice.ReviewedExtensions(deps.ownerAuth, extensionClient))
 	mux.Handle("/api/v4/skills", apiservice.ReviewedSkills(deps.ownerAuth, deps.skillClient))
+	mux.Handle("/api/v4/converters", apiservice.GeneratedConverters(deps.ownerAuth, deps.converterClient))
 	if deps.skillEvidenceHandler != nil {
 		mux.Handle("/internal/skill-evidence", deps.skillEvidenceHandler)
 	}

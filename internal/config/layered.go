@@ -56,6 +56,11 @@ func loadOrchestratorLayered(get envGetter, settings []Setting) (OrchestratorCon
 	if validationErr := validateOperatorControlEndpoint(cfg.SkillControlURL, "/internal/skills"); validationErr != nil {
 		return cfg, snapshot, fmt.Errorf("invalid operator skill control endpoint")
 	}
+	cfg.ConverterControlURL, _ = get("BUTLER_CONVERTER_CONTROL_URL")
+	cfg.ConverterControlURL = strings.TrimSpace(cfg.ConverterControlURL)
+	if validationErr := validateOperatorControlEndpoint(cfg.ConverterControlURL, "/internal/converters"); validationErr != nil {
+		return cfg, snapshot, fmt.Errorf("invalid operator converter control endpoint")
+	}
 	if conditionalErr := validateOrchestratorConditionalConfig(cfg); conditionalErr != nil {
 		if err != nil {
 			return cfg, snapshot, fmt.Errorf("%v; %v", err, conditionalErr)

@@ -8,7 +8,7 @@ RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache
     CGO_ENABLED=0 GOOS=linux go build -trimpath -o /out/tool-converter ./apps/tool-converter
 
 FROM alpine:3.21
-RUN adduser -D -H -u 10001 butler
+RUN adduser -D -H -u 10001 butler && mkdir /run/butler-converter && chown butler:butler /run/butler-converter && chmod 0700 /run/butler-converter
 WORKDIR /app
 COPY --from=builder /out/tool-converter /usr/local/bin/tool-converter
 USER butler

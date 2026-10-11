@@ -143,7 +143,8 @@ func ContractHash(contract *toolbrokerv1.ToolContract) (string, error) {
 		Revision                                         string                          `json:",omitempty"`
 		EffectContract                                   *toolbrokerv1.EffectContract    `json:",omitempty"`
 		Extension                                        *toolbrokerv1.ExtensionContract `json:",omitempty"`
-	}{contract.GetToolName(), contract.GetToolClass(), input, output, contract.GetRuntimeTarget(), contract.GetRiskLevel(), contract.GetStatus(), contract.GetSupportsCredentialRefs(), contract.GetRequiresApproval(), domains, tools, contract.GetContractRevision(), contract.GetEffectContract(), contract.GetExtension()})
+		Converter                                        *toolbrokerv1.ConverterContract `json:",omitempty"`
+	}{contract.GetToolName(), contract.GetToolClass(), input, output, contract.GetRuntimeTarget(), contract.GetRiskLevel(), contract.GetStatus(), contract.GetSupportsCredentialRefs(), contract.GetRequiresApproval(), domains, tools, contract.GetContractRevision(), contract.GetEffectContract(), contract.GetExtension(), contract.GetConverter()})
 	return digest(string(encoded)), nil
 }
 
@@ -211,6 +212,14 @@ func BuildBinding(actionID string, call *toolbrokerv1.ToolCall, contract *toolbr
 		}
 		binding.ExtensionID, binding.ExtensionManifestHash, binding.ExtensionGeneration = extension.GetExtensionId(), extension.GetManifestHash(), extension.GetGeneration()
 	}
+	if converter := contract.GetConverter(); converter != nil {
+		permission := ConverterPermission{ConverterID: converter.GetConverterId(), Class: converter.GetClass(), InputSchemaHash: converter.GetInputSchemaHash(), OutputSchemaHash: converter.GetOutputSchemaHash(), RuntimePin: converter.GetProfilePin(), InputBytes: converter.GetInputBytes(), OutputBytes: converter.GetOutputBytes(), Rows: converter.GetRows(), FieldBytes: converter.GetFieldBytes(), Millis: converter.GetMillis(), Trials: 1}
+		if permission.Validate() != nil || contract.GetExtension() != nil || call.GetToolName() != "converter."+converter.GetConverterId()+".convert" || contract.GetToolClass() != "pure_converter" || contract.GetRuntimeTarget() != "broker://pure-converters-v1" || !converterDigest.MatchString(converter.GetPackageHash()) || !converterDigest.MatchString(converter.GetNeedHash()) || converter.GetGeneration() < 1 || len(refs) != 0 {
+			return ActionBinding{}, "", fmt.Errorf("bounded converter contract is invalid")
+		}
+		binding.ConverterID, binding.ConverterPackageHash, binding.ConverterNeedHash, binding.ConverterGeneration = converter.GetConverterId(), converter.GetPackageHash(), converter.GetNeedHash(), converter.GetGeneration()
+		binding.Effect = EffectPrepare
+	}
 	if a := context.Authority; a != nil {
 		if a.TaskID != context.TaskID || a.OwnerID != context.OwnerID {
 			return ActionBinding{}, "", ErrOwnerAuthority
@@ -221,6 +230,27 @@ func BuildBinding(actionID string, call *toolbrokerv1.ToolCall, contract *toolbr
 	encoded, _ := json.Marshal(binding)
 	binding.ActionHash = digest(string(encoded))
 	return binding, args, nil
+}
+
+// BindDataSources is called only after a trusted catalog reads all exact
+// requested and package/need sources under current owned access. Canonical
+// metadata stays bound across approval/restart; it is not a read grant.
+func BindDataSources(binding ActionBinding, refs []DataRef) (ActionBinding, error) {
+	if len(refs) < 1 || len(refs) > 16 {
+		return binding, fmt.Errorf("bounded current data source set required")
+	}
+	ordered := append([]DataRef(nil), refs...)
+	sort.Slice(ordered, func(i, j int) bool { return ordered[i].ID < ordered[j].ID })
+	for i, r := range ordered {
+		if r.ID == "" || len(r.ID) > 160 || strings.TrimSpace(r.ID) != r.ID || strings.ContainsAny(r.ID, "\x00\r\n") || r.Revision < 1 || r.AccessRevision < 1 || !converterDigest.MatchString(r.Hash) || i > 0 && ordered[i-1].ID == r.ID {
+			return binding, fmt.Errorf("exact unique data source metadata required")
+		}
+	}
+	binding.DataSources = ordered
+	binding.ActionHash = ""
+	encoded, _ := json.Marshal(binding)
+	binding.ActionHash = digest(string(encoded))
+	return binding, nil
 }
 
 // BindExtensionAccess is trusted catalog metadata, not a model-selected grant.
@@ -318,9 +348,9 @@ func classifyEffect(tool string, args map[string]any) Effect {
 			return EffectCommit
 		}
 		return EffectUnknown
-	case "skills.search", "skills.load", "browser.read", "browser.open", "browser.navigate", "browser.snapshot", "browser.extract_text", "browser.wait_for", "browser.close", "single_tab.status", "single_tab.capture_visible", "single_tab.extract_text", "doctor.check_system", "doctor.check_container", "doctor.check_database", "doctor.check_provider", "web.fetch", "web.fetch_batch", "web.extract", "http.download", "http.parse_html":
+	case "converters.discover", "skills.search", "skills.load", "browser.read", "browser.open", "browser.navigate", "browser.snapshot", "browser.extract_text", "browser.wait_for", "browser.close", "single_tab.status", "single_tab.capture_visible", "single_tab.extract_text", "doctor.check_system", "doctor.check_container", "doctor.check_database", "doctor.check_provider", "web.fetch", "web.fetch_batch", "web.extract", "http.download", "http.parse_html":
 		return EffectRead
-	case "skills.propose", "browser.prepare_fill", "browser.prepare_type", "single_tab.bind", "browser.set_cookie", "browser.restore_storage_state", "doctor.generate_report":
+	case "converters.develop", "converters.test", "converters.trial", "converters.activate", "converters.rollback", "skills.propose", "browser.prepare_fill", "browser.prepare_type", "single_tab.bind", "browser.set_cookie", "browser.restore_storage_state", "doctor.generate_report":
 		return EffectPrepare
 	// Reads enforce GET/HEAD. Local preparation freezes all network persistently.
 	// Other live interactions can submit, purchase or autosave through site JS;
@@ -333,6 +363,9 @@ func classifyEffect(tool string, args map[string]any) Effect {
 // CatalogEffect is advisory capability filtering only. Exact action args still
 // determine and authorize HTTP methods during preparation/dispatch.
 func CatalogEffect(contract *toolbrokerv1.ToolContract) Effect {
+	if contract.GetConverter() != nil {
+		return EffectPrepare
+	}
 	if e := contract.GetExtension(); e != nil {
 		return Effect(e.GetEffect())
 	}

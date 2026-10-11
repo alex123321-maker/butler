@@ -921,3 +921,11 @@ reader must independently reload selected roots from the current authoritative
 contract, rather than treating stored selected IDs as permission. The saved-final
 retry path remains separate and never calls the model/source preparation again.
 
+
+Generated converter observations persist only checked-output SourceRefs, hashes
+and metadata. Current source/owner authority checks precede exact active-version
+guards at provider release/recovery and atomic result commit. A revoked or changed
+used catalog generation requires a fresh task attempt; saved tool results never
+redispatch a spent action. Local preparation acknowledgement and a model final
+remain unverified semantic task results until the existing explicit verifier
+checks completion criteria. See [generated converters](generated-converters.md).

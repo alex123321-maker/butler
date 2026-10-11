@@ -70,6 +70,12 @@ and [lifecycle contract](docs/architecture/reviewed-extension-lifecycle.md).
 The reference project connector prepares one synthetic README artifact with
 recipient proof; it does not modify a real repository or run a build.
 
+The opt-in [pure generated converter](docs/architecture/generated-converters.md)
+can create/check/trial and activate an exact bounded delimited-to-JSON IR under
+current owner permission. Its production runtime has no network and no core/account
+credentials. `/converters` shows checks, finite rights and current output evidence.
+Actual delegated developer acceptance remains a separate integration gate.
+
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.

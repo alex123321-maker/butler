@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"reflect"
 	"strings"
 )
@@ -53,6 +54,9 @@ func jsonEqual(a, b []byte) bool {
 		d := json.NewDecoder(bytes.NewReader(raw))
 		d.UseNumber()
 		e := d.Decode(&v)
+		if e == nil && d.Decode(new(any)) != io.EOF {
+			return nil, ErrChecks
+		}
 		return v, e
 	}
 	av, ae := decode(a)
