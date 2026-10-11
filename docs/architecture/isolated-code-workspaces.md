@@ -40,3 +40,13 @@ The private actual body digest is computed before the first write guard; a read
 digest is obtained from verified physical metadata before release. Actual PG/pool2
 tests cover this composition, while the production Broker policy/evidence adapters
 and all runtime routes remain disabled until separately verified.
+
+Independent physical confirmation is now provided by the kernel `Observer`,
+using a separately opened fixed private root and the caller's transaction. It
+returns content-free actual namespace/file observations and checks exact durable
+binding, physical hash/length, opened namespace/tree identity, private directory
+permissions, empty temporary state and the synced opaque checkpoint. It supplies
+no authorization or reconciliation decision. The adapter repeats current
+authority after observing and consumes the resource on the same metadata commit.
+Real PG/filesystem tampering tests use this observer; production Broker provenance,
+immutable evidence persistence and runtime composition remain separate work.

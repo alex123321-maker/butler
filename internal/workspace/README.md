@@ -150,3 +150,21 @@ The separate [controlled-browser bridge](../resourceexec/README.md) has actual
 Broker/runtime resource tests; it does not supply this workspace's production
 dispatch/evidence callbacks or change workspace authority. Workspace and
 shared-worker production composition remain separate issue17 acceptance gates.
+
+`NewObserver` opens its own fixed operator root and independently observes the
+actual namespace or file on the confirmation caller's transaction. It grants no
+authority and never reads a model verdict. `NamespaceTx` verifies the exact empty
+mode-0700 namespace, empty private temporary tree and synced opaque checkpoint.
+`FileTx` compares bounded real mode-0600 bytes with the exact owner/session/task/
+revision binding and current PostgreSQL file version/hash/length. It checks
+opened directory identity and private checkpoint shape again; links, unexpected
+private entries and shared permissions cannot become successful evidence.
+Observations contain only opaque identity, snapshot metadata and a deterministic
+digest, never body, host root, credential or lease. The production admission and
+immutable evidence ledger must still call it under their current held locks.
+
+Actual resource-adapter tests now use this observer rather than a test-only
+filesystem check. The [observer audit](../../docs/ai/workspace-observer-acceptance.md)
+records physical tampering during the real filesystem/PG commit gap, unknown
+outcomes, unconsumed claims and blocked/unpublished namespaces. No runtime route,
+model capability or deployment flag is enabled by this component.

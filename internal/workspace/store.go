@@ -23,7 +23,18 @@ type Store struct {
 // New requires an operator-provisioned private directory. No directory selected
 // by a model, shared /tmp, repository root or credential mount is accepted here.
 func New(pool *pgxpool.Pool, rootPath string, guard Guard, limits Limits) (*Store, error) {
-	if pool == nil || guard == nil || !filepath.IsAbs(rootPath) || filepath.Clean(rootPath) != rootPath || limits.MaxFileBytes <= 0 || limits.MaxWorkspaceBytes < limits.MaxFileBytes || limits.MaxWorkspaceBytes > 64<<20 || limits.MaxFiles <= 0 || limits.MaxFiles > 1024 {
+	if pool == nil || guard == nil || limits.MaxFileBytes <= 0 || limits.MaxWorkspaceBytes < limits.MaxFileBytes || limits.MaxWorkspaceBytes > 64<<20 || limits.MaxFiles <= 0 || limits.MaxFiles > 1024 {
+		return nil, ErrDenied
+	}
+	root, err := openPrivateRoot(rootPath)
+	if err != nil {
+		return nil, err
+	}
+	return &Store{pool, root, guard, limits}, nil
+}
+
+func openPrivateRoot(rootPath string) (*os.Root, error) {
+	if !filepath.IsAbs(rootPath) || filepath.Clean(rootPath) != rootPath {
 		return nil, ErrDenied
 	}
 	info, err := os.Lstat(rootPath)
@@ -45,7 +56,7 @@ func New(pool *pgxpool.Pool, rootPath string, guard Guard, limits Limits) (*Stor
 		root.Close()
 		return nil, ErrDenied
 	}
-	return &Store{pool, root, guard, limits}, nil
+	return root, nil
 }
 func (s *Store) Close() error { return s.root.Close() }
 

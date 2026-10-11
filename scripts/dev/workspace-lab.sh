@@ -22,7 +22,7 @@ trap cleanup EXIT INT TERM
 export DOCKER_CONFIG="$root/.cache/docker"
 docker network create --internal "$network" >/dev/null
 created_network=true
-docker run -d --name "$name" --network "$network" --network-alias workspace-postgres \
+docker run -d --runtime runc --name "$name" --network "$network" --network-alias workspace-postgres \
   --memory 512m --pids-limit 64 --cpus 1 --security-opt no-new-privileges:true \
   --env POSTGRES_USER=fixture --env POSTGRES_PASSWORD=workspace-fixture --env POSTGRES_DB=butler_workspace_test \
   --volume "$proof/postgres:/var/lib/postgresql/data" pgvector/pgvector:pg17 \
@@ -34,11 +34,11 @@ for attempt in $(seq 1 60); do
   sleep 1
 done
 printf 'Private workspace proof: %s\n' "$proof"
-docker run --rm --user "$(id -u):$(id -g)" --network "$network" --memory 1536m --pids-limit 128 --cpus 2 \
+docker run --rm --runtime runc --user "$(id -u):$(id -g)" --network "$network" --memory 1536m --pids-limit 128 --cpus 2 \
   --security-opt no-new-privileges:true --volume "$source_dir:/src:ro" --volume /srv/storage/butler/.cache:/cache \
   --volume "$root/.cache/workspace-tmp:/private-tmp" --workdir /src \
   --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp --env TMPDIR=/private-tmp \
   --env 'BUTLER_TEST_POSTGRES_URL=postgres://fixture:workspace-fixture@workspace-postgres:5432/butler_workspace_test?sslmode=disable' \
-  golang:1.27.2-bookworm go test -json -race -count=1 -timeout=120s ./internal/workspace > "$proof/tests.jsonl"
+  golang:1.27.2-bookworm bash -c 'go test -json -race -count=1 -timeout=120s ./internal/workspace > /dev/stdout && go vet ./internal/workspace' > "$proof/tests.jsonl"
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
 printf 'Workspace PG/filesystem race suite passed.\n'
