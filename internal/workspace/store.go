@@ -60,6 +60,28 @@ func openPrivateRoot(rootPath string) (*os.Root, error) {
 }
 func (s *Store) Close() error { return s.root.Close() }
 
+// CheckRoot is content-free installed-runtime readiness. It checks the actual
+// opened root and current named directory, granting no namespace access.
+func (s *Store) CheckRoot() error {
+	if s == nil || s.root == nil {
+		return ErrDenied
+	}
+	info, err := os.Lstat(s.root.Name())
+	if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 || info.Mode().Perm()&0077 != 0 {
+		return ErrDenied
+	}
+	dir, err := s.root.Open(".")
+	if err != nil {
+		return ErrDenied
+	}
+	defer dir.Close()
+	opened, err := dir.Stat()
+	if err != nil || !os.SameFile(info, opened) || opened.Mode().Perm()&0077 != 0 {
+		return ErrDenied
+	}
+	return nil
+}
+
 // Allocate is kernel-only namespace allocation, not admission. The kernel then
 // acquires workspace:<ID> resource authority before Create. No host path leaks.
 func Allocate(binding Binding) (Ref, error) {

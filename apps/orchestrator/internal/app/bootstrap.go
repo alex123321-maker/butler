@@ -57,6 +57,7 @@ import (
 	"github.com/butler/butler/internal/skills"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	redisstore "github.com/butler/butler/internal/storage/redis"
+	"github.com/butler/butler/internal/workspaceexec"
 	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc"
 )
@@ -528,6 +529,22 @@ func New(ctx context.Context) (*App, error) {
 	var guardedRequestHandler http.Handler
 	var memoryCandidateHandler http.Handler
 	var converterDelegationHandler http.Handler
+	workspaceReady := false
+	if cfg.WorkspaceEnabled {
+		provenance, readyErr := workspaceexec.NewProvenance(postgres.Pool(), sourceCatalog)
+		if readyErr == nil {
+			readyErr = provenance.CheckReady(ctx)
+		}
+		if readyErr == nil {
+			readyErr = workspaceexec.CheckDispatchSchema(ctx, postgres.Pool())
+		}
+		if readyErr != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, fmt.Errorf("workspace catalog requires current private source/dispatch/input schema and deletion anchor")
+		}
+		workspaceReady = true
+	}
 	if cfg.ActionAuthorityTokenFile != "" {
 		token, readErr := actionauth.ReadServiceToken(cfg.ActionAuthorityTokenFile)
 		if readErr != nil {
@@ -567,7 +584,7 @@ func New(ctx context.Context) (*App, error) {
 				return nil, err
 			}
 		}
-		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, guardedTabRequestReady: guardedRequests != nil, guardedTabRuntimeReady: cfg.GuardedTabRuntimeEnabled && guardedRequests != nil, memoryCandidateReady: memoryCandidates != nil, converterDelegationReady: converterDeveloper != nil && converterClient != nil})
+		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, guardedTabRequestReady: guardedRequests != nil, guardedTabRuntimeReady: cfg.GuardedTabRuntimeEnabled && guardedRequests != nil, memoryCandidateReady: memoryCandidates != nil, workspaceReady: workspaceReady, converterDelegationReady: converterDeveloper != nil && converterClient != nil})
 		skillEvidenceHandler = skills.NewEvidenceHandler(token, &skillEvidence{tasks: taskStore, journal: actionauth.NewPostgresStore(postgres.Pool()), transcript: transcriptStore, budgets: budget.NewLedger(postgres.Pool()), results: finalResults, sources: sourceCatalog})
 	} else {
 		log.Warn("private action authority unavailable; Tool Broker will deny execution")

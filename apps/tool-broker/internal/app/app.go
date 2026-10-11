@@ -32,6 +32,7 @@ import (
 	"github.com/butler/butler/internal/singletabcontrol"
 	"github.com/butler/butler/internal/skills"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
+	"github.com/butler/butler/internal/workspaceexec"
 	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc"
 )
@@ -58,6 +59,11 @@ func New(ctx context.Context) (*App, error) {
 	registryStore, err := registry.Load(cfg.RegistryPath, cfg.DefaultTarget)
 	if err != nil {
 		return nil, err
+	}
+	for _, c := range registryStore.List("", true) {
+		if workspaceexec.Protected(c.GetToolName()) {
+			return nil, fmt.Errorf("workspace contracts must come from canonical private startup composition")
+		}
 	}
 	var postgres *postgresstore.Store
 	var credentialResolver *credentials.ToolCallBroker
@@ -96,6 +102,12 @@ func New(ctx context.Context) (*App, error) {
 		}
 		return nil, fmt.Errorf("guarded tab requests require PostgreSQL and a fixed authenticated private endpoint")
 	}
+	if cfg.WorkspaceEnabled && (postgres == nil || cfg.ActionAuthorityTokenFile == "") {
+		if postgres != nil {
+			postgres.Close()
+		}
+		return nil, fmt.Errorf("workspace tools require PostgreSQL and private action authentication")
+	}
 	server := broker.NewServer(registryStore, router, credentialResolver, log)
 	var mandateHandler http.Handler
 	var effectHandler http.Handler
@@ -125,7 +137,7 @@ func New(ctx context.Context) (*App, error) {
 		}
 		authorizationStore := actionauth.NewPostgresStore(postgres.Pool())
 		sourceCatalog := catalog.New(postgres.Pool(), catalog.NewFileManifest(strings.TrimSpace(os.Getenv("BUTLER_MEMORY_DELETION_MANIFEST_FILE"))))
-		if cfg.GuardedTabRuntimeEnabled {
+		if cfg.GuardedTabRuntimeEnabled || cfg.WorkspaceEnabled {
 			tx, restoreErr := postgres.Pool().Begin(ctx)
 			if restoreErr == nil {
 				restoreErr = sourceCatalog.CheckRestoreTx(ctx, tx)
@@ -286,11 +298,19 @@ func New(ctx context.Context) (*App, error) {
 			postgres.Close()
 			return nil, resourceErr
 		}
+		workspaceStore, workspaceErr := configureWorkspace(ctx, cfg, postgres.Pool(), registryStore, router, budgetController, sourceCatalog)
+		if workspaceErr != nil {
+			postgres.Close()
+			return nil, workspaceErr
+		}
+		admissions := broker.ResourceAdmissions{Workspace: workspaceStore}
+		if cfg.GuardedTabRequestEnabled {
+			admissions.Browser = &broker.GuardedTabAdmission{Store: resourceStore}
+		}
 		if resourceStore != nil {
 			catalog.GuardedTabOnly = true
 			admission := broker.GuardedTabAdmission{Store: resourceStore}
-			authorizationStore.SetDispatchClaimGuard(admission)
-			server.SetResourceAdmission(admission)
+			admissions.Browser = &admission
 			executor, err = broker.NewResourceExecutor(resourceStore, executor)
 			if err != nil {
 				postgres.Close()
@@ -298,6 +318,19 @@ func New(ctx context.Context) (*App, error) {
 			}
 			guardedResourceHandler = resourceHandler
 			server.SetCatalogExecutor(executor)
+		}
+		if workspaceStore != nil {
+			catalog.BrowserResourcesUnavailable = resourceStore == nil
+			executor, err = broker.NewWorkspaceExecutor(workspaceStore, executor)
+			if err != nil {
+				postgres.Close()
+				return nil, err
+			}
+			server.SetCatalogExecutor(executor)
+		}
+		if resourceStore != nil || workspaceStore != nil {
+			authorizationStore.SetDispatchClaimGuard(admissions)
+			server.SetResourceAdmission(admissions)
 		}
 		if cfg.MemoryCandidateEnabled {
 			client, clientErr := candidatecontrol.NewClient(cfg.MemoryCandidateControlURL, token)

@@ -5,10 +5,17 @@ Workspace execution has an exact optional Server/router adapter in
 same-transaction current input/source/worker/budget/resource admission and one-use
 private runtime metadata. `ResourceAdmissions` prevents workspace and browser
 guards from substituting for each other. Task discovery/preparation requires
-current `workspace_ready`; the application does not yet register these tools or
-set owning readiness. The actual Broker/runtime/files acceptance is described in
+current `workspace_ready`. Operator-only `BUTLER_WORKSPACE_ENABLED` now registers
+the exact contracts after authenticated installed runtime/schema/anchor readiness.
+It requires a stable profile, fixed loopback or private Unix target and service
+token file. Raw workspace registry entries fail startup, including when disabled.
+Workspace-only composition hides browser tools without their required resource
+adapter; the exact local guarded selection request retains its separate path.
+The actual Broker/runtime/files acceptance is described in
 [workspace dispatch](../../docs/ai/workspace-dispatch-acceptance.md). Production
-bootstrap and owner reconciliation remain pending.
+rollout and owner reconciliation remain pending. See also
+[application setup](../tool-workspace/README.md) and
+[bootstrap proof](../../docs/ai/workspace-bootstrap-acceptance.md).
 
 Optional operator-only `BUTLER_MEMORY_CANDIDATE_ENABLED` registers the canonical
 local `memory.propose_candidate` control after exact authorization/permanent

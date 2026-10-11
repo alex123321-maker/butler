@@ -2,6 +2,15 @@
 
 Docker Compose files and environment templates live here.
 
+The explicit optional `docker-compose.workspaces.yml` overlay installs bounded
+workspace artifacts through a private Unix socket. Provision separate UID10001/
+0700 data and socket directories, a UID10001/0600 service token, stable profile
+and the existing independent deletion anchor before using it. Broker shares only
+the read-only socket mount/token and owning readiness gates discovery. This overlay
+enables the operator flags explicitly; base defaults and main laba remain unchanged.
+Unknown writes remain quarantined and owner reconciliation is pending. See
+[runtime setup](../apps/tool-workspace/README.md).
+
 - `docker-compose.yml` defines the internal Butler stack used as the base for all local environments.
 - `docker-compose.dev.yml` adds host-exposed ports and persistent dev volumes required for browser and direct local access.
 - Copy `../.env.example` to `../.env` before running `make up` or `make infra-up`.
