@@ -18,6 +18,15 @@ and [the isolated capture command](../../../scripts/dev/antigravity-wire/README.
 Account subscription membership is confirmed; per-request subscription metering
 is still unknown.
 
+Subsequent owner-authorized live checks completed both actual CLI (Flash-medium,
+daily CloudCode) and this Go Provider (Flash-tiered, AICode) with a diagnostic512
+cap. A separate Go request preserved the original body and8192, receiving
+RESOURCE_EXHAUSTED/HIGH_DEMAND; native `model_capacity_unavailable` was correct.
+The eight-minute gap leaves cap sensitivity unproven. Production behavior is
+unchanged. These are bounded text checks, not full delegation/tool acceptance.
+All21 agent-tracked attempts and seven immutable reports are retained in the
+diagnosis. The private comparison helper is not a production transport fallback.
+
 Only `providerauth.AntigravityTokenSource` supplies token and expiry. Transport
 does not read credentials or run the CLI. Native calls must match supplied aliases
 and schemas; Tool Broker remains the sole executor. Exact function parts and opaque

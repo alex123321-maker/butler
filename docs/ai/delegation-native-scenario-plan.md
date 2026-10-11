@@ -1,16 +1,22 @@
 # Opt-in native delegation experiment
 
-## Current Antigravity diagnosis continuation — zero inference
+## Current Antigravity diagnosis continuation — separate from delegation
 
-The owner authorized only Antigravity diagnosis and justified fixes. The installed
+The owner initially authorized Antigravity diagnosis without inference, then
+explicitly authorized further diagnostic calls. The installed
 CLI/Go synthetic wire comparison is now implemented and completed with networking
-disabled; see [the diagnosis](antigravity-quota-diagnosis.md). It adds no native
+disabled; see [the diagnosis](antigravity-quota-diagnosis.md). Three subsequent
+requests used independently sealed diagnostic windows: CLI and Go512 completed;
+ordinary Go8192 failed RESOURCE_EXHAUSTED/HIGH_DEMAND, confirming capacity for
+that new rejection. They add no full delegation
 model acceptance and no permission to execute the historical runner below.
 All five native reports, eighteen attempts, five known/thirteen unknown usage
 pairs and the SEALED baseline13 window remain unchanged. Known24921 input/547
 output is a subtotal. Issue16's full delegation gates remain outstanding.
-The [next comparison proposal](antigravity-next-experiment.md) is preparation
-only and requires separate explicit owner approval plus its admission controls.
+The [experiment record](antigravity-next-experiment.md) retains both completed
+windows and an optional further proposal. Cumulative diagnostic-inclusive count
+is21,7 known/14 unknown pairs; known input26939/output581 remains a subtotal.
+Native delegation history stays18 and must not be rewritten by diagnostic success.
 
 ## Historical owner-directed fifth window — 2026-10-11 — SEALED
 

@@ -257,6 +257,24 @@ production server acceptance or justify copying optional fields into the native
 adapter. See [the diagnosis](../ai/antigravity-quota-diagnosis.md). No runtime
 contract, credential ownership or inference permission changes with this tool.
 
+A separate private operator comparison may use the retained authorization only
+after explicit owner inference authorization and tested finite PostgreSQL admission.
+It is outside provider factory, Orchestrator and Tool Broker execution. Manager
+alone owns audit/refresh/encrypted persistence. CLI receives the same short-lived
+token in an isolated profile behind an internal-network, fixed-host HTTPS gate;
+main credential/proxy environment/control key are not mounted into CLI. Only
+fixed safe metadata leaves the backend. Model/prompt/credit/byte/deadline checks,
+charge-before-write, duplicate/restart refusal and sealed carried-forward reports
+apply to every dispatch. Function proposals are blocked before CLI execution.
+This does not create CLI inference fallback or grant other production authority.
+
+The authorized2026-10-11 comparison completed CLI Flash-medium/CloudCode and Go
+Flash-tiered/AICode with512; a separate byte-preserved Go8192 request returned
+HIGH_DEMAND. Capacity is proven for that new rejection, not a causal protocol or
+output-allocation defect. Keep production8192 and the existing fixed diagnostic;
+neither the live text test nor fixture success closes delegation/tool acceptance.
+See [the exact diagnosis and accounting](../ai/antigravity-quota-diagnosis.md).
+
 ---
 
 ## 8. Core transport entities

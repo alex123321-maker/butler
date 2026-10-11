@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "observed_date": "2026-10-12",
+  "evidence_type": "OWNER_SUPPLIED_UI_SCREENSHOTS",
+  "model_display_label": "Gemini 3.8 Flash High",
+  "desktop_version_owner_reported": "2.22",
+  "reply_observed": true,
+  "displayed_reply_local_timestamp": "2026-10-12 00:03:25",
+  "displayed_timezone": null,
+  "asked_text_kind": "SHORT_GENERAL_TEXT_DIFFERENT_FROM_DIAGNOSTIC_MARKER",
+  "thinking_duration_displayed_seconds": 8,
+  "gemini_usage_windows": [
+    {
+      "name": "Weekly Limit Remaining",
+      "remaining_percent_displayed": 99,
+      "reset_displayed": "6d 1h"
+    },
+    {
+      "name": "Five Hour Limit Remaining",
+      "remaining_percent_displayed": 96,
+      "reset_displayed": "1h 13m"
+    }
+  ],
+  "screenshot_sha256": {
+    "model_and_usage": "2fb2d21f7310ecf5b1fc2cdf8c19fa35b4bf94c5c208a76c84b1f44d3c7232cf",
+    "completed_dialogue": "720b31140299b99caba009be568da640078e6685cc7002531d449bd10dc1ca32"
+  },
+  "screenshots_copied_to_git": false,
+  "private_http_capture_performed": false,
+  "wire_model": null,
+  "endpoint": null,
+  "http_status": null,
+  "upstream_generation_count": null,
+  "input_tokens": null,
+  "output_tokens": null,
+  "thought_tokens": null,
+  "extra_credit_policy": null,
+  "agent_admission_attempt": null,
+  "interpretation": "The owner reports a completed Desktop dialogue under the selected High display variant. Actual route, exact wire experience, usage, account proof and number of upstream calls are not contained in these screenshots.",
+  "accounting_scope": "Separate owner activity; not an additional invented ordinal or zero-usage entry in the 21 agent-tracked admissions."
+}

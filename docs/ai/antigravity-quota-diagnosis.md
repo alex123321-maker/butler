@@ -1,6 +1,19 @@
-# Antigravity account and quota diagnosis — 2026-10-11
+# Antigravity account and quota diagnosis — updated 2026-10-12
 
-## Current conclusion after the offline CLI/Go comparison
+## Current conclusion after authorized live checks
+
+**The new ordinary8192 Go request reproduced HTTP429
+RESOURCE_EXHAUSTED/HIGH_DEMAND in the window around2026-10-11T16:52Z. Its confirmed upstream cause
+is unavailable model capacity, and Butler correctly emitted
+`model_capacity_unavailable`.** The backend still reported Pro and Flash
+remainingFraction0.960901. This is not evidence of depleted subscription quota.
+
+The official CLI and native Go both completed an earlier bounded512 request.
+Thus the CLI is not generally broken and the native endpoint/model/headers/body/
+SSE contract can work with the original OAuth. No causal production-code defect
+was demonstrated; do not change endpoint/version/model/UA or lower production
+8192 on a time-confounded correlation. The512 success and8192 failure were about
+eight minutes apart, so the cap is a hypothesis, not an established cause.
 
 The cause of the **last** generic `rate_limited` is still undetermined. The native
 adapter maps upstream HTTP429 to that class; OAuth failure, local serialization
@@ -10,13 +23,125 @@ particular responses. Their explanation cannot be transferred to the fifth
 window without its original response details.
 
 No causal production-code defect has been demonstrated. Consequently the actual
-endpoint, model, output8192 and credential flow are unchanged. This continuation
-adds a working offline wire diagnostic and corrects the unsupported claim that
-CLI session fields are "v1main-only". It makes **zero real model requests**.
-All five reports and18 prior attempts are preserved:5 known and13 unknown usage
-pairs;24921 input/547 output is only the known subtotal. Baseline13 remains SEALED.
+endpoint, model, output8192 and credential flow are unchanged. The initial offline
+phase made zero model requests; the owner's later explicit instruction authorized
+live diagnosis. Three new requests were admitted in two independently sealed
+windows. All five old reports and18 attempts remain unchanged: their5 known/13
+unknown usage pairs and24921 input/547 output subtotal are preserved. Cumulative
+agent-tracked count is now21:7 known/14 unknown pairs, known input26939/output581 subtotal.
+New thinking usage290 is known only for attempts19/20. Baseline13 remains SEALED.
 No main checkout/deployment or other issue was changed; issue16 acceptance is
 still separate.
+
+## Actual CLI interception and bounded live results
+
+The [private comparison backend](../../scripts/dev/antigravity-compare/README.md)
+terminates isolated CLI/Go HTTPS locally and exports only fixed safe projections.
+This supplies decrypted HTTP evidence without a raw tcpdump containing OAuth.
+An ordinary packet capture would contain encrypted TLS, not HTTP body fields.
+Original source wire was compared before forwarding, including byte lengths,
+model, envelope, headers, system/prompt sizes, session presence and generation
+keys. Requests/IDs/auth/thoughts/profile images remain private. The CLI's exact
+avatar URL, learned privately from Google userinfo, is admitted without bearer;
+it is never exported. The initial diagnostic gzip relay and avatar denial caused
+preparation failures; both were resolved before live dispatch. They are not
+historical Butler defects. CLI `models` then succeeded, and Print exited0.
+
+Real catalog/capture establishes that CLI1.3.3 accepts and sends
+`gemini-3.8-flash-medium`; `--model gemini-3.8-flash-tiered` is rejected locally.
+Default live route is daily Cloud Code v1internal. This differs from Butler's
+AICode v1/tiered experience. The CLI also attempted auxiliary generation; all
+such writes were rejected before Google and are not counted as model attempts.
+Even a custom empty-tools agent adds one declaration and a user reminder. Any
+function proposal is blocked before the CLI executor. Both successful responses
+contained no function proposal. The comparison preserves these contextual
+differences and deliberately bounds both output allowances at512.
+
+| Attempt | Actual client/model/route | Output allocation | Result | Measured input/output/thoughts/total |
+| --- | --- | --- | --- | --- |
+|19|CLI, Flash-medium, daily Cloud Code v1internal|512 (original request65536)|HTTP200, STOP, exact marker; CLI exit0|1990 /17 /97 /2104|
+|20|actual Go Provider, Flash-tiered, AICode v1|512 (production8192 overridden for this pair)|HTTP200, STOP, exact marker and native final|28 /17 /193 /238|
+|21|actual Go Provider, Flash-tiered, AICode v1|8192, **original242 request bytes preserved**|HTTP429, RESOURCE_EXHAUSTED/HIGH_DEMAND; native `model_capacity_unavailable`|NULL /NULL /NULL /NULL|
+
+Attempts19/20 used one normally configured CLI plus one Go sample, not repeated
+failed requests. Attempt21 was a new, native-only hypothesis check of the original
+allocation, carrying the immutable pair hash and base20 forward. No CLI was
+launched in21. The immutable21 report contains a safe cached CLI diagnostic from
+the prior pair; ignore that field. The final helper now explicitly marks CLI not
+launched in native-only mode, tested without any further generation.
+
+The four origin-match booleans were true before each window. Manager alone owns
+routine OAuth refresh and encrypted persistence; no new login/account import.
+CLI runs only on a dedicated internal network, behind a fixed-host private gate.
+PostgreSQL reserves before dispatch, enforces one per client / one native21,
+refuses duplicates/restarts/expiry, and retains unknown usage/money as NULL.
+All redirects, supplemental credits and fallback/retry writes are blocked. Both
+new single-use markers are sealed; dedicated PG data/dumps and safe reports are
+retained. All builds/tests/Docker used laba's isolated agent roots. Main agent's
+source pointer still resolves to task-owner-view/snapshots/20261011-094312-276;
+no deployment commands were issued.
+
+Evidence: [pair JSON](../../deploy/antigravity/live-comparison-20261011.json),
+[8192 JSON](../../deploy/antigravity/native8192-20261011.json), and
+[verification matrix](../../deploy/antigravity/live-verification-20261011.json).
+Pair source20261011-234341-576;8192 source20261011-235122-281; final helper
+tests20261011-235539-708. Final19 distinct tests/subtests passed with race, actual
+disposable PostgreSQL, vet and no skips/failures. No dependencies or production
+behavior changed. Detailed paths/hashes are pinned in the matrix.
+
+## Owner Desktop observation — 2026-10-12
+
+The owner supplied two screenshots: selected **Gemini 3.8 Flash High** and a
+completed short general-text dialogue with displayed local timestamp
+2026-10-12 00:03:25. The Gemini UI shows **weekly99%** (reset in6d1h) and
+**five-hour96%** (reset in1h13m). These are two named windows, not one universal
+remaining percentage. They demonstrate a working Desktop observation, whose
+selected display variant differs from CLI Medium and native tiered.
+
+The screenshots do not reveal the HTTP route, wire experience, full context,
+extra-credit setting, account audit, usage or upstream call count. The text was
+different from our fixed marker prompt. No private Desktop interception ran;
+do not call it an identical-request or byte comparison. The timezone is not
+confirmed, so no precise interval is inferred from the displayed timestamp.
+One owner UI send is not necessarily one upstream call; retain this outside the
+21 agent-tracked admissions and known usage subtotal. Safe fixed observations
+and screenshot hashes are in
+[desktop-observation-20261012.json](../../deploy/antigravity/desktop-observation-20261012.json).
+The original screenshots were not copied into Git.
+
+## What the subscription counter establishes
+
+Pro membership, original authorization and actual successful model access are
+confirmed. The owner explicitly attributes the earlier decline from100% to their
+own model use, so it is not attributed to Butler. Before19/20, server Flash was
+0.960997; after the pair,0.960901. This0.0096 percentage-point decrease is a joint
+interval observation, not proof of either client's individual paid bucket.
+Before/after21 it remained0.960901; the rejected request's usage is unknown,
+not zero. Meter delay, aggregation, rounding and concurrent owner use are not
+eliminated by these snapshots. Per-Go subscription accounting remains unresolved.
+Reported token usage is positive for19/20; the claim that tokens are never spent
+is contradicted by their usage metadata. Supplemental cost is governed by the
+operator's `subscription_no_overage` policy and CLI `useG1Credits:false`, as
+documented by the official [CLI credit guidance](https://www.antigravity.google/docs/cli/credits/).
+Observed monetary cost remains NULL; no purchase/extra-credit/API fallback ran.
+
+## Remaining uncertainty and next specific experiment
+
+The fifth historical generic429 still has no recoverable reason. This new
+HIGH_DEMAND cannot retroactively identify it. A valid small request may be rejected
+for capacity; an invalid-contract, wrong-account or local-SSE explanation is not
+supported by21. Full long-context delegation, native functions and issue16 gates
+are separate. Client/model/route differences are measured, not isolated as causes.
+
+The [next experiment record](antigravity-next-experiment.md) specifies a private
+Desktop High/native tiered comparison, preceded by zero-generation contract and
+isolation checks. It has at most two generations,8192 output allocation each,
+45s per request/120s total and supplemental cost0, carrying all21 tracked
+attempts, seven immutable reports and the owner observation forward. It stops
+on the first rejection or unproved control. Desktop credit policy is currently
+unknown. This proposal has not run or been implemented in the existing sealed
+runner. Current evidence already proves capacity for21; further inference is
+not required for that conclusion.
 
 ## Source-path audit
 
@@ -132,15 +257,15 @@ allowlisting and omission of private bodies/identity/auth from projections.
 Both actual CLI captures and the Go fixture completion passed with zero real
 model calls. No dependencies were added.
 
-## Hypotheses and subscription accounting
+## Offline-phase hypotheses and retained subscription observations
 
 | Hypothesis | Evidence and present status |
 | --- | --- |
 | Wrong account / imported credentials | Owner confirms same account; previous private encrypted-PG audit returned all four matches. No account substitution found. Audit equality is scoped to observation time. |
 | Wrong HTTP version | Installed CLI actually serializes AICode v1 offline. No evidence justifies changing Butler to HTTP v1main. |
-| Wrong generation contract or client/model routing | Real differences are measured offline. Live acceptance/causality remain unproven, and explicit AICode fixture model differs. Production change is not justified yet. |
-| Exhausted paid quota | Pro membership and backend Flash remainingFraction1 are confirmed. No retained response proves subscription quota exhaustion. Coexisting free-tier is not inference accounting. |
-| Available model capacity | HIGH_DEMAND proves this for particular earlier responses, not the last generic failure. Official Plans also describe capacity-dependent rate limits. |
+| Wrong generation contract or client/model routing | Offline and live differences are measured. Both clients complete512, and native8192 returns capacity429; no causal contract defect demonstrated. |
+| Exhausted paid quota | Pro membership and historical Flash fraction1, later0.960901, are confirmed. Owner Desktop shows weekly99%/five-hour96%. No retained response proves subscription quota exhaustion. Coexisting free-tier is not inference accounting. |
+| Available model capacity | HIGH_DEMAND proves this for particular earlier responses and new21, not the fifth historic generic failure. Official Plans describe capacity-dependent limits. |
 | Wrong local classification | Current code distinguishes recognized HIGH_DEMAND and general HTTP429; local OAuth/SSE/JSON failures use other types. The fifth response lost specificity and cannot now be reconstructed. |
 
 **Confirmed:** the original console authorization and the account's Google AI Pro
@@ -152,15 +277,14 @@ describe capacity-dependent limits and credit overage controls; the official
 describes backend quota refresh. Neither provides a mapping from Butler's direct
 AICode request to the desktop percentage. A full meter is compatible with
 capacity failure and is not proof of free routing, no billing or unlimited
-generation. No new model consumption was added to investigate it here.
+generation. This paragraph retains the initial offline interpretation; the live
+usage/counter observations above supersede the original no-generation boundary.
 
-The concrete [next experiment](antigravity-next-experiment.md) is prepared only:
-at most two separately admitted generations, fixed prompt/account/Flash, bounded
-payload/output/time, no retries or extra credits, and fixed safe failure metadata.
-It requires separate explicit owner approval and a verified private dispatch
-gate; no runnable live command or approval is implied by this document.
+The [experiment record](antigravity-next-experiment.md) retains the owner-authorized
+pair and subsequent8192 check, their bounds, results and sealed admission. It
+also describes an optional further check; none reopens old windows.
 
-## Retained credential audit and server observations
+## Historical credential audit and server observations — pre-live
 
 The owner reports desktop version2.22 and Flash remaining100% for the same
 account used in the lab CLI. Installed official CLI is1.3.3. Codex reasoning and

@@ -24,10 +24,21 @@ unary generation and SSE streaming returned HTTP 200, the expected text marker,
 tokens. Butler uses an explicit 8192-token allowance. The operator probes used
 512; they do not claim a maximum-length output test.
 
-Earlier Cloud Code generation returned 429 on the wrong inference route, and
+Earlier Cloud Code request profiles returned429, and
 direct regional AICode probes were rejected before the authorized proxy was
 configured. Those observations do not establish exhausted subscription quota.
 Stored credentials alone do not prove model access.
+
+The owner-authorized2026-10-11 comparison subsequently completed actual CLI
+Flash-medium/daily CloudCode and native Go Flash-tiered/AICode with output512.
+The official CLI's default CloudCode route is therefore not inherently wrong.
+A separate native request with original8192/body received429 HIGH_DEMAND, proving
+capacity rejection for that observation. Old generic429 cannot be reclassified;
+no causal code fault or cap defect is demonstrated. Pro membership/origin is
+confirmed, per-Go subscription accounting is unresolved. See the
+[updated diagnosis](../../docs/ai/antigravity-quota-diagnosis.md) for exact safe
+artifacts,21 cumulative attempts/7 known/14 unknown usage pairs and sealed windows.
+The diagnostic CLI was isolated outside deployment; no production fallback changed.
 
 The private `provider-auth -action audit-origin` command reads a bounded reference
 import on stdin and compares it with current encrypted PostgreSQL credentials.
