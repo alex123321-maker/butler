@@ -1,9 +1,12 @@
 # Opt-in native delegation experiment
 
-Reviewable opt-in preparation for issue16. The previous coordinated native
-experiment failed after three requests; its immutable report and nullable usage
-are retained below. A new experiment remains unexecuted and requires a separately
-reviewed immutable delta and explicit coordinated window. The composed
+Reviewable opt-in preparation and failed execution evidence for issue16. The
+first coordinated native experiment failed after three requests. The separately
+reviewed follow-up failed after two new requests, retaining all five attempted
+requests and their separate nullable usage. Both immutable reports are retained
+below. No successful width-one/width-two comparison or issue closure is
+established. Any further native execution needs another explicit review and
+coordinated window. The composed
 production admission/readiness baseline is
 `e7ca93e961f6250f66f7ca60142071044f03196f`, with the private-client ambient-proxy
 denial fixes `d500847` and `25d9c75`, followed by accepted-input verifier
@@ -228,8 +231,9 @@ mandate budgets in the new schema remain finite at their existing twelve-turn
 allowance. Historical spending is an additional test accounting baseline, not a
 production budget expansion or a claim that the failed experiment passed.
 
-The implementation and preparation checks do not authorize execution. No new
-actual native request followed the failed three-request experiment.
+The implementation and preparation checks alone did not authorize execution.
+The separately authorized follow-up execution is recorded below; this preparation
+record continues to describe zero inference at preparation time.
 
 Preparation on snapshot `20261011-101353-330` passed eight PG/race groups and five
 baseline-denial subtests, then the no-network read-only UID10001 file/baseline
@@ -240,3 +244,51 @@ ordinary-worker zero-inference diagnosis passed all seven groups and 21 subtests
 again with that carryover present. No failure or skip was observed. Evidence
 hashes and explicit simulated-versus-actual accounting are recorded in
 `deploy/delegation/native-carryover-preparation.json`.
+
+## Separately coordinated follow-up failure
+
+The one approved follow-up executed immutable runner
+`6bf29435cdf74ee143f4d3dd1c12defb2f9d1aa4`, snapshot
+`20261011-101727-059`. It **failed** after two new native requests: parent
+StartRun and one tool-result continuation. The hard ledger records ordinals four
+and five, retaining the original three attempts. The exact copied runtime report
+is `deploy/delegation/native-scenario-followup-failed.json`, SHA256
+`f5d25f36b574464508a4124ac7490d525e75d8c8cf60111a0bb637637e777619`.
+The original `native-scenario-failed.json` and its pinned hash are unchanged.
+
+Private lab evidence is
+`/srv/storage/butler/agents/durable-tasks/reports/delegation-native-execute-20261011T032101Z-3342751`.
+The retained native event hash is
+`e25ff250be2cae017b7b773a201f2ecaacef66ac5318b5543b4842e039c7df1c`.
+Before invocation, eight PG/race preparation groups and five baseline-denial
+subtests passed without failure or skip, and the UID10001 read-only file/baseline
+probe passed. That preparation does not replace the actual failed scenario.
+
+| Observation | Actual evidence | Limit |
+| --- | --- | --- |
+| Attempt accounting | Two new pre-call charges; historical three retained; total five of maximum fifteen | No further execute, corrective generation, fallback or probe |
+| Failure boundary | Parent input stopped before two admissions | No typed underlying provider/tool/guard failure code was exported |
+| Timing | Width-one failed after 10,558ms; whole scenario test 13.11s | Width-two and successful latency comparison not reached |
+| Conservative owner-day reservations | Two model turns, 2,113,536 tokens, one external call and one child allowance | A reservation is not proof of a committed child receipt or observed spend |
+| Actual model usage | Both new input/output token pairs are null | Unavailable usage is not zero; previous one known token pair remains historical |
+| Child/process checks | No exported child final/result/report and no worker SIGKILL | No child survival, overlap, independent result or conflict verification |
+| Current-authority controls | Stop/amend/delete phase did not run | False unfinished-phase fields are unperformed checks, never PASS |
+
+The retained native event file is only 224 bytes and contains the fixed test
+failure boundary. A bounded content-free inspection found no typed error code,
+checkpoint export or run-state export. The fixture's unconditional cleanup
+executes `DROP SCHEMA ... CASCADE` and removes subprocess temporary directories;
+its cleanup result and original owned state were not exported. Private PostgreSQL
+files remain in the isolated proof directory, but no retained live fixture schema
+or underlying failure state has been demonstrated. No restore or inference from
+an empty database was used to assign a cause. The exact lower-level cause of this
+second failure remains unknown.
+
+`deploy/delegation/native-followup-failure-audit.json` records these evidence
+limits separately. The appropriate next diagnostic is a zero-inference fixture
+that exports bounded typed input/run/tool/checkpoint state before cleanup and
+tests that export under deliberate provider/tool denials. Such a test would
+establish observability, not reproduce an unknown native cause or authorize
+another model experiment. Issue16 stays open. The reviewed three-attempt baseline
+was accounting for this completed window only; it must not silently reset the
+now-observed total of five for a future invocation.
