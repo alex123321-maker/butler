@@ -83,6 +83,7 @@ type OrchestratorConfig struct {
 	ActionMandateID                   string
 	ActionAuthorityTokenFile          string
 	ExtensionControlURL               string
+	SkillControlURL                   string
 	TelegramBotToken                  string
 	TelegramAllowedChatIDs            []string
 	TelegramBaseURL                   string
@@ -115,6 +116,7 @@ type ToolBrokerConfig struct {
 	ExtensionProfilesJSON     string
 	ExtensionRuntimeTokenFile string
 	ExtensionOwnerID          string
+	SkillsEnabled             bool
 }
 
 type ToolBrowserConfig struct {
@@ -293,6 +295,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_EXECUTION_BUDGET_POLICY_JSON", component: "orchestrator", typeName: "json", requiresRestart: true, validate: validateBudgetPolicy, assign: func(v string) { cfg.ExecutionBudgetPolicyJSON = v }},
 		fieldSpec{key: "BUTLER_ACTION_AUTHORITY_TOKEN_FILE", component: "orchestrator", typeName: "string", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ActionAuthorityTokenFile = strings.TrimSpace(v) }},
 		fieldSpec{key: "BUTLER_EXTENSION_CONTROL_URL", component: "orchestrator", typeName: "string", defaultValue: "", requiresRestart: true, validate: func(v string) error { return validateOperatorControlEndpoint(v, "/internal/extensions") }, assign: func(v string) { cfg.ExtensionControlURL = strings.TrimSpace(v) }},
+		fieldSpec{key: "BUTLER_SKILL_CONTROL_URL", component: "orchestrator", typeName: "string", requiresRestart: true, validate: func(v string) error { return validateOperatorControlEndpoint(v, "/internal/skills") }, assign: func(v string) { cfg.SkillControlURL = strings.TrimSpace(v) }},
 		fieldSpec{key: "BUTLER_TELEGRAM_BOT_TOKEN", component: "orchestrator", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: func(v string) { cfg.TelegramBotToken = v }},
 		fieldSpec{key: "BUTLER_TELEGRAM_ALLOWED_CHAT_IDS", component: "orchestrator", typeName: "csv", required: false, defaultValue: "", requiresRestart: true, validate: validateOptionalChatIDList, assign: func(v string) { cfg.TelegramAllowedChatIDs = parseCSV(v) }},
 		fieldSpec{key: "BUTLER_TELEGRAM_BASE_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "https://api.telegram.org", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.TelegramBaseURL = v }},
@@ -338,6 +341,7 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_EXTENSION_PROFILES_JSON", component: "tool-broker", typeName: "json", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ExtensionProfilesJSON = v }},
 		fieldSpec{key: "BUTLER_EXTENSION_RUNTIME_TOKEN_FILE", component: "tool-broker", typeName: "string", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ExtensionRuntimeTokenFile = strings.TrimSpace(v) }},
 		fieldSpec{key: "BUTLER_OWNER_CONTROL_OWNER_ID", component: "tool-broker", typeName: "string", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ExtensionOwnerID = strings.TrimSpace(v) }},
+		fieldSpec{key: "BUTLER_SKILLS_ENABLED", component: "tool-broker", typeName: "bool", defaultValue: "false", allowedValues: []string{"true", "false"}, requiresRestart: true, assign: func(v string) { cfg.SkillsEnabled = v == "true" }},
 		fieldSpec{key: "BUTLER_EXECUTION_BUDGET_POLICY_JSON", component: "tool-broker", typeName: "json", requiresRestart: true, validate: validateBudgetPolicy, assign: func(v string) { cfg.ExecutionBudgetPolicyJSON = v }},
 	)
 

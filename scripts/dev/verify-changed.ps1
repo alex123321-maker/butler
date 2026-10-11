@@ -41,6 +41,13 @@ foreach ($file in $files) {
       [void]$tests.Add("pwsh -NoProfile -File scripts/dev/lab.ps1 -RemoteRoot /srv/storage/butler/agents/initiatives -Action Race -Packages ./apps/orchestrator/internal/initiative")
       continue
     }
+    "^(internal/skills/|migrations/051_|apps/orchestrator/internal/.*/skill|apps/tool-broker/internal/broker/skills[.]go$)" {
+      [void]$specs.Add("docs/architecture/reviewed-skills.md")
+      [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$tests.Add("ssh laba: actual isolated PostgreSQL go test -race ./internal/skills/... ./apps/tool-broker/... ./apps/orchestrator/internal/orchestrator")
+      continue
+    }
     "^(internal/extensions/|apps/tool-extension/|docker/tool-extension/|deploy/extensions/|deploy/docker-compose[.]extensions[.]yml$|scripts/dev/lab-extensions[.]sh$|scripts/dev/lab-extension-container[.]sh$)" {
       [void]$specs.Add("docs/architecture/reviewed-extension-lifecycle.md")
       [void]$specs.Add("docs/architecture/tool-runtime-adr.md")

@@ -1,5 +1,9 @@
 # Owned memory auxiliary jobs
 
+`ClaimPurpose(kind, purpose)` additionally separates workers in the same kind.
+It uses the existing bounded claim/fence/deadline path; selecting a queue does
+not confer source access or replace per-attempt admission.
+
 `memory_aux_jobs` is a durable bounded queue with stable identity, immutable
 owner/purpose, original task/run/goal/mandate references, task/constraint versions,
 exact source hashes/access revisions, finite local allowance/deadline and current

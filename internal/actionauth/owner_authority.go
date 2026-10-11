@@ -153,6 +153,10 @@ func withinHours(h *ActiveHours, loc *time.Location, at time.Time) bool {
 }
 
 func validResourceScope(s ResourceScope) bool {
+	if strings.HasPrefix(s.Origin, "tool:") {
+		name := strings.TrimPrefix(s.Origin, "tool:")
+		return s.PathPrefix == "" && name != "" && strings.Contains(name, ".") && !strings.ContainsAny(name, "*?/\\:# \t\r\n")
+	}
 	u, err := url.Parse(s.Origin)
 	if err != nil || u.User != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" || u.Path != "" || u.RawQuery != "" || u.Fragment != "" || strings.ContainsAny(u.Host, "*? ") {
 		return false
@@ -161,6 +165,9 @@ func validResourceScope(s ResourceScope) bool {
 }
 
 func resourceWithin(scope ResourceScope, raw string) bool {
+	if strings.HasPrefix(scope.Origin, "tool:") {
+		return validResourceScope(scope) && raw == scope.Origin
+	}
 	if strings.HasPrefix(raw, "browser:") || strings.HasPrefix(raw, "single_tab:") {
 		if i := strings.Index(raw, "http"); i >= 0 {
 			raw = raw[i:]

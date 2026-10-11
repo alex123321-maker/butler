@@ -48,6 +48,7 @@ import (
 	"github.com/butler/butler/internal/modelprovider"
 	"github.com/butler/butler/internal/providerauth"
 	"github.com/butler/butler/internal/providerfactory"
+	"github.com/butler/butler/internal/skills"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 )
 
@@ -58,6 +59,8 @@ type httpServerDeps struct {
 	ownerGoals             *goal.Manager
 	finalResults           *completion.Coordinator
 	actionAuthorityHandler http.Handler
+	skillEvidenceHandler   http.Handler
+	skillClient            *skills.Client
 	cfg                    config.OrchestratorConfig
 	log                    *slog.Logger
 	settingsStore          *config.PostgresSettingsStore
@@ -186,6 +189,10 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 		}
 	}
 	mux.Handle("/api/v4/extensions", apiservice.ReviewedExtensions(deps.ownerAuth, extensionClient))
+	mux.Handle("/api/v4/skills", apiservice.ReviewedSkills(deps.ownerAuth, deps.skillClient))
+	if deps.skillEvidenceHandler != nil {
+		mux.Handle("/internal/skill-evidence", deps.skillEvidenceHandler)
+	}
 	mux.Handle("/internal/diagnostics", coreDiagnostics(deps))
 	if deps.actionAuthorityHandler != nil {
 		mux.Handle("/internal/action-context", deps.actionAuthorityHandler)

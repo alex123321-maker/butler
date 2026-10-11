@@ -1,5 +1,11 @@
 # Butler — Model Transport Contract
 
+Reviewed skill descriptions and selected procedures are private Document DATA,
+never system instructions. Fresh recovery reloads pinned versions through the
+current catalog; revocation/dependency failure stops before provider release.
+Skill authority and [release conditions](reviewed-skills.md) are independent of
+provider-side continuation state.
+
 [Execution budgets](execution-budget-contract.md) reserve declared conservative
 input/output/time before each actual inference request. Exact operator cost basis
 and current assigned privacy policy are required. Private

@@ -75,6 +75,9 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 	if err := s.attachToolContext(ctx, &prepared); err != nil {
 		return preparedRun{}, err
 	}
+	if err := s.attachSkillContext(ctx, &prepared, false); err != nil {
+		return preparedRun{}, err
+	}
 	if err := s.attachPromptContext(ctx, &prepared); err != nil {
 		return preparedRun{}, err
 	}

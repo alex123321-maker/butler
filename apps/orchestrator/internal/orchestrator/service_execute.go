@@ -358,7 +358,7 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 					finalMessage = resumedFinal
 				}
 			case transport.EventTypeTransportError:
-				if transportEvent.TransportError != nil && (transportEvent.TransportError.Type == "execution_budget_deadline" || transportEvent.TransportError.Type == "execution_budget_tokens" || transportEvent.TransportError.Type == transport.ErrorTypeInputBytesExceeded) {
+				if transportEvent.TransportError != nil && (transportEvent.TransportError.Type == skillInvalidReason || transportEvent.TransportError.Type == "execution_budget_deadline" || transportEvent.TransportError.Type == "execution_budget_tokens" || transportEvent.TransportError.Type == transport.ErrorTypeInputBytesExceeded) {
 					return "", current, &budget.LoopError{Reason: string(transportEvent.TransportError.Type)}
 				}
 				return "", current, transportError(transportEvent.TransportError)
