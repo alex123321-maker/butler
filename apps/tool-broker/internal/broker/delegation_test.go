@@ -18,6 +18,7 @@ import (
 	"github.com/butler/butler/internal/delegation"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/singletabcontrol"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
 )
@@ -101,9 +102,21 @@ func TestDelegationBrokerHarness(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	admission, err := delegation.NewAdmissionClient(os.Getenv("BUTLER_DELEGATION_ADMISSION_URL"), token)
-	if err != nil {
-		t.Fatal(err)
+	var executor RuntimeExecutor
+	contract := delegation.AdmissionContract()
+	if os.Getenv("BUTLER_GUARDED_TAB_REQUEST_HARNESS") == "1" {
+		client, err := singletabcontrol.NewRequestClient(os.Getenv("BUTLER_DELEGATION_ADMISSION_URL"), token)
+		if err != nil {
+			t.Fatal(err)
+		}
+		executor = &GuardedTabRequestExecutor{Requests: client}
+		contract = singletabcontrol.RequestContract()
+	} else {
+		admission, err := delegation.NewAdmissionClient(os.Getenv("BUTLER_DELEGATION_ADMISSION_URL"), token)
+		if err != nil {
+			t.Fatal(err)
+		}
+		executor = &DelegationExecutor{Admissions: admission}
 	}
 	regPath := filepath.Join(t.TempDir(), "tools.json")
 	if err = os.WriteFile(regPath, []byte(`{"tools":[]}`), 0600); err != nil {
@@ -113,7 +126,7 @@ func TestDelegationBrokerHarness(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = reg.RegisterOwned([]*toolbrokerv1.ToolContract{delegation.AdmissionContract()}); err != nil {
+	if err = reg.RegisterOwned([]*toolbrokerv1.ToolContract{contract}); err != nil {
 		t.Fatal(err)
 	}
 	controller := budget.NewController(pool, budget.DefaultPolicy())
@@ -122,7 +135,8 @@ func TestDelegationBrokerHarness(t *testing.T) {
 	journal.SetBudgets(controller)
 	sources := catalog.New(pool, catalog.NewFileManifest(os.Getenv("BUTLER_DELEGATION_MANIFEST_FILE")))
 	journal.SetRunDataGuard(sources.CheckRunSourcesTx)
-	server := NewServer(reg, &DelegationExecutor{Admissions: admission}, nil, nil)
+	server := NewServer(reg, executor, nil, nil)
+	server.SetScopedCatalog(&TaskCatalog{Registry: reg, Contexts: reader, Mandates: journal})
 	server.SetActionAuthorizer(actionauth.NewService(journal, reader, nil))
 	server.SetBudgets(controller)
 	listener, err := net.Listen("tcp", os.Getenv("BUTLER_DELEGATION_GRPC_ADDRESS"))

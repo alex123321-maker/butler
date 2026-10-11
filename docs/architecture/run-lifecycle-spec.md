@@ -1,5 +1,14 @@
 # Butler — Run Lifecycle Specification
 
+The optional guarded tab request is an ordinary exact Broker local control.
+Its owning publication atomically suspends the actual tool-running input/run/task
+with finite owner choices and an immutable dispatch mapping. Core detects that
+durable waiting state before generic result/checkpoint/model continuation,
+including a lost private ACK. Recovery needs fresh Session/input/source/task
+authority, exact owner selection and confirmed request journal outcome. A choice
+cannot reconcile an uncertain dispatch or authorize a browser effect. See
+[guarded composition](single-tab-production-composition.md).
+
 Tool preparation and dispatch follow
 [exact action authorization](action-authorization-contract.md). The approved
 intent retains stable IDs across durable suspension, while a resumed worker

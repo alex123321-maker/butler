@@ -15,6 +15,7 @@ import (
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/singletabcontrol"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -40,6 +41,9 @@ func (s *Service) resumeApprovedToolCall(ctx context.Context, runLog *slog.Logge
 func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, leaseID string, requested *transport.ToolCallRequest, approvalID string) (transport.EventStream, *sessionv1.RunRecord, error) {
 	if requested == nil {
 		return nil, current, fmt.Errorf("tool call request is required")
+	}
+	if requested.ToolName == singletabcontrol.BindTool && s.config.GuardedTabRequests == nil {
+		return nil, current, singletabcontrol.ErrDenied
 	}
 	if s.config.Tools == nil {
 		return nil, current, fmt.Errorf("tool executor is not configured")
@@ -283,6 +287,24 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		return nil, current, fmt.Errorf("persist tool dispatch checkpoint: %w", err)
 	}
 	result, err := executor.ExecuteAuthorizedToolCall(ctx, brokerCall, grantID)
+	if requested.ToolName == singletabcontrol.BindTool {
+		if s.config.GuardedTabRequests == nil {
+			return nil, current, ErrActionOutcomeUnknown
+		}
+		request, pendingErr := s.config.GuardedTabRequests.PendingRequest(ctx, current.GetRunId(), toolCallID, prepared.EffectID)
+		if pendingErr == nil {
+			// The owning adapter proves actual waiting state and the exact claim.
+			// Preserve its continuation before any generic result/transcript write,
+			// including a lost private ACK. Never feed a request receipt to the
+			// old provider context or replay the request through tool recovery.
+			stored, loadErr := s.runs.GetRun(ctx, current.GetRunId())
+			if loadErr != nil {
+				return nil, current, ErrActionOutcomeUnknown
+			}
+			_ = s.config.Delivery.DeliverApprovalRequest(ctx, request)
+			return nil, stored, ErrApprovalSuspended
+		}
+	}
 	if err != nil {
 		return nil, current, fmt.Errorf("%w: execute tool call %s: %v", ErrActionOutcomeUnknown, requested.ToolName, err)
 	}

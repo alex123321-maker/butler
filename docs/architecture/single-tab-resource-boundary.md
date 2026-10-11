@@ -10,7 +10,8 @@ actual accepted input and core recovery. The version1 selection marker is not
 an action approval: recovered model context receives only private opaque
 selection DATA. Fresh Session ownership, input claim, current source pins,
 task/revision/constraints and original selection expiry remain mandatory. The
-worker request/Broker/private runtime activation gates remain independent.
+ordinary worker request has a separate default-false exact Broker composition;
+private guarded status/click runtime activation remains independent.
 
 Exact measured scenarios and remaining acceptance gates are recorded in
 [the lab report](../ai/single-tab-resource-acceptance.md).

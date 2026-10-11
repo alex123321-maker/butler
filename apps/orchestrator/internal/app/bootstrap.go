@@ -52,6 +52,7 @@ import (
 	"github.com/butler/butler/internal/metrics"
 	"github.com/butler/butler/internal/providerauth"
 	"github.com/butler/butler/internal/providerfactory"
+	"github.com/butler/butler/internal/singletabcontrol"
 	"github.com/butler/butler/internal/skills"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	redisstore "github.com/butler/butler/internal/storage/redis"
@@ -385,6 +386,16 @@ func New(ctx context.Context) (*App, error) {
 		guardedRecovery = guardedCheckpoints
 	}
 
+	guardedRequests, err := configureGuardedTabRequests(ctx, postgres.Pool(), cfg, finalResults.DataGuard, guardedCheckpoints)
+	if err != nil {
+		redis.Close()
+		postgres.Close()
+		return nil, err
+	}
+	var guardedRequestAdapter flow.GuardedTabRequests
+	if guardedRequests != nil {
+		guardedRequestAdapter = guardedRequests
+	}
 	executor := flow.NewService(
 		sessionRepo,
 		sessionLeaseManager,
@@ -417,6 +428,7 @@ func New(ctx context.Context) (*App, error) {
 			ActionMandateID:          cfg.ActionMandateID,
 			Checkpoints:              inputStore,
 			GuardedTabRecovery:       guardedRecovery,
+			GuardedTabRequests:       guardedRequestAdapter,
 			Tasks:                    taskStore,
 			OwnerGoals:               ownerGoals,
 			ProviderName:             providerResult.ProviderName,
@@ -495,6 +507,7 @@ func New(ctx context.Context) (*App, error) {
 	var actionAuthorityHandler http.Handler
 	var skillEvidenceHandler http.Handler
 	var delegationHandler http.Handler
+	var guardedRequestHandler http.Handler
 	var converterDelegationHandler http.Handler
 	if cfg.ActionAuthorityTokenFile != "" {
 		token, readErr := actionauth.ReadServiceToken(cfg.ActionAuthorityTokenFile)
@@ -511,6 +524,14 @@ func New(ctx context.Context) (*App, error) {
 				return nil, err
 			}
 		}
+		if guardedRequests != nil {
+			guardedRequestHandler, err = singletabcontrol.NewRequestHandler(token, guardedRequests)
+			if err != nil {
+				redis.Close()
+				postgres.Close()
+				return nil, err
+			}
+		}
 		if converterDeveloper != nil {
 			converterDelegationHandler, err = delegation.NewAdmissionHandler(token, converterDeveloper)
 			if err != nil {
@@ -519,7 +540,7 @@ func New(ctx context.Context) (*App, error) {
 				return nil, err
 			}
 		}
-		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, converterDelegationReady: converterDeveloper != nil && converterClient != nil})
+		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, guardedTabRequestReady: guardedRequests != nil, converterDelegationReady: converterDeveloper != nil && converterClient != nil})
 		skillEvidenceHandler = skills.NewEvidenceHandler(token, &skillEvidence{tasks: taskStore, journal: actionauth.NewPostgresStore(postgres.Pool()), transcript: transcriptStore, budgets: budget.NewLedger(postgres.Pool()), results: finalResults, sources: sourceCatalog})
 	} else {
 		log.Warn("private action authority unavailable; Tool Broker will deny execution")
@@ -537,6 +558,7 @@ func New(ctx context.Context) (*App, error) {
 	}
 	httpServer := newHTTPServer(httpServerDeps{
 		guardedTabOwner:            guardedTabOwner,
+		guardedRequestHandler:      guardedRequestHandler,
 		delegationDecisions:        delegationDecisions,
 		delegationHandler:          delegationHandler,
 		converterDelegationHandler: converterDelegationHandler,

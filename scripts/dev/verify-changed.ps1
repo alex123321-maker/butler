@@ -54,12 +54,15 @@ foreach ($file in $files) {
       [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/durable-tasks/current/scripts/dev/delegation-admission-lab.sh /srv/storage/butler/agents/durable-tasks' after isolated source Sync (actual private Broker, disposable PostgreSQL, pool2 and race)")
       continue
     }
-    "^(internal/singletabcontrol/|apps/browser-bridge/|apps/orchestrator/internal/singletab/|apps/tool-broker/internal/broker/single_tab|web/extensions/chromium-butler/|migrations/(063_single_tab_resource_binding|064_guarded_tab_owner_choices)[.]|scripts/dev/single-tab-resource-lab[.]sh$|apps/orchestrator/internal/(api|app)/guarded_tab|internal/config/guarded_tab|web/components/GuardedTabChoice[.]vue$)" {
+    "^(internal/singletabcontrol/|internal/actionauth/input_claim|apps/browser-bridge/|apps/orchestrator/internal/singletab/|apps/tool-broker/internal/broker/(single_tab|guarded_tab_request)|web/extensions/chromium-butler/|migrations/(063_single_tab_resource_binding|064_guarded_tab_owner_choices|065_guarded_tab_request_dispatch)[.]|scripts/dev/(single-tab-resource|guarded-tab-request)-lab[.]sh$|apps/orchestrator/internal/(api|app|orchestrator)/guarded_tab|apps/orchestrator/internal/channel/telegram/guarded_tab|internal/config/guarded_tab|web/components/GuardedTabChoice[.]vue$)" {
       [void]$specs.Add("docs/architecture/single-tab-resource-boundary.md")
       [void]$specs.Add("docs/architecture/resource-lease-contract.md")
       [void]$specs.Add("docs/architecture/action-authorization-contract.md")
       [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
       [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$specs.Add("docs/architecture/single-tab-production-composition.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/guarded-tab-request/current/scripts/dev/guarded-tab-request-lab.sh /srv/storage/butler/agents/guarded-tab-request narrow' then full (actual private Broker process, PG/pool2, no inference)")
       [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/resource-runtime-bridge/current/scripts/dev/single-tab-resource-lab.sh /srv/storage/butler/agents/resource-runtime-bridge' after isolated Sync (actual PG/pool2, private native host and synthetic Chromium extension)")
       [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/task-observations/current/scripts/dev/task-observations-lab.sh /srv/storage/butler/agents/task-observations' after isolated Sync (actual waiting owner HTTP/PG and schema validation)")
       [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/task-observations/current/scripts/dev/task-view-lab.sh /srv/storage/butler/agents/task-observations' after isolated Sync (owner choice Chromium UI)")

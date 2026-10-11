@@ -17,9 +17,18 @@ function. Authenticated `GET /api/v3/tab-choices/{approval_id}` exposes only fro
 origin, candidate token, original ordinal, active-at-request marker and selection
 state. Private native host/tab references remain excluded. The Approvals page
 uses this view for guarded select/revoke and keeps owner proof only in page memory.
-This endpoint does not enable guarded tools or declare runtime readiness. Worker
-request creation, channel delivery and private Broker/runtime
-composition are separate activation requirements. Older requests without frozen
+This owner endpoint does not declare runtime readiness. The separate default-false
+`BUTLER_GUARDED_TAB_REQUEST_ENABLED` composes `single_tab.bind.guarded` request
+creation through the exact private Broker dispatch. It requires owner controls,
+private Broker authentication and immutable migration065. The current ingress
+claim is hashed into the private execution grant; another claim cannot borrow it.
+Finite choices, dispatch mapping and input/run/task waiting state commit together.
+Core preserves that continuation before generic tool-result writes, including a
+lost private ACK. Web exposes the durable choice; Telegram directs the owner to
+Butler's protected Approvals page without legacy/generic approval callbacks.
+Recovery also requires a confirmed request journal outcome. Actual status/click
+runtime composition and account/network policy remain activation requirements.
+Older requests without frozen
 064 display metadata have no reconstructed choice view; requests without the
 durable accepted-input continuation cannot activate this recovery path.
 

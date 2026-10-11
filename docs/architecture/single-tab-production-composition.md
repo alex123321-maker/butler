@@ -1,8 +1,9 @@
 # Optional guarded single-tab production composition
 
 Root application bootstrap now composes optional waiting-owner decisions behind
-an operator-only, default-false flag. Registry, worker request creation and private
-runtime composition remain pending; the endpoint is not an enabled tool route.
+an operator-only, default-false flag. A separate default-false request flag now
+composes ordinary worker request creation, exact Broker control and owner delivery.
+Private guarded status/click runtime composition remains pending.
 Durable selection/checkpoint queueing and fresh core recovery are composed under
 the same optional flag.
 No model calls are needed to validate this owner boundary.
@@ -57,7 +58,8 @@ lease, reloads current definitions, validates the actual input claim and current
 Catalog/task/guarded selection, then emits the opaque selection as private DATA
 into a fresh provider context. Original deadline stays finite; advanced tool
 checkpoints cannot replay an effect through this path. Request creation through
-the ordinary worker, channel delivery and production runtime wiring remain pending.
+the ordinary worker and owner delivery is described below; guarded status/click
+production runtime wiring remains pending.
 The Web decision API itself is composed
 at `POST /api/v3/tab-choices/{approval_id}/select` (`candidate_token` only) and
 `/revoke` (`{}` only), with mandatory configured Bearer owner proof. Unknown,
@@ -83,8 +85,41 @@ tab. Requests predating this metadata have no reconstructed view. The Approvals
 page uses this protected read and the existing select/revoke route; generic
 approval cannot substitute for the guarded choice. Owner proof stays only in
 page memory; proof changes fence late responses. Executing worker request
-creation, actual channel delivery and private runtime composition
-remain independent activation gates.
+creation and owner delivery have a separate operator composition below. The
+actual human channel workflow and private status/click runtime composition remain
+independent release gates.
+
+## Ordinary worker request composition
+
+`BUTLER_GUARDED_TAB_REQUEST_ENABLED` defaults false in both owning orchestrator
+and Broker. Orchestrator requires owner controls, private action authority and
+063–065 pinned immutable schema. Broker requires PG/private authentication and
+fixed `BUTLER_GUARDED_TAB_REQUEST_CONTROL_URL` at `/internal/guarded-tab-request`.
+HTTP is restricted to literal loopback; remote service topology requires trusted
+HTTPS/tunneling. No model/settings/channel body selects a private destination.
+
+Broker registers the exact empty-args `single_tab.bind.guarded` revision1 local
+control contract and denies Chrome/legacy routing for it. Scoped catalog and
+prepare require owning readiness. Existing autonomy/action approval, complete
+source/task checks and shared budget precede permanent dispatch. The private
+grant pins a hash of the actual current ingress claim, independently of immutable
+owner-approved intent: a new authorized worker may have a new claim, while an
+old dispatch cannot borrow it. Raw claim IDs are not added to public tool args or
+owner approval bindings. Owning request reads the permanent claimed journal,
+derives the actual Session fence/owner/channel/input, and repeats those guards
+in the same transaction before and after native metadata collection outside PG.
+No request RPC can select/revoke, execute Chrome, fetch a credential or resume.
+
+Migration065 atomically maps that request to its exact run/call/effect/grant/hash;
+finite choices, real claimed-input continuation, run awaiting approval and task
+waiting state commit with it. Core finds this durable suspension before ordinary
+tool transcript/checkpoint/provider continuation, even after a lost private ACK.
+It never retries the request. Web reads the durable protected choice; Telegram
+sends a fixed direction to Butler's Approvals page without legacy/generic
+callbacks. Delivery failure leaves the durable request available. Fresh recovery
+also checks that a mapped request's journal is confirmed: owner selection cannot
+settle a lost/uncertain Broker outcome. This route grants no status/click action
+authority or claim of browser/recipient/model success.
 
 ## Broker and runtime composition
 

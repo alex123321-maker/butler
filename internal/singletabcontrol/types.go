@@ -71,6 +71,19 @@ func NewDurable(pool *pgxpool.Pool, metadata Metadata, sources resourceexec.Sour
 	return c, err
 }
 
+// NewDispatchedRequests joins a trusted permanent-dispatch guard to owning
+// publication. The caller supplies no public request/select endpoint for it.
+func NewDispatchedRequests(pool *pgxpool.Pool, metadata Metadata, guard resources.Guard, sources resourceexec.SourceGuard, host string, checkpoints SelectionCheckpoints) (*Controller, error) {
+	if checkpoints == nil {
+		return nil, ErrDenied
+	}
+	c, err := New(pool, metadata, guard, sources, host)
+	if err == nil {
+		c.checkpoints = checkpoints
+	}
+	return c, err
+}
+
 func New(pool *pgxpool.Pool, metadata Metadata, guard resources.Guard, sources resourceexec.SourceGuard, host string) (*Controller, error) {
 	if pool == nil || metadata == nil || guard == nil || sources == nil || host == "" || len(host) > 128 {
 		return nil, ErrDenied

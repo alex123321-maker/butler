@@ -1,5 +1,16 @@
 # Tool Broker
 
+The separate default-false `BUTLER_GUARDED_TAB_REQUEST_ENABLED` registers only
+`single_tab.bind.guarded`, an empty-args local control contract. It requires
+PostgreSQL, private action authentication and fixed
+`BUTLER_GUARDED_TAB_REQUEST_CONTROL_URL` ending `/internal/guarded-tab-request`.
+Plain HTTP is limited to literal loopback; remote composition requires trusted
+HTTPS. The exact contract, permanent claim and shared budget precede the owning
+request RPC. No Chrome/legacy bind fallback or credential-bearing input exists.
+Only an opaque request receipt returns, without candidates or native references.
+Current owning readiness gates catalog/prepare; selection does not grant a
+browser effect. This flag does not register guarded status/click runtime routes.
+
 The optional converter developer route uses a distinct fixed reviewed
 `task.delegate_converter` contract and private admission client. The initial
 context-only `task.delegate` contract retains empty child permissions. A developer

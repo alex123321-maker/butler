@@ -20,11 +20,14 @@ import (
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/delegation"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
+	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
+	"github.com/butler/butler/internal/singletabcontrol"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -43,6 +46,7 @@ type dispatchAdmissionFixture struct {
 	grant        actionauth.Grant
 	envelope     delegation.AdmissionEnvelope
 	manifestPath string
+	inputClaim   durableinput.Record
 }
 
 func newDispatchAdmissionFixture(t *testing.T) *dispatchAdmissionFixture {
@@ -71,6 +75,10 @@ func TestDelegationAdmissionPartialMigrationReadinessIntegration(t *testing.T) {
 	}
 }
 func newDispatchAdmissionPolicyFixture(t *testing.T, setup func(*delegationGuardFixture)) *dispatchAdmissionFixture {
+	return newControlDispatchPolicyFixture(t, setup, false)
+}
+
+func newControlDispatchPolicyFixture(t *testing.T, setup func(*delegationGuardFixture), guarded bool) *dispatchAdmissionFixture {
 	t.Helper()
 	f := newDelegationGuardFixture(t)
 	if setup != nil {
@@ -101,6 +109,22 @@ func newDispatchAdmissionPolicyFixture(t *testing.T, setup func(*delegationGuard
 		t.Fatal(err)
 	}
 	owned := ownership.WithToken(f.ctx, f.leases.Authority(), ownership.Token{SessionKey: f.parent.SessionKey, RunID: id, LeaseID: lease.LeaseID, FenceEpoch: lease.FenceEpoch})
+	var inputClaim durableinput.Record
+	if guarded {
+		inputs := durableinput.NewStore(f.pool)
+		event := ingress.InputEvent{EventID: "guarded-request-input", IdempotencyKey: "guarded-request-input", SessionKey: f.parent.SessionKey, Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: `{"text":"ask owner for a tab"}`, CreatedAt: time.Now().UTC()}
+		if _, _, err = inputs.Accept(f.ctx, event, f.parent.OwnerID, f.parent.TaskID); err != nil {
+			t.Fatal(err)
+		}
+		inputClaim, err = inputs.Claim(f.ctx, time.Minute)
+		if err != nil {
+			t.Fatal(err)
+		}
+		owned = durableinput.WithClaim(owned, inputClaim)
+		if err = inputs.SaveCheckpoint(owned, id, "prepared", `{"UserMessage":"ask owner for a tab"}`); err != nil {
+			t.Fatal(err)
+		}
+	}
 	if err = f.sources.PinTranscript(owned, f.parent.SessionKey, 0); err != nil {
 		t.Fatal(err)
 	}
@@ -110,15 +134,21 @@ func newDispatchAdmissionPolicyFixture(t *testing.T, setup func(*delegationGuard
 		t.Fatal(err)
 	}
 	call := &toolbrokerv1.ToolCall{RunId: id, ToolCallId: "delegate-call", ToolName: delegation.AdmissionTool, ArgsJson: string(raw), AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_1}
+	contract := delegation.AdmissionContract()
+	if guarded {
+		call.ToolName, call.ToolCallId, call.ArgsJson = singletabcontrol.BindTool, "guarded-request-call", "{}"
+		contract = singletabcontrol.RequestContract()
+	}
 	repo := approvals.NewPostgresRepository(f.pool)
 	repo.SetCheckpointHooks(boundaryCheckpointHooks{}) // No authority: lifecycle checkpoints have their own fault suite.
 	approvalService := approvals.NewService(repo, nil)
 	reader := &actionContextReader{runs: run.NewService(run.NewPostgresRepository(f.pool), nil), sessions: sessions, leases: f.leases, tasks: f.store, approvals: approvalService, pool: f.pool, delegationReady: service.Manager != nil}
+	reader.guardedTabRequestReady = guarded
 	journal := actionauth.NewPostgresStore(f.pool)
 	journal.SetBudgets(f.budgets)
 	journal.SetRunDataGuard(f.sources.CheckRunSourcesTx)
 	auth := actionauth.NewService(journal, reader, nil)
-	prepared, err := auth.Prepare(f.ctx, call, delegation.AdmissionContract())
+	prepared, err := auth.Prepare(f.ctx, call, contract)
 	if err != nil || !prepared.RequiresApproval {
 		t.Fatal("exact prepare approval required", err)
 	}
@@ -134,11 +164,11 @@ func newDispatchAdmissionPolicyFixture(t *testing.T, setup func(*delegationGuard
 	if _, err = f.pool.Exec(f.ctx, `UPDATE runs SET status='tool_running',current_state='tool_running' WHERE run_id=$1`, id); err != nil {
 		t.Fatal(err)
 	}
-	grant, err := auth.Authorize(f.ctx, call, delegation.AdmissionContract(), prepared.Binding.ActionID, approval.ApprovalID, "")
+	grant, err := auth.Authorize(f.ctx, call, contract, prepared.Binding.ActionID, approval.ApprovalID, "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	return &dispatchAdmissionFixture{f: f, service: service, reader: reader, approvals: approvalService, journal: journal, auth: auth, owned: owned, args: args, call: call, prepared: prepared, grant: grant, envelope: delegation.AdmissionEnvelope{RunID: id, ToolCallID: call.ToolCallId, EffectID: prepared.EffectID, ArgsJSON: call.ArgsJson, ContractHash: prepared.Binding.ContractHash}, manifestPath: manifestPath}
+	return &dispatchAdmissionFixture{f: f, service: service, reader: reader, approvals: approvalService, journal: journal, auth: auth, owned: owned, args: args, call: call, prepared: prepared, grant: grant, envelope: delegation.AdmissionEnvelope{RunID: id, ToolCallID: call.ToolCallId, EffectID: prepared.EffectID, ArgsJSON: call.ArgsJson, ContractHash: prepared.Binding.ContractHash}, manifestPath: manifestPath, inputClaim: inputClaim}
 }
 
 func (f *dispatchAdmissionFixture) claim(t *testing.T) {

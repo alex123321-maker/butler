@@ -18,6 +18,7 @@ import (
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/logger"
+	"github.com/butler/butler/internal/singletabcontrol"
 )
 
 var ErrIgnoredUpdate = errors.New("telegram update ignored")
@@ -509,6 +510,12 @@ func (a *Adapter) DeliverApprovalRequest(ctx context.Context, req flow.ApprovalR
 	chatID, ok := ChatIDFromSessionKey(req.SessionKey)
 	if !ok || !a.isAllowedChatID(chatID) {
 		return nil
+	}
+	if req.ToolName == singletabcontrol.BindTool {
+		// Guarded choices use the protected Web owner route. Legacy tabsel or
+		// generic approve callbacks cannot select, grant or resume this request.
+		_, err := a.client.SendMessage(ctx, chatID, "Выберите вкладку в Butler → Подтверждения. Выбор не разрешает действие на странице.")
+		return err
 	}
 	if req.ApprovalType == approvals.ApprovalTypeBrowserTabSelection && len(req.TabCandidates) > 0 {
 		text := "Выберите вкладку, к которой подключить агента"
