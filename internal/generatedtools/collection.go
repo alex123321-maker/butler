@@ -18,7 +18,7 @@ type collectionArgs struct {
 
 func decodeCollectionArgs(raw string) (collectionArgs, error) {
 	var a collectionArgs
-	if len(raw) > 4096 || Decode([]byte(raw), &a) != nil || a.ChildTaskID == "" || len(a.ChildTaskID) > 512 || !digestName.MatchString(a.Digest) {
+	if len(raw) > 4096 || Decode([]byte(raw), &a) != nil || a.ChildTaskID == "" || len(a.ChildTaskID) > 512 || a.Digest != "" && !digestName.MatchString(a.Digest) {
 		return a, ErrPackage
 	}
 	return a, nil
@@ -62,10 +62,10 @@ func (s *Store) collectionTx(ctx context.Context, tx pgx.Tx, current actionauth.
 		return DeveloperReturn{}, collectionAccess{}, ErrAccess
 	}
 	p, err := ReadDeveloperReturnTx(ctx, tx, *snapshot)
-	if err != nil || p.Candidate.Digest != digest {
+	if err != nil || digest != "" && p.Candidate.Digest != digest {
 		return p, collectionAccess{}, ErrAccess
 	}
-	currentPackage, err := s.metadataTx(ctx, tx, digest)
+	currentPackage, err := s.metadataTx(ctx, tx, p.Candidate.Digest)
 	if err != nil || Hash(currentPackage) != Hash(p.Candidate) {
 		return p, collectionAccess{}, ErrAccess
 	}
@@ -80,7 +80,7 @@ func (s *Store) collectionTx(ctx context.Context, tx pgx.Tx, current actionauth.
 		return p, checker, ErrAccess
 	}
 	code, err := Parse([]byte(byID[p.Candidate.BodySource.ID].Body))
-	if err != nil || code.Digest != digest || code.Manifest.Version != snapshot.Spec.Version || code.Manifest.Dependencies[0] != s.profile.Dependency || byID[p.Candidate.BodySource.ID].ScopeType != "task" || byID[p.Candidate.BodySource.ID].ScopeID != childID {
+	if err != nil || code.Digest != p.Candidate.Digest || code.Manifest.Version != snapshot.Spec.Version || code.Manifest.Dependencies[0] != s.profile.Dependency || byID[p.Candidate.BodySource.ID].ScopeType != "task" || byID[p.Candidate.BodySource.ID].ScopeID != childID {
 		return p, checker, ErrAccess
 	}
 	return p, checker, nil

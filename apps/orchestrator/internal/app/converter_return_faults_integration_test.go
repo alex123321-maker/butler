@@ -17,6 +17,7 @@ import (
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func (f *developerFixture) commonLifecycle(t *testing.T) *task.DelegationManager {
@@ -223,5 +224,48 @@ func TestConverterDeveloperCandidateGrantSavepointExpiryIntegration(t *testing.T
 	var grants int
 	if err = f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM memory_scope_grants WHERE task_id=$1 AND source_id=$2`, f.f.parent.TaskID, candidate.BodySource.ID).Scan(&grants); err != nil || grants != 0 {
 		t.Fatal("failed publication retained candidate scope grant", grants, err)
+	}
+}
+
+func TestConverterDeveloperReadyRejectsFallbackSchemaIntegration(t *testing.T) {
+	f := newDeveloperFixture(t)
+	var own string
+	if err := f.f.pool.QueryRow(f.f.ctx, `SELECT current_schema()`).Scan(&own); err != nil {
+		t.Fatal(err)
+	}
+	fallback := own + "_fallback"
+	quoted := pgx.Identifier{fallback}.Sanitize()
+	if _, err := f.f.pool.Exec(f.f.ctx, "CREATE SCHEMA "+quoted+"; ALTER TABLE converter_developer_returns SET SCHEMA "+quoted); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _, _ = f.f.pool.Exec(context.Background(), "DROP SCHEMA "+quoted+" CASCADE") })
+	cfg := f.f.pool.Config().Copy()
+	cfg.ConnConfig.RuntimeParams["search_path"] = pgx.Identifier{own}.Sanitize() + "," + quoted + ",public"
+	other, err := pgxpool.NewWithConfig(f.f.ctx, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer other.Close()
+	// Bare table and trigger lookups would find a structurally correct fallback.
+	var fallbackVisible bool
+	if err = other.QueryRow(f.f.ctx, `SELECT EXISTS(SELECT 1 FROM pg_trigger WHERE tgrelid='converter_developer_returns'::regclass AND tgname='converter_return_immutable' AND tgenabled='O')`).Scan(&fallbackVisible); err != nil || !fallbackVisible {
+		t.Fatal("fallback regression fixture absent", err)
+	}
+	if err = generatedtools.CheckDeveloperReady(f.f.ctx, other); err == nil {
+		t.Fatal("missing owned054 accepted another search_path schema")
+	}
+}
+
+func TestConverterDeveloperReadyRequiresProjectionColumnsIntegration(t *testing.T) {
+	for _, mutation := range []string{"ALTER TABLE converter_developer_returns DROP COLUMN projection_json", "ALTER TABLE converter_developer_snapshots ALTER COLUMN snapshot_hash DROP NOT NULL"} {
+		t.Run(mutation, func(t *testing.T) {
+			f := newDeveloperFixture(t)
+			if _, err := f.f.pool.Exec(f.f.ctx, mutation); err != nil {
+				t.Fatal(err)
+			}
+			if err := generatedtools.CheckDeveloperReady(f.f.ctx, f.f.pool); err == nil {
+				t.Fatal("damaged owned schema advertised readiness")
+			}
+		})
 	}
 }

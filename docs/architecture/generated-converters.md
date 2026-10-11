@@ -54,7 +54,9 @@ deleted final/report, a different runtime/Need/version or changed authority deny
 The final and child task remain unverified; general semantic Accept is unchanged.
 
 The seventh static contract, `converters.collect`, is an ordinary parent read
-action with exact child task ID and package digest. Prepare binds the candidate,
+action with an exact child task ID. An optional digest further restricts the
+selection; without it, the unique actual054 digest is derived by Broker before
+Prepare, with no hidden parent-model database read. Prepare binds the candidate,
 selected Need and synthetic contract hashes; Claim repeats current authority and
 technical return checks. Its guarded Catalog savepoint grants only the one exact
 child package source to the actual live parent task revision, retaining its

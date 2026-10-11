@@ -76,3 +76,10 @@ even when the surrounding transaction committed. Mutable return schemas failed
 readiness. These proofs do not establish native model planning, independently
 measured improvement, deployed developer routing or the final production
 ordinary-parent/child-worker gate.
+
+Follow-up snapshot `20261011-095542-245` passed actual-PG race34.339s for
+server-derived optional-digest collection, all eight post-authorization revocations
+and owned-schema readiness. `20261011-095729-784` passed readiness1.689s including
+missing projection columns/nullability and a fully formed fallback schema whose
+bare table/trigger lookup succeeds. Readiness accepts only the current owned
+schema and its correctly typed non-null columns and immutable trigger function.

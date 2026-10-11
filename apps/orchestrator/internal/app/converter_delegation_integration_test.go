@@ -430,7 +430,7 @@ func (f *developerFixture) finishChild(t *testing.T, child task.Record, worker c
 func TestConverterDeveloperFinalReturnParentActionsIntegration(t *testing.T) {
 	f := newDeveloperFixture(t)
 	child, worker, candidate := f.testedChild(t)
-	args := map[string]any{"child_task_id": child.TaskID, "digest": candidate.Digest}
+	args := map[string]any{"child_task_id": child.TaskID}
 	raw, _ := json.Marshal(args)
 	var collect *toolbrokerv1.ToolContract
 	for _, c := range generatedtools.Contracts() {
@@ -461,7 +461,10 @@ func TestConverterDeveloperFinalReturnParentActionsIntegration(t *testing.T) {
 	if err == nil {
 		t.Fatal("technical collection granted candidate without parent Broker action")
 	}
-	out, _, _ := f.dispatch(t, f.parentRun, "converters.collect", args)
+	out, bound, _ := f.dispatch(t, f.parentRun, "converters.collect", args)
+	if bound.Binding.ConverterPackageHash != candidate.Digest || len(bound.Binding.DataSources) != 3 {
+		t.Fatal("server omitted exact return hash before authorization")
+	}
 	var received generatedtools.Record
 	if json.Unmarshal([]byte(out.ResultJson), &received) != nil || received.BodySource != candidate.BodySource {
 		t.Fatal("wrong candidate return")
