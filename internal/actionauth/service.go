@@ -93,6 +93,9 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	if err := CheckExecutionPolicy(c, b.Effect); err != nil {
 		return b, false, err
 	}
+	if call.GetToolName() == delegation.AdmissionTool && !c.DelegationReady {
+		return b, false, delegation.ErrDenied
+	}
 	if !delegationAllows(c.Delegation, b) {
 		return b, false, delegation.ErrDenied
 	}

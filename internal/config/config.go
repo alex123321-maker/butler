@@ -85,6 +85,8 @@ type OrchestratorConfig struct {
 	ExtensionControlURL               string
 	SkillControlURL                   string
 	ConverterControlURL               string
+	DelegationEnabled                 bool
+	DelegationMaxParallel             int
 	TelegramBotToken                  string
 	TelegramAllowedChatIDs            []string
 	TelegramBaseURL                   string
@@ -119,6 +121,8 @@ type ToolBrokerConfig struct {
 	ExtensionOwnerID          string
 	SkillsEnabled             bool
 	ConvertersEnabled         bool
+	DelegationEnabled         bool
+	DelegationControlURL      string
 	ConverterProfileJSON      string
 	ConverterRuntimeTarget    string
 	ConverterRuntimeTokenFile string
@@ -321,6 +325,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_RESTART_HELPER_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "http://restart-helper:8080", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.RestartHelperURL = v }},
 	)
 
+	specs = append(specs, delegationOrchestratorSpecs(&cfg)...)
 	snapshot, err := loadSpecs(get, specs)
 	if conditionalErr := validateOrchestratorConditionalConfig(cfg); conditionalErr != nil {
 		if err != nil {
@@ -360,6 +365,7 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_EXECUTION_BUDGET_POLICY_JSON", component: "tool-broker", typeName: "json", requiresRestart: true, validate: validateBudgetPolicy, assign: func(v string) { cfg.ExecutionBudgetPolicyJSON = v }},
 	)
 
+	specs = append(specs, delegationBrokerSpecs(&cfg)...)
 	snapshot, err := loadSpecs(get, specs)
 	return cfg, snapshot, err
 }

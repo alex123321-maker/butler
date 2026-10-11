@@ -130,4 +130,10 @@ Orchestrator service rechecks the executing grant and atomically admits an empty
 tool-permission child; the receipt/effect acknowledgement confirms admission,
 not child success. Service endpoints/tokens are operator-only composition; no
 runtime orchestrates or receives the token and nothing is enabled by default.
+`BUTLER_DELEGATION_ENABLED=true` requires PostgreSQL, the existing action-authority
+token file and `BUTLER_DELEGATION_CONTROL_URL` naming exactly
+`/internal/delegation`. Bootstrap then registers the fixed contract and Broker
+control executor. Catalog and preparation deny use until the owning core
+advertises composed readiness for a current task. Operator URL/settings do not
+replace current dispatch, approval, source, owner and budget checks.
 See [actual admission proof](../../docs/ai/delegation-admission-acceptance.md).

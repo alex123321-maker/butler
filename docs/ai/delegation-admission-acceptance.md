@@ -1,9 +1,22 @@
 # Private delegation admission acceptance
 
 This is component evidence for issue16, not a complete delegation release. The
-fixed revision1 `task.delegate` route grants no child tools. Production bootstrap,
-model scheduling and single-versus-bounded-parallel model comparison remain
-pending. Existing failed/blocked report limitations are unchanged.
+fixed revision1 `task.delegate` route grants no child tools. Optional production
+bootstrap now composes private admission, owned context transitions and bounded
+maintenance over existing input workers; operator defaults remain off. Actual
+native scheduling, deployment and single-versus-bounded-parallel model comparison
+remain pending. Existing failed/blocked report limitations are unchanged.
+
+The composed root delta passed actual lab snapshot `20261011-090359-595`:
+config, delegation, action authorization, Broker and Orchestrator app PG/race
+checks, followed by input/task/core race checks and Broker app compilation.
+The private separate-process runner repeated all fourteen selected top-level
+groups with no failure or skip. Event reference:
+`/srv/storage/butler/agents/delegation-resources/reports/delegation-20261011T020802Z-2992251/tests.jsonl`;
+SHA256 `fd6a0c800e8a3f370ee7e6815e05940fe320909f807f5cb91adada7692fefb4a`.
+This proves the component boundary and readiness policy in isolation. The runner
+uses a compiled Broker test harness, not production bootstrap startup, and does
+not establish native scheduling or main deployment acceptance.
 
 Actual laba snapshot: `20261011-085741-646`. A disposable PostgreSQL17/pgvector
 container on an internal isolated network applied all migrations, including061.
@@ -56,7 +69,8 @@ Without `BUTLER_TEST_MEMORY_POSTGRES_URL`, PG fixtures explicitly skip; without
 Neither skip is acceptance. This runner supplies both, and uses no main service.
 
 The component includes no public admission endpoint, runtime credential path,
-model permission field, scheduler activation or new dependency. Converter child
+model permission field or new dependency. Optional scheduler composition is an
+operator environment choice and cannot be enabled by stored settings. Converter child
 capabilities require a separate reviewed fixed contract/reader; initial
 context-only revision1 is not widened by an existing converter catalogue. Full
 issue16/issue33 evidence still needs real independent/conflicting research and

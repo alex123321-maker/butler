@@ -92,6 +92,7 @@ type ContextSnapshot struct {
 	DenyTools               []string             `json:"deny_tools,omitempty"`
 	DenyResources           []ResourceScope      `json:"deny_resources,omitempty"`
 	ConverterLifecycleReady bool                 `json:"converter_lifecycle_ready,omitempty"`
+	DelegationReady         bool                 `json:"delegation_ready,omitempty"`
 }
 
 type ApprovalRequest struct {

@@ -20,6 +20,7 @@ import (
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/config"
 	"github.com/butler/butler/internal/credentials"
+	"github.com/butler/butler/internal/delegation"
 	"github.com/butler/butler/internal/extensions"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/generatedtools"
@@ -65,6 +66,12 @@ func New(ctx context.Context) (*App, error) {
 			credentials.NewBroker(credentials.NewStore(postgres.Pool()), credentials.NewAuditStore(postgres.Pool())),
 			credentials.EnvSecretResolver{},
 		)
+	}
+	if cfg.DelegationEnabled && (postgres == nil || cfg.ActionAuthorityTokenFile == "" || cfg.DelegationControlURL == "") {
+		if postgres != nil {
+			postgres.Close()
+		}
+		return nil, fmt.Errorf("delegation requires PostgreSQL and a fixed authenticated private control endpoint")
 	}
 	router := runtimeclient.New(log)
 	server := broker.NewServer(registryStore, router, credentialResolver, log)
@@ -199,6 +206,18 @@ func New(ctx context.Context) (*App, error) {
 			skillStore.SetContracts(broker.SkillContracts{Registry: registryStore, Extensions: extensionStore, Converters: converterStore})
 			executor = &generatedtools.RoutedExecutor{Store: converterStore, Next: executor}
 			converterHandler = generatedtools.NewHandler(token, converterStore)
+		}
+		if cfg.DelegationEnabled {
+			client, clientErr := delegation.NewAdmissionClient(cfg.DelegationControlURL, token)
+			if clientErr != nil {
+				postgres.Close()
+				return nil, clientErr
+			}
+			if err = registryStore.RegisterOwned([]*toolbrokerv1.ToolContract{delegation.AdmissionContract()}); err != nil {
+				postgres.Close()
+				return nil, err
+			}
+			executor = &broker.DelegationExecutor{Admissions: client, Next: executor}
 		}
 		server.SetCatalogExecutor(executor)
 		authorizer.SetCapabilities(broker.CapabilityGuards{Extensions: extensionStore, Converters: converterStore})

@@ -91,7 +91,7 @@ func newDispatchAdmissionPolicyFixture(t *testing.T, setup func(*delegationGuard
 	repo := approvals.NewPostgresRepository(f.pool)
 	repo.SetCheckpointHooks(boundaryCheckpointHooks{}) // No authority: lifecycle checkpoints have their own fault suite.
 	approvalService := approvals.NewService(repo, nil)
-	reader := &actionContextReader{runs: run.NewService(run.NewPostgresRepository(f.pool), nil), sessions: sessions, leases: f.leases, tasks: f.store, approvals: approvalService, pool: f.pool}
+	reader := &actionContextReader{runs: run.NewService(run.NewPostgresRepository(f.pool), nil), sessions: sessions, leases: f.leases, tasks: f.store, approvals: approvalService, pool: f.pool, delegationReady: service.Manager != nil}
 	journal := actionauth.NewPostgresStore(f.pool)
 	journal.SetBudgets(f.budgets)
 	journal.SetRunDataGuard(f.sources.CheckRunSourcesTx)

@@ -60,6 +60,7 @@ type httpServerDeps struct {
 	ownerGoals             *goal.Manager
 	finalResults           *completion.Coordinator
 	actionAuthorityHandler http.Handler
+	delegationHandler      http.Handler
 	skillEvidenceHandler   http.Handler
 	skillClient            *skills.Client
 	converterClient        *generatedtools.Client
@@ -199,6 +200,9 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	mux.Handle("/internal/diagnostics", coreDiagnostics(deps))
 	if deps.actionAuthorityHandler != nil {
 		mux.Handle("/internal/action-context", deps.actionAuthorityHandler)
+	}
+	if deps.delegationHandler != nil {
+		mux.Handle("/internal/delegation", deps.delegationHandler)
 	}
 	mux.Handle("/health", deps.health.Handler())
 	mux.Handle("/metrics", deps.metrics.Handler())

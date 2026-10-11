@@ -1,8 +1,9 @@
 # Durable bounded delegation
 
-Implementation in progress for issue16. This foundation is not a production
-delegation release. No model-selectable executor tool, child scheduler or owner
-delegation endpoint has yet been enabled.
+Implementation in progress for issue16. Production/model acceptance remains
+pending. Optional operator composition registers fixed context-only research
+admission, using existing input workers; no new owner endpoint is exposed.
+The shared lab deployment has not enabled this feature.
 
 Session Service continues to own independent execution identities and ordering.
 Task Service owns child tasks and durable contracts. Orchestrator owns child
@@ -59,7 +60,7 @@ task revision and deadline checks repeat before model/dispatch/final publication
 The proposal source check also enforces the parent's exact scope/purpose grants
 when the authenticated owner can independently read a broader Catalog body.
 
-Pending acceptance: actual durable separate-context scheduling through Broker,
+Pending acceptance: actual native durable separate-context scheduling through Broker,
 dependency/width/depth bounds, independent and conflicting result collection,
 parent crash and revision/stop races, resource/workspace arbitration, and an actual
 single-versus-bounded-parallel experiment using the same shared model worker.
@@ -84,8 +85,9 @@ independent verifier adapter and never completes the task. Decision metadata has
 only pinned references, not narrative or model authority. Conflicting reports
 remain distinct. The [Task README](../../apps/orchestrator/internal/task/README.md)
 documents constructor/adapters and lock order. Actual PG/source/budget tests use
-two pooled connections; no model inference/effect is claimed. Production explicit
-Broker/scheduler and the shared model experiment above remain pending. Explicit
+two pooled connections; no model inference/effect is claimed. The optional
+private Broker route and ordinary durable workers are composed as described
+below; the shared native model experiment remains pending. Explicit
 selected-source context is integrated in the ordinary preparation/recovery path;
 actual Catalog and core projection/recovery checks are covered separately.
 
@@ -110,8 +112,28 @@ The optional owned-context lifecycle adapter marks execution using the actual
 child fence before releasing prepared input. Bounded kernel maintenance collects
 committed finals first, then advances previously admitted waiting children using
 the same existing durable input workers. Scan cursors affect fairness only;
-they never replace PostgreSQL lifecycle or authority. These adapters still
-require explicit production composition with the Broker admission boundary.
+they never replace PostgreSQL lifecycle or authority. Core composes these
+adapters with the private Broker admission boundary only on operator opt-in.
+
+## Operator composition
+
+`BUTLER_DELEGATION_ENABLED` defaults false in core and Broker. Core composes the
+real accepted-capability manager, private `/internal/delegation` handler, owned
+context transition and bounded maintenance over its existing input workers.
+`BUTLER_DELEGATION_MAX_PARALLEL` defaults one and allows only one or two; these
+topology settings are operator environment values, never database overrides.
+Broker's `BUTLER_DELEGATION_CONTROL_URL` must name the exact private route and
+uses the existing action-authority token file. The runtime receives no token.
+Fixed immutable `task.delegate` registration occurs only on explicit opt-in.
+
+The authenticated current action context advertises `delegation_ready` only
+after core composes the manager and lifecycle adapters. Broker hides the tool
+without a current task/readiness and denies preparation before persisting an
+intent. This bit supplies no authority: current lease, task/goal/mandate, source,
+exact approval, dispatch, budget and accepted snapshot checks remain required.
+Maintenance errors in one branch do not suppress unrelated initiative review.
+The initial tool admits context-only research with an empty child tool allowlist;
+the separate reviewed converter developer contract remains a distinct boundary.
 
 ## Current capability and result guards
 
@@ -127,9 +149,10 @@ A registry entry, model tool description or old snapshot alone grants nothing.
 empty child identity requires a current actual claimed delegate-dispatch proof;
 nonempty identity resolves that child's accepted durable capabilities and current
 parent/goal/package/source policy. Lifecycle must not depend on a surviving parent
-worker. The production adapter must persist its accepted snapshot during source
-binding, before the manager's first child lifecycle check. No production reader
-or accepted-snapshot storage is enabled by the guard component itself.
+worker. The private admission adapter persists its immutable migration061
+snapshot during source binding, before the manager's first child lifecycle
+check. The guard component alone supplies neither accepted capabilities nor
+activation; operator composition selects the concrete admission adapter.
 
 Report DATA is bound to a real completed child run, immutable final, exact current
 task-result row, final artifact/message hash and original Catalog source graph.

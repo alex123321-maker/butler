@@ -358,10 +358,15 @@ cloud memory model jobs remain denied.
 
 ## Delegation foundation
 
-The internal delegation contract and tree admission/owner-control barrier are
-implemented behind Task Service. The executor manager and Broker control adapter
-remain in progress; no delegation endpoint or model tool is enabled yet. See
-`docs/architecture/delegation-contract.md` before deploying migration057.
+The internal delegation contract, tree admission/owner-control barrier, executor
+manager and private Broker control adapter are implemented behind Task Service.
+`BUTLER_DELEGATION_ENABLED` defaults false. Explicit operator opt-in composes
+`/internal/delegation`, owned context transitions and bounded maintenance over
+the existing durable input workers. `BUTLER_DELEGATION_MAX_PARALLEL` accepts
+one or two, defaults one and cannot be overridden through database settings.
+Private action-authority authentication and migrations057/061 are required.
+Native model comparison and deployment acceptance remain pending. See
+`docs/architecture/delegation-contract.md` before enabling the route.
 
 Ordinary preparation/recovery now derives selected delegated context from the
 actual fenced run, after pinning its task. It skips ambient memory bundles and
@@ -380,8 +385,10 @@ structured child reports against real final/artifact/transcript, action journal,
 source graph and branch reservation records on the caller PG transaction. Its
 capability reader is mandatory and phase-explicit: new admission needs a current
 claimed delegate action, lifecycle needs that child's durable accepted snapshot
-and current policy. The private Broker adapter/storage and model experiment
-remain pending; no delegation tool is enabled here. Active completed partial
+and current policy. The private adapter stores immutable accepted capabilities
+on the same admission transaction; the model experiment remains pending.
+The initial `task.delegate` admits children with an empty tool allowlist.
+Active completed partial
 finals are distinct from blocked/failed attempts, whose historical collection
 bridge is still pending. See `docs/ai/delegation-guard-acceptance.md`.
 
@@ -391,7 +398,9 @@ reports contain only owning source/result/journal/reservation references and
 current uncertainty, with no model-authored success verdict. Replay keeps one
 report source; a revoked original rolls publication back. The optional context
 lifecycle adapter marks execution under the actual child fence before input
-release. These components still await the private Broker admission composition.
+release. Operator opt-in composes these adapters with private Broker admission.
+Maintenance combines independent branch errors without suppressing unrelated
+initiative review; it never admits a new model proposal by itself.
 
 Optional `/api/v4/converters` and `/converters` relay only owner-proof metadata
 inspection and exact-version revocation to the fixed operator/environment private
@@ -413,6 +422,8 @@ before queue/receipt. Initial children have no tools. The guard wrapper embeds
 component is composed. Its public `Manager` is for trusted bounded maintenance,
 not a caller-supplied worker authority. Accepted child lifecycle uses its own
 snapshot/current policy after parent process completion; no old lease is revived.
-No bootstrap, HTTP mux or config default enables this route in this component.
+The component alone does not enable a route. Bootstrap composes its private
+handler and lifecycle adapters only under `BUTLER_DELEGATION_ENABLED`; current
+action contexts advertise readiness only after this composition succeeds.
 Actual separate-process Broker/HTTP/PG evidence and pending model/deployment
 criteria are recorded in `docs/ai/delegation-admission-acceptance.md`.

@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -32,6 +33,7 @@ import (
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/config"
+	"github.com/butler/butler/internal/delegation"
 	orchestratorv1 "github.com/butler/butler/internal/gen/orchestrator/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	"github.com/butler/butler/internal/generatedtools"
@@ -205,6 +207,28 @@ func New(ctx context.Context) (*App, error) {
 	if restoreErr := sourceCatalog.Reconcile(ctx); restoreErr != nil {
 		log.Warn("memory unavailable: deletion anchor requires operator reconciliation")
 	}
+	var childAdmission *DelegationAdmission
+	if cfg.DelegationEnabled {
+		if cfg.ActionAuthorityTokenFile == "" {
+			redis.Close()
+			postgres.Close()
+			return nil, fmt.Errorf("delegation requires private action authority authentication")
+		}
+		limits := task.DefaultDelegationLimits()
+		limits.MaxParallel = cfg.DelegationMaxParallel
+		childAdmission, err = NewDelegationAdmission(postgres.Pool(), taskStore, sessionRepo, inputStore, sourceCatalog, limits)
+		if err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, err
+		}
+	}
+	childContexts := delegatedContextReader{sources: sourceCatalog}
+	var childMaintenance *delegationMaintenance
+	if childAdmission != nil {
+		childContexts.manager = childAdmission.Manager
+		childMaintenance = &delegationMaintenance{pool: postgres.Pool(), manager: childAdmission.Manager}
+	}
 	ownedSemantic, closeOwnedSemantic := configureOwnedSemantic(log, sourceCatalog, budgetController)
 	semanticReady := false
 	defer func() {
@@ -305,7 +329,7 @@ func New(ctx context.Context) (*App, error) {
 			},
 			SemanticMemory:        semanticReader,
 			MemorySources:         memorySources,
-			DelegationContexts:    delegatedContextReader{sources: sourceCatalog},
+			DelegationContexts:    childContexts,
 			Skills:                skillCatalogIfEnabled(skillClient),
 			Budgets:               budgetController,
 			Completion:            finalResults,
@@ -372,7 +396,12 @@ func New(ctx context.Context) (*App, error) {
 		if err := ownerGoals.Sweep(ctx); err != nil {
 			return err
 		}
-		return initiativeWorker.Sweep(ctx)
+		initiativeErr := initiativeWorker.Sweep(ctx)
+		if childMaintenance != nil {
+			// One denied branch must not prevent unrelated initiative review.
+			return errors.Join(initiativeErr, childMaintenance.Sweep(ctx))
+		}
+		return initiativeErr
 	})
 	if telegram != nil {
 		telegram.SetExecutor(inputWorker)
@@ -383,6 +412,7 @@ func New(ctx context.Context) (*App, error) {
 
 	var actionAuthorityHandler http.Handler
 	var skillEvidenceHandler http.Handler
+	var delegationHandler http.Handler
 	if cfg.ActionAuthorityTokenFile != "" {
 		token, readErr := actionauth.ReadServiceToken(cfg.ActionAuthorityTokenFile)
 		if readErr != nil {
@@ -390,13 +420,22 @@ func New(ctx context.Context) (*App, error) {
 			postgres.Close()
 			return nil, readErr
 		}
-		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil})
+		if childAdmission != nil {
+			delegationHandler, err = delegation.NewAdmissionHandler(token, childAdmission)
+			if err != nil {
+				redis.Close()
+				postgres.Close()
+				return nil, err
+			}
+		}
+		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil})
 		skillEvidenceHandler = skills.NewEvidenceHandler(token, &skillEvidence{tasks: taskStore, journal: actionauth.NewPostgresStore(postgres.Pool()), transcript: transcriptStore, budgets: budget.NewLedger(postgres.Pool()), results: finalResults, sources: sourceCatalog})
 	} else {
 		log.Warn("private action authority unavailable; Tool Broker will deny execution")
 	}
 	apiServer := apiservice.NewServer(inputWorker, logger.WithComponent(log, "api"))
 	httpServer := newHTTPServer(httpServerDeps{
+		delegationHandler:      delegationHandler,
 		memoryIndexing:         ownedSemantic,
 		sourceCatalog:          sourceCatalog,
 		cfg:                    cfg,

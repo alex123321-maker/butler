@@ -64,6 +64,9 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 	terms := strings.Fields(strings.ToLower(query))
 	result := []*toolbrokerv1.ToolContract{}
 	for _, contract := range c.Registry.List("", false) {
+		if contract.GetToolName() == delegation.AdmissionTool && (a.TaskID == "" || !a.DelegationReady) {
+			continue
+		}
 		if (strings.HasPrefix(contract.GetToolName(), "skills.") || strings.HasPrefix(contract.GetToolName(), "converters.")) && a.TaskID == "" {
 			continue
 		}

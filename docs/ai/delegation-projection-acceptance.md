@@ -1,9 +1,11 @@
 # Delegated attempt projection and maintenance evidence
 
 This is component evidence for issue16, not a production delegation release.
-Broker admission, accepted capability snapshots, actual model-created child
-research, parent process fault recovery and the shared model comparison remain
-pending. No model tool, owner endpoint or new service is enabled by this delta.
+Private Broker admission and immutable accepted capability snapshots now have
+separate component evidence. Operator opt-in composes these with the existing
+durable workers; defaults remain off. Actual model-created child research,
+parent process fault recovery and the shared model comparison remain pending.
+No owner admission endpoint or new service is introduced.
 
 Actual laba source snapshot `20261011-083142-941` passed PostgreSQL integration
 and race tests for Orchestrator app/task plus action authorization. The earlier
@@ -19,7 +21,7 @@ the waiting sibling unqueued, the active slot occupied, and report publication
 absent. Unit policy checks retain independently missing effect evidence after
 task verification and deny unknown or unrelated final limitations. The review
 found no additional confirmed issue in the generated-report/approval delta;
-the production composition and larger concurrency limitations below remain.
+the native/deployment acceptance and larger concurrency limitations below remain.
 
 The generated-report tests use actual child admission, independent fenced run,
 Catalog grants and original pins, atomic final/message/artifact/result/outbox,
