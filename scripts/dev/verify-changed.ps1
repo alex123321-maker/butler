@@ -26,6 +26,14 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(apps/tool-broker/internal/broker/workspaces?[^/]*[.]go$|internal/workspaceexec/|internal/actionauth/workspace|migrations/067_workspace_dispatches[.]|scripts/dev/workspace-lab[.]sh$)" {
+      [void]$specs.Add("docs/architecture/isolated-code-workspaces.md")
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$specs.Add("docs/architecture/resource-lease-contract.md")
+      [void]$specs.Add("docs/architecture/memory-model.md")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/workspace-broker-runtime/current/scripts/dev/workspace-lab.sh /srv/storage/butler/agents/workspace-broker-runtime broker' then all after isolated source Sync (actual Broker/runtime, disposable PG/files, race and vet; zero inference)")
+      continue
+    }
     "^(internal/memory/candidatecontrol/|internal/memory/catalog/worker_candidates|internal/(config|actionauth)/memory_candidate|apps/(orchestrator|tool-broker)/internal/(app|broker)/memory_candidate)" {
       [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
       [void]$specs.Add("docs/architecture/memory-model.md")

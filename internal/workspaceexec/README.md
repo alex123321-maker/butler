@@ -2,10 +2,49 @@
 
 `Provenance` joins actual workspace metadata to the owning memory Catalog on the
 same PostgreSQL pool/transaction. It grants no tool, runtime, budget or credential
-permission. Production Broker dispatch and runtime/bootstrap composition are
-still pending; the current actual action admission in tests is an explicit
-fixture, while source policy, storage, physical observation and resource leases
-are the real components.
+permission. Exact dispatch admission and the private gRPC file runtime are now
+implemented and tested through the actual Broker Server/router. Application
+bootstrap, operator rollout/readiness and owner reconciliation remain pending;
+the owning context projection and exact human approval in these tests are
+explicit fixtures. No model tools or production flags are enabled by this change.
+
+`DispatchStore` implements the Broker admission/claim hooks. Migration067 stores
+immutable approved operation/path/body hash/file CAS, original input-claim hash
+and original source context; no body, host root or reusable service token enters
+that history. The same action-claim transaction checks actual current worker,
+task, input/checkpoint, source graph and permanent intent, reserves the existing
+shared budget, acquires/claims the exact `workspace:<ID>` resource and creates one
+private ticket. Any denial rolls back all permission/reservation/lease changes.
+A stale file snapshot is rejected under the resource lock before that transaction
+commits. Tickets expire within the original input/grant/worker/budget bounds and
+the maximum resource lease of30 seconds. They do not renew a worker.
+
+`Contracts` exposes only canonical `workspace.create/read/write` DATA arguments:
+an opaque namespace, relative code path, bounded UTF-8 text and exact previous
+file version/hash/size. Strict parsing rejects duplicate/extra/case-alias fields,
+raw credential patterns, private paths, host roots and caller-supplied authority.
+Text is bounded to64 KiB. Creating a copy executes no code and copies no host
+environment. Reads require independent current access to the cumulative original
+graph; writes preserve provenance without publishing accepted memory.
+
+`Runtime` authenticates exactly one private service header and ticket, then
+rechecks correlated canonical contract/args/fingerprint, actual permanent journal,
+worker/task/input/source/budget/resource before committing the ticket's one-use
+start. A fixed private os.Root and the real workspace Store/Observer perform files.
+Independent physical evidence, immutable source context, file metadata and write
+lease consumption commit together. Reads release their held read lease only after
+current final checks. Generic/lost/failed acknowledgements stay unknown; tickets
+and actions never replay. An uncertain write retains the existing physical pending
+checkpoint and quarantine. Runtime privacy cleanup runs only the separately bounded
+Catalog deletion job, which cannot reconcile or resume execution.
+
+The Broker `ResourceAdmissions` routes workspace and browser namespaces to their
+separate exact guards; one cannot substitute for the other. The workspace executor
+obtains only an already-committed ticket and passes it as private gRPC metadata
+through the existing router. No credential-bearing request is supported. Owning
+`workspace_ready` gates exact contract discovery/preparation and the original
+input-claim hash is pinned privately to the grant. The application does not yet
+set that readiness or register these contracts automatically.
 
 `PrepareTx` runs before effect/budget/resource/workspace locks. It requires the
 current actual worker/session/task/constraints and deletion anchor, reads only

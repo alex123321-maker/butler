@@ -21,7 +21,11 @@ func validPath(name string) bool {
 	}
 	return true
 }
-func digest(data []byte) string { value := sha256.Sum256(data); return hex.EncodeToString(value[:]) }
+
+// ValidCodePath shares the storage boundary with exact Broker/runtime argument
+// validation. It grants no filesystem, workspace or source permission.
+func ValidCodePath(name string) bool { return validPath(name) }
+func digest(data []byte) string      { value := sha256.Sum256(data); return hex.EncodeToString(value[:]) }
 
 func privateTemp(root *os.Root) error {
 	for _, name := range []string{"private", "private/tmp"} {
