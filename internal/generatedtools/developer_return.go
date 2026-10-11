@@ -67,7 +67,11 @@ func ReadTestedDeveloperCandidateTx(ctx context.Context, tx pgx.Tx, snapshot Dev
 		return Record{}, "", Report{}, ErrChecks
 	}
 	var confirmed bool
-	if tx.QueryRow(ctx, `SELECT TRUE FROM action_intents i JOIN action_effect_dispatches d ON d.execution_action_id=i.action_id JOIN action_authorizations a ON a.authorization_id=d.authorization_id WHERE i.run_id=$1 AND i.effect_id=$2 AND i.binding->>'tool_name'='converters.test' AND i.binding->>'converter_package_hash'=$3 AND d.outcome='dispatch_completed' AND a.state='dispatch_completed' AND EXISTS(SELECT 1 FROM action_effect_evidence x WHERE x.action_id=$2 AND x.source_action_id=i.action_id AND x.evidence->>'source'='runtime_response' AND x.evidence->>'method'='local_runtime_ack' AND x.evidence->>'verdict'='effect_confirmed' AND x.evidence->>'result_digest'=$4 AND x.evidence->>'source_run_id'=$1 AND x.evidence->>'source_tool_call_id'=i.tool_call_id)`, runID, effect, r.Digest, HashBytes([]byte(encoded(report)))).Scan(&confirmed) != nil {
+	reportHash, err := observationHash(report)
+	if err != nil {
+		return Record{}, "", Report{}, ErrChecks
+	}
+	if tx.QueryRow(ctx, `SELECT TRUE FROM action_intents i JOIN action_effect_dispatches d ON d.execution_action_id=i.action_id JOIN action_authorizations a ON a.authorization_id=d.authorization_id WHERE i.run_id=$1 AND i.effect_id=$2 AND i.binding->>'tool_name'='converters.test' AND i.binding->>'converter_package_hash'=$3 AND d.outcome='dispatch_completed' AND a.state='dispatch_completed' AND EXISTS(SELECT 1 FROM action_effect_evidence x WHERE x.action_id=$2 AND x.source_action_id=i.action_id AND x.evidence->>'source'='runtime_response' AND x.evidence->>'method'='local_runtime_ack' AND x.evidence->>'verdict'='effect_confirmed' AND x.evidence->>'result_digest'=$4 AND x.evidence->>'source_run_id'=$1 AND x.evidence->>'source_tool_call_id'=i.tool_call_id)`, runID, effect, r.Digest, reportHash).Scan(&confirmed) != nil {
 		return Record{}, "", Report{}, ErrChecks
 	}
 	return r, effect, report, nil

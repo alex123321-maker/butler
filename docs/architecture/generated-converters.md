@@ -201,6 +201,11 @@ An exact schema-compatible installed converter must be reused. Skill search is
 bounded discovery, not semantic proof that every procedure is unsuitable.
 
 All calls use Prepare → Authorize → irreversible Claim → execution → outcome.
+Converter observations are serialized as decoded JSON objects with sorted keys,
+matching the mandatory Broker privacy boundary before its raw result digest is
+journaled. Discovery and child test proofs reconstruct these exact bytes and
+still check every typed field, current binding and actual dispatch provenance.
+Neither metadata struct order nor a model-provided pass flag is receipt evidence.
 Locks follow ownership → session → run/task → goal/mandate → complete sources →
 converter catalog/state → effect rows. Discovery/runtime RPCs hold no transaction
 or pooled connection. Publication repeats live lease/task/owner/source checks and

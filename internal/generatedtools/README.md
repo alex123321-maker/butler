@@ -5,6 +5,9 @@ validation, fixed independent checker and Broker-owned PG lifecycle. Creation,
 testing, trials, activation/rollback and use require ordinary exact action grants,
 current task/owner authority, deletion-aware source graph and existing budgets.
 Bodies remain Catalog DATA; metadata/history contains only hashes and SourceRefs.
+Tool observations use the Broker privacy boundary's decoded-object JSON ordering.
+Discovery and child-check receipt proofs reconstruct that exact representation;
+typed struct field order cannot stand in for the actual journal result digest.
 
 The separate developer/checker runtime has no network, core storage or account
 access. `RoutedExecutor` delegates other contracts through `Next`.

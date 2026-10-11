@@ -182,8 +182,10 @@ func CheckCompatibleInstalledTx(ctx context.Context, tx pgx.Tx, owner string, n 
 }
 
 func confirmedParentDiscoveryTx(ctx context.Context, tx pgx.Tx, parent actionauth.ActionBinding, ref catalog.SourceRef, n Need, d Discovery) (string, error) {
-	raw := encoded(map[string]any{"need_id": n.ID, "need_hash": Hash(n), "discovery": d, "instruction_authority": false})
-	resultHash := HashBytes([]byte(raw))
+	resultHash, err := observationHash(map[string]any{"need_id": n.ID, "need_hash": Hash(n), "discovery": d, "instruction_authority": false})
+	if err != nil {
+		return "", err
+	}
 	var contractHash string
 	for _, c := range Contracts() {
 		if c.ToolName == "converters.discover" {

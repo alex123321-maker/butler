@@ -2,7 +2,6 @@ package generatedtools
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"strings"
 
@@ -90,11 +89,11 @@ func (r *RoutedExecutor) Execute(ctx context.Context, call *toolbrokerv1.ToolCal
 	if e != nil {
 		return fail(e)
 	}
-	b, e := json.Marshal(value)
+	b, e := observationJSON(value)
 	if e != nil || len(b) > 32*1024 {
 		return fail(ErrLimit)
 	}
 	result.Status = "completed"
-	result.ResultJson = string(b)
+	result.ResultJson = b
 	return result, nil
 }
