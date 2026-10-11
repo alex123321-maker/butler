@@ -46,7 +46,7 @@ func (s *Service) prepareSourceInput(ctx context.Context, event ingress.InputEve
 }
 
 func durableSourcePreparation(prepared preparedRun) preparedRun {
-	if prepared.SourceInputEvent == nil && len(prepared.SourceDataRefs) == 0 {
+	if prepared.SourceInputEvent == nil && len(prepared.SourceDataRefs) == 0 && len(prepared.AttemptSourceRefs) == 0 {
 		return prepared
 	}
 	out := prepared
@@ -62,6 +62,10 @@ func durableSourcePreparation(prepared preparedRun) preparedRun {
 	}
 	for i, item := range out.InputItems {
 		o := content.ItemOrigin(item)
+		if isFailedAttemptItem(item) {
+			out.InputItems[i] = failedAttemptItem(map[string]any{"reload_current_attempts": true}, o.SourceRefs)
+			continue
+		}
 		if o.IsInstruction() || o.Kind == content.ToolOutput || item.Role == "tool" || item.Name != "" {
 			continue
 		}
@@ -79,6 +83,13 @@ func durableSourcePreparation(prepared preparedRun) preparedRun {
 	return out
 }
 func (s *Service) rehydrateSourcePreparation(ctx context.Context, prepared *preparedRun) error {
+	if err := s.rehydrateInputSources(ctx, prepared); err != nil {
+		return err
+	}
+	return s.attachFailedDelegationAttempts(ctx, prepared)
+}
+
+func (s *Service) rehydrateInputSources(ctx context.Context, prepared *preparedRun) error {
 	if prepared.SourceInputEvent == nil {
 		return s.rehydrateDelegatedContext(ctx, prepared)
 	}

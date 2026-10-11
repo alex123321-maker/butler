@@ -1,7 +1,7 @@
 # Issue16 current evidence and unfinished gates
 
-Issue16 remains open. This consolidates existing lab evidence; it introduces no
-subsystem, permission, model call or deployment. The opt-in context-only route
+Issue16 remains open. This consolidates lab evidence, including the failed-attempt
+observation bridge and separate local generative observations. The opt-in context-only route
 retains empty child permissions. Component tests and deliberately scripted
 provider outcomes are distinct from successful native research.
 
@@ -11,11 +11,11 @@ provider outcomes are distinct from successful native research.
 | One then bounded parallel executor | Actual manager reservations, durable maintenance advances a waiting sibling only after a current final; scripted ordinary workers and real Broker execute two sequential admissions at widths1/2 | Same-source native quality/timing/usage comparison has failed twice and remains pending |
 | Selected original evidence | Catalog grants/complete privacy graph and current pins, no ambient parent history/profile or hidden-ancestor bodies; source correction/deletion/grant revocation deny recovery/dispatch/collection | Actual native child prepared source observations and final citations remain pending |
 | Structured report | Actual completion/journal/reservation readers independently validate result/action/evidence identities and conservative units; generated reports retain uncertainty/partial observations and contain no model-derived accomplishment verdict | Successful actual independent native reports have not been produced |
-| Accept/reject and uncertainty | Actual exact owner verification accepts only the current final; forged action counts/evidence/units and unverified acceptance fail; partial final retains limitations; unknown/failed/timed-out history remains immutable | No general two-research contradiction resolver has been proved. Active partial-final collection is distinct from the pending read-only blocked-attempt collection bridge |
+| Accept/reject and uncertainty | Actual exact owner verification accepts only the current final; forged action counts/evidence/units and unverified acceptance fail; partial final retains limitations. The failed-attempt bridge supplies fresh private parent DATA with bounded terminal/journal history, branch-wide reservations and nullable usage across revisions; checkpoints reload current records | No general two-research contradiction resolver has been proved. Failed-attempt observations confer no completion or acceptance authority |
 | Restricted authority and shared budgets | Current inflight Broker admission plus immutable061 lifecycle snapshot, empty permissions, exact scope/deadline/source pins; root/delegation/mandate/day finite reservations, widening and cycle denial | Reservation totals are not measured tokens, invoice or evidence of successful research |
 | Stop and stale contracts | Real Controller stop versus admission/Collect and actual approved-grandchild ClaimGrant denial; spent earlier effects/immutable finals remain; stale revisions/source rights and clock expiry after actual lock waits deny later writes | Post-final native metadata controls have not run; arbitrary late native callback injection is outside the scheduled fixture |
 | Parent process loss | Durable lifecycle and selected source read succeed after actual parent run completion/lease expiry without borrowing its lease. First and final native windows performed completed-parent executor SIGKILL and waited real child-claim TTL; final window reached a recovered child's native Start | That child failed transport without a final; successful restarted-child completion is pending |
-| Shared local model service | Existing actual auxiliary GPU/CPU artifacts prove serialized shared lanes, reusable workers, parallel index/search and three source/job/live-admitted calls on the same deployed service | These are auxiliary embedding/ranking contexts, not delegated local-generative research; cloud internal weight loading is unobservable |
+| Shared local model service | Actual auxiliary GPU/CPU artifacts prove reusable workers and index/search lanes. Five real generative contexts used one pinned CPU runner; an independent runtime observation found one loaded model | All five generative semantic checks failed. They do not prove successful delegated research or faster/cheaper execution; cloud internal weights remain unobservable |
 
 ## Exact evidence references
 
@@ -47,6 +47,16 @@ The following documents retain their original component scope and limitations:
   Actual ordinary worker/private Broker flow is scripted and ends in intentional
   zero-network child entry denials. Reports are captured after own workers stop,
   before cleanup. This proves observability, not native failure reproduction.
+- `delegation-attempt-acceptance.md`: snapshot20261011-141030-569, real PG
+  observation/context and ordinary parent-pipeline checks, four race-enabled
+  packages and affected vet; event hash
+  `7a1b42db61264022abbfdb69474b4efd511074b23a7f3620a6c5d8e99fece3ac`.
+  Provider output and7/3 usage in this fixture are scripted, not native inference.
+- `../../deploy/local-generative/README.md`: five actual CPU-model requests,
+  all five semantic checks failed;608 input/150 output known tokens. Original
+  report SHA256 `b45ed541437ea24620740d26821fbb9b7b6b559687c531fecf2e7dccac4a7825`;
+  one loaded runner observation SHA256
+  `358a641817a9b902ae18cf9e8dd21123f9b8d2691ddb12b7af6948e2f0a7ba51`.
 
 Manager dependency-conflict tests reject cycles, unverified acceptance and
 dependencies on a rejected result. They are not two actual contradictory
@@ -72,7 +82,7 @@ acceptance or measurements of a cloud provider's internals.
 
 ## Native evidence is still failed
 
-All three FAILED artifacts remain byte-for-byte immutable:
+All four FAILED artifacts remain byte-for-byte immutable:
 
 - `native-scenario-failed.json`, SHA256
   `28c75c31827f8a25ca8ed101e6e04b8264a7e66ee9ce18808d504d5af748c8f0`:
@@ -90,20 +100,24 @@ All three FAILED artifacts remain byte-for-byte immutable:
   independent checks and post-final controls did not run. Fixed persisted
   classes were exported after workers stopped and before schema cleanup;
   lower-level cause remains unknown.
+- `native-scenario-fourth.json`, SHA256
+  `72d95bb5ac0bcf5bd4d8d4b28b1de6beb10d819a348c7e5efb187295ce28a1f9`:
+  four additional attempts; completed-parent process loss and claim expiry were
+  observed. The recovered child failed native Start with fixed `rate_limited`;
+  no child final, width2 comparison or post-final controls ran.
 
-Historical attempts now total nine. Two usage pairs are observed: input5526/
-output101 and input6244/output89. Seven are unavailable(null), never zero. The
-known subset11770input/190output is not the complete token total. The reviewed
-baseline5/new12/ceiling17 applied only to the completed final window; production
-scopes stayed twelve. The fixed third artifact now makes the current script's
-execute entry refuse before authentication metadata or Docker. It cannot silently
-reset history or grant fresh calls. `native-five-attempt-preparation.json` remains
-zero-inference evidence at preparation time. The old baseline3/ceiling15 applied
-solely to the second completed FAILED window.
+Historical attempts in this series now total thirteen. Three usage pairs are
+known; ten are unavailable(null), never zero. The known subset16810input/
+280output is not the complete token total. The current fourth report and sealed
+global baseline9 window make execute refuse before authentication metadata or
+Docker. Numerical allowance cannot reopen a closed window, reset history or
+grant a retry. Earlier baseline/cap descriptions belong to their retained
+historical windows, not a new authorization.
 
 No further model execution is authorized by this document. The proposed narrow
 window in `delegation-native-scenario-plan.md` requires a separately reviewed
 immutable SHA and explicit coordination. A PASS would prove that scheduled
-native flow only; it would not remove the local-generative, contradiction or
-blocked-attempt observation limitations. Artifacts are hash-pinned, not
-cryptographically signed. No new issue is started by this evidence audit.
+native flow only; it would not remove the failed local-generative quality or
+contradiction limitations. Artifacts are hash-pinned, not cryptographically
+signed. See the current owner-directed continuation in that plan for the sealed
+fourth window; the older stopping boundary does not cancel current issue work.

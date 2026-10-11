@@ -26,6 +26,14 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/delegation/attempt[.]go$|apps/orchestrator/internal/(app|orchestrator)/delegation_attempt.*[.]go$|apps/orchestrator/internal/task/delegation_attempts[.]go$|scripts/dev/delegation-attempts-lab[.]sh$)" {
+      [void]$specs.Add("docs/architecture/delegation-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/delegation-attempts/current/scripts/dev/delegation-attempts-lab.sh /srv/storage/butler/agents/delegation-attempts' after isolated Sync (disposable PG/pool2, owning parent pipeline, current source release and recovery/race; no model requests)")
+      continue
+    }
     "^(internal/transport/ollama/|deploy/local-generative/|scripts/dev/local-generative-lab[.]sh$)" {
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
       [void]$specs.Add("docs/architecture/execution-budget-contract.md")

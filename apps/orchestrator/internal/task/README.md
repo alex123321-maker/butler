@@ -46,6 +46,16 @@ data. CheckReportTx compares actual owning records; CheckDecisionTx proves the
 objective/owner verdict. Agreeing models cannot bypass it. Decide never marks a
 task complete or overwrites another result; conflicting reports remain distinct.
 
+`ObserveFailedAttempts` is a separate current-authority read for a blocked
+immediate child with failed terminal runs and no live worker. Its mandatory
+`DelegationAttemptObserver` adapter joins the same transaction to read journal,
+all branch reservations and nullable actual usage; it allowlists error enums and
+excludes raw provider prose. It cannot create a result/report source, change
+state or free execution width. Current parent Catalog dependencies may be pinned
+to the parent run. Ordinary execution/collection still requires its original
+active-child/deadline guards. Parent context/recovery composition and actual
+pool2 tests are described in `docs/ai/delegation-attempt-acceptance.md`.
+
 Lock order: tree barrier → sorted ownership → sessions → current runs → tasks
 → owner/source authority → budgets. Rechecks use DB time after waits. No
 ownership.Begin extra connection is used. Owner stop uses the same tree barrier

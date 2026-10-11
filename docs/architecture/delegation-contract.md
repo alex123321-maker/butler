@@ -170,13 +170,37 @@ persisted owner verification for this exact result, criteria and version/hash
 evidence; agreeing models or a model final do not verify it or complete a task.
 
 Execution/source lifecycle guards remain active-only. Completed partial assistant
-finals can be collected with limitations while the task is active. Failed,
-timed-out and blocked attempts retain observations but require a separate
-read-only historical collection contract before they can be collected: task
-revision changes and absent immutable finals must not be relabelled as current
-completion. Later journal reconciliation also makes an old final/report mismatch
-fail closed; it needs a new explicit observation workflow. Stop/cancelled tasks
-deny new collection even when historical result metadata remains visible.
+finals can be collected with limitations while the task is active. A separate
+`ObserveFailedAttempts` read returns current owning observations for a blocked
+immediate child with terminal failed/cancelled/timed-out runs on its current
+revision, no live worker/attempt and an unchanged current parent contract. It
+requires an authenticated owner or the actual live parent worker, current parent
+goal/mandate and current Catalog access. A context carrying both owner and worker
+identities is refused. It never reuses a failed child's execution authority or
+relaxes the ordinary collection/deadline guards.
+
+The typed `AttemptReport` has no result, accomplishment, approval or semantic
+success field. It includes at most16 failed run identities,64 current journal
+states with explicit truncation, all bounded branch reservations and at most128
+nullable actual model-usage records across branch revisions, each retaining its
+actual run/task revision. Reservation units are not measured usage.
+Only allowlisted error/transport enums leave owning rows; raw errors, metadata,
+source bodies and checkpoints are excluded. Missing independent verification
+and unknown effects retain uncertainty. A read cannot collect a result, decide
+acceptance, change delegation/task state, refund spending or free executor width.
+Current source dependencies may be pinned to the observing parent run.
+
+Under the existing delegation opt-in, ordinary parent preparation loads these
+observations from its actual run and immediate children as private SubagentOutput
+DATA. There are at most8 reports/256KiB. An initial selection transaction releases
+its connection/locks before the manager takes the tree-first lock order, so a
+two-connection pool needs no borrowed child fence or nested connection. Recovery
+removes saved report bodies and reloads current journal/source/authority state;
+checkpoint references cannot select children. The source guard rechecks the
+parent's pinned graph before provider/event/final release. This bridge neither
+automatically wakes the parent nor resolves contradictory research results.
+Stop/cancelled parents deny new observations/collection; owner metadata views may
+still show historical records. See [attempt acceptance](../ai/delegation-attempt-acceptance.md).
 
 See [guard acceptance evidence](../ai/delegation-guard-acceptance.md) for actual
 two-connection PostgreSQL/race tests and the pending production/model criteria.

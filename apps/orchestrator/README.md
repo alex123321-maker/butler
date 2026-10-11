@@ -460,9 +460,15 @@ claimed delegate action, lifecycle needs that child's durable accepted snapshot
 and current policy. The private adapter stores immutable accepted capabilities
 on the same admission transaction; the model experiment remains pending.
 The initial `task.delegate` admits children with an empty tool allowlist.
-Active completed partial
-finals are distinct from blocked/failed attempts, whose historical collection
-bridge is still pending. See `docs/ai/delegation-guard-acceptance.md`.
+Active completed partial finals remain distinct from blocked/failed attempts.
+With delegation enabled, the parent's ordinary preparation/recovery now reads
+typed failed-attempt observations under its own current lease and source access.
+They remain private SubagentOutput DATA with nullable actual usage, journal
+uncertainty and no completed result. Checkpoints retain reload markers and fresh
+reads preserve later reconciliation/deletion. Observation does not wake the
+parent, accept a child or free execution width. See
+`docs/ai/delegation-attempt-acceptance.md` and
+`docs/ai/delegation-guard-acceptance.md`.
 
 Trusted report projection and bounded maintenance now collect actual committed
 finals atomically before advancing already admitted waiting branches. Generated
