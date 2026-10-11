@@ -287,6 +287,10 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 		return nil, current, fmt.Errorf("%w: execute tool call %s: %v", ErrActionOutcomeUnknown, requested.ToolName, err)
 	}
 	finishedAt := time.Now().UTC()
+	// Catalog prose remains only in current live context and deletion-aware
+	// sources. Transcript, artifact, scratch and event copies carry refs only.
+	liveResultJSON := toolResultEnvelope(result)
+	result = durableSkillObservation(result)
 	// Persist the known observation before auxiliary memory/Redis IO so a slow
 	// cache or process failure cannot discard the dispatch's durable result.
 	if _, err := s.transcript.AppendToolCall(ctx, transcriptToolCallFromExecution(toolCallID, current.GetRunId(), requested, brokerCall, result, startedAt, finishedAt)); err != nil {
@@ -350,7 +354,7 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	}
 	current = next
 
-	stream, err := s.resumeProviderWithToolResult(ctx, current, toolCallID, toolResultEnvelope(result))
+	stream, err := s.resumeProviderWithToolResult(ctx, current, toolCallID, liveResultJSON)
 	if err != nil {
 		return nil, current, fmt.Errorf("submit tool result: %w", err)
 	}

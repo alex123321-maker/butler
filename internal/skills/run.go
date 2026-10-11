@@ -262,6 +262,40 @@ func (s *Store) Propose(ctx context.Context, run string, p Package) (Record, err
 	}
 	return s.Get(ctx, p.Digest)
 }
+
+// ProposeSource retains the original manifest source as a deletion dependency.
+// Tool arguments contain only exact references; prose never enters immutable
+// action/approval bindings. Prior source identity alone grants no access.
+func (s *Store) ProposeSource(ctx context.Context, run string, ref catalog.SourceRef) (Record, error) {
+	if s.sources == nil || ref.ID == "" || ref.Revision < 1 || ref.AccessRevision < 1 || !digest.MatchString(ref.Hash) {
+		return Record{}, ErrManifest
+	}
+	c, err := s.run(ctx, run)
+	if err != nil {
+		return Record{}, err
+	}
+	ctx = runContext(ctx, c)
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return Record{}, err
+	}
+	defer tx.Rollback(ctx)
+	if err = s.checkRunTx(ctx, tx, c); err != nil {
+		return Record{}, err
+	}
+	rows, err := s.sources.AccessTx(ctx, tx, []catalog.SourceRef{ref}, "memory_read")
+	if err != nil || len(rows) != 1 {
+		return Record{}, ErrAccess
+	}
+	p, err := Parse([]byte(rows[0].Body))
+	if err != nil {
+		return Record{}, err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return Record{}, err
+	}
+	return s.Propose(context.WithValue(ctx, proposalSourceKey{}, ref), run, p)
+}
 func (s *Store) autoPromote(ctx context.Context, c actionauth.ContextSnapshot, hash string) (Record, error) {
 	if c.Authority == nil {
 		return Record{}, ErrAccess

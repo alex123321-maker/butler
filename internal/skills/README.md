@@ -14,6 +14,11 @@ require ordinary Broker preparation, current task authority, admission, budgets
 and effect journaling. Search returns at most 12 descriptions. Load returns one
 exact digest, at most 16 KiB, with at most four pins per run. Proposal cannot pass
 a caller-supplied success verdict to validation.
+Agent proposals reference an exact currently accessible catalog source containing
+candidate manifest JSON. They cannot put prose into immutable tool action args;
+the original proposal is retained as a deletion dependency. The owner staging
+API accepts raw JSON. Live observations carry procedural DATA, while Orchestrator
+stores content-free references and rehydrates current text on recovery.
 
 The private source verifier reads owner-verified task results and actual
 confirmed action journal evidence through owned APIs. Both source evidence and

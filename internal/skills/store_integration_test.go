@@ -9,6 +9,7 @@ import (
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"google.golang.org/protobuf/proto"
 	"path/filepath"
 	"sync"
 	"testing"
@@ -164,6 +165,38 @@ func TestSkillPinsConcurrentIntegration(t *testing.T) {
 	defer tx.Rollback(ctx)
 	if err := s.CheckRunTx(ctx, tx, "run", "owner"); err != ErrConflict {
 		t.Fatalf("changed interface dispatched: %v", err)
+	}
+}
+
+type changedTransactionContract struct{ *fixtureAuthority }
+
+func (f changedTransactionContract) GetSkillContractTx(context.Context, pgx.Tx, string) (*toolbrokerv1.ToolContract, error) {
+	c := proto.Clone(f.contract).(*toolbrokerv1.ToolContract)
+	c.ContractRevision = "current-owned-revision-changed"
+	return c, nil
+}
+
+func TestActivationRechecksOwnedCurrentContractIntegration(t *testing.T) {
+	s, m, authority, _, ctx := skillFixture(t)
+	original := activeFixture(t, s, m, ctx)
+	m.Version = "1.0.1"
+	m.Description = "Accepted wording with original dependency"
+	candidate, err := s.Stage(ctx, packageOf(t, m))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.Test(ctx, candidate.Digest); err != nil {
+		t.Fatal(err)
+	}
+	// The read API still reports the previously validated contract; the owned
+	// transaction observes the current interface at irreversible activation.
+	s.contracts = changedTransactionContract{authority}
+	if _, err = s.Activate(ctx, candidate.Digest, original.Generation); err != ErrConflict {
+		t.Fatalf("stale preflight activated incompatible version: %v", err)
+	}
+	current, err := s.Get(ctx, original.Digest)
+	if err != nil || !current.Active || current.Generation != original.Generation {
+		t.Fatal("failed activation changed working procedure", err)
 	}
 }
 func TestSkillLeaseAndTaskRevocationIntegration(t *testing.T) {

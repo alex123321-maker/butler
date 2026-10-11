@@ -24,6 +24,7 @@ type Store struct {
 }
 
 type proposalAuthorityKey struct{}
+type proposalSourceKey struct{}
 
 func (s *Store) guardProposalTx(ctx context.Context, tx pgx.Tx) error {
 	if c, ok := ctx.Value(proposalAuthorityKey{}).(actionauth.ContextSnapshot); ok {
@@ -131,6 +132,14 @@ func (s *Store) stage(ctx context.Context, p Package, source any) (Record, error
 				continue
 			}
 			seen[ref.ID] = ref
+			parents = append(parents, ref)
+		}
+	}
+	if ref, ok := ctx.Value(proposalSourceKey{}).(catalog.SourceRef); ok {
+		if old, exists := seen[ref.ID]; exists && old != ref {
+			return Record{}, ErrEvidence
+		}
+		if _, exists := seen[ref.ID]; !exists {
 			parents = append(parents, ref)
 		}
 	}

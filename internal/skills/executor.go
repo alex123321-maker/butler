@@ -6,6 +6,7 @@ import (
 	"github.com/butler/butler/internal/credentials"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/memory/catalog"
 	"google.golang.org/protobuf/proto"
 	"strings"
 )
@@ -29,7 +30,7 @@ func Contracts() []*toolbrokerv1.ToolContract {
 	}{
 		{"skills.search", "List compatible active procedural DATA for the current task. Descriptions only; does not grant capabilities.", `{"type":"object","properties":{"query":{"type":"string"}},"additionalProperties":false}`, false},
 		{"skills.load", "Load a selected exact skill digest as bounded procedural DATA. Tool permissions and task constraints remain independently enforced.", `{"type":"object","required":["digest"],"properties":{"digest":{"type":"string"},"max_bytes":{"type":"integer"}},"additionalProperties":false}`, false},
-		{"skills.propose", "Propose a version from independently owner-verified task evidence. Stores a tested candidate; only an exact existing correction grant can activate it.", `{"type":"object","required":["manifest_text"],"properties":{"manifest_text":{"type":"string"}},"additionalProperties":false}`, true},
+		{"skills.propose", "Propose the manifest in an exact current catalog DATA source. Independent owner-verified task evidence is required; only an existing exact correction grant can activate it.", `{"type":"object","required":["source_ref"],"properties":{"source_ref":{"type":"object","required":["source_id","revision","access_revision","content_hash"],"properties":{"source_id":{"type":"string"},"revision":{"type":"integer"},"access_revision":{"type":"integer"},"content_hash":{"type":"string"}},"additionalProperties":false}},"additionalProperties":false}`, true},
 	} {
 		e := &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "read_result"}
 		risk := "low"
@@ -66,10 +67,10 @@ func (r *RoutedExecutor) Execute(ctx context.Context, call *toolbrokerv1.ToolCal
 		return fail(ErrAccess)
 	}
 	var args struct {
-		Query        string `json:"query"`
-		Digest       string `json:"digest"`
-		MaxBytes     int    `json:"max_bytes"`
-		ManifestText string `json:"manifest_text"`
+		Query     string            `json:"query"`
+		Digest    string            `json:"digest"`
+		MaxBytes  int               `json:"max_bytes"`
+		SourceRef catalog.SourceRef `json:"source_ref"`
 	}
 	if Decode([]byte(call.GetArgsJson()), &args) != nil {
 		return fail(ErrManifest)
@@ -86,13 +87,9 @@ func (r *RoutedExecutor) Execute(ctx context.Context, call *toolbrokerv1.ToolCal
 		p, err = r.Store.Load(ctx, call.GetRunId(), args.Digest, args.MaxBytes)
 		value = map[string]any{"format": "butler.skill.data.v1", "digest": p.Digest, "manifest": p.Manifest, "instruction_authority": false}
 	case "skills.propose":
-		var p Package
-		p, err = Parse([]byte(args.ManifestText))
-		if err == nil {
-			var record Record
-			record, err = r.Store.Propose(ctx, call.GetRunId(), p)
-			value = map[string]any{"skill_id": record.ID, "digest": record.Digest, "status": record.Status, "active": record.Active, "instruction_authority": false}
-		}
+		var record Record
+		record, err = r.Store.ProposeSource(ctx, call.GetRunId(), args.SourceRef)
+		value = map[string]any{"skill_id": record.ID, "digest": record.Digest, "status": record.Status, "active": record.Active, "instruction_authority": false}
 	default:
 		err = ErrManifest
 	}

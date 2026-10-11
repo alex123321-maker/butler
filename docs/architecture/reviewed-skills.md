@@ -67,6 +67,14 @@ current owner or owned run/job proof for the complete graph. Same-owner sources
 in different scopes still require access to every parent.
 
 The raw reviewed manifest is a catalog-derived `model_candidate` DATA source.
+Model `skills.propose` arguments carry an exact current catalog `source_ref`,
+not manifest prose: the agent can emit candidate JSON as an actual source/result
+and propose its reference in a follow-up owned task. Current access to that
+proposal and all verified result parents is required; both remain deletion edges.
+Owner staging accepts raw reviewed JSON through the authenticated control API.
+Live load/search observations contain authorized DATA, but durable transcript,
+artifacts, scratch and prepared approval checkpoints retain digest/source refs
+only. Fresh recovery resolves current text rather than replaying saved prose.
 Deleting an original message/source recursively redacts the procedure body;
 historical version hashes, usage and lifecycle events remain inspectable.
 Restoring an older database cannot recover readable procedure text before

@@ -65,7 +65,7 @@ func (p *procedureProvider) StartRun(_ context.Context, r transport.StartRunRequ
 	for _, item := range r.InputItems {
 		origin := content.ItemOrigin(item)
 		for _, ref := range origin.SourceRefs {
-			if strings.HasPrefix(ref, "skill-index:") {
+			if strings.HasPrefix(ref, "skill-index:") && strings.Contains(item.Content, `"skill_descriptions"`) {
 				p.sawDescription = true
 			}
 			if ref == "skill:"+p.digest {
@@ -444,7 +444,11 @@ func TestReviewedSkillRealBrokerDurableApprovalE2E(t *testing.T) {
 	if err != nil || len(baselineProofs) != 1 {
 		t.Fatal("actual source proof unavailable", err)
 	}
-	manifest := skills.Manifest{Format: skills.Format, ID: "prepare-fixture-patch", Version: "1.0.0", Source: skills.Source{URI: "https://example.invalid/reviewed/prepare-fixture", Revision: "owner-reviewed-v1"}, Description: "Prepare one immutable README correction and check the stored artifact", When: []string{"owner asks for exact reviewed fixture correction"}, Inputs: []string{"current project revision and exact owner-approved change"}, NotApplicable: []string{"unknown effect, changed dependency, changed project revision"}, Dependencies: baselineProofs[0].ConfirmedContracts, Sources: []skills.EvidenceRef{{TaskID: baseline.TaskID, TaskRevision: baseline.Revision, ResultID: baselineResult}}, Tests: []skills.Scenario{{Name: "verified-success", Kind: "verified_success", Expected: "recipient patch check and owner verification"}, {Name: "failed-check", Kind: "failure_stop", Expected: "stop without claimed success"}, {Name: "changed-interface", Kind: "interface_change", Expected: "reject changed contract"}}, Steps: []skills.Step{{ID: "inspect", Tool: toolNames[0], Intent: "Read current project revision", SuccessCheck: "exact revision", OnError: "stop", Retry: "read_again"}, {ID: "prepare", Tool: toolNames[1], Intent: "Request exact prepared README patch", SuccessCheck: "recipient receipt and artifact ID", OnError: "stop", Retry: "reconcile", ApprovalCheckpoint: true}, {ID: "check", Tool: toolNames[2], Intent: "Check stored patch; leave project unapplied", SuccessCheck: "checks_passed=true and applied=false", OnError: "stop", Retry: "read_again"}}}
+	messageID := strings.TrimPrefix(baselineProofs[0].ContentParents[0].ID, "message:")
+	if _, err = sources.VerifiedResultParents(ctx, "owner", messageID, "unrelated-run"); err == nil {
+		t.Fatal("historical source identity accepted an unrelated result run")
+	}
+	manifest := skills.Manifest{Format: skills.Format, ID: "prepare-fixture-patch", Version: "1.0.0", Source: skills.Source{URI: "https://example.invalid/reviewed/prepare-fixture", Revision: "owner-reviewed-v1"}, Description: "procedure-private-body-marker: prepare one immutable README correction and check the stored artifact", When: []string{"owner asks for exact reviewed fixture correction"}, Inputs: []string{"current project revision and exact owner-approved change"}, NotApplicable: []string{"unknown effect, changed dependency, changed project revision"}, Dependencies: baselineProofs[0].ConfirmedContracts, Sources: []skills.EvidenceRef{{TaskID: baseline.TaskID, TaskRevision: baseline.Revision, ResultID: baselineResult}}, Tests: []skills.Scenario{{Name: "verified-success", Kind: "verified_success", Expected: "recipient patch check and owner verification"}, {Name: "failed-check", Kind: "failure_stop", Expected: "stop without claimed success"}, {Name: "changed-interface", Kind: "interface_change", Expected: "reject changed contract"}}, Steps: []skills.Step{{ID: "inspect", Tool: toolNames[0], Intent: "Read current project revision", SuccessCheck: "exact revision", OnError: "stop", Retry: "read_again"}, {ID: "prepare", Tool: toolNames[1], Intent: "Request exact prepared README patch", SuccessCheck: "recipient receipt and artifact ID", OnError: "stop", Retry: "reconcile", ApprovalCheckpoint: true}, {ID: "check", Tool: toolNames[2], Intent: "Check stored patch; leave project unapplied", SuccessCheck: "checks_passed=true and applied=false", OnError: "stop", Retry: "read_again"}}}
 	raw, _ := json.Marshal(manifest)
 	pack, err := skills.Parse(raw)
 	if err != nil {
@@ -465,5 +469,21 @@ func TestReviewedSkillRealBrokerDurableApprovalE2E(t *testing.T) {
 	quality := skillControl(skills.ControlRequest{Operation: "quality", Digest: pack.Digest}).Quality
 	if quality == nil || quality.VerifiedSuccesses != 1 || quality.UnverifiedAttempts != 1 || len(quality.Baseline) != 1 || len(quality.Outcomes) != 2 || quality.Outcomes[0].ModelUsage == nil || quality.Outcomes[0].ModelUsage.Attempts < 5 {
 		t.Fatal("quality omitted actual task/attempt measurements")
+	}
+	for _, outcome := range quality.Outcomes {
+		// Current live provider inputs do contain the marker. Durable replay,
+		// transcript, artifacts and auxiliary scratch must retain refs only.
+		for _, query := range []string{
+			`SELECT COALESCE(string_agg(to_jsonb(x)::text,''),'') FROM accepted_inputs x WHERE run_id=$1`,
+			`SELECT COALESCE(string_agg(to_jsonb(x)::text,''),'') FROM approval_actions x JOIN approvals a USING(approval_id) WHERE a.run_id=$1`,
+			`SELECT COALESCE(string_agg(to_jsonb(x)::text,''),'') FROM tool_calls x WHERE run_id=$1`,
+			`SELECT COALESCE(string_agg(to_jsonb(x)::text,''),'') FROM artifacts x WHERE run_id=$1`,
+			`SELECT COALESCE(string_agg(to_jsonb(x)::text,''),'') FROM tasks x WHERE task_id=(SELECT task_id FROM runs WHERE run_id=$1)`,
+		} {
+			var saved string
+			if err = pool.QueryRow(ctx, query, outcome.Usage.RunID).Scan(&saved); err != nil || strings.Contains(saved, "procedure-private-body-marker") {
+				t.Fatal("procedure copied outside deletion-aware source graph", err)
+			}
+		}
 	}
 }
