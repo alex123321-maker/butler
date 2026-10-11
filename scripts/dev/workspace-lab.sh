@@ -2,6 +2,8 @@
 # Isolated workspace-only PostgreSQL/filesystem proof; no shared Compose access.
 set -euo pipefail
 root=${1:?isolated agent root required}
+mode=${2:-all}
+[[ "$mode" == all || "$mode" == provenance ]] || exit 2
 [[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/migrations/060_isolated_code_workspaces.up.sql" ]] || exit 2
@@ -33,12 +35,19 @@ for attempt in $(seq 1 60); do
   [[ "$attempt" != 60 ]] || exit 1
   sleep 1
 done
+# Concurrent packages create independent schemas but share this disposable DB.
+# Install its one extension before them; IF NOT EXISTS alone does not serialize
+# simultaneous pg_extension inserts from separate package processes.
+docker exec "$name" psql -q -v ON_ERROR_STOP=1 -U fixture -d butler_workspace_test \
+  -c 'CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public' >/dev/null
 printf 'Private workspace proof: %s\n' "$proof"
 docker run --rm --runtime runc --user "$(id -u):$(id -g)" --network "$network" --memory 1536m --pids-limit 128 --cpus 2 \
   --security-opt no-new-privileges:true --volume "$source_dir:/src:ro" --volume /srv/storage/butler/.cache:/cache \
   --volume "$root/.cache/workspace-tmp:/private-tmp" --workdir /src \
   --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp --env TMPDIR=/private-tmp \
   --env 'BUTLER_TEST_POSTGRES_URL=postgres://fixture:workspace-fixture@workspace-postgres:5432/butler_workspace_test?sslmode=disable' \
-  golang:1.27.2-bookworm bash -c 'go test -json -race -count=1 -timeout=120s ./internal/workspace > /dev/stdout && go vet ./internal/workspace' > "$proof/tests.jsonl"
+  --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:workspace-fixture@workspace-postgres:5432/butler_workspace_test?sslmode=disable' \
+  --env WORKSPACE_PROOF_MODE="$mode" \
+  golang:1.27.2-bookworm bash -c 'packages="./internal/workspaceexec"; if [[ "$WORKSPACE_PROOF_MODE" == all ]]; then packages="$packages ./internal/workspace ./internal/memory/catalog"; fi; go test -json -race -count=1 -timeout=120s $packages && go vet $packages' > "$proof/tests.jsonl"
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
 printf 'Workspace PG/filesystem race suite passed.\n'

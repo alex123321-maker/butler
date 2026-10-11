@@ -48,5 +48,23 @@ binding, physical hash/length, opened namespace/tree identity, private directory
 permissions, empty temporary state and the synced opaque checkpoint. It supplies
 no authorization or reconciliation decision. The adapter repeats current
 authority after observing and consumes the resource on the same metadata commit.
-Real PG/filesystem tampering tests use this observer; production Broker provenance,
-immutable evidence persistence and runtime composition remain separate work.
+Real PG/filesystem tampering tests use this observer; production Broker dispatch,
+immutable effect evidence and runtime composition remain separate work.
+
+`internal/workspaceexec.Provenance` now supplies current source policy and
+immutable cumulative original graph through Catalog task-scoped empty-body DATA.
+Private context is prepared before effect/budget/resource/workspace locks from
+actual run graph roots and old copy history. Ancestor pins do not become child
+body grants. Publication on physical/file/resource confirmation retains source
+scope, original parents and observation digest; later runs independently check
+that same original graph. Owner actors and auxiliary job proof cannot substitute
+for current worker authority. No accepted memory/policy or duplicate body is
+created. See [source/privacy composition](../../internal/workspaceexec/README.md).
+
+Migration066 joins transitive Catalog deletion to atomic workspace blockage and
+an exact durable erasure queue. A fixed private-root DeletionRuntime removes only
+the opaque copy after the owning privacy job verifies committed tombstones and
+the deletion anchor. Failure/lost acknowledgement retains pending cleanup;
+restart/idempotent erasure never resumes execution. This is privacy cleanup,
+not owner reconciliation. Broker/shared budget/private ticket/runtime bootstrap
+and cleanup scheduling are still required before model access is enabled.

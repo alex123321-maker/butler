@@ -829,3 +829,12 @@ access lifetime, including audio ancestors of presented text. Owner catalog
 administration retains/export-controls the source until explicit physical deletion;
 expiry itself does not promise purging assets or backups.
 
+Prepared code-copy provenance uses the same original Catalog graph, as specified
+in [isolated workspaces](isolated-code-workspaces.md). Its immutable task DATA
+contains no code/source body and grants no fact, policy or selectable ancestor
+access. Catalog deletion transitively tombstones these contexts and atomically
+blocks/queues affected filesystem copies. Fixed-root privacy erasure records a
+durable completion only after actual removal; lost acknowledgement remains
+pending across restart. This component is implemented, while workspace
+Broker/runtime/model admission and cleanup scheduling remain disabled/pending.
+

@@ -168,3 +168,10 @@ filesystem check. The [observer audit](../../docs/ai/workspace-observer-acceptan
 records physical tampering during the real filesystem/PG commit gap, unknown
 outcomes, unconsumed claims and blocked/unpublished namespaces. No runtime route,
 model capability or deployment flag is enabled by this component.
+
+`DeletionRuntime` is a fixed-root filesystem executor for the owning
+[provenance privacy job](../workspaceexec/README.md), not a model tool or recovery
+permission. It accepts only a lower-case opaque namespace ID, rejects host paths
+and namespace links, erases through os.Root without following links and syncs
+the root on both new and idempotent removal. Catalog tombstones and durable job
+state are checked by the owner of that job before it calls this executor.

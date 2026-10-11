@@ -110,10 +110,11 @@ foreach ($file in $files) {
       [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/durable-tasks/current/scripts/dev/delegation-lab.sh /srv/storage/butler/agents/durable-tasks' (disposable PostgreSQL, pool2 and manager race proof)")
       continue
     }
-    "^(internal/workspace/|migrations/060_isolated_code_workspaces[.]|scripts/dev/workspace-lab[.]sh$)" {
+    "^(internal/workspace/|internal/workspaceexec/|migrations/(060_isolated_code_workspaces|066_workspace_source_provenance)[.]|scripts/dev/workspace-lab[.]sh$)" {
       [void]$specs.Add("docs/architecture/isolated-code-workspaces.md")
       [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
       [void]$specs.Add("docs/architecture/agent-security-boundaries.md")
+      [void]$specs.Add("docs/architecture/memory-model.md")
       [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/durable-tasks/current/scripts/dev/workspace-lab.sh /srv/storage/butler/agents/durable-tasks' after isolated source Sync")
 	  continue
 	}
