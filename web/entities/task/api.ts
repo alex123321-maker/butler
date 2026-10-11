@@ -132,8 +132,8 @@ export interface TaskDetailResponse {
 export interface TaskFinalResult {
   result_id: string
   answer_state: string
-  effects: Array<{ action_id: string; effect_state: string; evidence_refs: string[] }>
-  limitations: string[]
+  effects: Array<{ action_id: string; effect_state: string; evidence_refs?: string[] | null }> | null
+  limitations: string[] | null
   privacy_redacted?: boolean
 }
 

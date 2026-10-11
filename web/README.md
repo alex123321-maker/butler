@@ -19,10 +19,13 @@ Provides a browser-based interface for:
   ignore responses belonging to an earlier task view.
 
 Focused laba verification uses `scripts/dev/task-view-lab.sh` after source Sync.
-Snapshot `20261011-092254-454` passed TypeScript/Vue checks, both lint checks,
-production build and five Chromium cases: confirmed effect with failed delivery,
-unknown effect/delivery, partial output, unavailable state and owner amendment/
-stop. The cases use synthetic API fixtures; existing server-side integration
+Snapshot `20261011-093937-181` passed TypeScript/Vue checks, both lint checks,
+production build and seven Chromium cases: confirmed effect with failed delivery,
+unknown effect/delivery, partial output, prepared effects with nullable evidence,
+removed response with failed delivery, unavailable state and owner amendment/
+stop. Removed or unavailable responses do not retain availability claims, and
+empty evidence cannot hide an uncertain effect. The cases use synthetic API
+fixtures; existing server-side integration
 checks remain responsible for actual effect/approval/verification policy.
 - **Initiatives** — authenticated source/schedule controls, observation decisions,
   ordinary-task links and grouped notice states. Empty checks stay quiet. The owner

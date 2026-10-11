@@ -21,7 +21,7 @@
             <details>
               <summary>Evidence references</summary>
               <p>{{ effect.action_id }}</p>
-              <ul v-if="effect.evidence_refs.length"><li v-for="ref in effect.evidence_refs" :key="ref">{{ ref }}</li></ul>
+              <ul v-if="effect.evidence_refs?.length"><li v-for="ref in effect.evidence_refs" :key="ref">{{ ref }}</li></ul>
               <p v-else>No evidence references were saved.</p>
             </details>
           </li>
@@ -48,6 +48,7 @@ const props = defineProps<{
   runId?: string
 }>()
 const final = computed(() => props.result && 'result_id' in props.result ? props.result : null)
+const responseAvailable = computed(() => Boolean(final.value && !final.value.privacy_redacted && ['final', 'partial'].includes(final.value.answer_state)))
 const effectLabels: Record<string, string> = {
   effect_confirmed: 'Effect confirmed',
   effect_absent: 'Effect confirmed absent',
@@ -66,7 +67,14 @@ const deliveryLabels: Record<string, string> = {
   failed: 'Notification failed. The saved response remains available.',
   delivery_unknown: 'Notification delivery is unknown. It will not be sent again automatically.',
 }
-const deliveryLabel = (state: string): string => deliveryLabels[state] || 'Notification delivery status is unavailable'
+const deliveryLabel = (state: string): string => {
+  if (!responseAvailable.value) {
+    if (state === 'failed') return 'Notification failed.'
+    if (state === 'pending') return 'Notification is waiting for delivery.'
+    if (state === 'result_ready') return 'Web delivery is recorded; response availability is not confirmed. Reading it is not tracked.'
+  }
+  return deliveryLabels[state] || 'Notification delivery status is unavailable'
+}
 </script>
 
 <style scoped>
