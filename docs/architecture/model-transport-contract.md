@@ -207,7 +207,7 @@ Orchestrator взаимодействует с Model Transport Layer через 
 
 ### 7.1 Native Antigravity subscription adapter
 
-`antigravity` uses Go HTTP/SSE directly against production AICode v1
+`antigravity` uses Go HTTP/SSE directly. The retained default tiered profile uses production AICode v1
 `https://aicode.googleapis.com/v1:streamGenerateContent?alt=sse`. Requests and SSE
 responses are flat. Subscription routing sends `aicode.experience` instead of the
 mutually exclusive `model` field. No Cloud Code project/request wrapper or
@@ -217,11 +217,25 @@ third-party consumer integration unsupported. It is not official product support
 The default model is `gemini-3.8-flash-tiered` (Gemini 3.8 Flash). CLI inference is
 removed; optional initial interactive sign-in stays outside Butler context.
 Control-plane `providerauth.Manager` imports a private operator stream into the
-encrypted PostgreSQL SecretStore and owns refresh. Project discovery is removed;
+encrypted PostgreSQL SecretStore and owns refresh. AICode requires no project;
 legacy imported project values are retained only for backward compatibility and
-are never returned to transport or used for inference. Transport
+never select a route. Transport
 receives only typed short-lived auth, never refresh tokens, credential files or CLI
 execution. No automatic API billing, credit overage or alternate endpoint exists.
+
+Explicit `gemini-3.8-flash-high` instead uses daily Cloud Code
+`/v1internal:streamGenerateContent?alt=sse` with model/project/request,
+requestType=agent, product userAgent, per-turn UUID requestId and a Butler-owned
+run sessionId. Manager discovers project via fixed authenticated loadCodeAssist
+and confirms paidTier g1-pro/ultra; private project/access metadata never enters
+model context or durable events. Wrapped `response` SSE is normalized with the
+same cancellation, complete-terminal/function/schema/signature and usage guards.
+High keeps8192 output/1048576 conservative input reservation, thinkingBudget=-1
+and checks the entire serialized envelope against the private byte limit.
+Only the Orchestrator's Butler prompt/context/catalog is forwarded unchanged:
+no Desktop/third-party wrapper instructions, identity rewriting, hidden reminders
+or extra tools. No route/model retry or fallback exists. See
+[the bounded High acceptance](../ai/antigravity-high-acceptance-20261012.md).
 
 Only supplied Butler functions are advertised. Complete native function proposals
 must match the exact per-run alias and schema before becoming `tool_call_requested`.
@@ -284,9 +298,11 @@ Windows2.22 frontend/official same-CL Linux backend capture measured Flash-high,
 daily Cloud Code v1internal,65536 output and15 declarations, including additional
 LOW writes blocked before Google. The actual Go network-none fixture retained
 flat AICode/tiered/8192 and parsed SSE. This is not the original Windows backend
-capture or a causal defect; production transport and issue16 gates remain
-unchanged. Any live pair still requires new finite durable admission carrying
-all21 tracked attempts and seven sealed reports forward. See
+capture or a causal defect; that capture itself changed no production behavior.
+The subsequent explicitly requested High profile and admitted22 are described
+above. Any additional live pair needs independent finite durable admission
+carrying all22 tracked attempts and eight generation reports forward; issue16's
+delegation gates remain separate. See
 [Desktop capture evidence](../../deploy/antigravity/desktop-interception-20261012.json).
 
 ---

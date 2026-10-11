@@ -1,6 +1,25 @@
 # Antigravity native transport
 
-This Go adapter uses production AICode v1 SSE with the requested experience
+The explicit `gemini-3.8-flash-high` profile uses the measured Desktop Cloud Code
+contract through native Go: daily `/v1internal:streamGenerateContent?alt=sse`,
+model/project/request wrapper, per-turn request identity, Butler-owned run session
+and thinkingBudget=-1. Output remains8192 to match durable admission. Manager
+discovers the project with the same refreshed OAuth and requires confirmed paid
+Pro/Ultra; an imported legacy project never selects a route. Wrapped
+`response.candidates`/usage becomes the existing Butler event contract. No endpoint
+or model fallback is performed. Select it with `BUTLER_ANTIGRAVITY_MODEL` and the
+matching `subscription_no_overage` execution budget entry; main deployment is
+unchanged by this patch. See [High acceptance](../../../docs/ai/antigravity-high-acceptance-20261012.md).
+
+Only supplied Butler inputs/system instructions and scoped declarations are
+serialized. No Desktop reminders, third-party identity prompt, system prefix,
+prompt rewriting or additional tools are added. Fixtures verify exact system/user
+text, native calls/signatures/continuation, wrapped SSE and failure-before-write.
+
+The following AICode details and earlier investigations describe the retained
+default tiered profile and their historical evidence.
+
+The retained tiered profile uses production AICode v1 SSE with the requested experience
 `gemini-3.8-flash-tiered`. The flat request uses `aicode.experience`, ordered
 contents, optional system instructions/Butler function declarations and an
 8192-token output allowance. It omits the mutually exclusive `model`, Cloud Code
@@ -37,7 +56,8 @@ unchanged. These are bounded text checks, not full delegation/tool acceptance.
 All21 agent-tracked attempts and seven immutable reports are retained in the
 diagnosis. The private comparison helper is not a production transport fallback.
 
-Only `providerauth.AntigravityTokenSource` supplies token and expiry. Transport
+Only the typed providerauth source supplies token/expiry and, for High, private
+discovered routing metadata through `AntigravityCloudCodeTokenSource`. Transport
 does not read credentials or run the CLI. Native calls must match supplied aliases
 and schemas; Tool Broker remains the sole executor. Exact function parts and opaque
 thought signatures remain private and run-local. Durable recovery starts fresh

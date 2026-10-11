@@ -1,6 +1,65 @@
 # Antigravity account and quota diagnosis — updated 2026-10-12
 
-## Current conclusion after authorized live checks
+## Flash High access — current result
+
+**Butler now supports and has actually completed `gemini-3.8-flash-high` through
+the original console OAuth account with confirmed Google AI Pro.** Attempt22
+used the real Go Provider and production Manager on isolated laba: daily Cloud
+Code v1internal/SSE, authenticated project discovery, High model,8192 output,
+thinkingBudget=-1,456 complete request bytes, HTTP200/STOP/exact marker and native
+assistant final. Usage was29 input/17 output/155 thoughts/201 total. No CLI,
+Desktop, API key, account change, overage fields, retries or tool execution.
+Only the supplied Butler operator user prompt was sent; no wrapper/third-party
+system prompt, identity scrubbing, Desktop reminders or extra declarations.
+
+The implementation gap for the requested High profile is proved: the previous
+adapter only serialized flat AICode experiences and parsed flat SSE. The measured
+Desktop High route instead needs model/project/request and wrapped response SSE.
+The new explicit High path implements those, discovers project privately from
+the same bearer and requires paidTier Pro/Ultra before generation. The default
+tiered/AICode profile remains available. This fixes High support; it does **not**
+prove that every historical429 was a protocol error. Attempt21 remains proven
+HIGH_DEMAND capacity rejection; the fifth old generic429 remains UNKNOWN.
+
+Primary GitHub code also implements this wrapper/project/session contract:
+[codex-pool, pinned translation](https://github.com/darvell/codex-pool/blob/9a327b323f513e2e826044861976b1f523f4a283/antigravity_translate.go),
+[antigravity-claude-proxy, pinned request builder](https://github.com/badrisnarayanan/antigravity-claude-proxy/blob/daa39d6c6239ac078a4e69de85094dde35558ef6/src/cloudcode/request-builder.js).
+The latter also rewrites/adds identity instructions, so its prompt logic is
+excluded by the owner's explicit Butler-only constraint. These are implementation
+sources, not official Google support or proof of this account's acceptance;
+our installed Desktop capture and actual Go22 supply that evidence.
+
+[Safe evidence](../../deploy/antigravity/flash-high-20261012.json) records code,
+history/report hashes and the [bounded execution](antigravity-high-acceptance-20261012.md).
+Final source022129-083 passed91 test/subtest names across3 packages, actual
+disposable PostgreSQL, race and vet on laba,0 failures/skips. Tests cover exact
+Butler prompt preservation, High wire, native function/signature/result
+continuation, wrapped SSE, limits, auth failure, concurrency, expiry and restart.
+The live test verifies text access; it is not a full real-tool/delegation smoke.
+
+Two earlier High **preparations** stopped before generation and remain sealed.
+Their generic reports record only the discovery phase, so no exact cause is
+retroactively assigned. Separate bounded metadata probes saw temporary TLS/read
+timeouts, then200/Pro/project and later valid Cloud auth with access validity
+below the diagnostic three-minute guard. The final fresh window used normal
+Manager refresh, preserving existing credential persistence and guards. Only
+one model call was dispatched in this High series; no model rejection was retried.
+
+All five old reports/18 calls and later19/20/21 reports remain byte-identical.
+Tracked count is22,8 known/14 unknown usage pairs,26968 input/598 output **known
+subtotals**. NULL is not zero. Owner Desktop activity remains separately unknown.
+All old windows and all three new preparation/execution markers remain sealed;
+main checkout/source pointer/deployment are unchanged and helper containers removed.
+
+Subscription authentication and working High access are now confirmed. Exact
+per-request attribution to Google's weekly/five-hour counter was not observed;
+100% is not a capacity guarantee and must not be called zero token spend. No
+further generation is needed to prove High text access. Production activation
+still requires its separate native function/result smoke; full issue16 delegation
+criteria remain open. The historical investigation below retains its original
+scope/accounting rather than overwriting it with High success.
+
+## Historical conclusion after attempts19–21
 
 **The new ordinary8192 Go request reproduced HTTP429
 RESOURCE_EXHAUSTED/HIGH_DEMAND in the window around2026-10-11T16:52Z. Its confirmed upstream cause

@@ -26,10 +26,11 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "^(scripts/dev/antigravity-compare/|scripts/dev/antigravity-compare-lab[.]sh$)" {
+    "^(scripts/dev/antigravity-compare/|scripts/dev/antigravity-compare-lab[.]sh$|scripts/dev/antigravity-high-lab[.]sh$)" {
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
       [void]$specs.Add("docs/architecture/credential-management.md")
       [void]$tests.Add("ssh laba: scripts/dev/antigravity-compare-lab.sh /srv/storage/butler/agents/antigravity-compare tests after isolated Sync (actual disposable PG, race, vet; zero inference). inspect blocks generation; execute requires separately recorded owner authorization and cannot reopen its marker.")
+      [void]$tests.Add("ssh laba: scripts/dev/antigravity-high-lab.sh /srv/storage/butler/agents/antigravity-high tests after isolated Sync (actual disposable PG, race, vet, zero inference). inspect/probe perform no generation. execute is a separately recorded one-use window carrying21 historical attempts.")
       continue
     }
     "^(scripts/dev/antigravity-wire/|scripts/dev/antigravity-wire-lab[.]sh$|internal/transport/antigravity/)" {

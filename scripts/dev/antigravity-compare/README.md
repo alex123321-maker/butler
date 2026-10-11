@@ -1,5 +1,18 @@
 # Private, bounded Antigravity comparison
 
+The separate `antigravity-high-lab.sh` runner now verifies the explicit native
+Flash High subscription path. `tests` uses actual disposable PG/race/vet with
+zero inference; `inspect` projects fixed metadata/Manager flags only; `probe`
+checks bounded TLS/unauthenticated HTTP only. `execute` is a sealed, one-use
+attempt22 carrying21 historical attempts/all seven reports and Desktop capture.
+It requires a passing exact-source test stamp and retained explicit owner
+authorization. The completed window is SEALED and cannot run again. Two failed
+preparations admitted0 calls and remain preserved. Actual22 passed200/STOP and
+native final with the original Pro account. The gate passes complete bytes
+unchanged and accepts only the supplied Butler prompt, High route/project/session,
+8192/thinkingBudget=-1; no wrapper prompt or tools. See
+[High plan/results](../../../docs/ai/antigravity-high-acceptance-20261012.md).
+
 This operator diagnostic is outside production transport and Butler tool execution.
 It compares the installed CLI 1.3.3 with the actual Go Provider. It does not deploy
 code, run delegation, reopen baseline13, install/update clients or change accounts.

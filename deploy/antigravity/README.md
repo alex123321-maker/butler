@@ -1,5 +1,32 @@
 # Native Antigravity with Google AI Pro
 
+## Explicit Flash High — verified on isolated laba
+
+`gemini-3.8-flash-high` now has a native Go Cloud Code profile matching the
+measured Desktop route. Original console OAuth, Manager-owned project discovery
+and confirmed Pro/Ultra subscription are required. Actual Provider/Manager22
+completed200/STOP/exact marker with8192 output:29 input,17 output,155 thoughts.
+Only supplied Butler prompts/context/catalog are forwarded unchanged; no Desktop
+reminders or proxy-authored identity prompt. CLI is not used for runtime inference.
+See [safe evidence](flash-high-20261012.json) and [diagnosis](../../docs/ai/antigravity-quota-diagnosis.md).
+
+To select this profile after the normal activation gates, set the existing
+`BUTLER_ANTIGRAVITY_MODEL` to `gemini-3.8-flash-high` and add its exact model entry
+to the existing `BUTLER_EXECUTION_BUDGET_POLICY_JSON.models` map:
+
+```json
+"antigravity:gemini-3.8-flash-high": {"basis":"subscription_no_overage"}
+```
+
+Preserve other model entries/limits. The Compose overlay already accepts this
+model variable; main checkout/deployment were not modified by this task. Real
+High text access is proved; full real native function/result and delegation
+activation gates remain separate. Exact quota-meter bucket attribution is unknown.
+
+The following deployment/history details describe the retained default AICode
+tiered path. For High, the private control plane returns a discovered project
+alongside short-lived access; the legacy imported project remains unused.
+
 Butler's `antigravity` provider uses Go HTTP/SSE directly against the production
 AICode subscription endpoint. The default requested model is
 `gemini-3.8-flash-tiered` (Gemini 3.8 Flash). Every model turn stays inside Butler's

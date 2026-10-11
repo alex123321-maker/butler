@@ -1,5 +1,31 @@
 # Antigravity comparison — owner-authorized continuation
 
+## Current result after High22
+
+The owner prioritized working High subscription access, so the requested native
+High profile was implemented and independently tested. Actual Provider/Manager22
+completed HTTP200/STOP/exact marker with the original Pro-account OAuth and8192.
+Only Butler prompt content was sent. The earlier Desktop/native real pair below
+remains unrun and is no longer needed to establish High text access. Preserve its
+historical scope rather than silently admitting more requests. See
+[High plan/result](antigravity-high-acceptance-20261012.md),
+[safe evidence](../../deploy/antigravity/flash-high-20261012.json) and
+[current diagnosis](antigravity-quota-diagnosis.md). Cumulative22,8 known/14 unknown
+pairs;26968 input/598 output is only the known subtotal. All windows remain sealed.
+
+No further model request is scheduled. If production native-tool activation is
+requested, prepare a **separate** exact High tool/result smoke: hypothesis is that
+a supplied Butler function alias/schema and its opaque signature survive the live
+Cloud Code continuation. At most2 new calls (23/24),8192 output each,1048576 reserved
+input each,65536 request/response bytes,45s each/120s overall,0 supplemental credits.
+Only one declared read-only fixture function; synthetic operator observation,
+no real external tool action. Stop on the first429/error/timeout/bound/protocol
+failure, unexpected function/alias, invalid schema or signature, MAX_TOKENS or
+missing final. No retries/fallback. Charge before each write in new durable PG
+admission and carry22 plus all eight generation reports and all unknown usage
+forward. Implement/test that admission first; the High22 gate cannot admit it.
+This future smoke does not close issue16's full delegation criteria.
+
 Status: **TWO-CLIENT WINDOW COMPLETED / SEALED**. Both admitted requests completed
 HTTP200/STOP with the exact marker. Attempts19/20 and their measured usage are
 retained in `deploy/antigravity/live-comparison-20261011.json`, SHA256

@@ -41,9 +41,13 @@ type pgAdmission struct {
 	pool       *pgxpool.Pool
 	root       string
 	native8192 bool
+	high       bool
 }
 
 func (p *pgAdmission) profile() (base, attempts, output int) {
+	if p.high {
+		return 21, 1, 8192
+	}
 	if p.native8192 {
 		return 20, 1, 8192
 	}
@@ -63,6 +67,9 @@ func verifyComparison(root string) error {
 }
 
 func (p *pgAdmission) init(ctx context.Context) error {
+	if p.high && verifyHighHistory(p.root) != nil {
+		return denied
+	}
 	base, attempts, output := p.profile()
 	if p.native8192 && verifyComparison(p.root) != nil {
 		return denied
@@ -84,6 +91,9 @@ func (p *pgAdmission) init(ctx context.Context) error {
 }
 
 func (p *pgAdmission) Reserve(ctx context.Context, client string) (int, error) {
+	if p.high && (client != "go" || verifyHighHistory(p.root) != nil) {
+		return 0, denied
+	}
 	base, attempts, _ := p.profile()
 	if p.native8192 && (client != "go" || verifyComparison(p.root) != nil) {
 		return 0, denied

@@ -586,10 +586,15 @@ access/refresh token, verified OAuth application ID, application credential,
 expiry and optional subscription project. Unknown/duplicate fields are rejected;
 no id token, account email or arbitrary endpoint is stored. It is never a model
 argument or Web UI/chat input. Optional official CLI initial sign-in does not grant
-runtime file access: inference transport receives only a typed short-lived token
-and expiry from providerauth.Manager, and launches no subprocess. The optional
-legacy project field remains encrypted for import compatibility but is neither
-discovered nor returned to the transport or included in AICode inference.
+runtime file access: inference transport receives typed short-lived access from
+providerauth.Manager and launches no subprocess. AICode receives token/expiry
+only. Explicit Flash High additionally requires Manager-owned read-only
+`loadCodeAssist` on fixed daily Cloud Code, confirmed paidTier Pro/Ultra and a
+bounded project discovered using that same bearer. Project is private routing
+metadata, never model input, settings, logs or durable transport events. The
+legacy imported project stays encrypted for compatibility and never selects a
+route. No free-tier onboarding, selection from allowedTiers or endpoint fallback
+is performed; missing paidTier/project fails before generation.
 
 Refresh uses the fixed Google OAuth endpoint, bounded masked responses and no HTTP
 redirects. AICode inference uses its fixed production v1 endpoint and the versioned

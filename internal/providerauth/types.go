@@ -68,11 +68,19 @@ type OpenAICodexTokenSource interface {
 // tokens and OAuth application credentials remain in the control plane.
 type AntigravityAuth struct {
 	AccessToken string
-	// Deprecated: accepted by older callers only; AICode inference ignores it.
+	// Private routing metadata from authenticated Cloud Code discovery. Never
+	// serialized into model context, settings, logs or durable transport events.
+	// AICode resolution leaves it empty.
 	ProjectID string
 	ExpiresAt time.Time
 }
 
 type AntigravityTokenSource interface {
 	ResolveAntigravity(context.Context) (AntigravityAuth, error)
+}
+
+// Cloud Code subscription access is an explicit capability of the private
+// control plane; an imported legacy project is not an authoritative route.
+type AntigravityCloudCodeTokenSource interface {
+	ResolveAntigravityCloudCode(context.Context) (AntigravityAuth, error)
 }

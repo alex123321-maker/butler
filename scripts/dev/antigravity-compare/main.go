@@ -38,6 +38,18 @@ const privateRoot = "/private"
 var bootPhase = "INVOCATION"
 
 func main() {
+	if len(os.Args) == 2 && os.Args[1] == "high-inspect" {
+		if err := inspectHigh(); err != nil {
+			safeExit("HIGH_INSPECTION_FAILED")
+		}
+		return
+	}
+	if len(os.Args) == 2 && os.Args[1] == "high" {
+		if err := runHigh(); err != nil {
+			safeExit("HIGH_BACKEND_FAILED")
+		}
+		return
+	}
 	if len(os.Args) == 2 && os.Args[1] == "-probe-network" {
 		probeNetwork()
 		return
