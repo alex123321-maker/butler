@@ -11,6 +11,10 @@ parent Broker action. Provider/recovery/final guards include current return
 privacy and policy, without turning technical preparation into semantic Accept.
 No constructor enables routing or deployment. See
 [the bounded converter contract](../../docs/architecture/generated-converters.md).
+The isolated converter lab helper exercises this composition through ordinary
+durable input workers, production Broker and a network-none actual runtime with
+the app race detector. Parent continuations are explicit owner inputs; native
+model planning and autonomous waiting-parent scheduling are separate gates.
 
 The bounded [delegation manager](internal/task/README.md) provides transactional
 child admission, dependency scheduling, durable result/report metadata and explicit

@@ -186,10 +186,13 @@ Actual isolated PostgreSQL MaxConns2 tests cover missing discovery, bad candidat
 finite shared-trial races, failed/unknown trials, stale generation, physical source
 deletion, real owner-mandate revoke, lease expiry, rollback and spent-grant replay.
 The owner UI passed TypeScript, lint and Chromium review/output-integrity checks.
-The remaining gate is actual delegated developer admission with separately reviewed
-exact child converter permissions and typed Need publication in that same original
-task scenario. No wider generated language or quality/cost improvement is
-claimed from these fixtures.
+The ordinary queued developer scenario also passed the actual production Broker,
+network-none converter and app race detector: exact three child rights, immutable
+final/report/054, parent collection/check/trial/activation and original conversion.
+It used explicit owner continuation attempts and a scripted provider with no PG
+or network access. Autonomous waiting-parent scheduling, native same-task model
+planning and final deployed acceptance remain release gates. No wider generated
+language or measured quality/cost improvement is claimed from these fixtures.
 
 ## Durable lifecycle and recovery
 

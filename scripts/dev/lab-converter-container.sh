@@ -34,6 +34,10 @@ docker run --rm --user 1000:1000 --network butler-lab_backend \
   --volume "$converter_source:/src:ro" --volume "$converter_root/.cache:/cache" --workdir /src \
   --env GOCACHE=/cache/go-build --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp \
   golang:1.27.2-alpine go test -c -o /cache/converter-goal.test ./apps/orchestrator/internal/goal
+docker run --rm --user 1000:1000 --network butler-lab_backend \
+  --volume "$converter_source:/src:ro" --volume "$converter_root/.cache:/cache" --workdir /src \
+  --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp \
+  golang:1.27.2-bookworm go test -race -c -o /cache/converter-app.test ./apps/orchestrator/internal/app
 docker volume create --label butler.agent=browser-converters "$converter_socket_volume" >/dev/null
 docker run --detach --name "$converter_container" --network none --read-only \
   --cap-drop ALL --security-opt no-new-privileges:true --pids-limit 64 --memory 128m \
@@ -80,5 +84,16 @@ docker run --rm --user 10001:10001 --network butler-lab_backend \
   --env 'BUTLER_TEST_GOALS_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_security_test?sslmode=disable' \
   golang:1.27.2-alpine /cache/converter-goal.test -test.v -test.timeout=90s \
   -test.run '^TestGeneratedConverterRealBrokerContainerE2E$'
+docker run --rm --user 10001:10001 --network butler-lab_backend \
+  --volume "$converter_source:/src:ro" --volume "$converter_root/.cache:/cache:ro" \
+  --mount "type=volume,src=$converter_socket_volume,dst=/run/butler-converter,readonly" \
+  --mount "type=bind,src=$converter_sandbox/runtime.token,dst=/run/secrets/converter-runtime,readonly" \
+  --workdir /src/apps/orchestrator/internal/app \
+  --env BUTLER_CONVERTER_DEVELOPER_E2E=1 --env BUTLER_CONVERTER_BROKER_BINARY=/cache/converter-tool-broker \
+  --env "BUTLER_CONVERTER_PROFILE_JSON=$converter_profile" \
+  --env BUTLER_CONVERTER_RUNTIME_TOKEN_FILE=/run/secrets/converter-runtime \
+  --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler_security_test?sslmode=disable' \
+  golang:1.27.2-bookworm /cache/converter-app.test -test.v -test.timeout=90s \
+  -test.run '^TestConverterDeveloperRealBrokerWorkersContainerE2E$'
 test -z "$(docker exec "$converter_container" ls -A /tmp)"
 printf 'PASS: actual pure-IR developer/checker/converter; UID10001, no capabilities/escalation/hostFS/Docker/PG/model/owner credentials; network none; bounded noexec workspace removed\n'

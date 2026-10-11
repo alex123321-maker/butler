@@ -98,10 +98,26 @@ type developerFixture struct {
 }
 
 func newDeveloperFixture(t *testing.T) *developerFixture {
+	return newDeveloperWorkerFixture(t, generatedtools.Profile{Dependency: generatedtools.Dependency{ID: "butler-converter-ir", Version: "1.0.0", SHA256: strings.Repeat("a", 64)}, Checker: generatedtools.Checker}, "", false)
+}
+
+// The ordinary-worker proof declares a separate finite fixture model quote;
+// production quotas and model/provider credentials are unchanged.
+func newDeveloperWorkerFixture(t *testing.T, profile generatedtools.Profile, manifestPath string, modelWorkflow bool) *developerFixture {
 	t.Helper()
-	f := newDelegationGuardFixture(t)
+	var f *delegationGuardFixture
+	if manifestPath == "" {
+		f = newDelegationGuardFixture(t)
+	} else {
+		f = newDelegationGuardFixtureWithManifest(t, manifestPath)
+	}
+	if modelWorkflow {
+		f.budgets.Policy.OutputTokens = 128
+		f.budgets.Policy.ModelMillis = 1000
+		f.budgets.Policy.ModelInputBytes = 128 << 10
+		f.budgets.Policy.Models["ollama:converter-worker-fixture"] = budget.ModelPrice{Basis: "local_no_billing"}
+	}
 	n := generatedtools.Need{ID: "developer-need", ConverterID: "developer-inventory", Class: generatedtools.Class, Input: generatedtools.InputSchema{MediaType: "text/csv", Delimiter: ",", Header: true, Columns: []string{"name", "count"}}, Output: generatedtools.OutputSchema{MediaType: "application/json", Fields: []generatedtools.OutputField{{Name: "label", Type: "string", SourceIndex: 0}, {Name: "quantity", Type: "integer", SourceIndex: 1}}}, Limits: generatedtools.Limits{InputBytes: 8192, OutputBytes: 32768, Rows: 128, FieldBytes: 1024, Millis: 1000}}
-	profile := generatedtools.Profile{Dependency: generatedtools.Dependency{ID: "butler-converter-ir", Version: "1.0.0", SHA256: strings.Repeat("a", 64)}, Checker: generatedtools.Checker}
 	gm := goal.New(f.pool, f.store, nil)
 	g := actionauth.GoalPolicy{Kind: "objective", Status: "active", Title: "Exact converter development", Purpose: "converter_work", ExpiresAt: time.Now().Add(24 * time.Hour)}
 	receipt, e := gm.PutGoal(owneridentity.WithActor(f.ctx, owneridentity.Actor{OwnerID: f.parent.OwnerID, Channel: "web", DeliveryID: "developer-goal"}), goal.GoalRequest{Goal: g})
@@ -116,6 +132,13 @@ func newDeveloperFixture(t *testing.T) *developerFixture {
 		scopes = append(scopes, actionauth.ResourceScope{Origin: "tool:" + c.ToolName})
 	}
 	m := actionauth.Mandate{GoalID: g.ID, GoalRevision: g.Revision, Status: "active", Purpose: g.Purpose, Tools: tools, ResourceScopes: scopes, Effects: []actionauth.Effect{actionauth.EffectRead, actionauth.EffectPrepare}, Privacy: "local_only", Converters: []actionauth.ConverterPermission{generatedtools.ExpectedPermission(n, profile, 2)}, Budget: actionauth.MandateBudget{ModelTurns: 8, Tokens: 100000, ExternalCalls: 20, Children: 4, ActiveMillis: 3600000, EgressBytes: 64 << 20, ProviderInputBytes: 64 << 20}, ExpiresAt: time.Now().Add(time.Hour), Intervention: []string{"scope_change", "effect_unknown", "budget_exhausted"}, Reporting: "exceptions"}
+	if modelWorkflow {
+		m.Budget.ModelTurns, m.Budget.Tokens = 32, 500000
+		// The ordinary ModelProvider admission is the cloud-capable contract.
+		// This fixture owner explicitly permits it; the deterministic provider
+		// itself performs no network IO. Production local_only stays enforced.
+		m.Privacy = "cloud_allowed"
+	}
 	mr, e := gm.PutMandate(owneridentity.WithActor(f.ctx, owneridentity.Actor{OwnerID: f.parent.OwnerID, Channel: "web", DeliveryID: "developer-mandate"}), goal.MandateRequest{Mandate: m})
 	if e != nil {
 		t.Fatal(e)

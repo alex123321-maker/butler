@@ -66,12 +66,16 @@ type delegationGuardFixture struct {
 }
 
 func newDelegationGuardFixture(t *testing.T) *delegationGuardFixture {
+	return newDelegationGuardFixtureWithManifest(t, filepath.Join(t.TempDir(), "deletions.log"))
+}
+
+func newDelegationGuardFixtureWithManifest(t *testing.T, path string) *delegationGuardFixture {
 	t.Helper()
 	pool := memorytest.Database(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	t.Cleanup(cancel)
 	owner := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: "guard-owner", Channel: "web", DeliveryID: "guard-fixture"})
-	manifest := catalog.NewFileManifest(filepath.Join(t.TempDir(), "deletions.log"))
+	manifest := catalog.NewFileManifest(path)
 	if err := manifest.Initialize(); err != nil {
 		t.Fatal(err)
 	}

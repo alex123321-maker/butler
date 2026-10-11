@@ -26,6 +26,10 @@ acceptance limits are in [generated converters](../../docs/architecture/generate
 The disposable lab helper `scripts/dev/lab-converter-container.sh` tests the actual
 binary in a network-none container with synthetic data and a synthetic service token,
 then an actual production Broker/isolated PG task workflow over its Unix socket.
+It also runs ordinary queued parent/developer workers with the app race detector,
+current authority/source/budget guards and immutable result/report/054 collection.
+Explicit owner continuations and a scripted provider keep that process proof
+separate from autonomous scheduling or native model quality acceptance.
 It does not start or alter the shared stack. Narrow Go checks are
 `go test ./internal/generatedtools ./apps/tool-converter/...` and `go test -race`
 for the same packages, run on the lab after an explicit snapshot sync.

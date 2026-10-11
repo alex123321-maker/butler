@@ -30,5 +30,7 @@ and accepted-role checks at provider/recovery/final publication; returned packag
 claims repeat it locally. `CheckDeveloperReady` requires immutable053/054 schemas.
 Run lab-only narrow checks for this module, apps/tool-converter, actionauth,
 skills and Broker, plus actual isolated PG goal lifecycle tests and
-scripts/dev/lab-converter-container.sh after explicit Sync. Actual delegated-child
-acceptance remains separate from the production runtime proof.
+scripts/dev/lab-converter-container.sh after explicit Sync. It includes actual
+queued developer/parent workers with production Broker/runtime and app race
+checks. Explicit owner continuations/scripted proposals establish process
+integration; autonomous native-model acceptance remains a separate release gate.

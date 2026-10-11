@@ -15,7 +15,7 @@ was changed. Every snapshot was explicitly synchronized before execution.
 | Bounded trials/restart | Actual PG concurrent independent task runs, unknown/failed slots spent, late stale responses rejected, grant replay refused | Passed; no automatic refund/replay |
 | Versioning/rollback/failure | Actual PG v1→v2→v1 generation transitions and owner revoke; bad candidate leaves prior task/catalog intact; empty migration down/up and retained-history down denial | Passed |
 | Owner result | Actual authenticated owner relay metadata, current checked-output SourceRef/SHA256, atomic unverified final record then explicit fixture owner verification; Chromium escaped/current output review | Passed; no model verdict promoted to task truth |
-| Delegated developer task | Actual PG accepted053 role, exact3 rights, ordinary parent collection and independent original trial/conversion | Component passed; actual production worker/Broker/container integration pending |
+| Delegated developer task | Actual PG accepted053 role, exact3 rights; production Broker/network-none converter and ordinary queued child worker, atomic final/report/054; parent collect/check/trial/activation/original conversion | Process/race passed with explicit owner continuations; autonomous/native workflow pending |
 
 `20261011-083442-054` passed complete `go test -p 1 -count=1 ./...` with actual
 isolated core/goals/memory/semantic/initiative/actionauth/completion PostgreSQL
@@ -99,5 +99,45 @@ plus converter and immutable-return guards; no native provider was invoked.
 See [component verification](../../deploy/delegation/integrated-component-verification.json).
 The earlier failed native experiment remains evidence of three actual attempts;
 unknown provider usage stays unknown. This proof does not establish native
-serial/parallel acceptance, production developer integration or independent
-original-document acceptance.
+serial/parallel acceptance or independent original-document acceptance. The
+production developer process was verified separately below.
+
+Snapshot `20261011-100354-257` passed actual-PG race4.199s for a damaged/restore
+projection with two owner/parent/digest matches: Claim denied before any candidate
+source grant. Collection requires exactly one return, never an arbitrary first row.
+
+Actual production worker snapshot `20261011-101546-644` exposed and then verified
+a receipt serialization defect: Broker's mandatory privacy boundary sorts decoded
+JSON object keys, while the prior typed discovery/report reconstruction used struct
+order. Canonical converter observation serialization preserves the raw journal
+digest across that boundary, including the nonempty real catalog and child's test
+report. Exact structural/provenance/currentness checks are retained. The actual-PG
+return/revoke/unknown/ambiguity race suite passed app38.299s and generatedtools1.021s.
+
+Fresh snapshot `20261011-101826-050` passed `lab-converter-container.sh`, including
+`TestConverterDeveloperRealBrokerWorkersContainerE2E` with the app race detector
+(8.80s). Production Broker and core each used MaxConns2 in the same explicitly
+selected private schema. The ordinary durable input workers executed parent
+discovery/admission, the scoped child discovery/develop/test, and an atomic
+unverified child final. Common maintenance generated its current report and054
+projection. Explicit authenticated owner continuation inputs on the same parent
+task then executed collection, an independent fixed checker, a finite trial,
+activation and a fresh-catalog original conversion. Checked JSON exactly matched
+the original private document. The retained journal has ten confirmed exact
+actions and four authoritative unverified finals; both semantic tasks remain
+active. Collection granted no report/final/session narrative to the parent.
+
+The child received exactly three tools and selected Need/contract DATA, with no
+original document or parent conversation. The actual runtime remained in its
+network-none container, UID10001, read-only root/socket client, no capabilities,
+host filesystem, Docker socket or core/PG/provider/owner credentials, and an empty
+bounded noexec workspace after execution. The existing direct production Broker
+and converter test also passed1.14s. The scripted provider has no PG or network
+API: it consumes actual tool receipts and proposes only ordinary Broker actions.
+It declares a finite fixture quote and explicit fixture-owner cloud-capable model
+permission; production local_only policy is unchanged. Native model calls were0.
+
+This gate establishes the ordinary queued developer process, not autonomous
+waiting-parent scheduling, native model planning, independently measured quality
+or cost improvement, or final deployed acceptance. Those remain explicit release
+requirements; component-only evidence cannot substitute for them.
