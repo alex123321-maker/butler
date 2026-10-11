@@ -51,6 +51,11 @@ func loadOrchestratorLayered(get envGetter, settings []Setting) (OrchestratorCon
 	if guardedErr != nil {
 		return cfg, snapshot, guardedErr
 	}
+	candidateSnapshot, candidateErr := loadSpecs(get, memoryCandidateOrchestratorSpecs(&cfg))
+	snapshot.keys = append(snapshot.keys, candidateSnapshot.keys...)
+	if candidateErr != nil {
+		return cfg, snapshot, candidateErr
+	}
 	// Owner authority is provisioned by the operator and cannot be reassigned
 	// through the unauthenticated settings surface or a database override.
 	cfg.OwnerControlToken, _ = get("BUTLER_OWNER_CONTROL_TOKEN")

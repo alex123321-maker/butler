@@ -1,5 +1,10 @@
 # Exact action authority
 
+The default-false owning `memory.propose_candidate` composition is a prepare
+control gated by a current task and private readiness. Like a guarded tab request,
+its grant pins the current input claim privately while its approved action hash
+remains immutable. No proposal accepts a fact or grants task/mandate authority.
+
 Shared typed contracts connect Orchestrator's trusted run/task/owner reader with
 Tool Broker. Models propose tool arguments; they cannot author owner identity,
 mandates, action bindings, approvals, grants or lease fences. Prepared intents

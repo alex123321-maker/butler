@@ -1,5 +1,13 @@
 # Tool Broker
 
+Optional operator-only `BUTLER_MEMORY_CANDIDATE_ENABLED` registers the canonical
+local `memory.propose_candidate` control after exact authorization/permanent
+dispatch/shared budgets. It requires PostgreSQL, private action authority and a
+fixed `BUTLER_MEMORY_CANDIDATE_CONTROL_URL` ending `/internal/memory-candidate`.
+Current owning readiness and task proof gate discovery/preparation. This route
+accepts no credential material and never writes accepted memory directly. See
+[the private control](../../internal/memory/candidatecontrol/README.md). Default false.
+
 Optional `BUTLER_GUARDED_TAB_RUNTIME_ENABLED` now composes canonical guarded-1
 status/click contracts, exact private runtime readiness, current selection/source
 checks, shared budgets and resource leases in the actual bootstrap. It requires

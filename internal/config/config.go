@@ -69,6 +69,7 @@ type OrchestratorConfig struct {
 	GuardedTabOwnerEnabled            bool
 	GuardedTabRequestEnabled          bool
 	GuardedTabRuntimeEnabled          bool
+	MemoryCandidateEnabled            bool
 	GuardedTabHost                    string
 	GuardedTabMetadataURL             string
 	GuardedTabTokenFile               string
@@ -133,6 +134,8 @@ type ToolBrokerConfig struct {
 	DelegationControlURL          string
 	GuardedTabRequestEnabled      bool
 	GuardedTabRequestControlURL   string
+	MemoryCandidateEnabled        bool
+	MemoryCandidateControlURL     string
 	GuardedTabRuntimeEnabled      bool
 	GuardedTabRuntimeTarget       string
 	GuardedTabRuntimeTokenFile    string
@@ -345,6 +348,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 
 	specs = append(specs, delegationOrchestratorSpecs(&cfg)...)
 	specs = append(specs, guardedTabOrchestratorSpecs(&cfg)...)
+	specs = append(specs, memoryCandidateOrchestratorSpecs(&cfg)...)
 	snapshot, err := loadSpecs(get, specs)
 	if conditionalErr := validateOrchestratorConditionalConfig(cfg); conditionalErr != nil {
 		if err != nil {
@@ -386,6 +390,7 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 
 	specs = append(specs, delegationBrokerSpecs(&cfg)...)
 	specs = append(specs, guardedTabBrokerSpecs(&cfg)...)
+	specs = append(specs, memoryCandidateBrokerSpecs(&cfg)...)
 	snapshot, err := loadSpecs(get, specs)
 	return cfg, snapshot, err
 }

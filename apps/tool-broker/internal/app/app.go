@@ -26,6 +26,7 @@ import (
 	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
+	"github.com/butler/butler/internal/memory/candidatecontrol"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/resourceexec"
 	"github.com/butler/butler/internal/singletabcontrol"
@@ -83,6 +84,12 @@ func New(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("converter delegation requires enabled converters, ordinary delegation and a fixed private developer endpoint")
 	}
 	router := runtimeclient.New(log)
+	if cfg.MemoryCandidateEnabled && (postgres == nil || cfg.ActionAuthorityTokenFile == "" || cfg.MemoryCandidateControlURL == "") {
+		if postgres != nil {
+			postgres.Close()
+		}
+		return nil, fmt.Errorf("memory candidates require PostgreSQL and a fixed authenticated private endpoint")
+	}
 	if (cfg.GuardedTabRequestEnabled || cfg.GuardedTabRuntimeEnabled) && (postgres == nil || cfg.ActionAuthorityTokenFile == "" || cfg.GuardedTabRequestControlURL == "") {
 		if postgres != nil {
 			postgres.Close()
@@ -290,6 +297,19 @@ func New(ctx context.Context) (*App, error) {
 				return nil, err
 			}
 			guardedResourceHandler = resourceHandler
+			server.SetCatalogExecutor(executor)
+		}
+		if cfg.MemoryCandidateEnabled {
+			client, clientErr := candidatecontrol.NewClient(cfg.MemoryCandidateControlURL, token)
+			if clientErr != nil {
+				postgres.Close()
+				return nil, clientErr
+			}
+			if err = registryStore.RegisterOwned([]*toolbrokerv1.ToolContract{candidatecontrol.Contract()}); err != nil {
+				postgres.Close()
+				return nil, err
+			}
+			executor = &broker.MemoryCandidateExecutor{Candidates: client, Next: executor}
 			server.SetCatalogExecutor(executor)
 		}
 		if cfg.GuardedTabRequestEnabled {

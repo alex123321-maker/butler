@@ -43,12 +43,20 @@ docker run --rm --runtime runc --user "$(id -u):$(id -g)" --network "$network" \
  --env "BUTLER_MEMORY_CHECK_MODE=$check_mode" \
  --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:memory-fixture@memory-postgres:5432/butler_memory_test?sslmode=disable' \
  golang:1.27.2-bookworm bash -eu -c '
+export BUTLER_GUARDED_REQUEST_BROKER_BINARY=/cache/go-tmp/memory-candidate-broker-$$.test
+export BUTLER_MEMORY_CANDIDATE_APP_BINARY=/cache/go-tmp/memory-candidate-app-$$
+trap "rm -f -- \"$BUTLER_GUARDED_REQUEST_BROKER_BINARY\" \"$BUTLER_MEMORY_CANDIDATE_APP_BINARY\"" EXIT
+go test -race -c -o "$BUTLER_GUARDED_REQUEST_BROKER_BINARY" ./apps/tool-broker/internal/broker
+go build -race -o "$BUTLER_MEMORY_CANDIDATE_APP_BINARY" ./apps/tool-broker
+go test -json -race -p 1 -count=1 -run "^TestMemoryCandidate" ./internal/memory/candidatecontrol ./internal/config ./internal/actionauth ./apps/tool-broker/internal/broker ./apps/orchestrator/internal/app
 go test -json -race -p 1 -count=1 -run "^Test(Extraction|SourceDuplicate|ConcurrentExplicit)" ./internal/memory/catalog
 go test -json -race -p 1 -count=1 -run "^TestExtractionJob" ./internal/memory/jobs
 if [[ "$BUTLER_MEMORY_CHECK_MODE" == full ]]; then
-go test -json -race -p 1 -count=1 ./internal/memory/catalog ./internal/memory/jobs
+export BUTLER_TEST_ACTIONAUTH_POSTGRES_URL="$BUTLER_TEST_MEMORY_POSTGRES_URL"
+export BUTLER_TEST_POSTGRES_URL="$BUTLER_TEST_MEMORY_POSTGRES_URL"
+go test -json -race -p 1 -count=1 ./internal/memory/catalog ./internal/memory/jobs ./internal/memory/candidatecontrol ./internal/config ./internal/actionauth ./apps/tool-broker/internal/broker ./apps/tool-broker/internal/app ./apps/orchestrator/internal/orchestrator
 fi
-go vet ./internal/memory/catalog ./internal/memory/jobs
+go vet ./internal/memory/catalog ./internal/memory/jobs ./internal/memory/candidatecontrol ./internal/config ./internal/actionauth ./apps/tool-broker/internal/broker ./apps/tool-broker/internal/app ./apps/orchestrator/internal/app
 ' > "$proof/tests.jsonl"
 sha256sum "$proof/tests.jsonl"
 printf '{"status":"memory_candidate_passed","model_calls":0}\n'

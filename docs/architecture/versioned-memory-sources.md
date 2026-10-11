@@ -101,6 +101,31 @@ Application replay prevents reappearance through Butler. Old backup media and
 already exported/delivered external copies require the owner's separate retention
 and erasure procedure; no application can retract an offline copy it does not own.
 
+## Agent candidate proposals
+
+Default-false operator composition `BUTLER_MEMORY_CANDIDATE_ENABLED` joins the
+fixed local `memory.propose_candidate` contract to the catalog candidate queue.
+Broker requires current owning readiness/task policy, exact preparation/authorization,
+permanent dispatch and shared budget reservation. Its private fixed endpoint is
+`/internal/memory-candidate`; model arguments cannot set owner/scope, confidence,
+acceptance, job/lease/input authority or retry identity.
+
+Orchestrator reconstructs the actual Session lease and the exact input claim
+pinned in that grant. It checks the tool-dispatch checkpoint, current task/goal/
+mandate/constraints and complete source graph in the caller transaction before
+and after publication waits. A source must already be pinned by the run and have
+current `memory_extract` access; the pin alone does not prove that the model read
+every ancestor. The catalog derives owner/scope from the original source, assigns
+confidence0 and deduplicates with the actual effect ID. Recognized credential
+keys/patterns deny publication; source sensitivity remains independently checked.
+
+Proposals append DATA candidates; acceptance separately requires an authenticated
+owner and exact head CAS. Source correction/deletion denies stale publication and
+removes covered text normally. Context-only/read-only child contracts receive no
+new scope, tool or extraction rights from this flag. Lost RPC acknowledgement
+does not settle an unknown Broker effect or authorize replay. This composition
+does not run a model, enable legacy cloud extraction or establish semantic quality.
+
 ## Owned auxiliary work
 
 `memory_aux_jobs` records immutable owner, purpose, original run/task and assignment,

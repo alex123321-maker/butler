@@ -1,5 +1,13 @@
 # Orchestrator
 
+Operator-only `BUTLER_MEMORY_CANDIDATE_ENABLED` defaults false and composes a
+private neutral candidate publication control after catalog/anchor/schema checks.
+Its original input claim, exact permanent dispatch, current worker/task/source
+proof and effect deduplication share the publication transaction. Model input
+cannot select owner/scope/acceptance; confidence0 remains DATA. Current owner head
+CAS decides conflicts through the existing protected memory API. See
+[the contract](../../internal/memory/candidatecontrol/README.md).
+
 Separate operator-only `BUTLER_GUARDED_TAB_RUNTIME_ENABLED` defaults false and
 requires the guarded request/recovery composition. The private owning action
 projection gates guarded status/click discovery and preparation with a current

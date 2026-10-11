@@ -17,6 +17,7 @@ import (
 	"github.com/butler/butler/internal/credentials"
 	"github.com/butler/butler/internal/delegation"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/memory/candidatecontrol"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/singletabcontrol"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -104,7 +105,14 @@ func TestDelegationBrokerHarness(t *testing.T) {
 	}
 	var executor RuntimeExecutor
 	contract := delegation.AdmissionContract()
-	if os.Getenv("BUTLER_GUARDED_TAB_REQUEST_HARNESS") == "1" {
+	if os.Getenv("BUTLER_MEMORY_CANDIDATE_HARNESS") == "1" {
+		client, err := candidatecontrol.NewClient(os.Getenv("BUTLER_DELEGATION_ADMISSION_URL"), token)
+		if err != nil {
+			t.Fatal(err)
+		}
+		executor = &MemoryCandidateExecutor{Candidates: client}
+		contract = candidatecontrol.Contract()
+	} else if os.Getenv("BUTLER_GUARDED_TAB_REQUEST_HARNESS") == "1" {
 		client, err := singletabcontrol.NewRequestClient(os.Getenv("BUTLER_DELEGATION_ADMISSION_URL"), token)
 		if err != nil {
 			t.Fatal(err)

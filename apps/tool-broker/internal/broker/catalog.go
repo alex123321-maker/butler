@@ -71,6 +71,9 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 		if contract.GetContractRevision() == "guarded-1" && (contract.GetToolName() == "single_tab.status" || contract.GetToolName() == "single_tab.click") && (a.TaskID == "" || !a.GuardedTabRuntimeReady) {
 			continue
 		}
+		if contract.GetToolName() == "memory.propose_candidate" && (a.TaskID == "" || !a.MemoryCandidateReady) {
+			continue
+		}
 		if contract.GetToolName() == "single_tab.bind.guarded" && (a.TaskID == "" || !a.GuardedTabRequestReady) {
 			continue
 		}
