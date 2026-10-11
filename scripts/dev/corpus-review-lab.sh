@@ -4,7 +4,7 @@ set -euo pipefail
 root=${1:?isolated agent root required}
 [[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ ]] || exit 2
 source_dir=$(readlink -f "$root/current")
-[[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/testdata/acceptance/ru-scenarios-v2.json" ]] || exit 2
+[[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/testdata/acceptance/ru-scenarios-v3.json" ]] || exit 2
 umask 077
 proof="$root/reports/corpus-$(date -u +%Y%m%dT%H%M%SZ)-$$"
 mkdir -p "$proof" /srv/storage/butler/.cache/go-tmp

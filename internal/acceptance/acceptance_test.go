@@ -13,7 +13,7 @@ import (
 
 func corpusFixture(t *testing.T) Corpus {
 	t.Helper()
-	f, err := os.Open(filepath.Join("..", "..", "testdata", "acceptance", "ru-scenarios-v2.json"))
+	f, err := os.Open(filepath.Join("..", "..", "testdata", "acceptance", "ru-scenarios-v3.json"))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -37,7 +37,7 @@ func run() error {
 	if *mode == "plan" {
 		return json.NewEncoder(os.Stdout).Encode(acceptance.Groups())
 	}
-	f, err := os.Open(filepath.Join(*root, "testdata", "acceptance", "ru-scenarios-v2.json"))
+	f, err := os.Open(filepath.Join(*root, "testdata", "acceptance", "ru-scenarios-v3.json"))
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func run() error {
 			return err
 		}
 		var a acceptance.GoldenApproval
-		if err = json.Unmarshal(raw, &a); err != nil {
+		if err = acceptance.DecodeStrict(raw, &a, "digest", "criteria_sha256", "rules", "reviewer", "candidate_author", "signature"); err != nil {
 			return err
 		}
 		raw, err = acceptance.ReadPrivateFile(*key, 256)
@@ -133,7 +133,7 @@ func run() error {
 				Single acceptance.ComparisonRun `json:"single"`
 				Multi  acceptance.ComparisonRun `json:"multi"`
 			}
-			if err = json.Unmarshal(raw, &paired); err != nil {
+			if err = acceptance.DecodeStrict(raw, &paired, "single", "multi"); err != nil {
 				return err
 			}
 			comparison, err := acceptance.Compare(paired.Single, paired.Multi)
@@ -149,7 +149,7 @@ func run() error {
 			Pin          acceptance.ModelPin      `json:"pin"`
 			Observations []acceptance.Observation `json:"observations"`
 		}
-		if err = json.Unmarshal(raw, &input); err != nil {
+		if err = acceptance.DecodeStrict(raw, &input, "pin", "observations"); err != nil {
 			return err
 		}
 		m, err := acceptance.Score(c, input.Pin, input.Observations, *split)

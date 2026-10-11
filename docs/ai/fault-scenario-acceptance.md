@@ -61,6 +61,18 @@ perfect scorer unit fixture are not model quality evidence.
 
 ## Recorded lab runs
 
+The separate second review rejected V2 with NO_GO. Its
+[content-free verdict](../../testdata/acceptance/reviews/ru-v2-no-go-20261011.json)
+and detailed external report remain at `/srv/storage/butler/reviews/issue33-20261011-r2`
+(review SHA256 `a199edf4b46f7df793a93f21cab0bed3bce43af902dbff83890afe57fdb9a6dd`).
+V2 fixed attack-family leakage but left additional negative-search and
+draft-only ambiguities, a negative extraction header containing RetryAfter,
+and absent metrics decoded as zero. Active V3 changes all absent questions to
+undocumented concrete properties, excludes target values from negative injection
+documents, clarifies draft-only requests, and strictly requires every measured
+counter. Unknown usage cannot become zero. V3 independent approval and actual
+model measurements remain pending; earlier reports/verdicts are immutable.
+
 Independent reviewer `codex-independent-corpus-critic-20261011-r1` rejected V1
 with NO_GO. The [original verdict](../../testdata/acceptance/reviews/ru-v1-no-go-20261011.json)
 is retained with unchanged V1 corpus bytes. The detailed independent report is

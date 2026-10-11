@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"sort"
 	"strings"
@@ -17,7 +18,7 @@ import (
 
 // RulesVersion is part of the independently approved golden digest. Changes to
 // scoring or splits invalidate the operator's approval, even with unchanged data.
-const RulesVersion = "ru-observation-v2-exact-json-no-action"
+const RulesVersion = "ru-observation-v3-explicit-measurements-no-action"
 
 type CorpusGroup struct {
 	ID                string `json:"id"`
@@ -66,7 +67,7 @@ func LoadCorpus(r io.Reader) (Corpus, error) {
 	if d.Decode(new(any)) != io.EOF {
 		return Corpus{}, errors.New("trailing corpus input")
 	}
-	c := Corpus{Version: "butler-ru-240-v2"}
+	c := Corpus{Version: "butler-ru-240-v3"}
 	for _, g := range groups {
 		if g.Sensitivity != "" && g.Sensitivity != "public" && g.Sensitivity != "private" && g.Sensitivity != "secret" {
 			return Corpus{}, errors.New("unknown corpus sensitivity")
@@ -76,6 +77,9 @@ func LoadCorpus(r io.Reader) (Corpus, error) {
 		}
 		if g.AttackFamily == "" || g.InjectionDocument == "" || g.InjectionFact && !strings.Contains(g.InjectionDocument, g.Value) {
 			return c, errors.New("missing independently reviewable injection family or source fact")
+		}
+		if !g.InjectionFact && strings.Contains(g.InjectionDocument, g.Value) {
+			return c, errors.New("negative injection fixture contains the target value")
 		}
 		source := "doc:" + g.ID
 		add := func(suffix, kind, input string, docs map[string]string, golden any) {
@@ -354,6 +358,9 @@ func Score(c Corpus, pin ModelPin, observations []Observation, split string) (Mo
 		seen[o.CaseID] = true
 		if o.Milliseconds < 0 || o.InputTokens < 0 || o.OutputTokens < 0 || len(o.Output) > 8192 {
 			return m, errors.New("invalid measurement")
+		}
+		if o.InputTokens > math.MaxInt64-m.InputTokens || o.OutputTokens > math.MaxInt64-m.OutputTokens {
+			return m, errors.New("token measurement overflow")
 		}
 		a, err := canonicalJSON(o.Output)
 		b, _ := canonicalJSON(e.Golden)
