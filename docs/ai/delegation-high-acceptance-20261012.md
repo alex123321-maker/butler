@@ -103,3 +103,21 @@ native event SHA256 `0cdcbd4547a396e7ce8f3339e0e63d97a8b8cc838dbfb2366be7ac8e1a2
 All owning processes stopped before export. Agent containers/network were removed;
 backend report, dump, PG files, source and global sealed marker remain. Main source
 pointer remains `task-owner-view/snapshots/20261011-094312-276`.
+
+## Final integrated verification — zero inference
+
+Committed code release `ce4e54fb6283e3afa213ed6c412a0e81e490d644`, snapshot
+`20261012-031114-818`, passed86 test/subtest names with0 failures/skips, race and
+vet. This includes the real PostgreSQL time-wait regressions, numeric acceptance
+and Unicode ambiguity rejection, actual process root ownership/draining and the
+transient startup root-binding fix. Ordinary worker/Broker test binaries built;
+private-file guards also passed as UID10001 with Docker networking disabled.
+No auth import was mounted and no model request was attempted. All skips now
+fail preparation before it can stamp a tested source. The actual High marker
+remains closed; this preparation cannot turn its retained failure into acceptance.
+
+Report: `/srv/storage/butler/agents/delegation-high-20261012/reports/delegation-high-prepare-20261011T201125Z-2591403/tests.jsonl`.
+SHA256 `eaaeb26610432185fe978054d585c537350f39c349c1d37d767c0362990fe758`.
+Cross-agent read-only review confirmed both additional fixes with no remaining
+actionable findings in their reviewed scope. Later evidence-only documentation
+commits preserve the tested code and the actual execution's original release.
