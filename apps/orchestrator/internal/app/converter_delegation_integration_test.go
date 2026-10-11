@@ -141,7 +141,7 @@ func newDeveloperFixture(t *testing.T) *developerFixture {
 	if e != nil {
 		t.Fatal(e)
 	}
-	reader := &actionContextReader{runs: run.NewService(run.NewPostgresRepository(f.pool), nil), sessions: session.NewPostgresRepository(f.pool), leases: f.leases, tasks: f.store, pool: f.pool, converterLifecycleReady: true}
+	reader := &actionContextReader{runs: run.NewService(run.NewPostgresRepository(f.pool), nil), sessions: session.NewPostgresRepository(f.pool), leases: f.leases, tasks: f.store, pool: f.pool, converterLifecycleReady: true, delegationReady: true, converterDelegationReady: true}
 	env := developerEnvironment{reader}
 	converters := generatedtools.NewStore(f.pool, f.parent.OwnerID, profile, f.sources, env, developerRuntime{profile})
 	journal := actionauth.NewPostgresStore(f.pool)

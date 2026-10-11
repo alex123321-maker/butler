@@ -146,6 +146,15 @@ advertises composed readiness for a current task. Operator URL/settings do not
 replace current dispatch, approval, source, owner and budget checks.
 See [actual admission proof](../../docs/ai/delegation-admission-acceptance.md).
 
+The distinct `BUTLER_CONVERTER_DELEGATION_ENABLED` opt-in also requires ordinary
+delegation and enabled converters. Its operator-only
+`BUTLER_CONVERTER_DELEGATION_CONTROL_URL` names exactly
+`/internal/converter-delegation`. Bootstrap verifies immutable053/054 readiness,
+registers only the fixed developer contract and composes its authenticated
+control executor around the existing routes. Catalog and preparation require a
+current task and the core's separate developer and converter lifecycle readiness;
+these signals do not grant permissions or allow recursive child admission.
+
 Optional controlled-browser resource admission now has explicit startup hooks:
 `SetResourceAdmission`, the same-TX actionauth `SetDispatchClaimGuard` and
 `NewResourceExecutor` around the actual private runtime router. Exact contract,

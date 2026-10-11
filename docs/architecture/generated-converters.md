@@ -74,6 +74,26 @@ return guard on their existing transaction. `CheckDeveloperReady` verifies both
 immutable053/054 schemas; this readiness signal grants no action authority.
 Enablement requires explicit operator composition, not merely a new constructor.
 
+Production bootstrap supplies that composition only when both core and Broker
+operators set `BUTLER_CONVERTER_DELEGATION_ENABLED=true` (default false).
+Ordinary delegation must also be enabled; core requires the guarded converter
+control endpoint and the same exact `BUTLER_CONVERTER_PROFILE_JSON` as Broker.
+Broker requires enabled converters and the fixed operator-only
+`BUTLER_CONVERTER_DELEGATION_CONTROL_URL` ending in
+`/internal/converter-delegation`. The existing061 endpoint remains
+`/internal/delegation`. Both sides verify immutable053/054 readiness before
+advertising the developer contract. Core composes the common lifecycle manager
+for selected context and collection through ordinary input workers, and all
+current developer/return guards before setting `converter_delegation_ready`.
+Catalog discovery and preparation deny absent readiness, task or ordinary
+converter/delegation composition. Readiness never creates action authority.
+
+Removing this composition while accepted developer children remain makes their
+lifecycle fail closed; it is not an owner stop operation and does not undo
+dispatched effects. Keep the composition available while the owner stops or
+resolves these tasks, before disabling it. Runtime process proof, native model
+planning and independent original-document acceptance remain separate gates.
+
 ## Independent need and code
 
 The trusted need fixes the converter ID, class, input dialect/header/columns,

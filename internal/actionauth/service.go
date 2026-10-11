@@ -96,6 +96,9 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	if call.GetToolName() == delegation.AdmissionTool && !c.DelegationReady {
 		return b, false, delegation.ErrDenied
 	}
+	if call.GetToolName() == "task.delegate_converter" && (c.TaskID == "" || !c.DelegationReady || !c.ConverterDelegationReady || !c.ConverterLifecycleReady) {
+		return b, false, delegation.ErrDenied
+	}
 	if !delegationAllows(c.Delegation, b) {
 		return b, false, delegation.ErrDenied
 	}

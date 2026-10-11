@@ -66,3 +66,9 @@ delegation does not enable this distinct developer role. Broker's operator-only
 `/internal/converter-delegation`, with no URL credentials, query or fragment.
 These settings supply startup composition only; current source/task/owner,
 accepted role, exact dispatch and finite budgets still supply authority.
+Core additionally requires ordinary delegation, the guarded converter control
+endpoint, exact runtime profile and immutable053/054 readiness; Broker requires
+enabled converters and ordinary delegation. The core's private projection sets
+`converter_delegation_ready` only after both role lifecycle and all current
+converter guards are composed. Disabling composition does not revoke or undo
+already dispatched effects; see the generated converter operational contract.

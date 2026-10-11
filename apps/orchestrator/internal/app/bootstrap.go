@@ -228,11 +228,45 @@ func New(ctx context.Context) (*App, error) {
 			return nil, fmt.Errorf("delegation requires initialized immutable migrations057/061")
 		}
 	}
+	var converterDeveloper *ConverterDelegation
+	var childLifecycle *task.DelegationManager
+	if childAdmission != nil {
+		childLifecycle = childAdmission.Manager
+	}
+	if cfg.ConverterDelegationEnabled {
+		if childAdmission == nil || cfg.ConverterControlURL == "" {
+			redis.Close()
+			postgres.Close()
+			return nil, fmt.Errorf("converter delegation requires ordinary delegation and the guarded converter control endpoint")
+		}
+		profile, profileErr := generatedtools.DecodeProfile([]byte(cfg.ConverterProfileJSON))
+		if profileErr != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, profileErr
+		}
+		if err = generatedtools.CheckDeveloperReady(ctx, postgres.Pool()); err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, fmt.Errorf("converter delegation requires initialized immutable migrations053/054")
+		}
+		limits := task.DefaultDelegationLimits()
+		limits.MaxParallel = cfg.DelegationMaxParallel
+		converterDeveloper, err = NewConverterDelegation(postgres.Pool(), taskStore, sessionRepo, inputStore, sourceCatalog, limits, profile)
+		if err == nil {
+			childLifecycle, err = NewDelegationLifecycleManager(taskStore, sessionRepo, inputStore, sourceCatalog, limits, childAdmission, converterDeveloper)
+		}
+		if err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, err
+		}
+	}
 	childContexts := delegatedContextReader{sources: sourceCatalog}
 	var childMaintenance *delegationMaintenance
-	if childAdmission != nil {
-		childContexts.manager = childAdmission.Manager
-		childMaintenance = &delegationMaintenance{pool: postgres.Pool(), manager: childAdmission.Manager}
+	if childLifecycle != nil {
+		childContexts.manager = childLifecycle
+		childMaintenance = &delegationMaintenance{pool: postgres.Pool(), manager: childLifecycle}
 	}
 	ownedSemantic, closeOwnedSemantic := configureOwnedSemantic(log, sourceCatalog, budgetController)
 	semanticReady := false
@@ -294,6 +328,12 @@ func New(ctx context.Context) (*App, error) {
 		previousGuard := finalResults.DataGuard
 		finalResults.DataGuard = func(ctx context.Context, tx pgx.Tx, run string) error {
 			if e := previousGuard(ctx, tx, run); e != nil {
+				return e
+			}
+			if e := generatedtools.CheckDeveloperLifecycleTx(ctx, tx, sourceCatalog, run); e != nil {
+				return e
+			}
+			if e := generatedtools.CheckDeveloperReturnLifecycleTx(ctx, tx, sourceCatalog, run); e != nil {
 				return e
 			}
 			return generatedtools.CheckPinnedLifecycleTx(ctx, tx, run)
@@ -418,6 +458,7 @@ func New(ctx context.Context) (*App, error) {
 	var actionAuthorityHandler http.Handler
 	var skillEvidenceHandler http.Handler
 	var delegationHandler http.Handler
+	var converterDelegationHandler http.Handler
 	if cfg.ActionAuthorityTokenFile != "" {
 		token, readErr := actionauth.ReadServiceToken(cfg.ActionAuthorityTokenFile)
 		if readErr != nil {
@@ -433,57 +474,66 @@ func New(ctx context.Context) (*App, error) {
 				return nil, err
 			}
 		}
-		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil})
+		if converterDeveloper != nil {
+			converterDelegationHandler, err = delegation.NewAdmissionHandler(token, converterDeveloper)
+			if err != nil {
+				redis.Close()
+				postgres.Close()
+				return nil, err
+			}
+		}
+		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, converterDelegationReady: converterDeveloper != nil && converterClient != nil})
 		skillEvidenceHandler = skills.NewEvidenceHandler(token, &skillEvidence{tasks: taskStore, journal: actionauth.NewPostgresStore(postgres.Pool()), transcript: transcriptStore, budgets: budget.NewLedger(postgres.Pool()), results: finalResults, sources: sourceCatalog})
 	} else {
 		log.Warn("private action authority unavailable; Tool Broker will deny execution")
 	}
 	apiServer := apiservice.NewServer(inputWorker, logger.WithComponent(log, "api"))
 	httpServer := newHTTPServer(httpServerDeps{
-		delegationHandler:      delegationHandler,
-		memoryIndexing:         ownedSemantic,
-		sourceCatalog:          sourceCatalog,
-		cfg:                    cfg,
-		finalResults:           finalResults,
-		actionAuthorityHandler: actionAuthorityHandler,
-		skillEvidenceHandler:   skillEvidenceHandler,
-		skillClient:            skillClient,
-		converterClient:        converterClient,
-		log:                    log,
-		settingsStore:          settingsStore,
-		hotConfig:              hotConfig,
-		postgres:               postgres,
-		metrics:                m,
-		health:                 h,
-		toolBrokerClient:       toolBrokerClient,
-		authManager:            authManager,
-		providerResult:         providerResult,
-		executor:               executor,
-		inputWorker:            inputWorker,
-		inputStore:             inputStore,
-		ownerAuth:              ownerAuth,
-		sessionRepo:            sessionRepo,
-		runRepo:                runRepo,
-		taskStore:              taskStore,
-		taskControls:           taskControls,
-		ownerGoals:             ownerGoals,
-		initiativeStore:        initiativeStore,
-		transcriptStore:        transcriptStore,
-		transitionRepo:         transitionRepo,
-		eventHub:               eventHub,
-		approvalRepo:           approvalRepo,
-		approvalService:        approvalService,
-		singleTabService:       singleTabService,
-		artifactsRepo:          artifactsRepo,
-		artifactsService:       artifactsService,
-		activityRepo:           activityRepo,
-		deliveryEventsRepo:     deliveryEventsRepo,
-		pipelineQueue:          pipelineQueue,
-		pipelineWorker:         pipelineWorker,
-		embeddingProvider:      embeddingProvider,
-		profileStore:           profileStore,
-		episodicStore:          episodicStore,
-		chunkStore:             chunkStore,
+		delegationHandler:          delegationHandler,
+		converterDelegationHandler: converterDelegationHandler,
+		memoryIndexing:             ownedSemantic,
+		sourceCatalog:              sourceCatalog,
+		cfg:                        cfg,
+		finalResults:               finalResults,
+		actionAuthorityHandler:     actionAuthorityHandler,
+		skillEvidenceHandler:       skillEvidenceHandler,
+		skillClient:                skillClient,
+		converterClient:            converterClient,
+		log:                        log,
+		settingsStore:              settingsStore,
+		hotConfig:                  hotConfig,
+		postgres:                   postgres,
+		metrics:                    m,
+		health:                     h,
+		toolBrokerClient:           toolBrokerClient,
+		authManager:                authManager,
+		providerResult:             providerResult,
+		executor:                   executor,
+		inputWorker:                inputWorker,
+		inputStore:                 inputStore,
+		ownerAuth:                  ownerAuth,
+		sessionRepo:                sessionRepo,
+		runRepo:                    runRepo,
+		taskStore:                  taskStore,
+		taskControls:               taskControls,
+		ownerGoals:                 ownerGoals,
+		initiativeStore:            initiativeStore,
+		transcriptStore:            transcriptStore,
+		transitionRepo:             transitionRepo,
+		eventHub:                   eventHub,
+		approvalRepo:               approvalRepo,
+		approvalService:            approvalService,
+		singleTabService:           singleTabService,
+		artifactsRepo:              artifactsRepo,
+		artifactsService:           artifactsService,
+		activityRepo:               activityRepo,
+		deliveryEventsRepo:         deliveryEventsRepo,
+		pipelineQueue:              pipelineQueue,
+		pipelineWorker:             pipelineWorker,
+		embeddingProvider:          embeddingProvider,
+		profileStore:               profileStore,
+		episodicStore:              episodicStore,
+		chunkStore:                 chunkStore,
 	})
 
 	grpcListener, err := net.Listen("tcp", cfg.Shared.GRPCAddr)

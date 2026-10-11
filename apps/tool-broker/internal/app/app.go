@@ -73,6 +73,12 @@ func New(ctx context.Context) (*App, error) {
 		}
 		return nil, fmt.Errorf("delegation requires PostgreSQL and a fixed authenticated private control endpoint")
 	}
+	if cfg.ConverterDelegationEnabled && (!cfg.ConvertersEnabled || !cfg.DelegationEnabled || cfg.ConverterDelegationControlURL == "") {
+		if postgres != nil {
+			postgres.Close()
+		}
+		return nil, fmt.Errorf("converter delegation requires enabled converters, ordinary delegation and a fixed private developer endpoint")
+	}
 	router := runtimeclient.New(log)
 	server := broker.NewServer(registryStore, router, credentialResolver, log)
 	var mandateHandler http.Handler
@@ -218,6 +224,22 @@ func New(ctx context.Context) (*App, error) {
 				return nil, err
 			}
 			executor = &broker.DelegationExecutor{Admissions: client, Next: executor}
+		}
+		if cfg.ConverterDelegationEnabled {
+			if err = generatedtools.CheckDeveloperReady(ctx, postgres.Pool()); err != nil {
+				postgres.Close()
+				return nil, fmt.Errorf("converter delegation requires initialized immutable migrations053/054")
+			}
+			client, clientErr := delegation.NewAdmissionClient(cfg.ConverterDelegationControlURL, token)
+			if clientErr != nil {
+				postgres.Close()
+				return nil, clientErr
+			}
+			if err = registryStore.RegisterOwned([]*toolbrokerv1.ToolContract{generatedtools.DeveloperAdmissionContract()}); err != nil {
+				postgres.Close()
+				return nil, err
+			}
+			executor = &broker.ConverterDelegationExecutor{Admissions: client, Next: executor}
 		}
 		server.SetCatalogExecutor(executor)
 		authorizer.SetCapabilities(broker.CapabilityGuards{Extensions: extensionStore, Converters: converterStore})

@@ -67,6 +67,9 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 		if contract.GetToolName() == delegation.AdmissionTool && (a.TaskID == "" || !a.DelegationReady) {
 			continue
 		}
+		if contract.GetToolName() == generatedtools.DeveloperAdmissionTool && (a.TaskID == "" || !a.DelegationReady || !a.ConverterDelegationReady || !a.ConverterLifecycleReady) {
+			continue
+		}
 		if (strings.HasPrefix(contract.GetToolName(), "skills.") || strings.HasPrefix(contract.GetToolName(), "converters.")) && a.TaskID == "" {
 			continue
 		}

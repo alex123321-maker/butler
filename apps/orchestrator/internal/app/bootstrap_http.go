@@ -54,50 +54,51 @@ import (
 )
 
 type httpServerDeps struct {
-	initiativeStore        *initiative.Store
-	memoryIndexing         *indexing.Runtime
-	sourceCatalog          *catalog.Store
-	ownerGoals             *goal.Manager
-	finalResults           *completion.Coordinator
-	actionAuthorityHandler http.Handler
-	delegationHandler      http.Handler
-	skillEvidenceHandler   http.Handler
-	skillClient            *skills.Client
-	converterClient        *generatedtools.Client
-	cfg                    config.OrchestratorConfig
-	log                    *slog.Logger
-	settingsStore          *config.PostgresSettingsStore
-	hotConfig              *config.HotConfig
-	postgres               *postgresstore.Store
-	metrics                *metrics.Registry
-	health                 *health.Service
-	toolBrokerClient       *tools.BrokerClient
-	authManager            *providerauth.Manager
-	providerResult         providerfactory.Result
-	executor               *flow.Service
-	sessionRepo            *session.PostgresRepository
-	runRepo                *runservice.PostgresRepository
-	taskStore              *task.Store
-	taskControls           *task.Controller
-	transcriptStore        *transcript.Store
-	transitionRepo         *runservice.PostgresTransitionRepository
-	eventHub               *observability.Hub
-	approvalRepo           *approvals.PostgresRepository
-	approvalService        *approvals.Service
-	singleTabService       *singletab.Service
-	artifactsRepo          *artifacts.PostgresRepository
-	artifactsService       *artifacts.Service
-	activityRepo           *activity.PostgresRepository
-	deliveryEventsRepo     *deliveryevents.PostgresRepository
-	pipelineQueue          *pipeline.Queue
-	pipelineWorker         *pipeline.Worker
-	embeddingProvider      pipeline.EmbeddingProvider
-	profileStore           *profile.Store
-	episodicStore          *episodic.Store
-	chunkStore             *chunks.Store
-	inputWorker            *durableinput.Service
-	inputStore             *durableinput.Store
-	ownerAuth              *apiservice.OwnerControlAuth
+	initiativeStore            *initiative.Store
+	memoryIndexing             *indexing.Runtime
+	sourceCatalog              *catalog.Store
+	ownerGoals                 *goal.Manager
+	finalResults               *completion.Coordinator
+	actionAuthorityHandler     http.Handler
+	delegationHandler          http.Handler
+	converterDelegationHandler http.Handler
+	skillEvidenceHandler       http.Handler
+	skillClient                *skills.Client
+	converterClient            *generatedtools.Client
+	cfg                        config.OrchestratorConfig
+	log                        *slog.Logger
+	settingsStore              *config.PostgresSettingsStore
+	hotConfig                  *config.HotConfig
+	postgres                   *postgresstore.Store
+	metrics                    *metrics.Registry
+	health                     *health.Service
+	toolBrokerClient           *tools.BrokerClient
+	authManager                *providerauth.Manager
+	providerResult             providerfactory.Result
+	executor                   *flow.Service
+	sessionRepo                *session.PostgresRepository
+	runRepo                    *runservice.PostgresRepository
+	taskStore                  *task.Store
+	taskControls               *task.Controller
+	transcriptStore            *transcript.Store
+	transitionRepo             *runservice.PostgresTransitionRepository
+	eventHub                   *observability.Hub
+	approvalRepo               *approvals.PostgresRepository
+	approvalService            *approvals.Service
+	singleTabService           *singletab.Service
+	artifactsRepo              *artifacts.PostgresRepository
+	artifactsService           *artifacts.Service
+	activityRepo               *activity.PostgresRepository
+	deliveryEventsRepo         *deliveryevents.PostgresRepository
+	pipelineQueue              *pipeline.Queue
+	pipelineWorker             *pipeline.Worker
+	embeddingProvider          pipeline.EmbeddingProvider
+	profileStore               *profile.Store
+	episodicStore              *episodic.Store
+	chunkStore                 *chunks.Store
+	inputWorker                *durableinput.Service
+	inputStore                 *durableinput.Store
+	ownerAuth                  *apiservice.OwnerControlAuth
 }
 
 func newHTTPServer(deps httpServerDeps) *http.Server {
@@ -203,6 +204,9 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	}
 	if deps.delegationHandler != nil {
 		mux.Handle("/internal/delegation", deps.delegationHandler)
+	}
+	if deps.converterDelegationHandler != nil {
+		mux.Handle("/internal/converter-delegation", deps.converterDelegationHandler)
 	}
 	mux.Handle("/health", deps.health.Handler())
 	mux.Handle("/metrics", deps.metrics.Handler())

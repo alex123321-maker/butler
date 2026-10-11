@@ -442,3 +442,13 @@ handler and lifecycle adapters only under `BUTLER_DELEGATION_ENABLED`; current
 action contexts advertise readiness only after this composition succeeds.
 Actual separate-process Broker/HTTP/PG evidence and pending model/deployment
 criteria are recorded in `docs/ai/delegation-admission-acceptance.md`.
+
+`BUTLER_CONVERTER_DELEGATION_ENABLED`, default false, adds a separate fixed
+`/internal/converter-delegation` private handler. It requires ordinary delegation,
+the guarded converter control endpoint, the exact operator runtime profile and
+immutable053/054 readiness. Both accepted roles use the same current lifecycle
+manager and ordinary input workers; the context reader advertises the distinct
+developer readiness only after this composition. Provider/recovery and atomic
+completion repeat source, developer and technical-return guards before installed
+converter guards. A child report or local acknowledgement never completes a task.
+See [generated converters](../../docs/architecture/generated-converters.md).
