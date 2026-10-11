@@ -24,6 +24,10 @@ Service creates the ordinary task and Input Service creates its session-ordered
 receipt inside that transaction. Actual inference/effects/children retain normal
 durable budget admission, exact-action grants, result verification and owner
 stop/pause behavior. A final current-time authority check follows budget waits.
+That same fresh PostgreSQL time rechecks source active hours and the 24-hour
+observation cutoff before admission. If the UTC day changes while waiting, the
+candidate is deferred with `admission_day_changed` for a fresh admission pass;
+the previous day's attention counter and model preflight cannot admit it.
 
 Only a verified Task Service completion with a completion result can complete
 the initiative. A provider final answer or completed run is insufficient.

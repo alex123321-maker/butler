@@ -25,6 +25,11 @@ owner UTC day bound interruption. Empty checks and proposals have no delivery
 outbox message. The owner pulls a bounded audit and digest delivery states at
 `/api/v3/initiatives`.
 
+After shared budget waits, promotion rechecks source active hours and observation
+freshness against the current PostgreSQL clock. A UTC-day rollover defers with
+`admission_day_changed` so the next pass checks the new day's model capacity and
+attention allowance. These deferrals create no task, receipt or model charge.
+
 Sources and schedules are configured at `/api/v3/initiatives/sources` and
 `/api/v3/initiatives/schedules`. The initial observation adapter at
 `/api/v3/initiatives/observations` requires the owner bearer and unique
@@ -40,8 +45,8 @@ Distinct failures count once, initiative origin is suppressed, and a newer
 verified project result clears the condition. Raw run errors are never selected.
 External source adapters
 must use Broker-mediated, fixed-target observation rather than arbitrary URLs.
-That installed adapter/project-fix execution acceptance is still outstanding:
-issue #15 remains active until the prepared correction scenario is verified.
+The real Broker prepared-correction fixture has passed. Live generative
+execution and actual channel delivery remain outstanding for issue #15.
 
 `digest_channel` is optional and must match the stored session channel. A separate
 durable outbox coalesces only admitted/verified-result changes into count-only
@@ -60,8 +65,9 @@ the response's claimed origin is ignored. Confirmed historical Broker dispatch
 and intent/argument hashes are required. It performs no external request itself.
 Configure it in `/initiatives` using a reviewed connector operation; templates
 and schedules remain owner administration, outside the model tool catalog.
-The mixed staged integration still requires source-lifecycle bootstrap hooks and
-the full repeated-check-to-verified-prepared-correction E2E before rollout.
+Bootstrap wires the source-lifecycle guards. The repeated-check-to-verified-
+prepared-correction E2E uses an explicit fixture driver and owner verification;
+live model planning remains a separate rollout gate.
 
 Daily schedules skip nonexistent local minutes, choose the first repeated minute
 and deduplicate on calendar date. Interval schedules retain their phase. Downtime
