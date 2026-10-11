@@ -26,6 +26,12 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/transport/ollama/|deploy/local-generative/|scripts/dev/local-generative-lab[.]sh$)" {
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: go test -race ./internal/transport/ollama and go vet ./internal/transport/ollama in the isolated read-only source snapshot; live observation is separately opt-in and bounded")
+      continue
+    }
     "^(apps/orchestrator/internal/app/delegation_admission.*[.]go$|apps/tool-broker/internal/broker/delegation.*[.]go$|migrations/061_delegation_admission[.]|deploy/docker-compose[.]delegation[.]yml$|scripts/dev/delegation-admission-lab[.]sh$)" {
       [void]$specs.Add("docs/architecture/delegation-contract.md")
       [void]$specs.Add("docs/architecture/action-authorization-contract.md")

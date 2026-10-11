@@ -1,0 +1,96 @@
+{
+  "version": "shared-local-observation-v1",
+  "model": "qwen3:0.6b",
+  "digest": "7df6b6e09427a769808717c0a93cadc4ae99ed4eb8bf5ca557c90846becea435",
+  "attempts": [
+    {
+      "run_id": "single",
+      "mode": "single-context",
+      "wall_millis": 3365,
+      "usage": {
+        "InputTokens": 132,
+        "OutputTokens": 58,
+        "TotalTokens": 190
+      },
+      "correct": false,
+      "error_code": "",
+      "output": {
+        "id": "1",
+        "source": {
+          "source_id": "source_A",
+          "value": 12
+        },
+        "source": {
+          "source_id": "source_B",
+          "value": 17
+        }
+      }
+    },
+    {
+      "run_id": "width-one-source_A",
+      "mode": "width-one",
+      "wall_millis": 776,
+      "usage": {
+        "InputTokens": 119,
+        "OutputTokens": 23,
+        "TotalTokens": 142
+      },
+      "correct": false,
+      "error_code": "",
+      "output": {
+        "id": "fixture:width-one-source_A",
+        "value": 12
+      }
+    },
+    {
+      "run_id": "width-one-source_B",
+      "mode": "width-one",
+      "wall_millis": 736,
+      "usage": {
+        "InputTokens": 119,
+        "OutputTokens": 23,
+        "TotalTokens": 142
+      },
+      "correct": false,
+      "error_code": "",
+      "output": {
+        "id": "fixture:width-one-source_B",
+        "value": 17
+      }
+    },
+    {
+      "run_id": "width-two-source_A",
+      "mode": "width-two",
+      "wall_millis": 771,
+      "usage": {
+        "InputTokens": 119,
+        "OutputTokens": 23,
+        "TotalTokens": 142
+      },
+      "correct": false,
+      "error_code": "",
+      "output": {
+        "id": "fixture:width-two-source_A",
+        "value": 12
+      }
+    },
+    {
+      "run_id": "width-two-source_B",
+      "mode": "width-two",
+      "wall_millis": 1513,
+      "usage": {
+        "InputTokens": 119,
+        "OutputTokens": 23,
+        "TotalTokens": 142
+      },
+      "correct": false,
+      "error_code": "",
+      "output": {
+        "id": "fixture:width-two-source_B",
+        "value": 17
+      }
+    }
+  ],
+  "shared_service": true,
+  "task_completion": false
+}
