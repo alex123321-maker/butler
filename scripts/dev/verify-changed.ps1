@@ -34,11 +34,14 @@ foreach ($file in $files) {
       [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/durable-tasks/current/scripts/dev/delegation-admission-lab.sh /srv/storage/butler/agents/durable-tasks' after isolated source Sync (actual private Broker, disposable PostgreSQL, pool2 and race)")
       continue
     }
-    "^(internal/resources/|migrations/058_execution_resource_leases[.])" {
+    "^(internal/resources/|internal/resourceexec/|migrations/(058_execution_resource_leases|062_resource_dispatches)[.]|scripts/dev/resource-runtime-lab[.]sh$|apps/tool-broker/internal/broker/resources[.]go$|apps/tool-broker/internal/broker/resource_integration_test[.]go$|internal/actionauth/resource_claim[.]go$|internal/budget/tool_deadline[.]go$)" {
       [void]$specs.Add("docs/architecture/resource-lease-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
       [void]$specs.Add("docs/architecture/credential-management.md")
       [void]$tests.Add("ssh laba: targeted Go race tests ./internal/resources ./internal/workspace with isolated *_test PostgreSQL; Sync the source snapshot first")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/resource-runtime-bridge/current/scripts/dev/resource-runtime-lab.sh /srv/storage/butler/agents/resource-runtime-bridge' after isolated Sync (actual PG/pool2, Broker/private runtime and Chromium)")
       continue
     }
     "^(internal/delegation/|migrations/057_task_delegations[.]|apps/orchestrator/internal/(app|orchestrator)/delegation.*[.]go$|apps/orchestrator/internal/task/delegation.*[.]go$|apps/orchestrator/internal/input/bounded_admission[.]go$|apps/orchestrator/internal/session/admission[.]go$|scripts/dev/delegation-lab[.]sh$)" {

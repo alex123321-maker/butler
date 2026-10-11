@@ -35,3 +35,9 @@ lock waiting. Broker/browser/workspace production composition remains pending;
 this library does not enable parallel effects or complete issue17 on its own.
 
 See [resource contract](../../docs/architecture/resource-lease-contract.md).
+
+The additive [controlled-browser adapter](../resourceexec/README.md) now joins
+real Broker grants/budgets and guarded gRPC runtime admission on isolated PG and
+Chromium. It conservatively serializes controlled browser calls and keeps lost
+outcomes quarantined. Production composition, user's `single_tab` fencing,
+workspace/shared-worker wiring and complete issue17 acceptance remain pending.

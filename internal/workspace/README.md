@@ -145,3 +145,8 @@ This evidence covers the isolated storage contract, not complete issue #17.
 The additional 2026-10-11 actual resource-adapter proof and its honest pending
 product boundaries are recorded in the
 [adapter acceptance audit](../../docs/ai/workspace-resource-acceptance.md).
+
+The separate [controlled-browser bridge](../resourceexec/README.md) has actual
+Broker/runtime resource tests; it does not supply this workspace's production
+dispatch/evidence callbacks or change workspace authority. Workspace and
+shared-worker production composition remain separate issue17 acceptance gates.

@@ -137,3 +137,14 @@ control executor. Catalog and preparation deny use until the owning core
 advertises composed readiness for a current task. Operator URL/settings do not
 replace current dispatch, approval, source, owner and budget checks.
 See [actual admission proof](../../docs/ai/delegation-admission-acceptance.md).
+
+Optional controlled-browser resource admission now has explicit startup hooks:
+`SetResourceAdmission`, the same-TX actionauth `SetDispatchClaimGuard` and
+`NewResourceExecutor` around the actual private runtime router. Exact contract,
+current run/task/source, grant and finite budget remain mandatory. Migration062
+stores only hashed browser provenance and correlated dispatch metadata; foreign
+session handles cannot claim or spend. Private tickets are gRPC metadata and do
+not enter tools, approvals or results. This change leaves bootstrap/registry and
+deployment disabled. All pieces, including the guarded actual runtime and
+independent owner reconciliation, must be composed together before readiness.
+See [resource adapter](../../internal/resourceexec/README.md).

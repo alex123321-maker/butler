@@ -6,10 +6,12 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"testing"
 	"time"
 
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
+	"github.com/butler/butler/internal/resourceexec"
 	"github.com/butler/butler/internal/security/egress"
 	"github.com/butler/butler/internal/security/egress/egresstest"
 	"google.golang.org/grpc"
@@ -34,6 +36,9 @@ func TestBrowserRuntimeEgressHarness(t *testing.T) {
 		},
 	}
 	runner := NewPlaywrightRunnerWithPolicy("node", os.Getenv("BUTLER_BROWSER_E2E_SCRIPT"), policy)
+	if script := os.Getenv("BUTLER_BROWSER_E2E_SCRIPT"); filepath.IsAbs(script) {
+		runner.workspaceRoot = filepath.Clean(filepath.Join(filepath.Dir(script), "..", "..", ".."))
+	}
 	server := NewServer(runner, nil)
 	defer server.Close()
 	listener, err := net.Listen("tcp", os.Getenv("BUTLER_GRPC_ADDR"))
@@ -42,7 +47,22 @@ func TestBrowserRuntimeEgressHarness(t *testing.T) {
 	}
 	defer listener.Close()
 	rpc := grpc.NewServer()
-	runtimev1.RegisterToolRuntimeServiceServer(rpc, server)
+	if endpoint := os.Getenv("BUTLER_RESOURCE_AUTHORITY_HARNESS"); endpoint != "" {
+		// Test-only optional composition around the REAL browser backend. There
+		// is no production environment bypass or public authority route.
+		token := "fixture-private-resource-fixture-private-resource-fixture-private-resource-"
+		authority, err := resourceexec.NewHTTPAuthority(endpoint, token)
+		if err != nil {
+			t.Fatal("private fixture authority unavailable")
+		}
+		guarded, err := resourceexec.NewRuntime(server, authority, token)
+		if err != nil {
+			t.Fatal("guarded fixture runtime unavailable")
+		}
+		runtimev1.RegisterToolRuntimeServiceServer(rpc, guarded)
+	} else {
+		runtimev1.RegisterToolRuntimeServiceServer(rpc, server)
+	}
 	done := make(chan error, 1)
 	go func() { done <- rpc.Serve(listener) }()
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)

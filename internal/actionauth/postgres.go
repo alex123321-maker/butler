@@ -13,10 +13,11 @@ import (
 )
 
 type PostgresStore struct {
-	pool          *pgxpool.Pool
-	budgets       *budget.Controller
-	contractGuard ContractGuard
-	runDataGuard  func(context.Context, pgx.Tx, string) error
+	pool               *pgxpool.Pool
+	budgets            *budget.Controller
+	contractGuard      ContractGuard
+	runDataGuard       func(context.Context, pgx.Tx, string) error
+	dispatchClaimGuard DispatchClaimGuard
 }
 
 // ContractGuard joins current capability admission to the irreversible dispatch
@@ -154,6 +155,11 @@ func (s *PostgresStore) ClaimGrant(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
+	if s.dispatchClaimGuard != nil {
+		if err = s.dispatchClaimGuard.CheckAdmissionTx(ctx, tx, g); err != nil {
+			return err
+		}
+	}
 	if err = s.guardDispatch(ctx, tx, g); err != nil {
 		return err
 	}
@@ -175,6 +181,11 @@ func (s *PostgresStore) ClaimGrant(ctx context.Context, id string) error {
 			return err
 		}
 		if err = CheckTaskActionTx(ctx, tx, g.Binding, at); err != nil {
+			return err
+		}
+	}
+	if s.dispatchClaimGuard != nil {
+		if err = s.dispatchClaimGuard.ClaimActionTx(ctx, tx, g, effectID); err != nil {
 			return err
 		}
 	}

@@ -49,6 +49,50 @@ Pending issue17 acceptance: production Broker/runtime wiring, actual workspace
 file conflicts, one user-tab executor with manual interference, task-tree stop
 of isolated executors and the combined root budget/memory-candidate scenarios.
 
+## Optional controlled-browser dispatch boundary
+
+Migration062 and `internal/resourceexec` add a tested, default-unenabled adapter
+for the controlled `browser.*` service. They do not change legacy `single_tab.*`
+or deploy a new production route. Stable profile/contract/runtime identity is
+operator-owned. Browser resources derive from runtime-created opaque session
+handles; a private successful-open mapping binds their hash to the actual
+owner/run/task. Foreign or fabricated handles cannot claim or spend a resource.
+No model resource IDs, host paths, modes, fences or credential values are used.
+All current browser operations serialize on an exclusive lane; different
+creation actions have distinct bounded lanes.
+
+Admission order is live ownership, session/run/task and current assigned policy,
+complete source authority, private browser mapping, permanent effect, finite
+shared budget, sorted resource/lease rows and dispatch mapping. The complete
+authority/source set is stabilized before the budget/resource locks; repeated
+checks use only those already held authority rows. The optional journal hook
+reserves/claims the resource in the same transaction as budget and grant spend.
+After resource waits, fresh PostgreSQL time must remain within the grant,
+ownership, task/policy, browser and actual budget deadlines. Whole admission
+rolls back on conflict or expiry, without partial grant/counter changes.
+
+Runtime online admission takes the same authority/source/browser locks before
+effect and grant/intent/dispatch locks, then the existing resource lease. It
+matches outcome recording's effect-before-grant order. Browser-close receipt
+locks its mapping for update before journal/resource rows to avoid a late lock
+upgrade. A local lane is acquired before the one-use ticket CAS. Broker claim
+commits before its runtime RPC; authority admission commits before backend
+execution. Neither callback issues an RPC while holding PostgreSQL locks. The private authority endpoint
+uses a dedicated service token, a fixed direct internal HTTP(S) destination,
+bounded messages and no redirects or ambient provider proxy.
+
+The concrete backend retains origin/credential/page CAS checks. Its bounded
+context propagates cancellation, but dispatch already committed before a later
+owner stop may have begun an external effect. Such uncertainty is preserved.
+Receipts contain correlated IDs and a result hash only. A successful local lane
+consumes its lease and advances the resource version without asserting external
+recipient verification. Missing/stale/lost receipts retain durable quarantine;
+no expiry/restart replay or automatic reconciliation exists. Browser sessions
+remain run-owned and cannot be handed to another task by this adapter.
+
+See [composition and limitations](../../internal/resourceexec/README.md) and
+[actual PG/Broker/Chromium evidence](../ai/resource-runtime-acceptance.md).
+
 ## Current lab evidence
 
 Read-only source snapshot `20261011-071207-877` on `ssh laba` passed

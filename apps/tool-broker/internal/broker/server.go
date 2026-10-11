@@ -22,14 +22,15 @@ import (
 type Server struct {
 	toolbrokerv1.UnimplementedToolBrokerServiceServer
 
-	registry      *registry.Registry
-	executor      RuntimeExecutor
-	creds         CredentialResolver
-	authorizer    *actionauth.Service
-	log           *slog.Logger
-	budgetTimeout time.Duration
-	budgets       *budget.Controller
-	scopedCatalog ScopedCatalog
+	registry          *registry.Registry
+	executor          RuntimeExecutor
+	creds             CredentialResolver
+	authorizer        *actionauth.Service
+	log               *slog.Logger
+	budgetTimeout     time.Duration
+	budgets           *budget.Controller
+	scopedCatalog     ScopedCatalog
+	resourceAdmission ResourceAdmission
 }
 type ScopedCatalog interface {
 	ListForRun(context.Context, string, string, int) ([]*toolbrokerv1.ToolContract, error)
@@ -137,6 +138,12 @@ func (s *Server) ExecuteToolCall(ctx context.Context, req *toolbrokerv1.ExecuteT
 	ctx, err = budget.WithCanonicalArguments(ctx, req.GetToolCall().GetArgsJson())
 	if err != nil {
 		return &toolbrokerv1.ExecuteToolCallResponse{Result: authorizationErrorResult(req.GetToolCall(), "tool arguments cannot be normalized")}, nil
+	}
+	if s.resourceAdmission != nil {
+		ctx, err = s.resourceAdmission.PrepareContext(ctx, req.GetToolCall(), contract, grant)
+		if err != nil {
+			return &toolbrokerv1.ExecuteToolCallResponse{Result: authorizationErrorResult(req.GetToolCall(), "current guarded resource admission is required")}, nil
+		}
 	}
 	if err = s.authorizer.Claim(ctx, grant.ID); err != nil {
 		var exhausted *budget.ExhaustedError

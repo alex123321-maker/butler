@@ -916,3 +916,17 @@ ordinary exact grant/journal action. Source/owner guards precede lifecycle/effec
 guards; activation requires current ConverterPermission and independent passed
 checks plus trial. Local acknowledgement proves preparation only. See
 [generated-converters.md](generated-converters.md).
+
+## 31. Необязательная ресурсная граница управляемого браузера
+
+`internal/resourceexec` связывает существующие grant/journal/budget с конечной
+ресурсной арендой в одной транзакции. ID и режим определяет сервер из точного
+контракта и подтверждённого runtime session; модель не выбирает lock/path/fence.
+Runtime wrapper проверяет приватный одноразовый ticket через внутренний
+авторизованный endpoint после локального lane lock и до реального backend.
+Транзакции завершаются до HTTP/gRPC исполнения. Runtime сохраняет текущие
+origin/credential/page guards и не принимает решений об orchestration.
+Receipt подтверждает завершение локального lane, но не внешний результат;
+неопределённость остаётся в journal и не разрешает replay. Конструкторы не
+включены в production bootstrap/Compose; legacy `single_tab` не покрыт.
+Полный контракт: [resource-lease-contract.md](resource-lease-contract.md).
