@@ -27,6 +27,7 @@ import (
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/resourceexec"
 	"github.com/butler/butler/internal/singletabcontrol"
 	"github.com/butler/butler/internal/skills"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
@@ -82,7 +83,7 @@ func New(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("converter delegation requires enabled converters, ordinary delegation and a fixed private developer endpoint")
 	}
 	router := runtimeclient.New(log)
-	if cfg.GuardedTabRequestEnabled && (postgres == nil || cfg.ActionAuthorityTokenFile == "" || cfg.GuardedTabRequestControlURL == "") {
+	if (cfg.GuardedTabRequestEnabled || cfg.GuardedTabRuntimeEnabled) && (postgres == nil || cfg.ActionAuthorityTokenFile == "" || cfg.GuardedTabRequestControlURL == "") {
 		if postgres != nil {
 			postgres.Close()
 		}
@@ -94,6 +95,7 @@ func New(ctx context.Context) (*App, error) {
 	var extensionHandler http.Handler
 	var skillHandler http.Handler
 	var converterHandler http.Handler
+	var guardedResourceHandler http.Handler
 	var converterConn *grpc.ClientConn
 	ready := false
 	defer func() {
@@ -116,7 +118,21 @@ func New(ctx context.Context) (*App, error) {
 		}
 		authorizationStore := actionauth.NewPostgresStore(postgres.Pool())
 		sourceCatalog := catalog.New(postgres.Pool(), catalog.NewFileManifest(strings.TrimSpace(os.Getenv("BUTLER_MEMORY_DELETION_MANIFEST_FILE"))))
-		authorizationStore.SetRunDataGuard(func(ctx context.Context, tx pgx.Tx, run string) error {
+		if cfg.GuardedTabRuntimeEnabled {
+			tx, restoreErr := postgres.Pool().Begin(ctx)
+			if restoreErr == nil {
+				restoreErr = sourceCatalog.CheckRestoreTx(ctx, tx)
+				if restoreErr == nil {
+					restoreErr = tx.Commit(ctx)
+				}
+				_ = tx.Rollback(context.Background())
+			}
+			if restoreErr != nil {
+				postgres.Close()
+				return nil, fmt.Errorf("guarded runtime requires a current private deletion manifest")
+			}
+		}
+		sources := resourceexec.SourceGuard(func(ctx context.Context, tx pgx.Tx, run string) error {
 			if err := sourceCatalog.CheckRunSourcesTx(ctx, tx, run); err != nil {
 				return err
 			}
@@ -124,6 +140,7 @@ func New(ctx context.Context) (*App, error) {
 			// new developer admissions are disabled by a later operator rollout.
 			return generatedtools.CheckContinuationRunTx(ctx, tx, sourceCatalog, run)
 		})
+		authorizationStore.SetRunDataGuard(sources)
 		budgetPolicy, policyErr := budget.ParsePolicy(cfg.ExecutionBudgetPolicyJSON)
 		if policyErr != nil {
 			postgres.Close()
@@ -257,6 +274,24 @@ func New(ctx context.Context) (*App, error) {
 			executor = &broker.ConverterDelegationExecutor{Admissions: client, Next: executor}
 		}
 		server.SetCatalogExecutor(executor)
+		resourceStore, resourceHandler, resourceErr := configureGuardedTabRuntime(ctx, cfg, postgres.Pool(), registryStore, router, budgetController, sources)
+		if resourceErr != nil {
+			postgres.Close()
+			return nil, resourceErr
+		}
+		if resourceStore != nil {
+			catalog.GuardedTabOnly = true
+			admission := broker.GuardedTabAdmission{Store: resourceStore}
+			authorizationStore.SetDispatchClaimGuard(admission)
+			server.SetResourceAdmission(admission)
+			executor, err = broker.NewResourceExecutor(resourceStore, executor)
+			if err != nil {
+				postgres.Close()
+				return nil, err
+			}
+			guardedResourceHandler = resourceHandler
+			server.SetCatalogExecutor(executor)
+		}
 		if cfg.GuardedTabRequestEnabled {
 			client, clientErr := singletabcontrol.NewRequestClient(cfg.GuardedTabRequestControlURL, token)
 			if clientErr != nil {
@@ -280,6 +315,9 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	httpMux := http.NewServeMux()
+	if guardedResourceHandler != nil {
+		httpMux.Handle("/internal/guarded-tab-resources", guardedResourceHandler)
+	}
 	if converterHandler != nil {
 		httpMux.Handle("/internal/converters", converterHandler)
 	}

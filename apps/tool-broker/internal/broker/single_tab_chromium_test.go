@@ -172,8 +172,7 @@ func TestSingleTabResourceActualChromiumNativeHostIntegration(t *testing.T) {
 				go func() { v, _ := f.server.ExecuteToolCall(context.Background(), first); done <- v.GetResult() }()
 				wait := time.Now().Add(3 * time.Second)
 				for {
-					n, _ := op("/state")["nativeRequests"].(float64)
-					if n >= 6 {
+					if op("/state")["guardedHeld"] == true {
 						break
 					}
 					if time.Now().After(wait) {

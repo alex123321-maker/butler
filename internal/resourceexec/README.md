@@ -1,5 +1,12 @@
 # Guarded controlled-browser resource dispatch
 
+The canonical guarded single-tab contracts and authenticated gRPC readiness
+probe are shared by optional Broker bootstrap and the installed native host.
+They pin the actual loopback listener, host and complete contract, without
+performing an action or minting a ticket. See
+[operator composition](../../docs/architecture/single-tab-production-composition.md).
+The main deployment remains disabled; controlled-browser bootstrap is separate.
+
 `NewSingleTab` is a separate optional composition for exact approved user-tab
 status/click contracts, with a mandatory owning selection guard. Original `New`
 still accepts only controlled `browser.*` profiles. No legacy single-tab route is

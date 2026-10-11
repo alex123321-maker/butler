@@ -2,7 +2,9 @@
 
 Status: implementation and lab acceptance in progress for issue17. Migration058
 and `internal/resources` are an additive kernel library; production tool/browser
-and isolated workspace adapters are not enabled by this change.
+and isolated workspace adapters default disabled. Optional guarded single-tab
+bootstrap is specified in [production composition](single-tab-production-composition.md);
+it joins the actual shared budget and permanent action claim on the same transaction.
 
 Session Service remains responsible for conversation ordering and worker
 fencing. Resource arbitration owns finite leases for exact stable kernel IDs

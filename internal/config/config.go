@@ -68,6 +68,7 @@ type OrchestratorConfig struct {
 	SingleTabTransportMode            string
 	GuardedTabOwnerEnabled            bool
 	GuardedTabRequestEnabled          bool
+	GuardedTabRuntimeEnabled          bool
 	GuardedTabHost                    string
 	GuardedTabMetadataURL             string
 	GuardedTabTokenFile               string
@@ -132,6 +133,12 @@ type ToolBrokerConfig struct {
 	DelegationControlURL          string
 	GuardedTabRequestEnabled      bool
 	GuardedTabRequestControlURL   string
+	GuardedTabRuntimeEnabled      bool
+	GuardedTabRuntimeTarget       string
+	GuardedTabRuntimeTokenFile    string
+	GuardedTabProfileID           string
+	GuardedTabRuntimeHost         string
+	GuardedTabAllowedOriginsJSON  string
 	ConverterDelegationEnabled    bool
 	ConverterDelegationControlURL string
 	ConverterProfileJSON          string

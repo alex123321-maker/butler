@@ -1,5 +1,17 @@
 # Tool Broker
 
+Optional `BUTLER_GUARDED_TAB_RUNTIME_ENABLED` now composes canonical guarded-1
+status/click contracts, exact private runtime readiness, current selection/source
+checks, shared budgets and resource leases in the actual bootstrap. It requires
+the request route, a registry without legacy `single_tab.*`, literal-loopback
+runtime/HTTP addresses, a private runtime token, stable profile/host and explicit
+canonical allowed origins. The resource authority is
+`/internal/guarded-tab-resources`; runtime tickets stay private. Local selection
+requests remain outside the tab lease route. Controlled-browser tools are hidden
+in this initial single-profile catalog and deny direct admission. See
+[operator setup and limits](../../docs/architecture/single-tab-production-composition.md).
+Default remains disabled; local click completion leaves external effects unknown.
+
 The separate default-false `BUTLER_GUARDED_TAB_REQUEST_ENABLED` registers only
 `single_tab.bind.guarded`, an empty-args local control contract. It requires
 PostgreSQL, private action authentication and fixed
@@ -23,7 +35,7 @@ Optional resource admission also accepts the separate guarded user-tab adapter
 when exact status/click contracts, current approved selection, finite shared
 budget and complete source authority are composed. Tickets remain private gRPC
 metadata. Successful local click ACK still leaves the external effect unknown.
-No guarded user-tab registration is enabled by this change; see the
+Main guarded user-tab registration remains disabled; see the
 [boundary and remaining gates](../../docs/architecture/single-tab-resource-boundary.md).
 
 The optional [reviewed procedural catalog](../../docs/architecture/reviewed-skills.md)

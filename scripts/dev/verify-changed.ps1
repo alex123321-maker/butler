@@ -26,6 +26,15 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(apps/tool-broker/internal/(app/guarded_tab|broker/guarded_tab_resources|runtimeclient/)|internal/resourceexec/single_tab_(contracts|health)|scripts/dev/guarded-tab-runtime-lab[.]sh$)" {
+      [void]$specs.Add("docs/architecture/single-tab-production-composition.md")
+      [void]$specs.Add("docs/architecture/resource-lease-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/guarded-tab-runtime/current/scripts/dev/guarded-tab-runtime-lab.sh /srv/storage/butler/agents/guarded-tab-runtime narrow' then full after isolated Sync (actual App.New/Run, PG65, private readiness and resource arbitration; zero inference)")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/resource-runtime-bridge/current/scripts/dev/single-tab-resource-lab.sh /srv/storage/butler/agents/resource-runtime-bridge' after isolated Sync (installed native host/extension/Chromium readiness and CAS)")
+      continue
+    }
     "^(internal/providerauth/|cmd/provider-auth/|scripts/dev/provider-origin-lab[.]sh$)" {
       [void]$specs.Add("docs/architecture/credential-management.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")

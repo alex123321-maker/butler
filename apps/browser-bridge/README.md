@@ -1,5 +1,13 @@
 # Browser Bridge
 
+The guarded native host also provides authenticated gRPC Health `Check` for the
+exact shared status/click contracts, actual listener and current extension host.
+It checks extension metadata without dispatching an action or granting a ticket.
+The backend denies modified contracts even with a private runtime connection.
+Broker's initial bootstrap supports the same literal-loopback address; remote
+alias/tunnel composition needs separate proof. No generic public health endpoint
+advertises guarded readiness.
+
 The original companion below is a legacy route. Additive
 `./apps/browser-bridge/cmd/guarded` is disabled until operator composition; it
 exposes authenticated resource-ticket gRPC with guarded status/click frames and

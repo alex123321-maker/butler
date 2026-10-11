@@ -18,9 +18,10 @@ import (
 // TaskCatalog uses the same private live projection as action authorization.
 // Search ranks only contracts that survived current capability filtering.
 type TaskCatalog struct {
-	Registry *registry.Registry
-	Contexts actionauth.ContextReader
-	Mandates interface {
+	Registry       *registry.Registry
+	Contexts       actionauth.ContextReader
+	GuardedTabOnly bool
+	Mandates       interface {
 		GetMandate(context.Context, string) (actionauth.Mandate, error)
 	}
 	Extensions *extensions.Store
@@ -64,6 +65,12 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 	terms := strings.Fields(strings.ToLower(query))
 	result := []*toolbrokerv1.ToolContract{}
 	for _, contract := range c.Registry.List("", false) {
+		if c.GuardedTabOnly && strings.HasPrefix(contract.GetToolName(), "browser.") {
+			continue
+		}
+		if contract.GetContractRevision() == "guarded-1" && (contract.GetToolName() == "single_tab.status" || contract.GetToolName() == "single_tab.click") && (a.TaskID == "" || !a.GuardedTabRuntimeReady) {
+			continue
+		}
 		if contract.GetToolName() == "single_tab.bind.guarded" && (a.TaskID == "" || !a.GuardedTabRequestReady) {
 			continue
 		}

@@ -14,6 +14,7 @@ import (
 	"github.com/butler/butler/internal/resourceexec"
 	"github.com/butler/butler/internal/singletabcontrol"
 	"google.golang.org/grpc"
+	healthv1 "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 // RunGuarded is an additive opt-in native host. The listener is operator-owned;
@@ -48,6 +49,23 @@ func RunGuardedWithMetadata(ctx context.Context, stdin io.Reader, stdout io.Writ
 		return e
 	}
 	server := grpc.NewServer(grpc.MaxRecvMsgSize(65536), grpc.MaxSendMsgSize(65536))
+	readiness, e := resourceexec.NewSingleTabHealth(listener.Addr().String(), brokerToken, func(ctx context.Context) (string, error) {
+		tabs, err := bridge.NewGuardedMetadata(dispatcher).List(ctx)
+		if err != nil || len(tabs) == 0 || len(tabs) > singletabcontrol.MaxTabs {
+			return "", resourceexec.ErrDenied
+		}
+		host := tabs[0].BrowserInstance
+		for _, tab := range tabs {
+			if tab.BrowserInstance != host {
+				return "", resourceexec.ErrDenied
+			}
+		}
+		return host, nil
+	})
+	if e != nil {
+		return e
+	}
+	healthv1.RegisterHealthServer(server, readiness)
 	runtimev1.RegisterToolRuntimeServiceServer(server, runtime)
 	defer server.Stop()
 	go func() { _ = server.Serve(listener) }()
