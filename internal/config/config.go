@@ -85,6 +85,8 @@ type OrchestratorConfig struct {
 	ExtensionControlURL               string
 	SkillControlURL                   string
 	ConverterControlURL               string
+	ConverterProfileJSON              string
+	ConverterDelegationEnabled        bool
 	DelegationEnabled                 bool
 	DelegationMaxParallel             int
 	TelegramBotToken                  string
@@ -109,23 +111,25 @@ type OrchestratorConfig struct {
 }
 
 type ToolBrokerConfig struct {
-	ExecutionBudgetPolicyJSON string
-	Shared                    SharedConfig
-	Postgres                  PostgresConfig
-	RegistryPath              string
-	DefaultTarget             string
-	ActionContextURL          string
-	ActionAuthorityTokenFile  string
-	ExtensionProfilesJSON     string
-	ExtensionRuntimeTokenFile string
-	ExtensionOwnerID          string
-	SkillsEnabled             bool
-	ConvertersEnabled         bool
-	DelegationEnabled         bool
-	DelegationControlURL      string
-	ConverterProfileJSON      string
-	ConverterRuntimeTarget    string
-	ConverterRuntimeTokenFile string
+	ExecutionBudgetPolicyJSON     string
+	Shared                        SharedConfig
+	Postgres                      PostgresConfig
+	RegistryPath                  string
+	DefaultTarget                 string
+	ActionContextURL              string
+	ActionAuthorityTokenFile      string
+	ExtensionProfilesJSON         string
+	ExtensionRuntimeTokenFile     string
+	ExtensionOwnerID              string
+	SkillsEnabled                 bool
+	ConvertersEnabled             bool
+	DelegationEnabled             bool
+	DelegationControlURL          string
+	ConverterDelegationEnabled    bool
+	ConverterDelegationControlURL string
+	ConverterProfileJSON          string
+	ConverterRuntimeTarget        string
+	ConverterRuntimeTokenFile     string
 }
 
 type ToolBrowserConfig struct {

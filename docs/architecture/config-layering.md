@@ -56,3 +56,13 @@ database row; Orchestrator and Broker must resolve identical policy. Finite defa
 remain for omitted fields, but exact model price basis defaults to unknown and
 denies inference. Changed defaults cannot reset or replace immutable PostgreSQL
 scope policy. See [execution budgets](execution-budget-contract.md).
+
+Reviewed converter child composition has a separate operator-only
+`BUTLER_CONVERTER_DELEGATION_ENABLED` flag, default false in core and Broker.
+Stored settings cannot enable it or select the core's
+`BUTLER_CONVERTER_PROFILE_JSON`. Enabling ordinary converters and context-only
+delegation does not enable this distinct developer role. Broker's operator-only
+`BUTLER_CONVERTER_DELEGATION_CONTROL_URL` must name exactly
+`/internal/converter-delegation`, with no URL credentials, query or fragment.
+These settings supply startup composition only; current source/task/owner,
+accepted role, exact dispatch and finite budgets still supply authority.
