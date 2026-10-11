@@ -150,3 +150,64 @@ deny new collection even when historical result metadata remains visible.
 
 See [guard acceptance evidence](../ai/delegation-guard-acceptance.md) for actual
 two-connection PostgreSQL/race tests and the pending production/model criteria.
+
+## Private dispatch admission component
+
+The optional fixed `task.delegate` revision1 contract is a Broker-owned control
+route with target `broker://task-delegation-v1`. Its effect is `prepare`; a
+`local_runtime_ack` confirms only one committed child admission. Child research,
+verification and parent goal completion remain separate. The immutable startup
+contract must be registered through `RegisterOwned`; a registry entry cannot
+replace its schema, target or effect. Runtimes receive no orchestration authority.
+
+Model arguments contain an exact current contract DATA reference, selected source
+references, all eight finite budget dimensions, deadline and bounded dependency
+IDs. Unknown fields, duplicate keys at any depth, trailing values, null/missing
+arrays and incomplete budgets are rejected. There is no owner, parent, lease,
+permission, runtime URL, source body or credential field. Initial children have
+an empty permission set; the parent's catalogue grants them no tools.
+
+`broker.DelegationExecutor` runs only after normal Broker authorization and the
+irreversible grant/effect claim. It sends the actual run/call/permanent-effect
+identity, exact argument JSON and fixed contract hash to a private authenticated
+HTTP `AdmissionService`, following the existing private authority bridge.
+The operator composes `app.NewDelegationAdmission` with actual Task, Session,
+Input and Catalog stores. Neither the constructor nor these files register a
+public endpoint or enable a model tool. Tokens never enter model arguments or
+runtime traffic; the HTTP client refuses redirects and bounds bodies/deadlines.
+
+Service authentication alone is insufficient. Orchestrator derives its private
+parent worker token from the actual inflight authorization, intent and executing
+dispatch journal. In the manager transaction it rechecks canonical action/args/
+effect fingerprints, expected fixed contract, current run/owner/autonomy/task/
+constraints, lease epoch and current source/owner policy. Database time is reread
+after acquiring dispatch locks, and the final proposal check repeats after budget
+and queue waits. Existing-child `Admit` retries also repeat the proposal check
+after lifecycle waits and before commit; routine maintenance does not acquire an
+old dispatch dependency. The claimed-effect row is stabilized before its grant
+and dispatch rows, matching outcome recording's order. The manager retains its
+ownership/session/task/tree lock order;
+all source/authority reads use that transaction, with no HTTP call or second
+pooled connection under those locks.
+
+Migration061 records one immutable metadata-only accepted capability snapshot per
+child and per permanent effect. Source binding inserts it before the manager's
+first lifecycle check, input publication and receipt. A queue/publication failure
+rolls back child, session, grants, snapshot, input and child reservation together.
+Its downgrade refuses a nonempty table. Content-free IDs, source versions/hashes,
+exact binding and finite allocation preserve the admission evidence; source prose
+remains deletable Catalog DATA.
+
+Lifecycle uses the exact child identity to validate its accepted snapshot and
+current parent/source/goal/mandate policy. It does not consult the ended parent
+grant, approval or worker lease. The admitted deadline stays bounded by the
+requested allocation and current owner policy, independently of transient parent
+lease/approval expiry. Parent stop/revision, source correction/deletion/grant
+revocation and current authority expiry still deny future work. Lost transport
+acknowledgement remains uncertain; a spent effect is not automatically replayed.
+
+The [admission acceptance audit](../ai/delegation-admission-acceptance.md) proves
+the optional composition with an actual separate Broker process and pool2 PG.
+Deployment wiring, real model scheduling and the shared-model single/parallel
+quality/resource comparison remain pending. Failed/blocked report collection
+continues requiring the separate historical observation contract described above.

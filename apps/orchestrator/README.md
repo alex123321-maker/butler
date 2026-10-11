@@ -401,3 +401,18 @@ cannot revive a revoked digest/generation. Bodies remain Catalog DATA and only
 SourceRefs/hashes enter saved actions or final-result summaries. Technical conversion
 does not complete semantic task criteria. See the
 [generated converter contract](../../docs/architecture/generated-converters.md).
+
+`NewDelegationAdmission(pool, taskStore, sessionAdapter, inputAdapter,
+catalogAdapter, limits)` now supplies the optional private Broker admission
+component. Every adapter is mandatory; the Task store needs shared budget
+wiring. `AdmitDispatched` derives parent ownership from the actual executing
+action/grant/effect, repeats current source/task/owner policy in the manager
+transaction and stores immutable migration061 capabilities during source binding
+before queue/receipt. Initial children have no tools. The guard wrapper embeds
+`DelegationGuards`, forwarding its optional report-creator capability when that
+component is composed. Its public `Manager` is for trusted bounded maintenance,
+not a caller-supplied worker authority. Accepted child lifecycle uses its own
+snapshot/current policy after parent process completion; no old lease is revived.
+No bootstrap, HTTP mux or config default enables this route in this component.
+Actual separate-process Broker/HTTP/PG evidence and pending model/deployment
+criteria are recorded in `docs/ai/delegation-admission-acceptance.md`.

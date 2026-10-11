@@ -121,3 +121,13 @@ digest/generation and source guards are repeated before publication and use.
 The production runtime has no network and uses a dedicated fixed Unix socket/token;
 the private owner endpoint only lists/revokes, never bypasses activation. See
 [generated converter contract](../../docs/architecture/generated-converters.md).
+
+Optional `DelegationExecutor{Admissions, Next}` adds a Broker-owned control route
+for the immutable `delegation.AdmissionContract()` startup contract. It requires
+the actual private dispatch identity, exact schema/hash/target, no secrets and no
+credential references. Other tools continue through `Next`. The private owning
+Orchestrator service rechecks the executing grant and atomically admits an empty
+tool-permission child; the receipt/effect acknowledgement confirms admission,
+not child success. Service endpoints/tokens are operator-only composition; no
+runtime orchestrates or receives the token and nothing is enabled by default.
+See [actual admission proof](../../docs/ai/delegation-admission-acceptance.md).

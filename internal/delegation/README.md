@@ -16,3 +16,14 @@ projection of actual evidence references; shape validity is not verification.
 No runtime tool or owner endpoint is enabled here. Production Catalog/Broker/
 context composition and actual model comparison remain pending acceptance.
 See `docs/architecture/delegation-contract.md`.
+
+`AdmissionContract` now defines the optional fixed `task.delegate` prepare route.
+Strict decoding accepts only current Catalog references, finite allocation,
+deadline and dependency IDs; it cannot express owner/task/lease/permission or
+credential authority. `AdmissionHandler`/`AdmissionClient` provide bounded private
+service traffic and refuse ambiguous JSON/redirects. Authentication does not
+authorize admission: the owning Orchestrator service must recheck the actual
+inflight dispatch. Migration061 persists its immutable accepted child snapshot.
+The separate real Broker process acceptance proves committed admission only;
+tools/default enabling, child model success and parallel-model comparison remain
+pending. See [admission evidence](../../docs/ai/delegation-admission-acceptance.md).

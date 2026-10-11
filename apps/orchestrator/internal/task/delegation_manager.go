@@ -203,6 +203,12 @@ func (m *DelegationManager) Admit(ctx context.Context, request DelegationRequest
 		if err = m.guard.CheckLifecycleTx(ctx, tx, parent, child, value.Contract); err != nil {
 			return value, err
 		}
+		// This is still an admission request, even when the child already exists.
+		// Recheck its current proposal/dispatch after all lifecycle lock waits;
+		// ordinary lifecycle maintenance remains independent of the old worker.
+		if err = m.guard.CheckProposalTx(ctx, tx, parent, request); err != nil {
+			return value, err
+		}
 		return value, tx.Commit(ctx)
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
