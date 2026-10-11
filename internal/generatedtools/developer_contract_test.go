@@ -56,3 +56,26 @@ func TestDeveloperProposalContainsOnlySelectedRefsAndFiniteAllocation(t *testing
 }
 
 func mustDeveloperJSON(v any) []byte { raw, _ := json.Marshal(v); return raw }
+
+func TestDeveloperContractCannotSmuggleDocumentOrReplaceIndependentCriteria(t *testing.T) {
+	hash := strings.Repeat("a", 64)
+	spec := DeveloperSpec{Format: DeveloperFormat, NeedHash: hash, Version: "1.0.0", Checker: Checker}
+	raw := string(mustDeveloperJSON(spec))
+	if parsed, err := DecodeDeveloperSpec([]byte(raw), hash); err != nil || parsed != spec {
+		t.Fatal("valid synthetic contract rejected", err)
+	}
+	for _, key := range []string{"instructions", "body", "document", "input", "tests", "criteria", "permissions", "code", "endpoint"} {
+		if _, err := DecodeDeveloperSpec([]byte(strings.TrimSuffix(raw, "}")+`,"`+key+`":"private-or-author-controlled"}`), hash); err == nil {
+			t.Fatalf("unbounded %s entered selected child contract", key)
+		}
+	}
+	for _, bad := range []string{
+		strings.Replace(raw, hash, strings.Repeat("b", 64), 1),
+		strings.Replace(raw, Checker, "author-defined-checker", 1),
+		strings.TrimSuffix(raw, "}") + `,"version":"2.0.0"}`,
+	} {
+		if _, err := DecodeDeveloperSpec([]byte(bad), hash); err == nil {
+			t.Fatal("independent contract binding replaced")
+		}
+	}
+}

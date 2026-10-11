@@ -19,6 +19,10 @@ The separately reviewed developer proposal contract is `task.delegate_converter`
 Its arguments select exact Need and synthetic-contract Catalog references, all
 eight finite allocation dimensions, deadline and dependency IDs. They cannot
 contain code, a working document, permissions, owner/task identity or credentials.
+The selected synthetic contract itself must strictly match
+`butler.converter.developer.v1`: exact Need hash, candidate version and the pinned
+independent checker. Free-form narrative, working inputs, code, permissions and
+author-defined criteria are rejected, even when disguised as contract DATA.
 The initial context-only `task.delegate` revision remains separate and unchanged.
 This contract definition alone is unregistered and grants no capabilities.
 Its pending admission bridge must require an actual parent `converters.discover`

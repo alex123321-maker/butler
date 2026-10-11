@@ -12,6 +12,25 @@ import (
 
 const DeveloperAdmissionTool = "task.delegate_converter"
 const DeveloperAdmissionTarget = "broker://converter-delegation-v1"
+const DeveloperFormat = "butler.converter.developer.v1"
+
+// DeveloperSpec is the entire selected synthetic contract body. Free-form
+// narrative, document copies, permissions, code and author-defined acceptance
+// tests are unrepresentable here; independent cases remain compiled in core.
+type DeveloperSpec struct {
+	Format   string `json:"format"`
+	NeedHash string `json:"need_hash"`
+	Version  string `json:"version"`
+	Checker  string `json:"checker"`
+}
+
+func DecodeDeveloperSpec(raw []byte, needHash string) (DeveloperSpec, error) {
+	var spec DeveloperSpec
+	if Decode(raw, &spec) != nil || spec.Format != DeveloperFormat || !digestName.MatchString(needHash) || spec.NeedHash != needHash || !version.MatchString(spec.Version) || len(spec.Version) > 32 || spec.Checker != Checker {
+		return DeveloperSpec{}, ErrPackage
+	}
+	return spec, nil
+}
 
 // DeveloperArgs selects only current DATA and a finite proposed allocation.
 // The approved parent dispatch and independently retained discovery receipt,
