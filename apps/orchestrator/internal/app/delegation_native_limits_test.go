@@ -217,6 +217,9 @@ func readNativeHistory(paths ...string) (nativeHistoricalEvidence, error) {
 }
 
 func newNativeDelegationLimiter(ctx context.Context, pool *pgxpool.Pool) (*nativeDelegationLimiter, error) {
+	if nativeHighWindow() {
+		return newHighDelegationLimiter(ctx, pool)
+	}
 	if pool == nil {
 		return nil, errNativeFixtureDenied
 	}
@@ -236,6 +239,9 @@ func newNativeDelegationLimiter(ctx context.Context, pool *pgxpool.Pool) (*nativ
 }
 
 func (l *nativeDelegationLimiter) reserve(ctx context.Context, kind, runID string, input any) error {
+	if nativeHighWindow() {
+		return l.reserveHigh(ctx, kind, runID, input, highDelegationHistoryPaths())
+	}
 	return l.reserveWithHistory(ctx, kind, runID, input, nativeHistoryPaths())
 }
 

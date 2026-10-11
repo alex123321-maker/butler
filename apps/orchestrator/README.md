@@ -1,5 +1,14 @@
 # Orchestrator
 
+Initiative promotion rechecks active hours and observation freshness after budget
+lock waits. A UTC-day change defers admission to a fresh check of attention limits.
+See [PG regression evidence](../../docs/ai/initiative-admission-time-acceptance.md).
+
+The separate opt-in [Flash High acceptance](../../docs/ai/delegation-high-acceptance-20261012.md)
+uses ordinary core/input/Broker processes and disposable PostgreSQL on laba.
+It retains22 historical attempts, pins the complete tested snapshot, and checks
+native tool-result continuation and child recovery without enabling deployment flags.
+
 Operator-only `BUTLER_WORKSPACE_ENABLED` defaults false. It requires private
 action authentication, current original-source/deletion anchor and immutable
 workspace/dispatch/input schema before setting private `workspace_ready`.

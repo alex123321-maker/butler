@@ -1,5 +1,14 @@
 # Opt-in native delegation experiment
 
+## New owner-directed High continuation — 2026-10-12
+
+The renewed request authorizes open-issue implementation and subscription-backed
+system checks. A separate [Flash High window](delegation-high-acceptance-20261012.md)
+retains all22 observed attempts/nine pinned artifacts, uses a new immutable marker
+and exact tested source, and leaves every historical runner sealed. Historical
+failures are unchanged; complete issue16 acceptance and production activation
+remain separate from this bounded scenario.
+
 ## Current Antigravity diagnosis continuation — separate from delegation
 
 The owner initially authorized Antigravity diagnosis without inference, then

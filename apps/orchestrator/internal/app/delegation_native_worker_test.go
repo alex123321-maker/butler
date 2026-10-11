@@ -55,7 +55,7 @@ func nativeExperimentPolicy() budget.Policy {
 	p.Conversation = p.Task
 	p.ModelMillis, p.ToolMillis, p.ModelInputBytes = 120000, 30000, 131072
 	p.TaskLifetimeMillis = 3600000
-	p.Models = map[string]budget.ModelPrice{antigravity.Name + ":" + antigravity.DefaultModel: {Basis: "subscription_no_overage"}}
+	p.Models = map[string]budget.ModelPrice{antigravity.Name + ":" + nativeScenarioModel(): {Basis: "subscription_no_overage"}}
 	return p
 }
 
@@ -131,7 +131,7 @@ func (g nativeChildGate) Resume(ctx context.Context, runID string, event ingress
 // model. Only hashes/ref identifiers and validation booleans are persisted.
 func nativeContextObserver(pool *pgxpool.Pool, corpus nativeResearchCorpus) func(context.Context, transport.StartRunRequest) error {
 	return func(ctx context.Context, r transport.StartRunRequest) error {
-		if r.Context.ProviderSessionRef != nil || r.Context.ModelName != antigravity.DefaultModel || r.Context.ProviderName != antigravity.Name {
+		if r.Context.ProviderSessionRef != nil || r.Context.ModelName != nativeScenarioModel() || r.Context.ProviderName != antigravity.Name {
 			return errNativeFixtureDenied
 		}
 		var raw []byte
@@ -244,7 +244,7 @@ func TestNativeDelegationWorkerHarness(t *testing.T) {
 	results.Evidence = effectEvidence{journal: actionauth.NewPostgresStore(pool)}
 	ownerGoals := goal.New(pool, tasks, nil)
 	executor := flow.NewService(sessions, leases, runs, transcript.NewStore(pool), provider, flow.Config{
-		ProviderName: antigravity.Name, ModelName: antigravity.DefaultModel, OwnerID: "native-fixture-worker", LeaseTTL: 60,
+		ProviderName: antigravity.Name, ModelName: nativeScenarioModel(), OwnerID: "native-fixture-worker", LeaseTTL: 60,
 		AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2, Tasks: tasks, Checkpoints: inputs, Completion: results,
 		Budgets: bc, OwnerGoals: ownerGoals, MemorySources: sources, DelegationContexts: delegatedContextReader{sources: sources, manager: admission.Manager},
 		Tools: broker, ToolCatalog: broker, ActionAuthorizer: broker, ApprovalChecker: broker, ApprovalGate: gate, ApprovalService: approvalService,

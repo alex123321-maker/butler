@@ -63,6 +63,7 @@ type nativeWidthEvidence struct {
 }
 type nativeScenarioEvidence struct {
 	Status            string                   `json:"status"`
+	Model             string                   `json:"model,omitempty"`
 	ReleaseRef        string                   `json:"release_ref"`
 	NativeAttempts    int                      `json:"native_attempts"`
 	NewNativeAttempts int                      `json:"new_native_attempts"`
@@ -263,6 +264,13 @@ func nativeWait(t *testing.T, ctx context.Context, timeout time.Duration, condit
 }
 
 func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
+	if nativeHighWindow() {
+		t.Fatal("High requires its separate reviewed scenario entry")
+	}
+	runNativeDelegationActualScenario(t)
+}
+
+func runNativeDelegationActualScenario(t *testing.T) {
 	if os.Getenv("BUTLER_DELEGATION_NATIVE_ACCEPTANCE") != "1" {
 		t.Skip("native experiment requires explicit operator opt-in")
 	}
@@ -273,11 +281,11 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 18*time.Minute)
 	defer cancel()
 	f := newNativeScenarioFixture(t, ctx)
-	history, err := readNativeHistory(nativeHistoryPaths()...)
+	history, err := nativeScenarioHistory()
 	if err != nil {
 		t.Fatal("committed historical experiment evidence unavailable")
 	}
-	report := nativeScenarioEvidence{Status: "failed", ReleaseRef: os.Getenv("BUTLER_DELEGATION_NATIVE_RELEASE"), MaxAttempts: nativeDelegationTotalAttemptCap, MaxNewAttempts: nativeDelegationAttemptCap, Historical: history, CostBasis: "operator_declared_subscription_no_overage", Limitations: []string{"gate_controlled_loss_after_parent_attempt_completed", "cloud_weights_not_observable", "no_local_generative_parity_claim", "blocked_attempt_report_bridge_pending", "metadata_barriers_do_not_claim_late_native_callback_injection", "historical_nullable_usage_not_zero_or_new_fixture_budget_usage"}}
+	report := nativeScenarioEvidence{Status: "failed", Model: nativeScenarioModel(), ReleaseRef: os.Getenv("BUTLER_DELEGATION_NATIVE_RELEASE"), MaxAttempts: history.NativeAttempts + nativeDelegationAttemptCap, MaxNewAttempts: nativeDelegationAttemptCap, Historical: history, CostBasis: "operator_declared_subscription_no_overage", Limitations: []string{"gate_controlled_loss_after_parent_attempt_completed", "cloud_weights_not_observable", "no_local_generative_parity_claim", "blocked_attempt_report_bridge_pending", "metadata_barriers_do_not_claim_late_native_callback_injection", "historical_nullable_usage_not_zero_or_new_fixture_budget_usage"}}
 	defer func() {
 		// Stop every owning process before reading its durable diagnostic state.
 		// Go defers run before memorytest's unconditional schema cleanup.
@@ -298,8 +306,8 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 			report.Limitations = append(report.Limitations, "attempt_evidence_unavailable")
 		}
 		report.NewNativeAttempts = -1
-		if report.NativeAttempts >= nativeDelegationPriorAttempts {
-			report.NewNativeAttempts = report.NativeAttempts - nativeDelegationPriorAttempts
+		if report.NativeAttempts >= history.NativeAttempts {
+			report.NewNativeAttempts = report.NativeAttempts - history.NativeAttempts
 		}
 		var raw []byte
 		if f.pool.QueryRow(auditCtx, `SELECT used_json FROM execution_budget_scopes WHERE kind='owner_day' AND owner_id=$1`, nativeFixtureOwner).Scan(&raw) == nil {
@@ -467,7 +475,7 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 	if f.pool.QueryRow(ctx, `SELECT used_json FROM execution_budget_scopes WHERE kind='owner_day' AND owner_id=$1`, nativeFixtureOwner).Scan(&dayRaw) != nil || json.Unmarshal(dayRaw, &report.SharedDayReserved) != nil {
 		t.Fatal("shared day reservation evidence unavailable")
 	}
-	if f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&attempts) != nil || attempts > nativeDelegationTotalAttemptCap || attempts-nativeDelegationPriorAttempts > nativeDelegationAttemptCap || report.SharedDayReserved.ModelTurns > 12 {
+	if f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&attempts) != nil || attempts > report.MaxAttempts || attempts-report.Historical.NativeAttempts > nativeDelegationAttemptCap || report.SharedDayReserved.ModelTurns > 12 {
 		t.Fatal("experiment exceeded shared attempt bound")
 	}
 	report.Status = "passed"
