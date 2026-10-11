@@ -15,6 +15,17 @@ activation/rollback and original document conversion. It defaults disabled.
 Passing a runtime test grants no capability. The actual delegated developer/task
 acceptance from issue16 remains a separate gate; runtime RPC alone is not its proof.
 
+The separately reviewed developer proposal contract is `task.delegate_converter`.
+Its arguments select exact Need and synthetic-contract Catalog references, all
+eight finite allocation dimensions, deadline and dependency IDs. They cannot
+contain code, a working document, permissions, owner/task identity or credentials.
+The initial context-only `task.delegate` revision remains separate and unchanged.
+This contract definition alone is unregistered and grants no capabilities.
+Its pending admission bridge must require an actual parent `converters.discover`
+receipt and current approved dispatch; missing or stale prerequisites deny rather
+than causing hidden actions. Only discover/develop/test rights may be derived for
+the developer. Trial, activation and original conversion remain parent actions.
+
 ## Independent need and code
 
 The trusted need fixes the converter ID, class, input dialect/header/columns,
