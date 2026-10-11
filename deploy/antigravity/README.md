@@ -136,7 +136,7 @@ The adapter sends a flat protobuf JSON request to
 `aicode: {experience: "gemini-3.8-flash-tiered"}`, `contents`, optional
 `systemInstruction`/`tools`/`toolConfig`, and `generationConfig.maxOutputTokens`.
 The `model` and `aicode` fields are a protobuf oneof: only `aicode` is sent.
-Cloud Code project/request envelopes, v1main `sessionId`/`entitlement` fields and
+Cloud Code project/request envelopes, optional CLI `sessionId`/`entitlement` fields and
 credit controls are absent. Responses are flat SSE `candidates`, `modelVersion`
 and `usageMetadata`, without a `response` wrapper. The HTTP User-Agent is
 `antigravity/1.3.3 butler/0.1`. Only Butler-supplied schemas become
@@ -169,5 +169,17 @@ The verified official Antigravity CLI 1.3.3 GCA PredictionService descriptors
 confirm `StreamGenerateContent` POST `/{$api_version}:streamGenerateContent` with
 body `*`, and native `parametersJsonSchema`, `functionCall`, `functionResponse`
 and `thoughtSignature` fields. Private production v1 probes confirmed the flat
-stream shape; v1main-only fields were rejected. These are internal subscription
+stream shape; additional session/entitlement fields were rejected. These are internal subscription
 APIs and can change; unknown protocol behavior fails closed.
+
+The 2026-10-11 isolated capture of installed CLI 1.3.3 implemented the previously
+proposed offline comparison. With synthetic metadata, its default path used
+`daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent`; explicit
+`USE_AICODE=true` emitted `aicode.googleapis.com/v1:streamGenerateContent` with
+`sessionId`. The latter selected a different experience under incomplete fixture
+licenses, so it is not a same-model production comparison. No HTTP v1main support
+or paid quota accounting follows from protobuf names. Production transport is
+unchanged; no real inference or deployment was performed. Evidence, limitations
+and the separate, unexecuted experiment proposal are in
+[the diagnosis](../../docs/ai/antigravity-quota-diagnosis.md). Reproduce only the
+zero-inference capture with [the isolated runner](../../scripts/dev/antigravity-wire/README.md).

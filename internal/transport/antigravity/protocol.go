@@ -79,8 +79,9 @@ func (p *Provider) invoke(ctx context.Context, model string, body generateReques
 		return modelAnswer{}, providerError(transport.ErrorTypeProviderUnavailable, "Antigravity authentication is incomplete or expired")
 	}
 	// AICode and model are a protobuf oneof. Subscription inference uses only
-	// aicode.experience; Cloud Code project/request wrappers and v1main-only
-	// sessionId/entitlement fields are not accepted by the production v1 API.
+	// aicode.experience. Cloud Code wrappers are a separate protocol. Optional
+	// CLI session/entitlement fields remain omitted after earlier v1 rejections;
+	// an offline CLI capture is not proof of production field acceptance.
 	envelope := requestEnvelope{AICode: aicodeInference{Experience: model}, generateRequest: body}
 	encoded, err := json.Marshal(envelope)
 	if err != nil {

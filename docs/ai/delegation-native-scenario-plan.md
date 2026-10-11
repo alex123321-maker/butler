@@ -1,6 +1,18 @@
 # Opt-in native delegation experiment
 
-## Current owner-directed fifth window — 2026-10-11
+## Current Antigravity diagnosis continuation — zero inference
+
+The owner authorized only Antigravity diagnosis and justified fixes. The installed
+CLI/Go synthetic wire comparison is now implemented and completed with networking
+disabled; see [the diagnosis](antigravity-quota-diagnosis.md). It adds no native
+model acceptance and no permission to execute the historical runner below.
+All five native reports, eighteen attempts, five known/thirteen unknown usage
+pairs and the SEALED baseline13 window remain unchanged. Known24921 input/547
+output is a subtotal. Issue16's full delegation gates remain outstanding.
+The [next comparison proposal](antigravity-next-experiment.md) is preparation
+only and requires separate explicit owner approval plus its admission controls.
+
+## Historical owner-directed fifth window — 2026-10-11 — SEALED
 
 The renewed owner instruction explicitly prioritizes finishing issues16/17.
 One new bounded window carries forward all four immutable failed reports:

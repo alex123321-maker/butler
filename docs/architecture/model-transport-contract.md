@@ -211,7 +211,7 @@ Orchestrator взаимодействует с Model Transport Layer через 
 `https://aicode.googleapis.com/v1:streamGenerateContent?alt=sse`. Requests and SSE
 responses are flat. Subscription routing sends `aicode.experience` instead of the
 mutually exclusive `model` field. No Cloud Code project/request wrapper or
-v1main-only session/entitlement fields are sent. Output allowance is 8192 tokens.
+optional CLI session/entitlement fields are sent. Output allowance is 8192 tokens.
 This is an experimental opt-in integration; Google's Antigravity FAQ declares
 third-party consumer integration unsupported. It is not official product support.
 The default model is `gemini-3.8-flash-tiered` (Gemini 3.8 Flash). CLI inference is
@@ -246,6 +246,16 @@ remain `rate_limited`; neither establishes exhausted subscription quota. No raw
 error metadata or automatic retry crosses this boundary. Historical general
 `rate_limited` records cannot be reclassified without their original evidence.
 See [protocol, operator import and validation status](../../deploy/antigravity/README.md).
+
+An isolated diagnostic command may execute the installed CLI only against a
+synthetic loopback HTTPS server, with fake credentials and network denied. It is
+outside the provider factory and run lifecycle, reads no real credential store,
+and exports only safe wire metadata. The completed CLI 1.3.3 capture proves that
+explicit AICode mode serializes HTTP v1 with sessionId; the protobuf namespace
+does not determine HTTP version. Fixture routing/model differences do not prove
+production server acceptance or justify copying optional fields into the native
+adapter. See [the diagnosis](../ai/antigravity-quota-diagnosis.md). No runtime
+contract, credential ownership or inference permission changes with this tool.
 
 ---
 

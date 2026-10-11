@@ -26,6 +26,12 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(scripts/dev/antigravity-wire/|scripts/dev/antigravity-wire-lab[.]sh$|internal/transport/antigravity/)" {
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$tests.Add("ssh laba: scripts/dev/antigravity-wire-lab.sh in a new isolated agent root after Sync; tests, default, and aicode modes use --network none, synthetic credentials and no operator profile (zero inference)")
+      continue
+    }
     "^(apps/tool-workspace/|apps/tool-broker/internal/app/workspace|apps/orchestrator/internal/app/workspace|internal/(config/workspace|workspaceexec/health)|deploy/docker-compose[.]workspaces|docker/tool-workspace/)" {
       [void]$specs.Add("docs/architecture/isolated-code-workspaces.md")
       [void]$specs.Add("docs/architecture/action-authorization-contract.md")

@@ -1,11 +1,22 @@
 # Antigravity native transport
 
-This Go adapter uses production AICode v1 SSE with the subscription experience
+This Go adapter uses production AICode v1 SSE with the requested experience
 `gemini-3.8-flash-tiered`. The flat request uses `aicode.experience`, ordered
 contents, optional system instructions/Butler function declarations and an
 8192-token output allowance. It omits the mutually exclusive `model`, Cloud Code
-project/request wrappers and v1main-only session/entitlement fields. Flat SSE
+project/request wrappers and optional CLI session/entitlement fields. Flat SSE
 responses provide candidates and usage metadata.
+
+The installed CLI 1.3.3 was captured offline against synthetic HTTPS with fake
+credentials and Docker networking disabled. Its default fixture path used Cloud
+Code; explicit `USE_AICODE=true` emitted an AICode **v1** request with `sessionId`.
+Thus neither that field nor the protobuf namespace identifies a v1main-only HTTP
+contract. Earlier production probes rejected additional session/entitlement
+fields; the capture does not prove their acceptance for Butler. Runtime behavior
+is unchanged. See [the diagnosis](../../../docs/ai/antigravity-quota-diagnosis.md)
+and [the isolated capture command](../../../scripts/dev/antigravity-wire/README.md).
+Account subscription membership is confirmed; per-request subscription metering
+is still unknown.
 
 Only `providerauth.AntigravityTokenSource` supplies token and expiry. Transport
 does not read credentials or run the CLI. Native calls must match supplied aliases
