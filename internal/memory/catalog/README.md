@@ -83,3 +83,10 @@ privacy references, not extra selectable bodies. It denies inherited owner/job
 proofs, stopped/expired workers and current parent grant or source revocation.
 `CheckDelegationProposalSourcesTx` also checks the parent's current purpose/scope
 grants when an authenticated owner independently has broader Catalog body access.
+
+`CreateTaskDerivedTx` is narrower: only a live owned worker may create fresh DATA
+in its current pinned task scope. Owner and auxiliary-job proofs cannot select
+that scope. The complete selected parent graph remains current and deletion-linked;
+the method uses a savepoint on the caller transaction and grants no parent-task
+read access. Reviewed developer delegation can use it for a child candidate without
+making the original parent/project scope ambient child context.
