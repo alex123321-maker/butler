@@ -48,6 +48,11 @@ agreement, narrative confidence or finish reason as verification. Independent
 results and conflict remain recorded; parent/task status is not promoted to
 completed by a model final or admission receipt. A failed model shape/citation is
 a failed experiment, with no corrective inference retry.
+The parent's final must contain exactly the two actual admitted child IDs and
+no additional verdict fields. Report publication also checks that durable native
+attempt rows and independent production model reservations are complete; a
+failed evidence read makes the experiment fail. Timing reports separate the
+remaining real claim-expiry wait from total recovery plus child execution.
 
 Reports contain fixed status/reason enums, source/result/contract/effect references,
 hashes, reservation and actual usage metadata, attempt counts and elapsed times.

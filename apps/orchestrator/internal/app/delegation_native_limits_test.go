@@ -146,6 +146,42 @@ func TestNativeDelegationObjectiveFixtureRejectsNarrativeAuthority(t *testing.T)
 			t.Fatal("forged observation or narrative promoted to objective evidence")
 		}
 	}
+	if verifyNativeAdmissionReceipts(`{"admitted_task_ids":["child-a","child-b"]}`, []string{"child-b", "child-a"}) != nil {
+		t.Fatal("exact independent admission receipts rejected")
+	}
+	for _, changed := range []string{
+		`{"admitted_task_ids":["child-a","child-a"]}`,
+		`{"admitted_task_ids":["child-a","other"]}`,
+		`{"admitted_task_ids":["child-a","child-b"],"accepted":true}`,
+		`{"admitted_task_ids":["child-a","child-b"],"admitted_task_ids":["child-a","child-b"]}`,
+		`{"admitted_task_ids":["child-a","child-b"]}{}`,
+	} {
+		if verifyNativeAdmissionReceipts(changed, []string{"child-a", "child-b"}) == nil {
+			t.Fatal("parent narrative or forged receipt accepted")
+		}
+	}
+}
+
+// This is an exact receipt projection check, never a child success verdict.
+func verifyNativeAdmissionReceipts(raw string, children []string) error {
+	if len(children) != 2 || children[0] == "" || children[1] == "" || children[0] == children[1] {
+		return errNativeFixtureDenied
+	}
+	if _, err := actionauth.ArgumentsHash(raw); err != nil {
+		return errNativeFixtureDenied
+	}
+	var receipt struct {
+		IDs []string `json:"admitted_task_ids"`
+	}
+	d := json.NewDecoder(strings.NewReader(raw))
+	d.DisallowUnknownFields()
+	if d.Decode(&receipt) != nil || d.Decode(new(any)) != io.EOF || len(receipt.IDs) != 2 || receipt.IDs[0] == receipt.IDs[1] {
+		return errNativeFixtureDenied
+	}
+	if receipt.IDs[0] == children[0] && receipt.IDs[1] == children[1] || receipt.IDs[0] == children[1] && receipt.IDs[1] == children[0] {
+		return nil
+	}
+	return errNativeFixtureDenied
 }
 
 func TestNativeDelegationTwelveAttemptBoundIntegration(t *testing.T) {

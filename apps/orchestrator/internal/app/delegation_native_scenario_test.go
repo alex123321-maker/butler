@@ -51,7 +51,9 @@ type nativeWidthEvidence struct {
 	SourceRefs                 []delegation.SourceRef `json:"source_refs"`
 	ObjectiveChecks            []bool                 `json:"objective_checks"`
 	ParentWorkerKilled         bool                   `json:"parent_worker_killed"`
-	ClaimWaitMillis            int64                  `json:"claim_wait_millis"`
+	ClaimExpiryWaitMillis      int64                  `json:"claim_expiry_wait_millis"`
+	RecoveryAndChildMillis     int64                  `json:"recovery_and_child_millis"`
+	ParentReceiptCheck         bool                   `json:"parent_receipt_check"`
 	ElapsedMillis              int64                  `json:"elapsed_millis"`
 	MaximumChildOverlap        int                    `json:"maximum_child_overlap"`
 	SharedRootReservations     budget.Units           `json:"shared_root_reservations"`
@@ -277,7 +279,11 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 		}
 		var raw []byte
 		if f.pool.QueryRow(auditCtx, `SELECT used_json FROM execution_budget_scopes WHERE kind='owner_day' AND owner_id=$1`, nativeFixtureOwner).Scan(&raw) == nil {
-			_ = json.Unmarshal(raw, &report.SharedDayReserved)
+			if json.Unmarshal(raw, &report.SharedDayReserved) != nil {
+				report.Status = "failed"
+			}
+		} else {
+			report.Status = "failed"
 		}
 		rows, e := f.pool.Query(auditCtx, `SELECT attempt,run_id,kind,input_hash,created_at FROM fixture_native_attempts ORDER BY attempt`)
 		if e == nil {
@@ -289,7 +295,12 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 				}
 				report.Attempts = append(report.Attempts, a)
 			}
+			if rows.Err() != nil {
+				report.Status = "failed"
+			}
 			rows.Close()
+		} else {
+			report.Status = "failed"
 		}
 		rows, e = f.pool.Query(auditCtx, `SELECT run_id,reservation_id,actual_input_tokens,actual_output_tokens FROM execution_model_attempts ORDER BY created_at,operation_id`)
 		if e == nil {
@@ -301,7 +312,18 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 				}
 				report.Usage = append(report.Usage, a)
 			}
+			if rows.Err() != nil {
+				report.Status = "failed"
+			}
 			rows.Close()
+		} else {
+			report.Status = "failed"
+		}
+		if len(report.Attempts) != report.NativeAttempts || len(report.Usage) != report.NativeAttempts {
+			report.Status = "failed"
+		}
+		if report.Status != "passed" && !t.Failed() {
+			t.Error("native experiment evidence incomplete")
 		}
 		if os.WriteFile(os.Getenv("BUTLER_DELEGATION_NATIVE_REPORT"), nativeJSON(report), 0600) != nil {
 			t.Error("content-free scenario report unavailable")
@@ -493,6 +515,7 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 	}
 	config.Gate = false
 	restartedAt := time.Now()
+	v.ClaimExpiryWaitMillis = max(int64(0), oldClaimExpires.Sub(restartedAt).Milliseconds())
 	worker = start("restarted")
 	nativeWait(t, f.ctx, 5*time.Minute, func() bool {
 		var n int
@@ -505,7 +528,7 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 		}
 		return f.pool.QueryRow(f.ctx, `SELECT count(*) FROM task_delegations WHERE parent_task_id=$1 AND state='result_ready'`, root.TaskID).Scan(&n) == nil && n == 2
 	})
-	v.ClaimWaitMillis = time.Since(restartedAt).Milliseconds()
+	v.RecoveryAndChildMillis = time.Since(restartedAt).Milliseconds()
 	if time.Now().Before(oldClaimExpires) {
 		t.Fatal("accepted child resumed before real claim expiry")
 	}
@@ -531,6 +554,10 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 			t.Fatal("durable child projection invalid")
 		}
 		finals = append(finals, x)
+	}
+	if rows.Err() != nil {
+		rows.Close()
+		t.Fatal("actual child evidence read incomplete")
 	}
 	rows.Close()
 	if len(finals) != 2 {
@@ -574,6 +601,11 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 			t.Fatal("numeric model agreement promoted unverified task result")
 		}
 	}
+	parentFinal, err := completion.New(f.pool).GetByRun(f.ctx, v.ParentRunID)
+	if err != nil || parentFinal.Verdict != "unverified" || parentFinal.PrivacyRedacted || verifyNativeAdmissionReceipts(parentFinal.Content, v.ChildTaskIDs) != nil {
+		t.Fatal("native parent final failed exact receipt projection; no retry")
+	}
+	v.ParentReceiptCheck = true
 	v.UnverifiedAcceptanceDenied = true
 	if f.pool.QueryRow(f.ctx, `SELECT max(overlap) FROM (SELECT (SELECT count(*) FROM fixture_native_attempts a JOIN runs r USING(run_id) JOIN tasks t ON t.task_id=r.task_id JOIN run_final_results f USING(run_id) WHERE t.parent_task_id=$1 AND a.created_at<=p.created_at AND f.created_at>=p.created_at) overlap FROM fixture_native_attempts p JOIN runs r USING(run_id) JOIN tasks t ON t.task_id=r.task_id WHERE t.parent_task_id=$1) spans`, root.TaskID).Scan(&v.MaximumChildOverlap) != nil || v.MaximumChildOverlap != width {
 		t.Fatal("actual child execution did not demonstrate configured width")
