@@ -17,7 +17,7 @@ import (
 func TestFailedRunPersistsSafeTransportSubtype(t *testing.T) {
 	const private = "PRIVATE_DIAGNOSTIC_MARKER"
 	for _, kind := range []transport.ErrorType{transport.ErrorTypeProviderTimeout,
-		transport.ErrorTypeRateLimited, transport.ErrorTypeMemorySourceTimeout, transport.ErrorType(private)} {
+		transport.ErrorTypeRateLimited, transport.ErrorTypeModelCapacityUnavailable, transport.ErrorTypeMemorySourceTimeout, transport.ErrorType(private)} {
 		t.Run(string(kind), func(t *testing.T) {
 			runs := newMemoryRunManager()
 			current := &sessionv1.RunRecord{RunId: "diagnostic-run", SessionKey: "web:fixture", CurrentState: commonv1.RunState_RUN_STATE_MODEL_RUNNING}

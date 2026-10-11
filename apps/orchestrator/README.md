@@ -101,6 +101,15 @@ attempts,25 overall. Its durable counter and global baseline13 marker prevent
 replay/reset; no failed provider call triggers retry or fallback. See the
 [experiment plan](../../docs/ai/delegation-native-scenario-plan.md) for evidence.
 
+When delegation is configured, authenticated owner controls at
+`POST /api/v3/delegation-decisions/{parent_task_id}/{child_task_id}` accept
+`kind: reject` with the exact collected `report_source` and `evidence_refs`, or
+`kind: accept_verified` with the same pins plus `verified_result_id`. The latter
+must reference a separately persisted owner verification for that same final
+run. It preserves the original collected report/result and atomically generates
+and accepts the checked report. Decisions do not complete tasks or resume work.
+Without configured delegation, this route returns unavailable.
+
 The opt-in `antigravity` provider uses native Go AICode v1 HTTP/SSE for Gemini 3.8 Flash and
 normalizes native function proposals into the Orchestrator/Tool Broker flow.
 Control-plane authorization owns encrypted PostgreSQL OAuth import and refresh;

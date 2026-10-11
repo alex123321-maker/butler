@@ -12,6 +12,7 @@ import (
 
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/budget"
+	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -396,6 +397,11 @@ func scanResult(row scanner) (Result, error) {
 }
 
 func (s *Store) SaveVerifiedResult(ctx context.Context, result Result) (Result, error) {
+	actor, ok := owneridentity.FromContext(ctx)
+	_, worker := ownership.TokenFromContext(ctx)
+	if !ok || worker {
+		return Result{}, ErrUnauthorized
+	}
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return Result{}, err
@@ -404,6 +410,9 @@ func (s *Store) SaveVerifiedResult(ctx context.Context, result Result) (Result, 
 	record, err := scan(tx.QueryRow(ctx, `SELECT `+columns+` FROM tasks WHERE task_id=$1 FOR UPDATE`, result.TaskID))
 	if err != nil {
 		return Result{}, err
+	}
+	if actor.OwnerID != record.OwnerID || (actor.SessionKey != "" && actor.SessionKey != record.SessionKey) {
+		return Result{}, ErrUnauthorized
 	}
 	if record.Status == "completed" || record.Status == "cancelled" {
 		return Result{}, ErrConflict

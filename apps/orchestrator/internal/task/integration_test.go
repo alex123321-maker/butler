@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/apps/orchestrator/internal/run"
+	"github.com/butler/butler/internal/owneridentity"
 
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 )
@@ -123,7 +124,8 @@ func TestDurableTaskStorageIntegration(t *testing.T) {
 	if _, err = store.Transition(ctx, a.TaskID, a.Revision, "completed", results[3].ResultID); !errors.Is(err, ErrInvalid) {
 		t.Fatalf("unverified final completed task: %v", err)
 	}
-	verified, err := store.SaveVerifiedResult(ctx, Result{TaskID: a.TaskID, TaskRevision: a.Revision, RunID: ids[3], Summary: "Approved and sent", EvidenceRefs: []string{"approval:1", "delivery:receipt:1"}, VerifiedCriteria: a.CompletionCriteria, Verifier: "owner"})
+	owner := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: a.OwnerID, Channel: "web", DeliveryID: "verification-fixture"})
+	verified, err := store.SaveVerifiedResult(owner, Result{TaskID: a.TaskID, TaskRevision: a.Revision, RunID: ids[3], Summary: "Approved and sent", EvidenceRefs: []string{"approval:1", "delivery:receipt:1"}, VerifiedCriteria: a.CompletionCriteria, Verifier: "owner"})
 	if err != nil {
 		t.Fatal(err)
 	}

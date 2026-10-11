@@ -20,6 +20,7 @@ const (
 	ErrorTypeInvalidToolRequest       ErrorType = "invalid_tool_request"
 	ErrorTypeStatefulSessionLost      ErrorType = "stateful_session_lost"
 	ErrorTypeRateLimited              ErrorType = "rate_limited"
+	ErrorTypeModelCapacityUnavailable ErrorType = "model_capacity_unavailable"
 	ErrorTypeInternalTransportError   ErrorType = "internal_transport_error"
 	ErrorTypeMemorySourceStale        ErrorType = "memory_source_stale"
 	ErrorTypeMemorySourceTimeout      ErrorType = "memory_source_check_timeout"
@@ -37,7 +38,7 @@ func DiagnosticCode(err error) string {
 	case ErrorTypeProviderUnavailable, ErrorTypeTransportConnectionError,
 		ErrorTypeProviderTimeout, ErrorTypeProviderProtocolError,
 		ErrorTypeCapabilityMismatch, ErrorTypeInvalidToolRequest,
-		ErrorTypeStatefulSessionLost, ErrorTypeRateLimited,
+		ErrorTypeStatefulSessionLost, ErrorTypeRateLimited, ErrorTypeModelCapacityUnavailable,
 		ErrorTypeInternalTransportError, ErrorTypeInputBytesExceeded,
 		ErrorTypeMemorySourceStale, ErrorTypeMemorySourceTimeout:
 		return string(failure.Type)

@@ -2,6 +2,7 @@ package delegation
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -32,5 +33,22 @@ func TestBoundedReportIsDataAndCannotClaimNarrativeAuthority(t *testing.T) {
 	}
 	if _, err := ParseReport(append(raw, raw...)); err == nil {
 		t.Fatal("trailing report accepted")
+	}
+}
+
+func TestReportRejectsAmbiguousConflictingFields(t *testing.T) {
+	r := Report{TaskID: "task:fixture", TaskRevision: 1, ContractRevision: 1, ResultID: "result:fixture", Uncertainty: []Reason{{Kind: "verification_missing"}}}
+	raw, _ := json.Marshal(r)
+	for _, field := range []string{`"task_revision":2,"task_revision":1`, `"task_revision":2,"TASK_REVISION":1`, `"task_revision":2,"task_\u0072evision":1`} {
+		candidate := strings.Replace(string(raw), `"task_revision":1`, field, 1)
+		if _, err := ParseReport([]byte(candidate)); err == nil {
+			t.Fatal("conflicting revision interpretations accepted")
+		}
+	}
+	for _, nested := range []string{`"kind":"effect_unknown","kind":"verification_missing"`, `"kind":"effect_unknown","KIND":"verification_missing"`, `"kind":"effect_unknown","k\u0069nd":"verification_missing"`} {
+		candidate := strings.Replace(string(raw), `"kind":"verification_missing"`, nested, 1)
+		if _, err := ParseReport([]byte(candidate)); err == nil {
+			t.Fatal("conflicting uncertainty interpretations accepted")
+		}
 	}
 }

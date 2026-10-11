@@ -83,7 +83,24 @@ Actual completed-run results bind to strict Catalog reports containing action/
 evidence/budget references, uncertainty and reason enums. Acceptance requires an
 independent verifier adapter and never completes the task. Decision metadata has
 only pinned references, not narrative or model authority. Conflicting reports
-remain distinct. The [Task README](../../apps/orchestrator/internal/task/README.md)
+remain distinct.
+Independent result verification requires a trusted channel owner actor matching
+the task owner/session; a worker, mixed worker/owner context or claimed verifier
+string cannot persist that authority. After maintenance has collected an
+unverified final, `AcceptVerified` can atomically accept a separately verified
+result for that same immutable run. It rechecks the original report graph and
+current contracts, creates a fresh kernel report and applies the exact decision
+guard. Both original result/report references remain in decision history; no
+existing decision, task status, final content or execution permission is replaced.
+Structured reports reject duplicate keys, including nested/escaped/case aliases.
+The optional owning manager is exposed through the authenticated owner-only
+`POST /api/v3/delegation-decisions/{parent}/{child}` route. Fixed request kinds
+are `reject` and `accept_verified`; both require exact report/evidence references,
+and acceptance requires an existing independent verified result ID. Request
+owner IDs, worker proofs, host/resource overrides and narrative verdicts deny.
+No delegation composition means unavailable, not an alternate execution route.
+
+The [Task README](../../apps/orchestrator/internal/task/README.md)
 documents constructor/adapters and lock order. Actual PG/source/budget tests use
 two pooled connections; no model inference/effect is claimed. The optional
 private Broker route and ordinary durable workers are composed as described

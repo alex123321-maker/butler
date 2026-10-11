@@ -13,6 +13,8 @@ existing independent ownership and owner authority checks.
 The owning Task manager now has atomic child/session/input admission, bounded
 dependencies, result collection and guarded decisions. Report is a strict DATA
 projection of actual evidence references; shape validity is not verification.
+Report parsing rejects duplicate nested keys, including escaped and case aliases;
+ambiguous conflicting values never acquire last-value-wins semantics.
 No runtime tool or owner endpoint is enabled here. Production Catalog/Broker/
 context composition and actual model comparison remain pending acceptance.
 See `docs/architecture/delegation-contract.md`.

@@ -519,8 +519,13 @@ func New(ctx context.Context) (*App, error) {
 		postgres.Close()
 		return nil, err
 	}
+	var delegationDecisions apiservice.DelegationDecisions
+	if childLifecycle != nil {
+		delegationDecisions = childLifecycle
+	}
 	httpServer := newHTTPServer(httpServerDeps{
 		guardedTabOwner:            guardedTabOwner,
+		delegationDecisions:        delegationDecisions,
 		delegationHandler:          delegationHandler,
 		converterDelegationHandler: converterDelegationHandler,
 		memoryIndexing:             ownedSemantic,

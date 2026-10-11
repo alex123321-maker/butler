@@ -1,9 +1,56 @@
 # Failed delegation attempt observation — issue16
 
 This implements the separate historical observation bridge. Issue16 remains
-open: a successful native delegated research run, independent conflicting
-reports and the complete single-versus-bounded-parallel experiment remain
+open: a successful native delegated research run and the complete
+single-versus-bounded-parallel experiment remain
 pending. The shared deployment still has delegation disabled.
+
+## Independent conflict decision and owner verification
+
+Authenticated owner proof is now mandatory for `SaveVerifiedResult`; anonymous,
+foreign owner/session, worker and mixed worker/owner contexts deny. A claimed
+`verifier=owner` string cannot establish independence. `AcceptVerified` promotes
+an already collected unverified result using a new immutable owner result and a
+fresh kernel report for the same actual completed run. The original final,
+collected report and result remain retained, including explicit prior pointers.
+Unknown effects, partial finals, deleted originals, stale expected reports,
+unfinished child attempts, incomplete action evidence and replayed decisions deny
+without changing the collected decision or completing any task.
+
+The protected `POST /api/v3/delegation-decisions/{parent}/{child}` API accepts
+only exact reject/accept-verified shapes, source pins and stored verified result
+IDs. It creates neither verification nor execution authority. Ambiguous JSON
+keys, including nested/case/escaped aliases, deny in report parsing and the API.
+Actual PostgreSQL tests retain two contradictory synthetic finals (17 and23),
+read the current original Catalog witness (17), independently check both saved
+artifact bodies, and accept one/reject the other through the real owner API.
+This proves the objective decision boundary with scripted DATA; it does not
+claim that Gemini produced either research result or that a model critic passed.
+
+Narrow proof on snapshot `20261011-151633-537` passed race checks and vet at
+`/srv/storage/butler/agents/delegation-conflicts/reports/delegation-attempts-20261011T081636Z-202312`.
+Events SHA256: `21d96787eeccc81e6418707b5c9c6c0270be62d939eda29af1ab6d2bd371b543`.
+Expanded proof on the same immutable snapshot passed482 distinct test/subtest
+names in7 packages plus affected vet:
+`/srv/storage/butler/agents/delegation-conflicts/reports/delegation-attempts-20261011T081751Z-207209`.
+Events SHA256: `c8a036a1e656d487b501dc5c68c5596b9e1120b879acb6a91dbaea9c855c6718`.
+Seven explicit skips are the three separately tested Broker/container fixtures,
+two older service integrations and two API integrations; none is claimed as a
+passed scenario. Both proofs use disposable PG17, pool2, read-only source and
+zero actual model requests. Earlier failed projection/assertion/unfinished-lease
+fixtures remain in the report history rather than replacing successful evidence.
+
+The fifth bounded real native window remains FAILED at transport rejection:
+5 new attempts,18 series total,5 known and13 unknown usage pairs. The public
+immutable report is `deploy/delegation/native-scenario-fifth.json`, SHA256
+`5e180087d4e1d43fe52c6afac0c35763b69a8dfe906953a18eac49416bd7cded`.
+Its first child completed, but the second failed `rate_limited`, before paired
+semantic verification, width2 or the complete comparison. No retry/reset follows.
+
+New transport errors distinguish bounded recognized `HIGH_DEMAND` as
+`model_capacity_unavailable`; other429s remain `rate_limited`. One-call transport,
+run persistence and actual PG safe-audit tests pass without leaking raw provider
+details. Existing general rate-limit history is not retroactively reclassified.
 
 The owning manager reads a blocked immediate child under current parent authority
 with no live child lease/attempt. The PG projection reads actual terminal runs

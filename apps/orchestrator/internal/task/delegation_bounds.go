@@ -85,9 +85,11 @@ func (m *DelegationManager) dependenciesTx(ctx context.Context, tx pgx.Tx, root,
 }
 
 type delegationEvidence struct {
-	Report   *delegation.SourceRef `json:"report_source,omitempty"`
-	Decision *DelegationDecision   `json:"decision,omitempty"`
-	Blocked  string                `json:"blocked_reason,omitempty"`
+	Report           *delegation.SourceRef `json:"report_source,omitempty"`
+	Decision         *DelegationDecision   `json:"decision,omitempty"`
+	Blocked          string                `json:"blocked_reason,omitempty"`
+	PreviousReport   *delegation.SourceRef `json:"previous_report_source,omitempty"`
+	PreviousResultID string                `json:"previous_result_id,omitempty"`
 }
 
 func (m *DelegationManager) loadTx(ctx context.Context, tx pgx.Tx, id string) (DelegationRecord, error) {
