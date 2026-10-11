@@ -275,6 +275,20 @@ output-allocation defect. Keep production8192 and the existing fixed diagnostic;
 neither the live text test nor fixture success closes delegation/tool acceptance.
 See [the exact diagnosis and accounting](../ai/antigravity-quota-diagnosis.md).
 
+A separate Desktop diagnostic may use the retained Manager-owned authorization
+for explicitly allowlisted read-only metadata while denying **every** generation
+before upstream. It adds no inference admission, account fallback or production
+authority. Raw profiles/headers/responses stay inside the private backend;
+only fixed safe request projections are exported. The2026-10-12 installed
+Windows2.22 frontend/official same-CL Linux backend capture measured Flash-high,
+daily Cloud Code v1internal,65536 output and15 declarations, including additional
+LOW writes blocked before Google. The actual Go network-none fixture retained
+flat AICode/tiered/8192 and parsed SSE. This is not the original Windows backend
+capture or a causal defect; production transport and issue16 gates remain
+unchanged. Any live pair still requires new finite durable admission carrying
+all21 tracked attempts and seven sealed reports forward. See
+[Desktop capture evidence](../../deploy/antigravity/desktop-interception-20261012.json).
+
 ---
 
 ## 8. Core transport entities

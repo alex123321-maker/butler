@@ -18,6 +18,16 @@ and [the isolated capture command](../../../scripts/dev/antigravity-wire/README.
 Account subscription membership is confirmed; per-request subscription metering
 is still unknown.
 
+The separate Desktop2.22 pre-dispatch capture used the installed Windows frontend
+with an official same-CL Linux backend on isolated laba. It measured Flash-high,
+daily Cloud Code v1internal/SSE, a65536 allowance and15 declarations with a much
+larger client context. All primary/auxiliary writes were denied before Google;
+actual Go completed synthetic SSE with its unchanged8192 default. This is not
+the original Windows backend/owner-dialogue capture, a causal transport defect,
+or permission to copy Desktop fields/routes into this adapter. See
+[safe evidence](../../../deploy/antigravity/desktop-interception-20261012.json).
+No new real attempt or production behavior change resulted.
+
 Subsequent owner-authorized live checks completed both actual CLI (Flash-medium,
 daily CloudCode) and this Go Provider (Flash-tiered, AICode) with a diagnostic512
 cap. A separate Go request preserved the original body and8192, receiving

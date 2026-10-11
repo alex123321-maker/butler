@@ -33,6 +33,77 @@ New thinking usage290 is known only for attempts19/20. Baseline13 remains SEALED
 No main checkout/deployment or other issue was changed; issue16 acceptance is
 still separate.
 
+## Desktop High contract — captured before Google, zero inference
+
+The owner explicitly authorized controlling Desktop and capturing High. The
+installed Windows2.22.0 frontend was operated in a separate user-data/HOME
+instance against Google's official Linux2.22.0 backend on isolated laba. Both
+installed Windows and Linux backends report CL995734886; their hashes differ.
+This captures the real Desktop frontend/official Linux transport arrangement,
+not the original Windows backend or the owner's earlier successful dialogue.
+Retain that OS/backend qualification in every comparison.
+
+Offline synthetic auth/TLS with external egress denied was implemented first.
+Incomplete fixture configuration failed before a primary High request. A later
+private gateway admitted only real read-only metadata, original Manager-owned
+OAuth and exact registered avatar reads without credentials. All four encrypted
+credential-origin matches were true; the captured primary bearer matched the
+Manager's fresh access. No second login/profile import/account substitution.
+An initial avatar denial caused the diagnostic Desktop's auth failure; allowing
+that exact read resolved it. These preparation failures are not Butler defects.
+
+The following actual serialized requests contain the same49-byte asked text;
+they are **not identical full model contexts**:
+
+| Field | Desktop Gemini3.8 Flash High | Actual native Go fixture |
+| --- | --- | --- |
+| Model/experience | `gemini-3.8-flash-high` | `gemini-3.8-flash-tiered` |
+| Host | `daily-cloudcode-pa.googleapis.com` | `aicode.googleapis.com` |
+| Path/query | `/v1internal:streamGenerateContent?alt=sse` | `/v1:streamGenerateContent?alt=sse` |
+| Envelope | model/project/request/requestId/requestType/userAgent; nested sessionId | flat aicode/contents/generationConfig; no sessionId |
+| Output allowance |65536 |8192, unchanged production default |
+| Thinking | thinkingBudget=-1; no captured explicit HIGH level | no explicit thinkingConfig |
+| Complete input bytes |61694 |195 |
+| System instruction bytes |21638 |not supplied in this small fixture |
+| User text bytes including client additions |465 |49 |
+| Function declarations |15 in15 groups |none supplied |
+| Safe headers |JSON; UA mentions2.22.0 |JSON; Accept SSE; fixed native UA |
+
+Desktop's Accept value was not represented by the safe allowlist; absence is not
+proved. OAuth/raw authorization, account/project/session IDs, profile data,
+request bodies, thoughts and provider logs were not exported. Byte counts are
+not token usage. Native Go ran on Docker `--network none`, using synthetic OAuth
+and a loopback-only dial, and produced the expected actual SSE final.
+
+Each of the two completed High captures observed one primary request and three further
+LOW-thinking writes whose model/purpose/retry identity remains UNKNOWN. Every
+one was denied **before Google**. The incomplete synthetic phase separately saw
+`tabChat`. No retry policy was enabled, no tool ran, and no Desktop Google
+response/usage was obtained. These writes are not admissions22/23. Additional
+inference count is0; historical tracked21,7 known/14 unknown and subtotal
+26939 input/581 output remain unchanged. All seven older reports still match
+their exact hashes; baseline13 is SEALED and unchanged.
+
+AI Credit Overages was observed OFF in the original Desktop and the isolated
+instance without changing the switch. Pro membership remains confirmed by the
+earlier scoped server observations; per-native paid-bucket attribution and the
+100% meter's mapping remain unknown. The screenshots' weekly99%/five-hour96%
+remain separate owner observations, not newly measured consumption here.
+
+Evidence: [safe capture/verification artifact](../../deploy/antigravity/desktop-interception-20261012.json)
+and [operator README](../../scripts/dev/antigravity-desktop/README.md). Seven
+targeted tests passed with race and vet on laba, including actual native SSE,
+generation/write denial, account substitution rejection, exact-avatar credential
+stripping, input bounds and secret-safe projection. Operator JS syntax passed on
+laba. Owned containers/network/frontend/tunnel/proxy stopped; original Desktop,
+private evidence and the main checkout/deployment are preserved.
+
+**Established:** High and native tiered use different serialized profiles.
+**Not established:** that any one difference caused the historical429, that
+either meter represents native per-request billing, or that the native contract
+is invalid. Attempt21 still proves HIGH_DEMAND/capacity; fifth generic reason
+remains UNKNOWN. No production transport correction is justified by this capture.
+
 ## Actual CLI interception and bounded live results
 
 The [private comparison backend](../../scripts/dev/antigravity-compare/README.md)
@@ -100,8 +171,9 @@ selected display variant differs from CLI Medium and native tiered.
 
 The screenshots do not reveal the HTTP route, wire experience, full context,
 extra-credit setting, account audit, usage or upstream call count. The text was
-different from our fixed marker prompt. No private Desktop interception ran;
-do not call it an identical-request or byte comparison. The timezone is not
+different from our fixed marker prompt. The screenshots themselves are not a
+private HTTP capture; the subsequent isolated capture above is separate evidence.
+Do not call the owner dialogue an identical-request comparison. The timezone is not
 confirmed, so no precise interval is inferred from the displayed timestamp.
 One owner UI send is not necessarily one upstream call; retain this outside the
 21 agent-tracked admissions and known usage subtotal. Safe fixed observations
@@ -138,9 +210,10 @@ Desktop High/native tiered comparison, preceded by zero-generation contract and
 isolation checks. It has at most two generations,8192 output allocation each,
 45s per request/120s total and supplemental cost0, carrying all21 tracked
 attempts, seven immutable reports and the owner observation forward. It stops
-on the first rejection or unproved control. Desktop credit policy is currently
-unknown. This proposal has not run or been implemented in the existing sealed
-runner. Current evidence already proves capacity for21; further inference is
+on the first rejection or unproved control. Desktop overages are now observed
+OFF; its primary contract and auxiliary writes are captured above. The real
+pair still requires a new durable admission gate and tool/proposal controls;
+it has not run and cannot use an existing sealed runner. Current evidence already proves capacity for21; further inference is
 not required for that conclusion.
 
 ## Source-path audit

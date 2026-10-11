@@ -1,0 +1,320 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-11T18:48:16.305Z",
+  "phase": "COMPLETE_PRE_DISPATCH_CONTRACT_CAPTURE",
+  "upstream_generations_forwarded": 0,
+  "desktop_upstream_response_or_usage_obtained": false,
+  "source": {
+    "installed_windows_desktop_version": "2.22.0",
+    "windows_desktop_exe_sha256": "df5030f1f8e1fb6b1b732629e802455d1ff4bd2eeae5f38eb733163e92ad2dfa",
+    "app_asar_sha256": "259c83ffa266088dda6ede520a601bbf06cc5c34985cdf56c5d68549c98dbb0e",
+    "installed_windows_language_server_sha256": "11ae03b090e9fb548f99d8547aeab030d2a8dba9cc03aff897e23f6a1977956b",
+    "official_linux_language_server_sha256": "bbb745ed391e82bb18ed85ceef36bb646a2a0cf801903bc1ef0b8e6df8ba1bc8",
+    "both_language_server_build_cl": "995734886",
+    "official_linux_download": "https://storage.googleapis.com/antigravity-public/antigravity-hub/2.22.0-5446056071266304/unsigned/language_server-linux-x64",
+    "capture_snapshot": "20261012-013540-266",
+    "final_test_snapshot": "20261012-014328-823",
+    "operator_syntax_snapshot": "20261012-014542-993",
+    "qualification": "Installed Windows frontend via separate DEV_URL/user-data instance; official same-CL Linux backend on isolated laba. Not the original running Windows backend or the earlier owner dialogue."
+  },
+  "isolation": {
+    "normal_desktop_profile_imported": false,
+    "original_console_oauth_reused_privately": true,
+    "origin_audit_all_four_matches": true,
+    "second_google_login": false,
+    "desktop_primary_bearer_matches_manager_access": true,
+    "original_desktop_ai_credit_overages": false,
+    "isolated_desktop_ai_credit_overages": false,
+    "global_proxy_or_trust_changed": false,
+    "main_checkout_changed": false,
+    "main_deployment_changed": false,
+    "diagnostic_containers_and_network_removed": true,
+    "original_desktop_process_preserved": true,
+    "private_profiles_and_safe_reports_preserved": true
+  },
+  "compared_asked_text_kind": "FIXED_PUBLIC_SYNTHETIC_MARKER_49_BYTES; both clients contain it, full context differs",
+  "primary_desktop_request": {
+    "alt_sse": true,
+    "bearer_is_synthetic": false,
+    "bearer_matches_audited_access": true,
+    "content-type": "application/json",
+    "contents_count": 1,
+    "denied_before_upstream": true,
+    "fixture_prompt_present": true,
+    "function_declaration_count": 15,
+    "generation_config_keys": [
+      "maxOutputTokens",
+      "thinkingConfig"
+    ],
+    "host": "daily-cloudcode-pa.googleapis.com",
+    "max_output_tokens": 65536,
+    "method": "POST",
+    "model": "gemini-3.8-flash-high",
+    "path": "/v1internal:streamGenerateContent",
+    "real_model_calls": 0,
+    "recognized_top_keys": [
+      "model",
+      "project",
+      "request",
+      "requestId",
+      "requestType",
+      "userAgent"
+    ],
+    "request_bytes": 61694,
+    "session_id_present": true,
+    "system_instruction_bytes": 21638,
+    "thinking_budget": -1,
+    "tool_group_count": 15,
+    "unknown_top_key_count": 0,
+    "user_agent_is_native_butler": false,
+    "user_agent_mentions_desktop_version": true,
+    "user_text_bytes": 465
+  },
+  "native_request": {
+    "accept": "text/event-stream",
+    "alt_sse": true,
+    "bearer_is_synthetic": true,
+    "content-type": "application/json",
+    "contents_count": 1,
+    "fixture_prompt_present": true,
+    "generation_config_keys": [
+      "maxOutputTokens"
+    ],
+    "host": "aicode.googleapis.com",
+    "max_output_tokens": 8192,
+    "method": "POST",
+    "model": "gemini-3.8-flash-tiered",
+    "path": "/v1:streamGenerateContent",
+    "real_model_calls": 0,
+    "recognized_top_keys": [
+      "aicode",
+      "contents",
+      "generationConfig"
+    ],
+    "request_bytes": 195,
+    "session_id_present": false,
+    "unknown_top_key_count": 0,
+    "user_agent_is_native_butler": true,
+    "user_agent_mentions_desktop_version": false,
+    "user_text_bytes": 49
+  },
+  "native_fixture_final_verified": true,
+  "captured_serialized_generation_writes": [
+    {
+      "alt_sse": true,
+      "bearer_is_synthetic": false,
+      "bearer_matches_audited_access": true,
+      "content-type": "application/json",
+      "contents_count": 1,
+      "denied_before_upstream": true,
+      "fixture_prompt_present": true,
+      "generation_config_keys": [
+        "thinkingConfig"
+      ],
+      "host": "daily-cloudcode-pa.googleapis.com",
+      "method": "POST",
+      "model": "UNKNOWN",
+      "path": "/v1internal:streamGenerateContent",
+      "real_model_calls": 0,
+      "recognized_top_keys": [
+        "model",
+        "project",
+        "request",
+        "requestId",
+        "requestType",
+        "userAgent"
+      ],
+      "request_bytes": 1009,
+      "session_id_present": true,
+      "system_instruction_bytes": 559,
+      "thinking_budget": -1,
+      "thinking_level": "LOW",
+      "unknown_top_key_count": 0,
+      "user_agent_is_native_butler": false,
+      "user_agent_mentions_desktop_version": true,
+      "user_text_bytes": 49
+    },
+    {
+      "alt_sse": true,
+      "bearer_is_synthetic": false,
+      "bearer_matches_audited_access": true,
+      "content-type": "application/json",
+      "contents_count": 1,
+      "denied_before_upstream": true,
+      "fixture_prompt_present": true,
+      "function_declaration_count": 15,
+      "generation_config_keys": [
+        "maxOutputTokens",
+        "thinkingConfig"
+      ],
+      "host": "daily-cloudcode-pa.googleapis.com",
+      "max_output_tokens": 65536,
+      "method": "POST",
+      "model": "gemini-3.8-flash-high",
+      "path": "/v1internal:streamGenerateContent",
+      "real_model_calls": 0,
+      "recognized_top_keys": [
+        "model",
+        "project",
+        "request",
+        "requestId",
+        "requestType",
+        "userAgent"
+      ],
+      "request_bytes": 61694,
+      "session_id_present": true,
+      "system_instruction_bytes": 21638,
+      "thinking_budget": -1,
+      "tool_group_count": 15,
+      "unknown_top_key_count": 0,
+      "user_agent_is_native_butler": false,
+      "user_agent_mentions_desktop_version": true,
+      "user_text_bytes": 465
+    },
+    {
+      "alt_sse": true,
+      "bearer_is_synthetic": false,
+      "bearer_matches_audited_access": true,
+      "content-type": "application/json",
+      "contents_count": 1,
+      "denied_before_upstream": true,
+      "fixture_prompt_present": true,
+      "generation_config_keys": [
+        "thinkingConfig"
+      ],
+      "host": "daily-cloudcode-pa.googleapis.com",
+      "method": "POST",
+      "model": "UNKNOWN",
+      "path": "/v1internal:streamGenerateContent",
+      "real_model_calls": 0,
+      "recognized_top_keys": [
+        "model",
+        "project",
+        "request",
+        "requestId",
+        "requestType",
+        "userAgent"
+      ],
+      "request_bytes": 1009,
+      "session_id_present": true,
+      "system_instruction_bytes": 559,
+      "thinking_budget": -1,
+      "thinking_level": "LOW",
+      "unknown_top_key_count": 0,
+      "user_agent_is_native_butler": false,
+      "user_agent_mentions_desktop_version": true,
+      "user_text_bytes": 49
+    },
+    {
+      "alt_sse": true,
+      "bearer_is_synthetic": false,
+      "bearer_matches_audited_access": true,
+      "content-type": "application/json",
+      "contents_count": 1,
+      "denied_before_upstream": true,
+      "fixture_prompt_present": true,
+      "generation_config_keys": [
+        "thinkingConfig"
+      ],
+      "host": "daily-cloudcode-pa.googleapis.com",
+      "method": "POST",
+      "model": "UNKNOWN",
+      "path": "/v1internal:streamGenerateContent",
+      "real_model_calls": 0,
+      "recognized_top_keys": [
+        "model",
+        "project",
+        "request",
+        "requestId",
+        "requestType",
+        "userAgent"
+      ],
+      "request_bytes": 1009,
+      "session_id_present": true,
+      "system_instruction_bytes": 559,
+      "thinking_budget": -1,
+      "thinking_level": "LOW",
+      "unknown_top_key_count": 0,
+      "user_agent_is_native_butler": false,
+      "user_agent_mentions_desktop_version": true,
+      "user_text_bytes": 49
+    }
+  ],
+  "auxiliary_purpose_and_retry_identity": "UNKNOWN; LOW writes repeat without a retry setting being enabled; all denied before Google",
+  "earlier_metadata_capture": {
+    "report": "/srv/storage/butler/agents/antigravity-desktop/reports/desktop-metadata-capture-final.json",
+    "sha256": "3872fa1d8f8e6679f3428f780c2c4a67bed37a22c19a35f257a2d2f8fd02cd8f",
+    "primary_high_requests": 1,
+    "other_low_requests": 3,
+    "upstream_generations_forwarded": 0
+  },
+  "preparation_limitations": [
+    "Incomplete synthetic configuration failed at GetSlashCommands/default conversational config before a primary High request; synthetic tabChat was observed.",
+    "First real-metadata preparation blocked exact avatar read, yielding local auth failure; exact registered avatar without bearer/cookies resolved it. Neither is a historical Butler defect.",
+    "Desktop Accept header is not represented by the safe value allowlist; its absence is not established."
+  ],
+  "validation": {
+    "root": "/srv/storage/butler/agents/antigravity-desktop",
+    "go_vet_passed": true,
+    "race_passed": true,
+    "passed_tests": [
+      "TestSyntheticProjectionNeverExportsIdentityTokensOrPrompt",
+      "TestMetadataAvatarRequiresRegisteredURLAndDropsCredentials",
+      "TestActualNativeProviderUsesProductionContractAndParsesSSE",
+      "TestMetadataRejectsCredentialSubstitutionBeforeUpstream",
+      "TestSyntheticGenerationAlwaysRejectsWithoutUpstream",
+      "TestMalformedAndOversizedCaptureDoesNotExportValues",
+      "TestMetadataPolicyDeniesEveryGenerationAndWrite"
+    ],
+    "failures": 0,
+    "skips": 0,
+    "node_operator_syntax_check_passed_on_laba": true,
+    "tests": {
+      "path": "/srv/storage/butler/agents/antigravity-desktop/reports/desktop-20261011T184333Z-2265507-tests.jsonl",
+      "sha256": "a6cd097487cd9da14a225a03836c4654b8c4721439add044a5e335542f933f92"
+    },
+    "native": {
+      "path": "/srv/storage/butler/agents/antigravity-desktop/reports/desktop-20261011T184101Z-2256911-native.json",
+      "sha256": "052989e2cb030eea9fea9dbea5fdb170aeef9921502eaad3420e5e80538dc5c1"
+    },
+    "desktop": {
+      "path": "/srv/storage/butler/agents/antigravity-desktop/reports/desktop-wire-window-final.json",
+      "sha256": "27850c21b805457a808125013154755498a8d5cc73d97ff535a3a7efd27958a9"
+    },
+    "header_capture": {
+      "path": "/srv/storage/butler/agents/antigravity-desktop/reports/desktop-wire-final.json",
+      "sha256": "4e3e1108966033be47d1b6c6866c0c764fc97ba823c973ab11fa453d4cd4b886"
+    }
+  },
+  "retained_generation_reports": {
+    "deploy/delegation/native-scenario-failed.json": "28c75c31827f8a25ca8ed101e6e04b8264a7e66ee9ce18808d504d5af748c8f0",
+    "deploy/delegation/native-scenario-followup-failed.json": "f5d25f36b574464508a4124ac7490d525e75d8c8cf60111a0bb637637e777619",
+    "deploy/delegation/native-scenario-third-failed.json": "b7a4b35b7b587fb8f0561cbdb18f5ad8088b7939e673ffa290e06ec10410b89b",
+    "deploy/delegation/native-scenario-fourth.json": "72d95bb5ac0bcf5bd4d8d4b28b1de6beb10d819a348c7e5efb187295ce28a1f9",
+    "deploy/delegation/native-scenario-fifth.json": "5e180087d4e1d43fe52c6afac0c35763b69a8dfe906953a18eac49416bd7cded",
+    "deploy/antigravity/live-comparison-20261011.json": "6808c50e120b59a40c2c2d9b53babb7dba1e581a3fbcb29ddb3cae6b9491e472",
+    "deploy/antigravity/native8192-20261011.json": "f3474b9d7b6441d1a9ea66dcf84b8aecc7dbe0c7dfcc1494bff3eaa7c19dcdb5"
+  },
+  "accounting": {
+    "agent_tracked_attempts": 21,
+    "known_usage_pairs": 7,
+    "unknown_usage_pairs": 14,
+    "known_input_tokens_subtotal": 26939,
+    "known_output_tokens_subtotal": 581,
+    "new_real_attempts": 0,
+    "new_synthetic_usage_excluded": true,
+    "null_is_zero": false,
+    "owner_activity_separate": true
+  },
+  "conclusions": {
+    "desktop_high_contract_differs_from_native": true,
+    "causal_production_transport_defect_proven": false,
+    "production_transport_changed": false,
+    "attempt21_capacity_reason": "RESOURCE_EXHAUSTED/HIGH_DEMAND",
+    "fifth_historical_generic_reason": "UNKNOWN",
+    "subscription_membership": "Previously confirmed Google AI Pro; original authorization retained",
+    "per_native_paid_bucket_accounting": "UNKNOWN",
+    "issue16_closed": false,
+    "new_live_desktop_native_pair_run": false
+  }
+}

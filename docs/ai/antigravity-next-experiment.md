@@ -43,26 +43,53 @@ pair and must be ignored. The corrected helper projection was tested without
 further generation. Tracked cumulative attempts21, seven known/fourteen unknown
 usage pairs, known26939 input/581 output subtotal. No window may be reopened.
 
-## Desktop comparison — next bounded proposal, NOT RUN
+## Desktop comparison — contract captured, real pair NOT RUN
+
+The owner subsequently explicitly authorized controlling Desktop and capturing
+High. A separate installed Windows2.22.0 frontend/official same-CL Linux backend
+completed pre-dispatch capture with0 upstream generations. This is not a capture
+of the original Windows backend or the old owner dialogue. Exact qualification,
+source hashes and7 passed race/vet tests are in
+`deploy/antigravity/desktop-interception-20261012.json`.
+
+Primary request is now measured: `gemini-3.8-flash-high`, daily Cloud Code
+v1internal/SSE,61694 bytes, output65536, thinkingBudget=-1,21638 system bytes,
+15 declarations, nested session/project/request and465 user bytes including
+additions to the asked49-byte text. Actual Go with that asked text is195 bytes,
+flat AICode v1/tiered/output8192 and no tools/system in the small fixture.
+All generation writes were blocked, including three LOW auxiliary writes per
+completed High capture. Their model/purpose/retry identity remains UNKNOWN; none is
+an admission22. AI Credit Overages is observed OFF in both original and isolated
+Desktop. Real Desktop SSE/usage/result has not been obtained. This new helper
+has no inference-forwarding mode and cannot run the proposed pair.
 
 The owner supplied screenshots of Desktop's **Gemini 3.8 Flash High**, a completed
 short general-text dialogue at displayed local2026-10-12 00:03:25, Gemini weekly
 remaining99% and five-hour remaining96%. Timezone, exact HTTP route/experience,
-tokens, number of upstream calls and extra-credit settings are unknown. This is
+tokens and number of upstream calls are unknown in those screenshots; overages
+were subsequently observed OFF in settings. This is
 one owner UI observation, not a newly admitted agent attempt or the requested
 marker comparison. It is retained separately in
 `deploy/antigravity/desktop-observation-20261012.json`. Do not assume one UI send
 equals one upstream generation. The seven pinned generation reports still record
 21 agent-tracked attempts; this is not a complete account-wide usage count.
 
-**Hypothesis:** the working Desktop High request uses a different model experience
-or route from Butler tiered, possibly with different capacity availability.
-Client success alone does not prove this hypothesis. Capture actual serialized
-HTTP privately; a raw tcpdump cannot reveal encrypted TLS bodies. The existing
+**Remaining hypothesis:** the now-measured High/native profiles have different
+acceptance or capacity in the same short interval. Their model/route/context
+differences are established; a response comparison and causal attribution are
+not. The owner's earlier Windows request cannot be reconstructed from the
+screenshots. A raw tcpdump cannot reveal encrypted TLS bodies. The existing
 CLI/Go runner does not recognize or admit Desktop and must not be reused for it.
 No more live calls are needed to establish HIGH_DEMAND for21.
 
 Preparation must precede forwarding:
+
+Steps1/2 have completed for the controlled Windows-frontend/Linux-backend
+arrangement above; original-Windows-backend equivalence is not established.
+Step3 is pending. Also pin the new non-generation capture artifact and all
+seven generation hashes; do not confuse a successful blocked capture with an
+admitted model call. Desktop still advertises15 declarations without sidecars:
+prove proposal blocking before its executor rather than inferring empty tools.
 
 1. Pin the actual Desktop2.22 executable/transport version and public source
    literals. Prove its process-scoped proxy/trust behavior with fake credentials
@@ -89,13 +116,19 @@ authorization permits this finite profile; this document is not a ready runner:
 | --- | --- |
 | Asked user text | `Ответь ровно BUTLER_AGY_DESKTOP_COMPARE_20261012. Не вызывай инструменты.` |
 | Context | fresh blank dialogue; no owner files/history/MCP/skills/plugins; inspect bounded client-added context privately; block any function proposal before execution |
-| Clients and order | one Desktop High call through its observed pinned route, then one actual native Go/tiered/AICode v1 call with the same asked text |
+| Clients and order | one `gemini-3.8-flash-high` Desktop call through pinned daily Cloud Code v1internal, then one actual native Go/tiered/AICode v1 call with the same asked text |
 | Generation count | at most2 new upstream calls, at most1 per client; tracked ordinals22/23; every auxiliary generation denied before upstream |
 | Input bound |65,536 complete serialized bytes per request; reserve1,048,576 input tokens per request absent a verified tighter tokenizer |
 | Output allocation |8192 each, at most16,384 reserved; preserve native production allocation and apply the explicit same bound to Desktop before forwarding |
 | Response bound |65,536 bytes per response; stop on overflow |
 | Time |45s per generation;120s total after preparation; no retry with unused allowance |
 | Supplemental money |0; extra credits/overages disabled and privately verified for both clients; no API-key, purchase or account fallback; measured money remains NULL if absent |
+
+The8192 Desktop limit deliberately lowers its captured65536 allocation; record
+that override. Keep native8192 unchanged. Current61,694-byte input leaves little
+headroom, so check the complete newly serialized body before every dispatch.
+Reject all auxiliary writes, including the observed UNKNOWN/LOW profile, before
+admission. One UI send must never authorize its extra requests or a retry.
 
 Stop the entire new window immediately on HTTP429/HIGH_DEMAND, unknown error,
 timeout, malformed response, output exhaustion, tool proposal, changed model/
