@@ -19,6 +19,21 @@ CREATE TABLE task_delegations (
  CHECK(task_id<>parent_task_id)
 );
 CREATE INDEX task_delegations_root ON task_delegations(root_task_id,created_at);
+CREATE FUNCTION reject_delegation_contract_change() RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+ IF ROW(NEW.task_id,NEW.root_task_id,NEW.parent_task_id,NEW.parent_revision,
+        NEW.parent_constraints_revision,NEW.contract_revision,NEW.contract_source_id,
+        NEW.contract_json,NEW.budget_json,NEW.deadline,NEW.depth)
+    IS DISTINCT FROM
+    ROW(OLD.task_id,OLD.root_task_id,OLD.parent_task_id,OLD.parent_revision,
+        OLD.parent_constraints_revision,OLD.contract_revision,OLD.contract_source_id,
+        OLD.contract_json,OLD.budget_json,OLD.deadline,OLD.depth) THEN
+  RAISE EXCEPTION 'delegation contract identity, authority and allowance are immutable';
+ END IF;
+ RETURN NEW;
+END $$;
+CREATE TRIGGER delegation_contract_immutable BEFORE UPDATE ON task_delegations
+ FOR EACH ROW EXECUTE FUNCTION reject_delegation_contract_change();
 CREATE TABLE task_delegation_dependencies (
  task_id TEXT NOT NULL REFERENCES task_delegations(task_id) ON DELETE CASCADE,
  depends_on_task_id TEXT NOT NULL REFERENCES task_delegations(task_id),

@@ -6,6 +6,7 @@ END $$;
 DROP FUNCTION butler_task_check_delegation(TEXT);
 DROP TABLE task_delegation_dependencies;
 DROP TABLE task_delegations;
+DROP FUNCTION reject_delegation_contract_change();
 ALTER TABLE execution_budget_scopes DROP CONSTRAINT execution_budget_scopes_kind_check;
 ALTER TABLE execution_budget_scopes ADD CONSTRAINT execution_budget_scopes_kind_check
  CHECK(kind IN ('task','mandate','owner_day','conversation','auxiliary'));

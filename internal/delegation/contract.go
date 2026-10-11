@@ -4,11 +4,13 @@ package delegation
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"github.com/jackc/pgx/v5"
 	"strings"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
 var ErrDenied = errors.New("delegation is stale or outside its bounded contract")
@@ -58,30 +60,43 @@ type Contract struct {
 }
 
 func Validate(c Contract, now time.Time) error {
-	if c.TaskID == "" || c.ParentTaskID == "" || c.RootTaskID == "" || c.TaskID == c.ParentTaskID || c.ParentRevision < 1 || c.ConstraintsRevision < 1 || c.Revision != 1 || c.Depth < 1 || c.Depth > 3 || !c.Deadline.After(now) || c.Deadline.After(now.Add(24*time.Hour)) || len(c.Permissions) > 32 || len(c.Sources) > 64 {
+	if c.TaskID == "" || c.ParentTaskID == "" || c.RootTaskID == "" || c.TaskID == c.ParentTaskID || c.TaskID == c.RootTaskID || c.ParentRevision < 1 || c.ConstraintsRevision < 1 || c.Revision != 1 || c.Depth < 1 || c.Depth > 3 || !c.Deadline.After(now) || c.Deadline.After(now.Add(24*time.Hour)) || len(c.Permissions) > 32 || len(c.Sources) > 64 {
 		return ErrDenied
 	}
 	seen := map[string]bool{}
 	for _, p := range c.Permissions {
-		if p.Tool == "" || len(p.Tool) > 128 || seen[p.Tool] || len(p.ContractHash) != 64 || len(p.Resources) < 1 || len(p.Resources) > 16 || len(p.Effects) < 1 || len(p.Effects) > 4 || len(p.Credentials) > 16 {
+		if p.Tool == "" || len(p.Tool) > 128 || strings.ContainsAny(p.Tool, "\x00\r\n* ?/\\") || seen[p.Tool] || !validHash(p.ContractHash) || len(p.Resources) < 1 || len(p.Resources) > 16 || len(p.Effects) < 1 || len(p.Effects) > 4 || len(p.Credentials) > 16 {
 			return ErrDenied
 		}
 		seen[p.Tool] = true
+		resources := map[string]bool{}
 		for _, r := range p.Resources {
-			if r == "" || len(r) > 2048 || strings.ContainsAny(r, "\x00\r\n*") {
+			if r == "" || len(r) > 2048 || strings.ContainsAny(r, "\x00\r\n*") || resources[r] {
 				return ErrDenied
 			}
+			resources[r] = true
 		}
+		effects := map[string]bool{}
 		for _, e := range p.Effects {
-			if e != "read" && e != "prepare" && e != "commit" && e != "unknown" {
+			if (e != "read" && e != "prepare" && e != "commit" && e != "unknown") || effects[e] {
 				return ErrDenied
 			}
+			effects[e] = true
+		}
+		credentials := map[CredentialRef]bool{}
+		for _, ref := range p.Credentials {
+			if ref.Alias == "" || len(ref.Alias) > 256 || ref.Field == "" || len(ref.Field) > 128 || strings.ContainsAny(ref.Alias+ref.Field, "\x00\r\n*") || credentials[ref] {
+				return ErrDenied
+			}
+			credentials[ref] = true
 		}
 	}
+	seenSources := map[string]bool{}
 	for _, r := range append(append([]SourceRef(nil), c.Sources...), c.ContractSource) {
-		if r.ID == "" || r.Revision < 1 || r.AccessRevision < 1 || len(r.Hash) != 64 {
+		if r.ID == "" || len(r.ID) > 512 || strings.ContainsAny(r.ID, "\x00\r\n") || r.Revision < 1 || r.AccessRevision < 1 || !validHash(r.Hash) || seenSources[r.ID] {
 			return ErrDenied
 		}
+		seenSources[r.ID] = true
 	}
 	for _, v := range []int64{c.Budget.ModelTurns, c.Budget.Tokens, c.Budget.CostMicros, c.Budget.ExternalCalls, c.Budget.Children, c.Budget.ActiveMillis, c.Budget.EgressBytes, c.Budget.ProviderInputBytes} {
 		if v < 0 {
@@ -117,9 +132,13 @@ func LoadTx(ctx context.Context, tx pgx.Tx, id string) (*Contract, error) {
 	if !exists {
 		return nil, nil
 	}
-	var raw []byte
+	var raw, budgetRaw []byte
 	var state, input string
-	e := tx.QueryRow(ctx, `SELECT contract_json,state,input_id FROM task_delegations WHERE task_id=$1`, id).Scan(&raw, &state, &input)
+	var root, parent, source string
+	var parentRevision, constraintsRevision, contractRevision int64
+	var depth int
+	var deadline, created time.Time
+	e := tx.QueryRow(ctx, `SELECT contract_json,state,input_id,root_task_id,parent_task_id,parent_revision,parent_constraints_revision,contract_revision,contract_source_id,budget_json,deadline,depth,created_at FROM task_delegations WHERE task_id=$1`, id).Scan(&raw, &state, &input, &root, &parent, &parentRevision, &constraintsRevision, &contractRevision, &source, &budgetRaw, &deadline, &depth, &created)
 	if errors.Is(e, pgx.ErrNoRows) {
 		return nil, nil
 	}
@@ -127,11 +146,20 @@ func LoadTx(ctx context.Context, tx pgx.Tx, id string) (*Contract, error) {
 		return nil, e
 	}
 	var c Contract
-	if e = json.Unmarshal(raw, &c); e != nil || c.TaskID != id {
+	var limits Limits
+	if e = json.Unmarshal(raw, &c); e != nil || json.Unmarshal(budgetRaw, &limits) != nil || Validate(c, created) != nil || c.TaskID != id || c.RootTaskID != root || c.ParentTaskID != parent || c.ParentRevision != parentRevision || c.ConstraintsRevision != constraintsRevision || c.Revision != contractRevision || c.ContractSource.ID != source || c.Budget != limits || c.Depth != depth || !c.Deadline.Equal(deadline) {
 		return nil, ErrDenied
 	}
 	c.State, c.InputID = state, input
 	return &c, nil
+}
+
+func validHash(hash string) bool {
+	if len(hash) != 64 || strings.ToLower(hash) != hash {
+		return false
+	}
+	_, err := hex.DecodeString(hash)
+	return err == nil
 }
 
 func Allows(c *Contract, tool, hash, resource, effect string, refs []CredentialRef) bool {
