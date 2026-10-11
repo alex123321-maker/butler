@@ -5,6 +5,12 @@ Installed declarative capability admission is specified in
 version/review state and current task permission are checked before credential
 inspection and within irreversible dispatch; package code is never installed.
 
+The additive [isolated code workspace store](isolated-code-workspaces.md) prepares
+bounded owner/task/version-bound code artifacts with file CAS and private temporary
+directories. It exposes no filesystem or shell tool. Production use requires
+current resource leases, budgets, provenance and Broker admission; an uncertain
+filesystem/PG boundary blocks instead of replaying a patch.
+
 Current execution policy is defined by
 [exact action authorization](action-authorization-contract.md): the complete
 action, current contract/resource/task versions and credential metadata are

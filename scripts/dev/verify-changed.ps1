@@ -26,7 +26,7 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "^(internal/resources/|internal/workspace/|migrations/058_execution_resource_leases[.]|migrations/060_.*workspace.*[.])" {
+    "^(internal/resources/|migrations/058_execution_resource_leases[.])" {
       [void]$specs.Add("docs/architecture/resource-lease-contract.md")
       [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
       [void]$specs.Add("docs/architecture/credential-management.md")
@@ -38,6 +38,13 @@ foreach ($file in $files) {
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/execution-budget-contract.md")
       [void]$tests.Add("ssh laba: targeted Go race tests ./internal/delegation ./internal/actionauth ./internal/budget ./apps/orchestrator/internal/task ./apps/tool-broker/internal/broker; Sync first")
+      continue
+    }
+    "^(internal/workspace/|migrations/060_isolated_code_workspaces[.]|scripts/dev/workspace-lab[.]sh$)" {
+      [void]$specs.Add("docs/architecture/isolated-code-workspaces.md")
+      [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
+      [void]$specs.Add("docs/architecture/agent-security-boundaries.md")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/durable-tasks/current/scripts/dev/workspace-lab.sh /srv/storage/butler/agents/durable-tasks' after isolated source Sync")
       continue
     }
     "^(internal/acceptance/|cmd/acceptance/|testdata/acceptance/|scripts/dev/fault-lab[.]|apps/orchestrator/internal/input/process_fault_integration_test[.]go$)" {
