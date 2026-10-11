@@ -118,3 +118,13 @@ migration completion before recovering readiness probes. For selective releases
 using `up --no-deps`, build and run the current migrator first and verify its exit
 status before starting the executor, Broker, Orchestrator and Web. Otherwise the
 Broker can start before migration 050 creates the durable extension catalog.
+
+Owned semantic memory and the optional PDF/OCR sandbox are preserved by lab
+lifecycle commands when `BUTLER_LAB_ROOT/memory-semantic/compose.env` and
+`BUTLER_LAB_ROOT/memory-parser/compose.env` exist. The semantic descriptor holds
+the reviewed local service identity; the parser descriptor may be empty. Keep
+the existing finite provider policy and add the exact local embedding price
+without replacing native provider prices. Neither descriptor holds a raw token.
+Provision the private independent deletion anchor before migrations046–049 and
+retain a separate newest anchor copy alongside every retained content backup.
+Initialize only a nonexistent manifest, never an empty replacement after loss.

@@ -28,6 +28,7 @@ import (
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/butler/butler/internal/security/egress/egresstest"
 	"github.com/jackc/pgx/v5"
@@ -64,6 +65,7 @@ func e2eDatabase(t *testing.T) (*pgxpool.Pool, string) {
 		t.Fatal(err)
 	}
 	cfg.ConnConfig.RuntimeParams["search_path"] = schema + ",public"
+	cfg.MaxConns = 2
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		t.Fatal(err)
@@ -161,6 +163,15 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 		t.Fatal(err)
 	}
 	authoritativeCtx := ownership.WithToken(ctx, leases.Authority(), ownership.Token{SessionKey: sessionKey, RunID: run.GetRunId(), LeaseID: lease.LeaseID, FenceEpoch: lease.FenceEpoch})
+	manifestPath := filepath.Join(t.TempDir(), "deletions.log")
+	manifest := catalog.NewFileManifest(manifestPath)
+	if err = manifest.Initialize(); err != nil {
+		t.Fatal(err)
+	}
+	sourceCatalog := catalog.New(pool, manifest)
+	if err = sourceCatalog.PinTranscript(authoritativeCtx, sessionKey, 0); err != nil {
+		t.Fatal("owned transcript source pin", err)
+	}
 	approvalRepo := approvals.NewPostgresRepository(pool)
 	approvalRepo.SetCheckpointHooks(boundaryCheckpointHooks{})
 	approvalService := approvals.NewService(approvalRepo, nil)
@@ -216,7 +227,7 @@ func TestApprovedCredentialBrokerBrowserE2E(t *testing.T) {
 		t.Fatal("private token fixture unavailable")
 	}
 	brokerAddress := freeAddress(t)
-	childService(t, os.Getenv("BUTLER_BROKER_E2E_BINARY"), brokerAddress, "BUTLER_POSTGRES_URL="+dsn, "BUTLER_TOOL_REGISTRY_PATH="+catalogPath, "BUTLER_ACTION_CONTEXT_URL="+authority.URL, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+tokenPath, "BUTLER_BROWSER_TEST_SECRET="+secret)
+	childService(t, os.Getenv("BUTLER_BROKER_E2E_BINARY"), brokerAddress, "BUTLER_POSTGRES_URL="+dsn, "BUTLER_TOOL_REGISTRY_PATH="+catalogPath, "BUTLER_ACTION_CONTEXT_URL="+authority.URL, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+tokenPath, "BUTLER_BROWSER_TEST_SECRET="+secret, "BUTLER_MEMORY_DELETION_MANIFEST_FILE="+manifestPath)
 	client, err := tools.DialWithTokenFile(brokerAddress, tokenPath)
 	if err != nil {
 		t.Fatal(err)

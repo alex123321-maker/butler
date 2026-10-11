@@ -92,11 +92,12 @@ several times. A stable check identity/error class on the same source revision
 coalesces three distinct attempts. A passing newer check, different latest
 condition, or a newer verified prepared-correction result invalidates an older
 candidate before promotion. The exact stored fact is checked again after budget
-waits. Source lifecycle deployment must wire `catalog.CheckRunSources` into
-the observer and `catalog.CheckRunSourcesTx` into its store's `RunDataGuardTx`.
-The recorded-check adapter and promotion fail closed without these hooks; this
-staged branch needs the source-lifecycle bootstrap integration before
-production acceptance. Immutable manifest lookup during promotion uses the same
+waits. The observer validates historical source pins in a fresh ordinary
+transaction with `catalog.CheckRunSourcesTx`; it never borrows a completed run's
+lease. The store's `RunDataGuardTx` uses the same source-only guard. Bootstrap now
+wires both hooks alongside the persistent deletion anchor. The recorded-check
+adapter and promotion fail closed without them. Live generative planning remains
+separate outstanding acceptance. Immutable manifest lookup during promotion uses the same
 owned transaction and cannot borrow an additional connection while locks are held.
 
 The owner UI exposes inspection, pause/enable controls, active hours, templates,

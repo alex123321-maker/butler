@@ -1,0 +1,217 @@
+{
+  "status": "AVAILABLE_CONTRACTS_PASSED_ISSUE_33_PENDING",
+  "baseline_commit": "dfff7f7fc8ee6c8ad23fe093175b85a6d2b4e041",
+  "tested_commit": "189320fb8b789c0c4cb76fa0a0f2cc5c70cd259b",
+  "source_snapshot": "20261011-065339-408",
+  "lab_proof_root": "/srv/storage/butler/agents/durable-tasks/reports/fault-20261010T235341Z-2382388",
+  "source_tree_sha256": "b580146a2b9284953dc1d58e4f76ee63dcbf3e7a0bc690d1363a85fc0a400c39",
+  "schema_sha256": "f3709d847d72522beb9a3e119c2764f1fd7d9da3d766d0a5645e52620c10e302",
+  "corpus_digest": "4d9f997a94489a1d564b0218b4018e1820754e6471a240aee35ab565d03b5876",
+  "criteria_sha256": "c9313d3a7bde401f91096e74c2c26904c2e8bd311d4651b08b7b3cb926f85489",
+  "hardware": {
+    "kernel": "7.0.0-34-generic",
+    "logical_cpus": 12,
+    "host_ram_kib": 15693396,
+    "cpu_manifest_sha256": "0cdcaa9ff53b0609df18baba46972fbb60987a421a79f4dc83b50fc599fc014a",
+    "go_image": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61",
+    "postgres_image": "sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d",
+    "redis_image": "sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499",
+    "go": "1.27.2",
+    "core_test_memory_limit_bytes": 1610612736,
+    "database_memory_limit_bytes": 536870912,
+    "effects": "synthetic_fixture_only"
+  },
+  "browser_image": "sha256:2819ba6ab15df584366426f60c3db37141a6fa6b3aa532f4f074f306f5f25998",
+  "backup_dump_sha256": "4ea8c37e47764ff1a0358a6995625c9a77bd213371c4e60eb7fa49c07a86d549",
+  "profile": "full",
+  "selected_passed": true,
+  "issue_33_ready": false,
+  "groups": [
+    {
+      "id": "ownership",
+      "status": "PASS",
+      "required_tests": 2,
+      "events_sha256": "103927c16a09ce3d75d2b86ff18c3f38e23b76a83f38ec5a93f7aeeb595ddeda"
+    },
+    {
+      "id": "approval",
+      "status": "PASS",
+      "required_tests": 14,
+      "events_sha256": "1cbfaceeffb31f58ad8097fea1c08e80158509ad9a6416d80bc94ca13a47828f"
+    },
+    {
+      "id": "owner-stop",
+      "status": "PASS",
+      "required_tests": 9,
+      "events_sha256": "500ce5342b20962cf6ae8cb7f0e516a2827fa7dcd8c26f44ddacd85e608b93aa"
+    },
+    {
+      "id": "authority",
+      "status": "PASS",
+      "required_tests": 5,
+      "events_sha256": "b8c9f374f28f6df7fd4c7c2b78461798cb06b57a0b05f34c146828466689c1dd"
+    },
+    {
+      "id": "effects",
+      "status": "PASS",
+      "required_tests": 8,
+      "events_sha256": "40c970d34579fa4873150170bfa44a04e1d0755afc95a5e83480500de5d34fef"
+    },
+    {
+      "id": "delivery",
+      "status": "PASS",
+      "required_tests": 7,
+      "events_sha256": "d5119ea84cbe490ef8409146ea8e052dfb8b6e8365e24c580fc2c3891702b573"
+    },
+    {
+      "id": "budget",
+      "status": "PASS",
+      "required_tests": 6,
+      "events_sha256": "d0b9bb0e705f5cbac1e504558fd6ffef2fa3afcb27bee5fca874be6d430d5ef1"
+    },
+    {
+      "id": "context",
+      "status": "PASS",
+      "required_tests": 5,
+      "events_sha256": "4c13e404fbaac4010a532c479b5292e7ce499ae535ad7e60733da1906001fc04"
+    },
+    {
+      "id": "memory",
+      "status": "PASS",
+      "required_tests": 9,
+      "events_sha256": "63fe360fe644c6d06604b779067db44e562a263fced53d5ab41f989138739221"
+    },
+    {
+      "id": "source-index",
+      "status": "PASS",
+      "required_tests": 7,
+      "events_sha256": "4eb95459700f21c6a9851d2122ed4310863700969ac183e6f7a50a0d84049ad9"
+    },
+    {
+      "id": "auxiliary",
+      "status": "PASS",
+      "required_tests": 5,
+      "events_sha256": "6227eb3582c80b38bc43b36584dbfccf175b3cd81d21d281336bcbae07a6af26"
+    },
+    {
+      "id": "model-pressure",
+      "status": "PASS",
+      "required_tests": 7,
+      "events_sha256": "73a4504e66691d2629945eace8dd812540a62632470145244fd56f0c9a1b7070"
+    },
+    {
+      "id": "extensions",
+      "status": "PASS",
+      "required_tests": 6,
+      "events_sha256": "ec843af00dad66d017b4b51ebec0207a0e1045653d2a4a5e3f915ee29a716d10"
+    },
+    {
+      "id": "browser",
+      "status": "PASS",
+      "required_tests": 6,
+      "events_sha256": "2ba4ca8d1d4cff177de2653281dd922d13f59edcb27a5e9f6ab075c384b5dee9"
+    },
+    {
+      "id": "broker-browser",
+      "status": "PASS",
+      "required_tests": 3,
+      "events_sha256": "e49c5997a8ac9db1bf1e9ee15998fddfad755f2d7d64d9c32f0af19f57852570"
+    },
+    {
+      "id": "credential-e2e",
+      "status": "PASS",
+      "required_tests": 1,
+      "events_sha256": "5f1df42db7ba1bd0697ab8fb16fb49e43ab073a53634b6cd6436c8cbfdf8c700"
+    },
+    {
+      "id": "extension-e2e",
+      "status": "PASS",
+      "required_tests": 1,
+      "events_sha256": "f3dfba8db41ccf10e3f8830367d6b749bea10a9225720a93ad7934103c28056c"
+    },
+    {
+      "id": "backup-seed",
+      "status": "PASS",
+      "required_tests": 1,
+      "events_sha256": "d765fcd676c388bbcf0e460a1219b5b5450eb78c4495a169bf74691902b846da"
+    },
+    {
+      "id": "backup-delete",
+      "status": "PASS",
+      "required_tests": 1,
+      "events_sha256": "421be4402e878d07864d14eda8991abb2182d670d385af8f05fc4ac8a939e3a2"
+    },
+    {
+      "id": "backup-restore",
+      "status": "PASS",
+      "required_tests": 1,
+      "events_sha256": "86c019e427eec6afc01f7e69aa14827eea1bc6c1edd28b963e452d88d557715d"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "browser-observe-act",
+      "status": "PASS"
+    },
+    {
+      "id": "approval-restart",
+      "status": "PASS"
+    },
+    {
+      "id": "stop-and-ownership",
+      "status": "PASS"
+    },
+    {
+      "id": "effect-and-delivery",
+      "status": "PASS"
+    },
+    {
+      "id": "fresh-context-and-deletion",
+      "status": "PASS"
+    },
+    {
+      "id": "shared-cost-and-loop",
+      "status": "PASS"
+    },
+    {
+      "id": "delegation-conflict",
+      "status": "PENDING"
+    },
+    {
+      "id": "untrusted-content",
+      "status": "PENDING"
+    },
+    {
+      "id": "model-memory-pressure",
+      "status": "PENDING"
+    },
+    {
+      "id": "installed-extension-boundaries",
+      "status": "PASS"
+    },
+    {
+      "id": "extension-release-rollback",
+      "status": "PENDING"
+    },
+    {
+      "id": "russian-model-evaluation",
+      "status": "PENDING"
+    },
+    {
+      "id": "full-release-chain",
+      "status": "PENDING"
+    }
+  ],
+  "model_status": "NO_GO",
+  "actual_model_calls": 0,
+  "corpus_cases": 240,
+  "source_groups": 30,
+  "eligible_holdout_cases": 76,
+  "secret_cases_blocked_before_model": 4,
+  "limits": [
+    "Go/Chromium tests use synthetic credentials and fixture effects; passing tests assert contracts, not broad model task success.",
+    "Controlled worker OOM is not measured operating-system OOM of deployed weights.",
+    "Model accuracy, missed-event/false-initiative rates and single/multi-agent full cost are unmeasured until independently approved pinned observation runs exist.",
+    "Issue #33 cannot pass while release-chain/delegation/skills/repair dependencies remain pending. No skipped required test counts as proof."
+  ]
+}

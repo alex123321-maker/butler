@@ -16,7 +16,7 @@ try {
       failures.push(`API HTTP ${response.status()} ${new URL(response.url()).pathname}`)
     }
   })
-  for (const [path, title] of [['/', 'Overview'], ['/tasks', 'Tasks'], ['/approvals', 'Approvals'], ['/memory', 'Memory']]) {
+  for (const [path, title] of [['/', 'Overview'], ['/tasks', 'Tasks'], ['/approvals', 'Approvals'], ['/memory', /^Memory(?: and sources)?$/]]) {
     await page.goto(new URL(path, baseURL).href)
     await page.getByRole('heading', { name: title, exact: true }).waitFor()
     await page.waitForLoadState('networkidle')

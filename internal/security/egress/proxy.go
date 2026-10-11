@@ -44,7 +44,11 @@ func NewScopedProxy(policy Policy, origin string, expires time.Time, limit int64
 	}
 	proxy := &ScopedProxy{listener: listener, policy: policy, origin: parsed, expires: expires, counter: NewCounter(limit), inbound: NewCounter(20 * 1024 * 1024), tunnels: map[net.Conn]bool{}, requests: map[uint64]context.CancelFunc{}}
 	proxy.server = &http.Server{Handler: proxy, ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 10 * time.Second, MaxHeaderBytes: 32 * 1024}
+	// AfterFunc may call Close before the returned timer has been assigned. The
+	// callback reads timer under mu, so initialize it under the same lock.
+	proxy.mu.Lock()
 	proxy.timer = time.AfterFunc(time.Until(expires), func() { _ = proxy.Close() })
+	proxy.mu.Unlock()
 	go func() { _ = proxy.server.Serve(listener) }()
 	return proxy, nil
 }

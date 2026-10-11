@@ -54,6 +54,8 @@ func TestExtensionDisableLinearizesWithGrantClaimIntegration(t *testing.T) {
 	go func() { claimed <- store.ClaimGrant(ctx, grant.ID) }()
 	select {
 	case <-guard.locked:
+	case err := <-claimed:
+		t.Fatalf("claim failed before current installation lock: %v", err)
 	case <-ctx.Done():
 		t.Fatal("claim did not hold current installation")
 	}
