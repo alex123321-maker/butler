@@ -160,7 +160,43 @@ recorded; this actual failure is not replaced by preparation PASS.
 
 The report's empty child result arrays and false unfinished-phase flags preserve
 the failed boundary; they must not be interpreted as completed observations.
-The exact child stop reason is not established by the content-free report.
-Disposable schema cleanup ran after failure. Diagnosis requires a separately
-reviewed zero-inference reproduction, not another model experiment. Issue16
-acceptance, single-versus-parallel comparison and closure remain unestablished.
+The content-free report did not establish the exact child stop reason.
+Disposable schema cleanup ran after failure; the original private PG files were
+preserved, but their fixture schema had already been removed. Issue16 acceptance,
+single-versus-parallel comparison and closure remain unestablished.
+
+## Zero-inference recovery diagnosis
+
+The isolated reproduction used actual PostgreSQL with two pooled connections,
+real separate Broker/private admission, current Catalog and the ordinary input
+workers. Its provider only counts entry and synchronously denies; no native
+provider, credential import, proxy, model stream or model response is involved.
+Before the fix, both fresh and naturally expired queued claims stopped before
+provider entry even though current Catalog loading and MarkExecuting passed.
+
+The worker correctly retains its accepted input ID as the run deduplication key.
+The delegated envelope validator incorrectly required that rewritten key to equal
+the original kernel event ID. Production fix `2233c85` adds a typed owning-store
+verification of the actual current claim/run/fence, session owner, active pinned
+task and exact original refs-only event/contract source. It checks current PG
+clock after waits and preserves the real accepted input ID in run/checkpoint
+identity. Strict original direct-core events retain their existing key contract;
+arbitrary keys and missing verification remain denied.
+
+Snapshot `20261011-100822-713` passed seven top-level tests and 21 subtests under
+the race detector, with no failure or skip. Fresh and naturally expired worker
+claims each reached the entry-denial spy once. Six altered or unverified handoffs
+reached it zero times. Direct real-PG checks denied wrong owner, claim, fence,
+session, run, source, run dedup key and task revision. Real task-row lock waits
+crossed claim and input deadlines naturally; both were denied after release.
+The existing original-key preparation/recovery checks and the new accepted-key
+checkpoint retention check also passed.
+
+The content-free record is `deploy/delegation/native-recovery-diagnosis.json`.
+Private event evidence is
+`/srv/storage/butler/agents/durable-tasks/reports/delegation-native-diagnosis-20261011T030825Z-3260863`,
+SHA256 `3164f43494db65981c18e1c96ee3783b0aa39f9c0b26b8224b18be81515e43a7`.
+`scripts/dev/delegation-native-diagnose-lab.sh` reproduces these checks without
+native auth or inference. This diagnosis spent zero new native requests; the
+failed actual experiment still records three. A provider-entry regression PASS
+does not replace the failed native run or establish delegation acceptance.
