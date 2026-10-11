@@ -32,6 +32,9 @@ func (s *Store) Test(ctx context.Context, call *toolbrokerv1.ToolCall, contract 
 	if e != nil {
 		return Report{}, e
 	}
+	if e = s.developerPackageTx(ctx, tx, c, r, n); e != nil {
+		return Report{}, e
+	}
 	if _, e = s.permission(m, n, now); e != nil {
 		return Report{}, e
 	}
@@ -75,6 +78,9 @@ func (s *Store) Test(ctx context.Context, call *toolbrokerv1.ToolCall, contract 
 	fresh, freshNeed, _, e := s.packageTx(ctx, tx, current)
 	if e != nil || fresh.Digest != p.Digest || Hash(freshNeed) != Hash(n) {
 		return report, ErrAccess
+	}
+	if e = s.developerPackageTx(ctx, tx, c, current, freshNeed); e != nil {
+		return report, e
 	}
 	if _, e = s.permission(m, n, now); e != nil {
 		return report, e

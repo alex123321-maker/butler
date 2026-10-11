@@ -25,10 +25,25 @@ independent checker. Free-form narrative, working inputs, code, permissions and
 author-defined criteria are rejected, even when disguised as contract DATA.
 The initial context-only `task.delegate` revision remains separate and unchanged.
 This contract definition alone is unregistered and grants no capabilities.
-Its pending admission bridge must require an actual parent `converters.discover`
-receipt and current approved dispatch; missing or stale prerequisites deny rather
-than causing hidden actions. Only discover/develop/test rights may be derived for
-the developer. Trial, activation and original conversion remain parent actions.
+The optional migration053 admission bridge requires an actual confirmed parent
+`converters.discover` receipt and current claimed approved dispatch; missing or
+stale prerequisites deny rather than causing hidden actions. Its immutable
+content-free snapshot binds exact Need/contract refs, receipt digest, action,
+task/constraints/owner-policy revisions, runtime profile, allocation and deadline.
+Only the three fixed discover/develop/test contracts are derived for the child.
+Trial, activation and original conversion remain parent actions. Child discovery
+returns only those three identities, without the parent's installed/skill catalog.
+Packages are child task DATA with both selected roots as privacy dependencies.
+Every test also requires the package to have been created by that actual child.
+
+`app.NewDelegationLifecycleManager` composes context and maintenance for accepted
+061 context-only and 053 developer children. It selects exactly one immutable
+accepted record in the caller transaction. Unknown or ambiguous identity denies;
+source/policy denial never falls back to another reader. Its Bind is disabled:
+each fixed admission still uses its owning manager and snapshot writer. Both roles
+share the existing tree width, deadlines and root budget. Constructors do not
+enable deployment. Parent candidate collection and the actual delegated original
+document acceptance remain a separate, unfinished gate.
 
 ## Independent need and code
 

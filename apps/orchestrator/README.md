@@ -1,5 +1,13 @@
 # Orchestrator
 
+Optional generated-converter delegation053 has a distinct private admission
+component. `NewDelegationLifecycleManager` selects immutable061 context-only or053
+developer identity inside the owning transaction; it cannot admit new children and
+does not retry another role after denial. Developer rights are only fixed
+discover/develop/test, while original-data trials and activation stay parent actions.
+No constructor enables routing or deployment. See
+[the bounded converter contract](../../docs/architecture/generated-converters.md).
+
 The bounded [delegation manager](internal/task/README.md) provides transactional
 child admission, dependency scheduling, durable result/report metadata and explicit
 guarded decisions. It is an unenabled component until the owning Catalog/Broker

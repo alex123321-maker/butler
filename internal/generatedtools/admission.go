@@ -47,13 +47,24 @@ func (s *Store) needTx(ctx context.Context, tx pgx.Tx, c actionauth.ContextSnaps
 	return n, rows[0], nil
 }
 func (s *Store) recordedNeedTx(ctx context.Context, tx pgx.Tx, c actionauth.ContextSnapshot, n Need, ref catalog.SourceRef, d Discovery) error {
+	snapshot, err := s.developerTx(ctx, tx, c, n, ref)
+	if err != nil {
+		return err
+	}
+	if snapshot != nil {
+		expected, err := developerDiscovery()
+		if err != nil || Hash(expected) != Hash(d) {
+			return ErrAccess
+		}
+		return nil
+	}
 	var data, discovery []byte
 	var hash, taskID string
 	var revision, constraints int64
 	e := tx.QueryRow(ctx, `SELECT need_hash,source_ref_json,task_id,task_revision,constraints_revision,discovery_json FROM converter_needs WHERE owner_id=$1 AND need_id=$2`, s.owner, n.ID).Scan(&hash, &data, &taskID, &revision, &constraints, &discovery)
 	var saved catalog.SourceRef
-	var snapshot Discovery
-	if e != nil || json.Unmarshal(data, &saved) != nil || json.Unmarshal(discovery, &snapshot) != nil || hash != Hash(n) || saved != ref || taskID != c.TaskID || revision != c.TaskRevision || constraints != c.ConstraintsRevision || Hash(snapshot) != Hash(d) {
+	var savedDiscovery Discovery
+	if e != nil || json.Unmarshal(data, &saved) != nil || json.Unmarshal(discovery, &savedDiscovery) != nil || hash != Hash(n) || saved != ref || taskID != c.TaskID || revision != c.TaskRevision || constraints != c.ConstraintsRevision || Hash(savedDiscovery) != Hash(d) {
 		return ErrAccess
 	}
 	return nil
@@ -87,7 +98,7 @@ func (s *Store) Discover(ctx context.Context, call *toolbrokerv1.ToolCall, contr
 	if e = tx.Commit(ctx); e != nil {
 		return n, Discovery{}, e
 	}
-	d, e := s.environment.Discover(ctx, c.RunID, n)
+	d, e := s.discoverForRun(ctx, c, n, ref)
 	if e != nil {
 		return n, d, e
 	}
@@ -114,8 +125,14 @@ func (s *Store) Discover(ctx context.Context, call *toolbrokerv1.ToolCall, contr
 	if e = s.dispatchTx(ctx, tx, c, call, contract); e != nil {
 		return n, d, e
 	}
-	if _, e = tx.Exec(ctx, `INSERT INTO converter_needs(owner_id,need_id,converter_id,need_hash,source_ref_json,task_id,task_revision,constraints_revision,run_id,discovery_json) VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9,$10::jsonb) ON CONFLICT DO NOTHING`, s.owner, n.ID, n.ConverterID, Hash(n), encoded(ref), c.TaskID, c.TaskRevision, c.ConstraintsRevision, c.RunID, encoded(d)); e != nil {
+	snapshot, e := s.developerTx(ctx, tx, c, n, ref)
+	if e != nil {
 		return n, d, e
+	}
+	if snapshot == nil {
+		if _, e = tx.Exec(ctx, `INSERT INTO converter_needs(owner_id,need_id,converter_id,need_hash,source_ref_json,task_id,task_revision,constraints_revision,run_id,discovery_json) VALUES($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9,$10::jsonb) ON CONFLICT DO NOTHING`, s.owner, n.ID, n.ConverterID, Hash(n), encoded(ref), c.TaskID, c.TaskRevision, c.ConstraintsRevision, c.RunID, encoded(d)); e != nil {
+			return n, d, e
+		}
 	}
 	if e = s.recordedNeedTx(ctx, tx, c, n, ref, d); e != nil {
 		return n, d, e
@@ -142,13 +159,17 @@ func (s *Store) Develop(ctx context.Context, call *toolbrokerv1.ToolCall, contra
 	if e != nil {
 		return Record{}, e
 	}
+	developer, e := s.developerTx(ctx, tx, c, n, ref)
+	if e != nil || developer != nil && v != developer.Spec.Version {
+		return Record{}, ErrAccess
+	}
 	if _, e = s.permission(m, n, now); e != nil {
 		return Record{}, e
 	}
 	if e = tx.Commit(ctx); e != nil {
 		return Record{}, e
 	}
-	d, e := s.environment.Discover(ctx, c.RunID, n)
+	d, e := s.discoverForRun(ctx, c, n, ref)
 	if e != nil {
 		return Record{}, e
 	}
@@ -226,7 +247,7 @@ func (s *Store) Develop(ctx context.Context, call *toolbrokerv1.ToolCall, contra
 	}
 	// Creating a fresh child is safe after source locks; it cannot lock an
 	// existing source out of order. Raw package bytes live only in this child.
-	body, e := s.sources.CreateDerivedTx(ctx, tx, []catalog.SourceRef{ref}, "memory_read", n.ConverterID, string(p.Raw), json.RawMessage(encoded(map[string]string{"kind": "generated_converter_v1", "digest": p.Digest})))
+	body, e := s.candidateSourceTx(ctx, tx, c, n, ref, p)
 	if e != nil {
 		return Record{}, fmt.Errorf("candidate source publication: %w", e)
 	}

@@ -21,6 +21,8 @@ type RoutedExecutor struct {
 
 func SafeError(e error) string {
 	switch {
+	case errors.Is(e, ErrPrerequisite):
+		return "missing_prerequisite: current confirmed parent converter discovery required"
 	case errors.Is(e, ErrChecks):
 		return "independent converter checks failed"
 	case errors.Is(e, ErrLimit):

@@ -103,6 +103,9 @@ func bindingRefs(refs []catalog.SourceRef) ([]actionauth.DataRef, error) {
 }
 
 func (s *Store) BindAction(ctx context.Context, call *toolbrokerv1.ToolCall, c *toolbrokerv1.ToolContract, b actionauth.ActionBinding, snapshot actionauth.ContextSnapshot) (actionauth.ActionBinding, error) {
+	if call.GetToolName() == DeveloperAdmissionTool {
+		return s.bindDeveloperAction(ctx, call, c, b, snapshot)
+	}
 	if !strings.HasPrefix(call.GetToolName(), "converters.") && !strings.HasPrefix(call.GetToolName(), "converter.") {
 		return b, nil
 	}
@@ -137,6 +140,10 @@ func (s *Store) BindAction(ctx context.Context, call *toolbrokerv1.ToolCall, c *
 			if _, e = s.permission(m, n, now); e != nil {
 				return b, e
 			}
+			developer, e := s.developerTx(ctx, tx, current, n, args.Source)
+			if e != nil || developer != nil && call.GetToolName() == "converters.develop" && args.Version != developer.Spec.Version {
+				return b, ErrAccess
+			}
 			refs = append(refs, args.Source)
 		} else {
 			r, e := s.metadataTx(ctx, tx, args.Digest)
@@ -163,6 +170,9 @@ func (s *Store) BindAction(ctx context.Context, call *toolbrokerv1.ToolCall, c *
 			}
 			_, n, _, e := s.packageTx(ctx, tx, r, extra...)
 			if e != nil {
+				return b, e
+			}
+			if e = s.developerPackageTx(ctx, tx, current, r, n); e != nil {
 				return b, e
 			}
 			if _, e = s.permission(m, n, now); e != nil {
@@ -207,6 +217,9 @@ func (s *Store) BindAction(ctx context.Context, call *toolbrokerv1.ToolCall, c *
 // Claim rechecks all bound sources on the caller transaction before any secret
 // or document release. An input from another task cannot ride the package's scope.
 func (s *Store) CheckActionTx(ctx context.Context, tx pgx.Tx, b actionauth.ActionBinding) error {
+	if b.ToolName == DeveloperAdmissionTool {
+		return s.checkDeveloperActionTx(ctx, tx, b)
+	}
 	if !strings.HasPrefix(b.ToolName, "converters.") && !strings.HasPrefix(b.ToolName, "converter.") {
 		return nil
 	}
@@ -266,6 +279,9 @@ func (s *Store) CheckActionTx(ctx context.Context, tx pgx.Tx, b actionauth.Actio
 	}
 	if b.ConverterID != "" {
 		r := record
+		if e = s.developerPackageTx(ctx, tx, actionauth.ContextSnapshot{TaskID: b.TaskID}, r, n); e != nil {
+			return e
+		}
 		if r.ID != b.ConverterID || r.NeedHash != b.ConverterNeedHash || r.Generation != b.ConverterGeneration || r.NeedHash != Hash(n) {
 			return ErrAccess
 		}

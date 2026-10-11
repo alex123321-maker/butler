@@ -99,7 +99,7 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	if !delegationAllows(c.Delegation, b) {
 		return b, false, delegation.ErrDenied
 	}
-	if contract.GetExtension() != nil || strings.HasPrefix(call.GetToolName(), "extension.") || contract.GetConverter() != nil || strings.HasPrefix(call.GetToolName(), "converters.") || strings.HasPrefix(call.GetToolName(), "converter.") {
+	if call.GetToolName() == "task.delegate_converter" || contract.GetExtension() != nil || strings.HasPrefix(call.GetToolName(), "extension.") || contract.GetConverter() != nil || strings.HasPrefix(call.GetToolName(), "converters.") || strings.HasPrefix(call.GetToolName(), "converter.") {
 		if s.capabilities == nil {
 			return b, false, fmt.Errorf("reviewed capability admission is unavailable")
 		}

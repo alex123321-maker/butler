@@ -84,7 +84,7 @@ type CapabilityGuards struct {
 }
 
 func (s CapabilityGuards) BindAction(ctx context.Context, call *toolbrokerv1.ToolCall, c *toolbrokerv1.ToolContract, b actionauth.ActionBinding, snapshot actionauth.ContextSnapshot) (actionauth.ActionBinding, error) {
-	if strings.HasPrefix(call.GetToolName(), "converters.") || strings.HasPrefix(call.GetToolName(), "converter.") || c.GetConverter() != nil {
+	if call.GetToolName() == generatedtools.DeveloperAdmissionTool || strings.HasPrefix(call.GetToolName(), "converters.") || strings.HasPrefix(call.GetToolName(), "converter.") || c.GetConverter() != nil {
 		if s.Converters == nil {
 			return b, generatedtools.ErrAccess
 		}
