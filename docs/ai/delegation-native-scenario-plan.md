@@ -109,3 +109,12 @@ quality/latency/usage comparison and final criterion audit. Native output shape,
 citation or configured parallel overlap failure is a failed experiment without
 repair inference. Nothing in this document establishes issue closure or an
 executed native PASS.
+
+The first reviewed execute invocation on snapshot `20261011-093941-771`
+stopped at the host import metadata gate: the shell user cannot traverse the
+private UID10001 import directory. No execute database/container, import or
+native request was created. The content-free record is
+`deploy/delegation/native-preflight-blocked.json`. No second invocation was
+performed under that one-window authorization; all actual model criteria remain
+pending. The host metadata gate needs an explicitly reviewed exact-file runtime
+check before a separately coordinated experiment can proceed.

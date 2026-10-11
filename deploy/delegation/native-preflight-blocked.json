@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-11T02:42:02Z",
+  "status": "blocked_before_runtime",
+  "runner_commit": "fd9b53f6ab30932363747e36c88ad1cd6847648c",
+  "snapshot": "20261011-093941-771",
+  "execute_invocations": 1,
+  "exit_code": 1,
+  "native_attempts": 0,
+  "native_counter_created": false,
+  "reason": "host_import_metadata_inaccessible",
+  "credential_material_read": false,
+  "import_performed": false,
+  "execute_runtime_created": false,
+  "execute_database_created": false,
+  "retry_performed": false,
+  "proxy_running_metadata": true,
+  "main_state_changed": false,
+  "preparation": {
+    "status": "passed",
+    "race_groups_passed": 6,
+    "runtime_uid_probe": "passed",
+    "event_sha256": "4cfc79fb58e561a0ad74fef23f16611028c4cea409815cafec95da484ef33cba",
+    "source_manifest_sha256": "924c2b01c23d8fda7ffd4b5a7ed30998eba73bd551debc0a0efc0a5de8313694"
+  },
+  "model_acceptance": "pending",
+  "single_width_timing_ms": null,
+  "parallel_width_timing_ms": null,
+  "actual_model_usage": null,
+  "issue_16_closure": "not_established"
+}
