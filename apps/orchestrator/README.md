@@ -520,3 +520,9 @@ and exact task revision checks. Text Stop remains independent. The voice runtime
 caller and human quality evidence are documented in
 [voice contract](../../docs/architecture/russian-voice.md); all profiles/caller
 flags remain off because the fixed Russian quality gate failed.
+
+Authenticated task observations include durable background queue metadata across
+the owned root's branches. Requested model, persisted state, attempts, expired
+deadline and obsolete task revision remain separate from runtime readiness and
+verified task completion. Raw source/error/claim/allowance payloads are excluded;
+the read-only projection grants no execution authority.

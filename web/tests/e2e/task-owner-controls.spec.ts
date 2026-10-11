@@ -61,6 +61,12 @@ const overview = {
   initiative: { status: 'deferred', reason: 'budget', importance: 7, confidence: 8, expected_model_calls: 2 },
   children: [{ task_id: 'child-unverified', status: 'active', delegation_state: 'report_ready' }],
   actions: [{ action_id: 'action-1', tool_name: 'http.request', task_revision: 4, effect: 'commit', effect_state: 'effect_unknown' }],
+  auxiliary_work: [
+    { job_id: 'job-current', kind: 'extract', status: 'running', attempts: 1, task_revision: 4, current_task_version: true, requested_model: 'pinned-extractor', deadline_elapsed: false },
+    { job_id: 'job-obsolete', kind: 'summary', status: 'pending', attempts: 2, task_revision: 3, current_task_version: false, deadline_elapsed: false },
+    { job_id: 'job-expired', kind: 'index', status: 'failed', attempts: 1, task_revision: 4, current_task_version: true, deadline_elapsed: true },
+  ],
+  auxiliary_work_truncated: true,
   budget: { root_task_id: 'task-observed', limits: { model_turns: 5 }, reserved: { model_turns: 3 }, model_attempts: 3, known_input_tokens: 20, known_output_tokens: 4, unknown_input_attempts: 1, unknown_output_attempts: 2 },
 }
 
@@ -78,6 +84,10 @@ test('owner observations distinguish child results, effects and incomplete share
   await expect(page.getByRole('link', { name: 'Inspect or revoke owner authority' })).toHaveAttribute('href', '/goals')
   await expect(page.getByRole('link', { name: 'Inspect the initiative source' })).toHaveAttribute('href', '/initiatives')
   await expect(page.getByRole('row', { name: 'Model turns 3 5', exact: true })).toBeVisible()
+  await expect(page.getByText('requested model pinned-extractor', { exact: false })).toBeVisible()
+  await expect(page.getByText('(obsolete version)', { exact: false })).toBeVisible()
+  await expect(page.getByText('deadline elapsed', { exact: false })).toBeVisible()
+  await expect(page.getByText('Only the latest 50 background jobs are shown.', { exact: true })).toBeVisible()
   await page.getByLabel('Owner control token').fill('')
   await expect(page.getByRole('heading', { name: 'Recorded task observations' })).toHaveCount(0)
   expect(await page.evaluate(() => JSON.stringify({ local: { ...localStorage }, session: { ...sessionStorage } }))).not.toContain('fixture-owner-token')

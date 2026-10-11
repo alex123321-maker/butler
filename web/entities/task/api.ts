@@ -147,6 +147,8 @@ export interface TaskOwnerOverview {
   children_truncated: boolean
   actions: Array<{ action_id: string; tool_name: string; task_revision: number; effect: string; effect_state: string; contract_hash: string }>
   actions_truncated: boolean
+  auxiliary_work?: Array<{ job_id: string; task_id: string; task_revision: number; current_task_version: boolean; kind: string; status: string; attempts: number; deadline: string; deadline_elapsed: boolean; requested_provider: string; requested_model: string }>
+  auxiliary_work_truncated?: boolean
   budget: {
     root_task_id: string
     limits?: Record<string, number>

@@ -1,5 +1,17 @@
 # Programmatic security acceptance — issue 31
 
+The complete integrated matrix also passed on commit
+`159934737a42eeec7a1deef2b90f6a9a6fd4c0b1`, snapshot
+`20261011-122704-930`: 28 groups and 137 required executions, zero real model
+requests. It includes the optional model integrations and strict V3 measurement
+parser; feature defaults remain disabled. Private proof:
+`/srv/storage/butler/agents/issue-completion/reports/fault-20261011T052708Z-3845374`.
+The retained content-free [integrated report](../../deploy/security/acceptance-integrated-20261011.json)
+has SHA256
+`05f587f517e1c21f459465ec2eef58b7c070c98ead52bd22947bde9654ce66bf`.
+It retains eight passing scenarios and five pending product scenarios; the
+report still has `issue_33_ready=false`. The earlier proof below is preserved.
+
 The Full lab matrix on commit `7b1e1e2bd703d33357a9b1ce0bd420f2813eef13`
 passed 28 groups and 137 required top-level executions. Its read-only source
 snapshot is `20261011-113533-470`; private artifacts are retained at

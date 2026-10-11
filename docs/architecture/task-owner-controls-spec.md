@@ -66,6 +66,13 @@ Actual model attempts across the owned tree report known input/output subtotals
 and separate missing-input/missing-output counts. Absent budget records remain
 unavailable. Neither missing usage nor a missing scope is presented as zero cost.
 
+The same owner snapshot includes the latest 50 background jobs across the owned
+root task tree, with explicit truncation. It shows durable kind/status/attempts,
+requested model, exact task revision and elapsed deadline. It omits raw source,
+purpose text, errors, claim IDs and allowance payloads. Queue state is not runtime
+readiness or current source/mandate permission. Completed background processing
+does not verify the task; old task revisions and elapsed deadlines remain visible.
+
 The Web view loads this snapshot explicitly using page-memory owner proof.
 Changing the task or proof clears the snapshot and fences late responses;
 successful controls invalidate it. Goal/mandate and initiative links expose the

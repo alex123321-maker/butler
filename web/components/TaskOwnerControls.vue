@@ -58,6 +58,21 @@
         <p>Observed token subtotal: input {{ observations.budget.known_input_tokens }}, output {{ observations.budget.known_output_tokens }}.</p>
         <p v-if="observations.budget.unknown_input_attempts || observations.budget.unknown_output_attempts">Usage is incomplete: input missing for {{ observations.budget.unknown_input_attempts }} attempts; output missing for {{ observations.budget.unknown_output_attempts }} attempts.</p>
       </section>
+      <section>
+        <h4>Background work across task branches</h4>
+        <p>Recorded queue states do not prove model readiness or permission to run. A finished background job does not verify the task result.</p>
+        <ul v-if="observations.auxiliary_work?.length">
+          <li v-for="job in observations.auxiliary_work" :key="job.job_id">
+            {{ job.kind }} · {{ job.status }} · {{ job.attempts }} attempts
+            <span v-if="job.requested_model"> · requested model {{ job.requested_model }}</span>
+            · task version {{ job.task_revision }}<span v-if="!job.current_task_version"> (obsolete version)</span>
+            <span v-if="job.deadline_elapsed"> · deadline elapsed</span>
+          </li>
+        </ul>
+        <p v-else-if="observations.auxiliary_work">No background jobs are recorded.</p>
+        <p v-else>Background queue observations are unavailable.</p>
+        <p v-if="observations.auxiliary_work_truncated">Only the latest 50 background jobs are shown.</p>
+      </section>
     </section>
     <label>Amendment
       <textarea v-model="instruction" aria-label="Amendment" rows="3" />

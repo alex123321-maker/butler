@@ -15,16 +15,18 @@ import (
 // OwnerOverview projects owning records without granting authority or treating
 // a model answer as verified task completion. It contains no source/args bodies.
 type OwnerOverview struct {
-	TaskID            string                 `json:"task_id"`
-	Revision          int64                  `json:"revision"`
-	ObservedAt        time.Time              `json:"observed_at"`
-	Assignment        *actionauth.Assignment `json:"assignment,omitempty"`
-	Initiative        *InitiativeOverview    `json:"initiative,omitempty"`
-	Children          []ChildOverview        `json:"children"`
-	ChildrenTruncated bool                   `json:"children_truncated"`
-	Actions           []ActionOverview       `json:"actions"`
-	ActionsTruncated  bool                   `json:"actions_truncated"`
-	Budget            BudgetOverview         `json:"budget"`
+	TaskID             string                 `json:"task_id"`
+	Revision           int64                  `json:"revision"`
+	ObservedAt         time.Time              `json:"observed_at"`
+	Assignment         *actionauth.Assignment `json:"assignment,omitempty"`
+	Initiative         *InitiativeOverview    `json:"initiative,omitempty"`
+	Children           []ChildOverview        `json:"children"`
+	ChildrenTruncated  bool                   `json:"children_truncated"`
+	Actions            []ActionOverview       `json:"actions"`
+	ActionsTruncated   bool                   `json:"actions_truncated"`
+	Budget             BudgetOverview         `json:"budget"`
+	Auxiliary          []AuxiliaryOverview    `json:"auxiliary_work"`
+	AuxiliaryTruncated bool                   `json:"auxiliary_work_truncated"`
 }
 
 type ChildOverview struct {
@@ -174,6 +176,10 @@ func (s *Store) OwnerOverview(ctx context.Context, id string) (OwnerOverview, er
 	// Actual usage stays separate from reservations. Missing values remain
 	// explicit; known subtotals cannot imply a complete token or invoice total.
 	err = tx.QueryRow(ctx, `WITH RECURSIVE tree AS (SELECT task_id FROM tasks WHERE task_id=$1 AND owner_id=$2 UNION SELECT t.task_id FROM tasks t JOIN tree p ON t.parent_task_id=p.task_id WHERE t.owner_id=$2) SELECT count(*),COALESCE(sum(a.actual_input_tokens),0),COALESCE(sum(a.actual_output_tokens),0),count(*) FILTER(WHERE a.actual_input_tokens IS NULL),count(*) FILTER(WHERE a.actual_output_tokens IS NULL) FROM execution_model_attempts a JOIN runs r ON r.run_id=a.run_id JOIN tree ON tree.task_id=r.task_id`, v.Budget.RootTaskID, owner).Scan(&v.Budget.ModelAttempts, &v.Budget.KnownInputTokens, &v.Budget.KnownOutputTokens, &v.Budget.UnknownInputAttempts, &v.Budget.UnknownOutputAttempts)
+	if err != nil {
+		return OwnerOverview{}, err
+	}
+	v.Auxiliary, v.AuxiliaryTruncated, err = ownerAuxiliary(ctx, tx, v.Budget.RootTaskID, owner)
 	if err != nil {
 		return OwnerOverview{}, err
 	}
