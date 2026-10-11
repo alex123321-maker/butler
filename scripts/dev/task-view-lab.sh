@@ -16,6 +16,6 @@ docker run --rm --user "$(id -u):$(id -g)" --network butler-lab_backend \
 npm run typecheck
 npm run lint
 npx --no-install playwright install chromium
-npx --no-install playwright test --workers=1 tests/e2e/task-execution-result.spec.ts tests/e2e/task-owner-controls.spec.ts' \
+npx --no-install playwright test --workers=1 tests/e2e/task-execution-result.spec.ts tests/e2e/task-owner-controls.spec.ts tests/e2e/durable-input-approval.spec.ts' \
   > "$report" 2>&1
 tail -n 15 "$report"

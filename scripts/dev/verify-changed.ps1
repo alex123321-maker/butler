@@ -34,13 +34,15 @@ foreach ($file in $files) {
       [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/durable-tasks/current/scripts/dev/delegation-admission-lab.sh /srv/storage/butler/agents/durable-tasks' after isolated source Sync (actual private Broker, disposable PostgreSQL, pool2 and race)")
       continue
     }
-    "^(internal/singletabcontrol/|apps/browser-bridge/|apps/orchestrator/internal/singletab/|apps/tool-broker/internal/broker/single_tab|web/extensions/chromium-butler/|migrations/063_single_tab_resource_binding[.]|scripts/dev/single-tab-resource-lab[.]sh$)" {
+    "^(internal/singletabcontrol/|apps/browser-bridge/|apps/orchestrator/internal/singletab/|apps/tool-broker/internal/broker/single_tab|web/extensions/chromium-butler/|migrations/(063_single_tab_resource_binding|064_guarded_tab_owner_choices)[.]|scripts/dev/single-tab-resource-lab[.]sh$|apps/orchestrator/internal/(api|app)/guarded_tab|internal/config/guarded_tab|web/components/GuardedTabChoice[.]vue$)" {
       [void]$specs.Add("docs/architecture/single-tab-resource-boundary.md")
       [void]$specs.Add("docs/architecture/resource-lease-contract.md")
       [void]$specs.Add("docs/architecture/action-authorization-contract.md")
       [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
       [void]$specs.Add("docs/architecture/credential-management.md")
       [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/resource-runtime-bridge/current/scripts/dev/single-tab-resource-lab.sh /srv/storage/butler/agents/resource-runtime-bridge' after isolated Sync (actual PG/pool2, private native host and synthetic Chromium extension)")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/task-observations/current/scripts/dev/task-observations-lab.sh /srv/storage/butler/agents/task-observations' after isolated Sync (actual waiting owner HTTP/PG and schema validation)")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/task-observations/current/scripts/dev/task-view-lab.sh /srv/storage/butler/agents/task-observations' after isolated Sync (owner choice Chromium UI)")
       continue
     }
     "^(internal/resources/|internal/resourceexec/|migrations/(058_execution_resource_leases|062_resource_dispatches)[.]|scripts/dev/resource-runtime-lab[.]sh$|apps/tool-broker/internal/broker/resources[.]go$|apps/tool-broker/internal/broker/resource_integration_test[.]go$|internal/actionauth/resource_claim[.]go$|internal/budget/tool_deadline[.]go$)" {

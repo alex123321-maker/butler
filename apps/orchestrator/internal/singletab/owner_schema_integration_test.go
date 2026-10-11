@@ -12,6 +12,7 @@ func TestOwnerWaitingSelectionSchemaRejectsMissingOrReplacedImmutability(t *test
 	for _, mutation := range []string{
 		`ALTER TABLE guarded_single_tab_requests DISABLE TRIGGER guarded_request_immutable`,
 		`DROP TRIGGER guarded_selection_immutable ON guarded_single_tab_selections`,
+		`ALTER TABLE guarded_single_tab_choices DISABLE TRIGGER guarded_choice_immutable`,
 		`CREATE OR REPLACE FUNCTION guarded_single_tab_immutable() RETURNS trigger LANGUAGE plpgsql AS 'BEGIN RETURN NEW; END'`,
 		`ALTER TABLE execution_resource_dispatches DROP COLUMN single_tab_binding`,
 	} {

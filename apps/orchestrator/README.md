@@ -9,10 +9,15 @@ does not resume an executor or confirm a browser effect. The operator-only
 `BUTLER_GUARDED_TAB_HOST`, `BUTLER_GUARDED_TAB_METADATA_URL`, private
 `BUTLER_GUARDED_TAB_TOKEN_FILE` and configured owner authentication. Remote
 metadata requires HTTPS; plain HTTP is limited to literal loopback addresses.
-Startup checks migration063 columns and the exact enabled immutable trigger
-function. This owner endpoint does not enable guarded tools or declare runtime
-readiness. Request creation, UI delivery, resumption and private Broker/runtime
-composition are separate activation requirements.
+Startup checks migration063/064 columns and the exact enabled immutable trigger
+function. Authenticated `GET /api/v3/tab-choices/{approval_id}` exposes only frozen
+origin, candidate token, original ordinal, active-at-request marker and selection
+state. Private native host/tab references remain excluded. The Approvals page
+uses this view for guarded select/revoke and keeps owner proof only in page memory.
+This endpoint does not enable guarded tools or declare runtime readiness. Worker
+request creation, channel delivery/resumption and private Broker/runtime
+composition are separate activation requirements. Older requests without frozen
+064 display metadata have no reconstructed choice view.
 
 Authenticated task observations at `/api/v3/tasks/{task_id}/observations` expose
 owned assignment/initiative metadata, child result status, recorded action

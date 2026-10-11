@@ -34,7 +34,7 @@ func singleTabBroker(t *testing.T, backend resourceexec.RuntimeBackend, start fu
 func singleTabBrokerWithGuard(t *testing.T, backend resourceexec.RuntimeBackend, start func(target, authority, tokenFile string) (string, string, string), pause resourceexec.SourceGuard) *resourceBrokerFixture {
 	t.Helper()
 	pool := resourceBrokerDB(t)
-	for _, name := range []string{"022_approvals_and_approval_events.up.sql", "027_single_tab_sessions_and_web_fetch_cache.up.sql", "028_typed_approvals.up.sql", "063_single_tab_resource_binding.up.sql"} {
+	for _, name := range []string{"022_approvals_and_approval_events.up.sql", "027_single_tab_sessions_and_web_fetch_cache.up.sql", "028_typed_approvals.up.sql", "063_single_tab_resource_binding.up.sql", "064_guarded_tab_owner_choices.up.sql"} {
 		raw, e := os.ReadFile(filepath.Join("..", "..", "..", "..", "migrations", name))
 		if e != nil {
 			t.Fatal(e)
@@ -117,11 +117,13 @@ func singleTabBrokerWithGuard(t *testing.T, backend resourceexec.RuntimeBackend,
 	}
 	ctx, binding := singleTabOwnerContext()
 	choices, e := selection.Request(ctx, binding)
-	if e != nil || len(choices.Candidates) < 1 || len(choices.Candidates)>singletabcontrol.MaxTabs {
+	if e != nil || len(choices.Candidates) < 1 || len(choices.Candidates) > singletabcontrol.MaxTabs {
 		t.Fatal("actual owner candidates denied", e)
 	}
-	if len(choices.Candidates)>1{
-		if len(choices.Candidates)!=2||choices.Candidates[0].Origin!=choices.Candidates[1].Origin||choices.Candidates[0].Ordinal==choices.Candidates[1].Ordinal||choices.Candidates[0].Token==choices.Candidates[1].Token||!choices.Candidates[0].Active||choices.Candidates[1].Active{t.Fatal("same-origin owner choices not distinguishable")}
+	if len(choices.Candidates) > 1 {
+		if len(choices.Candidates) != 2 || choices.Candidates[0].Origin != choices.Candidates[1].Origin || choices.Candidates[0].Ordinal == choices.Candidates[1].Ordinal || choices.Candidates[0].Token == choices.Candidates[1].Token || !choices.Candidates[0].Active || choices.Candidates[1].Active {
+			t.Fatal("same-origin owner choices not distinguishable")
+		}
 		t.Log("actual two same-origin tabs: opaque choices, distinct ordinals and one active marker; no native IDs")
 	}
 	if _, e = selection.Select(context.Background(), binding, choices.ApprovalID, choices.Candidates[0].Token); e == nil {
@@ -265,6 +267,9 @@ func TestSingleTabResourceMigrationKeepsBindingHistory(t *testing.T) {
 	}
 	ctx := context.Background()
 	down := read("063_single_tab_resource_binding.down.sql")
+	if _, e := f.pool.Exec(ctx, string(read("064_guarded_tab_owner_choices.down.sql"))); e == nil {
+		t.Fatal("frozen owner choice history discarded")
+	}
 	if _, e := f.pool.Exec(ctx, string(down)); e == nil {
 		t.Fatal("retained guarded selection downgrade accepted")
 	}

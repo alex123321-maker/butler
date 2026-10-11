@@ -135,6 +135,10 @@ func (c *Controller) Request(ctx context.Context, b resources.Binding) (Selectio
 		if e != nil {
 			return out, e
 		}
+		_, e = tx.Exec(ctx, `INSERT INTO guarded_single_tab_choices(request_id,candidate_token,origin,ordinal,active_at_request) VALUES($1,$2,$3,$4,$5)`, id, token, t.Origin, i+1, t.Active)
+		if e != nil {
+			return out, e
+		}
 		out.Candidates = append(out.Candidates, Candidate{Token: token, Origin: t.Origin, Ordinal: i + 1, Active: t.Active})
 	}
 	if e = c.finalCheck(ctx, tx, b, expiry); e != nil {

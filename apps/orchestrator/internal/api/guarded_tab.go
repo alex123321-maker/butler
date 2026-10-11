@@ -9,11 +9,13 @@ import (
 
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/owneridentity"
+	"github.com/butler/butler/internal/singletabcontrol"
 )
 
 // GuardedTabDecisions accepts existing owner choices, never a worker binding,
 // host, tab, new request, execution grant or continuation instruction.
 type GuardedTabDecisions interface {
+	Choices(context.Context, string) (singletabcontrol.OwnerChoices, error)
 	Select(context.Context, string, string) (string, error)
 	Revoke(context.Context, string) error
 }
@@ -23,7 +25,7 @@ const guardedTabPrefix = "/api/v3/tab-choices/"
 func GuardedTabOwnerControls(auth *OwnerControlAuth, decisions GuardedTabDecisions) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
-		if r.Method != http.MethodPost {
+		if r.Method != http.MethodPost && r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
@@ -33,6 +35,23 @@ func GuardedTabOwnerControls(auth *OwnerControlAuth, decisions GuardedTabDecisio
 			return
 		}
 		parts := strings.Split(strings.TrimPrefix(r.URL.Path, guardedTabPrefix), "/")
+		if r.Method == http.MethodGet {
+			if !strings.HasPrefix(r.URL.Path, guardedTabPrefix) || len(parts) != 1 || len(parts[0]) != 48 || !validChoiceID(parts[0]) || r.URL.RawQuery != "" || r.ContentLength > 0 || len(r.TransferEncoding) > 0 {
+				writeJSON(w, http.StatusBadRequest, map[string]string{"error": "fixed tab choice reference required"})
+				return
+			}
+			if decisions == nil {
+				writeJSON(w, http.StatusServiceUnavailable, map[string]string{"error": "guarded tab owner controls unavailable"})
+				return
+			}
+			choices, err := decisions.Choices(owneridentity.WithActor(r.Context(), actor), parts[0])
+			if err != nil {
+				writeJSON(w, http.StatusConflict, map[string]string{"error": "current tab choice authority required"})
+				return
+			}
+			writeJSON(w, http.StatusOK, choices)
+			return
+		}
 		if !strings.HasPrefix(r.URL.Path, guardedTabPrefix) || len(parts) != 2 || len(parts[0]) != 48 || !validChoiceID(parts[0]) || (parts[1] != "select" && parts[1] != "revoke") || r.URL.RawQuery != "" {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"error": "fixed tab choice action required"})
 			return
