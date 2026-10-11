@@ -24,8 +24,19 @@ the additional 064 frozen-choice trigger and actual immutable function before st
 status, repeating current sources before release. Private native refs stay private.
 There is no reconstruction of missing old choice metadata or current browser order.
 The operator flag defaults false;
-stored settings cannot change it. Creating choices, UI/Telegram delivery,
-guarded Broker/runtime composition remain separate gates.
+stored settings cannot change it. A separate default-false request flag composes
+the ordinary Broker request and protected Web owner delivery. Telegram points to
+that page and cannot use legacy/generic callbacks. Guarded status/click runtime
+composition remains a separate gate.
+
+`RequestContract` has empty public args and only an opaque local request receipt.
+`NewRequestClient`/`NewRequestHandler` carry private exact dispatch refs with a
+fixed service token; bounded strict JSON, no redirects/proxy and literal-loopback
+HTTP/trusted HTTPS keep that token out of models, channels and browser runtimes.
+`NewDispatchedRequests` joins the owning dispatch/source/worker guard to atomic
+checkpoint publication. Migration065 retains an immutable dispatch mapping.
+`CheckSchemaTx` permits fresh pinned-schema checks within the owning transaction
+without borrowing another connection. No request receipt authorizes an effect.
 
 `NewDurable` fixes `WorkerGuard` and requires typed `SelectionCheckpoints`.
 Pending choice publication and the actual input/run/task suspension commit

@@ -192,6 +192,11 @@ func BuildBinding(actionID string, call *toolbrokerv1.ToolCall, contract *toolbr
 		return ActionBinding{}, "", err
 	}
 	binding := ActionBinding{ActionID: actionID, RunID: call.GetRunId(), ToolCallID: call.GetToolCallId(), ToolName: call.GetToolName(), ContractHash: contractHash, ContractRevision: contract.GetContractRevision(), ArgsHash: digest(args), Resource: resource, CredentialRefs: refs, TaskID: context.TaskID, TaskRevision: context.TaskRevision, ConstraintsRevision: context.ConstraintsRevision, OwnerID: context.OwnerID, Effect: classifyEffect(call.GetToolName(), object)}
+	if call.GetToolName() == "single_tab.bind.guarded" {
+		if len(context.InputClaimHash) != 64 {
+			return ActionBinding{}, "", fmt.Errorf("current owning input claim required")
+		}
+	}
 	if extension := contract.GetExtension(); extension != nil {
 		if !strings.HasPrefix(call.GetToolName(), "extension."+extension.GetExtensionId()+".") || extension.GetGeneration() <= 0 || extension.GetManifestHash() == "" {
 			return ActionBinding{}, "", fmt.Errorf("reviewed extension contract is invalid")
@@ -350,7 +355,7 @@ func classifyEffect(tool string, args map[string]any) Effect {
 		return EffectUnknown
 	case "converters.discover", "converters.collect", "skills.search", "skills.load", "browser.read", "browser.open", "browser.navigate", "browser.snapshot", "browser.extract_text", "browser.wait_for", "browser.close", "single_tab.status", "single_tab.capture_visible", "single_tab.extract_text", "doctor.check_system", "doctor.check_container", "doctor.check_database", "doctor.check_provider", "web.fetch", "web.fetch_batch", "web.extract", "http.download", "http.parse_html":
 		return EffectRead
-	case "task.delegate", "task.delegate_converter", "converters.develop", "converters.test", "converters.trial", "converters.activate", "converters.rollback", "skills.propose", "browser.prepare_fill", "browser.prepare_type", "single_tab.bind", "browser.set_cookie", "browser.restore_storage_state", "doctor.generate_report":
+	case "single_tab.bind.guarded", "task.delegate", "task.delegate_converter", "converters.develop", "converters.test", "converters.trial", "converters.activate", "converters.rollback", "skills.propose", "browser.prepare_fill", "browser.prepare_type", "single_tab.bind", "browser.set_cookie", "browser.restore_storage_state", "doctor.generate_report":
 		return EffectPrepare
 	// Reads enforce GET/HEAD. Local preparation freezes all network persistently.
 	// Other live interactions can submit, purchase or autosave through site JS;

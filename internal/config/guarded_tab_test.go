@@ -32,3 +32,40 @@ func TestGuardedTabOwnerTopologyRequiresOperatorAndPrivateDestination(t *testing
 		env["BUTLER_GUARDED_TAB_METADATA_URL"] = "http://127.0.0.1:19091/metadata"
 	}
 }
+
+func TestGuardedTabRequestTopologyIsSeparateAndOperatorOnly(t *testing.T) {
+	env := map[string]string{"BUTLER_POSTGRES_URL": "postgres://localhost:5432/test", "BUTLER_REDIS_URL": "redis://localhost:6379/0"}
+	c, _, err := loadOrchestratorLayered(envMap(env), []Setting{{Key: "BUTLER_GUARDED_TAB_REQUEST_ENABLED", Value: "true"}})
+	if err != nil || c.GuardedTabRequestEnabled {
+		t.Fatal("database enabled worker request topology", err)
+	}
+	env["BUTLER_GUARDED_TAB_REQUEST_ENABLED"] = "true"
+	if _, _, err = loadOrchestrator(envMap(env)); err == nil {
+		t.Fatal("request enabled without owner composition")
+	}
+	env["BUTLER_GUARDED_TAB_OWNER_ENABLED"] = "true"
+	env["BUTLER_GUARDED_TAB_HOST"] = "fixed-host"
+	env["BUTLER_GUARDED_TAB_METADATA_URL"] = "http://127.0.0.1:19091/metadata"
+	env["BUTLER_GUARDED_TAB_TOKEN_FILE"] = "/private/metadata-token"
+	env["BUTLER_OWNER_CONTROL_TOKEN_FILE"] = "/private/owner-token"
+	env["BUTLER_OWNER_CONTROL_OWNER_ID"] = "owner"
+	if _, _, err = loadOrchestrator(envMap(env)); err == nil {
+		t.Fatal("request enabled without Broker authentication")
+	}
+	env["BUTLER_ACTION_AUTHORITY_TOKEN_FILE"] = "/private/broker-token"
+	c, _, err = loadOrchestrator(envMap(env))
+	if err != nil || !c.GuardedTabRequestEnabled {
+		t.Fatal("complete operator composition denied", err)
+	}
+	for _, endpoint := range []string{"http://192.0.2.1/internal/guarded-tab-request", "https://host/private-other", "https://host/internal/guarded-tab-request?token=x"} {
+		env["BUTLER_GUARDED_TAB_REQUEST_CONTROL_URL"] = endpoint
+		if _, _, err = loadToolBroker(envMap(env)); err == nil {
+			t.Fatal("unsafe private Broker request destination accepted")
+		}
+	}
+	env["BUTLER_GUARDED_TAB_REQUEST_CONTROL_URL"] = "http://127.0.0.1:8080/internal/guarded-tab-request"
+	b, _, err := loadToolBroker(envMap(env))
+	if err != nil || !b.GuardedTabRequestEnabled {
+		t.Fatal("private Broker request config denied", err)
+	}
+}

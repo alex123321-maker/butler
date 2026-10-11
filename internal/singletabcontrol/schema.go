@@ -2,6 +2,7 @@ package singletabcontrol
 
 import (
 	"context"
+	"github.com/jackc/pgx/v5"
 	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -13,9 +14,19 @@ func CheckSchema(ctx context.Context, pool *pgxpool.Pool) error {
 	if pool == nil {
 		return ErrDenied
 	}
+	return checkSchema(ctx, pool)
+}
+
+// CheckSchemaTx repeats the pinned owning safeguards without borrowing a
+// second pool connection while a publication transaction holds its barriers.
+func CheckSchemaTx(ctx context.Context, tx pgx.Tx) error { return checkSchema(ctx, tx) }
+
+func checkSchema(ctx context.Context, q interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+}) error {
 	var triggers int
 	var body string
-	err := pool.QueryRow(ctx, `SELECT count(*),COALESCE(max(p.prosrc),'')
+	err := q.QueryRow(ctx, `SELECT count(*),COALESCE(max(p.prosrc),'')
  FROM (VALUES ('guarded_single_tab_requests','guarded_request_immutable'),
  ('guarded_single_tab_selections','guarded_selection_immutable'),
  ('guarded_single_tab_choices','guarded_choice_immutable')) expected(relation,trigger_name)

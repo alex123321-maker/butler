@@ -93,6 +93,8 @@ type ContextSnapshot struct {
 	DenyResources            []ResourceScope      `json:"deny_resources,omitempty"`
 	ConverterLifecycleReady  bool                 `json:"converter_lifecycle_ready,omitempty"`
 	DelegationReady          bool                 `json:"delegation_ready,omitempty"`
+	GuardedTabRequestReady   bool                 `json:"guarded_tab_request_ready,omitempty"`
+	InputClaimHash           string               `json:"input_claim_hash,omitempty"`
 	ConverterDelegationReady bool                 `json:"converter_delegation_ready,omitempty"`
 }
 
@@ -123,6 +125,7 @@ type PreparedAction struct {
 // Grant is private system metadata; it is never part of model-visible args.
 // Claiming a grant records dispatch, not successful completion of an effect.
 type Grant struct {
+	InputClaimHash  string        `json:"input_claim_hash,omitempty"`
 	ID              string        `json:"authorization_id"`
 	Binding         ActionBinding `json:"binding"`
 	ApprovalID      string        `json:"approval_id"`

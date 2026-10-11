@@ -67,6 +67,7 @@ type OrchestratorConfig struct {
 	ExtensionAPITokens                []string
 	SingleTabTransportMode            string
 	GuardedTabOwnerEnabled            bool
+	GuardedTabRequestEnabled          bool
 	GuardedTabHost                    string
 	GuardedTabMetadataURL             string
 	GuardedTabTokenFile               string
@@ -129,6 +130,8 @@ type ToolBrokerConfig struct {
 	ConvertersEnabled             bool
 	DelegationEnabled             bool
 	DelegationControlURL          string
+	GuardedTabRequestEnabled      bool
+	GuardedTabRequestControlURL   string
 	ConverterDelegationEnabled    bool
 	ConverterDelegationControlURL string
 	ConverterProfileJSON          string
@@ -375,6 +378,7 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 	)
 
 	specs = append(specs, delegationBrokerSpecs(&cfg)...)
+	specs = append(specs, guardedTabBrokerSpecs(&cfg)...)
 	snapshot, err := loadSpecs(get, specs)
 	return cfg, snapshot, err
 }

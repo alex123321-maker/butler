@@ -258,3 +258,33 @@ func (s *Store) ReadySelectionTx(ctx context.Context, tx pgx.Tx, runID, approval
 	}
 	return err
 }
+
+// CheckPendingSelectionClaimTx checks the exact worker claim after the owning
+// publication/lock waits. An owner decision may already have made it ready.
+func (s *Store) CheckPendingSelectionClaimTx(ctx context.Context, tx pgx.Tx, runID, approvalID string) error {
+	r, ok := ctx.Value(claimKey{}).(Record)
+	if !ok {
+		return ErrClaimLost
+	}
+	var valid bool
+	err := tx.QueryRow(ctx, `SELECT run_id=$3 AND checkpoint IN ('awaiting_approval','approval_ready') AND checkpoint_json->>'approval_id'=$4 AND checkpoint_json->'continuation'->>'kind'='guarded_tab_selection' AND checkpoint_json->'continuation'->>'version'='1' AND checkpoint_json->'continuation'->>'approval_id'=$4 AND status='running' AND claim_id=$2 AND claim_expires_at>clock_timestamp() AND expires_at>clock_timestamp() FROM accepted_inputs WHERE input_id=$1 FOR UPDATE`, r.InputID, r.ClaimID, runID, approvalID).Scan(&valid)
+	if err != nil || !valid {
+		return ErrClaimLost
+	}
+	return nil
+}
+
+// CheckDispatchClaimTx binds a private control to the actually dispatched
+// action slot of this worker. Another inflight intent cannot borrow its claim.
+func (s *Store) CheckDispatchClaimTx(ctx context.Context, tx pgx.Tx, runID, callID, effectID, authorizationID string) error {
+	r, ok := ctx.Value(claimKey{}).(Record)
+	if !ok {
+		return ErrClaimLost
+	}
+	var valid bool
+	err := tx.QueryRow(ctx, `SELECT run_id=$3 AND checkpoint='tool_dispatching' AND checkpoint_json->'checkpoint_data'->>'tool_call_id'=$4 AND checkpoint_json->'checkpoint_data'->>'effect_id'=$5 AND checkpoint_json->'checkpoint_data'->>'authorization_id'=$6 AND status='running' AND claim_id=$2 AND claim_expires_at>clock_timestamp() AND expires_at>clock_timestamp() FROM accepted_inputs WHERE input_id=$1 FOR UPDATE`, r.InputID, r.ClaimID, runID, callID, effectID, authorizationID).Scan(&valid)
+	if err != nil || !valid {
+		return ErrClaimLost
+	}
+	return nil
+}

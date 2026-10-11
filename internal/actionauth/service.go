@@ -96,6 +96,9 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	if call.GetToolName() == delegation.AdmissionTool && !c.DelegationReady {
 		return b, false, delegation.ErrDenied
 	}
+	if call.GetToolName() == "single_tab.bind.guarded" && (c.TaskID == "" || !c.GuardedTabRequestReady) {
+		return b, false, fmt.Errorf("guarded tab request composition is unavailable")
+	}
 	if call.GetToolName() == "task.delegate_converter" && (c.TaskID == "" || !c.DelegationReady || !c.ConverterDelegationReady || !c.ConverterLifecycleReady) {
 		return b, false, delegation.ErrDenied
 	}
@@ -226,6 +229,9 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 		return Grant{}, fmt.Errorf("prepared action is missing, stale or changed")
 	}
 	g := Grant{ID: randomID(), Binding: b, LeaseID: c.LeaseID, LeaseEpoch: c.LeaseEpoch, AutonomyMode: c.AutonomyMode, ExpiresAt: s.now().Add(time.Minute), State: "authorized"}
+	if call.GetToolName() == "single_tab.bind.guarded" {
+		g.InputClaimHash = c.InputClaimHash
+	}
 	if c.LeaseExpiresAt.Before(g.ExpiresAt) {
 		g.ExpiresAt = c.LeaseExpiresAt
 	}

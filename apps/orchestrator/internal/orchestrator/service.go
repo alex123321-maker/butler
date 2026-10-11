@@ -138,6 +138,10 @@ type GuardedTabRecovery interface {
 	ResumeSelection(context.Context, string, string) (string, error)
 }
 
+type GuardedTabRequests interface {
+	PendingRequest(context.Context, string, string, string) (ApprovalRequest, error)
+}
+
 type Config struct {
 	// Trusted composition resolves opaque source-bound inputs only after live
 	// ownership. The adapter loads durable bindings, not caller-selected refs.
@@ -146,6 +150,7 @@ type Config struct {
 	FailedDelegationAttempts FailedDelegationAttemptReader
 	ConverterContinuations   ConverterContinuationReader
 	GuardedTabRecovery       GuardedTabRecovery
+	GuardedTabRequests       GuardedTabRequests
 	MemorySources            interface {
 		PinTranscript(context.Context, string, int64) error
 		CheckRunSources(context.Context, string) error

@@ -1,0 +1,113 @@
+package app
+
+import (
+	"net"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/butler/butler/apps/orchestrator/internal/tools"
+	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/singletabcontrol"
+)
+
+func guardedRequestBrokerProcess(t *testing.T, f *dispatchAdmissionFixture, service *GuardedTabRequests) *tools.BrokerClient {
+	t.Helper()
+	binary := os.Getenv("BUTLER_GUARDED_REQUEST_BROKER_BINARY")
+	if binary == "" {
+		t.Skip("compiled private Broker process required")
+	}
+	const token = "guarded-request-private-process-fixture-token"
+	h, err := singletabcontrol.NewRequestHandler(token, service)
+	if err != nil {
+		t.Fatal(err)
+	}
+	mux := http.NewServeMux()
+	mux.Handle("/context", actionauth.NewContextHandler(token, f.reader))
+	mux.Handle("/request", h)
+	control := httptest.NewServer(mux)
+	t.Cleanup(control.Close)
+	tokenPath := filepath.Join(t.TempDir(), "token")
+	if os.WriteFile(tokenPath, []byte(token), 0600) != nil {
+		t.Fatal("private fixture token unavailable")
+	}
+	dsn, err := url.Parse(f.f.pool.Config().ConnConfig.ConnString())
+	if err != nil {
+		t.Fatal("fixture storage unavailable")
+	}
+	query := dsn.Query()
+	query.Set("search_path", f.f.pool.Config().ConnConfig.RuntimeParams["search_path"])
+	dsn.RawQuery = query.Encode()
+	address := freeAddress(t)
+	cmd := exec.Command(binary, "-test.run=^TestDelegationBrokerHarness$", "-test.timeout=50s")
+	cmd.Env = append(os.Environ(), "BUTLER_DELEGATION_BROKER_HARNESS=1", "BUTLER_GUARDED_TAB_REQUEST_HARNESS=1", "BUTLER_DELEGATION_POSTGRES_URL="+dsn.String(), "BUTLER_DELEGATION_TOKEN_FILE="+tokenPath, "BUTLER_DELEGATION_CONTEXT_URL="+control.URL+"/context", "BUTLER_DELEGATION_ADMISSION_URL="+control.URL+"/request", "BUTLER_DELEGATION_GRPC_ADDRESS="+address, "BUTLER_DELEGATION_MANIFEST_FILE="+f.manifestPath)
+	log, err := os.OpenFile(filepath.Join(t.TempDir(), "broker.log"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = log.Close() })
+	cmd.Stdout, cmd.Stderr = log, log
+	if err = cmd.Start(); err != nil {
+		t.Fatal(err)
+	}
+	done := make(chan struct{})
+	var processErr error
+	go func() { processErr = cmd.Wait(); close(done) }()
+	t.Cleanup(func() {
+		_ = cmd.Process.Signal(os.Interrupt)
+		select {
+		case <-done:
+			if processErr != nil {
+				t.Error("private Broker failed", processErr)
+			}
+		case <-time.After(3 * time.Second):
+			_ = cmd.Process.Kill()
+			<-done
+			t.Error("private Broker did not stop")
+		}
+		if t.Failed() {
+			raw, _ := os.ReadFile(log.Name())
+			if len(raw) > 8192 {
+				raw = raw[len(raw)-8192:]
+			}
+			t.Log(strings.ReplaceAll(string(raw), token, "[private fixture token]"))
+		}
+	})
+	ready := false
+	for deadline := time.Now().Add(5 * time.Second); time.Now().Before(deadline); {
+		conn, err := net.DialTimeout("tcp", address, 50*time.Millisecond)
+		if err == nil {
+			_ = conn.Close()
+			ready = true
+			break
+		}
+		select {
+		case <-done:
+			t.Fatal("Broker stopped before ready", processErr)
+		case <-time.After(25 * time.Millisecond):
+		}
+	}
+	if !ready {
+		t.Fatal("private Broker unavailable")
+	}
+	client, err := tools.DialWithTokenFile(address, tokenPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = client.Close() })
+	anonymous, err := tools.Dial(address)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer anonymous.Close()
+	if _, err = anonymous.ExecuteAuthorizedToolCall(f.f.ctx, f.call, f.grant.ID); err == nil {
+		t.Fatal("anonymous runtime used Broker request route")
+	}
+	return client
+}

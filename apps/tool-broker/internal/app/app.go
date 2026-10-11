@@ -27,6 +27,7 @@ import (
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/singletabcontrol"
 	"github.com/butler/butler/internal/skills"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	"github.com/jackc/pgx/v5"
@@ -81,6 +82,12 @@ func New(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("converter delegation requires enabled converters, ordinary delegation and a fixed private developer endpoint")
 	}
 	router := runtimeclient.New(log)
+	if cfg.GuardedTabRequestEnabled && (postgres == nil || cfg.ActionAuthorityTokenFile == "" || cfg.GuardedTabRequestControlURL == "") {
+		if postgres != nil {
+			postgres.Close()
+		}
+		return nil, fmt.Errorf("guarded tab requests require PostgreSQL and a fixed authenticated private endpoint")
+	}
 	server := broker.NewServer(registryStore, router, credentialResolver, log)
 	var mandateHandler http.Handler
 	var effectHandler http.Handler
@@ -250,6 +257,19 @@ func New(ctx context.Context) (*App, error) {
 			executor = &broker.ConverterDelegationExecutor{Admissions: client, Next: executor}
 		}
 		server.SetCatalogExecutor(executor)
+		if cfg.GuardedTabRequestEnabled {
+			client, clientErr := singletabcontrol.NewRequestClient(cfg.GuardedTabRequestControlURL, token)
+			if clientErr != nil {
+				postgres.Close()
+				return nil, clientErr
+			}
+			if err = registryStore.RegisterOwned([]*toolbrokerv1.ToolContract{singletabcontrol.RequestContract()}); err != nil {
+				postgres.Close()
+				return nil, err
+			}
+			executor = &broker.GuardedTabRequestExecutor{Requests: client, Next: executor}
+			server.SetCatalogExecutor(executor)
+		}
 		authorizer.SetCapabilities(broker.CapabilityGuards{Extensions: extensionStore, Converters: converterStore})
 		authorizationStore.SetContractGuard(broker.CatalogGuards{Extensions: extensionStore, Skills: skillStore, Converters: converterStore})
 		extensionHandler = extensions.NewControlHandler(token, extensionStore, router)

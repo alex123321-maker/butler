@@ -18,9 +18,14 @@ The core reconstructs current definitions and starts a fresh model context with
 only the opaque local selection receipt as private DATA. Unknown/incomplete tool
 checkpoints cannot use this selection recovery path to replay an effect.
 
-Default bootstrap keeps the operator flag off. Creating guarded requests through
-the ordinary worker/Broker route, delivering them to the owner and the private
-guarded runtime route remain separate composition gates. A successful local
+Default bootstrap keeps both operator flags off. A separate request composition
+now proves the exact permanent Broker dispatch and original ingress claim, then
+joins finite choices, immutable dispatch mapping and tool-running suspension in
+one transaction. Core sends the durable request through its delivery surface;
+Telegram directs to the protected Web choice page. Recovery checks a mapped
+request's actual confirmed journal outcome before activation. An owner decision
+cannot bypass an uncertain/lost Broker outcome. The private guarded status/click
+runtime route remains a composition gate. A successful local
 selection does not prove a browser action, recipient outcome or model quality.
 
 Actual PG/pool2 tests run on the lab through `task-observations-lab.sh`, narrow

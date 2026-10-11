@@ -32,13 +32,28 @@ func NewSelectionCheckpoints(pool *pgxpool.Pool, inputs *durableinput.Store, sou
 }
 
 func (s *SelectionCheckpoints) SuspendSelectionTx(ctx context.Context, tx pgx.Tx, b resources.Binding, selection singletabcontrol.Selection) error {
+	return s.suspendSelectionTx(ctx, tx, b, selection, "tool_pending")
+}
+
+// SuspendToolSelectionTx is an owning hook for an actually claimed Broker
+// request. The composition must prove that dispatch and retain its immutable
+// mapping in this same transaction before invoking this hook.
+func (s *SelectionCheckpoints) SuspendToolSelectionTx(ctx context.Context, tx pgx.Tx, b resources.Binding, selection singletabcontrol.Selection) error {
+	var mapped bool
+	if tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM guarded_single_tab_dispatches WHERE request_id=$1 AND run_id=$2)`, selection.ApprovalID, b.RunID).Scan(&mapped) != nil || !mapped {
+		return singletabcontrol.ErrDenied
+	}
+	return s.suspendSelectionTx(ctx, tx, b, selection, "tool_running")
+}
+
+func (s *SelectionCheckpoints) suspendSelectionTx(ctx context.Context, tx pgx.Tx, b resources.Binding, selection singletabcontrol.Selection, from string) error {
 	// Controller already holds ownership, authority, source and choice locks.
 	// Failure of the real input claim rolls back all newly published choices.
 	payload, _ := json.Marshal(map[string]any{"kind": "guarded_tab_selection", "version": 1, "approval_id": selection.ApprovalID})
 	if err := s.inputs.SuspendApprovalTx(ctx, tx, b.RunID, selection.ApprovalID, string(payload)); err != nil {
 		return err
 	}
-	tag, err := tx.Exec(ctx, `UPDATE runs SET status='awaiting_approval',current_state='awaiting_approval',updated_at=clock_timestamp() WHERE run_id=$1 AND session_key=$2 AND task_id=$3 AND task_revision=$4 AND current_state='tool_pending'`, b.RunID, b.SessionKey, b.TaskID, b.TaskRevision)
+	tag, err := tx.Exec(ctx, `UPDATE runs SET status='awaiting_approval',current_state='awaiting_approval',updated_at=clock_timestamp() WHERE run_id=$1 AND session_key=$2 AND task_id=$3 AND task_revision=$4 AND current_state=$5`, b.RunID, b.SessionKey, b.TaskID, b.TaskRevision, from)
 	if err != nil || tag.RowsAffected() != 1 {
 		return singletabcontrol.ErrDenied
 	}
@@ -46,16 +61,20 @@ func (s *SelectionCheckpoints) SuspendSelectionTx(ctx context.Context, tx pgx.Tx
 	if err != nil || tag.RowsAffected() != 1 {
 		return singletabcontrol.ErrDenied
 	}
-	_, err = tx.Exec(ctx, `INSERT INTO run_state_transitions(run_id,from_state,to_state,triggered_by,metadata_json,transitioned_at) VALUES($1,'tool_pending','awaiting_approval','orchestrator',$2::jsonb,clock_timestamp())`, b.RunID, payload)
+	_, err = tx.Exec(ctx, `INSERT INTO run_state_transitions(run_id,from_state,to_state,triggered_by,metadata_json,transitioned_at) VALUES($1,$3,'awaiting_approval','orchestrator',$2::jsonb,clock_timestamp())`, b.RunID, payload, from)
 	if err != nil {
 		return err
 	}
 	token, ok := ownership.TokenFromContext(ctx)
 	var live bool
-	if !ok || tx.QueryRow(ctx, `SELECT run_id=$2 AND lease_id=$3 AND fence_epoch=$4 AND expires_at>clock_timestamp() AND $5::timestamptz>clock_timestamp() FROM session_ownership WHERE session_key=$1`, b.SessionKey, b.RunID, token.LeaseID, b.LeaseEpoch, selection.ExpiresAt).Scan(&live) != nil || !live || s.sources(ctx, tx, b.RunID) != nil {
+	if !ok || tx.QueryRow(ctx, `SELECT run_id=$2 AND lease_id=$3 AND fence_epoch=$4 AND expires_at>clock_timestamp() AND $5::timestamptz>clock_timestamp() FROM session_ownership WHERE session_key=$1`, b.SessionKey, b.RunID, token.LeaseID, b.LeaseEpoch, selection.ExpiresAt).Scan(&live) != nil || !live || s.sources(ctx, tx, b.RunID) != nil || s.CheckPendingSelectionTx(ctx, tx, b.RunID, selection.ApprovalID) != nil {
 		return singletabcontrol.ErrDenied
 	}
 	return err
+}
+
+func (s *SelectionCheckpoints) CheckPendingSelectionTx(ctx context.Context, tx pgx.Tx, runID, id string) error {
+	return s.inputs.CheckPendingSelectionClaimTx(ctx, tx, runID, id)
 }
 
 func (s *SelectionCheckpoints) ResolveSelectionTx(ctx context.Context, tx pgx.Tx, b resources.Binding, id string, revoked bool) error {
@@ -112,6 +131,13 @@ func (s *SelectionCheckpoints) ResumeSelection(ctx context.Context, runID, id st
 		return "", singletabcontrol.ErrDenied
 	}
 	if s.sources(ctx, tx, runID) != nil {
+		return "", singletabcontrol.ErrDenied
+	}
+	// A lost private request response may leave its journal outcome uncertain.
+	// Owner selection cannot bypass that uncertainty. Component-only requests
+	// without a Broker dispatch retain their isolated recovery contract.
+	var settled bool
+	if tx.QueryRow(ctx, `SELECT NOT EXISTS(SELECT 1 FROM guarded_single_tab_dispatches d JOIN action_effects e ON e.action_id=d.effect_id JOIN action_authorizations a ON a.authorization_id=d.authorization_id WHERE d.request_id=$1 AND (e.state<>'effect_confirmed' OR e.dispatch_outcome<>'dispatch_completed' OR a.state<>'dispatch_completed'))`, id).Scan(&settled) != nil || !settled {
 		return "", singletabcontrol.ErrDenied
 	}
 	// Activate only inside this transaction so denied/expired/revoked selection

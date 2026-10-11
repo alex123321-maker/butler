@@ -64,6 +64,9 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 	terms := strings.Fields(strings.ToLower(query))
 	result := []*toolbrokerv1.ToolContract{}
 	for _, contract := range c.Registry.List("", false) {
+		if contract.GetToolName() == "single_tab.bind.guarded" && (a.TaskID == "" || !a.GuardedTabRequestReady) {
+			continue
+		}
 		if contract.GetToolName() == delegation.AdmissionTool && (a.TaskID == "" || !a.DelegationReady) {
 			continue
 		}

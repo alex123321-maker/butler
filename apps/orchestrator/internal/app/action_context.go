@@ -27,6 +27,7 @@ type actionContextReader struct {
 	mandateID                string
 	converterLifecycleReady  bool
 	delegationReady          bool
+	guardedTabRequestReady   bool
 	converterDelegationReady bool
 }
 
@@ -54,6 +55,13 @@ func (r *actionContextReader) GetActionContext(ctx context.Context, runID string
 	c = actionauth.ContextSnapshot{RunID: runID, RunState: run.GetCurrentState().String(), SessionKey: run.GetSessionKey(), OwnerID: sessionRecord.UserID, AutonomyMode: int32(run.GetAutonomyMode()), MandateID: r.mandateID, LeaseID: lease.LeaseID, LeaseEpoch: lease.FenceEpoch, LeaseExpiresAt: lease.ExpiresAt}
 	c.ConverterLifecycleReady = r.converterLifecycleReady
 	c.DelegationReady = r.delegationReady
+	c.GuardedTabRequestReady = r.guardedTabRequestReady
+	if r.guardedTabRequestReady {
+		var inputID, claimID string
+		if r.pool.QueryRow(ctx, `SELECT input_id,claim_id FROM accepted_inputs WHERE run_id=$1 AND session_key=$2 AND owner_id=$3 AND status='running' AND claim_expires_at>clock_timestamp() AND expires_at>clock_timestamp()`, runID, c.SessionKey, c.OwnerID).Scan(&inputID, &claimID) == nil {
+			c.InputClaimHash = actionauth.InputClaimHash(inputID, claimID)
+		}
+	}
 	c.ConverterDelegationReady = r.converterDelegationReady
 	// This projection stays inside orchestrator; it is a read of Run Service's
 	// admission binding, never a Broker write into another service's tables.

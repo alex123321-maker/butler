@@ -55,6 +55,7 @@ import (
 
 type httpServerDeps struct {
 	guardedTabOwner            apiservice.GuardedTabDecisions
+	guardedRequestHandler      http.Handler
 	delegationDecisions        apiservice.DelegationDecisions
 	initiativeStore            *initiative.Store
 	memoryIndexing             *indexing.Runtime
@@ -198,6 +199,9 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	mux.Handle("/api/v4/skills", apiservice.ReviewedSkills(deps.ownerAuth, deps.skillClient))
 	mux.Handle("/api/v4/converters", apiservice.GeneratedConverters(deps.ownerAuth, deps.converterClient))
 	mux.Handle("/api/v3/tab-choices/", apiservice.GuardedTabOwnerControls(deps.ownerAuth, deps.guardedTabOwner))
+	if deps.guardedRequestHandler != nil {
+		mux.Handle("/internal/guarded-tab-request", deps.guardedRequestHandler)
+	}
 	mux.Handle("/api/v3/delegation-decisions/", apiservice.DelegationOwnerDecisions(deps.ownerAuth, deps.delegationDecisions))
 	if deps.skillEvidenceHandler != nil {
 		mux.Handle("/internal/skill-evidence", deps.skillEvidenceHandler)
