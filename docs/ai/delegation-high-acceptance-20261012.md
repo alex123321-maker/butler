@@ -21,12 +21,18 @@ harnesses, tests real disposable PG/race, private UID10001 guards and vet with
 zero inference. BUTLER_DELEGATION_NATIVE_RELEASE identifies the clean committed
 release. The stamp pins every snapshot file and the exact file set by SHA256;
 changed release/path/bytes, added files and symlinks deny execution before auth.
+The integrated preparation also reruns numeric source acceptance, initiative
+time revalidation after PostgreSQL waits and workspace root ownership/draining
+regressions against the same committed snapshot, with race detection and vet.
 
 One execute invocation requires the existing owner authorization, explicit
 BUTLER_DELEGATION_NATIVE_ACCEPTANCE=1 and the tested release/snapshot. The new
 global marker is
 /srv/storage/butler/native-acceptance-windows/high-delegation-20261012-baseline22.
-It is never removed or reopened, including after failure. Every Start/Continue/
+It is never removed or reopened, including after failure.
+The marker is created before auth metadata/Docker work after tested-source
+admission, so an execution preparation failure consumes this invocation too.
+Every Start/Continue/
 Submit revalidates all nine artifacts and durably charges before the native method.
 The shared ceiling is12 new/34 total across worker reconstruction and both widths.
 The18-minute durable deadline cannot be extended. Independent root/child/mandate/

@@ -33,6 +33,12 @@ if [[ "$phase" == execute ]]; then
   [[ "$(cat "$root/tested-high-source")" == "$source_dir" ]] || exit 2
   [[ "$(cat "$root/tested-high-release")" == "$BUTLER_DELEGATION_NATIVE_RELEASE" ]] || exit 2
   check_tested_source || exit 2
+  # Seal after exact-source admission and before any auth metadata or Docker.
+  # A later preparation/execution failure cannot reopen this invocation.
+  mkdir -p /srv/storage/butler/native-acceptance-windows
+  mkdir "$window" || exit 2
+  printf '%s\n' "$source_dir" > "$window/source-ref"
+  printf '%s\n' "$BUTLER_DELEGATION_NATIVE_RELEASE" > "$window/release-ref"
   # Opaque operator-confirmed reference; never source/read/print credential data.
   import_parent=/srv/storage/butler/agents/antigravity-provider/profile/.gemini/antigravity-cli
   import_file="$import_parent/butler-native-import.json"
@@ -96,7 +102,10 @@ docker run --rm --user "$(id -u):$(id -g)" --network "$network" --memory 1536m -
 go test -race -c -o /binaries/broker.test ./apps/tool-broker/internal/broker
 chmod 555 /binaries/orchestrator.test /binaries/broker.test
 export BUTLER_DELEGATION_BROKER_BINARY=/binaries/broker.test
-go test -json -race -run "^Test(HighDelegation(History|AdmissionIntegration|RevalidationAndEntryChargesIntegration|CompositionIntegration)|NativeDelegation(ObjectiveFixtureRejectsNarrativeAuthority|PrivateRuntimeFiles|EncryptedFixtureImportWithoutInferenceIntegration|BrokerPreflightWithoutInferenceIntegration))$" -count=1 -timeout=90s ./apps/orchestrator/internal/app' > "$proof/tests.jsonl"
+go test -json -race -run "^Test(HighDelegation(History|AdmissionIntegration|RevalidationAndEntryChargesIntegration|CompositionIntegration)|NativeDelegation(ObjectiveFixtureRejectsNarrativeAuthority|PrivateRuntimeFiles|EncryptedFixtureImportWithoutInferenceIntegration|BrokerPreflightWithoutInferenceIntegration)|Delegation(ConflictingReportsRequireOriginalWitnessIntegration|NumericAcceptanceCannotUseAgreementOrMalformedContractIntegration))$" -count=1 -timeout=90s ./apps/orchestrator/internal/app
+go test -json -race -count=1 -timeout=90s ./internal/delegation
+go test -json -race -run "^TestPromotionRechecksTimeAfterSharedBudgetWaitIntegration$" -count=1 -timeout=90s ./apps/orchestrator/internal/initiative
+go test -json -race -run "^TestWorkspace(RootOwner|RuntimeCloseDrainsActualExecuteAndKeepsUnknownLeaseIntegration|RuntimeRootReplacementAfterAuthorityWaitDeniesEffectIntegration)" -count=1 -timeout=90s ./internal/workspace ./internal/workspaceexec' > "$proof/tests.jsonl"
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
 docker run --rm --network none --user 0:0 --volume "$proof/runtime:/private" alpine:3.22 \
   sh -eu -c 'chown 10001:10001 /private; chmod 700 /private'
@@ -109,7 +118,7 @@ sha256sum "$proof/runtime-files.txt" > "$proof/runtime-files.sha256"
 docker run --rm --user "$(id -u):$(id -g)" --network none --memory 1536m --pids-limit 128 --cpus 2 \
  --volume "$source_dir:/src:ro" --volume /srv/storage/butler/.cache:/cache --workdir /src \
  --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp \
- golang:1.27.2-bookworm go vet ./apps/orchestrator/internal/app ./apps/tool-broker/internal/broker
+ golang:1.27.2-bookworm go vet ./apps/orchestrator/internal/app ./apps/tool-broker/internal/broker ./apps/orchestrator/internal/initiative ./internal/delegation ./internal/workspace ./internal/workspaceexec
 if [[ "$phase" == prepare ]]; then
   source_manifest | cmp -s "$proof/source.sha256" - || exit 2
   cp "$proof/source.sha256" "$root/tested-high-manifest"
@@ -137,11 +146,8 @@ docker create --name "$name-runtime" --user 10001:10001 --network "$network" \
 created_runtime=true
 docker network connect butler-lab_backend "$name-runtime"
 # A single invocation. Nonzero status is retained, never retried.
-mkdir -p /srv/storage/butler/native-acceptance-windows
 check_tested_source || exit 2
-mkdir "$window" || exit 2
 printf '%s\n' "$proof" > "$window/proof-ref"
-printf '%s\n' "$BUTLER_DELEGATION_NATIVE_RELEASE" > "$window/release-ref"
 status=0
 docker start -a "$name-runtime" > "$proof/native-events.txt" 2>&1 || status=$?
 docker run --rm --network none --user 10001:10001 --volume "$proof/runtime:/private:ro" alpine:3.22 \
