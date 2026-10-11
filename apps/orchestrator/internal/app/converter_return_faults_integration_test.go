@@ -269,3 +269,38 @@ func TestConverterDeveloperReadyRequiresProjectionColumnsIntegration(t *testing.
 		})
 	}
 }
+
+func TestConverterDeveloperAmbiguousReturnDeniesClaimIntegration(t *testing.T) {
+	f := newDeveloperFixture(t)
+	child, candidate, _ := f.returnedChild(t)
+	// Fault injection simulates an invalid retained/restore row. The owned
+	// publisher could not derive this projection from the second child's final.
+	for _, q := range []struct {
+		sql  string
+		args []any
+	}{
+		{`INSERT INTO tasks SELECT (jsonb_populate_record(NULL::tasks,to_jsonb(t)||'{"task_id":"damaged-second-child"}')).* FROM tasks t WHERE task_id=$1`, []any{child.TaskID}},
+		{`INSERT INTO converter_developer_snapshots(task_id,owner_id,parent_task_id,parent_revision,parent_constraints_revision,execution_action_id,effect_id,authorization_id,action_hash,args_hash,contract_hash,snapshot_hash,accepted_json) SELECT 'damaged-second-child',owner_id,parent_task_id,parent_revision,parent_constraints_revision,execution_action_id,(SELECT effect_id FROM action_intents WHERE run_id=$2 AND binding->>'tool_name'='converters.discover' LIMIT 1),authorization_id,action_hash,args_hash,contract_hash,snapshot_hash,accepted_json FROM converter_developer_snapshots WHERE task_id=$1`, []any{child.TaskID, f.parentRun}},
+		{`INSERT INTO converter_developer_returns(child_task_id,owner_id,parent_task_id,result_id,child_run_id,digest,projection_hash,projection_json) SELECT 'damaged-second-child',owner_id,parent_task_id,result_id,child_run_id,digest,projection_hash,projection_json FROM converter_developer_returns WHERE child_task_id=$1`, []any{child.TaskID}},
+	} {
+		if _, err := f.f.pool.Exec(f.f.ctx, q.sql, q.args...); err != nil {
+			t.Fatal(err)
+		}
+	}
+	call, contract := f.collectCall(t, child, candidate, "ambiguous-return")
+	p, err := f.auth.Prepare(f.f.ctx, call, contract)
+	if err != nil {
+		t.Fatal("exact child prepare", err)
+	}
+	g, err := f.auth.Authorize(f.f.ctx, call, contract, p.Binding.ActionID, "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = f.auth.Claim(f.f.ctx, g.ID); err == nil {
+		t.Fatal("ambiguous return chose a first row")
+	}
+	var grants int
+	if err = f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM memory_scope_grants WHERE task_id=$1 AND source_id=$2`, f.f.parent.TaskID, candidate.BodySource.ID).Scan(&grants); err != nil || grants != 0 {
+		t.Fatal("ambiguous metadata widened parent scope", grants, err)
+	}
+}

@@ -125,7 +125,8 @@ func (s *Store) bindCollectionAction(ctx context.Context, call *toolbrokerv1.Too
 
 func (s *Store) checkCollectionActionTx(ctx context.Context, tx pgx.Tx, b actionauth.ActionBinding) error {
 	var childID string
-	if b.OwnerID != s.owner || len(b.DataSources) != 3 || b.Effect != actionauth.EffectRead || b.Resource != "tool:converters.collect" || len(b.CredentialRefs) != 0 || tx.QueryRow(ctx, `SELECT child_task_id FROM converter_developer_returns WHERE owner_id=$1 AND parent_task_id=$2 AND digest=$3`, s.owner, b.TaskID, b.ConverterPackageHash).Scan(&childID) != nil {
+	var matches int64
+	if b.OwnerID != s.owner || len(b.DataSources) != 3 || b.Effect != actionauth.EffectRead || b.Resource != "tool:converters.collect" || len(b.CredentialRefs) != 0 || tx.QueryRow(ctx, `SELECT COALESCE(min(child_task_id),''),count(*) FROM converter_developer_returns WHERE owner_id=$1 AND parent_task_id=$2 AND digest=$3`, s.owner, b.TaskID, b.ConverterPackageHash).Scan(&childID, &matches) != nil || matches != 1 {
 		return ErrAccess
 	}
 	var c actionauth.ContextSnapshot
