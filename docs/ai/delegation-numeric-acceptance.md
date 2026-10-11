@@ -72,8 +72,8 @@ converter, parent-context, owner API and transport suites; it performs no infere
 | --- | --- | --- |
 | Initial rejected JSONB marker design |20261012-024242-738|`b3b8fb68a03f3bfde677bad8f12102e535fbd078e52f24f8304604ad71587f33`|
 | TEXT marker numeric PG/race/vet |20261012-024514-114|`b9e48c9110fa37995f045d5b4611b24389bf038a8ae38af43a674d20fb913530`|
-| Final-code verification PG/race/vet |20261012-024634-906|`f472ff917071db11ee7f6d5e5c1057f8b9f5483b7668dc982e16fef3f76777c1`|
-| Final-code full delegation PG/race/vet and shell syntax |20261012-024822-644|`2e393600db90cd7187e6dd3171fb5e2644e5a84d9d9b0163461ba0b1e76258a9`|
+| First-version verification PG/race/vet |20261012-024634-906|`f472ff917071db11ee7f6d5e5c1057f8b9f5483b7668dc982e16fef3f76777c1`|
+| First-version full delegation PG/race/vet and shell syntax |20261012-024822-644|`2e393600db90cd7187e6dd3171fb5e2644e5a84d9d9b0163461ba0b1e76258a9`|
 
 Verification retained 88 distinct test/subtest names across 5 packages, 18 top-level
 tests, 0 failures and 0 skips. Full mode retained 524 passed distinct test/subtest
@@ -84,6 +84,36 @@ They are not passed evidence; the selected numeric/owner/legacy PG gates all ran
 Reports are under this agent root's `reports/`; PostgreSQL data and the initial
 failed report remain there. New model calls 0.
 All prior native attempts and unknown token usage remain unchanged.
+
+## Unicode field-alias repair
+
+A later read-only review found a parser defect in that first code version:
+`encoding/json` struct decoding folds Unicode aliases more broadly than the
+duplicate guard's `strings.ToLower`. A final with `observed_value:23` followed
+by `ob\u017ferved_value:17` could be interpreted as 17 and match witness 17.
+The new regression reproduced ten alias interpretations before the fix on laba,
+including the original witness, contract `source_ref`, nested original reference
+and Kelvin-sign `kind`. No inference or live numeric acceptance was performed.
+
+Numeric parsing now requires the exact decoded field-name set for every object
+before struct decoding. Nested source references get their own four-key check.
+Long-s/case/Unicode aliases cannot substitute for or overwrite canonical fields;
+an ASCII JSON escape spelling the same exact field remains valid. Existing prose
+contracts remain outside this schema. Actual PG owner-promotion regressions deny
+ambiguous final/original/contract/nested-reference DATA without changing collected
+result or decision state.
+
+| Check | Snapshot | Immutable events SHA256 |
+| --- | --- | --- |
+| Reproduced Unicode alias defect before repair |20261012-030026-233|`9d9da376e51e8a771a5c32e6c9b219c3af4e40f3318c6d7b892805508536113e`|
+| Repaired exact-key numeric PG/race/vet |20261012-030205-187|`9a9ddd9afa08d6266168a105e6d9bd6b6c7d24bca920a2a72fa18843754b38e6`|
+| Repaired verification PG/race/vet |20261012-030205-187|`678b0e973017cd8c2355151a470150f08f46a20ed00bb364dd7925335ea471a5`|
+
+The repaired numeric gate passed 64 distinct test/subtest names with 0 failures
+and 0 skips. Repaired verification passed 103 distinct tests/subtests, 19 top-level
+tests across 5 packages, 0 failures and 0 skips. Earlier pass reports remain scoped
+to their original code version; they are not evidence that the Unicode defect
+was absent. New model calls remain 0.
 
 Full successful native scheduling/recovery, same-source single/parallel quality,
 latency and complete measured usage, general contradictory-original research and

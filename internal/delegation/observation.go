@@ -55,13 +55,14 @@ func NumericResearchSource(body []byte) (SourceRef, bool, error) {
 		return SourceRef{}, false, nil
 	}
 	var contract struct {
-		Kind   string     `json:"kind"`
-		Source *SourceRef `json:"source_ref"`
+		Kind   string          `json:"kind"`
+		Source json.RawMessage `json:"source_ref"`
 	}
-	if strictJSON(body, &contract) != nil || contract.Kind != NumericObservationKind || contract.Source == nil || !ValidSource(*contract.Source) {
+	var source SourceRef
+	if strictJSON(body, &contract, "kind", "source_ref") != nil || contract.Kind != NumericObservationKind || strictJSON(contract.Source, &source, "source_id", "revision", "access_revision", "content_hash") != nil || !ValidSource(source) {
 		return SourceRef{}, true, ErrDenied
 	}
-	return *contract.Source, true, nil
+	return source, true, nil
 }
 
 func ParseNumericObservation(raw []byte) (NumericObservation, error) {
@@ -73,7 +74,7 @@ func ParseNumericObservation(raw []byte) (NumericObservation, error) {
 		ObservedDate   *string `json:"observed_date"`
 		Uncertainty    *string `json:"uncertainty"`
 	}
-	if strictJSON(raw, &wire) != nil || wire.SourceID == nil || wire.SourceRevision == nil || wire.SourceHash == nil || wire.ObservedValue == nil || wire.ObservedDate == nil || wire.Uncertainty == nil || !validID(*wire.SourceID) || *wire.SourceRevision < 1 || !validHash(*wire.SourceHash) || !validObservationDate(*wire.ObservedDate) || *wire.Uncertainty != "source_only" {
+	if strictJSON(raw, &wire, "source_id", "source_revision", "source_hash", "observed_value", "observed_date", "uncertainty") != nil || wire.SourceID == nil || wire.SourceRevision == nil || wire.SourceHash == nil || wire.ObservedValue == nil || wire.ObservedDate == nil || wire.Uncertainty == nil || !validID(*wire.SourceID) || *wire.SourceRevision < 1 || !validHash(*wire.SourceHash) || !validObservationDate(*wire.ObservedDate) || *wire.Uncertainty != "source_only" {
 		return NumericObservation{}, ErrDenied
 	}
 	return NumericObservation{*wire.SourceID, *wire.SourceRevision, *wire.SourceHash, *wire.ObservedValue, *wire.ObservedDate, *wire.Uncertainty}, nil
@@ -95,7 +96,7 @@ func VerifyNumericObservation(raw []byte, source SourceRef, witness []byte) erro
 		Value *int64  `json:"observed_value"`
 		Date  *string `json:"observed_date"`
 	}
-	if strictJSON(witness, &fact) != nil || fact.Value == nil || fact.Date == nil || !validObservationDate(*fact.Date) || observation.ObservedValue != *fact.Value || observation.ObservedDate != *fact.Date {
+	if strictJSON(witness, &fact, "observed_value", "observed_date") != nil || fact.Value == nil || fact.Date == nil || !validObservationDate(*fact.Date) || observation.ObservedValue != *fact.Value || observation.ObservedDate != *fact.Date {
 		return ErrDenied
 	}
 	return nil
@@ -106,7 +107,7 @@ func validObservationDate(value string) bool {
 	return err == nil && parsed.Format("2006-01-02") == value
 }
 
-func strictJSON(raw []byte, value any) error {
+func strictJSON(raw []byte, value any, requiredFields ...string) error {
 	if len(raw) == 0 || len(raw) > 8192 {
 		return ErrDenied
 	}
@@ -116,6 +117,18 @@ func strictJSON(raw []byte, value any) error {
 	}
 	if _, err := keys.Token(); err != io.EOF {
 		return ErrDenied
+	}
+	// Struct decoding folds Unicode aliases (including long s and Kelvin sign).
+	// Check the exact decoded field names before that decoder can interpret them;
+	// strings.ToLower duplicate checks alone do not implement Unicode SimpleFold.
+	var fields map[string]json.RawMessage
+	if json.Unmarshal(raw, &fields) != nil || len(fields) != len(requiredFields) {
+		return ErrDenied
+	}
+	for _, name := range requiredFields {
+		if _, ok := fields[name]; !ok {
+			return ErrDenied
+		}
 	}
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	decoder.DisallowUnknownFields()

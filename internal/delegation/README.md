@@ -25,6 +25,9 @@ acceptance constraint for a selected structured numeric/date witness.
 date and `source_only` uncertainty after the owning guard reads the current
 original and immutable final. Duplicate keys, omitted/null fields, unknown fields
 and trailing JSON deny; integer zero is a real value only when explicitly given.
+Exact required field names are checked before struct decoding for the final,
+witness, contract and nested source reference, so Unicode folding cannot turn
+an extra long-s or Kelvin-sign key into an accepted field alias.
 The production owner acceptance guard requires that witness in both the child's
 exact selected sources and the owner's pinned decision evidence. Other reports
 cannot vote it into agreement. This constrained source-relative check does not

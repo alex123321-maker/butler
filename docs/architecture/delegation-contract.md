@@ -112,6 +112,11 @@ and in the independently verified result and decision evidence. The witness body
 has exactly `observed_value` (int64) and `observed_date` (valid `YYYY-MM-DD`).
 The immutable child final must strictly contain `source_id`, `source_revision`,
 `source_hash`, `observed_value`, `observed_date` and `uncertainty:"source_only"`.
+Every numeric object has an exact required field-name set, including the nested
+`source_ref`. Case variants and Unicode folding aliases are rejected before
+struct decoding; JSON escapes that decode to the exact ASCII field name remain
+valid. A duplicate-key check based only on lowercasing is insufficient because
+the Go struct decoder also folds long s and Kelvin sign.
 The value and date must match that original witness, preserving the difference
 between a source-relative observation and general truth. Agreement between
 children does not enter this comparison.

@@ -110,3 +110,50 @@ func TestNumericResearchContractSelectionIsExplicitAndStrict(t *testing.T) {
 		}
 	}
 }
+
+func TestNumericObservationRejectsUnicodeFieldAliases(t *testing.T) {
+	source, raw, witness := numericFixture(t, 17)
+	body, _ := json.Marshal(struct {
+		Kind   string    `json:"kind"`
+		Source SourceRef `json:"source_ref"`
+	}{NumericObservationKind, source})
+	for name, candidate := range map[string]string{
+		"wrong_final_overwritten": strings.Replace(raw, `"observed_value":17`, `"observed_value":23,"ob\u017ferved_value":17`, 1),
+		"alias_only_final":        strings.Replace(raw, `"observed_value":17`, `"ob\u017ferved_value":17`, 1),
+		"source_alias_final":      strings.Replace(raw, `"source_id":"source:original"`, `"source_id":"source:foreign","\u017fource_id":"source:original"`, 1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if VerifyNumericObservation([]byte(candidate), source, []byte(witness)) == nil {
+				t.Fatal("Unicode field alias changed a final's interpretation")
+			}
+		})
+	}
+	for name, candidate := range map[string]string{
+		"wrong_witness_overwritten": strings.Replace(witness, `"observed_value":17`, `"observed_value":23,"ob\u017ferved_value":17`, 1),
+		"alias_only_witness":        strings.Replace(witness, `"observed_value":17`, `"ob\u017ferved_value":17`, 1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if VerifyNumericObservation([]byte(raw), source, []byte(candidate)) == nil {
+				t.Fatal("Unicode field alias changed an original's interpretation")
+			}
+		})
+	}
+	for name, candidate := range map[string]string{
+		"alias_only_source_ref":        strings.Replace(string(body), `"source_ref":`, `"\u017fource_ref":`, 1),
+		"nested_source_id_overwritten": strings.Replace(string(body), `"source_id":"source:original"`, `"source_id":"source:foreign","\u017fource_id":"source:original"`, 1),
+		"alias_only_nested_source_id":  strings.Replace(string(body), `"source_id":`, `"\u017fource_id":`, 1),
+		"nested_access_overwritten":    strings.Replace(string(body), `"access_revision":3`, `"access_revision":99,"acce\u017f\u017f_revision":3`, 1),
+		"kelvin_kind":                  strings.Replace(string(body), `"kind":`, `"\u212aind":`, 1),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if _, applicable, err := NumericResearchSource([]byte(candidate)); err == nil || !applicable {
+				t.Fatal("Unicode field alias changed contract or source-reference interpretation", applicable, err)
+			}
+		})
+	}
+	// JSON escaping of an exact ASCII key retains the same unambiguous name.
+	escaped := strings.Replace(raw, `"observed_value":17`, `"obser\u0076ed_value":17`, 1)
+	if VerifyNumericObservation([]byte(escaped), source, []byte(witness)) != nil {
+		t.Fatal("equivalent exact ASCII key spelling denied")
+	}
+}

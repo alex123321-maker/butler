@@ -141,10 +141,14 @@ func (f *delegationGuardFixture) numericResearchContract(t *testing.T, key strin
 }
 
 func TestDelegationNumericAcceptanceCannotUseAgreementOrMalformedContractIntegration(t *testing.T) {
-	for _, scenario := range []string{"agreeing_wrong_finals", "duplicate_marker", "unknown_schema", "unselected_witness", "missing_observed_value", "null_observed_value", "missing_source_evidence"} {
+	for _, scenario := range []string{"agreeing_wrong_finals", "duplicate_marker", "unknown_schema", "unselected_witness", "missing_observed_value", "null_observed_value", "missing_source_evidence", "unicode_final_alias", "unicode_witness_alias", "unicode_contract_alias", "unicode_nested_source_alias"} {
 		t.Run(scenario, func(t *testing.T) {
 			f := newDelegationGuardFixture(t)
-			witness := f.source(t, "numeric-original", "user", f.parent.OwnerID, `{"observed_value":0,"observed_date":"2026-10-11"}`, nil)
+			witnessBody := `{"observed_value":0,"observed_date":"2026-10-11"}`
+			if scenario == "unicode_witness_alias" {
+				witnessBody = `{"observed_value":23,"ob\u017ferved_value":0,"observed_date":"2026-10-11"}`
+			}
+			witness := f.source(t, "numeric-original", "user", f.parent.OwnerID, witnessBody, nil)
 			selected := witness
 			override := []byte(nil)
 			switch scenario {
@@ -152,6 +156,16 @@ func TestDelegationNumericAcceptanceCannotUseAgreementOrMalformedContractIntegra
 				override = []byte(`{"kind":"delegation_numeric_observation_v1","kind":"legacy"}`)
 			case "unknown_schema":
 				override = []byte(`{"kind":"delegation_numeric_observation_v2"}`)
+			case "unicode_contract_alias", "unicode_nested_source_alias":
+				contract, _ := json.Marshal(struct {
+					Kind   string               `json:"kind"`
+					Source delegation.SourceRef `json:"source_ref"`
+				}{delegation.NumericObservationKind, witness})
+				field, alias := `"source_ref":`, `"\u017fource_ref":`
+				if scenario == "unicode_nested_source_alias" {
+					field, alias = `"source_id":`, `"\u017fource_id":`
+				}
+				override = []byte(strings.Replace(string(contract), field, alias, 1))
 			case "unselected_witness", "missing_source_evidence":
 				selected = f.source(t, "numeric-other", "user", f.parent.OwnerID, `{"observed_value":0,"observed_date":"2026-10-11"}`, nil)
 			}
@@ -184,6 +198,8 @@ func TestDelegationNumericAcceptanceCannotUseAgreementOrMalformedContractIntegra
 					raw = strings.Replace(raw, `"observed_value":0,`, "", 1)
 				case "null_observed_value":
 					raw = strings.Replace(raw, `"observed_value":0`, `"observed_value":null`, 1)
+				case "unicode_final_alias":
+					raw = strings.Replace(raw, `"observed_value":0`, `"observed_value":23,"ob\u017ferved_value":0`, 1)
 				}
 				result, report, parents := f.completeWithContent(t, admitted.Contract, child, false, false, raw)
 				ref := f.report(t, key+"-report", child, report, parents)
