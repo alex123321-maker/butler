@@ -24,6 +24,76 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+func TestWorkspaceRuntimeRootBindingRejectsRestoredStartupReplacementIntegration(t *testing.T) {
+	f := newRuntimeFixture(t)
+	if f.runtime.checkRootBinding() != nil {
+		t.Fatal("installed runtime did not bind its independent handles")
+	}
+	original := f.root + "-original"
+	replacement := f.root + "-replacement"
+	if err := os.Rename(f.root, original); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Remove(original) })
+	if err := os.Mkdir(f.root, 0700); err != nil {
+		t.Fatal(err)
+	}
+	// These are the same three constructors used at startup, opening real
+	// private directory B while the owner still holds directory A. No timing,
+	// production injection hook or custom clock is involved.
+	observer, err := workspace.NewObserver(f.root, MaxCodeBytes)
+	if err != nil {
+		t.Fatal("replacement observer could not open private fixture root")
+	}
+	t.Cleanup(func() { _ = observer.Close() })
+	guard, err := workspace.NewResourceGuard(f.dispatch.resources, f.runtime, f.runtime)
+	if err != nil {
+		t.Fatal(err)
+	}
+	files, err := workspace.New(f.pool, f.root, guard, workspace.DefaultLimits())
+	if err != nil {
+		t.Fatal("replacement Store could not open private fixture root")
+	}
+	t.Cleanup(func() { _ = files.Close() })
+	purge, err := workspace.NewDeletionRuntime(f.root)
+	if err != nil {
+		t.Fatal("replacement privacy executor could not open private fixture root")
+	}
+	t.Cleanup(func() { _ = purge.Close() })
+	if err := os.Rename(f.root, replacement); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Remove(replacement) })
+	if err := os.Rename(original, f.root); err != nil {
+		t.Fatal(err)
+	}
+	if f.runtime.owner.Check() != nil || f.runtime.checkRootBinding() != nil {
+		t.Fatal("restored named directory did not retain original owner/handles")
+	}
+	for _, component := range []string{"store", "observer", "privacy", "all"} {
+		t.Run(component, func(t *testing.T) {
+			r := &Runtime{owner: f.runtime.owner, files: f.runtime.files, observer: f.runtime.observer, purge: f.runtime.purge}
+			if component == "store" || component == "all" {
+				r.files = files
+			}
+			if component == "observer" || component == "all" {
+				r.observer = observer
+			}
+			if component == "privacy" || component == "all" {
+				r.purge = purge
+			}
+			if r.checkRootBinding() != ErrDenied {
+				t.Fatal("constructor binding accepted a replacement inode after path restoration")
+			}
+		})
+	}
+	for _, path := range []string{f.root, replacement} {
+		if entries, err := os.ReadDir(path); err != nil || len(entries) != 0 {
+			t.Fatal("startup binding created physical artifact/lock/temp state")
+		}
+	}
+}
+
 func TestWorkspaceRuntimeCloseDrainsActualExecuteAndKeepsUnknownLeaseIntegration(t *testing.T) {
 	f := newRuntimeFixture(t)
 	if duplicate, err := NewRuntime(f.ctx, f.dispatch, f.root, f.token); err == nil {

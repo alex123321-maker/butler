@@ -72,7 +72,7 @@ docker run --rm --runtime runc --user "$(id -u):$(id -g)" --network "$network" -
     filter="."
     if [[ "$WORKSPACE_PROOF_MODE" == ownership ]]; then
       packages="./internal/workspace ./internal/workspaceexec"
-      filter="^TestWorkspace(RootOwner|RuntimeClose|RuntimeRootReplacement)"
+      filter="^TestWorkspace(RootOwner|RuntimeClose|RuntimeRootReplacement|RuntimeRootBinding)"
     fi
     if [[ "$WORKSPACE_PROOF_MODE" == broker ]]; then
       packages="$packages ./apps/tool-broker/internal/broker ./apps/tool-broker/internal/runtimeclient"

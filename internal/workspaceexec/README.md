@@ -53,9 +53,15 @@ route. See [the runtime application](../../apps/tool-workspace/README.md).
 
 `Runtime` holds exclusive Linux `workspace.RootOwner` ownership of the actual
 directory inode before opening Store/Observer/privacy handles. Contention and
-unsupported platforms deny startup with a fixed safe error. No lock/PID/temp
-file is created; independent roots retain concurrency. Readiness and Execute
-check the current named private root against that held inode; Store admission
+unsupported platforms deny startup with a fixed safe error. Before constructor
+success, each of the three actual opened handles must match the RootOwner's
+locked directory inode, as well as its current
+named path. Temporarily replacing the root and restoring it before the final
+named-path check cannot leave a Store, Observer or privacy executor anchored to
+a different directory.
+
+No lock/PID/temp file is created; independent roots retain concurrency. Readiness
+and Execute check the current named private root against that held inode; Store admission
 repeats this after authority/resource waits and privacy erasure checks it around
 physical work. A lifecycle guard
 drains entered Execute/readiness/privacy work before Close releases ownership;

@@ -69,12 +69,22 @@ func NewRuntime(ctx context.Context, d *DispatchStore, root, token string) (*Run
 		o.Close()
 		return nil, err
 	}
-	if owner.Check() != nil {
+	if r.checkRootBinding() != nil {
 		_ = r.Close()
 		return nil, ErrDenied
 	}
 	success = true
 	return r, nil
+}
+
+// Startup must bind all independently opened handles to the locked inode.
+// Returning the original directory to its name cannot validate handles opened
+// against a temporary private replacement.
+func (r *Runtime) checkRootBinding() error {
+	if r == nil || r.owner.Check() != nil || r.files.CheckOwner(r.owner) != nil || r.observer.CheckOwner(r.owner) != nil || r.purge.CheckOwner(r.owner) != nil {
+		return ErrDenied
+	}
+	return nil
 }
 func (r *Runtime) Close() error {
 	if r == nil {

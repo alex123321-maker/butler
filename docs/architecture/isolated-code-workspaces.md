@@ -110,8 +110,13 @@ Each production workspace Runtime now holds an exclusive Linux directory-inode
 cannot open that same root, even under a different socket/profile; independently
 provisioned roots remain concurrent. No PID, lock file or shared temporary data
 is created. Unsupported platforms/filesystems fail closed. Readiness and runtime
-entry bind the held directory inode to the current private operator path, and
-the Store admission callback repeats identity checks after authority/resource
+entry bind the held directory inode to the current private operator path.
+Startup separately validates the actual opened Store/Observer/DeletionRuntime
+inodes against the locked inode before returning. A transient replacement
+restored before the final named-path check cannot bind any of those handles to
+another private directory. The named-path check alone is insufficient.
+
+The Store admission callback repeats identity checks after authority/resource
 waits. Privacy erasure validates root identity around physical work. Private
 mounts, os.Root containment and OS/runtime isolation remain required.
 

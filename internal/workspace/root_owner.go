@@ -59,6 +59,34 @@ func (o *RootOwner) Check() error {
 	return nil
 }
 
+// checkRoot compares a component's already opened directory handle to the
+// locked inode. Checking only its named path would miss a transient replacement
+// restored before startup finishes, leaving that component anchored elsewhere.
+func (o *RootOwner) checkRoot(root *os.Root) error {
+	if o == nil || root == nil {
+		return ErrDenied
+	}
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	if o.dir == nil {
+		return ErrDenied
+	}
+	locked, err := o.dir.Stat()
+	if err != nil || locked.Mode().Perm()&0077 != 0 {
+		return ErrDenied
+	}
+	dir, err := root.Open(".")
+	if err != nil {
+		return ErrDenied
+	}
+	defer dir.Close()
+	opened, err := dir.Stat()
+	if err != nil || !opened.IsDir() || opened.Mode().Perm()&0077 != 0 || !os.SameFile(locked, opened) {
+		return ErrDenied
+	}
+	return nil
+}
+
 // Close releases the kernel lock only after the caller has drained all users.
 // No lock file, PID, timeout, resource lease or effect history is modified.
 func (o *RootOwner) Close() error {

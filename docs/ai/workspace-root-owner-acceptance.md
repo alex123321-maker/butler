@@ -16,7 +16,39 @@ Close excludes new entries, drains existing Execute/readiness/privacy passes,
 closes their handles and only then releases the root lock. Close is idempotent.
 This lock grants no tool, owner, resource or reconciliation authority.
 
-## Final isolated evidence
+## Startup handle binding correction
+
+Read-only cross-review found a concrete gap beyond the initial green evidence:
+the owner could hold inode A while the independently opened Store, Observer and
+DeletionRuntime handles were anchored to temporary private directory B. Returning
+A to its original name before the final owner check would pass that named-path
+check while keeping those B handles open.
+
+Startup now separately compares each actual opened component handle to the
+RootOwner's locked inode before returning, alongside the current named-path
+check. A deterministic regression uses the same real constructors, opens all
+three against temporary B, restores A and proves owner.Check still succeeds
+while startup binding denies Store-only, Observer-only, privacy-only and all-B
+combinations. Good original handles still pass. There is no production test
+hook, custom clock or timing-dependent swap. The test restores real directory
+paths and leaves workspace-operation and PG effect state unchanged.
+
+Supplemental final source snapshot: `20261012-030630-685`, isolated root
+`/srv/storage/butler/agents/workspace-root-binding`. Both runs used Go1.27.2,
+actual disposable PostgreSQL17/pool2, actual private filesystem handles, race
+and targeted vet; the all-suite also built the actual static workspace service.
+
+| Runner | Report suffix | Result | tests.jsonl SHA256 |
+| --- | --- | --- | --- |
+| `workspace-lab.sh <root> ownership` | `workspace-20261011T200649Z-2575205` | 10 passes, 0 failures/skips | `1f5e4607c3e7511fa31e1ac623988b3e2911f47f100df64c15638f0c63852e5e` |
+| `workspace-lab.sh <root> all` | `workspace-20261011T200657Z-2575116` | 417 distinct passes, 215 top-level, 11 packages; 0 failures and the same 11 explicit opt-in skips listed below | `9882cd740b539deb65a88300cf71c28a2ed16b8ef4a96ca24899888c16a92355` |
+
+Owned containers/networks were removed; retained proof/PG files were preserved.
+This correction used zero model calls and changed no deployment, credential
+material, current main checkout or issue status. Owner recovery and the other
+remaining gates below are unchanged.
+
+## Initial root lifetime evidence (before handle binding correction)
 
 Root: `/srv/storage/butler/agents/workspace-root-owner`. Final source snapshot:
 `20261012-024854-794`; Go1.27.2, disposable PostgreSQL17/pool2, real private files,

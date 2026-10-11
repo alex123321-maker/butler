@@ -24,6 +24,12 @@ releases ownership only after the caller drains work. This primitive is separate
 from Store authorization and resource arbitration, and writes no PG state.
 Lower-level Store/Observer handles do not themselves obtain process ownership;
 the owning runtime must keep one RootOwner until all its handles are closed.
+`Store.CheckOwner`, `Observer.CheckOwner` and `DeletionRuntime.CheckOwner` compare
+their actual opened directory inode with that RootOwner. The runtime validates
+all three before returning from startup. A temporary root replacement followed
+by restoration of the original named directory cannot validate replacement
+handles. The handle comparison and RootOwner's current named-path check are
+separate required checks.
 
 The guard checks live ownership, current task/goal/mandate and actual resource
 lease/fence/observation version **on the caller's transaction** before workspace

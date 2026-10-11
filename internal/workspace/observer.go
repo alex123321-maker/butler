@@ -38,6 +38,15 @@ func NewObserver(rootPath string, maxFileBytes int64) (*Observer, error) {
 }
 func (o *Observer) Close() error { return o.root.Close() }
 
+// CheckOwner verifies this independently opened Observer is anchored to the
+// same directory inode held by the runtime, including transient path swaps.
+func (o *Observer) CheckOwner(owner *RootOwner) error {
+	if o == nil {
+		return ErrDenied
+	}
+	return owner.checkRoot(o.root)
+}
+
 // Check bounded directory entries without reading any unclassified content.
 func exactEntries(r *os.Root, name string, names ...string) error {
 	info, err := r.Lstat(name)

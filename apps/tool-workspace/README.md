@@ -39,7 +39,11 @@ The Linux runtime holds an exclusive advisory lock on its artifact directory
 inode for its lifetime. A competing runtime sharing that root cannot start,
 including with another profile or listening address. Independent artifact roots
 stay concurrent. This requires directory `flock` support; other operating systems
-fail closed. No lock/PID file or shared temporary payload is created. Root path
+fail closed. Startup also compares each already opened Store, Observer and
+privacy executor handle to the locked directory inode. A temporary root swap
+restored before startup returns is denied even when the named-path check passes.
+
+No lock/PID file or shared temporary payload is created. Root path
 replacement or shared permissions deny readiness and new execution. Shutdown
 drains active execution/readiness/privacy work before releasing the root. A
 crash releases this process lock without clearing any PG resource/effect state;
