@@ -9,9 +9,15 @@ The optional path remains disabled until the application composes all guards.
 missing dependencies. `Request`, `Select` and `Revoke` require an authenticated
 `owneridentity.Actor` and a trusted current `resources.Binding`; API/model bodies
 must not supply that proof. The runtime callback is `Guard(fixedHost)`.
-The measured `WorkerGuard` composition is synchronous under a live worker lease.
-Released-lease human waiting/resume needs a separate current-owner/suspended-run
-authority adapter; this component provides no stale-lease shortcut.
+`WorkerGuard` requires a live worker lease for request and runtime dispatch.
+`NewWaiting(pool,metadata,sources,fixedHost)` provides only Select/Revoke on an
+existing request while the current task waits for its owner. It resolves the
+immutable binding from PG; a verified owner actor, matching run/task revisions,
+current mandate/delegation and sources, and released/expired Session lease are
+required under the owning lock. A resumed live worker denies this path. It never
+creates a token, renews a lease, extends the original finite request expiry or
+dispatches work. Metadata runs outside PG; all guards repeat before publication.
+Web/Telegram delivery, resume and production bootstrap remain separate gates.
 
 Metadata RPCs run outside every transaction. Their fixed client bypasses ambient
 proxies/redirects, accepts HTTP only on loopback (remote requires trusted TLS),

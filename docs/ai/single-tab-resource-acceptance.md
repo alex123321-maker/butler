@@ -86,6 +86,16 @@ browser field/document contents are absent from tool observations.
 
 ## Durable and private boundary checks
 
+The later owner-waiting adapter passed actual disposable PG and race checks on
+snapshot `20261011-121430-072`, proof
+`/srv/storage/butler/agents/task-observations/reports/task-observations-20261011T051434Z-3803281`.
+Eight cases cover actual Session lease release, successful/idempotent selection,
+revocation, anonymous/foreign owners, changed revision, stopped task, a newly
+acquired live executor and source staleness after metadata. No owner operation
+creates/renews a lease; the stale worker proof remains denied. Events SHA256:
+`74dd1c80fd537e05569de6813c2635bc68092d824bb435af9bfa5c3b2fd37999`.
+This is a library proof, not composed Web/Telegram acceptance or activation.
+
 - Owning Request/Select/Revoke requires authenticated owner plus current execution
   and source authority. Runtime metadata RPC is outside PG locks. Approval,
   candidate, opaque session and immutable guarded marker publish atomically.

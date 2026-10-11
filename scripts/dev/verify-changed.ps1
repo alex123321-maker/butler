@@ -148,7 +148,7 @@ foreach ($file in $files) {
       [void]$tests.Add("pwsh -NoProfile -File scripts/dev/lab.ps1 -RemoteRoot /srv/storage/butler/agents/local-models -Action Test -Packages ./apps/local-models/...")
       continue
     }
-    "^(apps/orchestrator/internal/task/owner_overview.*[.]go$|apps/orchestrator/internal/api/(task_observations_test|tasks_control|tasks_v2)[.]go$|scripts/dev/task-observations-lab[.]sh$|web/(components/TaskOwnerControls[.]vue|entities/task/api[.]ts|tests/e2e/task-owner-controls[.]spec[.]ts)$)" {
+    "^(apps/orchestrator/internal/task/owner_overview.*[.]go$|apps/orchestrator/internal/api/(task_observations_test|tasks_control|tasks_v2)[.]go$|apps/orchestrator/internal/run/task_(read|risk_integration_test)[.]go$|scripts/dev/task-observations-lab[.]sh$|web/(components/TaskOwnerControls[.]vue|entities/task/api[.]ts|tests/e2e/task-owner-controls[.]spec[.]ts)$)" {
       [void]$specs.Add("docs/architecture/task-owner-controls-spec.md")
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/execution-budget-contract.md")

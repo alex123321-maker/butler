@@ -35,12 +35,17 @@ The authenticated owning API uses only these public shapes:
 
 Use the existing owner Web/Telegram approval delivery surface with sanitized
 choices. Do not route guarded approvals through legacy non-atomic selection.
-The measured library/Chrome path is synchronous and requires a live worker lease.
-A Web/Telegram workflow that releases the lease while awaiting human selection
-needs its separate current-owner/suspended-run authority adapter and acceptance;
-these tests do not certify that lifecycle. The library's guards cannot be removed
-or the old lease resurrected to simulate it. Production selection/bootstrap
-wiring remains pending.
+The library/Chrome dispatch path requires a live worker lease. The separate
+`NewWaiting` owner adapter permits only selection/revocation of an existing
+finite request after Session Service releases the worker lease. It resolves
+bindings from PG, requires a verified channel actor, current matching
+waiting-for-user task and awaiting-approval run, current authority and sources,
+and no live executor. It repeats those checks under the owning barrier after
+metadata RPC. Original expiry is never extended; elapsed requests deny. Its
+LeaseEpoch=0 binding confers no execution authority. Resuming execution must
+acquire a new Session lease and pass ordinary WorkerGuard/Broker checks.
+Actual PG tests cover this adapter; Web/Telegram delivery, resume, and production
+selection/bootstrap wiring remain pending.
 
 ## Broker and runtime composition
 

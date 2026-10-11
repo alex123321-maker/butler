@@ -20,3 +20,10 @@ recorded contract effects. The broader issue still requires the initiative-to-
 verified-repair scenario, model/resource diagnostics and deployed channel proof.
 The UI does not turn a completed model answer into a verified task result or
 invent a risk rating from execution status.
+
+The task collection SQL also now reports risk `unknown`; failed/tool-running
+states cannot establish danger. The actual PostgreSQL regression covers failed,
+tool-running and completed runs under still-unverified active tasks. The later
+owner/collection suite passed with race detection on snapshot
+`20261011-121430-072` (proof `task-observations-20261011T051434Z-3803281`, events
+SHA256 `74dd1c80fd537e05569de6813c2635bc68092d824bb435af9bfa5c3b2fd37999`).

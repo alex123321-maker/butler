@@ -41,6 +41,9 @@ docker run --rm --user "$(id -u):$(id -g)" --network "$network" --memory 1536m -
   golang:1.27.2-bookworm bash -eu -c '
 go test -json -race -p 1 -count=1 -run "^TestOwnerOverview" ./apps/orchestrator/internal/task
 go test -json -race -p 1 -count=1 -run "^Test(OwnerTaskObservations|TaskRisk|DurableTaskDetail)" ./apps/orchestrator/internal/api
-go vet ./apps/orchestrator/internal/task ./apps/orchestrator/internal/api' > "$proof/tests.jsonl"
+go test -json -race -p 1 -count=1 -run "^Test(TaskListDoesNotInfer|BuildTaskList)" ./apps/orchestrator/internal/run
+go test -json -race -p 1 -count=1 -run "^TestOwnerWaitingSelection" ./apps/orchestrator/internal/singletab
+go test -json -race -p 1 -count=1 ./apps/orchestrator/internal/orchestrator
+go vet ./apps/orchestrator/internal/task ./apps/orchestrator/internal/api ./apps/orchestrator/internal/run ./internal/singletabcontrol' > "$proof/tests.jsonl"
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
 printf '{"status":"task_observations_passed","model_calls":0}\n'

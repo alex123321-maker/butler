@@ -21,7 +21,17 @@ Preparation on snapshot `20261011-115208-052` passed the zero-inference PG/race
 and UID10001 private-file checks. Proof:
 `/srv/storage/butler/agents/issue-native/reports/delegation-native-prepare-20261011T045211Z-3726204`.
 Current failure diagnostics preserve only a fixed transport subtype; raw provider
-material remains excluded. One actual execute remains pending at preparation.
+material remains excluded. The sole execute then failed on the recovered child's
+actual native Start with persisted `rate_limited`. It added four attempted
+requests, bringing the observed total to thirteen. Three usage pairs are known,
+ten unknown; known input16810/output280 is still only a subtotal. Neither child
+final nor width2 nor post-final controls ran. The
+[fourth immutable report](../../deploy/delegation/native-scenario-fourth.json)
+has SHA256 `72d95bb5ac0bcf5bd4d8d4b28b1de6beb10d819a348c7e5efb187295ce28a1f9`.
+Exact proof on release `b91e72d881ea933257110d4452cf8d4b91ae3aba`:
+`/srv/storage/butler/agents/issue-native/reports/delegation-native-execute-20261011T045329Z-3730912`.
+The global marker refused reentry with zero new attempts before auth/Docker.
+This window is closed; remaining numerical allowance is not a retry permission.
 Main source pointer, PG state and optional deployment flags stay separate.
 
 The earlier baseline5 instructions and failed-window observations below are
