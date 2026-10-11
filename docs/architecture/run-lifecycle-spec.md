@@ -12,6 +12,13 @@ save a concrete `execution_stopped` checkpoint and prior continuation, block
 input/task and cancel transport. A frozen finalizing checkpoint never invokes
 another model/effect; a budget stop cannot become verified completion.
 
+Failed provider attempts preserve a content-free transport subtype alongside
+the existing general error class. Source-check expiry is
+`memory_source_check_timeout`, separate from provider expiry, stale sources and
+rate limiting. The same normalization applies before logs, persistent failure
+state and returning to the input worker. Unknown provider types become
+`internal_transport_error`; private provider error text is never a diagnostic.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Run Lifecycle  

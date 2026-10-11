@@ -1,5 +1,10 @@
 # Orchestrator
 
+Provider failures persist their fixed transport subtype in the failure message
+with the existing `transport_error` class. Source verification distinguishes
+stale sources from its own timeout. No provider text/details or unknown type
+string is logged or returned by this failure path; retries remain disabled.
+
 Optional generated-converter delegation053 has a distinct private admission
 component. `NewDelegationLifecycleManager` selects immutable061 context-only or053
 developer identity inside the owning transaction; it cannot admit new children and

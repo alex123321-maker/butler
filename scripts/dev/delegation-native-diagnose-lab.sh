@@ -49,4 +49,4 @@ go test -json -race -run "^TestNativeDelegation(OwnedAudit|ScriptedOwnedObservab
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
 find "$proof/state" -type f -name '*.json' -print0 | sort -z | xargs -0 -r sha256sum > "$proof/state.sha256"
 [[ "$status" == 0 ]] || exit "$status"
-printf '{"status":"zero_inference_diagnosis_passed","new_native_attempts":0,"historical_observed_native_attempts":5,"exact_native_failure_reproduction":false}\n'
+printf '{"status":"zero_inference_diagnosis_passed","new_native_attempts":0,"historical_observed_native_attempts":9,"exact_native_failure_reproduction":false}\n'

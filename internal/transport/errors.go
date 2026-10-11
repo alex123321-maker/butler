@@ -21,7 +21,30 @@ const (
 	ErrorTypeStatefulSessionLost      ErrorType = "stateful_session_lost"
 	ErrorTypeRateLimited              ErrorType = "rate_limited"
 	ErrorTypeInternalTransportError   ErrorType = "internal_transport_error"
+	ErrorTypeMemorySourceStale        ErrorType = "memory_source_stale"
+	ErrorTypeMemorySourceTimeout      ErrorType = "memory_source_check_timeout"
 )
+
+// DiagnosticCode projects an execution failure onto a fixed, content-free
+// vocabulary. Error messages, provider codes/details and unknown type strings
+// must never become durable diagnostics or exported acceptance evidence.
+func DiagnosticCode(err error) string {
+	var failure *Error
+	if !errors.As(err, &failure) || failure == nil {
+		return ""
+	}
+	switch failure.Type {
+	case ErrorTypeProviderUnavailable, ErrorTypeTransportConnectionError,
+		ErrorTypeProviderTimeout, ErrorTypeProviderProtocolError,
+		ErrorTypeCapabilityMismatch, ErrorTypeInvalidToolRequest,
+		ErrorTypeStatefulSessionLost, ErrorTypeRateLimited,
+		ErrorTypeInternalTransportError, ErrorTypeInputBytesExceeded,
+		ErrorTypeMemorySourceStale, ErrorTypeMemorySourceTimeout:
+		return string(failure.Type)
+	default:
+		return string(ErrorTypeInternalTransportError)
+	}
+}
 
 type Error struct {
 	Type            ErrorType

@@ -44,6 +44,7 @@ type nativeOwnedRow struct {
 	State               string            `json:"state,omitempty"`
 	Status              string            `json:"status,omitempty"`
 	ErrorCode           string            `json:"error_code,omitempty"`
+	TransportCode       string            `json:"transport_code,omitempty"`
 	Checkpoint          string            `json:"checkpoint_kind,omitempty"`
 	Outcome             string            `json:"outcome,omitempty"`
 	Tool                string            `json:"tool,omitempty"`
@@ -96,6 +97,10 @@ func nativeAuditState(v string) string {
 
 func nativeAuditError(v string) string {
 	return nativeAuditEnum(v, "input_expired", "retry_exhausted", "recovery_unavailable", "prior_attempt_terminal", "session_busy", "result_persistence_pending", "execution_stopped", "execution_deadline_exceeded", "effect_unknown", "execution_error", "provider_unavailable", "transport_connection_error", "provider_timeout", "provider_protocol_error", "capability_mismatch", "invalid_tool_request", "stateful_session_lost", "rate_limited", "internal_transport_error", "provider_input_bytes_exceeded", "execution_budget_deadline", "execution_budget_tokens", "validation_error", "transport_error", "tool_error", "policy_denied", "credential_error", "approval_error", "internal_error", "cancelled", "timeout", "unknown")
+}
+
+func nativeAuditTransport(v string) string {
+	return nativeAuditEnum(v, "provider_unavailable", "transport_connection_error", "provider_timeout", "provider_protocol_error", "capability_mismatch", "invalid_tool_request", "stateful_session_lost", "rate_limited", "internal_transport_error", "provider_input_bytes_exceeded", "memory_source_stale", "memory_source_check_timeout")
 }
 
 func nativeAuditCheckpoint(v string) string {
@@ -152,9 +157,11 @@ func collectNativeOwnedAudit(ctx context.Context, pool *pgxpool.Pool, stopped bo
 			r.Status, r.ErrorCode, r.Checkpoint = nativeAuditState(r.Status), nativeAuditError(r.ErrorCode), nativeAuditCheckpoint(r.Checkpoint)
 			return r, e
 		}},
-		{`SELECT run_id,COALESCE(task_id,''),COALESCE(lease_id,''),COALESCE(task_revision,0),status,current_state,COALESCE(error_type,''),finished_at IS NOT NULL FROM runs ORDER BY started_at,run_id LIMIT 17`, func(rows pgx.Rows) (r nativeOwnedRow, e error) {
+		{`SELECT run_id,COALESCE(task_id,''),COALESCE(lease_id,''),COALESCE(task_revision,0),status,current_state,COALESCE(error_type,''),finished_at IS NOT NULL,
+		 CASE WHEN error_type='transport_error' AND error_message IN ('provider_unavailable','transport_connection_error','provider_timeout','provider_protocol_error','capability_mismatch','invalid_tool_request','stateful_session_lost','rate_limited','internal_transport_error','provider_input_bytes_exceeded','memory_source_stale','memory_source_check_timeout') THEN error_message ELSE '' END
+		 FROM runs ORDER BY started_at,run_id LIMIT 17`, func(rows pgx.Rows) (r nativeOwnedRow, e error) {
 			r.Kind = "run"
-			e = rows.Scan(&r.Ref, &r.Task, &r.Lease, &r.Revision, &r.Status, &r.State, &r.ErrorCode, &r.Finished)
+			e = rows.Scan(&r.Ref, &r.Task, &r.Lease, &r.Revision, &r.Status, &r.State, &r.ErrorCode, &r.Finished, &r.TransportCode)
 			r.Status, r.State, r.ErrorCode = nativeAuditState(r.Status), nativeAuditState(r.State), nativeAuditError(r.ErrorCode)
 			return r, e
 		}},
@@ -243,7 +250,10 @@ func nativeAuditBytes(a nativeOwnedAudit) ([]byte, error) {
 			return nil, errNativeAudit
 		}
 		counts[r.Kind]++
-		if counts[r.Kind] > nativeAuditMaxRows || nativeAuditState(r.State) != r.State || nativeAuditState(r.Status) != r.Status || nativeAuditError(r.ErrorCode) != r.ErrorCode || nativeAuditCheckpoint(r.Checkpoint) != r.Checkpoint || nativeAuditState(r.Outcome) != r.Outcome || nativeAuditEnum(r.Tool, "task.delegate", "unknown") != r.Tool {
+		if counts[r.Kind] > nativeAuditMaxRows || nativeAuditState(r.State) != r.State || nativeAuditState(r.Status) != r.Status || nativeAuditError(r.ErrorCode) != r.ErrorCode || nativeAuditTransport(r.TransportCode) != r.TransportCode || nativeAuditCheckpoint(r.Checkpoint) != r.Checkpoint || nativeAuditState(r.Outcome) != r.Outcome || nativeAuditEnum(r.Tool, "task.delegate", "unknown") != r.Tool {
+			return nil, errNativeAudit
+		}
+		if r.TransportCode != "" && (r.Kind != "run" || r.ErrorCode != "transport_error") {
 			return nil, errNativeAudit
 		}
 		for _, h := range []string{r.Ref, r.Run, r.Task, r.Parent, r.Claim, r.Input, r.Lease, r.Object, r.ContentHash} {
@@ -293,13 +303,17 @@ func writeNativeOwnedAudit(path string, a nativeOwnedAudit) error {
 
 func TestNativeDelegationOwnedAuditValidation(t *testing.T) {
 	base := nativeOwnedAudit{Status: "captured_before_cleanup", Available: true, WorkersStopped: true, Rows: []nativeOwnedRow{{Kind: "input", Ref: nativeAuditRef("fixture-input"), Status: "blocked", ErrorCode: "execution_stopped"}}}
-	for _, name := range []string{"raw-error", "raw-state", "raw-tool", "raw-checkpoint", "raw-id", "raw-kind", "raw-status", "negative", "too-many", "too-large"} {
+	for _, name := range []string{"raw-error", "raw-transport", "misplaced-transport", "raw-state", "raw-tool", "raw-checkpoint", "raw-id", "raw-kind", "raw-status", "negative", "too-many", "too-large"} {
 		t.Run(name, func(t *testing.T) {
 			a := base
 			a.Rows = append([]nativeOwnedRow{}, base.Rows...)
 			switch name {
 			case "raw-error":
 				a.Rows[0].ErrorCode = "password=SECRET_DIAGNOSTIC_MARKER"
+			case "raw-transport":
+				a.Rows[0].TransportCode = "password=SECRET_DIAGNOSTIC_MARKER"
+			case "misplaced-transport":
+				a.Rows[0].TransportCode = "provider_timeout"
 			case "raw-state":
 				a.Rows[0].State = "SECRET_DIAGNOSTIC_MARKER"
 			case "raw-tool":
@@ -389,6 +403,46 @@ func TestNativeDelegationOwnedAuditPrivacyIntegration(t *testing.T) {
 	stat, err := os.Stat(path)
 	if err != nil || stat.Mode().Perm() != 0600 {
 		t.Fatal("diagnostic report not private")
+	}
+}
+
+func TestNativeDelegationOwnedAuditTransportDiagnosticsIntegration(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	f := newNativeScenarioFixture(t, ctx)
+	if _, err := f.pool.Exec(ctx, `INSERT INTO sessions(session_key,user_id,channel) VALUES('audit-transport','fixture','web')`); err != nil {
+		t.Fatal("transport fixture session denied")
+	}
+	cases := []struct{ id, kind, message, expected string }{
+		{"provider", "transport_error", "provider_timeout", "provider_timeout"},
+		{"source", "transport_error", "memory_source_check_timeout", "memory_source_check_timeout"},
+		{"private", "transport_error", "PRIVATE_DIAGNOSTIC_MARKER", ""},
+		{"wrong-class", "internal_error", "provider_timeout", ""},
+	}
+	for _, c := range cases {
+		if _, err := f.pool.Exec(ctx, `INSERT INTO runs(run_id,session_key,input_event_id,status,current_state,autonomy_mode,model_provider,started_at,updated_at,error_type,error_message) VALUES($1,'audit-transport','fixture','failed','failed','mode_2','antigravity',clock_timestamp(),clock_timestamp(),$2,$3)`, c.id, c.kind, c.message); err != nil {
+			t.Fatal("transport fixture run denied")
+		}
+	}
+	a, err := collectNativeOwnedAudit(ctx, f.pool, true)
+	if err != nil {
+		t.Fatal("transport snapshot unavailable")
+	}
+	seen := map[string]string{}
+	for _, row := range a.Rows {
+		if row.Kind == "run" {
+			seen[row.Ref] = row.TransportCode
+		}
+	}
+	for _, c := range cases {
+		got, exists := seen[nativeAuditRef(c.id)]
+		if !exists || got != c.expected {
+			t.Fatal("transport projection mismatch")
+		}
+	}
+	raw, err := nativeAuditBytes(a)
+	if err != nil || strings.Contains(string(raw), "PRIVATE_DIAGNOSTIC_MARKER") {
+		t.Fatal("transport projection exposed provider material")
 	}
 }
 

@@ -32,6 +32,14 @@ fresh PG, binds the initialized private anchor and pins each run's transcript.
 Current reviewed version, approval, readiness, changed version, rollback and
 deferred credentials are exercised without weakening source or dispatch guards.
 
+Core also requires explicit instruction-derivation, DNS/redirect/rebinding/byte
+caps, workspace containment, reflected-value masking, reviewed model-loader,
+generated-package isolation and actual PostgreSQL delegated-source checks.
+Child selected content cannot gain instruction authority or expose unselected
+ancestors. Fixed transport diagnostics distinguish a source-check timeout from
+provider expiry and reject private error material before durable failure state.
+These named checks have the same missing/skip/failure rules as other groups.
+
 Each required named top-level test must run exactly once and pass with package
 completion. Missing, skipped, failed, duplicate, foreign-package or malformed
 events fail the selected evidence. `selected_passed` describes the selected
@@ -101,7 +109,7 @@ independent runner's actual kernel/budget/result records, not model assertions.
 No actual single/multi-agent experiment exists yet; #16/#17 are prerequisites.
 
 Pending entries are deliberately explicit: real child-resource competition,
-child-output provenance, delegated full-cost comparison, real hardware model
+delegated full-cost comparison, real hardware model
 pressure evaluation, skill/self-development/self-repair release and the entire
 mandate-to-one-notification chain across restart/stop/delivery failure. Adding an
 available boundary test is useful; it does not complete those product scenarios.

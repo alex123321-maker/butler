@@ -381,6 +381,11 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 }
 
 func (s *Service) failRun(ctx context.Context, current *sessionv1.RunRecord, leaseID string, runLog *slog.Logger, err error) error {
+	// Typed provider errors may contain untrusted details even after wrapping.
+	// Persist only the fixed subtype while retaining the general run error class.
+	if code := transport.DiagnosticCode(err); code != "" {
+		err = &transport.Error{Type: transport.ErrorType(code), Message: code}
+	}
 	runLog.Error("run execution failed", slog.String("error", err.Error()))
 	s.emitEvent(ctx, current.GetRunId(), current.GetSessionKey(), observability.EventRunError, map[string]any{
 		"error_message": truncateForObservability(err.Error(), 500),

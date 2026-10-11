@@ -46,7 +46,7 @@ for attempt in $(seq 1 60); do
   [[ "$attempt" != 60 ]] || { printf 'Disposable PostgreSQL not ready\n' >&2; exit 1; }
   sleep 1
 done
-for group in template ownership approval owner_stop authority effects delivery budget context memory source_index auxiliary model_pressure credential_e2e extensions extension_e2e; do
+for group in template ownership approval owner_stop authority effects delivery budget context memory source_index auxiliary model_pressure credential_e2e extensions extension_e2e security_content security_egress security_workspace security_redaction provider_diagnostics model_provenance generated_isolation delegated_sources; do
   docker exec "$pg" createdb -U fixture "butler_acceptance_${group}_test"
 done
 docker exec "$pg" createdb -U fixture butler_memory_backup_test
