@@ -13,7 +13,7 @@ func (s *Service) refreshRecoveredToolContext(ctx context.Context, runID string,
 	for _, item := range inputs {
 		packageData := false
 		for _, ref := range content.ItemOrigin(item).SourceRefs {
-			if strings.HasPrefix(ref, "extension-manifest:") {
+			if strings.HasPrefix(ref, "extension-manifest:") || strings.HasPrefix(ref, "skill:") || strings.HasPrefix(ref, "skill-index:") {
 				packageData = true
 			}
 		}
@@ -29,9 +29,15 @@ func (s *Service) refreshRecoveredToolContext(ctx context.Context, runID string,
 				p.ToolDefs = append(p.ToolDefs, def)
 			}
 		}
+		if err := s.attachSkillContext(ctx, &p, true); err != nil {
+			return preparedRun{}, err
+		}
 		return p, nil
 	}
 	if err := s.attachToolContext(ctx, &p); err != nil {
+		return preparedRun{}, err
+	}
+	if err := s.attachSkillContext(ctx, &p, true); err != nil {
 		return preparedRun{}, err
 	}
 	return p, nil

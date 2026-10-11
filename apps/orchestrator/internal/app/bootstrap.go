@@ -49,8 +49,10 @@ import (
 	"github.com/butler/butler/internal/metrics"
 	"github.com/butler/butler/internal/providerauth"
 	"github.com/butler/butler/internal/providerfactory"
+	"github.com/butler/butler/internal/skills"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	redisstore "github.com/butler/butler/internal/storage/redis"
+	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc"
 )
 
@@ -225,6 +227,22 @@ func New(ctx context.Context) (*App, error) {
 	finalResults := completion.New(postgres.Pool())
 	finalResults.DataGuard = sourceCatalog.CheckRunSourcesTx
 	finalResults.Evidence = effectEvidence{journal: actionauth.NewPostgresStore(postgres.Pool())}
+	var skillClient *skills.Client
+	if cfg.SkillControlURL != "" {
+		token, tokenErr := actionauth.ReadServiceToken(cfg.ActionAuthorityTokenFile)
+		if tokenErr != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, tokenErr
+		}
+		skillClient = skills.NewClient(cfg.SkillControlURL, token)
+		finalResults.DataGuard = func(ctx context.Context, tx pgx.Tx, run string) error {
+			if err := sourceCatalog.CheckRunSourcesTx(ctx, tx, run); err != nil {
+				return err
+			}
+			return skills.CheckPinnedLifecycleTx(ctx, tx, run)
+		}
+	}
 	outboxWorker := &deliveryoutbox.Worker{Store: finalResults.Outbox}
 	if telegram != nil {
 		outboxWorker.Sender = telegram
@@ -259,6 +277,7 @@ func New(ctx context.Context) (*App, error) {
 			},
 			SemanticMemory:        semanticReader,
 			MemorySources:         sourceCatalog,
+			Skills:                skillCatalogIfEnabled(skillClient),
 			Budgets:               budgetController,
 			Completion:            finalResults,
 			DurableMemoryPipeline: pipelineWorker != nil,
@@ -334,6 +353,7 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	var actionAuthorityHandler http.Handler
+	var skillEvidenceHandler http.Handler
 	if cfg.ActionAuthorityTokenFile != "" {
 		token, readErr := actionauth.ReadServiceToken(cfg.ActionAuthorityTokenFile)
 		if readErr != nil {
@@ -342,6 +362,7 @@ func New(ctx context.Context) (*App, error) {
 			return nil, readErr
 		}
 		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID})
+		skillEvidenceHandler = skills.NewEvidenceHandler(token, &skillEvidence{tasks: taskStore, journal: actionauth.NewPostgresStore(postgres.Pool()), transcript: transcriptStore, budgets: budget.NewLedger(postgres.Pool()), results: finalResults, sources: sourceCatalog})
 	} else {
 		log.Warn("private action authority unavailable; Tool Broker will deny execution")
 	}
@@ -352,6 +373,8 @@ func New(ctx context.Context) (*App, error) {
 		cfg:                    cfg,
 		finalResults:           finalResults,
 		actionAuthorityHandler: actionAuthorityHandler,
+		skillEvidenceHandler:   skillEvidenceHandler,
+		skillClient:            skillClient,
 		log:                    log,
 		settingsStore:          settingsStore,
 		hotConfig:              hotConfig,

@@ -53,6 +53,24 @@ func (s *Store) GetContract(ctx context.Context, name string) (*toolbrokerv1.Too
 	}
 	return s.contract(r, op)
 }
+
+// GetContractTx validates dependencies inside the caller's owned authority
+// transaction, without opening a second pool connection.
+func (s *Store) GetContractTx(ctx context.Context, tx pgx.Tx, name string) (*toolbrokerv1.ToolContract, error) {
+	parts := strings.Split(name, ".")
+	if len(parts) != 3 || parts[0] != "extension" {
+		return nil, ErrUnavailable
+	}
+	r, err := s.read(ctx, tx, parts[1], "FOR SHARE OF i")
+	if err != nil {
+		return nil, err
+	}
+	op, err := operation(r.Package.Manifest, name)
+	if err != nil {
+		return nil, err
+	}
+	return s.contract(r, op)
+}
 func (s *Store) ProbeContract(r Record) (*toolbrokerv1.ExtensionContract, string, error) {
 	profile, err := s.profile(r.Package)
 	if err != nil {

@@ -153,6 +153,9 @@ func (s *Store) applyDeletionTx(ctx context.Context, tx pgx.Tx, r ManifestRecord
 	if e = redactMessagesTx(ctx, tx, ids, r.ID); e != nil {
 		return e
 	}
+	if e = redactPinnedRunsTx(ctx, tx, ids, r.ID); e != nil {
+		return e
+	}
 	if _, e = tx.Exec(ctx, `UPDATE memory_aux_jobs SET status='cancelled',claim_id='',claim_until=NULL,error_code='source_deleted',updated_at=clock_timestamp() WHERE owner_id=$1 AND status IN ('pending','running') AND EXISTS(SELECT 1 FROM jsonb_array_elements(sources) x WHERE x->>'source_id'=ANY($2))`, own, ids); e != nil {
 		return e
 	}

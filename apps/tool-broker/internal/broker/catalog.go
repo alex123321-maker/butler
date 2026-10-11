@@ -62,20 +62,8 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 	terms := strings.Fields(strings.ToLower(query))
 	result := []*toolbrokerv1.ToolContract{}
 	for _, contract := range c.Registry.List("", false) {
-		if a.Delegation != nil {
-			hash, e := actionauth.ContractHash(contract)
-			matched := false
-			if e == nil {
-				for _, p := range a.Delegation.Permissions {
-					if p.Tool == contract.GetToolName() && p.ContractHash == hash {
-						matched = true
-						break
-					}
-				}
-			}
-			if !matched {
-				continue
-			}
+		if strings.HasPrefix(contract.GetToolName(), "skills.") && a.TaskID == "" {
+			continue
 		}
 		effect := actionauth.CatalogEffect(contract)
 		if actionauth.CheckExecutionPolicy(a, effect) != nil || a.AutonomyMode == 1 && effect != actionauth.EffectRead {

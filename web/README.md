@@ -5,6 +5,10 @@ Nuxt.js frontend for the Butler self-hosted AI agent platform.
 ## Overview
 
 Provides a browser-based interface for:
+- **Reviewed skills** — owner-authenticated staging, independent evidence checks,
+  exact activation/rollback/revoke, procedure applicability, usage/outcome
+  comparison and bounded descriptive correction grants. Deleted sources retain
+  metadata history without serving procedure text; the token stays in page memory.
 - **Dashboard** — system health overview
 - **Initiatives** — authenticated source/schedule controls, observation decisions,
   ordinary-task links and grouped notice states. Empty checks stay quiet. The owner

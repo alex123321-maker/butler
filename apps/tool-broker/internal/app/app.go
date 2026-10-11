@@ -25,6 +25,7 @@ import (
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/skills"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	"google.golang.org/grpc"
 )
@@ -68,6 +69,7 @@ func New(ctx context.Context) (*App, error) {
 	var mandateHandler http.Handler
 	var effectHandler http.Handler
 	var extensionHandler http.Handler
+	var skillHandler http.Handler
 	serviceToken := ""
 	if cfg.ActionAuthorityTokenFile != "" && postgres != nil {
 		token, err := actionauth.ReadServiceToken(cfg.ActionAuthorityTokenFile)
@@ -128,7 +130,28 @@ func New(ctx context.Context) (*App, error) {
 		authorizer := actionauth.NewService(authorizationStore, reader, credentialResolver)
 		authorizer.SetCapabilities(extensionStore)
 		server.SetActionAuthorizer(authorizer)
-		server.SetScopedCatalog(&broker.TaskCatalog{Registry: registryStore, Contexts: reader, Mandates: authorizationStore, Extensions: extensionStore})
+		catalog := &broker.TaskCatalog{Registry: registryStore, Contexts: reader, Mandates: authorizationStore, Extensions: extensionStore}
+		server.SetScopedCatalog(catalog)
+		if cfg.SkillsEnabled {
+			if cfg.ExtensionOwnerID == "" {
+				postgres.Close()
+				return nil, fmt.Errorf("configured skill owner is required")
+			}
+			if err = registryStore.RegisterOwned(skills.Contracts()); err != nil {
+				postgres.Close()
+				return nil, err
+			}
+			evidenceURL, endpointErr := skills.SiblingEndpoint(cfg.ActionContextURL, "/internal/skill-evidence")
+			if endpointErr != nil {
+				postgres.Close()
+				return nil, endpointErr
+			}
+			skillStore := skills.NewStore(postgres.Pool(), cfg.ExtensionOwnerID, skills.NewClient(evidenceURL, token), broker.SkillContracts{Registry: registryStore, Extensions: extensionStore}, broker.SkillEnvironment{Contexts: reader, Catalog: catalog})
+			skillStore.SetSources(sourceCatalog)
+			server.SetCatalogExecutor(&skills.RoutedExecutor{Store: skillStore, Next: router})
+			authorizationStore.SetContractGuard(broker.CatalogGuards{Extensions: extensionStore, Skills: skillStore})
+			skillHandler = skills.NewHandler(token, skillStore)
+		}
 		extensionHandler = extensions.NewControlHandler(token, extensionStore, router)
 		effectHandler = actionauth.NewEffectHandler(token, authorizer, authorizationStore)
 		mandateHandler = actionauth.NewMandateHandler(token, authorizationStore, reader)
@@ -137,6 +160,9 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	httpMux := http.NewServeMux()
+	if skillHandler != nil {
+		httpMux.Handle("/internal/skills", skillHandler)
+	}
 	if extensionHandler != nil {
 		httpMux.Handle("/internal/extensions", extensionHandler)
 	}

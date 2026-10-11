@@ -51,6 +51,9 @@ preparation/model release, Broker grant claim and atomic results pin current
 sources; deletion has a one-way typed privacy path retaining evidence hashes and
 verdicts. Scoped cache cleanup persists progress and task scratch revisions prevent
 late republishing. Full manifest identity is checked on restore, not just its count.
+Deletion also redacts source-pinned run metadata and accepted-input checkpoints
+before a first message exists. Restore replay erases those copies again while
+retaining run/source/effect identities; a queued or late prepared release is denied.
 
 Tests use `BUTLER_TEST_MEMORY_POSTGRES_URL`, an isolated `_test` DB, private schemas,
 pgvector in public and pool size two. Actual race tests cover privacy/backup replay,
@@ -66,3 +69,10 @@ publishes only candidates and rejects a changed body under an existing key.
 `DedupKey` is not an HTTP/model field; ordinary owner manual proposals keep their
 random identity. Migration043 preserves only opaque IDs/hashes/times separately
 from source/claim text, including after catalog deletion.
+
+`VerifiedResultParents` is a content-free historical evidence bridge for reviewed
+skills. It binds the actual assistant message to its run, checks restore identity
+and every original run/source edge, and returns the exact final-message root.
+It grants no publication authority. `CreateDerivedTx` requires a fresh current
+owner/run/job proof for all parents; deletion of any original dependency erases
+the procedure body while content-free skill audit remains in migration051.

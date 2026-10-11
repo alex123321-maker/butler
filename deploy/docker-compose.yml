@@ -264,6 +264,8 @@ services:
       - BUTLER_GRPC_ADDR
       - BUTLER_TOOL_REGISTRY_PATH
       - BUTLER_TOOL_DEFAULT_TARGET
+      - BUTLER_SKILLS_ENABLED
+      - BUTLER_OWNER_CONTROL_OWNER_ID
       - BUTLER_EXECUTION_BUDGET_POLICY_JSON
       - BUTLER_ACTION_CONTEXT_URL=http://orchestrator:8080/internal/action-context
       - BUTLER_ACTION_AUTHORITY_TOKEN_FILE=/run/secrets/butler-action-authority-token
@@ -324,6 +326,7 @@ services:
       - BUTLER_POSTGRES_URL=postgres://butler:butler-dev-password@postgres:5432/butler?sslmode=disable
       - BUTLER_REDIS_URL=redis://redis:6379/0
       - BUTLER_TOOL_BROKER_ADDR=tool-broker:9090
+      - BUTLER_SKILL_CONTROL_URL
       - BUTLER_RESTART_HELPER_URL=http://restart-helper:8080
       - BUTLER_ENVIRONMENT
       - BUTLER_LOG_LEVEL

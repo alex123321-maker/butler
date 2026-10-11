@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/butler/butler/internal/budget"
@@ -248,10 +249,10 @@ func (s *PostgresStore) guardDispatch(ctx context.Context, tx pgx.Tx, g Grant) e
 			return err
 		}
 	}
-	if g.Binding.ExtensionID != "" {
-		if s.contractGuard == nil {
-			return fmt.Errorf("reviewed capability admission is unavailable at dispatch")
-		}
+	if (g.Binding.ExtensionID != "" || strings.HasPrefix(g.Binding.ToolName, "skills.")) && s.contractGuard == nil {
+		return fmt.Errorf("reviewed capability admission is unavailable at dispatch")
+	}
+	if s.contractGuard != nil {
 		if err = s.contractGuard.CheckActionTx(ctx, tx, g.Binding); err != nil {
 			return err
 		}

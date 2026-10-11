@@ -25,6 +25,23 @@ type ExtensionSource interface {
 
 func (r *Registry) SetExtensions(source ExtensionSource) { r.extensions = source }
 
+// RegisterOwned is immutable startup wiring for fixed kernel catalog contracts.
+// An operator registry cannot replace their schema, effect or runtime target.
+func (r *Registry) RegisterOwned(contracts []*toolbrokerv1.ToolContract) error {
+	if r == nil {
+		return fmt.Errorf("registry unavailable")
+	}
+	for _, contract := range contracts {
+		if contract == nil || contract.GetToolName() == "" || r.toolsByName[contract.GetToolName()] != nil {
+			return fmt.Errorf("owned catalog contract conflicts with registry")
+		}
+	}
+	for _, contract := range contracts {
+		r.toolsByName[contract.GetToolName()] = cloneContract(contract)
+	}
+	return nil
+}
+
 type fileConfig struct {
 	Tools []toolConfig `json:"tools"`
 }

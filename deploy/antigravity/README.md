@@ -27,15 +27,22 @@ tokens. Butler uses an explicit 8192-token allowance. The operator probes used
 Earlier Cloud Code generation returned 429 on the wrong inference route, and
 direct regional AICode probes were rejected before the authorized proxy was
 configured. Those observations do not establish exhausted subscription quota.
-Keep the provider opt in until the Go adapter's real text, function proposal and
-continuation smoke passes. Stored credentials alone do not prove model access.
+Stored credentials alone do not prove model access.
 
 Subsequent Go and Node requests both returned production AICode HTTP 429 with
 `RESOURCE_EXHAUSTED` / `HIGH_DEMAND`, identifying temporary backend model capacity.
 The identical private token and expiry were checked in the operator backend.
 This is not evidence of a Go-only transport failure or depleted subscription.
 The adapter exposes only a fixed capacity diagnostic, performs no implicit retry,
-and remains inactive until the separate real Go smoke succeeds.
+and does not infer depleted subscription quota from that response.
+
+The subsequent [native Butler verification](../execution-budgets/native-verification.json)
+on 2026-10-10 at 21:38:34 UTC passed the real Go acceptance gate: direct SSE with
+Gemini 3.8 Flash, two durable model attempts, one exact owner-approved Broker
+GET of `example.com`, and native continuation observing the page title. The
+diagnostic task was stopped and its goal revoked afterward. Earlier protocol
+probes and capacity failures remain historical observations; backend capacity
+can change independently of this verified transport and execution flow.
 
 Lab tests use an HTTP fixture to verify native request/stream normalization,
 function schema guards, thought-signature replay, cancellation, isolated runs,

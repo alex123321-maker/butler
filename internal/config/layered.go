@@ -51,6 +51,11 @@ func loadOrchestratorLayered(get envGetter, settings []Setting) (OrchestratorCon
 	if validationErr := validateOperatorControlEndpoint(cfg.ExtensionControlURL, "/internal/extensions"); validationErr != nil {
 		return cfg, snapshot, fmt.Errorf("invalid operator extension control endpoint")
 	}
+	cfg.SkillControlURL, _ = get("BUTLER_SKILL_CONTROL_URL")
+	cfg.SkillControlURL = strings.TrimSpace(cfg.SkillControlURL)
+	if validationErr := validateOperatorControlEndpoint(cfg.SkillControlURL, "/internal/skills"); validationErr != nil {
+		return cfg, snapshot, fmt.Errorf("invalid operator skill control endpoint")
+	}
 	if conditionalErr := validateOrchestratorConditionalConfig(cfg); conditionalErr != nil {
 		if err != nil {
 			return cfg, snapshot, fmt.Errorf("%v; %v", err, conditionalErr)

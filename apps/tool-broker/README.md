@@ -1,5 +1,13 @@
 # Tool Broker
 
+The optional [reviewed procedural catalog](../../docs/architecture/reviewed-skills.md)
+adds fixed local `skills.search/load/propose` operations. Skill text remains
+DATA and actual tools retain current action/approval/budget/source admission.
+Procedure bodies are deletion-aware derived sources; immutable skill history
+contains hashes/refs rather than prose. Migration051 and the shared private
+deletion anchor are required before enabling `BUTLER_SKILLS_ENABLED`. Actual
+process/PG acceptance is documented in the [matrix](../../docs/architecture/reviewed-skills-acceptance.md).
+
 Every dispatch now uses `PrepareToolCall` and `AuthorizeToolCall` for the complete
 action, followed by `ExecuteToolCall.authorization_id`. PostgreSQL retains exact
 intent, grant state and bounded mandates. Approval is revalidated before secrets

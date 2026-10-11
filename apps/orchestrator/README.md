@@ -6,6 +6,15 @@ guarded decisions. It is an unenabled component until the owning Catalog/Broker
 adapters and isolated child context are wired and verified. It does not turn a
 model report or manager acceptance into task completion.
 
+[Reviewed skills](../../docs/architecture/reviewed-skills.md) use descriptions
+before selected procedural DATA and reload current pins during recovery.
+The private evidence API reads owned task/result/effect/transcript/budget APIs;
+model verdicts never activate skills. The optional authenticated `/skills` page
+relays owner decisions to the fixed private `BUTLER_SKILL_CONTROL_URL` endpoint.
+Source access/deletion guards run before skill lifecycle and dependency guards
+through inference, dispatch and final-result admission. See the
+[actual acceptance and limits](../../docs/architecture/reviewed-skills-acceptance.md).
+
 Tool execution prepares the exact action through Broker, records required
 owner approval, then obtains a private dispatch grant tied to current task and
 worker versions. `/internal/action-context` validates PostgreSQL ownership and
@@ -26,8 +35,10 @@ Control-plane authorization owns encrypted PostgreSQL OAuth import and refresh;
 transport reads no credential files and launches no CLI. The settings UI reports
 stored credentials without claiming model quota. [Operator setup and validation
 status](../../deploy/antigravity/README.md) document the private import and real
-text/function/continuation gate. Current Google generation returns HTTP 429;
-activation remains pending that gate.
+text/function/continuation gate. The lab's [native verification](../../deploy/execution-budgets/native-verification.json)
+records actual direct Gemini 3.8 Flash inference, one owner-approved Broker HTTP
+call and native tool-result continuation. Stored credentials alone still do not
+prove model access or future backend capacity.
 
 Tool execution fails closed when the approval policy cannot be checked. A tool
 requiring approval also requires a configured approval gate. These guarantees

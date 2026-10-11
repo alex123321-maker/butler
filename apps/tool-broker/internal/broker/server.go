@@ -37,6 +37,9 @@ type ScopedCatalog interface {
 
 func (s *Server) SetScopedCatalog(c ScopedCatalog) { s.scopedCatalog = c }
 
+// SetCatalogExecutor is startup wiring for finite broker-owned local catalog operations.
+func (s *Server) SetCatalogExecutor(e RuntimeExecutor) { s.executor = e }
+
 func (s *Server) SetActionAuthorizer(authorizer *actionauth.Service) { s.authorizer = authorizer }
 func (s *Server) SetBudgetTimeout(d time.Duration)                   { s.budgetTimeout = d }
 func (s *Server) SetBudgets(c *budget.Controller)                    { s.budgets = c }
