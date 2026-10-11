@@ -124,3 +124,43 @@ that check; it rejects a symlink or nonregular approved basename, wrong owner or
 mode, empty file, or size above 64KiB. It never reads or prints file contents.
 The inference runtime still mounts only the single approved file read-only.
 No host ownership, profile permission or credential content changes are made.
+
+## Coordinated actual run
+
+The single actual experiment used immutable runner
+`85bef824e838caef64407891d5b228f982c51032`, snapshot
+`20261011-094307-366`. It **failed** after three native requests: one parent
+StartRun and two real tool-result continuations. Two actual admission receipts
+were committed; the parent input completed and the gated worker process was
+SIGKILLed. The restarted worker waited for the original claim expiry, then a child
+input stopped before its first native request. No second execute, fallback,
+corrective generation or quota probe followed.
+
+The exact content-free runtime report is
+`deploy/delegation/native-scenario-failed.json`, SHA256
+`28c75c31827f8a25ca8ed101e6e04b8264a7e66ee9ce18808d504d5af748c8f0`.
+Private lab evidence is
+`/srv/storage/butler/agents/durable-tasks/reports/delegation-native-execute-20261011T024417Z-3147832`;
+test event SHA256 is
+`f8eb2ad59f073000bec6546ad4212d6535634b219d579ec9663e04e4778d575d`.
+The six zero-inference preparation groups and runtime UID probe passed again
+before the actual invocation. The earlier host metadata denial remains separately
+recorded; this actual failure is not replaced by preparation PASS.
+
+| Observation | Actual evidence | Limit |
+| --- | --- | --- |
+| Native attempts | Three committed pre-call charges; actual parent with two Broker/private admissions | No child native request or width-two run |
+| Durable scope | Same two selected source refs/hashes and two child reservations; parent input completed before process loss | Child selective prepared context and independent final results not reached |
+| Process loss | Actual SIGKILL; 48,637ms original claim-expiry time remained at restart | Recovery ended with stopped child input; successful child survival is unproven |
+| Runtime timing | Width-one failed after 66,904ms; whole test 69.45s | No successful single-versus-parallel latency comparison |
+| Shared budgets | Owner-day reserved three model turns, 3,170,304 tokens, two external calls and two children | Conservative allowance, not observed spend |
+| Actual model usage | Final parent reservation observed input 5,526/output 101 tokens; preceding two rows have null usage | Full token total and invoice unavailable; null is not zero |
+| Objective acceptance | None of the child source/result checks ran | Parent receipt-final checker, conflicting results and Accept denial not reached |
+| Stop/amend/delete | Post-final metadata controls did not run | Their false report defaults mean unperformed checks, not negative-control PASS |
+
+The report's empty child result arrays and false unfinished-phase flags preserve
+the failed boundary; they must not be interpreted as completed observations.
+The exact child stop reason is not established by the content-free report.
+Disposable schema cleanup ran after failure. Diagnosis requires a separately
+reviewed zero-inference reproduction, not another model experiment. Issue16
+acceptance, single-versus-parallel comparison and closure remain unestablished.
