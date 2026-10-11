@@ -21,7 +21,9 @@ See `docs/architecture/delegation-contract.md`.
 Strict decoding accepts only current Catalog references, finite allocation,
 deadline and dependency IDs; it cannot express owner/task/lease/permission or
 credential authority. `AdmissionHandler`/`AdmissionClient` provide bounded private
-service traffic and refuse ambiguous JSON/redirects. Authentication does not
+service traffic and refuse ambiguous JSON/redirects. Their direct private HTTP
+transport ignores ambient provider proxies, keeping service tokens on the
+operator-selected internal connection. Authentication does not
 authorize admission: the owning Orchestrator service must recheck the actual
 inflight dispatch. Migration061 persists its immutable accepted child snapshot.
 The separate real Broker process acceptance proves committed admission only;

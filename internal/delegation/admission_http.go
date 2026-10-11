@@ -59,7 +59,9 @@ func NewAdmissionClient(endpoint, token string) (*AdmissionClient, error) {
 	if err != nil || u.Hostname() == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || (u.Scheme != "http" && u.Scheme != "https") || !validAdmissionToken(token) {
 		return nil, ErrDenied
 	}
-	return &AdmissionClient{endpoint: endpoint, token: token, client: &http.Client{Timeout: 3 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}, nil
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.Proxy = nil // provider proxy configuration cannot receive private service credentials
+	return &AdmissionClient{endpoint: endpoint, token: token, client: &http.Client{Transport: transport, Timeout: 3 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}, nil
 }
 func validAdmissionToken(t string) bool {
 	return len(t) >= 32 && len(t) <= 4096 && !strings.ContainsAny(t, "\r\n \t")

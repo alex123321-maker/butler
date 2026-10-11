@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -116,5 +117,42 @@ func TestAdmissionPrivateHTTPBoundary(t *testing.T) {
 	client, _ = delegation.NewAdmissionClient(redirect.URL, token)
 	if _, err := client.AdmitDispatched(context.Background(), delegation.AdmissionEnvelope{}); err == nil || targetCalls.Load() != 0 {
 		t.Fatal("private token followed redirect")
+	}
+}
+
+func TestAdmissionPrivateHTTPDoesNotUseAmbientProxy(t *testing.T) {
+	var proxyCalls atomic.Int32
+	proxy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		proxyCalls.Add(1)
+		w.WriteHeader(http.StatusForbidden)
+	}))
+	defer proxy.Close()
+	proxyURL, err := url.Parse(proxy.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	original := http.DefaultTransport
+	configured := original.(*http.Transport).Clone()
+	configured.Proxy = http.ProxyURL(proxyURL)
+	http.DefaultTransport = configured
+	t.Cleanup(func() { http.DefaultTransport = original; configured.CloseIdleConnections() })
+
+	const token = "private-fixture-token-32bytes-long-value"
+	stub := &admissionStub{}
+	handler, err := delegation.NewAdmissionHandler(token, stub)
+	if err != nil {
+		t.Fatal(err)
+	}
+	server := httptest.NewServer(handler)
+	defer server.Close()
+	client, err := delegation.NewAdmissionClient(server.URL, token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if receipt, err := client.AdmitDispatched(context.Background(), delegation.AdmissionEnvelope{RunID: "run"}); err != nil || receipt.TaskID != "child" {
+		t.Fatalf("direct private admission failed: %v", err)
+	}
+	if proxyCalls.Load() != 0 || stub.calls.Load() != 1 {
+		t.Fatal("private admission traffic was routed through the ambient proxy")
 	}
 }
