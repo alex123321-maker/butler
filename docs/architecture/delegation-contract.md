@@ -23,6 +23,17 @@ parent authority is checked at model/budget, task writes and final result commit
 An empty allowlist denies all tools. Root/mandate/day budgets remain shared;
 delegation scopes add restrictions rather than refill the root allowance.
 
+Catalog owns initial delegated source grants in the child-admission transaction.
+Only selected source roots, immutable contract DATA and the child's own separate
+session/task data may become child context bodies. Original transitive parents
+remain pinned for privacy and current access checks; they cannot be selected as
+additional model context merely because they occur in that dependency graph.
+Unselected owner profile/user sources remain outside the child allowlist. Every
+inherited project/scope grant is rechecked against the current parent permission
+chain, including original purpose and access revision. Copying a child grant
+does not preserve revoked parent access. Lifecycle/dispatch checks use durable
+task/mandate state and need no surviving parent worker lease.
+
 Child admission and owner controls take a task-tree PostgreSQL advisory barrier
 before any ownership/session locks. Controls capture all independent sessions,
 lock ownership rows in sorted order, then session admission and approval/run/task

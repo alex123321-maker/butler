@@ -1,5 +1,11 @@
 # Memory source catalog
 
+Delegated runs select only their exact contract/source roots and their own
+session/task bodies. Original dependency ancestors remain privacy pins rather
+than additional selectable context. Catalog owns same-transaction child grants
+and rechecks the current parent grant chain at reads, dispatch and publication;
+copied child grants cannot retain revoked parent permissions.
+
 `CreateDerivedTx` creates a fresh immutable `model_candidate` DATA source from
 exact current parents under an owned run/job or authenticated owner proof. It
 derives owner and sensitivity, anchors scope to the first trusted requested
