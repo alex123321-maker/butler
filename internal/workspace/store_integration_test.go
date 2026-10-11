@@ -19,9 +19,23 @@ import (
 // This real-PG fixture supplies explicit same-TX live authority. It proves the
 // workspace seam, not the separately owned production resource-lease adapter.
 type fixtureGuard struct {
-	entered          chan struct{}
-	once             sync.Once
-	denyConfirmation bool
+	entered                chan struct{}
+	once                   sync.Once
+	denyConfirmation       bool
+	denyCreateConfirmation bool
+}
+
+func (g *fixtureGuard) ConfirmCreateTx(ctx context.Context, tx pgx.Tx, a Access) error {
+	if err := g.CheckTx(ctx, tx, a); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(ctx, `INSERT INTO fixture_confirmed_creates(resource_id) VALUES($1)`, a.Proof.ResourceID); err != nil {
+		return err
+	}
+	if g.denyCreateConfirmation {
+		return ErrDenied
+	}
+	return nil
 }
 
 func (g *fixtureGuard) CheckTx(ctx context.Context, tx pgx.Tx, a Access) error {
@@ -107,6 +121,9 @@ func newFixture(t *testing.T) *workspaceFixture {
 		t.Fatal(err)
 	}
 	if _, err = pool.Exec(ctx, `CREATE TABLE fixture_confirmed_writes(resource_id text,path text,file_version bigint,content_sha256 text,byte_length bigint,PRIMARY KEY(resource_id,path,file_version))`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, `CREATE TABLE fixture_confirmed_creates(resource_id text PRIMARY KEY)`); err != nil {
 		t.Fatal(err)
 	}
 	root := t.TempDir()

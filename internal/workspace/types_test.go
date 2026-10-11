@@ -13,6 +13,10 @@ func TestModelJSONCannotSupplyPrivateWorkspaceAuthority(t *testing.T) {
 	if proof != (LeaseProof{}) {
 		t.Fatal("model populated private authority")
 	}
+	var a Access
+	if err := json.Unmarshal([]byte(`{"ContentSHA256":"forged"}`), &a); err != nil || a.ContentSHA256 != "" {
+		t.Fatal("model populated actual content observation", err)
+	}
 	encoded, err := json.Marshal(LeaseProof{LeaseID: "private", RunID: "private", ResourceID: "private", FenceEpoch: 4})
 	if err != nil || string(encoded) != "{}" {
 		t.Fatal("private lease proof leaked", err)

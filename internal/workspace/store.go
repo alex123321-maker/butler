@@ -72,7 +72,7 @@ func access(ref Ref, proof LeaseProof, operation, path string, bytes int64) (Acc
 	if !validRef(ref) || proof.LeaseID == "" || proof.RunID == "" || proof.FenceEpoch <= 0 || proof.ExpectedResourceVersion < 0 || proof.ResourceID != ResourceID(ref.ID) || proof.SessionKey != ref.Binding.SessionKey || proof.TaskID != ref.Binding.TaskID {
 		return Access{}, ErrDenied
 	}
-	return Access{ref, proof, operation, path, bytes}, nil
+	return Access{Ref: ref, Proof: proof, Operation: operation, Path: path, Bytes: bytes}, nil
 }
 func rollback(tx pgx.Tx) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -103,28 +103,37 @@ func (s *Store) Create(ctx context.Context, ref Ref, proof LeaseProof) error {
 	if err = s.root.Mkdir(ref.ID, 0700); err != nil {
 		return ErrDenied
 	}
+	unknown := func() error { rollback(tx); s.quarantine(ref, "persistence_unknown"); return ErrOutcomeUnknown }
 	r, err := s.root.OpenRoot(ref.ID)
 	if err != nil {
-		return ErrDenied
+		return unknown()
 	}
 	defer r.Close()
 	for _, path := range []string{"tree", "private", "private/tmp"} {
 		if err = r.Mkdir(path, 0700); err != nil {
-			return ErrDenied
+			return unknown()
 		}
 	}
 	if err = syncDir(r, "."); err != nil {
-		return ErrDenied
+		return unknown()
 	}
 	if err = syncDir(s.root, "."); err != nil {
-		return ErrDenied
+		return unknown()
+	}
+	if err = markPending(r, ref.ID); err != nil {
+		return unknown()
 	}
 	if err = s.guard.CheckTx(ctx, tx, a); err != nil {
-		return err
+		return unknown()
+	}
+	if err = s.guard.ConfirmCreateTx(ctx, tx, a); err != nil {
+		return unknown()
 	}
 	if err = tx.Commit(ctx); err != nil {
-		return ErrOutcomeUnknown
+		return unknown()
 	}
+	_ = r.Remove("private/write-pending")
+	_ = syncDir(r, "private")
 	return nil
 }
 
@@ -231,6 +240,7 @@ func (s *Store) Read(ctx context.Context, ref Ref, proof LeaseProof, name string
 	if value.Version == 0 {
 		return File{}, os.ErrNotExist
 	}
+	a.ContentSHA256, a.Bytes = value.SHA256, value.Bytes
 	if err = s.guard.CheckTx(ctx, tx, a); err != nil {
 		return File{}, err
 	}
@@ -253,6 +263,7 @@ func (s *Store) Write(ctx context.Context, ref Ref, proof LeaseProof, expected S
 	if err != nil {
 		return Snapshot{}, err
 	}
+	a.ContentSHA256 = digest(data)
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return Snapshot{}, err

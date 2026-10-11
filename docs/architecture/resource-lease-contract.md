@@ -58,3 +58,10 @@ subtests and a contended row-lock/deadline case. Earlier failure was in the test
 observer's cached PostgreSQL activity snapshot; refreshing that snapshot made
 the observer follow actual row-lock waiting. It did not alter production policy.
 This demonstrates the library boundaries, not completed issue17 acceptance.
+
+The workspace adapter now requires exact current action/source admission plus
+independent actual namespace/file evidence. Create and Write use committed claims,
+resource update locks from their first check, and same-TX confirmation/consumption.
+The [combined audit](../ai/workspace-resource-acceptance.md) proves actual resource
+lease and file metadata behavior on PG/pool2; production Broker/runtime callbacks
+and full issue17 scenarios remain pending.

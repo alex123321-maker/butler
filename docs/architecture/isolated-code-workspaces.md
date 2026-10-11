@@ -15,7 +15,7 @@ Separate copies have independent private data/temp trees; writes require both a
 monotonic file version and physical content hash. Concurrent approved patches
 cannot overwrite one another, including across manager instances.
 
-The mandatory `Guard.ConfirmWriteTx` records resource observation and write-lease
+The mandatory `Guard.ConfirmCreateTx` and `Guard.ConfirmWriteTx` record resource observation and write-lease
 consumption with the committed file metadata on the caller's transaction. The
 guard takes resource update locks from the first create/write check, avoiding
 lock upgrades. Confirmation failure after rename blocks the copy and retains
@@ -31,3 +31,12 @@ fact/profile/permission memory writes. Current programmatic tests cover actual
 PG and files under race detection, not arbitrary code sandboxing or delegated
 resource-cost experiments. Full #17 closure also needs the separately owned
 browser/resource/delegation/kernel integration acceptance.
+
+The typed ResourceGuard adapter now composes actual resources.Store with mandatory
+exact action/source admission and independent physical evidence callbacks. Claims
+must be committed before creating a namespace or writing bytes. Successful Create
+consumes its claim/version; a subsequent Write needs fresh resource admission.
+The private actual body digest is computed before the first write guard; a read
+digest is obtained from verified physical metadata before release. Actual PG/pool2
+tests cover this composition, while the production Broker policy/evidence adapters
+and all runtime routes remain disabled until separately verified.

@@ -39,11 +39,12 @@ type Ref struct {
 	Binding Binding `json:"-"`
 }
 type Access struct {
-	Ref       Ref
-	Proof     LeaseProof
-	Operation string // create, read, write; never inferred from a tool name
-	Path      string
-	Bytes     int64
+	Ref           Ref
+	Proof         LeaseProof
+	Operation     string // create, read, write; never inferred from a tool name
+	Path          string
+	Bytes         int64
+	ContentSHA256 string `json:"-"` // copied actual bytes/observed metadata, never model proof
 }
 
 // CheckTx must lock/check live ownership -> session/task/goal -> sorted resource
@@ -53,6 +54,9 @@ type Access struct {
 // No second pooled connection is needed.
 type Guard interface {
 	CheckTx(context.Context, pgx.Tx, Access) error
+	// ConfirmCreateTx independently confirms the actual synced empty namespace,
+	// then consumes its committed write claim on this metadata transaction.
+	ConfirmCreateTx(context.Context, pgx.Tx, Access) error
 	// ConfirmWriteTx rechecks current authority and records resource observation
 	// and lease consumption on this transaction, after the filesystem rename and
 	// metadata CAS. Failure is an uncertain physical effect, never a rolled-back
