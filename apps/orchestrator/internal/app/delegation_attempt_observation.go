@@ -37,13 +37,13 @@ func (g *DelegationGuards) ObserveAttemptsTx(ctx context.Context, tx pgx.Tx, par
 	// Only exact known persisted transport subtypes may leave the owning DB.
 	// Raw error messages, metadata, checkpoints and source bodies are not scanned.
 	codes := []string{string(transport.ErrorTypeProviderUnavailable), string(transport.ErrorTypeTransportConnectionError), string(transport.ErrorTypeProviderTimeout), string(transport.ErrorTypeProviderProtocolError), string(transport.ErrorTypeCapabilityMismatch), string(transport.ErrorTypeInvalidToolRequest), string(transport.ErrorTypeStatefulSessionLost), string(transport.ErrorTypeRateLimited), string(transport.ErrorTypeInternalTransportError), string(transport.ErrorTypeInputBytesExceeded), string(transport.ErrorTypeMemorySourceStale), string(transport.ErrorTypeMemorySourceTimeout)}
-	rows, err := tx.Query(ctx, `SELECT run_id,current_state,CASE WHEN error_type=ANY($4) THEN error_type ELSE 'execution_failed' END,CASE WHEN error_type='transport_error' AND error_message=ANY($5) THEN error_message ELSE '' END FROM runs WHERE task_id=$1 AND task_revision=$2 AND session_key=$3 AND current_state IN ('failed','cancelled','timed_out') ORDER BY started_at DESC,run_id DESC LIMIT 17`, child.TaskID, child.Revision, child.SessionKey, []string{"transport_error", "execution_stopped", "tool_execution_error", "execution_failed", "lease_lost", "task_revision_conflict"}, codes)
+	rows, err := tx.Query(ctx, `SELECT run_id,task_revision,current_state,CASE WHEN error_type=ANY($4) THEN error_type ELSE 'execution_failed' END,CASE WHEN error_type='transport_error' AND error_message=ANY($5) THEN error_message ELSE '' END FROM runs WHERE task_id=$1 AND task_revision BETWEEN 1 AND $2 AND session_key=$3 AND current_state IN ('failed','cancelled','timed_out') ORDER BY started_at DESC,run_id DESC LIMIT 17`, child.TaskID, child.Revision, child.SessionKey, []string{"transport_error", "execution_stopped", "tool_execution_error", "execution_failed", "lease_lost", "task_revision_conflict"}, codes)
 	if err != nil {
 		return fail()
 	}
 	for rows.Next() {
 		var a delegation.FailedAttempt
-		if err = rows.Scan(&a.RunID, &a.State, &a.ErrorCode, &a.DiagnosticCode); err != nil {
+		if err = rows.Scan(&a.RunID, &a.TaskRevision, &a.State, &a.ErrorCode, &a.DiagnosticCode); err != nil {
 			break
 		}
 		r.Attempts = append(r.Attempts, a)
@@ -61,7 +61,7 @@ func (g *DelegationGuards) ObserveAttemptsTx(ctx context.Context, tx pgx.Tx, par
 	}
 	// Include current journal states for every failed attempt, even ones outside
 	// the bounded visible run list. A journal observation cannot prove task success.
-	rows, err = tx.Query(ctx, `SELECT i.run_id,i.action_id,i.action_hash,i.binding,i.effect_id,e.state FROM action_intents i JOIN action_effects e ON e.action_id=i.effect_id JOIN runs r USING(run_id) WHERE r.task_id=$1 AND r.task_revision=$2 AND r.session_key=$3 AND r.current_state IN ('failed','cancelled','timed_out') ORDER BY i.action_id LIMIT 65 FOR SHARE OF i,e`, child.TaskID, child.Revision, child.SessionKey)
+	rows, err = tx.Query(ctx, `SELECT i.run_id,r.task_revision,i.action_id,i.action_hash,i.binding,i.effect_id,e.state FROM action_intents i JOIN action_effects e ON e.action_id=i.effect_id JOIN runs r USING(run_id) WHERE r.task_id=$1 AND r.task_revision BETWEEN 1 AND $2 AND r.session_key=$3 AND r.current_state IN ('failed','cancelled','timed_out') ORDER BY i.action_id LIMIT 65 FOR SHARE OF i,e`, child.TaskID, child.Revision, child.SessionKey)
 	if err != nil {
 		return fail()
 	}
@@ -70,10 +70,10 @@ func (g *DelegationGuards) ObserveAttemptsTx(ctx context.Context, tx pgx.Tx, par
 		var hash string
 		var raw []byte
 		var b actionauth.ActionBinding
-		if err = rows.Scan(&a.RunID, &a.ActionID, &hash, &raw, &a.EffectID, &a.State); err != nil {
+		if err = rows.Scan(&a.RunID, &a.TaskRevision, &a.ActionID, &hash, &raw, &a.EffectID, &a.State); err != nil {
 			break
 		}
-		if json.Unmarshal(raw, &b) != nil || b.ActionID != a.ActionID || b.ActionHash != hash || b.RunID != a.RunID || b.TaskID != child.TaskID || b.TaskRevision != child.Revision || b.ConstraintsRevision != child.ConstraintsRevision || b.OwnerID != child.OwnerID {
+		if json.Unmarshal(raw, &b) != nil || b.ActionID != a.ActionID || b.ActionHash != hash || b.RunID != a.RunID || b.TaskID != child.TaskID || b.TaskRevision != a.TaskRevision || b.ConstraintsRevision != child.ConstraintsRevision || b.OwnerID != child.OwnerID {
 			err = delegation.ErrDenied
 			break
 		}

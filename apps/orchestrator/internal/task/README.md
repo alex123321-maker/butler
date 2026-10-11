@@ -47,7 +47,9 @@ objective/owner verdict. Agreeing models cannot bypass it. Decide never marks a
 task complete or overwrites another result; conflicting reports remain distinct.
 
 `ObserveFailedAttempts` is a separate current-authority read for a blocked
-immediate child with failed terminal runs and no live worker. Its mandatory
+immediate child with failed terminal runs, unchanged contract constraints and no
+live worker or unfinished run on any revision. Historical run/action revisions
+stay explicit when `SaveRunOutcome` increments the blocked-task revision. Its mandatory
 `DelegationAttemptObserver` adapter joins the same transaction to read journal,
 all branch reservations and nullable actual usage; it allowlists error enums and
 excludes raw provider prose. It cannot create a result/report source, change

@@ -52,6 +52,13 @@ The following documents retain their original component scope and limitations:
   packages and affected vet; event hash
   `7a1b42db61264022abbfdb69474b4efd511074b23a7f3620a6c5d8e99fece3ac`.
   Provider output and7/3 usage in this fixture are scripted, not native inference.
+  The follow-up invokes actual `SaveRunOutcome`, retaining failed revision1
+  while the blocked task advances to2. Full race/vet snapshot142541-974 hash
+  `1b00bc7161be0f8fad2d3c334c7d396e3b4fad27132c796950de6f23f70b8b11`;
+  final narrow snapshot143149-090 hash
+  `c13a459c4c9d13b432508b0061e85c1e7513b8236c8d0b55404ff0930f7cdca0`.
+  Any unfinished child revision or changed child constraints denies the read;
+  parent and child constraints revisions remain independent.
 - `../../deploy/local-generative/README.md`: five actual CPU-model requests,
   all five semantic checks failed;608 input/150 output known tokens. Original
   report SHA256 `b45ed541437ea24620740d26821fbb9b7b6b559687c531fecf2e7dccac4a7825`;

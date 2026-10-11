@@ -65,6 +65,16 @@ func (s *Service) attachFailedDelegationAttempts(ctx context.Context, p *prepare
 			return delegation.ErrDenied
 		}
 		seenTasks[r.TaskID] = true
+		for _, a := range r.Attempts {
+			if a.TaskRevision < 1 || a.TaskRevision > r.TaskRevision {
+				return delegation.ErrDenied
+			}
+		}
+		for _, a := range r.Actions {
+			if a.TaskRevision < 1 || a.TaskRevision > r.TaskRevision {
+				return delegation.ErrDenied
+			}
+		}
 		refs := make([]string, 0, len(r.Sources))
 		local := map[string]bool{}
 		for _, ref := range r.Sources {

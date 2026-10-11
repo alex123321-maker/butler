@@ -25,8 +25,9 @@ import (
 
 type parentAttemptProbe struct {
 	transport.ModelProvider
-	starts  int
-	childID string
+	starts         int
+	childID        string
+	failedRevision int64
 }
 
 func (*parentAttemptProbe) Name() string                    { return "fixture" }
@@ -48,7 +49,7 @@ func (p *parentAttemptProbe) StartRun(_ context.Context, request transport.Start
 			Data delegation.AttemptReport `json:"data"`
 		}
 		origin := content.ItemOrigin(item)
-		if found || json.Unmarshal([]byte(item.Content), &wrapped) != nil || item.Role != "user" || origin.IsInstruction() || origin.Kind != content.SubagentOutput || origin.Sensitivity != content.Private || len(origin.SourceRefs) == 0 || wrapped.Data.TaskID != p.childID || wrapped.Data.TaskStatus != "blocked" || len(wrapped.Data.ModelUsage) != 2 || wrapped.Data.ModelUsage[1].InputTokens != nil || len(wrapped.Data.Actions) != 1 || wrapped.Data.Actions[0].State != "effect_unknown" {
+		if found || json.Unmarshal([]byte(item.Content), &wrapped) != nil || item.Role != "user" || origin.IsInstruction() || origin.Kind != content.SubagentOutput || origin.Sensitivity != content.Private || len(origin.SourceRefs) == 0 || wrapped.Data.TaskID != p.childID || wrapped.Data.TaskStatus != "blocked" || wrapped.Data.TaskRevision != p.failedRevision+1 || len(wrapped.Data.Attempts) != 1 || wrapped.Data.Attempts[0].TaskRevision != p.failedRevision || len(wrapped.Data.ModelUsage) != 2 || wrapped.Data.ModelUsage[1].InputTokens != nil || len(wrapped.Data.Actions) != 1 || wrapped.Data.Actions[0].TaskRevision != p.failedRevision || wrapped.Data.Actions[0].State != "effect_unknown" {
 			return nil, errors.New("failed-attempt DATA projection changed at provider boundary")
 		}
 		found = true
@@ -108,7 +109,7 @@ func TestDelegationFailedAttemptActualParentPipelineIntegration(t *testing.T) {
 				}
 				return reports, err
 			})
-			provider := &parentAttemptProbe{childID: child.TaskID}
+			provider := &parentAttemptProbe{childID: child.TaskID, failedRevision: child.Revision}
 			results := completion.New(f.pool)
 			results.DataGuard = func(ctx context.Context, tx pgx.Tx, id string) error { return f.sources.CheckRunSourcesTx(ctx, tx, id) }
 			executor := flow.NewService(session.NewPostgresRepository(f.pool), f.leases, runservice.NewService(runservice.NewPostgresRepository(f.pool), nil), transcript.NewStore(f.pool), provider, flow.Config{ProviderName: "fixture", ModelName: "fixture", OwnerID: "attempt-parent-worker", AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_1, Tasks: f.store, Checkpoints: inputs, Completion: results, MemorySources: f.sources, Budgets: f.budgets, DelegationContexts: delegatedContextReader{sources: f.sources, manager: f.manager}, FailedDelegationAttempts: ownedReader}, nil)

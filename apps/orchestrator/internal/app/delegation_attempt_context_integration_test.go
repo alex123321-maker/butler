@@ -90,7 +90,7 @@ func TestDelegationFailedAttemptPriorRevisionSpendingIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	r, err := f.manager.ObserveFailedAttempts(f.owner, f.parent.TaskID, child.TaskID)
-	if err != nil || r.TaskRevision != child.Revision+1 || len(r.Attempts) != 1 || r.Attempts[0].RunID != "new-failed-revision" || len(r.ModelUsage) != 2 || r.ModelUsage[0].RunID != oldRun || r.ModelUsage[0].TaskRevision != child.Revision || r.ModelUsage[0].InputTokens == nil || *r.ModelUsage[0].InputTokens != 7 || r.ModelUsage[1].InputTokens != nil || r.Reserved.ModelTurns != 2 {
+	if err != nil || r.TaskRevision != child.Revision+2 || len(r.Attempts) != 2 || r.Attempts[0].RunID != "new-failed-revision" || r.Attempts[0].TaskRevision != child.Revision+1 || r.Attempts[1].RunID != oldRun || r.Attempts[1].TaskRevision != child.Revision || len(r.Actions) != 1 || r.Actions[0].TaskRevision != child.Revision || len(r.ModelUsage) != 2 || r.ModelUsage[0].RunID != oldRun || r.ModelUsage[0].TaskRevision != child.Revision || r.ModelUsage[0].InputTokens == nil || *r.ModelUsage[0].InputTokens != 7 || r.ModelUsage[1].InputTokens != nil || r.Reserved.ModelTurns != 2 {
 		t.Fatal("revision hid earlier measured/unknown branch spending", err, r)
 	}
 }

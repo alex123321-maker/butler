@@ -3,6 +3,8 @@
 set -euo pipefail
 root=${1:?isolated agent root required}
 [[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ ]] || exit 2
+check_mode=${2:-full}
+[[ "$check_mode" == full || "$check_mode" == narrow ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* ]] || exit 2
 run_id="$(date -u +%Y%m%dT%H%M%SZ)-$$"
@@ -38,11 +40,16 @@ docker run --rm --runtime runc --user "$(id -u):$(id -g)" --network "$network" \
   --memory 1536m --pids-limit 128 --cpus 2 --security-opt no-new-privileges \
   --volume "$source_dir:/src:ro" --volume /srv/storage/butler/.cache:/cache --workdir /src \
   --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp \
+  --env "BUTLER_ATTEMPT_CHECK_MODE=$check_mode" \
   --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:attempt-fixture@attempt-postgres:5432/butler_attempt_test?sslmode=disable' \
   golang:1.27.2-bookworm bash -eu -c '
+if [[ "$BUTLER_ATTEMPT_CHECK_MODE" == narrow ]]; then
+go test -json -race -p 1 -count=1 -run "^TestDelegationFailedAttempt" ./apps/orchestrator/internal/app ./apps/orchestrator/internal/orchestrator
+else
 go test -json -race -p 1 -count=1 -run "^Test(Delegation|Delegated|Converter)" ./apps/orchestrator/internal/app
 go test -json -race -p 1 -count=1 ./apps/orchestrator/internal/orchestrator
 go test -json -race -p 1 -count=1 -run "^TestDelegation" ./apps/orchestrator/internal/task ./internal/delegation
+fi
 go vet ./apps/orchestrator/internal/task ./apps/orchestrator/internal/app ./apps/orchestrator/internal/orchestrator ./internal/delegation
 ' > "$proof/tests.jsonl"
 sha256sum "$proof/tests.jsonl"

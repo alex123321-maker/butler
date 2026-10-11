@@ -172,8 +172,14 @@ evidence; agreeing models or a model final do not verify it or complete a task.
 Execution/source lifecycle guards remain active-only. Completed partial assistant
 finals can be collected with limitations while the task is active. A separate
 `ObserveFailedAttempts` read returns current owning observations for a blocked
-immediate child with terminal failed/cancelled/timed-out runs on its current
-revision, no live worker/attempt and an unchanged current parent contract. It
+immediate child with terminal failed/cancelled/timed-out runs from its current
+or earlier revisions, no live worker/attempt and an unchanged current parent
+contract and child constraints. Child constraints must remain at their original
+admission revision1; the contract's parent constraints revision is independent
+and may be greater. Each run/action retains its actual task revision, while the
+report separately identifies the current blocked-task revision. The ordinary
+`SaveRunOutcome` failure transition advances that revision, so history is not
+restricted to a nonexistent new run or relabelled as a current attempt. It
 requires an authenticated owner or the actual live parent worker, current parent
 goal/mandate and current Catalog access. A context carrying both owner and worker
 identities is refused. It never reuses a failed child's execution authority or
