@@ -248,6 +248,24 @@ See [protocol, operator import and validation status](../../deploy/antigravity/R
 
 ## 8. Core transport entities
 
+### Pinned local observation adapter
+
+`internal/transport/ollama` is an explicitly composed experimental text-only
+ModelProvider. It uses HTTP/NDJSON against a reserved private Ollama service or
+literal loopback, with no environment proxy or redirects. Its exact Qwen3:0.6b
+manifest, finite4096/256 context/output profile and immutable isolated runner are
+described in its README. There is no production selector or automatic fallback.
+Each Start carries fresh Butler-owned input; continuations, tools, foreign refs
+and model-supplied options refuse. Instruction/data provenance and secret denial
+apply before serialization. The complete body and conservative byte/template
+token bound are checked before HTTP, avoiding silent evidence truncation.
+The sole installed model digest is checked before each inference. Streams have
+bounded body/line/text/time and refuse incomplete finals, duplicated envelope
+keys, unexpected thinking/tools and token-limit overruns. Actual usage requires
+both explicit counts; missing/null counts remain unknown. Multiple contexts use
+one loaded service runner, with serialized admission and a finite queue. This
+does not grant mandate privacy authority or verify any delegated task result.
+
 ### 8.1 TransportRunContext
 
 Контекст transport-взаимодействия для конкретного run.
