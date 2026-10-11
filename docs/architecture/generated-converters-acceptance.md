@@ -83,3 +83,21 @@ and owned-schema readiness. `20261011-095729-784` passed readiness1.689s includi
 missing projection columns/nullability and a fully formed fallback schema whose
 bare table/trigger lookup succeeds. Readiness accepts only the current owned
 schema and its correctly typed non-null columns and immutable trigger function.
+
+The integrated root composition passed on `20261011-095855-780`: generatedtools
+race1.083s, app converter/developer/lifecycle race48.085s and narrow core/Broker
+vet. Separate operator flags, common accepted-role lifecycle, current developer
+and return guards, private readiness projection and fixed routes were compiled
+together. Optional Compose overlays passed configuration validation without
+starting services. The base deployment remains disabled.
+
+After fixing the ordinary input-worker delegated key verification, root snapshot
+`20261011-101125-400` passed actual isolated PostgreSQL/Redis race checks for input
+(9.591s), execution (5.279s), and selected app integration (69.333s). The app proof
+includes a real separate Broker and ordinary-worker recovery with a denied spy,
+plus converter and immutable-return guards; no native provider was invoked.
+See [component verification](../../deploy/delegation/integrated-component-verification.json).
+The earlier failed native experiment remains evidence of three actual attempts;
+unknown provider usage stays unknown. This proof does not establish native
+serial/parallel acceptance, production developer integration or independent
+original-document acceptance.
