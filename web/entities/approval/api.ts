@@ -31,3 +31,14 @@ export const approveById = (id: string, ownerToken: string) => {
 export const rejectById = (id: string, ownerToken: string) => {
   return apiRequest(`/api/v2/approvals/${encodeURIComponent(id)}/reject`, { method: 'POST', headers: { Authorization: `Bearer ${ownerToken}`, 'X-Butler-Delivery-ID': crypto.randomUUID() } })
 }
+
+export interface GuardedTabChoices {
+  approval_id: string
+  state: 'pending' | 'selected'
+  expires_at: string
+  candidates: Array<{ candidate_token: string; origin: string; ordinal: number; active_at_request: boolean; selected: boolean }>
+}
+
+export const fetchGuardedTabChoices = (id: string, ownerToken: string) => apiRequest<GuardedTabChoices>(`/api/v3/tab-choices/${encodeURIComponent(id)}`, { headers: { Authorization: `Bearer ${ownerToken}` } })
+export const selectGuardedTab = (id: string, candidateToken: string, ownerToken: string) => apiRequest<{ single_tab_session_id: string }>(`/api/v3/tab-choices/${encodeURIComponent(id)}/select`, { method: 'POST', headers: { Authorization: `Bearer ${ownerToken}`, 'X-Butler-Delivery-ID': crypto.randomUUID() }, body: { candidate_token: candidateToken } })
+export const revokeGuardedTab = (id: string, ownerToken: string) => apiRequest(`/api/v3/tab-choices/${encodeURIComponent(id)}/revoke`, { method: 'POST', headers: { Authorization: `Bearer ${ownerToken}`, 'X-Butler-Delivery-ID': crypto.randomUUID() }, body: {} })

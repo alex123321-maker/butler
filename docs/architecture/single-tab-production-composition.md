@@ -55,11 +55,24 @@ No private metadata or library error text enters responses. The startup-only
 `BUTLER_GUARDED_TAB_OWNER_ENABLED` requires fixed `BUTLER_GUARDED_TAB_HOST`,
 `BUTLER_GUARDED_TAB_METADATA_URL`, `BUTLER_GUARDED_TAB_TOKEN_FILE` and owner auth.
 Database settings cannot enable it or change the authenticated destination.
-Startup requires the 063 dispatch column, both enabled immutable triggers and
+Startup requires the 063 dispatch column, all three enabled immutable triggers and
 the pinned actual function body; missing or replaced safeguards prevent startup.
 The metadata client retains loopback-only HTTP / trusted HTTPS, bounded direct
 requests without ambient proxy or redirects. No runtime-ready assertion follows
 from composing this endpoint.
+
+Migration064 retains immutable sanitized choice metadata: original ordinal and
+active-at-request boolean alongside the opaque candidate and canonical origin.
+It records no private native reference or page body and denies dropping retained
+history. `GET /api/v3/tab-choices/{approval_id}` requires current waiting-owner
+authority and sources under the same owning transaction and exposes these fixed
+fields plus selected state. It does not contact Chrome or claim a current active
+tab. Requests predating this metadata have no reconstructed view. The Approvals
+page uses this protected read and the existing select/revoke route; generic
+approval cannot substitute for the guarded choice. Owner proof stays only in
+page memory; proof changes fence late responses. Executing worker request
+creation, actual channel delivery/resumption and private runtime composition
+remain independent activation gates.
 
 ## Broker and runtime composition
 

@@ -9,12 +9,18 @@ import (
 	"testing"
 
 	"github.com/butler/butler/internal/owneridentity"
+	"github.com/butler/butler/internal/singletabcontrol"
 )
 
 type capturedTabDecision struct {
 	actor owneridentity.Actor
 	calls int
 	fail  bool
+}
+
+func (d *capturedTabDecision) Choices(ctx context.Context, id string) (singletabcontrol.OwnerChoices, error) {
+	_, err := d.Select(ctx, id, "")
+	return singletabcontrol.OwnerChoices{ApprovalID: id}, err
 }
 
 func (d *capturedTabDecision) Select(ctx context.Context, _, _ string) (string, error) {

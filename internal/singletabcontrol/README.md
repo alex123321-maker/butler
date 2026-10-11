@@ -17,9 +17,13 @@ current mandate/delegation and sources, and released/expired Session lease are
 required under the owning lock. A resumed live worker denies this path. It never
 creates a token, renews a lease, extends the original finite request expiry or
 dispatches work. Metadata runs outside PG; all guards repeat before publication.
-The Orchestrator optionally composes waiting-owner select/revoke through its
+The Orchestrator optionally composes waiting-owner choices/select/revoke through its
 authenticated Web API. `CheckSchema` pins migration063's enabled triggers and
-actual immutable function before startup. The operator flag defaults false;
+the additional 064 frozen-choice trigger and actual immutable function before startup.
+`Choices` exposes only recorded ordinal, origin, active-at-request and selection
+status, repeating current sources before release. Private native refs stay private.
+There is no reconstruction of missing old choice metadata or current browser order.
+The operator flag defaults false;
 stored settings cannot change it. Creating choices, UI/Telegram delivery,
 executor resumption and guarded Broker/runtime composition remain separate gates.
 

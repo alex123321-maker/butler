@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// CheckSchema is startup validation of the owning immutable migration063
+// CheckSchema is startup validation of the owning immutable migrations063/064
 // boundary. It does not assert metadata/runtime readiness or grant execution.
 func CheckSchema(ctx context.Context, pool *pgxpool.Pool) error {
 	if pool == nil {
@@ -17,13 +17,14 @@ func CheckSchema(ctx context.Context, pool *pgxpool.Pool) error {
 	var body string
 	err := pool.QueryRow(ctx, `SELECT count(*),COALESCE(max(p.prosrc),'')
  FROM (VALUES ('guarded_single_tab_requests','guarded_request_immutable'),
- ('guarded_single_tab_selections','guarded_selection_immutable')) expected(relation,trigger_name)
+ ('guarded_single_tab_selections','guarded_selection_immutable'),
+ ('guarded_single_tab_choices','guarded_choice_immutable')) expected(relation,trigger_name)
  JOIN pg_trigger t ON t.tgrelid=to_regclass(expected.relation) AND t.tgname=expected.trigger_name
  JOIN pg_proc p ON p.oid=t.tgfoid
  WHERE NOT t.tgisinternal AND t.tgenabled IN ('O','A') AND p.proname='guarded_single_tab_immutable'
  AND t.tgtype=27 AND EXISTS(SELECT 1 FROM pg_attribute
  WHERE attrelid=to_regclass('execution_resource_dispatches') AND attname='single_tab_binding' AND NOT attisdropped)`).Scan(&triggers, &body)
-	if err != nil || triggers != 2 || strings.Join(strings.Fields(body), " ") != strings.Join(strings.Fields(immutableBody), " ") {
+	if err != nil || triggers != 3 || strings.Join(strings.Fields(body), " ") != strings.Join(strings.Fields(immutableBody), " ") {
 		return ErrDenied
 	}
 	return nil

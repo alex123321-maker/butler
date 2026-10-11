@@ -113,6 +113,31 @@ func TestOwnerWaitingSelectionAfterActualLeaseReleaseIntegration(t *testing.T) {
 			}
 			token := strings.Repeat("fixture-owner-", 4)
 			handler := api.GuardedTabOwnerControls(api.NewOwnerControlAuth(token, actor.OwnerID), waiting)
+			get := httptest.NewRequest(http.MethodGet, "/api/v3/tab-choices/"+choices.ApprovalID, nil)
+			if scenario != "anonymous" {
+				get.Header.Set("Authorization", "Bearer "+token)
+			}
+			read := httptest.NewRecorder()
+			handler.ServeHTTP(read, get)
+			readWant := http.StatusConflict
+			if scenario == "select" || scenario == "revoke" || scenario == "source_changes_after_metadata" {
+				readWant = http.StatusOK
+			}
+			if scenario == "anonymous" {
+				readWant = http.StatusUnauthorized
+			}
+			if read.Code != readWant {
+				t.Fatal("current owner choice read", scenario, read.Code, read.Body.String())
+			}
+			if read.Code == http.StatusOK {
+				var current singletabcontrol.OwnerChoices
+				if json.Unmarshal(read.Body.Bytes(), &current) != nil || len(current.Candidates) != 1 || current.Candidates[0].Token != choices.Candidates[0].Token || current.Candidates[0].Ordinal != 1 || !current.Candidates[0].ActiveAtRequest || strings.Contains(read.Body.String(), "waiting-host") || strings.Contains(read.Body.String(), `"431"`) {
+					t.Fatal("sanitized immutable choices lost")
+				}
+				if _, mutateErr := pool.Exec(ctx, `UPDATE guarded_single_tab_choices SET ordinal=2 WHERE request_id=$1`, choices.ApprovalID); mutateErr == nil {
+					t.Fatal("recorded choice label could change")
+				}
+			}
 			action, body := "select", `{"candidate_token":"`+choices.Candidates[0].Token+`"}`
 			if scenario == "revoke" {
 				action, body = "revoke", `{}`

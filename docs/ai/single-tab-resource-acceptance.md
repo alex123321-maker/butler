@@ -126,6 +126,36 @@ This is a library proof, not composed Web/Telegram acceptance or activation.
 
 ## Production gates still open
 
+Migration064 and the guarded Approvals component now preserve and display original
+same-origin choice ordinals and active-at-request markers. Protected GET requires
+current waiting-owner/task/source authority; native host/tab refs stay private.
+Original labels survive reload without reconstructing current Chrome order.
+Choice rows are immutable and their retained history prevents downgrade. Ordinary
+Approve/Reject cannot replace this guarded selection. Page-only owner proof fences
+late responses; selecting and revoking send only their fixed decision bodies.
+
+Actual waiting-owner HTTP/PG, schema mutation, core race and vet checks passed on
+snapshot `20261011-125524-281`, proof
+`/srv/storage/butler/agents/task-observations/reports/task-observations-20261011T055535Z-3943834`,
+events SHA256 `19b411798c704f5df6c5bd6eb750cfc1ed791dce3012b5de4dce2a4a20a3c68b`.
+Typecheck, lint and 13 actual Chromium UI fixtures passed on
+`20261011-125736-048`, private log
+`/srv/storage/butler/agents/task-observations/reports/task-view-20261011T055740Z.log`.
+An earlier UI check rejected accidental double JSON encoding, and a second check
+found that refresh discarded the decision receipt. Both failures remain retained;
+the client now sends an object through the shared encoder and keeps the card while
+refreshing its status.
+
+The full private native-host/actual Chrome/Broker regression also passed with the
+064 fixture applied, on snapshot `20261011-125623-054`:
+`/srv/storage/butler/agents/resource-runtime-bridge/reports/single-tab-20261011T055703Z-3949941`.
+PG/race event SHA256 `8805df44a16f9d8c748efe3e1878ecfaee532b4c56ac6c22df37b0de60af9f87`;
+bridge/race `e3c2210b6c57145bba4a509a83641643c884a6894b4c5872f6417501b5247694`;
+actual Chrome `018af7cf959ab15e4775253dd4e030ea6c341c6789e8c2a38ea8bb735f7b8394`.
+No model call or main deployment occurred. These are component/channel-display
+proofs; automatic worker request/resumption and executing production composition
+remain pending.
+
 The application now composes an operator-only, default-disabled waiting-owner
 Web decision endpoint for existing guarded requests. On snapshot
 `20261011-124302-890`, actual PostgreSQL/Session lease release followed by HTTP

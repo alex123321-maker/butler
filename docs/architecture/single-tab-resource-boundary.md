@@ -77,6 +77,15 @@ Its authenticated Web select/revoke API does not accept a client binding. Actual
 PG tests cover the released-lease decision; complete UI delivery and a fresh
 executor's resumption remain separate activation gates.
 
+Migration064 additionally freezes sanitized original choice ordinal and
+active-at-request metadata. The authenticated waiting-owner choice view retains
+those labels across process restart; it does not reconstruct browser order or
+disclose native host/tab IDs. The Approvals page distinguishes same-origin tabs
+by their original ordinals and presents guarded select/revoke. Its selection
+receipt means a binding was committed, with no browser action or recipient-success
+claim. UI fixtures and actual PG/HTTP control tests cover separate boundaries;
+the complete executing channel workflow remains unproved.
+
 Resource identity derives from operator profile plus actual browser instance and
 tab number, not fresh bind-session IDs. Rebinding cannot create a parallel lane.
 Changing origins cannot partition the same physical tab into a second lane.

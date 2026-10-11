@@ -12,7 +12,7 @@
 
     <p class="approvals-meta">Total: {{ approvals.length }}<span v-if="pending"> · loading...</span></p>
 
-    <AppTable v-if="!pending && approvals.length > 0">
+    <AppTable v-if="approvals.length > 0">
       <thead>
         <tr>
           <th>ID</th>
@@ -31,9 +31,10 @@
           <td>{{ approval.run_id }}</td>
           <td>{{ approval.risk_level || '-' }}</td>
           <td>
-            <div class="approval-actions">
-              <AppButton variant="primary" :disabled="approval.status !== 'pending' || actionPending || !ownerToken" @click="approve(approval.id)">Approve</AppButton>
-              <AppButton variant="danger" :disabled="approval.status !== 'pending' || actionPending || !ownerToken" @click="rejectApproval(approval.id)">Reject</AppButton>
+            <GuardedTabChoice v-if="approval.tool_name === 'single_tab.bind.guarded'" :approval-id="approval.id" :owner-token="ownerToken" @changed="approvalsStore.load()" />
+            <div v-else class="approval-actions">
+              <AppButton variant="primary" :disabled="approval.status !== 'pending' || pending || actionPending || !ownerToken" @click="approve(approval.id)">Approve</AppButton>
+              <AppButton variant="danger" :disabled="approval.status !== 'pending' || pending || actionPending || !ownerToken" @click="rejectApproval(approval.id)">Reject</AppButton>
             </div>
           </td>
         </tr>
@@ -50,6 +51,7 @@ import { storeToRefs } from 'pinia'
 import AppAlert from '~/shared/ui/AppAlert.vue'
 import AppButton from '~/shared/ui/AppButton.vue'
 import AppTable from '~/shared/ui/AppTable.vue'
+import GuardedTabChoice from '~/components/GuardedTabChoice.vue'
 import { useApprovalsStore } from '~/shared/model/stores/approvals'
 
 useHead({ title: 'Approvals - Butler' })
