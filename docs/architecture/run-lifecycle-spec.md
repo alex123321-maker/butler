@@ -913,6 +913,14 @@ current content after the new live lease, preserving event/session/type/source,
 timestamp and idempotency identity. Missing composition or a replaced checkpoint
 binding fails closed before inference. Selected source bodies are not queued.
 
+The delegated worker's durable run key is the accepted `input_id`, separate from
+the immutable kernel `delegation:<task_id>` event ID. The input store's private
+typed verifier must prove the exact current claim, owner/session, live run fence,
+pinned task and original contract source before core validates a local copy of
+that envelope. The actual run/checkpoint key stays the input ID. Preparation and
+recovery both require this proof for rewritten keys; absent or stale verification
+fails before provider entry. Original direct-core keys keep strict equality.
+
 `SourceInputEvent` retains that original opaque event; `SourceDataRefs` identifies
 exact DATA items for durable projection only. Checkpoints and approval continuations
 remove current source prose, preserve refs/digests and keep instructions and actual

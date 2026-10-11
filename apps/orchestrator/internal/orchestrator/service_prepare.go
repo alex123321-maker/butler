@@ -81,7 +81,7 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 	if err != nil {
 		return preparedRun{}, err
 	}
-	if err = attachDelegatedContext(event, &prepared, delegated); err != nil {
+	if err = s.attachDelegatedContext(ctx, event, &prepared, delegated); err != nil {
 		return preparedRun{}, err
 	}
 	if delegated == nil {

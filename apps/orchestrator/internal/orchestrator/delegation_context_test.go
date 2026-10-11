@@ -18,6 +18,15 @@ import (
 
 type delegatedReaderFunc func(context.Context, string) (*DelegatedContext, error)
 
+type delegatedBindingVerifier struct {
+	CheckpointStore
+	verify func(context.Context, ingress.InputEvent, string, delegation.SourceRef) error
+}
+
+func (v delegatedBindingVerifier) VerifyDelegatedInput(ctx context.Context, event ingress.InputEvent, taskID string, source delegation.SourceRef) error {
+	return v.verify(ctx, event, taskID, source)
+}
+
 func (f delegatedReaderFunc) LoadDelegatedContext(ctx context.Context, id string) (*DelegatedContext, error) {
 	return f(ctx, id)
 }
@@ -116,6 +125,39 @@ func TestDelegationRecoveryRechecksSelectionAndPreservesUnknownEffect(t *testing
 	revoked = true
 	if err := s.rehydrateSourcePreparation(ctx, &p); err == nil {
 		t.Fatal("revoked current context reused checkpoint body")
+	}
+}
+
+func TestDelegationAcceptedInputKeyRetainsCheckpointIdentityOnRecovery(t *testing.T) {
+	ctx, event, d := delegatedContextFixture()
+	event.IdempotencyKey = "accepted-child-input"
+	calls, revoked := 0, false
+	verifier := delegatedBindingVerifier{verify: func(_ context.Context, current ingress.InputEvent, taskID string, source delegation.SourceRef) error {
+		calls++
+		if revoked || current.IdempotencyKey != event.IdempotencyKey || current.EventID != event.EventID || current.PayloadJSON != event.PayloadJSON || taskID != d.TaskID || source != d.ContractSource {
+			return delegation.ErrDenied
+		}
+		return nil
+	}}
+	s := &Service{sessions: delegatedSessions{}, transcript: &memoryTranscriptStore{}, config: Config{Tasks: &delegatedTasks{}, Checkpoints: verifier, DelegationContexts: delegatedReaderFunc(func(context.Context, string) (*DelegatedContext, error) { return d, nil })}}
+	p, err := s.prepareRun(ctx, event)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.SourceInputEvent = &event
+	durable := durableSourcePreparation(p)
+	if durable.SourceInputEvent.IdempotencyKey != "accepted-child-input" || event.IdempotencyKey != "accepted-child-input" || calls != 1 {
+		t.Fatal("preparation replaced durable accepted identity")
+	}
+	if err = s.rehydrateSourcePreparation(ctx, &durable); err != nil {
+		t.Fatal(err)
+	}
+	if durable.SourceInputEvent.IdempotencyKey != "accepted-child-input" || calls != 2 {
+		t.Fatal("recovery changed key or bypassed current verifier")
+	}
+	revoked = true
+	if err = s.rehydrateSourcePreparation(ctx, &durable); !errors.Is(err, delegation.ErrDenied) || calls != 3 {
+		t.Fatal("recovery reused an unverified rewrite", err)
 	}
 }
 

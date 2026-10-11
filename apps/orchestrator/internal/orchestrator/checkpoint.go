@@ -1,12 +1,23 @@
 package orchestrator
 
-import "context"
+import (
+	"context"
+
+	"github.com/butler/butler/internal/delegation"
+	"github.com/butler/butler/internal/ingress"
+)
 
 // CheckpointStore is durable execution progress owned by the accepted input.
 // Transport refs alone never authorize replay of an external effect.
 type CheckpointStore interface {
 	SaveCheckpoint(context.Context, string, string, string) error
 	LoadCheckpoint(context.Context, string) (string, string, error)
+}
+
+// DelegatedInputVerifier proves the kernel accepted-input deduplication identity
+// under its current private claim and worker fence. It grants no wider sources.
+type DelegatedInputVerifier interface {
+	VerifyDelegatedInput(context.Context, ingress.InputEvent, string, delegation.SourceRef) error
 }
 
 func (s *Service) checkpoint(ctx context.Context, runID, stage string, payload any) error {

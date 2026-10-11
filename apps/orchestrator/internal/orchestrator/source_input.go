@@ -80,7 +80,7 @@ func (s *Service) rehydrateSourcePreparation(ctx context.Context, prepared *prep
 		if err != nil || d == nil {
 			return delegation.ErrDenied
 		}
-		if err = attachDelegatedInputBinding(*prepared.SourceInputEvent, d); err != nil {
+		if _, err = s.verifiedDelegatedInput(ctx, *prepared.SourceInputEvent, d); err != nil {
 			return err
 		}
 		prepared.UserMessage = delegatedInputLabel

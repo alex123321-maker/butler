@@ -96,6 +96,37 @@ func attachDelegatedContext(event ingress.InputEvent, p *preparedRun, d *Delegat
 	return nil
 }
 
+func (s *Service) attachDelegatedContext(ctx context.Context, event ingress.InputEvent, p *preparedRun, d *DelegatedContext) error {
+	if event.Source == "delegation" || d != nil {
+		var err error
+		event, err = s.verifiedDelegatedInput(ctx, event, d)
+		if err != nil {
+			return err
+		}
+	}
+	return attachDelegatedContext(event, p, d)
+}
+
+// Ordinary workers use the accepted input ID for stable run deduplication.
+// Only the owning store may prove that rewrite. Canonicalizing a local copy for
+// envelope validation never changes the actual run key or durable checkpoint.
+func (s *Service) verifiedDelegatedInput(ctx context.Context, event ingress.InputEvent, d *DelegatedContext) (ingress.InputEvent, error) {
+	if d == nil || event.Source != "delegation" {
+		return event, delegation.ErrDenied
+	}
+	if event.IdempotencyKey != event.EventID {
+		verifier, ok := s.config.Checkpoints.(DelegatedInputVerifier)
+		if !ok || verifier.VerifyDelegatedInput(ctx, event, d.TaskID, d.ContractSource) != nil {
+			return event, delegation.ErrDenied
+		}
+		event.IdempotencyKey = event.EventID
+	}
+	if err := attachDelegatedInputBinding(event, d); err != nil {
+		return event, err
+	}
+	return event, nil
+}
+
 func attachDelegatedInputBinding(event ingress.InputEvent, d *DelegatedContext) error {
 	var binding struct {
 		TaskID string               `json:"task_id"`

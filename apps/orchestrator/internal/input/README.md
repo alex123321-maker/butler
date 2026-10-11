@@ -18,6 +18,15 @@ shared child allowance, source grants and this receipt commit together; the norm
 input worker still owns claims and run execution. No parent prose/provider session
 is copied. Production delegated context/Broker composition remains separate.
 
+Workers retain the original refs-only kernel event and use its accepted `input_id`
+as the run deduplication key on every retry. `Store.VerifyDelegatedInput` implements
+the core's private typed verifier for that mapping. It checks the current claim,
+owner/session, run key, ownership fence, active pinned task and exact original
+event/contract source on one connection, then rechecks lease, claim and admission
+expiry with the PostgreSQL clock after any lock wait. A rewritten key without this
+verifier fails closed. Catalog still independently controls selected source DATA;
+the mapping grants no source or tool permission.
+
 Defaults: two workers, 250 ms polling, 60-second renewed claims, ten-minute
 execution deadline, 24-hour acceptance deadline and three recovery attempts.
 Busy-session retries and approved continuations do not consume recovery attempts.

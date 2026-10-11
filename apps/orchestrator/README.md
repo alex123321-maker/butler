@@ -18,6 +18,14 @@ guarded decisions. It is an unenabled component until the owning Catalog/Broker
 adapters and isolated child context are wired and verified. It does not turn a
 model report or manager acceptance into task completion.
 
+Ordinary delegated workers use the durable accepted input ID for run
+deduplication. Core preparation/recovery accepts that private key mapping only
+through the current input store's typed claim/fence verifier, while retaining the
+original kernel event and exact versioned contract source. Missing verification,
+stale claims and substituted keys fail before inference. Strict direct-core
+events keep their original event key. Current Catalog selection and task/owner
+authority remain independent checks.
+
 [Reviewed skills](../../docs/architecture/reviewed-skills.md) use descriptions
 before selected procedural DATA and reload current pins during recovery.
 The private evidence API reads owned task/result/effect/transcript/budget APIs;
