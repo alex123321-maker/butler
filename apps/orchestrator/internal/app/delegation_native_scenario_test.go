@@ -62,19 +62,22 @@ type nativeWidthEvidence struct {
 	UnverifiedAcceptanceDenied bool                   `json:"unverified_acceptance_denied"`
 }
 type nativeScenarioEvidence struct {
-	Status            string                  `json:"status"`
-	ReleaseRef        string                  `json:"release_ref"`
-	NativeAttempts    int                     `json:"native_attempts"`
-	MaxAttempts       int                     `json:"max_attempts"`
-	Widths            []nativeWidthEvidence   `json:"widths"`
-	OwnerStopDenies   bool                    `json:"owner_stop_denies"`
-	RevisionDenies    bool                    `json:"revision_denies"`
-	DeletionDenies    bool                    `json:"deletion_denies"`
-	CostBasis         string                  `json:"cost_basis"`
-	SharedDayReserved budget.Units            `json:"shared_day_reserved"`
-	Attempts          []nativeAttemptEvidence `json:"attempts"`
-	Usage             []nativeUsageEvidence   `json:"usage"`
-	Limitations       []string                `json:"limitations"`
+	Status            string                   `json:"status"`
+	ReleaseRef        string                   `json:"release_ref"`
+	NativeAttempts    int                      `json:"native_attempts"`
+	NewNativeAttempts int                      `json:"new_native_attempts"`
+	MaxAttempts       int                      `json:"max_attempts"`
+	MaxNewAttempts    int                      `json:"max_new_attempts"`
+	Historical        nativeHistoricalEvidence `json:"historical"`
+	Widths            []nativeWidthEvidence    `json:"widths"`
+	OwnerStopDenies   bool                     `json:"owner_stop_denies"`
+	RevisionDenies    bool                     `json:"revision_denies"`
+	DeletionDenies    bool                     `json:"deletion_denies"`
+	CostBasis         string                   `json:"cost_basis"`
+	SharedDayReserved budget.Units             `json:"shared_day_reserved"`
+	Attempts          []nativeAttemptEvidence  `json:"new_attempts"`
+	Usage             []nativeUsageEvidence    `json:"new_usage"`
+	Limitations       []string                 `json:"limitations"`
 }
 type nativeAttemptEvidence struct {
 	Attempt   int       `json:"attempt"`
@@ -194,7 +197,7 @@ func TestNativeDelegationCompositionWithoutInferenceIntegration(t *testing.T) {
 		f.composition(t, width)
 	}
 	var attempts int
-	if f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&attempts) != nil || attempts != 0 {
+	if f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&attempts) != nil || attempts != nativeDelegationPriorAttempts {
 		t.Fatal("composition performed inference")
 	}
 }
@@ -268,7 +271,11 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 18*time.Minute)
 	defer cancel()
 	f := newNativeScenarioFixture(t, ctx)
-	report := nativeScenarioEvidence{Status: "failed", ReleaseRef: os.Getenv("BUTLER_DELEGATION_NATIVE_RELEASE"), MaxAttempts: 12, CostBasis: "operator_declared_subscription_no_overage", Limitations: []string{"gate_controlled_loss_after_parent_attempt_completed", "cloud_weights_not_observable", "no_local_generative_parity_claim", "blocked_attempt_report_bridge_pending", "metadata_barriers_do_not_claim_late_native_callback_injection"}}
+	history, err := readNativeHistory(nativeHistoryPath())
+	if err != nil {
+		t.Fatal("committed historical experiment evidence unavailable")
+	}
+	report := nativeScenarioEvidence{Status: "failed", ReleaseRef: os.Getenv("BUTLER_DELEGATION_NATIVE_RELEASE"), MaxAttempts: nativeDelegationTotalAttemptCap, MaxNewAttempts: nativeDelegationAttemptCap, Historical: history, CostBasis: "operator_declared_subscription_no_overage", Limitations: []string{"gate_controlled_loss_after_parent_attempt_completed", "cloud_weights_not_observable", "no_local_generative_parity_claim", "blocked_attempt_report_bridge_pending", "metadata_barriers_do_not_claim_late_native_callback_injection", "historical_nullable_usage_not_zero_or_new_fixture_budget_usage"}}
 	defer func() {
 		auditCtx, auditCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer auditCancel()
@@ -276,6 +283,10 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 			report.NativeAttempts = -1
 			report.Status = "failed"
 			report.Limitations = append(report.Limitations, "attempt_evidence_unavailable")
+		}
+		report.NewNativeAttempts = -1
+		if report.NativeAttempts >= nativeDelegationPriorAttempts {
+			report.NewNativeAttempts = report.NativeAttempts - nativeDelegationPriorAttempts
 		}
 		var raw []byte
 		if f.pool.QueryRow(auditCtx, `SELECT used_json FROM execution_budget_scopes WHERE kind='owner_day' AND owner_id=$1`, nativeFixtureOwner).Scan(&raw) == nil {
@@ -319,7 +330,7 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 		} else {
 			report.Status = "failed"
 		}
-		if len(report.Attempts) != report.NativeAttempts || len(report.Usage) != report.NativeAttempts {
+		if report.NewNativeAttempts < 0 || report.NewNativeAttempts > nativeDelegationAttemptCap || len(report.Attempts) != report.NewNativeAttempts || len(report.Usage) != report.NewNativeAttempts {
 			report.Status = "failed"
 		}
 		if report.Status != "passed" && !t.Failed() {
@@ -443,7 +454,7 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 	if f.pool.QueryRow(ctx, `SELECT used_json FROM execution_budget_scopes WHERE kind='owner_day' AND owner_id=$1`, nativeFixtureOwner).Scan(&dayRaw) != nil || json.Unmarshal(dayRaw, &report.SharedDayReserved) != nil {
 		t.Fatal("shared day reservation evidence unavailable")
 	}
-	if f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&attempts) != nil || attempts > 12 || report.SharedDayReserved.ModelTurns > 12 {
+	if f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&attempts) != nil || attempts > nativeDelegationTotalAttemptCap || attempts-nativeDelegationPriorAttempts > nativeDelegationAttemptCap || report.SharedDayReserved.ModelTurns > 12 {
 		t.Fatal("experiment exceeded shared attempt bound")
 	}
 	report.Status = "passed"

@@ -47,4 +47,4 @@ go test -json -race -run "^TestDelegation(Preparation|Recovery|Context|Accepted)
 go test -json -race -run "^TestNativeDelegationZeroInferenceRecoveryDiagnosisIntegration$" -count=1 -timeout=120s ./apps/orchestrator/internal/app' > "$proof/tests.jsonl" || status=$?
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
 [[ "$status" == 0 ]] || exit "$status"
-printf '{"status":"diagnosis_passed","native_attempts":0}\n'
+printf '{"status":"diagnosis_passed","new_native_attempts":0,"historical_native_attempts":3,"total_native_attempts":3}\n'

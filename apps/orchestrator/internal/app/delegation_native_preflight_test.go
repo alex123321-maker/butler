@@ -111,7 +111,7 @@ func TestNativeDelegationBrokerPreflightWithoutInferenceIntegration(t *testing.T
 		t.Fatal("actual durable preflight receipt invalid")
 	}
 	var attempts int
-	if f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&attempts) != nil || attempts != 0 {
+	if f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&attempts) != nil || attempts != nativeDelegationPriorAttempts {
 		t.Fatal("preflight performed inference")
 	}
 	var n int

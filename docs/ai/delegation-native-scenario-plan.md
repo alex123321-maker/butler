@@ -1,10 +1,13 @@
 # Opt-in native delegation experiment
 
-Reviewable opt-in preparation for issue16; no native inference has been run by
-this scenario yet. The composed production admission/readiness baseline is
+Reviewable opt-in preparation for issue16. The previous coordinated native
+experiment failed after three requests; its immutable report and nullable usage
+are retained below. A new experiment remains unexecuted and requires a separately
+reviewed immutable delta and explicit coordinated window. The composed
+production admission/readiness baseline is
 `e7ca93e961f6250f66f7ca60142071044f03196f`, with the private-client ambient-proxy
-denial fixes `d500847` and `25d9c75`. Execution waits for review of the
-immutable runner delta and the operator's coordinated lab window. An unset
+denial fixes `d500847` and `25d9c75`, followed by accepted-input verifier
+`2233c85`. An unset
 opt-in is a visible skip, never acceptance. Component PG/Broker evidence remains
 separate from the pending model experiment.
 
@@ -21,8 +24,9 @@ ancestor bodies or any tool permission. Candidate contract text is Catalog DATA.
 Expected native requests per width are three parent turns (two admissions and a
 receipt-only final) and one turn per child. A durable fixture counter reserves each
 Start/Continue/Submit attempt before forwarding to the actual provider, including
-requests interrupted by process loss. Its global cap is twelve across both
-widths/restarts; it never deduplicates away an attempted request. Production
+requests interrupted by process loss. Its total cap is fifteen: three immutable
+historical attempts plus at most twelve new attempts across both widths/restarts;
+it never deduplicates away an attempted request. Production
 root/delegation/owner-day budgets remain independently enforced. No automatic
 retry, model fallback, paid overage, other inference or extra quota probe runs.
 
@@ -69,14 +73,18 @@ PG or the read-only import file. Refresh traffic, if necessary, is authenticatio
 traffic, not an extra inference/fallback. Its credential rotation is an operator
 workflow concern to review before the single coordinated experiment.
 
-`scripts/dev/delegation-native-lab.sh ROOT prepare` runs six zero-inference
+`scripts/dev/delegation-native-lab.sh ROOT prepare` runs eight zero-inference
 PG/race groups and compiles both real process harnesses. A separate no-network
 probe runs the private-file test as the actual runtime UID10001 under its
 read-only root. These groups verify the
-16-contender durable cap, reconstruction denial, strict objective checker, private
+16-contender remaining-twelve cap with a three-attempt carryover, immutable
+baseline mismatch/reconstruction denial, all three method charges before invalid
+request rejection, strict objective checker, private
 runtime-file guards, encrypted synthetic import, authentic owner scope and real
 Broker → private admission → durable receipt under the exact finite policy.
-This preflight has no model provider. Only after review, `execute` additionally
+This preflight makes no inference or credential refresh request. The method-charge
+test uses an uninitialized native provider with no HTTP client or auth source and
+invalid requests that synchronously fail validation. Only after review, `execute` additionally
 requires explicit `BUTLER_DELEGATION_NATIVE_ACCEPTANCE=1` and a 40-character
 `BUTLER_DELEGATION_NATIVE_RELEASE` artifact reference. It runs once; a nonzero
 outcome is recorded and never retried. Runtime UID10001 has a read-only root,
@@ -100,7 +108,7 @@ Reports separate conservative reservations from nullable actual usage metadata.
 | Parent process loss | Kill completed parent executor with real gated accepted child claims; await real TTL | Pending actual process-loss run |
 | Independent/conflicting results | Strict fixed source/value/date/citation check, separate final/report refs; owner Accept denied without independent persisted verification | Pending actual results |
 | Stop/amend/delete | Actual owner controls and Catalog deletion after finals, current historical-source/manager checks | Pending metadata barriers; no late native callback injection claim |
-| Shared budgets/restarts | Durable pre-call cap twelve; real root/delegation/mandate/day ledgers and actual usage | Cap and finite Broker policy passed; model usage pending |
+| Shared budgets/restarts | Historical three pinned, at most twelve new calls/total fifteen; independent real root/delegation/mandate/day scopes remain twelve and usage is separate | Cap and finite Broker policy passed; model usage pending |
 | One loaded local model rather than per-agent weights | Cloud internals cannot be observed by this runner | Separate shared local service evidence required; no cloud-weight claim |
 | Arbitrary mid-native crash, blocked child historical report bridge | Outside this narrowly scheduled experiment | Pending separate evidence; never synthetic PASS |
 
@@ -200,3 +208,35 @@ SHA256 `3164f43494db65981c18e1c96ee3783b0aa39f9c0b26b8224b18be81515e43a7`.
 native auth or inference. This diagnosis spent zero new native requests; the
 failed actual experiment still records three. A provider-entry regression PASS
 does not replace the failed native run or establish delegation acceptance.
+
+## Prepared historical accounting
+
+The next runner's fixture ledger starts at three and pins the exact failed report
+SHA256 `28c75c31827f8a25ca8ed101e6e04b8264a7e66ee9ce18808d504d5af748c8f0`.
+Missing, altered or symlinked baseline artifacts fail before import/inference.
+Its immutable metadata records prior three, ceiling fifteen and remaining twelve;
+the counter cannot decrease. Every attempted Start/Continue/Submit revalidates
+the public baseline and commits a single pre-call CAS plus content-free attempt
+record. Reconstruction cannot reset the counter. New attempt ordinals start at
+four, distinguishing this experiment from historical observations.
+
+New reports expose total and new attempt counts, maximum twelve new/fifteen total,
+the separate historical report/status/release and its original nullable usage,
+plus new attempt and usage rows. Null historical usage remains unavailable; it is
+never zero or part of the new fixture's measured scope reservations. Root/day/
+mandate budgets in the new schema remain finite at their existing twelve-turn
+allowance. Historical spending is an additional test accounting baseline, not a
+production budget expansion or a claim that the failed experiment passed.
+
+The implementation and preparation checks do not authorize execution. No new
+actual native request followed the failed three-request experiment.
+
+Preparation on snapshot `20261011-101353-330` passed eight PG/race groups and five
+baseline-denial subtests, then the no-network read-only UID10001 file/baseline
+probe. Sixteen synthetic counter contenders obtained exactly twelve new slots;
+persisted total fifteen included the immutable prior three. Invalid native entry
+method requests were charged and failed before network entry. The real Broker /
+ordinary-worker zero-inference diagnosis passed all seven groups and 21 subtests
+again with that carryover present. No failure or skip was observed. Evidence
+hashes and explicit simulated-versus-actual accounting are recorded in
+`deploy/delegation/native-carryover-preparation.json`.

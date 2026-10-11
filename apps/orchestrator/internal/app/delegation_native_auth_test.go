@@ -26,6 +26,9 @@ func nativeFixtureProvider(ctx context.Context, pool *pgxpool.Pool, importPath, 
 	if pool == nil || limit == nil || limit.pool != pool {
 		return nil, errNativeFixtureDenied
 	}
+	if _, err := readNativeHistory(nativeHistoryPath()); err != nil {
+		return nil, err
+	}
 	key, err := privateNativeFixtureKey(keyPath)
 	if err != nil {
 		return nil, err
@@ -172,7 +175,7 @@ func TestNativeDelegationEncryptedFixtureImportWithoutInferenceIntegration(t *te
 		t.Fatal("restart depended on the old import")
 	}
 	var attempts int
-	if pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&attempts) != nil || attempts != 0 {
+	if pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&attempts) != nil || attempts != nativeDelegationPriorAttempts {
 		t.Fatal("credential preparation spent a native attempt")
 	}
 }

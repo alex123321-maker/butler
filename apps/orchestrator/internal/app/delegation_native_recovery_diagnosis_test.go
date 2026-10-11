@@ -295,7 +295,7 @@ func TestNativeDelegationZeroInferenceRecoveryDiagnosisIntegration(t *testing.T)
 			evidence := map[string]any{"case": name, "input_status": status, "error_code": code, "reason_categories": nativeDiagnosisReasons(message), "error_sha256": hex.EncodeToString(hash[:]), "run_state": runState, "task_state": taskState, "provider_spy_entries": spy.entries.Load(), "native_attempts": 0, "context_reader_entered": reader.entered.Load(), "catalog_check_denied": reader.catalogDenied.Load(), "mark_executing_denied": reader.markDenied.Load()}
 			t.Log(string(nativeJSON(evidence)))
 			var nativeAttempts int
-			if f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&nativeAttempts) != nil || nativeAttempts != 0 {
+			if f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&nativeAttempts) != nil || nativeAttempts != nativeDelegationPriorAttempts {
 				t.Fatal("diagnosis attempted native inference")
 			}
 			// Initially this assertion exposes the real pre-provider denial. After
