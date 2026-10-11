@@ -15,7 +15,8 @@ current assignment; no configured arbitrary mandate can override it. Exact task
 mandates retain their private operator API.
 
 Authority release deadlines clamp grants/model/runtime contexts to the earliest
-goal, purpose-policy, mandate or active-hours boundary. They do not reset the
+goal, purpose-policy, mandate or active-hours boundary. Exact-action grants also
+retain the verified approval expiry through dispatch waits. They do not reset the
 immutable budget period. Same-transaction DB-time checks after budget waits
 deny expired dispatch/model/child admission before permission is spent.
 
@@ -26,3 +27,5 @@ See [action authorization](../../docs/architecture/action-authorization-contract
 Unit tests and isolated PostgreSQL suites cover hashes, exact scopes,
 credentials, lease/task/owner changes, authority revocation, single dispatch,
 uncertain effects and conservative shared reservations.
+An actual PostgreSQL authority-row wait past a short exact approval deadline
+denies claim without spending the grant or writing a dispatch record.

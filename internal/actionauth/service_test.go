@@ -172,6 +172,25 @@ func TestAuthorizationFailureClosed(t *testing.T) {
 		})
 	}
 }
+
+func TestApprovedGrantCannotOutliveExactApproval(t *testing.T) {
+	s, store, reader, _, call, contract := fixture(t)
+	p, err := s.Prepare(context.Background(), call, contract)
+	if err != nil {
+		t.Fatal(err)
+	}
+	at := s.now()
+	until := at.Add(5 * time.Second)
+	reader.approved = ApprovalSnapshot{ApprovalID: "approval", Status: "approved", Binding: p.Binding, ExpiresAt: until, ResolvedAt: at}
+	g, err := s.Authorize(context.Background(), call, contract, p.Binding.ActionID, "approval", "")
+	if err != nil || !g.ExpiresAt.Equal(until) || !store.grants[g.ID].ExpiresAt.Equal(until) {
+		t.Fatal("private grant widened the verified approval deadline", g, err)
+	}
+	s.now = func() time.Time { return until }
+	if _, err = s.Verify(context.Background(), call, contract, g.ID); err == nil {
+		t.Fatal("expired exact approval retained dispatch permission")
+	}
+}
 func TestExactApprovedActionRejectsChangedAuthority(t *testing.T) {
 	for _, test := range []struct {
 		name   string
