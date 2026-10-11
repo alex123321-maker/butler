@@ -198,3 +198,17 @@ review and the normal durable input/Stop contracts belong to the separate caller
 All three profiles remain disabled until their caller and real quality/resource
 acceptance are complete. The evaluation catalog enables only those three optional
 profiles; it must be deliberately staged and then removed by the operator.
+
+On cgroup v2, RAM admission bounds host `MemAvailable` by the hard
+`memory.max` headroom plus clean `inactive_file` cache. Required `memory.stat`
+keys are validated by name; missing, malformed, duplicate or impossible counts
+deny admission. Credit is bounded by both `file` and `memory.current`, and all
+`file_dirty` plus `file_writeback` bytes are conservatively deducted from inactive
+cache. Anonymous and active file memory remain fully charged. This estimates
+reclaimable cache, not guaranteed future availability: the 8 GiB container cap,
+6 GiB process-RSS policy, 512 MiB reserve and shared atomic lane reservations
+still apply. No cache flushing is performed. The accounting follows the
+[kernel cgroup v2 counters](https://docs.kernel.org/admin-guide/cgroup-v2.html)
+and the [Docker inactive-file accounting convention](https://docs.docker.com/reference/cli/docker/container/stats/),
+with an additional conservative dirty/writeback subtraction. Earlier voice
+attempts rejected under raw cgroup charges remain recorded as resource refusals.

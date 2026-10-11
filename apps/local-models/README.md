@@ -58,6 +58,9 @@ RAM defaults to 6144 MiB with 512 MiB reserve; configure with
 `BUTLER_LOCAL_MODELS_RAM_BUDGET_MIB`/`BUTLER_LOCAL_MODELS_RAM_RESERVE_MIB`.
 Profiles require full-process peak RAM allowances; both lanes share an atomic
 admission gate and sample total service RSS, host availability and cgroup headroom.
+The latter credits only validated clean inactive file cache, subtracting dirty and
+writeback bytes; missing or inconsistent counters deny admission. Hard container
+and RSS limits and reservations remain in force; this performs no cache flush.
 
 `/health` reports worker paths/backend availability; model availability is checked
 per request against pinned metadata. `/metrics` has request/failure/queue/fallback,

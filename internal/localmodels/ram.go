@@ -57,10 +57,64 @@ func (p ProcMemory) SnapshotRAM(ctx context.Context) (RAMStatus, error) {
 			if err1 != nil || err2 != nil || now >= maximum {
 				return RAMStatus{}, fault(Resources)
 			}
-			available = min(available, (maximum-now)/1024)
+			stat, statErr := os.ReadFile("/sys/fs/cgroup/memory.stat")
+			if statErr != nil {
+				return RAMStatus{}, fault(Resources)
+			}
+			headroom, e := cgroupHeadroom(maximum, now, stat)
+			if e != nil {
+				return RAMStatus{}, e
+			}
+			available = min(available, headroom/1024)
 		}
 	}
 	return RAMStatus{UsedMiB: uint32((used + 1023) / 1024), AvailableMiB: uint32(available / 1024)}, nil
+}
+
+// Only clean inactive filesystem cache is reclaimable for admission. Active
+// cache, anonymous memory, shared memory and dirty/writeback pages stay charged.
+// The kernel's hard memory.max still applies, and process RSS is capped separately.
+func cgroupHeadroom(maximum, current uint64, raw []byte) (uint64, error) {
+	if current >= maximum {
+		return 0, fault(Resources)
+	}
+	values := map[string]uint64{}
+	for _, line := range strings.Split(string(raw), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) == 0 {
+			continue
+		}
+		switch fields[0] {
+		case "file", "inactive_file", "file_dirty", "file_writeback":
+		default:
+			continue
+		}
+		if len(fields) != 2 {
+			return 0, fault(Resources)
+		}
+		if _, duplicate := values[fields[0]]; duplicate {
+			return 0, fault(Resources)
+		}
+		n, e := strconv.ParseUint(fields[1], 10, 64)
+		if e != nil {
+			return 0, fault(Resources)
+		}
+		values[fields[0]] = n
+	}
+	for _, key := range []string{"file", "inactive_file", "file_dirty", "file_writeback"} {
+		if _, ok := values[key]; !ok {
+			return 0, fault(Resources)
+		}
+	}
+	file, inactive, dirty, writeback := values["file"], values["inactive_file"], values["file_dirty"], values["file_writeback"]
+	if file > current || inactive > file || dirty > file || writeback > file || dirty > file-writeback {
+		return 0, fault(Resources)
+	}
+	// Dirty/writeback totals can include active pages; subtracting both from
+	// inactive cache deliberately underestimates clean reclaimable memory.
+	unclean := dirty + writeback
+	clean := inactive - min(inactive, unclean)
+	return maximum - current + clean, nil // clean<=current, so no overflow or extra cap.
 }
 func procKiB(data, key string) uint64 {
 	for _, line := range strings.Split(data, "\n") {
