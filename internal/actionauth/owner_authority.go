@@ -275,6 +275,16 @@ func ValidateOwnerMandate(m Mandate, now time.Time) error {
 			}
 		}
 	}
+	if len(m.Converters) > 8 {
+		return ErrOwnerAuthority
+	}
+	seenConverters := map[string]bool{}
+	for _, p := range m.Converters {
+		if p.Validate() != nil || seenConverters[p.ConverterID] || !contains(m.Tools, "converter."+p.ConverterID+".convert") {
+			return ErrOwnerAuthority
+		}
+		seenConverters[p.ConverterID] = true
+	}
 	return nil
 }
 

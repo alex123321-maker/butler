@@ -11,6 +11,11 @@ directories. It exposes no filesystem or shell tool. Production use requires
 current resource leases, budgets, provenance and Broker admission; an uncertain
 filesystem/PG boundary blocks instead of replaying a patch.
 
+[Bounded generated converters](generated-converters.md) define the first pure
+self-development IR and independent runtime checks. Its package/test/permission
+foundation is implemented; catalog/task admission remains a separate pending gate.
+No generated converter currently becomes a production capability from a test alone.
+
 Current execution policy is defined by
 [exact action authorization](action-authorization-contract.md): the complete
 action, current contract/resource/task versions and credential metadata are

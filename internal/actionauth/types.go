@@ -135,6 +135,7 @@ type Mandate struct {
 	Intervention        []string              `json:"intervention,omitempty"`
 	Reporting           string                `json:"reporting,omitempty"`
 	Extensions          []ExtensionPermission `json:"extensions,omitempty"`
+	Converters          []ConverterPermission `json:"converters,omitempty"`
 	Source              map[string]string     `json:"source,omitempty"`
 	ID                  string                `json:"mandate_id"`
 	OwnerID             string                `json:"owner_id"`
