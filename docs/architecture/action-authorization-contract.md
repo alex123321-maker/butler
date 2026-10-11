@@ -41,8 +41,10 @@ may be refreshed; a dispatched grant cannot be refreshed.
 Prepare/authorize/execute RPCs require a private service token. Knowing `run_id`
 cannot impersonate a worker. Read-only catalog inspection remains available.
 Both gRPC and private HTTP tokens come from a mounted secret file. HTTP
-authority calls reject redirects, bound response size and time out after three
-seconds. Failures deny actions. The baseline uses the trusted Compose backend
+authority calls use a direct transport without ambient provider proxies, reject
+redirects, bound response size and time out after three seconds. Private
+delegation admission uses the same direct-connection rule. Failures deny actions.
+The baseline uses the trusted Compose backend
 network; externally exposed deployments must use encrypted transport.
 
 ## Effects and autonomy

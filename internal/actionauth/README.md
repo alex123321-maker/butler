@@ -6,6 +6,10 @@ mandates, action bindings, approvals, grants or lease fences. Prepared intents
 bind exact canonical arguments, contract/resource/credential metadata and task
 versions. Grants are claimed once at the durable effect boundary.
 
+Private HTTP context reads use a direct transport with no ambient proxy and
+reject redirects. Provider proxy configuration cannot reroute service tokens
+or trusted owner/task context through an external proxy.
+
 Broad owner authority is authored only by the authenticated Orchestrator goal
 module. `CheckTaskAuthorityTx` and `CheckTaskActionTx` run after the caller locks
 current ownership/run/task, then lock mandate/goal/purpose-policy. Dispatch,
