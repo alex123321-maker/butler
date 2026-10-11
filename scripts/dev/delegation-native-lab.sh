@@ -7,6 +7,13 @@ phase=${2:-prepare}
 [[ "$phase" == prepare || "$phase" == execute ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/apps/orchestrator/internal/app/delegation_native_scenario_test.go" ]] || exit 2
+if [[ "$phase" == execute && ( -e "$source_dir/deploy/delegation/native-scenario-third-failed.json" || -L "$source_dir/deploy/delegation/native-scenario-third-failed.json" ) ]]; then
+  # Fixed public artifact presence closes the reviewed baseline5 window before
+  # any auth metadata, Docker process, import, proxy or provider entry. It cannot
+  # authorize a fresh allowance or silently reset the observed nine attempts.
+  printf '{"status":"denied","reason":"native_window_completed_history_superseded","new_native_attempts":0,"historical_observed_native_attempts":9}\n'
+  exit 2
+fi
 export DOCKER_CONFIG="$root/.cache/docker"
 if [[ "$phase" == execute ]]; then
   if [[ ${BUTLER_DELEGATION_NATIVE_ACCEPTANCE:-} != 1 ]]; then

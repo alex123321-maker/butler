@@ -14,7 +14,7 @@ provider outcomes are distinct from successful native research.
 | Accept/reject and uncertainty | Actual exact owner verification accepts only the current final; forged action counts/evidence/units and unverified acceptance fail; partial final retains limitations; unknown/failed/timed-out history remains immutable | No general two-research contradiction resolver has been proved. Active partial-final collection is distinct from the pending read-only blocked-attempt collection bridge |
 | Restricted authority and shared budgets | Current inflight Broker admission plus immutable061 lifecycle snapshot, empty permissions, exact scope/deadline/source pins; root/delegation/mandate/day finite reservations, widening and cycle denial | Reservation totals are not measured tokens, invoice or evidence of successful research |
 | Stop and stale contracts | Real Controller stop versus admission/Collect and actual approved-grandchild ClaimGrant denial; spent earlier effects/immutable finals remain; stale revisions/source rights and clock expiry after actual lock waits deny later writes | Post-final native metadata controls have not run; arbitrary late native callback injection is outside the scheduled fixture |
-| Parent process loss | Durable lifecycle and selected source read succeed after actual parent run completion/lease expiry without borrowing its lease. First native attempt performed actual completed-parent executor SIGKILL and waited real child-claim TTL | That native recovery stopped before a child model request; successful restarted-child completion is pending |
+| Parent process loss | Durable lifecycle and selected source read succeed after actual parent run completion/lease expiry without borrowing its lease. First and final native windows performed completed-parent executor SIGKILL and waited real child-claim TTL; final window reached a recovered child's native Start | That child failed transport without a final; successful restarted-child completion is pending |
 | Shared local model service | Existing actual auxiliary GPU/CPU artifacts prove serialized shared lanes, reusable workers, parallel index/search and three source/job/live-admitted calls on the same deployed service | These are auxiliary embedding/ranking contexts, not delegated local-generative research; cloud internal weight loading is unobservable |
 
 ## Exact evidence references
@@ -72,7 +72,7 @@ acceptance or measurements of a cloud provider's internals.
 
 ## Native evidence is still failed
 
-Both FAILED artifacts remain byte-for-byte immutable:
+All three FAILED artifacts remain byte-for-byte immutable:
 
 - `native-scenario-failed.json`, SHA256
   `28c75c31827f8a25ca8ed101e6e04b8264a7e66ee9ce18808d504d5af748c8f0`:
@@ -83,13 +83,23 @@ Both FAILED artifacts remain byte-for-byte immutable:
   two additional attempted requests; parent stopped before two admissions.
   Exact lower-level cause unknown; original schema diagnostics were not exported
   before its cleanup. The later scripted diagnostics cannot reconstruct it.
+- `native-scenario-third-failed.json`, SHA256
+  `b7a4b35b7b587fb8f0561cbdb18f5ad8088b7939e673ffa290e06ec10410b89b`:
+  four further attempted requests; actual completed-parent SIGKILL, real claim
+  expiry and one recovered-child native Start. Child transport failed; width2,
+  independent checks and post-final controls did not run. Fixed persisted
+  classes were exported after workers stopped and before schema cleanup;
+  lower-level cause remains unknown.
 
-Historical attempts total five. One usage pair is observed(input5526/output101);
-four are unavailable(null), never zero. The current opt-in fixture pins both
-files before import and every native-entry reservation, starts at five and has
-twelve new slots/total ceiling seventeen. Production scopes remain twelve.
-`native-five-attempt-preparation.json` records only zero-inference verification.
-The old baseline3/ceiling15 applied solely to the second completed FAILED window.
+Historical attempts now total nine. Two usage pairs are observed: input5526/
+output101 and input6244/output89. Seven are unavailable(null), never zero. The
+known subset11770input/190output is not the complete token total. The reviewed
+baseline5/new12/ceiling17 applied only to the completed final window; production
+scopes stayed twelve. The fixed third artifact now makes the current script's
+execute entry refuse before authentication metadata or Docker. It cannot silently
+reset history or grant fresh calls. `native-five-attempt-preparation.json` remains
+zero-inference evidence at preparation time. The old baseline3/ceiling15 applied
+solely to the second completed FAILED window.
 
 No further model execution is authorized by this document. The proposed narrow
 window in `delegation-native-scenario-plan.md` requires a separately reviewed

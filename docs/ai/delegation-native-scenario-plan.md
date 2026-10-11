@@ -3,8 +3,9 @@
 Reviewable opt-in preparation and failed execution evidence for issue16. The
 first coordinated native experiment failed after three requests. The separately
 reviewed follow-up failed after two new requests, retaining all five attempted
-requests and their separate nullable usage. Both immutable reports are retained
-below. No successful width-one/width-two comparison or issue closure is
+requests and their separate nullable usage. The final separately approved
+window failed after four more requests, bringing historical attempts to nine.
+All three immutable reports are retained below. No successful width-one/width-two comparison or issue closure is
 established. Any further native execution needs another explicit review and
 coordinated window. The composed
 production admission/readiness baseline is
@@ -342,9 +343,9 @@ observability of intentionally scripted boundaries, with zero new native calls.
 They do not recover the discarded original schema, identify the unknown native
 failure, prove successful children, or establish the required native comparison.
 
-## Current five-attempt ledger and remaining coordinated window
+## Reviewed five-attempt ledger, now completed
 
-The active fixture pins both original FAILED files by exact SHA256 and release:
+The fixture reviewed for the completed final window pins both original FAILED files by exact SHA256 and release:
 the first report contributes three attempts, the second contributes only its two
 new attempts. Its nested historical three are checked for exact equality and
 never counted again. Five original usage records remain separate from new usage:
@@ -372,7 +373,7 @@ Event SHA256 is
 `39b895df9443cd63461dc8475eacb86593450491e615a53e811895dc69f3682e`.
 These are zero new native requests; the five historical requests remain failed.
 
-No further execute window has been authorized at this preparation stage.
+No further execute window was authorized at this preparation stage.
 After explicit review of an immutable release and coordinated inference window,
 the only proposed execution is one invocation of the existing runner: widths1
 then2, the same selected synthetic sources/prompt/finite scopes, three parent
@@ -390,3 +391,65 @@ Even a successful invocation cannot by itself close issue16: delegated local
 generative contexts, actual contradictory research resolution and the blocked
 attempt report bridge are not established. The consolidated current evidence
 and remaining gates are in `docs/ai/delegation-current-evidence.md`.
+
+## Final coordinated window and handoff
+
+The separately reviewed single invocation of release
+`38e3b87353cd3fbf25fb90e77fcf76b83a4ac09d`, immutable snapshot
+`20261011-105350-914`, **failed**. Clean local HEAD, all recorded source hashes,
+both prior failed artifact hashes and the metadata-only UID10001 import gate
+passed before the experiment. Main services, proxy and model settings were
+unchanged. No retry, fallback, corrective generation or extra probe followed.
+
+The real parent attempted StartRun and two tool-result continuations, committed
+two exact admissions and an unverified final, then its scheduling-gated executor
+was SIGKILLed. After waiting for the actual input claim expiry, a restarted
+ordinary worker prepared the selected first child and attempted a real native
+StartRun. That child stopped with persisted `transport_error`/`execution_stopped`
+classes; no child final was produced. The lower-level provider/guard cause is
+unknown. This is progress past the original key-verifier boundary, not successful
+recovery, a reproduction of the second failure, or evidence that a guessed
+timeout/capacity change fixes it.
+
+The exact report is `deploy/delegation/native-scenario-third-failed.json`,
+SHA256 `b7a4b35b7b587fb8f0561cbdb18f5ad8088b7939e673ffa290e06ec10410b89b`.
+Private proof:
+`/srv/storage/butler/agents/durable-tasks/reports/delegation-native-execute-20261011T035712Z-3523787`.
+Native event SHA256:
+`fd409cff979cca4490840813c6742b23d9ec7af1e4262bb9ade00f2b0c85aa51`.
+
+| Observation | Actual evidence | Limit |
+| --- | --- | --- |
+| Attempt accounting | Four new ordinals6–9; prior five retained; total nine | One completed window only; unused allowance is not authorization for another run |
+| Parent/process loss | Two confirmed admission effects, parent final and actual SIGKILL;49,539ms real claim TTL remained | No arbitrary mid-native crash assertion |
+| Child recovery | One recovered child reached actual native Start after TTL | Failed transport; no successful child source/result check |
+| Timing | Failed width1 elapsed72,501ms | Width2 and single/parallel comparison did not run |
+| Usage | New parent final observed input6244/output89; three new records null | Across all nine attempts only two usage pairs known, seven unavailable; known subset11770input/190output is not a complete total |
+| Diagnostic state | Owning workers stopped; bounded read-only snapshot captured before cleanup, available=true; two inputs/two runs/six source pins/two confirmed actions/one final | Only fixed persisted classes, no provider body/error message or exact lower-level cause |
+| Remaining phases | Independent observations, receipt checker and post-final stop/amend/delete flags unperformed | False/empty report fields are not passed controls |
+
+The scheduled kill occurs before `core.Execute` for children, so it leaves no
+prepared child run/source pins. For a complete widths1+2 execution, the projected
+maximum source pins are sixteen: four per parent and two per child. The expected
+counts are input/run/ownership/task/authority/final6 each, delegation/action/tool4
+each, model10(expected) with hard12. The existing fixed16/category and64KiB
+audit limits remain unchanged; overflow is unavailable, never truncated PASS.
+The actual failed snapshot fit those limits and survived before-cleanup export.
+
+`deploy/delegation/native-third-failure-audit.json` records nullable accounting
+and exact missing phases. The baseline5/ceiling17 runner applied only to this
+completed reviewed window. Current script execution refuses when the fixed
+public third-failure artifact exists, before any Docker/auth/proxy/provider entry,
+with the content-free `native_window_completed_history_superseded` reason.
+An actual lab refusal check on snapshot `20261011-110251-904` set the opt-in
+explicitly and placed a denying Docker sentinel first in the subprocess PATH.
+The script returned2 with the fixed reason, empty stderr and no sentinel entry;
+authentication metadata, import, proxy and provider were never entered.
+Private proof:
+`/srv/storage/butler/agents/durable-tasks/reports/delegation-native-refusal-20261011T040255Z-3555968`;
+result SHA256 `d8f93ddee050236f634de7ea307407ac499f7852cc1b8e269bccc7c6dfa14652`.
+No further native window is authorized; the historical fixture tests do not
+grant another allowance. Any future chat must review an immutable history pin
+that includes this third FAILED artifact and the now-observed nine attempts.
+Issue16 remains open with the precise gates in `delegation-current-evidence.md`.
+No new issue or additional functionality is started by this handoff.
