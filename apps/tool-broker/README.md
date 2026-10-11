@@ -1,5 +1,15 @@
 # Tool Broker
 
+Workspace execution has an exact optional Server/router adapter in
+`internal/broker/workspaces.go`: canonical create/read/write DATA contracts,
+same-transaction current input/source/worker/budget/resource admission and one-use
+private runtime metadata. `ResourceAdmissions` prevents workspace and browser
+guards from substituting for each other. Task discovery/preparation requires
+current `workspace_ready`; the application does not yet register these tools or
+set owning readiness. The actual Broker/runtime/files acceptance is described in
+[workspace dispatch](../../docs/ai/workspace-dispatch-acceptance.md). Production
+bootstrap and owner reconciliation remain pending.
+
 Optional operator-only `BUTLER_MEMORY_CANDIDATE_ENABLED` registers the canonical
 local `memory.propose_candidate` control after exact authorization/permanent
 dispatch/shared budgets. It requires PostgreSQL, private action authority and a

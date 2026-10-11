@@ -1,5 +1,17 @@
 # Exact action authorization
 
+Canonical workspace DATA tools require current owning workspace readiness and
+the original accepted-input claim pinned privately to the grant. Their immutable
+operation/body/path/file snapshot and source context are joined to shared budget
+and exact resource admission on the permanent action transaction. A private
+one-use ticket reaches only the authenticated workspace runtime; actual physical
+confirmation precedes local completion. Source/input/task expiry and stale file
+CAS deny admission without partially spending a grant or budget. Lost responses
+remain unknown and stop further non-read dispatch in the task tree. No model
+argument supplies a filesystem root, credential, authority or evidence verdict.
+See [workspace composition](isolated-code-workspaces.md); application rollout
+and owner reconciliation remain separate pending gates.
+
 Optional owning `memory.propose_candidate` is a local prepare control. Current
 task/private composition readiness and the original accepted-input claim are
 required in addition to exact policy authorization, permanent dispatch and shared

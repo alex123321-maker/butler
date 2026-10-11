@@ -192,7 +192,7 @@ func BuildBinding(actionID string, call *toolbrokerv1.ToolCall, contract *toolbr
 		return ActionBinding{}, "", err
 	}
 	binding := ActionBinding{ActionID: actionID, RunID: call.GetRunId(), ToolCallID: call.GetToolCallId(), ToolName: call.GetToolName(), ContractHash: contractHash, ContractRevision: contract.GetContractRevision(), ArgsHash: digest(args), Resource: resource, CredentialRefs: refs, TaskID: context.TaskID, TaskRevision: context.TaskRevision, ConstraintsRevision: context.ConstraintsRevision, OwnerID: context.OwnerID, Effect: classifyEffect(call.GetToolName(), object)}
-	if call.GetToolName() == "single_tab.bind.guarded" || call.GetToolName() == "memory.propose_candidate" {
+	if call.GetToolName() == "single_tab.bind.guarded" || call.GetToolName() == "memory.propose_candidate" || strings.HasPrefix(call.GetToolName(), "workspace.") {
 		if len(context.InputClaimHash) != 64 {
 			return ActionBinding{}, "", fmt.Errorf("current owning input claim required")
 		}
@@ -317,6 +317,14 @@ func normalizeRefs(refs []CredentialRef) []CredentialRef {
 	return result
 }
 func actionResource(tool string, args map[string]any) (string, error) {
+	if tool == "workspace.read" || tool == "workspace.write" {
+		id, _ := args["workspace_id"].(string)
+		decoded, err := hex.DecodeString(id)
+		if err != nil || len(decoded) != 16 || hex.EncodeToString(decoded) != id {
+			return "", fmt.Errorf("exact opaque workspace identity is required")
+		}
+		return "workspace:" + id, nil
+	}
 	raw, _ := args["url"].(string)
 	if strings.HasPrefix(tool, "browser.") {
 		if observed, _ := args["expected_url"].(string); observed != "" {
@@ -343,6 +351,10 @@ func actionResource(tool string, args map[string]any) (string, error) {
 }
 func classifyEffect(tool string, args map[string]any) Effect {
 	switch tool {
+	case "workspace.read":
+		return EffectRead
+	case "workspace.create", "workspace.write":
+		return EffectPrepare
 	case "http.request":
 		method, _ := args["method"].(string)
 		method = strings.ToUpper(method)

@@ -13,6 +13,7 @@ import (
 	"github.com/butler/butler/internal/extensions"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/generatedtools"
+	"github.com/butler/butler/internal/workspaceexec"
 )
 
 // TaskCatalog uses the same private live projection as action authorization.
@@ -65,6 +66,9 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 	terms := strings.Fields(strings.ToLower(query))
 	result := []*toolbrokerv1.ToolContract{}
 	for _, contract := range c.Registry.List("", false) {
+		if workspaceexec.Protected(contract.GetToolName()) && (a.TaskID == "" || !a.WorkspaceReady || !workspaceexec.ExactContract(contract)) {
+			continue
+		}
 		if c.GuardedTabOnly && strings.HasPrefix(contract.GetToolName(), "browser.") {
 			continue
 		}

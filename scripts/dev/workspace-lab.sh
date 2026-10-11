@@ -3,7 +3,7 @@
 set -euo pipefail
 root=${1:?isolated agent root required}
 mode=${2:-all}
-[[ "$mode" == all || "$mode" == provenance ]] || exit 2
+[[ "$mode" == all || "$mode" == provenance || "$mode" == contracts || "$mode" == broker ]] || exit 2
 [[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/migrations/060_isolated_code_workspaces.up.sql" ]] || exit 2
@@ -13,6 +13,20 @@ name="butler-workspace-$run_id"
 network="$name-net"
 umask 077
 mkdir -p "$proof/postgres" "$root/.cache/workspace-tmp"
+if [[ "$mode" == contracts ]]; then
+  export DOCKER_CONFIG="$root/.cache/docker"
+  printf 'Offline workspace contract proof: %s\n' "$proof"
+  docker run --rm --runtime runc --user "$(id -u):$(id -g)" --network none \
+    --memory 1536m --pids-limit 128 --cpus 2 --security-opt no-new-privileges:true \
+    --volume "$source_dir:/src:ro" --volume /srv/storage/butler/.cache:/cache --workdir /src \
+    --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp \
+    golang:1.27.2-bookworm go test -json -race -count=1 \
+      -run '^(TestWorkspaceContractsKeepOnlyDataAndFileCAS|TestWorkspaceGrantPinsOriginalInputAndUnavailableReadiness)$' \
+      ./internal/workspaceexec ./internal/actionauth > "$proof/tests.jsonl"
+  sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
+  printf 'Workspace contracts and original-input admission tests passed.\n'
+  exit 0
+fi
 created_network=false
 created_pg=false
 cleanup() {
@@ -47,7 +61,8 @@ docker run --rm --runtime runc --user "$(id -u):$(id -g)" --network "$network" -
   --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp --env TMPDIR=/private-tmp \
   --env 'BUTLER_TEST_POSTGRES_URL=postgres://fixture:workspace-fixture@workspace-postgres:5432/butler_workspace_test?sslmode=disable' \
   --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:workspace-fixture@workspace-postgres:5432/butler_workspace_test?sslmode=disable' \
+  --env 'BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=postgres://fixture:workspace-fixture@workspace-postgres:5432/butler_workspace_test?sslmode=disable' \
   --env WORKSPACE_PROOF_MODE="$mode" \
-  golang:1.27.2-bookworm bash -c 'packages="./internal/workspaceexec"; if [[ "$WORKSPACE_PROOF_MODE" == all ]]; then packages="$packages ./internal/workspace ./internal/memory/catalog"; fi; go test -json -race -count=1 -timeout=120s $packages && go vet $packages' > "$proof/tests.jsonl"
+  golang:1.27.2-bookworm bash -c 'packages="./internal/workspaceexec"; filter="."; if [[ "$WORKSPACE_PROOF_MODE" == broker ]]; then packages="$packages ./apps/tool-broker/internal/broker ./apps/tool-broker/internal/runtimeclient"; filter="^(TestWorkspace|TestResourceAdmissions)"; fi; if [[ "$WORKSPACE_PROOF_MODE" == all ]]; then packages="$packages ./internal/workspace ./internal/memory/catalog ./internal/actionauth ./apps/tool-broker/internal/broker ./apps/tool-broker/internal/runtimeclient ./apps/tool-broker/internal/registry"; fi; go test -json -race -count=1 -timeout=120s -run "$filter" $packages && go vet $packages' > "$proof/tests.jsonl"
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
 printf 'Workspace PG/filesystem race suite passed.\n'

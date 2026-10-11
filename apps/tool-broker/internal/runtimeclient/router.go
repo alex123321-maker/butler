@@ -14,6 +14,7 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/resourceexec"
+	"github.com/butler/butler/internal/workspaceexec"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -73,7 +74,7 @@ func (r *Router) Execute(ctx context.Context, toolCall *toolbrokerv1.ToolCall, c
 	if err != nil {
 		return nil, err
 	}
-	resp, err := client.Execute(resourceexec.OutgoingContext(ctx), &runtimev1.ExecuteRequest{
+	resp, err := client.Execute(workspaceexec.OutgoingContext(resourceexec.OutgoingContext(ctx)), &runtimev1.ExecuteRequest{
 		Context:             executionContext(ctx, toolCall, contract, target),
 		ToolCall:            toolCall,
 		Contract:            contract,

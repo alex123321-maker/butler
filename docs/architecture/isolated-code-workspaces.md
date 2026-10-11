@@ -66,5 +66,23 @@ an exact durable erasure queue. A fixed private-root DeletionRuntime removes onl
 the opaque copy after the owning privacy job verifies committed tombstones and
 the deletion anchor. Failure/lost acknowledgement retains pending cleanup;
 restart/idempotent erasure never resumes execution. This is privacy cleanup,
-not owner reconciliation. Broker/shared budget/private ticket/runtime bootstrap
-and cleanup scheduling are still required before model access is enabled.
+not owner reconciliation.
+
+Migration067 and `workspaceexec.DispatchStore` now join exact permanent action
+admission to actual source/input/worker/task/shared budget/resource state on one
+transaction. Private immutable operation/path/body digest/file CAS and original
+input-claim/source bindings precede a bounded one-use runtime ticket. A stale file
+snapshot denies before admission commits, retaining grant and budget unspent.
+The canonical three DATA contracts never accept host paths, credentials, tickets,
+source policy, executor identity or a successful verdict from the model.
+
+The private authenticated workspace gRPC runtime uses the actual Store and
+independent Observer. It consumes its start before touching files, publishes
+immutable physical evidence with metadata/source context/resource completion,
+and releases reads only after current final checks. Runtime output contains only
+the opaque namespace and bounded code/snapshot. The Broker Server/router composition
+is tested with real PG/files and lost actual-effect acknowledgements. Unknown
+outcomes remain stopped at irreversible admission and cannot be replayed or
+dispatched through a fresh tool. Production application bootstrap, owning readiness,
+runtime deployment/cleanup scheduling and owner reconciliation are still required
+for rollout and full#17.
