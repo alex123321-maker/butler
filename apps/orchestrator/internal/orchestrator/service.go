@@ -138,6 +138,7 @@ type Config struct {
 	// Trusted composition resolves opaque source-bound inputs only after live
 	// ownership. The adapter loads durable bindings, not caller-selected refs.
 	InputSourcePreparation func(context.Context, ingress.InputEvent) (ingress.InputEvent, error)
+	DelegationContexts     DelegatedContextReader
 	MemorySources          interface {
 		PinTranscript(context.Context, string, int64) error
 		CheckRunSources(context.Context, string) error
@@ -236,6 +237,7 @@ var errLeaseRenewalFailed = errors.New("lease renewal failed")
 type preparedRun struct {
 	SourceInputEvent     *ingress.InputEvent `json:"source_input_event,omitempty"`
 	SourceDataRefs       []string            `json:"source_data_refs,omitempty"`
+	DelegatedTaskID      string              `json:"delegated_task_id,omitempty"`
 	CurrentRunID         string
 	InputAlreadyRecorded bool
 	Task                 *task.Record

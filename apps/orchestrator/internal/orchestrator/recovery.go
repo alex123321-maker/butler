@@ -110,7 +110,7 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	if err = s.rehydrateSourcePreparation(ctx, &checkpoint.Prepared); err != nil {
 		return nil, err
 	}
-	if continuation.Prepared.SourceInputEvent != nil {
+	if continuation.Prepared.SourceInputEvent != nil || checkpoint.Prepared.DelegatedTaskID != "" {
 		continuation.Prepared = checkpoint.Prepared
 	}
 	var stream transport.EventStream

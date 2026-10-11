@@ -49,7 +49,7 @@ func (WorkerGuard) CheckTx(ctx context.Context, tx pgx.Tx, b Binding) error {
 	}
 	for _, value := range []string{state, status} {
 		switch value {
-		case "", "completed", "failed", "cancelled", "finalizing":
+		case "", "completed", "failed", "cancelled", "timed_out", "finalizing":
 			return ErrDenied
 		}
 	}

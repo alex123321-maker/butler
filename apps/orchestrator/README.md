@@ -363,6 +363,13 @@ implemented behind Task Service. The executor manager and Broker control adapter
 remain in progress; no delegation endpoint or model tool is enabled yet. See
 `docs/architecture/delegation-contract.md` before deploying migration057.
 
+Ordinary preparation/recovery now derives selected delegated context from the
+actual fenced run, after pinning its task. It skips ambient memory bundles and
+adds only selected Catalog DATA plus the child's own session/task context.
+Durable snapshots carry references and reload bodies under the new live lease;
+candidate prose is never promoted to owner policy. Migration057 is required for
+the owned context reader, even while model/owner delegation admission is disabled.
+
 Finite shared-resource leases are implemented in `internal/resources` with live
 worker/task/parent checks on the caller PostgreSQL transaction. Migration058 and
 production workspace/browser composition remain in progress; resource leases

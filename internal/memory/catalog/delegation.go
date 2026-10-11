@@ -2,6 +2,7 @@ package catalog
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
@@ -11,6 +12,127 @@ import (
 	"github.com/butler/butler/internal/security/content"
 	"github.com/jackc/pgx/v5"
 )
+
+type DelegatedRunSources struct {
+	SessionKey   string
+	Contract     delegation.Contract
+	Sources      []Source
+	Dependencies []SourceRef
+}
+
+// ReadDelegatedRun derives the selected context from the actual current run.
+// Caller-supplied task IDs, inherited owner actors and auxiliary job proofs
+// cannot widen this worker-only body-release path. Ordinary runs return nil.
+func (s *Store) ReadDelegatedRun(ctx context.Context, runID string) (*DelegatedRunSources, error) {
+	token, ok := ownership.TokenFromContext(ctx)
+	if !ok || token.RunID != runID {
+		return nil, ErrDenied
+	}
+	if _, actor := owneridentity.FromContext(ctx); actor {
+		return nil, ErrDenied
+	}
+	if _, job := ctx.Value(checkerKey{}).(AccessChecker); job {
+		return nil, ErrDenied
+	}
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+	var valid bool
+	if err = tx.QueryRow(ctx, `SELECT TRUE FROM session_ownership WHERE session_key=$1 AND run_id=$2 AND lease_id=$3 AND fence_epoch=$4 AND expires_at>clock_timestamp() FOR SHARE`, token.SessionKey, runID, token.LeaseID, token.FenceEpoch).Scan(&valid); err != nil {
+		return nil, ErrDenied
+	}
+	var taskID, session string
+	if err = tx.QueryRow(ctx, `SELECT COALESCE(task_id,''),session_key FROM runs WHERE run_id=$1 AND current_state NOT IN ('completed','failed','cancelled','timed_out','finalizing') FOR SHARE`, runID).Scan(&taskID, &session); err != nil || session != token.SessionKey {
+		return nil, ErrDenied
+	}
+	c, err := delegation.LoadTx(ctx, tx, taskID)
+	if err != nil {
+		return nil, err
+	}
+	if c == nil {
+		return nil, tx.Commit(ctx)
+	}
+	sources, err := s.AccessTx(ctx, tx, delegationRoots(c), "memory_read")
+	if err != nil {
+		return nil, err
+	}
+	dependencies, err := s.CanonicalSourcesTx(ctx, tx, delegationRoots(c))
+	if err != nil {
+		return nil, err
+	}
+	bytes := 0
+	for _, src := range sources {
+		bytes += len(src.Title) + len(src.Body)
+		if bytes > 64<<10 {
+			return nil, fmt.Errorf("selected delegated source context exceeds the bounded allowance")
+		}
+	}
+	if err = s.CheckDelegationSourcesTx(ctx, tx, taskID, delegationRoots(c), "memory_read"); err != nil {
+		return nil, err
+	}
+	if err = tx.QueryRow(ctx, `SELECT TRUE FROM session_ownership WHERE session_key=$1 AND run_id=$2 AND lease_id=$3 AND fence_epoch=$4 AND expires_at>clock_timestamp() FOR SHARE`, token.SessionKey, runID, token.LeaseID, token.FenceEpoch).Scan(&valid); err != nil {
+		return nil, ErrDenied
+	}
+	return &DelegatedRunSources{SessionKey: session, Contract: *c, Sources: sources, Dependencies: dependencies}, tx.Commit(ctx)
+}
+
+// CheckDelegationProposalSourcesTx checks the actual parent's current source
+// rights before admission. Owner permission to read a body does not widen the
+// parent's purpose-bound project grants. It performs no body publication.
+func (s *Store) CheckDelegationProposalSourcesTx(ctx context.Context, tx pgx.Tx, parentID, own string, refs []SourceRef, purpose string) error {
+	if parentID == "" || own == "" || purpose != "memory_read" || len(refs) < 1 || len(refs) > 65 {
+		return ErrDenied
+	}
+	if token, ok := ownership.TokenFromContext(ctx); ok {
+		if _, actor := owneridentity.FromContext(ctx); actor {
+			return ErrDenied
+		}
+		var current bool
+		if err := tx.QueryRow(ctx, `SELECT TRUE FROM session_ownership o JOIN runs r ON r.run_id=o.run_id WHERE o.session_key=$1 AND o.run_id=$2 AND o.lease_id=$3 AND o.fence_epoch=$4 AND o.expires_at>clock_timestamp() AND r.task_id=$5 AND r.session_key=o.session_key AND r.current_state NOT IN ('completed','failed','cancelled','timed_out','finalizing') FOR SHARE OF o,r`, token.SessionKey, token.RunID, token.LeaseID, token.FenceEpoch, parentID).Scan(&current); err != nil {
+			return ErrDenied
+		}
+	} else if actor, ok := owneridentity.FromContext(ctx); !ok || actor.OwnerID != own {
+		return ErrDenied
+	}
+	var current bool
+	if err := tx.QueryRow(ctx, `SELECT TRUE FROM tasks WHERE task_id=$1 AND owner_id=$2 AND status='active' FOR SHARE`, parentID, own).Scan(&current); err != nil {
+		return ErrDenied
+	}
+	if err := s.CheckRestoreTx(ctx, tx); err != nil {
+		return err
+	}
+	if _, err := s.AccessTx(ctx, tx, refs, purpose); err != nil {
+		return err
+	}
+	canonical, err := s.CanonicalSourcesTx(ctx, tx, refs)
+	if err != nil {
+		return err
+	}
+	for _, ref := range canonical {
+		src, err := getSourceTx(ctx, tx, ref.ID, false)
+		if err != nil || src.OwnerID != own || src.Status != "active" || src.Origin.Sensitivity == content.Secret {
+			return ErrDenied
+		}
+		if err = checkInheritedPermissionTx(ctx, tx, parentID, own, src, purpose, 0); err != nil {
+			return err
+		}
+	}
+	var now time.Time
+	if err = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now); err != nil {
+		return err
+	}
+	if _, err = actionauth.CheckTaskAuthorityTx(ctx, tx, parentID, own, nil, now); err != nil {
+		return err
+	}
+	if token, ok := ownership.TokenFromContext(ctx); ok {
+		if err = tx.QueryRow(ctx, `SELECT TRUE FROM session_ownership WHERE session_key=$1 AND run_id=$2 AND lease_id=$3 AND fence_epoch=$4 AND expires_at>clock_timestamp() FOR SHARE`, token.SessionKey, token.RunID, token.LeaseID, token.FenceEpoch).Scan(&current); err != nil {
+			return ErrDenied
+		}
+	}
+	return nil
+}
 
 // BindDelegationSourcesTx belongs to Catalog, rather than Task Service writing
 // memory grants. The caller has already serialized child admission. The actual

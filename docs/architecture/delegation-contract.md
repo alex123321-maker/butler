@@ -41,8 +41,21 @@ rows. The barrier serializes only admission/controls for one tree; models and
 unrelated task trees do not take it. A complete stop therefore cannot miss a child
 admitted concurrently. Committed external effects remain journal evidence.
 
+The owned context reader derives contract and selected roots from the current
+run/task under its independent live lease, before ambient memory retrieval.
+It pins the explicit current task before release, loads only selected root
+bodies (64KiB in total), and retains canonical originals as privacy references.
+Parent transcript, profile and retrieval bundles are never copied into a child.
+Only the child's own transcript/task working state is added. Candidate contract
+text remains Document/SubagentOutput DATA; a fixed kernel handoff label is the
+input, not model-authored owner instruction. Checkpoints/approval continuations
+retain selected references and reload current Catalog bodies after a new lease.
+Saved references cannot select additional bodies. Current deletion, parent grant,
+task revision and deadline checks repeat before model/dispatch/final publication.
+The proposal source check also enforces the parent's exact scope/purpose grants
+when the authenticated owner can independently read a broader Catalog body.
+
 Pending acceptance: actual durable separate-context scheduling through Broker,
-explicit source-only context without parent transcript/profile inheritance,
 dependency/width/depth bounds, independent and conflicting result collection,
 parent crash and revision/stop races, resource/workspace arbitration, and an actual
 single-versus-bounded-parallel experiment using the same shared model worker.
@@ -68,5 +81,6 @@ only pinned references, not narrative or model authority. Conflicting reports
 remain distinct. The [Task README](../../apps/orchestrator/internal/task/README.md)
 documents constructor/adapters and lock order. Actual PG/source/budget tests use
 two pooled connections; no model inference/effect is claimed. Production explicit
-source context without ambient profile/retrieval, Broker/scheduler and the shared
-model experiment above remain pending.
+Broker/scheduler and the shared model experiment above remain pending. Explicit
+selected-source context is integrated in the ordinary preparation/recovery path;
+actual Catalog and core projection/recovery checks are covered separately.

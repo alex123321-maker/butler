@@ -63,8 +63,31 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 	if token, ok := ownership.TokenFromContext(ctx); ok {
 		prepared.CurrentRunID = token.RunID
 	}
-	if err := s.attachMemoryContext(ctx, event.SessionKey, prepared.SessionUserID, message, &prepared); err != nil {
+	// Pin a validated explicit task before Catalog chooses a delegated context.
+	// Later task attachment also prepares working state and authenticated policy.
+	if id := firstString(payload, "task_id"); id != "" && prepared.CurrentRunID != "" {
+		if s.config.Tasks == nil {
+			return preparedRun{}, fmt.Errorf("task service is not configured")
+		}
+		record, err := s.config.Tasks.Get(ctx, id)
+		if err != nil || record.SessionKey != event.SessionKey || record.OwnerID != userID || record.Status != "active" {
+			return preparedRun{}, fmt.Errorf("current preparation task authority is required")
+		}
+		if err = s.config.Tasks.AttachRun(ctx, record.TaskID, record.Revision, prepared.CurrentRunID, event.SessionKey); err != nil {
+			return preparedRun{}, err
+		}
+	}
+	delegated, err := s.delegatedContext(ctx, event.SessionKey)
+	if err != nil {
 		return preparedRun{}, err
+	}
+	if err = attachDelegatedContext(event, &prepared, delegated); err != nil {
+		return preparedRun{}, err
+	}
+	if delegated == nil {
+		if err = s.attachMemoryContext(ctx, event.SessionKey, prepared.SessionUserID, message, &prepared); err != nil {
+			return preparedRun{}, err
+		}
 	}
 	if err := s.attachTranscriptContext(ctx, event.SessionKey, &prepared); err != nil {
 		return preparedRun{}, err

@@ -3,14 +3,20 @@ package catalog
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/butler/butler/internal/delegation"
+	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
 )
 
 func delegatedFixture(t *testing.T, project bool) (*Store, context.Context, context.Context, context.Context, Source, Source, delegation.Contract) {
+	return delegatedBodyFixture(t, project, "selected bounded summary")
+}
+
+func delegatedBodyFixture(t *testing.T, project bool, body string) (*Store, context.Context, context.Context, context.Context, Source, Source, delegation.Contract) {
 	t.Helper()
 	s, owner := fixture(t)
 	parent := seedRun(t, s)
@@ -31,7 +37,7 @@ func delegatedFixture(t *testing.T, project bool) (*Store, context.Context, cont
 	if err != nil {
 		t.Fatal(err)
 	}
-	selected, err := s.Put(owner, PutSource{ExternalKey: "selected", Kind: "model_candidate", ScopeType: "user", ScopeID: "owner", Body: "selected bounded summary", Parents: []SourceRef{ref(original)}})
+	selected, err := s.Put(owner, PutSource{ExternalKey: "selected", Kind: "model_candidate", ScopeType: "user", ScopeID: "owner", Body: body, Parents: []SourceRef{ref(original)}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,6 +54,69 @@ func delegatedFixture(t *testing.T, project bool) (*Store, context.Context, cont
 	}
 	child := ownership.WithToken(context.Background(), ownership.NewAuthority(s.pool), ownership.Token{SessionKey: "child-session", RunID: "child-run", LeaseID: "child-lease", FenceEpoch: 1})
 	return s, owner, parent, child, original, selected, c
+}
+
+func TestReadDelegatedRunDerivesOnlySelectedCurrentWorkerContextIntegration(t *testing.T) {
+	s, owner, parent, child, original, selected, c := delegatedFixture(t, false)
+	if err := bindDelegate(t, s, parent, c); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := s.ReadDelegatedRun(parent, "run"); err != nil || got != nil {
+		t.Fatal("ordinary parent inherited child contract", err)
+	}
+	for _, ctx := range []context.Context{owner, context.Background(), parent, owneridentity.WithActor(child, owneridentity.Actor{OwnerID: "owner", Channel: "web", DeliveryID: "actual-owner"})} {
+		if _, err := s.ReadDelegatedRun(ctx, "child-run"); err == nil {
+			t.Fatal("worker body reader accepted foreign or ambient owner authority")
+		}
+	}
+	got, err := s.ReadDelegatedRun(child, "child-run")
+	if err != nil || got == nil || got.SessionKey != "child-session" || got.Contract.TaskID != "child" || len(got.Sources) != 2 {
+		t.Fatal("actual bounded reader", got, err)
+	}
+	found := false
+	for _, source := range got.Sources {
+		if source.ID == original.ID {
+			t.Fatal("hidden ancestor body copied to selected context")
+		}
+		if source.ID == selected.ID && source.Body == selected.Body {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("selected body missing")
+	}
+	if _, err = s.pool.Exec(owner, `UPDATE session_ownership SET expires_at=clock_timestamp()-INTERVAL '1 second' WHERE session_key='child-session'`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.ReadDelegatedRun(child, "child-run"); err == nil {
+		t.Fatal("expired worker received selected body")
+	}
+}
+
+func TestReadDelegatedRunBoundsBodiesAndDeniesStoppedWorkerIntegration(t *testing.T) {
+	t.Run("size", func(t *testing.T) {
+		s, _, parent, child, _, _, c := delegatedBodyFixture(t, false, strings.Repeat("x", 64<<10))
+		if err := bindDelegate(t, s, parent, c); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := s.ReadDelegatedRun(child, "child-run"); err == nil {
+			t.Fatal("oversized selected body released")
+		}
+	})
+	for _, state := range []string{"completed", "failed", "cancelled", "timed_out", "finalizing"} {
+		t.Run(state, func(t *testing.T) {
+			s, owner, parent, child, _, _, c := delegatedFixture(t, false)
+			if err := bindDelegate(t, s, parent, c); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := s.pool.Exec(owner, `UPDATE runs SET current_state=$1 WHERE run_id='child-run'`, state); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := s.ReadDelegatedRun(child, "child-run"); err == nil {
+				t.Fatal("stopped worker received body")
+			}
+		})
+	}
 }
 
 func bindDelegate(t *testing.T, s *Store, ctx context.Context, c delegation.Contract) error {
@@ -107,6 +176,36 @@ func TestDelegatedContextSelectsBodiesWithoutAmbientProfileOrHiddenAncestorInteg
 	}
 	if err = restarted.CheckRunSources(child, "child-run"); err == nil {
 		t.Fatal("late child release ignored original deletion")
+	}
+}
+
+func TestDelegationProposalChecksParentGrantEvenWithOwnerBodyAccessIntegration(t *testing.T) {
+	s, owner, _, _, original, _, c := delegatedFixture(t, true)
+	check := func() error {
+		tx, err := s.pool.Begin(owner)
+		if err != nil {
+			return err
+		}
+		defer tx.Rollback(owner)
+		return s.CheckDelegationProposalSourcesTx(owner, tx, "root", "owner", delegationRoots(&c), "memory_read")
+	}
+	if _, err := s.Get(owner, original.ID); err != nil {
+		t.Fatal("owner body access fixture", err)
+	}
+	if err := check(); err == nil {
+		t.Fatal("owner body read widened parent project permission")
+	}
+	if err := s.GrantSource(owner, "root", original.ID, "memory_read", 1); err != nil {
+		t.Fatal(err)
+	}
+	if err := check(); err != nil {
+		t.Fatal("current exact parent grant", err)
+	}
+	if _, err := s.pool.Exec(owner, `DELETE FROM memory_scope_grants WHERE task_id='root' AND source_id=$1`, original.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err := check(); err == nil {
+		t.Fatal("revoked grant accepted by proposal")
 	}
 }
 

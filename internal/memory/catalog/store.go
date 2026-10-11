@@ -321,7 +321,7 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 		}
 		var state string
 		var revision int64
-		if tx.QueryRow(ctx, `SELECT COALESCE(task_id,''),COALESCE(task_revision,0),session_key,current_state FROM runs WHERE run_id=$1 FOR SHARE`, tok.RunID).Scan(&taskID, &revision, &session, &state) != nil || state == "completed" || state == "failed" || state == "cancelled" {
+		if tx.QueryRow(ctx, `SELECT COALESCE(task_id,''),COALESCE(task_revision,0),session_key,current_state FROM runs WHERE run_id=$1 FOR SHARE`, tok.RunID).Scan(&taskID, &revision, &session, &state) != nil || state == "completed" || state == "failed" || state == "cancelled" || state == "timed_out" {
 			return nil, ErrDenied
 		}
 		if tx.QueryRow(ctx, `SELECT user_id FROM sessions WHERE session_key=$1`, session).Scan(&own) != nil {

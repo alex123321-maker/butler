@@ -184,6 +184,26 @@ func TestResourceReadersAndExclusiveWriterAcrossSessionsIntegration(t *testing.T
 	}
 }
 
+func TestResourceTimedOutRunCannotAcquireOrClaimIntegration(t *testing.T) {
+	pool := resourceDB(t)
+	s := newStore(t)
+	register(t, pool, s, "workspace:timed")
+	ctx, binding := worker(1)
+	proof, err := acquire(ctx, pool, s, binding, Request{"workspace:timed", Write, 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = pool.Exec(ctx, `UPDATE runs SET current_state='timed_out' WHERE run_id='r1'`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = acquire(ctx, pool, s, binding, Request{"workspace:timed", Read, 1}); !errors.Is(err, ErrDenied) {
+		t.Fatal("timed out run acquired resource", err)
+	}
+	if err = transact(ctx, pool, func(tx pgx.Tx) error { return s.ClaimTx(ctx, tx, binding, proof[0]) }); !errors.Is(err, ErrDenied) {
+		t.Fatal("timed out run claimed existing lease", err)
+	}
+}
+
 func TestResourceSetAtomicFailureAndOppositeOrderIntegration(t *testing.T) {
 	pool := resourceDB(t)
 	s := newStore(t)

@@ -277,6 +277,7 @@ func New(ctx context.Context) (*App, error) {
 			},
 			SemanticMemory:        semanticReader,
 			MemorySources:         sourceCatalog,
+			DelegationContexts:    delegatedContextReader{sources: sourceCatalog},
 			Skills:                skillCatalogIfEnabled(skillClient),
 			Budgets:               budgetController,
 			Completion:            finalResults,

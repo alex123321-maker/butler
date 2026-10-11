@@ -76,3 +76,10 @@ and every original run/source edge, and returns the exact final-message root.
 It grants no publication authority. `CreateDerivedTx` requires a fresh current
 owner/run/job proof for all parents; deletion of any original dependency erases
 the procedure body while content-free skill audit remains in migration051.
+
+`ReadDelegatedRun` releases only the current worker's selected immutable contract
+and source root bodies, bounded to 64KiB. Canonical original dependencies remain
+privacy references, not extra selectable bodies. It denies inherited owner/job
+proofs, stopped/expired workers and current parent grant or source revocation.
+`CheckDelegationProposalSourcesTx` also checks the parent's current purpose/scope
+grants when an authenticated owner independently has broader Catalog body access.

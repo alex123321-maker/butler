@@ -6,15 +6,22 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/butler/butler/internal/delegation"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/security/content"
 	"github.com/butler/butler/internal/transport"
 )
 
 func opaqueSourceInput(event ingress.InputEvent) bool {
-	return strings.HasPrefix(event.EventID, "voice-reviewed:") || strings.HasPrefix(event.EventID, "delegated-owned:")
+	return event.Source == "delegation" || strings.HasPrefix(event.EventID, "voice-reviewed:") || strings.HasPrefix(event.EventID, "delegated-owned:")
 }
 func (s *Service) prepareSourceInput(ctx context.Context, event ingress.InputEvent) (ingress.InputEvent, error) {
+	if event.Source == "delegation" {
+		if s.config.DelegationContexts == nil {
+			return ingress.InputEvent{}, delegation.ErrDenied
+		}
+		return event, nil // Current DB-selected DATA is loaded by prepareRun.
+	}
 	if s.config.InputSourcePreparation == nil {
 		if opaqueSourceInput(event) {
 			return ingress.InputEvent{}, errors.New("current input source unavailable")
@@ -66,7 +73,18 @@ func durableSourcePreparation(prepared preparedRun) preparedRun {
 }
 func (s *Service) rehydrateSourcePreparation(ctx context.Context, prepared *preparedRun) error {
 	if prepared.SourceInputEvent == nil {
-		return nil
+		return s.rehydrateDelegatedContext(ctx, prepared)
+	}
+	if prepared.SourceInputEvent.Source == "delegation" {
+		d, err := s.delegatedContext(ctx, prepared.SourceInputEvent.SessionKey)
+		if err != nil || d == nil {
+			return delegation.ErrDenied
+		}
+		if err = attachDelegatedInputBinding(*prepared.SourceInputEvent, d); err != nil {
+			return err
+		}
+		prepared.UserMessage = delegatedInputLabel
+		return s.rehydrateDelegatedContext(ctx, prepared)
 	}
 	resolved, e := s.prepareSourceInput(ctx, *prepared.SourceInputEvent)
 	if e != nil {
@@ -91,7 +109,7 @@ func (s *Service) rehydrateSourcePreparation(ctx context.Context, prepared *prep
 			}
 		}
 	}
-	return nil
+	return s.rehydrateDelegatedContext(ctx, prepared)
 }
 
 func validateSourceCheckpoint(event ingress.InputEvent, prepared preparedRun) error {
