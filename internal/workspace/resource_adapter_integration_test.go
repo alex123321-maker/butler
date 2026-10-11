@@ -70,38 +70,29 @@ func (a *adapterAdmission) CheckWorkspaceTx(ctx context.Context, tx pgx.Tx, x Ac
 // Fixed operator root, real filesystem observation and exact source/action
 // records. There is no model-supplied path, evidence or successful verdict.
 type adapterEvidence struct {
-	root                  string
+	observer              *Observer
 	failCreate, failWrite bool
+	before                func(context.Context, pgx.Tx, Access) error
 }
 
-func (e *adapterEvidence) record(ctx context.Context, tx pgx.Tx, a Access, kind string, s Snapshot) (string, error) {
+func (e *adapterEvidence) record(ctx context.Context, tx pgx.Tx, a Access, o Observation) (string, error) {
 	id := "evidence:" + a.Proof.LeaseID
 	action, _ := ctx.Value(resourceActionKey{}).(string)
-	_, err := tx.Exec(ctx, `INSERT INTO fixture_workspace_evidence(evidence_id,action_id,resource_id,lease_id,kind,path,file_version,hash,bytes) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`, id, action, a.Proof.ResourceID, a.Proof.LeaseID, kind, s.Path, s.Version, s.SHA256, s.Bytes)
+	s := o.Snapshot
+	_, err := tx.Exec(ctx, `INSERT INTO fixture_workspace_evidence(evidence_id,action_id,resource_id,lease_id,kind,path,file_version,hash,bytes,observation_hash) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, id, action, a.Proof.ResourceID, a.Proof.LeaseID, o.Kind, s.Path, s.Version, s.SHA256, s.Bytes, o.Digest)
 	return id, err
 }
 func (e *adapterEvidence) RecordNamespaceTx(ctx context.Context, tx pgx.Tx, a Access) (string, error) {
-	r, err := os.OpenRoot(e.root)
-	if err != nil {
-		return "", err
-	}
-	defer r.Close()
-	for _, name := range []string{a.Ref.ID, a.Ref.ID + "/tree", a.Ref.ID + "/private", a.Ref.ID + "/private/tmp"} {
-		info, err := r.Lstat(name)
-		if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 || info.Mode().Perm() != 0700 {
-			return "", ErrDenied
+	if e.before != nil {
+		if err := e.before(ctx, tx, a); err != nil {
+			return "", err
 		}
 	}
-	tree, err := r.Open(a.Ref.ID + "/tree")
+	o, err := e.observer.NamespaceTx(ctx, tx, a)
 	if err != nil {
 		return "", err
 	}
-	entries, err := tree.ReadDir(-1)
-	tree.Close()
-	if err != nil || len(entries) != 0 {
-		return "", ErrDenied
-	}
-	id, err := e.record(ctx, tx, a, "namespace", Snapshot{})
+	id, err := e.record(ctx, tx, a, o)
 	if err != nil {
 		return "", err
 	}
@@ -111,16 +102,16 @@ func (e *adapterEvidence) RecordNamespaceTx(ctx context.Context, tx pgx.Tx, a Ac
 	return id, nil
 }
 func (e *adapterEvidence) RecordWriteTx(ctx context.Context, tx pgx.Tx, a Access, s Snapshot) (string, error) {
-	r, err := os.OpenRoot(filepath.Join(e.root, a.Ref.ID, "tree"))
-	if err != nil {
-		return "", err
+	if e.before != nil {
+		if err := e.before(ctx, tx, a); err != nil {
+			return "", err
+		}
 	}
-	defer r.Close()
-	data, exists, err := physical(r, s.Path, DefaultLimits().MaxFileBytes)
-	if err != nil || !exists || !matches(s, data, exists) {
-		return "", ErrDenied
+	o, err := e.observer.FileTx(ctx, tx, a)
+	if err != nil || o.Snapshot != s {
+		return "", ErrDrift
 	}
-	id, err := e.record(ctx, tx, a, "file", s)
+	id, err := e.record(ctx, tx, a, o)
 	if err != nil {
 		return "", err
 	}
@@ -181,7 +172,7 @@ func newAdapterFixture(t *testing.T) *adapterFixture {
  INSERT INTO runs(run_id,session_key,input_event_id,status,current_state,autonomy_mode,model_provider,started_at,updated_at,task_id,task_revision) VALUES('ws-r1','ws-s1','fixture1','tool_running','tool_running','mode_1','fixture',clock_timestamp(),clock_timestamp(),'ws-t1',1),('ws-r2','ws-s2','fixture2','tool_running','tool_running','mode_1','fixture',clock_timestamp(),clock_timestamp(),'ws-t2',1);
  INSERT INTO session_ownership(session_key,run_id,lease_id,fence_epoch,expires_at) VALUES('ws-s1','ws-r1','worker-1',1,clock_timestamp()+interval '1 hour'),('ws-s2','ws-r2','worker-2',1,clock_timestamp()+interval '1 hour');
  CREATE TABLE fixture_workspace_actions(action_id text PRIMARY KEY,owner_id text,run_id text,session_key text,task_id text,task_revision bigint,constraints_revision bigint,owner_epoch bigint,deadline timestamptz,resource_id text,operation text,path text,body_hash text,bytes bigint,source_id text,source_revision bigint,source_access_revision bigint,source_hash text,state text);
- CREATE TABLE fixture_workspace_evidence(evidence_id text PRIMARY KEY,action_id text,resource_id text,lease_id text,kind text,path text,file_version bigint,hash text,bytes bigint);
+ CREATE TABLE fixture_workspace_evidence(evidence_id text PRIMARY KEY,action_id text,resource_id text,lease_id text,kind text,path text,file_version bigint,hash text,bytes bigint,observation_hash text);
  CREATE TABLE fixture_independent_reconciliation(evidence_id text PRIMARY KEY,owner_id text,resource_id text,lease_id text,version bigint,executor_stopped boolean,actual_effect_observed boolean);`)
 	if err != nil {
 		t.Fatal(err)
@@ -205,7 +196,12 @@ func newAdapterFixture(t *testing.T) *adapterFixture {
 		t.Fatal(err)
 	}
 	admission := &adapterAdmission{catalog: c, resources: rs}
-	evidence := &adapterEvidence{root: root}
+	observer, err := NewObserver(root, DefaultLimits().MaxFileBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = observer.Close() })
+	evidence := &adapterEvidence{observer: observer}
 	guard, err := NewResourceGuard(rs, admission, evidence)
 	if err != nil {
 		t.Fatal(err)
@@ -467,7 +463,7 @@ func TestResourceWorkspaceTwoContendersAndStaleObservationsIntegration(t *testin
 		t.Fatal("old file observation revived", err)
 	}
 	var count int
-	if err = f.pool.QueryRow(ctx, `SELECT count(*) FROM fixture_workspace_evidence WHERE kind='file'`).Scan(&count); err != nil || count != 1 {
+	if err = f.pool.QueryRow(ctx, `SELECT count(*) FROM fixture_workspace_evidence WHERE kind='file_bytes'`).Scan(&count); err != nil || count != 1 {
 		t.Fatal("unexpected confirmed contenders", count, err)
 	}
 }
