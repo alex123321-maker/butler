@@ -15,8 +15,21 @@ if [[ "$phase" == execute ]]; then
   fi
   [[ ${BUTLER_DELEGATION_NATIVE_RELEASE:-} =~ ^[a-f0-9]{40}$ ]] || exit 2
   # Opaque operator-confirmed reference; never source/read/print credential data.
-  import_file=/srv/storage/butler/agents/antigravity-provider/profile/.gemini/antigravity-cli/butler-native-import.json
-  [[ -f "$import_file" && ! -L "$import_file" && $(stat -c '%u:%a' "$import_file") == 10001:600 ]] || exit 2
+  import_parent=/srv/storage/butler/agents/antigravity-provider/profile/.gemini/antigravity-cli
+  import_file="$import_parent/butler-native-import.json"
+  # The host shell deliberately cannot traverse the private UID10001 parent.
+  # This exact literal parent is mounted only for metadata, without reading the
+  # import content. The actual inference runtime below mounts only the file.
+  docker run --rm --network none --user 10001:10001 --read-only --cap-drop ALL \
+    --memory 32m --pids-limit 16 --cpus 1 --security-opt no-new-privileges:true \
+    --volume "$import_parent:/metadata:ro" alpine:3.22 sh -eu -c '
+approved=/metadata/butler-native-import.json
+test -f "$approved"
+test ! -L "$approved"
+test "$(stat -c "%u:%a" "$approved")" = 10001:600
+size=$(stat -c %s "$approved")
+test "$size" -gt 0
+test "$size" -le 65536' || exit 2
   [[ $(docker inspect --format '{{.State.Running}}' butler-lab-antigravity-proxy-1) == true ]] || exit 2
 fi
 run_id="$(date -u +%Y%m%dT%H%M%SZ)-$$"

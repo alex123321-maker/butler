@@ -118,3 +118,9 @@ native request was created. The content-free record is
 performed under that one-window authorization; all actual model criteria remain
 pending. The host metadata gate needs an explicitly reviewed exact-file runtime
 check before a separately coordinated experiment can proceed.
+The corrected gate uses a no-network, read-only, capability-free UID10001
+metadata helper. Only the fixed literal `antigravity-cli` parent is mounted for
+that check; it rejects a symlink or nonregular approved basename, wrong owner or
+mode, empty file, or size above 64KiB. It never reads or prints file contents.
+The inference runtime still mounts only the single approved file read-only.
+No host ownership, profile permission or credential content changes are made.
