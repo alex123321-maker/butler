@@ -20,8 +20,12 @@ to the existing `BUTLER_EXECUTION_BUDGET_POLICY_JSON.models` map:
 
 Preserve other model entries/limits. The Compose overlay already accepts this
 model variable; main checkout/deployment were not modified by this task. Real
-High text access is proved; full real native function/result and delegation
-activation gates remain separate. Exact quota-meter bucket attribution is unknown.
+High text access and actual native function/result continuation are proved.
+The separate sealed delegation scenario completed two real Broker admissions and
+both child extractions after worker loss, then failed the parent's exact receipt
+projection. Full delegation/activation gates remain separate; width2 was not run.
+See [retained result](../../docs/ai/delegation-high-acceptance-20261012.md).
+Exact quota-meter bucket attribution is unknown.
 
 The following deployment/history details describe the retained default AICode
 tiered path. For High, the private control plane returns a discovered project

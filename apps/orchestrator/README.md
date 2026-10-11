@@ -8,6 +8,9 @@ The separate opt-in [Flash High acceptance](../../docs/ai/delegation-high-accept
 uses ordinary core/input/Broker processes and disposable PostgreSQL on laba.
 It retains22 historical attempts, pins the complete tested snapshot, and checks
 native tool-result continuation and child recovery without enabling deployment flags.
+Its single execution is sealed:5 new High calls confirmed two Broker admissions
+and both child extractions after process loss, then failed the parent's exact
+receipt-projection gate. Width2 and later control gates remain unperformed.
 
 Operator-only `BUTLER_WORKSPACE_ENABLED` defaults false. It requires private
 action authentication, current original-source/deletion anchor and immutable

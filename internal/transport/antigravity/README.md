@@ -15,6 +15,11 @@ Only supplied Butler inputs/system instructions and scoped declarations are
 serialized. No Desktop reminders, third-party identity prompt, system prefix,
 prompt rewriting or additional tools are added. Fixtures verify exact system/user
 text, native calls/signatures/continuation, wrapped SSE and failure-before-write.
+An isolated actual High delegation window additionally completed two Broker
+admissions and two correct child extractions after process loss. It stopped at
+the parent's exact receipt-projection failure before width2/later controls;
+[safe evidence](../../../docs/ai/delegation-high-acceptance-20261012.md) records5
+new calls without retry. Full delegation acceptance and deployment remain pending.
 
 The following AICode details and earlier investigations describe the retained
 default tiered profile and their historical evidence.

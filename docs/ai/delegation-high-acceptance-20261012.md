@@ -56,5 +56,50 @@ Owning workers stop before bounded state export and cleanup; PG data/dumps remai
 
 This is not single-context parity, local generative acceptance, same-date
 contradiction resolution, complete issue acceptance or production activation.
-Issues16/17/20/33 retain their remaining gates. Results follow preparation and
-the single actual invocation.
+Issues16/17/20/33 retain their remaining gates.
+
+## Actual High result — sealed
+
+Release `7431af70a7f9f8699be86a2a73c053c2be56a3c5`, snapshot
+`20261012-025634-049`, ran once. The original preparation passed61 test/subtest
+names and skipped5: initiative's three subtests and two workspace runtime tests
+lacked their package-specific PostgreSQL environment variables. Those regressions
+had passed on their separate agent snapshots. The integrated runner is corrected
+to supply these URLs and to reject any skipped check; its subsequent preparation
+is separately recorded below, without another execute invocation.
+Original preparation report: `delegation-high-prepare-20261011T195643Z-2538370`,
+events SHA256 `575222d116f2707cf89e18f21c9baad74e28ab606c31bed7f7486930b36a09ea`.
+
+Actual execution failed the parent's exact receipt-projection gate after111.91s,
+five native calls and two confirmed `task.delegate` effects. The width1 parent
+completed its three native turns, created two actual children through Broker and
+was SIGKILLed with the child scheduling gate entered. A fresh ordinary worker
+waited for the real claim TTL (remaining47239ms), then both High children completed.
+Both immutable source/value/date/citation checks passed. Their runs and durable
+reports reached `completed`/`result_ready`; task states and finals remained
+`active`/`unverified` in the owning audit captured before schema cleanup.
+
+The saved report cannot identify the exact offending parent final field or
+format: only its hash and the combined exact-projection failure are retained.
+No inference retry, reformatted model answer or relaxed acceptance check followed.
+Width2, measured overlap, full shared-root projection and post-final owner
+amendment/deletion/stop gates were not reached. Their false/zero report fields
+are unperformed gates, not evidence that the controls failed or tasks completed.
+This proves actual High function/result continuation and bounded width1 process
+recovery with correct child extraction; full native delegation acceptance failed.
+
+New usage has3 known pairs and2 NULL pairs:11228 input/418 output known subtotal.
+Cumulative diagnostic-inclusive observations are27 attempts,11 known/16 unknown
+pairs and38196 input/1016 output known subtotal. The separate delegation-only
+series is23 attempts,8 known/15 unknown,36149 input/965 output known subtotal.
+NULL is unknown; account-wide usage and Google quota-counter attribution are not
+observed. The closed fixture retains its original22 baseline rather than resetting
+the ledger or rewriting any of its nine pinned historical artifacts.
+
+Proof: `/srv/storage/butler/agents/delegation-high-20261012/reports/delegation-high-execute-20261011T195753Z-2543435`.
+[Immutable safe report](../../deploy/delegation/native-scenario-high-20261012.json)
+SHA256 `f4649a539eed17bf01db034209a757bbfdb268759b2446c852f2260009bba0d2`;
+native event SHA256 `0cdcbd4547a396e7ce8f3339e0e63d97a8b8cc838dbfb2366be7ac8e1a218aeb`.
+All owning processes stopped before export. Agent containers/network were removed;
+backend report, dump, PG files, source and global sealed marker remain. Main source
+pointer remains `task-owner-view/snapshots/20261011-094312-276`.

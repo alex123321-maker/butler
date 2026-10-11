@@ -20,7 +20,7 @@ window=/srv/storage/butler/native-acceptance-windows/high-delegation-20261012-ba
 if [[ "$phase" == execute && ( -e "$source_dir/deploy/delegation/native-scenario-high-20261012.json" || -L "$source_dir/deploy/delegation/native-scenario-high-20261012.json" || -e "$window" || -L "$window" ) ]]; then
   # A distinct global marker prevents resetting this new window. Earlier
   # baseline13 and High text-access markers are never reopened or removed.
-  printf '{"status":"denied","reason":"native_window_already_attempted","new_native_attempts":0,"historical_observed_native_attempts":22}\n'
+  printf '{"status":"denied","reason":"native_window_already_attempted","new_native_attempts":0,"fixture_baseline_native_attempts":22}\n'
   exit 2
 fi
 export DOCKER_CONFIG="$root/.cache/docker"
@@ -97,6 +97,9 @@ docker run --rm --user "$(id -u):$(id -g)" --network "$network" --memory 1536m -
   --volume "$root/.cache/delegation-native-tmp:/private-tmp" --volume "$proof/binaries:/binaries" --workdir /src \
   --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp --env TMPDIR=/private-tmp \
   --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:delegation-fixture@delegation-postgres:5432/butler_delegation_native_test?sslmode=disable' \
+  --env 'BUTLER_TEST_POSTGRES_URL=postgres://fixture:delegation-fixture@delegation-postgres:5432/butler_delegation_native_test?sslmode=disable' \
+  --env 'BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=postgres://fixture:delegation-fixture@delegation-postgres:5432/butler_delegation_native_test?sslmode=disable' \
+  --env 'BUTLER_TEST_INITIATIVE_POSTGRES_URL=postgres://fixture:delegation-fixture@delegation-postgres:5432/butler_delegation_native_test?sslmode=disable' \
   --env BUTLER_DELEGATION_NATIVE_CORPUS=/src/scripts/dev/fixtures/delegation-native-research.json \
   golang:1.27.2-bookworm bash -eu -c 'go test -race -c -o /binaries/orchestrator.test ./apps/orchestrator/internal/app
 go test -race -c -o /binaries/broker.test ./apps/tool-broker/internal/broker
@@ -105,8 +108,12 @@ export BUTLER_DELEGATION_BROKER_BINARY=/binaries/broker.test
 go test -json -race -run "^Test(HighDelegation(History|AdmissionIntegration|RevalidationAndEntryChargesIntegration|CompositionIntegration)|NativeDelegation(ObjectiveFixtureRejectsNarrativeAuthority|PrivateRuntimeFiles|EncryptedFixtureImportWithoutInferenceIntegration|BrokerPreflightWithoutInferenceIntegration)|Delegation(ConflictingReportsRequireOriginalWitnessIntegration|NumericAcceptanceCannotUseAgreementOrMalformedContractIntegration))$" -count=1 -timeout=90s ./apps/orchestrator/internal/app
 go test -json -race -count=1 -timeout=90s ./internal/delegation
 go test -json -race -run "^TestPromotionRechecksTimeAfterSharedBudgetWaitIntegration$" -count=1 -timeout=90s ./apps/orchestrator/internal/initiative
-go test -json -race -run "^TestWorkspace(RootOwner|RuntimeCloseDrainsActualExecuteAndKeepsUnknownLeaseIntegration|RuntimeRootReplacementAfterAuthorityWaitDeniesEffectIntegration)" -count=1 -timeout=90s ./internal/workspace ./internal/workspaceexec' > "$proof/tests.jsonl"
+go test -json -race -run "^TestWorkspace(RootOwner|RuntimeClose|RuntimeRoot)" -count=1 -timeout=90s ./internal/workspace ./internal/workspaceexec' > "$proof/tests.jsonl"
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
+if grep -q '"Action":"skip"' "$proof/tests.jsonl"; then
+  printf '{"status":"preparation_failed","reason":"unexpected_skipped_check","new_native_attempts":0}\n'
+  exit 1
+fi
 docker run --rm --network none --user 0:0 --volume "$proof/runtime:/private" alpine:3.22 \
   sh -eu -c 'chown 10001:10001 /private; chmod 700 /private'
 docker run --rm --network none --user 10001:10001 --read-only --cap-drop ALL \
@@ -124,7 +131,7 @@ if [[ "$phase" == prepare ]]; then
   cp "$proof/source.sha256" "$root/tested-high-manifest"
   printf '%s\n' "$BUTLER_DELEGATION_NATIVE_RELEASE" > "$root/tested-high-release"
   printf '%s\n' "$source_dir" > "$root/tested-high-source"
-  printf '{"status":"preparation_passed","new_native_attempts":0,"historical_native_attempts":22,"total_native_attempts":22,"maximum_total_native_attempts":34,"maximum_new_native_attempts":12,"model_acceptance":"pending"}\n'
+  printf '{"status":"preparation_passed","new_native_attempts":0,"fixture_baseline_native_attempts":22,"maximum_total_native_attempts":34,"maximum_new_native_attempts":12,"model_acceptance":"sealed_failure"}\n'
   exit 0
 fi
 # The preparation probe already verified executable/private-file access as the

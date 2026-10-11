@@ -1,5 +1,24 @@
 # Antigravity account and quota diagnosis — updated 2026-10-12
 
+## Actual High tools and recovery — latest observation
+
+The renewed open-issue request authorized one separate bounded native delegation
+window. High completed5 native calls, two actual Broker `task.delegate` admissions
+and both child extractions after worker SIGKILL/real claim-expiry recovery.
+The scenario then failed the parent's exact receipt-projection gate and stopped
+without retry; width2 and later control gates remain unperformed. Actual native
+function/result continuation works; full delegation acceptance is still pending.
+The [sealed evidence](delegation-high-acceptance-20261012.md) preserves the exact
+release, immutable safe report and pre-cleanup owning state.
+
+New measured usage:3 known pairs/2 NULL pairs,11228 input/418 output subtotal.
+Diagnostic-inclusive tracked observations now total27 attempts,11 known/16 unknown
+pairs,38196 input/1016 output known subtotal. Delegation-only history is23 attempts,
+8 known/15 unknown,36149 input/965 output subtotal. Earlier sections retain their
+then-current counts. NULL stays unknown; no per-request Google quota attribution
+or account-wide spend is claimed. All9 pinned historical artifacts are unchanged.
+The High marker is permanently sealed; main source/deployment are unchanged.
+
 ## Flash High access — current result
 
 **Butler now supports and has actually completed `gemini-3.8-flash-high` through

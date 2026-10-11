@@ -26,6 +26,14 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(scripts/dev/delegation-high-lab[.]sh$|apps/orchestrator/internal/app/delegation_high_window_test[.]go$)" {
+      [void]$specs.Add("docs/architecture/delegation-contract.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/delegation-high-lab.sh /srv/storage/butler/agents/delegation-high-20261012 prepare after isolated Sync, with BUTLER_DELEGATION_NATIVE_RELEASE set to the committed SHA (real disposable PostgreSQL, integrated regressions, race/vet, zero inference). The single High execute window is permanently sealed after attempts23-27; never reopen it.")
+      continue
+    }
     "^(scripts/dev/antigravity-compare/|scripts/dev/antigravity-compare-lab[.]sh$|scripts/dev/antigravity-high-lab[.]sh$)" {
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
       [void]$specs.Add("docs/architecture/credential-management.md")

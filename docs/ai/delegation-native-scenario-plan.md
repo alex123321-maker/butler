@@ -9,6 +9,17 @@ and exact tested source, and leaves every historical runner sealed. Historical
 failures are unchanged; complete issue16 acceptance and production activation
 remain separate from this bounded scenario.
 
+The single High execution is now SEALED and failed the parent receipt-projection
+gate after5 new native calls. Both real Broker admissions succeeded; after actual
+worker loss/claim expiry both children completed and passed exact original-source
+checks. Width2 and later owner/source controls were not reached. The
+[new immutable report](../../deploy/delegation/native-scenario-high-20261012.json)
+has SHA256 `f4649a539eed17bf01db034209a757bbfdb268759b2446c852f2260009bba0d2`.
+Cumulative diagnostic-inclusive history27 has11 known/16 unknown usage pairs;
+38196 input/1016 output is a known subtotal. Delegation-only history23 has8
+known/15 unknown,36149 input/965 output subtotal. Preserve the separate old18
+history and all old reports; no old runner or this High window may be reopened.
+
 ## Current Antigravity diagnosis continuation — separate from delegation
 
 The owner initially authorized Antigravity diagnosis without inference, then
