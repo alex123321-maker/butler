@@ -26,6 +26,12 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/memory/catalog/(access_deadline|extraction|store)[^/]*[.]go$|internal/memory/jobs/extraction_wait_integration_test[.]go$|scripts/dev/memory-candidate-lab[.]sh$)" {
+      [void]$specs.Add("docs/architecture/memory-model.md")
+      [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/memory-candidate-admission/current/scripts/dev/memory-candidate-lab.sh /srv/storage/butler/agents/memory-candidate-admission full' (disposable PostgreSQL, pool2, actual source/dedup waits, zero inference)")
+      continue
+    }
     "^(apps/tool-broker/internal/(app/guarded_tab|broker/guarded_tab_resources|runtimeclient/)|internal/resourceexec/single_tab_(contracts|health)|scripts/dev/guarded-tab-runtime-lab[.]sh$)" {
       [void]$specs.Add("docs/architecture/single-tab-production-composition.md")
       [void]$specs.Add("docs/architecture/resource-lease-contract.md")

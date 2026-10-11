@@ -35,6 +35,12 @@ and purpose. An auxiliary worker instead supplies its own current durable job
 claim and full source manifest; it cannot borrow a completed run's lease. Catalog
 rows lock in sorted order before chunks/vectors, including every original parent.
 Publication uses the same transaction and fresh proof after local inference.
+Source and extraction-deduplication locks may wait past a lease or job deadline.
+Catalog access repeats time-sensitive run/task/delegation or independent job
+proof after those waits, including before returning an exact retry's candidate.
+These checks use already-held authority/source locks in the same transaction;
+they neither borrow another pool connection nor reacquire authority after new
+source locks in a separate transaction. Confidence never makes a claim accepted.
 
 Preparing model context pins transcript source revision and deletion watermark.
 Retrieval additionally pins every source ancestor. Each provider release and its

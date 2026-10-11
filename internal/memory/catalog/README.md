@@ -73,6 +73,10 @@ for the required private persistent anchor setup before deployment.
 `ProposeTx` supports trusted structured extraction checkpoints and exact retry
 keys in the caller transaction. It rechecks current owner/job/source access,
 publishes only candidates and rejects a changed body under an existing key.
+Source and deduplication row waits cannot extend worker authority: current run
+lease/state, task/assignment and delegated deadlines, or the independent job
+claim/deadline, are checked again in the caller transaction after the wait.
+Even an exact retry cannot return its original candidate to an expired worker.
 `DedupKey` is not an HTTP/model field; ordinary owner manual proposals keep their
 random identity. Migration043 preserves only opaque IDs/hashes/times separately
 from source/claim text, including after catalog deletion.
