@@ -70,6 +70,7 @@ type OrchestratorConfig struct {
 	GuardedTabRequestEnabled          bool
 	GuardedTabRuntimeEnabled          bool
 	MemoryCandidateEnabled            bool
+	WorkspaceEnabled                  bool
 	GuardedTabHost                    string
 	GuardedTabMetadataURL             string
 	GuardedTabTokenFile               string
@@ -136,6 +137,10 @@ type ToolBrokerConfig struct {
 	GuardedTabRequestControlURL   string
 	MemoryCandidateEnabled        bool
 	MemoryCandidateControlURL     string
+	WorkspaceEnabled              bool
+	WorkspaceProfileID            string
+	WorkspaceRuntimeTarget        string
+	WorkspaceRuntimeTokenFile     string
 	GuardedTabRuntimeEnabled      bool
 	GuardedTabRuntimeTarget       string
 	GuardedTabRuntimeTokenFile    string
@@ -349,6 +354,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 	specs = append(specs, delegationOrchestratorSpecs(&cfg)...)
 	specs = append(specs, guardedTabOrchestratorSpecs(&cfg)...)
 	specs = append(specs, memoryCandidateOrchestratorSpecs(&cfg)...)
+	specs = append(specs, workspaceOrchestratorSpecs(&cfg)...)
 	snapshot, err := loadSpecs(get, specs)
 	if conditionalErr := validateOrchestratorConditionalConfig(cfg); conditionalErr != nil {
 		if err != nil {
@@ -391,6 +397,7 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 	specs = append(specs, delegationBrokerSpecs(&cfg)...)
 	specs = append(specs, guardedTabBrokerSpecs(&cfg)...)
 	specs = append(specs, memoryCandidateBrokerSpecs(&cfg)...)
+	specs = append(specs, workspaceBrokerSpecs(&cfg)...)
 	snapshot, err := loadSpecs(get, specs)
 	return cfg, snapshot, err
 }
@@ -765,6 +772,9 @@ func parseDoctorContainerTargets(value string) []DoctorContainerTarget {
 }
 
 func validateOrchestratorConditionalConfig(cfg OrchestratorConfig) error {
+	if cfg.WorkspaceEnabled && cfg.ActionAuthorityTokenFile == "" {
+		return fmt.Errorf("workspace catalog requires private Broker authentication")
+	}
 	if err := validateGuardedTabConfig(cfg); err != nil {
 		return err
 	}

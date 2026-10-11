@@ -19,6 +19,7 @@ import (
 	"github.com/butler/butler/internal/workspace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	healthv1 "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -61,6 +62,11 @@ func newRuntimeFixture(t *testing.T) *runtimeFixture {
 	t.Cleanup(func() { _ = r.Close() })
 	server := grpc.NewServer()
 	runtimev1.RegisterToolRuntimeServiceServer(server, r)
+	h, err := NewHealth(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	healthv1.RegisterHealthServer(server, h)
 	go server.Serve(listener)
 	t.Cleanup(server.Stop)
 	conn, err := grpc.NewClient(listener.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -69,6 +75,39 @@ func newRuntimeFixture(t *testing.T) *runtimeFixture {
 	}
 	t.Cleanup(func() { _ = conn.Close() })
 	return &runtimeFixture{f, d, a, actionauth.NewService(a, reader, nil), reader, r, runtimev1.NewToolRuntimeServiceClient(conn), token}
+}
+
+func TestWorkspaceInstalledReadinessRejectsWrongProfileRootAndDisabledHistoryIntegration(t *testing.T) {
+	f := newRuntimeFixture(t)
+	if err := CheckReadiness(f.ctx, f.dispatch.profile, f.token); err != nil {
+		t.Fatal("actual runtime not ready", err)
+	}
+	wrong := f.dispatch.profile
+	wrong.ID = "other-profile"
+	if CheckReadiness(f.ctx, wrong, f.token) == nil || CheckReadiness(f.ctx, f.dispatch.profile, strings.Repeat("wrong-token", 4)) == nil {
+		t.Fatal("different profile/auth borrowed readiness")
+	}
+	if err := os.Chmod(f.root, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if CheckReadiness(f.ctx, f.dispatch.profile, f.token) == nil {
+		t.Fatal("shared root advertised ready")
+	}
+	if err := os.Chmod(f.root, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.pool.Exec(f.ctx, `ALTER TABLE code_workspace_effect_evidence DISABLE TRIGGER code_workspace_evidence_immutable`); err != nil {
+		t.Fatal(err)
+	}
+	if CheckReadiness(f.ctx, f.dispatch.profile, f.token) == nil {
+		t.Fatal("disabled immutable history advertised ready")
+	}
+	if _, err := f.pool.Exec(f.ctx, `ALTER TABLE code_workspace_effect_evidence ENABLE TRIGGER code_workspace_evidence_immutable`); err != nil {
+		t.Fatal(err)
+	}
+	if err := CheckReadiness(f.ctx, f.dispatch.profile, f.token); err != nil {
+		t.Fatal("restored exact runtime unavailable", err)
+	}
 }
 func (f *runtimeFixture) claim(t *testing.T, id, tool, raw string) (*runtimev1.ExecuteRequest, string) {
 	t.Helper()

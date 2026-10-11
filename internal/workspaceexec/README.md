@@ -4,7 +4,8 @@
 same PostgreSQL pool/transaction. It grants no tool, runtime, budget or credential
 permission. Exact dispatch admission and the private gRPC file runtime are now
 implemented and tested through the actual Broker Server/router. Application
-bootstrap, operator rollout/readiness and owner reconciliation remain pending;
+bootstrap and operator/owning readiness are now composed under default-false
+operator configuration; owner reconciliation and main rollout remain pending;
 the owning context projection and exact human approval in these tests are
 explicit fixtures. No model tools or production flags are enabled by this change.
 
@@ -44,7 +45,11 @@ obtains only an already-committed ticket and passes it as private gRPC metadata
 through the existing router. No credential-bearing request is supported. Owning
 `workspace_ready` gates exact contract discovery/preparation and the original
 input-claim hash is pinned privately to the grant. The application does not yet
-set that readiness or register these contracts automatically.
+set that readiness or register these contracts unless explicitly enabled by the
+operator. Exact authenticated installed readiness checks canonical hashes, root
+identity/private permissions, source/deletion anchor and intact immutable schema.
+Fixed Unix socket or literal loopback is supported, with no proxy/DNS/LAN bearer
+route. See [the runtime application](../../apps/tool-workspace/README.md).
 
 `PrepareTx` runs before effect/budget/resource/workspace locks. It requires the
 current actual worker/session/task/constraints and deletion anchor, reads only

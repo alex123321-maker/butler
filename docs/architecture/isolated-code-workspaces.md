@@ -83,6 +83,24 @@ and releases reads only after current final checks. Runtime output contains only
 the opaque namespace and bounded code/snapshot. The Broker Server/router composition
 is tested with real PG/files and lost actual-effect acknowledgements. Unknown
 outcomes remain stopped at irreversible admission and cannot be replayed or
-dispatched through a fresh tool. Production application bootstrap, owning readiness,
-runtime deployment/cleanup scheduling and owner reconciliation are still required
-for rollout and full#17.
+dispatched through a fresh tool.
+
+Production application composition is now available under operator-only,
+default-false `BUTLER_WORKSPACE_ENABLED`. Owning bootstrap checks source/anchor
+and intact dispatch/input/history schema before projecting readiness and a fresh
+private input claim hash. Broker installs only its canonical contracts after
+exact authenticated runtime readiness, rejecting raw workspace registry routes.
+The fixed Unix socket or literal loopback target is operator metadata; DNS/proxy/
+LAN bearer fallback is unsupported. Workspace/browser admissions retain separate
+guards, and unsupported browser resource routes stay out of scoped discovery.
+
+The dedicated `tool-workspace` application owns its fixed private artifact root,
+private service token, actual PG/filesystem runtime and scheduled bounded Catalog
+privacy cleanup. Independent root identity/permissions, profile/target/contract
+hashes, deletion anchor and enabled immutable-history triggers gate readiness.
+Compose shares only the private socket and token with Broker; artifact data and
+private temporary files remain exclusive to the runtime. Actual application tests
+cover loopback and Unix processes and scheduled physical source erasure.
+The overlay is explicit and has not been applied to main laba. Unknown writes
+remain quarantined; authenticated owner reconciliation and remaining integrated
+resource/delegation acceptance are still required for full#17.

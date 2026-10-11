@@ -57,8 +57,25 @@ func (s *DispatchStore) CheckReady(ctx context.Context) error {
 	if s == nil || s.provenance.CheckReady(ctx) != nil {
 		return ErrDenied
 	}
-	_, err := s.pool.Exec(ctx, `SELECT a.authorization_id,a.source_context,a.input_claim_hash,d.ticket_id,d.resource_lease_id,e.observation_hash,i.claim_id,i.checkpoint_json FROM code_workspace_authorizations a,code_workspace_dispatches d,code_workspace_effect_evidence e,accepted_inputs i WHERE FALSE`)
-	return err
+	return CheckDispatchSchema(ctx, s.pool)
+}
+
+// Owning catalog bootstrap uses the same content-free schema/immutable-history
+// check. It grants no source, tool, lease, input or runtime authority.
+func CheckDispatchSchema(ctx context.Context, pool *pgxpool.Pool) error {
+	if pool == nil {
+		return ErrDenied
+	}
+	_, err := pool.Exec(ctx, `SELECT a.authorization_id,a.source_context,a.input_claim_hash,d.ticket_id,d.resource_lease_id,e.observation_hash,i.claim_id,i.checkpoint_json FROM code_workspace_authorizations a,code_workspace_dispatches d,code_workspace_effect_evidence e,accepted_inputs i WHERE FALSE`)
+	if err != nil {
+		return err
+	}
+	var intact bool
+	err = pool.QueryRow(ctx, `WITH expected(rel,name,fn,events) AS (VALUES ('code_workspace_sources','code_workspace_sources_immutable','butler_workspace_source_immutable()',27),('memory_sources','code_workspace_source_deleted','butler_workspace_source_deleted()',17),('code_workspace_authorizations','code_workspace_authorizations_immutable','butler_workspace_authorization_immutable()',27),('code_workspace_effect_evidence','code_workspace_evidence_immutable','butler_workspace_authorization_immutable()',27)) SELECT NOT EXISTS(SELECT 1 FROM expected e WHERE NOT EXISTS(SELECT 1 FROM pg_trigger t WHERE t.tgrelid=to_regclass(e.rel) AND t.tgname=e.name AND t.tgfoid=to_regprocedure(e.fn) AND t.tgtype=e.events AND t.tgenabled IN ('O','A') AND NOT t.tgisinternal))`).Scan(&intact)
+	if err != nil || !intact {
+		return ErrDenied
+	}
+	return nil
 }
 func (s *DispatchStore) PrepareContext(ctx context.Context, call *toolbrokerv1.ToolCall, c *toolbrokerv1.ToolContract, g actionauth.Grant) (context.Context, error) {
 	if !Protected(call.GetToolName()) {

@@ -1,5 +1,14 @@
 # Orchestrator
 
+Operator-only `BUTLER_WORKSPACE_ENABLED` defaults false. It requires private
+action authentication, current original-source/deletion anchor and immutable
+workspace/dispatch/input schema before setting private `workspace_ready`.
+Current live accepted-input claim is included only as a private hash; expiry
+removes that authority. Stored settings cannot enable the workspace topology.
+Broker separately checks the exact authenticated installed runtime before
+registering canonical DATA tools. See
+[workspace setup](../tool-workspace/README.md).
+
 Operator-only `BUTLER_MEMORY_CANDIDATE_ENABLED` defaults false and composes a
 private neutral candidate publication control after catalog/anchor/schema checks.
 Its original input claim, exact permanent dispatch, current worker/task/source

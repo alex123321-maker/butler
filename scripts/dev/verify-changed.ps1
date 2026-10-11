@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(apps/tool-workspace/|apps/tool-broker/internal/app/workspace|apps/orchestrator/internal/app/workspace|internal/(config/workspace|workspaceexec/health)|deploy/docker-compose[.]workspaces|docker/tool-workspace/)" {
+      [void]$specs.Add("docs/architecture/isolated-code-workspaces.md")
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/workspace-bootstrap/current/scripts/dev/workspace-lab.sh /srv/storage/butler/agents/workspace-bootstrap bootstrap' then all after isolated source Sync (actual Broker/runtime applications, private Unix/loopback, PG/files and scheduled erasure, race and vet; zero inference)")
+      continue
+    }
     "^(apps/tool-broker/internal/broker/workspaces?[^/]*[.]go$|internal/workspaceexec/|internal/actionauth/workspace|migrations/067_workspace_dispatches[.]|scripts/dev/workspace-lab[.]sh$)" {
       [void]$specs.Add("docs/architecture/isolated-code-workspaces.md")
       [void]$specs.Add("docs/architecture/action-authorization-contract.md")

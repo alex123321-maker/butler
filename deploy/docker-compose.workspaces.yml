@@ -1,0 +1,59 @@
+# Explicit optional overlay; prepare separate private data/socket directories.
+# It enables bounded artifact preparation, with unknown outcomes quarantined.
+services:
+  tool-workspace:
+    build:
+      context: ..
+      dockerfile: docker/tool-workspace/Dockerfile
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 256m
+    cpus: 1.0
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+    environment:
+      BUTLER_HTTP_ADDR: '127.0.0.1:8086'
+      BUTLER_GRPC_ADDR: unix:///run/butler-workspace/runtime.sock
+      BUTLER_POSTGRES_URL: postgres://butler:butler-dev-password@postgres:5432/butler?sslmode=disable
+      BUTLER_POSTGRES_MAX_CONNS: '2'
+      BUTLER_WORKSPACE_PROFILE_ID: ${BUTLER_WORKSPACE_PROFILE_ID:?Stable workspace profile is required}
+      BUTLER_WORKSPACE_ROOT: /var/lib/butler-workspaces
+      BUTLER_WORKSPACE_RUNTIME_TOKEN_FILE: /run/secrets/workspace-runtime
+      BUTLER_MEMORY_DELETION_MANIFEST_FILE: /var/lib/butler-memory/deletions.log
+    secrets: [workspace-runtime]
+    volumes:
+      - ${BUTLER_WORKSPACE_ROOT_SOURCE:?Separate private workspace directory is required}:/var/lib/butler-workspaces
+      - ${BUTLER_WORKSPACE_SOCKET_SOURCE:?Separate private socket directory is required}:/run/butler-workspace
+      - memory-deletion-anchor:/var/lib/butler-memory:ro
+    healthcheck:
+      test: [CMD-SHELL, 'wget -qO- http://127.0.0.1:8086/health >/dev/null || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    ports: []
+    networks: [backend]
+
+  tool-broker:
+    depends_on:
+      tool-workspace:
+        condition: service_healthy
+    environment:
+      BUTLER_WORKSPACE_ENABLED: 'true'
+      BUTLER_WORKSPACE_PROFILE_ID: ${BUTLER_WORKSPACE_PROFILE_ID:?Stable workspace profile is required}
+      BUTLER_WORKSPACE_RUNTIME_TARGET: unix:///run/butler-workspace/runtime.sock
+      BUTLER_WORKSPACE_RUNTIME_TOKEN_FILE: /run/secrets/workspace-runtime
+    secrets: [workspace-runtime]
+    volumes:
+      - ${BUTLER_WORKSPACE_SOCKET_SOURCE:?Separate private socket directory is required}:/run/butler-workspace:ro
+
+  orchestrator:
+    environment:
+      BUTLER_WORKSPACE_ENABLED: 'true'
+
+secrets:
+  workspace-runtime:
+    file: ${BUTLER_WORKSPACE_RUNTIME_TOKEN_SOURCE:?Private workspace runtime token is required}

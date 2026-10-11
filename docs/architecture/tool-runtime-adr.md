@@ -7,7 +7,10 @@ inspection and within irreversible dispatch; package code is never installed.
 
 The additive [isolated code workspace store](isolated-code-workspaces.md) prepares
 bounded owner/task/version-bound code artifacts with file CAS and private temporary
-directories. It exposes no filesystem or shell tool. Production use requires
+directories. Canonical workspace DATA contracts now use default-false private
+Broker/runtime application composition with exact installed readiness, current
+input/source authority, shared budgets and finite resource claims. It exposes
+bounded artifacts and snapshots, with no host path or shell execution. Production use requires
 current resource leases, budgets, provenance and Broker admission; an uncertain
 filesystem/PG boundary blocks instead of replaying a patch.
 
