@@ -70,6 +70,11 @@ func (h *runtimeHealth) Check(ctx context.Context, req *healthv1.HealthCheckRequ
 	}
 	ctx, stop := context.WithTimeout(ctx, 2*time.Second)
 	defer stop()
+	leave, ok := h.runtime.enter()
+	if !ok {
+		return nil, status.Error(codes.FailedPrecondition, "exact installed workspace runtime is unavailable")
+	}
+	defer leave()
 	if req.GetService() != ReadinessService(h.runtime.dispatch.profile) || h.runtime.dispatch.CheckReady(ctx) != nil || h.runtime.files.CheckRoot() != nil {
 		return nil, status.Error(codes.FailedPrecondition, "exact installed workspace runtime is unavailable")
 	}

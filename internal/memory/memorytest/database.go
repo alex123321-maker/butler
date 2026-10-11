@@ -3,13 +3,14 @@ package memorytest
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"os"
 	"path/filepath"
 	"runtime"
 	"sort"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -30,10 +31,17 @@ func Database(t *testing.T) *pgxpool.Pool {
 	if e != nil {
 		t.Fatal(e)
 	}
+	t.Cleanup(admin.Close)
 	if _, e = admin.Exec(ctx, `CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public`); e != nil {
 		t.Fatal(e)
 	}
-	schema := "memory_" + strings.ReplaceAll(time.Now().UTC().Format("20060102150405.000000000"), ".", "")
+	// PostgreSQL fixtures run concurrently in separate package processes. A
+	// wall-clock timestamp does not guarantee distinct schema names across them.
+	var schemaID [16]byte
+	if _, e = rand.Read(schemaID[:]); e != nil {
+		t.Fatal("isolated memory schema identity unavailable")
+	}
+	schema := "memory_" + hex.EncodeToString(schemaID[:])
 	if _, e = admin.Exec(ctx, "CREATE SCHEMA "+schema); e != nil {
 		t.Fatal(e)
 	}
@@ -45,7 +53,6 @@ func Database(t *testing.T) *pgxpool.Pool {
 	t.Cleanup(func() {
 		pool.Close()
 		_, _ = admin.Exec(context.Background(), "DROP SCHEMA "+schema+" CASCADE")
-		admin.Close()
 	})
 	_, file, _, _ := runtime.Caller(0)
 	paths, e := filepath.Glob(filepath.Join(filepath.Dir(file), "..", "..", "..", "migrations", "*.up.sql"))

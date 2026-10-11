@@ -51,6 +51,21 @@ identity/private permissions, source/deletion anchor and intact immutable schema
 Fixed Unix socket or literal loopback is supported, with no proxy/DNS/LAN bearer
 route. See [the runtime application](../../apps/tool-workspace/README.md).
 
+`Runtime` holds exclusive Linux `workspace.RootOwner` ownership of the actual
+directory inode before opening Store/Observer/privacy handles. Contention and
+unsupported platforms deny startup with a fixed safe error. No lock/PID/temp
+file is created; independent roots retain concurrency. Readiness and Execute
+check the current named private root against that held inode; Store admission
+repeats this after authority/resource waits and privacy erasure checks it around
+physical work. A lifecycle guard
+drains entered Execute/readiness/privacy work before Close releases ownership;
+Close is idempotent and a closed runtime denies future entry. Process death
+releases only the operating-system lock, preserving PG resource/effect history
+and quarantine. This is a prerequisite for later owner recovery, not an owner
+reconciliation decision or a new tool permission. Actual process/SIGKILL and PG
+pool2 Close-versus-Execute regressions run with
+`scripts/dev/workspace-lab.sh <isolated-agent-root> ownership`.
+
 `PrepareTx` runs before effect/budget/resource/workspace locks. It requires the
 current actual worker/session/task/constraints and deletion anchor, reads only
 roots of the actual run's complete pinned graph and the latest immutable
