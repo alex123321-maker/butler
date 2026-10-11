@@ -599,6 +599,14 @@ plaintext setting fallback. Missing encryption prevents import/refresh persisten
 The settings UI shows only connection/expiry metadata and supports disconnect;
 connected credentials do not prove subscription quota. No automatic paid-credit,
 API billing, account rotation or alternate endpoint fallback is implemented.
+
+The private operator stdin origin audit compares current encrypted PG credentials
+with a bounded reference import and emits only fixed match booleans. It never
+refreshes, writes or calls OAuth/inference, even if the access token expired.
+No token hash, account/project ID or raw store error is returned. Case/escaped
+duplicate JSON import keys deny. A refresh mismatch may be token rotation;
+origin equality does not establish inference quota accounting. This operator
+capability has no model, channel, settings API or runtime route.
 See the [native Antigravity operator guide](../../deploy/antigravity/README.md).
 
 An optional lab network proxy keeps its subscription and full configuration in a

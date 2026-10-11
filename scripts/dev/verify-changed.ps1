@@ -26,6 +26,12 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/providerauth/|cmd/provider-auth/|scripts/dev/provider-origin-lab[.]sh$)" {
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/provider-origin-audit/current/scripts/dev/provider-origin-lab.sh /srv/storage/butler/agents/provider-origin-audit narrow' after isolated Sync; full adds actual encrypted PG, race, vet and operator build without inference")
+      continue
+    }
     "^(internal/delegation/attempt[.]go$|apps/orchestrator/internal/(app|orchestrator)/delegation_attempt.*[.]go$|apps/orchestrator/internal/task/delegation_attempts[.]go$|scripts/dev/delegation-attempts-lab[.]sh$)" {
       [void]$specs.Add("docs/architecture/delegation-contract.md")
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")

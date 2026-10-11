@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -19,7 +20,7 @@ import (
 )
 
 func main() {
-	action := flag.String("action", "state", "Antigravity operator action: import, resolve, state, disconnect, smoke")
+	action := flag.String("action", "state", "Antigravity operator action: import, resolve, state, audit-origin, disconnect, smoke")
 	flag.Parse()
 	if err := execute(*action); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -56,6 +57,12 @@ func execute(action string) error {
 			return err
 		}
 		fmt.Println("Antigravity access token resolved.")
+	case "audit-origin":
+		report, err := m.AuditAntigravityOrigin(ctx, os.Stdin)
+		if err != nil {
+			return err
+		}
+		return json.NewEncoder(os.Stdout).Encode(report)
 	case "state":
 		state, err := m.State(ctx, modelprovider.ProviderAntigravity)
 		if err != nil {

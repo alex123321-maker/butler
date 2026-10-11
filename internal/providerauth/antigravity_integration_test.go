@@ -57,6 +57,14 @@ func TestAntigravityImportEncryptedPostgresAndReconnect(t *testing.T) {
 		t.Fatal("raw OAuth persisted at rest")
 	}
 	restarted := NewManager(config.NewPostgresSettingsStore(privatePool, config.WithSettingsCodec(codec)))
+	audit, err := restarted.AuditAntigravityOrigin(ctx, strings.NewReader(importFixture(time.Now().Add(-time.Hour), "ignored-reference-project")))
+	if err != nil || !audit.StoredCredentials || !audit.OAuthApplicationMatches || !audit.OAuthCredentialMatches || !audit.RefreshCredentialMatches {
+		t.Fatal("encrypted origin audit failed", err)
+	}
+	var unchanged string
+	if privatePool.QueryRow(ctx, `SELECT value FROM system_settings WHERE key=$1`, settingKeyAntigravity).Scan(&unchanged) != nil || unchanged != stored {
+		t.Fatal("origin audit rewrote encrypted auth state")
+	}
 	auth, err := restarted.ResolveAntigravity(ctx)
 	if err != nil || auth.AccessToken != "access-old" || auth.ProjectID != "" {
 		t.Fatal("encrypted credentials did not survive restart")
@@ -73,5 +81,8 @@ func TestAntigravityImportEncryptedPostgresAndReconnect(t *testing.T) {
 	}
 	if _, err := wrongKey.ResolveAntigravity(ctx); err == nil {
 		t.Fatal("wrong encryption key accepted")
+	}
+	if _, err := wrongKey.AuditAntigravityOrigin(ctx, strings.NewReader(importFixture(time.Now().Add(time.Hour), ""))); err == nil || strings.Contains(err.Error(), "private") || strings.Contains(err.Error(), "access-old") {
+		t.Fatal("origin audit accepted wrong encryption or leaked material")
 	}
 }
