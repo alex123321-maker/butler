@@ -85,8 +85,12 @@ draft-only commands remained underspecified, and missing measurement fields
 became zeros. Both rejected versions and independent verdicts are preserved.
 V3 asks for 30 specific undocumented properties, removes target values from
 negative injection documents, makes those commands explicitly draft-only and
-requires explicit measurement fields. V3 has **not** been independently approved
-or evaluated;
+requires explicit measurement fields. The separately appointed critic approved
+V3 golden answers and criteria, with all 240 cases reviewed and 76 independent
+metadata negative checks; the signed external verdict is
+[retained](../../testdata/acceptance/reviews/ru-v3-golden-review-20261011.json).
+This is `PASS_GOLDEN_REVIEW_ONLY`, not model-quality or release approval. Actual
+model measurements remain absent;
 the lab writes `model-no-go.json` with zero actual model calls. Existing local
 quality reports do not measure this corpus. Do not train/tune on holdout or infer
 model accuracy from the scorer's controlled unit fixture.
@@ -101,6 +105,18 @@ has no key-generation, signing or approval-writing command. The verifier itself
 must be the independent operator's pinned read-only binary; running an arbitrary
 candidate's rewritten verifier does not enforce independence. Integrating that
 boundary with automatic development/repair release is still pending #20/#21.
+
+The V3 reviewer root is `/srv/storage/butler/reviews/issue33-20261011-r3`, outside
+candidate source. It contains `public-key.hex` (file SHA256
+`eab1a10c81977f9da1bac8174e8cfa47e15effa499bc547ce38be166316165b3`),
+`approval.json` (`b2ddf7534660c004b23e43d40a583923f659cd889ebde600ec6c1ac197ad2c6b`)
+and independently pinned `verifier/acceptance`
+(`defbb25076f772d4078073f406aed742fc5d8ab32a84b13295be9121325e5d69`).
+Run `ssh -o BatchMode=yes laba '/srv/storage/butler/reviews/issue33-20261011-r3/verifier/verify-golden'`
+to reproduce signature/digest approval with zero model calls. Read-only file
+modes and an independent AI role on the shared host do not protect against its
+administrator. The public synthetic corpus is not a hidden benchmark. Runtime
+key/binary pinning in a protected checker remains a separate release boundary.
 
 ```sh
 acceptance -mode score -root /src -split holdout \

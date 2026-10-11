@@ -36,11 +36,11 @@ matching the mandatory memory barrier; it does not disable that guard.
 | --- | --- |
 | Reproducible controlled effects | Fixed lab scripts, disposable PG/Redis, exact Go events, bounded actual Chromium and private Broker/HTTP/approval fixtures; see final run record below |
 | Initial Russian data | 240 self-authored cases / 30 source groups, 60 each retrieval/extraction/classification/commands; no real personal data or working secret |
-| Development/tuning/holdout separation | 96/64/80 cases, 12/8/10 groups; original and all derived cases stay in one split; exact/near-trigram screening runs programmatically; independent semantic review pending |
+| Development/tuning/holdout separation | 96/64/80 cases, 12/8/10 groups; original and all derived cases stay in one split; exact/near-trigram screening and independent V3 golden review passed; public synthetic data are not a hidden benchmark |
 | Critical contracts | Named Go assertions, real PG race/order tests, actual SIGKILL, Chromium and dump/restore; no model judge required |
 | Model outcomes and resources | Strict observation scorer with exact source/command schema, classification errors, measured latency/tokens and pinned weights/runtime/hardware; actual observations absent, NO_GO |
 | Single versus multiple agents | Same-task/model/code/hardware/resource/pricing validator and complete per-task cost fields; actual experiment pending #16/#17 |
-| Independent golden control | Ed25519 reviewer/candidate separation, corpus+criteria digest, outside-source public-key/approval mounts, no signing command; no approval supplied, and automatic release composition pending #20/#21 |
+| Independent golden control | Separate user-appointed critic signed frozen V3 corpus+criteria; outside-source key/approval and pinned verifier verified; automatic protected release composition remains pending #20/#21 |
 | Reproducible version pins | Exact code commit and snapshot hash, migration/corpus/criteria hashes, Go/container IDs, hardware manifest; raw private artifacts retained on lab |
 | Observation before model release | Export/scoring cannot execute an action; secret sources excluded before input; no model connected for this corpus and NO_GO cannot promote one |
 
@@ -61,6 +61,27 @@ perfect scorer unit fixture are not model quality evidence.
 
 ## Recorded lab runs
 
+V3 received **PASS_GOLDEN_REVIEW_ONLY** from the independent user-appointed critic
+on frozen commit `159934737a42eeec7a1deef2b90f6a9a6fd4c0b1`. All 240 cases were
+reviewed, ten harness tests passed with race/vet and 76 independent malformed
+measurement checks were rejected. The signed approval and public key remain
+outside candidate source in `/srv/storage/butler/reviews/issue33-20261011-r3`.
+The [content-free verdict](../../testdata/acceptance/reviews/ru-v3-golden-review-20261011.json)
+pins their exact hashes, corpus, criteria, reviewer and separately frozen binary.
+The reproduction helper successfully verified the signature after review.
+Detailed review SHA256:
+`2074d86dd88589cf1bf4c89e0b689c56dc55e3aadbc1bc3fb219e7c1bfa0963a`.
+This is role independence on a shared host, not administrator isolation. It
+authorizes no execution, model release or quality claim; actual model calls
+remain zero. Prior NO_GO files and corpus versions remain unchanged.
+
+The integrated Full matrix on the same frozen commit also passed 28 groups and
+137 required executions, with eight scenarios PASS and five PENDING. Its private
+proof is `/srv/storage/butler/agents/issue-completion/reports/fault-20261011T052708Z-3845374`;
+the [integrated content-free report](../../deploy/security/acceptance-integrated-20261011.json)
+has SHA256 `05f587f517e1c21f459465ec2eef58b7c070c98ead52bd22947bde9654ce66bf`.
+`issue_33_ready=false` remains unchanged by the golden review.
+
 The separate second review rejected V2 with NO_GO. Its
 [content-free verdict](../../testdata/acceptance/reviews/ru-v2-no-go-20261011.json)
 and detailed external report remain at `/srv/storage/butler/reviews/issue33-20261011-r2`
@@ -70,8 +91,9 @@ draft-only ambiguities, a negative extraction header containing RetryAfter,
 and absent metrics decoded as zero. Active V3 changes all absent questions to
 undocumented concrete properties, excludes target values from negative injection
 documents, clarifies draft-only requests, and strictly requires every measured
-counter. Unknown usage cannot become zero. V3 independent approval and actual
-model measurements remain pending; earlier reports/verdicts are immutable.
+counter. Unknown usage cannot become zero. V3 golden approval subsequently passed
+as recorded above; actual model measurements remain pending and earlier
+reports/verdicts are immutable.
 
 Independent reviewer `codex-independent-corpus-critic-20261011-r1` rejected V1
 with NO_GO. The [original verdict](../../testdata/acceptance/reviews/ru-v1-no-go-20261011.json)
