@@ -1,0 +1,72 @@
+{
+  "status": "preparation_passed",
+  "issue_16_ready": false,
+  "native_execution_authorized": false,
+  "snapshot": "20261011-105138-514",
+  "proof_ref": "/srv/storage/butler/agents/durable-tasks/reports/delegation-native-prepare-20261011T035141Z-3488792",
+  "events_sha256": "39b895df9443cd63461dc8475eacb86593450491e615a53e811895dc69f3682e",
+  "runtime_probe_sha256": "f0e8607bd809b883eb84bfeecced4725648c5d41f7567b1c112dd840b3c3c925",
+  "top_level_passed": 9,
+  "subtests_passed": 14,
+  "failed": 0,
+  "skipped": 0,
+  "postgres_max_connections_per_pool": 2,
+  "race_detector": true,
+  "actual_new_native_attempts": 0,
+  "historical_native_attempts": 5,
+  "historical_known_usage_pairs": 1,
+  "historical_unknown_usage_pairs": 4,
+  "historical_observed_input_tokens": 5526,
+  "historical_observed_output_tokens": 101,
+  "historical_complete_token_total_available": false,
+  "maximum_new_native_attempts": 12,
+  "maximum_total_native_attempts": 17,
+  "new_attempt_ordinals": [6, 17],
+  "baseline_sha256": "0726ca7b04668bedf863863d17db6593b477328a33a4b353d1f3a19f9abf97a3",
+  "baseline_artifacts": [
+    {
+      "file": "deploy/delegation/native-scenario-failed.json",
+      "sha256": "28c75c31827f8a25ca8ed101e6e04b8264a7e66ee9ce18808d504d5af748c8f0",
+      "release_ref": "85bef824e838caef64407891d5b228f982c51032",
+      "attempts_contributed": 3,
+      "status": "failed"
+    },
+    {
+      "file": "deploy/delegation/native-scenario-followup-failed.json",
+      "sha256": "f5d25f36b574464508a4124ac7490d525e75d8c8cf60111a0bb637637e777619",
+      "release_ref": "6bf29435cdf74ee143f4d3dd1c12defb2f9d1aa4",
+      "attempts_contributed": 2,
+      "status": "failed"
+    }
+  ],
+  "source_sha256": {
+    "apps/orchestrator/internal/app/delegation_native_limits_test.go": "42569afc4418d399d30229e8913f64b42855b921dfa287e3c12d10c0ef4311b5",
+    "apps/orchestrator/internal/app/delegation_native_scenario_test.go": "a9e54aab2c77f815ba00ba386ff957e1ebc81c21848d74cd9ad54933d9ed7db5",
+    "apps/orchestrator/internal/app/delegation_native_auth_test.go": "2ae78ed95862e5cc7336fd52398b9fb0475e75ea81924d41d6c621a24e8ceea6",
+    "apps/tool-broker/internal/broker/delegation_native_harness_test.go": "eeb859a71660ab73a70482e82c08dd0dcbc02c9c6e56e0df9ae77aab5615de48",
+    "scripts/dev/fixtures/delegation-native-research.json": "cba07ac2fca8c56dc56f4af56c546b956d08871d8a2f22e539a8d8c4f951e296",
+    "scripts/dev/delegation-native-lab.sh": "044ba9961bdeaab427f2ca5d763c2a77de889e3c0b4323908eb2073b667597d0"
+  },
+  "verified_without_inference": [
+    "both_failed_artifact_bytes_pinned_and_rechecked_before_each_entry",
+    "nested_first_history_not_counted_twice",
+    "immutable_prior_five_new_twelve_total_seventeen",
+    "sixteen_contenders_receive_exactly_twelve_new_slots",
+    "changed_first_or_followup_artifact_denies_all_three_later_entry_kinds",
+    "start_continue_tool_result_charged_before_invalid_request_validation",
+    "nullable_historical_usage_retained_separately",
+    "objective_source_checker_and_exact_receipt_shape",
+    "private_uid10001_no_network_runtime_probe",
+    "synthetic_encrypted_import_only",
+    "actual_separate_broker_private_admission_finite_receipt"
+  ],
+  "limits": [
+    "production_root_mandate_owner_day_limits_remain_twelve",
+    "no_real_auth_file_or_proxy_used_by_prepare",
+    "no_successful_native_single_parallel_comparison",
+    "previous_second_native_failure_cause_unknown",
+    "independent_different_date_observations_are_not_contradiction_resolution",
+    "shared_auxiliary_local_service_is_not_local_generative_delegation",
+    "hash_pinned_artifacts_not_cryptographic_signatures"
+  ]
+}

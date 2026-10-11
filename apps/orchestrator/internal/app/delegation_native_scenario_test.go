@@ -40,26 +40,26 @@ import (
 const nativeFixtureOwner = "native-research-owner"
 
 type nativeWidthEvidence struct {
-	Width                      int                    `json:"width"`
-	TaskID                     string                 `json:"task_id"`
-	InputID                    string                 `json:"input_id"`
-	ParentRunID                string                 `json:"parent_run_id"`
-	ChildTaskIDs               []string               `json:"child_task_ids"`
-	ChildRunIDs                []string               `json:"child_run_ids"`
-	ChildResultIDs             []string               `json:"child_result_ids"`
-	ReportSourceRefs           []delegation.SourceRef `json:"report_source_refs"`
-	SourceRefs                 []delegation.SourceRef `json:"source_refs"`
-	ObjectiveChecks            []bool                 `json:"objective_checks"`
-	ParentWorkerKilled         bool                   `json:"parent_worker_killed"`
-	ClaimExpiryWaitMillis      int64                  `json:"claim_expiry_wait_millis"`
-	RecoveryAndChildMillis     int64                  `json:"recovery_and_child_millis"`
-	ParentReceiptCheck         bool                   `json:"parent_receipt_check"`
-	ElapsedMillis              int64                  `json:"elapsed_millis"`
-	MaximumChildOverlap        int                    `json:"maximum_child_overlap"`
-	SharedRootReservations     budget.Units           `json:"shared_root_reservations"`
-	ParentTaskStillActive      bool                   `json:"parent_task_still_active"`
-	IndependentConflictKept    bool                   `json:"independent_conflict_kept"`
-	UnverifiedAcceptanceDenied bool                   `json:"unverified_acceptance_denied"`
+	Width                       int                    `json:"width"`
+	TaskID                      string                 `json:"task_id"`
+	InputID                     string                 `json:"input_id"`
+	ParentRunID                 string                 `json:"parent_run_id"`
+	ChildTaskIDs                []string               `json:"child_task_ids"`
+	ChildRunIDs                 []string               `json:"child_run_ids"`
+	ChildResultIDs              []string               `json:"child_result_ids"`
+	ReportSourceRefs            []delegation.SourceRef `json:"report_source_refs"`
+	SourceRefs                  []delegation.SourceRef `json:"source_refs"`
+	ObjectiveChecks             []bool                 `json:"objective_checks"`
+	ParentWorkerKilled          bool                   `json:"parent_worker_killed"`
+	ClaimExpiryWaitMillis       int64                  `json:"claim_expiry_wait_millis"`
+	RecoveryAndChildMillis      int64                  `json:"recovery_and_child_millis"`
+	ParentReceiptCheck          bool                   `json:"parent_receipt_check"`
+	ElapsedMillis               int64                  `json:"elapsed_millis"`
+	MaximumChildOverlap         int                    `json:"maximum_child_overlap"`
+	SharedRootReservations      budget.Units           `json:"shared_root_reservations"`
+	ParentTaskStillActive       bool                   `json:"parent_task_still_active"`
+	IndependentObservationsKept bool                   `json:"independent_observations_kept"`
+	UnverifiedAcceptanceDenied  bool                   `json:"unverified_acceptance_denied"`
 }
 type nativeScenarioEvidence struct {
 	Status            string                   `json:"status"`
@@ -273,7 +273,7 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 18*time.Minute)
 	defer cancel()
 	f := newNativeScenarioFixture(t, ctx)
-	history, err := readNativeHistory(nativeHistoryPath())
+	history, err := readNativeHistory(nativeHistoryPaths()...)
 	if err != nil {
 		t.Fatal("committed historical experiment evidence unavailable")
 	}
@@ -645,7 +645,7 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 		t.Fatal("parent completed from model consensus")
 	}
 	v.ParentTaskStillActive = true
-	v.IndependentConflictKept = true
+	v.IndependentObservationsKept = true
 	v.ElapsedMillis = time.Since(started).Milliseconds()
 	return v
 }

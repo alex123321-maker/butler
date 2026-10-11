@@ -10,7 +10,7 @@ source_dir=$(readlink -f "$root/current")
 export DOCKER_CONFIG="$root/.cache/docker"
 if [[ "$phase" == execute ]]; then
   if [[ ${BUTLER_DELEGATION_NATIVE_ACCEPTANCE:-} != 1 ]]; then
-    printf '{"status":"skipped","reason":"native_opt_in_unset","new_native_attempts":0,"historical_native_attempts":3,"total_native_attempts":3}\n'
+    printf '{"status":"skipped","reason":"native_opt_in_unset","new_native_attempts":0,"historical_native_attempts":5,"total_native_attempts":5}\n'
     exit 0
   fi
   [[ ${BUTLER_DELEGATION_NATIVE_RELEASE:-} =~ ^[a-f0-9]{40}$ ]] || exit 2
@@ -77,7 +77,7 @@ docker run --rm --user "$(id -u):$(id -g)" --network "$network" --memory 1536m -
 go test -race -c -o /binaries/broker.test ./apps/tool-broker/internal/broker
 chmod 555 /binaries/orchestrator.test /binaries/broker.test
 export BUTLER_DELEGATION_BROKER_BINARY=/binaries/broker.test
-go test -json -race -run "^TestNativeDelegation(ObjectiveFixtureRejectsNarrativeAuthority|TwelveAttemptBoundIntegration|CarryoverBaselineRejectsMismatch|ProviderMethodsAreChargedBeforeValidationIntegration|PrivateRuntimeFiles|EncryptedFixtureImportWithoutInferenceIntegration|CompositionWithoutInferenceIntegration|BrokerPreflightWithoutInferenceIntegration)$" -count=1 -timeout=90s ./apps/orchestrator/internal/app' > "$proof/tests.jsonl"
+go test -json -race -run "^TestNativeDelegation(ObjectiveFixtureRejectsNarrativeAuthority|TwelveAttemptBoundIntegration|CarryoverBaselineRejectsMismatch|EveryReservationRevalidatesBothArtifactsIntegration|ProviderMethodsAreChargedBeforeValidationIntegration|PrivateRuntimeFiles|EncryptedFixtureImportWithoutInferenceIntegration|CompositionWithoutInferenceIntegration|BrokerPreflightWithoutInferenceIntegration)$" -count=1 -timeout=90s ./apps/orchestrator/internal/app' > "$proof/tests.jsonl"
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
 docker run --rm --network none --user 0:0 --volume "$proof/runtime:/private" alpine:3.22 \
   sh -eu -c 'chown 10001:10001 /private; chmod 700 /private'
@@ -88,7 +88,7 @@ docker run --rm --network none --user 10001:10001 --read-only --cap-drop ALL \
   > "$proof/runtime-files.txt"
 sha256sum "$proof/runtime-files.txt" > "$proof/runtime-files.sha256"
 if [[ "$phase" == prepare ]]; then
-  printf '{"status":"preparation_passed","new_native_attempts":0,"historical_native_attempts":3,"total_native_attempts":3,"model_acceptance":"pending"}\n'
+  printf '{"status":"preparation_passed","new_native_attempts":0,"historical_native_attempts":5,"total_native_attempts":5,"maximum_total_native_attempts":17,"maximum_new_native_attempts":12,"model_acceptance":"pending"}\n'
   exit 0
 fi
 # The preparation probe already verified executable/private-file access as the
@@ -116,4 +116,4 @@ docker run --rm --network none --user 10001:10001 --volume "$proof/runtime:/priv
   cat /private/scenario.json > "$proof/scenario.json" || status=1
 sha256sum "$proof/scenario.json" "$proof/native-events.txt" > "$proof/native-evidence.sha256"
 [[ "$status" == 0 ]] || exit "$status"
-printf '{"status":"experiment_passed","historical_native_attempts":3,"maximum_total_native_attempts":15,"maximum_new_native_attempts":12,"issue_closure":"pending_audit"}\n'
+printf '{"status":"experiment_passed","historical_native_attempts":5,"maximum_total_native_attempts":17,"maximum_new_native_attempts":12,"issue_closure":"pending_audit"}\n'

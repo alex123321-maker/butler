@@ -26,7 +26,7 @@ func nativeFixtureProvider(ctx context.Context, pool *pgxpool.Pool, importPath, 
 	if pool == nil || limit == nil || limit.pool != pool {
 		return nil, errNativeFixtureDenied
 	}
-	if _, err := readNativeHistory(nativeHistoryPath()); err != nil {
+	if _, err := readNativeHistory(nativeHistoryPaths()...); err != nil {
 		return nil, err
 	}
 	key, err := privateNativeFixtureKey(keyPath)

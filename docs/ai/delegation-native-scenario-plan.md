@@ -27,8 +27,8 @@ ancestor bodies or any tool permission. Candidate contract text is Catalog DATA.
 Expected native requests per width are three parent turns (two admissions and a
 receipt-only final) and one turn per child. A durable fixture counter reserves each
 Start/Continue/Submit attempt before forwarding to the actual provider, including
-requests interrupted by process loss. Its total cap is fifteen: three immutable
-historical attempts plus at most twelve new attempts across both widths/restarts;
+requests interrupted by process loss. Its total cap is seventeen: five immutable
+historical attempts from both failed reports plus at most twelve new attempts across both widths/restarts;
 it never deduplicates away an attempted request. Production
 root/delegation/owner-day budgets remain independently enforced. No automatic
 retry, model fallback, paid overage, other inference or extra quota probe runs.
@@ -48,11 +48,12 @@ lease outcomes. Width one leaves the second child waiting until actual final
 collection; width two requires both child claims gated before process loss.
 
 Each child receives its own selected synthetic Russian observation and immutable
-contract. The observations intentionally differ. The objective fixture checker
+contract. The observations intentionally differ in value and date. The objective fixture checker
 compares exact cited source/result identities, current versions/hashes and bounded
 structured values with the immutable source fixture. It does not use model
 agreement, narrative confidence or finish reason as verification. Independent
-results and conflict remain recorded; parent/task status is not promoted to
+observations remain separately recorded; this is not contradiction detection or
+resolution. Parent/task status is not promoted to
 completed by a model final or admission receipt. A failed model shape/citation is
 a failed experiment, with no corrective inference retry.
 The parent's final must contain exactly the two actual admitted child IDs and
@@ -76,12 +77,12 @@ PG or the read-only import file. Refresh traffic, if necessary, is authenticatio
 traffic, not an extra inference/fallback. Its credential rotation is an operator
 workflow concern to review before the single coordinated experiment.
 
-`scripts/dev/delegation-native-lab.sh ROOT prepare` runs eight zero-inference
+`scripts/dev/delegation-native-lab.sh ROOT prepare` runs nine zero-inference
 PG/race groups and compiles both real process harnesses. A separate no-network
 probe runs the private-file test as the actual runtime UID10001 under its
 read-only root. These groups verify the
-16-contender remaining-twelve cap with a three-attempt carryover, immutable
-baseline mismatch/reconstruction denial, all three method charges before invalid
+16-contender remaining-twelve cap with a five-attempt carryover, both immutable
+artifact mismatch/reconstruction denial, per-entry revalidation and all three method charges before invalid
 request rejection, strict objective checker, private
 runtime-file guards, encrypted synthetic import, authentic owner scope and real
 Broker → private admission → durable receipt under the exact finite policy.
@@ -109,9 +110,9 @@ Reports separate conservative reservations from nullable actual usage metadata.
 | Independent selective contexts | Native request validator sees actual prepared DATA refs, denies sibling body or child tools | Pending actual requests |
 | Single versus bounded parallel | Same refs/hashes/prompt and shared owner mandate/day; actual child run intervals must show peak one versus two | Pending actual requests |
 | Parent process loss | Kill completed parent executor with real gated accepted child claims; await real TTL | Pending actual process-loss run |
-| Independent/conflicting results | Strict fixed source/value/date/citation check, separate final/report refs; owner Accept denied without independent persisted verification | Pending actual results |
+| Independent observations | Strict fixed source/value/date/citation check, separate final/report refs; owner Accept denied without independent persisted verification | Pending actual results; different dates are not contradictory evidence |
 | Stop/amend/delete | Actual owner controls and Catalog deletion after finals, current historical-source/manager checks | Pending metadata barriers; no late native callback injection claim |
-| Shared budgets/restarts | Historical three pinned, at most twelve new calls/total fifteen; independent real root/delegation/mandate/day scopes remain twelve and usage is separate | Cap and finite Broker policy passed; model usage pending |
+| Shared budgets/restarts | Historical five pinned from both reports, at most twelve new calls/total seventeen; independent real root/delegation/mandate/day scopes remain twelve and usage is separate | Zero-inference cap checks passed; immutable review and successful model comparison pending |
 | One loaded local model rather than per-agent weights | Cloud internals cannot be observed by this runner | Separate shared local service evidence required; no cloud-weight claim |
 | Arbitrary mid-native crash, blocked child historical report bridge | Outside this narrowly scheduled experiment | Pending separate evidence; never synthetic PASS |
 
@@ -212,18 +213,18 @@ native auth or inference. This diagnosis spent zero new native requests; the
 failed actual experiment still records three. A provider-entry regression PASS
 does not replace the failed native run or establish delegation acceptance.
 
-## Prepared historical accounting
+## Historical ledger used by the second failed window
 
-The next runner's fixture ledger starts at three and pins the exact failed report
+The reviewed second window's fixture ledger started at three and pinned the exact failed report
 SHA256 `28c75c31827f8a25ca8ed101e6e04b8264a7e66ee9ce18808d504d5af748c8f0`.
 Missing, altered or symlinked baseline artifacts fail before import/inference.
-Its immutable metadata records prior three, ceiling fifteen and remaining twelve;
+Its immutable metadata recorded prior three, ceiling fifteen and remaining twelve;
 the counter cannot decrease. Every attempted Start/Continue/Submit revalidates
 the public baseline and commits a single pre-call CAS plus content-free attempt
 record. Reconstruction cannot reset the counter. New attempt ordinals start at
 four, distinguishing this experiment from historical observations.
 
-New reports expose total and new attempt counts, maximum twelve new/fifteen total,
+That window's report exposes total and new attempt counts, maximum twelve new/fifteen total,
 the separate historical report/status/release and its original nullable usage,
 plus new attempt and usage rows. Null historical usage remains unavailable; it is
 never zero or part of the new fixture's measured scope reservations. Root/day/
@@ -290,8 +291,8 @@ that exports bounded typed input/run/tool/checkpoint state before cleanup and
 tests that export under deliberate provider/tool denials. Such a test would
 establish observability, not reproduce an unknown native cause or authorize
 another model experiment. Issue16 stays open. The reviewed three-attempt baseline
-was accounting for this completed window only; it must not silently reset the
-now-observed total of five for a future invocation.
+was valid only for this completed window. The current runner pins both immutable
+failed artifacts and starts from five, as described below.
 
 ## Bounded owned-state export without inference
 
@@ -340,3 +341,52 @@ The final content-free proof is
 observability of intentionally scripted boundaries, with zero new native calls.
 They do not recover the discarded original schema, identify the unknown native
 failure, prove successful children, or establish the required native comparison.
+
+## Current five-attempt ledger and remaining coordinated window
+
+The active fixture pins both original FAILED files by exact SHA256 and release:
+the first report contributes three attempts, the second contributes only its two
+new attempts. Its nested historical three are checked for exact equality and
+never counted again. Five original usage records remain separate from new usage:
+one has observed input5526/output101 tokens; four have null input/output usage.
+Null usage is unavailable, never zero. Both source files are checked before
+import and before every Start/Continue/Submit reservation. Missing, swapped,
+altered, oversized or symlinked files deny entry. The immutable PostgreSQL
+counter starts at five, permits only twelve new calls, and stops at seventeen;
+new attempt ordinals are six through seventeen. It cannot decrease or change
+either baseline hash. Production root/mandate/day limits remain twelve.
+
+The no-inference preparation proves sixteen competing reservations obtain only
+twelve new slots, reconstruction cannot reset them, and all three native entry
+methods are charged before invalid requests fail without a network client.
+Separate tests alter each artifact after a valid reservation and deny all three
+later entry kinds without spending a slot. Exact known/unknown historical usage
+and both hashes are asserted. Runtime probing is still no-network and uses no
+private authentication file. Content-free proof is recorded in
+`deploy/delegation/native-five-attempt-preparation.json`.
+
+Final-code preparation used snapshot `20261011-105138-514`: nine top-level
+groups and fourteen subtests passed on actual PostgreSQL pool2 with `-race`,
+without failure or skip. The no-network runtime UID10001 probe also passed.
+Event SHA256 is
+`39b895df9443cd63461dc8475eacb86593450491e615a53e811895dc69f3682e`.
+These are zero new native requests; the five historical requests remain failed.
+
+No further execute window has been authorized at this preparation stage.
+After explicit review of an immutable release and coordinated inference window,
+the only proposed execution is one invocation of the existing runner: widths1
+then2, the same selected synthetic sources/prompt/finite scopes, three parent
+requests plus two child requests per width, at most twelve new attempted calls
+in total. There is no retry, shape repair, fallback, quota probe or extra model
+request. On failure all workers stop before the bounded owned-state export;
+original FAILED reports stay unchanged. A completed-parent executor SIGKILL and
+real gated-claim expiry are exercised, not an arbitrary mid-native crash. The
+post-final stop/amend/deletion checks are metadata barriers, not injected late
+native-stream callbacks.
+
+The active report field `independent_observations_kept` means two exact separately
+saved source/final/report observations. It never claims a contradiction resolver.
+Even a successful invocation cannot by itself close issue16: delegated local
+generative contexts, actual contradictory research resolution and the blocked
+attempt report bridge are not established. The consolidated current evidence
+and remaining gates are in `docs/ai/delegation-current-evidence.md`.
