@@ -175,7 +175,7 @@ func (f *nativeScenarioFixture) composition(t *testing.T, width int) (*Delegatio
 	limits := task.DefaultDelegationLimits()
 	limits.MaxParallel = width
 	admission, err := NewDelegationAdmission(f.pool, f.tasks, f.sessions, f.inputs, f.sources, limits)
-	if err != nil {
+	if err != nil || admission.CheckReady(f.ctx) != nil {
 		t.Fatal("actual admission composition denied")
 	}
 	reader := &actionContextReader{runs: runservice.NewService(runservice.NewPostgresRepository(f.pool), slog.New(slog.NewTextHandler(io.Discard, nil))), sessions: f.sessions, leases: session.NewPostgresLeaseManager(f.pool), tasks: f.tasks, pool: f.pool, delegationReady: true}

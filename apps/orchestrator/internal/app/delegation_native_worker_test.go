@@ -224,7 +224,7 @@ func TestNativeDelegationWorkerHarness(t *testing.T) {
 	limits := task.DefaultDelegationLimits()
 	limits.MaxParallel = config.Width
 	admission, err := NewDelegationAdmission(pool, tasks, sessions, inputs, sources, limits)
-	if err != nil {
+	if err != nil || admission.CheckReady(ctx) != nil {
 		t.Fatal("durable child lifecycle unavailable")
 	}
 	broker, err := tools.DialWithTokenFile(config.Broker, config.TokenFile)

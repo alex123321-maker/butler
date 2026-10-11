@@ -62,16 +62,24 @@ docker run --rm --user "$(id -u):$(id -g)" --network "$network" --memory 1536m -
   --env BUTLER_DELEGATION_NATIVE_CORPUS=/src/scripts/dev/fixtures/delegation-native-research.json \
   golang:1.27.2-bookworm bash -eu -c 'go test -race -c -o /binaries/orchestrator.test ./apps/orchestrator/internal/app
 go test -race -c -o /binaries/broker.test ./apps/tool-broker/internal/broker
+chmod 555 /binaries/orchestrator.test /binaries/broker.test
 export BUTLER_DELEGATION_BROKER_BINARY=/binaries/broker.test
 go test -json -race -run "^TestNativeDelegation(ObjectiveFixtureRejectsNarrativeAuthority|TwelveAttemptBoundIntegration|PrivateRuntimeFiles|EncryptedFixtureImportWithoutInferenceIntegration|CompositionWithoutInferenceIntegration|BrokerPreflightWithoutInferenceIntegration)$" -count=1 -timeout=90s ./apps/orchestrator/internal/app' > "$proof/tests.jsonl"
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
+docker run --rm --network none --user 0:0 --volume "$proof/runtime:/private" alpine:3.22 \
+  sh -eu -c 'chown 10001:10001 /private; chmod 700 /private'
+docker run --rm --network none --user 10001:10001 --read-only --cap-drop ALL \
+  --memory 512m --pids-limit 64 --security-opt no-new-privileges:true \
+  --volume "$proof/binaries:/binaries:ro" --volume "$proof/runtime:/private" --env TMPDIR=/private \
+  golang:1.27.2-bookworm /binaries/orchestrator.test -test.v -test.run='^TestNativeDelegationPrivateRuntimeFiles$' \
+  > "$proof/runtime-files.txt"
+sha256sum "$proof/runtime-files.txt" > "$proof/runtime-files.sha256"
 if [[ "$phase" == prepare ]]; then
   printf '{"status":"preparation_passed","native_attempts":0,"model_acceptance":"pending"}\n'
   exit 0
 fi
-# Change only this new isolated runtime directory, not the source/proxy volumes.
-docker run --rm --network none --user 0:0 --volume "$proof/runtime:/private" alpine:3.22 \
-  sh -eu -c 'chown 10001:10001 /private; chmod 700 /private'
+# The preparation probe already verified executable/private-file access as the
+# exact runtime UID. Only the execute phase mounts the opaque auth file.
 docker create --name "$name-runtime" --user 10001:10001 --network "$network" \
   --memory 1536m --pids-limit 128 --cpus 2 --read-only --cap-drop ALL --security-opt no-new-privileges:true \
   --volume "$source_dir:/src:ro" --volume "$proof/binaries:/binaries:ro" --volume "$proof/runtime:/private" \

@@ -2,7 +2,8 @@
 
 Reviewable opt-in preparation for issue16; no native inference has been run by
 this scenario yet. The composed production admission/readiness baseline is
-`e7ca93e961f6250f66f7ca60142071044f03196f`. Execution waits for review of the
+`e7ca93e961f6250f66f7ca60142071044f03196f`, with the private-client ambient-proxy
+denial fixes `d500847` and `25d9c75`. Execution waits for review of the
 immutable runner delta and the operator's coordinated lab window. An unset
 opt-in is a visible skip, never acceptance. Component PG/Broker evidence remains
 separate from the pending model experiment.
@@ -64,7 +65,9 @@ traffic, not an extra inference/fallback. Its credential rotation is an operator
 workflow concern to review before the single coordinated experiment.
 
 `scripts/dev/delegation-native-lab.sh ROOT prepare` runs six zero-inference
-PG/race groups and compiles both real process harnesses. These groups verify the
+PG/race groups and compiles both real process harnesses. A separate no-network
+probe runs the private-file test as the actual runtime UID10001 under its
+read-only root. These groups verify the
 16-contender durable cap, reconstruction denial, strict objective checker, private
 runtime-file guards, encrypted synthetic import, authentic owner scope and real
 Broker → private admission → durable receipt under the exact finite policy.
