@@ -510,7 +510,14 @@ func New(ctx context.Context) (*App, error) {
 		log.Warn("private action authority unavailable; Tool Broker will deny execution")
 	}
 	apiServer := apiservice.NewServer(inputWorker, logger.WithComponent(log, "api"))
+	guardedTabOwner, err := configureGuardedTabOwner(ctx, postgres.Pool(), cfg, finalResults.DataGuard)
+	if err != nil {
+		redis.Close()
+		postgres.Close()
+		return nil, err
+	}
 	httpServer := newHTTPServer(httpServerDeps{
+		guardedTabOwner:            guardedTabOwner,
 		delegationHandler:          delegationHandler,
 		converterDelegationHandler: converterDelegationHandler,
 		memoryIndexing:             ownedSemantic,

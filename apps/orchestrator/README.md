@@ -1,5 +1,19 @@
 # Orchestrator
 
+Optional guarded tab owner decisions use `POST /api/v3/tab-choices/{approval_id}/select`
+with only `candidate_token`, or `/revoke` with `{}`. Bearer owner proof is
+mandatory; claimed actor/host/tab/lease fields cannot supply authority. Existing
+finite waiting requests resolve their current binding from PostgreSQL. Selection
+does not resume an executor or confirm a browser effect. The operator-only
+`BUTLER_GUARDED_TAB_OWNER_ENABLED` defaults false; enabling requires fixed
+`BUTLER_GUARDED_TAB_HOST`, `BUTLER_GUARDED_TAB_METADATA_URL`, private
+`BUTLER_GUARDED_TAB_TOKEN_FILE` and configured owner authentication. Remote
+metadata requires HTTPS; plain HTTP is limited to literal loopback addresses.
+Startup checks migration063 columns and the exact enabled immutable trigger
+function. This owner endpoint does not enable guarded tools or declare runtime
+readiness. Request creation, UI delivery, resumption and private Broker/runtime
+composition are separate activation requirements.
+
 Authenticated task observations at `/api/v3/tasks/{task_id}/observations` expose
 owned assignment/initiative metadata, child result status, recorded action
 consequences and shared root budget. Known token subtotals and unavailable usage

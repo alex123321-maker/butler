@@ -54,6 +54,7 @@ import (
 )
 
 type httpServerDeps struct {
+	guardedTabOwner            apiservice.GuardedTabDecisions
 	initiativeStore            *initiative.Store
 	memoryIndexing             *indexing.Runtime
 	sourceCatalog              *catalog.Store
@@ -195,6 +196,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	mux.Handle("/api/v4/extensions", apiservice.ReviewedExtensions(deps.ownerAuth, extensionClient))
 	mux.Handle("/api/v4/skills", apiservice.ReviewedSkills(deps.ownerAuth, deps.skillClient))
 	mux.Handle("/api/v4/converters", apiservice.GeneratedConverters(deps.ownerAuth, deps.converterClient))
+	mux.Handle("/api/v3/tab-choices/", apiservice.GuardedTabOwnerControls(deps.ownerAuth, deps.guardedTabOwner))
 	if deps.skillEvidenceHandler != nil {
 		mux.Handle("/internal/skill-evidence", deps.skillEvidenceHandler)
 	}

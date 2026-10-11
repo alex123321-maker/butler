@@ -69,9 +69,13 @@ choice denies. `Revoke(ctx, binding, approvalID)` serializes on the same owning
 barrier and disables the selection. These are owner controls, not model tools.
 The binding/token and authenticated actor come from trusted owning composition,
 never client-supplied authority fields. Metadata grants no tool or account rights.
-The measured owning guard requires a live worker lease. Human selection after a
-released lease is a distinct current-owner/suspended-run composition and remains
-unproven; neither fixture credentials nor a prior lease can stand in for it.
+Request creation and execution require a live worker lease. The separately
+composed `NewWaiting` owner adapter handles existing finite choices after actual
+lease release; it resolves matching waiting task/run authority from PostgreSQL,
+checks current sources/mandate, denies a resumed worker and grants no execution.
+Its authenticated Web select/revoke API does not accept a client binding. Actual
+PG tests cover the released-lease decision; complete UI delivery and a fresh
+executor's resumption remain separate activation gates.
 
 Resource identity derives from operator profile plus actual browser instance and
 tab number, not fresh bind-session IDs. Rebinding cannot create a parallel lane.

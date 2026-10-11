@@ -2,10 +2,15 @@ package singletab_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/butler/butler/apps/orchestrator/internal/api"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/internal/memory/memorytest"
@@ -106,21 +111,40 @@ func TestOwnerWaitingSelectionAfterActualLeaseReleaseIntegration(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
+			token := strings.Repeat("fixture-owner-", 4)
+			handler := api.GuardedTabOwnerControls(api.NewOwnerControlAuth(token, actor.OwnerID), waiting)
+			action, body := "select", `{"candidate_token":"`+choices.Candidates[0].Token+`"}`
 			if scenario == "revoke" {
-				if err = waiting.Revoke(owner, choices.ApprovalID); err != nil {
-					t.Fatal("owner revoke unavailable", err)
+				action, body = "revoke", `{}`
+			}
+			invoke := func() *httptest.ResponseRecorder {
+				r := httptest.NewRequest(http.MethodPost, "/api/v3/tab-choices/"+choices.ApprovalID+"/"+action, strings.NewReader(body))
+				if scenario != "anonymous" {
+					r.Header.Set("Authorization", "Bearer "+token)
 				}
-			} else {
-				selected, selectErr := waiting.Select(owner, choices.ApprovalID, choices.Candidates[0].Token)
-				if scenario == "select" {
-					if selectErr != nil || selected == "" {
-						t.Fatal("released-lease owner decision denied", selectErr)
-					}
-					if repeated, err := waiting.Select(owner, choices.ApprovalID, choices.Candidates[0].Token); err != nil || repeated != selected {
-						t.Fatal("owner decision retry changed selection", err)
-					}
-				} else if selectErr == nil || selected != "" {
-					t.Fatal("stale/foreign owner decision accepted")
+				r.Header.Set("X-Butler-Actor", "waiting-owner")
+				w := httptest.NewRecorder()
+				handler.ServeHTTP(w, r)
+				return w
+			}
+			w := invoke()
+			want := http.StatusConflict
+			if scenario == "select" || scenario == "revoke" {
+				want = http.StatusOK
+			}
+			if scenario == "anonymous" {
+				want = http.StatusUnauthorized
+			}
+			if w.Code != want {
+				t.Fatal("actual owner HTTP/PG decision", scenario, w.Code, w.Body.String())
+			}
+			if scenario == "select" {
+				var selected map[string]string
+				if json.Unmarshal(w.Body.Bytes(), &selected) != nil || selected["single_tab_session_id"] == "" {
+					t.Fatal("opaque selection receipt missing")
+				}
+				if repeated := invoke(); repeated.Code != http.StatusOK || repeated.Body.String() != w.Body.String() {
+					t.Fatal("owner HTTP retry changed choice")
 				}
 			}
 			var activeLeases int

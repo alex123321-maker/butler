@@ -1,8 +1,9 @@
 # Optional guarded single-tab production composition
 
-This is the typed integration design for the tested component, not an enabled
-production configuration. Root application bootstrap/config/registry/Compose
-remain the owning integration boundary. No model calls are needed to validate it.
+Root application bootstrap now composes optional waiting-owner decisions behind
+an operator-only, default-false flag. Registry, executing worker and private
+runtime composition remain pending; the endpoint is not an enabled tool route.
+No model calls are needed to validate this owner boundary.
 
 ## Operator and owning setup
 
@@ -45,7 +46,20 @@ metadata RPC. Original expiry is never extended; elapsed requests deny. Its
 LeaseEpoch=0 binding confers no execution authority. Resuming execution must
 acquire a new Session lease and pass ordinary WorkerGuard/Broker checks.
 Actual PG tests cover this adapter; Web/Telegram delivery, resume, and production
-selection/bootstrap wiring remain pending.
+request/runtime wiring remain pending. The Web decision API itself is composed
+at `POST /api/v3/tab-choices/{approval_id}/select` (`candidate_token` only) and
+`/revoke` (`{}` only), with mandatory configured Bearer owner proof. Unknown,
+duplicate, null, case-alias and oversized request fields deny. The only return
+from selection is an opaque session ID, with no execution or resume verdict.
+No private metadata or library error text enters responses. The startup-only
+`BUTLER_GUARDED_TAB_OWNER_ENABLED` requires fixed `BUTLER_GUARDED_TAB_HOST`,
+`BUTLER_GUARDED_TAB_METADATA_URL`, `BUTLER_GUARDED_TAB_TOKEN_FILE` and owner auth.
+Database settings cannot enable it or change the authenticated destination.
+Startup requires the 063 dispatch column, both enabled immutable triggers and
+the pinned actual function body; missing or replaced safeguards prevent startup.
+The metadata client retains loopback-only HTTP / trusted HTTPS, bounded direct
+requests without ambient proxy or redirects. No runtime-ready assertion follows
+from composing this endpoint.
 
 ## Broker and runtime composition
 

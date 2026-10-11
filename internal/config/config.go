@@ -66,6 +66,10 @@ type OrchestratorConfig struct {
 	RedisURL                          string
 	ExtensionAPITokens                []string
 	SingleTabTransportMode            string
+	GuardedTabOwnerEnabled            bool
+	GuardedTabHost                    string
+	GuardedTabMetadataURL             string
+	GuardedTabTokenFile               string
 	SingleTabRelayHeartbeatTTLSeconds int
 	ModelProvider                     string
 	OpenAIAPIKey                      string
@@ -330,6 +334,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 	)
 
 	specs = append(specs, delegationOrchestratorSpecs(&cfg)...)
+	specs = append(specs, guardedTabOrchestratorSpecs(&cfg)...)
 	snapshot, err := loadSpecs(get, specs)
 	if conditionalErr := validateOrchestratorConditionalConfig(cfg); conditionalErr != nil {
 		if err != nil {
@@ -744,6 +749,9 @@ func parseDoctorContainerTargets(value string) []DoctorContainerTarget {
 }
 
 func validateOrchestratorConditionalConfig(cfg OrchestratorConfig) error {
+	if err := validateGuardedTabConfig(cfg); err != nil {
+		return err
+	}
 	if strings.TrimSpace(cfg.TelegramBotToken) != "" && len(cfg.TelegramAllowedChatIDs) == 0 {
 		return fmt.Errorf("BUTLER_TELEGRAM_ALLOWED_CHAT_IDS is required when BUTLER_TELEGRAM_BOT_TOKEN is set")
 	}

@@ -126,16 +126,34 @@ This is a library proof, not composed Web/Telegram acceptance or activation.
 
 ## Production gates still open
 
+The application now composes an operator-only, default-disabled waiting-owner
+Web decision endpoint for existing guarded requests. On snapshot
+`20261011-124302-890`, actual PostgreSQL/Session lease release followed by HTTP
+select/revoke passed eight scenarios, including unauthenticated/foreign owner,
+changed task, stopped task, resumed executor and source changes after metadata.
+Same-choice HTTP retry returns the same opaque session and creates no worker
+lease. Four actual schema mutations (disabled/dropped trigger, no-op function
+and removed dispatch column) prevent readiness. Exact-case/duplicate/oversized
+body and duplicate authentication tests, operator-only config validation,
+complete Orchestrator core race tests and affected vet also passed.
+Private proof:
+`/srv/storage/butler/agents/task-observations/reports/task-observations-20261011T054314Z-3904037`.
+Events SHA256:
+`1a15c148a72c704087d570b31bbcd0ef173f818e477613388ac62da513a315db`.
+There were zero model calls. API selection neither resumes execution nor confirms
+a browser effect; UI/Telegram delivery, request creation and executing runtime
+composition still require their own acceptance.
+
 Full startup/contracts must expose only the guarded target, with current
 authority/source/budget hooks and no raw alternative. The existing controlled
 browser and user-tab constructors are distinct profiles; there is no implicit
 fallback or grant of unconfigured protected tools. A remote Broker needs an
 operator-authenticated tunnel/gateway to the host's loopback listener.
 
-The measured owning controller is synchronous under a live worker lease.
-Production Web/Telegram selection after releasing that lease needs a distinct
-current-owner/suspended-run authority adapter; no stale lease shortcut is
-provided. Guarded-only production startup/contracts/routing, actual channel
+The original requesting/executing controller requires a live worker lease;
+the separate waiting-owner adapter and Web decision route are measured above.
+No stale lease shortcut is provided. Guarded-only production
+startup/contracts/routing, actual complete channel
 selection/manual acceptance, effect reconciliation, workspace/runtime callbacks,
 shared local weights and memory-conflict admission, other observation-aware
 actions and aggregate user-browser network/privacy policy remain pending.
