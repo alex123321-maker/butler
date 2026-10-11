@@ -1,5 +1,56 @@
 # Guarded user-tab component acceptance
 
+## Durable owner choice and fresh core recovery
+
+The owning application now joins finite guarded choice publication to actual
+input suspension and run/task waiting state in the same transaction. Missing or
+lost input claims publish no choices. Protected owner select/revoke atomically
+readies the same stored version1 selection continuation. Revocation while queued
+and a choice arriving before the old worker finishes remain effective.
+
+Core recovery acquires a new real Session fence and repeats current input claim,
+source pins, task/constraints and exact guarded session/approval/deadline checks.
+Current tool definitions reload before activation; source changes during that
+reload deny before provider entry. Actual Catalog deletion cancels/redacts the
+queued input and removes its cached continuation. Corrected sources, revoked or
+expired selections, changed tasks, lost claims, missing composition and advanced
+tool checkpoints deny. Restart after activation can revalidate the local choice
+without extending expiry or replaying a browser action. A fresh provider context
+receives the opaque local choice as private DATA; it supplies no browser authority.
+
+Final narrow PG17/pool2/race and affected vet passed on immutable snapshot
+`20261011-154444-349`,13 scenarios plus their parent test, zero skips:
+`/srv/storage/butler/agents/guarded-tab-continuation/reports/task-observations-20261011T084447Z-301065`.
+Events SHA256 `9b06f7c94d1fd91e320b6c6eb0cf9e205de18691c30bff12ca51135528e6501c`.
+Earlier expanded owner/core/input checks passed177 test/subtest names in7 packages
+on snapshot `20261011-153929-717`, proof
+`/srv/storage/butler/agents/guarded-tab-continuation/reports/task-observations-20261011T083933Z-278676`,
+events SHA256 `a302c97344cebb598482adc1f7e8363839ec515811e419928057ed52186caa06`.
+Its29 explicit skips require the older separate service DSN; they are not passes.
+Five critical actual generic approval/input/action-slot regressions were enabled
+separately against disposable PG, passed without skips on snapshot
+`20261011-154400-466`, proof
+`/srv/storage/butler/agents/guarded-tab-continuation/reports/task-observations-20261011T084404Z-298295`,
+events SHA256 `7c08e085abef6bc3062b8612bbd1c0394352272632c1ac8ceaa2230747c43aad`.
+
+The independent resource/native-host/Broker regression passed72 PG/bridge
+test/subtest names and10 real Chromium fault/positive scenarios on snapshot
+`20261011-153943-743`, proof
+`/srv/storage/butler/agents/resource-runtime-bridge/reports/single-tab-20261011T083947Z-279871`.
+The PG phase explicitly skips Chrome, which executes in the later browser phase.
+Hashes: PG `914a8dae764aa06ed4e92ece3d195e4084ec88bec423c7c5c9f17cfa253f4a2c`,
+bridge `7f177517e296d2c87fc14ca022e54a022f97ca3934d16f7dd1970a4ca768c3e8`,
+Chrome `0a515fd31f8b233cc5308d4272e84bdaa569e8f06b7ee288694be680bcb4b362`.
+The final guarded recovery release uses its own fenced provider context and the
+ordinary context for subsequent writes; that final change was checked narrowly.
+Earlier failed compile, missing-source-pin and correction-CAS fixtures remain
+in the lab report history. No checker was relaxed to accept them.
+
+All model outcomes in these tests are scripted, with zero real inference calls.
+Whole issue17 still needs ordinary worker request/delivery, private runtime
+activation, workspace and shared memory/model composition. Main optional flags
+and deployment are unchanged. Component proof does not close those gates.
+
 Contributes to #17. The issue remains active and production activation remains
 disabled. This report proves an optional mechanism on public synthetic data,
 including actual Linux Chrome native-host installation and the authenticated

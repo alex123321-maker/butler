@@ -44,18 +44,38 @@ type Selection struct {
 	ExpiresAt  time.Time   `json:"expires_at"`
 }
 type Controller struct {
-	pool     *pgxpool.Pool
-	metadata Metadata
-	guard    resources.Guard
-	sources  resourceexec.SourceGuard
-	host     string
+	pool        *pgxpool.Pool
+	metadata    Metadata
+	guard       resources.Guard
+	sources     resourceexec.SourceGuard
+	host        string
+	checkpoints SelectionCheckpoints
+}
+
+// SelectionCheckpoints joins owning selection publication to the durable input
+// lifecycle in the same transaction. It cannot dispatch or acquire a lease.
+type SelectionCheckpoints interface {
+	SuspendSelectionTx(context.Context, pgx.Tx, resources.Binding, Selection) error
+	ResolveSelectionTx(context.Context, pgx.Tx, resources.Binding, string, bool) error
+}
+
+// NewDurable fixes live worker authority and requires atomic checkpoint hooks.
+func NewDurable(pool *pgxpool.Pool, metadata Metadata, sources resourceexec.SourceGuard, host string, checkpoints SelectionCheckpoints) (*Controller, error) {
+	if checkpoints == nil {
+		return nil, ErrDenied
+	}
+	c, err := New(pool, metadata, resources.WorkerGuard{}, sources, host)
+	if err == nil {
+		c.checkpoints = checkpoints
+	}
+	return c, err
 }
 
 func New(pool *pgxpool.Pool, metadata Metadata, guard resources.Guard, sources resourceexec.SourceGuard, host string) (*Controller, error) {
 	if pool == nil || metadata == nil || guard == nil || sources == nil || host == "" || len(host) > 128 {
 		return nil, ErrDenied
 	}
-	return &Controller{pool, metadata, guard, sources, host}, nil
+	return &Controller{pool: pool, metadata: metadata, guard: guard, sources: sources, host: host}, nil
 }
 
 // Guard owns the exact selected proof. Guard's authority/source ordering is

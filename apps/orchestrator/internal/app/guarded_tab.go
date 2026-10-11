@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func configureGuardedTabOwner(ctx context.Context, pool *pgxpool.Pool, cfg config.OrchestratorConfig, sources resourceexec.SourceGuard) (api.GuardedTabDecisions, error) {
+func configureGuardedTabOwner(ctx context.Context, pool *pgxpool.Pool, cfg config.OrchestratorConfig, sources resourceexec.SourceGuard, checkpoints singletabcontrol.SelectionCheckpoints) (api.GuardedTabDecisions, error) {
 	if !cfg.GuardedTabOwnerEnabled {
 		return nil, nil
 	}
@@ -29,5 +29,5 @@ func configureGuardedTabOwner(ctx context.Context, pool *pgxpool.Pool, cfg confi
 	if err != nil {
 		return nil, singletabcontrol.ErrDenied
 	}
-	return singletabcontrol.NewWaiting(pool, metadata, sources, cfg.GuardedTabHost)
+	return singletabcontrol.NewWaitingDurable(pool, metadata, sources, cfg.GuardedTabHost, checkpoints)
 }

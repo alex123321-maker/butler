@@ -6,6 +6,16 @@ intent retains stable IDs across durable suspension, while a resumed worker
 must obtain a fresh current lease/fence grant. Dispatch/result checkpoints and
 non-reusable unknown outcomes prevent recovery from repeating external effects.
 
+Guarded tab choice has a distinct version1 `guarded_tab_selection` continuation,
+not an exact-action approval. Choice publication, run/task waiting state and
+current input suspension commit together. Owner select/revoke readies the same
+input under its original finite request; the previous worker may finish after
+that decision without losing the wakeup. Core recovery acquires a new Session
+lease, validates the actual input claim, current Catalog/task/selection and
+rebuilds current tool definitions. It starts a fresh model context with opaque
+selection DATA and grants no browser execution authority. Later effects still
+require Tool Broker. Missing/advanced checkpoints deny this selection recovery.
+
 [Execution budgets](execution-budget-contract.md) admit each actual model turn,
 effect claim and child creation against shared durable scopes. Exhaustion/loops
 save a concrete `execution_stopped` checkpoint and prior continuation, block

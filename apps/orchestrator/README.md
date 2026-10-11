@@ -3,8 +3,11 @@
 Optional guarded tab owner decisions use `POST /api/v3/tab-choices/{approval_id}/select`
 with only `candidate_token`, or `/revoke` with `{}`. Bearer owner proof is
 mandatory; claimed actor/host/tab/lease fields cannot supply authority. Existing
-finite waiting requests resolve their current binding from PostgreSQL. Selection
-does not resume an executor or confirm a browser effect. The operator-only
+finite waiting requests resolve their current binding from PostgreSQL. Durable
+selection/revocation atomically queues the same accepted input using its stored
+selection checkpoint. Recovery acquires a fresh Session lease, repeats current
+source/task/selection guards and starts a fresh model context with the opaque
+selection as private DATA. This does not confirm a browser effect. The operator-only
 `BUTLER_GUARDED_TAB_OWNER_ENABLED` defaults false; enabling requires fixed
 `BUTLER_GUARDED_TAB_HOST`, `BUTLER_GUARDED_TAB_METADATA_URL`, private
 `BUTLER_GUARDED_TAB_TOKEN_FILE` and configured owner authentication. Remote
@@ -15,9 +18,10 @@ origin, candidate token, original ordinal, active-at-request marker and selectio
 state. Private native host/tab references remain excluded. The Approvals page
 uses this view for guarded select/revoke and keeps owner proof only in page memory.
 This endpoint does not enable guarded tools or declare runtime readiness. Worker
-request creation, channel delivery/resumption and private Broker/runtime
+request creation, channel delivery and private Broker/runtime
 composition are separate activation requirements. Older requests without frozen
-064 display metadata have no reconstructed choice view.
+064 display metadata have no reconstructed choice view; requests without the
+durable accepted-input continuation cannot activate this recovery path.
 
 Authenticated task observations at `/api/v3/tasks/{task_id}/observations` expose
 owned assignment/initiative metadata, child result status, recorded action

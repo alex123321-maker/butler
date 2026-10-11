@@ -233,3 +233,28 @@ func (s *Store) ReadyApprovalTx(ctx context.Context, tx pgx.Tx, runID, approvalI
 	}
 	return err
 }
+
+// CheckSelectionClaimTx validates recovery against the actual current ingress
+// claim. Selection callbacks use the caller transaction and borrow no pool slot.
+func (s *Store) CheckSelectionClaimTx(ctx context.Context, tx pgx.Tx, runID, approvalID string) error {
+	r, ok := ctx.Value(claimKey{}).(Record)
+	if !ok {
+		return ErrClaimLost
+	}
+	var valid bool
+	err := tx.QueryRow(ctx, `SELECT run_id=$3 AND checkpoint='approval_ready' AND checkpoint_json->>'approval_id'=$4 AND checkpoint_json->'continuation'->>'kind'='guarded_tab_selection' AND checkpoint_json->'continuation'->>'version'='1' AND checkpoint_json->'continuation'->>'approval_id'=$4 AND status='running' AND claim_id=$2 AND claim_expires_at>clock_timestamp() AND expires_at>clock_timestamp() FROM accepted_inputs WHERE input_id=$1 FOR UPDATE`, r.InputID, r.ClaimID, runID, approvalID).Scan(&valid)
+	if err != nil || !valid {
+		return ErrClaimLost
+	}
+	return nil
+}
+
+// ReadySelectionTx also permits owner revocation while the selected input is
+// already queued. It never changes its run or admits an unrelated continuation.
+func (s *Store) ReadySelectionTx(ctx context.Context, tx pgx.Tx, runID, approvalID string) error {
+	tag, err := tx.Exec(ctx, `UPDATE accepted_inputs SET checkpoint='approval_ready',status=CASE WHEN status='running' THEN status ELSE 'queued' END,not_before=clock_timestamp(),updated_at=clock_timestamp() WHERE run_id=$1 AND checkpoint_json->>'approval_id'=$2 AND checkpoint_json->'continuation'->>'kind'='guarded_tab_selection' AND checkpoint_json->'continuation'->>'version'='1' AND checkpoint_json->'continuation'->>'approval_id'=$2 AND status IN ('running','waiting_for_user','blocked','queued') AND expires_at>clock_timestamp()`, runID, approvalID)
+	if err == nil && tag.RowsAffected() != 1 {
+		return ErrNotFound
+	}
+	return err
+}

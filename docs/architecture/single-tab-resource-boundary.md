@@ -5,6 +5,13 @@ A tab/session ID, observation, heartbeat or resource lease grants no action,
 credential capability or external success verdict. No main registry, bootstrap
 or Compose route is enabled by this change.
 
+The optional owner bootstrap now joins durable selection decisions to their
+actual accepted input and core recovery. The version1 selection marker is not
+an action approval: recovered model context receives only private opaque
+selection DATA. Fresh Session ownership, input claim, current source pins,
+task/revision/constraints and original selection expiry remain mandatory. The
+worker request/Broker/private runtime activation gates remain independent.
+
 Exact measured scenarios and remaining acceptance gates are recorded in
 [the lab report](../ai/single-tab-resource-acceptance.md).
 

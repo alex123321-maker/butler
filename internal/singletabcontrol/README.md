@@ -25,7 +25,17 @@ status, repeating current sources before release. Private native refs stay priva
 There is no reconstruction of missing old choice metadata or current browser order.
 The operator flag defaults false;
 stored settings cannot change it. Creating choices, UI/Telegram delivery,
-executor resumption and guarded Broker/runtime composition remain separate gates.
+guarded Broker/runtime composition remain separate gates.
+
+`NewDurable` fixes `WorkerGuard` and requires typed `SelectionCheckpoints`.
+Pending choice publication and the actual input/run/task suspension commit
+together; a lost/missing input claim rolls everything back. `NewWaitingDurable`
+requires the same checkpoint adapter and atomically readies that exact input
+after selection/revocation. A choice can be revoked while queued. Checks repeat
+after checkpoint lock waits; original expiry is unchanged. The owning app
+controls recovery using a fresh Session lease and current Catalog pins. Plain
+library constructors remain for the independent isolated selection boundary;
+their records cannot establish a missing durable input continuation.
 
 Metadata RPCs run outside every transaction. Their fixed client bypasses ambient
 proxies/redirects, accepts HTTP only on loopback (remote requires trusted TLS),
