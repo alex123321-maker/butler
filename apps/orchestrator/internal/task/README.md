@@ -46,6 +46,16 @@ data. CheckReportTx compares actual owning records; CheckDecisionTx proves the
 objective/owner verdict. Agreeing models cannot bypass it. Decide never marks a
 task complete or overwrites another result; conflicting reports remain distinct.
 
+`SaveVerifiedResult` requires a verified channel owner actor matching the task;
+anonymous/foreign actors and any worker context deny before a verified row is
+written. `Verifier: owner` in result data alone grants no authority.
+`AcceptVerified` handles an already collected unverified final: it requires a
+separate owner-verified result for the same completed run, current original
+report and exact evidence, then generates and accepts a fresh report atomically.
+Original result/report IDs remain in decision history. Existing decisions,
+different runs, stale/deleted sources, unfinished executions and uncertain
+effects cannot be promoted. It does not complete either task or admit work.
+
 `ObserveFailedAttempts` is a separate current-authority read for a blocked
 immediate child with failed terminal runs, unchanged contract constraints and no
 live worker or unfinished run on any revision. Historical run/action revisions

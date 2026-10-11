@@ -240,8 +240,11 @@ operator AICode unary and SSE text probes passed through the configured lab prox
 These probes do not establish that Go function/result continuation passed; keep
 activation gated on that separate smoke. Earlier Cloud Code 429 responses do not
 prove subscription quota exhaustion.
-Production AICode 429 with bounded, recognized `HIGH_DEMAND` reports temporary
-model capacity; no raw error metadata or automatic retry crosses this boundary.
+Production AICode 429 with bounded, recognized `HIGH_DEMAND` uses the fixed
+`model_capacity_unavailable` subtype for temporary model capacity. Other 429s
+remain `rate_limited`; neither establishes exhausted subscription quota. No raw
+error metadata or automatic retry crosses this boundary. Historical general
+`rate_limited` records cannot be reclassified without their original evidence.
 See [protocol, operator import and validation status](../../deploy/antigravity/README.md).
 
 ---
@@ -734,6 +737,7 @@ Transport обязан нормализовать ошибки в следующ
 * `invalid_tool_request`
 * `stateful_session_lost`
 * `rate_limited`
+* `model_capacity_unavailable`
 * `internal_transport_error`
 
 ### Для каждой ошибки должны быть поля:

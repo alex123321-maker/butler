@@ -96,11 +96,11 @@ func nativeAuditState(v string) string {
 }
 
 func nativeAuditError(v string) string {
-	return nativeAuditEnum(v, "input_expired", "retry_exhausted", "recovery_unavailable", "prior_attempt_terminal", "session_busy", "result_persistence_pending", "execution_stopped", "execution_deadline_exceeded", "effect_unknown", "execution_error", "provider_unavailable", "transport_connection_error", "provider_timeout", "provider_protocol_error", "capability_mismatch", "invalid_tool_request", "stateful_session_lost", "rate_limited", "internal_transport_error", "provider_input_bytes_exceeded", "execution_budget_deadline", "execution_budget_tokens", "validation_error", "transport_error", "tool_error", "policy_denied", "credential_error", "approval_error", "internal_error", "cancelled", "timeout", "unknown")
+	return nativeAuditEnum(v, "input_expired", "retry_exhausted", "recovery_unavailable", "prior_attempt_terminal", "session_busy", "result_persistence_pending", "execution_stopped", "execution_deadline_exceeded", "effect_unknown", "execution_error", "provider_unavailable", "transport_connection_error", "provider_timeout", "provider_protocol_error", "capability_mismatch", "invalid_tool_request", "stateful_session_lost", "rate_limited", "model_capacity_unavailable", "internal_transport_error", "provider_input_bytes_exceeded", "execution_budget_deadline", "execution_budget_tokens", "validation_error", "transport_error", "tool_error", "policy_denied", "credential_error", "approval_error", "internal_error", "cancelled", "timeout", "unknown")
 }
 
 func nativeAuditTransport(v string) string {
-	return nativeAuditEnum(v, "provider_unavailable", "transport_connection_error", "provider_timeout", "provider_protocol_error", "capability_mismatch", "invalid_tool_request", "stateful_session_lost", "rate_limited", "internal_transport_error", "provider_input_bytes_exceeded", "memory_source_stale", "memory_source_check_timeout")
+	return nativeAuditEnum(v, "provider_unavailable", "transport_connection_error", "provider_timeout", "provider_protocol_error", "capability_mismatch", "invalid_tool_request", "stateful_session_lost", "rate_limited", "model_capacity_unavailable", "internal_transport_error", "provider_input_bytes_exceeded", "memory_source_stale", "memory_source_check_timeout")
 }
 
 func nativeAuditCheckpoint(v string) string {
@@ -158,7 +158,7 @@ func collectNativeOwnedAudit(ctx context.Context, pool *pgxpool.Pool, stopped bo
 			return r, e
 		}},
 		{`SELECT run_id,COALESCE(task_id,''),COALESCE(lease_id,''),COALESCE(task_revision,0),status,current_state,COALESCE(error_type,''),finished_at IS NOT NULL,
-		 CASE WHEN error_type='transport_error' AND error_message IN ('provider_unavailable','transport_connection_error','provider_timeout','provider_protocol_error','capability_mismatch','invalid_tool_request','stateful_session_lost','rate_limited','internal_transport_error','provider_input_bytes_exceeded','memory_source_stale','memory_source_check_timeout') THEN error_message ELSE '' END
+		 CASE WHEN error_type='transport_error' AND error_message IN ('provider_unavailable','transport_connection_error','provider_timeout','provider_protocol_error','capability_mismatch','invalid_tool_request','stateful_session_lost','rate_limited','model_capacity_unavailable','internal_transport_error','provider_input_bytes_exceeded','memory_source_stale','memory_source_check_timeout') THEN error_message ELSE '' END
 		 FROM runs ORDER BY started_at,run_id LIMIT 17`, func(rows pgx.Rows) (r nativeOwnedRow, e error) {
 			r.Kind = "run"
 			e = rows.Scan(&r.Ref, &r.Task, &r.Lease, &r.Revision, &r.Status, &r.State, &r.ErrorCode, &r.Finished, &r.TransportCode)
@@ -415,6 +415,7 @@ func TestNativeDelegationOwnedAuditTransportDiagnosticsIntegration(t *testing.T)
 	}
 	cases := []struct{ id, kind, message, expected string }{
 		{"provider", "transport_error", "provider_timeout", "provider_timeout"},
+		{"capacity", "transport_error", "model_capacity_unavailable", "model_capacity_unavailable"},
 		{"source", "transport_error", "memory_source_check_timeout", "memory_source_check_timeout"},
 		{"private", "transport_error", "PRIVATE_DIAGNOSTIC_MARKER", ""},
 		{"wrong-class", "internal_error", "provider_timeout", ""},

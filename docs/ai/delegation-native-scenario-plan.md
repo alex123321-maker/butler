@@ -1,6 +1,40 @@
 # Opt-in native delegation experiment
 
-## Current owner-directed continuation — 2026-10-11
+## Current owner-directed fifth window — 2026-10-11
+
+The renewed owner instruction explicitly prioritizes finishing issues16/17.
+One new bounded window carries forward all four immutable failed reports:
+thirteen attempted native calls, three known usage pairs and ten unknown.
+Known input16810/output280 remains a subtotal. No previous evidence is reset.
+
+The limiter starts at13, admits at most12 new attempts and caps the series at25.
+Every Start/Continue/Submit revalidates all four pinned artifacts and charges a
+durable attempt before the native call. Each nested historical record must equal
+the preceding window's accounting. Parallel workers, replay and reconstruction
+share that counter; production task/root/mandate/day limits remain independent.
+
+The single execute invocation atomically seals
+`/srv/storage/butler/native-acceptance-windows/baseline13` before inference.
+The previous baseline9 marker remains closed. A committed
+`native-scenario-fifth.json` also seals this window before auth/Docker.
+Failures are retained without retries or fallback. Preparation and actual
+model results must be recorded separately; preparation is not model acceptance.
+
+Preparation snapshot `20261011-144323-389` passed the no-inference PG/race and
+UID10001 probes. The sole actual execution of release
+`cfdaab9aa986a2e2824b87edf609fce6376bf7e2` failed after five new calls: the first
+child completed, then the second child's native Start failed `rate_limited`.
+There was no retry. Total attempted calls are18; five usage pairs are known and
+thirteen unknown. The known subtotal is24921 input/547 output, not full cost.
+Width2, independent comparison and later scenario controls did not run.
+The immutable [fifth report](../../deploy/delegation/native-scenario-fifth.json)
+has SHA256 `5e180087d4e1d43fe52c6afac0c35763b69a8dfe906953a18eac49416bd7cded`.
+Proof: `/srv/storage/butler/agents/delegation-completion/reports/delegation-native-execute-20261011T074435Z-100012`.
+The baseline13 window is sealed. Transport rate limiting does not establish
+exhausted subscription quota; no new window is implicitly authorized by unused
+numerical allowance. Issue16 model acceptance remains open.
+
+## Historical fourth window — 2026-10-11
 
 The owner's new request to finish the open issues supersedes the old chat's
 stopping boundary. This current preparation preserves all three hash-pinned

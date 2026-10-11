@@ -165,6 +165,10 @@ func (f *delegationGuardFixture) leasedWorker(t *testing.T, child task.Record, i
 	return ctx
 }
 func (f *delegationGuardFixture) complete(t *testing.T, c delegation.Contract, child task.Record, unknown, partial bool) (task.Result, delegation.Report, []catalog.SourceRef) {
+	return f.completeWithContent(t, c, child, unknown, partial, "Actual stored attempt")
+}
+
+func (f *delegationGuardFixture) completeWithContent(t *testing.T, c delegation.Contract, child task.Record, unknown, partial bool, content string) (task.Result, delegation.Report, []catalog.SourceRef) {
 	t.Helper()
 	runID := "child-run:" + child.TaskID
 	ctx := f.worker(t, child, runID)
@@ -219,7 +223,7 @@ func (f *delegationGuardFixture) complete(t *testing.T, c delegation.Contract, c
 	if partial {
 		answer = "partial"
 	}
-	final, err := coordinator.Save(ctx, completion.Request{RunID: runID, SessionKey: child.SessionKey, TaskID: child.TaskID, TaskRevision: child.Revision, ConstraintsRevision: child.ConstraintsRevision, Content: "Actual stored attempt", AnswerState: answer})
+	final, err := coordinator.Save(ctx, completion.Request{RunID: runID, SessionKey: child.SessionKey, TaskID: child.TaskID, TaskRevision: child.Revision, ConstraintsRevision: child.ConstraintsRevision, Content: content, AnswerState: answer})
 	if err != nil {
 		t.Fatal(err)
 	}

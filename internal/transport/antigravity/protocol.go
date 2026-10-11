@@ -120,7 +120,7 @@ func statusError(status int, body io.Reader) error {
 		// Only a fixed reason changes the safe diagnostic. Raw error messages,
 		// metadata and account identifiers never leave this transport boundary.
 		if hasHighDemandReason(body) {
-			return providerError(transport.ErrorTypeRateLimited, "Antigravity model capacity is temporarily unavailable (HTTP 429)")
+			return providerError(transport.ErrorTypeModelCapacityUnavailable, "Antigravity model capacity is temporarily unavailable (HTTP 429)")
 		}
 		return providerError(transport.ErrorTypeRateLimited, "Antigravity upstream rejected the request (HTTP 429)")
 	case http.StatusUnauthorized, http.StatusForbidden:

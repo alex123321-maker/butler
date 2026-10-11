@@ -346,7 +346,11 @@ func TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry(t *testing
 				t.Fatal(err)
 			}
 			event := findError(collect(t, stream))
-			if event == nil || event.Type != transport.ErrorTypeRateLimited || event.Retryable || calls.Load() != 1 {
+			want := transport.ErrorTypeRateLimited
+			if tc.capacity {
+				want = transport.ErrorTypeModelCapacityUnavailable
+			}
+			if event == nil || event.Type != want || event.Retryable || calls.Load() != 1 {
 				t.Fatal("capacity rejection must remain a single normalized failure")
 			}
 			if strings.Contains(event.Message, "capacity") != tc.capacity || strings.Contains(event.Message, "private-access") || strings.Contains(event.Message, "email") {

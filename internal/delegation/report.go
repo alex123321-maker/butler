@@ -48,6 +48,15 @@ func ParseReport(raw []byte) (Report, error) {
 	if len(raw) > 32768 {
 		return r, ErrDenied
 	}
+	// Conflicting duplicate fields cannot acquire a single meaning by decoding
+	// them with last-value wins. Validate all nested object keys before parsing.
+	keys := json.NewDecoder(bytes.NewReader(raw))
+	if err := uniqueReportValue(keys, 0); err != nil {
+		return Report{}, ErrDenied
+	}
+	if _, err := keys.Token(); err != io.EOF {
+		return Report{}, ErrDenied
+	}
 	d := json.NewDecoder(bytes.NewReader(raw))
 	d.DisallowUnknownFields()
 	if d.Decode(&r) != nil || d.Decode(new(any)) != io.EOF || !validID(r.TaskID) || r.TaskRevision < 1 || r.ContractRevision != 1 || !validID(r.ResultID) || len(r.Actions) > 64 || len(r.Evidence) > 128 || len(r.Accomplished) > 128 || len(r.Uncertainty) > 32 || len(r.Blockers) > 32 || len(r.Budget.ReservationIDs) > 128 {
@@ -103,6 +112,42 @@ func ParseReport(raw []byte) (Report, error) {
 		}
 	}
 	return r, nil
+}
+
+func uniqueReportValue(d *json.Decoder, depth int) error {
+	if depth > 16 {
+		return ErrDenied
+	}
+	token, err := d.Token()
+	if err != nil {
+		return ErrDenied
+	}
+	delim, container := token.(json.Delim)
+	if !container {
+		return nil
+	}
+	if delim != '{' && delim != '[' {
+		return ErrDenied
+	}
+	seen := map[string]bool{}
+	for d.More() {
+		if delim == '{' {
+			key, err := d.Token()
+			name, ok := key.(string)
+			if err != nil || !ok || seen[strings.ToLower(name)] {
+				return ErrDenied
+			}
+			seen[strings.ToLower(name)] = true
+		}
+		if err := uniqueReportValue(d, depth+1); err != nil {
+			return err
+		}
+	}
+	end, err := d.Token()
+	if err != nil || delim == '{' && end != json.Delim('}') || delim == '[' && end != json.Delim(']') {
+		return ErrDenied
+	}
+	return nil
 }
 func validID(id string) bool {
 	if id == "" || len(id) > 512 || strings.ContainsAny(id, "\x00\r\n \t") {
