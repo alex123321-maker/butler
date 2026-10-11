@@ -936,6 +936,17 @@ reader must independently reload selected roots from the current authoritative
 contract, rather than treating stored selected IDs as permission. The saved-final
 retry path remains separate and never calls the model/source preparation again.
 
+`AttemptSourceRefs` separately identifies ephemeral failed-child observations;
+it does not widen a delegated worker's immutable `SourceDataRefs` selection.
+With delegation enabled, ordinary preparation/recovery derives blocked immediate
+children from the actual current parent run and reloads their typed owning
+attempt/journal/budget observations as private SubagentOutput DATA. Checkpoints
+store reload markers, never report bodies. Missing owning composition, stale
+lease/parent authority or deleted/changed sources deny release. Current parent
+run source pins protect provider/event/final publication. No failed child result,
+automatic parent wakeup, executor slot release or successful completion follows
+from reading the observation. See `delegation-contract.md` for bounds and scope.
+
 
 Generated converter observations persist only checked-output SourceRefs, hashes
 and metadata. Current source/owner authority checks precede exact active-version
