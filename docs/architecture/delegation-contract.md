@@ -125,9 +125,16 @@ topology settings are operator environment values, never database overrides.
 Broker's `BUTLER_DELEGATION_CONTROL_URL` must name the exact private route and
 uses the existing action-authority token file. The runtime receives no token.
 Fixed immutable `task.delegate` registration occurs only on explicit opt-in.
+Core refuses activation unless migrations057/061 and their immutable contract/
+snapshot triggers are available. Deploy migrations first, then matching core
+and Broker flags/private route. Disabling the flag prevents new admissions and
+maintenance; already accepted child inputs retain their ordinary durable
+execution and current authority checks. Use the owner's task/tree stop or
+mandate revocation to stop those branches.
 
 The authenticated current action context advertises `delegation_ready` only
-after core composes the manager and lifecycle adapters. Broker hides the tool
+after core checks schema readiness and composes the manager/lifecycle adapters.
+Broker hides the tool
 without a current task/readiness and denies preparation before persisting an
 intent. This bit supplies no authority: current lease, task/goal/mandate, source,
 exact approval, dispatch, budget and accepted snapshot checks remain required.

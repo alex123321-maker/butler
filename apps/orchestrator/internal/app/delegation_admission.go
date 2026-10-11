@@ -69,6 +69,29 @@ func NewDelegationAdmission(pool *pgxpool.Pool, store *task.Store, sessions task
 	return &DelegationAdmission{pool: pool, leases: session.NewPostgresLeaseManager(pool), reader: reader, Manager: manager}, nil
 }
 
+// CheckReady refuses a partial migration rollout before core advertises the
+// private capability. It reads schema metadata only and supplies no authority.
+func (s *DelegationAdmission) CheckReady(ctx context.Context) error {
+	if s == nil || s.pool == nil || s.Manager == nil {
+		return delegation.ErrDenied
+	}
+	var ready bool
+	err := s.pool.QueryRow(ctx, `SELECT
+ to_regclass(format('%I.task_delegations',current_schema())) IS NOT NULL
+ AND to_regclass(format('%I.task_delegation_dependencies',current_schema())) IS NOT NULL
+ AND to_regprocedure(format('%I.butler_task_check_delegation(text)',current_schema())) IS NOT NULL
+ AND EXISTS(SELECT 1 FROM pg_catalog.pg_trigger
+  WHERE tgrelid=to_regclass(format('%I.task_delegations',current_schema()))
+   AND tgname='delegation_contract_immutable' AND tgenabled IN ('O','A') AND NOT tgisinternal)
+ AND EXISTS(SELECT 1 FROM pg_catalog.pg_trigger
+  WHERE tgrelid=to_regclass(format('%I.delegation_admission_snapshots',current_schema()))
+   AND tgname='delegation_admission_immutable' AND tgenabled IN ('O','A') AND NOT tgisinternal)`).Scan(&ready)
+	if err != nil || !ready {
+		return delegation.ErrDenied
+	}
+	return nil
+}
+
 func (s *DelegationAdmission) AdmitDispatched(ctx context.Context, e delegation.AdmissionEnvelope) (delegation.AdmissionReceipt, error) {
 	if s == nil || s.Manager == nil || e.RunID == "" || e.ToolCallID == "" || e.EffectID == "" || len(e.RunID) > 512 || len(e.ToolCallID) > 512 || len(e.EffectID) > 512 || e.ContractHash != s.reader.hash {
 		return delegation.AdmissionReceipt{}, delegation.ErrDenied

@@ -18,6 +18,13 @@ This proves the component boundary and readiness policy in isolation. The runner
 uses a compiled Broker test harness, not production bootstrap startup, and does
 not establish native scheduling or main deployment acceptance.
 
+The startup review fix passed app PG/race on snapshot `20261011-091416-108`
+(27.633s). The readiness probe checks the current schema's migration057 function
+and immutable057/061 triggers, refusing both disabled snapshot guards and a
+missing current-schema snapshot table even when another search-path schema has
+an installed copy. Feature disable is separate from owner stop for durable
+inputs that were already accepted.
+
 Actual laba snapshot: `20261011-085741-646`. A disposable PostgreSQL17/pgvector
 container on an internal isolated network applied all migrations, including061.
 Every fixture used its own schema, private initialized deletion anchor and

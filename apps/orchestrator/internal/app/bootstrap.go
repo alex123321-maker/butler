@@ -222,6 +222,11 @@ func New(ctx context.Context) (*App, error) {
 			postgres.Close()
 			return nil, err
 		}
+		if err = childAdmission.CheckReady(ctx); err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, fmt.Errorf("delegation requires initialized immutable migrations057/061")
+		}
 	}
 	childContexts := delegatedContextReader{sources: sourceCatalog}
 	var childMaintenance *delegationMaintenance

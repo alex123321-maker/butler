@@ -48,6 +48,28 @@ type dispatchAdmissionFixture struct {
 func newDispatchAdmissionFixture(t *testing.T) *dispatchAdmissionFixture {
 	return newDispatchAdmissionPolicyFixture(t, nil)
 }
+
+func TestDelegationAdmissionPartialMigrationReadinessIntegration(t *testing.T) {
+	f := newDispatchAdmissionFixture(t)
+	if err := f.service.CheckReady(f.f.ctx); err != nil {
+		t.Fatal("complete schema refused", err)
+	}
+	if _, err := f.f.pool.Exec(f.f.ctx, `ALTER TABLE delegation_admission_snapshots DISABLE TRIGGER delegation_admission_immutable`); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.service.CheckReady(f.f.ctx); err == nil {
+		t.Fatal("disabled immutable snapshot guard advertised ready")
+	}
+	if _, err := f.f.pool.Exec(f.f.ctx, `ALTER TABLE delegation_admission_snapshots ENABLE TRIGGER delegation_admission_immutable`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.f.pool.Exec(f.f.ctx, `ALTER TABLE delegation_admission_snapshots RENAME TO fixture_unavailable_admissions`); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.service.CheckReady(f.f.ctx); err == nil {
+		t.Fatal("absent admission snapshot schema advertised ready")
+	}
+}
 func newDispatchAdmissionPolicyFixture(t *testing.T, setup func(*delegationGuardFixture)) *dispatchAdmissionFixture {
 	t.Helper()
 	f := newDelegationGuardFixture(t)

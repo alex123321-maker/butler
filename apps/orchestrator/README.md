@@ -365,6 +365,9 @@ manager and private Broker control adapter are implemented behind Task Service.
 the existing durable input workers. `BUTLER_DELEGATION_MAX_PARALLEL` accepts
 one or two, defaults one and cannot be overridden through database settings.
 Private action-authority authentication and migrations057/061 are required.
+Startup verifies the immutable schema guards before advertising readiness.
+Disabling the feature prevents new admission/maintenance; use owner task/tree
+stop or mandate revocation for already accepted durable child inputs.
 Native model comparison and deployment acceptance remain pending. See
 `docs/architecture/delegation-contract.md` before enabling the route.
 
