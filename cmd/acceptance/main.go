@@ -37,7 +37,7 @@ func run() error {
 	if *mode == "plan" {
 		return json.NewEncoder(os.Stdout).Encode(acceptance.Groups())
 	}
-	f, err := os.Open(filepath.Join(*root, "testdata", "acceptance", "ru-scenarios-v1.json"))
+	f, err := os.Open(filepath.Join(*root, "testdata", "acceptance", "ru-scenarios-v2.json"))
 	if err != nil {
 		return err
 	}

@@ -13,7 +13,7 @@ import (
 
 func corpusFixture(t *testing.T) Corpus {
 	t.Helper()
-	f, err := os.Open(filepath.Join("..", "..", "testdata", "acceptance", "ru-scenarios-v1.json"))
+	f, err := os.Open(filepath.Join("..", "..", "testdata", "acceptance", "ru-scenarios-v2.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -73,6 +73,26 @@ func TestRussianCorpusHasSourceGroupedIndependentSplits(t *testing.T) {
 	bad.Examples[len(bad.Examples)-1].Input = bad.Examples[0].Input
 	if ValidateCorpus(bad) == nil {
 		t.Fatal("exact cross-split duplicate accepted")
+	}
+	// Family provenance must prevent leakage even when the texts are unrelated
+	// enough to pass the lexical similarity screen.
+	bad = c
+	bad.Examples = append([]Example(nil), c.Examples...)
+	var family string
+	for _, e := range c.Examples {
+		if e.Split == "development" && e.AttackFamily != "" {
+			family = e.AttackFamily
+			break
+		}
+	}
+	for i := range bad.Examples {
+		if bad.Examples[i].Split == "holdout" && bad.Examples[i].AttackFamily != "" {
+			bad.Examples[i].AttackFamily = family
+			break
+		}
+	}
+	if err := ValidateCorpus(bad); err == nil || !strings.Contains(err.Error(), "attack family crosses split") {
+		t.Fatal("semantically related attack family accepted across splits", err)
 	}
 }
 

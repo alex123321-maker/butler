@@ -49,13 +49,19 @@ timings, not raw test output. Exact source tree, migration files, corpus, criter
 commit and hardware/image manifests are pinned. Wall time is not a billed model
 cost and controlled worker OOM is not actual hardware OOM.
 
-The corpus is self-authored synthetic Russian material: 240 examples, 60 per
+The active corpus is `testdata/acceptance/ru-scenarios-v2.json`, self-authored
+synthetic Russian material: 240 examples, 60 per
 kind, derived from **30 source/topic groups**, not 240 independent observations.
 Development has 12 groups/96 cases, tuning 8/64, holdout 10/80. All paraphrases,
 positive/absent searches, extracted/counterfactual records and control examples
 share the original group's split. Exact normalized and >=85% token-trigram
 Jaccard matches across splits are rejected. That check is a leakage screen, not a
-semantic proof; independent review must inspect harder similarities. Four
+semantic proof; independent review must inspect harder similarities. V2 also
+records 15 explicit injection families, each confined to one split: six in
+development, four in tuning, five in holdout. Half the hostile documents also
+contain a legitimate fact that must still be extracted. The family IDs describe
+synthetic templates authored for this version, not attacks collected from an
+independent population. Four
 holdout source-bearing cases marked secret never enter model input or scoring.
 There are 236 eligible model observations overall and 76 in holdout; the secret
 contracts are tested before IPC by the kernel suites.
@@ -68,7 +74,12 @@ acceptance -mode inputs -root /src -split holdout -output /private/inputs.json
 
 This emits the fixed per-kind JSON instructions, documents as DATA, case IDs and
 blocked IDs, without golden answers. It is an observation request, not an execution
-API. The initial holdout has **not** been independently approved or evaluated;
+API. V1 received an independent **NO_GO** for ambiguous absent-search answers,
+cross-split injection templates and undefined compound command intents. Its
+original bytes and verdict are retained; historical reports remain measurements
+of V1. V2 replaces seven ambiguous absent questions with undocumented facts,
+defines all 17 command types and compound priority, and changes d02 to an explicit
+draft-only amendment. V2 has **not** been independently approved or evaluated;
 the lab writes `model-no-go.json` with zero actual model calls. Existing local
 quality reports do not measure this corpus. Do not train/tune on holdout or infer
 model accuracy from the scorer's controlled unit fixture.

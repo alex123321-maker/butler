@@ -61,6 +61,18 @@ perfect scorer unit fixture are not model quality evidence.
 
 ## Recorded lab runs
 
+Independent reviewer `codex-independent-corpus-critic-20261011-r1` rejected V1
+with NO_GO. The [original verdict](../../testdata/acceptance/reviews/ru-v1-no-go-20261011.json)
+is retained with unchanged V1 corpus bytes. The detailed independent report is
+outside candidate code at `/srv/storage/butler/reviews/issue33-20261011/review.md`
+(SHA256 `765edbc778f7b39e1696f778149bb8a3f74b539f90a4eff908d7b19bf14119da`).
+No signature, key or approval was created for rejected V1. Active V2 addresses
+the three findings with seven undocumented-fact questions, 15 split-confined
+attack templates (including mixed legitimate facts), and defined command
+classification rules. Its public synthetic templates are authored by the
+implementation agent; this does not make the golden answers independently
+approved. Independent re-review and actual model measurements remain pending.
+
 The later integrated Full run on `7b1e1e2bd703d33357a9b1ce0bd420f2813eef13`
 passed 28 groups / 137 required top-level executions, with eight scenarios PASS
 and five PENDING. It makes programmatic security/provenance tests mandatory,
