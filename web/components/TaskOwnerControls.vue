@@ -41,34 +41,45 @@ const pending = ref(false)
 const error = ref('')
 const result = ref<ControlResult | null>(null)
 const canControl = computed(() => Boolean(ownerToken.value && record.value && !pending.value && !['cancelled', 'completed'].includes(record.value.status)))
-onBeforeUnmount(() => { ownerToken.value = '' })
+let taskEpoch = 0
+onBeforeUnmount(() => { taskEpoch++; ownerToken.value = ''; instruction.value = '' })
 watch(() => props.taskId, async (id) => {
+  const epoch = ++taskEpoch
+  record.value = null
   ownerToken.value = ''
+  instruction.value = ''
+  prepareOnly.value = false
+  pending.value = false
+  error.value = ''
   result.value = null
   try {
     const response = await apiRequest<{ task: ControlTask }>(`/api/v3/tasks/${encodeURIComponent(id)}`)
+    if (epoch !== taskEpoch) return
     record.value = response.task
-  } catch { error.value = 'Unable to load current task version.' }
+  } catch { if (epoch === taskEpoch) error.value = 'Unable to load current task version.' }
 }, { immediate: true })
 
 const apply = async (kind: 'amend' | 'pause' | 'resume' | 'stop') => {
   if (!canControl.value || !record.value) return
+  const epoch = taskEpoch
+  const id = props.taskId
   pending.value = true
   error.value = ''
   result.value = null
   try {
     const deliveryId = [...crypto.getRandomValues(new Uint8Array(16))].map((value) => value.toString(16).padStart(2, '0')).join('')
-    const applied = await apiRequest<ControlResult>(`/api/v3/tasks/${encodeURIComponent(props.taskId)}/control`, {
+    const applied = await apiRequest<ControlResult>(`/api/v3/tasks/${encodeURIComponent(id)}/control`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${ownerToken.value}`, 'X-Butler-Delivery-ID': deliveryId },
       body: { kind, expected_revision: record.value.revision, instruction: kind === 'amend' ? instruction.value : '', execution_policy: kind === 'amend' && prepareOnly.value ? 'prepare_only' : undefined },
     })
+    if (epoch !== taskEpoch) return
     result.value = applied
     record.value = applied.task
     emit('changed')
   } catch {
-    error.value = 'Control was not applied. Check owner authentication and reload the current task version.'
-  } finally { pending.value = false }
+    if (epoch === taskEpoch) error.value = 'Control was not applied. Check owner authentication and reload the current task version.'
+  } finally { if (epoch === taskEpoch) pending.value = false }
 }
 </script>
 

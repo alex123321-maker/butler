@@ -90,6 +90,12 @@ verification. Existing channel activity is advisory; the outbox is authoritative
 for final notification state. These read APIs share the existing private admin
 perimeter and do not grant tool/action authority.
 
+Task detail renders these existing fields separately: saved complete/partial
+response, immutable action/evidence snapshot and current notification delivery.
+It does not infer a mutation from a confirmed read effect or treat channel ACK
+as user read. Unknown or unavailable state stays explicit. The overview shows
+the task's criteria and separate attempt links; no saved answer verifies them.
+
 ## Auxiliary jobs
 
 The same final transaction creates `completion_aux_jobs` for legacy working

@@ -10,6 +10,20 @@ Provides a browser-based interface for:
   comparison and bounded descriptive correction grants. Deleted sources retain
   metadata history without serving procedure text; the token stays in page memory.
 - **Dashboard** — system health overview
+- **Task detail** — explicit completion criteria and links to all attempts,
+  independent response/effect/notification states and saved evidence references.
+  Confirmed effects remain distinct from failed notification delivery; unknown
+  effects and delivery retain their uncertainty. Saved response evidence is a
+  historical snapshot, not a substitute for later journal reconciliation or
+  owner verification. Task changes clear owner proof/amendments immediately and
+  ignore responses belonging to an earlier task view.
+
+Focused laba verification uses `scripts/dev/task-view-lab.sh` after source Sync.
+Snapshot `20261011-092254-454` passed TypeScript/Vue checks, both lint checks,
+production build and five Chromium cases: confirmed effect with failed delivery,
+unknown effect/delivery, partial output, unavailable state and owner amendment/
+stop. The cases use synthetic API fixtures; existing server-side integration
+checks remain responsible for actual effect/approval/verification policy.
 - **Initiatives** — authenticated source/schedule controls, observation decisions,
   ordinary-task links and grouped notice states. Empty checks stay quiet. The owner
   token remains in page memory and is cleared on navigation; changing it clears

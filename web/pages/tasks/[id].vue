@@ -64,6 +64,8 @@
 
       <p v-if="taskDetails.run_ids" class="overview-copy">Attempts: {{ taskDetails.run_ids.length }}. Latest attempt: {{ taskDetails.task.run_state || 'not started' }}.</p>
 
+      <NuxtLink v-if="taskDetails.durable_task?.parent_task_id" :to="`/tasks/${encodeURIComponent(taskDetails.durable_task.parent_task_id)}`">View the parent task</NuxtLink>
+
       <TaskOwnerControls v-if="taskDetails.run_ids" :task-id="taskId" @changed="refreshOwnerState" />
 
       <AppAlert
@@ -96,6 +98,18 @@
               </div>
             </section>
             <section class="overview-card">
+              <h3>Completion criteria</h3>
+              <ul v-if="taskDetails.durable_task?.completion_criteria?.length">
+                <li v-for="criterion in taskDetails.durable_task.completion_criteria" :key="criterion">{{ criterion }}</li>
+              </ul>
+              <p v-else class="overview-copy">Completion criteria are unavailable for this historical task.</p>
+              <p class="overview-copy">A saved model response does not verify these criteria.</p>
+            </section>
+            <section v-if="taskDetails.run_ids?.length" class="overview-card">
+              <h3>Attempts</h3>
+              <ul><li v-for="runId in taskDetails.run_ids" :key="runId"><NuxtLink :to="`/runs/${encodeURIComponent(runId)}`">{{ runId }}</NuxtLink></li></ul>
+            </section>
+            <section class="overview-card">
               <h3>Memory context</h3>
               <template v-if="taskDetails.durable_task">
                 <p class="overview-copy">The plan and unfinished actions belong to this task and survive each model response.</p>
@@ -113,7 +127,7 @@
           <div class="overview-grid">
             <section class="overview-card">
               <h3>Outcome</h3>
-              <AppBadge v-if="taskDetails.result.verified !== undefined" :tone="taskDetails.result.verified ? 'success' : 'warning'">
+              <AppBadge v-if="taskDetails.result.has_result && taskDetails.result.verified !== undefined" :tone="taskDetails.result.verified ? 'success' : 'warning'">
                 {{ taskDetails.result.verified ? 'Verified user result' : 'Unverified model response' }}
               </AppBadge>
               <p class="overview-copy">{{ taskDetails.result.outcome_summary || 'No final result has been recorded yet.' }}</p>
@@ -123,6 +137,8 @@
               <p class="overview-copy">{{ taskDetails.error.error_summary || 'No error is currently attached to this task.' }}</p>
             </section>
           </div>
+
+          <TaskExecutionResult class="task-section" :result="taskDetails.final_result" :delivery="taskDetails.delivery" :run-id="taskDetails.task.run_id" />
 
           <div class="artifacts-block">
             <h4>Artifacts</h4>

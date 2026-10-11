@@ -110,9 +110,13 @@ export interface TaskArtifact {
 
 export interface TaskDetailResponse {
   run_ids?: string[]
+  final_result?: TaskFinalResult | { state: string } | null
+  delivery?: { channel?: string; state?: string }
   durable_task?: {
     goal: string
     constraints: string[]
+    completion_criteria?: string[]
+    parent_task_id?: string
     working: { plan: string[]; pending_actions: string[]; scratch: Record<string, unknown> }
   }
   task: TaskDetailRecord
@@ -123,6 +127,14 @@ export interface TaskDetailResponse {
   error: TaskError
   timeline_preview: TaskTransition[]
   artifacts: TaskArtifact[]
+}
+
+export interface TaskFinalResult {
+  result_id: string
+  answer_state: string
+  effects: Array<{ action_id: string; effect_state: string; evidence_refs: string[] }>
+  limitations: string[]
+  privacy_redacted?: boolean
 }
 
 export interface TaskActivityItem {
