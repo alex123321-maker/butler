@@ -917,6 +917,11 @@ guards; activation requires current ConverterPermission and independent passed
 checks plus trial. Local acknowledgement proves preparation only. See
 [generated-converters.md](generated-converters.md).
 
+The optional reviewed developer-child route is distinct from context-only
+delegation. Exact053 capabilities are only discover/develop/test. Immutable054
+return proof and ordinary parent `converters.collect` yield references only;
+parent original trials and activation retain separate current action grants.
+
 ## 31. Необязательная ресурсная граница управляемого браузера
 
 `internal/resourceexec` связывает существующие grant/journal/budget с конечной

@@ -6,6 +6,13 @@ than additional selectable context. Catalog owns same-transaction child grants
 and rechecks the current parent grant chain at reads, dispatch and publication;
 copied child grants cannot retain revoked parent permissions.
 
+`GrantDelegatedCandidateTx` is the narrow technical converter-return bridge. It
+requires a current owned parent worker and exact accepted result-ready child,
+selected roots, trusted return checker and complete current privacy graph. Its
+savepoint grants only the child candidate source; final/report/session access is
+excluded. Normal access is repeated after insertion and errors roll back the
+grant even if the surrounding transaction commits.
+
 `CreateDerivedTx` creates a fresh immutable `model_candidate` DATA source from
 exact current parents under an owned run/job or authenticated owner proof. It
 derives owner and sensitivity, anchors scope to the first trusted requested

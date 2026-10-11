@@ -152,5 +152,12 @@ func (s *Store) packageTx(ctx context.Context, tx pgx.Tx, r Record, extras ...ca
 	if e != nil || Hash(n) != r.NeedHash || p.Manifest.ID != r.ID || p.Manifest.Version != r.Version || p.Manifest.NeedID != r.NeedID || n.ID != r.NeedID || p.Manifest.Dependencies[0] != s.profile.Dependency {
 		return p, n, nil, ErrAccess
 	}
+	c, e := s.ownedSnapshotTx(ctx, tx)
+	if e != nil {
+		return p, n, nil, e
+	}
+	if e = s.checkReturnedPackageTx(ctx, tx, c, r); e != nil {
+		return p, n, nil, e
+	}
 	return p, n, byID, nil
 }

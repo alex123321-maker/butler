@@ -15,7 +15,7 @@ was changed. Every snapshot was explicitly synchronized before execution.
 | Bounded trials/restart | Actual PG concurrent independent task runs, unknown/failed slots spent, late stale responses rejected, grant replay refused | Passed; no automatic refund/replay |
 | Versioning/rollback/failure | Actual PG v1→v2→v1 generation transitions and owner revoke; bad candidate leaves prior task/catalog intact; empty migration down/up and retained-history down denial | Passed |
 | Owner result | Actual authenticated owner relay metadata, current checked-output SourceRef/SHA256, atomic unverified final record then explicit fixture owner verification; Chromium escaped/current output review | Passed; no model verdict promoted to task truth |
-| Delegated developer task | Ordinary child admission and separately reviewed exact child converter permissions from issue16 | Pending combined integration |
+| Delegated developer task | Actual PG accepted053 role, exact3 rights, ordinary parent collection and independent original trial/conversion | Component passed; actual production worker/Broker/container integration pending |
 
 `20261011-083442-054` passed complete `go test -p 1 -count=1 ./...` with actual
 isolated core/goals/memory/semantic/initiative/actionauth/completion PostgreSQL
@@ -53,3 +53,26 @@ race13.933s on `20261011-085102-724`. Exact binding-widening regressions passed
 actionauth race4.316s on `20261011-085211-622`. Read-only independent review found
 no additional confirmed defect in this converter union. These component checks
 do not close the developer-child or final combined Docker/runtime gate above.
+
+Snapshot `20261011-094730-679` passed actual PostgreSQL MaxConns2 race checks for
+the developer bridge and its immutable061/053 selector (app59.227s), generatedtools,
+Catalog owned/task-derived publication (3.616s), actionauth and Broker compilation.
+The component sequence executed parent discovery/admission, child scoped
+discovery/develop/test, actual atomic unverified final, composed kernel report,
+ordinary parent collection, parent independent checker, finite original-document
+trial, activation and exact original JSON conversion. Both tasks stayed active;
+the technical projection did not pass the general semantic acceptance decision.
+The runtime in this component test is an explicit fixed fixture, not the separate
+production runtime/container proof above.
+
+The same actual-PG race run exercised deletion of candidate, Need, synthetic
+contract, final and report, goal pause, parent lease expiry and a changed unknown
+child effect between Prepare/Authorize and Claim. Every denial retained zero
+parent candidate grants. Need deletion physically erased candidate descendant
+bytes. Deleted reports after collection denied a later checker and provider/
+recovery/final release. Unknown child finals could not publish054 returns. An
+actual lease expiring during Catalog's guarded grant rolled back its savepoint
+even when the surrounding transaction committed. Mutable return schemas failed
+readiness. These proofs do not establish native model planning, independently
+measured improvement, deployed developer routing or the final production
+ordinary-parent/child-worker gate.

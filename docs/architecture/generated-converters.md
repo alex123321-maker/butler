@@ -42,8 +42,37 @@ accepted record in the caller transaction. Unknown or ambiguous identity denies;
 source/policy denial never falls back to another reader. Its Bind is disabled:
 each fixed admission still uses its owning manager and snapshot writer. Both roles
 share the existing tree width, deadlines and root budget. Constructors do not
-enable deployment. Parent candidate collection and the actual delegated original
-document acceptance remain a separate, unfinished gate.
+enable deployment. The actual delegated original document acceptance remains a
+separate process/deployment gate.
+
+Migration054 retains a reference-only technical return. The composed manager's
+`DelegationReportCreator.CreateReportTx` requires the actual immutable child
+final/result, current accepted053 identity, full current source graph, exact
+tested child package and all three confirmed child actions. It runs in the
+owning `CollectGenerated` transaction. Unknown or missing effects, secret data,
+deleted final/report, a different runtime/Need/version or changed authority deny.
+The final and child task remain unverified; general semantic Accept is unchanged.
+
+The seventh static contract, `converters.collect`, is an ordinary parent read
+action with exact child task ID and package digest. Prepare binds the candidate,
+selected Need and synthetic contract hashes; Claim repeats current authority and
+technical return checks. Its guarded Catalog savepoint grants only the one exact
+child package source to the actual live parent task revision, retaining its
+complete selected privacy graph and independent parent rights. The report,
+final, child session and narrative are checked as privacy pins and never granted.
+It returns references and package metadata, not code or document bytes. Failure,
+including lease expiry while waiting, leaves no partial grant even if an outer
+caller commits after the error. Child permissions remain exactly three.
+
+Parent checker, finite original-document trial and activation are distinct
+ordinary actions. Later use of a returned package rechecks its current053/054
+identity, report/final privacy, original Need/profile and current parent policy.
+Compose `CheckDeveloperReturnLifecycleTx` after Catalog source authority and
+`CheckDeveloperLifecycleTx`, before `CheckPinnedLifecycleTx`, at provider,
+recovery and atomic final publication. Broker capability checks repeat the same
+return guard on their existing transaction. `CheckDeveloperReady` verifies both
+immutable053/054 schemas; this readiness signal grants no action authority.
+Enablement requires explicit operator composition, not merely a new constructor.
 
 ## Independent need and code
 
@@ -135,9 +164,9 @@ claimed from these fixtures.
 
 ## Durable lifecycle and recovery
 
-The six Broker-owned contracts are `converters.discover`, `develop`, `test`, `trial`,
-`activate` and `rollback`. Arguments contain only SourceRefs, versions, digests and
-expected generations. Development requires an actual discovery receipt under the
+The seven Broker-owned contracts are `converters.discover`, `collect`, `develop`,
+`test`, `trial`, `activate` and `rollback`. Arguments contain only SourceRefs,
+exact child IDs, versions, digests and expected generations. Development requires an actual discovery receipt under the
 same current task/constraints revision, plus a fresh current tool/skill search.
 An exact schema-compatible installed converter must be reused. Skill search is
 bounded discovery, not semantic proof that every procedure is unsuitable.

@@ -1,5 +1,13 @@
 # Tool Broker
 
+The optional converter developer route uses a distinct fixed reviewed
+`task.delegate_converter` contract and private admission client. The initial
+context-only `task.delegate` contract retains empty child permissions. A developer
+child receives only discover/develop/test; `converters.collect` is a separate
+parent action after current immutable final/report and tested-package proof.
+Original trials/activation remain ordinary parent grants. Routing constructors
+do not enable the feature or grant authority.
+
 The optional [reviewed procedural catalog](../../docs/architecture/reviewed-skills.md)
 adds fixed local `skills.search/load/propose` operations. Skill text remains
 DATA and actual tools retain current action/approval/budget/source admission.

@@ -66,6 +66,8 @@ func (r *RoutedExecutor) Execute(ctx context.Context, call *toolbrokerv1.ToolCal
 	var value any
 	var e error
 	switch call.ToolName {
+	case "converters.collect":
+		value, e = r.Store.Collect(ctx, call, c, args.ChildTaskID, args.Digest)
 	case "converters.discover":
 		var n Need
 		var d Discovery

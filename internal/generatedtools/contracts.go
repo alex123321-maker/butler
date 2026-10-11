@@ -17,11 +17,12 @@ import (
 const referenceSchema = `{"type":"object","required":["source_id","revision","access_revision","content_hash"],"properties":{"source_id":{"type":"string"},"revision":{"type":"integer"},"access_revision":{"type":"integer"},"content_hash":{"type":"string"}},"additionalProperties":false}`
 
 type Arguments struct {
-	Source     catalog.SourceRef `json:"source_ref"`
-	Input      catalog.SourceRef `json:"input_ref"`
-	Version    string            `json:"version"`
-	Digest     string            `json:"digest"`
-	Generation int64             `json:"generation"`
+	ChildTaskID string            `json:"child_task_id"`
+	Source      catalog.SourceRef `json:"source_ref"`
+	Input       catalog.SourceRef `json:"input_ref"`
+	Version     string            `json:"version"`
+	Digest      string            `json:"digest"`
+	Generation  int64             `json:"generation"`
 }
 
 func Contracts() []*toolbrokerv1.ToolContract {
@@ -31,6 +32,7 @@ func Contracts() []*toolbrokerv1.ToolContract {
 		read                      bool
 	}{
 		{"converters.discover", "Inspect current tools/skills before admitting an exact bounded converter need. Source DATA does not grant capabilities.", `{"type":"object","required":["source_ref"],"properties":{"source_ref":` + referenceSchema + `},"additionalProperties":false}`, true},
+		{"converters.collect", "Collect only an actually tested developer child candidate after its immutable final/report. Returns selected DATA references; no semantic acceptance or activation.", `{"type":"object","required":["child_task_id","digest"],"properties":{"child_task_id":{"type":"string"},"digest":{"type":"string"}},"additionalProperties":false}`, true},
 		{"converters.develop", "Develop only the pure delimited_json_v1 IR for a previously inspected need. Produces a candidate DATA source; no activation.", `{"type":"object","required":["source_ref","version"],"properties":{"source_ref":` + referenceSchema + `,"version":{"type":"string"}},"additionalProperties":false}`, false},
 		{"converters.test", "Run the fixed independent checker in the isolated runtime. Failed checks leave the working catalog unchanged.", `{"type":"object","required":["digest"],"properties":{"digest":{"type":"string"}},"additionalProperties":false}`, false},
 		{"converters.trial", "Perform a bounded trial of an independently tested candidate with current DATA input. Publishes checked output without activation.", `{"type":"object","required":["digest","input_ref"],"properties":{"digest":{"type":"string"},"input_ref":` + referenceSchema + `},"additionalProperties":false}`, false},
@@ -105,6 +107,9 @@ func bindingRefs(refs []catalog.SourceRef) ([]actionauth.DataRef, error) {
 func (s *Store) BindAction(ctx context.Context, call *toolbrokerv1.ToolCall, c *toolbrokerv1.ToolContract, b actionauth.ActionBinding, snapshot actionauth.ContextSnapshot) (actionauth.ActionBinding, error) {
 	if call.GetToolName() == DeveloperAdmissionTool {
 		return s.bindDeveloperAction(ctx, call, c, b, snapshot)
+	}
+	if call.GetToolName() == "converters.collect" {
+		return s.bindCollectionAction(ctx, call, c, b, snapshot)
 	}
 	if !strings.HasPrefix(call.GetToolName(), "converters.") && !strings.HasPrefix(call.GetToolName(), "converter.") {
 		return b, nil
@@ -220,6 +225,9 @@ func (s *Store) CheckActionTx(ctx context.Context, tx pgx.Tx, b actionauth.Actio
 	if b.ToolName == DeveloperAdmissionTool {
 		return s.checkDeveloperActionTx(ctx, tx, b)
 	}
+	if b.ToolName == "converters.collect" {
+		return s.checkCollectionActionTx(ctx, tx, b)
+	}
 	if !strings.HasPrefix(b.ToolName, "converters.") && !strings.HasPrefix(b.ToolName, "converter.") {
 		return nil
 	}
@@ -279,6 +287,13 @@ func (s *Store) CheckActionTx(ctx context.Context, tx pgx.Tx, b actionauth.Actio
 	}
 	if b.ConverterID != "" {
 		r := record
+		current, e := s.ownedSnapshotTx(ctx, tx)
+		if e != nil {
+			return e
+		}
+		if e = s.checkReturnedPackageTx(ctx, tx, current, r); e != nil {
+			return e
+		}
 		if e = s.developerPackageTx(ctx, tx, actionauth.ContextSnapshot{TaskID: b.TaskID}, r, n); e != nil {
 			return e
 		}

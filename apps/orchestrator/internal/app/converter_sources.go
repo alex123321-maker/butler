@@ -35,6 +35,9 @@ func (s converterSources) CheckRunSources(ctx context.Context, id string) error 
 	if e = generatedtools.CheckDeveloperLifecycleTx(ctx, tx, s.Store, id); e != nil {
 		return e
 	}
+	if e = generatedtools.CheckDeveloperReturnLifecycleTx(ctx, tx, s.Store, id); e != nil {
+		return e
+	}
 	if e = generatedtools.CheckPinnedLifecycleTx(ctx, tx, id); e != nil {
 		return e
 	}

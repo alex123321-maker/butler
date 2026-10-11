@@ -929,3 +929,9 @@ used catalog generation requires a fresh task attempt; saved tool results never
 redispatch a spent action. Local preparation acknowledgement and a model final
 remain unverified semantic task results until the existing explicit verifier
 checks completion criteria. See [generated converters](generated-converters.md).
+
+Optional converter developer returns require current immutable053/054 identity,
+actual tested child final/report and its full privacy graph on provider/recovery
+and atomic final paths. Parent collection grants only the candidate DATA source
+through a separate ordinary Broker action. Technical result readiness cannot
+accept the child or complete the semantic parent task.

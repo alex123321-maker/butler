@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	"github.com/butler/butler/apps/orchestrator/internal/goal"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	"github.com/butler/butler/apps/orchestrator/internal/run"
@@ -22,6 +23,8 @@ import (
 	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/owneridentity"
+	"github.com/butler/butler/internal/ownership"
+	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc"
 )
 
@@ -56,8 +59,20 @@ func (r developerRuntime) TestPackage(ctx context.Context, q *converterv1.TestPa
 	raw, _ := json.Marshal(report)
 	return &converterv1.TestPackageResponse{ReportJson: string(raw)}, nil
 }
-func (r developerRuntime) Convert(context.Context, *converterv1.ConvertRequest, ...grpc.CallOption) (*converterv1.ConvertResponse, error) {
-	return nil, generatedtools.ErrAccess
+func (r developerRuntime) Convert(ctx context.Context, q *converterv1.ConvertRequest, _ ...grpc.CallOption) (*converterv1.ConvertResponse, error) {
+	p, e := generatedtools.Parse(q.PackageSource.Body)
+	if e != nil {
+		return nil, e
+	}
+	var n generatedtools.Need
+	if generatedtools.Decode(q.NeedSource.Body, &n) != nil {
+		return nil, generatedtools.ErrPackage
+	}
+	out, e := generatedtools.Convert(ctx, p.Manifest.Code, n.Limits, q.InputSource.Body)
+	if e != nil {
+		return nil, e
+	}
+	return &converterv1.ConvertResponse{Output: out, OutputHash: generatedtools.HashBytes(out), MediaType: "application/json"}, nil
 }
 
 type developerEnvironment struct{ *actionContextReader }
@@ -143,7 +158,14 @@ func (f *developerFixture) dispatch(t *testing.T, runID, name string, args any) 
 	raw, _ := json.Marshal(args)
 	call := &toolbrokerv1.ToolCall{RunId: runID, ToolCallId: fmt.Sprintf("developer-call-%d", f.next), ToolName: name, ArgsJson: string(raw), AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2}
 	c := generatedtools.DeveloperAdmissionContract()
+	var e error
 	if name != generatedtools.DeveloperAdmissionTool {
+		if strings.HasPrefix(name, "converter.") {
+			c, e = f.converters.GetContract(f.f.ctx, name)
+			if e != nil {
+				t.Fatal(e)
+			}
+		}
 		for _, known := range generatedtools.Contracts() {
 			if known.ToolName == name {
 				c = known
@@ -183,6 +205,9 @@ func (f *developerFixture) dispatch(t *testing.T, runID, name string, args any) 
 	outcome, e := f.auth.Outcome(f.f.ctx, grant, result, false)
 	if e != nil || outcome.State != actionauth.StateConfirmed {
 		t.Fatal("actual journal outcome", name, e)
+	}
+	if _, e = f.f.pool.Exec(f.f.ctx, `INSERT INTO tool_calls(tool_call_id,run_id,tool_name,args,status,runtime_target,started_at,finished_at,result) VALUES($1,$2,$3,$4::jsonb,$5,$6,clock_timestamp(),clock_timestamp(),$7::jsonb)`, call.ToolCallId, runID, name, call.ArgsJson, result.Status, c.RuntimeTarget, result.ResultJson); e != nil {
+		t.Fatal(e)
 	}
 	return result, prepared, grant
 }
@@ -345,4 +370,134 @@ func TestDelegationLifecycleAcceptedRoleIntegration(t *testing.T) {
 	if _, err = router.ReadDelegationCapabilitiesTx(f.f.ctx, tx, f.f.parent, child.TaskID); err == nil {
 		t.Fatal("ambiguous accepted role allowed")
 	}
+}
+
+func (f *developerFixture) testedChild(t *testing.T) (task.Record, context.Context, generatedtools.Record) {
+	t.Helper()
+	f.dispatch(t, f.parentRun, "converters.discover", map[string]any{"source_ref": f.needRef})
+	out, _, _ := f.dispatch(t, f.parentRun, generatedtools.DeveloperAdmissionTool, f.args())
+	var receipt delegation.AdmissionReceipt
+	if json.Unmarshal([]byte(out.ResultJson), &receipt) != nil {
+		t.Fatal("receipt")
+	}
+	child, err := f.f.store.Get(f.f.ctx, receipt.TaskID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	worker := f.f.leasedWorker(t, child, "converter-child-run")
+	if _, err = f.f.pool.Exec(f.f.ctx, `UPDATE runs SET autonomy_mode='mode_2',status='tool_running',current_state='tool_running' WHERE run_id='converter-child-run'`); err != nil {
+		t.Fatal(err)
+	}
+	if err = f.f.sources.PinTranscript(worker, child.SessionKey, 0); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = f.service.Manager.MarkExecuting(worker, child.TaskID); err != nil {
+		t.Fatal(err)
+	}
+	f.dispatch(t, "converter-child-run", "converters.discover", map[string]any{"source_ref": f.needRef})
+	candidate, _, _ := f.dispatch(t, "converter-child-run", "converters.develop", map[string]any{"source_ref": f.needRef, "version": "1.0.0"})
+	var record generatedtools.Record
+	if json.Unmarshal([]byte(candidate.ResultJson), &record) != nil {
+		t.Fatal("candidate")
+	}
+	f.dispatch(t, "converter-child-run", "converters.test", map[string]any{"digest": record.Digest})
+	return child, worker, record
+}
+
+func (f *developerFixture) finishChild(t *testing.T, child task.Record, worker context.Context) task.Result {
+	t.Helper()
+	if _, err := f.f.pool.Exec(f.f.ctx, `UPDATE runs SET status='finalizing',current_state='finalizing' WHERE run_id='converter-child-run'`); err != nil {
+		t.Fatal(err)
+	}
+	c := completion.New(f.f.pool)
+	c.DataGuard = func(ctx context.Context, tx pgx.Tx, id string) error {
+		if err := f.f.sources.CheckRunSourcesTx(ctx, tx, id); err != nil {
+			return err
+		}
+		return generatedtools.CheckDeveloperLifecycleTx(ctx, tx, f.f.sources, id)
+	}
+	c.Evidence = effectEvidence{journal: f.journal}
+	if _, err := c.Save(worker, completion.Request{RunID: "converter-child-run", SessionKey: child.SessionKey, TaskID: child.TaskID, TaskRevision: child.Revision, ConstraintsRevision: child.ConstraintsRevision, Content: "Candidate DATA prepared; independent owner task verification remains pending", AnswerState: "final"}); err != nil {
+		t.Fatal(err)
+	}
+	results, err := f.f.store.Results(f.f.ctx, child.TaskID)
+	if err != nil || len(results) != 1 || results[0].Verdict != "unverified" {
+		t.Fatal("technical final promoted task", results, err)
+	}
+	return results[0]
+}
+
+func TestConverterDeveloperFinalReturnParentActionsIntegration(t *testing.T) {
+	f := newDeveloperFixture(t)
+	child, worker, candidate := f.testedChild(t)
+	args := map[string]any{"child_task_id": child.TaskID, "digest": candidate.Digest}
+	raw, _ := json.Marshal(args)
+	var collect *toolbrokerv1.ToolContract
+	for _, c := range generatedtools.Contracts() {
+		if c.ToolName == "converters.collect" {
+			collect = c
+		}
+	}
+	call := &toolbrokerv1.ToolCall{RunId: f.parentRun, ToolCallId: "premature-return", ToolName: "converters.collect", ArgsJson: string(raw), AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2}
+	if _, err := f.auth.Prepare(f.f.ctx, call, collect); err == nil {
+		t.Fatal("candidate returned before immutable final/report")
+	}
+	result := f.finishChild(t, child, worker)
+	collected, err := f.service.Manager.CollectGenerated(f.f.ctx, f.f.parent.TaskID, child.TaskID, result.ResultID)
+	if err != nil || collected.Contract.State != "result_ready" || collected.Report == nil {
+		t.Fatal("technical collect", collected, err)
+	}
+	var lease session.LeaseRecord
+	if f.f.pool.QueryRow(f.f.ctx, `SELECT lease_id,fence_epoch FROM session_ownership WHERE run_id=$1`, f.parentRun).Scan(&lease.LeaseID, &lease.FenceEpoch) != nil {
+		t.Fatal("parent lease")
+	}
+	parentCtx := runContextForDeveloperTest(f, f.parentRun, lease)
+	tx, err := f.f.pool.Begin(parentCtx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = f.f.sources.AccessTx(parentCtx, tx, []catalog.SourceRef{candidate.BodySource}, "memory_read")
+	_ = tx.Rollback(parentCtx)
+	if err == nil {
+		t.Fatal("technical collection granted candidate without parent Broker action")
+	}
+	out, _, _ := f.dispatch(t, f.parentRun, "converters.collect", args)
+	var received generatedtools.Record
+	if json.Unmarshal([]byte(out.ResultJson), &received) != nil || received.BodySource != candidate.BodySource {
+		t.Fatal("wrong candidate return")
+	}
+	tx, err = f.f.pool.Begin(parentCtx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = f.f.sources.AccessTx(parentCtx, tx, []catalog.SourceRef{catalog.SourceRef(*collected.Report)}, "memory_read")
+	_ = tx.Rollback(parentCtx)
+	if err == nil {
+		t.Fatal("parent received child narrative/report scope")
+	}
+	f.dispatch(t, f.parentRun, "converters.test", map[string]any{"digest": candidate.Digest})
+	trial, _, _ := f.dispatch(t, f.parentRun, "converters.trial", map[string]any{"digest": candidate.Digest, "input_ref": f.document})
+	var checked generatedtools.TrialResult
+	if json.Unmarshal([]byte(trial.ResultJson), &checked) != nil || checked.Status != "passed" || checked.Output == nil {
+		t.Fatal("independent original trial")
+	}
+	f.dispatch(t, f.parentRun, "converters.activate", map[string]any{"digest": candidate.Digest, "generation": candidate.Generation})
+	original, _, _ := f.dispatch(t, f.parentRun, "converter."+candidate.ID+".convert", map[string]any{"input_ref": f.document})
+	if json.Unmarshal([]byte(original.ResultJson), &checked) != nil || checked.Output == nil {
+		t.Fatal("original conversion")
+	}
+	source, err := f.f.sources.Get(parentCtx, checked.Output.Source.ID)
+	if err != nil || source.Body != `[{"label":"private-original-document","quantity":2}]` {
+		t.Fatal("original output mismatch", err)
+	}
+	for _, id := range []string{f.f.parent.TaskID, child.TaskID} {
+		current, e := f.f.store.Get(f.f.ctx, id)
+		if e != nil || current.Status != "active" {
+			t.Fatal("technical converter flow completed semantic task", e)
+		}
+	}
+}
+
+func runContextForDeveloperTest(f *developerFixture, id string, lease session.LeaseRecord) context.Context {
+	return ownership.WithToken(f.f.ctx, f.f.leases.Authority(), ownership.Token{SessionKey: f.f.parent.SessionKey, RunID: id, LeaseID: lease.LeaseID, FenceEpoch: lease.FenceEpoch})
 }

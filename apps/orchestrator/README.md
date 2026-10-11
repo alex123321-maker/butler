@@ -5,6 +5,10 @@ component. `NewDelegationLifecycleManager` selects immutable061 context-only or0
 developer identity inside the owning transaction; it cannot admit new children and
 does not retry another role after denial. Developer rights are only fixed
 discover/develop/test, while original-data trials and activation stay parent actions.
+Its report creator atomically retains the content-free054 tested return with the
+actual immutable child final/report. `converters.collect` remains a distinct
+parent Broker action. Provider/recovery/final guards include current return
+privacy and policy, without turning technical preparation into semantic Accept.
 No constructor enables routing or deployment. See
 [the bounded converter contract](../../docs/architecture/generated-converters.md).
 
