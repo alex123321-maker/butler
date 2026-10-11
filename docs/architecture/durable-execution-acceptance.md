@@ -48,9 +48,12 @@ Preparation recovery preserves verified summary coverage and all uncovered
 messages while recording the current owner input once. Known failed tool results
 retain their recorded error evidence during replay.
 
-The lifecycle suites inject failures at persisted boundaries, cancel worker
-contexts and create new Services against the same PostgreSQL state. They do not
-claim an operating-system SIGKILL test or real provider login. The separate
+The original lifecycle suites inject failures at persisted boundaries, cancel
+worker contexts and create new Services against the same PostgreSQL state. The
+later lab-only `TestApprovalWorkerSIGKILLRestartIntegration` adds actual Linux
+SIGKILL after durable approval suspension, duplicate owner decision and recovery
+with the same run/action and a two-connection pool. It does not claim real provider
+login. The separate
 Broker/browser integration suite supplies real private gRPC/HTTP, PostgreSQL
 approval and Chromium credential-effect coverage; the lifecycle fault suites use
 transport/tool fixtures to isolate restart behavior.
