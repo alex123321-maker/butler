@@ -29,8 +29,10 @@ Control-plane authorization owns encrypted PostgreSQL OAuth import and refresh;
 transport reads no credential files and launches no CLI. The settings UI reports
 stored credentials without claiming model quota. [Operator setup and validation
 status](../../deploy/antigravity/README.md) document the private import and real
-text/function/continuation gate. Current Google generation returns HTTP 429;
-activation remains pending that gate.
+text/function/continuation gate. The lab's [native verification](../../deploy/execution-budgets/native-verification.json)
+records actual direct Gemini 3.8 Flash inference, one owner-approved Broker HTTP
+call and native tool-result continuation. Stored credentials alone still do not
+prove model access or future backend capacity.
 
 Tool execution fails closed when the approval policy cannot be checked. A tool
 requiring approval also requires a configured approval gate. These guarantees
