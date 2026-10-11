@@ -17,7 +17,7 @@ type DelegatedRunSources struct {
 	SessionKey   string
 	Contract     delegation.Contract
 	Sources      []Source
-	Dependencies []SourceRef
+	Dependencies map[string][]SourceRef
 }
 
 // ReadDelegatedRun derives the selected context from the actual current run.
@@ -58,16 +58,18 @@ func (s *Store) ReadDelegatedRun(ctx context.Context, runID string) (*DelegatedR
 	if err != nil {
 		return nil, err
 	}
-	dependencies, err := s.CanonicalSourcesTx(ctx, tx, delegationRoots(c))
-	if err != nil {
-		return nil, err
-	}
+	dependencies := make(map[string][]SourceRef, len(sources))
 	bytes := 0
 	for _, src := range sources {
 		bytes += len(src.Title) + len(src.Body)
 		if bytes > 64<<10 {
 			return nil, fmt.Errorf("selected delegated source context exceeds the bounded allowance")
 		}
+		parents, err := s.CanonicalSourcesTx(ctx, tx, []SourceRef{{ID: src.ID, Revision: src.Revision, AccessRevision: src.AccessRevision, Hash: src.Hash}})
+		if err != nil {
+			return nil, err
+		}
+		dependencies[src.ID] = parents
 	}
 	if err = s.CheckDelegationSourcesTx(ctx, tx, taskID, delegationRoots(c), "memory_read"); err != nil {
 		return nil, err

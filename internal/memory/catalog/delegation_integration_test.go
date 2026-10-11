@@ -85,6 +85,16 @@ func TestReadDelegatedRunDerivesOnlySelectedCurrentWorkerContextIntegration(t *t
 	if !found {
 		t.Fatal("selected body missing")
 	}
+	originalEdge := false
+	for _, dep := range got.Dependencies[selected.ID] {
+		if dep.ID == c.ContractSource.ID {
+			t.Fatal("sibling contract became invented source ancestor")
+		}
+		originalEdge = originalEdge || dep.ID == original.ID
+	}
+	if !originalEdge {
+		t.Fatal("selected original ancestry missing")
+	}
 	if _, err = s.pool.Exec(owner, `UPDATE session_ownership SET expires_at=clock_timestamp()-INTERVAL '1 second' WHERE session_key='child-session'`); err != nil {
 		t.Fatal(err)
 	}

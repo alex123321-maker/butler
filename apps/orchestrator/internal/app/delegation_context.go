@@ -24,7 +24,7 @@ func (a delegatedContextReader) LoadDelegatedContext(ctx context.Context, runID 
 	d := &flow.DelegatedContext{RunID: runID, SessionKey: selected.SessionKey, TaskID: selected.Contract.TaskID, ContractSource: selected.Contract.ContractSource}
 	for _, src := range selected.Sources {
 		parents := []string{}
-		for _, dep := range selected.Dependencies {
+		for _, dep := range selected.Dependencies[src.ID] {
 			if dep.ID != src.ID {
 				parents = append(parents, dep.ID)
 			}
