@@ -1,0 +1,150 @@
+{
+  "status": "zero_inference_owned_observability_passed",
+  "snapshot": "20261011-103815-375",
+  "private_proof_directory": "/srv/storage/butler/agents/durable-tasks/reports/delegation-native-diagnosis-20261011T033827Z-3418559",
+  "events_sha256": "531b63bd09bdcc86332005863ca4f010da094eed1cb26a66552c30f992f42102",
+  "top_level_tests_passed": 11,
+  "subtests_passed": 34,
+  "failures": 0,
+  "skips": 0,
+  "max_pool_connections": 2,
+  "race_detector": true,
+  "new_native_attempts": 0,
+  "historical_observed_native_attempts": 5,
+  "first_failed_native_report_sha256": "28c75c31827f8a25ca8ed101e6e04b8264a7e66ee9ce18808d504d5af748c8f0",
+  "followup_failed_native_report_sha256": "f5d25f36b574464508a4124ac7490d525e75d8c8cf60111a0bb637637e777619",
+  "actual_native_failure_cause": "unknown",
+  "original_owned_schema_recovered": false,
+  "exact_native_failure_reproduced": false,
+  "production_policy_or_logging_changed": false,
+  "checker_scope": "fixed_scripted_parent_and_child_entry_denials_not_model_quality",
+  "row_limit_per_category": 16,
+  "serialized_state_byte_limit": 65536,
+  "error_codes": "fixed_allowlist_unknown_fallback",
+  "identifiers": "sha256_only",
+  "source_files_sha256": {
+    "apps/orchestrator/internal/app/delegation_native_owned_audit_test.go": "22c790e91d257a5da518fd407572c1e9795bd854fc59f865cf532be27b47850c",
+    "apps/orchestrator/internal/app/delegation_native_observability_test.go": "1f2045dd4db8ef906fe37ba299a22f71ddb5a34a1879b6cd6065c63406b7bf04",
+    "apps/orchestrator/internal/app/delegation_native_scenario_test.go": "6d1ad251dc89195793b9f6ebeda8284d164f2925816fd91aadfe80a5617eee2c",
+    "apps/orchestrator/internal/app/delegation_native_recovery_diagnosis_test.go": "d924972d722c99b800162d861f52f5c240830eacc6e497e7e5c49b872937c4c2",
+    "scripts/dev/delegation-native-diagnose-lab.sh": "4c10833257650845955297c47959dc1275d9e1b40169843a84855530da29279c"
+  },
+  "private_state_exports": [
+    {
+      "file": "private-marker.json",
+      "sha256": "81f193ece8f47343751864578ca7c9f954015c22eb47e151c30a2e4bfafc754c",
+      "bytes": 775,
+      "mode": "0o600",
+      "status": "captured_before_cleanup",
+      "workers_stopped": true,
+      "owned_state_available": true,
+      "row_counts": {
+        "input": 1,
+        "run": 1,
+        "tool": 1
+      },
+      "input_statuses": [
+        "blocked"
+      ],
+      "confirmed_action_count": 0,
+      "final_verdicts": []
+    },
+    {
+      "file": "scripted-provider-denial.json",
+      "sha256": "ba99da68cff4032d3a4a6534d317b510eb350d9fc11cebb3464568d018f673c0",
+      "bytes": 5807,
+      "mode": "0o600",
+      "status": "captured_before_cleanup",
+      "workers_stopped": true,
+      "owned_state_available": true,
+      "row_counts": {
+        "input": 2,
+        "run": 2,
+        "ownership": 2,
+        "task": 2,
+        "delegation": 1,
+        "authority": 2,
+        "action": 1,
+        "tool": 1,
+        "model": 2,
+        "source": 2
+      },
+      "input_statuses": [
+        "blocked",
+        "blocked"
+      ],
+      "confirmed_action_count": 1,
+      "final_verdicts": []
+    },
+    {
+      "file": "scripted-width-one.json",
+      "sha256": "b3b7267508d4b9701ec84d92d394abba27072d5e760ddc793b6a0d8f32f6cb8c",
+      "bytes": 10095,
+      "mode": "0o600",
+      "status": "captured_before_cleanup",
+      "workers_stopped": true,
+      "owned_state_available": true,
+      "row_counts": {
+        "input": 2,
+        "run": 2,
+        "ownership": 2,
+        "task": 3,
+        "delegation": 2,
+        "authority": 3,
+        "action": 2,
+        "tool": 2,
+        "model": 4,
+        "final": 1,
+        "source": 6
+      },
+      "input_statuses": [
+        "completed",
+        "blocked"
+      ],
+      "confirmed_action_count": 2,
+      "final_verdicts": [
+        "unverified"
+      ]
+    },
+    {
+      "file": "scripted-width-two.json",
+      "sha256": "d79c036b51aebe8c3428231b45087fed89dd19044d9bac1ba4f2c9989f60bf73",
+      "bytes": 12268,
+      "mode": "0o600",
+      "status": "captured_before_cleanup",
+      "workers_stopped": true,
+      "owned_state_available": true,
+      "row_counts": {
+        "input": 3,
+        "run": 3,
+        "ownership": 3,
+        "task": 3,
+        "delegation": 2,
+        "authority": 3,
+        "action": 2,
+        "tool": 2,
+        "model": 5,
+        "final": 1,
+        "source": 8
+      },
+      "input_statuses": [
+        "completed",
+        "blocked",
+        "blocked"
+      ],
+      "confirmed_action_count": 2,
+      "final_verdicts": [
+        "unverified"
+      ]
+    }
+  ],
+  "limitations": [
+    "scripted_provider_has_no_pg_auth_native_provider_or_http_client",
+    "actual_broker_private_admission_and_ordinary_input_workers_are_real",
+    "child_entry_denial_does_not_complete_child_task",
+    "width_one_second_child_waits_without_input_id",
+    "parent_final_verdict_remains_unverified",
+    "unknown_native_cause_not_inferred_from_scripted_success",
+    "native_acceptance_and_issue16_closure_unestablished"
+  ]
+}

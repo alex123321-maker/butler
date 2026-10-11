@@ -10,7 +10,7 @@ proof="$root/reports/delegation-native-diagnosis-$run_id"
 name="butler-native-diagnosis-$run_id"
 network="$name-net"
 umask 077
-mkdir -p "$proof/postgres" "$root/.cache/delegation-tmp"
+mkdir -p "$proof/postgres" "$proof/state" "$root/.cache/delegation-tmp"
 created_network=false
 created_pg=false
 cleanup() {
@@ -38,13 +38,15 @@ status=0
 docker run --rm --user "$(id -u):$(id -g)" --network "$network" --memory 1536m --pids-limit 128 --cpus 2 \
   --security-opt no-new-privileges:true --volume "$source_dir:/src:ro" --volume /srv/storage/butler/.cache:/cache \
   --volume "$root/.cache/delegation-tmp:/private-tmp" --workdir /src \
+  --volume "$proof/state:/diagnostic-proof" --env BUTLER_DELEGATION_DIAGNOSTIC_REPORT_DIR=/diagnostic-proof \
   --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp --env TMPDIR=/private-tmp \
   --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:delegation-fixture@delegation-postgres:5432/butler_delegation_test?sslmode=disable' \
   golang:1.27.2-bookworm bash -eu -c 'go test -race -c -o /private-tmp/diagnosis-broker.test ./apps/tool-broker/internal/broker
 export BUTLER_DELEGATION_BROKER_BINARY=/private-tmp/diagnosis-broker.test
 go test -json -race -run "^TestDelegatedInputVerifier" -count=1 -timeout=30s ./apps/orchestrator/internal/input
 go test -json -race -run "^TestDelegation(Preparation|Recovery|Context|Accepted)" -count=1 -timeout=30s ./apps/orchestrator/internal/orchestrator
-go test -json -race -run "^TestNativeDelegationZeroInferenceRecoveryDiagnosisIntegration$" -count=1 -timeout=120s ./apps/orchestrator/internal/app' > "$proof/tests.jsonl" || status=$?
+go test -json -race -run "^TestNativeDelegation(OwnedAudit|ScriptedOwnedObservability|ZeroInferenceRecoveryDiagnosis)" -count=1 -timeout=150s ./apps/orchestrator/internal/app' > "$proof/tests.jsonl" || status=$?
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
+find "$proof/state" -type f -name '*.json' -print0 | sort -z | xargs -0 -r sha256sum > "$proof/state.sha256"
 [[ "$status" == 0 ]] || exit "$status"
-printf '{"status":"diagnosis_passed","new_native_attempts":0,"historical_native_attempts":3,"total_native_attempts":3}\n'
+printf '{"status":"zero_inference_diagnosis_passed","new_native_attempts":0,"historical_observed_native_attempts":5,"exact_native_failure_reproduction":false}\n'

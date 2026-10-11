@@ -292,3 +292,51 @@ establish observability, not reproduce an unknown native cause or authorize
 another model experiment. Issue16 stays open. The reviewed three-attempt baseline
 was accounting for this completed window only; it must not silently reset the
 now-observed total of five for a future invocation.
+
+## Bounded owned-state export without inference
+
+The fixture now stops and awaits its owning worker processes before taking a
+read-only repeatable PostgreSQL snapshot. That defer runs before `memorytest`
+schema cleanup. The export selects only fixed scalar metadata: input/run/task
+states, allowlisted error classes, checkpoint kinds, claim/fence/revision pins,
+current assignment references, action authorization/effect/outcome state, tool
+state, nullable model usage, immutable final hashes and source revisions. It
+does not select error messages, input/event bodies, args, checkpoint payloads,
+grant bodies, credentials, DSNs or provider responses. All identifiers become
+SHA256 references, and unknown enum values become the fixed `unknown` value.
+No raw-string or regular-expression fallback exists for error codes.
+
+Each category is limited to sixteen rows and the serialized state to 64KiB.
+Missing, malformed, oversized or truncated evidence is `unavailable`, never a
+successful diagnostic. A separate operator-selected private report is created
+exclusively with mode 0600 and synced. Existing failed experiment reports are not
+rewritten. `scripts/dev/delegation-native-diagnose-lab.sh` retains these reports
+and their hashes outside the disposable fixture schema.
+
+The independent scripted transport has no PostgreSQL handle, native provider,
+HTTP client or authentication source. Through the ordinary two input workers
+and a separate actual Broker process it emits exactly two sequential
+`task.delegate` calls, reads the real receipts and emits a fixed receipt final.
+With width one, the second successful admission remains `waiting` until capacity
+exists; its receipt does not yet contain an input ID. With width two, both child
+inputs execute. Each started child immediately receives an intentional
+zero-network provider-entry denial. This does not pretend to be a successful
+child/model outcome. The parent final remains unverified. A separate deliberate
+parent continuation denial preserves its one confirmed admission effect and
+blocked state without inventing a final result.
+
+Actual PostgreSQL with two pooled connections and the race detector prove that
+these stopped states are exported before schema cleanup. Adversarial fixtures
+put private-looking markers into error codes, error messages, checkpoint kinds
+and payloads, tool fields and identifiers; no marker or raw field enters the
+export. Serializer tests reject untyped values, malformed hashes, negative
+metadata, more than sixteen rows and more than 64KiB; an actual seventeen-run
+snapshot fails rather than silently truncating. The accepted-input identity,
+natural lock-wait expiry and original zero-inference recovery checks remain in
+the same runner.
+
+The final content-free proof is
+`deploy/delegation/native-owned-observability.json`. These checks establish
+observability of intentionally scripted boundaries, with zero new native calls.
+They do not recover the discarded original schema, identify the unknown native
+failure, prove successful children, or establish the required native comparison.

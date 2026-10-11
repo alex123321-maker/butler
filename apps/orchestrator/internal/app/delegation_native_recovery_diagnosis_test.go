@@ -93,7 +93,7 @@ func (*nativeEntryDenialSpy) CancelRun(context.Context, transport.CancelRunReque
 	return nil, nil
 }
 
-func nativeDiagnosisCore(f *nativeScenarioFixture, spy *nativeEntryDenialSpy, client *tools.BrokerClient, reader *nativeDiagnosticContextReader, checkpoints flow.CheckpointStore) *flow.Service {
+func nativeDiagnosisCore(f *nativeScenarioFixture, spy transport.ModelProvider, client *tools.BrokerClient, reader *nativeDiagnosticContextReader, checkpoints flow.CheckpointStore) *flow.Service {
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
 	bc := budget.NewController(f.pool, nativeExperimentPolicy())
 	bc.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)

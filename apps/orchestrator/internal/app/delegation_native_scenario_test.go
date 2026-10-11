@@ -77,6 +77,7 @@ type nativeScenarioEvidence struct {
 	SharedDayReserved budget.Units             `json:"shared_day_reserved"`
 	Attempts          []nativeAttemptEvidence  `json:"new_attempts"`
 	Usage             []nativeUsageEvidence    `json:"new_usage"`
+	OwnedState        *nativeOwnedAudit        `json:"owned_state,omitempty"`
 	Limitations       []string                 `json:"limitations"`
 }
 type nativeAttemptEvidence struct {
@@ -104,6 +105,7 @@ type nativeScenarioFixture struct {
 	goalID, mandateID, manifest, private, corpusPath string
 	corpus                                           nativeResearchCorpus
 	args                                             []delegation.AdmissionArgs
+	workers                                          []*nativeSubprocess
 }
 
 func nativeOwner(ctx context.Context, delivery, sessionKey string) context.Context {
@@ -277,8 +279,19 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 	}
 	report := nativeScenarioEvidence{Status: "failed", ReleaseRef: os.Getenv("BUTLER_DELEGATION_NATIVE_RELEASE"), MaxAttempts: nativeDelegationTotalAttemptCap, MaxNewAttempts: nativeDelegationAttemptCap, Historical: history, CostBasis: "operator_declared_subscription_no_overage", Limitations: []string{"gate_controlled_loss_after_parent_attempt_completed", "cloud_weights_not_observable", "no_local_generative_parity_claim", "blocked_attempt_report_bridge_pending", "metadata_barriers_do_not_claim_late_native_callback_injection", "historical_nullable_usage_not_zero_or_new_fixture_budget_usage"}}
 	defer func() {
+		// Stop every owning process before reading its durable diagnostic state.
+		// Go defers run before memorytest's unconditional schema cleanup.
+		for _, worker := range f.workers {
+			worker.stop(t, false)
+		}
 		auditCtx, auditCancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer auditCancel()
+		owned, err := collectNativeOwnedAudit(auditCtx, f.pool, true)
+		report.OwnedState = &owned
+		if err != nil {
+			report.Status = "failed"
+			report.Limitations = append(report.Limitations, "owned_state_export_unavailable")
+		}
 		if f.pool.QueryRow(auditCtx, `SELECT attempts FROM fixture_native_limit`).Scan(&report.NativeAttempts) != nil {
 			report.NativeAttempts = -1
 			report.Status = "failed"
@@ -490,7 +503,9 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 		if os.WriteFile(p, nativeJSON(config), 0600) != nil {
 			t.Fatal("private worker config unavailable")
 		}
-		return startNativeSubprocess(t, binary, "TestNativeDelegationWorkerHarness", dsn, f.private, sessionKey+"-"+stage, []string{"BUTLER_DELEGATION_NATIVE_WORKER_HARNESS=1", "BUTLER_DELEGATION_NATIVE_WORKER_CONFIG=" + p})
+		worker := startNativeSubprocess(t, binary, "TestNativeDelegationWorkerHarness", dsn, f.private, sessionKey+"-"+stage, []string{"BUTLER_DELEGATION_NATIVE_WORKER_HARNESS=1", "BUTLER_DELEGATION_NATIVE_WORKER_CONFIG=" + p})
+		f.workers = append(f.workers, worker)
+		return worker
 	}
 	worker := start("gated")
 	nativeWait(t, f.ctx, 5*time.Minute, func() bool {
