@@ -2,7 +2,7 @@
 
 [Lab acceptance evidence](initiative-acceptance.md) distinguishes actual
 Broker/executor checks from recorded-journal adversarial fixtures and remaining
-production source-hook/generative-planning verification.
+live generative planning and channel-delivery verification.
 
 An initiative starts with a typed observation and an active owner objective.
 Observation content is data. Source configuration belongs to an authenticated
@@ -65,11 +65,12 @@ final results, effect evidence or claims of user read. Owner view exposes their
 delivery states separately. All template/project/error contents are excluded.
 
 Current scope: authenticated normalized event ingress, durable schedules, the
-installed PostgreSQL project-attempt observer, grouped digest delivery and atomic
-ordinary-task admission. An unconfigured heartbeat remains an empty check. Fixed
-external source adapters and the repeated-error to verified prepared-project-fix
-acceptance remain outstanding. This contract
-does not claim issue #15 acceptance from foundational tests alone.
+installed PostgreSQL project-attempt and recorded Broker-project observers,
+grouped digest delivery and atomic ordinary-task admission. An unconfigured
+heartbeat remains an empty check. The actual Broker prepared-project-fix proof
+uses an explicit fixture driver and independent owner verification. Live
+generative execution of the promoted task and actual channel delivery remain
+outstanding; the component proof does not establish issue15 acceptance.
 
 ## Recorded project checks
 
