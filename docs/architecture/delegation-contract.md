@@ -84,3 +84,41 @@ two pooled connections; no model inference/effect is claimed. Production explici
 Broker/scheduler and the shared model experiment above remain pending. Explicit
 selected-source context is integrated in the ordinary preparation/recovery path;
 actual Catalog and core projection/recovery checks are covered separately.
+
+## Current capability and result guards
+
+`app.DelegationGuards` composes actual Catalog grant/source validation with a
+mandatory local `DelegationPermissionReader`. Both adapters join the manager's
+transaction; a network request or second pool connection under those locks is
+forbidden. Permissions are exact tool, contract hash, resource, effect and
+credential-reference subsets, with finite deadline and all eight budget bounds.
+Current goal/mandate and prepare-only policy restrict that subset independently.
+A registry entry, model tool description or old snapshot alone grants nothing.
+
+`ReadDelegationCapabilitiesTx(ctx,tx,parent,childTaskID)` has an explicit phase:
+empty child identity requires a current actual claimed delegate-dispatch proof;
+nonempty identity resolves that child's accepted durable capabilities and current
+parent/goal/package/source policy. Lifecycle must not depend on a surviving parent
+worker. The production adapter must persist its accepted snapshot during source
+binding, before the manager's first child lifecycle check. No production reader
+or accepted-snapshot storage is enabled by the guard component itself.
+
+Report DATA is bound to a real completed child run, immutable final, exact current
+task-result row, final artifact/message hash and original Catalog source graph.
+Actual action intents, permanent effects, evidence and branch reservations are
+read independently on the same transaction. The report cannot omit uncertainty,
+invent actions or hide shared reservation usage. Accept requires independently
+persisted owner verification for this exact result, criteria and version/hash
+evidence; agreeing models or a model final do not verify it or complete a task.
+
+Execution/source lifecycle guards remain active-only. Completed partial assistant
+finals can be collected with limitations while the task is active. Failed,
+timed-out and blocked attempts retain observations but require a separate
+read-only historical collection contract before they can be collected: task
+revision changes and absent immutable finals must not be relabelled as current
+completion. Later journal reconciliation also makes an old final/report mismatch
+fail closed; it needs a new explicit observation workflow. Stop/cancelled tasks
+deny new collection even when historical result metadata remains visible.
+
+See [guard acceptance evidence](../ai/delegation-guard-acceptance.md) for actual
+two-connection PostgreSQL/race tests and the pending production/model criteria.

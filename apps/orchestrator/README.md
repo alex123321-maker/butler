@@ -374,3 +374,13 @@ Finite shared-resource leases are implemented in `internal/resources` with live
 worker/task/parent checks on the caller PostgreSQL transaction. Migration058 and
 production workspace/browser composition remain in progress; resource leases
 alone cannot authorize a tool effect. See `docs/architecture/resource-lease-contract.md`.
+
+`app.DelegationGuards` now validates exact current capability subsets and compares
+structured child reports against real final/artifact/transcript, action journal,
+source graph and branch reservation records on the caller PG transaction. Its
+capability reader is mandatory and phase-explicit: new admission needs a current
+claimed delegate action, lifecycle needs that child's durable accepted snapshot
+and current policy. The private Broker adapter/storage and model experiment
+remain pending; no delegation tool is enabled here. Active completed partial
+finals are distinct from blocked/failed attempts, whose historical collection
+bridge is still pending. See `docs/ai/delegation-guard-acceptance.md`.
