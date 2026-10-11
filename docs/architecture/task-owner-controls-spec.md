@@ -47,6 +47,30 @@ Zero or multiple roots produce a durable `waiting_for_user` receipt with
 `task_target_required`, without model/tool execution or task mutation. Explicit
 control with an ID resolves the waiting receipt in input and target sessions.
 
+## Owner observations
+
+`GET /api/v3/tasks/{task_id}/observations` requires the configured owner Bearer
+proof before any store read and exact task ownership. A two-second read-only
+repeatable-read PostgreSQL transaction projects the assignment/initiative,
+first 100 direct owned children, latest 50 action intents and shared root budget.
+Overflow is explicit. The response contains typed owning metadata rather than
+source bodies, tool arguments, provider errors or credential material. It grants
+no execution authority. The ordinary task detail keeps its deployment perimeter.
+
+Child run completion is distinct from the task's verified completion result.
+Action consequences come from the recorded contract (`read`, `prepare`, `commit`,
+or unknown); journal confirmation remains separate. Run failure or activity is
+not a risk assessment and the legacy risk field now reports `unknown`.
+Shared root reservations are conservative allowances, not measured consumption.
+Actual model attempts across the owned tree report known input/output subtotals
+and separate missing-input/missing-output counts. Absent budget records remain
+unavailable. Neither missing usage nor a missing scope is presented as zero cost.
+
+The Web view loads this snapshot explicitly using page-memory owner proof.
+Changing the task or proof clears the snapshot and fences late responses;
+successful controls invalidate it. Goal/mandate and initiative links expose the
+existing authority and observation views. Read failure presents unavailable data.
+
 ## Versions and branches
 
 Every control increments task/constraints revisions and saves prior working

@@ -211,6 +211,13 @@ secret through the lab terminal, never through model chat or browser storage.
 
 Durable task details expose owner amendment, prepare-only restriction, pause/resume and tree stop. Controls require the owner token in page memory and the displayed task revision; missing/stale proof is refused. A dispatch uncertainty notice preserves the distinction between stopped execution and a committed external effect.
 
+The same task page loads an authenticated observation snapshot on request:
+purpose/authority, initiative, internal children, recorded action effects and
+shared root budget. Verified task results are distinct from completed child
+responses; reservations are distinct from measured usage. Missing usage is
+explicit and read failure stays unavailable. Changing owner proof or task clears
+the snapshot and rejects late responses; tokens never enter browser storage.
+
 `/goals` exposes confirmed objectives, preferences/constraints and separate
 unconfirmed assumptions, bounded autonomy mandates and current obligations.
 Owners can explicitly confirm a proposed assumption, amend exact mandate JSON,

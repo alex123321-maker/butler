@@ -91,6 +91,31 @@ func (s *TaskControlServer) HandleItem(prefix string) http.Handler {
 			return
 		}
 		id := parts[0]
+		if len(parts) == 2 && parts[1] == "observations" {
+			if r.Method != http.MethodGet {
+				w.WriteHeader(http.StatusMethodNotAllowed)
+				return
+			}
+			var authenticated bool
+			r, authenticated = s.authenticate(w, r)
+			if !authenticated {
+				return
+			}
+			reader, ok := s.tasks.(interface {
+				OwnerOverview(context.Context, string) (task.OwnerOverview, error)
+			})
+			if !ok {
+				writeJSON(w, 503, map[string]string{"error": "task observations unavailable"})
+				return
+			}
+			observations, err := reader.OwnerOverview(r.Context(), id)
+			if err != nil {
+				writeTaskError(w, err)
+				return
+			}
+			writeJSON(w, 200, observations)
+			return
+		}
 		if len(parts) == 2 && parts[1] == "controls" && r.Method == http.MethodGet && s.controls != nil {
 			history, err := s.controls.History(r.Context(), id)
 			if err != nil {

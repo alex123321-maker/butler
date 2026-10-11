@@ -1,5 +1,13 @@
 # Persistent task and bounded delegation ownership
 
+`OwnerOverview` is an authenticated read-only repeatable-read projection of task
+authority, initiative, direct children, typed action effects and shared root
+budgets. It excludes source/argument bodies and keeps verified completion,
+dispatch evidence, conservative reservations and nullable measured usage
+distinct. Reads have a two-second bound and explicit child/action truncation.
+Actual disposable PostgreSQL tests use `scripts/dev/task-observations-lab.sh`;
+the projection does not admit work or charge a model attempt.
+
 Task Store owns durable work, working-state versions and evidence results. Tasks
 differ from runs, model finals and delivery. Owner controls apply revisions/stop
 across a stabilized cross-session tree; verified completion remains explicit.

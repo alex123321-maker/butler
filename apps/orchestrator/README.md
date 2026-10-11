@@ -1,5 +1,12 @@
 # Orchestrator
 
+Authenticated task observations at `/api/v3/tasks/{task_id}/observations` expose
+owned assignment/initiative metadata, child result status, recorded action
+consequences and shared root budget. Known token subtotals and unavailable usage
+remain separate from conservative reservations. Run status never supplies an
+action risk assessment. See the
+[owner control contract](../../docs/architecture/task-owner-controls-spec.md).
+
 Provider failures persist their fixed transport subtype in the failure message
 with the existing `transport_error` class. Source verification distinguishes
 stale sources from its own timeout. No provider text/details or unknown type

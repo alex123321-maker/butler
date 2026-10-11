@@ -137,6 +137,29 @@ export interface TaskFinalResult {
   privacy_redacted?: boolean
 }
 
+export interface TaskOwnerOverview {
+  task_id: string
+  revision: number
+  observed_at: string
+  assignment?: { goal_id: string; owner_mandate_id?: string; mandate_id?: string; purpose: string; initiative_reason: string; observation_ref: string }
+  initiative?: { initiative_id: string; source_id: string; observation_ref: string; status: string; reason: string; confidence: number; importance: number; expected_model_calls: number }
+  children: Array<{ task_id: string; revision: number; status: string; delegation_state: string; completion_result_id?: string }>
+  children_truncated: boolean
+  actions: Array<{ action_id: string; tool_name: string; task_revision: number; effect: string; effect_state: string; contract_hash: string }>
+  actions_truncated: boolean
+  budget: {
+    root_task_id: string
+    limits?: Record<string, number>
+    reserved?: Record<string, number>
+    deadline?: string
+    model_attempts: number
+    known_input_tokens: number
+    known_output_tokens: number
+    unknown_input_attempts: number
+    unknown_output_attempts: number
+  }
+}
+
 export interface TaskActivityItem {
   activity_id: number
   run_id: string

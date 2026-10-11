@@ -148,6 +148,14 @@ foreach ($file in $files) {
       [void]$tests.Add("pwsh -NoProfile -File scripts/dev/lab.ps1 -RemoteRoot /srv/storage/butler/agents/local-models -Action Test -Packages ./apps/local-models/...")
       continue
     }
+    "^(apps/orchestrator/internal/task/owner_overview.*[.]go$|apps/orchestrator/internal/api/(task_observations_test|tasks_control|tasks_v2)[.]go$|scripts/dev/task-observations-lab[.]sh$|web/(components/TaskOwnerControls[.]vue|entities/task/api[.]ts|tests/e2e/task-owner-controls[.]spec[.]ts)$)" {
+      [void]$specs.Add("docs/architecture/task-owner-controls-spec.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/task-observations/current/scripts/dev/task-observations-lab.sh /srv/storage/butler/agents/task-observations' after isolated Sync")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/task-observations/current/scripts/dev/task-view-lab.sh /srv/storage/butler/agents/task-observations' after isolated Sync")
+      continue
+    }
     "^apps/orchestrator/" {
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./apps/orchestrator/...")
