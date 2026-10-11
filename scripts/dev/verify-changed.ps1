@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/memory/candidatecontrol/|internal/memory/catalog/worker_candidates|internal/(config|actionauth)/memory_candidate|apps/(orchestrator|tool-broker)/internal/(app|broker)/memory_candidate)" {
+      [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
+      [void]$specs.Add("docs/architecture/memory-model.md")
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/memory-proposal-control/current/scripts/dev/memory-candidate-lab.sh /srv/storage/butler/agents/memory-proposal-control full' (actual Broker app, disposable PostgreSQL, pool2, race, zero inference)")
+      continue
+    }
     "^(internal/memory/catalog/(access_deadline|extraction|store)[^/]*[.]go$|internal/memory/jobs/extraction_wait_integration_test[.]go$|scripts/dev/memory-candidate-lab[.]sh$)" {
       [void]$specs.Add("docs/architecture/memory-model.md")
       [void]$specs.Add("docs/architecture/versioned-memory-sources.md")

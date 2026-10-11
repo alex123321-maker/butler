@@ -28,9 +28,18 @@ func guardedRequestBrokerProcess(t *testing.T, f *dispatchAdmissionFixture, serv
 	if err != nil {
 		t.Fatal(err)
 	}
+	return controlBrokerProcess(t, f, h, "/request", "BUTLER_GUARDED_TAB_REQUEST_HARNESS=1")
+}
+func controlBrokerProcess(t *testing.T, f *dispatchAdmissionFixture, h http.Handler, path, harness string) *tools.BrokerClient {
+	t.Helper()
+	binary := os.Getenv("BUTLER_GUARDED_REQUEST_BROKER_BINARY")
+	if binary == "" {
+		t.Skip("compiled private Broker process required")
+	}
+	const token = "guarded-request-private-process-fixture-token"
 	mux := http.NewServeMux()
 	mux.Handle("/context", actionauth.NewContextHandler(token, f.reader))
-	mux.Handle("/request", h)
+	mux.Handle(path, h)
 	control := httptest.NewServer(mux)
 	t.Cleanup(control.Close)
 	tokenPath := filepath.Join(t.TempDir(), "token")
@@ -46,7 +55,19 @@ func guardedRequestBrokerProcess(t *testing.T, f *dispatchAdmissionFixture, serv
 	dsn.RawQuery = query.Encode()
 	address := freeAddress(t)
 	cmd := exec.Command(binary, "-test.run=^TestDelegationBrokerHarness$", "-test.timeout=50s")
-	cmd.Env = append(os.Environ(), "BUTLER_DELEGATION_BROKER_HARNESS=1", "BUTLER_GUARDED_TAB_REQUEST_HARNESS=1", "BUTLER_DELEGATION_POSTGRES_URL="+dsn.String(), "BUTLER_DELEGATION_TOKEN_FILE="+tokenPath, "BUTLER_DELEGATION_CONTEXT_URL="+control.URL+"/context", "BUTLER_DELEGATION_ADMISSION_URL="+control.URL+"/request", "BUTLER_DELEGATION_GRPC_ADDRESS="+address, "BUTLER_DELEGATION_MANIFEST_FILE="+f.manifestPath)
+	cmd.Env = append(os.Environ(), "BUTLER_DELEGATION_BROKER_HARNESS=1", harness, "BUTLER_DELEGATION_POSTGRES_URL="+dsn.String(), "BUTLER_DELEGATION_TOKEN_FILE="+tokenPath, "BUTLER_DELEGATION_CONTEXT_URL="+control.URL+"/context", "BUTLER_DELEGATION_ADMISSION_URL="+control.URL+path, "BUTLER_DELEGATION_GRPC_ADDRESS="+address, "BUTLER_DELEGATION_MANIFEST_FILE="+f.manifestPath)
+	if harness == "BUTLER_MEMORY_CANDIDATE_HARNESS=1" {
+		actual := os.Getenv("BUTLER_MEMORY_CANDIDATE_APP_BINARY")
+		if actual == "" {
+			t.Skip("compiled actual Broker application required")
+		}
+		registryPath := filepath.Join(t.TempDir(), "tools.json")
+		if os.WriteFile(registryPath, []byte(`{"tools":[]}`), 0600) != nil {
+			t.Fatal("empty fixture registry unavailable")
+		}
+		cmd = exec.Command(actual)
+		cmd.Env = append(os.Environ(), "BUTLER_POSTGRES_URL="+dsn.String(), "BUTLER_POSTGRES_MAX_CONNS=2", "BUTLER_POSTGRES_MIN_CONNS=0", "BUTLER_TOOL_REGISTRY_PATH="+registryPath, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+tokenPath, "BUTLER_ACTION_CONTEXT_URL="+control.URL+"/context", "BUTLER_MEMORY_CANDIDATE_ENABLED=true", "BUTLER_MEMORY_CANDIDATE_CONTROL_URL="+control.URL+path, "BUTLER_HTTP_ADDR=127.0.0.1:0", "BUTLER_GRPC_ADDR="+address, "BUTLER_MEMORY_DELETION_MANIFEST_FILE="+f.manifestPath)
+	}
 	log, err := os.OpenFile(filepath.Join(t.TempDir(), "broker.log"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
 	if err != nil {
 		t.Fatal(err)

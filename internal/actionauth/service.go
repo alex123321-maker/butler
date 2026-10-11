@@ -99,6 +99,9 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	if call.GetToolName() == "single_tab.bind.guarded" && (c.TaskID == "" || !c.GuardedTabRequestReady) {
 		return b, false, fmt.Errorf("guarded tab request composition is unavailable")
 	}
+	if call.GetToolName() == "memory.propose_candidate" && (c.TaskID == "" || !c.MemoryCandidateReady) {
+		return b, false, fmt.Errorf("memory candidate composition is unavailable")
+	}
 	if contract.GetContractRevision() == "guarded-1" && (call.GetToolName() == "single_tab.status" || call.GetToolName() == "single_tab.click") && (c.TaskID == "" || !c.GuardedTabRuntimeReady) {
 		return b, false, fmt.Errorf("guarded tab runtime composition is unavailable")
 	}
@@ -232,7 +235,7 @@ func (s *Service) Authorize(ctx context.Context, call *toolbrokerv1.ToolCall, co
 		return Grant{}, fmt.Errorf("prepared action is missing, stale or changed")
 	}
 	g := Grant{ID: randomID(), Binding: b, LeaseID: c.LeaseID, LeaseEpoch: c.LeaseEpoch, AutonomyMode: c.AutonomyMode, ExpiresAt: s.now().Add(time.Minute), State: "authorized"}
-	if call.GetToolName() == "single_tab.bind.guarded" {
+	if call.GetToolName() == "single_tab.bind.guarded" || call.GetToolName() == "memory.propose_candidate" {
 		g.InputClaimHash = c.InputClaimHash
 	}
 	if c.LeaseExpiresAt.Before(g.ExpiresAt) {

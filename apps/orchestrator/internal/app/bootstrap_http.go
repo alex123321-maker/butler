@@ -34,6 +34,7 @@ import (
 	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
+	"github.com/butler/butler/internal/memory/candidatecontrol"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/chunks"
 	memorydoctor "github.com/butler/butler/internal/memory/doctor"
@@ -56,6 +57,7 @@ import (
 type httpServerDeps struct {
 	guardedTabOwner            apiservice.GuardedTabDecisions
 	guardedRequestHandler      http.Handler
+	memoryCandidateHandler     http.Handler
 	delegationDecisions        apiservice.DelegationDecisions
 	initiativeStore            *initiative.Store
 	memoryIndexing             *indexing.Runtime
@@ -201,6 +203,9 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	mux.Handle("/api/v3/tab-choices/", apiservice.GuardedTabOwnerControls(deps.ownerAuth, deps.guardedTabOwner))
 	if deps.guardedRequestHandler != nil {
 		mux.Handle("/internal/guarded-tab-request", deps.guardedRequestHandler)
+	}
+	if deps.memoryCandidateHandler != nil {
+		mux.Handle(candidatecontrol.Path, deps.memoryCandidateHandler)
 	}
 	mux.Handle("/api/v3/delegation-decisions/", apiservice.DelegationOwnerDecisions(deps.ownerAuth, deps.delegationDecisions))
 	if deps.skillEvidenceHandler != nil {

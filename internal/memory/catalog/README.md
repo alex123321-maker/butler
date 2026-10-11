@@ -1,5 +1,11 @@
 # Memory source catalog
 
+The optional [candidate control](../candidatecontrol/README.md) publishes agent
+proposals using current run/input/dispatch and source proof. Its trusted effect
+deduplication appends neutral confidence0 candidates. Concurrent workers cannot
+write accepted preferences; independent owner decisions require the exact current
+head. The legacy cloud extraction pipeline remains disabled.
+
 Delegated runs select only their exact contract/source roots and their own
 session/task bodies. Original dependency ancestors remain privacy pins rather
 than additional selectable context. Catalog owns same-transaction child grants

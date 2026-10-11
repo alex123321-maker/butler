@@ -29,6 +29,7 @@ type actionContextReader struct {
 	delegationReady          bool
 	guardedTabRequestReady   bool
 	guardedTabRuntimeReady   bool
+	memoryCandidateReady     bool
 	converterDelegationReady bool
 }
 
@@ -58,7 +59,8 @@ func (r *actionContextReader) GetActionContext(ctx context.Context, runID string
 	c.DelegationReady = r.delegationReady
 	c.GuardedTabRequestReady = r.guardedTabRequestReady
 	c.GuardedTabRuntimeReady = r.guardedTabRuntimeReady
-	if r.guardedTabRequestReady {
+	c.MemoryCandidateReady = r.memoryCandidateReady
+	if r.guardedTabRequestReady || r.memoryCandidateReady {
 		var inputID, claimID string
 		if r.pool.QueryRow(ctx, `SELECT input_id,claim_id FROM accepted_inputs WHERE run_id=$1 AND session_key=$2 AND owner_id=$3 AND status='running' AND claim_expires_at>clock_timestamp() AND expires_at>clock_timestamp()`, runID, c.SessionKey, c.OwnerID).Scan(&inputID, &claimID) == nil {
 			c.InputClaimHash = actionauth.InputClaimHash(inputID, claimID)

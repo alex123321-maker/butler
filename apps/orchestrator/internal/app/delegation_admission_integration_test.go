@@ -23,6 +23,7 @@ import (
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/ingress"
+	"github.com/butler/butler/internal/memory/candidatecontrol"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/owneridentity"
@@ -79,6 +80,9 @@ func newDispatchAdmissionPolicyFixture(t *testing.T, setup func(*delegationGuard
 }
 
 func newControlDispatchPolicyFixture(t *testing.T, setup func(*delegationGuardFixture), guarded bool) *dispatchAdmissionFixture {
+	return newToolControlDispatchFixture(t, setup, guarded, false)
+}
+func newToolControlDispatchFixture(t *testing.T, setup func(*delegationGuardFixture), guarded, candidate bool) *dispatchAdmissionFixture {
 	t.Helper()
 	f := newDelegationGuardFixture(t)
 	if setup != nil {
@@ -110,7 +114,7 @@ func newControlDispatchPolicyFixture(t *testing.T, setup func(*delegationGuardFi
 	}
 	owned := ownership.WithToken(f.ctx, f.leases.Authority(), ownership.Token{SessionKey: f.parent.SessionKey, RunID: id, LeaseID: lease.LeaseID, FenceEpoch: lease.FenceEpoch})
 	var inputClaim durableinput.Record
-	if guarded {
+	if guarded || candidate {
 		inputs := durableinput.NewStore(f.pool)
 		event := ingress.InputEvent{EventID: "guarded-request-input", IdempotencyKey: "guarded-request-input", SessionKey: f.parent.SessionKey, Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: `{"text":"ask owner for a tab"}`, CreatedAt: time.Now().UTC()}
 		if _, _, err = inputs.Accept(f.ctx, event, f.parent.OwnerID, f.parent.TaskID); err != nil {
@@ -139,11 +143,20 @@ func newControlDispatchPolicyFixture(t *testing.T, setup func(*delegationGuardFi
 		call.ToolName, call.ToolCallId, call.ArgsJson = singletabcontrol.BindTool, "guarded-request-call", "{}"
 		contract = singletabcontrol.RequestContract()
 	}
+	if candidate {
+		raw, err = json.Marshal(map[string]any{"source_id": args.Sources[0].ID, "source_revision": args.Sources[0].Revision, "fact_key": "language", "value_json": `"ru"`, "summary": "Russian preference candidate"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		call.ToolName, call.ToolCallId, call.ArgsJson = candidatecontrol.Tool, "memory-candidate-call", string(raw)
+		contract = candidatecontrol.Contract()
+	}
 	repo := approvals.NewPostgresRepository(f.pool)
 	repo.SetCheckpointHooks(boundaryCheckpointHooks{}) // No authority: lifecycle checkpoints have their own fault suite.
 	approvalService := approvals.NewService(repo, nil)
 	reader := &actionContextReader{runs: run.NewService(run.NewPostgresRepository(f.pool), nil), sessions: sessions, leases: f.leases, tasks: f.store, approvals: approvalService, pool: f.pool, delegationReady: service.Manager != nil}
 	reader.guardedTabRequestReady = guarded
+	reader.memoryCandidateReady = candidate
 	journal := actionauth.NewPostgresStore(f.pool)
 	journal.SetBudgets(f.budgets)
 	journal.SetRunDataGuard(f.sources.CheckRunSourcesTx)

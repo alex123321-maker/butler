@@ -1,5 +1,13 @@
 # Exact action authorization
 
+Optional owning `memory.propose_candidate` is a local prepare control. Current
+task/private composition readiness and the original accepted-input claim are
+required in addition to exact policy authorization, permanent dispatch and shared
+budgets. The claim hash stays private in the grant; it never changes the immutable
+approved action. Only the owning service publishes a neutral candidate from a
+current pinned source. Proposal fields cannot accept a fact or mint owner/scope,
+lease/job/input authority, confidence, retry identity or memory head decisions.
+
 Tool Broker authorizes every dispatch, including single calls, batches and
 direct Broker RPCs. Missing policy, incompatible contract, expired approval,
 failed authority request or missing grant denies execution before a runtime is
