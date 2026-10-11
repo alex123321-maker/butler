@@ -31,6 +31,7 @@ import (
 	"github.com/butler/butler/internal/config"
 	"github.com/butler/butler/internal/extensions"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/catalog"
@@ -53,48 +54,52 @@ import (
 )
 
 type httpServerDeps struct {
-	initiativeStore        *initiative.Store
-	memoryIndexing         *indexing.Runtime
-	sourceCatalog          *catalog.Store
-	ownerGoals             *goal.Manager
-	finalResults           *completion.Coordinator
-	actionAuthorityHandler http.Handler
-	skillEvidenceHandler   http.Handler
-	skillClient            *skills.Client
-	cfg                    config.OrchestratorConfig
-	log                    *slog.Logger
-	settingsStore          *config.PostgresSettingsStore
-	hotConfig              *config.HotConfig
-	postgres               *postgresstore.Store
-	metrics                *metrics.Registry
-	health                 *health.Service
-	toolBrokerClient       *tools.BrokerClient
-	authManager            *providerauth.Manager
-	providerResult         providerfactory.Result
-	executor               *flow.Service
-	sessionRepo            *session.PostgresRepository
-	runRepo                *runservice.PostgresRepository
-	taskStore              *task.Store
-	taskControls           *task.Controller
-	transcriptStore        *transcript.Store
-	transitionRepo         *runservice.PostgresTransitionRepository
-	eventHub               *observability.Hub
-	approvalRepo           *approvals.PostgresRepository
-	approvalService        *approvals.Service
-	singleTabService       *singletab.Service
-	artifactsRepo          *artifacts.PostgresRepository
-	artifactsService       *artifacts.Service
-	activityRepo           *activity.PostgresRepository
-	deliveryEventsRepo     *deliveryevents.PostgresRepository
-	pipelineQueue          *pipeline.Queue
-	pipelineWorker         *pipeline.Worker
-	embeddingProvider      pipeline.EmbeddingProvider
-	profileStore           *profile.Store
-	episodicStore          *episodic.Store
-	chunkStore             *chunks.Store
-	inputWorker            *durableinput.Service
-	inputStore             *durableinput.Store
-	ownerAuth              *apiservice.OwnerControlAuth
+	guardedTabOwner            apiservice.GuardedTabDecisions
+	initiativeStore            *initiative.Store
+	memoryIndexing             *indexing.Runtime
+	sourceCatalog              *catalog.Store
+	ownerGoals                 *goal.Manager
+	finalResults               *completion.Coordinator
+	actionAuthorityHandler     http.Handler
+	delegationHandler          http.Handler
+	converterDelegationHandler http.Handler
+	skillEvidenceHandler       http.Handler
+	skillClient                *skills.Client
+	converterClient            *generatedtools.Client
+	cfg                        config.OrchestratorConfig
+	log                        *slog.Logger
+	settingsStore              *config.PostgresSettingsStore
+	hotConfig                  *config.HotConfig
+	postgres                   *postgresstore.Store
+	metrics                    *metrics.Registry
+	health                     *health.Service
+	toolBrokerClient           *tools.BrokerClient
+	authManager                *providerauth.Manager
+	providerResult             providerfactory.Result
+	executor                   *flow.Service
+	sessionRepo                *session.PostgresRepository
+	runRepo                    *runservice.PostgresRepository
+	taskStore                  *task.Store
+	taskControls               *task.Controller
+	transcriptStore            *transcript.Store
+	transitionRepo             *runservice.PostgresTransitionRepository
+	eventHub                   *observability.Hub
+	approvalRepo               *approvals.PostgresRepository
+	approvalService            *approvals.Service
+	singleTabService           *singletab.Service
+	artifactsRepo              *artifacts.PostgresRepository
+	artifactsService           *artifacts.Service
+	activityRepo               *activity.PostgresRepository
+	deliveryEventsRepo         *deliveryevents.PostgresRepository
+	pipelineQueue              *pipeline.Queue
+	pipelineWorker             *pipeline.Worker
+	embeddingProvider          pipeline.EmbeddingProvider
+	profileStore               *profile.Store
+	episodicStore              *episodic.Store
+	chunkStore                 *chunks.Store
+	inputWorker                *durableinput.Service
+	inputStore                 *durableinput.Store
+	ownerAuth                  *apiservice.OwnerControlAuth
 }
 
 func newHTTPServer(deps httpServerDeps) *http.Server {
@@ -190,12 +195,20 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	}
 	mux.Handle("/api/v4/extensions", apiservice.ReviewedExtensions(deps.ownerAuth, extensionClient))
 	mux.Handle("/api/v4/skills", apiservice.ReviewedSkills(deps.ownerAuth, deps.skillClient))
+	mux.Handle("/api/v4/converters", apiservice.GeneratedConverters(deps.ownerAuth, deps.converterClient))
+	mux.Handle("/api/v3/tab-choices/", apiservice.GuardedTabOwnerControls(deps.ownerAuth, deps.guardedTabOwner))
 	if deps.skillEvidenceHandler != nil {
 		mux.Handle("/internal/skill-evidence", deps.skillEvidenceHandler)
 	}
 	mux.Handle("/internal/diagnostics", coreDiagnostics(deps))
 	if deps.actionAuthorityHandler != nil {
 		mux.Handle("/internal/action-context", deps.actionAuthorityHandler)
+	}
+	if deps.delegationHandler != nil {
+		mux.Handle("/internal/delegation", deps.delegationHandler)
+	}
+	if deps.converterDelegationHandler != nil {
+		mux.Handle("/internal/converter-delegation", deps.converterDelegationHandler)
 	}
 	mux.Handle("/health", deps.health.Handler())
 	mux.Handle("/metrics", deps.metrics.Handler())

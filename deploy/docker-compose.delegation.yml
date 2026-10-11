@@ -1,0 +1,11 @@
+# Optional context-only research admission; keep disabled until the owning
+# operator composes current migrations057/061, authority and finite budgets.
+services:
+  orchestrator:
+    environment:
+      BUTLER_DELEGATION_ENABLED: 'true'
+      BUTLER_DELEGATION_MAX_PARALLEL: ${BUTLER_DELEGATION_MAX_PARALLEL:-1}
+  tool-broker:
+    environment:
+      BUTLER_DELEGATION_ENABLED: 'true'
+      BUTLER_DELEGATION_CONTROL_URL: http://orchestrator:8080/internal/delegation

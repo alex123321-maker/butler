@@ -35,6 +35,18 @@ continuation is claimed does. Repeated crashes cannot renew the allowance.
 Receipts expose attempts, deadline, checkpoint and error code. Automatic retries
 never replay an uncertain external action; blocked work requires owner review.
 
+For a bounded delegated input, the original kernel event ID and refs-only payload
+remain immutable. Ordinary workers replace only the execution event's run
+deduplication key with the accepted `input_id`. Core preparation and recovery use
+the owning input store's typed `DelegatedInputVerifier` to prove this mapping
+against the current private claim and worker fence. The verifier locks
+ownership → session → run → task → accepted input on one connection and checks
+the actual owner, accepted/run IDs, pinned task revision, original event fields
+and exact contract SourceRef. Fresh PostgreSQL clock checks reject lease, claim
+or admission expiry after waits. A missing verifier or substituted mapping is
+denied; strict legacy direct-core events retain their exact event key. Neither
+path turns refs into authority or skips current Catalog/goal/mandate checks.
+
 ## Session authority and context
 
 Session Service uses `session_ownership` and PostgreSQL clock time. Acquisition

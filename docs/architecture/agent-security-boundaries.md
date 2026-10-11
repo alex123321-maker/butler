@@ -154,10 +154,13 @@ The same private classification applies to their backups and exported copies.
 Record suppression/expiry excludes retrieval but is not physical deletion. A
 source removal request must include all derived records identified by provenance
 and the separately retained backups; deleting one source cannot be described as
-complete erasure. Automated transitive deletion, retention deadlines and the
-owner-visible deletion job remain issue #22. Until that workflow is implemented,
-do not silently run an auxiliary job over a source pending removal or promise
-automatic cascade/backup erasure.
+complete erasure. The versioned source catalog now performs transitive deletion
+and privacy cleanup, fences pending/live model publication and checks a permanent
+deletion anchor before restoring backups. A backup is not silently rewritten:
+restored records are blocked/reconciled against the current deletion history.
+Suppression, expiry and deletion retain distinct meanings. See the
+[source contract](versioned-memory-sources.md) and
+[actual deletion/restore evidence](../ai/versioned-memory-acceptance.md).
 
 ## Acceptance evidence and integration limits
 
@@ -181,12 +184,15 @@ change; final full tests and focused budget/task race checks passed afterward.
 | Secret handling | Synthetic reflected credential/cookie/password masks; provider errors discard bodies; secret provenance cannot enter extraction/summary/bundles | No claim of discovering every arbitrary secret through pattern matching |
 | Reviewed code updates | Runtime executes embedded reviewed helper, validates workspace file equality; package-lock/npm ci without lifecycle scripts; reviewed HTTP-JSON manifests use immutable review/profile pins and current task/mandate admission before credential release/claim | Extension packages are declarative DATA and never load code; declared dependency provenance is not a measurement of a deployed binary; local-model provenance/runtime gate is not tensor-integrity proof |
 | Optional model filter | No detector has an authorization or bypass interface | Russian detection accuracy is not claimed or required by this boundary |
-| Retention | Conservative source/derivative policy above and persistent provenance; suppressed/expired data is distinct from deletion | Full transitive deletion and backup lifecycle remain #22 |
+| Retention | Current source/derivative guards, transitive privacy cleanup, permanent deletion anchor and actual PG dump/delete/restore | Suppression is not erasure; private backups remain subject to operator storage policy |
 | Independent owner stop | Current task/revisions/mandate and ownership fence checked before dispatch; existing real-PG stop-versus-claim/completion races remain authoritative | External effects already accepted retain truthful unknown/confirmed journal evidence |
 
-Full #31 closure must account for its #18/#22 and model-loader integration
-dependencies; this matrix does not mark them complete merely because the
-current catalog cannot run dynamic code or auxiliary cloud jobs.
+The current integrated acceptance includes the actual installed extension
+process, current model-loader provenance guards, selected child source grants
+and versioned deletion/restore. The
+[security acceptance audit](../ai/security-acceptance.md) pins their evidence.
+Native delegation and model quality remain separate release gates; no optional
+classifier can waive these programmatic boundaries.
 
 ## Packaged Web runtime
 

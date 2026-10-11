@@ -1,0 +1,31 @@
+{
+  "status": "component_passed",
+  "verified_at": "2026-10-11T03:13:34Z",
+  "source_head": "4342274c252f9c735c2b7093a66af582f025fd48",
+  "snapshot": "20261011-101125-400",
+  "environment": "separate lab; disposable internal-network PostgreSQL and Redis; no production settings or model calls",
+  "checks": [
+    {"package": "apps/orchestrator/internal/input", "race": true, "seconds": 9.591},
+    {"package": "apps/orchestrator/internal/orchestrator", "race": true, "seconds": 5.279},
+    {"package": "apps/orchestrator/internal/app", "race": true, "seconds": 69.333, "scope": "converter/developer/lifecycle; real separate Broker admission; ordinary-worker recovery with denied spy"},
+    {"scope": "input/orchestrator vet", "passed": true}
+  ],
+  "events_sha256": "48cf2dcb6ef0dc75c20ed181f2a26401e3dc56371140ab7ef1c9dcab410dd7dc",
+  "previous_composition": {
+    "source_head": "10e0809280f948b0b0d40f5bdaa63e1055597640",
+    "snapshot": "20261011-095855-780",
+    "generatedtools_race_seconds": 1.083,
+    "app_race_seconds": 48.085,
+    "broker_and_core_vet": true,
+    "events_sha256": "6b9ac33cfb8df057c6293953810334c5d0fd444463a217c26c21b2279cc606d4"
+  },
+  "native_attempts_this_validation": 0,
+  "prior_failed_native_attempts": 3,
+  "prior_native_failure_artifact": "deploy/delegation/native-scenario-failed.json",
+  "prior_nullable_native_usage_is_zero": false,
+  "base_deployment_delegation_enabled": false,
+  "production_feature_deployment_verified": false,
+  "native_serial_parallel_acceptance_verified": false,
+  "owner_document_acceptance_verified_by_these_checks": false,
+  "issues_closed_by_this_artifact": []
+}

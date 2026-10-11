@@ -2,11 +2,12 @@ package bridge
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/butler/butler/apps/browser-bridge/internal/protocol"
 )
@@ -45,11 +46,20 @@ func NewDispatcher(write writeFunc) *Dispatcher {
 }
 
 func (d *Dispatcher) DispatchAction(ctx context.Context, params protocol.ActionDispatchParams) (protocol.ActionDispatchResult, error) {
+	var result protocol.ActionDispatchResult
+	e := d.request(ctx, "action.dispatch", params, &result)
+	return result, e
+}
+func (d *Dispatcher) request(ctx context.Context, method string, params any, dest any) error {
 	if d == nil || d.write == nil {
-		return protocol.ActionDispatchResult{}, ErrNoNativeClient
+		return ErrNoNativeClient
 	}
 
-	requestID := fmt.Sprintf("action-%d", time.Now().UTC().UnixNano())
+	var nonce [24]byte
+	if _, e := rand.Read(nonce[:]); e != nil {
+		return e
+	}
+	requestID := "action-" + hex.EncodeToString(nonce[:])
 	responseCh := make(chan protocol.Response, 1)
 
 	d.mu.Lock()
@@ -64,34 +74,33 @@ func (d *Dispatcher) DispatchAction(ctx context.Context, params protocol.ActionD
 
 	if err := d.write(protocol.Request{
 		ID:     requestID,
-		Method: "action.dispatch",
+		Method: method,
 		Params: params,
 	}); err != nil {
-		return protocol.ActionDispatchResult{}, err
+		return err
 	}
 
 	select {
 	case <-ctx.Done():
-		return protocol.ActionDispatchResult{}, ctx.Err()
+		return ctx.Err()
 	case response := <-responseCh:
 		if !response.OK {
 			if response.Error != nil {
-				return protocol.ActionDispatchResult{}, &DispatchError{
+				return &DispatchError{
 					Code:    response.Error.Code,
 					Message: response.Error.Message,
 				}
 			}
-			return protocol.ActionDispatchResult{}, &DispatchError{Code: "dispatch_failed", Message: "dispatch failed"}
+			return &DispatchError{Code: "dispatch_failed", Message: "dispatch failed"}
 		}
-		var result protocol.ActionDispatchResult
 		payload, err := json.Marshal(response.Result)
 		if err != nil {
-			return protocol.ActionDispatchResult{}, fmt.Errorf("marshal action dispatch result: %w", err)
+			return fmt.Errorf("marshal action dispatch result: %w", err)
 		}
-		if err := json.Unmarshal(payload, &result); err != nil {
-			return protocol.ActionDispatchResult{}, fmt.Errorf("decode action dispatch result: %w", err)
+		if err := json.Unmarshal(payload, dest); err != nil {
+			return fmt.Errorf("decode action dispatch result: %w", err)
 		}
-		return result, nil
+		return nil
 	}
 }
 

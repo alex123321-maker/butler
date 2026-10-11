@@ -17,7 +17,12 @@ export interface OwnerMandate {
   active_hours?: { timezone: string; start_minute: number; end_minute: number; weekdays: number[] }
   deny_tools?: string[]; deny_resources?: { origin: string; path_prefix: string }[]
   extensions?: { source: string; extension_id: string; manifest_hash: string; tools: string[] }[]
+  converters?: ConverterPermission[]
   source?: { author: string; channel: string; delivery_id: string }
+}
+export interface ConverterPermission {
+  converter_id: string; class: string; input_schema_hash: string; output_schema_hash: string; runtime_pin: string
+  input_bytes: number; output_bytes: number; rows: number; field_bytes: number; millis: number; trials: number
 }
 export interface OwnerAuthorityView {
   goals: OwnerGoal[]; mandates: OwnerMandate[]; pending_propagation: number

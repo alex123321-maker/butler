@@ -106,6 +106,12 @@ func (s *Store) Create(ctx context.Context, req CreateRequest) (Record, error) {
 // parent rows are locked before goal/mandate authority. A caller that already
 // checked authority may insert only a new root (never lock an existing parent).
 func (s *Store) CreateTx(ctx context.Context, tx pgx.Tx, req CreateRequest) (Record, error) {
+	return s.createTx(ctx, tx, req, false)
+}
+
+// Only the owning delegation manager can admit a separate child session.
+// Public owner/task creation retains its existing same-session contract.
+func (s *Store) createTx(ctx context.Context, tx pgx.Tx, req CreateRequest, delegated bool) (Record, error) {
 
 	if err := ValidateCreate(req); err != nil {
 		return Record{}, err
@@ -118,6 +124,11 @@ func (s *Store) CreateTx(ctx context.Context, tx pgx.Tx, req CreateRequest) (Rec
 	}
 	if req.Constraints == nil {
 		req.Constraints = []string{}
+	}
+	if req.ParentTaskID != "" {
+		if _, err := lockTreeTx(ctx, tx, req.ParentTaskID); err != nil {
+			return Record{}, err
+		}
 	}
 	var owner, channel string
 	if err := tx.QueryRow(ctx, `SELECT user_id,channel FROM sessions WHERE session_key=$1 FOR SHARE`, req.SessionKey).Scan(&owner, &channel); err != nil {
@@ -138,7 +149,7 @@ func (s *Store) CreateTx(ctx context.Context, tx pgx.Tx, req CreateRequest) (Rec
 		if err != nil {
 			return Record{}, err
 		}
-		if parent.OwnerID != req.OwnerID || parent.SessionKey != req.SessionKey || parent.Status == "completed" || parent.Status == "cancelled" {
+		if parent.OwnerID != req.OwnerID || (!delegated && parent.SessionKey != req.SessionKey) || parent.Status != "active" {
 			return Record{}, ErrConflict
 		}
 		policy = parent.ExecutionPolicy

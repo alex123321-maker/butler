@@ -130,14 +130,23 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	}
 	current = next
 
+	opaqueEvent := event
+	event, err = s.prepareSourceInput(ctx, event)
+	if err != nil {
+		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
+	}
 	prepared, err = s.prepareRun(ctx, event)
 	if err != nil {
 		return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
 	}
+	if opaqueSourceInput(opaqueEvent) {
+		prepared.SourceInputEvent = &opaqueEvent
+	}
 	if writer, ok := s.runs.(interface {
 		PersistPreparation(context.Context, string, string) error
 	}); ok {
-		if err = writer.PersistPreparation(ctx, current.GetRunId(), mustMarshalJSON(map[string]any{"input_payload": prepared.InputPayload, "memory_bundle": prepared.MemoryBundle})); err != nil {
+		durablePrepared := durableSourcePreparation(prepared)
+		if err = writer.PersistPreparation(ctx, current.GetRunId(), mustMarshalJSON(map[string]any{"input_payload": durablePrepared.InputPayload, "memory_bundle": durablePrepared.MemoryBundle})); err != nil {
 			return nil, s.failRun(ctx, current, lease.LeaseID, runLog, err)
 		}
 	}
@@ -372,6 +381,11 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 }
 
 func (s *Service) failRun(ctx context.Context, current *sessionv1.RunRecord, leaseID string, runLog *slog.Logger, err error) error {
+	// Typed provider errors may contain untrusted details even after wrapping.
+	// Persist only the fixed subtype while retaining the general run error class.
+	if code := transport.DiagnosticCode(err); code != "" {
+		err = &transport.Error{Type: transport.ErrorType(code), Message: code}
+	}
 	runLog.Error("run execution failed", slog.String("error", err.Error()))
 	s.emitEvent(ctx, current.GetRunId(), current.GetSessionKey(), observability.EventRunError, map[string]any{
 		"error_message": truncateForObservability(err.Error(), 500),

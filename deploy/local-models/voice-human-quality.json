@@ -1,0 +1,107 @@
+{
+  "attribution": "Google FLEURS / Conneau et al. 2022 / https://huggingface.co/datasets/google/fleurs",
+  "cases": [
+    {
+      "id": "1799-13632175593719991398.wav",
+      "reference": "Помимо соревнований в среду, Карпендо принимал участие в двух индивидуальных соревнованиях на чемпионатах.",
+      "transcript": "Помимо соревнований в среду Карпенко принимал участие в двух индивидуальных соревнованиях на чемпионатах.",
+      "state": "review",
+      "millis": 1178,
+      "edits": 1,
+      "reference_words": 13,
+      "critical_misses": [
+        "name:карпендо"
+      ]
+    },
+    {
+      "id": "1799-4573705590156444548.wav",
+      "reference": "Помимо соревнований в среду, Карпендо принимал участие в двух индивидуальных соревнованиях на чемпионатах.",
+      "transcript": "Помимо соревнований в среду Карпенко принимал участие в двух индивидуальных соревнованиях на чемпионатах.",
+      "state": "review",
+      "millis": 1136,
+      "edits": 1,
+      "reference_words": 13,
+      "critical_misses": [
+        "name:карпендо"
+      ]
+    },
+    {
+      "id": "1799-6640574236129932707.wav",
+      "reference": "Помимо соревнований в среду, Карпендо принимал участие в двух индивидуальных соревнованиях на чемпионатах.",
+      "transcript": "Помимо соревнований в среду Карпенко принимал участие в двух индивидуальных соревнованиях на чемпионатах.",
+      "state": "review",
+      "millis": 1119,
+      "edits": 1,
+      "reference_words": 13,
+      "critical_misses": [
+        "name:карпендо"
+      ]
+    },
+    {
+      "id": "1697-10669014641440041936.wav",
+      "reference": "Он не смог принять препараты, необходимые для облегчения боли, так как они запрещены в Играх.",
+      "transcript": "Он не смог принять препараты необходимые для облегчения боли так как они запрещены в играх.",
+      "state": "review",
+      "millis": 864,
+      "edits": 0,
+      "reference_words": 15
+    },
+    {
+      "id": "1697-11692271085770319239.wav",
+      "reference": "Он не смог принять препараты, необходимые для облегчения боли, так как они запрещены в Играх.",
+      "transcript": "Он не смог принять препараты, необходимые для облегчения боли, так как они запрещены в играх.",
+      "state": "review",
+      "millis": 918,
+      "edits": 0,
+      "reference_words": 15
+    },
+    {
+      "id": "1693-1465434251837536297.wav",
+      "reference": "Однако после потери калитки капитана Индия совершила лишь 36 пробегов, потеряв 7 калиток для завершения иннингсов.",
+      "transcript": "Однако после потери колодки капитана Индия совершила лишь 36 пробегов, потеряв семь калиток для завершения Ининксов",
+      "state": "review",
+      "millis": 1471,
+      "edits": 3,
+      "reference_words": 16
+    },
+    {
+      "id": "1693-13542654457123658758.wav",
+      "reference": "Однако после потери калитки капитана Индия совершила лишь 36 пробегов, потеряв 7 калиток для завершения иннингсов.",
+      "transcript": "Однако после потери калита капитана Индия совершила лишь тридцать шесть пробегов, потеряв семь калитов для завершения иннингов.",
+      "state": "review",
+      "millis": 1304,
+      "edits": 6,
+      "reference_words": 16
+    },
+    {
+      "id": "1924-11285305154211545636.wav",
+      "reference": "Четыре лыжницы в женской сидячей группе не смогли завершить свои заезды, и 45 из 117 лыжниц в гигантском слаломе не сумели занять места в гонке.",
+      "transcript": "Четыре лыжницы в женской сидячей группе не смогли завершить свои заезды. и сорок пять из сто семнадцати лыжниц в гигантском слаломе не сумели занять места в гонке",
+      "state": "review",
+      "millis": 2012,
+      "edits": 4,
+      "reference_words": 25,
+      "critical_misses": [
+        "number:117"
+      ]
+    }
+  ],
+  "critical_misses": 4,
+  "dataset": "google/fleurs",
+  "dataset_revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+  "failures": 0,
+  "gate_critical_misses": 0,
+  "gate_max_wer": 0.2,
+  "license": "CC-BY-4.0",
+  "limitations": [
+    "eight recordings contain repeated sentences across speakers; no population accuracy claim",
+    "numbers reported as literal surface forms for WER and frozen word/digit equivalents for critical fields",
+    "no voice authentication; no command is accepted in this quality test"
+  ],
+  "quality_gate_passed": false,
+  "reference_words": 126,
+  "selection_frozen_before_inference": true,
+  "version": "butler-voice-ru8-v1",
+  "wer": 0.12698412698412698,
+  "word_edits": 16
+}

@@ -39,6 +39,9 @@ func NewStore(pool *pgxpool.Pool, owner string, verifier EvidenceVerifier, contr
 
 // SetSources is startup-only wiring to the owned deletion-aware catalog.
 func (s *Store) SetSources(sources *catalog.Store) { s.sources = sources }
+
+// SetContracts is immutable bootstrap composition for current reviewed catalogs.
+func (s *Store) SetContracts(contracts ContractReader) { s.contracts = contracts }
 func (s *Store) actor(ctx context.Context) (owneridentity.Actor, error) {
 	a, ok := owneridentity.FromContext(ctx)
 	if !ok || s == nil || s.pool == nil || s.owner == "" || a.OwnerID != s.owner || a.DeliveryID == "" {

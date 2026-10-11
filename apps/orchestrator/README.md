@@ -1,5 +1,72 @@
 # Orchestrator
 
+Optional guarded tab owner decisions use `POST /api/v3/tab-choices/{approval_id}/select`
+with only `candidate_token`, or `/revoke` with `{}`. Bearer owner proof is
+mandatory; claimed actor/host/tab/lease fields cannot supply authority. Existing
+finite waiting requests resolve their current binding from PostgreSQL. Selection
+does not resume an executor or confirm a browser effect. The operator-only
+`BUTLER_GUARDED_TAB_OWNER_ENABLED` defaults false; enabling requires fixed
+`BUTLER_GUARDED_TAB_HOST`, `BUTLER_GUARDED_TAB_METADATA_URL`, private
+`BUTLER_GUARDED_TAB_TOKEN_FILE` and configured owner authentication. Remote
+metadata requires HTTPS; plain HTTP is limited to literal loopback addresses.
+Startup checks migration063 columns and the exact enabled immutable trigger
+function. This owner endpoint does not enable guarded tools or declare runtime
+readiness. Request creation, UI delivery, resumption and private Broker/runtime
+composition are separate activation requirements.
+
+Authenticated task observations at `/api/v3/tasks/{task_id}/observations` expose
+owned assignment/initiative metadata, child result status, recorded action
+consequences and shared root budget. Known token subtotals and unavailable usage
+remain separate from conservative reservations. Run status never supplies an
+action risk assessment. See the
+[owner control contract](../../docs/architecture/task-owner-controls-spec.md).
+
+Provider failures persist their fixed transport subtype in the failure message
+with the existing `transport_error` class. Source verification distinguishes
+stale sources from its own timeout. No provider text/details or unknown type
+string is logged or returned by this failure path; retries remain disabled.
+
+Optional generated-converter delegation053 has a distinct private admission
+component. `NewDelegationLifecycleManager` selects immutable061 context-only or053
+developer identity inside the owning transaction; it cannot admit new children and
+does not retry another role after denial. Developer rights are only fixed
+discover/develop/test, while original-data trials and activation stay parent actions.
+Its report creator atomically retains the content-free054 tested return with the
+actual immutable child final/report. `converters.collect` remains a distinct
+parent Broker action. Provider/recovery/final guards include current return
+privacy and policy, without turning technical preparation into semantic Accept.
+No constructor enables routing or deployment. See
+[the bounded converter contract](../../docs/architecture/generated-converters.md).
+The isolated converter lab helper exercises this composition through ordinary
+durable input workers, production Broker and a network-none actual runtime with
+the app race detector. The earlier proof used explicit owner inputs; the055
+process proof now covers two automatic same-task continuations. Native model
+planning and final deployed acceptance remain separate gates.
+
+The optional `singletab.ResourceGuard` locks the actual approved selection for
+the separately guarded native-host status/click contracts. It requires prior
+current worker/owner/task/source authority on the same transaction and the
+immutable guarded request/selection marker; legacy approval/session activation
+cannot create this proof. The owning `internal/singletabcontrol` library performs
+atomic owner selection, with metadata RPC outside transaction locks. Its tested
+composition requires a live worker lease; suspended human waiting/resume is a
+separate pending authority adapter. No bootstrap/registry route is enabled by it;
+see [guarded user-tab contract](../../docs/architecture/single-tab-resource-boundary.md).
+
+The bounded [delegation manager](internal/task/README.md) provides transactional
+child admission, dependency scheduling, durable result/report metadata and explicit
+guarded decisions. It is an unenabled component until the owning Catalog/Broker
+adapters and isolated child context are wired and verified. It does not turn a
+model report or manager acceptance into task completion.
+
+Ordinary delegated workers use the durable accepted input ID for run
+deduplication. Core preparation/recovery accepts that private key mapping only
+through the current input store's typed claim/fence verifier, while retaining the
+original kernel event and exact versioned contract source. Missing verification,
+stale claims and substituted keys fail before inference. Strict direct-core
+events keep their original event key. Current Catalog selection and task/owner
+authority remain independent checks.
+
 [Reviewed skills](../../docs/architecture/reviewed-skills.md) use descriptions
 before selected procedural DATA and reload current pins during recovery.
 The private evidence API reads owned task/result/effect/transcript/budget APIs;
@@ -349,3 +416,127 @@ See the [indexing composition](../../internal/memory/indexing/README.md) and
 [parser confinement](../memory-parser/README.md). Missing model token, fixed local
 identity or declared local price disables only that owned semantic path; legacy
 cloud memory model jobs remain denied.
+
+## Delegation foundation
+
+The internal delegation contract, tree admission/owner-control barrier, executor
+manager and private Broker control adapter are implemented behind Task Service.
+`BUTLER_DELEGATION_ENABLED` defaults false. Explicit operator opt-in composes
+`/internal/delegation`, owned context transitions and bounded maintenance over
+the existing durable input workers. `BUTLER_DELEGATION_MAX_PARALLEL` accepts
+one or two, defaults one and cannot be overridden through database settings.
+Private action-authority authentication and migrations057/061 are required.
+Startup verifies the immutable schema guards before advertising readiness.
+Disabling the feature prevents new admission/maintenance; use owner task/tree
+stop or mandate revocation for already accepted durable child inputs.
+Native model comparison and deployment acceptance remain pending. See
+`docs/architecture/delegation-contract.md` before enabling the route.
+The separate opt-in native lab runner and its twelve-attempt spending cap are
+described in `docs/ai/delegation-native-scenario-plan.md`. Its zero-inference
+preflight is distinct from coordinated actual model acceptance.
+
+Ordinary preparation/recovery now derives selected delegated context from the
+actual fenced run, after pinning its task. It skips ambient memory bundles and
+adds only selected Catalog DATA plus the child's own session/task context.
+Durable snapshots carry references and reload bodies under the new live lease;
+candidate prose is never promoted to owner policy. Migration057 is required for
+the owned context reader, even while model/owner delegation admission is disabled.
+
+Finite shared-resource leases are implemented in `internal/resources` with live
+worker/task/parent checks on the caller PostgreSQL transaction. Migration058 and
+production workspace/browser composition remain in progress; resource leases
+alone cannot authorize a tool effect. See `docs/architecture/resource-lease-contract.md`.
+
+`app.DelegationGuards` now validates exact current capability subsets and compares
+structured child reports against real final/artifact/transcript, action journal,
+source graph and branch reservation records on the caller PG transaction. Its
+capability reader is mandatory and phase-explicit: new admission needs a current
+claimed delegate action, lifecycle needs that child's durable accepted snapshot
+and current policy. The private adapter stores immutable accepted capabilities
+on the same admission transaction; the model experiment remains pending.
+The initial `task.delegate` admits children with an empty tool allowlist.
+Active completed partial
+finals are distinct from blocked/failed attempts, whose historical collection
+bridge is still pending. See `docs/ai/delegation-guard-acceptance.md`.
+
+Trusted report projection and bounded maintenance now collect actual committed
+finals atomically before advancing already admitted waiting branches. Generated
+reports contain only owning source/result/journal/reservation references and
+current uncertainty, with no model-authored success verdict. Replay keeps one
+report source; a revoked original rolls publication back. The optional context
+lifecycle adapter marks execution under the actual child fence before input
+release. Operator opt-in composes these adapters with private Broker admission.
+Maintenance combines independent branch errors without suppressing unrelated
+initiative review; it never admits a new model proposal by itself.
+
+Optional `/api/v4/converters` and `/converters` relay only owner-proof metadata
+inspection and exact-version revocation to the fixed operator/environment private
+Broker endpoint. Provider release/recovery and atomic completion compose current
+source/task/owner checks before converter use/lifecycle guards; old observations
+cannot revive a revoked digest/generation. Bodies remain Catalog DATA and only
+SourceRefs/hashes enter saved actions or final-result summaries. Technical conversion
+does not complete semantic task criteria. See the
+[generated converter contract](../../docs/architecture/generated-converters.md).
+
+`NewDelegationAdmission(pool, taskStore, sessionAdapter, inputAdapter,
+catalogAdapter, limits)` now supplies the optional private Broker admission
+component. Every adapter is mandatory; the Task store needs shared budget
+wiring. `AdmitDispatched` derives parent ownership from the actual executing
+action/grant/effect, repeats current source/task/owner policy in the manager
+transaction and stores immutable migration061 capabilities during source binding
+before queue/receipt. Initial children have no tools. The guard wrapper embeds
+`DelegationGuards`, forwarding its optional report-creator capability when that
+component is composed. Its public `Manager` is for trusted bounded maintenance,
+not a caller-supplied worker authority. Accepted child lifecycle uses its own
+snapshot/current policy after parent process completion; no old lease is revived.
+The component alone does not enable a route. Bootstrap composes its private
+handler and lifecycle adapters only under `BUTLER_DELEGATION_ENABLED`; current
+action contexts advertise readiness only after this composition succeeds.
+Actual separate-process Broker/HTTP/PG evidence and pending model/deployment
+criteria are recorded in `docs/ai/delegation-admission-acceptance.md`.
+
+`BUTLER_CONVERTER_DELEGATION_ENABLED`, default false, adds a separate fixed
+`/internal/converter-delegation` private handler. It requires ordinary delegation,
+the guarded converter control endpoint, the exact operator runtime profile and
+immutable053/054/055 readiness. Both accepted roles use the same current lifecycle
+manager and ordinary input workers; the context reader advertises the distinct
+developer readiness only after this composition. Provider/recovery and atomic
+completion repeat source, developer and technical-return guards before installed
+converter guards. A child report or local acknowledgement never completes a task.
+See [generated converters](../../docs/architecture/generated-converters.md).
+Compose operators add the explicit delegation and converter-delegation overlays
+alongside the existing converters overlay; the base stack keeps both roles off.
+
+
+The optional owning055 continuation service atomically queues two once-only
+technical phases on the original task after confirmed developer return and
+actual parent activation. Ordinary workers/leases/Broker execute them; inputs
+carry opaque references and current readiness stays DATA. Full original document
+pins and current private claim/fence/authority repeat at provider/recovery/final.
+Its compound source verifier has a static2s bound (ordinary checks200ms), with
+uncached proposal/final/periodic checks. See
+[composition and evidence](../../docs/architecture/converter-continuations.md).
+
+Bootstrap composes this service under the existing converter-delegation flag,
+advertises readiness only after immutable055 checks, installs its opaque input
+reader, and joins continuation maintenance with existing lifecycle review.
+Its prospective allowance requires finite declared provider limits that fit the
+actual execution policy; a bookkeeping quote cannot reduce a request limit.
+Atomic final guards retain055 checks even if later new admission is disabled.
+This composition adds no default enablement or semantic completion authority.
+Optional `/api/v3/voice/` composition uses `VoiceServer`, current catalog/owned jobs,
+`VoiceInputAdapter` and `VoiceControlAdapter`. Registering it does not enable it.
+The post-lease `InputSourcePreparation` hook resolves exact stored input bindings;
+checkpoint/approval projection retains refs rather than copied ASR/selected DATA
+prose. Source refs never grant their own permission. Reviewed Stop calls the common
+owner controller with a same-transaction current-source guard, keeping tree fences
+and exact task revision checks. Text Stop remains independent. The voice runtime,
+caller and human quality evidence are documented in
+[voice contract](../../docs/architecture/russian-voice.md); all profiles/caller
+flags remain off because the fixed Russian quality gate failed.
+
+Authenticated task observations include durable background queue metadata across
+the owned root's branches. Requested model, persisted state, attempts, expired
+deadline and obsolete task revision remain separate from runtime readiness and
+verified task completion. Raw source/error/claim/allowance payloads are excluded;
+the read-only projection grants no execution authority.

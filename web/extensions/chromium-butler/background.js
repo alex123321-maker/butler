@@ -1,3 +1,4 @@
+import { executeGuarded, acknowledgeGuarded, runLegacyTab, guardedTabMetadata } from "./guarded.js";
 const HOST_NAME = "com.butler.browser_bridge";
 const SUPPORTED_PROTOCOLS = new Set(["http:", "https:"]);
 const TRANSPORT_MODE_NATIVE = "native";
@@ -700,6 +701,20 @@ async function handleNativeMessage(message) {
 
 async function handleHostRequest(request) {
   switch (request.method) {
+    case "tabs.guarded.list":
+    case "tabs.guarded.check":
+      try { postNativeMessage({id:request.id,ok:true,result:await guardedTabMetadata(request.method,request.params)}); }
+      catch {postNativeMessage({id:request.id,ok:false,error:{code:"guarded_metadata_denied",message:"Current guarded metadata required"}});}
+      return;
+    case "action.guarded":
+    case "action.guarded.ack":
+      try {
+        const result = request.method === "action.guarded" ? await executeGuarded(request.params) : await acknowledgeGuarded(request.params);
+        postNativeMessage({ id: request.id, ok: true, result });
+      } catch {
+        postNativeMessage({ id: request.id, ok: false, error: { code: "guarded_tab_denied", message: "Guarded tab is stale, busy or uncertain" } });
+      }
+      return;
     case "action.dispatch":
       try {
         const result = await executeAction(request.params);
@@ -750,6 +765,10 @@ function postNativeMessage(message) {
 
 async function executeAction(params) {
   const tabId = parseTabId(params?.bound_tab_ref);
+  return runLegacyTab(tabId, () => executeLegacyAction(params, tabId));
+}
+
+async function executeLegacyAction(params, tabId) {
   const tab = await getBoundTab(tabId);
   const actionType = String(params?.action_type ?? "").trim();
   const args = parseArgsJSON(params?.args_json);

@@ -11,7 +11,10 @@ Applicable scopes are root task, current assigned mandate and owner UTC calendar
 day. Conversation uses session/day and owner/day without planner/critic overhead.
 Restart, worker/run ID change, delegation and amendments do not reset root or
 mandate spending. Daily counters change at midnight UTC; root/mandate counters
-continue. Child limits may restrict these scopes further, never replace them.
+continue. Migration057 delegation contracts add exact immutable child scopes to
+every reservation on that branch. Their limits/deadlines restrict existing scopes
+further, never replace them. Scheduling acceptance is tracked separately in
+`delegation-contract.md`.
 
 Finite counters cover turns, conservative tokens, monetary micros, calls,
 children, reserved active milliseconds, tool egress and provider input bytes.
@@ -87,3 +90,12 @@ assigned authority checks, on the same transaction. The read-only preflight
 rejects currently exhausted root defaults/mandate/day capacity and unknown model
 cost/limits without charging inference. Only an actual request increments model
 turns; capacity consumed after promotion still blocks that later request.
+
+The optional controlled-browser resource hook reads the already reserved exact
+permanent effect with `Controller.ToolDeadlineTx` on the same ClaimGrant
+transaction. It validates complete owned scopes and finite external-call/time
+allowances, then clamps the resource deadline; it spends nothing twice and does
+not refund uncertain execution. Resource conflict/expiry rolls back the entire
+ClaimGrant transaction, including its new reservation and grant CAS. No second
+pool connection or RPC is used while these locks are held. See
+[resource adapter](../../internal/resourceexec/README.md).

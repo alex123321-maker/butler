@@ -1,0 +1,61 @@
+syntax = "proto3";
+package butler.converter.v1;
+option go_package = "github.com/butler/butler/internal/gen/converter/v1;converterv1";
+
+// Private Broker -> isolated pure-IR runtime. No model-visible body arguments,
+// secret lookup, filesystem path, URL, command or custom checker is supported.
+service ConverterRuntimeService {
+  rpc Develop(DevelopRequest) returns (DevelopResponse);
+  rpc TestPackage(TestPackageRequest) returns (TestPackageResponse);
+  rpc Convert(ConvertRequest) returns (ConvertResponse);
+}
+message DevelopRequest {
+  ExecutionProof proof = 1;
+  SourceData need_source = 2;
+  string need_hash = 3;
+  string profile_pin = 4;
+  string version = 5;
+}
+message DevelopResponse {
+  bytes package = 1;
+  string package_hash = 2;
+}
+
+message ExecutionProof {
+  string run_id = 1;
+  string tool_call_id = 2;
+  string action_id = 3;
+  string action_fingerprint = 4;
+}
+message SourceData {
+  string source_id = 1;
+  int64 revision = 2;
+  int64 access_revision = 3;
+  string content_hash = 4;
+  bytes body = 5;
+  string origin_json = 6;
+  string body_hash = 7;
+}
+message TestPackageRequest {
+  ExecutionProof proof = 1;
+  SourceData package_source = 2;
+  SourceData need_source = 3;
+  string package_hash = 4;
+  string need_hash = 5;
+  string profile_pin = 6;
+}
+message TestPackageResponse { string report_json = 1; }
+message ConvertRequest {
+  ExecutionProof proof = 1;
+  SourceData package_source = 2;
+  SourceData need_source = 3;
+  SourceData input_source = 4;
+  string package_hash = 5;
+  string need_hash = 6;
+  string profile_pin = 7;
+}
+message ConvertResponse {
+  bytes output = 1;
+  string output_hash = 2;
+  string media_type = 3;
+}

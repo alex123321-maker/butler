@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "checked_at_utc": "2026-10-11T02:34:28Z",
+  "source_base": "95774cd",
+  "source_snapshot": "20261011-093353-203",
+  "report_root": "/srv/storage/butler/agents/resource-runtime-bridge/reports/resource-runtime-20261011T023356Z-3096722",
+  "toolchain": "Go 1.27.2",
+  "postgres": "PostgreSQL 17 / pgvector",
+  "max_pool_connections": 2,
+  "runtime_source_sha256": {
+    "apps/tool-broker/internal/broker/resources.go": "f25031849c9aa8598161d6ec1cfd06a36a73d644b6849bd1aafb3c4f8fd58ca7",
+    "apps/tool-broker/internal/broker/server.go": "de531589c54b502de7edb0297bf7be70af778d033066e3ab04a6734c2efac09a",
+    "apps/tool-broker/internal/runtimeclient/router.go": "0a31c036de934370dd011722c289bb62b656a1fd937327369377238f104217df",
+    "internal/actionauth/postgres.go": "314eb2ed41f3371676e385eab0d156934e2b9e8ef37c00dd826a071de029ee59",
+    "internal/actionauth/resource_claim.go": "0d723466502b9236459889e9d78ff6fc95a8aebb9503dd5bed7f00330c8b4a4d",
+    "internal/budget/tool_deadline.go": "8315c9fe432bbfa95f88a58a3596d26e384cab87e169c46887d9632dd5cbd984",
+    "internal/resourceexec/authority.go": "e9ea8c2eaf1860bdc9a11786ab84527024ae231bf59f0ddba3b42f97c77ee4b3",
+    "internal/resourceexec/http.go": "cdce21bcb2b5e8a24ba33c2a3caf28338414e2b32ff69427d89c9715c9f12cfd",
+    "internal/resourceexec/runtime.go": "6e64590b34b86e67d20eb3ca8531ded7fd05d4e812bb349d07a81499bd8f0711",
+    "internal/resourceexec/store.go": "5a53d8c745ff3ad1de02ee4463fe19b99df974a436caffa8adeb02dd50046e40",
+    "internal/resourceexec/types.go": "3778f12d07030f4807ab2ef82ee69c2ea8d78c13aedeb293923bf73f4c895add"
+  },
+  "model_calls": 0,
+  "main_deployment_changed": false,
+  "credentials": "Synthetic fixture only; no account profile mounted",
+  "narrow_race": {
+    "passed_top_level": 12,
+    "passed_subtests": 6,
+    "failed": 0,
+    "passed_packages": 2,
+    "skipped": [
+      "TestResourceBrokerActualChromiumPageCASIntegration: executed in separate Chromium lane"
+    ],
+    "events_sha256": "44925700b83aabc53c85526affa4fafa4622b9a11e74121ade91df8dc0e99eee"
+  },
+  "regression_race": {
+    "passed_top_level": 103,
+    "passed_subtests": 72,
+    "failed": 0,
+    "passed_packages": 6,
+    "compiled_package_without_tests": "apps/tool-broker/internal/runtimeclient",
+    "skipped_scenarios": [
+      "TestBrokerBrowserSequenceE2E",
+      "TestResourceBrokerActualChromiumPageCASIntegration",
+      "TestBrowserSessionE2E",
+      "TestBrowserRuntimeEgressHarness"
+    ],
+    "events_sha256": "78221dec4f931dac4575c879cbcb94272e121fc971f554cc33b0306e401f071d"
+  },
+  "actual_chromium": {
+    "test": "TestResourceBrokerActualChromiumPageCASIntegration",
+    "passed": true,
+    "race_instrumented": false,
+    "separate_runtime_process": true,
+    "image": "butler-lab-tool-browser",
+    "image_id": "sha256:2819ba6ab15df584366426f60c3db37141a6fa6b3aa532f4f074f306f5f25998",
+    "elapsed_seconds": 1.49,
+    "actual_open_completed": true,
+    "private_open_mapping_created": true,
+    "external_dom_mutation": true,
+    "stale_click_status": "effect_unknown",
+    "recipient_effect_requests": 0,
+    "budget_reservations": 2,
+    "inflight_quarantine_retained": true,
+    "events_sha256": "c044fc5303a9efbf14965bbfd65ad51ddc5d68c3c53127c6b4b80287eb3bd361"
+  },
+  "boundary_passed": [
+    "exact_grant_budget_resource_same_transaction",
+    "missing_actual_budget_no_spend_no_backend",
+    "competing_writer_atomic_rollback",
+    "spent_ticket_and_fence_no_replay",
+    "foreign_or_invented_session_denied_before_spend",
+    "cancel_source_expiry_recorded_unknown_before_runtime_denied",
+    "fresh_pg_clock_after_resource_wait",
+    "lost_receipt_quarantine_no_successor",
+    "nonempty_history_down_refused",
+    "private_service_auth_strict_schema_no_redirect"
+  ],
+  "pending": [
+    "production_bootstrap_readiness_and_guarded_runtime_rollout",
+    "legacy_user_single_tab_fencing_and_manual_interference",
+    "workspace_and_shared_worker_production_callbacks",
+    "whole_tree_stop_and_combined_memory_preference_race",
+    "independent_owner_effect_reconciliation_adapter"
+  ],
+  "issue17": "active"
+}

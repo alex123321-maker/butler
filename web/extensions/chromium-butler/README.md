@@ -1,5 +1,16 @@
 # Chromium Butler Extension
 
+The optional `guarded.js` native path supports only exact claimed status/click
+dispatches. Frozen trusted selection origin, actual browser-instance identity, exclusive persistent tab lane,
+fence and synchronous page observation CAS are required. Once guarded, a tab
+rejects legacy dispatch. Missing host ACK retains quarantine across extension
+reload; it never reconnects and repeats an action. No service token reaches this
+module. Fixed private native list/check releases origin/active metadata to the
+owning controller without title, path, query, document or cookie content. The
+actual Linux installed native-host path is tested on public synthetic pages.
+Main rollout and owner Web/Telegram integration remain pending; see
+[the contract](../../../docs/architecture/single-tab-resource-boundary.md).
+
 Manifest V3 scaffold for the Butler single-tab browser bridge flow.
 
 Current responsibilities:

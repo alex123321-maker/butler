@@ -26,6 +26,68 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(apps/orchestrator/internal/app/delegation_admission.*[.]go$|apps/tool-broker/internal/broker/delegation.*[.]go$|migrations/061_delegation_admission[.]|deploy/docker-compose[.]delegation[.]yml$|scripts/dev/delegation-admission-lab[.]sh$)" {
+      [void]$specs.Add("docs/architecture/delegation-contract.md")
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/durable-tasks/current/scripts/dev/delegation-admission-lab.sh /srv/storage/butler/agents/durable-tasks' after isolated source Sync (actual private Broker, disposable PostgreSQL, pool2 and race)")
+      continue
+    }
+    "^(internal/singletabcontrol/|apps/browser-bridge/|apps/orchestrator/internal/singletab/|apps/tool-broker/internal/broker/single_tab|web/extensions/chromium-butler/|migrations/063_single_tab_resource_binding[.]|scripts/dev/single-tab-resource-lab[.]sh$)" {
+      [void]$specs.Add("docs/architecture/single-tab-resource-boundary.md")
+      [void]$specs.Add("docs/architecture/resource-lease-contract.md")
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/resource-runtime-bridge/current/scripts/dev/single-tab-resource-lab.sh /srv/storage/butler/agents/resource-runtime-bridge' after isolated Sync (actual PG/pool2, private native host and synthetic Chromium extension)")
+      continue
+    }
+    "^(internal/resources/|internal/resourceexec/|migrations/(058_execution_resource_leases|062_resource_dispatches)[.]|scripts/dev/resource-runtime-lab[.]sh$|apps/tool-broker/internal/broker/resources[.]go$|apps/tool-broker/internal/broker/resource_integration_test[.]go$|internal/actionauth/resource_claim[.]go$|internal/budget/tool_deadline[.]go$)" {
+      [void]$specs.Add("docs/architecture/resource-lease-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$tests.Add("ssh laba: targeted Go race tests ./internal/resources ./internal/workspace with isolated *_test PostgreSQL; Sync the source snapshot first")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/resource-runtime-bridge/current/scripts/dev/resource-runtime-lab.sh /srv/storage/butler/agents/resource-runtime-bridge' after isolated Sync (actual PG/pool2, Broker/private runtime and Chromium)")
+      continue
+    }
+    "^(internal/delegation/|migrations/057_task_delegations[.]|apps/orchestrator/internal/(app|orchestrator)/delegation.*[.]go$|apps/orchestrator/internal/task/delegation.*[.]go$|apps/orchestrator/internal/input/bounded_admission[.]go$|apps/orchestrator/internal/session/admission[.]go$|scripts/dev/delegation-lab[.]sh$)" {
+      [void]$specs.Add("docs/architecture/delegation-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$specs.Add("docs/architecture/memory-model.md")
+      [void]$tests.Add("ssh laba: targeted Go race tests ./internal/delegation ./internal/actionauth ./internal/budget ./apps/orchestrator/internal/task ./apps/tool-broker/internal/broker; Sync first")
+      [void]$tests.Add("ssh laba: selected child context and recovery ./internal/memory/catalog ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/app with isolated PostgreSQL; Sync first")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/durable-tasks/current/scripts/dev/delegation-lab.sh /srv/storage/butler/agents/durable-tasks' (disposable PostgreSQL, pool2 and manager race proof)")
+      continue
+    }
+    "^(internal/workspace/|migrations/060_isolated_code_workspaces[.]|scripts/dev/workspace-lab[.]sh$)" {
+      [void]$specs.Add("docs/architecture/isolated-code-workspaces.md")
+      [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
+      [void]$specs.Add("docs/architecture/agent-security-boundaries.md")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/durable-tasks/current/scripts/dev/workspace-lab.sh /srv/storage/butler/agents/durable-tasks' after isolated source Sync")
+	  continue
+	}
+    "^(apps/orchestrator/internal/orchestrator/memory_source_guard.*[.]go$|internal/budget/continuation[.]go$)" {
+      [void]$specs.Add("docs/architecture/generated-converters.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: isolated PostgreSQL go test -race ./internal/budget ./apps/orchestrator/internal/orchestrator; source checks must retain revocation, cancellation and finite deadline tests")
+      continue
+    }
+    "^(internal/generatedtools/|apps/tool-converter/|docker/tool-converter/|migrations/05[2345]_|apps/orchestrator/internal/.*/.*converter|apps/tool-broker/internal/broker/converter.*[.]go$|deploy/docker-compose[.](converters|converter-delegation)[.]yml$|scripts/dev/lab-converter-container[.]sh$)" {
+      [void]$specs.Add("docs/architecture/generated-converters.md")
+      [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: actual isolated PostgreSQL go test -race ./internal/generatedtools/... ./apps/tool-converter/... ./internal/actionauth/... ./internal/skills/... ./apps/tool-broker/... ./apps/orchestrator/internal/goal")
+      [void]$tests.Add("ssh laba: scripts/dev/lab-converter-container.sh /srv/storage/butler/agents/browser-sessions after explicit Sync")
+      continue
+    }
     "^(internal/acceptance/|cmd/acceptance/|testdata/acceptance/|scripts/dev/fault-lab[.]|apps/orchestrator/internal/input/process_fault_integration_test[.]go$)" {
       [void]$specs.Add("docs/ai/fault-scenario-acceptance.md")
       [void]$specs.Add("docs/architecture/durable-execution-acceptance.md")
@@ -84,6 +146,14 @@ foreach ($file in $files) {
       [void]$specs.Add("docs/architecture/memory-model.md")
       [void]$tests.Add("pwsh -NoProfile -File scripts/dev/lab.ps1 -RemoteRoot /srv/storage/butler/agents/local-models -Action Test -Packages ./internal/localmodels/...")
       [void]$tests.Add("pwsh -NoProfile -File scripts/dev/lab.ps1 -RemoteRoot /srv/storage/butler/agents/local-models -Action Test -Packages ./apps/local-models/...")
+      continue
+    }
+    "^(apps/orchestrator/internal/task/owner_(overview|auxiliary).*[.]go$|apps/orchestrator/internal/api/(task_observations_test|tasks_control|tasks_v2)[.]go$|apps/orchestrator/internal/run/task_(read|risk_integration_test)[.]go$|scripts/dev/task-observations-lab[.]sh$|web/(components/TaskOwnerControls[.]vue|entities/task/api[.]ts|tests/e2e/task-owner-controls[.]spec[.]ts)$)" {
+      [void]$specs.Add("docs/architecture/task-owner-controls-spec.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/task-observations/current/scripts/dev/task-observations-lab.sh /srv/storage/butler/agents/task-observations' after isolated Sync")
+      [void]$tests.Add("ssh laba 'bash /srv/storage/butler/agents/task-observations/current/scripts/dev/task-view-lab.sh /srv/storage/butler/agents/task-observations' after isolated Sync")
       continue
     }
     "^apps/orchestrator/" {

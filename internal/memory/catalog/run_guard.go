@@ -2,6 +2,7 @@ package catalog
 
 import (
 	"context"
+	"github.com/butler/butler/internal/delegation"
 	"github.com/butler/butler/internal/ownership"
 
 	"github.com/jackc/pgx/v5"
@@ -34,6 +35,21 @@ func (s *Store) CheckRunSources(ctx context.Context, runID string) error {
 func (s *Store) CheckRunSourcesTx(ctx context.Context, tx pgx.Tx, runID string) error {
 	if e := s.CheckRestoreTx(ctx, tx); e != nil {
 		return e
+	}
+	var taskID string
+	if e := tx.QueryRow(ctx, `SELECT COALESCE(task_id,'') FROM runs WHERE run_id=$1 FOR SHARE`, runID).Scan(&taskID); e != nil {
+		return e
+	}
+	if taskID != "" {
+		bounded, e := delegation.LoadTx(ctx, tx, taskID)
+		if e != nil {
+			return e
+		}
+		if bounded != nil {
+			if e = s.CheckDelegationSourcesTx(ctx, tx, taskID, delegationRoots(bounded), "memory_read"); e != nil {
+				return e
+			}
+		}
 	}
 	_, e := tx.Exec(ctx, `SELECT butler_memory_check_run_sources($1)`, runID)
 	return e

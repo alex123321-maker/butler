@@ -120,13 +120,9 @@ func buildTaskListQuery(params TaskListParams) (string, []any) {
 		sortClause = "t.updated_at ASC"
 	}
 
-	riskLevelExpr := `(
-		CASE
-			WHEN r.current_state IN ('failed','timed_out') THEN 'high'
-			WHEN r.current_state IN ('awaiting_approval','tool_pending','tool_running') THEN 'medium'
-			ELSE 'low'
-		END
-	)`
+	// Run activity/failure cannot establish consequences or likelihood of harm.
+	// Typed action contracts and journal evidence belong to owner observations.
+	riskLevelExpr := `'unknown'`
 
 	query := strings.Builder{}
 	query.WriteString(`

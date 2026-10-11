@@ -33,10 +33,31 @@ func (p *sourceGuardedProvider) SubmitToolResult(ctx context.Context, r transpor
 }
 
 func (p *sourceGuardedProvider) guard(ctx context.Context, runID string, call func(context.Context) (transport.EventStream, error)) (transport.EventStream, error) {
+	// Compound owning lifecycle checks retain all current source/authority
+	// barriers. Their explicit trusted bound cannot exceed the private skill
+	// verifier's existing two-second bound, and never changes event admission.
+	checkTimeout := 200 * time.Millisecond
+	if bounded, ok := p.sources.(interface{ MemorySourceCheckTimeout() time.Duration }); ok {
+		requested := bounded.MemorySourceCheckTimeout()
+		if requested < checkTimeout || requested > 2*time.Second {
+			return nil, errors.New("invalid owning memory source verification bound")
+		}
+		checkTimeout = requested
+	}
 	check := func(ctx context.Context) error {
-		bounded, cancel := context.WithTimeout(ctx, 200*time.Millisecond)
+		bounded, cancel := context.WithTimeout(ctx, checkTimeout)
 		defer cancel()
-		return p.sources.CheckRunSources(bounded, runID)
+		if err := p.sources.CheckRunSources(bounded, runID); err != nil {
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
+			kind := transport.ErrorTypeMemorySourceStale
+			if errors.Is(err, context.DeadlineExceeded) || bounded.Err() == context.DeadlineExceeded {
+				kind = transport.ErrorTypeMemorySourceTimeout
+			}
+			return &transport.Error{Type: kind, Message: string(kind)}
+		}
+		return nil
 	}
 	if e := check(ctx); e != nil {
 		return nil, e
@@ -53,9 +74,8 @@ func (p *sourceGuardedProvider) guard(ctx context.Context, runID string, call fu
 		defer cancel()
 		ticker := time.NewTicker(250 * time.Millisecond)
 		defer ticker.Stop()
-		failed := func() {
-			event := transport.NewTransportErrorEvent(runID, p.Name(), errors.New("memory source no longer usable"))
-			event.TransportError.Type = "memory_source_stale"
+		failed := func(err error) {
+			event := transport.NewTransportErrorEvent(runID, p.Name(), err)
 			select {
 			case out <- event:
 			case <-ctx.Done():
@@ -67,7 +87,7 @@ func (p *sourceGuardedProvider) guard(ctx context.Context, runID string, call fu
 				return
 			case <-ticker.C:
 				if e := check(bounded); e != nil {
-					failed()
+					failed(e)
 					return
 				}
 			case event, ok := <-stream:
@@ -77,7 +97,7 @@ func (p *sourceGuardedProvider) guard(ctx context.Context, runID string, call fu
 				// Final/tool proposals must not pass using a cached source snapshot.
 				if event.EventType == transport.EventTypeAssistantFinal || event.EventType == transport.EventTypeToolCallRequested || event.EventType == transport.EventTypeToolCallBatchRequested {
 					if e := check(bounded); e != nil {
-						failed()
+						failed(e)
 						return
 					}
 				}

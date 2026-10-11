@@ -1,5 +1,18 @@
 # Memory source catalog
 
+Delegated runs select only their exact contract/source roots and their own
+session/task bodies. Original dependency ancestors remain privacy pins rather
+than additional selectable context. Catalog owns same-transaction child grants
+and rechecks the current parent grant chain at reads, dispatch and publication;
+copied child grants cannot retain revoked parent permissions.
+
+`GrantDelegatedCandidateTx` is the narrow technical converter-return bridge. It
+requires a current owned parent worker and exact accepted result-ready child,
+selected roots, trusted return checker and complete current privacy graph. Its
+savepoint grants only the child candidate source; final/report/session access is
+excluded. Normal access is repeated after insertion and errors roll back the
+grant even if the surrounding transaction commits.
+
 `CreateDerivedTx` creates a fresh immutable `model_candidate` DATA source from
 exact current parents under an owned run/job or authenticated owner proof. It
 derives owner and sensitivity, anchors scope to the first trusted requested
@@ -70,3 +83,17 @@ and every original run/source edge, and returns the exact final-message root.
 It grants no publication authority. `CreateDerivedTx` requires a fresh current
 owner/run/job proof for all parents; deletion of any original dependency erases
 the procedure body while content-free skill audit remains in migration051.
+
+`ReadDelegatedRun` releases only the current worker's selected immutable contract
+and source root bodies, bounded to 64KiB. Canonical original dependencies remain
+privacy references, not extra selectable bodies. It denies inherited owner/job
+proofs, stopped/expired workers and current parent grant or source revocation.
+`CheckDelegationProposalSourcesTx` also checks the parent's current purpose/scope
+grants when an authenticated owner independently has broader Catalog body access.
+
+`CreateTaskDerivedTx` is narrower: only a live owned worker may create fresh DATA
+in its current pinned task scope. Owner and auxiliary-job proofs cannot select
+that scope. The complete selected parent graph remains current and deletion-linked;
+the method uses a savepoint on the caller transaction and grants no parent-task
+read access. Reviewed developer delegation can use it for a child candidate without
+making the original parent/project scope ambient child context.

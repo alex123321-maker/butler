@@ -103,3 +103,9 @@ waits and every250ms during IPC. `CheckLocalAuthority` rejects late results with
 charging a second turn. Indexing uses the separately claimed durable auxiliary
 job contract. No completed lease, failed attempt or changed revision refunds
 allowance or resets an existing immutable scope.
+
+`CheckTaskContinuationTx` is a read-only prospective check inside the owning055
+transaction. It resolves current authority and immutable finite scopes, then
+checks a trusted declared next-turn quote after waits without creating scopes or
+reservations. It grants no inference right; actual provider admission still charges
+once through the existing model ledger.

@@ -1,0 +1,57 @@
+# Opt-in pure converter: migrations052/053/054 + reviewed skills051 + persistent privacy
+# anchor are prerequisites. The package never grants deployment or capabilities.
+services:
+  tool-converter:
+    build:
+      context: ..
+      dockerfile: docker/tool-converter/Dockerfile
+    restart: unless-stopped
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 128m
+    tmpfs:
+      - /tmp:size=4m,noexec,nosuid,nodev,uid=10001,gid=10001,mode=0700
+    environment:
+      BUTLER_HTTP_ADDR: '127.0.0.1:8080'
+      BUTLER_CONVERTER_UNIX_SOCKET: /run/butler-converter/runtime.sock
+      BUTLER_CONVERTER_PROFILE_JSON: ${BUTLER_CONVERTER_PROFILE_JSON:?Pinned runtime dependency and fixed checker are required}
+      BUTLER_CONVERTER_RUNTIME_TOKEN_FILE: /run/secrets/converter-runtime
+    volumes:
+      - converter-socket:/run/butler-converter
+    secrets: [converter-runtime]
+    healthcheck:
+      test: [CMD-SHELL, 'wget -qO- http://127.0.0.1:8080/health >/dev/null || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  tool-broker:
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+      tool-converter:
+        condition: service_healthy
+    environment:
+      BUTLER_CONVERTERS_ENABLED: 'true'
+      BUTLER_SKILLS_ENABLED: 'true'
+      BUTLER_CONVERTER_PROFILE_JSON: ${BUTLER_CONVERTER_PROFILE_JSON:?Pinned runtime profile is required}
+      BUTLER_CONVERTER_RUNTIME_TARGET: unix:///run/butler-converter/runtime.sock
+      BUTLER_CONVERTER_RUNTIME_TOKEN_FILE: /run/secrets/converter-runtime
+      BUTLER_OWNER_CONTROL_OWNER_ID: ${BUTLER_OWNER_CONTROL_OWNER_ID:?Configured owner is required}
+    volumes:
+      - converter-socket:/run/butler-converter:ro
+    secrets: [converter-runtime]
+
+  orchestrator:
+    environment:
+      BUTLER_CONVERTER_CONTROL_URL: http://tool-broker:8081/internal/converters
+      BUTLER_SKILL_CONTROL_URL: http://tool-broker:8081/internal/skills
+
+volumes:
+  converter-socket:
+secrets:
+  converter-runtime:
+    file: ${BUTLER_CONVERTER_RUNTIME_TOKEN_SOURCE:-../.secrets/converter-runtime.token}

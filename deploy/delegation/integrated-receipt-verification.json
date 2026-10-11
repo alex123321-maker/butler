@@ -1,0 +1,35 @@
+{
+  "status": "component_passed",
+  "verified_at": "2026-10-11T03:23:26Z",
+  "source_head": "d18fe93cdbd12d11890af925db5a1d39190354e0",
+  "snapshot": "20261011-102146-812",
+  "environment": "separate lab; disposable internal-network PostgreSQL and Redis; no production mutation or native inference",
+  "checks": [
+    {"package": "internal/generatedtools", "race": true, "seconds": 1.087},
+    {"package": "apps/orchestrator/internal/app", "race": true, "seconds": 54.291, "scope": "converter/developer/lifecycle; fixed historical spending baseline; actual Broker preflight without inference"},
+    {"scope": "generatedtools/app vet", "passed": true}
+  ],
+  "events_sha256": "1fd0b90acd128f7395b12b50e8ecd51e54e5e2f8a98662e2285f4ee16e48725b",
+  "native_attempts_this_validation": 0,
+  "production_worker_proof": {
+    "snapshot": "20261011-101826-050",
+    "test": "TestConverterDeveloperRealBrokerWorkersContainerE2E",
+    "race": true,
+    "seconds": 8.80,
+    "max_pool_connections": 2,
+    "confirmed_actions": 10,
+    "unverified_finals": 4,
+    "ordinary_parent_and_child_input_workers": true,
+    "actual_production_broker": true,
+    "actual_network_none_converter": true,
+    "explicit_owner_continuations": true,
+    "autonomous_waiting_parent_scheduling": false,
+    "native_model_calls": 0
+  },
+  "prior_input_execution_verification": "deploy/delegation/integrated-component-verification.json",
+  "base_deployment_delegation_enabled": false,
+  "production_feature_deployment_verified": false,
+  "native_serial_parallel_acceptance_verified": false,
+  "owner_task_completion_verified_by_these_checks": false,
+  "issues_closed_by_this_artifact": []
+}

@@ -39,6 +39,18 @@ func loadOrchestratorLayered(get envGetter, settings []Setting) (OrchestratorCon
 	cfg := OrchestratorConfig{}
 	resolver := NewLayeredResolver(get, settings)
 	snapshot, err := resolver.Resolve(layeredOrchestratorSpecs(&cfg))
+	// Delegation topology is an operator choice. Stored settings cannot enable
+	// a private control route or widen executor concurrency.
+	operatorSnapshot, operatorErr := loadSpecs(get, delegationOrchestratorSpecs(&cfg))
+	snapshot.keys = append(snapshot.keys, operatorSnapshot.keys...)
+	if operatorErr != nil {
+		return cfg, snapshot, operatorErr
+	}
+	guardedSnapshot, guardedErr := loadSpecs(get, guardedTabOrchestratorSpecs(&cfg))
+	snapshot.keys = append(snapshot.keys, guardedSnapshot.keys...)
+	if guardedErr != nil {
+		return cfg, snapshot, guardedErr
+	}
 	// Owner authority is provisioned by the operator and cannot be reassigned
 	// through the unauthenticated settings surface or a database override.
 	cfg.OwnerControlToken, _ = get("BUTLER_OWNER_CONTROL_TOKEN")
@@ -55,6 +67,11 @@ func loadOrchestratorLayered(get envGetter, settings []Setting) (OrchestratorCon
 	cfg.SkillControlURL = strings.TrimSpace(cfg.SkillControlURL)
 	if validationErr := validateOperatorControlEndpoint(cfg.SkillControlURL, "/internal/skills"); validationErr != nil {
 		return cfg, snapshot, fmt.Errorf("invalid operator skill control endpoint")
+	}
+	cfg.ConverterControlURL, _ = get("BUTLER_CONVERTER_CONTROL_URL")
+	cfg.ConverterControlURL = strings.TrimSpace(cfg.ConverterControlURL)
+	if validationErr := validateOperatorControlEndpoint(cfg.ConverterControlURL, "/internal/converters"); validationErr != nil {
+		return cfg, snapshot, fmt.Errorf("invalid operator converter control endpoint")
 	}
 	if conditionalErr := validateOrchestratorConditionalConfig(cfg); conditionalErr != nil {
 		if err != nil {

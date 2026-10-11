@@ -84,7 +84,12 @@ func TestAppControlDispatchAction(t *testing.T) {
 		done <- application.Run(context.Background())
 	}()
 
-	waitForHealth(t, "http://127.0.0.1:29125/health")
+	// This fixture owns its connections. Ambient connection reuse/proxy state
+	// must not leave a pre-dialled STATE_NEW socket in graceful Shutdown.
+	transport := &http.Transport{DisableKeepAlives: true}
+	defer transport.CloseIdleConnections()
+	client := &http.Client{Transport: transport, Timeout: 2 * time.Second}
+	waitForHealth(t, client, "http://127.0.0.1:29125/health")
 
 	responseDone := make(chan struct{})
 	go func() {
@@ -109,7 +114,7 @@ func TestAppControlDispatchAction(t *testing.T) {
 	}()
 
 	reqBody := bytes.NewBufferString(`{"single_tab_session_id":"single-tab-7","bound_tab_ref":"17","action_type":"navigate","args_json":"{\"url\":\"https://example.com\"}"}`)
-	resp, err := http.Post("http://127.0.0.1:29125/api/v1/actions/dispatch", "application/json", reqBody)
+	resp, err := client.Post("http://127.0.0.1:29125/api/v1/actions/dispatch", "application/json", reqBody)
 	if err != nil {
 		t.Fatalf("POST dispatch failed: %v", err)
 	}
@@ -202,12 +207,13 @@ func readNativeRequestFrame(t *testing.T, r io.Reader) protocol.Request {
 	return request
 }
 
-func waitForHealth(t *testing.T, url string) {
+func waitForHealth(t *testing.T, client *http.Client, url string) {
 	t.Helper()
 	deadline := time.Now().Add(2 * time.Second)
 	for time.Now().Before(deadline) {
-		resp, err := http.Get(url)
+		resp, err := client.Get(url)
 		if err == nil {
+			_, _ = io.Copy(io.Discard, resp.Body)
 			_ = resp.Body.Close()
 			if resp.StatusCode == http.StatusOK {
 				return

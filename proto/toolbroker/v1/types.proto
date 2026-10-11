@@ -66,6 +66,25 @@ message ToolContract {
   EffectContract effect_contract = 15;
   // Reviewed installed capability metadata, set only by the durable catalog.
   ExtensionContract extension = 16;
+  // Fixed pure converter catalog metadata; model args never construct this.
+  ConverterContract converter = 17;
+}
+
+message ConverterContract {
+  string converter_id = 1;
+  string package_hash = 2;
+  string need_hash = 3;
+  string version = 4;
+  int64 generation = 5;
+  string profile_pin = 6;
+  string class = 7;
+  string input_schema_hash = 8;
+  string output_schema_hash = 9;
+  int64 input_bytes = 10;
+  int64 output_bytes = 11;
+  int64 rows = 12;
+  int64 field_bytes = 13;
+  int64 millis = 14;
 }
 
 message ExtensionResource {

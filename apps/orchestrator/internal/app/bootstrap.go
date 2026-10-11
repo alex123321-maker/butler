@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -32,8 +33,10 @@ import (
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/config"
+	"github.com/butler/butler/internal/delegation"
 	orchestratorv1 "github.com/butler/butler/internal/gen/orchestrator/v1"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
+	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/catalog"
@@ -204,6 +207,82 @@ func New(ctx context.Context) (*App, error) {
 	if restoreErr := sourceCatalog.Reconcile(ctx); restoreErr != nil {
 		log.Warn("memory unavailable: deletion anchor requires operator reconciliation")
 	}
+	var childAdmission *DelegationAdmission
+	if cfg.DelegationEnabled {
+		if cfg.ActionAuthorityTokenFile == "" {
+			redis.Close()
+			postgres.Close()
+			return nil, fmt.Errorf("delegation requires private action authority authentication")
+		}
+		limits := task.DefaultDelegationLimits()
+		limits.MaxParallel = cfg.DelegationMaxParallel
+		childAdmission, err = NewDelegationAdmission(postgres.Pool(), taskStore, sessionRepo, inputStore, sourceCatalog, limits)
+		if err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, err
+		}
+		if err = childAdmission.CheckReady(ctx); err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, fmt.Errorf("delegation requires initialized immutable migrations057/061")
+		}
+	}
+	var converterDeveloper *ConverterDelegation
+	var converterContinuations *ConverterContinuations
+	var converterContinuationReader flow.ConverterContinuationReader
+	var childLifecycle *task.DelegationManager
+	if childAdmission != nil {
+		childLifecycle = childAdmission.Manager
+	}
+	if cfg.ConverterDelegationEnabled {
+		if childAdmission == nil || cfg.ConverterControlURL == "" {
+			redis.Close()
+			postgres.Close()
+			return nil, fmt.Errorf("converter delegation requires ordinary delegation and the guarded converter control endpoint")
+		}
+		profile, profileErr := generatedtools.DecodeProfile([]byte(cfg.ConverterProfileJSON))
+		if profileErr != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, profileErr
+		}
+		if err = generatedtools.CheckDeveloperReady(ctx, postgres.Pool()); err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, fmt.Errorf("converter delegation requires initialized immutable migrations053/054")
+		}
+		limits := task.DefaultDelegationLimits()
+		limits.MaxParallel = cfg.DelegationMaxParallel
+		converterDeveloper, err = NewConverterDelegation(postgres.Pool(), taskStore, sessionRepo, inputStore, sourceCatalog, limits, profile)
+		if err == nil {
+			childLifecycle, err = NewDelegationLifecycleManager(taskStore, sessionRepo, inputStore, sourceCatalog, limits, childAdmission, converterDeveloper)
+		}
+		if err == nil {
+			var allowance budget.ModelAllowance
+			allowance, err = converterContinuationAllowance(providerResult, budgetController.Policy)
+			if err == nil {
+				converterContinuations, err = NewConverterContinuations(postgres.Pool(), taskStore, inputStore, sourceCatalog, budgetController, allowance, profile)
+				if err == nil {
+					err = converterDeveloper.EnableContinuations(converterContinuations)
+					if err == nil {
+						converterContinuationReader = converterContinuations
+					}
+				}
+			}
+		}
+		if err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, err
+		}
+	}
+	childContexts := delegatedContextReader{sources: sourceCatalog}
+	var childMaintenance *delegationMaintenance
+	if childLifecycle != nil {
+		childContexts.manager = childLifecycle
+		childMaintenance = &delegationMaintenance{pool: postgres.Pool(), manager: childLifecycle}
+	}
 	ownedSemantic, closeOwnedSemantic := configureOwnedSemantic(log, sourceCatalog, budgetController)
 	semanticReady := false
 	defer func() {
@@ -243,6 +322,42 @@ func New(ctx context.Context) (*App, error) {
 			return skills.CheckPinnedLifecycleTx(ctx, tx, run)
 		}
 	}
+	var converterClient *generatedtools.Client
+	var memorySources interface {
+		PinTranscript(context.Context, string, int64) error
+		CheckRunSources(context.Context, string) error
+	} = sourceCatalog
+	if cfg.ConverterControlURL != "" {
+		token, tokenErr := actionauth.ReadServiceToken(cfg.ActionAuthorityTokenFile)
+		if tokenErr != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, tokenErr
+		}
+		converterClient, err = generatedtools.NewClient(cfg.ConverterControlURL, token)
+		if err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, err
+		}
+		previousGuard := finalResults.DataGuard
+		finalResults.DataGuard = func(ctx context.Context, tx pgx.Tx, run string) error {
+			if e := previousGuard(ctx, tx, run); e != nil {
+				return e
+			}
+			if e := generatedtools.CheckContinuationRunTx(ctx, tx, sourceCatalog, run); e != nil {
+				return e
+			}
+			if e := generatedtools.CheckDeveloperLifecycleTx(ctx, tx, sourceCatalog, run); e != nil {
+				return e
+			}
+			if e := generatedtools.CheckDeveloperReturnLifecycleTx(ctx, tx, sourceCatalog, run); e != nil {
+				return e
+			}
+			return generatedtools.CheckPinnedLifecycleTx(ctx, tx, run)
+		}
+		memorySources = converterSources{Store: sourceCatalog, pool: postgres.Pool()}
+	}
 	outboxWorker := &deliveryoutbox.Worker{Store: finalResults.Outbox}
 	if telegram != nil {
 		outboxWorker.Sender = telegram
@@ -275,47 +390,49 @@ func New(ctx context.Context) (*App, error) {
 				}
 				return out, nil
 			},
-			SemanticMemory:        semanticReader,
-			MemorySources:         sourceCatalog,
-			Skills:                skillCatalogIfEnabled(skillClient),
-			Budgets:               budgetController,
-			Completion:            finalResults,
-			DurableMemoryPipeline: pipelineWorker != nil,
-			AutonomyMode:          autonomyMode(cfg.AutonomyMode),
-			ActionAuthorizer:      toolBrokerClient,
-			ActionMandateID:       cfg.ActionMandateID,
-			Checkpoints:           inputStore,
-			Tasks:                 taskStore,
-			OwnerGoals:            ownerGoals,
-			ProviderName:          providerResult.ProviderName,
-			ModelName:             providerResult.ModelName,
-			OwnerID:               cfg.Shared.ServiceName,
-			LeaseTTL:              int64(cfg.SessionLeaseTTLSeconds),
-			PromptManager:         promptmgmt.NewManager(settingsStore),
-			PromptAssembler:       promptmgmt.NewAssembler(),
-			ProfileLimit:          cfg.MemoryProfileLimit,
-			EpisodeLimit:          cfg.MemoryEpisodicLimit,
-			MemoryScopes:          cfg.MemoryScopeOrder,
-			Delivery:              delivery,
-			Tools:                 toolBrokerClient,
-			ToolCatalog:           toolBrokerClient,
-			ApprovalChecker:       toolBrokerClient,
-			ApprovalGate:          approvalGate,
-			ApprovalService:       approvalService,
-			WorkingStore:          workingStoreAdapter{store: working.NewStore(postgres.Pool())},
-			TransientStore:        transientWorkingStoreAdapter{store: working.NewTransientStore(redis.Client()), sources: sourceCatalog},
-			TransientTTL:          time.Duration(cfg.MemoryWorkingTransientTTLSeconds) * time.Second,
-			ProfileStore:          profileStoreAdapter{store: profileStore, sources: sourceCatalog},
-			EpisodeStore:          episodicStoreAdapter{store: episodicStore, sources: sourceCatalog},
-			ChunkStore:            chunkStoreAdapter{store: chunkStore, sources: sourceCatalog},
-			Embeddings:            memoryEmbeddings,
-			PipelineEnqueuer:      pipelineEnqueuer,
-			SummaryReader:         summaryStore,
-			ContextBudgetTokens:   cfg.ContextBudgetTokens,
-			TransitionLogger:      transitionRepo,
-			EventHub:              eventHub,
-			Artifacts:             artifactsService,
-			Activity:              activityService,
+			SemanticMemory:         semanticReader,
+			MemorySources:          memorySources,
+			DelegationContexts:     childContexts,
+			ConverterContinuations: converterContinuationReader,
+			Skills:                 skillCatalogIfEnabled(skillClient),
+			Budgets:                budgetController,
+			Completion:             finalResults,
+			DurableMemoryPipeline:  pipelineWorker != nil,
+			AutonomyMode:           autonomyMode(cfg.AutonomyMode),
+			ActionAuthorizer:       toolBrokerClient,
+			ActionMandateID:        cfg.ActionMandateID,
+			Checkpoints:            inputStore,
+			Tasks:                  taskStore,
+			OwnerGoals:             ownerGoals,
+			ProviderName:           providerResult.ProviderName,
+			ModelName:              providerResult.ModelName,
+			OwnerID:                cfg.Shared.ServiceName,
+			LeaseTTL:               int64(cfg.SessionLeaseTTLSeconds),
+			PromptManager:          promptmgmt.NewManager(settingsStore),
+			PromptAssembler:        promptmgmt.NewAssembler(),
+			ProfileLimit:           cfg.MemoryProfileLimit,
+			EpisodeLimit:           cfg.MemoryEpisodicLimit,
+			MemoryScopes:           cfg.MemoryScopeOrder,
+			Delivery:               delivery,
+			Tools:                  toolBrokerClient,
+			ToolCatalog:            toolBrokerClient,
+			ApprovalChecker:        toolBrokerClient,
+			ApprovalGate:           approvalGate,
+			ApprovalService:        approvalService,
+			WorkingStore:           workingStoreAdapter{store: working.NewStore(postgres.Pool())},
+			TransientStore:         transientWorkingStoreAdapter{store: working.NewTransientStore(redis.Client()), sources: sourceCatalog},
+			TransientTTL:           time.Duration(cfg.MemoryWorkingTransientTTLSeconds) * time.Second,
+			ProfileStore:           profileStoreAdapter{store: profileStore, sources: sourceCatalog},
+			EpisodeStore:           episodicStoreAdapter{store: episodicStore, sources: sourceCatalog},
+			ChunkStore:             chunkStoreAdapter{store: chunkStore, sources: sourceCatalog},
+			Embeddings:             memoryEmbeddings,
+			PipelineEnqueuer:       pipelineEnqueuer,
+			SummaryReader:          summaryStore,
+			ContextBudgetTokens:    cfg.ContextBudgetTokens,
+			TransitionLogger:       transitionRepo,
+			EventHub:               eventHub,
+			Artifacts:              artifactsService,
+			Activity:               activityService,
 		},
 		logger.WithComponent(log, "executor"),
 	)
@@ -343,7 +460,15 @@ func New(ctx context.Context) (*App, error) {
 		if err := ownerGoals.Sweep(ctx); err != nil {
 			return err
 		}
-		return initiativeWorker.Sweep(ctx)
+		maintenanceErr := initiativeWorker.Sweep(ctx)
+		if childMaintenance != nil {
+			// A denied branch must not prevent unrelated admitted maintenance.
+			maintenanceErr = errors.Join(maintenanceErr, childMaintenance.Sweep(ctx))
+		}
+		if converterContinuations != nil {
+			maintenanceErr = errors.Join(maintenanceErr, converterContinuations.Sweep(ctx))
+		}
+		return maintenanceErr
 	})
 	if telegram != nil {
 		telegram.SetExecutor(inputWorker)
@@ -354,6 +479,8 @@ func New(ctx context.Context) (*App, error) {
 
 	var actionAuthorityHandler http.Handler
 	var skillEvidenceHandler http.Handler
+	var delegationHandler http.Handler
+	var converterDelegationHandler http.Handler
 	if cfg.ActionAuthorityTokenFile != "" {
 		token, readErr := actionauth.ReadServiceToken(cfg.ActionAuthorityTokenFile)
 		if readErr != nil {
@@ -361,55 +488,81 @@ func New(ctx context.Context) (*App, error) {
 			postgres.Close()
 			return nil, readErr
 		}
-		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID})
+		if childAdmission != nil {
+			delegationHandler, err = delegation.NewAdmissionHandler(token, childAdmission)
+			if err != nil {
+				redis.Close()
+				postgres.Close()
+				return nil, err
+			}
+		}
+		if converterDeveloper != nil {
+			converterDelegationHandler, err = delegation.NewAdmissionHandler(token, converterDeveloper)
+			if err != nil {
+				redis.Close()
+				postgres.Close()
+				return nil, err
+			}
+		}
+		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, converterDelegationReady: converterDeveloper != nil && converterClient != nil})
 		skillEvidenceHandler = skills.NewEvidenceHandler(token, &skillEvidence{tasks: taskStore, journal: actionauth.NewPostgresStore(postgres.Pool()), transcript: transcriptStore, budgets: budget.NewLedger(postgres.Pool()), results: finalResults, sources: sourceCatalog})
 	} else {
 		log.Warn("private action authority unavailable; Tool Broker will deny execution")
 	}
 	apiServer := apiservice.NewServer(inputWorker, logger.WithComponent(log, "api"))
+	guardedTabOwner, err := configureGuardedTabOwner(ctx, postgres.Pool(), cfg, finalResults.DataGuard)
+	if err != nil {
+		redis.Close()
+		postgres.Close()
+		return nil, err
+	}
 	httpServer := newHTTPServer(httpServerDeps{
-		memoryIndexing:         ownedSemantic,
-		sourceCatalog:          sourceCatalog,
-		cfg:                    cfg,
-		finalResults:           finalResults,
-		actionAuthorityHandler: actionAuthorityHandler,
-		skillEvidenceHandler:   skillEvidenceHandler,
-		skillClient:            skillClient,
-		log:                    log,
-		settingsStore:          settingsStore,
-		hotConfig:              hotConfig,
-		postgres:               postgres,
-		metrics:                m,
-		health:                 h,
-		toolBrokerClient:       toolBrokerClient,
-		authManager:            authManager,
-		providerResult:         providerResult,
-		executor:               executor,
-		inputWorker:            inputWorker,
-		inputStore:             inputStore,
-		ownerAuth:              ownerAuth,
-		sessionRepo:            sessionRepo,
-		runRepo:                runRepo,
-		taskStore:              taskStore,
-		taskControls:           taskControls,
-		ownerGoals:             ownerGoals,
-		initiativeStore:        initiativeStore,
-		transcriptStore:        transcriptStore,
-		transitionRepo:         transitionRepo,
-		eventHub:               eventHub,
-		approvalRepo:           approvalRepo,
-		approvalService:        approvalService,
-		singleTabService:       singleTabService,
-		artifactsRepo:          artifactsRepo,
-		artifactsService:       artifactsService,
-		activityRepo:           activityRepo,
-		deliveryEventsRepo:     deliveryEventsRepo,
-		pipelineQueue:          pipelineQueue,
-		pipelineWorker:         pipelineWorker,
-		embeddingProvider:      embeddingProvider,
-		profileStore:           profileStore,
-		episodicStore:          episodicStore,
-		chunkStore:             chunkStore,
+		guardedTabOwner:            guardedTabOwner,
+		delegationHandler:          delegationHandler,
+		converterDelegationHandler: converterDelegationHandler,
+		memoryIndexing:             ownedSemantic,
+		sourceCatalog:              sourceCatalog,
+		cfg:                        cfg,
+		finalResults:               finalResults,
+		actionAuthorityHandler:     actionAuthorityHandler,
+		skillEvidenceHandler:       skillEvidenceHandler,
+		skillClient:                skillClient,
+		converterClient:            converterClient,
+		log:                        log,
+		settingsStore:              settingsStore,
+		hotConfig:                  hotConfig,
+		postgres:                   postgres,
+		metrics:                    m,
+		health:                     h,
+		toolBrokerClient:           toolBrokerClient,
+		authManager:                authManager,
+		providerResult:             providerResult,
+		executor:                   executor,
+		inputWorker:                inputWorker,
+		inputStore:                 inputStore,
+		ownerAuth:                  ownerAuth,
+		sessionRepo:                sessionRepo,
+		runRepo:                    runRepo,
+		taskStore:                  taskStore,
+		taskControls:               taskControls,
+		ownerGoals:                 ownerGoals,
+		initiativeStore:            initiativeStore,
+		transcriptStore:            transcriptStore,
+		transitionRepo:             transitionRepo,
+		eventHub:                   eventHub,
+		approvalRepo:               approvalRepo,
+		approvalService:            approvalService,
+		singleTabService:           singleTabService,
+		artifactsRepo:              artifactsRepo,
+		artifactsService:           artifactsService,
+		activityRepo:               activityRepo,
+		deliveryEventsRepo:         deliveryEventsRepo,
+		pipelineQueue:              pipelineQueue,
+		pipelineWorker:             pipelineWorker,
+		embeddingProvider:          embeddingProvider,
+		profileStore:               profileStore,
+		episodicStore:              episodicStore,
+		chunkStore:                 chunkStore,
 	})
 
 	grpcListener, err := net.Listen("tcp", cfg.Shared.GRPCAddr)

@@ -12,6 +12,13 @@ save a concrete `execution_stopped` checkpoint and prior continuation, block
 input/task and cancel transport. A frozen finalizing checkpoint never invokes
 another model/effect; a budget stop cannot become verified completion.
 
+Failed provider attempts preserve a content-free transport subtype alongside
+the existing general error class. Source-check expiry is
+`memory_source_check_timeout`, separate from provider expiry, stale sources and
+rate limiting. The same normalization applies before logs, persistent failure
+state and returning to the input worker. Unknown provider types become
+`internal_transport_error`; private provider error text is never a diagnostic.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Run Lifecycle  
@@ -905,3 +912,49 @@ loading. Preparation failure retains that truthful attempt association. Fresh
 approval recovery reloads current capabilities, replacing stale package data
 while retaining known observations without redispatch. See
 [extension lifecycle](reviewed-extension-lifecycle.md).
+## Optional source-bound ingress recovery
+
+An internally accepted voice/delegation event may carry only an opaque stored
+source binding. Its optional trusted `InputSourcePreparation` callback resolves
+current content after the new live lease, preserving event/session/type/source,
+timestamp and idempotency identity. Missing composition or a replaced checkpoint
+binding fails closed before inference. Selected source bodies are not queued.
+
+The delegated worker's durable run key is the accepted `input_id`, separate from
+the immutable kernel `delegation:<task_id>` event ID. The input store's private
+typed verifier must prove the exact current claim, owner/session, live run fence,
+pinned task and original contract source before core validates a local copy of
+that envelope. The actual run/checkpoint key stays the input ID. Preparation and
+recovery both require this proof for rewritten keys; absent or stale verification
+fails before provider entry. Original direct-core keys keep strict equality.
+
+`SourceInputEvent` retains that original opaque event; `SourceDataRefs` identifies
+exact DATA items for durable projection only. Checkpoints and approval continuations
+remove current source prose, preserve refs/digests and keep instructions and actual
+tool/effect observations intact. Recovery resolves current input again; a delegation
+reader must independently reload selected roots from the current authoritative
+contract, rather than treating stored selected IDs as permission. The saved-final
+retry path remains separate and never calls the model/source preparation again.
+
+
+Generated converter observations persist only checked-output SourceRefs, hashes
+and metadata. Current source/owner authority checks precede exact active-version
+guards at provider release/recovery and atomic result commit. A revoked or changed
+used catalog generation requires a fresh task attempt; saved tool results never
+redispatch a spent action. Local preparation acknowledgement and a model final
+remain unverified semantic task results until the existing explicit verifier
+checks completion criteria. See [generated converters](generated-converters.md).
+
+Optional converter developer returns require current immutable053/054 identity,
+actual tested child final/report and its full privacy graph on provider/recovery
+and atomic final paths. Parent collection grants only the candidate DATA source
+through a separate ordinary Broker action. Technical result readiness cannot
+accept the child or complete the semantic parent task.
+
+Migration055 optionally schedules two once-only technical continuations of the
+same original task after confirmed053/054 and then actual parent activation.
+Queue/CAS is atomic; original document/source pins, current owner authority,
+budget and private input claim/fence remain mandatory. Opaque readiness is DATA;
+no synthetic owner message or semantic acceptance is created. Recovery, Broker
+and atomic final repeat the guard. See
+[owned converter continuations](converter-continuations.md).

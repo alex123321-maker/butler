@@ -25,6 +25,25 @@ func ReadMessage(r io.Reader) (any, error) {
 		return nil, err
 	}
 
+	return decodeMessage(payload)
+}
+
+// ReadGuardedMessage bounds allocation before reading an untrusted native frame.
+func ReadGuardedMessage(r io.Reader) (any, error) {
+	var length uint32
+	if e := binary.Read(r, binary.LittleEndian, &length); e != nil {
+		return nil, e
+	}
+	if length == 0 || length > 65536 {
+		return nil, fmt.Errorf("invalid guarded native frame")
+	}
+	payload := make([]byte, int(length))
+	if _, e := io.ReadFull(r, payload); e != nil {
+		return nil, e
+	}
+	return decodeMessage(payload)
+}
+func decodeMessage(payload []byte) (any, error) {
 	var envelope map[string]json.RawMessage
 	if err := json.Unmarshal(payload, &envelope); err != nil {
 		return nil, fmt.Errorf("decode native message envelope: %w", err)

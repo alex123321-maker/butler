@@ -178,3 +178,49 @@ the exact repeat also records conservative d1 RAM admission refusals. Signals
 cannot suppress events or acquire task/grant/verification authority. See
 [local decision observations](local-decision-signals.md) and the checked-in
 acceptance matrix for remaining current-controller baseline work.
+
+Default-disabled voice profiles add fixed `ASR`, `VAD` and `TTS` typed operations.
+Inputs use canonical mono PCM16 WAV at 16 kHz; ASR is bounded to 15 seconds per
+actual request and VAD to 120 seconds. TTS accepts at most 200 Unicode characters
+and returns canonical 24 kHz PCM16 with a 20-second output bound. No compressed
+codec, arbitrary sample rate, reference voice, cloning, model path, speaker or
+runtime setting is supplied by a request. Qwen ASR/TTS revisions and the Silero
+Git revision are pinned; all libraries, weights and preparation caches remain on
+the storage bind. Offline SDK library overlays resolve upstream incompatible
+Transformers/NumPy versions without changing the existing embedding runtime.
+The optional Python worker is justified by official Qwen/Silero inference SDKs;
+Go owns admission, routing, deadlines and typed response validation.
+
+`decoder_complete` only records a decoder EOS. It is neither a correctness claim
+nor owner authentication. The local service never accepts a transcript as an
+ordinary input or action authorization. Voice source persistence, explicit owner
+review and the normal durable input/Stop contracts belong to the separate caller.
+All three profiles remain disabled until their caller and real quality/resource
+acceptance are complete. The evaluation catalog enables only those three optional
+profiles; it must be deliberately staged and then removed by the operator.
+
+On cgroup v2, RAM admission bounds host `MemAvailable` by the hard
+`memory.max` headroom plus clean `inactive_file` cache. Required `memory.stat`
+keys are validated by name; missing, malformed, duplicate or impossible counts
+deny admission. Credit is bounded by both `file` and `memory.current`, and all
+`file_dirty` plus `file_writeback` bytes are conservatively deducted from inactive
+cache. Anonymous and active file memory remain fully charged. This estimates
+reclaimable cache, not guaranteed future availability: the 8 GiB container cap,
+6 GiB process-RSS policy, 512 MiB reserve and shared atomic lane reservations
+still apply. No cache flushing is performed. The accounting follows the
+[kernel cgroup v2 counters](https://docs.kernel.org/admin-guide/cgroup-v2.html)
+and the [Docker inactive-file accounting convention](https://docs.docker.com/reference/cli/docker/container/stats/),
+with an additional conservative dirty/writeback subtraction. Earlier voice
+attempts rejected under raw cgroup charges remain recorded as resource refusals.
+
+The optional fixed `FUNCTION_PROPOSE` operation uses a pinned public FunctionGemma
+Q8_0 registry release and a Go-owned Ollama CPU subprocess inside the existing
+service PID namespace/cgroup. It shares the ordinary serialized CPU lane, fair
+queue, RAM reservations, deadline cancellation and idle unload. It does not use
+the separately deployed Ollama service. A fixed Google control-token formatter
+and complete-set output validator normalize candidates only. Model/runtime paths
+are operator composition, never request fields; runtime/model blobs and library
+symlinks are checked against pins before the read-only offline load. The normal
+profile remains disabled and no orchestrator command route is enabled. Current
+source/job admission, Broker schema/permission/task revision and measured Russian
+quality belong to its caller; see [function proposals](function-proposals.md).

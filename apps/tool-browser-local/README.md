@@ -1,5 +1,10 @@
 # Tool Browser Local
 
+Legacy reconnect/retry below is not used by the optional guarded route. The
+separately reviewed status/click native host requires exact observation CAS and
+persistent lost-ACK quarantine, with no raw alternative runtime endpoint. Main
+composition is unchanged. See [guarded user-tab boundaries](../../docs/architecture/single-tab-resource-boundary.md).
+
 Local runtime for Butler `single_tab.*` tools.
 
 Current state:

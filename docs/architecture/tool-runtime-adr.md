@@ -5,6 +5,17 @@ Installed declarative capability admission is specified in
 version/review state and current task permission are checked before credential
 inspection and within irreversible dispatch; package code is never installed.
 
+The additive [isolated code workspace store](isolated-code-workspaces.md) prepares
+bounded owner/task/version-bound code artifacts with file CAS and private temporary
+directories. It exposes no filesystem or shell tool. Production use requires
+current resource leases, budgets, provenance and Broker admission; an uncertain
+filesystem/PG boundary blocks instead of replaying a patch.
+
+[Bounded generated converters](generated-converters.md) define the first pure
+self-development IR and independent runtime checks. Its package/test/permission
+foundation is implemented; catalog/task admission remains a separate pending gate.
+No generated converter currently becomes a production capability from a test alone.
+
 Current execution policy is defined by
 [exact action authorization](action-authorization-contract.md): the complete
 action, current contract/resource/task versions and credential metadata are
@@ -280,7 +291,7 @@ Butler может поддерживать отдельную tool family `singl
 * доступ привязывается к durable `single_tab_session`, а не к raw `tab_id` в model-visible contract;
 * у агента нет public tools для list/switch/open/close/focus tab и window operations;
 * follow-up `single_tab.*` action contracts могут разрешать активную durable session из текущего Butler session context, чтобы агенту не приходилось повторно передавать raw tab/session identifiers после успешного bind-flow;
-* runtime single-tab follow-up actions могут выполнять один локальный recovery-проход через `single_tab.bind` semantics при `host_unavailable`, `tab_closed` или эквивалентной потере привязки, чтобы минимизировать лишние model turns и повторные вопросы пользователю;
+* legacy single-tab runtime содержит recovery через `single_tab.bind`, но не является защищённой ресурсной границей; [guarded user-tab runtime](single-tab-resource-boundary.md) запрещает recovery/повтор и сохраняет uncertain outcome при потере ответа;
 * `single_tab.*` не поддерживает `credential_ref`, cookie injection, `storage_state` restore и другие secret-bearing browser args;
 * policy boundary строится вокруг session-bound capability и broker-side prereq checks, а не вокруг domain allowlist.
 * `single_tab.bind` использует typed `browser_tab_selection` approval: runtime запрашивает tab candidates у extension через orchestrator relay и создаёт durable approval request для Web UI + Telegram.
@@ -893,3 +904,40 @@ Runtime замораживает все HTTP/CONNECT соединения и pag
 recipient proof. Read/open/navigate revision 2 имеют enforced GET/HEAD contract;
 старые navigation contracts не наследуют это право. Подробности и evidence:
 [browser-session-contract.md](browser-session-contract.md).
+
+## 30. Ограниченные создаваемые конвертеры
+
+Первый класс `delimited_json_v1` — чистая конечная IR без shell, произвольного
+компилятора, process/network/filesystem операций. Broker сохраняет discovery,
+candidate, независимые проверки, расходуемые trials, active digest/generation и
+usage в052. Отдельный Go runtime работает без сети через фиксированный Unix socket;
+ему не передаются основные учётные данные или PostgreSQL. Every call remains an
+ordinary exact grant/journal action. Source/owner guards precede lifecycle/effect
+guards; activation requires current ConverterPermission and independent passed
+checks plus trial. Local acknowledgement proves preparation only. See
+[generated-converters.md](generated-converters.md).
+
+The optional reviewed developer-child route is distinct from context-only
+delegation. Exact053 capabilities are only discover/develop/test. Immutable054
+return proof and ordinary parent `converters.collect` yield references only;
+parent original trials and activation retain separate current action grants.
+
+Optional055 owning continuations schedule only those previously permitted parent
+phases and fresh-catalog original work, after actual confirmed receipts. They
+cannot grant runtime rights or owner authority. Exact source/claim/fence guards
+remain before Broker dispatch and final. See
+[converter-continuations.md](converter-continuations.md).
+
+## 31. Необязательная ресурсная граница управляемого браузера
+
+`internal/resourceexec` связывает существующие grant/journal/budget с конечной
+ресурсной арендой в одной транзакции. ID и режим определяет сервер из точного
+контракта и подтверждённого runtime session; модель не выбирает lock/path/fence.
+Runtime wrapper проверяет приватный одноразовый ticket через внутренний
+авторизованный endpoint после локального lane lock и до реального backend.
+Транзакции завершаются до HTTP/gRPC исполнения. Runtime сохраняет текущие
+origin/credential/page guards и не принимает решений об orchestration.
+Receipt подтверждает завершение локального lane, но не внешний результат;
+неопределённость остаётся в journal и не разрешает replay. Конструкторы не
+включены в production bootstrap/Compose; legacy `single_tab` не покрыт.
+Полный контракт: [resource-lease-contract.md](resource-lease-contract.md).

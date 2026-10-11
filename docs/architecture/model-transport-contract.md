@@ -14,6 +14,14 @@ tool declarations before HTTP write; unset cap is finite. Native Antigravity
 declares inference limits; undeclared adapters fail closed in admitted production
 execution. No automatic model fallback or overage follows from a budget quote.
 
+Execution failure diagnostics retain the general `transport_error` run class and
+a fixed subtype in its error message. `transport.DiagnosticCode` allows only
+declared transport codes, including `memory_source_stale` and
+`memory_source_check_timeout`. Provider text/codes/details and unknown type strings
+are discarded before execution logging, run persistence and input-worker return.
+An owning source-check timeout is distinct from a provider timeout; both deny
+release. These diagnostics do not grant a retry or relax any source deadline.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Model Transport Contract

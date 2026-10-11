@@ -1,6 +1,7 @@
 package localmodels
 
 import (
+	"github.com/butler/butler/internal/audio"
 	"strings"
 	"unicode/utf8"
 
@@ -89,6 +90,40 @@ func validateRequest(p *pb.ModelProfile, r *pb.InferRequest) error {
 		}
 		count = 1
 		bytes = len(input.Media.Content)
+	case *pb.InferRequest_Asr:
+		cap = pb.Capability_CAPABILITY_ASR
+		if input.Asr == nil {
+			return fault(Invalid)
+		}
+		if _, e := audio.Decode(input.Asr.Wav, 16000, 15); e != nil {
+			return fault(Invalid)
+		}
+		count = 1
+		bytes = len(input.Asr.Wav)
+	case *pb.InferRequest_Vad:
+		cap = pb.Capability_CAPABILITY_VAD
+		if input.Vad == nil {
+			return fault(Invalid)
+		}
+		if _, e := audio.Decode(input.Vad.Wav, 16000, 120); e != nil {
+			return fault(Invalid)
+		}
+		count = 1
+		bytes = len(input.Vad.Wav)
+	case *pb.InferRequest_Tts:
+		cap = pb.Capability_CAPABILITY_TTS
+		if input.Tts == nil || !validText(input.Tts.Text) || len([]rune(input.Tts.Text)) > 200 {
+			return fault(Invalid)
+		}
+		count = 1
+		bytes = len(input.Tts.Text)
+	case *pb.InferRequest_Function:
+		cap = pb.Capability_CAPABILITY_FUNCTION_PROPOSE
+		if input.Function == nil || !validText(input.Function.Text) || input.Function.CatalogVersion != FunctionCatalogVersion {
+			return fault(Invalid)
+		}
+		count = 1
+		bytes = len(input.Function.Text)
 	default:
 		return fault(Invalid)
 	}

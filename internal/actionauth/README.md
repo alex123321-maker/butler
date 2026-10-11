@@ -33,3 +33,11 @@ credentials, lease/task/owner changes, authority revocation, single dispatch,
 uncertain effects and conservative shared reservations.
 An actual PostgreSQL authority-row wait past a short exact approval deadline
 denies claim without spending the grant or writing a dispatch record.
+
+## Delegated permissions
+
+Delegated tasks also require exact contract hashes, resources, effects and typed
+credential references from their current bounded contract, before credential
+inspection and again at dispatch. Parent versions/deadlines remain authoritative.
+See `docs/architecture/delegation-contract.md` for the current implementation and
+pending scheduling acceptance.

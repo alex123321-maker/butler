@@ -47,6 +47,37 @@ Zero or multiple roots produce a durable `waiting_for_user` receipt with
 `task_target_required`, without model/tool execution or task mutation. Explicit
 control with an ID resolves the waiting receipt in input and target sessions.
 
+## Owner observations
+
+`GET /api/v3/tasks/{task_id}/observations` requires the configured owner Bearer
+proof before any store read and exact task ownership. A two-second read-only
+repeatable-read PostgreSQL transaction projects the assignment/initiative,
+first 100 direct owned children, latest 50 action intents and shared root budget.
+Overflow is explicit. The response contains typed owning metadata rather than
+source bodies, tool arguments, provider errors or credential material. It grants
+no execution authority. The ordinary task detail keeps its deployment perimeter.
+
+Child run completion is distinct from the task's verified completion result.
+Action consequences come from the recorded contract (`read`, `prepare`, `commit`,
+or unknown); journal confirmation remains separate. Run failure or activity is
+not a risk assessment and the legacy risk field now reports `unknown`.
+Shared root reservations are conservative allowances, not measured consumption.
+Actual model attempts across the owned tree report known input/output subtotals
+and separate missing-input/missing-output counts. Absent budget records remain
+unavailable. Neither missing usage nor a missing scope is presented as zero cost.
+
+The same owner snapshot includes the latest 50 background jobs across the owned
+root task tree, with explicit truncation. It shows durable kind/status/attempts,
+requested model, exact task revision and elapsed deadline. It omits raw source,
+purpose text, errors, claim IDs and allowance payloads. Queue state is not runtime
+readiness or current source/mandate permission. Completed background processing
+does not verify the task; old task revisions and elapsed deadlines remain visible.
+
+The Web view loads this snapshot explicitly using page-memory owner proof.
+Changing the task or proof clears the snapshot and fences late responses;
+successful controls invalidate it. Goal/mandate and initiative links expose the
+existing authority and observation views. Read failure presents unavailable data.
+
 ## Versions and branches
 
 Every control increments task/constraints revisions and saves prior working
@@ -75,8 +106,9 @@ of provider call IDs.
 ## Irreversible boundary and late replies
 
 Transaction lock order is **ownership row, session admission, approval/run, task**.
-Control locks/creates ownership before session admission and captures the complete
-same-session tree. Worker transcript sequence triggers lock session admission
+Control first takes the per-root task-tree admission barrier, then locks every
+descendant session's ownership row in sorted order before session admission and
+captures the complete tree. Worker transcript sequence triggers lock session admission
 after ownership; this order avoids a cross-process deadlock. No external call
 occurs in the control transaction. Broker's irreversible journal/grant claim must
 share-lock the same ownership and exact task revision/constraints/policy in its
@@ -122,7 +154,7 @@ The acceptance checks map to these boundaries:
 | Stop or prepare-only prevents an unclaimed action | Current policy and old authorization rejected; amendment revokes the exact PostgreSQL fence | Owner-first actual claim race rejects dispatch; recipient receives zero effects |
 | Old proposals and approvals cannot authorize the new version | Pending approval expires, approved audit stays, stale task revision/fence fails | Previously approved proposal cannot verify, reauthorize or claim after owner-first commit |
 | Stop bypasses ordinary execution | Accepted owner control interrupts an idle provider and a waiting approval without calling the normal executor | Idle-provider cancellation and late final rejection still pass with the required atomic coordinator |
-| All unfinished descendants stop | Complete same-session tree cancellation and inherited restrictions | Root stop revokes an actual approved grandchild grant; the recipient receives zero effects |
+| All unfinished descendants stop | Complete tree capture and inherited restrictions; independent-session delegation acceptance is pending | Root stop revokes an actual approved grandchild grant; the recipient receives zero effects |
 | Already committed or uncertain effects remain | Historical tool observations remain; receipt reports uncertainty | Claim-first recipient response is saved after stop/amend; lost acknowledgement remains unknown with append-only evidence and no replay |
 | Context follows admission and current task revision | Fresh continuation sees the complete protected amendment; late old final cannot append | Stop-first actual coordinator saves no result/artifact/transcript/outbox; result-first retains all immutable components and revision-one journal evidence |
 | Ordering, pause/resume and ambiguity are explicit | Two-channel revision CAS, delivery deduplication, owner proof, ambiguous receipt and explicit clarification | Storage/kernel tests and functional Web controls |

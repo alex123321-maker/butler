@@ -39,3 +39,14 @@ Related docs:
 - `docs/planning/butler-implementation-roadmap.md`
 
 The reviewed helper is embedded in Go and checked against its workspace file; arbitrary helper updates fail before Node startup. Private expiring proxies pin public DNS and origin, share a 4 MiB outbound counter, deny WebSockets/service workers and allow writes only during authorized interactions. The image is read-only with temporary mounts and receives no model/PG credentials. Real Chromium tests include malicious POST/private iframe/foreign fetch/WebSocket attempts with zero effects, alongside permitted forms and auth. See [security boundaries](../../docs/architecture/agent-security-boundaries.md).
+
+The optional `resourceexec.NewRuntime` wrapper adds private one-use Broker tickets,
+online current authority/source checks and a bounded local resource lane before
+this existing backend. It receives no PostgreSQL access or owner policy. Known
+local completion returns a hashed receipt; a missing receipt keeps the durable
+inflight resource quarantined and returns an unknown effect. Origin/page CAS and
+credentials remain enforced by this backend. The constructors are not enabled by
+production bootstrap/Compose in this change. The actual isolated Chromium proof
+demonstrates controlled open plus stale-page click refusal with zero recipient
+POSTs. It does not establish user's legacy `single_tab` arbitration. See
+[resource adapter and required composition](../../internal/resourceexec/README.md).

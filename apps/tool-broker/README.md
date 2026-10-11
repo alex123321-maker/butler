@@ -1,5 +1,20 @@
 # Tool Broker
 
+The optional converter developer route uses a distinct fixed reviewed
+`task.delegate_converter` contract and private admission client. The initial
+context-only `task.delegate` contract retains empty child permissions. A developer
+child receives only discover/develop/test; `converters.collect` is a separate
+parent action after current immutable final/report and tested-package proof.
+Original trials/activation remain ordinary parent grants. Routing constructors
+do not enable the feature or grant authority.
+
+Optional resource admission also accepts the separate guarded user-tab adapter
+when exact status/click contracts, current approved selection, finite shared
+budget and complete source authority are composed. Tickets remain private gRPC
+metadata. Successful local click ACK still leaves the external effect unknown.
+No guarded user-tab registration is enabled by this change; see the
+[boundary and remaining gates](../../docs/architecture/single-tab-resource-boundary.md).
+
 The optional [reviewed procedural catalog](../../docs/architecture/reviewed-skills.md)
 adds fixed local `skills.search/load/propose` operations. Skill text remains
 DATA and actual tools retain current action/approval/budget/source admission.
@@ -111,3 +126,64 @@ source/transcript/privacy-watermark pins in the same transaction before budget
 spend or dispatch. Broker reads the private deletion anchor volume read-only;
 missing or stale restore history denies a new release. Existing spent journal
 observations remain intact. See [versioned memory sources](../../docs/architecture/versioned-memory-sources.md).
+
+Optional migration052 pure converters use owned `converters.*` lifecycle contracts
+and dynamic exact `converter.<id>.convert`. They require current reviewed skill
+search, an exact schema/profile/finite-limit ConverterPermission, source access,
+budgets and ordinary journal grants. Development/checker sees only Need/synthetic
+data; working input is released only after separately authorized Claim. Active
+digest/generation and source guards are repeated before publication and use.
+The production runtime has no network and uses a dedicated fixed Unix socket/token;
+the private owner endpoint only lists/revokes, never bypasses activation. See
+[generated converter contract](../../docs/architecture/generated-converters.md).
+
+Optional `DelegationExecutor{Admissions, Next}` adds a Broker-owned control route
+for the immutable `delegation.AdmissionContract()` startup contract. It requires
+the actual private dispatch identity, exact schema/hash/target, no secrets and no
+credential references. Other tools continue through `Next`. The private owning
+Orchestrator service rechecks the executing grant and atomically admits an empty
+tool-permission child; the receipt/effect acknowledgement confirms admission,
+not child success. Service endpoints/tokens are operator-only composition; no
+runtime orchestrates or receives the token and nothing is enabled by default.
+`BUTLER_DELEGATION_ENABLED=true` requires PostgreSQL, the existing action-authority
+token file and `BUTLER_DELEGATION_CONTROL_URL` naming exactly
+`/internal/delegation`. Bootstrap then registers the fixed contract and Broker
+control executor. Catalog and preparation deny use until the owning core
+advertises composed readiness for a current task. Operator URL/settings do not
+replace current dispatch, approval, source, owner and budget checks.
+See [actual admission proof](../../docs/ai/delegation-admission-acceptance.md).
+
+The distinct `BUTLER_CONVERTER_DELEGATION_ENABLED` opt-in also requires ordinary
+delegation and enabled converters. Its operator-only
+`BUTLER_CONVERTER_DELEGATION_CONTROL_URL` names exactly
+`/internal/converter-delegation`. Bootstrap verifies immutable053/054 readiness,
+registers only the fixed developer contract and composes its authenticated
+control executor around the existing routes. Catalog and preparation require a
+current task and the core's separate developer and converter lifecycle readiness;
+these signals do not grant permissions or allow recursive child admission.
+The optional delegation and converter-delegation Compose overlays supply only
+these fixed routes/flags; use them with the existing converters overlay.
+
+The global current-source data guard also repeats immutable055 continuation
+authority before a tool claim. Already accepted `converter-return` inputs retain
+this check after new developer admission is disabled. Ordinary inputs require no
+055 record and gain no continuation authority. Core requires055 readiness before
+advertising its composed developer route.
+
+Optional controlled-browser resource admission now has explicit startup hooks:
+`SetResourceAdmission`, the same-TX actionauth `SetDispatchClaimGuard` and
+`NewResourceExecutor` around the actual private runtime router. Exact contract,
+current run/task/source, grant and finite budget remain mandatory. Migration062
+stores only hashed browser provenance and correlated dispatch metadata; foreign
+session handles cannot claim or spend. Private tickets are gRPC metadata and do
+not enter tools, approvals or results. This change leaves bootstrap/registry and
+deployment disabled. All pieces, including the guarded actual runtime and
+independent owner reconciliation, must be composed together before readiness.
+See [resource adapter](../../internal/resourceexec/README.md).
+
+For owning converter continuations055, compose
+`generatedtools.CheckContinuationRunTx` after the Catalog source guard for every
+action. The owning check repeats exact queued input/fence/current authority and
+complete original privacy dependencies; converter publication also repeats it.
+An internal readiness input never creates owner permission, tool capability or
+semantic completion. See the [contract](../../docs/architecture/converter-continuations.md).

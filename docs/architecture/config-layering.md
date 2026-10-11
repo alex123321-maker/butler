@@ -56,3 +56,27 @@ database row; Orchestrator and Broker must resolve identical policy. Finite defa
 remain for omitted fields, but exact model price basis defaults to unknown and
 denies inference. Changed defaults cannot reset or replace immutable PostgreSQL
 scope policy. See [execution budgets](execution-budget-contract.md).
+
+Reviewed converter child composition has a separate operator-only
+`BUTLER_CONVERTER_DELEGATION_ENABLED` flag, default false in core and Broker.
+Stored settings cannot enable it or select the core's
+`BUTLER_CONVERTER_PROFILE_JSON`. Enabling ordinary converters and context-only
+delegation does not enable this distinct developer role. Broker's operator-only
+`BUTLER_CONVERTER_DELEGATION_CONTROL_URL` must name exactly
+`/internal/converter-delegation`, with no URL credentials, query or fragment.
+These settings supply startup composition only; current source/task/owner,
+accepted role, exact dispatch and finite budgets still supply authority.
+Core additionally requires ordinary delegation, the guarded converter control
+endpoint, exact runtime profile and immutable053/054/055 readiness; Broker requires
+enabled converters and ordinary delegation. The core's private projection sets
+`converter_delegation_ready` only after both role lifecycle and all current
+converter guards are composed. Disabling composition does not revoke or undo
+already dispatched effects; see the generated converter operational contract.
+
+The existing developer opt-in also composes its two bounded automatic parent
+continuations; there is no separate model-visible scheduling flag. Core requires
+declared finite provider request limits with output no larger than the current
+execution policy. It uses that policy's conservative quote without claiming to
+lower a provider request cap. The opaque continuation reader is absent when the
+flag is off. Broker/final source guards still recognize retained055 inputs,
+which cannot acquire ordinary owner authority by disabling new admission.

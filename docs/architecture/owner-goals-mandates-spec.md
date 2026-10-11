@@ -192,3 +192,11 @@ facts are installed; fixture examples use synthetic test services only.
 See [acceptance evidence](owner-goals-mandates-acceptance.md),
 [exact action authorization](action-authorization-contract.md) and
 [shared execution budgets](execution-budget-contract.md).
+
+`Mandate.converters` separately admits a finite pure delimited-to-JSON class:
+exact converter ID, schema hashes, runtime profile hash, byte/row/field/time limits
+and trials. Current tool/resource/effect/purpose/hour/budget/deny checks remain
+mandatory; generated code never selects its own authority. It does not widen the
+reviewed ExtensionPermission or allow another account. See
+[generated converters](generated-converters.md); actual child admission must
+additionally retain the separately reviewed delegated permission boundary.

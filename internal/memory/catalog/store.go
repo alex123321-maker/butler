@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/delegation"
 	"github.com/butler/butler/internal/memory/sanitize"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
@@ -303,6 +304,7 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 		return nil, e
 	}
 	var own, taskID, session, liveRun string
+	var bounded *delegation.Contract
 	if a, ok := owneridentity.FromContext(ctx); ok {
 		own = a.OwnerID
 	} else if c, ok := ctx.Value(checkerKey{}).(AccessChecker); ok {
@@ -319,7 +321,7 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 		}
 		var state string
 		var revision int64
-		if tx.QueryRow(ctx, `SELECT COALESCE(task_id,''),COALESCE(task_revision,0),session_key,current_state FROM runs WHERE run_id=$1 FOR SHARE`, tok.RunID).Scan(&taskID, &revision, &session, &state) != nil || state == "completed" || state == "failed" || state == "cancelled" {
+		if tx.QueryRow(ctx, `SELECT COALESCE(task_id,''),COALESCE(task_revision,0),session_key,current_state FROM runs WHERE run_id=$1 FOR SHARE`, tok.RunID).Scan(&taskID, &revision, &session, &state) != nil || state == "completed" || state == "failed" || state == "cancelled" || state == "timed_out" {
 			return nil, ErrDenied
 		}
 		if tx.QueryRow(ctx, `SELECT user_id FROM sessions WHERE session_key=$1`, session).Scan(&own) != nil {
@@ -335,6 +337,16 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 			_ = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now)
 			if _, e := actionauth.CheckTaskAuthorityTx(ctx, tx, taskID, own, nil, now); e != nil {
 				return nil, e
+			}
+			var e error
+			bounded, e = delegation.LoadTx(ctx, tx, taskID)
+			if e != nil {
+				return nil, e
+			}
+			if bounded != nil {
+				if e = s.CheckDelegationSourcesTx(ctx, tx, taskID, delegationRoots(bounded), "memory_read"); e != nil {
+					return nil, e
+				}
 			}
 		}
 	} else {
@@ -368,6 +380,20 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 		}
 		if ref.Revision != 0 && ref.Revision != src.Revision || ref.AccessRevision != 0 && ref.AccessRevision != src.AccessRevision || ref.Hash != "" && ref.Hash != src.Hash {
 			return nil, ErrStale
+		}
+		if bounded != nil {
+			for _, requested := range refs {
+				if requested.ID == src.ID && !delegatedBodyAllowed(bounded, src, session) {
+					return nil, ErrDenied
+				}
+			}
+			// The complete original graph is a privacy dependency, not additional
+			// model-selectable context. Every inherited node needs a current grant.
+			if !(src.ScopeType == "session" && src.ScopeID == session || src.ScopeType == "task" && src.ScopeID == taskID) {
+				if e = checkInheritedPermissionTx(ctx, tx, taskID, own, src, purpose, 0); e != nil {
+					return nil, e
+				}
+			}
 		}
 		_, jobProof := ctx.Value(checkerKey{}).(AccessChecker)
 		if _, isOwner := owneridentity.FromContext(ctx); !isOwner && !jobProof && !(src.ScopeType == "user" && src.ScopeID == own || src.ScopeType == "session" && src.ScopeID == session || taskID != "" && src.ScopeType == "task" && src.ScopeID == taskID) {

@@ -46,6 +46,10 @@ type workerMessage struct {
 	Labels     []string              `json:"labels"`
 	Relations  []*pb.ExtractRelation `json:"relations"`
 	Records    []*pb.ExtractRecord   `json:"records"`
+	Text       string                `json:"text"`
+	Complete   bool                  `json:"complete"`
+	WAV        string                `json:"wav"`
+	Regions    []*pb.SpeechRegion    `json:"regions"`
 }
 
 func NewProcess(cfg ProcessConfig) (*Process, error) {
@@ -63,6 +67,9 @@ func (b *Process) Healthy(context.Context) bool {
 	return true
 }
 func (b *Process) Verify(_ context.Context, p *pb.ModelProfile) error {
+	if voiceModel(p.Model) {
+		return b.verifyVoice(p)
+	}
 	runtime := map[string]string{"google/embeddinggemma-2": "torch-sentence-transformers", "Qwen/Qwen3-Reranker-0.6B": "torch-transformers", "fastino/gliner2.5-multi-v1": "torch-gliner2", "fastino/GLiNER2.5-multi-Decide": "torch-gliner2", "LiquidAI/d1-omni-600M": "torch-d1-reviewed"}[p.Model]
 	if runtime == "" || p.Runtime != runtime || p.Format != "safetensors" || (p.Precision != "BF16" && p.Precision != "FP32") || len(p.Revision) != 40 {
 		return fault(Unavailable)
@@ -188,6 +195,9 @@ func (b *Process) ensure(ctx context.Context, p *pb.ModelProfile, device string)
 	b.stop()
 	cmd := exec.Command(b.cfg.Python, "-u", b.cfg.Script)
 	cmd.Env = []string{"PATH=/usr/local/bin:/usr/bin:/bin", "HOME=/tmp", "USER=butler", "LOGNAME=butler", "TORCHINDUCTOR_CACHE_DIR=/tmp/torch", "HF_HOME=/tmp/huggingface", "HF_HUB_OFFLINE=1", "TRANSFORMERS_OFFLINE=1", "HF_HUB_DISABLE_TELEMETRY=1", "BUTLER_MODEL_ROOT=" + b.cfg.ModelRoot, "BUTLER_MODEL_CPU_THREADS=4", "CUDA_VISIBLE_DEVICES=" + strconv.Itoa(int(b.cfg.GPUIndex))}
+	if overlay := voiceOverlay(p.Model); overlay != "" {
+		cmd.Env = append(cmd.Env, "PYTHONPATH="+overlay, "NUMBA_CACHE_DIR=/tmp/numba")
+	}
 	cmd.Stderr = io.Discard
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
@@ -224,6 +234,9 @@ func (b *Process) ensure(ctx context.Context, p *pb.ModelProfile, device string)
 func (b *Process) Infer(ctx context.Context, p *pb.ModelProfile, r *pb.InferRequest, device string, batch uint32) (*pb.InferResponse, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+	if r.GetAsr() != nil || r.GetVad() != nil || r.GetTts() != nil {
+		return b.voice(ctx, p, r, device)
+	}
 	if r.GetRerank() != nil {
 		return b.rank(ctx, p, r.GetRerank(), device, batch)
 	}

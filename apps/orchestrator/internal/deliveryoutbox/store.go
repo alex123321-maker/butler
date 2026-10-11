@@ -88,7 +88,7 @@ func (s *Store) EnqueueTx(ctx context.Context, tx pgx.Tx, resultID, runID, key, 
 		state = "pending"
 		code = ""
 	}
-	if channel == "web" {
+	if channel == "web" || channel == "delegation" {
 		state = "result_ready"
 		code = ""
 	}

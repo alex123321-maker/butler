@@ -41,3 +41,77 @@ test('owner amendment pins the current task version and stop preserves uncertain
   expect(kinds).toEqual(['amend', 'stop'])
   expect(await page.evaluate(() => JSON.stringify({ local: { ...localStorage }, session: { ...sessionStorage } }))).not.toContain('fixture-owner-token')
 })
+
+async function openObservedTask(page: import('@playwright/test').Page) {
+  await page.route('**/api/v2/tasks/task-observed/*', (route) => route.fulfill({ json: { activity: [], artifacts: [], messages: [] } }))
+  await page.route('**/api/v2/tasks/task-observed', (route) => route.fulfill({ json: {
+    task: { task_id: 'task-observed', status: 'running', run_state: 'model_running', needs_user_action: false },
+    summary_bar: { status: 'running', risk_level: 'unknown', source_channel: 'web' },
+    source: { channel: 'web', source_message_full: 'Observed task' }, waiting_state: {},
+    result: { has_result: false }, error: { has_error: false }, timeline_preview: [], artifacts: [], run_ids: [],
+  } }))
+  await page.route('**/api/v3/tasks/task-observed', (route) => route.fulfill({ json: { task: { revision: 4, status: 'active', execution_policy: 'normal' } } }))
+  await page.goto('/tasks/task-observed')
+  await page.getByLabel('Owner control token').fill('fixture-owner-token-000000000000000')
+}
+
+const overview = {
+  task_id: 'task-observed', revision: 4, observed_at: '2026-10-11T00:00:00Z',
+  assignment: { goal_id: 'goal-1', mandate_id: 'mandate-1', purpose: 'Prepare evidence', initiative_reason: 'Owner requested comparison' },
+  initiative: { status: 'deferred', reason: 'budget', importance: 7, confidence: 8, expected_model_calls: 2 },
+  children: [{ task_id: 'child-unverified', status: 'active', delegation_state: 'report_ready' }],
+  actions: [{ action_id: 'action-1', tool_name: 'http.request', task_revision: 4, effect: 'commit', effect_state: 'effect_unknown' }],
+  auxiliary_work: [
+    { job_id: 'job-current', kind: 'extract', status: 'running', attempts: 1, task_revision: 4, current_task_version: true, requested_model: 'pinned-extractor', deadline_elapsed: false },
+    { job_id: 'job-obsolete', kind: 'summary', status: 'pending', attempts: 2, task_revision: 3, current_task_version: false, deadline_elapsed: false },
+    { job_id: 'job-expired', kind: 'index', status: 'failed', attempts: 1, task_revision: 4, current_task_version: true, deadline_elapsed: true },
+  ],
+  auxiliary_work_truncated: true,
+  budget: { root_task_id: 'task-observed', limits: { model_turns: 5 }, reserved: { model_turns: 3 }, model_attempts: 3, known_input_tokens: 20, known_output_tokens: 4, unknown_input_attempts: 1, unknown_output_attempts: 2 },
+}
+
+test('owner observations distinguish child results, effects and incomplete shared usage', async ({ page }) => {
+  await page.route('**/api/v3/tasks/task-observed/observations', (route) => {
+    expect(route.request().headers().authorization).toBe('Bearer fixture-owner-token-000000000000000')
+    return route.fulfill({ json: overview })
+  })
+  await openObservedTask(page)
+  await page.getByRole('button', { name: 'Load task observations' }).click()
+  await expect(page.getByText('Task result is unverified', { exact: false })).toBeVisible()
+  await expect(page.getByText('Effect unknown; reconcile before repeating', { exact: false })).toBeVisible()
+  await expect(page.getByText('Observed token subtotal: input 20, output 4.', { exact: true })).toBeVisible()
+  await expect(page.getByText('Usage is incomplete: input missing for 1 attempts; output missing for 2 attempts.', { exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Inspect or revoke owner authority' })).toHaveAttribute('href', '/goals')
+  await expect(page.getByRole('link', { name: 'Inspect the initiative source' })).toHaveAttribute('href', '/initiatives')
+  await expect(page.getByRole('row', { name: 'Model turns 3 5', exact: true })).toBeVisible()
+  await expect(page.getByText('requested model pinned-extractor', { exact: false })).toBeVisible()
+  await expect(page.getByText('(obsolete version)', { exact: false })).toBeVisible()
+  await expect(page.getByText('deadline elapsed', { exact: false })).toBeVisible()
+  await expect(page.getByText('Only the latest 50 background jobs are shown.', { exact: true })).toBeVisible()
+  await page.getByLabel('Owner control token').fill('')
+  await expect(page.getByRole('heading', { name: 'Recorded task observations' })).toHaveCount(0)
+  expect(await page.evaluate(() => JSON.stringify({ local: { ...localStorage }, session: { ...sessionStorage } }))).not.toContain('fixture-owner-token')
+})
+
+test('changing owner proof fences a late observation response and read failure stays unavailable', async ({ page }) => {
+  let release: () => void = () => {}
+  const delayed = new Promise<void>((resolve) => { release = resolve })
+  let started: () => void = () => {}
+  const requestStarted = new Promise<void>((resolve) => { started = resolve })
+  let count = 0
+  await page.route('**/api/v3/tasks/task-observed/observations', async (route) => {
+    count++
+    if (count === 1) { started(); await delayed; await route.fulfill({ json: overview }) }
+    else await route.fulfill({ status: 503, json: { error: 'unavailable' } })
+  })
+  await openObservedTask(page)
+  await page.getByRole('button', { name: 'Load task observations' }).click()
+  await requestStarted
+  await page.getByLabel('Owner control token').fill('different-fixture-proof')
+  const response = page.waitForResponse('**/api/v3/tasks/task-observed/observations')
+  release()
+  await response
+  await page.getByRole('button', { name: 'Load task observations' }).click()
+  await expect(page.getByText('Task observations could not be read. Recorded actions and costs are unavailable.', { exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Recorded task observations' })).toHaveCount(0)
+})

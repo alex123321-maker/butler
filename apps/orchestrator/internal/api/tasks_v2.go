@@ -527,15 +527,10 @@ func mapTaskPresentation(runState, sourceChannel string) (status string, needsUs
 	return status, needsUserAction, actionChannel, waitingReason
 }
 
-func deriveRiskLevel(runState string) string {
-	switch runState {
-	case "failed", "timed_out":
-		return "high"
-	case "awaiting_approval", "tool_pending", "tool_running":
-		return "medium"
-	default:
-		return "low"
-	}
+func deriveRiskLevel(_ string) string {
+	// Run activity/failure is not an assessment of an action's consequences.
+	// Exact recorded effect classes are available in authenticated observations.
+	return "unknown"
 }
 
 func extractSourceMessage(messages []transcript.Message) (preview string, full string) {

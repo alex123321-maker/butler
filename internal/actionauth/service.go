@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"github.com/butler/butler/internal/delegation"
 	"strings"
 	"time"
 
@@ -92,7 +93,16 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	if err := CheckExecutionPolicy(c, b.Effect); err != nil {
 		return b, false, err
 	}
-	if contract.GetExtension() != nil || strings.HasPrefix(call.GetToolName(), "extension.") {
+	if call.GetToolName() == delegation.AdmissionTool && !c.DelegationReady {
+		return b, false, delegation.ErrDenied
+	}
+	if call.GetToolName() == "task.delegate_converter" && (c.TaskID == "" || !c.DelegationReady || !c.ConverterDelegationReady || !c.ConverterLifecycleReady) {
+		return b, false, delegation.ErrDenied
+	}
+	if !delegationAllows(c.Delegation, b) {
+		return b, false, delegation.ErrDenied
+	}
+	if call.GetToolName() == "task.delegate_converter" || contract.GetExtension() != nil || strings.HasPrefix(call.GetToolName(), "extension.") || contract.GetConverter() != nil || strings.HasPrefix(call.GetToolName(), "converters.") || strings.HasPrefix(call.GetToolName(), "converter.") {
 		if s.capabilities == nil {
 			return b, false, fmt.Errorf("reviewed capability admission is unavailable")
 		}
@@ -100,6 +110,9 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 		if err != nil {
 			return b, false, err
 		}
+	}
+	if !delegationAllows(c.Delegation, b) {
+		return b, false, delegation.ErrDenied
 	}
 	if _, err := NetworkReleaseRequired(call, contract); err != nil {
 		return b, false, err

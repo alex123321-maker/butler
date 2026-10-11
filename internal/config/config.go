@@ -66,6 +66,10 @@ type OrchestratorConfig struct {
 	RedisURL                          string
 	ExtensionAPITokens                []string
 	SingleTabTransportMode            string
+	GuardedTabOwnerEnabled            bool
+	GuardedTabHost                    string
+	GuardedTabMetadataURL             string
+	GuardedTabTokenFile               string
 	SingleTabRelayHeartbeatTTLSeconds int
 	ModelProvider                     string
 	OpenAIAPIKey                      string
@@ -84,6 +88,11 @@ type OrchestratorConfig struct {
 	ActionAuthorityTokenFile          string
 	ExtensionControlURL               string
 	SkillControlURL                   string
+	ConverterControlURL               string
+	ConverterProfileJSON              string
+	ConverterDelegationEnabled        bool
+	DelegationEnabled                 bool
+	DelegationMaxParallel             int
 	TelegramBotToken                  string
 	TelegramAllowedChatIDs            []string
 	TelegramBaseURL                   string
@@ -106,17 +115,25 @@ type OrchestratorConfig struct {
 }
 
 type ToolBrokerConfig struct {
-	ExecutionBudgetPolicyJSON string
-	Shared                    SharedConfig
-	Postgres                  PostgresConfig
-	RegistryPath              string
-	DefaultTarget             string
-	ActionContextURL          string
-	ActionAuthorityTokenFile  string
-	ExtensionProfilesJSON     string
-	ExtensionRuntimeTokenFile string
-	ExtensionOwnerID          string
-	SkillsEnabled             bool
+	ExecutionBudgetPolicyJSON     string
+	Shared                        SharedConfig
+	Postgres                      PostgresConfig
+	RegistryPath                  string
+	DefaultTarget                 string
+	ActionContextURL              string
+	ActionAuthorityTokenFile      string
+	ExtensionProfilesJSON         string
+	ExtensionRuntimeTokenFile     string
+	ExtensionOwnerID              string
+	SkillsEnabled                 bool
+	ConvertersEnabled             bool
+	DelegationEnabled             bool
+	DelegationControlURL          string
+	ConverterDelegationEnabled    bool
+	ConverterDelegationControlURL string
+	ConverterProfileJSON          string
+	ConverterRuntimeTarget        string
+	ConverterRuntimeTokenFile     string
 }
 
 type ToolBrowserConfig struct {
@@ -296,6 +313,7 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_ACTION_AUTHORITY_TOKEN_FILE", component: "orchestrator", typeName: "string", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ActionAuthorityTokenFile = strings.TrimSpace(v) }},
 		fieldSpec{key: "BUTLER_EXTENSION_CONTROL_URL", component: "orchestrator", typeName: "string", defaultValue: "", requiresRestart: true, validate: func(v string) error { return validateOperatorControlEndpoint(v, "/internal/extensions") }, assign: func(v string) { cfg.ExtensionControlURL = strings.TrimSpace(v) }},
 		fieldSpec{key: "BUTLER_SKILL_CONTROL_URL", component: "orchestrator", typeName: "string", requiresRestart: true, validate: func(v string) error { return validateOperatorControlEndpoint(v, "/internal/skills") }, assign: func(v string) { cfg.SkillControlURL = strings.TrimSpace(v) }},
+		fieldSpec{key: "BUTLER_CONVERTER_CONTROL_URL", component: "orchestrator", typeName: "string", requiresRestart: true, validate: func(v string) error { return validateOperatorControlEndpoint(v, "/internal/converters") }, assign: func(v string) { cfg.ConverterControlURL = strings.TrimSpace(v) }},
 		fieldSpec{key: "BUTLER_TELEGRAM_BOT_TOKEN", component: "orchestrator", typeName: "string", required: false, defaultValue: "", isSecret: true, requiresRestart: true, validate: validateOptionalNonEmpty, assign: func(v string) { cfg.TelegramBotToken = v }},
 		fieldSpec{key: "BUTLER_TELEGRAM_ALLOWED_CHAT_IDS", component: "orchestrator", typeName: "csv", required: false, defaultValue: "", requiresRestart: true, validate: validateOptionalChatIDList, assign: func(v string) { cfg.TelegramAllowedChatIDs = parseCSV(v) }},
 		fieldSpec{key: "BUTLER_TELEGRAM_BASE_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "https://api.telegram.org", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.TelegramBaseURL = v }},
@@ -315,6 +333,8 @@ func loadOrchestrator(get envGetter) (OrchestratorConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_RESTART_HELPER_URL", component: "orchestrator", typeName: "string", required: false, defaultValue: "http://restart-helper:8080", requiresRestart: true, validate: validateNonEmptyURL, assign: func(v string) { cfg.RestartHelperURL = v }},
 	)
 
+	specs = append(specs, delegationOrchestratorSpecs(&cfg)...)
+	specs = append(specs, guardedTabOrchestratorSpecs(&cfg)...)
 	snapshot, err := loadSpecs(get, specs)
 	if conditionalErr := validateOrchestratorConditionalConfig(cfg); conditionalErr != nil {
 		if err != nil {
@@ -342,9 +362,19 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 		fieldSpec{key: "BUTLER_EXTENSION_RUNTIME_TOKEN_FILE", component: "tool-broker", typeName: "string", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ExtensionRuntimeTokenFile = strings.TrimSpace(v) }},
 		fieldSpec{key: "BUTLER_OWNER_CONTROL_OWNER_ID", component: "tool-broker", typeName: "string", defaultValue: "", requiresRestart: true, assign: func(v string) { cfg.ExtensionOwnerID = strings.TrimSpace(v) }},
 		fieldSpec{key: "BUTLER_SKILLS_ENABLED", component: "tool-broker", typeName: "bool", defaultValue: "false", allowedValues: []string{"true", "false"}, requiresRestart: true, assign: func(v string) { cfg.SkillsEnabled = v == "true" }},
+		fieldSpec{key: "BUTLER_CONVERTERS_ENABLED", component: "tool-broker", typeName: "bool", defaultValue: "false", allowedValues: []string{"true", "false"}, requiresRestart: true, assign: func(v string) { cfg.ConvertersEnabled = v == "true" }},
+		fieldSpec{key: "BUTLER_CONVERTER_PROFILE_JSON", component: "tool-broker", typeName: "json", requiresRestart: true, assign: func(v string) { cfg.ConverterProfileJSON = v }},
+		fieldSpec{key: "BUTLER_CONVERTER_RUNTIME_TARGET", component: "tool-broker", typeName: "string", defaultValue: "unix:///run/butler-converter/runtime.sock", requiresRestart: true, validate: func(v string) error {
+			if v != "unix:///run/butler-converter/runtime.sock" {
+				return fmt.Errorf("fixed private converter socket required")
+			}
+			return nil
+		}, assign: func(v string) { cfg.ConverterRuntimeTarget = v }},
+		fieldSpec{key: "BUTLER_CONVERTER_RUNTIME_TOKEN_FILE", component: "tool-broker", typeName: "string", requiresRestart: true, assign: func(v string) { cfg.ConverterRuntimeTokenFile = strings.TrimSpace(v) }},
 		fieldSpec{key: "BUTLER_EXECUTION_BUDGET_POLICY_JSON", component: "tool-broker", typeName: "json", requiresRestart: true, validate: validateBudgetPolicy, assign: func(v string) { cfg.ExecutionBudgetPolicyJSON = v }},
 	)
 
+	specs = append(specs, delegationBrokerSpecs(&cfg)...)
 	snapshot, err := loadSpecs(get, specs)
 	return cfg, snapshot, err
 }
@@ -719,6 +749,9 @@ func parseDoctorContainerTargets(value string) []DoctorContainerTarget {
 }
 
 func validateOrchestratorConditionalConfig(cfg OrchestratorConfig) error {
+	if err := validateGuardedTabConfig(cfg); err != nil {
+		return err
+	}
 	if strings.TrimSpace(cfg.TelegramBotToken) != "" && len(cfg.TelegramAllowedChatIDs) == 0 {
 		return fmt.Errorf("BUTLER_TELEGRAM_ALLOWED_CHAT_IDS is required when BUTLER_TELEGRAM_BOT_TOKEN is set")
 	}
