@@ -45,6 +45,9 @@ preparation/model release, Broker grant claim and atomic results pin current
 sources; deletion has a one-way typed privacy path retaining evidence hashes and
 verdicts. Scoped cache cleanup persists progress and task scratch revisions prevent
 late republishing. Full manifest identity is checked on restore, not just its count.
+Deletion also redacts source-pinned run metadata and accepted-input checkpoints
+before a first message exists. Restore replay erases those copies again while
+retaining run/source/effect identities; a queued or late prepared release is denied.
 
 Tests use `BUTLER_TEST_MEMORY_POSTGRES_URL`, an isolated `_test` DB, private schemas,
 pgvector in public and pool size two. Actual race tests cover privacy/backup replay,

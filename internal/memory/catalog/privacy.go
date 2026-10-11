@@ -7,6 +7,22 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+// Preparation can persist before the first message exists. Source pins are
+// authoritative for those runs too; deletion must erase their cached bodies
+// without waiting for a message edge. Identity and external-effect rows stay.
+func redactPinnedRunsTx(ctx context.Context, tx pgx.Tx, sources []string, deletionID string) error {
+	queries := []string{
+		`UPDATE accepted_inputs SET event_json=jsonb_build_object('privacy_redacted',TRUE,'deletion_id',$2::TEXT,'event_id',event_id,'task_id',task_id),checkpoint_json=jsonb_build_object('privacy_redacted',TRUE),status=CASE WHEN status IN ('completed','failed','cancelled','expired') THEN status ELSE 'cancelled' END,claim_id='',claim_expires_at=NULL,error_code='privacy_redacted',error_message='',updated_at=clock_timestamp() WHERE run_id IN(SELECT run_id FROM memory_run_sources WHERE source_id=ANY($1))`,
+		`UPDATE runs SET metadata_json=jsonb_build_object('privacy_redacted',TRUE,'deletion_id',$2::TEXT) WHERE run_id IN(SELECT run_id FROM memory_run_sources WHERE source_id=ANY($1))`,
+	}
+	for _, q := range queries {
+		if _, e := tx.Exec(ctx, q, sources, deletionID); e != nil {
+			return e
+		}
+	}
+	return nil
+}
+
 // Redaction is one-way content removal. IDs, original hashes, effect evidence,
 // verdicts and sent/unknown receipts remain truthful; no external undo is claimed.
 func redactMessagesTx(ctx context.Context, tx pgx.Tx, sources []string, deletionID string) error {
