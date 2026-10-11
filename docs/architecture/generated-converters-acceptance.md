@@ -141,3 +141,9 @@ This gate establishes the ordinary queued developer process, not autonomous
 waiting-parent scheduling, native model planning, independently measured quality
 or cost improvement, or final deployed acceptance. Those remain explicit release
 requirements; component-only evidence cannot substitute for them.
+
+Root snapshot `20261011-102146-812` passed the integrated receipt serialization
+and historical-accounting delta: generatedtools race1.087s, actual-PG app
+converter/developer/lifecycle and zero-inference native preparation race54.291s,
+plus narrow vet. No native model was invoked. See
+[receipt verification](../../deploy/delegation/integrated-receipt-verification.json).
