@@ -1,0 +1,50 @@
+{
+  "cases": [
+    {
+      "automatic_input": false,
+      "case": "silence",
+      "millis": 2080,
+      "original_retained": true,
+      "role": "owner_command",
+      "state": "partial",
+      "text_present": false
+    },
+    {
+      "automatic_input": false,
+      "case": "deterministic_background_noise",
+      "millis": 49,
+      "original_retained": true,
+      "role": "external",
+      "state": "partial",
+      "text_present": false
+    },
+    {
+      "automatic_input": false,
+      "case": "long_note_repeated_public_human_recording",
+      "millis": 13140,
+      "original_retained": true,
+      "role": "note",
+      "state": "review",
+      "text_present": true
+    },
+    {
+      "case": "asr_cpu_only_finite_ram",
+      "error": "ResourceExhausted",
+      "hard_ram_policy_unchanged": true,
+      "millis": 245
+    },
+    {
+      "automatic_input": false,
+      "case": "caller_connection_unavailable",
+      "error": "caller_rejected",
+      "millis": 8,
+      "original_retained": true,
+      "role": "external",
+      "state": "failed",
+      "text_present": false
+    }
+  ],
+  "human_quality_gate_passed": false,
+  "quality_gate_changed": false,
+  "version": "voice-bounded-failures-v1"
+}

@@ -209,6 +209,9 @@ func (s *Store) ClaimKind(ctx context.Context, kind string) (Job, bool, error) {
 	return s.claimSelected(ctx, kind, "")
 }
 func (s *Store) claimSelected(ctx context.Context, kind, purpose string) (Job, bool, error) {
+	return s.claimSelectedOwner(ctx, kind, purpose, "", "")
+}
+func (s *Store) claimSelectedOwner(ctx context.Context, kind, purpose, jobID, ownerID string) (Job, bool, error) {
 	switch kind {
 	case "", "index", "extract", "summary", "ingest":
 	default:
@@ -231,7 +234,7 @@ func (s *Store) claimSelected(ctx context.Context, kind, purpose string) (Job, b
 		return Job{}, false, e
 	}
 	var jid string
-	e = tx.QueryRow(ctx, `UPDATE memory_aux_jobs SET status='running',claim_id=$1,claim_epoch=claim_epoch+1,claim_until=LEAST(deadline,clock_timestamp()+INTERVAL '2 minutes'),attempts=attempts+1,updated_at=clock_timestamp() WHERE job_id=(SELECT job_id FROM memory_aux_jobs WHERE status='pending' AND ($2='' OR kind=$2) AND ($3='' OR purpose=$3) AND next_attempt_at<=clock_timestamp() AND deadline>clock_timestamp() AND attempts<max_attempts ORDER BY next_attempt_at,job_id FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING job_id`, id, kind, purpose).Scan(&jid)
+	e = tx.QueryRow(ctx, `UPDATE memory_aux_jobs SET status='running',claim_id=$1,claim_epoch=claim_epoch+1,claim_until=LEAST(deadline,clock_timestamp()+INTERVAL '2 minutes'),attempts=attempts+1,updated_at=clock_timestamp() WHERE job_id=(SELECT job_id FROM memory_aux_jobs WHERE status='pending' AND ($2='' OR kind=$2) AND ($3='' OR purpose=$3) AND ($4='' OR job_id=$4) AND ($5='' OR owner_id=$5) AND next_attempt_at<=clock_timestamp() AND deadline>clock_timestamp() AND attempts<max_attempts ORDER BY next_attempt_at,job_id FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING job_id`, id, kind, purpose, jobID, ownerID).Scan(&jid)
 	if e == pgx.ErrNoRows {
 		return Job{}, false, tx.Commit(ctx)
 	}

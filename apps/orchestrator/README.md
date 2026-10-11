@@ -349,3 +349,14 @@ See the [indexing composition](../../internal/memory/indexing/README.md) and
 [parser confinement](../memory-parser/README.md). Missing model token, fixed local
 identity or declared local price disables only that owned semantic path; legacy
 cloud memory model jobs remain denied.
+
+Optional `/api/v3/voice/` composition uses `VoiceServer`, current catalog/owned jobs,
+`VoiceInputAdapter` and `VoiceControlAdapter`. Registering it does not enable it.
+The post-lease `InputSourcePreparation` hook resolves exact stored input bindings;
+checkpoint/approval projection retains refs rather than copied ASR/selected DATA
+prose. Source refs never grant their own permission. Reviewed Stop calls the common
+owner controller with a same-transaction current-source guard, keeping tree fences
+and exact task revision checks. Text Stop remains independent. The voice runtime,
+caller and human quality evidence are documented in
+[voice contract](../../docs/architecture/russian-voice.md); all profiles/caller
+flags remain off because the fixed Russian quality gate failed.

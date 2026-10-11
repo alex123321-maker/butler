@@ -1,0 +1,15 @@
+{
+  "asr_revision": "5eb144179a02acc5e5ba31e748d22b0cf3e303b0",
+  "audio_delete_bytes": 0,
+  "durable_reservations": 3,
+  "independent_human_quality": false,
+  "recording_origin": "synthetic_fixed_Ryan_self_roundtrip",
+  "synthetic_transcript": "Не отправляй Ивану семнадцать файлов.",
+  "transcript_state": "review",
+  "tts_millis": 13876,
+  "tts_revision": "85e237c12c027371202489a0ec509ded67b5e4b5",
+  "tts_wave_bytes": 169004,
+  "vad_asr_millis": 12191,
+  "vad_revision": "5cd7945676eb32225748052e2e6a0580e4686a08",
+  "version": "voice-actual-v1"
+}
