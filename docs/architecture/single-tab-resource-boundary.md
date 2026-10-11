@@ -3,7 +3,8 @@
 Status: default-disabled implementation and isolated lab acceptance for issue 17.
 A tab/session ID, observation, heartbeat or resource lease grants no action,
 credential capability or external success verdict. No main registry, bootstrap
-or Compose route is enabled by this change.
+or Compose route is enabled on the main deployment. Separate default-false
+Broker runtime bootstrap now exists; see [operator composition](single-tab-production-composition.md).
 
 The optional owner bootstrap now joins durable selection decisions to their
 actual accepted input and core recovery. The version1 selection marker is not

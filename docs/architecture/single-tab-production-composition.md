@@ -3,7 +3,9 @@
 Root application bootstrap now composes optional waiting-owner decisions behind
 an operator-only, default-false flag. A separate default-false request flag now
 composes ordinary worker request creation, exact Broker control and owner delivery.
-Private guarded status/click runtime composition remains pending.
+Separate default-false guarded status/click runtime composition now exists in
+Broker bootstrap. Main deployment remains disabled pending actual owner/channel
+activation and the remaining account/network release checks.
 Durable selection/checkpoint queueing and fresh core recovery are composed under
 the same optional flag.
 No model calls are needed to validate this owner boundary.
@@ -59,7 +61,7 @@ Catalog/task/guarded selection, then emits the opaque selection as private DATA
 into a fresh provider context. Original deadline stays finite; advanced tool
 checkpoints cannot replay an effect through this path. Request creation through
 the ordinary worker and owner delivery is described below; guarded status/click
-production runtime wiring remains pending.
+runtime wiring is described below.
 The Web decision API itself is composed
 at `POST /api/v3/tab-choices/{approval_id}/select` (`candidate_token` only) and
 `/revoke` (`{}` only), with mandatory configured Bearer owner proof. Unknown,
@@ -86,8 +88,8 @@ page uses this protected read and the existing select/revoke route; generic
 approval cannot substitute for the guarded choice. Owner proof stays only in
 page memory; proof changes fence late responses. Executing worker request
 creation and owner delivery have a separate operator composition below. The
-actual human channel workflow and private status/click runtime composition remain
-independent release gates.
+actual human channel workflow and deployment activation remain independent
+release gates.
 
 ## Ordinary worker request composition
 
@@ -122,6 +124,68 @@ settle a lost/uncertain Broker outcome. This route grants no status/click action
 authority or claim of browser/recipient/model success.
 
 ## Broker and runtime composition
+
+`BUTLER_GUARDED_TAB_RUNTIME_ENABLED` defaults false in both orchestrator and Broker.
+Owning orchestration requires the already composed request/owner/recovery route;
+its private `guarded_tab_runtime_ready` projection gates scoped discovery and
+action preparation. Broker independently requires request composition, PG,
+the immutable selection schema, resource/shared-budget tables, the current private
+memory deletion anchor matching PG and authenticated
+readiness from the installed native runtime. A missing owning flag denies a new
+action even if Broker has the contracts. Disabling this catalog does not settle
+an already committed resource dispatch.
+
+Broker startup accepts these operator-only fields:
+
+```text
+BUTLER_GUARDED_TAB_RUNTIME_TARGET=127.0.0.1:19090
+BUTLER_GUARDED_TAB_RUNTIME_TOKEN_FILE=<private host/authority service token file>
+BUTLER_GUARDED_TAB_PROFILE_ID=<stable physical browser profile identity>
+BUTLER_GUARDED_TAB_HOST=<actual installed extension browser instance>
+BUTLER_GUARDED_TAB_ALLOWED_ORIGINS_JSON=["https://reviewed.example"]
+BUTLER_HTTP_ADDR=127.0.0.1:<private Broker HTTP port>
+BUTLER_GRPC_ADDR=127.0.0.1:<private Broker RPC port>
+BUTLER_MEMORY_DELETION_MANIFEST_FILE=<current private external deletion anchor>
+```
+
+The supported initial route is direct literal loopback, with the exact address
+reported by the native listener. DNS, wildcard, LAN and URI resolver targets
+deny. The private authority is `/internal/guarded-tab-resources` on the Broker
+HTTP listener and uses the separate runtime token. The existing action token
+retains owning/Broker authorization. Private runtime gRPC ignores ambient proxy
+configuration. Docker host networking or local Go alongside Compose-owned PG
+can provide this Linux topology. A container's loopback is its own namespace;
+a remote tunnel/gateway alias is not proved by this direct-route implementation.
+No token is sent across a plain LAN and no automatic tunnel is created.
+
+The native host exposes only authenticated standard gRPC Health `Check` for a
+service identifier derived from the exact canonical status/click contract hashes,
+listener address and actual browser instance. It obtains that instance through
+the installed guarded extension's bounded list RPC outside PG. Empty/unavailable
+extension, wrong token, different host, address or contract revision deny startup.
+The probe grants no ticket and performs no browser action. Its fixed contract
+factory is shared with Broker; the native backend rejects a modified schema,
+effect or contract. Generic health or metadata availability cannot substitute.
+
+The reviewed registry must contain no `single_tab.*` contracts when this flag is
+enabled. Startup never silently replaces a raw/legacy contract; it registers
+only the canonical guarded status/click pair, then the existing local request.
+Scoped discovery hides unconfigured controlled `browser.*` routes, and the
+single-tab admission store denies them before credentials or dispatch. A future
+controlled-browser coexistence needs a distinct explicit profile/dispatcher.
+Local `single_tab.bind.guarded` is routed outside the resource executor and its
+admission adapter, while retaining its exact contract and ordinary journal/budget.
+It cannot borrow a tab execution lease. Unknown protected single-tab names have
+no fallback.
+
+The origin list contains 1–32 unique canonical HTTP(S) origins, without userinfo,
+path, query, fragment or aliases. The current approved selection must match it
+again on the caller transaction at claim and runtime authority release. It does
+not change a page's account or intercept its requests. Existing Chrome account
+scope/network policy must be separately reviewed before live activation. No
+credential reference or resolved secret is accepted by these two tools. Uncertain
+lanes remain blocked; the bootstrap intentionally supplies no automatic or
+unproved owner reconciliation callback.
 
 Construct `resourceexec.NewSingleTab(pool, resourceStore, sharedBudgets, sources,
 singletabcontrol.Guard(fixedBrowserInstance), fixedProfile)` using the same owned

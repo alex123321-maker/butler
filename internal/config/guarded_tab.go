@@ -11,6 +11,7 @@ import (
 // enable an executor. Stored settings cannot choose a credential destination.
 func guardedTabOrchestratorSpecs(cfg *OrchestratorConfig) []fieldSpec {
 	return []fieldSpec{
+		{key: "BUTLER_GUARDED_TAB_RUNTIME_ENABLED", component: "orchestrator", typeName: "bool", defaultValue: "false", allowedValues: []string{"true", "false"}, requiresRestart: true, assign: func(v string) { cfg.GuardedTabRuntimeEnabled = v == "true" }},
 		{key: "BUTLER_GUARDED_TAB_REQUEST_ENABLED", component: "orchestrator", typeName: "bool", defaultValue: "false", allowedValues: []string{"true", "false"}, requiresRestart: true, assign: func(v string) { cfg.GuardedTabRequestEnabled = v == "true" }},
 		{key: "BUTLER_GUARDED_TAB_OWNER_ENABLED", component: "orchestrator", typeName: "bool", defaultValue: "false", allowedValues: []string{"true", "false"}, requiresRestart: true, assign: func(v string) { cfg.GuardedTabOwnerEnabled = v == "true" }},
 		{key: "BUTLER_GUARDED_TAB_HOST", component: "orchestrator", typeName: "string", requiresRestart: true, assign: func(v string) { cfg.GuardedTabHost = strings.TrimSpace(v) }},
@@ -31,6 +32,9 @@ func validateGuardedMetadataURL(v string) error {
 }
 
 func validateGuardedTabConfig(cfg OrchestratorConfig) error {
+	if cfg.GuardedTabRuntimeEnabled && !cfg.GuardedTabRequestEnabled {
+		return fmt.Errorf("guarded runtime catalog requires owning request and recovery composition")
+	}
 	if cfg.GuardedTabRequestEnabled && (!cfg.GuardedTabOwnerEnabled || cfg.ActionAuthorityTokenFile == "") {
 		return fmt.Errorf("guarded tab requests require owner controls and private Broker authentication")
 	}
@@ -45,6 +49,12 @@ func validateGuardedTabConfig(cfg OrchestratorConfig) error {
 
 func guardedTabBrokerSpecs(cfg *ToolBrokerConfig) []fieldSpec {
 	return []fieldSpec{
+		{key: "BUTLER_GUARDED_TAB_RUNTIME_ENABLED", component: "tool-broker", typeName: "bool", defaultValue: "false", allowedValues: []string{"true", "false"}, requiresRestart: true, assign: func(v string) { cfg.GuardedTabRuntimeEnabled = v == "true" }},
+		{key: "BUTLER_GUARDED_TAB_RUNTIME_TARGET", component: "tool-broker", typeName: "string", requiresRestart: true, assign: func(v string) { cfg.GuardedTabRuntimeTarget = strings.TrimSpace(v) }},
+		{key: "BUTLER_GUARDED_TAB_RUNTIME_TOKEN_FILE", component: "tool-broker", typeName: "string", requiresRestart: true, assign: func(v string) { cfg.GuardedTabRuntimeTokenFile = strings.TrimSpace(v) }},
+		{key: "BUTLER_GUARDED_TAB_PROFILE_ID", component: "tool-broker", typeName: "string", requiresRestart: true, assign: func(v string) { cfg.GuardedTabProfileID = strings.TrimSpace(v) }},
+		{key: "BUTLER_GUARDED_TAB_HOST", component: "tool-broker", typeName: "string", requiresRestart: true, assign: func(v string) { cfg.GuardedTabRuntimeHost = strings.TrimSpace(v) }},
+		{key: "BUTLER_GUARDED_TAB_ALLOWED_ORIGINS_JSON", component: "tool-broker", typeName: "string", defaultValue: "[]", requiresRestart: true, assign: func(v string) { cfg.GuardedTabAllowedOriginsJSON = v }},
 		{key: "BUTLER_GUARDED_TAB_REQUEST_ENABLED", component: "tool-broker", typeName: "bool", defaultValue: "false", allowedValues: []string{"true", "false"}, requiresRestart: true, assign: func(v string) { cfg.GuardedTabRequestEnabled = v == "true" }},
 		{key: "BUTLER_GUARDED_TAB_REQUEST_CONTROL_URL", component: "tool-broker", typeName: "string", requiresRestart: true, validate: func(v string) error {
 			if err := validateGuardedMetadataURL(v); err != nil {

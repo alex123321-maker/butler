@@ -135,7 +135,7 @@ const control=createServer(async(req,res)=>{
   else if(req.url==='/state') {
     const state=await worker.evaluate(async(id)=>{const key='butler.guardedTab.v1:'+id;const all=await chrome.storage.local.get(key);return all[key]?.phase||'absent';},tabRef);
     let manifestLaunched=false;if(installed){try{manifestLaunched=(await readFile(join(profile,'native-launched'),'utf8'))==='launched';}catch{}}
-    res.end(JSON.stringify({phase:state,effects,nativeRequests,nativeCompleted,nativeACKs,nativeDenied,restartTabMatches,manifestLaunched}));return;
+    res.end(JSON.stringify({phase:state,effects,nativeRequests,nativeCompleted,nativeACKs,nativeDenied,guardedHeld:releaseNative!==null,restartTabMatches,manifestLaunched}));return;
   } else if(req.url!=='/effects') {res.writeHead(404);res.end();return;}
   res.end(JSON.stringify({effects}));
  } catch {res.writeHead(500);res.end(JSON.stringify({failure:phase}));}

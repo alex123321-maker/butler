@@ -2,6 +2,23 @@ package config
 
 import "testing"
 
+func TestGuardedTabRuntimeRequiresOwningComposition(t *testing.T) {
+	env := map[string]string{"BUTLER_POSTGRES_URL": "postgres://localhost:5432/test", "BUTLER_REDIS_URL": "redis://localhost:6379/0"}
+	c, _, err := loadOrchestratorLayered(envMap(env), []Setting{{Key: "BUTLER_GUARDED_TAB_RUNTIME_ENABLED", Value: "true"}})
+	if err != nil || c.GuardedTabRuntimeEnabled {
+		t.Fatal("database enabled guarded runtime", err)
+	}
+	env["BUTLER_GUARDED_TAB_RUNTIME_ENABLED"] = "true"
+	if _, _, err = loadOrchestratorLayered(envMap(env), nil); err == nil {
+		t.Fatal("runtime catalog enabled without owning requests")
+	}
+	delete(env, "BUTLER_GUARDED_TAB_RUNTIME_ENABLED")
+	b, _, err := loadToolBroker(envMap(env))
+	if err != nil || b.GuardedTabRuntimeEnabled {
+		t.Fatal("runtime unexpectedly enabled", err)
+	}
+}
+
 func TestGuardedTabOwnerTopologyRequiresOperatorAndPrivateDestination(t *testing.T) {
 	env := map[string]string{"BUTLER_POSTGRES_URL": "postgres://localhost:5432/test", "BUTLER_REDIS_URL": "redis://localhost:6379/0"}
 	settings := []Setting{{Key: "BUTLER_GUARDED_TAB_OWNER_ENABLED", Value: "true"}, {Key: "BUTLER_GUARDED_TAB_METADATA_URL", Value: "https://attacker.invalid/metadata"}}

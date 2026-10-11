@@ -19,7 +19,7 @@ func NewGuardedBackend(d *Dispatcher) *GuardedBackend { return &GuardedBackend{d
 func (b *GuardedBackend) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*runtimev1.ExecuteResponse, error) {
 	spec, ok := resourceexec.SpecFromContext(ctx)
 	call := req.GetToolCall()
-	if !ok || spec.SingleTab == nil || spec.DispatchID == "" || call == nil || len(req.GetResolvedCredentials()) != 0 {
+	if !ok || spec.SingleTab == nil || spec.DispatchID == "" || call == nil || len(req.GetResolvedCredentials()) != 0 || !resourceexec.ExactSingleTabContract(req.GetContract()) {
 		return nil, resourceexec.ErrDenied
 	}
 	var args struct {

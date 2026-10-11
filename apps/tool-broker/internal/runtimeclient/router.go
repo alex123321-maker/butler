@@ -36,7 +36,7 @@ func New(log *slog.Logger) *Router {
 func (r *Router) SetTargetAuthentication(target, token string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if target == "" || len(token) < 32 || r.conns[target] != nil {
+	if target == "" || len(token) < 32 || r.conns[target] != nil || r.tokens[target] != "" && r.tokens[target] != token {
 		return fmt.Errorf("invalid runtime authentication configuration")
 	}
 	r.tokens[target] = token
@@ -130,7 +130,7 @@ func (r *Router) clientFor(target string) (runtimev1.ToolRuntimeServiceClient, e
 	}
 	options := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	if token := r.tokens[target]; token != "" {
-		options = append(options, grpc.WithPerRPCCredentials(actionauth.ServiceTokenCredentials{Token: token}))
+		options = append(options, grpc.WithNoProxy(), grpc.WithPerRPCCredentials(actionauth.ServiceTokenCredentials{Token: token}))
 	}
 	conn, err := grpc.NewClient(target, options...)
 	if err != nil {

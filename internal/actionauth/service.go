@@ -99,6 +99,9 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	if call.GetToolName() == "single_tab.bind.guarded" && (c.TaskID == "" || !c.GuardedTabRequestReady) {
 		return b, false, fmt.Errorf("guarded tab request composition is unavailable")
 	}
+	if contract.GetContractRevision() == "guarded-1" && (call.GetToolName() == "single_tab.status" || call.GetToolName() == "single_tab.click") && (c.TaskID == "" || !c.GuardedTabRuntimeReady) {
+		return b, false, fmt.Errorf("guarded tab runtime composition is unavailable")
+	}
 	if call.GetToolName() == "task.delegate_converter" && (c.TaskID == "" || !c.DelegationReady || !c.ConverterDelegationReady || !c.ConverterLifecycleReady) {
 		return b, false, delegation.ErrDenied
 	}

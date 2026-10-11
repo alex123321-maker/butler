@@ -36,11 +36,12 @@ import (
 
 type resourceReader struct {
 	*authFixture
-	pool *pgxpool.Pool
+	pool         *pgxpool.Pool
+	guardedReady bool
 }
 
 func (r resourceReader) GetActionContext(ctx context.Context, id string) (actionauth.ContextSnapshot, error) {
-	c := actionauth.ContextSnapshot{RunID: id, AutonomyMode: 3}
+	c := actionauth.ContextSnapshot{RunID: id, AutonomyMode: 3, GuardedTabRuntimeReady: r.guardedReady}
 	e := r.pool.QueryRow(ctx, `SELECT r.current_state,r.session_key,s.user_id,r.task_id,t.revision,r.task_revision,t.constraints_revision,t.status,o.lease_id,o.fence_epoch,o.expires_at FROM runs r JOIN sessions s USING(session_key) JOIN tasks t ON t.task_id=r.task_id JOIN session_ownership o ON o.session_key=r.session_key WHERE r.run_id=$1 AND o.run_id=r.run_id`, id).Scan(&c.RunState, &c.SessionKey, &c.OwnerID, &c.TaskID, &c.TaskRevision, &c.PinnedTaskRevision, &c.ConstraintsRevision, &c.TaskStatus, &c.LeaseID, &c.LeaseEpoch, &c.LeaseExpiresAt)
 	return c, e
 }
@@ -262,7 +263,7 @@ func resourceBroker(t *testing.T, backend *resourcePageBackend, loseReceipt bool
 	if e != nil {
 		t.Fatal(e)
 	}
-	reader := resourceReader{newAuthFixture(), pool}
+	reader := resourceReader{authFixture: newAuthFixture(), pool: pool}
 	auth := actionauth.NewPostgresStore(pool)
 	auth.SetBudgets(c)
 	auth.SetRunDataGuard(source)

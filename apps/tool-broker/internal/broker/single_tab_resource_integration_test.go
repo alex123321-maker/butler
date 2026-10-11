@@ -48,10 +48,7 @@ func singleTabBrokerWithGuard(t *testing.T, backend resourceexec.RuntimeBackend,
 		t.Fatal(e)
 	}
 	target := listener.Addr().String()
-	contracts := []*toolbrokerv1.ToolContract{
-		{ToolName: "single_tab.status", ContractRevision: "guarded-1", RuntimeTarget: target, ToolClass: "single_tab", Status: "enabled", InputSchemaJson: `{"type":"object","required":["session_id"],"properties":{"session_id":{"type":"string"}},"additionalProperties":false}`, OutputSchemaJson: `{"type":"object"}`},
-		{ToolName: "single_tab.click", ContractRevision: "guarded-1", RuntimeTarget: target, ToolClass: "single_tab", Status: "enabled", InputSchemaJson: `{"type":"object","required":["session_id","observation_id","selector"],"properties":{"session_id":{"type":"string"},"observation_id":{"type":"string"},"selector":{"type":"string"}},"additionalProperties":false}`, OutputSchemaJson: `{"type":"object"}`},
-	}
+	contracts := resourceexec.SingleTabContracts(target)
 	hashes := map[string]string{}
 	for _, c := range contracts {
 		hashes[c.ToolName], _ = actionauth.ContractHash(c)
@@ -97,6 +94,12 @@ func singleTabBrokerWithGuard(t *testing.T, backend resourceexec.RuntimeBackend,
 			t.Fatal("fixture token file unavailable")
 		}
 		_, _, metadataURL := start(target, endpoint.URL, file)
+		if e = resourceexec.CheckSingleTabReadiness(context.Background(), target, "actual-fixed-host", token); e != nil {
+			t.Fatal("installed native contract readiness denied", e)
+		}
+		if resourceexec.CheckSingleTabReadiness(context.Background(), target, "replacement-host", token) == nil {
+			t.Fatal("installed native host accepted replacement identity")
+		}
 		metadata, e = singletabcontrol.NewMetadataClient(metadataURL, token)
 		if e != nil {
 			t.Fatal(e)
@@ -155,7 +158,7 @@ func singleTabBrokerWithGuard(t *testing.T, backend resourceexec.RuntimeBackend,
 	if e != nil {
 		t.Fatal(e)
 	}
-	reader := resourceReader{newAuthFixture(), pool}
+	reader := resourceReader{authFixture: newAuthFixture(), pool: pool, guardedReady: true}
 	auth := actionauth.NewPostgresStore(pool)
 	auth.SetBudgets(budgets)
 	auth.SetRunDataGuard(source)

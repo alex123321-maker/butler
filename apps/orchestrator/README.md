@@ -1,5 +1,12 @@
 # Orchestrator
 
+Separate operator-only `BUTLER_GUARDED_TAB_RUNTIME_ENABLED` defaults false and
+requires the guarded request/recovery composition. The private owning action
+projection gates guarded status/click discovery and preparation with a current
+task. Broker independently verifies its installed runtime, exact contracts,
+origin policy, resources and budgets. This flag does not start a native host or
+settle an uncertain browser effect.
+
 Optional guarded tab owner decisions use `POST /api/v3/tab-choices/{approval_id}/select`
 with only `candidate_token`, or `/revoke` with `{}`. Bearer owner proof is
 mandatory; claimed actor/host/tab/lease fields cannot supply authority. Existing
