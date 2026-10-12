@@ -12,6 +12,12 @@ and [runner instructions](../../cmd/command-observe/README.md) preserve signed V
 data/scoring. The new 45-case fixture is candidate contract validation, not an
 independent model-quality holdout or replacement for the reviewed 240 cases.
 
+`cloud_observation.go` and `cmd/cloud-observe` add a separate explicit cloud shadow
+profile without weakening the local-weight scorer. Its [protocol and frozen policy](../../cmd/cloud-observe/README.md)
+retain unknown proprietary weights/remote resources, per-attempt total thinking
+usage, opaque inputs and complete single/multiple-context accounting. Fixture
+outputs cannot establish actual model quality or release authority.
+
 `scripts/dev/fault-lab.ps1 -Profile Full` synchronizes only an isolated agent root
 and invokes `fault-lab.sh` there. It creates its own internal Docker network,
 PostgreSQL and Redis with synthetic credentials, one database per package, and
