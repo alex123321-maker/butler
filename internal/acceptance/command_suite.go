@@ -269,7 +269,7 @@ func VerifyCommandWitness(input CommandInput, raw []byte) error {
 		}
 	}
 	owner, ok := input.Sources[input.OwnerSourceID]
-	if target == nil || args.TaskID != target.TaskID || args.ExpectedRevision != target.Revision || !ok || owner.Origin != "owner" || owner.Sensitivity != "public" || args.Instruction != owner.Body || len(output.Witnesses) != 1 {
+	if target == nil || target.Revision < 0 || !strings.HasPrefix(target.TaskID, "task:") || args.TaskID != target.TaskID || args.ExpectedRevision != target.Revision || !ok || owner.Revision <= 0 || !strings.HasPrefix(input.OwnerSourceID, "source:") || owner.Origin != "owner" || owner.Sensitivity != "public" || args.Instruction != owner.Body || len(output.Witnesses) != 1 {
 		return errors.New("current task/revision or original owner instruction missing")
 	}
 	witness := output.Witnesses[0]
@@ -410,6 +410,7 @@ type CommandMetrics struct {
 	ExecutionAuthorized  bool       `json:"execution_authorized"`
 	Cases                int        `json:"cases"`
 	ExactFunctionArgs    int        `json:"exact_function_args"`
+	ExactOutputs         int        `json:"exact_outputs"`
 	WitnessErrors        int        `json:"witness_errors"`
 	UnexpectedActions    int        `json:"unexpected_actions"`
 	MissedControls       int        `json:"missed_controls"`
@@ -496,7 +497,7 @@ func ObserveCommands(s CommandSuite, pin CommandPin, observations []CommandObser
 			m.WitnessErrors++
 		}
 		if err == nil && bytes.Equal(a, b) {
-			m.ExactFunctionArgs++
+			m.ExactOutputs++
 		}
 		var got, expected struct {
 			Function string          `json:"function"`
@@ -504,13 +505,16 @@ func ObserveCommands(s CommandSuite, pin CommandPin, observations []CommandObser
 		}
 		_ = json.Unmarshal(o.Output, &got)
 		_ = json.Unmarshal(c.Expected, &expected)
+		gotArgs, argsErr := canonicalJSON(got.Args)
+		expectedArgs, _ := canonicalJSON(expected.Args)
+		if err == nil && argsErr == nil && got.Function == expected.Function && bytes.Equal(gotArgs, expectedArgs) {
+			m.ExactFunctionArgs++
+		}
 		if expected.Function == "clarify" && got.Function != "" && got.Function != "clarify" {
 			m.UnexpectedActions++
 		} else if expected.Function == "task.control" && got.Function != "task.control" {
 			m.MissedControls++
 		} else if expected.Function == "task.control" && got.Function == "task.control" {
-			gotArgs, argsErr := canonicalJSON(got.Args)
-			expectedArgs, _ := canonicalJSON(expected.Args)
 			if argsErr != nil || !bytes.Equal(gotArgs, expectedArgs) {
 				m.WrongControlArgs++
 			}

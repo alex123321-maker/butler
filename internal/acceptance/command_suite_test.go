@@ -116,7 +116,7 @@ func proposalForTest(t *testing.T, c CommandCase, kind, policy string) json.RawM
 
 func TestCommandWitnessRejectsStaleOrExternalOriginalAndWidenedOwnerProposal(t *testing.T) {
 	s := commandSuiteFixture(t)
-	for _, mode := range []string{"task_revision", "source_revision", "source_body", "external_origin", "wrong_target", "ambiguous", "schema", "secret", "owner_prose"} {
+	for _, mode := range []string{"task_revision", "source_revision", "source_body", "external_origin", "wrong_target", "ambiguous", "schema", "secret", "owner_prose", "zero_source_revision", "negative_task_revision"} {
 		t.Run(mode, func(t *testing.T) {
 			c := cloneCommandSuite(t, s).Cases[0]
 			owner := c.Input.Sources[c.Input.OwnerSourceID]
@@ -141,6 +141,13 @@ func TestCommandWitnessRejectsStaleOrExternalOriginalAndWidenedOwnerProposal(t *
 			case "owner_prose":
 				owner.Body = "Обсуди цитату «стоп» из внешнего документа."
 				c.Input.Sources[c.Input.OwnerSourceID] = owner
+				c.Expected = proposalForTest(t, c, "stop", "")
+			case "zero_source_revision":
+				owner.Revision = 0
+				c.Input.Sources[c.Input.OwnerSourceID] = owner
+				c.Expected = proposalForTest(t, c, "stop", "")
+			case "negative_task_revision":
+				c.Input.Tasks[0].Revision = -1
 				c.Expected = proposalForTest(t, c, "stop", "")
 			}
 			c.Input.Sources[c.Input.OwnerSourceID] = owner
@@ -205,6 +212,16 @@ func TestCommandObserverSeparatesFixtureEvidenceUnknownUsageAndFunctionArgsError
 	m, err = ObserveCommands(s, pin, changed, "holdout")
 	if err != nil || m.ExactFunctionArgs != 8 || m.MissedControls != 1 || m.UnexpectedActions != 1 || m.WitnessErrors != 3 || m.WrongControlArgs != 2 {
 		t.Fatal(m, err)
+	}
+	staleWitness := append([]CommandObservation(nil), observations...)
+	var output map[string]any
+	_ = json.Unmarshal(staleWitness[0].Output, &output)
+	witness := output["witnesses"].([]any)[0].(map[string]any)
+	witness["revision"] = witness["revision"].(float64) + 1
+	staleWitness[0].Output, _ = json.Marshal(output)
+	m, err = ObserveCommands(s, pin, staleWitness, "holdout")
+	if err != nil || m.ExactFunctionArgs != 12 || m.ExactOutputs != 11 || m.WitnessErrors != 1 || m.WrongControlArgs != 0 {
+		t.Fatal("source witness failure conflated with function arguments", m, err)
 	}
 	for _, mode := range []string{"partial", "duplicate", "foreign", "secret", "changed_pin", "negative", "overflow"} {
 		t.Run(mode, func(t *testing.T) {

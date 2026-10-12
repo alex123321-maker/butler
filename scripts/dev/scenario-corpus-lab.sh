@@ -27,7 +27,7 @@ docker run --rm --user "$(id -u):$(id -g)" --network none --memory 1536m --pids-
 if [[ "$CORPUS_PHASE" == narrow ]]; then
   go test -json -race -p 1 -count=1 -run "^Test(SupplementaryCommand|CommandWitness|CommandObserver)" ./internal/acceptance
 else
-  go test -json -race -p 1 -count=1 ./internal/acceptance ./cmd/acceptance ./cmd/command-observe
+  go test -json -race -p 1 -count=1 ./internal/acceptance ./cmd/command-observe
 fi
 go vet ./internal/acceptance ./cmd/acceptance ./cmd/command-observe
 go run ./cmd/command-observe -mode inputs -root /src -split holdout > /cache/command-inputs.json

@@ -58,7 +58,8 @@ Every observation requires `case_id`, raw JSON `output`, measured `milliseconds`
 remain unknown, separately counted from known subtotals/peak. Missing, duplicate,
 foreign, secret, negative and overflowing observations fail. Wrong function/args,
 stale witnesses, unexpected action proposals, missed controls and malformed JSON
-have separate counts. These are proposal errors, not actual permission failures,
+have separate counts; `exact_function_args` remains separate from `exact_outputs`
+and witness failures. These are proposal errors, not actual permission failures,
 verified task outcomes or effects. Scripted timings are not model latency.
 
 Observation/hardware files must be bounded private regular files. New report
