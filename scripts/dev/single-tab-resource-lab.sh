@@ -10,7 +10,8 @@ proof="$root/reports/single-tab-$run_id"
 name="butler-single-tab-$run_id"
 network="$name-net"
 umask 077
-mkdir -p "$proof/postgres" "$proof/chrome-tmp" "$proof/go-tmp" "$root/.cache"
+mkdir -p "$proof/postgres" "$proof/chrome-tmp" "$proof/go-tmp" "$proof/binaries" "$root/.cache"
+chmod 755 "$proof/binaries"
 export DOCKER_CONFIG="$root/.cache/docker"
 created_pg=false; created_network=false
 cleanup(){
@@ -38,14 +39,14 @@ docker run --rm --user "$(id -u):$(id -g)" --network none --memory 1536m --cpus 
  --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp --env TMPDIR=/private-tmp \
  golang:1.27.2-bookworm go test -json -race -p=1 -count=1 -timeout=120s ./apps/browser-bridge/... > "$proof/bridge-race.jsonl"
 docker run --rm --user "$(id -u):$(id -g)" --network none --memory 1536m --cpus 2 \
- --volume "$source_dir:/src:ro" --volume /srv/storage/butler/.cache:/cache --volume "$root/.cache:/proof-cache" --workdir /src \
+ --volume "$source_dir:/src:ro" --volume /srv/storage/butler/.cache:/cache --volume "$proof/binaries:/proof-cache" --workdir /src \
  --env CGO_ENABLED=0 --env GOCACHE=/cache/go-build --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp \
- golang:1.27.2-bookworm bash -c 'go build -o /proof-cache/guarded-native-host ./apps/browser-bridge/cmd/guarded && go test -c -o /proof-cache/single-tab-broker.test ./apps/tool-broker/internal/broker'
+ golang:1.27.2-bookworm bash -eu -c 'go build -o /proof-cache/guarded-native-host ./apps/browser-bridge/cmd/guarded; go test -c -o /proof-cache/single-tab-broker.test ./apps/tool-broker/internal/broker; chmod 555 /proof-cache/guarded-native-host /proof-cache/single-tab-broker.test'
 # Only this uniquely named temporary fixture directory is made writable by the
 # existing browser image UID. It contains no user account/profile or credential.
 docker run --rm --network none --user 0 --volume "$proof/chrome-tmp:/owned-tmp" --entrypoint sh butler-lab-tool-browser -c 'chown 10001:10001 /owned-tmp; chmod 700 /owned-tmp'
 docker run --rm --user 10001:10001 --network "$network" --memory 1536m --pids-limit 256 --cpus 2 \
- --security-opt no-new-privileges:true --volume "$source_dir:/src:ro" --volume "$root/.cache:/proof-cache:ro" \
+ --security-opt no-new-privileges:true --volume "$source_dir:/src:ro" --volume "$proof/binaries:/proof-cache:ro" \
  --volume "$proof/chrome-tmp:/tmp" --workdir /src/apps/tool-broker/internal/broker \
  --env DISPLAY=:91 --env BUTLER_SINGLE_TAB_E2E=1 --env BUTLER_SINGLE_TAB_HOST_BINARY=/proof-cache/guarded-native-host \
  --env BUTLER_SINGLE_TAB_FIXTURE_SCRIPT=/src/apps/browser-bridge/scripts/guarded_chromium_fixture.mjs \
