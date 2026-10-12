@@ -52,6 +52,17 @@ zero failures and zero skips. Events SHA256:
 The earlier focused proof is report `narrow-20261012T073805Z-510330`, events
 SHA256 `cd306984c1a7a84a55718cdccead00d8e3bac974b06661c26f9831bde5801903`.
 
+`TestInitiativeHighOwningBindingsZeroInferenceE2E` additionally selects the
+explicit High context while retaining the clearly scripted transport. At every
+actual ordinary Start/Submit entry, the native route's current task/initiative/
+source/goal/mandate SQL binding must accept the promoted run. Neither the native
+provider nor attempt reservation is called: the native counter stays at41 with
+zero journal rows. Together with the unowned-route rejection, projection and
+ordinary fixture tests it passed four focused PG/race tests and vet in snapshot
+`20261012-145057-601`, report `narrow-20261012T075103Z-559800`, zero skips.
+Events SHA256: `138d5278976b7fb5f4786393266969b6e204560bcf9e93ccddd0093152710386`.
+This checks route composition, not live High acceptance.
+
 Run `scripts/dev/initiative-lab.sh <isolated-agent-root> broad` from a read-only
 source snapshot populated by `scripts/dev/lab.ps1 -Action Sync`. It builds the
 three actual-process binaries, runs the app fixture and all initiative tests

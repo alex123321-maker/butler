@@ -9,10 +9,13 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/butler/butler/internal/extensions/projectfixture"
 	"github.com/butler/butler/internal/security/egress/egresstest"
 	"github.com/butler/butler/internal/transport"
+	"github.com/butler/butler/internal/transport/antigravity"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // Fixed component transport, never generation acceptance. Every returned tool
@@ -23,6 +26,8 @@ type initiativeProjectScriptedProvider struct {
 	phase    int
 	artifact string
 	entries  atomic.Int32
+	// Optional read-only entry assertion; it forwards no native request.
+	beforeEntry func(context.Context, string) error
 }
 
 func (*initiativeProjectScriptedProvider) Name() string                    { return "fixture" }
@@ -42,7 +47,7 @@ func (p *initiativeProjectScriptedProvider) proposal(run, call, tool string, arg
 	raw, _ := json.Marshal(args)
 	return initiativeProjectStream(transport.NewToolCallRequestedEvent(run, p.Name(), transport.ToolCallRequest{ToolCallRef: call, ToolName: tool, ArgsJSON: string(raw), SequenceNo: p.phase}))
 }
-func (p *initiativeProjectScriptedProvider) StartRun(_ context.Context, request transport.StartRunRequest) (transport.EventStream, error) {
+func (p *initiativeProjectScriptedProvider) StartRun(ctx context.Context, request transport.StartRunRequest) (transport.EventStream, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if p.phase != 0 || request.Context.ProviderSessionRef != nil {
@@ -54,6 +59,11 @@ func (p *initiativeProjectScriptedProvider) StartRun(_ context.Context, request 
 	}
 	if len(names) != 3 || !names["extension.project.inspect"] || !names["extension.project.prepare-patch"] || !names["extension.project.check"] {
 		return nil, errors.New("exact initiative tools unavailable")
+	}
+	if p.beforeEntry != nil {
+		if err := p.beforeEntry(ctx, request.Context.RunID); err != nil {
+			return nil, err
+		}
 	}
 	p.entries.Add(1)
 	p.phase, p.run = 1, request.Context.RunID
@@ -78,7 +88,7 @@ func initiativeProjectToolBody(raw string) (map[string]any, error) {
 	}
 	return body, nil
 }
-func (p *initiativeProjectScriptedProvider) SubmitToolResult(_ context.Context, request transport.SubmitToolResultRequest) (transport.EventStream, error) {
+func (p *initiativeProjectScriptedProvider) SubmitToolResult(ctx context.Context, request transport.SubmitToolResultRequest) (transport.EventStream, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if request.RunID != p.run {
@@ -87,6 +97,11 @@ func (p *initiativeProjectScriptedProvider) SubmitToolResult(_ context.Context, 
 	body, err := initiativeProjectToolBody(request.ToolResultJSON)
 	if err != nil {
 		return nil, err
+	}
+	if p.beforeEntry != nil {
+		if err := p.beforeEntry(ctx, request.RunID); err != nil {
+			return nil, err
+		}
 	}
 	p.entries.Add(1)
 	switch p.phase {
@@ -171,5 +186,39 @@ func TestInitiativeProjectFinalProjection(t *testing.T) {
 		if initiativeProjectFinal(bad, "artifact") == nil {
 			t.Fatal("invalid projection accepted")
 		}
+	}
+}
+
+// The context selects explicit High, but the transport is entirely scripted.
+// This proves the current SQL route binding on the actual promoted ordinary
+// task. Neither the native provider nor limiter.reserve is invoked.
+func TestInitiativeHighOwningBindingsZeroInferenceE2E(t *testing.T) {
+	provider := &initiativeProjectScriptedProvider{}
+	var checks atomic.Int32
+	runInitiativeProjectAcceptance(t, func(ctx context.Context, pool *pgxpool.Pool, taskID string) (transport.ModelProvider, error) {
+		limit, err := newInitiativeHighLimiter(ctx, pool)
+		if err != nil {
+			return nil, err
+		}
+		guard := &initiativeHighProvider{limit: limit, taskID: taskID}
+		provider.beforeEntry = func(live context.Context, runID string) error {
+			if !guard.ownsRun(live, runID) {
+				return errors.New("actual promoted Core run failed native route provenance")
+			}
+			checks.Add(1)
+			return nil
+		}
+		t.Cleanup(func() {
+			bounded, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			var total, attempts int
+			if err := pool.QueryRow(bounded, `SELECT attempts,(SELECT count(*) FROM fixture_initiative_native_attempts) FROM fixture_initiative_native_limit`).Scan(&total, &attempts); err != nil || total != 41 || attempts != 0 {
+				t.Error("scripted owning route proof spent native allowance")
+			}
+		})
+		return provider, nil
+	}, antigravity.Name, antigravity.FlashHighModel)
+	if checks.Load() != 4 || provider.entries.Load() != 4 {
+		t.Fatal("exact four ordinary scripted entries were not provenance-checked")
 	}
 }

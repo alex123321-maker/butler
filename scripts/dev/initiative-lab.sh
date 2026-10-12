@@ -27,7 +27,7 @@ export BUTLER_EXTENSION_E2E=1
 export BUTLER_BROKER_E2E_BINARY=/proof/tool-broker
 export BUTLER_EXTENSION_E2E_BINARY=/proof/tool-extension.test
 export BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=postgres://fixture:initiative-fixture@postgres:5432/butler_initiative_test?sslmode=disable
-go tool test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /proof/orchestrator.test -test.v -test.timeout=180s -test.run "^TestInitiativeProject(FinalProjection|ChecksRealBrokerE2E)$" > /proof/events.jsonl
+go tool test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /proof/orchestrator.test -test.v -test.timeout=180s -test.run "^TestInitiative(HighOwningBindingsZeroInferenceE2E|HighProviderRejectsUnownedRunIntegration|Project(FinalProjection|ChecksRealBrokerE2E))$" > /proof/events.jsonl
 if [[ "$MODE" == broad ]]; then
 go test -json -race -p 1 -count=1 ./apps/orchestrator/internal/initiative >> /proof/events.jsonl
 fi

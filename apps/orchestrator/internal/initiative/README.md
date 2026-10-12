@@ -78,6 +78,9 @@ the current owner goal/mandate, identical finite Core/Broker budget policy and
 current Catalog pins. The optional provider factory receives only the promoted
 task ID. It grants no source access, action permission or verification authority.
 Native callers must retain their separate attempt window.
+The owning-route zero-inference preflight selects explicit High but retains a
+scripted transport, checks the native SQL binding at all four ordinary entries
+and leaves the separate native attempt counter unchanged.
 
 Daily schedules skip nonexistent local minutes, choose the first repeated minute
 and deduplicate on calendar date. Interval schedules retain their phase. Downtime
