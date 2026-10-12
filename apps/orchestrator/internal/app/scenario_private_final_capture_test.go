@@ -123,10 +123,11 @@ func capturePrivateFinal(private string, ordinal int, content string) (privateFi
 // deltas, thoughts, signatures and provider transport frames are never stored.
 type privateFinalCaptureProvider struct {
 	transport.ModelProvider
-	private  string
-	ordinal  int
-	mu       sync.Mutex
-	metadata *privateFinalMetadata
+	private       string
+	ordinal       int
+	mu            sync.Mutex
+	metadata      *privateFinalMetadata
+	captureFailed bool
 }
 
 func (p *privateFinalCaptureProvider) finalMetadata() *privateFinalMetadata {
@@ -137,6 +138,12 @@ func (p *privateFinalCaptureProvider) finalMetadata() *privateFinalMetadata {
 	}
 	copy := *p.metadata
 	return &copy
+}
+
+func (p *privateFinalCaptureProvider) captureFailure() bool {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.captureFailed
 }
 
 func (*privateFinalCaptureProvider) ContinueRun(context.Context, transport.ContinueRunRequest) (transport.EventStream, error) {
@@ -167,36 +174,20 @@ func (p *privateFinalCaptureProvider) StartRun(ctx context.Context, req transpor
 					seen := p.metadata != nil
 					p.mu.Unlock()
 					if seen {
-						failed := transport.NewTransportErrorEvent(req.Context.RunID, p.Name(), &transport.Error{Type: transport.ErrorTypeProviderProtocolError})
-						failed.Usage, failed.ProviderModelVersion = event.Usage, event.ProviderModelVersion
-						if failed.Usage == nil {
-							failed.Usage = event.AssistantFinal.Usage
-						}
-						select {
-						case out <- failed:
-						case <-ctx.Done():
-						}
-						return
-					}
-					m, captureErr := capturePrivateFinal(p.private, p.ordinal, event.AssistantFinal.Content)
-					p.mu.Lock()
-					p.metadata = &m
-					p.mu.Unlock()
-					if captureErr != nil {
-						failed := transport.NewTransportErrorEvent(req.Context.RunID, p.Name(), &transport.Error{Type: transport.ErrorTypeProviderProtocolError})
-						failed.Usage, failed.ProviderModelVersion = event.Usage, event.ProviderModelVersion
-						if failed.Usage == nil {
-							failed.Usage = event.AssistantFinal.Usage
-						}
-						event = failed
+						p.mu.Lock()
+						p.captureFailed = true
+						p.mu.Unlock()
+					} else {
+						m, captureErr := capturePrivateFinal(p.private, p.ordinal, event.AssistantFinal.Content)
+						p.mu.Lock()
+						p.metadata = &m
+						p.captureFailed = captureErr != nil
+						p.mu.Unlock()
 					}
 				}
 				select {
 				case out <- event:
 				case <-ctx.Done():
-					return
-				}
-				if event.EventType == transport.EventTypeTransportError {
 					return
 				}
 			}
@@ -215,6 +206,7 @@ func TestScenarioPrivateFinalCaptureEncodingBoundsAndMetadataPrivacy(t *testing.
 		{"duplicate", `{"a":1,"\u0061":2}`, "duplicate_key"},
 		{"nested_duplicate", `{"x":[{"a":1,"a":2}]}`, "duplicate_key"},
 		{"depth", strings.Repeat(`{"x":`, 65) + `0` + strings.Repeat(`}`, 65), "depth_bound"},
+		{"depth64", strings.Repeat(`{"x":`, 64) + `0` + strings.Repeat(`}`, 64), "json_object"},
 		{"utf8", string([]byte{'{', '"', 'x', '"', ':', '"', 0xff, '"', '}'}), "invalid_utf8"},
 		{"visible", strings.Repeat("x", 8193), "visible_bound"},
 	} {
