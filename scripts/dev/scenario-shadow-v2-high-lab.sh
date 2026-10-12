@@ -65,9 +65,6 @@ if [[ "$phase" == prepare ]]; then
   for file in orchestrator.test tls-prerequisite; do cmp -s "$proof/binaries/$file" "$pin_binaries/$file"; done
 fi
 review=/srv/storage/butler/reviews/issue33-20261012-v2
-cp "$review/public-key.hex" "$proof/metadata/public-key.hex"
-cp "$review/approval.json" "$proof/metadata/approval.json"
-cp "$review/candidate-files/testdata/acceptance/ru-cloud-fresh-v2.json" "$proof/metadata/frozen-corpus.json"
 go_image=$(docker image inspect golang:1.27.2-bookworm --format '{{.Id}}')
 pg_image=$(docker image inspect pgvector/pgvector:pg17 --format '{{.Id}}')
 lscpu --json --extended=CPU,CORE,SOCKET,NODE,ONLINE > "$proof/hardware-cpu.json"
@@ -77,6 +74,11 @@ printf '{"kernel":"%s","logical_cpus":%s,"host_ram_kib":%s,"cpu_manifest_sha256"
 # Reject hardware/image drift below after chown: both private directories
 # belong to10001, and comparison still precedes any authentication.
 docker run --rm --network none --user 0:0 --volume "$proof/runtime:/private" --volume "$proof/metadata:/metadata" alpine:3.22 sh -eu -c 'chown -R 10001:10001 /private /metadata; chmod 700 /private /metadata; chmod 600 /metadata/*'
+docker run --rm --network none --user 10001:10001 --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+  --volume "$review/public-key.hex:/review/public-key.hex:ro" --volume "$review/approval.json:/review/approval.json:ro" \
+  --volume "$review/candidate-files/testdata/acceptance/ru-cloud-fresh-v2.json:/review/frozen-corpus.json:ro" \
+  --volume "$proof/metadata:/metadata" alpine:3.22 sh -eu -c '
+for file in public-key.hex approval.json frozen-corpus.json; do cp "/review/$file" "/metadata/$file"; chmod 600 "/metadata/$file"; done'
 if [[ "$phase" != prepare ]]; then
   docker run --rm --network none --user 10001:10001 --read-only --cap-drop ALL --security-opt no-new-privileges:true \
     --volume "$proof/metadata:/actual:ro" --volume "$prepared/metadata:/prepared:ro" alpine:3.22 sh -eu -c '

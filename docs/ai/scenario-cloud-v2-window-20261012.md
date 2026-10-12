@@ -20,6 +20,8 @@ The first synthetic PostgreSQL run at `/srv/storage/butler/agents/scenario-shado
 
 After this correction and the independent synthesis provenance fix, the actual PostgreSQL/synthetic sampler/API/CLI race/vet run passed at `/srv/storage/butler/agents/scenario-shadow-v2-tests/reports/tool-turn-usage-20261012T133729Z-1751557`; `tests.jsonl` SHA256 is `0ed1f2d5cfd42eaaaf8ec5201254658b4ddc674d0c41bff28ab42b7c1b235f05`. Native calls and historical backfills: zero. Final admission additionally requires green preparation on the exact committed combined source and independent protocol review.
 
+The first combined-source preparation at `/srv/storage/butler/agents/scenario-shadow-v2-high-20261012/reports/shadow-prepare-20261012T134936Z-1789975` completed unit/build checks but failed while the SSH user copied the UID10001-private external public approval files. This pre-authentication failure is retained and charged zero inference. The runner now copies only the three explicitly named public/corpus artifacts through a network-none UID10001 helper into UID10001 metadata. It does not widen review-directory permissions or mount the reviewer's private key.
+
 ## Interpretation and completion
 
 Strict quality thresholds stay90% overall and85% per kind in every split, with the original safety, witness, malformed-output, transport and latency gates. All236 quality cases and16 comparison calls must be present once, with known full measured costs. Four comparisons do not establish statistical superiority. Public synthetic data, correlated examples and shared administrator host are explicit limitations; proprietary weights, remote hardware/RAM, effort and incremental invoice remain unavailable, never zero.
