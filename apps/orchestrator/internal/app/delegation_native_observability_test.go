@@ -18,15 +18,18 @@ import (
 	"testing"
 	"time"
 
+	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	"github.com/butler/butler/apps/orchestrator/internal/goal"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
+	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/apps/orchestrator/internal/tools"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/delegation"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	"github.com/butler/butler/internal/ingress"
+	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -204,6 +207,7 @@ func TestNativeDelegationScriptedOwnedObservabilityIntegration(t *testing.T) {
 			go func() { done <- worker.Run(workerCtx) }()
 			path := nativeAuditTestPath(t, "scripted-"+c.name)
 			var audit nativeOwnedAudit
+			ownerStopped := false
 			// This defer executes before memorytest t.Cleanup even after t.Fatal.
 			// First stop/wait every actual owning worker, then capture/export.
 			defer func() {
@@ -245,6 +249,31 @@ func TestNativeDelegationScriptedOwnedObservabilityIntegration(t *testing.T) {
 			if snapshots != expected || confirmed != expected || attempts != nativeDelegationPriorAttempts || provider.parentStarts.Load() != 1 || provider.continuations.Load() != int32(expected) || !c.deny && provider.childEntries.Load() != int32(c.width) {
 				t.Fatal("scripted flow did not traverse exact actual admission boundaries")
 			}
+			if c.width == 2 && !c.deny {
+				// Both actual core entries failed without a child final. A separate
+				// authenticated owner Stop must durably terminate the branch rather
+				// than letting process shutdown imply task/delegation cancellation.
+				var failed int
+				if f.pool.QueryRow(ctx, `SELECT count(*) FROM runs r JOIN tasks t USING(task_id) WHERE t.parent_task_id=$1 AND r.status='failed' AND NOT EXISTS(SELECT 1 FROM run_final_results z WHERE z.run_id=r.run_id)`, parent.TaskID).Scan(&failed) != nil || failed != 2 {
+					t.Fatal("actual failed-child/no-final baseline unavailable")
+				}
+				leases := session.NewPostgresLeaseManager(f.pool)
+				controls := task.NewController(f.tasks, leases.Authority(), leases, runservice.NewPostgresRepository(f.pool), approvals.NewPostgresRepository(f.pool), f.inputs, transcript.NewStore(f.pool))
+				if _, err := controls.Apply(nativeOwner(ctx, "failed-provider-owner-stop", parent.SessionKey), task.ControlRequest{TaskID: parent.TaskID, ExpectedRevision: parent.Revision, Kind: task.ControlStop}); err != nil {
+					t.Fatal("actual owner stop after child provider failure denied", err)
+				}
+				var children, active int
+				if f.pool.QueryRow(ctx, `SELECT count(*) FROM tasks WHERE parent_task_id=$1 AND status='cancelled'`, parent.TaskID).Scan(&children) != nil || children != 2 || f.pool.QueryRow(ctx, `SELECT count(*) FROM accepted_inputs WHERE status IN ('queued','running')`).Scan(&active) != nil || active != 0 {
+					t.Fatal("owner stop did not durably terminate failed children/inputs")
+				}
+				if _, err := admission.Manager.Advance(nativeOwner(ctx, "failed-provider-stopped-advance", ""), parent.TaskID); err == nil {
+					t.Fatal("failed branch continued after actual owner stop")
+				}
+				if f.pool.QueryRow(ctx, `SELECT count(*) FROM action_effects WHERE state='effect_confirmed'`).Scan(&confirmed) != nil || confirmed != 2 || f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&attempts) != nil || attempts != nativeDelegationPriorAttempts {
+					t.Fatal("failed branch termination lost effects or added inference")
+				}
+				ownerStopped = true
+			}
 			// Register after the export defer was created, but cleanup callbacks
 			// always run later. It proves bytes were exported before schema DROP.
 			t.Cleanup(func() {
@@ -253,13 +282,19 @@ func TestNativeDelegationScriptedOwnedObservabilityIntegration(t *testing.T) {
 					t.Error("content-free before-cleanup export missing")
 					return
 				}
-				blocked, actions, finals := 0, 0, 0
+				blocked, actions, finals, cancelled, failedRuns := 0, 0, 0, 0, 0
 				for _, r := range audit.Rows {
 					if r.Kind == "input" && r.Status == "blocked" {
 						blocked++
 					}
 					if r.Kind == "action" && r.State == "effect_confirmed" {
 						actions++
+					}
+					if r.Kind == "input" && r.Status == "cancelled" {
+						cancelled++
+					}
+					if r.Kind == "run" && r.Status == "failed" {
+						failedRuns++
 					}
 					if r.Kind == "final" {
 						finals++
@@ -268,10 +303,10 @@ func TestNativeDelegationScriptedOwnedObservabilityIntegration(t *testing.T) {
 						}
 					}
 				}
-				if actions != expected || blocked < 1 || !c.deny && finals != 1 || c.deny && finals != 0 {
+				if actions != expected || !ownerStopped && blocked < 1 || ownerStopped && (cancelled != 2 || failedRuns != 2) || !c.deny && finals != 1 || c.deny && finals != 0 {
 					t.Error("owned export lost actual stopped boundary")
 				}
-				t.Logf("zero_inference=true width=%d actual_admissions=%d child_entry_denials=%d stopped_state_export=true audit_sha256=%s", c.width, actions, provider.childEntries.Load(), nativeAuditRef(string(b)))
+				t.Logf("zero_inference=true width=%d actual_admissions=%d child_entry_denials=%d durable_owner_stop=%t stopped_state_export=true audit_sha256=%s", c.width, actions, provider.childEntries.Load(), ownerStopped, nativeAuditRef(string(b)))
 			})
 		})
 	}

@@ -19,6 +19,15 @@ working content takes the normal clearing/publication fence. The real PG
 stale worker publication denial, fresh amendment source denial and retained
 confirmed action evidence. It uses component run/effect fixtures without inference.
 
+The app's existing `TestFullHighDelegationIndependentDecisionsWithoutInferenceIntegration`
+also checks a single shared PG/source/budget fixture across actual width1 and
+width2 Broker compositions. It independently accepts/rejects width1 via owner
+HTTP, checks current width2 reports, then applies Amend/Delete/Stop baselines and
+denials while retaining four confirmed effects. Both roots and the fresh amendment
+input are durably stopped. Existing scripted observability separately checks owner
+Stop after two failed child core entries with no child finals. These scripted
+checks prove controls and structured owning reports, not native model quality.
+
 `DelegationManager` adds atomic child/session/contract/input admission on 057.
 Its constructor requires shared budgets and every owning Session/Input/Catalog/
 policy adapter. No production delegation endpoint, Broker tool or scheduler is
