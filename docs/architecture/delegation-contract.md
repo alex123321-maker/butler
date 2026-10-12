@@ -1,9 +1,12 @@
 # Durable bounded delegation
 
-Implementation in progress for issue16. Production/model acceptance remains
-pending. Optional operator composition registers fixed context-only research
-admission, using existing input workers; no new owner endpoint is exposed.
-The shared lab deployment has not enabled this feature.
+The bounded issue16 implementation and High model acceptance are complete.
+Optional operator composition registers fixed context-only research admission
+using existing input workers and authenticated owner decisions. The shared lab
+deployment has not enabled this feature. The
+[acceptance matrix](../ai/delegation-final-high-acceptance-20261012.md) records
+actual parent receipts, child recovery, bounded parallel results and controls;
+scripted component work and retained failed reports remain explicitly separate.
 
 Session Service continues to own independent execution identities and ordering.
 Task Service owns child tasks and durable contracts. Orchestrator owns child
@@ -60,11 +63,12 @@ task revision and deadline checks repeat before model/dispatch/final publication
 The proposal source check also enforces the parent's exact scope/purpose grants
 when the authenticated owner can independently read a broader Catalog body.
 
-Pending acceptance: actual native durable separate-context scheduling through Broker,
-dependency/width/depth bounds, independent and conflicting result collection,
-parent crash and revision/stop races, resource/workspace arbitration, and an actual
-single-versus-bounded-parallel experiment using the same shared model worker.
-No criterion is satisfied by agreeing model outputs or a simulated effect.
+Accepted bounded evidence covers real Broker scheduling, separate child contexts,
+dependency/width/depth caps, source-relative conflicting observations, independent
+owner decisions, worker loss, revision/source/Stop controls and actual High
+width1 followed by width2 overlap. Broader resource/workspace arbitration, local
+research quality and a no-delegation benchmark remain issue17/33 work. Model
+agreement and simulated effects never supply an acceptance verdict.
 
 ## Owning manager component
 
@@ -155,7 +159,7 @@ The [Task README](../../apps/orchestrator/internal/task/README.md)
 documents constructor/adapters and lock order. Actual PG/source/budget tests use
 two pooled connections; no model inference/effect is claimed. The optional
 private Broker route and ordinary durable workers are composed as described
-below; the shared native model experiment remains pending. Explicit
+below; the bounded High experiment is accepted as documented above. Explicit
 selected-source context is integrated in the ordinary preparation/recovery path;
 actual Catalog and core projection/recovery checks are covered separately.
 
@@ -277,7 +281,8 @@ Stop/cancelled parents deny new observations/collection; owner metadata views ma
 still show historical records. See [attempt acceptance](../ai/delegation-attempt-acceptance.md).
 
 See [guard acceptance evidence](../ai/delegation-guard-acceptance.md) for actual
-two-connection PostgreSQL/race tests and the pending production/model criteria.
+two-connection PostgreSQL/race tests. Current bounded native High acceptance and
+the separate deployment/local-quality scope are documented in the final matrix.
 
 ## Private dispatch admission component
 
@@ -345,6 +350,7 @@ acknowledgement remains uncertain; a spent effect is not automatically replayed.
 
 The [admission acceptance audit](../ai/delegation-admission-acceptance.md) proves
 the optional composition with an actual separate Broker process and pool2 PG.
-Deployment wiring, real model scheduling and the shared-model single/parallel
-quality/resource comparison remain pending. Failed/blocked report collection
+Deployment activation and broad local quality/resource benchmarking remain
+separate. Actual High scheduling and bounded width1/width2 acceptance passed.
+Failed/blocked report collection
 continues requiring the separate historical observation contract described above.

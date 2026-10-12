@@ -1,12 +1,20 @@
 # Orchestrator
 
+Bounded issue16 High acceptance passed. The
+[final matrix](../../docs/ai/delegation-final-high-acceptance-20261012.md) combines
+earlier actual native parent/width1 evidence with two final native High children,
+actual overlap2 after SIGKILL/claim expiry and all owner/source controls retaining
+four effects. Final parents/width1 are labelled scripted. Preparation passed302
+names,0 failures/skips, race/vet. Shared deployment flags remain off.
+
 The [full High experiment](../../docs/ai/delegation-full-high-acceptance-20261012.md)
 proved both native parent receipt projections, four source-relative extractions
 after worker loss and width1 independent owner decisions; it remains failed at
 width2 overlap. The repaired [remainder](../../docs/ai/delegation-high-remainder-acceptance-20261012.md)
 started two High children concurrently, but both stopped with
 `transport_connection_error` and no finals. History39 and every failed report
-remain immutable; full delegation acceptance and deployment remain pending.
+remain immutable. That remainder alone did not complete acceptance; the later
+final matrix above does. Deployment activation remains separate.
 
 Initiative promotion rechecks active hours and observation freshness after budget
 lock waits. A UTC-day change defers admission to a fresh check of attention limits.
@@ -520,7 +528,8 @@ Private action-authority authentication and migrations057/061 are required.
 Startup verifies the immutable schema guards before advertising readiness.
 Disabling the feature prevents new admission/maintenance; use owner task/tree
 stop or mandate revocation for already accepted durable child inputs.
-Native model comparison and deployment acceptance remain pending. See
+Bounded native High width1/width2 acceptance passed; deployment activation and
+broad local research/resource benchmarking remain separate. See
 `docs/architecture/delegation-contract.md` before enabling the route.
 The separate opt-in native lab runner and its twelve-attempt spending cap are
 described in `docs/ai/delegation-native-scenario-plan.md`. Its zero-inference
@@ -544,7 +553,7 @@ source graph and branch reservation records on the caller PG transaction. Its
 capability reader is mandatory and phase-explicit: new admission needs a current
 claimed delegate action, lifecycle needs that child's durable accepted snapshot
 and current policy. The private adapter stores immutable accepted capabilities
-on the same admission transaction; the model experiment remains pending.
+on the same admission transaction; bounded native High acceptance passed.
 The initial `task.delegate` admits children with an empty tool allowlist.
 Active completed partial finals remain distinct from blocked/failed attempts.
 With delegation enabled, the parent's ordinary preparation/recovery now reads

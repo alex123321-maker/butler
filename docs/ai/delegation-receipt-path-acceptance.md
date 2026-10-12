@@ -6,7 +6,10 @@ remains immutable: SHA256
 Its parent receipt-projection gate failed after two real admissions and two correct
 child extractions. The offending original parent text/field was not exported.
 This work does not assign an exact cause to that historical failure or relax its
-objective checker. Issues16/33 native acceptance remain separate.
+objective checker. The subsequent
+[combined issue16 matrix](delegation-final-high-acceptance-20261012.md) passed
+both actual High parent projections and native parallel/control gates. Issue33
+research quality and the precise old failed body remain separate.
 
 ## Verified production path and an independent guard repair
 

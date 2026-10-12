@@ -1,6 +1,22 @@
 # Antigravity account and quota diagnosis — updated 2026-10-12
 
-## High receipt repair and parallel network failure — latest observation
+## Final bounded High delegation acceptance — latest observation
+
+The [final window](delegation-final-high-acceptance-20261012.md) passed both
+actual High children after worker loss/natural claim expiry, strict overlap2,
+independent original/report checks and revision/deletion/stop controls with four
+effects retained. Parents/width1 in this final report are labelled scripted;
+earlier actual High receipt/width1 evidence remains separate and immutable.
+Together with owning tests this completes the bounded issue16 matrix.
+
+Only40–41 are new native calls:3155/165 and3143/160 input/output. History41 has
+19 known/22 NULL pairs,69058 input/2135 output known subtotal. Eight scripted
+turns are separate. Both failed connection attempts stay charged/unknown. The
+final two-lane TLS prerequisite passed; it does not identify or erase the earlier
+network failure. No quota-counter attribution, full cost or cloud weight count
+is inferred. Old windows are sealed; main source/deployment are unchanged.
+
+## High receipt repair and parallel network failure — earlier observation
 
 The issue16 continuation added ten native High calls: both parents' exact receipt
 projections, four source-relative child extractions after worker loss, and width1

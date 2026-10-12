@@ -1,5 +1,11 @@
 # High delegation remainder — two calls within the original ceiling
 
+Both remainder reports below remain FAILED and SEALED. The later
+[final window](delegation-final-high-acceptance-20261012.md) carried all39 attempts
+and13 report pins, then passed its two new native High children, strict overlap2
+and current controls. It completes the bounded combined matrix without changing
+either remainder failure or the old39 ceiling.
+
 The owner requested full issue16 acceptance, including repairs, with subagents.
 The prior [full High report](../../deploy/delegation/native-acceptance-high-20261012.json)
 remains FAILED and SEALED. It proves two real High parent receipt projections,

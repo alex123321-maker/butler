@@ -1,11 +1,12 @@
-# Issue16 current evidence and unfinished gates
+# Issue16 accepted bounded evidence and scope
 
-Issue16 remains open. This consolidates lab evidence, including the failed-attempt
+Issue16's bounded criteria are independently accepted; the issue closes when
+PR71 merges. This consolidates lab evidence, including the failed-attempt
 observation bridge and separate local generative observations. The opt-in context-only route
 retains empty child permissions. Component tests and deliberately scripted
 provider outcomes are distinct from successful native research.
 
-The latest owner-directed continuation repaired final-turn ownership, typed
+The owner-directed continuation repaired final-turn ownership, typed
 numeric formatting and canonical deletion-marker handling. Its final preparation
 of `bdd85cd` passed268 names/94 top-level,0 failure/skip, race/vet and private
 worker/Broker guards. The full native High report remains failed at width2
@@ -14,20 +15,26 @@ extractions after SIGKILL/claim-expiry recovery, and width1 independent owner
 accept/reject. The later two-call remainder proves simultaneous native entry,
 then fails both children with `transport_connection_error`, no finals or usage.
 History39 has17 known/22 NULL pairs; known subtotal62760 input/1810 output.
+The [final window](delegation-final-high-acceptance-20261012.md) then passed both
+actual High children after worker loss, strict overlap2, independent original/report
+checks and all owner/source controls with four effects retained. Its parents/width1
+are explicitly scripted; earlier actual High receipt/width1 evidence remains
+separate. Final combined preparation passed302 names/106 top-level,0 fail/skip,
+race/vet. History41 has19 known/22 NULL pairs,69058 input/2135 output subtotal.
 All failed reports and sealed windows remain unchanged. Exact releases, hashes
 and distinct scopes: [full High](delegation-full-high-acceptance-20261012.md),
 [remainder](delegation-high-remainder-acceptance-20261012.md).
 
-| Requirement | Already observed | Remaining gate |
+| Requirement | Accepted evidence | Scope limitation |
 | --- | --- | --- |
 | Durable child contract and state | Actual PostgreSQL manager states/identity/replay/limits, plus four real High child completions after parent-worker SIGKILL and natural claim expiry | — |
-| One then bounded parallel executor | Real High width1 extraction and owner decisions; current PG recovery observes two contexts after staggered expiry; failed remainder entered two real High starts47.517ms apart | Successful native width2 overlap2 with both finals and independent verification remains pending |
-| Selected original evidence | Selected Catalog grants/current pins and isolated DATA contexts; all four recovered real High results passed exact source/hash/revision/value/date checks | Width2 remainder did not produce finals |
-| Structured report | Actual action/evidence/conservative-budget guards and real High width1 independent structured-report checks, with original result/report references retained | Final native width2 report verification remains pending |
-| Accept/reject and uncertainty | Real High width1 authenticated owner API accepts A and rejects B after independent original checks under predeclared source-selection policy. Both source-relative observations/conflicting originals remain; model finals stay unverified. Wrong agreement/forged evidence cannot override originals | Final width2 verification remains pending. This bounded policy does not claim general research contradiction adjudication |
+| One then bounded parallel executor | Earlier real High width1 extraction/owner decisions; final native High width2 overlap2, both correct finals and independent verification after natural claim expiry | The final report labels scripted parent/width1 work; no speedup, cloud weight count or no-delegation benchmark is claimed |
+| Selected original evidence | Selected Catalog grants/current pins and isolated DATA contexts; four earlier and two final recovered real High results pass exact source/hash/revision/value/date checks | Original fixture values are source-relative observations |
+| Structured report | Actual action/evidence/conservative-budget guards, real High width1 and final native width2 independent structured-report checks | Reservations and known token subtotals are separate; NULL usage remains unknown |
+| Accept/reject and uncertainty | Real High width1 authenticated owner API accepts A/rejects B after original checks under predeclared source-selection policy. Final width2 original/report verification passes; results remain result_ready for controls. Conflicting originals remain; model finals stay unverified. Wrong agreement/forged evidence deny | This bounded policy does not claim general prose contradiction adjudication |
 | Restricted authority and shared budgets | Current inflight Broker admission plus immutable061 lifecycle snapshot, empty permissions, exact scope/deadline/source pins; root/delegation/mandate/day finite reservations, widening and cycle denial | Reservation totals are not measured tokens, invoice or evidence of successful research |
-| Stop and stale contracts | Real Controller stop versus admission/Collect and actual approved-grandchild ClaimGrant denial; spent earlier effects/immutable finals remain; stale revisions/source rights and clock expiry after actual lock waits deny later writes | Post-final native metadata controls have not run; arbitrary late native callback injection is outside the scheduled fixture |
-| Parent process loss | The full High experiment completed four recovered native children after actual parent-worker SIGKILL and natural child-claim expiry, without borrowing parent lease | Latest remainder reached two concurrent starts, then stopped on network errors; it adds no completed results |
+| Stop and stale contracts | Final scenario positive baselines→Amend/Delete/Stop denial, four effects retained; actual active-grandchild/failed-child owner Stop and atomic admission/Collect races; natural deadline/row-wait denial | Final native workers stop before metadata controls; arbitrary late native callback injection is outside this fixture |
+| Parent process loss | Four earlier and two final actual High children complete after parent-worker SIGKILL and natural claim expiry without borrowing the parent lease | Process loss occurs after both parent admissions and final; earlier failures remain retained |
 | Shared local model service | Actual auxiliary GPU/CPU artifacts prove reusable workers and index/search lanes. Five real generative contexts used one pinned CPU runner; an independent runtime observation found one loaded model | All five generative semantic checks failed. They do not prove successful delegated research or faster/cheaper execution; cloud internal weights remain unobservable |
 
 ## Exact evidence references
@@ -100,7 +107,7 @@ one weight process per caller. That architectural/runtime evidence supports the
 shared-service design. It cannot substitute for local generative child-context
 acceptance or measurements of a cloud provider's internals.
 
-## Native evidence is still failed
+## Historical failed native evidence — retained unchanged
 
 All four FAILED artifacts remain byte-for-byte immutable:
 

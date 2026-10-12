@@ -15,8 +15,10 @@ dependencies, result collection and guarded decisions. Report is a strict DATA
 projection of actual evidence references; shape validity is not verification.
 Report parsing rejects duplicate nested keys, including escaped and case aliases;
 ambiguous conflicting values never acquire last-value-wins semantics.
-No runtime tool or owner endpoint is enabled here. Production Catalog/Broker/
-context composition and actual model comparison remain pending acceptance.
+This contract package does not enable runtime tools or owner endpoints.
+The optional owning Catalog/Broker/context composition passed bounded High
+recovery/parallel/control acceptance; shared deployment flags remain off.
+See [the acceptance matrix](../../docs/ai/delegation-final-high-acceptance-20261012.md).
 See `docs/architecture/delegation-contract.md`.
 
 An opt-in `delegation_numeric_observation_v1` Catalog contract adds an objective
@@ -43,5 +45,6 @@ operator-selected internal connection. Authentication does not
 authorize admission: the owning Orchestrator service must recheck the actual
 inflight dispatch. Migration061 persists its immutable accepted child snapshot.
 The separate real Broker process acceptance proves committed admission only;
-tools/default enabling, child model success and parallel-model comparison remain
-pending. See [admission evidence](../../docs/ai/delegation-admission-acceptance.md).
+default enabling and broad local quality/resource benchmarks remain separate.
+Actual High child success and bounded parallel acceptance passed in the final
+matrix. See [admission evidence](../../docs/ai/delegation-admission-acceptance.md).

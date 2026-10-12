@@ -1,5 +1,12 @@
 # Antigravity native transport
 
+The [bounded issue16 matrix](../../../docs/ai/delegation-final-high-acceptance-20261012.md)
+is accepted on High: exact actual native parent receipt projections, width1 owner
+decisions, recovered children and final native overlap2/source/report/control
+checks. The final report's scripted parents/width1 remain labelled; its two new
+native child calls complete separate prior evidence. All earlier failed reports
+and NULL usage remain unchanged; no automatic inference retry is added.
+
 The explicit `gemini-3.8-flash-high` profile uses the measured Desktop Cloud Code
 contract through native Go: daily `/v1internal:streamGenerateContent?alt=sse`,
 model/project/request wrapper, per-turn request identity, Butler-owned run session
@@ -27,7 +34,8 @@ An isolated actual High delegation window additionally completed two Broker
 admissions and two correct child extractions after process loss. It stopped at
 the parent's exact receipt-projection failure before width2/later controls;
 [safe evidence](../../../docs/ai/delegation-high-acceptance-20261012.md) records5
-new calls without retry. Full delegation acceptance and deployment remain pending.
+new calls without retry. That first window did not complete delegation acceptance;
+the current combined matrix above does. Deployment activation remains separate.
 The later [full experiment](../../../docs/ai/delegation-full-high-acceptance-20261012.md)
 passed both native parents' exact receipt projections and four recovered child
 extractions; it remains failed at width2 overlap. Its distinct

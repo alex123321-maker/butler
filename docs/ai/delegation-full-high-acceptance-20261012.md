@@ -1,5 +1,11 @@
 # Issue16 — full native High delegation acceptance
 
+The original full report below remains FAILED at overlap1. The later
+[final two-call window](delegation-final-high-acceptance-20261012.md) passed actual
+High overlap2, original/report checks and controls. Combined with this report's
+real High parent/width1 evidence and owning tests it completes the bounded
+issue16 matrix. No old failure is promoted.
+
 The owner's renewed request explicitly authorizes receipt-failure investigation,
 fixes and full delegation acceptance on `gemini-3.8-flash-high` with subagents.
 Subsystems: orchestration/model-turn terminal state, owned delegated context,

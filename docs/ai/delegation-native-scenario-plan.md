@@ -1,6 +1,17 @@
 # Opt-in native delegation experiment
 
-## Current owner-directed issue16 continuation — 2026-10-12
+## Accepted bounded issue16 continuation — 2026-10-12
+
+The [final High window](delegation-final-high-acceptance-20261012.md) passed two
+actual High children, overlap2, exact original checks after real worker loss,
+and current owner/source controls with four effects retained. It labels scripted
+parents/width1; earlier real High receipt/width1 evidence remains in the unchanged
+failed full report. All nine bounded criteria have independently audited combined
+evidence. History41 retains19 known/22 NULL pairs,69058 input/2135 output subtotal.
+The final window is sealed at41/new2; all old caps/counters/deadlines/reports stay
+unchanged. Deployment and broader issue17/33 acceptance remain separate.
+
+## Previous owner-directed issue16 continuation — 2026-10-12
 
 The owner requested full High acceptance with subagents. The sealed
 [full experiment](delegation-full-high-acceptance-20261012.md) proved both native
