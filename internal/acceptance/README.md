@@ -225,7 +225,15 @@ independent content-free audit and exact PostgreSQL correlation are recorded in
 prior NULL measurements remain in cumulative history. The 17 correct completed
 development observations do not establish full quality or a paired comparison.
 
-The additive V4 corpus/protocol starts from the separately verified268-call
+The actual V4 window is sealed NO_GO after11 new admissions, for279 cumulative
+entries. Exact safe audit/PG/diagnostic exports remain pinned under
+`deploy/acceptance/cloud-fresh-v4-*-20261013.json`; correct raw/SQL correlation
+does not imply quality or readiness. New V5 APIs use fresh unsigned corpus and
+independent source/dialect/model-input identities; their native gate is closed
+until actual intervening diagnostic history and new signed review are established.
+Old data, signatures, lost266 cause and historical NULL spending remain unchanged.
+
+The historical additive V4 corpus/protocol starts from the separately verified268-call
 history and preserves all19 historical artifact pins. `CloudV4*` APIs and
 `cmd/cloud-observe` V4 modes require a fresh240-case corpus, whole-corpus review,
 external signed criteria and exact source/runtime/hardware/window pins. V4's

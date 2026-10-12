@@ -33,6 +33,9 @@ type Config struct {
 	// The generated-token ceiling includes thinking as well as visible output.
 	MaximumOutputTokens int
 	JSONResponseSchema  json.RawMessage
+	// Explicit native OpenAPI-subset responseSchema dialect, not a fallback.
+	// Mutually exclusive with JSONResponseSchema and available only on High.
+	GoogleResponseSchema json.RawMessage
 }
 
 type Provider struct {
@@ -100,10 +103,11 @@ func (p *Provider) StartRun(ctx context.Context, req transport.StartRunRequest) 
 	if len(req.TransportOptions) > 0 || req.TransportOptionsJSON != "" {
 		return nil, protocolError("Antigravity transport options are unsupported")
 	}
-	if (p.config.MaximumOutputTokens > maxOutputTokens || len(p.config.JSONResponseSchema) > 0) && req.Context.ModelName != FlashHighModel {
+	structured := len(p.config.JSONResponseSchema) > 0 || len(p.config.GoogleResponseSchema) > 0
+	if (p.config.MaximumOutputTokens > maxOutputTokens || structured) && req.Context.ModelName != FlashHighModel {
 		return nil, protocolError("configured High generation requires the selected High model")
 	}
-	if len(p.config.JSONResponseSchema) > 0 && len(req.ToolDefinitions) > 0 {
+	if structured && len(req.ToolDefinitions) > 0 {
 		return nil, protocolError("JSON observation cannot declare tools")
 	}
 	system, contents, err := convertInputs(req.InputItems)
@@ -212,6 +216,9 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 	if len(p.config.JSONResponseSchema) > 0 {
 		request.GenerationConfig.ResponseMIMEType = "application/json"
 		request.GenerationConfig.ResponseJSONSchema = p.config.JSONResponseSchema
+	} else if len(p.config.GoogleResponseSchema) > 0 {
+		request.GenerationConfig.ResponseMIMEType = "application/json"
+		request.GenerationConfig.ResponseSchema = p.config.GoogleResponseSchema
 	}
 	if len(state.tools) > 0 {
 		request.Tools = []functionTools{{FunctionDeclarations: state.tools}}

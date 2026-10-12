@@ -1,6 +1,14 @@
 # Butler Dev Scripts
 
-Issue33 V4 uses new isolated roots and once-only windows. Run
+Issue33 V4 is now sealed NO_GO after11 new entries, for279 cumulative attempts.
+Never Sync or execute its root again. `cloud-v4-final-audit-reproduce.sh` runs
+the frozen independent auditor read-only/network-none against named retained
+leaves and saves exact content-free output; it invokes no model. The new
+`scenario-schema-dialect-high-lab.sh` has its own279→283 marker, exact reviewed
+two-input/two-dialect protocol and prepare/execute separation. Preparation has
+zero authentication/inference. Its actual native gate remains closed until review.
+
+Historical issue33 V4 used new isolated roots and once-only windows. Its
 `scenario-shadow-v4-high-lab.sh ROOT offline|prepare|execute COMMIT` for the fresh
 240-case signed quality corpus and four paired High tasks; `offline` has no auth
 or inference. The full collector preserves private raw finals after SQL spend and

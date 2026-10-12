@@ -139,6 +139,29 @@ upstream schema is a failed request and never triggers a text-mode fallback.
 The application still validates semantic source witnesses and visible JSON bytes.
 Synthetic exact-wire tests prove serialization, not server compatibility.
 
+The separately explicit trusted `Config.GoogleResponseSchema` selects the native
+OpenAPI-subset `responseSchema` field instead. It is mutually exclusive with
+`JSONResponseSchema`, High-only and tool-free; the existing default and JSON Schema
+wire remain unchanged. The exact constructor copy accepts uppercase OBJECT,
+ARRAY, STRING, BOOLEAN, INTEGER and NUMBER types; properties/required/items,
+nullable and bounded unique string enums. Arrays require canonical decimal-string
+`maxItems` in1–128, with optional compatible `minItems`. Depth8,256 nodes,32
+properties per object,64 enum values and16KiB schema bounds apply. References,
+annotations, defaults, unions and unknown fields are refused before authentication.
+This subset has no `additionalProperties` constraint: the trusted caller's strict
+JSON/field/source/semantic checker still rejects extra fields and incorrect answers.
+Transport preserves the original output, including invalid Markdown wrappers.
+
+The [Google GenerationConfig reference](https://cloud.google.com/vertex-ai/generative-ai/docs/reference/rest/v1beta1/GenerationConfig)
+documents the mutually exclusive OpenAPI and JSON Schema fields with JSON MIME.
+The [Gemini API reference](https://ai.google.dev/api/generate-content#GenerationConfig)
+currently labels its public `responseSchema` field deprecated. These public
+references establish a prospective serialization choice, not compatibility of
+the private daily Cloud Code endpoint or the cause of a prior model answer.
+High/thinking/allowances, request guards, raw-final retention and refusal to retry,
+repair or fall back are unchanged. Actual compatibility requires its own frozen
+bounded experiment with fresh inputs; old failed quality windows stay closed.
+
 Trusted request-local `transport.WithProviderStageObserver` can distinguish
 authentication, serialization, HTTP round trip and SSE reading for future
 diagnosis. Only fixed phase names leave the adapter; credential/request/response

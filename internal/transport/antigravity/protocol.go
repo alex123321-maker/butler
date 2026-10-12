@@ -46,6 +46,7 @@ type generationConfig struct {
 	ThinkingConfig     *thinkingConfig `json:"thinkingConfig,omitempty"`
 	ResponseMIMEType   string          `json:"responseMimeType,omitempty"`
 	ResponseJSONSchema json.RawMessage `json:"responseJsonSchema,omitempty"`
+	ResponseSchema     json.RawMessage `json:"responseSchema,omitempty"`
 }
 type thinkingConfig struct {
 	ThinkingBudget int `json:"thinkingBudget"`

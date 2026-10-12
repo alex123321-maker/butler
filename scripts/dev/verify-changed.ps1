@@ -26,6 +26,19 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(apps/orchestrator/internal/app/(scenario_schema_dialect_|scenario_high_v5_|scenario_shadow_v5_)|internal/acceptance/cloud_(v5|schema_dialect)|cmd/cloud-observe/v5|scripts/dev/(cloud-v5-|scenario-shadow-v5|scenario-schema-dialect|fixtures/(scenario-shadow-v5|schema-dialect))|testdata/acceptance/(ru-cloud-fresh-v5|cloud-schema-dialect))" {
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$tests.Add("SSH laba: scenario-schema-dialect-high-lab.sh FRESH_DIAGNOSTIC_ROOT prepare EXACT_COMMIT (zero inference; separate reviewed native gate)")
+      [void]$tests.Add("SSH laba: scenario-shadow-v5-high-lab.sh FRESH_V5_ROOT offline EXACT_COMMIT (zero inference; baseline and compatibility must be established before signed preparation)")
+      continue
+    }
+    "^(deploy/acceptance/(cloud-fresh-v4-|scenario-fault-v4-)|scripts/dev/cloud-v4-final-audit-reproduce[.]sh$)" {
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$tests.Add("Read-only frozen V4 audit reproduction; verify copied content-free artifact SHA256 and pure history279. Zero inference; V4 root is sealed, never Sync or execute.")
+      continue
+    }
     "^apps/orchestrator/internal/app/(scenario_high_v4_|scenario_shadow_v4_|release_chain_v4_)" {
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
@@ -39,7 +52,7 @@ foreach ($file in $files) {
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
       [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./internal/acceptance/...")
       [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./cmd/cloud-observe/...")
-      [void]$tests.Add("SSH laba: scenario-shadow-v4-high-lab.sh ROOT offline EXACT_COMMIT (zero inference)")
+      [void]$tests.Add("SSH laba: fresh current protocol root offline EXACT_COMMIT (zero inference); V1–V4 roots are sealed and must never be synced or executed again")
       continue
     }
     "^(scripts/dev/scenario-shadow-v3-high-lab[.]sh$|scripts/dev/fixtures/scenario-shadow-v3-|apps/orchestrator/internal/app/scenario_shadow_v3_.*[.]go$|internal/acceptance/cloud_v3.*[.]go$|testdata/acceptance/ru-cloud-fresh-v3[.]json$)" {

@@ -30,7 +30,7 @@ func TestHighStructuredGenerationUsesFrozenAllowance(t *testing.T) {
 		g := wire.Request.GenerationConfig
 		if req.URL.String() != cloudEndpoint+":streamGenerateContent?alt=sse" || wire.Model != FlashHighModel ||
 			g.MaxOutputTokens != 32768 || g.ThinkingConfig == nil || g.ThinkingConfig.ThinkingBudget != -1 ||
-			g.ResponseMIMEType != "application/json" || string(g.ResponseJSONSchema) != want || len(wire.Request.Tools) != 0 {
+			g.ResponseMIMEType != "application/json" || string(g.ResponseJSONSchema) != want || len(g.ResponseSchema) != 0 || len(wire.Request.Tools) != 0 {
 			t.Error("frozen High thinking/schema/ceiling changed")
 		}
 		return response(cloudFrame(`{"text":"{\"ok\":true}"}`, "STOP")), nil

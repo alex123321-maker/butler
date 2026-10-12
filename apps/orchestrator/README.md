@@ -1,6 +1,15 @@
 # Orchestrator
 
-The additive V4 acceptance reader preserves268 spent High attempts and all old
+Current issue33 evidence is279 spent High attempts. The closed V4 window added11
+measured requests, retained every bounded original final and independently matched
+PostgreSQL. Its quality/comparison and520-entry chain prerequisite are NO_GO.
+The pure additive V5 history reader carries253 known visible cost pairs and26
+NULL pairs. Original266's discarded cause remains UNKNOWN. A distinct four-entry
+schema-dialect diagnostic and fresh V5 quality protocol are prospective and closed
+until their own independent reviews and actual prerequisites are established.
+See the [closed V4 audit](../../docs/ai/scenario-cloud-v4-independent-audit-20261013.md).
+
+The historical additive V4 acceptance reader preserves268 spent High attempts and all old
 unknown costs/verdicts. Its full shadow collector saves owning PostgreSQL spend
 before private original-final bytes; immutable safe diagnostics distinguish
 encoding, lifecycle, transport and retention failure. A new independently signed

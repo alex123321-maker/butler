@@ -196,3 +196,32 @@ structural diagnostic uses this pure reader as its266 baseline, under a distinct
 follows owning SQL spend and preserves original complete events and uncertainty.
 This diagnostic is independent of model quality and the native release chain.
 The reader itself grants no retry, refund, scoring or execution authority.
+
+Fresh V4 extended the268-entry history through a separately authored240-case
+corpus, independent semantic review and new external signature. Its complete
+quality236 and paired16 allowance was prospective; the actual window failed
+after11 new entries. Every new cost and first bounded original final was retained
+and independently correlated with owning PostgreSQL. The resulting279-entry
+pure history preserves253 known input/output pairs,26 NULL pairs and46 unknown
+historical totals. Failed/partial V4 is NO_GO; neither its unused allowance nor
+its520-entry native-chain prerequisite can be reused. Original266's discarded
+cause remains UNKNOWN even when later originals establish different failures.
+
+A producer-dialect diagnosis uses a separate prospective279→283 ceiling,
+four fixed Start-only entries, two new public nested-extraction inputs and
+legacy/native schema arms with identical complete model content. Syntax-only
+failures can be recorded while proceeding to the next independently fixed
+diagnostic entry if lifecycle, actual version, measured cost and private raw
+retention are all complete. A provider, metadata, lifecycle, deadline or retention
+failure denies further entry. This narrowly reviewed diagnostic makes no quality,
+holdout, comparative superiority or execution claim. It never strips Markdown,
+repairs an answer, retries a spent context or reopens a prior window.
+
+Prospective V5 data, signatures, identifiers and windows are distinct from V4.
+Native admission stays closed until the exact native producer dialect has
+actual independently audited compatibility evidence, the actual intervening
+history is pinned, and fresh full-code/data/golden/resource review is frozen.
+The90/85/safety0,60-second nearest-rank p95,120-second individual deadline and
+all-new-attempt measured-token gates remain fixed. Public synthetic observations
+and separate agent roles on an administrator-controlled host are never described
+as hidden benchmark evidence or hardware isolation.

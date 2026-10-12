@@ -974,6 +974,24 @@ limits include the schema. Model request options cannot change either setting.
 Schemas never establish semantic truth or execution authority. An unsupported
 upstream request remains failed without retry, MIME fallback or effort downgrade.
 
+The additive, explicitly trusted `Config.GoogleResponseSchema` selects Google's
+native OpenAPI-subset `responseSchema` wire field for tool-free High observations.
+It is mutually exclusive with `JSONResponseSchema`; existing defaults and legacy
+JSON Schema serialization remain unchanged. Constructor validation requires a
+duplicate-free uppercase OBJECT root, only OBJECT/ARRAY/STRING/BOOLEAN/INTEGER/
+NUMBER types and properties/required/items/nullable/string enums/bounded array
+counts. Depth8/nodes256/properties32/enums64/16KiB bounds, unique valid required
+names and canonical decimal-string `maxItems`1–128 deny unsupported structure
+before auth. References, annotations, defaults, unions and unknown fields deny.
+No `additionalProperties` field exists in this subset; caller-owned strict field,
+source and semantic validation remains mandatory, with original output preserved.
+Model transport options cannot change dialect/model/effort/resources or add tools.
+The [public Google contract](https://cloud.google.com/vertex-ai/generative-ai/docs/reference/rest/v1beta1/GenerationConfig)
+documents this alternative; the [Gemini reference](https://ai.google.dev/api/generate-content#GenerationConfig)
+marks public `responseSchema` deprecated. Compatibility of private Cloud Code,
+model correctness and a cause of earlier failures remain unestablished until a
+separately reviewed finite fresh experiment. No fallback/repair/retry is added.
+
 Only typed code-owned instructions carry system role; external/context/derived observations carry provenance as data. Secret-class inputs fail before serialization. Budget037 passes a private input byte cap and the native provider checks its complete actual request, including prior function calls, thought signatures and tool results, before HTTP. Other adapters have serialization guards but need verified capacity/cost declarations before budgeted production inference. HTTP error status is retained without untrusted body/code/details; no raw network error or response content enters durable error events. Production auxiliary model/embed adapters have no durable job-owned admission and remain disabled. See [agent security boundaries](agent-security-boundaries.md).
 
 Trusted callers may install a request-local `WithProviderStageObserver` for

@@ -36,6 +36,10 @@ func run(args []string, stdout io.Writer) error {
 	expectedReviewKey := f.String("expected-review-key-sha256", "", "independent prospective public-key file hash")
 	expectedReviewApproval := f.String("expected-review-approval-sha256", "", "independent prospective approval file hash")
 	pgWitness := f.String("pg-witness", "", "separate read-only SQL metadata witness; prospective pg-correlate modes only")
+	v5HistoryFile := f.String("expected-history-file", "", "independently verified prepared V5 historical JSON; V5window-audit only")
+	v5KnownTotal := f.Int64("expected-historical-known-total-tokens", 0, "independently measured historical total-token subtotal; V5window-audit only")
+	v5UnknownTotal := f.Int("expected-historical-unknown-total-attempts", 0, "independently retained historical unknown totals; V5window-audit only")
+	v5Compatibility := f.String("expected-compatibility-sha256", "", "independently accepted producer compatibility artifact; V5window-audit only")
 	output := f.String("output", "", "new private report; existing evidence is immutable")
 	if err := f.Parse(args); err != nil {
 		return err
@@ -51,6 +55,12 @@ func run(args []string, stdout io.Writer) error {
 	}
 	if *mode == "v4-pg-correlate" {
 		return runCloudV4PGCorrelation(*observations, *pgWitness, *output, stdout)
+	}
+	if *mode == "v5-pg-correlate" {
+		return runCloudV5PGCorrelation(*observations, *pgWitness, *output, stdout)
+	}
+	if strings.HasPrefix(*mode, "v5-") {
+		return runCloudV5(cloudV5CLIOptions{Mode: *mode, Root: *root, Split: *split, Observations: *observations, Hardware: *hardware, Commit: *commit, Key: *keyPath, Approval: *approvalPath, ExpectedKey: *expectedReviewKey, ExpectedApproval: *expectedReviewApproval, Output: *output, ExpectedSource: *expectedSource, ExpectedHistory: *expectedHistory, HistoryFile: *v5HistoryFile, KnownTotal: *v5KnownTotal, UnknownTotal: *v5UnknownTotal, Compatibility: *v5Compatibility}, stdout)
 	}
 	if strings.HasPrefix(*mode, "v4-") {
 		return runCloudV4(cloudV4CLIOptions{Mode: *mode, Root: *root, Split: *split, Observations: *observations, Hardware: *hardware, Commit: *commit, Key: *keyPath, Approval: *approvalPath, ExpectedKey: *expectedReviewKey, ExpectedApproval: *expectedReviewApproval, Output: *output, ExpectedSource: *expectedSource, ExpectedHistory: *expectedHistory}, stdout)
