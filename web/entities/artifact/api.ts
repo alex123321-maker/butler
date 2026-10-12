@@ -29,5 +29,5 @@ export const fetchArtifacts = (query: Record<string, string | number | undefined
 }
 
 export const fetchArtifactById = (artifactId: string) => {
-  return apiRequest<ArtifactDetailResponse>(`/api/v2/artifacts/${artifactId}`)
+  return apiRequest<ArtifactDetailResponse>(`/api/v2/artifacts/${encodeURIComponent(artifactId)}`)
 }

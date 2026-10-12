@@ -2,6 +2,7 @@ package orchestrator
 
 import (
 	"context"
+	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	"log/slog"
 
 	"github.com/butler/butler/internal/logger"
@@ -9,6 +10,7 @@ import (
 
 // ApprovalRequest represents a tool call that needs user approval before execution.
 type ApprovalRequest struct {
+	OwnerFacts    *approvals.OwnerActionFacts
 	Summary       string
 	RiskLevel     string
 	RunID         string

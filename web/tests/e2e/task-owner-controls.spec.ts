@@ -115,3 +115,95 @@ test('changing owner proof fences a late observation response and read failure s
   await expect(page.getByText('Task observations could not be read. Recorded actions and costs are unavailable.', { exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Recorded task observations' })).toHaveCount(0)
 })
+
+test('lost control acknowledgement retries the exact durable delivery without a second amendment', async ({ page }) => {
+  await openObservedTask(page)
+  let firstDelivery = ''
+  let firstBody = ''
+  let requests = 0
+  let applied = 0
+  await page.route('**/api/v3/tasks/task-observed/control', async (route) => {
+    requests++
+    const delivery = route.request().headers()['x-butler-delivery-id']!
+    const body = route.request().postData()!
+    if (requests === 1) {
+      firstDelivery = delivery
+      firstBody = body
+      applied++
+      await route.abort('connectionclosed')
+    } else {
+      expect(delivery).toBe(firstDelivery)
+      expect(body).toBe(firstBody)
+      expect(route.request().postDataJSON().expected_revision).toBe(4)
+      await route.fulfill({ json: { task: { revision: 5, status: 'active', execution_policy: 'normal' }, input_id: 'saved-control-receipt', effect_boundary: 'previous_attempt_revoked' } })
+    }
+  })
+  await page.getByLabel('Amendment', { exact: true }).fill('Prepare the checked correction')
+  await page.getByRole('button', { name: 'Apply amendment', exact: true }).click()
+  await expect(page.getByText('Control outcome is unavailable.', { exact: false })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Apply amendment', exact: true })).toBeDisabled()
+  // Editing the draft does not alter the saved request being recovered.
+  await page.getByLabel('Amendment', { exact: true }).fill('A different later intention')
+  await page.getByRole('button', { name: 'Retry same control', exact: true }).click()
+  await expect(page.getByText('Task version 5 · active · normal', { exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'View control receipt' })).toHaveAttribute('href', '/inputs/saved-control-receipt')
+  expect(requests).toBe(2)
+  expect(applied).toBe(1)
+})
+
+test('branch stop uses its own observed revision and keeps the parent task current', async ({ page }) => {
+  await page.route('**/api/v3/tasks/task-observed/observations', route => route.fulfill({ json: { ...overview, children: [{ task_id: 'child-unverified', revision: 2, status: 'active', delegation_state: 'report_ready' }] } }))
+  await openObservedTask(page)
+  await page.route('**/api/v3/tasks/child-unverified/control', async route => {
+    expect(route.request().postDataJSON()).toEqual({ kind: 'stop', expected_revision: 2, instruction: '' })
+    expect(route.request().headers().authorization).toBe('Bearer fixture-owner-token-000000000000000')
+    await route.fulfill({ json: { task: { revision: 3, status: 'cancelled', execution_policy: 'normal' }, input_id: 'branch-control', effect_boundary: 'previous_attempt_revoked' } })
+  })
+  await page.getByRole('button', { name: 'Load task observations' }).click()
+  await page.getByRole('button', { name: 'Stop branch child-unverified', exact: true }).click()
+  await expect(page.getByText('Task version 4 · active · normal', { exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'View control receipt' })).toHaveAttribute('href', '/inputs/branch-control')
+})
+
+test('owner sees pinned sources, saved artifacts, stale verification and separate delivery', async ({ page }) => {
+  const hash = 'a'.repeat(64)
+  await page.route('**/api/v3/tasks/task-observed/observations', route => route.fulfill({ json: {
+    ...overview, status: 'active',
+    assignment: { ...overview.assignment, goal_revision: 2, mandate_revision: 3, observation_ref: 'observation:saved-check' },
+    authority: { available: true, goal_revision: 4, goal_status: 'active', mandate_revision: 3, mandate_status: 'revoked', versions_current: false },
+    attempts: [{ run_id: 'run-completed', task_revision: 3, state: 'completed', answer_state: 'final', delivery_state: 'delivery_unknown', artifact_id: 'final:run-completed', privacy_redacted: false }],
+    results: [{ result_id: 'owner-result', task_revision: 3, current_revision: false, verdict: 'verified', evidence_refs: [{ kind: 'source', id: 'source-original' }, { kind: 'artifact', id: 'checked-artifact' }], omitted_reference_count: 1 }],
+    actions: [{ ...overview.actions[0], contract_hash: hash, source_refs: [{ source_id: 'source-original', revision: 2, access_revision: 5, content_hash: hash }] }],
+  } }))
+  await openObservedTask(page)
+  await page.getByRole('button', { name: 'Load task observations' }).click()
+  await expect(page.getByText('Stored authority is stale or inactive.', { exact: false })).toBeVisible()
+  await expect(page.getByText('Observation reference observation:saved-check', { exact: true })).toBeVisible()
+  await expect(page.getByText('notification delivery_unknown', { exact: false })).toBeVisible()
+  await expect(page.getByText('Result owner-result · verified · task version 3 (obsolete version)', { exact: false })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'artifact checked-artifact' })).toHaveAttribute('href', '/artifacts?artifact_id=checked-artifact')
+  await page.getByText('Recorded evidence and contract', { exact: true }).click()
+  await expect(page.getByRole('link', { name: 'Source source-original', exact: true })).toHaveAttribute('href', '/memory?source_id=source-original')
+  await expect(page.getByText('pinned revision 2', { exact: false })).toBeVisible()
+})
+
+test('changed owner proof fences a late control receipt', async ({ page }) => {
+  await openObservedTask(page)
+  let release: () => void = () => {}
+  const delayed = new Promise<void>(resolve => { release = resolve })
+  let started: () => void = () => {}
+  const requestStarted = new Promise<void>(resolve => { started = resolve })
+  await page.route('**/api/v3/tasks/task-observed/control', async route => {
+    started()
+    await delayed
+    await route.fulfill({ json: { task: { revision: 5, status: 'paused', execution_policy: 'normal' }, input_id: 'old-proof-receipt', effect_boundary: 'previous_attempt_revoked' } })
+  })
+  await page.getByRole('button', { name: 'Pause task', exact: true }).click()
+  await requestStarted
+  await page.getByLabel('Owner control token').fill('another-owner-proof')
+  const response = page.waitForResponse('**/api/v3/tasks/task-observed/control')
+  release()
+  await response
+  await expect(page.getByRole('link', { name: 'View control receipt' })).toHaveCount(0)
+  await expect(page.getByText('Task version 5 · paused · normal', { exact: true })).toHaveCount(0)
+})

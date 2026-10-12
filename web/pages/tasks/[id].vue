@@ -73,7 +73,7 @@
         class="task-section"
         tone="warning"
       >
-        Action is available only through Telegram. {{ taskDetails.waiting_state.note }}
+        This request waits for a Telegram reply. Matching owner access also permits task controls here. {{ taskDetails.waiting_state.note }}
       </AppAlert>
 
       <div class="task-section">

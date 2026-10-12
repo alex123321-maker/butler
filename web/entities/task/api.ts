@@ -140,12 +140,21 @@ export interface TaskFinalResult {
 export interface TaskOwnerOverview {
   task_id: string
   revision: number
+  status?: string
+  execution_policy?: string
+  completion_result_id?: string
   observed_at: string
-  assignment?: { goal_id: string; owner_mandate_id?: string; mandate_id?: string; purpose: string; initiative_reason: string; observation_ref: string }
+  omitted_metadata?: string[]
+  assignment?: { goal_id: string; goal_revision?: number; owner_mandate_id?: string; mandate_id?: string; mandate_revision?: number; purpose: string; initiative_reason: string; observation_ref: string }
+  authority?: { available: boolean; goal_revision: number; goal_status: string; mandate_revision: number; mandate_status: string; versions_current: boolean }
+  attempts?: Array<{ run_id: string; task_revision: number; state: string; answer_state: string; delivery_state: string; result_id?: string; artifact_id?: string; privacy_redacted: boolean }>
+  attempts_truncated?: boolean
+  results?: Array<{ result_id: string; task_revision: number; current_revision: boolean; run_id?: string; verdict: string; evidence_refs: Array<{ kind: string; id: string }>; omitted_reference_count: number }>
+  results_truncated?: boolean
   initiative?: { initiative_id: string; source_id: string; observation_ref: string; status: string; reason: string; confidence: number; importance: number; expected_model_calls: number }
   children: Array<{ task_id: string; revision: number; status: string; delegation_state: string; completion_result_id?: string }>
   children_truncated: boolean
-  actions: Array<{ action_id: string; tool_name: string; task_revision: number; effect: string; effect_state: string; contract_hash: string }>
+  actions: Array<{ action_id: string; tool_name: string; task_revision: number; effect: string; effect_state: string; contract_hash: string; source_refs?: Array<{ source_id: string; revision: number; access_revision: number; content_hash: string }> }>
   actions_truncated: boolean
   auxiliary_work?: Array<{ job_id: string; task_id: string; task_revision: number; current_task_version: boolean; kind: string; status: string; attempts: number; deadline: string; deadline_elapsed: boolean; requested_provider: string; requested_model: string }>
   auxiliary_work_truncated?: boolean

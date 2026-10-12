@@ -121,6 +121,7 @@ import { useArtifactsStore } from '~/shared/model/stores/artifacts'
 useHead({ title: 'Artifacts - Butler' })
 
 const artifactsStore = useArtifactsStore()
+const route = useRoute()
 const {
   items: artifacts,
   total,
@@ -202,6 +203,11 @@ const onDialogToggle = (value: boolean) => {
 onMounted(async () => {
   await artifactsStore.load({ offset: 0 })
 })
+watch(() => route.query.artifact_id, async value => {
+  if (typeof value === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,255}$/.test(value)) await openPreview(value)
+  else artifactsStore.closePreview()
+}, { immediate: true })
+onBeforeUnmount(() => artifactsStore.closePreview())
 </script>
 
 <style scoped>

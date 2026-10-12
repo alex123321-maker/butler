@@ -1,5 +1,15 @@
 # Resource arbitration foundation
 
+Workspace owner reconciliation now has one concrete discard-only composition:
+[explicit owner discard](isolated-code-workspaces.md#explicit-owner-discard).
+An immutable authenticated owner decision, matching actual old executor inode,
+per-copy drain, terminal tree, exact current resource/lease/CAS and natural expiry
+precede physical erasure. An independent synced absence receipt satisfies the
+private guard, advancing version/fence while retaining original UNKNOWN effect
+and spent budget. Neither owner Actor alone nor a model/RPC receipt string can
+reconcile. Lost erase acknowledgment permits observation only; another effect
+needs another explicit owner decision. No new lease or worker is minted.
+
 Status: implementation and lab acceptance in progress for issue17. Migration058
 and `internal/resources` are an additive kernel library; production tool/browser
 and isolated workspace adapters default disabled. Optional guarded single-tab

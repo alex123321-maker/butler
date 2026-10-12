@@ -64,6 +64,15 @@ runtime readiness. The overlay is not applied by tests or package installation.
 
 Broker and Orchestrator `BUTLER_WORKSPACE_ENABLED` are operator-only and default
 false. Stored settings cannot enable this topology. The application supports
-bounded artifact preparation with honest quarantine; separately authenticated
-owner reconciliation and the remaining integrated issue17/native16 gates are
-pending. See [bootstrap acceptance](../../docs/ai/workspace-bootstrap-acceptance.md).
+bounded artifact preparation with honest quarantine. Migration068 enables only
+explicit authenticated-owner discard: durable owner decision, terminal whole
+task tree, exact old lease/CAS and natural expiry, matching actual old root inode
+plus per-copy execution drain, synced erasure and independent absence receipt.
+The installed bounded owner queue worker preserves the original unknown effect,
+spent reservations and provenance. It grants no execution or lease. Missing old
+executor binding and replacement roots deny. A durable erasing attempt resumes
+observation only; a surviving copy needs a new explicit owner decision. Delivery
+replay returns current observation. No new environment flag enables owner
+authority. Remaining combined issue17 acceptance is separate; issue16 is closed.
+See [discard acceptance](../../docs/ai/workspace-owner-discard-acceptance.md) and
+[bootstrap acceptance](../../docs/ai/workspace-bootstrap-acceptance.md).

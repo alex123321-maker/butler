@@ -8,6 +8,13 @@ distinct. Reads have a two-second bound and explicit child/action truncation.
 Actual disposable PostgreSQL tests use `scripts/dev/task-observations-lab.sh`;
 the projection does not admit work or charge a model attempt.
 
+The owner snapshot now includes bounded attempt/result metadata, pinned action
+source references and current goal/mandate revision/state observations. Delivery
+aggregates all chunks; verified obsolete results remain separate from current
+completion. Only safe typed references are exported, with explicit omission
+counts. `scripts/dev/owner-state-lab.sh` exercises real PG and HTTP lost-ACK replay,
+versioned results, safe approval projection and fake Telegram without inference.
+
 Task Store owns durable work, working-state versions and evidence results. Tasks
 differ from runs, model finals and delivery. Owner controls apply revisions/stop
 across a stabilized cross-session tree; verified completion remains explicit.

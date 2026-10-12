@@ -25,9 +25,14 @@ type taskController interface {
 // TaskControlServer is a trusted owner control surface. It is deliberately absent
 // from the model tool catalog; model final events cannot call completion.
 type TaskControlServer struct {
-	tasks     taskController
-	controls  *task.Controller
-	ownerAuth *OwnerControlAuth
+	tasks      taskController
+	controls   *task.Controller
+	ownerAuth  *OwnerControlAuth
+	workspaces *WorkspaceRecoveryServer
+}
+
+func (s *TaskControlServer) SetWorkspaceRecovery(server *WorkspaceRecoveryServer) {
+	s.workspaces = server
 }
 
 func (s *TaskControlServer) SetOwnerControlAuth(auth *OwnerControlAuth) { s.ownerAuth = auth }
@@ -91,6 +96,14 @@ func (s *TaskControlServer) HandleItem(prefix string) http.Handler {
 			return
 		}
 		id := parts[0]
+		if len(parts) == 2 && parts[1] == "workspace-recovery" {
+			if s.workspaces == nil {
+				writeJSON(w, 503, map[string]string{"error": "workspace recovery unavailable"})
+				return
+			}
+			s.workspaces.HandleTaskList(id).ServeHTTP(w, r)
+			return
+		}
 		if len(parts) == 2 && parts[1] == "observations" {
 			if r.Method != http.MethodGet {
 				w.WriteHeader(http.StatusMethodNotAllowed)

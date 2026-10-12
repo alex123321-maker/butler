@@ -518,6 +518,8 @@ func New(ctx context.Context) (*App, error) {
 	})
 	if telegram != nil {
 		telegram.SetExecutor(inputWorker)
+		telegram.SetOwnerTaskReader(taskStore)
+		telegram.SetOwnerAuthority(ownerGoals)
 		telegram.SetApprovalService(approvalService)
 		telegram.SetSingleTabSelector(singleTabService)
 		telegram.SetAuthManager(authManager)

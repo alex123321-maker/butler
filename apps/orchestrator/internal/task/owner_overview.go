@@ -17,8 +17,17 @@ import (
 type OwnerOverview struct {
 	TaskID             string                 `json:"task_id"`
 	Revision           int64                  `json:"revision"`
+	Status             string                 `json:"status"`
+	ExecutionPolicy    string                 `json:"execution_policy"`
+	CompletionResultID string                 `json:"completion_result_id,omitempty"`
 	ObservedAt         time.Time              `json:"observed_at"`
+	OmittedMetadata    []string               `json:"omitted_metadata"`
 	Assignment         *actionauth.Assignment `json:"assignment,omitempty"`
+	Authority          *AuthorityOverview     `json:"authority,omitempty"`
+	Attempts           []AttemptOverview      `json:"attempts"`
+	AttemptsTruncated  bool                   `json:"attempts_truncated"`
+	Results            []ResultOverview       `json:"results"`
+	ResultsTruncated   bool                   `json:"results_truncated"`
 	Initiative         *InitiativeOverview    `json:"initiative,omitempty"`
 	Children           []ChildOverview        `json:"children"`
 	ChildrenTruncated  bool                   `json:"children_truncated"`
@@ -49,12 +58,13 @@ type InitiativeOverview struct {
 }
 
 type ActionOverview struct {
-	ID           string `json:"action_id"`
-	Tool         string `json:"tool_name"`
-	TaskRevision int64  `json:"task_revision"`
-	Effect       string `json:"effect"`
-	EffectState  string `json:"effect_state"`
-	ContractHash string `json:"contract_hash"`
+	ID           string               `json:"action_id"`
+	Tool         string               `json:"tool_name"`
+	TaskRevision int64                `json:"task_revision"`
+	Effect       string               `json:"effect"`
+	EffectState  string               `json:"effect_state"`
+	ContractHash string               `json:"contract_hash"`
+	Sources      []actionauth.DataRef `json:"source_refs"`
 }
 
 type BudgetOverview struct {
@@ -82,8 +92,8 @@ func (s *Store) OwnerOverview(ctx context.Context, id string) (OwnerOverview, er
 	}
 	defer tx.Rollback(ctx)
 	var owner string
-	v := OwnerOverview{TaskID: id, Children: []ChildOverview{}, Actions: []ActionOverview{}}
-	err = tx.QueryRow(ctx, `SELECT owner_id,revision,clock_timestamp() FROM tasks WHERE task_id=$1`, id).Scan(&owner, &v.Revision, &v.ObservedAt)
+	v := OwnerOverview{TaskID: id, Children: []ChildOverview{}, Actions: []ActionOverview{}, OmittedMetadata: []string{}}
+	err = tx.QueryRow(ctx, `SELECT owner_id,revision,status,execution_policy,COALESCE(completion_result_id,''),clock_timestamp() FROM tasks WHERE task_id=$1`, id).Scan(&owner, &v.Revision, &v.Status, &v.ExecutionPolicy, &v.CompletionResultID, &v.ObservedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return OwnerOverview{}, ErrNotFound
 	}
@@ -102,11 +112,31 @@ func (s *Store) OwnerOverview(ctx context.Context, id string) (OwnerOverview, er
 			return OwnerOverview{}, ErrUnauthorized
 		}
 		v.Assignment = &a
+		if a.ObservationRef != "" && !opaqueOwnerRef.MatchString(a.ObservationRef) {
+			v.Assignment.ObservationRef = ""
+			v.OmittedMetadata = append(v.OmittedMetadata, "assignment_observation_ref")
+		}
+		v.Authority, err = ownerAuthorityOverview(ctx, tx, a, v.ObservedAt)
+		if err != nil {
+			return OwnerOverview{}, err
+		}
+	}
+	v.Attempts, v.AttemptsTruncated, v.Results, v.ResultsTruncated, err = ownerEvidence(ctx, tx, id, v.Revision)
+	if err != nil {
+		return OwnerOverview{}, err
 	}
 	i := &InitiativeOverview{}
 	err = tx.QueryRow(ctx, `SELECT initiative_id,source_id,observation_ref,status,reason,confidence,importance,expected_model_calls FROM initiatives WHERE task_id=$1 AND owner_id=$2`, id, owner).Scan(&i.ID, &i.SourceID, &i.ObservationRef, &i.Status, &i.Reason, &i.Confidence, &i.Importance, &i.ExpectedModelCalls)
 	if err == nil {
 		v.Initiative = i
+		if !opaqueOwnerRef.MatchString(i.SourceID) {
+			i.SourceID = ""
+			v.OmittedMetadata = append(v.OmittedMetadata, "initiative_source_id")
+		}
+		if i.ObservationRef != "" && !opaqueOwnerRef.MatchString(i.ObservationRef) {
+			i.ObservationRef = ""
+			v.OmittedMetadata = append(v.OmittedMetadata, "initiative_observation_ref")
+		}
 	} else if !errors.Is(err, pgx.ErrNoRows) {
 		return OwnerOverview{}, err
 	}
@@ -131,16 +161,22 @@ func (s *Store) OwnerOverview(ctx context.Context, id string) (OwnerOverview, er
 		v.ChildrenTruncated = true
 		v.Children = v.Children[:100]
 	}
-	rows, err = tx.Query(ctx, `SELECT i.action_id,i.binding->>'tool_name',COALESCE((i.binding->>'task_revision')::bigint,0),CASE WHEN i.binding->>'effect' IN ('read','prepare','commit') THEN i.binding->>'effect' ELSE 'unknown' END,COALESCE(e.state,'unavailable'),i.binding->>'contract_hash' FROM action_intents i LEFT JOIN action_effects e ON e.action_id=i.effect_id WHERE i.binding->>'task_id'=$1 AND i.binding->>'owner_id'=$2 ORDER BY i.created_at DESC,i.action_id LIMIT 51`, id, owner)
+	rows, err = tx.Query(ctx, `SELECT i.action_id,i.binding->>'tool_name',COALESCE((i.binding->>'task_revision')::bigint,0),CASE WHEN i.binding->>'effect' IN ('read','prepare','commit') THEN i.binding->>'effect' ELSE 'unknown' END,COALESCE(e.state,'unavailable'),i.binding->>'contract_hash',COALESCE(i.binding->'data_sources','[]'::jsonb) FROM action_intents i LEFT JOIN action_effects e ON e.action_id=i.effect_id WHERE i.binding->>'task_id'=$1 AND i.binding->>'owner_id'=$2 ORDER BY i.created_at DESC,i.action_id LIMIT 51`, id, owner)
 	if err != nil {
 		return OwnerOverview{}, err
 	}
 	for rows.Next() {
 		var action ActionOverview
-		if err = rows.Scan(&action.ID, &action.Tool, &action.TaskRevision, &action.Effect, &action.EffectState, &action.ContractHash); err != nil {
+		var rawSources []byte
+		if err = rows.Scan(&action.ID, &action.Tool, &action.TaskRevision, &action.Effect, &action.EffectState, &action.ContractHash, &rawSources); err != nil {
 			rows.Close()
 			return OwnerOverview{}, err
 		}
+		if json.Unmarshal(rawSources, &action.Sources) != nil {
+			rows.Close()
+			return OwnerOverview{}, ErrInvalid
+		}
+		action.Sources = safeDataRefs(action.Sources)
 		v.Actions = append(v.Actions, action)
 	}
 	err = rows.Err()

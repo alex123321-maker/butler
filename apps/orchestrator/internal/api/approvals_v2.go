@@ -293,27 +293,25 @@ type selectTabRequest struct {
 }
 
 type approvalDTO struct {
-	ApprovalID       string                    `json:"approval_id"`
-	RunID            string                    `json:"run_id"`
-	SessionKey       string                    `json:"session_key"`
-	ToolCallID       string                    `json:"tool_call_id"`
-	ApprovalType     string                    `json:"approval_type"`
-	Status           string                    `json:"status"`
-	RequestedVia     string                    `json:"requested_via"`
-	ResolvedVia      string                    `json:"resolved_via"`
-	ToolName         string                    `json:"tool_name"`
-	ArgsJSON         string                    `json:"args_json"`
-	PayloadJSON      string                    `json:"payload_json"`
-	RiskLevel        string                    `json:"risk_level"`
-	Summary          string                    `json:"summary"`
-	DetailsJSON      string                    `json:"details_json"`
-	RequestedAt      string                    `json:"requested_at"`
-	ResolvedAt       *string                   `json:"resolved_at"`
-	ResolvedBy       string                    `json:"resolved_by"`
-	ResolutionReason string                    `json:"resolution_reason"`
-	ExpiresAt        *string                   `json:"expires_at"`
-	UpdatedAt        string                    `json:"updated_at"`
-	TabCandidates    []approvalTabCandidateDTO `json:"tab_candidates,omitempty"`
+	OwnerFacts       *approvals.OwnerActionFacts `json:"owner_facts,omitempty"`
+	ApprovalID       string                      `json:"approval_id"`
+	RunID            string                      `json:"run_id"`
+	SessionKey       string                      `json:"session_key"`
+	ToolCallID       string                      `json:"tool_call_id"`
+	ApprovalType     string                      `json:"approval_type"`
+	Status           string                      `json:"status"`
+	RequestedVia     string                      `json:"requested_via"`
+	ResolvedVia      string                      `json:"resolved_via"`
+	ToolName         string                      `json:"tool_name"`
+	RiskLevel        string                      `json:"risk_level"`
+	Summary          string                      `json:"summary"`
+	RequestedAt      string                      `json:"requested_at"`
+	ResolvedAt       *string                     `json:"resolved_at"`
+	ResolvedBy       string                      `json:"resolved_by"`
+	ResolutionReason string                      `json:"resolution_reason"`
+	ExpiresAt        *string                     `json:"expires_at"`
+	UpdatedAt        string                      `json:"updated_at"`
+	TabCandidates    []approvalTabCandidateDTO   `json:"tab_candidates,omitempty"`
 }
 
 type singleTabSessionDTO struct {
@@ -343,6 +341,7 @@ type approvalTabCandidateDTO struct {
 
 func toApprovalDTO(record approvals.Record, candidates []approvals.TabCandidate) approvalDTO {
 	item := approvalDTO{
+		OwnerFacts:       approvals.OwnerFactsForRecord(record),
 		ApprovalID:       record.ApprovalID,
 		RunID:            record.RunID,
 		SessionKey:       record.SessionKey,
@@ -352,15 +351,15 @@ func toApprovalDTO(record approvals.Record, candidates []approvals.TabCandidate)
 		RequestedVia:     record.RequestedVia,
 		ResolvedVia:      record.ResolvedVia,
 		ToolName:         record.ToolName,
-		ArgsJSON:         record.ArgsJSON,
-		PayloadJSON:      record.PayloadJSON,
 		RiskLevel:        record.RiskLevel,
-		Summary:          record.Summary,
-		DetailsJSON:      record.DetailsJSON,
+		Summary:          "Saved approval proposal; exact authority metadata unavailable",
 		RequestedAt:      record.RequestedAt.UTC().Format(time.RFC3339),
 		ResolvedBy:       record.ResolvedBy,
-		ResolutionReason: record.ResolutionReason,
+		ResolutionReason: ownerApprovalResolution(record.Status),
 		UpdatedAt:        record.UpdatedAt.UTC().Format(time.RFC3339),
+	}
+	if item.OwnerFacts != nil {
+		item.Summary = item.OwnerFacts.Summary
 	}
 	if record.ResolvedAt != nil {
 		value := record.ResolvedAt.UTC().Format(time.RFC3339)
@@ -390,6 +389,17 @@ func toApprovalDTO(record approvals.Record, candidates []approvals.TabCandidate)
 		}
 	}
 	return item
+}
+
+func ownerApprovalResolution(status string) string {
+	switch status {
+	case approvals.StatusApproved:
+		return "Approved proposal; effect verification remains separate"
+	case approvals.StatusRejected:
+		return "Rejected proposal"
+	default:
+		return ""
+	}
 }
 
 func toSingleTabSessionDTO(record singletab.Record) singleTabSessionDTO {

@@ -1,0 +1,400 @@
+{
+  "status": "passed",
+  "model": "gemini-3.8-flash-high",
+  "release_ref": "250cf05be67b3ba19bcdcc6a7afabf13d5733e79",
+  "historical": {
+    "status": "mixed_completed_history",
+    "baseline_sha256": "be81b57d096b3d3a2a79c532426ccf4bf4dcf4ad3d3d861d63989e10ea1b6f6c",
+    "artifacts": [
+      {
+        "report_sha256": "28c75c31827f8a25ca8ed101e6e04b8264a7e66ee9ce18808d504d5af748c8f0",
+        "release_ref": "85bef824e838caef64407891d5b228f982c51032",
+        "new_attempts": 3
+      },
+      {
+        "report_sha256": "f5d25f36b574464508a4124ac7490d525e75d8c8cf60111a0bb637637e777619",
+        "release_ref": "6bf29435cdf74ee143f4d3dd1c12defb2f9d1aa4",
+        "new_attempts": 2
+      },
+      {
+        "report_sha256": "b7a4b35b7b587fb8f0561cbdb18f5ad8088b7939e673ffa290e06ec10410b89b",
+        "release_ref": "38e3b87353cd3fbf25fb90e77fcf76b83a4ac09d",
+        "new_attempts": 4
+      },
+      {
+        "report_sha256": "72d95bb5ac0bcf5bd4d8d4b28b1de6beb10d819a348c7e5efb187295ce28a1f9",
+        "release_ref": "b91e72d881ea933257110d4452cf8d4b91ae3aba",
+        "new_attempts": 4
+      },
+      {
+        "report_sha256": "5e180087d4e1d43fe52c6afac0c35763b69a8dfe906953a18eac49416bd7cded",
+        "release_ref": "",
+        "new_attempts": 5
+      },
+      {
+        "report_sha256": "6808c50e120b59a40c2c2d9b53babb7dba1e581a3fbcb29ddb3cae6b9491e472",
+        "release_ref": "",
+        "new_attempts": 2
+      },
+      {
+        "report_sha256": "f3474b9d7b6441d1a9ea66dcf84b8aecc7dbe0c7dfcc1494bff3eaa7c19dcdb5",
+        "release_ref": "",
+        "new_attempts": 1
+      },
+      {
+        "report_sha256": "208f7d4702451b36e8f27ab25474fcb3edc66e1e9a18074fd5a946d2ba47dffe",
+        "release_ref": "",
+        "new_attempts": 0
+      },
+      {
+        "report_sha256": "3ec5ffb14090e7875db47490ad20821645974fd3c9478af5b831128b3558a2cc",
+        "release_ref": "",
+        "new_attempts": 1
+      },
+      {
+        "report_sha256": "f4649a539eed17bf01db034209a757bbfdb268759b2446c852f2260009bba0d2",
+        "release_ref": "7431af70a7f9f8699be86a2a73c053c2be56a3c5",
+        "new_attempts": 5
+      },
+      {
+        "report_sha256": "afa63de06b6991feb3a96b322d442d573d4d2834c51a70c07e5fd4419f751a91",
+        "release_ref": "b2100bd2bcd4147b1168a252cd7369c3415c5140",
+        "new_attempts": 10
+      },
+      {
+        "report_sha256": "ce8835a6fefcd600c6b28b88fed73212453c5af54016bdd6d8c77c4e506dbeae",
+        "release_ref": "a473dbd124a8b437de3058e81e0b76455b57bddb",
+        "new_attempts": 0
+      },
+      {
+        "report_sha256": "58edb6f022399e385118c51de8e3f9f7890fbfc74a5dd3b39de8b42839651505",
+        "release_ref": "bdd85cdc752a739e0a4fa9be4789bf2f8fc7132d",
+        "new_attempts": 2
+      },
+      {
+        "report_sha256": "724c8f3f0e4ba6864952e57b52d5111f135fbe8a27c88f00d893a2b4df753df3",
+        "release_ref": "51b3ea62179edf2b31d1b1fbd4d0b08137484ab4",
+        "new_attempts": 2
+      }
+    ],
+    "native_attempts": 41,
+    "known_usage_pairs": 19,
+    "unknown_usage_pairs": 22,
+    "usage": [
+      {
+        "run_id": "run-1791686670205717203-fcecce7eaea3ea63",
+        "reservation_id": "e9ce3e06b11b5229fc8bb94f2d409bde830a1dfffc4e12fef961a85303e05651",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791686670205717203-fcecce7eaea3ea63",
+        "reservation_id": "b68add3660a5fb49ac9df4bd90f2105a54189fb7a6f573521640c77fb9ea4380",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791686670205717203-fcecce7eaea3ea63",
+        "reservation_id": "b1780250701ce0c20906b303cffb80ee952232dfae4a3beb88bd5f10905a811d",
+        "actual_input_tokens": 5526,
+        "actual_output_tokens": 101
+      },
+      {
+        "run_id": "run-1791688873777308720-1d9517b5da3da9ef",
+        "reservation_id": "5a260b551bffd11e9ab89c312097b0b4c4350f4142985e7984955a0834771f77",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791688873777308720-1d9517b5da3da9ef",
+        "reservation_id": "779b9f375063f532b17d4ce628d880605a4a10f4881f379b801d4886e6f00565",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791691045412458727-aa70dbf582b9b496",
+        "reservation_id": "6e6cb0a74d6f9aaf5d7aa51eeb2eb78e85b0851708a6fe53ea66600635b5aee7",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791691045412458727-aa70dbf582b9b496",
+        "reservation_id": "0db7496f708fc4ad519033c573a075d07166bad04a6e1f3759aa3cc38613860b",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791691045412458727-aa70dbf582b9b496",
+        "reservation_id": "a1491d0fdcdeee1dfed146ef87d5017b91baa2afdf341fcfda9d01a67eaf010d",
+        "actual_input_tokens": 6244,
+        "actual_output_tokens": 89
+      },
+      {
+        "run_id": "run-1791691113172230594-20088272d4a492db",
+        "reservation_id": "efc27fd98850af569fb1e082bc3803ecddfebcd6d28d915a26dfd442c822262d",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791694426489736723-fec44c89de11d01d",
+        "reservation_id": "ed1bcb1e7fbc66a12768b9ea227d65bfc8b948cb2d9c83bcf813c52da2ee2a0d",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791694426489736723-fec44c89de11d01d",
+        "reservation_id": "b74f7567c7d8308a6602ba87bc56a1d50a0b92e353e9ebe5cfcb04f6ce1eed78",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791694426489736723-fec44c89de11d01d",
+        "reservation_id": "9d8607b32115f86e7fb9d87177782d1aa03702be14c02675a64497132be7cda6",
+        "actual_input_tokens": 5040,
+        "actual_output_tokens": 90
+      },
+      {
+        "run_id": "run-1791694493060919285-c9e6aec1305dd43c",
+        "reservation_id": "138857aeef60e4e9f9d94dbbf9c0cd3cac22cf32749d84fb73a8446bb222ff36",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791704688540132965-dc65fa91103bb796",
+        "reservation_id": "fcc2304c9d49ddb0c8464eb792942371b8aca4bd1920359cf033f122ff73177a",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791704688540132965-dc65fa91103bb796",
+        "reservation_id": "3cd102b7e3d2481f6f70bccbd7fa222e8eab14aeab3bb87499236f3506747313",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791704688540132965-dc65fa91103bb796",
+        "reservation_id": "09351d2e81b8cb001f68f5a992341af262b370746646ef461351976f41f3773f",
+        "actual_input_tokens": 5226,
+        "actual_output_tokens": 101
+      },
+      {
+        "run_id": "run-1791704756286860114-fa8d42f262f36327",
+        "reservation_id": "85625da8081658f24606349c136626bb13fc8e43e2873862e6b919b822454086",
+        "actual_input_tokens": 2885,
+        "actual_output_tokens": 166
+      },
+      {
+        "run_id": "run-1791704765290208395-e72d5eda99b2b826",
+        "reservation_id": "ffeb521a8175ef9fb70090948daa0d55fb1560e9ed74ffb3ac59b1077c5be93f",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "",
+        "reservation_id": "",
+        "actual_input_tokens": 1990,
+        "actual_output_tokens": 17
+      },
+      {
+        "run_id": "",
+        "reservation_id": "",
+        "actual_input_tokens": 28,
+        "actual_output_tokens": 17
+      },
+      {
+        "run_id": "",
+        "reservation_id": "",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "",
+        "reservation_id": "",
+        "actual_input_tokens": 29,
+        "actual_output_tokens": 17
+      },
+      {
+        "run_id": "run-1791748702327777941-6be50ca468fcc927",
+        "reservation_id": "c6d631f7e32b9358873d285cc68fb5d8ac977e99596db263a4baa686c0e2cff1",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791748702327777941-6be50ca468fcc927",
+        "reservation_id": "dc29bd82d3f0b807184bc1b1c557b6d8e4369770179cae2a3b878a24b3aa718f",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791748702327777941-6be50ca468fcc927",
+        "reservation_id": "b3d9d31ec86533d0529ab73de60e9c6e16eb646d00b74c27e082f8472b08aa6e",
+        "actual_input_tokens": 5472,
+        "actual_output_tokens": 92
+      },
+      {
+        "run_id": "run-1791748774385493674-d1ce9b79cad9b7e3",
+        "reservation_id": "d39a7a927b68fad0a26fff556df520c5cd0faef142f24bd5273c19eda8f576d6",
+        "actual_input_tokens": 2880,
+        "actual_output_tokens": 166
+      },
+      {
+        "run_id": "run-1791748795458973772-d858713c01d0b300",
+        "reservation_id": "9e0414a459570a8f13c90aa1b72c9de202b6ce559e4d91b275c916cc2d4181d4",
+        "actual_input_tokens": 2876,
+        "actual_output_tokens": 160
+      },
+      {
+        "run_id": "run-1791781649045319983-8694bc31d0f6865a",
+        "reservation_id": "c614479656a1c807fa49d0c3f2a6fe0d28d2f647863bcf1fb471a7dda9477fd4",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791781649045319983-8694bc31d0f6865a",
+        "reservation_id": "e5b36a4ee5e3901b1bbc3f394cfdc56e02840baf637d78d1140fa22c4d6b8f18",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791781649045319983-8694bc31d0f6865a",
+        "reservation_id": "7f9d27ca1a085ae3fb7568bea968b50d857c30a0bf25a9e8191eabdc12e4e20a",
+        "actual_input_tokens": 5707,
+        "actual_output_tokens": 70
+      },
+      {
+        "run_id": "run-1791781723812532520-3a671aef2445f9eb",
+        "reservation_id": "cbe48175ee9a5af90139e7f541ce5704bd8d03c52a1f299282cb4d658e65ce28",
+        "actual_input_tokens": 3144,
+        "actual_output_tokens": 165
+      },
+      {
+        "run_id": "run-1791781737557534094-868e4962c53c2439",
+        "reservation_id": "97dab6fe60e19e785e85e6f12b155e7631c68c33a083ba46a09b27f40755202a",
+        "actual_input_tokens": 3138,
+        "actual_output_tokens": 160
+      },
+      {
+        "run_id": "run-1791781750915110756-0e672c49a9feacfc",
+        "reservation_id": "b552c920076fc974c004198eb21cb34dbc811e2dafa88293881e1f43badd4579",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791781750915110756-0e672c49a9feacfc",
+        "reservation_id": "0ea75d1a17f1f3c38a6d8a08844a2c645afcd742b67da5c74f02a233eed42f1b",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791781750915110756-0e672c49a9feacfc",
+        "reservation_id": "7d19881607e1143b73515cd097320a8adea5bf2765199c6a024a615f4a9b10b5",
+        "actual_input_tokens": 6281,
+        "actual_output_tokens": 74
+      },
+      {
+        "run_id": "run-1791781821310830898-b6f905c7c3a13f87",
+        "reservation_id": "c69b2e376de835c0ad05773c73176051a40b5c6aea01eaa0941ff9cfacf6607d",
+        "actual_input_tokens": 3147,
+        "actual_output_tokens": 165
+      },
+      {
+        "run_id": "run-1791781833553753760-b21ab6b1ba3a58ea",
+        "reservation_id": "8d518485f535ce473086857d06ff0b18638059b3bf8714889ffdf3a937db5207",
+        "actual_input_tokens": 3147,
+        "actual_output_tokens": 160
+      },
+      {
+        "run_id": "run-1791784701472967805-5ce92a5c8ba2384f",
+        "reservation_id": "33c96d4f81c11ec4246bc0102afe49c437497e9c27022431a333dd0593931fba",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791784701473173698-220b67e3e35806ae",
+        "reservation_id": "f8163320fc3daa108480f1b71918d9aa669df988fd27c1ae927899222ea018b1",
+        "actual_input_tokens": null,
+        "actual_output_tokens": null
+      },
+      {
+        "run_id": "run-1791786923264801268-98a14d29e9790902",
+        "reservation_id": "98fbe580353d1d525155aa7d3f773fa6e706b18558b9c81cd66c7c49023b7428",
+        "actual_input_tokens": 3155,
+        "actual_output_tokens": 165
+      },
+      {
+        "run_id": "run-1791786923264815236-c6520d2a6a18386e",
+        "reservation_id": "36a20c9012af0eab3578c4191395d8a5490ba86256093a846333d657f61b7a27",
+        "actual_input_tokens": 3143,
+        "actual_output_tokens": 160
+      }
+    ]
+  },
+  "native_attempts": 45,
+  "new_native_attempts": 4,
+  "maximum_total_attempts": 45,
+  "maximum_new_attempts": 4,
+  "attempts": [
+    {
+      "attempt": 42,
+      "run_id": "run-1791791826470237448-3a905cf9235d3942",
+      "kind": "start",
+      "input_hash": "c346703d93aff90af3429c689e2a78b527eef919889bf590c0a211fa9f4e992e",
+      "created_at": "2026-10-12T07:57:06.641141Z"
+    },
+    {
+      "attempt": 43,
+      "run_id": "run-1791791826470237448-3a905cf9235d3942",
+      "kind": "tool_result",
+      "input_hash": "6a5d1a57adbfce4ed500609a5c8ff72dc5c873fad58e1a974e17e718cbe52268",
+      "created_at": "2026-10-12T07:57:12.687533Z"
+    },
+    {
+      "attempt": 44,
+      "run_id": "run-1791791826470237448-3a905cf9235d3942",
+      "kind": "tool_result",
+      "input_hash": "edd10f4e70c37eb22ab6682411c2229bdaf70b2a621fc35664bd4ce4cbedce33",
+      "created_at": "2026-10-12T07:57:17.982888Z"
+    },
+    {
+      "attempt": 45,
+      "run_id": "run-1791791826470237448-3a905cf9235d3942",
+      "kind": "tool_result",
+      "input_hash": "be7e12120ab6ccfb1ee48801a1f8866ad7c87202f0bc9c737138c7ebdcb2a752",
+      "created_at": "2026-10-12T07:57:22.59665Z"
+    }
+  ],
+  "usage": [
+    {
+      "run_id": "run-1791791826470237448-3a905cf9235d3942",
+      "reservation_id": "47c1379d8eb1194bcf889f309b9502e20d110721fc90ce4d729a20e3688984e1",
+      "actual_input_tokens": null,
+      "actual_output_tokens": null
+    },
+    {
+      "run_id": "run-1791791826470237448-3a905cf9235d3942",
+      "reservation_id": "7eddd8e43a21c6afa5aae81818642264c66d59c4973c44cce098c88b002ae591",
+      "actual_input_tokens": null,
+      "actual_output_tokens": null
+    },
+    {
+      "run_id": "run-1791791826470237448-3a905cf9235d3942",
+      "reservation_id": "1099de389fa49fd65c9785e03698f5c7f4564e79f7658694d8d688c4a29e1a56",
+      "actual_input_tokens": null,
+      "actual_output_tokens": null
+    },
+    {
+      "run_id": "run-1791791826470237448-3a905cf9235d3942",
+      "reservation_id": "a52a339b134100ca81f8fcd93c9bde2f1ac5e84f4faa1ceb460661cd7be6efc3",
+      "actual_input_tokens": 5640,
+      "actual_output_tokens": 75
+    }
+  ],
+  "promoted_task_id": "task_a02765473b26d863ce45a1c5b07cd208",
+  "ordinary_run_id": "run-1791791826470237448-3a905cf9235d3942",
+  "actual_cheap_broker_checks": 3,
+  "ordinary_core_artifact_channel_acceptance": true,
+  "model_final_verdict": "unverified",
+  "owner_verified_task_status": "completed",
+  "count_only_digest_status": "sent",
+  "synthetic_channel_ack": "101"
+}

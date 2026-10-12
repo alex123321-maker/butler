@@ -66,25 +66,85 @@ const file = ref<File | null>(null); const uploadKey = ref(''); const uploadRevi
 const operationHint = computed(() => operation.value === 'grants' ? 'Fields: source_id, task_id, task_revision, purpose. The task and source must belong to this owner.' : operation.value === 'index' ? 'Fields: job {job_id, kind:index, purpose, task_id, original_run_id, sources [{source_id, revision, access_revision, content_hash}], allowance {model_turns,tokens,active_millis,provider_input_bytes}, deadline}, scope_type, scope_id, max_chunks. A completed session lease cannot authorize this worker.' : 'Fields: generation_id, expected_previous, proof {artifact_ref,artifact_sha256,corpus_version,cases,baseline_top1,candidate_top1}. Reviewed quality evidence is required.')
 const filtered = computed(() => view.value?.sources.filter(s => `${s.title} ${s.external_key} ${s.scope_id}`.toLowerCase().includes(filter.value.toLowerCase())) || [])
 const tombstoned = computed(() => detail.value?.source.status === 'deleted' || detail.value?.source.status === 'revoked')
-onBeforeUnmount(() => { token.value = ''; view.value = null; detail.value = null; citation.value = null; file.value = null })
-const request = <T,>(path: string, body?: unknown) => ownerAuthorityRequest<T>(path, token.value, body)
+interface OwnerProof { epoch: number; token: string }
+let proofEpoch = 0
+let selectionEpoch = 0
+let queuedInspection: string | null = null
+let mounted = true
+const proofCurrent = (proof: OwnerProof) => mounted && proof.epoch === proofEpoch && !!proof.token && proof.token === token.value
+const requireProof = (proof: OwnerProof) => { if (!proofCurrent(proof)) throw new Error('owner proof changed') }
+const clearPrivate = () => {
+  selectionEpoch++; queuedInspection = null
+  view.value = null; detail.value = null; citation.value = null; file.value = null
+  error.value = ''; receipt.value = ''; pending.value = false; filter.value = ''
+  editTitle.value = ''; editBody.value = ''; editAuthor.value = ''; editTime.value = ''; reviewLegacy.value = false
+  claimKey.value = ''; claimValue.value = '""'; claimSummary.value = ''
+  uploadKey.value = ''; uploadRevision.value = 0; uploadPath.value = ''; repoRevision.value = ''; uploadAuthor.value = ''; uploadTime.value = ''
+  scopeType.value = 'user'; scopeId.value = ''; format.value = 'text'; operation.value = 'grants'; operationJSON.value = ''
+}
+watch(token, () => { proofEpoch++; clearPrivate() }, { flush: 'sync' })
+onBeforeUnmount(() => { mounted = false; proofEpoch++; token.value = ''; clearPrivate() })
+const request = async <T,>(proof: OwnerProof, path: string, body?: unknown): Promise<T> => {
+  requireProof(proof)
+  const result = await ownerAuthorityRequest<T>(path, proof.token, body)
+  requireProof(proof)
+  return result
+}
 const localTime = (v: string | null) => v ? new Date(new Date(v).getTime() - new Date(v).getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''
 const eventTime = (v: string) => v ? new Date(v).toISOString() : null
-const loadView = async () => { view.value = await request<View>('/api/v4/memory') }
-const run = async (fn: () => Promise<void>) => { pending.value = true; error.value = ''; receipt.value = ''; try { await fn() } catch { error.value = 'Memory request rejected. Check owner access, current revision, scope or deletion anchor; reload before retrying.' } finally { pending.value = false } }
-const load = () => run(loadView)
-const loadDetail = async (id: string) => { detail.value = await request<Inspection>(`/api/v4/memory/source?source_id=${encodeURIComponent(id)}`); const s = detail.value.source; editTitle.value = s.title; editBody.value = s.body; editAuthor.value = s.author; editTime.value = localTime(s.event_time); reviewLegacy.value = false; citation.value = null }
-const inspect = (id: string) => run(() => loadDetail(id))
-const mutate = async (path: string, body: unknown) => { await request(path, body); await loadView(); if (detail.value) await loadDetail(detail.value.source.source_id); receipt.value = 'Saved with the current source revision. Historical evidence remains separate from current authority.' }
-const correct = () => run(() => mutate('/api/v4/memory/correct', { source_id: detail.value?.source.source_id, expected_revision: detail.value?.source.revision, title: editTitle.value, body: editBody.value, author: editAuthor.value, event_time: eventTime(editTime.value), review_legacy: reviewLegacy.value }))
-const propose = () => run(() => mutate('/api/v4/memory/claims', { source_id: detail.value?.source.source_id, source_revision: detail.value?.source.revision, key: claimKey.value, value: JSON.parse(claimValue.value), summary: claimSummary.value, extraction_confidence: 1 }))
-const decide = (c: Claim, reject: boolean) => run(() => { const a = view.value?.claims.find(a => a.status === 'confirmed' && a.scope_type === c.scope_type && a.scope_id === c.scope_id && a.key === c.key); return mutate('/api/v4/memory/decisions', { claim_id: c.claim_id, expected_active_id: a?.claim_id || '', reject }) })
-const remove = (action: string) => run(() => mutate('/api/v4/memory/delete', { source_id: detail.value?.source.source_id, expected_revision: detail.value?.source.revision, action }))
-const openCitation = (id: number) => run(async () => { citation.value = await request(`/api/v4/memory/citation?chunk_id=${id}`) })
+const loadView = async (proof: OwnerProof) => { view.value = await request<View>(proof, '/api/v4/memory') }
+const run = async (fn: (proof: OwnerProof) => Promise<void>) => {
+  if (pending.value || !token.value || !mounted) return
+  const proof = { epoch: proofEpoch, token: token.value }
+  pending.value = true; error.value = ''; receipt.value = ''
+  try { await fn(proof) } catch {
+    if (proofCurrent(proof)) error.value = 'Memory request rejected. Check owner access, current revision, scope or deletion anchor; reload before retrying.'
+  } finally { if (proofCurrent(proof)) { pending.value = false; flushInspection() } }
+}
+const route = useRoute()
+const selectedSource = computed(() => typeof route.query.source_id === 'string' && route.query.source_id.length <= 256 ? route.query.source_id : '')
+const clearDetail = () => { detail.value = null; citation.value = null; editTitle.value = ''; editBody.value = ''; editAuthor.value = ''; editTime.value = ''; reviewLegacy.value = false }
+const load = () => run(async proof => { await loadView(proof); const id = queuedInspection || selectedSource.value; queuedInspection = null; if (id) await loadDetail(proof, id, selectionEpoch) })
+const loadDetail = async (proof: OwnerProof, id: string, epoch = selectionEpoch) => {
+  requireProof(proof)
+  if (epoch !== selectionEpoch) return
+  clearDetail()
+  const loaded = await request<Inspection>(proof, `/api/v4/memory/source?source_id=${encodeURIComponent(id)}`)
+  if (epoch !== selectionEpoch) return
+  if (loaded.source.source_id !== id) throw new Error('source selection differs')
+  detail.value = loaded
+  const s = loaded.source
+  editTitle.value = s.title; editBody.value = s.body; editAuthor.value = s.author; editTime.value = localTime(s.event_time); reviewLegacy.value = false
+}
+const flushInspection = () => {
+  if (pending.value || !view.value || !queuedInspection) return
+  const id = queuedInspection; queuedInspection = null
+  const epoch = selectionEpoch
+  return run(proof => loadDetail(proof, id, epoch))
+}
+const inspect = (id: string) => { selectionEpoch++; clearDetail(); queuedInspection = id; return flushInspection() }
+watch(selectedSource, id => { selectionEpoch++; clearDetail(); queuedInspection = id || null; flushInspection() }, { flush: 'sync' })
+const mutate = async (proof: OwnerProof, path: string, body: unknown) => {
+  const sourceID = detail.value?.source.source_id
+  const epoch = selectionEpoch
+  await request(proof, path, body)
+  if (epoch !== selectionEpoch) return
+  await loadView(proof)
+  if (epoch !== selectionEpoch) return
+  if (sourceID) await loadDetail(proof, sourceID, epoch)
+  if (epoch !== selectionEpoch) return
+  requireProof(proof)
+  receipt.value = 'Saved with the current source revision. Historical evidence remains separate from current authority.'
+}
+const correct = () => run(proof => mutate(proof, '/api/v4/memory/correct', { source_id: detail.value?.source.source_id, expected_revision: detail.value?.source.revision, title: editTitle.value, body: editBody.value, author: editAuthor.value, event_time: eventTime(editTime.value), review_legacy: reviewLegacy.value }))
+const propose = () => run(proof => mutate(proof, '/api/v4/memory/claims', { source_id: detail.value?.source.source_id, source_revision: detail.value?.source.revision, key: claimKey.value, value: JSON.parse(claimValue.value), summary: claimSummary.value, extraction_confidence: 1 }))
+const decide = (c: Claim, reject: boolean) => run(proof => { const a = view.value?.claims.find(a => a.status === 'confirmed' && a.scope_type === c.scope_type && a.scope_id === c.scope_id && a.key === c.key); return mutate(proof, '/api/v4/memory/decisions', { claim_id: c.claim_id, expected_active_id: a?.claim_id || '', reject }) })
+const remove = (action: string) => run(proof => mutate(proof, '/api/v4/memory/delete', { source_id: detail.value?.source.source_id, expected_revision: detail.value?.source.revision, action }))
+const openCitation = (id: number) => run(async proof => { const epoch = selectionEpoch; const loaded = await request<{ source: Source; fragment: Fragment; neighbors: Fragment[] }>(proof, `/api/v4/memory/citation?chunk_id=${id}`); if (epoch === selectionEpoch) citation.value = loaded })
 const chooseFile = (e: Event) => { file.value = (e.target as HTMLInputElement).files?.[0] || null; uploadPath.value = file.value?.name || '' }
-const upload = () => run(async () => { if (!file.value || file.value.size > 8 * 1024 * 1024) throw new Error('file limit'); const bytes = new Uint8Array(await file.value.arrayBuffer()); let binary = ''; for (let i = 0; i < bytes.length; i += 16384) binary += String.fromCharCode(...bytes.subarray(i, i + 16384)); const r = await request<{ source: Source; status: string; error_code: string; uncertain: boolean }>('/api/v4/memory/ingest', { external_key: uploadKey.value, expected_revision: uploadRevision.value, scope_type: scopeType.value, scope_id: scopeId.value, format: format.value, path: uploadPath.value, repository_revision: repoRevision.value, author: uploadAuthor.value, event_time: eventTime(uploadTime.value), original_bytes: btoa(binary) }); await loadView(); await loadDetail(r.source.source_id); receipt.value = `Source revision ${r.source.revision}: ${r.status} ${r.error_code || ''}${r.uncertain ? ' · OCR is uncertain' : ''}` })
-const applyOperation = () => run(() => mutate(`/api/v4/memory/${operation.value}`, JSON.parse(operationJSON.value)))
-const download = (path: string, filename: string) => run(async () => { const config = useRuntimeConfig(); const r = await fetch(`${String(config.public.apiBase || '').replace(/\/$/, '')}${path}`, { headers: { Authorization: `Bearer ${token.value}` }, cache: 'no-store' }); if (!r.ok) throw new Error('access'); const url = URL.createObjectURL(await r.blob()); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url) })
+const upload = () => run(async proof => { if (!file.value || file.value.size > 8 * 1024 * 1024) throw new Error('file limit'); const bytes = new Uint8Array(await file.value.arrayBuffer()); requireProof(proof); let binary = ''; for (let i = 0; i < bytes.length; i += 16384) binary += String.fromCharCode(...bytes.subarray(i, i + 16384)); const r = await request<{ source: Source; status: string; error_code: string; uncertain: boolean }>(proof, '/api/v4/memory/ingest', { external_key: uploadKey.value, expected_revision: uploadRevision.value, scope_type: scopeType.value, scope_id: scopeId.value, format: format.value, path: uploadPath.value, repository_revision: repoRevision.value, author: uploadAuthor.value, event_time: eventTime(uploadTime.value), original_bytes: btoa(binary) }); await loadView(proof); await loadDetail(proof, r.source.source_id); receipt.value = `Source revision ${r.source.revision}: ${r.status} ${r.error_code || ''}${r.uncertain ? ' · OCR is uncertain' : ''}` })
+const applyOperation = () => run(proof => mutate(proof, `/api/v4/memory/${operation.value}`, JSON.parse(operationJSON.value)))
+const download = (path: string, filename: string) => run(async proof => { const config = useRuntimeConfig(); const r = await fetch(`${String(config.public.apiBase || '').replace(/\/$/, '')}${path}`, { headers: { Authorization: `Bearer ${proof.token}` }, cache: 'no-store' }); requireProof(proof); if (!r.ok) throw new Error('access'); const blob = await r.blob(); requireProof(proof); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url) })
 </script>
 
 <style scoped>

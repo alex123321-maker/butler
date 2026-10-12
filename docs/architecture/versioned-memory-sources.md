@@ -29,6 +29,13 @@ already in progress is an external copy and cannot be recalled by later deletion
 Existing scope reads also require owner proof; old unversioned mutation APIs deny.
 Tokens use the owner-control configuration and never enter model or memory data.
 
+The memory page captures the current in-page owner token and a proof epoch for
+each operation. Changing or clearing the token, or leaving the page, clears
+private views and editable fields. A response from an older epoch cannot publish
+source text, a citation, a receipt or a download, nor start a follow-up request
+under a replacement token. A `source_id` evidence link opens that exact source
+only after the owner explicitly loads the authenticated page.
+
 Live retrieval checks the current run lease/task/assigned goal authority, exact
 source revision/hash/access and scope. Explicit source grants bind a task revision
 and purpose. An auxiliary worker instead supplies its own current durable job

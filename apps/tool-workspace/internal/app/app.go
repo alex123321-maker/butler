@@ -19,7 +19,6 @@ import (
 	"github.com/butler/butler/internal/resources"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
 	"github.com/butler/butler/internal/workspaceexec"
-	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc"
 	healthv1 "google.golang.org/grpc/health/grpc_health_v1"
 )
@@ -31,11 +30,6 @@ type App struct {
 	listener net.Listener
 	http     *http.Server
 	socket   string
-}
-type denyReconciliation struct{}
-
-func (denyReconciliation) CheckReconciliationTx(context.Context, pgx.Tx, resources.Decision) error {
-	return resources.ErrDenied
 }
 
 func New(ctx context.Context) (*App, error) {
@@ -57,11 +51,16 @@ func New(ctx context.Context) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	provenance, err := workspaceexec.NewProvenance(pool.Pool(), catalog.New(pool.Pool(), catalog.NewFileManifest(cfg.DeletionManifest)))
+	sources := catalog.New(pool.Pool(), catalog.NewFileManifest(cfg.DeletionManifest))
+	provenance, err := workspaceexec.NewProvenance(pool.Pool(), sources)
 	if err != nil {
 		return nil, err
 	}
-	leaseStore, err := resources.New(resources.WorkerGuard{}, denyReconciliation{})
+	recovery, err := workspaceexec.NewRecoveryController(pool.Pool(), sources)
+	if err != nil {
+		return nil, err
+	}
+	leaseStore, err := resources.New(resources.WorkerGuard{}, recovery)
 	if err != nil {
 		return nil, err
 	}
@@ -146,6 +145,8 @@ func (a *App) Run(ctx context.Context) error {
 	go func() { failures <- a.http.ListenAndServe() }()
 	cleanupDone := make(chan struct{})
 	go func() { defer close(cleanupDone); _ = a.runtime.RunPrivacyCleanup(cleanupCtx) }()
+	recoveryDone := make(chan struct{})
+	go func() { defer close(recoveryDone); _ = a.runtime.RunOwnerRecovery(cleanupCtx) }()
 	var err error
 	select {
 	case err = <-failures:
@@ -168,6 +169,10 @@ func (a *App) Run(ctx context.Context) error {
 	case <-shutdown.Done():
 	}
 	_ = a.runtime.Close()
+	select {
+	case <-recoveryDone:
+	case <-shutdown.Done():
+	}
 	a.postgres.Close()
 	if errors.Is(err, http.ErrServerClosed) || errors.Is(err, grpc.ErrServerStopped) {
 		return nil

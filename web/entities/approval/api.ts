@@ -1,6 +1,7 @@
 import { apiRequest } from '@shared/api/client'
 
 export interface ApprovalItem {
+  owner_facts?: { summary: string; effect: string; resource: string; task_id?: string; task_revision: number; constraints_revision: number; goal_id?: string; goal_revision: number; mandate_id?: string; mandate_revision: number; contract_hash: string; args_hash: string; credential_reference_count: number }
   id: string
   run_id: string
   status: string
@@ -8,7 +9,6 @@ export interface ApprovalItem {
   summary?: string
   risk_level?: string
   requested_at?: string
-  args_json?: string
   expires_at?: string
   requested_via?: string
 }

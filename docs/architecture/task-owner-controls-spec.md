@@ -78,6 +78,41 @@ Changing the task or proof clears the snapshot and fences late responses;
 successful controls invalidate it. Goal/mandate and initiative links expose the
 existing authority and observation views. Read failure presents unavailable data.
 
+The snapshot also projects the latest 20 attempts and 20 verified-result records.
+Answer persistence, current task verification and all notification chunks remain
+distinct: an unknown/failed chunk cannot be hidden by another sent chunk. Privacy
+redaction removes response availability. Result references allow only typed
+`source:`, `artifact:`, `effect:` and `result:` opaque IDs; omitted references are
+counted. No summaries, arbitrary URLs, private paths, source bodies or raw verifier
+text are exported. Current goal/mandate versions describe stored revision/state
+matches; admission still owns policy, scope and source validation.
+
+Web owner controls retain the exact request body and durable delivery identity
+after a lost acknowledgement. The owner may retry that saved request or explicitly
+reload current owned task state before a new intention. A failed response never
+claims that the control was unapplied. Proof/task changes fence late control
+receipts. Stopping a child uses its own observed revision and keeps the parent's
+version and result projection independent.
+
+Telegram `/task TASK_ID` reads the same authenticated snapshot without model
+execution; `/mandate_revoke MANDATE_ID CURRENT_REVISION` is a typed authority
+decision. Trusted `From.ID`, allowed chat, session and update delivery supply the
+actor. Text/model output cannot supply one. The short response bounds displayed
+attempts/effects/branches and points to retained Web history.
+
+Approval HTTP responses project finite contract facts: consequence class, safe
+resource URL without userinfo/query/fragment, task/constraints/goal/mandate versions,
+contract/argument hashes and credential-reference count. Stored argument/payload/
+details JSON, free-form summary/resolution text, credentials, continuations and
+hidden reasoning are excluded from list/get/decision responses. Telegram uses the
+same safe facts and never falls back to raw tool arguments. A saved approval
+describes one proposal; current policy and effect verification remain separate.
+
+Typed source/artifact links select their exact retained record. Memory opens
+original content only after explicit owner authentication and loading. Proof and
+source-selection epochs fence late detail, mutation, citation, upload and export
+responses; a delayed old source cannot populate a newer source route.
+
 ## Versions and branches
 
 Every control increments task/constraints revisions and saves prior working

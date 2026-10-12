@@ -26,6 +26,24 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(scripts/dev/initiative-high-window-lab[.]sh$|apps/orchestrator/internal/app/initiative_high_window_test[.]go$)" {
+      [void]$specs.Add("docs/architecture/initiative-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$tests.Add("ssh laba: scripts/dev/initiative-high-window-lab.sh <isolated-agent-root> after Sync. Fourteen fixed prior reports carry41 attempts into a separate at-most4-new/45-total/18-minute window; no inference or auth imports in this preparation.")
+      continue
+    }
+    "^(scripts/dev/initiative-high-lab[.]sh$|apps/orchestrator/internal/app/initiative_high_provider_test[.]go$)" {
+      [void]$specs.Add("docs/architecture/initiative-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$tests.Add("ssh laba: scripts/dev/initiative-high-lab.sh /srv/storage/butler/agents/initiative-high-20261012 prepare. Actual Core/Broker/channel component, positive owning High SQL route without inference, fourteen-pin counters, race/vet and fixed TLS executable. Execute only once after clean-source preparation; baseline41 + at most4 native calls.")
+      continue
+    }
     "^(scripts/dev/delegation-final-high-lab[.]sh$|scripts/dev/delegation-final-tls/|apps/orchestrator/internal/app/delegation_high_final.*_test[.]go$)" {
       [void]$specs.Add("docs/architecture/delegation-contract.md")
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")

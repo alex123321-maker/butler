@@ -10,15 +10,22 @@
     <section v-if="observations" class="owner-observations">
       <h3>Recorded task observations</h3>
       <p>Snapshot of task version {{ observations.revision }} at {{ formatDateTime(observations.observed_at) }}.</p>
+      <p v-if="observations.omitted_metadata?.length">Some references cannot be shown as safe typed metadata.</p>
+      <p>Task {{ observations.status || 'state unavailable' }} · {{ observations.completion_result_id ? `Verified completion result ${observations.completion_result_id}` : 'No verified task completion recorded' }}.</p>
       <section v-if="observations.assignment">
         <h4>Purpose and authority</h4>
         <p>{{ observations.assignment.purpose }} · {{ observations.assignment.initiative_reason }}</p>
         <p>Goal {{ observations.assignment.goal_id }} · mandate {{ observations.assignment.mandate_id || observations.assignment.owner_mandate_id }}</p>
+        <p>Assignment pins goal version {{ observations.assignment.goal_revision ?? 'unavailable' }} and mandate version {{ observations.assignment.mandate_revision ?? 'unavailable' }}.</p>
+        <p v-if="observations.authority?.available">Current goal version {{ observations.authority.goal_revision }} · {{ observations.authority.goal_status }}; mandate version {{ observations.authority.mandate_revision }} · {{ observations.authority.mandate_status }}. {{ observations.authority.versions_current ? 'Stored authority versions match.' : 'Stored authority is stale or inactive.' }} Admission still checks current policy and sources.</p>
+        <p v-else>Current authority metadata is unavailable.</p>
+        <p v-if="observations.assignment.observation_ref">Observation reference {{ observations.assignment.observation_ref }}</p>
         <NuxtLink to="/goals">Inspect or revoke owner authority</NuxtLink>
       </section>
       <section v-if="observations.initiative">
         <h4>Initiative</h4>
         <p>{{ observations.initiative.status }} · {{ observations.initiative.reason }}</p>
+        <p v-if="observations.initiative.source_id">Source {{ observations.initiative.source_id }} · observation {{ observations.initiative.observation_ref || 'unavailable' }}</p>
         <p>Importance {{ observations.initiative.importance }} · confidence score {{ observations.initiative.confidence }} · estimated model calls {{ observations.initiative.expected_model_calls }}.</p>
         <NuxtLink to="/initiatives">Inspect the initiative source</NuxtLink>
       </section>
@@ -30,10 +37,26 @@
             <NuxtLink :to="`/tasks/${encodeURIComponent(child.task_id)}`">{{ child.task_id }}</NuxtLink>
             · {{ child.status }}<span v-if="child.delegation_state"> · delegation {{ child.delegation_state }}</span>
             · {{ child.completion_result_id ? 'Verified task result recorded' : 'Task result is unverified' }}
+            <AppButton variant="danger" :disabled="!canStopBranch || ['cancelled', 'completed'].includes(child.status)" @click="apply('stop', { taskId: child.task_id, revision: child.revision })">Stop branch {{ child.task_id }}</AppButton>
           </li>
         </ul>
         <p v-else>No child tasks are recorded.</p>
         <p v-if="observations.children_truncated">Only the first 100 child tasks are shown.</p>
+      </section>
+      <section>
+        <h4>Saved attempts and result references</h4>
+        <p>Model response, task verification and notification delivery are separate records.</p>
+        <ul v-if="observations.attempts?.length"><li v-for="attempt in observations.attempts" :key="attempt.run_id">
+          <NuxtLink :to="`/runs/${encodeURIComponent(attempt.run_id)}`">{{ attempt.run_id }}</NuxtLink> · task version {{ attempt.task_revision }} · {{ attempt.state }} · response {{ attempt.privacy_redacted ? 'removed by retention policy' : attempt.answer_state }} · notification {{ attempt.delivery_state }}
+          <NuxtLink v-if="attempt.artifact_id && !attempt.privacy_redacted" :to="`/artifacts?artifact_id=${encodeURIComponent(attempt.artifact_id)}`">Saved response artifact {{ attempt.artifact_id }} (verification separate)</NuxtLink>
+        </li></ul>
+        <p v-else>No saved attempt observations are available.</p>
+        <ul v-if="observations.results?.length"><li v-for="saved in observations.results" :key="saved.result_id">
+          Result {{ saved.result_id }} · {{ saved.verdict }} · task version {{ saved.task_revision }} {{ saved.current_revision ? '(current version)' : '(obsolete version)' }}
+          <ul><li v-for="ref in saved.evidence_refs" :key="ref.kind + ref.id"><NuxtLink v-if="evidenceLink(ref.kind, ref.id)" :to="evidenceLink(ref.kind, ref.id)">{{ ref.kind }} {{ ref.id }}</NuxtLink><span v-else>{{ ref.kind }} {{ ref.id }}</span></li></ul>
+          <p v-if="saved.omitted_reference_count">{{ saved.omitted_reference_count }} references cannot be shown as safe typed metadata.</p>
+        </li></ul>
+        <p v-if="observations.attempts_truncated || observations.results_truncated">Only the latest 20 attempts and results are shown.</p>
       </section>
       <section>
         <h4>Action consequences and effects</h4>
@@ -41,6 +64,7 @@
         <ul v-if="observations.actions.length">
           <li v-for="action in observations.actions" :key="action.action_id">
             {{ action.tool_name }} · task version {{ action.task_revision }} · {{ effectLabel(action.effect) }} · {{ effectStateLabel(action.effect_state) }}
+            <details><summary>Recorded evidence and contract</summary><p>Action {{ action.action_id }} · contract {{ action.contract_hash }}</p><p v-for="ref in action.source_refs" :key="ref.source_id + ref.revision"><NuxtLink :to="`/memory?source_id=${encodeURIComponent(ref.source_id)}`">Source {{ ref.source_id }}</NuxtLink> · pinned revision {{ ref.revision }} · access version {{ ref.access_revision }} · SHA-256 {{ ref.content_hash }}</p></details>
           </li>
         </ul>
         <p v-else>No action intents are recorded for this task.</p>
@@ -74,6 +98,7 @@
         <p v-if="observations.auxiliary_work_truncated">Only the latest 50 background jobs are shown.</p>
       </section>
     </section>
+    <TaskWorkspaceRecovery :task-id="taskId" :owner-token="ownerToken" />
     <label>Amendment
       <textarea v-model="instruction" aria-label="Amendment" rows="3" />
     </label>
@@ -85,6 +110,7 @@
       <AppButton variant="danger" :disabled="!canControl" @click="apply('stop')">Stop task</AppButton>
     </div>
     <AppAlert v-if="error" tone="error">{{ error }}</AppAlert>
+    <div v-if="unresolvedControl" class="control-actions"><AppButton :disabled="pending || !ownerToken" @click="retryControl">Retry same control</AppButton><AppButton :disabled="pending || !ownerToken" @click="reloadForNewControl">Reload task for a new control</AppButton></div>
     <AppAlert v-if="result" tone="info">
       {{ result.effect_boundary.includes('reconciliation') ? 'Previous dispatch may already have committed. Reconciliation is required.' : 'Future actions from the previous attempt were revoked. Previous effects remain in history.' }}
       <NuxtLink :to="`/inputs/${result.input_id}`">View control receipt</NuxtLink>
@@ -96,12 +122,14 @@
 import AppPanel from '~/shared/ui/AppPanel.vue'
 import AppButton from '~/shared/ui/AppButton.vue'
 import AppAlert from '~/shared/ui/AppAlert.vue'
+import TaskWorkspaceRecovery from '~/components/TaskWorkspaceRecovery.vue'
 import { apiRequest } from '~/shared/api/client'
 import type { TaskOwnerOverview } from '~/entities/task/api'
 import { formatDateTime } from '~/entities/task/presentation'
 
 interface ControlTask { revision: number; status: string; execution_policy: string }
 interface ControlResult { task: ControlTask; input_id: string; effect_boundary: string }
+interface SavedControl { taskId: string; deliveryId: string; body: { kind: string; expected_revision: number; instruction: string; execution_policy?: string } }
 const props = defineProps<{ taskId: string }>()
 const emit = defineEmits<{ changed: [] }>()
 const record = ref<ControlTask | null>(null)
@@ -111,6 +139,8 @@ const prepareOnly = ref(false)
 const pending = ref(false)
 const error = ref('')
 const result = ref<ControlResult | null>(null)
+const unresolvedControl = ref<SavedControl | null>(null)
+let controlEpoch = 0
 const observations = ref<TaskOwnerOverview | null>(null)
 const observationsPending = ref(false)
 const observationsError = ref(false)
@@ -125,9 +155,11 @@ const effectLabels: Record<string, string> = { read: 'Read', prepare: 'Preparati
 const effectStateLabels: Record<string, string> = { effect_confirmed: 'Effect confirmed', effect_absent: 'Effect confirmed absent', effect_unknown: 'Effect unknown; reconcile before repeating', prepared: 'Prepared', allowed: 'Authorized', executing: 'Dispatch started; effect unverified' }
 const effectLabel = (value: string): string => effectLabels[value] || 'Consequences unknown'
 const effectStateLabel = (value: string): string => effectStateLabels[value] || 'Effect evidence unavailable'
+const evidenceLink = (kind: string, id: string): string => kind === 'source' ? `/memory?source_id=${encodeURIComponent(id)}` : kind === 'artifact' ? `/artifacts?artifact_id=${encodeURIComponent(id)}` : ''
 const clearObservations = () => { observationsEpoch++; observations.value = null; observationsPending.value = false; observationsError.value = false }
-watch(ownerToken, clearObservations)
-const canControl = computed(() => Boolean(ownerToken.value && record.value && !pending.value && !['cancelled', 'completed'].includes(record.value.status)))
+watch(ownerToken, () => { controlEpoch++; pending.value = false; unresolvedControl.value = null; result.value = null; error.value = ''; clearObservations() })
+const canControl = computed(() => Boolean(ownerToken.value && record.value && !pending.value && !unresolvedControl.value && !['cancelled', 'completed'].includes(record.value.status)))
+const canStopBranch = computed(() => Boolean(ownerToken.value && record.value && !pending.value && !unresolvedControl.value))
 let taskEpoch = 0
 onBeforeUnmount(() => { taskEpoch++; ownerToken.value = ''; instruction.value = '' })
 watch(() => props.taskId, async (id) => {
@@ -139,6 +171,8 @@ watch(() => props.taskId, async (id) => {
   pending.value = false
   error.value = ''
   result.value = null
+  unresolvedControl.value = null
+  controlEpoch++
   clearObservations()
   try {
     const response = await apiRequest<{ task: ControlTask }>(`/api/v3/tasks/${encodeURIComponent(id)}`)
@@ -162,28 +196,58 @@ const loadObservations = async () => {
   finally { if (task === taskEpoch && epoch === observationsEpoch) observationsPending.value = false }
 }
 
-const apply = async (kind: 'amend' | 'pause' | 'resume' | 'stop') => {
-  if (!canControl.value || !record.value) return
+const apply = async (kind: 'amend' | 'pause' | 'resume' | 'stop', target?: { taskId: string; revision: number }) => {
+  if (!(target ? canStopBranch.value : canControl.value) || !record.value) return
+  const request: SavedControl = {
+    taskId: target?.taskId || props.taskId,
+    deliveryId: [...crypto.getRandomValues(new Uint8Array(16))].map(value => value.toString(16).padStart(2, '0')).join(''),
+    body: { kind, expected_revision: target?.revision || record.value.revision, instruction: kind === 'amend' ? instruction.value : '', execution_policy: kind === 'amend' && prepareOnly.value ? 'prepare_only' : undefined },
+  }
+  unresolvedControl.value = request
+  await sendControl(request)
+}
+
+const sendControl = async (request: SavedControl) => {
+  if (!ownerToken.value || pending.value) return
   const epoch = taskEpoch
-  const id = props.taskId
+  const proofEpoch = controlEpoch
+  const token = ownerToken.value
   pending.value = true
   error.value = ''
   result.value = null
+  clearObservations()
   try {
-    const deliveryId = [...crypto.getRandomValues(new Uint8Array(16))].map((value) => value.toString(16).padStart(2, '0')).join('')
-    const applied = await apiRequest<ControlResult>(`/api/v3/tasks/${encodeURIComponent(id)}/control`, {
+    const applied = await apiRequest<ControlResult>(`/api/v3/tasks/${encodeURIComponent(request.taskId)}/control`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${ownerToken.value}`, 'X-Butler-Delivery-ID': deliveryId },
-      body: { kind, expected_revision: record.value.revision, instruction: kind === 'amend' ? instruction.value : '', execution_policy: kind === 'amend' && prepareOnly.value ? 'prepare_only' : undefined },
+      headers: { Authorization: `Bearer ${token}`, 'X-Butler-Delivery-ID': request.deliveryId },
+      body: request.body,
     })
-    if (epoch !== taskEpoch) return
+    if (epoch !== taskEpoch || proofEpoch !== controlEpoch) return
+    unresolvedControl.value = null
     result.value = applied
-    record.value = applied.task
-    clearObservations()
+    if (request.taskId === props.taskId) record.value = applied.task
     emit('changed')
   } catch {
-    if (epoch === taskEpoch) error.value = 'Control was not applied. Check owner authentication and reload the current task version.'
-  } finally { if (epoch === taskEpoch) pending.value = false }
+    if (epoch === taskEpoch && proofEpoch === controlEpoch) error.value = 'Control outcome is unavailable. Retry the same control to recover its saved receipt, or reload current task state before a new control.'
+  } finally { if (epoch === taskEpoch && proofEpoch === controlEpoch) pending.value = false }
+}
+
+const retryControl = async () => { if (unresolvedControl.value) await sendControl(unresolvedControl.value) }
+const reloadForNewControl = async () => {
+  if (!ownerToken.value || pending.value) return
+  const epoch = taskEpoch
+  const proofEpoch = controlEpoch
+  pending.value = true
+  try {
+    const view = await apiRequest<TaskOwnerOverview>(`/api/v3/tasks/${encodeURIComponent(props.taskId)}/observations`, { headers: { Authorization: `Bearer ${ownerToken.value}` } })
+    if (epoch !== taskEpoch || proofEpoch !== controlEpoch) return
+    if (!view.status || !view.execution_policy) throw new Error('Current task state unavailable')
+    record.value = { revision: view.revision, status: view.status, execution_policy: view.execution_policy }
+    unresolvedControl.value = null
+    error.value = ''
+    observations.value = view
+  } catch { if (epoch === taskEpoch && proofEpoch === controlEpoch) error.value = 'Current task state is unavailable. The previous control outcome remains unresolved.' }
+  finally { if (epoch === taskEpoch && proofEpoch === controlEpoch) pending.value = false }
 }
 </script>
 

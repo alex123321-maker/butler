@@ -27,7 +27,11 @@
         <tr v-for="approval in approvals" :key="approval.id">
           <td>{{ approval.id }}</td>
           <td>{{ approval.status }}</td>
-          <td>{{ approval.summary || `Tool: ${approval.tool_name || '-'}` }}<pre v-if="approval.args_json">{{ approval.args_json }}</pre><small v-if="approval.expires_at">Expires {{ approval.expires_at }} · reply through {{ approval.requested_via }}</small></td>
+          <td>
+            <template v-if="approval.owner_facts"><p>{{ approval.owner_facts.summary }}</p><p>Task {{ approval.owner_facts.task_id || 'conversation' }} version {{ approval.owner_facts.task_revision }} · constraints {{ approval.owner_facts.constraints_revision }}</p><p>Goal {{ approval.owner_facts.goal_id || 'none' }} version {{ approval.owner_facts.goal_revision }} · mandate {{ approval.owner_facts.mandate_id || 'none' }} version {{ approval.owner_facts.mandate_revision }}</p><p>Credential references {{ approval.owner_facts.credential_reference_count }}; values hidden.</p><details><summary>Exact proposal references</summary><p>Contract {{ approval.owner_facts.contract_hash }} · arguments hash {{ approval.owner_facts.args_hash }}</p></details><p>This approves one saved action. Current policy is checked again before execution; approval does not confirm its effect.</p></template>
+            <p v-else>{{ approval.summary || `Tool: ${approval.tool_name || '-'}` }} · Exact authority metadata unavailable.</p>
+            <small v-if="approval.expires_at">Expires {{ approval.expires_at }} · reply through {{ approval.requested_via }}</small>
+          </td>
           <td>{{ approval.run_id }}</td>
           <td>{{ approval.risk_level || '-' }}</td>
           <td>

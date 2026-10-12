@@ -72,9 +72,14 @@ Current scope: authenticated normalized event ingress, durable schedules, the
 installed PostgreSQL project-attempt and recorded Broker-project observers,
 grouped digest delivery and atomic ordinary-task admission. An unconfigured
 heartbeat remains an empty check. The actual Broker prepared-project-fix proof
-uses an explicit fixture driver and independent owner verification. Live
-generative execution of the promoted task and actual channel delivery remain
-outstanding; the component proof does not establish issue15 acceptance.
+uses three exactly approved observation tasks, then an ordinary Input/Core
+promoted task under current goal/mandate and Catalog/budget guards. Its provider
+is injected: the component fixture uses four scripted turns, while live
+generative acceptance requires the separately sealed native caller. An owner
+independently verifies the recipient's stored patch and actual Broker check;
+the model final stays unverified. A production Telegram delivery worker sends
+the separate count-only digest to a synthetic HTTP recipient and stores the ACK.
+This establishes actual channel delivery without sending to a human owner.
 
 ## Recorded project checks
 

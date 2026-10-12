@@ -3,7 +3,7 @@
 set -euo pipefail
 root=${1:?isolated agent root required}
 mode=${2:-all}
-[[ "$mode" == all || "$mode" == provenance || "$mode" == contracts || "$mode" == broker || "$mode" == bootstrap || "$mode" == ownership ]] || exit 2
+[[ "$mode" == all || "$mode" == provenance || "$mode" == contracts || "$mode" == broker || "$mode" == bootstrap || "$mode" == ownership || "$mode" == recovery ]] || exit 2
 [[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/migrations/060_isolated_code_workspaces.up.sql" ]] || exit 2
@@ -70,6 +70,11 @@ docker run --rm --runtime runc --user "$(id -u):$(id -g)" --network "$network" -
     set -euo pipefail
     packages="./internal/workspaceexec"
     filter="."
+    if [[ "$WORKSPACE_PROOF_MODE" == recovery ]]; then
+      packages="./internal/workspace ./internal/workspaceexec ./apps/tool-workspace/..."
+      filter="^TestWorkspaceOwnerDiscard|^TestWorkspaceRootOwner"
+    fi
+    gofmt -d internal/workspaceexec/recovery*.go internal/workspaceexec/copy_lane.go >/dev/null
     if [[ "$WORKSPACE_PROOF_MODE" == ownership ]]; then
       packages="./internal/workspace ./internal/workspaceexec"
       filter="^TestWorkspace(RootOwner|RuntimeClose|RuntimeRootReplacement|RuntimeRootBinding)"

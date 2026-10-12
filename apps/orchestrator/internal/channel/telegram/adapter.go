@@ -46,6 +46,8 @@ type Adapter struct {
 	approvalGate      *flow.ApprovalGate
 	approvalService   *approvals.Service
 	singleTabSelector BrowserTabSelector
+	ownerTasks        OwnerTaskReader
+	ownerAuthority    OwnerAuthority
 	log               *slog.Logger
 	nextOffset        int64
 	now               func() time.Time
@@ -175,6 +177,9 @@ func (a *Adapter) handleMessageUpdate(ctx context.Context, update Update) error 
 	if !a.isAllowedChatID(update.Message.Chat.ID) {
 		a.log.Warn("telegram update ignored for disallowed chat", slog.Int64("update_id", update.UpdateID), slog.Int64("chat_id", update.Message.Chat.ID))
 		return ErrIgnoredUpdate
+	}
+	if handled, err := a.handleOwnerObservationCommand(ctx, update); handled {
+		return err
 	}
 	handled, err := a.handleCommand(ctx, update.Message)
 	if err != nil {
@@ -545,7 +550,10 @@ func (a *Adapter) DeliverApprovalRequest(ctx context.Context, req flow.ApprovalR
 		return nil
 	}
 
-	text := fmt.Sprintf("Tool call requires approval:\n\nTool: %s\nArgs: %s\n\nApprove or reject?", req.ToolName, req.ArgsJSON)
+	text := "Tool call requires approval. Exact action consequences and authority metadata are unavailable; inspect the stored Web approval."
+	if facts := req.OwnerFacts; facts != nil {
+		text = fmt.Sprintf("Approval required: %s\nTask %s version %d · constraints %d\nGoal %s version %d · mandate %s version %d\nCredential references: %d (values hidden).\nThis decision covers only the exact saved action. Current policy is rechecked before execution; approval does not confirm an effect.", facts.Summary, facts.TaskID, facts.TaskRevision, facts.ConstraintsRevision, facts.GoalID, facts.GoalRevision, facts.MandateID, facts.MandateRevision, facts.CredentialReferenceCount)
+	}
 	markup := &InlineKeyboardMarkup{
 		InlineKeyboard: [][]InlineKeyboardButton{
 			{

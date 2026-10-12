@@ -59,6 +59,25 @@ func (o *RootOwner) Check() error {
 	return nil
 }
 
+// IdentityHash identifies the actual locked inode without exposing its path or
+// device/inode numbers. Recovery compares it to the old physical executor's
+// immutable binding; locking a replacement directory is not quiescence proof.
+func (o *RootOwner) IdentityHash() (string, error) {
+	if o == nil || o.Check() != nil {
+		return "", ErrDenied
+	}
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	if o.dir == nil {
+		return "", ErrDenied
+	}
+	info, err := o.dir.Stat()
+	if err != nil {
+		return "", ErrDenied
+	}
+	return directoryIdentity(info)
+}
+
 // checkRoot compares a component's already opened directory handle to the
 // locked inode. Checking only its named path would miss a transient replacement
 // restored before startup finishes, leaving that component anchored elsewhere.
