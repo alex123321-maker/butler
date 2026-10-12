@@ -252,6 +252,20 @@ func TestScenarioStructuralJSONPendingReconstructionDeniesIntegration(t *testing
 	}
 }
 
+func TestScenarioStructuralJSONAbsoluteDeadlinePersistedIntegration(t *testing.T) {
+	pool := memorytest.Database(t)
+	deadline := time.Now().UTC().Add(10 * time.Second)
+	ctx, cancel := context.WithDeadline(context.Background(), deadline)
+	defer cancel()
+	if _, err := createStructuralDiagnosticWindow(ctx, pool, 8*time.Minute); err != nil {
+		t.Fatal(err)
+	}
+	var actual time.Time
+	if pool.QueryRow(ctx, `SELECT expires_at FROM fixture_structural_json_window`).Scan(&actual) != nil || actual.After(deadline) || deadline.Sub(actual) > time.Microsecond {
+		t.Fatal("SQL scope extended the absolute parent deadline")
+	}
+}
+
 func TestScenarioStructuralJSONPostWaitGuardsIntegration(t *testing.T) {
 	for _, mode := range []string{"prior_failed_after_wait", "expired_after_wait"} {
 		t.Run(mode, func(t *testing.T) {

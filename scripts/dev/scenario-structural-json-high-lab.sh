@@ -74,7 +74,7 @@ if [[ "$phase" == prepare ]]; then
   docker run --rm --runtime runc --network "$network" --read-only --user "$(id -u):$(id -g)" --memory 1536m --pids-limit 160 --cpus 2 --cap-drop ALL --security-opt no-new-privileges:true \
     --volume "$source_dir:/src:ro" --volume "$proof/binaries:/binaries:ro" --volume "$proof/tmp:/tmp" --workdir /src --env TMPDIR=/tmp --env "$dsn" \
     "$go_image" /binaries/orchestrator.test -test.v -test.timeout=5m \
-      -test.run='^TestScenario(PrivateFinalCapture|HighV3History|StructuralJSON(ClosedGateAndExactInputs|EncodingOnlyTwoContextsIntegration|FailuresDenyNextEntryIntegration|PostWaitGuardsIntegration|ChangedInputDeniedBeforeEntryIntegration|PendingReconstructionDeniesIntegration))' > "$proof/pg-tests.txt" 2>&1
+      -test.run='^TestScenario(PrivateFinalCapture|HighV3History|StructuralJSON(ClosedGateAndExactInputs|EncodingOnlyTwoContextsIntegration|FailuresDenyNextEntryIntegration|PostWaitGuardsIntegration|ChangedInputDeniedBeforeEntryIntegration|PendingReconstructionDeniesIntegration|AbsoluteDeadlinePersistedIntegration))' > "$proof/pg-tests.txt" 2>&1
   ! grep -Eq -- '--- (FAIL|SKIP):' "$proof/pg-tests.txt"
   LC_ALL=C sort "$source_dir/scripts/dev/fixtures/structural-json-required-tests.txt" > "$proof/required-tests.txt"
   sed -n 's/^[[:space:]]*--- PASS: \(TestScenarioStructuralJSON[^ ]*\).*/\1/p' "$proof/pg-tests.txt" | LC_ALL=C sort > "$proof/passed-tests.txt"
@@ -94,6 +94,7 @@ fi
 docker run --rm --runtime runc --network butler-lab_backend --user 10001:10001 --read-only --cap-drop ALL --memory 64m --pids-limit 16 --cpus 1 --security-opt no-new-privileges:true \
   --volume "$proof/binaries/tls-prerequisite:/prerequisite:ro" "$go_image" /prerequisite > "$proof/tls.json"
 import_file=/srv/storage/butler/agents/antigravity-provider/profile/.gemini/antigravity-cli/butler-native-import.json
+[[ -f "$import_file" && ! -L "$import_file" ]]
 # Only this exact file is mounted; never its credential-bearing parent directory.
 docker run --rm --network none --user 10001:10001 --read-only --cap-drop ALL --memory 32m --pids-limit 16 --security-opt no-new-privileges:true \
   --volume "$import_file:/metadata/import.json:ro" alpine:3.22 sh -eu -c 'p=/metadata/import.json; test -f "$p"; test ! -L "$p"; test "$(stat -c "%u:%a" "$p")" = 10001:600; size=$(stat -c %s "$p"); test "$size" -gt 0; test "$size" -le 65536'

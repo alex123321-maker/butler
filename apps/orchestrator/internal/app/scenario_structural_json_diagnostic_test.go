@@ -83,6 +83,10 @@ type structuralDiagnosticWindow struct {
 const structuralDiagnosticSafePriorSQL = `SELECT NOT EXISTS(SELECT 1 FROM fixture_structural_json_attempts a LEFT JOIN fixture_structural_json_retention r USING(ordinal) WHERE a.outcome<>'completed' OR NOT a.clean_lifecycle OR NOT a.metadata_known OR NOT COALESCE(r.retention_ok,false))`
 
 func createStructuralDiagnosticWindow(ctx context.Context, pool *pgxpool.Pool, duration time.Duration) (*structuralDiagnosticWindow, error) {
+	deadline := time.Now().UTC().Add(duration)
+	if parentDeadline, ok := ctx.Deadline(); ok && parentDeadline.Before(deadline) {
+		deadline = parentDeadline
+	}
 	history, err := readScenarioHighV3History()
 	cases, cerr := structuralDiagnosticInputs()
 	if pool == nil || err != nil || cerr != nil || history.NativeAttempts != 266 || history.KnownUsagePairs != 240 || history.UnknownUsagePairs != 26 || duration <= 0 || duration > 8*time.Minute {
@@ -107,7 +111,7 @@ END $$;`
 		return nil, errNativeFixtureDenied
 	}
 	protocol := structuralDiagnosticProtocolSHA()
-	if _, err = pool.Exec(ctx, `INSERT INTO fixture_structural_json_window VALUES(TRUE,266,$1,$2,clock_timestamp()+$3*interval '1 millisecond') ON CONFLICT DO NOTHING`, history.BaselineSHA256, protocol, duration.Milliseconds()); err != nil {
+	if _, err = pool.Exec(ctx, `INSERT INTO fixture_structural_json_window VALUES(TRUE,266,$1,$2,$3) ON CONFLICT DO NOTHING`, history.BaselineSHA256, protocol, deadline); err != nil {
 		return nil, errNativeFixtureDenied
 	}
 	var compatible bool
