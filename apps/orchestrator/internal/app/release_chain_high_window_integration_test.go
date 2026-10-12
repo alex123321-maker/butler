@@ -174,7 +174,7 @@ func TestReleaseChainHighAllFailedEntriesSpentButSourceDenialZeroIntegration(t *
 	if e != nil {
 		t.Fatal(e)
 	}
-	if _, e = pool.Exec(ctx, `INSERT INTO runs(run_id,session_key,task_id,task_revision,input_event_id,status,autonomy_mode,current_state,model_provider,lease_id) VALUES('chain-run',$1,$2,1,'input','model_running','mode_2','model_running','antigravity','chain-lease')`, key, root.TaskID); e != nil {
+	if _, e = pool.Exec(ctx, `INSERT INTO runs(run_id,session_key,task_id,task_revision,input_event_id,status,autonomy_mode,current_state,model_provider,lease_id,started_at,updated_at) VALUES('chain-run',$1,$2,1,'input','model_running','mode_2','model_running','antigravity','chain-lease',clock_timestamp(),clock_timestamp())`, key, root.TaskID); e != nil {
 		t.Fatal(e)
 	}
 	if _, e = pool.Exec(ctx, `INSERT INTO session_ownership(session_key,run_id,lease_id,fence_epoch,expires_at) VALUES($1,'chain-run','chain-lease',1,clock_timestamp()+interval '1 hour')`, key); e != nil {
