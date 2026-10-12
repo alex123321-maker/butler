@@ -6,6 +6,12 @@ model-selected command, or approve deployment. The standard library is sufficien
 for fixed Go test events, bounded JSON observations, digests and Ed25519 review;
 no evaluation framework or new dependency is added.
 
+`cmd/command-observe` separately checks supplementary typed owner-control
+proposals and original witnesses. Its [contract](../../docs/architecture/observation-evaluation-contract.md)
+and [runner instructions](../../cmd/command-observe/README.md) preserve signed V3
+data/scoring. The new 45-case fixture is candidate contract validation, not an
+independent model-quality holdout or replacement for the reviewed 240 cases.
+
 `scripts/dev/fault-lab.ps1 -Profile Full` synchronizes only an isolated agent root
 and invokes `fault-lab.sh` there. It creates its own internal Docker network,
 PostgreSQL and Redis with synthetic credentials, one database per package, and
