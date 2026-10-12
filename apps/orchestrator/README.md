@@ -1,5 +1,13 @@
 # Orchestrator
 
+The budgeted provider now records complete request usage from tool proposals and
+other complete transport outcomes as well as legacy text finals. One admitted
+operation receives one consistent measurement; duplicate events cannot add a
+charge or overwrite its first known counts. Missing/incomplete/cancelled metadata
+remains NULL; source/task admission and conservative reservations keep their
+existing authority and no-refund semantics. Earlier native reports are immutable.
+Zero-inference regression runner: `scripts/dev/tool-turn-usage-lab.sh`.
+
 Owner state/control acceptance adds finite attempt/result/source/version metadata,
 exact lost-ACK control replay in Web, typed Telegram observations/mandate revocation
 and safe approval response projection. The HTTP response itself excludes raw

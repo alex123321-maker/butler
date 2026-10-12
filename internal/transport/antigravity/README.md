@@ -1,5 +1,16 @@
 # Antigravity native transport
 
+Future complete tool turns now retain native SSE usage on the logical transport
+event, so the same owning budget wrapper can record it without waiting for a text
+final. Complete invalid function proposals carry usage only on their safe terminal
+error, never an executable tool. Tiered and High share this path; legacy final
+usage remains compatible. Missing/partial/provisional counts, incomplete streams,
+invalid/aliased/negative/overflowed counts and cancellation before completion do
+not become measured zero. No actual provider requests, imports or historical
+backfills are part of this fix; all sealed native reports remain unchanged.
+`scripts/dev/tool-turn-usage-lab.sh` verifies synthetic HTTP/SSE and real PG budget
+behavior on laba without inference.
+
 The [bounded issue16 matrix](../../../docs/ai/delegation-final-high-acceptance-20261012.md)
 is accepted on High: exact actual native parent receipt projections, width1 owner
 decisions, recovered children and final native overlap2/source/report/control

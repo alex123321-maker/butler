@@ -36,6 +36,21 @@ type Usage struct {
 	TotalTokens  int
 }
 
+// Validate accepts nonnegative observed counts without overflowing a sum. A
+// reported nonzero total may include provider reasoning/cached dimensions, but
+// cannot be less than the separately reported input/output subtotal. Zero total
+// remains compatible with adapters that report only the two measured dimensions.
+func (u Usage) Validate() error {
+	maxInt := int(^uint(0) >> 1)
+	if u.InputTokens < 0 || u.OutputTokens < 0 || u.TotalTokens < 0 || u.InputTokens > maxInt-u.OutputTokens {
+		return fmt.Errorf("invalid observed token usage")
+	}
+	if u.TotalTokens > 0 && u.TotalTokens < u.InputTokens+u.OutputTokens {
+		return fmt.Errorf("invalid observed token total")
+	}
+	return nil
+}
+
 type AssistantFinal struct {
 	Content      string
 	FinishReason string
@@ -69,6 +84,10 @@ type TransportEvent struct {
 	ToolCall             *ToolCallRequest
 	ToolCallBatch        *ToolCallBatch
 	TransportError       *Error
+	// Usage is the complete observation for one admitted inference request,
+	// independent of whether that turn requests tools or returns final text.
+	// It is never a per-tool allowance or permission to run another turn.
+	Usage *Usage
 }
 
 func NewEvent(runID string, eventType EventType, providerName string) TransportEvent {
@@ -109,6 +128,7 @@ func NewAssistantDeltaEvent(runID, providerName string, delta AssistantDelta) Tr
 func NewAssistantFinalEvent(runID, providerName string, final AssistantFinal) TransportEvent {
 	event := NewEvent(runID, EventTypeAssistantFinal, providerName)
 	event.AssistantFinal = &final
+	event.Usage = final.Usage
 	event.PayloadJSON = mustJSON(final)
 	return event
 }

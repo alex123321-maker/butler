@@ -17,6 +17,7 @@ pwsh -NoProfile -File scripts/dev/run-orchestrator.ps1
 ```
 
 Available scripts:
+- `tool-turn-usage-lab.sh AGENT_ROOT` — future complete-turn usage in Tiered/High synthetic SSE and real disposable PostgreSQL budget wrapper, NULL/malformed/duplicate/cancel/source-denied cases, race/vet; no actual model calls, private auth or old history edits.
 - `owner-state-lab.sh AGENT_ROOT` — disposable PostgreSQL, actual owner HTTP/authority/replay and safe approval response checks; all Telegram uses fake local HTTP. Race/vet, zero inference and zero human messages.
 - `owner-state-web-lab.sh AGENT_ROOT` — targeted actual Chromium presentation scenarios, TypeScript/lint/build. HTTP observations are intercepted synthetic fixtures; this is not external-effect evidence. Excludes the unrelated stale all-page screenshot baseline whose merged Skills/Converters sidebar changed before this task.
 - `owner-state-browser-api-lab.sh AGENT_ROOT` — actual Chromium → Go production owner handlers → disposable PostgreSQL; paused reload, branch controls and committed lost-ACK replay with independently checked durable event count. Seeded effect/result observations are labelled fixture data; no provider/executor/main deployment is present.

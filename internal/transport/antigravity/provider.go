@@ -241,7 +241,9 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 		if err != nil {
 			delete(p.runs, runID)
 			p.mu.Unlock()
-			send(transport.NewTransportErrorEvent(runID, Name, err))
+			event := transport.NewTransportErrorEvent(runID, Name, err)
+			event.Usage = answer.Usage
+			send(event)
 			return
 		}
 		if call != nil {
@@ -251,7 +253,9 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 			state.pending = &proposal
 			state.pendingNative = *call
 			p.mu.Unlock()
-			if !send(transport.NewToolCallRequestedEvent(runID, Name, proposal)) {
+			event := transport.NewToolCallRequestedEvent(runID, Name, proposal)
+			event.Usage = answer.Usage
+			if !send(event) {
 				p.discard(runID, state)
 			}
 			return
@@ -259,7 +263,9 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 		delete(p.runs, runID)
 		p.mu.Unlock()
 		if answer.Text == "" {
-			send(transport.NewTransportErrorEvent(runID, Name, protocolError("model returned no usable text or function")))
+			event := transport.NewTransportErrorEvent(runID, Name, protocolError("model returned no usable text or function"))
+			event.Usage = answer.Usage
+			send(event)
 			return
 		}
 		send(transport.NewAssistantFinalEvent(runID, Name, transport.AssistantFinal{Content: answer.Text, FinishReason: answer.FinishReason, Usage: answer.Usage}))

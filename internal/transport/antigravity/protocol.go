@@ -68,11 +68,7 @@ type responseEnvelope struct {
 		Content      content `json:"content"`
 		FinishReason string  `json:"finishReason"`
 	} `json:"candidates"`
-	UsageMetadata struct {
-		PromptTokenCount     int `json:"promptTokenCount"`
-		CandidatesTokenCount int `json:"candidatesTokenCount"`
-		TotalTokenCount      int `json:"totalTokenCount"`
-	} `json:"usageMetadata"`
+	UsageMetadata                   *nativeUsage      `json:"usageMetadata"`
 	ModelVersion                    string            `json:"modelVersion"`
 	AutomaticFunctionCallingHistory []json.RawMessage `json:"automaticFunctionCallingHistory"`
 	Error                           json.RawMessage   `json:"error"`
@@ -82,6 +78,37 @@ type modelAnswer struct {
 	Text         string
 	FinishReason string
 	Usage        *transport.Usage
+}
+
+type nativeUsage struct {
+	PromptTokenCount, CandidatesTokenCount, TotalTokenCount *int
+}
+
+// Count names are exact. Other provider usage dimensions may be ignored, but
+// encoding/json case/Unicode aliases must not override a measured count.
+func (u *nativeUsage) UnmarshalJSON(data []byte) error {
+	if _, err := strictJSON(data); err != nil {
+		return err
+	}
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(data, &fields); err != nil || fields == nil {
+		return fmt.Errorf("invalid usage metadata")
+	}
+	counts := map[string]**int{"promptTokenCount": &u.PromptTokenCount, "candidatesTokenCount": &u.CandidatesTokenCount, "totalTokenCount": &u.TotalTokenCount}
+	for key, raw := range fields {
+		if target, ok := counts[key]; ok {
+			if err := json.Unmarshal(raw, target); err != nil {
+				return err
+			}
+			continue
+		}
+		for canonical := range counts {
+			if strings.EqualFold(key, canonical) {
+				return fmt.Errorf("ambiguous usage count")
+			}
+		}
+	}
+	return nil
 }
 
 func (p *Provider) invoke(ctx context.Context, model, sessionID string, body generateRequest, onText func(string) bool) (modelAnswer, error) {
@@ -218,8 +245,33 @@ func readStreamProtocol(reader io.Reader, onText func(string) bool, cloud bool) 
 			}
 			return nil
 		}
-		if _, err := strictJSON([]byte(data)); err != nil {
+		decoded, decodeErr := strictJSON([]byte(data))
+		if decodeErr != nil {
 			return protocolError("invalid SSE response JSON")
+		}
+		// The typed envelope decoder folds key case/Unicode. Reject aliases at
+		// the usage boundary so a second field cannot replace canonical counts.
+		if object, ok := decoded.(map[string]any); ok {
+			usageAlias := func(fields map[string]any) bool {
+				for key := range fields {
+					if key != "usageMetadata" && strings.EqualFold(key, "usageMetadata") {
+						return true
+					}
+				}
+				return false
+			}
+			if usageAlias(object) {
+				return protocolError("ambiguous usage metadata")
+			}
+			if cloud {
+				for key, value := range object {
+					if strings.EqualFold(key, "response") {
+						if wrapped, ok := value.(map[string]any); ok && usageAlias(wrapped) {
+							return protocolError("ambiguous usage metadata")
+						}
+					}
+				}
+			}
 		}
 		var envelope responseEnvelope
 		if json.Unmarshal([]byte(data), &envelope) != nil || (len(envelope.Error) > 0 && string(envelope.Error) != "null") {
@@ -270,11 +322,25 @@ func readStreamProtocol(reader io.Reader, onText func(string) bool, cloud bool) 
 			}
 		}
 		u := response.UsageMetadata
-		if u.PromptTokenCount < 0 || u.CandidatesTokenCount < 0 || u.TotalTokenCount < 0 {
-			return protocolError("invalid usage metadata")
+		if u != nil {
+			for _, count := range []*int{u.PromptTokenCount, u.CandidatesTokenCount, u.TotalTokenCount} {
+				if count != nil && *count < 0 {
+					return protocolError("invalid usage metadata")
+				}
+			}
 		}
-		if u.TotalTokenCount > 0 {
-			answer.Usage = &transport.Usage{InputTokens: u.PromptTokenCount, OutputTokens: u.CandidatesTokenCount, TotalTokens: u.TotalTokenCount}
+		if finished && u != nil && u.PromptTokenCount != nil && u.CandidatesTokenCount != nil && u.TotalTokenCount != nil {
+			usage := &transport.Usage{InputTokens: *u.PromptTokenCount, OutputTokens: *u.CandidatesTokenCount, TotalTokens: *u.TotalTokenCount}
+			if usage.Validate() != nil {
+				return protocolError("invalid usage metadata")
+			}
+			if usage.TotalTokens < usage.InputTokens+usage.OutputTokens {
+				return protocolError("invalid usage metadata")
+			}
+			if answer.Usage != nil && *answer.Usage != *usage {
+				return protocolError("conflicting complete usage metadata")
+			}
+			answer.Usage = usage
 		}
 		return nil
 	}

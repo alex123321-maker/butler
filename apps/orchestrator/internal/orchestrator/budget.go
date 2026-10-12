@@ -77,6 +77,7 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 				}
 			}
 		}
+		var observed *transport.Usage
 		for {
 			select {
 			case <-turn.Done():
@@ -89,8 +90,18 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 					}
 					return
 				}
-				if final := event.AssistantFinal; final != nil && final.Usage != nil {
-					in, output := int64(final.Usage.InputTokens), int64(final.Usage.OutputTokens)
+				usage, usageErr := modelTurnUsage(event)
+				stopTurn := false
+				if usageErr == nil && observed != nil && usage != nil && *usage != *observed {
+					usageErr = fmt.Errorf("conflicting observations for one model turn")
+				}
+				if usageErr != nil {
+					stopTurn = true
+					event = transport.NewTransportErrorEvent(runID, p.Name(), fmt.Errorf("invalid observed model usage"))
+				} else if usage != nil && observed == nil {
+					copy := *usage
+					observed = &copy
+					in, output := int64(usage.InputTokens), int64(usage.OutputTokens)
 					observeCtx, stop := context.WithTimeout(context.WithoutCancel(ctx), 3*time.Second)
 					err := s.config.Budgets.ObserveModel(observeCtx, a.OperationID, &in, &output)
 					stop()
@@ -98,6 +109,7 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 						s.log.Warn("model usage persistence unavailable; conservative reservation retained")
 					}
 					if in > input || output > a.OutputTokens {
+						stopTurn = true
 						event = transport.NewTransportErrorEvent(runID, p.Name(), fmt.Errorf("provider exceeded declared inference allowance"))
 						event.TransportError.Type = "execution_budget_tokens"
 					}
@@ -111,10 +123,39 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 				if event.EventType == transport.EventTypeToolCallRequested || event.EventType == transport.EventTypeToolCallBatchRequested {
 					return
 				}
+				if stopTurn {
+					return
+				}
 			}
 		}
 	}()
 	return out, nil
+}
+
+// Prefer one turn-level observation, with the existing final-only field as a
+// compatibility path. Neither field is cumulative usage across multiple turns.
+func modelTurnUsage(event transport.TransportEvent) (*transport.Usage, error) {
+	usage := event.Usage
+	if final := event.AssistantFinal; final != nil && final.Usage != nil {
+		if usage != nil && *usage != *final.Usage {
+			return nil, fmt.Errorf("ambiguous observed model usage")
+		}
+		if usage == nil {
+			usage = final.Usage
+		}
+	}
+	if usage == nil {
+		return nil, nil
+	}
+	switch event.EventType {
+	case transport.EventTypeAssistantFinal, transport.EventTypeToolCallRequested, transport.EventTypeToolCallBatchRequested, transport.EventTypeTransportError, transport.EventTypeRunCompleted, transport.EventTypeRunCancelled, transport.EventTypeRunTimedOut:
+	default:
+		return nil, fmt.Errorf("usage is not a complete turn observation")
+	}
+	if err := usage.Validate(); err != nil {
+		return nil, err
+	}
+	return usage, nil
 }
 
 func budgetStopReason(err error) (string, bool) {
