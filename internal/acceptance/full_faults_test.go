@@ -87,7 +87,7 @@ func localOOMFixture(t *testing.T, root string) LocalLoadOOM {
 		t.Fatal(err)
 	}
 	hash, _ := FileHash(filepath.Join(root, "scripts/dev/local-model-load-oom-lab.sh"))
-	return LocalLoadOOM{Version: LocalLoadOOMVersion, RunnerSHA256: hash, Image: localOOMImage, WeightsSHA256: localOOMWeights, WeightsBytes: 522640096, ManifestSHA256: localOOMManifest, ActualModelLoadAttempts: 1, ModelMetadataRead: true, OOMKilled: true, ExitCode: 137, ElapsedSeconds: 5, MemoryBytes: 268435456, MemorySwapBytes: 268435456, NanoCPUs: 1000000000, PidsLimit: 64, Runtime: "runc", NetworkMode: "none", User: "10001:10001", ReadOnlyRoot: true, OnlyReadOnlyWeightMount: true, NoDeviceRequests: true, NoCapabilities: true, NoNewPrivileges: true, CPUOnly: true, Model: "qwen3:0.6b", Stage: "load_before_inference"}
+	return LocalLoadOOM{Version: LocalLoadOOMVersion, RunnerSHA256: hash, Image: localOOMImage, WeightsSHA256: localOOMWeights, WeightsBytes: 522640096, ManifestSHA256: localOOMManifest, RegistryManifestSHA256: localOOMRegistryManifest, ActualModelLoadAttempts: 1, ModelMetadataRead: true, OOMKilled: true, ExitCode: 137, ElapsedSeconds: 5, MemoryBytes: 268435456, MemorySwapBytes: 268435456, NanoCPUs: 1000000000, PidsLimit: 64, Runtime: "runc", NetworkMode: "none", User: "10001:10001", ReadOnlyRoot: true, OnlyReadOnlyWeightMount: true, NoDeviceRequests: true, NoCapabilities: true, NoNewPrivileges: true, CPUOnly: true, Model: "qwen3:0.6b", Stage: "load_before_inference"}
 }
 
 func TestFullFaultReportNeedsEveryCurrentNamedFaultAndPhysicalModelOOM(t *testing.T) {
@@ -159,8 +159,9 @@ func TestPhysicalModelOOMProofRejectsGracefulFailureInferenceIsolationAndRelabel
 		func(p *LocalLoadOOM) { p.ActualInferenceCalls = 1 }, func(p *LocalLoadOOM) { p.ActualNativeCalls = 1 }, func(p *LocalLoadOOM) { p.ModelMetadataRead = false },
 		func(p *LocalLoadOOM) { p.MemorySwapBytes = 536870912 }, func(p *LocalLoadOOM) { p.ElapsedSeconds = 91 }, func(p *LocalLoadOOM) { p.NetworkMode = "bridge" },
 		func(p *LocalLoadOOM) { p.NoDeviceRequests = false }, func(p *LocalLoadOOM) { p.OnlyReadOnlyWeightMount = false }, func(p *LocalLoadOOM) { p.NoCapabilities = false },
-		func(p *LocalLoadOOM) { p.NoNewPrivileges = false }, func(p *LocalLoadOOM) { p.KernelObservedPhysicalOOM = true }, func(p *LocalLoadOOM) { p.Model = "3.8 flash high" },
+		func(p *LocalLoadOOM) { p.NoNewPrivileges = false }, func(p *LocalLoadOOM) { p.ButlerKernelReceivedOOM = true }, func(p *LocalLoadOOM) { p.Model = "3.8 flash high" },
 		func(p *LocalLoadOOM) { p.RunnerSHA256 = strings.Repeat("b", 64) }, func(p *LocalLoadOOM) { p.WeightsSHA256 = strings.Repeat("b", 64) },
+		func(p *LocalLoadOOM) { p.RegistryManifestSHA256 = strings.Repeat("b", 64) },
 	}
 	for i, change := range mutations {
 		p := valid

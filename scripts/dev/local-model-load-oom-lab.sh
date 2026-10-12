@@ -13,14 +13,19 @@ image=sha256:b86366bb528bbf7f1424435d165028497a5b69bf6ddb4fa5a87102e2b79f44fb
 weight_hash=7f4030143c1c477224c5434f8272c662a8b042079a0a584f0a27a1684fe2e1fa
 weight=/srv/storage/butler/agents/local-generative/model-store/blobs/sha256-$weight_hash
 manifest=/srv/storage/butler/agents/local-generative/model-store/manifests/registry.ollama.ai/library/qwen3/0.6b
+registry_hash=7df6b6e09427a769808717c0a93cadc4ae99ed4eb8bf5ca557c90846becea435
+registry=/srv/storage/butler/agents/local-generative/model-store/blobs/sha256-$registry_hash
 [[ -f "$weight" && ! -L "$weight" && "$(readlink -f "$weight")" == "$weight" && "$(stat -c %s "$weight")" == 522640096 ]]
 [[ "$(sha256sum "$weight" | cut -d' ' -f1)" == "$weight_hash" ]]
 manifest_hash=$(sha256sum "$manifest" | cut -d' ' -f1)
 [[ "$manifest_hash" == 6f76d4346c34ba89df6e137fb661b4bb4daf322c1151b6ef0dfda981070a851f ]]
+grep -Fq '"mediaType":"application/vnd.docker.distribution.manifest.v2+json","digest":"sha256:'"$registry_hash"'","size":858' "$manifest"
+[[ -f "$registry" && ! -L "$registry" && "$(stat -c %s "$registry")" == 858 && "$(sha256sum "$registry" | cut -d' ' -f1)" == "$registry_hash" ]]
 [[ "$(docker image inspect "$image" --format '{{.Id}}')" == "$image" ]]
 runner_hash=$(sha256sum "$source_dir/scripts/dev/local-model-load-oom-lab.sh" | cut -d' ' -f1)
 # Atomic one-use marker is never reopened, even after failure or interruption.
-marker="$root/cached-qwen3-load-oom-v1-sealed"
+mkdir -p /srv/storage/butler/fault-acceptance-windows
+marker=/srv/storage/butler/fault-acceptance-windows/issue33-cached-qwen3-load-20261012
 mkdir "$marker" || { printf 'Cached model load window already sealed\n' >&2; exit 1; }
 proof="$root/reports/local-model-load-oom-$(date -u +%Y%m%dT%H%M%SZ)-$$"
 mkdir -p "$proof"
@@ -32,6 +37,9 @@ created=false
 cleanup() { $created && docker rm -f "$container" >/dev/null 2>&1 || true; }
 trap cleanup EXIT INT TERM
 started=$SECONDS
+# The cached runtime's own --help defines none as "no special loading mode",
+# compared with auto/mmap/mlock. It disables special mapping, not tensor load;
+# --model still supplies the full GGUF to the CPU loader. No inference is sent.
 docker create --name "$container" --runtime runc --user 10001:10001 --network none --read-only \
   --memory 256m --memory-swap 256m --cpus 1 --pids-limit 64 --cap-drop ALL --security-opt no-new-privileges:true \
   --tmpfs /tmp:rw,noexec,nosuid,nodev,size=8m,uid=10001,gid=10001,mode=0700 \
@@ -60,8 +68,8 @@ oom=$(docker inspect --format '{{.State.OOMKilled}}' "$container")
 docker logs "$container" > "$proof/public-weight-loader.log" 2>&1
 metadata=false
 grep -q 'llama_model_loader: loaded meta data with' "$proof/public-weight-loader.log" && metadata=true
-printf '{"version":"butler-cached-cpu-load-oom-v1","runner_sha256":"%s","image":"%s","weights_sha256":"%s","weights_bytes":522640096,"manifest_sha256":"%s","actual_model_load_attempts":1,"actual_inference_calls":0,"actual_native_calls":0,"model_metadata_read":%s,"oom_killed":%s,"exit_code":%s,"elapsed_seconds":%s,"memory_bytes":268435456,"memory_swap_bytes":268435456,"nano_cpus":1000000000,"pids_limit":64,"runtime":"runc","network_mode":"none","user":"10001:10001","read_only_root":true,"only_read_only_weight_mount":true,"no_device_requests":true,"no_capabilities":true,"no_new_privileges":true,"cpu_only":true,"model":"qwen3:0.6b","stage":"load_before_inference","kernel_observed_physical_oom":false}\n' \
-  "$runner_hash" "$image" "$weight_hash" "$manifest_hash" "$metadata" "$oom" "$exit_code" "$elapsed" > "$proof/local-load-oom.json"
+printf '{"version":"butler-cached-cpu-load-oom-v1","runner_sha256":"%s","image":"%s","weights_sha256":"%s","weights_bytes":522640096,"manifest_sha256":"%s","registry_manifest_sha256":"%s","actual_model_load_attempts":1,"actual_inference_calls":0,"actual_native_calls":0,"model_metadata_read":%s,"oom_killed":%s,"exit_code":%s,"elapsed_seconds":%s,"memory_bytes":268435456,"memory_swap_bytes":268435456,"nano_cpus":1000000000,"pids_limit":64,"runtime":"runc","network_mode":"none","user":"10001:10001","read_only_root":true,"only_read_only_weight_mount":true,"no_device_requests":true,"no_capabilities":true,"no_new_privileges":true,"cpu_only":true,"model":"qwen3:0.6b","stage":"load_before_inference","butler_kernel_received_oom":false}\n' \
+  "$runner_hash" "$image" "$weight_hash" "$manifest_hash" "$registry_hash" "$metadata" "$oom" "$exit_code" "$elapsed" > "$proof/local-load-oom.json"
 sha256sum "$proof/local-load-oom.json" "$proof/isolation.txt" "$proof/public-weight-loader.log" > "$proof/artifacts.sha256"
 printf 'Content-free local load proof: %s\n' "$proof/local-load-oom.json"
 [[ "$metadata" == true && "$oom" == true && "$exit_code" == 137 && "$elapsed" -le 90 ]]

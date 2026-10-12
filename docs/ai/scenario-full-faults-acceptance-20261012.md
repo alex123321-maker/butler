@@ -38,11 +38,18 @@ only into a pinned cached llama.cpp runtime; runc, UID10001, no network/GPU/caps
 read-only root, bounded tmpfs/CPU/PIDs and 256 MiB RAM/swap are checked before
 start. It never downloads, sends HTTP, supplies a prompt, performs inference,
 touches the existing loaded-model observer, or mounts source/DB/auth/socket.
-Actual weight/manifest bytes are verified first. A failed/no-OOM load remains
+Actual weight/local-manifest/reviewed-registry-layer bytes are verified first.
+The cached runner's own metadata help defines `--load-mode none` as “no special
+loading mode”, compared with mmap/mlock. It loads the explicit full GGUF without
+special mapping; it does not skip tensors. The global one-use marker is fixed at
+`/srv/storage/butler/fault-acceptance-windows/issue33-cached-qwen3-load-20261012`,
+so changing the agent root cannot open another attempt. A failed/no-OOM load remains
 failed and its marker sealed. A PASS requires public GGUF metadata read, exit137
 and Docker OOMKilled within90 seconds, not an allocator fixture or timeout kill.
 
-The physical load is deliberately separate from Butler's owning kernel: it does
+`oom_killed` describes actual OS/Docker physical OOM;
+`butler_kernel_received_oom=false` records that the physical load is deliberately
+separate from Butler's owning kernel: it does
 not prove that a real model OOM was received there. Fixed owned-worker tests
 separately prove cancellation/resource pressure and durable no-replay controls.
 Cloud 3.8 Flash High RAM/OOM are not observable. No actual native calls occur in
