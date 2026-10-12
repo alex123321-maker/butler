@@ -12,6 +12,13 @@ Task Store owns durable work, working-state versions and evidence results. Tasks
 differ from runs, model finals and delivery. Owner controls apply revisions/stop
 across a stabilized cross-session tree; verified completion remains explicit.
 
+Owner controls keep the exact content-free working deletion marker after Catalog
+has already cleared memory. Task/working revisions still advance; arbitrary
+working content takes the normal clearing/publication fence. The real PG
+`TestOwnerControlsAfterSourceDeletionIntegration` covers Delete→Stop/Amend,
+stale worker publication denial, fresh amendment source denial and retained
+confirmed action evidence. It uses component run/effect fixtures without inference.
+
 `DelegationManager` adds atomic child/session/contract/input admission on 057.
 Its constructor requires shared budgets and every owning Session/Input/Catalog/
 policy adapter. No production delegation endpoint, Broker tool or scheduler is

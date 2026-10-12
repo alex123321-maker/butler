@@ -64,6 +64,10 @@ owner. Task goal/constraints/mandates remain intact, while task scratch is clear
 with a bumped working revision and content-free deletion reason. Old prepared
 contexts cannot restore durable or Redis working data. Every transcript head and
 global deletion watermark changes, so late summaries cannot republish old text.
+Owner task controls preserve only the exact already-empty working state with its
+same-owner deletion marker. Changing or adding working content still invokes the
+normal run source fence. Stop/amend do not obtain a privacy-redaction exception,
+and a new amendment lease cannot read the deleted original.
 The idempotent cache worker persists a 500-key cursor per deletion and removes only
 the owner's known session/run working keys. A Redis failure leaves cleanup pending
 for restart; current reads already deny the stale data. No global cache flush runs.

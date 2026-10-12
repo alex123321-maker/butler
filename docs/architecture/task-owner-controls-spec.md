@@ -89,6 +89,14 @@ nonterminal runs are cancelled, and the ownership epoch is revoked. Amendment or
 resume queues a fresh input for the revised root; old provider/checkpoint state
 never authorizes it.
 
+After Catalog privacy deletion has already cleared working content, control keeps
+its exact empty plan/pending state and content-free privacy deletion marker. The
+marker must reference an existing deletion for the same owner; additional working
+content still takes the ordinary clearing path. This unchanged JSON avoids
+republishing under an obsolete run while task and working revisions still advance.
+Source publication fences and current source/lease checks remain mandatory for
+both the old worker and any fresh amendment continuation.
+
 Stop cancels every unfinished descendant. Amendment/pause/resume pauses existing
 unfinished descendants for explicit review. Completed/cancelled descendants stay
 historical. A child cannot resume under an inactive ancestor. New children inherit
