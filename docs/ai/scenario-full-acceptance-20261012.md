@@ -70,8 +70,15 @@ Its global marker, original source/release refs and failure files are retained.
 The fixed runner compares private metadata inside a10001 container. One explicit
 `resume-preflight` is restricted to that exact zero-start proof and absence of
 `native-started`; it appends a continuation record instead of changing old refs.
+The first continuation proved equal metadata but Docker could not execute its
+copied binary:077 umask changed555 to500 during copy. Its fixed proof
+`shadow-resume-preflight-20261012T110746Z-1258891` retains this second zero-start
+failure. `resume-file-preflight` is restricted to that exact Docker error,
+unchanged binary hash and absence of PG/auth/native-start evidence; it appends
+another once-only record and explicitly restores555 on copied binaries.
 An atomic `native-started` marker precedes the sole runtime start. There is no
-continuation or reset after this marker, any admitted call, or another failure.
+continuation or reset after this marker or any admitted call. These two narrow
+file-permission corrections add no model allowance, deadline or spent refund.
 
 ## Pending combined acceptance
 

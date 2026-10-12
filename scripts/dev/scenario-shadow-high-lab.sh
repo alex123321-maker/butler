@@ -3,7 +3,7 @@
 # No tool routing, retries, fallback, billing assumption or production database.
 set -euo pipefail
 root=${1:?isolated root required}; phase=${2:-prepare}; release=${3:?exact commit required}
-[[ "$root" == /srv/storage/butler/agents/scenario-shadow-high-20261012 && "$phase" =~ ^(prepare|execute|resume-preflight)$ && "$release" =~ ^[a-f0-9]{40}$ ]] || exit 2
+[[ "$root" == /srv/storage/butler/agents/scenario-shadow-high-20261012 && "$phase" =~ ^(prepare|execute|resume-preflight|resume-file-preflight)$ && "$release" =~ ^[a-f0-9]{40}$ ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* ]] || exit 2
 umask 077
@@ -13,13 +13,20 @@ window=/srv/storage/butler/native-acceptance-windows/issue33-high-shadow-2026101
 if [[ "$phase" != prepare ]]; then
   if [[ "$phase" == execute ]]; then
     [[ ! -e "$window" && ! -L "$window" ]] || { printf '{"status":"denied","reason":"sealed_window"}\n'; exit 2; }
-  else
+  elif [[ "$phase" == resume-preflight ]]; then
     # One fixed zero-native permission failure preceded PG, TLS, import and
     # docker create/start. Keep its marker/source/proof; never resume a start.
     failed="$root/reports/shadow-execute-20261012T110125Z-1227245"
     [[ -d "$window" && ! -L "$window" && ! -e "$window/native-started" && ! -e "$window/preflight-continuation" && ! -e "$window/proof-ref" ]]
     [[ "$(cat "$window/release-ref")" == 297287f13b7de91aa48cbfa836001f2216310af1 ]]
     [[ -f "$failed/source.sha256" && -f "$failed/metadata/hardware.json" && ! -e "$failed/pins.txt" && ! -e "$failed/tls.json" && ! -e "$failed/native-events.txt" ]]
+    [[ "$(sha256sum "$failed/binaries/orchestrator.test" | cut -d' ' -f1)" == 976e3e53298508850a805b01f69c3a0404bbf0b0f9c531425ac91a4a36725d48 ]]
+  else
+    failed="$root/reports/shadow-resume-preflight-20261012T110746Z-1258891"
+    [[ -d "$window/preflight-continuation" && ! -L "$window/preflight-continuation" && ! -e "$window/native-started" && ! -e "$window/file-preflight-continuation" && ! -e "$window/proof-ref" ]]
+    [[ "$(cat "$window/preflight-continuation/release-ref")" == dfbd6b9a03d11699a3a972667bd34216c9662ba3 ]]
+    [[ -f "$failed/source.sha256" && -f "$failed/pins.txt" && ! -e "$failed/tls.json" && ! -e "$failed/native-events.txt" ]]
+    grep -Fq 'exec: "/binaries/orchestrator.test": permission denied' "$failed/pins.txt"
     [[ "$(sha256sum "$failed/binaries/orchestrator.test" | cut -d' ' -f1)" == 976e3e53298508850a805b01f69c3a0404bbf0b0f9c531425ac91a4a36725d48 ]]
   fi
   [[ "$(cat "$root/prepared-release")" == "$release" && "$(cat "$root/prepared-source")" == "$source_dir" ]]
@@ -31,10 +38,12 @@ if [[ "$phase" != prepare ]]; then
     printf '%s\n' "$release" > "$window/release-ref"
     printf '%s\n' "$source_dir" > "$window/source-ref"
   else
-    mkdir "$window/preflight-continuation"
-    printf '%s\n' "$release" > "$window/preflight-continuation/release-ref"
-    printf '%s\n' "$source_dir" > "$window/preflight-continuation/source-ref"
-    printf '%s\n' "$failed" > "$window/preflight-continuation/prior-failed-proof-ref"
+    continuation=preflight-continuation
+    [[ "$phase" != resume-file-preflight ]] || continuation=file-preflight-continuation
+    mkdir "$window/$continuation"
+    printf '%s\n' "$release" > "$window/$continuation/release-ref"
+    printf '%s\n' "$source_dir" > "$window/$continuation/source-ref"
+    printf '%s\n' "$failed" > "$window/$continuation/prior-failed-proof-ref"
   fi
 fi
 stamp=$(date -u +%Y%m%dT%H%M%SZ)-$$
@@ -54,6 +63,7 @@ if [[ "$phase" != prepare ]]; then
   prepared=$(cat "$root/prepared-proof")
   [[ "$prepared" == "$root/reports/shadow-prepare-"* ]]
   cp "$prepared/binaries/"* "$proof/binaries/"
+  chmod 555 "$proof/binaries/"*
 else
   docker run --rm --runtime runc --user "$(id -u):$(id -g)" --network none --memory 1536m --pids-limit 160 --cpus 2 --security-opt no-new-privileges:true \
     --volume "$source_dir:/src:ro" --volume /srv/storage/butler/.cache:/cache --volume "$proof/binaries:/binaries" --workdir /src \
