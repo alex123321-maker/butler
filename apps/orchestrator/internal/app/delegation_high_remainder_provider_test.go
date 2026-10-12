@@ -37,7 +37,7 @@ func newHighRemainderProvider(pool *pgxpool.Pool, corpus nativeResearchCorpus, a
 }
 
 func (p *highRemainderProvider) StartRun(ctx context.Context, req transport.StartRunRequest) (transport.EventStream, error) {
-	if !highRemainderDelegationWindow() || nativeContextObserver(p.pool, p.corpus)(ctx, req) != nil {
+	if !highRemainderDelegationWindow() {
 		return nil, errNativeFixtureDenied
 	}
 	var ownSession, parentSession, owner string
@@ -77,7 +77,13 @@ func (p *highRemainderProvider) StartRun(ctx context.Context, req transport.Star
 		p.modes[req.Context.RunID] = mode
 		p.mu.Unlock()
 		if mode == "native_child" {
+			// The selected native provider runs its existing observer exactly
+			// once before reservation. Repeating it here would duplicate its
+			// immutable context-journal row, rather than strengthen a guard.
 			return p.native.StartRun(ctx, req)
+		}
+		if nativeContextObserver(p.pool, p.corpus)(ctx, req) != nil {
+			return nil, errNativeFixtureDenied
 		}
 		ref := contract.Sources[0]
 		observation := delegation.NumericObservation{SourceID: ref.ID, SourceRevision: ref.Revision, SourceHash: ref.Hash, ObservedValue: p.corpus.Sources[selected].ExpectedValue, ObservedDate: p.corpus.Sources[selected].ExpectedDate, Uncertainty: "source_only"}
@@ -90,6 +96,9 @@ func (p *highRemainderProvider) StartRun(ctx context.Context, req transport.Star
 	}
 	p.modes[req.Context.RunID] = mode
 	p.mu.Unlock()
+	if nativeContextObserver(p.pool, p.corpus)(ctx, req) != nil {
+		return nil, errNativeFixtureDenied
+	}
 	return p.nativeScriptedObservationProvider.StartRun(ctx, req)
 }
 

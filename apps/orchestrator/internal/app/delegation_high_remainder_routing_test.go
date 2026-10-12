@@ -70,8 +70,8 @@ func TestHighRemainderProviderRoutesOnlyDeclaredWidth2ChildrenIntegration(t *tes
 			if width == 2 {
 				want = 2
 			}
-			var spent int
-			if spy.parentStarts.Load() != 0 || spy.childEntries.Load() != want || provider.parentStarts.Load() != 1 || provider.continuations.Load() != 2 || f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&spent) != nil || spent != 37 {
+			var spent, contexts int
+			if spy.parentStarts.Load() != 0 || spy.childEntries.Load() != want || provider.parentStarts.Load() != 1 || provider.continuations.Load() != 2 || f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&spent) != nil || spent != 37 || f.pool.QueryRow(ctx, `SELECT count(*) FROM fixture_native_contexts`).Scan(&contexts) != nil || contexts != 3 {
 				t.Fatal("scripted routing entered wrong lane or charged native calls")
 			}
 		})
