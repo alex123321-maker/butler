@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Prospective separate High scope. Preparation uses only private PG/synthetic
+# providers; unknown V2 review bytes deny execution before auth/network/markers.
+set -euo pipefail
+root=${1:?isolated root required}; phase=${2:-prepare}; release=${3:?exact clean release required}
+[[ "$root" == /srv/storage/butler/agents/scenario-release-chain-high-20261012 && "$phase" =~ ^(prepare|execute)$ && "$release" =~ ^[a-f0-9]{40}$ ]] || exit 2
+source_dir=$(readlink -f "$root/current")
+[[ "$source_dir" == "$root/snapshots/"* ]] || exit 2
+umask 077
+export DOCKER_CONFIG="$root/.cache/docker"
+proof="$root/reports/chain-high-$phase-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+mkdir -p "$proof/bin" /srv/storage/butler/.cache/go-tmp
+printf '%s\n' "$release" > "$proof/source-commit.txt"
+manifest() { (cd "$source_dir"; [[ -z "$(find . ! -type f ! -type d -print -quit)" ]]; find . -type f -print0 | sort -z | xargs -0 sha256sum); }
+manifest > "$proof/source.sha256"
+printf 'Private prospective High-chain %s proof: %s\n' "$phase" "$proof"
+if [[ "$phase" == execute ]]; then
+  [[ -f "$root/prepared-release" && "$(cat "$root/prepared-release")" == "$release" && "$(cat "$root/prepared-source")" == "$source_dir" ]]
+  manifest | cmp -s "$root/prepared-source.sha256" -
+  sha256sum -c "$root/prepared-runtime.sha256" >/dev/null
+  prepared=$(cat "$root/prepared-proof")
+  [[ "$prepared" == "$root/reports/chain-high-prepare-"* ]]
+  # Deliberately first: no provider import, TLS, backend network, persistent
+  # native scope or old-window read/write can precede this frozen source gate.
+  docker run --rm --runtime runc --pull never --network none --read-only --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true \
+    --memory 512m --pids-limit 64 --volume "$source_dir:/src:ro" --volume "$prepared/bin:/bin-proof:ro" --workdir /src \
+    --env BUTLER_SCENARIO_CHAIN_HIGH_GATE=1 golang:1.27.2-bookworm \
+    /bin-proof/app.test -test.v -test.timeout=30s -test.run='^TestReleaseChainHighOperationalGate$' > "$proof/prerequisite-gate.txt" 2>&1
+  printf 'Denied: final independently reviewed native process protocol is not yet frozen.\n' >&2
+  exit 2
+fi
+name="butler-chain-high-prepare-$(date -u +%Y%m%dT%H%M%SZ)-$$"; network="$name-net"; pg="$name-pg"
+created_network=false; created_pg=false
+cleanup() { $created_pg && docker rm -f "$pg" >/dev/null 2>&1 || true; $created_network && docker network rm "$network" >/dev/null 2>&1 || true; }
+trap cleanup EXIT INT TERM
+build=(docker run --rm --runtime runc --pull never --network none --user "$(id -u):$(id -g)" --memory 1536m --pids-limit 160 --cpus 2 --security-opt no-new-privileges:true
+  --volume "$source_dir:/src:ro" --volume "$proof/bin:/bin-proof" --volume /srv/storage/butler/.cache:/cache --workdir /src
+  --env GOPROXY=off --env GOSUMDB=off --env GOMAXPROCS=2 --env GOFLAGS=-p=2 --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp)
+"${build[@]}" golang:1.27.2-bookworm bash -eu -c 'go test -c -race -o /bin-proof/app.test ./apps/orchestrator/internal/app; go build -o /bin-proof/test2json cmd/test2json; go vet ./apps/orchestrator/internal/app; chmod 555 /bin-proof/*' > "$proof/build-vet.log" 2>&1
+docker network create --internal "$network" >/dev/null; created_network=true
+docker run -d --runtime runc --name "$pg" --network "$network" --network-alias chain-prepare-postgres --memory 512m --pids-limit 64 --cpus 1 --security-opt no-new-privileges:true \
+  --env POSTGRES_USER=fixture --env POSTGRES_PASSWORD=chain-prepare-fixture --env POSTGRES_DB=butler_chain_prepare_test \
+  pgvector/pgvector:pg17 -c shared_buffers=32MB -c max_connections=32 -c max_wal_size=64MB >/dev/null; created_pg=true
+for attempt in $(seq 1 60); do docker exec "$pg" pg_isready -U fixture -d butler_chain_prepare_test >/dev/null 2>&1 && break; [[ "$attempt" != 60 ]] || exit 1; sleep 1; done
+docker run --rm --runtime runc --pull never --network "$network" --read-only --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true --memory 1536m --pids-limit 160 --cpus 2 \
+  --tmpfs /tmp:rw,nosuid,nodev,size=64m --volume "$source_dir:/src:ro" --volume "$proof/bin:/bin-proof:ro" --workdir /src \
+  --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:chain-prepare-fixture@chain-prepare-postgres:5432/butler_chain_prepare_test?sslmode=disable' \
+  --entrypoint /bin-proof/test2json golang:1.27.2-bookworm -t -p github.com/butler/butler/apps/orchestrator/internal/app \
+  /bin-proof/app.test -test.v=test2json -test.timeout=3m '-test.run=^TestReleaseChainHigh(Window|AllFailedEntries|OperationalPrerequisite)' > "$proof/tests.jsonl"
+! grep -Eq '"Action":"(skip|fail)"' "$proof/tests.jsonl"
+for test_name in TestReleaseChainHighOperationalPrerequisiteIsNotApproved TestReleaseChainHighWindowSharedCeilingRestartAndExpiryIntegration TestReleaseChainHighWindowChecksDeadlineAfterCounterWaitIntegration TestReleaseChainHighWindowSharesCounterAcrossPrivateTaskSchemasIntegration TestReleaseChainHighAllFailedEntriesSpentButSourceDenialZeroIntegration; do
+  [[ "$(awk -v needle="\"Test\":\"$test_name\"" 'index($0,"\"Action\":\"pass\"") && index($0,needle) { n++ } END { print n+0 }' "$proof/tests.jsonl")" == 1 ]]
+done
+manifest | cmp -s "$proof/source.sha256" -
+sha256sum "$proof/bin/"* > "$root/prepared-runtime.sha256"
+cp "$proof/source.sha256" "$root/prepared-source.sha256"
+printf '%s\n' "$source_dir" > "$root/prepared-source"
+printf '%s\n' "$proof" > "$root/prepared-proof"
+printf '%s\n' "$release" > "$root/prepared-release"
+sha256sum "$proof/tests.jsonl" "$proof/source.sha256" > "$proof/evidence.sha256"
+printf '{"status":"offline_preparation_passed","native_calls":0,"baseline480":"prospective_pending_V2","maximum_new_attempts_design":40,"execution_enabled":false}\n' > "$proof/summary.json"
+printf 'PASS: offline prospective cap/current proof tests; native execution remains denied.\n'

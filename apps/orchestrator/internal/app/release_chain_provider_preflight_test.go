@@ -14,6 +14,7 @@ import (
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/butler/butler/internal/transport"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -127,9 +128,26 @@ func (p *releaseChainEntryChecker) guard(ctx context.Context, runID string) (boo
 		return false, e
 	}
 	defer tx.Rollback(ctx)
+	parent, e := p.guardTx(ctx, tx, runID)
+	if e != nil {
+		return false, e
+	}
+	return parent, tx.Commit(ctx)
+}
+
+// The caller already owns this transaction. The native fixture also uses this
+// read proof before and after its finite counter CAS, without borrowing a pool.
+func (p *releaseChainEntryChecker) guardTx(ctx context.Context, tx pgx.Tx, runID string) (bool, error) {
+	if _, ok := owneridentity.FromContext(ctx); ok {
+		return false, errors.New("provider received owner authority")
+	}
+	token, ok := ownership.TokenFromContext(ctx)
+	if !ok || token.RunID != runID {
+		return false, errors.New("provider current execution proof absent")
+	}
 	var parent bool
 	var taskID string
-	e = tx.QueryRow(ctx, `SELECT t.task_id=$5,t.task_id FROM runs r JOIN tasks t ON t.task_id=r.task_id
+	e := tx.QueryRow(ctx, `SELECT t.task_id=$5,t.task_id FROM runs r JOIN tasks t ON t.task_id=r.task_id
  JOIN session_ownership o ON o.session_key=r.session_key
  WHERE r.run_id=$1 AND r.session_key=$2 AND r.lease_id=$3 AND o.run_id=r.run_id AND o.lease_id=$3 AND o.fence_epoch=$4
  AND o.expires_at>clock_timestamp()
@@ -160,7 +178,7 @@ func (p *releaseChainEntryChecker) guard(ctx context.Context, runID string) (boo
 	if e = tx.QueryRow(ctx, `SELECT TRUE FROM session_ownership WHERE session_key=$1 AND run_id=$2 AND lease_id=$3 AND fence_epoch=$4 AND expires_at>clock_timestamp()`, token.SessionKey, runID, token.LeaseID, token.FenceEpoch).Scan(&live); e != nil {
 		return false, errors.New("provider lease expired after source wait")
 	}
-	return parent, tx.Commit(ctx)
+	return parent, nil
 }
 func (p *releaseChainEntryChecker) StartRun(ctx context.Context, q transport.StartRunRequest) (transport.EventStream, error) {
 	parent, e := p.guard(ctx, q.Context.RunID)
