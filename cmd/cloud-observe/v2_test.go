@@ -108,7 +108,7 @@ func TestCloudV2CLIRequiresIndependentReviewAndExactReleaseFiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	p := acceptance.CloudPin{EvidenceKind: "synthetic_fixture", Provider: acceptance.CloudProvider, RequestedModel: acceptance.CloudRequestedModel, WeightsStatus: "unavailable", Runtime: "CLI-unit", RuntimeSHA256: strings.Repeat("a", 64), CodeCommit: strings.Repeat("b", 40), SourceSHA256: sourceSHA, HardwareSHA256: hashCloudV2File(hardware), CorpusDigest: acceptance.CloudV2CorpusDigest(c), SchemaSHA256: acceptance.CloudV2SchemaDigest(), PolicySHA256: acceptance.CloudV2PolicyDigest(c), ResourcesSHA256: strings.Repeat("e", 64), WindowID: "unit-no-native", Mode: "shadow_observation"}
+	p := acceptance.CloudPin{EvidenceKind: "synthetic_fixture", Provider: acceptance.CloudProvider, RequestedModel: acceptance.CloudRequestedModel, WeightsStatus: "unavailable", Runtime: "CLI-unit", RuntimeSHA256: strings.Repeat("a", 64), CodeCommit: strings.Repeat("b", 40), SourceSHA256: sourceSHA, HardwareSHA256: hashCloudV2File(hardware), CorpusDigest: acceptance.CloudV2CorpusDigest(c), SchemaSHA256: acceptance.CloudV2SchemaDigest(), PolicySHA256: acceptance.CloudV2PolicyDigest(c), ResourcesSHA256: acceptance.CloudV2ResourcesDigest(), WindowID: "unit-no-native", Mode: "shadow_observation"}
 	observationFile, _ := json.Marshal(struct {
 		Pin      acceptance.CloudPin       `json:"pin"`
 		Attempts []acceptance.CloudAttempt `json:"attempts"`

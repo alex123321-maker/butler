@@ -158,3 +158,12 @@ them. An explicitly pinned fixture/import helper never writes or signs approval.
 Pure offline success is not native provenance or execution permission. Existing
 artifact output uses O_EXCL. See the
 [prospective design](../../docs/ai/scenario-cloud-prospective-v2-design-20261012.md).
+# Fixed V2 client allowances
+
+The V2 resource pin binds the exact client allowance: four calls per comparison
+arm, 65,536 input bytes, 32,768 generated tokens including thinking, 8,192 visible
+JSON bytes, 120 seconds per attempt, 480 seconds per arm, one context at a time,
+and a 1,536 MiB client process limit. A changed resource digest or excessive arm
+wall time denies comparison readiness. The cost projection retains all recorded
+calls before a wall-time rejection. These client limits do not observe cloud
+weights, hardware, remote RAM or an incremental subscription invoice.

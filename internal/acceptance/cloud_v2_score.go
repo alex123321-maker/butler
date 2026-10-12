@@ -228,6 +228,9 @@ func CompareCloudV2(c CloudV2Corpus, approval GoldenApproval, key []byte, single
 			if wall-task.Milliseconds > 2 || task.Milliseconds-wall > 2 {
 				return r, errors.New("task wall time differs from timestamps")
 			}
+			if task.Milliseconds > int64(FixedCloudV2Resources().MaximumArmSeconds)*1000 {
+				return r, errors.New("comparison arm exceeded fixed wall allowance")
+			}
 			need := 1
 			if arm == 1 {
 				need = 3

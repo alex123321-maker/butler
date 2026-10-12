@@ -128,3 +128,9 @@ Numerical release thresholds remain90/85/safety0 and the same latency gates.
 Every old/new charged attempt, failure and NULL usage survives; nothing refunds
 or resets an old window. See the prospective design for the separately proposed
 baseline228/new252 admission, independent author/reviewer/freeze gates and limits.
+# Prospective V2 fixed resources
+
+V2 release pins require the exact `FixedCloudV2Resources` digest. A comparison
+arm must finish within 480 seconds as well as the 120-second attempt limit.
+All recorded child and synthesis costs are aggregated before a wall-time
+rejection. Unknown metadata stays unknown and cannot establish complete cost.

@@ -80,7 +80,7 @@ func cloudV2Fixture(t *testing.T) (CloudV2Corpus, GoldenApproval, []byte, CloudP
 	a := GoldenApproval{Digest: CloudV2CorpusDigest(c), CriteriaDigest: CloudV2CriteriaDigest(c), Rules: CloudV2Protocol, Reviewer: "independent-unit-fixture", CandidateAuthor: "unit-fixture-author"}
 	unsigned, _ := json.Marshal(a)
 	a.Signature = hex.EncodeToString(ed25519.Sign(private, unsigned))
-	p := CloudPin{EvidenceKind: "synthetic_fixture", Provider: CloudProvider, RequestedModel: CloudRequestedModel, WeightsStatus: "unavailable", Runtime: "unit-only", RuntimeSHA256: strings.Repeat("a", 64), CodeCommit: strings.Repeat("b", 40), SourceSHA256: strings.Repeat("c", 64), HardwareSHA256: strings.Repeat("d", 64), CorpusDigest: CloudV2CorpusDigest(c), SchemaSHA256: CloudV2SchemaDigest(), PolicySHA256: CloudV2PolicyDigest(c), ResourcesSHA256: strings.Repeat("e", 64), WindowID: "unit-fixture-never-native", Mode: "shadow_observation"}
+	p := CloudPin{EvidenceKind: "synthetic_fixture", Provider: CloudProvider, RequestedModel: CloudRequestedModel, WeightsStatus: "unavailable", Runtime: "unit-only", RuntimeSHA256: strings.Repeat("a", 64), CodeCommit: strings.Repeat("b", 40), SourceSHA256: strings.Repeat("c", 64), HardwareSHA256: strings.Repeat("d", 64), CorpusDigest: CloudV2CorpusDigest(c), SchemaSHA256: CloudV2SchemaDigest(), PolicySHA256: CloudV2PolicyDigest(c), ResourcesSHA256: CloudV2ResourcesDigest(), WindowID: "unit-fixture-never-native", Mode: "shadow_observation"}
 	inputs, err := ExportCloudV2Inputs(c, "")
 	if err != nil {
 		t.Fatal(err)
@@ -271,6 +271,21 @@ func TestCloudV2ComparisonCountsAllChildrenBeforeFailure(t *testing.T) {
 	r, err = CompareCloudV2(c, a, key, single, multi)
 	if err == nil || r.Status != "NO_GO" || r.Multi.Attempts != 12 || r.Single.Attempts != 4 || r.Multi.UnknownTotal != 1 || r.FullTokenCostKnown {
 		t.Fatal("failed child costs hidden", err, r.Multi)
+	}
+}
+
+func TestCloudV2ComparisonRejectsChangedResourcesAndExcessiveArmWallRetainingCost(t *testing.T) {
+	c, a, key, p, _ := cloudV2Fixture(t)
+	single, multi := cloudV2ComparisonFixture(t, c, p)
+	multi.Tasks[0].EndUTC = multi.Tasks[0].StartUTC.Add(480001 * time.Millisecond)
+	multi.Tasks[0].Milliseconds = 480001
+	r, err := CompareCloudV2(c, a, key, single, multi)
+	if err == nil || r.Status != "NO_GO" || r.Single.Attempts != 4 || r.Multi.Attempts != 12 || r.Multi.KnownTotalTokens != 240 {
+		t.Fatal("wall violation erased cost or passed", err, r)
+	}
+	p.ResourcesSHA256 = strings.Repeat("e", 64)
+	if validateCloudV2Pin(c, p) == nil {
+		t.Fatal("arbitrary resource pin accepted")
 	}
 }
 func TestCloudV2LeakageScreenNormalizesOpaqueRenamingWithoutApprovingHoldout(t *testing.T) {

@@ -353,8 +353,33 @@ func validateCloudV2Pin(c CloudV2Corpus, p CloudPin) error {
 	if p.Mode != "shadow_observation" || p.EvidenceKind != "native_cloud_observation" && p.EvidenceKind != "synthetic_fixture" || p.Provider != CloudProvider || p.RequestedModel != CloudRequestedModel || p.WeightsStatus != "unavailable" || p.WeightsSHA256 != nil || p.Runtime == "" || p.WindowID == "" || !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(p.CodeCommit) || !validSHA(p.SourceSHA256) || !validSHA(p.RuntimeSHA256) || !validSHA(p.HardwareSHA256) || !validSHA(p.ResourcesSHA256) || p.CorpusDigest != CloudV2CorpusDigest(c) || p.SchemaSHA256 != CloudV2SchemaDigest() || p.PolicySHA256 != CloudV2PolicyDigest(c) || p.ProviderModelVersion != nil && !SafeCloudFamilyVersion(*p.ProviderModelVersion) {
 		return errors.New("prospective release pins denied")
 	}
+	if p.ResourcesSHA256 != CloudV2ResourcesDigest() {
+		return errors.New("prospective fixed resource allowance changed")
+	}
 	return nil
 }
+
+// CloudV2Resources is a client allowance. Cloud hardware, weights, remote RAM
+// and incremental billing are not observed or inferred from these limits.
+type CloudV2Resources struct {
+	MaximumCallsPerArm      int    `json:"maximum_calls_per_arm"`
+	MaximumInputBytes       int    `json:"maximum_input_bytes"`
+	MaximumOutputTokens     int    `json:"maximum_output_tokens"`
+	MaximumVisibleJSONBytes int    `json:"maximum_visible_json_bytes"`
+	MaximumAttemptSeconds   int    `json:"maximum_attempt_seconds"`
+	MaximumArmSeconds       int    `json:"maximum_arm_seconds"`
+	Concurrency             int    `json:"concurrency"`
+	ClientMemoryLimitBytes  int64  `json:"client_memory_limit_bytes"`
+	PricingBasis            string `json:"pricing_basis"`
+	InvoiceMeasured         bool   `json:"invoice_measured"`
+	RemoteRAMMeasured       bool   `json:"remote_ram_measured"`
+}
+
+func FixedCloudV2Resources() CloudV2Resources {
+	return CloudV2Resources{4, 65536, CloudV2MaximumGeneratedTokens, CloudV2MaximumVisibleJSONBytes, 120, 480, 1, 1536 << 20, "subscription_no_overage", false, false}
+}
+
+func CloudV2ResourcesDigest() string { return cloudDigest(FixedCloudV2Resources()) }
 
 // No response bytes are repaired or Markdown-stripped. Native JSON mode is not
 // semantic verification and never permits a missing golden/witness review.
