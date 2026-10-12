@@ -29,6 +29,23 @@ independent presentation fixture backed by the existing extension lifecycle API.
 
 ## Exact lab evidence
 
+The combined root branch independently repeated the owning75 names/67 tops
+after the final stale-request kernel fix on snapshot `20261012-154240-383`,
+zero failures/skips with race/vet. Proof
+`/srv/storage/butler/agents/issues-after-delegation/reports/owner-state-20261012T084324Z-745501`,
+events SHA256 `a4f23b4d71decb599f3c8aec00c2508b7745a70ffc24621c7e063d7f8863c6e9`.
+The combined actual Chrome→HTTP→PG owner flow passed in
+`reports/owner-browser-api-20261012T082137Z-673623`, API events
+`6d952fc2b0725720411711714ee552bc07b207e7a3906299f7cf8ee31b70e368`,
+browser `d8547cf7e15dcba15ac4819dc0e80d3df2577d64acd4832722997de090c8fc8c`.
+The final UI followup also passed all38 selected Chromium scenarios plus
+TypeScript/lint/build on snapshot `20261012-152634-678`, report
+`owner-state-web-20261012T082638Z.log`, SHA256
+`96b68115bf8f7c7a78dc463aece57ee766cf3d4ed6f53b80b4ffdd756332dcc4`.
+The kernel-only followup adds no UI/owner API contract change. Independent review
+accepted all ten declared owner-state criteria. Synthetic observations and
+physical executor receipts retain their separate scopes below.
+
 Snapshot `20261012-151335-824`, isolated agent root
 `/srv/storage/butler/agents/owner-state-ui`, includes root memory proof/selection
 fixes and the workspace discard controller dependency.
