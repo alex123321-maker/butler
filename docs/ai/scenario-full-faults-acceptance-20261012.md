@@ -1,5 +1,9 @@
 # Current mandatory faults for issue33
 
+Current bounded mandatory-fault gate: **PASS**, all8scenarios. Full issue33:
+still requires separately reviewed High quality/cost and complete release-chain
+baseline/restart/Stop/delivery acceptance; this report sets issue_33_ready=false.
+
 Base main895bdd3. This current gate is additive: the independently signed V3
 criteria digest `76437b99d5eb79baadb39c5eb6d7958a2d6108296c7b6dc6c6118f42b21cd058`,
 corpus, old V1 matrix and failed/native history are immutable. Old dependency
@@ -22,8 +26,8 @@ malformed named events fail; actual single-tab Chromium subtests are required.
 | External/child instruction, secret, forbidden resource | Selected-original child/source guards; instruction derivation, secret-before-IPC, workspace/egress/reflection and real credential/Broker boundary |
 | Model OOM, incompatible/failed release, rollback | Separately sealed physical cached CPU model LOAD OOM; separate owned-process/pressure controls; current reviewed extension version/probe/restart/rollback, immutable receipts and workspace readiness |
 
-All evidence is initially PENDING until the executable current-release report is
-recorded. Prior reports explain invariants but cannot substitute for current runs.
+The current executable evidence below passes this bounded matrix. Prior reports
+explain invariants but do not substitute for current runs or complete issue33.
 
 Recorded first current full matrix on2a2be53 is FAIL and retained unchanged:
 `fault-20261012T103522Z-1118687/report.json` SHA
@@ -46,6 +50,34 @@ script. This new lane now explicitly permits execution only in its bounded
 384MiB fixture tmpfs (nosuid/nodev, read-only source/root, no caps, synthetic
 private profile, no accounts). The other browser lanes retain their policy.
 Actual installed-native tests and full current matrix must pass after this fix.
+
+Final current run on code `eef48f62d9d929b04024b66ef6e06d7744ddffc3`, immutable
+snapshot `20261012-180452-703`, is **PASS**:
+
+| Pin / result | Value |
+| --- | --- |
+| Runner | `fault-lab.sh full-faults` on SSH laba; no new model load/inference/native call |
+| Safe report | [full-mandatory-faults-20261012.json](../../deploy/acceptance/full-mandatory-faults-20261012.json) |
+| Owning private report | `/srv/storage/butler/agents/scenario-full-faults/reports/fault-20261012T110614Z-1251780/report.json` |
+| Report SHA256 | `c2bd8d84cc1e218dcaaf7845c7489d58e3d315c96ac468e30ad684750a2d2be5` |
+| Source tree SHA256 | `8a4317f792027dfa72961b7a690294d6bfd8adf5cad3a482dc6cb300fb8dcbb2` |
+| Complete source manifest SHA256 | `c2a4cfd4513bbd85ee175c05a48d8cf7854ebdccc03e9d07154b82e61da8ce80` |
+| Schema SHA256 | `f3a877f5669ce85d62061f1d118a43c591eaa1a2b7e438a467cfa36895748a27` |
+| Fault criteria SHA256 | `4329f8a374e610db78f7356e1b8e04304402d5bc0d5ff4086c1ff76505b16358` |
+| Initial release-pin SHA256 | `8b5837e12794a533553c0270414cf735c27123d6b048bc327c66ba1db9d79f4e` |
+| Exact required named checks | 176, allPASS;35groups (33eventgroups, initial release pin, physical/additive witness) |
+| Actual test events | 317pass names/166top executions,0fail/0skip; race detection and harness vet |
+| Browser and restore | Actual Chrome10single-tab subcases including installed native host, actual private Broker/PG, separate seed/delete/actual pg_dump+restore phases |
+| Fault verdict | mandatory_faults_passed=true; issue_33_ready=false |
+
+The fixed Chrome lane additionally passed its narrow actual installed-native
+case (top+sub) before the full run: events SHA
+`5d568e4aa8d491b7501ae551b3bc6f86c8e64d29435bc134b89b79958dc05307`,
+actual exec/nosuid/nodev bounded tmpfs proof SHA
+`cbc44eed8469b895bc56242b57954b2d5505a421a4d3f175ccc5df6c5904c079`.
+No production permission/source guard was weakened. Later integrated root code
+must receive its own current release run; this proof cannot certify untested
+changes or the separately owned full release-chain/High-quality gates.
 
 Reproduction on SSH laba only, in a dedicated agent root:
 
