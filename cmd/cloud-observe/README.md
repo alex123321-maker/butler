@@ -211,3 +211,31 @@ its cost and NO_GO verdict remain owned by the separate window audit. The
 immutable runner/source must establish that the SQL file came from the actual
 owning database. Both inputs are bounded to 2 MiB; output cannot overwrite an
 existing artifact.
+# Prospective V4 modes
+
+`v4-inputs`, `v4-policy`, `v4-quality`, `v4-compare`, `v4-window-audit` and
+`v4-pg-correlate` use the new independently reviewed V4 corpus and criteria.
+All V1–V3 modes and sealed reports retain their original identities. V4 binds
+baseline268/new252/ceiling520 and19 historical artifacts, the exact High version,
+nearest-rank p95 and complete known new cost including children/synthesis.
+
+```sh
+cloud-observe -mode v4-policy -root /src -output /private/policy.json
+cloud-observe -mode v4-inputs -root /src -split holdout -output /private/inputs.json
+cloud-observe -mode v4-window-audit -root /src \
+  -commit <prepared-commit> -expected-source-sha256 <prepared-source> \
+  -expected-history-sha256 85c6b9e345fe30093a4801bc29b72b098add699e7cf2df524419106e3a75c186 \
+  -hardware /metadata/hardware.json -observations /private/report.json \
+  -golden-public-key /review/public-key.hex -golden-approval /review/approval.json \
+  -expected-review-key-sha256 <external-key-file-sha256> \
+  -expected-review-approval-sha256 <external-approval-file-sha256> \
+  -output /private/audit.json
+cloud-observe -mode v4-pg-correlate -observations /private/report.json \
+  -pg-witness /private/pg-witness.json -output /private/pg-correlation.json
+```
+
+External approval files must be outside candidate source. Outputs are exclusive;
+existing evidence cannot be overwritten. These commands are offline imports and
+exports, with no provider, signing, credential or tool-execution capability.
+Private raw-final and safe diagnostic evidence is independently inspected by the
+owning runner/auditor and never printed or included in model export.

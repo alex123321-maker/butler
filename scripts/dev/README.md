@@ -1,5 +1,14 @@
 # Butler Dev Scripts
 
+Issue33 V4 uses new isolated roots and once-only windows. Run
+`scenario-shadow-v4-high-lab.sh ROOT offline|prepare|execute COMMIT` for the fresh
+240-case signed quality corpus and four paired High tasks; `offline` has no auth
+or inference. The full collector preserves private raw finals after SQL spend and
+exports separate safe PostgreSQL diagnostics. `cloud-v4-review` seals exact bytes
+only after independent review. `scenario-release-chain-v4-high-lab.sh ROOT prepare|execute COMMIT`
+opens native chain execution only from actual independently accepted V4 quality
+and comparison evidence. Historical V1–V3 and diagnostic roots remain sealed.
+
 Windows-first helper scripts for Codex Desktop and other host-side agent workflows.
 
 Goals:

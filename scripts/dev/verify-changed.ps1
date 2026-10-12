@@ -26,6 +26,22 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^apps/orchestrator/internal/app/(scenario_high_v4_|scenario_shadow_v4_|release_chain_v4_)" {
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$tests.Add("SSH laba: scenario-shadow-v4-high-lab.sh FRESH_V4_ROOT offline EXACT_COMMIT (zero inference)")
+      [void]$tests.Add("SSH laba: scenario-release-chain-v4-high-lab.sh FRESH_V4_CHAIN_ROOT prepare EXACT_COMMIT (zero inference; native requires actual quality PASS)")
+      continue
+    }
+    "^(internal/acceptance/|cmd/cloud-observe/|testdata/acceptance/|scripts/dev/(cloud-v4-review/|scenario-shadow-v4|scenario-release-chain-v4|fixtures/scenario-shadow-v4))" {
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./internal/acceptance/...")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./cmd/cloud-observe/...")
+      [void]$tests.Add("SSH laba: scenario-shadow-v4-high-lab.sh ROOT offline EXACT_COMMIT (zero inference)")
+      continue
+    }
     "^(scripts/dev/scenario-shadow-v3-high-lab[.]sh$|scripts/dev/fixtures/scenario-shadow-v3-|apps/orchestrator/internal/app/scenario_shadow_v3_.*[.]go$|internal/acceptance/cloud_v3.*[.]go$|testdata/acceptance/ru-cloud-fresh-v3[.]json$)" {
       [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")

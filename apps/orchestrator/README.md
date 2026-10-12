@@ -1,5 +1,16 @@
 # Orchestrator
 
+The additive V4 acceptance reader preserves268 spent High attempts and all old
+unknown costs/verdicts. Its full shadow collector saves owning PostgreSQL spend
+before private original-final bytes; immutable safe diagnostics distinguish
+encoding, lifecycle, transport and retention failure. A new independently signed
+corpus and separate finite window govern quality and paired comparison. The
+fresh native chain admits only an independently rechecked actual complete V4
+quality/comparison PASS, with source/cost/PostgreSQL lineage preserved. These
+test-only gates do not change deployed authority or default capabilities. See
+[268-attempt accounting](../../docs/ai/scenario-high-v4-history-accounting-20261013.md)
+and [V4 native chain protocol](../../docs/ai/scenario-release-chain-v4-high-plan-20261013.md).
+
 The separate pure High history reader preserves all248 spent attempts, including
 the failed V2 timeout with NULL usage. It grants no admission or retry and keeps
 both old NO_GO verdicts. See [historical accounting](../../docs/ai/scenario-high-history-accounting-20261012.md).

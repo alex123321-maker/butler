@@ -1,5 +1,17 @@
 # Observation-only contract evaluation
 
+The separate prospective V4 protocol carries the complete268-attempt history
+into a fresh236-quality/16-comparison window. Its240 newly authored examples and
+all original witnesses, grouped splits and near-duplicate findings receive a
+separate whole-content review and external signature before invocation. Numeric
+90/85, event-error, safety and latency thresholds remain fixed; p95 uses the
+nearest-rank definition, frozen before collection. All child and synthesis
+requests consume the same finite arm allowances and owning SQL ledger. The
+extension author cannot change the externally pinned control data/criteria.
+Unknown old cost and the lost266 response cause remain unknown. This protocol
+grants no production action or native-chain release from a prospective count.
+See [V4 design](../ai/scenario-cloud-prospective-v4-design-20261013.md).
+
 Evaluation is separate from orchestration, transport, memory, credentials, tools
 and delivery. It may inspect public synthetic fixtures and independently recorded
 measurements. It cannot authenticate owners, dispatch tools, mutate PostgreSQL,

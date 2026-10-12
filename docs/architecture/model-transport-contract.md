@@ -1,5 +1,14 @@
 # Butler — Model Transport Contract
 
+The lab-only V4 observation collector preserves bounded filtered final bytes
+after owning SQL spend persistence and separately records immutable encoding,
+retention and lifecycle facts. It forwards the original events unchanged and
+never stores reasoning, raw provider frames/errors or credentials. Provisional
+versions cannot establish a completed native observation. Real High is frozen
+to the requested profile and observed version before the new window; old failures
+and unknown measurements remain immutable. See
+[V4 evidence/accounting](../ai/scenario-high-v4-history-accounting-20261013.md).
+
 Optional `TransportEvent.ProviderModelVersion` carries an actually observed
 provider version on complete native outcomes. It is independent of the requested
 model profile and proprietary weight bytes. Missing metadata remains unavailable;

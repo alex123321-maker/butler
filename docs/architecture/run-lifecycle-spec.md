@@ -1,5 +1,13 @@
 # Butler — Run Lifecycle Specification
 
+The prospective V4 lab acceptance keeps separate completed-model, original-task
+verification, action-effect and notice-delivery evidence. Its native chain cannot
+open from an assumed baseline: exact independently reviewed full quality and
+paired-cost PostgreSQL evidence must establish the actual520-call prerequisite.
+Restart, tree Stop, explicit delivery absence and lost ACK retain owning product
+rows in immutable content-free witnesses before fixture cleanup. See
+[V4 chain protocol](../ai/scenario-release-chain-v4-high-plan-20261013.md).
+
 Complete model-turn usage is independent of run/task completion, tool success
 and notification delivery. The budget wrapper saves one optional complete
 observation per admitted inference request before releasing its tool/final event;

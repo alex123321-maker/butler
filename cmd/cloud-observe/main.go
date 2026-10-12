@@ -23,7 +23,7 @@ func main() {
 }
 func run(args []string, stdout io.Writer) error {
 	f := flag.NewFlagSet("cloud-observe", flag.ContinueOnError)
-	mode := f.String("mode", "inputs", "inputs, policy, quality, compare, window-audit; v2-inputs, v2-policy, v2-quality, v2-compare, v2-window-audit, v2-pg-correlate; v3-inputs, v3-policy, v3-quality, v3-compare")
+	mode := f.String("mode", "inputs", "inputs, policy, quality, compare, window-audit; v2/v3/v4-inputs, -policy, -quality, -compare, -window-audit, -pg-correlate")
 	root := f.String("root", ".", "frozen source snapshot")
 	split := f.String("split", "", "empty means all three splits")
 	observations := f.String("observations", "", "private recorded observation envelope")
@@ -33,9 +33,9 @@ func run(args []string, stdout io.Writer) error {
 	approvalPath := f.String("golden-approval", "", "external independently pinned signed approval")
 	expectedSource := f.String("expected-source-sha256", "", "independent prepared shadow source hash; window-audit only")
 	expectedHistory := f.String("expected-history-sha256", "", "independent fifteen-artifact baseline hash; window-audit only")
-	expectedReviewKey := f.String("expected-review-key-sha256", "", "independent prospective V2 public-key file hash")
-	expectedReviewApproval := f.String("expected-review-approval-sha256", "", "independent prospective V2 approval file hash")
-	pgWitness := f.String("pg-witness", "", "separate read-only V2 SQL metadata witness; v2-pg-correlate only")
+	expectedReviewKey := f.String("expected-review-key-sha256", "", "independent prospective public-key file hash")
+	expectedReviewApproval := f.String("expected-review-approval-sha256", "", "independent prospective approval file hash")
+	pgWitness := f.String("pg-witness", "", "separate read-only SQL metadata witness; prospective pg-correlate modes only")
 	output := f.String("output", "", "new private report; existing evidence is immutable")
 	if err := f.Parse(args); err != nil {
 		return err
@@ -48,6 +48,12 @@ func run(args []string, stdout io.Writer) error {
 	}
 	if *mode == "v3-pg-correlate" {
 		return runCloudV3PGCorrelation(*observations, *pgWitness, *output, stdout)
+	}
+	if *mode == "v4-pg-correlate" {
+		return runCloudV4PGCorrelation(*observations, *pgWitness, *output, stdout)
+	}
+	if strings.HasPrefix(*mode, "v4-") {
+		return runCloudV4(cloudV4CLIOptions{Mode: *mode, Root: *root, Split: *split, Observations: *observations, Hardware: *hardware, Commit: *commit, Key: *keyPath, Approval: *approvalPath, ExpectedKey: *expectedReviewKey, ExpectedApproval: *expectedReviewApproval, Output: *output, ExpectedSource: *expectedSource, ExpectedHistory: *expectedHistory}, stdout)
 	}
 	if strings.HasPrefix(*mode, "v3-") {
 		return runCloudV3(cloudV3CLIOptions{Mode: *mode, Root: *root, Split: *split, Observations: *observations, Hardware: *hardware, Commit: *commit, Key: *keyPath, Approval: *approvalPath, ExpectedKey: *expectedReviewKey, ExpectedApproval: *expectedReviewApproval, Output: *output, ExpectedSource: *expectedSource, ExpectedHistory: *expectedHistory}, stdout)

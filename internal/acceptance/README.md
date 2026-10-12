@@ -224,3 +224,15 @@ independent content-free audit and exact PostgreSQL correlation are recorded in
 `docs/ai/scenario-cloud-v3-independent-audit-20261012.md`; all failed spend and
 prior NULL measurements remain in cumulative history. The 17 correct completed
 development observations do not establish full quality or a paired comparison.
+
+The additive V4 corpus/protocol starts from the separately verified268-call
+history and preserves all19 historical artifact pins. `CloudV4*` APIs and
+`cmd/cloud-observe` V4 modes require a fresh240-case corpus, whole-corpus review,
+external signed criteria and exact source/runtime/hardware/window pins. V4's
+nearest-rank p95 definition and exact observed version are frozen in its criteria
+digest; original V1–V3 scorers remain unchanged. Maximum252 new calls comprise236
+quality and16 paired single/child/child/synthesis entries, with cumulative520.
+Private final retention is separate from the content-free audit; the audit
+recomputes known/NULL costs before quality and refuses a failed or partial window.
+Reproduce the prospective contract and limitations from
+`docs/ai/scenario-cloud-prospective-v4-design-20261013.md`.
