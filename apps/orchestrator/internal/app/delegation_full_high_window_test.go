@@ -147,6 +147,13 @@ func (l *nativeDelegationLimiter) reserveFullHigh(ctx context.Context, kind, run
 	if tx.QueryRow(ctx, `UPDATE fixture_native_limit SET attempts=attempts+1 WHERE singleton AND prior_attempts=27 AND hard_cap=39 AND new_cap=12 AND baseline_hash=$1 AND attempts<hard_cap AND expires_at>clock_timestamp() RETURNING attempts`, h.BaselineSHA256).Scan(&ordinal) != nil {
 		return errNativeFixtureDenied
 	}
+	// UPDATE can test expiry before waiting on an unchanged row lock. Once it
+	// holds that lock, check the database clock again before committing a slot.
+	// A denial rolls back both the provisional counter and any attempt record.
+	var withinWindow bool
+	if tx.QueryRow(ctx, `SELECT expires_at>clock_timestamp() FROM fixture_native_limit WHERE singleton`).Scan(&withinWindow) != nil || !withinWindow {
+		return errNativeFixtureDenied
+	}
 	if _, err = tx.Exec(ctx, `INSERT INTO fixture_native_attempts(attempt,run_id,kind,input_hash) VALUES($1,$2,$3,$4)`, ordinal, runID, kind, hex.EncodeToString(hash[:])); err != nil || tx.Commit(ctx) != nil {
 		return errNativeFixtureDenied
 	}
