@@ -79,3 +79,17 @@ start is allowed; old scopes cannot be reopened. Every failure retains the
 private report and independent allowlisted PostgreSQL witness. The root owns
 review, signing, source freeze and the eventual actual invocation. This task
 performs zero native calls, credential imports and new physical model loads.
+
+The exact offline source `2b38d5ba64b6f1fb011f6e5ec0a99f60514cfd04`
+passed222 unit names (59 top-level),30 PG names (six top-level) and the independent
+SQL probe on laba, with no test failures/skips and race/vet passed. The safe
+record is `deploy/acceptance/scenario-shadow-v3-offline-20261012.json`. Its source
+still had empty golden pins: it proves guards, not signed preparation or native
+quality. The later actual review/signature source must undergo a new combined
+signed prepare before root may invoke the runner.
+
+The provisional `1c731fa` run is retained as FAILED. Its10-minute timeout stack
+shows quadratic corpus validation inside repeated per-case window construction.
+The revised source binds one explicitly local validated selection to the exact
+candidate bytes and checks projection/body/query drift before DB creation; it
+does not extend that test timeout. The historical native ledger is unaffected.
