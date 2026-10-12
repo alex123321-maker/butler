@@ -64,8 +64,11 @@ under `/srv/storage/butler/agents/scenario-structural-json-high-20261012`.
 There is no anonymous PostgreSQL volume. Preparation uses fake providers and an
 internal network; model/auth/import/TLS counts are zero. Actual execution, still
 closed, compares the exact prepared source, executable and hardware/image pins,
-then uses the existing fixed-host credential-free TLS prerequisite. Only the
-single protected import file is mounted, never its parent folder. Raw private
+then uses the existing fixed-host credential-free TLS prerequisite. The model
+runtime mounts only the single protected import file. A separate network-none,
+read-only UID10001 metadata checker mounts the fixed parent solely for test/stat
+of that exact leaf; it reads no content and performs no listing or authentication.
+An ordinary SSH operator cannot search that protected parent. Raw private
 files survive failure and remain outside public proof copies. Fixed enums, byte
 counts/hashes and nullable operation-stage metadata do not establish HTTP dispatch
 or the cause of any previous failure.

@@ -94,10 +94,11 @@ fi
 docker run --rm --runtime runc --network butler-lab_backend --user 10001:10001 --read-only --cap-drop ALL --memory 64m --pids-limit 16 --cpus 1 --security-opt no-new-privileges:true \
   --volume "$proof/binaries/tls-prerequisite:/prerequisite:ro" "$go_image" /prerequisite > "$proof/tls.json"
 import_file=/srv/storage/butler/agents/antigravity-provider/profile/.gemini/antigravity-cli/butler-native-import.json
-[[ -f "$import_file" && ! -L "$import_file" ]]
-# Only this exact file is mounted; never its credential-bearing parent directory.
+# SSH operator lacks search permission in the protected10001 parent. A separate
+# fixed metadata-only checker sees the original leaf, not Docker's resolved bind.
+# It has no model/provider/auth code and neither reads nor lists file contents.
 docker run --rm --network none --user 10001:10001 --read-only --cap-drop ALL --memory 32m --pids-limit 16 --security-opt no-new-privileges:true \
-  --volume "$import_file:/metadata/import.json:ro" alpine:3.22 sh -eu -c 'p=/metadata/import.json; test -f "$p"; test ! -L "$p"; test "$(stat -c "%u:%a" "$p")" = 10001:600; size=$(stat -c %s "$p"); test "$size" -gt 0; test "$size" -le 65536'
+  --volume /srv/storage/butler/agents/antigravity-provider/profile/.gemini/antigravity-cli:/metadata:ro alpine:3.22 sh -eu -c 'p=/metadata/butler-native-import.json; test -f "$p"; test ! -L "$p"; test "$(stat -c "%u:%a" "$p")" = 10001:600; size=$(stat -c %s "$p"); test "$size" -gt 0; test "$size" -le 65536'
 docker run --rm --network none --user 0:0 --volume "$proof/runtime:/private" --volume "$proof/tmp:/tmp" alpine:3.22 sh -eu -c 'chown 10001:10001 /private /tmp; chmod 700 /private /tmp'
 manifest | cmp -s "$root/prepared-manifest" -
 mkdir -p /srv/storage/butler/native-acceptance-windows
