@@ -35,9 +35,10 @@ Fresh `butler-ru-cloud-fresh-v3` requires240 explicit cases/30 new semantic-sour
 groups,96 development/64 tuning/80 holdout,4 secret document cases blocked before
 export,236 eligible. Whole content/goldens/split construction families and overlap
 with V1/V2/control data require independent review. Names/family labels or lexical
-screening cannot certify independence. Default new external Ed25519 file hashes
-are empty/denied until new review/signing. Mechanical unit fixtures are not the
-authored corpus or quality evidence.
+screening cannot certify independence. New external Ed25519 file hashes now pin
+the independently reviewed/signed exact V3 dataset and unchanged criteria;
+native preparation/admission/quality remain separately pending. Mechanical unit
+fixtures are not the authored corpus or quality evidence.
 
 Numerical gates stay90% overall/85% each kind per split, missed/false important
 at most1 each, critical schema/witness/authority/tool errors0, p95<=60s and every

@@ -106,3 +106,30 @@ cases per source group are correlated;30 groups do not prove statistical
 sufficiency or complete independence of240 examples. Shadow single/multi contexts
 do not replace authenticated kernel child-task/full-chain evidence. No native
 quality or full issue acceptance has been established by this data review.
+
+## New independent external approval
+
+After the complete content review and exact-LF parser/witness/enum/negative checks
+passed, the operator authorized new independent V3 signing. Protected one-use
+directory /srv/storage/butler/reviews/issue33-20261012-v3 contains the exact
+candidate, public key, new signed approval, frozen full review and separately
+signed public review manifest. The signing process used UID10001, mode0600,
+networknone and exclusive creation. Private key bytes were never printed,
+committed or mounted to a model/app. No old key or artifact was changed.
+
+- public-key.hex SHA256 cfda63b072ff7abd1cae464995e16faefb5006b2c1ef4f50286e531a53d7f747;
+- approval.json SHA256354de625e3c0bff64ab23239c55bbbeca9ea6b5014f393246875a8253cd1d4c0;
+- frozen pre-sign complete review SHA256345011878f7903d79f416e231226625671500b9c3e3032beff6a91a9ba6bf31b.
+
+The separate signed manifest binds that complete review hash, raw/semantic corpus,
+schema/policy/criteria/resources and both public file identities. Shared old
+approval schema is unchanged. The source pins only the new public key/approval
+identities; reviewer and author roles differ. Default V3 verification checks their
+exact bytes/signature, with no old fallback. Signing proof:
+/srv/storage/butler/agents/scenario-cloud-observe/reports/independent-sign-v3-20261012T154926Z-2203497.
+Own mechanical proof68 names/19 top-level/0 failure/skip/race/vet/native0:
+/srv/storage/butler/agents/scenario-cloud-observe/reports/cloud-scorer-v3-20261012T154622Z-2192995,
+events b339d4cf4d53359fa630cbcf9590b3067e64c22f80ecd8fdde07bf0ca88854b8.
+This addendum does not replace the externally frozen pre-sign review. Root's
+exact source/binary/hardware/deadline/native-window preparation and independent
+protocol audit remain required before any inference.

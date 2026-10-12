@@ -20,10 +20,10 @@ const CloudV3MaximumVisibleJSONBytes = 8192
 const CloudV3CorpusPath = "testdata/acceptance/ru-cloud-fresh-v3.json"
 
 // The new independently reviewed artifacts live outside candidate source. They
-// approve only a new V3 dataset/criteria after independent review. Empty until
-// that review and new external signing; V1/V2 artifacts are never fallback.
-const CloudV3GoldenPublicKeyFileSHA256 = ""
-const CloudV3GoldenApprovalFileSHA256 = ""
+// approve only the independently reviewed V3 dataset/criteria, not native quality
+// or execution. This NEW external key never falls back to V1/V2 artifacts.
+const CloudV3GoldenPublicKeyFileSHA256 = "cfda63b072ff7abd1cae464995e16faefb5006b2c1ef4f50286e531a53d7f747"
+const CloudV3GoldenApprovalFileSHA256 = "354de625e3c0bff64ab23239c55bbbeca9ea6b5014f393246875a8253cd1d4c0"
 
 type CloudV3Group struct {
 	ID             string `json:"id"`

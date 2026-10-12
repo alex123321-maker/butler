@@ -5,8 +5,10 @@ pending. Trusted native schemas contain every original map key, including
 distractors; selection/quote/value/authority checks remain programmatic. Full
 model-input hashes include the exact per-case enum. This is namespace-assisted
 output, not unconstrained source skill or execution. New default review hashes
-remain empty/denied; V1/V2 reports/digests/NO_GO verdicts and all248 spent attempts
-are unchanged. [Protocol proposal](../../docs/ai/scenario-cloud-prospective-v3-design-20261012.md).
+require the newly signed exact public artifact bytes; V1/V2 reports/digests/NO_GO
+verdicts and all248 spent attempts stay unchanged. The fresh dataset/criteria
+signature grants no native admission or quality result.
+[Protocol proposal](../../docs/ai/scenario-cloud-prospective-v3-design-20261012.md).
 
 Additive V3 window audit and pure SQL correlation bind every new ordinal,
 canonical context/nullable parent, input/output digest, nullable measured spend

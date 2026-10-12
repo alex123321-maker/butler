@@ -1,7 +1,7 @@
 # Cloud shadow observation importer
 
-Prospective V3 is separate candidate API/CLI, with pending fresh-data review and
-default external approval hashes empty/denied. `v3-inputs`, `v3-policy`,
+Prospective V3 is separate API/CLI with independently reviewed fresh data and
+new exact external key/approval pins. Native freeze/quality remain pending. `v3-inputs`, `v3-policy`,
 `v3-quality`, `v3-compare` preserve original witnesses and all nullable spend.
 Trusted schemas enumerate every current original ID, including distractors;
 complete model-input hashes pin that enum. Output IDs/quotes are never repaired.
