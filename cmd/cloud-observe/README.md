@@ -91,6 +91,45 @@ their original signature. It cannot create/sign an approval. Reports use O_EXCL
 and preserve older evidence. Commit/runtime/model identity still require the
 independent frozen runner's release and owning-ledger audit.
 
+`-mode window-audit` independently imports the complete private collector report
+from the fixed `issue33-high-shadow-20261012-baseline45` window and code commit
+`f3e0cbc11dedc2fb8e547e61f0153bf78cde6f98`. It reads at most 2MiB, requires the
+external signed V3 golden and independently supplied prepared source/history
+hashes, and hashes the prepared hardware manifest. It reconstructs the original
+fifteen-artifact hash chain and retains 45 historical attempts, 20 known pairs,
+25 NULL pairs and the original known subtotal 74698/2210.
+
+Every new ordinal must be contiguous from 46, unique and matched to exactly one
+observed attempt with the same context, input hash and charge time inside its
+recorded attempt. Missing children, extra/reused contexts, changed source/runtime
+pins, widened resources and counters fail import. Sequential timing is checked
+against the window's declared one active context. Quality and comparison are
+recomputed from original witnesses; stored scorer verdicts are ignored. All new
+attempt costs are aggregated before scoring, including failed children and NULLs.
+A failed collector stays NO_GO even when its stored or recomputed metrics pass.
+The requested High profile remains distinct from the bounded observed version:
+a known non-3.8-Flash family yields NO_GO; absent versions remain unavailable.
+The opaque server suffix does not prove server effort, hardware or weight bytes.
+
+```sh
+cloud-observe -mode window-audit -root /audit-source \
+  -observations /private/observations.json -hardware /prepared/hardware.json \
+  -expected-source-sha256 <independent-prepared-source-hash> \
+  -expected-history-sha256 <independent-fifteen-artifact-baseline-hash> \
+  -golden-public-key /review/public-key.hex -golden-approval /review/approval.json \
+  -output /private/new-safe-window-audit.json
+```
+
+The exported audit contains only pins, counters, fixed scorer metrics and per-new
+attempt ordinal/context/input digest/time/outcome/version/nullable usage/RSS. It
+has no case input, documents, model output, source text or credential material.
+It pins the complete original private artifact by SHA256. Valid partial/failed
+observations export NO_GO with every spent ordinal for future carry-forward;
+malformed correlation denies import. O_EXCL protects prior audit files. Audit
+PASS validates a collector claim offline and grants no execution/model release:
+the independent root must also verify the actual immutable runner and PostgreSQL
+journal. Roles share an administrator-controlled host, not hardware isolation.
+
 Zero-inference checks use `scripts/dev/cloud-observation-lab.sh ROOT narrow|broad`
 after isolated `lab.ps1 -Action Sync`. Go 1.27.2, network-disabled containers,
 read-only source and repo-local caches run meaningful synthetic race/vet checks.

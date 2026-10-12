@@ -43,4 +43,8 @@ func TestCloudOfflineCLIExportsOpaqueInputsAndFrozenPolicyWithoutProvider(t *tes
 	if err := run([]string{"-root", root, "-mode", "quality"}, &out); err == nil {
 		t.Fatal("unreviewed/unpinned measurements accepted")
 	}
+	out.Reset()
+	if err := run([]string{"-root", root, "-mode", "window-audit", "-observations", "untrusted"}, &out); err == nil || out.Len() != 0 {
+		t.Fatal("untrusted window exported without external expectations")
+	}
 }

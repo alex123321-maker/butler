@@ -68,6 +68,18 @@ Cloud API and exact thresholds/reproduction: `internal/acceptance/cloud_observat
 and `cmd/cloud-observe/README.md`. External key/approval identity and original
 signature are checked before import; candidate code cannot issue approvals.
 
+The separate offline window audit rechecks the fixed cloud collector report,
+independent prepared source/hardware and fifteen-artifact history pins. It matches
+every charged ordinal to a unique context and exact input digest, recomputes
+original-witness quality/comparison and counts all known/NULL failed spend before
+deciding readiness. A failed collector cannot become PASS by re-scoring. Safe
+exports contain no source/model content; their SHA pins the private original.
+Reported non-3.8-Flash family cannot substantiate the requested High identity.
+Missing version and proprietary effort/weights remain unavailable. Offline audit
+never establishes inference provenance alone, authorizes execution or reopens
+an old window. Independent immutable runner/PG evidence remains required on the
+shared administrator-controlled host.
+
 Implementation/reproduction: `internal/acceptance/command_suite.go`,
 `cmd/command-observe/README.md`, `scripts/dev/scenario-corpus-lab.sh`.
 

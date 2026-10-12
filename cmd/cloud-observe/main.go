@@ -22,7 +22,7 @@ func main() {
 }
 func run(args []string, stdout io.Writer) error {
 	f := flag.NewFlagSet("cloud-observe", flag.ContinueOnError)
-	mode := f.String("mode", "inputs", "inputs, policy, quality, compare")
+	mode := f.String("mode", "inputs", "inputs, policy, quality, compare, window-audit")
 	root := f.String("root", ".", "frozen source snapshot")
 	split := f.String("split", "", "empty means all three splits")
 	observations := f.String("observations", "", "private recorded observation envelope")
@@ -30,6 +30,8 @@ func run(args []string, stdout io.Writer) error {
 	commit := f.String("commit", "", "exact source commit")
 	keyPath := f.String("golden-public-key", "", "external independently pinned public key file")
 	approvalPath := f.String("golden-approval", "", "external independently pinned signed approval")
+	expectedSource := f.String("expected-source-sha256", "", "independent prepared shadow source hash; window-audit only")
+	expectedHistory := f.String("expected-history-sha256", "", "independent fifteen-artifact baseline hash; window-audit only")
 	output := f.String("output", "", "new private report; existing evidence is immutable")
 	if err := f.Parse(args); err != nil {
 		return err
@@ -56,8 +58,8 @@ func run(args []string, stdout io.Writer) error {
 			PolicySHA256 string                 `json:"policy_sha256"`
 			SchemaSHA256 string                 `json:"schema_sha256"`
 		}{acceptance.FrozenCloudPolicy(), acceptance.CloudPolicyDigest(), acceptance.CloudSchemaDigest()}
-	case "quality", "compare":
-		if *observations == "" || *hardware == "" || *commit == "" || *keyPath == "" || *approvalPath == "" {
+	case "quality", "compare", "window-audit":
+		if *observations == "" || *hardware == "" || (*mode != "window-audit" && *commit == "") || *keyPath == "" || *approvalPath == "" {
 			return fmt.Errorf("complete observation/source/hardware/external golden pins required")
 		}
 		for _, path := range []string{*keyPath, *approvalPath} {
@@ -86,7 +88,11 @@ func run(args []string, stdout io.Writer) error {
 		if e != nil {
 			return e
 		}
-		raw, e := acceptance.ReadPrivateFile(*observations, 8<<20)
+		limit := 8 << 20
+		if *mode == "window-audit" {
+			limit = acceptance.CloudWindowReportLimit
+		}
+		raw, e := acceptance.ReadPrivateFile(*observations, int64(limit))
 		if e != nil {
 			return e
 		}
@@ -98,6 +104,13 @@ func run(args []string, stdout io.Writer) error {
 			return fmt.Errorf("JSON hardware manifest required")
 		}
 		hardwareSum := sha256.Sum256(hw)
+		if *mode == "window-audit" {
+			if *expectedSource == "" || *expectedHistory == "" || *commit != "" && *commit != acceptance.CloudAuditedCode {
+				return fmt.Errorf("independent prepared source/history and exact shadow code required")
+			}
+			result, err = acceptance.AuditCloudWindow(c, approval, key, raw, acceptance.CloudWindowExpectation{SourceSHA256: *expectedSource, HistorySHA256: *expectedHistory, HardwareSHA256: hex.EncodeToString(hardwareSum[:])})
+			break
+		}
 		sourceHash, e := acceptance.TreeHash(*root, nil)
 		if e != nil {
 			return e
