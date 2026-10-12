@@ -4,7 +4,11 @@ set -euo pipefail
 root=${1:?isolated agent root required}
 profile=${2:-core}
 commit=${3:?exact git commit required}
-[[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ && "$profile" =~ ^(core|full)$ && "$commit" =~ ^[a-f0-9]{40}$ ]] || exit 2
+[[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ && "$profile" =~ ^(core|full|full-faults)$ && "$commit" =~ ^[a-f0-9]{40}$ ]] || exit 2
+local_oom=${4:-}
+if [[ "$profile" == full-faults ]]; then
+  [[ "$local_oom" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_/-]+/local-load-oom.json$ && "$local_oom" != *..* && -f "$local_oom" && ! -L "$local_oom" ]] || { printf 'Separate sealed local model-load OOM proof required\n' >&2; exit 2; }
+fi
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/go.mod" ]] || exit 2
 run_id="$(date -u +%Y%m%dT%H%M%SZ)-$$"
@@ -15,6 +19,10 @@ pg="$prefix-pg"
 redis="$prefix-redis"
 umask 077
 mkdir -p "$proof/events" "$proof/bin" "$proof/private/postgres" /srv/storage/butler/.cache/go-tmp
+printf '%s\n' "$commit" > "$proof/source-commit.txt"
+(cd "$source_dir"; find . -type f -not -path './.cache/*' -print0 | sort -z | xargs -0 sha256sum) > "$proof/source-manifest.sha256"
+sha256sum "$proof/source-manifest.sha256" > "$proof/source-manifest-hash.txt"
+if [[ "$profile" == full-faults ]]; then cp "$local_oom" "$proof/local-load-oom.json"; fi
 chmod 700 "$proof" "$proof/events" "$proof/private"
 printf 'Private acceptance artifacts: %s\n' "$proof"
 created_network=false
@@ -46,7 +54,7 @@ for attempt in $(seq 1 60); do
   [[ "$attempt" != 60 ]] || { printf 'Disposable PostgreSQL not ready\n' >&2; exit 1; }
   sleep 1
 done
-for group in template ownership approval owner_stop authority effects delivery budget context memory source_index auxiliary model_pressure credential_e2e extensions extension_e2e security_content security_egress security_workspace security_redaction provider_diagnostics model_provenance generated_isolation delegated_sources; do
+for group in template ownership approval owner_stop authority effects delivery budget context memory source_index auxiliary model_pressure credential_e2e extensions extension_e2e security_content security_egress security_workspace security_redaction provider_diagnostics model_provenance generated_isolation delegated_sources resources workspace workspace_runtime delegation_reports single_tab; do
   docker exec "$pg" createdb -U fixture "butler_acceptance_${group}_test"
 done
 docker exec "$pg" createdb -U fixture butler_memory_backup_test
@@ -56,13 +64,15 @@ docker exec "$pg" createdb -U fixture butler_memory_restore_test
 go_image=$(docker image inspect golang:1.27.2-bookworm --format '{{.Id}}')
 pg_image=$(docker image inspect pgvector/pgvector:pg17 --format '{{.Id}}')
 redis_image=$(docker image inspect redis:7-alpine --format '{{.Id}}')
+browser_image='not-selected'
+if [[ "$profile" == full || "$profile" == full-faults ]]; then browser_image=$(docker image inspect butler-lab-tool-browser:latest --format '{{.Id}}'); fi
 kernel=$(uname -r)
 cpu_count=$(getconf _NPROCESSORS_ONLN)
 ram_kib=$(awk '/^MemTotal:/ {print $2}' /proc/meminfo)
 lscpu --json > "$proof/hardware-cpu.json"
 cpu_hash=$(sha256sum "$proof/hardware-cpu.json" | cut -d' ' -f1)
-printf '{"kernel":"%s","logical_cpus":%s,"host_ram_kib":%s,"cpu_manifest_sha256":"%s","go_image":"%s","postgres_image":"%s","redis_image":"%s","go":"1.27.2","core_test_memory_limit_bytes":1610612736,"database_memory_limit_bytes":536870912,"effects":"synthetic_fixture_only"}\n' \
-  "$kernel" "$cpu_count" "$ram_kib" "$cpu_hash" "$go_image" "$pg_image" "$redis_image" > "$proof/hardware.json"
+printf '{"kernel":"%s","logical_cpus":%s,"host_ram_kib":%s,"cpu_manifest_sha256":"%s","go_image":"%s","postgres_image":"%s","redis_image":"%s","browser_image":"%s","go":"1.27.2","core_test_memory_limit_bytes":1610612736,"database_memory_limit_bytes":536870912,"effects":"synthetic_fixture_only"}\n' \
+  "$kernel" "$cpu_count" "$ram_kib" "$cpu_hash" "$go_image" "$pg_image" "$redis_image" "$browser_image" > "$proof/hardware.json"
 base_dsn='postgres://fixture:acceptance-fixture@acceptance-postgres:5432/butler_acceptance_template_test?sslmode=disable'
 test_env=(--env "BUTLER_TEST_POSTGRES_URL=$base_dsn" --env "BUTLER_TEST_GOALS_POSTGRES_URL=$base_dsn"
   --env "BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=$base_dsn" --env "BUTLER_TEST_COMPLETION_POSTGRES_URL=$base_dsn"
@@ -71,6 +81,7 @@ test_env=(--env "BUTLER_TEST_POSTGRES_URL=$base_dsn" --env "BUTLER_TEST_GOALS_PO
 go_container=(docker run --rm --user "$(id -u):$(id -g)" --network "$network" --memory 1536m --pids-limit 128 --cpus 2
   --security-opt no-new-privileges:true --volume "$source_dir:/src:ro" --volume "$proof:/proof"
   --volume /srv/storage/butler/.cache:/cache --workdir /src
+  --env GOPROXY=off --env GOSUMDB=off --env GOMAXPROCS=2
   --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp)
 "${go_container[@]}" golang:1.27.2-bookworm go test -race ./internal/acceptance ./cmd/acceptance -count=1 > "$proof/harness.log" 2>&1
 "${go_container[@]}" golang:1.27.2-bookworm go build -o /proof/bin/acceptance ./cmd/acceptance
@@ -80,14 +91,16 @@ go_container=(docker run --rm --user "$(id -u):$(id -g)" --network "$network" --
 # The report records missing model observations/independent review as NO_GO.
 # It does not copy fixture golden values into alleged model observations.
 printf '{"status":"NO_GO","actual_model_calls":0,"cases":240,"source_groups":30,"development":96,"tuning":64,"holdout":80,"eligible_model_cases":236,"eligible_holdout_cases":76,"secret_cases_blocked_before_model":4,"reason":"Independent signed golden approval and actual pinned-model observations absent. Existing local quality reports do not evaluate this corpus. No model actions or single/multi-agent comparison executed."}\n' > "$proof/model-no-go.json"
+core_mode=run
+if [[ "$profile" == full-faults ]]; then core_mode=fault-run; fi
 set +e
 "${go_container[@]}" "${test_env[@]}" golang:1.27.2-bookworm /proof/bin/acceptance \
-  -mode run -root /src -events /proof/events -profile core -commit "$commit" \
+  -mode "$core_mode" -root /src -events /proof/events -profile core -commit "$commit" \
   -hardware /proof/hardware.json -output /proof/core-report.json > "$proof/core.log" 2>&1
 core_exit=$?
 set -e
 
-if [[ "$profile" == full ]]; then
+if [[ "$profile" == full || "$profile" == full-faults ]]; then
   # Compile fixed test binaries and test2json for the actual Chromium image.
   # No npm install or writable source checkout is needed inside that image.
   "${go_container[@]}" golang:1.27.2-bookworm go build -o /proof/bin/test2json cmd/test2json
@@ -96,6 +109,9 @@ if [[ "$profile" == full ]]; then
   "${go_container[@]}" golang:1.27.2-bookworm go test -c -race -o /proof/bin/app.test ./apps/orchestrator/internal/app
   "${go_container[@]}" golang:1.27.2-bookworm go test -c -race -o /proof/bin/extension.test ./apps/tool-extension/internal/runtime
   "${go_container[@]}" golang:1.27.2-bookworm go build -o /proof/bin/tool-broker ./apps/tool-broker
+  if [[ "$profile" == full-faults ]]; then
+    "${go_container[@]}" --env CGO_ENABLED=0 golang:1.27.2-bookworm go build -o /proof/bin/guarded-native-host ./apps/browser-bridge/cmd/guarded
+  fi
   browser_image=$(docker image inspect butler-lab-tool-browser:latest --format '{{.Id}}')
   printf '%s\n' "$browser_image" > "$proof/browser-image-id.txt"
   # Embedded helper validation must see this exact snapshot, while Playwright
@@ -125,6 +141,14 @@ if [[ "$profile" == full ]]; then
     --env 'BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=postgres://fixture:acceptance-fixture@acceptance-postgres:5432/butler_acceptance_extension_e2e_test?sslmode=disable' \
     golang:1.27.2-bookworm /proof/bin/test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app \
     /proof/bin/app.test -test.v=test2json -test.timeout=150s '-test.run=^TestInstalledProjectExtensionRealBrokerApprovalE2E$' > "$proof/events/extension-e2e.jsonl"
+  if [[ "$profile" == full-faults ]]; then
+    "${browser_container[@]}" --env DISPLAY=:91 --env BUTLER_SINGLE_TAB_E2E=1 \
+      --env BUTLER_SINGLE_TAB_HOST_BINARY=/proof/bin/guarded-native-host \
+      --env BUTLER_SINGLE_TAB_FIXTURE_SCRIPT=/fixture/apps/browser-bridge/scripts/guarded_chromium_fixture.mjs \
+      --env BUTLER_SINGLE_TAB_EXTENSION=/fixture/web/extensions/chromium-butler \
+      --env 'BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=postgres://fixture:acceptance-fixture@acceptance-postgres:5432/butler_acceptance_single_tab_test?sslmode=disable' \
+      --entrypoint sh "$browser_image" -c 'Xvfb :91 -screen 0 1280x900x24 -nolisten tcp >/tmp/xvfb.log 2>&1 & exec /proof/bin/test2json -t -p github.com/butler/butler/apps/tool-broker/internal/broker /proof/bin/broker.test -test.v=test2json -test.timeout=150s -test.run="^TestSingleTabResourceActualChromiumNativeHostIntegration$"' > "$proof/events/single-tab.jsonl"
+  fi
   set -e
 
   # Actual backup before deletion, then restore the old PG contents while keeping
@@ -150,7 +174,15 @@ if [[ "$profile" == full ]]; then
   done
 fi
 docker stats --no-stream --format '{{json .}}' "$pg" "$redis" > "$proof/container-resources.jsonl"
+report_mode=report
+report_profile=$profile
+extra_report_args=()
+if [[ "$profile" == full-faults ]]; then
+  report_mode=fault-report
+  report_profile=full
+  extra_report_args=(-local-load-oom /proof/local-load-oom.json)
+fi
 "${go_container[@]}" golang:1.27.2-bookworm /proof/bin/acceptance \
-  -mode report -root /src -events /proof/events -profile "$profile" -commit "$commit" \
-  -hardware /proof/hardware.json -output /proof/report.json
+  -mode "$report_mode" -root /src -events /proof/events -profile "$report_profile" -commit "$commit" \
+  -hardware /proof/hardware.json -output /proof/report.json "${extra_report_args[@]}"
 [[ "$core_exit" == 0 ]]

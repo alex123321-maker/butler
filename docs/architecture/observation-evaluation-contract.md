@@ -70,3 +70,23 @@ signature are checked before import; candidate code cannot issue approvals.
 
 Implementation/reproduction: `internal/acceptance/command_suite.go`,
 `cmd/command-observe/README.md`, `scripts/dev/scenario-corpus-lab.sh`.
+
+## Current mandatory product faults
+
+`internal/acceptance.FullFaultGroups/FullFaultScenarios` and
+`FaultCriteriaDigest` define the separate `butler-mandatory-faults-v2` gate.
+They do not alter the independently signed V3 `CriteriaDigest`, original matrix
+or corpus. Current exact event names, source/schema/criteria/hardware pins,
+actual Chromium, PostgreSQL and dump/restore are required; missing, skipped,
+duplicate or foreign events fail. Fault-run writes an exclusive initial release
+pin before tests; fault-report rejects changed source/schema/hardware identity.
+
+The actual model fault is one separately sealed cached Qwen3 CPU **load** under
+256 MiB RAM/swap with no GPU, network, HTTP, prompt or inference. Verified image,
+weights, manifest and current runner bytes, read-only single weight mount,
+GGUF metadata read, Docker exit137 and OOMKilled are required. This physical
+runtime proof is separate from controlled kernel/owned-worker failure tests and
+does not assert Butler received this OOM. Remote High RAM/OOM are unavailable.
+Fault-only output never approves model quality, enables authority or sets full
+issue readiness. Complete original-task/one-notice release-chain faults and
+independent pinned High quality/cost observations remain separate required gates.

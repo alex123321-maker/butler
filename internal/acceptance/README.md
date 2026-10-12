@@ -6,6 +6,26 @@ model-selected command, or approve deployment. The standard library is sufficien
 for fixed Go test events, bounded JSON observations, digests and Ed25519 review;
 no evaluation framework or new dependency is added.
 
+The additive `butler-mandatory-faults-v2` gate selects the current eight required
+product fault groups through `FullFaultGroups`/`FullFaultScenarios`. Use
+`fault-lab.ps1 -Profile FullFaults -LocalModelLoadOOM <sealed-private-proof>`.
+It reruns exact current PostgreSQL, Chromium, subprocess, Broker, source deletion
+and actual dump/restore checks. A pre-test source/schema/criteria/hardware pin
+must match report mode. Every named test and subtest must pass exactly once;
+missing or skipped evidence fails. See [the current plan](../../docs/ai/scenario-full-faults-acceptance-20261012.md).
+
+The separately bounded cached Qwen3 CPU load experiment records one physical
+Docker OOM (137 plus `OOMKilled`) before inference, verified weight/image/manifest
+bytes and actual runtime isolation. A graceful error, synthetic worker error,
+GPU/cloud inference, changed runner or repeated load cannot satisfy this gate.
+That physical process is not connected to Butler's kernel; separate owned-worker
+tests prove its failure controls. High server RAM/OOM remain unavailable.
+`mandatory_faults_passed` covers these bounded faults only; `issue_33_ready`
+remains false until independently reviewed model quality/cost and the complete
+mandate-to-one-final-notice chain, including restart/Stop/delivery faults, pass.
+V1 `Groups`/`Scenarios`/`CriteriaDigest`, signed V3 data and historical failed
+reports are preserved byte-for-byte in meaning and digest.
+
 `cmd/command-observe` separately checks supplementary typed owner-control
 proposals and original witnesses. Its [contract](../../docs/architecture/observation-evaluation-contract.md)
 and [runner instructions](../../cmd/command-observe/README.md) preserve signed V3

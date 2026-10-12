@@ -22,7 +22,7 @@ func main() {
 	}
 }
 func run() error {
-	mode := flag.String("mode", "report", "plan, run, report, corpus, inputs, score, compare")
+	mode := flag.String("mode", "report", "plan, run, report, fault-plan, fault-run, fault-report, corpus, inputs, score, compare")
 	root := flag.String("root", ".", "source snapshot")
 	events := flag.String("events", "", "private event directory")
 	output := flag.String("output", "", "private report file")
@@ -33,9 +33,46 @@ func run() error {
 	approval := flag.String("golden-approval", "", "independently signed approval file outside candidate")
 	key := flag.String("golden-public-key", "", "operator-controlled Ed25519 hex public key")
 	split := flag.String("split", "holdout", "development/tuning/holdout")
+	localOOM := flag.String("local-load-oom", "", "separately sealed content-free physical local model LOAD proof")
 	flag.Parse()
 	if *mode == "plan" {
 		return json.NewEncoder(os.Stdout).Encode(acceptance.Groups())
+	}
+	if *mode == "fault-plan" {
+		return json.NewEncoder(os.Stdout).Encode(acceptance.FullFaultGroups())
+	}
+	if *mode == "fault-run" || *mode == "fault-report" {
+		if *output == "" || *events == "" || *hardware == "" {
+			return fmt.Errorf("private output, events and hardware required")
+		}
+		raw, err := os.ReadFile(*hardware)
+		if err != nil {
+			return err
+		}
+		var executionErr error
+		if *mode == "fault-run" {
+			if err = acceptance.WriteFaultRunPin(*root, *events, *commit, raw); err != nil {
+				return err
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), 45*time.Minute)
+			defer cancel()
+			executionErr = acceptance.RunFullFaultCore(ctx, *root, *events)
+		}
+		r, err := acceptance.BuildFullFaultReport(*root, *events, *commit, raw, *localOOM)
+		if err != nil {
+			return err
+		}
+		if err = acceptance.WriteJSON(*output, r); err != nil {
+			return err
+		}
+		fmt.Printf("mandatory_faults_passed=%t issue_33_ready=%t report=%s\n", r.MandatoryFaultsPassed, r.Issue33Ready, *output)
+		if executionErr != nil {
+			return executionErr
+		}
+		if *mode == "fault-report" && !r.MandatoryFaultsPassed {
+			return fmt.Errorf("mandatory fault evidence failed or missing")
+		}
+		return nil
 	}
 	f, err := os.Open(filepath.Join(*root, "testdata", "acceptance", "ru-scenarios-v3.json"))
 	if err != nil {
