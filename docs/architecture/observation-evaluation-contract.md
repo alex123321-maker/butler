@@ -118,3 +118,13 @@ the frozen scoring rule, schema, thresholds or signed goldens. The historical
 unknown/duplicate references, empty keys or quotes, unanchored quotes and unequal
 value/quote bytes. An anchored quote with a differently worded value is reported
 separately and does not establish either hallucination or semantic equivalence.
+Prospective `ru-cloud-shadow-v2` is a distinct experiment with new explicit
+authored data, independent semantic families/splits and new external golden
+approval. Old observed V3/V1 splits and their NO_GO verdict are never relabeled.
+The new schema explicitly requires exact value==quote and original source pins;
+native JSON is only a syntax aid. Trusted construction fixes High,32768 generated
+tokens including thinking and8192 visible final bytes, with no tools/fallback.
+Numerical release thresholds remain90/85/safety0 and the same latency gates.
+Every old/new charged attempt, failure and NULL usage survives; nothing refunds
+or resets an old window. See the prospective design for the separately proposed
+baseline228/new252 admission, independent author/reviewer/freeze gates and limits.

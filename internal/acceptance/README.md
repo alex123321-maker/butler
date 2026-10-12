@@ -193,3 +193,12 @@ delegated full-cost comparison, real hardware model
 pressure evaluation, skill/self-development/self-repair release and the entire
 mandate-to-one-notification chain across restart/stop/delivery failure. Adding an
 available boundary test is useful; it does not complete those product scenarios.
+The additive prospective V2 cloud contract uses explicit authored cases and a
+separate schema/policy/golden digest. `LoadCloudV2Corpus` does not expand the old
+V3 templates. `ExportCloudV2Inputs` excludes secret cases and review metadata;
+`MakeCloudV2ModelInput` pins native kind-generic JSON schema, MIME and generated
+allowance. `ScoreCloudV2`/`CompareCloudV2` check original witnesses, fixed thresholds,
+all child costs and nullable usage. The new native review constants remain
+unavailable until independent review. Mechanical inventory, lexical screens and
+synthetic signature/CLI tests are fixture validation, not semantic holdout approval
+or actual High quality. Existing V1 evidence is unchanged.

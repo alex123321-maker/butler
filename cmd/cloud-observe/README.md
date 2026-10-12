@@ -141,3 +141,20 @@ value/quote mismatches. Anchored quotes with differing values are counted
 separately. The frozen `source_fabrications` metric remains unchanged; its name
 does not mean every contract violation is a literal hallucination. Diagnostics
 export only counts and never values, quotes, source text or goldens.
+Prospective `v2-inputs`, `v2-policy`, `v2-quality` and `v2-compare` use a separate
+explicit `testdata/acceptance/ru-cloud-fresh-v2.json` corpus. V1 functions, hashes,
+goldens and NO_GO audits remain unchanged. V2 native configuration is code-owned
+High, application/json, a kind-generic JSON schema,32768 generated tokens including
+thinking, and8192 visible JSON bytes. Unknown usage/version cannot become known
+zero or the requested model identity. The same90/85/safety0/latency thresholds
+remain fixed; the dataset and comparison cases require independent review before
+new calls.
+
+V2 imports require external new signed review artifacts plus trusted
+`-expected-review-key-sha256` and `-expected-review-approval-sha256`, exact source
+commit/tree and actual hardware. The native three-argument review helper keeps
+its new artifact constants empty and denies until independent approval supplies
+them. An explicitly pinned fixture/import helper never writes or signs approval.
+Pure offline success is not native provenance or execution permission. Existing
+artifact output uses O_EXCL. See the
+[prospective design](../../docs/ai/scenario-cloud-prospective-v2-design-20261012.md).

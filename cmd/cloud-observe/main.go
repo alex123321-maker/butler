@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/butler/butler/internal/acceptance"
 )
@@ -22,7 +23,7 @@ func main() {
 }
 func run(args []string, stdout io.Writer) error {
 	f := flag.NewFlagSet("cloud-observe", flag.ContinueOnError)
-	mode := f.String("mode", "inputs", "inputs, policy, quality, compare, window-audit")
+	mode := f.String("mode", "inputs", "inputs, policy, quality, compare, window-audit; v2-inputs, v2-policy, v2-quality, v2-compare")
 	root := f.String("root", ".", "frozen source snapshot")
 	split := f.String("split", "", "empty means all three splits")
 	observations := f.String("observations", "", "private recorded observation envelope")
@@ -32,12 +33,17 @@ func run(args []string, stdout io.Writer) error {
 	approvalPath := f.String("golden-approval", "", "external independently pinned signed approval")
 	expectedSource := f.String("expected-source-sha256", "", "independent prepared shadow source hash; window-audit only")
 	expectedHistory := f.String("expected-history-sha256", "", "independent fifteen-artifact baseline hash; window-audit only")
+	expectedReviewKey := f.String("expected-review-key-sha256", "", "independent prospective V2 public-key file hash")
+	expectedReviewApproval := f.String("expected-review-approval-sha256", "", "independent prospective V2 approval file hash")
 	output := f.String("output", "", "new private report; existing evidence is immutable")
 	if err := f.Parse(args); err != nil {
 		return err
 	}
 	if f.NArg() != 0 {
 		return fmt.Errorf("unexpected positional arguments")
+	}
+	if strings.HasPrefix(*mode, "v2-") {
+		return runCloudV2(cloudV2CLIOptions{*mode, *root, *split, *observations, *hardware, *commit, *keyPath, *approvalPath, *expectedReviewKey, *expectedReviewApproval, *output}, stdout)
 	}
 	file, err := os.Open(filepath.Join(*root, "testdata", "acceptance", "ru-scenarios-v3.json"))
 	if err != nil {

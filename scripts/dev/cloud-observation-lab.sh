@@ -4,7 +4,7 @@ set -euo pipefail
 root=${1:?isolated agent root required}
 phase=${2:-narrow}
 [[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ ]] || exit 2
-[[ "$phase" == narrow || "$phase" == broad ]] || exit 2
+[[ "$phase" == narrow || "$phase" == broad || "$phase" == v2 ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/internal/acceptance/cloud_observation.go" ]] || exit 2
 umask 077
@@ -16,7 +16,9 @@ docker run --rm --user "$(id -u):$(id -g)" --network none --memory 1536m --pids-
   --security-opt no-new-privileges:true --volume "$source_dir:/src:ro" --volume "$root/.cache:/cache" \
   --workdir /src --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp \
   --env CLOUD_PHASE="$phase" golang:1.27.2-bookworm bash -eu -c '
-if [[ "$CLOUD_PHASE" == narrow ]]; then
+if [[ "$CLOUD_PHASE" == v2 ]]; then
+  go test -json -race -p 1 -count=1 -run "^TestCloudV2" ./internal/acceptance ./cmd/cloud-observe
+elif [[ "$CLOUD_PHASE" == narrow ]]; then
   go test -json -race -p 1 -count=1 -run "^TestCloud" ./internal/acceptance
 else
   go test -json -race -p 1 -count=1 ./internal/acceptance ./cmd/command-observe ./cmd/cloud-observe
