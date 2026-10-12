@@ -14,7 +14,12 @@ import (
 
 // Explicit test composition, never a production transport fallback. Prior
 // immutable evidence supplies actual High parent/width1 generation. Only the
-// two current width2 children can enter the native provider in this remainder.
+// two current width2 children can enter the native provider in either separately
+// bounded mixed window. Their limiters/history/one-use markers remain distinct.
+func finalMixedDelegationWindow() bool {
+	return highRemainderDelegationWindow() || highFinalDelegationWindow()
+}
+
 type highRemainderProvider struct {
 	*nativeScriptedObservationProvider
 	pool   *pgxpool.Pool
@@ -37,7 +42,7 @@ func newHighRemainderProvider(pool *pgxpool.Pool, corpus nativeResearchCorpus, a
 }
 
 func (p *highRemainderProvider) StartRun(ctx context.Context, req transport.StartRunRequest) (transport.EventStream, error) {
-	if !highRemainderDelegationWindow() {
+	if !finalMixedDelegationWindow() {
 		return nil, errNativeFixtureDenied
 	}
 	var ownSession, parentSession, owner string
@@ -129,6 +134,13 @@ func (p *highRemainderProvider) CancelRun(ctx context.Context, req transport.Can
 func TestHighRemainderDelegationActualAcceptanceIntegration(t *testing.T) {
 	if !highRemainderDelegationWindow() || os.Getenv("BUTLER_DELEGATION_NATIVE_ACCEPTANCE") != "1" {
 		t.Skip("separate two-call remainder opt-in required")
+	}
+	runNativeDelegationActualScenario(t)
+}
+
+func TestHighFinalDelegationActualAcceptanceIntegration(t *testing.T) {
+	if !highFinalDelegationWindow() || os.Getenv("BUTLER_DELEGATION_NATIVE_ACCEPTANCE") != "1" {
+		t.Skip("separate final two-call window opt-in required")
 	}
 	runNativeDelegationActualScenario(t)
 }

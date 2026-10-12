@@ -17,10 +17,26 @@ import (
 )
 
 func TestHighRemainderProviderRoutesOnlyDeclaredWidth2ChildrenIntegration(t *testing.T) {
+	testHighMixedProviderRoutesOnlyDeclaredWidth2Children(t, false)
+}
+
+func TestHighFinalProviderRoutesOnlyDeclaredWidth2ChildrenIntegration(t *testing.T) {
+	testHighMixedProviderRoutesOnlyDeclaredWidth2Children(t, true)
+}
+
+func testHighMixedProviderRoutesOnlyDeclaredWidth2Children(t *testing.T, final bool) {
 	if os.Getenv("BUTLER_DELEGATION_BROKER_BINARY") == "" {
 		t.Skip("actual private Broker binary required")
 	}
-	t.Setenv("BUTLER_DELEGATION_HIGH_REMAINDER_WINDOW", "1")
+	t.Setenv("BUTLER_DELEGATION_HIGH_REMAINDER_WINDOW", "")
+	t.Setenv("BUTLER_DELEGATION_HIGH_FINAL_WINDOW", "")
+	baseline := 37
+	if final {
+		t.Setenv("BUTLER_DELEGATION_HIGH_FINAL_WINDOW", "1")
+		baseline = 39
+	} else {
+		t.Setenv("BUTLER_DELEGATION_HIGH_REMAINDER_WINDOW", "1")
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Second)
 	defer cancel()
 	f := newNativeScenarioFixture(t, ctx)
@@ -73,7 +89,7 @@ func TestHighRemainderProviderRoutesOnlyDeclaredWidth2ChildrenIntegration(t *tes
 				want = 2
 			}
 			var spent, contexts int
-			if spy.parentStarts.Load() != 0 || spy.childEntries.Load() != want || provider.parentStarts.Load() != int32(width) || provider.continuations.Load() != int32(2*width) || f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&spent) != nil || spent != 37 || f.pool.QueryRow(ctx, `SELECT count(*) FROM fixture_native_contexts`).Scan(&contexts) != nil || contexts != 3*width {
+			if spy.parentStarts.Load() != 0 || spy.childEntries.Load() != want || provider.parentStarts.Load() != int32(width) || provider.continuations.Load() != int32(2*width) || f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&spent) != nil || spent != baseline || f.pool.QueryRow(ctx, `SELECT count(*) FROM fixture_native_contexts`).Scan(&contexts) != nil || contexts != 3*width {
 				t.Fatal("scripted routing entered wrong lane or charged native calls")
 			}
 		})

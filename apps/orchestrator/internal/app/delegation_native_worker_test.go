@@ -219,7 +219,7 @@ func TestNativeDelegationWorkerHarness(t *testing.T) {
 	}
 	provider.observe = nativeContextObserver(pool, corpus)
 	var model transport.ModelProvider = provider
-	if highRemainderDelegationWindow() {
+	if finalMixedDelegationWindow() {
 		model, err = newHighRemainderProvider(pool, corpus, config.RemainderArgs, provider)
 		if err != nil {
 			t.Fatal("explicit remainder provider composition unavailable")
