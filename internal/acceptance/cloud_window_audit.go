@@ -135,34 +135,35 @@ type CloudSafeAttempt struct {
 	ClientRSS    *int64    `json:"client_process_peak_rss_bytes"`
 }
 type CloudWindowAudit struct {
-	Status               string                `json:"status"`
-	EvidenceKind         string                `json:"evidence_kind"`
-	OriginalReportSHA256 string                `json:"original_private_report_sha256"`
-	CollectorStatus      string                `json:"collector_status"`
-	Pin                  CloudPin              `json:"pin"`
-	HistorySHA256        string                `json:"historical_baseline_sha256"`
-	HistoricalAttempts   int                   `json:"historical_attempts"`
-	HistoricalArtifacts  int                   `json:"historical_artifacts"`
-	HistoricalKnown      int                   `json:"historical_known_pairs"`
-	HistoricalUnknown    int                   `json:"historical_null_pairs"`
-	HistoricalInput      int64                 `json:"historical_known_input_subtotal"`
-	HistoricalOutput     int64                 `json:"historical_known_output_subtotal"`
-	NewAttempts          int                   `json:"new_attempts"`
-	CarryForwardAttempts int                   `json:"carry_forward_attempts"`
-	MaximumNew           int                   `json:"maximum_new_attempts"`
-	MaximumTotal         int                   `json:"maximum_total_attempts"`
-	CorrelationValid     bool                  `json:"charged_ledger_correlated"`
-	Attempts             []CloudSafeAttempt    `json:"attempts"`
-	Cost                 CloudCost             `json:"all_new_attempt_cost"`
-	Quality              CloudQualityReport    `json:"quality_recheck"`
-	Comparison           CloudComparisonReport `json:"comparison_recheck"`
-	QualityValid         bool                  `json:"quality_recheck_valid"`
-	ComparisonValid      bool                  `json:"comparison_recheck_valid"`
-	ModelFamily          string                `json:"observed_model_family_status"`
-	UnknownVersions      int                   `json:"unknown_model_version_attempts"`
-	Reasons              []string              `json:"no_go_reasons"`
-	Execution            bool                  `json:"execution_authorized"`
-	Limits               []string              `json:"limits"`
+	Status               string                  `json:"status"`
+	EvidenceKind         string                  `json:"evidence_kind"`
+	OriginalReportSHA256 string                  `json:"original_private_report_sha256"`
+	CollectorStatus      string                  `json:"collector_status"`
+	Pin                  CloudPin                `json:"pin"`
+	HistorySHA256        string                  `json:"historical_baseline_sha256"`
+	HistoricalAttempts   int                     `json:"historical_attempts"`
+	HistoricalArtifacts  int                     `json:"historical_artifacts"`
+	HistoricalKnown      int                     `json:"historical_known_pairs"`
+	HistoricalUnknown    int                     `json:"historical_null_pairs"`
+	HistoricalInput      int64                   `json:"historical_known_input_subtotal"`
+	HistoricalOutput     int64                   `json:"historical_known_output_subtotal"`
+	NewAttempts          int                     `json:"new_attempts"`
+	CarryForwardAttempts int                     `json:"carry_forward_attempts"`
+	MaximumNew           int                     `json:"maximum_new_attempts"`
+	MaximumTotal         int                     `json:"maximum_total_attempts"`
+	CorrelationValid     bool                    `json:"charged_ledger_correlated"`
+	Attempts             []CloudSafeAttempt      `json:"attempts"`
+	Cost                 CloudCost               `json:"all_new_attempt_cost"`
+	Quality              CloudQualityReport      `json:"quality_recheck"`
+	WitnessDiagnostics   CloudWitnessDiagnostics `json:"witness_diagnostics"`
+	Comparison           CloudComparisonReport   `json:"comparison_recheck"`
+	QualityValid         bool                    `json:"quality_recheck_valid"`
+	ComparisonValid      bool                    `json:"comparison_recheck_valid"`
+	ModelFamily          string                  `json:"observed_model_family_status"`
+	UnknownVersions      int                     `json:"unknown_model_version_attempts"`
+	Reasons              []string                `json:"no_go_reasons"`
+	Execution            bool                    `json:"execution_authorized"`
+	Limits               []string                `json:"limits"`
 }
 
 var cloudWindowContext = regexp.MustCompile(`^shadow-[a-f0-9]{32}$`)
@@ -324,6 +325,7 @@ func AuditCloudWindow(c Corpus, approval GoldenApproval, key []byte, raw []byte,
 	}
 	var err error
 	r.Quality, err = ScoreCloud(c, approval, key, e.Pin, e.Attempts)
+	r.WitnessDiagnostics = cloudWitnessDiagnostics(c, e.Attempts)
 	r.QualityValid = err == nil
 	if err != nil {
 		r.Reasons = append(r.Reasons, "quality_recheck_denied")

@@ -112,3 +112,9 @@ vocabulary metadata processing before physical OOM, not completed weights,
 inference, remote High OOM or Butler kernel propagation. Reviewer/root approval
 is a fixed source-reviewed hash pin, not a claimed signature or administrative
 isolation. The precise primary logger premise is recorded in the current plan.
+Offline window audits may add content-free witness-reason counts without changing
+the frozen scoring rule, schema, thresholds or signed goldens. The historical
+`source_fabrications` metric counts exact source-witness contract failures:
+unknown/duplicate references, empty keys or quotes, unanchored quotes and unequal
+value/quote bytes. An anchored quote with a differently worded value is reported
+separately and does not establish either hallucination or semantic equivalence.

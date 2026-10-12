@@ -135,3 +135,9 @@ after isolated `lab.ps1 -Action Sync`. Go 1.27.2, network-disabled containers,
 read-only source and repo-local caches run meaningful synthetic race/vet checks.
 Native execution and auth remain exclusively with the separately authorized
 root-owned bounded runner. Old sealed windows/usage/data are untouched.
+The additive `witness_diagnostics` in a window audit separates invalid/duplicate
+source references, empty keys/quotes, quotes absent from originals and exact
+value/quote mismatches. Anchored quotes with differing values are counted
+separately. The frozen `source_fabrications` metric remains unchanged; its name
+does not mean every contract violation is a literal hallucination. Diagnostics
+export only counts and never values, quotes, source text or goldens.
