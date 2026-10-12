@@ -31,10 +31,11 @@ pwsh -NoProfile -File scripts/dev/fault-lab.ps1 -Profile FullFaults `
   -LocalModelLoadOOM /srv/storage/butler/agents/scenario-full-faults/reports/local-model-load-oom-20261012T104346Z-1157147/local-load-oom.json
 ```
 
-The report explicitly retains `issue_33_ready=false`. Both closed High shadow
-NO_GO results remain immutable; prospective V3 whole-content review, signing,
-quality/cost collection and the actual full native release chain are still
-separate required gates. Earlier full process-chain RED and later narrow PASS
-remain recorded in [their offline report](scenario-release-chain-high-offline-20261012.md).
-This fault proof cannot replace either pending native acceptance or that complete
-process-chain verification.
+The report explicitly retains `issue_33_ready=false`. All three closed High
+shadow NO_GO results remain immutable, including the subsequently signed and
+executed [actual V3 window](scenario-cloud-v3-independent-audit-20261012.md).
+Full native quality/comparison and the actual High release chain remain required.
+The [current complete scripted chain](scenario-current-scripted-chain-20261012.md)
+has separately passed; its earlier full-process RED and narrow PASS remain
+recorded in [their offline report](scenario-release-chain-high-offline-20261012.md).
+Neither scripted execution nor these fault checks establish native acceptance.

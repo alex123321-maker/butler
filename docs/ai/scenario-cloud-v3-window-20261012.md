@@ -1,5 +1,19 @@
 # Prospective High V3 window
 
+## Actual result — 2026-10-12
+
+The signed, independently reviewed V3 window has now executed once and closed
+**NO_GO** after18 new observations, cumulative266. Seventeen completed answers
+are correct; ordinal266 failed the JSON encoding contract with known cost and
+observed version. Rejected bytes were not retained, so the exact structural cause
+is unavailable. No tuning, holdout, comparison or native release chain passed.
+See the [independent actual audit](scenario-cloud-v3-independent-audit-20261012.md)
+for immutable source and evidence hashes. The prospective preparation below is
+historical; its empty-pin statements do not describe the signed actual source.
+This sealed window must not be synced, reopened or resampled.
+
+## Frozen prospective protocol and preparation history
+
 This additive runner is not native acceptance or release authority. The new
 candidate corpus, independent whole-corpus review, external signature identities
 and clean combined-source preparation must all be established before root may
