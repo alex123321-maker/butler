@@ -1,5 +1,26 @@
 # Antigravity account and quota diagnosis — updated 2026-10-12
 
+## Ordinary initiative High acceptance — latest observation
+
+After PR71 merged and issue16 closed, the owner-directed continuation passed
+issue15's bounded ordinary Core/Broker/artifact/owner-verification/channel
+scenario. [Exact evidence](initiative-high-acceptance-20261012.md) uses one
+promoted task and four actual native High requests42–45. Three real cheap
+observations are model-free; preflight transports are explicitly scripted.
+The same current authority, Catalog and conservative budget gates remain active.
+
+Three new tool-turn usage pairs are NULL in Butler's journal; the final pair is
+5640 input/75 output. The transport attaches usage to finals, so this does not
+establish that upstream omitted tool-turn metadata. No raw response or measured
+counter permits backfilling them. Tracked history45 has20 known/25 NULL pairs
+and74698 input/2210 output known subtotal. Every failed/unknown earlier attempt
+and all sealed windows remain retained. These are not full billing/account
+quotas. The latest four-request window is spent; no retry or refund occurred.
+
+The actual test passed29.32s; both authless daily TLS lanes and79 names/41
+top-level preparation checks (race/vet,0 fail/skip) passed. Synthetic channel
+ACK101 is an actual HTTP acknowledgement, not evidence of human reading.
+
 ## Final bounded High delegation acceptance — latest observation
 
 The [final window](delegation-final-high-acceptance-20261012.md) passed both

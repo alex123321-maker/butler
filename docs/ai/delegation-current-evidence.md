@@ -1,7 +1,7 @@
 # Issue16 accepted bounded evidence and scope
 
-Issue16's bounded criteria are independently accepted; the issue closes when
-PR71 merges. This consolidates lab evidence, including the failed-attempt
+Issue16's bounded criteria are independently accepted; PR71 merged as90ad32a
+and issue16 is closed. This consolidates lab evidence, including the failed-attempt
 observation bridge and separate local generative observations. The opt-in context-only route
 retains empty child permissions. Component tests and deliberately scripted
 provider outcomes are distinct from successful native research.

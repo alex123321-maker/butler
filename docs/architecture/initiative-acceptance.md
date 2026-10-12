@@ -14,7 +14,7 @@ separate gate: a scripted provider is not evidence of generative quality.
 | 6. Active hours, quiet checks and grouped delivery | Admission rechecks the PG clock after budget waits; empty checks/proposals have no notice; digest source/goal/mandate is checked at claim and send; production Telegram adapter obtains an actual synthetic HTTP ACK once | None at component level |
 | 7. Safe pull audit explains the initiative | Owner view exposes bounded typed source/observation IDs, status, deterministic reasons and estimates; raw errors, model content and credentials are excluded | None at component level |
 | 8. Model, external effects and verified task outcomes stay separate | Actual Broker dispatch/recipient confirmation is required; model final remains `unverified`; independent owner verification completes the task; digest ACK is separate; low-confidence observations remain proposal-only | None at component level |
-| 9. Repeated project error produces a checked prepared correction | Three real Broker failed checks produce one initiative and ordered input; ordinary Core obtains one actual stored patch, checks it and retains `applied=false`; owner checks the stored proposal and actual check before task verification | Live `gemini3.8flashhigh` four-turn run, separately sealed and bounded |
+| 9. Repeated project error produces a checked prepared correction | Three real Broker failed checks produce one initiative and ordered input; ordinary Core obtains one actual stored patch, checks it and retains `applied=false`; owner checks the stored proposal and actual check before task verification | Separately sealed actual High four-turn run passed; bounded evidence below |
 
 `TestInitiativeProjectChecksRealBrokerE2E` uses a disposable PostgreSQL schema,
 real Tool Broker and extension runtime subprocesses, a reviewed fixed-origin
@@ -62,6 +62,20 @@ ordinary fixture tests it passed four focused PG/race tests and vet in snapshot
 `20261012-145057-601`, report `narrow-20261012T075103Z-559800`, zero skips.
 Events SHA256: `138d5278976b7fb5f4786393266969b6e204560bcf9e93ccddd0093152710386`.
 This checks route composition, not live High acceptance.
+
+The actual `gemini-3.8-flash-high` continuation passed all four promoted-task
+turns42–45 on release `250cf05be67b3ba19bcdcc6a7afabf13d5733e79` in29.32s.
+Safe report SHA256 `0ded1f418c3ecf9fad177fe5141350e8c5ca8002452fb462e3114219c4ab4ca9`
+confirms the ordinary Core/artifact/channel checks, independent owner completion,
+unverified model final and one synthetic digest ACK101. The cheap observation
+drivers remain model-free and the preflight transports remain explicitly
+scripted. Independent review accepted all nine criteria within this declared
+synthetic project; no production deployment or automatic general verifier is
+claimed. Shared owner-day exhaustion has separate actual Ledger/PG evidence in
+`TestBudgetRootPreflightDoesNotChargeOrResetAdmissionIntegration`.
+Three tool-turn usage pairs remain NULL, while the final pair is5640/75. They
+remain charged and unknown; full accounting and source/window pins are in the
+[bounded High acceptance](../ai/initiative-high-acceptance-20261012.md).
 
 Run `scripts/dev/initiative-lab.sh <isolated-agent-root> broad` from a read-only
 source snapshot populated by `scripts/dev/lab.ps1 -Action Sync`. It builds the
