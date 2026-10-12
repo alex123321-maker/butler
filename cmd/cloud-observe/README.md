@@ -183,3 +183,15 @@ All recorded costs precede re-scoring failures or incomplete comparisons. A
 failed collector stays NO_GO; all 228 previous charges and 25 NULL input/output
 pairs remain spent. Historical total cost is incomplete for the first 45 calls.
 O_EXCL output cannot overwrite evidence.
+
+`v2-pg-correlate -observations <private collector report> -pg-witness <separate
+read-only SQL artifact>` compares the exact V2 PG witness version, window counter,
+baseline/policy hashes, expiry and every ordered metadata/usage row. NULL and
+literal zero remain different; no extra, missing or reordered rows are accepted.
+The output contains only artifact hashes, counts and a matching verdict. It
+does not score the corpus, infer, read authentication, or establish quality or
+execution permission. A failed collector may match its genuine SQL journal;
+its cost and NO_GO verdict remain owned by the separate window audit. The
+immutable runner/source must establish that the SQL file came from the actual
+owning database. Both inputs are bounded to 2 MiB; output cannot overwrite an
+existing artifact.

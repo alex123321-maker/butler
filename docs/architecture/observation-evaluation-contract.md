@@ -143,3 +143,11 @@ and key order while preserving strings and array order; it grants no semantic
 authority. Failed or partial collector reports remain NO_GO and retain their
 spend, even when a later quality/comparison checker returns an error. Exports
 are content-free; old V1 verdicts, byte pins and counters are unchanged.
+
+V2 adds an independent runner-owned read-only SQL snapshot before PG cleanup.
+The pure `CorrelateCloudV2PGWitness` compares its whitelisted immutable window and
+ordered attempt columns with the collector ledger, including exact nullable
+usage and output hashes. It exports only hashes/counts/equality, never model
+content or authentication. Equality is separate from inference provenance,
+golden review, measured cost and quality readiness; it cannot turn NO_GO into a
+quality PASS. No V1 scorer, corpus, policy or historical verdict changes.

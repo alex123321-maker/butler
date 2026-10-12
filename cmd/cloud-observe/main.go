@@ -35,12 +35,16 @@ func run(args []string, stdout io.Writer) error {
 	expectedHistory := f.String("expected-history-sha256", "", "independent fifteen-artifact baseline hash; window-audit only")
 	expectedReviewKey := f.String("expected-review-key-sha256", "", "independent prospective V2 public-key file hash")
 	expectedReviewApproval := f.String("expected-review-approval-sha256", "", "independent prospective V2 approval file hash")
+	pgWitness := f.String("pg-witness", "", "separate read-only V2 SQL metadata witness; v2-pg-correlate only")
 	output := f.String("output", "", "new private report; existing evidence is immutable")
 	if err := f.Parse(args); err != nil {
 		return err
 	}
 	if f.NArg() != 0 {
 		return fmt.Errorf("unexpected positional arguments")
+	}
+	if *mode == "v2-pg-correlate" {
+		return runCloudV2PGCorrelation(*observations, *pgWitness, *output, stdout)
 	}
 	if strings.HasPrefix(*mode, "v2-") {
 		return runCloudV2(cloudV2CLIOptions{Mode: *mode, Root: *root, Split: *split, Observations: *observations, Hardware: *hardware, Commit: *commit, Key: *keyPath, Approval: *approvalPath, ExpectedKey: *expectedReviewKey, ExpectedApproval: *expectedReviewApproval, Output: *output, ExpectedSource: *expectedSource, ExpectedHistory: *expectedHistory}, stdout)

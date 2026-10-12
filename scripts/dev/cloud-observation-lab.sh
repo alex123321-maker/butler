@@ -21,7 +21,7 @@ docker run --rm --user "$(id -u):$(id -g)" --network none --memory 1536m --pids-
   --workdir /src --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp \
   --env CLOUD_PHASE="$phase" golang:1.27.2-bookworm bash -eu -c '
 if [[ "$CLOUD_PHASE" == audit-v2 ]]; then
-  go test -json -race -p 1 -count=1 -run "^TestCloudV2(WindowAudit|CLIWindowAudit|OutputDigest)" ./internal/acceptance ./cmd/cloud-observe
+  go test -json -race -p 1 -count=1 -run "^TestCloudV2(WindowAudit|CLIWindowAudit|OutputDigest|PGCorrelation|CLIIndependentPGCorrelation)" ./internal/acceptance ./cmd/cloud-observe
 elif [[ "$CLOUD_PHASE" == v2 ]]; then
   go test -json -race -p 1 -count=1 -run "^TestCloudV2" ./internal/acceptance ./cmd/cloud-observe
 elif [[ "$CLOUD_PHASE" == narrow ]]; then
