@@ -60,6 +60,12 @@ MakeCloudV3ModelInput/CloudV3ModelInputDigest, ScoreCloudV3/CompareCloudV3.
 Native statuses CLOUD_V3_SHADOW_THRESHOLDS_PASS/CLOUD_V3_SHADOW_COMPARISON_PASS;
 fixture statuses never substitute. CLI v3-inputs/v3-policy/v3-quality/v3-compare
 only exports/imports with exact external review/source/commit/hardware pins and
-exclusive output. SSH runner cloud-observation-lab.sh phasev3 then broad uses
-race/vet/networknone/native0. Additive V3 audit/SQL correlation remain pending
-before final freeze.
+exclusive output. `AuditCloudV3Window` rechecks the exact prepared source/hardware,
+all17 historical artifact pins and248 spent calls, canonical ledger inputs and
+outputs, explicit nullable parent_context_id, deadlines and all new known/NULL
+cost before quality. Failed collectors/partial inventory stay NO_GO.
+`CorrelateCloudV3PGWitness` checks the independent ordered read-only SQL export;
+its equality result never establishes inference or quality. CLI modes are
+v3-window-audit and v3-pg-correlate, with content-free exclusive safe exports.
+SSH runner cloud-observation-lab.sh phaseaudit-v3/v3 then broad uses race/vet,
+networknone/native0. Native corpus approval/freeze remain separately pending.

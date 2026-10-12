@@ -8,6 +8,12 @@ output, not unconstrained source skill or execution. New default review hashes
 remain empty/denied; V1/V2 reports/digests/NO_GO verdicts and all248 spent attempts
 are unchanged. [Protocol proposal](../../docs/ai/scenario-cloud-prospective-v3-design-20261012.md).
 
+Additive V3 window audit and pure SQL correlation bind every new ordinal,
+canonical context/nullable parent, input/output digest, nullable measured spend
+and exact old248 history. Partial/failed collectors remain NO_GO; correlation
+equality alone never establishes inference/quality. Safe output omits model/source
+content and credentials. Both old auditors/correlation helpers stay unchanged.
+
 This package and `cmd/acceptance` run and inspect fixed, programmatic product
 contracts. They do not run an agent, change PostgreSQL authority, execute a
 model-selected command, or approve deployment. The standard library is sufficient

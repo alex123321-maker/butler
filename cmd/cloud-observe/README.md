@@ -9,6 +9,13 @@ This is namespace-assisted output, not unconstrained selection or execution.
 Old V1/V2 bytes/verdicts stay unchanged. See the
 [prospective design](../../docs/ai/scenario-cloud-prospective-v3-design-20261012.md).
 
+`v3-window-audit` additionally requires independently prepared source/history
+hashes; `v3-pg-correlate` requires separate private collector/SQL artifacts and
+exports only their hashes/count/equality. Both preserve NULL and failed-prefix
+accounting; correlation never grants quality or inference. Parent lineage is
+explicit nullable metadata, never owner authority. Existing outputs cannot be
+overwritten. These offline tools do not admit or reopen a native window.
+
 This Go standard-library command exports frozen Russian inputs, records the fixed
 acceptance policy and imports quality/comparison observations. It has no provider,
 auth importer, network client, Tool Broker, owner-control endpoint or executor.

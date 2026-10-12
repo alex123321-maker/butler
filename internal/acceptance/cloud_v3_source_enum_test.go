@@ -60,6 +60,9 @@ func TestCloudV3NativeSourceEnumContainsEveryOriginalNeverGoldOrBody(t *testing.
 }
 
 func TestCloudV3SourceNamespaceAndQuotationAreNeverRepaired(t *testing.T) {
+	if !strings.Contains(CloudV3Instructions()["retrieval"], "Прямо подтверждённый отрицательный ответ") || !strings.Contains(CloudV3Instructions()["retrieval"], "Простое отсутствие сведений не доказывает") {
+		t.Fatal("negative fact confused with absence of information")
+	}
 	e := Example{Kind: "retrieval", Documents: map[string]string{"srcA": "original fact", "srcB": "distractor"}, Golden: json.RawMessage(`{"refs":["srcA"]}`)}
 	for _, raw := range []string{`{"refs":["doc:srcA"]}`, `{"refs":["source:srcA"]}`, `{"refs":["srca"]}`, `{"refs":["srcA","srcA"]}`} {
 		check := VerifyCloudV3Response(e, []byte(raw))

@@ -37,7 +37,7 @@ func runCloudV3(o cloudV3CLIOptions, stdout io.Writer) error {
 			PolicySHA   string                 `json:"policy_sha256"`
 			CriteriaSHA string                 `json:"criteria_sha256"`
 		}{acceptance.FrozenCloudV3Policy(c), acceptance.CloudV3CorpusDigest(c), acceptance.CloudV3SchemaDigest(), acceptance.CloudV3PolicyDigest(c), acceptance.CloudV3CriteriaDigest(c)}
-	case "v3-quality", "v3-compare":
+	case "v3-quality", "v3-compare", "v3-window-audit":
 		if o.Observations == "" || o.Hardware == "" || o.Commit == "" || o.Key == "" || o.Approval == "" || o.ExpectedKey == "" || o.ExpectedApproval == "" {
 			return errors.New("complete independent prospective release/review pins required")
 		}
@@ -74,6 +74,13 @@ func runCloudV3(o cloudV3CLIOptions, stdout io.Writer) error {
 		hardware, e := acceptance.ReadPrivateFile(o.Hardware, 1<<20)
 		if e != nil || !json.Valid(hardware) {
 			return errors.New("prospective hardware metadata denied")
+		}
+		if o.Mode == "v3-window-audit" {
+			if o.ExpectedSource == "" || o.ExpectedHistory == "" {
+				return errors.New("independent prepared V3 source/history required")
+			}
+			result, err = acceptance.AuditCloudV3Window(c, approval, key, raw, acceptance.CloudV3WindowExpectation{CodeCommit: o.Commit, SourceSHA256: o.ExpectedSource, HistorySHA256: o.ExpectedHistory, HardwareSHA256: hashCloudV3File(hardware)})
+			break
 		}
 		sourceSHA, e := acceptance.TreeHash(o.Root, nil)
 		if e != nil {

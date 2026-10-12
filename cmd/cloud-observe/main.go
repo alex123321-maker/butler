@@ -46,6 +46,9 @@ func run(args []string, stdout io.Writer) error {
 	if *mode == "v2-pg-correlate" {
 		return runCloudV2PGCorrelation(*observations, *pgWitness, *output, stdout)
 	}
+	if *mode == "v3-pg-correlate" {
+		return runCloudV3PGCorrelation(*observations, *pgWitness, *output, stdout)
+	}
 	if strings.HasPrefix(*mode, "v3-") {
 		return runCloudV3(cloudV3CLIOptions{Mode: *mode, Root: *root, Split: *split, Observations: *observations, Hardware: *hardware, Commit: *commit, Key: *keyPath, Approval: *approvalPath, ExpectedKey: *expectedReviewKey, ExpectedApproval: *expectedReviewApproval, Output: *output, ExpectedSource: *expectedSource, ExpectedHistory: *expectedHistory}, stdout)
 	}

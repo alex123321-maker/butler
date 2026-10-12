@@ -166,3 +166,9 @@ selection. Literal-key instructions and complete per-case schema hashes accompan
 original-witness checks; no golden subset, model authority or output repair is
 allowed. Default fresh external review hashes deny until independent signing.
 The same90/85/safety0/latency/cost gates and High resource allowances apply.
+
+V3 offline window/SQL checks require exact ordered rows and nullable parent
+lineage in addition to per-attempt hashes/outcomes/usage. Old248 history retains
+both failed observations and the final NULL timeout; all cost is accumulated
+before readiness checks. Correlation alone reports equality, never inference or
+quality. Failed/partial reports remain NO_GO and cannot create a refund or retry.
