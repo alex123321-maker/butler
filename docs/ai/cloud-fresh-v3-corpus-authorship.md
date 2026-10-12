@@ -92,7 +92,7 @@ role/group hint and an ambiguous q307a mapping question. Candidate
 `83bb6413b70edc75fe622a97845048780a1384686ebdd7195675344b666ea9ce`
 replaced all60 source IDs with opaque random keys and asked q307a only for both
 actual inscriptions. The next independent whole-read identified q314 relationship
-arrow direction and q320's explicit-negative witness ambiguity. Current candidate
+arrow direction and q320's explicit-negative witness ambiguity. Formatted candidate
 `0b3261edf1035423d8698364471329c90bb414cd4f484b7418954b9cea3fcd00`
 names Nina's parent/guardian unambiguously and asks for the observer's own
 assertion that no forecast was composed. Other original semantics are retained.
@@ -118,3 +118,18 @@ Tested source-manifest SHA256:
 `ff78f897d6669f4ce7702d731b1c39fb7bc4a17ac71e1c94a61eb1d52a9d8698`.
 This proof section was appended afterward; corpus and executable checks did not
 change. Author review approval=false; native calls/imports/loads/messages=0.
+
+Canonical repository LF bytes of that same candidate, also stored by commit
+42390ea, have raw SHA256
+`26aab5aaa916b86a179ea26f7eb46ea6ffb72461ed7de9461b064342577f62da`.
+The earlier0b326 hash included formatter CRLF separators; normalization changed
+only JSON whitespace, not decoded original/query/golden strings or references.
+The exact LF snapshot `20261012-222239-739` repeated the targeted author checks:
+17 names / 5 top-level / 0 fail / 0 skip / race/vet, elapsed3.684s, proof
+`/srv/storage/butler/agents/cloud-fresh-v3-corpus/reports/corpus-author-20261012T152338Z-2115780`.
+Events SHA256:
+`be0f9dd254fc06529f01c15984e1db1c011b8cfaa884e3e54c1ec8d0d0b071ab`.
+Source-manifest SHA256:
+`188e42542dc5a0c444027d58428732c1f6af066aa214c2e0f9743fd4a37c9192`.
+This paragraph was appended after the run. Independent semantic approval remains
+pending; these structural screens cannot authorize model execution.
