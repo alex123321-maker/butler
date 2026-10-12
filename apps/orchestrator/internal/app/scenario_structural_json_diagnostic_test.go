@@ -208,6 +208,11 @@ func collectStructuralDiagnostic(ctx context.Context, w *structuralDiagnosticWin
 	}{c.ID, c.Input, c.Documents})
 	observer := &privateFinalCaptureProvider{ModelProvider: provider, private: private, ordinal: ordinal}
 	stream, startErr := observer.StartRun(call, transport.StartRunRequest{Context: transport.TransportRunContext{RunID: a.Context, SessionKey: "structural:" + c.ID, ProviderName: antigravity.Name, ModelName: antigravity.FlashHighModel, SupportsStreaming: true}, StreamingEnabled: true, InputItems: []transport.InputItem{{Role: "system", Content: input.SystemInstructions}, {Role: "user", Content: string(user)}}})
+	defer func() {
+		cleanup, stop := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer stop()
+		_ = observer.CancelRun(cleanup, transport.CancelRunRequest{Context: transport.TransportRunContext{RunID: a.Context, SessionKey: "structural:" + c.ID, ProviderName: antigravity.Name, ModelName: antigravity.FlashHighModel}})
+	}()
 	clean := startErr == nil && stream != nil
 	finals, terminals := 0, 0
 	var known *transport.Usage

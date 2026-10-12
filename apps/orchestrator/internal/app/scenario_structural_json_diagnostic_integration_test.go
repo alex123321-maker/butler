@@ -13,11 +13,13 @@ import (
 	"github.com/butler/butler/internal/memory/memorytest"
 	"github.com/butler/butler/internal/transport"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestScenarioStructuralJSONClosedGateAndExactInputs(t *testing.T) {
-	if structuralDiagnosticReviewedSHA != "" || structuralDiagnosticGate() == nil {
-		t.Fatal("prospective diagnostic opened before independent source freeze")
+	gateErr := structuralDiagnosticGate()
+	if structuralDiagnosticReviewedSHA == "" && gateErr == nil || structuralDiagnosticReviewedSHA != "" && gateErr != nil {
+		t.Fatal("empty review must deny; frozen review must satisfy every actual pin")
 	}
 	cases, err := structuralDiagnosticInputs()
 	if err != nil || len(cases) != 2 || cases[0].ID == cases[1].ID {
@@ -117,6 +119,21 @@ func TestScenarioStructuralJSONEncodingOnlyTwoContextsIntegration(t *testing.T) 
 		if i == 0 && a.Final.Reason != "json_syntax" {
 			t.Fatal("malformed output was repaired or promoted")
 		}
+		if i == 0 {
+			var before, after time.Time
+			if pool.QueryRow(context.Background(), `SELECT expires_at FROM fixture_structural_json_window`).Scan(&before) != nil {
+				t.Fatal("immutable expiry unavailable")
+			}
+			other, err := pgxpool.NewWithConfig(context.Background(), pool.Config().Copy())
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(other.Close)
+			w, err = createStructuralDiagnosticWindow(context.Background(), other, 8*time.Minute)
+			if err != nil || other.QueryRow(context.Background(), `SELECT expires_at FROM fixture_structural_json_window`).Scan(&after) != nil || !before.Equal(after) {
+				t.Fatal("independent store reconstruction changed the original deadline")
+			}
+		}
 		body, _ := json.Marshal(a)
 		if strings.Contains(string(body), "PRIVATE_MALFORMED") || strings.Contains(string(body), private) {
 			t.Fatal("private body/path exported")
@@ -181,11 +198,52 @@ func TestScenarioStructuralJSONFailuresDenyNextEntryIntegration(t *testing.T) {
 			if pool.QueryRow(context.Background(), `SELECT total_tokens FROM fixture_structural_json_attempts WHERE ordinal=267`).Scan(&storedTotal) != nil || pool.QueryRow(context.Background(), `SELECT count(*) FROM fixture_structural_json_attempts`).Scan(&rows) != nil || rows != 1 || !nativeEqualJSON(storedTotal, a.Total) {
 				t.Fatal("SQL measurements not durable before private failure")
 			}
+			other, err := pgxpool.NewWithConfig(context.Background(), pool.Config().Copy())
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(other.Close)
+			restored, err := createStructuralDiagnosticWindow(context.Background(), other, time.Minute)
+			if err != nil {
+				t.Fatal(err)
+			}
 			next := structuralDiagnosticFixtureProvider("valid")
-			if _, err = collectStructuralDiagnostic(context.Background(), w, next, private, cases[1]); err == nil || next.entries != 0 {
+			if _, err = collectStructuralDiagnostic(context.Background(), restored, next, private, cases[1]); err == nil || next.entries != 0 {
 				t.Fatal("sticky bad lifecycle/metadata/retention did not deny next provider entry")
 			}
 		})
+	}
+}
+
+func TestScenarioStructuralJSONPendingReconstructionDeniesIntegration(t *testing.T) {
+	ctx := context.Background()
+	pool := memorytest.Database(t)
+	w, err := createStructuralDiagnosticWindow(ctx, pool, time.Minute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cases, _ := structuralDiagnosticInputs()
+	input, _ := acceptance.MakeCloudV3ModelInput(cases[0], acceptance.CloudRoleSingle, nil)
+	if ordinal, err := w.reserve(ctx, cases[0], input); err != nil || ordinal != 267 {
+		t.Fatal("initial admitted pending entry missing")
+	}
+	other, err := pgxpool.NewWithConfig(ctx, pool.Config().Copy())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer other.Close()
+	w, err = createStructuralDiagnosticWindow(ctx, other, 8*time.Minute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p := structuralDiagnosticFixtureProvider("valid")
+	if _, err = collectStructuralDiagnostic(ctx, w, p, t.TempDir(), cases[1]); err == nil || p.entries != 0 {
+		t.Fatal("reconstructed pending entry reopened inference")
+	}
+	var counter int
+	var total *int64
+	if other.QueryRow(ctx, `SELECT attempts FROM fixture_structural_json_window`).Scan(&counter) != nil || counter != 267 || other.QueryRow(ctx, `SELECT total_tokens FROM fixture_structural_json_attempts WHERE ordinal=267 AND outcome='unavailable'`).Scan(&total) != nil || total != nil {
+		t.Fatal("pending unknown spend changed during reconstruction")
 	}
 }
 

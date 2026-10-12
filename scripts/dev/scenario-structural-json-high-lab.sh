@@ -28,6 +28,7 @@ cleanup() {
 trap cleanup EXIT INT TERM
 printf 'Private structural diagnostic %s proof: %s\n' "$phase" "$proof"
 manifest > "$proof/source.sha256"
+printf '%s\n' "$release" > "$proof/source-commit.txt"
 go_image=$(docker image inspect golang:1.27.2-bookworm --format '{{.Id}}')
 pg_image=$(docker image inspect pgvector/pgvector:pg17 --format '{{.Id}}')
 lscpu --json --extended=CPU,CORE,SOCKET,NODE,ONLINE > "$proof/hardware-cpu.json"
@@ -52,6 +53,8 @@ else
   [[ "$prepared" == "$root/reports/structural-json-prepare-"* ]]
   cmp "$prepared/hardware.json" "$proof/hardware.json"
   cp "$prepared/binaries/"* "$proof/binaries/"; chmod 555 "$proof/binaries/"*
+  for file in orchestrator.test tls-prerequisite; do cmp "$prepared/binaries/$file" "$proof/binaries/$file"; done
+  sha256sum "$proof/binaries/"* > "$proof/runtime.sha256"
   # This independent source gate precedes TLS, import inspection and markers.
   docker run --rm --runtime runc --network none --read-only --user 10001:10001 --cap-drop ALL --memory 512m --pids-limit 64 --security-opt no-new-privileges:true \
     --volume "$source_dir:/src:ro" --volume "$proof/binaries:/binaries:ro" --workdir /src --env BUTLER_STRUCTURAL_JSON_GATE=1 \
@@ -71,13 +74,14 @@ if [[ "$phase" == prepare ]]; then
   docker run --rm --runtime runc --network "$network" --read-only --user "$(id -u):$(id -g)" --memory 1536m --pids-limit 160 --cpus 2 --cap-drop ALL --security-opt no-new-privileges:true \
     --volume "$source_dir:/src:ro" --volume "$proof/binaries:/binaries:ro" --volume "$proof/tmp:/tmp" --workdir /src --env TMPDIR=/tmp --env "$dsn" \
     "$go_image" /binaries/orchestrator.test -test.v -test.timeout=5m \
-      -test.run='^TestScenario(PrivateFinalCapture|HighV3History|StructuralJSON(ClosedGateAndExactInputs|EncodingOnlyTwoContextsIntegration|FailuresDenyNextEntryIntegration|PostWaitGuardsIntegration|ChangedInputDeniedBeforeEntryIntegration))' > "$proof/pg-tests.txt" 2>&1
+      -test.run='^TestScenario(PrivateFinalCapture|HighV3History|StructuralJSON(ClosedGateAndExactInputs|EncodingOnlyTwoContextsIntegration|FailuresDenyNextEntryIntegration|PostWaitGuardsIntegration|ChangedInputDeniedBeforeEntryIntegration|PendingReconstructionDeniesIntegration))' > "$proof/pg-tests.txt" 2>&1
   ! grep -Eq -- '--- (FAIL|SKIP):' "$proof/pg-tests.txt"
   LC_ALL=C sort "$source_dir/scripts/dev/fixtures/structural-json-required-tests.txt" > "$proof/required-tests.txt"
   sed -n 's/^[[:space:]]*--- PASS: \(TestScenarioStructuralJSON[^ ]*\).*/\1/p' "$proof/pg-tests.txt" | LC_ALL=C sort > "$proof/passed-tests.txt"
   cmp "$proof/required-tests.txt" "$proof/passed-tests.txt"
   manifest | cmp -s "$proof/source.sha256" -
-  sha256sum "$proof/unit.jsonl" "$proof/pg-tests.txt" "$proof/source.sha256" "$proof/hardware.json" > "$proof/evidence.sha256"
+  sha256sum "$proof/binaries/"* > "$proof/runtime.sha256"
+  sha256sum "$proof/unit.jsonl" "$proof/pg-tests.txt" "$proof/source.sha256" "$proof/source-commit.txt" "$proof/runtime.sha256" "$proof/hardware.json" > "$proof/evidence.sha256"
   sha256sum "$proof/binaries/"* > "$root/prepared-runtime.sha256"
   cp "$proof/source.sha256" "$root/prepared-manifest"
   printf '%s\n' "$proof" > "$root/prepared-proof"
@@ -110,6 +114,7 @@ docker create --name "$name-runtime" --runtime runc --network "$network" --user 
   "$go_image" /binaries/orchestrator.test -test.v -test.timeout=9m -test.run='^TestScenarioStructuralJSONActualHighE2E$' >/dev/null; created_runtime=true
 docker network connect butler-lab_backend "$name-runtime"
 manifest | cmp -s "$root/prepared-manifest" -
+sha256sum -c "$proof/runtime.sha256" >/dev/null
 mkdir "$window/native-started" # Atomic once-only entry; never reset or resume.
 status=0
 docker start -a "$name-runtime" > "$proof/native-events.txt" 2>&1 || status=$?

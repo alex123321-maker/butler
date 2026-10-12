@@ -70,11 +70,13 @@ files survive failure and remain outside public proof copies. Fixed enums, byte
 counts/hashes and nullable operation-stage metadata do not establish HTTP dispatch
 or the cause of any previous failure.
 
-The named21 structural guard checks cover two clean independent observations,
+The named22 structural guard checks cover two clean independent observations,
 cap/duplicate denial, errors followed by invalid encoding, duplicate finals,
 conflicting event/legacy usage and versions, missing metadata/terminal, unsupported
 batch, foreign final, wrong finish, generated/visible bounds, raw collision,
-provisional version, post-lock failure/expiry and changed input. Existing helper,
+provisional version, post-lock failure/expiry, changed input and pending-entry
+reconstruction. Independent store reconstruction preserves the exact original
+deadline, spend and contexts; it does not prove a physical process restart. Existing helper,
 pure266 carry and author checks run with actual disposable PostgreSQL/race/vet.
 Until the current source has actual green preparation, this list is an executable
 contract, not a passed report. Even a completed native diagnostic cannot establish
