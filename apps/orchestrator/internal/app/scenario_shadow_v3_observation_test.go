@@ -28,7 +28,7 @@ import (
 
 // Candidate bytes for offline checks only. Native preparation additionally
 // requires separately frozen external V3 golden identities and reviewer approval.
-const shadowV3RawCorpusSHA = "26aab5aaa916b86a179ea26f7eb46ea6ffb72461ed7de9461b064342577f62da"
+const shadowV3RawCorpusSHA = "20099b3b5d7b5ec21cea7e3f1b6ddc62b9bc623859891a9450e47c18303c3da4"
 
 func readShadowV3CorpusBytes(path string) ([]byte, error) {
 	const limit = 512 * 1024
@@ -210,6 +210,7 @@ func (s *shadowV3Sampler) call(parent context.Context, phase string, c acceptanc
 		finals, terminals := 0, 0
 		var known *transport.Usage
 		usageUncertain := false
+		versionUncertain := false
 	readStream:
 		for {
 			var event transport.TransportEvent
@@ -241,12 +242,20 @@ func (s *shadowV3Sampler) call(parent context.Context, phase string, c acceptanc
 			}
 			if event.ProviderModelVersion != nil {
 				version := *event.ProviderModelVersion
-				if !acceptance.SafeCloudFamilyVersion(version) || s.observedVersion != nil && *s.observedVersion != version || a.ProviderModelVersion != nil && *a.ProviderModelVersion != version {
+				if a.ProviderModelVersion != nil && *a.ProviderModelVersion != version {
+					versionUncertain = true
+				}
+				if versionUncertain {
+					a.ProviderModelVersion = nil
+				} else {
+					a.ProviderModelVersion = &version
+				}
+				if versionUncertain || !acceptance.SafeCloudFamilyVersion(version) || s.observedVersion != nil && *s.observedVersion != version {
 					failureStage = "version_contract"
 					startErr = errNativeFixtureDenied
+				} else if s.observedVersion == nil {
+					s.observedVersion = &version
 				}
-				a.ProviderModelVersion = &version
-				s.observedVersion = &version
 			}
 			usage := event.Usage
 			if usage != nil && event.AssistantFinal != nil && event.AssistantFinal.Usage != nil && *usage != *event.AssistantFinal.Usage {

@@ -122,6 +122,10 @@ func (p *shadowV3FixtureProvider) StartRun(ctx context.Context, req transport.St
 		other := "gemini-3.8-flash-other"
 		terminal.ProviderModelVersion = &other
 		events[1] = terminal
+		// Returning to the first value cannot resolve the contradiction.
+		repeated := transport.NewAssistantDeltaEvent(run, p.Name(), transport.AssistantDelta{})
+		repeated.ProviderModelVersion = &version
+		events = append(events, repeated)
 	case "conflicting_usage":
 		terminal.Usage = &transport.Usage{InputTokens: 4, OutputTokens: 2, TotalTokens: 8}
 		if p.legacyConflict {
@@ -148,11 +152,15 @@ func TestScenarioShadowV3SamplerChargedTruthAndNoRetryIntegration(t *testing.T) 
 	if err != nil {
 		t.Fatal(err)
 	}
-	inputs, _ := acceptance.ExportCloudV3Inputs(corpus, "")
+	selection, err := prepareShadowV3Selection(corpus)
+	if err != nil {
+		t.Fatal(err)
+	}
+	inputs := selection.inputs
 	for _, mode := range []string{"known", "zero_usage", "missing_usage", "missing_version", "wrong_family", "legacy_total", "oversized_usage", "oversized_total", "start_failure", "wrong_run", "truncated", "large_visible", "malformed_raw_json", "private_finish_reason", "missing_terminal", "duplicate_terminal", "duplicate_final", "error_after_final", "conflicting_version", "conflicting_usage", "tool", "stage_authentication_failure", "stage_http_failure", "stage_stream_failure"} {
 		t.Run(mode, func(t *testing.T) {
 			pool := memorytest.Database(t)
-			w, err := createShadowV3Window(context.Background(), pool, time.Minute)
+			w, err := createShadowV3WindowSelected(context.Background(), pool, time.Minute, selection)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -213,12 +221,18 @@ func TestScenarioShadowV3SamplerChargedTruthAndNoRetryIntegration(t *testing.T) 
 				if mode == "malformed_raw_json" && !strings.Contains(string(raw), `"collector_stage": "output_encoding_contract"`) {
 					t.Fatal("malformed native JSON did not stop the observation driver")
 				}
+				if mode == "conflicting_version" && !strings.Contains(string(raw), `"collector_stage": "version_contract"`) {
+					t.Fatal("identity contradiction lost its safe failure classification")
+				}
 			}
 			if mode == "missing_usage" && a.InputTokens != nil || mode == "legacy_total" && a.TotalTokens != nil || mode == "missing_version" && a.ProviderModelVersion != nil {
 				t.Fatal("unknown observation invented")
 			}
 			if mode == "conflicting_usage" && (a.InputTokens != nil || a.OutputTokens != nil || a.TotalTokens != nil) {
 				t.Fatal("conflicting usage treated as complete cost")
+			}
+			if mode == "conflicting_version" && (a.ProviderModelVersion != nil || sampler.observedVersion == nil || *sampler.observedVersion != "gemini-3.8-flash-observed" || a.TotalTokens == nil || *a.TotalTokens != 7) {
+				t.Fatal("conflicting identity became arbitrary known metadata or changed measured spend")
 			}
 			if mode == "known" && (a.TotalTokens == nil || *a.TotalTokens != 7) {
 				t.Fatal("observed thinking total lost")

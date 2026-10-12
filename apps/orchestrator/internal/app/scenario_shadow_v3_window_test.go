@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -27,21 +28,63 @@ type shadowV3Window struct {
 	comparison map[string]string
 }
 
+// Explicit caller-local projection of fully validated, hash-pinned bytes.
+// It avoids repeating the quadratic corpus screen for every isolated PG case;
+// it is never a global cache or an input obtained from a model proposal.
+type shadowV3Selection struct {
+	inputs     acceptance.CloudInputs
+	policySHA  string
+	quality    map[string]string
+	comparison map[string]string
+	seal       string
+}
+
+func prepareShadowV3Selection(corpus acceptance.CloudV3Corpus) (*shadowV3Selection, error) {
+	inputs, err := acceptance.ExportCloudV3Inputs(corpus, "")
+	pairs, pairErr := acceptance.CloudV3ComparisonInputs(corpus)
+	if err != nil || pairErr != nil || len(inputs.Cases) != 236 || len(inputs.BlockedIDs) != 4 || len(pairs) != 4 {
+		return nil, errNativeFixtureDenied
+	}
+	s := &shadowV3Selection{inputs: inputs, policySHA: acceptance.CloudV3PolicyDigest(corpus), quality: map[string]string{}, comparison: map[string]string{}}
+	for _, c := range inputs.Cases {
+		s.quality[c.ID] = shadowV3Hash(c)
+	}
+	for _, c := range pairs {
+		s.comparison[c.ID] = shadowV3Hash(c)
+	}
+	s.seal = shadowV3SelectionSeal(s)
+	return s, nil
+}
+
+func shadowV3SelectionSeal(s *shadowV3Selection) string {
+	return shadowV3Hash(struct {
+		RawCorpus, Policy string
+		Inputs            acceptance.CloudInputs
+		Quality, Paired   map[string]string
+	}{shadowV3RawCorpusSHA, s.policySHA, s.inputs, s.quality, s.comparison})
+}
+
 // The one new scope is independent of all sealed previous counters. Metadata,
 // deadline and spent ordinals are immutable; neither failure nor process loss
 // can make an admitted request available again.
 func createShadowV3Window(ctx context.Context, pool *pgxpool.Pool, duration time.Duration) (*shadowV3Window, error) {
-	history, err := readScenarioHighHistory()
-	if pool == nil || err != nil || duration <= 0 || duration > 75*time.Minute {
-		return nil, errNativeFixtureDenied
-	}
 	corpus, err := loadShadowV3Corpus()
 	if err != nil {
 		return nil, errNativeFixtureDenied
 	}
-	inputs, err := acceptance.ExportCloudV3Inputs(corpus, "")
-	pairs, pairErr := acceptance.CloudV3ComparisonInputs(corpus)
-	if err != nil || pairErr != nil || len(inputs.Cases) != 236 || len(inputs.BlockedIDs) != 4 || len(pairs) != 4 {
+	selection, err := prepareShadowV3Selection(corpus)
+	if err != nil {
+		return nil, errNativeFixtureDenied
+	}
+	return createShadowV3WindowSelected(ctx, pool, duration, selection)
+}
+
+func createShadowV3WindowSelected(ctx context.Context, pool *pgxpool.Pool, duration time.Duration, selection *shadowV3Selection) (*shadowV3Window, error) {
+	history, err := readScenarioHighHistory()
+	if pool == nil || err != nil || duration <= 0 || duration > 75*time.Minute || selection == nil || selection.seal != shadowV3SelectionSeal(selection) {
+		return nil, errNativeFixtureDenied
+	}
+	if _, err = readShadowV3CorpusBytes(filepath.Join(shadowRepoRoot(), "testdata", "acceptance", "ru-cloud-fresh-v3.json")); err != nil {
 		return nil, errNativeFixtureDenied
 	}
 	const ddl = `CREATE TABLE IF NOT EXISTS fixture_scenario_shadow_v3_limit(
@@ -87,19 +130,19 @@ CREATE OR REPLACE FUNCTION fixture_scenario_shadow_v3_attempt_immutable() RETURN
 			return nil, errNativeFixtureDenied
 		}
 	}
-	if _, err = pool.Exec(ctx, `INSERT INTO fixture_scenario_shadow_v3_limit VALUES(TRUE,248,$1,$2,clock_timestamp()+$3*interval '1 millisecond') ON CONFLICT DO NOTHING`, history.BaselineSHA256, acceptance.CloudV3PolicyDigest(corpus), duration.Milliseconds()); err != nil {
+	if _, err = pool.Exec(ctx, `INSERT INTO fixture_scenario_shadow_v3_limit VALUES(TRUE,248,$1,$2,clock_timestamp()+$3*interval '1 millisecond') ON CONFLICT DO NOTHING`, history.BaselineSHA256, selection.policySHA, duration.Milliseconds()); err != nil {
 		return nil, errNativeFixtureDenied
 	}
 	var compatible bool
-	if pool.QueryRow(ctx, `SELECT baseline_hash=$1 AND policy_hash=$2 FROM fixture_scenario_shadow_v3_limit WHERE singleton`, history.BaselineSHA256, acceptance.CloudV3PolicyDigest(corpus)).Scan(&compatible) != nil || !compatible {
+	if pool.QueryRow(ctx, `SELECT baseline_hash=$1 AND policy_hash=$2 FROM fixture_scenario_shadow_v3_limit WHERE singleton`, history.BaselineSHA256, selection.policySHA).Scan(&compatible) != nil || !compatible {
 		return nil, errNativeFixtureDenied
 	}
-	w := &shadowV3Window{pool: pool, historySHA: history.BaselineSHA256, policySHA: acceptance.CloudV3PolicyDigest(corpus), quality: map[string]string{}, comparison: map[string]string{}}
-	for _, c := range inputs.Cases {
-		w.quality[c.ID] = shadowV3Hash(c)
+	w := &shadowV3Window{pool: pool, historySHA: history.BaselineSHA256, policySHA: selection.policySHA, quality: map[string]string{}, comparison: map[string]string{}}
+	for id, hash := range selection.quality {
+		w.quality[id] = hash
 	}
-	for _, c := range pairs {
-		w.comparison[c.ID] = shadowV3Hash(c)
+	for id, hash := range selection.comparison {
+		w.comparison[id] = hash
 	}
 	return w, nil
 }
@@ -181,15 +224,19 @@ func shadowV3Hash(v any) string {
 func TestScenarioShadowV3WindowRetainsOneChargeAndEveryOldPinIntegration(t *testing.T) {
 	pool := memorytest.Database(t)
 	ctx := context.Background()
-	w, err := createShadowV3Window(ctx, pool, time.Minute)
-	if err != nil {
-		t.Fatal("shadow scope unavailable")
-	}
 	corpus, err := loadShadowV3Corpus()
 	if err != nil {
 		t.Fatal("frozen corpus unavailable")
 	}
-	inputs, _ := acceptance.ExportCloudV3Inputs(corpus, "")
+	selection, err := prepareShadowV3Selection(corpus)
+	if err != nil {
+		t.Fatal("validated selection unavailable")
+	}
+	inputs := selection.inputs
+	w, err := createShadowV3WindowSelected(ctx, pool, time.Minute, selection)
+	if err != nil {
+		t.Fatal("shadow scope unavailable")
+	}
 	c := inputs.Cases[0]
 	input, _ := acceptance.MakeCloudV3ModelInput(c, acceptance.CloudRoleSingle, nil)
 	if ordinal, err := w.reserve(ctx, "quality", c, acceptance.CloudRoleSingle, shadowV3ContextID("quality", c.ID, acceptance.CloudRoleSingle), input); err != nil || ordinal != 249 {
@@ -212,7 +259,7 @@ func TestScenarioShadowV3WindowRetainsOneChargeAndEveryOldPinIntegration(t *test
 		t.Fatal("reopened database pool unavailable")
 	}
 	defer reopened.Close()
-	second, err := createShadowV3Window(ctx, reopened, 75*time.Minute)
+	second, err := createShadowV3WindowSelected(ctx, reopened, 75*time.Minute, selection)
 	if err != nil {
 		t.Fatal("durable shadow reopen denied")
 	}
@@ -259,6 +306,31 @@ func TestScenarioShadowV3WindowRetainsOneChargeAndEveryOldPinIntegration(t *test
 	}
 	if pool.QueryRow(ctx, `SELECT attempts FROM fixture_scenario_shadow_v3_limit`).Scan(&attempts) != nil || attempts != 249 {
 		t.Fatal("NoModel denied requests spent allowance")
+	}
+	// Reusing this explicitly held selection cannot authorize a changed case
+	// map or stale bytes. Neither denial can reset the durable spent counter.
+	changed := *selection
+	changed.quality = map[string]string{}
+	for id, hash := range selection.quality {
+		changed.quality[id] = hash
+	}
+	changed.quality[c.ID] = "substituted selected case"
+	if _, denied := createShadowV3WindowSelected(ctx, pool, time.Minute, &changed); denied == nil {
+		t.Fatal("changed prepared selection reopened authority")
+	}
+	raw, err := readShadowV3CorpusBytes(filepath.Join(shadowRepoRoot(), "testdata", "acceptance", "ru-cloud-fresh-v3.json"))
+	if err != nil {
+		t.Fatal("pinned original bytes unavailable")
+	}
+	drifted := filepath.Join(t.TempDir(), "changed-corpus.json")
+	if os.WriteFile(drifted, append(raw, '\n'), 0600) != nil {
+		t.Fatal("drift fixture unavailable")
+	}
+	if _, denied := readShadowV3CorpusBytes(drifted); denied == nil {
+		t.Fatal("semantically equivalent but unpinned corpus bytes accepted")
+	}
+	if pool.QueryRow(ctx, `SELECT attempts FROM fixture_scenario_shadow_v3_limit`).Scan(&attempts) != nil || attempts != 249 {
+		t.Fatal("changed selection or bytes affected durable spending")
 	}
 }
 

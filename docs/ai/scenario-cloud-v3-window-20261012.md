@@ -41,6 +41,16 @@ sidecars. A complete uniquely validated failed packet retains its measurements;
 ambiguous usage remains NULL. True zero stays known zero. Missing totals,
 incomplete lifecycle, metadata/version mismatch, forbidden tools, malformed or
 oversized output fail the observation and stop the live driver without retry.
+Contradictory version packets leave that attempt's identity NULL and retain the
+first stable family observation; a single wrong-family version remains known
+failed evidence. Known complete spend is independent of identity uncertainty.
+
+Each owning PG test may hold one explicitly local validated selection projection.
+Its seal binds policy, original cases and all allowed hashes; each new window
+and reservation still rehashes the exact candidate file. The native constructor
+creates a fresh projection once. There is no global cache, deadline extension or
+model-controlled selection. Changed projection and even whitespace-only corpus
+drift are denied before affecting the durable counter.
 
 Request-local stage diagnostics record only the last observed fixed operation:
 authentication, request_serialization, http_round_trip or response_stream. The
