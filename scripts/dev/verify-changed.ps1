@@ -26,6 +26,15 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(apps/orchestrator/internal/app/(release_chain_.*|scenario_release_chain_.*|verified_task_.*)[.]go$|apps/orchestrator/internal/task/(verified_notifications|store|controller|task)[.]go$|migrations/069_verified_task_notifications[.]|scripts/dev/scenario-release-chain.*[.]sh$)" {
+      [void]$specs.Add("docs/architecture/durable-task-spec.md")
+      [void]$specs.Add("docs/architecture/goal-contract.md")
+      [void]$specs.Add("docs/architecture/task-completion-contract.md")
+      [void]$specs.Add("docs/architecture/initiative-contract.md")
+      [void]$specs.Add("docs/architecture/api-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/scenario-release-chain-lab.sh <isolated-agent-root> kernel <exact-clean-commit>, then scenario-release-chain-process-lab.sh <isolated-agent-root> chain <exact-clean-commit>. Actual PG/Broker/runtime and one loopback recipient, current owner/source/lease guards, restart/Stop/delivery faults, race/vet; zero native calls. Re-run full mandatory fault matrix on the same combined source.")
+      continue
+    }
     "^(scripts/dev/scenario-shadow-high-lab[.]sh$|apps/orchestrator/internal/app/scenario_shadow_.*[.]go$|internal/transport/antigravity/model_version_test[.]go$)" {
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
       [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
