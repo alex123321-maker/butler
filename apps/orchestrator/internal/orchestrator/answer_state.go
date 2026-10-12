@@ -29,6 +29,12 @@ func setPartialAnswer(ctx context.Context) {
 	}
 }
 
+func resetAnswerState(ctx context.Context) {
+	if s, ok := ctx.Value(answerKey{}).(*answerSnapshot); ok {
+		s.state = "final"
+	}
+}
+
 // Providers retain their native finish reason in the logical final event.
 // A token limit or explicitly incomplete response is still a saved result,
 // but must never be presented as a complete answer.

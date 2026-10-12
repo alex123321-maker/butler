@@ -295,6 +295,15 @@ arrays and incomplete budgets are rejected. There is no owner, parent, lease,
 permission, runtime URL, source body or credential field. Initial children have
 an empty permission set; the parent's catalogue grants them no tools.
 
+The committed `AdmissionReceipt` body contains `task_id`, `input_id`, `state`
+and `contract_revision`. Core submits it under the normalized result envelope,
+so a live model reads the child's identity from `result.task_id`, rather than
+mistaking the tool-call ID, permanent effect ID or empty waiting input ID for a
+child task. Durable transcript results retain that exact body; recovered ToolOutput
+DATA wraps the reconstructed envelope without changing the receipt. A parent
+final remains the model's actual terminal answer and undergoes independent
+exact receipt projection checks. The kernel does not synthesize or repair it.
+
 `broker.DelegationExecutor` runs only after normal Broker authorization and the
 irreversible grant/effect claim. It sends the actual run/call/permanent-effect
 identity, exact argument JSON and fixed contract hash to a private authenticated

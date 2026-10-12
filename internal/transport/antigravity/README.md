@@ -15,6 +15,14 @@ Only supplied Butler inputs/system instructions and scoped declarations are
 serialized. No Desktop reminders, third-party identity prompt, system prefix,
 prompt rewriting or additional tools are added. Fixtures verify exact system/user
 text, native calls/signatures/continuation, wrapped SSE and failure-before-write.
+
+Live admission receipts retain Core's `{status,result}` envelope inside the
+correlated native `functionResponse`. The child's ID stays at
+`response.result.task_id`, including when the receipt state is waiting and
+`input_id` is empty. A three-request synthetic High fixture checks both sequential
+receipt identities, original native call IDs/signatures and a separate terminal
+JSON answer after tool-phase commentary. This is zero-inference serialization
+evidence, not a successful model experiment or an explanation of an old model final.
 An isolated actual High delegation window additionally completed two Broker
 admissions and two correct child extractions after process loss. It stopped at
 the parent's exact receipt-projection failure before width2/later controls;

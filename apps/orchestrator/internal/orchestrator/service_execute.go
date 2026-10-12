@@ -345,11 +345,16 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 			case transport.EventTypeAssistantFinal:
 				if transportEvent.AssistantFinal != nil {
 					finalMessage = transportEvent.AssistantFinal.Content
+					resetAnswerState(ctx)
 					if partialFinishReason(transportEvent.AssistantFinal.FinishReason) {
 						setPartialAnswer(ctx)
 					}
 				}
 			case transport.EventTypeToolCallRequested:
+				// A tool proposal supersedes any earlier apparent answer, even if
+				// the continuation returns a nil stream. Only a new final may commit.
+				finalMessage = ""
+				resetAnswerState(ctx)
 				resumed, updated, err := s.handleToolCall(ctx, runLog, current, leaseID, transportEvent.ToolCall)
 				if err != nil {
 					return "", updated, err

@@ -34,6 +34,7 @@ Available scripts:
 - `workspace-lab.sh <isolated-agent-root>` - disposable PG/filesystem race proof for task-bound code copies and exact version/hash patch CAS; no shared Compose or production tool wiring.
 - `delegation-lab.sh` - disposable PostgreSQL manager proof on a synced isolated agent root: real bounded receipts, shared budget reservations, dependency decisions and stop races with two pool connections; no production delegation enablement or model comparison claim.
 - `delegation-attempts-lab.sh <isolated-agent-root> numeric` - narrow actual PostgreSQL/race/vet proof for selected numeric witness acceptance, retained contradictory results and agreeing unsupported finals; `verification` also checks existing owner decision and legacy promotion controls. All modes use synthetic model outcomes and no credentials or inference.
+- `delegation-receipts-lab.sh <isolated-agent-root> narrow|full` - actual private Broker/core/PG receipt preservation and final-turn failure checks, synthetic High serialization and recovery DATA checks; no account credentials or inference. Full mode also runs core/transport and existing Broker admission regressions.
 - `lab-converter-container.sh <isolated-agent-root>` - actual production Broker and network-none converter proof, including ordinary parent/child workers with explicit and automatic055 continuations. Run `lab.ps1 -Action Sync` first; tests use that fixed snapshot, no native inference or shared deployment changes.
 
 Optional dependency install:

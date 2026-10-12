@@ -86,6 +86,12 @@ with the existing `transport_error` class. Source verification distinguishes
 stale sources from its own timeout. No provider text/details or unknown type
 string is logged or returned by this failure path; retries remain disabled.
 
+Final content and `final`/`partial` classification belong to the last model turn.
+A tool proposal invalidates an earlier apparent final; missing continuation output
+cannot complete a run using that stale answer. Confirmed tool results remain in
+the durable transcript. Streaming tool-phase commentary is kept separate from the
+terminal final body. See [receipt path checks](../../docs/ai/delegation-receipt-path-acceptance.md).
+
 Optional generated-converter delegation053 has a distinct private admission
 component. `NewDelegationLifecycleManager` selects immutable061 context-only or053
 developer identity inside the owning transaction; it cannot admit new children and

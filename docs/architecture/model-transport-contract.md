@@ -246,6 +246,19 @@ assistant output. Foreign/lost refs, duplicate results, ambiguous calls, unsuppo
 parts and incomplete streams fail closed. Provider context is transient; Butler
 replays its durable context after restart instead of trusting provider references.
 
+Normalized live results retain the Broker envelope `{status,result,error?}`.
+For `task.delegate`, the admitted child's ID is at
+`functionResponse.response.result.task_id`; `status:"completed"` acknowledges
+local admission only. The validated receipt body, including an empty `input_id`
+for a waiting child, is preserved in durable tool history. Recovery reconstructs
+the status/result/error envelope and presents it as private ToolOutput DATA;
+its additional DATA wrapper places that same ID at `data.result.result.task_id`.
+Recovery does not reconstruct native function calls or thought signatures.
+Tool-phase text/signatures remain native live-context parts; only the last
+model turn's terminal answer supplies the stored final, without concatenating
+earlier streamed commentary. See
+[receipt path verification](../ai/delegation-receipt-path-acceptance.md).
+
 Capabilities: text streaming, one function proposal per turn, cancellation, usage;
 no batch calls or provider stateful restart. All HTTP redirects are rejected and
 errors are bounded/masked. Subscription model availability is distinct from stored
