@@ -30,7 +30,7 @@ foreach ($file in $files) {
       [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
       [void]$specs.Add("docs/architecture/execution-budget-contract.md")
-      [void]$tests.Add("ssh laba: scripts/dev/scenario-shadow-v3-high-lab.sh /srv/storage/butler/agents/scenario-shadow-v3-high-20261012 offline <exact-clean-commit> before independent whole-corpus review/signing; prepare only after signed freeze. Actual PG baseline248/shared252-new cap,29 required admission/sampler names, separate SQL parent/usage export probe, race/vet, zero inference. Execute is separately sealed; old V1/V2 failures, spending and NULL usage remain immutable.")
+      [void]$tests.Add("ssh laba: scripts/dev/scenario-shadow-v3-high-lab.sh /srv/storage/butler/agents/scenario-shadow-v3-high-20261012 offline <exact-clean-commit> before independent whole-corpus review/signing; prepare only after signed freeze. Actual PG baseline248/shared252-new cap,30 required admission/sampler names, separate SQL parent/usage export probe, race/vet, zero inference. Execute is separately sealed; old V1/V2 failures, spending and NULL usage remain immutable.")
       continue
     }
     "^(scripts/dev/provider-stage-lab[.]sh$|internal/transport/diagnostic_stage(_test)?[.]go$|internal/transport/antigravity/diagnostic_stage_test[.]go$)" {
