@@ -161,7 +161,8 @@ func (p *chainHighFailureSpy) SubmitToolResult(context.Context, transport.Submit
 	return nil, errors.New("synthetic failed submit")
 }
 
-func TestReleaseChainHighAllFailedEntriesSpentButSourceDenialZeroIntegration(t *testing.T) {
+func chainHighOwnedProviderFixture(t *testing.T, provider transport.ModelProvider) (*chainHighProvider, context.Context, transport.StartRunRequest, context.Context) {
+	t.Helper()
 	pool := memorytest.Database(t)
 	ctx := context.Background()
 	const key = "chain-high:synthetic-owner"
@@ -216,19 +217,26 @@ func TestReleaseChainHighAllFailedEntriesSpentButSourceDenialZeroIntegration(t *
 	if e != nil {
 		t.Fatal(e)
 	}
-	spy := &chainHighFailureSpy{converterWorkerProvider: &converterWorkerProvider{}}
-	p := &chainHighProvider{ModelProvider: spy, window: w, scenario: "restart_sent", checker: &releaseChainEntryChecker{pool: pool, sources: sources, root: root.TaskID, document: refs[0], need: refs[1], spec: refs[2]}}
+	p := &chainHighProvider{ModelProvider: provider, window: w, scenario: "restart_sent", checker: &releaseChainEntryChecker{pool: pool, sources: sources, root: root.TaskID, document: refs[0], need: refs[1], spec: refs[2]}}
 	req := transport.StartRunRequest{Context: transport.TransportRunContext{RunID: token.RunID, SessionKey: key, ProviderName: antigravity.Name, ModelName: antigravity.FlashHighModel}}
+	return p, live, req, actor
+}
+
+func TestReleaseChainHighAllFailedEntriesSpentButSourceDenialZeroIntegration(t *testing.T) {
+	spy := &chainHighFailureSpy{converterWorkerProvider: &converterWorkerProvider{}}
+	p, live, req, actor := chainHighOwnedProviderFixture(t, spy)
+	ctx, pool, sources, ref := context.Background(), p.window.pool, p.checker.sources, p.checker.document
+	var e error
 	if _, e = p.StartRun(live, req); e == nil {
 		t.Fatal("synthetic failure lost")
 	}
-	if _, e = p.ContinueRun(live, transport.ContinueRunRequest{RunID: token.RunID}); e == nil {
+	if _, e = p.ContinueRun(live, transport.ContinueRunRequest{RunID: req.Context.RunID}); e == nil {
 		t.Fatal("synthetic continuation failure lost")
 	}
-	if _, e = p.SubmitToolResult(live, transport.SubmitToolResultRequest{RunID: token.RunID}); e == nil {
+	if _, e = p.SubmitToolResult(live, transport.SubmitToolResultRequest{RunID: req.Context.RunID}); e == nil {
 		t.Fatal("synthetic submit failure lost")
 	}
-	if _, e = sources.Correct(actor, catalog.Correction{SourceID: refs[0].ID, ExpectedRevision: refs[0].Revision, Title: "Current changed DATA", Body: "changed"}); e != nil {
+	if _, e = sources.Correct(actor, catalog.Correction{SourceID: ref.ID, ExpectedRevision: ref.Revision, Title: "Current changed DATA", Body: "changed"}); e != nil {
 		t.Fatal(e)
 	}
 	if _, e = p.StartRun(live, req); e == nil {
@@ -237,5 +245,120 @@ func TestReleaseChainHighAllFailedEntriesSpentButSourceDenialZeroIntegration(t *
 	var attempts, failed, unknown int
 	if pool.QueryRow(ctx, `SELECT attempts FROM fixture_chain_high_window`).Scan(&attempts) != nil || pool.QueryRow(ctx, `SELECT count(*) FILTER(WHERE outcome='transport_error'),count(*) FILTER(WHERE input_tokens IS NULL AND output_tokens IS NULL AND total_tokens IS NULL) FROM fixture_chain_high_requests`).Scan(&failed, &unknown) != nil || attempts != 483 || failed != 3 || unknown != 3 || spy.calls.Load() != 3 {
 		t.Fatal("failed entries refunded or denial charged", attempts, failed, unknown, spy.calls.Load())
+	}
+}
+
+type chainHighStreamSpy struct {
+	*converterWorkerProvider
+	events []transport.TransportEvent
+	calls  atomic.Int32
+}
+
+func (p *chainHighStreamSpy) StartRun(context.Context, transport.StartRunRequest) (transport.EventStream, error) {
+	p.calls.Add(1)
+	stream := make(chan transport.TransportEvent, len(p.events))
+	for _, event := range p.events {
+		stream <- event
+	}
+	close(stream)
+	return stream, nil
+}
+
+func TestReleaseChainHighTerminalMetadataRetainedAndReleaseGatedIntegration(t *testing.T) {
+	known := transport.Usage{InputTokens: 3, OutputTokens: 2, TotalTokens: 205}
+	changed := transport.Usage{InputTokens: 3, OutputTokens: 3, TotalTokens: 206}
+	zero := transport.Usage{}
+	legacy := transport.Usage{InputTokens: 3, OutputTokens: 2}
+	version := "gemini-3.8-flash-n"
+	errorEvent := func(usage *transport.Usage, version *string) transport.TransportEvent {
+		e := transport.NewTransportErrorEvent("chain-run", antigravity.Name, errors.New("synthetic private error body"))
+		e.Usage, e.ProviderModelVersion = usage, version
+		return e
+	}
+	toolEvent := func(usage *transport.Usage, version *string) transport.TransportEvent {
+		e := transport.NewToolCallRequestedEvent("chain-run", antigravity.Name, transport.ToolCallRequest{ToolName: "synthetic.read", ArgsJSON: `{}`})
+		e.Usage, e.ProviderModelVersion = usage, version
+		return e
+	}
+	finalEvent := func(usage *transport.Usage, version *string) transport.TransportEvent {
+		e := transport.NewAssistantFinalEvent("chain-run", antigravity.Name, transport.AssistantFinal{Content: "synthetic final", Usage: usage})
+		e.ProviderModelVersion = version
+		return e
+	}
+	untrustedError := errorEvent(&known, &version)
+	untrustedError.TransportError = &transport.Error{Type: transport.ErrorType("PRIVATE_TYPE"), Message: "PRIVATE_MESSAGE", ProviderCode: "PRIVATE_CODE", ProviderDetails: map[string]any{"PRIVATE_KEY": "PRIVATE_VALUE"}}
+	for _, tc := range []struct {
+		name    string
+		events  []transport.TransportEvent
+		usage   *transport.Usage
+		version bool
+		total   bool
+		outcome string
+		tools   int
+		finals  int
+	}{
+		{"failed_terminal_known", []transport.TransportEvent{errorEvent(&known, &version)}, &known, true, true, "transport_error", 0, 0},
+		{"untrusted_diagnostic_type", []transport.TransportEvent{untrustedError}, &known, true, true, "transport_error", 0, 0},
+		{"conflicting_complete_usage", []transport.TransportEvent{finalEvent(&known, &version), errorEvent(&changed, &version)}, nil, true, false, "transport_error", 0, 0},
+		{"true_zero_triple", []transport.TransportEvent{toolEvent(&zero, &version)}, &zero, true, true, "completed", 1, 0},
+		{"missing_total_legacy_pair", []transport.TransportEvent{toolEvent(&legacy, &version)}, &legacy, true, false, "transport_error", 0, 0},
+		{"missing_metadata", []transport.TransportEvent{toolEvent(nil, nil)}, nil, false, false, "transport_error", 0, 0},
+		{"missing_version", []transport.TransportEvent{finalEvent(&known, nil)}, &known, false, true, "transport_error", 0, 0},
+		{"incomplete_final_stream", []transport.TransportEvent{finalEvent(&known, &version)}, nil, false, false, "transport_error", 0, 0},
+		{"completed_final", []transport.TransportEvent{finalEvent(&known, &version), transport.NewTerminalEvent("chain-run", transport.EventTypeRunCompleted, antigravity.Name)}, &known, true, true, "completed", 0, 1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			spy := &chainHighStreamSpy{converterWorkerProvider: &converterWorkerProvider{}, events: tc.events}
+			p, live, req, _ := chainHighOwnedProviderFixture(t, spy)
+			stream, e := p.StartRun(live, req)
+			if e != nil {
+				t.Fatal("current actual source/lease preflight denied synthetic stream", e)
+			}
+			tools, finals := 0, 0
+			for event := range stream {
+				if event.EventType == transport.EventTypeToolCallRequested {
+					tools++
+				}
+				if event.EventType == transport.EventTypeAssistantFinal {
+					finals++
+				}
+			}
+			var outcome string
+			var in, out, total *int64
+			var observedVersion *string
+			var admitted, finished time.Time
+			var elapsed int64
+			var stage, code *string
+			if e = p.window.pool.QueryRow(context.Background(), `SELECT outcome,input_tokens,output_tokens,total_tokens,model_version,admitted_at,finished_at,elapsed_ms,failure_stage,diagnostic_code FROM fixture_chain_high_requests WHERE ordinal=481`).Scan(&outcome, &in, &out, &total, &observedVersion, &admitted, &finished, &elapsed, &stage, &code); e != nil {
+				t.Fatal(e)
+			}
+			if outcome != tc.outcome || tools != tc.tools || finals != tc.finals || spy.calls.Load() != 1 {
+				t.Fatal("terminal release/outcome differs", outcome, tools, finals, spy.calls.Load())
+			}
+			if finished.Before(admitted) || elapsed < 0 || tc.outcome == "completed" && (stage != nil || code != nil) || tc.outcome != "completed" && (stage == nil || *stage != "stream" || code == nil || *code != string(transport.ErrorTypeInternalTransportError) && *code != string(transport.ErrorTypeProviderProtocolError)) {
+				t.Fatal("elapsed time or bounded diagnostic not retained")
+			}
+			if tc.usage == nil {
+				if in != nil || out != nil || total != nil {
+					t.Fatal("unknown or conflicting usage became known")
+				}
+			} else if in == nil || out == nil || *in != int64(tc.usage.InputTokens) || *out != int64(tc.usage.OutputTokens) {
+				t.Fatal("known failed/zero usage was lost")
+			}
+			if (total != nil) != tc.total || total != nil && *total != int64(tc.usage.TotalTokens) || (observedVersion != nil) != tc.version || observedVersion != nil && *observedVersion != version {
+				t.Fatal("complete total/version truth differs")
+			}
+			var attempts, rows int
+			if p.window.pool.QueryRow(context.Background(), `SELECT attempts FROM fixture_chain_high_window`).Scan(&attempts) != nil || p.window.pool.QueryRow(context.Background(), `SELECT count(*) FROM fixture_chain_high_requests`).Scan(&rows) != nil || attempts != 481 || rows != 1 {
+				t.Fatal("failed terminal refunded or duplicated the entry")
+			}
+			// Terminal observation is immutable, including a known zero triple.
+			p.finish(481, "completed", &changed, &version, "stream", nil)
+			var retainedOutcome string
+			var retainedTotal *int64
+			if p.window.pool.QueryRow(context.Background(), `SELECT outcome,total_tokens FROM fixture_chain_high_requests WHERE ordinal=481`).Scan(&retainedOutcome, &retainedTotal) != nil || retainedOutcome != outcome || (retainedTotal != nil) != (total != nil) || retainedTotal != nil && *retainedTotal != *total {
+				t.Fatal("terminal observation overwritten")
+			}
+		})
 	}
 }

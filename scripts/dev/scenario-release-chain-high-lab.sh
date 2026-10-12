@@ -67,9 +67,11 @@ docker run --rm --runtime runc --pull never --network "$network" --read-only --u
   --tmpfs /tmp:rw,nosuid,nodev,size=64m --volume "$source_dir:/src:ro" --volume "$proof/bin:/bin-proof:ro" --workdir /src \
   --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:chain-prepare-fixture@chain-prepare-postgres:5432/butler_chain_prepare_test?sslmode=disable' \
   --entrypoint /bin-proof/test2json golang:1.27.2-bookworm -t -p github.com/butler/butler/apps/orchestrator/internal/app \
-  /bin-proof/app.test -test.v=test2json -test.timeout=3m '-test.run=^TestReleaseChainHigh(Window|AllFailedEntries|OperationalPrerequisite)' > "$proof/tests.jsonl"
+  /bin-proof/app.test -test.v=test2json -test.timeout=3m '-test.run=^TestReleaseChainHigh(Window|AllFailedEntries|TerminalMetadata|OperationalPrerequisite)' > "$proof/tests.jsonl"
 ! grep -Eq '"Action":"(skip|fail)"' "$proof/tests.jsonl"
-for test_name in TestReleaseChainHighOperationalPrerequisiteIsNotApproved TestReleaseChainHighWindowSharedCeilingRestartAndExpiryIntegration TestReleaseChainHighWindowChecksDeadlineAfterCounterWaitIntegration TestReleaseChainHighWindowSharesCounterAcrossPrivateTaskSchemasIntegration TestReleaseChainHighAllFailedEntriesSpentButSourceDenialZeroIntegration; do
+required=(TestReleaseChainHighOperationalPrerequisiteIsNotApproved TestReleaseChainHighWindowSharedCeilingRestartAndExpiryIntegration TestReleaseChainHighWindowChecksDeadlineAfterCounterWaitIntegration TestReleaseChainHighWindowSharesCounterAcrossPrivateTaskSchemasIntegration TestReleaseChainHighAllFailedEntriesSpentButSourceDenialZeroIntegration TestReleaseChainHighTerminalMetadataRetainedAndReleaseGatedIntegration)
+for case_name in failed_terminal_known untrusted_diagnostic_type conflicting_complete_usage true_zero_triple missing_total_legacy_pair missing_metadata missing_version incomplete_final_stream completed_final; do required+=("TestReleaseChainHighTerminalMetadataRetainedAndReleaseGatedIntegration/$case_name"); done
+for test_name in "${required[@]}"; do
   [[ "$(awk -v needle="\"Test\":\"$test_name\"" 'index($0,"\"Action\":\"pass\"") && index($0,needle) { n++ } END { print n+0 }' "$proof/tests.jsonl")" == 1 ]]
 done
 manifest | cmp -s "$proof/source.sha256" -

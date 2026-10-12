@@ -103,7 +103,9 @@ CREATE TABLE IF NOT EXISTS fixture_chain_high_requests(
  ordinal integer PRIMARY KEY CHECK(ordinal BETWEEN 481 AND 520), scenario text NOT NULL CHECK(scenario IN('restart_sent','lost_ack','owner_stop')),
  kind text NOT NULL CHECK(kind IN('start','continue','submit')),root_task_id text NOT NULL,run_id text NOT NULL,is_parent boolean NOT NULL,input_hash text NOT NULL CHECK(length(input_hash)=64),
  admitted_at timestamptz NOT NULL DEFAULT clock_timestamp(),outcome text NOT NULL DEFAULT 'unavailable' CHECK(outcome IN('unavailable','completed','transport_error','cancelled')),
- input_tokens bigint CHECK(input_tokens>=0),output_tokens bigint CHECK(output_tokens>=0),total_tokens bigint CHECK(total_tokens>=input_tokens+output_tokens),model_version text);
+ input_tokens bigint CHECK(input_tokens>=0),output_tokens bigint CHECK(output_tokens>=0),total_tokens bigint CHECK(total_tokens>=input_tokens+output_tokens),model_version text,
+ finished_at timestamptz CHECK(finished_at>=admitted_at),elapsed_ms bigint CHECK(elapsed_ms>=0),failure_stage text CHECK(failure_stage IN('entry','stream')),
+ diagnostic_code text CHECK(diagnostic_code IN('provider_unavailable','transport_connection_error','provider_timeout','provider_protocol_error','capability_mismatch','invalid_tool_request','stateful_session_lost','rate_limited','model_capacity_unavailable','internal_transport_error','provider_input_bytes_exceeded','memory_source_stale','memory_source_check_timeout')));
 CREATE OR REPLACE FUNCTION fixture_chain_high_window_immutable() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
  IF TG_OP='DELETE' OR NEW.singleton IS DISTINCT FROM OLD.singleton OR NEW.prerequisite_hash IS DISTINCT FROM OLD.prerequisite_hash OR
  NEW.expires_at IS DISTINCT FROM OLD.expires_at OR NEW.attempts<>OLD.attempts+1 THEN RAISE EXCEPTION 'sealed chain high scope'; END IF; RETURN NEW; END $$;

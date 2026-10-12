@@ -72,12 +72,20 @@ There is no resume, fallback or old-window mutation path. The converter remains
 network-none and the actual Telegram adapter targets a loopback fake recipient.
 
 Content-free request evidence preserves ordinal, scenario, entry kind, root/run
-IDs, parent/child classification, input hash, admission time, outcome, observed
-input/output/complete total and native version. Failed or incomplete observations
-remain NULL. Unknown full cost/version or failed owning checks produce failure;
+IDs, parent/child classification, input hash, admission/finish times, owning entry
+elapsed milliseconds, outcome, allowlisted failure stage/code, observed
+input/output/complete total and native version. A failed terminal retains uniquely
+validated complete measurements; absent, conflicting or incomplete observations
+remain NULL. A real zero input/output/total triple remains known zero; a legacy
+nonzero pair with missing zero total retains that pair with NULL total. Tools and
+final text require the complete total and exact version before release. Final
+text additionally waits for a successful terminal event, so a contradictory or
+unfinished stream does not publish it; already streamed deltas are not rewound.
+Unknown full cost/version or failed owning checks produce failure;
 they never become zero cost, model correctness or release permission. Runtime
 auth, prompts, tool bodies and hidden reasoning are excluded from the safe scope
-report.
+report. The runner also exports an independent allowlisted PostgreSQL request
+witness before cleanup and content-free Docker start/finish/exit/OOM state.
 
 Preparation history is immutable: initial9ae4cd9 fixture Run insertion failed on
 missing `started_at` before any provider entry. d3bd3e8 corrected only required

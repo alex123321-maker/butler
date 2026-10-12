@@ -168,6 +168,9 @@ func TestScenarioReleaseChainActualHighE2E(t *testing.T) {
 		if _, e = file.Write(body); e != nil {
 			t.Error("native scope artifact not persisted")
 		}
+		if e = file.Sync(); e != nil {
+			t.Error("native scope artifact not synced")
+		}
 	}()
 	for _, scenario := range []string{"restart_sent", "lost_ack", "owner_stop"} {
 		t.Run(scenario, func(t *testing.T) {
@@ -248,7 +251,7 @@ func TestScenarioReleaseChainActualHighE2E(t *testing.T) {
 						t.Error("durable native scope unavailable")
 						return
 					}
-					rows, e := f.f.pool.Query(context.Background(), `SELECT ordinal,scenario,kind,root_task_id,run_id,is_parent,input_hash,admitted_at,outcome,input_tokens,output_tokens,total_tokens,model_version FROM `+caseWindow.table("fixture_chain_high_requests")+` ORDER BY ordinal`)
+					rows, e := f.f.pool.Query(context.Background(), `SELECT ordinal,scenario,kind,root_task_id,run_id,is_parent,input_hash,admitted_at,outcome,input_tokens,output_tokens,total_tokens,model_version,finished_at,elapsed_ms,failure_stage,diagnostic_code FROM `+caseWindow.table("fixture_chain_high_requests")+` ORDER BY ordinal`)
 					if e != nil {
 						t.Error("safe native request evidence unavailable")
 						return
@@ -261,10 +264,13 @@ func TestScenarioReleaseChainActualHighE2E(t *testing.T) {
 						var at time.Time
 						var input, output, total *int64
 						var version *string
-						if e = rows.Scan(&ordinal, &scenario, &kind, &root, &run, &parent, &hash, &at, &outcome, &input, &output, &total, &version); e != nil {
+						var finished *time.Time
+						var elapsed *int64
+						var stage, code *string
+						if e = rows.Scan(&ordinal, &scenario, &kind, &root, &run, &parent, &hash, &at, &outcome, &input, &output, &total, &version, &finished, &elapsed, &stage, &code); e != nil {
 							break
 						}
-						items = append(items, map[string]any{"ordinal": ordinal, "scenario": scenario, "kind": kind, "root_task_id": root, "run_id": run, "is_parent": parent, "input_sha256": hash, "admitted_at_utc": at, "outcome": outcome, "actual_input_tokens": input, "actual_output_tokens": output, "actual_total_tokens": total, "model_version": version})
+						items = append(items, map[string]any{"ordinal": ordinal, "scenario": scenario, "kind": kind, "root_task_id": root, "run_id": run, "is_parent": parent, "input_sha256": hash, "admitted_at_utc": at, "finished_at_utc": finished, "elapsed_ms": elapsed, "outcome": outcome, "failure_stage": stage, "diagnostic_code": code, "actual_input_tokens": input, "actual_output_tokens": output, "actual_total_tokens": total, "model_version": version})
 					}
 					if e != nil || rows.Err() != nil {
 						rows.Close()

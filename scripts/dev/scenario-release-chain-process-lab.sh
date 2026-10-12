@@ -171,9 +171,14 @@ if $high; then
   docker start -a "$prefix-native" > "$proof/tests.jsonl" 2>&1
   test_exit=$?
   set -e
+  docker inspect --format '{"started_at":{{json .State.StartedAt}},"finished_at":{{json .State.FinishedAt}},"exit_code":{{.State.ExitCode}},"oom_killed":{{.State.OOMKilled}},"memory_limit_bytes":{{.HostConfig.Memory}}}' "$prefix-native" > "$proof/runtime-state.json"
   docker rm -f "$prefix-native" >/dev/null
   created_native=false
   docker run --rm --network none --volume "$proof/private/native:/private:ro" alpine:3.21 cat /private/scope.json > "$proof/scope.json" || test_exit=1
+  # Independent content-free export from the owning fixture ledger, before
+  # disposable PG cleanup. No prompt, tool args, profile or private grant rows.
+  docker exec "$pg" psql -X -At -v ON_ERROR_STOP=1 -U fixture -d butler_release_chain_test -c "SELECT json_build_object('baseline_attempts',480,'total_attempts',(SELECT attempts FROM fixture_chain_high.fixture_chain_high_window WHERE singleton),'new_attempts',(SELECT count(*) FROM fixture_chain_high.fixture_chain_high_requests),'requests',COALESCE((SELECT json_agg(row_to_json(r) ORDER BY ordinal) FROM (SELECT ordinal,scenario,kind,root_task_id,run_id,is_parent,input_hash,admitted_at,outcome,input_tokens,output_tokens,total_tokens,model_version,finished_at,elapsed_ms,failure_stage,diagnostic_code FROM fixture_chain_high.fixture_chain_high_requests) r),'[]'::json))" > "$proof/pg-ledger-witness.json" || test_exit=1
+  sha256sum "$proof/scope.json" "$proof/pg-ledger-witness.json" "$proof/runtime-state.json" > "$proof/native-evidence.sha256"
 fi
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
 required=(TestScenarioReleaseChainOneVerifiedNoticeContainerE2E TestScenarioReleaseChainOneVerifiedNoticeContainerE2E/baseline)
