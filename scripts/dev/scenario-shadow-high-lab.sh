@@ -80,6 +80,15 @@ chmod 555 /binaries/*
 ' > "$proof/unit.jsonl" 2> "$proof/build-diagnostics.log"
   ! grep -Eq '"Action":"(skip|fail)"' "$proof/unit.jsonl"
 fi
+pin_binaries="$proof/binaries"
+if [[ "$phase" == prepare ]]; then
+  # Exercise the same077-umask copy boundary as actual execution, as10001 below.
+  pin_binaries="$proof/copied-binaries"
+  mkdir "$pin_binaries"; chmod 755 "$pin_binaries"
+  cp "$proof/binaries/"* "$pin_binaries/"
+  chmod 555 "$pin_binaries/"*
+  for file in orchestrator.test tls-prerequisite; do cmp -s "$proof/binaries/$file" "$pin_binaries/$file"; done
+fi
 review=/srv/storage/butler/reviews/issue33-20261011-r3
 cp "$review/public-key.hex" "$proof/metadata/public-key.hex"
 cp "$review/approval.json" "$proof/metadata/approval.json"
@@ -99,7 +108,7 @@ if [[ "$phase" != prepare ]]; then
 for file in hardware.json public-key.hex approval.json frozen-corpus.json; do cmp "/actual/$file" "/prepared/$file"; done'
 fi
 docker run --rm --network none --user 10001:10001 --read-only --cap-drop ALL --memory 512m --pids-limit 64 --security-opt no-new-privileges:true \
-  --volume "$source_dir:/src:ro" --volume "$proof/binaries:/binaries:ro" --volume "$proof/runtime:/private" --volume "$proof/metadata:/metadata:ro" --workdir /src \
+  --volume "$source_dir:/src:ro" --volume "$pin_binaries:/binaries:ro" --volume "$proof/runtime:/private" --volume "$proof/metadata:/metadata:ro" --workdir /src \
   --env BUTLER_SCENARIO_SHADOW_PREPARE=1 --env BUTLER_SCENARIO_SHADOW_PRIVATE=/private --env "BUTLER_SCENARIO_SHADOW_RELEASE=$release" --env "BUTLER_SCENARIO_SHADOW_RUNTIME_IMAGE=$go_image" --env TMPDIR=/private \
   "$go_image" /binaries/orchestrator.test -test.v -test.timeout=2m -test.run='^TestScenarioShadowPreparePins$' > "$proof/pins.txt" 2>&1
 if [[ "$phase" != prepare ]]; then
