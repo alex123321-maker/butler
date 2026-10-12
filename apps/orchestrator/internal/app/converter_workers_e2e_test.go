@@ -656,6 +656,11 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 				t.Fatal("automatic fresh catalog admission", sweepError)
 			}
 			if f.modelConfig == nil && time.Since(automaticStarted) > 25*time.Second {
+				if diagnostic, e := converterWorkerStructuralState(f.f.ctx, f.f.pool, f.f.parent.TaskID, f.f.budgets.Policy); e == nil {
+					t.Logf("bounded_automatic_structural_diagnostic=%s", diagnostic)
+				} else {
+					t.Log("bounded_automatic_structural_diagnostic=unavailable")
+				}
 				var states string
 				_ = f.f.pool.QueryRow(f.f.ctx, `SELECT string_agg(c.purpose||':'||c.state||':'||COALESCE(i.status,'no_input')||':'||COALESCE(r.current_state,'no_run'),', ' ORDER BY c.purpose) FROM converter_parent_continuations c LEFT JOIN accepted_inputs i ON i.input_id=c.input_id LEFT JOIN runs r ON r.run_id=i.run_id`).Scan(&states)
 				t.Fatal("bounded automatic state", states)

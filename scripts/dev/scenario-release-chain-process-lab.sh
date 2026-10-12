@@ -4,7 +4,7 @@ set -euo pipefail
 root=${1:?isolated agent root required}
 mode=${2:-baseline}
 commit=${3:?exact source commit required}
-[[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ && "$mode" =~ ^(baseline|chain|high)$ && "$commit" =~ ^[a-f0-9]{40}$ ]] || exit 2
+[[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ && "$mode" =~ ^(baseline|chain|high|diagnose_absence)$ && "$commit" =~ ^[a-f0-9]{40}$ ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/go.mod" ]] || exit 2
 high=false
@@ -129,6 +129,7 @@ docker exec "$runtime" sh -ec '
   test -z "${BUTLER_POSTGRES_URL:-}${BUTLER_REDIS_URL:-}${OPENAI_API_KEY:-}${BUTLER_OWNER_CONTROL_TOKEN:-}"
 ' > "$proof/runtime-isolation.txt"
 filter='^TestScenarioReleaseChain(OneVerifiedNotice|GenericProviderCurrentOwnership|ProviderStartFailureRetainsAdmission)ContainerE2E$'
+if [[ "$mode" == diagnose_absence ]]; then filter='^TestScenarioReleaseChainOneVerifiedNoticeContainerE2E$/^explicit_absence$'; fi
 if [[ "$mode" == baseline ]]; then filter='^TestScenarioReleaseChainOneVerifiedNoticeContainerE2E/baseline$'; fi
 native_args=()
 if $high; then
@@ -182,6 +183,7 @@ if $high; then
 fi
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
 required=(TestScenarioReleaseChainOneVerifiedNoticeContainerE2E TestScenarioReleaseChainOneVerifiedNoticeContainerE2E/baseline)
+if [[ "$mode" == diagnose_absence ]]; then required=(TestScenarioReleaseChainOneVerifiedNoticeContainerE2E TestScenarioReleaseChainOneVerifiedNoticeContainerE2E/explicit_absence); fi
 if $high; then required=(TestScenarioReleaseChainActualHighE2E TestScenarioReleaseChainActualHighE2E/restart_sent TestScenarioReleaseChainActualHighE2E/lost_ack TestScenarioReleaseChainActualHighE2E/owner_stop); fi
 if [[ "$mode" == chain ]]; then
  for fault in broker_restart_after_admission explicit_absence ack_commit_failure child_stop_after_admission technical_failure_projection; do required+=("TestScenarioReleaseChainOneVerifiedNoticeContainerE2E/$fault"); done
