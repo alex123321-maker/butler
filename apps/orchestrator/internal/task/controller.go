@@ -390,6 +390,9 @@ func (c *Controller) ApplyWithGuard(ctx context.Context, req ControlRequest, gua
 		}
 		if id == root.TaskID {
 			result.Task = updated
+			if err = c.store.queueVerifiedNotificationTx(ctx, tx, root, updated); err != nil {
+				return result, err
+			}
 		}
 	}
 	instruction := strings.TrimSpace(req.Instruction)

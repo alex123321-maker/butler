@@ -193,6 +193,7 @@ func New(ctx context.Context) (*App, error) {
 		delivery = flow.NewCompositeDeliverySink(delivery, telegram)
 	}
 	delivery = flow.NewObservedDeliverySink(delivery, deliveryEventsService)
+	delivery = newVerifiedTaskDelivery(delivery, taskStore)
 	singleTabService.SetDeliverySink(delivery)
 
 	sessionRepo := session.NewPostgresRepository(postgres.Pool())
@@ -207,6 +208,7 @@ func New(ctx context.Context) (*App, error) {
 	episodicStore := episodic.NewStore(postgres.Pool())
 	chunkStore := chunks.NewStore(postgres.Pool())
 	sourceCatalog := catalog.New(postgres.Pool(), catalog.NewFileManifest(strings.TrimSpace(os.Getenv("BUTLER_MEMORY_DELETION_MANIFEST_FILE"))))
+	taskStore.SetVerifiedResultSourceGuard(sourceCatalog.CheckRunSourcesTx)
 	if restoreErr := sourceCatalog.Reconcile(ctx); restoreErr != nil {
 		log.Warn("memory unavailable: deletion anchor requires operator reconciliation")
 	}
@@ -364,8 +366,21 @@ func New(ctx context.Context) (*App, error) {
 		memorySources = converterSources{Store: sourceCatalog, pool: postgres.Pool()}
 	}
 	outboxWorker := &deliveryoutbox.Worker{Store: finalResults.Outbox}
+	var verifiedTaskDeliveryWorker *deliveryoutbox.Worker
+	verifiedDeliveryReady, err := taskStore.VerifiedDeliveryReady(ctx)
+	if err != nil {
+		redis.Close()
+		postgres.Close()
+		return nil, err
+	}
+	if verifiedDeliveryReady {
+		verifiedTaskDeliveryWorker = &deliveryoutbox.Worker{Store: task.VerifiedNotificationStore{Tasks: taskStore}}
+	}
 	if telegram != nil {
 		outboxWorker.Sender = telegram
+		if verifiedTaskDeliveryWorker != nil {
+			verifiedTaskDeliveryWorker.Sender = telegram
+		}
 	}
 	auxiliaryWorker := &completion.AuxiliaryWorker{Coordinator: finalResults, Handler: completionAuxiliary{Working: working.NewStore(postgres.Pool()), Transient: working.NewTransientStore(redis.Client()), Pipeline: pipelineWorker}}
 
@@ -676,25 +691,26 @@ func New(ctx context.Context) (*App, error) {
 
 	semanticReady = true
 	return &App{
-		config:                   cfg,
-		log:                      log,
-		metrics:                  m,
-		health:                   h,
-		postgres:                 postgres,
-		redis:                    redis,
-		httpServer:               httpServer,
-		grpcServer:               grpcServer,
-		grpcListen:               grpcListener,
-		telegram:                 telegram,
-		toolBroker:               toolBrokerClient,
-		pipelineWorker:           pipelineWorker,
-		inputWorker:              inputWorker,
-		outboxWorker:             outboxWorker,
-		initiativeDeliveryWorker: initiativeDeliveryWorker,
-		auxiliaryWorker:          auxiliaryWorker,
-		memoryCleanup:            &catalog.CleanupWorker{Store: sourceCatalog, Cleaner: privacyCacheCleaner{store: working.NewTransientStore(redis.Client())}},
-		memoryIndexing:           ownedSemantic,
-		memoryIndexingClose:      closeOwnedSemantic,
+		config:                     cfg,
+		log:                        log,
+		metrics:                    m,
+		health:                     h,
+		postgres:                   postgres,
+		redis:                      redis,
+		httpServer:                 httpServer,
+		grpcServer:                 grpcServer,
+		grpcListen:                 grpcListener,
+		telegram:                   telegram,
+		toolBroker:                 toolBrokerClient,
+		pipelineWorker:             pipelineWorker,
+		inputWorker:                inputWorker,
+		outboxWorker:               outboxWorker,
+		initiativeDeliveryWorker:   initiativeDeliveryWorker,
+		verifiedTaskDeliveryWorker: verifiedTaskDeliveryWorker,
+		auxiliaryWorker:            auxiliaryWorker,
+		memoryCleanup:              &catalog.CleanupWorker{Store: sourceCatalog, Cleaner: privacyCacheCleaner{store: working.NewTransientStore(redis.Client())}},
+		memoryIndexing:             ownedSemantic,
+		memoryIndexingClose:        closeOwnedSemantic,
 	}, nil
 }
 

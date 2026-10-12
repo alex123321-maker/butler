@@ -1012,3 +1012,10 @@ budget and private input claim/fence remain mandatory. Opaque readiness is DATA;
 no synthetic owner message or semantic acceptance is created. Recovery, Broker
 and atomic final repeat the guard. See
 [owned converter continuations](converter-continuations.md).
+
+Owner-configured verified-task delivery retains all ordinary attempts/finals and
+current execution/lease/source checks, while suppressing outward technical drafts
+and progress before channel-delivery observation. Only current independent owner
+verification of original criteria and the Task completion transaction create the
+one root notice. Source-only historical completion/send checks cannot borrow a
+completed run's execution authority. Approval/intervention delivery is preserved.

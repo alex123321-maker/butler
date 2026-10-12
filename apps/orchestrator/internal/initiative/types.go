@@ -36,6 +36,7 @@ type Source struct {
 	CheckToolName       string   `json:"check_tool_name,omitempty"`
 	CheckResource       string   `json:"check_resource,omitempty"`
 	DigestChannel       string   `json:"digest_channel,omitempty"`
+	ResultDelivery      string   `json:"result_delivery,omitempty"`
 	Purpose             string   `json:"purpose"`
 	TimeZone            string   `json:"time_zone"`
 	TaskGoal            string   `json:"task_goal"`
@@ -52,6 +53,12 @@ type Source struct {
 }
 
 func (s Source) Validate() error {
+	if s.ResultDelivery != "" && s.ResultDelivery != "attempt" && s.ResultDelivery != "verified_task" {
+		return ErrInvalid
+	}
+	if s.ResultDelivery == "verified_task" && s.DigestChannel != "" {
+		return ErrInvalid
+	}
 	if s.DigestChannel != "" && s.DigestChannel != "web" && s.DigestChannel != "telegram" {
 		return ErrInvalid
 	}

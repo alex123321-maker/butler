@@ -51,3 +51,8 @@ The `/goals` owner page and authenticated `/api/v3/owner-*` routes expose goals,
 assumptions, bounded mandates, current obligations and pending propagation.
 See [owner authority](../../../../docs/architecture/owner-goals-mandates-spec.md)
 and [actual acceptance checks](../../../../docs/architecture/owner-goals-mandates-acceptance.md).
+
+Trusted owner-task admission may carry the private `ResultDelivery` field; public
+JSON and model arguments cannot select it. Its explicit value participates in
+the frozen owner delivery fingerprint. Public owner/operator configuration uses
+an authenticated initiative Source instead; omitted mode preserves legacy replay.

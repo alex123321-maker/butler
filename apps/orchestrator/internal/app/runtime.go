@@ -27,6 +27,10 @@ func (a *App) Run(ctx context.Context) error {
 			workers++
 			go func() { _ = a.outboxWorker.Run(runCtx); done <- struct{}{} }()
 		}
+		if a.verifiedTaskDeliveryWorker != nil {
+			workers++
+			go func() { _ = a.verifiedTaskDeliveryWorker.Run(runCtx); done <- struct{}{} }()
+		}
 		if a.auxiliaryWorker != nil {
 			workers++
 			go func() { _ = a.auxiliaryWorker.Run(runCtx); done <- struct{}{} }()

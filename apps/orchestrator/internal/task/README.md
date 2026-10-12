@@ -118,3 +118,16 @@ observation. Replay reuses the pinned report. Neither form verifies task success
 pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Sync -RemoteRoot /srv/storage/butler/agents/durable-tasks
 ssh laba 'bash /srv/storage/butler/agents/durable-tasks/current/scripts/dev/delegation-lab.sh /srv/storage/butler/agents/durable-tasks'
 ```
+
+`verified_task` is an explicit owner-configured immutable delivery mode, inherited
+by children. Task completion with the current owner's verified original result
+atomically queues one root-owned fixed-content notice. A partial/deleted/stale
+attempt cannot enqueue it; duplicate completion retains identity. Task owns its
+PG outbox and `VerifiedNotificationStore`; the common dispatcher retries only
+known absent delivery and quarantines lost ACK without execution replay.
+
+`SetVerifiedResultSourceGuard` must install the owning Catalog's historical same-TX
+source/restore/delegation check for opted-in queue/send. Missing guard or corrected
+original pins deny completion/delivery. Orchestrator's quiet outward filter runs
+before the delivery observer: suppressed technical progress is not recorded sent.
+Owner approvals and explicit interventions keep their normal delivery paths.

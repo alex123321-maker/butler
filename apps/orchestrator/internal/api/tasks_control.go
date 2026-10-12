@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/butler/butler/apps/orchestrator/internal/deliveryoutbox"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/internal/owneridentity"
 )
@@ -154,7 +155,25 @@ func (s *TaskControlServer) HandleItem(prefix string) http.Handler {
 				writeTaskError(w, err)
 				return
 			}
-			writeJSON(w, 200, map[string]any{"task": record, "run_ids": runs, "results": results})
+			view := map[string]any{"task": record, "run_ids": runs, "results": results}
+			if record.ResultDelivery == "verified_task" {
+				var authenticated bool
+				r, authenticated = s.authenticate(w, r)
+				if !authenticated {
+					return
+				}
+				if notices, ok := s.tasks.(interface {
+					VerifiedNotifications(context.Context, string) ([]deliveryoutbox.Message, error)
+				}); ok {
+					rows, err := notices.VerifiedNotifications(r.Context(), id)
+					if err != nil {
+						writeTaskError(w, err)
+						return
+					}
+					view["verified_result_notifications"] = rows
+				}
+			}
+			writeJSON(w, 200, view)
 			return
 		}
 		if len(parts) != 2 || r.Method != http.MethodPost {

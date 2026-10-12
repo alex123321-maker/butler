@@ -40,12 +40,16 @@ type Record struct {
 	LastRunID           string         `json:"last_run_id,omitempty"`
 	CompletionResultID  string         `json:"completion_result_id,omitempty"`
 	Legacy              bool           `json:"legacy"`
+	ResultDelivery      string         `json:"result_delivery"`
 	CreatedAt           time.Time      `json:"created_at"`
 	UpdatedAt           time.Time      `json:"updated_at"`
 	FinishedAt          *time.Time     `json:"finished_at,omitempty"`
 }
 
 type CreateRequest struct {
+	// Only trusted owner/source configuration chooses a root mode. Delegation
+	// inherits its parent's mode; model-facing proposals have no selector.
+	ResultDelivery         string                 `json:"-"`
 	InitialExecutionPolicy string                 `json:"-"`
 	Authority              *actionauth.Assignment `json:"-"`
 	SessionKey             string                 `json:"session_key"`
@@ -82,6 +86,9 @@ type Manager interface {
 }
 
 func ValidateCreate(req CreateRequest) error {
+	if req.ResultDelivery != "" && req.ResultDelivery != "attempt" && req.ResultDelivery != "verified_task" {
+		return ErrInvalid
+	}
 	if err := ValidatePolicy(req.InitialExecutionPolicy); err != nil {
 		return err
 	}

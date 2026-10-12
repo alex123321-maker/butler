@@ -14,6 +14,7 @@ import (
 	"github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
 	"github.com/butler/butler/apps/orchestrator/internal/task"
+	"github.com/butler/butler/apps/orchestrator/internal/tools"
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/delegation"
@@ -82,20 +83,26 @@ func (developerEnvironment) Discover(context.Context, string, generatedtools.Nee
 }
 
 type developerFixture struct {
-	f                          *delegationGuardFixture
-	goals                      *goal.Manager
-	goal                       actionauth.GoalPolicy
-	profile                    generatedtools.Profile
-	need                       generatedtools.Need
-	needRef, specRef, document catalog.SourceRef
-	service                    *ConverterDelegation
-	env                        developerEnvironment
-	converters                 *generatedtools.Store
-	auth                       *actionauth.Service
-	journal                    *actionauth.PostgresStore
-	parentRun                  string
-	next                       int
-	deadline                   time.Time
+	f                              *delegationGuardFixture
+	goals                          *goal.Manager
+	goal                           actionauth.GoalPolicy
+	profile                        generatedtools.Profile
+	need                           generatedtools.Need
+	needRef, specRef, document     catalog.SourceRef
+	service                        *ConverterDelegation
+	env                            developerEnvironment
+	converters                     *generatedtools.Store
+	auth                           *actionauth.Service
+	journal                        *actionauth.PostgresStore
+	parentRun                      string
+	next                           int
+	deadline                       time.Time
+	initialInputID, admissionInput string
+	existingClient                 *tools.BrokerClient
+	modelConfig                    *releaseChainModelConfig
+	restartBroker                  func() error
+	channel                        *releaseChainChannel
+	projectDirectory               string
 }
 
 func newDeveloperFixture(t *testing.T) *developerFixture {

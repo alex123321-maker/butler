@@ -19,9 +19,16 @@ import (
 )
 
 type Store struct {
-	pool          *pgxpool.Pool
-	budgets       *budget.Controller
-	budgetMandate string
+	pool                      *pgxpool.Pool
+	budgets                   *budget.Controller
+	budgetMandate             string
+	verifiedResultSourceGuard func(context.Context, pgx.Tx, string) error
+}
+
+// SetVerifiedResultSourceGuard installs the owning Catalog's same-transaction
+// historical source check. It grants no completed run execution authority.
+func (s *Store) SetVerifiedResultSourceGuard(guard func(context.Context, pgx.Tx, string) error) {
+	s.verifiedResultSourceGuard = guard
 }
 
 func (s *Store) SetBudgets(c *budget.Controller, mandateID string) {
@@ -33,14 +40,14 @@ func NewStore(pool *pgxpool.Pool) *Store { return &Store{pool: pool} }
 
 const columns = `task_id, session_key, owner_id, COALESCE(parent_task_id,''), goal, source_json,
  status, revision, constraints_revision, execution_policy, constraints_json, completion_criteria_json, working_json,
- working_revision, COALESCE(last_run_id,''), COALESCE(completion_result_id,''), legacy, created_at, updated_at, finished_at`
+ working_revision, COALESCE(last_run_id,''), COALESCE(completion_result_id,''), legacy, COALESCE(to_jsonb(tasks)->>'result_delivery','attempt'), created_at, updated_at, finished_at`
 
 type scanner interface{ Scan(...any) error }
 
 func scan(row scanner) (Record, error) {
 	var r Record
 	var source, constraints, criteria, working []byte
-	err := row.Scan(&r.TaskID, &r.SessionKey, &r.OwnerID, &r.ParentTaskID, &r.Goal, &source, &r.Status, &r.Revision, &r.ConstraintsRevision, &r.ExecutionPolicy, &constraints, &criteria, &working, &r.WorkingRevision, &r.LastRunID, &r.CompletionResultID, &r.Legacy, &r.CreatedAt, &r.UpdatedAt, &r.FinishedAt)
+	err := row.Scan(&r.TaskID, &r.SessionKey, &r.OwnerID, &r.ParentTaskID, &r.Goal, &source, &r.Status, &r.Revision, &r.ConstraintsRevision, &r.ExecutionPolicy, &constraints, &criteria, &working, &r.WorkingRevision, &r.LastRunID, &r.CompletionResultID, &r.Legacy, &r.ResultDelivery, &r.CreatedAt, &r.UpdatedAt, &r.FinishedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Record{}, ErrNotFound
 	}
@@ -154,6 +161,10 @@ func (s *Store) createTx(ctx context.Context, tx pgx.Tx, req CreateRequest, dele
 			return Record{}, ErrConflict
 		}
 		policy = parent.ExecutionPolicy
+		if req.ResultDelivery != "" && req.ResultDelivery != parent.ResultDelivery {
+			return Record{}, ErrConflict
+		}
+		req.ResultDelivery = parent.ResultDelivery
 		if req.InitialExecutionPolicy != "" && req.InitialExecutionPolicy != policy {
 			return Record{}, ErrConflict
 		}
@@ -195,8 +206,19 @@ func (s *Store) createTx(ctx context.Context, tx pgx.Tx, req CreateRequest, dele
 	}
 	constraints, _ := json.Marshal(req.Constraints)
 	criteria, _ := json.Marshal(req.CompletionCriteria)
-	record, err := scan(tx.QueryRow(ctx, `INSERT INTO tasks(task_id,session_key,owner_id,parent_task_id,goal,source_json,constraints_json,completion_criteria_json,execution_policy)
- VALUES($1,$2,$3,NULLIF($4,''),$5,$6::jsonb,$7::jsonb,$8::jsonb,$9) RETURNING `+columns, id, req.SessionKey, req.OwnerID, req.ParentTaskID, strings.TrimSpace(req.Goal), source, constraints, criteria, policy))
+	query := `INSERT INTO tasks(task_id,session_key,owner_id,parent_task_id,goal,source_json,constraints_json,completion_criteria_json,execution_policy)
+ VALUES($1,$2,$3,NULLIF($4,''),$5,$6::jsonb,$7::jsonb,$8::jsonb,$9) RETURNING ` + columns
+	// Legacy default creation remains compatible with old schemas. Explicit
+	// mode/inheritance needs actual069; a missing schema rolls back admission.
+	if req.ResultDelivery == "verified_task" {
+		ready, err := verifiedDeliveryReady(ctx, tx)
+		if err != nil || !ready {
+			return Record{}, ErrInvalid
+		}
+		query = `INSERT INTO tasks(task_id,session_key,owner_id,parent_task_id,goal,source_json,constraints_json,completion_criteria_json,execution_policy,result_delivery)
+ VALUES($1,$2,$3,NULLIF($4,''),$5,$6::jsonb,$7::jsonb,$8::jsonb,$9,'verified_task') RETURNING ` + columns
+	}
+	record, err := scan(tx.QueryRow(ctx, query, id, req.SessionKey, req.OwnerID, req.ParentTaskID, strings.TrimSpace(req.Goal), source, constraints, criteria, policy))
 	if err != nil {
 		return Record{}, err
 	}
@@ -332,14 +354,31 @@ func (s *Store) CheckpointRun(ctx context.Context, runID string, revision int64,
 
 // Transition is a trusted owner control operation, never a model finish event.
 func (s *Store) Transition(ctx context.Context, id string, revision int64, status, resultID string) (Record, error) {
+	hint, err := s.Get(ctx, id)
+	if err != nil {
+		return Record{}, err
+	}
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
 		return Record{}, err
 	}
 	defer tx.Rollback(ctx)
+	if hint.ResultDelivery == "verified_task" {
+		a, ok := owneridentity.FromContext(ctx)
+		_, worker := ownership.TokenFromContext(ctx)
+		if !ok || worker || a.OwnerID != hint.OwnerID || (a.SessionKey != "" && a.SessionKey != hint.SessionKey) {
+			return Record{}, ErrUnauthorized
+		}
+		if _, err = tx.Exec(ctx, `SELECT session_key FROM sessions WHERE session_key=$1 AND user_id=$2 FOR SHARE`, hint.SessionKey, hint.OwnerID); err != nil {
+			return Record{}, err
+		}
+	}
 	record, err := scan(tx.QueryRow(ctx, `SELECT `+columns+` FROM tasks WHERE task_id=$1 FOR UPDATE`, id))
 	if err != nil {
 		return Record{}, err
+	}
+	if record.ResultDelivery == "verified_task" && record.Status == "completed" && status == "completed" && record.CompletionResultID == resultID && record.Revision == revision+1 {
+		return record, tx.Commit(ctx)
 	}
 	if record.Revision != revision {
 		return Record{}, ErrConflict
@@ -367,6 +406,9 @@ func (s *Store) Transition(ctx context.Context, id string, revision int64, statu
 	stored, err := scan(tx.QueryRow(ctx, `UPDATE tasks SET status=$3,revision=revision+1,completion_result_id=CASE WHEN $3='completed' THEN NULLIF($4,'') ELSE completion_result_id END,
  finished_at=CASE WHEN $3 IN ('completed','cancelled') THEN NOW() ELSE NULL END,updated_at=NOW() WHERE task_id=$1 AND revision=$2 RETURNING `+columns, id, revision, status, resultID))
 	if err != nil {
+		return Record{}, err
+	}
+	if err = s.queueVerifiedNotificationTx(ctx, tx, record, stored); err != nil {
 		return Record{}, err
 	}
 	if err = tx.Commit(ctx); err != nil {

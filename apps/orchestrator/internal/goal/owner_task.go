@@ -14,6 +14,7 @@ var projectDigest = regexp.MustCompile("^[a-f0-9]{64}$")
 var projectReference = regexp.MustCompile("^[a-zA-Z0-9][a-zA-Z0-9_.:/-]{0,199}$")
 
 type TaskRequest struct {
+	ResultDelivery     string   `json:"-"`
 	SessionKey         string   `json:"session_key"`
 	GoalID             string   `json:"goal_id"`
 	MandateID          string   `json:"mandate_id"`
@@ -38,6 +39,15 @@ func (m *Manager) CreateOwnerTask(ctx context.Context, req TaskRequest) (task.Re
 	if err != nil {
 		return task.Record{}, err
 	}
+	requestHash := fingerprint(req)
+	if req.ResultDelivery != "" {
+		// This trusted field is deliberately excluded from public JSON. It still
+		// belongs to the immutable owner delivery identity.
+		requestHash = fingerprint(struct {
+			Request        TaskRequest
+			ResultDelivery string
+		}{req, req.ResultDelivery})
+	}
 	tx, err := m.pool.Begin(ctx)
 	if err != nil {
 		return task.Record{}, err
@@ -51,7 +61,7 @@ func (m *Manager) CreateOwnerTask(ctx context.Context, req TaskRequest) (task.Re
 	var oldHash, taskID string
 	err = tx.QueryRow(ctx, `SELECT source_json->>'owner_request_hash',task_id FROM tasks WHERE owner_id=$1 AND source_json->>'owner_delivery_id'=$2`, a.OwnerID, a.Channel+":"+a.DeliveryID).Scan(&oldHash, &taskID)
 	if err == nil {
-		if oldHash != fingerprint(req) {
+		if oldHash != requestHash {
 			return task.Record{}, ErrConflict
 		}
 		return m.tasks.GetTx(ctx, tx, taskID)
@@ -75,11 +85,11 @@ func (m *Manager) CreateOwnerTask(ctx context.Context, req TaskRequest) (task.Re
 	if err != nil {
 		return task.Record{}, err
 	}
-	source := map[string]any{"type": "owner_goal_task", "owner_delivery_id": a.Channel + ":" + a.DeliveryID, "owner_request_hash": fingerprint(req), "channel": a.Channel}
+	source := map[string]any{"type": "owner_goal_task", "owner_delivery_id": a.Channel + ":" + a.DeliveryID, "owner_request_hash": requestHash, "channel": a.Channel}
 	if req.ProjectRef != "" {
 		source["project_ref"], source["project_revision"] = req.ProjectRef, req.ProjectRevision
 	}
-	r, err := m.tasks.CreateTx(ctx, tx, task.CreateRequest{SessionKey: req.SessionKey, OwnerID: a.OwnerID, Goal: req.Goal, Constraints: req.Constraints, CompletionCriteria: req.CompletionCriteria, Authority: &assignment, Source: source})
+	r, err := m.tasks.CreateTx(ctx, tx, task.CreateRequest{ResultDelivery: req.ResultDelivery, SessionKey: req.SessionKey, OwnerID: a.OwnerID, Goal: req.Goal, Constraints: req.Constraints, CompletionCriteria: req.CompletionCriteria, Authority: &assignment, Source: source})
 	if err != nil {
 		return r, err
 	}

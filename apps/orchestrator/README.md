@@ -673,3 +673,9 @@ the owned root's branches. Requested model, persisted state, attempts, expired
 deadline and obsolete task revision remain separate from runtime readiness and
 verified task completion. Raw source/error/claim/allowance payloads are excluded;
 the read-only projection grants no execution authority.
+
+Authenticated initiative Sources can opt new tasks into `verified_task` delivery:
+ordinary technical finals remain immutable, while one fixed-content Task-owned
+notice is queued atomically only after current owner verification/completion.
+The separate dispatcher is installed only with the actual069 schema/guards.
+Existing Sources and attempt notification behavior stay compatible.
