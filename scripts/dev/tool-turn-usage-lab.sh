@@ -4,7 +4,7 @@
 set -euo pipefail
 root=${1:?isolated agent root required}
 check_mode=${2:-all}
-[[ "$check_mode" == all || "$check_mode" == narrow || "$check_mode" == shadow-diagnostics ]] || exit 2
+[[ "$check_mode" == all || "$check_mode" == narrow || "$check_mode" == shadow-diagnostics || "$check_mode" == shadow-v2 ]] || exit 2
 [[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/apps/orchestrator/internal/orchestrator/budget_usage_integration_test.go" ]] || exit 2
@@ -42,7 +42,11 @@ docker run --rm --user "$(id -u):$(id -g)" --network "$network" --memory 1536m -
   --env "BUTLER_TURN_USAGE_CHECK_MODE=$check_mode" \
   --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:usage-fixture@usage-postgres:5432/butler_usage_test?sslmode=disable' \
   golang:1.27.2-bookworm bash -eu -c '
-if [[ "$BUTLER_TURN_USAGE_CHECK_MODE" == shadow-diagnostics ]]; then
+if [[ "$BUTLER_TURN_USAGE_CHECK_MODE" == shadow-v2 ]]; then
+go test -json -race -p 1 -count=1 -timeout=10m -run "^TestScenarioShadow(V2(Window|Sampler|Readiness|Diagnostic|Synthesis)|History)" ./apps/orchestrator/internal/app
+go test -json -race -p 1 -count=1 -timeout=3m -run "^TestCloud(V2|FreshV2)" ./internal/acceptance ./cmd/cloud-observe
+go vet ./internal/acceptance ./cmd/cloud-observe ./apps/orchestrator/internal/app
+elif [[ "$BUTLER_TURN_USAGE_CHECK_MODE" == shadow-diagnostics ]]; then
 go test -json -race -p 1 -count=1 -timeout=3m -run "^TestScenarioShadowSamplerChargedTruthAndNoRetryIntegration$" ./apps/orchestrator/internal/app
 go vet ./apps/orchestrator/internal/app
 else

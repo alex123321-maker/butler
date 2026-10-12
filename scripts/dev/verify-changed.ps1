@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(scripts/dev/scenario-shadow-v2-high-lab[.]sh$|apps/orchestrator/internal/app/scenario_shadow_v2_.*[.]go$|internal/acceptance/cloud_v2.*[.]go$|testdata/acceptance/ru-cloud-fresh-v2[.]json$)" {
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/scenario-shadow-v2-high-lab.sh /srv/storage/butler/agents/scenario-shadow-v2-high-20261012 prepare <exact-clean-commit> after independent V2 corpus/schema/policy review and freeze. Zero-native actual PG immutable baseline228/shared252-new cap, restart/expiry/contention, synthetic safe diagnostics, complete generation/JSON bounds, race/vet. Execute is separately sealed; no resampling, V1 mutation or automatic repeat.")
+      continue
+    }
     "^(apps/orchestrator/internal/app/(release_chain_.*|scenario_release_chain_.*|verified_task_.*)[.]go$|apps/orchestrator/internal/task/(verified_notifications|store|controller|task)[.]go$|migrations/069_verified_task_notifications[.]|scripts/dev/scenario-release-chain.*[.]sh$)" {
       [void]$specs.Add("docs/architecture/durable-tasks-spec.md")
       [void]$specs.Add("docs/architecture/owner-goals-mandates-spec.md")
