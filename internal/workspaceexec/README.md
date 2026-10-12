@@ -127,3 +127,10 @@ changed CAS and invented receipts deny. `erasing` resumes observation only;
 another physical attempt requires another owner delivery with previous-decision
 CAS. Original unknown effects, source history and allowance stay retained.
 See [discard acceptance](../../docs/ai/workspace-owner-discard-acceptance.md).
+
+An unattempted requested intent made stale by owner task/constraints changes may
+be superseded only by a distinct explicit current owner delivery with previous-ID
+and full current CAS, unchanged resource/copy/source/root/lease proof and NULL
+attempt. Current requested intents cannot be superseded merely by another
+delivery. Old workers remain denied; old delivery replay returns its own retained
+identity/phase/frozen CAS, never the successor's current authority or receipt.

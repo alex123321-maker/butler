@@ -49,6 +49,12 @@ BEGIN
  IF ROW(NEW.recovery_id,NEW.owner_id,NEW.channel,NEW.delivery_id,NEW.request_hash,NEW.workspace_id,NEW.ticket_id,NEW.resource_version,NEW.workspace_generation,NEW.task_revision,NEW.constraints_revision,NEW.previous_recovery_id,NEW.choice,NEW.created_at)
  IS DISTINCT FROM ROW(OLD.recovery_id,OLD.owner_id,OLD.channel,OLD.delivery_id,OLD.request_hash,OLD.workspace_id,OLD.ticket_id,OLD.resource_version,OLD.workspace_generation,OLD.task_revision,OLD.constraints_revision,OLD.previous_recovery_id,OLD.choice,OLD.created_at)
  OR NOT ((OLD.phase='requested' AND NEW.phase='erasing' AND OLD.attempted_at IS NULL AND NEW.attempted_at IS NOT NULL AND NEW.finished_at IS NULL)
+ OR (OLD.phase='requested' AND NEW.phase='superseded' AND OLD.attempted_at IS NULL AND NEW.attempted_at IS NULL AND NEW.finished_at IS NOT NULL
+ AND EXISTS(SELECT 1 FROM code_workspace_dispatches d JOIN code_workspace_authorizations a USING(authorization_id)
+ JOIN tasks t ON t.task_id=a.source_context->>'task_id' JOIN execution_resources r ON r.resource_id=d.resource_id
+ LEFT JOIN code_workspaces w ON w.workspace_id=a.workspace_id WHERE d.ticket_id=OLD.ticket_id
+ AND r.version=OLD.resource_version AND COALESCE(w.generation,0)=OLD.workspace_generation
+ AND (t.revision<>OLD.task_revision OR t.constraints_revision<>OLD.constraints_revision)))
  OR (OLD.phase='erasing' AND NEW.phase IN ('discarded','superseded') AND NEW.attempted_at=OLD.attempted_at AND NEW.finished_at IS NOT NULL)) THEN
   RAISE EXCEPTION 'workspace recovery decision or attempt is immutable';
  END IF;

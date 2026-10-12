@@ -242,7 +242,9 @@ func (c *RecoveryController) Get(ctx context.Context, id string) (RecoveryStatus
 		s.RecoveryID = latest.id
 		s.Phase = latest.phase
 	}
-	s.CanDiscard = c.current(ctx, tx, t, actor.OwnerID) == nil && s.Phase != "requested"
+	// A stale, unconsumed decision cannot be auto-revalidated by a worker. A
+	// distinct explicit owner decision may replace it using fresh full CAS.
+	s.CanDiscard = c.current(ctx, tx, t, actor.OwnerID) == nil && (s.Phase != "requested" || latestErr == nil && staleRecoveryTuple(latest.req, t))
 	if tx.Commit(ctx) != nil {
 		return RecoveryStatus{}, ErrRecoveryConflict
 	}
@@ -252,6 +254,34 @@ func requestDigest(req DiscardRequest) string {
 	raw, _ := json.Marshal(req)
 	sum := sha256.Sum256(raw)
 	return hex.EncodeToString(sum[:])
+}
+
+func staleRecoveryTuple(req DiscardRequest, t recoveryTarget) bool {
+	return req.ResourceVersion == t.proof.ExpectedResourceVersion && req.WorkspaceGeneration == t.generation && (req.TaskRevision != t.taskRevision || req.ConstraintsRevision != t.constraintsRevision)
+}
+
+// A delivery replay observes that exact decision's identity/frozen CAS. It
+// cannot borrow the successor's erasure receipt or its current owner permission.
+func (c *RecoveryController) replayDiscard(ctx context.Context, req DiscardRequest, id, owner string) (RecoveryStatus, error) {
+	current, err := c.Get(ctx, req.WorkspaceID)
+	if err != nil {
+		return RecoveryStatus{}, err
+	}
+	stale := current.TaskRevision != req.TaskRevision || current.ConstraintsRevision != req.ConstraintsRevision || current.ResourceVersion != req.ResourceVersion || current.WorkspaceGeneration != req.WorkspaceGeneration
+	var phase string
+	if c.pool.QueryRow(ctx, `SELECT phase FROM code_workspace_recoveries WHERE recovery_id=$1 AND owner_id=$2 AND request_hash=$3`, id, owner, requestDigest(req)).Scan(&phase) != nil {
+		return RecoveryStatus{}, ErrRecoveryConflict
+	}
+	current.RecoveryID = id
+	current.Phase = phase
+	current.TaskRevision = req.TaskRevision
+	current.ConstraintsRevision = req.ConstraintsRevision
+	if phase == "superseded" || phase == "requested" || phase == "erasing" && stale {
+		current.CanDiscard = false
+		current.ResourceVersion = req.ResourceVersion
+		current.WorkspaceGeneration = req.WorkspaceGeneration
+	}
+	return current, nil
 }
 
 // ListForTask lets the authenticated owner discover opaque unknown-Create IDs
@@ -323,7 +353,7 @@ func (c *RecoveryController) RequestDiscard(ctx context.Context, req DiscardRequ
 		if tx.Commit(ctx) != nil {
 			return RecoveryStatus{}, ErrRecoveryConflict
 		}
-		return c.Get(ctx, req.WorkspaceID)
+		return c.replayDiscard(ctx, req, previousID, actor.OwnerID)
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
 		return RecoveryStatus{}, ErrRecoveryConflict
@@ -340,7 +370,7 @@ func (c *RecoveryController) RequestDiscard(ctx context.Context, req DiscardRequ
 	}
 	// A concurrent identical delivery may have committed while resource rows
 	// were awaited. Return only its current observation, with no second intent.
-	err = tx.QueryRow(ctx, `SELECT request_hash FROM code_workspace_recoveries WHERE owner_id=$1 AND channel=$2 AND delivery_id=$3`, actor.OwnerID, actor.Channel, actor.DeliveryID).Scan(&previousHash)
+	err = tx.QueryRow(ctx, `SELECT recovery_id,request_hash FROM code_workspace_recoveries WHERE owner_id=$1 AND channel=$2 AND delivery_id=$3`, actor.OwnerID, actor.Channel, actor.DeliveryID).Scan(&previousID, &previousHash)
 	if err == nil {
 		if previousHash != requestDigest(req) {
 			return RecoveryStatus{}, ErrRecoveryConflict
@@ -348,17 +378,18 @@ func (c *RecoveryController) RequestDiscard(ctx context.Context, req DiscardRequ
 		if tx.Commit(ctx) != nil {
 			return RecoveryStatus{}, ErrRecoveryConflict
 		}
-		return c.Get(ctx, req.WorkspaceID)
+		return c.replayDiscard(ctx, req, previousID, actor.OwnerID)
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
 		return RecoveryStatus{}, ErrRecoveryConflict
 	}
 	latest, err := c.latest(ctx, tx, req.WorkspaceID, actor.OwnerID)
 	if err == nil {
-		if latest.id != req.PreviousRecoveryID || latest.phase != "erasing" {
+		if latest.id != req.PreviousRecoveryID || latest.phase != "erasing" && !(latest.phase == "requested" && staleRecoveryTuple(latest.req, t)) {
 			return RecoveryStatus{}, ErrRecoveryConflict
 		}
-		if _, err = tx.Exec(ctx, `UPDATE code_workspace_recoveries SET phase='superseded',finished_at=clock_timestamp() WHERE recovery_id=$1 AND phase='erasing'`, latest.id); err != nil {
+		tag, err := tx.Exec(ctx, `UPDATE code_workspace_recoveries SET phase='superseded',finished_at=clock_timestamp() WHERE recovery_id=$1 AND phase=$2 AND (phase='erasing' OR attempted_at IS NULL)`, latest.id, latest.phase)
+		if err != nil || tag.RowsAffected() != 1 {
 			return RecoveryStatus{}, ErrRecoveryConflict
 		}
 	} else if !errors.Is(err, pgx.ErrNoRows) || req.PreviousRecoveryID != "" {

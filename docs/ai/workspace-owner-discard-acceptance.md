@@ -98,6 +98,36 @@ and migration068 up
 `e45b91eebe76f8f4dfe6b81d6b9572c0779c31bdcb5e5d67a6155e5db96ae3ca`.
 All newly reported generation/provider calls are0.
 
+## Stale unattempted owner intent
+
+The initial kernel incorrectly left an unattempted `requested` intent permanently
+blocking fresh owner recovery when owner Amend/Stop changed its frozen task tuple.
+The actual-PG regression first failed on old source3654a8d plus the new test,
+snapshot153020-725, proof `workspace-20261012T083024Z-703750`, at
+`fresh stopped revision cannot replace stale unattempted intent`. No physical
+attempt occurred; the old worker correctly refused and UNKNOWN was retained.
+
+The fix permits only a distinct explicit authenticated current owner decision
+with exact previous-ID and full fresh CAS. Task/constraints revisions must have
+changed while resource version, copy generation and original source/root/lease
+proof remain current and unchanged. The prior requested intent keeps NULL
+`attempted_at` and becomes retained `superseded`; no worker auto-revalidation,
+erase replay, refund or permission is created. An unchanged pending intent cannot
+be replaced merely by changing delivery ID. Old delivery lost-ACK observation
+returns its own identity/phase/frozen CAS without its successor's authority or
+erasure receipt, including after the successor completes physical discard.
+
+Actual-PG pool2 race/vet GREEN snapshot153424-744, proof
+`/srv/storage/butler/agents/workspace-owner-discard/reports/workspace-20261012T083428Z-716635`,
+33 test/subtest names,16 top-level tests,0 failures,0 test skips. Events SHA256
+`f01c2cb1fb7135c3467684a485ee6f860a08e96b649f49ada4bb320ea529611a`.
+The regression applies real PG revision/status/session-fence transitions matching
+owning Amend/Stop semantics (rev2/constraints2→3/3→4/4); actual public HTTP/channel
+composition is tested separately by the owner-control suite. It verifies active
+and stale old-worker refusal, fresh current discovery, foreign/stale/wrong-CAS/
+same-delivery/no-previous refusal, distinct new intent, no old physical receipt,
+independent actual erasure and original effect/budget retention.
+
 Run only on laba with a unique disposable root:
 `scripts/dev/workspace-lab.sh <isolated-agent-root> recovery`, then `all` for the
 affected runtime, source/Catalog, Broker, action authorization and application

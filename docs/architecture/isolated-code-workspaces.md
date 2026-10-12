@@ -176,8 +176,9 @@ only. An absent namespace can finalize through a fresh independently synced
 receipt. A surviving/partial namespace remains unknown; another attempt needs a
 new explicit owner delivery naming the previous recovery ID and unchanged CAS.
 The prior decision/attempt becomes retained `superseded` history. Replaying the
-same owner delivery returns current observation and cannot erase again. Changed
-task/source/owner/version or unavailable physical evidence preserves quarantine.
+same owner delivery returns its own identity, phase and frozen CAS and cannot
+erase again or claim a successor receipt. Changed task/source/owner/version or
+unavailable physical evidence never refreshes an old decision automatically.
 Retained executor, decision and receipt history prevents migration rollback.
 
 The opted-in Orchestrator HTTP adapter exposes authenticated
@@ -199,3 +200,15 @@ does not claim verified erasure; original outcome remains unknown after discard.
 After a changed CAS or unavailable receipt, a distinct explicit authenticated
 reload may replace the retained intent only after current discovery succeeds.
 An ordinary observation refresh does not allocate a new delivery or repeat erasure.
+
+A still-unattempted `requested` intent can become stale after owner Amend/Stop.
+The worker continues to reject its frozen task/constraints tuple. Replacement
+requires a distinct authenticated owner delivery, the exact previous recovery ID
+and all fresh current CAS. Only changed task/constraints revisions with unchanged
+resource version, copy generation and original source/root/lease proof allow
+`requested -> superseded`; `attempted_at` must stay NULL and history remains.
+A current unattempted intent cannot be replaced merely by changing delivery ID.
+Discovery can offer this new explicit choice after current stopped-tree checks;
+it never revalidates or executes the old decision automatically. Replaying an
+old delivery returns that decision's own identity, phase and frozen CAS, without
+borrowing its successor's permission or erasure receipt.
