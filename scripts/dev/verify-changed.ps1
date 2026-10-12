@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(scripts/dev/scenario-native-history-lab[.]sh$|apps/orchestrator/internal/app/scenario_native_history_test[.]go$)" {
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/scenario-native-history-lab.sh <isolated-agent-root> after Sync. Fifteen immutable public reports carry all45 attempts, known20/NULL25; network-none/race/vet, no counter, import, allowance or inference.")
+      continue
+    }
     "^(scripts/dev/initiative-high-window-lab[.]sh$|apps/orchestrator/internal/app/initiative_high_window_test[.]go$)" {
       [void]$specs.Add("docs/architecture/initiative-contract.md")
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")

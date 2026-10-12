@@ -1,5 +1,13 @@
 # Opt-in native delegation experiment
 
+## Current continuation after merged acceptance
+
+#16 closed after PR71; PR72 subsequently closed #15 and #32. The owner
+authorized continuing remaining issues. See the [current scenario evidence](scenario-current-evidence-20261012.md)
+for the fifteen-report45-attempt baseline and active #33 scope. Earlier failed
+windows and their stopping statements below remain historical evidence; none
+may be reopened or used as a fresh allowance.
+
 ## Accepted bounded issue16 continuation — 2026-10-12
 
 The [final High window](delegation-final-high-acceptance-20261012.md) passed two
