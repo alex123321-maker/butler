@@ -45,8 +45,14 @@ Distinct failures count once, initiative origin is suppressed, and a newer
 verified project result clears the condition. Raw run errors are never selected.
 External source adapters
 must use Broker-mediated, fixed-target observation rather than arbitrary URLs.
-The real Broker prepared-correction fixture has passed. Live generative
-execution and actual channel delivery remain outstanding for issue #15.
+The real-process prepared-correction fixture now executes the promoted task
+through the ordinary durable Input worker and Core with an injected provider.
+It checks the recipient's actual stored patch and Broker check, then uses an
+independent owner Task Service verification. The model final stays unverified.
+A separate digest worker uses the production Telegram adapter against a synthetic
+HTTP Bot endpoint, retains its actual ACK and sends once. This component fixture
+uses four scripted provider turns; live High generative acceptance remains a
+separately bounded gate for issue #15.
 
 `digest_channel` is optional and must match the stored session channel. A separate
 durable outbox coalesces only admitted/verified-result changes into count-only
@@ -66,8 +72,12 @@ and intent/argument hashes are required. It performs no external request itself.
 Configure it in `/initiatives` using a reviewed connector operation; templates
 and schedules remain owner administration, outside the model tool catalog.
 Bootstrap wires the source-lifecycle guards. The repeated-check-to-verified-
-prepared-correction E2E uses an explicit fixture driver and owner verification;
-live model planning remains a separate rollout gate.
+prepared-correction E2E derives observations from three actual exactly approved
+Broker check tasks. Its promoted task runs through ordinary Core/Broker under
+the current owner goal/mandate, identical finite Core/Broker budget policy and
+current Catalog pins. The optional provider factory receives only the promoted
+task ID. It grants no source access, action permission or verification authority.
+Native callers must retain their separate attempt window.
 
 Daily schedules skip nonexistent local minutes, choose the first repeated minute
 and deduplicate on calendar date. Interval schedules retain their phase. Downtime
@@ -80,3 +90,12 @@ Run `Integration` and `Race` on the lab with isolated
 and a two-connection pool: concurrent promotion, duplicate delivery/evidence,
 obsolete/healthy conditions, revoked authority, missing/exhausted budget, downtime
 and stale tick claims. Migration 040 refuses rollback after any policy/history.
+
+For the zero-inference real-process fixture, sync an isolated lab root with
+`scripts/dev/lab.ps1 -Action Sync -RemoteRoot <agent-root>` and run
+`bash <agent-root>/current/scripts/dev/initiative-lab.sh <agent-root> broad` on
+the lab. The runner creates disposable PostgreSQL, builds the actual Broker and
+extension runtime with race detection, runs the app fixture and initiative suite,
+checks vet and rejects skips. It mounts neither operator credentials nor native
+authentication. See `docs/architecture/initiative-acceptance.md` for all nine
+issue criteria and the separate generative gate.
