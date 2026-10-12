@@ -28,7 +28,7 @@ import (
 
 // Candidate bytes for offline checks only. Native preparation additionally
 // requires separately frozen external V3 golden identities and reviewer approval.
-const shadowV3RawCorpusSHA = "83bb6413b70edc75fe622a97845048780a1384686ebdd7195675344b666ea9ce"
+const shadowV3RawCorpusSHA = "26aab5aaa916b86a179ea26f7eb46ea6ffb72461ed7de9461b064342577f62da"
 
 func readShadowV3CorpusBytes(path string) ([]byte, error) {
 	const limit = 512 * 1024
