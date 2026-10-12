@@ -24,7 +24,7 @@ const (
 )
 
 func fullHighDelegationWindow() bool {
-	return os.Getenv("BUTLER_DELEGATION_HIGH_ACCEPTANCE_WINDOW") == "1" || highRemainderDelegationWindow()
+	return os.Getenv("BUTLER_DELEGATION_HIGH_ACCEPTANCE_WINDOW") == "1" || highRemainderDelegationWindow() || highFinalDelegationWindow()
 }
 
 func fullHighDelegationHistoryPaths() []string {
