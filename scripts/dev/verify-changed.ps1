@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(scripts/dev/tool-turn-usage-lab[.]sh$|internal/transport/(events|usage_test)[.]go$|internal/transport/antigravity/usage_test[.]go$|apps/orchestrator/internal/orchestrator/budget(_usage_integration_test)?[.]go$)" {
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/tool-turn-usage-lab.sh <isolated-agent-root> all after Sync. Synthetic Tiered/High SSE and actual PG per-request usage, duplicate/conflict/cancel/source guards, race/vet; zero inference or historical backfill.")
+      continue
+    }
     "^(scripts/dev/scenario-native-history-lab[.]sh$|apps/orchestrator/internal/app/scenario_native_history_test[.]go$)" {
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")

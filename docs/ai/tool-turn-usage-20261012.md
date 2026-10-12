@@ -21,7 +21,8 @@ The budget wrapper validates nonnegative finite counts, overflow and total
 consistency before persistence. It records one observation per admitted operation,
 accepts identical legacy/event/terminal duplicates, rejects conflicting duplicates
 without overwriting the first known measurement and stops allowance overruns
-before tool/content release. An unexpected batch still has no execution permission;
+before tool or final release. Earlier streaming deltas are not rewound by a later
+complete usage observation. An unexpected batch still has no execution permission;
 its request usage is not multiplied by its number of proposals.
 
 Native parser counts use exact keys. Case/Unicode aliases cannot overwrite counts
