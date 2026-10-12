@@ -68,10 +68,13 @@ const filtered = computed(() => view.value?.sources.filter(s => `${s.title} ${s.
 const tombstoned = computed(() => detail.value?.source.status === 'deleted' || detail.value?.source.status === 'revoked')
 interface OwnerProof { epoch: number; token: string }
 let proofEpoch = 0
+let selectionEpoch = 0
+let queuedInspection: string | null = null
 let mounted = true
 const proofCurrent = (proof: OwnerProof) => mounted && proof.epoch === proofEpoch && !!proof.token && proof.token === token.value
 const requireProof = (proof: OwnerProof) => { if (!proofCurrent(proof)) throw new Error('owner proof changed') }
 const clearPrivate = () => {
+  selectionEpoch++; queuedInspection = null
   view.value = null; detail.value = null; citation.value = null; file.value = null
   error.value = ''; receipt.value = ''; pending.value = false; filter.value = ''
   editTitle.value = ''; editBody.value = ''; editAuthor.value = ''; editTime.value = ''; reviewLegacy.value = false
@@ -96,26 +99,40 @@ const run = async (fn: (proof: OwnerProof) => Promise<void>) => {
   pending.value = true; error.value = ''; receipt.value = ''
   try { await fn(proof) } catch {
     if (proofCurrent(proof)) error.value = 'Memory request rejected. Check owner access, current revision, scope or deletion anchor; reload before retrying.'
-  } finally { if (proofCurrent(proof)) pending.value = false }
+  } finally { if (proofCurrent(proof)) { pending.value = false; flushInspection() } }
 }
 const route = useRoute()
 const selectedSource = computed(() => typeof route.query.source_id === 'string' && route.query.source_id.length <= 256 ? route.query.source_id : '')
-const load = () => run(async proof => { await loadView(proof); if (selectedSource.value) await loadDetail(proof, selectedSource.value) })
-const loadDetail = async (proof: OwnerProof, id: string) => {
+const clearDetail = () => { detail.value = null; citation.value = null; editTitle.value = ''; editBody.value = ''; editAuthor.value = ''; editTime.value = ''; reviewLegacy.value = false }
+const load = () => run(async proof => { await loadView(proof); const id = queuedInspection || selectedSource.value; queuedInspection = null; if (id) await loadDetail(proof, id, selectionEpoch) })
+const loadDetail = async (proof: OwnerProof, id: string, epoch = selectionEpoch) => {
   requireProof(proof)
-  detail.value = null; citation.value = null; editTitle.value = ''; editBody.value = ''; editAuthor.value = ''; editTime.value = ''
+  if (epoch !== selectionEpoch) return
+  clearDetail()
   const loaded = await request<Inspection>(proof, `/api/v4/memory/source?source_id=${encodeURIComponent(id)}`)
+  if (epoch !== selectionEpoch) return
+  if (loaded.source.source_id !== id) throw new Error('source selection differs')
   detail.value = loaded
   const s = loaded.source
   editTitle.value = s.title; editBody.value = s.body; editAuthor.value = s.author; editTime.value = localTime(s.event_time); reviewLegacy.value = false
 }
-const inspect = (id: string) => run(proof => loadDetail(proof, id))
-watch(selectedSource, id => { if (id && view.value) inspect(id) })
+const flushInspection = () => {
+  if (pending.value || !view.value || !queuedInspection) return
+  const id = queuedInspection; queuedInspection = null
+  const epoch = selectionEpoch
+  return run(proof => loadDetail(proof, id, epoch))
+}
+const inspect = (id: string) => { selectionEpoch++; clearDetail(); queuedInspection = id; return flushInspection() }
+watch(selectedSource, id => { selectionEpoch++; clearDetail(); queuedInspection = id || null; flushInspection() }, { flush: 'sync' })
 const mutate = async (proof: OwnerProof, path: string, body: unknown) => {
   const sourceID = detail.value?.source.source_id
+  const epoch = selectionEpoch
   await request(proof, path, body)
+  if (epoch !== selectionEpoch) return
   await loadView(proof)
-  if (sourceID) await loadDetail(proof, sourceID)
+  if (epoch !== selectionEpoch) return
+  if (sourceID) await loadDetail(proof, sourceID, epoch)
+  if (epoch !== selectionEpoch) return
   requireProof(proof)
   receipt.value = 'Saved with the current source revision. Historical evidence remains separate from current authority.'
 }
@@ -123,7 +140,7 @@ const correct = () => run(proof => mutate(proof, '/api/v4/memory/correct', { sou
 const propose = () => run(proof => mutate(proof, '/api/v4/memory/claims', { source_id: detail.value?.source.source_id, source_revision: detail.value?.source.revision, key: claimKey.value, value: JSON.parse(claimValue.value), summary: claimSummary.value, extraction_confidence: 1 }))
 const decide = (c: Claim, reject: boolean) => run(proof => { const a = view.value?.claims.find(a => a.status === 'confirmed' && a.scope_type === c.scope_type && a.scope_id === c.scope_id && a.key === c.key); return mutate(proof, '/api/v4/memory/decisions', { claim_id: c.claim_id, expected_active_id: a?.claim_id || '', reject }) })
 const remove = (action: string) => run(proof => mutate(proof, '/api/v4/memory/delete', { source_id: detail.value?.source.source_id, expected_revision: detail.value?.source.revision, action }))
-const openCitation = (id: number) => run(async proof => { citation.value = await request(proof, `/api/v4/memory/citation?chunk_id=${id}`) })
+const openCitation = (id: number) => run(async proof => { const epoch = selectionEpoch; const loaded = await request<{ source: Source; fragment: Fragment; neighbors: Fragment[] }>(proof, `/api/v4/memory/citation?chunk_id=${id}`); if (epoch === selectionEpoch) citation.value = loaded })
 const chooseFile = (e: Event) => { file.value = (e.target as HTMLInputElement).files?.[0] || null; uploadPath.value = file.value?.name || '' }
 const upload = () => run(async proof => { if (!file.value || file.value.size > 8 * 1024 * 1024) throw new Error('file limit'); const bytes = new Uint8Array(await file.value.arrayBuffer()); requireProof(proof); let binary = ''; for (let i = 0; i < bytes.length; i += 16384) binary += String.fromCharCode(...bytes.subarray(i, i + 16384)); const r = await request<{ source: Source; status: string; error_code: string; uncertain: boolean }>(proof, '/api/v4/memory/ingest', { external_key: uploadKey.value, expected_revision: uploadRevision.value, scope_type: scopeType.value, scope_id: scopeId.value, format: format.value, path: uploadPath.value, repository_revision: repoRevision.value, author: uploadAuthor.value, event_time: eventTime(uploadTime.value), original_bytes: btoa(binary) }); await loadView(proof); await loadDetail(proof, r.source.source_id); receipt.value = `Source revision ${r.source.revision}: ${r.status} ${r.error_code || ''}${r.uncertain ? ' · OCR is uncertain' : ''}` })
 const applyOperation = () => run(proof => mutate(proof, `/api/v4/memory/${operation.value}`, JSON.parse(operationJSON.value)))
