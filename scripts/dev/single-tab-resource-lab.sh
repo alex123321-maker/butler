@@ -2,7 +2,7 @@
 # Isolated synthetic Chrome/extension/native-host + actual Broker/PG acceptance.
 set -euo pipefail
 root=${1:?isolated root required}
-[[ "$root" == /srv/storage/butler/agents/resource-runtime-bridge ]] || exit 2
+[[ "$root" == /srv/storage/butler/agents/resource-runtime-bridge || "$root" == /srv/storage/butler/agents/resource-full-acceptance-20261012 ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* ]] || exit 2
 run_id="$(date -u +%Y%m%dT%H%M%SZ)-$$"
