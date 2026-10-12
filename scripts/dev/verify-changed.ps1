@@ -26,6 +26,12 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(scripts/dev/scenario-corpus-lab[.]sh$|cmd/command-observe/|internal/acceptance/command_suite(_test)?[.]go$|testdata/acceptance/ru-command-proposals-v1[.]json$)" {
+      [void]$specs.Add("docs/architecture/persistent-assistant-spec.md")
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/scenario-corpus-lab.sh <isolated-agent-root> narrow <exact-commit> then broad after Sync. Observation-only45-case contract supplement, opaque inputs, original witnesses and exact release pins, race/vet; no model/execution or independent semantic holdout claim.")
+      continue
+    }
     "^(scripts/dev/scenario-fault-matrix-lab[.]sh$|internal/actionauth/(postgres|dispatch_source_context_integration_test)[.]go$|apps/orchestrator/internal/app/(scenario_fault_matrix_integration_test|converter_workers_e2e_test)[.]go$)" {
       [void]$specs.Add("docs/architecture/action-authorization-contract.md")
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")

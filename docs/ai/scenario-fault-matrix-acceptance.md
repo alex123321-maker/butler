@@ -107,6 +107,9 @@ test skips. `tail` is the narrower new three-branch flow; `baseline` selects unc
 explicit/automatic workers. `regression` additionally requires both baselines
 and nine named PG055 continuation tests. Missing, renamed, repeated, skipped or
 failed required tests deny the report. Go1.27.2 tests use race detection and vet,
+with a300-second outer test-process timeout to cover the separate flows and
+natural30-second delivery claim expiry. Product budgets, source/lease deadlines,
+required scenario assertions and protected criteria are unchanged.
 offline module/build network and repository caches. Actual PG17 and all runtime
 resources belong only to this invocation. The converter binary/profile, all source
 and migration/data bytes, hardware/CPU/container identities, binaries and JSON

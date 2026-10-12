@@ -148,7 +148,7 @@ docker run --rm --runtime runc --user 10001:10001 --network "$network" --read-on
   --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:scenario-fixture@scenario-postgres:5432/butler_scenario_fault_test?sslmode=disable' \
   --entrypoint /proof/bin/test2json golang:1.27.2-bookworm \
   -t -p github.com/butler/butler/apps/orchestrator/internal/app /proof/bin/app.test \
-  -test.v=test2json -test.timeout=240s -test.run="$filter" > "$proof/tests.jsonl"
+  -test.v=test2json -test.timeout=300s -test.run="$filter" > "$proof/tests.jsonl"
 test_exit=$?
 set -e
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
