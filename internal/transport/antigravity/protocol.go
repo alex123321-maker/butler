@@ -266,6 +266,9 @@ func readStreamProtocol(reader io.Reader, onText func(string) bool, cloud bool) 
 			if cloud {
 				for key, value := range object {
 					if strings.EqualFold(key, "response") {
+						if key != "response" {
+							return protocolError("ambiguous Cloud Code response envelope")
+						}
 						if wrapped, ok := value.(map[string]any); ok && usageAlias(wrapped) {
 							return protocolError("ambiguous usage metadata")
 						}

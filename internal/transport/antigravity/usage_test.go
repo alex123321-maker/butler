@@ -218,3 +218,30 @@ func TestToolTurnUsageOnlyTrailerPreservesOneConsistentCompleteObservation(t *te
 		}
 	}
 }
+
+func TestToolTurnUsageHighWrapperAliasesCannotReplaceCompleteResponse(t *testing.T) {
+	complete := strings.TrimSpace(strings.TrimPrefix(frame(`{"functionCall":{"name":"butler_tool_0","args":{"url":"https://example.com"}}}`, "STOP"), "data: "))
+	changed := strings.Replace(strings.Replace(complete, `"promptTokenCount":17`, `"promptTokenCount":18`, 1), `"totalTokenCount":31`, `"totalTokenCount":32`, 1)
+	for _, alias := range []string{"Response", `re\u017fponse`} {
+		t.Run(alias, func(t *testing.T) {
+			sse := `data: {"response":` + complete + `,"` + alias + `":` + changed + "}\n\n"
+			p := newFixture(t, func(*http.Request) (*http.Response, error) { return response(sse), nil })
+			p.config.AuthSource = cloudAuthSource{project: "discovered-project"}
+			req := request("aliased-high-wrapper")
+			req.Context.ModelName = FlashHighModel
+			stream, err := p.StartRun(context.Background(), req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			events := collect(t, stream)
+			if failure := findError(events); failure == nil || failure.Type != transport.ErrorTypeProviderProtocolError {
+				t.Fatal("aliased High wrapper was accepted")
+			}
+			for _, event := range events {
+				if event.Usage != nil || event.ToolCall != nil || event.AssistantFinal != nil {
+					t.Fatal("alternate wrapper replaced a complete observation/proposal")
+				}
+			}
+		})
+	}
+}

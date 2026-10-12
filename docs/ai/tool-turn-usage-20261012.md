@@ -78,3 +78,14 @@ Exact owning tests:
 This establishes future usage wiring and its accounting boundaries. It does not
 complete the broader issue33 intelligence criteria or reopen any sealed native
 acceptance window. Any future real High comparison is separately owned and bounded.
+
+Followup independent review found that typed Cloud Code wrapper decoding could
+replace `response` with a case/Unicode alias containing different valid counts.
+The parser now rejects these aliases before decoding the wrapped response.
+`TestToolTurnUsageHighWrapperAliasesCannotReplaceCompleteResponse` demonstrates
+canonical+`Response` and canonical+long-s aliases cannot release a tool or usage.
+Snapshot `20261012-162831-202`, network-none targeted race/vet proof
+`reports/usage-wrapper-alias-20261012T092925Z.jsonl`: 11 passing names, three
+top-level cases, zero failures/skips, including the canonical High continuation
+and all trailer cases. SHA-256
+`60d2226d347bd8dc30d845cabe92866bb4e474bf7d17861b1c452a9ceb4a518d`.
