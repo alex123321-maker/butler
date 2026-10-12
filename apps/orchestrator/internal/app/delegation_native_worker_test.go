@@ -85,6 +85,9 @@ type nativeResearchCorpus struct {
 }
 
 func readNativeCorpus(path string) (nativeResearchCorpus, error) {
+	if fullHighDelegationWindow() {
+		return readFullHighDelegationCorpus(path)
+	}
 	var c nativeResearchCorpus
 	if path == "" {
 		_, file, _, _ := runtime.Caller(0)

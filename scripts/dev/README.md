@@ -17,6 +17,7 @@ pwsh -NoProfile -File scripts/dev/run-orchestrator.ps1
 ```
 
 Available scripts:
+- `delegation-acceptance-high-lab.sh /srv/storage/butler/agents/delegation-acceptance-high-20261012 prepare` - new zero-inference PG/Broker/independent-owner/race/vet preparation for full issue16 High acceptance, carrying27 historical attempts in a separate one-use native window. See [the declared scope](../../docs/ai/delegation-full-high-acceptance-20261012.md).
 - `delegation-high-lab.sh /srv/storage/butler/agents/delegation-high-20261012 prepare` - integrated disposable PostgreSQL/race/vet and worker/Broker preparation with a committed `BUTLER_DELEGATION_NATIVE_RELEASE`, zero inference and zero allowed skips. The single execute window is permanently sealed after native attempts23-27; see [evidence](../../docs/ai/delegation-high-acceptance-20261012.md).
 - `bootstrap.ps1` - create repo-local cache directories and optionally install dependencies into those caches
 - `doctor.ps1` - verify that the Windows host has the required tools, env templates, and Docker daemon access

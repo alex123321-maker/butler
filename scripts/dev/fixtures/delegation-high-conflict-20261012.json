@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "question": "Проверь числовое наблюдение только по своему выбранному оригиналу. Два оригинала описывают один показатель за одну дату, но не согласуются. Наблюдение источника не является общей истиной; приоритет A задаётся владельцем только для этой лабораторной приёмки.",
+  "sources": [
+    {
+      "key": "research-a",
+      "title": "Исходная ведомость A",
+      "body": "{\"observed_value\":17,\"observed_date\":\"2026-10-11\"}",
+      "expected_value": 17,
+      "expected_date": "2026-10-11"
+    },
+    {
+      "key": "research-b",
+      "title": "Независимая ведомость B",
+      "body": "{\"observed_value\":23,\"observed_date\":\"2026-10-11\"}",
+      "expected_value": 23,
+      "expected_date": "2026-10-11"
+    }
+  ],
+  "response_fields": ["source_id", "source_revision", "source_hash", "observed_value", "observed_date", "uncertainty"],
+  "required_uncertainty": "source_only"
+}

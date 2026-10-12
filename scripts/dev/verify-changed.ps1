@@ -26,6 +26,15 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(scripts/dev/delegation-acceptance-high-lab[.]sh$|scripts/dev/fixtures/delegation-high-conflict-20261012[.]json$|apps/orchestrator/internal/app/delegation_full_high.*_test[.]go$)" {
+      [void]$specs.Add("docs/architecture/delegation-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/delegation-acceptance-high-lab.sh /srv/storage/butler/agents/delegation-acceptance-high-20261012 prepare after isolated Sync, with the clean committed BUTLER_DELEGATION_NATIVE_RELEASE (real PostgreSQL/Broker/owner verification, race/vet, zero inference). New owner-authorized one-use execute carries27 historical calls and has12-new/39-total ceiling; never reopen earlier windows.")
+      continue
+    }
     "^(scripts/dev/delegation-high-lab[.]sh$|apps/orchestrator/internal/app/delegation_high_window_test[.]go$)" {
       [void]$specs.Add("docs/architecture/delegation-contract.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")

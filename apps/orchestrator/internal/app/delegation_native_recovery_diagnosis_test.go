@@ -106,7 +106,7 @@ func nativeDiagnosisCore(f *nativeScenarioFixture, spy transport.ModelProvider, 
 	results.DataGuard = f.sources.CheckRunSourcesTx
 	results.Evidence = effectEvidence{journal: actionauth.NewPostgresStore(f.pool)}
 	return flow.NewService(f.sessions, session.NewPostgresLeaseManager(f.pool), runs, transcript.NewStore(f.pool), spy, flow.Config{
-		ProviderName: antigravity.Name, ModelName: antigravity.DefaultModel, OwnerID: "native-fixture-worker", LeaseTTL: 60,
+		ProviderName: antigravity.Name, ModelName: nativeScenarioModel(), OwnerID: "native-fixture-worker", LeaseTTL: 60,
 		AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2, Tasks: f.tasks, Checkpoints: checkpoints, Completion: results,
 		Budgets: bc, OwnerGoals: f.goals, MemorySources: f.sources, DelegationContexts: reader,
 		Tools: client, ToolCatalog: client, ActionAuthorizer: client, ApprovalChecker: client, ApprovalGate: gate, ApprovalService: approvalService,

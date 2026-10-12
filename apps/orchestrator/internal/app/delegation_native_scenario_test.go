@@ -40,26 +40,27 @@ import (
 const nativeFixtureOwner = "native-research-owner"
 
 type nativeWidthEvidence struct {
-	Width                       int                    `json:"width"`
-	TaskID                      string                 `json:"task_id"`
-	InputID                     string                 `json:"input_id"`
-	ParentRunID                 string                 `json:"parent_run_id"`
-	ChildTaskIDs                []string               `json:"child_task_ids"`
-	ChildRunIDs                 []string               `json:"child_run_ids"`
-	ChildResultIDs              []string               `json:"child_result_ids"`
-	ReportSourceRefs            []delegation.SourceRef `json:"report_source_refs"`
-	SourceRefs                  []delegation.SourceRef `json:"source_refs"`
-	ObjectiveChecks             []bool                 `json:"objective_checks"`
-	ParentWorkerKilled          bool                   `json:"parent_worker_killed"`
-	ClaimExpiryWaitMillis       int64                  `json:"claim_expiry_wait_millis"`
-	RecoveryAndChildMillis      int64                  `json:"recovery_and_child_millis"`
-	ParentReceiptCheck          bool                   `json:"parent_receipt_check"`
-	ElapsedMillis               int64                  `json:"elapsed_millis"`
-	MaximumChildOverlap         int                    `json:"maximum_child_overlap"`
-	SharedRootReservations      budget.Units           `json:"shared_root_reservations"`
-	ParentTaskStillActive       bool                   `json:"parent_task_still_active"`
-	IndependentObservationsKept bool                   `json:"independent_observations_kept"`
-	UnverifiedAcceptanceDenied  bool                   `json:"unverified_acceptance_denied"`
+	Width                       int                      `json:"width"`
+	TaskID                      string                   `json:"task_id"`
+	InputID                     string                   `json:"input_id"`
+	ParentRunID                 string                   `json:"parent_run_id"`
+	ChildTaskIDs                []string                 `json:"child_task_ids"`
+	ChildRunIDs                 []string                 `json:"child_run_ids"`
+	ChildResultIDs              []string                 `json:"child_result_ids"`
+	ReportSourceRefs            []delegation.SourceRef   `json:"report_source_refs"`
+	SourceRefs                  []delegation.SourceRef   `json:"source_refs"`
+	ObjectiveChecks             []bool                   `json:"objective_checks"`
+	ParentWorkerKilled          bool                     `json:"parent_worker_killed"`
+	ClaimExpiryWaitMillis       int64                    `json:"claim_expiry_wait_millis"`
+	RecoveryAndChildMillis      int64                    `json:"recovery_and_child_millis"`
+	ParentReceiptCheck          bool                     `json:"parent_receipt_check"`
+	ElapsedMillis               int64                    `json:"elapsed_millis"`
+	MaximumChildOverlap         int                      `json:"maximum_child_overlap"`
+	SharedRootReservations      budget.Units             `json:"shared_root_reservations"`
+	ParentTaskStillActive       bool                     `json:"parent_task_still_active"`
+	IndependentObservationsKept bool                     `json:"independent_observations_kept"`
+	UnverifiedAcceptanceDenied  bool                     `json:"unverified_acceptance_denied"`
+	FullAcceptance              *fullHighWidthAcceptance `json:"full_acceptance,omitempty"`
 }
 type nativeScenarioEvidence struct {
 	Status            string                   `json:"status"`
@@ -146,7 +147,11 @@ func newNativeScenarioFixture(t *testing.T, ctx context.Context) *nativeScenario
 	}
 	f.goals = goal.New(pool, tasks, nil)
 	expires := time.Now().Add(35 * time.Minute).UTC().Truncate(time.Microsecond)
-	g, err := f.goals.PutGoal(nativeOwner(ctx, "research-goal", ""), goal.GoalRequest{Goal: actionauth.GoalPolicy{Title: "Сравнить два независимых наблюдения без повышения модельного вывода до истины", Kind: "objective", Status: "active", Purpose: "native_research", Constraints: []string{"Only two selected synthetic sources; no credentials, network tools or final-verdict promotion."}, ExpiresAt: expires}})
+	constraints := []string{"Only two selected synthetic sources; no credentials, network tools or final-verdict promotion."}
+	if fullHighDelegationWindow() {
+		constraints = append(constraints, "For this bounded fixture, independently observe both originals, then use corpus key research-a as the owner-selected original; retain research-b as disputed source-relative evidence without declaring universal truth.")
+	}
+	g, err := f.goals.PutGoal(nativeOwner(ctx, "research-goal", ""), goal.GoalRequest{Goal: actionauth.GoalPolicy{Title: "Сравнить два независимых наблюдения без повышения модельного вывода до истины", Kind: "objective", Status: "active", Purpose: "native_research", Constraints: constraints, ExpiresAt: expires}})
 	if err != nil {
 		t.Fatal("explicit owner objective denied")
 	}
@@ -165,6 +170,12 @@ func newNativeScenarioFixture(t *testing.T, ctx context.Context) *nativeScenario
 		}
 		ref := guardSource(source)
 		body := f.corpus.Question + "\nВерни только JSON, без Markdown и пояснений. Поля: source_id, source_revision, source_hash, observed_value (целое), observed_date (YYYY-MM-DD), uncertainty (ровно source_only). Точная ссылка на проверяемый источник: " + string(nativeJSON(ref))
+		if fullHighDelegationWindow() {
+			body = string(nativeJSON(struct {
+				Kind   string               `json:"kind"`
+				Source delegation.SourceRef `json:"source_ref"`
+			}{delegation.NumericObservationKind, ref}))
+		}
 		contract, err := f.sources.Put(nativeOwner(ctx, "contract-"+s.Key, ""), catalog.PutSource{ExternalKey: "contract-" + s.Key, Kind: "model_candidate", ScopeType: "user", ScopeID: nativeFixtureOwner, Title: "Ограниченное поручение " + s.Key, Body: body, Parents: []catalog.SourceRef{{ID: ref.ID, Revision: ref.Revision, AccessRevision: ref.AccessRevision, Hash: ref.Hash}}})
 		if err != nil {
 			t.Fatal("bounded contract DATA publication denied")
@@ -489,6 +500,9 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 		t.Fatal("actual parent session denied")
 	}
 	prompt := "Создай ровно два независимых поручения: по одному последовательному вызову task.delegate для каждого следующего JSON. Используй аргументы без изменений, не подменяй ссылки, бюджет и срок. Не отвечай на исследовательский вопрос сам. После двух успешных receipts заверши свой ответ JSON с полем admitted_task_ids, содержащим ровно две фактические task_id из receipts. Не вызывай другие инструменты и не создавай третье поручение.\n" + string(nativeJSON(f.args[0])) + "\n" + string(nativeJSON(f.args[1]))
+	if fullHighDelegationWindow() {
+		prompt = fullHighParentPrompt(f.args)
+	}
 	root, err := f.goals.CreateOwnerTask(nativeOwner(f.ctx, "root-"+sessionKey, sessionKey), goal.TaskRequest{SessionKey: sessionKey, GoalID: f.goalID, MandateID: f.mandateID, Purpose: "native_research", Goal: "Два независимых ограниченных исследования", Constraints: []string{"Create only the two exact source-bound context-only children; retain disagreements."}, CompletionCriteria: []string{"Independent immutable-source checker, no model consensus"}, InitiativeReason: "explicit lab owner experiment", ObservationRef: "fixture:native-research"})
 	if err != nil {
 		t.Fatal("actual assigned parent task denied")
@@ -502,6 +516,9 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 		t.Fatal("actual ordered parent input denied")
 	}
 	v := nativeWidthEvidence{Width: width, TaskID: root.TaskID, InputID: receipt.InputID, SourceRefs: []delegation.SourceRef{f.args[0].Sources[0], f.args[1].Sources[0]}}
+	if fullHighDelegationWindow() {
+		v.FullAcceptance = &fullHighWidthAcceptance{Stage: "parent_admission", ResolutionPolicy: "owner_selected_source_a_for_fixture"}
+	}
 	index := len(report.Widths)
 	report.Widths = append(report.Widths, v)
 	defer func() { v.ElapsedMillis = time.Since(started).Milliseconds(); report.Widths[index] = v }()
@@ -537,6 +554,11 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 		}
 		return true
 	})
+	if fullHighDelegationWindow() {
+		checkFullHighParentReceipts(t, f, root.TaskID, v.ParentRunID, v.FullAcceptance)
+		v.ParentReceiptCheck = true
+		v.FullAcceptance.Stage = "parent_receipts_checked"
+	}
 	var childAttempts int
 	if f.pool.QueryRow(f.ctx, `SELECT count(*) FROM fixture_native_attempts a JOIN runs r USING(run_id) JOIN tasks t ON t.task_id=r.task_id WHERE t.parent_task_id=$1`, root.TaskID).Scan(&childAttempts) != nil || childAttempts != 0 {
 		t.Fatal("scheduling gate ran child inference before crash")
@@ -620,6 +642,10 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 			t.Fatal("native final became verification or was incomplete")
 		}
 		check := verifyNativeResearchObservation(final.Content, x.c.Sources[0], f.corpus.Sources[index].ExpectedValue, f.corpus.Sources[index].ExpectedDate) == nil
+		if fullHighDelegationWindow() {
+			witness, e := f.sources.Get(nativeOwner(f.ctx, "verify-witness-"+x.taskID, ""), x.c.Sources[0].ID)
+			check = e == nil && guardSource(witness) == x.c.Sources[0] && delegation.VerifyNumericObservation([]byte(final.Content), x.c.Sources[0], []byte(witness.Body)) == nil
+		}
 		v.ObjectiveChecks = append(v.ObjectiveChecks, check)
 		v.ChildTaskIDs = append(v.ChildTaskIDs, x.taskID)
 		v.ChildRunIDs = append(v.ChildRunIDs, x.runID)
@@ -654,6 +680,10 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 	}
 	v.ParentTaskStillActive = true
 	v.IndependentObservationsKept = true
+	if fullHighDelegationWindow() {
+		verifyFullHighOwnerDecisions(t, f, admission, v, v.FullAcceptance)
+		v.FullAcceptance.Stage = "independent_decisions_checked"
+	}
 	v.ElapsedMillis = time.Since(started).Milliseconds()
 	return v
 }

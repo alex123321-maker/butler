@@ -28,7 +28,9 @@ var highDelegationPins = []struct{ path, hash string }{
 	{"deploy/antigravity/flash-high-20261012.json", "3ec5ffb14090e7875db47490ad20821645974fd3c9478af5b831128b3558a2cc"},
 }
 
-func nativeHighWindow() bool { return os.Getenv("BUTLER_DELEGATION_HIGH_WINDOW") == "1" }
+func nativeHighWindow() bool {
+	return os.Getenv("BUTLER_DELEGATION_HIGH_WINDOW") == "1" || fullHighDelegationWindow()
+}
 
 func nativeScenarioModel() string {
 	if nativeHighWindow() {
@@ -38,6 +40,9 @@ func nativeScenarioModel() string {
 }
 
 func nativeScenarioHistory() (nativeHistoricalEvidence, error) {
+	if fullHighDelegationWindow() {
+		return readFullHighDelegationHistory(fullHighDelegationHistoryPaths())
+	}
 	if nativeHighWindow() {
 		return readHighDelegationHistory(highDelegationHistoryPaths())
 	}
@@ -286,6 +291,9 @@ func TestHighDelegationCompositionIntegration(t *testing.T) {
 }
 
 func TestHighDelegationActualScenarioIntegration(t *testing.T) {
+	if fullHighDelegationWindow() {
+		t.Fatal("full acceptance requires its separate reviewed entry")
+	}
 	if !nativeHighWindow() || os.Getenv("BUTLER_DELEGATION_NATIVE_ACCEPTANCE") != "1" {
 		t.Skip("separate sealed High operator window required")
 	}
