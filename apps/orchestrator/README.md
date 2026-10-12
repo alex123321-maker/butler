@@ -1,5 +1,9 @@
 # Orchestrator
 
+The separate pure High history reader preserves all248 spent attempts, including
+the failed V2 timeout with NULL usage. It grants no admission or retry and keeps
+both old NO_GO verdicts. See [historical accounting](../../docs/ai/scenario-high-history-accounting-20261012.md).
+
 The budgeted provider now records complete request usage from tool proposals and
 other complete transport outcomes as well as legacy text finals. One admitted
 operation receives one consistent measurement; duplicate events cannot add a

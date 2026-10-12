@@ -151,3 +151,10 @@ usage and output hashes. It exports only hashes/counts/equality, never model
 content or authentication. Equality is separate from inference provenance,
 golden review, measured cost and quality readiness; it cannot turn NO_GO into a
 quality PASS. No V1 scorer, corpus, policy or historical verdict changes.
+
+The separate `readScenarioHighHistory` carries the closed failed V2's twenty
+ordinals into an immutable 248-call accounting view. The timeout retains NULL
+usage/version, and known subtotals do not become complete total cost. Exact safe
+audit/independent SQL correlation pins and a new append-only provenance fold are
+required. This reader has no admission, retry, provider, scoring or execution
+capability; the 45/228-call readers and both historical NO_GO verdicts stay fixed.
