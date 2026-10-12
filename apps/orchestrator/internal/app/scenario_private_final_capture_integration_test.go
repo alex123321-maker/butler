@@ -44,13 +44,19 @@ func TestScenarioPrivateFinalCapturePreservesChargedFailedCostIntegration(t *tes
 			c := selection.inputs.Cases[0]
 			a, failure := sampler.call(context.Background(), "quality", c, acceptance.CloudRoleSingle, nil, nil)
 			m := observer.finalMetadata()
-			if failure == nil || a.Outcome != "transport_error" || string(a.Output) != "null" || m == nil || m.Reason != "json_syntax" || m.RawRetained == collision || observer.captureFailure() != collision || base.entries != 1 {
+			if failure == nil || a.Outcome != "transport_error" || string(a.Output) != "null" || m == nil || m.Reason != "json_syntax" || m.RawRetained || observer.captureFailure() || base.entries != 1 {
 				t.Fatal("private capture promoted output, lost raw or repeated the provider")
 			}
 			var attempts, rows int
 			var input, output, total int64
 			if pool.QueryRow(context.Background(), `SELECT attempts FROM fixture_scenario_shadow_v3_limit`).Scan(&attempts) != nil || pool.QueryRow(context.Background(), `SELECT count(*) FROM fixture_scenario_shadow_v3_attempts`).Scan(&rows) != nil || pool.QueryRow(context.Background(), `SELECT input_tokens,output_tokens,total_tokens FROM fixture_scenario_shadow_v3_attempts WHERE ordinal=249 AND outcome='transport_error'`).Scan(&input, &output, &total) != nil || attempts != 249 || rows != 1 || input != 4 || output != 2 || total != 7 {
 				t.Fatal("failed visible-final capture changed owning known spend")
+			}
+			// SQL measurement precedes every raw filesystem operation.
+			persistErr := observer.persistFinal()
+			m = observer.finalMetadata()
+			if (persistErr != nil) != collision || observer.captureFailure() != collision || m.RawRetained == collision {
+				t.Fatal("private retention status differs from immutable collision")
 			}
 			raw, err := os.ReadFile(filepath.Join(private, "final-249.raw"))
 			wanted := base.text
@@ -133,7 +139,7 @@ func TestScenarioPrivateFinalCapturePreservesOriginalUncertaintyIntegration(t *t
 			observer := &privateFinalCaptureProvider{ModelProvider: base, private: private, ordinal: 249}
 			sampler := &shadowV3Sampler{provider: observer, window: w, private: private}
 			a, failure := sampler.call(context.Background(), "quality", selection.inputs.Cases[0], acceptance.CloudRoleSingle, nil, nil)
-			if failure == nil || a.Outcome != "transport_error" || !observer.captureFailure() || base.entries != 1 {
+			if failure == nil || a.Outcome != "transport_error" || base.entries != 1 {
 				t.Fatal("capture changed original failure/uncertainty or repeated inference")
 			}
 			if mode != "duplicate_final" && (a.InputTokens != nil || a.OutputTokens != nil || a.TotalTokens != nil) {
@@ -142,15 +148,18 @@ func TestScenarioPrivateFinalCapturePreservesOriginalUncertaintyIntegration(t *t
 			if mode == "tail_conflict_after_error" && a.ProviderModelVersion != nil {
 				t.Fatal("observer hid a contradictory original version tail")
 			}
+			var rows int
+			if pool.QueryRow(context.Background(), `SELECT count(*) FROM fixture_scenario_shadow_v3_attempts WHERE outcome='transport_error'`).Scan(&rows) != nil || rows != 1 {
+				t.Fatal("owning failed entry missing")
+			}
+			if observer.persistFinal() == nil || !observer.captureFailure() {
+				t.Fatal("private collision/duplicate did not fail closed after owning SQL write")
+			}
 			if mode == "duplicate_final" {
 				body, err := os.ReadFile(filepath.Join(private, "final-249.raw"))
 				if err != nil || string(body) != `{"refs":[]}` || !observer.finalMetadata().RawRetained || a.TotalTokens == nil || *a.TotalTokens != 7 {
 					t.Fatal("duplicate final overwrote first private bytes or measured spend")
 				}
-			}
-			var rows int
-			if pool.QueryRow(context.Background(), `SELECT count(*) FROM fixture_scenario_shadow_v3_attempts WHERE outcome='transport_error'`).Scan(&rows) != nil || rows != 1 {
-				t.Fatal("owning failed entry missing")
 			}
 		})
 	}
@@ -200,6 +209,12 @@ func TestScenarioPrivateFinalCaptureIgnoresDeltaAndKeepsOriginalEvent(t *testing
 		if event.AssistantFinal != nil && event.AssistantFinal.Content != `{"refs":[]}` {
 			t.Fatal("observer repaired visible model output")
 		}
+	}
+	if _, err := os.Stat(filepath.Join(private, "final-267.raw")); !os.IsNotExist(err) {
+		t.Fatal("filesystem I/O preceded complete original metadata stream")
+	}
+	if err := p.persistFinal(); err != nil {
+		t.Fatal("post-collection private write failed")
 	}
 	raw, err := os.ReadFile(filepath.Join(private, "final-267.raw"))
 	if err != nil || string(raw) != `{"refs":[]}` || count != 3 || p.finalMetadata() == nil || p.finalMetadata().Reason != "json_object" {

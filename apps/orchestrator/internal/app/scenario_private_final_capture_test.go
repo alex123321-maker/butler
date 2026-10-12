@@ -18,7 +18,7 @@ import (
 )
 
 const privateFinalMaximumBytes = 8192
-const privateFinalMaximumDepth = 64
+const privateFinalMaximumDepth = 16 // Same scalar/container bound as canonicalJSON.
 
 type privateFinalMetadata struct {
 	Bytes       int    `json:"visible_final_bytes"`
@@ -47,6 +47,9 @@ func classifyPrivateFinal(raw []byte) string {
 	decoder.UseNumber()
 	var value func(int) string
 	value = func(depth int) string {
+		if depth > privateFinalMaximumDepth {
+			return "depth_bound"
+		}
 		token, err := decoder.Token()
 		if err != nil {
 			return "json_syntax"
@@ -54,9 +57,6 @@ func classifyPrivateFinal(raw []byte) string {
 		delimiter, nested := token.(json.Delim)
 		if !nested {
 			return "json_object"
-		}
-		if depth > privateFinalMaximumDepth {
-			return "depth_bound"
 		}
 		if delimiter == '{' {
 			keys := map[string]bool{}
@@ -75,7 +75,12 @@ func classifyPrivateFinal(raw []byte) string {
 				}
 			}
 		} else if delimiter == '[' {
+			count := 0
 			for decoder.More() {
+				if count >= 256 {
+					return "array_bound"
+				}
+				count++
 				if reason := value(depth + 1); reason != "json_object" {
 					return reason
 				}
@@ -88,15 +93,19 @@ func classifyPrivateFinal(raw []byte) string {
 		}
 		return "json_object"
 	}
-	return value(1)
+	return value(0)
+}
+
+func privateFinalFacts(raw []byte) privateFinalMetadata {
+	hash := sha256.Sum256(raw)
+	return privateFinalMetadata{Bytes: len(raw), SHA256: hex.EncodeToString(hash[:]), Reason: classifyPrivateFinal(raw)}
 }
 
 // The private directory and ordinal come only from the owning runner. Raw
 // bytes remain a separate0600 file; this metadata is safe to serialize publicly.
 func capturePrivateFinal(private string, ordinal int, content string) (privateFinalMetadata, error) {
 	raw := []byte(content)
-	hash := sha256.Sum256(raw)
-	m := privateFinalMetadata{Bytes: len(raw), SHA256: hex.EncodeToString(hash[:]), Reason: classifyPrivateFinal(raw)}
+	m := privateFinalFacts(raw)
 	if len(raw) > privateFinalMaximumBytes {
 		return m, nil
 	}
@@ -128,6 +137,7 @@ type privateFinalCaptureProvider struct {
 	mu            sync.Mutex
 	metadata      *privateFinalMetadata
 	captureFailed bool
+	raw           []byte // Bounded, private, never serialized; retained only until SQL persistence.
 }
 
 func (p *privateFinalCaptureProvider) finalMetadata() *privateFinalMetadata {
@@ -144,6 +154,39 @@ func (p *privateFinalCaptureProvider) captureFailure() bool {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	return p.captureFailed
+}
+
+// Called by the trusted driver only after owning SQL spend is persisted. File
+// I/O can fail the diagnostic but cannot block or rewrite measured packet data.
+func (p *privateFinalCaptureProvider) persistFinal() error {
+	p.mu.Lock()
+	if p.metadata == nil {
+		p.mu.Unlock()
+		return errNativeFixtureDenied
+	}
+	meta := *p.metadata
+	raw := append([]byte(nil), p.raw...)
+	previousFailure := p.captureFailed
+	p.mu.Unlock()
+	if meta.Bytes > privateFinalMaximumBytes {
+		if previousFailure {
+			return errNativeFixtureDenied
+		}
+		return nil
+	}
+	retained, err := capturePrivateFinal(p.private, p.ordinal, string(raw))
+	p.mu.Lock()
+	if retained.Bytes != meta.Bytes || retained.SHA256 != meta.SHA256 || retained.Reason != meta.Reason {
+		err = errNativeFixtureDenied
+	}
+	p.metadata = &retained
+	p.captureFailed = p.captureFailed || err != nil
+	p.raw = nil
+	p.mu.Unlock()
+	if err != nil || previousFailure {
+		return errNativeFixtureDenied
+	}
+	return nil
 }
 
 func (*privateFinalCaptureProvider) ContinueRun(context.Context, transport.ContinueRunRequest) (transport.EventStream, error) {
@@ -178,10 +221,12 @@ func (p *privateFinalCaptureProvider) StartRun(ctx context.Context, req transpor
 						p.captureFailed = true
 						p.mu.Unlock()
 					} else {
-						m, captureErr := capturePrivateFinal(p.private, p.ordinal, event.AssistantFinal.Content)
+						m := privateFinalFacts([]byte(event.AssistantFinal.Content))
 						p.mu.Lock()
 						p.metadata = &m
-						p.captureFailed = captureErr != nil
+						if m.Bytes <= privateFinalMaximumBytes {
+							p.raw = append([]byte(nil), event.AssistantFinal.Content...)
+						}
 						p.mu.Unlock()
 					}
 				}
@@ -205,8 +250,10 @@ func TestScenarioPrivateFinalCaptureEncodingBoundsAndMetadataPrivacy(t *testing.
 		{"null", `null`, "non_object"},
 		{"duplicate", `{"a":1,"\u0061":2}`, "duplicate_key"},
 		{"nested_duplicate", `{"x":[{"a":1,"a":2}]}`, "duplicate_key"},
-		{"depth", strings.Repeat(`{"x":`, 65) + `0` + strings.Repeat(`}`, 65), "depth_bound"},
-		{"depth64", strings.Repeat(`{"x":`, 64) + `0` + strings.Repeat(`}`, 64), "json_object"},
+		{"depth17", strings.Repeat(`{"x":`, 17) + `0` + strings.Repeat(`}`, 17), "depth_bound"},
+		{"depth16", strings.Repeat(`{"x":`, 16) + `0` + strings.Repeat(`}`, 16), "json_object"},
+		{"array256", `{"x":[` + strings.Repeat(`0,`, 255) + `0]}`, "json_object"},
+		{"array257", `{"x":[` + strings.Repeat(`0,`, 256) + `0]}`, "array_bound"},
 		{"utf8", string([]byte{'{', '"', 'x', '"', ':', '"', 0xff, '"', '}'}), "invalid_utf8"},
 		{"visible", strings.Repeat("x", 8193), "visible_bound"},
 	} {
