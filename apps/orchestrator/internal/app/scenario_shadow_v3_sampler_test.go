@@ -102,6 +102,11 @@ func (p *shadowV3FixtureProvider) StartRun(ctx context.Context, req transport.St
 	case "large_visible":
 		final.AssistantFinal.Content = strings.Repeat("x", 8193)
 		events[0] = final
+	case "malformed_raw_json":
+		if p.text == "" {
+			final.AssistantFinal.Content = strings.Repeat("x", 5000)
+		}
+		events[0] = final
 	case "private_finish_reason":
 		final.AssistantFinal.FinishReason = "private fixture finish"
 		events[0] = final
@@ -144,7 +149,7 @@ func TestScenarioShadowV3SamplerChargedTruthAndNoRetryIntegration(t *testing.T) 
 		t.Fatal(err)
 	}
 	inputs, _ := acceptance.ExportCloudV3Inputs(corpus, "")
-	for _, mode := range []string{"known", "zero_usage", "missing_usage", "missing_version", "wrong_family", "legacy_total", "oversized_usage", "oversized_total", "start_failure", "wrong_run", "truncated", "large_visible", "private_finish_reason", "missing_terminal", "duplicate_terminal", "duplicate_final", "error_after_final", "conflicting_version", "conflicting_usage", "tool", "stage_authentication_failure", "stage_http_failure", "stage_stream_failure"} {
+	for _, mode := range []string{"known", "zero_usage", "missing_usage", "missing_version", "wrong_family", "legacy_total", "oversized_usage", "oversized_total", "start_failure", "wrong_run", "truncated", "large_visible", "malformed_raw_json", "private_finish_reason", "missing_terminal", "duplicate_terminal", "duplicate_final", "error_after_final", "conflicting_version", "conflicting_usage", "tool", "stage_authentication_failure", "stage_http_failure", "stage_stream_failure"} {
 		t.Run(mode, func(t *testing.T) {
 			pool := memorytest.Database(t)
 			w, err := createShadowV3Window(context.Background(), pool, time.Minute)
@@ -205,6 +210,9 @@ func TestScenarioShadowV3SamplerChargedTruthAndNoRetryIntegration(t *testing.T) 
 				if mode == "private_finish_reason" && (!strings.Contains(string(raw), `"observed_finish_reason": null`) || strings.Contains(string(raw), "private fixture finish")) {
 					t.Fatal("untrusted finish reason escaped")
 				}
+				if mode == "malformed_raw_json" && !strings.Contains(string(raw), `"collector_stage": "output_encoding_contract"`) {
+					t.Fatal("malformed native JSON did not stop the observation driver")
+				}
 			}
 			if mode == "missing_usage" && a.InputTokens != nil || mode == "legacy_total" && a.TotalTokens != nil || mode == "missing_version" && a.ProviderModelVersion != nil {
 				t.Fatal("unknown observation invented")
@@ -254,6 +262,27 @@ func TestScenarioShadowV3SamplerChargedTruthAndNoRetryIntegration(t *testing.T) 
 				b, failure := sampler.call(context.Background(), "quality", inputs.Cases[1], acceptance.CloudRoleSingle, nil, nil)
 				if failure == nil || other.entries != 1 || b.Outcome != "invalid_tool_proposal" || !b.UnsafeToolProposal || string(b.Output) != "null" || b.TotalTokens == nil || *b.TotalTokens != 7 || b.ProviderModelVersion == nil {
 					t.Fatal("unsupported batch discarded complete spend or became an action/result")
+				}
+			}
+			if mode == "malformed_raw_json" {
+				// These are valid JSON encodings, but none is the structured
+				// object required by the native schema. Preserve known spend
+				// while rejecting every shape before another driver call.
+				for index, text := range []string{`"wrapped text"`, `[]`, `null`} {
+					other := &shadowV3FixtureProvider{mode: mode, text: text}
+					sampler.provider = other
+					b, failure := sampler.call(context.Background(), "quality", inputs.Cases[index+1], acceptance.CloudRoleSingle, nil, nil)
+					if failure == nil || other.entries != 1 || b.Outcome != "transport_error" || string(b.Output) != "null" || b.TotalTokens == nil || *b.TotalTokens != 7 {
+						t.Fatal("non-object native JSON became a completed observation or lost spend")
+					}
+					var outcome string
+					var total int64
+					if pool.QueryRow(context.Background(), `SELECT outcome,total_tokens FROM fixture_scenario_shadow_v3_attempts WHERE ordinal=$1`, 250+index).Scan(&outcome, &total) != nil || outcome != "transport_error" || total != 7 {
+						t.Fatal("rejected JSON shape did not retain its single durable charge")
+					}
+					if _, retry := sampler.call(context.Background(), "quality", inputs.Cases[index+1], acceptance.CloudRoleSingle, nil, nil); retry == nil || other.entries != 1 {
+						t.Fatal("rejected JSON shape reopened a spent attempt")
+					}
 				}
 			}
 		})

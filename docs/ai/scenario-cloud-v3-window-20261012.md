@@ -54,8 +54,9 @@ fields do not enter model inputs, scoring responses or output hashes.
 `scenario-shadow-v3-high-lab.sh` has three distinct phases. `offline` compiles
 candidate source and runs synthetic-provider/real-PG, transport/API and exact SQL
 formatter checks. It imports no authentication, performs no native/TLS request,
-creates no global marker and writes no prepared execution references. Its29
-named PG checks retain the former26-case shape plus three safe stage failures;
+creates no global marker and writes no prepared execution references. Its30
+named PG checks retain the former26-case shape, add malformed/non-object JSON
+denial with a single durable charge, and include three safe stage failures;
 the same three-row read-only SQL exporter checks known zero, known failed spend
 and NULL failed spend.
 

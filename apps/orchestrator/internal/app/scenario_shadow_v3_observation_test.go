@@ -303,7 +303,16 @@ func (s *shadowV3Sampler) call(parent context.Context, phase string, c acceptanc
 					startErr = errNativeFixtureDenied
 					continue
 				}
-				a.Output = shadowOutput(event.AssistantFinal.Content)
+				// Native structured observations must arrive as JSON objects.
+				// Wrapping malformed text as a JSON string would preserve bytes,
+				// but falsely let the driver continue a completed observation.
+				content := strings.TrimSpace(event.AssistantFinal.Content)
+				if !json.Valid([]byte(content)) || len(content) == 0 || content[0] != '{' {
+					failureStage = "output_encoding_contract"
+					startErr = errNativeFixtureDenied
+					continue
+				}
+				a.Output = json.RawMessage(event.AssistantFinal.Content)
 				a.Outcome = "completed"
 			}
 		}
