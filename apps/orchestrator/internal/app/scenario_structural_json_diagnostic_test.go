@@ -17,8 +17,8 @@ import (
 
 const structuralDiagnosticWindowID = "issue33-high-structural-json-20261012-baseline266"
 const structuralDiagnosticInputSHA = "529be4819f407e4028dfbf8b44b5e84d2b0ee42aad1edf62be0e0f182bfc6e45"
-const structuralDiagnosticReviewedSHA = ""                       // Independent protocol/source review pending.
-const structuralDiagnosticExpectedVersion = "gemini-3.8-flash-n" // Observed in all18 prior V3 packets.
+const structuralDiagnosticReviewedSHA = "703055d0db0200a566eaed077399373a1c0d6efb3d2c542ff28aa014a448cd41" // Independent bounded diagnostic review; never quality admission.
+const structuralDiagnosticExpectedVersion = "gemini-3.8-flash-n"                                           // Observed in all18 prior V3 packets.
 
 func structuralDiagnosticProtocolSHA() string {
 	return shadowV3Hash(struct {

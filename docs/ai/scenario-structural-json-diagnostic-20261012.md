@@ -1,5 +1,37 @@
 # Prospective two-context JSON diagnostic
 
+## Root review freeze
+
+Root retains the independent protocol/source review of author revision
+`d7f9fda9afb85cf5eb5e917a66645a238ce031b8` and the separately reviewed public
+inputs. The [review declaration](../../deploy/acceptance/structural-json-diagnostic-approval-20261012.json)
+has exact SHA256
+`703055d0db0200a566eaed077399373a1c0d6efb3d2c542ff28aa014a448cd41`;
+protocol SHA256 is
+`a1ec13d673129392e7382851ed55921d5230d60e21670f2ba98a65bbd56ee774`.
+The declaration uses independently reviewed roles on a shared operator-controlled
+host; it is not a signature, hardware isolation or model-quality approval.
+Root fills only this diagnostic gate. Actual invocation remains conditional on
+a new exact clean combined-source preparation and final independent review.
+All old NO_GO observations and full issue33/native-chain gates stay closed.
+
+The author `f329f8b000bd8cd2589da9edb8d039ae31c42867` offline preparation passed
+76 app test/subtest names across16 top-level tests:23 structural,24 private-final
+and29 accounting names, with no fail/skip, race/vet and zero inference/auth/TLS.
+It is retained at
+`/srv/storage/butler/agents/scenario-structural-json-high-20261012/reports/structural-json-prepare-20261012T172347Z-2506422`.
+App proof SHA256:
+`31d3a004fc7f7a5d6fc24924372043eb6ae9c80ceb53e890cf6dff85d2fc7c07`;
+unit events:
+`8ee09ae8b7c858bb6b05e32632c61b32b222868ca62ad33d8f8564973e53d0f4`;
+source manifest:
+`1ae17d6cb03ad97d9da95f80fef5b8d5ced60052fa992b304bfc9c29f569b4e2`.
+This source still had an empty gate and the inaccessible host metadata check.
+The later fixed metadata inspector and filled root gate need their own preparation;
+this earlier proof is not relabelled as that final source.
+
+## Historical closed prototype
+
 This closed prototype follows the immutable failed V3 window: 266 actual
 attempts, 240 known input/output pairs and26 NULL pairs. The pure266 history fold
 is `fa9cf46d603db8c2b9155e32d49f0e5bde41b0fdfa39bc95cf9a8a7a74b84d03`.
