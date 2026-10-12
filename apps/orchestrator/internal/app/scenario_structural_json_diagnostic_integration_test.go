@@ -21,6 +21,11 @@ func TestScenarioStructuralJSONClosedGateAndExactInputs(t *testing.T) {
 	if structuralDiagnosticReviewedSHA == "" && gateErr == nil || structuralDiagnosticReviewedSHA != "" && gateErr != nil {
 		t.Fatal("empty review must deny; frozen review must satisfy every actual pin")
 	}
+	history, herr := readScenarioHighV3History()
+	if herr != nil {
+		t.Fatal("fixed diagnostic history unavailable")
+	}
+	t.Logf("diagnostic_pins protocol_sha256=%s input_sha256=%s history_sha256=%s schema_sha256=%s requested_model=%s observed_version=%s baseline=266 ceiling=268 seconds=480 attempt_seconds=120 generated_tokens=32768 visible_bytes=8192 input_bytes=65536 concurrency=1", structuralDiagnosticProtocolSHA(), structuralDiagnosticInputSHA, history.BaselineSHA256, acceptance.CloudV3SchemaDigest(), "gemini-3.8-flash-high", structuralDiagnosticExpectedVersion)
 	cases, err := structuralDiagnosticInputs()
 	if err != nil || len(cases) != 2 || cases[0].ID == cases[1].ID {
 		t.Fatal("fixed unseen public inputs unavailable")
