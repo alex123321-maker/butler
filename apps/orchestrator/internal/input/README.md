@@ -38,6 +38,14 @@ Busy-session retries and approved continuations do not consume recovery attempts
 Waiting/blocked session heads deliberately block later execution. PostgreSQL is
 authoritative; no Redis queue or live approval channel is needed for recovery.
 
+Independent claim expiries can be staggered after worker loss: the first ready
+session may finish before another claim expires. Two available worker slots do
+not synchronize those deadlines. The app's zero-inference
+`TestDelegationParallelRecoveryWaitsNaturalClaimExpiryWithoutInferenceIntegration`
+uses actual Broker admission, equal short claim TTLs started at different PG
+times, natural expiry, current source/lease checks and two simultaneous core
+streams. It keeps all accepted refs and conservative model reservations intact.
+
 See [durable execution contract](../../../../docs/architecture/durable-execution-spec.md).
 Tests require an isolated `BUTLER_TEST_POSTGRES_URL`; run them on the lab. The
 lifecycle suite uses real stores and fault-injected provider/tool adapters, and
