@@ -3,22 +3,39 @@
 # No tool routing, retries, fallback, billing assumption or production database.
 set -euo pipefail
 root=${1:?isolated root required}; phase=${2:-prepare}; release=${3:?exact commit required}
-[[ "$root" == /srv/storage/butler/agents/scenario-shadow-high-20261012 && "$phase" =~ ^(prepare|execute)$ && "$release" =~ ^[a-f0-9]{40}$ ]] || exit 2
+[[ "$root" == /srv/storage/butler/agents/scenario-shadow-high-20261012 && "$phase" =~ ^(prepare|execute|resume-preflight)$ && "$release" =~ ^[a-f0-9]{40}$ ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* ]] || exit 2
 umask 077
 export DOCKER_CONFIG="$root/.cache/docker"
 manifest() { (cd "$source_dir"; [[ -z "$(find . ! -type f ! -type d -print -quit)" ]]; find . -type f -print0 | sort -z | xargs -0 sha256sum); }
 window=/srv/storage/butler/native-acceptance-windows/issue33-high-shadow-20261012-baseline45
-if [[ "$phase" == execute ]]; then
-  [[ ! -e "$window" && ! -L "$window" ]] || { printf '{"status":"denied","reason":"sealed_window"}\n'; exit 2; }
+if [[ "$phase" != prepare ]]; then
+  if [[ "$phase" == execute ]]; then
+    [[ ! -e "$window" && ! -L "$window" ]] || { printf '{"status":"denied","reason":"sealed_window"}\n'; exit 2; }
+  else
+    # One fixed zero-native permission failure preceded PG, TLS, import and
+    # docker create/start. Keep its marker/source/proof; never resume a start.
+    failed="$root/reports/shadow-execute-20261012T110125Z-1227245"
+    [[ -d "$window" && ! -L "$window" && ! -e "$window/native-started" && ! -e "$window/preflight-continuation" && ! -e "$window/proof-ref" ]]
+    [[ "$(cat "$window/release-ref")" == 297287f13b7de91aa48cbfa836001f2216310af1 ]]
+    [[ -f "$failed/source.sha256" && -f "$failed/metadata/hardware.json" && ! -e "$failed/pins.txt" && ! -e "$failed/tls.json" && ! -e "$failed/native-events.txt" ]]
+    [[ "$(sha256sum "$failed/binaries/orchestrator.test" | cut -d' ' -f1)" == 976e3e53298508850a805b01f69c3a0404bbf0b0f9c531425ac91a4a36725d48 ]]
+  fi
   [[ "$(cat "$root/prepared-release")" == "$release" && "$(cat "$root/prepared-source")" == "$source_dir" ]]
   manifest | cmp -s "$root/prepared-manifest" -
   sha256sum -c "$root/prepared-runtime.sha256" >/dev/null
-  mkdir -p /srv/storage/butler/native-acceptance-windows
-  mkdir "$window"
-  printf '%s\n' "$release" > "$window/release-ref"
-  printf '%s\n' "$source_dir" > "$window/source-ref"
+  if [[ "$phase" == execute ]]; then
+    mkdir -p /srv/storage/butler/native-acceptance-windows
+    mkdir "$window"
+    printf '%s\n' "$release" > "$window/release-ref"
+    printf '%s\n' "$source_dir" > "$window/source-ref"
+  else
+    mkdir "$window/preflight-continuation"
+    printf '%s\n' "$release" > "$window/preflight-continuation/release-ref"
+    printf '%s\n' "$source_dir" > "$window/preflight-continuation/source-ref"
+    printf '%s\n' "$failed" > "$window/preflight-continuation/prior-failed-proof-ref"
+  fi
 fi
 stamp=$(date -u +%Y%m%dT%H%M%SZ)-$$
 proof="$root/reports/shadow-$phase-$stamp"; name="butler-shadow-$stamp"; network="$name-net"
@@ -33,7 +50,7 @@ cleanup() {
 trap cleanup EXIT INT TERM
 printf 'Private shadow %s proof: %s\n' "$phase" "$proof"
 manifest > "$proof/source.sha256"
-if [[ "$phase" == execute ]]; then
+if [[ "$phase" != prepare ]]; then
   prepared=$(cat "$root/prepared-proof")
   [[ "$prepared" == "$root/reports/shadow-prepare-"* ]]
   cp "$prepared/binaries/"* "$proof/binaries/"
@@ -63,20 +80,22 @@ lscpu --json --extended=CPU,CORE,SOCKET,NODE,ONLINE > "$proof/hardware-cpu.json"
 cpu_hash=$(sha256sum "$proof/hardware-cpu.json" | cut -d' ' -f1)
 printf '{"kernel":"%s","logical_cpus":%s,"host_ram_kib":%s,"cpu_manifest_sha256":"%s","go_image":"%s","postgres_image":"%s","client_ram_bytes":1610612736,"client_cpus":2,"remote_hardware":null,"remote_ram":null,"weights_sha256":null,"incremental_invoice":null}\n' \
   "$(uname -r)" "$(getconf _NPROCESSORS_ONLN)" "$(awk '/^MemTotal:/ {print $2}' /proc/meminfo)" "$cpu_hash" "$go_image" "$pg_image" > "$proof/metadata/hardware.json"
-if [[ "$phase" == execute ]]; then
+if [[ "$phase" != prepare ]]; then
   # Reject hardware/image drift before authentication. Current values may not
   # silently replace the independently prepared source/runtime/resource pins.
-  cmp -s "$prepared/metadata/hardware.json" "$proof/metadata/hardware.json"
-  cmp -s "$prepared/metadata/public-key.hex" "$proof/metadata/public-key.hex"
-  cmp -s "$prepared/metadata/approval.json" "$proof/metadata/approval.json"
-  cmp -s "$prepared/metadata/frozen-corpus.json" "$proof/metadata/frozen-corpus.json"
+  # Comparisons run below after chown: both private directories belong to10001.
 fi
 docker run --rm --network none --user 0:0 --volume "$proof/runtime:/private" --volume "$proof/metadata:/metadata" alpine:3.22 sh -eu -c 'chown -R 10001:10001 /private /metadata; chmod 700 /private /metadata; chmod 600 /metadata/*'
+if [[ "$phase" != prepare ]]; then
+  docker run --rm --network none --user 10001:10001 --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+    --volume "$proof/metadata:/actual:ro" --volume "$prepared/metadata:/prepared:ro" alpine:3.22 sh -eu -c '
+for file in hardware.json public-key.hex approval.json frozen-corpus.json; do cmp "/actual/$file" "/prepared/$file"; done'
+fi
 docker run --rm --network none --user 10001:10001 --read-only --cap-drop ALL --memory 512m --pids-limit 64 --security-opt no-new-privileges:true \
   --volume "$source_dir:/src:ro" --volume "$proof/binaries:/binaries:ro" --volume "$proof/runtime:/private" --volume "$proof/metadata:/metadata:ro" --workdir /src \
   --env BUTLER_SCENARIO_SHADOW_PREPARE=1 --env BUTLER_SCENARIO_SHADOW_PRIVATE=/private --env "BUTLER_SCENARIO_SHADOW_RELEASE=$release" --env "BUTLER_SCENARIO_SHADOW_RUNTIME_IMAGE=$go_image" --env TMPDIR=/private \
   "$go_image" /binaries/orchestrator.test -test.v -test.timeout=2m -test.run='^TestScenarioShadowPreparePins$' > "$proof/pins.txt" 2>&1
-if [[ "$phase" == execute ]]; then
+if [[ "$phase" != prepare ]]; then
   docker run --rm --network none --user 10001:10001 --volume "$proof/runtime:/actual:ro" --volume "$prepared/runtime:/prepared:ro" alpine:3.22 \
     sh -eu -c 'cmp /actual/pin.json /prepared/pin.json; cmp /actual/policy.json /prepared/policy.json; cmp /actual/resources.json /prepared/resources.json'
 fi
@@ -122,6 +141,8 @@ docker create --name "$name-runtime" --runtime runc --network "$network" --user 
 docker network connect butler-lab_backend "$name-runtime"
 manifest | cmp -s "$root/prepared-manifest" -
 status=0
+mkdir "$window/native-started"
+printf '%s\n' "$proof" > "$window/native-started/proof-ref"
 docker start -a "$name-runtime" > "$proof/native-events.txt" 2>&1 || status=$?
 # The complete private report and per-attempt immutable files survive all failures.
 docker run --rm --network none --user 10001:10001 --volume "$proof/runtime:/private:ro" alpine:3.22 cat /private/observations.json > "$proof/observations.json" || status=1
