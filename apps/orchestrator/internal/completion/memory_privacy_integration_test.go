@@ -2,6 +2,7 @@ package completion
 
 import (
 	"context"
+	"errors"
 	"path/filepath"
 	"sync"
 	"testing"
@@ -28,7 +29,7 @@ func TestSourceDeletionVersusAtomicResultAndDispatchIntegration(t *testing.T) {
 				t.Fatal(e)
 			}
 			sources := catalog.New(pool, manifest)
-			_, e := pool.Exec(ctx, `INSERT INTO sessions(session_key,user_id,channel) VALUES('web:owner','owner','web'); INSERT INTO runs(run_id,session_key,input_event_id,status,autonomy_mode,current_state,model_provider,started_at,updated_at) VALUES('run','web:owner','input','running','mode_1','finalizing','fixture',clock_timestamp(),clock_timestamp());INSERT INTO session_ownership(session_key,run_id,lease_id,fence_epoch,expires_at) VALUES('web:owner','run','lease',1,clock_timestamp()+INTERVAL '1 hour')`)
+			_, e := pool.Exec(ctx, `INSERT INTO sessions(session_key,user_id,channel) VALUES('web:owner','owner','web'); INSERT INTO runs(run_id,session_key,input_event_id,status,autonomy_mode,current_state,model_provider,started_at,updated_at) VALUES('run','web:owner','input','running','mode_1','preparing','fixture',clock_timestamp(),clock_timestamp());INSERT INTO session_ownership(session_key,run_id,lease_id,fence_epoch,expires_at) VALUES('web:owner','run','lease',1,clock_timestamp()+INTERVAL '1 hour')`)
 			if e != nil {
 				t.Fatal(e)
 			}
@@ -40,8 +41,19 @@ func TestSourceDeletionVersusAtomicResultAndDispatchIntegration(t *testing.T) {
 			if e != nil {
 				t.Fatal(e)
 			}
-			if _, e = sources.Get(live, src.ID); e != nil {
-				t.Fatal(e)
+			// Acquire and pin the input under the actual current fenced run before
+			// entering finalizing. Finalization can verify saved provenance but
+			// cannot acquire another source body as fresh model input.
+			acquired, e := sources.Get(live, src.ID)
+			if e != nil || acquired.Body != src.Body || acquired.Hash != src.Hash {
+				t.Fatal("current run did not acquire original input", e)
+			}
+			changed, e := pool.Exec(ctx, `UPDATE runs SET current_state='finalizing' WHERE run_id='run' AND lease_id='lease' AND current_state='preparing'`)
+			if e != nil || changed.RowsAffected() != 1 {
+				t.Fatal("fixture did not enter actual finalization", e)
+			}
+			if _, e = sources.Get(live, src.ID); !errors.Is(e, catalog.ErrDenied) {
+				t.Fatal("finalizing run acquired fresh source body", e)
 			}
 			c := New(pool)
 			c.DataGuard = sources.CheckRunSourcesTx
@@ -65,6 +77,9 @@ func TestSourceDeletionVersusAtomicResultAndDispatchIntegration(t *testing.T) {
 			}
 			if deleteErr != nil {
 				t.Fatal(deleteErr)
+			}
+			if _, e = sources.Get(own, src.ID); !errors.Is(e, catalog.ErrDenied) {
+				t.Fatal("deleted input body remained available to its owner", e)
 			}
 			if order == "delete_first" && saveErr == nil {
 				t.Fatal("deleted source published")

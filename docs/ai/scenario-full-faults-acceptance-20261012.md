@@ -47,6 +47,17 @@ so changing the agent root cannot open another attempt. A failed/no-OOM load rem
 failed and its marker sealed. A PASS requires public GGUF metadata read, exit137
 and Docker OOMKilled within90 seconds, not an allocator fixture or timeout kill.
 
+The initial preflight on ba62c02 failed before `docker start`: `len` of nil
+Docker `DeviceRequests` threw during inspect. Its original report and global
+marker are retained. Actual model-load attempts were0; no original created-state
+proof survived, so none is added retrospectively. The explicitly reviewed
+`resume-zero-start` mode admits only this exact recorded failure: old committed
+runner bytes and source ID, absent start/attempt markers, and an exclusive
+continuation marker are required. A new owned container must have a saved actual
+`created/0001-01-01T00:00:00Z` state and exact isolation proof. Global atomic
+`load-started` precedes its single start and can never be reset/reused. This is
+the same one-load experiment, not another OOM attempt or another root's window.
+
 `oom_killed` describes actual OS/Docker physical OOM;
 `butler_kernel_received_oom=false` records that the physical load is deliberately
 separate from Butler's owning kernel: it does

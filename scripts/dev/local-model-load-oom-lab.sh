@@ -3,7 +3,8 @@
 set -euo pipefail
 root=${1:?isolated agent root required}
 commit=${2:?exact release commit required}
-[[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ && "$commit" =~ ^[a-f0-9]{40}$ ]] || exit 2
+mode=${3:-initial}
+[[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ && "$commit" =~ ^[a-f0-9]{40}$ && "$mode" =~ ^(initial|resume-zero-start)$ ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/go.mod" ]] || exit 2
 umask 077
@@ -26,10 +27,29 @@ runner_hash=$(sha256sum "$source_dir/scripts/dev/local-model-load-oom-lab.sh" | 
 # Atomic one-use marker is never reopened, even after failure or interruption.
 mkdir -p /srv/storage/butler/fault-acceptance-windows
 marker=/srv/storage/butler/fault-acceptance-windows/issue33-cached-qwen3-load-20261012
-mkdir "$marker" || { printf 'Cached model load window already sealed\n' >&2; exit 1; }
+if [[ "$mode" == initial ]]; then
+  mkdir "$marker" || { printf 'Cached model load window already sealed\n' >&2; exit 1; }
+else
+  # Explicitly reviewed continuation of the one prestart nil-inspect failure.
+  # Original State was not saved; do not manufacture it. The immutable old
+  # script and observed template error place failure before its docker start.
+  # Absence of an attempt file alone is never a generic restart permission.
+  [[ -d "$marker" && ! -L "$marker" && ! -e "$marker/load-started" ]]
+  original=$(cat "$marker/report-path.txt")
+  [[ "$original" == /srv/storage/butler/agents/scenario-full-faults/reports/local-model-load-oom-20261012T103203Z-1108417 ]]
+  [[ ! -e "$original/actual-model-load-attempts.txt" && "$(cat "$original/source-commit.txt")" == ba62c02a3344d2da8374030fab666437f2431473 ]]
+  original_script=/srv/storage/butler/agents/scenario-full-faults/snapshots/20261012-173118-241/scripts/dev/local-model-load-oom-lab.sh
+  [[ "$(sha256sum "$original_script" | cut -d' ' -f1)" == "$(cat "$original/runner-sha256.txt")" ]]
+  mkdir "$marker/zero-load-preflight-continuation"
+fi
 proof="$root/reports/local-model-load-oom-$(date -u +%Y%m%dT%H%M%SZ)-$$"
 mkdir -p "$proof"
-printf '%s\n' "$proof" > "$marker/report-path.txt"
+if [[ "$mode" == initial ]]; then
+  printf '%s\n' "$proof" > "$marker/report-path.txt"
+else
+  printf '%s\n' "$proof" > "$marker/zero-load-preflight-continuation/report-path.txt"
+  printf '{"original_preflight":"local-model-load-oom-20261012T103203Z-1108417","original_code_commit":"ba62c02a3344d2da8374030fab666437f2431473","original_state_proof_saved":false,"recorded_failure":"device_requests_nil_template_before_start","zero_start_basis":"immutable_committed_control_flow_and_recorded_prestart_error_and_absent_start_markers","old_report_unchanged":true}\n' > "$proof/preflight-continuation.json"
+fi
 printf '%s\n' "$commit" > "$proof/source-commit.txt"
 printf '%s\n' "$runner_hash" > "$proof/runner-sha256.txt"
 container="butler-cached-model-load-oom-$$-$(date -u +%s)"
@@ -54,6 +74,13 @@ created=true
 actual=$(docker inspect --format '{{.Image}}|{{.HostConfig.Memory}}|{{.HostConfig.MemorySwap}}|{{.HostConfig.NanoCpus}}|{{.HostConfig.PidsLimit}}|{{.HostConfig.Runtime}}|{{.HostConfig.NetworkMode}}|{{.Config.User}}|{{.HostConfig.ReadonlyRootfs}}|{{len .Mounts}}|{{range .Mounts}}{{.Destination}}:{{.RW}}{{end}}|{{len .HostConfig.Devices}}|{{if .HostConfig.DeviceRequests}}{{len .HostConfig.DeviceRequests}}{{else}}0{{end}}|{{.HostConfig.Privileged}}|{{json .HostConfig.CapDrop}}|{{json .HostConfig.SecurityOpt}}' "$container")
 [[ "$actual" == "$image|268435456|268435456|1000000000|64|runc|none|10001:10001|true|1|/model.gguf:false|0|0|false|[\"ALL\"]|[\"no-new-privileges:true\"]" ]]
 printf '%s\n' "$actual" > "$proof/isolation.txt"
+state=$(docker inspect --format '{{.State.Status}}|{{.State.StartedAt}}|{{.State.Running}}' "$container")
+[[ "$state" == 'created|0001-01-01T00:00:00Z|false' ]]
+printf '%s\n' "$state" > "$proof/created-state.txt"
+# Global atomic admission precedes the only actual docker start. Any subsequent
+# error/cancellation keeps this marker: no second start or load is permitted.
+mkdir "$marker/load-started"
+printf '%s\n' "$proof" > "$marker/load-started/report-path.txt"
 docker start "$container" >/dev/null
 printf '1\n' > "$proof/actual-model-load-attempts.txt"
 set +e
