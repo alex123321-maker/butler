@@ -1,0 +1,71 @@
+# Issue33 full acceptance, 2026-10-12
+
+This work follows issue33 through its final-task notice, mandatory failures and
+actual `gemini-3.8-flash-high` observations. Preparatory tests are not acceptance
+of model quality. Merge and issue closure require an independently reviewed
+combined report; any failed required gate remains NO_GO.
+
+## Separate finite observation window
+
+`scripts/dev/scenario-shadow-high-lab.sh` uses only an isolated SSH lab snapshot.
+Run `prepare` before `execute`, with the exact clean code commit. Preparation
+tests transport metadata and observation scoring, actual PostgreSQL admission,
+immutable terminal outcomes and reopening without extending expiry. It verifies
+the original independent golden artifacts and freezes source, executable,
+hardware, schema, policy and resource hashes before authentication.
+
+The globally unique window is `issue33-high-shadow-20261012-baseline45`.
+Historical fifteen evidence pins retain all45 spent attempts, including25
+unknown token pairs. There are at most252 new admissions:236 eligible quality
+examples (development96, tuning64, holdout76), and four preselected comparisons
+with one single-context call versus two child contexts plus synthesis (16 calls).
+Four secret examples are excluded before creating model input. The children are
+shadow contexts; actual Butler Task delegation is tested by the separate release
+chain. Neither observation grants execution authority.
+
+There are no retries, resampling, tuning on observed holdout failures, fallback
+models or account changes. A PostgreSQL charge precedes each provider call;
+transport failure, cancellation, malformed/truncated output or a tool proposal
+cannot refund it. The75-minute expiry and once-terminal outcomes are immutable.
+The actual window uses a stable isolated database and retains its volume and
+private per-attempt files. A process restart cannot create a fresh database scope
+under the globally sealed runner marker.
+
+Both comparison arms receive the same originals, selected model and declared
+limits: maximum4 calls,120 seconds per call,480 seconds per arm,64KiB input byte
+cap,8192 output tokens, one active context,1536MiB client memory. Every child
+and synthesis call contributes to measured cost. Original source witnesses are
+checked programmatically. Calls with unknown/conflicting usage cannot satisfy
+the complete-token-cost gate. Readiness checks require the exact scorer PASS
+status, all cases/pairs and complete cost; quality percentages alone are not PASS.
+
+The provider's actual bounded `modelVersion` is recorded when supplied, otherwise
+NULL. The pre-call pin stays immutable; a requested profile is never substituted
+for an observed version. A version change, ambiguous aliases or incomplete
+lifecycle fails validation. Proprietary weight bytes, cloud server RAM/hardware
+and incremental subscription invoice are unavailable. `/proc/self/status` gives
+the shared client's lifetime peak RSS, not causal per-model or child memory.
+
+## Original review byte provenance
+
+The independent2026-10-11 review froze67363 bytes with542 CRLF pairs and543 LF
+characters, raw SHA256 `5941a750b9f053b0eabdda249dd4b257e56c3264cfb31aa4f3950ecc2d98d8a2`.
+Replacing exactly CRLF with LF yields the current66821 repository bytes, SHA256
+`058b73d4fbcaa146c59fe476e84da91d2fbc652b3888d0ec84ea2d382861cfbd`.
+Preparation proves byte equality after this conversion, without changing either
+corpus, old verdict or signature. The semantic CorpusDigest remains
+`4f9d5ba8001940c41d1b36efe192a498624eb2f779a2cbc420145b1f89a6e701` and
+old CriteriaDigest remains
+`76437b99d5eb79baadb39c5eb6d7958a2d6108296c7b6dc6c6118f42b21cd058`.
+
+New cloud-policy and full-fault contracts are additive. The signed V3 corpus,
+its groups/scenarios, old local-weight scorers and all original failed reports
+remain immutable. The independent review is a separate agent role on a shared
+administrator-controlled host, not hardware isolation or a blind benchmark.
+
+## Pending combined acceptance
+
+The verified-task notice path, real observer→promotion→converter→original
+verification chain, restart/Stop/delivery failures, current complete fault matrix,
+actual High observations and independent final audit must all be correlated to
+their tested source pins. No acceptance or merge is claimed by this plan.

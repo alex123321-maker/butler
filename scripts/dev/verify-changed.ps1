@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(scripts/dev/scenario-shadow-high-lab[.]sh$|apps/orchestrator/internal/app/scenario_shadow_.*[.]go$|internal/transport/antigravity/model_version_test[.]go$)" {
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/scenario-shadow-high-lab.sh /srv/storage/butler/agents/scenario-shadow-high-20261012 prepare <exact-clean-commit>. Actual isolated PG admission/reopen/expiry and synthetic sampler/model-version/scorer checks, race/vet, zero native calls. Execute is a separately sealed baseline45 + at most252 High-only shadow window; never automatically repeat execute.")
+      continue
+    }
     "^(scripts/dev/scenario-corpus-lab[.]sh$|cmd/command-observe/|internal/acceptance/command_suite(_test)?[.]go$|testdata/acceptance/ru-command-proposals-v1[.]json$)" {
       [void]$specs.Add("docs/architecture/persistent-assistant-spec.md")
       [void]$specs.Add("docs/architecture/action-authorization-contract.md")

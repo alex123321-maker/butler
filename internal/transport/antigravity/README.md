@@ -1,5 +1,11 @@
 # Antigravity native transport
 
+Complete logical tool/final outcomes optionally retain the provider's observed
+`modelVersion`. Missing version stays unavailable; the requested profile never
+fills it in. Bounded Gemini identifiers, exact JSON keys and cross-frame version
+consistency are required. This metadata does not identify undisclosed weight
+bytes, select another model, or grant execution authority.
+
 Future complete tool turns now retain native SSE usage on the logical transport
 event, so the same owning budget wrapper can record it without waiting for a text
 final. Complete invalid function proposals carry usage only on their safe terminal

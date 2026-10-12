@@ -1,5 +1,11 @@
 # Butler — Model Transport Contract
 
+Optional `TransportEvent.ProviderModelVersion` carries an actually observed
+provider version on complete native outcomes. It is independent of the requested
+model profile and proprietary weight bytes. Missing metadata remains unavailable;
+malformed, aliased or conflicting native versions deny a complete release. No
+route, authority or model promotion follows from a version observation.
+
 Reviewed skill descriptions and selected procedures are private Document DATA,
 never system instructions. Fresh recovery reloads pinned versions through the
 current catalog; revocation/dependency failure stops before provider release.

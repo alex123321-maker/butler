@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -78,7 +79,10 @@ type modelAnswer struct {
 	Text         string
 	FinishReason string
 	Usage        *transport.Usage
+	ModelVersion *string
 }
+
+var nativeModelVersion = regexp.MustCompile(`^gemini-[a-zA-Z0-9][a-zA-Z0-9._-]{0,110}$`)
 
 type nativeUsage struct {
 	PromptTokenCount, CandidatesTokenCount, TotalTokenCount *int
@@ -254,8 +258,10 @@ func readStreamProtocol(reader io.Reader, onText func(string) bool, cloud bool) 
 		if object, ok := decoded.(map[string]any); ok {
 			usageAlias := func(fields map[string]any) bool {
 				for key := range fields {
-					if key != "usageMetadata" && strings.EqualFold(key, "usageMetadata") {
-						return true
+					for _, canonical := range []string{"usageMetadata", "modelVersion"} {
+						if key != canonical && strings.EqualFold(key, canonical) {
+							return true
+						}
 					}
 				}
 				return false
@@ -295,6 +301,13 @@ func readStreamProtocol(reader io.Reader, onText func(string) bool, cloud bool) 
 		}
 		if len(response.AutomaticFunctionCallingHistory) > 0 {
 			return protocolError("provider attempted automatic function execution")
+		}
+		if response.ModelVersion != "" {
+			if !nativeModelVersion.MatchString(response.ModelVersion) || answer.ModelVersion != nil && *answer.ModelVersion != response.ModelVersion {
+				return protocolError("invalid or conflicting observed model version")
+			}
+			version := response.ModelVersion
+			answer.ModelVersion = &version
 		}
 		if len(response.Candidates) > 1 {
 			return protocolError("multiple candidates are unsupported")

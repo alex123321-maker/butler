@@ -88,6 +88,9 @@ type TransportEvent struct {
 	// independent of whether that turn requests tools or returns final text.
 	// It is never a per-tool allowance or permission to run another turn.
 	Usage *Usage
+	// ProviderModelVersion is optional observed version metadata, not a claim
+	// about proprietary weight bytes or authority to change the selected model.
+	ProviderModelVersion *string
 }
 
 func NewEvent(runID string, eventType EventType, providerName string) TransportEvent {

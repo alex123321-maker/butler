@@ -243,6 +243,7 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 			p.mu.Unlock()
 			event := transport.NewTransportErrorEvent(runID, Name, err)
 			event.Usage = answer.Usage
+			event.ProviderModelVersion = answer.ModelVersion
 			send(event)
 			return
 		}
@@ -255,6 +256,7 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 			p.mu.Unlock()
 			event := transport.NewToolCallRequestedEvent(runID, Name, proposal)
 			event.Usage = answer.Usage
+			event.ProviderModelVersion = answer.ModelVersion
 			if !send(event) {
 				p.discard(runID, state)
 			}
@@ -265,10 +267,13 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 		if answer.Text == "" {
 			event := transport.NewTransportErrorEvent(runID, Name, protocolError("model returned no usable text or function"))
 			event.Usage = answer.Usage
+			event.ProviderModelVersion = answer.ModelVersion
 			send(event)
 			return
 		}
-		send(transport.NewAssistantFinalEvent(runID, Name, transport.AssistantFinal{Content: answer.Text, FinishReason: answer.FinishReason, Usage: answer.Usage}))
+		final := transport.NewAssistantFinalEvent(runID, Name, transport.AssistantFinal{Content: answer.Text, FinishReason: answer.FinishReason, Usage: answer.Usage})
+		final.ProviderModelVersion = answer.ModelVersion
+		send(final)
 		send(transport.NewTerminalEvent(runID, transport.EventTypeRunCompleted, Name))
 	}()
 	return out
