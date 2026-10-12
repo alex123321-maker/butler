@@ -388,7 +388,10 @@ func readStreamProtocol(reader io.Reader, onText func(string) bool, cloud bool) 
 			var part map[string]json.RawMessage
 			_ = json.Unmarshal(raw, &part)
 			if _, ok := part["functionCall"]; ok {
-				return modelAnswer{}, protocolError("truncated function proposal")
+				// EOF and every candidate/trailer/metadata check have completed.
+				// Rejection does not erase this request's measured cost, but its
+				// model body must never accompany the failed outcome.
+				return modelAnswer{Usage: answer.Usage, ModelVersion: answer.ModelVersion}, protocolError("truncated function proposal")
 			}
 		}
 	}

@@ -244,6 +244,12 @@ compatible; normal final constructors mirror it into the event, and legacy
 final-only adapters still work. Antigravity emits complete terminal SSE counts
 on its tool proposal as well as its final text. A complete invalid function
 proposal may retain measured usage on its safe error while granting no execution.
+After a clean EOF and all terminal candidate/trailer checks, a `MAX_TOKENS`
+function rejection likewise retains only complete validated usage and optional
+observed version on its one transport error. Rejected parts, text and signatures
+never accompany that error. A body read failure, incomplete frame, conflicting or
+aliased metadata still returns no measurements; EOF is not skipped to retain
+provisional values. This forward-only rule cannot recover historical unknown cost.
 This logical field does not introduce a new RPC or claim an implemented protobuf
 mapping where only the historical service declaration exists.
 

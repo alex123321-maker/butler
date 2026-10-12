@@ -248,8 +248,11 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 			p.mu.Unlock()
 			// Cancellation may already have closed runCtx. Deliver a buffered safe
 			// terminal error when possible, without blocking an abandoned consumer.
+			event := transport.NewTransportErrorEvent(runID, Name, err)
+			event.Usage = answer.Usage
+			event.ProviderModelVersion = answer.ModelVersion
 			select {
-			case out <- transport.NewTransportErrorEvent(runID, Name, err):
+			case out <- event:
 			default:
 			}
 			return

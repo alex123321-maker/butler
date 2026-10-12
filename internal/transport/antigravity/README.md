@@ -14,6 +14,11 @@ usage remains compatible. Missing/partial/provisional counts, incomplete streams
 invalid/aliased/negative/overflowed counts and cancellation before completion do
 not become measured zero. No actual provider requests, imports or historical
 backfills are part of this fix; all sealed native reports remain unchanged.
+The post-EOF `MAX_TOKENS` function rejection returns only validated complete
+usage/version to the safe failed event, discarding rejected text/parts/signatures.
+All candidates and trailers are still read and checked before this measurement
+can survive. Late reader failure or conflicting metadata retains UNKNOWN and
+cannot release a tool, final, continuation or retry.
 `scripts/dev/tool-turn-usage-lab.sh` verifies synthetic HTTP/SSE and real PG budget
 behavior on laba without inference.
 
