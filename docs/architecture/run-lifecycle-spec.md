@@ -394,6 +394,14 @@ Run остановлен из-за превышения допустимого �
 14. Run переходит в `completed`.
 15. Session lease освобождается.
 
+Final content and `final`/`partial` classification belong to the last model turn.
+A tool proposal invalidates any earlier apparent final, including its finish
+classification. Each fresh final is classified from its own finish reason;
+an absent continuation final cannot commit the pre-tool answer. Intermediate
+tool-turn narration stays transcript data. Confirmed tool effects and spent
+reservations survive an incomplete answer and are not replayed or refunded.
+See [the receipt/final-turn evidence](../ai/delegation-receipt-path-acceptance.md).
+
 ---
 
 ## 10. Context preparation

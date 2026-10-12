@@ -73,6 +73,17 @@ After the parent's completed answer and child scheduling gate, its worker is
 SIGKILLed. A fresh ordinary worker waits for actual60-second claims to expire.
 Width2 must establish actual overlap; cloud weight counts are not observable.
 
+The local service-reuse criterion has separate actual evidence from
+`deploy/local-generative/shared-contexts-first.json` (SHA256
+`b45ed541437ea24620740d26821fbb9b7b6b559687c531fecf2e7dccac4a7825`)
+and `loaded-runner-first.json` (SHA256
+`358a641817a9b902ae18cf9e8dd21123f9b8d2691ddb12b7af6948e2f0a7ba51`).
+Five generated contexts used one pinned CPU Ollama service, with one loaded model
+observed independently. All five semantic checks failed and remain failed: those
+observations prove service reuse, not local delegated research quality. Current
+no-inference shared-provider and warm-runner tests cover separate contexts,
+queue cancellation and reuse. Cloud weight counts are never inferred from this.
+
 The independent verifier reads current immutable finals/Catalog originals, the
 known typed contract, actual structured reports/action journal and conservative
 reservation rows through the ordinary report guard. Only then does real

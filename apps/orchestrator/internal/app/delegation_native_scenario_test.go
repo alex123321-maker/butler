@@ -299,6 +299,9 @@ func runNativeDelegationActualScenario(t *testing.T) {
 		t.Fatal("committed historical experiment evidence unavailable")
 	}
 	report := nativeScenarioEvidence{Status: "failed", Model: nativeScenarioModel(), ReleaseRef: os.Getenv("BUTLER_DELEGATION_NATIVE_RELEASE"), MaxAttempts: history.NativeAttempts + nativeDelegationAttemptCap, MaxNewAttempts: nativeDelegationAttemptCap, Historical: history, CostBasis: "operator_declared_subscription_no_overage", Limitations: []string{"gate_controlled_loss_after_parent_attempt_completed", "cloud_weights_not_observable", "no_local_generative_parity_claim", "blocked_attempt_report_bridge_pending", "metadata_barriers_do_not_claim_late_native_callback_injection", "historical_nullable_usage_not_zero_or_new_fixture_budget_usage"}}
+	if fullHighDelegationWindow() {
+		report.Limitations = []string{"gate_controlled_loss_after_parent_attempt_completed", "cloud_weights_not_observable", "local_service_reuse_evidence_separate_from_local_quality", "source_only_conflict_selection_uses_predeclared_owner_policy", "model_finals_remain_unverified", "metadata_barriers_do_not_claim_late_native_callback_injection", "historical_nullable_usage_not_zero_or_new_fixture_budget_usage"}
+	}
 	defer func() {
 		// Stop every owning process before reading its durable diagnostic state.
 		// Go defers run before memorytest's unconditional schema cleanup.
