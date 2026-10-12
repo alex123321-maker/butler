@@ -1,5 +1,30 @@
 # Prospective two-context JSON diagnostic
 
+## Actual closed diagnostic — 2026-10-12 UTC
+
+The one declared scope completed on frozen source
+`b7d65b8dbe81bb8b1951c70039869f6f5d66ed3c`, snapshot `20261013-003259-397`.
+Final preparation passed76 app names, all23 required structural checks and18
+unit events, without fail/skip and with race/vet. Exact proofs are
+`/srv/storage/butler/agents/scenario-structural-json-high-20261012/reports/structural-json-prepare-20261012T173313Z-2535372`
+and `structural-json-execute-20261012T173958Z-2556236` in the same reports folder.
+This root is now sealed: never Sync, rerun or reopen it.
+
+Both267 and268 have clean lifecycle, known cost/version, retained bounded JSON
+finals and exact original witnesses. [Independent actual audit](cloud-structural-json-independent-audit-20261012.md)
+matches both SQL rows and raw-file hashes, with no raw output or key/auth mounts.
+New input/output/total tokens are1078/29/1964. The PG admission-to-persistence
+intervals are7262/6267ms, not exact server inference latency. The unchanged
+[safe collector report](../../deploy/acceptance/structural-json-high-20261012.json)
+has SHA256 `76d3e1a71681cac0b54e3a54c58978f94185c12e28ead163ee736f2022433adb`.
+
+History is268 entries,242 known input/output pairs and26 NULL pairs, known
+155423/5943 input/output and273072 total-token subtotal with46 unknown totals.
+Both new observations are diagnostic only: `issue33_ready=false`,
+`quality_claim=false`. They did not reproduce the encoding failure and cannot
+establish the lost266 cause. All shadow quality/comparison and actual High
+release-chain gates remain unpassed; no new benchmark window or merge follows.
+
 ## Root review freeze
 
 Root retains the independent protocol/source review of author revision

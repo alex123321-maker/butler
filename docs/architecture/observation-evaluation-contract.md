@@ -178,5 +178,9 @@ attempts to the unchanged248-call view, producing266 spent calls. Exact pinned
 safe audit and independent SQL correlation bind the original failed collector,
 known-cost failed ordinal266, prepared source/runtime and all ordered usage.
 The new hash fold carries all prior provenance;26 NULL input/output pairs and46
-unknown total-token attempts remain unknown. No existing runner or admission
-uses this reader, and it grants no retry, refund, scoring or execution authority.
+unknown total-token attempts remain unknown. The separately approved two-context
+structural diagnostic uses this pure reader as its266 baseline, under a distinct
+268 ceiling and eight-minute absolute deadline. Private bounded final retention
+follows owning SQL spend and preserves original complete events and uncertainty.
+This diagnostic is independent of model quality and the native release chain.
+The reader itself grants no retry, refund, scoring or execution authority.

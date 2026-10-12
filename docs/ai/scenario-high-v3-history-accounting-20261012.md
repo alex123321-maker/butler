@@ -3,8 +3,10 @@
 `readScenarioHighV3History()` is a new pure reader after the unchanged
 `readScenarioHighHistory()` 248-call view. It reads only the two exact committed
 content-free V3 artifacts. No provider, private report, credential, database
-mutation, scoring or window admission is involved. It is not called by any
-existing native runner or admission path.
+mutation, scoring or window admission is involved. The separately reviewed
+[two-context diagnostic](scenario-structural-json-diagnostic-20261012.md) now
+uses this pure view only as its pinned266 baseline. Its own finite approval,
+counter and deadline govern new entries; the reader grants no authority.
 
 The required V3 audit SHA256 is
 `2561b8486c40ee3d2d23d01709b5b06962f3407165c54133e04ab5bd29cd9a16`;

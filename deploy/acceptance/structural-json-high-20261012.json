@@ -1,0 +1,50 @@
+{
+  "status": "diagnostic_completed",
+  "window_id": "issue33-high-structural-json-20261012-baseline266",
+  "baseline": 266,
+  "ceiling": 268,
+  "attempts": [
+    {
+      "ordinal": 267,
+      "context_id": "structural-11e5c1d9de9df0730ed88bd9d28be75b",
+      "input_sha256": "db806ef9c651f3229e2bd520dceba23f3421fef0193dc907ffee9af44ae95852",
+      "outcome": "completed",
+      "input_tokens": 529,
+      "output_tokens": 25,
+      "total_tokens": 989,
+      "model_version": "gemini-3.8-flash-n",
+      "clean_lifecycle": true,
+      "metadata_known": true,
+      "visible_final_metadata": {
+        "visible_final_bytes": 35,
+        "visible_final_sha256": "80ddbbd7446d3a2c86ace1243293f96ee06de84e030323a875fd8b61f4443993",
+        "encoding_reason": "json_object",
+        "private_raw_retained": true
+      },
+      "retention_ok": true,
+      "provider_operation_stage": "response_stream"
+    },
+    {
+      "ordinal": 268,
+      "context_id": "structural-676ac6839bfe917c63d151bea479add7",
+      "input_sha256": "6fd4d2337f838d88e6993a4455435f10732a58d8baf9d83f4869100d9d9e5dc2",
+      "outcome": "completed",
+      "input_tokens": 549,
+      "output_tokens": 4,
+      "total_tokens": 975,
+      "model_version": "gemini-3.8-flash-n",
+      "clean_lifecycle": true,
+      "metadata_known": true,
+      "visible_final_metadata": {
+        "visible_final_bytes": 11,
+        "visible_final_sha256": "d84c599b38b661764ac1ef97be223d823d5a916ea7a4dfcabaf4d575e82c6652",
+        "encoding_reason": "json_object",
+        "private_raw_retained": true
+      },
+      "retention_ok": true,
+      "provider_operation_stage": "response_stream"
+    }
+  ],
+  "issue33_ready": false,
+  "quality_claim": false
+}
