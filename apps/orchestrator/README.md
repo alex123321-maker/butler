@@ -3,6 +3,9 @@
 The separate pure High history reader preserves all248 spent attempts, including
 the failed V2 timeout with NULL usage. It grants no admission or retry and keeps
 both old NO_GO verdicts. See [historical accounting](../../docs/ai/scenario-high-history-accounting-20261012.md).
+The additive `readScenarioHighV3History` accounts for266 spent calls, including
+the V3 known-cost failure, without changing any prior reader or native admission.
+See [closed V3 accounting](../../docs/ai/scenario-high-v3-history-accounting-20261012.md).
 
 The budgeted provider now records complete request usage from tool proposals and
 other complete transport outcomes as well as legacy text finals. One admitted

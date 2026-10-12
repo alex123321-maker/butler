@@ -172,3 +172,11 @@ lineage in addition to per-attempt hashes/outcomes/usage. Old248 history retains
 both failed observations and the final NULL timeout; all cost is accumulated
 before readiness checks. Correlation alone reports equality, never inference or
 quality. Failed/partial reports remain NO_GO and cannot create a refund or retry.
+
+The separate pure `readScenarioHighV3History` appends all eighteen closed V3
+attempts to the unchanged248-call view, producing266 spent calls. Exact pinned
+safe audit and independent SQL correlation bind the original failed collector,
+known-cost failed ordinal266, prepared source/runtime and all ordered usage.
+The new hash fold carries all prior provenance;26 NULL input/output pairs and46
+unknown total-token attempts remain unknown. No existing runner or admission
+uses this reader, and it grants no retry, refund, scoring or execution authority.
