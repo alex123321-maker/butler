@@ -1,0 +1,1344 @@
+{
+  "version": "butler-mandatory-faults-v3",
+  "created_utc": "2026-10-12T15:24:14.424349907Z",
+  "code_commit": "29cd58c33da760324345e919855025b41b7e9351",
+  "source_tree_sha256": "4f2137e1960696614393aac02ad248dc8e5c83c181728924b9fb166b4c2454c0",
+  "schema_sha256": "f3673fd3db28bd98026f9bbbcc5d8e5f9ab06de32055602f3ad94b859521647d",
+  "criteria_sha256": "4329f8a374e610db78f7356e1b8e04304402d5bc0d5ff4086c1ff76505b16358",
+  "signed_quality_criteria_sha256": "76437b99d5eb79baadb39c5eb6d7958a2d6108296c7b6dc6c6118f42b21cd058",
+  "hardware": {
+    "kernel": "7.0.0-34-generic",
+    "logical_cpus": 12,
+    "host_ram_kib": 15693396,
+    "cpu_manifest_sha256": "7ef32970c3534eec4c10fd9dc8d3206f0db5ccee56c0bcb150f5de161418199e",
+    "go_image": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61",
+    "postgres_image": "sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d",
+    "redis_image": "sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499",
+    "browser_image": "sha256:2819ba6ab15df584366426f60c3db37141a6fa6b3aa532f4f074f306f5f25998",
+    "go": "1.27.2",
+    "core_test_memory_limit_bytes": 1610612736,
+    "database_memory_limit_bytes": 536870912,
+    "effects": "synthetic_fixture_only"
+  },
+  "mandatory_faults_passed": true,
+  "issue_33_ready": false,
+  "groups": [
+    {
+      "id": "release-pin",
+      "runtime": "pre-test-release-manifest",
+      "status": "PASS",
+      "events_sha256": "457956e7e4986f1bd47518465807020fabfbf1d99ae693f99ebf17ea105192b2"
+    },
+    {
+      "id": "ownership",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestDurableLeaseFenceTakeoverIntegration",
+          "status": "PASS",
+          "seconds": 0.5
+        },
+        {
+          "name": "TestRedisLeaseManagerIntegration",
+          "status": "PASS",
+          "seconds": 1.21
+        }
+      ],
+      "events_sha256": "6bb7dbf8fd6087c83df71736d1977b35a1d2aa3f82eda45f6f62fe3d6c41f9c4"
+    },
+    {
+      "id": "approval",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestApprovalWorkerSIGKILLRestartIntegration",
+          "status": "PASS",
+          "seconds": 0.27
+        },
+        {
+          "name": "TestDurableApprovalResumesInSameProcessIntegration",
+          "status": "PASS",
+          "seconds": 0.23
+        },
+        {
+          "name": "TestApprovalDecisionBeforeNotificationReturnsIntegration",
+          "status": "PASS",
+          "seconds": 0.18
+        },
+        {
+          "name": "TestApprovalExpiryWithoutOwnerReplyIntegration",
+          "status": "PASS",
+          "seconds": 0.14
+        },
+        {
+          "name": "TestApprovalExpiresAfterDecisionBeforeDispatchIntegration",
+          "status": "PASS",
+          "seconds": 0.14
+        },
+        {
+          "name": "TestDurableApprovalRestartsSameRunAndActionIntegration",
+          "status": "PASS",
+          "seconds": 0.19
+        },
+        {
+          "name": "TestDurableApprovalDecisionRacesAndInvalidationIntegration",
+          "status": "PASS",
+          "seconds": 0.67
+        },
+        {
+          "name": "TestDurableUnknownEffectAndKnownResultRecoveryIntegration",
+          "status": "PASS",
+          "seconds": 0.51
+        },
+        {
+          "name": "TestStaleExecutorCannotPublishDurableAuthorityIntegration",
+          "status": "PASS",
+          "seconds": 0.12
+        },
+        {
+          "name": "TestApprovalCannotAuthorizeChangedSavedArgumentsIntegration",
+          "status": "PASS",
+          "seconds": 0.14
+        },
+        {
+          "name": "TestTelegramDecisionIsBoundToSavedChatIntegration",
+          "status": "PASS",
+          "seconds": 0.12
+        },
+        {
+          "name": "TestFinalResultRecoveryNeverRepeatsExternalCallIntegration",
+          "status": "PASS",
+          "seconds": 0.39
+        },
+        {
+          "name": "TestActionSlotPersistsBeforePrepareAndSurvivesApprovalRecoveryIntegration",
+          "status": "PASS",
+          "seconds": 0.55
+        },
+        {
+          "name": "TestRuntimeBudgetDeadlineCancelsIdleInferenceIntegration",
+          "status": "PASS",
+          "seconds": 1.11
+        }
+      ],
+      "events_sha256": "4beec8c267036c23350d08bab1b523385a189f40e6412b354478a381751c6f97"
+    },
+    {
+      "id": "owner-stop",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestControlStopPropagatesChildrenAndRetainsExternalObservations",
+          "status": "PASS",
+          "seconds": 0.07
+        },
+        {
+          "name": "TestStopIdleProviderIgnoresLateFinalIntegration",
+          "status": "PASS",
+          "seconds": 0.31
+        },
+        {
+          "name": "TestAmendContinuationUsesCurrentProtectedContextIntegration",
+          "status": "PASS",
+          "seconds": 0.14
+        },
+        {
+          "name": "TestOwnerControlWinsBeforeRealDispatchClaimIntegration",
+          "status": "PASS",
+          "seconds": 0.32
+        },
+        {
+          "name": "TestOwnerTreeStopRevokesActualGrandchildGrantIntegration",
+          "status": "PASS",
+          "seconds": 0.13
+        },
+        {
+          "name": "TestRealDispatchClaimWinsBeforeOwnerControlRetainsOutcomeIntegration",
+          "status": "PASS",
+          "seconds": 0.68
+        },
+        {
+          "name": "TestOwnerStopAndAtomicResultCommitOrderIntegration",
+          "status": "PASS",
+          "seconds": 0.36
+        },
+        {
+          "name": "TestChildAdmissionCannotResetRootBudgetIntegration",
+          "status": "PASS",
+          "seconds": 0.5
+        },
+        {
+          "name": "TestCompletionRequiresCurrentOwnerEvidenceForEveryCriterion",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestControlAmendStopsOldApprovalAndPreservesNewContext",
+          "status": "PASS",
+          "seconds": 0.08
+        },
+        {
+          "name": "TestDelegationBoundedParallelBudgetAndAdmissionRollbackIntegration",
+          "status": "PASS",
+          "seconds": 1.08
+        },
+        {
+          "name": "TestDelegationTotalBranchCapAndMissingAuthorityIntegration",
+          "status": "PASS",
+          "seconds": 0.55
+        },
+        {
+          "name": "TestDelegationDependencyCyclesConflictsAndSourceRevocationIntegration",
+          "status": "PASS",
+          "seconds": 0.6
+        },
+        {
+          "name": "TestDelegationStaleParentSubsetDepthAndStopRaceIntegration",
+          "status": "PASS",
+          "seconds": 0.64
+        }
+      ],
+      "events_sha256": "71b8ec4ef3881224bd5aeb8827378cd46959b8e746611d97beaf2e9983dc060c"
+    },
+    {
+      "id": "authority",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestRevocationDeniesBeforeFailedPropagationAndRestartIntegration",
+          "status": "PASS",
+          "seconds": 0.61
+        },
+        {
+          "name": "TestGoalRevocationCancelsIdleProviderBeforeSweepAndIgnoresLateFinalIntegration",
+          "status": "PASS",
+          "seconds": 0.78
+        },
+        {
+          "name": "TestOwnerAuthorityChangeWinsBeforeRealDispatchIntegration",
+          "status": "PASS",
+          "seconds": 1.9
+        },
+        {
+          "name": "TestBudgetWaitCrossingPurposeDeadlineRollsBackEveryAdmissionIntegration",
+          "status": "PASS",
+          "seconds": 16.58
+        },
+        {
+          "name": "TestExplicitOwnerTaskDoesNotNeedSpontaneousInitiativePermissionIntegration",
+          "status": "PASS",
+          "seconds": 0.56
+        }
+      ],
+      "events_sha256": "493a8ddb815f7a606496d80f0665158045fedf1283e51cb9afdb8532153fef02"
+    },
+    {
+      "id": "effects",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestEffectJournalLostAcknowledgementReconcilesWithoutReplay",
+          "status": "PASS",
+          "seconds": 0.21
+        },
+        {
+          "name": "TestEffectJournalBeforeDispatchRollbackAndAbsentObservation",
+          "status": "PASS",
+          "seconds": 0.11
+        },
+        {
+          "name": "TestEffectJournalGenericSuccessIsUnverifiedAndCancellationFencesClaim",
+          "status": "PASS",
+          "seconds": 0.09
+        },
+        {
+          "name": "TestEffectJournalCancelAndPrepareOnlySerializeWithClaim",
+          "status": "PASS",
+          "seconds": 0.43
+        },
+        {
+          "name": "TestClaimAndBudgetAdmissionAreOneTransactionIntegration",
+          "status": "PASS",
+          "seconds": 0.14
+        },
+        {
+          "name": "TestUnassignedTerminalRunCannotDispatchWithStillCurrentLeaseIntegration",
+          "status": "PASS",
+          "seconds": 0.29
+        },
+        {
+          "name": "TestReleaseMandateRevocationStopsBeforeCredentialInspection",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestPublicReadNeedsExactReleaseProofAndChangedPathQueryCannotReuseIt",
+          "status": "PASS",
+          "seconds": 0
+        }
+      ],
+      "events_sha256": "648086083c69d1d49e3b5a0335dec1a998e9f906aa6fee747b60476b44c01177"
+    },
+    {
+      "id": "delivery",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestAtomicResultAndRestartIntegration",
+          "status": "PASS",
+          "seconds": 0.47
+        },
+        {
+          "name": "TestAtomicRollbackAndPersistenceOnlyRecoveryIntegration",
+          "status": "PASS",
+          "seconds": 0.16
+        },
+        {
+          "name": "TestOutboxRetryBoundAndImmutablePayloadIntegration",
+          "status": "PASS",
+          "seconds": 0.09
+        },
+        {
+          "name": "TestOutboxChunksAndUnknownSendIntegration",
+          "status": "PASS",
+          "seconds": 0.1
+        },
+        {
+          "name": "TestOutboxConcurrentClaimAndCrashIntegration",
+          "status": "PASS",
+          "seconds": 0.08
+        },
+        {
+          "name": "TestSourceDeletionVersusAtomicResultAndDispatchIntegration",
+          "status": "PASS",
+          "seconds": 1.58
+        },
+        {
+          "name": "TestSourceDeletionVersusLiveDispatchClaimIntegration",
+          "status": "PASS",
+          "seconds": 1.55
+        }
+      ],
+      "events_sha256": "5a4e8dbfbc1d85632a78084c3f83c37e9f06db421529a8f375952a1f870364cb"
+    },
+    {
+      "id": "budget",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestSharedReservationsSurviveRestartAndRejectParallelOverspendIntegration",
+          "status": "PASS",
+          "seconds": 0.11
+        },
+        {
+          "name": "TestParallelScopeAndReservationInitializationIntegration",
+          "status": "PASS",
+          "seconds": 0.33
+        },
+        {
+          "name": "TestChildAndToolReservationsShareAtomicParentLimitsIntegration",
+          "status": "PASS",
+          "seconds": 0.14
+        },
+        {
+          "name": "TestNormalizedLoopPersistsAcrossRestartAndTypedErrorsIntegration",
+          "status": "PASS",
+          "seconds": 0.09
+        },
+        {
+          "name": "TestRuntimeAdmissionRejectsFinishedRunAndAggregateBytesIntegration",
+          "status": "PASS",
+          "seconds": 0.08
+        },
+        {
+          "name": "TestLocalTargetIsIndependentOfDeclaredZeroPrice",
+          "status": "PASS",
+          "seconds": 0
+        }
+      ],
+      "events_sha256": "5a67ca5aa5af3de428a5a21db1e3d2faa8ac82077894b965ab58059281e2bf60"
+    },
+    {
+      "id": "context",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestSummaryCannotHideRecentOwnerCorrection",
+          "status": "PASS",
+          "seconds": 0.12
+        },
+        {
+          "name": "TestContextBudgetDropsOptionalMaterialBeforeMandatoryConstraints",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestForeignDocumentMemoryAndToolDescriptionNeverBecomeInstructions",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestCoveredSummaryCannotRemoveSecretLabelOrPromoteHistoricalAuthority",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestIdleProviderCannotPublishAfterSourceDeletionIntegration",
+          "status": "PASS",
+          "seconds": 0.75
+        },
+        {
+          "name": "TestOwningSourceVerificationBoundSlowCurrentAndRevocationIntegration",
+          "status": "PASS",
+          "seconds": 1.13
+        },
+        {
+          "name": "TestDelegationPreparationPinsTaskBeforeSelectionAndExcludesAmbientMemory",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestDelegationContextRejectsUnboundInstructionsSecretsAndPayloadProse",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestFailedRunPersistsSafeTransportSubtype",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestSourceGuardDiagnosticsAtEveryProviderEntry",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestSourceGuardDiagnosesLateTimeoutWithoutPublishingFinal",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestDurableTaskExecutionIntegration",
+          "status": "PASS",
+          "seconds": 0.58
+        },
+        {
+          "name": "TestDelegationRecoveryRechecksSelectionAndPreservesUnknownEffect",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration",
+          "status": "PASS",
+          "seconds": 8.76
+        }
+      ],
+      "events_sha256": "fc52db458c39f18d4d5ce39066dd5ca29b14efaf9ef625fb1431dfcbadc459c2"
+    },
+    {
+      "id": "security-content",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestDerivedInstructionCannotAcquireAuthority",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestLegacyPreparedInstructionsBecomeDataAndSecretsAreDenied",
+          "status": "PASS",
+          "seconds": 0
+        }
+      ],
+      "events_sha256": "50f3a2ae8368e49bc22c2e0f373d02fcbb52bf8a9bb95ba2719704599a172141"
+    },
+    {
+      "id": "security-egress",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestInternalAndAmbiguousResourcesAreDenied",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestDNSMixedAnswersAndRebindingNeverDialPrivateNetwork",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestAllowedPublicFixtureRedirectAndByteCaps",
+          "status": "PASS",
+          "seconds": 0.07
+        },
+        {
+          "name": "TestScopedProxyDeniesCrossOriginUpgradeAndCumulativeRelease",
+          "status": "PASS",
+          "seconds": 0.01
+        },
+        {
+          "name": "TestCONNECTPinsDNSRejectsOtherHostsAndClosesExpiredTunnel",
+          "status": "PASS",
+          "seconds": 0.4
+        },
+        {
+          "name": "TestCONNECTRejectsMixedDNSAndByteOverflow",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestScopedProxyFreezeCancelsInflightAndPersistsUntilBoundedWindow",
+          "status": "PASS",
+          "seconds": 0.16
+        },
+        {
+          "name": "TestScopedProxyFreezeClosesEstablishedCONNECT",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestScopedProxyExpiryTimerInitializationIsSynchronized",
+          "status": "PASS",
+          "seconds": 0.03
+        }
+      ],
+      "events_sha256": "24553fd65b845944eabf71d51c9f8d5a2eec29abc40796c637d7a9c15f649a5b"
+    },
+    {
+      "id": "security-workspace",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestWorkspaceDeniesSiblingSymlinkAndNonregularFiles",
+          "status": "PASS",
+          "seconds": 0
+        }
+      ],
+      "events_sha256": "5af472cf29607d8c12b439e1ca0b711885c7b464563190ee0719d7f1649a9eb4"
+    },
+    {
+      "id": "security-redaction",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestPrivateValueCannotEscapeReflectionMaskThroughJSONEncoding",
+          "status": "PASS",
+          "seconds": 0
+        }
+      ],
+      "events_sha256": "8b2d199eab942aff261986640bbe9f8fed7a61fbd6581c97a1fd74dafe2dee64"
+    },
+    {
+      "id": "provider-diagnostics",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestDiagnosticCodeExcludesUntrustedProviderMaterial",
+          "status": "PASS",
+          "seconds": 0
+        }
+      ],
+      "events_sha256": "ac7de57efb48cab297d637efbcf55086c99e5e935e4208a21f69c17e287c4b8b"
+    },
+    {
+      "id": "model-provenance",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestDecisionCodeIsExactAndFailClosedBeforeTrustLoader",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestPinnedMetadataIsBoundedAndContained",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestProcessEnvironmentAndRawErrorAreNotExposed",
+          "status": "PASS",
+          "seconds": 0
+        }
+      ],
+      "events_sha256": "d759c3d19f7e85e3d1c57812ec761ece4c72821e1bdc9de02f12c997a31c345b"
+    },
+    {
+      "id": "generated-isolation",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestDeveloperContractCannotSmuggleDocumentOrReplaceIndependentCriteria",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestConverterPrivateClientsNeverSelectNetworkRuntimeOrFollowControlRedirect",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestIndependentCheckerRejectsAuthorMappingAndAcceptanceChanges",
+          "status": "PASS",
+          "seconds": 0.04
+        },
+        {
+          "name": "TestPackageRejectsExecutableAuthorityAndDuplicateMembers",
+          "status": "PASS",
+          "seconds": 0.01
+        },
+        {
+          "name": "TestDeveloperFreshTemporaryWorkcopyRemoved",
+          "status": "PASS",
+          "seconds": 0.01
+        }
+      ],
+      "events_sha256": "32707264508c57dcc7129c3bcb50eabc07a4ae79dde46b21f2d95d41afd9f838"
+    },
+    {
+      "id": "delegated-sources",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestReadDelegatedRunDerivesOnlySelectedCurrentWorkerContextIntegration",
+          "status": "PASS",
+          "seconds": 0.61
+        },
+        {
+          "name": "TestReadDelegatedRunBoundsBodiesAndDeniesStoppedWorkerIntegration",
+          "status": "PASS",
+          "seconds": 3.21
+        },
+        {
+          "name": "TestDelegatedContextSelectsBodiesWithoutAmbientProfileOrHiddenAncestorIntegration",
+          "status": "PASS",
+          "seconds": 0.61
+        },
+        {
+          "name": "TestDelegationProposalChecksParentGrantEvenWithOwnerBodyAccessIntegration",
+          "status": "PASS",
+          "seconds": 0.5
+        },
+        {
+          "name": "TestDelegatedSourceGrantRevocationAndImmutablePinsIntegration",
+          "status": "PASS",
+          "seconds": 0.55
+        }
+      ],
+      "events_sha256": "d3570146bf9b14e3a6445d725f9e52dd9d1497506992d644bdb37664acb71049"
+    },
+    {
+      "id": "memory",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestSourceDuplicateAndConflictingPreferencesIntegration",
+          "status": "PASS",
+          "seconds": 0.55
+        },
+        {
+          "name": "TestConcurrentExplicitSupersessionIntegration",
+          "status": "PASS",
+          "seconds": 0.68
+        },
+        {
+          "name": "TestTransitiveDeletionAndBackupRestoreIntegration",
+          "status": "PASS",
+          "seconds": 0.99
+        },
+        {
+          "name": "TestMissingManifestFailsClosedIntegration",
+          "status": "PASS",
+          "seconds": 0.48
+        },
+        {
+          "name": "TestMatchingWatermarkCannotHideWrongDeletionHistoryIntegration",
+          "status": "PASS",
+          "seconds": 0.49
+        },
+        {
+          "name": "TestPrivacyCleanupRestartAndStaleSummaryWorkingPublicationIntegration",
+          "status": "PASS",
+          "seconds": 0.53
+        },
+        {
+          "name": "TestDeletionRedactsImmutableFinalWithoutInventingUndoIntegration",
+          "status": "PASS",
+          "seconds": 0.46
+        },
+        {
+          "name": "TestLiveSourceAndTranscriptPinsRejectLatePublicationIntegration",
+          "status": "PASS",
+          "seconds": 0.94
+        },
+        {
+          "name": "TestDeletionAnchorRejectsSymlinkReplacement",
+          "status": "PASS",
+          "seconds": 0
+        }
+      ],
+      "events_sha256": "b11f5bdf2f12e75f63d4a8a7b220618ac3be3c117ec45134db4ef0606b7ffe0b"
+    },
+    {
+      "id": "source-index",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestSemanticIndexPostgresReindexRollbackAndSourceChanges",
+          "status": "PASS",
+          "seconds": 0.39
+        },
+        {
+          "name": "TestCitationChangeReusesVectorWithoutNewInference",
+          "status": "PASS",
+          "seconds": 0.29
+        },
+        {
+          "name": "TestSourceCorrectionCommitsBeforeWaitingVectorPersistence",
+          "status": "PASS",
+          "seconds": 0.32
+        },
+        {
+          "name": "TestSecretSourceExcludedFromIndexAndModelAdmission",
+          "status": "PASS",
+          "seconds": 0.28
+        },
+        {
+          "name": "TestOwnedJobRebuildPinsSourcesChargesEveryAttemptIntegration",
+          "status": "PASS",
+          "seconds": 0.55
+        },
+        {
+          "name": "TestOwnedSourceSnapshotRejectsCorrectionBeforeAndAfterInferenceIntegration",
+          "status": "PASS",
+          "seconds": 0.5
+        },
+        {
+          "name": "TestSecretOriginDeniesBeforeModelIPC",
+          "status": "PASS",
+          "seconds": 0
+        }
+      ],
+      "events_sha256": "1de9ed13578bd9151de0c7dc23112e89947443e9fce083cdbda4bacb4a38b178"
+    },
+    {
+      "id": "auxiliary",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestOwnedAuxiliaryAfterRunAndClaimTakeoverIntegration",
+          "status": "PASS",
+          "seconds": 0.58
+        },
+        {
+          "name": "TestEachActualAuxiliaryAttemptChargedAndBoundedIntegration",
+          "status": "PASS",
+          "seconds": 0.53
+        },
+        {
+          "name": "TestTaskAmendmentImmediatelyDeniesPostRunAuxiliaryIntegration",
+          "status": "PASS",
+          "seconds": 0.55
+        },
+        {
+          "name": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration",
+          "status": "PASS",
+          "seconds": 0.48
+        },
+        {
+          "name": "TestAuxiliaryManifestPinsOriginalAncestorsIntegration",
+          "status": "PASS",
+          "seconds": 0.51
+        }
+      ],
+      "events_sha256": "b0e16a48da2de1e390e45561d7368d70cf1da67729fced9bd071d24211ddfc0a"
+    },
+    {
+      "id": "model-pressure",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestOOMRetriesWholeInputThenCPU",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestFullDevicePressureCancelsGPUAndFallsBack",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestUnknownResidentNeverEvicted",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestIdleUnloadAndRestartLeavesNoFalseSuccess",
+          "status": "PASS",
+          "seconds": 0.01
+        },
+        {
+          "name": "TestRAMReservationsAreSharedAcrossLanesAndReleased",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestRAMOverrunCancelsOwnedCPUWorkAndUnloads",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestProcessCancellationKillsAndWaitsForOwnedRuntime",
+          "status": "PASS",
+          "seconds": 0.05
+        }
+      ],
+      "events_sha256": "17a73f833b382edb81a850db9d71427d4e52cbd1ec1de51d12a6c19df0151388"
+    },
+    {
+      "id": "extensions",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestReviewedLifecycleKeepsStatesHistoryAndVersionPinsIntegration",
+          "status": "PASS",
+          "seconds": 0.17
+        },
+        {
+          "name": "TestConcurrentProbeAdmissionAndInterruptedHealthIntegration",
+          "status": "PASS",
+          "seconds": 0.15
+        },
+        {
+          "name": "TestExtensionCatalogAndDispatchUseCurrentPermissionIntegration",
+          "status": "PASS",
+          "seconds": 0.17
+        },
+        {
+          "name": "TestPermissionRevocationAndTaskAmendDenySavedActionIntegration",
+          "status": "PASS",
+          "seconds": 0.58
+        },
+        {
+          "name": "TestExtensionDisableLinearizesWithGrantClaimIntegration",
+          "status": "PASS",
+          "seconds": 0.25
+        },
+        {
+          "name": "TestReviewedReceiptIsExactContractAndGenericWriteStaysUnknownIntegration",
+          "status": "PASS",
+          "seconds": 0.16
+        },
+        {
+          "name": "TestProbeCASQuotaAndRestartNeverReplayIntegration",
+          "status": "PASS",
+          "seconds": 0.13
+        }
+      ],
+      "events_sha256": "c4be5281ebdc5a6e11f563400e09388ae4d51671e48052243e560cb7c517a610"
+    },
+    {
+      "id": "browser",
+      "runtime": "chromium",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestBrowserSessionE2E",
+          "status": "PASS",
+          "seconds": 5.59
+        },
+        {
+          "name": "TestSessionGuardsBeforeEffect",
+          "status": "PASS",
+          "seconds": 0.01
+        },
+        {
+          "name": "TestExclusiveControlRejectsConcurrentEffect",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestProcessFailureInvalidatesAllSessions",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestCredentialArgumentsRequireMatchingBrokerResolution",
+          "status": "PASS",
+          "seconds": 0
+        },
+        {
+          "name": "TestCookieScopeCheckedBeforeSecretInjection",
+          "status": "PASS",
+          "seconds": 0
+        }
+      ],
+      "events_sha256": "c02e0e1dc5364b72ebaa3821d26361dd710fb80fb0d0d4226d57764ec7287160"
+    },
+    {
+      "id": "broker-browser",
+      "runtime": "chromium",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestBrokerBrowserSequenceE2E",
+          "status": "PASS",
+          "seconds": 1.66
+        },
+        {
+          "name": "TestDirectBrokerCallsCannotBypassActionAuthorization",
+          "status": "PASS",
+          "seconds": 0.01
+        },
+        {
+          "name": "TestReflectedCredentialIsMaskedBeforeModelBoundary",
+          "status": "PASS",
+          "seconds": 0
+        }
+      ],
+      "events_sha256": "9a9f566222d526b5f2e7ca094d0d80dff4f208c6a936a6e0407ce1b7edfa4171"
+    },
+    {
+      "id": "credential-e2e",
+      "runtime": "chromium",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestApprovedCredentialBrokerBrowserE2E",
+          "status": "PASS",
+          "seconds": 2.65
+        }
+      ],
+      "events_sha256": "c919754627048ce676ab689f437d717b4f49731b9190022af49c0488902616a6"
+    },
+    {
+      "id": "extension-e2e",
+      "runtime": "process",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestInstalledProjectExtensionRealBrokerApprovalE2E",
+          "status": "PASS",
+          "seconds": 2.45
+        }
+      ],
+      "events_sha256": "9ae9972788edbada2e4d60f5fc6a7da1c10bd35d04d8cb5a1506b4d037f7588a"
+    },
+    {
+      "id": "backup-seed",
+      "runtime": "backup",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestActualPostgresDumpRestoreDeletionIntegration",
+          "status": "PASS",
+          "seconds": 0.43
+        }
+      ],
+      "events_sha256": "11e14560364217dab1d9ea0bd9b0cb2d59f0798ebc0fe7e08b94d9547b147f46"
+    },
+    {
+      "id": "backup-delete",
+      "runtime": "backup",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestActualPostgresDumpRestoreDeletionIntegration",
+          "status": "PASS",
+          "seconds": 0.04
+        }
+      ],
+      "events_sha256": "4232e02d78b48b6de93211eaeca37026d516f4209d1a4816e0d4863633c69154"
+    },
+    {
+      "id": "backup-restore",
+      "runtime": "backup",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestActualPostgresDumpRestoreDeletionIntegration",
+          "status": "PASS",
+          "seconds": 0.04
+        }
+      ],
+      "events_sha256": "c1a3462112324e6105f3f2506bd58eb1fe5284e35f2643dea7d0cdeb88d7c0ce"
+    },
+    {
+      "id": "resources",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestResourceReadersAndExclusiveWriterAcrossSessionsIntegration",
+          "status": "PASS",
+          "seconds": 0.15
+        },
+        {
+          "name": "TestResourceSetAtomicFailureAndOppositeOrderIntegration",
+          "status": "PASS",
+          "seconds": 0.13
+        },
+        {
+          "name": "TestResourceExpiredWriterRemainsBlockedUntilEvidenceReconciliationIntegration",
+          "status": "PASS",
+          "seconds": 0.12
+        },
+        {
+          "name": "TestResourceCurrentTaskParentAndOwnerFencesIntegration",
+          "status": "PASS",
+          "seconds": 0.43
+        },
+        {
+          "name": "TestResourceConfirmedWriteConsumesLeaseAndInvalidatesObservationIntegration",
+          "status": "PASS",
+          "seconds": 0.11
+        },
+        {
+          "name": "TestResourceDeadlineIsRecheckedAfterContendedLockIntegration",
+          "status": "PASS",
+          "seconds": 0.47
+        }
+      ],
+      "events_sha256": "119b5a96881ee714e52053ef3c0aba789a97883fe0c6fb0fe58366ebd621450c"
+    },
+    {
+      "id": "workspace",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestResourceWorkspaceIndependentLeaseContendersIntegration",
+          "status": "PASS",
+          "seconds": 0.58
+        },
+        {
+          "name": "TestResourceWorkspaceTwoContendersAndStaleObservationsIntegration",
+          "status": "PASS",
+          "seconds": 0.62
+        },
+        {
+          "name": "TestResourceWorkspaceUnknownClaimsSurviveFailureAndNeedOwnerEvidenceIntegration",
+          "status": "PASS",
+          "seconds": 1.15
+        },
+        {
+          "name": "TestPhysicalDriftAndFailedMetadataCommitBlockWithoutReplayIntegration",
+          "status": "PASS",
+          "seconds": 0.27
+        },
+        {
+          "name": "TestConcurrentRealPatchesCannotOverwriteAcrossStoreInstancesIntegration",
+          "status": "PASS",
+          "seconds": 0.09
+        }
+      ],
+      "events_sha256": "ad458d118497957d758538070bf90ee1c144497eade80e3a843c55db6a45f4bc"
+    },
+    {
+      "id": "workspace-runtime",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestWorkspaceDispatchClaimAtomicallyBindsInputBudgetSourceAndResourceIntegration",
+          "status": "PASS",
+          "seconds": 4.23
+        },
+        {
+          "name": "TestWorkspaceRuntimeCloseDrainsActualExecuteAndKeepsUnknownLeaseIntegration",
+          "status": "PASS",
+          "seconds": 0.69
+        },
+        {
+          "name": "TestWorkspaceInstalledReadinessRejectsWrongProfileRootAndDisabledHistoryIntegration",
+          "status": "PASS",
+          "seconds": 0.54
+        },
+        {
+          "name": "TestWorkspaceRuntimeActualPrivateRPCAndPhysicalConfirmationIntegration",
+          "status": "PASS",
+          "seconds": 1.18
+        },
+        {
+          "name": "TestWorkspaceOwnerDiscardActualRuntimeProcessLossIntegration",
+          "status": "PASS",
+          "seconds": 2.09
+        },
+        {
+          "name": "TestWorkspaceOwnerDiscardLostErasureAcknowledgmentObservesOnlyIntegration",
+          "status": "PASS",
+          "seconds": 4.09
+        },
+        {
+          "name": "TestWorkspaceOwnerDiscardSupersedesOnlyStaleUnattemptedIntentIntegration",
+          "status": "PASS",
+          "seconds": 2.07
+        }
+      ],
+      "events_sha256": "a2d758c105d19b3fc133244fe99d063dbcae511b04784f1b037cd939e9bae164"
+    },
+    {
+      "id": "delegation-reports",
+      "runtime": "go-race",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestDelegationConflictingReportsRequireOriginalWitnessIntegration",
+          "status": "PASS",
+          "seconds": 1.14
+        }
+      ],
+      "events_sha256": "6b21dc52c102b8563a88c59bea495983e4981fbc7a612b30161ce207f74a536f"
+    },
+    {
+      "id": "single-tab",
+      "runtime": "chromium",
+      "status": "PASS",
+      "tests": [
+        {
+          "name": "TestSingleTabResourceActualChromiumNativeHostIntegration",
+          "status": "PASS",
+          "seconds": 22.9
+        },
+        {
+          "name": "TestSingleTabResourceActualChromiumNativeHostIntegration/valid",
+          "status": "PASS",
+          "seconds": 2.48
+        },
+        {
+          "name": "TestSingleTabResourceActualChromiumNativeHostIntegration/manual_input",
+          "status": "PASS",
+          "seconds": 2.38
+        },
+        {
+          "name": "TestSingleTabResourceActualChromiumNativeHostIntegration/manual_new_observation",
+          "status": "PASS",
+          "seconds": 2.44
+        },
+        {
+          "name": "TestSingleTabResourceActualChromiumNativeHostIntegration/dom_mutation",
+          "status": "PASS",
+          "seconds": 2.35
+        },
+        {
+          "name": "TestSingleTabResourceActualChromiumNativeHostIntegration/navigation",
+          "status": "PASS",
+          "seconds": 2.41
+        },
+        {
+          "name": "TestSingleTabResourceActualChromiumNativeHostIntegration/foreign_origin",
+          "status": "PASS",
+          "seconds": 2.47
+        },
+        {
+          "name": "TestSingleTabResourceActualChromiumNativeHostIntegration/foreign_host",
+          "status": "PASS",
+          "seconds": 2.36
+        },
+        {
+          "name": "TestSingleTabResourceActualChromiumNativeHostIntegration/lost_ack_restart",
+          "status": "PASS",
+          "seconds": 2.06
+        },
+        {
+          "name": "TestSingleTabResourceActualChromiumNativeHostIntegration/two_executors",
+          "status": "PASS",
+          "seconds": 1.37
+        },
+        {
+          "name": "TestSingleTabResourceActualChromiumNativeHostIntegration/installed_native",
+          "status": "PASS",
+          "seconds": 2.59
+        }
+      ],
+      "events_sha256": "95d94b42d2bcc970533749bfa497bb26ae4d9c1abe2f8f6732db0fd9bb4312ef"
+    },
+    {
+      "id": "model-load-oom",
+      "runtime": "actual-cached-cpu-model-load",
+      "status": "PASS",
+      "reason": "independently reviewed vocabulary-metadata witness; original strict report remains FAIL",
+      "events_sha256": "23fc8f4cab1d105333d3057f136008d7ce0964feba7fbea0bec222c00c90b234"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "browser-observe-act",
+      "guarantee": "Actual Chromium multi-step session and current observation, page/tab drift and lost acknowledgement.",
+      "groups": [
+        "browser",
+        "broker-browser",
+        "credential-e2e",
+        "single-tab"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "approval-restart",
+      "guarantee": "Persisted restart, reply-before-notification, double/stale decisions and changed arguments.",
+      "groups": [
+        "approval",
+        "ownership",
+        "effects"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "stop-and-ownership",
+      "guarantee": "Current owner 'do not send' amendment, stopped descendants and lost/exclusive resource ownership.",
+      "groups": [
+        "owner-stop",
+        "authority",
+        "ownership",
+        "resources",
+        "workspace-runtime"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "effect-and-delivery",
+      "guarantee": "Before/after-effect disconnect, UNKNOWN and delivery recovery without repeating the original action.",
+      "groups": [
+        "effects",
+        "delivery",
+        "approval",
+        "workspace",
+        "workspace-runtime",
+        "single-tab"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "fresh-context-and-deletion",
+      "guarantee": "Fresh constraints beat old summary; a fresh task survives old failure; deletion/reindex and actual dump/restore deny old data.",
+      "groups": [
+        "context",
+        "memory",
+        "source-index",
+        "backup-seed",
+        "backup-delete",
+        "backup-restore"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "shared-cost-and-loop",
+      "guarantee": "Actual tab/file contenders and independently checked conflicting child reports, durable shared budget, depth/branch caps, dependency cycles and normalized loops.",
+      "groups": [
+        "resources",
+        "workspace",
+        "single-tab",
+        "budget",
+        "owner-stop",
+        "delegation-reports"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "untrusted-content",
+      "guarantee": "External/child prose stays data; synthetic secrets and unallowed resources are denied before authority/effects.",
+      "groups": [
+        "context",
+        "delegated-sources",
+        "security-content",
+        "security-egress",
+        "security-workspace",
+        "security-redaction",
+        "generated-isolation",
+        "credential-e2e"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "model-and-release-failure",
+      "guarantee": "Actual isolated cached CPU model LOAD OOM before inference; separately tested owned-worker cancellation/no replay and reviewed incompatible/failed extension release/rollback.",
+      "groups": [
+        "model-load-oom",
+        "model-pressure",
+        "model-provenance",
+        "extensions",
+        "extension-e2e",
+        "workspace-runtime"
+      ],
+      "status": "PASS"
+    }
+  ],
+  "local_model_load_oom": {
+    "version": "butler-cached-cpu-load-oom-v1",
+    "runner_sha256": "8968b8440a4f19635dcc90cda341afa5fdd5f135bc96f135498984266ef2bcd6",
+    "image": "sha256:b86366bb528bbf7f1424435d165028497a5b69bf6ddb4fa5a87102e2b79f44fb",
+    "weights_sha256": "7f4030143c1c477224c5434f8272c662a8b042079a0a584f0a27a1684fe2e1fa",
+    "weights_bytes": 522640096,
+    "manifest_sha256": "6f76d4346c34ba89df6e137fb661b4bb4daf322c1151b6ef0dfda981070a851f",
+    "registry_manifest_sha256": "7df6b6e09427a769808717c0a93cadc4ae99ed4eb8bf5ca557c90846becea435",
+    "actual_model_load_attempts": 1,
+    "actual_inference_calls": 0,
+    "actual_native_calls": 0,
+    "model_metadata_read": false,
+    "oom_killed": true,
+    "exit_code": 137,
+    "elapsed_seconds": 1,
+    "memory_bytes": 268435456,
+    "memory_swap_bytes": 268435456,
+    "nano_cpus": 1000000000,
+    "pids_limit": 64,
+    "runtime": "runc",
+    "network_mode": "none",
+    "user": "10001:10001",
+    "read_only_root": true,
+    "only_read_only_weight_mount": true,
+    "no_device_requests": true,
+    "no_capabilities": true,
+    "no_new_privileges": true,
+    "cpu_only": true,
+    "model": "qwen3:0.6b",
+    "stage": "load_before_inference",
+    "butler_kernel_received_oom": false
+  },
+  "local_model_load_witness": {
+    "version": "butler-local-load-vocabulary-witness-v2",
+    "original_report_sha256": "23fc8f4cab1d105333d3057f136008d7ce0964feba7fbea0bec222c00c90b234",
+    "original_strict_gate": "FAIL",
+    "original_metadata_read": false,
+    "loader_log_sha256": "2303783bdb57a79266815f68908a10b053107acaebd3485badce8bbb7cf0d5ab",
+    "global_load_started_sha256": "0d8e4dd803b8fbea8eeaa7fd2d463cee366b0c2b362dd5f3211b2d4c9335c38a",
+    "image": "sha256:b86366bb528bbf7f1424435d165028497a5b69bf6ddb4fa5a87102e2b79f44fb",
+    "weights_sha256": "7f4030143c1c477224c5434f8272c662a8b042079a0a584f0a27a1684fe2e1fa",
+    "reviewer": "codex-independent-cloud-critic-20261012",
+    "review_basis": "independent review plus root-approved fixed hashes and ordered primary-source logger premise; no signature or rebuilt-binary attestation",
+    "scope": "cpu_model_load_vocabulary_metadata_before_inference",
+    "vocabulary_metadata_processing_reached": true,
+    "complete_weights_loaded": false,
+    "actual_model_load_attempts": 1,
+    "actual_inference_calls": 0,
+    "actual_native_calls": 0,
+    "butler_kernel_received_oom": false,
+    "deployment_authority": false
+  },
+  "measurement_limits": [
+    "Synthetic external effects/channels and actual isolated Chrome/PG/backup tests do not measure general model quality.",
+    "Cached Qwen3 CPU LOAD OOM is before inference. It does not observe Antigravity 3.8 Flash High server RAM/OOM or establish that Butler's kernel received that physical OOM. Owned-worker/kernel failure controls are separate tests.",
+    "Independently reviewed High task-quality/cost observations and the complete mandate-to-one-final-notice release chain, including its restart/Stop/delivery faults, are separate required gates. This fault-only report never sets issue_33_ready.",
+    "Historical V1 matrix, signed V3 quality digest/corpus and all old failed/native reports remain immutable."
+  ]
+}
