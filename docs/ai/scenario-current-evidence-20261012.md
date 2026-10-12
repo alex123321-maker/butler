@@ -24,8 +24,8 @@ ordinals42–45, run-bound reservation identities, result statuses and usage.
 Every missing or changed pin is rejected, including a copied report with just
 one extra newline.
 
-The baseline is45 attempted requests,20 known usage pairs and25 NULL pairs.
-The known subtotal is74698 input and2210 output tokens. This is a partial
+The baseline is 45 attempted requests, 20 known usage pairs and 25 NULL pairs.
+The known subtotal is 74698 input and 2210 output tokens. This is a partial
 observation of these acceptance attempts, not an account-wide or invoice total.
 The first three initiative tool turns remain NULL in their original journal;
 that absence alone does not prove the upstream provider omitted usage.
@@ -49,13 +49,13 @@ retained separately; it is not a passed preparation.
 This helper grants no inference allowance and touches no import, provider,
 counter, marker, database or deployment. All previous native windows remain
 sealed. Any later native experiment needs its own finite scope and window and
-must carry this entire45-attempt baseline.
+must carry this entire 45-attempt baseline.
 
 ## Active #33 work
 
 Independent subagents are preparing a supplementary typed command/witness
 corpus, future tool-turn usage accounting, and actual converter/result/outbox
-fault checks. The existing signed240-example Russian corpus remains unchanged.
+fault checks. The existing signed 240-example Russian corpus remains unchanged.
 Fixture validation does not establish model quality. A saved transport attempt
 notice does not establish verified-result delivery or a single final notice.
 

@@ -1,12 +1,12 @@
 # Supplementary command expectations: independent bounded review
 
-The root agent reviewed the separate corpus author's45-case candidate in
+The root agent reviewed the separate corpus author's 45-case candidate in
 `testdata/acceptance/ru-command-proposals-v1.json`. Exact raw file SHA256:
 `2facbb0d7eb5fc6829b748bd11fe62f6e81086c6ede25b6523b54a649703d379`.
 This review covers expected proposals and original-input witnesses only. It
 does not approve model quality, execution or a protected holdout release.
 
-All36 public owner messages were read independently. Eighteen explicit stop or
+All 36 public owner messages were read independently. Eighteen explicit stop or
 prepare-only instructions propose the corresponding existing `task.control`
 kind. The remaining public cases clarify rather than elevate external DATA,
 guess a target among two current tasks, or use an unknown schema. Nine
@@ -33,7 +33,7 @@ development/tuning/holdout splits. The lexical normalization check detects named
 numbered and near text copies, but cannot establish semantic independence. This
 supplement is a programmable contract fixture and retains
 `CANDIDATE_REVIEW_REQUIRED`; it does not satisfy issue33's independent model
-holdout criterion. The previously signed240-example v3 corpus, its instructions,
+holdout criterion. The previously signed 240-example v3 corpus, its instructions,
 criteria and external review remain unchanged.
 
 No model ran during this review. Fixture-validation success and unreviewed
