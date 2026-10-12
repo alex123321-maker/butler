@@ -115,6 +115,11 @@ resources belong only to this invocation. The converter binary/profile, all sour
 and migration/data bytes, hardware/CPU/container identities, binaries and JSON
 event hashes are retained. The Docker runtime uses the pinned Alpine base and
 current compiled production binary; this is not a new production image release.
+The aggregate race-test harness timeout is300s, with headroom above the observed
+233s regression. Only the harness kill timer changes; production deadlines,
+budgets, grant/lease bounds,30s sending claim and the45s delivery-tail bound stay
+unchanged. The source-context guard requires every named positive/negative case
+exactly once even when the full affected package is selected.
 Raw events, synthetic token, PG files and service logs stay private below the
 agent root. No real auth/import/provider/weights, model requests or human messages
 are used. Historical native45/20 known/25 NULL pairs and74698/2210 known subtotal
@@ -150,6 +155,23 @@ complete source manifest
 These diagnosis/implementation snapshots include work in progress; their exact
 byte manifests are retained and are not represented as clean main releases.
 Final committed-source affected actionauth proof is recorded below.
+The full affected `internal/actionauth` package on clean commit
+`6af2b321aea537f8b910b05b95cc9c6ded94ca7a`, snapshot
+`20261012-163319-571`, passed118 names/57 top-level tests, zero failures/skips,
+race/vet, in5.359s. Proof093340Z-914654, events
+`387abe5ba501854bda63c1c0acde5316133d990a375779872e49918cb32c79aa`,
+source manifest `24795105d3fb39c87aac15e4928035871f6f6baef6e7e7f24faa4c468b7cd093`.
+The followup test-only commit `ca9ffa59ab4b631ec5228d67cd9f072f8e6cb729`
+sets its entered flag only after exact token and live-grant validation, so a
+fixture error cannot masquerade as expiry during the verifier. Its final narrow
+actual-PG source proof on snapshot `20261012-163528-929` passed8 names/2 tops,
+zero failures/skips, race/vet:093546Z-922071, events
+`64a18013e607ae794abe8e84778d389176237770b198b3f9deef79aa55e25ea0`,
+manifest `e50469d6ce5a18654a35a5975df2af77ad219453cc5dd39c93fb9cdf015d1816`.
+The production fix, converter helpers and tail bytes are unchanged between these
+proofs. A later documentation/runner-only followup adds aggregate timeout
+headroom and requires all six context cases by exact name. Independent read-only
+review found no concrete blocker in the scoped fix and expiry regression.
 Issue33 remains open until the combined required chain and separately pinned
 observation-only Russian model/holdout/single-versus-multi measurements satisfy
 their actual independent controls. Existing unknown usage precludes a complete

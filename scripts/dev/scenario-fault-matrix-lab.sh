@@ -92,8 +92,14 @@ if [[ "$mode" == authority || "$mode" == authority-all ]]; then
     -run "$authority_filter" ./internal/actionauth > "$proof/tests.jsonl"
   "${build[@]}" golang:1.27.2-bookworm go vet ./internal/actionauth > "$proof/authority-vet.log" 2>&1
   sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
-  test "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":\"TestClaimRunDataGuardDerivesOnlyCurrentDatabaseOwnershipIntegration\"") { n++ } END { print n+0 }' "$proof/tests.jsonl")" = 1
-  test "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":\"TestClaimGrantExpiryDuringPrivateSourceReadProofRollsBackIntegration\"") { n++ } END { print n+0 }' "$proof/tests.jsonl")" = 1
+  authority_required=(TestClaimRunDataGuardDerivesOnlyCurrentDatabaseOwnershipIntegration
+    TestClaimGrantExpiryDuringPrivateSourceReadProofRollsBackIntegration)
+  for fault in plain_rpc forged_caller expired_lease superseded_lease stale_task current_source_denied; do
+    authority_required+=("TestClaimRunDataGuardDerivesOnlyCurrentDatabaseOwnershipIntegration/$fault")
+  done
+  for required_test in "${authority_required[@]}"; do
+    test "$(awk -v needle="\"Test\":\"$required_test\"" 'index($0,"\"Action\":\"pass\"") && index($0,needle) { n++ } END { print n+0 }' "$proof/tests.jsonl")" = 1
+  done
   ! grep -Eq '"Action":"(skip|fail)"' "$proof/tests.jsonl"
   printf '{"test_exit":0,"mode":"%s","actual_native_calls":0}\n' "$mode" > "$proof/summary.json"
   printf 'PASS: actual-PG same-TX source proof, race/vet, no native calls.\n'
