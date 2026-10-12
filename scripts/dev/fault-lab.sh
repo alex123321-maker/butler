@@ -151,6 +151,7 @@ if [[ "$profile" == full || "$profile" == full-faults ]]; then
   if [[ "$profile" == full-faults ]]; then
     "${browser_container[@]}" --env DISPLAY=:91 --env BUTLER_SINGLE_TAB_E2E=1 \
       --workdir /fixture/apps/tool-broker/internal/broker \
+      --tmpfs /tmp:rw,exec,nosuid,nodev,size=384m \
       --env BUTLER_SINGLE_TAB_HOST_BINARY=/proof/bin/guarded-native-host \
       --env BUTLER_SINGLE_TAB_FIXTURE_SCRIPT=/fixture/apps/browser-bridge/scripts/guarded_chromium_fixture.mjs \
       --env BUTLER_SINGLE_TAB_EXTENSION=/fixture/web/extensions/chromium-butler \

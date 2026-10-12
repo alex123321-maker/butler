@@ -37,6 +37,16 @@ vet passes all8names (2tops/6orders), no skips, on54aec53: events SHA
 The Chrome lane now uses the actual broker package directory for migrations.
 These fixes change fixture/runner setup, not production source guards.
 
+The second full report onadefc1b is retained FAIL (SHA
+`c5af6a3939677274df3ef7b16e8e331cfc04a7a40331bb74b97b9b56fa99f40d`):
+all other required groups pass, but actual Chrome `installed_native` cannot launch
+its fixture native wrapper. A separate content-free mount/executable probe
+proves Docker's default `/tmp` tmpfs is noexec and denies the owned temporary
+script. This new lane now explicitly permits execution only in its bounded
+384MiB fixture tmpfs (nosuid/nodev, read-only source/root, no caps, synthetic
+private profile, no accounts). The other browser lanes retain their policy.
+Actual installed-native tests and full current matrix must pass after this fix.
+
 Reproduction on SSH laba only, in a dedicated agent root:
 
 ```text
