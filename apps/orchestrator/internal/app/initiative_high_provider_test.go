@@ -99,6 +99,14 @@ func (p *initiativeHighProvider) StartRun(ctx context.Context, r transport.Start
 		len(r.TransportOptions) != 0 || r.TransportOptionsJSON != "" {
 		return nil, errNativeFixtureDenied
 	}
+	tools := map[string]bool{}
+	for _, definition := range r.ToolDefinitions {
+		tools[definition.Name] = true
+	}
+	if len(r.ToolDefinitions) != 3 || len(tools) != 3 || !tools["extension.project.inspect"] ||
+		!tools["extension.project.prepare-patch"] || !tools["extension.project.check"] {
+		return nil, errNativeFixtureDenied
+	}
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if p.runID != "" || !p.ownsRun(ctx, r.Context.RunID) || p.limit.reserve(ctx, "start", r.Context.RunID, r) != nil {
@@ -255,6 +263,9 @@ func TestInitiativeHighProviderRejectsUnownedRunIntegration(t *testing.T) {
 	}
 	p := &initiativeHighProvider{Provider: new(antigravity.Provider), limit: limit, taskID: "promoted-task"}
 	request := transport.StartRunRequest{Context: transport.TransportRunContext{RunID: "unowned", SessionKey: "telegram:chat:424242", ProviderName: antigravity.Name, ModelName: antigravity.FlashHighModel}}
+	for _, name := range []string{"extension.project.inspect", "extension.project.prepare-patch", "extension.project.check"} {
+		request.ToolDefinitions = append(request.ToolDefinitions, transport.ToolDefinition{Name: name})
+	}
 	if _, err = p.StartRun(ctx, request); err != errNativeFixtureDenied {
 		t.Fatal("unowned task/run entered native provider")
 	}

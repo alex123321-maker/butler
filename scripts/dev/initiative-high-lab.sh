@@ -93,7 +93,7 @@ chmod 555 /binaries/*
 export BUTLER_EXTENSION_E2E=1 BUTLER_BROKER_E2E_BINARY=/binaries/tool-broker BUTLER_EXTENSION_E2E_BINARY=/binaries/tool-extension.test
 go test -json -race -p 1 -count=1 -timeout=4m -run "^Test(InitiativeProjectFinalProjection|InitiativeHigh(History|LimitIntegration|RevalidationIntegration|PreservesSpentDelegationWindowIntegration|ExpiryAfterRowWaitIntegration|ProviderRejectsUnownedRunIntegration)|NativeDelegationPrivateRuntimeFiles)$" ./apps/orchestrator/internal/app
 # The real-process fixture intentionally resolves migrations from repository root.
-go tool test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /binaries/orchestrator.test -test.v -test.timeout=4m -test.run "^TestInitiativeProjectChecksRealBrokerE2E$"
+go tool test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /binaries/orchestrator.test -test.v -test.timeout=4m -test.run "^Test(InitiativeProjectChecksRealBrokerE2E|InitiativeHighOwningBindingsZeroInferenceE2E)$"
 go test -json -race -p 1 -count=1 -timeout=3m ./apps/orchestrator/internal/initiative
 go vet ./apps/orchestrator/internal/app ./apps/orchestrator/internal/initiative ./scripts/dev/delegation-final-tls
 ' > "$proof/tests.jsonl"
