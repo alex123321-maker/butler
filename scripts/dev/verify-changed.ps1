@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(scripts/dev/scenario-fault-matrix-lab[.]sh$|internal/actionauth/(postgres|dispatch_source_context_integration_test)[.]go$|apps/orchestrator/internal/app/(scenario_fault_matrix_integration_test|converter_workers_e2e_test)[.]go$)" {
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/generated-converters.md")
+      [void]$tests.Add("ssh laba: scripts/dev/scenario-fault-matrix-lab.sh <isolated-agent-root> authority-all <exact-commit> then regression after Sync. Actual PG current read-proof/expiry and ordinary converter workers/verified task/frozen-notice faults, race/vet; synthetic channel, zero inference, full mandate-to-one-notice chain remains pending.")
+      continue
+    }
     "^(scripts/dev/tool-turn-usage-lab[.]sh$|internal/transport/(events|usage_test)[.]go$|internal/transport/antigravity/usage_test[.]go$|apps/orchestrator/internal/orchestrator/budget(_usage_integration_test)?[.]go$)" {
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
