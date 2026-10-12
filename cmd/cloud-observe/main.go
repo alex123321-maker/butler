@@ -23,7 +23,7 @@ func main() {
 }
 func run(args []string, stdout io.Writer) error {
 	f := flag.NewFlagSet("cloud-observe", flag.ContinueOnError)
-	mode := f.String("mode", "inputs", "inputs, policy, quality, compare, window-audit; v2-inputs, v2-policy, v2-quality, v2-compare, v2-window-audit")
+	mode := f.String("mode", "inputs", "inputs, policy, quality, compare, window-audit; v2-inputs, v2-policy, v2-quality, v2-compare, v2-window-audit, v2-pg-correlate; v3-inputs, v3-policy, v3-quality, v3-compare")
 	root := f.String("root", ".", "frozen source snapshot")
 	split := f.String("split", "", "empty means all three splits")
 	observations := f.String("observations", "", "private recorded observation envelope")
@@ -45,6 +45,9 @@ func run(args []string, stdout io.Writer) error {
 	}
 	if *mode == "v2-pg-correlate" {
 		return runCloudV2PGCorrelation(*observations, *pgWitness, *output, stdout)
+	}
+	if strings.HasPrefix(*mode, "v3-") {
+		return runCloudV3(cloudV3CLIOptions{Mode: *mode, Root: *root, Split: *split, Observations: *observations, Hardware: *hardware, Commit: *commit, Key: *keyPath, Approval: *approvalPath, ExpectedKey: *expectedReviewKey, ExpectedApproval: *expectedReviewApproval, Output: *output, ExpectedSource: *expectedSource, ExpectedHistory: *expectedHistory}, stdout)
 	}
 	if strings.HasPrefix(*mode, "v2-") {
 		return runCloudV2(cloudV2CLIOptions{Mode: *mode, Root: *root, Split: *split, Observations: *observations, Hardware: *hardware, Commit: *commit, Key: *keyPath, Approval: *approvalPath, ExpectedKey: *expectedReviewKey, ExpectedApproval: *expectedReviewApproval, Output: *output, ExpectedSource: *expectedSource, ExpectedHistory: *expectedHistory}, stdout)

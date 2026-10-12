@@ -1,5 +1,13 @@
 # Lab acceptance evidence
 
+Prospective cloud V3 adds an independent API/scorer with fresh corpus/review
+pending. Trusted native schemas contain every original map key, including
+distractors; selection/quote/value/authority checks remain programmatic. Full
+model-input hashes include the exact per-case enum. This is namespace-assisted
+output, not unconstrained source skill or execution. New default review hashes
+remain empty/denied; V1/V2 reports/digests/NO_GO verdicts and all248 spent attempts
+are unchanged. [Protocol proposal](../../docs/ai/scenario-cloud-prospective-v3-design-20261012.md).
+
 This package and `cmd/acceptance` run and inspect fixed, programmatic product
 contracts. They do not run an agent, change PostgreSQL authority, execute a
 model-selected command, or approve deployment. The standard library is sufficient

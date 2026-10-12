@@ -158,3 +158,11 @@ usage/version, and known subtotals do not become complete total cost. Exact safe
 audit/independent SQL correlation pins and a new append-only provenance fold are
 required. This reader has no admission, retry, provider, scoring or execution
 capability; the 45/228-call readers and both historical NO_GO verdicts stay fixed.
+
+Prospective V3 is a new protocol/data/review with no V1/V2 rewrite or refunded
+window. Trusted native schema enumerates every original document key for refs
+and source_id. This is namespace-assisted output, not unconstrained source
+selection. Literal-key instructions and complete per-case schema hashes accompany
+original-witness checks; no golden subset, model authority or output repair is
+allowed. Default fresh external review hashes deny until independent signing.
+The same90/85/safety0/latency/cost gates and High resource allowances apply.

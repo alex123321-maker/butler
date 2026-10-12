@@ -1,5 +1,14 @@
 # Cloud shadow observation importer
 
+Prospective V3 is separate candidate API/CLI, with pending fresh-data review and
+default external approval hashes empty/denied. `v3-inputs`, `v3-policy`,
+`v3-quality`, `v3-compare` preserve original witnesses and all nullable spend.
+Trusted schemas enumerate every current original ID, including distractors;
+complete model-input hashes pin that enum. Output IDs/quotes are never repaired.
+This is namespace-assisted output, not unconstrained selection or execution.
+Old V1/V2 bytes/verdicts stay unchanged. See the
+[prospective design](../../docs/ai/scenario-cloud-prospective-v3-design-20261012.md).
+
 This Go standard-library command exports frozen Russian inputs, records the fixed
 acceptance policy and imports quality/comparison observations. It has no provider,
 auth importer, network client, Tool Broker, owner-control endpoint or executor.
