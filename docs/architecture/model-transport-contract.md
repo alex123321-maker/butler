@@ -230,6 +230,24 @@ run sessionId. Manager discovers project via fixed authenticated loadCodeAssist
 and confirms paidTier g1-pro/ultra; private project/access metadata never enters
 model context or durable events. Wrapped `response` SSE is normalized with the
 same cancellation, complete-terminal/function/schema/signature and usage guards.
+
+In the implemented direct Go Core path, optional `TransportEvent.Usage` is one
+complete inference-request observation, independent of text final versus tool
+proposal/batch/complete terminal error. The existing `AssistantFinal.Usage` stays
+compatible; normal final constructors mirror it into the event, and legacy
+final-only adapters still work. Antigravity emits complete terminal SSE counts
+on its tool proposal as well as its final text. A complete invalid function
+proposal may retain measured usage on its safe error while granting no execution.
+This logical field does not introduce a new RPC or claim an implemented protobuf
+mapping where only the historical service declaration exists.
+
+Usage is absent for missing/partial metadata, incomplete SSE and cancellation
+before a complete observation; explicit reported zero remains distinct. Native
+count keys are exact, counts must be nonnegative finite integers, sums must not
+overflow and total cannot be below input/output subtotal. Other provider token
+dimensions can explain a larger total; Butler does not invent them. Provisional
+nonterminal snapshots cannot become complete-request measurements. Neither
+provider usage nor a saved terminal error authorizes effects or another turn.
 High keeps8192 output/1048576 conservative input reservation, thinkingBudget=-1
 and checks the entire serialized envelope against the private byte limit.
 Only the Orchestrator's Butler prompt/context/catalog is forwarded unchanged:

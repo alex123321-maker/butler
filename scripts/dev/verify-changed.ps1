@@ -26,6 +26,33 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(scripts/dev/scenario-corpus-lab[.]sh$|cmd/command-observe/|internal/acceptance/command_suite(_test)?[.]go$|testdata/acceptance/ru-command-proposals-v1[.]json$)" {
+      [void]$specs.Add("docs/architecture/persistent-assistant-spec.md")
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/scenario-corpus-lab.sh <isolated-agent-root> narrow <exact-commit> then broad after Sync. Observation-only45-case contract supplement, opaque inputs, original witnesses and exact release pins, race/vet; no model/execution or independent semantic holdout claim.")
+      continue
+    }
+    "^(scripts/dev/scenario-fault-matrix-lab[.]sh$|internal/actionauth/(postgres|dispatch_source_context_integration_test)[.]go$|apps/orchestrator/internal/app/(scenario_fault_matrix_integration_test|converter_workers_e2e_test)[.]go$)" {
+      [void]$specs.Add("docs/architecture/action-authorization-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/generated-converters.md")
+      [void]$tests.Add("ssh laba: scripts/dev/scenario-fault-matrix-lab.sh <isolated-agent-root> authority-all <exact-commit> then regression after Sync. Actual PG current read-proof/expiry and ordinary converter workers/verified task/frozen-notice faults, race/vet; synthetic channel, zero inference, full mandate-to-one-notice chain remains pending.")
+      continue
+    }
+    "^(scripts/dev/tool-turn-usage-lab[.]sh$|internal/transport/(events|usage_test)[.]go$|internal/transport/antigravity/usage_test[.]go$|apps/orchestrator/internal/orchestrator/budget(_usage_integration_test)?[.]go$)" {
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/tool-turn-usage-lab.sh <isolated-agent-root> all after Sync. Synthetic Tiered/High SSE and actual PG per-request usage, duplicate/conflict/cancel/source guards, race/vet; zero inference or historical backfill.")
+      continue
+    }
+    "^(scripts/dev/scenario-native-history-lab[.]sh$|apps/orchestrator/internal/app/scenario_native_history_test[.]go$)" {
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/scenario-native-history-lab.sh <isolated-agent-root> after Sync. Fifteen immutable public reports carry all45 attempts, known20/NULL25; network-none/race/vet, no counter, import, allowance or inference.")
+      continue
+    }
     "^(scripts/dev/initiative-high-window-lab[.]sh$|apps/orchestrator/internal/app/initiative_high_window_test[.]go$)" {
       [void]$specs.Add("docs/architecture/initiative-contract.md")
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")

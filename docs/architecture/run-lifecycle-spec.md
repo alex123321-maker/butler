@@ -1,5 +1,21 @@
 # Butler — Run Lifecycle Specification
 
+Complete model-turn usage is independent of run/task completion, tool success
+and notification delivery. The budget wrapper saves one optional complete
+observation per admitted inference request before releasing its tool/final event;
+identical duplicate events cannot charge another request. Missing usage stays
+NULL. Current source/task guards still deny release/admission, and a later tool
+failure or cancellation neither erases an observed request nor refunds allowance.
+See [execution-budget contract](execution-budget-contract.md) for validation and
+forward-only history rules.
+
+Private Broker claim source guards derive a read-proof worker token from the
+already locked exact current PostgreSQL lease/run/grant. They do not trust an RPC
+caller token or owner Actor. The same-transaction derivative has no general write
+authority and does not escape; accepted converter continuation input, current
+task/source/055 identity and post-wait expiry still require independent checks.
+See [action authorization](action-authorization-contract.md).
+
 The optional guarded tab request is an ordinary exact Broker local control.
 Its owning publication atomically suspends the actual tool-running input/run/task
 with finite owner choices and an immutable dispatch mapping. Core detects that

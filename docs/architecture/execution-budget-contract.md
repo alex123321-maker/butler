@@ -23,6 +23,23 @@ context uses the earliest reservation or scope deadline. Native Flash reserves
 its declared 1,048,576 context and 8,192 output tokens instead of guessing exact
 serialized token counts. Observed usage is separate; missing usage is null.
 
+The trusted budget wrapper records optional complete turn-level event usage for
+each newly admitted operation, including a tool proposal or batch. It falls back
+to legacy final-only usage and accepts identical final/event/terminal repetitions
+without another observation or charge. Conflicting duplicate totals or ambiguous
+legacy/event fields fail closed, preserving the first committed measurement;
+negative/inconsistent/overflowed or provisional counts are never recorded.
+Observed allowance overrun is retained as a measurement and stops the turn before
+tool/content release. Missing/incomplete/cancelled observations remain NULL.
+
+The existing source guard must release current final/tool proposals before their
+usage reaches the wrapper. Denied stale source/task authority cannot admit another
+request or turn a pending NULL into successful work. A complete measurement
+already recorded before later tool failure/cancellation remains historical data,
+not renewed authority; generic `ObserveModel` stays a measurement operation.
+Reservations are never refunded or replenished. This forward-only wiring never
+backfills earlier attempts whose provider counts were not retained.
+
 Operator BUTLER_EXECUTION_BUDGET_POLICY_JSON must match in Orchestrator and Broker.
 Default model costs are unknown and deny inference. Exact provider/model basis is
 operator_rate with nonzero integer rates, subscription_no_overage, or
