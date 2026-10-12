@@ -127,6 +127,7 @@ func (p *Provider) invoke(ctx context.Context, model, sessionID string, body gen
 		}
 		resolve = source.ResolveAntigravityCloudCode
 	}
+	transport.ObserveProviderStage(ctx, transport.ProviderStageAuthentication)
 	auth, err := resolve(ctx)
 	if err != nil {
 		return modelAnswer{}, providerError(transport.ErrorTypeProviderUnavailable, "Antigravity authentication is unavailable; reconnect through the private control plane")
@@ -149,6 +150,7 @@ func (p *Provider) invoke(ctx context.Context, model, sessionID string, body gen
 		envelope = cloudRequestEnvelope{Model: model, Project: auth.ProjectID, Request: body, RequestID: requestID, RequestType: "agent", UserAgent: "antigravity"}
 		url, userAgent = cloudEndpoint, "antigravity/2.22.0 butler/0.1"
 	}
+	transport.ObserveProviderStage(ctx, transport.ProviderStageSerialization)
 	encoded, err := json.Marshal(envelope)
 	if err != nil {
 		return modelAnswer{}, protocolError("invalid model request")
@@ -164,6 +166,7 @@ func (p *Provider) invoke(ctx context.Context, model, sessionID string, body gen
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "text/event-stream")
 	req.Header.Set("User-Agent", userAgent)
+	transport.ObserveProviderStage(ctx, transport.ProviderStageHTTP)
 	resp, err := p.client.Do(req)
 	if err != nil {
 		if ctx.Err() != nil {
@@ -178,6 +181,7 @@ func (p *Provider) invoke(ctx context.Context, model, sessionID string, body gen
 	if !strings.HasPrefix(strings.ToLower(resp.Header.Get("Content-Type")), "text/event-stream") {
 		return modelAnswer{}, protocolError("Antigravity returned a non-SSE response")
 	}
+	transport.ObserveProviderStage(ctx, transport.ProviderStageStream)
 	return readStreamProtocol(resp.Body, onText, cloud)
 }
 

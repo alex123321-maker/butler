@@ -139,6 +139,13 @@ upstream schema is a failed request and never triggers a text-mode fallback.
 The application still validates semantic source witnesses and visible JSON bytes.
 Synthetic exact-wire tests prove serialization, not server compatibility.
 
+Trusted request-local `transport.WithProviderStageObserver` can distinguish
+authentication, serialization, HTTP round trip and SSE reading for future
+diagnosis. Only fixed phase names leave the adapter; credential/request/response
+bodies and endpoint details never reach the callback. It changes no timeout,
+retry or execution behavior. A recorded phase alone does not prove inference
+dispatch or retrospectively explain an earlier timeout.
+
 Private `transport.WithInputByteLimit` bounds the exact complete
 serialized request, including private retained history, schemas and tool results,
 before HTTP write; unset callers use a fixed 8MiB cap. Operator subscription cost
