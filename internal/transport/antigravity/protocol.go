@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/butler/butler/internal/providerauth"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -32,6 +33,7 @@ type functionCall struct {
 	Args json.RawMessage `json:"args"`
 }
 type generateRequest struct {
+	SessionID         string           `json:"sessionId,omitempty"`
 	Contents          []content        `json:"contents"`
 	SystemInstruction *content         `json:"systemInstruction,omitempty"`
 	Tools             []functionTools  `json:"tools,omitempty"`
@@ -39,7 +41,19 @@ type generateRequest struct {
 	GenerationConfig  generationConfig `json:"generationConfig"`
 }
 type generationConfig struct {
-	MaxOutputTokens int `json:"maxOutputTokens"`
+	MaxOutputTokens int             `json:"maxOutputTokens"`
+	ThinkingConfig  *thinkingConfig `json:"thinkingConfig,omitempty"`
+}
+type thinkingConfig struct {
+	ThinkingBudget int `json:"thinkingBudget"`
+}
+type cloudRequestEnvelope struct {
+	Model       string          `json:"model"`
+	Project     string          `json:"project"`
+	Request     generateRequest `json:"request"`
+	RequestID   string          `json:"requestId"`
+	RequestType string          `json:"requestType"`
+	UserAgent   string          `json:"userAgent"`
 }
 type aicodeInference struct {
 	Experience string `json:"experience"`
@@ -70,18 +84,38 @@ type modelAnswer struct {
 	Usage        *transport.Usage
 }
 
-func (p *Provider) invoke(ctx context.Context, model string, body generateRequest, onText func(string) bool) (modelAnswer, error) {
-	auth, err := p.config.AuthSource.ResolveAntigravity(ctx)
+func (p *Provider) invoke(ctx context.Context, model, sessionID string, body generateRequest, onText func(string) bool) (modelAnswer, error) {
+	cloud := model == FlashHighModel
+	resolve := p.config.AuthSource.ResolveAntigravity
+	if cloud {
+		source, ok := p.config.AuthSource.(providerauth.AntigravityCloudCodeTokenSource)
+		if !ok {
+			return modelAnswer{}, providerError(transport.ErrorTypeProviderUnavailable, "Antigravity subscription discovery is required for Flash High")
+		}
+		resolve = source.ResolveAntigravityCloudCode
+	}
+	auth, err := resolve(ctx)
 	if err != nil {
 		return modelAnswer{}, providerError(transport.ErrorTypeProviderUnavailable, "Antigravity authentication is unavailable; reconnect through the private control plane")
 	}
 	if strings.TrimSpace(auth.AccessToken) == "" || strings.ContainsAny(auth.AccessToken, "\r\n") || !auth.ExpiresAt.After(time.Now()) {
 		return modelAnswer{}, providerError(transport.ErrorTypeProviderUnavailable, "Antigravity authentication is incomplete or expired")
 	}
-	// AICode and model are a protobuf oneof. Subscription inference uses only
-	// aicode.experience; Cloud Code project/request wrappers and v1main-only
-	// sessionId/entitlement fields are not accepted by the production v1 API.
-	envelope := requestEnvelope{AICode: aicodeInference{Experience: model}, generateRequest: body}
+	var envelope any = requestEnvelope{AICode: aicodeInference{Experience: model}, generateRequest: body}
+	url, userAgent := endpoint, "antigravity/1.3.3 butler/0.1"
+	if cloud {
+		if !providerauth.ValidAntigravityProject(auth.ProjectID) {
+			return modelAnswer{}, providerError(transport.ErrorTypeProviderUnavailable, "Antigravity subscription project is unavailable")
+		}
+		requestID, err := newCloudRequestID()
+		if err != nil {
+			return modelAnswer{}, err
+		}
+		body.SessionID = sessionID
+		body.GenerationConfig.ThinkingConfig = &thinkingConfig{ThinkingBudget: -1}
+		envelope = cloudRequestEnvelope{Model: model, Project: auth.ProjectID, Request: body, RequestID: requestID, RequestType: "agent", UserAgent: "antigravity"}
+		url, userAgent = cloudEndpoint, "antigravity/2.22.0 butler/0.1"
+	}
 	encoded, err := json.Marshal(envelope)
 	if err != nil {
 		return modelAnswer{}, protocolError("invalid model request")
@@ -89,14 +123,14 @@ func (p *Provider) invoke(ctx context.Context, model string, body generateReques
 	if err = transport.CheckSerializedInput(ctx, len(encoded)); err != nil {
 		return modelAnswer{}, err
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint+":streamGenerateContent?alt=sse", bytes.NewReader(encoded))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url+":streamGenerateContent?alt=sse", bytes.NewReader(encoded))
 	if err != nil {
 		return modelAnswer{}, protocolError("cannot build model request")
 	}
 	req.Header.Set("Authorization", "Bearer "+auth.AccessToken)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "text/event-stream")
-	req.Header.Set("User-Agent", "antigravity/1.3.3 butler/0.1")
+	req.Header.Set("User-Agent", userAgent)
 	resp, err := p.client.Do(req)
 	if err != nil {
 		if ctx.Err() != nil {
@@ -111,7 +145,7 @@ func (p *Provider) invoke(ctx context.Context, model string, body generateReques
 	if !strings.HasPrefix(strings.ToLower(resp.Header.Get("Content-Type")), "text/event-stream") {
 		return modelAnswer{}, protocolError("Antigravity returned a non-SSE response")
 	}
-	return readStream(resp.Body, onText)
+	return readStreamProtocol(resp.Body, onText, cloud)
 }
 
 func statusError(status int, body io.Reader) error {
@@ -162,6 +196,10 @@ func hasHighDemandReason(body io.Reader) bool {
 // Decode complete SSE frames before exposing any function. Incomplete streams
 // never yield a tool proposal, even if a function appeared before the disconnect.
 func readStream(reader io.Reader, onText func(string) bool) (modelAnswer, error) {
+	return readStreamProtocol(reader, onText, false)
+}
+
+func readStreamProtocol(reader io.Reader, onText func(string) bool, cloud bool) (modelAnswer, error) {
 	limited := &io.LimitedReader{R: reader, N: 16*1024*1024 + 1}
 	scanner := bufio.NewScanner(limited)
 	scanner.Buffer(make([]byte, 4096), 1024*1024)
@@ -188,6 +226,18 @@ func readStream(reader io.Reader, onText func(string) bool) (modelAnswer, error)
 			return protocolError("invalid Antigravity response envelope")
 		}
 		response := envelope
+		if cloud {
+			var wrapped struct {
+				Response *responseEnvelope `json:"response"`
+			}
+			if len(envelope.Candidates) > 0 || len(envelope.AutomaticFunctionCallingHistory) > 0 || json.Unmarshal([]byte(data), &wrapped) != nil || wrapped.Response == nil {
+				return protocolError("invalid Cloud Code response envelope")
+			}
+			response = *wrapped.Response
+			if len(response.Error) > 0 && string(response.Error) != "null" {
+				return protocolError("invalid Cloud Code response envelope")
+			}
+		}
 		if len(response.AutomaticFunctionCallingHistory) > 0 {
 			return protocolError("provider attempted automatic function execution")
 		}

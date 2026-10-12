@@ -1,4 +1,4 @@
-// Package antigravity implements the AICode subscription HTTP/SSE protocol.
+// Package antigravity implements Antigravity subscription HTTP/SSE protocols.
 // It proposes functions; only Butler's execution kernel can execute them.
 package antigravity
 
@@ -19,7 +19,9 @@ import (
 const (
 	Name            = "antigravity"
 	DefaultModel    = "gemini-3.8-flash-tiered"
+	FlashHighModel  = "gemini-3.8-flash-high"
 	endpoint        = "https://aicode.googleapis.com/v1"
+	cloudEndpoint   = "https://daily-cloudcode-pa.googleapis.com/v1internal"
 	maxOutputTokens = 8192
 )
 
@@ -215,7 +217,7 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 			p.discard(runID, state)
 			return
 		}
-		answer, err := p.invoke(runCtx, state.model, request, func(delta string) bool {
+		answer, err := p.invoke(runCtx, state.model, state.ref.SessionRef, request, func(delta string) bool {
 			return send(transport.NewAssistantDeltaEvent(runID, Name, transport.AssistantDelta{DeltaType: "text", Content: delta, SequenceNo: turn}))
 		})
 		p.mu.Lock()
@@ -280,6 +282,16 @@ func newReference() (transport.ProviderSessionRef, error) {
 	}
 	now := time.Now().UTC()
 	return transport.ProviderSessionRef{ProviderName: Name, SessionRef: hex.EncodeToString(raw[:]), CreatedAt: now, LastUsedAt: now}, nil
+}
+
+func newCloudRequestID() (string, error) {
+	var raw [16]byte
+	if _, err := rand.Read(raw[:]); err != nil {
+		return "", protocolError("cannot create request identity")
+	}
+	raw[6] = raw[6]&0x0f | 0x40
+	raw[8] = raw[8]&0x3f | 0x80
+	return fmt.Sprintf("agent-%x-%x-%x-%x-%x", raw[0:4], raw[4:6], raw[6:8], raw[8:10], raw[10:16]), nil
 }
 func matchesReference(state *runState, ref *transport.ProviderSessionRef) bool {
 	return ref == nil || (ref.ProviderName == Name && ref.SessionRef == state.ref.SessionRef && ref.ResponseRef == "")

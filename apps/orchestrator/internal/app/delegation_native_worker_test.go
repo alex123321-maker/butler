@@ -55,19 +55,20 @@ func nativeExperimentPolicy() budget.Policy {
 	p.Conversation = p.Task
 	p.ModelMillis, p.ToolMillis, p.ModelInputBytes = 120000, 30000, 131072
 	p.TaskLifetimeMillis = 3600000
-	p.Models = map[string]budget.ModelPrice{antigravity.Name + ":" + antigravity.DefaultModel: {Basis: "subscription_no_overage"}}
+	p.Models = map[string]budget.ModelPrice{antigravity.Name + ":" + nativeScenarioModel(): {Basis: "subscription_no_overage"}}
 	return p
 }
 
 type nativeWorkerConfig struct {
-	Width        int    `json:"width"`
-	Gate         bool   `json:"gate"`
-	Broker       string `json:"broker"`
-	TokenFile    string `json:"token_file"`
-	ManifestFile string `json:"manifest_file"`
-	ImportFile   string `json:"import_file"`
-	KeyFile      string `json:"key_file"`
-	CorpusFile   string `json:"corpus_file"`
+	Width         int                        `json:"width"`
+	Gate          bool                       `json:"gate"`
+	Broker        string                     `json:"broker"`
+	TokenFile     string                     `json:"token_file"`
+	ManifestFile  string                     `json:"manifest_file"`
+	ImportFile    string                     `json:"import_file"`
+	KeyFile       string                     `json:"key_file"`
+	CorpusFile    string                     `json:"corpus_file"`
+	RemainderArgs []delegation.AdmissionArgs `json:"remainder_args,omitempty"`
 }
 
 type nativeResearchCorpus struct {
@@ -85,6 +86,9 @@ type nativeResearchCorpus struct {
 }
 
 func readNativeCorpus(path string) (nativeResearchCorpus, error) {
+	if fullHighDelegationWindow() {
+		return readFullHighDelegationCorpus(path)
+	}
 	var c nativeResearchCorpus
 	if path == "" {
 		_, file, _, _ := runtime.Caller(0)
@@ -131,7 +135,7 @@ func (g nativeChildGate) Resume(ctx context.Context, runID string, event ingress
 // model. Only hashes/ref identifiers and validation booleans are persisted.
 func nativeContextObserver(pool *pgxpool.Pool, corpus nativeResearchCorpus) func(context.Context, transport.StartRunRequest) error {
 	return func(ctx context.Context, r transport.StartRunRequest) error {
-		if r.Context.ProviderSessionRef != nil || r.Context.ModelName != antigravity.DefaultModel || r.Context.ProviderName != antigravity.Name {
+		if r.Context.ProviderSessionRef != nil || r.Context.ModelName != nativeScenarioModel() || r.Context.ProviderName != antigravity.Name {
 			return errNativeFixtureDenied
 		}
 		var raw []byte
@@ -214,6 +218,13 @@ func TestNativeDelegationWorkerHarness(t *testing.T) {
 		t.Fatal("native encrypted runtime import unavailable")
 	}
 	provider.observe = nativeContextObserver(pool, corpus)
+	var model transport.ModelProvider = provider
+	if finalMixedDelegationWindow() {
+		model, err = newHighRemainderProvider(pool, corpus, config.RemainderArgs, provider)
+		if err != nil {
+			t.Fatal("explicit remainder provider composition unavailable")
+		}
+	}
 	bc := budget.NewController(pool, nativeExperimentPolicy())
 	bc.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	tasks := task.NewStore(pool)
@@ -243,8 +254,8 @@ func TestNativeDelegationWorkerHarness(t *testing.T) {
 	results.DataGuard = sources.CheckRunSourcesTx
 	results.Evidence = effectEvidence{journal: actionauth.NewPostgresStore(pool)}
 	ownerGoals := goal.New(pool, tasks, nil)
-	executor := flow.NewService(sessions, leases, runs, transcript.NewStore(pool), provider, flow.Config{
-		ProviderName: antigravity.Name, ModelName: antigravity.DefaultModel, OwnerID: "native-fixture-worker", LeaseTTL: 60,
+	executor := flow.NewService(sessions, leases, runs, transcript.NewStore(pool), model, flow.Config{
+		ProviderName: antigravity.Name, ModelName: nativeScenarioModel(), OwnerID: "native-fixture-worker", LeaseTTL: 60,
 		AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2, Tasks: tasks, Checkpoints: inputs, Completion: results,
 		Budgets: bc, OwnerGoals: ownerGoals, MemorySources: sources, DelegationContexts: delegatedContextReader{sources: sources, manager: admission.Manager},
 		Tools: broker, ToolCatalog: broker, ActionAuthorizer: broker, ApprovalChecker: broker, ApprovalGate: gate, ApprovalService: approvalService,

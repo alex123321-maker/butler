@@ -1,6 +1,68 @@
 # Opt-in native delegation experiment
 
-## Current owner-directed fifth window — 2026-10-11
+## Accepted bounded issue16 continuation — 2026-10-12
+
+The [final High window](delegation-final-high-acceptance-20261012.md) passed two
+actual High children, overlap2, exact original checks after real worker loss,
+and current owner/source controls with four effects retained. It labels scripted
+parents/width1; earlier real High receipt/width1 evidence remains in the unchanged
+failed full report. All nine bounded criteria have independently audited combined
+evidence. History41 retains19 known/22 NULL pairs,69058 input/2135 output subtotal.
+The final window is sealed at41/new2; all old caps/counters/deadlines/reports stay
+unchanged. Deployment and broader issue17/33 acceptance remain separate.
+
+## Previous owner-directed issue16 continuation — 2026-10-12
+
+The owner requested full High acceptance with subagents. The sealed
+[full experiment](delegation-full-high-acceptance-20261012.md) proved both native
+parent receipt projections, four correct recovered children and width1 owner
+decisions, then failed width2 overlap1. The corrected
+[remainder](delegation-high-remainder-acceptance-20261012.md) entered both real
+width2 calls concurrently but failed with `transport_connection_error`, no finals.
+Both failed reports remain failed. History39 has17 known/22 NULL usage pairs and
+62760 input/1810 output known subtotal. The original39 ceiling and every earlier
+window remain sealed. Successful native width2 verification and final controls
+remain pending.
+
+## Earlier owner-directed High continuation — 2026-10-12
+
+The renewed request authorizes open-issue implementation and subscription-backed
+system checks. A separate [Flash High window](delegation-high-acceptance-20261012.md)
+retains all22 observed attempts/nine pinned artifacts, uses a new immutable marker
+and exact tested source, and leaves every historical runner sealed. Historical
+failures are unchanged; complete issue16 acceptance and production activation
+remain separate from this bounded scenario.
+
+The single High execution is now SEALED and failed the parent receipt-projection
+gate after5 new native calls. Both real Broker admissions succeeded; after actual
+worker loss/claim expiry both children completed and passed exact original-source
+checks. Width2 and later owner/source controls were not reached. The
+[new immutable report](../../deploy/delegation/native-scenario-high-20261012.json)
+has SHA256 `f4649a539eed17bf01db034209a757bbfdb268759b2446c852f2260009bba0d2`.
+Cumulative diagnostic-inclusive history27 has11 known/16 unknown usage pairs;
+38196 input/1016 output is a known subtotal. Delegation-only history23 has8
+known/15 unknown,36149 input/965 output subtotal. Preserve the separate old18
+history and all old reports; no old runner or this High window may be reopened.
+
+## Current Antigravity diagnosis continuation — separate from delegation
+
+The owner initially authorized Antigravity diagnosis without inference, then
+explicitly authorized further diagnostic calls. The installed
+CLI/Go synthetic wire comparison is now implemented and completed with networking
+disabled; see [the diagnosis](antigravity-quota-diagnosis.md). Three subsequent
+requests used independently sealed diagnostic windows: CLI and Go512 completed;
+ordinary Go8192 failed RESOURCE_EXHAUSTED/HIGH_DEMAND, confirming capacity for
+that new rejection. They add no full delegation
+model acceptance and no permission to execute the historical runner below.
+All five native reports, eighteen attempts, five known/thirteen unknown usage
+pairs and the SEALED baseline13 window remain unchanged. Known24921 input/547
+output is a subtotal. Issue16's full delegation gates remain outstanding.
+The [experiment record](antigravity-next-experiment.md) retains both completed
+windows and an optional further proposal. Cumulative diagnostic-inclusive count
+is21,7 known/14 unknown pairs; known input26939/output581 remains a subtotal.
+Native delegation history stays18 and must not be rewritten by diagnostic success.
+
+## Historical owner-directed fifth window — 2026-10-11 — SEALED
 
 The renewed owner instruction explicitly prioritizes finishing issues16/17.
 One new bounded window carries forward all four immutable failed reports:

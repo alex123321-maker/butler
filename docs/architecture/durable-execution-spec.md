@@ -35,6 +35,13 @@ continuation is claimed does. Repeated crashes cannot renew the allowance.
 Receipts expose attempts, deadline, checkpoint and error code. Automatic retries
 never replay an uncertain external action; blocked work requires owner review.
 
+Independent claims acquired or renewed at different times also expire at different
+times. Available worker width permits simultaneous eligible sessions but does not
+synchronize crash-recovery eligibility. A parallel acceptance fixture must observe
+all relevant old claim expiries using the PostgreSQL clock before measuring
+overlap; it must not rewrite TTLs or infer serialized workers from a fast run that
+finishes while another claim is still live.
+
 For a bounded delegated input, the original kernel event ID and refs-only payload
 remain immutable. Ordinary workers replace only the execution event's run
 deduplication key with the accepted `input_id`. Core preparation and recovery use

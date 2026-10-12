@@ -26,6 +26,53 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(scripts/dev/delegation-final-high-lab[.]sh$|scripts/dev/delegation-final-tls/|apps/orchestrator/internal/app/delegation_high_final.*_test[.]go$)" {
+      [void]$specs.Add("docs/architecture/delegation-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/delegation-final-high-lab.sh /srv/storage/butler/agents/delegation-final-high-20261012 prepare after isolated Sync with clean committed release. Thirteen immutable history pins carry39 into a separate two-call41 ceiling; exact fixed-host two-lane TLS gate has no auth or HTTP generation. Old windows/caps stay sealed.")
+      continue
+    }
+    "^(scripts/dev/delegation-remainder-high-lab[.]sh$|apps/orchestrator/internal/app/delegation_high_remainder.*_test[.]go$)" {
+      [void]$specs.Add("docs/architecture/delegation-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/delegation-remainder-high-lab.sh /srv/storage/butler/agents/delegation-remainder-high-v2-20261012 prepare after isolated Sync with clean committed release. Mixed fixture declares scripted parents/width1 and only2 native High width2 child calls, carrying37 to original39 ceiling. All old windows remain sealed.")
+      continue
+    }
+    "^(scripts/dev/delegation-acceptance-high-lab[.]sh$|scripts/dev/fixtures/delegation-high-conflict-20261012[.]json$|apps/orchestrator/internal/app/delegation_full_high.*_test[.]go$)" {
+      [void]$specs.Add("docs/architecture/delegation-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/delegation-acceptance-high-lab.sh /srv/storage/butler/agents/delegation-acceptance-high-20261012 prepare after isolated Sync, with the clean committed BUTLER_DELEGATION_NATIVE_RELEASE (real PostgreSQL/Broker/owner verification, race/vet, zero inference). New owner-authorized one-use execute carries27 historical calls and has12-new/39-total ceiling; never reopen earlier windows.")
+      continue
+    }
+    "^(scripts/dev/delegation-high-lab[.]sh$|apps/orchestrator/internal/app/delegation_high_window_test[.]go$)" {
+      [void]$specs.Add("docs/architecture/delegation-contract.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/delegation-high-lab.sh /srv/storage/butler/agents/delegation-high-20261012 prepare after isolated Sync, with BUTLER_DELEGATION_NATIVE_RELEASE set to the committed SHA (real disposable PostgreSQL, integrated regressions, race/vet, zero inference). The single High execute window is permanently sealed after attempts23-27; never reopen it.")
+      continue
+    }
+    "^(scripts/dev/antigravity-compare/|scripts/dev/antigravity-compare-lab[.]sh$|scripts/dev/antigravity-high-lab[.]sh$)" {
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$tests.Add("ssh laba: scripts/dev/antigravity-compare-lab.sh /srv/storage/butler/agents/antigravity-compare tests after isolated Sync (actual disposable PG, race, vet; zero inference). inspect blocks generation; execute requires separately recorded owner authorization and cannot reopen its marker.")
+      [void]$tests.Add("ssh laba: scripts/dev/antigravity-high-lab.sh /srv/storage/butler/agents/antigravity-high tests after isolated Sync (actual disposable PG, race, vet, zero inference). inspect/probe perform no generation. execute is a separately recorded one-use window carrying21 historical attempts.")
+      continue
+    }
+    "^(scripts/dev/antigravity-wire/|scripts/dev/antigravity-wire-lab[.]sh$|internal/transport/antigravity/)" {
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$tests.Add("ssh laba: scripts/dev/antigravity-wire-lab.sh in a new isolated agent root after Sync; tests, default, and aicode modes use --network none, synthetic credentials and no operator profile (zero inference)")
+      continue
+    }
     "^(apps/tool-workspace/|apps/tool-broker/internal/app/workspace|apps/orchestrator/internal/app/workspace|internal/(config/workspace|workspaceexec/health)|deploy/docker-compose[.]workspaces|docker/tool-workspace/)" {
       [void]$specs.Add("docs/architecture/isolated-code-workspaces.md")
       [void]$specs.Add("docs/architecture/action-authorization-contract.md")

@@ -16,6 +16,21 @@ workspace keeps its task binding. A task amendment invalidates old pinned use;
 there is no automatic widening or reassignment to the new task revision.
 
 `New` requires a preprovisioned private directory, nonnil guard and fixed limits.
+The production Runtime separately holds `LockRoot` for that root's complete
+lifetime: Linux directory-inode `flock`, no shared lock/PID/temp file, fixed safe
+denial on contention or unsupported platforms. `RootOwner.Check` compares the
+held inode and private permissions to the current named directory; `Close`
+releases ownership only after the caller drains work. This primitive is separate
+from Store authorization and resource arbitration, and writes no PG state.
+Lower-level Store/Observer handles do not themselves obtain process ownership;
+the owning runtime must keep one RootOwner until all its handles are closed.
+`Store.CheckOwner`, `Observer.CheckOwner` and `DeletionRuntime.CheckOwner` compare
+their actual opened directory inode with that RootOwner. The runtime validates
+all three before returning from startup. A temporary root replacement followed
+by restoration of the original named directory cannot validate replacement
+handles. The handle comparison and RootOwner's current named-path check are
+separate required checks.
+
 The guard checks live ownership, current task/goal/mandate and actual resource
 lease/fence/observation version **on the caller's transaction** before workspace
 locks. The fixed lock order is ownership → session/task/goal → sorted resources

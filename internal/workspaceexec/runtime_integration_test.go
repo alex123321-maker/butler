@@ -17,11 +17,238 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/workspace"
+	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	healthv1 "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/metadata"
 )
+
+func TestWorkspaceRuntimeRootBindingRejectsRestoredStartupReplacementIntegration(t *testing.T) {
+	f := newRuntimeFixture(t)
+	if f.runtime.checkRootBinding() != nil {
+		t.Fatal("installed runtime did not bind its independent handles")
+	}
+	original := f.root + "-original"
+	replacement := f.root + "-replacement"
+	if err := os.Rename(f.root, original); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Remove(original) })
+	if err := os.Mkdir(f.root, 0700); err != nil {
+		t.Fatal(err)
+	}
+	// These are the same three constructors used at startup, opening real
+	// private directory B while the owner still holds directory A. No timing,
+	// production injection hook or custom clock is involved.
+	observer, err := workspace.NewObserver(f.root, MaxCodeBytes)
+	if err != nil {
+		t.Fatal("replacement observer could not open private fixture root")
+	}
+	t.Cleanup(func() { _ = observer.Close() })
+	guard, err := workspace.NewResourceGuard(f.dispatch.resources, f.runtime, f.runtime)
+	if err != nil {
+		t.Fatal(err)
+	}
+	files, err := workspace.New(f.pool, f.root, guard, workspace.DefaultLimits())
+	if err != nil {
+		t.Fatal("replacement Store could not open private fixture root")
+	}
+	t.Cleanup(func() { _ = files.Close() })
+	purge, err := workspace.NewDeletionRuntime(f.root)
+	if err != nil {
+		t.Fatal("replacement privacy executor could not open private fixture root")
+	}
+	t.Cleanup(func() { _ = purge.Close() })
+	if err := os.Rename(f.root, replacement); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Remove(replacement) })
+	if err := os.Rename(original, f.root); err != nil {
+		t.Fatal(err)
+	}
+	if f.runtime.owner.Check() != nil || f.runtime.checkRootBinding() != nil {
+		t.Fatal("restored named directory did not retain original owner/handles")
+	}
+	for _, component := range []string{"store", "observer", "privacy", "all"} {
+		t.Run(component, func(t *testing.T) {
+			r := &Runtime{owner: f.runtime.owner, files: f.runtime.files, observer: f.runtime.observer, purge: f.runtime.purge}
+			if component == "store" || component == "all" {
+				r.files = files
+			}
+			if component == "observer" || component == "all" {
+				r.observer = observer
+			}
+			if component == "privacy" || component == "all" {
+				r.purge = purge
+			}
+			if r.checkRootBinding() != ErrDenied {
+				t.Fatal("constructor binding accepted a replacement inode after path restoration")
+			}
+		})
+	}
+	for _, path := range []string{f.root, replacement} {
+		if entries, err := os.ReadDir(path); err != nil || len(entries) != 0 {
+			t.Fatal("startup binding created physical artifact/lock/temp state")
+		}
+	}
+}
+
+func TestWorkspaceRuntimeCloseDrainsActualExecuteAndKeepsUnknownLeaseIntegration(t *testing.T) {
+	f := newRuntimeFixture(t)
+	if duplicate, err := NewRuntime(f.ctx, f.dispatch, f.root, f.token); err == nil {
+		_ = duplicate.Close()
+		t.Fatal("runtime borrowed active artifact root")
+	}
+	req, ticket := f.claim(t, "close-active-create", CreateTool, `{}`)
+	var lease, resource string
+	var version, fence int64
+	if err := f.pool.QueryRow(f.ctx, `SELECT d.resource_id,r.inflight_lease_id,r.version,r.fence_epoch FROM code_workspace_dispatches d JOIN execution_resources r ON r.resource_id=d.resource_id WHERE d.ticket_id=$1`, ticket).Scan(&resource, &lease, &version, &fence); err != nil || lease == "" {
+		t.Fatal("claimed resource not retained before runtime entry")
+	}
+	blocker, err := f.pool.Begin(f.ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer blocker.Rollback(context.Background())
+	if _, err := blocker.Exec(f.ctx, `SELECT input_id FROM accepted_inputs WHERE input_id='wp-input' FOR UPDATE`); err != nil {
+		t.Fatal(err)
+	}
+	executeCtx, stopExecute := context.WithCancel(metadata.NewIncomingContext(f.ctx, metadata.Pairs("authorization", "Bearer "+f.token, TicketHeader, ticket)))
+	defer stopExecute()
+	results := make(chan *runtimev1.ExecuteResponse, 1)
+	go func() { response, _ := f.runtime.Execute(executeCtx, req); results <- response }()
+	// The fixture has pool2. Observe the actual second connection's row-lock
+	// wait using the already borrowed blocker, without a third pool checkout.
+	waitWorkspaceInputBlock(t, f.ctx, blocker)
+	closed := make(chan error, 1)
+	go func() { closed <- f.runtime.Close() }()
+	select {
+	case <-closed:
+		t.Fatal("Close released artifact root during actual Execute")
+	case <-time.After(100 * time.Millisecond):
+	}
+	if owner, err := workspace.LockRoot(f.root); err != workspace.ErrDenied {
+		if owner != nil {
+			_ = owner.Close()
+		}
+		t.Fatal("replacement owner entered while old Execute was active")
+	}
+	stopExecute()
+	select {
+	case response := <-results:
+		if response.GetResult().GetStatus() != "effect_unknown" {
+			t.Fatal("cancelled row-lock wait invented completed effect")
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("actual Execute did not stop after cancellation")
+	}
+	select {
+	case err := <-closed:
+		if err != nil {
+			t.Fatal("drained runtime did not release root")
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("Close did not finish after actual Execute returned")
+	}
+	if err := blocker.Rollback(f.ctx); err != nil {
+		t.Fatal(err)
+	}
+	if f.runtime.Close() != nil {
+		t.Fatal("runtime Close was not idempotent")
+	}
+	response, err := f.runtime.Execute(metadata.NewIncomingContext(f.ctx, metadata.Pairs("authorization", "Bearer "+f.token, TicketHeader, ticket)), req)
+	if err != nil || response.GetResult().GetStatus() != "effect_unknown" {
+		t.Fatal("closed runtime retained execution admission")
+	}
+	if CheckReadiness(f.ctx, f.dispatch.profile, f.token) == nil {
+		t.Fatal("closed runtime retained readiness")
+	}
+	replacement, err := NewRuntime(f.ctx, f.dispatch, f.root, f.token)
+	if err != nil {
+		t.Fatal("drained runtime blocked fresh process ownership")
+	}
+	t.Cleanup(func() { _ = replacement.Close() })
+	var currentResource, currentLease, phase, effect string
+	var currentVersion, currentFence int64
+	if err := f.pool.QueryRow(f.ctx, `SELECT d.resource_id,r.inflight_lease_id,r.version,r.fence_epoch,d.phase,e.state FROM code_workspace_dispatches d JOIN execution_resources r ON r.resource_id=d.resource_id JOIN action_effects e ON e.action_id=d.effect_id WHERE d.ticket_id=$1`, ticket).Scan(&currentResource, &currentLease, &currentVersion, &currentFence, &phase, &effect); err != nil || currentResource != resource || currentLease != lease || currentVersion != version || currentFence != fence || phase != "prepared" || effect != "executing" {
+		t.Fatal("close/restart reconciled retained unknown dispatch/resource history")
+	}
+	if entries, err := os.ReadDir(f.root); err != nil || len(entries) != 0 {
+		t.Fatal("cancelled Execute touched artifact/lock/temp files")
+	}
+}
+
+func TestWorkspaceRuntimeRootReplacementAfterAuthorityWaitDeniesEffectIntegration(t *testing.T) {
+	f := newRuntimeFixture(t)
+	req, ticket := f.claim(t, "root-replaced-create", CreateTool, `{}`)
+	blocker, err := f.pool.Begin(f.ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer blocker.Rollback(context.Background())
+	if _, err := blocker.Exec(f.ctx, `SELECT input_id FROM accepted_inputs WHERE input_id='wp-input' FOR UPDATE`); err != nil {
+		t.Fatal(err)
+	}
+	results := make(chan *runtimev1.ExecuteResponse, 1)
+	ctx := metadata.NewIncomingContext(f.ctx, metadata.Pairs("authorization", "Bearer "+f.token, TicketHeader, ticket))
+	go func() { response, _ := f.runtime.Execute(ctx, req); results <- response }()
+	waitWorkspaceInputBlock(t, f.ctx, blocker)
+	old := f.root + "-replaced"
+	if err := os.Rename(f.root, old); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Remove(old) })
+	if err := os.Mkdir(f.root, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := blocker.Rollback(f.ctx); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case response := <-results:
+		if response.GetResult().GetStatus() != "effect_unknown" {
+			t.Fatal("root replaced during authority wait admitted physical effect")
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("runtime did not finish after actual authority wait")
+	}
+	if CheckReadiness(f.ctx, f.dispatch.profile, f.token) == nil {
+		t.Fatal("replaced root borrowed installed readiness")
+	}
+	for _, path := range []string{f.root, old} {
+		if entries, err := os.ReadDir(path); err != nil || len(entries) != 0 {
+			t.Fatal("root replacement reached detached or replacement files")
+		}
+	}
+	var phase string
+	var evidence, copies int
+	var quarantined bool
+	if err := f.pool.QueryRow(f.ctx, `SELECT d.phase,(SELECT count(*) FROM code_workspace_effect_evidence),(SELECT count(*) FROM code_workspaces),r.inflight_lease_id=d.resource_lease_id FROM code_workspace_dispatches d JOIN execution_resources r ON r.resource_id=d.resource_id WHERE d.ticket_id=$1`, ticket).Scan(&phase, &evidence, &copies, &quarantined); err != nil || phase != "running" || evidence != 0 || copies != 0 || !quarantined {
+		t.Fatal("root replacement invented evidence or cleared irreversible resource admission")
+	}
+}
+
+func waitWorkspaceInputBlock(t *testing.T, ctx context.Context, blocker pgx.Tx) {
+	t.Helper()
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		if _, err := blocker.Exec(ctx, `SELECT pg_stat_clear_snapshot()`); err != nil {
+			t.Fatal(err)
+		}
+		var waiting bool
+		if err := blocker.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pg_backend_pid()=ANY(pg_blocking_pids(pid)))`).Scan(&waiting); err != nil {
+			t.Fatal(err)
+		}
+		if waiting {
+			return
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("actual Execute did not reach owning input row-lock wait")
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+}
 
 type runtimeFixture struct {
 	*sourceFixture

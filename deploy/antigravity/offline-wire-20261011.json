@@ -1,0 +1,304 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-11",
+  "status": "OFFLINE_DIAGNOSIS_COMPLETE_LIVE_CAUSE_UNRESOLVED",
+  "original_handoff_commit": "9cd696e",
+  "cli_version": "1.3.3",
+  "cli_sha256": "d97edcf90eda1799cd6cedc92616ef402f23c9752a723e8b8ae3e8f062ce458b",
+  "isolation": {
+    "docker_network": "none",
+    "command_requires_loopback_only": true,
+    "credentials": "synthetic_only",
+    "inherited_operator_environment": false,
+    "real_profile_mounts": false,
+    "real_postgres_credentials": false,
+    "source_and_binary_readonly": true,
+    "proxy_dials_fixed_loopback_only": true,
+    "main_deployment_changed": false,
+    "real_model_calls": 0,
+    "scope": "Synthetic CLI/Go capture and isolated unit tests"
+  },
+  "captures": [
+    {
+      "mode": "default",
+      "source_snapshot": "20261011-215258-010",
+      "remote_report": "/srv/storage/butler/agents/antigravity-offline/reports/wire-20261011T145513Z-1482839-default.json",
+      "sha256": "d9e4c56f6a28d0876e3368be72e8f1e3e2b553e40430de20fba935b065b2a10e",
+      "cli_capture_complete": true,
+      "cli_exit_ok": false,
+      "cli_exit_failure_expected": true,
+      "butler_fixture_complete": true,
+      "cli_generation_attempts": 1,
+      "real_model_calls": 0,
+      "generation_observations": [
+        {
+          "accept": "",
+          "alt": "sse",
+          "authorization_is_fixture": true,
+          "client": "cli",
+          "content_type": "application/json",
+          "generation": {
+            "model": "gemini-3.8-flash-tiered",
+            "model_present": true,
+            "request": {
+              "contents_count": 1,
+              "generationConfig_present": true,
+              "generation_config_keys": [
+                "thinkingConfig"
+              ],
+              "prompt_seen": true,
+              "roles": [
+                "user"
+              ],
+              "sessionId_present": true,
+              "system_instruction_present": true
+            },
+            "request_keys": [
+              "contents",
+              "generationConfig",
+              "sessionId",
+              "systemInstruction"
+            ],
+            "request_present": true,
+            "system_instruction_present": false
+          },
+          "host": "daily-cloudcode-pa.googleapis.com",
+          "keys": [
+            "model",
+            "project",
+            "request",
+            "requestId",
+            "requestType",
+            "userAgent"
+          ],
+          "method": "POST",
+          "path": "/v1internal:streamGenerateContent",
+          "user_agent": "antigravity/cli/1.3.3 (aidev_client; os_type=linux; arch=amd64; cl=996823801; auth_method=consumer)"
+        },
+        {
+          "accept": "text/event-stream",
+          "alt": "sse",
+          "authorization_is_fixture": true,
+          "client": "butler",
+          "content_type": "application/json",
+          "generation": {
+            "aicode_keys": [
+              "experience"
+            ],
+            "aicode_present": true,
+            "contents_count": 1,
+            "experience": "gemini-3.8-flash-tiered",
+            "experience_expected": true,
+            "experience_type": "string",
+            "generationConfig_present": true,
+            "generation_config_keys": [
+              "maxOutputTokens"
+            ],
+            "maxOutputTokens": 8192,
+            "prompt_seen": true,
+            "roles": [
+              "user"
+            ],
+            "system_instruction_present": true
+          },
+          "host": "aicode.googleapis.com",
+          "keys": [
+            "aicode",
+            "contents",
+            "generationConfig",
+            "systemInstruction"
+          ],
+          "method": "POST",
+          "path": "/v1:streamGenerateContent",
+          "user_agent": "antigravity/1.3.3 butler/0.1"
+        }
+      ]
+    },
+    {
+      "mode": "aicode",
+      "source_snapshot": "20261011-215258-010",
+      "remote_report": "/srv/storage/butler/agents/antigravity-offline/reports/wire-20261011T145516Z-1483137-aicode.json",
+      "sha256": "cab53c4a3df292f924e3f32c7fab632cb401edffe4a475cc91055a6344b5816a",
+      "cli_capture_complete": true,
+      "cli_exit_ok": false,
+      "cli_exit_failure_expected": true,
+      "butler_fixture_complete": true,
+      "cli_generation_attempts": 1,
+      "real_model_calls": 0,
+      "generation_observations": [
+        {
+          "accept": "",
+          "alt": "sse",
+          "authorization_is_fixture": true,
+          "client": "cli",
+          "content_type": "application/json",
+          "generation": {
+            "aicode_keys": [
+              "experience"
+            ],
+            "aicode_present": true,
+            "contents_count": 1,
+            "experience": "chat-gemini-3.1-pro-low",
+            "experience_expected": false,
+            "experience_type": "string",
+            "generationConfig_present": true,
+            "generation_config_keys": [
+              "responseMimeType",
+              "thinkingConfig"
+            ],
+            "prompt_seen": true,
+            "roles": [
+              "user"
+            ],
+            "sessionId_present": true,
+            "system_instruction_present": true
+          },
+          "host": "aicode.googleapis.com",
+          "keys": [
+            "aicode",
+            "contents",
+            "generationConfig",
+            "sessionId",
+            "systemInstruction"
+          ],
+          "method": "POST",
+          "path": "/v1:streamGenerateContent",
+          "user_agent": "antigravity/cli/1.3.3 (aidev_client; os_type=linux; arch=amd64; cl=996823801; auth_method=consumer)"
+        },
+        {
+          "accept": "text/event-stream",
+          "alt": "sse",
+          "authorization_is_fixture": true,
+          "client": "butler",
+          "content_type": "application/json",
+          "generation": {
+            "aicode_keys": [
+              "experience"
+            ],
+            "aicode_present": true,
+            "contents_count": 1,
+            "experience": "gemini-3.8-flash-tiered",
+            "experience_expected": true,
+            "experience_type": "string",
+            "generationConfig_present": true,
+            "generation_config_keys": [
+              "maxOutputTokens"
+            ],
+            "maxOutputTokens": 8192,
+            "prompt_seen": true,
+            "roles": [
+              "user"
+            ],
+            "system_instruction_present": true
+          },
+          "host": "aicode.googleapis.com",
+          "keys": [
+            "aicode",
+            "contents",
+            "generationConfig",
+            "systemInstruction"
+          ],
+          "method": "POST",
+          "path": "/v1:streamGenerateContent",
+          "user_agent": "antigravity/1.3.3 butler/0.1"
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "source_snapshot": "20261011-215653-732",
+    "remote_report": "/srv/storage/butler/agents/antigravity-offline/reports/wire-20261011T145657Z-1488477-tests.jsonl",
+    "sha256": "1aa1cd28a0fef81f712c30918d52d591ef1af1d935daa2208de5fd29dc776d03",
+    "race": true,
+    "count": 1,
+    "passed_test_and_subtest_names": 110,
+    "passed_packages": 4,
+    "packages_without_tests": [
+      "internal/providerfactory"
+    ],
+    "skipped_tests": [
+      "internal/providerauth: TestAntigravityImportEncryptedPostgresAndReconnect",
+      "internal/config: TestPostgresSettingsStoreIntegration"
+    ],
+    "skip_reason": "No real/disposable PostgreSQL configured for this isolated offline runner",
+    "vet_passed_packages": [
+      "scripts/dev/antigravity-wire",
+      "internal/transport/antigravity",
+      "internal/providerfactory",
+      "internal/providerauth",
+      "internal/config"
+    ]
+  },
+  "historical_ledger": {
+    "attempts": 18,
+    "usage_known_pairs": 5,
+    "usage_unknown_pairs": 13,
+    "known_input_subtotal": 24921,
+    "known_output_subtotal": 547,
+    "unknown_usage_is_zero": false,
+    "window": "/srv/storage/butler/native-acceptance-windows/baseline13",
+    "window_state": "SEALED",
+    "reports": [
+      {
+        "path": "deploy/delegation/native-scenario-failed.json",
+        "sha256": "28c75c31827f8a25ca8ed101e6e04b8264a7e66ee9ce18808d504d5af748c8f0"
+      },
+      {
+        "path": "deploy/delegation/native-scenario-followup-failed.json",
+        "sha256": "f5d25f36b574464508a4124ac7490d525e75d8c8cf60111a0bb637637e777619"
+      },
+      {
+        "path": "deploy/delegation/native-scenario-third-failed.json",
+        "sha256": "b7a4b35b7b587fb8f0561cbdb18f5ad8088b7939e673ffa290e06ec10410b89b"
+      },
+      {
+        "path": "deploy/delegation/native-scenario-fourth.json",
+        "sha256": "72d95bb5ac0bcf5bd4d8d4b28b1de6beb10d819a348c7e5efb187295ce28a1f9"
+      },
+      {
+        "path": "deploy/delegation/native-scenario-fifth.json",
+        "sha256": "5e180087d4e1d43fe52c6afac0c35763b69a8dfe906953a18eac49416bd7cded"
+      }
+    ]
+  },
+  "conclusions": {
+    "http_v1_cli_aicode_serialization_observed": true,
+    "v1main_namespace_proves_http_version": false,
+    "explicit_aicode_fixture_matches_flash": false,
+    "production_transport_behavior_changed": false,
+    "code_cause_proven": false,
+    "historical_high_demand_capacity_confirmed_for_specific_responses": true,
+    "fifth_rate_limited_reason": "UNKNOWN",
+    "account_google_ai_pro_confirmed_by_prior_private_audit_and_metadata": true,
+    "per_request_subscription_accounting": "UNKNOWN",
+    "meter_100_percent_explanation": "UNKNOWN"
+  },
+  "next_real_experiment": {
+    "proposal": "docs/ai/antigravity-next-experiment.md",
+    "status": "PREPARED_NOT_AUTHORIZED_NOT_EXECUTED",
+    "new_generation_limit": 2,
+    "output_token_cap_per_request": 128,
+    "request_seconds": 45,
+    "total_generation_seconds": 120,
+    "supplemental_monetary_cost_cap": 0,
+    "private_live_dispatch_gate_implemented": false
+  },
+  "source_files": [
+    {
+      "path": "scripts/dev/antigravity-wire/main.go",
+      "sha256": "954723bb82827d21f4dad9e2b9bb91eed1d749a8d33eb13f643115750ee4c2d1"
+    },
+    {
+      "path": "scripts/dev/antigravity-wire/main_test.go",
+      "sha256": "bb905ed5402356de276f1352af3ed58228400c5e7b188585961c741401ea31b8"
+    },
+    {
+      "path": "scripts/dev/antigravity-wire-lab.sh",
+      "sha256": "70a7d3222e6a4e583170a83311735d8bff7ac9f3b38a0df15f7c47ac47f806f3"
+    },
+    {
+      "path": "internal/transport/antigravity/protocol.go",
+      "sha256": "7a06ce6a6fe5560ae0346165287705c70fa56b8717415162c9988a81c84d6b94"
+    }
+  ]
+}

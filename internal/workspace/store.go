@@ -60,6 +60,15 @@ func openPrivateRoot(rootPath string) (*os.Root, error) {
 }
 func (s *Store) Close() error { return s.root.Close() }
 
+// CheckOwner binds this actual opened Store handle to the runtime's locked
+// directory inode independently of the current operator path.
+func (s *Store) CheckOwner(owner *RootOwner) error {
+	if s == nil {
+		return ErrDenied
+	}
+	return owner.checkRoot(s.root)
+}
+
 // CheckRoot is content-free installed-runtime readiness. It checks the actual
 // opened root and current named directory, granting no namespace access.
 func (s *Store) CheckRoot() error {

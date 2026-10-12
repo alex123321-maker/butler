@@ -18,6 +18,15 @@ func NewDeletionRuntime(rootPath string) (*DeletionRuntime, error) {
 	return &DeletionRuntime{r}, nil
 }
 func (r *DeletionRuntime) Close() error { return r.root.Close() }
+
+// CheckOwner binds the physical privacy executor's actual opened root to the
+// runtime's locked inode. A matching named path alone is insufficient.
+func (r *DeletionRuntime) CheckOwner(owner *RootOwner) error {
+	if r == nil {
+		return ErrDenied
+	}
+	return owner.checkRoot(r.root)
+}
 func (r *DeletionRuntime) PurgeWorkspace(ctx context.Context, id string) error {
 	decoded, err := hex.DecodeString(id)
 	if r == nil || ctx.Err() != nil || err != nil || len(decoded) != 16 || hex.EncodeToString(decoded) != id {

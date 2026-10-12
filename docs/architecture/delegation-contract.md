@@ -1,9 +1,12 @@
 # Durable bounded delegation
 
-Implementation in progress for issue16. Production/model acceptance remains
-pending. Optional operator composition registers fixed context-only research
-admission, using existing input workers; no new owner endpoint is exposed.
-The shared lab deployment has not enabled this feature.
+The bounded issue16 implementation and High model acceptance are complete.
+Optional operator composition registers fixed context-only research admission
+using existing input workers and authenticated owner decisions. The shared lab
+deployment has not enabled this feature. The
+[acceptance matrix](../ai/delegation-final-high-acceptance-20261012.md) records
+actual parent receipts, child recovery, bounded parallel results and controls;
+scripted component work and retained failed reports remain explicitly separate.
 
 Session Service continues to own independent execution identities and ordering.
 Task Service owns child tasks and durable contracts. Orchestrator owns child
@@ -60,11 +63,12 @@ task revision and deadline checks repeat before model/dispatch/final publication
 The proposal source check also enforces the parent's exact scope/purpose grants
 when the authenticated owner can independently read a broader Catalog body.
 
-Pending acceptance: actual native durable separate-context scheduling through Broker,
-dependency/width/depth bounds, independent and conflicting result collection,
-parent crash and revision/stop races, resource/workspace arbitration, and an actual
-single-versus-bounded-parallel experiment using the same shared model worker.
-No criterion is satisfied by agreeing model outputs or a simulated effect.
+Accepted bounded evidence covers real Broker scheduling, separate child contexts,
+dependency/width/depth caps, source-relative conflicting observations, independent
+owner decisions, worker loss, revision/source/Stop controls and actual High
+width1 followed by width2 overlap. Broader resource/workspace arbitration, local
+research quality and a no-delegation benchmark remain issue17/33 work. Model
+agreement and simulated effects never supply an acceptance verdict.
 
 ## Owning manager component
 
@@ -100,11 +104,62 @@ and acceptance requires an existing independent verified result ID. Request
 owner IDs, worker proofs, host/resource overrides and narrative verdicts deny.
 No delegation composition means unavailable, not an alternate execution route.
 
+An explicit versioned Catalog contract can further constrain numeric research
+acceptance. Its contract-source body is
+`{"kind":"delegation_numeric_observation_v1","source_ref":<exact selected SourceRef>}`.
+The marker lives in the preserved source TEXT, because PostgreSQL JSONB locators
+normalize duplicate keys and could hide conflicting schema selection.
+This DATA selects an additional
+objective check; it grants no execution, verification or owner authority.
+The referenced witness must already occur in the child's selected source list,
+and in the independently verified result and decision evidence. The witness body
+has exactly `observed_value` (int64) and `observed_date` (valid `YYYY-MM-DD`).
+The immutable child final must strictly contain `source_id`, `source_revision`,
+`source_hash`, `observed_value`, `observed_date` and `uncertainty:"source_only"`.
+Every numeric object has an exact required field-name set, including the nested
+`source_ref`. Case variants and Unicode folding aliases are rejected before
+struct decoding; JSON escapes that decode to the exact ASCII field name remain
+valid. A duplicate-key check based only on lowercasing is insufficient because
+the Go struct decoder also folds long s and Kelvin sign.
+The value and date must match that original witness, preserving the difference
+between a source-relative observation and general truth. Agreement between
+children does not enter this comparison.
+
+`DelegationGuards.CheckDecisionTx` reads the current contract source and selected
+original through guarded Catalog access on the existing manager transaction;
+the final's owning task/run, content hash, current source/access pins, lifecycle
+and DB time are checked by the ordinary report guard. The numeric checker only
+tightens the existing authenticated owner accept path, including
+`AcceptVerified`. Even a persisted owner-verified result cannot override a
+contradictory typed final. Missing/null/ambiguous/oversized JSON, unknown schema
+versions and an unselected witness deny acceptance; explicit zero remains valid.
+A duplicate contract kind cannot hide the opt-in with a later legacy kind.
+Unverified or unsupported finals remain collectable and rejectable as original
+observations. Narrative contracts without this marker retain their behavior;
+malformed JSON object contracts deny acceptance rather than acquire an ambiguous
+meaning.
+There is no automatic decision or broader contradiction solver for arbitrary
+research reports.
+The owning delegated-context reader recognizes this marker only from the current
+exact contract-source body returned by Catalog under the child's live lease. Its
+witness must be an exact selected root, not an inherited ancestor or a reference
+chosen by a checkpoint. It supplies a typed ephemeral witness pin to core.
+Core matches that pin to both the known contract and current selected DATA, then
+adds fixed kernel instructions for the six-field JSON output, signed int64 value,
+valid date and `source_only` uncertainty. The instruction contains only the exact
+witness reference, never its value, body, title or candidate instructions. It
+grants no tool, verification, completion or owner authority. Narrative contracts
+retain their generic handoff; malformed numeric markers deny provider preparation.
+Checkpoint recovery discards the saved numeric-format instruction and derives it
+again from fresh Catalog/lease proof, preserving separate journal/tool evidence.
+See [the actual numeric acceptance checks](../ai/delegation-numeric-acceptance.md)
+for the PG conflict scenario and its source-relative limits.
+
 The [Task README](../../apps/orchestrator/internal/task/README.md)
 documents constructor/adapters and lock order. Actual PG/source/budget tests use
 two pooled connections; no model inference/effect is claimed. The optional
 private Broker route and ordinary durable workers are composed as described
-below; the shared native model experiment remains pending. Explicit
+below; the bounded High experiment is accepted as documented above. Explicit
 selected-source context is integrated in the ordinary preparation/recovery path;
 actual Catalog and core projection/recovery checks are covered separately.
 
@@ -226,7 +281,8 @@ Stop/cancelled parents deny new observations/collection; owner metadata views ma
 still show historical records. See [attempt acceptance](../ai/delegation-attempt-acceptance.md).
 
 See [guard acceptance evidence](../ai/delegation-guard-acceptance.md) for actual
-two-connection PostgreSQL/race tests and the pending production/model criteria.
+two-connection PostgreSQL/race tests. Current bounded native High acceptance and
+the separate deployment/local-quality scope are documented in the final matrix.
 
 ## Private dispatch admission component
 
@@ -243,6 +299,15 @@ IDs. Unknown fields, duplicate keys at any depth, trailing values, null/missing
 arrays and incomplete budgets are rejected. There is no owner, parent, lease,
 permission, runtime URL, source body or credential field. Initial children have
 an empty permission set; the parent's catalogue grants them no tools.
+
+The committed `AdmissionReceipt` body contains `task_id`, `input_id`, `state`
+and `contract_revision`. Core submits it under the normalized result envelope,
+so a live model reads the child's identity from `result.task_id`, rather than
+mistaking the tool-call ID, permanent effect ID or empty waiting input ID for a
+child task. Durable transcript results retain that exact body; recovered ToolOutput
+DATA wraps the reconstructed envelope without changing the receipt. A parent
+final remains the model's actual terminal answer and undergoes independent
+exact receipt projection checks. The kernel does not synthesize or repair it.
 
 `broker.DelegationExecutor` runs only after normal Broker authorization and the
 irreversible grant/effect claim. It sends the actual run/call/permanent-effect
@@ -285,6 +350,7 @@ acknowledgement remains uncertain; a spent effect is not automatically replayed.
 
 The [admission acceptance audit](../ai/delegation-admission-acceptance.md) proves
 the optional composition with an actual separate Broker process and pool2 PG.
-Deployment wiring, real model scheduling and the shared-model single/parallel
-quality/resource comparison remain pending. Failed/blocked report collection
+Deployment activation and broad local quality/resource benchmarking remain
+separate. Actual High scheduling and bounded width1/width2 acceptance passed.
+Failed/blocked report collection
 continues requiring the separate historical observation contract described above.

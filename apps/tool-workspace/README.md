@@ -35,6 +35,21 @@ execution permission or content. A fixed Unix socket requires its own directory
 with mode0700, and the socket is0600. Startup refuses active/non-socket/unknown
 endpoints; only a verified unchanged stale refused socket may be replaced.
 
+The Linux runtime holds an exclusive advisory lock on its artifact directory
+inode for its lifetime. A competing runtime sharing that root cannot start,
+including with another profile or listening address. Independent artifact roots
+stay concurrent. This requires directory `flock` support; other operating systems
+fail closed. Startup also compares each already opened Store, Observer and
+privacy executor handle to the locked directory inode. A temporary root swap
+restored before startup returns is denied even when the named-path check passes.
+
+No lock/PID file or shared temporary payload is created. Root path
+replacement or shared permissions deny readiness and new execution. Shutdown
+drains active execution/readiness/privacy work before releasing the root. A
+crash releases this process lock without clearing any PG resource/effect state;
+restart is not evidence that an uncertain operation was absent or permission to
+reconcile/replay it. See [root ownership acceptance](../../docs/ai/workspace-root-owner-acceptance.md).
+
 For Compose use the explicit optional
 [workspace overlay](../../deploy/docker-compose.workspaces.yml). Prepare separate
 data and socket directories owned by UID10001, mode0700, and a readable private

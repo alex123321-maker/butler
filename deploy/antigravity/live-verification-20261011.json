@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "updated_date": "2026-10-12",
+  "status": "CAPACITY_PROVEN_FOR_NEW_ATTEMPT_21_HISTORICAL_GENERIC_REASON_UNRESOLVED",
+  "original_handoff_commit": "9cd696e",
+  "offline_diagnosis_commit": "2d19d81",
+  "branch": "codex/antigravity-offline-diagnosis",
+  "working_copy": "D:/CodexData/home/worktrees/initiatives-completion/butler",
+  "primary_checkout_changed": false,
+  "cli": {
+    "version": "1.3.3",
+    "sha256": "d97edcf90eda1799cd6cedc92616ef402f23c9752a723e8b8ae3e8f062ce458b"
+  },
+  "authorization": {
+    "initial": "ZERO_INFERENCE_DIAGNOSIS",
+    "owner_subsequent": "EXPLICIT_ADDITIONAL_DIAGNOSTIC_MODEL_REQUESTS_AUTHORIZATION",
+    "scope": "Antigravity diagnosis only; no extra credits, account changes, fallback, issue closure or deployment."
+  },
+  "historical": {
+    "reports": [
+      {
+        "file": "deploy/delegation/native-scenario-failed.json",
+        "sha256": "28c75c31827f8a25ca8ed101e6e04b8264a7e66ee9ce18808d504d5af748c8f0",
+        "unchanged": true
+      },
+      {
+        "file": "deploy/delegation/native-scenario-followup-failed.json",
+        "sha256": "f5d25f36b574464508a4124ac7490d525e75d8c8cf60111a0bb637637e777619",
+        "unchanged": true
+      },
+      {
+        "file": "deploy/delegation/native-scenario-third-failed.json",
+        "sha256": "b7a4b35b7b587fb8f0561cbdb18f5ad8088b7939e673ffa290e06ec10410b89b",
+        "unchanged": true
+      },
+      {
+        "file": "deploy/delegation/native-scenario-fourth.json",
+        "sha256": "72d95bb5ac0bcf5bd4d8d4b28b1de6beb10d819a348c7e5efb187295ce28a1f9",
+        "unchanged": true
+      },
+      {
+        "file": "deploy/delegation/native-scenario-fifth.json",
+        "sha256": "5e180087d4e1d43fe52c6afac0c35763b69a8dfe906953a18eac49416bd7cded",
+        "unchanged": true
+      }
+    ],
+    "attempts": 18,
+    "usage_known_pairs": 5,
+    "usage_unknown_pairs": 13,
+    "known_input_tokens_subtotal": 24921,
+    "known_output_tokens_subtotal": 547,
+    "baseline13": "SEALED_UNCHANGED",
+    "baseline13_ref_hashes": {
+      "proof_ref": "09d982387c0e91b4c715709b90c576bb4ebff7e389b810d1d8989b35eb28ada4",
+      "release_ref": "9ceb3bb991fac6a84f456e5656b57d548c71368095618a9e316d437a93bf36c2"
+    }
+  },
+  "live_windows": [
+    {
+      "mode": "two-client",
+      "source_snapshot": "20261011-234341-576",
+      "remote_report": "/srv/storage/butler/agents/antigravity-compare/reports/compare-execute-20261011T164359Z-1852235/report.json",
+      "local_report": "deploy/antigravity/live-comparison-20261011.json",
+      "sha256": "6808c50e120b59a40c2c2d9b53babb7dba1e581a3fbcb29ddb3cae6b9491e472",
+      "ledger_sha256": "7a06a62c330f08036e9a65d8351eb0d7981f99f6835758cdafb5544d0aa3e4a0",
+      "marker": "/srv/storage/butler/agents/antigravity-compare/window-20261011-two-client",
+      "state": "SEALED",
+      "base_attempts": 18,
+      "new_attempts": 2,
+      "attempt_ids": [
+        19,
+        20
+      ],
+      "cli_exited_zero": true,
+      "results": "Both HTTP200 STOP marker-complete with output allocation512; route/model/context differ.",
+      "flash_fraction_pre": 0.960997,
+      "flash_fraction_post": 0.960901
+    },
+    {
+      "mode": "native8192",
+      "source_snapshot": "20261011-235122-281",
+      "remote_report": "/srv/storage/butler/agents/antigravity-compare/reports/compare-native8192-20261011T165214Z-1879006/report.json",
+      "local_report": "deploy/antigravity/native8192-20261011.json",
+      "sha256": "f3474b9d7b6441d1a9ea66dcf84b8aecc7dbe0c7dfcc1494bff3eaa7c19dcdb5",
+      "ledger_sha256": "3bd7f00651ad54284a8397094488ef1d2d8cba84da1e1181950570cf0e6b6afc",
+      "marker": "/srv/storage/butler/agents/antigravity-compare/window-20261011-native8192",
+      "state": "SEALED",
+      "base_attempts": 20,
+      "new_attempts": 1,
+      "attempt_ids": [
+        21
+      ],
+      "cli_launched": false,
+      "original_request_bytes": 242,
+      "original_body_preserved": true,
+      "output_allocation": 8192,
+      "http_status": 429,
+      "api_status": "RESOURCE_EXHAUSTED",
+      "reason": "HIGH_DEMAND",
+      "native_diagnostic": "model_capacity_unavailable",
+      "input_tokens": null,
+      "output_tokens": null,
+      "thought_tokens": null,
+      "total_tokens": null,
+      "flash_fraction_pre": 0.960901,
+      "flash_fraction_post": 0.960901,
+      "artifact_caveat": "Immutable original report contains stale safe CLI diagnostics from prior pair. Ignore that field; CLI was not launched. Final helper projection is corrected and tested without more inference."
+    }
+  ],
+  "accounting": {
+    "scope": "AGENT_TRACKED_ADMISSIONS_NOT_ACCOUNT_WIDE_TOTAL",
+    "new_attempts": 3,
+    "new_known_pairs": 2,
+    "new_unknown_pairs": 1,
+    "new_known_input_tokens": 2018,
+    "new_known_output_tokens": 34,
+    "new_known_thought_tokens": 290,
+    "new_known_total_tokens": 2342,
+    "cumulative_attempts": 21,
+    "cumulative_known_pairs": 7,
+    "cumulative_unknown_pairs": 14,
+    "known_input_tokens_subtotal": 26939,
+    "known_output_tokens_subtotal": 581,
+    "observed_monetary_cost": null,
+    "supplemental_cost_policy": "subscription_no_overage",
+    "supplemental_cost_limit": 0,
+    "owner_desktop_activity": "Separate unmetered UI observation with unknown upstream call count.",
+    "null_is_zero": false
+  },
+  "proof": {
+    "google_ai_pro_confirmed": true,
+    "origin_four_matches_true": true,
+    "official_cli_marker_complete": true,
+    "actual_go_marker_complete": true,
+    "new_native8192_capacity_rejection_proven": true,
+    "production_code_fault_proven": false,
+    "production_endpoint_model_output_auth_error_contract_changed": false,
+    "output_cap_causal_effect_proven": false,
+    "historical_fifth_reason": "UNKNOWN",
+    "per_go_subscription_bucket": "UNKNOWN",
+    "quota_delta_individually_attributed": false
+  },
+  "verification": {
+    "location": "SSH_LABA_ISOLATED_AGENT_ROOT",
+    "source_snapshot": "20261011-235539-708",
+    "remote_report": "/srv/storage/butler/agents/antigravity-compare/reports/compare-tests-20261011T165546Z-1890661/tests.jsonl",
+    "sha256": "4416b755e92e617c17ef44238f43c34dab460605814fb5c50d9612eb9df1da84",
+    "distinct_passed_test_subtest_names": 19,
+    "failures": 0,
+    "skips": 0,
+    "race": true,
+    "actual_disposable_postgres": true,
+    "vet": true,
+    "real_model_calls": 0,
+    "prior_offline_distinct_names": 110,
+    "prior_offline_pg_skips": 2,
+    "prior_offline_scope_separate": true,
+    "tested_source_hashes": {
+      "main.go": "a991d3e1f47067f372f7463f3978accd2db153233ce0447a8dcf3ed12bb6b529",
+      "gate.go": "1170f44ed1b3695a670e9dcb156f91ca0815f0b0404e30801bd2bc10d0f7b3ab",
+      "gate_test.go": "41b005ebfe72b7fc16bda45405876655ed4c931654b9fe749def1ee4ca0eb6ec",
+      "budget.go": "a8fcc9c84c2c7a8112eb45481cc998565fec203220d88784f07bede91e569cd5",
+      "budget_integration_test.go": "f3735a1e50c0cb2036358ab7846eba8d03ecc8c5887d1551d3fd5ba75d370e66",
+      "network.go": "7de51bd5f459664179818fb3bc00e67f8fe08a6ace6c98a6d969b3042eb50781",
+      "private-env.mjs": "d722f2df2b82a6fd1657c91803237c192e46ba745b0026852f005498827cfb0a",
+      "private-network-audit.mjs": "799742675f6e76678f1105fe4fe5149d0eb9b264e001ac5e0de21c3cdda5a824",
+      "../antigravity-compare-lab.sh": "89df42eab0ac782839baa3eb68957404bc2a9c49e1fa6a1ab3d27330645af9ab"
+    },
+    "local_source_matches_tested_hashes": true
+  },
+  "operational": {
+    "two_client_marker_exists": true,
+    "native8192_marker_exists": true,
+    "remaining_comparison_containers": 0,
+    "remaining_comparison_networks": 0,
+    "dedicated_postgres_data_and_sql_dumps_preserved": true,
+    "main_agent_source_pointer": "/srv/storage/butler/agents/task-owner-view/snapshots/20261011-094312-276",
+    "main_agent_source_pointer_unchanged": true,
+    "main_deployment_commands_issued": false,
+    "main_credential_write": "Only normal Manager-owned encrypted OAuth refresh/persistence; no new authorization.",
+    "issue16_closed": false
+  },
+  "owner_desktop_observation": "deploy/antigravity/desktop-observation-20261012.json",
+  "next_experiment": "docs/ai/antigravity-next-experiment.md#desktop-comparison--next-bounded-proposal-not-run",
+  "next_experiment_implemented": false,
+  "next_experiment_run": false,
+  "raw_credentials_headers_profiles_responses_exported": false
+}

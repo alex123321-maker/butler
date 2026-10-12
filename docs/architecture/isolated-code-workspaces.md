@@ -104,3 +104,27 @@ cover loopback and Unix processes and scheduled physical source erasure.
 The overlay is explicit and has not been applied to main laba. Unknown writes
 remain quarantined; authenticated owner reconciliation and remaining integrated
 resource/delegation acceptance are still required for full#17.
+
+Each production workspace Runtime now holds an exclusive Linux directory-inode
+`flock` for the lifetime of its fixed private root. A second participating process
+cannot open that same root, even under a different socket/profile; independently
+provisioned roots remain concurrent. No PID, lock file or shared temporary data
+is created. Unsupported platforms/filesystems fail closed. Readiness and runtime
+entry bind the held directory inode to the current private operator path.
+Startup separately validates the actual opened Store/Observer/DeletionRuntime
+inodes against the locked inode before returning. A transient replacement
+restored before the final named-path check cannot bind any of those handles to
+another private directory. The named-path check alone is insufficient.
+
+The Store admission callback repeats identity checks after authority/resource
+waits. Privacy erasure validates root identity around physical work. Private
+mounts, os.Root containment and OS/runtime isolation remain required.
+
+Shutdown excludes new execution/readiness/privacy entries, drains already
+entered work, closes its file/Observer/privacy handles and only then releases
+root ownership. SIGKILL releases the operating-system lock, while PostgreSQL
+claims, inflight markers, effect history and unknown outcomes remain unchanged.
+This lifetime primitive supplies neither execution authority nor evidence of
+effect absence. Authenticated owner reconciliation must still independently
+prove old-executor quiescence, exact evidence, authority and lease expiry; a
+successful restart alone cannot reconcile a resource or replay an operation.

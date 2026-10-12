@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -40,45 +41,52 @@ import (
 const nativeFixtureOwner = "native-research-owner"
 
 type nativeWidthEvidence struct {
-	Width                       int                    `json:"width"`
-	TaskID                      string                 `json:"task_id"`
-	InputID                     string                 `json:"input_id"`
-	ParentRunID                 string                 `json:"parent_run_id"`
-	ChildTaskIDs                []string               `json:"child_task_ids"`
-	ChildRunIDs                 []string               `json:"child_run_ids"`
-	ChildResultIDs              []string               `json:"child_result_ids"`
-	ReportSourceRefs            []delegation.SourceRef `json:"report_source_refs"`
-	SourceRefs                  []delegation.SourceRef `json:"source_refs"`
-	ObjectiveChecks             []bool                 `json:"objective_checks"`
-	ParentWorkerKilled          bool                   `json:"parent_worker_killed"`
-	ClaimExpiryWaitMillis       int64                  `json:"claim_expiry_wait_millis"`
-	RecoveryAndChildMillis      int64                  `json:"recovery_and_child_millis"`
-	ParentReceiptCheck          bool                   `json:"parent_receipt_check"`
-	ElapsedMillis               int64                  `json:"elapsed_millis"`
-	MaximumChildOverlap         int                    `json:"maximum_child_overlap"`
-	SharedRootReservations      budget.Units           `json:"shared_root_reservations"`
-	ParentTaskStillActive       bool                   `json:"parent_task_still_active"`
-	IndependentObservationsKept bool                   `json:"independent_observations_kept"`
-	UnverifiedAcceptanceDenied  bool                   `json:"unverified_acceptance_denied"`
+	ExecutionMode               string                   `json:"execution_mode,omitempty"`
+	Width                       int                      `json:"width"`
+	TaskID                      string                   `json:"task_id"`
+	InputID                     string                   `json:"input_id"`
+	ParentRunID                 string                   `json:"parent_run_id"`
+	ChildTaskIDs                []string                 `json:"child_task_ids"`
+	ChildRunIDs                 []string                 `json:"child_run_ids"`
+	ChildResultIDs              []string                 `json:"child_result_ids"`
+	ReportSourceRefs            []delegation.SourceRef   `json:"report_source_refs"`
+	SourceRefs                  []delegation.SourceRef   `json:"source_refs"`
+	ObjectiveChecks             []bool                   `json:"objective_checks"`
+	ParentWorkerKilled          bool                     `json:"parent_worker_killed"`
+	ClaimExpiryWaitMillis       int64                    `json:"claim_expiry_wait_millis"`
+	RecoveryAndChildMillis      int64                    `json:"recovery_and_child_millis"`
+	ParentReceiptCheck          bool                     `json:"parent_receipt_check"`
+	ElapsedMillis               int64                    `json:"elapsed_millis"`
+	MaximumChildOverlap         int                      `json:"maximum_child_overlap"`
+	SharedRootReservations      budget.Units             `json:"shared_root_reservations"`
+	ParentTaskStillActive       bool                     `json:"parent_task_still_active"`
+	IndependentObservationsKept bool                     `json:"independent_observations_kept"`
+	UnverifiedAcceptanceDenied  bool                     `json:"unverified_acceptance_denied"`
+	FullAcceptance              *fullHighWidthAcceptance `json:"full_acceptance,omitempty"`
 }
 type nativeScenarioEvidence struct {
-	Status            string                   `json:"status"`
-	ReleaseRef        string                   `json:"release_ref"`
-	NativeAttempts    int                      `json:"native_attempts"`
-	NewNativeAttempts int                      `json:"new_native_attempts"`
-	MaxAttempts       int                      `json:"max_attempts"`
-	MaxNewAttempts    int                      `json:"max_new_attempts"`
-	Historical        nativeHistoricalEvidence `json:"historical"`
-	Widths            []nativeWidthEvidence    `json:"widths"`
-	OwnerStopDenies   bool                     `json:"owner_stop_denies"`
-	RevisionDenies    bool                     `json:"revision_denies"`
-	DeletionDenies    bool                     `json:"deletion_denies"`
-	CostBasis         string                   `json:"cost_basis"`
-	SharedDayReserved budget.Units             `json:"shared_day_reserved"`
-	Attempts          []nativeAttemptEvidence  `json:"new_attempts"`
-	Usage             []nativeUsageEvidence    `json:"new_usage"`
-	OwnedState        *nativeOwnedAudit        `json:"owned_state,omitempty"`
-	Limitations       []string                 `json:"limitations"`
+	ExecutionMode                 string                   `json:"execution_mode,omitempty"`
+	ScriptedModelTurns            *int                     `json:"scripted_model_turns,omitempty"`
+	Status                        string                   `json:"status"`
+	Model                         string                   `json:"model,omitempty"`
+	ReleaseRef                    string                   `json:"release_ref"`
+	NativeAttempts                int                      `json:"native_attempts"`
+	NewNativeAttempts             int                      `json:"new_native_attempts"`
+	MaxAttempts                   int                      `json:"max_attempts"`
+	MaxNewAttempts                int                      `json:"max_new_attempts"`
+	Historical                    nativeHistoricalEvidence `json:"historical"`
+	Widths                        []nativeWidthEvidence    `json:"widths"`
+	OwnerStopDenies               bool                     `json:"owner_stop_denies"`
+	RevisionDenies                bool                     `json:"revision_denies"`
+	DeletionDenies                bool                     `json:"deletion_denies"`
+	CostBasis                     string                   `json:"cost_basis"`
+	SharedDayReserved             budget.Units             `json:"shared_day_reserved"`
+	Attempts                      []nativeAttemptEvidence  `json:"new_attempts"`
+	Usage                         []nativeUsageEvidence    `json:"new_usage"`
+	OwnedState                    *nativeOwnedAudit        `json:"owned_state,omitempty"`
+	Limitations                   []string                 `json:"limitations"`
+	ControlScopes                 []string                 `json:"control_scopes,omitempty"`
+	ConfirmedEffectsAfterControls *int                     `json:"confirmed_effects_after_controls,omitempty"`
 }
 type nativeAttemptEvidence struct {
 	Attempt   int       `json:"attempt"`
@@ -145,7 +153,11 @@ func newNativeScenarioFixture(t *testing.T, ctx context.Context) *nativeScenario
 	}
 	f.goals = goal.New(pool, tasks, nil)
 	expires := time.Now().Add(35 * time.Minute).UTC().Truncate(time.Microsecond)
-	g, err := f.goals.PutGoal(nativeOwner(ctx, "research-goal", ""), goal.GoalRequest{Goal: actionauth.GoalPolicy{Title: "Сравнить два независимых наблюдения без повышения модельного вывода до истины", Kind: "objective", Status: "active", Purpose: "native_research", Constraints: []string{"Only two selected synthetic sources; no credentials, network tools or final-verdict promotion."}, ExpiresAt: expires}})
+	constraints := []string{"Only two selected synthetic sources; no credentials, network tools or final-verdict promotion."}
+	if fullHighDelegationWindow() {
+		constraints = append(constraints, "For this bounded fixture, independently observe both originals, then use corpus key research-a as the owner-selected original; retain research-b as disputed source-relative evidence without declaring universal truth.")
+	}
+	g, err := f.goals.PutGoal(nativeOwner(ctx, "research-goal", ""), goal.GoalRequest{Goal: actionauth.GoalPolicy{Title: "Сравнить два независимых наблюдения без повышения модельного вывода до истины", Kind: "objective", Status: "active", Purpose: "native_research", Constraints: constraints, ExpiresAt: expires}})
 	if err != nil {
 		t.Fatal("explicit owner objective denied")
 	}
@@ -164,6 +176,12 @@ func newNativeScenarioFixture(t *testing.T, ctx context.Context) *nativeScenario
 		}
 		ref := guardSource(source)
 		body := f.corpus.Question + "\nВерни только JSON, без Markdown и пояснений. Поля: source_id, source_revision, source_hash, observed_value (целое), observed_date (YYYY-MM-DD), uncertainty (ровно source_only). Точная ссылка на проверяемый источник: " + string(nativeJSON(ref))
+		if fullHighDelegationWindow() {
+			body = string(nativeJSON(struct {
+				Kind   string               `json:"kind"`
+				Source delegation.SourceRef `json:"source_ref"`
+			}{delegation.NumericObservationKind, ref}))
+		}
 		contract, err := f.sources.Put(nativeOwner(ctx, "contract-"+s.Key, ""), catalog.PutSource{ExternalKey: "contract-" + s.Key, Kind: "model_candidate", ScopeType: "user", ScopeID: nativeFixtureOwner, Title: "Ограниченное поручение " + s.Key, Body: body, Parents: []catalog.SourceRef{{ID: ref.ID, Revision: ref.Revision, AccessRevision: ref.AccessRevision, Hash: ref.Hash}}})
 		if err != nil {
 			t.Fatal("bounded contract DATA publication denied")
@@ -263,6 +281,13 @@ func nativeWait(t *testing.T, ctx context.Context, timeout time.Duration, condit
 }
 
 func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
+	if nativeHighWindow() {
+		t.Fatal("High requires its separate reviewed scenario entry")
+	}
+	runNativeDelegationActualScenario(t)
+}
+
+func runNativeDelegationActualScenario(t *testing.T) {
 	if os.Getenv("BUTLER_DELEGATION_NATIVE_ACCEPTANCE") != "1" {
 		t.Skip("native experiment requires explicit operator opt-in")
 	}
@@ -273,11 +298,22 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 18*time.Minute)
 	defer cancel()
 	f := newNativeScenarioFixture(t, ctx)
-	history, err := readNativeHistory(nativeHistoryPaths()...)
+	history, err := nativeScenarioHistory()
 	if err != nil {
 		t.Fatal("committed historical experiment evidence unavailable")
 	}
-	report := nativeScenarioEvidence{Status: "failed", ReleaseRef: os.Getenv("BUTLER_DELEGATION_NATIVE_RELEASE"), MaxAttempts: nativeDelegationTotalAttemptCap, MaxNewAttempts: nativeDelegationAttemptCap, Historical: history, CostBasis: "operator_declared_subscription_no_overage", Limitations: []string{"gate_controlled_loss_after_parent_attempt_completed", "cloud_weights_not_observable", "no_local_generative_parity_claim", "blocked_attempt_report_bridge_pending", "metadata_barriers_do_not_claim_late_native_callback_injection", "historical_nullable_usage_not_zero_or_new_fixture_budget_usage"}}
+	report := nativeScenarioEvidence{Status: "failed", Model: nativeScenarioModel(), ReleaseRef: os.Getenv("BUTLER_DELEGATION_NATIVE_RELEASE"), MaxAttempts: history.NativeAttempts + nativeDelegationAttemptCap, MaxNewAttempts: nativeDelegationAttemptCap, Historical: history, CostBasis: "operator_declared_subscription_no_overage", Limitations: []string{"gate_controlled_loss_after_parent_attempt_completed", "cloud_weights_not_observable", "no_local_generative_parity_claim", "blocked_attempt_report_bridge_pending", "metadata_barriers_do_not_claim_late_native_callback_injection", "historical_nullable_usage_not_zero_or_new_fixture_budget_usage"}}
+	if fullHighDelegationWindow() {
+		report.Limitations = []string{"gate_controlled_loss_after_parent_attempt_completed", "cloud_weights_not_observable", "local_service_reuse_evidence_separate_from_local_quality", "source_only_conflict_selection_uses_predeclared_owner_policy", "model_finals_remain_unverified", "metadata_barriers_do_not_claim_late_native_callback_injection", "historical_nullable_usage_not_zero_or_new_fixture_budget_usage"}
+	}
+	if finalMixedDelegationWindow() {
+		report.MaxAttempts, report.MaxNewAttempts = 39, 2
+		if highFinalDelegationWindow() {
+			report.MaxAttempts = 41
+		}
+		report.ExecutionMode = "scripted_parents_and_width1_baseline_only_width2_children_native_high"
+		report.Limitations = append(report.Limitations, "native_parent_and_width1_quality_evidence_is_in_prior_immutable_failed_report")
+	}
 	defer func() {
 		// Stop every owning process before reading its durable diagnostic state.
 		// Go defers run before memorytest's unconditional schema cleanup.
@@ -298,8 +334,8 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 			report.Limitations = append(report.Limitations, "attempt_evidence_unavailable")
 		}
 		report.NewNativeAttempts = -1
-		if report.NativeAttempts >= nativeDelegationPriorAttempts {
-			report.NewNativeAttempts = report.NativeAttempts - nativeDelegationPriorAttempts
+		if report.NativeAttempts >= history.NativeAttempts {
+			report.NewNativeAttempts = report.NativeAttempts - history.NativeAttempts
 		}
 		var raw []byte
 		if f.pool.QueryRow(auditCtx, `SELECT used_json FROM execution_budget_scopes WHERE kind='owner_day' AND owner_id=$1`, nativeFixtureOwner).Scan(&raw) == nil {
@@ -326,7 +362,16 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 		} else {
 			report.Status = "failed"
 		}
-		rows, e = f.pool.Query(auditCtx, `SELECT run_id,reservation_id,actual_input_tokens,actual_output_tokens FROM execution_model_attempts ORDER BY created_at,operation_id`)
+		usageSQL := `SELECT run_id,reservation_id,actual_input_tokens,actual_output_tokens FROM execution_model_attempts ORDER BY created_at,operation_id`
+		if finalMixedDelegationWindow() {
+			usageSQL = `SELECT m.run_id,m.reservation_id,m.actual_input_tokens,m.actual_output_tokens FROM execution_model_attempts m WHERE EXISTS(SELECT 1 FROM fixture_native_attempts a WHERE a.run_id=m.run_id) ORDER BY m.created_at,m.operation_id`
+			var scripted int
+			if f.pool.QueryRow(auditCtx, `SELECT count(*) FROM execution_model_attempts m WHERE NOT EXISTS(SELECT 1 FROM fixture_native_attempts a WHERE a.run_id=m.run_id)`).Scan(&scripted) != nil || scripted != 8 {
+				report.Status = "failed"
+			}
+			report.ScriptedModelTurns = &scripted
+		}
+		rows, e = f.pool.Query(auditCtx, usageSQL)
 		if e == nil {
 			for rows.Next() {
 				var a nativeUsageEvidence
@@ -343,7 +388,7 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 		} else {
 			report.Status = "failed"
 		}
-		if report.NewNativeAttempts < 0 || report.NewNativeAttempts > nativeDelegationAttemptCap || len(report.Attempts) != report.NewNativeAttempts || len(report.Usage) != report.NewNativeAttempts {
+		if report.NewNativeAttempts < 0 || report.NewNativeAttempts > report.MaxNewAttempts || len(report.Attempts) != report.NewNativeAttempts || len(report.Usage) != report.NewNativeAttempts || finalMixedDelegationWindow() && report.NewNativeAttempts != 2 {
 			report.Status = "failed"
 		}
 		if report.Status != "passed" && !t.Failed() {
@@ -425,6 +470,9 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal("second parent metadata unavailable")
 	}
+	if fullHighDelegationWindow() {
+		checkFullHighCurrentRevisionBaseline(t, f, admission, second)
+	}
 	if _, err = controls.Apply(nativeOwner(ctx, "actual-owner-revision", parent.SessionKey), task.ControlRequest{TaskID: parent.TaskID, ExpectedRevision: parent.Revision, Kind: task.ControlAmend, Instruction: "Сохранить раздельные наблюдения; уточнение не принимает старый результат."}); err != nil {
 		t.Fatal("actual owner amendment denied")
 	}
@@ -434,40 +482,66 @@ func TestNativeDelegationActualScenarioIntegration(t *testing.T) {
 	report.RevisionDenies = true
 	var deletedChildRun, retainedChildRun string
 	for i, target := range []*string{&deletedChildRun, &retainedChildRun} {
+		if fullHighDelegationWindow() {
+			*target = first.ChildRunIDs[i]
+			continue
+		}
 		if f.pool.QueryRow(ctx, `SELECT r.run_id FROM runs r JOIN tasks t ON t.task_id=r.task_id JOIN memory_run_sources s USING(run_id) WHERE t.parent_task_id=$1 AND s.source_id=$2 LIMIT 1`, first.TaskID, f.args[i].Sources[0].ID).Scan(target) != nil || checkRecordedInitiativeSources(ctx, f.pool, f.sources, *target) != nil {
 			t.Fatal("current exact historical source release denied before mutation")
 		}
 	}
+	if fullHighDelegationWindow() {
+		checkFullHighOriginalsBeforeDeletion(t, f)
+	}
 	if _, err = f.sources.Delete(nativeOwner(ctx, "actual-owner-delete", ""), f.args[0].Sources[0].ID, "delete", f.args[0].Sources[0].Revision); err != nil {
 		t.Fatal("actual owner deletion denied")
 	}
-	if err = checkRecordedInitiativeSources(ctx, f.pool, f.sources, deletedChildRun); err == nil {
+	if fullHighDelegationWindow() {
+		checkFullHighOriginalDeletion(t, f)
+	} else if err = checkRecordedInitiativeSources(ctx, f.pool, f.sources, deletedChildRun); err == nil {
 		t.Fatal("deleted original retained historical run access")
 	}
 	report.DeletionDenies = true
-	if checkRecordedInitiativeSources(ctx, f.pool, f.sources, retainedChildRun) != nil {
+	if !fullHighDelegationWindow() && checkRecordedInitiativeSources(ctx, f.pool, f.sources, retainedChildRun) != nil {
 		t.Fatal("unrelated selected source lost current release before stop")
 	}
 	parent, err = f.tasks.Get(ctx, first.TaskID)
 	if err != nil {
 		t.Fatal("parent metadata unavailable")
 	}
+	if fullHighDelegationWindow() {
+		if _, err = admission.Manager.Advance(nativeOwner(ctx, "stop-positive-baseline", ""), parent.TaskID); err != nil {
+			t.Fatal("current parent scheduling denied before stop")
+		}
+	}
 	if _, err = controls.Apply(nativeOwner(ctx, "actual-owner-stop", parent.SessionKey), task.ControlRequest{TaskID: parent.TaskID, ExpectedRevision: parent.Revision, Kind: task.ControlStop}); err != nil {
 		t.Fatal("actual owner stop denied")
 	}
-	if checkRecordedInitiativeSources(ctx, f.pool, f.sources, retainedChildRun) == nil {
+	if !fullHighDelegationWindow() && checkRecordedInitiativeSources(ctx, f.pool, f.sources, retainedChildRun) == nil {
 		t.Fatal("stopped branch retained current source release")
 	}
-	if _, err = admission.Manager.Advance(ctx, parent.TaskID); err == nil {
+	advanceCtx := ctx
+	if fullHighDelegationWindow() {
+		advanceCtx = nativeOwner(ctx, "stop-negative-baseline", "")
+	}
+	if _, err = admission.Manager.Advance(advanceCtx, parent.TaskID); err == nil {
 		t.Fatal("stopped parent continued child lifecycle")
 	}
 	report.OwnerStopDenies = true
+	if fullHighDelegationWindow() {
+		report.ControlScopes = []string{"revision:current_result_ready_collect_before_and_after_amend", "deletion:historical_original_owner_access_before_and_after", "stop:current_parent_scheduling_before_and_after"}
+		var confirmed int
+		if f.pool.QueryRow(ctx, `SELECT count(DISTINCT e.action_id) FROM action_effects e JOIN action_intents a ON a.effect_id=e.action_id JOIN runs r ON r.run_id=a.run_id WHERE r.task_id IN ($1,$2) AND e.state='effect_confirmed'`, first.TaskID, second.TaskID).Scan(&confirmed) != nil || confirmed != 4 {
+			t.Fatal("owner controls discarded confirmed delegation effects")
+		}
+		report.ConfirmedEffectsAfterControls = &confirmed
+	}
 	var attempts int
 	var dayRaw []byte
 	if f.pool.QueryRow(ctx, `SELECT used_json FROM execution_budget_scopes WHERE kind='owner_day' AND owner_id=$1`, nativeFixtureOwner).Scan(&dayRaw) != nil || json.Unmarshal(dayRaw, &report.SharedDayReserved) != nil {
 		t.Fatal("shared day reservation evidence unavailable")
 	}
-	if f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&attempts) != nil || attempts > nativeDelegationTotalAttemptCap || attempts-nativeDelegationPriorAttempts > nativeDelegationAttemptCap || report.SharedDayReserved.ModelTurns > 12 {
+	if f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&attempts) != nil || attempts > report.MaxAttempts || attempts-report.Historical.NativeAttempts > report.MaxNewAttempts || report.SharedDayReserved.ModelTurns > 12 {
 		t.Fatal("experiment exceeded shared attempt bound")
 	}
 	report.Status = "passed"
@@ -481,6 +555,9 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 		t.Fatal("actual parent session denied")
 	}
 	prompt := "Создай ровно два независимых поручения: по одному последовательному вызову task.delegate для каждого следующего JSON. Используй аргументы без изменений, не подменяй ссылки, бюджет и срок. Не отвечай на исследовательский вопрос сам. После двух успешных receipts заверши свой ответ JSON с полем admitted_task_ids, содержащим ровно две фактические task_id из receipts. Не вызывай другие инструменты и не создавай третье поручение.\n" + string(nativeJSON(f.args[0])) + "\n" + string(nativeJSON(f.args[1]))
+	if fullHighDelegationWindow() {
+		prompt = fullHighParentPrompt(f.args)
+	}
 	root, err := f.goals.CreateOwnerTask(nativeOwner(f.ctx, "root-"+sessionKey, sessionKey), goal.TaskRequest{SessionKey: sessionKey, GoalID: f.goalID, MandateID: f.mandateID, Purpose: "native_research", Goal: "Два независимых ограниченных исследования", Constraints: []string{"Create only the two exact source-bound context-only children; retain disagreements."}, CompletionCriteria: []string{"Independent immutable-source checker, no model consensus"}, InitiativeReason: "explicit lab owner experiment", ObservationRef: "fixture:native-research"})
 	if err != nil {
 		t.Fatal("actual assigned parent task denied")
@@ -494,10 +571,22 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 		t.Fatal("actual ordered parent input denied")
 	}
 	v := nativeWidthEvidence{Width: width, TaskID: root.TaskID, InputID: receipt.InputID, SourceRefs: []delegation.SourceRef{f.args[0].Sources[0], f.args[1].Sources[0]}}
+	if finalMixedDelegationWindow() {
+		v.ExecutionMode = "scripted_parent_and_children_component_baseline"
+		if width == 2 {
+			v.ExecutionMode = "scripted_parent_native_high_children"
+		}
+	}
+	if fullHighDelegationWindow() {
+		v.FullAcceptance = &fullHighWidthAcceptance{Stage: "parent_admission", ResolutionPolicy: "owner_selected_source_a_for_fixture"}
+	}
 	index := len(report.Widths)
 	report.Widths = append(report.Widths, v)
 	defer func() { v.ElapsedMillis = time.Since(started).Milliseconds(); report.Widths[index] = v }()
 	config := nativeWorkerConfig{Width: width, Gate: true, Broker: broker, TokenFile: tokenFile, ManifestFile: f.manifest, ImportFile: os.Getenv("BUTLER_DELEGATION_NATIVE_IMPORT_FILE"), KeyFile: filepath.Join(f.private, "encrypted-settings-key"), CorpusFile: f.corpusPath}
+	if finalMixedDelegationWindow() {
+		config.RemainderArgs = f.args
+	}
 	start := func(stage string) *nativeSubprocess {
 		p := filepath.Join(f.private, sessionKey+"-"+stage+".json")
 		if os.WriteFile(p, nativeJSON(config), 0600) != nil {
@@ -529,6 +618,11 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 		}
 		return true
 	})
+	if fullHighDelegationWindow() {
+		checkFullHighParentReceipts(t, f, root.TaskID, v.ParentRunID, v.FullAcceptance)
+		v.ParentReceiptCheck = true
+		v.FullAcceptance.Stage = "parent_receipts_checked"
+	}
 	var childAttempts int
 	if f.pool.QueryRow(f.ctx, `SELECT count(*) FROM fixture_native_attempts a JOIN runs r USING(run_id) JOIN tasks t ON t.task_id=r.task_id WHERE t.parent_task_id=$1`, root.TaskID).Scan(&childAttempts) != nil || childAttempts != 0 {
 		t.Fatal("scheduling gate ran child inference before crash")
@@ -542,6 +636,15 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 	config.Gate = false
 	restartedAt := time.Now()
 	v.ClaimExpiryWaitMillis = max(int64(0), oldClaimExpires.Sub(restartedAt).Milliseconds())
+	if finalMixedDelegationWindow() {
+		// Independent old claims can expire at different times. Wait for all of
+		// them naturally before starting a new worker, so eligibility does not
+		// accidentally serialize the bounded-parallel experiment. No TTL edit.
+		nativeWait(t, f.ctx, 90*time.Second, func() bool {
+			var expired bool
+			return f.pool.QueryRow(f.ctx, `SELECT clock_timestamp()>=$1::timestamptz`, oldClaimExpires).Scan(&expired) == nil && expired
+		})
+	}
 	worker = start("restarted")
 	nativeWait(t, f.ctx, 5*time.Minute, func() bool {
 		var n int
@@ -612,6 +715,10 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 			t.Fatal("native final became verification or was incomplete")
 		}
 		check := verifyNativeResearchObservation(final.Content, x.c.Sources[0], f.corpus.Sources[index].ExpectedValue, f.corpus.Sources[index].ExpectedDate) == nil
+		if fullHighDelegationWindow() {
+			witness, e := f.sources.Get(nativeOwner(f.ctx, "verify-witness-"+x.taskID, ""), x.c.Sources[0].ID)
+			check = e == nil && guardSource(witness) == x.c.Sources[0] && delegation.VerifyNumericObservation([]byte(final.Content), x.c.Sources[0], []byte(witness.Body)) == nil
+		}
 		v.ObjectiveChecks = append(v.ObjectiveChecks, check)
 		v.ChildTaskIDs = append(v.ChildTaskIDs, x.taskID)
 		v.ChildRunIDs = append(v.ChildRunIDs, x.runID)
@@ -633,7 +740,13 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 	}
 	v.ParentReceiptCheck = true
 	v.UnverifiedAcceptanceDenied = true
-	if f.pool.QueryRow(f.ctx, `SELECT max(overlap) FROM (SELECT (SELECT count(*) FROM fixture_native_attempts a JOIN runs r USING(run_id) JOIN tasks t ON t.task_id=r.task_id JOIN run_final_results f USING(run_id) WHERE t.parent_task_id=$1 AND a.created_at<=p.created_at AND f.created_at>=p.created_at) overlap FROM fixture_native_attempts p JOIN runs r USING(run_id) JOIN tasks t ON t.task_id=r.task_id WHERE t.parent_task_id=$1) spans`, root.TaskID).Scan(&v.MaximumChildOverlap) != nil || v.MaximumChildOverlap != width {
+	overlapSQL := `SELECT max(overlap) FROM (SELECT (SELECT count(*) FROM fixture_native_attempts a JOIN runs r USING(run_id) JOIN tasks t ON t.task_id=r.task_id JOIN run_final_results f USING(run_id) WHERE t.parent_task_id=$1 AND a.created_at<=p.created_at AND f.created_at>=p.created_at) overlap FROM fixture_native_attempts p JOIN runs r USING(run_id) JOIN tasks t ON t.task_id=r.task_id WHERE t.parent_task_id=$1) spans`
+	if finalMixedDelegationWindow() && width == 1 {
+		// Component-only overlap, explicitly labelled scripted in this report.
+		// The prior immutable report supplies actual native width1 evidence.
+		overlapSQL = strings.ReplaceAll(overlapSQL, "fixture_native_attempts", "execution_model_attempts")
+	}
+	if f.pool.QueryRow(f.ctx, overlapSQL, root.TaskID).Scan(&v.MaximumChildOverlap) != nil || v.MaximumChildOverlap != width {
 		t.Fatal("actual child execution did not demonstrate configured width")
 	}
 	var raw []byte
@@ -646,6 +759,15 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 	}
 	v.ParentTaskStillActive = true
 	v.IndependentObservationsKept = true
+	if fullHighDelegationWindow() {
+		if width == 1 {
+			verifyFullHighOwnerDecisions(t, f, admission, v, v.FullAcceptance)
+			v.FullAcceptance.Stage = "independent_decisions_checked"
+		} else {
+			verifyFullHighIndependentResults(t, f, admission, v, v.FullAcceptance, false)
+			v.FullAcceptance.Stage = "independently_checked_result_ready_for_controls"
+		}
+	}
 	v.ElapsedMillis = time.Since(started).Milliseconds()
 	return v
 }

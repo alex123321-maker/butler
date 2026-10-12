@@ -1,0 +1,149 @@
+{
+  "schema": "butler.antigravity.flash-high-acceptance.v1",
+  "recorded_at_utc": "2026-10-11T19:26:04.477518Z",
+  "source_snapshot": "20261012-022129-083",
+  "scope": "Actual native Go Provider and production Manager, original audited console OAuth; isolated laba, one primary generation, no tool execution.",
+  "github_primary_sources": [
+    {
+      "repository": "darvell/codex-pool",
+      "commit": "9a327b323f513e2e826044861976b1f523f4a283",
+      "path": "antigravity_translate.go"
+    },
+    {
+      "repository": "badrisnarayanan/antigravity-claude-proxy",
+      "commit": "daa39d6c6239ac078a4e69de85094dde35558ef6",
+      "path": "src/cloudcode/request-builder.js"
+    }
+  ],
+  "source_sha256": {
+    "internal/transport/antigravity/provider.go": "c27733f09b53b56ee5a7f80dee901b702eead5f1da3a8c3b45ecbca22f11424f",
+    "internal/transport/antigravity/protocol.go": "a2d395e42c74985fc1033c9f378eb431056ae12626241883c4a7b11d6cdfc621",
+    "internal/providerauth/antigravity_cloudcode.go": "711ad68e9a11a45ffaa8f2345138eb23c6952d277ef8863462ad201a46351399",
+    "internal/providerauth/types.go": "5d48b1b07e19c0c97e7c3a0de836ebfb612eb1f809056d719183e0dc7dc2874c",
+    "scripts/dev/antigravity-compare/high.go": "3f05e6d1b8e09e4a72744ed21fa77627bffaea1b011b4994cf14146dd885b144",
+    "scripts/dev/antigravity-compare/budget.go": "a433edb7170fafa35cf29aaccc55d7d8fffa2c43350682d6e20bf241619e0a4a"
+  },
+  "historical_artifact_sha256": {
+    "deploy/delegation/native-scenario-failed.json": "28c75c31827f8a25ca8ed101e6e04b8264a7e66ee9ce18808d504d5af748c8f0",
+    "deploy/delegation/native-scenario-followup-failed.json": "f5d25f36b574464508a4124ac7490d525e75d8c8cf60111a0bb637637e777619",
+    "deploy/delegation/native-scenario-third-failed.json": "b7a4b35b7b587fb8f0561cbdb18f5ad8088b7939e673ffa290e06ec10410b89b",
+    "deploy/delegation/native-scenario-fourth.json": "72d95bb5ac0bcf5bd4d8d4b28b1de6beb10d819a348c7e5efb187295ce28a1f9",
+    "deploy/delegation/native-scenario-fifth.json": "5e180087d4e1d43fe52c6afac0c35763b69a8dfe906953a18eac49416bd7cded",
+    "deploy/antigravity/live-comparison-20261011.json": "6808c50e120b59a40c2c2d9b53babb7dba1e581a3fbcb29ddb3cae6b9491e472",
+    "deploy/antigravity/native8192-20261011.json": "f3474b9d7b6441d1a9ea66dcf84b8aecc7dbe0c7dfcc1494bff3eaa7c19dcdb5",
+    "deploy/antigravity/desktop-interception-20261012.json": "208f7d4702451b36e8f27ab25474fcb3edc66e1e9a18074fd5a946d2ba47dffe"
+  },
+  "live_report_sha256": "bc33130427e70773f148aa19544154dbba0c5134a8224f682617e9c3a883ef38",
+  "proof_root": "/srv/storage/butler/agents/antigravity-high/reports/high-execute-20261011T192202Z-2402055",
+  "live": {
+    "actual_go_provider": true,
+    "historical_attempts": 21,
+    "historical_input_subtotal": 26939,
+    "historical_known_usage_pairs": 7,
+    "historical_output_subtotal": 581,
+    "historical_unknown_usage_pairs": 14,
+    "metadata_calls_through_gate": 1,
+    "native_diagnostic": "ASSISTANT_FINAL",
+    "native_final_verified": true,
+    "origin": {
+      "stored_credentials": true,
+      "oauth_application_matches": true,
+      "oauth_credential_matches": true,
+      "refresh_credential_matches": true
+    },
+    "paid_subscription_confirmed": true,
+    "profile": "flash-high-subscription",
+    "result": {
+      "attempt": 22,
+      "client": "go",
+      "host": "daily-cloudcode-pa.googleapis.com",
+      "path": "/v1internal:streamGenerateContent",
+      "model": "gemini-3.8-flash-high",
+      "request_bytes": 456,
+      "output_cap": 8192,
+      "http_status": 200,
+      "api_status": "UNKNOWN",
+      "reason": "UNKNOWN",
+      "finish_reason": "STOP",
+      "marker_match": true,
+      "input_tokens": 29,
+      "output_tokens": 17,
+      "thought_tokens": 155,
+      "total_tokens": 201,
+      "response_bound_exceeded": false,
+      "tool_proposal": false,
+      "malformed_response": false,
+      "outcome": "MARKER_COMPLETE"
+    },
+    "retry_enabled": false,
+    "supplemental_credit_allowance": 0,
+    "window_sealed": true
+  },
+  "verified": {
+    "only_butler_prompt": true,
+    "wrapper_prompt_added": false,
+    "third_party_prompt_scrubbing": false,
+    "request_bytes_preserved": true,
+    "api_key_used": false,
+    "account_rotation": false,
+    "fallback": false,
+    "supplemental_credit_allowance": 0,
+    "main_checkout_changed": false,
+    "main_deployment_changed": false,
+    "new_agent_containers_removed": true,
+    "issue16_closed": false
+  },
+  "cumulative_accounting": {
+    "attempts": 22,
+    "known_usage_pairs": 8,
+    "unknown_usage_pairs": 14,
+    "known_input_subtotal": 26968,
+    "known_output_subtotal": 598,
+    "unknown_is_zero": false,
+    "new_known_thought_tokens": 155,
+    "meter_attribution": "UNKNOWN; subscription authentication and High access proved, exact counter bucket not observed."
+  },
+  "tests": {
+    "snapshot": "20261012-022129-083",
+    "path": "/srv/storage/butler/agents/antigravity-high/reports/high-tests-20261011T192134Z-2399978/tests.jsonl",
+    "sha256": "29d20046bd56041929056e5db736b60263e8f1ce011f5cf42361a365fef8fb6e",
+    "passed_test_and_subtest_names": 91,
+    "failed": 0,
+    "skipped": 0,
+    "packages_passed": 3,
+    "race": true,
+    "vet": true,
+    "real_disposable_postgres": true,
+    "real_model_calls": 0
+  },
+  "preparation": {
+    "model_calls": 0,
+    "both_earlier_markers_preserved": true,
+    "generic_preparation_report_sha256": "fb6995077b14cd25193bde85c5f90b78b853af80e890fda8e95640b9e2bb6ca8",
+    "generic_report_count": 2,
+    "causes_not_retroactively_invented": true,
+    "initial_metadata_timeout_report_sha256": "a36130b6267a39495f7eb8de2ad28e2925f9097f66545c765075b9bae8450bdc",
+    "tls_probe_sha256": "0bc6a2ae8e32cda7b4025622d9668ca935aeeb6cfbbf499b16cad001fc946133",
+    "subsequent_metadata_200_pro_report_sha256": "dc6fc9fadb6d4e045fc123b79cfe2324aa15d8973e9b6172af9b98fba20075c7",
+    "manager_preflight_short_validity_report_sha256": "881d33ea4c0fadfd888392232f6382540de0170c76dc49b9c9416bf0ae1f7924",
+    "final_sealed_marker": "window-20261012-high-22-fresh"
+  },
+  "limits": {
+    "primary_model_requests": 1,
+    "provider_timeout_seconds": 45,
+    "window_timeout_seconds": 120,
+    "request_bytes": 65536,
+    "response_bytes": 65536,
+    "reserved_input_tokens": 1048576,
+    "reserved_output_tokens": 8192,
+    "reserved_monetary_micros": 0,
+    "automatic_retries": false,
+    "observed_monetary_micros": null
+  },
+  "orchestrator_build": {
+    "source_snapshot": "20261012-022129-083",
+    "network": "none",
+    "sha256": "e8ac8fb20b8d8e76f81104ed01bd1112f6ea739921bb14412bde6e4d6e9cd192",
+    "deployed": false
+  }
+}

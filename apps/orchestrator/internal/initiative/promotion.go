@@ -171,6 +171,19 @@ func (p *Promoter) Promote(ctx context.Context, id, ownerID string) (Candidate, 
 	} else if !current {
 		return finish("rejected", "condition_obsolete", now)
 	}
+	if c.LastObservedAt.Before(now.Add(-24 * time.Hour)) {
+		return finish("rejected", "condition_obsolete", now)
+	}
+	status, reason, next = Decide(source, latest, c.Occurrences, now)
+	if status != "ready" {
+		return finish(status, reason, next)
+	}
+	// Both prospective model capacity and attention were checked for this UTC
+	// day. Retry admission from the beginning after midnight rather than charge
+	// the previous day's attention or reuse its prospective model preflight.
+	if !now.UTC().Truncate(24 * time.Hour).Equal(day) {
+		return finish("deferred", "admission_day_changed", now)
+	}
 	record, err := p.Tasks.CreateTx(ctx, tx, task.CreateRequest{Authority: &a, InitialExecutionPolicy: source.ExecutionPolicy, SessionKey: source.SessionKey, OwnerID: ownerID, Goal: source.TaskGoal, Source: map[string]any{"type": "initiative", "initiative_id": c.ID, "observation_ref": c.ObservationRef, "project_ref": source.ProjectRef, "project_revision": source.ProjectRevision}, CompletionCriteria: source.CompletionCriteria})
 	if err != nil {
 		return c, err

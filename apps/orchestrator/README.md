@@ -1,5 +1,33 @@
 # Orchestrator
 
+Bounded issue16 High acceptance passed. The
+[final matrix](../../docs/ai/delegation-final-high-acceptance-20261012.md) combines
+earlier actual native parent/width1 evidence with two final native High children,
+actual overlap2 after SIGKILL/claim expiry and all owner/source controls retaining
+four effects. Final parents/width1 are labelled scripted. Preparation passed302
+names,0 failures/skips, race/vet. Shared deployment flags remain off.
+
+The [full High experiment](../../docs/ai/delegation-full-high-acceptance-20261012.md)
+proved both native parent receipt projections, four source-relative extractions
+after worker loss and width1 independent owner decisions; it remains failed at
+width2 overlap. The repaired [remainder](../../docs/ai/delegation-high-remainder-acceptance-20261012.md)
+started two High children concurrently, but both stopped with
+`transport_connection_error` and no finals. History39 and every failed report
+remain immutable. That remainder alone did not complete acceptance; the later
+final matrix above does. Deployment activation remains separate.
+
+Initiative promotion rechecks active hours and observation freshness after budget
+lock waits. A UTC-day change defers admission to a fresh check of attention limits.
+See [PG regression evidence](../../docs/ai/initiative-admission-time-acceptance.md).
+
+The separate opt-in [Flash High acceptance](../../docs/ai/delegation-high-acceptance-20261012.md)
+uses ordinary core/input/Broker processes and disposable PostgreSQL on laba.
+It retains22 historical attempts, pins the complete tested snapshot, and checks
+native tool-result continuation and child recovery without enabling deployment flags.
+Its single execution is sealed:5 new High calls confirmed two Broker admissions
+and both child extractions after process loss, then failed the parent's exact
+receipt-projection gate. Width2 and later control gates remain unperformed.
+
 Operator-only `BUTLER_WORKSPACE_ENABLED` defaults false. It requires private
 action authentication, current original-source/deletion anchor and immutable
 workspace/dispatch/input schema before setting private `workspace_ready`.
@@ -68,6 +96,12 @@ with the existing `transport_error` class. Source verification distinguishes
 stale sources from its own timeout. No provider text/details or unknown type
 string is logged or returned by this failure path; retries remain disabled.
 
+Final content and `final`/`partial` classification belong to the last model turn.
+A tool proposal invalidates an earlier apparent final; missing continuation output
+cannot complete a run using that stale answer. Confirmed tool results remain in
+the durable transcript. Streaming tool-phase commentary is kept separate from the
+terminal final body. See [receipt path checks](../../docs/ai/delegation-receipt-path-acceptance.md).
+
 Optional generated-converter delegation053 has a distinct private admission
 component. `NewDelegationLifecycleManager` selects immutable061 context-only or053
 developer identity inside the owning transaction; it cannot admit new children and
@@ -100,6 +134,14 @@ child admission, dependency scheduling, durable result/report metadata and expli
 guarded decisions. It is an unenabled component until the owning Catalog/Broker
 adapters and isolated child context are wired and verified. It does not turn a
 model report or manager acceptance into task completion.
+
+An explicit `delegation_numeric_observation_v1` Catalog contract adds an objective
+source-relative acceptance check to owner delegation decisions. The owning guard
+loads the exact selected original and immutable child final on the manager
+transaction. A numeric/date contradiction denies acceptance even when a separate
+owner-verified row exists; the original collected observation survives. Ordinary
+narrative contracts and explicit rejection retain their existing semantics. See
+[the numeric contract](../../docs/architecture/delegation-contract.md).
 
 Ordinary delegated workers use the durable accepted input ID for run
 deduplication. Core preparation/recovery accepts that private key mapping only
@@ -486,7 +528,8 @@ Private action-authority authentication and migrations057/061 are required.
 Startup verifies the immutable schema guards before advertising readiness.
 Disabling the feature prevents new admission/maintenance; use owner task/tree
 stop or mandate revocation for already accepted durable child inputs.
-Native model comparison and deployment acceptance remain pending. See
+Bounded native High width1/width2 acceptance passed; deployment activation and
+broad local research/resource benchmarking remain separate. See
 `docs/architecture/delegation-contract.md` before enabling the route.
 The separate opt-in native lab runner and its twelve-attempt spending cap are
 described in `docs/ai/delegation-native-scenario-plan.md`. Its zero-inference
@@ -510,7 +553,7 @@ source graph and branch reservation records on the caller PG transaction. Its
 capability reader is mandatory and phase-explicit: new admission needs a current
 claimed delegate action, lifecycle needs that child's durable accepted snapshot
 and current policy. The private adapter stores immutable accepted capabilities
-on the same admission transaction; the model experiment remains pending.
+on the same admission transaction; bounded native High acceptance passed.
 The initial `task.delegate` admits children with an empty tool allowlist.
 Active completed partial finals remain distinct from blocked/failed attempts.
 With delegation enabled, the parent's ordinary preparation/recovery now reads
@@ -533,6 +576,15 @@ lifecycle adapter marks execution under the actual child fence before input
 release. Operator opt-in composes these adapters with private Broker admission.
 Maintenance combines independent branch errors without suppressing unrelated
 initiative review; it never admits a new model proposal by itself.
+
+Known `delegation_numeric_observation_v1` context contracts now select a fixed
+kernel JSON format from the exact current contract and selected witness under
+the child's own Catalog/lease proof. The six-field schema and quoted witness pin
+are instructions; body/title/candidate text remain private DATA. Unselected,
+changed or deleted witnesses and malformed numeric markers deny provider entry.
+Recovery rebuilds formatting from current proof rather than a saved instruction;
+it preserves tool/effect observations and grants no permission or acceptance.
+See [the numeric context proof](../../docs/ai/delegation-numeric-context-acceptance.md).
 
 Optional `/api/v4/converters` and `/converters` relay only owner-proof metadata
 inspection and exact-version revocation to the fixed operator/environment private

@@ -26,7 +26,7 @@ func nativeFixtureProvider(ctx context.Context, pool *pgxpool.Pool, importPath, 
 	if pool == nil || limit == nil || limit.pool != pool {
 		return nil, errNativeFixtureDenied
 	}
-	if _, err := readNativeHistory(nativeHistoryPaths()...); err != nil {
+	if _, err := nativeScenarioHistory(); err != nil {
 		return nil, err
 	}
 	key, err := privateNativeFixtureKey(keyPath)
@@ -52,7 +52,7 @@ func nativeFixtureProvider(ctx context.Context, pool *pgxpool.Pool, importPath, 
 	}
 	// On restart, preserve the current encrypted rotation. Never reimport an old
 	// read-only operator copy over credentials refreshed by the first process.
-	provider, err := antigravity.NewProvider(antigravity.Config{Model: antigravity.DefaultModel, AuthSource: manager})
+	provider, err := antigravity.NewProvider(antigravity.Config{Model: nativeScenarioModel(), AuthSource: manager})
 	if err != nil {
 		return nil, errNativeFixtureDenied
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/subtle"
 	"encoding/json"
+	"sync"
 	"time"
 	"unicode/utf8"
 
@@ -11,6 +12,7 @@ import (
 	runtimev1 "github.com/butler/butler/internal/gen/runtime/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/memory/sanitize"
+	"github.com/butler/butler/internal/resources"
 	"github.com/butler/butler/internal/workspace"
 	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc/metadata"
@@ -20,23 +22,36 @@ import (
 // immutable dispatch remain mandatory; this service plans no run or tool.
 type Runtime struct {
 	runtimev1.UnimplementedToolRuntimeServiceServer
-	dispatch *DispatchStore
-	files    *workspace.Store
-	observer *workspace.Observer
-	purge    *workspace.DeletionRuntime
-	token    string
+	dispatch  *DispatchStore
+	files     *workspace.Store
+	observer  *workspace.Observer
+	purge     *workspace.DeletionRuntime
+	token     string
+	owner     *workspace.RootOwner
+	lifecycle sync.RWMutex
+	closed    bool
 }
 
 func NewRuntime(ctx context.Context, d *DispatchStore, root, token string) (*Runtime, error) {
 	if d == nil || len(token) < 32 || len(token) > 4096 || d.CheckReady(ctx) != nil {
 		return nil, ErrDenied
 	}
+	owner, err := workspace.LockRoot(root)
+	if err != nil {
+		return nil, ErrDenied
+	}
+	success := false
+	defer func() {
+		if !success {
+			_ = owner.Close()
+		}
+	}()
 	o, err := workspace.NewObserver(root, MaxCodeBytes)
 	if err != nil {
 		return nil, err
 	}
-	r := &Runtime{dispatch: d, observer: o, token: token}
-	g, err := workspace.NewResourceGuard(d.resources, d, r)
+	r := &Runtime{dispatch: d, observer: o, token: token, owner: owner}
+	g, err := workspace.NewResourceGuard(d.resources, r, r)
 	if err != nil {
 		o.Close()
 		return nil, err
@@ -54,9 +69,36 @@ func NewRuntime(ctx context.Context, d *DispatchStore, root, token string) (*Run
 		o.Close()
 		return nil, err
 	}
+	if r.checkRootBinding() != nil {
+		_ = r.Close()
+		return nil, ErrDenied
+	}
+	success = true
 	return r, nil
 }
+
+// Startup must bind all independently opened handles to the locked inode.
+// Returning the original directory to its name cannot validate handles opened
+// against a temporary private replacement.
+func (r *Runtime) checkRootBinding() error {
+	if r == nil || r.owner.Check() != nil || r.files.CheckOwner(r.owner) != nil || r.observer.CheckOwner(r.owner) != nil || r.purge.CheckOwner(r.owner) != nil {
+		return ErrDenied
+	}
+	return nil
+}
 func (r *Runtime) Close() error {
+	if r == nil {
+		return nil
+	}
+	// Readers cover actual Execute, readiness and individual privacy passes.
+	// A waiting close excludes new entries and keeps root ownership until all
+	// already admitted file/PG work has returned.
+	r.lifecycle.Lock()
+	defer r.lifecycle.Unlock()
+	if r.closed {
+		return nil
+	}
+	r.closed = true
 	first := r.files.Close()
 	if err := r.observer.Close(); first == nil {
 		first = err
@@ -64,7 +106,39 @@ func (r *Runtime) Close() error {
 	if err := r.purge.Close(); first == nil {
 		first = err
 	}
-	return first
+	if err := r.owner.Close(); first == nil {
+		first = err
+	}
+	if first != nil {
+		return ErrDenied
+	}
+	return nil
+}
+
+func (r *Runtime) enter() (func(), bool) {
+	if r == nil {
+		return nil, false
+	}
+	r.lifecycle.RLock()
+	if r.closed || r.owner.Check() != nil {
+		r.lifecycle.RUnlock()
+		return nil, false
+	}
+	return r.lifecycle.RUnlock, true
+}
+
+// The runtime owns root lifetime; DispatchStore remains the sole source of
+// exact action authority. Repeat inode checks around authority/resource waits
+// before Store can read or change physical artifacts on the held transaction.
+func (r *Runtime) CheckWorkspaceTx(ctx context.Context, tx pgx.Tx, a workspace.Access) (resources.Binding, error) {
+	if r.owner.Check() != nil {
+		return resources.Binding{}, ErrDenied
+	}
+	b, err := r.dispatch.CheckWorkspaceTx(ctx, tx, a)
+	if err == nil && r.owner.Check() != nil {
+		return resources.Binding{}, ErrDenied
+	}
+	return b, err
 }
 func (r *Runtime) RecordNamespaceTx(ctx context.Context, tx pgx.Tx, a workspace.Access) (string, error) {
 	o, err := r.observer.NamespaceTx(ctx, tx, a)
@@ -165,6 +239,9 @@ func (r *Runtime) finishRead(ctx context.Context, d dispatch, f workspace.File) 
 	if err = r.dispatch.provenance.CheckTx(owned, tx, actual.prepared.source, actual.proof.LeaseID); err != nil {
 		return err
 	}
+	if r.owner.Check() != nil {
+		return ErrDenied
+	}
 	return tx.Commit(owned)
 }
 
@@ -176,6 +253,11 @@ func (r *Runtime) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*
 	if r == nil || req == nil {
 		return fail()
 	}
+	leave, ok := r.enter()
+	if !ok {
+		return fail()
+	}
+	defer leave()
 	auth := metadata.ValueFromIncomingContext(ctx, "authorization")
 	tickets := metadata.ValueFromIncomingContext(ctx, TicketHeader)
 	if len(auth) != 1 || subtle.ConstantTimeCompare([]byte(auth[0]), []byte("Bearer "+r.token)) != 1 || len(tickets) != 1 {
@@ -221,7 +303,7 @@ func (r *Runtime) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*
 	default:
 		return fail()
 	}
-	if owned.Err() != nil {
+	if owned.Err() != nil || r.owner.Check() != nil {
 		return fail()
 	}
 	raw, err := json.Marshal(output)
@@ -239,7 +321,13 @@ func (r *Runtime) RunPrivacyCleanup(ctx context.Context) error {
 	defer ticker.Stop()
 	for {
 		bounded, stop := context.WithTimeout(ctx, 5*time.Second)
-		_, _ = r.dispatch.provenance.PurgeDeleted(bounded, r.purge)
+		leave, ok := r.enter()
+		if !ok {
+			stop()
+			return ErrDenied
+		}
+		_, _ = r.dispatch.provenance.PurgeDeleted(bounded, ownedPurge{r})
+		leave()
 		stop()
 		select {
 		case <-ctx.Done():
@@ -247,4 +335,23 @@ func (r *Runtime) RunPrivacyCleanup(ctx context.Context) error {
 		case <-ticker.C:
 		}
 	}
+}
+
+// PurgeDeleted calls this after its PG waits under the runtime lifecycle guard.
+// A late path change retains pending cleanup rather than confirming erasure in
+// a different operator namespace.
+type ownedPurge struct{ runtime *Runtime }
+
+func (p ownedPurge) PurgeWorkspace(ctx context.Context, id string) error {
+	r := p.runtime
+	if r.owner.Check() != nil {
+		return ErrDenied
+	}
+	if err := r.purge.PurgeWorkspace(ctx, id); err != nil {
+		return err
+	}
+	if r.owner.Check() != nil {
+		return workspace.ErrOutcomeUnknown
+	}
+	return nil
 }

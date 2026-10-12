@@ -15,9 +15,25 @@ dependencies, result collection and guarded decisions. Report is a strict DATA
 projection of actual evidence references; shape validity is not verification.
 Report parsing rejects duplicate nested keys, including escaped and case aliases;
 ambiguous conflicting values never acquire last-value-wins semantics.
-No runtime tool or owner endpoint is enabled here. Production Catalog/Broker/
-context composition and actual model comparison remain pending acceptance.
+This contract package does not enable runtime tools or owner endpoints.
+The optional owning Catalog/Broker/context composition passed bounded High
+recovery/parallel/control acceptance; shared deployment flags remain off.
+See [the acceptance matrix](../../docs/ai/delegation-final-high-acceptance-20261012.md).
 See `docs/architecture/delegation-contract.md`.
+
+An opt-in `delegation_numeric_observation_v1` Catalog contract adds an objective
+acceptance constraint for a selected structured numeric/date witness.
+`VerifyNumericObservation` compares exact source identity/revision/hash, value,
+date and `source_only` uncertainty after the owning guard reads the current
+original and immutable final. Duplicate keys, omitted/null fields, unknown fields
+and trailing JSON deny; integer zero is a real value only when explicitly given.
+Exact required field names are checked before struct decoding for the final,
+witness, contract and nested source reference, so Unicode folding cannot turn
+an extra long-s or Kelvin-sign key into an accepted field alias.
+The production owner acceptance guard requires that witness in both the child's
+exact selected sources and the owner's pinned decision evidence. Other reports
+cannot vote it into agreement. This constrained source-relative check does not
+verify arbitrary prose, auto-accept a result or complete a task.
 
 `AdmissionContract` now defines the optional fixed `task.delegate` prepare route.
 Strict decoding accepts only current Catalog references, finite allocation,
@@ -29,5 +45,6 @@ operator-selected internal connection. Authentication does not
 authorize admission: the owning Orchestrator service must recheck the actual
 inflight dispatch. Migration061 persists its immutable accepted child snapshot.
 The separate real Broker process acceptance proves committed admission only;
-tools/default enabling, child model success and parallel-model comparison remain
-pending. See [admission evidence](../../docs/ai/delegation-admission-acceptance.md).
+default enabling and broad local quality/resource benchmarks remain separate.
+Actual High child success and bounded parallel acceptance passed in the final
+matrix. See [admission evidence](../../docs/ai/delegation-admission-acceptance.md).

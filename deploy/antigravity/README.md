@@ -1,5 +1,36 @@
 # Native Antigravity with Google AI Pro
 
+## Explicit Flash High — verified on isolated laba
+
+`gemini-3.8-flash-high` now has a native Go Cloud Code profile matching the
+measured Desktop route. Original console OAuth, Manager-owned project discovery
+and confirmed Pro/Ultra subscription are required. Actual Provider/Manager22
+completed200/STOP/exact marker with8192 output:29 input,17 output,155 thoughts.
+Only supplied Butler prompts/context/catalog are forwarded unchanged; no Desktop
+reminders or proxy-authored identity prompt. CLI is not used for runtime inference.
+See [safe evidence](flash-high-20261012.json) and [diagnosis](../../docs/ai/antigravity-quota-diagnosis.md).
+
+To select this profile after the normal activation gates, set the existing
+`BUTLER_ANTIGRAVITY_MODEL` to `gemini-3.8-flash-high` and add its exact model entry
+to the existing `BUTLER_EXECUTION_BUDGET_POLICY_JSON.models` map:
+
+```json
+"antigravity:gemini-3.8-flash-high": {"basis":"subscription_no_overage"}
+```
+
+Preserve other model entries/limits. The Compose overlay already accepts this
+model variable; main checkout/deployment were not modified by this task. Real
+High text access and actual native function/result continuation are proved.
+The separate sealed delegation scenario completed two real Broker admissions and
+both child extractions after worker loss, then failed the parent's exact receipt
+projection. Full delegation/activation gates remain separate; width2 was not run.
+See [retained result](../../docs/ai/delegation-high-acceptance-20261012.md).
+Exact quota-meter bucket attribution is unknown.
+
+The following deployment/history details describe the retained default AICode
+tiered path. For High, the private control plane returns a discovered project
+alongside short-lived access; the legacy imported project remains unused.
+
 Butler's `antigravity` provider uses Go HTTP/SSE directly against the production
 AICode subscription endpoint. The default requested model is
 `gemini-3.8-flash-tiered` (Gemini 3.8 Flash). Every model turn stays inside Butler's
@@ -24,10 +55,21 @@ unary generation and SSE streaming returned HTTP 200, the expected text marker,
 tokens. Butler uses an explicit 8192-token allowance. The operator probes used
 512; they do not claim a maximum-length output test.
 
-Earlier Cloud Code generation returned 429 on the wrong inference route, and
+Earlier Cloud Code request profiles returned429, and
 direct regional AICode probes were rejected before the authorized proxy was
 configured. Those observations do not establish exhausted subscription quota.
 Stored credentials alone do not prove model access.
+
+The owner-authorized2026-10-11 comparison subsequently completed actual CLI
+Flash-medium/daily CloudCode and native Go Flash-tiered/AICode with output512.
+The official CLI's default CloudCode route is therefore not inherently wrong.
+A separate native request with original8192/body received429 HIGH_DEMAND, proving
+capacity rejection for that observation. Old generic429 cannot be reclassified;
+no causal code fault or cap defect is demonstrated. Pro membership/origin is
+confirmed, per-Go subscription accounting is unresolved. See the
+[updated diagnosis](../../docs/ai/antigravity-quota-diagnosis.md) for exact safe
+artifacts,21 cumulative attempts/7 known/14 unknown usage pairs and sealed windows.
+The diagnostic CLI was isolated outside deployment; no production fallback changed.
 
 The private `provider-auth -action audit-origin` command reads a bounded reference
 import on stdin and compares it with current encrypted PostgreSQL credentials.
@@ -136,7 +178,7 @@ The adapter sends a flat protobuf JSON request to
 `aicode: {experience: "gemini-3.8-flash-tiered"}`, `contents`, optional
 `systemInstruction`/`tools`/`toolConfig`, and `generationConfig.maxOutputTokens`.
 The `model` and `aicode` fields are a protobuf oneof: only `aicode` is sent.
-Cloud Code project/request envelopes, v1main `sessionId`/`entitlement` fields and
+Cloud Code project/request envelopes, optional CLI `sessionId`/`entitlement` fields and
 credit controls are absent. Responses are flat SSE `candidates`, `modelVersion`
 and `usageMetadata`, without a `response` wrapper. The HTTP User-Agent is
 `antigravity/1.3.3 butler/0.1`. Only Butler-supplied schemas become
@@ -169,5 +211,17 @@ The verified official Antigravity CLI 1.3.3 GCA PredictionService descriptors
 confirm `StreamGenerateContent` POST `/{$api_version}:streamGenerateContent` with
 body `*`, and native `parametersJsonSchema`, `functionCall`, `functionResponse`
 and `thoughtSignature` fields. Private production v1 probes confirmed the flat
-stream shape; v1main-only fields were rejected. These are internal subscription
+stream shape; additional session/entitlement fields were rejected. These are internal subscription
 APIs and can change; unknown protocol behavior fails closed.
+
+The 2026-10-11 isolated capture of installed CLI 1.3.3 implemented the previously
+proposed offline comparison. With synthetic metadata, its default path used
+`daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent`; explicit
+`USE_AICODE=true` emitted `aicode.googleapis.com/v1:streamGenerateContent` with
+`sessionId`. The latter selected a different experience under incomplete fixture
+licenses, so it is not a same-model production comparison. No HTTP v1main support
+or paid quota accounting follows from protobuf names. Production transport is
+unchanged; no real inference or deployment was performed. Evidence, limitations
+and the separate, unexecuted experiment proposal are in
+[the diagnosis](../../docs/ai/antigravity-quota-diagnosis.md). Reproduce only the
+zero-inference capture with [the isolated runner](../../scripts/dev/antigravity-wire/README.md).

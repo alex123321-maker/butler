@@ -38,6 +38,14 @@ rate limiting. The same normalization applies before logs, persistent failure
 state and returning to the input worker. Unknown provider types become
 `internal_transport_error`; private provider error text is never a diagnostic.
 
+An actual tool proposal invalidates any earlier candidate final and its answer
+classification. Only a fresh `assistant_final` after the last tool continuation
+can supply the frozen final body; an empty or nil continuation cannot fall back
+to an answer from before that action. A fresh final's own finish reason determines
+`final` versus `partial`. Confirmed tool observations and spent reservations stay
+durable when a later model turn fails to provide a final. Streaming commentary
+does not become final content or a task-completion verdict.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Run Lifecycle  

@@ -376,7 +376,15 @@ func (c *Controller) ApplyWithGuard(ctx context.Context, req ControlRequest, gua
 		}
 		source["last_owner_control"] = map[string]any{"control_id": controlID, "channel": actor.Channel, "delivery_id": actor.DeliveryID, "instruction": req.Instruction}
 		sourceJSON, _ := json.Marshal(source)
-		updated, err := scan(tx.QueryRow(ctx, `UPDATE tasks SET goal=$2,status=$3,revision=revision+1,constraints_revision=constraints_revision+1,execution_policy=$4,constraints_json=$5::jsonb,completion_criteria_json=$6::jsonb,source_json=$7::jsonb,working_json='{"plan":[],"pending_actions":[],"scratch":{}}',working_revision=working_revision+1,completion_result_id=CASE WHEN $3='completed' THEN NULLIF($8,'') ELSE completion_result_id END,finished_at=CASE WHEN $3 IN('completed','cancelled') THEN clock_timestamp() ELSE NULL END,updated_at=clock_timestamp() WHERE task_id=$1 RETURNING `+columns, id, r.Goal, nextStatus, r.ExecutionPolicy, constraints, criteria, sourceJSON, req.ResultID))
+		// Catalog deletion already cleared all content. Keep only its exact,
+		// owner-bound empty marker so control does not republish working state
+		// under the deleted run's source fence. Other working state still clears
+		// through the ordinary publication fence.
+		updated, err := scan(tx.QueryRow(ctx, `UPDATE tasks SET goal=$2,status=$3,revision=revision+1,constraints_revision=constraints_revision+1,execution_policy=$4,constraints_json=$5::jsonb,completion_criteria_json=$6::jsonb,source_json=$7::jsonb,
+ working_json=CASE WHEN working_json=jsonb_build_object('plan','[]'::jsonb,'pending_actions','[]'::jsonb,'scratch',jsonb_build_object('privacy_redacted',TRUE,'deletion_id',working_json #>> '{scratch,deletion_id}'))
+ AND EXISTS(SELECT 1 FROM memory_deletions d WHERE d.deletion_id=tasks.working_json #>> '{scratch,deletion_id}' AND d.owner_id=tasks.owner_id)
+ THEN working_json ELSE '{"plan":[],"pending_actions":[],"scratch":{}}'::jsonb END,
+ working_revision=working_revision+1,completion_result_id=CASE WHEN $3='completed' THEN NULLIF($8,'') ELSE completion_result_id END,finished_at=CASE WHEN $3 IN('completed','cancelled') THEN clock_timestamp() ELSE NULL END,updated_at=clock_timestamp() WHERE task_id=$1 RETURNING `+columns, id, r.Goal, nextStatus, r.ExecutionPolicy, constraints, criteria, sourceJSON, req.ResultID))
 		if err != nil {
 			return result, err
 		}

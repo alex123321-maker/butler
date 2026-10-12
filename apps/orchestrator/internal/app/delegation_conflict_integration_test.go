@@ -30,6 +30,7 @@ func TestDelegationConflictingReportsRequireOriginalWitnessIntegration(t *testin
 		key := []string{"first-conflict", "second-conflict"}[i]
 		q := f.proposal(t, key)
 		q.Sources = []delegation.SourceRef{witness}
+		q.ContractSource = f.numericResearchContract(t, key+"-numeric", witness, nil)
 		admitted, err := f.manager.Admit(f.owner, q)
 		if err != nil {
 			t.Fatal(err)
@@ -38,7 +39,7 @@ func TestDelegationConflictingReportsRequireOriginalWitnessIntegration(t *testin
 		if err != nil {
 			t.Fatal(err)
 		}
-		body, _ := json.Marshal(nativeResearchObservation{SourceID: witness.ID, SourceRevision: witness.Revision, SourceHash: witness.Hash, ObservedValue: value, ObservedDate: "2026-10-11", Uncertainty: "source_only"})
+		body, _ := json.Marshal(delegation.NumericObservation{SourceID: witness.ID, SourceRevision: witness.Revision, SourceHash: witness.Hash, ObservedValue: value, ObservedDate: "2026-10-11", Uncertainty: "source_only"})
 		result, report, parents := f.completeWithContent(t, admitted.Contract, child, false, false, string(body))
 		children = append(children, child)
 		results = append(results, result)
@@ -60,13 +61,6 @@ func TestDelegationConflictingReportsRequireOriginalWitnessIntegration(t *testin
 	if err != nil || guardSource(original) != witness {
 		t.Fatal("current original witness unavailable", err)
 	}
-	var fact struct {
-		Value int64  `json:"observed_value"`
-		Date  string `json:"observed_date"`
-	}
-	if json.Unmarshal([]byte(original.Body), &fact) != nil {
-		t.Fatal("fixed witness is malformed")
-	}
 	var accepted, rejected int
 	ownerToken := strings.Repeat("fixture-owner-", 4)
 	ownerAPI := api.DelegationOwnerDecisions(api.NewOwnerControlAuth(ownerToken, f.parent.OwnerID), f.manager)
@@ -75,17 +69,26 @@ func TestDelegationConflictingReportsRequireOriginalWitnessIntegration(t *testin
 		if err := f.pool.QueryRow(f.ctx, `SELECT content_text FROM artifacts WHERE artifact_id=$1 AND NOT privacy_redacted`, reports[i].Evidence[1].ID).Scan(&body); err != nil {
 			t.Fatal(err)
 		}
-		matched := verifyNativeResearchObservation(body, witness, fact.Value, fact.Date) == nil
+		matched := delegation.VerifyNumericObservation([]byte(body), witness, []byte(original.Body)) == nil
+		verified, err := f.store.SaveVerifiedResult(f.owner, task.Result{TaskID: child.TaskID, TaskRevision: child.Revision, RunID: results[i].RunID, Summary: "Synthetic owner verification for objective guard", EvidenceRefs: []string{DelegationSourceEvidence(witness), DelegationRecordEvidence(delegation.EvidenceRef{Kind: "action", ID: reports[i].Actions[0].ActionID, Hash: validationHash}), DelegationRecordEvidence(reports[i].Actions[0].Evidence[0])}, VerifiedCriteria: child.CompletionCriteria, Verifier: "owner"})
+		if err != nil {
+			t.Fatal(err)
+		}
 		if matched {
-			verified, err := f.store.SaveVerifiedResult(f.owner, task.Result{TaskID: child.TaskID, TaskRevision: child.Revision, RunID: results[i].RunID, Summary: "Independent exact original-witness check passed", EvidenceRefs: []string{DelegationSourceEvidence(witness), DelegationRecordEvidence(delegation.EvidenceRef{Kind: "action", ID: reports[i].Actions[0].ActionID, Hash: validationHash}), DelegationRecordEvidence(reports[i].Actions[0].Evidence[0])}, VerifiedCriteria: child.CompletionCriteria, Verifier: "owner"})
-			if err != nil {
-				t.Fatal(err)
-			}
 			results[i] = verified
 			reports[i].ResultID, reports[i].Evidence[0].ID = verified.ResultID, verified.ResultID
 			reports[i].Uncertainty = nil
 			accepted++
 		} else {
+			// Even an actual owner-verified row cannot accept the contradictory
+			// immutable final under this selected objective contract.
+			if _, err := f.manager.AcceptVerified(f.owner, f.parent.TaskID, child.TaskID, collected[i], verified.ResultID, []delegation.SourceRef{witness}); err == nil {
+				t.Fatal("owner verification overrode the original numeric witness")
+			}
+			var storedResult, state string
+			if err := f.pool.QueryRow(f.ctx, `SELECT result_id,state FROM task_delegations WHERE task_id=$1`, child.TaskID).Scan(&storedResult, &state); err != nil || storedResult != results[i].ResultID || state != "result_ready" {
+				t.Fatal("denied objective acceptance changed the collected observation", err)
+			}
 			rejected++
 		}
 		payload := map[string]any{"kind": "reject", "report_source": collected[i], "evidence_refs": []delegation.SourceRef{witness}}
@@ -118,6 +121,108 @@ func TestDelegationConflictingReportsRequireOriginalWitnessIntegration(t *testin
 	parent, err := f.store.Get(f.ctx, f.parent.TaskID)
 	if err != nil || parent.Status != "active" {
 		t.Fatal("conflict resolution completed the parent", err)
+	}
+}
+
+func (f *delegationGuardFixture) numericResearchContract(t *testing.T, key string, witness delegation.SourceRef, override []byte) delegation.SourceRef {
+	t.Helper()
+	body, _ := json.Marshal(struct {
+		Kind   string               `json:"kind"`
+		Source delegation.SourceRef `json:"source_ref"`
+	}{delegation.NumericObservationKind, witness})
+	if override != nil {
+		body = override
+	}
+	source, err := f.sources.Put(f.owner, catalog.PutSource{ExternalKey: key, Kind: "model_candidate", ScopeType: "user", ScopeID: f.parent.OwnerID, Body: string(body), Title: "Bounded numeric source observation"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return guardSource(source)
+}
+
+func TestDelegationNumericAcceptanceCannotUseAgreementOrMalformedContractIntegration(t *testing.T) {
+	for _, scenario := range []string{"agreeing_wrong_finals", "duplicate_marker", "unknown_schema", "unselected_witness", "missing_observed_value", "null_observed_value", "missing_source_evidence", "unicode_final_alias", "unicode_witness_alias", "unicode_contract_alias", "unicode_nested_source_alias"} {
+		t.Run(scenario, func(t *testing.T) {
+			f := newDelegationGuardFixture(t)
+			witnessBody := `{"observed_value":0,"observed_date":"2026-10-11"}`
+			if scenario == "unicode_witness_alias" {
+				witnessBody = `{"observed_value":23,"ob\u017ferved_value":0,"observed_date":"2026-10-11"}`
+			}
+			witness := f.source(t, "numeric-original", "user", f.parent.OwnerID, witnessBody, nil)
+			selected := witness
+			override := []byte(nil)
+			switch scenario {
+			case "duplicate_marker":
+				override = []byte(`{"kind":"delegation_numeric_observation_v1","kind":"legacy"}`)
+			case "unknown_schema":
+				override = []byte(`{"kind":"delegation_numeric_observation_v2"}`)
+			case "unicode_contract_alias", "unicode_nested_source_alias":
+				contract, _ := json.Marshal(struct {
+					Kind   string               `json:"kind"`
+					Source delegation.SourceRef `json:"source_ref"`
+				}{delegation.NumericObservationKind, witness})
+				field, alias := `"source_ref":`, `"\u017fource_ref":`
+				if scenario == "unicode_nested_source_alias" {
+					field, alias = `"source_id":`, `"\u017fource_id":`
+				}
+				override = []byte(strings.Replace(string(contract), field, alias, 1))
+			case "unselected_witness", "missing_source_evidence":
+				selected = f.source(t, "numeric-other", "user", f.parent.OwnerID, `{"observed_value":0,"observed_date":"2026-10-11"}`, nil)
+			}
+			count := 1
+			if scenario == "agreeing_wrong_finals" {
+				count = 2
+			}
+			for i := 0; i < count; i++ {
+				key := []string{"numeric-first", "numeric-second"}[i]
+				q := f.proposal(t, key)
+				q.Sources = []delegation.SourceRef{selected}
+				if scenario == "missing_source_evidence" {
+					q.Sources = append(q.Sources, witness)
+				}
+				q.ContractSource = f.numericResearchContract(t, key+"-contract", witness, override)
+				admitted, err := f.manager.Admit(f.owner, q)
+				if err != nil {
+					t.Fatal(err)
+				}
+				child, err := f.store.Get(f.ctx, admitted.Contract.TaskID)
+				if err != nil {
+					t.Fatal(err)
+				}
+				body, _ := json.Marshal(delegation.NumericObservation{SourceID: witness.ID, SourceRevision: witness.Revision, SourceHash: witness.Hash, ObservedValue: 0, ObservedDate: "2026-10-11", Uncertainty: "source_only"})
+				raw := string(body)
+				switch scenario {
+				case "agreeing_wrong_finals":
+					raw = strings.Replace(raw, `"observed_value":0`, `"observed_value":23`, 1)
+				case "missing_observed_value":
+					raw = strings.Replace(raw, `"observed_value":0,`, "", 1)
+				case "null_observed_value":
+					raw = strings.Replace(raw, `"observed_value":0`, `"observed_value":null`, 1)
+				case "unicode_final_alias":
+					raw = strings.Replace(raw, `"observed_value":0`, `"observed_value":23,"ob\u017ferved_value":0`, 1)
+				}
+				result, report, parents := f.completeWithContent(t, admitted.Contract, child, false, false, raw)
+				ref := f.report(t, key+"-report", child, report, parents)
+				if _, err := f.manager.Collect(f.ctx, f.parent.TaskID, child.TaskID, result.ResultID, ref); err != nil {
+					t.Fatal("unverified invalid observation must remain collectable", err)
+				}
+				verified, err := f.store.SaveVerifiedResult(f.owner, task.Result{TaskID: child.TaskID, TaskRevision: child.Revision, RunID: result.RunID, Summary: "Synthetic owner proof cannot override objective facts", EvidenceRefs: []string{DelegationSourceEvidence(selected), DelegationRecordEvidence(delegation.EvidenceRef{Kind: "action", ID: report.Actions[0].ActionID, Hash: validationHash}), DelegationRecordEvidence(report.Actions[0].Evidence[0])}, VerifiedCriteria: child.CompletionCriteria, Verifier: "owner"})
+				if err != nil {
+					t.Fatal(err)
+				}
+				var before string
+				if err := f.pool.QueryRow(f.ctx, `SELECT decision_evidence_json::text FROM task_delegations WHERE task_id=$1`, child.TaskID).Scan(&before); err != nil {
+					t.Fatal(err)
+				}
+				if _, err := f.manager.AcceptVerified(f.owner, f.parent.TaskID, child.TaskID, ref, verified.ResultID, []delegation.SourceRef{selected}); err == nil {
+					t.Fatal("unsupported numeric final accepted", scenario)
+				}
+				var after, state, current string
+				if err := f.pool.QueryRow(f.ctx, `SELECT decision_evidence_json::text,state,result_id FROM task_delegations WHERE task_id=$1`, child.TaskID).Scan(&after, &state, &current); err != nil || after != before || state != "result_ready" || current != result.ResultID {
+					t.Fatal("denial rewrote retained observation", err)
+				}
+			}
+		})
 	}
 }
 

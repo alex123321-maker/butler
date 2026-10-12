@@ -207,21 +207,35 @@ Orchestrator взаимодействует с Model Transport Layer через 
 
 ### 7.1 Native Antigravity subscription adapter
 
-`antigravity` uses Go HTTP/SSE directly against production AICode v1
+`antigravity` uses Go HTTP/SSE directly. The retained default tiered profile uses production AICode v1
 `https://aicode.googleapis.com/v1:streamGenerateContent?alt=sse`. Requests and SSE
 responses are flat. Subscription routing sends `aicode.experience` instead of the
 mutually exclusive `model` field. No Cloud Code project/request wrapper or
-v1main-only session/entitlement fields are sent. Output allowance is 8192 tokens.
+optional CLI session/entitlement fields are sent. Output allowance is 8192 tokens.
 This is an experimental opt-in integration; Google's Antigravity FAQ declares
 third-party consumer integration unsupported. It is not official product support.
 The default model is `gemini-3.8-flash-tiered` (Gemini 3.8 Flash). CLI inference is
 removed; optional initial interactive sign-in stays outside Butler context.
 Control-plane `providerauth.Manager` imports a private operator stream into the
-encrypted PostgreSQL SecretStore and owns refresh. Project discovery is removed;
+encrypted PostgreSQL SecretStore and owns refresh. AICode requires no project;
 legacy imported project values are retained only for backward compatibility and
-are never returned to transport or used for inference. Transport
+never select a route. Transport
 receives only typed short-lived auth, never refresh tokens, credential files or CLI
 execution. No automatic API billing, credit overage or alternate endpoint exists.
+
+Explicit `gemini-3.8-flash-high` instead uses daily Cloud Code
+`/v1internal:streamGenerateContent?alt=sse` with model/project/request,
+requestType=agent, product userAgent, per-turn UUID requestId and a Butler-owned
+run sessionId. Manager discovers project via fixed authenticated loadCodeAssist
+and confirms paidTier g1-pro/ultra; private project/access metadata never enters
+model context or durable events. Wrapped `response` SSE is normalized with the
+same cancellation, complete-terminal/function/schema/signature and usage guards.
+High keeps8192 output/1048576 conservative input reservation, thinkingBudget=-1
+and checks the entire serialized envelope against the private byte limit.
+Only the Orchestrator's Butler prompt/context/catalog is forwarded unchanged:
+no Desktop/third-party wrapper instructions, identity rewriting, hidden reminders
+or extra tools. No route/model retry or fallback exists. See
+[the bounded High acceptance](../ai/antigravity-high-acceptance-20261012.md).
 
 Only supplied Butler functions are advertised. Complete native function proposals
 must match the exact per-run alias and schema before becoming `tool_call_requested`.
@@ -231,6 +245,19 @@ parts and opaque thought signatures without exposing thought text/signatures to
 assistant output. Foreign/lost refs, duplicate results, ambiguous calls, unsupported
 parts and incomplete streams fail closed. Provider context is transient; Butler
 replays its durable context after restart instead of trusting provider references.
+
+Normalized live results retain the Broker envelope `{status,result,error?}`.
+For `task.delegate`, the admitted child's ID is at
+`functionResponse.response.result.task_id`; `status:"completed"` acknowledges
+local admission only. The validated receipt body, including an empty `input_id`
+for a waiting child, is preserved in durable tool history. Recovery reconstructs
+the status/result/error envelope and presents it as private ToolOutput DATA;
+its additional DATA wrapper places that same ID at `data.result.result.task_id`.
+Recovery does not reconstruct native function calls or thought signatures.
+Tool-phase text/signatures remain native live-context parts; only the last
+model turn's terminal answer supplies the stored final, without concatenating
+earlier streamed commentary. See
+[receipt path verification](../ai/delegation-receipt-path-acceptance.md).
 
 Capabilities: text streaming, one function proposal per turn, cancellation, usage;
 no batch calls or provider stateful restart. All HTTP redirects are rejected and
@@ -246,6 +273,50 @@ remain `rate_limited`; neither establishes exhausted subscription quota. No raw
 error metadata or automatic retry crosses this boundary. Historical general
 `rate_limited` records cannot be reclassified without their original evidence.
 See [protocol, operator import and validation status](../../deploy/antigravity/README.md).
+
+An isolated diagnostic command may execute the installed CLI only against a
+synthetic loopback HTTPS server, with fake credentials and network denied. It is
+outside the provider factory and run lifecycle, reads no real credential store,
+and exports only safe wire metadata. The completed CLI 1.3.3 capture proves that
+explicit AICode mode serializes HTTP v1 with sessionId; the protobuf namespace
+does not determine HTTP version. Fixture routing/model differences do not prove
+production server acceptance or justify copying optional fields into the native
+adapter. See [the diagnosis](../ai/antigravity-quota-diagnosis.md). No runtime
+contract, credential ownership or inference permission changes with this tool.
+
+A separate private operator comparison may use the retained authorization only
+after explicit owner inference authorization and tested finite PostgreSQL admission.
+It is outside provider factory, Orchestrator and Tool Broker execution. Manager
+alone owns audit/refresh/encrypted persistence. CLI receives the same short-lived
+token in an isolated profile behind an internal-network, fixed-host HTTPS gate;
+main credential/proxy environment/control key are not mounted into CLI. Only
+fixed safe metadata leaves the backend. Model/prompt/credit/byte/deadline checks,
+charge-before-write, duplicate/restart refusal and sealed carried-forward reports
+apply to every dispatch. Function proposals are blocked before CLI execution.
+This does not create CLI inference fallback or grant other production authority.
+
+The authorized2026-10-11 comparison completed CLI Flash-medium/CloudCode and Go
+Flash-tiered/AICode with512; a separate byte-preserved Go8192 request returned
+HIGH_DEMAND. Capacity is proven for that new rejection, not a causal protocol or
+output-allocation defect. Keep production8192 and the existing fixed diagnostic;
+neither the live text test nor fixture success closes delegation/tool acceptance.
+See [the exact diagnosis and accounting](../ai/antigravity-quota-diagnosis.md).
+
+A separate Desktop diagnostic may use the retained Manager-owned authorization
+for explicitly allowlisted read-only metadata while denying **every** generation
+before upstream. It adds no inference admission, account fallback or production
+authority. Raw profiles/headers/responses stay inside the private backend;
+only fixed safe request projections are exported. The2026-10-12 installed
+Windows2.22 frontend/official same-CL Linux backend capture measured Flash-high,
+daily Cloud Code v1internal,65536 output and15 declarations, including additional
+LOW writes blocked before Google. The actual Go network-none fixture retained
+flat AICode/tiered/8192 and parsed SSE. This is not the original Windows backend
+capture or a causal defect; that capture itself changed no production behavior.
+The subsequent explicitly requested High profile and admitted22 are described
+above. Any additional live pair needs independent finite durable admission
+carrying all22 tracked attempts and eight generation reports forward; issue16's
+delegation gates remain separate. See
+[Desktop capture evidence](../../deploy/antigravity/desktop-interception-20261012.json).
 
 ---
 
