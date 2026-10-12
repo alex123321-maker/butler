@@ -2,6 +2,26 @@
 
 Nuxt.js frontend for the Butler self-hosted AI agent platform.
 
+Owner task controls show current assignment/source/result references and separate
+answer, verification, effects and notification delivery. A lost acknowledgement
+keeps its exact delivery/body for retry; child Stop uses the child's current
+version. Owner proof lives in page memory and fences late control/read responses.
+Approval views receive only service-derived consequences and version metadata.
+Artifact/source links select exact retained evidence; private memory requires
+explicit owner loading and guards both proof and source-selection changes.
+
+Workspace recovery is a discovered, current-version owner control on task detail.
+Discard affects one quarantined copy; request/erasing is not a verified receipt,
+and the original operation remains unknown. No path, lease or model verdict is
+accepted. The current kernel independently proves stopped-tree/executor/source
+eligibility and erasure.
+
+`scripts/dev/owner-state-web-lab.sh` covers bounded Chromium presentation scenarios
+with intercepted fixtures. `owner-state-browser-api-lab.sh` separately drives real
+Go owner HTTP handlers and disposable PostgreSQL from Chromium, including a
+committed lost response and exact durable replay. Their evidence boundaries are
+recorded in `docs/ai/task-owner-state-20261012.md`.
+
 ## Overview
 
 Provides a browser-based interface for:

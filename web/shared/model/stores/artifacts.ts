@@ -30,6 +30,7 @@ export const useArtifactsStore = defineStore('artifacts', () => {
   const selectedID = ref('')
   const detailPending = ref(false)
   const detailError = ref<string | null>(null)
+  let previewEpoch = 0
 
   const load = async (overrides: Partial<ArtifactFilters> = {}) => {
     filters.value = {
@@ -62,6 +63,7 @@ export const useArtifactsStore = defineStore('artifacts', () => {
   }
 
   const openPreview = async (artifactID: string) => {
+    const epoch = ++previewEpoch
     selectedID.value = artifactID
     selected.value = null
     detailPending.value = true
@@ -69,19 +71,23 @@ export const useArtifactsStore = defineStore('artifacts', () => {
 
     try {
       const response = await fetchArtifactById(artifactID)
+      if (epoch !== previewEpoch) return
       selected.value = response.artifact
     } catch (err) {
+      if (epoch !== previewEpoch) return
       selected.value = null
       detailError.value = err instanceof Error ? err.message : 'Failed to load artifact details'
     } finally {
-      detailPending.value = false
+      if (epoch === previewEpoch) detailPending.value = false
     }
   }
 
   const closePreview = () => {
+    previewEpoch++
     selectedID.value = ''
     selected.value = null
     detailError.value = null
+    detailPending.value = false
   }
 
   return {

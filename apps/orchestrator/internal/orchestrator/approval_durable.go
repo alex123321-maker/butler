@@ -68,7 +68,7 @@ func (s *Service) suspendApproval(ctx context.Context, current *sessionv1.RunRec
 	}
 	// Delivery failure does not remove the committed pending decision. It remains
 	// discoverable through the approval API; a durable outbox is a separate layer.
-	_ = s.config.Delivery.DeliverApprovalRequest(ctx, ApprovalRequest{ApprovalID: record.ApprovalID, RunID: current.GetRunId(), SessionKey: current.GetSessionKey(), ToolCallID: record.ToolCallID, ToolName: record.ToolName, ArgsJSON: record.ArgsJSON, Summary: record.Summary, RiskLevel: record.RiskLevel})
+	_ = s.config.Delivery.DeliverApprovalRequest(ctx, ApprovalRequest{OwnerFacts: approvals.OwnerFactsForRecord(record), ApprovalID: record.ApprovalID, RunID: current.GetRunId(), SessionKey: current.GetSessionKey(), ToolCallID: record.ToolCallID, ToolName: record.ToolName, ArgsJSON: record.ArgsJSON, Summary: record.Summary, RiskLevel: record.RiskLevel})
 	return updated, ErrApprovalSuspended
 }
 

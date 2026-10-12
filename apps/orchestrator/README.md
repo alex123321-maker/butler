@@ -1,5 +1,13 @@
 # Orchestrator
 
+Owner state/control acceptance adds finite attempt/result/source/version metadata,
+exact lost-ACK control replay in Web, typed Telegram observations/mandate revocation
+and safe approval response projection. The HTTP response itself excludes raw
+stored arguments/details and arbitrary summary text. Workspace recovery discovery
+and discard endpoints are authenticated owner-only adapters to the independent
+quiescence/erasure controller; they never execute model actions. See
+[bounded owner evidence](../../docs/ai/task-owner-state-20261012.md).
+
 Bounded issue16 High acceptance passed. The
 [final matrix](../../docs/ai/delegation-final-high-acceptance-20261012.md) combines
 earlier actual native parent/width1 evidence with two final native High children,

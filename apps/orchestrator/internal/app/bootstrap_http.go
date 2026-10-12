@@ -52,6 +52,7 @@ import (
 	"github.com/butler/butler/internal/providerfactory"
 	"github.com/butler/butler/internal/skills"
 	postgresstore "github.com/butler/butler/internal/storage/postgres"
+	"github.com/butler/butler/internal/workspaceexec"
 )
 
 type httpServerDeps struct {
@@ -157,6 +158,21 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	taskControlServer := apiservice.NewTaskControlServer(deps.taskStore)
 	taskControlServer.SetOwnerControlAuth(deps.ownerAuth)
 	taskControlServer.SetControls(deps.taskControls)
+	// Bootstrap has already checked the opted-in workspace/source schema. The
+	// controller rechecks current owning proof on every read/explicit discard.
+	var recoveryController *workspaceexec.RecoveryController
+	if deps.cfg.WorkspaceEnabled && deps.postgres != nil && deps.sourceCatalog != nil {
+		var recoveryErr error
+		recoveryController, recoveryErr = workspaceexec.NewRecoveryController(deps.postgres.Pool(), deps.sourceCatalog)
+		if recoveryErr != nil {
+			deps.log.Warn("workspace owner recovery unavailable")
+		}
+	}
+	workspaceRecoveryServer := apiservice.NewWorkspaceRecoveryServer(nil, deps.ownerAuth)
+	if recoveryController != nil {
+		workspaceRecoveryServer = apiservice.NewWorkspaceRecoveryServer(recoveryController, deps.ownerAuth)
+	}
+	taskControlServer.SetWorkspaceRecovery(workspaceRecoveryServer)
 	overviewServer := apiservice.NewOverviewServer(deps.runRepo, deps.deliveryEventsRepo)
 	if deps.finalResults != nil {
 		overviewServer.SetOutbox(deps.finalResults.Outbox)
@@ -187,6 +203,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	remoteRelayEnabled := singleTabTransportMode != "native_only"
 
 	mux := http.NewServeMux()
+	mux.Handle("/api/workspaces/", workspaceRecoveryServer.Handle("/api/workspaces/"))
 	mux.Handle("/api/v3/execution-budgets", apiservice.NewBudgetHandler(budget.NewLedger(deps.postgres.Pool()), deps.ownerAuth))
 	var extensionClient *extensions.ControlClient
 	if deps.cfg.ExtensionControlURL != "" {

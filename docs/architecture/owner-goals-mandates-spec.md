@@ -24,6 +24,15 @@ Replaying the same delivery returns its original receipt; changing the request
 under that delivery fails. The server rejects unknown fields, trailing JSON and
 requests larger than 256 KiB. Tokens never enter goals, model context or logs.
 
+The channel's exact-reference `RevokeMandate` command accepts only a mandate ID
+and its expected current revision; owner identity and delivery come from the
+authenticated adapter. It locks the stored mandate and bound objective, copies
+its finite policy unchanged, marks revocation and queues branch cancellation in
+one transaction. Existing allowance/reservations and prior effects are retained.
+Replay checks the immutable delivery fingerprint before current-revision CAS, so
+a lost acknowledgement remains recoverable after the original revocation or an
+adapter restart. Another body under the same delivery conflicts.
+
 Objectives, preferences and constraints are confirmed owner records. An agent
 may propose an assumption under a fenced run, but cannot promote it or obtain
 authority from it. Explicit owner confirmation creates a separate objective

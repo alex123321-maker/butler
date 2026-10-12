@@ -6,6 +6,12 @@ create or amend goal and broad mandate authority. Agent assumptions cannot
 promote themselves; explicit owner confirmation creates a distinct objective
 with the assumption reference retained in its provenance.
 
+`RevokeMandate` is the finite authenticated channel command for an exact saved
+mandate/version. Its durable decision replay runs before CAS; it revokes current
+authority and queues branch cancellation without changing budgets or prior effects.
+The actual PostgreSQL owner-reference tests verify foreign-owner/stale denial,
+immediate admission denial, propagation and restart/lost-ACK deduplication.
+
 `CheckAdmissionTx` is for trusted initiative coordinators. Acquire ownership and
 session locks first, call the typed check, and insert new task/input rows in the
 same transaction. `task.CreateTx` inherits a parent's exact assignment and

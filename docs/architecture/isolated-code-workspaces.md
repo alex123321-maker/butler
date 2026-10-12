@@ -179,3 +179,20 @@ The prior decision/attempt becomes retained `superseded` history. Replaying the
 same owner delivery returns current observation and cannot erase again. Changed
 task/source/owner/version or unavailable physical evidence preserves quarantine.
 Retained executor, decision and receipt history prevents migration rollback.
+
+The opted-in Orchestrator HTTP adapter exposes authenticated
+`GET /api/v3/tasks/{task_id}/workspace-recovery` (bounded 50 metadata entries),
+`GET /api/workspaces/{workspace_id}/recovery` and
+`POST /api/workspaces/{workspace_id}/discard`. Task discovery also covers unknown
+creates whose model result never contained the allocated copy ID. Exact ownership
+is checked by the recovery controller, never inferred from an opaque ID.
+
+Discard JSON accepts exactly `workspace_id`, `resource_version`,
+`workspace_generation`, `task_revision`, `constraints_revision` and optional
+`previous_recovery_id`; zero generation is explicit for uncommitted creates.
+Unknown/duplicate/aliased keys, null CAS values, trailing values, path mismatch
+and a missing stable owner delivery ID are refused before controller mutation.
+No owner/path/lease/fence/body/caller receipt is input. The Web task discovers these
+safe current versions with its existing owner proof, retains an exact lost-ACK
+intent for retry and fences late receipts on proof changes. Requested/erasing
+does not claim verified erasure; original outcome remains unknown after discard.

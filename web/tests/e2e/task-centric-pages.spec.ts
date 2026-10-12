@@ -505,7 +505,7 @@ test.describe('Task-centric pages baseline', () => {
     await expect(page.getByText('Needs your action')).toBeVisible()
 
     await page.goto('/tasks/run-1')
-    await expect(page.getByText('Action is available only through Telegram.')).toBeVisible()
+    await expect(page.getByText('This request waits for a Telegram reply. Matching owner access also permits task controls here.', { exact: false })).toBeVisible()
     await expect(page.getByText('Open related memory')).toBeVisible()
 
     await page.goto('/approvals')
