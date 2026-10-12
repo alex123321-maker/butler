@@ -40,6 +40,9 @@ func nativeScenarioModel() string {
 }
 
 func nativeScenarioHistory() (nativeHistoricalEvidence, error) {
+	if highRemainderDelegationWindow() {
+		return readHighRemainderDelegationHistory(highRemainderDelegationHistoryPaths())
+	}
 	if fullHighDelegationWindow() {
 		return readFullHighDelegationHistory(fullHighDelegationHistoryPaths())
 	}

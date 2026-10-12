@@ -14,6 +14,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -40,6 +41,7 @@ import (
 const nativeFixtureOwner = "native-research-owner"
 
 type nativeWidthEvidence struct {
+	ExecutionMode               string                   `json:"execution_mode,omitempty"`
 	Width                       int                      `json:"width"`
 	TaskID                      string                   `json:"task_id"`
 	InputID                     string                   `json:"input_id"`
@@ -63,6 +65,8 @@ type nativeWidthEvidence struct {
 	FullAcceptance              *fullHighWidthAcceptance `json:"full_acceptance,omitempty"`
 }
 type nativeScenarioEvidence struct {
+	ExecutionMode                 string                   `json:"execution_mode,omitempty"`
+	ScriptedModelTurns            *int                     `json:"scripted_model_turns,omitempty"`
 	Status                        string                   `json:"status"`
 	Model                         string                   `json:"model,omitempty"`
 	ReleaseRef                    string                   `json:"release_ref"`
@@ -302,6 +306,11 @@ func runNativeDelegationActualScenario(t *testing.T) {
 	if fullHighDelegationWindow() {
 		report.Limitations = []string{"gate_controlled_loss_after_parent_attempt_completed", "cloud_weights_not_observable", "local_service_reuse_evidence_separate_from_local_quality", "source_only_conflict_selection_uses_predeclared_owner_policy", "model_finals_remain_unverified", "metadata_barriers_do_not_claim_late_native_callback_injection", "historical_nullable_usage_not_zero_or_new_fixture_budget_usage"}
 	}
+	if highRemainderDelegationWindow() {
+		report.MaxAttempts, report.MaxNewAttempts = 39, 2
+		report.ExecutionMode = "scripted_parents_and_width1_baseline_only_width2_children_native_high"
+		report.Limitations = append(report.Limitations, "native_parent_and_width1_quality_evidence_is_in_prior_immutable_failed_report")
+	}
 	defer func() {
 		// Stop every owning process before reading its durable diagnostic state.
 		// Go defers run before memorytest's unconditional schema cleanup.
@@ -350,7 +359,16 @@ func runNativeDelegationActualScenario(t *testing.T) {
 		} else {
 			report.Status = "failed"
 		}
-		rows, e = f.pool.Query(auditCtx, `SELECT run_id,reservation_id,actual_input_tokens,actual_output_tokens FROM execution_model_attempts ORDER BY created_at,operation_id`)
+		usageSQL := `SELECT run_id,reservation_id,actual_input_tokens,actual_output_tokens FROM execution_model_attempts ORDER BY created_at,operation_id`
+		if highRemainderDelegationWindow() {
+			usageSQL = `SELECT m.run_id,m.reservation_id,m.actual_input_tokens,m.actual_output_tokens FROM execution_model_attempts m WHERE EXISTS(SELECT 1 FROM fixture_native_attempts a WHERE a.run_id=m.run_id) ORDER BY m.created_at,m.operation_id`
+			var scripted int
+			if f.pool.QueryRow(auditCtx, `SELECT count(*) FROM execution_model_attempts m WHERE NOT EXISTS(SELECT 1 FROM fixture_native_attempts a WHERE a.run_id=m.run_id)`).Scan(&scripted) != nil || scripted != 8 {
+				report.Status = "failed"
+			}
+			report.ScriptedModelTurns = &scripted
+		}
+		rows, e = f.pool.Query(auditCtx, usageSQL)
 		if e == nil {
 			for rows.Next() {
 				var a nativeUsageEvidence
@@ -367,7 +385,7 @@ func runNativeDelegationActualScenario(t *testing.T) {
 		} else {
 			report.Status = "failed"
 		}
-		if report.NewNativeAttempts < 0 || report.NewNativeAttempts > nativeDelegationAttemptCap || len(report.Attempts) != report.NewNativeAttempts || len(report.Usage) != report.NewNativeAttempts {
+		if report.NewNativeAttempts < 0 || report.NewNativeAttempts > report.MaxNewAttempts || len(report.Attempts) != report.NewNativeAttempts || len(report.Usage) != report.NewNativeAttempts || highRemainderDelegationWindow() && report.NewNativeAttempts != 2 {
 			report.Status = "failed"
 		}
 		if report.Status != "passed" && !t.Failed() {
@@ -520,7 +538,7 @@ func runNativeDelegationActualScenario(t *testing.T) {
 	if f.pool.QueryRow(ctx, `SELECT used_json FROM execution_budget_scopes WHERE kind='owner_day' AND owner_id=$1`, nativeFixtureOwner).Scan(&dayRaw) != nil || json.Unmarshal(dayRaw, &report.SharedDayReserved) != nil {
 		t.Fatal("shared day reservation evidence unavailable")
 	}
-	if f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&attempts) != nil || attempts > report.MaxAttempts || attempts-report.Historical.NativeAttempts > nativeDelegationAttemptCap || report.SharedDayReserved.ModelTurns > 12 {
+	if f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&attempts) != nil || attempts > report.MaxAttempts || attempts-report.Historical.NativeAttempts > report.MaxNewAttempts || report.SharedDayReserved.ModelTurns > 12 {
 		t.Fatal("experiment exceeded shared attempt bound")
 	}
 	report.Status = "passed"
@@ -550,6 +568,12 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 		t.Fatal("actual ordered parent input denied")
 	}
 	v := nativeWidthEvidence{Width: width, TaskID: root.TaskID, InputID: receipt.InputID, SourceRefs: []delegation.SourceRef{f.args[0].Sources[0], f.args[1].Sources[0]}}
+	if highRemainderDelegationWindow() {
+		v.ExecutionMode = "scripted_parent_and_children_component_baseline"
+		if width == 2 {
+			v.ExecutionMode = "scripted_parent_native_high_children"
+		}
+	}
 	if fullHighDelegationWindow() {
 		v.FullAcceptance = &fullHighWidthAcceptance{Stage: "parent_admission", ResolutionPolicy: "owner_selected_source_a_for_fixture"}
 	}
@@ -557,6 +581,9 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 	report.Widths = append(report.Widths, v)
 	defer func() { v.ElapsedMillis = time.Since(started).Milliseconds(); report.Widths[index] = v }()
 	config := nativeWorkerConfig{Width: width, Gate: true, Broker: broker, TokenFile: tokenFile, ManifestFile: f.manifest, ImportFile: os.Getenv("BUTLER_DELEGATION_NATIVE_IMPORT_FILE"), KeyFile: filepath.Join(f.private, "encrypted-settings-key"), CorpusFile: f.corpusPath}
+	if highRemainderDelegationWindow() {
+		config.RemainderArgs = f.args
+	}
 	start := func(stage string) *nativeSubprocess {
 		p := filepath.Join(f.private, sessionKey+"-"+stage+".json")
 		if os.WriteFile(p, nativeJSON(config), 0600) != nil {
@@ -606,6 +633,15 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 	config.Gate = false
 	restartedAt := time.Now()
 	v.ClaimExpiryWaitMillis = max(int64(0), oldClaimExpires.Sub(restartedAt).Milliseconds())
+	if highRemainderDelegationWindow() {
+		// Independent old claims can expire at different times. Wait for all of
+		// them naturally before starting a new worker, so eligibility does not
+		// accidentally serialize the bounded-parallel experiment. No TTL edit.
+		nativeWait(t, f.ctx, 90*time.Second, func() bool {
+			var expired bool
+			return f.pool.QueryRow(f.ctx, `SELECT clock_timestamp()>=$1::timestamptz`, oldClaimExpires).Scan(&expired) == nil && expired
+		})
+	}
 	worker = start("restarted")
 	nativeWait(t, f.ctx, 5*time.Minute, func() bool {
 		var n int
@@ -701,7 +737,13 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 	}
 	v.ParentReceiptCheck = true
 	v.UnverifiedAcceptanceDenied = true
-	if f.pool.QueryRow(f.ctx, `SELECT max(overlap) FROM (SELECT (SELECT count(*) FROM fixture_native_attempts a JOIN runs r USING(run_id) JOIN tasks t ON t.task_id=r.task_id JOIN run_final_results f USING(run_id) WHERE t.parent_task_id=$1 AND a.created_at<=p.created_at AND f.created_at>=p.created_at) overlap FROM fixture_native_attempts p JOIN runs r USING(run_id) JOIN tasks t ON t.task_id=r.task_id WHERE t.parent_task_id=$1) spans`, root.TaskID).Scan(&v.MaximumChildOverlap) != nil || v.MaximumChildOverlap != width {
+	overlapSQL := `SELECT max(overlap) FROM (SELECT (SELECT count(*) FROM fixture_native_attempts a JOIN runs r USING(run_id) JOIN tasks t ON t.task_id=r.task_id JOIN run_final_results f USING(run_id) WHERE t.parent_task_id=$1 AND a.created_at<=p.created_at AND f.created_at>=p.created_at) overlap FROM fixture_native_attempts p JOIN runs r USING(run_id) JOIN tasks t ON t.task_id=r.task_id WHERE t.parent_task_id=$1) spans`
+	if highRemainderDelegationWindow() && width == 1 {
+		// Component-only overlap, explicitly labelled scripted in this report.
+		// The prior immutable report supplies actual native width1 evidence.
+		overlapSQL = strings.ReplaceAll(overlapSQL, "fixture_native_attempts", "execution_model_attempts")
+	}
+	if f.pool.QueryRow(f.ctx, overlapSQL, root.TaskID).Scan(&v.MaximumChildOverlap) != nil || v.MaximumChildOverlap != width {
 		t.Fatal("actual child execution did not demonstrate configured width")
 	}
 	var raw []byte

@@ -24,7 +24,7 @@ const (
 )
 
 func fullHighDelegationWindow() bool {
-	return os.Getenv("BUTLER_DELEGATION_HIGH_ACCEPTANCE_WINDOW") == "1"
+	return os.Getenv("BUTLER_DELEGATION_HIGH_ACCEPTANCE_WINDOW") == "1" || highRemainderDelegationWindow()
 }
 
 func fullHighDelegationHistoryPaths() []string {
@@ -259,6 +259,9 @@ func TestFullHighDelegationCompositionIntegration(t *testing.T) {
 }
 
 func TestFullHighDelegationActualAcceptanceIntegration(t *testing.T) {
+	if highRemainderDelegationWindow() {
+		t.Fatal("remainder requires its separate declared mixed-evidence entry")
+	}
 	if !fullHighDelegationWindow() || os.Getenv("BUTLER_DELEGATION_NATIVE_ACCEPTANCE") != "1" {
 		t.Skip("separate owner-authorized full High acceptance required")
 	}

@@ -38,6 +38,31 @@ does not spend two extra generation turns.
 
 ## Native window and objective verification
 
+The single execution of this window is SEALED and FAILED at the width2 overlap
+gate. Its immutable [report](../../deploy/delegation/native-acceptance-high-20261012.json)
+has SHA256 `afa63de06b6991feb3a96b322d442d573d4d2834c51a70c07e5fd4419f751a91`.
+Both native parent receipt checks passed, all four source-relative native child
+extractions passed after actual SIGKILL and claim-expiry recovery, and width1
+completed independent report checks plus authenticated accept/reject. Width2
+observed overlap1; its later independent verification and all final controls did
+not execute. The failed report remains failed.
+
+Execution proof: `reports/delegation-acceptance-high-execute-20261012T050416Z-6794`
+under the root below; native test duration200.51s, native event SHA256
+`b8780c9afe168a79082fe714e78462fbc498f30f1fd2515aa4b62fc09ff1f71a`.
+Ten new calls advanced the historical count27 to37. Six usage pairs are known,
+four are NULL;24564 input/794 output is a subtotal. Cumulative history has17
+known/20 unknown pairs and62760 input/1810 output known subtotal.
+
+The unchanged ordinary input service has two worker goroutines. The scenario
+started its replacement before all independently staggered claims expired,
+allowing the first fast High response to finish before the second was eligible.
+[Actual PG recovery checks](delegation-parallel-recovery-acceptance.md) prove
+parallel current contexts after natural expiry of both claims. The separately
+declared [two-call remainder](delegation-high-remainder-acceptance-20261012.md)
+keeps the original39 total ceiling and only tests the missing High child overlap;
+it does not reopen this window or repeat successful native parents/width1 work.
+
 New root: `/srv/storage/butler/agents/delegation-acceptance-high-20261012`.
 New global one-use marker:
 `/srv/storage/butler/native-acceptance-windows/high-delegation-acceptance-20261012-baseline27`.
@@ -116,3 +141,35 @@ baseline, workspace arbitration and other issue33/17 gates stay separate. This
 does not imply arbitrary research contradiction adjudication or production flag
 activation. Preparation and live results will be recorded separately; a failed
 actual run cannot be relabelled complete by passing component tests.
+
+## Final preparation
+
+The combined release is `b2100bd2bcd4147b1168a252cd7369c3415c5140`, snapshot
+`20261012-120050-595`. The final preparation passed 260 test/subtest names
+(88 top-level) across eight packages, with 0 failures and 0 skips. Race checks,
+affected vet, ordinary worker/Broker builds and UID10001 private-file checks
+passed with zero inference. Every required exact named regression executed,
+including the native High receipt envelope, final-turn/recovery, numeric context,
+the actual expiry row wait, both full owner/control preflights and local reuse.
+
+Proof: `reports/delegation-acceptance-high-prepare-20261012T050106Z-4187670`
+under the isolated root above. `tests.jsonl` SHA256:
+`17afa300398dc35be8849ba97c6b0c5bde56869da0b4899a23996d289b2a65f8`.
+Complete tested source-manifest SHA256:
+`82fb353daf97121abcb8e324d6b21140f84435a39ae3f4c907572f94322d5ed6`.
+Private runtime-file events SHA256:
+`ff91c6c723f8aeedad49bb4ee1c1b485b24e45685684b5c87fc906acc8e3c4a3`.
+
+Preparation also found and fixed two test-order/identity mistakes: decided
+children cannot be positive execution-authority baselines, and effects bind to
+tasks through their owning action-intent/run relation, not an absent effect
+task column. The negative controls now have matching positive current baselines.
+The retained intermediate preparation `d3a6f9d` additionally reproduced a
+production deletion-to-stop defect (SQLSTATE40001), events SHA256
+`c14052c9f2ca5b36bf222acb8f2e4917a070dd28b4ee2f1f606ef941508b9e33`.
+Owner controls now preserve only the exact empty same-owner Catalog deletion
+marker. The publication fence remains intact; old worker writes still fail.
+See [the actual Stop/Amend proof](task-control-privacy-marker-acceptance.md).
+The native window also rechecks database clock expiry after an unchanged-row
+lock wait; [red/green expiry evidence](delegation-high-expiry-acceptance.md) proves
+denial before auth or HTTP entry. Neither repair reopens an old native window.
