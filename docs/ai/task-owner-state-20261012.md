@@ -73,3 +73,14 @@ remains unknown even after an independently verified discard receipt.
 
 Issue closure, shared deployment activation and final integrated checks remain
 with the root owner; this component does not close issues or change runtime flags.
+
+An independent recovery review found that an unattempted requested discard could
+become stale after owner Amend→Stop and then block a fresh owner decision. This
+requires a restrictive kernel supersession fix; physical recovery acceptance
+remains pending until that kernel case passes. The Web followup now permits an
+explicit authenticated reload for a new intention only after successful current
+discovery; ordinary refresh retains the exact saved retry identity. Snapshot
+`20261012-152305-657`, `reports/owner-recovery-web-20261012T082348Z.log`, passed
+TypeScript/lint/build and both recovery Chromium cases (same lost-ACK identity,
+fresh delivery only after explicit current CAS8→9 reload), zero skips.
+SHA-256 `bd8832f898cc8350c5e88ac7e51e8c29a1a3f72f61c86fe3f0fa9d4febdf6139`.

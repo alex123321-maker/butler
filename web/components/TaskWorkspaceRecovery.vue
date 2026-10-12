@@ -2,7 +2,7 @@
   <section class="workspace-recovery">
     <h3>Quarantined workspace copies</h3>
     <p>Discard erases this stopped task's quarantined working copy. The original operation remains unknown. Active tasks, stale sources or an unexpired executor lease deny discard.</p>
-    <AppButton :disabled="!ownerToken || pending" @click="load">Load workspace recovery</AppButton>
+    <AppButton :disabled="!ownerToken || pending" @click="load()">Load workspace recovery</AppButton>
     <p v-if="error" role="alert">{{ error }}</p>
     <p v-if="statuses && !statuses.length">No recovery copies are recorded for this task.</p>
     <ul v-if="statuses"><li v-for="status in statuses" :key="status.workspace_id">
@@ -14,6 +14,7 @@
     </li></ul>
     <p v-if="mayHaveMore">This view is bounded to 50 copies; additional history may exist.</p>
     <AppButton v-if="saved" :disabled="pending || !ownerToken" @click="send(saved)">Retry same discard intent</AppButton>
+    <AppButton v-if="saved" :disabled="pending || !ownerToken" @click="load(true)">Reload copies for a new discard intent</AppButton>
   </section>
 </template>
 
@@ -33,7 +34,7 @@ let epoch = 0
 const clear = () => { epoch++; statuses.value = null; saved.value = null; pending.value = false; error.value = ''; mayHaveMore.value = false }
 watch(() => [props.taskId, props.ownerToken], clear, { flush: 'sync' })
 onBeforeUnmount(clear)
-const load = async () => {
+const load = async (newIntent = false) => {
   if (!props.ownerToken || pending.value) return
   const version = epoch
   const token = props.ownerToken
@@ -44,6 +45,7 @@ const load = async () => {
     if (version !== epoch) return
     statuses.value = response.workspaces
     mayHaveMore.value = response.may_have_more
+    if (newIntent) saved.value = null
   } catch { if (version === epoch) { statuses.value = null; error.value = 'Workspace recovery is unavailable for the current owner proof.' } }
   finally { if (version === epoch) pending.value = false }
 }

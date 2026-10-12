@@ -196,3 +196,6 @@ No owner/path/lease/fence/body/caller receipt is input. The Web task discovers t
 safe current versions with its existing owner proof, retains an exact lost-ACK
 intent for retry and fences late receipts on proof changes. Requested/erasing
 does not claim verified erasure; original outcome remains unknown after discard.
+After a changed CAS or unavailable receipt, a distinct explicit authenticated
+reload may replace the retained intent only after current discovery succeeds.
+An ordinary observation refresh does not allocate a new delivery or repeat erasure.
