@@ -951,4 +951,12 @@ Model Transport Layer в Butler — это provider-normalizing execution channe
 
 ## Security and admitted serialization
 
+Trusted Antigravity construction may freeze an explicit Cloud Code High generated
+token ceiling up to32768 and an object JSON response schema for tool-free
+observations. Defaults retain8192 and ordinary tool semantics. `InferenceLimits`
+quotes the actual complete ceiling, including thinking; private serialization
+limits include the schema. Model request options cannot change either setting.
+Schemas never establish semantic truth or execution authority. An unsupported
+upstream request remains failed without retry, MIME fallback or effort downgrade.
+
 Only typed code-owned instructions carry system role; external/context/derived observations carry provenance as data. Secret-class inputs fail before serialization. Budget037 passes a private input byte cap and the native provider checks its complete actual request, including prior function calls, thought signatures and tool results, before HTTP. Other adapters have serialization guards but need verified capacity/cost declarations before budgeted production inference. HTTP error status is retained without untrusted body/code/details; no raw network error or response content enters durable error events. Production auxiliary model/embed adapters have no durable job-owned admission and remain disabled. See [agent security boundaries](agent-security-boundaries.md).

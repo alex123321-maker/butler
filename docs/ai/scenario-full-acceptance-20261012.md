@@ -96,3 +96,32 @@ The verified-task notice path, real observer→promotion→converter→original
 verification chain, restart/Stop/delivery failures, current complete fault matrix,
 actual High observations and independent final audit must all be correlated to
 their tested source pins. No acceptance or merge is claimed by this plan.
+
+## Immutable failed High measurement
+
+The sole V1 window charged183 new attempts, cumulative228. Independent offline
+audit [safe artifact](../../deploy/acceptance/cloud-shadow-high-20261012.json)
+has SHA256 `332d10777cb208b4d78fdfbf88be5183050ab4679ba3cf372395bdab74eab249`.
+It retains182 completed observations and charged228 transport failure. Quality
+was73/96 development,49/64 tuning and17/23 partial holdout;53 eligible holdout
+cases and all four comparison pairs were missing. V1 remains NO_GO.
+All183 new token triples are known:62707 input,3083 output,218644 total including
+provider dimensions. Cumulative203 known input/output pairs and25 NULL pairs
+give only137405 input/5293 output known subtotals, never full historical cost.
+`readScenarioShadowHistory` binds the original private SHA, this safe audit and
+the unchanged fifteen-artifact history before any prospective new admission.
+
+All28 historical `source_fabrications` were anchored value/quote byte mismatches;
+no missing quote or invalid source reference was observed in those28. They are
+witness contract violations, not a proved count of hallucinations or semantic
+equivalences. Two invalid authority labels were responses, not executed tools.
+
+Last228 retained complete usage and observed `gemini-3.8-flash-n`; total minus
+input was8188 against8192 generated tokens. Exhaustion is compatible with these
+facts but the discarded finish reason prevents diagnosis. Google's official
+[thinking token limits](https://ai.google.dev/gemini-api/docs/generate-content/thinking#token-limits-and-max_output_tokens)
+include thinking and visible output in the same ceiling. A prospective V2 keeps
+High and freezes32768 generated tokens with8192 visible JSON bytes, clearer exact
+witness instructions and code-owned structured output. It needs a new varied
+independently reviewed corpus and holdout, policy/resources/source pins and a
+separate finite window. No V1 threshold, golden, failure or observation changes.

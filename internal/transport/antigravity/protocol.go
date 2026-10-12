@@ -42,8 +42,10 @@ type generateRequest struct {
 	GenerationConfig  generationConfig `json:"generationConfig"`
 }
 type generationConfig struct {
-	MaxOutputTokens int             `json:"maxOutputTokens"`
-	ThinkingConfig  *thinkingConfig `json:"thinkingConfig,omitempty"`
+	MaxOutputTokens    int             `json:"maxOutputTokens"`
+	ThinkingConfig     *thinkingConfig `json:"thinkingConfig,omitempty"`
+	ResponseMIMEType   string          `json:"responseMimeType,omitempty"`
+	ResponseJSONSchema json.RawMessage `json:"responseJsonSchema,omitempty"`
 }
 type thinkingConfig struct {
 	ThinkingBudget int `json:"thinkingBudget"`

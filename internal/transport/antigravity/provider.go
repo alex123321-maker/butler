@@ -29,6 +29,10 @@ type Config struct {
 	Model      string
 	Timeout    time.Duration
 	AuthSource providerauth.AntigravityTokenSource
+	// These are trusted construction-time settings, never model transport options.
+	// The generated-token ceiling includes thinking as well as visible output.
+	MaximumOutputTokens int
+	JSONResponseSchema  json.RawMessage
 }
 
 type Provider struct {
@@ -70,6 +74,9 @@ func NewProvider(cfg Config) (*Provider, error) {
 	if cfg.Timeout <= 0 {
 		cfg.Timeout = 5 * time.Minute
 	}
+	if err := validateGenerationConfig(&cfg); err != nil {
+		return nil, err
+	}
 	if cfg.AuthSource == nil {
 		return nil, providerError(transport.ErrorTypeProviderUnavailable, "Antigravity authentication source is required")
 	}
@@ -92,6 +99,12 @@ func (p *Provider) StartRun(ctx context.Context, req transport.StartRunRequest) 
 	}
 	if len(req.TransportOptions) > 0 || req.TransportOptionsJSON != "" {
 		return nil, protocolError("Antigravity transport options are unsupported")
+	}
+	if (p.config.MaximumOutputTokens > maxOutputTokens || len(p.config.JSONResponseSchema) > 0) && req.Context.ModelName != FlashHighModel {
+		return nil, protocolError("configured High generation requires the selected High model")
+	}
+	if len(p.config.JSONResponseSchema) > 0 && len(req.ToolDefinitions) > 0 {
+		return nil, protocolError("JSON observation cannot declare tools")
 	}
 	system, contents, err := convertInputs(req.InputItems)
 	if err != nil {
@@ -195,7 +208,11 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 	state.cancel = cancel
 	state.turn++
 	turn := state.turn
-	request := generateRequest{Contents: append([]content(nil), state.contents...), SystemInstruction: state.system, GenerationConfig: generationConfig{MaxOutputTokens: maxOutputTokens}}
+	request := generateRequest{Contents: append([]content(nil), state.contents...), SystemInstruction: state.system, GenerationConfig: generationConfig{MaxOutputTokens: p.config.MaximumOutputTokens}}
+	if len(p.config.JSONResponseSchema) > 0 {
+		request.GenerationConfig.ResponseMIMEType = "application/json"
+		request.GenerationConfig.ResponseJSONSchema = p.config.JSONResponseSchema
+	}
 	if len(state.tools) > 0 {
 		request.Tools = []functionTools{{FunctionDeclarations: state.tools}}
 		request.ToolConfig = map[string]any{"functionCallingConfig": map[string]any{"mode": "AUTO"}}

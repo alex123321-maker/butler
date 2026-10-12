@@ -119,8 +119,22 @@ the unsupported third-party integration policy, proxy configuration and real
 validation status. Fixtures verify wire shape, safe failure handling, signatures,
 schema guards and cancellation; they do not prove Google model access.
 
-`InferenceLimits` declares 1,048,576 input plus 8,192 output tokens for conservative
-kernel admission. Private `transport.WithInputByteLimit` bounds the exact complete
+`InferenceLimits` declares 1,048,576 input plus the configured generated-token
+ceiling for conservative kernel admission (default8,192). Trusted Go construction
+may explicitly select at most32,768 for Cloud Code High. The ceiling includes
+thinking and visible output; it is not a visible-answer allowance. No lower
+thinking effort, profile fallback or automatic retry is introduced.
+
+Trusted construction may also select a bounded object `JSONResponseSchema` for
+an observation without tools. Its frozen copy adds `responseMimeType`=`application/json`
+and `responseJsonSchema` to the same High request. A selected foreign model,
+tool declarations, duplicate schema keys, any reference or oversized schema
+fail before HTTP. Per-request transport options remain unsupported. A rejected
+upstream schema is a failed request and never triggers a text-mode fallback.
+The application still validates semantic source witnesses and visible JSON bytes.
+Synthetic exact-wire tests prove serialization, not server compatibility.
+
+Private `transport.WithInputByteLimit` bounds the exact complete
 serialized request, including private retained history, schemas and tool results,
 before HTTP write; unset callers use a fixed 8MiB cap. Operator subscription cost
 basis is separately required by production execution budgets. Neither this quote
