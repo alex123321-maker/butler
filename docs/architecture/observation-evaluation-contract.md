@@ -74,7 +74,7 @@ Implementation/reproduction: `internal/acceptance/command_suite.go`,
 ## Current mandatory product faults
 
 `internal/acceptance.FullFaultGroups/FullFaultScenarios` and
-`FaultCriteriaDigest` define the separate `butler-mandatory-faults-v2` gate.
+`FaultCriteriaDigest` define the separate `butler-mandatory-faults-v3` gate.
 They do not alter the independently signed V3 `CriteriaDigest`, original matrix
 or corpus. Current exact event names, source/schema/criteria/hardware pins,
 actual Chromium, PostgreSQL and dump/restore are required; missing, skipped,
@@ -90,3 +90,13 @@ does not assert Butler received this OOM. Remote High RAM/OOM are unavailable.
 Fault-only output never approves model quality, enables authority or sets full
 issue readiness. Complete original-task/one-notice release-chain faults and
 independent pinned High quality/cost observations remain separate required gates.
+
+The original physical report's complete-metadata-line detector remains FAIL and
+metadata_read=false. The separately reviewed vocabulary witness-v2 fixes that
+detector's narrow logger assumption without rewriting it: exact immutable report,
+log and global one-start hashes plus ordered model-specific loading/vocabulary
+markers and original OOM/isolation are required. It proves only entry into GGUF
+vocabulary metadata processing before physical OOM, not completed weights,
+inference, remote High OOM or Butler kernel propagation. Reviewer/root approval
+is a fixed source-reviewed hash pin, not a claimed signature or administrative
+isolation. The precise primary logger premise is recorded in the current plan.

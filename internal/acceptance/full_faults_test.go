@@ -119,6 +119,18 @@ func TestFullFaultReportNeedsEveryCurrentNamedFaultAndPhysicalModelOOM(t *testin
 	if err != nil || missing.MandatoryFaultsPassed {
 		t.Fatal("controlled worker fixture substituted for actual cached model OOM")
 	}
+	p.ModelMetadataRead = false
+	if err := WriteJSON(proofPath, p); err != nil {
+		t.Fatal(err)
+	}
+	failedPhysical, err := BuildFullFaultReport(root, events, strings.Repeat("a", 40), hardware, proofPath)
+	if err != nil || failedPhysical.MandatoryFaultsPassed || failedPhysical.LocalModelLoadOOM == nil || failedPhysical.LocalModelLoadOOM.ModelMetadataRead || !failedPhysical.LocalModelLoadOOM.OOMKilled || failedPhysical.LocalModelLoadOOM.ActualModelLoadAttempts != 1 {
+		t.Fatal("failed physical proof was promoted or known observations lost", err)
+	}
+	p.ModelMetadataRead = true
+	if err := WriteJSON(proofPath, p); err != nil {
+		t.Fatal(err)
+	}
 	path := filepath.Join(events, "single-tab.jsonl")
 	raw, _ := os.ReadFile(path)
 	for _, altered := range []string{

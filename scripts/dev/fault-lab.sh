@@ -24,7 +24,12 @@ mkdir -p "$proof/events" "$proof/bin" "$proof/private/postgres" /srv/storage/but
 printf '%s\n' "$commit" > "$proof/source-commit.txt"
 (cd "$source_dir"; find . -type f -not -path './.cache/*' -print0 | sort -z | xargs -0 sha256sum) > "$proof/source-manifest.sha256"
 sha256sum "$proof/source-manifest.sha256" > "$proof/source-manifest-hash.txt"
-if [[ "$profile" == full-faults && -n "$local_oom" ]]; then cp "$local_oom" "$proof/local-load-oom.json"; fi
+if [[ "$profile" == full-faults && -n "$local_oom" ]]; then
+  cp "$local_oom" "$proof/local-load-oom.json"
+  if [[ -f "$(dirname "$local_oom")/public-weight-loader.log" && ! -L "$(dirname "$local_oom")/public-weight-loader.log" ]]; then
+    cp "$(dirname "$local_oom")/public-weight-loader.log" "$proof/public-weight-loader.log"
+  fi
+fi
 chmod 700 "$proof" "$proof/events" "$proof/private"
 printf 'Private acceptance artifacts: %s\n' "$proof"
 created_network=false
@@ -145,6 +150,7 @@ if [[ "$profile" == full || "$profile" == full-faults ]]; then
     /proof/bin/app.test -test.v=test2json -test.timeout=150s '-test.run=^TestInstalledProjectExtensionRealBrokerApprovalE2E$' > "$proof/events/extension-e2e.jsonl"
   if [[ "$profile" == full-faults ]]; then
     "${browser_container[@]}" --env DISPLAY=:91 --env BUTLER_SINGLE_TAB_E2E=1 \
+      --workdir /fixture/apps/tool-broker/internal/broker \
       --env BUTLER_SINGLE_TAB_HOST_BINARY=/proof/bin/guarded-native-host \
       --env BUTLER_SINGLE_TAB_FIXTURE_SCRIPT=/fixture/apps/browser-bridge/scripts/guarded_chromium_fixture.mjs \
       --env BUTLER_SINGLE_TAB_EXTENSION=/fixture/web/extensions/chromium-butler \
@@ -179,12 +185,14 @@ docker stats --no-stream --format '{{json .}}' "$pg" "$redis" > "$proof/containe
 report_mode=report
 report_profile=$profile
 extra_report_args=()
+extra_report_mounts=()
 if [[ "$profile" == full-faults ]]; then
   report_mode=fault-report
   report_profile=full
   extra_report_args=(-local-load-oom /proof/local-load-oom.json)
+  extra_report_mounts=(--volume /srv/storage/butler/fault-acceptance-windows/issue33-cached-qwen3-load-20261012/load-started/report-path.txt:/srv/storage/butler/fault-acceptance-windows/issue33-cached-qwen3-load-20261012/load-started/report-path.txt:ro)
 fi
-"${go_container[@]}" golang:1.27.2-bookworm /proof/bin/acceptance \
+"${go_container[@]}" "${extra_report_mounts[@]}" golang:1.27.2-bookworm /proof/bin/acceptance \
   -mode "$report_mode" -root /src -events /proof/events -profile "$report_profile" -commit "$commit" \
   -hardware /proof/hardware.json -output /proof/report.json "${extra_report_args[@]}"
 [[ "$core_exit" == 0 ]]

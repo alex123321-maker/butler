@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-const FullFaultVersion = "butler-mandatory-faults-v2"
+const FullFaultVersion = "butler-mandatory-faults-v3"
 
 // V1 Groups/Scenarios/CriteriaDigest are also the independently signed V3
 // model-quality criteria. Keep them immutable. These current product fault
@@ -54,30 +54,32 @@ func FullFaultScenarios() []Scenario {
 
 func FaultCriteriaDigest() string {
 	raw, _ := json.Marshal(struct {
-		Version   string
-		Groups    []Group
-		Scenarios []Scenario
-		OOM       string
-	}{FullFaultVersion, FullFaultGroups(), FullFaultScenarios(), LocalLoadOOMVersion})
+		Version                   string
+		Groups                    []Group
+		Scenarios                 []Scenario
+		OOM                       string
+		ApprovedVocabularyWitness any
+	}{FullFaultVersion, FullFaultGroups(), FullFaultScenarios(), LocalLoadOOMVersion, approvedLocalLoadRules()})
 	h := sha256.Sum256(raw)
 	return hex.EncodeToString(h[:])
 }
 
 type FullFaultReport struct {
-	Version                     string          `json:"version"`
-	CreatedUTC                  time.Time       `json:"created_utc"`
-	CodeCommit                  string          `json:"code_commit"`
-	SourceTreeSHA256            string          `json:"source_tree_sha256"`
-	SchemaSHA256                string          `json:"schema_sha256"`
-	CriteriaSHA256              string          `json:"criteria_sha256"`
-	SignedQualityCriteriaSHA256 string          `json:"signed_quality_criteria_sha256"`
-	Hardware                    json.RawMessage `json:"hardware"`
-	MandatoryFaultsPassed       bool            `json:"mandatory_faults_passed"`
-	Issue33Ready                bool            `json:"issue_33_ready"`
-	Groups                      []GroupProof    `json:"groups"`
-	Scenarios                   []ScenarioProof `json:"scenarios"`
-	LocalModelLoadOOM           *LocalLoadOOM   `json:"local_model_load_oom,omitempty"`
-	MeasurementLimits           []string        `json:"measurement_limits"`
+	Version                     string            `json:"version"`
+	CreatedUTC                  time.Time         `json:"created_utc"`
+	CodeCommit                  string            `json:"code_commit"`
+	SourceTreeSHA256            string            `json:"source_tree_sha256"`
+	SchemaSHA256                string            `json:"schema_sha256"`
+	CriteriaSHA256              string            `json:"criteria_sha256"`
+	SignedQualityCriteriaSHA256 string            `json:"signed_quality_criteria_sha256"`
+	Hardware                    json.RawMessage   `json:"hardware"`
+	MandatoryFaultsPassed       bool              `json:"mandatory_faults_passed"`
+	Issue33Ready                bool              `json:"issue_33_ready"`
+	Groups                      []GroupProof      `json:"groups"`
+	Scenarios                   []ScenarioProof   `json:"scenarios"`
+	LocalModelLoadOOM           *LocalLoadOOM     `json:"local_model_load_oom,omitempty"`
+	LocalModelLoadWitness       *LocalLoadWitness `json:"local_model_load_witness,omitempty"`
+	MeasurementLimits           []string          `json:"measurement_limits"`
 }
 
 type faultRunPin struct {
@@ -164,12 +166,23 @@ func BuildFullFaultReport(root, events, commit string, hardware json.RawMessage,
 	}
 	oom := GroupProof{ID: "model-load-oom", Runtime: "actual-cached-cpu-model-load", Status: "FAIL", Reason: "required local model-load OOM artifact missing"}
 	if oomPath != "" {
+		oom.EventsSHA256, _ = FileHash(oomPath)
 		if proof, proofErr := ReadLocalLoadOOM(root, oomPath); proofErr == nil {
 			r.LocalModelLoadOOM = &proof
 			oom.Status, oom.Reason = "PASS", ""
 			oom.EventsSHA256, _ = FileHash(oomPath)
 		} else {
 			oom.Reason = proofErr.Error()
+			// Retain failed physical observations only when the immutable identity
+			// and isolation match. A missing metadata witness stays a failed gate;
+			// known exit/OOM/attempt measurements do not become unavailable or0.
+			if !proof.ModelMetadataRead && validateLocalLoadExperiment(root, proof) == nil {
+				r.LocalModelLoadOOM = &proof
+			}
+			if witness, witnessErr := ReadApprovedLocalLoadWitness(root, oomPath); witnessErr == nil {
+				r.LocalModelLoadWitness = &witness
+				oom.Status, oom.Reason = "PASS", "independently reviewed vocabulary-metadata witness; original strict report remains FAIL"
+			}
 		}
 	}
 	states[oom.ID] = oom.Status

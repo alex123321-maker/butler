@@ -25,6 +25,18 @@ malformed named events fail; actual single-tab Chromium subtests are required.
 All evidence is initially PENDING until the executable current-release report is
 recorded. Prior reports explain invariants but cannot substitute for current runs.
 
+Recorded first current full matrix on2a2be53 is FAIL and retained unchanged:
+`fault-20261012T103522Z-1118687/report.json` SHA
+`3de13d44a24b3a4c9351d67b0c4b3aabf1691a1a4322d69e9bd8792a288ac2b0`.
+It found an obsolete deletion fixture that acquired a source body in finalizing
+and a new single-tab runner with the wrong working directory. The fixture now
+acquires/pins under actual current ownership before finalizing and asserts
+finalizing/new-body and deleted-owner reads deny. Narrow actual PostgreSQL/race/
+vet passes all8names (2tops/6orders), no skips, on54aec53: events SHA
+`253bf70c5982862a7eb7f123e0a45e98b924ebd55f22a87fb68f518094170698`.
+The Chrome lane now uses the actual broker package directory for migrations.
+These fixes change fixture/runner setup, not production source guards.
+
 Reproduction on SSH laba only, in a dedicated agent root:
 
 ```text
@@ -65,6 +77,40 @@ not prove that a real model OOM was received there. Fixed owned-worker tests
 separately prove cancellation/resource pressure and durable no-replay controls.
 Cloud 3.8 Flash High RAM/OOM are not observable. No actual native calls occur in
 these runners. All actual local model-load attempts are explicitly counted.
+
+The one physical load artifact SHA
+`23fc8f4cab1d105333d3057f136008d7ce0964feba7fbea0bec222c00c90b234`
+has `oom_killed=true`, exit137, elapsed1second, actual model-load attempts1,
+inference/native calls0, verified256MiB limits/isolation and
+`model_metadata_read=false`. Its original strict gate remains FAIL: the older
+complete-metadata log string is absent. Global load-started remains sealed; no
+second load or inference occurred. Public no-input loader log SHA
+`2303783bdb57a79266815f68908a10b053107acaebd3485badce8bbb7cf0d5ab`
+is retained unchanged. Content-free original JSON and this public software log
+are copied into testdata only to verify exact hashes and adversarial rejections.
+
+Independent reviewer `codex-independent-cloud-critic-20261012` and the root
+approved a **separate additive vocabulary witness-v2**. Current mandatory-fault
+contractv3 accepts the old strict successful marker, or exactly this old strict
+FAIL plus the approved original/log/global-start hash pins and both ordered
+patterns: loading `/model.gguf`, then the specific control-looking token128247
+`</s>` warning. The new scope states vocabulary metadata processing reached;
+complete weights loaded, inference, Butler kernel receipt and deployment
+authority remain false. Original FALSE/FAIL is never rewritten. This is fixed
+independent source review and root approval, not an Ed25519 signature or proven
+administrative separation; the generated adapter author does not own this gate.
+
+Primary reasoning uses the cached binary's declared llama.cpp revision
+`631109b34da437a3c4a5ebd75091d677671392e3` (version0.5.0-dev/build1):
+[vocabulary loader](https://github.com/ggml-org/llama.cpp/blob/631109b34da437a3c4a5ebd75091d677671392e3/src/llama-vocab.cpp#L1799)
+reads the GGUF metadata context, builds its token mapping and emits the exact
+[control-token warning](https://github.com/ggml-org/llama.cpp/blob/631109b34da437a3c4a5ebd75091d677671392e3/src/llama-vocab.cpp#L2696)
+while checking vocabulary entries; the preceding
+[server loader message](https://github.com/ggml-org/llama.cpp/blob/631109b34da437a3c4a5ebd75091d677671392e3/tools/server/server-context.cpp#L944)
+identifies the explicitly mounted model. This supports that narrow stage from
+actual preserved bytes before OOM. The image is pinned and its declared revision
+matches these sources; the binary was not rebuilt/attested from that source, and
+the log does not prove tensor loading completion, inference or kernel propagation.
 
 `mandatory_faults_passed` approves only this bounded fault matrix. Full issue33
 requires separate independently reviewed High quality/single-vs-multi complete

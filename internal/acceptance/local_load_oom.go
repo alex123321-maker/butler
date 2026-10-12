@@ -55,12 +55,26 @@ func ReadLocalLoadOOM(root, path string) (LocalLoadOOM, error) {
 	if err = DecodeStrict(raw, &p, "version", "runner_sha256", "image", "weights_sha256", "weights_bytes", "manifest_sha256", "registry_manifest_sha256", "actual_model_load_attempts", "actual_inference_calls", "actual_native_calls", "model_metadata_read", "oom_killed", "exit_code", "elapsed_seconds", "memory_bytes", "memory_swap_bytes", "nano_cpus", "pids_limit", "runtime", "network_mode", "user", "read_only_root", "only_read_only_weight_mount", "no_device_requests", "no_capabilities", "no_new_privileges", "cpu_only", "model", "stage", "butler_kernel_received_oom"); err != nil {
 		return p, fmt.Errorf("invalid local load proof envelope")
 	}
+	return p, validateLocalLoadOOM(root, p)
+}
+
+func validateLocalLoadOOM(root string, p LocalLoadOOM) error {
+	if err := validateLocalLoadExperiment(root, p); err != nil {
+		return err
+	}
+	if !p.ModelMetadataRead {
+		return fmt.Errorf("required model metadata witness absent; physical OOM remains failed evidence")
+	}
+	return nil
+}
+
+func validateLocalLoadExperiment(root string, p LocalLoadOOM) error {
 	runner, err := FileHash(filepath.Join(root, "scripts", "dev", "local-model-load-oom-lab.sh"))
 	if err != nil || p.RunnerSHA256 != runner {
-		return p, fmt.Errorf("local load proof runner bytes differ from current release")
+		return fmt.Errorf("local load proof runner bytes differ from current release")
 	}
-	if p.Version != LocalLoadOOMVersion || p.Image != localOOMImage || p.WeightsSHA256 != localOOMWeights || p.WeightsBytes != 522640096 || p.ManifestSHA256 != localOOMManifest || p.RegistryManifestSHA256 != localOOMRegistryManifest || p.ActualModelLoadAttempts != 1 || p.ActualInferenceCalls != 0 || p.ActualNativeCalls != 0 || !p.ModelMetadataRead || !p.OOMKilled || p.ExitCode != 137 || p.ElapsedSeconds < 0 || p.ElapsedSeconds > 90 || p.MemoryBytes != 268435456 || p.MemorySwapBytes != 268435456 || p.NanoCPUs != 1000000000 || p.PidsLimit != 64 || p.Runtime != "runc" || p.NetworkMode != "none" || p.User != "10001:10001" || !p.ReadOnlyRoot || !p.OnlyReadOnlyWeightMount || !p.NoDeviceRequests || !p.NoCapabilities || !p.NoNewPrivileges || !p.CPUOnly || p.Model != "qwen3:0.6b" || p.Stage != "load_before_inference" || p.ButlerKernelReceivedOOM {
-		return p, fmt.Errorf("physical CPU model load OOM or isolation requirement failed")
+	if p.Version != LocalLoadOOMVersion || p.Image != localOOMImage || p.WeightsSHA256 != localOOMWeights || p.WeightsBytes != 522640096 || p.ManifestSHA256 != localOOMManifest || p.RegistryManifestSHA256 != localOOMRegistryManifest || p.ActualModelLoadAttempts != 1 || p.ActualInferenceCalls != 0 || p.ActualNativeCalls != 0 || !p.OOMKilled || p.ExitCode != 137 || p.ElapsedSeconds < 0 || p.ElapsedSeconds > 90 || p.MemoryBytes != 268435456 || p.MemorySwapBytes != 268435456 || p.NanoCPUs != 1000000000 || p.PidsLimit != 64 || p.Runtime != "runc" || p.NetworkMode != "none" || p.User != "10001:10001" || !p.ReadOnlyRoot || !p.OnlyReadOnlyWeightMount || !p.NoDeviceRequests || !p.NoCapabilities || !p.NoNewPrivileges || !p.CPUOnly || p.Model != "qwen3:0.6b" || p.Stage != "load_before_inference" || p.ButlerKernelReceivedOOM {
+		return fmt.Errorf("physical CPU model load OOM or isolation requirement failed")
 	}
-	return p, nil
+	return nil
 }

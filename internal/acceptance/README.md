@@ -6,7 +6,7 @@ model-selected command, or approve deployment. The standard library is sufficien
 for fixed Go test events, bounded JSON observations, digests and Ed25519 review;
 no evaluation framework or new dependency is added.
 
-The additive `butler-mandatory-faults-v2` gate selects the current eight required
+The additive `butler-mandatory-faults-v3` gate selects the current eight required
 product fault groups through `FullFaultGroups`/`FullFaultScenarios`. Use
 `fault-lab.ps1 -Profile FullFaults -LocalModelLoadOOM <sealed-private-proof>`.
 It reruns exact current PostgreSQL, Chromium, subprocess, Broker, source deletion
@@ -18,6 +18,11 @@ The separately bounded cached Qwen3 CPU load experiment records one physical
 Docker OOM (137 plus `OOMKilled`) before inference, verified weight/image/manifest
 bytes and actual runtime isolation. A graceful error, synthetic worker error,
 GPU/cloud inference, changed runner or repeated load cannot satisfy this gate.
+The independently reviewed vocabulary witness-v2 additionally accepts only the
+fixed original failed artifact/log/global-start hashes and exact ordered loader
+and GGUF vocabulary markers. Original metadata_read=false/FAIL stays unchanged;
+the new scope says vocabulary metadata processing reached, with complete weights,
+inference and Butler kernel receipt all false. No signature is claimed.
 That physical process is not connected to Butler's kernel; separate owned-worker
 tests prove its failure controls. High server RAM/OOM remain unavailable.
 `mandatory_faults_passed` covers these bounded faults only; `issue_33_ready`
