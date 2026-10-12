@@ -26,6 +26,15 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(scripts/dev/delegation-final-high-lab[.]sh$|scripts/dev/delegation-final-tls/|apps/orchestrator/internal/app/delegation_high_final.*_test[.]go$)" {
+      [void]$specs.Add("docs/architecture/delegation-contract.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/delegation-final-high-lab.sh /srv/storage/butler/agents/delegation-final-high-20261012 prepare after isolated Sync with clean committed release. Thirteen immutable history pins carry39 into a separate two-call41 ceiling; exact fixed-host two-lane TLS gate has no auth or HTTP generation. Old windows/caps stay sealed.")
+      continue
+    }
     "^(scripts/dev/delegation-remainder-high-lab[.]sh$|apps/orchestrator/internal/app/delegation_high_remainder.*_test[.]go$)" {
       [void]$specs.Add("docs/architecture/delegation-contract.md")
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
