@@ -218,3 +218,9 @@ all child costs and nullable usage. The new native review constants remain
 unavailable until independent review. Mechanical inventory, lexical screens and
 synthetic signature/CLI tests are fixture validation, not semantic holdout approval
 or actual High quality. Existing V1 evidence is unchanged.
+
+The actual V3 window is closed **NO_GO** after 18 charged observations. The
+independent content-free audit and exact PostgreSQL correlation are recorded in
+`docs/ai/scenario-cloud-v3-independent-audit-20261012.md`; all failed spend and
+prior NULL measurements remain in cumulative history. The 17 correct completed
+development observations do not establish full quality or a paired comparison.
