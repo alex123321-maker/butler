@@ -39,6 +39,15 @@ func freshV3IntentPart(intent string) string {
 
 var freshV3SourceID = regexp.MustCompile(`^d_[0-9a-f]{20}$`)
 
+func freshV3AbsentExtraction(id string) bool {
+	switch id {
+	case "q305d", "q312d", "q315d", "q320d", "q323d", "q328d":
+		return true
+	default:
+		return false
+	}
+}
+
 func freshV3AuthorValidate(c freshAuthorCorpus) error {
 	if c.Version != "butler-ru-cloud-fresh-v3" || len(c.Groups) != 30 || len(c.Cases) != 240 {
 		return errors.New("new corpus cardinality denied")
@@ -67,6 +76,7 @@ func freshV3AuthorValidate(c freshAuthorCorpus) error {
 		groups[g.ID] = g
 	}
 	counts, blocked, intents := map[string]int{}, map[string]int{}, map[string]bool{}
+	absent := map[string]int{}
 	originals, sourceGroups := map[string]string{}, map[string]string{}
 	for i, e := range c.Cases {
 		n, suffix := 301+i/8, byte('a'+i%8)
@@ -92,6 +102,17 @@ func freshV3AuthorValidate(c freshAuthorCorpus) error {
 		if err := freshAuthorGolden(e); err != nil {
 			return err
 		}
+		if kind == "extraction" {
+			var answer struct {
+				Facts []map[string]string `json:"facts"`
+			}
+			if json.Unmarshal(e.Golden, &answer) != nil || answer.Facts == nil || (len(answer.Facts) == 0) != freshV3AbsentExtraction(e.ID) {
+				return errors.New("new absent-property extraction inventory denied")
+			}
+			if len(answer.Facts) == 0 {
+				absent[g.Split]++
+			}
+		}
 		if kind == "commands" {
 			var answer struct {
 				Intent, Authority string
@@ -106,6 +127,9 @@ func freshV3AuthorValidate(c freshAuthorCorpus) error {
 	}
 	if len(originals) != 60 || len(intents) != 17 || counts["development"] != 96 || counts["tuning"] != 64 || counts["holdout"] != 80 || blocked["development"] != 0 || blocked["tuning"] != 0 || blocked["holdout"] != 4 {
 		return errors.New("new split/source/control inventory denied")
+	}
+	if absent["development"] != 2 || absent["tuning"] != 2 || absent["holdout"] != 2 {
+		return errors.New("new absent-property extraction split balance denied")
 	}
 	wanted := []string{"q301a", "q302c", "q303e", "q304g"}
 	if len(c.Comparison) != 4 {
@@ -208,7 +232,7 @@ func TestCloudFreshV3AuthorExactOriginalWitness(t *testing.T) {
 }
 
 func TestCloudFreshV3AuthorFixedBoundaries(t *testing.T) {
-	for _, mutation := range []string{"family", "command_part", "secret", "public_block", "comparison", "source_role_hint", "body_drift"} {
+	for _, mutation := range []string{"family", "command_part", "secret", "public_block", "comparison", "source_role_hint", "body_drift", "no_answer_lost", "no_answer_extra", "no_answer_null"} {
 		t.Run(mutation, func(t *testing.T) {
 			c := freshV3AuthorLoad(t)
 			switch mutation {
@@ -231,6 +255,14 @@ func TestCloudFreshV3AuthorFixedBoundaries(t *testing.T) {
 					c.Cases[0].Documents[id] += " changed"
 					break
 				}
+			case "no_answer_lost":
+				// Another real value from the same original is still unrelated to
+				// the requested absent property; it cannot remove this branch.
+				c.Cases[35].Golden = c.Cases[34].Golden
+			case "no_answer_extra":
+				c.Cases[2].Golden = json.RawMessage(`{"facts":[]}`)
+			case "no_answer_null":
+				c.Cases[35].Golden = json.RawMessage(`{"facts":null}`)
 			}
 			if freshV3AuthorValidate(c) == nil {
 				t.Fatal("fixed corpus boundary mutation accepted")

@@ -25,6 +25,15 @@ chosen before freeze independently of model responses. Keys expose no group,
 split or x/y answer role; sorted model export order is independent of that role.
 Original bodies and exact golden source linkage remain authoritative.
 
+Six public extraction queries ask for genuinely undocumented properties and
+expect exactly `facts=[]`: q305d room humidity, q312d manufacturer stopwatch
+accuracy, q315d actual graft-establishment date, q320d measured cloud-base
+height, q323d sender-interface MAC address and q328d the recorded GPS-point
+coordinate-system EPSG code. They are two cases per split, not explicit
+negative claims or unsupported inferences from the existing measurements.
+There remain60 extraction cases,58 model-eligible:52 eligible nonempty exact
+witnesses plus6 eligible absent-property cases; the other2 are NoModel.
+
 ## Whole episode inventory (prospective)
 
 | Group | Original evidence problem | Distinct source/corruption carrier |
@@ -133,3 +142,27 @@ Source-manifest SHA256:
 `188e42542dc5a0c444027d58428732c1f6af066aa214c2e0f9743fd4a37c9192`.
 This paragraph was appended after the run. Independent semantic approval remains
 pending; these structural screens cannot authorize model execution.
+
+Before any freeze or model call, independent review identified that the native
+empty-extraction branch had no coverage. The next candidate has raw LF SHA256
+`20099b3b5d7b5ec21cea7e3f1b6ddc62b9bc623859891a9450e47c18303c3da4`.
+Only the six questions/goldens above changed; all60 original bodies/opaque IDs,
+30 groups,240 cases,split/NoModel decisions and four comparison identities
+remain unchanged. The author inventory now requires those exact six empty
+arrays,two per part, and rejects a lost/extra/null absent answer. The independent
+reviewer must read the changed question/source relationship before freeze.
+This is prospective coverage correction,not a post-observation relabeling.
+
+Exact LF coverage snapshot `20261012-223823-208` ran on laba with the same
+network-none cached Go1.27.2/race/vet author harness. Proof:
+`/srv/storage/butler/agents/cloud-fresh-v3-corpus/reports/corpus-author-20261012T153833Z-2167306`.
+20 named tests / 5 top-level / 0 fail / 0 skip,elapsed3.849s. Events SHA256:
+`a4db4d0a034966ab2da50f675b8d6910efeda3485553b0b707b6370a3870d425`.
+Source-manifest SHA256:
+`373507b7c248b61b95447a7f4370f2a7d709fe0494968753b319eda0b8f3c4db`.
+The independent reviewer read all six exact changed questions with both
+originals and found the requested properties absent; the remaining234 cases
+and all original/source/group/split/comparison fields were unchanged by diff.
+This paragraph was appended after testing,without further executable changes.
+It records scoped semantic feedback and author structural proof,not a signature
+or statistical independence claim. Corpus model calls/imports/loads/messages=0.
