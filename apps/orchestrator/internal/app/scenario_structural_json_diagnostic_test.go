@@ -211,7 +211,7 @@ func collectStructuralDiagnostic(ctx context.Context, w *structuralDiagnosticWin
 	defer func() {
 		cleanup, stop := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 		defer stop()
-		_ = observer.CancelRun(cleanup, transport.CancelRunRequest{Context: transport.TransportRunContext{RunID: a.Context, SessionKey: "structural:" + c.ID, ProviderName: antigravity.Name, ModelName: antigravity.FlashHighModel}})
+		_, _ = observer.CancelRun(cleanup, transport.CancelRunRequest{RunID: a.Context, Reason: "structural observation finished"})
 	}()
 	clean := startErr == nil && stream != nil
 	finals, terminals := 0, 0
