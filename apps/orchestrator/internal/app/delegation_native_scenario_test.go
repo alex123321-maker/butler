@@ -507,7 +507,7 @@ func runNativeDelegationActualScenario(t *testing.T) {
 	if fullHighDelegationWindow() {
 		report.ControlScopes = []string{"revision:current_result_ready_collect_before_and_after_amend", "deletion:historical_original_owner_access_before_and_after", "stop:current_parent_scheduling_before_and_after"}
 		var confirmed int
-		if f.pool.QueryRow(ctx, `SELECT count(*) FROM action_effects WHERE task_id IN ($1,$2) AND state='effect_confirmed'`, first.TaskID, second.TaskID).Scan(&confirmed) != nil || confirmed != 4 {
+		if f.pool.QueryRow(ctx, `SELECT count(DISTINCT e.action_id) FROM action_effects e JOIN action_intents a ON a.effect_id=e.action_id JOIN runs r ON r.run_id=a.run_id WHERE r.task_id IN ($1,$2) AND e.state='effect_confirmed'`, first.TaskID, second.TaskID).Scan(&confirmed) != nil || confirmed != 4 {
 			t.Fatal("owner controls discarded confirmed delegation effects")
 		}
 		report.ConfirmedEffectsAfterControls = &confirmed

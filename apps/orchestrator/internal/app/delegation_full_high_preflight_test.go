@@ -165,7 +165,7 @@ func fullHighDecisionPreflight(t *testing.T, controls bool) {
 		// A separate current-root scheduling baseline is covered below on the
 		// already-decided branch, because amendment invalidates these contracts.
 		if _, err = controller.Apply(nativeOwner(ctx, "preflight-stop", current.SessionKey), task.ControlRequest{TaskID: current.TaskID, ExpectedRevision: current.Revision, Kind: task.ControlStop}); err != nil {
-			t.Fatal("actual preflight stop failed")
+			t.Fatalf("actual zero-inference preflight stop failed: %v", err)
 		}
 		if _, err = admission.Manager.Advance(nativeOwner(ctx, "preflight-stopped-advance", ""), parent.TaskID); err == nil {
 			t.Fatal("stopped preflight parent continued")
@@ -185,7 +185,7 @@ func fullHighDecisionPreflight(t *testing.T, controls bool) {
 		}
 	}
 	var confirmed int
-	if f.pool.QueryRow(ctx, `SELECT count(*) FROM action_effects WHERE task_id=$1 AND state='effect_confirmed'`, parent.TaskID).Scan(&confirmed) != nil || confirmed != 2 {
+	if f.pool.QueryRow(ctx, `SELECT count(DISTINCT e.action_id) FROM action_effects e JOIN action_intents a ON a.effect_id=e.action_id JOIN runs r ON r.run_id=a.run_id WHERE r.task_id=$1 AND e.state='effect_confirmed'`, parent.TaskID).Scan(&confirmed) != nil || confirmed != 2 {
 		t.Fatal("preflight controls lost actual Broker effects")
 	}
 	var spent int
