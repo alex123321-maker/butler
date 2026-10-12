@@ -40,6 +40,11 @@ type shadowV3Selection struct {
 }
 
 func prepareShadowV3Selection(corpus acceptance.CloudV3Corpus) (*shadowV3Selection, error) {
+	raw, readErr := readShadowV3CorpusBytes(filepath.Join(shadowRepoRoot(), "testdata", "acceptance", "ru-cloud-fresh-v3.json"))
+	var pinned acceptance.CloudV3Corpus
+	if readErr != nil || json.Unmarshal(raw, &pinned) != nil || shadowV3Hash(pinned) != shadowV3Hash(corpus) {
+		return nil, errNativeFixtureDenied
+	}
 	inputs, err := acceptance.ExportCloudV3Inputs(corpus, "")
 	pairs, pairErr := acceptance.CloudV3ComparisonInputs(corpus)
 	if err != nil || pairErr != nil || len(inputs.Cases) != 236 || len(inputs.BlockedIDs) != 4 || len(pairs) != 4 {
@@ -317,6 +322,20 @@ func TestScenarioShadowV3WindowRetainsOneChargeAndEveryOldPinIntegration(t *test
 	changed.quality[c.ID] = "substituted selected case"
 	if _, denied := createShadowV3WindowSelected(ctx, pool, time.Minute, &changed); denied == nil {
 		t.Fatal("changed prepared selection reopened authority")
+	}
+	changedCorpus := corpus
+	changedCorpus.Cases = append([]acceptance.CloudV3Case(nil), corpus.Cases...)
+	changedCorpus.Cases[0].Input += " modified query"
+	if _, denied := prepareShadowV3Selection(changedCorpus); denied == nil {
+		t.Fatal("un-pinned query became a hash-pinned prepared selection")
+	}
+	changedCorpus.Cases[0] = corpus.Cases[0]
+	changedCorpus.Cases[0].Documents = map[string]string{}
+	for id, body := range corpus.Cases[0].Documents {
+		changedCorpus.Cases[0].Documents[id] = body + " modified source body"
+	}
+	if _, denied := prepareShadowV3Selection(changedCorpus); denied == nil {
+		t.Fatal("un-pinned original body became a hash-pinned prepared selection")
 	}
 	raw, err := readShadowV3CorpusBytes(filepath.Join(shadowRepoRoot(), "testdata", "acceptance", "ru-cloud-fresh-v3.json"))
 	if err != nil {
