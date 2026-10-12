@@ -19,8 +19,8 @@ const CloudV5MaximumArrayItems = 32
 const CloudV5ExpectedModelVersion = CloudV4ExpectedModelVersion
 const CloudV5SchemaDialect = "native_openapi_response_schema_v1"
 const CloudV5GenerationSchemaField = "responseSchema"
-const CloudV5GoldenPublicKeyFileSHA256 = ""
-const CloudV5GoldenApprovalFileSHA256 = ""
+const CloudV5GoldenPublicKeyFileSHA256 = "226db234dbe9c95486dfeb1c03205cec2d8f31dd1f262ff8de7a293a8dc67883"
+const CloudV5GoldenApprovalFileSHA256 = "094390b7d9890c0000926282ffca31e044f5cf2c8c7806a05c4d6e2b08770865"
 
 // V5 reuses only the immutable shape/witness checks, not V4 data, approval,
 // identifiers, hashes, execution window, source or quality verdict.

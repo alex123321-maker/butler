@@ -244,3 +244,20 @@ Private final retention is separate from the content-free audit; the audit
 recomputes known/NULL costs before quality and refuses a failed or partial window.
 Reproduce the prospective contract and limitations from
 `docs/ai/scenario-cloud-prospective-v4-design-20261013.md`.
+
+The additive `CloudV5*` APIs use a fresh240-case/30-episode corpus with whole-group
+development/tuning/holdout splits, four blocked secret-document cases and four
+fixed comparison originals. V5 explicitly pins native OpenAPI `responseSchema`,
+all-source IDs, decimal-string array32, strict single JSON and the unchanged
+90/85/zero-critical/event/nearest-rank latency/full-new-cost rules. Pure immutable
+shape/source helpers are reused; no past data, approval or verdict is translated.
+`AuditCloudV5Window` requires independently supplied full historical JSON,
+historical known-total/unknown measurements and the compatibility artifact's
+exact last-history identity. It derives actual baseline/ceiling and checks ordered
+charges before cost/quality correlation. Failed prefixes retain every measured
+cost and NULL. `CorrelateCloudV5PGWitness` binds `native_baseline` and exact ordered
+SQL metadata; equality is not inference or quality approval. Import framing is
+8MiB without widening the8192-byte raw-final limit. Reproduce offline modes from
+`cmd/cloud-observe/README.md` and the V5 design/authorship records. Actual native
+compatibility, quality, paired comparison and release-chain acceptance remain
+separate gates.

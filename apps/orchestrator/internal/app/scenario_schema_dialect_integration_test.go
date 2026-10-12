@@ -35,6 +35,11 @@ func TestScenarioSchemaDialectClosedGateAndExactInputs(t *testing.T) {
 		t.Fatal("fixed diagnostic history unavailable")
 	}
 	t.Logf("diagnostic_pins protocol_sha256=%s input_sha256=%s history_sha256=%s schema_sha256=%s requested_model=%s observed_version=%s baseline=279 ceiling=283 seconds=600 attempt_seconds=120 generated_tokens=32768 visible_bytes=8192 input_bytes=65536 concurrency=1", schemaDiagnosticProtocolSHA(), schemaDiagnosticInputSHA, history.BaselineSHA256, acceptance.CloudV4SchemaDigest(), "gemini-3.8-flash-high", schemaDiagnosticExpectedVersion)
+	source, sourceErr := acceptance.TreeHash(shadowRepoRoot(), nil)
+	if sourceErr != nil {
+		t.Fatal("actual frozen source manifest unavailable")
+	}
+	t.Logf("actual_frozen_source_sha256=%s", source)
 	cases, err := schemaDiagnosticInputs()
 	if err != nil || len(cases) != 4 || cases[0].ID != cases[1].ID || cases[0].Dialect == cases[1].Dialect {
 		t.Fatal("fixed unseen public inputs unavailable")

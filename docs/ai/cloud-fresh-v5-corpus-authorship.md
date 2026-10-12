@@ -136,3 +136,27 @@ Raw SHA256 is03caf934 above. New exact raw/semantic review, lexical verification
 and a fresh external key/directory are required before quality inference. Schema,
 policy, criteria and resources remain unchanged; approval separately signs the
 new corpus digest, so the old signature cannot approve this corrected dataset.
+
+The corrected candidate was measured in isolated Linux proof
+`/srv/storage/butler/agents/scenario-shadow-v5-high-20261013/reports/review-build-20261012T201710Z-3051823`,
+snapshot `20261013-031706-773`, network-none Go1.27.2/race. Its tests.jsonl SHA256 is
+`802fe3eaa175c414c78c52a37d6c46376d021c229d9efe38ca924be4c1dc0951`, and source
+manifest SHA256 is
+`98367ad70249a57738d08339b55df990161859722096d2e37b43310a6c0b84c2`.
+The compiled corpus digest is
+`0c28cc221b241c84008e078f280c008f5bcd6384f917958012b8aaacd9ee0fc9`.
+Schema, policy, criteria and resources are exactly the unchanged values above.
+All-old/V4/diagnostic screening passed1.54s, every236 native-schema constructor
+passed9.83s with no authentication, diagnostic original witnesses passed0.78s,
+and the V5 CLI's release/source/key/hardware mutation checks passed7.46s on Linux.
+Windows cannot establish the existing POSIX0600 private-file guard; it was not
+weakened to accommodate local filesystem permissions.
+
+Subsequent separate V5 offline-audit regressions cover actual dynamic baselines,
+the independently frozen whole history and compatibility artifact, old NULL
+preservation, failed-prefix spending, exact charge order and PostgreSQL lineage.
+They identified and closed a V5-only import gap where reordered charge rows could
+be indexed by ordinal and sorted later. The importer now checks contiguous row
+order and nondecreasing admission timestamps before correlation. This preserves
+the already declared one-use release order, with no data or scoring-rule change.
+These tests use synthetic signatures/history/output and confer no native verdict.

@@ -239,3 +239,50 @@ existing evidence cannot be overwritten. These commands are offline imports and
 exports, with no provider, signing, credential or tool-execution capability.
 Private raw-final and safe diagnostic evidence is independently inspected by the
 owning runner/auditor and never printed or included in model export.
+
+# Prospective V5 modes
+
+`v5-inputs`, `v5-policy`, `v5-quality`, `v5-compare`, `v5-window-audit` and
+`v5-pg-correlate` use a separate fresh Russian corpus and external V5 review.
+V5 pins the native OpenAPI `responseSchema` producer dialect, decimal-string
+array cap32, strict single-JSON instructions and unchanged numerical thresholds.
+The caller still rejects unknown fields, unprovided sources and nonliteral facts.
+Every eligible schema is tested through the actual provider constructor without
+authentication. These checks establish preparation, not native compatibility.
+
+The native baseline derives from the actual independently audited compatibility
+diagnostic history. It is not assumed to be283. `v5-window-audit` requires a
+separate trusted prepared history file, its digest and independently measured
+historical total-token/unknown totals; the collector cannot supply these pins.
+Its compatibility hash must identify the last historical artifact exactly.
+The new252-call allowance contains236 quality and16 paired entries. The importer
+requires contiguous ordered charge rows, exact original inputs/parents and all
+nullable usage. Failed-prefix spend remains in a safe NO_GO projection.
+
+```sh
+cloud-observe -mode v5-policy -root /src -output /private/v5-policy.json
+cloud-observe -mode v5-inputs -root /src -split holdout -output /private/v5-inputs.json
+cloud-observe -mode v5-window-audit -root /src \
+  -commit <prepared-commit> -expected-source-sha256 <prepared-source> \
+  -expected-history-sha256 <actual-reviewed-history-sha256> \
+  -expected-history-file /metadata/independent-history.json \
+  -expected-historical-known-total-tokens <measured-known-total> \
+  -expected-historical-unknown-total-attempts 46 \
+  -expected-compatibility-sha256 <accepted-compatibility-report-sha256> \
+  -hardware /metadata/hardware.json -observations /private/v5-report.json \
+  -golden-public-key /review/v5-public-key.hex -golden-approval /review/v5-approval.json \
+  -expected-review-key-sha256 <new-external-key-file-sha256> \
+  -expected-review-approval-sha256 <new-external-approval-file-sha256> \
+  -output /private/v5-audit.json
+cloud-observe -mode v5-pg-correlate -observations /private/v5-report.json \
+  -pg-witness /private/v5-pg-witness.json -output /private/v5-pg-correlation.json
+```
+
+V5 report/PG import framing is8MiB, while an individual raw final stays bounded
+to8192 bytes. Expected history is at most1MiB. Private inputs require regular
+POSIX0600 files; output is exclusive. Review files stay outside candidate source.
+PG equality grants no quality, inference or execution authority. Old V1–V4
+windows, failures, usage and approvals retain their exact bytes and identities;
+the revoked first V5 seal cannot approve the corrected dataset. See the
+[V5 design](../../docs/ai/scenario-cloud-prospective-v5-design-20261013.md) and
+[authorship record](../../docs/ai/cloud-fresh-v5-corpus-authorship.md).

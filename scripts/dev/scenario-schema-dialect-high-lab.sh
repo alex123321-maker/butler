@@ -41,12 +41,15 @@ if [[ "$phase" == prepare ]]; then
     --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/tmp --env TMPDIR=/tmp \
     "$go_image" bash -eu -c '
 go test -json -race -p 1 -count=1 -run "^TestCloud(V5|FreshV5|SchemaDialectDiagnostic)" ./internal/acceptance
+go test -json -race -p 1 -count=1 -run "^TestCloudV5" ./cmd/cloud-observe
+go test -json -race -p 1 -count=1 ./scripts/dev/cloud-v5-final-audit
+go build -o /binaries/v5-final-audit ./scripts/dev/cloud-v5-final-audit
 go test -json -race -p 1 -count=1 ./internal/transport/antigravity ./internal/transport
 go test -json -race -p 1 -count=1 -run "^TestSchemaDialectFactoryUnknownSelection" ./apps/orchestrator/internal/app
 go test -json -race -p 1 -count=1 ./scripts/dev/delegation-final-tls
 go build -o /binaries/tls-prerequisite ./scripts/dev/delegation-final-tls
 go test -c -race -p 1 -o /binaries/orchestrator.test ./apps/orchestrator/internal/app
-go vet ./apps/orchestrator/internal/app ./internal/acceptance ./internal/transport/antigravity ./internal/transport ./scripts/dev/delegation-final-tls
+go vet ./apps/orchestrator/internal/app ./internal/acceptance ./internal/transport/antigravity ./internal/transport ./cmd/cloud-observe ./scripts/dev/cloud-v5-final-audit ./scripts/dev/delegation-final-tls
 chmod 555 /binaries/*
 ' > "$proof/unit.jsonl" 2> "$proof/build-diagnostics.log"
   ! grep -Eq '"Action":"(skip|fail)"' "$proof/unit.jsonl"

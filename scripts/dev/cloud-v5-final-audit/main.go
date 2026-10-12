@@ -18,6 +18,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/butler/butler/internal/acceptance"
+	"github.com/butler/butler/internal/transport"
 )
 
 type diagnostic struct {
@@ -164,6 +165,31 @@ func readRaw(path string) ([]byte, error) {
 	return raw, nil
 }
 
+func validDiagnosticRow(d diagnostic, baseline, index int) bool {
+	if d.Ordinal != baseline+1+index {
+		return false
+	}
+	if d.ProviderStage != nil {
+		switch transport.ProviderStage(*d.ProviderStage) {
+		case transport.ProviderStageAuthentication, transport.ProviderStageSerialization, transport.ProviderStageHTTP, transport.ProviderStageStream:
+		default:
+			return false
+		}
+	}
+	if d.Code != "" && transport.DiagnosticCode(&transport.Error{Type: transport.ErrorType(d.Code)}) != d.Code {
+		return false
+	}
+	switch d.Stage {
+	case "provider_start", "stream_lifecycle", "foreign_run", "version_contract", "usage_contract", "usage_allowance", "forbidden_tool_proposal", "provider_stream", "final_contract", "output_encoding_contract", "incomplete_lifecycle", "metadata_contract", "attempt_deadline", "context_cancelled", "completed":
+	default:
+		return false
+	}
+	if d.Outcome == "completed" {
+		return d.Clean && d.Finals == 1 && d.Terminals == 1 && d.Finish != nil && *d.Finish == "STOP" && d.Version != nil && *d.Version == acceptance.CloudV5ExpectedModelVersion && d.Reason == "json_object" && d.Code == "" && d.Stage == "completed" && d.ProviderStage != nil && *d.ProviderStage == string(transport.ProviderStageStream)
+	}
+	return true
+}
+
 func run() error {
 	reportSHA := flag.String("report-sha256", "", "exact private collector identity")
 	pgSHA := flag.String("pg-sha256", "", "exact independent attempt witness")
@@ -294,7 +320,7 @@ func run() error {
 		p := w.Attempts[i]
 		a, ok := attempts[d.Context]
 		safe := audit.Attempts[i]
-		if !ok || d.Ordinal != 269+i || d.Ordinal != p.Ordinal || d.Context != p.Context || d.Context != safe.Context || d.Outcome != p.Outcome || !reflect.DeepEqual(d.Input, p.InputTokens) || !reflect.DeepEqual(d.Output, p.OutputTokens) || !reflect.DeepEqual(d.Total, p.TotalTokens) || !reflect.DeepEqual(d.Version, a.ProviderModelVersion) {
+		if !ok || !validDiagnosticRow(d, audit.HistoricalAttempts, i) || d.Ordinal != p.Ordinal || d.Context != p.Context || d.Context != safe.Context || d.Outcome != p.Outcome || !reflect.DeepEqual(d.Input, p.InputTokens) || !reflect.DeepEqual(d.Output, p.OutputTokens) || !reflect.DeepEqual(d.Total, p.TotalTokens) || !reflect.DeepEqual(d.Version, a.ProviderModelVersion) {
 			return errors.New("exact diagnostic SQL measurement mismatch")
 		}
 		if !d.Retained {

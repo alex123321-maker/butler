@@ -39,7 +39,7 @@ docker run --rm --runtime runc --network none --read-only --user 10001:10001 --c
  "$image" /seal \
  -corpus-sha256 03caf934ff0a420d8e7522225ddb2ccad732fbd43ae113389433e57113f0d171 \
  -review-sha256 "$review_sha" \
- -semantic-sha256 UNSET \
+ -semantic-sha256 0c28cc221b241c84008e078f280c008f5bcd6384f917958012b8aaacd9ee0fc9 \
  -schema-sha256 b5362cee519809034f93c662d9d386534ca95ed6fd2c4bff2276b4a97dc351f5 \
  -policy-sha256 e77dea3dcb284c30e16f23f76e4a782cdb599316c7f0d1cc831e0b0716469b8b \
  -criteria-sha256 71565f56ab0be83b6d99f268ca82acc6852eab837421ba1897653de3b07b6a19 \

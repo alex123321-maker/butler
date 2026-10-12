@@ -227,7 +227,7 @@ func AuditCloudV5Window(c CloudV5Corpus, approval GoldenApproval, key []byte, ra
 			plan = append(plan, plannedCall{"comparison", input.ID, role})
 		}
 	}
-	for _, l := range e.Ledger {
+	for index, l := range e.Ledger {
 		context := "shadow-" + cloudDigest([]string{windowID, l.Phase, l.CaseID, l.Role})[:32]
 		var parent *string
 		if l.Role == CloudRoleChildA || l.Role == CloudRoleChildB {
@@ -235,8 +235,11 @@ func AuditCloudV5Window(c CloudV5Corpus, approval GoldenApproval, key []byte, ra
 			parent = &value
 		}
 		selection := l.Phase + "\x00" + l.CaseID + "\x00" + l.Role
-		if l.Ordinal < baseline+1 || l.Ordinal > e.Total || ordinals[l.Ordinal] || contexts[l.Context] || oldContexts[l.Context] || selections[selection] || l.Context != context ||
+		if l.Ordinal != baseline+1+index || l.Ordinal > e.Total || ordinals[l.Ordinal] || contexts[l.Context] || oldContexts[l.Context] || selections[selection] || l.Context != context ||
 			!equalCloudV5NullableString(l.ParentContextID, parent) || !validSHA(l.InputSHA) || l.Kind != "start" || l.Phase != "quality" && l.Phase != "comparison" || l.Phase == "quality" && l.Role != CloudRoleSingle || l.Created.Before(e.Start) || l.Created.After(e.End) || !l.Created.Before(e.Expires) {
+			return deny()
+		}
+		if index > 0 && l.Created.Before(e.Ledger[index-1].Created) {
 			return deny()
 		}
 		if want := plan[l.Ordinal-baseline-1]; l.Phase != want.phase || l.CaseID != want.caseID || l.Role != want.role {

@@ -18,8 +18,8 @@ import (
 
 const schemaDiagnosticWindowID = "issue33-high-schema-dialect-20261013-baseline279"
 const schemaDiagnosticInputSHA = "f1d1ca8172e7fd1c794b531f9e73ac02895967dca87c3313963121cedfed89fc"
-const schemaDiagnosticReviewedSHA = ""                       // Closed until independent protocol/source/data review; never quality admission.
-const schemaDiagnosticExpectedVersion = "gemini-3.8-flash-n" // Observed in all18 prior V3 packets.
+const schemaDiagnosticReviewedSHA = "75b3e16772b42856cdfa124813deb802c9e671fb141d61b85b114641ce66c61a" // Independent four-entry diagnostic review; never quality admission.
+const schemaDiagnosticExpectedVersion = "gemini-3.8-flash-n"                                           // Observed in all18 prior V3 packets.
 
 type schemaDiagnosticEntry struct {
 	acceptance.CloudInputCase
