@@ -74,5 +74,32 @@ and the actual zero-inference routing proof must pass before the execute seal.
 It reads only the already approved exact private import reference; all earlier
 windows, signed corpora, credentials, main checkout and deployment remain intact.
 
-Preparation and actual remainder results are pending. A successful component
-baseline cannot label the missing two native child calls or overlap as passed.
+The V2 preparation used release `bdd85cdc752a739e0a4fa9be4789bf2f8fc7132d`,
+snapshot `20261012-125039-747`. All268 test/subtest names (94 top-level) passed,
+with0 failures/skips, race/vet, worker/Broker builds and private UID10001 guards.
+Proof: `reports/delegation-remainder-high-prepare-20261012T055050Z-158798`;
+tests SHA256 `90082ca0fa737d55d7710a4ff7825dd825008b6c1df2275fbae6ee1b576fa0b8`,
+source-manifest SHA256 `c8f8db0dde9220a163492621b227b46ff380f0448d48b02cabdc0df51e5824b4`.
+
+The sole V2 execution is SEALED and FAILED. Its immutable
+[report](../../deploy/delegation/native-remainder-high-20261012.json),40949 bytes,
+has SHA256 `58edb6f022399e385118c51de8e3f9f7890fbfc74a5dd3b39de8b42839651505`.
+Proof: `reports/delegation-remainder-high-execute-20261012T055401Z-170110`;
+native events SHA256 `55173b52b2217e44b55d6938af01484307e22789a9605af041cd0992a11c7650`.
+The native scenario failed after143.26s at the stopped-child gate. The scripted
+width1 component passed; both scripted parents' receipt projections passed.
+Both real width2 child starts entered47.517ms apart, after natural expiry of both
+claims, but neither produced a final. Owning run diagnostics for both are
+`transport_error` / `transport_connection_error`; blocked inputs preserve
+`execution_stopped` and the conservative model reservations. This proves
+concurrent native entry, not successful native parallel extraction or completion.
+It does not establish a quota rejection, exhausted subscription or model error.
+Private socket/proxy/TLS detail was not exported, so its precise network cause
+is unknown. Width2 report verification and final controls did not execute.
+
+The two charged calls are ordinals38–39. Native accounting is now39 attempted,
+17 known/22 NULL usage pairs,62760 input/1810 output known subtotal. Both new
+usage pairs are unknown; eight scripted turns are separate component activity.
+There is no refund, retry, fallback or reopening. The original39 ceiling is
+exhausted. Full issue16 acceptance remains pending; component checks and earlier
+successful parent/child observations cannot relabel either failed live report.

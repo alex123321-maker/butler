@@ -28,6 +28,13 @@ admissions and two correct child extractions after process loss. It stopped at
 the parent's exact receipt-projection failure before width2/later controls;
 [safe evidence](../../../docs/ai/delegation-high-acceptance-20261012.md) records5
 new calls without retry. Full delegation acceptance and deployment remain pending.
+The later [full experiment](../../../docs/ai/delegation-full-high-acceptance-20261012.md)
+passed both native parents' exact receipt projections and four recovered child
+extractions; it remains failed at width2 overlap. Its distinct
+[remainder](../../../docs/ai/delegation-high-remainder-acceptance-20261012.md)
+charged two concurrent child starts but both failed `transport_connection_error`.
+This does not establish quota exhaustion or provider rejection. No implicit
+transport retry or model fallback is introduced.
 
 The following AICode details and earlier investigations describe the retained
 default tiered profile and their historical evidence.

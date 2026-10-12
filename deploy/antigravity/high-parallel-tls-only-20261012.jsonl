@@ -1,0 +1,4 @@
+{"endpoint_enum":"REQUESTED_SANDBOX","lane":2,"dns_resolved":true,"public_dns_only":true,"proxy_connected":true,"connect_http_status":200,"upstream_tls_ready":true,"phase_enum":"TLS_READY_NO_HTTP","failure_enum":"NONE","model_calls":0}
+{"endpoint_enum":"REQUESTED_SANDBOX","lane":1,"dns_resolved":true,"public_dns_only":true,"proxy_connected":true,"connect_http_status":200,"upstream_tls_ready":true,"phase_enum":"TLS_READY_NO_HTTP","failure_enum":"NONE","model_calls":0}
+{"endpoint_enum":"NATIVE_DAILY","lane":1,"dns_resolved":true,"public_dns_only":true,"proxy_connected":true,"connect_http_status":200,"upstream_tls_ready":true,"phase_enum":"TLS_READY_NO_HTTP","failure_enum":"NONE","model_calls":0}
+{"endpoint_enum":"NATIVE_DAILY","lane":2,"dns_resolved":true,"public_dns_only":true,"proxy_connected":true,"connect_http_status":200,"upstream_tls_ready":true,"phase_enum":"TLS_READY_NO_HTTP","failure_enum":"NONE","model_calls":0}

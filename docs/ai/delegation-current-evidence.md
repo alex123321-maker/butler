@@ -5,16 +5,29 @@ observation bridge and separate local generative observations. The opt-in contex
 retains empty child permissions. Component tests and deliberately scripted
 provider outcomes are distinct from successful native research.
 
+The latest owner-directed continuation repaired final-turn ownership, typed
+numeric formatting and canonical deletion-marker handling. Its final preparation
+of `bdd85cd` passed268 names/94 top-level,0 failure/skip, race/vet and private
+worker/Broker guards. The full native High report remains failed at width2
+overlap1, but proves both exact native parent receipts, four correct child
+extractions after SIGKILL/claim-expiry recovery, and width1 independent owner
+accept/reject. The later two-call remainder proves simultaneous native entry,
+then fails both children with `transport_connection_error`, no finals or usage.
+History39 has17 known/22 NULL pairs; known subtotal62760 input/1810 output.
+All failed reports and sealed windows remain unchanged. Exact releases, hashes
+and distinct scopes: [full High](delegation-full-high-acceptance-20261012.md),
+[remainder](delegation-high-remainder-acceptance-20261012.md).
+
 | Requirement | Already observed | Remaining gate |
 | --- | --- | --- |
-| Durable child contract and state | Six actual PostgreSQL manager groups on snapshot073844-801: separate session/working state, immutable contract/source/deadline/budget, waiting/queued/executing/result identity and replay; dependency/tree/depth caps | Full successful native child recovery has not completed |
-| One then bounded parallel executor | Actual manager reservations, durable maintenance advances a waiting sibling only after a current final; scripted ordinary workers and real Broker execute two sequential admissions at widths1/2 | Same-source native quality/timing/usage comparison has failed twice and remains pending |
-| Selected original evidence | Catalog grants/complete privacy graph and current pins, no ambient parent history/profile or hidden-ancestor bodies; source correction/deletion/grant revocation deny recovery/dispatch/collection | Actual native child prepared source observations and final citations remain pending |
-| Structured report | Actual completion/journal/reservation readers independently validate result/action/evidence identities and conservative units; generated reports retain uncertainty/partial observations and contain no model-derived accomplishment verdict | Successful actual independent native reports have not been produced |
-| Accept/reject and uncertainty | Actual exact owner verification accepts only the current final; forged action counts/evidence/units and unverified acceptance fail; partial final retains limitations. The failed-attempt bridge supplies fresh private parent DATA with bounded terminal/journal history, branch-wide reservations and nullable usage across revisions; checkpoints reload current records | No general two-research contradiction resolver has been proved. Failed-attempt observations confer no completion or acceptance authority |
+| Durable child contract and state | Actual PostgreSQL manager states/identity/replay/limits, plus four real High child completions after parent-worker SIGKILL and natural claim expiry | — |
+| One then bounded parallel executor | Real High width1 extraction and owner decisions; current PG recovery observes two contexts after staggered expiry; failed remainder entered two real High starts47.517ms apart | Successful native width2 overlap2 with both finals and independent verification remains pending |
+| Selected original evidence | Selected Catalog grants/current pins and isolated DATA contexts; all four recovered real High results passed exact source/hash/revision/value/date checks | Width2 remainder did not produce finals |
+| Structured report | Actual action/evidence/conservative-budget guards and real High width1 independent structured-report checks, with original result/report references retained | Final native width2 report verification remains pending |
+| Accept/reject and uncertainty | Real High width1 authenticated owner API accepts A and rejects B after independent original checks under predeclared source-selection policy. Both source-relative observations/conflicting originals remain; model finals stay unverified. Wrong agreement/forged evidence cannot override originals | Final width2 verification remains pending. This bounded policy does not claim general research contradiction adjudication |
 | Restricted authority and shared budgets | Current inflight Broker admission plus immutable061 lifecycle snapshot, empty permissions, exact scope/deadline/source pins; root/delegation/mandate/day finite reservations, widening and cycle denial | Reservation totals are not measured tokens, invoice or evidence of successful research |
 | Stop and stale contracts | Real Controller stop versus admission/Collect and actual approved-grandchild ClaimGrant denial; spent earlier effects/immutable finals remain; stale revisions/source rights and clock expiry after actual lock waits deny later writes | Post-final native metadata controls have not run; arbitrary late native callback injection is outside the scheduled fixture |
-| Parent process loss | Durable lifecycle and selected source read succeed after actual parent run completion/lease expiry without borrowing its lease. First and final native windows performed completed-parent executor SIGKILL and waited real child-claim TTL; final window reached a recovered child's native Start | That child failed transport without a final; successful restarted-child completion is pending |
+| Parent process loss | The full High experiment completed four recovered native children after actual parent-worker SIGKILL and natural child-claim expiry, without borrowing parent lease | Latest remainder reached two concurrent starts, then stopped on network errors; it adds no completed results |
 | Shared local model service | Actual auxiliary GPU/CPU artifacts prove reusable workers and index/search lanes. Five real generative contexts used one pinned CPU runner; an independent runtime observation found one loaded model | All five generative semantic checks failed. They do not prove successful delegated research or faster/cheaper execution; cloud internal weights remain unobservable |
 
 ## Exact evidence references

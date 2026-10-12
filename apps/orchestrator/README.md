@@ -1,10 +1,12 @@
 # Orchestrator
 
-The separately authorized [full High delegation acceptance](../../docs/ai/delegation-full-high-acceptance-20261012.md)
-carries27 historical calls and uses a new bounded window. It combines exact parent
-receipt diagnostics, current typed numeric formatting, source-relative independent
-owner verification and real width1/width2 recovery/control checks. All original
-failed reports and their sealed windows remain unchanged.
+The [full High experiment](../../docs/ai/delegation-full-high-acceptance-20261012.md)
+proved both native parent receipt projections, four source-relative extractions
+after worker loss and width1 independent owner decisions; it remains failed at
+width2 overlap. The repaired [remainder](../../docs/ai/delegation-high-remainder-acceptance-20261012.md)
+started two High children concurrently, but both stopped with
+`transport_connection_error` and no finals. History39 and every failed report
+remain immutable; full delegation acceptance and deployment remain pending.
 
 Initiative promotion rechecks active hours and observation freshness after budget
 lock waits. A UTC-day change defers admission to a fresh check of attention limits.

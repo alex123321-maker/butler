@@ -60,8 +60,11 @@ allowing the first fast High response to finish before the second was eligible.
 [Actual PG recovery checks](delegation-parallel-recovery-acceptance.md) prove
 parallel current contexts after natural expiry of both claims. The separately
 declared [two-call remainder](delegation-high-remainder-acceptance-20261012.md)
-keeps the original39 total ceiling and only tests the missing High child overlap;
-it does not reopen this window or repeat successful native parents/width1 work.
+kept the original39 total ceiling and tested the missing High child overlap;
+it did not reopen this window or repeat successful native parents/width1 work.
+That remainder is now also sealed and failed: both native child starts entered
+concurrently but stopped with `transport_connection_error`, without finals.
+History is39 attempts,17 known/22 NULL usage pairs; full acceptance remains pending.
 
 New root: `/srv/storage/butler/agents/delegation-acceptance-high-20261012`.
 New global one-use marker:

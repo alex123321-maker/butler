@@ -17,6 +17,7 @@ pwsh -NoProfile -File scripts/dev/run-orchestrator.ps1
 ```
 
 Available scripts:
+- `delegation-remainder-high-lab.sh /srv/storage/butler/agents/delegation-remainder-high-v2-20261012 prepare` - twelve immutable history pins and labelled scripted parents/width1, with only two real High width2 child slots at the original39 ceiling. Both execute markers are sealed; the latest report retains two connection failures and39 total attempts. See [evidence](../../docs/ai/delegation-high-remainder-acceptance-20261012.md).
 - `delegation-acceptance-high-lab.sh /srv/storage/butler/agents/delegation-acceptance-high-20261012 prepare` - new zero-inference PG/Broker/independent-owner/race/vet preparation for full issue16 High acceptance, carrying27 historical attempts in a separate one-use native window. See [the declared scope](../../docs/ai/delegation-full-high-acceptance-20261012.md).
 - `delegation-high-lab.sh /srv/storage/butler/agents/delegation-high-20261012 prepare` - integrated disposable PostgreSQL/race/vet and worker/Broker preparation with a committed `BUTLER_DELEGATION_NATIVE_RELEASE`, zero inference and zero allowed skips. The single execute window is permanently sealed after native attempts23-27; see [evidence](../../docs/ai/delegation-high-acceptance-20261012.md).
 - `bootstrap.ps1` - create repo-local cache directories and optionally install dependencies into those caches

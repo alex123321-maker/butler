@@ -1,6 +1,24 @@
 # Antigravity account and quota diagnosis — updated 2026-10-12
 
-## Actual High tools and recovery — latest observation
+## High receipt repair and parallel network failure — latest observation
+
+The issue16 continuation added ten native High calls: both parents' exact receipt
+projections, four source-relative child extractions after worker loss, and width1
+independent owner decisions passed. The [full experiment](delegation-full-high-acceptance-20261012.md)
+remains failed at width2 overlap1. After a zero-native scripted preflight failure,
+the repaired [remainder](delegation-high-remainder-acceptance-20261012.md)
+entered both native High children47.517ms apart, but both failed with owning
+`transport_error` / `transport_connection_error`, no finals and NULL usage.
+The concrete HTTP client returned an error; no Google quota/capacity rejection
+or exact private connection detail was measured.
+
+Diagnostic-inclusive history is now39 attempts,17 known/22 NULL pairs;
+62760 input/1810 output remains the known subtotal. Eight scripted component
+turns are separate from native accounting. No retry, fallback, counter reset
+or account-wide usage attribution occurred. Full issue16 acceptance is pending;
+main source/deployment remain unchanged. Earlier counts below are historical.
+
+## Actual High tools and recovery — earlier observation
 
 The renewed open-issue request authorized one separate bounded native delegation
 window. High completed5 native calls, two actual Broker `task.delegate` admissions

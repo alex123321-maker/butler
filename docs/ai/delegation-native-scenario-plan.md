@@ -1,6 +1,19 @@
 # Opt-in native delegation experiment
 
-## New owner-directed High continuation — 2026-10-12
+## Current owner-directed issue16 continuation — 2026-10-12
+
+The owner requested full High acceptance with subagents. The sealed
+[full experiment](delegation-full-high-acceptance-20261012.md) proved both native
+parent receipt projections, four correct recovered children and width1 owner
+decisions, then failed width2 overlap1. The corrected
+[remainder](delegation-high-remainder-acceptance-20261012.md) entered both real
+width2 calls concurrently but failed with `transport_connection_error`, no finals.
+Both failed reports remain failed. History39 has17 known/22 NULL usage pairs and
+62760 input/1810 output known subtotal. The original39 ceiling and every earlier
+window remain sealed. Successful native width2 verification and final controls
+remain pending.
+
+## Earlier owner-directed High continuation — 2026-10-12
 
 The renewed request authorizes open-issue implementation and subscription-backed
 system checks. A separate [Flash High window](delegation-high-acceptance-20261012.md)
