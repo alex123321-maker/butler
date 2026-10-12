@@ -132,12 +132,13 @@ func capturePrivateFinal(private string, ordinal int, content string) (privateFi
 // deltas, thoughts, signatures and provider transport frames are never stored.
 type privateFinalCaptureProvider struct {
 	transport.ModelProvider
-	private       string
-	ordinal       int
-	mu            sync.Mutex
-	metadata      *privateFinalMetadata
-	captureFailed bool
-	raw           []byte // Bounded, private, never serialized; retained only until SQL persistence.
+	private          string
+	ordinal          int
+	mu               sync.Mutex
+	metadata         *privateFinalMetadata
+	captureFailed    bool
+	raw              []byte // Bounded, private, never serialized; retained only until SQL persistence.
+	persistAttempted bool
 }
 
 func (p *privateFinalCaptureProvider) finalMetadata() *privateFinalMetadata {
@@ -164,6 +165,11 @@ func (p *privateFinalCaptureProvider) persistFinal() error {
 		p.mu.Unlock()
 		return errNativeFixtureDenied
 	}
+	if p.persistAttempted {
+		p.mu.Unlock()
+		return errNativeFixtureDenied
+	}
+	p.persistAttempted = true
 	meta := *p.metadata
 	raw := append([]byte(nil), p.raw...)
 	previousFailure := p.captureFailed
@@ -281,5 +287,22 @@ func TestScenarioPrivateFinalCaptureEncodingBoundsAndMetadataPrivacy(t *testing.
 				t.Fatal("oversized model output retained")
 			}
 		})
+	}
+}
+
+func TestScenarioPrivateFinalCaptureRepeatedPersistenceRetainsFirstTruth(t *testing.T) {
+	raw := []byte(`{"refs":[]}`)
+	meta := privateFinalFacts(raw)
+	p := &privateFinalCaptureProvider{private: t.TempDir(), ordinal: 267, metadata: &meta, raw: raw}
+	if p.persistFinal() != nil {
+		t.Fatal("first private persistence failed")
+	}
+	first := *p.finalMetadata()
+	if p.persistFinal() == nil || *p.finalMetadata() != first {
+		t.Fatal("repeated persistence changed first immutable metadata")
+	}
+	retained, err := os.ReadFile(filepath.Join(p.private, "final-267.raw"))
+	if err != nil || !bytes.Equal(retained, raw) || !first.RawRetained {
+		t.Fatal("first raw observation was lost or overwritten")
 	}
 }
