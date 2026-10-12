@@ -134,3 +134,12 @@ V2 release pins require the exact `FixedCloudV2Resources` digest. A comparison
 arm must finish within 480 seconds as well as the 120-second attempt limit.
 All recorded child and synthesis costs are aggregated before a wall-time
 rejection. Unknown metadata stays unknown and cannot establish complete cost.
+
+The additive offline V2 window auditor binds the exact independently prepared
+release, hardware, immutable 228-call history and finite window. Every new PG
+ordinal/context/phase/case/role/input hash/output hash/outcome/nullable cost is
+correlated before readiness. A canonical output hash tolerates report formatting
+and key order while preserving strings and array order; it grants no semantic
+authority. Failed or partial collector reports remain NO_GO and retain their
+spend, even when a later quality/comparison checker returns an error. Exports
+are content-free; old V1 verdicts, byte pins and counters are unchanged.

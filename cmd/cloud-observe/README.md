@@ -152,9 +152,9 @@ new calls.
 
 V2 imports require external new signed review artifacts plus trusted
 `-expected-review-key-sha256` and `-expected-review-approval-sha256`, exact source
-commit/tree and actual hardware. The native three-argument review helper keeps
-its new artifact constants empty and denies until independent approval supplies
-them. An explicitly pinned fixture/import helper never writes or signs approval.
+commit/tree and actual hardware. The native three-argument review helper pins
+the two newly published external artifacts from the independent whole-corpus
+review. An explicitly pinned fixture/import helper never writes or signs approval.
 Pure offline success is not native provenance or execution permission. Existing
 artifact output uses O_EXCL. See the
 [prospective design](../../docs/ai/scenario-cloud-prospective-v2-design-20261012.md).
@@ -167,3 +167,19 @@ and a 1,536 MiB client process limit. A changed resource digest or excessive arm
 wall time denies comparison readiness. The cost projection retains all recorded
 calls before a wall-time rejection. These client limits do not observe cloud
 weights, hardware, remote RAM or an incremental subscription invoice.
+
+`v2-window-audit` imports a private collector report of at most 2 MiB offline.
+Supply the external V2 review files and their trusted hashes, `-commit` for the
+observed immutable release, `-expected-source-sha256` from preparation,
+`-expected-history-sha256` for the 16-artifact/228-call baseline, and the actual
+`-hardware` file. The auditor may be built after the observed release; its own
+tree does not replace the prepared source hash.
+
+The safe result contains no questions, documents, model outputs or approval
+material. It correlates ordinal/context/phase/case/role/input hash/canonical
+output hash/outcome/nullable usage and the actual immutable PG expiry. Canonical
+JSON hashing changes only representation, never string contents or semantics.
+All recorded costs precede re-scoring failures or incomplete comparisons. A
+failed collector stays NO_GO; all 228 previous charges and 25 NULL input/output
+pairs remain spent. Historical total cost is incomplete for the first 45 calls.
+O_EXCL output cannot overwrite evidence.

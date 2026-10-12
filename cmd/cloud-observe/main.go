@@ -23,7 +23,7 @@ func main() {
 }
 func run(args []string, stdout io.Writer) error {
 	f := flag.NewFlagSet("cloud-observe", flag.ContinueOnError)
-	mode := f.String("mode", "inputs", "inputs, policy, quality, compare, window-audit; v2-inputs, v2-policy, v2-quality, v2-compare")
+	mode := f.String("mode", "inputs", "inputs, policy, quality, compare, window-audit; v2-inputs, v2-policy, v2-quality, v2-compare, v2-window-audit")
 	root := f.String("root", ".", "frozen source snapshot")
 	split := f.String("split", "", "empty means all three splits")
 	observations := f.String("observations", "", "private recorded observation envelope")
@@ -43,7 +43,7 @@ func run(args []string, stdout io.Writer) error {
 		return fmt.Errorf("unexpected positional arguments")
 	}
 	if strings.HasPrefix(*mode, "v2-") {
-		return runCloudV2(cloudV2CLIOptions{*mode, *root, *split, *observations, *hardware, *commit, *keyPath, *approvalPath, *expectedReviewKey, *expectedReviewApproval, *output}, stdout)
+		return runCloudV2(cloudV2CLIOptions{Mode: *mode, Root: *root, Split: *split, Observations: *observations, Hardware: *hardware, Commit: *commit, Key: *keyPath, Approval: *approvalPath, ExpectedKey: *expectedReviewKey, ExpectedApproval: *expectedReviewApproval, Output: *output, ExpectedSource: *expectedSource, ExpectedHistory: *expectedHistory}, stdout)
 	}
 	file, err := os.Open(filepath.Join(*root, "testdata", "acceptance", "ru-scenarios-v3.json"))
 	if err != nil {

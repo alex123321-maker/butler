@@ -13,7 +13,7 @@ import (
 	"github.com/butler/butler/internal/acceptance"
 )
 
-type cloudV2CLIOptions struct{ Mode, Root, Split, Observations, Hardware, Commit, Key, Approval, ExpectedKey, ExpectedApproval, Output string }
+type cloudV2CLIOptions struct{ Mode, Root, Split, Observations, Hardware, Commit, Key, Approval, ExpectedKey, ExpectedApproval, Output, ExpectedSource, ExpectedHistory string }
 
 func runCloudV2(o cloudV2CLIOptions, stdout io.Writer) error {
 	file, err := os.Open(filepath.Join(o.Root, acceptance.CloudV2CorpusPath))
@@ -37,7 +37,7 @@ func runCloudV2(o cloudV2CLIOptions, stdout io.Writer) error {
 			PolicySHA   string                 `json:"policy_sha256"`
 			CriteriaSHA string                 `json:"criteria_sha256"`
 		}{acceptance.FrozenCloudV2Policy(c), acceptance.CloudV2CorpusDigest(c), acceptance.CloudV2SchemaDigest(), acceptance.CloudV2PolicyDigest(c), acceptance.CloudV2CriteriaDigest(c)}
-	case "v2-quality", "v2-compare":
+	case "v2-quality", "v2-compare", "v2-window-audit":
 		if o.Observations == "" || o.Hardware == "" || o.Commit == "" || o.Key == "" || o.Approval == "" || o.ExpectedKey == "" || o.ExpectedApproval == "" {
 			return errors.New("complete independent prospective release/review pins required")
 		}
@@ -74,6 +74,15 @@ func runCloudV2(o cloudV2CLIOptions, stdout io.Writer) error {
 		hardware, e := acceptance.ReadPrivateFile(o.Hardware, 1<<20)
 		if e != nil || !json.Valid(hardware) {
 			return errors.New("prospective hardware metadata denied")
+		}
+		if o.Mode == "v2-window-audit" {
+			if o.ExpectedSource == "" || o.ExpectedHistory == "" {
+				return errors.New("independent prepared V2 source/history required")
+			}
+			// The auditor may be built after the immutable observed release.
+			// Its own tree is not a substitute for the trusted prepared hash.
+			result, err = acceptance.AuditCloudV2Window(c, approval, key, raw, acceptance.CloudV2WindowExpectation{CodeCommit: o.Commit, SourceSHA256: o.ExpectedSource, HistorySHA256: o.ExpectedHistory, HardwareSHA256: hashCloudV2File(hardware)})
+			break
 		}
 		sourceSHA, e := acceptance.TreeHash(o.Root, nil)
 		if e != nil {
