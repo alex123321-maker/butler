@@ -9,10 +9,10 @@ erasure permission and says nothing about the unknown original write.
 
 This kernel storage component implements the file-copy part of issue #17. It is
 not a model filesystem tool, shell, runtime sandbox or authorization service.
-No production route, Broker handler or container mount is enabled by this delta.
-The resource/ownership adapter below is implemented; production exact Broker
-action/source/evidence composition and delegated runtime remain required before
-product use and issue closure.
+The optional production runtime now supplies exact Broker action/source/evidence
+composition and owner discard. Operator activation remains explicit and disabled
+by default; a storage callback alone grants no runtime/tool route. Full issue
+closure additionally requires the owning API/UI and combined acceptance matrix.
 
 `Allocate(Binding)` generates an opaque random workspace ID in the kernel. The
 kernel acquires `workspace:<ID>` resource permission, then calls `Create` with

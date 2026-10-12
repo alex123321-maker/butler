@@ -57,8 +57,46 @@ authority in scheduling state. Shared terminal-tree validation excludes exclusiv
 child/owner mutations while retaining independent per-copy physical concurrency.
 
 The broader `all` race/vet/build suite on pre-discovery snapshot144617-977 passed
-at proof `workspace-20261012T074830Z-548342`. The final `all` source proof is
-recorded below after current validation.
+at proof `workspace-20261012T074830Z-548342`.
+
+Final committed source `3f34c47bd93587f00feb0b7c5966c953da1ead74`, snapshot
+`20261012-150314-513`, passed445 test/subtest names,226 top-level tests across
+11 packages,0 failures. Race, vet and actual tool-workspace application builds /
+loopback+Unix private-process/bootstrap/cleanup checks passed. Proof:
+`/srv/storage/butler/agents/workspace-owner-discard/reports/workspace-20261012T080318Z-603174`.
+Events SHA256 `51ad0eeb69b45f352a26a64839e9362a60b69c36e874c6fcb9c2cea55c17fba6`.
+
+Eleven explicit opt-in test skips remain in this workspace runner:
+
+| Test | Required separate opt-in |
+| --- | --- |
+| `TestActualPostgresDumpRestoreDeletionIntegration` | Actual external pg_dump/restore procedure |
+| `TestBrokerBrowserSequenceE2E` | Isolated real browser image |
+| `TestNativeDelegationBrokerHarness` | Private native experiment Broker subprocess |
+| `TestDelegationBrokerHarness` | Private delegation process harness |
+| `TestResourceBrokerActualChromiumPageCASIntegration` | Actual Chromium fixture |
+| `TestSingleTabResourceActualChromiumNativeHostIntegration` | Actual Chromium/guarded-host subprocess |
+| `TestWorkspaceRuntimeAppHarness` | Private workspace application helper subprocess |
+| `TestApprovedCredentialBrokerBrowserE2E` | Private authority and actual Chromium |
+| `TestGuardedTabRequestDispatchedIntegration/broker_process` | Compiled private Broker subprocess |
+| `TestMemoryCandidateDispatchedIntegration/broker_process` | Compiled private Broker subprocess |
+| `TestMemoryCandidateDispatchedIntegration/lost_ack` | Compiled private Broker subprocess |
+
+The command-only Broker and workspace packages contain no test files. Private
+helpers' ordinary invocations are skipped; owning parent process tests execute
+the workspace helper through its explicit child marker. Applicable real Chrome /
+Broker candidate/budget composition belongs to root's final combined matrix;
+these skips are not represented as passed hardware/channel acceptance.
+
+The archived tested-source byte pins include `recovery.go`
+`b9f9ce6ebaeefcc320b27e0adb8473e1d24a9a1ec2ecd6c204d2089037744816`,
+`recovery_runtime.go`
+`a52c1917d9dda8320eac90554079d0cdc3f16670825eecdb708a6666579a86a9`,
+`recovery_integration_test.go`
+`d664480196446dbb098f1418b70a70c1a67d5d4b45212a0ca3eab8eb751e88ac`,
+and migration068 up
+`e45b91eebe76f8f4dfe6b81d6b9572c0779c31bdcb5e5d67a6155e5db96ae3ca`.
+All newly reported generation/provider calls are0.
 
 Run only on laba with a unique disposable root:
 `scripts/dev/workspace-lab.sh <isolated-agent-root> recovery`, then `all` for the
