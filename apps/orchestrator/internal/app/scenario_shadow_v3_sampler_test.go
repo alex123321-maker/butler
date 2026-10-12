@@ -2,9 +2,12 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
+	"reflect"
+	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -19,6 +22,7 @@ type shadowV3FixtureProvider struct {
 	entries        int
 	text           string
 	legacyConflict bool
+	batch          bool
 }
 
 func (*shadowV3FixtureProvider) Name() string { return "fixture" }
@@ -122,7 +126,11 @@ func (p *shadowV3FixtureProvider) StartRun(ctx context.Context, req transport.St
 		events[1] = terminal
 	case "tool":
 		event := transport.NewToolCallRequestedEvent(run, p.Name(), transport.ToolCallRequest{ToolName: "forbidden"})
+		if p.batch {
+			event = transport.NewToolCallBatchRequestedEvent(run, p.Name(), transport.ToolCallBatch{ToolCalls: []transport.ToolCallRequest{{ToolName: "forbidden_a"}, {ToolName: "forbidden_b"}}})
+		}
 		event.Usage = usage
+		event.ProviderModelVersion = &version
 		events = []transport.TransportEvent{event}
 	default:
 		panic("unknown fixture")
@@ -146,6 +154,27 @@ func TestScenarioShadowV3SamplerChargedTruthAndNoRetryIntegration(t *testing.T) 
 			provider := &shadowV3FixtureProvider{mode: mode}
 			pin := acceptance.CloudPin{}
 			sampler := &shadowV3Sampler{provider: provider, window: w, pin: &pin, private: t.TempDir()}
+			if mode == "known" {
+				sampler.providerFactory = func(schema json.RawMessage) (transport.ModelProvider, error) {
+					var parsed struct {
+						Properties struct {
+							Refs struct{ Items struct{ Enum []string } }
+						}
+					}
+					if inputs.Cases[0].Kind != "retrieval" || json.Unmarshal(schema, &parsed) != nil {
+						t.Fatal("expected retrieval schema unavailable at trusted factory")
+					}
+					ids := []string{}
+					for id := range inputs.Cases[0].Documents {
+						ids = append(ids, id)
+					}
+					sort.Strings(ids)
+					if !reflect.DeepEqual(ids, parsed.Properties.Refs.Items.Enum) {
+						t.Fatal("factory narrowed original namespace to a golden subset")
+					}
+					return provider, nil
+				}
+			}
 			a, err := sampler.call(context.Background(), "quality", inputs.Cases[0], acceptance.CloudRoleSingle, nil, nil)
 			completed := mode == "known" || mode == "zero_usage"
 			if (err == nil) != completed || provider.entries != 1 || a.AttemptID != "native-249" || pin.ProviderModelVersion != nil {
@@ -189,6 +218,9 @@ func TestScenarioShadowV3SamplerChargedTruthAndNoRetryIntegration(t *testing.T) 
 			if mode == "stage_stream_failure" && (a.TotalTokens == nil || *a.TotalTokens != 7 || a.InputTokens == nil || *a.InputTokens != 4) {
 				t.Fatal("known failed packet cost lost to stage diagnostic")
 			}
+			if mode == "missing_terminal" && (a.TotalTokens == nil || *a.TotalTokens != 7 || a.ProviderModelVersion == nil) {
+				t.Fatal("complete parsed packet metadata lost on lifecycle EOF")
+			}
 			if mode == "wrong_family" && (a.ProviderModelVersion == nil || *a.ProviderModelVersion != "gemini-2.5-pro" || a.TotalTokens == nil || *a.TotalTokens != 7) {
 				t.Fatal("foreign observed identity or charged spend discarded")
 			}
@@ -214,6 +246,14 @@ func TestScenarioShadowV3SamplerChargedTruthAndNoRetryIntegration(t *testing.T) 
 				b, failure := sampler.call(context.Background(), "quality", inputs.Cases[1], acceptance.CloudRoleSingle, nil, nil)
 				if failure == nil || other.entries != 1 || b.Outcome != "transport_error" || b.InputTokens != nil || b.OutputTokens != nil || b.TotalTokens != nil {
 					t.Fatal("legacy/event ambiguity became known complete cost")
+				}
+			}
+			if mode == "tool" {
+				other := &shadowV3FixtureProvider{mode: mode, batch: true}
+				sampler.provider = other
+				b, failure := sampler.call(context.Background(), "quality", inputs.Cases[1], acceptance.CloudRoleSingle, nil, nil)
+				if failure == nil || other.entries != 1 || b.Outcome != "invalid_tool_proposal" || !b.UnsafeToolProposal || string(b.Output) != "null" || b.TotalTokens == nil || *b.TotalTokens != 7 || b.ProviderModelVersion == nil {
+					t.Fatal("unsupported batch discarded complete spend or became an action/result")
 				}
 			}
 		})

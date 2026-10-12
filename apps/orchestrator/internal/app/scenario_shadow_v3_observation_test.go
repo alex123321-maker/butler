@@ -28,7 +28,7 @@ import (
 
 // Candidate bytes for offline checks only. Native preparation additionally
 // requires separately frozen external V3 golden identities and reviewer approval.
-const shadowV3RawCorpusSHA = ""
+const shadowV3RawCorpusSHA = "83bb6413b70edc75fe622a97845048780a1384686ebdd7195675344b666ea9ce"
 
 func readShadowV3CorpusBytes(path string) ([]byte, error) {
 	const limit = 512 * 1024
@@ -122,7 +122,7 @@ type shadowV3Sampler struct {
 }
 
 // Import once into the private control plane. Every observation constructs an
-// independent run owner with the reviewed kind-generic schema; no model output
+// independent run owner with the exact all-original-ID case schema; no model output
 // can choose credentials, model, schema, effort or generated-token allowance.
 func newShadowV3NativeFactory(ctx context.Context, pool *pgxpool.Pool, importPath, keyPath string) (func(json.RawMessage) (transport.ModelProvider, error), error) {
 	key, err := privateNativeFixtureKey(keyPath)
