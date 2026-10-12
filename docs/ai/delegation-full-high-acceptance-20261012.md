@@ -23,6 +23,10 @@ permissions are unchanged, and recovery reconstructs the instruction after fresh
 Catalog access. The parent owner input explicitly requires the one-field receipt
 JSON and actual `result.task_id` values. This is a new declared input contract;
 the old checker/reports/corpus are not relaxed or reformatted.
+Actual Broker/core tests also reproduced stale pre-tool terminal candidates and
+partial answer-state reuse. Core now invalidates a pre-tool answer and classifies
+each fresh final by its own finish reason; an absent continuation final cannot
+commit the old answer. This proven defect is distinct from the unknown old27 cause.
 
 The new receipt classifier exports fixed reasons, sizes/hashes and validation
 flags only. Parent final lookup, answer state, verdict and privacy are separate
@@ -73,12 +77,18 @@ The independent verifier reads current immutable finals/Catalog originals, the
 known typed contract, actual structured reports/action journal and conservative
 reservation rows through the ordinary report guard. Only then does real
 `SaveVerifiedResult` persist authenticated owner verification. Real HTTP owner
-decision routes accept A and reject B. Promotion must keep original result/report
+decision routes in width1 accept A and reject B. Promotion must keep original result/report
 references; both raw model finals stay unverified/source_only and tasks stay
 active. Model agreement cannot supply this proof or complete the parent.
-Post-final owner amendment, original deletion and tree stop are real owning
-mutations with no inference. Source/current-authority rechecks must deny obsolete
-work while confirmed Broker effects remain journal evidence.
+Width2 retains its independently checked children in result_ready so current
+collection/source authority can pass before amendment and fail after it. Decided
+children correctly lack execution authority and are never a positive baseline.
+Deletion separately proves actual owner access to the historical originals before
+mutation, refusal afterward and preservation of the unrelated original. Parent
+scheduling passes before stop and fails after it; confirmed Broker effects remain
+journal evidence. These are no-inference current-authority/privacy controls,
+complemented by real-PG active-descendant stop/race tests, not a claim of injecting
+a late callback into a live native stream. No production lifecycle guard is widened.
 
 ## Issue16 scope and pending evidence
 

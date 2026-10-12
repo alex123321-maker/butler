@@ -9,13 +9,16 @@ import (
 	"testing"
 	"time"
 
+	approvals "github.com/butler/butler/apps/orchestrator/internal/approval"
 	"github.com/butler/butler/apps/orchestrator/internal/completion"
 	durableinput "github.com/butler/butler/apps/orchestrator/internal/input"
 	runservice "github.com/butler/butler/apps/orchestrator/internal/run"
 	"github.com/butler/butler/apps/orchestrator/internal/session"
+	"github.com/butler/butler/apps/orchestrator/internal/task"
 	"github.com/butler/butler/internal/delegation"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	"github.com/butler/butler/internal/ingress"
+	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/transport"
 	"github.com/jackc/pgx/v5"
 )
@@ -51,6 +54,16 @@ func (p *fullHighPreflightProvider) StartRun(ctx context.Context, request transp
 }
 
 func TestFullHighDelegationIndependentDecisionsWithoutInferenceIntegration(t *testing.T) {
+	for _, controls := range []bool{false, true} {
+		name := "independent_owner_decisions"
+		if controls {
+			name = "positive_and_negative_control_baselines"
+		}
+		t.Run(name, func(t *testing.T) { fullHighDecisionPreflight(t, controls) })
+	}
+}
+
+func fullHighDecisionPreflight(t *testing.T, controls bool) {
 	if os.Getenv("BUTLER_DELEGATION_BROKER_BINARY") == "" {
 		t.Skip("actual private Broker binary required")
 	}
@@ -100,7 +113,7 @@ func TestFullHighDelegationIndependentDecisionsWithoutInferenceIntegration(t *te
 		t.Fatal("actual preflight worker failed to stop")
 	}
 	stopped = true
-	v := nativeWidthEvidence{Width: 2, TaskID: parent.TaskID, InputID: receipt.InputID, FullAcceptance: &fullHighWidthAcceptance{ResolutionPolicy: "owner_selected_source_a_for_fixture"}}
+	v := nativeWidthEvidence{Width: 2, TaskID: parent.TaskID, InputID: receipt.InputID, SourceRefs: []delegation.SourceRef{f.args[0].Sources[0], f.args[1].Sources[0]}, FullAcceptance: &fullHighWidthAcceptance{ResolutionPolicy: "owner_selected_source_a_for_fixture"}}
 	if f.pool.QueryRow(ctx, `SELECT run_id FROM accepted_inputs WHERE input_id=$1 AND status='completed'`, receipt.InputID).Scan(&v.ParentRunID) != nil {
 		t.Fatal("preflight parent final unavailable")
 	}
@@ -129,7 +142,52 @@ func TestFullHighDelegationIndependentDecisionsWithoutInferenceIntegration(t *te
 	if err != nil || len(v.ChildTaskIDs) != 2 {
 		t.Fatal("actual preflight child collection incomplete")
 	}
-	verifyFullHighOwnerDecisions(t, f, admission, v, v.FullAcceptance)
+	if controls {
+		verifyFullHighIndependentResults(t, f, admission, v, v.FullAcceptance, false)
+		checkFullHighCurrentRevisionBaseline(t, f, admission, v)
+		leases := session.NewPostgresLeaseManager(f.pool)
+		controller := task.NewController(f.tasks, leases.Authority(), leases, runservice.NewPostgresRepository(f.pool), approvals.NewPostgresRepository(f.pool), f.inputs, transcript.NewStore(f.pool))
+		if _, err = controller.Apply(nativeOwner(ctx, "preflight-amend", parent.SessionKey), task.ControlRequest{TaskID: parent.TaskID, ExpectedRevision: parent.Revision, Kind: task.ControlAmend, Instruction: "Preserve independent observations; obsolete reports are not new verification."}); err != nil {
+			t.Fatal("actual preflight amendment failed")
+		}
+		if _, err = admission.Manager.CollectGenerated(ctx, parent.TaskID, v.ChildTaskIDs[0], v.ChildResultIDs[0]); err == nil {
+			t.Fatal("obsolete collection survived actual amendment")
+		}
+		checkFullHighOriginalsBeforeDeletion(t, f)
+		if _, err = f.sources.Delete(nativeOwner(ctx, "preflight-delete", ""), f.args[0].Sources[0].ID, "delete", f.args[0].Sources[0].Revision); err != nil {
+			t.Fatal("actual preflight deletion failed")
+		}
+		checkFullHighOriginalDeletion(t, f)
+		current, err := f.tasks.Get(ctx, parent.TaskID)
+		if err != nil {
+			t.Fatal("current preflight parent unavailable")
+		}
+		// A separate current-root scheduling baseline is covered below on the
+		// already-decided branch, because amendment invalidates these contracts.
+		if _, err = controller.Apply(nativeOwner(ctx, "preflight-stop", current.SessionKey), task.ControlRequest{TaskID: current.TaskID, ExpectedRevision: current.Revision, Kind: task.ControlStop}); err != nil {
+			t.Fatal("actual preflight stop failed")
+		}
+		if _, err = admission.Manager.Advance(nativeOwner(ctx, "preflight-stopped-advance", ""), parent.TaskID); err == nil {
+			t.Fatal("stopped preflight parent continued")
+		}
+	} else {
+		verifyFullHighOwnerDecisions(t, f, admission, v, v.FullAcceptance)
+		if _, err = admission.Manager.Advance(nativeOwner(ctx, "preflight-current-advance", ""), parent.TaskID); err != nil {
+			t.Fatal("current decided parent scheduling denied")
+		}
+		leases := session.NewPostgresLeaseManager(f.pool)
+		controller := task.NewController(f.tasks, leases.Authority(), leases, runservice.NewPostgresRepository(f.pool), approvals.NewPostgresRepository(f.pool), f.inputs, transcript.NewStore(f.pool))
+		if _, err = controller.Apply(nativeOwner(ctx, "preflight-decided-stop", parent.SessionKey), task.ControlRequest{TaskID: parent.TaskID, ExpectedRevision: parent.Revision, Kind: task.ControlStop}); err != nil {
+			t.Fatal("actual decided parent stop failed")
+		}
+		if _, err = admission.Manager.Advance(nativeOwner(ctx, "preflight-decided-stopped-advance", ""), parent.TaskID); err == nil {
+			t.Fatal("decided stopped preflight parent continued")
+		}
+	}
+	var confirmed int
+	if f.pool.QueryRow(ctx, `SELECT count(*) FROM action_effects WHERE task_id=$1 AND state='effect_confirmed'`, parent.TaskID).Scan(&confirmed) != nil || confirmed != 2 {
+		t.Fatal("preflight controls lost actual Broker effects")
+	}
 	var spent int
 	if f.pool.QueryRow(ctx, `SELECT attempts FROM fixture_native_limit`).Scan(&spent) != nil || spent != 27 || provider.parentStarts.Load() != 1 || provider.continuations.Load() != 2 || provider.childEntries.Load() != 2 {
 		t.Fatal("zero-inference preflight bypassed owning flow or charged native calls")

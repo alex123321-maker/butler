@@ -105,10 +105,11 @@ docker run --rm --user "$(id -u):$(id -g)" --network "$network" --memory 1536m -
 go test -race -c -o /binaries/broker.test ./apps/tool-broker/internal/broker
 chmod 555 /binaries/orchestrator.test /binaries/broker.test
 export BUTLER_DELEGATION_BROKER_BINARY=/binaries/broker.test
-go test -json -race -run "^Test(FullHighDelegation(History|LimitIntegration|RevalidationIntegration|CompositionIntegration|IndependentDecisionsWithoutInferenceIntegration)|NativeReceiptProjection|DelegationNumeric|NativeDelegation(PrivateRuntimeFiles|EncryptedFixtureImportWithoutInferenceIntegration|BrokerPreflightWithoutInferenceIntegration))" -count=1 -timeout=90s ./apps/orchestrator/internal/app
+go test -json -race -run "^Test(FullHighDelegation(History|LimitIntegration|RevalidationIntegration|CompositionIntegration|IndependentDecisionsWithoutInferenceIntegration)|NativeReceiptProjection|Delegation(Numeric|ReceiptPath)|NativeDelegation(PrivateRuntimeFiles|EncryptedFixtureImportWithoutInferenceIntegration|BrokerPreflightWithoutInferenceIntegration))" -count=1 -timeout=90s ./apps/orchestrator/internal/app
 go test -json -race -count=1 -timeout=90s ./internal/delegation
 go test -json -race -count=1 -timeout=90s -run "^TestDelegation" ./apps/orchestrator/internal/task ./apps/orchestrator/internal/api
-go test -json -race -count=1 -timeout=90s -run "^TestDelegationNumeric" ./apps/orchestrator/internal/orchestrator' > "$proof/tests.jsonl"
+go test -json -race -count=1 -timeout=90s -run "^Test(DelegationNumeric|ExecuteFinalBelongsToLastModelTurn|RecoveryDelegationReceiptsKeepExactIDsAsData)" ./apps/orchestrator/internal/orchestrator
+go test -json -race -count=1 -timeout=90s -run "^TestFlashHigh(SequentialAdmissionReceiptsKeepExactEnvelopeAndFinal|CloudCodeToolContinuation)" ./internal/transport/antigravity' > "$proof/tests.jsonl"
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
 if grep -q '"Action":"skip"' "$proof/tests.jsonl"; then
   printf '{"status":"preparation_failed","reason":"unexpected_skipped_check","new_native_attempts":0}\n'

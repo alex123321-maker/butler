@@ -78,7 +78,14 @@ func checkFullHighParentReceipts(t *testing.T, f *nativeScenarioFixture, parent,
 // A is selected by the fixture's predeclared owner policy; B remains a correct
 // source-relative observation, not a disproved universal fact.
 func verifyFullHighOwnerDecisions(t *testing.T, f *nativeScenarioFixture, admission *DelegationAdmission, width nativeWidthEvidence, evidence *fullHighWidthAcceptance) {
+	verifyFullHighIndependentResults(t, f, admission, width, evidence, true)
+}
+
+func verifyFullHighIndependentResults(t *testing.T, f *nativeScenarioFixture, admission *DelegationAdmission, width nativeWidthEvidence, evidence *fullHighWidthAcceptance, decide bool) {
 	t.Helper()
+	if len(width.SourceRefs) != 2 || len(width.ChildTaskIDs) != 2 || len(width.ChildRunIDs) != 2 || len(width.ChildResultIDs) != 2 || len(width.ReportSourceRefs) != 2 {
+		t.Fatal("complete independent child evidence required")
+	}
 	owner := nativeOwner(f.ctx, "independent-native-verification", "")
 	parent, err := f.tasks.Get(f.ctx, width.TaskID)
 	if err != nil {
@@ -142,6 +149,9 @@ func verifyFullHighOwnerDecisions(t *testing.T, f *nativeScenarioFixture, admiss
 			t.Fatal("independent original numeric verification failed")
 		}
 		evidenceRefs := []string{DelegationSourceEvidence(ref)}
+		if !decide {
+			continue
+		}
 		for _, r := range actual.report.Evidence {
 			evidenceRefs = append(evidenceRefs, DelegationRecordEvidence(r))
 		}
@@ -149,7 +159,7 @@ func verifyFullHighOwnerDecisions(t *testing.T, f *nativeScenarioFixture, admiss
 		if err != nil {
 			t.Fatal("independent owner result persistence failed")
 		}
-		chooseA := ref == f.args[0].Sources[0]
+		chooseA := ref == width.SourceRefs[0]
 		payload := map[string]any{"kind": "reject", "report_source": *record.Report, "evidence_refs": []delegation.SourceRef{ref}}
 		if chooseA {
 			payload["kind"], payload["verified_result_id"] = "accept_verified", verified.ResultID
@@ -195,14 +205,48 @@ func verifyFullHighOwnerDecisions(t *testing.T, f *nativeScenarioFixture, admiss
 			t.Fatal("source-relative decision completed child task")
 		}
 	}
-	if accepted != 1 || rejected != 1 || f.corpus.Sources[0].ExpectedDate != f.corpus.Sources[1].ExpectedDate || f.corpus.Sources[0].ExpectedValue == f.corpus.Sources[1].ExpectedValue {
+	if decide && (accepted != 1 || rejected != 1) || f.corpus.Sources[0].ExpectedDate != f.corpus.Sources[1].ExpectedDate || f.corpus.Sources[0].ExpectedValue == f.corpus.Sources[1].ExpectedValue {
 		t.Fatal("bounded conflicting-original selection incomplete")
 	}
 	evidence.StructuredOwningReportsChecked = true
 	evidence.IndependentOriginalChecks = true
 	evidence.ConflictingOriginalsRetained = true
-	evidence.PreviousResultAndReportKept = true
-	evidence.OwnerAPIAuthenticated = true
+	evidence.PreviousResultAndReportKept = decide
+	evidence.OwnerAPIAuthenticated = decide
 	evidence.ChildFinalsStayUnverified = true
 	evidence.ChildTasksStayActive = true
+}
+
+func checkFullHighCurrentRevisionBaseline(t *testing.T, f *nativeScenarioFixture, admission *DelegationAdmission, width nativeWidthEvidence) {
+	t.Helper()
+	for i, child := range width.ChildTaskIDs {
+		if _, err := admission.Manager.CollectGenerated(f.ctx, width.TaskID, child, width.ChildResultIDs[i]); err != nil {
+			t.Fatal("current result_ready report denied before parent amendment")
+		}
+		if checkRecordedInitiativeSources(f.ctx, f.pool, f.sources, width.ChildRunIDs[i]) != nil {
+			t.Fatal("current result_ready source release denied before parent amendment")
+		}
+	}
+}
+
+func checkFullHighOriginalsBeforeDeletion(t *testing.T, f *nativeScenarioFixture) {
+	t.Helper()
+	for _, args := range f.args {
+		source, err := f.sources.Get(nativeOwner(f.ctx, "historical-original-before-delete", ""), args.Sources[0].ID)
+		if err != nil || guardSource(source) != args.Sources[0] {
+			t.Fatal("current historical original owner access denied before deletion")
+		}
+	}
+}
+
+func checkFullHighOriginalDeletion(t *testing.T, f *nativeScenarioFixture) {
+	t.Helper()
+	owner := nativeOwner(f.ctx, "historical-original-after-delete", "")
+	if _, err := f.sources.Get(owner, f.args[0].Sources[0].ID); err == nil {
+		t.Fatal("deleted original retained historical owner access")
+	}
+	unrelated, err := f.sources.Get(owner, f.args[1].Sources[0].ID)
+	if err != nil || guardSource(unrelated) != f.args[1].Sources[0] {
+		t.Fatal("unrelated current original lost owner access")
+	}
 }

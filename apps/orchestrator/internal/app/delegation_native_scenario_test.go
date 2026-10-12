@@ -63,24 +63,26 @@ type nativeWidthEvidence struct {
 	FullAcceptance              *fullHighWidthAcceptance `json:"full_acceptance,omitempty"`
 }
 type nativeScenarioEvidence struct {
-	Status            string                   `json:"status"`
-	Model             string                   `json:"model,omitempty"`
-	ReleaseRef        string                   `json:"release_ref"`
-	NativeAttempts    int                      `json:"native_attempts"`
-	NewNativeAttempts int                      `json:"new_native_attempts"`
-	MaxAttempts       int                      `json:"max_attempts"`
-	MaxNewAttempts    int                      `json:"max_new_attempts"`
-	Historical        nativeHistoricalEvidence `json:"historical"`
-	Widths            []nativeWidthEvidence    `json:"widths"`
-	OwnerStopDenies   bool                     `json:"owner_stop_denies"`
-	RevisionDenies    bool                     `json:"revision_denies"`
-	DeletionDenies    bool                     `json:"deletion_denies"`
-	CostBasis         string                   `json:"cost_basis"`
-	SharedDayReserved budget.Units             `json:"shared_day_reserved"`
-	Attempts          []nativeAttemptEvidence  `json:"new_attempts"`
-	Usage             []nativeUsageEvidence    `json:"new_usage"`
-	OwnedState        *nativeOwnedAudit        `json:"owned_state,omitempty"`
-	Limitations       []string                 `json:"limitations"`
+	Status                        string                   `json:"status"`
+	Model                         string                   `json:"model,omitempty"`
+	ReleaseRef                    string                   `json:"release_ref"`
+	NativeAttempts                int                      `json:"native_attempts"`
+	NewNativeAttempts             int                      `json:"new_native_attempts"`
+	MaxAttempts                   int                      `json:"max_attempts"`
+	MaxNewAttempts                int                      `json:"max_new_attempts"`
+	Historical                    nativeHistoricalEvidence `json:"historical"`
+	Widths                        []nativeWidthEvidence    `json:"widths"`
+	OwnerStopDenies               bool                     `json:"owner_stop_denies"`
+	RevisionDenies                bool                     `json:"revision_denies"`
+	DeletionDenies                bool                     `json:"deletion_denies"`
+	CostBasis                     string                   `json:"cost_basis"`
+	SharedDayReserved             budget.Units             `json:"shared_day_reserved"`
+	Attempts                      []nativeAttemptEvidence  `json:"new_attempts"`
+	Usage                         []nativeUsageEvidence    `json:"new_usage"`
+	OwnedState                    *nativeOwnedAudit        `json:"owned_state,omitempty"`
+	Limitations                   []string                 `json:"limitations"`
+	ControlScopes                 []string                 `json:"control_scopes,omitempty"`
+	ConfirmedEffectsAfterControls *int                     `json:"confirmed_effects_after_controls,omitempty"`
 }
 type nativeAttemptEvidence struct {
 	Attempt   int       `json:"attempt"`
@@ -444,6 +446,9 @@ func runNativeDelegationActualScenario(t *testing.T) {
 	if err != nil {
 		t.Fatal("second parent metadata unavailable")
 	}
+	if fullHighDelegationWindow() {
+		checkFullHighCurrentRevisionBaseline(t, f, admission, second)
+	}
 	if _, err = controls.Apply(nativeOwner(ctx, "actual-owner-revision", parent.SessionKey), task.ControlRequest{TaskID: parent.TaskID, ExpectedRevision: parent.Revision, Kind: task.ControlAmend, Instruction: "Сохранить раздельные наблюдения; уточнение не принимает старый результат."}); err != nil {
 		t.Fatal("actual owner amendment denied")
 	}
@@ -453,34 +458,60 @@ func runNativeDelegationActualScenario(t *testing.T) {
 	report.RevisionDenies = true
 	var deletedChildRun, retainedChildRun string
 	for i, target := range []*string{&deletedChildRun, &retainedChildRun} {
+		if fullHighDelegationWindow() {
+			*target = first.ChildRunIDs[i]
+			continue
+		}
 		if f.pool.QueryRow(ctx, `SELECT r.run_id FROM runs r JOIN tasks t ON t.task_id=r.task_id JOIN memory_run_sources s USING(run_id) WHERE t.parent_task_id=$1 AND s.source_id=$2 LIMIT 1`, first.TaskID, f.args[i].Sources[0].ID).Scan(target) != nil || checkRecordedInitiativeSources(ctx, f.pool, f.sources, *target) != nil {
 			t.Fatal("current exact historical source release denied before mutation")
 		}
 	}
+	if fullHighDelegationWindow() {
+		checkFullHighOriginalsBeforeDeletion(t, f)
+	}
 	if _, err = f.sources.Delete(nativeOwner(ctx, "actual-owner-delete", ""), f.args[0].Sources[0].ID, "delete", f.args[0].Sources[0].Revision); err != nil {
 		t.Fatal("actual owner deletion denied")
 	}
-	if err = checkRecordedInitiativeSources(ctx, f.pool, f.sources, deletedChildRun); err == nil {
+	if fullHighDelegationWindow() {
+		checkFullHighOriginalDeletion(t, f)
+	} else if err = checkRecordedInitiativeSources(ctx, f.pool, f.sources, deletedChildRun); err == nil {
 		t.Fatal("deleted original retained historical run access")
 	}
 	report.DeletionDenies = true
-	if checkRecordedInitiativeSources(ctx, f.pool, f.sources, retainedChildRun) != nil {
+	if !fullHighDelegationWindow() && checkRecordedInitiativeSources(ctx, f.pool, f.sources, retainedChildRun) != nil {
 		t.Fatal("unrelated selected source lost current release before stop")
 	}
 	parent, err = f.tasks.Get(ctx, first.TaskID)
 	if err != nil {
 		t.Fatal("parent metadata unavailable")
 	}
+	if fullHighDelegationWindow() {
+		if _, err = admission.Manager.Advance(nativeOwner(ctx, "stop-positive-baseline", ""), parent.TaskID); err != nil {
+			t.Fatal("current parent scheduling denied before stop")
+		}
+	}
 	if _, err = controls.Apply(nativeOwner(ctx, "actual-owner-stop", parent.SessionKey), task.ControlRequest{TaskID: parent.TaskID, ExpectedRevision: parent.Revision, Kind: task.ControlStop}); err != nil {
 		t.Fatal("actual owner stop denied")
 	}
-	if checkRecordedInitiativeSources(ctx, f.pool, f.sources, retainedChildRun) == nil {
+	if !fullHighDelegationWindow() && checkRecordedInitiativeSources(ctx, f.pool, f.sources, retainedChildRun) == nil {
 		t.Fatal("stopped branch retained current source release")
 	}
-	if _, err = admission.Manager.Advance(ctx, parent.TaskID); err == nil {
+	advanceCtx := ctx
+	if fullHighDelegationWindow() {
+		advanceCtx = nativeOwner(ctx, "stop-negative-baseline", "")
+	}
+	if _, err = admission.Manager.Advance(advanceCtx, parent.TaskID); err == nil {
 		t.Fatal("stopped parent continued child lifecycle")
 	}
 	report.OwnerStopDenies = true
+	if fullHighDelegationWindow() {
+		report.ControlScopes = []string{"revision:current_result_ready_collect_before_and_after_amend", "deletion:historical_original_owner_access_before_and_after", "stop:current_parent_scheduling_before_and_after"}
+		var confirmed int
+		if f.pool.QueryRow(ctx, `SELECT count(*) FROM action_effects WHERE task_id IN ($1,$2) AND state='effect_confirmed'`, first.TaskID, second.TaskID).Scan(&confirmed) != nil || confirmed != 4 {
+			t.Fatal("owner controls discarded confirmed delegation effects")
+		}
+		report.ConfirmedEffectsAfterControls = &confirmed
+	}
 	var attempts int
 	var dayRaw []byte
 	if f.pool.QueryRow(ctx, `SELECT used_json FROM execution_budget_scopes WHERE kind='owner_day' AND owner_id=$1`, nativeFixtureOwner).Scan(&dayRaw) != nil || json.Unmarshal(dayRaw, &report.SharedDayReserved) != nil {
@@ -681,8 +712,13 @@ func (f *nativeScenarioFixture) runWidth(t *testing.T, width int, admission *Del
 	v.ParentTaskStillActive = true
 	v.IndependentObservationsKept = true
 	if fullHighDelegationWindow() {
-		verifyFullHighOwnerDecisions(t, f, admission, v, v.FullAcceptance)
-		v.FullAcceptance.Stage = "independent_decisions_checked"
+		if width == 1 {
+			verifyFullHighOwnerDecisions(t, f, admission, v, v.FullAcceptance)
+			v.FullAcceptance.Stage = "independent_decisions_checked"
+		} else {
+			verifyFullHighIndependentResults(t, f, admission, v, v.FullAcceptance, false)
+			v.FullAcceptance.Stage = "independently_checked_result_ready_for_controls"
+		}
 	}
 	v.ElapsedMillis = time.Since(started).Milliseconds()
 	return v
