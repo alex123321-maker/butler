@@ -554,6 +554,15 @@ release. Operator opt-in composes these adapters with private Broker admission.
 Maintenance combines independent branch errors without suppressing unrelated
 initiative review; it never admits a new model proposal by itself.
 
+Known `delegation_numeric_observation_v1` context contracts now select a fixed
+kernel JSON format from the exact current contract and selected witness under
+the child's own Catalog/lease proof. The six-field schema and quoted witness pin
+are instructions; body/title/candidate text remain private DATA. Unselected,
+changed or deleted witnesses and malformed numeric markers deny provider entry.
+Recovery rebuilds formatting from current proof rather than a saved instruction;
+it preserves tool/effect observations and grants no permission or acceptance.
+See [the numeric context proof](../../docs/ai/delegation-numeric-context-acceptance.md).
+
 Optional `/api/v4/converters` and `/converters` relay only owner-proof metadata
 inspection and exact-version revocation to the fixed operator/environment private
 Broker endpoint. Provider release/recovery and atomic completion compose current

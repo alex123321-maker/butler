@@ -136,6 +136,18 @@ malformed JSON object contracts deny acceptance rather than acquire an ambiguous
 meaning.
 There is no automatic decision or broader contradiction solver for arbitrary
 research reports.
+The owning delegated-context reader recognizes this marker only from the current
+exact contract-source body returned by Catalog under the child's live lease. Its
+witness must be an exact selected root, not an inherited ancestor or a reference
+chosen by a checkpoint. It supplies a typed ephemeral witness pin to core.
+Core matches that pin to both the known contract and current selected DATA, then
+adds fixed kernel instructions for the six-field JSON output, signed int64 value,
+valid date and `source_only` uncertainty. The instruction contains only the exact
+witness reference, never its value, body, title or candidate instructions. It
+grants no tool, verification, completion or owner authority. Narrative contracts
+retain their generic handoff; malformed numeric markers deny provider preparation.
+Checkpoint recovery discards the saved numeric-format instruction and derives it
+again from fresh Catalog/lease proof, preserving separate journal/tool evidence.
 See [the actual numeric acceptance checks](../ai/delegation-numeric-acceptance.md)
 for the PG conflict scenario and its source-relative limits.
 
