@@ -4,9 +4,18 @@ set -euo pipefail
 root=${1:?isolated agent root required}
 mode=${2:-baseline}
 commit=${3:?exact source commit required}
-[[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ && "$mode" =~ ^(baseline|chain)$ && "$commit" =~ ^[a-f0-9]{40}$ ]] || exit 2
+[[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ && "$mode" =~ ^(baseline|chain|high)$ && "$commit" =~ ^[a-f0-9]{40}$ ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/go.mod" ]] || exit 2
+high=false
+if [[ "$mode" == high ]]; then
+  [[ "$root" == /srv/storage/butler/agents/scenario-release-chain-high-20261012 && "${BUTLER_SCENARIO_CHAIN_HIGH_SEALED_ENTRY:-}" == 1 ]] || exit 2
+  high=true
+  window=/srv/storage/butler/native-acceptance-windows/issue33-high-release-chain-20261012-baseline480
+  [[ -d "$window" && ! -L "$window" && ! -e "$window/native-started" && "$(cat "$window/release-ref")" == "$commit" && "$(cat "$window/source-ref")" == "$source_dir" ]] || exit 2
+  prepared=$(cat "$root/prepared-proof")
+  [[ "$prepared" == "$root/reports/chain-high-prepare-"* && "$(cat "$root/prepared-release")" == "$commit" ]]
+fi
 run_id="$(date -u +%Y%m%dT%H%M%SZ)-$$"
 proof="$root/reports/release-chain-process-$run_id"
 prefix="butler-release-chain-process-$run_id"
@@ -21,7 +30,9 @@ created_network=false
 created_pg=false
 created_runtime=false
 created_socket=false
+created_native=false
 cleanup() {
+  $created_native && docker rm -f "$prefix-native" >/dev/null 2>&1 || true
   $created_runtime && docker logs --tail 80 "$runtime" > "$proof/private/runtime.log" 2>&1 || true
   $created_runtime && docker rm -f "$runtime" >/dev/null 2>&1 || true
   $created_pg && docker logs --tail 80 "$pg" > "$proof/private/postgres.log" 2>&1 || true
@@ -41,13 +52,19 @@ runtime_image=$(docker image inspect alpine:3.21 --format '{{.Id}}')
 lscpu --json > "$proof/hardware-cpu.json"
 cpu_hash=$(sha256sum "$proof/hardware-cpu.json" | cut -d' ' -f1)
 ram_kib=$(awk '/^MemTotal:/ {print $2}' /proc/meminfo)
-printf '{"go_image":"%s","postgres_image":"%s","runtime_base_image":"%s","go":"1.27.2","kernel":"%s","logical_cpus":%s,"host_ram_kib":%s,"cpu_manifest_sha256":"%s","build_memory_bytes":2147483648,"fixture_memory_bytes":1610612736,"converter_memory_bytes":134217728,"build_cpus":2,"fixture_cpus":2,"postgres_cpus":1,"converter_cpus":1,"provider":"deterministic_scripted","actual_native_calls":0,"channel":"loopback_http_simulator","weights":"not_used"}\n' \
-  "$go_image" "$pg_image" "$runtime_image" "$(uname -r)" "$(getconf _NPROCESSORS_ONLN)" "$ram_kib" "$cpu_hash" > "$proof/hardware.json"
+planning=deterministic_scripted; native_count=0
+if $high; then planning=actual_native_High; native_count=null; fi
+printf '{"go_image":"%s","postgres_image":"%s","runtime_base_image":"%s","go":"1.27.2","kernel":"%s","logical_cpus":%s,"host_ram_kib":%s,"cpu_manifest_sha256":"%s","build_memory_bytes":2147483648,"fixture_memory_bytes":1610612736,"converter_memory_bytes":134217728,"build_cpus":2,"fixture_cpus":2,"postgres_cpus":1,"converter_cpus":1,"provider":"%s","actual_native_calls":%s,"channel":"loopback_http_simulator","weights":"not_observed"}\n' \
+  "$go_image" "$pg_image" "$runtime_image" "$(uname -r)" "$(getconf _NPROCESSORS_ONLN)" "$ram_kib" "$cpu_hash" "$planning" "$native_count" > "$proof/hardware.json"
 build=(docker run --rm --runtime runc --user "$(id -u):$(id -g)" --network none
   --memory 2g --pids-limit 192 --cpus 2 --security-opt no-new-privileges:true
   --volume "$source_dir:/src:ro" --volume "$proof:/proof" --volume /srv/storage/butler/.cache:/cache --workdir /src
   --env GOPROXY=off --env GOSUMDB=off --env GOMAXPROCS=2 --env GOFLAGS=-p=2
   --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp)
+if $high; then
+  sha256sum -c "$root/prepared-runtime.sha256" >/dev/null
+  cp "$prepared/bin/"* "$proof/bin/"
+else
 "${build[@]}" golang:1.27.2-bookworm bash -c '
   set -euo pipefail
   go test -c -race -o /proof/bin/app.test ./apps/orchestrator/internal/app
@@ -57,6 +74,7 @@ build=(docker run --rm --runtime runc --user "$(id -u):$(id -g)" --network none
   go build -trimpath -o /proof/bin/test2json cmd/test2json
   go vet ./apps/orchestrator/internal/app
 ' > "$proof/build-vet.log" 2>&1
+fi
 sha256sum "$proof/bin/"* > "$proof/binaries.sha256"
 converter_hash=$(sha256sum "$proof/bin/tool-converter" | cut -d' ' -f1)
 profile='{"dependency":{"id":"butler-converter-ir","version":"1.0.0","sha256":"'"$converter_hash"'"},"checker":"butler.delimited-json.checks.v1"}'
@@ -112,8 +130,21 @@ docker exec "$runtime" sh -ec '
 ' > "$proof/runtime-isolation.txt"
 filter='^TestScenarioReleaseChain(OneVerifiedNotice|GenericProviderCurrentOwnership|ProviderStartFailureRetainsAdmission)ContainerE2E$'
 if [[ "$mode" == baseline ]]; then filter='^TestScenarioReleaseChainOneVerifiedNoticeContainerE2E/baseline$'; fi
+native_args=()
+if $high; then
+  filter='^TestScenarioReleaseChainActualHighE2E$'
+  mkdir -p "$proof/private/native"; chmod 700 "$proof/private/native"
+  docker run --rm --network none --volume "$proof/private/native:/private" alpine:3.21 sh -eu -c 'chown 10001:10001 /private; chmod 700 /private'
+  import_file=/srv/storage/butler/agents/antigravity-provider/profile/.gemini/antigravity-cli/butler-native-import.json
+  native_args=(--volume "$proof/private/native:/private" --volume "$import_file:/home/butler/.gemini/antigravity-cli/butler-native-import.json:ro"
+    --env BUTLER_SCENARIO_CHAIN_HIGH_ACCEPTANCE=1 --env BUTLER_SCENARIO_CHAIN_HIGH_PRIVATE=/private --env BUTLER_SCENARIO_CHAIN_HIGH_IMPORT_FILE=/home/butler/.gemini/antigravity-cli/butler-native-import.json
+    --env HTTPS_PROXY=http://antigravity-proxy:18080 --env HTTP_PROXY=http://antigravity-proxy:18080 --env NO_PROXY=localhost,127.0.0.1,scenario-postgres)
+fi
+run_verb=run
+run_name=(--rm)
+if $high; then run_verb=create; run_name=(--name "$prefix-native"); fi
 set +e
-docker run --rm --runtime runc --user 10001:10001 --network "$network" --read-only \
+docker "$run_verb" --runtime runc "${run_name[@]}" --user 10001:10001 --network "$network" --read-only \
   --memory 1536m --pids-limit 192 --cpus 2 --cap-drop ALL --security-opt no-new-privileges:true \
   --tmpfs /tmp:rw,nosuid,nodev,size=256m,uid=10001,gid=10001,mode=0700 \
   --volume "$source_dir:/src:ro" --volume "$proof/bin:/proof/bin:ro" \
@@ -123,13 +154,30 @@ docker run --rm --runtime runc --user 10001:10001 --network "$network" --read-on
   --env "BUTLER_CONVERTER_PROFILE_JSON=$profile" --env BUTLER_CONVERTER_RUNTIME_TOKEN_FILE=/run/secrets/converter-runtime \
   --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:scenario-fixture@scenario-postgres:5432/butler_release_chain_test?sslmode=disable' \
   --env 'BUTLER_TEST_ACTIONAUTH_POSTGRES_URL=postgres://fixture:scenario-fixture@scenario-postgres:5432/butler_release_chain_test?sslmode=disable' \
+  "${native_args[@]}" \
   --entrypoint /proof/bin/test2json golang:1.27.2-bookworm \
   -t -p github.com/butler/butler/apps/orchestrator/internal/app /proof/bin/app.test \
-  -test.v=test2json -test.timeout=420s -test.run="$filter" > "$proof/tests.jsonl"
+  -test.v=test2json -test.timeout="$(if $high; then printf 46m; else printf 420s; fi)" -test.run="$filter" > "$proof/tests.jsonl"
 test_exit=$?
 set -e
+if $high; then
+  [[ "$test_exit" == 0 ]]
+  created_native=true
+  docker network connect butler-lab_backend "$prefix-native"
+  (cd "$source_dir"; find . -type f -not -path './.cache/*' -print0 | sort -z | xargs -0 sha256sum) | cmp -s "$root/prepared-source.sha256" -
+  mkdir "$window/native-started"
+  printf '%s\n' "$proof" > "$window/native-started/proof-ref"
+  set +e
+  docker start -a "$prefix-native" > "$proof/tests.jsonl" 2>&1
+  test_exit=$?
+  set -e
+  docker rm -f "$prefix-native" >/dev/null
+  created_native=false
+  docker run --rm --network none --volume "$proof/private/native:/private:ro" alpine:3.21 cat /private/scope.json > "$proof/scope.json" || test_exit=1
+fi
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
 required=(TestScenarioReleaseChainOneVerifiedNoticeContainerE2E TestScenarioReleaseChainOneVerifiedNoticeContainerE2E/baseline)
+if $high; then required=(TestScenarioReleaseChainActualHighE2E TestScenarioReleaseChainActualHighE2E/restart_sent TestScenarioReleaseChainActualHighE2E/lost_ack TestScenarioReleaseChainActualHighE2E/owner_stop); fi
 if [[ "$mode" == chain ]]; then
  for fault in broker_restart_after_admission explicit_absence ack_commit_failure child_stop_after_admission technical_failure_projection; do required+=("TestScenarioReleaseChainOneVerifiedNoticeContainerE2E/$fault"); done
  required+=(TestScenarioReleaseChainGenericProviderCurrentOwnershipContainerE2E TestScenarioReleaseChainProviderStartFailureRetainsAdmissionContainerE2E)
@@ -143,6 +191,6 @@ done
 if grep -Eq '"Action":"(skip|fail)"' "$proof/tests.jsonl"; then test_exit=1; fi
 if ! grep -Eq '"Action":"pass","Package":"github.com/butler/butler/apps/orchestrator/internal/app","Elapsed":' "$proof/tests.jsonl"; then test_exit=1; fi
 test -z "$(docker exec "$runtime" ls -A /tmp)"
-printf '{"test_exit":%s,"mode":"%s","actual_native_calls":0,"channel":"loopback_http_simulator","full_release_chain":"deterministic_actual_composition","runtime_tmp_empty":true}\n' "$test_exit" "$mode" > "$proof/summary.json"
+printf '{"test_exit":%s,"mode":"%s","actual_native_calls":%s,"channel":"loopback_http_simulator","planning":"%s","runtime_tmp_empty":true}\n' "$test_exit" "$mode" "$native_count" "$planning" > "$proof/summary.json"
 [[ "$test_exit" == 0 ]]
-printf 'PASS: actual promoted-task release chain and single semantic notification, race/vet, no native calls.\n'
+printf 'PASS: actual promoted-task release chain and single semantic notification, race/vet, planning=%s.\n' "$planning"

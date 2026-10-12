@@ -34,7 +34,7 @@ func TestReleaseChainHighWindowSharedCeilingRestartAndExpiryIntegration(t *testi
 		workers.Add(1)
 		go func(i int) {
 			defer workers.Done()
-			if _, _, e := w.reserve(ctx, []string{"restart_sent", "lost_ack", "owner_stop"}[i%3], []string{"start", "continue", "submit"}[i%3], "synthetic-window-row", i, guard); e == nil {
+			if _, _, e := w.reserve(ctx, []string{"restart_sent", "lost_ack", "owner_stop"}[i%3], []string{"start", "continue", "submit"}[i%3], "synthetic-root", "synthetic-window-row", i, guard); e == nil {
 				calls.Add(1)
 			}
 		}(i)
@@ -56,7 +56,7 @@ func TestReleaseChainHighWindowSharedCeilingRestartAndExpiryIntegration(t *testi
 	if pool.QueryRow(ctx, `SELECT expires_at FROM fixture_chain_high_window`).Scan(&retained) != nil || !retained.Equal(expiry) {
 		t.Fatal("restart extended deadline")
 	}
-	if _, _, e = reopened.reserve(ctx, "restart_sent", "start", "new-root", nil, guard); e == nil {
+	if _, _, e = reopened.reserve(ctx, "restart_sent", "start", "new-root", "new-run", nil, guard); e == nil {
 		t.Fatal("new root refilled spent allowance")
 	}
 	for _, q := range []string{`UPDATE fixture_chain_high_window SET attempts=480`, `UPDATE fixture_chain_high_window SET attempts=attempts+1,expires_at=expires_at+interval '1 hour'`, `DELETE FROM fixture_chain_high_requests`, `UPDATE fixture_chain_high_requests SET input_hash=repeat('b',64)`} {
@@ -83,7 +83,7 @@ func TestReleaseChainHighWindowChecksDeadlineAfterCounterWaitIntegration(t *test
 	entered := make(chan struct{})
 	done := make(chan error, 1)
 	go func() {
-		_, _, e := w.reserve(ctx, "restart_sent", "start", "held", nil, func(context.Context, pgx.Tx, string) (bool, error) {
+		_, _, e := w.reserve(ctx, "restart_sent", "start", "held-root", "held", nil, func(context.Context, pgx.Tx, string) (bool, error) {
 			select {
 			case <-entered:
 			default:
@@ -130,11 +130,11 @@ func TestReleaseChainHighWindowSharesCounterAcrossPrivateTaskSchemasIntegration(
 		if i%2 != 0 {
 			w = w2
 		}
-		if _, _, e = w.reserve(ctx, "restart_sent", "start", "separate-root", i, guard); e != nil {
+		if _, _, e = w.reserve(ctx, "restart_sent", "start", "separate-root", "separate-run", i, guard); e != nil {
 			t.Fatal("cross-schema shared spending denied", i)
 		}
 	}
-	if _, _, e = w2.reserve(ctx, "lost_ack", "submit", "later-root", nil, guard); e == nil {
+	if _, _, e = w2.reserve(ctx, "lost_ack", "submit", "later-root", "later-run", nil, guard); e == nil {
 		t.Fatal("private task schema reset the shared native counter")
 	}
 	var attempts, rows int

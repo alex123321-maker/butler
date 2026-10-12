@@ -149,11 +149,13 @@ func (p *releaseChainEntryChecker) guardTx(ctx context.Context, tx pgx.Tx, runID
 	var taskID string
 	e := tx.QueryRow(ctx, `SELECT t.task_id=$5,t.task_id FROM runs r JOIN tasks t ON t.task_id=r.task_id
  JOIN session_ownership o ON o.session_key=r.session_key
+ JOIN sessions s ON s.session_key=r.session_key JOIN tasks owning_root ON owning_root.task_id=$5
  WHERE r.run_id=$1 AND r.session_key=$2 AND r.lease_id=$3 AND o.run_id=r.run_id AND o.lease_id=$3 AND o.fence_epoch=$4
  AND o.expires_at>clock_timestamp()
+ AND t.owner_id=s.user_id AND t.owner_id=owning_root.owner_id AND owning_root.status='active'
  AND t.status='active' AND t.revision=r.task_revision AND (t.task_id=$5 OR (t.parent_task_id=$5
  AND EXISTS(SELECT 1 FROM converter_developer_snapshots d JOIN task_delegations c ON c.task_id=d.task_id WHERE d.task_id=t.task_id AND d.parent_task_id=$5 AND c.state IN('accepted','executing'))))
- AND r.current_state IN('model_running','awaiting_model_resume') FOR SHARE OF r,t,o`, runID, token.SessionKey, token.LeaseID, token.FenceEpoch, p.root).Scan(&parent, &taskID)
+ AND r.current_state IN('model_running','awaiting_model_resume') FOR SHARE OF r,t,o,s,owning_root`, runID, token.SessionKey, token.LeaseID, token.FenceEpoch, p.root).Scan(&parent, &taskID)
 	if e != nil {
 		return false, errors.New("provider current owning lineage denied")
 	}

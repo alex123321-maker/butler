@@ -101,7 +101,7 @@ func createChainHighWindowInSchema(ctx context.Context, pool *pgxpool.Pool, pin,
  prerequisite_hash text NOT NULL CHECK(length(prerequisite_hash)=64), expires_at timestamptz NOT NULL);
 CREATE TABLE IF NOT EXISTS fixture_chain_high_requests(
  ordinal integer PRIMARY KEY CHECK(ordinal BETWEEN 481 AND 520), scenario text NOT NULL CHECK(scenario IN('restart_sent','lost_ack','owner_stop')),
- kind text NOT NULL CHECK(kind IN('start','continue','submit')),run_id text NOT NULL,input_hash text NOT NULL CHECK(length(input_hash)=64),
+ kind text NOT NULL CHECK(kind IN('start','continue','submit')),root_task_id text NOT NULL,run_id text NOT NULL,is_parent boolean NOT NULL,input_hash text NOT NULL CHECK(length(input_hash)=64),
  admitted_at timestamptz NOT NULL DEFAULT clock_timestamp(),outcome text NOT NULL DEFAULT 'unavailable' CHECK(outcome IN('unavailable','completed','transport_error','cancelled')),
  input_tokens bigint CHECK(input_tokens>=0),output_tokens bigint CHECK(output_tokens>=0),total_tokens bigint CHECK(total_tokens>=input_tokens+output_tokens),model_version text);
 CREATE OR REPLACE FUNCTION fixture_chain_high_window_immutable() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
@@ -109,7 +109,7 @@ CREATE OR REPLACE FUNCTION fixture_chain_high_window_immutable() RETURNS trigger
  NEW.expires_at IS DISTINCT FROM OLD.expires_at OR NEW.attempts<>OLD.attempts+1 THEN RAISE EXCEPTION 'sealed chain high scope'; END IF; RETURN NEW; END $$;
 CREATE OR REPLACE FUNCTION fixture_chain_high_request_immutable() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
  IF TG_OP='DELETE' OR NEW.ordinal IS DISTINCT FROM OLD.ordinal OR NEW.scenario IS DISTINCT FROM OLD.scenario OR NEW.kind IS DISTINCT FROM OLD.kind OR
- NEW.run_id IS DISTINCT FROM OLD.run_id OR NEW.input_hash IS DISTINCT FROM OLD.input_hash OR NEW.admitted_at IS DISTINCT FROM OLD.admitted_at OR
+ NEW.root_task_id IS DISTINCT FROM OLD.root_task_id OR NEW.run_id IS DISTINCT FROM OLD.run_id OR NEW.is_parent IS DISTINCT FROM OLD.is_parent OR NEW.input_hash IS DISTINCT FROM OLD.input_hash OR NEW.admitted_at IS DISTINCT FROM OLD.admitted_at OR
  OLD.outcome<>'unavailable' OR NEW.outcome='unavailable' THEN RAISE EXCEPTION 'sealed chain high request'; END IF; RETURN NEW; END $$;
 DO $$ BEGIN
  IF NOT EXISTS(SELECT 1 FROM pg_trigger WHERE tgname='fixture_chain_high_window_guard' AND tgrelid='fixture_chain_high_window'::regclass) THEN
@@ -134,8 +134,8 @@ END $$;`
 	return w, nil
 }
 
-func (w *chainHighWindow) reserve(ctx context.Context, scenario, kind, run string, input any, guard func(context.Context, pgx.Tx, string) (bool, error)) (int, time.Time, error) {
-	if w == nil || w.pool == nil || run == "" || guard == nil || (scenario != "restart_sent" && scenario != "lost_ack" && scenario != "owner_stop") || (kind != "start" && kind != "continue" && kind != "submit") {
+func (w *chainHighWindow) reserve(ctx context.Context, scenario, kind, root, run string, input any, guard func(context.Context, pgx.Tx, string) (bool, error)) (int, time.Time, error) {
+	if w == nil || w.pool == nil || root == "" || run == "" || guard == nil || (scenario != "restart_sent" && scenario != "lost_ack" && scenario != "owner_stop") || (kind != "start" && kind != "continue" && kind != "submit") {
 		return 0, time.Time{}, errNativeFixtureDenied
 	}
 	raw, err := json.Marshal(input)
@@ -148,7 +148,8 @@ func (w *chainHighWindow) reserve(ctx context.Context, scenario, kind, run strin
 		return 0, time.Time{}, errNativeFixtureDenied
 	}
 	defer tx.Rollback(ctx)
-	if _, err = guard(ctx, tx, run); err != nil {
+	parent, err := guard(ctx, tx, run)
+	if err != nil {
 		return 0, time.Time{}, errNativeFixtureDenied
 	}
 	var ordinal int
@@ -156,14 +157,15 @@ func (w *chainHighWindow) reserve(ctx context.Context, scenario, kind, run strin
 	if tx.QueryRow(ctx, `UPDATE `+w.table("fixture_chain_high_window")+` SET attempts=attempts+1 WHERE singleton AND prerequisite_hash=$1 AND attempts<520 AND expires_at>clock_timestamp() RETURNING attempts,expires_at`, w.pin).Scan(&ordinal, &deadline) != nil {
 		return 0, time.Time{}, errNativeFixtureDenied
 	}
-	if _, err = guard(ctx, tx, run); err != nil {
+	currentParent, err := guard(ctx, tx, run)
+	if err != nil || currentParent != parent {
 		return 0, time.Time{}, errNativeFixtureDenied
 	}
 	var current bool
 	if tx.QueryRow(ctx, `SELECT expires_at>clock_timestamp() FROM `+w.table("fixture_chain_high_window")+` WHERE singleton`).Scan(&current) != nil || !current {
 		return 0, time.Time{}, errNativeFixtureDenied
 	}
-	if _, err = tx.Exec(ctx, `INSERT INTO `+w.table("fixture_chain_high_requests")+`(ordinal,scenario,kind,run_id,input_hash) VALUES($1,$2,$3,$4,$5)`, ordinal, scenario, kind, run, hex.EncodeToString(hash[:])); err != nil || tx.Commit(ctx) != nil {
+	if _, err = tx.Exec(ctx, `INSERT INTO `+w.table("fixture_chain_high_requests")+`(ordinal,scenario,kind,root_task_id,run_id,is_parent,input_hash) VALUES($1,$2,$3,$4,$5,$6,$7)`, ordinal, scenario, kind, root, run, parent, hex.EncodeToString(hash[:])); err != nil || tx.Commit(ctx) != nil {
 		return 0, time.Time{}, errNativeFixtureDenied
 	}
 	return ordinal, deadline, nil

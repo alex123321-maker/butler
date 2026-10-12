@@ -47,7 +47,7 @@ func (p *chainHighProvider) entry(ctx context.Context, kind, run string, input a
 			return nil, err
 		}
 	}
-	ordinal, deadline, err := p.window.reserve(ctx, p.scenario, kind, run, input, p.checker.guardTx)
+	ordinal, deadline, err := p.window.reserve(ctx, p.scenario, kind, p.checker.root, run, input, p.checker.guardTx)
 	if err != nil {
 		return nil, err
 	}

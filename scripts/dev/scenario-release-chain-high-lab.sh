@@ -26,8 +26,20 @@ if [[ "$phase" == execute ]]; then
     --memory 512m --pids-limit 64 --volume "$source_dir:/src:ro" --volume "$prepared/bin:/bin-proof:ro" --workdir /src \
     --env BUTLER_SCENARIO_CHAIN_HIGH_GATE=1 golang:1.27.2-bookworm \
     /bin-proof/app.test -test.v -test.timeout=30s -test.run='^TestReleaseChainHighOperationalGate$' > "$proof/prerequisite-gate.txt" 2>&1
-  printf 'Denied: final independently reviewed native process protocol is not yet frozen.\n' >&2
-  exit 2
+  window=/srv/storage/butler/native-acceptance-windows/issue33-high-release-chain-20261012-baseline480
+  [[ ! -e "$window" && ! -L "$window" ]] || { printf 'Denied: sealed separate native window.\n' >&2; exit 2; }
+  [[ "$(docker inspect --format '{{.State.Running}}' butler-lab-antigravity-proxy-1)" == true ]]
+  docker run --rm --runtime runc --pull never --network butler-lab_backend --read-only --user 10001:10001 --cap-drop ALL --security-opt no-new-privileges:true --memory 64m --pids-limit 16 \
+    --volume "$prepared/bin/tls-prerequisite:/tls:ro" golang:1.27.2-bookworm /tls > "$proof/tls.json"
+  import_parent=/srv/storage/butler/agents/antigravity-provider/profile/.gemini/antigravity-cli
+  docker run --rm --network none --read-only --user 10001:10001 --cap-drop ALL --security-opt no-new-privileges:true --volume "$import_parent:/metadata:ro" alpine:3.21 sh -eu -c 'p=/metadata/butler-native-import.json; test -f "$p"; test ! -L "$p"; test "$(stat -c "%u:%a" "$p")" = 10001:600; size=$(stat -c %s "$p"); test "$size" -gt 0; test "$size" -le 65536'
+  mkdir -p /srv/storage/butler/native-acceptance-windows
+  mkdir "$window"
+  printf '%s\n' "$release" > "$window/release-ref"
+  printf '%s\n' "$source_dir" > "$window/source-ref"
+  printf '%s\n' "$proof" > "$window/preflight-proof-ref"
+  export BUTLER_SCENARIO_CHAIN_HIGH_SEALED_ENTRY=1
+  exec bash "$source_dir/scripts/dev/scenario-release-chain-process-lab.sh" "$root" high "$release"
 fi
 name="butler-chain-high-prepare-$(date -u +%Y%m%dT%H%M%SZ)-$$"; network="$name-net"; pg="$name-pg"
 created_network=false; created_pg=false
@@ -36,7 +48,16 @@ trap cleanup EXIT INT TERM
 build=(docker run --rm --runtime runc --pull never --network none --user "$(id -u):$(id -g)" --memory 1536m --pids-limit 160 --cpus 2 --security-opt no-new-privileges:true
   --volume "$source_dir:/src:ro" --volume "$proof/bin:/bin-proof" --volume /srv/storage/butler/.cache:/cache --workdir /src
   --env GOPROXY=off --env GOSUMDB=off --env GOMAXPROCS=2 --env GOFLAGS=-p=2 --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp)
-"${build[@]}" golang:1.27.2-bookworm bash -eu -c 'go test -c -race -o /bin-proof/app.test ./apps/orchestrator/internal/app; go build -o /bin-proof/test2json cmd/test2json; go vet ./apps/orchestrator/internal/app; chmod 555 /bin-proof/*' > "$proof/build-vet.log" 2>&1
+"${build[@]}" golang:1.27.2-bookworm bash -eu -c '
+go test -c -race -o /bin-proof/app.test ./apps/orchestrator/internal/app
+go build -o /bin-proof/test2json cmd/test2json
+CGO_ENABLED=0 go build -trimpath -o /bin-proof/tool-broker ./apps/tool-broker
+CGO_ENABLED=0 go build -trimpath -o /bin-proof/tool-converter ./apps/tool-converter
+go test -c -o /bin-proof/extension.test ./apps/tool-extension/internal/runtime
+go build -o /bin-proof/tls-prerequisite ./scripts/dev/delegation-final-tls
+go vet ./apps/orchestrator/internal/app ./apps/orchestrator/internal/orchestrator
+chmod 555 /bin-proof/*
+' > "$proof/build-vet.log" 2>&1
 docker network create --internal "$network" >/dev/null; created_network=true
 docker run -d --runtime runc --name "$pg" --network "$network" --network-alias chain-prepare-postgres --memory 512m --pids-limit 64 --cpus 1 --security-opt no-new-privileges:true \
   --env POSTGRES_USER=fixture --env POSTGRES_PASSWORD=chain-prepare-fixture --env POSTGRES_DB=butler_chain_prepare_test \

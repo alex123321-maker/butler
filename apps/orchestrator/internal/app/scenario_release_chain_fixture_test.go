@@ -49,6 +49,7 @@ type releaseChainModelConfig struct {
 	InputTokens, OutputTokens int64
 	Policy                    budget.Policy
 	ChildBudget               budget.Units
+	FixtureTimeout            time.Duration
 	Factory                   func(context.Context, *pgxpool.Pool, string) (transport.ModelProvider, error)
 }
 
@@ -61,7 +62,14 @@ func newReleaseChainFixtureWithModel(t *testing.T, profile generatedtools.Profil
 	if os.Getenv("BUTLER_EXTENSION_E2E") != "1" {
 		t.Skip("isolated real-process initiative acceptance")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	fixtureTimeout := 10 * time.Minute
+	if modelConfig != nil && modelConfig.FixtureTimeout > 0 {
+		if modelConfig.FixtureTimeout > 20*time.Minute {
+			t.Fatal("bounded fixture timeout required")
+		}
+		fixtureTimeout = modelConfig.FixtureTimeout
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), fixtureTimeout)
 	t.Cleanup(cancel)
 	pool, dsn := e2eDatabase(t)
 	// One current deletion anchor and one Broker span every actual phase.
@@ -236,6 +244,10 @@ func newReleaseChainFixtureWithModel(t *testing.T, profile generatedtools.Profil
 	specRef := asset("developer-spec", string(specRaw), nil)
 	selectedRefs, _ := json.Marshal(map[string]catalog.SourceRef{"need_source": needRef, "contract_source": specRef, "input_ref": document})
 	admissionGoal := releaseChainAdmissionGoal + " Selected current typed DATA refs: " + string(selectedRefs)
+	if modelConfig != nil && modelConfig.Provider == "antigravity" {
+		allowanceData, _ := json.Marshal(modelConfig.ChildBudget)
+		admissionGoal += " Owner-selected bounded child budget DATA: " + string(allowanceData) + ". Use a finite child deadline no later than ten minutes from admission. This allowance never replaces the current mandate or Broker policy."
+	}
 	source := initiative.Source{ID: "project-fixture-checks", OwnerID: owner, GoalID: goalResponse.SubjectID, MandateID: mandateResponse.SubjectID, SessionKey: sessionKey, ProjectRef: projectfixture.ProjectRef, ProjectRevision: projectfixture.Revision(), ObserverKind: "broker_project", CheckManifestHash: p.Digest, CheckToolName: "extension.project.inspect", CheckResource: egresstest.Origin + "/project", ResultDelivery: "verified_task", Purpose: "fixture_maintenance", TimeZone: "UTC", TaskGoal: admissionGoal, ExecutionPolicy: "normal", CompletionCriteria: []string{"exact original CSV converted to JSON", "independently tested converter activated within original mandate", "exact immutable ready=true README patch checked; original project remains unapplied"}, ActiveStart: now.Hour(), ActiveEnd: (now.Hour() + 23) % 24, FailureThreshold: 3, ConfidenceThreshold: 90, MinimumImportance: 60, CooldownSeconds: 3600, Enabled: true}
 	sourceAPI := httptest.NewServer(api.NewInitiativeServer(store, api.NewOwnerControlAuth(ownerToken, owner)).Handle())
 	t.Cleanup(sourceAPI.Close)
