@@ -102,7 +102,7 @@ func nativeScriptedStream(events ...transport.TransportEvent) transport.EventStr
 	return stream
 }
 func (p *nativeScriptedObservationProvider) tool(runID string, index int) transport.EventStream {
-	return nativeScriptedStream(transport.NewToolCallRequestedEvent(runID, p.Name(), transport.ToolCallRequest{ToolCallRef: "scripted-call-" + string(rune('0'+index)), ToolName: delegation.AdmissionTool, ArgsJSON: string(nativeJSON(p.args[index])), SequenceNo: index + 1}))
+	return nativeScriptedStream(transport.NewToolCallRequestedEvent(runID, p.Name(), transport.ToolCallRequest{ToolCallRef: runID + "-scripted-call-" + string(rune('0'+index)), ToolName: delegation.AdmissionTool, ArgsJSON: string(nativeJSON(p.args[index])), SequenceNo: index + 1}))
 }
 func (p *nativeScriptedObservationProvider) StartRun(_ context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
 	if len(r.ToolDefinitions) == 0 {

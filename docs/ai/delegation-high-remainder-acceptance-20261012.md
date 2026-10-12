@@ -34,10 +34,33 @@ allowed, with strict unchanged native overlap==2 and numeric final verification.
 Width1's labelled component overlap uses owning model-attempt timestamps; prior
 native width1 overlap==1 remains the independent real-generation evidence.
 
-New isolated root: `/srv/storage/butler/agents/delegation-remainder-high-20261012`.
+The first remainder invocation is SEALED and failed before any native entry.
+Its [immutable preflight report](../../deploy/delegation/native-remainder-high-preflight-20261012.json)
+has SHA256 `ce8835a6fefcd600c6b28b88fed73212453c5af54016bdd6d8c77c4e506dbeae`:
+37 total/0 new native calls, six scripted turns, width1 component checks passed,
+then width2 parent admission stopped. Scripted tool references were reused across
+the two parents; the real dispatch committed before global tool-call persistence
+failed and correctly became effect_unknown. No retry reconciles that old run.
+Scripted references now include their actual run ID. The routing regression
+uses both parents in one schema/provider/Broker and checks cumulative observer
+rows; separate fixtures per width would not expose this collision.
+
+The first remainder preparation also caught duplicate observer instrumentation,
+now fixed by observing once in the selected lane. Its final zero-inference
+preparation a473dbd/snapshot123243-483 passed268 names/94 top-level,0 fail/skip,
+race/vet. Events SHA256
+`b462b0bb31fb9e4b36e8c21286757f96eeb2351d32b9ef97ed586cb9724d0b3a`;
+source-manifest SHA256
+`90127e416882079826204f99512bd5cab0bb50288d62edb02e3e8a05564dd751`.
+Its execute report is under the first isolated root,
+`reports/delegation-remainder-high-execute-20261012T053627Z-111806`;
+native events SHA256
+`f1b15a10d96579c730bb69c13b87f494da66466e1ad2d63d7707ebb3efd4497c`.
+
+New isolated root: `/srv/storage/butler/agents/delegation-remainder-high-v2-20261012`.
 New one-use marker:
-`/srv/storage/butler/native-acceptance-windows/high-delegation-remainder-20261012-baseline37`.
-Eleven immutable history pins carry37 attempts,17 known/20 unknown usage pairs,
+`/srv/storage/butler/native-acceptance-windows/high-delegation-remainder-v2-20261012-baseline37`.
+The original remainder marker remains sealed. Twelve immutable history pins carry37 attempts,17 known/20 unknown usage pairs,
 62760 input/1810 output known subtotal. The durable limiter admits only38–39,
 at most2 new calls, at the original39 ceiling and a fixed18-minute expiry.
 All history is revalidated before every native entry, including after process

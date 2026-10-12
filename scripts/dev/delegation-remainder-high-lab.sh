@@ -3,7 +3,7 @@
 set -euo pipefail
 root=${1:?isolated agent root required}
 phase=${2:-prepare}
-[[ "$root" == /srv/storage/butler/agents/delegation-remainder-high-20261012 ]] || exit 2
+[[ "$root" == /srv/storage/butler/agents/delegation-remainder-high-v2-20261012 ]] || exit 2
 [[ "$phase" == prepare || "$phase" == execute ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/apps/orchestrator/internal/app/delegation_native_scenario_test.go" ]] || exit 2
@@ -16,7 +16,7 @@ source_manifest() {
 check_tested_source() {
   source_manifest | cmp -s "$root/tested-remainder-high-manifest" -
 }
-window=/srv/storage/butler/native-acceptance-windows/high-delegation-remainder-20261012-baseline37
+window=/srv/storage/butler/native-acceptance-windows/high-delegation-remainder-v2-20261012-baseline37
 if [[ "$phase" == execute && ( -e "$source_dir/deploy/delegation/native-remainder-high-20261012.json" || -L "$source_dir/deploy/delegation/native-remainder-high-20261012.json" || -e "$window" || -L "$window" ) ]]; then
   # A distinct global marker prevents resetting this new window. Earlier
   # baseline13 and High text-access markers are never reopened or removed.

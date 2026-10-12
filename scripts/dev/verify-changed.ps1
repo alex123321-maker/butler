@@ -31,7 +31,7 @@ foreach ($file in $files) {
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
       [void]$specs.Add("docs/architecture/execution-budget-contract.md")
-      [void]$tests.Add("ssh laba: scripts/dev/delegation-remainder-high-lab.sh /srv/storage/butler/agents/delegation-remainder-high-20261012 prepare after isolated Sync with clean committed release. Mixed fixture declares scripted parents/width1 and only2 native High width2 child calls, carrying37 to original39 ceiling. All old windows remain sealed.")
+      [void]$tests.Add("ssh laba: scripts/dev/delegation-remainder-high-lab.sh /srv/storage/butler/agents/delegation-remainder-high-v2-20261012 prepare after isolated Sync with clean committed release. Mixed fixture declares scripted parents/width1 and only2 native High width2 child calls, carrying37 to original39 ceiling. All old windows remain sealed.")
       continue
     }
     "^(scripts/dev/delegation-acceptance-high-lab[.]sh$|scripts/dev/fixtures/delegation-high-conflict-20261012[.]json$|apps/orchestrator/internal/app/delegation_full_high.*_test[.]go$)" {
