@@ -82,6 +82,16 @@ file-permission corrections add no model allowance, deadline or spent refund.
 
 ## Pending combined acceptance
 
+The f3e0cbc window stopped on a charged transport failure. Its raw private report
+is218064 bytes, SHA256
+`b82c572c62840e9e18de9723fc33bf3d335f546e4d445a4bc0a16a1a81686b99`.
+No case is retried and the fixed thresholds remain unchanged. The collector
+stored outcome but discarded the typed transport diagnostic, so the precise
+failure class is unavailable; quota, capacity, TLS or protocol cause cannot be
+asserted from it. Future samples write a separate immutable diagnostic sidecar
+using only `transport.DiagnosticCode`, excluding message, provider code/details
+and raw errors. This does not modify or complete the failed old observation.
+
 The verified-task notice path, real observer→promotion→converter→original
 verification chain, restart/Stop/delivery failures, current complete fault matrix,
 actual High observations and independent final audit must all be correlated to

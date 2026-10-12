@@ -3,6 +3,9 @@ package app
 import (
 	"context"
 	"errors"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -35,7 +38,7 @@ func (p *shadowFixtureProvider) StartRun(_ context.Context, req transport.StartR
 		return nil, errors.New("unexpected model/tools")
 	}
 	if p.mode == "start_failure" {
-		return nil, errors.New("fixed fixture failure")
+		return nil, &transport.Error{Type: transport.ErrorTypeModelCapacityUnavailable, Message: "private fixture text", ProviderCode: "private fixture code", ProviderDetails: map[string]any{"private": "fixture detail"}}
 	}
 	run := req.Context.RunID
 	usage := &transport.Usage{InputTokens: 4, OutputTokens: 2, TotalTokens: 7}
@@ -113,6 +116,15 @@ func TestScenarioShadowSamplerChargedTruthAndNoRetryIntegration(t *testing.T) {
 			}
 			if completed != (a.Outcome == "completed") || !completed && string(a.Output) != "null" {
 				t.Fatal("failed output promoted")
+			}
+			if !completed {
+				raw, readErr := os.ReadFile(filepath.Join(sampler.private, "attempt-046-diagnostic.json"))
+				if readErr != nil || strings.Contains(string(raw), "private fixture") || strings.Contains(string(raw), "fixture detail") {
+					t.Fatal("safe diagnostic missing or raw upstream data escaped")
+				}
+				if mode == "start_failure" && !strings.Contains(string(raw), "model_capacity_unavailable") {
+					t.Fatal("typed capacity failure discarded")
+				}
 			}
 			if mode == "missing_usage" && a.InputTokens != nil || mode == "legacy_total" && a.TotalTokens != nil || mode == "missing_version" && a.ProviderModelVersion != nil {
 				t.Fatal("unknown observation invented")

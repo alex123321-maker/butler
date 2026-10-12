@@ -211,6 +211,7 @@ func (s *shadowSampler) call(parent context.Context, phase string, c acceptance.
 		InputItems: []transport.InputItem{{Role: "system", Content: input.SystemInstructions}, {Role: "user", Content: string(user)}}}
 	ctx = transport.WithInputByteLimit(ctx, 65536)
 	stream, startErr := s.provider.StartRun(ctx, req)
+	diagnostic := transport.DiagnosticCode(startErr)
 	if startErr == nil {
 		finals, terminals := 0, 0
 		var known *transport.Usage
@@ -282,6 +283,7 @@ func (s *shadowSampler) call(parent context.Context, phase string, c acceptance.
 				break
 			}
 			if event.TransportError != nil {
+				diagnostic = transport.DiagnosticCode(event.TransportError)
 				startErr = errNativeFixtureDenied
 				a.Outcome = "transport_error"
 				a.Output = json.RawMessage("null")
@@ -317,6 +319,20 @@ func (s *shadowSampler) call(parent context.Context, phase string, c acceptance.
 	a.EndUTC = time.Now().UTC()
 	a.Milliseconds = a.EndUTC.Sub(a.StartUTC).Milliseconds()
 	a.LocalPeakRSSBytes = shadowClientRSS()
+	// Sidecar diagnostics use the existing bounded vocabulary only. Never
+	// persist an upstream message/details, and never retrofit an old observation.
+	if a.Outcome != "completed" {
+		if diagnostic == "" {
+			diagnostic = string(transport.ErrorTypeInternalTransportError)
+		}
+		if writeShadowJSON(filepath.Join(s.private, fmt.Sprintf("attempt-%03d-diagnostic.json", ordinal)), struct {
+			Attempt string `json:"attempt_id"`
+			Outcome string `json:"outcome"`
+			Code    string `json:"diagnostic_code"`
+		}{a.AttemptID, a.Outcome, diagnostic}) != nil {
+			return a, errNativeFixtureDenied
+		}
+	}
 	writeCtx, stop := context.WithTimeout(context.WithoutCancel(parent), 5*time.Second)
 	defer stop()
 	tag, persistErr := s.window.pool.Exec(writeCtx, `UPDATE fixture_scenario_shadow_attempts SET outcome=$2,input_tokens=$3,output_tokens=$4,total_tokens=$5 WHERE ordinal=$1 AND outcome='unavailable'`, ordinal, a.Outcome, a.InputTokens, a.OutputTokens, a.TotalTokens)

@@ -4,7 +4,7 @@
 set -euo pipefail
 root=${1:?isolated agent root required}
 check_mode=${2:-all}
-[[ "$check_mode" == all || "$check_mode" == narrow ]] || exit 2
+[[ "$check_mode" == all || "$check_mode" == narrow || "$check_mode" == shadow-diagnostics ]] || exit 2
 [[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ ]] || exit 2
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/apps/orchestrator/internal/orchestrator/budget_usage_integration_test.go" ]] || exit 2
@@ -42,6 +42,10 @@ docker run --rm --user "$(id -u):$(id -g)" --network "$network" --memory 1536m -
   --env "BUTLER_TURN_USAGE_CHECK_MODE=$check_mode" \
   --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:usage-fixture@usage-postgres:5432/butler_usage_test?sslmode=disable' \
   golang:1.27.2-bookworm bash -eu -c '
+if [[ "$BUTLER_TURN_USAGE_CHECK_MODE" == shadow-diagnostics ]]; then
+go test -json -race -p 1 -count=1 -timeout=3m -run "^TestScenarioShadowSamplerChargedTruthAndNoRetryIntegration$" ./apps/orchestrator/internal/app
+go vet ./apps/orchestrator/internal/app
+else
 if [[ "$BUTLER_TURN_USAGE_CHECK_MODE" == all ]]; then
 go test -json -race -p 1 -count=1 -timeout=90s ./internal/transport ./internal/transport/antigravity
 else
@@ -51,7 +55,8 @@ go test -json -race -p 1 -count=1 -timeout=180s -run "^TestModelTurnUsage" ./app
 if [[ "$BUTLER_TURN_USAGE_CHECK_MODE" == all ]]; then
 go test -json -race -p 1 -count=1 -timeout=90s -run "^Test(OwningSourceVerification|ExecuteRunsHappyPath)" ./apps/orchestrator/internal/orchestrator
 fi
-go vet ./internal/transport ./internal/transport/antigravity ./apps/orchestrator/internal/orchestrator' > "$proof/tests.jsonl"
+go vet ./internal/transport ./internal/transport/antigravity ./apps/orchestrator/internal/orchestrator
+fi' > "$proof/tests.jsonl"
 sha256sum "$proof/tests.jsonl" > "$proof/events.sha256"
 ! grep -q '"Action":"skip"' "$proof/tests.jsonl"
 printf '{"status":"tool_turn_usage_passed","model_calls":0,"historical_backfills":0}\n'
