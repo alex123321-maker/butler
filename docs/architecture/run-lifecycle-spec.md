@@ -9,6 +9,13 @@ failure or cancellation neither erases an observed request nor refunds allowance
 See [execution-budget contract](execution-budget-contract.md) for validation and
 forward-only history rules.
 
+Private Broker claim source guards derive a read-proof worker token from the
+already locked exact current PostgreSQL lease/run/grant. They do not trust an RPC
+caller token or owner Actor. The same-transaction derivative has no general write
+authority and does not escape; accepted converter continuation input, current
+task/source/055 identity and post-wait expiry still require independent checks.
+See [action authorization](action-authorization-contract.md).
+
 The optional guarded tab request is an ordinary exact Broker local control.
 Its owning publication atomically suspends the actual tool-running input/run/task
 with finite owner choices and an immutable dispatch mapping. Core detects that

@@ -50,6 +50,18 @@ cannot supply owners, task versions, decisions, worker fences or grants.
 7. Broker revalidates before each secret release, then again directly before
    dispatch. The grant is claimed atomically immediately before runtime entry.
 
+The claim's owning source/lifecycle adapter runs on the same transaction after
+the actual grant's matching session/run/lease/fence row is locked `FOR SHARE` and
+current run/task/owner policy is checked. Plain Broker RPC context carries no core
+worker token. Only this adapter receives a private read-proof token derived from
+those checked identities. Caller token and owner Actor metadata are overwritten;
+the derivative has nil `ownership.Authority`, cannot acquire a second write fence
+and is not returned to the runtime or caller. It does not supply an input claim,
+grant sources, renew a lease or authorize a continuation: the owning adapter still
+checks its durable input and every current source/055 identity. A denied adapter
+rolls back the existing grant/effect/budget transaction. Replay and fresh-clock
+expiry checks remain mandatory.
+
 The binding includes action/run/tool-call identity, canonical argument hash,
 relevant full registry contract hash, concrete resource, credential alias/field
 references and metadata digest, task/constraints versions, owner and effect

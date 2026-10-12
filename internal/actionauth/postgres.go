@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/budget"
+	"github.com/butler/butler/internal/owneridentity"
+	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -256,7 +258,14 @@ func (s *PostgresStore) guardDispatch(ctx context.Context, tx pgx.Tx, g Grant) e
 		}
 	}
 	if s.runDataGuard != nil {
-		if err = s.runDataGuard(ctx, tx, g.Binding.RunID); err != nil {
+		// Broker RPC callers do not carry a core worker context. The owning
+		// source verifier receives read proof from the exact PG lease already
+		// locked above, never caller Actor/token metadata. Nil Authority prevents
+		// borrowing another fence/connection or using this proof as write power;
+		// it is confined to this guard's existing transaction and does not escape.
+		proofCtx := owneridentity.WithActor(ctx, owneridentity.Actor{})
+		proofCtx = ownership.WithToken(proofCtx, nil, ownership.Token{SessionKey: session, RunID: g.Binding.RunID, LeaseID: g.LeaseID, FenceEpoch: g.LeaseEpoch})
+		if err = s.runDataGuard(proofCtx, tx, g.Binding.RunID); err != nil {
 			return err
 		}
 	}

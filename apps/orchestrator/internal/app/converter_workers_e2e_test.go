@@ -248,6 +248,12 @@ func TestConverterDeveloperAutomaticParentContainerE2E(t *testing.T) {
 }
 
 func testConverterDeveloperWorkers(t *testing.T, automatic bool) {
+	testConverterDeveloperWorkersObserved(t, automatic, nil)
+}
+
+// Hooks observe the same owning process fixture; they cannot substitute tool
+// outcomes, runtime/checker receipts, final records or the ordinary workers.
+func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *converterWorkerFaultHooks) {
 	if os.Getenv("BUTLER_CONVERTER_DEVELOPER_E2E") != "1" {
 		t.Skip("explicit isolated production Broker and network-none converter required")
 	}
@@ -257,6 +263,9 @@ func testConverterDeveloperWorkers(t *testing.T, automatic bool) {
 	}
 	manifest := filepath.Join(t.TempDir(), "deletions.log")
 	f := newDeveloperWorkerFixture(t, profile, manifest, true)
+	if hooks != nil && hooks.before != nil {
+		hooks.before(t, f)
+	}
 	// End the fixture's setup-only attempt. All proof calls below are made by
 	// ordinary durable input workers, under their own fresh PG lease/fence.
 	var oldLease string
@@ -531,6 +540,13 @@ func testConverterDeveloperWorkers(t *testing.T, automatic bool) {
 		t.Log("PASS: same-task original document conversion via actual production Broker/network-none converter, ordinary parent/child workers and two055 once-only internal continuations; one owner input, independent parent checks, no semantic auto-verification, native calls 0")
 	} else {
 		t.Log("PASS: actual production Broker and network-none converter, ordinary parent/child workers, exact three child tools, immutable final/report/054, parent collect/check/trial/activation and original conversion; explicit owner continuations, native calls 0, both semantic tasks unverified")
+	}
+	if hooks != nil && hooks.after != nil {
+		// A new dispatcher observes persisted work after the execution worker
+		// has drained. Delivery has no access to this provider or tool client.
+		stop()
+		<-done
+		hooks.after(t, f, provider)
 	}
 }
 

@@ -11,6 +11,14 @@ mandates, action bindings, approvals, grants or lease fences. Prepared intents
 bind exact canonical arguments, contract/resource/credential metadata and task
 versions. Grants are claimed once at the durable effect boundary.
 
+The same-transaction source/lifecycle guard receives private read proof derived
+from the actual matching PostgreSQL ownership row already locked during claim.
+It overwrites caller token/Actor metadata and has no `ownership.Authority`; it
+cannot acquire another write fence or escape to the RPC/runtime caller. This lets
+an ordinary authenticated Broker RPC verify an owned converter continuation while
+retaining every current input/source/task/lease/expiry check. See the
+[fault-tail evidence](../../docs/ai/scenario-fault-matrix-acceptance.md).
+
 Private HTTP context reads use a direct transport with no ambient proxy and
 reject redirects. Provider proxy configuration cannot reroute service tokens
 or trusted owner/task context through an external proxy.
