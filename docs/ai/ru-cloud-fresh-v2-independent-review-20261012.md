@@ -68,10 +68,25 @@ The proposed observation protocol pins are:
 - new criteria: `280479d286975a09f60e0cee582200d3a36ab11099a86339cdfe0ea6c0556767`;
 - fixed client resources: `df078aa7d2a0a0410be62f7259fe49a93ad31f572dc2a002f5639950abc1ab2c`.
 
-An independent external approval must sign these new corpus/criteria identities
-before release. The native review helper still denies while its new artifact
-constants are empty. Exact source, runtime, hardware, owner window and all 228
-previous charges must also be pinned. The old corpus, signature, thresholds,
+The separate external approval signed these exact new corpus/criteria identities
+under a fresh Ed25519 key, with reviewer `initiative-independent-review-20261012`
+and author `resources-corpus-author-20261012`. Its one-use protected directory is
+`/srv/storage/butler/reviews/issue33-20261012-v2`. The signer ran with no network
+as UID10001; the private signing key stays backend-only with mode0600. The exact
+LF candidate and this independent review were copied there without overwriting
+existing artifacts. Public artifact file hashes are:
+
+- `public-key.hex`: `d13e7a0deba38a21951b3afd740262ac5ceb9a223eb28664fae5bda9f4cbd76f`;
+- `approval.json`: `4af0e4d71da789cff33dcb04dd0d4f653fb9e34559d54e820cf855ace6651946`;
+- pre-sign review document: `acfc63e632ae8c60fa65808766bd9d742c184128861d2cb2a60c0b3b6e7c88af`.
+
+Signing proof:
+`/srv/storage/butler/agents/scenario-cloud-observe/reports/independent-sign-v2-20261012T132404Z-1710447`.
+The signer verified the approval with the new strict API before publication.
+The source now pins only the two public artifact hashes. Independent exact
+source/runtime/hardware/window preparation and root execution approval are still
+required; a signed dataset is not a successful model observation.
+The old corpus, signature, thresholds,
 183-call failed window, partial old holdout and NO_GO verdict remain immutable.
 
 The data are synthetic, public and reviewed on a shared administrator-controlled

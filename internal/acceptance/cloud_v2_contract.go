@@ -18,10 +18,10 @@ const CloudV2MaximumGeneratedTokens = 32768
 const CloudV2MaximumVisibleJSONBytes = 8192
 const CloudV2CorpusPath = "testdata/acceptance/ru-cloud-fresh-v2.json"
 
-// Intentionally unavailable until a separate reviewer approves the exact new
-// corpus/criteria and publishes externally pinned V2 artifacts. No V1 fallback.
-const CloudV2GoldenPublicKeyFileSHA256 = ""
-const CloudV2GoldenApprovalFileSHA256 = ""
+// The new independently reviewed artifacts live outside candidate source. They
+// approve the V2 dataset/criteria, never native quality or execution. No V1 fallback.
+const CloudV2GoldenPublicKeyFileSHA256 = "d13e7a0deba38a21951b3afd740262ac5ceb9a223eb28664fae5bda9f4cbd76f"
+const CloudV2GoldenApprovalFileSHA256 = "4af0e4d71da789cff33dcb04dd0d4f653fb9e34559d54e820cf855ace6651946"
 
 type CloudV2Group struct {
 	ID             string `json:"id"`
