@@ -144,7 +144,6 @@ func TestClaimGrantExpiryDuringPrivateSourceReadProofRollsBackIntegration(t *tes
 	}
 	called := false
 	store.SetRunDataGuard(func(proofCtx context.Context, tx pgx.Tx, id string) error {
-		called = true
 		token, ok := ownership.TokenFromContext(proofCtx)
 		if !ok || token != (ownership.Token{SessionKey: "web:owner", RunID: "run", LeaseID: "lease", FenceEpoch: 4}) || id != "run" {
 			return errors.New("expired-grant check did not receive current PG read proof")
@@ -153,6 +152,7 @@ func TestClaimGrantExpiryDuringPrivateSourceReadProofRollsBackIntegration(t *tes
 		if tx.QueryRow(proofCtx, `SELECT expires_at>clock_timestamp() FROM action_authorizations WHERE authorization_id=$1`, grant.ID).Scan(&live) != nil || !live {
 			return errors.New("grant was not live before owning verifier wait")
 		}
+		called = true
 		// The actual DB wall clock crosses the immutable grant while its same
 		// transaction/read proof stays current. No forged clocks or expiry UPDATE.
 		_, err := tx.Exec(proofCtx, `SELECT pg_sleep(0.45)`)
