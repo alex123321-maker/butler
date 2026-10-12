@@ -124,8 +124,11 @@ func (s *DispatchStore) checkCurrent(ctx context.Context, tx pgx.Tx, d dispatch,
 	return s.provenance.CheckTx(ctx, tx, d.prepared.source, d.proof.LeaseID)
 }
 
-func (s *DispatchStore) begin(ctx context.Context, req *runtimev1.ExecuteRequest, ticket string) (context.Context, dispatch, Args, func(), error) {
+func (s *DispatchStore) begin(ctx context.Context, req *runtimev1.ExecuteRequest, ticket, rootIdentity string) (context.Context, dispatch, Args, func(), error) {
 	var empty dispatch
+	if !sha256Digest(rootIdentity) {
+		return nil, empty, Args{}, nil, ErrDenied
+	}
 	call, c, ec := req.GetToolCall(), req.GetContract(), req.GetContext()
 	if s == nil || call == nil || !ExactContract(c) || c.GetRuntimeTarget() != s.profile.Target || ec == nil || call.GetRunId() != ec.GetRunId() || call.GetToolCallId() != ec.GetToolCallId() || call.GetToolName() != ec.GetToolName() || ec.GetRuntimeTarget() != s.profile.Target || ec.GetActionFingerprint() == "" || len(call.GetCredentialRefs()) != 0 || len(req.GetResolvedCredentials()) != 0 || call.GetRuntimeTarget() != "" && call.GetRuntimeTarget() != s.profile.Target {
 		return nil, empty, Args{}, nil, ErrDenied
@@ -163,6 +166,10 @@ func (s *DispatchStore) begin(ctx context.Context, req *runtimev1.ExecuteRequest
 	if err = s.checkCurrent(owned, tx, d, b, ec.GetActionFingerprint()); err != nil {
 		stop()
 		return nil, empty, Args{}, nil, err
+	}
+	if _, err = tx.Exec(owned, `INSERT INTO code_workspace_executor_bindings(ticket_id,root_identity_hash) VALUES($1,$2)`, ticket, rootIdentity); err != nil {
+		stop()
+		return nil, empty, Args{}, nil, ErrDenied
 	}
 	tag, err := tx.Exec(owned, `UPDATE code_workspace_dispatches SET phase='running' WHERE ticket_id=$1 AND phase='prepared' AND deadline>clock_timestamp()`, ticket)
 	if err != nil || tag.RowsAffected() != 1 {

@@ -47,6 +47,27 @@ func (o *Observer) CheckOwner(owner *RootOwner) error {
 	return owner.checkRoot(o.root)
 }
 
+// Erased observes absence through the independently opened inode-bound handle.
+// Syncing the parent makes this an erasure receipt, never a verdict about the
+// original write or authority to erase/replay anything.
+func (o *Observer) Erased(ctx context.Context, id string) (Observation, error) {
+	decoded, err := hex.DecodeString(id)
+	if o == nil || ctx.Err() != nil || err != nil || len(decoded) != 16 || hex.EncodeToString(decoded) != id {
+		return Observation{}, ErrDenied
+	}
+	if _, err = o.root.Lstat(id); !os.IsNotExist(err) {
+		return Observation{}, ErrOutcomeUnknown
+	}
+	if syncDir(o.root, ".") != nil || ctx.Err() != nil {
+		return Observation{}, ErrOutcomeUnknown
+	}
+	if _, err = o.root.Lstat(id); !os.IsNotExist(err) {
+		return Observation{}, ErrOutcomeUnknown
+	}
+	digest := sha256.Sum256([]byte("workspace-erased:" + id))
+	return Observation{WorkspaceID: id, Kind: "erased", Digest: hex.EncodeToString(digest[:])}, nil
+}
+
 // Check bounded directory entries without reading any unclassified content.
 func exactEntries(r *os.Root, name string, names ...string) error {
 	info, err := r.Lstat(name)

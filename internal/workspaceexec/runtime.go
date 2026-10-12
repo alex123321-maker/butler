@@ -30,6 +30,8 @@ type Runtime struct {
 	owner     *workspace.RootOwner
 	lifecycle sync.RWMutex
 	closed    bool
+	copies    copyLanes
+	recovery  *RecoveryController
 }
 
 func NewRuntime(ctx context.Context, d *DispatchStore, root, token string) (*Runtime, error) {
@@ -51,6 +53,11 @@ func NewRuntime(ctx context.Context, d *DispatchStore, root, token string) (*Run
 		return nil, err
 	}
 	r := &Runtime{dispatch: d, observer: o, token: token, owner: owner}
+	r.recovery, err = NewRecoveryController(d.pool, d.provenance.sources)
+	if err != nil {
+		o.Close()
+		return nil, ErrDenied
+	}
 	g, err := workspace.NewResourceGuard(d.resources, r, r)
 	if err != nil {
 		o.Close()
@@ -263,7 +270,21 @@ func (r *Runtime) Execute(ctx context.Context, req *runtimev1.ExecuteRequest) (*
 	if len(auth) != 1 || subtle.ConstantTimeCompare([]byte(auth[0]), []byte("Bearer "+r.token)) != 1 || len(tickets) != 1 {
 		return fail()
 	}
-	owned, d, a, stop, err := r.dispatch.begin(ctx, req, tickets[0])
+	// No PG locks are retained while waiting for this copy's physical lane.
+	var workspaceID string
+	if r.dispatch.pool.QueryRow(ctx, `SELECT a.workspace_id FROM code_workspace_dispatches d JOIN code_workspace_authorizations a USING(authorization_id) WHERE d.ticket_id=$1 AND a.profile_id=$2`, tickets[0], r.dispatch.profile.ID).Scan(&workspaceID) != nil {
+		return fail()
+	}
+	release, err := r.copies.acquire(ctx, workspaceID, false)
+	if err != nil {
+		return fail()
+	}
+	defer release()
+	rootIdentity, err := r.owner.IdentityHash()
+	if err != nil {
+		return fail()
+	}
+	owned, d, a, stop, err := r.dispatch.begin(ctx, req, tickets[0], rootIdentity)
 	if err != nil {
 		return fail()
 	}
@@ -343,6 +364,13 @@ func (r *Runtime) RunPrivacyCleanup(ctx context.Context) error {
 type ownedPurge struct{ runtime *Runtime }
 
 func (p ownedPurge) PurgeWorkspace(ctx context.Context, id string) error {
+	// Privacy already owns PG rows. Try-only avoids inversion with Execute /
+	// recovery, which acquire this lane before their PG locks.
+	release, err := p.runtime.copies.acquire(ctx, id, true)
+	if err != nil {
+		return ErrDenied
+	}
+	defer release()
 	r := p.runtime
 	if r.owner.Check() != nil {
 		return ErrDenied

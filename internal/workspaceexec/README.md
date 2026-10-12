@@ -67,8 +67,8 @@ physical work. A lifecycle guard
 drains entered Execute/readiness/privacy work before Close releases ownership;
 Close is idempotent and a closed runtime denies future entry. Process death
 releases only the operating-system lock, preserving PG resource/effect history
-and quarantine. This is a prerequisite for later owner recovery, not an owner
-reconciliation decision or a new tool permission. Actual process/SIGKILL and PG
+and quarantine. This is a prerequisite for explicit owner discard, not itself an
+owner reconciliation decision or a new tool permission. Actual process/SIGKILL and PG
 pool2 Close-versus-Execute regressions run with
 `scripts/dev/workspace-lab.sh <isolated-agent-root> ownership`.
 
@@ -114,3 +114,16 @@ shortcuts and lost erasure acknowledgement with a restarted runtime. Run
 first, or `all` to include storage and Catalog privacy regressions. All builds and
 tests run on laba. See the [acceptance audit](../../docs/ai/workspace-provenance-acceptance.md)
 for exact snapshots, event digests and remaining issue17 gates.
+
+`RecoveryController` accepts discard-only controls from authenticated channel
+actors, with current workspace/resource/task CAS and stable delivery identity.
+Migration068 retains immutable actual executor inode bindings, owner decisions,
+one-use erasure attempt phases and independent receipts. The installed runtime
+polls only its profile's explicit decision queue. Per-copy execution exclusion
+precedes PG locks; independently bound Observer absence plus parent sync is
+required before reconciliation advances version/fence and retires the copy.
+Missing old binding, live tree/lease/executor, foreign/stale owner or source,
+changed CAS and invented receipts deny. `erasing` resumes observation only;
+another physical attempt requires another owner delivery with previous-decision
+CAS. Original unknown effects, source history and allowance stay retained.
+See [discard acceptance](../../docs/ai/workspace-owner-discard-acceptance.md).

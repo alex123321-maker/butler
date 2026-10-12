@@ -102,8 +102,8 @@ Compose shares only the private socket and token with Broker; artifact data and
 private temporary files remain exclusive to the runtime. Actual application tests
 cover loopback and Unix processes and scheduled physical source erasure.
 The overlay is explicit and has not been applied to main laba. Unknown writes
-remain quarantined; authenticated owner reconciliation and remaining integrated
-resource/delegation acceptance are still required for full#17.
+remain quarantined until explicit owner discard; remaining integrated resource
+acceptance is separately required for full#17.
 
 Each production workspace Runtime now holds an exclusive Linux directory-inode
 `flock` for the lifetime of its fixed private root. A second participating process
@@ -128,3 +128,54 @@ This lifetime primitive supplies neither execution authority nor evidence of
 effect absence. Authenticated owner reconciliation must still independently
 prove old-executor quiescence, exact evidence, authority and lease expiry; a
 successful restart alone cannot reconcile a resource or replay an operation.
+
+## Explicit owner discard
+
+The implemented recovery product choice is discard-only. An authenticated
+channel owner may request physical erasure of one exact quarantined copy;
+recovery never adopts bytes, resumes a task, retries a write, accepts a model
+verdict or changes the original unresolved effect into absent/completed. The
+copy ID remains permanently blocked with `owner_discarded`; preparing future
+work requires a new opaque copy and independently current action authority.
+
+Migration068 freezes the actual executor root's device/inode digest when the
+one-use dispatch becomes running. A current directory flock plus matching
+persisted digest excludes the old physical process; the runtime's per-copy lane
+also drains entered execution in the same process. Missing historical binding,
+an active old process or a replacement root deny. A new process/lease, stopped
+task row, expired resource lease, identical path or empty-looking directory is
+insufficient individually. Execute acquires its local lane before PG locks;
+privacy's already-locked cleanup tries the lane without waiting, avoiding a
+lock-order inversion. Different copies retain physical execution concurrency.
+
+The owner request accepts only opaque copy identity and current resource,
+workspace and task/constraints CAS. It derives the exact old dispatch, immutable
+owner/session/task/source graph, lease and fence server-side. The entire task
+tree must be terminal, every session must have no live executor lease, the old
+claimed write lease must naturally expire, and current original source and
+independent deletion-anchor checks must pass. Tree/ownership/task/source locks
+precede exact workspace/resource rows; fresh DB time is checked after waits.
+An unknown create may have no committed workspace row: its immutable prepared
+copy binding and running executor evidence still identify the private namespace.
+
+The authenticated decision and delivery fingerprint commit durably before the
+runtime consumes a one-use erasure attempt. `requested -> erasing` commits
+before any physical change. A second validation transaction retains current
+authority/source/resource locks through bounded local removal and parent sync;
+there is no RPC, provider inference or nested pool checkout under those locks.
+An independently opened, inode-bound Observer then verifies absence and syncs
+the parent, recording a content-free receipt. Only that private runtime proof
+can satisfy `resources.ReconcileTx`; no API/model receipt argument can do so.
+Successful discard advances resource observation version and writer fence,
+clears its inflight marker, records `reconciled` on the old lease, and retires the
+copy. Original effect/dispatch, provenance, allowance and reservation rows remain
+retained and unresolved; no refund, worker renewal or new lease is issued.
+
+After lost erasure/commit acknowledgment, durable `erasing` permits observation
+only. An absent namespace can finalize through a fresh independently synced
+receipt. A surviving/partial namespace remains unknown; another attempt needs a
+new explicit owner delivery naming the previous recovery ID and unchanged CAS.
+The prior decision/attempt becomes retained `superseded` history. Replaying the
+same owner delivery returns current observation and cannot erase again. Changed
+task/source/owner/version or unavailable physical evidence preserves quarantine.
+Retained executor, decision and receipt history prevents migration rollback.

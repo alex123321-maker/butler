@@ -70,6 +70,13 @@ func CheckDispatchSchema(ctx context.Context, pool *pgxpool.Pool) error {
 	if err != nil {
 		return err
 	}
+	if _, err = pool.Exec(ctx, `SELECT x.root_identity_hash,q.recovery_id,q.request_hash,q.phase,e.observation_hash FROM code_workspace_executor_bindings x,code_workspace_recoveries q,code_workspace_erasure_receipts e WHERE FALSE`); err != nil {
+		return ErrDenied
+	}
+	var recoveryIntact bool
+	if pool.QueryRow(ctx, `WITH expected(rel,name,fn,events) AS(VALUES ('code_workspace_executor_bindings','code_workspace_executor_bindings_immutable','butler_workspace_authorization_immutable()',27),('code_workspace_dispatches','code_workspace_dispatches_immutable','butler_workspace_dispatch_immutable()',27),('code_workspace_recoveries','code_workspace_recoveries_immutable','butler_workspace_recovery_immutable()',27),('code_workspace_erasure_receipts','code_workspace_erasure_receipts_immutable','butler_workspace_authorization_immutable()',27)) SELECT NOT EXISTS(SELECT 1 FROM expected e WHERE NOT EXISTS(SELECT 1 FROM pg_trigger t WHERE t.tgrelid=to_regclass(e.rel) AND t.tgname=e.name AND t.tgfoid=to_regprocedure(e.fn) AND t.tgtype=e.events AND t.tgenabled IN ('O','A') AND NOT t.tgisinternal))`).Scan(&recoveryIntact) != nil || !recoveryIntact {
+		return ErrDenied
+	}
 	var intact bool
 	err = pool.QueryRow(ctx, `WITH expected(rel,name,fn,events) AS (VALUES ('code_workspace_sources','code_workspace_sources_immutable','butler_workspace_source_immutable()',27),('memory_sources','code_workspace_source_deleted','butler_workspace_source_deleted()',17),('code_workspace_authorizations','code_workspace_authorizations_immutable','butler_workspace_authorization_immutable()',27),('code_workspace_effect_evidence','code_workspace_evidence_immutable','butler_workspace_authorization_immutable()',27)) SELECT NOT EXISTS(SELECT 1 FROM expected e WHERE NOT EXISTS(SELECT 1 FROM pg_trigger t WHERE t.tgrelid=to_regclass(e.rel) AND t.tgname=e.name AND t.tgfoid=to_regprocedure(e.fn) AND t.tgtype=e.events AND t.tgenabled IN ('O','A') AND NOT t.tgisinternal))`).Scan(&intact)
 	if err != nil || !intact {
