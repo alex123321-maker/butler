@@ -156,11 +156,14 @@ The [Google GenerationConfig reference](https://cloud.google.com/vertex-ai/gener
 documents the mutually exclusive OpenAPI and JSON Schema fields with JSON MIME.
 The [Gemini API reference](https://ai.google.dev/api/generate-content#GenerationConfig)
 currently labels its public `responseSchema` field deprecated. These public
-references establish a prospective serialization choice, not compatibility of
-the private daily Cloud Code endpoint or the cause of a prior model answer.
+references describe serialization. The separately frozen four-entry High
+diagnostic established compatibility of the private daily Cloud Code endpoint
+for two exact native extraction originals, with all four original replies/costs
+independently matched to PostgreSQL. Both legacy originals also passed; this
+proves neither causal superiority nor the cause of a prior model answer.
 High/thinking/allowances, request guards, raw-final retention and refusal to retry,
-repair or fall back are unchanged. Actual compatibility requires its own frozen
-bounded experiment with fresh inputs; old failed quality windows stay closed.
+repair or fall back are unchanged. See the [actual diagnostic audit](../../../docs/ai/scenario-schema-dialect-actual-audit-20261013.md).
+Full benchmark quality remains separate; old failed quality windows stay closed.
 
 Trusted request-local `transport.WithProviderStageObserver` can distinguish
 authentication, serialization, HTTP round trip and SSE reading for future

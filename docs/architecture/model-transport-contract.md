@@ -988,9 +988,13 @@ source and semantic validation remains mandatory, with original output preserved
 Model transport options cannot change dialect/model/effort/resources or add tools.
 The [public Google contract](https://cloud.google.com/vertex-ai/generative-ai/docs/reference/rest/v1beta1/GenerationConfig)
 documents this alternative; the [Gemini reference](https://ai.google.dev/api/generate-content#GenerationConfig)
-marks public `responseSchema` deprecated. Compatibility of private Cloud Code,
-model correctness and a cause of earlier failures remain unestablished until a
-separately reviewed finite fresh experiment. No fallback/repair/retry is added.
+marks public `responseSchema` deprecated. A separately reviewed fixed four-entry
+High diagnostic established private Cloud Code compatibility for two exact native
+extraction originals and correlated all four original replies/costs with owning
+PostgreSQL. Both legacy originals also passed; this does not establish causal
+quality superiority, general model correctness or a cause of earlier failures.
+See [actual compatibility evidence](../ai/scenario-schema-dialect-actual-audit-20261013.md).
+No fallback/repair/retry is added.
 
 Only typed code-owned instructions carry system role; external/context/derived observations carry provenance as data. Secret-class inputs fail before serialization. Budget037 passes a private input byte cap and the native provider checks its complete actual request, including prior function calls, thought signatures and tool results, before HTTP. Other adapters have serialization guards but need verified capacity/cost declarations before budgeted production inference. HTTP error status is retained without untrusted body/code/details; no raw network error or response content enters durable error events. Production auxiliary model/embed adapters have no durable job-owned admission and remain disabled. See [agent security boundaries](agent-security-boundaries.md).
 

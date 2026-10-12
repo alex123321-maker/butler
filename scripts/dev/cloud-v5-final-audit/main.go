@@ -146,7 +146,10 @@ func encodingReason(raw []byte) string {
 
 func readRaw(path string) ([]byte, error) {
 	stat, err := os.Lstat(path)
-	if err != nil || !stat.Mode().IsRegular() || stat.Mode().Perm() != 0600 || stat.Size() > 8192 {
+	// The producer's whole SSE body is bounded to16MiB. Original rejected finals
+	// have a separate forensic bound; accepted visible output remains8192bytes.
+	const rawLimit = 16 << 20
+	if err != nil || !stat.Mode().IsRegular() || stat.Mode().Perm() != 0600 || stat.Size() > rawLimit {
 		return nil, errors.New("private raw identity denied")
 	}
 	f, err := os.Open(path)
@@ -158,7 +161,7 @@ func readRaw(path string) ([]byte, error) {
 	if err != nil || !os.SameFile(stat, opened) {
 		return nil, errors.New("private raw identity changed")
 	}
-	raw, err := io.ReadAll(io.LimitReader(f, 8193))
+	raw, err := io.ReadAll(io.LimitReader(f, rawLimit+1))
 	if err != nil || int64(len(raw)) != stat.Size() {
 		return nil, errors.New("private raw bytes denied")
 	}
@@ -180,14 +183,30 @@ func validDiagnosticRow(d diagnostic, baseline, index int) bool {
 		return false
 	}
 	switch d.Stage {
-	case "provider_start", "stream_lifecycle", "foreign_run", "version_contract", "usage_contract", "usage_allowance", "forbidden_tool_proposal", "provider_stream", "final_contract", "output_encoding_contract", "incomplete_lifecycle", "metadata_contract", "attempt_deadline", "context_cancelled", "completed":
+	case "provider_start", "stream_lifecycle", "foreign_run", "version_contract", "usage_contract", "usage_allowance", "forbidden_tool_proposal", "provider_stream", "final_contract", "output_encoding_contract", "forensic_retention_bound", "critical_schema_contract", "critical_source_contract", "critical_authority_contract", "critical_tool_contract", "incomplete_lifecycle", "metadata_contract", "attempt_deadline", "context_cancelled", "completed":
 	default:
 		return false
 	}
 	if d.Outcome == "completed" {
 		return d.Clean && d.Finals == 1 && d.Terminals == 1 && d.Finish != nil && *d.Finish == "STOP" && d.Version != nil && *d.Version == acceptance.CloudV5ExpectedModelVersion && d.Reason == "json_object" && d.Code == "" && d.Stage == "completed" && d.ProviderStage != nil && *d.ProviderStage == string(transport.ProviderStageStream)
 	}
+	if strings.HasPrefix(d.Stage, "critical_") && d.Code != string(transport.ErrorTypeProviderProtocolError) {
+		return false
+	}
 	return true
+}
+
+func criticalOriginalStage(check acceptance.CloudResponseCheck) string {
+	if check.UnsafeAuthority {
+		return "critical_authority_contract"
+	}
+	if check.SourceFabrication {
+		return "critical_source_contract"
+	}
+	if check.SchemaError {
+		return "critical_schema_contract"
+	}
+	return ""
 }
 
 func run() error {
@@ -323,6 +342,13 @@ func run() error {
 		if !ok || !validDiagnosticRow(d, audit.HistoricalAttempts, i) || d.Ordinal != p.Ordinal || d.Context != p.Context || d.Context != safe.Context || d.Outcome != p.Outcome || !reflect.DeepEqual(d.Input, p.InputTokens) || !reflect.DeepEqual(d.Output, p.OutputTokens) || !reflect.DeepEqual(d.Total, p.TotalTokens) || !reflect.DeepEqual(d.Version, a.ProviderModelVersion) {
 			return errors.New("exact diagnostic SQL measurement mismatch")
 		}
+		if d.Stage == "critical_tool_contract" && !a.UnsafeToolProposal {
+			return errors.New("critical tool observation contradicted")
+		}
+		originalCritical := d.Stage == "critical_schema_contract" || d.Stage == "critical_source_contract" || d.Stage == "critical_authority_contract"
+		if originalCritical && (!d.Retained || d.Reason != "json_object") {
+			return errors.New("critical original response unavailable")
+		}
 		if !d.Retained {
 			if d.Outcome == "completed" {
 				return errors.New("completed original bytes unavailable")
@@ -340,6 +366,15 @@ func run() error {
 			return errors.New("private original byte/category mismatch")
 		}
 		rawCount++
+		if originalCritical {
+			original, exists := goldens[a.CaseID]
+			// Recompute the collector's input/source/schema gate without expected
+			// labels. The separate full scorer still uses signed golden authority.
+			original.Golden = nil
+			if !exists || criticalOriginalStage(acceptance.VerifyCloudV5Response(original, raw)) != d.Stage {
+				return errors.New("critical original response category mismatch")
+			}
+		}
 		if d.Outcome == "completed" {
 			if !d.Clean || d.Finals != 1 || d.Terminals != 1 || d.Finish == nil || *d.Finish != "STOP" || d.Version == nil || *d.Version != acceptance.CloudV5ExpectedModelVersion || d.Reason != "json_object" || d.Code != "" || d.Stage != "completed" {
 				return errors.New("completed native state contradicted")

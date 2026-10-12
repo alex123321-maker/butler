@@ -69,4 +69,17 @@ func TestFinalAuditChecksExactPrivateBytesAndEncoding(t *testing.T) {
 	if _, err = readRaw(path); err == nil {
 		t.Fatal("public raw file accepted")
 	}
+	if os.Chmod(path, 0600) != nil || os.WriteFile(path, []byte(strings.Repeat("x", 8193)), 0600) != nil {
+		t.Fatal("oversize forensic fixture denied")
+	}
+	raw, err = readRaw(path)
+	if err != nil || len(raw) != 8193 || encodingReason(raw) != "visible_bound" {
+		t.Fatal("rejected original bytes lost or visible allowance expanded")
+	}
+	if os.Truncate(path, (16<<20)+1) != nil {
+		t.Fatal("hard bound fixture denied")
+	}
+	if _, err := readRaw(path); err == nil {
+		t.Fatal("upstream hard raw bound expanded")
+	}
 }

@@ -1,5 +1,23 @@
 # Observation-only contract evaluation
 
+The separate fresh V5 protocol uses the actual independently audited283-attempt
+quality-start history, including four compatible schema-dialect observations.
+Its corrected240-original corpus and golden are separately reviewed and signed;
+236 non-secret quality calls plus16 fixed single/multi comparison calls form one
+fresh finite window. Numeric criteria, original witness checks and complete new
+cost gates remain unchanged. Compatibility observations are no quality PASS and
+projected535 is no native-chain admission premise. V4 and earlier NO_GO windows
+remain sealed. See [V5 design](../ai/scenario-cloud-prospective-v5-design-20261013.md).
+
+The V5-only forensic observer stores exact first-final bytes even when a reply
+exceeds the8192visible-byte acceptance limit, up to the existing16MiB transport
+whole-SSE bound. Accepted outputs/criteria remain8192bytes; rejected oversize
+stays failed and can never be repaired or resampled. Original files are separate
+exclusive0600 private leaves; PostgreSQL owns spend and immutable safe failure/
+retention metadata before file I/O. Missing/failed retention denies further
+admission and full acceptance. The independent read-only auditor validates the
+same original bound and recomputes critical schema/source/authority categories.
+
 The separate prospective V4 protocol carries the complete268-attempt history
 into a fresh236-quality/16-comparison window. Its240 newly authored examples and
 all original witnesses, grouped splits and near-duplicate findings receive a

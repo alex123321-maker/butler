@@ -42,9 +42,14 @@ can continue past encoding-only failures only with clean lifecycle, complete
 known cost/version and retained raw bytes. Two exact native-dialect witnesses
 plus independent ordered PostgreSQL/raw correlation are required before V5
 quality admission. Diagnostic examples and results are not benchmark PASS.
-Until actual diagnostic evidence establishes the spent history and compatibility,
-V5 native baseline/window/signature gates remain unset and deny invocation.
-No proposed279–283 outcome is treated as already measured.
+The actual independently correlated diagnostic completed280–283, with both
+native originals exact and all four costs known. Its sealed
+[compatibility audit](scenario-schema-dialect-actual-audit-20261013.md) carries
+the actual quality-start history to283, rather than a proposed count. It proves
+no full quality result. The corrected independently reviewed V5 golden has a
+separate public signature; the unused initial signature remains revoked and
+immutable. Native quality still requires a freshly committed/frozen collector,
+all offline guards, trusted283 history and separate independent source approval.
 
 The separately frozen eventual quality window has252 new requests, at most75
 minutes and concurrency1. Its cumulative ceiling is the actual audited baseline
@@ -61,6 +66,17 @@ responses/private paths never enter model export or public reports. Failed and
 pending entries cannot reset the allowance or admit another concurrent request.
 The8MiB complete report framing retains finals plus all metadata without widening
 an individual8192-byte final.
+
+V5 uses a separate forensic capture implementation; the sealed earlier diagnostic
+observer stays byte-identical. A rejected final exceeding8192visible bytes is
+still preserved privately up to the existing transport's16MiB whole-SSE bound.
+It remains `visible_bound`, failed, absent from accepted output and cannot admit
+another request. Originals use exclusive0600 files and only byte/hash/category
+metadata leaves the observer. A synthetic producer exceeding that hard forensic
+bound records `forensic_retention_bound` and failed retention, never a claim that
+the original was saved. SQL spend always precedes file persistence. The final
+read-only auditor permits the same forensic bound but leaves visible scoring
+and resource allowances unchanged.
 
 Pure V5 witness checking reuses V4's immutable strict witness helper, and group/
 case shape validation uses a temporary value with V4's shape version. No old data,

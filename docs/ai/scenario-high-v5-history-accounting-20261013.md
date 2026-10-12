@@ -20,7 +20,11 @@ Tests reject fake PASS, refund, erased unknowns, omitted rows or changed cost.
 Actual279-entry SHA is
 `5a91d598ae6f94a82fdab88d6305a214104d4ecd1bd59274546b1e4269071694`.
 
-This accounting names a future protocol version but proves no V5 quality result.
-Future diagnostics and quality require independent fresh review, concrete
-actual baselines, immutable source/runtime pins and separate finite windows.
-No old allowance can be resumed. See the [closed V4 audit](scenario-cloud-v4-independent-audit-20261013.md).
+The separate actual four-entry dialect diagnostic subsequently spent280–283.
+The new `readScenarioHighV5QualityHistory` reader extends this immutable279
+reader with its independently audited evidence. Actual283 history has257known
+visible pairs/26 NULL,162673/6484known input/output and289855known total with46
+unknown totals. Read the [actual diagnostic audit and folded history](scenario-schema-dialect-actual-audit-20261013.md).
+Neither accounting reader proves V5 quality or revives an old allowance. Full
+quality requires separately reviewed immutable source/runtime and a new finite
+window. See the [closed V4 audit](scenario-cloud-v4-independent-audit-20261013.md).

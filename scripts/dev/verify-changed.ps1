@@ -30,8 +30,13 @@ foreach ($file in $files) {
       [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
       [void]$specs.Add("docs/architecture/credential-management.md")
-      [void]$tests.Add("SSH laba: scenario-schema-dialect-high-lab.sh FRESH_DIAGNOSTIC_ROOT prepare EXACT_COMMIT (zero inference; separate reviewed native gate)")
+      [void]$tests.Add("Read-only schema-dialect-final-audit-reproduce.sh against frozen a200 source; exact safe SHA and pure history283 checks. Diagnostic root is sealed: never Sync or execute.")
       [void]$tests.Add("SSH laba: scenario-shadow-v5-high-lab.sh FRESH_V5_ROOT offline EXACT_COMMIT (zero inference; baseline and compatibility must be established before signed preparation)")
+      continue
+    }
+    "^(deploy/acceptance/schema-dialect-|scripts/dev/schema-dialect-final-audit-reproduce[.]sh$)" {
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$tests.Add("Read-only frozen schema-dialect original-byte/PG audit reproduction; verify copied artifact SHA256 and pure history283. Zero inference; diagnostic root is sealed.")
       continue
     }
     "^(deploy/acceptance/(cloud-fresh-v4-|scenario-fault-v4-)|scripts/dev/cloud-v4-final-audit-reproduce[.]sh$)" {

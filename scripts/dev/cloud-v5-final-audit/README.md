@@ -14,6 +14,13 @@ Also mount the separately prepared actual intervening history at
 `-history-sha256`. Missing history denies admission; a projected283-entry
 ceiling or the collector's own history cannot establish this expectation.
 
+The audit retains the8192-byte visible acceptance bound and separately permits
+named original forensic leaves up to the transport's16MiB whole-body bound.
+An8193-byte original remains a visible_bound failure; preserving it cannot make
+it an accepted answer. Critical schema/source/authority stages are recomputed
+from the exact original bytes and frozen originals; tool violations must match
+the recorded forbidden proposal. Safe failure categories never contain raw text.
+
 The audit reuses frozen programmatic scoring, verifies every SQL measurement,
 retained original byte/hash/mode/category and completed lifecycle, and checks
 synthesis inputs against the actual children. Its stdout is a content-free

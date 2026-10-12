@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/butler/butler/internal/acceptance"
+	"github.com/butler/butler/internal/transport"
 )
 
 func TestFinalAuditActualBaselineStageAndClosedCategory(t *testing.T) {
@@ -46,5 +47,31 @@ func TestFinalAuditActualBaselineStageAndClosedCategory(t *testing.T) {
 				t.Fatal("safe failed-spend diagnostic lost")
 			}
 		})
+	}
+}
+
+func TestFinalAuditRecomputesCriticalCategoryWithoutRepair(t *testing.T) {
+	for _, stage := range []string{"critical_schema_contract", "critical_source_contract", "critical_authority_contract", "critical_tool_contract"} {
+		d := diagnostic{Ordinal: 284, Outcome: "transport_error", Stage: stage, Code: string(transport.ErrorTypeProviderProtocolError)}
+		if !validDiagnosticRow(d, 283, 0) {
+			t.Fatal("critical failed spend lost")
+		}
+		d.Code = ""
+		if validDiagnosticRow(d, 283, 0) {
+			t.Fatal("unclassified critical failure accepted")
+		}
+	}
+	for _, tc := range []struct {
+		check acceptance.CloudResponseCheck
+		stage string
+	}{
+		{acceptance.CloudResponseCheck{}, ""},
+		{acceptance.CloudResponseCheck{SchemaError: true}, "critical_schema_contract"},
+		{acceptance.CloudResponseCheck{SchemaError: true, SourceFabrication: true}, "critical_source_contract"},
+		{acceptance.CloudResponseCheck{SchemaError: true, SourceFabrication: true, UnsafeAuthority: true}, "critical_authority_contract"},
+	} {
+		if criticalOriginalStage(tc.check) != tc.stage {
+			t.Fatal("original critical priority changed")
+		}
 	}
 }

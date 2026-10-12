@@ -1,13 +1,15 @@
 # Orchestrator
 
-Current issue33 evidence is279 spent High attempts. The closed V4 window added11
+Current issue33 evidence is283 spent High attempts. The closed V4 window added11
 measured requests, retained every bounded original final and independently matched
 PostgreSQL. Its quality/comparison and520-entry chain prerequisite are NO_GO.
-The pure additive V5 history reader carries253 known visible cost pairs and26
-NULL pairs. Original266's discarded cause remains UNKNOWN. A distinct four-entry
-schema-dialect diagnostic and fresh V5 quality protocol are prospective and closed
-until their own independent reviews and actual prerequisites are established.
-See the [closed V4 audit](../../docs/ai/scenario-cloud-v4-independent-audit-20261013.md).
+The separate four-entry schema-dialect diagnostic passed independent original-byte/
+SQL correlation, including two exact native schema witnesses. Its additive pure
+quality-start reader carries257known visible cost pairs and26NULL pairs; known
+total289855 still has46historical unknown totals. Original266's discarded cause
+remains UNKNOWN. Fresh V5 full quality/comparison and native chain remain separate
+required gates. See the [actual diagnostic audit](../../docs/ai/scenario-schema-dialect-actual-audit-20261013.md)
+and [closed V4 audit](../../docs/ai/scenario-cloud-v4-independent-audit-20261013.md).
 
 The historical additive V4 acceptance reader preserves268 spent High attempts and all old
 unknown costs/verdicts. Its full shadow collector saves owning PostgreSQL spend
