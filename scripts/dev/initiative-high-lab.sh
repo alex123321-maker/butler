@@ -91,7 +91,9 @@ go test -c -race -p 1 -o /binaries/tool-extension.test ./apps/tool-extension/int
 go test -c -race -p 1 -o /binaries/orchestrator.test ./apps/orchestrator/internal/app
 chmod 555 /binaries/*
 export BUTLER_EXTENSION_E2E=1 BUTLER_BROKER_E2E_BINARY=/binaries/tool-broker BUTLER_EXTENSION_E2E_BINARY=/binaries/tool-extension.test
-go test -json -race -p 1 -count=1 -timeout=4m -run "^Test(InitiativeProject(FinalProjection|ChecksRealBrokerE2E)|InitiativeHigh(History|LimitIntegration|RevalidationIntegration|PreservesSpentDelegationWindowIntegration|ExpiryAfterRowWaitIntegration|ProviderRejectsUnownedRunIntegration)|NativeDelegationPrivateRuntimeFiles)$" ./apps/orchestrator/internal/app
+go test -json -race -p 1 -count=1 -timeout=4m -run "^Test(InitiativeProjectFinalProjection|InitiativeHigh(History|LimitIntegration|RevalidationIntegration|PreservesSpentDelegationWindowIntegration|ExpiryAfterRowWaitIntegration|ProviderRejectsUnownedRunIntegration)|NativeDelegationPrivateRuntimeFiles)$" ./apps/orchestrator/internal/app
+# The real-process fixture intentionally resolves migrations from repository root.
+go tool test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /binaries/orchestrator.test -test.v -test.timeout=4m -test.run "^TestInitiativeProjectChecksRealBrokerE2E$"
 go test -json -race -p 1 -count=1 -timeout=3m ./apps/orchestrator/internal/initiative
 go vet ./apps/orchestrator/internal/app ./apps/orchestrator/internal/initiative ./scripts/dev/delegation-final-tls
 ' > "$proof/tests.jsonl"
@@ -115,7 +117,7 @@ if [[ "$phase" == prepare ]]; then
   exit 0
 fi
 docker create --name "$name-runtime" --runtime runc --user 10001:10001 --network "$network" \
-  --memory 1536m --pids-limit 160 --cpus 2 --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+  --memory 1536m --pids-limit 160 --cpus 2 --read-only --cap-drop ALL --security-opt no-new-privileges:true --workdir /src \
   --volume "$source_dir:/src:ro" --volume "$proof/binaries:/binaries:ro" --volume "$proof/runtime:/private" \
   --volume "$import_file:/home/butler/.gemini/antigravity-cli/butler-native-import.json:ro" \
   --env TMPDIR=/private --env HOME=/home/butler \
