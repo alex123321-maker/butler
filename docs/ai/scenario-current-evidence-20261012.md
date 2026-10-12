@@ -51,11 +51,13 @@ counter, marker, database or deployment. All previous native windows remain
 sealed. Any later native experiment needs its own finite scope and window and
 must carry this entire 45-attempt baseline.
 
-## Active #33 work
+## Accepted #33 components and remaining work
 
-Independent subagents are preparing a supplementary typed command/witness
-corpus, future tool-turn usage accounting, and actual converter/result/outbox
-fault checks. The existing signed 240-example Russian corpus remains unchanged.
+Three subagents completed a supplementary typed command/witness corpus, future
+tool-turn usage accounting, and actual converter/result/outbox fault checks.
+Root combined-source [integration](scenario-integration-20261012.md) passed all
+four checks, race/vet, 293 passing names and no failures/skips. The changes are
+tracked in PR73. The existing signed 240-example Russian corpus remains unchanged.
 Fixture validation does not establish model quality. A saved transport attempt
 notice does not establish verified-result delivery or a single final notice.
 
