@@ -140,8 +140,22 @@ status=0
 mkdir "$window/native-started"
 printf '%s\n' "$proof" > "$window/native-started/proof-ref"
 docker start -a "$name-runtime" > "$proof/native-events.txt" 2>&1 || status=$?
+# A separate read-only PostgreSQL snapshot is independent of collector report
+# serialization. Select only these immutable fixture metadata/usage columns.
+docker exec "$name-pg" psql -q -A -t -v ON_ERROR_STOP=1 -U fixture -d butler_shadow_v2_test -c '
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;
+SELECT json_build_object(
+  '\''version'\'','\''butler-cloud-v2-pg-witness-v1'\'',
+  '\''window'\'',(SELECT json_build_object('\''attempts'\'',attempts,'\''baseline_hash'\'',baseline_hash,'\''policy_hash'\'',policy_hash,'\''expires_at'\'',expires_at) FROM fixture_scenario_shadow_v2_limit WHERE singleton),
+  '\''attempts'\'',(SELECT COALESCE(json_agg(json_build_object(
+    '\''ordinal'\'',ordinal,'\''phase'\'',phase,'\''case_id'\'',case_id,'\''role'\'',role,'\''context_id'\'',context_id,
+    '\''input_hash'\'',input_hash,'\''created_at'\'',created_at,'\''outcome'\'',outcome,
+    '\''input_tokens'\'',input_tokens,'\''output_tokens'\'',output_tokens,'\''total_tokens'\'',total_tokens,'\''output_hash'\'',output_hash
+  ) ORDER BY ordinal),'\''[]'\''::json) FROM fixture_scenario_shadow_v2_attempts));
+COMMIT;
+' > "$proof/pg-witness.json" 2> "$proof/pg-witness-diagnostics.log" || status=1
 # The complete private report and per-attempt immutable files survive all failures.
 docker run --rm --network none --user 10001:10001 --volume "$proof/runtime:/private:ro" alpine:3.22 cat /private/observations.json > "$proof/observations.json" || status=1
-sha256sum "$proof/observations.json" "$proof/native-events.txt" > "$proof/native-evidence.sha256"
+sha256sum "$proof/observations.json" "$proof/native-events.txt" "$proof/pg-witness.json" > "$proof/native-evidence.sha256"
 [[ "$status" == 0 ]] || exit "$status"
 printf '{"status":"shadow_window_passed","maximum_total_attempts":480,"maximum_new_attempts":252,"issue33_ready":false}\n'
