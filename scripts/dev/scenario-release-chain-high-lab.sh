@@ -70,7 +70,7 @@ docker run --rm --runtime runc --pull never --network "$network" --read-only --u
   /bin-proof/app.test -test.v=test2json -test.timeout=3m '-test.run=^TestReleaseChainHigh(Window|AllFailedEntries|TerminalMetadata|OperationalPrerequisite)' > "$proof/tests.jsonl"
 ! grep -Eq '"Action":"(skip|fail)"' "$proof/tests.jsonl"
 required=(TestReleaseChainHighOperationalPrerequisiteIsNotApproved TestReleaseChainHighWindowSharedCeilingRestartAndExpiryIntegration TestReleaseChainHighWindowChecksDeadlineAfterCounterWaitIntegration TestReleaseChainHighWindowSharesCounterAcrossPrivateTaskSchemasIntegration TestReleaseChainHighAllFailedEntriesSpentButSourceDenialZeroIntegration TestReleaseChainHighTerminalMetadataRetainedAndReleaseGatedIntegration)
-for case_name in failed_terminal_known untrusted_diagnostic_type conflicting_complete_usage true_zero_triple missing_total_legacy_pair missing_metadata missing_version incomplete_final_stream completed_final; do required+=("TestReleaseChainHighTerminalMetadataRetainedAndReleaseGatedIntegration/$case_name"); done
+for case_name in failed_terminal_known untrusted_diagnostic_type known_batch_cost_denied conflicting_complete_usage true_zero_triple missing_total_legacy_pair missing_metadata missing_version missing_terminal_known completed_final; do required+=("TestReleaseChainHighTerminalMetadataRetainedAndReleaseGatedIntegration/$case_name"); done
 for test_name in "${required[@]}"; do
   [[ "$(awk -v needle="\"Test\":\"$test_name\"" 'index($0,"\"Action\":\"pass\"") && index($0,needle) { n++ } END { print n+0 }' "$proof/tests.jsonl")" == 1 ]]
 done

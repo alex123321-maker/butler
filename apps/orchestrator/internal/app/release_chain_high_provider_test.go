@@ -107,7 +107,7 @@ func (p *chainHighProvider) entry(ctx context.Context, kind, run string, input a
 					}
 				}
 				if usage != nil {
-					completeUsage := event.EventType == transport.EventTypeAssistantFinal || event.EventType == transport.EventTypeToolCallRequested || event.EventType == transport.EventTypeRunCompleted || event.EventType == transport.EventTypeTransportError
+					completeUsage := event.EventType == transport.EventTypeAssistantFinal || event.EventType == transport.EventTypeToolCallRequested || event.EventType == transport.EventTypeToolCallBatchRequested || event.EventType == transport.EventTypeRunCompleted || event.EventType == transport.EventTypeTransportError
 					if !completeUsage || usage.Validate() != nil || observed != nil && *observed != *usage {
 						usageUncertain = true
 						event = transport.NewTransportErrorEvent(run, p.Name(), errors.New("invalid native usage observation"))
@@ -124,6 +124,12 @@ func (p *chainHighProvider) entry(ctx context.Context, kind, run string, input a
 						copy := *v
 						version = &copy
 					}
+				}
+				// The provider parsed this complete response packet before emitting
+				// it. Later EOF/cancellation is a lifecycle failure, not evidence
+				// that uniquely validated packet metadata was never observed.
+				if event.EventType == transport.EventTypeAssistantFinal || event.EventType == transport.EventTypeToolCallBatchRequested {
+					observedComplete = true
 				}
 				// A tool or final answer can lead to another request or an effect.
 				// Stop before releasing it if this prospective experiment cannot

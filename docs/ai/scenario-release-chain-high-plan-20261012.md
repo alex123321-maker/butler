@@ -75,7 +75,9 @@ Content-free request evidence preserves ordinal, scenario, entry kind, root/run
 IDs, parent/child classification, input hash, admission/finish times, owning entry
 elapsed milliseconds, outcome, allowlisted failure stage/code, observed
 input/output/complete total and native version. A failed terminal retains uniquely
-validated complete measurements; absent, conflicting or incomplete observations
+validated complete packet measurements, including a denied batch or a parsed
+final packet followed by EOF/cancellation without the lifecycle terminal; neither
+case releases its action/final. Absent, conflicting or incomplete observations
 remain NULL. A real zero input/output/total triple remains known zero; a legacy
 nonzero pair with missing zero total retains that pair with NULL total. Tools and
 final text require the complete total and exact version before release. Final

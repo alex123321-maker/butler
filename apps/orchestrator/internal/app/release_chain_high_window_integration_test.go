@@ -287,6 +287,8 @@ func TestReleaseChainHighTerminalMetadataRetainedAndReleaseGatedIntegration(t *t
 	}
 	untrustedError := errorEvent(&known, &version)
 	untrustedError.TransportError = &transport.Error{Type: transport.ErrorType("PRIVATE_TYPE"), Message: "PRIVATE_MESSAGE", ProviderCode: "PRIVATE_CODE", ProviderDetails: map[string]any{"PRIVATE_KEY": "PRIVATE_VALUE"}}
+	batch := transport.NewToolCallBatchRequestedEvent("chain-run", antigravity.Name, transport.ToolCallBatch{ToolCalls: []transport.ToolCallRequest{{ToolName: "synthetic.read", ArgsJSON: `{}`}, {ToolName: "synthetic.write", ArgsJSON: `{}`}}})
+	batch.Usage, batch.ProviderModelVersion = &known, &version
 	for _, tc := range []struct {
 		name    string
 		events  []transport.TransportEvent
@@ -299,12 +301,13 @@ func TestReleaseChainHighTerminalMetadataRetainedAndReleaseGatedIntegration(t *t
 	}{
 		{"failed_terminal_known", []transport.TransportEvent{errorEvent(&known, &version)}, &known, true, true, "transport_error", 0, 0},
 		{"untrusted_diagnostic_type", []transport.TransportEvent{untrustedError}, &known, true, true, "transport_error", 0, 0},
+		{"known_batch_cost_denied", []transport.TransportEvent{batch}, &known, true, true, "transport_error", 0, 0},
 		{"conflicting_complete_usage", []transport.TransportEvent{finalEvent(&known, &version), errorEvent(&changed, &version)}, nil, true, false, "transport_error", 0, 0},
 		{"true_zero_triple", []transport.TransportEvent{toolEvent(&zero, &version)}, &zero, true, true, "completed", 1, 0},
 		{"missing_total_legacy_pair", []transport.TransportEvent{toolEvent(&legacy, &version)}, &legacy, true, false, "transport_error", 0, 0},
 		{"missing_metadata", []transport.TransportEvent{toolEvent(nil, nil)}, nil, false, false, "transport_error", 0, 0},
 		{"missing_version", []transport.TransportEvent{finalEvent(&known, nil)}, &known, false, true, "transport_error", 0, 0},
-		{"incomplete_final_stream", []transport.TransportEvent{finalEvent(&known, &version)}, nil, false, false, "transport_error", 0, 0},
+		{"missing_terminal_known", []transport.TransportEvent{finalEvent(&known, &version)}, &known, true, true, "transport_error", 0, 0},
 		{"completed_final", []transport.TransportEvent{finalEvent(&known, &version), transport.NewTerminalEvent("chain-run", transport.EventTypeRunCompleted, antigravity.Name)}, &known, true, true, "completed", 0, 1},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -316,7 +319,7 @@ func TestReleaseChainHighTerminalMetadataRetainedAndReleaseGatedIntegration(t *t
 			}
 			tools, finals := 0, 0
 			for event := range stream {
-				if event.EventType == transport.EventTypeToolCallRequested {
+				if event.EventType == transport.EventTypeToolCallRequested || event.EventType == transport.EventTypeToolCallBatchRequested {
 					tools++
 				}
 				if event.EventType == transport.EventTypeAssistantFinal {
