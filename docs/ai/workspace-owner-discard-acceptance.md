@@ -128,6 +128,21 @@ and stale old-worker refusal, fresh current discovery, foreign/stale/wrong-CAS/
 same-delivery/no-previous refusal, distinct new intent, no old physical receipt,
 independent actual erasure and original effect/budget retention.
 
+Final supersession source `84a96b9398e44c1b8309792f87dfd8f8daae0b73`, snapshot
+`20261012-154124-629`, passed the affected `all` suite:447 test/subtest names,
+228 top-level tests across11 packages,0 failures; race/vet/builds passed. The same
+11 explicit opt-in skips above remain, without newly omitted recovery tests.
+Proof `workspace-20261012T084128Z-738153`, events SHA256
+`cadd413e12a2bb8e7714ddc1cfe9c9ece72b61f9addfc0d245cf9aef19e04a4d`.
+Tested byte pins: `recovery.go`
+`72d47ede46a3696f49d1d1b2853ee1138f346e82f14aa4a45c4012c6d83370ad`,
+`recovery_supersession_integration_test.go`
+`6eed1a25366c5ff10d2346ec2168fe12e94448859611a965f1553bc701a237e7`,
+migration068 up
+`cbdb717a3e529ad7aa03b9400531a501142e462d4d8143bbc84cf92d4c286ca7`.
+Public owner API/UI/bootstrap compilation and current decision/reload flow are
+validated separately on the combined root source. No provider calls occurred.
+
 Run only on laba with a unique disposable root:
 `scripts/dev/workspace-lab.sh <isolated-agent-root> recovery`, then `all` for the
 affected runtime, source/Catalog, Broker, action authorization and application
