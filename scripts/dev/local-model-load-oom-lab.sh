@@ -51,7 +51,7 @@ docker create --name "$container" --runtime runc --user 10001:10001 --network no
 created=true
 # Assert actual Docker policy before starting the one load; no socket, source,
 # database, credentials, observer server or GPU is accessible in this container.
-actual=$(docker inspect --format '{{.Image}}|{{.HostConfig.Memory}}|{{.HostConfig.MemorySwap}}|{{.HostConfig.NanoCpus}}|{{.HostConfig.PidsLimit}}|{{.HostConfig.Runtime}}|{{.HostConfig.NetworkMode}}|{{.Config.User}}|{{.HostConfig.ReadonlyRootfs}}|{{len .Mounts}}|{{range .Mounts}}{{.Destination}}:{{.RW}}{{end}}|{{len .HostConfig.Devices}}|{{len .HostConfig.DeviceRequests}}|{{.HostConfig.Privileged}}|{{json .HostConfig.CapDrop}}|{{json .HostConfig.SecurityOpt}}' "$container")
+actual=$(docker inspect --format '{{.Image}}|{{.HostConfig.Memory}}|{{.HostConfig.MemorySwap}}|{{.HostConfig.NanoCpus}}|{{.HostConfig.PidsLimit}}|{{.HostConfig.Runtime}}|{{.HostConfig.NetworkMode}}|{{.Config.User}}|{{.HostConfig.ReadonlyRootfs}}|{{len .Mounts}}|{{range .Mounts}}{{.Destination}}:{{.RW}}{{end}}|{{len .HostConfig.Devices}}|{{if .HostConfig.DeviceRequests}}{{len .HostConfig.DeviceRequests}}{{else}}0{{end}}|{{.HostConfig.Privileged}}|{{json .HostConfig.CapDrop}}|{{json .HostConfig.SecurityOpt}}' "$container")
 [[ "$actual" == "$image|268435456|268435456|1000000000|64|runc|none|10001:10001|true|1|/model.gguf:false|0|0|false|[\"ALL\"]|[\"no-new-privileges:true\"]" ]]
 printf '%s\n' "$actual" > "$proof/isolation.txt"
 docker start "$container" >/dev/null

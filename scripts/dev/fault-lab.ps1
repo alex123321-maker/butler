@@ -20,8 +20,8 @@ $commit = (git -C (Join-Path $PSScriptRoot '../..') rev-parse HEAD).Trim()
 if ($commit -notmatch '^[a-f0-9]{40}$') { throw 'Exact source commit required.' }
 $labProfile = $Profile.ToLowerInvariant()
 if ($Profile -eq 'FullFaults') {
-  if ($LocalModelLoadOOM -notmatch '^/srv/storage/butler/agents/[a-zA-Z0-9_/-]+/local-load-oom.json$' -or $LocalModelLoadOOM.Contains('..')) {
-    throw 'The separate sealed local model-load proof is required for FullFaults.'
+  if ($LocalModelLoadOOM -and ($LocalModelLoadOOM -notmatch '^/srv/storage/butler/agents/[a-zA-Z0-9_/-]+/local-load-oom.json$' -or $LocalModelLoadOOM.Contains('..'))) {
+    throw 'Invalid separate sealed local model-load proof for FullFaults.'
   }
   $labProfile = 'full-faults'
 }

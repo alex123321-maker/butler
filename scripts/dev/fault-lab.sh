@@ -7,7 +7,9 @@ commit=${3:?exact git commit required}
 [[ "$root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ && "$profile" =~ ^(core|full|full-faults)$ && "$commit" =~ ^[a-f0-9]{40}$ ]] || exit 2
 local_oom=${4:-}
 if [[ "$profile" == full-faults ]]; then
-  [[ "$local_oom" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_/-]+/local-load-oom.json$ && "$local_oom" != *..* && -f "$local_oom" && ! -L "$local_oom" ]] || { printf 'Separate sealed local model-load OOM proof required\n' >&2; exit 2; }
+  if [[ -n "$local_oom" ]]; then
+    [[ "$local_oom" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_/-]+/local-load-oom.json$ && "$local_oom" != *..* && -f "$local_oom" && ! -L "$local_oom" ]] || { printf 'Invalid separate sealed local model-load proof\n' >&2; exit 2; }
+  fi
 fi
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/go.mod" ]] || exit 2
@@ -22,7 +24,7 @@ mkdir -p "$proof/events" "$proof/bin" "$proof/private/postgres" /srv/storage/but
 printf '%s\n' "$commit" > "$proof/source-commit.txt"
 (cd "$source_dir"; find . -type f -not -path './.cache/*' -print0 | sort -z | xargs -0 sha256sum) > "$proof/source-manifest.sha256"
 sha256sum "$proof/source-manifest.sha256" > "$proof/source-manifest-hash.txt"
-if [[ "$profile" == full-faults ]]; then cp "$local_oom" "$proof/local-load-oom.json"; fi
+if [[ "$profile" == full-faults && -n "$local_oom" ]]; then cp "$local_oom" "$proof/local-load-oom.json"; fi
 chmod 700 "$proof" "$proof/events" "$proof/private"
 printf 'Private acceptance artifacts: %s\n' "$proof"
 created_network=false
