@@ -18,9 +18,11 @@ import (
 )
 
 const (
-	highRemainderPriorAttempts = 37
-	highRemainderPriorReport   = "afa63de06b6991feb3a96b322d442d573d4d2834c51a70c07e5fd4419f751a91"
-	highRemainderPriorRelease  = "b2100bd2bcd4147b1168a252cd7369c3415c5140"
+	highRemainderPriorAttempts    = 37
+	highRemainderPriorReport      = "afa63de06b6991feb3a96b322d442d573d4d2834c51a70c07e5fd4419f751a91"
+	highRemainderPriorRelease     = "b2100bd2bcd4147b1168a252cd7369c3415c5140"
+	highRemainderPreflightReport  = "ce8835a6fefcd600c6b28b88fed73212453c5af54016bdd6d8c77c4e506dbeae"
+	highRemainderPreflightRelease = "a473dbd124a8b437de3058e81e0b76455b57bddb"
 )
 
 func highRemainderDelegationWindow() bool {
@@ -29,12 +31,13 @@ func highRemainderDelegationWindow() bool {
 
 func highRemainderDelegationHistoryPaths() []string {
 	paths := fullHighDelegationHistoryPaths()
-	return append(paths, filepath.Join(filepath.Dir(paths[9]), "native-acceptance-high-20261012.json"))
+	dir := filepath.Dir(paths[9])
+	return append(paths, filepath.Join(dir, "native-acceptance-high-20261012.json"), filepath.Join(dir, "native-remainder-high-preflight-20261012.json"))
 }
 
 // The exact full High report is 43,072 bytes. Its larger content-free audit
 // needs a separate bound; historical readers retain their original 32 KiB cap.
-func readHighRemainderPriorArtifact(path string) ([]byte, error) {
+func readHighRemainderPriorArtifact(path, expectedHash string) ([]byte, error) {
 	const limit = 65536
 	stat, err := os.Lstat(path)
 	if err != nil || !stat.Mode().IsRegular() || stat.Size() <= 0 || stat.Size() > limit {
@@ -51,7 +54,7 @@ func readHighRemainderPriorArtifact(path string) ([]byte, error) {
 	}
 	raw, err := io.ReadAll(io.LimitReader(f, limit+1))
 	hash := sha256.Sum256(raw)
-	if err != nil || len(raw) > limit || hex.EncodeToString(hash[:]) != highRemainderPriorReport {
+	if err != nil || len(raw) > limit || hex.EncodeToString(hash[:]) != expectedHash {
 		return nil, errNativeFixtureDenied
 	}
 	return raw, nil
@@ -60,14 +63,14 @@ func readHighRemainderPriorArtifact(path string) ([]byte, error) {
 // Carry every spent attempt, including the failed width2 overlap gate. This
 // does not promote the failed report or its model finals to owner completion.
 func readHighRemainderDelegationHistory(paths []string) (nativeHistoricalEvidence, error) {
-	if len(paths) != 11 {
+	if len(paths) != 12 {
 		return nativeHistoricalEvidence{}, errNativeFixtureDenied
 	}
 	h, err := readFullHighDelegationHistory(paths[:10])
 	if err != nil {
 		return nativeHistoricalEvidence{}, errNativeFixtureDenied
 	}
-	raw, err := readHighRemainderPriorArtifact(paths[10])
+	raw, err := readHighRemainderPriorArtifact(paths[10], highRemainderPriorReport)
 	var previous nativeScenarioEvidence
 	if err != nil || json.Unmarshal(raw, &previous) != nil || previous.Status != "failed" || previous.Model != antigravity.FlashHighModel || previous.ReleaseRef != highRemainderPriorRelease || previous.NativeAttempts != 37 || previous.NewNativeAttempts != 10 || previous.MaxAttempts != 39 || previous.MaxNewAttempts != 12 || len(previous.Attempts) != 10 || len(previous.Usage) != 10 || len(previous.Widths) != 2 || string(nativeJSON(previous.Historical)) != string(nativeJSON(h)) || previous.OwnerStopDenies || previous.RevisionDenies || previous.DeletionDenies {
 		return nativeHistoricalEvidence{}, errNativeFixtureDenied
@@ -111,6 +114,27 @@ func readHighRemainderDelegationHistory(paths []string) (nativeHistoricalEvidenc
 	h.BaselineSHA256 = hex.EncodeToString(baseline[:])
 	h.NativeAttempts = highRemainderPriorAttempts
 	h.Artifacts = append(h.Artifacts, nativePriorArtifact{ReportSHA256: highRemainderPriorReport, ReleaseRef: previous.ReleaseRef, NewAttempts: 10})
+	// The sealed first remainder failed during scripted width2 parent admission
+	// without entering a native child. Keep that failure and its separate
+	// component scope; neither its script turns nor usage become native calls.
+	raw, err = readHighRemainderPriorArtifact(paths[11], highRemainderPreflightReport)
+	var preflight nativeScenarioEvidence
+	if err != nil || json.Unmarshal(raw, &preflight) != nil || preflight.Status != "failed" || preflight.Model != antigravity.FlashHighModel || preflight.ReleaseRef != highRemainderPreflightRelease || preflight.ExecutionMode != "scripted_parents_and_width1_baseline_only_width2_children_native_high" || preflight.ScriptedModelTurns == nil || *preflight.ScriptedModelTurns != 6 || preflight.NativeAttempts != 37 || preflight.NewNativeAttempts != 0 || preflight.MaxAttempts != 39 || preflight.MaxNewAttempts != 2 || len(preflight.Attempts) != 0 || len(preflight.Usage) != 0 || len(preflight.Widths) != 2 || string(nativeJSON(preflight.Historical)) != string(nativeJSON(h)) || preflight.OwnerStopDenies || preflight.RevisionDenies || preflight.DeletionDenies || len(preflight.ControlScopes) != 0 || preflight.ConfirmedEffectsAfterControls != nil {
+		return nativeHistoricalEvidence{}, errNativeFixtureDenied
+	}
+	w := preflight.Widths[0]
+	a := w.FullAcceptance
+	if w.Width != 1 || w.ExecutionMode != "scripted_parent_and_children_component_baseline" || !w.ParentWorkerKilled || !w.ParentReceiptCheck || len(w.ObjectiveChecks) != 2 || !w.ObjectiveChecks[0] || !w.ObjectiveChecks[1] || w.MaximumChildOverlap != 1 || len(w.ChildTaskIDs) != 2 || len(w.ChildRunIDs) != 2 || len(w.ChildResultIDs) != 2 || !w.ParentTaskStillActive || !w.IndependentObservationsKept || !w.UnverifiedAcceptanceDenied || a == nil || a.Stage != "independent_decisions_checked" || a.ResolutionPolicy != "owner_selected_source_a_for_fixture" || !a.ParentFinalAvailable || !a.ParentFinalUnverified || !a.ParentFinalComplete || a.ParentFinalPrivacyRedacted || a.ParentReceipt == nil || a.ParentReceipt.Reason != "passed" || !a.ParentReceipt.IDsMatch || !a.StructuredOwningReportsChecked || !a.IndependentOriginalChecks || !a.ConflictingOriginalsRetained || a.AcceptedChild != w.ChildTaskIDs[0] || a.RejectedChild != w.ChildTaskIDs[1] || !a.PreviousResultAndReportKept || !a.OwnerAPIAuthenticated || !a.ChildFinalsStayUnverified || !a.ChildTasksStayActive {
+		return nativeHistoricalEvidence{}, errNativeFixtureDenied
+	}
+	w = preflight.Widths[1]
+	a = w.FullAcceptance
+	if w.Width != 2 || w.ExecutionMode != "scripted_parent_native_high_children" || w.ParentWorkerKilled || w.ParentReceiptCheck || w.ParentRunID != "" || len(w.ObjectiveChecks) != 0 || w.MaximumChildOverlap != 0 || len(w.ChildTaskIDs) != 0 || len(w.ChildRunIDs) != 0 || len(w.ChildResultIDs) != 0 || w.ParentTaskStillActive || w.IndependentObservationsKept || w.UnverifiedAcceptanceDenied || a == nil || a.Stage != "parent_admission" || a.ResolutionPolicy != "owner_selected_source_a_for_fixture" || a.ParentFinalAvailable || a.ParentFinalUnverified || a.ParentFinalComplete || a.ParentFinalPrivacyRedacted || a.ParentReceipt != nil || a.StructuredOwningReportsChecked || a.IndependentOriginalChecks || a.ConflictingOriginalsRetained || a.AcceptedChild != "" || a.RejectedChild != "" || a.PreviousResultAndReportKept || a.OwnerAPIAuthenticated || a.ChildFinalsStayUnverified || a.ChildTasksStayActive {
+		return nativeHistoricalEvidence{}, errNativeFixtureDenied
+	}
+	baseline = sha256.Sum256([]byte(h.BaselineSHA256 + "\n" + highRemainderPreflightReport + "\n"))
+	h.BaselineSHA256 = hex.EncodeToString(baseline[:])
+	h.Artifacts = append(h.Artifacts, nativePriorArtifact{ReportSHA256: highRemainderPreflightReport, ReleaseRef: preflight.ReleaseRef, NewAttempts: 0})
 	return h, nil
 }
 
@@ -185,10 +209,10 @@ func (l *nativeDelegationLimiter) reserveHighRemainderPaths(ctx context.Context,
 
 func TestHighRemainderDelegationHistory(t *testing.T) {
 	h, err := readHighRemainderDelegationHistory(highRemainderDelegationHistoryPaths())
-	if err != nil || h.NativeAttempts != 37 || len(h.Artifacts) != 11 || len(h.Usage) != 37 || h.KnownUsagePairs != 17 || h.UnknownUsagePairs != 20 {
+	if err != nil || h.NativeAttempts != 37 || len(h.Artifacts) != 12 || h.Artifacts[11].NewAttempts != 0 || h.Artifacts[11].ReportSHA256 != highRemainderPreflightReport || len(h.Usage) != 37 || h.KnownUsagePairs != 17 || h.UnknownUsagePairs != 20 {
 		t.Fatal("High remainder history unavailable")
 	}
-	if _, err = readHighRemainderDelegationHistory(highRemainderDelegationHistoryPaths()[:10]); err != errNativeFixtureDenied {
+	if _, err = readHighRemainderDelegationHistory(highRemainderDelegationHistoryPaths()[:11]); err != errNativeFixtureDenied {
 		t.Fatal("High remainder accepted incomplete carried history")
 	}
 }
@@ -277,6 +301,39 @@ func TestHighRemainderDelegationRevalidationIntegration(t *testing.T) {
 	if pool.QueryRow(ctx, `SELECT attempts,(SELECT count(*) FROM fixture_native_attempts) FROM fixture_native_limit`).Scan(&attempts, &rows) != nil || attempts != 37 || rows != 0 {
 		t.Fatal("invalid High remainder history changed spending")
 	}
+	// The zero-call failure still changes provenance. A previous remainder row
+	// cannot be reused just because its attempt baseline is also 37.
+	raw, err := readHighRemainderPriorArtifact(highRemainderDelegationHistoryPaths()[11], highRemainderPreflightReport)
+	var preflight nativeScenarioEvidence
+	h, historyErr := readHighRemainderDelegationHistory(highRemainderDelegationHistoryPaths())
+	if err != nil || json.Unmarshal(raw, &preflight) != nil || historyErr != nil || preflight.Historical.BaselineSHA256 == h.BaselineSHA256 {
+		t.Fatal("zero-call failure baseline evidence unavailable")
+	}
+	setIsolatedBaseline := func(baseline string) {
+		tx, err := pool.Begin(ctx)
+		if err != nil {
+			t.Fatal("isolated baseline transaction unavailable")
+		}
+		defer tx.Rollback(ctx)
+		if _, err = tx.Exec(ctx, `ALTER TABLE fixture_native_limit DISABLE TRIGGER fixture_high_remainder_guard`); err != nil {
+			t.Fatal("isolated baseline guard unavailable")
+		}
+		if _, err = tx.Exec(ctx, `UPDATE fixture_native_limit SET baseline_hash=$1`, baseline); err != nil {
+			t.Fatal("isolated baseline fixture unavailable")
+		}
+		if _, err = tx.Exec(ctx, `ALTER TABLE fixture_native_limit ENABLE TRIGGER fixture_high_remainder_guard`); err != nil || tx.Commit(ctx) != nil {
+			t.Fatal("isolated baseline guard restoration unavailable")
+		}
+	}
+	setIsolatedBaseline(preflight.Historical.BaselineSHA256)
+	if _, err = newHighRemainderDelegationLimiter(ctx, pool); err != errNativeFixtureDenied {
+		t.Fatal("previous remainder baseline reused without its zero-call failure")
+	}
+	var priorBaseline string
+	if pool.QueryRow(ctx, `SELECT attempts,baseline_hash,(SELECT count(*) FROM fixture_native_attempts) FROM fixture_native_limit`).Scan(&attempts, &priorBaseline, &rows) != nil || attempts != 37 || rows != 0 || priorBaseline != preflight.Historical.BaselineSHA256 {
+		t.Fatal("denied remainder reconstruction changed previous baseline")
+	}
+	setIsolatedBaseline(h.BaselineSHA256)
 	if _, err = pool.Exec(ctx, `ALTER TABLE fixture_native_limit DISABLE TRIGGER fixture_high_remainder_guard; UPDATE fixture_native_limit SET expires_at=clock_timestamp()-interval '1 second'; ALTER TABLE fixture_native_limit ENABLE TRIGGER fixture_high_remainder_guard`); err != nil {
 		t.Fatal("isolated remainder expiry unavailable")
 	}
