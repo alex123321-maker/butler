@@ -80,11 +80,8 @@ lscpu --json --extended=CPU,CORE,SOCKET,NODE,ONLINE > "$proof/hardware-cpu.json"
 cpu_hash=$(sha256sum "$proof/hardware-cpu.json" | cut -d' ' -f1)
 printf '{"kernel":"%s","logical_cpus":%s,"host_ram_kib":%s,"cpu_manifest_sha256":"%s","go_image":"%s","postgres_image":"%s","client_ram_bytes":1610612736,"client_cpus":2,"remote_hardware":null,"remote_ram":null,"weights_sha256":null,"incremental_invoice":null}\n' \
   "$(uname -r)" "$(getconf _NPROCESSORS_ONLN)" "$(awk '/^MemTotal:/ {print $2}' /proc/meminfo)" "$cpu_hash" "$go_image" "$pg_image" > "$proof/metadata/hardware.json"
-if [[ "$phase" != prepare ]]; then
-  # Reject hardware/image drift before authentication. Current values may not
-  # silently replace the independently prepared source/runtime/resource pins.
-  # Comparisons run below after chown: both private directories belong to10001.
-fi
+# Reject hardware/image drift below after chown: both private directories
+# belong to10001, and comparison still precedes any authentication.
 docker run --rm --network none --user 0:0 --volume "$proof/runtime:/private" --volume "$proof/metadata:/metadata" alpine:3.22 sh -eu -c 'chown -R 10001:10001 /private /metadata; chmod 700 /private /metadata; chmod 600 /metadata/*'
 if [[ "$phase" != prepare ]]; then
   docker run --rm --network none --user 10001:10001 --read-only --cap-drop ALL --security-opt no-new-privileges:true \

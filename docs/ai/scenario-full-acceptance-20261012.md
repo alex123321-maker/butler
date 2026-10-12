@@ -63,6 +63,16 @@ its groups/scenarios, old local-weight scorers and all original failed reports
 remain immutable. The independent review is a separate agent role on a shared
 administrator-controlled host, not hardware isolation or a blind benchmark.
 
+The first execute preparation (`shadow-execute-20261012T110125Z-1227245`,
+commit297287f) stopped on host-user access to10001-owned preparation metadata.
+It reached no PostgreSQL startup, TLS, credential import or native runtime.
+Its global marker, original source/release refs and failure files are retained.
+The fixed runner compares private metadata inside a10001 container. One explicit
+`resume-preflight` is restricted to that exact zero-start proof and absence of
+`native-started`; it appends a continuation record instead of changing old refs.
+An atomic `native-started` marker precedes the sole runtime start. There is no
+continuation or reset after this marker, any admitted call, or another failure.
+
 ## Pending combined acceptance
 
 The verified-task notice path, real observer→promotion→converter→original
