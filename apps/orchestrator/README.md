@@ -7,6 +7,11 @@ charge or overwrite its first known counts. Missing/incomplete/cancelled metadat
 remains NULL; source/task admission and conservative reservations keep their
 existing authority and no-refund semantics. Earlier native reports are immutable.
 Zero-inference regression runner: `scripts/dev/tool-turn-usage-lab.sh`.
+Native High additionally checks the known complete total less prompt input
+against its generation allowance, which includes candidates and thinking. The
+ledger retains visible input/output measurements and conservative reservations;
+generic cached dimensions and missing totals are not reclassified. An overrun
+blocks tool/final release; already streamed deltas are not rewound.
 
 Owner state/control acceptance adds finite attempt/result/source/version metadata,
 exact lost-ACK control replay in Web, typed Telegram observations/mandate revocation

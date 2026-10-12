@@ -14,6 +14,7 @@ import (
 	"github.com/butler/butler/internal/memory/memorytest"
 	"github.com/butler/butler/internal/ownership"
 	"github.com/butler/butler/internal/transport"
+	"github.com/butler/butler/internal/transport/antigravity"
 )
 
 type usageProvider struct {
@@ -71,10 +72,13 @@ func TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegrati
 	changed := transport.Usage{InputTokens: 4, OutputTokens: 2, TotalTokens: 6}
 	partial := transport.NewAssistantDeltaEvent("run", "fixture", transport.AssistantDelta{Content: "partial"})
 	partial.Usage = &valid
+	underGeneration := transport.Usage{InputTokens: 3, OutputTokens: 2, TotalTokens: 9}
+	overGeneration := transport.Usage{InputTokens: 3, OutputTokens: 2, TotalTokens: 205}
 	cases := []struct {
 		name                                string
 		events                              []transport.TransportEvent
 		known, failed, cancel, sourceDenied bool
+		high, noRelease                     bool
 	}{
 		{name: "known_tool_before_tool_failure_or_cancel", events: []transport.TransportEvent{tool(&valid)}, known: true, cancel: true},
 		{name: "batch_is_one_inference_not_per_tool", events: []transport.TransportEvent{batch}, known: true},
@@ -90,6 +94,10 @@ func TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegrati
 		{name: "stream_without_terminal_has_NULL", events: []transport.TransportEvent{transport.NewEvent("run", transport.EventTypeRunStarted, "fixture")}},
 		{name: "cancel_before_usage_has_NULL", cancel: true},
 		{name: "revoked_source_before_tool_release", events: []transport.TransportEvent{tool(&valid)}, sourceDenied: true, failed: true},
+		{name: "High_tool_candidates_plus_thinking_under_generation_bound", events: []transport.TransportEvent{tool(&underGeneration)}, known: true, high: true},
+		{name: "High_tool_thinking_exceeds_generation_bound", events: []transport.TransportEvent{tool(&overGeneration)}, known: true, high: true, failed: true, noRelease: true},
+		{name: "High_final_thinking_exceeds_generation_bound", events: []transport.TransportEvent{final(&overGeneration)}, known: true, high: true, failed: true, noRelease: true},
+		{name: "generic_total_does_not_reclassify_cached_dimensions", events: []transport.TransportEvent{tool(&overGeneration)}, known: true},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -112,14 +120,18 @@ func TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegrati
 			}
 			policy := budget.DefaultPolicy()
 			policy.OutputTokens = 8
-			policy.Models["fixture:fixture"] = budget.ModelPrice{Basis: "local_no_billing"}
+			providerName, modelName := "fixture", "fixture"
+			if c.high {
+				providerName, modelName = antigravity.Name, antigravity.FlashHighModel
+			}
+			policy.Models[providerName+":"+modelName] = budget.ModelPrice{Basis: "local_no_billing"}
 			controller := budget.NewController(pool, policy)
 			provider := &usageProvider{events: c.events, hold: c.cancel && !c.known}
 			var raw transport.ModelProvider = provider
 			if c.sourceDenied {
 				raw = &sourceGuardedProvider{ModelProvider: provider, sources: &deniedUsageSources{}}
 			}
-			service := &Service{config: Config{Budgets: controller, ProviderName: "fixture", ModelName: "fixture"}, log: slog.New(slog.NewTextHandler(io.Discard, nil))}
+			service := &Service{config: Config{Budgets: controller, ProviderName: providerName, ModelName: modelName}, log: slog.New(slog.NewTextHandler(io.Discard, nil))}
 			wrapper := &budgetedProvider{ModelProvider: raw, service: service}
 			owned := ownership.WithToken(ctx, nil, ownership.Token{SessionKey: "session", RunID: "run", LeaseID: "lease", FenceEpoch: 1})
 			stream, err := wrapper.StartRun(owned, transport.StartRunRequest{Context: transport.TransportRunContext{RunID: "run"}})
@@ -136,6 +148,9 @@ func TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegrati
 				}
 				if c.sourceDenied && event.ToolCall != nil {
 					t.Fatal("revoked source released a tool")
+				}
+				if c.noRelease && (event.ToolCall != nil || event.AssistantFinal != nil) {
+					t.Fatal("High generation overrun released tool or final")
 				}
 			}
 			if c.cancel {

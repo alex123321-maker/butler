@@ -8,6 +8,7 @@ import (
 
 	"github.com/butler/butler/internal/budget"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
+	"github.com/butler/butler/internal/modelprovider"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -108,7 +109,14 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 					if err != nil {
 						s.log.Warn("model usage persistence unavailable; conservative reservation retained")
 					}
-					if in > input || output > a.OutputTokens {
+					generated := output
+					// High's native total includes prompt, candidates and thinking;
+					// its generation ceiling bounds candidates+thinking together.
+					// Other adapters may include cached dimensions in their total.
+					if s.config.ProviderName == modelprovider.ProviderAntigravity && s.config.ModelName == "gemini-3.8-flash-high" && usage.TotalTokens > 0 {
+						generated = max(generated, int64(usage.TotalTokens)-in)
+					}
+					if in > input || generated > a.OutputTokens {
 						stopTurn = true
 						event = transport.NewTransportErrorEvent(runID, p.Name(), fmt.Errorf("provider exceeded declared inference allowance"))
 						event.TransportError.Type = "execution_budget_tokens"
