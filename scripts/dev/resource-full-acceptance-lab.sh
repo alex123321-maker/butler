@@ -43,8 +43,10 @@ go test -json -race -p 1 -count=1 -timeout=3m ./internal/resources ./internal/re
 go test -json -race -p 1 -count=1 -timeout=90s -run "^Test(SourceDuplicateAndConflictingPreferencesIntegration|ConcurrentExplicitSupersessionIntegration|ExtractionConcurrentWorkerCandidatesNeedOwnerHeadCASIntegration)$" ./internal/memory/catalog
 go test -json -race -p 1 -count=1 -timeout=90s -run "^TestChildAdmissionCannotResetRootBudgetIntegration$" ./apps/orchestrator/internal/task
 go test -c -race -p 1 -o /binaries/broker.test ./apps/tool-broker/internal/broker
+go build -race -p 1 -trimpath -o /binaries/tool-broker ./apps/tool-broker
 go test -c -race -p 1 -o /binaries/orchestrator.test ./apps/orchestrator/internal/app
 export BUTLER_GUARDED_REQUEST_BROKER_BINARY=/binaries/broker.test
+export BUTLER_MEMORY_CANDIDATE_APP_BINARY=/binaries/tool-broker
 go tool test2json -t -p github.com/butler/butler/apps/orchestrator/internal/app /binaries/orchestrator.test -test.v -test.timeout=3m -test.run "^TestMemoryCandidate(DispatchedIntegration|InputExpiresDuringDedupWaitIntegration|RejectsSensitiveData)$"
 go vet ./internal/resources ./internal/resourceexec ./internal/budget ./internal/memory/catalog ./apps/orchestrator/internal/task ./apps/orchestrator/internal/app
 ' > "$proof/tests.jsonl"

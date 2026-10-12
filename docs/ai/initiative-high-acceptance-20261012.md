@@ -33,8 +33,8 @@ one-use marker, pass fixed daily authless TLS before accessing the already appro
 read-only UID10001 import, and use native Go/Manager only. No model/endpoint/account/
 CLI/key fallback, overage, retry or credit purchase. Supplemental money0 uses the
 already declared `subscription_no_overage` basis. This declares the finite new
-scope; preparation/native result are pending. Component outcomes cannot claim
-live generative acceptance.
+scope; preparation and the live result are accepted below. Component outcomes
+alone cannot claim live generative acceptance.
 
 Fixture-only accounting checks run on SSH laba with disposable PG17, Go1.27.2,
 repo-local caches and no credential/import/provider access:
@@ -47,8 +47,8 @@ already spent delegation counter, deadline, ledger and trigger.
 Proof: `/srv/storage/butler/agents/initiative-high-window/reports/initiative-high-window-20261012T072547Z-465798`.
 Test events SHA256: `8f2a44ef8ee5b353bebf839adfa4cca93b762f4ff675fef1c3dc26379a22fb1d`;
 source manifest SHA256: `2da5e6c9ed4a1ec85a845895c443f433ae17c01156b2f7d878c43ea28c76a91a`.
-This is accounting preparation only; the ordinary Core and live provider scenario
-still require their own evidence.
+This accounting preparation alone does not establish ordinary Core or live
+provider acceptance; their separate evidence follows.
 
 ## Accepted bounded result
 
