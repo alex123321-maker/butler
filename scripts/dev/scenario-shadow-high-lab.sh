@@ -59,19 +59,31 @@ cp "$review/approval.json" "$proof/metadata/approval.json"
 cp "$review/candidate-files/testdata/acceptance/ru-scenarios-v3.json" "$proof/metadata/frozen-corpus.json"
 go_image=$(docker image inspect golang:1.27.2-bookworm --format '{{.Id}}')
 pg_image=$(docker image inspect pgvector/pgvector:pg17 --format '{{.Id}}')
-lscpu --json > "$proof/hardware-cpu.json"
+lscpu --json --extended=CPU,CORE,SOCKET,NODE,ONLINE > "$proof/hardware-cpu.json"
 cpu_hash=$(sha256sum "$proof/hardware-cpu.json" | cut -d' ' -f1)
 printf '{"kernel":"%s","logical_cpus":%s,"host_ram_kib":%s,"cpu_manifest_sha256":"%s","go_image":"%s","postgres_image":"%s","client_ram_bytes":1610612736,"client_cpus":2,"remote_hardware":null,"remote_ram":null,"weights_sha256":null,"incremental_invoice":null}\n' \
   "$(uname -r)" "$(getconf _NPROCESSORS_ONLN)" "$(awk '/^MemTotal:/ {print $2}' /proc/meminfo)" "$cpu_hash" "$go_image" "$pg_image" > "$proof/metadata/hardware.json"
+if [[ "$phase" == execute ]]; then
+  # Reject hardware/image drift before authentication. Current values may not
+  # silently replace the independently prepared source/runtime/resource pins.
+  cmp -s "$prepared/metadata/hardware.json" "$proof/metadata/hardware.json"
+  cmp -s "$prepared/metadata/public-key.hex" "$proof/metadata/public-key.hex"
+  cmp -s "$prepared/metadata/approval.json" "$proof/metadata/approval.json"
+  cmp -s "$prepared/metadata/frozen-corpus.json" "$proof/metadata/frozen-corpus.json"
+fi
 docker run --rm --network none --user 0:0 --volume "$proof/runtime:/private" --volume "$proof/metadata:/metadata" alpine:3.22 sh -eu -c 'chown -R 10001:10001 /private /metadata; chmod 700 /private /metadata; chmod 600 /metadata/*'
 docker run --rm --network none --user 10001:10001 --read-only --cap-drop ALL --memory 512m --pids-limit 64 --security-opt no-new-privileges:true \
   --volume "$source_dir:/src:ro" --volume "$proof/binaries:/binaries:ro" --volume "$proof/runtime:/private" --volume "$proof/metadata:/metadata:ro" --workdir /src \
   --env BUTLER_SCENARIO_SHADOW_PREPARE=1 --env BUTLER_SCENARIO_SHADOW_PRIVATE=/private --env "BUTLER_SCENARIO_SHADOW_RELEASE=$release" --env "BUTLER_SCENARIO_SHADOW_RUNTIME_IMAGE=$go_image" --env TMPDIR=/private \
-  golang:1.27.2-bookworm /binaries/orchestrator.test -test.v -test.timeout=2m -test.run='^TestScenarioShadowPreparePins$' > "$proof/pins.txt" 2>&1
+  "$go_image" /binaries/orchestrator.test -test.v -test.timeout=2m -test.run='^TestScenarioShadowPreparePins$' > "$proof/pins.txt" 2>&1
+if [[ "$phase" == execute ]]; then
+  docker run --rm --network none --user 10001:10001 --volume "$proof/runtime:/actual:ro" --volume "$prepared/runtime:/prepared:ro" alpine:3.22 \
+    sh -eu -c 'cmp /actual/pin.json /prepared/pin.json; cmp /actual/policy.json /prepared/policy.json; cmp /actual/resources.json /prepared/resources.json'
+fi
 docker run --rm --network none --user 10001:10001 --volume "$proof/runtime:/private:ro" --volume "$proof/metadata:/metadata" alpine:3.22 sh -eu -c 'cp /private/pin.json /metadata/pin.json; chmod 600 /metadata/pin.json'
 docker network create --internal "$network" >/dev/null; created_net=true
 docker run -d --name "$name-pg" --runtime runc --network "$network" --network-alias shadow-postgres --memory 512m --pids-limit 64 --cpus 1 --security-opt no-new-privileges:true \
-  --env POSTGRES_USER=fixture --env POSTGRES_PASSWORD=shadow-fixture --env POSTGRES_DB=butler_shadow_test --volume "$proof/postgres:/var/lib/postgresql/data" pgvector/pgvector:pg17 \
+  --env POSTGRES_USER=fixture --env POSTGRES_PASSWORD=shadow-fixture --env POSTGRES_DB=butler_shadow_test --volume "$proof/postgres:/var/lib/postgresql/data" "$pg_image" \
   -c shared_buffers=32MB -c max_connections=24 -c max_wal_size=64MB >/dev/null; created_pg=true
 for attempt in $(seq 1 60); do
   docker exec "$name-pg" pg_isready -U fixture -d butler_shadow_test >/dev/null 2>&1 && break
@@ -81,7 +93,7 @@ dsn='BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:shadow-fixture@shadow-po
 if [[ "$phase" == prepare ]]; then
   docker run --rm --runtime runc --network "$network" --user "$(id -u):$(id -g)" --memory 1536m --pids-limit 160 --cpus 2 --security-opt no-new-privileges:true \
     --volume "$source_dir:/src:ro" --volume "$proof/binaries:/binaries:ro" --workdir /src --env "$dsn" \
-    golang:1.27.2-bookworm /binaries/orchestrator.test -test.v -test.timeout=4m -test.run='^TestScenarioShadow(Window|Sampler|Readiness)' > "$proof/pg-tests.txt" 2>&1
+    "$go_image" /binaries/orchestrator.test -test.v -test.timeout=4m -test.run='^TestScenarioShadow(Window|Sampler|Readiness)' > "$proof/pg-tests.txt" 2>&1
   ! grep -Eq -- '--- (FAIL|SKIP):' "$proof/pg-tests.txt"
   manifest | cmp -s "$proof/source.sha256" -
   sha256sum "$proof/binaries/"* > "$root/prepared-runtime.sha256"
@@ -95,7 +107,7 @@ fi
 printf '%s\n' "$proof" > "$window/proof-ref"
 [[ $(docker inspect --format '{{.State.Running}}' butler-lab-antigravity-proxy-1) == true ]]
 docker run --rm --network butler-lab_backend --user 10001:10001 --read-only --cap-drop ALL --memory 64m --pids-limit 16 --cpus 1 --security-opt no-new-privileges:true \
-  --volume "$proof/binaries/tls-prerequisite:/prerequisite:ro" golang:1.27.2-bookworm /prerequisite > "$proof/tls.json"
+  --volume "$proof/binaries/tls-prerequisite:/prerequisite:ro" "$go_image" /prerequisite > "$proof/tls.json"
 import_parent=/srv/storage/butler/agents/antigravity-provider/profile/.gemini/antigravity-cli
 import_file="$import_parent/butler-native-import.json"
 docker run --rm --network none --user 10001:10001 --read-only --cap-drop ALL --memory 32m --pids-limit 16 --cpus 1 --security-opt no-new-privileges:true \
@@ -106,7 +118,7 @@ docker create --name "$name-runtime" --runtime runc --network "$network" --user 
   --env TMPDIR=/private --env HOME=/home/butler --env HTTPS_PROXY=http://antigravity-proxy:18080 --env HTTP_PROXY=http://antigravity-proxy:18080 --env NO_PROXY=localhost,127.0.0.1,shadow-postgres \
   --env "$dsn" --env BUTLER_SCENARIO_SHADOW_ACCEPTANCE=1 --env "BUTLER_SCENARIO_SHADOW_RELEASE=$release" --env BUTLER_SCENARIO_SHADOW_PRIVATE=/private \
   --env BUTLER_SCENARIO_SHADOW_IMPORT_FILE=/home/butler/.gemini/antigravity-cli/butler-native-import.json \
-  golang:1.27.2-bookworm /binaries/orchestrator.test -test.v -test.timeout=80m -test.run='^TestScenarioShadowActualHighObservationE2E$' >/dev/null; created_runtime=true
+  "$go_image" /binaries/orchestrator.test -test.v -test.timeout=80m -test.run='^TestScenarioShadowActualHighObservationE2E$' >/dev/null; created_runtime=true
 docker network connect butler-lab_backend "$name-runtime"
 manifest | cmp -s "$root/prepared-manifest" -
 status=0
