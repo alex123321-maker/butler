@@ -300,3 +300,20 @@ func TestCloudV2LeakageScreenNormalizesOpaqueRenamingWithoutApprovingHoldout(t *
 		t.Fatal("lexical screening promoted holdout")
 	}
 }
+
+func TestCloudV2OutputDigestPinsCanonicalJSONWithoutRepairingModelContent(t *testing.T) {
+	a, err := CloudV2OutputDigest([]byte(` { "authority": "none", "intent":"clarify" } `))
+	b, secondErr := CloudV2OutputDigest([]byte(`{"intent":"clarify","authority":"none"}`))
+	if err != nil || secondErr != nil || a != b {
+		t.Fatal("report indentation/key order changed child provenance")
+	}
+	c, _ := CloudV2OutputDigest([]byte(`{"intent":"clarify","authority":"owner_required"}`))
+	if c == a {
+		t.Fatal("string content repaired")
+	}
+	for _, raw := range []string{"```json\n{}\n```", `{"intent":"clarify","intent":"stop_tree"}`, `{"x":1,"\u0078":2}`} {
+		if _, err := CloudV2OutputDigest([]byte(raw)); err == nil {
+			t.Fatal("ambiguous/Markdown output repaired")
+		}
+	}
+}

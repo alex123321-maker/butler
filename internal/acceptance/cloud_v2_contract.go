@@ -313,6 +313,20 @@ func MakeCloudV2ModelInput(c CloudInputCase, role string, children []string) (Cl
 }
 func CloudV2ModelInputDigest(x CloudV2ModelInput) string { return cloudDigest(x) }
 
+// CloudV2OutputDigest pins a JSON representation independently of report
+// indentation and object-key order. It never repairs fields, strings, schemas,
+// source witnesses, Markdown or model semantics. Arrays retain their order.
+func CloudV2OutputDigest(raw []byte) (string, error) {
+	if len(raw) == 0 || len(raw) > CloudV2MaximumVisibleJSONBytes {
+		return "", errors.New("bounded prospective output JSON required")
+	}
+	canonical, err := canonicalJSON(raw)
+	if err != nil {
+		return "", errors.New("prospective output JSON encoding denied")
+	}
+	return hashWindowBytes(canonical), nil
+}
+
 func VerifyCloudV2Golden(c CloudV2Corpus, a GoldenApproval, key []byte) error {
 	if err := ValidateCloudV2Corpus(c); err != nil {
 		return err
