@@ -176,6 +176,9 @@ func auditWithPolicy(in inputs, policy auditPolicy) (r report, err error) {
 	if policy.Baseline >= 539 {
 		r.Limits[5] = "The explicit V7 human amendment permits only one safely recovered nominal HTTP or response-stream timeout per input, retaining NULL usage/version. The new chain has 300-second entries, 40-minute cases and a 120-minute window; retained V5 quality/comparison remain their original 120-second/32768 profile. All successful requests require measured expense and expected version."
 	}
+	if policy.SerializedEntries {
+		r.Limits = append(r.Limits, "V9 serialization is checked from owning client request intervals and durable measurements. It does not establish provider GPU scheduling or server hardware isolation.")
+	}
 	defer func() {
 		if v := recover(); v != nil {
 			r.Status = "NO_GO"
@@ -261,6 +264,7 @@ func auditWithPolicy(in inputs, policy auditPolicy) (r report, err error) {
 	grouped := map[string][]object{}
 	lastScenario := -1
 	var previous time.Time
+	var previousFinished time.Time
 	operations := map[string]bool{}
 	failedEntries := 0
 	unknownCostEntries, unknownVersionEntries, unmeasuredEntries := 0, 0, 0
@@ -293,10 +297,14 @@ func auditWithPolicy(in inputs, policy auditPolicy) (r report, err error) {
 		require(pos >= lastScenario && pos >= 0, "scenario_release_order")
 		lastScenario = pos
 		at, finish := moment(a["admitted_at_utc"]), moment(a["finished_at_utc"])
+		if policy.SerializedEntries {
+			require(i == 0 || !at.Before(previousFinished), "v9_client_request_intervals_overlap")
+		}
 		require(!at.Before(begin) && !finish.After(end) && at.Before(expiry) && !finish.After(expiry) && !at.Before(previous) && !finish.Before(at) && finish.Sub(at) <= policy.Attempt, "request_deadline")
 		elapsed := integer(a["elapsed_ms"])
 		require(elapsed <= policy.Attempt.Milliseconds() && finish.Sub(at).Milliseconds()-elapsed >= -2 && finish.Sub(at).Milliseconds()-elapsed <= 2, "request_elapsed")
 		previous = at
+		previousFinished = finish
 		grouped[name] = append(grouped[name], a)
 	}
 	initial, product := witnesses(in.Initial), witnesses(in.Product)
