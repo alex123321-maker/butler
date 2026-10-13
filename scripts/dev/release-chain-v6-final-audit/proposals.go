@@ -72,6 +72,9 @@ func verifyV8Proposals(in inputs, policy auditPolicy) {
 		require(err == nil && authHash == sha(m["arguments_authorization_sha256"]) && digest(p.Arguments) == sha(m["arguments_sha256"]) && int64(len(p.Arguments)) == integer(m["arguments_bytes"]), "v8_original_arguments_hash")
 		fin := products[p.Scenario]
 		require(fin != nil, "v8_proposal_product_missing")
+		if policy.AllowRepeatedPatchChecks {
+			verifyV12ReadProposal(obj(fin["payload_json"]), p)
+		}
 		pg := obj(obj(fin["payload_json"])["postgres"])
 		matches := 0
 		for _, a := range rows(pg, "actions") {

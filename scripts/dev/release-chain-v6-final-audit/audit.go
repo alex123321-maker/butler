@@ -187,6 +187,22 @@ func auditWithPolicy(in inputs, policy auditPolicy) (r report, err error) {
 		r.Limits[5] = "The fixed V11 protocol retains the same critical recovery and measured-success predicates. A separately pinned historical557 exception preserves its closed source-check cancellation and NULL expense; it does not establish a nominal provider timeout or authorize a source-uncertain retry."
 		r.Limits = append(r.Limits, "V11 is a fresh 557+71=628 allocation; prior615 and627 scopes stay closed without refunds. Failure-only source/watchdog diagnostics are content-free observations of unchanged checks, not authorization or proof of the old557 underlying cause. Pool counters are shared snapshots; query digests are content hashes, not an isolated exact-template registry.")
 	}
+	if policy.AllowRepeatedPatchChecks {
+		r.Limits[5] = "The explicit V12 policy retains the historical557 expense exception, fully measured completed requests and proved same-run timeout recovery. Source uncertainty never grants retry or authority."
+		r.Limits = append(r.Limits, "V12 uses a new 575+120=695 allocation and permits root project GET inspection/check counts under the unchanged owning Core budgets. Every read retains qualified run/call, actual PG result digest and validated canonical body digest; source-pinned capture is not raw HTTP/SSE proof. Writes, owner verification, Stop and delivery gates remain unchanged; closed V11 two-read response booleans stay UNKNOWN and NO_GO.")
+	}
+	if policy.PassStatus == "CHAIN_V13_WITNESS_AUDIT_PASS" {
+		r.Limits[5] = strings.Replace(r.Limits[5], "V12 policy", "V13 policy", 1)
+		for i, line := range r.Limits {
+			if strings.HasPrefix(line, "V11 is a fresh") {
+				r.Limits[i] = "The retained closed V11 scope used557+71=628 without refunding prior615/627 history. Current failure-only source/watchdog diagnostics still observe unchanged checks; pool counters are shared snapshots and query digests are content hashes, not an isolated exact-template registry."
+			}
+			if strings.HasPrefix(line, "V12 uses") {
+				r.Limits[i] = strings.Replace(line, "V12 uses", "V13 uses", 1)
+			}
+		}
+		r.Limits = append(r.Limits, "The sealed V12 bootstrap adds no paid ordinal: its separately pinned independent proof derives zero native requests from source ordering and the actual constructor failure. Its original NULL counter remains NULL; empty exports alone do not prove zero. V13 uses a new fixed120 fixture constructor without reopening that failed scope.")
+	}
 	defer func() {
 		if v := recover(); v != nil {
 			r.Status = "NO_GO"

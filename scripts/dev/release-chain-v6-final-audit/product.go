@@ -164,7 +164,11 @@ func verifyProductWithPolicy(name string, ini, fin object, native []object, poli
 	require(name != "restart_sent" || fault["triggered"] == true, "actual_restart_not_triggered")
 	verifyAuthority(pg, root, native)
 	verifyAdapter(pg, ini, root, child, refs, sources)
-	verifyOriginalResult(fin, actions)
+	if policy.AllowRepeatedPatchChecks {
+		verifyV12OriginalResult(fin, actions, runs, root, child, text(ini["target_converter_id"]))
+	} else {
+		verifyOriginalResult(fin, actions)
+	}
 	finals := rows(pg, "final_results")
 	require(len(finals) == 4, "native_final_inventory")
 	finalByRun := byID(finals, "run_id")
