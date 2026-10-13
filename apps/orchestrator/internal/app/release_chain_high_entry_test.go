@@ -22,11 +22,17 @@ type releaseChainHighEntry struct {
 	ObserveSourceChecks                  bool
 	AllowRepeatedPatchChecks             bool
 	TaskScopedOriginalProof              bool
+	PreserveInvalidOriginalEvidence      bool
+	ContinueAfterCaseFailure             bool
 	ScenarioNames                        []string
 	ProviderInputBytes                   int64
 	Policy                               releaseChainHighWindowPolicy
 	ReadQuality                          func() (releaseChainV5Prerequisite, error)
 	NewWindow                            func(context.Context, *pgxpool.Pool) (*releaseChainV5Window, error)
+}
+
+func releaseChainHighStopsAfterCase(entry releaseChainHighEntry, failed bool) bool {
+	return failed && !entry.ContinueAfterCaseFailure
 }
 
 func TestScenarioReleaseChainActualV5HighE2E(t *testing.T) {

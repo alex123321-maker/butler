@@ -45,16 +45,17 @@ import (
 const releaseChainAdmissionGoal = "Prepare a verified readiness correction for the observed synthetic project; leave the original project unapplied. First convert its exact original inventory CSV to JSON: discover the missing converter, delegate bounded development from selected Need/contract, independently check and trial its return, activate only under this original mandate, then convert the original document. Next inspect " + egresstest.Origin + "/project, read exact project_revision and README.md, prepare one immutable patch at " + egresstest.Origin + "/project/patches with body {project_revision,changes:[{path:README.md,before:actual inspected bytes,after:same bytes replacing ready=false with ready=true}]}, and check " + egresstest.Origin + "/project/patches/<actual artifact_id>/checks. Both original inventory conversion and stored ready=true patch are required; never apply the patch or claim model verification."
 
 type releaseChainModelConfig struct {
-	Provider, Model           string
-	InputTokens, OutputTokens int64
-	Policy                    budget.Policy
-	ChildBudget               budget.Units
-	FixtureTimeout            time.Duration
-	ExtensionHarnessLifetime  time.Duration
-	SourceObserver            *releaseChainSourceObserver
-	AllowRepeatedPatchChecks  bool
-	TaskScopedOriginalProof   bool
-	Factory                   func(context.Context, *pgxpool.Pool, string) (transport.ModelProvider, error)
+	Provider, Model                 string
+	InputTokens, OutputTokens       int64
+	Policy                          budget.Policy
+	ChildBudget                     budget.Units
+	FixtureTimeout                  time.Duration
+	ExtensionHarnessLifetime        time.Duration
+	SourceObserver                  *releaseChainSourceObserver
+	AllowRepeatedPatchChecks        bool
+	TaskScopedOriginalProof         bool
+	PreserveInvalidOriginalEvidence bool
+	Factory                         func(context.Context, *pgxpool.Pool, string) (transport.ModelProvider, error)
 }
 
 func newReleaseChainFixture(t *testing.T, profile generatedtools.Profile, manifestPath string) *developerFixture {

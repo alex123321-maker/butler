@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -18,6 +19,8 @@ import (
 	"github.com/butler/butler/internal/ownership"
 	"github.com/butler/butler/internal/transport/antigravity"
 )
+
+var errReleaseChainOriginalCaptureInvalid = errors.New("original result capture invalid; PostgreSQL evidence retained")
 
 type releaseChainV5PatchChange struct {
 	Path      string `json:"path"`
@@ -264,9 +267,20 @@ func recordReleaseChainV5ProductEvidence(parent context.Context, w *releaseChain
 		default:
 		}
 	}
-	patchHash, originalResult, err := releaseChainV5CaptureOriginalResult(ctx, f, scenario)
-	if err != nil {
+	patchHash, originalResult, captureErr := releaseChainV5CaptureOriginalResult(ctx, f, scenario)
+	preserveInvalid := f.modelConfig != nil && f.modelConfig.PreserveInvalidOriginalEvidence
+	if captureErr != nil && !preserveInvalid {
 		return errNativeFixtureDenied
+	}
+	captureStatus := "absent"
+	if captureErr != nil {
+		// Preserve the owning SQL snapshot even when the semantic artifact
+		// projection is unusable. A partial projection must never imply PASS.
+		originalResult = nil
+		failed = true
+		captureStatus = "invalid_or_incomplete"
+	} else if originalResult != nil {
+		captureStatus = "captured"
 	}
 	payload := map[string]any{
 		"version": "butler-release-chain-v5-product-witness-v1", "scenario": scenario, "test_failed": failed, "postgres": raw,
@@ -277,6 +291,9 @@ func recordReleaseChainV5ProductEvidence(parent context.Context, w *releaseChain
 		"recipient_requests":         f.channel.requests.Load(), "recipient_acceptances": f.channel.accepted.Load(),
 		"all_channel_requests": f.channel.total.Load(),
 		"fault":                faultEvidence,
+	}
+	if preserveInvalid {
+		payload["original_result_capture_status"] = captureStatus
 	}
 	if f.modelConfig != nil && f.modelConfig.SourceObserver != nil {
 		payload["source_check_observation"] = f.modelConfig.SourceObserver.snapshot()
@@ -300,6 +317,9 @@ func recordReleaseChainV5ProductEvidence(parent context.Context, w *releaseChain
 	sum := sha256.Sum256(body)
 	if _, err = w.pool.Exec(ctx, `INSERT INTO `+w.table("fixture_chain_v5_high_case_evidence")+`(scenario,payload_sha256,payload_json) VALUES($1,$2,$3)`, scenario, hex.EncodeToString(sum[:]), body); err != nil {
 		return errNativeFixtureDenied
+	}
+	if captureErr != nil {
+		return errReleaseChainOriginalCaptureInvalid
 	}
 	return nil
 }

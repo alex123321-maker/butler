@@ -329,7 +329,10 @@ func newReleaseChainV16Window(ctx context.Context, pool *pgxpool.Pool) (*release
 	return createReleaseChainHighWindow120WithPolicy(ctx, pool, releaseChainV16ReviewedPrerequisiteSHA, p.ChainHistorySHA, 616, "fixture_chain_v16_high", deadline, true, releaseChainV9Policy(), true)
 }
 func TestScenarioReleaseChainActualV16HighE2E(t *testing.T) {
-	testReleaseChainHighNative(t, releaseChainHighEntry{WindowID: releaseChainV16WindowID, AcceptanceEnv: "BUTLER_SCENARIO_CHAIN_V16_HIGH_ACCEPTANCE", PrivateEnv: "BUTLER_SCENARIO_CHAIN_V16_HIGH_PRIVATE", ImportEnv: "BUTLER_SCENARIO_CHAIN_V16_HIGH_IMPORT_FILE", Baseline: 616, Maximum: 120, ProviderStages: true, RetainProposals: true, ProposalMetadata120: true, TaskScopedOriginalProof: true, ScenarioNames: []string{"restart_sent", "explicit_absence", "lost_ack", "owner_stop"}, ProviderInputBytes: 4 << 20, Policy: releaseChainV9Policy(), ExtensionHarnessLifetime: 40 * time.Minute, ObserveSourceChecks: true, AllowRepeatedPatchChecks: true, ReadQuality: readReleaseChainV16Prerequisite, NewWindow: newReleaseChainV16Window})
+	if os.Getenv("BUTLER_SCENARIO_CHAIN_V16_HIGH_ACCEPTANCE") == "1" {
+		t.Fatal("V16 native scope is sealed failed; no new entry from current source")
+	}
+	t.Skip("V16 native scope is sealed failed")
 }
 func TestReleaseChainV16OperationalGate(t *testing.T) {
 	if os.Getenv("BUTLER_SCENARIO_CHAIN_V16_HIGH_GATE") != "1" {

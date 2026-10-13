@@ -259,6 +259,7 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 			cfg.ExtensionHarnessLifetime = entry.ExtensionHarnessLifetime
 			cfg.AllowRepeatedPatchChecks = entry.AllowRepeatedPatchChecks
 			cfg.TaskScopedOriginalProof = entry.TaskScopedOriginalProof
+			cfg.PreserveInvalidOriginalEvidence = entry.PreserveInvalidOriginalEvidence
 			if entry.ObserveSourceChecks {
 				cfg.SourceObserver = &releaseChainSourceObserver{}
 			}
@@ -353,7 +354,11 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 				if caseWindow != nil {
 					if e := recordReleaseChainV5ProductEvidence(context.Background(), caseWindow, f, scenario, t.Failed(), fault); e != nil {
 						results[scenario] = false
-						t.Error("content-free owning product witness unavailable")
+						if errors.Is(e, errReleaseChainOriginalCaptureInvalid) {
+							t.Error("original result capture rejected; owning PostgreSQL witness retained")
+						} else {
+							t.Error("content-free owning product witness unavailable")
+						}
 					}
 					var attempts, unknown, failed, overlong, unknownCost, unknownVersion int
 					var window json.RawMessage
@@ -419,7 +424,7 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 			}()
 			testConverterDeveloperWorkersObserved(t, true, hooks)
 		})
-		if t.Failed() {
+		if releaseChainHighStopsAfterCase(entry, t.Failed()) {
 			break
 		}
 	}

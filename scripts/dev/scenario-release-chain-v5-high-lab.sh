@@ -6,7 +6,13 @@ root=${1:?isolated root required}; phase=${2:-prepare}; release=${3:?exact clean
 protocol=${4:-v5}
 [[ "$phase" =~ ^(prepare|execute)$ && "$release" =~ ^[a-f0-9]{40}$ ]] || exit 2
 global_minutes=60
-if [[ "$protocol" == v16 ]]; then
+if [[ "$protocol" == v17 ]]; then
+  [[ "$root" == /srv/storage/butler/agents/scenario-release-chain-v17-high-20261013 ]] || exit 2
+  chain_baseline=636; chain_cap=120; chain_env=BUTLER_SCENARIO_CHAIN_V17_HIGH
+  gate_test=TestReleaseChainV17OperationalGate; window_id=issue33-high-release-chain-v17-20261013-baseline636
+  audit_package=./scripts/dev/release-chain-v6-final-audit
+  offline_timeout=3m; global_minutes=120; expected_audit_passes=0
+elif [[ "$protocol" == v16 ]]; then
   [[ "$root" == /srv/storage/butler/agents/scenario-release-chain-v16-high-20261013 ]] || exit 2
   chain_baseline=616; chain_cap=120; chain_env=BUTLER_SCENARIO_CHAIN_V16_HIGH
   gate_test=TestReleaseChainV16OperationalGate; window_id=issue33-high-release-chain-v16-20261013-baseline616
@@ -160,7 +166,7 @@ if [[ "$CHAIN_PROTOCOL" == v10 ]]; then
  go test -race -json -count=1 -run "^TestExtensionHarness(LifetimeBounds|RPCLifecycle)$" ./apps/tool-extension/internal/runtime > /bin-proof/extension-lifetime-unit.jsonl
  go vet ./apps/tool-extension/internal/runtime
 fi
-if [[ "$CHAIN_PROTOCOL" != v7 && "$CHAIN_PROTOCOL" != v8 && "$CHAIN_PROTOCOL" != v9 && "$CHAIN_PROTOCOL" != v10 && "$CHAIN_PROTOCOL" != v11 && "$CHAIN_PROTOCOL" != v12 && "$CHAIN_PROTOCOL" != v13 && "$CHAIN_PROTOCOL" != v14 && "$CHAIN_PROTOCOL" != v15 && "$CHAIN_PROTOCOL" != v16 ]]; then
+if [[ "$CHAIN_PROTOCOL" != v7 && "$CHAIN_PROTOCOL" != v8 && "$CHAIN_PROTOCOL" != v9 && "$CHAIN_PROTOCOL" != v10 && "$CHAIN_PROTOCOL" != v11 && "$CHAIN_PROTOCOL" != v12 && "$CHAIN_PROTOCOL" != v13 && "$CHAIN_PROTOCOL" != v14 && "$CHAIN_PROTOCOL" != v15 && "$CHAIN_PROTOCOL" != v16 && "$CHAIN_PROTOCOL" != v17 ]]; then
  go test -race -json -count=1 "$CHAIN_AUDIT_PACKAGE" > /bin-proof/chain-audit-unit.jsonl
  go test -race -json -count=1 -run "^TestToolAuthorizationFailsClosed$" ./apps/orchestrator/internal/orchestrator > /bin-proof/core-batch-policy.jsonl
 fi
@@ -169,7 +175,7 @@ chmod 555 /bin-proof/*
 ' > "$proof/build-vet.log" 2>&1
 # The direct human request is to run High immediately after the fix/build.
 # Record build-only honestly; independent code/tests/acceptance run concurrently.
-if [[ "$protocol" == v14 || "$protocol" == v15 || "$protocol" == v16 ]]; then
+if [[ "$protocol" == v14 || "$protocol" == v15 || "$protocol" == v16 || "$protocol" == v17 ]]; then
   manifest | cmp -s "$proof/source.sha256" -
   sha256sum "$proof/bin/"* > "$root/prepared-runtime.sha256"
   cp "$proof/source.sha256" "$root/prepared-source.sha256"

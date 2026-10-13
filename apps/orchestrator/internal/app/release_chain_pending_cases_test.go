@@ -10,6 +10,11 @@ func releaseChainHighDeclaredScenarios(entry releaseChainHighEntry) ([]string, e
 		return releaseChainV5Scenarios(), nil
 	}
 	fixed := []string{"restart_sent", "explicit_absence", "lost_ack", "owner_stop"}
+	if entry.PreserveInvalidOriginalEvidence {
+		// A new frozen scope starts with the previously unattempted faults. The
+		// complete restart/result/notification chain remains mandatory last.
+		fixed = []string{"owner_stop", "explicit_absence", "lost_ack", "restart_sent"}
+	}
 	if !reflect.DeepEqual(entry.ScenarioNames, fixed) {
 		return nil, errNativeFixtureDenied
 	}
