@@ -1,5 +1,14 @@
 # Orchestrator
 
+Current actual history advanced to537 after the sealed V5 native chain NO_GO:
+536 completed one discover packet;537 timed out without usage/version. Cumulative
+294598 input/11827 output/572459 total are known subtotals, with27 unknown visible
+pairs and47 unknown totals. No child/adapter/result/notice exists; four remaining
+chain cases were not run. Same-source137 PG/67 checker/4 Core preparation names,
+full321 mandatory faults and broad Linux tests/vet passed. See the
+[actual chain audit](../../docs/ai/scenario-release-chain-v5-independent-audit-20261013.md).
+The535 quality/comparison boundary below remains its immutable prior evidence.
+
 Current issue33 evidence is535 spent High attempts. Actual V5 quality and four
 paired comparisons passed independent source/signature/original-byte/PostgreSQL
 audit:96/96 development,64/64 tuning,75/76 holdout, zero critical failures,4/4 both
@@ -24,8 +33,10 @@ prepared patch/result and frozen notice state. Current Core rejects whole tool
 batches before Broker dispatch; the operator prompt declares one call at a time.
 Read the [V5 chain plan](../../docs/ai/scenario-release-chain-v5-high-plan-20261013.md)
 for the model-free detector, production finite-IR builder and loopback recipient
-boundaries. Preparation and a separate independent source review remain required;
-these fixtures do not change deployed authority or default model capabilities.
+boundaries. Its actual independent admission/preparation passed, but its native
+scope is now sealed failed; never execute or Sync that root again. Any future
+scope needs separate reviewed code/history/admission. These fixtures do not
+change deployed authority or default model capabilities.
 
 The historical additive V4 acceptance reader preserves268 spent High attempts and all old
 unknown costs/verdicts. Its full shadow collector saves owning PostgreSQL spend

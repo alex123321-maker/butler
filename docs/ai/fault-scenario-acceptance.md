@@ -1,5 +1,16 @@
 # Issue #33 scenario evidence and remaining acceptance
 
+Current2026-10-13 evidence supersedes the historical status table below:
+[actual V5 High quality/comparison](scenario-cloud-v5-independent-audit-20261013.md)
+passed236 Russian quality cases and all four paired tasks with complete new cost;
+the same final source's mandatory matrix passed321 names without fail/skip.
+The [actual native V5 chain](scenario-release-chain-v5-independent-audit-20261013.md)
+is sealed NO_GO at537 cumulative admissions: the second entry timed out with
+unknown cost before delegation, adapter development, result and notification.
+Full issue acceptance is therefore still NO_GO; PR74 remains draft and issue33
+open. No historical component-only/model-absent statement below describes this
+current complete set of evidence.
+
 The executable matrix is `internal/acceptance/matrix.go`; its contract and
 reproduction instructions are in `internal/acceptance/README.md`. It distinguishes
 available deterministic core boundaries, actual Chromium/private service paths,

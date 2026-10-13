@@ -1,5 +1,13 @@
 # Cumulative native history after closed V4
 
+The later actual V5 chain is sealed NO_GO after two additional admissions536–537.
+History now537:510 known visible pairs/27 NULL,294598/11827 known input/output,
+572459 known total subtotal/47 unknown totals. Failed537's usage/version remain
+NULL;536's7106/155/8462 remains spent. Read the
+[independent actual failure correlation](scenario-release-chain-v5-independent-audit-20261013.md).
+All535 and earlier readers/pins below stay unchanged; future accounting must add
+both failed-chain entries and retain their exact original artifact identities.
+
 Subsequent full V5 quality/comparison completed252 requests and passed independent
 original-byte/PG audit. Its separate actual chain bridge carries history to535,
 509 known visible pairs/26 NULL,287492 input/11672 output/563997 total subtotal,

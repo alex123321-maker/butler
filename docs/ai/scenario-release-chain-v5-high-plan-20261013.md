@@ -1,5 +1,14 @@
 # Prospective V5 High release-chain plan
 
+This protocol was frozen and actually executed on `afa50b225b1341d2ff8a553188a69f6b6b2ac633`.
+Preparation passed137 app/67 checker/4 Core names without skips and independent
+admission passed, but the actual chain is sealed NO_GO after536–537. The second
+request timed out with unknown expense; no child/adapter/result/notice exists,
+and the other four scenarios did not run. Read the
+[actual independent chain audit](scenario-release-chain-v5-independent-audit-20261013.md).
+Never Sync/execute this V5 root again. The prospective preparation commands and
+unexecuted wording below record the pre-invocation plan; they are historical.
+
 The V5 test-only collector and runner are integrated into source after actual
 quality/comparison PASS. Their prepared binaries, source freeze and independent
 native admission remain separate. No native chain call, credential import,

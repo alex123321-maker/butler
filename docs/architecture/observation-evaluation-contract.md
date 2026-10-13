@@ -1,5 +1,28 @@
 # Observation-only contract evaluation
 
+The actual V5 quality/comparison window passed independent original-byte/PG audit
+at535 attempts. The subsequent actual V5 release chain is sealed NO_GO after536–537:
+536 completed a measured discover packet,537 timed out without usage/version,
+and no adapter/result/notice exists. Its two admissions remain spent. Cumulative
+572459 total tokens are a known subtotal, with47 unknown dimensions. The user
+explicitly permitted UNKNOWN only for the closed537 expense; this does not recover
+usage, change that NO_GO or exempt any new request after537. The exact
+[human exception](../../deploy/acceptance/release-chain-v6-user-expense-exception-20261013.json)
+and [independent failure evidence](../ai/scenario-release-chain-v5-independent-audit-20261013.md)
+must be bound separately by a future protocol. All numeric/quality/product gates
+remain unchanged. Any future run requires complete new measured cost, independent
+source/resource admission and all five actual native product cases; only78 of the
+original80 chain allowances remain, with absolute cumulative ceiling615.
+
+Prospective chain diagnostics may retain the existing trusted request-local
+`ProviderStage` vocabulary (authentication, serialization, HTTP round trip,
+response stream) in the owning terminal measurement. They must never record
+credential material, payloads, hidden reasoning or raw provider error bodies.
+The wrapper's `failure_stage=stream` is distinct from the provider's HTTP/SSE
+stage; absence of the latter stays unknown. Later observations cannot reconstruct
+or overwrite537's missing internal stage or cost. A diagnostic signal creates
+neither completion nor execution authority.
+
 The separate fresh V5 protocol uses the actual independently audited283-attempt
 quality-start history, including four compatible schema-dialect observations.
 Its corrected240-original corpus and golden are separately reviewed and signed;
