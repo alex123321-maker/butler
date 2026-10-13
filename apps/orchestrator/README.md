@@ -13,6 +13,20 @@ High release chain and final issue-wide acceptance still remain. See the
 [actual diagnostic audit](../../docs/ai/scenario-schema-dialect-actual-audit-20261013.md)
 and [closed V4 audit](../../docs/ai/scenario-cloud-v4-independent-audit-20261013.md).
 
+The separately prepared V5 native release-chain collector binds this actual535
+history and full original quality audit before any provider import. Its shared
+PostgreSQL counter supplements ordinary Core budgets: at most80 new requests,
+one60-minute absolute window, five fixed normal/restart/delivery/Stop cases. Each
+tool/final release first persists complete measured cost/version; unknowns or
+write failures deny action. Initial/final product and independent PG witnesses
+retain current owner/source/lease, converter checks/activation, exact original
+prepared patch/result and frozen notice state. Current Core rejects whole tool
+batches before Broker dispatch; the operator prompt declares one call at a time.
+Read the [V5 chain plan](../../docs/ai/scenario-release-chain-v5-high-plan-20261013.md)
+for the model-free detector, production finite-IR builder and loopback recipient
+boundaries. Preparation and a separate independent source review remain required;
+these fixtures do not change deployed authority or default model capabilities.
+
 The historical additive V4 acceptance reader preserves268 spent High attempts and all old
 unknown costs/verdicts. Its full shadow collector saves owning PostgreSQL spend
 before private original-final bytes; immutable safe diagnostics distinguish

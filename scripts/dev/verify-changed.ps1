@@ -26,6 +26,17 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(apps/orchestrator/internal/app/release_chain_v5_|scripts/dev/(scenario-release-chain-v5-|release-chain-v5-final-audit/))" {
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$specs.Add("docs/architecture/owner-goals-mandates-spec.md")
+      [void]$specs.Add("docs/architecture/atomic-result-delivery.md")
+      [void]$specs.Add("docs/architecture/generated-converters.md")
+      [void]$tests.Add("SSH laba: scenario-release-chain-v5-high-lab.sh /srv/storage/butler/agents/scenario-release-chain-v5-high-20261013 prepare EXACT_CLEAN_COMMIT. Actual535 history/quality bridge,137 required app cases and67 independent checker cases, disposable PostgreSQL, source/current ownership, complete native-cost/error accounting, original patch/receipt projection, race/vet; zero inference before independent frozen-source review.")
+      [void]$tests.Add("Independent final checker and full mandatory fault matrix on the same final composition. Native execute is once-only after separate source/runtime/resource review; old sealed roots cannot be reopened.")
+      continue
+    }
     "^(deploy/acceptance/(cloud-shadow-v5-|release-chain-v5-)|scripts/dev/cloud-v5-final-audit-reproduce[.]sh$)" {
       [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
       [void]$tests.Add("Read-only cloud-v5-final-audit-reproduce.sh against the sealed252-request native window and separately repaired auditor; exact safe SHA/size, history535/retained unknowns. Zero inference; never Sync or execute native V5.")
