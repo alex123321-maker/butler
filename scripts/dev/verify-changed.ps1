@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/acceptance/cloud_v5_window_audit(_test)?[.]go$|scripts/dev/cloud-v5-(final-audit/|readonly-audit-lab[.]sh$))" {
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$tests.Add("SSH laba: cloud-v5-readonly-audit-lab.sh /srv/storage/butler/agents/scenario-v5-readonly-audit-fix-20261013 EXACT_COMMIT (network-none, zero inference, historical multi-request Run regression, journal tamper tests, private-byte auditor tests, race/vet)")
+      [void]$tests.Add("Independently pin repaired auditor and read the same named original V5/PG leaves. Preserve the original failed audit; V5 native root is sealed, never Sync or execute.")
+      continue
+    }
     "^(apps/orchestrator/internal/app/(scenario_schema_dialect_|scenario_high_v5_|scenario_shadow_v5_)|internal/acceptance/cloud_(v5|schema_dialect)|cmd/cloud-observe/v5|scripts/dev/(cloud-v5-|scenario-shadow-v5|scenario-schema-dialect|fixtures/(scenario-shadow-v5|schema-dialect))|testdata/acceptance/(ru-cloud-fresh-v5|cloud-schema-dialect))" {
       [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")

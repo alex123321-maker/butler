@@ -28,3 +28,11 @@ projection with costs and metrics. Correct witness counts can be less than the
 inventory; SQL/raw equality does not imply quality PASS or release acceptance.
 No model/source text, upstream provider error, credential or hidden reasoning is
 printed. The audit performs no inference, authentication, network or mutation.
+
+Historical Start/Continue/Submit entries may share a RunID. Exact frozen-history
+identity still owns every ordered charge and NULL; the old RunID set forbids new
+context collisions without merging historical rows. The separately frozen repair
+and original193fea rejection are documented in
+`docs/ai/scenario-cloud-v5-audit-history-fix-20261013.md`. Prepare the repaired
+read-only executable in its own root with `cloud-v5-readonly-audit-lab.sh`; never
+Sync or reopen the completed native V5 root to rebuild an auditor.

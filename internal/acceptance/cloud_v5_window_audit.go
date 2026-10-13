@@ -162,9 +162,9 @@ func AuditCloudV5Window(c CloudV5Corpus, approval GoldenApproval, key []byte, ra
 	known, unknown := 0, 0
 	for _, u := range frozen.Usage {
 		if u.Run != "" {
-			if oldContexts[u.Run] {
-				return deny()
-			}
+			// The exact frozen historical ledger owns each charged request.
+			// Start/Continue/Submit can share a RunID; retain every row and cost.
+			// This set only prevents a new observation reusing an old context.
 			oldContexts[u.Run] = true
 		}
 		if u.Input == nil && u.Output == nil {

@@ -104,6 +104,45 @@ func TestCloudV5WindowAuditDerivesActualBaselineAndRetainsTrustedUnknownHistory(
 	}
 }
 
+func TestCloudV5WindowAuditRetainsDistinctHistoricalRequestsInOneRun(t *testing.T) {
+	c, approval, key, e, expected := cloudV5WindowFixture(t, 283)
+	// Start/Continue/Submit entries have distinct reservations within one Run.
+	// Repeated RunID is not a replay of the recorded historical provider entry.
+	e.History.Usage[1].Run = e.History.Usage[0].Run
+	e.History.Usage[1].Input, e.History.Usage[1].Output = intCloud(23), intCloud(3)
+	expected.HistoricalBaseline, _ = json.Marshal(e.History)
+	if e.History.Usage[0].Reservation == e.History.Usage[1].Reservation {
+		t.Fatal("fixture must contain two distinct charged requests")
+	}
+	r, err := AuditCloudV5Window(c, approval, key, cloudV5WindowBytes(t, e), expected)
+	if err != nil || r.Status != "CLOUD_V5_WINDOW_AUDIT_PASS" || r.HistoricalAttempts != 283 || r.HistoricalKnown != 257 || r.HistoricalUnknown != 26 || r.HistoricalNullTotal != 46 || r.HistoricalInput != 170023 || r.HistoricalOutput != 6003 || r.NewAttempts != 252 {
+		t.Fatal("distinct historical requests sharing a Run lost", err, r.Status)
+	}
+	for _, name := range []string{"changed_charge", "omitted_charge", "filled_unknown", "new_context_collides_with_old_run"} {
+		t.Run(name, func(t *testing.T) {
+			var changed cloudV5WindowEnvelope
+			if json.Unmarshal(cloudV5WindowBytes(t, e), &changed) != nil {
+				t.Fatal("fixture clone denied")
+			}
+			want := expected
+			switch name {
+			case "changed_charge":
+				changed.History.Usage[1].Input = intCloud(0)
+			case "omitted_charge":
+				changed.History.Usage = append(changed.History.Usage[:1], changed.History.Usage[2:]...)
+			case "filled_unknown":
+				changed.History.Usage[282].Input, changed.History.Usage[282].Output = intCloud(0), intCloud(0)
+			case "new_context_collides_with_old_run":
+				changed.History.Usage[0].Run, changed.History.Usage[1].Run = changed.Ledger[0].Context, changed.Ledger[0].Context
+				want.HistoricalBaseline, _ = json.Marshal(changed.History)
+			}
+			if result, err := AuditCloudV5Window(c, approval, key, cloudV5WindowBytes(t, changed), want); err == nil || result.Status != "NO_GO" {
+				t.Fatal("historical spend mutation or new-context collision accepted")
+			}
+		})
+	}
+}
+
 func TestCloudV5WindowAuditPreservesFailedChargedPrefixAndNullableSpend(t *testing.T) {
 	c, a, key, e, want := cloudV5WindowFixture(t, 283)
 	e.Status, e.New, e.Total = "failed", 2, 285

@@ -243,3 +243,10 @@ The90/85/safety0,60-second nearest-rank p95,120-second individual deadline and
 all-new-attempt measured-token gates remain fixed. Public synthetic observations
 and separate agent roles on an administrator-controlled host are never described
 as hidden benchmark evidence or hardware isolation.
+
+Historical provider-entry identity is the exact pinned ordered request ledger,
+not a unique RunID. Start/Continue/Submit entries can share a run; all charges and
+NULLs remain separate. An offline auditor must preserve these entries after exact
+historical equality while forbidding any new observation context from reusing an
+old RunID. A repaired auditor is separately frozen and reviews the same immutable
+paid originals without rewriting native collector code, data or old audit failures.
