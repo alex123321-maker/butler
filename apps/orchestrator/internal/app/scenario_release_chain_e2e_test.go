@@ -192,39 +192,47 @@ func verifyReleaseChainAndDeliver(t *testing.T, f *developerFixture, p *converte
 		t.Fatal("model final promoted or lost")
 	}
 	var artifact, patchCall, checkCall string
-	toolRows, e := f.f.pool.Query(ctx, `SELECT tool_name,tool_call_id,result::text FROM tool_calls WHERE run_id=$1`, runID)
-	if e != nil {
-		t.Fatal(e)
-	}
-	for toolRows.Next() {
-		var name, call, raw string
-		if e = toolRows.Scan(&name, &call, &raw); e != nil {
-			toolRows.Close()
+	patchRun, checkRun := runID, runID
+	if releaseChainV15TaskScopedProof(f) {
+		artifact, patchRun, patchCall, checkRun, checkCall, e = releaseChainV15OriginalProof(ctx, f, current)
+		if e != nil {
+			t.Fatal("current qualified original correction proof unavailable", e)
+		}
+	} else {
+		toolRows, e := f.f.pool.Query(ctx, `SELECT tool_name,tool_call_id,result::text FROM tool_calls WHERE run_id=$1`, runID)
+		if e != nil {
 			t.Fatal(e)
 		}
-		if name != "extension.project.prepare-patch" && name != "extension.project.check" {
-			continue
-		}
-		body, e := initiativeProjectToolBody(raw)
-		if e != nil {
-			toolRows.Close()
-			t.Fatal("actual project artifact/check receipt absent")
-		}
-		if name == "extension.project.prepare-patch" {
-			artifact, _ = body["artifact_id"].(string)
-			patchCall = call
-		} else {
-			if body["checks_passed"] != true || body["applied"] != false {
+		for toolRows.Next() {
+			var name, call, raw string
+			if e = toolRows.Scan(&name, &call, &raw); e != nil {
 				toolRows.Close()
-				t.Fatal("prepared correction not independently checked/unapplied")
+				t.Fatal(e)
 			}
-			checkCall = call
+			if name != "extension.project.prepare-patch" && name != "extension.project.check" {
+				continue
+			}
+			body, e := initiativeProjectToolBody(raw)
+			if e != nil {
+				toolRows.Close()
+				t.Fatal("actual project artifact/check receipt absent")
+			}
+			if name == "extension.project.prepare-patch" {
+				artifact, _ = body["artifact_id"].(string)
+				patchCall = call
+			} else {
+				if body["checks_passed"] != true || body["applied"] != false {
+					toolRows.Close()
+					t.Fatal("prepared correction not independently checked/unapplied")
+				}
+				checkCall = call
+			}
 		}
-	}
-	e = toolRows.Err()
-	toolRows.Close()
-	if e != nil || artifact == "" || patchCall == "" || checkCall == "" {
-		t.Fatal("original readiness correction missing")
+		e = toolRows.Err()
+		toolRows.Close()
+		if e != nil || artifact == "" || patchCall == "" || checkCall == "" {
+			t.Fatal("original readiness correction missing")
+		}
 	}
 	storedRaw, e := os.ReadFile(filepath.Join(f.projectDirectory, "patches.json"))
 	var stored map[string]projectfixture.Patch
@@ -249,6 +257,11 @@ func verifyReleaseChainAndDeliver(t *testing.T, f *developerFixture, p *converte
 		}
 	}
 	proof := task.Result{TaskID: current.TaskID, TaskRevision: current.Revision, RunID: runID, Summary: "Prepared verified: exact original conversion and checked ready=true patch; original remains unapplied", EvidenceRefs: []string{"source:" + original.ID, "source:" + output.Source.ID, "sha256:" + output.SHA256, "tool:" + patchCall, "tool:" + checkCall, "recipient-artifact:" + artifact, "sha256:" + generatedtools.HashBytes(storedRaw)}, VerifiedCriteria: current.CompletionCriteria, Verifier: "owner"}
+	if releaseChainV15TaskScopedProof(f) {
+		// Owner verification still belongs to the actual conversion final. The
+		// earlier confirmed project actions are qualified by their own run/call.
+		proof.EvidenceRefs = append(proof.EvidenceRefs, "tool-run:"+patchRun+":"+patchCall, "tool-run:"+checkRun+":"+checkCall)
+	}
 	verified, e := f.f.store.SaveVerifiedResult(actor, proof)
 	if e != nil {
 		t.Fatal("current original owner verification failed", e)

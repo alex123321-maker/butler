@@ -53,6 +53,7 @@ type releaseChainModelConfig struct {
 	ExtensionHarnessLifetime  time.Duration
 	SourceObserver            *releaseChainSourceObserver
 	AllowRepeatedPatchChecks  bool
+	TaskScopedOriginalProof   bool
 	Factory                   func(context.Context, *pgxpool.Pool, string) (transport.ModelProvider, error)
 }
 

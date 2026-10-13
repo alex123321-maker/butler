@@ -6,7 +6,13 @@ root=${1:?isolated root required}; phase=${2:-prepare}; release=${3:?exact clean
 protocol=${4:-v5}
 [[ "$phase" =~ ^(prepare|execute)$ && "$release" =~ ^[a-f0-9]{40}$ ]] || exit 2
 global_minutes=60
-if [[ "$protocol" == v14 ]]; then
+if [[ "$protocol" == v15 ]]; then
+  [[ "$root" == /srv/storage/butler/agents/scenario-release-chain-v15-high-20261013 ]] || exit 2
+  chain_baseline=611; chain_cap=120; chain_env=BUTLER_SCENARIO_CHAIN_V15_HIGH
+  gate_test=TestReleaseChainV15OperationalGate; window_id=issue33-high-release-chain-v15-20261013-baseline611
+  audit_package=./scripts/dev/release-chain-v6-final-audit
+  offline_timeout=3m; global_minutes=120; expected_audit_passes=0
+elif [[ "$protocol" == v14 ]]; then
   [[ "$root" == /srv/storage/butler/agents/scenario-release-chain-v14-high-20261013 ]] || exit 2
   chain_baseline=593; chain_cap=120; chain_env=BUTLER_SCENARIO_CHAIN_V14_HIGH
   gate_test=TestReleaseChainV14OperationalGate; window_id=issue33-high-release-chain-v14-20261013-baseline593
@@ -148,7 +154,7 @@ if [[ "$CHAIN_PROTOCOL" == v10 ]]; then
  go test -race -json -count=1 -run "^TestExtensionHarness(LifetimeBounds|RPCLifecycle)$" ./apps/tool-extension/internal/runtime > /bin-proof/extension-lifetime-unit.jsonl
  go vet ./apps/tool-extension/internal/runtime
 fi
-if [[ "$CHAIN_PROTOCOL" != v7 && "$CHAIN_PROTOCOL" != v8 && "$CHAIN_PROTOCOL" != v9 && "$CHAIN_PROTOCOL" != v10 && "$CHAIN_PROTOCOL" != v11 && "$CHAIN_PROTOCOL" != v12 && "$CHAIN_PROTOCOL" != v13 && "$CHAIN_PROTOCOL" != v14 ]]; then
+if [[ "$CHAIN_PROTOCOL" != v7 && "$CHAIN_PROTOCOL" != v8 && "$CHAIN_PROTOCOL" != v9 && "$CHAIN_PROTOCOL" != v10 && "$CHAIN_PROTOCOL" != v11 && "$CHAIN_PROTOCOL" != v12 && "$CHAIN_PROTOCOL" != v13 && "$CHAIN_PROTOCOL" != v14 && "$CHAIN_PROTOCOL" != v15 ]]; then
  go test -race -json -count=1 "$CHAIN_AUDIT_PACKAGE" > /bin-proof/chain-audit-unit.jsonl
  go test -race -json -count=1 -run "^TestToolAuthorizationFailsClosed$" ./apps/orchestrator/internal/orchestrator > /bin-proof/core-batch-policy.jsonl
 fi
@@ -157,14 +163,14 @@ chmod 555 /bin-proof/*
 ' > "$proof/build-vet.log" 2>&1
 # The direct human request is to run High immediately after the fix/build.
 # Record build-only honestly; independent code/tests/acceptance run concurrently.
-if [[ "$protocol" == v14 ]]; then
+if [[ "$protocol" == v14 || "$protocol" == v15 ]]; then
   manifest | cmp -s "$proof/source.sha256" -
   sha256sum "$proof/bin/"* > "$root/prepared-runtime.sha256"
   cp "$proof/source.sha256" "$root/prepared-source.sha256"
   printf '%s\n' "$source_dir" > "$root/prepared-source"
   printf '%s\n' "$proof" > "$root/prepared-proof"
   printf '%s\n' "$release" > "$root/prepared-release"
-  printf '{"status":"BUILD_ONLY_IMMEDIATE_NATIVE_REQUESTED","native_calls":0,"baseline":593,"maximum_new_attempts_design":120,"offline_tests_run":false,"independent_acceptance_pending":true}\n' > "$proof/summary.json"
+  printf '{"status":"BUILD_ONLY_IMMEDIATE_NATIVE_REQUESTED","native_calls":0,"baseline":%s,"maximum_new_attempts_design":120,"offline_tests_run":false,"independent_acceptance_pending":true}\n' "$chain_baseline" > "$proof/summary.json"
   printf 'BUILD ONLY: frozen runtime ready for immediate fresh High; final independent acceptance pending.\n'
   exit 0
 fi
@@ -233,7 +239,7 @@ if [[ "$protocol" == v12 ]]; then
  if docker run --rm --network none --read-only --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true --memory 512m --volume "$proof/bin:/bin-proof:ro" --env BUTLER_SCENARIO_CHAIN_V11_HIGH_ACCEPTANCE=1 "$go_image" /bin-proof/app.test -test.v -test.run='^TestScenarioReleaseChainActualV11HighE2E$' > "$proof/sealed-v11-entry.txt" 2>&1; then exit 1; fi
  grep -Fq 'V11 native scope is sealed failed; no new entry from current source' "$proof/sealed-v11-entry.txt"
 fi
-if [[ "$protocol" == v14 ]]; then
+elif [[ "$protocol" == v14 ]]; then
   [[ "$root" == /srv/storage/butler/agents/scenario-release-chain-v14-high-20261013 ]] || exit 2
   chain_baseline=593; chain_cap=120; chain_env=BUTLER_SCENARIO_CHAIN_V14_HIGH
   gate_test=TestReleaseChainV14OperationalGate; window_id=issue33-high-release-chain-v14-20261013-baseline593
