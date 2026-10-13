@@ -1,0 +1,355 @@
+{
+  "version": "butler-issue33-independent-v6-native-admission-v1",
+  "reviewed_at_utc": "2026-10-13T12:02:09.3240873Z",
+  "reviewer_role": "/root/v5_final_independent_audit",
+  "status": "INDEPENDENT_V6_NATIVE_ADMISSION_PASS",
+  "native_admission_admissible": true,
+  "admissible_once_only": true,
+  "admitted_commit": "829d77582691b7e80a4fcbd6279b8db3c1046669",
+  "admitted_source_dir": "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/snapshots/20261013-185042-032",
+  "native_root": "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013",
+  "native_window_id": "issue33-high-release-chain-v6-20261013-baseline537",
+  "native_window_observed_absent": true,
+  "model_calls_by_auditor": 0,
+  "authentication_by_auditor": false,
+  "model_profile": "gemini-3.8-flash-high",
+  "successful_observed_version_required": "gemini-3.8-flash-n",
+  "frozen_preparation": {
+    "broad": {
+      "fails": 0,
+      "gated_integration_skips": 1240,
+      "named_passes": 3060,
+      "package_passes": 112,
+      "vet_empty": true
+    },
+    "broad_proof": "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/final-unit-linux-20261013-829d775",
+    "commit": "829d77582691b7e80a4fcbd6279b8db3c1046669",
+    "gates": {
+      "app": {
+        "exact_required_names_sha256": "20bf3dcfebd7de04416e098245e79b96bf6e0158870e1fa47098dde52cef7267",
+        "fails": 0,
+        "named_passes": 309,
+        "skips": 0
+      },
+      "checker": {
+        "exact_required_names_sha256": "b64a5625d1b40cc9a7e9ac715788f1ba9fe5b4283a1d17844f9ea486b0238041",
+        "fails": 0,
+        "named_passes": 231,
+        "skips": 0
+      },
+      "core": {
+        "exact_required_names_sha256": "7fa39b8fbdb8819400789fbbd5ae93422b8304eebacfb28358c3d83df0474ea7",
+        "fails": 0,
+        "named_passes": 4,
+        "skips": 0
+      }
+    },
+    "hardware": {
+      "cloud_weights_sha256": null,
+      "cpu_sha256": "177d14a5788191dc50c31b0906b921147a444b23b1e4acc96e42181bbc3b6baa",
+      "fixture_cpus": 2,
+      "fixture_ram_bytes": 1610612736,
+      "go_image": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61",
+      "host_ram_kib": 15693396,
+      "kernel": "7.0.0-34-generic",
+      "postgres_image": "sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d",
+      "remote_model_ram": null,
+      "runtime_image": "sha256:ce64758a109eb420d874a118f87920e625e12d3634e03b4a5573fd9f6e5d3507"
+    },
+    "issue33_ready": false,
+    "metadata": {
+      "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/chain-v6-high-prepare-20261013T115208Z-1708428/bin/chain-audit-unit.jsonl": {
+        "bytes": 260053,
+        "sha256": "ad08b7787154f8b0c6ca80a2b5b196d5122f0c3cf07eb1e3d576c2c46e08951f"
+      },
+      "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/chain-v6-high-prepare-20261013T115208Z-1708428/bin/core-batch-policy.jsonl": {
+        "bytes": 5660,
+        "sha256": "d644721c7a3c173f30ceab802c2f0d73ae34c5f058e480cd99adb20bf6f6cbd7"
+      },
+      "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/chain-v6-high-prepare-20261013T115208Z-1708428/build-vet.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/chain-v6-high-prepare-20261013T115208Z-1708428/evidence.sha256": {
+        "bytes": 402,
+        "sha256": "d8985aa16e7a0f28600c9534c1247db55bc68a751c2805ecc38c1ac398c540f3"
+      },
+      "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/chain-v6-high-prepare-20261013T115208Z-1708428/hardware-cpu.json": {
+        "bytes": 1410,
+        "sha256": "177d14a5788191dc50c31b0906b921147a444b23b1e4acc96e42181bbc3b6baa"
+      },
+      "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/chain-v6-high-prepare-20261013T115208Z-1708428/hardware.json": {
+        "bytes": 500,
+        "sha256": "ac640d38f0ad5db871190315628543b2407a7c539ce7b3b31e85039edba61e9b"
+      },
+      "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/chain-v6-high-prepare-20261013T115208Z-1708428/source-commit.txt": {
+        "bytes": 41,
+        "sha256": "2078a4c708fcd159b143737790bfd4ea740d5e3798a6fd166af8efcc49ab6c1e"
+      },
+      "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/chain-v6-high-prepare-20261013T115208Z-1708428/source.sha256": {
+        "bytes": 245906,
+        "sha256": "bea1702496bebb20e1c0872ef85b5c4d65b8a73303df1d614fdea849f6003e6b"
+      },
+      "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/chain-v6-high-prepare-20261013T115208Z-1708428/summary.json": {
+        "bytes": 193,
+        "sha256": "15a8005ff4741d773cbc653cbbf5b7f04bf8f259712e2a308d8f3e4d568c9769"
+      },
+      "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/chain-v6-high-prepare-20261013T115208Z-1708428/tests.jsonl": {
+        "bytes": 337965,
+        "sha256": "598e0140232075d41a213b2c669266b16ca0373fc1354c0f550dbe0f72d5bf07"
+      },
+      "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/final-unit-linux-20261013-829d775/diagnostics.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/final-unit-linux-20261013-829d775/evidence.sha256": {
+        "bytes": 567,
+        "sha256": "fe1aed2e9938b28067bb7c60586effb464563a72ab9ceeeed2c6dbdf302211c0"
+      },
+      "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/final-unit-linux-20261013-829d775/source.sha256": {
+        "bytes": 245906,
+        "sha256": "bea1702496bebb20e1c0872ef85b5c4d65b8a73303df1d614fdea849f6003e6b"
+      },
+      "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/final-unit-linux-20261013-829d775/tests.jsonl": {
+        "bytes": 5235209,
+        "sha256": "dc282b794236269a53b3092d46df48b554372f3a814dff6ddcfda7b2f8f2aaf9"
+      }
+    },
+    "native_window_absent": true,
+    "planned_runtime_profile": {
+      "checker": "butler.delimited-json.checks.v1",
+      "dependency": {
+        "id": "butler-converter-ir",
+        "sha256": "d62c672bac20820926e17774b01ac326d0ca9a2af52f1317e76280681e992fa0",
+        "version": "1.0.0"
+      }
+    },
+    "planned_runtime_profile_sha256": "f9235b7d0290e67388c9ac67130060948ccb1ba7d507b6765ac1f616eea80267",
+    "production73_transfer_byte_equal": true,
+    "proof": "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/chain-v6-high-prepare-20261013T115208Z-1708428",
+    "public_pins": {
+      "deploy/acceptance/cloud-shadow-v5-final-audit-20261013.json": "f8248d19ec2a0c222b39d46fbc46c0d0cf4ccc3c1361c89965b597eedbb21cab",
+      "deploy/acceptance/release-chain-v6-high-prerequisite-20261013.json": "bef93bde0afa1251c67eb60f01dbbe6f8142b4f32b5a8076c0f34d5d9b402077",
+      "deploy/acceptance/release-chain-v6-high-prerequisite-v1-20261013.json": "9ce27e6d9a15f598fadc037e5de377869672937fef84849fc662610ec6379de3",
+      "deploy/acceptance/release-chain-v6-prior-history537-20261013.json": "71e640379d3904570afa4057be2580ce5713a2883275673bd9d1e356c163a2e7",
+      "deploy/acceptance/release-chain-v6-user-expense-exception-20261013.json": "31b930ac4e39206d65424ac951f65cc4656b71166995650122cbdda3e63b6ab4",
+      "deploy/acceptance/release-chain-v6-user-safe-timeout-waiver-20261013.json": "44991353526966ab57cfd0155c3f65af00061b87308eed37c2b735f207e75180"
+    },
+    "runtime_pins": {
+      "app.test": {
+        "bytes": 54357740,
+        "mode": "0555",
+        "sha256": "b3601b408ffac951022d543906e92cc61abfeebbb9514dca0b6001ad8edf3a9f"
+      },
+      "chain-audit-unit.jsonl": {
+        "bytes": 260053,
+        "mode": "0555",
+        "sha256": "ad08b7787154f8b0c6ca80a2b5b196d5122f0c3cf07eb1e3d576c2c46e08951f"
+      },
+      "chain-final-audit": {
+        "bytes": 5373420,
+        "mode": "0555",
+        "sha256": "92ecd23ead5e9b2d029470319b0c2987e57e6fa6d386cc117af87c60ad1c132c"
+      },
+      "core-batch-policy.jsonl": {
+        "bytes": 5660,
+        "mode": "0555",
+        "sha256": "d644721c7a3c173f30ceab802c2f0d73ae34c5f058e480cd99adb20bf6f6cbd7"
+      },
+      "extension.test": {
+        "bytes": 22405714,
+        "mode": "0555",
+        "sha256": "d207593822b20c5d26bba8d2a54549cc248e942931c3ee1321f7691efa3c74a0"
+      },
+      "test2json": {
+        "bytes": 4566038,
+        "mode": "0555",
+        "sha256": "8f352c19877e12d5b0305b9eebac875aa63734fe03b73127ee01fae2c833ad68"
+      },
+      "tls-prerequisite": {
+        "bytes": 8829345,
+        "mode": "0555",
+        "sha256": "14a3bc9fc5a006ce6ae91fe10e3d4ae2ef0f78ac6c1a4c16e43d6d65f1589392"
+      },
+      "tool-broker": {
+        "bytes": 28744943,
+        "mode": "0555",
+        "sha256": "caccde9e733875c1d7f32a734f184181c7b1184637a681f29d6bca9d283f91d5"
+      },
+      "tool-converter": {
+        "bytes": 20154564,
+        "mode": "0555",
+        "sha256": "d62c672bac20820926e17774b01ac326d0ca9a2af52f1317e76280681e992fa0"
+      }
+    },
+    "source_dir": "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/snapshots/20261013-185042-032",
+    "source_files": 2172,
+    "source_manifest_sha256": "bea1702496bebb20e1c0872ef85b5c4d65b8a73303df1d614fdea849f6003e6b",
+    "source_tree_sha256": "dbb3737b32824e9324ff82b34975e5a4b9c60ba5a676b965022b948e741ad017",
+    "status": "INDEPENDENT_CURRENT_PREPARATION_MATCH"
+  },
+  "independently_verified_source_inventory_files": 2172,
+  "independent_prepared_metadata_sha256": "8f33fb8b9d76f938d9cac53d334e713b00e98d7dfe7fd1cb32d3273fa91bcc72",
+  "current_context_race_evidence": {
+    "skips": 0,
+    "exact_unique_names": 4,
+    "proof": "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/context-race-repeat-829d775-20261013T115104Z-1704817",
+    "cause_boundary": "Context cancellation precedes provider stream close; EOF now checks call.Err(), preserving the actual cause and complete observed metadata. Live-context EOF remains protocol error. Tool/completed release paths and exact fixture predicates are unchanged.",
+    "vet_empty": true,
+    "named_events": 40,
+    "each_name_passes": 10,
+    "tests_sha256": "01c58058d323810df92843cce1d8bef1bea12bbf89f74dcdbb2baafbd1ddb779",
+    "race": true,
+    "fails": 0
+  },
+  "production_evidence_transfer": {
+    "transfer_scope": "Production and mandatory criteria/test implementations unchanged; measured old source identity stays73. New acceptance helpers/checker/source inventory and current binaries separately verified by current309/231/Core4 preparation. All4Go package roots and vet passed current829.",
+    "independently_checked_git_diff_empty": true,
+    "actual_mandatory_faults": {
+      "skips": 0,
+      "fails": 0,
+      "proof": "/srv/storage/butler/agents/scenario-v6-final-faults-20261013/reports/fault-20261013T103727Z-1467275/report.json",
+      "mandatory_faults_passed": true,
+      "scenarios": 8,
+      "issue33_ready": false,
+      "exact_names": 321,
+      "deadline_cancel_regression_repaired": true,
+      "sha256": "900da5cce76ea8663f28d4c04543d2da2f49cf7047f106230fa6a7bb70deb047",
+      "raw_event_leaves": 33
+    },
+    "actual_retry_pg": {
+      "skips": 0,
+      "proof": "/srv/storage/butler/agents/scenario-v6-model-retry-20261013/reports/model-retry-20261013T103449Z-1458468",
+      "vet_empty": true,
+      "native_calls": 0,
+      "exact_names": 81,
+      "source_sha256": "dc73824b244440ba857cf7be0a8119d0d839b6009dae5890f834c0497a7db629",
+      "tests_sha256": "efb8a9c9c3e8b3c6669be99862fa959bd839aed1b48dcf9ad49f82475176db98",
+      "race": true,
+      "fails": 0
+    },
+    "measured_source": "73b17b88f0d1c84f220957de2a3d3a51ab132747",
+    "exact_byte_equal_roots": [
+      "internal/transport",
+      "internal/budget",
+      "apps/orchestrator/internal/input",
+      "apps/orchestrator/internal/orchestrator",
+      "apps/tool-broker",
+      "apps/tool-converter",
+      "internal/acceptance"
+    ]
+  },
+  "quality_comparison_transfer": {
+    "direct_path": "scenario_shadow_v5_observation_test.go invokes capture.StartRun directly with no Tool Broker/Core retry dispatcher; transport implementation, collector, corpus/goldens and measurement runner unchanged.",
+    "total_originals": 252,
+    "reproduced_full_audit_sha256": "f8248d19ec2a0c222b39d46fbc46c0d0cf4ccc3c1361c89965b597eedbb21cab",
+    "quality_tuning": "64/64",
+    "comparison_tasks": 4,
+    "critical_errors": 0,
+    "direct_measurement_path_byte_equal": true,
+    "native_comparison_requests": 16,
+    "single_correct": 4,
+    "owning_pg_sha256": "cf1a2479041a972b4fe1f6b9097c058880d28da2328e806b0bac993389a8e1f8",
+    "quality_development": "96/96",
+    "missed_important_per_partition": 0,
+    "diagnostics_sha256": "18c62eb81c6e3595189586a4ad4593e55a9dbe8469f7a34d607d3b44cda28f1a",
+    "all252_usage": {
+      "known_total": 274142,
+      "unknown": 0,
+      "known_output": 5188,
+      "known_input": 124819
+    },
+    "holdout_retrieval": "17/18",
+    "multi_correct": 4,
+    "maximum_entry_ms": 98568,
+    "quality_holdout": "75/76",
+    "only_quality_auditor_change": "Legitimate historical Start/Continue/Submit entries may share RunID after exact frozen ledger verification; new context uniqueness and historical cost rows remain checked. Repair evidence retained separately.",
+    "evidence_scope": "Quality and four-pair comparison measured on3c; fresh whole production chain remains mandatory on admitted final composition. No claim of new quality inference on829 or cryptographic administrative isolation.",
+    "native_quality_requests": 236,
+    "original_private_report_sha256": "a5d4c7991143c2c75d2fc7663187d82acedb7092e6cec91eb67d246db016b830",
+    "measured_source": "3c4089f35c0bdf33bf9b2c6328ba395c519cecf4",
+    "p95_ms": {
+      "development": 8835,
+      "holdout": 20205,
+      "tuning": 7920
+    },
+    "proof": "/srv/storage/butler/agents/scenario-shadow-v5-high-20261013/reports/shadow-execute-20261012T213414Z-3290402",
+    "false_important_per_partition": 0
+  },
+  "historical_and_waiver_boundary": {
+    "old266_reason": "UNKNOWN",
+    "old_v5_chain_status": "SEALED_NO_GO",
+    "prior_attempts": 537,
+    "old_v5_failure_audit_sha256": "592d27ee34178a9b336eb0f9cce4784fac1ba214b22f05e1ad0b247a48f97c04",
+    "known_total_subtotal": 572459,
+    "denied": "Partial/conflicting measurements, wrong known version, HTTP/auth/serialization/absent phase, unbound/second failure or retry, other errors/unknowns, refunded/shared reservation, incorrect source/authority, duplicate effects, stopped-child effects, schema/transport/result/delivery violations.",
+    "known_input_subtotal": 294598,
+    "waiver": "Only one fully bound nominal response_stream provider_timeout per accepted input, no final/effect, all-three known-valid or all-three NULL usage, expected or NULL failed version, actual kernel IO/observed_at matching NULL shape, distinct permanently spent reservations, started durable count1 same-run fresh Start after claimed_at+2s and failed finish, later completed known-cost/version and fixed scenario result or strict owner_stop guarantees.",
+    "unknown_io_pairs": 27,
+    "later_safe_timeout_waiver_sha256": "44991353526966ab57cfd0155c3f65af00061b87308eed37c2b735f207e75180",
+    "report_all_new_expense_measured_false_when_waived_cost_null": true,
+    "old537_usage": null,
+    "known_io_pairs": 510,
+    "actual_failed_measurements_never_materialized_or_refunded": true,
+    "known_output_subtotal": 11827,
+    "unknown_total_entries": 47,
+    "old537_model_version": null,
+    "prior_fold_sha256": "7100f33980905baea6dbcffe608d546a8544457b8260bac4d725952f415578df",
+    "factual_unknown_cost_version_union_counts_required": true,
+    "old537_exception_sha256": "31b930ac4e39206d65424ac951f65cc4656b71166995650122cbdda3e63b6ab4",
+    "prior_history_sha256": "71e640379d3904570afa4057be2580ce5713a2883275673bd9d1e356c163a2e7"
+  },
+  "fixed_native_limits": {
+    "maximum_entry_ms": 120000,
+    "scenario_order": [
+      "normal_sent",
+      "restart_sent",
+      "explicit_absence",
+      "lost_ack",
+      "owner_stop"
+    ],
+    "baseline": 537,
+    "maximum_generation": 32768,
+    "maximum_new_attempts": 78,
+    "maximum_case_ms": 1200000,
+    "maximum_model_retries_per_input": 1,
+    "absolute_ceiling": 615,
+    "backoff_ms": 2000,
+    "maximum_global_ms": 3600000
+  },
+  "retained_failed_proofs": [
+    "/srv/storage/butler/agents/scenario-release-chain-v5-high-20261013/reports/release-chain-process-20261013T075645Z-968057",
+    "/srv/storage/butler/agents/scenario-v6-final-faults-20261013/reports/fault-20261013T095943Z-1336935",
+    "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/chain-v6-high-prepare-20261013T111909Z-1604628",
+    "/srv/storage/butler/agents/scenario-release-chain-v6-high-20261013/reports/chain-v6-high-prepare-20261013T114057Z-1672291"
+  ],
+  "independent_current_safety_review": "No remaining concrete blocker to the once-only prospective V6 execution was found in the frozen composition after actual309PG/231checker/Core4/race/vet, context4x10 and broad3060PASS. Corrected SQL predecessor route preserves same-root/scenario, exact pending retry op, completed known recovery and coherent negative fixtures; SQL query failures are distinct from intentional policy denial. EOF collector correction preserves actual context cause/known dimensions without releasing withheld finals.",
+  "execution_conditions": [
+    "Parent rechecks exact admitted source, prepared executable hashes and hardware image IDs before invocation.",
+    "Only the named fresh V6 window; no reopen/retry/refund of closed535 window or537 failed request.",
+    "Usual Core and Tool Broker, source/mandate/ownership controls and stopped-tree guards remain required.",
+    "After execution seal actual product/initial/owningPG/runtime leaves; independent13named-leaf checker plus issue-wide acceptance required.",
+    "Save failed outcomes and explicit UNKNOWN dimensions; no synthetic PASS or inferred cost."
+  ],
+  "limitations": [
+    "Shared administrator-controlled host; independent reviewer role is not cryptographic signature or admin isolation.",
+    "Cloud weight bytes/server effort/hardware/RAM and invoice unavailable. High request profile and observed expected Flash version are the stated evidence.",
+    "Owner setup/cheap reads are model-free; finite-IR builder, loopback project/channel fixtures and prepared/checked/unapplied README patch are explicit boundaries.",
+    "Comparison is four fixed pairs of shadow contexts, not authenticated kernel children or statistical superiority proof.",
+    "Full321 includes isolated local CPU load/OOM evidence, not proof of proprietary High server memory.",
+    "Broad1240 integration skips are explicit;309PG/81PG/321mandatory proofs are separate actual gates."
+  ],
+  "pending_final_acceptance": [
+    "All5 actual V6 High scenarios on final admitted code.",
+    "Independent sealed owningPG/product/initial/runtime/source/cost/version/waived subset correlation with13named safe leaves.",
+    "Issue-wide exact criterion evidence and final source composition review before PR ready/merge/issue close."
+  ],
+  "issue33_ready": false,
+  "merge_authorized_by_this_artifact": false,
+  "admission_is_final_issue_acceptance": false,
+  "review_commands": [
+    "pwsh -NoProfile -File .cache/v6-independent-review/read-829d775-context.ps1",
+    "pwsh -NoProfile -File .cache/v6-independent-review/read-829d775-preparation.ps1",
+    "After completed seal: scripts/dev/release-chain-v6-final-audit/README.md exact13leaf offline checker."
+  ]
+}

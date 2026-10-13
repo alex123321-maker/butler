@@ -15,6 +15,7 @@ type releaseChainHighEntry struct {
 	AcceptanceEnv, PrivateEnv, ImportEnv string
 	Baseline, Maximum                    int
 	ProviderStages                       bool
+	Policy                               releaseChainHighWindowPolicy
 	ReadQuality                          func() (releaseChainV5Prerequisite, error)
 	NewWindow                            func(context.Context, *pgxpool.Pool) (*releaseChainV5Window, error)
 }
@@ -29,6 +30,13 @@ func TestScenarioReleaseChainActualV5HighE2E(t *testing.T) {
 }
 
 func TestScenarioReleaseChainActualV6HighE2E(t *testing.T) {
+	if os.Getenv("BUTLER_SCENARIO_CHAIN_V6_HIGH_ACCEPTANCE") == "1" {
+		t.Fatal("V6 native scope is sealed failed; no new entry from current source")
+	}
+	t.Skip("V6 native scope is sealed failed; no new entry from current source")
+}
+
+func closedReleaseChainV6Entry(t *testing.T) {
 	testReleaseChainHighNative(t, releaseChainHighEntry{
 		WindowID:      releaseChainV6WindowID,
 		AcceptanceEnv: "BUTLER_SCENARIO_CHAIN_V6_HIGH_ACCEPTANCE", PrivateEnv: "BUTLER_SCENARIO_CHAIN_V6_HIGH_PRIVATE", ImportEnv: "BUTLER_SCENARIO_CHAIN_V6_HIGH_IMPORT_FILE",

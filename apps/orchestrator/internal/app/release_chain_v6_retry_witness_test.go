@@ -136,6 +136,9 @@ type releaseChainV6RetryGateFixture struct {
 }
 
 func TestReleaseChainV6MeasuredRetryFailureGateIntegration(t *testing.T) {
+	testReleaseChainMeasuredRetryFailureGate(t, releaseChainHighWindowPolicy{}, nil)
+}
+func testReleaseChainMeasuredRetryFailureGate(t *testing.T, policy releaseChainHighWindowPolicy, selected map[string]bool) {
 	for _, tc := range []struct {
 		name                string
 		mutate              func(*releaseChainV6RetryGateFixture)
@@ -177,6 +180,12 @@ func TestReleaseChainV6MeasuredRetryFailureGateIntegration(t *testing.T) {
 		{name: "failed_final_not_released", fresh: true, mutate: func(f *releaseChainV6RetryGateFixture) { f.finals = 1 }},
 		{name: "unknown_usage_confidence", fresh: true, mutate: func(f *releaseChainV6RetryGateFixture) { f.usageUncertain = nil }},
 	} {
+		if selected != nil && !selected[tc.name] {
+			continue
+		}
+		if tc.name == "http_stage" && policy.TimeoutStages == "http_or_stream" {
+			tc.want = true
+		}
 		t.Run(tc.name, func(t *testing.T) {
 			pool := memorytest.Database(t)
 			ctx := context.Background()
@@ -184,7 +193,7 @@ func TestReleaseChainV6MeasuredRetryFailureGateIntegration(t *testing.T) {
 			if pool.QueryRow(ctx, `SELECT current_schema()`).Scan(&schema) != nil {
 				t.Fatal("schema unavailable")
 			}
-			w, e := createReleaseChainHighWindowInSchemaAt(ctx, pool, strings.Repeat("a", 64), strings.Repeat("b", 64), 537, schema, time.Now().UTC().Add(time.Minute), 78, true, true)
+			w, e := createReleaseChainHighWindowWithPolicy(ctx, pool, strings.Repeat("a", 64), strings.Repeat("b", 64), 537, schema, time.Now().UTC().Add(time.Minute), 78, true, policy, true)
 			if e != nil {
 				t.Fatal(e)
 			}
@@ -258,6 +267,9 @@ func TestReleaseChainV6MeasuredRetryFailureGateIntegration(t *testing.T) {
 			expectedFailed := 1
 			if tc.freshBad == "failed" {
 				expectedFailed = 2
+			}
+			if !tc.want {
+				expectedFailed = 0
 			}
 			if (e == nil) != tc.want || count != expectedFailed {
 				t.Fatal("measured failed retry gate changed", count, e)

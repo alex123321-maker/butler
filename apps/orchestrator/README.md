@@ -10,16 +10,17 @@ provider cancellation and blocking. Missing provider usage stays NULL. See the
 [model retry policy](../../docs/architecture/model-retry-policy.md) and the
 zero-inference `scripts/dev/model-retry-lab.sh` runner.
 
-Current actual history advanced to537 after the sealed V5 native chain NO_GO:
-536 completed one discover packet;537 timed out without usage/version. Cumulative
-294598 input/11827 output/572459 total are known subtotals, with27 unknown visible
-pairs and47 unknown totals. No child/adapter/result/notice exists; four remaining
-chain cases were not run. Same-source137 PG/67 checker/4 Core preparation names,
-full321 mandatory faults and broad Linux tests/vet passed. See the
-[actual chain audit](../../docs/ai/scenario-release-chain-v5-independent-audit-20261013.md).
+Current actual history is539 after the sealed V5 and V6 native chains NO_GO.
+538 completed one discover packet;539 timed out in HTTP without usage/version.
+Core durably prepared one fresh retry, which the V6 stream-only fixture guard
+denied before native dispatch. Cumulative301714 input/11982 output/580620 total
+are known subtotals, with28 unknown visible pairs and48 unknown totals. No
+complete child/adapter/result/notice chain exists; four remaining cases were not
+run. Full mandatory faults, production retry tests and broad Linux tests/vet
+passed separately. See the [V6 chain audit](../../docs/ai/scenario-release-chain-v6-independent-audit-20261013.md).
 The535 quality/comparison boundary below remains its immutable prior evidence.
 
-Current issue33 evidence is535 spent High attempts. Actual V5 quality and four
+The accepted quality/comparison evidence ends at535 spent High attempts. Actual V5 quality and four
 paired comparisons passed independent source/signature/original-byte/PostgreSQL
 audit:96/96 development,64/64 tuning,75/76 holdout, zero critical failures,4/4 both
 comparison arms and274142 fully measured new total tokens including thinking.
@@ -32,7 +33,7 @@ High release chain and final issue-wide acceptance still remain. See the
 [actual diagnostic audit](../../docs/ai/scenario-schema-dialect-actual-audit-20261013.md)
 and [closed V4 audit](../../docs/ai/scenario-cloud-v4-independent-audit-20261013.md).
 
-The separately prepared V5 native release-chain collector binds this actual535
+The sealed V5 native release-chain collector bound the actual535
 history and full original quality audit before any provider import. Its shared
 PostgreSQL counter supplements ordinary Core budgets: at most80 new requests,
 one60-minute absolute window, five fixed normal/restart/delivery/Stop cases. Each

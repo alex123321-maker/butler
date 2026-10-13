@@ -1,10 +1,16 @@
-# Prospective V6 High release chain
+# Sealed V6 High release-chain protocol
 
-This new scope starts from actual537. It has not run and grants no native
-admission until clean final source, zero-inference preparation and independent
-review freeze its exact code, protocol, runtimes and hardware. The owning V6
-reader now pins the independently reviewed protocol bytes; prepared-source and
-runtime admission remain pending and no native execution has occurred.
+This protocol was fixed before the once-only V6 execution on commit829d775.
+Independent admission and preparation passed. The actual run is now sealed
+NO_GO after requests538–539; it cannot be executed again. Request538 completed
+with a measured discover tool packet. Request539 timed out in the observed
+`http_round_trip` phase, with provider usage and model version still NULL.
+Core prepared its bounded retry, but this protocol's response-stream-only
+admission predicate stopped the fresh request before the native counter and
+network. The original result and all five complete scenarios remain unproved.
+The limits and predicates below describe the original fixed protocol, not a
+permission to rerun it. Cumulative history is539 attempts:301714 known input,
+11982 known output and580620 known total tokens, with48 unknown total counts.
 
 The [V5 quality/comparison audit](scenario-cloud-v5-independent-audit-20261013.md)
 retains PASS on its original measured collector3c4089f, source61c8e729 and
@@ -124,8 +130,10 @@ one verified semantic notification each, with no technical duplicate outbox.
 
 ## Reproduction and remaining gates
 
-Only a fresh isolated root may receive this code. Old windows are sealed and
-their frozen read-only auditors remain the reproduction path. From Windows:
+The following commands document the original preparation and one execution.
+The V6 root and native window are now sealed. Its frozen read-only auditor is
+the reproduction path; these commands must not execute or resync that root.
+Original Windows preparation command:
 
 ```powershell
 pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Sync -RemoteRoot /srv/storage/butler/agents/scenario-release-chain-v6-high-20261013
@@ -150,7 +158,7 @@ bash ROOT/current/scripts/dev/scenario-release-chain-v6-high-lab.sh ROOT execute
 
 The read-only V6 auditor receives only individually named safe leaves, frozen
 source and binaries, no credential import or whole private runtime directory.
-Actual full-cost chain PASS, final-code checks and independent issue-wide
+An independently accepted real-chain result, final-code checks and issue-wide
 criterion mapping remain necessary before ready/merge/closure of PR74 and #33.
 Shared administrative host and unavailable proprietary weights/vendor billing
 records remain explicit evidence limits.

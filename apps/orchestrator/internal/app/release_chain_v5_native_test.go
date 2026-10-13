@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -45,7 +46,34 @@ func releaseChainV5Configuration() releaseChainModelConfig {
 	return releaseChainModelConfig{Provider: antigravity.Name, Model: antigravity.FlashHighModel, InputTokens: 1048576, OutputTokens: 32768, Policy: p, FixtureTimeout: 20 * time.Minute, ChildBudget: budget.Units{ModelTurns: 4, Tokens: 4 * quote, ExternalCalls: 4, ActiveMillis: 600000, EgressBytes: 16 << 20, ProviderInputBytes: 16 << 20}}
 }
 
+func releaseChainHighConfigurationFor(policy releaseChainHighWindowPolicy) releaseChainModelConfig {
+	c := releaseChainV5Configuration()
+	if policy == (releaseChainHighWindowPolicy{}) {
+		return c
+	}
+	c.Policy.Day.ModelTurns = 76
+	c.Policy.Day.Tokens = 76 * int64(1048576+32768)
+	c.ChildBudget.ActiveMillis = 4 * (int64(policy.attemptMillis()) + c.Policy.ToolMillis)
+	ms := int64(policy.attemptMillis())
+	c.Policy.ModelMillis = ms
+	c.Policy.Task.ModelTurns = 24
+	c.Policy.Task.ActiveMillis = 24 * ms
+	c.Policy.Mandate.ActiveMillis = 40 * ms
+	c.Policy.Day.ActiveMillis = 76 * ms
+	c.Policy.Conversation = c.Policy.Task
+	c.Policy.TaskLifetimeMillis = int64(policy.caseMillis())
+	c.FixtureTimeout = time.Duration(policy.caseMillis()) * time.Millisecond
+	return c
+}
+
 func newReleaseChainV5NativeProvider(ctx context.Context, pool *pgxpool.Pool, importPath, keyPath string) (transport.ModelProvider, error) {
+	return newReleaseChainHighNativeProviderFor(ctx, pool, importPath, keyPath, releaseChainHighWindowPolicy{})
+}
+
+func newReleaseChainHighNativeProviderFor(ctx context.Context, pool *pgxpool.Pool, importPath, keyPath string, policy releaseChainHighWindowPolicy) (transport.ModelProvider, error) {
+	if !policy.valid() {
+		return nil, errNativeFixtureDenied
+	}
 	if _, err := readReleaseChainV5Prerequisite(); err != nil {
 		return nil, errNativeFixtureDenied
 	}
@@ -70,7 +98,7 @@ func newReleaseChainV5NativeProvider(ctx context.Context, pool *pgxpool.Pool, im
 			return nil, errNativeFixtureDenied
 		}
 	}
-	return antigravity.NewProvider(antigravity.Config{Model: antigravity.FlashHighModel, Timeout: 120 * time.Second, AuthSource: manager, MaximumOutputTokens: 32768})
+	return antigravity.NewProvider(antigravity.Config{Model: antigravity.FlashHighModel, Timeout: time.Duration(policy.attemptMillis()) * time.Millisecond, AuthSource: manager, MaximumOutputTokens: policy.generation()})
 }
 
 // Faults observe actual owning PG admission. They do not read model prose or
@@ -195,7 +223,7 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 			var f *developerFixture
 			var fault *releaseChainV5Fault
 			var caseWindow *releaseChainV5Window
-			cfg := releaseChainV5Configuration()
+			cfg := releaseChainHighConfigurationFor(entry.Policy)
 			cfg.Factory = func(ctx context.Context, pool *pgxpool.Pool, root string) (transport.ModelProvider, error) {
 				prerequisite, e := entry.ReadQuality()
 				if e != nil {
@@ -205,11 +233,14 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 				if e != nil {
 					return nil, e
 				}
+				if w.policy != entry.Policy {
+					return nil, errNativeFixtureDenied
+				}
 				caseWindow = w
 				if e := recordReleaseChainV5InitialEvidence(ctx, w, f, scenario); e != nil {
 					return nil, e
 				}
-				native, e := newReleaseChainV5NativeProvider(ctx, pool, os.Getenv(entry.ImportEnv), filepath.Join(private, "encrypted-settings-key"))
+				native, e := newReleaseChainHighNativeProviderFor(ctx, pool, os.Getenv(entry.ImportEnv), filepath.Join(private, "encrypted-settings-key"), entry.Policy)
 				if e != nil {
 					return nil, e
 				}
@@ -280,7 +311,7 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 					}
 					var attempts, unknown, failed, overlong, unknownCost, unknownVersion int
 					var window json.RawMessage
-					e := f.f.pool.QueryRow(context.Background(), `SELECT (SELECT attempts FROM `+caseWindow.table("fixture_chain_v5_high_window")+`),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE input_tokens IS NULL OR output_tokens IS NULL OR total_tokens IS NULL OR model_version IS NULL),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE outcome<>'completed' OR provider_operation_stage IS DISTINCT FROM 'response_stream'),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE elapsed_ms IS NULL OR elapsed_ms>120000),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE input_tokens IS NULL OR output_tokens IS NULL OR total_tokens IS NULL),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE model_version IS NULL),(SELECT json_build_object('native_baseline',native_baseline,'attempts',attempts,'prior_history_hash',prior_history_hash,'prerequisite_hash',prerequisite_hash,'expires_at',expires_at,'maximum_new_attempts',maximum_new_attempts,'provider_stage_observation',provider_stage_observation,'kernel_operation_binding',kernel_operation_binding) FROM `+caseWindow.table("fixture_chain_v5_high_window")+`)`).Scan(&attempts, &unknown, &failed, &overlong, &unknownCost, &unknownVersion, &window)
+					e := f.f.pool.QueryRow(context.Background(), `SELECT (SELECT attempts FROM `+caseWindow.table("fixture_chain_v5_high_window")+`),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE input_tokens IS NULL OR output_tokens IS NULL OR total_tokens IS NULL OR model_version IS NULL),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE outcome<>'completed' OR provider_operation_stage IS DISTINCT FROM 'response_stream'),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE elapsed_ms IS NULL OR elapsed_ms>`+strconv.Itoa(caseWindow.policy.attemptMillis())+`),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE input_tokens IS NULL OR output_tokens IS NULL OR total_tokens IS NULL),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE model_version IS NULL),(SELECT `+caseWindow.metadataSQL()+` FROM `+caseWindow.table("fixture_chain_v5_high_window")+`)`).Scan(&attempts, &unknown, &failed, &overlong, &unknownCost, &unknownVersion, &window)
 					if e != nil {
 						t.Error("durable native scope unavailable")
 						return
@@ -322,6 +353,7 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 					var retryError error
 					if caseWindow.kernelOperations {
 						retryMeasurements, retryError = releaseChainV6AcceptedRetryMeasurements(context.Background(), caseWindow)
+						retryMeasurements = releaseChainHighAcceptedMeasurements(retryMeasurements, retryError)
 						acceptedRetries = retryMeasurements.Failures
 					}
 					scopeSnapshot := map[string]any{"window": window, "total_attempts": attempts, "new_attempts": attempts - entry.Baseline, "unknown_full_token_cost": unknown, "failed_provider_entries": failed, "accepted_model_retry_failures": acceptedRetries, "overlong_provider_entries": overlong, "requests": items}

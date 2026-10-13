@@ -82,6 +82,17 @@ func releaseChainV6PriorBudgetJSONSQL(a, r string) string {
 
 // A sealed earlier case can be admitted only from its actual saved safe product
 // witness. This does not authorize a new request or relax its result predicate.
+func releaseChainHighCompleteNativeSQL(w *releaseChainV5Window, alias string) string {
+	return strings.ReplaceAll(strings.ReplaceAll(releaseChainV6CompleteNativeSQL(alias), "32768", fmt.Sprint(w.policy.generation())), "120000", fmt.Sprint(w.policy.attemptMillis()))
+}
+func releaseChainHighSafeTimeoutSQL(w *releaseChainV5Window, alias string) string {
+	s := strings.ReplaceAll(strings.ReplaceAll(releaseChainV6SafeTimeoutSQL(alias), "32768", fmt.Sprint(w.policy.generation())), "120000", fmt.Sprint(w.policy.attemptMillis()))
+	if w.policy.TimeoutStages == "http_or_stream" {
+		s = strings.ReplaceAll(s, alias+".provider_operation_stage='response_stream'", alias+".provider_operation_stage IN('http_round_trip','response_stream')")
+	}
+	return s
+}
+
 func releaseChainV6SealedRetryProofSQL(w *releaseChainV5Window) string {
 	return `EXISTS(SELECT 1 FROM ` + w.table("fixture_chain_v5_high_case_evidence") + ` e,
  LATERAL jsonb_array_elements(e.payload_json->'postgres'->'accepted_inputs') i,
@@ -94,7 +105,7 @@ func releaseChainV6SealedRetryProofSQL(w *releaseChainV5Window) string {
  AND ` + releaseChainV6RetryMarkerSQL("i->'model_retry'", "r") + `
  AND fresh.kernel_operation_id=i->'model_retry'->>'retry_operation_id' AND fresh.run_id=r.run_id
  AND fresh.root_task_id=r.root_task_id AND fresh.scenario=r.scenario AND fresh.kind='start'
- AND ` + releaseChainV6CompleteNativeSQL("fresh") + `
+ AND ` + releaseChainHighCompleteNativeSQL(w, "fresh") + `
  AND fresh.admitted_at>=(i->'model_retry'->>'started_at')::timestamptz AND fresh.admitted_at>=r.finished_at
  AND ` + releaseChainV6PriorBudgetJSONSQL("prior", "r") + `
  AND next->>'operation_id'=fresh.kernel_operation_id AND next->>'run_id'=r.run_id
@@ -113,11 +124,11 @@ func releaseChainV6AcceptedRetryMeasurements(ctx context.Context, w *releaseChai
 	query := `SELECT count(*),count(*) FILTER(WHERE r.input_tokens IS NULL OR r.output_tokens IS NULL OR r.total_tokens IS NULL),
  count(*) FILTER(WHERE r.model_version IS NULL),
  count(*) FILTER(WHERE r.input_tokens IS NULL OR r.output_tokens IS NULL OR r.total_tokens IS NULL OR r.model_version IS NULL),
- count(*) FILTER(WHERE (` + releaseChainV6SafeTimeoutSQL("r") + ` AND ` + releaseChainV6SealedRetryProofSQL(w) + `) IS NOT TRUE)
+ count(*) FILTER(WHERE (` + releaseChainHighSafeTimeoutSQL(w, "r") + ` AND ` + releaseChainV6SealedRetryProofSQL(w) + `) IS NOT TRUE)
  FROM ` + w.table("fixture_chain_v5_high_requests") + ` r WHERE r.outcome<>'completed'`
 	var denied int
 	if w.pool.QueryRow(ctx, query).Scan(&m.Failures, &m.UnknownCost, &m.UnknownVersion, &m.UnknownMeasurement, &denied) != nil || denied != 0 {
-		return m, errNativeFixtureDenied
+		return releaseChainV6RetryMeasurements{}, errNativeFixtureDenied
 	}
 	return m, nil
 }
@@ -128,7 +139,7 @@ func releaseChainV6AcceptedRetryMeasurements(ctx context.Context, w *releaseChai
 // original marker; unrelated/second failures never acquire another exception.
 func releaseChainV6HistoryAllowsAdmission(ctx context.Context, tx pgx.Tx, w *releaseChainV5Window, scenario, kind, root, run, operation string) error {
 	query := `SELECT NOT EXISTS(SELECT 1 FROM ` + w.table("fixture_chain_v5_high_requests") + ` r WHERE (
- ` + releaseChainV6CompleteNativeSQL("r") + ` OR (` + releaseChainV6SafeTimeoutSQL("r") + ` AND (
+ ` + releaseChainHighCompleteNativeSQL(w, "r") + ` OR (` + releaseChainHighSafeTimeoutSQL(w, "r") + ` AND (
  ` + releaseChainV6SealedRetryProofSQL(w) + ` OR EXISTS(SELECT 1 FROM accepted_inputs i
  JOIN execution_model_attempts prior ON prior.operation_id=r.kernel_operation_id AND prior.run_id=r.run_id
  JOIN execution_model_attempts fresh_op ON fresh_op.operation_id=i.checkpoint_json->'model_retry'->>'retry_operation_id' AND fresh_op.run_id=r.run_id
@@ -148,7 +159,7 @@ func releaseChainV6HistoryAllowsAdmission(ctx context.Context, tx pgx.Tx, w *rel
  OR EXISTS(SELECT 1 FROM ` + w.table("fixture_chain_v5_high_requests") + ` fresh
  WHERE fresh.kernel_operation_id=i.checkpoint_json->'model_retry'->>'retry_operation_id'
  AND fresh.run_id=r.run_id AND fresh.scenario=r.scenario AND fresh.kind='start' AND fresh.root_task_id=r.root_task_id
- AND ` + releaseChainV6CompleteNativeSQL("fresh") + `
+ AND ` + releaseChainHighCompleteNativeSQL(w, "fresh") + `
  AND fresh_op.actual_input_tokens=fresh.input_tokens AND fresh_op.actual_output_tokens=fresh.output_tokens AND fresh_op.observed_at IS NOT NULL
  AND fresh.admitted_at>=r.finished_at AND fresh.admitted_at>=(i.checkpoint_json->'model_retry'->>'started_at')::timestamptz))
  )))) IS NOT TRUE)`
@@ -171,6 +182,9 @@ func releaseChainV6HistoryAllowsAdmission(ctx context.Context, tx pgx.Tx, w *rel
 }
 
 func TestReleaseChainV6SafeRetryPredecessorAdmissionIntegration(t *testing.T) {
+	testReleaseChainSafeRetryPredecessorAdmission(t, releaseChainHighWindowPolicy{}, nil)
+}
+func testReleaseChainSafeRetryPredecessorAdmission(t *testing.T, policy releaseChainHighWindowPolicy, selected map[string]bool) {
 	for _, tc := range []struct {
 		name              string
 		want              bool
@@ -189,6 +203,12 @@ func TestReleaseChainV6SafeRetryPredecessorAdmissionIntegration(t *testing.T) {
 		{"completed_retry_unknown_fresh", false, true}, {"completed_retry_unfinished_fresh", false, true}, {"completed_retry_fresh_cost_unobserved", false, true},
 		{"completed_retry_blocked_old_input", false, true}, {"completed_retry_cancelled_old_input", false, true}, {"completed_retry_malformed_fresh", false, true},
 	} {
+		if selected != nil && !selected[tc.name] {
+			continue
+		}
+		if tc.name == "http_phase" && policy.TimeoutStages == "http_or_stream" {
+			tc.want = true
+		}
 		t.Run(tc.name, func(t *testing.T) {
 			pool := memorytest.Database(t)
 			ctx := context.Background()
@@ -196,7 +216,7 @@ func TestReleaseChainV6SafeRetryPredecessorAdmissionIntegration(t *testing.T) {
 			if pool.QueryRow(ctx, `SELECT current_schema()`).Scan(&schema) != nil {
 				t.Fatal("schema unavailable")
 			}
-			w, err := createReleaseChainHighWindowInSchemaAt(ctx, pool, strings.Repeat("a", 64), strings.Repeat("b", 64), 537, schema, time.Now().UTC().Add(time.Minute), 78, true, true)
+			w, err := createReleaseChainHighWindowWithPolicy(ctx, pool, strings.Repeat("a", 64), strings.Repeat("b", 64), 537, schema, time.Now().UTC().Add(time.Minute), 78, true, policy, true)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -379,6 +399,12 @@ CREATE TEMP TABLE execution_budget_reservations(reservation_id text,operation_id
 			var queryFailure *releaseChainV6PredecessorQueryFailure
 			if errors.As(err, &queryFailure) {
 				t.Fatal("SQL failure masked the predecessor predicate", queryFailure)
+			}
+			if selected != nil {
+				m, measurementErr := releaseChainV6AcceptedRetryMeasurements(ctx, w)
+				if measurementErr == nil || m != (releaseChainV6RetryMeasurements{}) {
+					t.Fatal("unsealed recovery reported accepted measurements", m, measurementErr)
+				}
 			}
 			var attempts, rows int
 			if pool.QueryRow(ctx, `SELECT attempts,(SELECT count(*) FROM fixture_chain_v5_high_requests) FROM fixture_chain_v5_high_window`).Scan(&attempts, &rows) != nil {

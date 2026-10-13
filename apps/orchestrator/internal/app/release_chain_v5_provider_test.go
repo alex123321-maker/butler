@@ -118,7 +118,7 @@ func (p *releaseChainV5Provider) entry(ctx context.Context, kind, run string, in
 	}
 	// This bound owns the whole auth/preflight/invoke/stream entry. The native
 	// HTTP timeout is only an additional transport limit, not its replacement.
-	attemptDeadline := time.Now().Add(120 * time.Second)
+	attemptDeadline := time.Now().Add(time.Duration(p.window.policy.attemptMillis()) * time.Millisecond)
 	if attemptDeadline.Before(deadline) {
 		deadline = attemptDeadline
 	}
@@ -256,7 +256,7 @@ func (p *releaseChainV5Provider) entry(ctx context.Context, kind, run string, in
 				// still retains any unambiguous dimensions it actually reported.
 				actionable := event.EventType == transport.EventTypeToolCallRequested || event.EventType == transport.EventTypeToolCallBatchRequested || event.EventType == transport.EventTypeAssistantFinal
 				fullTotal := observed != nil && (observed.TotalTokens > 0 || observed.InputTokens == 0 && observed.OutputTokens == 0)
-				withinLimits := observed != nil && observed.InputTokens <= 1048576 && observed.OutputTokens <= 32768 && observed.TotalTokens <= observed.InputTokens+32768
+				withinLimits := observed != nil && observed.InputTokens <= 1048576 && observed.OutputTokens <= p.window.policy.generation() && observed.TotalTokens <= observed.InputTokens+p.window.policy.generation()
 				if actionable && (usageUncertain || versionUncertain || !fullTotal || version == nil || !withinLimits) {
 					event = transport.NewTransportErrorEvent(run, p.Name(), &transport.Error{Type: transport.ErrorTypeProviderProtocolError})
 				}

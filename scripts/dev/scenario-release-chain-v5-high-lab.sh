@@ -5,7 +5,17 @@ set -euo pipefail
 root=${1:?isolated root required}; phase=${2:-prepare}; release=${3:?exact clean release required}
 protocol=${4:-v5}
 [[ "$phase" =~ ^(prepare|execute)$ && "$release" =~ ^[a-f0-9]{40}$ ]] || exit 2
-if [[ "$protocol" == v6 ]]; then
+global_minutes=60
+if [[ "$protocol" == v7 ]]; then
+  [[ "$root" == /srv/storage/butler/agents/scenario-release-chain-v7-high-20261013 ]] || exit 2
+  chain_baseline=539; chain_cap=76; chain_env=BUTLER_SCENARIO_CHAIN_V7_HIGH
+  gate_test=TestReleaseChainV7OperationalGate; window_id=issue33-high-release-chain-v7-20261013-baseline539
+  audit_package=./scripts/dev/release-chain-v6-final-audit
+  offline_timeout=3m; global_minutes=120
+  # Unchanged Core, transport and broad fault suites have independently retained
+  # proofs. V7 checks only the new history, frozen timing policy and retry guards.
+  expected_audit_passes=0
+elif [[ "$protocol" == v6 ]]; then
   [[ "$root" == /srv/storage/butler/agents/scenario-release-chain-v6-high-20261013 ]] || exit 2
   chain_baseline=537; chain_cap=78; chain_env=BUTLER_SCENARIO_CHAIN_V6_HIGH
   gate_test=TestReleaseChainV6OperationalGate; window_id=issue33-high-release-chain-v6-20261013-baseline537
@@ -63,7 +73,7 @@ if [[ "$phase" == execute ]]; then
   printf '%s\n' "$release" > "$window/release-ref"
   printf '%s\n' "$source_dir" > "$window/source-ref"
   printf '%s\n' "$proof" > "$window/preflight-proof-ref"
-  date -u -d '+60 minutes' +%Y-%m-%dT%H:%M:%SZ > "$window/deadline"
+  date -u -d "+$global_minutes minutes" +%Y-%m-%dT%H:%M:%SZ > "$window/deadline"
   export "${chain_env}_SEALED_ENTRY=1"
   exec bash "$source_dir/scripts/dev/scenario-release-chain-v5-process-lab.sh" "$root" "high_$protocol" "$release"
 fi
@@ -73,7 +83,7 @@ cleanup() { $created_pg && docker rm -f "$pg" >/dev/null 2>&1 || true; $created_
 trap cleanup EXIT INT TERM
 build=(docker run --rm --runtime runc --pull never --network none --user "$(id -u):$(id -g)" --memory 1536m --pids-limit 160 --cpus 2 --security-opt no-new-privileges:true
   --volume "$source_dir:/src:ro" --volume "$proof/bin:/bin-proof" --volume /srv/storage/butler/.cache:/cache --workdir /src
-  --env GOPROXY=off --env GOSUMDB=off --env GOMAXPROCS=2 --env GOFLAGS=-p=2 --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp --env "CHAIN_AUDIT_PACKAGE=$audit_package")
+  --env GOPROXY=off --env GOSUMDB=off --env GOMAXPROCS=2 --env GOFLAGS=-p=2 --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp --env "CHAIN_AUDIT_PACKAGE=$audit_package" --env "CHAIN_PROTOCOL=$protocol")
 "${build[@]}" "$go_image" bash -eu -c '
 go test -c -race -o /bin-proof/app.test ./apps/orchestrator/internal/app
 go build -o /bin-proof/test2json cmd/test2json
@@ -82,8 +92,10 @@ CGO_ENABLED=0 go build -trimpath -o /bin-proof/tool-converter ./apps/tool-conver
 go test -c -o /bin-proof/extension.test ./apps/tool-extension/internal/runtime
 go build -o /bin-proof/tls-prerequisite ./scripts/dev/delegation-final-tls
 CGO_ENABLED=0 go build -trimpath -o /bin-proof/chain-final-audit "$CHAIN_AUDIT_PACKAGE"
-go test -race -json -count=1 "$CHAIN_AUDIT_PACKAGE" > /bin-proof/chain-audit-unit.jsonl
-go test -race -json -count=1 -run "^TestToolAuthorizationFailsClosed$" ./apps/orchestrator/internal/orchestrator > /bin-proof/core-batch-policy.jsonl
+if [[ "$CHAIN_PROTOCOL" != v7 ]]; then
+ go test -race -json -count=1 "$CHAIN_AUDIT_PACKAGE" > /bin-proof/chain-audit-unit.jsonl
+ go test -race -json -count=1 -run "^TestToolAuthorizationFailsClosed$" ./apps/orchestrator/internal/orchestrator > /bin-proof/core-batch-policy.jsonl
+fi
 go vet ./apps/orchestrator/internal/app ./apps/orchestrator/internal/orchestrator "$CHAIN_AUDIT_PACKAGE"
 chmod 555 /bin-proof/*
 ' > "$proof/build-vet.log" 2>&1
@@ -95,15 +107,18 @@ docker run -d --runtime runc --name "$pg" --network "$network" --network-alias c
 for attempt in $(seq 1 60); do docker exec "$pg" pg_isready -U fixture -d butler_chain_prepare_test >/dev/null 2>&1 && break; [[ "$attempt" != 60 ]] || exit 1; sleep 1; done
 app_pattern='^Test(ReleaseChainV5(Window|AllFailedEntries|TerminalMetadata|MeasurementWriteFailure|WholeEntryDeadline|OperationalPrerequisite|Bridge|ProductEvidence|InitialWitness|ProspectiveHealthy|CancelledTimedOut|ContextDeadlineAndCancel|ContextFailureAfterCompleteFinal|ProviderObservationFacts|FailureOutcome|OriginalResult)|ConverterWorkerStructuralDiagnostics)'
 if [[ "$protocol" == v6 ]]; then app_pattern='^Test(ReleaseChainV5(Window|AllFailedEntries|TerminalMetadata|MeasurementWriteFailure|WholeEntryDeadline|OperationalPrerequisite|Bridge|ProductEvidence|InitialWitness|ProspectiveHealthy|CancelledTimedOut|ContextDeadlineAndCancel|ContextFailureAfterCompleteFinal|ProviderObservationFacts|FailureOutcome|OriginalResult)|ReleaseChainV6(OperationalPrerequisiteClosed|ActualHistory|ActualBridge|HumanExpenseException|PrerequisiteTamper|ProviderStage|Window|Kernel|MeasuredRetry|HumanSafeTimeout|SafeRetry)|ConverterWorkerStructuralDiagnostics)'; fi
+if [[ "$protocol" == v7 ]]; then app_pattern='^TestReleaseChainV7(ProfileAndPredicates|UnvalidatedRetryCountersStayZero|PolicyCannotReconstructOrRefillIntegration|SafeRetryPredecessorAdmissionIntegration|MeasuredRetryCountersIntegration|ActualHistory|Prerequisite)'; fi
 docker run --rm --runtime runc --pull never --network "$network" --read-only --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true --memory 1536m --pids-limit 160 --cpus 2 \
   --tmpfs /tmp:rw,nosuid,nodev,size=64m --volume "$source_dir:/src:ro" --volume "$proof/bin:/bin-proof:ro" --workdir /src \
   --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:chain-prepare-fixture@chain-prepare-postgres:5432/butler_chain_prepare_test?sslmode=disable' \
   --entrypoint /bin-proof/test2json "$go_image" -t -p github.com/butler/butler/apps/orchestrator/internal/app \
   /bin-proof/app.test -test.v=test2json "-test.timeout=$offline_timeout" "-test.run=$app_pattern" > "$proof/tests.jsonl"
 ! grep -Eq '"Action":"(skip|fail)"' "$proof/tests.jsonl"
+if [[ "$protocol" != v7 ]]; then
 ! grep -Eq '"Action":"(skip|fail)"' "$proof/bin/core-batch-policy.jsonl"
 ! grep -Eq '"Action":"(skip|fail)"' "$proof/bin/chain-audit-unit.jsonl"
 [[ "$expected_audit_passes" -gt 0 && "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/bin/chain-audit-unit.jsonl")" == "$expected_audit_passes" ]]
+fi
 if [[ "$protocol" == v6 ]]; then
   mapfile -t checker_required < "$source_dir/scripts/dev/release-chain-v6-final-audit/required-tests.txt"
   [[ "${#checker_required[@]}" == 231 ]]
@@ -112,7 +127,9 @@ if [[ "$protocol" == v6 ]]; then
     [[ "$(awk -v needle="\"Test\":\"$test_name\"" 'index($0,"\"Action\":\"pass\"") && index($0,needle) { n++ } END { print n+0 }' "$proof/bin/chain-audit-unit.jsonl")" == 1 ]]
   done
 fi
-[[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":\"TestToolAuthorizationFailsClosed\"") { n++ } END { print n+0 }' "$proof/bin/core-batch-policy.jsonl")" == 1 ]]
+if [[ "$protocol" != v7 ]]; then
+ [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":\"TestToolAuthorizationFailsClosed\"") { n++ } END { print n+0 }' "$proof/bin/core-batch-policy.jsonl")" == 1 ]]
+fi
 required=(TestReleaseChainV5OperationalPrerequisiteIsNotApproved TestReleaseChainV5WindowSharedCeilingRestartAndExpiryIntegration TestReleaseChainV5WindowChecksDeadlineAfterCounterWaitIntegration TestReleaseChainV5WindowSharesCounterAcrossPrivateTaskSchemasIntegration TestReleaseChainV5AllFailedEntriesSpentButSourceDenialZeroIntegration TestReleaseChainV5TerminalMetadataRetainedAndReleaseGatedIntegration TestConverterWorkerStructuralDiagnosticsExcludePrivatePayloadIntegration)
 required+=(TestReleaseChainV5BridgeUnknownActualHistoryDeniesBeforeProvider TestReleaseChainV5ProductEvidenceRetainedBeforeCleanupIntegration)
 required+=(TestReleaseChainV5MeasurementWriteFailureDeniesReleaseIntegration)
@@ -137,6 +154,11 @@ if [[ "$protocol" == v6 ]]; then
   required+=("${release_chain_v6_required[@]}")
   [[ "${#required[@]}" == 309 ]]
   [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/tests.jsonl")" == 309 ]]
+fi
+if [[ "$protocol" == v7 ]]; then
+  mapfile -t required < "$source_dir/scripts/dev/scenario-release-chain-v7-required-tests.txt"
+  [[ "${#required[@]}" == 31 ]]
+  [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/tests.jsonl")" == 31 ]]
 fi
 for test_name in "${required[@]}"; do
   [[ "$(awk -v needle="\"Test\":\"$test_name\"" 'index($0,"\"Action\":\"pass\"") && index($0,needle) { n++ } END { print n+0 }' "$proof/tests.jsonl")" == 1 ]]
