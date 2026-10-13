@@ -519,9 +519,21 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 	if f.channel != nil {
 		delivery = newVerifiedTaskDelivery(flow.NewObservedDeliverySink(f.channel.sender, deliveryevents.NewService(deliveryevents.NewPostgresRepository(f.f.pool))), f.f.store)
 	}
-	executor := flow.NewService(sessions, f.f.leases, runs, transcript.NewStore(f.f.pool), modelProvider, flow.Config{Delivery: delivery, ProviderName: modelProvider.Name(), ModelName: modelName, OwnerID: "converter-worker", LeaseTTL: 60, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2,
-		Tasks: f.f.store, Checkpoints: inputs, Budgets: f.f.budgets, OwnerGoals: f.goals, Completion: finalizer, Tools: client, ActionAuthorizer: client, ToolCatalog: client,
-		MemorySources: converterSources{f.f.sources, f.f.pool}, DelegationContexts: delegatedContextReader{f.f.sources, manager}, ConverterContinuations: continuations,
+	var memorySources interface {
+		PinTranscript(context.Context, string, int64) error
+		CheckRunSources(context.Context, string) error
+	} = converterSources{f.f.sources, f.f.pool}
+	var tracedLeases session.LeaseManager = f.f.leases
+	var tracedTasks task.Manager = f.f.store
+	if f.modelConfig != nil && f.modelConfig.SourceObserver != nil {
+		observer := f.modelConfig.SourceObserver
+		memorySources = releaseChainObservedSources{converterSources: converterSources{f.f.sources, f.f.pool}, observer: observer}
+		tracedLeases = releaseChainObservedLeases{PostgresLeaseManager: f.f.leases, pool: f.f.pool, observer: observer}
+		tracedTasks = releaseChainObservedTasks{Store: f.f.store, pool: f.f.pool, observer: observer}
+	}
+	executor := flow.NewService(sessions, tracedLeases, runs, transcript.NewStore(f.f.pool), modelProvider, flow.Config{Delivery: delivery, ProviderName: modelProvider.Name(), ModelName: modelName, OwnerID: "converter-worker", LeaseTTL: 60, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_2,
+		Tasks: tracedTasks, Checkpoints: inputs, Budgets: f.f.budgets, OwnerGoals: f.goals, Completion: finalizer, Tools: client, ActionAuthorizer: client, ToolCatalog: client,
+		MemorySources: memorySources, DelegationContexts: delegatedContextReader{f.f.sources, manager}, ConverterContinuations: continuations,
 		InputSourcePreparation: func(ctx context.Context, event ingress.InputEvent) (ingress.InputEvent, error) {
 			if f.initialInputID == "" {
 				return event, nil

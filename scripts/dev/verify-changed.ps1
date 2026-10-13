@@ -26,12 +26,12 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "^(apps/orchestrator/internal/app/(release_chain_v(?:[789]|10)_|release_chain_extension_harness|release_chain_proposal_|release_chain_entry_lane)|scripts/dev/scenario-release-chain-v(?:[789]|10)-|scripts/dev/release-chain-v6-final-audit/(v(?:[89]|10)|proposals)|deploy/acceptance/release-chain-v(?:[789]|10))" {
+    "^(apps/orchestrator/internal/app/(release_chain_v(?:[789]|10|11)_|release_chain_extension_harness|release_chain_source_observer|release_chain_proposal_|release_chain_entry_lane)|scripts/dev/scenario-release-chain-v(?:[789]|10|11)-|scripts/dev/release-chain-v6-final-audit/(v(?:[89]|10|11)|proposals)|deploy/acceptance/release-chain-v(?:[789]|10|11))" {
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
       [void]$specs.Add("docs/architecture/generated-converters.md")
       [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
-      [void]$tests.Add("V10: exact18 reader/lifetime checks and separate source/runtime admission. The measured1937 V9 root is sealed; never Sync or execute it again. A fresh V10 native window starts from factual556 only after independent admission; prior catalog/input/retry/fault proofs retain their sources.")
+      [void]$tests.Add("V11: exact12 reader/source-observer checks and separate source/runtime admission. The measured0f V10 root is sealed; never Sync or execute it again. A fresh V11 native window starts from factual557 only after independent admission; source/watchdog bounds and critical gates stay fixed, historical557 NULL is separately pinned.")
       [void]$tests.Add("Read-only version-specific final checker with separately frozen auditor source/binary and only individually named own-tool proposal leaves. Earlier V6/V7/V8/V9 retain their original reproduction; all failed runs and UNKNOWN stay unchanged.")
       continue
     }

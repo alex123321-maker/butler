@@ -263,7 +263,7 @@ func recordReleaseChainV5ProductEvidence(parent context.Context, w *releaseChain
 	if err != nil {
 		return errNativeFixtureDenied
 	}
-	body, err := json.Marshal(map[string]any{
+	payload := map[string]any{
 		"version": "butler-release-chain-v5-product-witness-v1", "scenario": scenario, "test_failed": failed, "postgres": raw,
 		"native_batch_support": false, "native_multi_function_contract": "capability_mismatch_before_tool_release", "generic_wrapper_batch_handoff_evidence": "Go_spy_fixture_only", "core_batch_capability": false,
 		"original_document": f.document, "original_need": f.needRef, "original_spec": f.specRef,
@@ -272,7 +272,11 @@ func recordReleaseChainV5ProductEvidence(parent context.Context, w *releaseChain
 		"recipient_requests":         f.channel.requests.Load(), "recipient_acceptances": f.channel.accepted.Load(),
 		"all_channel_requests": f.channel.total.Load(),
 		"fault":                faultEvidence,
-	})
+	}
+	if f.modelConfig != nil && f.modelConfig.SourceObserver != nil {
+		payload["source_check_observation"] = f.modelConfig.SourceObserver.snapshot()
+	}
+	body, err := json.Marshal(payload)
 	if err != nil {
 		return errNativeFixtureDenied
 	}

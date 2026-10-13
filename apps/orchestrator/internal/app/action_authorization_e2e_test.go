@@ -49,6 +49,10 @@ func (boundaryCheckpointHooks) ReadyApprovalTx(context.Context, pgx.Tx, string, 
 }
 
 func e2eDatabase(t *testing.T) (*pgxpool.Pool, string) {
+	return e2eDatabaseWithTracer(t, nil)
+}
+
+func e2eDatabaseWithTracer(t *testing.T, tracer pgx.QueryTracer) (*pgxpool.Pool, string) {
 	t.Helper()
 	dsn := os.Getenv("BUTLER_TEST_ACTIONAUTH_POSTGRES_URL")
 	cfg, err := pgxpool.ParseConfig(dsn)
@@ -66,6 +70,7 @@ func e2eDatabase(t *testing.T) (*pgxpool.Pool, string) {
 	}
 	cfg.ConnConfig.RuntimeParams["search_path"] = schema + ",public"
 	cfg.MaxConns = 2
+	cfg.ConnConfig.Tracer = tracer
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		t.Fatal(err)

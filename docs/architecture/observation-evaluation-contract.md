@@ -1,5 +1,15 @@
 # Observation-only contract evaluation
 
+The latest closed history is557: owning source-check cancellation with NULL
+expense/version and no action. Prospective V11 binds an explicit historical-only
+expense interpretation of the later modest user relaxation. It does not classify
+that cancellation as a nominal model timeout or grant retry/current effects.
+All fresh completed expense and original critical gates remain required.
+Fixture-only source/lease/task observation records fixed failure roles/phases,
+connection waits, public query-template hashes, safe error categories and pool
+counters, without query/argument/credential/model values. It keeps2000ms source
+and750ms watchdog bounds and executes no extra SQL. See the [V11 plan](../ai/scenario-release-chain-v11-plan-20261013.md).
+
 The latest retained native history is556 after V9 reached tested adapter activation
 and blocked on UNKNOWN extension inspection. All twelve V9 requests have measured
 usage; no original result or notice was verified. See the separately pinned

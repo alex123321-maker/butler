@@ -51,6 +51,7 @@ type releaseChainModelConfig struct {
 	ChildBudget               budget.Units
 	FixtureTimeout            time.Duration
 	ExtensionHarnessLifetime  time.Duration
+	SourceObserver            *releaseChainSourceObserver
 	Factory                   func(context.Context, *pgxpool.Pool, string) (transport.ModelProvider, error)
 }
 
@@ -78,7 +79,13 @@ func newReleaseChainFixtureWithModel(t *testing.T, profile generatedtools.Profil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), fixtureTimeout)
 	t.Cleanup(cancel)
-	pool, dsn := e2eDatabase(t)
+	var pool *pgxpool.Pool
+	var dsn string
+	if modelConfig != nil && modelConfig.SourceObserver != nil {
+		pool, dsn = e2eDatabaseWithTracer(t, modelConfig.SourceObserver)
+	} else {
+		pool, dsn = e2eDatabase(t)
+	}
 	// One current deletion anchor and one Broker span every actual phase.
 	manifest := catalog.NewFileManifest(manifestPath)
 	if err := manifest.Initialize(); err != nil {
