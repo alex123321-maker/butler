@@ -11,13 +11,19 @@ case "$root:$mode" in
   /srv/storage/butler/agents/scenario-release-chain-v7b-high-20261013:high_v7) ;;
   /srv/storage/butler/agents/scenario-release-chain-v8-high-20261013:high_v8) ;;
   /srv/storage/butler/agents/scenario-release-chain-v9-high-20261013:high_v9) ;;
+  /srv/storage/butler/agents/scenario-release-chain-v10-high-20261013:high_v10) ;;
   *) exit 2 ;;
 esac
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* && -f "$source_dir/go.mod" ]] || exit 2
 high=false
-if [[ "$mode" == high_v5 || "$mode" == high_v6 || "$mode" == high_v7 || "$mode" == high_v8 || "$mode" == high_v9 ]]; then
-  if [[ "$mode" == high_v9 ]]; then
+if [[ "$mode" == high_v5 || "$mode" == high_v6 || "$mode" == high_v7 || "$mode" == high_v8 || "$mode" == high_v9 || "$mode" == high_v10 ]]; then
+  if [[ "$mode" == high_v10 ]]; then
+    [[ "${BUTLER_SCENARIO_CHAIN_V10_HIGH_SEALED_ENTRY:-}" == 1 ]] || exit 2
+    window=/srv/storage/butler/native-acceptance-windows/issue33-high-release-chain-v10-20261013-baseline556
+    chain_schema=fixture_chain_v10_high; chain_baseline=556; high_test=TestScenarioReleaseChainActualV10HighE2E
+    high_env=BUTLER_SCENARIO_CHAIN_V10_HIGH; prepared_prefix=chain-v10-high-prepare-
+  elif [[ "$mode" == high_v9 ]]; then
     [[ "${BUTLER_SCENARIO_CHAIN_V9_HIGH_SEALED_ENTRY:-}" == 1 ]] || exit 2
     window=/srv/storage/butler/native-acceptance-windows/issue33-high-release-chain-v9-20261013-baseline544
     chain_schema=fixture_chain_v9_high; chain_baseline=544; high_test=TestScenarioReleaseChainActualV9HighE2E
@@ -192,7 +198,7 @@ docker "$run_verb" --runtime runc "${run_name[@]}" --user 10001:10001 --network 
   "${native_args[@]}" \
   --entrypoint /proof/bin/test2json "$go_image" \
   -t -p github.com/butler/butler/apps/orchestrator/internal/app /proof/bin/app.test \
-  -test.v=test2json -test.timeout="$(if [[ "$mode" == high_v7 || "$mode" == high_v8 || "$mode" == high_v9 ]]; then printf 121m; elif $high; then printf 61m; else printf 420s; fi)" -test.run="$filter" > "$proof/tests.jsonl"
+  -test.v=test2json -test.timeout="$(if [[ "$mode" == high_v7 || "$mode" == high_v8 || "$mode" == high_v9 || "$mode" == high_v10 ]]; then printf 121m; elif $high; then printf 61m; else printf 420s; fi)" -test.run="$filter" > "$proof/tests.jsonl"
 test_exit=$?
 set -e
 if $high; then
@@ -215,8 +221,8 @@ if $high; then
   # Independent content-free export from the owning fixture ledger, before
   # disposable PG cleanup. No prompt, tool args, profile or private grant rows.
   window_fields=''; request_fields=''
-  if [[ "$mode" == high_v6 || "$mode" == high_v7 || "$mode" == high_v8 || "$mode" == high_v9 ]]; then window_fields=",'maximum_new_attempts',maximum_new_attempts,'provider_stage_observation',provider_stage_observation,'kernel_operation_binding',kernel_operation_binding"; request_fields=',provider_operation_stage,kernel_operation_id'; fi
-  if [[ "$mode" == high_v7 || "$mode" == high_v8 || "$mode" == high_v9 ]]; then window_fields+=",'protocol_policy',protocol_policy"; fi
+  if [[ "$mode" == high_v6 || "$mode" == high_v7 || "$mode" == high_v8 || "$mode" == high_v9 || "$mode" == high_v10 ]]; then window_fields=",'maximum_new_attempts',maximum_new_attempts,'provider_stage_observation',provider_stage_observation,'kernel_operation_binding',kernel_operation_binding"; request_fields=',provider_operation_stage,kernel_operation_id'; fi
+  if [[ "$mode" == high_v7 || "$mode" == high_v8 || "$mode" == high_v9 || "$mode" == high_v10 ]]; then window_fields+=",'protocol_policy',protocol_policy"; fi
   docker exec "$pg" psql -X -At -v ON_ERROR_STOP=1 -U fixture -d butler_release_chain_test -c "SELECT json_build_object('window',(SELECT json_build_object('native_baseline',native_baseline,'attempts',attempts,'prior_history_hash',prior_history_hash,'prerequisite_hash',prerequisite_hash,'expires_at',expires_at$window_fields) FROM $chain_schema.fixture_chain_v5_high_window),'baseline_attempts',$chain_baseline,'total_attempts',(SELECT attempts FROM $chain_schema.fixture_chain_v5_high_window WHERE singleton),'new_attempts',(SELECT count(*) FROM $chain_schema.fixture_chain_v5_high_requests),'requests',COALESCE((SELECT json_agg(row_to_json(r) ORDER BY ordinal) FROM (SELECT ordinal,scenario,kind,root_task_id,run_id,is_parent,input_hash,admitted_at,outcome,input_tokens,output_tokens,total_tokens,model_version,finished_at,elapsed_ms,failure_stage,diagnostic_code,final_count,terminal_count,completed_count,cancelled_count,timed_out_count,transport_error_count,finish_reason,stop_final_count,max_tokens_final_count,usage_observation_uncertain,version_observation_uncertain,finish_observation_uncertain$request_fields FROM $chain_schema.fixture_chain_v5_high_requests) r),'[]'::json))" > "$proof/pg-ledger-witness.json" || test_exit=1
   docker exec "$pg" psql -X -At -v ON_ERROR_STOP=1 -U fixture -d butler_release_chain_test -c "SELECT COALESCE(json_agg(row_to_json(r) ORDER BY scenario),'[]'::json) FROM (SELECT scenario,payload_sha256,payload_json,created_at FROM $chain_schema.fixture_chain_v5_high_case_evidence) r" > "$proof/pg-product-witness.json" || test_exit=1
   docker exec "$pg" psql -X -At -v ON_ERROR_STOP=1 -U fixture -d butler_release_chain_test -c "SELECT COALESCE(json_agg(row_to_json(r) ORDER BY scenario),'[]'::json) FROM (SELECT scenario,payload_sha256,payload_json,created_at FROM $chain_schema.fixture_chain_v5_high_case_initial) r" > "$proof/pg-initial-witness.json" || test_exit=1

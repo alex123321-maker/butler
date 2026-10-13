@@ -1,5 +1,18 @@
 # Observation-only contract evaluation
 
+The latest retained native history is556 after V9 reached tested adapter activation
+and blocked on UNKNOWN extension inspection. All twelve V9 requests have measured
+usage; no original result or notice was verified. See the separately pinned
+[V9 report](../ai/scenario-release-chain-v9-independent-audit-20261013.md).
+The prospective V10 test extension lifetime is positive and at most40minutes,
+clamped to the remaining case deadline; legacy construction keeps three minutes.
+Its explicit test-process timeout is at most41minutes. This changes only fixture
+availability; Broker authority, egress, Stop and UNKNOWN delivery semantics remain.
+The fresh556+71 allocation has a prospective627 ceiling and preserves all closed
+615 windows and spent requests. It requires independent exact source/runtime
+admission and all five actual results before final acceptance. The historical
+boundaries below remain attributed to their original frozen versions.
+
 The actual V5 quality/comparison window passed independent original-byte/PG audit
 at535 attempts. The subsequent actual V5 release chain is sealed NO_GO after536–537:
 536 completed a measured discover packet,537 timed out without usage/version,

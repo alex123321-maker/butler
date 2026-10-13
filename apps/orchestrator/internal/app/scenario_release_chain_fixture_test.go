@@ -50,6 +50,7 @@ type releaseChainModelConfig struct {
 	Policy                    budget.Policy
 	ChildBudget               budget.Units
 	FixtureTimeout            time.Duration
+	ExtensionHarnessLifetime  time.Duration
 	Factory                   func(context.Context, *pgxpool.Pool, string) (transport.ModelProvider, error)
 }
 
@@ -178,7 +179,16 @@ func newReleaseChainFixtureWithModel(t *testing.T, profile generatedtools.Profil
 		return path
 	}
 	coreFile, runtimeFile := file("core.token", coreToken), file("runtime.token", runtimeToken)
-	extensionChild(t, runtimeBinary, runtimeAddress, "127.0.0.1:0", []string{"-test.run=^TestExtensionRuntimeEgressHarness$"}, "BUTLER_EXTENSION_EGRESS_HARNESS=1", "BUTLER_EXTENSION_FIXTURE_ENDPOINT="+site.URL, "BUTLER_EXTENSION_PROFILES_JSON="+string(profileJSON), "BUTLER_EXTENSION_RUNTIME_TOKEN_FILE="+runtimeFile)
+	harnessLifetime := time.Duration(0)
+	if modelConfig != nil {
+		harnessLifetime = modelConfig.ExtensionHarnessLifetime
+	}
+	harnessArgs, harnessEnv, err := releaseChainExtensionHarnessInvocation(ctx, harnessLifetime, fixtureTimeout)
+	if err != nil {
+		t.Fatal("bounded fixture harness lifetime required")
+	}
+	harnessEnv = append(harnessEnv, "BUTLER_EXTENSION_EGRESS_HARNESS=1", "BUTLER_EXTENSION_FIXTURE_ENDPOINT="+site.URL, "BUTLER_EXTENSION_PROFILES_JSON="+string(profileJSON), "BUTLER_EXTENSION_RUNTIME_TOKEN_FILE="+runtimeFile)
+	extensionChild(t, runtimeBinary, runtimeAddress, "127.0.0.1:0", harnessArgs, harnessEnv...)
 	policyJSON, _ := json.Marshal(policy)
 	restartBroker := startReleaseChainBroker(t, os.Getenv("BUTLER_BROKER_E2E_BINARY"), brokerAddress, brokerHTTP, "BUTLER_POSTGRES_URL="+dsn, "BUTLER_TOOL_REGISTRY_PATH=configs/tools.json", "BUTLER_ACTION_CONTEXT_URL="+authority.URL+"/internal/action-context", "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+coreFile, "BUTLER_EXTENSION_PROFILES_JSON="+string(profileJSON), "BUTLER_EXTENSION_RUNTIME_TOKEN_FILE="+runtimeFile, "BUTLER_OWNER_CONTROL_OWNER_ID="+owner, "BUTLER_MEMORY_DELETION_MANIFEST_FILE="+manifestPath, "BUTLER_EXECUTION_BUDGET_POLICY_JSON="+string(policyJSON),
 		"BUTLER_SKILLS_ENABLED=true", "BUTLER_CONVERTERS_ENABLED=true", "BUTLER_DELEGATION_ENABLED=true", "BUTLER_DELEGATION_CONTROL_URL="+authority.URL+"/internal/delegation", "BUTLER_CONVERTER_DELEGATION_ENABLED=true", "BUTLER_CONVERTER_DELEGATION_CONTROL_URL="+authority.URL+"/internal/converter-delegation", "BUTLER_CONVERTER_PROFILE_JSON="+os.Getenv("BUTLER_CONVERTER_PROFILE_JSON"), "BUTLER_CONVERTER_RUNTIME_TARGET="+generatedtools.RuntimeTarget, "BUTLER_CONVERTER_RUNTIME_TOKEN_FILE="+os.Getenv("BUTLER_CONVERTER_RUNTIME_TOKEN_FILE"))

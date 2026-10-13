@@ -240,6 +240,7 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 			var fault *releaseChainV5Fault
 			var caseWindow *releaseChainV5Window
 			cfg := releaseChainHighConfigurationFor(entry.Policy)
+			cfg.ExtensionHarnessLifetime = entry.ExtensionHarnessLifetime
 			if entry.Policy != (releaseChainHighWindowPolicy{}) {
 				cfg.Policy.Day.ModelTurns = int64(entry.Maximum)
 				cfg.Policy.Day.Tokens = int64(entry.Maximum) * (cfg.InputTokens + cfg.OutputTokens)

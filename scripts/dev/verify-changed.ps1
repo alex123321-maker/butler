@@ -26,13 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "^(apps/orchestrator/internal/app/(release_chain_v[789]_|release_chain_proposal_|release_chain_entry_lane)|scripts/dev/scenario-release-chain-v[789]-|scripts/dev/release-chain-v6-final-audit/(v[89]|proposals)|deploy/acceptance/release-chain-v[789])" {
+    "^(apps/orchestrator/internal/app/(release_chain_v(?:[789]|10)_|release_chain_extension_harness|release_chain_proposal_|release_chain_entry_lane)|scripts/dev/scenario-release-chain-v(?:[789]|10)-|scripts/dev/release-chain-v6-final-audit/(v(?:[89]|10)|proposals)|deploy/acceptance/release-chain-v(?:[789]|10))" {
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
       [void]$specs.Add("docs/architecture/generated-converters.md")
       [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
-      [void]$tests.Add("V9: exact affected catalog/lane/input/app checks and separate source/runtime admission. The measured5057 V8 root is sealed; never Sync or execute it again. A fresh V9 native window starts from factual544 only after its own independent admission.")
-      [void]$tests.Add("Read-only final checker with explicit -protocol=v8, separately frozen auditor source/binary and only individually named own-tool proposal leaves. V6/V7 retain their original read-only reproduction; all failed runs and UNKNOWN stay unchanged.")
+      [void]$tests.Add("V10: exact18 reader/lifetime checks and separate source/runtime admission. The measured1937 V9 root is sealed; never Sync or execute it again. A fresh V10 native window starts from factual556 only after independent admission; prior catalog/input/retry/fault proofs retain their sources.")
+      [void]$tests.Add("Read-only version-specific final checker with separately frozen auditor source/binary and only individually named own-tool proposal leaves. Earlier V6/V7/V8/V9 retain their original reproduction; all failed runs and UNKNOWN stay unchanged.")
       continue
     }
     "^apps/orchestrator/internal/input/(execution_timeout_test[.]go|service[.]go)$" {

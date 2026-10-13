@@ -6,7 +6,13 @@ root=${1:?isolated root required}; phase=${2:-prepare}; release=${3:?exact clean
 protocol=${4:-v5}
 [[ "$phase" =~ ^(prepare|execute)$ && "$release" =~ ^[a-f0-9]{40}$ ]] || exit 2
 global_minutes=60
-if [[ "$protocol" == v9 ]]; then
+if [[ "$protocol" == v10 ]]; then
+  [[ "$root" == /srv/storage/butler/agents/scenario-release-chain-v10-high-20261013 ]] || exit 2
+  chain_baseline=556; chain_cap=71; chain_env=BUTLER_SCENARIO_CHAIN_V10_HIGH
+  gate_test=TestReleaseChainV10OperationalGate; window_id=issue33-high-release-chain-v10-20261013-baseline556
+  audit_package=./scripts/dev/release-chain-v6-final-audit
+  offline_timeout=3m; global_minutes=120; expected_audit_passes=0
+elif [[ "$protocol" == v9 ]]; then
   [[ "$root" == /srv/storage/butler/agents/scenario-release-chain-v9-high-20261013 ]] || exit 2
   chain_baseline=544; chain_cap=71; chain_env=BUTLER_SCENARIO_CHAIN_V9_HIGH
   gate_test=TestReleaseChainV9OperationalGate; window_id=issue33-high-release-chain-v9-20261013-baseline544
@@ -114,7 +120,11 @@ if [[ "$CHAIN_PROTOCOL" == v9 ]]; then
  go test -race -json -count=1 -run "^(TestConverterCatalogOmitsUnavailableCollectionPreservesDeveloperRoute|TestConverterDeveloperAdmissionDeclaresPhaseBoundary)$" ./apps/tool-broker/internal/broker > /bin-proof/collection-catalog-unit.jsonl
  go vet ./internal/generatedtools ./apps/tool-broker/internal/broker
 fi
-if [[ "$CHAIN_PROTOCOL" != v7 && "$CHAIN_PROTOCOL" != v8 && "$CHAIN_PROTOCOL" != v9 ]]; then
+if [[ "$CHAIN_PROTOCOL" == v10 ]]; then
+ go test -race -json -count=1 -run "^TestExtensionHarness(LifetimeBounds|RPCLifecycle)$" ./apps/tool-extension/internal/runtime > /bin-proof/extension-lifetime-unit.jsonl
+ go vet ./apps/tool-extension/internal/runtime
+fi
+if [[ "$CHAIN_PROTOCOL" != v7 && "$CHAIN_PROTOCOL" != v8 && "$CHAIN_PROTOCOL" != v9 && "$CHAIN_PROTOCOL" != v10 ]]; then
  go test -race -json -count=1 "$CHAIN_AUDIT_PACKAGE" > /bin-proof/chain-audit-unit.jsonl
  go test -race -json -count=1 -run "^TestToolAuthorizationFailsClosed$" ./apps/orchestrator/internal/orchestrator > /bin-proof/core-batch-policy.jsonl
 fi
@@ -129,6 +139,15 @@ if [[ "$protocol" == v9 ]]; then
  done
  if docker run --rm --network none --read-only --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true --memory 512m --volume "$proof/bin:/bin-proof:ro" --env BUTLER_SCENARIO_CHAIN_V8_HIGH_ACCEPTANCE=1 "$go_image" /bin-proof/app.test -test.v -test.run='^TestScenarioReleaseChainActualV8HighE2E$' > "$proof/sealed-v8-entry.txt" 2>&1; then exit 1; fi
  grep -Fq 'V8 native scope is sealed failed; no new entry from current source' "$proof/sealed-v8-entry.txt"
+fi
+if [[ "$protocol" == v10 ]]; then
+ ! grep -Eq '"Action":"(skip|fail)"' "$proof/bin/extension-lifetime-unit.jsonl"
+ [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") {n++} END{print n+0}' "$proof/bin/extension-lifetime-unit.jsonl")" == 4 ]]
+ for name in TestExtensionHarnessLifetimeBounds TestExtensionHarnessRPCLifecycle TestExtensionHarnessRPCLifecycle/timer TestExtensionHarnessRPCLifecycle/cancel; do
+  [[ "$(awk -v needle="\"Test\":\"$name\"" 'index($0,"\"Action\":\"pass\"") && index($0,needle) {n++} END{print n+0}' "$proof/bin/extension-lifetime-unit.jsonl")" == 1 ]]
+ done
+ if docker run --rm --network none --read-only --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true --memory 512m --volume "$proof/bin:/bin-proof:ro" --env BUTLER_SCENARIO_CHAIN_V9_HIGH_ACCEPTANCE=1 "$go_image" /bin-proof/app.test -test.v -test.run='^TestScenarioReleaseChainActualV9HighE2E$' > "$proof/sealed-v9-entry.txt" 2>&1; then exit 1; fi
+ grep -Fq 'V9 native scope is sealed failed; no new entry from current source' "$proof/sealed-v9-entry.txt"
 fi
 if [[ "$protocol" == v8 ]]; then
  ! grep -Eq '"Action":"(skip|fail)"' "$proof/bin/developer-integer-unit.jsonl"
@@ -151,7 +170,7 @@ for attempt in $(seq 1 60); do docker exec "$pg" pg_isready -U fixture -d butler
 app_pattern='^Test(ReleaseChainV5(Window|AllFailedEntries|TerminalMetadata|MeasurementWriteFailure|WholeEntryDeadline|OperationalPrerequisite|Bridge|ProductEvidence|InitialWitness|ProspectiveHealthy|CancelledTimedOut|ContextDeadlineAndCancel|ContextFailureAfterCompleteFinal|ProviderObservationFacts|FailureOutcome|OriginalResult)|ConverterWorkerStructuralDiagnostics)'
 if [[ "$protocol" == v6 ]]; then app_pattern='^Test(ReleaseChainV5(Window|AllFailedEntries|TerminalMetadata|MeasurementWriteFailure|WholeEntryDeadline|OperationalPrerequisite|Bridge|ProductEvidence|InitialWitness|ProspectiveHealthy|CancelledTimedOut|ContextDeadlineAndCancel|ContextFailureAfterCompleteFinal|ProviderObservationFacts|FailureOutcome|OriginalResult)|ReleaseChainV6(OperationalPrerequisiteClosed|ActualHistory|ActualBridge|HumanExpenseException|PrerequisiteTamper|ProviderStage|Window|Kernel|MeasuredRetry|HumanSafeTimeout|SafeRetry)|ConverterWorkerStructuralDiagnostics)'; fi
 if [[ "$protocol" == v7 ]]; then app_pattern='^TestReleaseChainV7BootstrapTimeoutGuard$'; fi
-if [[ "$protocol" == v8 || "$protocol" == v9 ]]; then
+if [[ "$protocol" == v8 || "$protocol" == v9 || "$protocol" == v10 ]]; then
   mapfile -t v8_required < "$source_dir/scripts/dev/scenario-release-chain-$protocol-required-tests.txt"
   [[ "${#v8_required[@]}" -gt 0 ]]
   app_pattern='^('
@@ -180,7 +199,7 @@ if [[ "$protocol" == v9 ]]; then
  done
 fi
 ! grep -Eq '"Action":"(skip|fail)"' "$proof/tests.jsonl"
-if [[ "$protocol" != v7 && "$protocol" != v8 && "$protocol" != v9 ]]; then
+if [[ "$protocol" != v7 && "$protocol" != v8 && "$protocol" != v9 && "$protocol" != v10 ]]; then
 ! grep -Eq '"Action":"(skip|fail)"' "$proof/bin/core-batch-policy.jsonl"
 ! grep -Eq '"Action":"(skip|fail)"' "$proof/bin/chain-audit-unit.jsonl"
 [[ "$expected_audit_passes" -gt 0 && "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/bin/chain-audit-unit.jsonl")" == "$expected_audit_passes" ]]
@@ -193,7 +212,7 @@ if [[ "$protocol" == v6 ]]; then
     [[ "$(awk -v needle="\"Test\":\"$test_name\"" 'index($0,"\"Action\":\"pass\"") && index($0,needle) { n++ } END { print n+0 }' "$proof/bin/chain-audit-unit.jsonl")" == 1 ]]
   done
 fi
-if [[ "$protocol" != v7 && "$protocol" != v8 && "$protocol" != v9 ]]; then
+if [[ "$protocol" != v7 && "$protocol" != v8 && "$protocol" != v9 && "$protocol" != v10 ]]; then
  [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":\"TestToolAuthorizationFailsClosed\"") { n++ } END { print n+0 }' "$proof/bin/core-batch-policy.jsonl")" == 1 ]]
 fi
 required=(TestReleaseChainV5OperationalPrerequisiteIsNotApproved TestReleaseChainV5WindowSharedCeilingRestartAndExpiryIntegration TestReleaseChainV5WindowChecksDeadlineAfterCounterWaitIntegration TestReleaseChainV5WindowSharesCounterAcrossPrivateTaskSchemasIntegration TestReleaseChainV5AllFailedEntriesSpentButSourceDenialZeroIntegration TestReleaseChainV5TerminalMetadataRetainedAndReleaseGatedIntegration TestConverterWorkerStructuralDiagnosticsExcludePrivatePayloadIntegration)
@@ -225,7 +244,7 @@ if [[ "$protocol" == v7 ]]; then
   required=(TestReleaseChainV7BootstrapTimeoutGuard)
   [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/tests.jsonl")" == 1 ]]
 fi
-if [[ "$protocol" == v8 || "$protocol" == v9 ]]; then
+if [[ "$protocol" == v8 || "$protocol" == v9 || "$protocol" == v10 ]]; then
   mapfile -t required < "$source_dir/scripts/dev/scenario-release-chain-$protocol-required-tests.txt"
   [[ "${#required[@]}" -gt 0 ]]
   [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/tests.jsonl")" == "${#required[@]}" ]]

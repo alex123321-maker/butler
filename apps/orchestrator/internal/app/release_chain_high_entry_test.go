@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -16,6 +17,7 @@ type releaseChainHighEntry struct {
 	Baseline, Maximum                    int
 	ProviderStages                       bool
 	RetainProposals                      bool
+	ExtensionHarnessLifetime             time.Duration
 	Policy                               releaseChainHighWindowPolicy
 	ReadQuality                          func() (releaseChainV5Prerequisite, error)
 	NewWindow                            func(context.Context, *pgxpool.Pool) (*releaseChainV5Window, error)
