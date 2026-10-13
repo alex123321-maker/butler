@@ -27,7 +27,7 @@ func TestReleaseChainV18SkipsVerifiedOwnerStop(t *testing.T) {
 
 func TestReleaseChainV18TerminalContinuationIntegration(t *testing.T) {
 	c := newContinuationFixture(t, 0)
-	ctx, _, inputID := c.claimParent(t)
+	ctx, _, receipt := c.claimParent(t)
 	pool := c.f.f.pool
 	taskID := c.f.f.parent.TaskID
 	// The real failed input had this stale run state and no live inference.
@@ -37,7 +37,7 @@ func TestReleaseChainV18TerminalContinuationIntegration(t *testing.T) {
 	if failed, err := releaseChainTerminalContinuation(ctx, pool, taskID); err != nil || failed {
 		t.Fatal("live continuation treated as terminal", err)
 	}
-	if _, err := pool.Exec(ctx, `UPDATE accepted_inputs SET status='blocked',error_code='execution_stopped' WHERE input_id=$1`, inputID); err != nil {
+	if _, err := pool.Exec(ctx, `UPDATE accepted_inputs SET status='blocked',error_code='execution_stopped' WHERE input_id=$1`, receipt.InputID); err != nil {
 		t.Fatal(err)
 	}
 	if failed, err := releaseChainTerminalContinuation(ctx, pool, taskID); err != nil || !failed {
