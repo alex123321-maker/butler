@@ -198,3 +198,70 @@ The retained quality/comparison results remain measurements of source3c4089f3;
 the direct quality request path does not use Core retry. A new Core composition
 requires its own frozen-source tests and actual release chain. Shared-host
 independent review is not cryptographic or administrator isolation.
+
+## Explicit V7b policy and separate post-run auditor
+
+Use `-protocol=v7` only for the separately sealed V7b source and window
+`issue33-high-release-chain-v7b-20261013-baseline539`. The default remains V6.
+There is no arbitrary baseline/deadline/waiver option. The exact V7b prerequisite
+is `fc4f5cfd6fa7209f212cb47c767c4f80c60d304fb3c1513371c27008850636a6`;
+the explicit human amendment is
+`efef2aa0f09ec0cf2fcfce7e55375920117f482a215f6fd6894abc6afd1f759e`.
+Stage the same thirteen named safe leaves, with `/prerequisite.json` from
+`release-chain-v7-high-prerequisite-20261013.json` and `/timeout-waiver.json`
+from `release-chain-v7-user-policy-amendment-20261013.json`. The latter basename
+is retained for CLI compatibility; its exact role is a V7 human policy amendment.
+The original31b537 exception and retained449V6 timeout waiver remain distinct.
+
+V7 carries539 paid attempts, known total subtotal580620 and48 unknown totals.
+Closed537/539 retain NULL measurements and sealed NO_GO; the earlier V7
+bootstrap failed before provider/window construction and contributes zero
+provider attempts. Its independent report, the9a/169 original bootstrap
+protocol and all seven actual failed-V6 leaves remain byte-pinned public inputs
+in the measured source. History537 remains an immutable prefix of history539.
+The independently recomputed carry fold is
+`a8a0d81d750e08c7ba2c4ddd70d312a3d3776657b950a2e36a583041d0a24261`.
+
+The new chain, separately from retained V5 quality/comparison, allows300-second
+native entries,40-minute cases,120-minute global scope and76 new entries with
+absolute ceiling615. Generation remains32768. The ninth immutable SQL window
+field `protocol_policy` must match this exact tuple. Root24-turn quotes and
+owner-day76-turn quotes reserve300 seconds per model call. Child4-turn/4-call
+active budget is1320000 milliseconds, including4*(300000+30000), without
+changing the32768 output allowance. All eight charge dimensions and kernel
+operations remain independently summed and correlated.
+
+Only a nominal `http_round_trip` or `response_stream` timeout may receive the
+same proved one-retry exception. Authentication, serialization, absent/unknown
+phase, second retry, unbound predecessor, partial/conflicting usage, unknown
+successful usage/version, tool/final release by a failed request, source/Stop/
+authority/delivery/schema/original-result failures still deny PASS. All five
+fixed scenarios and exact original README/Broker receipts remain required.
+Accepted subsets are zero on denial and never substitute for factual counts.
+
+This read-only auditor may be built after actual execution from a separately
+frozen auditor source. The measured source, executable and predeclared protocol
+remain their actual original versions. Mount the measured source at `/src:ro`
+and the separate public auditor snapshot at `/auditor-src:ro`. Pin both complete
+TreeHashes, the separate auditor commit and its full executable bytes:
+
+```sh
+/chain-final-audit -protocol=v7 \
+  -auditor-commit "$audit_commit" \
+  -auditor-source-sha256 "$audit_tree_sha" \
+  -auditor-binary-sha256 "$audit_binary_sha" \
+  -commit "$actual_commit" -source-sha256 "$actual_tree_sha" \
+  # append the existing measured runtime/image and eight leaf SHA flags above
+```
+
+No additional private inputs, network, provider/auth modes or credential mounts
+are allowed. Retain the auditor build proof and source inventory separately.
+The narrow changed-policy regression command is
+`go test -race -count=1 -json ./scripts/dev/release-chain-v6-final-audit -run '^TestV7Audit'`,
+followed by `go vet ./scripts/dev/release-chain-v6-final-audit`; the exact new
+manifest is `v7-required-tests.txt`. These29 named offline cases include the
+unchanged default V6 synthetic pass, all5 V7 scenarios, a safe HTTP NULL retry
+with normal and owner-stop outcomes, coherent critical tampering and exact
+retained failure/history verification. They are not actual model outcomes.
+Even `CHAIN_V7_WITNESS_AUDIT_PASS` keeps `issue33_ready=false`: independent
+issue-wide final acceptance and final composition remain separate.

@@ -38,6 +38,9 @@ var productFields = map[string]string{
 const unitKeys = "model_turns tokens cost_micros external_calls children active_millis egress_bytes provider_input_bytes"
 
 func verifyProduct(name string, ini, fin object, native []object) {
+	verifyProductWithPolicy(name, ini, fin, native, v6AuditPolicy())
+}
+func verifyProductWithPolicy(name string, ini, fin object, native []object, policy auditPolicy) {
 	keys(ini, "version scenario configured_native_high ordinary_core_entry setup_execution adapter_development model_authored_ir human_recipient native_batch_support native_multi_function_contract generic_wrapper_batch_handoff_evidence core_batch_capability target_converter_id target_need_sha256 original_refs existing_target_versions existing_target_catalogs preexisting_root_model_reservations preexisting_case_native_requests postgres")
 	keys(fin, "version scenario test_failed postgres native_batch_support native_multi_function_contract generic_wrapper_batch_handoff_evidence core_batch_capability original_document original_need original_spec patch_artifact_file_sha256 original_result recipient_requests recipient_acceptances all_channel_requests fault")
 	require(ini["version"] == "butler-release-chain-v5-initial-witness-v1" && fin["version"] == "butler-release-chain-v5-product-witness-v1" && ini["scenario"] == name && fin["scenario"] == name && fin["test_failed"] == false, "product_identity")
@@ -109,7 +112,7 @@ func verifyProduct(name string, ini, fin object, native []object) {
 		run := runs[text(a["run_id"])]
 		require(run != nil && a["root_task_id"] == root && (run["task_id"] == root || run["task_id"] == child) && a["is_parent"] == (run["task_id"] == root) && run["model_provider"] == "antigravity", "native_core_run_lineage")
 	}
-	verifyBudget(pg, native, name, root, child)
+	verifyBudgetWithPolicy(pg, native, name, root, child, policy)
 	actions := rows(pg, "actions")
 	verifyActions(pg, native, runs)
 	fault := obj(fin["fault"])
@@ -210,6 +213,9 @@ func verifyProduct(name string, ini, fin object, native []object) {
 }
 func jsonNumber(n int64) any { return clone(n) }
 func verifyBudget(pg object, native []object, name, root, child string) {
+	verifyBudgetWithPolicy(pg, native, name, root, child, v6AuditPolicy())
+}
+func verifyBudgetWithPolicy(pg object, native []object, name, root, child string, policy auditPolicy) {
 	reservations := byID(rows(pg, "budget_reservations"), "reservation_id")
 	allScopes := byID(rows(pg, "budget_scopes"), "scope_id")
 	sums := map[string]map[string]int64{}
@@ -245,14 +251,20 @@ func verifyBudget(pg object, native []object, name, root, child string) {
 		}
 		if scope["kind"] == "task" && scope["subject_id"] == root {
 			foundTask = true
-			require(integer(limit["model_turns"]) == 24 && integer(limit["tokens"]) == 24*1081344 && integer(limit["active_millis"]) == 24*120000, "root_budget_changed")
+			require(integer(limit["model_turns"]) == 24 && integer(limit["tokens"]) == 24*1081344 && integer(limit["active_millis"]) == 24*policy.Attempt.Milliseconds(), "root_budget_changed")
 		}
-		if scope["kind"] == "owner_day" && integer(limit["model_turns"]) == 80 {
+		if scope["kind"] == "owner_day" && integer(limit["model_turns"]) == policy.DayModelTurns {
 			foundDay = true
+			if policy.WindowPolicy != nil {
+				require(integer(limit["tokens"]) == policy.DayModelTurns*1081344 && integer(limit["active_millis"]) == policy.DayModelTurns*policy.Attempt.Milliseconds(), "v7_day_budget_changed")
+			}
 		}
 		if scope["kind"] == "delegation" && scope["subject_id"] == child {
 			foundChild = true
 			require(integer(limit["model_turns"]) == 4 && integer(limit["tokens"]) == 4*1081344 && integer(limit["external_calls"]) == 4, "child_budget_changed")
+			if policy.WindowPolicy != nil {
+				require(integer(limit["active_millis"]) == policy.ChildActiveMillis, "v7_child_active_budget_changed")
+			}
 		}
 	}
 	require(foundTask && foundDay && foundChild, "ordinary_budget_scopes_missing")
@@ -263,7 +275,7 @@ func verifyBudget(pg object, native []object, name, root, child string) {
 		res := reservations[text(a["reservation_id"])]
 		require(res != nil && res["operation_id"] == a["operation_id"] && a["provider"] == "antigravity" && a["model"] == "gemini-3.8-flash-high" && integer(a["input_allowance"]) == 1048576 && integer(a["output_allowance"]) == 32768, "normal_kernel_admission")
 		charge := obj(res["charge"])
-		require(integer(charge["model_turns"]) == 1 && integer(charge["tokens"]) == 1081344 && integer(charge["active_millis"]) == 120000, "quote_is_not_measured_cost")
+		require(integer(charge["model_turns"]) == 1 && integer(charge["tokens"]) == 1081344 && integer(charge["active_millis"]) == policy.Attempt.Milliseconds(), "quote_is_not_measured_cost")
 		byRun[text(a["run_id"])] = append(byRun[text(a["run_id"])], a)
 	}
 	for _, a := range byRun {

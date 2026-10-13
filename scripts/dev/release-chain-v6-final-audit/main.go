@@ -63,6 +63,10 @@ func binaryHash(path, expected string) error {
 	return nil
 }
 func run() error {
+	protocol := flag.String("protocol", "v6", "explicit frozen v6 or v7 audit policy")
+	auditorCode := flag.String("auditor-commit", "", "separately frozen read-only auditor commit")
+	auditorSource := flag.String("auditor-source-sha256", "", "separately frozen auditor source TreeHash")
+	auditorBinary := flag.String("auditor-binary-sha256", "", "separately built audit executable")
 	pins := map[string]*string{}
 	for _, name := range []string{"scope", "pg-ledger", "pg-initial", "pg-product", "runtime-state", "hardware", "runtime-profile", "source-manifest"} {
 		pins[name] = flag.String(name+"-sha256", "", "exact independently retained named file identity")
@@ -75,11 +79,28 @@ func run() error {
 	pgImage := flag.String("postgres-image", "", "prepared exact PostgreSQL image")
 	runtimeImage := flag.String("runtime-image", "", "prepared exact converter runtime image")
 	flag.Parse()
+	policy := selectedAuditPolicy(*protocol)
 	if os.Geteuid() != 10001 {
 		return errors.New("readonly_audit_owner_required")
 	}
 	if !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(*code) || !hashPattern.MatchString(*source) {
 		return errors.New("prepared_source_identity_required")
+	}
+	if *protocol == "v7" {
+		if !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(*auditorCode) || !hashPattern.MatchString(*auditorSource) {
+			return errors.New("separate_auditor_source_identity_required")
+		}
+		auditTree, err := acceptance.TreeHash("/auditor-src", nil)
+		if err != nil || auditTree != *auditorSource {
+			return errors.New("separate_auditor_source_tree_denied")
+		}
+		executable, err := os.Executable()
+		if err != nil {
+			return errors.New("auditor_executable_identity_denied")
+		}
+		if err = binaryHash(executable, *auditorBinary); err != nil {
+			return err
+		}
 	}
 	measuredCode, e := readExact("/source-commit.txt", digest([]byte(*code+"\n")), 41)
 	if e != nil || string(measuredCode) != *code+"\n" {
@@ -95,7 +116,13 @@ func run() error {
 		}
 	}
 	parsed := map[string]any{}
-	bindings := map[string]string{"code_commit": *code, "source_sha256": *source, "app_sha256": *app, "broker_sha256": *broker, "converter_sha256": *converter, "quality_sha256": qualitySHA, "prerequisite_sha256": prerequisiteSHA, "prior_protocol_sha256": priorProtocolSHA, "human_safe_timeout_waiver_sha256": safeTimeoutWaiverSHA}
+	bindings := map[string]string{"protocol": *protocol, "code_commit": *code, "source_sha256": *source, "app_sha256": *app, "broker_sha256": *broker, "converter_sha256": *converter, "quality_sha256": qualitySHA, "prerequisite_sha256": policy.PrerequisiteSHA, "prior_protocol_sha256": priorProtocolSHA, "human_safe_timeout_waiver_sha256": safeTimeoutWaiverSHA}
+	if *protocol == "v7" {
+		bindings["auditor_commit"], bindings["auditor_source_sha256"], bindings["auditor_binary_sha256"] = *auditorCode, *auditorSource, *auditorBinary
+		bindings["human_policy_amendment_sha256"] = policy.HumanSHA
+		bindings["retained_v6_timeout_waiver_sha256"] = safeTimeoutWaiverSHA
+		bindings["retained_v6_protocol_sha256"] = prerequisiteSHA
+	}
 	for name, pin := range pins {
 		path, maximum := "/"+name+".json", int64(8<<20)
 		if name == "source-manifest" {
@@ -118,7 +145,7 @@ func run() error {
 			parsed[name] = v
 		}
 	}
-	for name, pin := range map[string]string{"quality": qualitySHA, "prerequisite": prerequisiteSHA, "expense-exception": expenseExceptionSHA, "timeout-waiver": safeTimeoutWaiverSHA} {
+	for name, pin := range map[string]string{"quality": qualitySHA, "prerequisite": policy.PrerequisiteSHA, "expense-exception": expenseExceptionSHA, "timeout-waiver": policy.HumanSHA} {
 		raw, e := readExact("/"+name+".json", pin, 8<<20)
 		if e != nil {
 			return e
@@ -139,7 +166,10 @@ func run() error {
 	}
 	verifyRetainedFailedV5Source("/src")
 	verifyPriorV6ProtocolSource("/src")
-	result, err := audit(inputs{parsed["scope"], parsed["pg-ledger"], parsed["pg-initial"], parsed["pg-product"], parsed["runtime-state"], parsed["quality"], parsed["prerequisite"], parsed["expense-exception"], parsed["timeout-waiver"]})
+	if *protocol == "v7" {
+		verifyRetainedFailedV6Source("/src")
+	}
+	result, err := auditWithPolicy(inputs{parsed["scope"], parsed["pg-ledger"], parsed["pg-initial"], parsed["pg-product"], parsed["runtime-state"], parsed["quality"], parsed["prerequisite"], parsed["expense-exception"], parsed["timeout-waiver"]}, policy)
 	if e = json.NewEncoder(os.Stdout).Encode(struct {
 		Report   report            `json:"chain_audit"`
 		Bindings map[string]string `json:"evidence_bindings"`
