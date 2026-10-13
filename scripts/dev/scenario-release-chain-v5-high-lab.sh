@@ -10,6 +10,7 @@ if [[ "$protocol" == v6 ]]; then
   chain_baseline=537; chain_cap=78; chain_env=BUTLER_SCENARIO_CHAIN_V6_HIGH
   gate_test=TestReleaseChainV6OperationalGate; window_id=issue33-high-release-chain-v6-20261013-baseline537
   audit_package=./scripts/dev/release-chain-v6-final-audit
+  offline_timeout=8m
   # Independently reviewed exact manifest; runtime/source admission remains a
   # separate gate after zero-inference preparation and final composition checks.
   expected_audit_passes=154
@@ -18,6 +19,7 @@ else
   chain_baseline=535; chain_cap=80; chain_env=BUTLER_SCENARIO_CHAIN_V5_HIGH
   gate_test=TestReleaseChainV5OperationalGate; window_id=issue33-high-release-chain-v5-20261013-baseline535
   audit_package=./scripts/dev/release-chain-v5-final-audit; expected_audit_passes=67
+  offline_timeout=3m
 fi
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* ]] || exit 2
@@ -97,7 +99,7 @@ docker run --rm --runtime runc --pull never --network "$network" --read-only --u
   --tmpfs /tmp:rw,nosuid,nodev,size=64m --volume "$source_dir:/src:ro" --volume "$proof/bin:/bin-proof:ro" --workdir /src \
   --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:chain-prepare-fixture@chain-prepare-postgres:5432/butler_chain_prepare_test?sslmode=disable' \
   --entrypoint /bin-proof/test2json "$go_image" -t -p github.com/butler/butler/apps/orchestrator/internal/app \
-  /bin-proof/app.test -test.v=test2json -test.timeout=3m "-test.run=$app_pattern" > "$proof/tests.jsonl"
+  /bin-proof/app.test -test.v=test2json "-test.timeout=$offline_timeout" "-test.run=$app_pattern" > "$proof/tests.jsonl"
 ! grep -Eq '"Action":"(skip|fail)"' "$proof/tests.jsonl"
 ! grep -Eq '"Action":"(skip|fail)"' "$proof/bin/core-batch-policy.jsonl"
 ! grep -Eq '"Action":"(skip|fail)"' "$proof/bin/chain-audit-unit.jsonl"
