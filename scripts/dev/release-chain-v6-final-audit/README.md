@@ -1,29 +1,22 @@
-# Read-only V10 final checker overlay
+# Read-only release-chain final audit
 
-Six Go files from the current V9 checker package, explicit -protocol=v10. The default remains v6; v6/v7/v8/v9 policies retain ceiling615. V10 computes 556+71=627 from its fixed policy, never an operator-supplied baseline or retry cap.
+This Go command checks retained release evidence and never calls a model or executes tools. The default policy is V6; explicit V7, V8, V9, V10 and V11 policies preserve their separate frozen contracts and histories. A new report cannot rewrite a failed window or refund its attempts. NO_GO retains factual expense and UNKNOWN while clearing accepted subsets.
 
-V10 exact bindings:
-- prerequisite 193e3b8c21b00ffdda62ea0dddb7ecf17357f912d7c78e0d349873e92ee63b86
-- human interpretation 417dfd7bf7e9f0fba535d18a50552696f8efd08a9bf19b2f4a54d4cfb922da1d
-- prior fold a8ff280f6905081c83c48f8c0dc327576792e0de9ddd44b8e952cc9d0e0ec00d
-- retained history556 8509f520a5b013900c5365f06868656448afd74a3f24d2f88971f013024055f5
-- retained carry556 70041e9a3275a2099d39eda98d4535420eea7bfdae1bb3eb34bd58662f51ae3b
+V11 binds native source 323da2db, prerequisite 9f57fb1c613ffcd86f5f2b19a9cdd2b17c92f2c726723551fd9fbd44b8957888, human policy 31a2381c9f23f1ceeb9687f87bcb705c484433617491b8ec30d1173988bbd5f8 and prior fold fb4b085728544f0709dbc58dc7d5a3ba678412cc6a0c96514363a6fab2c27dee. Its allocation is 557 + 71 = 628. The historical source-check cancellation557 remains NULL, UNKNOWN and NO_GO under the separately pinned historical-only interpretation e2ebb0c52c406f21c1120b78c90aa9e3181d83c0875411a07738fc084286297d. The original537 exception remains a different input. Successful new entries require measured usage and the selected version.
 
-The exact eight public closed-V9 leaves and earlier immutable histories are read only from /src/deploy/acceptance. The old615 window has remaining59, stays NO_GO, and retains all12 paid requests146325 tokens. Cumulative known token subtotal793703 and48 unknown totals are carried without estimation/refund. The specific556 uncertain read cause and earlier541/544 causes remain UNKNOWN. The test-only runtime three-minute timer is a source/timing hypothesis; its actual exit was not retained.
+The checker requires all five actual cases, current source and authority, Stop, immutable original results, delivery deduplication, original tool proposals, serialized provider entries and all eight budget dimensions. V11 retains its original single-check receipt criterion; its actual14 actions are not retrospectively accepted.
 
-The frozen new prerequisite/human semantic equality binds a test-only maximum harness lifetime2400000ms clamped to the remaining case deadline, legacy180000ms, and prospective-only627 allocation. Owning SQL's eight-field protocol_policy remains the V9 shape. Source TreeHash and app/runtime binary pins bind the changed fixture implementation; the checker does not invent an additional native runtime exit receipt or human cryptographic signature.
+The V11 source-check projection is diagnostic data. Its exact typed fields exclude SQL, arguments and error bodies. It has at most64 failed records and a nonnegative dropped count; a positive count requires64 retained records. Caller remaining time is a nullable signed observation. The projection never grants authority, source success or retry permission. Source2000ms and watchdog750ms bounds remain fixed.
 
-Every existing five-scenario/result/owner-Stop/source/authority/delivery/private-proposal/kernel/eight-budget-dimension/retry rule remains shared. Serialization validates owning client previous.finished_at <= next.admitted_at for all outcomes, without GPU/server scheduling claims. Successful requests require full measured usage and expected version. A single eligible recovered nominal timeout may retain all-three NULL usage/NULL failed version only with the existing durable recovery proof. NO_GO zeroes accepted subsets while preserving factual cost/unknown counters.
+Stage only the thirteen named public-safe inputs: scope.json, pg-ledger.json, pg-initial.json, pg-product.json, runtime-state.json, hardware.json, runtime-profile.json, source-manifest.sha256, source-commit.txt, quality.json, prerequisite.json, expense-exception.json and timeout-waiver.json. V11 additionally requires the named historical557-expense-exception.json with the exact e2ebb0c bytes and semantics. Files must be regular0600. Each own proposal is an individually named0600 /proposals/tool-proposal-%06d.json, at most262144 bytes. Never mount the original private directory, credentials, provider imports or SSE bodies.
 
-CLI staging uses the same13 named read-only0600 safe leaves: scope.json, pg-ledger.json, pg-initial.json, pg-product.json, runtime-state.json, hardware.json, runtime-profile.json, source-manifest.sha256, quality.json, prerequisite.json, expense-exception.json, timeout-waiver.json, source-commit.txt. timeout-waiver.json is the new417d human interpretation; the original expense-exception31b remains unchanged. No whole private directory, SSE transcript, credentials, old private model bodies or provider/auth mount is permitted.
+A separate frozen auditor source and executable are mandatory for later policies. The -auditor-commit, -auditor-source-sha256 and -auditor-binary-sha256 flags bind that checker; -commit, -source-sha256 and measured binary flags bind the native execution. Reproduction commands for retained V10 remain in [its audit report](../../../docs/ai/scenario-release-chain-v10-independent-audit-20261013.md).
 
-Original proposals are individual read-only0600 /proposals/tool-proposal-%06d.json files, one per declared own ToolCall packet, <=262144 bytes. Existing V8 strict private file/base64/ArgsJSON/authorization fingerprint checks and actual Core action correlation remain unchanged. Never emit the arguments themselves. Separate -auditor-commit/-auditor-source-sha256/-auditor-binary-sha256 provenance binds the future read-only checker; -commit/-source-sha256 and measured binary flags retain the independently admitted native source/runtime.
+After initializing the repo-local Go environment, the V11 targeted checks are:
 
-Local unit.jsonl:22 named PASS,0FAIL,0SKIP =19 new V10 names(required-tests.txt) +three existing compatibility names(verified-tests.txt). Includes allfive cases, recovered NULL retry exactlyat627, old-ceiling/expanded-cap/runtime-lifetime/private-proposal/result/serialization tampering, actual retained556 reader, and oldexpense/UNKNOWN/action/NO_GO tampering. vet.txt empty, exit0. No live inference/auth/admission or PG mutation occurred.
+```text
+go test -race -count=1 -json -run '^TestV11Audit|^TestV10AuditFiveCasesExplicitProspectiveAllocation$|^TestV9AuditFiveCasesSerializedOriginalProposals$|^TestV8AuditFiveCasesOriginalProposalBinding$|^TestV7AuditDefaultV6Compatibility$' ./scripts/dev/release-chain-v6-final-audit
+go vet ./scripts/dev/release-chain-v6-final-audit
+```
 
-Commands after repo-local scripts/dev/common.ps1 environment initialization:
-
-    go test -overlay .cache/v10-chain-audit-draft/overlay.json -count=1 -json -run '^TestV10Audit|^TestV9AuditFiveCasesSerializedOriginalProposals$|^TestV8AuditFiveCasesOriginalProposalBinding$|^TestV7AuditDefaultV6Compatibility$' ./scripts/dev/release-chain-v6-final-audit
-    go vet -overlay .cache/v10-chain-audit-draft/overlay.json ./scripts/dev/release-chain-v6-final-audit
-
-This author checker handoff is not independent final acceptance or permission to merge. Root integrates only handoff-sha256.json's sixGo files after independent review, freezes a separate auditor commit/binary, and audits the actual closed V10 leaves.
+The exact25 V11 names are in v11-required-tests.txt; the four additional compatibility names make29. Local draft tests and a build alone do not establish independent final acceptance or issue readiness.

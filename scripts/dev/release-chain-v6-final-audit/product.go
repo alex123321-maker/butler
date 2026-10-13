@@ -42,7 +42,12 @@ func verifyProduct(name string, ini, fin object, native []object) {
 }
 func verifyProductWithPolicy(name string, ini, fin object, native []object, policy auditPolicy) {
 	keys(ini, "version scenario configured_native_high ordinary_core_entry setup_execution adapter_development model_authored_ir human_recipient native_batch_support native_multi_function_contract generic_wrapper_batch_handoff_evidence core_batch_capability target_converter_id target_need_sha256 original_refs existing_target_versions existing_target_catalogs preexisting_root_model_reservations preexisting_case_native_requests postgres")
-	keys(fin, "version scenario test_failed postgres native_batch_support native_multi_function_contract generic_wrapper_batch_handoff_evidence core_batch_capability original_document original_need original_spec patch_artifact_file_sha256 original_result recipient_requests recipient_acceptances all_channel_requests fault")
+	finalFields := "version scenario test_failed postgres native_batch_support native_multi_function_contract generic_wrapper_batch_handoff_evidence core_batch_capability original_document original_need original_spec patch_artifact_file_sha256 original_result recipient_requests recipient_acceptances all_channel_requests fault"
+	if policy.RequireSourceObservation {
+		finalFields += " source_check_observation"
+		verifyV11SourceObservation(fin["source_check_observation"], obj(fin["postgres"]))
+	}
+	keys(fin, finalFields)
 	require(ini["version"] == "butler-release-chain-v5-initial-witness-v1" && fin["version"] == "butler-release-chain-v5-product-witness-v1" && ini["scenario"] == name && fin["scenario"] == name && fin["test_failed"] == false, "product_identity")
 	require(ini["configured_native_high"] == true && ini["ordinary_core_entry"] == "after_owner_bound_initiative_promoted_input" && ini["setup_execution"] == "owner_services_and_real_approved_broker_reads_without_model" && ini["adapter_development"] == "production_deterministic_finite_ir_builder_selected_by_native_child" && ini["model_authored_ir"] == false && ini["human_recipient"] == false, "authorship_boundary")
 	for _, v := range []object{ini, fin} {

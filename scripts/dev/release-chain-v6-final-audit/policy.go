@@ -14,6 +14,7 @@ type auditPolicy struct {
 	WindowPolicy                                              object
 	DayModelTurns, ChildActiveMillis                          int64
 	RequireProposals                                          bool
+	RequireSourceObservation                                  bool
 	SerializedEntries                                         bool
 	ReadPrivateProposal                                       func(object) []byte
 	VerifyHuman                                               func(inputs)
@@ -56,6 +57,8 @@ func selectedAuditPolicy(name string) auditPolicy {
 		return v9AuditPolicy()
 	case "v10":
 		return v10AuditPolicy()
+	case "v11":
+		return v11AuditPolicy()
 	default:
 		require(false, "explicit_reviewed_protocol_required")
 		return auditPolicy{}

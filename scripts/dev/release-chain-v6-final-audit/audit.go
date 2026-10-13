@@ -183,6 +183,10 @@ func auditWithPolicy(in inputs, policy auditPolicy) (r report, err error) {
 		r.Limits[5] = "The pinned V10 prospective policy retains one safely recovered nominal HTTP or response-stream timeout per input with NULL expense/version kept UNKNOWN, 300-second entries, 40-minute cases and a 120-minute window. All successful requests require measured expense and expected version; original quality and comparison profiles remain unchanged."
 		r.Limits = append(r.Limits, "V10 is a new prospective 71-entry allocation after factual556, with ceiling627. Closed earlier615 windows keep all spent requests and UNKNOWNs. Its pinned test-only harness lifetime is bounded by the remaining forty-minute case; historical556 runtime exit is unavailable and its specific cause stays UNKNOWN.")
 	}
+	if policy.RequireSourceObservation {
+		r.Limits[5] = "The fixed V11 protocol retains the same critical recovery and measured-success predicates. A separately pinned historical557 exception preserves its closed source-check cancellation and NULL expense; it does not establish a nominal provider timeout or authorize a source-uncertain retry."
+		r.Limits = append(r.Limits, "V11 is a fresh 557+71=628 allocation; prior615 and627 scopes stay closed without refunds. Failure-only source/watchdog diagnostics are content-free observations of unchanged checks, not authorization or proof of the old557 underlying cause. Pool counters are shared snapshots; query digests are content hashes, not an isolated exact-template registry.")
+	}
 	defer func() {
 		if v := recover(); v != nil {
 			r.Status = "NO_GO"

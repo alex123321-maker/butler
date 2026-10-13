@@ -51,7 +51,7 @@ script. This new lane now explicitly permits execution only in its bounded
 private profile, no accounts). The other browser lanes retain their policy.
 Actual installed-native tests and full current matrix must pass after this fix.
 
-Final current run on code `eef48f62d9d929b04024b66ef6e06d7744ddffc3`, immutable
+Historical run on code `eef48f62d9d929b04024b66ef6e06d7744ddffc3`, immutable
 snapshot `20261012-180452-703`, is **PASS**:
 
 | Pin / result | Value |
@@ -160,3 +160,36 @@ cost evidence and the complete mandate→task→delegation→adapter development
 independent checks→approved activation→original task→verified result→one final
 notice, repeated with restart/Stop/delivery faults. No signed-quality gate or
 old FAILED report is relaxed or reclassified by this current fault report.
+
+The final fault matrix was repeated on production code
+`0f9b61e23fd56fefddd1c42cd3aa9efa14087d83`, snapshot
+`20261013-235009-202`, proof `fault-20261013T170617Z-2668214` in
+`/srv/storage/butler/agents/scenario-release-chain-v10-final-faults-20261013`.
+The [current report](../../deploy/acceptance/scenario-full-faults-current0f-report-20261013.json)
+and [independent review](../../deploy/acceptance/scenario-full-faults-current0f-independent-review-20261013.json)
+retain all eight scenarios, 35 groups and 176 selected names. The reviewer
+matched all 33 original event files: 321 named PASS, zero FAIL or SKIP, including
+the actual runtime-deadline cancellation regression. The report SHA256 is
+`c2f3787b0940952138861e5a1211a05a8788841128661469ae7068b0422af5f4`;
+review SHA256 is
+`3e3e2bbd97c24999642a5fab0b19bbe6684ca7df73b3b067b497ccbdbfc9f6e8`.
+
+All 657 production Go files in the independently admitted V11 source
+`323da2db21b37e2efd39639eaff98f838a33f0c6` equal that measured source byte for
+byte. V11 fixture observations have their own 12-name preparation; this is
+source equality and targeted validation, not another full matrix run. The
+retained physical Qwen CPU-load OOM remains the same sealed experiment with
+its original strict FAIL and separate additive witness. No new model load,
+High RAM measurement, binary rebuild attestation or administrative isolation
+attestation is claimed. Full native High release acceptance remains separate.
+
+The [read-only reproducer](../../scripts/dev/verify-current-full-faults-0f9b61e.py)
+uses Python's standard library solely to correlate the retained JSON, event,
+source and binary files; it is independent evidence tooling, not a Butler
+service or model client. Its default creates no files. On SSH laba, with the
+retained isolated proofs available:
+
+```powershell
+$scriptBytes = [IO.File]::ReadAllBytes((Join-Path (Get-Location) 'scripts/dev/verify-current-full-faults-0f9b61e.py'))
+[Convert]::ToBase64String($scriptBytes) | ssh -o BatchMode=yes laba 'base64 -d | python3 -'
+```

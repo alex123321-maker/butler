@@ -1,0 +1,230 @@
+{
+  "admissible_once_only": true,
+  "admitted_commit": "323da2db21b37e2efd39639eaff98f838a33f0c6",
+  "admitted_source_dir": "/srv/storage/butler/agents/scenario-release-chain-v11-high-20261013/snapshots/20261014-003010-084",
+  "auditor_scope_is_read_only": true,
+  "authentication_by_auditor": false,
+  "critical_static_blockers_found": [],
+  "exact_named_tests": {
+    "bytes": 12591,
+    "named_fail": 0,
+    "named_pass": 12,
+    "named_skip": 0,
+    "names": [
+      "TestReleaseChainV11ActualHistoryPreserves557",
+      "TestReleaseChainV11HistoryRejectsTampering/old_usage_changed",
+      "TestReleaseChainV11HistoryRejectsTampering/new_null_filled",
+      "TestReleaseChainV11HistoryRejectsTampering/source_cancel_called_nominal_retry",
+      "TestReleaseChainV11HistoryRejectsTampering/no_go_promoted",
+      "TestReleaseChainV11HistoryRejectsTampering/old_ceiling_refunded",
+      "TestReleaseChainV11HistoryRejectsTampering/tool_effect_invented",
+      "TestReleaseChainV11HistoryRejectsTampering/underlying_cause_invented",
+      "TestReleaseChainV11HistoryRejectsTampering",
+      "TestReleaseChainV11SourceObserverPrivateDataAndFirstFailure",
+      "TestReleaseChainV11SourceObserverUnmarkedHealthyAndPrequote",
+      "TestReleaseChainV11SourceObserverPoolContentionIntegration"
+    ],
+    "sha256": "2ca28e794e0b64c22bee46858126708c4154908a125a1c387a317965123ba238"
+  },
+  "frozen_child_budget": {
+    "active_ms": 1320000,
+    "external_calls": 4,
+    "turns": 4
+  },
+  "frozen_limits": {
+    "all_completed_entries_require_measured_usage_and_selected_version": true,
+    "authority_watchdog_check_timeout_ms": 750,
+    "baseline_attempts": 557,
+    "extension_harness_lifetime_source": "remaining_case_deadline",
+    "extension_harness_lifetime_test_only": true,
+    "legacy_extension_harness_lifetime_ms": 180000,
+    "maximum_attempt_ms": 300000,
+    "maximum_case_ms": 2400000,
+    "maximum_concurrent_native_entries": 1,
+    "maximum_extension_harness_lifetime_ms": 2400000,
+    "maximum_generation_tokens": 32768,
+    "maximum_global_ms": 7200000,
+    "maximum_model_retries_per_input": 1,
+    "maximum_new_attempts": 71,
+    "maximum_private_proposal_bytes": 262144,
+    "maximum_total_attempts": 628,
+    "model_retry_backoff_ms": 2000,
+    "new_scope_allocation_is_prospective": true,
+    "old_closed_attempts_or_unknowns_refunded": false,
+    "old_sealed_absolute_ceiling": 627,
+    "production_source_check_or_authority_behavior_changed": false,
+    "proposal_retention_required": true,
+    "provider_entries_serialized": true,
+    "source_check_failure_observation_schema": "butler-source-check-observation-v1",
+    "source_check_observation_contains_query_or_argument_values": false,
+    "source_check_observation_max_failed_checks": 64,
+    "source_check_observer_enabled": true,
+    "source_check_or_watchdog_bounds_changed": false,
+    "source_check_timeout_ms": 2000
+  },
+  "hardware": {
+    "cloud_weights_sha256": null,
+    "cpu_sha256": "177d14a5788191dc50c31b0906b921147a444b23b1e4acc96e42181bbc3b6baa",
+    "fixture_cpus": 2,
+    "fixture_ram_bytes": 1610612736,
+    "go_image": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61",
+    "host_ram_kib": 15693396,
+    "kernel": "7.0.0-34-generic",
+    "postgres_image": "sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d",
+    "remote_model_ram": null,
+    "runtime_image": "sha256:ce64758a109eb420d874a118f87920e625e12d3634e03b4a5573fd9f6e5d3507"
+  },
+  "historical_carry": {
+    "all_prior_native_windows": "SEALED_NO_GO",
+    "attempts": 557,
+    "fold_sha256": "fb4b085728544f0709dbc58dc7d5a3ba678412cc6a0c96514363a6fab2c27dee",
+    "known_input_tokens_subtotal": 475637,
+    "known_io_pairs": 528,
+    "known_output_tokens_subtotal": 15159,
+    "known_total_tokens_subtotal": 793703,
+    "old_266_cause": "UNKNOWN",
+    "old_541_rejected_proposal_specific_cause": "UNKNOWN",
+    "old_544_child_pre_native_specific_cause": "UNKNOWN",
+    "old_556_inspect_specific_cause": "UNKNOWN",
+    "old_557_source_failure_underlying_cause": "UNKNOWN",
+    "old_ceiling": 627,
+    "old_remaining": 70,
+    "unknown_io_pairs": 29,
+    "unknown_total_entries": 49
+  },
+  "issue33_ready": false,
+  "limitations": [
+    "Shared administrator host; independent reviewer role is not cryptographic administrator isolation or rebuilt binary attestation.",
+    "Model-free setup, finite adapter IR builder, loopback project/channel and unapplied verified README patch remain fixture boundaries.",
+    "Historical cost is a known subtotal; all49 unknowns remain unknown.",
+    "Observed query families classify current fixed parameterized source code; the digest is not an independently maintained exact SQL template registry.",
+    "Pool stats are shared cumulative counters, not exclusive attribution of557 or model expense.",
+    "No cloud weights, remote server effort/RAM or invoice observed."
+  ],
+  "merge_authorized_by_this_artifact": false,
+  "metadata": {
+    "build-vet.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evidence.sha256": {
+      "bytes": 406,
+      "sha256": "f1a5ea37c934feabe7be8fc37fe02b6805ae4882561a8a455a660033f47aea3e"
+    },
+    "hardware-cpu.json": {
+      "bytes": 1410,
+      "sha256": "177d14a5788191dc50c31b0906b921147a444b23b1e4acc96e42181bbc3b6baa"
+    },
+    "hardware.json": {
+      "bytes": 500,
+      "sha256": "ac640d38f0ad5db871190315628543b2407a7c539ce7b3b31e85039edba61e9b"
+    },
+    "sealed-v10-entry.txt": {
+      "bytes": 230,
+      "sha256": "8a3919ede8683a69711c0513b2ed69e8cfd94d9060336f4c72383ede0645d6a5"
+    },
+    "source-commit.txt": {
+      "bytes": 41,
+      "sha256": "af80802eb7c147b228d97202854b3326dd08323a9edf8717fab8707dd4c87ff0"
+    },
+    "source.sha256": {
+      "bytes": 263451,
+      "sha256": "d35ef189b09ecb0bac9ef21fc23f60b712ddd3b6fab78e04bd49b268c4f4b0c1"
+    },
+    "summary.json": {
+      "bytes": 193,
+      "sha256": "45af84dceb1d62b09f8b95370364b9117285ad071008408cbd72af0d8df8d2c4"
+    },
+    "tests.jsonl": {
+      "bytes": 12591,
+      "sha256": "2ca28e794e0b64c22bee46858126708c4154908a125a1c387a317965123ba238"
+    }
+  },
+  "model_calls_by_auditor": 0,
+  "native_admission_admissible": true,
+  "native_root": "/srv/storage/butler/agents/scenario-release-chain-v11-high-20261013",
+  "native_window_observed_absent": true,
+  "pending_final_acceptance": [
+    "All five actual V11 fixed scenarios on exactly323da2db source.",
+    "Independent actual PostgreSQL, initial/final product, serial intervals, measured usage/version, kernel/model retry markers, all eight budget dimensions, source observations and any stopped descendants.",
+    "Individual named private own-tool originals and unchanged Core authorization fingerprints. A separately frozen V11 checker is required; bundled97ee supports V10 and is not V11 final acceptance.",
+    "Final composition and issue-wide independent PASS before PR ready/merge/closure."
+  ],
+  "prepared_proof": "/srv/storage/butler/agents/scenario-release-chain-v11-high-20261013/reports/chain-v11-high-prepare-20261013T173054Z-2752364",
+  "production_go_files_unchanged_since_0f": 657,
+  "public_pins": {
+    "deploy/acceptance/cloud-shadow-v5-final-audit-20261013.json": "f8248d19ec2a0c222b39d46fbc46c0d0cf4ccc3c1361c89965b597eedbb21cab",
+    "deploy/acceptance/release-chain-v10-carry557-independent-20261013.json": "78d320c595483d666b25cbaee55be764b53b0004bdd6806ecb4924e4f01130ef",
+    "deploy/acceptance/release-chain-v10-failure-correlation-20261013.json": "f7c20a7246eb2fc5a653f39f4bfe7f06498e152be3d50c4b523357eff163af8d",
+    "deploy/acceptance/release-chain-v10-final-audit-20261013.json": "28b4dbc9cdfbd8fb8e838b2f14bb698b7142e587f0a44ec2e534a716dce62534",
+    "deploy/acceptance/release-chain-v10-history557-20261013.json": "fb85f5ce35a5217990d83af664060908574c0ac0682fa8d111e20ac0c2deef0f",
+    "deploy/acceptance/release-chain-v11-high-prerequisite-20261013.json": "9f57fb1c613ffcd86f5f2b19a9cdd2b17c92f2c726723551fd9fbd44b8957888",
+    "deploy/acceptance/release-chain-v11-user-expense-exception-20261013.json": "e2ebb0c52c406f21c1120b78c90aa9e3181d83c0875411a07738fc084286297d",
+    "deploy/acceptance/release-chain-v11-user-policy-amendment-20261013.json": "31a2381c9f23f1ceeb9687f87bcb705c484433617491b8ec30d1173988bbd5f8"
+  },
+  "race": true,
+  "reused_evidence": {
+    "core_retry81_sha256": "efb8a9c9c3e8b3c6669be99862fa959bd839aed1b48dcf9ad49f82475176db98",
+    "current_0f_full_fault_independent_review_sha256": "3e3e2bbd97c24999642a5fab0b19bbe6684ca7df73b3b067b497ccbdbfc9f6e8",
+    "current_0f_full_fault_report_sha256": "c2f3787b0940952138861e5a1211a05a8788841128661469ae7068b0422af5f4",
+    "mandatory_faults_scope": "321raw namedPASS/176selected/33rawGo leaves/8mandatory; actual0fsource matched2280files. Production identicalV11; fixture observer narrow12 is fresh.",
+    "quality_and_four_pair_comparison_sha256": "f8248d19ec2a0c222b39d46fbc46c0d0cf4ccc3c1361c89965b597eedbb21cab",
+    "quality_measured_source": "3c4089f35c0bdf33bf9b2c6328ba395c519cecf4",
+    "quality_profile": "Original120seconds/32768; direct provider/data/goldens path unchanged. No chain300second quality remeasurement claimed.",
+    "reuse_limits": "Previous native product outcomes remain NO_GO. No unchanged suite rerun or finalHigh result claimed.",
+    "v10_extension_lifetime_scope": "Retained14app+4realRPC/runtime tests; unchanged extension testbinary924476 and ordinaryBroker/converter binaries.",
+    "v9_catalog_and_input_timeout_scope": "Retained2Broker+4input+10app before1937 native; unchanged production carried through current0f/V11."
+  },
+  "reviewed_at_utc": "2026-10-13T17:39:16.450807+00:00",
+  "reviewer_role": "/root/v5_final_independent_audit",
+  "runtime_pins": {
+    "app.test": {
+      "bytes": 55100861,
+      "mode": "0555",
+      "sha256": "e1e20c8d64b868f7a1752a10edee3f8f8dc10a4ceeea787a51fc5b48735fb25d"
+    },
+    "chain-final-audit": {
+      "bytes": 17643889,
+      "mode": "0555",
+      "sha256": "97ee9948b24950f0d134a0daf34a94475308f0e6924c9587634f21d2d328adb4"
+    },
+    "extension.test": {
+      "bytes": 22526386,
+      "mode": "0555",
+      "sha256": "924476213168951493ae8ad21ef0630f1b666e63ac67d643fa79e5d5517f0a07"
+    },
+    "test2json": {
+      "bytes": 4566038,
+      "mode": "0555",
+      "sha256": "8f352c19877e12d5b0305b9eebac875aa63734fe03b73127ee01fae2c833ad68"
+    },
+    "tls-prerequisite": {
+      "bytes": 8829345,
+      "mode": "0555",
+      "sha256": "14a3bc9fc5a006ce6ae91fe10e3d4ae2ef0f78ac6c1a4c16e43d6d65f1589392"
+    },
+    "tool-broker": {
+      "bytes": 28759445,
+      "mode": "0555",
+      "sha256": "2ed16aca088b7cb90b85b643a7e9533d336ca2d43ea0af5746e44847496d9e8e"
+    },
+    "tool-converter": {
+      "bytes": 20154212,
+      "mode": "0555",
+      "sha256": "5f2dee5acef95c2f279b849d7af76003688a3b46a274e0d44456a37c40536f75"
+    }
+  },
+  "source_inventory_files": 2307,
+  "source_manifest_sha256": "d35ef189b09ecb0bac9ef21fc23f60b712ddd3b6fab78e04bd49b268c4f4b0c1",
+  "source_tree_sha256": "f7158f46360ed52794188063a1c7860c90d1cbb4ffc9d1c8b65f4fdbe9cc5849",
+  "static_review": [
+    "Fresh fixture-local PG Query/Acquire tracer does not execute SQL or borrow a connection. Original source, lease and task authority delegates receive unchanged owned contexts/token and original errors. Two-second source and 750ms authority watchdog bounds are preserved.",
+    "Failure-only trace stores bounded64 records and dropped count. It retains the first real query/acquisition failure through cleanup. Only allowlisted role/phase/error/SQLSTATE, fixed query-family and template digest, pool stats and nullable owned kernel operation are emitted; no SQL, Args, messages, auth, DSN or provider/model bodies.",
+    "Fresh actual owning-source/lease/task PG integration verifies healthy delegates and deliberate two-connection exhaustion with bounded80ms pre-query waits. This proves new observer behavior, not the unavailable original557 cause.",
+    "Closed557 usage remains NULL/NO_GO under narrowly labelled assistant interpretation of the later direct human relaxation; no new literal human557 signature, nominal timeout, future exception or refunded attempt is asserted.",
+    "New557+71=628 is prospective; old627/615 are sealed. Every successful fresh request needs measured expense and selected version. Source uncertainty grants no model retry or effect. All five original result/Stop/restart/delivery gates remain mandatory."
+  ],
+  "status": "INDEPENDENT_V11_NATIVE_ADMISSION_PASS",
+  "version": "butler-issue33-independent-v11-native-admission-v1",
+  "vet_and_build_log_empty": true
+}

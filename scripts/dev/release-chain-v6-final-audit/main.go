@@ -63,7 +63,7 @@ func binaryHash(path, expected string) error {
 	return nil
 }
 func run() error {
-	protocol := flag.String("protocol", "v6", "explicit frozen v6, v7, v8, v9 or v10 audit policy")
+	protocol := flag.String("protocol", "v6", "explicit frozen v6, v7, v8, v9, v10 or v11 audit policy")
 	auditorCode := flag.String("auditor-commit", "", "separately frozen read-only auditor commit")
 	auditorSource := flag.String("auditor-source-sha256", "", "separately frozen auditor source TreeHash")
 	auditorBinary := flag.String("auditor-binary-sha256", "", "separately built audit executable")
@@ -86,7 +86,7 @@ func run() error {
 	if !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(*code) || !hashPattern.MatchString(*source) {
 		return errors.New("prepared_source_identity_required")
 	}
-	if *protocol == "v7" || *protocol == "v8" || *protocol == "v9" || *protocol == "v10" {
+	if *protocol == "v7" || *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || *protocol == "v11" {
 		if !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(*auditorCode) || !hashPattern.MatchString(*auditorSource) {
 			return errors.New("separate_auditor_source_identity_required")
 		}
@@ -117,26 +117,42 @@ func run() error {
 	}
 	parsed := map[string]any{}
 	bindings := map[string]string{"protocol": *protocol, "code_commit": *code, "source_sha256": *source, "app_sha256": *app, "broker_sha256": *broker, "converter_sha256": *converter, "quality_sha256": qualitySHA, "prerequisite_sha256": policy.PrerequisiteSHA, "prior_protocol_sha256": priorProtocolSHA, "human_safe_timeout_waiver_sha256": safeTimeoutWaiverSHA}
-	if *protocol == "v7" || *protocol == "v8" || *protocol == "v9" || *protocol == "v10" {
+	if *protocol == "v7" || *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || *protocol == "v11" {
 		bindings["auditor_commit"], bindings["auditor_source_sha256"], bindings["auditor_binary_sha256"] = *auditorCode, *auditorSource, *auditorBinary
 		bindings["human_policy_amendment_sha256"] = policy.HumanSHA
 		bindings["retained_v6_timeout_waiver_sha256"] = safeTimeoutWaiverSHA
 		bindings["retained_v6_protocol_sha256"] = prerequisiteSHA
-		if *protocol == "v8" || *protocol == "v9" || *protocol == "v10" {
+		if *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || *protocol == "v11" {
 			bindings["retained_v7b_protocol_sha256"] = v7PrerequisiteSHA
 			bindings["proposal_retention_policy"] = "own_tool_call_original_bytes_v1"
-			if *protocol == "v9" || *protocol == "v10" {
+			if *protocol == "v9" || *protocol == "v10" || *protocol == "v11" {
 				bindings["retained_v8_protocol_sha256"] = v8PrerequisiteSHA
 				bindings["prior_actual544_fold_sha256"] = v9PriorSHA
 				bindings["provider_entries_serialized"] = "owning_client_intervals"
 			}
 		}
 	}
-	if *protocol == "v10" {
+	if *protocol == "v10" || *protocol == "v11" {
 		bindings["retained_v9_protocol_sha256"] = v9PrerequisiteSHA
 		bindings["retained_v9_human_amendment_sha256"] = v9HumanSHA
 		bindings["prior_actual556_fold_sha256"] = v10PriorSHA
 		bindings["extension_harness_lifetime_policy"] = "test_only_remaining_case_deadline_le_2400000_ms"
+	}
+	if *protocol == "v11" {
+		bindings["retained_v10_protocol_sha256"] = v10PrerequisiteSHA
+		bindings["retained_v10_human_amendment_sha256"] = v10HumanSHA
+		bindings["prior_actual557_fold_sha256"] = v11PriorSHA
+		bindings["historical557_expense_exception_sha256"] = v11HistoricalExceptionSHA
+		bindings["source_check_observation_policy"] = "test_only_failure_projection_no_authority_or_retry"
+		raw, err := readExact("/historical557-expense-exception.json", v11HistoricalExceptionSHA, 256<<10)
+		if err != nil {
+			return err
+		}
+		value, err := decode(raw)
+		if err != nil {
+			return err
+		}
+		verifyV11HistoricalException(value)
 	}
 	for name, pin := range pins {
 		path, maximum := "/"+name+".json", int64(8<<20)
@@ -181,20 +197,23 @@ func run() error {
 	}
 	verifyRetainedFailedV5Source("/src")
 	verifyPriorV6ProtocolSource("/src")
-	if *protocol == "v7" || *protocol == "v8" || *protocol == "v9" || *protocol == "v10" {
+	if *protocol == "v7" || *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || *protocol == "v11" {
 		verifyRetainedFailedV6Source("/src")
 	}
-	if *protocol == "v8" || *protocol == "v9" || *protocol == "v10" {
+	if *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || *protocol == "v11" {
 		verifyRetainedFailedV7bSource("/src")
 	}
-	if *protocol == "v8" || *protocol == "v9" || *protocol == "v10" {
+	if *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || *protocol == "v11" {
 		verifyV8PrivateDirectory(obj(parsed["scope"]))
 	}
-	if *protocol == "v9" || *protocol == "v10" {
+	if *protocol == "v9" || *protocol == "v10" || *protocol == "v11" {
 		verifyRetainedFailedV8Source("/src")
 	}
-	if *protocol == "v10" {
+	if *protocol == "v10" || *protocol == "v11" {
 		verifyRetainedFailedV9Source("/src")
+	}
+	if *protocol == "v11" {
+		verifyRetainedFailedV10Source("/src")
 	}
 	result, err := auditWithPolicy(inputs{parsed["scope"], parsed["pg-ledger"], parsed["pg-initial"], parsed["pg-product"], parsed["runtime-state"], parsed["quality"], parsed["prerequisite"], parsed["expense-exception"], parsed["timeout-waiver"]}, policy)
 	if e = json.NewEncoder(os.Stdout).Encode(struct {
