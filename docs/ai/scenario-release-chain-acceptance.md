@@ -113,6 +113,24 @@ does not turn that failure into native acceptance or authorize its replay.
 
 ## Current isolated evidence
 
+The later actual High work is composed from separate sealed windows. Frozen V5
+quality and four paired comparisons pass independently. The V17 owner Stop
+component and V18 explicit absence component pass independently; each whole
+window keeps its original NO_GO. V18 proved the fixture pool2 was exhausted
+during authority checks. The prospective V19 fixture uses production default10
+without changing source2s/watchdog750ms bounds or any production Go code.
+Its four named actual PostgreSQL profile/headroom/revoked-lease checks passed
+with race/vet at `context-pg-20261013T215340Z-3597994`.
+
+Current production67133e17 has separate independent full321 mandatory-fault
+verification in `deploy/acceptance/current-67133e1-full-fault-independent-review-20261013.json`.
+V19 ran only pending lost_ack/restart_sent; request706 got provider_unavailable
+before any accepted model answer, and the fixture denied the second case before
+provider dispatch. No fault-case PASS is claimed. The baseline705/full-known
+subtotal2649327 and historical UNKNOWNs are retained;706 has UNKNOWN usage.
+The [prospective plan](../../deploy/acceptance/release-chain-v19-execution-plan-20261013.md)
+records fixed source, resources, two-case scope and final independent gate.
+
 Snapshot `20261012-190357-233` tested the implementation on base
 `895bdd3e9474d7a53c0890b3db948723c5ae43c4` with its complete source manifest
 SHA256 `9f2689bd664d076cb6c4f425495a0e74f461d57b34c02e31a95e938d599d3f35`.
