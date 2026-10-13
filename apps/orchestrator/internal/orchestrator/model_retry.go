@@ -24,6 +24,7 @@ type modelRetryRecoveryKey struct{}
 type modelTurnTimeout struct{ operationID string }
 
 func (*modelTurnTimeout) Error() string { return "model_turn_timeout" }
+func (*modelTurnTimeout) Unwrap() error { return &budget.LoopError{Reason: "model_turn_timeout"} }
 
 type modelRetryStore interface {
 	ClaimModelRetry(context.Context, string, string) error

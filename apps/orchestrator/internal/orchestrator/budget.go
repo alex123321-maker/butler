@@ -75,6 +75,11 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 	if err != nil {
 		if modelTurnLimited && phases.inferencePhase() && ctx.Err() == nil && (errors.Is(err, context.DeadlineExceeded) || transport.DiagnosticCode(err) == string(transport.ErrorTypeProviderTimeout)) {
 			err = &modelTurnTimeout{operationID: a.OperationID}
+		} else if errors.Is(turn.Err(), context.DeadlineExceeded) && ctx.Err() == nil {
+			// The owning budget still expires if inference was never observed.
+			// Early provider timeouts and caller cancellation do not acquire
+			// this budget deadline classification.
+			err = &budget.LoopError{Reason: "execution_budget_deadline"}
 		}
 		cancel()
 		return nil, err
@@ -89,8 +94,6 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 				event.TransportError.Type = "execution_budget_deadline"
 				if modelTurnLimited && phases.inferencePhase() {
 					event.TransportError.Type = "model_turn_timeout"
-				} else if modelTurnLimited {
-					event.TransportError = &transport.Error{Type: transport.ErrorTypeProviderTimeout, Message: "provider_timeout"}
 				}
 				select {
 				case out <- event:

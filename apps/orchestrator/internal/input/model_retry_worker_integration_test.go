@@ -75,6 +75,8 @@ type modelRetryWorkerProvider struct {
 	submits                         int
 	stage                           *transport.ProviderStage
 	hold, failAgain, cancelTerminal bool
+	cancellations                   int
+	startWait, active               bool
 }
 
 func (*modelRetryWorkerProvider) Name() string                    { return "fixture" }
@@ -89,6 +91,11 @@ func (p *modelRetryWorkerProvider) StartRun(ctx context.Context, r transport.Sta
 	}
 	transport.ObserveProviderStage(ctx, stage)
 	p.calls = append(p.calls, r)
+	p.active = true
+	if p.startWait {
+		<-ctx.Done()
+		return nil, ctx.Err()
+	}
 	out := make(chan transport.TransportEvent, 2)
 	if p.hold {
 		return out, nil
@@ -143,7 +150,9 @@ func (p *modelRetryWorkerProvider) SubmitToolResult(ctx context.Context, r trans
 	close(out)
 	return out, nil
 }
-func (*modelRetryWorkerProvider) CancelRun(context.Context, transport.CancelRunRequest) (*transport.TransportEvent, error) {
+func (p *modelRetryWorkerProvider) CancelRun(context.Context, transport.CancelRunRequest) (*transport.TransportEvent, error) {
+	p.cancellations++
+	p.active = false
 	return nil, nil
 }
 
@@ -303,12 +312,16 @@ func TestModelRetryWorkerUnsafeTimeoutNeverQueuesIntegration(t *testing.T) {
 			case "absent_phase":
 				stage := transport.ProviderStage("")
 				f.provider.stage = &stage
+				f.provider.hold = true
 			case "authentication_phase":
 				stage := transport.ProviderStageAuthentication
 				f.provider.stage = &stage
+				// Hang inside StartRun rather than returning an idle stream.
+				f.provider.startWait = true
 			case "serialization_phase":
 				stage := transport.ProviderStageSerialization
 				f.provider.stage = &stage
+				f.provider.hold = true
 			case "caller_deadline":
 				f.provider.hold = true
 				f.worker.executionTimeout = time.Second
@@ -319,14 +332,26 @@ func TestModelRetryWorkerUnsafeTimeoutNeverQueuesIntegration(t *testing.T) {
 			case "cancelled_terminal":
 				f.provider.cancelTerminal = true
 			}
+			if name == "absent_phase" || name == "authentication_phase" || name == "serialization_phase" {
+				// Exercise the owning nominal deadline rather than a provider's
+				// synthetic timeout event: no observed inference phase means the
+				// existing budget stop must cancel, retain NULL usage and not retry.
+				f.policy.ModelMillis = 1000
+				f.restart()
+			}
 			f.step(t)
 			r := f.result(t)
 			if r.Status == "queued" || len(f.provider.calls) != 1 {
 				t.Fatal("unsafe timeout queued automatic model work", r.Status, r.ErrorMessage, len(f.provider.calls))
 			}
+			if name == "absent_phase" || name == "authentication_phase" || name == "serialization_phase" {
+				if r.Status != "blocked" || r.ErrorCode != "execution_budget_deadline" || f.provider.cancellations != 1 || f.provider.active {
+					t.Fatal("unobserved inference deadline bypassed budget stop/cancel", r.Status, r.ErrorCode, f.provider.cancellations)
+				}
+			}
 			var hasRetry bool
-			var count int
-			if f.pool.QueryRow(context.Background(), `SELECT checkpoint_json ? 'model_retry' FROM accepted_inputs WHERE input_id=$1`, r.InputID).Scan(&hasRetry) != nil || hasRetry || f.pool.QueryRow(context.Background(), `SELECT count(*) FROM execution_model_attempts WHERE run_id=$1`, r.RunID).Scan(&count) != nil || count != 1 {
+			var count, unknown int
+			if f.pool.QueryRow(context.Background(), `SELECT checkpoint_json ? 'model_retry' FROM accepted_inputs WHERE input_id=$1`, r.InputID).Scan(&hasRetry) != nil || hasRetry || f.pool.QueryRow(context.Background(), `SELECT count(*),count(*) FILTER(WHERE actual_input_tokens IS NULL AND actual_output_tokens IS NULL) FROM execution_model_attempts WHERE run_id=$1`, r.RunID).Scan(&count, &unknown) != nil || count != 1 || unknown != 1 {
 				t.Fatal("unsafe model timeout fabricated a retry marker or refunded reservation")
 			}
 		})
@@ -351,7 +376,7 @@ func TestModelRetryWorkerSecondTimeoutStopsIntegration(t *testing.T) {
 	f := newModelRetryWorkerFixture(t, false, false)
 	f.provider.failAgain = true
 	f.step(t)
-	if f.result(t).Status != "queued" {
+	if f.result(t).Status != "queued" || f.provider.cancellations != 1 || f.provider.active {
 		t.Fatal("first nominal timeout did not queue one retry")
 	}
 	time.Sleep(2100 * time.Millisecond)
@@ -369,8 +394,17 @@ func TestModelRetryWorkerSecondTimeoutStopsIntegration(t *testing.T) {
 	}
 	f.worker.process(parent, claim)
 	r := f.result(t)
-	if r.Status != "running" || len(f.provider.calls) != 2 || parent.Err() == nil {
+	if r.Status != "running" || len(f.provider.calls) != 2 || parent.Err() == nil || f.provider.cancellations != 2 || f.provider.active {
 		t.Fatal("post-second-timeout process loss did not leave exact durable retry receipt")
+	}
+	var stoppedStage, stoppedJSON string
+	var stopped struct {
+		Data struct {
+			Reason string `json:"reason"`
+		} `json:"checkpoint_data"`
+	}
+	if stoppedStage, stoppedJSON, err = f.store.LoadCheckpoint(context.Background(), r.RunID); err != nil || stoppedStage != "execution_stopped" || json.Unmarshal([]byte(stoppedJSON), &stopped) != nil || stopped.Data.Reason != "model_turn_timeout" {
+		t.Fatal("exhausted model retry bypassed budget stop/cancel", stoppedStage, stoppedJSON, err)
 	}
 	time.Sleep(1100 * time.Millisecond)
 	f.restart()
@@ -378,7 +412,7 @@ func TestModelRetryWorkerSecondTimeoutStopsIntegration(t *testing.T) {
 	r = f.result(t)
 	var count, unknown int
 	var retryCount, state string
-	if f.pool.QueryRow(context.Background(), `SELECT count(*),count(*) FILTER(WHERE actual_input_tokens IS NULL AND actual_output_tokens IS NULL) FROM execution_model_attempts WHERE run_id=$1`, r.RunID).Scan(&count, &unknown) != nil || count != 2 || unknown != 2 || len(f.provider.calls) != 2 || r.Status != "blocked" || r.Attempts != 3 {
+	if f.pool.QueryRow(context.Background(), `SELECT count(*),count(*) FILTER(WHERE actual_input_tokens IS NULL AND actual_output_tokens IS NULL) FROM execution_model_attempts WHERE run_id=$1`, r.RunID).Scan(&count, &unknown) != nil || count != 2 || unknown != 2 || len(f.provider.calls) != 2 || r.Status != "blocked" || r.Attempts != 3 || f.provider.cancellations != 2 || f.provider.active {
 		t.Fatal("restart reopened the started retry or changed spent NULLs", count, unknown, r.Status, r.Attempts, len(f.provider.calls))
 	}
 	if f.pool.QueryRow(context.Background(), `SELECT checkpoint_json->'model_retry'->>'count',checkpoint_json->'model_retry'->>'state' FROM accepted_inputs WHERE input_id=$1`, r.InputID).Scan(&retryCount, &state) != nil || retryCount != "1" || state != "started" {
