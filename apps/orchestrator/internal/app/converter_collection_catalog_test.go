@@ -52,5 +52,7 @@ func TestConverterCollectionCatalogRequiresActualReturnIntegration(t *testing.T)
 		t.Fatal("stale lease catalog accepted")
 	}
 	f.deleteSource(t, catalog.SourceRef(*collected.Report))
-	check(false)
+	if ready, e := f.converters.CollectionAvailable(f.f.ctx, current); ready || e == nil {
+		t.Fatal("corrected return source did not deny current catalog", ready, e)
+	}
 }
