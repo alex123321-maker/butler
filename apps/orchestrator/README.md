@@ -10,14 +10,14 @@ provider cancellation and blocking. Missing provider usage stays NULL. See the
 [model retry policy](../../docs/architecture/model-retry-policy.md) and the
 zero-inference `scripts/dev/model-retry-lab.sh` runner.
 
-Current actual history is539 after the sealed V5 and V6 native chains NO_GO.
-538 completed one discover packet;539 timed out in HTTP without usage/version.
-Core durably prepared one fresh retry, which the V6 stream-only fixture guard
-denied before native dispatch. Cumulative301714 input/11982 output/580620 total
+Current actual history is541 after the sealed V5/V6/V7b native chains NO_GO.
+540 and541 completed actual High start/continuation with full measured usage;
+Broker rejected the next action during exact preparation, before execution.
+Cumulative318461 input/12525 output/611404 total
 are known subtotals, with28 unknown visible pairs and48 unknown totals. No
 complete child/adapter/result/notice chain exists; four remaining cases were not
 run. Full mandatory faults, production retry tests and broad Linux tests/vet
-passed separately. See the [V6 chain audit](../../docs/ai/scenario-release-chain-v6-independent-audit-20261013.md).
+passed separately. See the [V7b chain audit](../../docs/ai/scenario-release-chain-v7b-independent-audit-20261013.md).
 The535 quality/comparison boundary below remains its immutable prior evidence.
 
 The accepted quality/comparison evidence ends at535 spent High attempts. Actual V5 quality and four

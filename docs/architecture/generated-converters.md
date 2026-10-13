@@ -16,6 +16,12 @@ Passing a runtime test grants no capability. The actual delegated developer/task
 acceptance from issue16 remains a separate gate; runtime RPC alone is not its proof.
 
 The separately reviewed developer proposal contract is `task.delegate_converter`.
+Its typed integer fields accept exact integral JSON numbers in decimal and
+exponent notation. Decoding is bounded to 512 characters and exponents within
+±1024, rejects fractions and int64 overflow, and preserves original argument
+bytes for exact action authorization. The deadline is an absolute RFC3339
+timestamp with an explicit timezone; the schema description states this existing
+requirement. These syntax rules grant no source, budget or child authority.
 Its arguments select exact Need and synthetic-contract Catalog references, all
 eight finite allocation dimensions, deadline and dependency IDs. They cannot
 contain code, a working document, permissions, owner/task identity or credentials.

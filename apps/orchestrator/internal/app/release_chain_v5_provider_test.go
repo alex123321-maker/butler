@@ -13,6 +13,7 @@ import (
 // All actual root/child entries share one window. The kernel budget wrapper
 // remains the owning reservation ledger; this is an additional acceptance cap.
 type releaseChainV5Provider struct {
+	proposals *releaseChainProposalSink
 	transport.ModelProvider
 	checker         *releaseChainEntryChecker
 	window          *releaseChainV5Window
@@ -104,7 +105,7 @@ func (p *releaseChainV5Provider) SubmitToolResult(ctx context.Context, r transpo
 }
 
 func (p *releaseChainV5Provider) entry(ctx context.Context, kind, run string, input any, invoke func(context.Context) (transport.EventStream, error)) (transport.EventStream, error) {
-	if p == nil || p.checker == nil || p.ModelProvider == nil || p.window == nil || p.expectedVersion == "" {
+	if p == nil || p.checker == nil || p.ModelProvider == nil || p.window == nil || p.expectedVersion == "" || p.window.policy.ProposalRetention && p.proposals == nil {
 		return nil, errNativeFixtureDenied
 	}
 	if p.before != nil {
@@ -319,6 +320,18 @@ func (p *releaseChainV5Provider) entry(ctx context.Context, kind, run string, in
 					}
 					if ownTerminal || event.EventType == transport.EventTypeTransportError {
 						event.Usage, event.ProviderModelVersion = observed, version // Measurements grant no action authority.
+					}
+				}
+				// Retain only this own typed tool proposal, after its measured request
+				// commit and before ordinary Core sees it. No signature, thought,
+				// provider body, credentials or proposed action is executed here.
+				if event.EventType == transport.EventTypeToolCallRequested && p.proposals != nil {
+					if err := p.proposals.retain(ordinal, kind, run, event.ToolCall); err != nil {
+						select {
+						case out <- transport.NewTransportErrorEvent(run, p.Name(), &transport.Error{Type: transport.ErrorTypeProviderProtocolError}):
+						case <-call.Done():
+						}
+						return
 					}
 				}
 				if event.EventType == transport.EventTypeAssistantFinal {

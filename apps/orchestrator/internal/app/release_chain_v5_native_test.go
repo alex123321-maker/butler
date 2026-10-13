@@ -200,7 +200,23 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 		if len(results) == 5 && results["normal_sent"] && results["restart_sent"] && results["explicit_absence"] && results["lost_ack"] && results["owner_stop"] && !t.Failed() {
 			status = "passed"
 		}
+		var proposals []map[string]any
+		if entry.RetainProposals {
+			var err error
+			proposals, err = readReleaseChainProposalMetadata(private, entry.Baseline, entry.Maximum)
+			if err != nil {
+				status = "failed"
+				t.Error("safe private proposal metadata unavailable")
+			}
+		}
 		body, _ := json.Marshal(map[string]any{"status": status, "window_id": entry.WindowID, "baseline_attempts": entry.Baseline, "maximum_total_attempts": entry.Baseline + entry.Maximum, "maximum_new_attempts": entry.Maximum, "scenarios": results, "scope": snapshot, "planning": "actual_native_High", "human_messages": 0, "issue33_ready": false})
+		if entry.RetainProposals {
+			var wrapper map[string]any
+			if json.Unmarshal(body, &wrapper) == nil {
+				wrapper["proposal_observations"] = proposals
+				body, _ = json.Marshal(wrapper)
+			}
+		}
 		if len(body) > releaseChainV5SafeArtifactOutputMax {
 			t.Error("bounded safe scope artifact unavailable")
 			return
@@ -224,6 +240,11 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 			var fault *releaseChainV5Fault
 			var caseWindow *releaseChainV5Window
 			cfg := releaseChainHighConfigurationFor(entry.Policy)
+			if entry.Policy != (releaseChainHighWindowPolicy{}) {
+				cfg.Policy.Day.ModelTurns = int64(entry.Maximum)
+				cfg.Policy.Day.Tokens = int64(entry.Maximum) * (cfg.InputTokens + cfg.OutputTokens)
+				cfg.Policy.Day.ActiveMillis = int64(entry.Maximum) * cfg.Policy.ModelMillis
+			}
 			cfg.Factory = func(ctx context.Context, pool *pgxpool.Pool, root string) (transport.ModelProvider, error) {
 				prerequisite, e := entry.ReadQuality()
 				if e != nil {
@@ -233,7 +254,7 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 				if e != nil {
 					return nil, e
 				}
-				if w.policy != entry.Policy {
+				if w.policy != entry.Policy || entry.RetainProposals != w.policy.ProposalRetention {
 					return nil, errNativeFixtureDenied
 				}
 				caseWindow = w
@@ -248,7 +269,7 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 				if scenario == "restart_sent" || scenario == "owner_stop" {
 					fault.gate = make(chan struct{})
 				}
-				return &releaseChainV5Provider{ModelProvider: native, window: w, scenario: scenario, expectedVersion: prerequisite.ObservedVersion, checker: &releaseChainEntryChecker{pool: pool, sources: f.f.sources, root: root, document: f.document, need: f.needRef, spec: f.specRef}, before: fault.before}, nil
+				return &releaseChainV5Provider{ModelProvider: native, window: w, scenario: scenario, expectedVersion: prerequisite.ObservedVersion, checker: &releaseChainEntryChecker{pool: pool, sources: f.f.sources, root: root, document: f.document, need: f.needRef, spec: f.specRef}, before: fault.before, proposals: releaseChainProposalSinkFor(entry.RetainProposals, private, scenario)}, nil
 			}
 			hooks := &converterWorkerFaultHooks{factory: func(t *testing.T, p generatedtools.Profile, path string) *developerFixture {
 				f = newReleaseChainFixtureWithModel(t, p, path, &cfg)

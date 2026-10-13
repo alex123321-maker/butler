@@ -15,15 +15,17 @@ import (
 // independently pinned new window declares the longer bounded request profile
 // and both trusted nominal-timeout phases used by ordinary Core.
 type releaseChainHighWindowPolicy struct {
-	Generation    int    `json:"maximum_generation_tokens,omitempty"`
-	TimeoutStages string `json:"safe_timeout_stages,omitempty"`
-	AttemptMillis int    `json:"maximum_attempt_ms,omitempty"`
-	CaseMillis    int    `json:"maximum_case_ms,omitempty"`
-	GlobalMillis  int    `json:"maximum_global_ms,omitempty"`
+	ProposalRetention           bool   `json:"proposal_retention_required,omitempty"`
+	MaximumPrivateProposalBytes int    `json:"maximum_private_proposal_bytes,omitempty"`
+	Generation                  int    `json:"maximum_generation_tokens,omitempty"`
+	TimeoutStages               string `json:"safe_timeout_stages,omitempty"`
+	AttemptMillis               int    `json:"maximum_attempt_ms,omitempty"`
+	CaseMillis                  int    `json:"maximum_case_ms,omitempty"`
+	GlobalMillis                int    `json:"maximum_global_ms,omitempty"`
 }
 
 func (p releaseChainHighWindowPolicy) valid() bool {
-	return p == (releaseChainHighWindowPolicy{}) || p == releaseChainV7Policy()
+	return p == (releaseChainHighWindowPolicy{}) || p == releaseChainV7Policy() || p == releaseChainV8Policy()
 }
 func (p releaseChainHighWindowPolicy) generation() int {
 	if p.Generation == 0 {
@@ -156,4 +158,11 @@ func TestReleaseChainV7SafeRetryPredecessorAdmissionIntegration(t *testing.T) {
 
 func TestReleaseChainV7MeasuredRetryCountersIntegration(t *testing.T) {
 	testReleaseChainMeasuredRetryFailureGate(t, releaseChainV7Policy(), map[string]bool{"http_stage": true, "unknown_all_cost_and_version": true, "no_fresh_start": true, "fresh_unknown_cost": true, "more_than_one_retry": true})
+}
+
+func releaseChainV8Policy() releaseChainHighWindowPolicy {
+	p := releaseChainV7Policy()
+	p.ProposalRetention = true
+	p.MaximumPrivateProposalBytes = releaseChainProposalMaxBytes
+	return p
 }

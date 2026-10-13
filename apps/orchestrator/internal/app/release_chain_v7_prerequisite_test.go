@@ -217,7 +217,10 @@ func newReleaseChainV7Window(ctx context.Context, pool *pgxpool.Pool) (*releaseC
 	return createReleaseChainHighWindowWithPolicy(ctx, pool, releaseChainV7ReviewedPrerequisiteSHA, p.ChainHistorySHA, 539, "fixture_chain_v7_high", at, 76, true, releaseChainV7Policy(), true)
 }
 func TestScenarioReleaseChainActualV7HighE2E(t *testing.T) {
-	testReleaseChainHighNative(t, releaseChainHighEntry{WindowID: releaseChainV7WindowID, AcceptanceEnv: "BUTLER_SCENARIO_CHAIN_V7_HIGH_ACCEPTANCE", PrivateEnv: "BUTLER_SCENARIO_CHAIN_V7_HIGH_PRIVATE", ImportEnv: "BUTLER_SCENARIO_CHAIN_V7_HIGH_IMPORT_FILE", Baseline: 539, Maximum: 76, ProviderStages: true, Policy: releaseChainV7Policy(), ReadQuality: readReleaseChainV7Prerequisite, NewWindow: newReleaseChainV7Window})
+	if os.Getenv("BUTLER_SCENARIO_CHAIN_V7_HIGH_ACCEPTANCE") == "1" {
+		t.Fatal("V7 native scopes are sealed failed; no new entry from current source")
+	}
+	t.Skip("V7 native scopes are sealed failed; no new entry from current source")
 }
 func TestReleaseChainV7OperationalGate(t *testing.T) {
 	if os.Getenv("BUTLER_SCENARIO_CHAIN_V7_HIGH_GATE") != "1" {

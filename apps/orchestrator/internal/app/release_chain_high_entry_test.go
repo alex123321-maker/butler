@@ -15,6 +15,7 @@ type releaseChainHighEntry struct {
 	AcceptanceEnv, PrivateEnv, ImportEnv string
 	Baseline, Maximum                    int
 	ProviderStages                       bool
+	RetainProposals                      bool
 	Policy                               releaseChainHighWindowPolicy
 	ReadQuality                          func() (releaseChainV5Prerequisite, error)
 	NewWindow                            func(context.Context, *pgxpool.Pool) (*releaseChainV5Window, error)

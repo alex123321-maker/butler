@@ -1,0 +1,44 @@
+{
+  "version": "butler-chain-v8-human-policy-amendment-v1",
+  "source": "direct_user_messages_in_current_task",
+  "user_messages": [
+    "Хорошо тогда чутьчуть ослабь требования и если прям критичных проблем не останется тогда можно закрывать пр",
+    "Ты можешь не делать сотни проверок перед проверкой на модели HIGH. У меня подписка и денег не списывается, потратить больше чем дано нельзя, смело тестируй модель",
+    "Так может убрать/увеличить таймаут, если модель думает, то пускай, какбудто лучше чтобы агент выполнил задачу чем сказал что не сможет. Или ты считаешь что слишком долго на такие задачи он тратит времени?"
+  ],
+  "interpretation": "Continue the bounded native High chain with the same longer deadlines and safe timeout recovery. Correct the confirmed schema versus decoder mismatch losslessly at the typed argument boundary, retain exact original tool proposal bytes privately before release, and keep every closed failure, unknown measurement and safety guard.",
+  "window_id": "issue33-high-release-chain-v8-20261013-baseline541",
+  "baseline_attempts": 541,
+  "maximum_new_attempts": 74,
+  "maximum_total_attempts": 615,
+  "maximum_generation_tokens": 32768,
+  "maximum_attempt_ms": 300000,
+  "maximum_case_ms": 2400000,
+  "maximum_global_ms": 7200000,
+  "maximum_child_model_turns": 4,
+  "maximum_child_external_calls": 4,
+  "maximum_child_active_ms": 1320000,
+  "maximum_model_retries_per_input": 1,
+  "model_retry_backoff_ms": 2000,
+  "safe_timeout_stages": [
+    "http_round_trip",
+    "response_stream"
+  ],
+  "keep_closed_537_and_539_unknown": true,
+  "all_completed_entries_require_measured_usage_and_selected_version": true,
+  "failed_unknown_requires_proved_safe_same_run_recovery": true,
+  "critical_safety_or_original_result_criteria_changed": false,
+  "quality_or_comparison_criteria_changed": false,
+  "release_chain_latency_policy_changed": true,
+  "independent_acceptance_required_before_ready_merge_closure": true,
+  "native_window_reopened": false,
+  "issue33_ready": false,
+  "limitations": [
+    "This records the direct messages and the assistant's bounded operational choices; it is not a cryptographic human signature.",
+    "The new deadline does not establish that the model was thinking during an unanswered HTTP request.",
+    "Subscription-no-overage pricing does not supply missing token measurements or provider-side billing and runtime records."
+  ],
+  "proposal_retention_required": true,
+  "maximum_private_proposal_bytes": 262144,
+  "original_model_arguments_and_authorization_fingerprints_preserved": true
+}
