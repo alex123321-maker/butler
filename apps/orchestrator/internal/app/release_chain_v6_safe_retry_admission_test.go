@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -10,6 +12,7 @@ import (
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/memory/memorytest"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 // The exception never supplies a missing measurement. The accepted subset
@@ -17,6 +20,15 @@ import (
 type releaseChainV6RetryMeasurements struct {
 	Failures, UnknownCost, UnknownVersion, UnknownMeasurement int
 }
+
+// Query failure is distinct from an evaluated rejection. Only allowlisted safe
+// diagnostic metadata is retained; the underlying PostgreSQL error is private.
+type releaseChainV6PredecessorQueryFailure struct{ SQLState string }
+
+func (e *releaseChainV6PredecessorQueryFailure) Error() string {
+	return fmt.Sprintf("predecessor_history SQLSTATE=%s", e.SQLState)
+}
+func (*releaseChainV6PredecessorQueryFailure) Unwrap() error { return errNativeFixtureDenied }
 
 func releaseChainV6CompleteNativeSQL(r string) string {
 	return `(` + r + `.outcome='completed' AND ` + r + `.input_tokens IS NOT NULL AND ` + r + `.output_tokens IS NOT NULL
@@ -139,9 +151,20 @@ func releaseChainV6HistoryAllowsAdmission(ctx context.Context, tx pgx.Tx, w *rel
  AND ` + releaseChainV6CompleteNativeSQL("fresh") + `
  AND fresh_op.actual_input_tokens=fresh.input_tokens AND fresh_op.actual_output_tokens=fresh.output_tokens AND fresh_op.observed_at IS NOT NULL
  AND fresh.admitted_at>=r.finished_at AND fresh.admitted_at>=(i.checkpoint_json->'model_retry'->>'started_at')::timestamptz))
- ))) IS NOT TRUE)`
+ )))) IS NOT TRUE)`
 	var allowed bool
-	if tx.QueryRow(ctx, query, scenario, kind, run, operation, root).Scan(&allowed) != nil || !allowed {
+	if err := tx.QueryRow(ctx, query, scenario, kind, run, operation, root).Scan(&allowed); err != nil {
+		// Synthetic probe retains only SQLSTATE, never a query, arguments or
+		// database/provider error text. It distinguishes broken predicates
+		// from an intentional policy denial in this pre-native test scope.
+		state := "unavailable"
+		var databaseError *pgconn.PgError
+		if errors.As(err, &databaseError) {
+			state = databaseError.Code
+		}
+		return &releaseChainV6PredecessorQueryFailure{SQLState: state}
+	}
+	if !allowed {
 		return errNativeFixtureDenied
 	}
 	return nil
@@ -249,7 +272,7 @@ func TestReleaseChainV6SafeRetryPredecessorAdmissionIntegration(t *testing.T) {
 				t.Fatal(err)
 			}
 			_, err = pool.Exec(ctx, `INSERT INTO fixture_chain_v5_high_requests(ordinal,scenario,kind,root_task_id,run_id,is_parent,input_hash,admitted_at,outcome,input_tokens,output_tokens,total_tokens,model_version,finished_at,elapsed_ms,failure_stage,diagnostic_code,final_count,terminal_count,completed_count,cancelled_count,timed_out_count,transport_error_count,finish_reason,stop_final_count,max_tokens_final_count,usage_observation_uncertain,version_observation_uncertain,finish_observation_uncertain,provider_operation_stage,kernel_operation_id)
- VALUES(538,'normal_sent','submit','root','owned-run',TRUE,$1,$2,$3,$4,$5,$6,$7,$8,500,$14,$9,$10,0,0,$11,0,0,NULL,0,0,$12,FALSE,FALSE,$13,'model-prior')`, strings.Repeat("a", 64), base, outcome, in, out, total, version, base.Add(500*time.Millisecond), diagnostic, finals, cancelled, uncertain, providerStage, failureStage)
+ VALUES(538,'normal_sent','submit','root','owned-run',TRUE,$1,$2,$3,$4,$5,$6,$7,$8,500,$14,$9,$10,$11,0,$11,0,0,NULL,0,0,$12,FALSE,FALSE,$13,'model-prior')`, strings.Repeat("a", 64), base, outcome, in, out, total, version, base.Add(500*time.Millisecond), diagnostic, finals, cancelled, uncertain, providerStage, failureStage)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -281,7 +304,7 @@ func TestReleaseChainV6SafeRetryPredecessorAdmissionIntegration(t *testing.T) {
 					t.Fatal(err)
 				}
 				_, err = pool.Exec(ctx, `INSERT INTO fixture_chain_v5_high_requests(ordinal,scenario,kind,root_task_id,run_id,is_parent,input_hash,admitted_at,outcome,kernel_operation_id,input_tokens,output_tokens,total_tokens,model_version,provider_operation_stage,usage_observation_uncertain,version_observation_uncertain,finish_observation_uncertain,finished_at,elapsed_ms,final_count,terminal_count,completed_count,cancelled_count,timed_out_count,transport_error_count,stop_final_count,max_tokens_final_count)
- VALUES(539,'normal_sent','start','root','owned-run',TRUE,$1,$2,$3,'model-fresh',$4,2,5,'gemini-3.8-flash-n','response_stream',FALSE,FALSE,FALSE,$5,100,0,0,0,$6,0,0,0,0)`, strings.Repeat("b", 64), base.Add(3200*time.Millisecond), freshOutcome, freshInput, base.Add(3300*time.Millisecond), freshCancelled)
+ VALUES(539,'normal_sent','start','root','owned-run',TRUE,$1,$2,$3,'model-fresh',$4,2,5,'gemini-3.8-flash-n','response_stream',FALSE,FALSE,FALSE,$5,100,0,$6,0,$6,0,0,0,0)`, strings.Repeat("b", 64), base.Add(3200*time.Millisecond), freshOutcome, freshInput, base.Add(3300*time.Millisecond), freshCancelled)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -353,6 +376,10 @@ CREATE TEMP TABLE execution_budget_reservations(reservation_id text,operation_id
 			}
 			owned := budget.WithModelOperation(ctx, callerOperation)
 			ordinal, _, err := w.reserve(owned, callerScenario, kind, callerRoot, callerRun, nil, guard)
+			var queryFailure *releaseChainV6PredecessorQueryFailure
+			if errors.As(err, &queryFailure) {
+				t.Fatal("SQL failure masked the predecessor predicate", queryFailure)
+			}
 			var attempts, rows int
 			if pool.QueryRow(ctx, `SELECT attempts,(SELECT count(*) FROM fixture_chain_v5_high_requests) FROM fixture_chain_v5_high_window`).Scan(&attempts, &rows) != nil {
 				t.Fatal("spend unavailable")
