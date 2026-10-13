@@ -405,6 +405,7 @@ func newReleaseChainV19Window(ctx context.Context, pool *pgxpool.Pool) (*release
 	return createReleaseChainHighWindow120WithPolicy(ctx, pool, releaseChainV19ReviewedPrerequisiteSHA, p.ChainHistorySHA, 705, "fixture_chain_v19_high", deadline, true, releaseChainV9Policy(), true)
 }
 func TestScenarioReleaseChainActualV19HighE2E(t *testing.T) {
+	t.Skip("sealed failed V19 window; unavailable706 remains UNKNOWN, pending cases have a distinct V20 window")
 	testReleaseChainHighNative(t, releaseChainHighEntry{WindowID: releaseChainV19WindowID, AcceptanceEnv: "BUTLER_SCENARIO_CHAIN_V19_HIGH_ACCEPTANCE", PrivateEnv: "BUTLER_SCENARIO_CHAIN_V19_HIGH_PRIVATE", ImportEnv: "BUTLER_SCENARIO_CHAIN_V19_HIGH_IMPORT_FILE", Baseline: 705, Maximum: 120, ProviderStages: true, RetainProposals: true, ProposalMetadata120: true, TaskScopedOriginalProof: true, PreserveInvalidOriginalEvidence: true, ContinueAfterCaseFailure: true, SkipVerifiedOwnerStop: true, SkipVerifiedExplicitAbsence: true, FailFastTerminalContinuation: true, PostgreSQLPoolSize: 10, ScenarioNames: []string{"lost_ack", "restart_sent"}, ProviderInputBytes: 4 << 20, Policy: releaseChainV9Policy(), ExtensionHarnessLifetime: 40 * time.Minute, ObserveSourceChecks: true, AllowRepeatedPatchChecks: true, ReadQuality: readReleaseChainV19Prerequisite, NewWindow: newReleaseChainV19Window})
 }
 func TestReleaseChainV19OperationalGate(t *testing.T) {

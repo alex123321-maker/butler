@@ -15,18 +15,20 @@ import (
 // independently pinned new window declares the longer bounded request profile
 // and both trusted nominal-timeout phases used by ordinary Core.
 type releaseChainHighWindowPolicy struct {
-	SerializedEntries           bool   `json:"provider_entries_serialized,omitempty"`
-	ProposalRetention           bool   `json:"proposal_retention_required,omitempty"`
-	MaximumPrivateProposalBytes int    `json:"maximum_private_proposal_bytes,omitempty"`
-	Generation                  int    `json:"maximum_generation_tokens,omitempty"`
-	TimeoutStages               string `json:"safe_timeout_stages,omitempty"`
-	AttemptMillis               int    `json:"maximum_attempt_ms,omitempty"`
-	CaseMillis                  int    `json:"maximum_case_ms,omitempty"`
-	GlobalMillis                int    `json:"maximum_global_ms,omitempty"`
+	AllowIndependentClosedCases     bool   `json:"allow_independent_closed_cases,omitempty"`
+	ObserveProviderUnavailableClass bool   `json:"observe_provider_unavailable_class,omitempty"`
+	SerializedEntries               bool   `json:"provider_entries_serialized,omitempty"`
+	ProposalRetention               bool   `json:"proposal_retention_required,omitempty"`
+	MaximumPrivateProposalBytes     int    `json:"maximum_private_proposal_bytes,omitempty"`
+	Generation                      int    `json:"maximum_generation_tokens,omitempty"`
+	TimeoutStages                   string `json:"safe_timeout_stages,omitempty"`
+	AttemptMillis                   int    `json:"maximum_attempt_ms,omitempty"`
+	CaseMillis                      int    `json:"maximum_case_ms,omitempty"`
+	GlobalMillis                    int    `json:"maximum_global_ms,omitempty"`
 }
 
 func (p releaseChainHighWindowPolicy) valid() bool {
-	return p == (releaseChainHighWindowPolicy{}) || p == releaseChainV7Policy() || p == releaseChainV8Policy() || p == releaseChainV9Policy()
+	return p == (releaseChainHighWindowPolicy{}) || p == releaseChainV7Policy() || p == releaseChainV8Policy() || p == releaseChainV9Policy() || p == releaseChainV20Policy()
 }
 func (p releaseChainHighWindowPolicy) generation() int {
 	if p.Generation == 0 {

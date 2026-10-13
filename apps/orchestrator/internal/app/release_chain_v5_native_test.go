@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -369,7 +370,11 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 						t.Error("durable native scope unavailable")
 						return
 					}
-					rows, e := f.f.pool.Query(context.Background(), `SELECT ordinal,scenario,kind,root_task_id,run_id,is_parent,input_hash,admitted_at,outcome,input_tokens,output_tokens,total_tokens,model_version,finished_at,elapsed_ms,failure_stage,diagnostic_code,final_count,terminal_count,completed_count,cancelled_count,timed_out_count,transport_error_count,finish_reason,usage_observation_uncertain,version_observation_uncertain,stop_final_count,max_tokens_final_count,finish_observation_uncertain,provider_operation_stage,kernel_operation_id FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` ORDER BY ordinal`)
+					requestSQL := `SELECT ordinal,scenario,kind,root_task_id,run_id,is_parent,input_hash,admitted_at,outcome,input_tokens,output_tokens,total_tokens,model_version,finished_at,elapsed_ms,failure_stage,diagnostic_code,final_count,terminal_count,completed_count,cancelled_count,timed_out_count,transport_error_count,finish_reason,usage_observation_uncertain,version_observation_uncertain,stop_final_count,max_tokens_final_count,finish_observation_uncertain,provider_operation_stage,kernel_operation_id FROM ` + caseWindow.table("fixture_chain_v5_high_requests") + ` ORDER BY ordinal`
+					if caseWindow.policy.ObserveProviderUnavailableClass {
+						requestSQL = strings.Replace(requestSQL, "kernel_operation_id FROM", "kernel_operation_id,provider_unavailable_class FROM", 1)
+					}
+					rows, e := f.f.pool.Query(context.Background(), requestSQL)
 					if e != nil {
 						t.Error("safe native request evidence unavailable")
 						return
@@ -390,10 +395,18 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 						var usageUncertain, versionUncertain, finishUncertain *bool
 						var stopFinals, maxTokensFinals *int
 						var providerStage, kernelOperation *string
-						if e = rows.Scan(&ordinal, &scenario, &kind, &root, &run, &parent, &hash, &at, &outcome, &input, &output, &total, &version, &finished, &elapsed, &stage, &code, &finals, &terminals, &completed, &cancelled, &timedOut, &transportErrors, &finishReason, &usageUncertain, &versionUncertain, &stopFinals, &maxTokensFinals, &finishUncertain, &providerStage, &kernelOperation); e != nil {
+						var unavailableClass *string
+						scan := []any{&ordinal, &scenario, &kind, &root, &run, &parent, &hash, &at, &outcome, &input, &output, &total, &version, &finished, &elapsed, &stage, &code, &finals, &terminals, &completed, &cancelled, &timedOut, &transportErrors, &finishReason, &usageUncertain, &versionUncertain, &stopFinals, &maxTokensFinals, &finishUncertain, &providerStage, &kernelOperation}
+						if caseWindow.policy.ObserveProviderUnavailableClass {
+							scan = append(scan, &unavailableClass)
+						}
+						if e = rows.Scan(scan...); e != nil {
 							break
 						}
 						items = append(items, map[string]any{"ordinal": ordinal, "scenario": scenario, "kind": kind, "root_task_id": root, "run_id": run, "is_parent": parent, "input_sha256": hash, "admitted_at_utc": at, "finished_at_utc": finished, "elapsed_ms": elapsed, "outcome": outcome, "failure_stage": stage, "diagnostic_code": code, "actual_input_tokens": input, "actual_output_tokens": output, "actual_total_tokens": total, "model_version": version, "final_count": finals, "terminal_count": terminals, "completed_count": completed, "cancelled_count": cancelled, "timed_out_count": timedOut, "transport_error_count": transportErrors, "finish_reason": finishReason, "usage_observation_uncertain": usageUncertain, "version_observation_uncertain": versionUncertain, "stop_final_count": stopFinals, "max_tokens_final_count": maxTokensFinals, "finish_observation_uncertain": finishUncertain, "provider_operation_stage": providerStage, "kernel_operation_id": kernelOperation})
+						if caseWindow.policy.ObserveProviderUnavailableClass {
+							items[len(items)-1]["provider_unavailable_class"] = unavailableClass
+						}
 					}
 					if e != nil || rows.Err() != nil {
 						rows.Close()
@@ -418,7 +431,11 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 						scopeSnapshot["accepted_unmeasured_timeout_entries"] = retryMeasurements.UnknownMeasurement
 					}
 					snapshot, _ = json.Marshal(scopeSnapshot)
-					if unknown != retryMeasurements.UnknownMeasurement || failed != acceptedRetries || overlong != 0 || retryError != nil {
+					caseDenied := unknown != retryMeasurements.UnknownMeasurement || failed != acceptedRetries || overlong != 0 || retryError != nil
+					if caseWindow.policy.AllowIndependentClosedCases {
+						caseDenied = releaseChainV20CaseMeasurementsDenied(context.Background(), caseWindow, scenario)
+					}
+					if caseDenied {
 						results[scenario] = false
 						t.Error("complete observed cost/version/provider outcomes or request deadline unavailable")
 					}

@@ -163,6 +163,18 @@ func releaseChainV6HistoryAllowsAdmission(ctx context.Context, tx pgx.Tx, w *rel
  AND fresh_op.actual_input_tokens=fresh.input_tokens AND fresh_op.actual_output_tokens=fresh.output_tokens AND fresh_op.observed_at IS NOT NULL
  AND fresh.admitted_at>=r.finished_at AND fresh.admitted_at>=(i.checkpoint_json->'model_retry'->>'started_at')::timestamptz))
  )))) IS NOT TRUE)`
+	if w.policy.AllowIndependentClosedCases {
+		requirePolicy := w.policy == releaseChainV20Policy() && w.kernelOperations && w.providerStages
+		if !requirePolicy {
+			return errNativeFixtureDenied
+		}
+		query = strings.Replace(query, "r WHERE (", "r WHERE ("+releaseChainV20IndependentClosedCaseSQL(w)+" OR (", 1)
+		const suffix = " IS NOT TRUE)"
+		if !strings.HasSuffix(query, suffix) {
+			return errNativeFixtureDenied
+		}
+		query = strings.TrimSuffix(query, suffix) + ") IS NOT TRUE)"
+	}
 	var allowed bool
 	if err := tx.QueryRow(ctx, query, scenario, kind, run, operation, root).Scan(&allowed); err != nil {
 		// Synthetic probe retains only SQLSTATE, never a query, arguments or

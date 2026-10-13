@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/butler/butler/internal/ownership"
@@ -398,6 +399,10 @@ func (p *releaseChainV5Provider) finish(ordinal int, outcome string, usage *tran
 		}
 	}
 	var failureStage, code *string
+	var unavailableClass *string
+	if p.window.policy.ObserveProviderUnavailableClass {
+		unavailableClass = releaseChainV20UnavailableClass(failure)
+	}
 	if outcome != "completed" {
 		if stage != "entry" && stage != "stream" {
 			stage = "stream"
@@ -419,7 +424,13 @@ func (p *releaseChainV5Provider) finish(ordinal int, outcome string, usage *tran
 		stopFinals, maxTokensFinals, finishUncertain = &observations.stopFinals, &observations.maxTokensFinals, &observations.finishUncertain
 		providerStage = observations.providerStage
 	}
-	tag, err := p.window.pool.Exec(ctx, `WITH finished AS MATERIALIZED (SELECT clock_timestamp() AS at) UPDATE `+p.window.table("fixture_chain_v5_high_requests")+` SET outcome=$2,input_tokens=$3,output_tokens=$4,total_tokens=$5,model_version=$6,finished_at=finished.at,elapsed_ms=GREATEST(0,floor(extract(epoch FROM finished.at-admitted_at)*1000)::bigint),failure_stage=$7,diagnostic_code=$8,final_count=$9,terminal_count=$10,completed_count=$11,cancelled_count=$12,timed_out_count=$13,transport_error_count=$14,finish_reason=$15,usage_observation_uncertain=$16,version_observation_uncertain=$17,stop_final_count=$18,max_tokens_final_count=$19,finish_observation_uncertain=$20,provider_operation_stage=$21 FROM finished WHERE ordinal=$1 AND outcome='unavailable'`, ordinal, outcome, in, out, total, version, failureStage, code, finals, terminals, completed, cancelled, timedOut, transportErrors, finishReason, usageUncertain, versionUncertain, stopFinals, maxTokensFinals, finishUncertain, providerStage)
+	query := `WITH finished AS MATERIALIZED (SELECT clock_timestamp() AS at) UPDATE ` + p.window.table("fixture_chain_v5_high_requests") + ` SET outcome=$2,input_tokens=$3,output_tokens=$4,total_tokens=$5,model_version=$6,finished_at=finished.at,elapsed_ms=GREATEST(0,floor(extract(epoch FROM finished.at-admitted_at)*1000)::bigint),failure_stage=$7,diagnostic_code=$8,final_count=$9,terminal_count=$10,completed_count=$11,cancelled_count=$12,timed_out_count=$13,transport_error_count=$14,finish_reason=$15,usage_observation_uncertain=$16,version_observation_uncertain=$17,stop_final_count=$18,max_tokens_final_count=$19,finish_observation_uncertain=$20,provider_operation_stage=$21 FROM finished WHERE ordinal=$1 AND outcome='unavailable'`
+	args := []any{ordinal, outcome, in, out, total, version, failureStage, code, finals, terminals, completed, cancelled, timedOut, transportErrors, finishReason, usageUncertain, versionUncertain, stopFinals, maxTokensFinals, finishUncertain, providerStage}
+	if p.window.policy.ObserveProviderUnavailableClass {
+		query = strings.Replace(query, " FROM finished WHERE", ",provider_unavailable_class=$22 FROM finished WHERE", 1)
+		args = append(args, unavailableClass)
+	}
+	tag, err := p.window.pool.Exec(ctx, query, args...)
 	if err != nil || tag.RowsAffected() != 1 {
 		return errNativeFixtureDenied
 	}

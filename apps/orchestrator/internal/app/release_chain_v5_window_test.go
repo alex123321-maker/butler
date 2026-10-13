@@ -178,8 +178,11 @@ END $$;`
 		return nil, errNativeFixtureDenied
 	}
 	selectedDDL := ddl
+	if policy.ObserveProviderUnavailableClass {
+		selectedDDL = strings.Replace(selectedDDL, "kernel_operation_id text UNIQUE", "provider_unavailable_class text CHECK(provider_unavailable_class IN('backend_unavailable','account_access_rejected','unknown')),kernel_operation_id text UNIQUE", 1)
+	}
 	if declaredLimit == 120 {
-		selectedDDL = strings.Replace(ddl, "CHECK(maximum_new_attempts BETWEEN 1 AND 80)", "CHECK(maximum_new_attempts BETWEEN 1 AND 120)", 1)
+		selectedDDL = strings.Replace(selectedDDL, "CHECK(maximum_new_attempts BETWEEN 1 AND 80)", "CHECK(maximum_new_attempts BETWEEN 1 AND 120)", 1)
 	}
 	qualified := regexp.MustCompile(`\b(fixture_chain_v5_high_window(?:_immutable)?|fixture_chain_v5_high_requests|fixture_chain_v5_high_request_immutable|fixture_chain_v5_high_case_evidence(?:_immutable)?|fixture_chain_v5_high_case_initial)\b`).ReplaceAllStringFunc(selectedDDL, w.table)
 	if _, err := pool.Exec(ctx, qualified); err != nil {
