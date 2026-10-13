@@ -385,6 +385,7 @@ func newReleaseChainV18Window(ctx context.Context, pool *pgxpool.Pool) (*release
 	return createReleaseChainHighWindow120WithPolicy(ctx, pool, releaseChainV18ReviewedPrerequisiteSHA, p.ChainHistorySHA, 658, "fixture_chain_v18_high", deadline, true, releaseChainV9Policy(), true)
 }
 func TestScenarioReleaseChainActualV18HighE2E(t *testing.T) {
+	t.Skip("sealed failed V18 window; accepted absence retained, pending cases have a distinct V19 window")
 	testReleaseChainHighNative(t, releaseChainHighEntry{WindowID: releaseChainV18WindowID, AcceptanceEnv: "BUTLER_SCENARIO_CHAIN_V18_HIGH_ACCEPTANCE", PrivateEnv: "BUTLER_SCENARIO_CHAIN_V18_HIGH_PRIVATE", ImportEnv: "BUTLER_SCENARIO_CHAIN_V18_HIGH_IMPORT_FILE", Baseline: 658, Maximum: 120, ProviderStages: true, RetainProposals: true, ProposalMetadata120: true, TaskScopedOriginalProof: true, PreserveInvalidOriginalEvidence: true, ContinueAfterCaseFailure: true, SkipVerifiedOwnerStop: true, FailFastTerminalContinuation: true, ScenarioNames: []string{"explicit_absence", "lost_ack", "restart_sent"}, ProviderInputBytes: 4 << 20, Policy: releaseChainV9Policy(), ExtensionHarnessLifetime: 40 * time.Minute, ObserveSourceChecks: true, AllowRepeatedPatchChecks: true, ReadQuality: readReleaseChainV18Prerequisite, NewWindow: newReleaseChainV18Window})
 }
 func TestReleaseChainV18OperationalGate(t *testing.T) {

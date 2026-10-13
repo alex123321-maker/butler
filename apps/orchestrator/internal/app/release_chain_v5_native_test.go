@@ -257,6 +257,7 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 			var caseWindow *releaseChainV5Window
 			cfg := releaseChainHighConfigurationFor(entry.Policy)
 			cfg.ExtensionHarnessLifetime = entry.ExtensionHarnessLifetime
+			cfg.PostgreSQLPoolSize = entry.PostgreSQLPoolSize
 			cfg.AllowRepeatedPatchChecks = entry.AllowRepeatedPatchChecks
 			cfg.TaskScopedOriginalProof = entry.TaskScopedOriginalProof
 			cfg.PreserveInvalidOriginalEvidence = entry.PreserveInvalidOriginalEvidence

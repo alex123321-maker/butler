@@ -52,6 +52,7 @@ type releaseChainModelConfig struct {
 	FixtureTimeout                  time.Duration
 	ExtensionHarnessLifetime        time.Duration
 	SourceObserver                  *releaseChainSourceObserver
+	PostgreSQLPoolSize              int32
 	AllowRepeatedPatchChecks        bool
 	TaskScopedOriginalProof         bool
 	PreserveInvalidOriginalEvidence bool
@@ -85,10 +86,14 @@ func newReleaseChainFixtureWithModel(t *testing.T, profile generatedtools.Profil
 	t.Cleanup(cancel)
 	var pool *pgxpool.Pool
 	var dsn string
+	poolSize := int32(2)
+	if modelConfig != nil && modelConfig.PostgreSQLPoolSize != 0 {
+		poolSize = modelConfig.PostgreSQLPoolSize
+	}
 	if modelConfig != nil && modelConfig.SourceObserver != nil {
-		pool, dsn = e2eDatabaseWithTracer(t, modelConfig.SourceObserver)
+		pool, dsn = e2eDatabaseWithTracerAndPool(t, modelConfig.SourceObserver, poolSize)
 	} else {
-		pool, dsn = e2eDatabase(t)
+		pool, dsn = e2eDatabaseWithTracerAndPool(t, nil, poolSize)
 	}
 	// One current deletion anchor and one Broker span every actual phase.
 	manifest := catalog.NewFileManifest(manifestPath)

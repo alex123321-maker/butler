@@ -1,0 +1,59 @@
+{
+  "canonical_go_json_available": false,
+  "chain_audit": {
+    "accepted_model_retry_failures": 0,
+    "accepted_unknown_timeout_cost_entries": 0,
+    "accepted_unknown_timeout_version_entries": 0,
+    "accepted_unmeasured_timeout_entries": 0,
+    "all_new_expense_measured": false,
+    "all_new_measured_cost": {
+      "attempts": 47,
+      "known_input_tokens": 496208,
+      "known_output_tokens": 8642,
+      "known_total_tokens": 549811,
+      "known_usage_pairs": 46,
+      "unknown_input_attempts": 1,
+      "unknown_output_attempts": 1,
+      "unknown_total_attempts": 1
+    },
+    "auditor_native_calls": 0,
+    "carry_forward_attempts": 705,
+    "common_completion_evidence": null,
+    "failed_scenarios": [
+      "lost_ack",
+      "restart_sent"
+    ],
+    "independent_component_acceptance_pending": [
+      "explicit_absence"
+    ],
+    "issue33_ready": false,
+    "no_go_reasons": [
+      "two_same_root_task_authority_watchdogs_denied_at_pool_acquisition_deadline",
+      "one_unmeasured_cancelled_native_request",
+      "lost_ack_and_restart_sent_no_verified_original_result_or_notice"
+    ],
+    "reported_native_case_passes": [
+      "explicit_absence"
+    ],
+    "status": "NO_GO",
+    "verified_scenarios": []
+  },
+  "evidence_bindings": {
+    "app_sha256": "5126b31cad0345e9fc296a5b5f43a47ecdba0fd9caa32dd9b358cc0f90719fff",
+    "code_commit": "67133e17b58acd825b2988a281079e1253da7af8",
+    "human_policy_sha256": "cdb3b2c35384cd60faf4a89542b96e196fea26bd394ed83d775ded09b4d4ef21",
+    "prerequisite_sha256": "f6b5259999b0a0dad7b9d0a1e5ae4e1a18a856804894756e67b81d54475771be",
+    "source_manifest_sha256": "f74ca9cc706662e48cbf86e82f0731c52069b833a05b576c973768ab5017d8f9",
+    "source_sha256": "b917ec423adcfdffbdf0713785cf962b619ceeee03bf4885e2d189fd6c0d5ca3"
+  },
+  "limits": [
+    "Independent supplemental NO_GO; currentV18 canonical Go checker not yet frozen, no entire release PASS fabricated.",
+    "Actualexplicit_absence reportedPASS and finalowningSQL/result/notice captured; independent critical component acceptance still pending. Bothothercases failedbefore originalowner result/notice; no lostACKUNKNOWN or restartcompletion is invented.",
+    "Watchdog actualpool acquisition deadline and same-root source query cancellation are retained for bothfailures. Bothpoolconnections wereoccupied; preciseholder/lockcause remains UNKNOWN. No nominaltimeout/quota inference.",
+    "Native705 was cancelled18911ms/stream with allusage/versionNULL; no newzero/refund/safeModelRetry fabricated. Prior658NULL and alloldhistoricalUNKNOWNs preserved.",
+    "Original scope scenarios map omits lost_ack. Original tests and final product prove itsFAIL independently; omission not rewritten.",
+    "No old overallNO_GO or previousduplicatecommits are rehabilitated. Current3component statuses require originalpacket/source/budget/receipt verification separately."
+  ],
+  "report_origin": "independent_read_only_completed_original_scope_pg_product_ledger_and_source_observer",
+  "version": "butler-independent-v18-failure-supplemental-v1"
+}

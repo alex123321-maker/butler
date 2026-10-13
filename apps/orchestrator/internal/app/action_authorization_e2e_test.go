@@ -53,7 +53,18 @@ func e2eDatabase(t *testing.T) (*pgxpool.Pool, string) {
 }
 
 func e2eDatabaseWithTracer(t *testing.T, tracer pgx.QueryTracer) (*pgxpool.Pool, string) {
+	return e2eDatabaseWithTracerAndPool(t, tracer, 2)
+}
+
+// Legacy boundary fixtures exercise a two-connection pool. The prospective
+// native fixture can explicitly use the production orchestrator default10.
+func releaseChainFixturePoolAllowed(max int32) bool { return max == 2 || max == 10 }
+
+func e2eDatabaseWithTracerAndPool(t *testing.T, tracer pgx.QueryTracer, maximum int32) (*pgxpool.Pool, string) {
 	t.Helper()
+	if !releaseChainFixturePoolAllowed(maximum) {
+		t.Fatal("fixed fixture PostgreSQL pool size required")
+	}
 	dsn := os.Getenv("BUTLER_TEST_ACTIONAUTH_POSTGRES_URL")
 	cfg, err := pgxpool.ParseConfig(dsn)
 	if err != nil || !strings.HasSuffix(cfg.ConnConfig.Database, "_test") {
@@ -69,7 +80,7 @@ func e2eDatabaseWithTracer(t *testing.T, tracer pgx.QueryTracer) (*pgxpool.Pool,
 		t.Fatal(err)
 	}
 	cfg.ConnConfig.RuntimeParams["search_path"] = schema + ",public"
-	cfg.MaxConns = 2
+	cfg.MaxConns = maximum
 	cfg.ConnConfig.Tracer = tracer
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {

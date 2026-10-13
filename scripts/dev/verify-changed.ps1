@@ -26,7 +26,7 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "^(apps/orchestrator/internal/app/(release_chain_v(?:14|15|16|17|18)_|release_chain_pending_cases|release_chain_entry_lane)|scripts/dev/scenario-release-chain-v(?:14|15|16|17|18)-|scripts/dev/release-chain-v6-final-audit/v(?:14|15|16|17|18)|deploy/acceptance/release-chain-v(?:14|15|16|17|18))" {
+    "^(apps/orchestrator/internal/app/(release_chain_v(?:14|15|16|17|18|19)_|release_chain_pool_checks|release_chain_pending_cases|release_chain_entry_lane)|scripts/dev/scenario-release-chain-v(?:14|15|16|17|18|19)-|scripts/dev/release-chain-v6-final-audit/v(?:14|15|16|17|18|19)|deploy/acceptance/release-chain-v(?:14|15|16|17|18|19))" {
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
       [void]$specs.Add("docs/architecture/generated-converters.md")

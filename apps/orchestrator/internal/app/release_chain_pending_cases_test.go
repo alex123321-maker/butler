@@ -21,6 +21,12 @@ func releaseChainHighDeclaredScenarios(entry releaseChainHighEntry) ([]string, e
 		}
 		fixed = []string{"explicit_absence", "lost_ack", "restart_sent"}
 	}
+	if entry.SkipVerifiedExplicitAbsence {
+		if !entry.SkipVerifiedOwnerStop || !entry.FailFastTerminalContinuation || entry.PostgreSQLPoolSize != 10 {
+			return nil, errNativeFixtureDenied
+		}
+		fixed = []string{"lost_ack", "restart_sent"}
+	}
 	if !reflect.DeepEqual(entry.ScenarioNames, fixed) {
 		return nil, errNativeFixtureDenied
 	}

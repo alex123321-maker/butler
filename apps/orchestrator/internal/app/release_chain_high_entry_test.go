@@ -20,11 +20,13 @@ type releaseChainHighEntry struct {
 	ProposalMetadata120                  bool
 	ExtensionHarnessLifetime             time.Duration
 	ObserveSourceChecks                  bool
+	PostgreSQLPoolSize                   int32
 	AllowRepeatedPatchChecks             bool
 	TaskScopedOriginalProof              bool
 	PreserveInvalidOriginalEvidence      bool
 	ContinueAfterCaseFailure             bool
 	SkipVerifiedOwnerStop                bool
+	SkipVerifiedExplicitAbsence          bool
 	FailFastTerminalContinuation         bool
 	ScenarioNames                        []string
 	ProviderInputBytes                   int64
