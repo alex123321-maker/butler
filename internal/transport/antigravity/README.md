@@ -163,7 +163,11 @@ independently matched to PostgreSQL. Both legacy originals also passed; this
 proves neither causal superiority nor the cause of a prior model answer.
 High/thinking/allowances, request guards, raw-final retention and refusal to retry,
 repair or fall back are unchanged. See the [actual diagnostic audit](../../../docs/ai/scenario-schema-dialect-actual-audit-20261013.md).
-Full benchmark quality remains separate; old failed quality windows stay closed.
+The separate full V5 benchmark subsequently passed independent original-byte/PG
+audit of236 quality and16 comparison requests on frozen3c4089 source; see the
+[actual V5 audit](../../../docs/ai/scenario-cloud-v5-independent-audit-20261013.md).
+Old failed quality windows stay closed. This observational PASS does not grant
+tool/deployment permission or establish the still-required real High release chain.
 
 Trusted request-local `transport.WithProviderStageObserver` can distinguish
 authentication, serialization, HTTP round trip and SSE reading for future

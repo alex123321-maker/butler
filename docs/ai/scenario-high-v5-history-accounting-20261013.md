@@ -1,5 +1,12 @@
 # Cumulative native history after closed V4
 
+Subsequent full V5 quality/comparison completed252 requests and passed independent
+original-byte/PG audit. Its separate actual chain bridge carries history to535,
+509 known visible pairs/26 NULL,287492 input/11672 output/563997 total subtotal,
+with46 old unknown totals unchanged. Read the [actual V5 audit](scenario-cloud-v5-independent-audit-20261013.md).
+The279 and283 pure readers described below stay immutable; no new measurement
+rewrites their old window/count or refunds a failed request.
+
 The additive pure `readScenarioHighV5History` reader extends the pinned268-entry
 view with all11 spent V4 requests269–279. It reads the independent safe audit
 and exact separate PostgreSQL/diagnostic exports; it has no provider, credentials,

@@ -1,14 +1,16 @@
 # Orchestrator
 
-Current issue33 evidence is283 spent High attempts. The closed V4 window added11
-measured requests, retained every bounded original final and independently matched
-PostgreSQL. Its quality/comparison and520-entry chain prerequisite are NO_GO.
-The separate four-entry schema-dialect diagnostic passed independent original-byte/
-SQL correlation, including two exact native schema witnesses. Its additive pure
-quality-start reader carries257known visible cost pairs and26NULL pairs; known
-total289855 still has46historical unknown totals. Original266's discarded cause
-remains UNKNOWN. Fresh V5 full quality/comparison and native chain remain separate
-required gates. See the [actual diagnostic audit](../../docs/ai/scenario-schema-dialect-actual-audit-20261013.md)
+Current issue33 evidence is535 spent High attempts. Actual V5 quality and four
+paired comparisons passed independent source/signature/original-byte/PostgreSQL
+audit:96/96 development,64/64 tuning,75/76 holdout, zero critical failures,4/4 both
+comparison arms and274142 fully measured new total tokens including thinking.
+Its original historical-RunID auditor rejection is retained; the separately
+reviewed read-only repair audited the same unchanged252 paid originals.
+Cumulative509 known visible pairs/26 NULL and563997 known total tokens preserve
+all46 old unknown totals. Original266's discarded cause remains UNKNOWN. Real
+High release chain and final issue-wide acceptance still remain. See the
+[actual V5 audit](../../docs/ai/scenario-cloud-v5-independent-audit-20261013.md),
+[actual diagnostic audit](../../docs/ai/scenario-schema-dialect-actual-audit-20261013.md)
 and [closed V4 audit](../../docs/ai/scenario-cloud-v4-independent-audit-20261013.md).
 
 The historical additive V4 acceptance reader preserves268 spent High attempts and all old

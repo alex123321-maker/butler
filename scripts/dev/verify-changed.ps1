@@ -26,6 +26,11 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(deploy/acceptance/(cloud-shadow-v5-|release-chain-v5-)|scripts/dev/cloud-v5-final-audit-reproduce[.]sh$)" {
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$tests.Add("Read-only cloud-v5-final-audit-reproduce.sh against the sealed252-request native window and separately repaired auditor; exact safe SHA/size, history535/retained unknowns. Zero inference; never Sync or execute native V5.")
+      continue
+    }
     "^(internal/acceptance/cloud_v5_window_audit(_test)?[.]go$|scripts/dev/cloud-v5-(final-audit/|readonly-audit-lab[.]sh$))" {
       [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")

@@ -655,7 +655,14 @@ Payload:
 
 #### V1 правило
 
-Transport может отдать batch event, но Orchestrator в V1 обязан сериализовать его в sequential execution policy согласно Run Lifecycle Spec.
+Transport может представить complete batch event. Текущий Orchestrator объявляет
+`SupportsBatchToolCalls=false` и отклоняет весь batch как
+`batch_tool_calls_unsupported` до первого Tool Broker dispatch. Это разрешённое
+unsupported поведение Run Lifecycle Spec и действующая execution-budget policy.
+Модель должна выбирать один tool call и ждать его коррелированный результат.
+Представление batch в transport не предоставляет capability его исполнения;
+acceptance wrapper не сериализует его и не исполняет частично. Native Antigravity
+также отклоняет неподдерживаемый multi-function response как capability mismatch.
 
 ### 11.8 transport_warning
 
