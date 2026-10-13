@@ -1,5 +1,23 @@
 # Current mandatory faults for issue33
 
+The current production matrix is67133e17b58acd825b2988a281079e1253da7af8,
+not the earlier9c matrix described below. Exact321 events/eight scenarios pass
+on the V18 native source, independently verified through its complete
+2459-file manifest and actual PostgreSQL/runtime/hardware evidence.
+The [current report](../../deploy/acceptance/current-67133e1-full-fault-report-20261013.json)
+is f4fdd7722ae3606077401c355803c3c388e9fa26c1ff60693fd7c2284c3a37d3;
+the [independent review](../../deploy/acceptance/current-67133e1-full-fault-independent-review-20261013.json)
+is5c3df885021fdf6fd35767a7f8e0ed5736e425f9fa2905e5956e6c7ec8df60d2.
+Its proof is `/srv/storage/butler/agents/scenario-release-chain-v18-final-faults-20261013/reports/fault-20261013T212125Z-3484533`.
+
+All658 production Go files remain byte-identical in actual High V20/native708
+and separately frozen final checker59aa. Their later fixture/test/checker
+changes do not claim a repeated full matrix. See the
+[final composition](../../deploy/acceptance/v20-final-production-composition-independent-20261013.json)
+and [final acceptance record](issue33-final-acceptance-20261014.md).
+The older9c/73b results and historical physical CPU load failure below remain
+their original observations, not newly measured remote High hardware.
+
 Current bounded mandatory-fault gate: **PASS**, all8scenarios. Full issue33:
 still requires separately reviewed High quality/cost and complete release-chain
 baseline/restart/Stop/delivery acceptance; this report sets issue_33_ready=false.
