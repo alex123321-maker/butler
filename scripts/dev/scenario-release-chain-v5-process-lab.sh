@@ -8,7 +8,7 @@ commit=${3:?exact source commit required}
 case "$root:$mode" in
   /srv/storage/butler/agents/scenario-release-chain-v5-high-20261013:baseline|/srv/storage/butler/agents/scenario-release-chain-v5-high-20261013:chain|/srv/storage/butler/agents/scenario-release-chain-v5-high-20261013:high_v5|/srv/storage/butler/agents/scenario-release-chain-v5-high-20261013:diagnose_absence) ;;
   /srv/storage/butler/agents/scenario-release-chain-v6-high-20261013:high_v6) ;;
-  /srv/storage/butler/agents/scenario-release-chain-v7-high-20261013:high_v7) ;;
+  /srv/storage/butler/agents/scenario-release-chain-v7b-high-20261013:high_v7) ;;
   *) exit 2 ;;
 esac
 source_dir=$(readlink -f "$root/current")
@@ -17,7 +17,7 @@ high=false
 if [[ "$mode" == high_v5 || "$mode" == high_v6 || "$mode" == high_v7 ]]; then
   if [[ "$mode" == high_v7 ]]; then
     [[ "${BUTLER_SCENARIO_CHAIN_V7_HIGH_SEALED_ENTRY:-}" == 1 ]] || exit 2
-    window=/srv/storage/butler/native-acceptance-windows/issue33-high-release-chain-v7-20261013-baseline539
+    window=/srv/storage/butler/native-acceptance-windows/issue33-high-release-chain-v7b-20261013-baseline539
     chain_schema=fixture_chain_v7_high; chain_baseline=539; high_test=TestScenarioReleaseChainActualV7HighE2E
     high_env=BUTLER_SCENARIO_CHAIN_V7_HIGH; prepared_prefix=chain-v7-high-prepare-
   elif [[ "$mode" == high_v6 ]]; then

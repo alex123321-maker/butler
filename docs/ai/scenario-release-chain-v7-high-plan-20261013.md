@@ -1,5 +1,18 @@
 # New V7 High chain from actual539
 
+The first frozen524e694 bootstrap stopped before database/Factory construction
+because the shared fixture still capped the case at20 minutes. The
+[independent zero-native report](../../deploy/acceptance/release-chain-v7-bootstrap-failure-20261013.json)
+binds that failure to its exact source/runtime/log and preserves absent SQL and
+the original NULL summary; it proves no provider invocation or authentication
+was reached. The original root/window remain sealed. The corrected invocation
+uses the fresh `v7b` root/window with unchanged539 baseline and76 request cap;
+no failed native attempt was refunded. Original9a689 protocol/169430 authority
+bytes are retained in the `bootstrap1` artifacts. The current protocol SHA is
+fc4f5cfd6fa7209f212cb47c767c4f80c60d304fb3c1513371c27008850636a6;
+current human policy amendment SHA is
+efef2aa0f09ec0cf2fcfce7e55375920117f482a215f6fd6894abc6afd1f759e.
+
 The direct user policy amendment allows longer High reasoning and safe timeout
 recovery, and permits reuse of already verified unchanged checks. The original
 quality and paired comparisons retain their measured120-second profile and all
@@ -31,15 +44,17 @@ and one semantic final notice where permitted. Lost ACK remains UNKNOWN; stopped
 descendants cannot act. Loopback fixture channels and an unapplied patch remain
 the declared result boundaries.
 
-Before native execution, check only the31 named changed-history, timing and
-retry predicates with disposable PostgreSQL/race, compile and vet the final
-fixture, then independently freeze the clean source, protocol and binaries.
+The31 named changed-history, timing and retry predicates already passed with
+disposable PostgreSQL/race on524e694. The v7b delta changes only the fixture
+bootstrap limit, label and exact protocol hashes. Before its native execution,
+run one guard proving40 minutes accepted and41 minutes rejected, compile/vet,
+then independently freeze the clean source, protocol and binaries.
 The unchanged production retry/fault/broad suites retain their existing exact
 proofs. The independent issue-wide audit remains necessary before PR readiness,
 merge and issue closure.
 
 ```powershell
-pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Sync -RemoteRoot /srv/storage/butler/agents/scenario-release-chain-v7-high-20261013
+pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Sync -RemoteRoot /srv/storage/butler/agents/scenario-release-chain-v7b-high-20261013
 ```
 
 ```sh

@@ -57,6 +57,12 @@ func newReleaseChainFixture(t *testing.T, profile generatedtools.Profile, manife
 	return newReleaseChainFixtureWithModel(t, profile, manifestPath, nil)
 }
 
+// This bound belongs to the isolated scenario fixture, not production policy.
+// The prospective High window separately pins its forty-minute case deadline.
+func releaseChainFixtureTimeoutAllowed(timeout time.Duration) bool {
+	return timeout > 0 && timeout <= 40*time.Minute
+}
+
 func newReleaseChainFixtureWithModel(t *testing.T, profile generatedtools.Profile, manifestPath string, modelConfig *releaseChainModelConfig) *developerFixture {
 	t.Helper()
 	if os.Getenv("BUTLER_EXTENSION_E2E") != "1" {
@@ -64,7 +70,7 @@ func newReleaseChainFixtureWithModel(t *testing.T, profile generatedtools.Profil
 	}
 	fixtureTimeout := 10 * time.Minute
 	if modelConfig != nil && modelConfig.FixtureTimeout > 0 {
-		if modelConfig.FixtureTimeout > 20*time.Minute {
+		if !releaseChainFixtureTimeoutAllowed(modelConfig.FixtureTimeout) {
 			t.Fatal("bounded fixture timeout required")
 		}
 		fixtureTimeout = modelConfig.FixtureTimeout

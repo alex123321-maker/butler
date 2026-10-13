@@ -7,7 +7,7 @@
     "Так может убрать/увеличить таймаут, если модель думает, то пускай, какбудто лучше чтобы агент выполнил задачу чем сказал что не сможет. Или ты считаешь что слишком долго на такие задачи он тратит времени?"
   ],
   "interpretation": "Allow a new bounded native High chain with longer deadlines and one safe HTTP or response-stream timeout retry; retain every closed failure and unknown measurement. Reuse independently verified unchanged checks and run narrow checks of changed guards before model execution.",
-  "window_id": "issue33-high-release-chain-v7-20261013-baseline539",
+  "window_id": "issue33-high-release-chain-v7b-20261013-baseline539",
   "baseline_attempts": 539,
   "maximum_new_attempts": 76,
   "maximum_total_attempts": 615,

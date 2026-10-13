@@ -1,0 +1,94 @@
+{
+  "absolute_ceiling": 615,
+  "actual_proof": "/srv/storage/butler/agents/scenario-release-chain-v7-high-20261013/reports/release-chain-process-20261013T125857Z-1912125",
+  "actual_root": "/srv/storage/butler/agents/scenario-release-chain-v7-high-20261013",
+  "auditor_authentication": false,
+  "auditor_native_calls": 0,
+  "charge_refunds": 0,
+  "code_commit": "524e69485fb08590df4fec83e2e9ebeb77b5b288",
+  "evidence": {
+    "pg-initial-witness.json": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "pg-ledger-witness.json": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "pg-product-witness.json": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime-state.json": {
+      "bytes": 433,
+      "sha256": "18c865da4bacc0cb1366a002e80fd111699baf0b5b2d0912ac7881e63a43849d"
+    },
+    "scope.json": {
+      "bytes": 264,
+      "sha256": "fb0a2c24ca96b47e4d49dc921be93bcca9a48b296f938b897eebaf98a3524185"
+    },
+    "source-commit.txt": {
+      "bytes": 41,
+      "sha256": "eed426077aa0b1fb553b7c35de091cab7e2631e59028466ea9dd6bbb5c977930"
+    },
+    "source-manifest-hash.txt": {
+      "bytes": 211,
+      "sha256": "2e61b81eef126fe7707e83a6e77baf99d91be4658e6a05dc8fb32878d2f7be92"
+    },
+    "source-manifest.sha256": {
+      "bytes": 248512,
+      "sha256": "535208945ef5a64e98c60bdfa452146172a4c70d276ad9d6b0895973b250ea37"
+    },
+    "summary.json": {
+      "bytes": 153,
+      "sha256": "601dc282603b6e6a1f8ceefb9bf1c03f77433ba6aab8c834df9b62def557cd39"
+    },
+    "tests.jsonl": {
+      "bytes": 2589,
+      "sha256": "83c9185bd0fc87737e3404a5dd62594d10706315cb7e5967dae560353183a7a1"
+    }
+  },
+  "historical_attempt_baseline_unchanged": 539,
+  "issue33_ready": false,
+  "known_total_subtotal_unchanged": 580620,
+  "native_cap_remaining": 76,
+  "native_request_admissions": 0,
+  "observed_scope": {
+    "baseline_attempts": 539,
+    "human_messages": 0,
+    "issue33_ready": false,
+    "maximum_new_attempts": 76,
+    "maximum_total_attempts": 615,
+    "planning": "actual_native_High",
+    "scenarios": {},
+    "scope": null,
+    "status": "failed",
+    "window_id": "issue33-high-release-chain-v7-20261013-baseline539"
+  },
+  "old_native_window_remains_closed": true,
+  "old_summary_actual_native_calls": null,
+  "owning_window_constructor_reached": false,
+  "proof_basis": "Frozen source control-flow order plus exact fatal test event, null scope, empty3 PG export leaves. Empty leaves are retained as absent evidence, not fabricated successful SQL projection.",
+  "provider_authentication_reached": false,
+  "provider_factory_reached": false,
+  "reason": "fixture constructor rejects predeclared40minute case at legacy20minute cap before e2eDatabase and cfg.Factory invocation",
+  "remaining": [
+    "Fresh uniquely named root/window and source pin after bounded fixture correction.",
+    "Actual all5 scenarios and independent final audit."
+  ],
+  "reviewed_at_utc": "2026-10-13T13:11:04.224637+00:00",
+  "runtime": {
+    "converter_image_id": "sha256:ce64758a109eb420d874a118f87920e625e12d3634e03b4a5573fd9f6e5d3507",
+    "exit_code": 1,
+    "finished_at": "2026-10-13T12:59:12.134161592Z",
+    "image_id": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61",
+    "memory_limit_bytes": 1610612736,
+    "oom_killed": false,
+    "postgres_image_id": "sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d",
+    "started_at": "2026-10-13T12:59:01.30615735Z"
+  },
+  "source_tree_sha256": "7b04d8ed75b715197eb6976a3dacd6bc1616ae9f6f34df750939ecca461d70d0",
+  "status": "SEALED_BOOTSTRAP_NO_GO_ZERO_NATIVE",
+  "unknown_total_attempts_unchanged": 48,
+  "version": "butler-issue33-v7-bootstrap-zero-native-independent-v1"
+}

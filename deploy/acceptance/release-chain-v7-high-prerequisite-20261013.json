@@ -1,6 +1,6 @@
 {
   "version": "butler-chain-high-reviewed-v7-prerequisite-v1",
-  "window_id": "issue33-high-release-chain-v7-20261013-baseline539",
+  "window_id": "issue33-high-release-chain-v7b-20261013-baseline539",
   "baseline_attempts": 539,
   "maximum_new_attempts": 76,
   "maximum_total_attempts": 615,
@@ -38,5 +38,5 @@
   "failed_model_version_shape": "selected_version_or_null",
   "all_other_quality_source_authority_stop_effect_delivery_gates_retained": true,
   "issue33_ready": false,
-  "human_policy_amendment_sha256": "169430ff19321b029196763a8aeae388a9d1d13c585ef8d07e59bbf55cdbf6e8"
+  "human_policy_amendment_sha256": "efef2aa0f09ec0cf2fcfce7e55375920117f482a215f6fd6894abc6afd1f759e"
 }

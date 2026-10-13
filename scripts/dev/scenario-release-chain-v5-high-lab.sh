@@ -7,9 +7,9 @@ protocol=${4:-v5}
 [[ "$phase" =~ ^(prepare|execute)$ && "$release" =~ ^[a-f0-9]{40}$ ]] || exit 2
 global_minutes=60
 if [[ "$protocol" == v7 ]]; then
-  [[ "$root" == /srv/storage/butler/agents/scenario-release-chain-v7-high-20261013 ]] || exit 2
+  [[ "$root" == /srv/storage/butler/agents/scenario-release-chain-v7b-high-20261013 ]] || exit 2
   chain_baseline=539; chain_cap=76; chain_env=BUTLER_SCENARIO_CHAIN_V7_HIGH
-  gate_test=TestReleaseChainV7OperationalGate; window_id=issue33-high-release-chain-v7-20261013-baseline539
+  gate_test=TestReleaseChainV7OperationalGate; window_id=issue33-high-release-chain-v7b-20261013-baseline539
   audit_package=./scripts/dev/release-chain-v6-final-audit
   offline_timeout=3m; global_minutes=120
   # Unchanged Core, transport and broad fault suites have independently retained
@@ -107,7 +107,7 @@ docker run -d --runtime runc --name "$pg" --network "$network" --network-alias c
 for attempt in $(seq 1 60); do docker exec "$pg" pg_isready -U fixture -d butler_chain_prepare_test >/dev/null 2>&1 && break; [[ "$attempt" != 60 ]] || exit 1; sleep 1; done
 app_pattern='^Test(ReleaseChainV5(Window|AllFailedEntries|TerminalMetadata|MeasurementWriteFailure|WholeEntryDeadline|OperationalPrerequisite|Bridge|ProductEvidence|InitialWitness|ProspectiveHealthy|CancelledTimedOut|ContextDeadlineAndCancel|ContextFailureAfterCompleteFinal|ProviderObservationFacts|FailureOutcome|OriginalResult)|ConverterWorkerStructuralDiagnostics)'
 if [[ "$protocol" == v6 ]]; then app_pattern='^Test(ReleaseChainV5(Window|AllFailedEntries|TerminalMetadata|MeasurementWriteFailure|WholeEntryDeadline|OperationalPrerequisite|Bridge|ProductEvidence|InitialWitness|ProspectiveHealthy|CancelledTimedOut|ContextDeadlineAndCancel|ContextFailureAfterCompleteFinal|ProviderObservationFacts|FailureOutcome|OriginalResult)|ReleaseChainV6(OperationalPrerequisiteClosed|ActualHistory|ActualBridge|HumanExpenseException|PrerequisiteTamper|ProviderStage|Window|Kernel|MeasuredRetry|HumanSafeTimeout|SafeRetry)|ConverterWorkerStructuralDiagnostics)'; fi
-if [[ "$protocol" == v7 ]]; then app_pattern='^TestReleaseChainV7(ProfileAndPredicates|UnvalidatedRetryCountersStayZero|PolicyCannotReconstructOrRefillIntegration|SafeRetryPredecessorAdmissionIntegration|MeasuredRetryCountersIntegration|ActualHistory|Prerequisite)'; fi
+if [[ "$protocol" == v7 ]]; then app_pattern='^TestReleaseChainV7BootstrapTimeoutGuard$'; fi
 docker run --rm --runtime runc --pull never --network "$network" --read-only --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true --memory 1536m --pids-limit 160 --cpus 2 \
   --tmpfs /tmp:rw,nosuid,nodev,size=64m --volume "$source_dir:/src:ro" --volume "$proof/bin:/bin-proof:ro" --workdir /src \
   --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:chain-prepare-fixture@chain-prepare-postgres:5432/butler_chain_prepare_test?sslmode=disable' \
@@ -156,9 +156,8 @@ if [[ "$protocol" == v6 ]]; then
   [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/tests.jsonl")" == 309 ]]
 fi
 if [[ "$protocol" == v7 ]]; then
-  mapfile -t required < "$source_dir/scripts/dev/scenario-release-chain-v7-required-tests.txt"
-  [[ "${#required[@]}" == 31 ]]
-  [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/tests.jsonl")" == 31 ]]
+  required=(TestReleaseChainV7BootstrapTimeoutGuard)
+  [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/tests.jsonl")" == 1 ]]
 fi
 for test_name in "${required[@]}"; do
   [[ "$(awk -v needle="\"Test\":\"$test_name\"" 'index($0,"\"Action\":\"pass\"") && index($0,needle) { n++ } END { print n+0 }' "$proof/tests.jsonl")" == 1 ]]
