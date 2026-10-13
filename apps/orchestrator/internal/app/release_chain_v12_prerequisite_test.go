@@ -49,7 +49,10 @@ func newReleaseChainV12Window(ctx context.Context, pool *pgxpool.Pool) (*release
 	return createReleaseChainHighWindowWithPolicy(ctx, pool, releaseChainV12ReviewedPrerequisiteSHA, p.ChainHistorySHA, 575, "fixture_chain_v12_high", deadline, 120, true, releaseChainV9Policy(), true)
 }
 func TestScenarioReleaseChainActualV12HighE2E(t *testing.T) {
-	testReleaseChainHighNative(t, releaseChainHighEntry{WindowID: releaseChainV12WindowID, AcceptanceEnv: "BUTLER_SCENARIO_CHAIN_V12_HIGH_ACCEPTANCE", PrivateEnv: "BUTLER_SCENARIO_CHAIN_V12_HIGH_PRIVATE", ImportEnv: "BUTLER_SCENARIO_CHAIN_V12_HIGH_IMPORT_FILE", Baseline: 575, Maximum: 120, ProviderStages: true, RetainProposals: true, Policy: releaseChainV9Policy(), ExtensionHarnessLifetime: 40 * time.Minute, ObserveSourceChecks: true, AllowRepeatedPatchChecks: true, ReadQuality: readReleaseChainV12Prerequisite, NewWindow: newReleaseChainV12Window})
+	if os.Getenv("BUTLER_SCENARIO_CHAIN_V12_HIGH_ACCEPTANCE") == "1" {
+		t.Fatal("V12 native scope is sealed failed; no new entry from current source")
+	}
+	t.Skip("sealed V12 zero-native bootstrap retained; fresh V13 requires admission")
 }
 func TestReleaseChainV12OperationalGate(t *testing.T) {
 	if os.Getenv("BUTLER_SCENARIO_CHAIN_V12_HIGH_GATE") != "1" {

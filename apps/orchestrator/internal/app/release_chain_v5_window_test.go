@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -102,11 +103,24 @@ func createReleaseChainHighWindowInSchemaAt(ctx context.Context, pool *pgxpool.P
 }
 
 func createReleaseChainHighWindowWithPolicy(ctx context.Context, pool *pgxpool.Pool, pin, history string, baseline int, schema string, deadline time.Time, maximum int, providerStages bool, policy releaseChainHighWindowPolicy, kernelBinding ...bool) (*releaseChainV5Window, error) {
+	return createReleaseChainHighWindowWithDeclaredLimit(ctx, pool, pin, history, baseline, schema, deadline, maximum, providerStages, policy, 80, kernelBinding...)
+}
+
+// This is a new finite fixture allocation, never an operator-supplied ceiling.
+// Actual entry must still bind its independently pinned prospective protocol.
+func createReleaseChainHighWindow120WithPolicy(ctx context.Context, pool *pgxpool.Pool, pin, history string, baseline int, schema string, deadline time.Time, providerStages bool, policy releaseChainHighWindowPolicy, kernelBinding ...bool) (*releaseChainV5Window, error) {
+	return createReleaseChainHighWindowWithDeclaredLimit(ctx, pool, pin, history, baseline, schema, deadline, 120, providerStages, policy, 120, kernelBinding...)
+}
+
+func createReleaseChainHighWindowWithDeclaredLimit(ctx context.Context, pool *pgxpool.Pool, pin, history string, baseline int, schema string, deadline time.Time, maximum int, providerStages bool, policy releaseChainHighWindowPolicy, declaredLimit int, kernelBinding ...bool) (*releaseChainV5Window, error) {
+	if declaredLimit != 80 && declaredLimit != 120 {
+		return nil, errNativeFixtureDenied
+	}
 	if !policy.valid() {
 		return nil, errNativeFixtureDenied
 	}
 	remaining := time.Until(deadline)
-	if pool == nil || !nativeAuditHash.MatchString(pin) || !nativeAuditHash.MatchString(history) || baseline <= 0 || baseline > 10000 || maximum <= 0 || maximum > 80 || remaining <= 0 || remaining > time.Duration(policy.globalMillis())*time.Millisecond || len(kernelBinding) > 1 || len(kernelBinding) == 1 && kernelBinding[0] && !providerStages {
+	if pool == nil || !nativeAuditHash.MatchString(pin) || !nativeAuditHash.MatchString(history) || baseline <= 0 || baseline > 10000 || maximum <= 0 || maximum > declaredLimit || remaining <= 0 || remaining > time.Duration(policy.globalMillis())*time.Millisecond || len(kernelBinding) > 1 || len(kernelBinding) == 1 && kernelBinding[0] && !providerStages {
 		return nil, errNativeFixtureDenied
 	}
 	if schema == "" || len(schema) > 63 {
@@ -163,7 +177,11 @@ END $$;`
 	if _, err := pool.Exec(ctx, `CREATE SCHEMA IF NOT EXISTS `+pgx.Identifier{schema}.Sanitize()); err != nil {
 		return nil, errNativeFixtureDenied
 	}
-	qualified := regexp.MustCompile(`\b(fixture_chain_v5_high_window(?:_immutable)?|fixture_chain_v5_high_requests|fixture_chain_v5_high_request_immutable|fixture_chain_v5_high_case_evidence(?:_immutable)?|fixture_chain_v5_high_case_initial)\b`).ReplaceAllStringFunc(ddl, w.table)
+	selectedDDL := ddl
+	if declaredLimit == 120 {
+		selectedDDL = strings.Replace(ddl, "CHECK(maximum_new_attempts BETWEEN 1 AND 80)", "CHECK(maximum_new_attempts BETWEEN 1 AND 120)", 1)
+	}
+	qualified := regexp.MustCompile(`\b(fixture_chain_v5_high_window(?:_immutable)?|fixture_chain_v5_high_requests|fixture_chain_v5_high_request_immutable|fixture_chain_v5_high_case_evidence(?:_immutable)?|fixture_chain_v5_high_case_initial)\b`).ReplaceAllStringFunc(selectedDDL, w.table)
 	if _, err := pool.Exec(ctx, qualified); err != nil {
 		return nil, errNativeFixtureDenied
 	}

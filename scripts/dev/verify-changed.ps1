@@ -26,12 +26,12 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "^(apps/orchestrator/internal/app/(release_chain_v(?:[789]|10|11|12)_|release_chain_extension_harness|release_chain_source_observer|release_chain_proposal_|release_chain_entry_lane)|scripts/dev/scenario-release-chain-v(?:[789]|10|11|12)-|scripts/dev/release-chain-v6-final-audit/(v(?:[89]|10|11|12)|proposals)|deploy/acceptance/release-chain-v(?:[789]|10|11|12))" {
+    "^(apps/orchestrator/internal/app/(release_chain_v(?:[789]|10|11|12|13)_|release_chain_extension_harness|release_chain_source_observer|release_chain_proposal_|release_chain_entry_lane)|scripts/dev/scenario-release-chain-v(?:[789]|10|11|12|13)-|scripts/dev/release-chain-v6-final-audit/(v(?:[89]|10|11|12|13)|proposals)|deploy/acceptance/release-chain-v(?:[789]|10|11|12|13))" {
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
       [void]$specs.Add("docs/architecture/generated-converters.md")
       [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
-      [void]$tests.Add("V12: targeted factual575 reader and owned GET read/receipt checks, then separate source/runtime admission. V10 and V11 native roots are sealed; never Sync or execute them again. Fresh V12 starts from factual575 only after independent admission; source/watchdog, Stop, mandatory mutations and original-result gates stay fixed. Repeated reads follow current Core budgets, without a dedicated small read cap.")
+      [void]$tests.Add("V13: five targeted actual PostgreSQL declared120 and pinned entry bootstrap checks, then separate source/runtime admission. V10/V11/V12 native roots are sealed; never Sync or execute them again. Retain V12 forty-test read/receipt source proof, historical575 and independently proved zero-native bootstrap; all current source/Stop/result/delivery guards remain.")
       [void]$tests.Add("Read-only version-specific final checker with separately frozen auditor source/binary and only individually named own-tool proposal leaves. Earlier V6/V7/V8/V9 retain their original reproduction; all failed runs and UNKNOWN stay unchanged.")
       continue
     }

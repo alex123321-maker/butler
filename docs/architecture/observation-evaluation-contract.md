@@ -9,6 +9,13 @@ inspection/check reads within unchanged Core quotas and deadlines, with every
 actual receipt and fixed resource verified. Mandatory mutations remain once;
 source/authority/Stop, deduplication, original result and delivery gates remain.
 There is no dedicated small GET-call ceiling or exact script-step count.
+V12 subsequently failed before native construction because its declared120
+allocation exceeded the old fixture80 constructor/SQL bound. Its separate
+source-correlated zero-native proof leaves history575 and original NULL exports
+unchanged. Fresh V13 uses a fixed120 test constructor and matching SQL bound;
+legacy80 and every stored counter/deadline remain immutable. Its preparation
+includes a direct actual pinned entry-constructor PostgreSQL test. See the
+[V13 plan](../ai/scenario-release-chain-v13-plan-20261013.md).
 
 Historical557 is the owning source-check cancellation with NULL
 expense/version and no action. Prospective V11 binds an explicit historical-only

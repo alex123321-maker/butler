@@ -1,0 +1,113 @@
+{
+  "version": "butler-release-chain-v12-zero-native-bootstrap-review-v1",
+  "reviewed_at_utc": "2026-10-13T18:43:08.212403+00:00",
+  "status": "NO_GO_ZERO_NATIVE_BOOTSTRAP",
+  "issue33_ready": false,
+  "reviewer_role": "/root/v5_final_independent_audit",
+  "actual_proof": "/srv/storage/butler/agents/scenario-release-chain-v12-high-20261013/reports/release-chain-process-20261013T183424Z-2945984",
+  "measured_source_commit": "cc63e7b4bacba8d3c46af7842c96d99838626390",
+  "source_tree_sha256": "d5d7d24a7143905f55479ef51e297cfd94e5bf423e137abf08f675c59fa28b8b",
+  "source_manifest_sha256": "bf5c17e1c643e776d83fc73463c5bf50f8f9d24dee35c5b96d927d3fd77a1c4a",
+  "source_inventory_files": 2340,
+  "app_binary_sha256": "24a7bbe71e557384a940da5fb5ff7171d4b6361711bd03dc827a6d77964e9594",
+  "runtime": {
+    "image_id": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61",
+    "postgres_image_id": "sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d",
+    "converter_image_id": "sha256:ce64758a109eb420d874a118f87920e625e12d3634e03b4a5573fd9f6e5d3507",
+    "started_at": "2026-10-13T18:34:28.599826054Z",
+    "finished_at": "2026-10-13T18:35:02.962229479Z",
+    "exit_code": 1,
+    "oom_killed": false,
+    "memory_limit_bytes": 1610612736
+  },
+  "evidence": {
+    "tests.jsonl": {
+      "sha256": "7902ceb83a9587c2fa68148cd644246c2037e17099e5da967963bcbf8d8917cc",
+      "bytes": 15279
+    },
+    "runtime-state.json": {
+      "sha256": "aac9eb7b1e992e5147eac7df7edbecd0400cf99f1e76b87ceb50c2a7612675b3",
+      "bytes": 434
+    },
+    "scope.json": {
+      "sha256": "6c8d9c955e99c32bde31ded6e889d6e5f7d5161ac9ad62611d6947a60a214adb",
+      "bytes": 295
+    },
+    "summary.json": {
+      "sha256": "e1de86393b082375dfc95f50c71d648b13ec6f1a76fac6d48cdb586ebd93d2f8",
+      "bytes": 154
+    },
+    "source-manifest.sha256": {
+      "sha256": "bf5c17e1c643e776d83fc73463c5bf50f8f9d24dee35c5b96d927d3fd77a1c4a",
+      "bytes": 267764
+    },
+    "source-commit.txt": {
+      "sha256": "7232999d7e4f7018518c67a670c0edfa24c5efb7f81f45cf482f323c67a3b0d6",
+      "bytes": 41
+    },
+    "pg-initial-witness.json": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "pg-ledger-witness.json": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "pg-product-witness.json": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "binaries.sha256": {
+      "sha256": "467d7f17815fa9e2b703f7e7ab55a85a0129fa3bcc4b7dd7ead92ad46d9cc500",
+      "bytes": 1447
+    },
+    "native-evidence.sha256": {
+      "sha256": "62b78148f5a4874b123a5e6094d37189410926f38b792c790a66f45e1adcfa35",
+      "bytes": 1046
+    },
+    "events.sha256": {
+      "sha256": "0d51da7ffa7705710d2c572c330fc344e963112ff32636c03dc47d06ffbdd301",
+      "bytes": 201
+    },
+    "runtime-profile.json": {
+      "sha256": "1ab435172fa063abaecc742f78ba36048a0202a9f0e3546afd9e6fe09e889a12",
+      "bytes": 181
+    },
+    "hardware.json": {
+      "sha256": "c035ff8ccecb9a5f3d3cf1a789d9b70a80fbfbb08c2f9fa29ec3caed35d81071",
+      "bytes": 736
+    }
+  },
+  "failed_first_case": "normal_sent",
+  "other_four_cases_run": false,
+  "bootstrap_cause": "fixture_window_constructor_maximum120_exceeds_legacy80_before_DDL",
+  "observed_failure": "declared release chain provider unavailable",
+  "secondary_cleanup_observation": "safe private proposal metadata unavailable; no native proposal sink had been constructed",
+  "derived_native_provider_requests": 0,
+  "native_provider_constructor_reachable": false,
+  "core_executor_constructed": false,
+  "kernel_model_quotes_reachable": false,
+  "provider_auth_import_reachable": false,
+  "actual_native_calls_field_original": null,
+  "original_field_overwritten": false,
+  "historical_attempts_unchanged": 575,
+  "new_usage_entries": 0,
+  "historical_known_input_subtotal": 689116,
+  "historical_known_output_subtotal": 18790,
+  "historical_known_total_subtotal": 1039921,
+  "historical_unknown_total_entries": 49,
+  "historical_unknown_io_pairs": 29,
+  "verified_scenarios": [],
+  "original_window_remains_sealed": true,
+  "boundary_basis": [
+    "Exact frozen NewWindow passes120 to a constructor that unconditionally rejects maximum>80 before CREATE TABLE or any invocation of the native provider constructor.",
+    "The factory propagates that error before provider auth import/initialization; Core executor/worker and its model quotation are created only after the factory successfully returns.",
+    "Recorded Fatal469 agrees with that factory denial. Empty PG exports and null scope are corroboration only; absence alone is not treated as proof of zero."
+  ],
+  "limits": [
+    "No live owning PostgreSQL query or private runtime directory inspection was performed by reviewer.",
+    "The original summary actual_native_calls=NULL and all empty exports remain unchanged; zero is separately derived from retained source ordering plus actual failure, not a fabricated original measurement.",
+    "No claim of zero setup actions, preflight TLS activity, or credential-file preparation is made.",
+    "The admission review f507 correctly checked source/runtime/pins/40 targeted tests but missed the constructor120 versus legacy80 incompatibility. It also retained stale descriptive V11/557 fields; this report does not overwrite that artifact or claim its narrative was current."
+  ]
+}

@@ -1,0 +1,75 @@
+package app
+
+import (
+	"context"
+	"encoding/json"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"os"
+	"testing"
+	"time"
+)
+
+const releaseChainV13WindowID = "issue33-high-release-chain-v13-20261013-baseline575"
+const releaseChainV13ReviewedPrerequisiteSHA = "c1aa03290cc85616c4f2156acfde3d116037e7cafd0a4f89b5ea2b9d545c2f4e"
+const releaseChainV13AuthoritySHA = "e62000001cd3685560587b1e74c6e0583118e8d0b143cc386f860ac4965d6934"
+const releaseChainV13BootstrapSHA = "dca503946b4a1bfc5a09215b128b5d4d1ea5f3d71333d4a09edcff5271ef7326"
+const releaseChainV13AuthoritySemanticJSON = `{"version":"butler-chain-v13-human-policy-amendment-v1","source":"direct_user_messages_in_current_task","user_messages":["Хорошо тогда чутьчуть ослабь требования и если прям критичных проблем не останется тогда можно закрывать пр","Ты можешь не делать сотни проверок перед проверкой на модели HIGH. У меня подписка и денег не списывается, потратить больше чем дано нельзя, смело тестируй модель","Так может убрать/увеличить таймаут, если модель думает, то пускай, какбудто лучше чтобы агент выполнил задачу чем сказал что не сможет. Или ты считаешь что слишком долго на такие задачи он тратит времени?","А может уберём ограничения на количество вызовов? Есть ли какие то подводные камни в этом, кроме потенциально большего расхода токенов? Я просто думаю что это и развяжет руки агенту и он сможет качественнее выполнять работу"],"interpretation":"Continue a fresh finite High chain from factual575 after independently proved zero-native V12 bootstrap denial. Use the new fixed120 fixture constructor and matching SQL ceiling instead of passing120 to legacy80; preserve the legacy80 path and every immutable counter/deadline/ownership/source rule. The same prospective575+120=695 allocation is a new declared scope, not reopening or borrowing an old window. Owned GET inspection/check reads follow current Core budgets and every actual receipt; mandatory mutations remain once. Historical575 expense/UNKNOWN and all five original-result/Stop/delivery/independent acceptance gates remain unchanged.","window_id":"issue33-high-release-chain-v13-20261013-baseline575","baseline_attempts":575,"maximum_new_attempts":120,"maximum_total_attempts":695,"maximum_generation_tokens":32768,"maximum_attempt_ms":300000,"maximum_case_ms":2400000,"maximum_global_ms":7200000,"maximum_child_model_turns":4,"maximum_child_external_calls":4,"maximum_child_active_ms":1320000,"maximum_model_retries_per_input":1,"model_retry_backoff_ms":2000,"safe_timeout_stages":["http_round_trip","response_stream"],"keep_closed_537_and_539_unknown":true,"all_completed_entries_require_measured_usage_and_selected_version":true,"failed_unknown_requires_proved_safe_same_run_recovery":true,"critical_safety_or_original_result_criteria_changed":false,"quality_or_comparison_criteria_changed":false,"release_chain_latency_policy_changed":true,"independent_acceptance_required_before_ready_merge_closure":true,"native_window_reopened":false,"issue33_ready":false,"limitations":["This records the direct messages and the assistant's bounded operational choices; it is not a cryptographic human signature.","The new deadline does not establish that the model was thinking during an unanswered HTTP request.","Subscription-no-overage pricing does not supply missing token measurements or provider-side billing and runtime records."],"proposal_retention_required":true,"maximum_private_proposal_bytes":262144,"original_model_arguments_and_authorization_fingerprints_preserved":true,"provider_entries_serialized":true,"maximum_concurrent_native_entries":1,"maximum_extension_harness_lifetime_ms":2400000,"extension_harness_lifetime_source":"remaining_case_deadline","extension_harness_lifetime_test_only":true,"legacy_extension_harness_lifetime_ms":180000,"old_sealed_absolute_ceiling":628,"old_closed_attempts_or_unknowns_refunded":false,"new_scope_allocation_is_prospective":true,"historical557_expense_exception_sha256":"e2ebb0c52c406f21c1120b78c90aa9e3181d83c0875411a07738fc084286297d","source_check_observer_enabled":true,"source_check_failure_observation_schema":"butler-source-check-observation-v1","source_check_observation_max_failed_checks":64,"source_check_observation_contains_query_or_argument_values":false,"source_check_timeout_ms":2000,"authority_watchdog_check_timeout_ms":750,"source_check_or_watchdog_bounds_changed":false,"production_source_check_or_authority_behavior_changed":false,"allow_repeated_patch_checks":true,"patch_check_read_count_limit_source":"owning_core_budget","repeated_project_inspection_allowed":true,"patch_check_read_method":"GET","patch_check_effect":"read","patch_check_receipt_inventory_required":true,"patch_check_receipts_must_agree":true,"mandatory_mutation_action_counts_changed":false,"release_chain_exact_read_count_criterion_changed":true,"original_write_or_notice_repeat_allowed":false,"original_legacy_read_receipt_unknowns_reconstructed":false,"zero_native_v12_bootstrap_sha256":"dca503946b4a1bfc5a09215b128b5d4d1ea5f3d71333d4a09edcff5271ef7326","new_fixture_window_declared_limit":120,"legacy_fixture_window_maximum":80,"zero_bootstrap_adds_native_ordinal":false,"bootstrap_original_null_fields_rewritten":false,"previous_v12_scope_remains_sealed":true}`
+const releaseChainV13PrerequisiteSemanticJSON = `{"version":"butler-chain-high-reviewed-v13-prerequisite-v1","window_id":"issue33-high-release-chain-v13-20261013-baseline575","baseline_attempts":575,"maximum_new_attempts":120,"maximum_total_attempts":695,"prior_history_artifact_sha256":"4f62e26456070b298ee411f2d7681fbf6dda0d6662cf869a4cbcba8674303220","prior_history_sha256":"d24720adf3522dc19ada8b53a7d54d4485fe7774c0cd029d3c717c9f1468db05","retained_quality_prerequisite_sha256":"9480184b2f5586d8f9826b8db328c52a845ee812bd48afbf1432ca7f30bfd5d3","retained_quality_final_audit_sha256":"f8248d19ec2a0c222b39d46fbc46c0d0cf4ccc3c1361c89965b597eedbb21cab","prior_v6_prerequisite_sha256":"bef93bde0afa1251c67eb60f01dbbe6f8142b4f32b5a8076c0f34d5d9b402077","prior_v6_timeout_waiver_sha256":"44991353526966ab57cfd0155c3f65af00061b87308eed37c2b735f207e75180","historical_known_input_tokens_subtotal":689116,"historical_known_output_tokens_subtotal":18790,"historical_known_total_tokens_subtotal":1039921,"historical_unknown_total_attempts":49,"historical_known_usage_pairs":546,"historical_unknown_usage_pairs":29,"provider_stage_observation":true,"capture_kernel_operation_id":true,"requested_model":"gemini-3.8-flash-high","observed_successful_model_version":"gemini-3.8-flash-n","maximum_generation_tokens":32768,"maximum_attempt_ms":300000,"maximum_case_ms":2400000,"maximum_global_ms":7200000,"allowed_provider_operation_stages":["http_round_trip","response_stream"],"maximum_model_retries_per_input":1,"model_retry_backoff_ms":2000,"all_completed_entries_require_measured_usage_and_selected_version":true,"failed_usage_shape":"valid_all_three_known_or_all_three_null","failed_model_version_shape":"selected_version_or_null","all_other_quality_source_authority_stop_effect_delivery_gates_retained":true,"issue33_ready":false,"human_policy_amendment_sha256":"e62000001cd3685560587b1e74c6e0583118e8d0b143cc386f860ac4965d6934","proposal_retention_required":true,"maximum_private_proposal_bytes":262144,"preserve_original_proposal_bytes_and_authorization_fingerprint":true,"actual544_bridge_sha256":"ca18f5d5f3a78ac9d61ada16472399ecc3024801b8b077795fabbe3db9584650","failed_v8_audit_sha256":"5573b9f25e13a4f3aefacacf142aeda7846b68962f8cd26df4498417097c580f","failed_v8_correlation_sha256":"2e1eed8eadb5874299693bd28ea9857fbd6d96ce9a2e1865009f2368403761d3","prior_v8_prerequisite_sha256":"effa65a6e39fcecce2510c76554685d047ee5e8c7ed1b9e6d27e633133d402ec","prior_v8_authority_sha256":"3560bb090a6b2c8b8bc78a987b2331eaf2eb55550b5e62572fbaf0bb7646973d","retained_closed_v8_proposal_diagnostic_sha256":"8d5b296bfacd45da1d578896435378e7151787ee4847f26d6953267da3af87d8","provider_entries_serialized":true,"maximum_concurrent_native_entries":1,"actual556_bridge_sha256":"70041e9a3275a2099d39eda98d4535420eea7bfdae1bb3eb34bd58662f51ae3b","failed_v9_audit_sha256":"731cf102a25d42a091441ea045cedb5964c66ebb305890c564cc3b5b9713ad83","failed_v9_correlation_sha256":"b96457cbb16bfbc89cb3fb32c62a3d9622939efb9fbe574eb97253c4f89f9b6c","prior_v9_prerequisite_sha256":"4f753010b86b57ff2ea4cc8ff698d56d23787ab1ec20b572cb35ad329b1802c3","prior_v9_authority_sha256":"83ca7491e4fc4a3673097f62f9590117e42387daadc656935318b5bd6caf4ebe","retained_closed_v9_proposal_diagnostic_sha256":"8b5c8683e1aa23e49c15809e5d12432df3402ad01365a2e5a1567ed6f55350fb","maximum_extension_harness_lifetime_ms":2400000,"extension_harness_lifetime_source":"remaining_case_deadline","extension_harness_lifetime_test_only":true,"legacy_extension_harness_lifetime_ms":180000,"old_sealed_absolute_ceiling":628,"old_closed_attempts_or_unknowns_refunded":false,"new_scope_allocation_is_prospective":true,"actual557_bridge_sha256":"78d320c595483d666b25cbaee55be764b53b0004bdd6806ecb4924e4f01130ef","failed_v10_audit_sha256":"28b4dbc9cdfbd8fb8e838b2f14bb698b7142e587f0a44ec2e534a716dce62534","failed_v10_correlation_sha256":"f7c20a7246eb2fc5a653f39f4bfe7f06498e152be3d50c4b523357eff163af8d","prior_v10_prerequisite_sha256":"193e3b8c21b00ffdda62ea0dddb7ecf17357f912d7c78e0d349873e92ee63b86","prior_v10_authority_sha256":"417dfd7bf7e9f0fba535d18a50552696f8efd08a9bf19b2f4a54d4cfb922da1d","historical557_expense_exception_sha256":"e2ebb0c52c406f21c1120b78c90aa9e3181d83c0875411a07738fc084286297d","source_check_observer_enabled":true,"source_check_failure_observation_schema":"butler-source-check-observation-v1","source_check_observation_max_failed_checks":64,"source_check_observation_contains_query_or_argument_values":false,"source_check_timeout_ms":2000,"authority_watchdog_check_timeout_ms":750,"source_check_or_watchdog_bounds_changed":false,"production_source_check_or_authority_behavior_changed":false,"actual575_bridge_sha256":"043ef974962836ab2c69691dccdc1d1add15c379632599b1889057cd55d3fc00","failed_v11_audit_sha256":"85a32e433345e53db47b0f314feb55c5d23baadff0e18be0756084e77f9f54ae","failed_v11_correlation_sha256":"638cebaedc3b4b4ceed5745c70053e5c1aaa0fe4d245681c97ce990781ec14be","prior_v11_prerequisite_sha256":"9f57fb1c613ffcd86f5f2b19a9cdd2b17c92f2c726723551fd9fbd44b8957888","prior_v11_authority_sha256":"31a2381c9f23f1ceeb9687f87bcb705c484433617491b8ec30d1173988bbd5f8","retained_closed_v11_proposal_diagnostic_sha256":"be70e93a61d10873bab71a934a54ce763ee1d25f52b8c951adb6a70585ee8c2e","allow_repeated_patch_checks":true,"patch_check_read_count_limit_source":"owning_core_budget","repeated_project_inspection_allowed":true,"patch_check_read_method":"GET","patch_check_effect":"read","patch_check_receipt_inventory_required":true,"patch_check_receipts_must_agree":true,"mandatory_mutation_action_counts_changed":false,"release_chain_exact_read_count_criterion_changed":true,"original_write_or_notice_repeat_allowed":false,"original_legacy_read_receipt_unknowns_reconstructed":false,"prior_v12_prerequisite_sha256":"4d9af878b09f812c0f8fa69198f03c377b7485b89faf953f180bd34fa69430ca","prior_v12_authority_sha256":"77f0355763d3e020b3e43215c32bbdf490d665422eaafb061f4376622720447d","zero_native_v12_bootstrap_sha256":"dca503946b4a1bfc5a09215b128b5d4d1ea5f3d71333d4a09edcff5271ef7326","new_fixture_window_declared_limit":120,"legacy_fixture_window_maximum":80,"zero_bootstrap_adds_native_ordinal":false,"bootstrap_original_null_fields_rewritten":false,"previous_v12_scope_remains_sealed":true}`
+
+func readReleaseChainV13Prerequisite() (releaseChainV5Prerequisite, error) {
+	var result releaseChainV5Prerequisite
+	for _, item := range []struct{ file, pin, semantic string }{
+		{"release-chain-v13-high-prerequisite-20261013.json", releaseChainV13ReviewedPrerequisiteSHA, releaseChainV13PrerequisiteSemanticJSON},
+		{"release-chain-v13-user-policy-amendment-20261013.json", releaseChainV13AuthoritySHA, releaseChainV13AuthoritySemanticJSON},
+		{"release-chain-v11-user-expense-exception-20261013.json", releaseChainV11ExpenseExceptionSHA, releaseChainV11ExpenseExceptionSemanticJSON},
+	} {
+		raw, err := readReleaseChainV5Artifact(highHistoryPath(item.file), item.pin)
+		if err != nil || !releaseChainV7ExactSemantic(raw, item.semantic) {
+			return result, errNativeFixtureDenied
+		}
+	}
+	raw, err := readReleaseChainV5Artifact(highHistoryPath("release-chain-v12-bootstrap-independent-20261013.json"), releaseChainV13BootstrapSHA)
+	var b map[string]any
+	if err != nil || json.Unmarshal(raw, &b) != nil || !releaseChainV6Exact(b, map[string]any{
+		"status": "NO_GO_ZERO_NATIVE_BOOTSTRAP", "measured_source_commit": "cc63e7b4bacba8d3c46af7842c96d99838626390",
+		"source_tree_sha256":               "d5d7d24a7143905f55479ef51e297cfd94e5bf423e137abf08f675c59fa28b8b",
+		"app_binary_sha256":                "24a7bbe71e557384a940da5fb5ff7171d4b6361711bd03dc827a6d77964e9594",
+		"derived_native_provider_requests": float64(0), "new_usage_entries": float64(0), "historical_attempts_unchanged": float64(575),
+		"native_provider_constructor_reachable": false, "kernel_model_quotes_reachable": false, "provider_auth_import_reachable": false,
+		"original_field_overwritten": false, "actual_native_calls_field_original": nil, "original_window_remains_sealed": true, "issue33_ready": false,
+	}) {
+		return result, errNativeFixtureDenied
+	}
+	h, err := readReleaseChainV12ActualHistory()
+	if err != nil {
+		return result, errNativeFixtureDenied
+	}
+	result, err = readReleaseChainV5Prerequisite()
+	if err != nil {
+		return result, errNativeFixtureDenied
+	}
+	result.Baseline, result.ChainHistorySHA = h.NativeAttempts, h.BaselineSHA256
+	return result, nil
+}
+func newReleaseChainV13Window(ctx context.Context, pool *pgxpool.Pool) (*releaseChainV5Window, error) {
+	p, err := readReleaseChainV13Prerequisite()
+	if err != nil {
+		return nil, errNativeFixtureDenied
+	}
+	deadline, err := time.Parse(time.RFC3339, os.Getenv("BUTLER_SCENARIO_CHAIN_V13_HIGH_DEADLINE"))
+	if err != nil {
+		return nil, errNativeFixtureDenied
+	}
+	return createReleaseChainHighWindow120WithPolicy(ctx, pool, releaseChainV13ReviewedPrerequisiteSHA, p.ChainHistorySHA, 575, "fixture_chain_v13_high", deadline, true, releaseChainV9Policy(), true)
+}
+func TestScenarioReleaseChainActualV13HighE2E(t *testing.T) {
+	testReleaseChainHighNative(t, releaseChainHighEntry{WindowID: releaseChainV13WindowID, AcceptanceEnv: "BUTLER_SCENARIO_CHAIN_V13_HIGH_ACCEPTANCE", PrivateEnv: "BUTLER_SCENARIO_CHAIN_V13_HIGH_PRIVATE", ImportEnv: "BUTLER_SCENARIO_CHAIN_V13_HIGH_IMPORT_FILE", Baseline: 575, Maximum: 120, ProviderStages: true, RetainProposals: true, Policy: releaseChainV9Policy(), ExtensionHarnessLifetime: 40 * time.Minute, ObserveSourceChecks: true, AllowRepeatedPatchChecks: true, ReadQuality: readReleaseChainV13Prerequisite, NewWindow: newReleaseChainV13Window})
+}
+func TestReleaseChainV13OperationalGate(t *testing.T) {
+	if os.Getenv("BUTLER_SCENARIO_CHAIN_V13_HIGH_GATE") != "1" {
+		t.Skip("explicit pinned new scope required")
+	}
+	if _, err := readReleaseChainV13Prerequisite(); err != nil {
+		t.Fatal("sealed575/zero-native V12/prospective protocol denied")
+	}
+}
