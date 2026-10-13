@@ -5,6 +5,13 @@ for normal HTTP, gRPC and Telegram ingress. PostgreSQL owns acceptance, ordering
 execution checkpoints, expiring ownership and decisions. Redis and provider
 session references do not authorize dispatch or reconstruct an unknown result.
 
+The input worker has a ten-minute default execution bound. A declared runtime
+profile may use the explicit startup constructor `NewServiceWithExecutionTimeout`
+with a positive bound no greater than forty minutes. This configures a new
+service before workers start. Earlier caller, accepted input, task, mandate,
+claim, ownership and source deadlines remain authoritative; retries never extend
+them and existing services receive no timeout mutation.
+
 ## Acceptance and ordering
 
 `POST /api/v1/events` returns HTTP 202 with `accepted`, `input_id`,

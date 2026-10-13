@@ -6,7 +6,13 @@ root=${1:?isolated root required}; phase=${2:-prepare}; release=${3:?exact clean
 protocol=${4:-v5}
 [[ "$phase" =~ ^(prepare|execute)$ && "$release" =~ ^[a-f0-9]{40}$ ]] || exit 2
 global_minutes=60
-if [[ "$protocol" == v8 ]]; then
+if [[ "$protocol" == v9 ]]; then
+  [[ "$root" == /srv/storage/butler/agents/scenario-release-chain-v9-high-20261013 ]] || exit 2
+  chain_baseline=544; chain_cap=71; chain_env=BUTLER_SCENARIO_CHAIN_V9_HIGH
+  gate_test=TestReleaseChainV9OperationalGate; window_id=issue33-high-release-chain-v9-20261013-baseline544
+  audit_package=./scripts/dev/release-chain-v6-final-audit
+  offline_timeout=3m; global_minutes=120; expected_audit_passes=0
+elif [[ "$protocol" == v8 ]]; then
   [[ "$root" == /srv/storage/butler/agents/scenario-release-chain-v8-high-20261013 ]] || exit 2
   chain_baseline=541; chain_cap=74; chain_env=BUTLER_SCENARIO_CHAIN_V8_HIGH
   gate_test=TestReleaseChainV8OperationalGate; window_id=issue33-high-release-chain-v8-20261013-baseline541
@@ -92,6 +98,9 @@ build=(docker run --rm --runtime runc --pull never --network none --user "$(id -
   --env GOPROXY=off --env GOSUMDB=off --env GOMAXPROCS=2 --env GOFLAGS=-p=2 --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp --env "CHAIN_AUDIT_PACKAGE=$audit_package" --env "CHAIN_PROTOCOL=$protocol")
 "${build[@]}" "$go_image" bash -eu -c '
 go test -c -race -o /bin-proof/app.test ./apps/orchestrator/internal/app
+if [[ "$CHAIN_PROTOCOL" == v9 ]]; then
+ go test -c -race -o /bin-proof/input.test ./apps/orchestrator/internal/input
+fi
 go build -o /bin-proof/test2json cmd/test2json
 CGO_ENABLED=0 go build -trimpath -o /bin-proof/tool-broker ./apps/tool-broker
 CGO_ENABLED=0 go build -trimpath -o /bin-proof/tool-converter ./apps/tool-converter
@@ -101,13 +110,26 @@ CGO_ENABLED=0 go build -trimpath -o /bin-proof/chain-final-audit "$CHAIN_AUDIT_P
 if [[ "$CHAIN_PROTOCOL" == v8 ]]; then
  go test -race -json -count=1 -run "^(TestDeveloperArgs|TestDeveloperProposalContainsOnlySelectedRefsAndFiniteAllocation|TestDeveloperContractCannotSmuggleDocumentOrReplaceIndependentCriteria)" ./internal/generatedtools ./internal/transport/antigravity > /bin-proof/developer-integer-unit.jsonl
 fi
-if [[ "$CHAIN_PROTOCOL" != v7 && "$CHAIN_PROTOCOL" != v8 ]]; then
+if [[ "$CHAIN_PROTOCOL" == v9 ]]; then
+ go test -race -json -count=1 -run "^(TestConverterCatalogOmitsUnavailableCollectionPreservesDeveloperRoute|TestConverterDeveloperAdmissionDeclaresPhaseBoundary)$" ./apps/tool-broker/internal/broker > /bin-proof/collection-catalog-unit.jsonl
+ go vet ./internal/generatedtools ./apps/tool-broker/internal/broker
+fi
+if [[ "$CHAIN_PROTOCOL" != v7 && "$CHAIN_PROTOCOL" != v8 && "$CHAIN_PROTOCOL" != v9 ]]; then
  go test -race -json -count=1 "$CHAIN_AUDIT_PACKAGE" > /bin-proof/chain-audit-unit.jsonl
  go test -race -json -count=1 -run "^TestToolAuthorizationFailsClosed$" ./apps/orchestrator/internal/orchestrator > /bin-proof/core-batch-policy.jsonl
 fi
 go vet ./apps/orchestrator/internal/app ./apps/orchestrator/internal/orchestrator "$CHAIN_AUDIT_PACKAGE"
 chmod 555 /bin-proof/*
 ' > "$proof/build-vet.log" 2>&1
+if [[ "$protocol" == v9 ]]; then
+ ! grep -Eq '"Action":"(skip|fail)"' "$proof/bin/collection-catalog-unit.jsonl"
+ [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") {n++} END{print n+0}' "$proof/bin/collection-catalog-unit.jsonl")" == 2 ]]
+ for name in TestConverterCatalogOmitsUnavailableCollectionPreservesDeveloperRoute TestConverterDeveloperAdmissionDeclaresPhaseBoundary; do
+  [[ "$(awk -v needle="\"Test\":\"$name\"" 'index($0,"\"Action\":\"pass\"") && index($0,needle) {n++} END{print n+0}' "$proof/bin/collection-catalog-unit.jsonl")" == 1 ]]
+ done
+ if docker run --rm --network none --read-only --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true --memory 512m --volume "$proof/bin:/bin-proof:ro" --env BUTLER_SCENARIO_CHAIN_V8_HIGH_ACCEPTANCE=1 "$go_image" /bin-proof/app.test -test.v -test.run='^TestScenarioReleaseChainActualV8HighE2E$' > "$proof/sealed-v8-entry.txt" 2>&1; then exit 1; fi
+ grep -Fq 'V8 native scope is sealed failed; no new entry from current source' "$proof/sealed-v8-entry.txt"
+fi
 if [[ "$protocol" == v8 ]]; then
  ! grep -Eq '"Action":"(skip|fail)"' "$proof/bin/developer-integer-unit.jsonl"
  mapfile -t integer_required < "$source_dir/scripts/dev/scenario-release-chain-v8-integer-required-tests.txt"
@@ -129,8 +151,8 @@ for attempt in $(seq 1 60); do docker exec "$pg" pg_isready -U fixture -d butler
 app_pattern='^Test(ReleaseChainV5(Window|AllFailedEntries|TerminalMetadata|MeasurementWriteFailure|WholeEntryDeadline|OperationalPrerequisite|Bridge|ProductEvidence|InitialWitness|ProspectiveHealthy|CancelledTimedOut|ContextDeadlineAndCancel|ContextFailureAfterCompleteFinal|ProviderObservationFacts|FailureOutcome|OriginalResult)|ConverterWorkerStructuralDiagnostics)'
 if [[ "$protocol" == v6 ]]; then app_pattern='^Test(ReleaseChainV5(Window|AllFailedEntries|TerminalMetadata|MeasurementWriteFailure|WholeEntryDeadline|OperationalPrerequisite|Bridge|ProductEvidence|InitialWitness|ProspectiveHealthy|CancelledTimedOut|ContextDeadlineAndCancel|ContextFailureAfterCompleteFinal|ProviderObservationFacts|FailureOutcome|OriginalResult)|ReleaseChainV6(OperationalPrerequisiteClosed|ActualHistory|ActualBridge|HumanExpenseException|PrerequisiteTamper|ProviderStage|Window|Kernel|MeasuredRetry|HumanSafeTimeout|SafeRetry)|ConverterWorkerStructuralDiagnostics)'; fi
 if [[ "$protocol" == v7 ]]; then app_pattern='^TestReleaseChainV7BootstrapTimeoutGuard$'; fi
-if [[ "$protocol" == v8 ]]; then
-  mapfile -t v8_required < "$source_dir/scripts/dev/scenario-release-chain-v8-required-tests.txt"
+if [[ "$protocol" == v8 || "$protocol" == v9 ]]; then
+  mapfile -t v8_required < "$source_dir/scripts/dev/scenario-release-chain-$protocol-required-tests.txt"
   [[ "${#v8_required[@]}" -gt 0 ]]
   app_pattern='^('
   for name in "${v8_required[@]}"; do
@@ -144,8 +166,20 @@ docker run --rm --runtime runc --pull never --network "$network" --read-only --u
   --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:chain-prepare-fixture@chain-prepare-postgres:5432/butler_chain_prepare_test?sslmode=disable' \
   --entrypoint /bin-proof/test2json "$go_image" -t -p github.com/butler/butler/apps/orchestrator/internal/app \
   /bin-proof/app.test -test.v=test2json "-test.timeout=$offline_timeout" "-test.run=$app_pattern" > "$proof/tests.jsonl"
+if [[ "$protocol" == v9 ]]; then
+ docker run --rm --runtime runc --pull never --network "$network" --read-only --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true --memory 1536m --pids-limit 160 --cpus 2 \
+  --tmpfs /tmp:rw,nosuid,nodev,size=64m --volume "$source_dir:/src:ro" --volume "$proof/bin:/bin-proof:ro" --workdir /src \
+  --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:chain-prepare-fixture@chain-prepare-postgres:5432/butler_chain_prepare_test?sslmode=disable' \
+  --entrypoint /bin-proof/test2json "$go_image" -t -p github.com/butler/butler/apps/orchestrator/internal/input \
+  /bin-proof/input.test -test.v=test2json -test.timeout=3m '-test.run=^TestExecutionTimeout(StartupBound|CurrentWorkerIntegration)$' > "$proof/input-timeout-tests.jsonl"
+ ! grep -Eq '"Action":"(skip|fail)"' "$proof/input-timeout-tests.jsonl"
+ [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") {n++} END{print n+0}' "$proof/input-timeout-tests.jsonl")" == 4 ]]
+ for name in TestExecutionTimeoutStartupBound TestExecutionTimeoutCurrentWorkerIntegration TestExecutionTimeoutCurrentWorkerIntegration/service_bound TestExecutionTimeoutCurrentWorkerIntegration/parent_bound; do
+  [[ "$(awk -v needle="\"Test\":\"$name\"" 'index($0,"\"Action\":\"pass\"") && index($0,needle) {n++} END{print n+0}' "$proof/input-timeout-tests.jsonl")" == 1 ]]
+ done
+fi
 ! grep -Eq '"Action":"(skip|fail)"' "$proof/tests.jsonl"
-if [[ "$protocol" != v7 && "$protocol" != v8 ]]; then
+if [[ "$protocol" != v7 && "$protocol" != v8 && "$protocol" != v9 ]]; then
 ! grep -Eq '"Action":"(skip|fail)"' "$proof/bin/core-batch-policy.jsonl"
 ! grep -Eq '"Action":"(skip|fail)"' "$proof/bin/chain-audit-unit.jsonl"
 [[ "$expected_audit_passes" -gt 0 && "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/bin/chain-audit-unit.jsonl")" == "$expected_audit_passes" ]]
@@ -158,7 +192,7 @@ if [[ "$protocol" == v6 ]]; then
     [[ "$(awk -v needle="\"Test\":\"$test_name\"" 'index($0,"\"Action\":\"pass\"") && index($0,needle) { n++ } END { print n+0 }' "$proof/bin/chain-audit-unit.jsonl")" == 1 ]]
   done
 fi
-if [[ "$protocol" != v7 && "$protocol" != v8 ]]; then
+if [[ "$protocol" != v7 && "$protocol" != v8 && "$protocol" != v9 ]]; then
  [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":\"TestToolAuthorizationFailsClosed\"") { n++ } END { print n+0 }' "$proof/bin/core-batch-policy.jsonl")" == 1 ]]
 fi
 required=(TestReleaseChainV5OperationalPrerequisiteIsNotApproved TestReleaseChainV5WindowSharedCeilingRestartAndExpiryIntegration TestReleaseChainV5WindowChecksDeadlineAfterCounterWaitIntegration TestReleaseChainV5WindowSharesCounterAcrossPrivateTaskSchemasIntegration TestReleaseChainV5AllFailedEntriesSpentButSourceDenialZeroIntegration TestReleaseChainV5TerminalMetadataRetainedAndReleaseGatedIntegration TestConverterWorkerStructuralDiagnosticsExcludePrivatePayloadIntegration)
@@ -190,8 +224,8 @@ if [[ "$protocol" == v7 ]]; then
   required=(TestReleaseChainV7BootstrapTimeoutGuard)
   [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/tests.jsonl")" == 1 ]]
 fi
-if [[ "$protocol" == v8 ]]; then
-  mapfile -t required < "$source_dir/scripts/dev/scenario-release-chain-v8-required-tests.txt"
+if [[ "$protocol" == v8 || "$protocol" == v9 ]]; then
+  mapfile -t required < "$source_dir/scripts/dev/scenario-release-chain-$protocol-required-tests.txt"
   [[ "${#required[@]}" -gt 0 ]]
   [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/tests.jsonl")" == "${#required[@]}" ]]
 fi

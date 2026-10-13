@@ -67,6 +67,21 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 	terms := strings.Fields(strings.ToLower(query))
 	result := []*toolbrokerv1.ToolContract{}
 	for _, contract := range c.Registry.List("", false) {
+		if contract.GetToolName() == "converters.collect" {
+			// A queued developer receipt is not a candidate return. Advertising
+			// collection early invites a call that correctly fails Prepare.
+			// This is availability only; actual Prepare/Claim repeat all guards.
+			if c.Converters == nil {
+				continue
+			}
+			ready, e := c.Converters.CollectionAvailable(ctx, a)
+			if e != nil {
+				return nil, e
+			}
+			if !ready {
+				continue
+			}
+		}
 		if c.BrowserResourcesUnavailable && (strings.HasPrefix(contract.GetToolName(), "browser.") || strings.HasPrefix(contract.GetToolName(), "single_tab.")) && contract.GetToolName() != "single_tab.bind.guarded" {
 			continue
 		}

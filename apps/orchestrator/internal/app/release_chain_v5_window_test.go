@@ -191,6 +191,14 @@ func (w *releaseChainV5Window) reserve(ctx context.Context, scenario, kind, root
 		return 0, time.Time{}, errNativeFixtureDenied
 	}
 	defer tx.Rollback(ctx)
+	if w.policy.SerializedEntries {
+		// Serialize the fresh history check with this window's admission CAS.
+		// This short transaction ends before the provider call begins.
+		var locked bool
+		if tx.QueryRow(ctx, `SELECT singleton FROM `+w.table("fixture_chain_v5_high_window")+` WHERE singleton FOR UPDATE`).Scan(&locked) != nil || !locked {
+			return 0, time.Time{}, errNativeFixtureDenied
+		}
+	}
 	parent, err := guard(ctx, tx, run)
 	if err != nil {
 		return 0, time.Time{}, errNativeFixtureDenied

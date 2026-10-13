@@ -34,6 +34,9 @@ the mapping grants no source or tool permission.
 
 Defaults: two workers, 250 ms polling, 60-second renewed claims, ten-minute
 execution deadline, 24-hour acceptance deadline and three recovery attempts.
+`NewServiceWithExecutionTimeout` permits a positive startup execution bound up
+to forty minutes for a declared runtime profile. Earlier caller, durable input,
+task, mandate, claim and source deadlines still deny work; retries extend none.
 Busy-session retries and approved continuations do not consume recovery attempts.
 Waiting/blocked session heads deliberately block later execution. PostgreSQL is
 authoritative; no Redis queue or live approval channel is needed for recovery.

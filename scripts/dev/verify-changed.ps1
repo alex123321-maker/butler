@@ -26,13 +26,18 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
-    "^(apps/orchestrator/internal/app/(release_chain_v[78]_|release_chain_proposal_)|scripts/dev/scenario-release-chain-v[78]-|scripts/dev/release-chain-v6-final-audit/(v8|proposals)|deploy/acceptance/release-chain-v[78])" {
+    "^(apps/orchestrator/internal/app/(release_chain_v[789]_|release_chain_proposal_|release_chain_entry_lane)|scripts/dev/scenario-release-chain-v[789]-|scripts/dev/release-chain-v6-final-audit/(v[89]|proposals)|deploy/acceptance/release-chain-v[789])" {
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
       [void]$specs.Add("docs/architecture/generated-converters.md")
       [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
-      [void]$tests.Add("V8: exact affected decoder/app manifests and separate source/runtime admission. The measured5057 V8 root is sealed after its actual native run; never Sync or execute it again. A future native run needs a fresh root/window and factual current history.")
+      [void]$tests.Add("V9: exact affected catalog/lane/input/app checks and separate source/runtime admission. The measured5057 V8 root is sealed; never Sync or execute it again. A fresh V9 native window starts from factual544 only after its own independent admission.")
       [void]$tests.Add("Read-only final checker with explicit -protocol=v8, separately frozen auditor source/binary and only individually named own-tool proposal leaves. V6/V7 retain their original read-only reproduction; all failed runs and UNKNOWN stay unchanged.")
+      continue
+    }
+    "^apps/orchestrator/internal/input/(execution_timeout_test[.]go|service[.]go)$" {
+      [void]$specs.Add("docs/architecture/durable-execution-spec.md")
+      [void]$tests.Add("V9 isolated PostgreSQL/race: TestExecutionTimeoutStartupBound and TestExecutionTimeoutCurrentWorkerIntegration. Explicit startup bound must preserve ordinary ten-minute default, earlier caller cancellation and durable expiry category; no network or model before admission.")
       continue
     }
     "^(docs/architecture/model-retry-policy[.]md$|scripts/dev/model-retry-lab[.]sh$|apps/orchestrator/internal/(input|orchestrator)/model_retry.*[.]go$|internal/budget/model_retry.*[.]go$)" {

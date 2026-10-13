@@ -475,7 +475,13 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 		}
 		args.Budget = f.modelConfig.ChildBudget
 		provider.args = args
-		waitTimeout = 5 * time.Minute
+		waitTimeout = f.modelConfig.FixtureTimeout
+		if waitTimeout == 0 {
+			waitTimeout = 10 * time.Minute
+		}
+		if waitTimeout < 0 || waitTimeout > 40*time.Minute {
+			t.Fatal("finite model fixture wait bound required")
+		}
 	}
 	wait := func(check func() bool, label string) { waitConverterWorkerFor(t, waitTimeout, check, label) }
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
@@ -555,6 +561,12 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 			return event, tx.Commit(ctx)
 		}}, log)
 	worker := durableinput.NewService(inputs, sessions, executor, runs, log)
+	if f.modelConfig != nil {
+		worker, err = durableinput.NewServiceWithExecutionTimeout(inputs, sessions, executor, runs, log, waitTimeout)
+		if err != nil {
+			t.Fatal("declared model fixture input timeout unavailable", err)
+		}
+	}
 	maintenance := &delegationMaintenance{pool: f.f.pool, manager: manager}
 	var maintenanceMu sync.Mutex
 	var maintenanceError error

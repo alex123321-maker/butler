@@ -252,7 +252,15 @@ func newReleaseChainFixtureWithModel(t *testing.T, profile generatedtools.Profil
 	admissionGoal := releaseChainAdmissionGoal + " Selected current typed DATA refs: " + string(selectedRefs)
 	if modelConfig != nil && modelConfig.Provider == "antigravity" {
 		allowanceData, _ := json.Marshal(modelConfig.ChildBudget)
-		admissionGoal += " Owner-selected bounded child budget DATA: " + string(allowanceData) + ". Use a finite child deadline no later than ten minutes from admission. This allowance never replaces the current mandate or Broker policy."
+		childBound := modelConfig.FixtureTimeout
+		if childBound == 0 {
+			childBound = 10 * time.Minute
+		}
+		latest := time.Now().UTC().Add(childBound)
+		if current, ok := ctx.Deadline(); ok && current.Before(latest) {
+			latest = current.UTC()
+		}
+		admissionGoal += " Owner-selected bounded child budget DATA: " + string(allowanceData) + ". Use a finite child deadline no later than " + latest.Format(time.RFC3339Nano) + ". This allowance never replaces the current mandate or Broker policy."
 	}
 	source := initiative.Source{ID: "project-fixture-checks", OwnerID: owner, GoalID: goalResponse.SubjectID, MandateID: mandateResponse.SubjectID, SessionKey: sessionKey, ProjectRef: projectfixture.ProjectRef, ProjectRevision: projectfixture.Revision(), ObserverKind: "broker_project", CheckManifestHash: p.Digest, CheckToolName: "extension.project.inspect", CheckResource: egresstest.Origin + "/project", ResultDelivery: "verified_task", Purpose: "fixture_maintenance", TimeZone: "UTC", TaskGoal: admissionGoal, ExecutionPolicy: "normal", CompletionCriteria: []string{"exact original CSV converted to JSON", "independently tested converter activated within original mandate", "exact immutable ready=true README patch checked; original project remains unapplied"}, ActiveStart: now.Hour(), ActiveEnd: (now.Hour() + 23) % 24, FailureThreshold: 3, ConfidenceThreshold: 90, MinimumImportance: 60, CooldownSeconds: 3600, Enabled: true}
 	sourceAPI := httptest.NewServer(api.NewInitiativeServer(store, api.NewOwnerControlAuth(ownerToken, owner)).Handle())

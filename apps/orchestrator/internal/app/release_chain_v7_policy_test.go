@@ -15,6 +15,7 @@ import (
 // independently pinned new window declares the longer bounded request profile
 // and both trusted nominal-timeout phases used by ordinary Core.
 type releaseChainHighWindowPolicy struct {
+	SerializedEntries           bool   `json:"provider_entries_serialized,omitempty"`
 	ProposalRetention           bool   `json:"proposal_retention_required,omitempty"`
 	MaximumPrivateProposalBytes int    `json:"maximum_private_proposal_bytes,omitempty"`
 	Generation                  int    `json:"maximum_generation_tokens,omitempty"`
@@ -25,7 +26,7 @@ type releaseChainHighWindowPolicy struct {
 }
 
 func (p releaseChainHighWindowPolicy) valid() bool {
-	return p == (releaseChainHighWindowPolicy{}) || p == releaseChainV7Policy() || p == releaseChainV8Policy()
+	return p == (releaseChainHighWindowPolicy{}) || p == releaseChainV7Policy() || p == releaseChainV8Policy() || p == releaseChainV9Policy()
 }
 func (p releaseChainHighWindowPolicy) generation() int {
 	if p.Generation == 0 {

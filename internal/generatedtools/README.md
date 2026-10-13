@@ -20,6 +20,10 @@ See [contracts and acceptance](../../docs/architecture/generated-converters.md).
 Optional053 developer admission requires the actual confirmed parent discovery
 and a claimed `task.delegate_converter` action. Child rights are exactly three
 fixed local contracts; the original document and trial/activation stay parent-only.
+The queued admission receipt ends the current parent attempt. `converters.collect`
+appears in the owned Broker catalog only after an actual current immutable
+tested child return. Listing grants no candidate source or action; preparation
+and dispatch repeat the complete authority and return checks.
 The typed argument decoder accepts exact JSON integers in decimal and exponent
 notation, including `1.0` and `1e0`, consistently with the transport schema. It
 rejects fractions, int64 overflow, missing fields, duplicate keys and extra fields.

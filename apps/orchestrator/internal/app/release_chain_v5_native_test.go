@@ -269,7 +269,7 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 				if scenario == "restart_sent" || scenario == "owner_stop" {
 					fault.gate = make(chan struct{})
 				}
-				return &releaseChainV5Provider{ModelProvider: native, window: w, scenario: scenario, expectedVersion: prerequisite.ObservedVersion, checker: &releaseChainEntryChecker{pool: pool, sources: f.f.sources, root: root, document: f.document, need: f.needRef, spec: f.specRef}, before: fault.before, proposals: releaseChainProposalSinkFor(entry.RetainProposals, private, scenario)}, nil
+				return &releaseChainV5Provider{ModelProvider: native, window: w, scenario: scenario, expectedVersion: prerequisite.ObservedVersion, checker: &releaseChainEntryChecker{pool: pool, sources: f.f.sources, root: root, document: f.document, need: f.needRef, spec: f.specRef}, before: fault.before, proposals: releaseChainProposalSinkFor(entry.RetainProposals, private, scenario), entryLane: releaseChainHighEntryLaneFor(entry.Policy)}, nil
 			}
 			hooks := &converterWorkerFaultHooks{factory: func(t *testing.T, p generatedtools.Profile, path string) *developerFixture {
 				f = newReleaseChainFixtureWithModel(t, p, path, &cfg)

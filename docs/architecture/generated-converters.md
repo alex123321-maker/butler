@@ -16,6 +16,12 @@ Passing a runtime test grants no capability. The actual delegated developer/task
 acceptance from issue16 remains a separate gate; runtime RPC alone is not its proof.
 
 The separately reviewed developer proposal contract is `task.delegate_converter`.
+A queued admission receipt requires finishing the current parent attempt; the
+ordinary continuation resumes collection after the child's tested final/report.
+The owned Broker catalog advertises `converters.collect` only when the current
+Store verifies an actual return through the same collection and authority
+checks. Listing creates no source grant or action. Preparation and claim repeat
+those checks, including deletion, ownership and current return validity.
 Its typed integer fields accept exact integral JSON numbers in decimal and
 exponent notation. Decoding is bounded to 512 characters and exponents within
 ±1024, rejects fractions and int64 overflow, and preserves original argument

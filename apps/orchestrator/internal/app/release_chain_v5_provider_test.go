@@ -14,6 +14,7 @@ import (
 // remains the owning reservation ledger; this is an additional acceptance cap.
 type releaseChainV5Provider struct {
 	proposals *releaseChainProposalSink
+	entryLane *releaseChainHighEntryLane
 	transport.ModelProvider
 	checker         *releaseChainEntryChecker
 	window          *releaseChainV5Window
@@ -105,7 +106,7 @@ func (p *releaseChainV5Provider) SubmitToolResult(ctx context.Context, r transpo
 }
 
 func (p *releaseChainV5Provider) entry(ctx context.Context, kind, run string, input any, invoke func(context.Context) (transport.EventStream, error)) (transport.EventStream, error) {
-	if p == nil || p.checker == nil || p.ModelProvider == nil || p.window == nil || p.expectedVersion == "" || p.window.policy.ProposalRetention && p.proposals == nil {
+	if p == nil || p.checker == nil || p.ModelProvider == nil || p.window == nil || p.expectedVersion == "" || p.window.policy.ProposalRetention && p.proposals == nil || p.window.policy.SerializedEntries && p.entryLane == nil {
 		return nil, errNativeFixtureDenied
 	}
 	if p.before != nil {
@@ -113,8 +114,17 @@ func (p *releaseChainV5Provider) entry(ctx context.Context, kind, run string, in
 			return nil, err
 		}
 	}
+	release := func() {}
+	if p.window.policy.SerializedEntries {
+		var err error
+		release, err = p.entryLane.acquire(ctx, func(guard context.Context) error { _, err := p.checker.guard(guard, run); return err })
+		if err != nil {
+			return nil, err
+		}
+	}
 	ordinal, deadline, err := p.window.reserve(ctx, p.scenario, kind, p.checker.root, run, input, p.checker.guardTx)
 	if err != nil {
+		release()
 		return nil, err
 	}
 	// This bound owns the whole auth/preflight/invoke/stream entry. The native
@@ -136,22 +146,26 @@ func (p *releaseChainV5Provider) entry(ctx context.Context, kind, run string, in
 	if call.Err() != nil {
 		p.finish(ordinal, releaseChainV5FailureOutcome(call.Err()), nil, nil, "entry", transport.NormalizeError(call.Err(), p.Name()), &releaseChainV5Observations{providerStage: stages.seal()})
 		cancel()
+		release()
 		return nil, call.Err()
 	}
 	stream, err := invoke(call)
 	if err != nil {
 		p.finish(ordinal, releaseChainV5FailureOutcome(err), nil, nil, "entry", transport.NormalizeError(err, p.Name()), &releaseChainV5Observations{providerStage: stages.seal()})
 		cancel()
+		release()
 		return nil, err
 	}
 	if stream == nil {
 		failure := &transport.Error{Type: transport.ErrorTypeProviderProtocolError}
 		_ = p.finish(ordinal, "transport_error", nil, nil, "entry", failure, &releaseChainV5Observations{providerStage: stages.seal()})
 		cancel()
+		release()
 		return nil, failure
 	}
 	out := make(chan transport.TransportEvent)
 	go func() {
+		defer release()
 		defer close(out)
 		defer cancel()
 		outcome := "transport_error"
@@ -333,6 +347,11 @@ func (p *releaseChainV5Provider) entry(ctx context.Context, kind, run string, in
 						}
 						return
 					}
+				}
+				if terminal {
+					// Expense and any original proposal are durable. End the
+					// provider lane before Core can change the holder's run state.
+					release()
 				}
 				if event.EventType == transport.EventTypeAssistantFinal {
 					copy := event
