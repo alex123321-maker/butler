@@ -28,7 +28,9 @@ func TestModelAdmissionDeadlineOriginIntegration(t *testing.T) {
 			c := NewController(pool, p)
 			if name == "earlier_assigned_authority" {
 				c.SetAuthorityResolver(func(context.Context, pgx.Tx, string, string) (MandateScope, error) {
-					return MandateScope{ID: "mandate", OwnerID: "owner", Limits: p.Mandate, Deadline: time.Now().Add(time.Hour), AuthorityDeadline: time.Now().Add(20 * time.Second)}, nil
+					// Declare the fixture's model privacy explicitly; this test owns
+					// deadline origin, not admission under missing mandate authority.
+					return MandateScope{ID: "mandate", OwnerID: "owner", Privacy: "cloud_allowed", Limits: p.Mandate, Deadline: time.Now().Add(time.Hour), AuthorityDeadline: time.Now().Add(20 * time.Second)}, nil
 				})
 			}
 			owned := ownership.WithToken(ctx, nil, ownership.Token{SessionKey: "deadline-session", RunID: "deadline-run", LeaseID: "lease", FenceEpoch: 1})
