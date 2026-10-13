@@ -47,6 +47,14 @@ func verifyProductWithPolicy(name string, ini, fin object, native []object, poli
 		finalFields += " source_check_observation"
 		verifyV11SourceObservation(fin["source_check_observation"], obj(fin["postgres"]))
 	}
+	if policy.RequireCaptureStatus {
+		finalFields += " original_result_capture_status"
+		expected := "captured"
+		if name == "owner_stop" {
+			expected = "absent"
+		}
+		require(fin["original_result_capture_status"] == expected, "v18_original_capture_status")
+	}
 	keys(fin, finalFields)
 	require(ini["version"] == "butler-release-chain-v5-initial-witness-v1" && fin["version"] == "butler-release-chain-v5-product-witness-v1" && ini["scenario"] == name && fin["scenario"] == name && fin["test_failed"] == false, "product_identity")
 	require(ini["configured_native_high"] == true && ini["ordinary_core_entry"] == "after_owner_bound_initiative_promoted_input" && ini["setup_execution"] == "owner_services_and_real_approved_broker_reads_without_model" && ini["adapter_development"] == "production_deterministic_finite_ir_builder_selected_by_native_child" && ini["model_authored_ir"] == false && ini["human_recipient"] == false, "authorship_boundary")
@@ -70,7 +78,11 @@ func verifyProductWithPolicy(name string, ini, fin object, native []object, poli
 	}
 	for _, a := range rows(setup, "setup_actions") {
 		keys(a, "action_id run_id tool_call_id action_hash effect_id requires_approval created_at tool_name effect_state authorization_id authorization_state")
-		require(setupRuns[text(a["run_id"])] != nil && a["requires_approval"] == true && a["effect_state"] == "effect_confirmed" && a["authorization_state"] == "dispatch_completed", "approved_setup_read")
+		approved := a["requires_approval"] == true
+		if policy.CurrentSourceSemantics {
+			approved = a["requires_approval"] == false && a["tool_name"] == "extension.project.inspect"
+		}
+		require(setupRuns[text(a["run_id"])] != nil && approved && a["effect_state"] == "effect_confirmed" && a["authorization_state"] == "dispatch_completed", "approved_setup_read")
 		sha(a["action_hash"])
 	}
 	accepted := obj(setup["accepted_input"])
@@ -113,7 +125,11 @@ func verifyProductWithPolicy(name string, ini, fin object, native []object, poli
 		s := sources[text(ref["source_id"])]
 		require(s != nil && s["status"] == "active" && s["revision"] == ref["revision"] && s["access_revision"] == ref["access_revision"] && s["content_hash"] == ref["content_hash"], "original_source_not_current")
 	}
-	require(obj(refs["document"])["content_hash"] == digest([]byte("name,count\nprivate-original-document,2\n")), "original_document_bytes")
+	if policy.CurrentSourceSemantics {
+		verifyV18DocumentRevision(obj(refs["document"]), sources)
+	} else {
+		require(obj(refs["document"])["content_hash"] == digest([]byte("name,count\nprivate-original-document,2\n")), "original_document_bytes")
+	}
 	inputRows := byID(rows(pg, "accepted_inputs"), "input_id")
 	require(inputRows[text(accepted["input_id"])] != nil, "original_input_discarded")
 	for _, a := range native {
@@ -135,7 +151,13 @@ func verifyProductWithPolicy(name string, ini, fin object, native []object, poli
 		for _, a := range native {
 			require(a["is_parent"] == true, "stopped_descendant_inference")
 		}
+		if policy.CurrentSourceSemantics {
+			verifyV18StoppedWaitingIntents(pg, initialTask, tasks, root, child)
+		}
 		for _, table := range []string{"converter_versions", "converter_catalog", "converter_trials", "converter_usages", "converter_returns", "continuations"} {
+			if policy.CurrentSourceSemantics && table == "continuations" {
+				continue
+			}
 			require(len(rows(pg, table)) == 0, "stopped_adapter_effect")
 		}
 		return
@@ -163,7 +185,7 @@ func verifyProductWithPolicy(name string, ini, fin object, native []object, poli
 	require(ordinary == 4 && control == 1, "ordinary_and_owner_control_inputs")
 	require(name != "restart_sent" || fault["triggered"] == true, "actual_restart_not_triggered")
 	verifyAuthority(pg, root, native)
-	verifyAdapter(pg, ini, root, child, refs, sources)
+	verifyAdapterWithPolicy(pg, ini, root, child, refs, sources, policy)
 	if policy.AllowRepeatedPatchChecks {
 		verifyV12OriginalResult(fin, actions, runs, root, child, text(ini["target_converter_id"]))
 	} else {
@@ -263,16 +285,25 @@ func verifyBudgetWithPolicy(pg object, native []object, name, root, child string
 		}
 		if scope["kind"] == "task" && scope["subject_id"] == root {
 			foundTask = true
+			if policy.ModelInputBytes > 0 {
+				require(integer(limit["provider_input_bytes"]) == 256<<20, "v16_root_input_byte_scope_unchanged")
+			}
 			require(integer(limit["model_turns"]) == 24 && integer(limit["tokens"]) == 24*1081344 && integer(limit["active_millis"]) == 24*policy.Attempt.Milliseconds(), "root_budget_changed")
 		}
 		if scope["kind"] == "owner_day" && integer(limit["model_turns"]) == policy.DayModelTurns {
 			foundDay = true
+			if policy.DayProviderInputBytes > 0 {
+				require(integer(limit["provider_input_bytes"]) == policy.DayProviderInputBytes, "v16_finite_day_input_byte_scope")
+			}
 			if policy.WindowPolicy != nil {
 				require(integer(limit["tokens"]) == policy.DayModelTurns*1081344 && integer(limit["active_millis"]) == policy.DayModelTurns*policy.Attempt.Milliseconds(), "v7_day_budget_changed")
 			}
 		}
 		if scope["kind"] == "delegation" && scope["subject_id"] == child {
 			foundChild = true
+			if policy.ModelInputBytes > 0 {
+				require(integer(limit["provider_input_bytes"]) == 4*policy.ModelInputBytes, "v16_finite_child_input_byte_scope")
+			}
 			require(integer(limit["model_turns"]) == 4 && integer(limit["tokens"]) == 4*1081344 && integer(limit["external_calls"]) == 4, "child_budget_changed")
 			if policy.WindowPolicy != nil {
 				require(integer(limit["active_millis"]) == policy.ChildActiveMillis, "v7_child_active_budget_changed")
@@ -288,6 +319,9 @@ func verifyBudgetWithPolicy(pg object, native []object, name, root, child string
 		require(res != nil && res["operation_id"] == a["operation_id"] && a["provider"] == "antigravity" && a["model"] == "gemini-3.8-flash-high" && integer(a["input_allowance"]) == 1048576 && integer(a["output_allowance"]) == 32768, "normal_kernel_admission")
 		charge := obj(res["charge"])
 		require(integer(charge["model_turns"]) == 1 && integer(charge["tokens"]) == 1081344 && integer(charge["active_millis"]) == policy.Attempt.Milliseconds(), "quote_is_not_measured_cost")
+		if policy.ModelInputBytes > 0 {
+			require(integer(charge["provider_input_bytes"]) == policy.ModelInputBytes, "v16_actual_model_input_byte_quote")
+		}
 		byRun[text(a["run_id"])] = append(byRun[text(a["run_id"])], a)
 	}
 	for _, a := range byRun {
@@ -371,6 +405,9 @@ func verifyAuthority(pg object, root string, native []object) {
 	require(moment(g["expires_at"]).After(last) && moment(m["expires_at"]).After(last), "owner_authority_expired")
 }
 func verifyAdapter(pg, ini object, root, child string, refs object, sources map[string]object) {
+	verifyAdapterWithPolicy(pg, ini, root, child, refs, sources, v6AuditPolicy())
+}
+func verifyAdapterWithPolicy(pg, ini object, root, child string, refs object, sources map[string]object, policy auditPolicy) {
 	versions, catalog, states := rows(pg, "converter_versions"), rows(pg, "converter_catalog"), rows(pg, "converter_states")
 	require(len(versions) == 1 && len(catalog) == 1 && len(states) == 1, "one_missing_adapter_developed")
 	v, c := versions[0], catalog[0]
@@ -403,7 +440,11 @@ func verifyAdapter(pg, ini object, root, child string, refs object, sources map[
 		require(x["digest"] == dig && x["task_id"] == root && x["output_hash"] == expected, "exact_original_conversion")
 		ref := obj(x["output_ref_json"])
 		s := sources[text(ref["source_id"])]
-		require(s != nil && s["content_hash"] == expected && s["status"] == "active", "converted_original_source")
+		if policy.CurrentSourceSemantics {
+			verifyV18DerivedConversionRevision(ref, s, v, refs)
+		} else {
+			require(s != nil && s["content_hash"] == expected && s["status"] == "active", "converted_original_source")
+		}
 	}
 	require(trials[0]["status"] == "passed" && reflect.DeepEqual(trials[0]["input_ref_json"], refs["document"]) && uses[0]["generation"] == c["generation"], "original_trial_and_current_catalog_use")
 	continuations := rows(pg, "continuations")

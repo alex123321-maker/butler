@@ -16,7 +16,14 @@ type auditPolicy struct {
 	RequireProposals                                          bool
 	RequireSourceObservation                                  bool
 	AllowRepeatedPatchChecks                                  bool
+	RequireTaskScopedOriginalProof                            bool
+	CurrentSourceSemantics                                    bool
+	RequireUnavailableClass                                   bool
+	RequireCaptureStatus                                      bool
+	RetainedScenarioNames                                     []string
 	SerializedEntries                                         bool
+	ScenarioNames                                             []string
+	ModelInputBytes, DayProviderInputBytes                    int64
 	ReadPrivateProposal                                       func(object) []byte
 	VerifyHuman                                               func(inputs)
 	VerifyPrerequisite                                        func(object)
@@ -64,6 +71,18 @@ func selectedAuditPolicy(name string) auditPolicy {
 		return v12AuditPolicy()
 	case "v13":
 		return v13AuditPolicy()
+	case "v14":
+		return v14AuditPolicy()
+	case "v15":
+		return v15AuditPolicy()
+	case "v16":
+		return v16AuditPolicy()
+	case "v18":
+		return v18AuditPolicy()
+	case "v19":
+		return v19AuditPolicy()
+	case "v20":
+		return v20AuditPolicy()
 	default:
 		require(false, "explicit_reviewed_protocol_required")
 		return auditPolicy{}

@@ -63,7 +63,7 @@ func binaryHash(path, expected string) error {
 	return nil
 }
 func run() error {
-	protocol := flag.String("protocol", "v6", "explicit frozen v6, v7, v8, v9, v10, v11, v12 or v13 audit policy")
+	protocol := flag.String("protocol", "v6", "explicit frozen v6, v7, v8, v9, v10, v11, v12, v13, v14, v15 or v16 audit policy")
 	auditorCode := flag.String("auditor-commit", "", "separately frozen read-only auditor commit")
 	auditorSource := flag.String("auditor-source-sha256", "", "separately frozen auditor source TreeHash")
 	auditorBinary := flag.String("auditor-binary-sha256", "", "separately built audit executable")
@@ -86,7 +86,7 @@ func run() error {
 	if !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(*code) || !hashPattern.MatchString(*source) {
 		return errors.New("prepared_source_identity_required")
 	}
-	if *protocol == "v7" || *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || *protocol == "v13")) {
+	if *protocol == "v7" || *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
 		if !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(*auditorCode) || !hashPattern.MatchString(*auditorSource) {
 			return errors.New("separate_auditor_source_identity_required")
 		}
@@ -117,28 +117,28 @@ func run() error {
 	}
 	parsed := map[string]any{}
 	bindings := map[string]string{"protocol": *protocol, "code_commit": *code, "source_sha256": *source, "app_sha256": *app, "broker_sha256": *broker, "converter_sha256": *converter, "quality_sha256": qualitySHA, "prerequisite_sha256": policy.PrerequisiteSHA, "prior_protocol_sha256": priorProtocolSHA, "human_safe_timeout_waiver_sha256": safeTimeoutWaiverSHA}
-	if *protocol == "v7" || *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || *protocol == "v13")) {
+	if *protocol == "v7" || *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
 		bindings["auditor_commit"], bindings["auditor_source_sha256"], bindings["auditor_binary_sha256"] = *auditorCode, *auditorSource, *auditorBinary
 		bindings["human_policy_amendment_sha256"] = policy.HumanSHA
 		bindings["retained_v6_timeout_waiver_sha256"] = safeTimeoutWaiverSHA
 		bindings["retained_v6_protocol_sha256"] = prerequisiteSHA
-		if *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || *protocol == "v13")) {
+		if *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
 			bindings["retained_v7b_protocol_sha256"] = v7PrerequisiteSHA
 			bindings["proposal_retention_policy"] = "own_tool_call_original_bytes_v1"
-			if *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || *protocol == "v13")) {
+			if *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
 				bindings["retained_v8_protocol_sha256"] = v8PrerequisiteSHA
 				bindings["prior_actual544_fold_sha256"] = v9PriorSHA
 				bindings["provider_entries_serialized"] = "owning_client_intervals"
 			}
 		}
 	}
-	if *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || *protocol == "v13")) {
+	if *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
 		bindings["retained_v9_protocol_sha256"] = v9PrerequisiteSHA
 		bindings["retained_v9_human_amendment_sha256"] = v9HumanSHA
 		bindings["prior_actual556_fold_sha256"] = v10PriorSHA
 		bindings["extension_harness_lifetime_policy"] = "test_only_remaining_case_deadline_le_2400000_ms"
 	}
-	if *protocol == "v11" || (*protocol == "v12" || *protocol == "v13") {
+	if *protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20")))))) {
 		bindings["retained_v10_protocol_sha256"] = v10PrerequisiteSHA
 		bindings["retained_v10_human_amendment_sha256"] = v10HumanSHA
 		bindings["prior_actual557_fold_sha256"] = v11PriorSHA
@@ -197,36 +197,81 @@ func run() error {
 	}
 	verifyRetainedFailedV5Source("/src")
 	verifyPriorV6ProtocolSource("/src")
-	if *protocol == "v7" || *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || *protocol == "v13")) {
+	if *protocol == "v7" || *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
 		verifyRetainedFailedV6Source("/src")
 	}
-	if *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || *protocol == "v13")) {
+	if *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
 		verifyRetainedFailedV7bSource("/src")
 	}
-	if *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || *protocol == "v13")) {
+	if *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
 		verifyV8PrivateDirectory(obj(parsed["scope"]))
 	}
-	if *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || *protocol == "v13")) {
+	if *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
 		verifyRetainedFailedV8Source("/src")
 	}
-	if *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || *protocol == "v13")) {
+	if *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
 		verifyRetainedFailedV9Source("/src")
 	}
-	if *protocol == "v11" || (*protocol == "v12" || *protocol == "v13") {
+	if *protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20")))))) {
 		verifyRetainedFailedV10Source("/src")
 	}
-	if *protocol == "v12" || *protocol == "v13" {
+	if *protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))) {
 		bindings["retained_v11_protocol_sha256"] = v11PrerequisiteSHA
 		bindings["retained_v11_human_amendment_sha256"] = v11HumanSHA
 		bindings["prior_actual575_fold_sha256"] = v12PriorSHA
 		bindings["project_read_receipts_policy"] = "owning_budget_qualified_run_call_actual_pg_result_and_canonical_body_digests"
 		verifyRetainedFailedV11Source("/src")
 	}
-	if *protocol == "v13" {
+	if *protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20")))) {
 		bindings["retained_v12_protocol_sha256"] = v12PrerequisiteSHA
 		bindings["retained_v12_human_amendment_sha256"] = v12HumanSHA
 		bindings["zero_native_v12_bootstrap_sha256"] = v13BootstrapSHA
 		verifyV13BootstrapSource("/src")
+	}
+	if *protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))) {
+		bindings["retained_v13_protocol_sha256"] = v13PrerequisiteSHA
+		bindings["retained_v13_human_amendment_sha256"] = v13HumanSHA
+		bindings["prior_actual593_fold_sha256"] = v14PriorSHA
+		bindings["activated_context_policy"] = "source_pinned_current_activation_data_no_authority"
+		bindings["proposal_metadata_reader_policy"] = "test_only_fixed120_legacy80_unchanged"
+		verifyRetainedFailedV13Source("/src")
+	}
+	if *protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20")) {
+		bindings["retained_v14_protocol_sha256"] = v14PrerequisiteSHA
+		bindings["retained_v14_human_amendment_sha256"] = v14HumanSHA
+		bindings["prior_actual611_fold_sha256"] = v15PriorSHA
+		bindings["task_scoped_original_proof_policy"] = "current_task_qualified_completed_run_call_confirmed_dispatch_source_pinned_sql"
+		verifyRetainedFailedV14Source("/src")
+	}
+	if *protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20") {
+		bindings["retained_v15_protocol_sha256"] = v15PrerequisiteSHA
+		bindings["retained_v15_human_amendment_sha256"] = v15HumanSHA
+		bindings["prior_actual616_fold_sha256"] = v16PriorSHA
+		bindings["selected_actual_scenarios"] = "restart_sent,explicit_absence,lost_ack,owner_stop"
+		bindings["retained_v14_normal_work"] = "technical_CSV_patch_facts_only_original_NO_GO_no_owner_notice"
+		bindings["common_normal_completion_evidence"] = "current_restart_sent_owner_verification_single_sent_notice"
+		bindings["provider_input_byte_policy"] = "fixture_only_4194304_per_model_quote_503316480_day_16777216_child"
+		verifyRetainedFailedV15Source("/src")
+	}
+	if *protocol == "v18" || *protocol == "v19" || *protocol == "v20" {
+		verifyV18RetainedHistory("/src", "/historical-safe")
+		bindings["selected_actual_scenarios"] = "explicit_absence,lost_ack,restart_sent"
+		bindings["prior_actual658_fold_sha256"] = v18PriorSHA
+		bindings["retained_owner_stop_component_sha256"] = v18StopComponentSHA
+		bindings["retained_owner_stop_boundary_sha256"] = v18StopBoundarySHA
+		bindings["current_source_semantics"] = "actual_catalog_revision_envelope_distinct_from_golden_body_digest"
+	}
+	if *protocol == "v19" || *protocol == "v20" {
+		verifyRetainedFailedV18Source("/src")
+		bindings["selected_actual_scenarios"] = "lost_ack,restart_sent"
+		bindings["retained_explicit_absence_component_sha256"] = v19RetainedAbsenceSHA
+		bindings["prior_actual705_fold_sha256"] = v19PriorSHA
+	}
+	if *protocol == "v20" {
+		verifyRetainedFailedV19Source("/src")
+		bindings["prior_actual706_fold_sha256"] = v20PriorSHA
+		bindings["independent_case_admission_policy"] = "closed_other_case_does_not_grant_authority_retry_or_global_pass"
+		bindings["provider_unavailable_class_policy"] = "exact_fixed_transport_messages_diagnostic_only_no_status_or_retry_authority"
 	}
 	result, err := auditWithPolicy(inputs{parsed["scope"], parsed["pg-ledger"], parsed["pg-initial"], parsed["pg-product"], parsed["runtime-state"], parsed["quality"], parsed["prerequisite"], parsed["expense-exception"], parsed["timeout-waiver"]}, policy)
 	if e = json.NewEncoder(os.Stdout).Encode(struct {

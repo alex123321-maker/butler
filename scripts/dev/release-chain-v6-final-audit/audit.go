@@ -34,22 +34,24 @@ type costs struct {
 	UnknownOutput int   `json:"unknown_output_attempts"`
 }
 type report struct {
-	Status                 string   `json:"status"`
-	Reasons                []string `json:"no_go_reasons"`
-	Cost                   costs    `json:"all_new_measured_cost"`
-	Cases                  []string `json:"verified_scenarios"`
-	Prior                  int      `json:"prior_attempts"`
-	Total                  int      `json:"carry_forward_attempts"`
-	KnownHistoricalTotal   int64    `json:"prior_known_total_subtotal"`
-	UnknownHistoricalTotal int      `json:"prior_unknown_total_attempts"`
-	AuditorCalls           int      `json:"auditor_native_calls"`
-	AcceptedRetryFailures  int      `json:"accepted_model_retry_failures"`
-	AcceptedUnknownCost    int      `json:"accepted_unknown_timeout_cost_entries"`
-	AcceptedUnknownVersion int      `json:"accepted_unknown_timeout_version_entries"`
-	AcceptedUnmeasured     int      `json:"accepted_unmeasured_timeout_entries"`
-	MeasuredComplete       bool     `json:"all_new_expense_measured"`
-	Ready                  bool     `json:"issue33_ready"`
-	Limits                 []string `json:"limits"`
+	Status                   string   `json:"status"`
+	Reasons                  []string `json:"no_go_reasons"`
+	Cost                     costs    `json:"all_new_measured_cost"`
+	Cases                    []string `json:"verified_scenarios"`
+	Prior                    int      `json:"prior_attempts"`
+	Total                    int      `json:"carry_forward_attempts"`
+	KnownHistoricalTotal     int64    `json:"prior_known_total_subtotal"`
+	UnknownHistoricalTotal   int      `json:"prior_unknown_total_attempts"`
+	AuditorCalls             int      `json:"auditor_native_calls"`
+	AcceptedRetryFailures    int      `json:"accepted_model_retry_failures"`
+	AcceptedUnknownCost      int      `json:"accepted_unknown_timeout_cost_entries"`
+	AcceptedUnknownVersion   int      `json:"accepted_unknown_timeout_version_entries"`
+	AcceptedUnmeasured       int      `json:"accepted_unmeasured_timeout_entries"`
+	MeasuredComplete         bool     `json:"all_new_expense_measured"`
+	Ready                    bool     `json:"issue33_ready"`
+	Limits                   []string `json:"limits"`
+	CommonCompletionEvidence string   `json:"common_completion_evidence,omitempty"`
+	RetainedCases            []string `json:"retained_verified_scenarios,omitempty"`
 }
 
 func require(ok bool, code string) {
@@ -164,6 +166,7 @@ func audit(in inputs) (r report, err error) {
 }
 
 func auditWithPolicy(in inputs, policy auditPolicy) (r report, err error) {
+	selectedScenarios := reviewedScenarioNames(policy)
 	r = report{Status: "NO_GO", Reasons: []string{}, Cases: []string{}, Prior: policy.Baseline, KnownHistoricalTotal: policy.KnownTotal, UnknownHistoricalTotal: policy.UnknownTotal, Limits: []string{
 		"Read-only witness correlation on a shared administrator-controlled host; no hardware isolation or blind benchmark claim.",
 		"Owner-bound setup and cheap checks are model-free. Native ordinary Core begins at the promoted input; production finite-IR builder authors the adapter.",
@@ -191,7 +194,7 @@ func auditWithPolicy(in inputs, policy auditPolicy) (r report, err error) {
 		r.Limits[5] = "The explicit V12 policy retains the historical557 expense exception, fully measured completed requests and proved same-run timeout recovery. Source uncertainty never grants retry or authority."
 		r.Limits = append(r.Limits, "V12 uses a new 575+120=695 allocation and permits root project GET inspection/check counts under the unchanged owning Core budgets. Every read retains qualified run/call, actual PG result digest and validated canonical body digest; source-pinned capture is not raw HTTP/SSE proof. Writes, owner verification, Stop and delivery gates remain unchanged; closed V11 two-read response booleans stay UNKNOWN and NO_GO.")
 	}
-	if policy.PassStatus == "CHAIN_V13_WITNESS_AUDIT_PASS" {
+	if policy.PassStatus == "CHAIN_V13_WITNESS_AUDIT_PASS" || (policy.PassStatus == "CHAIN_V14_WITNESS_AUDIT_PASS" || policy.PassStatus == "CHAIN_V15_WITNESS_AUDIT_PASS") {
 		r.Limits[5] = strings.Replace(r.Limits[5], "V12 policy", "V13 policy", 1)
 		for i, line := range r.Limits {
 			if strings.HasPrefix(line, "V11 is a fresh") {
@@ -202,6 +205,39 @@ func auditWithPolicy(in inputs, policy auditPolicy) (r report, err error) {
 			}
 		}
 		r.Limits = append(r.Limits, "The sealed V12 bootstrap adds no paid ordinal: its separately pinned independent proof derives zero native requests from source ordering and the actual constructor failure. Its original NULL counter remains NULL; empty exports alone do not prove zero. V13 uses a new fixed120 fixture constructor without reopening that failed scope.")
+	}
+	if policy.PassStatus == "CHAIN_V14_WITNESS_AUDIT_PASS" || policy.PassStatus == "CHAIN_V15_WITNESS_AUDIT_PASS" {
+		for i, line := range r.Limits {
+			line = strings.ReplaceAll(line, "V13 uses a new 575+120=695", "V14 uses a new 593+120=713")
+			line = strings.Replace(line, "V13 policy", "V14 policy", 1)
+			r.Limits[i] = line
+		}
+		r.Limits = append(r.Limits, "V14 reloads a source-pinned current confirmed activation as technical DATA for the original-work phase. It grants no new authority and is not a measured copy of model context. Its explicit fixed120 metadata reader preserves original arguments; the sealed V13 NULL metadata and empty Go stdout remain unchanged, with its supplemental NO_GO explicitly distinct from canonical Go output.")
+	}
+	if policy.RequireTaskScopedOriginalProof {
+		for i, line := range r.Limits {
+			line = strings.ReplaceAll(line, "V14 uses a new 593+120=713", "V15 uses a new 611+120=731")
+			r.Limits[i] = strings.Replace(line, "V14 policy", "V15 policy", 1)
+		}
+		r.Limits = append(r.Limits, "V15 verifies earlier completed project phases under the same current root task and qualified run/call identities; the owner result remains bound to the actual original conversion final. Private full binding/constraints checks and qualified owner evidence references are enforced by frozen fixture SQL, with current public qualified receipts independently checked. The closed V14 original conversion and checked patch are technical facts only: its owner verification/notice and four fault variants did not run; its supplemental report is not canonical Go output.")
+	}
+	if policy.ScenarioNames != nil {
+		for i, line := range r.Limits {
+			line = strings.ReplaceAll(line, "V12 uses a new 575+120=695", "V16 uses a new 616+120=736")
+			line = strings.Replace(line, "V12 policy", "V16 policy", 1)
+			if strings.HasPrefix(line, "V11 is a fresh") {
+				line = "Retained closed V11 and all subsequent scopes preserve actual spent requests and UNKNOWNs without refunds. Current source/watchdog diagnostic bounds remain unchanged; historical causes are not retroactively recovered."
+			}
+			r.Limits[i] = line
+		}
+		r.Limits = append(r.Limits, "The explicit user amendment runs only restart_sent, explicit_absence, lost_ack and owner_stop. Retained V14 original CSV/checked patch are technical facts; normal_sent stays NO_GO with no owner result/notice. The current real restart_sent must independently prove the complete ordinary original-result/current-owner/single-sent-notice tail; verified_scenarios never invents a normal_sent PASS. Per-request 4MiB and day480MiB input quotes are finite fixture bounds checked from actual durable model reservations/scopes; production defaults and all critical guards stay unchanged. Closed616 serialization rejection retains NULL usage/version and is not an accepted nominal retry or a zero-expense observation.")
+	}
+	if policy.CurrentSourceSemantics {
+		for i, line := range r.Limits {
+			if strings.HasPrefix(line, "The explicit user amendment runs only") {
+				r.Limits[i] = "Current selected scenarios are " + strings.Join(selectedScenarios, ",") + ". Independently pinned earlier Stop and explicit-absence components are separate retained evidence; no completed case or normal work is rerun, and historical overall NO_GO results remain unchanged. Actual restart_sent must prove the complete current owner/result/single-sent-notice tail before any current composite PASS. Provider input quotes stay4MiB per model,480MiB day and16MiB delegated child under all eight dimensions."
+			}
+		}
 	}
 	defer func() {
 		if v := recover(); v != nil {
@@ -284,7 +320,7 @@ func auditWithPolicy(in inputs, policy auditPolicy) (r report, err error) {
 	require(integer(ss["new_attempts"]) == int64(len(nr)) && integer(pg["new_attempts"]) == int64(len(nr)) && integer(ss["total_attempts"]) == int64(r.Total) && integer(pg["total_attempts"]) == int64(r.Total) && integer(window["attempts"]) == int64(r.Total), "spent_counter")
 	require(sc["status"] == "passed" && integer(ss["overlong_provider_entries"]) == 0, "collector_outcome")
 	results := obj(sc["scenarios"])
-	require(len(results) == 5, "scenario_inventory")
+	require(len(results) == len(selectedScenarios), "scenario_inventory")
 	grouped := map[string][]object{}
 	lastScenario := -1
 	var previous time.Time
@@ -313,7 +349,7 @@ func auditWithPolicy(in inputs, policy auditPolicy) (r report, err error) {
 		require(integer(a["ordinal"]) == int64(policy.Baseline+1+i), "ordinal_replay_or_gap")
 		name := text(a["scenario"])
 		pos := -1
-		for j, s := range scenarios {
+		for j, s := range selectedScenarios {
 			if s == name {
 				pos = j
 			}
@@ -332,15 +368,18 @@ func auditWithPolicy(in inputs, policy auditPolicy) (r report, err error) {
 		grouped[name] = append(grouped[name], a)
 	}
 	initial, product := witnesses(in.Initial), witnesses(in.Product)
-	require(len(initial) == 5 && len(product) == 5, "owning_product_inventory")
+	require(len(initial) == len(selectedScenarios) && len(product) == len(selectedScenarios), "owning_product_inventory")
 	var priorFinal time.Time
-	for _, name := range scenarios {
+	for _, name := range selectedScenarios {
 		require(results[name] == true && len(grouped[name]) > 0, "scenario_missing")
 		first, last := grouped[name][0], grouped[name][len(grouped[name])-1]
 		ini, fin := initial[name], product[name]
 		require(ini != nil && fin != nil, "scenario_witness_missing")
 		require(!moment(ini["created_at"]).Before(begin) && moment(ini["created_at"]).Before(moment(first["admitted_at_utc"])) && !moment(ini["created_at"]).Before(priorFinal) && !moment(fin["created_at"]).Before(moment(last["finished_at_utc"])) && !moment(fin["created_at"]).After(end), "initial_final_causality")
 		verifyProductWithPolicy(name, obj(ini["payload_json"]), obj(fin["payload_json"]), grouped[name], policy)
+		if policy.RequireTaskScopedOriginalProof {
+			verifyV15TaskScopedOriginalProof(name, obj(ini["payload_json"]), obj(fin["payload_json"]))
+		}
 		r.AcceptedRetryFailures += verifyModelRetries(name, obj(obj(fin["payload_json"])["postgres"]), grouped[name])
 		require(moment(fin["created_at"]).Sub(moment(ini["created_at"])) <= policy.Case, "case_lifetime")
 		priorFinal = moment(fin["created_at"])
@@ -356,6 +395,10 @@ func auditWithPolicy(in inputs, policy auditPolicy) (r report, err error) {
 	require(r.Cost.Unknown == unknownCostEntries && r.Cost.UnknownInput == unknownCostEntries && r.Cost.UnknownOutput == unknownCostEntries, "unwaived_unknown_cost")
 	if policy.RequireProposals {
 		verifyV8Proposals(in, policy)
+	}
+	if policy.ScenarioNames != nil {
+		r.CommonCompletionEvidence = "restart_sent_current_owner_result_and_single_sent_notice"
+		r.RetainedCases = append([]string(nil), policy.RetainedScenarioNames...)
 	}
 	r.Status = policy.PassStatus
 	return r, nil
@@ -376,7 +419,12 @@ func verifyRequest(a, b object) {
 	verifyRequestWithPolicy(a, b, v6AuditPolicy())
 }
 func verifyRequestWithPolicy(a, b object, policy auditPolicy) {
-	keys(a, "ordinal scenario kind root_task_id run_id is_parent input_sha256 admitted_at_utc finished_at_utc elapsed_ms outcome failure_stage diagnostic_code actual_input_tokens actual_output_tokens actual_total_tokens model_version final_count terminal_count completed_count cancelled_count timed_out_count transport_error_count finish_reason usage_observation_uncertain version_observation_uncertain stop_final_count max_tokens_final_count finish_observation_uncertain provider_operation_stage kernel_operation_id")
+	requestFields := "ordinal scenario kind root_task_id run_id is_parent input_sha256 admitted_at_utc finished_at_utc elapsed_ms outcome failure_stage diagnostic_code actual_input_tokens actual_output_tokens actual_total_tokens model_version final_count terminal_count completed_count cancelled_count timed_out_count transport_error_count finish_reason usage_observation_uncertain version_observation_uncertain stop_final_count max_tokens_final_count finish_observation_uncertain provider_operation_stage kernel_operation_id"
+	if policy.RequireUnavailableClass {
+		requestFields += " provider_unavailable_class"
+		verifyV20UnavailableClassObservation(a)
+	}
+	keys(a, requestFields)
 	normalized := obj(clone(a))
 	for from, to := range map[string]string{"input_sha256": "input_hash", "admitted_at_utc": "admitted_at", "finished_at_utc": "finished_at", "actual_input_tokens": "input_tokens", "actual_output_tokens": "output_tokens", "actual_total_tokens": "total_tokens"} {
 		normalized[to] = normalized[from]

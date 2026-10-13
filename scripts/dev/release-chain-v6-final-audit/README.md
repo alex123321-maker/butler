@@ -1,5 +1,36 @@
 # Read-only release-chain final audit
 
+The current explicit V20 policy independently audits only lost_ack and
+restart_sent, retaining separately verified V17 owner Stop and V18 explicit
+absence. Restart must prove the complete current Core/Broker/original-result/
+owner-verification/one-Sent-notice chain. Historical normal_sent remains NO_GO;
+its useful V14 conversion and checked unapplied patch are separate facts.
+
+V20 pins factual baseline706:2649327 known total tokens and53 unknown full
+costs. Closed706 provider_unavailable has UNKNOWN HTTP subcause, expense and
+version, and is not an accepted retry. Two immutable fixture flags permit only
+an independently owned later case after a sealed quiet failed case and retain
+an allowlisted content-free error class. They grant neither current authority,
+same-case recovery nor overall PASS. Successful current packets require NULL
+diagnostic class and fully measured input/output/total usage.
+
+Catalog revision hashes bind metadata, provenance and dependencies separately
+from the exact original CSV/JSON body digests. Current setup reads follow their
+actual read grants. Stopped waiting continuation intents must remain unarmed,
+stale and unable to execute. These prospective source-aligned checks preserve
+original bytes, all effect counts and every critical result/authority predicate.
+
+Freeze this checker separately, build and run the51 names in
+`v20-required-tests.txt` with race/vet and zero failures/skips. The actual V18
+history tests need five separately bound original safe files via
+`BUTLER_V19_HISTORICAL_FIXTURE_DIR`; the CLI reads exact named old V16/V17
+leaves under /historical-safe and V18/V19 leaves under /retained-v18 and
+/retained-v19. Neither whole private directories nor provider credentials are
+mounted. The14 current safe inputs and individually named original proposal
+leaves keep the existing identity checks. Old modes and sealed source roots
+remain unchanged. Final issue readiness still needs independent current
+production/source/fault/quality/comparison review after the witness PASS.
+
 This Go command correlates retained release evidence without calling a model or executing tools. V6 remains the default; explicit V7 through V13 modes preserve each separate frozen contract. NO_GO retains measured expense and UNKNOWN and clears accepted subsets. Neither an audit witness PASS nor subscription pricing grants issue readiness, merge or a zero-cost estimate.
 
 V12 and V13 use factual575 + a new120-entry allocation =695. They retain the exact history575 fold d24720adf3522dc19ada8b53a7d54d4485fe7774c0cd029d3c717c9f1468db05: known cumulative token subtotal1039921,49 unknown full totals,546 known input/output pairs and29 unknown pairs. Historical537 and557 exceptions remain separate, narrowly pinned inputs. Every fresh completed request requires measured input/output/total and the selected model version; a failed UNKNOWN is eligible only under the existing proved one-retry recovery contract. No historical UNKNOWN or failed window is rewritten or refunded.
