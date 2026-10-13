@@ -63,7 +63,7 @@ func binaryHash(path, expected string) error {
 	return nil
 }
 func run() error {
-	protocol := flag.String("protocol", "v6", "explicit frozen v6 or v7 audit policy")
+	protocol := flag.String("protocol", "v6", "explicit frozen v6, v7 or v8 audit policy")
 	auditorCode := flag.String("auditor-commit", "", "separately frozen read-only auditor commit")
 	auditorSource := flag.String("auditor-source-sha256", "", "separately frozen auditor source TreeHash")
 	auditorBinary := flag.String("auditor-binary-sha256", "", "separately built audit executable")
@@ -86,7 +86,7 @@ func run() error {
 	if !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(*code) || !hashPattern.MatchString(*source) {
 		return errors.New("prepared_source_identity_required")
 	}
-	if *protocol == "v7" {
+	if *protocol == "v7" || *protocol == "v8" {
 		if !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(*auditorCode) || !hashPattern.MatchString(*auditorSource) {
 			return errors.New("separate_auditor_source_identity_required")
 		}
@@ -117,11 +117,15 @@ func run() error {
 	}
 	parsed := map[string]any{}
 	bindings := map[string]string{"protocol": *protocol, "code_commit": *code, "source_sha256": *source, "app_sha256": *app, "broker_sha256": *broker, "converter_sha256": *converter, "quality_sha256": qualitySHA, "prerequisite_sha256": policy.PrerequisiteSHA, "prior_protocol_sha256": priorProtocolSHA, "human_safe_timeout_waiver_sha256": safeTimeoutWaiverSHA}
-	if *protocol == "v7" {
+	if *protocol == "v7" || *protocol == "v8" {
 		bindings["auditor_commit"], bindings["auditor_source_sha256"], bindings["auditor_binary_sha256"] = *auditorCode, *auditorSource, *auditorBinary
 		bindings["human_policy_amendment_sha256"] = policy.HumanSHA
 		bindings["retained_v6_timeout_waiver_sha256"] = safeTimeoutWaiverSHA
 		bindings["retained_v6_protocol_sha256"] = prerequisiteSHA
+		if *protocol == "v8" {
+			bindings["retained_v7b_protocol_sha256"] = v7PrerequisiteSHA
+			bindings["proposal_retention_policy"] = "own_tool_call_original_bytes_v1"
+		}
 	}
 	for name, pin := range pins {
 		path, maximum := "/"+name+".json", int64(8<<20)
@@ -166,8 +170,14 @@ func run() error {
 	}
 	verifyRetainedFailedV5Source("/src")
 	verifyPriorV6ProtocolSource("/src")
-	if *protocol == "v7" {
+	if *protocol == "v7" || *protocol == "v8" {
 		verifyRetainedFailedV6Source("/src")
+	}
+	if *protocol == "v8" {
+		verifyRetainedFailedV7bSource("/src")
+	}
+	if *protocol == "v8" {
+		verifyV8PrivateDirectory(obj(parsed["scope"]))
 	}
 	result, err := auditWithPolicy(inputs{parsed["scope"], parsed["pg-ledger"], parsed["pg-initial"], parsed["pg-product"], parsed["runtime-state"], parsed["quality"], parsed["prerequisite"], parsed["expense-exception"], parsed["timeout-waiver"]}, policy)
 	if e = json.NewEncoder(os.Stdout).Encode(struct {

@@ -79,6 +79,9 @@ func verifyProductWithPolicy(name string, ini, fin object, native []object, poli
 	keys(pg, inventory)
 	require(pg["root_task_id"] == root && integer(pg["live_tree_leases"])+integer(pg["run_outbox_rows"])+integer(pg["digest_outbox_rows"])+integer(pg["technical_sent_rows"]) == 0, "quiet_completed_tree")
 	for table, fields := range productFields {
+		if policy.RequireProposals && table == "actions" {
+			fields += " args_hash"
+		}
 		for _, row := range rows(pg, table) {
 			keys(row, fields)
 		}

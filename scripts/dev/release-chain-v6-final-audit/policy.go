@@ -13,6 +13,8 @@ type auditPolicy struct {
 	HTTPTimeouts                                              bool
 	WindowPolicy                                              object
 	DayModelTurns, ChildActiveMillis                          int64
+	RequireProposals                                          bool
+	ReadPrivateProposal                                       func(object) []byte
 	VerifyHuman                                               func(inputs)
 	VerifyPrerequisite                                        func(object)
 }
@@ -47,6 +49,8 @@ func selectedAuditPolicy(name string) auditPolicy {
 		return v6AuditPolicy()
 	case "v7":
 		return v7AuditPolicy()
+	case "v8":
+		return v8AuditPolicy()
 	default:
 		require(false, "explicit_reviewed_protocol_required")
 		return auditPolicy{}

@@ -173,12 +173,18 @@ func auditWithPolicy(in inputs, policy auditPolicy) (r report, err error) {
 		"The original human exception preserves failed537. The separately pinned prospective human waiver permits only one safely recovered response-stream timeout per input with all-three NULL cost or NULL failed version; these remain UNKNOWN. All successful requests retain measured usage and expected version.",
 		"This chain witness result does not replace final-composition tests or issue-wide independent acceptance and does not authorize merge or execution.",
 	}}
-	if policy.Baseline == 539 {
+	if policy.Baseline >= 539 {
 		r.Limits[5] = "The explicit V7 human amendment permits only one safely recovered nominal HTTP or response-stream timeout per input, retaining NULL usage/version. The new chain has 300-second entries, 40-minute cases and a 120-minute window; retained V5 quality/comparison remain their original 120-second/32768 profile. All successful requests require measured expense and expected version."
 	}
 	defer func() {
 		if v := recover(); v != nil {
 			r.Status = "NO_GO"
+			if policy.RequireProposals {
+				// Accepted subsets describe a complete validated V8 proof. Keep
+				// factual cost/unknown counts even when a later proposal check fails.
+				r.AcceptedRetryFailures, r.AcceptedUnknownCost = 0, 0
+				r.AcceptedUnknownVersion, r.AcceptedUnmeasured = 0, 0
+			}
 			code, ok := v.(string)
 			if !ok {
 				code = "typed_contract"
@@ -188,7 +194,11 @@ func auditWithPolicy(in inputs, policy auditPolicy) (r report, err error) {
 		}
 	}()
 	sc, pg := obj(in.Scope), obj(in.Ledger)
-	keys(sc, "status window_id baseline_attempts maximum_total_attempts maximum_new_attempts scenarios scope planning human_messages issue33_ready")
+	scopeKeys := "status window_id baseline_attempts maximum_total_attempts maximum_new_attempts scenarios scope planning human_messages issue33_ready"
+	if policy.RequireProposals {
+		scopeKeys += " proposal_observations"
+	}
+	keys(sc, scopeKeys)
 	keys(pg, "baseline_attempts total_attempts new_attempts requests window")
 	ss := obj(sc["scope"])
 	keys(ss, "total_attempts new_attempts unknown_full_token_cost unknown_token_cost_entries unknown_model_version_entries failed_provider_entries accepted_model_retry_failures accepted_unknown_timeout_cost_entries accepted_unknown_timeout_version_entries accepted_unmeasured_timeout_entries overlong_provider_entries requests window")
@@ -312,6 +322,9 @@ func auditWithPolicy(in inputs, policy auditPolicy) (r report, err error) {
 	r.AcceptedUnmeasured = unmeasuredEntries
 	require(integer(ss["unknown_full_token_cost"]) == int64(unmeasuredEntries) && integer(ss["unknown_token_cost_entries"]) == int64(unknownCostEntries) && integer(ss["unknown_model_version_entries"]) == int64(unknownVersionEntries) && integer(ss["accepted_unknown_timeout_cost_entries"]) == int64(unknownCostEntries) && integer(ss["accepted_unknown_timeout_version_entries"]) == int64(unknownVersionEntries) && integer(ss["accepted_unmeasured_timeout_entries"]) == int64(unmeasuredEntries), "narrow_timeout_unknown_accounting")
 	require(r.Cost.Unknown == unknownCostEntries && r.Cost.UnknownInput == unknownCostEntries && r.Cost.UnknownOutput == unknownCostEntries, "unwaived_unknown_cost")
+	if policy.RequireProposals {
+		verifyV8Proposals(in, policy)
+	}
 	r.Status = policy.PassStatus
 	return r, nil
 }
