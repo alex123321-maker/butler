@@ -76,6 +76,7 @@ type modelRetryWorkerProvider struct {
 	stage                           *transport.ProviderStage
 	hold, failAgain, cancelTerminal bool
 	cancellations                   int
+	activeCancellations             int
 	startWait, active               bool
 }
 
@@ -152,6 +153,9 @@ func (p *modelRetryWorkerProvider) SubmitToolResult(ctx context.Context, r trans
 }
 func (p *modelRetryWorkerProvider) CancelRun(context.Context, transport.CancelRunRequest) (*transport.TransportEvent, error) {
 	p.cancellations++
+	if p.active {
+		p.activeCancellations++
+	}
 	p.active = false
 	return nil, nil
 }
@@ -376,8 +380,8 @@ func TestModelRetryWorkerSecondTimeoutStopsIntegration(t *testing.T) {
 	f := newModelRetryWorkerFixture(t, false, false)
 	f.provider.failAgain = true
 	f.step(t)
-	if f.result(t).Status != "queued" || f.provider.cancellations != 1 || f.provider.active {
-		t.Fatal("first nominal timeout did not queue one retry")
+	if f.result(t).Status != "queued" || f.provider.cancellations != 1 || f.provider.activeCancellations != 1 || f.provider.active {
+		t.Fatal("first nominal timeout did not queue one retry", f.result(t).Status, f.provider.cancellations, f.provider.activeCancellations, f.provider.active)
 	}
 	time.Sleep(2100 * time.Millisecond)
 	f.restart()
@@ -394,8 +398,11 @@ func TestModelRetryWorkerSecondTimeoutStopsIntegration(t *testing.T) {
 	}
 	f.worker.process(parent, claim)
 	r := f.result(t)
-	if r.Status != "running" || len(f.provider.calls) != 2 || parent.Err() == nil || f.provider.cancellations != 2 || f.provider.active {
-		t.Fatal("post-second-timeout process loss did not leave exact durable retry receipt")
+	// Recovery defensively discards the already inactive first context once
+	// before a fresh StartRun. Thus three CancelRun invocations must cancel
+	// exactly two active contexts, including the exhausted second timeout.
+	if r.Status != "running" || len(f.provider.calls) != 2 || parent.Err() == nil || f.provider.cancellations != 3 || f.provider.activeCancellations != 2 || f.provider.active {
+		t.Fatal("post-second-timeout process loss did not leave exact durable retry receipt", r.Status, len(f.provider.calls), parent.Err(), f.provider.cancellations, f.provider.activeCancellations, f.provider.active)
 	}
 	var stoppedStage, stoppedJSON string
 	var stopped struct {
@@ -412,8 +419,8 @@ func TestModelRetryWorkerSecondTimeoutStopsIntegration(t *testing.T) {
 	r = f.result(t)
 	var count, unknown int
 	var retryCount, state string
-	if f.pool.QueryRow(context.Background(), `SELECT count(*),count(*) FILTER(WHERE actual_input_tokens IS NULL AND actual_output_tokens IS NULL) FROM execution_model_attempts WHERE run_id=$1`, r.RunID).Scan(&count, &unknown) != nil || count != 2 || unknown != 2 || len(f.provider.calls) != 2 || r.Status != "blocked" || r.Attempts != 3 || f.provider.cancellations != 2 || f.provider.active {
-		t.Fatal("restart reopened the started retry or changed spent NULLs", count, unknown, r.Status, r.Attempts, len(f.provider.calls))
+	if f.pool.QueryRow(context.Background(), `SELECT count(*),count(*) FILTER(WHERE actual_input_tokens IS NULL AND actual_output_tokens IS NULL) FROM execution_model_attempts WHERE run_id=$1`, r.RunID).Scan(&count, &unknown) != nil || count != 2 || unknown != 2 || len(f.provider.calls) != 2 || r.Status != "blocked" || r.Attempts != 3 || f.provider.cancellations != 3 || f.provider.activeCancellations != 2 || f.provider.active {
+		t.Fatal("restart reopened the started retry or changed spent NULLs", count, unknown, r.Status, r.Attempts, len(f.provider.calls), f.provider.cancellations, f.provider.activeCancellations, f.provider.active)
 	}
 	if f.pool.QueryRow(context.Background(), `SELECT checkpoint_json->'model_retry'->>'count',checkpoint_json->'model_retry'->>'state' FROM accepted_inputs WHERE input_id=$1`, r.InputID).Scan(&retryCount, &state) != nil || retryCount != "1" || state != "started" {
 		t.Fatal("second timeout/refenced claim reset retry count")
