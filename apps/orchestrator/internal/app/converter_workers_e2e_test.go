@@ -740,8 +740,14 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 	if f.projectDirectory != "" {
 		expectedActions, expectedTurns = 13, 17
 	}
-	if f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM action_intents i JOIN action_effects e ON e.action_id=i.effect_id WHERE i.run_id IN(SELECT run_id FROM runs WHERE task_id IN($1,$2)) AND e.state='effect_confirmed'`, f.f.parent.TaskID, childID).Scan(&confirmed) != nil || confirmed != expectedActions {
-		t.Fatal("real Broker journal lost ordinary exact actions", confirmed)
+	if releaseChainV12RepeatedReads(f) {
+		if err := releaseChainV12CheckInventory(f.f.ctx, f, childID); err != nil {
+			t.Fatal("real Broker journal lacks exact effects and budgeted project reads")
+		}
+	} else {
+		if f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM action_intents i JOIN action_effects e ON e.action_id=i.effect_id WHERE i.run_id IN(SELECT run_id FROM runs WHERE task_id IN($1,$2)) AND e.state='effect_confirmed'`, f.f.parent.TaskID, childID).Scan(&confirmed) != nil || confirmed != expectedActions {
+			t.Fatal("real Broker journal lost ordinary exact actions", confirmed)
+		}
 	}
 	if f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM run_final_results WHERE task_id IN($1,$2) AND verdict='unverified'`, f.f.parent.TaskID, childID).Scan(&finalized) != nil || finalized != 4 {
 		t.Fatal("authoritative ordinary worker finals missing", finalized)

@@ -51,7 +51,10 @@ func newReleaseChainV11Window(ctx context.Context, pool *pgxpool.Pool) (*release
 	return createReleaseChainHighWindowWithPolicy(ctx, pool, releaseChainV11ReviewedPrerequisiteSHA, p.ChainHistorySHA, 557, "fixture_chain_v11_high", deadline, 71, true, releaseChainV9Policy(), true)
 }
 func TestScenarioReleaseChainActualV11HighE2E(t *testing.T) {
-	testReleaseChainHighNative(t, releaseChainHighEntry{WindowID: releaseChainV11WindowID, AcceptanceEnv: "BUTLER_SCENARIO_CHAIN_V11_HIGH_ACCEPTANCE", PrivateEnv: "BUTLER_SCENARIO_CHAIN_V11_HIGH_PRIVATE", ImportEnv: "BUTLER_SCENARIO_CHAIN_V11_HIGH_IMPORT_FILE", Baseline: 557, Maximum: 71, ProviderStages: true, RetainProposals: true, Policy: releaseChainV9Policy(), ExtensionHarnessLifetime: 40 * time.Minute, ObserveSourceChecks: true, ReadQuality: readReleaseChainV11Prerequisite, NewWindow: newReleaseChainV11Window})
+	if os.Getenv("BUTLER_SCENARIO_CHAIN_V11_HIGH_ACCEPTANCE") == "1" {
+		t.Fatal("V11 native scope is sealed failed; no new entry from current source")
+	}
+	t.Skip("sealed V11 native proof is retained; fresh V12 requires independent admission")
 }
 func TestReleaseChainV11OperationalGate(t *testing.T) {
 	if os.Getenv("BUTLER_SCENARIO_CHAIN_V11_HIGH_GATE") != "1" {

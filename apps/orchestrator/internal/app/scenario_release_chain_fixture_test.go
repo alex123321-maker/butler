@@ -52,6 +52,7 @@ type releaseChainModelConfig struct {
 	FixtureTimeout            time.Duration
 	ExtensionHarnessLifetime  time.Duration
 	SourceObserver            *releaseChainSourceObserver
+	AllowRepeatedPatchChecks  bool
 	Factory                   func(context.Context, *pgxpool.Pool, string) (transport.ModelProvider, error)
 }
 

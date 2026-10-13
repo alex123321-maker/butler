@@ -26,18 +26,20 @@ type releaseChainV5PatchChange struct {
 }
 
 type releaseChainV5OriginalResult struct {
-	PatchCount      int                         `json:"patch_count"`
-	ArtifactID      *string                     `json:"artifact_id"`
-	ProjectRevision *string                     `json:"project_revision"`
-	Changes         []releaseChainV5PatchChange `json:"changes"`
-	PatchCall       *string                     `json:"patch_tool_call_id"`
-	CheckCall       *string                     `json:"check_tool_call_id"`
-	PrepareReceipts int                         `json:"prepare_receipt_count"`
-	CheckReceipts   int                         `json:"check_receipt_count"`
-	PrepareArtifact *string                     `json:"prepare_receipt_artifact_id"`
-	CheckArtifact   *string                     `json:"check_receipt_artifact_id"`
-	ChecksPassed    *bool                       `json:"checks_passed"`
-	Applied         *bool                       `json:"applied"`
+	PatchCount       int                          `json:"patch_count"`
+	ArtifactID       *string                      `json:"artifact_id"`
+	ProjectRevision  *string                      `json:"project_revision"`
+	Changes          []releaseChainV5PatchChange  `json:"changes"`
+	PatchCall        *string                      `json:"patch_tool_call_id"`
+	CheckCall        *string                      `json:"check_tool_call_id"`
+	PrepareReceipts  int                          `json:"prepare_receipt_count"`
+	CheckReceipts    int                          `json:"check_receipt_count"`
+	PrepareArtifact  *string                      `json:"prepare_receipt_artifact_id"`
+	CheckArtifact    *string                      `json:"check_receipt_artifact_id"`
+	ChecksPassed     *bool                        `json:"checks_passed"`
+	Applied          *bool                        `json:"applied"`
+	CheckInventory   []releaseChainV12ReadReceipt `json:"check_receipts,omitempty"`
+	InspectInventory []releaseChainV12ReadReceipt `json:"inspect_receipts,omitempty"`
 }
 
 func releaseChainV5PatchProjection(patches map[string]projectfixture.Patch) *releaseChainV5OriginalResult {
@@ -81,6 +83,9 @@ func releaseChainV5ReadPatch(path string) ([]byte, error) {
 // Export only actual stored patch hashes and actual Broker receipt fields.
 // Missing/ambiguous fields stay NULL; no success value comes from a fixture seed.
 func releaseChainV5CaptureOriginalResult(ctx context.Context, f *developerFixture, scenario string) (*string, *releaseChainV5OriginalResult, error) {
+	if releaseChainV12RepeatedReads(f) {
+		return releaseChainV12CaptureOriginalResult(ctx, f, scenario)
+	}
 	raw, err := releaseChainV5ReadPatch(filepath.Join(f.projectDirectory, "patches.json"))
 	if os.IsNotExist(err) {
 		return nil, nil, nil

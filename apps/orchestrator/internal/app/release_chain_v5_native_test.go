@@ -241,6 +241,7 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 			var caseWindow *releaseChainV5Window
 			cfg := releaseChainHighConfigurationFor(entry.Policy)
 			cfg.ExtensionHarnessLifetime = entry.ExtensionHarnessLifetime
+			cfg.AllowRepeatedPatchChecks = entry.AllowRepeatedPatchChecks
 			if entry.ObserveSourceChecks {
 				cfg.SourceObserver = &releaseChainSourceObserver{}
 			}

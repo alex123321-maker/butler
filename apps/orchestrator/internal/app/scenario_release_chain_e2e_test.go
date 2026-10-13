@@ -243,6 +243,11 @@ func verifyReleaseChainAndDeliver(t *testing.T, f *developerFixture, p *converte
 	if _, e = f.f.store.Transition(actor, current.TaskID, current.Revision, "completed", final.ResultID); e == nil {
 		t.Fatal("model final replaced independent criteria verification")
 	}
+	if releaseChainV12RepeatedReads(f) {
+		if _, receipt, err := releaseChainV12CaptureOriginalResult(ctx, f, "normal_sent"); err != nil || receipt == nil {
+			t.Fatal("independent original project read receipts disagree or are incomplete")
+		}
+	}
 	proof := task.Result{TaskID: current.TaskID, TaskRevision: current.Revision, RunID: runID, Summary: "Prepared verified: exact original conversion and checked ready=true patch; original remains unapplied", EvidenceRefs: []string{"source:" + original.ID, "source:" + output.Source.ID, "sha256:" + output.SHA256, "tool:" + patchCall, "tool:" + checkCall, "recipient-artifact:" + artifact, "sha256:" + generatedtools.HashBytes(storedRaw)}, VerifiedCriteria: current.CompletionCriteria, Verifier: "owner"}
 	verified, e := f.f.store.SaveVerifiedResult(actor, proof)
 	if e != nil {

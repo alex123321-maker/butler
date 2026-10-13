@@ -19,6 +19,7 @@ type releaseChainHighEntry struct {
 	RetainProposals                      bool
 	ExtensionHarnessLifetime             time.Duration
 	ObserveSourceChecks                  bool
+	AllowRepeatedPatchChecks             bool
 	Policy                               releaseChainHighWindowPolicy
 	ReadQuality                          func() (releaseChainV5Prerequisite, error)
 	NewWindow                            func(context.Context, *pgxpool.Pool) (*releaseChainV5Window, error)

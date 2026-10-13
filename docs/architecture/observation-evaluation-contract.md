@@ -1,6 +1,16 @@
 # Observation-only contract evaluation
 
-The latest closed history is557: owning source-check cancellation with NULL
+The latest closed history is575. V11's18 requests all completed with measured
+expense, but its fixture stopped on14 actions instead of exactly13, before owner
+verification and delivery. Two check proposals read the same immutable artifact;
+legacy per-read response fields remain NULL. See the [closed V11 audit](../ai/scenario-release-chain-v11-independent-audit-20261013.md).
+Prospective V12 follows the user's call-count steering: repeat current owned GET
+inspection/check reads within unchanged Core quotas and deadlines, with every
+actual receipt and fixed resource verified. Mandatory mutations remain once;
+source/authority/Stop, deduplication, original result and delivery gates remain.
+There is no dedicated small GET-call ceiling or exact script-step count.
+
+Historical557 is the owning source-check cancellation with NULL
 expense/version and no action. Prospective V11 binds an explicit historical-only
 expense interpretation of the later modest user relaxation. It does not classify
 that cancellation as a nominal model timeout or grant retry/current effects.
@@ -10,7 +20,7 @@ connection waits, public query-template hashes, safe error categories and pool
 counters, without query/argument/credential/model values. It keeps2000ms source
 and750ms watchdog bounds and executes no extra SQL. See the [V11 plan](../ai/scenario-release-chain-v11-plan-20261013.md).
 
-The latest retained native history is556 after V9 reached tested adapter activation
+Historical556 follows V9 reaching tested adapter activation
 and blocked on UNKNOWN extension inspection. All twelve V9 requests have measured
 usage; no original result or notice was verified. See the separately pinned
 [V9 report](../ai/scenario-release-chain-v9-independent-audit-20261013.md).
