@@ -34,7 +34,7 @@ func units(turns int64) object {
 	return u
 }
 func normalizedInputs(x inputs) inputs {
-	return inputs{clone(x.Scope), clone(x.Ledger), clone(x.Initial), clone(x.Product), clone(x.Runtime), clone(x.Quality), clone(x.Prerequisite), clone(x.ExpenseException)}
+	return inputs{clone(x.Scope), clone(x.Ledger), clone(x.Initial), clone(x.Product), clone(x.Runtime), clone(x.Quality), clone(x.Prerequisite), clone(x.ExpenseException), clone(x.SafeTimeoutWaiver)}
 }
 func actualPublic(t *testing.T, name, pin string) any {
 	t.Helper()
@@ -256,10 +256,10 @@ func syntheticWitness(t *testing.T) inputs {
 		products = append(products, object{"scenario": name, "payload_sha256": hashValue(fin), "payload_json": fin, "created_at": ts(end.Add(time.Millisecond))})
 	}
 	window := object{"native_baseline": 537, "attempts": ordinal, "prior_history_hash": priorSHA, "prerequisite_hash": prerequisiteSHA, "expires_at": ts(base.Add(time.Hour)), "maximum_new_attempts": 78, "provider_stage_observation": true, "kernel_operation_binding": true}
-	scope := object{"status": "passed", "window_id": "issue33-high-release-chain-v6-20261013-baseline537", "baseline_attempts": 537, "maximum_total_attempts": 615, "maximum_new_attempts": 78, "scenarios": results, "scope": object{"total_attempts": ordinal, "new_attempts": ordinal - 537, "unknown_full_token_cost": 0, "failed_provider_entries": 0, "accepted_model_retry_failures": 0, "overlong_provider_entries": 0, "requests": native, "window": window}, "planning": "actual_native_High", "human_messages": 0, "issue33_ready": false}
+	scope := object{"status": "passed", "window_id": "issue33-high-release-chain-v6-20261013-baseline537", "baseline_attempts": 537, "maximum_total_attempts": 615, "maximum_new_attempts": 78, "scenarios": results, "scope": object{"total_attempts": ordinal, "new_attempts": ordinal - 537, "unknown_full_token_cost": 0, "unknown_token_cost_entries": 0, "unknown_model_version_entries": 0, "accepted_unknown_timeout_cost_entries": 0, "accepted_unknown_timeout_version_entries": 0, "accepted_unmeasured_timeout_entries": 0, "failed_provider_entries": 0, "accepted_model_retry_failures": 0, "overlong_provider_entries": 0, "requests": native, "window": window}, "planning": "actual_native_High", "human_messages": 0, "issue33_ready": false}
 	ledger := object{"baseline_attempts": 537, "total_attempts": ordinal, "new_attempts": ordinal - 537, "requests": sql, "window": window}
 	runtime := object{"started_at": ts(base), "finished_at": ts(base.Add(30 * time.Second)), "exit_code": 0, "oom_killed": false, "memory_limit_bytes": 1536 << 20, "image_id": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61", "postgres_image_id": "sha256:" + strings.Repeat("b", 64), "converter_image_id": "sha256:" + strings.Repeat("c", 64)}
-	return normalizedInputs(inputs{scope, ledger, initial, products, runtime, actualPublic(t, "cloud-shadow-v5-final-audit-20261013.json", qualitySHA), candidatePrerequisite(t), actualPublic(t, "release-chain-v6-user-expense-exception-20261013.json", expenseExceptionSHA)})
+	return normalizedInputs(inputs{scope, ledger, initial, products, runtime, actualPublic(t, "cloud-shadow-v5-final-audit-20261013.json", qualitySHA), candidatePrerequisite(t), actualPublic(t, "release-chain-v6-user-expense-exception-20261013.json", expenseExceptionSHA), actualPublic(t, "release-chain-v6-user-safe-timeout-waiver-20261013.json", safeTimeoutWaiverSHA)})
 }
 
 func TestSyntheticChainWitnessPassNeverGrantsIssueAcceptance(t *testing.T) {

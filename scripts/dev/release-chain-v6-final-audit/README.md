@@ -1,6 +1,6 @@
-# Prospective V6 checker draft
+# V6 independent release-chain audit
 
-This ignored draft starts from the frozen V5 auditor and adds the exact human
+This checker starts from the frozen V5 auditor and adds the exact human
 expense exception, immutable failed V5 history, baseline537/cap78, request-local
 provider stage, exact kernel operation binding and the predeclared durable retry
 witness. It is not native admission. The final prerequisite bytes, source freeze,
@@ -8,10 +8,16 @@ Linux PostgreSQL preparation and independent admission must precede execution.
 
 The exact expense exception is SHA256
 `31b930ac4e39206d65424ac951f65cc4656b71166995650122cbdda3e63b6ab4`.
-It permits UNKNOWN solely for the closed failed537. Its original NULL fields
-and V5 NO_GO remain unchanged. Historical known-total subtotal572459 and47
-unknown totals stay explicit; every request after537 requires complete measured
-usage. Future unknown exceptions are unauthorized. All five scenarios, quality
+It originally permitted UNKNOWN solely for the closed failed537. Its original
+NULL fields and V5 NO_GO remain unchanged. Historical known-total subtotal572459
+and47 unknown totals stay explicit. A later direct human reply permits only a
+proved safe response-stream timeout followed by one durable retry and the fixed
+scenario result or owner Stop guarantees. Its separate exact SHA is
+`44991353526966ab57cfd0155c3f65af00061b87308eed37c2b735f207e75180`.
+The failed request may have all-three NULL usage or a NULL failed model version;
+neither a later answer nor conservative reservations fill those observations.
+Every completed request still requires measured usage and the expected version.
+Other unknowns and partial or conflicting observations deny PASS. All five scenarios, quality
 thresholds, comparison criteria,120-second entries,32768 generation ceiling,
 remaining78/absolute615 and independent frozen-source admission remain required.
 
@@ -31,8 +37,11 @@ V6 carries 537 prior attempts and the actual failed-chain fold
 The historical known total is a subtotal of 572459 tokens; 47 total-token
 dimensions remain unknown. Attempt 266's unknown cause and sealed V5 NO_GO
 remain. The exact V6 prerequisite SHA is
+`bef93bde0afa1251c67eb60f01dbbe6f8142b4f32b5a8076c0f34d5d9b402077`.
+It binds the narrow human waiver, one-retry policy, two-second backoff and kernel
+operation witness. The original v1 prerequisite remains byte-exact at
+`release-chain-v6-high-prerequisite-v1-20261013.json`, SHA
 `9ce27e6d9a15f598fadc037e5de377869672937fef84849fc662610ec6379de3`.
-It binds the one-retry policy, two-second backoff and kernel operation witness.
 This data freeze does not replace final-source preparation or native admission.
 
 ## Build and offline tests
@@ -46,10 +55,12 @@ go vet ./scripts/dev/release-chain-v6-final-audit
 ```
 
 Tests use existing exact public quality/prerequisite artifacts and synthetic product
-records. The positive synthetic witness uses 70 entries solely as a fixture;
+records. The fixed required manifest contains231 named tests. The positive synthetic witness uses 70 entries solely as a fixture;
 the auditor accepts a variable actual request count within the frozen cap of
 78. The measured-timeout retry fixture uses 71 entries and keeps the failed
-request's independently measured expense. These are offline fixtures, not native
+request's independently measured expense. Safe waived fixtures keep one original
+NULL request, its separate spent reservation and five unchanged product scenarios.
+These are offline fixtures, not native
 outcomes or mandatory request counts. Coherent tamper tests recompute payload
 hashes and change both collector and
 PG projections where appropriate. They test paid failure retention, unknown
@@ -80,6 +91,7 @@ audit container are fixed:
 | `/quality.json` | Exact public `cloud-shadow-v5-final-audit-20261013.json` |
 | `/prerequisite.json` | Exact public `release-chain-v6-high-prerequisite-20261013.json` |
 | `/expense-exception.json` | Exact direct human exception `release-chain-v6-user-expense-exception-20261013.json` |
+| `/timeout-waiver.json` | Exact later direct human waiver `release-chain-v6-user-safe-timeout-waiver-20261013.json` |
 
 Mount the frozen source snapshot at `/src:ro`, the prepared measured executables
 at `/app.test`, `/tool-broker`, `/tool-converter`, and this auditor at
@@ -126,7 +138,7 @@ including nullable usage, terminal observations and deadlines. Ordinals start
 at 538; five scenarios follow the frozen order `normal_sent`, `restart_sent`,
 `explicit_absence`, `lost_ack`, `owner_stop`. The actual window lasts at most
 60 minutes, each initial-to-final scenario at most 20 minutes, each native entry
-at most 120 seconds. Every new input/output/total dimension is measured for PASS.
+at most 120 seconds. Every completed request has measured input/output/total.
 All owning-PG admissions are counted before semantic success or cap checks;
 failure and cap denial preserve their known subtotal and unknown dimensions.
 The durable window binds cap78, provider observation and kernel operation
@@ -135,8 +147,14 @@ binding to the exact prerequisite/history. Every native request has a unique
 and measured usage. Quotes cannot fill missing provider expense.
 
 An accepted failed entry must be a nominal `provider_timeout` with no final,
-complete measured input/output/total, the expected model version and the actual
-`response_stream` phase. Its owning input retains one started `model_retry`
+valid complete input/output/total or all-three NULL, the expected model version
+or NULL, and the actual `response_stream` phase. Wrapper `failure_stage` may be
+`entry` or `stream`: it records whether invoke returned an event stream, not the
+provider's actual operation phase. No other or absent wrapper stage is accepted.
+Unknown cost requires exact
+NULL/NULL kernel input/output with NULL `observed_at`; known usage requires an
+actual kernel observation. The original immutable reservation remains spent.
+Its owning input retains one started `model_retry`
 record linking that exact operation to the next fresh Start on the same run.
 The database `claimed_at` and `not_before` differ by exactly two seconds;
 `started_at` follows that bound and precedes native admission. The retry has a
@@ -146,11 +164,16 @@ cancelled with the owning store's `owner_control` code and a cancelled run;
 all existing stopped-tree, source/Broker denial, two-parent-effect and zero
 descendant/final/notice predicates still apply. The four completed cases require
 completed inputs with empty error codes. Factual failed entry counts remain visible separately from
-accepted retry failures. No failed request may release a tool action or final.
-An unbound failure, second retry, unknown new expense, changed model, premature
+accepted retry failures. Factual unknown cost, unknown version and their union
+are separately compared with the exact independently verified waived subset.
+Reports retain known cost subtotals and unknown dimensions;
+`all_new_expense_measured=false` records waived missing cost honestly.
+No failed request may release a tool action or final.
+An unbound failure, second retry, other unknown expense, changed known model, premature
 Start or changed operation denies PASS. Production may conservatively retry a
-known HTTP phase, but this acceptance still requires complete observed expense
-and the stricter stream witness for every failed entry.
+known HTTP phase, but this acceptance requires the stricter stream witness for
+every failed entry. It never accepts authentication, serialization or absent
+phase failures. Safety, result, latency, resource and quality gates are unchanged.
 
 Initial/final witness hashes are recomputed with numeric-preserving canonical
 JSON. Product records bind current original source revisions, native ordinary

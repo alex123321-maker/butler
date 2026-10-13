@@ -95,7 +95,7 @@ func run() error {
 		}
 	}
 	parsed := map[string]any{}
-	bindings := map[string]string{"code_commit": *code, "source_sha256": *source, "app_sha256": *app, "broker_sha256": *broker, "converter_sha256": *converter, "quality_sha256": qualitySHA, "prerequisite_sha256": prerequisiteSHA}
+	bindings := map[string]string{"code_commit": *code, "source_sha256": *source, "app_sha256": *app, "broker_sha256": *broker, "converter_sha256": *converter, "quality_sha256": qualitySHA, "prerequisite_sha256": prerequisiteSHA, "prior_protocol_sha256": priorProtocolSHA, "human_safe_timeout_waiver_sha256": safeTimeoutWaiverSHA}
 	for name, pin := range pins {
 		path, maximum := "/"+name+".json", int64(8<<20)
 		if name == "source-manifest" {
@@ -118,7 +118,7 @@ func run() error {
 			parsed[name] = v
 		}
 	}
-	for name, pin := range map[string]string{"quality": qualitySHA, "prerequisite": prerequisiteSHA, "expense-exception": expenseExceptionSHA} {
+	for name, pin := range map[string]string{"quality": qualitySHA, "prerequisite": prerequisiteSHA, "expense-exception": expenseExceptionSHA, "timeout-waiver": safeTimeoutWaiverSHA} {
 		raw, e := readExact("/"+name+".json", pin, 8<<20)
 		if e != nil {
 			return e
@@ -138,7 +138,8 @@ func run() error {
 		}
 	}
 	verifyRetainedFailedV5Source("/src")
-	result, err := audit(inputs{parsed["scope"], parsed["pg-ledger"], parsed["pg-initial"], parsed["pg-product"], parsed["runtime-state"], parsed["quality"], parsed["prerequisite"], parsed["expense-exception"]})
+	verifyPriorV6ProtocolSource("/src")
+	result, err := audit(inputs{parsed["scope"], parsed["pg-ledger"], parsed["pg-initial"], parsed["pg-product"], parsed["runtime-state"], parsed["quality"], parsed["prerequisite"], parsed["expense-exception"], parsed["timeout-waiver"]})
 	if e = json.NewEncoder(os.Stdout).Encode(struct {
 		Report   report            `json:"chain_audit"`
 		Bindings map[string]string `json:"evidence_bindings"`

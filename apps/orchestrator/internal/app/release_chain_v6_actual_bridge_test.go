@@ -246,7 +246,7 @@ func TestReleaseChainV6HumanExpenseExceptionOnly537(t *testing.T) {
 }
 
 func releaseChainV6ProspectivePrerequisite(h nativeHistoricalEvidence) releaseChainV6Prerequisite {
-	return releaseChainV6Prerequisite{Version: "butler-chain-high-reviewed-v6-prerequisite-v1", Baseline: 537, Maximum: 78, Ceiling: 615, HistorySHA: h.BaselineSHA256, QualitySHA: releaseChainV5ReviewedPrerequisiteSHA, OriginalQualitySHA: releaseChainV5ReviewedOriginalAuditSHA, FailedAuditSHA: releaseChainV6FailedAuditSHA, FailedCorrelationSHA: releaseChainV6FailedCorrelationSHA, ExpenseExceptionSHA: releaseChainV6ExceptionSHA, KnownInput: 294598, KnownOutput: 11827, KnownTotal: 572459, UnknownTotal: 47, KnownPairs: 510, UnknownPairs: 27, ProviderStages: true, RequireKnown: true, Generation: 32768, Model: "gemini-3.8-flash-high", RetryPolicy: "one_nominal_timeout_per_accepted_input_v1", MaximumRetries: 1, RetryBackoffMillis: 2000, KernelOperations: true}
+	return releaseChainV6Prerequisite{Version: "butler-chain-high-reviewed-v6-prerequisite-v2", Baseline: 537, Maximum: 78, Ceiling: 615, HistorySHA: h.BaselineSHA256, QualitySHA: releaseChainV5ReviewedPrerequisiteSHA, OriginalQualitySHA: releaseChainV5ReviewedOriginalAuditSHA, FailedAuditSHA: releaseChainV6FailedAuditSHA, FailedCorrelationSHA: releaseChainV6FailedCorrelationSHA, ExpenseExceptionSHA: releaseChainV6ExceptionSHA, KnownInput: 294598, KnownOutput: 11827, KnownTotal: 572459, UnknownTotal: 47, KnownPairs: 510, UnknownPairs: 27, ProviderStages: true, RequireKnown: false, Generation: 32768, Model: "gemini-3.8-flash-high", RetryPolicy: "one_nominal_timeout_per_accepted_input_v1", MaximumRetries: 1, RetryBackoffMillis: 2000, KernelOperations: true, PriorProtocolSHA: releaseChainV6PriorProtocolSHA, SafeTimeoutWaiverSHA: releaseChainV6SafeTimeoutWaiverSHA, AllowUnknownTimeouts: true, SuccessRequireKnown: true}
 }
 
 func TestReleaseChainV6PrerequisiteTamperMatrix(t *testing.T) {
@@ -271,11 +271,14 @@ func TestReleaseChainV6PrerequisiteTamperMatrix(t *testing.T) {
 		{"failed_no_go_audit_changed", func(p *releaseChainV6Prerequisite) { p.FailedAuditSHA = "UNSET" }},
 		{"failed_correlation_changed", func(p *releaseChainV6Prerequisite) { p.FailedCorrelationSHA = "UNSET" }},
 		{"human_exception_unbound", func(p *releaseChainV6Prerequisite) { p.ExpenseExceptionSHA = "UNSET" }},
+		{"prior_protocol_unbound", func(p *releaseChainV6Prerequisite) { p.PriorProtocolSHA = "UNSET" }},
+		{"safe_timeout_waiver_unbound", func(p *releaseChainV6Prerequisite) { p.SafeTimeoutWaiverSHA = "UNSET" }},
+		{"waiver_scope_changed", func(p *releaseChainV6Prerequisite) { p.AllowUnknownTimeouts = false }},
 		{"unknown537_removed", func(p *releaseChainV6Prerequisite) { p.UnknownTotal = 46 }},
 		{"subtotal_guessed", func(p *releaseChainV6Prerequisite) { p.KnownTotal++ }},
 		{"input_guessed", func(p *releaseChainV6Prerequisite) { p.KnownInput++ }},
 		{"output_guessed", func(p *releaseChainV6Prerequisite) { p.KnownOutput++ }},
-		{"new_unknown_expense_allowed", func(p *releaseChainV6Prerequisite) { p.RequireKnown = false }},
+		{"all_successful_measurements_disabled", func(p *releaseChainV6Prerequisite) { p.SuccessRequireKnown = false }},
 		{"observer_disabled", func(p *releaseChainV6Prerequisite) { p.ProviderStages = false }},
 		{"retry_policy_changed", func(p *releaseChainV6Prerequisite) { p.RetryPolicy = "provider_hidden_retry" }},
 		{"multiple_retries", func(p *releaseChainV6Prerequisite) { p.MaximumRetries = 2 }},

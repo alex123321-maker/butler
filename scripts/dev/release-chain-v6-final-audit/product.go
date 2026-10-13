@@ -272,7 +272,12 @@ func verifyBudget(pg object, native []object, name, root, child string) {
 	consumed := map[string]bool{}
 	for _, n := range native {
 		match := byOperation[text(n["kernel_operation_id"])]
-		require(match != nil && !consumed[text(match["operation_id"])] && match["run_id"] == n["run_id"] && !moment(match["created_at"]).After(moment(n["admitted_at_utc"])) && match["actual_input_tokens"] == n["actual_input_tokens"] && match["actual_output_tokens"] == n["actual_output_tokens"] && match["observed_at"] != nil, "native_measurement_not_kernel_correlated")
+		require(match != nil && !consumed[text(match["operation_id"])] && match["run_id"] == n["run_id"] && !moment(match["created_at"]).After(moment(n["admitted_at_utc"])) && match["actual_input_tokens"] == n["actual_input_tokens"] && match["actual_output_tokens"] == n["actual_output_tokens"], "native_measurement_not_kernel_correlated")
+		if n["outcome"] != "completed" && n["actual_input_tokens"] == nil && n["actual_output_tokens"] == nil && n["actual_total_tokens"] == nil {
+			require(match["observed_at"] == nil, "unmeasured_timeout_kernel_nulls_preserved")
+		} else {
+			require(match["observed_at"] != nil, "known_native_usage_requires_kernel_observation")
+		}
 		consumed[text(match["operation_id"])] = true
 	}
 	extras := 0

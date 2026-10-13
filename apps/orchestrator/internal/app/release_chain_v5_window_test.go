@@ -188,15 +188,12 @@ func (w *releaseChainV5Window) reserve(ctx context.Context, scenario, kind, root
 	}
 	var kernelOperation *string
 	if w.kernelOperations {
-		var recoverable bool
-		if tx.QueryRow(ctx, `SELECT NOT EXISTS(SELECT 1 FROM `+w.table("fixture_chain_v5_high_requests")+` WHERE outcome='unavailable' OR input_tokens IS NULL OR output_tokens IS NULL OR total_tokens IS NULL OR model_version IS NULL OR provider_operation_stage IS DISTINCT FROM 'response_stream')`).Scan(&recoverable) != nil || !recoverable {
-			// Acceptance-only stop: another successful request cannot recover
-			// an earlier new UNKNOWN. Generic Core retry policy is unchanged.
-			return 0, time.Time{}, errNativeFixtureDenied
-		}
 		id, bindingErr := releaseChainV6KernelOperation(ctx, tx, run)
 		if bindingErr != nil {
 			return 0, time.Time{}, bindingErr
+		}
+		if err := releaseChainV6HistoryAllowsAdmission(ctx, tx, w, scenario, kind, root, run, id); err != nil {
+			return 0, time.Time{}, err
 		}
 		kernelOperation = &id
 	}

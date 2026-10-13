@@ -13,7 +13,7 @@ if [[ "$protocol" == v6 ]]; then
   offline_timeout=8m
   # Independently reviewed exact manifest; runtime/source admission remains a
   # separate gate after zero-inference preparation and final composition checks.
-  expected_audit_passes=154
+  expected_audit_passes=231
 else
   [[ "$protocol" == v5 && "$root" == /srv/storage/butler/agents/scenario-release-chain-v5-high-20261013 ]] || exit 2
   chain_baseline=535; chain_cap=80; chain_env=BUTLER_SCENARIO_CHAIN_V5_HIGH
@@ -94,7 +94,7 @@ docker run -d --runtime runc --name "$pg" --network "$network" --network-alias c
   "$pg_image" -c shared_buffers=32MB -c max_connections=32 -c max_wal_size=64MB >/dev/null; created_pg=true
 for attempt in $(seq 1 60); do docker exec "$pg" pg_isready -U fixture -d butler_chain_prepare_test >/dev/null 2>&1 && break; [[ "$attempt" != 60 ]] || exit 1; sleep 1; done
 app_pattern='^Test(ReleaseChainV5(Window|AllFailedEntries|TerminalMetadata|MeasurementWriteFailure|WholeEntryDeadline|OperationalPrerequisite|Bridge|ProductEvidence|InitialWitness|ProspectiveHealthy|CancelledTimedOut|ContextDeadlineAndCancel|ContextFailureAfterCompleteFinal|ProviderObservationFacts|FailureOutcome|OriginalResult)|ConverterWorkerStructuralDiagnostics)'
-if [[ "$protocol" == v6 ]]; then app_pattern='^Test(ReleaseChainV5(Window|AllFailedEntries|TerminalMetadata|MeasurementWriteFailure|WholeEntryDeadline|OperationalPrerequisite|Bridge|ProductEvidence|InitialWitness|ProspectiveHealthy|CancelledTimedOut|ContextDeadlineAndCancel|ContextFailureAfterCompleteFinal|ProviderObservationFacts|FailureOutcome|OriginalResult)|ReleaseChainV6(OperationalPrerequisiteClosed|ActualHistory|ActualBridge|HumanExpenseException|PrerequisiteTamper|ProviderStage|Window|Kernel|MeasuredRetry)|ConverterWorkerStructuralDiagnostics)'; fi
+if [[ "$protocol" == v6 ]]; then app_pattern='^Test(ReleaseChainV5(Window|AllFailedEntries|TerminalMetadata|MeasurementWriteFailure|WholeEntryDeadline|OperationalPrerequisite|Bridge|ProductEvidence|InitialWitness|ProspectiveHealthy|CancelledTimedOut|ContextDeadlineAndCancel|ContextFailureAfterCompleteFinal|ProviderObservationFacts|FailureOutcome|OriginalResult)|ReleaseChainV6(OperationalPrerequisiteClosed|ActualHistory|ActualBridge|HumanExpenseException|PrerequisiteTamper|ProviderStage|Window|Kernel|MeasuredRetry|HumanSafeTimeout|SafeRetry)|ConverterWorkerStructuralDiagnostics)'; fi
 docker run --rm --runtime runc --pull never --network "$network" --read-only --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true --memory 1536m --pids-limit 160 --cpus 2 \
   --tmpfs /tmp:rw,nosuid,nodev,size=64m --volume "$source_dir:/src:ro" --volume "$proof/bin:/bin-proof:ro" --workdir /src \
   --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:chain-prepare-fixture@chain-prepare-postgres:5432/butler_chain_prepare_test?sslmode=disable' \
@@ -106,7 +106,7 @@ docker run --rm --runtime runc --pull never --network "$network" --read-only --u
 [[ "$expected_audit_passes" -gt 0 && "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/bin/chain-audit-unit.jsonl")" == "$expected_audit_passes" ]]
 if [[ "$protocol" == v6 ]]; then
   mapfile -t checker_required < "$source_dir/scripts/dev/release-chain-v6-final-audit/required-tests.txt"
-  [[ "${#checker_required[@]}" == 154 ]]
+  [[ "${#checker_required[@]}" == 231 ]]
   for test_name in "${checker_required[@]}"; do
     [[ "$test_name" =~ ^Test[A-Za-z0-9_/-]+$ ]]
     [[ "$(awk -v needle="\"Test\":\"$test_name\"" 'index($0,"\"Action\":\"pass\"") && index($0,needle) { n++ } END { print n+0 }' "$proof/bin/chain-audit-unit.jsonl")" == 1 ]]
@@ -135,8 +135,8 @@ for case_name in failed_terminal_known untrusted_diagnostic_type known_batch_cos
 if [[ "$protocol" == v6 ]]; then
   source "$source_dir/scripts/dev/scenario-release-chain-v6-required-tests.sh"
   required+=("${release_chain_v6_required[@]}")
-  [[ "${#required[@]}" == 231 ]]
-  [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/tests.jsonl")" == 231 ]]
+  [[ "${#required[@]}" == 309 ]]
+  [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/tests.jsonl")" == 309 ]]
 fi
 for test_name in "${required[@]}"; do
   [[ "$(awk -v needle="\"Test\":\"$test_name\"" 'index($0,"\"Action\":\"pass\"") && index($0,needle) { n++ } END { print n+0 }' "$proof/tests.jsonl")" == 1 ]]

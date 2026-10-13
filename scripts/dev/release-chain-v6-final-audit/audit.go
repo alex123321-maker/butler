@@ -16,14 +16,14 @@ import (
 )
 
 const qualitySHA = "f8248d19ec2a0c222b39d46fbc46c0d0cf4ccc3c1361c89965b597eedbb21cab"
-const prerequisiteSHA = "9ce27e6d9a15f598fadc037e5de377869672937fef84849fc662610ec6379de3"
+const prerequisiteSHA = "bef93bde0afa1251c67eb60f01dbbe6f8142b4f32b5a8076c0f34d5d9b402077"
 const priorSHA = "7100f33980905baea6dbcffe608d546a8544457b8260bac4d725952f415578df"
 
 var scenarios = []string{"normal_sent", "restart_sent", "explicit_absence", "lost_ack", "owner_stop"}
 var hashPattern = regexp.MustCompile(`^[a-f0-9]{64}$`)
 
 type object = map[string]any
-type inputs struct{ Scope, Ledger, Initial, Product, Runtime, Quality, Prerequisite, ExpenseException any }
+type inputs struct{ Scope, Ledger, Initial, Product, Runtime, Quality, Prerequisite, ExpenseException, SafeTimeoutWaiver any }
 type costs struct {
 	Attempts      int   `json:"attempts"`
 	Input         int64 `json:"known_input_tokens"`
@@ -44,6 +44,10 @@ type report struct {
 	UnknownHistoricalTotal int      `json:"prior_unknown_total_attempts"`
 	AuditorCalls           int      `json:"auditor_native_calls"`
 	AcceptedRetryFailures  int      `json:"accepted_model_retry_failures"`
+	AcceptedUnknownCost    int      `json:"accepted_unknown_timeout_cost_entries"`
+	AcceptedUnknownVersion int      `json:"accepted_unknown_timeout_version_entries"`
+	AcceptedUnmeasured     int      `json:"accepted_unmeasured_timeout_entries"`
+	MeasuredComplete       bool     `json:"all_new_expense_measured"`
 	Ready                  bool     `json:"issue33_ready"`
 	Limits                 []string `json:"limits"`
 }
@@ -162,7 +166,7 @@ func audit(in inputs) (r report, err error) {
 		"Project and Telegram recipients are loopback fixtures. The original result is prepared_verified and unapplied; no human recipient or live project deployment.",
 		"Kernel budget reservations are conservative quotes; only the separate native ledger owns measured complete token totals, including thinking.",
 		"Cloud weights, server effort/hardware/RAM and subscription invoice remain unavailable. Old unknown spend and UNKNOWN266 are preserved.",
-		"The exact human expense exception covers only the sealed failed537. Its NULL usage and V5 NO_GO remain; any unknown new-after537 expense denies PASS.",
+		"The original human exception preserves failed537. The separately pinned prospective human waiver permits only one safely recovered response-stream timeout per input with all-three NULL cost or NULL failed version; these remain UNKNOWN. All successful requests retain measured usage and expected version.",
 		"This chain witness result does not replace final-composition tests or issue-wide independent acceptance and does not authorize merge or execution.",
 	}}
 	defer func() {
@@ -180,7 +184,7 @@ func audit(in inputs) (r report, err error) {
 	keys(sc, "status window_id baseline_attempts maximum_total_attempts maximum_new_attempts scenarios scope planning human_messages issue33_ready")
 	keys(pg, "baseline_attempts total_attempts new_attempts requests window")
 	ss := obj(sc["scope"])
-	keys(ss, "total_attempts new_attempts unknown_full_token_cost failed_provider_entries accepted_model_retry_failures overlong_provider_entries requests window")
+	keys(ss, "total_attempts new_attempts unknown_full_token_cost unknown_token_cost_entries unknown_model_version_entries failed_provider_entries accepted_model_retry_failures accepted_unknown_timeout_cost_entries accepted_unknown_timeout_version_entries accepted_unmeasured_timeout_entries overlong_provider_entries requests window")
 	nr, pr := arr(ss["requests"]), arr(pg["requests"])
 	r.Total = 537 + len(pr)
 	// Owning PG records every admitted entry, even if a later identity, timing,
@@ -205,9 +209,11 @@ func audit(in inputs) (r report, err error) {
 			r.Cost.Total += integer(a["total_tokens"])
 		}
 	}
+	r.MeasuredComplete = r.Cost.Unknown == 0 && r.Cost.UnknownInput == 0 && r.Cost.UnknownOutput == 0
 	q := obj(in.Quality)
 	p := obj(in.Prerequisite)
 	verifyExpenseException(in.ExpenseException)
+	verifySafeTimeoutWaiver(in.SafeTimeoutWaiver)
 	require(q["status"] == "V5_PRIVATE_FINAL_SQL_CORRELATION_MATCH" && integer(q["exact_diagnostic_rows"]) == 252 && integer(q["exact_private_originals"]) == 252 && integer(q["auditor_native_calls"]) == 0 && q["issue33_ready"] == false, "quality_original_provenance")
 	wa := obj(q["window_audit"])
 	require(wa["status"] == "CLOUD_V5_WINDOW_AUDIT_PASS" && integer(wa["carry_forward_attempts"]) == 535 && len(arr(wa["no_go_reasons"])) == 0, "quality_prior_denied")
@@ -228,7 +234,7 @@ func audit(in inputs) (r report, err error) {
 	require(runtime["exit_code"] == json.Number("0") && runtime["oom_killed"] == false && integer(runtime["memory_limit_bytes"]) == 1536<<20 && !end.Before(begin) && expiry.After(begin) && !expiry.After(begin.Add(time.Hour)), "runtime_or_global_deadline")
 	require(len(nr) > 0 && len(nr) <= 78 && len(nr) == len(pr), "entry_inventory")
 	require(integer(ss["new_attempts"]) == int64(len(nr)) && integer(pg["new_attempts"]) == int64(len(nr)) && integer(ss["total_attempts"]) == int64(r.Total) && integer(pg["total_attempts"]) == int64(r.Total) && integer(window["attempts"]) == int64(r.Total), "spent_counter")
-	require(sc["status"] == "passed" && integer(ss["unknown_full_token_cost"])+integer(ss["overlong_provider_entries"]) == 0, "collector_outcome")
+	require(sc["status"] == "passed" && integer(ss["overlong_provider_entries"]) == 0, "collector_outcome")
 	results := obj(sc["scenarios"])
 	require(len(results) == 5, "scenario_inventory")
 	grouped := map[string][]object{}
@@ -236,6 +242,7 @@ func audit(in inputs) (r report, err error) {
 	var previous time.Time
 	operations := map[string]bool{}
 	failedEntries := 0
+	unknownCostEntries, unknownVersionEntries, unmeasuredEntries := 0, 0, 0
 	for i, v := range nr {
 		a, b := obj(v), obj(pr[i])
 		verifyRequest(a, b)
@@ -244,6 +251,15 @@ func audit(in inputs) (r report, err error) {
 		operations[op] = true
 		if a["outcome"] != "completed" {
 			failedEntries++
+			if a["actual_total_tokens"] == nil {
+				unknownCostEntries++
+			}
+			if a["model_version"] == nil {
+				unknownVersionEntries++
+			}
+			if a["actual_total_tokens"] == nil || a["model_version"] == nil {
+				unmeasuredEntries++
+			}
 		}
 		require(integer(a["ordinal"]) == int64(538+i), "ordinal_replay_or_gap")
 		name := text(a["scenario"])
@@ -278,7 +294,13 @@ func audit(in inputs) (r report, err error) {
 		r.Cases = append(r.Cases, name)
 	}
 	require(integer(ss["failed_provider_entries"]) == int64(failedEntries) && integer(ss["accepted_model_retry_failures"]) == int64(r.AcceptedRetryFailures) && r.AcceptedRetryFailures == failedEntries, "retry_failure_accounting")
-	require(r.Cost.Unknown == 0, "complete_new_cost_required")
+	// Only after every failed predecessor has independently matched its exact
+	// durable retry and safe final product may its missing observation receive
+	// this narrow waiver. No successful request or unrelated UNKNOWN is covered.
+	r.AcceptedUnknownCost, r.AcceptedUnknownVersion = unknownCostEntries, unknownVersionEntries
+	r.AcceptedUnmeasured = unmeasuredEntries
+	require(integer(ss["unknown_full_token_cost"]) == int64(unmeasuredEntries) && integer(ss["unknown_token_cost_entries"]) == int64(unknownCostEntries) && integer(ss["unknown_model_version_entries"]) == int64(unknownVersionEntries) && integer(ss["accepted_unknown_timeout_cost_entries"]) == int64(unknownCostEntries) && integer(ss["accepted_unknown_timeout_version_entries"]) == int64(unknownVersionEntries) && integer(ss["accepted_unmeasured_timeout_entries"]) == int64(unmeasuredEntries), "narrow_timeout_unknown_accounting")
+	require(r.Cost.Unknown == unknownCostEntries && r.Cost.UnknownInput == unknownCostEntries && r.Cost.UnknownOutput == unknownCostEntries, "unwaived_unknown_cost")
 	r.Status = "CHAIN_V6_WITNESS_AUDIT_PASS"
 	return r, nil
 }
@@ -309,19 +331,21 @@ func verifyRequest(a, b object) {
 		sql[field] = moment(sql[field]).UTC().Format(time.RFC3339Nano)
 	}
 	require(reflect.DeepEqual(normalized, sql), "independent_pg_entry_mismatch")
-	require(a["model_version"] == "gemini-3.8-flash-n" && a["usage_observation_uncertain"] == false && a["version_observation_uncertain"] == false && a["finish_observation_uncertain"] == false, "native_terminal_contract")
+	require(a["usage_observation_uncertain"] == false && a["version_observation_uncertain"] == false && a["finish_observation_uncertain"] == false, "native_terminal_contract")
 	require(a["provider_operation_stage"] == "response_stream", "actual_provider_operation_stage")
-	input, output, total := integer(a["actual_input_tokens"]), integer(a["actual_output_tokens"]), integer(a["actual_total_tokens"])
-	require(input <= 1048576 && output <= 32768 && total >= input+output && total <= input+32768, "native_generation_allowance")
 	require(a["kind"] == "start" || a["kind"] == "continue" || a["kind"] == "submit", "entry_kind")
 	sha(a["input_sha256"])
 	require(text(a["run_id"]) != "" && text(a["root_task_id"]) != "", "entry_owner")
 	fc, tc, cc := integer(a["final_count"]), integer(a["terminal_count"]), integer(a["completed_count"])
 	if a["outcome"] != "completed" {
 		require((a["outcome"] == "timed_out" || a["outcome"] == "transport_error") && a["diagnostic_code"] == "provider_timeout" && (a["failure_stage"] == "entry" || a["failure_stage"] == "stream"), "only_nominal_timeout_retriable")
+		require(a["model_version"] == nil || a["model_version"] == "gemini-3.8-flash-n", "failed_timeout_version_contract")
+		verifyNativeCost(a, true)
 		require(fc == 0 && cc == 0 && integer(a["cancelled_count"]) == 0 && tc <= 1 && tc == integer(a["timed_out_count"])+integer(a["transport_error_count"]) && integer(a["stop_final_count"])+integer(a["max_tokens_final_count"]) == 0 && a["finish_reason"] == nil, "failed_retry_original_lifecycle")
 		return
 	}
+	require(a["model_version"] == "gemini-3.8-flash-n", "native_terminal_contract")
+	verifyNativeCost(a, false)
 	require(a["failure_stage"] == nil && a["diagnostic_code"] == nil, "native_success_diagnostic")
 	require(fc <= 1 && tc == cc && integer(a["cancelled_count"])+integer(a["timed_out_count"])+integer(a["transport_error_count"]) == 0 && integer(a["max_tokens_final_count"]) == 0, "clean_original_lifecycle")
 	if fc == 1 {
@@ -329,6 +353,22 @@ func verifyRequest(a, b object) {
 	} else {
 		require(tc == 0 && a["finish_reason"] == nil && integer(a["stop_final_count"]) == 0, "tool_request_contract")
 	}
+}
+
+func verifyNativeCost(a object, allowUnmeasuredTimeout bool) {
+	missing := 0
+	for _, key := range []string{"actual_input_tokens", "actual_output_tokens", "actual_total_tokens"} {
+		if a[key] == nil {
+			missing++
+		}
+	}
+	if missing == 3 {
+		require(allowUnmeasuredTimeout, "successful_cost_must_be_measured")
+		return
+	}
+	require(missing == 0, "partial_timeout_cost_denied")
+	input, output, total := integer(a["actual_input_tokens"]), integer(a["actual_output_tokens"]), integer(a["actual_total_tokens"])
+	require(input <= 1048576 && output <= 32768 && total >= input+output && total <= input+32768, "native_generation_allowance")
 }
 func sortedByTime(rows []object, key string) {
 	sort.SliceStable(rows, func(i, j int) bool { return moment(rows[i][key]).Before(moment(rows[j][key])) })

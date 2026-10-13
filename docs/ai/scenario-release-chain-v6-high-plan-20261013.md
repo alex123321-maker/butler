@@ -19,8 +19,11 @@ The [actual V5 chain](scenario-release-chain-v5-independent-audit-20261013.md)
 remains sealed NO_GO on afa50b2 after requests536–537. One discover action
 completed; no child, adapter, result or notification exists. Attempt537's
 provider usage and internal timeout substage remain UNKNOWN. The exact direct
-human reply permits unknown expense for that closed attempt only. It changes
-no other criterion and allows no future unknown-expense exception.
+human reply permits unknown expense for that closed attempt only. That record
+remains unchanged. Before any V6 native request, the subsequent direct human
+instruction, “Хорошо тогда чутьчуть ослабь требования и если прям критичных
+проблем не останется тогда можно закрывать пр”, authorized the narrow prospective
+exception below. It does not change the old failed outcome or safety criteria.
 
 ## Fixed history and limits
 
@@ -35,11 +38,16 @@ Known input294598/output11827/total572459 are subtotals;47 total measurements
 remain unknown. Old266's cause remains UNKNOWN.
 
 The new prospective prerequisite is exact LF SHA
-`9ce27e6d9a15f598fadc037e5de377869672937fef84849fc662610ec6379de3`.
+`bef93bde0afa1251c67eb60f01dbbe6f8142b4f32b5a8076c0f34d5d9b402077`.
 It binds the retained quality auditf8248d19, failed chain audit592d27ee,
-failure correlationfb8a430c and human exception31b930ac. It freezes one nominal
-timeout retry per input, two-second backoff, exact kernel-operation correlation,
-request-local phase observations and full measured expense for every new entry.
+failure correlationfb8a430c, original human exception31b930ac, the byte-exact
+previous prospective protocol9ce27e6d and new human waiver44991353. The previous
+protocol is preserved separately as `release-chain-v6-high-prerequisite-v1-20261013.json`.
+The waiver is exact LF SHA
+`44991353526966ab57cfd0155c3f65af00061b87308eed37c2b735f207e75180`.
+It freezes one nominal timeout retry per input, two-second backoff, exact
+kernel-operation correlation and request-local phase observations. All
+successful entries require full measured expense and the selected version.
 The prerequisite's existence alone enables no execution.
 
 V6 permits at most78 new Start/Continue/Submit requests, ending at absolute615.
@@ -75,17 +83,22 @@ The record binds count1, reason, prior operation, state, one database-clock
 claimed timestamp, backoff timestamp and the fresh retry operation/start stamp.
 
 The factual failed-request count is retained. A failed request is accepted only
-as the predecessor of exactly one proved same-run fresh Start retry: complete
-known usage/version, response_stream phase, provider_timeout, zero final and
+as the predecessor of exactly one proved same-run fresh Start retry:
+response_stream phase, provider_timeout, zero final and
 completed/cancelled events, safe terminal counts and certain observations.
+Its usage is either three valid known dimensions or three NULL dimensions;
+partial or conflicting usage is rejected. Its observed version is the selected
+version or NULL. Successful entries always have complete known usage/version.
 The failed row, record, later Start, timestamps and two distinct conservative
 reservations must agree. The final checker independently verifies this contract;
 a collector PASS alone establishes no release readiness.
 
-Any new unknown usage/version, unfinished prior native measurement or invalid
-phase stops further paid V6 admissions. A later successful retry cannot recover
-those measurements. Generic production recovery may retain unknown costs, but
-this acceptance scope must satisfy the user's stricter expense criterion.
+An unknown measurement qualifies only for that exact failed predecessor and
+the owning started retry before its next fresh Start. Every other new unknown,
+unfinished prior measurement, invalid phase or second timeout stops further paid
+admissions. A later success cannot recover the failed measurements: known totals
+are subtotals and factual unknown cost/version counts remain explicit, separately
+bound to accepted timeout exceptions. No failed request releases a tool or final.
 
 ## Five cases and result boundaries
 

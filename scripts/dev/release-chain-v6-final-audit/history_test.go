@@ -72,7 +72,7 @@ func TestActualSealedFailedV5HistoryAndMultiEntryRunRemainUnchanged(t *testing.T
 func TestV6PrerequisiteRemainingBudgetStagesAndNewUsageAreFrozen(t *testing.T) {
 	actual := candidatePrerequisite(t)
 	verifyV6Prerequisite(obj(actual))
-	for _, name := range []string{"reset_baseline535", "restore80", "larger617", "wrong_history", "unknowns_erased", "estimated_subtotal", "exception_missing", "new_unknown_allowed", "stages_disabled", "model_changed", "generation_relaxed", "retry_policy_changed", "second_model_retry", "shortened_retry_backoff", "kernel_binding_disabled"} {
+	for _, name := range []string{"reset_baseline535", "restore80", "larger617", "wrong_history", "unknowns_erased", "estimated_subtotal", "exception_missing", "new_unknown_allowed", "stages_disabled", "model_changed", "generation_relaxed", "retry_policy_changed", "second_model_retry", "shortened_retry_backoff", "kernel_binding_disabled", "original_protocol_removed", "waiver_pin_replaced", "waiver_disabled", "unamended_expense_claim"} {
 		t.Run(name, func(t *testing.T) {
 			x := obj(clone(actual))
 			switch name {
@@ -91,7 +91,7 @@ func TestV6PrerequisiteRemainingBudgetStagesAndNewUsageAreFrozen(t *testing.T) {
 			case "exception_missing":
 				x["human_expense_exception_sha256"] = nil
 			case "new_unknown_allowed":
-				x["all_new_expense_must_be_measured"] = false
+				x["all_successful_expense_must_be_measured"] = false
 			case "stages_disabled":
 				x["provider_stage_observation"] = false
 			case "model_changed":
@@ -106,6 +106,14 @@ func TestV6PrerequisiteRemainingBudgetStagesAndNewUsageAreFrozen(t *testing.T) {
 				x["model_retry_backoff_ms"] = jsonNumber(1999)
 			case "kernel_binding_disabled":
 				x["capture_kernel_operation_id"] = false
+			case "original_protocol_removed":
+				x["prior_protocol_sha256"] = nil
+			case "waiver_pin_replaced":
+				x["human_safe_timeout_waiver_sha256"] = expenseExceptionSHA
+			case "waiver_disabled":
+				x["allow_unmeasured_safe_timeout_retry"] = false
+			case "unamended_expense_claim":
+				x["all_new_expense_must_be_measured"] = true
 			}
 			denied := false
 			func() { defer func() { denied = recover() != nil }(); verifyV6Prerequisite(x) }()

@@ -5,7 +5,8 @@ model-turn timeout. The input worker queues a two-second pause, then obtains fre
 ownership and a separately budgeted provider session from saved Butler input and
 known tool results. Confirmed non-read proposals cannot execute again with a new
 call ID; owner Stop, changed sources, earlier authority deadlines and unknown
-effects deny recovery. Missing provider usage stays NULL. See the
+effects deny recovery. An exhausted or ineligible deadline follows normal
+provider cancellation and blocking. Missing provider usage stays NULL. See the
 [model retry policy](../../docs/architecture/model-retry-policy.md) and the
 zero-inference `scripts/dev/model-retry-lab.sh` runner.
 

@@ -40,8 +40,8 @@ foreach ($file in $files) {
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
       [void]$specs.Add("docs/architecture/execution-budget-contract.md")
       [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
-      [void]$tests.Add("SSH laba: scenario-release-chain-v6-high-lab.sh FRESH_V6_ROOT prepare EXACT_CLEAN_COMMIT. Actual537 carry, retained V5 quality and failed chain, single human537 expense exception, eight-field78/615 window and request-local stage/kernel-operation binding, disposable PostgreSQL, exact independent checker/Core gates; zero inference before independent source/runtime admission.")
-      [void]$tests.Add("Fresh final production retry regression and full mandatory fault matrix before once-only V6 native chain. Every new failure/retry needs full measured cost. All old native windows stay sealed.")
+      [void]$tests.Add("SSH laba: scenario-release-chain-v6-high-lab.sh FRESH_V6_ROOT prepare EXACT_CLEAN_COMMIT. Actual537 carry, retained V5 quality and failed chain, original human537 exception plus separately pinned prospective safe-timeout waiver, eight-field78/615 window and request-local stage/kernel-operation binding, disposable PostgreSQL, exact independent checker/Core gates; zero inference before independent source/runtime admission.")
+      [void]$tests.Add("Fresh final production retry regression and full mandatory fault matrix before once-only V6 native chain. Successes require full measured cost; only a proved response-stream timeout followed by one safe retry may retain separately counted NULLs. Safety, Stop, original result and all old sealed windows remain unchanged.")
       continue
     }
     "^(apps/orchestrator/internal/app/release_chain_v5_|scripts/dev/(scenario-release-chain-v5-|release-chain-v5-final-audit[-/]))" {

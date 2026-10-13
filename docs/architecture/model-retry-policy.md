@@ -48,6 +48,8 @@ reservation, it stamps the record as started, binding the fresh operation before
 transport execution. A crash after admission or that stamp cannot start another
 fresh request from the old queued marker. Subsequent turns keep the exhausted
 retry count. A second timeout follows the ordinary blocked/failed path.
+An exhausted or ineligible nominal deadline cancels the provider context through
+the normal budget-stop path. The retry must not bypass that cancellation.
 
 The failed provider context is discarded. The fresh session receives Butler's
 prepared input plus committed tool results as provenance-tagged user DATA.
@@ -77,13 +79,20 @@ ledger. Missing provider usage stays NULL. A successful retry cannot supply the
 earlier request's measurements. Request-local provider-stage observations retain
 only the allowlisted phase and do not establish cost or successful inference.
 
-Issue #33's closed attempt537 remains NO_GO with unknown usage. The direct human
-exception applies only to that retained attempt. Every newly admitted acceptance
-request, including a failed request followed by a retry, must have complete
-measured input/output/total usage. The new release-chain protocol, final tests and
-independent review are fixed before native execution.
+Issue #33's closed attempt537 remains NO_GO with unknown usage. Its original
+human exception and the original prospective V6 protocol remain immutable.
+Before any V6 native execution, a later direct human instruction permitted a
+narrow expense exception for a proved nominal response-stream timeout followed
+by the single safe retry. That failed request may retain three NULL usage
+dimensions and a NULL observed version; partial or conflicting measurements do
+not qualify. Every successful request still requires complete measured usage and
+the selected observed version. The failed reservation stays spent, unknown
+dimensions are counted separately, and the exact owning retry and eventual
+scenario result or owner-Stop guarantees must pass independent checks. All
+safety, quality and resource criteria remain. See the
+[prospective protocol](../ai/scenario-release-chain-v6-high-plan-20261013.md).
 
 The zero-inference regression runner is
-`scripts/dev/model-retry-lab.sh ISOLATED_AGENT_ROOT`. It uses disposable PostgreSQL,
+`scripts/dev/model-retry-lab.sh ISOLATED_AGENT_ROOT EXACT_COMMIT`. It uses disposable PostgreSQL,
 synthetic providers, race/vet and the same production worker/Core/budget path.
 Native High release-chain acceptance is a separate once-only gate.

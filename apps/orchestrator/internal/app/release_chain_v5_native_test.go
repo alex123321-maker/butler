@@ -278,9 +278,9 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 						results[scenario] = false
 						t.Error("content-free owning product witness unavailable")
 					}
-					var attempts, unknown, failed, overlong int
+					var attempts, unknown, failed, overlong, unknownCost, unknownVersion int
 					var window json.RawMessage
-					e := f.f.pool.QueryRow(context.Background(), `SELECT (SELECT attempts FROM `+caseWindow.table("fixture_chain_v5_high_window")+`),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE input_tokens IS NULL OR output_tokens IS NULL OR total_tokens IS NULL OR model_version IS NULL),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE outcome<>'completed' OR provider_operation_stage IS DISTINCT FROM 'response_stream'),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE elapsed_ms IS NULL OR elapsed_ms>120000),(SELECT json_build_object('native_baseline',native_baseline,'attempts',attempts,'prior_history_hash',prior_history_hash,'prerequisite_hash',prerequisite_hash,'expires_at',expires_at,'maximum_new_attempts',maximum_new_attempts,'provider_stage_observation',provider_stage_observation,'kernel_operation_binding',kernel_operation_binding) FROM `+caseWindow.table("fixture_chain_v5_high_window")+`)`).Scan(&attempts, &unknown, &failed, &overlong, &window)
+					e := f.f.pool.QueryRow(context.Background(), `SELECT (SELECT attempts FROM `+caseWindow.table("fixture_chain_v5_high_window")+`),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE input_tokens IS NULL OR output_tokens IS NULL OR total_tokens IS NULL OR model_version IS NULL),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE outcome<>'completed' OR provider_operation_stage IS DISTINCT FROM 'response_stream'),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE elapsed_ms IS NULL OR elapsed_ms>120000),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE input_tokens IS NULL OR output_tokens IS NULL OR total_tokens IS NULL),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE model_version IS NULL),(SELECT json_build_object('native_baseline',native_baseline,'attempts',attempts,'prior_history_hash',prior_history_hash,'prerequisite_hash',prerequisite_hash,'expires_at',expires_at,'maximum_new_attempts',maximum_new_attempts,'provider_stage_observation',provider_stage_observation,'kernel_operation_binding',kernel_operation_binding) FROM `+caseWindow.table("fixture_chain_v5_high_window")+`)`).Scan(&attempts, &unknown, &failed, &overlong, &unknownCost, &unknownVersion, &window)
 					if e != nil {
 						t.Error("durable native scope unavailable")
 						return
@@ -318,12 +318,22 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 					}
 					rows.Close()
 					acceptedRetries := 0
+					var retryMeasurements releaseChainV6RetryMeasurements
 					var retryError error
 					if caseWindow.kernelOperations {
-						acceptedRetries, retryError = releaseChainV6AcceptedRetryFailures(context.Background(), caseWindow)
+						retryMeasurements, retryError = releaseChainV6AcceptedRetryMeasurements(context.Background(), caseWindow)
+						acceptedRetries = retryMeasurements.Failures
 					}
-					snapshot, _ = json.Marshal(map[string]any{"window": window, "total_attempts": attempts, "new_attempts": attempts - entry.Baseline, "unknown_full_token_cost": unknown, "failed_provider_entries": failed, "accepted_model_retry_failures": acceptedRetries, "overlong_provider_entries": overlong, "requests": items})
-					if unknown != 0 || failed != acceptedRetries || overlong != 0 || retryError != nil {
+					scopeSnapshot := map[string]any{"window": window, "total_attempts": attempts, "new_attempts": attempts - entry.Baseline, "unknown_full_token_cost": unknown, "failed_provider_entries": failed, "accepted_model_retry_failures": acceptedRetries, "overlong_provider_entries": overlong, "requests": items}
+					if caseWindow.kernelOperations {
+						scopeSnapshot["unknown_token_cost_entries"] = unknownCost
+						scopeSnapshot["unknown_model_version_entries"] = unknownVersion
+						scopeSnapshot["accepted_unknown_timeout_cost_entries"] = retryMeasurements.UnknownCost
+						scopeSnapshot["accepted_unknown_timeout_version_entries"] = retryMeasurements.UnknownVersion
+						scopeSnapshot["accepted_unmeasured_timeout_entries"] = retryMeasurements.UnknownMeasurement
+					}
+					snapshot, _ = json.Marshal(scopeSnapshot)
+					if unknown != retryMeasurements.UnknownMeasurement || failed != acceptedRetries || overlong != 0 || retryError != nil {
 						results[scenario] = false
 						t.Error("complete observed cost/version/provider outcomes or request deadline unavailable")
 					}

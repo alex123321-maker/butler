@@ -20,7 +20,9 @@ const releaseChainV6Ceiling = 615
 
 // Independently reviewed protocol bytes. Final prepared source/runtime/fault
 // admission remains separate; a history count or expense exception is insufficient.
-const releaseChainV6ReviewedPrerequisiteSHA = "9ce27e6d9a15f598fadc037e5de377869672937fef84849fc662610ec6379de3"
+const releaseChainV6ReviewedPrerequisiteSHA = "bef93bde0afa1251c67eb60f01dbbe6f8142b4f32b5a8076c0f34d5d9b402077"
+const releaseChainV6PriorProtocolSHA = "9ce27e6d9a15f598fadc037e5de377869672937fef84849fc662610ec6379de3"
+const releaseChainV6SafeTimeoutWaiverSHA = "44991353526966ab57cfd0155c3f65af00061b87308eed37c2b735f207e75180"
 const releaseChainV6ExceptionSHA = "31b930ac4e39206d65424ac951f65cc4656b71166995650122cbdda3e63b6ab4"
 const releaseChainV6FailedAuditSHA = "592d27ee34178a9b336eb0f9cce4784fac1ba214b22f05e1ad0b247a48f97c04"
 const releaseChainV6FailedCorrelationSHA = "fb8a430c327c4abec5984cad6fec6e79aa57d36866500dd588979722f282a424"
@@ -103,13 +105,17 @@ type releaseChainV6Prerequisite struct {
 	MaximumRetries       int    `json:"maximum_model_retries_per_input"`
 	RetryBackoffMillis   int    `json:"model_retry_backoff_ms"`
 	KernelOperations     bool   `json:"capture_kernel_operation_id"`
+	PriorProtocolSHA     string `json:"prior_protocol_sha256"`
+	SafeTimeoutWaiverSHA string `json:"human_safe_timeout_waiver_sha256"`
+	AllowUnknownTimeouts bool   `json:"allow_unmeasured_safe_timeout_retry"`
+	SuccessRequireKnown  bool   `json:"all_successful_expense_must_be_measured"`
 }
 
 func validateReleaseChainV6Prerequisite(p releaseChainV6Prerequisite, h nativeHistoricalEvidence) error {
-	if p.RetryPolicy != "one_nominal_timeout_per_accepted_input_v1" || p.MaximumRetries != 1 || p.RetryBackoffMillis != 2000 || !p.KernelOperations {
+	if p.RetryPolicy != "one_nominal_timeout_per_accepted_input_v1" || p.MaximumRetries != 1 || p.RetryBackoffMillis != 2000 || !p.KernelOperations || p.PriorProtocolSHA != releaseChainV6PriorProtocolSHA || p.SafeTimeoutWaiverSHA != releaseChainV6SafeTimeoutWaiverSHA || !p.AllowUnknownTimeouts || !p.SuccessRequireKnown {
 		return errNativeFixtureDenied
 	}
-	if p.Version != "butler-chain-high-reviewed-v6-prerequisite-v1" || p.Baseline != 537 || p.Maximum != 78 || p.Ceiling != 615 || p.Baseline+p.Maximum != p.Ceiling || p.HistorySHA != h.BaselineSHA256 || h.NativeAttempts != 537 || h.KnownUsagePairs != 510 || h.UnknownUsagePairs != 27 || p.QualitySHA != releaseChainV5ReviewedPrerequisiteSHA || p.OriginalQualitySHA != releaseChainV5ReviewedOriginalAuditSHA || p.FailedAuditSHA != releaseChainV6FailedAuditSHA || p.FailedCorrelationSHA != releaseChainV6FailedCorrelationSHA || p.ExpenseExceptionSHA != releaseChainV6ExceptionSHA || p.KnownInput != 294598 || p.KnownOutput != 11827 || p.KnownTotal != 572459 || p.UnknownTotal != 47 || p.KnownPairs != 510 || p.UnknownPairs != 27 || !p.ProviderStages || !p.RequireKnown || p.Generation != 32768 || p.Model != acceptance.CloudRequestedModel {
+	if p.Version != "butler-chain-high-reviewed-v6-prerequisite-v2" || p.Baseline != 537 || p.Maximum != 78 || p.Ceiling != 615 || p.Baseline+p.Maximum != p.Ceiling || p.HistorySHA != h.BaselineSHA256 || h.NativeAttempts != 537 || h.KnownUsagePairs != 510 || h.UnknownUsagePairs != 27 || p.QualitySHA != releaseChainV5ReviewedPrerequisiteSHA || p.OriginalQualitySHA != releaseChainV5ReviewedOriginalAuditSHA || p.FailedAuditSHA != releaseChainV6FailedAuditSHA || p.FailedCorrelationSHA != releaseChainV6FailedCorrelationSHA || p.ExpenseExceptionSHA != releaseChainV6ExceptionSHA || p.KnownInput != 294598 || p.KnownOutput != 11827 || p.KnownTotal != 572459 || p.UnknownTotal != 47 || p.KnownPairs != 510 || p.UnknownPairs != 27 || !p.ProviderStages || p.RequireKnown || p.Generation != 32768 || p.Model != acceptance.CloudRequestedModel {
 		return errNativeFixtureDenied
 	}
 	return nil
@@ -124,7 +130,7 @@ func readReleaseChainV6Prerequisite() (releaseChainV5Prerequisite, error) {
 	}
 	raw, err := readReleaseChainV5Artifact(highHistoryPath("release-chain-v6-high-prerequisite-20261013.json"), releaseChainV6ReviewedPrerequisiteSHA)
 	var p releaseChainV6Prerequisite
-	if err != nil || acceptance.DecodeStrict(raw, &p, "version", "baseline_attempts", "maximum_new_attempts", "maximum_total_attempts", "prior_history_sha256", "retained_quality_prerequisite_sha256", "retained_quality_final_audit_sha256", "failed_v5_audit_sha256", "failed_v5_correlation_sha256", "human_expense_exception_sha256", "historical_known_input_tokens_subtotal", "historical_known_output_tokens_subtotal", "historical_known_total_tokens_subtotal", "historical_unknown_total_attempts", "historical_known_usage_pairs", "historical_unknown_usage_pairs", "provider_stage_observation", "all_new_expense_must_be_measured", "maximum_generation_tokens", "requested_model", "retry_policy", "maximum_model_retries_per_input", "model_retry_backoff_ms", "capture_kernel_operation_id") != nil {
+	if err != nil || acceptance.DecodeStrict(raw, &p, "version", "baseline_attempts", "maximum_new_attempts", "maximum_total_attempts", "prior_history_sha256", "retained_quality_prerequisite_sha256", "retained_quality_final_audit_sha256", "failed_v5_audit_sha256", "failed_v5_correlation_sha256", "human_expense_exception_sha256", "historical_known_input_tokens_subtotal", "historical_known_output_tokens_subtotal", "historical_known_total_tokens_subtotal", "historical_unknown_total_attempts", "historical_known_usage_pairs", "historical_unknown_usage_pairs", "provider_stage_observation", "all_new_expense_must_be_measured", "maximum_generation_tokens", "requested_model", "retry_policy", "maximum_model_retries_per_input", "model_retry_backoff_ms", "capture_kernel_operation_id", "prior_protocol_sha256", "human_safe_timeout_waiver_sha256", "allow_unmeasured_safe_timeout_retry", "all_successful_expense_must_be_measured") != nil {
 		return result, errNativeFixtureDenied
 	}
 	h, err := readReleaseChainV6ActualHistory()
@@ -132,6 +138,12 @@ func readReleaseChainV6Prerequisite() (releaseChainV5Prerequisite, error) {
 		return result, errNativeFixtureDenied
 	}
 	if _, err = readReleaseChainV6ExpenseException(); err != nil {
+		return result, errNativeFixtureDenied
+	}
+	if _, err = readReleaseChainV6SafeTimeoutWaiver(); err != nil {
+		return result, errNativeFixtureDenied
+	}
+	if _, err = readReleaseChainV5Artifact(highHistoryPath("release-chain-v6-high-prerequisite-v1-20261013.json"), releaseChainV6PriorProtocolSHA); err != nil {
 		return result, errNativeFixtureDenied
 	}
 	result, err = readReleaseChainV5Prerequisite()
