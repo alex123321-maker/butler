@@ -43,3 +43,29 @@ The command performs a build-only preparation then one fresh native execution.
 No offline PASS is claimed. Existing source gate, TLS and credential metadata
 checks precede marker/native entry. Narrow new helper and PostgreSQL checks run
 in parallel and remain separate from factual native results and final acceptance.
+
+The V16 window is now closed **NO_GO**. Its first `restart_sent` case stopped
+at the exact Broker inventory assertion; the other three cases did not run.
+Requests 617–636 all completed with measured usage: 237570 input, 4108 output
+and 265857 total tokens. Native failure, timeout, retry and new unknown usage
+counts are zero. These are successful model responses, not accepted product
+results. The original product export is the literal three-byte `[]\n`; it
+cannot substantiate effects, all eight budget dimensions or an owner notice.
+
+The independently matched proposals contain two `extension.project.prepare-patch`
+calls, 629 and 634, with the same authorization arguments hash. This tool is a
+POST with commit effects; proposal equivalence alone does not prove identical
+external artifacts or safe deduplication. The repeated read-only inspect and
+check calls do not relax the requirement for one logical write. A future repair
+must retain the actual owning PostgreSQL snapshot even when semantic result
+capture fails, and must address the primary repeated-write behavior separately.
+
+The [closed audit](../../deploy/acceptance/release-chain-v16-final-audit-20261013.json),
+[failure correlation](../../deploy/acceptance/release-chain-v16-failure-correlation-20261013.json),
+[exact history through636](../../deploy/acceptance/release-chain-v16-history636-20261013.json)
+and [independent carry](../../deploy/acceptance/release-chain-v16-carry636-independent-20261013.json)
+retain this result. Known cumulative subtotals are 1372607 input, 30515 output
+and 1844192 total tokens; 30 input/output pairs and 50 full costs remain unknown.
+The carry fold is
+`314bf4a5a3b649f6dc6354a03ea4c536a85f6a8ea92c756ef50bcc288aeda951`.
+The unused allowance in the closed736 window remains sealed.

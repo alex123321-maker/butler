@@ -4,6 +4,27 @@ Current bounded mandatory-fault gate: **PASS**, all8scenarios. Full issue33:
 still requires separately reviewed High quality/cost and complete release-chain
 baseline/restart/Stop/delivery acceptance; this report sets issue_33_ready=false.
 
+The latest full matrix measured production commit
+`9c9c826e4df62f97704473e17bd86562c187cf9a`, exactly the V14 native source,
+in snapshot `20261014-022354-308`. Its isolated proof is
+`/srv/storage/butler/agents/scenario-release-chain-v14-final-faults-20261013/reports/fault-20261013T192358Z-3102452`.
+The [current report](../../deploy/acceptance/scenario-full-faults-current9c-report-20261013.json)
+has SHA256 `b0277daec57e4acfb773d9255daa8944e91fd087c058540e7633ffa24f98c67c`;
+the [independent review](../../deploy/acceptance/scenario-full-faults-current9c-independent-review-20261013.json)
+has SHA256 `04d9383bfc2c11fc75b883055c44fc26c8bc6c59872957968329006b3cb726e9`.
+All 176 selected checks and 321 named events passed, with zero failures or skips,
+across 33 raw event files, 35 groups and all eight mandatory scenarios. Eight
+runtime binaries and container images are pinned. Source tree SHA256 is
+`2088977d4631e9a13167dede98ad74990114f4addfbfb51d89b0e7e4a13783e3`;
+manifest SHA256 is
+`cdebb59281d4b211c41bea917eb62a6e43225d00d2ce6e88c2a868accb4ebedf`.
+The [read-only reproducer](../../scripts/dev/verify-current-full-faults-9c9c826.py)
+checks the retained named artifacts without running the tests again. This run
+reuses the independently checked, sealed physical model-load witness described
+below; it performed no new model load or inference. The older matrix reports
+remain historical evidence, and this bounded PASS does not certify later
+production changes or the incomplete native release chain.
+
 Base main895bdd3. This current gate is additive: the independently signed V3
 criteria digest `76437b99d5eb79baadb39c5eb6d7958a2d6108296c7b6dc6c6118f42b21cd058`,
 corpus, old V1 matrix and failed/native history are immutable. Old dependency

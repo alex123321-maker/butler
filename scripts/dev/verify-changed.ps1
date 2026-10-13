@@ -26,6 +26,15 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(apps/orchestrator/internal/app/(release_chain_v(?:14|15|16|17)_|release_chain_pending_cases|release_chain_entry_lane)|scripts/dev/scenario-release-chain-v(?:14|15|16|17)-|scripts/dev/release-chain-v6-final-audit/v(?:14|15|16|17)|deploy/acceptance/release-chain-v(?:14|15|16|17))" {
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/generated-converters.md")
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$tests.Add("Latest frozen fresh native entry: build then execute immediately, only the declared pending cases. Run meaningful changed-helper/current PostgreSQL and race/vet checks in parallel; final independent source, original receipts, eight budget dimensions and costs remain mandatory. Never Sync or execute a closed V14/V15/V16 native root.")
+      [void]$tests.Add("Use a separately frozen version-specific read-only final auditor on exact named original artifacts. Preserve V14 useful work separately from its failed normal case, all later failures and historical UNKNOWN; no completed quality/comparison rerun or duplicate-write waiver.")
+      continue
+    }
     "^(apps/orchestrator/internal/app/(release_chain_v(?:[789]|10|11|12|13)_|release_chain_extension_harness|release_chain_source_observer|release_chain_proposal_|release_chain_entry_lane)|scripts/dev/scenario-release-chain-v(?:[789]|10|11|12|13)-|scripts/dev/release-chain-v6-final-audit/(v(?:[89]|10|11|12|13)|proposals)|deploy/acceptance/release-chain-v(?:[789]|10|11|12|13))" {
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
@@ -65,8 +74,8 @@ foreach ($file in $files) {
       [void]$specs.Add("docs/architecture/owner-goals-mandates-spec.md")
       [void]$specs.Add("docs/architecture/atomic-result-delivery.md")
       [void]$specs.Add("docs/architecture/generated-converters.md")
-      [void]$tests.Add("Shared future V6 helper: scenario-release-chain-v6-high-lab.sh FRESH_V6_ROOT prepare EXACT_CLEAN_COMMIT after model-retry integration; exact current app/checker manifest, disposable PostgreSQL, original result/cost/authority gates and race/vet. V5 native root is sealed failed; use its frozen read-only audit reproduction only.")
-      [void]$tests.Add("Independent V6 checker and full mandatory fault matrix on the same final composition. New native execute is once-only after separate source/runtime/resource review; old sealed roots cannot be reopened.")
+      [void]$tests.Add("Shared runner: use only the latest explicitly fixed fresh pending-case wrapper and clean commit. Build then execute immediately; changed helper checks and independent source/runtime review run in parallel. All old native roots, including V5 through V16, are sealed and cannot be reused.")
+      [void]$tests.Add("Final version-specific independent checker verifies actual Core/Broker receipts, original result, restart/Stop/delivery and full new measured usage. Retained quality/comparison/full-fault evidence needs scoped source comparison, not hundreds of repeated pre-native checks.")
       continue
     }
     "^(deploy/acceptance/(cloud-shadow-v5-|release-chain-v5-)|scripts/dev/cloud-v5-final-audit-reproduce[.]sh$)" {

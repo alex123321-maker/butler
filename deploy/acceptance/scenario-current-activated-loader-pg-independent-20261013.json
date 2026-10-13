@@ -1,0 +1,43 @@
+{
+  "all_preexisting_production_files_identical": true,
+  "all_source_inventory_bytes_recomputed": true,
+  "exact_named_passes": [
+    "TestConverterContinuationActivatedCurrentLoaderRecoveryIntegration"
+  ],
+  "issue33_ready": false,
+  "limitations": [
+    "Model-free PostgreSQL/journal/current-loader proof; manual fixture lifecycle setup is not a new native inference or end-to-end release PASS.",
+    "Prior anonymous-volume NoSpace startup failures remain retained and are not passing tests."
+  ],
+  "named_failures": 0,
+  "named_pass_count": 1,
+  "named_skips": 0,
+  "native_calls": 0,
+  "owning_native_roots_modified": false,
+  "prior_measured_commit": "9c9c826e4df62f97704473e17bd86562c187cf9a",
+  "proof": "/srv/storage/butler/agents/scenario-release-chain-v14-context-pg-20261013/reports/context-pg-20261013T194056Z-3170262",
+  "race_execution": true,
+  "snapshot": "/srv/storage/butler/agents/scenario-release-chain-v14-context-pg-20261013/snapshots/20261014-022804-049",
+  "source_added": {
+    "apps/orchestrator/internal/app/converter_continuation_activated_integration_test.go": "58923e8d536abc6df8318b67a978befbe3275d5d114326e6c8af35811c5066fd",
+    "apps/orchestrator/internal/app/release_chain_v14_metadata_checks_test.go": "f4598d952dc96e3a77139aebfeb5aa3c3d40509158a181a71010d5f538d4aaf5",
+    "apps/orchestrator/internal/orchestrator/converter_continuation_activated_test.go": "7830984eb2f233b7c6352ce0a5a3e38adf727384110c324e435df7e2e00a61e2",
+    "scripts/dev/scenario-release-chain-v14-activated-loader-required-tests.txt": "11db7588082c3e8b9a79eb5a9176267c72cce0c548f3a79245d726969147916a",
+    "scripts/dev/scenario-release-chain-v14-context-required-tests.txt": "2d481592d7656536e43438e5bb420363286cde319832ccda000b86760b26141f"
+  },
+  "source_changed": {},
+  "source_file_count": 2381,
+  "source_manifest_sha256": "651c0fb40de568df773b58654648277b4d9ac41f6b29e43b590153d111577deb",
+  "source_removed": [],
+  "source_review_predicates": [
+    "Ordinary guarded collect/test/trial/activate journal confirms immutable candidate generation1 and current activated generation2 with actual authorization/effect receipts.",
+    "Completed candidate input/lease release, new durable055 activated input claim, current lease/claim/checkpoint/source transcript pin precede current loader and restarted loader proof.",
+    "Both loaders return current generation2/action/effect; modified ownership fence and deleted original source each deny."
+  ],
+  "source_tree_sha256": "2c2330fbdaa0b4e5f52cf847c9f8a6c7554c2cff187515bb7c14a35a2ede6941",
+  "status": "PASS",
+  "tests_jsonl_bytes": 1707,
+  "tests_jsonl_sha256": "805d4b74e962620bf9546a5123291f02c79b43b34dbab8f506be240ccf11a723",
+  "version": "butler-independent-current-pg-source-review-v1",
+  "vet_diagnostics_bytes": 0
+}
