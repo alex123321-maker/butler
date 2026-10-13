@@ -1,8 +1,8 @@
 # Issue33 final acceptance
 
-Overall issue-wide publication gate is pending the independent final composition
-record. The actual model and component gates below have PASS evidence. No new
-model calls or repeated completed scenarios are required.
+Overall issue-wide independent acceptance: **PASS**, issue33_ready=true.
+The [final independent record](../../deploy/acceptance/issue33-final-independent-acceptance-20261014.json)
+confirms all33 criteria and the exact final publication composition.
 
 ## Evidence matrix
 
