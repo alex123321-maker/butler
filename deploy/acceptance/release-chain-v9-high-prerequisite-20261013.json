@@ -35,7 +35,7 @@
   "failed_model_version_shape": "selected_version_or_null",
   "all_other_quality_source_authority_stop_effect_delivery_gates_retained": true,
   "issue33_ready": false,
-  "human_policy_amendment_sha256": "69877515a9271fa53ce4fc1b8996ab09dfe0314317ea3c8cb2a68e95e4b71fe2",
+  "human_policy_amendment_sha256": "83ca7491e4fc4a3673097f62f9590117e42387daadc656935318b5bd6caf4ebe",
   "proposal_retention_required": true,
   "maximum_private_proposal_bytes": 262144,
   "preserve_original_proposal_bytes_and_authorization_fingerprint": true,

@@ -7,9 +7,9 @@ scenarios and the separate child's pre-native reason UNKNOWN. V9 starts from
 this factual544 history; it reopens no earlier native window.
 
 The reviewed protocol SHA is
-`af7638fe5f698530efc21740dd87843ef06d8455c0aca3fe155cb1970617463d`;
+`4f753010b86b57ff2ea4cc8ff698d56d23787ab1ec20b572cb35ad329b1802c3`;
 direct user policy amendment SHA is
-`69877515a9271fa53ce4fc1b8996ab09dfe0314317ea3c8cb2a68e95e4b71fe2`.
+`83ca7491e4fc4a3673097f62f9590117e42387daadc656935318b5bd6caf4ebe`.
 The fresh V9 window allows at most71 new requests under the retained615 ceiling.
 High keeps32768 generation tokens, 300-second request bounds, 40-minute case
 bounds, 120-minute global bounds, one proved nominal timeout retry and complete
