@@ -34,7 +34,8 @@ directory or credential material may enter the independent auditor.
 Preparation runs the exact manifests in
 `scripts/dev/scenario-release-chain-v8-integer-required-tests.txt` and
 `scripts/dev/scenario-release-chain-v8-required-tests.txt`: 29 affected decoder
-and schema checks, seven app checks including two PostgreSQL retention cases,
+and schema checks, eight app checks including two PostgreSQL retention cases
+and one check against the actual Broker argument fingerprint,
 and a separate negative test of the sealed V7 native entry. Existing unchanged
 Core, retry, quality, comparison and fault evidence remains attributed to its
 original source. Final admission requires the new snapshot and runtime pins,
@@ -55,3 +56,10 @@ bash "$ROOT/current/scripts/dev/scenario-release-chain-v8-high-lab.sh" "$ROOT" e
 
 Preparation and protocol review establish no native chain PASS. Acceptance still
 requires the five actual Core/Broker cases and independent final evidence review.
+
+The first preparation on `f01319a` passed all 29 affected decoder tests, then
+stopped because the manifest name check rejected the dot in `1.0`. It made no
+native request. Its proof remains at
+`chain-v8-high-prepare-20261013T141619Z-2147212`; the next clean preparation fixes
+the manifest validation and adds the content-free Broker argument fingerprint
+projection for independent correlation.

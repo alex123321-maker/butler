@@ -114,7 +114,7 @@ if [[ "$protocol" == v8 ]]; then
  [[ "${#integer_required[@]}" == 29 ]]
  [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") {n++} END{print n+0}' "$proof/bin/developer-integer-unit.jsonl")" == 29 ]]
  for test_name in "${integer_required[@]}"; do
-  [[ "$test_name" =~ ^Test[A-Za-z0-9_/-]+$ ]]
+  [[ "$test_name" =~ ^Test[A-Za-z0-9_./-]+$ ]]
   [[ "$(awk -v needle="\"Test\":\"$test_name\"" 'index($0,"\"Action\":\"pass\"") && index($0,needle) {n++} END{print n+0}' "$proof/bin/developer-integer-unit.jsonl")" == 1 ]]
  done
  if docker run --rm --network none --read-only --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true --memory 512m --volume "$proof/bin:/bin-proof:ro" --env BUTLER_SCENARIO_CHAIN_V7_HIGH_ACCEPTANCE=1 "$go_image" /bin-proof/app.test -test.v -test.run='^TestScenarioReleaseChainActualV7HighE2E$' > "$proof/sealed-v7-entry.txt" 2>&1; then exit 1; fi

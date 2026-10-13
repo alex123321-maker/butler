@@ -9,11 +9,31 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/transport"
 	"github.com/butler/butler/internal/transport/antigravity"
 )
+
+func TestReleaseChainV8ProductActionsRetainArgumentHashIntegration(t *testing.T) {
+	f := newDeveloperFixture(t)
+	f.channel = &releaseChainChannel{}
+	f.projectDirectory = t.TempDir()
+	_, prepared, _ := f.dispatch(t, f.parentRun, "converters.discover", map[string]any{"source_ref": f.needRef})
+	w, err := createReleaseChainV5Window(f.f.ctx, f.f.pool, strings.Repeat("e", 64), strings.Repeat("f", 64), 7, time.Minute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	w.policy = releaseChainV8Policy()
+	if recordReleaseChainV5ProductEvidence(f.f.ctx, w, f, "explicit_absence", true, nil) != nil {
+		t.Fatal("owning product evidence unavailable")
+	}
+	var actual string
+	if f.f.pool.QueryRow(f.f.ctx, `SELECT payload_json->'postgres'->'actions'->0->>'args_hash' FROM `+w.table("fixture_chain_v5_high_case_evidence")).Scan(&actual) != nil || actual != prepared.Binding.ArgsHash || len(actual) != 64 {
+		t.Fatal("retained argument fingerprint differs from actual Broker binding")
+	}
+}
 
 func TestReleaseChainV8ProposalExactBytesAndNoMetadataLeak(t *testing.T) {
 	dir := t.TempDir()

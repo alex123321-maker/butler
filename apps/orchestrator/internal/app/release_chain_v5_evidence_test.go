@@ -235,6 +235,9 @@ func recordReleaseChainV5ProductEvidence(parent context.Context, w *releaseChain
  'technical_sent_rows',(SELECT count(*) FROM channel_delivery_events WHERE state='sent'),
  'initiatives',COALESCE((SELECT json_agg(row_to_json(i) ORDER BY initiative_id) FROM (SELECT initiative_id,task_id,status,reason FROM initiatives WHERE task_id=$1) i),'[]'::json))`
 	productQuery := query
+	if w.policy.ProposalRetention {
+		productQuery = strings.Replace(productQuery, "c.tool_name,i.action_hash,i.effect_id", "c.tool_name,i.action_hash,i.binding->>'args_hash' AS args_hash,i.effect_id", 1)
+	}
 	if w.kernelOperations {
 		productQuery = strings.Replace(productQuery, "updated_at,expires_at,error_code FROM accepted_inputs", "updated_at,expires_at,error_code,not_before,checkpoint_json->'model_retry' AS model_retry FROM accepted_inputs", 1)
 	}
