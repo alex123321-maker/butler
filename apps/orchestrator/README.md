@@ -10,16 +10,18 @@ provider cancellation and blocking. Missing provider usage stays NULL. See the
 [model retry policy](../../docs/architecture/model-retry-policy.md) and the
 zero-inference `scripts/dev/model-retry-lab.sh` runner.
 
-Current actual history is556 after the sealed V5/V6/V7b/V8/V9 native chains NO_GO.
-545 through556 completed actual High requests with full measured usage. Ordinary
+Current actual history is557 after the sealed V5/V6/V7b/V8/V9/V10 native chains NO_GO.
+The latest557 start was cancelled by a source-check timeout; usage/version remain
+UNKNOWN and no action ran. This is ineligible for nominal model-timeout retry.
+Earlier545 through556 completed actual High requests with full measured usage. Ordinary
 Core/Broker confirmed child development and test, parent collection, retest,
 trial and activation. The next extension inspection became effect_unknown;
 its exact runtime subcause remains UNKNOWN and automatic continuation blocked.
 Cumulative475637 input/15159 output/793703 total
-are known subtotals, with28 unknown visible pairs and48 unknown totals. No
+are known subtotals, with29 unknown visible pairs and49 unknown totals. No
 complete original-result/notice chain exists; four remaining cases were not
 run. Full mandatory faults, production retry tests and broad Linux tests/vet
-passed separately on their attributed earlier sources. See the [V9 chain audit](../../docs/ai/scenario-release-chain-v9-independent-audit-20261013.md).
+passed separately on their attributed earlier sources. See the [V10 chain audit](../../docs/ai/scenario-release-chain-v10-independent-audit-20261013.md).
 The535 quality/comparison boundary below remains its immutable prior evidence.
 
 The accepted quality/comparison evidence ends at535 spent High attempts. Actual V5 quality and four

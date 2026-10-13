@@ -1,0 +1,3493 @@
+{
+  "artifacts": [
+    {
+      "new_attempts": 3,
+      "release_ref": "85bef824e838caef64407891d5b228f982c51032",
+      "report_sha256": "28c75c31827f8a25ca8ed101e6e04b8264a7e66ee9ce18808d504d5af748c8f0"
+    },
+    {
+      "new_attempts": 2,
+      "release_ref": "6bf29435cdf74ee143f4d3dd1c12defb2f9d1aa4",
+      "report_sha256": "f5d25f36b574464508a4124ac7490d525e75d8c8cf60111a0bb637637e777619"
+    },
+    {
+      "new_attempts": 4,
+      "release_ref": "38e3b87353cd3fbf25fb90e77fcf76b83a4ac09d",
+      "report_sha256": "b7a4b35b7b587fb8f0561cbdb18f5ad8088b7939e673ffa290e06ec10410b89b"
+    },
+    {
+      "new_attempts": 4,
+      "release_ref": "b91e72d881ea933257110d4452cf8d4b91ae3aba",
+      "report_sha256": "72d95bb5ac0bcf5bd4d8d4b28b1de6beb10d819a348c7e5efb187295ce28a1f9"
+    },
+    {
+      "new_attempts": 5,
+      "release_ref": "",
+      "report_sha256": "5e180087d4e1d43fe52c6afac0c35763b69a8dfe906953a18eac49416bd7cded"
+    },
+    {
+      "new_attempts": 2,
+      "release_ref": "",
+      "report_sha256": "6808c50e120b59a40c2c2d9b53babb7dba1e581a3fbcb29ddb3cae6b9491e472"
+    },
+    {
+      "new_attempts": 1,
+      "release_ref": "",
+      "report_sha256": "f3474b9d7b6441d1a9ea66dcf84b8aecc7dbe0c7dfcc1494bff3eaa7c19dcdb5"
+    },
+    {
+      "new_attempts": 0,
+      "release_ref": "",
+      "report_sha256": "208f7d4702451b36e8f27ab25474fcb3edc66e1e9a18074fd5a946d2ba47dffe"
+    },
+    {
+      "new_attempts": 1,
+      "release_ref": "",
+      "report_sha256": "3ec5ffb14090e7875db47490ad20821645974fd3c9478af5b831128b3558a2cc"
+    },
+    {
+      "new_attempts": 5,
+      "release_ref": "7431af70a7f9f8699be86a2a73c053c2be56a3c5",
+      "report_sha256": "f4649a539eed17bf01db034209a757bbfdb268759b2446c852f2260009bba0d2"
+    },
+    {
+      "new_attempts": 10,
+      "release_ref": "b2100bd2bcd4147b1168a252cd7369c3415c5140",
+      "report_sha256": "afa63de06b6991feb3a96b322d442d573d4d2834c51a70c07e5fd4419f751a91"
+    },
+    {
+      "new_attempts": 0,
+      "release_ref": "a473dbd124a8b437de3058e81e0b76455b57bddb",
+      "report_sha256": "ce8835a6fefcd600c6b28b88fed73212453c5af54016bdd6d8c77c4e506dbeae"
+    },
+    {
+      "new_attempts": 2,
+      "release_ref": "bdd85cdc752a739e0a4fa9be4789bf2f8fc7132d",
+      "report_sha256": "58edb6f022399e385118c51de8e3f9f7890fbfc74a5dd3b39de8b42839651505"
+    },
+    {
+      "new_attempts": 2,
+      "release_ref": "51b3ea62179edf2b31d1b1fbd4d0b08137484ab4",
+      "report_sha256": "724c8f3f0e4ba6864952e57b52d5111f135fbe8a27c88f00d893a2b4df753df3"
+    },
+    {
+      "new_attempts": 4,
+      "release_ref": "250cf05be67b3ba19bcdcc6a7afabf13d5733e79",
+      "report_sha256": "0ded1f418c3ecf9fad177fe5141350e8c5ca8002452fb462e3114219c4ab4ca9"
+    },
+    {
+      "new_attempts": 183,
+      "release_ref": "f3e0cbc11dedc2fb8e547e61f0153bf78cde6f98",
+      "report_sha256": "332d10777cb208b4d78fdfbf88be5183050ab4679ba3cf372395bdab74eab249"
+    },
+    {
+      "new_attempts": 20,
+      "release_ref": "409847057692cf6a9a30b4cdbd6ef55fa7711ca0",
+      "report_sha256": "f00347b79875ca9f516c2308b66f70c851606ddfd058d00125adc45aab432f7b"
+    },
+    {
+      "new_attempts": 18,
+      "release_ref": "b4f594899f8780a7f20b8a9983ef53f5221ff96d",
+      "report_sha256": "2561b8486c40ee3d2d23d01709b5b06962f3407165c54133e04ab5bd29cd9a16"
+    },
+    {
+      "new_attempts": 2,
+      "release_ref": "b7d65b8dbe81bb8b1951c70039869f6f5d66ed3c",
+      "report_sha256": "76d3e1a71681cac0b54e3a54c58978f94185c12e28ead163ee736f2022433adb"
+    },
+    {
+      "new_attempts": 11,
+      "release_ref": "925e1729923fd9865622c475893d7bffb21699e8",
+      "report_sha256": "431e4371e7975604971019930c1f912eb9c610fa7ad316738cb50601ab8507cb"
+    },
+    {
+      "new_attempts": 4,
+      "release_ref": "a2004acad0c6dc37c2cdf5db71e1a63d5e57e3dc",
+      "report_sha256": "d3877d3bc9a2bdffca14c040e4aa8c397e3b5da806c0ff0e3a33a47221fd7cfe"
+    },
+    {
+      "new_attempts": 252,
+      "release_ref": "3c4089f35c0bdf33bf9b2c6328ba395c519cecf4",
+      "report_sha256": "0344daef8123db481eb4c34519bf02fad72f7a358cfa2168a469293938b47cec"
+    },
+    {
+      "new_attempts": 2,
+      "release_ref": "afa50b225b1341d2ff8a553188a69f6b6b2ac633",
+      "report_sha256": "592d27ee34178a9b336eb0f9cce4784fac1ba214b22f05e1ad0b247a48f97c04"
+    },
+    {
+      "new_attempts": 2,
+      "release_ref": "829d77582691b7e80a4fcbd6279b8db3c1046669",
+      "report_sha256": "339e54f39e51c43972c54b87d2d335f4eefa8340ac6d51cfad05b8391772a0c2"
+    },
+    {
+      "new_attempts": 2,
+      "release_ref": "6d874f6625af7f21ac9758dbea9b287b4d5252ea",
+      "report_sha256": "a75e06331c6151a79726e94559fbe3c48f84e1af23dc0a8351d78ce3db517c28"
+    },
+    {
+      "new_attempts": 3,
+      "release_ref": "5057fbf1a90e01952ea939c2c1fd7af13c3db6a6",
+      "report_sha256": "5573b9f25e13a4f3aefacacf142aeda7846b68962f8cd26df4498417097c580f"
+    },
+    {
+      "new_attempts": 12,
+      "release_ref": "1937bdc8f152469d918ea83092a8d75a614f07c5",
+      "report_sha256": "731cf102a25d42a091441ea045cedb5964c66ebb305890c564cc3b5b9713ad83"
+    },
+    {
+      "new_attempts": 1,
+      "release_ref": "0f9b61e23fd56fefddd1c42cd3aa9efa14087d83",
+      "report_sha256": "28b4dbc9cdfbd8fb8e838b2f14bb698b7142e587f0a44ec2e534a716dce62534"
+    }
+  ],
+  "baseline_sha256": "fb4b085728544f0709dbc58dc7d5a3ba678412cc6a0c96514363a6fab2c27dee",
+  "known_usage_pairs": 528,
+  "native_attempts": 557,
+  "status": "mixed_completed_history",
+  "unknown_usage_pairs": 29,
+  "usage": [
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "e9ce3e06b11b5229fc8bb94f2d409bde830a1dfffc4e12fef961a85303e05651",
+      "run_id": "run-1791686670205717203-fcecce7eaea3ea63"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "b68add3660a5fb49ac9df4bd90f2105a54189fb7a6f573521640c77fb9ea4380",
+      "run_id": "run-1791686670205717203-fcecce7eaea3ea63"
+    },
+    {
+      "actual_input_tokens": 5526,
+      "actual_output_tokens": 101,
+      "reservation_id": "b1780250701ce0c20906b303cffb80ee952232dfae4a3beb88bd5f10905a811d",
+      "run_id": "run-1791686670205717203-fcecce7eaea3ea63"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "5a260b551bffd11e9ab89c312097b0b4c4350f4142985e7984955a0834771f77",
+      "run_id": "run-1791688873777308720-1d9517b5da3da9ef"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "779b9f375063f532b17d4ce628d880605a4a10f4881f379b801d4886e6f00565",
+      "run_id": "run-1791688873777308720-1d9517b5da3da9ef"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "6e6cb0a74d6f9aaf5d7aa51eeb2eb78e85b0851708a6fe53ea66600635b5aee7",
+      "run_id": "run-1791691045412458727-aa70dbf582b9b496"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "0db7496f708fc4ad519033c573a075d07166bad04a6e1f3759aa3cc38613860b",
+      "run_id": "run-1791691045412458727-aa70dbf582b9b496"
+    },
+    {
+      "actual_input_tokens": 6244,
+      "actual_output_tokens": 89,
+      "reservation_id": "a1491d0fdcdeee1dfed146ef87d5017b91baa2afdf341fcfda9d01a67eaf010d",
+      "run_id": "run-1791691045412458727-aa70dbf582b9b496"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "efc27fd98850af569fb1e082bc3803ecddfebcd6d28d915a26dfd442c822262d",
+      "run_id": "run-1791691113172230594-20088272d4a492db"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "ed1bcb1e7fbc66a12768b9ea227d65bfc8b948cb2d9c83bcf813c52da2ee2a0d",
+      "run_id": "run-1791694426489736723-fec44c89de11d01d"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "b74f7567c7d8308a6602ba87bc56a1d50a0b92e353e9ebe5cfcb04f6ce1eed78",
+      "run_id": "run-1791694426489736723-fec44c89de11d01d"
+    },
+    {
+      "actual_input_tokens": 5040,
+      "actual_output_tokens": 90,
+      "reservation_id": "9d8607b32115f86e7fb9d87177782d1aa03702be14c02675a64497132be7cda6",
+      "run_id": "run-1791694426489736723-fec44c89de11d01d"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "138857aeef60e4e9f9d94dbbf9c0cd3cac22cf32749d84fb73a8446bb222ff36",
+      "run_id": "run-1791694493060919285-c9e6aec1305dd43c"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "fcc2304c9d49ddb0c8464eb792942371b8aca4bd1920359cf033f122ff73177a",
+      "run_id": "run-1791704688540132965-dc65fa91103bb796"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "3cd102b7e3d2481f6f70bccbd7fa222e8eab14aeab3bb87499236f3506747313",
+      "run_id": "run-1791704688540132965-dc65fa91103bb796"
+    },
+    {
+      "actual_input_tokens": 5226,
+      "actual_output_tokens": 101,
+      "reservation_id": "09351d2e81b8cb001f68f5a992341af262b370746646ef461351976f41f3773f",
+      "run_id": "run-1791704688540132965-dc65fa91103bb796"
+    },
+    {
+      "actual_input_tokens": 2885,
+      "actual_output_tokens": 166,
+      "reservation_id": "85625da8081658f24606349c136626bb13fc8e43e2873862e6b919b822454086",
+      "run_id": "run-1791704756286860114-fa8d42f262f36327"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "ffeb521a8175ef9fb70090948daa0d55fb1560e9ed74ffb3ac59b1077c5be93f",
+      "run_id": "run-1791704765290208395-e72d5eda99b2b826"
+    },
+    {
+      "actual_input_tokens": 1990,
+      "actual_output_tokens": 17,
+      "reservation_id": "",
+      "run_id": ""
+    },
+    {
+      "actual_input_tokens": 28,
+      "actual_output_tokens": 17,
+      "reservation_id": "",
+      "run_id": ""
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "",
+      "run_id": ""
+    },
+    {
+      "actual_input_tokens": 29,
+      "actual_output_tokens": 17,
+      "reservation_id": "",
+      "run_id": ""
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "c6d631f7e32b9358873d285cc68fb5d8ac977e99596db263a4baa686c0e2cff1",
+      "run_id": "run-1791748702327777941-6be50ca468fcc927"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "dc29bd82d3f0b807184bc1b1c557b6d8e4369770179cae2a3b878a24b3aa718f",
+      "run_id": "run-1791748702327777941-6be50ca468fcc927"
+    },
+    {
+      "actual_input_tokens": 5472,
+      "actual_output_tokens": 92,
+      "reservation_id": "b3d9d31ec86533d0529ab73de60e9c6e16eb646d00b74c27e082f8472b08aa6e",
+      "run_id": "run-1791748702327777941-6be50ca468fcc927"
+    },
+    {
+      "actual_input_tokens": 2880,
+      "actual_output_tokens": 166,
+      "reservation_id": "d39a7a927b68fad0a26fff556df520c5cd0faef142f24bd5273c19eda8f576d6",
+      "run_id": "run-1791748774385493674-d1ce9b79cad9b7e3"
+    },
+    {
+      "actual_input_tokens": 2876,
+      "actual_output_tokens": 160,
+      "reservation_id": "9e0414a459570a8f13c90aa1b72c9de202b6ce559e4d91b275c916cc2d4181d4",
+      "run_id": "run-1791748795458973772-d858713c01d0b300"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "c614479656a1c807fa49d0c3f2a6fe0d28d2f647863bcf1fb471a7dda9477fd4",
+      "run_id": "run-1791781649045319983-8694bc31d0f6865a"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "e5b36a4ee5e3901b1bbc3f394cfdc56e02840baf637d78d1140fa22c4d6b8f18",
+      "run_id": "run-1791781649045319983-8694bc31d0f6865a"
+    },
+    {
+      "actual_input_tokens": 5707,
+      "actual_output_tokens": 70,
+      "reservation_id": "7f9d27ca1a085ae3fb7568bea968b50d857c30a0bf25a9e8191eabdc12e4e20a",
+      "run_id": "run-1791781649045319983-8694bc31d0f6865a"
+    },
+    {
+      "actual_input_tokens": 3144,
+      "actual_output_tokens": 165,
+      "reservation_id": "cbe48175ee9a5af90139e7f541ce5704bd8d03c52a1f299282cb4d658e65ce28",
+      "run_id": "run-1791781723812532520-3a671aef2445f9eb"
+    },
+    {
+      "actual_input_tokens": 3138,
+      "actual_output_tokens": 160,
+      "reservation_id": "97dab6fe60e19e785e85e6f12b155e7631c68c33a083ba46a09b27f40755202a",
+      "run_id": "run-1791781737557534094-868e4962c53c2439"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "b552c920076fc974c004198eb21cb34dbc811e2dafa88293881e1f43badd4579",
+      "run_id": "run-1791781750915110756-0e672c49a9feacfc"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "0ea75d1a17f1f3c38a6d8a08844a2c645afcd742b67da5c74f02a233eed42f1b",
+      "run_id": "run-1791781750915110756-0e672c49a9feacfc"
+    },
+    {
+      "actual_input_tokens": 6281,
+      "actual_output_tokens": 74,
+      "reservation_id": "7d19881607e1143b73515cd097320a8adea5bf2765199c6a024a615f4a9b10b5",
+      "run_id": "run-1791781750915110756-0e672c49a9feacfc"
+    },
+    {
+      "actual_input_tokens": 3147,
+      "actual_output_tokens": 165,
+      "reservation_id": "c69b2e376de835c0ad05773c73176051a40b5c6aea01eaa0941ff9cfacf6607d",
+      "run_id": "run-1791781821310830898-b6f905c7c3a13f87"
+    },
+    {
+      "actual_input_tokens": 3147,
+      "actual_output_tokens": 160,
+      "reservation_id": "8d518485f535ce473086857d06ff0b18638059b3bf8714889ffdf3a937db5207",
+      "run_id": "run-1791781833553753760-b21ab6b1ba3a58ea"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "33c96d4f81c11ec4246bc0102afe49c437497e9c27022431a333dd0593931fba",
+      "run_id": "run-1791784701472967805-5ce92a5c8ba2384f"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "f8163320fc3daa108480f1b71918d9aa669df988fd27c1ae927899222ea018b1",
+      "run_id": "run-1791784701473173698-220b67e3e35806ae"
+    },
+    {
+      "actual_input_tokens": 3155,
+      "actual_output_tokens": 165,
+      "reservation_id": "98fbe580353d1d525155aa7d3f773fa6e706b18558b9c81cd66c7c49023b7428",
+      "run_id": "run-1791786923264801268-98a14d29e9790902"
+    },
+    {
+      "actual_input_tokens": 3143,
+      "actual_output_tokens": 160,
+      "reservation_id": "36a20c9012af0eab3578c4191395d8a5490ba86256093a846333d657f61b7a27",
+      "run_id": "run-1791786923264815236-c6520d2a6a18386e"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "47c1379d8eb1194bcf889f309b9502e20d110721fc90ce4d729a20e3688984e1",
+      "run_id": "run-1791791826470237448-3a905cf9235d3942"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "7eddd8e43a21c6afa5aae81818642264c66d59c4973c44cce098c88b002ae591",
+      "run_id": "run-1791791826470237448-3a905cf9235d3942"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "1099de389fa49fd65c9785e03698f5c7f4564e79f7658694d8d688c4a29e1a56",
+      "run_id": "run-1791791826470237448-3a905cf9235d3942"
+    },
+    {
+      "actual_input_tokens": 5640,
+      "actual_output_tokens": 75,
+      "reservation_id": "a52a339b134100ca81f8fcd93c9bde2f1ac5e84f4faa1ceb460661cd7be6efc3",
+      "run_id": "run-1791791826470237448-3a905cf9235d3942"
+    },
+    {
+      "actual_input_tokens": 291,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-46",
+      "run_id": "shadow-efe015e364f8a40e8b17c3bf4a03c88b"
+    },
+    {
+      "actual_input_tokens": 295,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-47",
+      "run_id": "shadow-c0d33753eca434b3956113f2e1b2ec5f"
+    },
+    {
+      "actual_input_tokens": 319,
+      "actual_output_tokens": 53,
+      "reservation_id": "shadow-v1-native-48",
+      "run_id": "shadow-d43d366c7d6e4816e1515e26bb7efa60"
+    },
+    {
+      "actual_input_tokens": 348,
+      "actual_output_tokens": 58,
+      "reservation_id": "shadow-v1-native-49",
+      "run_id": "shadow-cb5e6451c194e7e7532dc06ae59d121d"
+    },
+    {
+      "actual_input_tokens": 243,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-50",
+      "run_id": "shadow-d98cbf93d64f9b43df12a445ab8b68cb"
+    },
+    {
+      "actual_input_tokens": 239,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-51",
+      "run_id": "shadow-b262f8630336633fb9f28bd303c9ed62"
+    },
+    {
+      "actual_input_tokens": 572,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-52",
+      "run_id": "shadow-4d6b030111f97341ecf85a147ad0dc6b"
+    },
+    {
+      "actual_input_tokens": 568,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-53",
+      "run_id": "shadow-5667398ba78202ed151e6cef9c560f44"
+    },
+    {
+      "actual_input_tokens": 268,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-54",
+      "run_id": "shadow-45f8e1315b9cb4209d58980573717d51"
+    },
+    {
+      "actual_input_tokens": 268,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-55",
+      "run_id": "shadow-9b8288d1491e1aaf62cf416b605339bf"
+    },
+    {
+      "actual_input_tokens": 303,
+      "actual_output_tokens": 84,
+      "reservation_id": "shadow-v1-native-56",
+      "run_id": "shadow-96f2973e967e188f634fe80dec6f5b90"
+    },
+    {
+      "actual_input_tokens": 282,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-57",
+      "run_id": "shadow-21c66fb34553c6b4b5a2c73b4c5c6160"
+    },
+    {
+      "actual_input_tokens": 242,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-58",
+      "run_id": "shadow-b4e5894e917e933da38c8eb17f37e877"
+    },
+    {
+      "actual_input_tokens": 236,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-59",
+      "run_id": "shadow-4ca289106bac3dc05fc1990dc1593784"
+    },
+    {
+      "actual_input_tokens": 589,
+      "actual_output_tokens": 16,
+      "reservation_id": "shadow-v1-native-60",
+      "run_id": "shadow-cd93677b8aff50d71c2d816bbbb1375a"
+    },
+    {
+      "actual_input_tokens": 565,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-61",
+      "run_id": "shadow-0caa1ea0c9989fe80a756b1f15651126"
+    },
+    {
+      "actual_input_tokens": 266,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-62",
+      "run_id": "shadow-2ff0e53588bb0247b3faefc518d97158"
+    },
+    {
+      "actual_input_tokens": 270,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-63",
+      "run_id": "shadow-a62cb8ab2945662e106372fb01bb2313"
+    },
+    {
+      "actual_input_tokens": 302,
+      "actual_output_tokens": 53,
+      "reservation_id": "shadow-v1-native-64",
+      "run_id": "shadow-c80b4ab945a0b63306eb5d50ca2c9bc9"
+    },
+    {
+      "actual_input_tokens": 314,
+      "actual_output_tokens": 58,
+      "reservation_id": "shadow-v1-native-65",
+      "run_id": "shadow-682cdb7e23a4012efc461d204a505053"
+    },
+    {
+      "actual_input_tokens": 240,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-66",
+      "run_id": "shadow-028330ff5f6e568c56d43325a731f545"
+    },
+    {
+      "actual_input_tokens": 241,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-67",
+      "run_id": "shadow-5745e496fc3302c1ad191672794596cb"
+    },
+    {
+      "actual_input_tokens": 572,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-68",
+      "run_id": "shadow-0c4d4e18c7bad581cc21d88afaed7a86"
+    },
+    {
+      "actual_input_tokens": 567,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-69",
+      "run_id": "shadow-ed10cc3d4cc06b4f177c258c4fce7780"
+    },
+    {
+      "actual_input_tokens": 258,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-70",
+      "run_id": "shadow-fa85bc69d8372f49ce8571f01b84a0ea"
+    },
+    {
+      "actual_input_tokens": 261,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-71",
+      "run_id": "shadow-1b6ac00545b48a3bcece871773ea818f"
+    },
+    {
+      "actual_input_tokens": 291,
+      "actual_output_tokens": 98,
+      "reservation_id": "shadow-v1-native-72",
+      "run_id": "shadow-ece40b5b58f559367ff3d65545074996"
+    },
+    {
+      "actual_input_tokens": 278,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-73",
+      "run_id": "shadow-cbd0f017b8f68ad1dfcb80a03e24d7cc"
+    },
+    {
+      "actual_input_tokens": 242,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-74",
+      "run_id": "shadow-287d8ccc548021e3ec5e00e5b0a88f72"
+    },
+    {
+      "actual_input_tokens": 237,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-75",
+      "run_id": "shadow-e4af1feb22ab80762f1555f374a7c21e"
+    },
+    {
+      "actual_input_tokens": 576,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-76",
+      "run_id": "shadow-9b86ad2b7a47b70ff3e8ad801924c55c"
+    },
+    {
+      "actual_input_tokens": 566,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-77",
+      "run_id": "shadow-46f75da9114ba88f25f8c2f2a8d0fd67"
+    },
+    {
+      "actual_input_tokens": 259,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-78",
+      "run_id": "shadow-1f928689cb3b7f9fd7b1d78c8e267de8"
+    },
+    {
+      "actual_input_tokens": 261,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-79",
+      "run_id": "shadow-56920f08e5ac9ecd43631132cb2050b7"
+    },
+    {
+      "actual_input_tokens": 290,
+      "actual_output_tokens": 41,
+      "reservation_id": "shadow-v1-native-80",
+      "run_id": "shadow-c08c2f6153bf8f7aa87eae01cc9cfcfa"
+    },
+    {
+      "actual_input_tokens": 321,
+      "actual_output_tokens": 44,
+      "reservation_id": "shadow-v1-native-81",
+      "run_id": "shadow-ff27a3dfb3b12e527f9dc8e9f3784999"
+    },
+    {
+      "actual_input_tokens": 245,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-82",
+      "run_id": "shadow-84d0db421790f828eb8388e47931185d"
+    },
+    {
+      "actual_input_tokens": 235,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-83",
+      "run_id": "shadow-ce4c742e3753a85889fa4c4e77cfa1ce"
+    },
+    {
+      "actual_input_tokens": 572,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-84",
+      "run_id": "shadow-2aa85f81b0a5802fae711b7a2a697a7e"
+    },
+    {
+      "actual_input_tokens": 565,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-85",
+      "run_id": "shadow-00e8583def786415d08c2e38713600cc"
+    },
+    {
+      "actual_input_tokens": 249,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-86",
+      "run_id": "shadow-3a9068ba5beea3c7859e811ad73c4a8c"
+    },
+    {
+      "actual_input_tokens": 262,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-87",
+      "run_id": "shadow-9dccfe40e3ef9bb789f05a2630f8f261"
+    },
+    {
+      "actual_input_tokens": 288,
+      "actual_output_tokens": 38,
+      "reservation_id": "shadow-v1-native-88",
+      "run_id": "shadow-e0eddba120ea14daf894245bd8280667"
+    },
+    {
+      "actual_input_tokens": 273,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-89",
+      "run_id": "shadow-35b426589d31475247f8bfecb4410fe2"
+    },
+    {
+      "actual_input_tokens": 243,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-90",
+      "run_id": "shadow-c162b39ad9e4b56a016da0ecae0ca434"
+    },
+    {
+      "actual_input_tokens": 243,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-91",
+      "run_id": "shadow-4beb59a8e2eddbad13c244207cbeffe9"
+    },
+    {
+      "actual_input_tokens": 571,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-92",
+      "run_id": "shadow-7aa50450a55cf94cd8d9ad7861a429b4"
+    },
+    {
+      "actual_input_tokens": 569,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-93",
+      "run_id": "shadow-03d857357c005472c4fabb4d6a4e43fc"
+    },
+    {
+      "actual_input_tokens": 275,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-94",
+      "run_id": "shadow-0fd8a1177d04f75065b9e9bcc0a2eec5"
+    },
+    {
+      "actual_input_tokens": 276,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-95",
+      "run_id": "shadow-4e26287015d7d6887aaffe70d2d6910f"
+    },
+    {
+      "actual_input_tokens": 301,
+      "actual_output_tokens": 44,
+      "reservation_id": "shadow-v1-native-96",
+      "run_id": "shadow-8359f84706cf2e16bb40f785309c3b47"
+    },
+    {
+      "actual_input_tokens": 342,
+      "actual_output_tokens": 47,
+      "reservation_id": "shadow-v1-native-97",
+      "run_id": "shadow-2203cb722ea8fa705583cf906b8a9cc5"
+    },
+    {
+      "actual_input_tokens": 240,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-98",
+      "run_id": "shadow-41b1ddbcce7921f9a8408ccb8a3fc382"
+    },
+    {
+      "actual_input_tokens": 240,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-99",
+      "run_id": "shadow-4d36304e61196f5b55165831ef333006"
+    },
+    {
+      "actual_input_tokens": 568,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-100",
+      "run_id": "shadow-1a44e35ce01ad576c14e432c8a39aec4"
+    },
+    {
+      "actual_input_tokens": 562,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-101",
+      "run_id": "shadow-14039ca1963583daf97876d7e1118b78"
+    },
+    {
+      "actual_input_tokens": 256,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-102",
+      "run_id": "shadow-b324f759274ef9a27aa02713fa9b430c"
+    },
+    {
+      "actual_input_tokens": 260,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-103",
+      "run_id": "shadow-1bd78852cf566ebce62807418d68ae39"
+    },
+    {
+      "actual_input_tokens": 291,
+      "actual_output_tokens": 39,
+      "reservation_id": "shadow-v1-native-104",
+      "run_id": "shadow-ef608a788f78659db15761a680cc9daf"
+    },
+    {
+      "actual_input_tokens": 277,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-105",
+      "run_id": "shadow-d2d93152fac608667d151e1fc7592db2"
+    },
+    {
+      "actual_input_tokens": 239,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-106",
+      "run_id": "shadow-1d8ac26a6ba8ba1ed2a385226907c692"
+    },
+    {
+      "actual_input_tokens": 237,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-107",
+      "run_id": "shadow-87bcafaf8e912a27db83aed1109ea338"
+    },
+    {
+      "actual_input_tokens": 586,
+      "actual_output_tokens": 16,
+      "reservation_id": "shadow-v1-native-108",
+      "run_id": "shadow-a87637826918dab069df3095c3a8abe5"
+    },
+    {
+      "actual_input_tokens": 568,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-109",
+      "run_id": "shadow-63559ef7d023eb5b211d375eaf9b0411"
+    },
+    {
+      "actual_input_tokens": 276,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-110",
+      "run_id": "shadow-7f0c0c434bbd98984d7523af87a718ee"
+    },
+    {
+      "actual_input_tokens": 273,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-111",
+      "run_id": "shadow-2365680e72e74e313e87d8f79bb0352e"
+    },
+    {
+      "actual_input_tokens": 304,
+      "actual_output_tokens": 34,
+      "reservation_id": "shadow-v1-native-112",
+      "run_id": "shadow-6313d766e02218c95bd7a06c0b257e98"
+    },
+    {
+      "actual_input_tokens": 306,
+      "actual_output_tokens": 42,
+      "reservation_id": "shadow-v1-native-113",
+      "run_id": "shadow-a7a9c8f274a861f68261dedf25ea7473"
+    },
+    {
+      "actual_input_tokens": 237,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-114",
+      "run_id": "shadow-379fcd78f8ecf9acf4570b6947e0336a"
+    },
+    {
+      "actual_input_tokens": 235,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-115",
+      "run_id": "shadow-04a508d0b1e86f7810749a164a95e5d7"
+    },
+    {
+      "actual_input_tokens": 569,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-116",
+      "run_id": "shadow-6c64b479aab5406cfb803fd80cc98bba"
+    },
+    {
+      "actual_input_tokens": 563,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-117",
+      "run_id": "shadow-3e2b08bd77cde54db8df9d9f1fb17d4f"
+    },
+    {
+      "actual_input_tokens": 259,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-118",
+      "run_id": "shadow-1148f8da51db7dfbbf880c2717e5545d"
+    },
+    {
+      "actual_input_tokens": 257,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-119",
+      "run_id": "shadow-8e60ca178f64b0d179ef5f6e40ff34e1"
+    },
+    {
+      "actual_input_tokens": 288,
+      "actual_output_tokens": 51,
+      "reservation_id": "shadow-v1-native-120",
+      "run_id": "shadow-d108191bde5d836ffc6d446d1664b295"
+    },
+    {
+      "actual_input_tokens": 273,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-121",
+      "run_id": "shadow-c8091acc78cedccde5ebae786a0b1e54"
+    },
+    {
+      "actual_input_tokens": 239,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-122",
+      "run_id": "shadow-d630cc0596adb2dc327a4ddfbeeb27ae"
+    },
+    {
+      "actual_input_tokens": 235,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-123",
+      "run_id": "shadow-5eb55c27feabe269e65f926c1b123253"
+    },
+    {
+      "actual_input_tokens": 576,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-124",
+      "run_id": "shadow-ad7280d89dd73909cbc1b32f14222a77"
+    },
+    {
+      "actual_input_tokens": 569,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-125",
+      "run_id": "shadow-bc368786aa1da85dccddf0eb8b62defa"
+    },
+    {
+      "actual_input_tokens": 257,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-126",
+      "run_id": "shadow-1b3b8f7226c53031cc251d45421c7489"
+    },
+    {
+      "actual_input_tokens": 257,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-127",
+      "run_id": "shadow-103d3e518c2883fb40df76e7061ed508"
+    },
+    {
+      "actual_input_tokens": 287,
+      "actual_output_tokens": 44,
+      "reservation_id": "shadow-v1-native-128",
+      "run_id": "shadow-4bf129f07bf08d32d799e0b3b7d68503"
+    },
+    {
+      "actual_input_tokens": 316,
+      "actual_output_tokens": 45,
+      "reservation_id": "shadow-v1-native-129",
+      "run_id": "shadow-e924d2681c3ed0be1d28cb9a49775e58"
+    },
+    {
+      "actual_input_tokens": 232,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-130",
+      "run_id": "shadow-7d2363d42acf793f6467d7d4e77eb7ad"
+    },
+    {
+      "actual_input_tokens": 235,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-131",
+      "run_id": "shadow-e93ac7bac6e23a582ed9f7bb4d7c1dcc"
+    },
+    {
+      "actual_input_tokens": 567,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-132",
+      "run_id": "shadow-1d6c61bfe8e7affab5d29c1976fd4061"
+    },
+    {
+      "actual_input_tokens": 564,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-133",
+      "run_id": "shadow-1a290ca29447646b8691ddfb97ebb3be"
+    },
+    {
+      "actual_input_tokens": 261,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-134",
+      "run_id": "shadow-e2dca2b2d8601d89539e144e16a34e9c"
+    },
+    {
+      "actual_input_tokens": 255,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-135",
+      "run_id": "shadow-baf67ec6354804b4c0f99af249caef17"
+    },
+    {
+      "actual_input_tokens": 293,
+      "actual_output_tokens": 40,
+      "reservation_id": "shadow-v1-native-136",
+      "run_id": "shadow-71bdb372e565dab5a13183097515eab7"
+    },
+    {
+      "actual_input_tokens": 270,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-137",
+      "run_id": "shadow-0ab379f84a95e809312cf7e81cde3990"
+    },
+    {
+      "actual_input_tokens": 236,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-138",
+      "run_id": "shadow-fdc2ab01e0eec1db575f2976290894d9"
+    },
+    {
+      "actual_input_tokens": 229,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-139",
+      "run_id": "shadow-0625f99ca17ae58ab77ac0006ec8a1f2"
+    },
+    {
+      "actual_input_tokens": 581,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-140",
+      "run_id": "shadow-fa59e6fca70e478f0f9ca4166cbfa0a0"
+    },
+    {
+      "actual_input_tokens": 566,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-141",
+      "run_id": "shadow-3b58ca55f2834d4b316d1d1ed2180e31"
+    },
+    {
+      "actual_input_tokens": 258,
+      "actual_output_tokens": 14,
+      "reservation_id": "shadow-v1-native-142",
+      "run_id": "shadow-e89f6a5154e0f9aa3c48f7f37f52b37d"
+    },
+    {
+      "actual_input_tokens": 262,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-143",
+      "run_id": "shadow-ad5e267995e7d60566fc967b65c86a7f"
+    },
+    {
+      "actual_input_tokens": 290,
+      "actual_output_tokens": 47,
+      "reservation_id": "shadow-v1-native-144",
+      "run_id": "shadow-84424dd16de8e4032032b6054de2ac83"
+    },
+    {
+      "actual_input_tokens": 321,
+      "actual_output_tokens": 51,
+      "reservation_id": "shadow-v1-native-145",
+      "run_id": "shadow-0a3d1249b56b4a538182f2b3c9867a11"
+    },
+    {
+      "actual_input_tokens": 241,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-146",
+      "run_id": "shadow-308b9d855223bd05f9d05cd0c8f3d94e"
+    },
+    {
+      "actual_input_tokens": 238,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-147",
+      "run_id": "shadow-eeb7fd5c4d9e977c4e6c9da4b32f6f8e"
+    },
+    {
+      "actual_input_tokens": 581,
+      "actual_output_tokens": 16,
+      "reservation_id": "shadow-v1-native-148",
+      "run_id": "shadow-4c85ff0c2af77312e1dc27cd9cb848da"
+    },
+    {
+      "actual_input_tokens": 569,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-149",
+      "run_id": "shadow-01100bdfefbb7f35cc5655501f215955"
+    },
+    {
+      "actual_input_tokens": 262,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-150",
+      "run_id": "shadow-f29de87a300c8db67b3814d0321bebd9"
+    },
+    {
+      "actual_input_tokens": 271,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-151",
+      "run_id": "shadow-60305d4d4ba7621d92ae03fe0b08fa51"
+    },
+    {
+      "actual_input_tokens": 297,
+      "actual_output_tokens": 41,
+      "reservation_id": "shadow-v1-native-152",
+      "run_id": "shadow-bbe60f102a41d01f2a2fb46508472e1c"
+    },
+    {
+      "actual_input_tokens": 282,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-153",
+      "run_id": "shadow-28de5a8a30e7b31b68eb600267c54b2a"
+    },
+    {
+      "actual_input_tokens": 239,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-154",
+      "run_id": "shadow-802af3a1e9e6bf264f9d936461d126df"
+    },
+    {
+      "actual_input_tokens": 240,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-155",
+      "run_id": "shadow-031606b2cb46825ff630507199fe4d7d"
+    },
+    {
+      "actual_input_tokens": 577,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-156",
+      "run_id": "shadow-63a7cbaf58c97d644c8e0e71f32b3ea0"
+    },
+    {
+      "actual_input_tokens": 569,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-157",
+      "run_id": "shadow-12952f62742ec639bedf84f33a0e5d7b"
+    },
+    {
+      "actual_input_tokens": 257,
+      "actual_output_tokens": 14,
+      "reservation_id": "shadow-v1-native-158",
+      "run_id": "shadow-1998385a93e05070d1038a2ce0b50df9"
+    },
+    {
+      "actual_input_tokens": 265,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-159",
+      "run_id": "shadow-a822e1675a7b8e08914fd89ca3553704"
+    },
+    {
+      "actual_input_tokens": 294,
+      "actual_output_tokens": 44,
+      "reservation_id": "shadow-v1-native-160",
+      "run_id": "shadow-f5982eee790c0cf6cd50d7ce6cbef02e"
+    },
+    {
+      "actual_input_tokens": 323,
+      "actual_output_tokens": 46,
+      "reservation_id": "shadow-v1-native-161",
+      "run_id": "shadow-ef37806a3cc353be953e821783eebbb4"
+    },
+    {
+      "actual_input_tokens": 245,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-162",
+      "run_id": "shadow-5e6c8095ae727f7bacb1ab1d2e041405"
+    },
+    {
+      "actual_input_tokens": 240,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-163",
+      "run_id": "shadow-2c89adba8c99528c3b264cdb21e93f3a"
+    },
+    {
+      "actual_input_tokens": 573,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-164",
+      "run_id": "shadow-2a47411459359c96648d5202f1b69ba2"
+    },
+    {
+      "actual_input_tokens": 564,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-165",
+      "run_id": "shadow-a28ad5919b39c8eff9fb5e20876c3909"
+    },
+    {
+      "actual_input_tokens": 262,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-166",
+      "run_id": "shadow-0ae9498af066b848223ffa725a355755"
+    },
+    {
+      "actual_input_tokens": 265,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-167",
+      "run_id": "shadow-0001d728f98e7f2d123c1852cc8efa45"
+    },
+    {
+      "actual_input_tokens": 292,
+      "actual_output_tokens": 47,
+      "reservation_id": "shadow-v1-native-168",
+      "run_id": "shadow-59c318fa914432a7ed0cf525abfc34d5"
+    },
+    {
+      "actual_input_tokens": 276,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-169",
+      "run_id": "shadow-f6405d5999071edd6c72ca9a75259980"
+    },
+    {
+      "actual_input_tokens": 241,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-170",
+      "run_id": "shadow-10af3000f545344a00a384b8ea3b7266"
+    },
+    {
+      "actual_input_tokens": 238,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-171",
+      "run_id": "shadow-303f7cb49e8de396b4c62e118b278402"
+    },
+    {
+      "actual_input_tokens": 575,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-172",
+      "run_id": "shadow-df787c80654907f6f78568ed763865a8"
+    },
+    {
+      "actual_input_tokens": 563,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-173",
+      "run_id": "shadow-6ed8858ca4dff0d9ce0ed20fe7a4e112"
+    },
+    {
+      "actual_input_tokens": 266,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-174",
+      "run_id": "shadow-116c4f6ac61f76ab4f86237efc3485ee"
+    },
+    {
+      "actual_input_tokens": 275,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-175",
+      "run_id": "shadow-f2c50345af7a0a0dad95ed633b8b2651"
+    },
+    {
+      "actual_input_tokens": 297,
+      "actual_output_tokens": 43,
+      "reservation_id": "shadow-v1-native-176",
+      "run_id": "shadow-ac7de3fbd444a67e563f85b1afd25b26"
+    },
+    {
+      "actual_input_tokens": 318,
+      "actual_output_tokens": 47,
+      "reservation_id": "shadow-v1-native-177",
+      "run_id": "shadow-7b5247f5afa2b15c424b9edafdd294ac"
+    },
+    {
+      "actual_input_tokens": 242,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-178",
+      "run_id": "shadow-e3ab04caf64f21d9045507e1a4302e7b"
+    },
+    {
+      "actual_input_tokens": 243,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-179",
+      "run_id": "shadow-4d4055cfdee3ec12e9572f213df165cd"
+    },
+    {
+      "actual_input_tokens": 572,
+      "actual_output_tokens": 19,
+      "reservation_id": "shadow-v1-native-180",
+      "run_id": "shadow-98cfb254bf93d1804447422a127654b1"
+    },
+    {
+      "actual_input_tokens": 569,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-181",
+      "run_id": "shadow-adba605790fb746f8df25108471026b6"
+    },
+    {
+      "actual_input_tokens": 260,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-182",
+      "run_id": "shadow-5091c749aa85982d1c5ffadc605d6230"
+    },
+    {
+      "actual_input_tokens": 268,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-183",
+      "run_id": "shadow-61971166d2353845862ccbc22264ab04"
+    },
+    {
+      "actual_input_tokens": 295,
+      "actual_output_tokens": 54,
+      "reservation_id": "shadow-v1-native-184",
+      "run_id": "shadow-2a767e91d4f18c9dcf402c35ab70bf87"
+    },
+    {
+      "actual_input_tokens": 277,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-185",
+      "run_id": "shadow-9901f8c6cd3d6a5cd9dbd3b1c26dd341"
+    },
+    {
+      "actual_input_tokens": 239,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-186",
+      "run_id": "shadow-ffbe7767c2573ed7aea1565db5c719c1"
+    },
+    {
+      "actual_input_tokens": 241,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-187",
+      "run_id": "shadow-a470d2579b4af359a8cbba2139fbc6d6"
+    },
+    {
+      "actual_input_tokens": 581,
+      "actual_output_tokens": 16,
+      "reservation_id": "shadow-v1-native-188",
+      "run_id": "shadow-24735a4ffceea7345a48057488cd1ccc"
+    },
+    {
+      "actual_input_tokens": 569,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-189",
+      "run_id": "shadow-e6a0aa6d6c2359f19acdcc7c8c842d6d"
+    },
+    {
+      "actual_input_tokens": 253,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-190",
+      "run_id": "shadow-ba90fa463a5d467c1f65d6a1c142dc5e"
+    },
+    {
+      "actual_input_tokens": 264,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-191",
+      "run_id": "shadow-c1d380ea9c3047ec95d6848fe1f48347"
+    },
+    {
+      "actual_input_tokens": 285,
+      "actual_output_tokens": 53,
+      "reservation_id": "shadow-v1-native-192",
+      "run_id": "shadow-b4c358d8e9cfb3b80a57393bdb63ffd7"
+    },
+    {
+      "actual_input_tokens": 324,
+      "actual_output_tokens": 47,
+      "reservation_id": "shadow-v1-native-193",
+      "run_id": "shadow-4a3fc26b8146d817e2e892ed196bf0a0"
+    },
+    {
+      "actual_input_tokens": 250,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-194",
+      "run_id": "shadow-c6275ae5c9e9dd093409e6d9b0d23c58"
+    },
+    {
+      "actual_input_tokens": 234,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-195",
+      "run_id": "shadow-fdbfb12f52f17531f7ab29883f9565bf"
+    },
+    {
+      "actual_input_tokens": 577,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-196",
+      "run_id": "shadow-c987d7a1fe0d0d86ad264415c09035d7"
+    },
+    {
+      "actual_input_tokens": 566,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-197",
+      "run_id": "shadow-413e725f0ac2c44de0a602e4ee999b26"
+    },
+    {
+      "actual_input_tokens": 258,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-198",
+      "run_id": "shadow-641e0fb08192be7be0b1563efd46345b"
+    },
+    {
+      "actual_input_tokens": 267,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-199",
+      "run_id": "shadow-2d5ae8a58881a18c81353ec67ef00705"
+    },
+    {
+      "actual_input_tokens": 290,
+      "actual_output_tokens": 41,
+      "reservation_id": "shadow-v1-native-200",
+      "run_id": "shadow-923e72164ad91eb50476a1cffd3cbbde"
+    },
+    {
+      "actual_input_tokens": 273,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-201",
+      "run_id": "shadow-77b60c6e131ce3c142c5dba605b62ffe"
+    },
+    {
+      "actual_input_tokens": 248,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-202",
+      "run_id": "shadow-8d1171aa1fc68af28dc0fc40ebbee43a"
+    },
+    {
+      "actual_input_tokens": 244,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-203",
+      "run_id": "shadow-12050a9010d5a0fe00aafa5f54d92224"
+    },
+    {
+      "actual_input_tokens": 574,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-204",
+      "run_id": "shadow-0c37c54f13bd823b08aaad237ec16860"
+    },
+    {
+      "actual_input_tokens": 567,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-205",
+      "run_id": "shadow-aef50af392738affb5e41e1004c7cda6"
+    },
+    {
+      "actual_input_tokens": 239,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-206",
+      "run_id": "shadow-bf09951f8347ccdd623bb58502e75b77"
+    },
+    {
+      "actual_input_tokens": 235,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-207",
+      "run_id": "shadow-ed3520883b66bf4703b3e56283623971"
+    },
+    {
+      "actual_input_tokens": 574,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-208",
+      "run_id": "shadow-383b37e9a5caf6328e5e50e2dd9e5c5a"
+    },
+    {
+      "actual_input_tokens": 566,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-209",
+      "run_id": "shadow-3a47c61f838e09d5f45019b3722181b1"
+    },
+    {
+      "actual_input_tokens": 265,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-210",
+      "run_id": "shadow-c978aa644a3638974c303123a67e254d"
+    },
+    {
+      "actual_input_tokens": 274,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-211",
+      "run_id": "shadow-9233df206185eb23cd013d2f5b382659"
+    },
+    {
+      "actual_input_tokens": 305,
+      "actual_output_tokens": 52,
+      "reservation_id": "shadow-v1-native-212",
+      "run_id": "shadow-c8790c586932838a71a58bae95751808"
+    },
+    {
+      "actual_input_tokens": 273,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-213",
+      "run_id": "shadow-6c485682f3d95cc4164464930417b629"
+    },
+    {
+      "actual_input_tokens": 241,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-214",
+      "run_id": "shadow-9dbdf2a3da8c8ef16725738188842e33"
+    },
+    {
+      "actual_input_tokens": 236,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-215",
+      "run_id": "shadow-a4bf005681f53e71407b4ec04462411d"
+    },
+    {
+      "actual_input_tokens": 570,
+      "actual_output_tokens": 14,
+      "reservation_id": "shadow-v1-native-216",
+      "run_id": "shadow-1988962468b3c8458c80c2b02515ee72"
+    },
+    {
+      "actual_input_tokens": 565,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-217",
+      "run_id": "shadow-b855809cfc43de4c58d8cd7b6126f276"
+    },
+    {
+      "actual_input_tokens": 245,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-218",
+      "run_id": "shadow-fc8ae7d52c86c5b78298f97c516b7611"
+    },
+    {
+      "actual_input_tokens": 252,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v1-native-219",
+      "run_id": "shadow-e89090467b7416480bf05863c977438a"
+    },
+    {
+      "actual_input_tokens": 274,
+      "actual_output_tokens": 46,
+      "reservation_id": "shadow-v1-native-220",
+      "run_id": "shadow-e3b9fc2d6a19fb6290c172b387f00e4e"
+    },
+    {
+      "actual_input_tokens": 307,
+      "actual_output_tokens": 43,
+      "reservation_id": "shadow-v1-native-221",
+      "run_id": "shadow-310f46c66155a34cc5f6b7d640eefe52"
+    },
+    {
+      "actual_input_tokens": 237,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-222",
+      "run_id": "shadow-9fcf32c307fb3b5dd4cf11ca3488a55a"
+    },
+    {
+      "actual_input_tokens": 232,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v1-native-223",
+      "run_id": "shadow-f4ee2f195b165659aab7a93ec7ab0b5f"
+    },
+    {
+      "actual_input_tokens": 570,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v1-native-224",
+      "run_id": "shadow-65c99786e402a4a741f07e4d37269783"
+    },
+    {
+      "actual_input_tokens": 566,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v1-native-225",
+      "run_id": "shadow-d6fd08ee15873a6d4e8054b9f85e00c8"
+    },
+    {
+      "actual_input_tokens": 252,
+      "actual_output_tokens": 14,
+      "reservation_id": "shadow-v1-native-226",
+      "run_id": "shadow-2c10a2a4ad37d5df16aa36ba0110c675"
+    },
+    {
+      "actual_input_tokens": 251,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v1-native-227",
+      "run_id": "shadow-253c98c58a77fab783a59d785d163559"
+    },
+    {
+      "actual_input_tokens": 284,
+      "actual_output_tokens": 324,
+      "reservation_id": "shadow-v1-native-228",
+      "run_id": "shadow-bd332d007205109f474e33b3f65bbfa8"
+    },
+    {
+      "actual_input_tokens": 348,
+      "actual_output_tokens": 11,
+      "reservation_id": "shadow-v2-native-229",
+      "run_id": "shadow-de9e1d98265e3982eefa5e9b698f621e"
+    },
+    {
+      "actual_input_tokens": 356,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v2-native-230",
+      "run_id": "shadow-a6fffe795f909246b67b045725342655"
+    },
+    {
+      "actual_input_tokens": 363,
+      "actual_output_tokens": 35,
+      "reservation_id": "shadow-v2-native-231",
+      "run_id": "shadow-ae695872f402d85322111f4686c3e39a"
+    },
+    {
+      "actual_input_tokens": 338,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v2-native-232",
+      "run_id": "shadow-6ec56390cf5cb0f9140daab28330a62a"
+    },
+    {
+      "actual_input_tokens": 244,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v2-native-233",
+      "run_id": "shadow-cc9a9184c6dd270e5ae7ff0f136f7166"
+    },
+    {
+      "actual_input_tokens": 237,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v2-native-234",
+      "run_id": "shadow-57e52c1d9f38a435f81490b471962450"
+    },
+    {
+      "actual_input_tokens": 593,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v2-native-235",
+      "run_id": "shadow-12c425b7eee351e6d7a379d104209b92"
+    },
+    {
+      "actual_input_tokens": 585,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v2-native-236",
+      "run_id": "shadow-6919ffcce36c299ce3255dde72712a41"
+    },
+    {
+      "actual_input_tokens": 341,
+      "actual_output_tokens": 11,
+      "reservation_id": "shadow-v2-native-237",
+      "run_id": "shadow-ac4f681b76861940c465d163a67fe5a9"
+    },
+    {
+      "actual_input_tokens": 299,
+      "actual_output_tokens": 11,
+      "reservation_id": "shadow-v2-native-238",
+      "run_id": "shadow-89671bbdb122933acd8867726715f14c"
+    },
+    {
+      "actual_input_tokens": 365,
+      "actual_output_tokens": 28,
+      "reservation_id": "shadow-v2-native-239",
+      "run_id": "shadow-67b79bcbebb2c1ed4d6e91448e9d3c71"
+    },
+    {
+      "actual_input_tokens": 412,
+      "actual_output_tokens": 32,
+      "reservation_id": "shadow-v2-native-240",
+      "run_id": "shadow-1ee871d9f5836b531680dcad00a9b7a0"
+    },
+    {
+      "actual_input_tokens": 241,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v2-native-241",
+      "run_id": "shadow-124dbcc44d5a88f185a5f1e5c894b170"
+    },
+    {
+      "actual_input_tokens": 233,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v2-native-242",
+      "run_id": "shadow-6c5fc447de1aae71e421129a919012fb"
+    },
+    {
+      "actual_input_tokens": 593,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v2-native-243",
+      "run_id": "shadow-93e406f9de66957049ab48ebe8e703c8"
+    },
+    {
+      "actual_input_tokens": 580,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v2-native-244",
+      "run_id": "shadow-3cdf0cf4c7df15ac3d7021d7b11f9eb1"
+    },
+    {
+      "actual_input_tokens": 336,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v2-native-245",
+      "run_id": "shadow-59d4c5ac8e15fb4c528652f8217fadb4"
+    },
+    {
+      "actual_input_tokens": 333,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v2-native-246",
+      "run_id": "shadow-4f1e06868bfb4d907fb57fb97b61c6f3"
+    },
+    {
+      "actual_input_tokens": 344,
+      "actual_output_tokens": 34,
+      "reservation_id": "shadow-v2-native-247",
+      "run_id": "shadow-812902938344ff0e83cac4c95bc829f7"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "shadow-v2-native-248",
+      "run_id": "shadow-f48e68394e3cc6d5b241900ca5bfbdb0"
+    },
+    {
+      "actual_input_tokens": 531,
+      "actual_output_tokens": 22,
+      "reservation_id": "shadow-v3-native-249",
+      "run_id": "shadow-eb0942d81b04d4484e1ab111a209d94b"
+    },
+    {
+      "actual_input_tokens": 530,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v3-native-250",
+      "run_id": "shadow-f43660bd03aea0c427fd2e42e51b3fc3"
+    },
+    {
+      "actual_input_tokens": 562,
+      "actual_output_tokens": 53,
+      "reservation_id": "shadow-v3-native-251",
+      "run_id": "shadow-efaea68f3cfac5a2657741df6d6216a2"
+    },
+    {
+      "actual_input_tokens": 562,
+      "actual_output_tokens": 52,
+      "reservation_id": "shadow-v3-native-252",
+      "run_id": "shadow-cf11883c8daf4a41287ab3249bf95b5a"
+    },
+    {
+      "actual_input_tokens": 265,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v3-native-253",
+      "run_id": "shadow-1372a7ee5c83b16ebec35d24b28e6022"
+    },
+    {
+      "actual_input_tokens": 255,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v3-native-254",
+      "run_id": "shadow-c51152cd6a97bb52cba3406506c8cbe4"
+    },
+    {
+      "actual_input_tokens": 821,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v3-native-255",
+      "run_id": "shadow-4ce7de8f673679ca12ffd9385ae00729"
+    },
+    {
+      "actual_input_tokens": 805,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v3-native-256",
+      "run_id": "shadow-22fcfb64b3978a0c689af19fb4bd1d97"
+    },
+    {
+      "actual_input_tokens": 538,
+      "actual_output_tokens": 24,
+      "reservation_id": "shadow-v3-native-257",
+      "run_id": "shadow-eec779869518656d65c8c1c0861f5ad4"
+    },
+    {
+      "actual_input_tokens": 534,
+      "actual_output_tokens": 24,
+      "reservation_id": "shadow-v3-native-258",
+      "run_id": "shadow-afefc570d957d3d564085035cfa0ab5e"
+    },
+    {
+      "actual_input_tokens": 578,
+      "actual_output_tokens": 54,
+      "reservation_id": "shadow-v3-native-259",
+      "run_id": "shadow-c6443ea3f28c9b316b55264062180a22"
+    },
+    {
+      "actual_input_tokens": 574,
+      "actual_output_tokens": 45,
+      "reservation_id": "shadow-v3-native-260",
+      "run_id": "shadow-d5a8bd0fe8e02b952d2c2a8002b93e5d"
+    },
+    {
+      "actual_input_tokens": 271,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v3-native-261",
+      "run_id": "shadow-1171bed112b762230c151720030fd5fb"
+    },
+    {
+      "actual_input_tokens": 261,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v3-native-262",
+      "run_id": "shadow-64fd69a8aa179e5a3eeca6843e30f45b"
+    },
+    {
+      "actual_input_tokens": 832,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v3-native-263",
+      "run_id": "shadow-bb828b5c5722d7152a713c253b134f7c"
+    },
+    {
+      "actual_input_tokens": 820,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v3-native-264",
+      "run_id": "shadow-7591a6a7f9148fc7a7759159d6c7ed29"
+    },
+    {
+      "actual_input_tokens": 534,
+      "actual_output_tokens": 24,
+      "reservation_id": "shadow-v3-native-265",
+      "run_id": "shadow-0a3e3157ca3c8c327c8cbe5be2dc077e"
+    },
+    {
+      "actual_input_tokens": 526,
+      "actual_output_tokens": 9,
+      "reservation_id": "shadow-v3-native-266",
+      "run_id": "shadow-88503b3313d13a6afe3ce32bf0d6f699"
+    },
+    {
+      "actual_input_tokens": 529,
+      "actual_output_tokens": 25,
+      "reservation_id": "structural-native-267",
+      "run_id": "structural-11e5c1d9de9df0730ed88bd9d28be75b"
+    },
+    {
+      "actual_input_tokens": 549,
+      "actual_output_tokens": 4,
+      "reservation_id": "structural-native-268",
+      "run_id": "structural-676ac6839bfe917c63d151bea479add7"
+    },
+    {
+      "actual_input_tokens": 476,
+      "actual_output_tokens": 26,
+      "reservation_id": "shadow-v4-native-269",
+      "run_id": "shadow-8abfcd974e6f2305f535ba28714ba004"
+    },
+    {
+      "actual_input_tokens": 485,
+      "actual_output_tokens": 26,
+      "reservation_id": "shadow-v4-native-270",
+      "run_id": "shadow-375d2013a99b6a408cb6678f29186580"
+    },
+    {
+      "actual_input_tokens": 528,
+      "actual_output_tokens": 62,
+      "reservation_id": "shadow-v4-native-271",
+      "run_id": "shadow-7160a188938981d5afed27c2681bb876"
+    },
+    {
+      "actual_input_tokens": 517,
+      "actual_output_tokens": 49,
+      "reservation_id": "shadow-v4-native-272",
+      "run_id": "shadow-f381b2ef098ec0b4dc9511c78320cd94"
+    },
+    {
+      "actual_input_tokens": 246,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v4-native-273",
+      "run_id": "shadow-75e65074e06c4b8fb25367db1679a1e9"
+    },
+    {
+      "actual_input_tokens": 243,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v4-native-274",
+      "run_id": "shadow-2631c509403235739616eae6c3048bf0"
+    },
+    {
+      "actual_input_tokens": 610,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v4-native-275",
+      "run_id": "shadow-b639f170703ee5f89aa68a364a3bfa70"
+    },
+    {
+      "actual_input_tokens": 596,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v4-native-276",
+      "run_id": "shadow-9b0137c9666ca53f21d2b4974a3940d2"
+    },
+    {
+      "actual_input_tokens": 460,
+      "actual_output_tokens": 25,
+      "reservation_id": "shadow-v4-native-277",
+      "run_id": "shadow-ca7caad37edb2dea21a1901cf2caba7e"
+    },
+    {
+      "actual_input_tokens": 464,
+      "actual_output_tokens": 22,
+      "reservation_id": "shadow-v4-native-278",
+      "run_id": "shadow-839138253e1818dfb5c419fa61ba1e26"
+    },
+    {
+      "actual_input_tokens": 509,
+      "actual_output_tokens": 53,
+      "reservation_id": "shadow-v4-native-279",
+      "run_id": "shadow-aed45248b79f6c5e129c306416d0a29d"
+    },
+    {
+      "actual_input_tokens": 517,
+      "actual_output_tokens": 56,
+      "reservation_id": "schema-dialect-native-280",
+      "run_id": "schema-dialect-9afc45b55b08f99d1307b25a43fb0592"
+    },
+    {
+      "actual_input_tokens": 517,
+      "actual_output_tokens": 56,
+      "reservation_id": "schema-dialect-native-281",
+      "run_id": "schema-dialect-30b2403649acae4a911b7e09cd2ca673"
+    },
+    {
+      "actual_input_tokens": 541,
+      "actual_output_tokens": 65,
+      "reservation_id": "schema-dialect-native-282",
+      "run_id": "schema-dialect-269014eb79b28affbb53253a842403b9"
+    },
+    {
+      "actual_input_tokens": 541,
+      "actual_output_tokens": 65,
+      "reservation_id": "schema-dialect-native-283",
+      "run_id": "schema-dialect-16730e09ecd966bc89c633b1753655d4"
+    },
+    {
+      "actual_input_tokens": 493,
+      "actual_output_tokens": 22,
+      "reservation_id": "shadow-v5-native-284",
+      "run_id": "shadow-66a6855be0b63052227de0607600ba90"
+    },
+    {
+      "actual_input_tokens": 489,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-285",
+      "run_id": "shadow-de795fb7dc34dfefead50e12ac8b8c10"
+    },
+    {
+      "actual_input_tokens": 546,
+      "actual_output_tokens": 52,
+      "reservation_id": "shadow-v5-native-286",
+      "run_id": "shadow-c344207c66c5efe4635705ee686426d4"
+    },
+    {
+      "actual_input_tokens": 541,
+      "actual_output_tokens": 46,
+      "reservation_id": "shadow-v5-native-287",
+      "run_id": "shadow-8775e1b124ef061f3ed26cb202c8d06f"
+    },
+    {
+      "actual_input_tokens": 292,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-288",
+      "run_id": "shadow-2fd2128d015f18a4e190cc1986821f8d"
+    },
+    {
+      "actual_input_tokens": 292,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-289",
+      "run_id": "shadow-d5d9a69c1045fc7f6c45e5015d4d2167"
+    },
+    {
+      "actual_input_tokens": 650,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-290",
+      "run_id": "shadow-56a038e86053ccffbe9c0c82b2f5a8b0"
+    },
+    {
+      "actual_input_tokens": 647,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-291",
+      "run_id": "shadow-f43dcebe9d2a0f41900da71724478e32"
+    },
+    {
+      "actual_input_tokens": 499,
+      "actual_output_tokens": 24,
+      "reservation_id": "shadow-v5-native-292",
+      "run_id": "shadow-d3f63937a07efa3586a644457ffe65b7"
+    },
+    {
+      "actual_input_tokens": 498,
+      "actual_output_tokens": 22,
+      "reservation_id": "shadow-v5-native-293",
+      "run_id": "shadow-1158de0b51cd2f2929852fd4e06aca71"
+    },
+    {
+      "actual_input_tokens": 545,
+      "actual_output_tokens": 54,
+      "reservation_id": "shadow-v5-native-294",
+      "run_id": "shadow-26b5d69852cdf1b12ae7a65808eb99ae"
+    },
+    {
+      "actual_input_tokens": 552,
+      "actual_output_tokens": 46,
+      "reservation_id": "shadow-v5-native-295",
+      "run_id": "shadow-11ce812a80cac4eb68b635ed4c5ef2db"
+    },
+    {
+      "actual_input_tokens": 289,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-296",
+      "run_id": "shadow-eab34ec57b3daaa0b3dea3c5ffdee358"
+    },
+    {
+      "actual_input_tokens": 285,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-297",
+      "run_id": "shadow-e0612337404c564d634a58a45cc4c8dc"
+    },
+    {
+      "actual_input_tokens": 656,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-298",
+      "run_id": "shadow-c59634dc2f325dfdb1df160a8659a689"
+    },
+    {
+      "actual_input_tokens": 656,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-299",
+      "run_id": "shadow-458cd4f1973eeb3d673651eb72cc374e"
+    },
+    {
+      "actual_input_tokens": 484,
+      "actual_output_tokens": 25,
+      "reservation_id": "shadow-v5-native-300",
+      "run_id": "shadow-2d3a8aae1bc774062de1d5ea5c68304e"
+    },
+    {
+      "actual_input_tokens": 490,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-301",
+      "run_id": "shadow-002f0758d1a8c474b7c411e126319f7c"
+    },
+    {
+      "actual_input_tokens": 533,
+      "actual_output_tokens": 51,
+      "reservation_id": "shadow-v5-native-302",
+      "run_id": "shadow-c392dce7f8a165e3a28d594b3a61279e"
+    },
+    {
+      "actual_input_tokens": 535,
+      "actual_output_tokens": 50,
+      "reservation_id": "shadow-v5-native-303",
+      "run_id": "shadow-9db9f0ce7476ff8194944714e271e8c5"
+    },
+    {
+      "actual_input_tokens": 297,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-304",
+      "run_id": "shadow-7a00d2b6246d84e72a41d21c10298ec1"
+    },
+    {
+      "actual_input_tokens": 290,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-305",
+      "run_id": "shadow-b93d723f845107e5ba0dae808e4bbd3f"
+    },
+    {
+      "actual_input_tokens": 658,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-306",
+      "run_id": "shadow-1e4533ba46d3d3f2807e96ec73c76fed"
+    },
+    {
+      "actual_input_tokens": 668,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v5-native-307",
+      "run_id": "shadow-6fe75c3896b44c816cd6280b96c091b4"
+    },
+    {
+      "actual_input_tokens": 491,
+      "actual_output_tokens": 23,
+      "reservation_id": "shadow-v5-native-308",
+      "run_id": "shadow-73a56e36325e4e5fad696895f7bebaee"
+    },
+    {
+      "actual_input_tokens": 488,
+      "actual_output_tokens": 22,
+      "reservation_id": "shadow-v5-native-309",
+      "run_id": "shadow-8f18626778a532d49df4f73ffd27ec73"
+    },
+    {
+      "actual_input_tokens": 534,
+      "actual_output_tokens": 49,
+      "reservation_id": "shadow-v5-native-310",
+      "run_id": "shadow-7593eb476b4b4a616e24e8ba2ba58e81"
+    },
+    {
+      "actual_input_tokens": 539,
+      "actual_output_tokens": 46,
+      "reservation_id": "shadow-v5-native-311",
+      "run_id": "shadow-cce33c09e8075ab21d0f133251004c2b"
+    },
+    {
+      "actual_input_tokens": 288,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-312",
+      "run_id": "shadow-38bb30bc5167c8a9f45cc9ca4815cdcc"
+    },
+    {
+      "actual_input_tokens": 286,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-313",
+      "run_id": "shadow-d55a999636fea0641f20bdef1aa1a006"
+    },
+    {
+      "actual_input_tokens": 651,
+      "actual_output_tokens": 14,
+      "reservation_id": "shadow-v5-native-314",
+      "run_id": "shadow-af124b0eac085031f04a5961741a5126"
+    },
+    {
+      "actual_input_tokens": 656,
+      "actual_output_tokens": 14,
+      "reservation_id": "shadow-v5-native-315",
+      "run_id": "shadow-3867ceb1f905e528d53e338348ac5443"
+    },
+    {
+      "actual_input_tokens": 504,
+      "actual_output_tokens": 21,
+      "reservation_id": "shadow-v5-native-316",
+      "run_id": "shadow-d4ae8ecfa02caa354f2e22fafa8c5447"
+    },
+    {
+      "actual_input_tokens": 496,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-317",
+      "run_id": "shadow-2f8e73cc3a9bd5c8b3a29809dbd76b88"
+    },
+    {
+      "actual_input_tokens": 547,
+      "actual_output_tokens": 49,
+      "reservation_id": "shadow-v5-native-318",
+      "run_id": "shadow-85885645f0b4639884080e252de9d03e"
+    },
+    {
+      "actual_input_tokens": 551,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-319",
+      "run_id": "shadow-5772ad7a2776e394fa79c1968f595471"
+    },
+    {
+      "actual_input_tokens": 291,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-320",
+      "run_id": "shadow-a001a3bd99e6d3c7969cbf86265a11a3"
+    },
+    {
+      "actual_input_tokens": 282,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-321",
+      "run_id": "shadow-999c9b4e4d68e2dd7f24e1ca6182cc14"
+    },
+    {
+      "actual_input_tokens": 650,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-322",
+      "run_id": "shadow-d3a6a2a02590e4ddf1937516d5b7ca50"
+    },
+    {
+      "actual_input_tokens": 650,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-323",
+      "run_id": "shadow-38b098249f76625c5fe26d77b367eedf"
+    },
+    {
+      "actual_input_tokens": 496,
+      "actual_output_tokens": 24,
+      "reservation_id": "shadow-v5-native-324",
+      "run_id": "shadow-3e3dfa5946c35a72db0b514219877919"
+    },
+    {
+      "actual_input_tokens": 495,
+      "actual_output_tokens": 23,
+      "reservation_id": "shadow-v5-native-325",
+      "run_id": "shadow-3425a253354af10a3efcf33cf3b3d842"
+    },
+    {
+      "actual_input_tokens": 542,
+      "actual_output_tokens": 52,
+      "reservation_id": "shadow-v5-native-326",
+      "run_id": "shadow-8a7e92f99eb02516102e16551ffdd994"
+    },
+    {
+      "actual_input_tokens": 540,
+      "actual_output_tokens": 48,
+      "reservation_id": "shadow-v5-native-327",
+      "run_id": "shadow-f918455c747f1ff697b7da352fe0644b"
+    },
+    {
+      "actual_input_tokens": 291,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-328",
+      "run_id": "shadow-59e03bbe66833bf870c11c3485b46a5a"
+    },
+    {
+      "actual_input_tokens": 282,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-329",
+      "run_id": "shadow-285980de1fd8662b2c25e9142c910b5a"
+    },
+    {
+      "actual_input_tokens": 655,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-330",
+      "run_id": "shadow-d2c312e6346757c56ca7f3bd0932ea0f"
+    },
+    {
+      "actual_input_tokens": 653,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-331",
+      "run_id": "shadow-f658726e0a894785349cb78d8283107f"
+    },
+    {
+      "actual_input_tokens": 496,
+      "actual_output_tokens": 23,
+      "reservation_id": "shadow-v5-native-332",
+      "run_id": "shadow-fb4afa67278583c2745220ee17d8d871"
+    },
+    {
+      "actual_input_tokens": 493,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-333",
+      "run_id": "shadow-fe47691b0ef6ce557aeb96d6d03c1a77"
+    },
+    {
+      "actual_input_tokens": 539,
+      "actual_output_tokens": 49,
+      "reservation_id": "shadow-v5-native-334",
+      "run_id": "shadow-ad2894d1dd910611fdd6a3b538c89506"
+    },
+    {
+      "actual_input_tokens": 542,
+      "actual_output_tokens": 48,
+      "reservation_id": "shadow-v5-native-335",
+      "run_id": "shadow-6b7235d235b6d973227d6ff733d47264"
+    },
+    {
+      "actual_input_tokens": 290,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-336",
+      "run_id": "shadow-d307ecc480a1960e9073bb5f54d8a9ff"
+    },
+    {
+      "actual_input_tokens": 288,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-337",
+      "run_id": "shadow-b723a20522387a4c76a5faaf48004e6a"
+    },
+    {
+      "actual_input_tokens": 653,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-338",
+      "run_id": "shadow-cdb0cc0c8c0c6c7c26bfef2d3636677e"
+    },
+    {
+      "actual_input_tokens": 647,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-339",
+      "run_id": "shadow-c60b1690fe7c874a213cca3657e894d5"
+    },
+    {
+      "actual_input_tokens": 489,
+      "actual_output_tokens": 24,
+      "reservation_id": "shadow-v5-native-340",
+      "run_id": "shadow-02b6c83d4e3bfca4d74f9a854e2b6eab"
+    },
+    {
+      "actual_input_tokens": 487,
+      "actual_output_tokens": 24,
+      "reservation_id": "shadow-v5-native-341",
+      "run_id": "shadow-2ea11942ee0fc966630eae460b5e45ee"
+    },
+    {
+      "actual_input_tokens": 534,
+      "actual_output_tokens": 46,
+      "reservation_id": "shadow-v5-native-342",
+      "run_id": "shadow-6ee296e99957dfbe1af16bba97fa63f7"
+    },
+    {
+      "actual_input_tokens": 540,
+      "actual_output_tokens": 47,
+      "reservation_id": "shadow-v5-native-343",
+      "run_id": "shadow-7dc7829bb5215bd8c0616e3ef54b0068"
+    },
+    {
+      "actual_input_tokens": 289,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-344",
+      "run_id": "shadow-7315f7b7f1019e93a3a64ebbfc9ea4de"
+    },
+    {
+      "actual_input_tokens": 285,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-345",
+      "run_id": "shadow-9be0b9a48d4763d6ba5ef5cbe1454e3f"
+    },
+    {
+      "actual_input_tokens": 655,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-346",
+      "run_id": "shadow-f963d5b1c5aa20da5c44e18480e44751"
+    },
+    {
+      "actual_input_tokens": 648,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-347",
+      "run_id": "shadow-19903d5f4056f8390bf31b9dee326eff"
+    },
+    {
+      "actual_input_tokens": 488,
+      "actual_output_tokens": 25,
+      "reservation_id": "shadow-v5-native-348",
+      "run_id": "shadow-032c81dc49bdf6f45b43730dcf160eb9"
+    },
+    {
+      "actual_input_tokens": 492,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-349",
+      "run_id": "shadow-07bf2958144df2e35905df15e2bdde78"
+    },
+    {
+      "actual_input_tokens": 536,
+      "actual_output_tokens": 57,
+      "reservation_id": "shadow-v5-native-350",
+      "run_id": "shadow-7127411f7b7d8378b8118818a0f2681e"
+    },
+    {
+      "actual_input_tokens": 540,
+      "actual_output_tokens": 48,
+      "reservation_id": "shadow-v5-native-351",
+      "run_id": "shadow-ab8b08b149f6cf7dd0c4753e5a6dfdfc"
+    },
+    {
+      "actual_input_tokens": 287,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-352",
+      "run_id": "shadow-21b92c0114cee48ab3854a6923beea6f"
+    },
+    {
+      "actual_input_tokens": 292,
+      "actual_output_tokens": 11,
+      "reservation_id": "shadow-v5-native-353",
+      "run_id": "shadow-924935da54463a6d457372c648395415"
+    },
+    {
+      "actual_input_tokens": 655,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-354",
+      "run_id": "shadow-42db11ae64065cbefcd39cca6efe2f13"
+    },
+    {
+      "actual_input_tokens": 667,
+      "actual_output_tokens": 10,
+      "reservation_id": "shadow-v5-native-355",
+      "run_id": "shadow-d98560b430d056b451cd68e259aaf8ff"
+    },
+    {
+      "actual_input_tokens": 491,
+      "actual_output_tokens": 24,
+      "reservation_id": "shadow-v5-native-356",
+      "run_id": "shadow-6eaa92e0681eb95e1f17e8b30cec091e"
+    },
+    {
+      "actual_input_tokens": 489,
+      "actual_output_tokens": 26,
+      "reservation_id": "shadow-v5-native-357",
+      "run_id": "shadow-7051f088439ac434823ae093f9ccb00c"
+    },
+    {
+      "actual_input_tokens": 541,
+      "actual_output_tokens": 52,
+      "reservation_id": "shadow-v5-native-358",
+      "run_id": "shadow-a79576fb552b272fcf44ce2a1910f587"
+    },
+    {
+      "actual_input_tokens": 541,
+      "actual_output_tokens": 49,
+      "reservation_id": "shadow-v5-native-359",
+      "run_id": "shadow-7385910bce5fbd6b267f64544151c66c"
+    },
+    {
+      "actual_input_tokens": 287,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-360",
+      "run_id": "shadow-3ba7ce00f1a78a7537ecd6d31eb7619a"
+    },
+    {
+      "actual_input_tokens": 286,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-361",
+      "run_id": "shadow-75c756240505d98a7a9bcbe2ba94305b"
+    },
+    {
+      "actual_input_tokens": 651,
+      "actual_output_tokens": 14,
+      "reservation_id": "shadow-v5-native-362",
+      "run_id": "shadow-99a467fad0e0f34213510eb827e6a359"
+    },
+    {
+      "actual_input_tokens": 655,
+      "actual_output_tokens": 14,
+      "reservation_id": "shadow-v5-native-363",
+      "run_id": "shadow-edb79fad5db55d400d488dddce44832b"
+    },
+    {
+      "actual_input_tokens": 529,
+      "actual_output_tokens": 24,
+      "reservation_id": "shadow-v5-native-364",
+      "run_id": "shadow-511e8e136992e0e0f0e50ffee973b1d8"
+    },
+    {
+      "actual_input_tokens": 526,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-365",
+      "run_id": "shadow-a045c2d1df5b61736ea6dfc89499a4cb"
+    },
+    {
+      "actual_input_tokens": 566,
+      "actual_output_tokens": 49,
+      "reservation_id": "shadow-v5-native-366",
+      "run_id": "shadow-b9abbc5fc5f43f0c13e93b74f94e11e9"
+    },
+    {
+      "actual_input_tokens": 563,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-367",
+      "run_id": "shadow-687952b0c2783f62239b5145c90fe98f"
+    },
+    {
+      "actual_input_tokens": 291,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-368",
+      "run_id": "shadow-a87c55df57b9d8a3c0f7aa237b246ff4"
+    },
+    {
+      "actual_input_tokens": 289,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-369",
+      "run_id": "shadow-d66bc08fe25048875c11377c06323014"
+    },
+    {
+      "actual_input_tokens": 659,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-370",
+      "run_id": "shadow-c4faecae26454046d46a9bed1b38a326"
+    },
+    {
+      "actual_input_tokens": 650,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-371",
+      "run_id": "shadow-3ccead80953be0a0c36edc6356eb8587"
+    },
+    {
+      "actual_input_tokens": 497,
+      "actual_output_tokens": 25,
+      "reservation_id": "shadow-v5-native-372",
+      "run_id": "shadow-01175fb8783ee07664f21a406b0c8c16"
+    },
+    {
+      "actual_input_tokens": 490,
+      "actual_output_tokens": 25,
+      "reservation_id": "shadow-v5-native-373",
+      "run_id": "shadow-70bdad70bc8e960c728d96a2ce3b861f"
+    },
+    {
+      "actual_input_tokens": 540,
+      "actual_output_tokens": 50,
+      "reservation_id": "shadow-v5-native-374",
+      "run_id": "shadow-e0728b26d50d22bcbf3fd59e08f1e44d"
+    },
+    {
+      "actual_input_tokens": 545,
+      "actual_output_tokens": 44,
+      "reservation_id": "shadow-v5-native-375",
+      "run_id": "shadow-539934574a4b9aeb687e9fa63999db01"
+    },
+    {
+      "actual_input_tokens": 291,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-376",
+      "run_id": "shadow-a73dc2d7d97f360863af2ffb3d125488"
+    },
+    {
+      "actual_input_tokens": 283,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-377",
+      "run_id": "shadow-3b3b6f3f22089c5678898c7e089fa234"
+    },
+    {
+      "actual_input_tokens": 653,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-378",
+      "run_id": "shadow-982b6c3df29d5855173bd509c61eb06a"
+    },
+    {
+      "actual_input_tokens": 655,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-379",
+      "run_id": "shadow-ba424641239d1b72d707bbfe40e6d560"
+    },
+    {
+      "actual_input_tokens": 484,
+      "actual_output_tokens": 23,
+      "reservation_id": "shadow-v5-native-380",
+      "run_id": "shadow-dc3e07bc319beb7efc52fd13f387738d"
+    },
+    {
+      "actual_input_tokens": 484,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-381",
+      "run_id": "shadow-ec782dd9c34104e5ad236aeca01726b6"
+    },
+    {
+      "actual_input_tokens": 533,
+      "actual_output_tokens": 49,
+      "reservation_id": "shadow-v5-native-382",
+      "run_id": "shadow-08a7b0f95f4edaead67f031945edf60b"
+    },
+    {
+      "actual_input_tokens": 532,
+      "actual_output_tokens": 41,
+      "reservation_id": "shadow-v5-native-383",
+      "run_id": "shadow-7b8992a03993f418d591432413fa0b84"
+    },
+    {
+      "actual_input_tokens": 288,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-384",
+      "run_id": "shadow-8186dc8ac9aa4fdb9ec4c99edb79fce5"
+    },
+    {
+      "actual_input_tokens": 280,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-385",
+      "run_id": "shadow-a061ae5e69795af9dff0e1cbdef9f01b"
+    },
+    {
+      "actual_input_tokens": 656,
+      "actual_output_tokens": 16,
+      "reservation_id": "shadow-v5-native-386",
+      "run_id": "shadow-cb5cb1d8449d067da40aa5a9569bf0d3"
+    },
+    {
+      "actual_input_tokens": 648,
+      "actual_output_tokens": 16,
+      "reservation_id": "shadow-v5-native-387",
+      "run_id": "shadow-877057d1fd946422dcbaf7020a1ed7ff"
+    },
+    {
+      "actual_input_tokens": 503,
+      "actual_output_tokens": 23,
+      "reservation_id": "shadow-v5-native-388",
+      "run_id": "shadow-793de77f6e5af2ff16c4159a3a46be8c"
+    },
+    {
+      "actual_input_tokens": 498,
+      "actual_output_tokens": 21,
+      "reservation_id": "shadow-v5-native-389",
+      "run_id": "shadow-8cd90b8eab71032a7d82f0aefd371309"
+    },
+    {
+      "actual_input_tokens": 541,
+      "actual_output_tokens": 48,
+      "reservation_id": "shadow-v5-native-390",
+      "run_id": "shadow-42022ba339eeef04d4ed78807f9923e5"
+    },
+    {
+      "actual_input_tokens": 547,
+      "actual_output_tokens": 44,
+      "reservation_id": "shadow-v5-native-391",
+      "run_id": "shadow-34cfea128085ba0043e8ee1b90430efa"
+    },
+    {
+      "actual_input_tokens": 298,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-392",
+      "run_id": "shadow-4dac71ac9cc0c6a54aad286cfb1f4d7b"
+    },
+    {
+      "actual_input_tokens": 290,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-393",
+      "run_id": "shadow-78e98d2554482b7019bd42dad10e687b"
+    },
+    {
+      "actual_input_tokens": 652,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-394",
+      "run_id": "shadow-35f59ae5515132b76c46e7956d0af604"
+    },
+    {
+      "actual_input_tokens": 645,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-395",
+      "run_id": "shadow-18a6bbcf6d2d42beb0e06ff23b7826c5"
+    },
+    {
+      "actual_input_tokens": 508,
+      "actual_output_tokens": 23,
+      "reservation_id": "shadow-v5-native-396",
+      "run_id": "shadow-1ec419ee2aea6172492a2a836181c052"
+    },
+    {
+      "actual_input_tokens": 504,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-397",
+      "run_id": "shadow-3754a9ef1465682830530640a8bd1f74"
+    },
+    {
+      "actual_input_tokens": 550,
+      "actual_output_tokens": 47,
+      "reservation_id": "shadow-v5-native-398",
+      "run_id": "shadow-dfcbef7458573c051d20b1c461500b07"
+    },
+    {
+      "actual_input_tokens": 552,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-399",
+      "run_id": "shadow-43a170dff18b0cae4eef0f69f3a72f99"
+    },
+    {
+      "actual_input_tokens": 294,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-400",
+      "run_id": "shadow-07b1f809c5df153de2e0a94323c4f270"
+    },
+    {
+      "actual_input_tokens": 290,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-401",
+      "run_id": "shadow-e956f97398e90c0d654c324ee5c14fc6"
+    },
+    {
+      "actual_input_tokens": 653,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-402",
+      "run_id": "shadow-8bf4676f4a1b3dca33ebb07a9394087e"
+    },
+    {
+      "actual_input_tokens": 659,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-403",
+      "run_id": "shadow-fda69ba19ffb0a2203f1231267ef9de2"
+    },
+    {
+      "actual_input_tokens": 498,
+      "actual_output_tokens": 24,
+      "reservation_id": "shadow-v5-native-404",
+      "run_id": "shadow-46ad399f43fd8de6a3797e78db6ccba2"
+    },
+    {
+      "actual_input_tokens": 498,
+      "actual_output_tokens": 26,
+      "reservation_id": "shadow-v5-native-405",
+      "run_id": "shadow-dc9959e7085d32c264264052487581a3"
+    },
+    {
+      "actual_input_tokens": 545,
+      "actual_output_tokens": 69,
+      "reservation_id": "shadow-v5-native-406",
+      "run_id": "shadow-3ab9374575bb8c9db64fd10821005def"
+    },
+    {
+      "actual_input_tokens": 545,
+      "actual_output_tokens": 50,
+      "reservation_id": "shadow-v5-native-407",
+      "run_id": "shadow-cfe4fd0746ad4e01bfd743c5350307ee"
+    },
+    {
+      "actual_input_tokens": 289,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-408",
+      "run_id": "shadow-e1296b07b324322171d76a4569eb83fc"
+    },
+    {
+      "actual_input_tokens": 286,
+      "actual_output_tokens": 11,
+      "reservation_id": "shadow-v5-native-409",
+      "run_id": "shadow-3785e22c9a368eb6547f9598e7d3e76a"
+    },
+    {
+      "actual_input_tokens": 658,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-410",
+      "run_id": "shadow-bb3e47ef564612fcab132b1826a35d87"
+    },
+    {
+      "actual_input_tokens": 647,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-411",
+      "run_id": "shadow-d029216b4ec5e365d25df513c27d845f"
+    },
+    {
+      "actual_input_tokens": 490,
+      "actual_output_tokens": 25,
+      "reservation_id": "shadow-v5-native-412",
+      "run_id": "shadow-aa8ff7ecaf5d53854ca94893f6d7fe34"
+    },
+    {
+      "actual_input_tokens": 488,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-413",
+      "run_id": "shadow-df03a1fef78756358f64b615a6ffc891"
+    },
+    {
+      "actual_input_tokens": 537,
+      "actual_output_tokens": 52,
+      "reservation_id": "shadow-v5-native-414",
+      "run_id": "shadow-61fc28a730fd4e8d24de4d2187493f4c"
+    },
+    {
+      "actual_input_tokens": 531,
+      "actual_output_tokens": 48,
+      "reservation_id": "shadow-v5-native-415",
+      "run_id": "shadow-4662eafd1374e165357fba4ea819d03d"
+    },
+    {
+      "actual_input_tokens": 284,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-416",
+      "run_id": "shadow-dce1a79b60a6fd0205ecedf37ed9cf0b"
+    },
+    {
+      "actual_input_tokens": 284,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-417",
+      "run_id": "shadow-c513869dce57a0b2ccc86ba7a1be8836"
+    },
+    {
+      "actual_input_tokens": 650,
+      "actual_output_tokens": 14,
+      "reservation_id": "shadow-v5-native-418",
+      "run_id": "shadow-65b29f1a696bc7b8e93de8fa1cf70651"
+    },
+    {
+      "actual_input_tokens": 642,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-419",
+      "run_id": "shadow-569c9c4e9e030b88dbd682e2ce7d0e57"
+    },
+    {
+      "actual_input_tokens": 493,
+      "actual_output_tokens": 25,
+      "reservation_id": "shadow-v5-native-420",
+      "run_id": "shadow-d9adafac1bc99bcc1cbb08c189de4209"
+    },
+    {
+      "actual_input_tokens": 491,
+      "actual_output_tokens": 25,
+      "reservation_id": "shadow-v5-native-421",
+      "run_id": "shadow-7c424c334c4247379101f765fc825dbb"
+    },
+    {
+      "actual_input_tokens": 541,
+      "actual_output_tokens": 51,
+      "reservation_id": "shadow-v5-native-422",
+      "run_id": "shadow-aaee375567f45f81b7f58d15a02e09fa"
+    },
+    {
+      "actual_input_tokens": 537,
+      "actual_output_tokens": 49,
+      "reservation_id": "shadow-v5-native-423",
+      "run_id": "shadow-580e5fc058664d285ef508abdaecb740"
+    },
+    {
+      "actual_input_tokens": 287,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-424",
+      "run_id": "shadow-afd38f8fc914725176711458c18f334a"
+    },
+    {
+      "actual_input_tokens": 287,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-425",
+      "run_id": "shadow-6407b245eb303c3f52d4cb2f81603984"
+    },
+    {
+      "actual_input_tokens": 649,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-426",
+      "run_id": "shadow-5976f978fd5ecd6a7537397541f34bde"
+    },
+    {
+      "actual_input_tokens": 647,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-427",
+      "run_id": "shadow-477682c3b3f582b2c8a500a7d1d766e7"
+    },
+    {
+      "actual_input_tokens": 498,
+      "actual_output_tokens": 24,
+      "reservation_id": "shadow-v5-native-428",
+      "run_id": "shadow-96814bc9f28007a44b870c8403eb2654"
+    },
+    {
+      "actual_input_tokens": 508,
+      "actual_output_tokens": 24,
+      "reservation_id": "shadow-v5-native-429",
+      "run_id": "shadow-1cbff877d95bd51aff3af57a75553012"
+    },
+    {
+      "actual_input_tokens": 552,
+      "actual_output_tokens": 56,
+      "reservation_id": "shadow-v5-native-430",
+      "run_id": "shadow-e94fb0f67bbdf7d54e0faaf376b08981"
+    },
+    {
+      "actual_input_tokens": 554,
+      "actual_output_tokens": 49,
+      "reservation_id": "shadow-v5-native-431",
+      "run_id": "shadow-bfda4e0576d5ae463a8d31c22e79c3a6"
+    },
+    {
+      "actual_input_tokens": 293,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-432",
+      "run_id": "shadow-80c6f243dcb8b7a030c9c233c7646cd2"
+    },
+    {
+      "actual_input_tokens": 284,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-433",
+      "run_id": "shadow-07fe9ad0e186261d74684bdab732fc8e"
+    },
+    {
+      "actual_input_tokens": 652,
+      "actual_output_tokens": 16,
+      "reservation_id": "shadow-v5-native-434",
+      "run_id": "shadow-3f2401328ddf56414d48b28635cb783b"
+    },
+    {
+      "actual_input_tokens": 659,
+      "actual_output_tokens": 16,
+      "reservation_id": "shadow-v5-native-435",
+      "run_id": "shadow-77a16b94bb86e3023dfda17604d550e8"
+    },
+    {
+      "actual_input_tokens": 499,
+      "actual_output_tokens": 25,
+      "reservation_id": "shadow-v5-native-436",
+      "run_id": "shadow-a662ee03e7b5c424936ccbd26800fec6"
+    },
+    {
+      "actual_input_tokens": 492,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-437",
+      "run_id": "shadow-2fc879dee8dde68c533d653ff58cc497"
+    },
+    {
+      "actual_input_tokens": 550,
+      "actual_output_tokens": 56,
+      "reservation_id": "shadow-v5-native-438",
+      "run_id": "shadow-f2d22a26731fde2804079c9671120578"
+    },
+    {
+      "actual_input_tokens": 541,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-439",
+      "run_id": "shadow-1c4f97e4d6005d441034757a23138293"
+    },
+    {
+      "actual_input_tokens": 294,
+      "actual_output_tokens": 11,
+      "reservation_id": "shadow-v5-native-440",
+      "run_id": "shadow-2fc04570d9694977ccce2e28651ca286"
+    },
+    {
+      "actual_input_tokens": 283,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-441",
+      "run_id": "shadow-afc686d1a1dda1f6f8539fe1a2cb054f"
+    },
+    {
+      "actual_input_tokens": 653,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-442",
+      "run_id": "shadow-e3afd39da39edf603e2516cd0224013a"
+    },
+    {
+      "actual_input_tokens": 649,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-443",
+      "run_id": "shadow-9429f472da8c1965de9d7fcf3dd1a0a5"
+    },
+    {
+      "actual_input_tokens": 485,
+      "actual_output_tokens": 23,
+      "reservation_id": "shadow-v5-native-444",
+      "run_id": "shadow-715fae7241ec5b8b9502f6044a41e0e6"
+    },
+    {
+      "actual_input_tokens": 488,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-445",
+      "run_id": "shadow-3b48c7df511921f0e387b052a33f6ed8"
+    },
+    {
+      "actual_input_tokens": 527,
+      "actual_output_tokens": 49,
+      "reservation_id": "shadow-v5-native-446",
+      "run_id": "shadow-434d5acf9de3bbeea09750970d2ad670"
+    },
+    {
+      "actual_input_tokens": 529,
+      "actual_output_tokens": 45,
+      "reservation_id": "shadow-v5-native-447",
+      "run_id": "shadow-cdae4c8e008f7e63aea49ae148612cb1"
+    },
+    {
+      "actual_input_tokens": 286,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-448",
+      "run_id": "shadow-08644f85ddd719c8294e40af68cbbf98"
+    },
+    {
+      "actual_input_tokens": 288,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-449",
+      "run_id": "shadow-8686c9e14471a13e2f72a34b11018607"
+    },
+    {
+      "actual_input_tokens": 652,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-450",
+      "run_id": "shadow-a968719dc8e020449fdf9535e1dea7eb"
+    },
+    {
+      "actual_input_tokens": 651,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-451",
+      "run_id": "shadow-ffe5dd093e2ee706f5995730f6288d2b"
+    },
+    {
+      "actual_input_tokens": 481,
+      "actual_output_tokens": 25,
+      "reservation_id": "shadow-v5-native-452",
+      "run_id": "shadow-8220c78e930b5076d9e6d8208fefe243"
+    },
+    {
+      "actual_input_tokens": 473,
+      "actual_output_tokens": 22,
+      "reservation_id": "shadow-v5-native-453",
+      "run_id": "shadow-dfd11bad7186cd6a6355d008b487ffbb"
+    },
+    {
+      "actual_input_tokens": 523,
+      "actual_output_tokens": 49,
+      "reservation_id": "shadow-v5-native-454",
+      "run_id": "shadow-56ced3b987c2cbffc09abf90edad7c4d"
+    },
+    {
+      "actual_input_tokens": 529,
+      "actual_output_tokens": 42,
+      "reservation_id": "shadow-v5-native-455",
+      "run_id": "shadow-2096363e63baeb11300980539a2aa2ef"
+    },
+    {
+      "actual_input_tokens": 291,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-456",
+      "run_id": "shadow-6c7c2464b4cd6f98084ef6d4c2359773"
+    },
+    {
+      "actual_input_tokens": 288,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-457",
+      "run_id": "shadow-b213912adb966a973c5dc775139c66e9"
+    },
+    {
+      "actual_input_tokens": 650,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-458",
+      "run_id": "shadow-e4102ed83a268db24e072ccd1776478e"
+    },
+    {
+      "actual_input_tokens": 650,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-459",
+      "run_id": "shadow-af9d545552878248a611a4912dbc9c8d"
+    },
+    {
+      "actual_input_tokens": 507,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-460",
+      "run_id": "shadow-d9cb3550f02c64f4a33509151f5dbd09"
+    },
+    {
+      "actual_input_tokens": 511,
+      "actual_output_tokens": 23,
+      "reservation_id": "shadow-v5-native-461",
+      "run_id": "shadow-1efff6e97de9a7404e01be8de8588639"
+    },
+    {
+      "actual_input_tokens": 551,
+      "actual_output_tokens": 56,
+      "reservation_id": "shadow-v5-native-462",
+      "run_id": "shadow-d0e35f8966db72a9e77d22941c6bc9b6"
+    },
+    {
+      "actual_input_tokens": 552,
+      "actual_output_tokens": 48,
+      "reservation_id": "shadow-v5-native-463",
+      "run_id": "shadow-e3c5cc6c0ea8eadeb0f62d01ba0cec7c"
+    },
+    {
+      "actual_input_tokens": 292,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-464",
+      "run_id": "shadow-f0cbed47f17a131cabbb952f23d7e517"
+    },
+    {
+      "actual_input_tokens": 286,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-465",
+      "run_id": "shadow-50f36d2955b152f3cf30032f297d5552"
+    },
+    {
+      "actual_input_tokens": 654,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-466",
+      "run_id": "shadow-3a42a9f514e3554549408d07ecb9e652"
+    },
+    {
+      "actual_input_tokens": 656,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-467",
+      "run_id": "shadow-9ed8303627ea068d0479e3dd54e07da4"
+    },
+    {
+      "actual_input_tokens": 489,
+      "actual_output_tokens": 25,
+      "reservation_id": "shadow-v5-native-468",
+      "run_id": "shadow-90a975be5797cc7517b6f4ae6bebfe83"
+    },
+    {
+      "actual_input_tokens": 479,
+      "actual_output_tokens": 24,
+      "reservation_id": "shadow-v5-native-469",
+      "run_id": "shadow-694dc2d16bbf6858d9128fd2bf3279ea"
+    },
+    {
+      "actual_input_tokens": 533,
+      "actual_output_tokens": 51,
+      "reservation_id": "shadow-v5-native-470",
+      "run_id": "shadow-3001f555a984eba4a90df091ef643559"
+    },
+    {
+      "actual_input_tokens": 534,
+      "actual_output_tokens": 50,
+      "reservation_id": "shadow-v5-native-471",
+      "run_id": "shadow-a7c711ce54b4eace677d29d628d63ea0"
+    },
+    {
+      "actual_input_tokens": 287,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-472",
+      "run_id": "shadow-c461d9a1c7e2be092610e2e0994880ba"
+    },
+    {
+      "actual_input_tokens": 284,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-473",
+      "run_id": "shadow-c057e33c7f035aaae52e8c63ef419306"
+    },
+    {
+      "actual_input_tokens": 650,
+      "actual_output_tokens": 15,
+      "reservation_id": "shadow-v5-native-474",
+      "run_id": "shadow-8010ecf0dcc924d09ff5f83b6f62d420"
+    },
+    {
+      "actual_input_tokens": 647,
+      "actual_output_tokens": 15,
+      "reservation_id": "shadow-v5-native-475",
+      "run_id": "shadow-2b70b24269c3e09fa44a886ad0ae4bc8"
+    },
+    {
+      "actual_input_tokens": 483,
+      "actual_output_tokens": 25,
+      "reservation_id": "shadow-v5-native-476",
+      "run_id": "shadow-4d0ea2e84e640f525392f05383f1b41c"
+    },
+    {
+      "actual_input_tokens": 481,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-477",
+      "run_id": "shadow-783889525b08f90119ab2e661133f846"
+    },
+    {
+      "actual_input_tokens": 523,
+      "actual_output_tokens": 53,
+      "reservation_id": "shadow-v5-native-478",
+      "run_id": "shadow-3e0d8715003441b1ac8bab828039abfe"
+    },
+    {
+      "actual_input_tokens": 529,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-479",
+      "run_id": "shadow-d3a9df3436e6be4bf2059caa6a9e6883"
+    },
+    {
+      "actual_input_tokens": 291,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-480",
+      "run_id": "shadow-c830ffc64961576b38bc23117e82a342"
+    },
+    {
+      "actual_input_tokens": 281,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-481",
+      "run_id": "shadow-fdbc75ec38c9be96cb319bef80eec85d"
+    },
+    {
+      "actual_input_tokens": 652,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-482",
+      "run_id": "shadow-8a87d0f37f22a8e8196d8a07e2d18d1e"
+    },
+    {
+      "actual_input_tokens": 646,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-483",
+      "run_id": "shadow-0c4632f2aeee488d7069c1b96d3260a1"
+    },
+    {
+      "actual_input_tokens": 493,
+      "actual_output_tokens": 24,
+      "reservation_id": "shadow-v5-native-484",
+      "run_id": "shadow-3cb03fcad874492f735e4b0dd00d5831"
+    },
+    {
+      "actual_input_tokens": 484,
+      "actual_output_tokens": 24,
+      "reservation_id": "shadow-v5-native-485",
+      "run_id": "shadow-8be85236320ad2515d4e13d1abf5a403"
+    },
+    {
+      "actual_input_tokens": 531,
+      "actual_output_tokens": 47,
+      "reservation_id": "shadow-v5-native-486",
+      "run_id": "shadow-15c46d61b83505fbb5b452c606a504e0"
+    },
+    {
+      "actual_input_tokens": 536,
+      "actual_output_tokens": 49,
+      "reservation_id": "shadow-v5-native-487",
+      "run_id": "shadow-72acc6595b5320ba3fb525fee70ea535"
+    },
+    {
+      "actual_input_tokens": 287,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-488",
+      "run_id": "shadow-6062ec966d6e29ede480e5008b9d31cb"
+    },
+    {
+      "actual_input_tokens": 283,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-489",
+      "run_id": "shadow-7d0a2f338fee1d290ed7cb8ef298649c"
+    },
+    {
+      "actual_input_tokens": 648,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-490",
+      "run_id": "shadow-f92ec2988c106f0e949bd03dc23d590b"
+    },
+    {
+      "actual_input_tokens": 648,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-491",
+      "run_id": "shadow-39f891184e7ef4aec6c3e27c467bca9b"
+    },
+    {
+      "actual_input_tokens": 495,
+      "actual_output_tokens": 26,
+      "reservation_id": "shadow-v5-native-492",
+      "run_id": "shadow-e0271a95d3c0a5b50ecda78f3e93325f"
+    },
+    {
+      "actual_input_tokens": 497,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-493",
+      "run_id": "shadow-4a9be9795809596a79ad58424507b500"
+    },
+    {
+      "actual_input_tokens": 542,
+      "actual_output_tokens": 52,
+      "reservation_id": "shadow-v5-native-494",
+      "run_id": "shadow-3b0791d9aa6d1b7ff301b38891bfd33e"
+    },
+    {
+      "actual_input_tokens": 544,
+      "actual_output_tokens": 49,
+      "reservation_id": "shadow-v5-native-495",
+      "run_id": "shadow-5186f785080ad9a7806d8603a229ae8d"
+    },
+    {
+      "actual_input_tokens": 296,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-496",
+      "run_id": "shadow-2bad79156e5a6a5626db58ea2c160edc"
+    },
+    {
+      "actual_input_tokens": 286,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-497",
+      "run_id": "shadow-98f93e68fb754350732391fd22f930bc"
+    },
+    {
+      "actual_input_tokens": 648,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-498",
+      "run_id": "shadow-68d58d37c3bf69c21e1ac71454b7985e"
+    },
+    {
+      "actual_input_tokens": 649,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-499",
+      "run_id": "shadow-4b59c9157bf2797125f543381caf9ea0"
+    },
+    {
+      "actual_input_tokens": 503,
+      "actual_output_tokens": 22,
+      "reservation_id": "shadow-v5-native-500",
+      "run_id": "shadow-72562abc961d145effbac6796b1ce1a1"
+    },
+    {
+      "actual_input_tokens": 497,
+      "actual_output_tokens": 26,
+      "reservation_id": "shadow-v5-native-501",
+      "run_id": "shadow-4a5c63f8b373b36bca8cda6c45537c7d"
+    },
+    {
+      "actual_input_tokens": 547,
+      "actual_output_tokens": 49,
+      "reservation_id": "shadow-v5-native-502",
+      "run_id": "shadow-9bb5c3e09aa24b516afe54d9045fe656"
+    },
+    {
+      "actual_input_tokens": 544,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-503",
+      "run_id": "shadow-30f69939be4e572fafa3d5f6766a9827"
+    },
+    {
+      "actual_input_tokens": 294,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-504",
+      "run_id": "shadow-597e39cd5c37562f6fe9600382844246"
+    },
+    {
+      "actual_input_tokens": 291,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-505",
+      "run_id": "shadow-2ad79f32a78f948ffcb3babb45638c61"
+    },
+    {
+      "actual_input_tokens": 644,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-506",
+      "run_id": "shadow-13cffe272d7116c012e995f86c3d9d2b"
+    },
+    {
+      "actual_input_tokens": 652,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-507",
+      "run_id": "shadow-55cba54eb0b8d31d040d3988168d85b6"
+    },
+    {
+      "actual_input_tokens": 495,
+      "actual_output_tokens": 25,
+      "reservation_id": "shadow-v5-native-508",
+      "run_id": "shadow-19642af9c7b8232c302fc1bf364bd2a4"
+    },
+    {
+      "actual_input_tokens": 492,
+      "actual_output_tokens": 4,
+      "reservation_id": "shadow-v5-native-509",
+      "run_id": "shadow-0d1fb606e0ba720e8b02ddb0a8e315d4"
+    },
+    {
+      "actual_input_tokens": 541,
+      "actual_output_tokens": 48,
+      "reservation_id": "shadow-v5-native-510",
+      "run_id": "shadow-efb0930df8cf80738f7fcf3f62ae7dfa"
+    },
+    {
+      "actual_input_tokens": 543,
+      "actual_output_tokens": 51,
+      "reservation_id": "shadow-v5-native-511",
+      "run_id": "shadow-6ab5ab05f2994324b246574c618affc4"
+    },
+    {
+      "actual_input_tokens": 284,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-512",
+      "run_id": "shadow-234621b5efb7852ee4a93cce6fa95c4d"
+    },
+    {
+      "actual_input_tokens": 283,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-513",
+      "run_id": "shadow-b9d035c1abd493942d80b0b61dc58f0c"
+    },
+    {
+      "actual_input_tokens": 655,
+      "actual_output_tokens": 15,
+      "reservation_id": "shadow-v5-native-514",
+      "run_id": "shadow-e0fe58e736d4a9d86ec091e9b99944b3"
+    },
+    {
+      "actual_input_tokens": 649,
+      "actual_output_tokens": 15,
+      "reservation_id": "shadow-v5-native-515",
+      "run_id": "shadow-282a1962072ef0c01d89c8c08c6e22cb"
+    },
+    {
+      "actual_input_tokens": 294,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-516",
+      "run_id": "shadow-781285b388af879341e21a05e279b1cd"
+    },
+    {
+      "actual_input_tokens": 286,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-517",
+      "run_id": "shadow-144c250d6d596e4824a3a035a4f87ec7"
+    },
+    {
+      "actual_input_tokens": 658,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-518",
+      "run_id": "shadow-e915de2622fe8679f8b726ddce6f284c"
+    },
+    {
+      "actual_input_tokens": 642,
+      "actual_output_tokens": 13,
+      "reservation_id": "shadow-v5-native-519",
+      "run_id": "shadow-efad10a22982b1d447e64fb14aaaf080"
+    },
+    {
+      "actual_input_tokens": 493,
+      "actual_output_tokens": 22,
+      "reservation_id": "shadow-v5-native-520",
+      "run_id": "shadow-fb829cbfc89fdd546f1e88fb7e415c78"
+    },
+    {
+      "actual_input_tokens": 493,
+      "actual_output_tokens": 22,
+      "reservation_id": "shadow-v5-native-521",
+      "run_id": "shadow-020ade50b8e9392f1e1bed24c4d4ed0e"
+    },
+    {
+      "actual_input_tokens": 493,
+      "actual_output_tokens": 22,
+      "reservation_id": "shadow-v5-native-522",
+      "run_id": "shadow-f78240d3666c829f6b5a6cd5e9f06af9"
+    },
+    {
+      "actual_input_tokens": 599,
+      "actual_output_tokens": 22,
+      "reservation_id": "shadow-v5-native-523",
+      "run_id": "shadow-24814410d7194457c494f03fdae51236"
+    },
+    {
+      "actual_input_tokens": 545,
+      "actual_output_tokens": 54,
+      "reservation_id": "shadow-v5-native-524",
+      "run_id": "shadow-d2f2e6884f27826698348a8a45d2325b"
+    },
+    {
+      "actual_input_tokens": 545,
+      "actual_output_tokens": 54,
+      "reservation_id": "shadow-v5-native-525",
+      "run_id": "shadow-6da5bf896be38d18e115923348148b88"
+    },
+    {
+      "actual_input_tokens": 545,
+      "actual_output_tokens": 54,
+      "reservation_id": "shadow-v5-native-526",
+      "run_id": "shadow-a95d15679c1f7b01ab4fd8fd7aa58104"
+    },
+    {
+      "actual_input_tokens": 713,
+      "actual_output_tokens": 54,
+      "reservation_id": "shadow-v5-native-527",
+      "run_id": "shadow-d14dd012c02204297b265cea08601b6f"
+    },
+    {
+      "actual_input_tokens": 297,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-528",
+      "run_id": "shadow-718ca7952cfb52fa263fa2cb3897a19c"
+    },
+    {
+      "actual_input_tokens": 297,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-529",
+      "run_id": "shadow-3d1c19c4fdd4c7c4192f1d97717f8b77"
+    },
+    {
+      "actual_input_tokens": 297,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-530",
+      "run_id": "shadow-3e678deb8f04ed8934c1ec17bd56d175"
+    },
+    {
+      "actual_input_tokens": 365,
+      "actual_output_tokens": 5,
+      "reservation_id": "shadow-v5-native-531",
+      "run_id": "shadow-0a5e15ad075dc39a5f2b445402e2cb97"
+    },
+    {
+      "actual_input_tokens": 651,
+      "actual_output_tokens": 14,
+      "reservation_id": "shadow-v5-native-532",
+      "run_id": "shadow-1fa4833dacbe0f5860f4ae8f878c52e5"
+    },
+    {
+      "actual_input_tokens": 651,
+      "actual_output_tokens": 14,
+      "reservation_id": "shadow-v5-native-533",
+      "run_id": "shadow-53afd3541fdf56b6f09a07fe525ca920"
+    },
+    {
+      "actual_input_tokens": 651,
+      "actual_output_tokens": 14,
+      "reservation_id": "shadow-v5-native-534",
+      "run_id": "shadow-da48f75a60ef7c33921759dd283cc644"
+    },
+    {
+      "actual_input_tokens": 737,
+      "actual_output_tokens": 14,
+      "reservation_id": "shadow-v5-native-535",
+      "run_id": "shadow-f7b5c947358b0336a28d846dcda455be"
+    },
+    {
+      "actual_input_tokens": 7106,
+      "actual_output_tokens": 155,
+      "reservation_id": "release-chain-v5-native-536",
+      "run_id": "run-1791878233983966157-7e47e927d33a91e9"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "release-chain-v5-native-537",
+      "run_id": "run-1791878233983966157-7e47e927d33a91e9"
+    },
+    {
+      "actual_input_tokens": 7116,
+      "actual_output_tokens": 155,
+      "reservation_id": "release-chain-v6-native-538",
+      "run_id": "run-1791893121691412052-066ae56b7f25cc6b"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "release-chain-v6-native-539",
+      "run_id": "run-1791893121691412052-066ae56b7f25cc6b"
+    },
+    {
+      "actual_input_tokens": 7092,
+      "actual_output_tokens": 155,
+      "reservation_id": "release-chain-v7-native-540",
+      "run_id": "run-1791897610018972036-b7127de735a5e390"
+    },
+    {
+      "actual_input_tokens": 9655,
+      "actual_output_tokens": 388,
+      "reservation_id": "release-chain-v7-native-541",
+      "run_id": "run-1791897610018972036-b7127de735a5e390"
+    },
+    {
+      "actual_input_tokens": 7172,
+      "actual_output_tokens": 155,
+      "reservation_id": "release-chain-v8-native-542",
+      "run_id": "run-1791902458151001758-270ebcc33313b907"
+    },
+    {
+      "actual_input_tokens": 9183,
+      "actual_output_tokens": 405,
+      "reservation_id": "release-chain-v8-native-543",
+      "run_id": "run-1791902458151001758-270ebcc33313b907"
+    },
+    {
+      "actual_input_tokens": 13832,
+      "actual_output_tokens": 53,
+      "reservation_id": "release-chain-v8-native-544",
+      "run_id": "run-1791902458151001758-270ebcc33313b907"
+    },
+    {
+      "actual_input_tokens": 7160,
+      "actual_output_tokens": 155,
+      "reservation_id": "release-chain-v9-native-545",
+      "run_id": "run-1791907877935588912-a4b38207fe22a5dc"
+    },
+    {
+      "actual_input_tokens": 10092,
+      "actual_output_tokens": 404,
+      "reservation_id": "release-chain-v9-native-546",
+      "run_id": "run-1791907877935588912-a4b38207fe22a5dc"
+    },
+    {
+      "actual_input_tokens": 11848,
+      "actual_output_tokens": 92,
+      "reservation_id": "release-chain-v9-native-547",
+      "run_id": "run-1791907877935588912-a4b38207fe22a5dc"
+    },
+    {
+      "actual_input_tokens": 4063,
+      "actual_output_tokens": 155,
+      "reservation_id": "release-chain-v9-native-548",
+      "run_id": "run-1791907907685183508-d1920de00763c8c5"
+    },
+    {
+      "actual_input_tokens": 13283,
+      "actual_output_tokens": 165,
+      "reservation_id": "release-chain-v9-native-549",
+      "run_id": "run-1791907907685183508-d1920de00763c8c5"
+    },
+    {
+      "actual_input_tokens": 14888,
+      "actual_output_tokens": 77,
+      "reservation_id": "release-chain-v9-native-550",
+      "run_id": "run-1791907907685183508-d1920de00763c8c5"
+    },
+    {
+      "actual_input_tokens": 15507,
+      "actual_output_tokens": 518,
+      "reservation_id": "release-chain-v9-native-551",
+      "run_id": "run-1791907907685183508-d1920de00763c8c5"
+    },
+    {
+      "actual_input_tokens": 7743,
+      "actual_output_tokens": 54,
+      "reservation_id": "release-chain-v9-native-552",
+      "run_id": "run-1791907996936480404-d0299fceac4e644b"
+    },
+    {
+      "actual_input_tokens": 9185,
+      "actual_output_tokens": 77,
+      "reservation_id": "release-chain-v9-native-553",
+      "run_id": "run-1791907996936480404-d0299fceac4e644b"
+    },
+    {
+      "actual_input_tokens": 10097,
+      "actual_output_tokens": 218,
+      "reservation_id": "release-chain-v9-native-554",
+      "run_id": "run-1791907996936480404-d0299fceac4e644b"
+    },
+    {
+      "actual_input_tokens": 11039,
+      "actual_output_tokens": 81,
+      "reservation_id": "release-chain-v9-native-555",
+      "run_id": "run-1791907996936480404-d0299fceac4e644b"
+    },
+    {
+      "actual_input_tokens": 12084,
+      "actual_output_tokens": 25,
+      "reservation_id": "release-chain-v9-native-556",
+      "run_id": "run-1791907996936480404-d0299fceac4e644b"
+    },
+    {
+      "actual_input_tokens": null,
+      "actual_output_tokens": null,
+      "reservation_id": "release-chain-v10-native-557",
+      "run_id": "run-1791910232548561092-422d2d06d4a9f747"
+    }
+  ]
+}
