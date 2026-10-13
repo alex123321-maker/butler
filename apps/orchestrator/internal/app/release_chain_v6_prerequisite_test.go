@@ -18,9 +18,9 @@ const releaseChainV6Baseline = 537
 const releaseChainV6NewCap = 78
 const releaseChainV6Ceiling = 615
 
-// Deliberately closed until an independent review freezes the new prerequisite.
-// An actual history count or the human expense exception alone grants no entry.
-const releaseChainV6ReviewedPrerequisiteSHA = ""
+// Independently reviewed protocol bytes. Final prepared source/runtime/fault
+// admission remains separate; a history count or expense exception is insufficient.
+const releaseChainV6ReviewedPrerequisiteSHA = "9ce27e6d9a15f598fadc037e5de377869672937fef84849fc662610ec6379de3"
 const releaseChainV6ExceptionSHA = "31b930ac4e39206d65424ac951f65cc4656b71166995650122cbdda3e63b6ab4"
 const releaseChainV6FailedAuditSHA = "592d27ee34178a9b336eb0f9cce4784fac1ba214b22f05e1ad0b247a48f97c04"
 const releaseChainV6FailedCorrelationSHA = "fb8a430c327c4abec5984cad6fec6e79aa57d36866500dd588979722f282a424"

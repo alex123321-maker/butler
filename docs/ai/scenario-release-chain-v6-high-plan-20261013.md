@@ -3,7 +3,8 @@
 This new scope starts from actual537. It has not run and grants no native
 admission until clean final source, zero-inference preparation and independent
 review freeze its exact code, protocol, runtimes and hardware. The owning V6
-reader's reviewed prerequisite pin remains empty during preparation.
+reader now pins the independently reviewed protocol bytes; prepared-source and
+runtime admission remain pending and no native execution has occurred.
 
 The [V5 quality/comparison audit](scenario-cloud-v5-independent-audit-20261013.md)
 retains PASS on its original measured collector3c4089f, source61c8e729 and
