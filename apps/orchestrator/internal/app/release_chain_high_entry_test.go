@@ -17,6 +17,7 @@ type releaseChainHighEntry struct {
 	Baseline, Maximum                    int
 	ProviderStages                       bool
 	RetainProposals                      bool
+	ProposalMetadata120                  bool
 	ExtensionHarnessLifetime             time.Duration
 	ObserveSourceChecks                  bool
 	AllowRepeatedPatchChecks             bool

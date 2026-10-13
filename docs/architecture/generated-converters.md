@@ -1,3 +1,11 @@
+An activated-catalog continuation carries the current confirmed activation as
+private DATA: converter identity, digest, current catalog generation and the
+exact activation action/effect. The ordinary continuation verifier reloads these
+facts under the current lease, task, source and authority guards on every fresh
+or recovered preparation. Candidate-return context remains distinct. Core tells
+the model to use the active catalog for the remaining original work rather than
+repeat a completed installation sequence. Activation readiness does not verify
+the original task and grants no permission beyond the current Broker policy.
 # Bounded generated converter tools
 
 This specification defines the first self-development class for issue 20:

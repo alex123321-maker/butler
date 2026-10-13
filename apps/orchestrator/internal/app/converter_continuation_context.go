@@ -57,5 +57,10 @@ func (s *ConverterContinuations) LoadConverterContinuation(ctx context.Context, 
 		return out, err
 	}
 	out = flow.ConverterContinuationContext{RunID: tok.RunID, SessionKey: tok.SessionKey, TaskID: c.Intent.ParentTaskID, ID: c.Intent.ID, Purpose: c.Intent.Purpose, ChildTaskID: c.Intent.ChildTaskID}
+	if c.Intent.Purpose == generatedtools.ActivatedCatalog {
+		// CheckContinuationTx above verified the exact confirmed activation and
+		// current installed generation. Candidate.Generation is an older snapshot.
+		out.Activation = &flow.ConverterContinuationActivation{ConverterID: p.Candidate.ID, Digest: p.Candidate.Digest, Generation: c.Ready.Generation, ActionID: c.Ready.ActivationActionID, EffectID: c.Ready.ActivationEffectID}
+	}
 	return out, tx.Commit(ctx)
 }

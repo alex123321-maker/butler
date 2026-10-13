@@ -1,3 +1,9 @@
+Converter continuations distinguish returned candidates from already activated
+catalog entries. Current activation facts are reloaded as private DATA under the
+existing lease/source/authority checks, including recovery. Activated entries
+resume the remaining original task; they do not establish semantic verification
+or authorize replaying activation. Candidate collection/checking remains its
+separate earlier phase.
 # Orchestrator
 
 Core supports one durable model retry per accepted input after a trusted nominal

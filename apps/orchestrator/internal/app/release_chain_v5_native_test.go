@@ -203,7 +203,15 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 		var proposals []map[string]any
 		if entry.RetainProposals {
 			var err error
-			proposals, err = readReleaseChainProposalMetadata(private, entry.Baseline, entry.Maximum)
+			if entry.ProposalMetadata120 {
+				if entry.Maximum != 120 {
+					err = errNativeFixtureDenied
+				} else {
+					proposals, err = readReleaseChainProposalMetadata120(private, entry.Baseline)
+				}
+			} else {
+				proposals, err = readReleaseChainProposalMetadata(private, entry.Baseline, entry.Maximum)
+			}
 			if err != nil {
 				status = "failed"
 				t.Error("safe private proposal metadata unavailable")

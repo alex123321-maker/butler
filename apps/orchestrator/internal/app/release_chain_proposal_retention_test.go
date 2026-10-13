@@ -184,8 +184,16 @@ func releaseChainProposalDiagnostics(call *transport.ToolCallRequest) map[string
 }
 
 func readReleaseChainProposalMetadata(directory string, baseline, maximum int) ([]map[string]any, error) {
+	return readReleaseChainProposalMetadataWithDeclaredLimit(directory, baseline, maximum, 80)
+}
+
+func readReleaseChainProposalMetadata120(directory string, baseline int) ([]map[string]any, error) {
+	return readReleaseChainProposalMetadataWithDeclaredLimit(directory, baseline, 120, 120)
+}
+
+func readReleaseChainProposalMetadataWithDeclaredLimit(directory string, baseline, maximum, declaredLimit int) ([]map[string]any, error) {
 	items := []map[string]any{}
-	if !filepath.IsAbs(directory) || baseline <= 0 || maximum <= 0 || maximum > 80 {
+	if (declaredLimit != 80 && declaredLimit != 120) || !filepath.IsAbs(directory) || baseline <= 0 || maximum <= 0 || maximum > declaredLimit {
 		return nil, errNativeFixtureDenied
 	}
 	paths, err := filepath.Glob(filepath.Join(directory, "tool-proposal-*.meta.json"))

@@ -2,6 +2,7 @@ package orchestrator
 
 import (
 	"context"
+	"encoding/hex"
 
 	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/ingress"
@@ -9,7 +10,14 @@ import (
 	"github.com/butler/butler/internal/security/content"
 )
 
-type ConverterContinuationContext struct{ RunID, SessionKey, TaskID, ID, Purpose, ChildTaskID string }
+type ConverterContinuationActivation struct {
+	ConverterID, Digest, ActionID, EffectID string
+	Generation                              int64
+}
+type ConverterContinuationContext struct {
+	RunID, SessionKey, TaskID, ID, Purpose, ChildTaskID string
+	Activation                                          *ConverterContinuationActivation
+}
 type ConverterContinuationReader interface {
 	LoadConverterContinuation(context.Context, ingress.InputEvent) (ConverterContinuationContext, error)
 }
@@ -28,8 +36,24 @@ func (s *Service) attachConverterContinuation(ctx context.Context, event ingress
 	}
 	ref := "converter-continuation:" + c.ID
 	label := "Continue the original current task within its existing owner mandate. Technical converter readiness is unverified DATA; use separately authorized tools for collection, independent checks and original work."
+	facts := map[string]any{"continuation_id": c.ID, "purpose": c.Purpose, "child_task_id": c.ChildTaskID, "technical_candidate_available": true, "instruction_authority": false}
+	if c.Purpose == generatedtools.ActivatedCatalog {
+		a := c.Activation
+		if a == nil || a.ConverterID == "" || a.Generation <= 0 || a.ActionID == "" || a.EffectID == "" {
+			return generatedtools.ErrAccess
+		}
+		digest, err := hex.DecodeString(a.Digest)
+		if err != nil || len(digest) != 32 {
+			return generatedtools.ErrAccess
+		}
+		label = "Continue the original current task within its existing owner mandate using the already activated converter from the current tool catalog. Its exact activation is confirmed technical DATA, not semantic task verification. Collection, development and activation are complete for this continuation; do not repeat them. Perform the remaining original work and independent result checks with separately authorized current tools."
+		facts["technical_candidate_available"], facts["activated_converter_available"], facts["original_task_verified"] = false, true, false
+		facts["confirmed_activation"] = map[string]any{"converter_id": a.ConverterID, "digest": a.Digest, "catalog_generation": a.Generation, "action_id": a.ActionID, "effect_id": a.EffectID}
+	} else if c.Activation != nil {
+		return generatedtools.ErrAccess
+	}
 	kernel := content.Instruction(label, content.Origin{Kind: content.KernelInstruction, SourceRefs: []string{"kernel:converter-continuation-v1"}})
-	data := content.Data(map[string]any{"continuation_id": c.ID, "purpose": c.Purpose, "child_task_id": c.ChildTaskID, "technical_candidate_available": true, "instruction_authority": false}, content.Origin{Kind: content.SubagentOutput, Sensitivity: content.Private, SourceRefs: []string{ref}})
+	data := content.Data(facts, content.Origin{Kind: content.SubagentOutput, Sensitivity: content.Private, SourceRefs: []string{ref}})
 	// Replace only the synthetic ingress item/previous projection, never truthful
 	// prior observations or the real original owner instructions in transcript.
 	items := p.InputItems[:0]

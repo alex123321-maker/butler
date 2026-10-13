@@ -1,0 +1,52 @@
+{
+  "canonical_go_exit": 1,
+  "canonical_go_json_available": false,
+  "canonical_go_review_directory": "/srv/storage/butler/reviews/issue33-chain-v13-20261013/v13-missing-metadata-audit-09cf34c-20261013T191139Z-3063084",
+  "canonical_go_stderr": "typed_operator_contract_denied",
+  "canonical_go_stderr_sha256": "80d84085421b4bb1d3645b7595ca37d0a826da17dc5ede8a31ddd707fb4fb722",
+  "canonical_go_stdout_bytes": 0,
+  "canonical_go_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "chain_audit": {
+    "accepted_model_retry_failures": 0,
+    "accepted_unknown_timeout_cost_entries": 0,
+    "accepted_unknown_timeout_version_entries": 0,
+    "accepted_unmeasured_timeout_entries": 0,
+    "all_new_expense_measured": true,
+    "all_new_measured_cost": {
+      "attempts": 18,
+      "known_input_tokens": 221156,
+      "known_output_tokens": 3231,
+      "known_total_tokens": 256750,
+      "unknown_input_attempts": 0,
+      "unknown_output_attempts": 0,
+      "unknown_total_attempts": 0
+    },
+    "auditor_native_calls": 0,
+    "carry_forward_attempts": 593,
+    "issue33_ready": false,
+    "no_go_reasons": [
+      "source_pinned_private_metadata_reader_legacy80_rejects_declared120",
+      "actual_current_converter_authority_denied_second_activation",
+      "original_conversion_unverified_and_four_cases_unattempted"
+    ],
+    "status": "NO_GO",
+    "verified_scenarios": []
+  },
+  "evidence_bindings": {
+    "app_sha256": "c290b25cacdeaf35fb7b89787fe18630689a29c13acbf37ed24bd6b50e005d26",
+    "auditor_binary_sha256": "b27e7d92021cf0774a6f1f0de0ffde85183d62ee5d39f2b28a569ab96c115d2e",
+    "auditor_commit": "efce2e552a0c43621f51b172fd02931d18bace86",
+    "auditor_source_sha256": "352b26a1405a917238c9af46e8dd5d07f931481563066adaff495d3826f23fca",
+    "code_commit": "09cf34c05ab1fc1840dc73f1c9e1ecb2766b0faf",
+    "prerequisite_sha256": "c1aa03290cc85616c4f2156acfde3d116037e7cafd0a4f89b5ea2b9d545c2f4e",
+    "source_sha256": "e203276bb12e30c16c975952f7e70c92295adba80e76c85dc08d9ca43ade6e70"
+  },
+  "limits": [
+    "This is an independent supplemental NO_GO record, not JSON emitted by the frozen Go checker. Its original empty stdout and typed denial remain untouched.",
+    "Original scope proposal_observations remains NULL because the metadata-reader maximum80 check occurs before any file access. No replacement inventory or full private coverage is fabricated.",
+    "Only separately authorized own packets591/592/593 were read; no directory, auth, SSE, hidden parts or model prose were imported.",
+    "Confirmed active-digest tests/trial and denied repeatedactivation/stalegeneration are observed facts. The model reason for choosing those actions and all old UNKNOWN subcauses remain unobserved."
+  ],
+  "report_origin": "independent_read_only_owning_pg_and_frozen_source_correlation",
+  "version": "butler-independent-v13-failure-supplemental-v1"
+}
