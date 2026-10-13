@@ -54,6 +54,8 @@ func selectedAuditPolicy(name string) auditPolicy {
 		return v8AuditPolicy()
 	case "v9":
 		return v9AuditPolicy()
+	case "v10":
+		return v10AuditPolicy()
 	default:
 		require(false, "explicit_reviewed_protocol_required")
 		return auditPolicy{}

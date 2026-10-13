@@ -179,6 +179,10 @@ func auditWithPolicy(in inputs, policy auditPolicy) (r report, err error) {
 	if policy.SerializedEntries {
 		r.Limits = append(r.Limits, "V9 serialization is checked from owning client request intervals and durable measurements. It does not establish provider GPU scheduling or server hardware isolation.")
 	}
+	if policy.PrerequisiteSHA == v10PrerequisiteSHA {
+		r.Limits[5] = "The pinned V10 prospective policy retains one safely recovered nominal HTTP or response-stream timeout per input with NULL expense/version kept UNKNOWN, 300-second entries, 40-minute cases and a 120-minute window. All successful requests require measured expense and expected version; original quality and comparison profiles remain unchanged."
+		r.Limits = append(r.Limits, "V10 is a new prospective 71-entry allocation after factual556, with ceiling627. Closed earlier615 windows keep all spent requests and UNKNOWNs. Its pinned test-only harness lifetime is bounded by the remaining forty-minute case; historical556 runtime exit is unavailable and its specific cause stays UNKNOWN.")
+	}
 	defer func() {
 		if v := recover(); v != nil {
 			r.Status = "NO_GO"
@@ -237,7 +241,7 @@ func auditWithPolicy(in inputs, policy auditPolicy) (r report, err error) {
 	wa := obj(q["window_audit"])
 	require(wa["status"] == "CLOUD_V5_WINDOW_AUDIT_PASS" && integer(wa["carry_forward_attempts"]) == 535 && len(arr(wa["no_go_reasons"])) == 0, "quality_prior_denied")
 	policy.VerifyPrerequisite(p)
-	require(sc["window_id"] == policy.WindowID && integer(sc["baseline_attempts"]) == int64(policy.Baseline) && integer(pg["baseline_attempts"]) == int64(policy.Baseline) && integer(sc["maximum_total_attempts"]) == 615 && integer(sc["maximum_new_attempts"]) == int64(policy.Maximum) && sc["planning"] == "actual_native_High" && sc["human_messages"] == json.Number("0") && sc["issue33_ready"] == false, "scope_identity")
+	require(sc["window_id"] == policy.WindowID && integer(sc["baseline_attempts"]) == int64(policy.Baseline) && integer(pg["baseline_attempts"]) == int64(policy.Baseline) && integer(sc["maximum_total_attempts"]) == int64(policy.Baseline+policy.Maximum) && integer(sc["maximum_new_attempts"]) == int64(policy.Maximum) && sc["planning"] == "actual_native_High" && sc["human_messages"] == json.Number("0") && sc["issue33_ready"] == false, "scope_identity")
 	window, pw := obj(ss["window"]), obj(pg["window"])
 	windowFields := "native_baseline attempts prior_history_hash prerequisite_hash expires_at maximum_new_attempts provider_stage_observation kernel_operation_binding"
 	if policy.WindowPolicy != nil {
