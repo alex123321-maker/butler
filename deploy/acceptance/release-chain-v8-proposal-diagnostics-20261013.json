@@ -1,0 +1,55 @@
+{
+  "actual_source": "5057fbf1a90e01952ea939c2c1fd7af13c3db6a6",
+  "all_model_argument_values_remain_private": true,
+  "created_at_utc": "2026-10-13T14:57:10.190878+00:00",
+  "issue33_ready": false,
+  "new_native_attempts": 3,
+  "ordinal544_action_intent_absent": true,
+  "ordinal544_child_field_type_string": true,
+  "ordinal544_class": "syntactically_valid_collect_for_current_child_before_candidate_return_or_final",
+  "ordinal544_requested_child_equals_actual_admitted_child": true,
+  "ordinal544_required_fields_exact": true,
+  "product_sha256": "534411ccfcefe90b40ea22a890335602c909f66ff64b85197231ae6d09e504b9",
+  "proposals": [
+    {
+      "actual_core_authorized_action_match": true,
+      "known_role": "confirmed_discovery",
+      "model_argument_values_emitted": false,
+      "ordinal": 542,
+      "original_authorization_hash_matches_metadata": true,
+      "original_bytes_and_base64_match": true,
+      "private_bytes": 841,
+      "private_sha256": "ee8ac5eebd71d6211e8751c9877be67a291813383bd643f77c2cfbed0a21566a",
+      "requested_current_child": false
+    },
+    {
+      "actual_core_authorized_action_match": true,
+      "known_role": "confirmed_delegation",
+      "model_argument_values_emitted": false,
+      "ordinal": 543,
+      "original_authorization_hash_matches_metadata": true,
+      "original_bytes_and_base64_match": true,
+      "private_bytes": 1962,
+      "private_sha256": "a3bc319cdf4ca3239ca687bd26d8642bae2870a7a242d4c003b04f00af78fe03",
+      "requested_current_child": false
+    },
+    {
+      "actual_core_authorized_action_match": false,
+      "known_role": "collection_denied_before_action",
+      "model_argument_values_emitted": false,
+      "ordinal": 544,
+      "original_authorization_hash_matches_metadata": true,
+      "original_bytes_and_base64_match": true,
+      "private_bytes": 451,
+      "private_sha256": "3370886d505798eb4686d8042f50cd6b06f1f89064169788a386bbafe600ab07",
+      "requested_current_child": true
+    }
+  ],
+  "provider_or_auth_calls_by_auditor": 0,
+  "scope_sha256": "d319637dcd6a74e80c7cdb18749e9c35501bd35c590daa7d72b934543a04f9e8",
+  "specific_prior541_cause": "UNKNOWN",
+  "status": "INDEPENDENT_THREE_ORIGINAL_PROPOSALS_CORRELATED_CHAIN_NO_GO",
+  "verified_scenarios": 0,
+  "version": "butler-v8-closed544-private-own-proposal-diagnostic-v1",
+  "whole_private_directory_read_or_mounted": false
+}

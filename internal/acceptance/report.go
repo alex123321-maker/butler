@@ -195,11 +195,19 @@ func BuildReport(root, events, profile, commit string, hardware json.RawMessage,
 // RunCore launches only fixed packages/tests. No model-controlled command or
 // environment is accepted. Docker/network/cache isolation is owned by fault-lab.sh.
 func RunCore(ctx context.Context, root, events string) error {
+	return runGroups(ctx, root, events, Groups())
+}
+
+func RunFullFaultCore(ctx context.Context, root, events string) error {
+	return runGroups(ctx, root, events, FullFaultGroups())
+}
+
+func runGroups(ctx context.Context, root, events string, groups []Group) error {
 	if err := os.MkdirAll(events, 0700); err != nil {
 		return err
 	}
 	var failures []string
-	for _, g := range Groups() {
+	for _, g := range groups {
 		if g.Runtime != "go-race" {
 			continue
 		}

@@ -1,0 +1,8 @@
+{
+  "version": "butler-structural-json-protocol-review-v1",
+  "reviewer": "/root/initiative + /root/resources",
+  "author": "/root/delegation",
+  "protocol_sha256": "a1ec13d673129392e7382851ed55921d5230d60e21670f2ba98a65bbd56ee774",
+  "input_sha256": "529be4819f407e4028dfbf8b44b5e84d2b0ee42aad1edf62be0e0f182bfc6e45",
+  "history_sha256": "fa9cf46d603db8c2b9155e32d49f0e5bde41b0fdfa39bc95cf9a8a7a74b84d03"
+}

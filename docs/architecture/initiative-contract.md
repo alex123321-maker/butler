@@ -117,3 +117,22 @@ reviewed read operations; source setup pins the selected manifest rather than
 acquiring any new capability. The token stays in page memory. Changing proof
 clears the view and stale asynchronous responses cannot restore it. New sources
 start paused. This UI does not mark tasks completed or authorize an action.
+
+## Semantic result delivery
+
+An authenticated Source may set `result_delivery: verified_task` before promotion.
+The ordinary promotion transaction passes that frozen owner configuration into
+Task admission. `digest_channel` must then be empty: admission/completion digests
+must not create an additional owner notification for this flow. Three distinct
+current Broker observations remain required by the configured threshold; this
+setting grants no new observer, admission, tool, converter or execution rights.
+Only independent owner verification and Task completion produce its one semantic
+result notice. All technical finals and budget/effect history remain retained.
+
+The production selection path is authenticated `POST /api/v3/initiatives/sources`
+with the existing owner credential, a unique `X-Butler-Delivery-ID`, full Source
+and exact `expected_revision`. Add `result_delivery: verified_task` to that Source
+and omit/clear `digest_channel`. Owner/schema validation and CAS remain unchanged;
+existing admitted tasks keep their frozen mode when a Source is later changed.
+This endpoint is registered by production HTTP bootstrap. The task/model APIs
+cannot set the private admission field.

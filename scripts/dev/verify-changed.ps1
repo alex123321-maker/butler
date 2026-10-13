@@ -26,6 +26,139 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(apps/orchestrator/internal/app/(release_chain_v(?:14|15|16|17|18|19|20)_|release_chain_pool_checks|release_chain_pending_cases|release_chain_entry_lane)|scripts/dev/scenario-release-chain-v(?:14|15|16|17|18|19|20)-|scripts/dev/release-chain-v6-final-audit/v(?:14|15|16|17|18|19|20)|deploy/acceptance/release-chain-v(?:14|15|16|17|18|19|20))" {
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/generated-converters.md")
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$tests.Add("Latest frozen fresh native entry: build then execute immediately, only the declared pending cases. Run meaningful changed-helper/current PostgreSQL and race/vet checks in parallel; final independent source, original receipts, eight budget dimensions and costs remain mandatory. Never Sync or execute a closed V14/V15/V16/V17 native root.")
+      [void]$tests.Add("Use a separately frozen version-specific read-only final auditor on exact named original artifacts. Preserve V14 useful work separately from its failed normal case, all later failures and historical UNKNOWN; no completed quality/comparison rerun or duplicate-write waiver.")
+      continue
+    }
+    "^(apps/orchestrator/internal/app/(release_chain_v(?:[789]|10|11|12|13)_|release_chain_extension_harness|release_chain_source_observer|release_chain_proposal_|release_chain_entry_lane)|scripts/dev/scenario-release-chain-v(?:[789]|10|11|12|13)-|scripts/dev/release-chain-v6-final-audit/(v(?:[89]|10|11|12|13)|proposals)|deploy/acceptance/release-chain-v(?:[789]|10|11|12|13))" {
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/generated-converters.md")
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$tests.Add("V13: five targeted actual PostgreSQL declared120 and pinned entry bootstrap checks, then separate source/runtime admission. V10/V11/V12 native roots are sealed; never Sync or execute them again. Retain V12 forty-test read/receipt source proof, historical575 and independently proved zero-native bootstrap; all current source/Stop/result/delivery guards remain.")
+      [void]$tests.Add("Read-only version-specific final checker with separately frozen auditor source/binary and only individually named own-tool proposal leaves. Earlier V6/V7/V8/V9 retain their original reproduction; all failed runs and UNKNOWN stay unchanged.")
+      continue
+    }
+    "^apps/orchestrator/internal/input/(execution_timeout_test[.]go|service[.]go)$" {
+      [void]$specs.Add("docs/architecture/durable-execution-spec.md")
+      [void]$tests.Add("V9 isolated PostgreSQL/race: TestExecutionTimeoutStartupBound and TestExecutionTimeoutCurrentWorkerIntegration. Explicit startup bound must preserve ordinary ten-minute default, earlier caller cancellation and durable expiry category; no network or model before admission.")
+      continue
+    }
+    "^(docs/architecture/model-retry-policy[.]md$|scripts/dev/model-retry-lab[.]sh$|apps/orchestrator/internal/(input|orchestrator)/model_retry.*[.]go$|internal/budget/model_retry.*[.]go$)" {
+      [void]$specs.Add("docs/architecture/model-retry-policy.md")
+      [void]$specs.Add("docs/architecture/durable-execution-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("SSH laba: model-retry-lab.sh FRESH_ISOLATED_ROOT EXACT_COMMIT. Disposable PostgreSQL, nominal versus authority deadline, single durable retry, current Stop/source checks, known-result fresh session, equivalent confirmed-write denial, full separate reservations/NULL retention, race/vet; zero inference.")
+      continue
+    }
+    "^(apps/orchestrator/internal/app/(release_chain_v6_|release_chain_high_)|scripts/dev/(scenario-release-chain-v6-|release-chain-v6-final-audit[-/])|deploy/acceptance/release-chain-v6-)" {
+      [void]$specs.Add("docs/architecture/model-retry-policy.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$tests.Add("SSH laba: scenario-release-chain-v6-high-lab.sh FRESH_V6_ROOT prepare EXACT_CLEAN_COMMIT. Actual537 carry, retained V5 quality and failed chain, original human537 exception plus separately pinned prospective safe-timeout waiver, eight-field78/615 window and request-local stage/kernel-operation binding, disposable PostgreSQL, exact independent checker/Core gates; zero inference before independent source/runtime admission.")
+      [void]$tests.Add("Fresh final production retry regression and full mandatory fault matrix before once-only V6 native chain. Successes require full measured cost; only a proved response-stream timeout followed by one safe retry may retain separately counted NULLs. Safety, Stop, original result and all old sealed windows remain unchanged.")
+      continue
+    }
+    "^(apps/orchestrator/internal/app/release_chain_v5_|scripts/dev/(scenario-release-chain-v5-|release-chain-v5-final-audit[-/]))" {
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$specs.Add("docs/architecture/owner-goals-mandates-spec.md")
+      [void]$specs.Add("docs/architecture/atomic-result-delivery.md")
+      [void]$specs.Add("docs/architecture/generated-converters.md")
+      [void]$tests.Add("Shared runner: use only the latest explicitly fixed fresh pending-case wrapper and clean commit. Build then execute immediately; changed helper checks and independent source/runtime review run in parallel. All old native roots, including V5 through V17, are sealed and cannot be reused.")
+      [void]$tests.Add("Final version-specific independent checker verifies actual Core/Broker receipts, original result, restart/Stop/delivery and full new measured usage. Retained quality/comparison/full-fault evidence needs scoped source comparison, not hundreds of repeated pre-native checks.")
+      continue
+    }
+    "^(deploy/acceptance/(cloud-shadow-v5-|release-chain-v5-)|scripts/dev/cloud-v5-final-audit-reproduce[.]sh$)" {
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$tests.Add("Read-only cloud-v5-final-audit-reproduce.sh against the sealed252-request native window and separately repaired auditor; exact safe SHA/size, history535/retained unknowns. Zero inference; never Sync or execute native V5.")
+      continue
+    }
+    "^(internal/acceptance/cloud_v5_window_audit(_test)?[.]go$|scripts/dev/cloud-v5-(final-audit/|readonly-audit-lab[.]sh$))" {
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$tests.Add("SSH laba: cloud-v5-readonly-audit-lab.sh /srv/storage/butler/agents/scenario-v5-readonly-audit-fix-20261013 EXACT_COMMIT (network-none, zero inference, historical multi-request Run regression, journal tamper tests, private-byte auditor tests, race/vet)")
+      [void]$tests.Add("Independently pin repaired auditor and read the same named original V5/PG leaves. Preserve the original failed audit; V5 native root is sealed, never Sync or execute.")
+      continue
+    }
+    "^(apps/orchestrator/internal/app/(scenario_schema_dialect_|scenario_high_v5_|scenario_shadow_v5_)|internal/acceptance/cloud_(v5|schema_dialect)|cmd/cloud-observe/v5|scripts/dev/(cloud-v5-|scenario-shadow-v5|scenario-schema-dialect|fixtures/(scenario-shadow-v5|schema-dialect))|testdata/acceptance/(ru-cloud-fresh-v5|cloud-schema-dialect))" {
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$tests.Add("Read-only schema-dialect-final-audit-reproduce.sh against frozen a200 source; exact safe SHA and pure history283 checks. Diagnostic root is sealed: never Sync or execute.")
+      [void]$tests.Add("SSH laba: scenario-shadow-v5-high-lab.sh FRESH_V5_ROOT offline EXACT_COMMIT (zero inference; baseline and compatibility must be established before signed preparation)")
+      continue
+    }
+    "^(deploy/acceptance/schema-dialect-|scripts/dev/schema-dialect-final-audit-reproduce[.]sh$)" {
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$tests.Add("Read-only frozen schema-dialect original-byte/PG audit reproduction; verify copied artifact SHA256 and pure history283. Zero inference; diagnostic root is sealed.")
+      continue
+    }
+    "^(deploy/acceptance/(cloud-fresh-v4-|scenario-fault-v4-)|scripts/dev/cloud-v4-final-audit-reproduce[.]sh$)" {
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$tests.Add("Read-only frozen V4 audit reproduction; verify copied content-free artifact SHA256 and pure history279. Zero inference; V4 root is sealed, never Sync or execute.")
+      continue
+    }
+    "^apps/orchestrator/internal/app/(scenario_high_v4_|scenario_shadow_v4_|release_chain_v4_)" {
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$tests.Add("SSH laba: scenario-shadow-v4-high-lab.sh FRESH_V4_ROOT offline EXACT_COMMIT (zero inference)")
+      [void]$tests.Add("SSH laba: scenario-release-chain-v4-high-lab.sh FRESH_V4_CHAIN_ROOT prepare EXACT_COMMIT (zero inference; native requires actual quality PASS)")
+      continue
+    }
+    "^(internal/acceptance/|cmd/cloud-observe/|testdata/acceptance/|scripts/dev/(cloud-v4-review/|scenario-shadow-v4|scenario-release-chain-v4|fixtures/scenario-shadow-v4))" {
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./internal/acceptance/...")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./cmd/cloud-observe/...")
+      [void]$tests.Add("SSH laba: fresh current protocol root offline EXACT_COMMIT (zero inference); V1–V4 roots are sealed and must never be synced or executed again")
+      continue
+    }
+    "^(scripts/dev/scenario-shadow-v3-high-lab[.]sh$|scripts/dev/fixtures/scenario-shadow-v3-|apps/orchestrator/internal/app/scenario_shadow_v3_.*[.]go$|internal/acceptance/cloud_v3.*[.]go$|testdata/acceptance/ru-cloud-fresh-v3[.]json$)" {
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/scenario-shadow-v3-high-lab.sh /srv/storage/butler/agents/scenario-shadow-v3-high-20261012 offline <exact-clean-commit> before independent whole-corpus review/signing; prepare only after signed freeze. Actual PG baseline248/shared252-new cap,30 required admission/sampler names, separate SQL parent/usage export probe, race/vet, zero inference. Execute is separately sealed; old V1/V2 failures, spending and NULL usage remain immutable.")
+      continue
+    }
+    "^(scripts/dev/provider-stage-lab[.]sh$|internal/transport/diagnostic_stage(_test)?[.]go$|internal/transport/antigravity/diagnostic_stage_test[.]go$)" {
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/credential-management.md")
+      [void]$tests.Add("ssh laba: scripts/dev/provider-stage-lab.sh <isolated-agent-root> after Sync. Request-local allowlisted authentication/serialization/HTTP/stream diagnostics, High/Tiered synthetic failure isolation, race/vet, zero inference; no credential contents or historical backfill.")
+      continue
+    }
+    "^(scripts/dev/scenario-shadow-v2-high-lab[.]sh$|apps/orchestrator/internal/app/scenario_shadow_v2_.*[.]go$|internal/acceptance/cloud_v2.*[.]go$|testdata/acceptance/ru-cloud-fresh-v2[.]json$)" {
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/scenario-shadow-v2-high-lab.sh /srv/storage/butler/agents/scenario-shadow-v2-high-20261012 prepare <exact-clean-commit> after independent V2 corpus/schema/policy review and freeze. Zero-native actual PG immutable baseline228/shared252-new cap, restart/expiry/contention, synthetic safe diagnostics, complete generation/JSON bounds, race/vet. Execute is separately sealed; no resampling, V1 mutation or automatic repeat.")
+      continue
+    }
+    "^(apps/orchestrator/internal/app/(release_chain_.*|scenario_release_chain_.*|verified_task_.*)[.]go$|apps/orchestrator/internal/task/(verified_notifications|store|controller|task)[.]go$|migrations/069_verified_task_notifications[.]|scripts/dev/scenario-release-chain.*[.]sh$)" {
+      [void]$specs.Add("docs/architecture/durable-tasks-spec.md")
+      [void]$specs.Add("docs/architecture/owner-goals-mandates-spec.md")
+      [void]$specs.Add("docs/architecture/atomic-result-delivery.md")
+      [void]$specs.Add("docs/architecture/initiative-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/scenario-release-chain-lab.sh <isolated-agent-root> kernel <exact-clean-commit>, then scenario-release-chain-process-lab.sh <isolated-agent-root> chain <exact-clean-commit>. Actual PG/Broker/runtime and one loopback recipient, current owner/source/lease guards, restart/Stop/delivery faults, race/vet; zero native calls. Re-run full mandatory fault matrix on the same combined source.")
+      continue
+    }
+    "^(scripts/dev/scenario-shadow-high-lab[.]sh$|apps/orchestrator/internal/app/scenario_shadow_.*[.]go$|internal/transport/antigravity/model_version_test[.]go$)" {
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("ssh laba: scripts/dev/scenario-shadow-high-lab.sh /srv/storage/butler/agents/scenario-shadow-high-20261012 prepare <exact-clean-commit>. Actual isolated PG admission/reopen/expiry and synthetic sampler/model-version/scorer checks, race/vet, zero native calls. Execute is a separately sealed baseline45 + at most252 High-only shadow window; never automatically repeat execute.")
+      continue
+    }
     "^(scripts/dev/scenario-corpus-lab[.]sh$|cmd/command-observe/|internal/acceptance/command_suite(_test)?[.]go$|testdata/acceptance/ru-command-proposals-v1[.]json$)" {
       [void]$specs.Add("docs/architecture/persistent-assistant-spec.md")
       [void]$specs.Add("docs/architecture/action-authorization-contract.md")

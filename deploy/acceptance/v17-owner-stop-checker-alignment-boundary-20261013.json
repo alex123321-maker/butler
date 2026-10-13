@@ -1,0 +1,44 @@
+{
+  "canonical_old_checker_assumption_mismatches": [
+    {
+      "actual": false,
+      "field": "initial.postgres.setup_actions.requires_approval",
+      "frozen_checker_expected": true,
+      "proof": "All four exact setup extension.project.inspect read receipts are effect_confirmed/dispatch_completed; setup_approved_count4 records authorization. RequiresApproval flag is false under current read autonomy, not missing authorization."
+    },
+    {
+      "actual_rows": 2,
+      "field": "postgres.continuations",
+      "frozen_checker_expected_rows": 0,
+      "proof": "Two typed delegation intents created before Stop are waiting with input_idNULL/ready_hash empty, exactly same root and child and stale parent/constraint revisions1 while stopped tasks revisions2. No ready/released input, converter return/effect or post-stop child action/provider entry exists; old child source and Broker prepare are actually denied."
+    },
+    {
+      "actual": "2c8f703ac21700c0ec505a01757eade27ea8ea39ca61c6e75abdb74c6ac28e5d",
+      "field": "original_refs.document.content_hash",
+      "incorrect_raw_body_digest": "aeec846fae7a8f5fe3d3f8f354e3bb5e0d3cd9cbdb912c35216471234fc4c353",
+      "proof": "Independently recomputed actual catalog revision digest with current store.go semantics: SHA256 JSON array [fixed title, fixed original CSV body, empty locator, empty author, null event_time, ordered document Origin with same source and parent refs and private sensitivity]. Initial/final/current active source refs match exactly."
+    }
+  ],
+  "component_report_sha256": "bb33524638d25dc71cf21381c07e5cc5f5879cb1a041070f907bb5ecfd67392e",
+  "component_status": "OWNER_STOP_CRITICAL_COMPONENT_PASS",
+  "critical_stop_component_predicates_unchanged": [
+    "same cancelled root and child lineage",
+    "actual stopped child source and Broker denials",
+    "no descendant provider entries or actions",
+    "no final semantic result or notification",
+    "no converter package/catalog/trial/usage/return effects",
+    "no live tree lease/outbox/channel send",
+    "two measured native requests uniquely bound to durable kernel reservations",
+    "all eight budget dimensions and quote sums verified",
+    "two original named packet byte/base64/auth hashes equal actual qualified Core actions and confirmed authorization/dispatch"
+  ],
+  "issue33_ready": false,
+  "limits": [
+    "Component report uses truthful current source semantics for setup permission flag, waiting intent bookkeeping and catalog revision hash. It does not assert the unchanged historical common full auditor PASS.",
+    "These are final-checker source-contract alignment issues to fix prospectively; no authority, source, Stop, dedup, mutation or result criterion is waived. All original snapshots and previous NO_GO results remain unchanged."
+  ],
+  "old_evidence_or_thresholds_rewritten": false,
+  "overall_chain_status": "NO_GO",
+  "unchanged_full_canonical_checker_passed": false,
+  "version": "butler-independent-v17-owner-stop-checker-alignment-boundary-v1"
+}

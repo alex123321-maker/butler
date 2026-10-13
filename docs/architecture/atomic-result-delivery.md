@@ -122,3 +122,53 @@ ACK/429/unknown outcomes, concurrent claims, expired sending claims, stale fence
 expired ownership, cancellation/version changes, and recoverable memory failure.
 Use `BUTLER_TEST_COMPLETION_POSTGRES_URL` for the coordinator/outbox integration
 suite and `BUTLER_TEST_POSTGRES_URL` for durable input lifecycle integration.
+
+## Owner-configured verified task delivery
+
+Migration069 adds an explicit `verified_task` mode, configured by the authenticated
+owner on an initiative Source. Existing Sources and tasks keep `attempt` delivery.
+The Task module freezes this mode at root admission and inherits it unchanged to
+actual children. Model tool arguments and public owner-task JSON cannot select it.
+A Source cannot combine this mode with `DigestChannel`.
+
+Completion still saves each immutable technical final, artifacts, transcript,
+effects, unverified task result and auxiliary jobs atomically. For this mode only,
+it suppresses the external per-run notice. Technical success, child reports,
+activation and conversion do not produce the semantic owner notification.
+
+Only current authenticated owner completion of the root with an independently
+verified `task_results` record creates one `task_verified_notifications` row in
+the same Task transaction. The original exact task/constraints revision, complete
+unredacted completed attempt, current owner/session and assignment must agree.
+Partial answers, deleted sources, unrelated or stale results and cancellation
+cannot enqueue a verified-success notice. Store completion replay and Controller
+delivery replay retain the exact result/notice identity. Failure to enqueue rolls
+back completion. This is an owner decision; no model final auto-verifies a task.
+
+The frozen content contains the opaque task link and confirmation status, never
+the original source, owner proof summary or model response. Authenticated task
+detail exposes its separate delivery state. Web starts `result_ready`; Telegram
+starts `pending`. Task owns this outbox. The existing channel-only dispatcher
+claims, authorizes against current task/owner/privacy/assignment and fresh actual
+PostgreSQL time, and records channel ACK. It has no executor/provider capability.
+Explicit recipient absence permits only bounded retries of the same row. Expired
+sending claims and acceptance without persisted ACK become `delivery_unknown`
+and never resend or rerun work. Exactly-once recipient delivery is not promised.
+
+The default attempt outbox and historical notices retain their original semantics.
+Rollback of069 refuses to discard any opted-in task or stored notice history.
+
+The ordinary outward delivery sink applies the immutable Task mode before the
+channel-delivery observer. Opted-in assistant drafts/finals, all tool lifecycle
+progress and ordinary status do not make HTTP channel requests or mint `sent`
+`channel_delivery_events`. Approval requests and explicit policy blocked/waiting
+interventions remain available. Core task/run/tool/activity/effect history stays
+observable independently. The final task outbox uses the raw channel sender after
+its own authorization, not the progress filter.
+
+Queue and send additionally invoke the trusted owning Catalog's historical
+`CheckRunSourcesTx` in the same transaction, including restore anchor and exact
+source/transcript/delegation pins. An absent adapter denies this mode. Correcting
+an original source invalidates completion/send even when the old technical final
+remains unredacted. This source-only read grants no current completed-run lease
+or model/tool execution permission.

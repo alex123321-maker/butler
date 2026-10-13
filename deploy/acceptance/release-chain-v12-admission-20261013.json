@@ -1,0 +1,279 @@
+{
+  "admissible_once_only": true,
+  "admitted_commit": "cc63e7b4bacba8d3c46af7842c96d99838626390",
+  "admitted_source_dir": "/srv/storage/butler/agents/scenario-release-chain-v12-high-20261013/snapshots/20261014-012815-836",
+  "auditor_scope_is_read_only": true,
+  "authentication_by_auditor": false,
+  "critical_static_blockers_found": [],
+  "exact_named_tests": {
+    "bytes": 43707,
+    "named_fail": 0,
+    "named_pass": 40,
+    "named_skip": 0,
+    "names": [
+      "TestReleaseChainV12ActualGETReceiptsAgreeWithoutMutation",
+      "TestReleaseChainV12ActualHistoryPreserves575",
+      "TestReleaseChainV12HistoryRejectsTampering",
+      "TestReleaseChainV12HistoryRejectsTampering/cleanup_called_source_timeout",
+      "TestReleaseChainV12HistoryRejectsTampering/kernel_operation_duplicated",
+      "TestReleaseChainV12HistoryRejectsTampering/legacy_read_receipt_filled",
+      "TestReleaseChainV12HistoryRejectsTampering/new_measured_cost_changed",
+      "TestReleaseChainV12HistoryRejectsTampering/no_go_promoted",
+      "TestReleaseChainV12HistoryRejectsTampering/old_ceiling_refunded",
+      "TestReleaseChainV12HistoryRejectsTampering/old_usage_changed",
+      "TestReleaseChainV12HistoryRejectsTampering/original_proposal_match_removed",
+      "TestReleaseChainV12HistoryRejectsTampering/retry_invented",
+      "TestReleaseChainV12OriginalResultActualRepeatedReceiptsIntegration",
+      "TestReleaseChainV12OriginalResultActualRepeatedReceiptsIntegration/actual_repeated_reads",
+      "TestReleaseChainV12OriginalResultActualRepeatedReceiptsIntegration/conflicting_check",
+      "TestReleaseChainV12OriginalResultActualRepeatedReceiptsIntegration/duplicate_prepare",
+      "TestReleaseChainV12OriginalResultActualRepeatedReceiptsIntegration/foreign_artifact",
+      "TestReleaseChainV12OriginalResultActualRepeatedReceiptsIntegration/owner_stop",
+      "TestReleaseChainV12OriginalResultActualRepeatedReceiptsIntegration/unconfirmed_read",
+      "TestReleaseChainV12ReadInventoryBudgetedRepeatsAndLegacy",
+      "TestReleaseChainV12ReadInventoryRejectsEffectsAndUnknowns",
+      "TestReleaseChainV12ReadInventoryRejectsEffectsAndUnknowns/child_read",
+      "TestReleaseChainV12ReadInventoryRejectsEffectsAndUnknowns/double_activation",
+      "TestReleaseChainV12ReadInventoryRejectsEffectsAndUnknowns/double_prepare",
+      "TestReleaseChainV12ReadInventoryRejectsEffectsAndUnknowns/duplicate_id",
+      "TestReleaseChainV12ReadInventoryRejectsEffectsAndUnknowns/duplicate_run_call",
+      "TestReleaseChainV12ReadInventoryRejectsEffectsAndUnknowns/foreign_task",
+      "TestReleaseChainV12ReadInventoryRejectsEffectsAndUnknowns/missing_check",
+      "TestReleaseChainV12ReadInventoryRejectsEffectsAndUnknowns/missing_run",
+      "TestReleaseChainV12ReadInventoryRejectsEffectsAndUnknowns/unknown_effect",
+      "TestReleaseChainV12ReadReceiptRejectsConflictsAndForeignArtifact",
+      "TestReleaseChainV12ReadReceiptRejectsConflictsAndForeignArtifact/applied_true",
+      "TestReleaseChainV12ReadReceiptRejectsConflictsAndForeignArtifact/checks_false",
+      "TestReleaseChainV12ReadReceiptRejectsConflictsAndForeignArtifact/duplicate_body_key",
+      "TestReleaseChainV12ReadReceiptRejectsConflictsAndForeignArtifact/failed_http",
+      "TestReleaseChainV12ReadReceiptRejectsConflictsAndForeignArtifact/foreign_artifact",
+      "TestReleaseChainV12ReadReceiptRejectsConflictsAndForeignArtifact/foreign_url",
+      "TestReleaseChainV12ReadReceiptRejectsConflictsAndForeignArtifact/missing_bool",
+      "TestReleaseChainV12ReadReceiptRejectsConflictsAndForeignArtifact/wrong_check_array",
+      "TestReleaseChainV12ReadReceiptRejectsConflictsAndForeignArtifact/wrong_revision"
+    ],
+    "sha256": "c146e918b72c8bcc2ad8de5a51b19c9708079b3178b153a3369081436868e4a7"
+  },
+  "frozen_child_budget": {
+    "active_ms": 1320000,
+    "external_calls": 4,
+    "turns": 4
+  },
+  "frozen_limits": {
+    "all_completed_entries_require_measured_usage_and_selected_version": true,
+    "allow_repeated_patch_checks": true,
+    "authority_watchdog_check_timeout_ms": 750,
+    "baseline_attempts": 575,
+    "extension_harness_lifetime_source": "remaining_case_deadline",
+    "extension_harness_lifetime_test_only": true,
+    "legacy_extension_harness_lifetime_ms": 180000,
+    "mandatory_mutation_action_counts_changed": false,
+    "maximum_attempt_ms": 300000,
+    "maximum_case_ms": 2400000,
+    "maximum_concurrent_native_entries": 1,
+    "maximum_extension_harness_lifetime_ms": 2400000,
+    "maximum_generation_tokens": 32768,
+    "maximum_global_ms": 7200000,
+    "maximum_model_retries_per_input": 1,
+    "maximum_new_attempts": 120,
+    "maximum_private_proposal_bytes": 262144,
+    "maximum_total_attempts": 695,
+    "model_retry_backoff_ms": 2000,
+    "new_scope_allocation_is_prospective": true,
+    "old_closed_attempts_or_unknowns_refunded": false,
+    "old_sealed_absolute_ceiling": 628,
+    "original_legacy_read_receipt_unknowns_reconstructed": false,
+    "original_write_or_notice_repeat_allowed": false,
+    "patch_check_effect": "read",
+    "patch_check_read_count_limit_source": "owning_core_budget",
+    "patch_check_read_method": "GET",
+    "patch_check_receipt_inventory_required": true,
+    "patch_check_receipts_must_agree": true,
+    "production_source_check_or_authority_behavior_changed": false,
+    "proposal_retention_required": true,
+    "provider_entries_serialized": true,
+    "release_chain_exact_read_count_criterion_changed": true,
+    "repeated_project_inspection_allowed": true,
+    "source_check_failure_observation_schema": "butler-source-check-observation-v1",
+    "source_check_observation_contains_query_or_argument_values": false,
+    "source_check_observation_max_failed_checks": 64,
+    "source_check_observer_enabled": true,
+    "source_check_or_watchdog_bounds_changed": false,
+    "source_check_timeout_ms": 2000
+  },
+  "hardware": {
+    "cloud_weights_sha256": null,
+    "cpu_sha256": "177d14a5788191dc50c31b0906b921147a444b23b1e4acc96e42181bbc3b6baa",
+    "fixture_cpus": 2,
+    "fixture_ram_bytes": 1610612736,
+    "go_image": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61",
+    "host_ram_kib": 15693396,
+    "kernel": "7.0.0-34-generic",
+    "postgres_image": "sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d",
+    "remote_model_ram": null,
+    "runtime_image": "sha256:ce64758a109eb420d874a118f87920e625e12d3634e03b4a5573fd9f6e5d3507"
+  },
+  "historical_carry": {
+    "all_prior_native_windows": "SEALED_NO_GO",
+    "attempts": 575,
+    "fold_sha256": "d24720adf3522dc19ada8b53a7d54d4485fe7774c0cd029d3c717c9f1468db05",
+    "known_input_tokens_subtotal": 689116,
+    "known_io_pairs": 546,
+    "known_output_tokens_subtotal": 18790,
+    "known_total_tokens_subtotal": 1039921,
+    "old_266_cause": "UNKNOWN",
+    "old_541_rejected_proposal_specific_cause": "UNKNOWN",
+    "old_544_child_pre_native_specific_cause": "UNKNOWN",
+    "old_556_inspect_specific_cause": "UNKNOWN",
+    "old_557_source_failure_underlying_cause": "UNKNOWN",
+    "old_ceiling": 628,
+    "old_remaining": 53,
+    "old_v11_two_actual_check_read_receipt_fields": "NULL_UNRECONSTRUCTED",
+    "old_v11_verified_cases": 0,
+    "unknown_io_pairs": 29,
+    "unknown_total_entries": 49
+  },
+  "issue33_ready": false,
+  "limitations": [
+    "Shared administrator host; independent reviewer role is not cryptographic administrator isolation or rebuilt binary attestation.",
+    "Model-free setup, finite adapter IR builder, loopback project/channel and unapplied verified README patch remain fixture boundaries.",
+    "Historical cost is a known subtotal; all49 unknowns remain unknown.",
+    "Observed query families classify current fixed parameterized source code; the digest is not an independently maintained exact SQL template registry.",
+    "Pool stats are shared cumulative counters, not exclusive attribution of557 or model expense.",
+    "No cloud weights, remote server effort/RAM or invoice observed."
+  ],
+  "merge_authorized_by_this_artifact": false,
+  "metadata": {
+    "build-vet.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evidence.sha256": {
+      "bytes": 406,
+      "sha256": "8e840deeb5fa3a83f4d59f6373fa40f855617a552e34f327774639c7cfd1f094"
+    },
+    "hardware-cpu.json": {
+      "bytes": 1410,
+      "sha256": "177d14a5788191dc50c31b0906b921147a444b23b1e4acc96e42181bbc3b6baa"
+    },
+    "hardware.json": {
+      "bytes": 500,
+      "sha256": "ac640d38f0ad5db871190315628543b2407a7c539ce7b3b31e85039edba61e9b"
+    },
+    "sealed-v11-entry.txt": {
+      "bytes": 230,
+      "sha256": "6f3bb77ee07698e8562fa3e7e51e5c050eb892c0d8d719b816619c18f368c200"
+    },
+    "source-commit.txt": {
+      "bytes": 41,
+      "sha256": "7232999d7e4f7018518c67a670c0edfa24c5efb7f81f45cf482f323c67a3b0d6"
+    },
+    "source.sha256": {
+      "bytes": 267764,
+      "sha256": "bf5c17e1c643e776d83fc73463c5bf50f8f9d24dee35c5b96d927d3fd77a1c4a"
+    },
+    "summary.json": {
+      "bytes": 194,
+      "sha256": "94e3fbfd91d5b8c14f85fd6d534c1b18c337102d8e5272ca4d7e5c333be7acd9"
+    },
+    "tests.jsonl": {
+      "bytes": 43707,
+      "sha256": "c146e918b72c8bcc2ad8de5a51b19c9708079b3178b153a3369081436868e4a7"
+    }
+  },
+  "model_calls_by_auditor": 0,
+  "native_admission_admissible": true,
+  "native_root": "/srv/storage/butler/agents/scenario-release-chain-v12-high-20261013",
+  "native_window_observed_absent": true,
+  "pending_final_acceptance": [
+    "All five actual V12 fixed scenarios on exactlycc63e7b source.",
+    "Independent owning PostgreSQL, initial/final product, all new paid usage/version and model/kernel lineage, current source/authority, all eight budget dimensions, stopped descendants and exact delivery behavior.",
+    "Each individually named private original proposal must bind its actual Core action. Every actual repeated project GET receipt must have a complete run-qualified safe inventory with matching result/body/artifact/current revision.",
+    "A separately frozen V12 checker and issue-wide final composition/independent PASS are required. Bundledd228 supportsV11 and is not V12 final acceptance."
+  ],
+  "prepared_proof": "/srv/storage/butler/agents/scenario-release-chain-v12-high-20261013/reports/chain-v12-high-prepare-20261013T182830Z-2928012",
+  "production_go_files_unchanged_since_0f": 657,
+  "public_pins": {
+    "deploy/acceptance/cloud-shadow-v5-final-audit-20261013.json": "f8248d19ec2a0c222b39d46fbc46c0d0cf4ccc3c1361c89965b597eedbb21cab",
+    "deploy/acceptance/release-chain-v10-carry557-independent-20261013.json": "78d320c595483d666b25cbaee55be764b53b0004bdd6806ecb4924e4f01130ef",
+    "deploy/acceptance/release-chain-v10-failure-correlation-20261013.json": "f7c20a7246eb2fc5a653f39f4bfe7f06498e152be3d50c4b523357eff163af8d",
+    "deploy/acceptance/release-chain-v10-final-audit-20261013.json": "28b4dbc9cdfbd8fb8e838b2f14bb698b7142e587f0a44ec2e534a716dce62534",
+    "deploy/acceptance/release-chain-v10-history557-20261013.json": "fb85f5ce35a5217990d83af664060908574c0ac0682fa8d111e20ac0c2deef0f",
+    "deploy/acceptance/release-chain-v11-carry575-independent-20261013.json": "043ef974962836ab2c69691dccdc1d1add15c379632599b1889057cd55d3fc00",
+    "deploy/acceptance/release-chain-v11-failure-correlation-20261013.json": "638cebaedc3b4b4ceed5745c70053e5c1aaa0fe4d245681c97ce990781ec14be",
+    "deploy/acceptance/release-chain-v11-final-audit-20261013.json": "85a32e433345e53db47b0f314feb55c5d23baadff0e18be0756084e77f9f54ae",
+    "deploy/acceptance/release-chain-v11-history575-20261013.json": "4f62e26456070b298ee411f2d7681fbf6dda0d6662cf869a4cbcba8674303220",
+    "deploy/acceptance/release-chain-v11-proposal-diagnostics-20261013.json": "be70e93a61d10873bab71a934a54ce763ee1d25f52b8c951adb6a70585ee8c2e",
+    "deploy/acceptance/release-chain-v11-user-expense-exception-20261013.json": "e2ebb0c52c406f21c1120b78c90aa9e3181d83c0875411a07738fc084286297d",
+    "deploy/acceptance/release-chain-v12-high-prerequisite-20261013.json": "4d9af878b09f812c0f8fa69198f03c377b7485b89faf953f180bd34fa69430ca",
+    "deploy/acceptance/release-chain-v12-user-policy-amendment-20261013.json": "77f0355763d3e020b3e43215c32bbdf490d665422eaafb061f4376622720447d"
+  },
+  "race": true,
+  "reused_evidence": {
+    "core_retry81_sha256": "efb8a9c9c3e8b3c6669be99862fa959bd839aed1b48dcf9ad49f82475176db98",
+    "current_0f_full_fault_independent_review_sha256": "3e3e2bbd97c24999642a5fab0b19bbe6684ca7df73b3b067b497ccbdbfc9f6e8",
+    "current_0f_full_fault_report_sha256": "c2f3787b0940952138861e5a1211a05a8788841128661469ae7068b0422af5f4",
+    "mandatory_faults_scope": "321raw namedPASS/176selected/33Go leaves/8mandatory on exact0f. All657productionGo byteequalV12; fresh11history+29fixture names cover only prospective delta.",
+    "quality_and_four_pair_comparison_sha256": "f8248d19ec2a0c222b39d46fbc46c0d0cf4ccc3c1361c89965b597eedbb21cab",
+    "quality_measured_source": "3c4089f35c0bdf33bf9b2c6328ba395c519cecf4",
+    "quality_profile": "Original120seconds/32768; direct provider/data/goldens path unchanged. No chain300second quality remeasurement claimed.",
+    "reuse_limits": "Previous native product outcomes remain NO_GO. No unchanged suite rerun or finalHigh result claimed.",
+    "v10_extension_lifetime_scope": "Retained14app+4realRPC/runtime tests; unchanged extension testbinary924476 and ordinaryBroker/converter binaries.",
+    "v11_source_observer_scope": "Retained12 actualPG/race/vet source323; identical observer inV12. It does not retrospectively recover557.",
+    "v9_catalog_and_input_timeout_scope": "Retained2Broker+4input+10app before1937 native; unchanged production carried through current0f/V11."
+  },
+  "reviewed_at_utc": "2026-10-13T18:32:58.369349+00:00",
+  "reviewer_role": "/root/v5_final_independent_audit",
+  "runtime_pins": {
+    "app.test": {
+      "bytes": 55344646,
+      "mode": "0555",
+      "sha256": "24a7bbe71e557384a940da5fb5ff7171d4b6361711bd03dc827a6d77964e9594"
+    },
+    "chain-final-audit": {
+      "bytes": 17702630,
+      "mode": "0555",
+      "sha256": "d228b1edf9cbc9596e342212ff6c97aa596db2deca7f904beb1193c0fca87b03"
+    },
+    "extension.test": {
+      "bytes": 22526386,
+      "mode": "0555",
+      "sha256": "924476213168951493ae8ad21ef0630f1b666e63ac67d643fa79e5d5517f0a07"
+    },
+    "test2json": {
+      "bytes": 4566038,
+      "mode": "0555",
+      "sha256": "8f352c19877e12d5b0305b9eebac875aa63734fe03b73127ee01fae2c833ad68"
+    },
+    "tls-prerequisite": {
+      "bytes": 8829345,
+      "mode": "0555",
+      "sha256": "14a3bc9fc5a006ce6ae91fe10e3d4ae2ef0f78ac6c1a4c16e43d6d65f1589392"
+    },
+    "tool-broker": {
+      "bytes": 28759445,
+      "mode": "0555",
+      "sha256": "2ed16aca088b7cb90b85b643a7e9533d336ca2d43ea0af5746e44847496d9e8e"
+    },
+    "tool-converter": {
+      "bytes": 20154212,
+      "mode": "0555",
+      "sha256": "5f2dee5acef95c2f279b849d7af76003688a3b46a274e0d44456a37c40536f75"
+    }
+  },
+  "source_inventory_files": 2340,
+  "source_manifest_sha256": "bf5c17e1c643e776d83fc73463c5bf50f8f9d24dee35c5b96d927d3fd77a1c4a",
+  "source_tree_sha256": "d5d7d24a7143905f55479ef51e297cfd94e5bf423e137abf08f675c59fa28b8b",
+  "static_review": [
+    "V12 enables optional fixture-only repeated owned project GET inspection/check reads within the unchanged owning Core resource budget. There is no artificial dedicated four-read cap.",
+    "Every root mandatory logical mutation/converter phase and child developer phase remains exactly once; action IDs and run-qualified call IDs are unique, tasks exact, all effects known confirmed. Duplicate writes, unknown effects and foreign tasks still deny.",
+    "Before semantic owner verification, every actual current-root Broker tool_calls result is independently decoded: fixed owned URL, same immutable patch artifact/revision, HTTP200, complete exact body, checks_passed true and applied false. Actual result::text and parsed-body hashes bind each read; contradictory or missing receipts deny.",
+    "The one prepare receipt is matched to actual immutable stored patch key/fingerprint/artifact and original arguments. One or more read receipts agree; legacy defaultfalse shape and single-check behavior remain unchanged.",
+    "The new live PostgreSQL tests use actual authenticated-free loopback GET/patch responses with explicitly synthetic journal setup, not a claimed model or Broker dispatch. Real full Core/Broker/native acceptance remains pending.",
+    "All657 production Go source files, ordinary Broker/converter/extension binaries, source2s/watchdog750ms, retry, current authority, Stop and final one-notice gates match measured0f. Observer is unchanged from admittedV11.",
+    "575+120=695 is prospective bounded assistant interpretation of the latest direct human call-count question. Closed628 remaining53 is neither reused nor refunded; V11 fixed-count NO_GO and its two legacy receipt NULLs stay unchanged. Historical557 expense exception remains historical-only."
+  ],
+  "status": "INDEPENDENT_V12_NATIVE_ADMISSION_PASS",
+  "version": "butler-issue33-independent-v12-native-admission-v1",
+  "vet_and_build_log_empty": true
+}

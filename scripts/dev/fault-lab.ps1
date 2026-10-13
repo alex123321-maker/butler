@@ -1,9 +1,10 @@
 [CmdletBinding()]
 param(
-  [ValidateSet('Core', 'Full')][string]$Profile = 'Core',
+  [ValidateSet('Core', 'Full', 'FullFaults')][string]$Profile = 'Core',
   [string]$HostAlias = 'laba',
   [string]$RemoteRoot = '/srv/storage/butler/agents/durable-tasks',
-  [switch]$NoSync
+  [switch]$NoSync,
+  [string]$LocalModelLoadOOM = ''
 )
 
 # This script never changes the shared lab pointer or its Compose project.
@@ -17,5 +18,12 @@ if (-not $NoSync) {
 }
 $commit = (git -C (Join-Path $PSScriptRoot '../..') rev-parse HEAD).Trim()
 if ($commit -notmatch '^[a-f0-9]{40}$') { throw 'Exact source commit required.' }
-& ssh -o BatchMode=yes $HostAlias "bash '$RemoteRoot/current/scripts/dev/fault-lab.sh' '$RemoteRoot' '$($Profile.ToLowerInvariant())' '$commit'"
+$labProfile = $Profile.ToLowerInvariant()
+if ($Profile -eq 'FullFaults') {
+  if ($LocalModelLoadOOM -and ($LocalModelLoadOOM -notmatch '^/srv/storage/butler/agents/[a-zA-Z0-9_/-]+/local-load-oom.json$' -or $LocalModelLoadOOM.Contains('..'))) {
+    throw 'Invalid separate sealed local model-load proof for FullFaults.'
+  }
+  $labProfile = 'full-faults'
+}
+& ssh -o BatchMode=yes $HostAlias "bash '$RemoteRoot/current/scripts/dev/fault-lab.sh' '$RemoteRoot' '$labProfile' '$commit' '$LocalModelLoadOOM'"
 if ($LASTEXITCODE -ne 0) { throw 'Required acceptance evidence failed; see the private report path printed by the lab.' }

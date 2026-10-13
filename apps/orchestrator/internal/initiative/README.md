@@ -102,3 +102,14 @@ extension runtime with race detection, runs the app fixture and initiative suite
 checks vet and rejects skips. It mounts neither operator credentials nor native
 authentication. See `docs/architecture/initiative-acceptance.md` for all nine
 issue criteria and the separate generative gate.
+
+The authenticated Source's optional `result_delivery: verified_task` configures
+one Task-owned semantic result notification after current owner verification.
+It cannot coexist with a digest channel and cannot be selected by model arguments.
+Promotion and ordinary child admission retain existing authority and budgets.
+
+Select the mode through the existing authenticated production
+`POST /api/v3/initiatives/sources` (`{source: {..., result_delivery:"verified_task"},
+expected_revision:<current>}`), with no digest channel and a unique owner delivery
+ID. No manual database write or fixture-only Go call is required. Previously
+admitted tasks retain their immutable mode.

@@ -1,0 +1,58 @@
+{
+  "actual_current055_positive_passed": true,
+  "actual_current055_source_revocation_and_malformed_runtime_evidence_denied": true,
+  "all658_production_bytes_equal_measured_native": true,
+  "fixed_source_changes_only_test": {
+    "apps/orchestrator/internal/app/release_chain_terminal_continuation_checks_test.go": {
+      "corrected": "d570dd9c866062041ae6e7b046aaefca6078f4f01845ec1a8d774aa0ac25e939",
+      "original": "b308385bc1e2f7f77fa00d8e8f4d47bd9b22274d145b43d267939eafc4817134"
+    }
+  },
+  "fixed_terminal_probe_passed": true,
+  "issue33_ready": false,
+  "limits": [
+    "Original671 combined probe has two named PASS and one fixture setup FAIL; it is not rewritten or claimed full PASS.",
+    "Fixed probe changes only two test lines: whole accepted input Record to receipt.InputID. Production loader/guard/terminal helper and owning native source are byteequal measured671. Source snapshots are LF-stable, exact testhashd570 differs from author raw draft hash; actual bytes independently verified.",
+    "Actual055 integration is model-free real journal/private input/lease/source and runtime-normalized result proof, distinct from the still-running three actual native scenarios and final release acceptance.",
+    "No full current mandatoryfault matrix or unchanged canonical auditor acceptance is inferred from these addressed tests."
+  ],
+  "measured_native_commit": "67133e17b58acd825b2988a281079e1253da7af8",
+  "measured_source_all2459_bytes_verified": true,
+  "measured_source_manifest_sha256": "f74ca9cc706662e48cbf86e82f0731c52069b833a05b576c973768ab5017d8f9",
+  "native_auth_or_model_calls_by_auditor": 0,
+  "native_source_or_runtime_hotpatched": false,
+  "original_probe_complete_set_passed": false,
+  "original_probe_fail_preserved": true,
+  "proofs": [
+    {
+      "exact_failed_names": [
+        "TestReleaseChainV18TerminalContinuationIntegration"
+      ],
+      "exact_passed_names": [
+        "TestConverterContinuationActivatedConfirmedPriorActionsIntegration",
+        "TestReleaseChainV18SkipsVerifiedOwnerStop"
+      ],
+      "proof": "/srv/storage/butler/reviews/issue33-v18-current-context-pg-20261013/reports/context-pg-20261013T211939Z-3478691",
+      "race": true,
+      "skip": 0,
+      "source_manifest_sha256": "f74ca9cc706662e48cbf86e82f0731c52069b833a05b576c973768ab5017d8f9",
+      "tests_sha256": "64c01d2db123efe1d45ce95dedf784d994d72c1f400ffa12fc5c6cbd9dc4b667",
+      "vet_diagnostics_bytes": 0
+    },
+    {
+      "exact_failed_names": [],
+      "exact_passed_names": [
+        "TestReleaseChainV18TerminalContinuationIntegration"
+      ],
+      "proof": "/srv/storage/butler/agents/scenario-release-chain-v18-terminal-pg-20261013/reports/context-pg-20261013T212523Z-3498167",
+      "race": true,
+      "skip": 0,
+      "source_manifest_sha256": "a5eb3244790bd1196e0cf91bd21c8f64df0d89d7ff4b4b574b3651064a2ad132",
+      "tests_sha256": "b13aae915878cf1e2b00aad83ae544b57ec1f018e068a87190b6658965e237d3",
+      "vet_diagnostics_bytes": 0
+    }
+  ],
+  "skip_verified_stop_selection_unit_passed": true,
+  "status": "CURRENT_055_ACTUAL_PG_AND_TEST_ONLY_FIXED_TERMINAL_BOUNDARY_PASS",
+  "version": "butler-independent-v18-confirmed055-and-terminal-pg-source-review-v1"
+}

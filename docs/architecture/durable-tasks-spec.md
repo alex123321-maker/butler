@@ -116,3 +116,15 @@ cancellation (#9) and outbox delivery (#12) remain separate issues.
 
 
 Versioned owner amendments, inherited restrictions and cancellation are implemented by [Owner Controls](task-owner-controls-spec.md).
+
+## Verified task notification mode
+
+The Task-owned immutable `result_delivery` is `attempt` by default. Authenticated
+initiative Source configuration may select `verified_task` for a newly admitted
+root; child admission inherits it and cannot override it. Its external delivery
+is governed by the owner completion/result transaction described in
+[atomic result delivery](atomic-result-delivery.md). Completion and delivery remain
+separate states. One frozen root notice requires current owner verification of
+original criteria and an unredacted complete actual attempt. Child technical
+return, successful effect or unverified model final never satisfies this gate.
+Neither owner replay nor delivery reconstruction creates another root notice.

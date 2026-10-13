@@ -1,0 +1,61 @@
+{
+  "actual_native_cost": {
+    "attempts": 2,
+    "known_input_tokens": 16747,
+    "known_output_tokens": 543,
+    "known_total_tokens": 30784,
+    "unknown_input_attempts": 0,
+    "unknown_output_attempts": 0,
+    "unknown_total_attempts": 0
+  },
+  "all_new_expense_measured": true,
+  "auditor_native_calls": 0,
+  "carry_forward": {
+    "attempts": 541,
+    "known_input_tokens_subtotal": 318461,
+    "known_output_tokens_subtotal": 12525,
+    "known_total_tokens_subtotal": 611404,
+    "known_usage_pairs": 513,
+    "old_unknown_266_cause": "UNKNOWN",
+    "unknown_input_attempts": 28,
+    "unknown_output_attempts": 28,
+    "unknown_total_attempts": 48,
+    "unknown_usage_pairs": 28
+  },
+  "fold_sha256": "c74760a2d757f14e9f953bf2195fb557334a9910f8da62cbb3699c96a8758332",
+  "fold_vector": [
+    "a8a0d81d750e08c7ba2c4ddd70d312a3d3776657b950a2e36a583041d0a24261",
+    "a75e06331c6151a79726e94559fbe3c48f84e1af23dc0a8351d78ce3db517c28",
+    "d954dfce56bca311f3b83ea427d709fd87cb0a7c14ddf385462c80affce982d2",
+    "6f75edc22c093bba57fbde3b978edfb93177e6ad5c761ce868e8f56f6a8e8ed3",
+    "f6eef31876d685fb1f778484f25d99b8c25cfa41565e6b71db70c308f2af3884",
+    "69077eea2e57bcd8cc90a37f6f1cc56ad5921877f4c5c26afa3f58d285d9c392",
+    "605eb28f639803df22ba43a24af289c263a0278f017a08ffa3bfd70fed779871",
+    "d6d2aa53d46d54ec2efd32ad97be6e5594093545002d1693c315c631366ee12d",
+    "6d874f6625af7f21ac9758dbea9b287b4d5252ea",
+    "0586a361fa246066244ffdcdce3269a2ce600ebf2bf35625383d551f0afd0e3c",
+    "97f6ad4ce71fc067f48555cadcba1ef68a92d98878d0a2694ff5484e6d731c51"
+  ],
+  "issue33_ready": false,
+  "model_generation_32768_on_closed_v7b": true,
+  "new_failed_v7b_artifacts": {
+    "failure-correlation": "d6d2aa53d46d54ec2efd32ad97be6e5594093545002d1693c315c631366ee12d",
+    "final-audit": "a75e06331c6151a79726e94559fbe3c48f84e1af23dc0a8351d78ce3db517c28",
+    "high": "d954dfce56bca311f3b83ea427d709fd87cb0a7c14ddf385462c80affce982d2",
+    "pg-initial": "69077eea2e57bcd8cc90a37f6f1cc56ad5921877f4c5c26afa3f58d285d9c392",
+    "pg-ledger": "6f75edc22c093bba57fbde3b978edfb93177e6ad5c761ce868e8f56f6a8e8ed3",
+    "pg-product": "f6eef31876d685fb1f778484f25d99b8c25cfa41565e6b71db70c308f2af3884",
+    "runtime-state": "605eb28f639803df22ba43a24af289c263a0278f017a08ffa3bfd70fed779871"
+  },
+  "new_history541": {
+    "bytes": 107638,
+    "mode": "0600",
+    "path": "/srv/storage/butler/reviews/issue33-chain-v7-20261013/release-chain-v7b-history541-20261013.json",
+    "sha256": "ebbc1a11df409a22c58e2b602fb60f5614c4ee7d71e0c0b9e13f9c055113b079"
+  },
+  "old_originals_or_measurements_changed": false,
+  "prior_fold_sha256": "a8a0d81d750e08c7ba2c4ddd70d312a3d3776657b950a2e36a583041d0a24261",
+  "prior_history539_sha256": "f5424aa422a1f018c7bf4b7e13684e9ea86d6a68f316c8f82e31e00443228f1d",
+  "prospective_model_admission": false,
+  "status": "INDEPENDENT_SEALED541_CARRY_BRIDGE"
+}

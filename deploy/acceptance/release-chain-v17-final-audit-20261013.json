@@ -1,0 +1,60 @@
+{
+  "canonical_go_json_available": false,
+  "chain_audit": {
+    "accepted_model_retry_failures": 0,
+    "accepted_unknown_timeout_cost_entries": 0,
+    "accepted_unknown_timeout_version_entries": 0,
+    "accepted_unmeasured_timeout_entries": 0,
+    "all_new_expense_measured": false,
+    "all_new_measured_cost": {
+      "attempts": 22,
+      "known_input_tokens": 229303,
+      "known_output_tokens": 3796,
+      "known_total_tokens": 255324,
+      "known_usage_pairs": 21,
+      "unknown_input_attempts": 1,
+      "unknown_output_attempts": 1,
+      "unknown_total_attempts": 1
+    },
+    "auditor_native_calls": 0,
+    "carry_forward_attempts": 658,
+    "common_completion_evidence": null,
+    "independent_component_acceptance_pending": [
+      "owner_stop"
+    ],
+    "issue33_ready": false,
+    "no_go_reasons": [
+      "explicit_absence_last_input_blocked_with_unmeasured_cancelled_model_request",
+      "second_continuation_wait_failed_to_recognize_terminal_blocked_input",
+      "two_distinct_confirmed_prepare_mutations",
+      "missing_final_explicit_absence_product_and_two_unattempted_cases"
+    ],
+    "reported_native_case_passes": [
+      "owner_stop"
+    ],
+    "status": "NO_GO",
+    "unattempted_scenarios": [
+      "lost_ack",
+      "restart_sent"
+    ],
+    "verified_scenarios": []
+  },
+  "evidence_bindings": {
+    "app_sha256": "3afd047fe67663138fdef479cc79f6d2a68fc202ae1003de674374f338b13cb5",
+    "code_commit": "1a22b7af2f87f56c82a45b53ca7abaa64eaa2980",
+    "human_policy_sha256": "6c7cc0c1e4262c0ca5b2da8e820ec16e0893cfaaa2219f03f76daaee77a84abb",
+    "prerequisite_sha256": "02bf4cb2e1666197c0641d21255e78cb0a055e0adee0a3eb0bda80782ed3f9c8",
+    "source_manifest_sha256": "aea36418b670e8d53455c5aa593d290e63a9385d0372709e2bd43278c91afd8c",
+    "source_sha256": "bf54ecd28bdd8753469ce2bc406a34db87726c4a305356d4e81bd8dc89f65a16"
+  },
+  "limits": [
+    "Explicit independent supplemental NO_GO; no V17 canonical Go output or full release acceptance is fabricated.",
+    "Original scope export is exactly 0B. Final owning product preserves only owner_stop; explicit_absence final product is absent. Live read-only metadata and copied-PG receipt correlation are separately bound supplemental evidence, not replacement final witnesses.",
+    "Native658 was cancelled after30175ms with NULL input/output/total/version. It predates operator stop by more than10minutes; cancellation subcause remains UNKNOWN, not a nominal300s timeout or safe retry.",
+    "Two actually completed prepare POST receipts produced different artifact IDs and idempotency keys, with distinct confirmed effects; same authorization args/fingerprint does not prove deduplication or one external mutation.",
+    "owner_stop was reported PASS by actual native test; independent critical component acceptance is pending. Other2later scenarios were never attempted; explicit_absence remained blocked/stalled and was not accepted.",
+    "All original UNKNOWNs and closed NO_GO states are preserved; no NULL is replaced by zero, token estimate, refund or later successful usage."
+  ],
+  "report_origin": "independent_read_only_completed_native_pg_plus_bound_live_snapshot_and_physical_copy_receipts",
+  "version": "butler-independent-v17-failure-supplemental-v1"
+}

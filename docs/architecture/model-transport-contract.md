@@ -1,5 +1,20 @@
 # Butler — Model Transport Contract
 
+The lab-only V4 observation collector preserves bounded filtered final bytes
+after owning SQL spend persistence and separately records immutable encoding,
+retention and lifecycle facts. It forwards the original events unchanged and
+never stores reasoning, raw provider frames/errors or credentials. Provisional
+versions cannot establish a completed native observation. Real High is frozen
+to the requested profile and observed version before the new window; old failures
+and unknown measurements remain immutable. See
+[V4 evidence/accounting](../ai/scenario-high-v4-history-accounting-20261013.md).
+
+Optional `TransportEvent.ProviderModelVersion` carries an actually observed
+provider version on complete native outcomes. It is independent of the requested
+model profile and proprietary weight bytes. Missing metadata remains unavailable;
+malformed, aliased or conflicting native versions deny a complete release. No
+route, authority or model promotion follows from a version observation.
+
 Reviewed skill descriptions and selected procedures are private Document DATA,
 never system instructions. Fresh recovery reloads pinned versions through the
 current catalog; revocation/dependency failure stops before provider release.
@@ -238,6 +253,12 @@ compatible; normal final constructors mirror it into the event, and legacy
 final-only adapters still work. Antigravity emits complete terminal SSE counts
 on its tool proposal as well as its final text. A complete invalid function
 proposal may retain measured usage on its safe error while granting no execution.
+After a clean EOF and all terminal candidate/trailer checks, a `MAX_TOKENS`
+function rejection likewise retains only complete validated usage and optional
+observed version on its one transport error. Rejected parts, text and signatures
+never accompany that error. A body read failure, incomplete frame, conflicting or
+aliased metadata still returns no measurements; EOF is not skipped to retain
+provisional values. This forward-only rule cannot recover historical unknown cost.
 This logical field does not introduce a new RPC or claim an implemented protobuf
 mapping where only the historical service declaration exists.
 
@@ -634,7 +655,14 @@ Payload:
 
 #### V1 правило
 
-Transport может отдать batch event, но Orchestrator в V1 обязан сериализовать его в sequential execution policy согласно Run Lifecycle Spec.
+Transport может представить complete batch event. Текущий Orchestrator объявляет
+`SupportsBatchToolCalls=false` и отклоняет весь batch как
+`batch_tool_calls_unsupported` до первого Tool Broker dispatch. Это разрешённое
+unsupported поведение Run Lifecycle Spec и действующая execution-budget policy.
+Модель должна выбирать один tool call и ждать его коррелированный результат.
+Представление batch в transport не предоставляет capability его исполнения;
+acceptance wrapper не сериализует его и не исполняет частично. Native Antigravity
+также отклоняет неподдерживаемый multi-function response как capability mismatch.
 
 ### 11.8 transport_warning
 
@@ -816,6 +844,11 @@ provider chain, для которого пока нет durable replay boundary.
 
 ## 16. Error model
 
+The [bounded model retry policy](model-retry-policy.md) belongs to Core's durable
+execution path. It makes a fresh provider session and admission after one trusted
+nominal model-turn timeout. Transport performs one actual request per command;
+it does not hide retries, reuse a paid attempt ID or fill missing usage.
+
 Transport обязан нормализовать ошибки в следующие классы:
 
 * `provider_unavailable`
@@ -945,4 +978,42 @@ Model Transport Layer в Butler — это provider-normalizing execution channe
 
 ## Security and admitted serialization
 
+Trusted Antigravity construction may freeze an explicit Cloud Code High generated
+token ceiling up to32768 and an object JSON response schema for tool-free
+observations. Defaults retain8192 and ordinary tool semantics. `InferenceLimits`
+quotes the actual complete ceiling, including thinking; private serialization
+limits include the schema. Model request options cannot change either setting.
+Schemas never establish semantic truth or execution authority. An unsupported
+upstream request remains failed without retry, MIME fallback or effort downgrade.
+
+The additive, explicitly trusted `Config.GoogleResponseSchema` selects Google's
+native OpenAPI-subset `responseSchema` wire field for tool-free High observations.
+It is mutually exclusive with `JSONResponseSchema`; existing defaults and legacy
+JSON Schema serialization remain unchanged. Constructor validation requires a
+duplicate-free uppercase OBJECT root, only OBJECT/ARRAY/STRING/BOOLEAN/INTEGER/
+NUMBER types and properties/required/items/nullable/string enums/bounded array
+counts. Depth8/nodes256/properties32/enums64/16KiB bounds, unique valid required
+names and canonical decimal-string `maxItems`1–128 deny unsupported structure
+before auth. References, annotations, defaults, unions and unknown fields deny.
+No `additionalProperties` field exists in this subset; caller-owned strict field,
+source and semantic validation remains mandatory, with original output preserved.
+Model transport options cannot change dialect/model/effort/resources or add tools.
+The [public Google contract](https://cloud.google.com/vertex-ai/generative-ai/docs/reference/rest/v1beta1/GenerationConfig)
+documents this alternative; the [Gemini reference](https://ai.google.dev/api/generate-content#GenerationConfig)
+marks public `responseSchema` deprecated. A separately reviewed fixed four-entry
+High diagnostic established private Cloud Code compatibility for two exact native
+extraction originals and correlated all four original replies/costs with owning
+PostgreSQL. Both legacy originals also passed; this does not establish causal
+quality superiority, general model correctness or a cause of earlier failures.
+See [actual compatibility evidence](../ai/scenario-schema-dialect-actual-audit-20261013.md).
+No fallback/repair/retry is added.
+
 Only typed code-owned instructions carry system role; external/context/derived observations carry provenance as data. Secret-class inputs fail before serialization. Budget037 passes a private input byte cap and the native provider checks its complete actual request, including prior function calls, thought signatures and tool results, before HTTP. Other adapters have serialization guards but need verified capacity/cost declarations before budgeted production inference. HTTP error status is retained without untrusted body/code/details; no raw network error or response content enters durable error events. Production auxiliary model/embed adapters have no durable job-owned admission and remain disabled. See [agent security boundaries](agent-security-boundaries.md).
+
+Trusted callers may install a request-local `WithProviderStageObserver` for
+content-free diagnosis. Antigravity reports only authentication, request
+serialization, HTTP round trip and response-stream phases. The observer receives
+no token, project, endpoint, response, model body or raw error; unknown stage
+strings are ignored. It changes no event, timeout, retry, ownership or execution
+decision. An HTTP phase is not proof of upstream inference. Older observations
+without this telemetry remain unknown and cannot be backfilled.

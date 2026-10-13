@@ -1,0 +1,34 @@
+{
+  "catalog_projection": {
+    "broker_schemas": [],
+    "default_transaction_read_only": "on",
+    "owning_native_attempts": 636,
+    "owning_native_baseline": 616,
+    "owning_native_rows": 20,
+    "server_version_num": "170011",
+    "transaction_read_only": "on"
+  },
+  "copy_before_engine_equals_original": true,
+  "copy_root": "/srv/storage/butler/reviews/issue33-chain-v16-20261013/pg-copy-recovery-20261013T202837Z-3319406",
+  "copy_stale_pid_removed": true,
+  "engine_namespace": "private_copy_only_network_none_unix_socket",
+  "engine_writes_on_copy_only_for_crash_recovery": true,
+  "historical636_carry_changed": false,
+  "issue33_ready": false,
+  "limits": [
+    "Only the explicitly named disposed fixture PG physical cluster was mounted readonly and copied; no runtime/auth/SSE private directory was inspected.",
+    "SQL is READ ONLY on the copied engine; original DB/source/window remains closed and unchanged.",
+    "Postprocess catalog reflects the current physical cluster, not a point-in-time backup. Dropped fixture relations/receipts are not reconstructed from native tool proposals or estimated WAL contents."
+  ],
+  "native_auth_or_model_calls": 0,
+  "original_bytes_before_after_sha256": "dbffa16c5089c895011365e656046fad2c635c7d2f1af54130bf1df17421b9d5",
+  "original_modified": false,
+  "original_product_bytes": 3,
+  "original_product_changed": false,
+  "original_product_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "original_read_only_physical_pg": "/srv/storage/butler/agents/scenario-release-chain-v16-high-20261013/reports/release-chain-process-20261013T200606Z-3246680/private/postgres",
+  "original_stale_pid_not_removed": true,
+  "postgres_image": "sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d",
+  "status": "OWNING_FIXTURE_SCHEMA_DROPPED_NO_RECEIPT_RECOVERY",
+  "version": "butler-independent-v16-readonly-pg-copy-recovery-v1"
+}

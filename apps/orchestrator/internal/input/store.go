@@ -194,7 +194,7 @@ func (s *Store) SaveCheckpoint(ctx context.Context, runID, stage, payload string
 		return err
 	}
 	defer release()
-	tag, err := s.pool.Exec(ctx, `UPDATE accepted_inputs SET run_id=$3,checkpoint=$4,checkpoint_json=CASE WHEN $4='prepared' THEN jsonb_build_object('prepared',$5::jsonb) ELSE checkpoint_json||jsonb_build_object('checkpoint_data',$5::jsonb) END,updated_at=clock_timestamp() WHERE input_id=$1 AND claim_id=$2 AND status='running' AND claim_expires_at>clock_timestamp()`, r.InputID, r.ClaimID, runID, stage, payload)
+	tag, err := s.pool.Exec(ctx, `UPDATE accepted_inputs SET run_id=$3,checkpoint=$4,checkpoint_json=CASE WHEN $4='prepared' THEN (checkpoint_json-'prepared'-'checkpoint_data')||jsonb_build_object('prepared',$5::jsonb) ELSE checkpoint_json||jsonb_build_object('checkpoint_data',$5::jsonb) END,updated_at=clock_timestamp() WHERE input_id=$1 AND claim_id=$2 AND status='running' AND claim_expires_at>clock_timestamp()`, r.InputID, r.ClaimID, runID, stage, payload)
 	if err == nil && tag.RowsAffected() != 1 {
 		return ErrClaimLost
 	}
@@ -206,7 +206,7 @@ func (s *Store) LoadCheckpoint(ctx context.Context, runID string) (string, strin
 	return stage, payload, err
 }
 func (s *Store) Finish(ctx context.Context, r Record, status, code, message string, delay time.Duration) error {
-	tag, err := s.pool.Exec(ctx, `UPDATE accepted_inputs SET status=CASE WHEN $3='waiting_for_user' AND checkpoint='approval_ready' THEN 'queued' ELSE $3 END,attempts=CASE WHEN $4='session_busy' THEN GREATEST(attempts-1,0) ELSE attempts END,error_code=$4,error_message=$5,claim_id='',claim_expires_at=NULL,not_before=clock_timestamp()+$6*INTERVAL '1 millisecond',updated_at=clock_timestamp() WHERE input_id=$1 AND claim_id=$2 AND status='running' AND claim_expires_at>clock_timestamp()`, r.InputID, r.ClaimID, status, code, message, delay.Milliseconds())
+	tag, err := s.pool.Exec(ctx, `UPDATE accepted_inputs SET status=CASE WHEN $3='waiting_for_user' AND checkpoint='approval_ready' THEN 'queued' ELSE $3 END,attempts=CASE WHEN $4='session_busy' THEN GREATEST(attempts-1,0) ELSE attempts END,error_code=$4,error_message=$5,claim_id='',claim_expires_at=NULL,not_before=CASE WHEN $4='model_retry_pending' THEN GREATEST(clock_timestamp(),(checkpoint_json->'model_retry'->>'not_before')::timestamptz) ELSE clock_timestamp()+$6*INTERVAL '1 millisecond' END,updated_at=clock_timestamp() WHERE input_id=$1 AND claim_id=$2 AND status='running' AND claim_expires_at>clock_timestamp()`, r.InputID, r.ClaimID, status, code, message, delay.Milliseconds())
 	if err == nil && tag.RowsAffected() != 1 {
 		return ErrClaimLost
 	}

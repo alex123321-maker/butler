@@ -1,0 +1,244 @@
+{
+  "admissible_once_only": true,
+  "admitted_commit": "0f9b61e23fd56fefddd1c42cd3aa9efa14087d83",
+  "admitted_source_dir": "/srv/storage/butler/agents/scenario-release-chain-v10-high-20261013/snapshots/20261013-234239-392",
+  "auditor_scope_is_read_only": true,
+  "authentication_by_auditor": false,
+  "critical_static_blockers_found": [],
+  "exact_named_tests": {
+    "app": {
+      "bytes": 14342,
+      "exact_names": [
+        "TestReleaseChainV10HarnessInvocationLegacy",
+        "TestReleaseChainV10HarnessInvocationBounded",
+        "TestReleaseChainV10HarnessInvocationDenied",
+        "TestReleaseChainV10ActualHistoryPreserves556",
+        "TestReleaseChainV10HistoryRejectsTampering/old_usage_changed",
+        "TestReleaseChainV10HistoryRejectsTampering/new_cost_changed",
+        "TestReleaseChainV10HistoryRejectsTampering/terminal_pattern_changed",
+        "TestReleaseChainV10HistoryRejectsTampering/parallel_intervals",
+        "TestReleaseChainV10HistoryRejectsTampering/inspect_unknown_promoted",
+        "TestReleaseChainV10HistoryRejectsTampering/old_no_go_promoted",
+        "TestReleaseChainV10HistoryRejectsTampering/proposal_binding_lost",
+        "TestReleaseChainV10HistoryRejectsTampering/old_ceiling_refunded",
+        "TestReleaseChainV10HistoryRejectsTampering/invented_failure_cause",
+        "TestReleaseChainV10HistoryRejectsTampering"
+      ],
+      "named_fail": 0,
+      "named_pass": 14,
+      "named_skip": 0,
+      "sha256": "65e27a30701e63ff41f55e7ba076b51b3c4b5cf094c6c0e7f974743a1fd5cbca"
+    },
+    "extension_runtime": {
+      "bytes": 4262,
+      "exact_names": [
+        "TestExtensionHarnessLifetimeBounds",
+        "TestExtensionHarnessRPCLifecycle",
+        "TestExtensionHarnessRPCLifecycle/timer",
+        "TestExtensionHarnessRPCLifecycle/cancel"
+      ],
+      "named_fail": 0,
+      "named_pass": 4,
+      "named_skip": 0,
+      "sha256": "526907336e3a77c2171fc5c50fcbc4b8b87acf9342c9a920115db5035d341b05"
+    }
+  },
+  "frozen_child_budget": {
+    "active_ms": 1320000,
+    "external_calls": 4,
+    "turns": 4
+  },
+  "frozen_limits": {
+    "all_completed_entries_require_measured_usage_and_selected_version": true,
+    "baseline_attempts": 556,
+    "extension_harness_lifetime_source": "remaining_case_deadline",
+    "extension_harness_lifetime_test_only": true,
+    "legacy_extension_harness_lifetime_ms": 180000,
+    "maximum_attempt_ms": 300000,
+    "maximum_case_ms": 2400000,
+    "maximum_concurrent_native_entries": 1,
+    "maximum_extension_harness_lifetime_ms": 2400000,
+    "maximum_generation_tokens": 32768,
+    "maximum_global_ms": 7200000,
+    "maximum_model_retries_per_input": 1,
+    "maximum_new_attempts": 71,
+    "maximum_private_proposal_bytes": 262144,
+    "maximum_total_attempts": 627,
+    "model_retry_backoff_ms": 2000,
+    "new_scope_allocation_is_prospective": true,
+    "old_closed_attempts_or_unknowns_refunded": false,
+    "old_sealed_absolute_ceiling": 615,
+    "proposal_retention_required": true,
+    "provider_entries_serialized": true
+  },
+  "hardware": {
+    "cloud_weights_sha256": null,
+    "cpu_sha256": "177d14a5788191dc50c31b0906b921147a444b23b1e4acc96e42181bbc3b6baa",
+    "fixture_cpus": 2,
+    "fixture_ram_bytes": 1610612736,
+    "go_image": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61",
+    "host_ram_kib": 15693396,
+    "kernel": "7.0.0-34-generic",
+    "postgres_image": "sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d",
+    "remote_model_ram": null,
+    "runtime_image": "sha256:ce64758a109eb420d874a118f87920e625e12d3634e03b4a5573fd9f6e5d3507"
+  },
+  "historical_carry": {
+    "all_prior_native_windows": "SEALED_NO_GO",
+    "attempts": 556,
+    "fold_sha256": "a8ff280f6905081c83c48f8c0dc327576792e0de9ddd44b8e952cc9d0e0ec00d",
+    "known_input_tokens_subtotal": 475637,
+    "known_io_pairs": 528,
+    "known_output_tokens_subtotal": 15159,
+    "known_total_tokens_subtotal": 793703,
+    "old_266_cause": "UNKNOWN",
+    "old_541_rejected_proposal_specific_cause": "UNKNOWN",
+    "old_544_child_pre_native_specific_cause": "UNKNOWN",
+    "old_556_inspect_specific_cause": "UNKNOWN",
+    "old_ceiling": 615,
+    "old_remaining": 59,
+    "unknown_io_pairs": 28,
+    "unknown_total_entries": 48
+  },
+  "issue33_ready": false,
+  "limitations": [
+    "Shared administrator host; independent reviewer role is not cryptographic administrative isolation.",
+    "Model-free setup, finite IR adapter builder, loopback project/channel and checked unapplied README patch remain fixture boundaries.",
+    "Known spend remains a subtotal; historical NULLs and UNKNOWN causes are never estimated, filled or promoted.",
+    "Cloud weights, remote server thinking effort/hardware/RAM and invoice not observed."
+  ],
+  "merge_authorized_by_this_artifact": false,
+  "metadata": {
+    "build-vet.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evidence.sha256": {
+      "bytes": 406,
+      "sha256": "e9d53ec6a3634780b48edcfe0a5f001455b2ee548a296c8201685ed116f8db93"
+    },
+    "hardware-cpu.json": {
+      "bytes": 1410,
+      "sha256": "177d14a5788191dc50c31b0906b921147a444b23b1e4acc96e42181bbc3b6baa"
+    },
+    "hardware.json": {
+      "bytes": 500,
+      "sha256": "ac640d38f0ad5db871190315628543b2407a7c539ce7b3b31e85039edba61e9b"
+    },
+    "sealed-v9-entry.txt": {
+      "bytes": 227,
+      "sha256": "76b17695ffab31703bbe03585bb1519f58a2951f5bdee54efcf26eb9ccd17e09"
+    },
+    "source-commit.txt": {
+      "bytes": 41,
+      "sha256": "c5b45bb2a0f8683ca6af3209bd568ded3b84ceabf47050c3d08cf82f31b8aee0"
+    },
+    "source.sha256": {
+      "bytes": 259926,
+      "sha256": "830204cc9f031430e20280bbf63136a340f318b3d80c536fa0c8f5deb5743543"
+    },
+    "summary.json": {
+      "bytes": 193,
+      "sha256": "fcc790fa5f36d961886169397641f51c76ccc8eb8722114d30e81027a790d2f5"
+    },
+    "tests.jsonl": {
+      "bytes": 14342,
+      "sha256": "65e27a30701e63ff41f55e7ba076b51b3c4b5cf094c6c0e7f974743a1fd5cbca"
+    }
+  },
+  "model_calls_by_auditor": 0,
+  "named_failures": 0,
+  "named_skips": 0,
+  "native_admission_admissible": true,
+  "native_root": "/srv/storage/butler/agents/scenario-release-chain-v10-high-20261013",
+  "native_window_observed_absent": true,
+  "pending_final_acceptance": [
+    "All five actual V10 fixed scenarios on exactly0f9 source.",
+    "Independent actual owning PostgreSQL, initial/final product, serial native intervals, measured cost/version, safe retry and all budget dimensions.",
+    "Individual named private own-tool originals and authorization fingerprints; separately frozen V10 auditor required. Bundled288973 executable supports V9 and is not V10 acceptance.",
+    "Final code composition and issue-wide independent PASS before PR ready/merge/closure."
+  ],
+  "prepared_proof": "/srv/storage/butler/agents/scenario-release-chain-v10-high-20261013/reports/chain-v10-high-prepare-20261013T164253Z-2595044",
+  "public_pins": {
+    "deploy/acceptance/cloud-shadow-v5-final-audit-20261013.json": "f8248d19ec2a0c222b39d46fbc46c0d0cf4ccc3c1361c89965b597eedbb21cab",
+    "deploy/acceptance/release-chain-v10-high-prerequisite-20261013.json": "193e3b8c21b00ffdda62ea0dddb7ecf17357f912d7c78e0d349873e92ee63b86",
+    "deploy/acceptance/release-chain-v10-user-policy-amendment-20261013.json": "417dfd7bf7e9f0fba535d18a50552696f8efd08a9bf19b2f4a54d4cfb922da1d",
+    "deploy/acceptance/release-chain-v9-carry556-independent-20261013.json": "70041e9a3275a2099d39eda98d4535420eea7bfdae1bb3eb34bd58662f51ae3b",
+    "deploy/acceptance/release-chain-v9-failure-correlation-20261013.json": "b96457cbb16bfbc89cb3fb32c62a3d9622939efb9fbe574eb97253c4f89f9b6c",
+    "deploy/acceptance/release-chain-v9-final-audit-20261013.json": "731cf102a25d42a091441ea045cedb5964c66ebb305890c564cc3b5b9713ad83",
+    "deploy/acceptance/release-chain-v9-history556-20261013.json": "8509f520a5b013900c5365f06868656448afd74a3f24d2f88971f013024055f5",
+    "deploy/acceptance/release-chain-v9-proposal-diagnostics-20261013.json": "8b5c8683e1aa23e49c15809e5d12432df3402ad01365a2e5a1567ed6f55350fb"
+  },
+  "race": true,
+  "reused_evidence": {
+    "core_retry81_sha256": "efb8a9c9c3e8b3c6669be99862fa959bd839aed1b48dcf9ad49f82475176db98",
+    "mandatory_fault321_sha256": "900da5cce76ea8663f28d4c04543d2da2f49cf7047f106230fa6a7bb70deb047",
+    "quality_and_four_pair_comparison_sha256": "f8248d19ec2a0c222b39d46fbc46c0d0cf4ccc3c1361c89965b597eedbb21cab",
+    "quality_measured_source": "3c4089f35c0bdf33bf9b2c6328ba395c519cecf4",
+    "quality_profile": "Original120seconds/32768; direct provider/data/goldens path unchanged, no chain300second remeasurement claimed.",
+    "reuse_scope": "Previous complete product outcomes remain NO_GO. Unchanged critical test logic and production runtime scopes transfer without claiming full rerun on0f9 source.",
+    "v8_decoder29_sha256": "710ddcfa904938b8c3d9a323e8ec16ae59d74ad8f3e705976e03d32c319db064",
+    "v9_app10_sha256": "e3f7ea33a98aeb5beccd43c460722cd70d982cab23a846bf859ce550dd058a05",
+    "v9_broker2_sha256": "cb1721b887c62f2867be4171a5c7140af7188a53b28bc1ce84be9870a9267dcf",
+    "v9_input4_sha256": "ee0336869d2dad5a8cf7e2b35ae60e9e7dc235212154dd4a7fd683573b60718e"
+  },
+  "reviewed_at_utc": "2026-10-13T16:49:09.237877+00:00",
+  "reviewer_role": "/root/v5_final_independent_audit",
+  "runtime_pins": {
+    "app.test": {
+      "bytes": 54838759,
+      "mode": "0555",
+      "sha256": "4deec48d416f372c9606b3e6e1d3fc168a8e479427d5be3e7660bf7fc6934694"
+    },
+    "chain-final-audit": {
+      "bytes": 17607209,
+      "mode": "0555",
+      "sha256": "288973e6dd28d0b22812686621be57fac12f70fa2b03fa9265ae7675fa9e88f4"
+    },
+    "extension.test": {
+      "bytes": 22526386,
+      "mode": "0555",
+      "sha256": "924476213168951493ae8ad21ef0630f1b666e63ac67d643fa79e5d5517f0a07"
+    },
+    "test2json": {
+      "bytes": 4566038,
+      "mode": "0555",
+      "sha256": "8f352c19877e12d5b0305b9eebac875aa63734fe03b73127ee01fae2c833ad68"
+    },
+    "tls-prerequisite": {
+      "bytes": 8829345,
+      "mode": "0555",
+      "sha256": "14a3bc9fc5a006ce6ae91fe10e3d4ae2ef0f78ac6c1a4c16e43d6d65f1589392"
+    },
+    "tool-broker": {
+      "bytes": 28759445,
+      "mode": "0555",
+      "sha256": "2ed16aca088b7cb90b85b643a7e9533d336ca2d43ea0af5746e44847496d9e8e"
+    },
+    "tool-converter": {
+      "bytes": 20154212,
+      "mode": "0555",
+      "sha256": "5f2dee5acef95c2f279b849d7af76003688a3b46a274e0d44456a37c40536f75"
+    }
+  },
+  "separate_safe_log_pin": {
+    "bytes": 4262,
+    "mode": "0555",
+    "sha256": "526907336e3a77c2171fc5c50fcbc4b8b87acf9342c9a920115db5035d341b05"
+  },
+  "source_inventory_files": 2280,
+  "source_manifest_sha256": "830204cc9f031430e20280bbf63136a340f318b3d80c536fa0c8f5deb5743543",
+  "source_tree_sha256": "2096a0a5f7a80ad8a912dc0df1f7b2452053d68b27b55c6abdd783af6ce96879",
+  "static_review": [
+    "Only test extension subprocess lifetime is changed since measured1937. Explicit override is canonicalpositive<=2400000ms, floored to remaining case deadline. Compiled subprocess receives finite<=41minute process bound; legacy default3minute behavior and arguments are unchanged.",
+    "Real authenticated loopbackRPC tests verify authentication/policy before timer or cancellation and unavailability after. Production server, Broker, Core, transport, source and authority APIs unchanged since1937.",
+    "Current reader calls unchanged historical544 prefix and verifies all12 completed measured entries, parent/child/terminal pattern, exact scope/owningSQL, serial intervals, historical fold,10original proposal/action fingerprints and UNKNOWNread. It grants no future allocation.",
+    "New556+71=627 is explicitly prospective bounded assistant operational interpretation of direct user instruction to test High proactively. Old615 windows and twelve spent V9 requests remain immutable and are not refunded.",
+    "All successful V10 requests must have measured full cost and selected version. Only exactly proven one safe nominal HTTP or stream timeout recovery may retain failed NULLs. Original result, Stop, source/authority, duplicate, schema and delivery gates remain unchanged."
+  ],
+  "status": "INDEPENDENT_V10_NATIVE_ADMISSION_PASS",
+  "testing_scope": "Direct user requests meaningful changed checks before High. Fresh14app history/invocation and4runtime authenticated lifetime tests, race/vet, immutable source/runtime, and sealed V9 negative. No hundreds of unchanged tests rerun or relabelled.",
+  "total_named_pass": 18,
+  "version": "butler-issue33-independent-v10-native-admission-v1",
+  "vet_and_build_log_empty": true
+}

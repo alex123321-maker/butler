@@ -1,0 +1,12 @@
+{
+  "status": "PG_WITNESS_CORRELATION_MATCH",
+  "collector_report_sha256": "2e35fa1600744b3686024f5173c20afececb5b23629dc1499e8028084d14726f",
+  "pg_witness_sha256": "01bbc2c1472998c967339f251a0df1bd2853568583bf14ba0f1dfb5985736843",
+  "carry_forward_attempts": 266,
+  "new_attempts": 18,
+  "witness_rows": 18,
+  "exact_journal_match": true,
+  "quality_passed": false,
+  "inference_proven": false,
+  "execution_authorized": false
+}

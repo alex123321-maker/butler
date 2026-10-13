@@ -22,8 +22,11 @@ import (
 )
 
 type converterWorkerFaultHooks struct {
-	before func(*testing.T, *developerFixture)
-	after  func(*testing.T, *developerFixture, *converterWorkerProvider)
+	factory       func(*testing.T, generatedtools.Profile, string) *developerFixture
+	before        func(*testing.T, *developerFixture)
+	after         func(*testing.T, *developerFixture, *converterWorkerProvider)
+	providerSetup func(*testing.T, *developerFixture, *converterWorkerProvider)
+	terminal      func(*testing.T, *developerFixture, *converterWorkerProvider, func())
 }
 
 // This is the actual converter workflow's result/delivery tail, not the complete

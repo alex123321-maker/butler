@@ -21,7 +21,8 @@ import (
 )
 
 type storedCheckpoint struct {
-	Prepared     preparedRun `json:"prepared"`
+	ModelRetry   modelRetryCheckpoint `json:"model_retry"`
+	Prepared     preparedRun          `json:"prepared"`
 	Continuation struct {
 		Kind       string `json:"kind"`
 		Version    int    `json:"version"`
@@ -52,6 +53,9 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	var checkpoint storedCheckpoint
 	if json.Unmarshal([]byte(payload), &checkpoint) != nil {
 		return nil, fmt.Errorf("invalid durable checkpoint")
+	}
+	if checkpoint.ModelRetry.Count == 1 {
+		ctx = context.WithValue(ctx, modelRetryRecoveryKey{}, true)
 	}
 	var continuation approvalContinuation
 	var decision approvals.Record
@@ -107,7 +111,8 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	if err != nil {
 		return nil, err
 	}
-	if !guardedSelection && current.GetCurrentState() != commonv1.RunState_RUN_STATE_AWAITING_APPROVAL && stage != "tool_result_recorded" && stage != "finalizing" && stage != "tool_dispatching" {
+	modelRetry := stage == "model_retry_pending" && checkpoint.ModelRetry.Count == 1 && checkpoint.ModelRetry.State == "claimed"
+	if !modelRetry && !guardedSelection && current.GetCurrentState() != commonv1.RunState_RUN_STATE_AWAITING_APPROVAL && stage != "tool_result_recorded" && stage != "finalizing" && stage != "tool_dispatching" {
 		s.blockTaskRun(ctx, runID, "checkpoint_not_resumable")
 		return &ExecutionResult{RunID: runID, SessionKey: event.SessionKey, CurrentState: current.GetCurrentState(), ReceiptStatus: "blocked", ErrorCode: "checkpoint_not_resumable"}, nil
 	}
@@ -120,11 +125,17 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	if err = s.rehydrateSourcePreparation(ctx, &checkpoint.Prepared); err != nil {
 		return nil, err
 	}
+	ctx = converterContinuationProposalContext(ctx, checkpoint.Prepared)
 	if continuation.Prepared.SourceInputEvent != nil || checkpoint.Prepared.DelegatedTaskID != "" {
 		continuation.Prepared = checkpoint.Prepared
 	}
 	var stream transport.EventStream
-	if guardedSelection {
+	if modelRetry {
+		stream, err = s.resumeModelRetry(ctx, current, checkpoint.Prepared, checkpoint.ModelRetry)
+		if err == nil && current.GetCurrentState() == commonv1.RunState_RUN_STATE_AWAITING_MODEL_RESUME {
+			current, err = s.transition(ctx, runID, current.GetCurrentState(), commonv1.RunState_RUN_STATE_MODEL_RUNNING, lease.LeaseID, "", "")
+		}
+	} else if guardedSelection {
 		// Reload capability DATA before task activation. Catalog changes during
 		// reload are then checked by the atomic owning selection/source guard.
 		refreshed, refreshErr := s.refreshRecoveredToolContext(ctx, runID, checkpoint.Prepared.InputItems, checkpoint.Prepared.ToolDefs)
@@ -204,6 +215,9 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		}
 	}
 	if err != nil {
+		if s.scheduleModelRetry(ctx, current, err) {
+			return nil, ErrModelRetryPending
+		}
 		if _, stopped := budgetStopReason(err); stopped {
 			return s.stopBudget(ctx, current, err)
 		}
@@ -215,6 +229,9 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 		return nil, err
 	}
 	final, current, err := s.consumeModelStream(ctx, runLog, current, event.SessionKey, lease.LeaseID, stream)
+	if err != nil && s.scheduleModelRetry(ctx, current, err) {
+		return nil, ErrModelRetryPending
+	}
 	if _, stopped := budgetStopReason(err); stopped {
 		return s.stopBudget(ctx, current, err)
 	}

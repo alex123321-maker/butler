@@ -1,3 +1,11 @@
+An activated-catalog continuation carries the current confirmed activation as
+private DATA: converter identity, digest, current catalog generation and the
+exact activation action/effect. The ordinary continuation verifier reloads these
+facts under the current lease, task, source and authority guards on every fresh
+or recovered preparation. Candidate-return context remains distinct. Core tells
+the model to use the active catalog for the remaining original work rather than
+repeat a completed installation sequence. Activation readiness does not verify
+the original task and grants no permission beyond the current Broker policy.
 # Bounded generated converter tools
 
 This specification defines the first self-development class for issue 20:
@@ -16,6 +24,18 @@ Passing a runtime test grants no capability. The actual delegated developer/task
 acceptance from issue16 remains a separate gate; runtime RPC alone is not its proof.
 
 The separately reviewed developer proposal contract is `task.delegate_converter`.
+A queued admission receipt requires finishing the current parent attempt; the
+ordinary continuation resumes collection after the child's tested final/report.
+The owned Broker catalog advertises `converters.collect` only when the current
+Store verifies an actual return through the same collection and authority
+checks. Listing creates no source grant or action. Preparation and claim repeat
+those checks, including deletion, ownership and current return validity.
+Its typed integer fields accept exact integral JSON numbers in decimal and
+exponent notation. Decoding is bounded to 512 characters and exponents within
+±1024, rejects fractions and int64 overflow, and preserves original argument
+bytes for exact action authorization. The deadline is an absolute RFC3339
+timestamp with an explicit timezone; the schema description states this existing
+requirement. These syntax rules grant no source, budget or child authority.
 Its arguments select exact Need and synthetic-contract Catalog references, all
 eight finite allocation dimensions, deadline and dependency IDs. They cannot
 contain code, a working document, permissions, owner/task identity or credentials.
@@ -258,3 +278,29 @@ acceptance. The actual production Broker/network-none runtime process gate passe
 with one original owner input and both internal continuations. See the
 [acceptance matrix](generated-converters-acceptance.md) for evidence and the
 remaining native-quality/deployed acceptance gates.
+
+Activated055 preparations reload bounded confirmed tool observations from the
+exact completed preceding ROOT attempt. Each qualified run/call must have a
+matching owner/task/constraints and goal/mandate binding, confirmed effect,
+completed authorization/dispatch and retained canonical runtime-result evidence.
+Missing, unfinished or uncertain journal/transcript rows deny. Child reports and
+unrelated session/task histories are never selected. Original sources and the
+private claim/current owner proof are checked again after the reads.
+
+Observations remain private sanitized DATA, not native function responses,
+semantic owner verification or execution grants. Results retain actual artifact
+and check receipts. Original authorization hashes stay exact; sanitized arguments
+and equivalence hashes are included only when stored JSONB arguments match that
+exact hash. Otherwise arguments are omitted, without reconstructing numeric
+lexemes. Context is bounded to32 observations/256KiB. Recovered preparations
+discard and reload the projection under current guards.
+
+Only a private automatic055 continuation blocks equivalent confirmed non-read
+proposals before slot admission or Broker preparation. Object-key order, numeric
+spelling and a fresh call ID cannot repeat a verified prior mutation. Unavailable
+prior equivalence makes a non-read proposal for the same tool fail closed. Repeat reads require both the
+prior read effect and a current active trusted read-only catalog contract.
+Ordinary owner inputs retain distinct intentional action slots. There is no
+fabricated ToolResult, prior-effect replay, refund or permission bypass. Current
+task/source/lease, Stop, budget, final and Broker guards still apply. Private proof
+reloads before proposals use a two-second maximum clamped by the live caller.

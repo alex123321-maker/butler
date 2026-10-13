@@ -8,6 +8,7 @@ import (
 
 	"github.com/butler/butler/internal/budget"
 	sessionv1 "github.com/butler/butler/internal/gen/session/v1"
+	"github.com/butler/butler/internal/modelprovider"
 	"github.com/butler/butler/internal/transport"
 )
 
@@ -49,7 +50,17 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 	if err != nil {
 		return nil, err
 	}
-	if err = s.checkpoint(ctx, runID, "model_budget_reserved", map[string]any{"operation_id": a.OperationID, "reservation_id": a.ReservationID, "deadline": a.Deadline}); err != nil {
+	modelTurnLimited := modelTurnRetryBound(ctx, a)
+	origin := "scope_or_authority"
+	if modelTurnLimited {
+		origin = "model_turn"
+	}
+	if retryStore, ok := s.config.Checkpoints.(modelRetryStore); ok && ctx.Value(modelRetryRecoveryKey{}) == true {
+		if err = retryStore.MarkModelRetryStarted(ctx, runID, a.OperationID); err != nil {
+			return nil, err
+		}
+	}
+	if err = s.checkpoint(ctx, runID, "model_budget_reserved", map[string]any{"operation_id": a.OperationID, "reservation_id": a.ReservationID, "deadline": a.Deadline, "deadline_origin": origin}); err != nil {
 		return nil, err
 	}
 	turn, cancel := context.WithDeadline(ctx, a.Deadline)
@@ -58,8 +69,18 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 		return nil, &budget.LoopError{Reason: "owner_authority_deadline"}
 	}
 	turn = transport.WithInputByteLimit(turn, s.config.Budgets.Policy.ModelInputBytes)
+	turn = budget.WithModelOperation(turn, a.OperationID)
+	turn, phases := withModelRetryStages(turn)
 	stream, err := call(turn)
 	if err != nil {
+		if modelTurnLimited && phases.inferencePhase() && ctx.Err() == nil && (errors.Is(err, context.DeadlineExceeded) || transport.DiagnosticCode(err) == string(transport.ErrorTypeProviderTimeout)) {
+			err = &modelTurnTimeout{operationID: a.OperationID}
+		} else if errors.Is(turn.Err(), context.DeadlineExceeded) && ctx.Err() == nil {
+			// The owning budget still expires if inference was never observed.
+			// Early provider timeouts and caller cancellation do not acquire
+			// this budget deadline classification.
+			err = &budget.LoopError{Reason: "execution_budget_deadline"}
+		}
 		cancel()
 		return nil, err
 	}
@@ -71,6 +92,9 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 			if ctx.Err() == nil {
 				event := transport.NewTransportErrorEvent(runID, p.Name(), fmt.Errorf("execution budget deadline"))
 				event.TransportError.Type = "execution_budget_deadline"
+				if modelTurnLimited && phases.inferencePhase() {
+					event.TransportError.Type = "model_turn_timeout"
+				}
 				select {
 				case out <- event:
 				case <-ctx.Done():
@@ -90,6 +114,11 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 					}
 					return
 				}
+				// Only this trusted admission wrapper emits retry eligibility.
+				// Provider codes/messages cannot identify an owning operation.
+				if event.EventType == transport.EventTypeRunTimedOut || event.EventType == transport.EventTypeTransportError && event.TransportError != nil && (event.TransportError.Type == transport.ErrorTypeProviderTimeout || event.TransportError.Type == "model_turn_timeout") {
+					event = modelRetryTimeoutEvent(event, modelTurnLimited && event.RunID == runID && phases.inferencePhase(), ctx.Err() == nil)
+				}
 				usage, usageErr := modelTurnUsage(event)
 				stopTurn := false
 				if usageErr == nil && observed != nil && usage != nil && *usage != *observed {
@@ -108,7 +137,14 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 					if err != nil {
 						s.log.Warn("model usage persistence unavailable; conservative reservation retained")
 					}
-					if in > input || output > a.OutputTokens {
+					generated := output
+					// High's native total includes prompt, candidates and thinking;
+					// its generation ceiling bounds candidates+thinking together.
+					// Other adapters may include cached dimensions in their total.
+					if s.config.ProviderName == modelprovider.ProviderAntigravity && s.config.ModelName == "gemini-3.8-flash-high" && usage.TotalTokens > 0 {
+						generated = max(generated, int64(usage.TotalTokens)-in)
+					}
+					if in > input || generated > a.OutputTokens {
 						stopTurn = true
 						event = transport.NewTransportErrorEvent(runID, p.Name(), fmt.Errorf("provider exceeded declared inference allowance"))
 						event.TransportError.Type = "execution_budget_tokens"

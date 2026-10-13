@@ -1,0 +1,61 @@
+# Read-only release-chain final audit
+
+The current explicit V20 policy independently audits only lost_ack and
+restart_sent, retaining separately verified V17 owner Stop and V18 explicit
+absence. Restart must prove the complete current Core/Broker/original-result/
+owner-verification/one-Sent-notice chain. Historical normal_sent remains NO_GO;
+its useful V14 conversion and checked unapplied patch are separate facts.
+
+V20 pins factual baseline706:2649327 known total tokens and53 unknown full
+costs. Closed706 provider_unavailable has UNKNOWN HTTP subcause, expense and
+version, and is not an accepted retry. Two immutable fixture flags permit only
+an independently owned later case after a sealed quiet failed case and retain
+an allowlisted content-free error class. They grant neither current authority,
+same-case recovery nor overall PASS. Successful current packets require NULL
+diagnostic class and fully measured input/output/total usage.
+
+Catalog revision hashes bind metadata, provenance and dependencies separately
+from the exact original CSV/JSON body digests. Current setup reads follow their
+actual read grants. Stopped waiting continuation intents must remain unarmed,
+stale and unable to execute. These prospective source-aligned checks preserve
+original bytes, all effect counts and every critical result/authority predicate.
+
+Freeze this checker separately, build and run the51 names in
+`v20-required-tests.txt` with race/vet and zero failures/skips. The actual V18
+history tests need five separately bound original safe files via
+`BUTLER_V19_HISTORICAL_FIXTURE_DIR`; the CLI reads exact named old V16/V17
+leaves under /historical-safe and V18/V19 leaves under /retained-v18 and
+/retained-v19. Neither whole private directories nor provider credentials are
+mounted. The14 current safe inputs and individually named original proposal
+leaves keep the existing identity checks. Old modes and sealed source roots
+remain unchanged. Final issue readiness still needs independent current
+production/source/fault/quality/comparison review after the witness PASS.
+
+This Go command correlates retained release evidence without calling a model or executing tools. V6 remains the default; explicit V7 through V13 modes preserve each separate frozen contract. NO_GO retains measured expense and UNKNOWN and clears accepted subsets. Neither an audit witness PASS nor subscription pricing grants issue readiness, merge or a zero-cost estimate.
+
+V12 and V13 use factual575 + a new120-entry allocation =695. They retain the exact history575 fold d24720adf3522dc19ada8b53a7d54d4485fe7774c0cd029d3c717c9f1468db05: known cumulative token subtotal1039921,49 unknown full totals,546 known input/output pairs and29 unknown pairs. Historical537 and557 exceptions remain separate, narrowly pinned inputs. Every fresh completed request requires measured input/output/total and the selected model version; a failed UNKNOWN is eligible only under the existing proved one-retry recovery contract. No historical UNKNOWN or failed window is rewritten or refunded.
+
+V12 prerequisite4d9af878b09f812c0f8fa69198f03c377b7485b89faf953f180bd34fa69430ca and human77f0355763d3e020b3e43215c32bbdf490d665422eaafb061f4376622720447d remain immutable. Actual V12 failed before the owning window, provider factory or Core model admission because120 exceeded its constructor's legacy80 bound. The independent bootstrap dca503946b4a1bfc5a09215b128b5d4d1ea5f3d71333d4a09edcff5271ef7326 separately derives zero native requests from retained source order plus actual failure. Its original NULL counter stays NULL, its NO_GO stays sealed, and no paid ordinal is added. Empty exports alone are not zero proof.
+
+V13 explicitly binds prerequisitec1aa03290cc85616c4f2156acfde3d116037e7cafd0a4f89b5ea2b9d545c2f4e, humane62000001cd3685560587b1e74c6e0583118e8d0b143cc386f860ac4965d6934 and the new fixed120 fixture constructor. Native measured source is09cf34c05ab1fc1840dc73f1c9e1ecb2766b0faf. Earlier default constructors still enforce80. The bootstrap is a named public file beneath the measured read-only /src tree and needs no additional private mount.
+
+Both later policies require all five actual cases: normal completion, restart, tree Stop, explicit absent delivery and lost ACK. Current source/authority, original task verification, exact original CSV conversion, immutable prepared/unapplied patch, write/send deduplication, original proposal bytes, serial client intervals and all eight owning budget dimensions remain mandatory. Every mandatory logical action remains once except root fixed-project GET inspect/check reads with count>=1 under the existing Core budgets. There is no special per-GET cap or global tool_call_id uniqueness requirement; identity is(run_id,tool_call_id).
+
+Only V12/V13 original_result adds check_receipts/inspect_receipts. Each actual receipt binds that qualified root action, fixed project/revision, actual stored result digest and validated canonical body digest. All checks agree on the same immutable artifact, checks_passed=true and applied=false; inspections observe original ready=false bytes. The checker independently validates each retained original GET target and sole prepare URL/revision/README before/after arguments. result_sha256 is source-pinned capture of PostgreSQL c.result::text, not a claim that raw HTTP/SSE bodies were imported. Legacy V11 two-check fields remain NULL and NO_GO; no later policy reconstructs them.
+
+The inherited source_check_observation is diagnostic data, never authority or retry permission. Its typed fields exclude SQL, argument values and error bodies; at most64 failures with a nonnegative dropped count, positive only at64 retained. Caller remaining time may be NULL or negative. Source2000ms/watchdog750ms bounds are unchanged. Old557 underlying cause remains UNKNOWN.
+
+Stage14 individually named regular0600 safe leaves: scope.json, pg-ledger.json, pg-initial.json, pg-product.json, runtime-state.json, hardware.json, runtime-profile.json, source-manifest.sha256, source-commit.txt, quality.json, prerequisite.json, expense-exception.json, timeout-waiver.json and historical557-expense-exception.json. The last input preserves exacte2ebb0c52c406f21c1120b78c90aa9e3181d83c0875411a07738fc084286297d; the original537 expense-exception remains distinct. Stage only individually named0600 /proposals/tool-proposal-%06d.json leaves from safe scope metadata, each<=262144 bytes. Never mount an original private directory, provider import, credential material or SSE body.
+
+A separate frozen auditor checkout/executable is mandatory. -auditor-commit, -auditor-source-sha256 and -auditor-binary-sha256 bind that future checker; -commit, -source-sha256 and measured app/broker/converter flags bind actual native execution. Both source trees and the exact binaries are verified. All copying/audit containers use network none and bounded resources; no source is synchronized into an already-running native root.
+
+After initializing the repo-local Go environment, the narrow Linux auditor verification is:
+
+```bash
+go test -race -count=1 -json -run '^Test(V12Audit|V13Audit|V11AuditFiveCasesSourceProjectionAnd628$|V10AuditFiveCasesExplicitProspectiveAllocation$|V9AuditFiveCasesSerializedOriginalProposals$|V8AuditFiveCasesOriginalProposalBinding$|V7AuditFiveCasesExplicitProfile$|SyntheticChainWitnessPassNeverGrantsIssueAcceptance$)' ./scripts/dev/release-chain-v6-final-audit
+go vet ./scripts/dev/release-chain-v6-final-audit
+```
+
+Require exactly49 named PASS with zero FAIL/SKIP:32 V12 names in v12-required-tests.txt,11 V13 names in v13-required-tests.txt, plus the six explicit V6–V11 compatibility names above. This is a required future Linux proof, not a claim that an author-local build establishes release acceptance. The author-local V12 and V13 overlay logs passed their respective38 and18 named checks and vet; the final combined49-name composition and executable must be independently frozen and verified.
+
+Run [the V13 reproducer](../release-chain-v13-final-audit-reproduce.sh) only after actual native completion is confirmed. It copies the named leaves and proposals into a fresh exclusive review directory, preserves stdout/stderr/exit status and hashes even on NO_GO, and invokes explicit-protocol=v13. An input identity rejection may yield empty stdout with a nonzero exit; that remains NO_GO. Final issue-wide review must also correlate quality/comparison, all historical expense/waivers, final composition checks and documentation before PR readiness, merge or issue closure. Earlier reproduction commands remain unchanged.

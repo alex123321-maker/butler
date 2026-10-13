@@ -1,0 +1,107 @@
+{
+  "version": "butler-release-chain-high-offline-evidence-v1",
+  "status": "targeted_offline_passed_full_process_failed_native_closed",
+  "code_commit": "b224652cc344cda9e4c330d7a6f26a670e08f4e7",
+  "new_native_calls": 0,
+  "new_local_model_load_attempts": 0,
+  "human_messages": 0,
+  "issue33_ready": false,
+  "prospective_scope": {
+    "window_id": "issue33-high-release-chain-20261012-baseline480",
+    "baseline_attempts": 480,
+    "baseline_established": false,
+    "maximum_new_attempts_design": 40,
+    "maximum_total_attempts_design": 520,
+    "reviewed_prerequisite_sha256": null,
+    "execution_enabled": false
+  },
+  "proofs": [
+    {
+      "stage": "exact_4d_offline_preparation",
+      "code_commit": "4d643d742ce07db5b64c8f62eb9aa7f066626814",
+      "report": "/srv/storage/butler/agents/scenario-release-chain-high-20261012/reports/chain-high-prepare-20261012T141506Z-1875595",
+      "source_manifest_sha256": "f8496ec46fe842c0fe4846f7eab319206a8d7025245d645f7dfd66f97002f152",
+      "events_sha256": "17acb0a986a646f45ea69e34109051ee427c6b8d2b07cfdb62182fbb633d1d7a",
+      "pass_names": 16,
+      "top_level_pass_names": 6,
+      "failed_names": 0,
+      "skipped_names": 0,
+      "race": true,
+      "vet": true
+    },
+    {
+      "stage": "exact_4d_actual_pg_kernel",
+      "code_commit": "4d643d742ce07db5b64c8f62eb9aa7f066626814",
+      "report": "/srv/storage/butler/agents/scenario-release-chain-high-20261012/reports/release-chain-20261012T141704Z-1883629",
+      "source_manifest_sha256": "f8496ec46fe842c0fe4846f7eab319206a8d7025245d645f7dfd66f97002f152",
+      "events_sha256": "d90838c4e052c5ba8012e070d1a5981984df59eb898d2b4a5d13f69281601e5e",
+      "pass_names": 20,
+      "top_level_pass_names": 2,
+      "failed_names": 0,
+      "skipped_names": 0,
+      "race": true,
+      "vet": true
+    },
+    {
+      "stage": "exact_4d_actual_process_chain",
+      "status": "failed",
+      "code_commit": "4d643d742ce07db5b64c8f62eb9aa7f066626814",
+      "report": "/srv/storage/butler/agents/scenario-release-chain-high-20261012/reports/release-chain-process-20261012T141809Z-1888527",
+      "source_manifest_sha256": "f8496ec46fe842c0fe4846f7eab319206a8d7025245d645f7dfd66f97002f152",
+      "events_sha256": "1bec90b36867aac90eb4ee644ebe8fb3c0a693b7f2e0ff22b533e141b0db563a",
+      "pass_names": 7,
+      "top_level_pass_names": 2,
+      "failed_test_names": [
+        "TestScenarioReleaseChainOneVerifiedNoticeContainerE2E/explicit_absence",
+        "TestScenarioReleaseChainOneVerifiedNoticeContainerE2E"
+      ],
+      "package_failed": true,
+      "skipped_names": 0,
+      "failure": "fixture_25_second_automatic_state_fence",
+      "recorded_state": "activated_catalog:queued:running:tool_running, candidate_return:queued:completed:completed",
+      "exact_cause_known": false
+    },
+    {
+      "stage": "exact_b224_offline_preparation",
+      "code_commit": "b224652cc344cda9e4c330d7a6f26a670e08f4e7",
+      "report": "/srv/storage/butler/agents/scenario-release-chain-high-20261012/reports/chain-high-prepare-20261012T143223Z-1943859",
+      "source_manifest_sha256": "ef8f54e480bbdb6f1856d408103327fbd0c13c63563db51e592706803b433cf8",
+      "events_sha256": "074ae3fae8eef987a278cea28b9ba4b0f1c6f1788be1776a3c647dc35eb05dbc",
+      "pass_names": 17,
+      "top_level_pass_names": 7,
+      "failed_names": 0,
+      "skipped_names": 0,
+      "race": true,
+      "vet": true
+    },
+    {
+      "stage": "exact_b224_narrow_absence_diagnosis",
+      "code_commit": "b224652cc344cda9e4c330d7a6f26a670e08f4e7",
+      "report": "/srv/storage/butler/agents/scenario-release-chain-high-20261012/reports/release-chain-process-20261012T143424Z-1950567",
+      "source_manifest_sha256": "ef8f54e480bbdb6f1856d408103327fbd0c13c63563db51e592706803b433cf8",
+      "events_sha256": "39ba20b5256c1cacec1082bbe7aff9c51b5b4ee92eb2b1e731f620b2dd3f2946",
+      "pass_names": 2,
+      "top_level_pass_names": 1,
+      "failed_names": 0,
+      "skipped_names": 0,
+      "race": true,
+      "vet": true,
+      "old_failure_reproduced": false,
+      "supersedes_full_failed_chain": false
+    }
+  ],
+  "excluded_proof": {
+    "report": "/srv/storage/butler/agents/scenario-release-chain-high-20261012/reports/chain-high-prepare-20261012T143126Z-1940232",
+    "reason": "incorrect_declared_release_argument",
+    "retained": true,
+    "native_calls": 0,
+    "used_for_acceptance": false
+  },
+  "pending": [
+    "unresolved_full_process_25_second_fence_failure",
+    "actual_independent_V2_quality_and_comparison_pass",
+    "current_history_and_reviewed_prerequisite_freeze",
+    "current_combined_source_preparation",
+    "actual_native_release_chain_scenarios"
+  ]
+}

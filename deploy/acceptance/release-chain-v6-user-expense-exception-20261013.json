@@ -1,0 +1,25 @@
+{
+  "version": "butler-chain-v6-human-expense-exception-v1",
+  "source": "explicit_user_reply_in_current_task",
+  "reply_to": "request_user_input_async:call_48746905f5834b09be7b567fd2531f0d",
+  "user_reply": "Разрешить UNKNOWN только для закрытого сбоя №537; новый прогон должен иметь полный измеренный расход.",
+  "allowed_closed_ordinal": 537,
+  "allowed_unknown_fields": ["input_tokens", "output_tokens", "total_tokens"],
+  "retain_original_null_usage": true,
+  "retain_closed_chain_no_go": true,
+  "new_after_537_all_attempts_require_complete_measured_usage": true,
+  "future_unknown_expense_exceptions_authorized": false,
+  "other_quality_release_criteria_changed": false,
+  "historical_266_cause": "UNKNOWN",
+  "prior_total_unknown_dimensions": 47,
+  "prior_known_total_tokens_subtotal": 572459,
+  "remaining_operator_protocol_attempt_cap": 78,
+  "absolute_operator_protocol_history_ceiling": 615,
+  "independent_native_admission_still_required": true,
+  "issue33_ready": false,
+  "limitations": [
+    "This records the trusted human reply; it is not an external signature or administrative isolation proof.",
+    "The exception does not recover actual expense, change the failed V5 outcome or claim complete historical expense.",
+    "Existing pre-task unknowns remain unknown; no new attempt after537 receives an unknown-expense exception."
+  ]
+}

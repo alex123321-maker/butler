@@ -30,7 +30,15 @@ without another observation or charge. Conflicting duplicate totals or ambiguous
 legacy/event fields fail closed, preserving the first committed measurement;
 negative/inconsistent/overflowed or provisional counts are never recorded.
 Observed allowance overrun is retained as a measurement and stops the turn before
-tool/content release. Missing/incomplete/cancelled observations remain NULL.
+tool or final release; already streamed deltas are not rewound.
+For native Antigravity High, a known complete total additionally bounds generated
+tokens as `max(candidate_output, total - prompt_input)` against the admitted
+output allowance. High's declared generation ceiling includes thinking. This
+does not label generic adapters' cached/other token dimensions as generation,
+change the stored visible input/output observations, infer billing, or refund
+reservations. A missing total preserves the legacy pair-only check and remains
+unavailable for full-token-cost acceptance. Missing/incomplete/cancelled
+observations remain NULL.
 
 The existing source guard must release current final/tool proposals before their
 usage reaches the wrapper. Denied stale source/task authority cannot admit another
@@ -69,6 +77,10 @@ children, and fresh committed random ID for every actual model attempt. Replayin
 a quote is idempotent; changing scope or charge conflicts. Reservation replay is
 not dispatch permission: the effect journal independently rejects spent/unknown
 effects. Crashes, timeouts and unknown outcomes do not refund allowance.
+The [bounded model retry](model-retry-policy.md) spends a fresh reservation and
+operation. Admission exposes the effective deadline's trusted origin so a nominal
+model-turn timeout can be distinguished from an earlier scope or authority limit.
+Earlier attempts and NULL measurements remain immutable across recovery.
 
 Loops normalize root, pinned task/constraints revisions, exact tool/contract and
 canonical arguments across restart. Equivalent numbers/object order compare

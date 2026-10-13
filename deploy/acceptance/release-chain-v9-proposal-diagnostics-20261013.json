@@ -1,0 +1,142 @@
+{
+  "actual_source": "1937bdc8f152469d918ea83092a8d75a614f07c5",
+  "all_model_argument_values_remain_private": true,
+  "all_ten_core_action_fingerprints_match": true,
+  "confirmed_actions": 9,
+  "created_at_utc": "2026-10-13T16:22:01.631579+00:00",
+  "issue33_ready": false,
+  "new_native_attempts": 12,
+  "ordinal556_inspect_shape": {
+    "action_state": "effect_unknown",
+    "authorization_absent": true,
+    "body_absent": true,
+    "current_action_authorization_hash_matches": true,
+    "dispatch_outcome": "unknown",
+    "exact_failure_subcause": "UNKNOWN_FROM_CURRENT_SAFE_EXPORTS",
+    "required_fields_exact": true,
+    "url_equals_fixed_project_fixture_target": true,
+    "url_field_type_string": true
+  },
+  "product_sha256": "c7515abd5c1b33a72e38dcb1bab48b866820b732b78e214decd438913023f642",
+  "proposals": [
+    {
+      "actual_action_state": "effect_confirmed",
+      "actual_core_authorized_action_match": true,
+      "model_argument_values_emitted": false,
+      "ordinal": 545,
+      "original_authorization_hash_matches_metadata": true,
+      "original_bytes_and_base64_match": true,
+      "private_bytes": 841,
+      "private_sha256": "977ede63aba12136a35405e761aeb260169c18962e10063bffd086b95334d335",
+      "tool_name": "converters.discover"
+    },
+    {
+      "actual_action_state": "effect_confirmed",
+      "actual_core_authorized_action_match": true,
+      "model_argument_values_emitted": false,
+      "ordinal": 546,
+      "original_authorization_hash_matches_metadata": true,
+      "original_bytes_and_base64_match": true,
+      "private_bytes": 1962,
+      "private_sha256": "6a0610a6805f5ea09a5ab51dac633365ba7fa571214cb6b8b647978fff77bcbb",
+      "tool_name": "task.delegate_converter"
+    },
+    {
+      "actual_action_state": "effect_confirmed",
+      "actual_core_authorized_action_match": true,
+      "model_argument_values_emitted": false,
+      "ordinal": 548,
+      "original_authorization_hash_matches_metadata": true,
+      "original_bytes_and_base64_match": true,
+      "private_bytes": 841,
+      "private_sha256": "2da7ee577826166396da9f900509602cc441df97818eb0032f9eb80a0a620b49",
+      "tool_name": "converters.discover"
+    },
+    {
+      "actual_action_state": "effect_confirmed",
+      "actual_core_authorized_action_match": true,
+      "model_argument_values_emitted": false,
+      "ordinal": 549,
+      "original_authorization_hash_matches_metadata": true,
+      "original_bytes_and_base64_match": true,
+      "private_bytes": 892,
+      "private_sha256": "682ac0f2b27f746209da5ffca222cc2ed0695a457673ded2a25ae5ee547d127c",
+      "tool_name": "converters.develop"
+    },
+    {
+      "actual_action_state": "effect_confirmed",
+      "actual_core_authorized_action_match": true,
+      "model_argument_values_emitted": false,
+      "ordinal": 550,
+      "original_authorization_hash_matches_metadata": true,
+      "original_bytes_and_base64_match": true,
+      "private_bytes": 492,
+      "private_sha256": "804fd62b8aef6ecbeeb5cba147ba6c07024343e6332d322ed5e0aa824797d0fb",
+      "tool_name": "converters.test"
+    },
+    {
+      "actual_action_state": "effect_confirmed",
+      "actual_core_authorized_action_match": true,
+      "model_argument_values_emitted": false,
+      "ordinal": 552,
+      "original_authorization_hash_matches_metadata": true,
+      "original_bytes_and_base64_match": true,
+      "private_bytes": 450,
+      "private_sha256": "4f8e410ed9c270c39522ff9604e2b6698f319a87e4c80f81f2a44dcbfbed6ffc",
+      "tool_name": "converters.collect"
+    },
+    {
+      "actual_action_state": "effect_confirmed",
+      "actual_core_authorized_action_match": true,
+      "model_argument_values_emitted": false,
+      "ordinal": 553,
+      "original_authorization_hash_matches_metadata": true,
+      "original_bytes_and_base64_match": true,
+      "private_bytes": 492,
+      "private_sha256": "bf9290080cabf186326c503318d2bb2e6eb805303607a23e7b2b679776419a47",
+      "tool_name": "converters.test"
+    },
+    {
+      "actual_action_state": "effect_confirmed",
+      "actual_core_authorized_action_match": true,
+      "model_argument_values_emitted": false,
+      "ordinal": 554,
+      "original_authorization_hash_matches_metadata": true,
+      "original_bytes_and_base64_match": true,
+      "private_bytes": 1023,
+      "private_sha256": "77240de58645a34cb3a286cb10370d3d87883c4ddfb2985e17f73e9fe8ad6268",
+      "tool_name": "converters.trial"
+    },
+    {
+      "actual_action_state": "effect_confirmed",
+      "actual_core_authorized_action_match": true,
+      "model_argument_values_emitted": false,
+      "ordinal": 555,
+      "original_authorization_hash_matches_metadata": true,
+      "original_bytes_and_base64_match": true,
+      "private_bytes": 538,
+      "private_sha256": "60b617e61a15b265cba60a8b8ef9ad5196ed170c863aa193494fa87413312537",
+      "tool_name": "converters.activate"
+    },
+    {
+      "actual_action_state": "effect_unknown",
+      "actual_core_authorized_action_match": true,
+      "model_argument_values_emitted": false,
+      "ordinal": 556,
+      "original_authorization_hash_matches_metadata": true,
+      "original_bytes_and_base64_match": true,
+      "private_bytes": 411,
+      "private_sha256": "b8a5d34c14d681db2069b050f9435a7e019fa55dd544841c0c8f1eb867b568b4",
+      "tool_name": "extension.project.inspect"
+    }
+  ],
+  "provider_or_auth_calls_by_auditor": 0,
+  "scope_sha256": "332ed92d91d264988375eebf884c408781f19bd8eb3f18649dea48b8bc67afe1",
+  "specific_prior541_cause": "UNKNOWN",
+  "specific_prior544_child_cause": "UNKNOWN",
+  "status": "INDEPENDENT_TEN_ORIGINAL_PROPOSALS_CORRELATED_CHAIN_NO_GO",
+  "unknown_actions": 1,
+  "verified_scenarios": 0,
+  "version": "butler-v9-closed556-private-own-proposal-diagnostic-v1",
+  "whole_private_directory_read_or_mounted": false
+}

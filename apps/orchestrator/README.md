@@ -1,4 +1,81 @@
+Converter continuations distinguish returned candidates from already activated
+catalog entries. Current activation facts are reloaded as private DATA under the
+existing lease/source/authority checks, including recovery. Activated entries
+resume the remaining original task; they do not establish semantic verification
+or authorize replaying activation. Candidate collection/checking remains its
+separate earlier phase.
 # Orchestrator
+
+Core supports one durable model retry per accepted input after a trusted nominal
+model-turn timeout. The input worker queues a two-second pause, then obtains fresh
+ownership and a separately budgeted provider session from saved Butler input and
+known tool results. Confirmed non-read proposals cannot execute again with a new
+call ID; owner Stop, changed sources, earlier authority deadlines and unknown
+effects deny recovery. An exhausted or ineligible deadline follows normal
+provider cancellation and blocking. Missing provider usage stays NULL. See the
+[model retry policy](../../docs/architecture/model-retry-policy.md) and the
+zero-inference `scripts/dev/model-retry-lab.sh` runner.
+
+Current actual history is557 after the sealed V5/V6/V7b/V8/V9/V10 native chains NO_GO.
+The latest557 start was cancelled by a source-check timeout; usage/version remain
+UNKNOWN and no action ran. This is ineligible for nominal model-timeout retry.
+Earlier545 through556 completed actual High requests with full measured usage. Ordinary
+Core/Broker confirmed child development and test, parent collection, retest,
+trial and activation. The next extension inspection became effect_unknown;
+its exact runtime subcause remains UNKNOWN and automatic continuation blocked.
+Cumulative475637 input/15159 output/793703 total
+are known subtotals, with29 unknown visible pairs and49 unknown totals. No
+complete original-result/notice chain exists; four remaining cases were not
+run. Full mandatory faults, production retry tests and broad Linux tests/vet
+passed separately on their attributed earlier sources. See the [V10 chain audit](../../docs/ai/scenario-release-chain-v10-independent-audit-20261013.md).
+The535 quality/comparison boundary below remains its immutable prior evidence.
+
+The accepted quality/comparison evidence ends at535 spent High attempts. Actual V5 quality and four
+paired comparisons passed independent source/signature/original-byte/PostgreSQL
+audit:96/96 development,64/64 tuning,75/76 holdout, zero critical failures,4/4 both
+comparison arms and274142 fully measured new total tokens including thinking.
+Its original historical-RunID auditor rejection is retained; the separately
+reviewed read-only repair audited the same unchanged252 paid originals.
+Cumulative509 known visible pairs/26 NULL and563997 known total tokens preserve
+all46 old unknown totals. Original266's discarded cause remains UNKNOWN. Real
+High release chain and final issue-wide acceptance still remain. See the
+[actual V5 audit](../../docs/ai/scenario-cloud-v5-independent-audit-20261013.md),
+[actual diagnostic audit](../../docs/ai/scenario-schema-dialect-actual-audit-20261013.md)
+and [closed V4 audit](../../docs/ai/scenario-cloud-v4-independent-audit-20261013.md).
+
+The sealed V5 native release-chain collector bound the actual535
+history and full original quality audit before any provider import. Its shared
+PostgreSQL counter supplements ordinary Core budgets: at most80 new requests,
+one60-minute absolute window, five fixed normal/restart/delivery/Stop cases. Each
+tool/final release first persists complete measured cost/version; unknowns or
+write failures deny action. Initial/final product and independent PG witnesses
+retain current owner/source/lease, converter checks/activation, exact original
+prepared patch/result and frozen notice state. Current Core rejects whole tool
+batches before Broker dispatch; the operator prompt declares one call at a time.
+Read the [V5 chain plan](../../docs/ai/scenario-release-chain-v5-high-plan-20261013.md)
+for the model-free detector, production finite-IR builder and loopback recipient
+boundaries. Its actual independent admission/preparation passed, but its native
+scope is now sealed failed; never execute or Sync that root again. Any future
+scope needs separate reviewed code/history/admission. These fixtures do not
+change deployed authority or default model capabilities.
+
+The historical additive V4 acceptance reader preserves268 spent High attempts and all old
+unknown costs/verdicts. Its full shadow collector saves owning PostgreSQL spend
+before private original-final bytes; immutable safe diagnostics distinguish
+encoding, lifecycle, transport and retention failure. A new independently signed
+corpus and separate finite window govern quality and paired comparison. The
+fresh native chain admits only an independently rechecked actual complete V4
+quality/comparison PASS, with source/cost/PostgreSQL lineage preserved. These
+test-only gates do not change deployed authority or default capabilities. See
+[268-attempt accounting](../../docs/ai/scenario-high-v4-history-accounting-20261013.md)
+and [V4 native chain protocol](../../docs/ai/scenario-release-chain-v4-high-plan-20261013.md).
+
+The separate pure High history reader preserves all248 spent attempts, including
+the failed V2 timeout with NULL usage. It grants no admission or retry and keeps
+both old NO_GO verdicts. See [historical accounting](../../docs/ai/scenario-high-history-accounting-20261012.md).
+The additive `readScenarioHighV3History` accounts for266 spent calls, including
+the V3 known-cost failure, without changing any prior reader or native admission.
+See [closed V3 accounting](../../docs/ai/scenario-high-v3-history-accounting-20261012.md).
 
 The budgeted provider now records complete request usage from tool proposals and
 other complete transport outcomes as well as legacy text finals. One admitted
@@ -7,6 +84,11 @@ charge or overwrite its first known counts. Missing/incomplete/cancelled metadat
 remains NULL; source/task admission and conservative reservations keep their
 existing authority and no-refund semantics. Earlier native reports are immutable.
 Zero-inference regression runner: `scripts/dev/tool-turn-usage-lab.sh`.
+Native High additionally checks the known complete total less prompt input
+against its generation allowance, which includes candidates and thinking. The
+ledger retains visible input/output measurements and conservative reservations;
+generic cached dimensions and missing totals are not reclassified. An overrun
+blocks tool/final release; already streamed deltas are not rewound.
 
 Owner state/control acceptance adds finite attempt/result/source/version metadata,
 exact lost-ACK control replay in Web, typed Telegram observations/mandate revocation
@@ -673,3 +755,35 @@ the owned root's branches. Requested model, persisted state, attempts, expired
 deadline and obsolete task revision remain separate from runtime readiness and
 verified task completion. Raw source/error/claim/allowance payloads are excluded;
 the read-only projection grants no execution authority.
+
+Authenticated initiative Sources can opt new tasks into `verified_task` delivery:
+ordinary technical finals remain immutable, while one fixed-content Task-owned
+notice is queued atomically only after current owner verification/completion.
+The separate dispatcher is installed only with the actual069 schema/guards.
+Existing Sources and attempt notification behavior stay compatible.
+
+Activated055 preparations reload bounded confirmed tool observations from the
+exact completed preceding ROOT attempt. Each qualified run/call must have a
+matching owner/task/constraints and goal/mandate binding, confirmed effect,
+completed authorization/dispatch and retained canonical runtime-result evidence.
+Missing, unfinished or uncertain journal/transcript rows deny. Child reports and
+unrelated session/task histories are never selected. Original sources and the
+private claim/current owner proof are checked again after the reads.
+
+Observations remain private sanitized DATA, not native function responses,
+semantic owner verification or execution grants. Results retain actual artifact
+and check receipts. Original authorization hashes stay exact; sanitized arguments
+and equivalence hashes are included only when stored JSONB arguments match that
+exact hash. Otherwise arguments are omitted, without reconstructing numeric
+lexemes. Context is bounded to32 observations/256KiB. Recovered preparations
+discard and reload the projection under current guards.
+
+Only a private automatic055 continuation blocks equivalent confirmed non-read
+proposals before slot admission or Broker preparation. Object-key order, numeric
+spelling and a fresh call ID cannot repeat a verified prior mutation. Unavailable
+prior equivalence makes a non-read proposal for the same tool fail closed. Repeat reads require both the
+prior read effect and a current active trusted read-only catalog contract.
+Ordinary owner inputs retain distinct intentional action slots. There is no
+fabricated ToolResult, prior-effect replay, refund or permission bypass. Current
+task/source/lease, Stop, budget, final and Broker guards still apply. Private proof
+reloads before proposals use a two-second maximum clamped by the live caller.

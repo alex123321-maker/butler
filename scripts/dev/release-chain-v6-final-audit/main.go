@@ -1,0 +1,371 @@
+// Network-free independent operator checker. It has no provider/auth/executor.
+package main
+
+import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"flag"
+	"fmt"
+	"io"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
+
+	"github.com/butler/butler/internal/acceptance"
+)
+
+func readExact(path, expected string, limit int64) ([]byte, error) {
+	if !hashPattern.MatchString(expected) {
+		return nil, errors.New("operator_input_pin_required")
+	}
+	stat, e := os.Lstat(path)
+	if e != nil || !stat.Mode().IsRegular() || stat.Mode().Perm() != 0600 || stat.Size() <= 0 || stat.Size() > limit {
+		return nil, errors.New("named_safe_file_identity_denied")
+	}
+	f, e := os.Open(path)
+	if e != nil {
+		return nil, errors.New("named_safe_file_read_denied")
+	}
+	defer f.Close()
+	opened, e := f.Stat()
+	if e != nil || !os.SameFile(stat, opened) {
+		return nil, errors.New("named_safe_file_replaced")
+	}
+	raw, e := io.ReadAll(io.LimitReader(f, limit+1))
+	if e != nil || int64(len(raw)) != stat.Size() || digest(raw) != expected {
+		return nil, errors.New("named_safe_file_bytes_denied")
+	}
+	return raw, nil
+}
+func binaryHash(path, expected string) error {
+	stat, e := os.Lstat(path)
+	if e != nil || !stat.Mode().IsRegular() || stat.Mode().Perm() != 0555 || !hashPattern.MatchString(expected) {
+		return errors.New("readonly_runtime_binary_identity_denied")
+	}
+	f, e := os.Open(path)
+	if e != nil {
+		return errors.New("readonly_runtime_binary_read_denied")
+	}
+	defer f.Close()
+	opened, e := f.Stat()
+	if e != nil || !os.SameFile(stat, opened) {
+		return errors.New("readonly_runtime_binary_replaced")
+	}
+	h := sha256.New()
+	n, e := io.Copy(h, f)
+	if e != nil || n != stat.Size() || hex.EncodeToString(h.Sum(nil)) != expected {
+		return errors.New("readonly_runtime_binary_hash_denied")
+	}
+	return nil
+}
+func run() error {
+	protocol := flag.String("protocol", "v6", "explicit frozen v6, v7, v8, v9, v10, v11, v12, v13, v14, v15 or v16 audit policy")
+	auditorCode := flag.String("auditor-commit", "", "separately frozen read-only auditor commit")
+	auditorSource := flag.String("auditor-source-sha256", "", "separately frozen auditor source TreeHash")
+	auditorBinary := flag.String("auditor-binary-sha256", "", "separately built audit executable")
+	pins := map[string]*string{}
+	for _, name := range []string{"scope", "pg-ledger", "pg-initial", "pg-product", "runtime-state", "hardware", "runtime-profile", "source-manifest"} {
+		pins[name] = flag.String(name+"-sha256", "", "exact independently retained named file identity")
+	}
+	code := flag.String("commit", "", "exact prepared measurement commit")
+	source := flag.String("source-sha256", "", "exact prepared source TreeHash")
+	app := flag.String("app-sha256", "", "prepared app.test executable")
+	broker := flag.String("broker-sha256", "", "prepared Tool Broker executable")
+	converter := flag.String("converter-sha256", "", "prepared isolated converter executable")
+	pgImage := flag.String("postgres-image", "", "prepared exact PostgreSQL image")
+	runtimeImage := flag.String("runtime-image", "", "prepared exact converter runtime image")
+	flag.Parse()
+	policy := selectedAuditPolicy(*protocol)
+	if os.Geteuid() != 10001 {
+		return errors.New("readonly_audit_owner_required")
+	}
+	if !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(*code) || !hashPattern.MatchString(*source) {
+		return errors.New("prepared_source_identity_required")
+	}
+	if *protocol == "v7" || *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
+		if !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(*auditorCode) || !hashPattern.MatchString(*auditorSource) {
+			return errors.New("separate_auditor_source_identity_required")
+		}
+		auditTree, err := acceptance.TreeHash("/auditor-src", nil)
+		if err != nil || auditTree != *auditorSource {
+			return errors.New("separate_auditor_source_tree_denied")
+		}
+		executable, err := os.Executable()
+		if err != nil {
+			return errors.New("auditor_executable_identity_denied")
+		}
+		if err = binaryHash(executable, *auditorBinary); err != nil {
+			return err
+		}
+	}
+	measuredCode, e := readExact("/source-commit.txt", digest([]byte(*code+"\n")), 41)
+	if e != nil || string(measuredCode) != *code+"\n" {
+		return errors.New("measured_source_commit_denied")
+	}
+	tree, e := acceptance.TreeHash("/src", nil)
+	if e != nil || tree != *source {
+		return errors.New("prepared_source_tree_denied")
+	}
+	for _, item := range [][2]string{{"/app.test", *app}, {"/tool-broker", *broker}, {"/tool-converter", *converter}} {
+		if e = binaryHash(item[0], item[1]); e != nil {
+			return e
+		}
+	}
+	parsed := map[string]any{}
+	bindings := map[string]string{"protocol": *protocol, "code_commit": *code, "source_sha256": *source, "app_sha256": *app, "broker_sha256": *broker, "converter_sha256": *converter, "quality_sha256": qualitySHA, "prerequisite_sha256": policy.PrerequisiteSHA, "prior_protocol_sha256": priorProtocolSHA, "human_safe_timeout_waiver_sha256": safeTimeoutWaiverSHA}
+	if *protocol == "v7" || *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
+		bindings["auditor_commit"], bindings["auditor_source_sha256"], bindings["auditor_binary_sha256"] = *auditorCode, *auditorSource, *auditorBinary
+		bindings["human_policy_amendment_sha256"] = policy.HumanSHA
+		bindings["retained_v6_timeout_waiver_sha256"] = safeTimeoutWaiverSHA
+		bindings["retained_v6_protocol_sha256"] = prerequisiteSHA
+		if *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
+			bindings["retained_v7b_protocol_sha256"] = v7PrerequisiteSHA
+			bindings["proposal_retention_policy"] = "own_tool_call_original_bytes_v1"
+			if *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
+				bindings["retained_v8_protocol_sha256"] = v8PrerequisiteSHA
+				bindings["prior_actual544_fold_sha256"] = v9PriorSHA
+				bindings["provider_entries_serialized"] = "owning_client_intervals"
+			}
+		}
+	}
+	if *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
+		bindings["retained_v9_protocol_sha256"] = v9PrerequisiteSHA
+		bindings["retained_v9_human_amendment_sha256"] = v9HumanSHA
+		bindings["prior_actual556_fold_sha256"] = v10PriorSHA
+		bindings["extension_harness_lifetime_policy"] = "test_only_remaining_case_deadline_le_2400000_ms"
+	}
+	if *protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20")))))) {
+		bindings["retained_v10_protocol_sha256"] = v10PrerequisiteSHA
+		bindings["retained_v10_human_amendment_sha256"] = v10HumanSHA
+		bindings["prior_actual557_fold_sha256"] = v11PriorSHA
+		bindings["historical557_expense_exception_sha256"] = v11HistoricalExceptionSHA
+		bindings["source_check_observation_policy"] = "test_only_failure_projection_no_authority_or_retry"
+		raw, err := readExact("/historical557-expense-exception.json", v11HistoricalExceptionSHA, 256<<10)
+		if err != nil {
+			return err
+		}
+		value, err := decode(raw)
+		if err != nil {
+			return err
+		}
+		verifyV11HistoricalException(value)
+	}
+	for name, pin := range pins {
+		path, maximum := "/"+name+".json", int64(8<<20)
+		if name == "source-manifest" {
+			path, maximum = "/source-manifest.sha256", 1<<20
+		}
+		raw, e := readExact(path, *pin, maximum)
+		if e != nil {
+			return e
+		}
+		bindings[name+"_sha256"] = *pin
+		if name == "source-manifest" {
+			if e = sourceManifest("/src", raw); e != nil {
+				return e
+			}
+		} else {
+			v, e := decode(raw)
+			if e != nil {
+				return e
+			}
+			parsed[name] = v
+		}
+	}
+	for name, pin := range map[string]string{"quality": qualitySHA, "prerequisite": policy.PrerequisiteSHA, "expense-exception": expenseExceptionSHA, "timeout-waiver": policy.HumanSHA} {
+		raw, e := readExact("/"+name+".json", pin, 8<<20)
+		if e != nil {
+			return e
+		}
+		v, e := decode(raw)
+		if e != nil {
+			return e
+		}
+		parsed[name] = v
+		bindings[name+"_sha256"] = pin
+	}
+	profileHash := operatorBindings(obj(parsed["hardware"]), obj(parsed["runtime-state"]), obj(parsed["runtime-profile"]), *pgImage, *runtimeImage, *converter)
+	for _, value := range arr(parsed["pg-product"]) {
+		product := obj(obj(value)["payload_json"])
+		for _, version := range rows(obj(product["postgres"]), "converter_versions") {
+			require(version["profile_pin"] == profileHash, "converter_profile_binary_binding")
+		}
+	}
+	verifyRetainedFailedV5Source("/src")
+	verifyPriorV6ProtocolSource("/src")
+	if *protocol == "v7" || *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
+		verifyRetainedFailedV6Source("/src")
+	}
+	if *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
+		verifyRetainedFailedV7bSource("/src")
+	}
+	if *protocol == "v8" || *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
+		verifyV8PrivateDirectory(obj(parsed["scope"]))
+	}
+	if *protocol == "v9" || *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
+		verifyRetainedFailedV8Source("/src")
+	}
+	if *protocol == "v10" || (*protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))))) {
+		verifyRetainedFailedV9Source("/src")
+	}
+	if *protocol == "v11" || (*protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20")))))) {
+		verifyRetainedFailedV10Source("/src")
+	}
+	if *protocol == "v12" || (*protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))))) {
+		bindings["retained_v11_protocol_sha256"] = v11PrerequisiteSHA
+		bindings["retained_v11_human_amendment_sha256"] = v11HumanSHA
+		bindings["prior_actual575_fold_sha256"] = v12PriorSHA
+		bindings["project_read_receipts_policy"] = "owning_budget_qualified_run_call_actual_pg_result_and_canonical_body_digests"
+		verifyRetainedFailedV11Source("/src")
+	}
+	if *protocol == "v13" || (*protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20")))) {
+		bindings["retained_v12_protocol_sha256"] = v12PrerequisiteSHA
+		bindings["retained_v12_human_amendment_sha256"] = v12HumanSHA
+		bindings["zero_native_v12_bootstrap_sha256"] = v13BootstrapSHA
+		verifyV13BootstrapSource("/src")
+	}
+	if *protocol == "v14" || (*protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20"))) {
+		bindings["retained_v13_protocol_sha256"] = v13PrerequisiteSHA
+		bindings["retained_v13_human_amendment_sha256"] = v13HumanSHA
+		bindings["prior_actual593_fold_sha256"] = v14PriorSHA
+		bindings["activated_context_policy"] = "source_pinned_current_activation_data_no_authority"
+		bindings["proposal_metadata_reader_policy"] = "test_only_fixed120_legacy80_unchanged"
+		verifyRetainedFailedV13Source("/src")
+	}
+	if *protocol == "v15" || (*protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20")) {
+		bindings["retained_v14_protocol_sha256"] = v14PrerequisiteSHA
+		bindings["retained_v14_human_amendment_sha256"] = v14HumanSHA
+		bindings["prior_actual611_fold_sha256"] = v15PriorSHA
+		bindings["task_scoped_original_proof_policy"] = "current_task_qualified_completed_run_call_confirmed_dispatch_source_pinned_sql"
+		verifyRetainedFailedV14Source("/src")
+	}
+	if *protocol == "v16" || (*protocol == "v18" || *protocol == "v19" || *protocol == "v20") {
+		bindings["retained_v15_protocol_sha256"] = v15PrerequisiteSHA
+		bindings["retained_v15_human_amendment_sha256"] = v15HumanSHA
+		bindings["prior_actual616_fold_sha256"] = v16PriorSHA
+		bindings["selected_actual_scenarios"] = "restart_sent,explicit_absence,lost_ack,owner_stop"
+		bindings["retained_v14_normal_work"] = "technical_CSV_patch_facts_only_original_NO_GO_no_owner_notice"
+		bindings["common_normal_completion_evidence"] = "current_restart_sent_owner_verification_single_sent_notice"
+		bindings["provider_input_byte_policy"] = "fixture_only_4194304_per_model_quote_503316480_day_16777216_child"
+		verifyRetainedFailedV15Source("/src")
+	}
+	if *protocol == "v18" || *protocol == "v19" || *protocol == "v20" {
+		verifyV18RetainedHistory("/src", "/historical-safe")
+		bindings["selected_actual_scenarios"] = "explicit_absence,lost_ack,restart_sent"
+		bindings["prior_actual658_fold_sha256"] = v18PriorSHA
+		bindings["retained_owner_stop_component_sha256"] = v18StopComponentSHA
+		bindings["retained_owner_stop_boundary_sha256"] = v18StopBoundarySHA
+		bindings["current_source_semantics"] = "actual_catalog_revision_envelope_distinct_from_golden_body_digest"
+	}
+	if *protocol == "v19" || *protocol == "v20" {
+		verifyRetainedFailedV18Source("/src")
+		bindings["selected_actual_scenarios"] = "lost_ack,restart_sent"
+		bindings["retained_explicit_absence_component_sha256"] = v19RetainedAbsenceSHA
+		bindings["prior_actual705_fold_sha256"] = v19PriorSHA
+	}
+	if *protocol == "v20" {
+		verifyRetainedFailedV19Source("/src")
+		bindings["prior_actual706_fold_sha256"] = v20PriorSHA
+		bindings["independent_case_admission_policy"] = "closed_other_case_does_not_grant_authority_retry_or_global_pass"
+		bindings["provider_unavailable_class_policy"] = "exact_fixed_transport_messages_diagnostic_only_no_status_or_retry_authority"
+	}
+	result, err := auditWithPolicy(inputs{parsed["scope"], parsed["pg-ledger"], parsed["pg-initial"], parsed["pg-product"], parsed["runtime-state"], parsed["quality"], parsed["prerequisite"], parsed["expense-exception"], parsed["timeout-waiver"]}, policy)
+	if e = json.NewEncoder(os.Stdout).Encode(struct {
+		Report   report            `json:"chain_audit"`
+		Bindings map[string]string `json:"evidence_bindings"`
+	}{result, bindings}); e != nil {
+		return errors.New("safe_audit_output_failed")
+	}
+	return err
+}
+
+// Match every named file and every regular file in the frozen snapshot. The
+// shell manifest hashes and the independent TreeHash are distinct encodings.
+func sourceManifest(root string, raw []byte) error {
+	if len(raw) == 0 || raw[len(raw)-1] != '\n' {
+		return errors.New("source_manifest_frame_denied")
+	}
+	expected := map[string]string{}
+	for _, line := range strings.Split(strings.TrimSuffix(string(raw), "\n"), "\n") {
+		if len(line) < 69 || !hashPattern.MatchString(line[:64]) || line[64:68] != "  ./" {
+			return errors.New("source_manifest_line_denied")
+		}
+		rel := line[68:]
+		if rel == "" || strings.ContainsAny(rel, "\\\x00\r\t") || filepath.IsAbs(rel) || filepath.ToSlash(filepath.Clean(rel)) != rel || rel == ".." || strings.HasPrefix(rel, "../") || expected[rel] != "" {
+			return errors.New("source_manifest_path_denied")
+		}
+		expected[rel] = line[:64]
+	}
+	seen := 0
+	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, e error) error {
+		if e != nil {
+			return errors.New("source_manifest_walk_denied")
+		}
+		if d.IsDir() {
+			return nil
+		}
+		if !d.Type().IsRegular() {
+			return errors.New("source_manifest_special_file_denied")
+		}
+		rel, e := filepath.Rel(root, path)
+		if e != nil {
+			return errors.New("source_manifest_walk_denied")
+		}
+		pin := expected[filepath.ToSlash(rel)]
+		if pin == "" {
+			return errors.New("source_manifest_missing_file")
+		}
+		sum, e := acceptance.FileHash(path)
+		if e != nil || sum != pin {
+			return errors.New("source_manifest_file_bytes_denied")
+		}
+		seen++
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	if seen != len(expected) {
+		return errors.New("source_manifest_unowned_file")
+	}
+	return nil
+}
+
+func operatorBindings(hardware, runtime, profile object, pgImage, runtimeImage, converter string) string {
+	keys(hardware, "go_image postgres_image runtime_base_image go kernel logical_cpus host_ram_kib cpu_manifest_sha256 build_memory_bytes fixture_memory_bytes converter_memory_bytes build_cpus fixture_cpus postgres_cpus converter_cpus provider actual_native_calls channel weights")
+	require(hardware["go_image"] == "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61" && hardware["postgres_image"] == pgImage && hardware["runtime_base_image"] == runtimeImage && strings.HasPrefix(pgImage, "sha256:") && hashPattern.MatchString(strings.TrimPrefix(pgImage, "sha256:")) && strings.HasPrefix(runtimeImage, "sha256:") && hashPattern.MatchString(strings.TrimPrefix(runtimeImage, "sha256:")), "prepared_image_binding")
+	require(hardware["provider"] == "actual_native_High" && hardware["channel"] == "loopback_http_simulator" && hardware["weights"] == "not_observed" && hardware["actual_native_calls"] == nil && hardware["go"] == "1.27.2" && integer(hardware["build_memory_bytes"]) == 2<<30 && integer(hardware["fixture_memory_bytes"]) == 1536<<20 && integer(hardware["converter_memory_bytes"]) == 128<<20 && integer(hardware["build_cpus"]) == 2 && integer(hardware["fixture_cpus"]) == 2 && integer(hardware["postgres_cpus"]) == 1 && integer(hardware["converter_cpus"]) == 1 && integer(hardware["logical_cpus"]) > 0 && integer(hardware["host_ram_kib"]) > 0 && text(hardware["kernel"]) != "", "declared_runtime_boundary")
+	sha(hardware["cpu_manifest_sha256"])
+	require(runtime["image_id"] == hardware["go_image"] && runtime["postgres_image_id"] == pgImage && runtime["converter_image_id"] == runtimeImage, "actual_process_image_binding")
+	keys(profile, "dependency checker")
+	dep := obj(profile["dependency"])
+	keys(dep, "id version sha256")
+	require(hashPattern.MatchString(converter) && dep["id"] == "butler-converter-ir" && dep["version"] == "1.0.0" && dep["sha256"] == converter && profile["checker"] == "butler.delimited-json.checks.v1", "isolated_converter_profile")
+	// Profile's struct JSON order is part of the existing production digest.
+	type dependency struct {
+		ID      string `json:"id"`
+		Version string `json:"version"`
+		SHA     string `json:"sha256"`
+	}
+	typedProfile := struct {
+		Dependency dependency `json:"dependency"`
+		Checker    string     `json:"checker"`
+	}{dependency{"butler-converter-ir", "1.0.0", converter}, "butler.delimited-json.checks.v1"}
+	return hashValue(typedProfile)
+}
+func main() {
+	defer func() {
+		if recover() != nil {
+			fmt.Fprintln(os.Stderr, "typed_operator_contract_denied")
+			os.Exit(1)
+		}
+	}()
+	if e := run(); e != nil {
+		fmt.Fprintln(os.Stderr, e)
+		os.Exit(1)
+	}
+}

@@ -1,0 +1,44 @@
+{
+  "canonical_go_json_available": false,
+  "canonical_go_not_available_reason": "V14-specific final auditor was not frozen at this completed run; no wrong-protocol or fabricated JSON is used",
+  "chain_audit": {
+    "accepted_model_retry_failures": 0,
+    "accepted_unknown_timeout_cost_entries": 0,
+    "accepted_unknown_timeout_version_entries": 0,
+    "accepted_unmeasured_timeout_entries": 0,
+    "all_new_expense_measured": true,
+    "all_new_measured_cost": {
+      "attempts": 18,
+      "known_input_tokens": 193079,
+      "known_output_tokens": 3556,
+      "known_total_tokens": 215393,
+      "unknown_input_attempts": 0,
+      "unknown_output_attempts": 0,
+      "unknown_total_attempts": 0
+    },
+    "auditor_native_calls": 0,
+    "carry_forward_attempts": 611,
+    "issue33_ready": false,
+    "no_go_reasons": [
+      "original_readiness_terminal_predicate_failed_before_owner_verification_and_notice",
+      "four_fault_variants_unattempted"
+    ],
+    "status": "NO_GO",
+    "verified_scenarios": []
+  },
+  "evidence_bindings": {
+    "app_sha256": "aadbd7333a196c4162404236989fb49a2df24a3335368d6efeeb8771d17dc361",
+    "code_commit": "9c9c826e4df62f97704473e17bd86562c187cf9a",
+    "human_policy_sha256": "531f867dd0e4a4f2ca2c801ff1c5963a423dfeaf7adcd38374d5bed82452985b",
+    "prerequisite_sha256": "7e0122e3041ae3524331f5d4cbc296053e5f4891e09f674e288a02d288f398af",
+    "source_manifest_sha256": "cdebb59281d4b211c41bea917eb62a6e43225d00d2ce6e88c2a868accb4ebedf",
+    "source_sha256": "2088977d4631e9a13167dede98ad74990114f4addfbfb51d89b0e7e4a13783e3"
+  },
+  "limits": [
+    "Supplemental independent NO_GO record; no V14 Go JSON or overall scenario PASS is fabricated.",
+    "All fourteen individual original tool packets matched actual run/call/action authorization digests. Actual response/result/body digests come from the owning source-pinned Broker projection, not imported raw HTTP/SSE.",
+    "Original conversion, immutable unapplied patch and both qualified checks are technical facts; final owner semantic verification/one notice never ran. All four fault cases remain unattempted."
+  ],
+  "report_origin": "independent_read_only_completed_native_pg_original_packets",
+  "version": "butler-independent-v14-failure-supplemental-v1"
+}

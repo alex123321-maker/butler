@@ -1,5 +1,11 @@
 # Tool Broker
 
+The owned converter catalog advertises `converters.collect` only after the
+current Store verifies an actual immutable tested child return. A queued
+developer receipt ends the current parent attempt; collection resumes through
+the ordinary continuation. Listing grants no source or action, and Prepare/Claim
+repeat all current authority, ownership, deletion and return checks.
+
 Workspace execution has an exact optional Server/router adapter in
 `internal/broker/workspaces.go`: canonical create/read/write DATA contracts,
 same-transaction current input/source/worker/budget/resource admission and one-use

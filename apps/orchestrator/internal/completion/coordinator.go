@@ -191,8 +191,14 @@ func (c *Coordinator) Save(ctx context.Context, q Request) (FinalRecord, error) 
 	if err != nil {
 		return r, err
 	}
-	if err = c.Outbox.EnqueueTx(ctx, tx, r.ResultID, r.RunID, r.SessionKey, channel, r.NotificationContent(), now); err != nil {
+	notify, err := c.Tasks.NotifyRunResultTx(ctx, tx, r.TaskID)
+	if err != nil {
 		return r, err
+	}
+	if notify {
+		if err = c.Outbox.EnqueueTx(ctx, tx, r.ResultID, r.RunID, r.SessionKey, channel, r.NotificationContent(), now); err != nil {
+			return r, err
+		}
 	}
 	kinds := []string{"working_cleanup", "transient_cleanup"}
 	if q.PipelineEnabled {

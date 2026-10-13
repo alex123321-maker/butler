@@ -1,0 +1,66 @@
+{
+  "actual_native_cost": {
+    "attempts": 18,
+    "known_input_tokens": 221156,
+    "known_output_tokens": 3231,
+    "known_total_tokens": 256750,
+    "unknown_input_attempts": 0,
+    "unknown_output_attempts": 0,
+    "unknown_total_attempts": 0
+  },
+  "all_new_expense_measured": true,
+  "auditor_native_calls": 0,
+  "canonical_go_json_available": false,
+  "carry_forward": {
+    "attempts": 593,
+    "known_input_tokens_subtotal": 910272,
+    "known_output_tokens_subtotal": 22021,
+    "known_total_tokens_subtotal": 1296671,
+    "known_usage_pairs": 564,
+    "old_unknown_266_cause": "UNKNOWN",
+    "unknown_input_attempts": 29,
+    "unknown_output_attempts": 29,
+    "unknown_total_attempts": 49,
+    "unknown_usage_pairs": 29
+  },
+  "fold_sha256": "f7bb9011255ec3bfe0286f29cd1fd958cd719cf6db7d0a2dc6fef2b24534a265",
+  "fold_vector": [
+    "d24720adf3522dc19ada8b53a7d54d4485fe7774c0cd029d3c717c9f1468db05",
+    "ab3da7aa5cb254401ca12eb0ed26e69819bf0d0d0da84e94d51c8fd31dee9b93",
+    "97be7689270c2fbefe642287ba0f2bc9770a2dd27931549f7dde1bbfc0b8a214",
+    "48fcc81af4be04014a03a829a6a574468ed73b4cb4d6a908ec1a70999fd99f62",
+    "36a84b49ac9fb9753cb628f597f690f7bcd41c9f401dc086d33217451f561544",
+    "c0816cddc6ae1df53d94cb1bb0ab766a50d96e2a7bd445d1bfc2383e0f02162d",
+    "6d6934f7c56c2c2551e9a8a50be7910c09bf6e6e97db93838dbb172328484c93",
+    "e23955bcf779f1c062529c0531ca6984db4119dd529009f05a2ade4a7528aca7",
+    "09cf34c05ab1fc1840dc73f1c9e1ecb2766b0faf",
+    "e203276bb12e30c16c975952f7e70c92295adba80e76c85dc08d9ca43ade6e70",
+    "c290b25cacdeaf35fb7b89787fe18630689a29c13acbf37ed24bd6b50e005d26"
+  ],
+  "issue33_ready": false,
+  "new_failed_v13_artifacts": {
+    "failure-correlation": "e23955bcf779f1c062529c0531ca6984db4119dd529009f05a2ade4a7528aca7",
+    "final-audit": "ab3da7aa5cb254401ca12eb0ed26e69819bf0d0d0da84e94d51c8fd31dee9b93",
+    "high": "97be7689270c2fbefe642287ba0f2bc9770a2dd27931549f7dde1bbfc0b8a214",
+    "pg-initial": "c0816cddc6ae1df53d94cb1bb0ab766a50d96e2a7bd445d1bfc2383e0f02162d",
+    "pg-ledger": "48fcc81af4be04014a03a829a6a574468ed73b4cb4d6a908ec1a70999fd99f62",
+    "pg-product": "36a84b49ac9fb9753cb628f597f690f7bcd41c9f401dc086d33217451f561544",
+    "runtime-state": "6d6934f7c56c2c2551e9a8a50be7910c09bf6e6e97db93838dbb172328484c93"
+  },
+  "new_history593": {
+    "bytes": 118895,
+    "mode": "0600",
+    "path": "/srv/storage/butler/reviews/issue33-chain-v13-20261013/release-chain-v13-history593-20261013.json",
+    "sha256": "b93399340f64d881c99180b3ea6b62885341ba25f6de70edb64a34a0b51789f0"
+  },
+  "new_unknown_expense_entries": 0,
+  "old_originals_or_measurements_changed": false,
+  "original_scope_proposal_observations": null,
+  "prior615_627_628_scopes_unchanged_and_sealed": true,
+  "prior_fold_sha256": "d24720adf3522dc19ada8b53a7d54d4485fe7774c0cd029d3c717c9f1468db05",
+  "prior_history575_sha256": "4f62e26456070b298ee411f2d7681fbf6dda0d6662cf869a4cbcba8674303220",
+  "prospective_model_admission": false,
+  "remaining_original_absolute695_attempts": 102,
+  "status": "INDEPENDENT_SEALED593_CARRY_BRIDGE",
+  "supplemental_final_report_explicitly_independent_not_go_output": true
+}

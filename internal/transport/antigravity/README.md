@@ -1,5 +1,11 @@
 # Antigravity native transport
 
+Complete logical tool/final outcomes optionally retain the provider's observed
+`modelVersion`. Missing version stays unavailable; the requested profile never
+fills it in. Bounded Gemini identifiers, exact JSON keys and cross-frame version
+consistency are required. This metadata does not identify undisclosed weight
+bytes, select another model, or grant execution authority.
+
 Future complete tool turns now retain native SSE usage on the logical transport
 event, so the same owning budget wrapper can record it without waiting for a text
 final. Complete invalid function proposals carry usage only on their safe terminal
@@ -8,6 +14,11 @@ usage remains compatible. Missing/partial/provisional counts, incomplete streams
 invalid/aliased/negative/overflowed counts and cancellation before completion do
 not become measured zero. No actual provider requests, imports or historical
 backfills are part of this fix; all sealed native reports remain unchanged.
+The post-EOF `MAX_TOKENS` function rejection returns only validated complete
+usage/version to the safe failed event, discarding rejected text/parts/signatures.
+All candidates and trailers are still read and checked before this measurement
+can survive. Late reader failure or conflicting metadata retains UNKNOWN and
+cannot release a tool, final, continuation or retry.
 `scripts/dev/tool-turn-usage-lab.sh` verifies synthetic HTTP/SSE and real PG budget
 behavior on laba without inference.
 
@@ -113,8 +124,59 @@ the unsupported third-party integration policy, proxy configuration and real
 validation status. Fixtures verify wire shape, safe failure handling, signatures,
 schema guards and cancellation; they do not prove Google model access.
 
-`InferenceLimits` declares 1,048,576 input plus 8,192 output tokens for conservative
-kernel admission. Private `transport.WithInputByteLimit` bounds the exact complete
+`InferenceLimits` declares 1,048,576 input plus the configured generated-token
+ceiling for conservative kernel admission (default8,192). Trusted Go construction
+may explicitly select at most32,768 for Cloud Code High. The ceiling includes
+thinking and visible output; it is not a visible-answer allowance. No lower
+thinking effort, profile fallback or automatic retry is introduced.
+
+Trusted construction may also select a bounded object `JSONResponseSchema` for
+an observation without tools. Its frozen copy adds `responseMimeType`=`application/json`
+and `responseJsonSchema` to the same High request. A selected foreign model,
+tool declarations, duplicate schema keys, any reference or oversized schema
+fail before HTTP. Per-request transport options remain unsupported. A rejected
+upstream schema is a failed request and never triggers a text-mode fallback.
+The application still validates semantic source witnesses and visible JSON bytes.
+Synthetic exact-wire tests prove serialization, not server compatibility.
+
+The separately explicit trusted `Config.GoogleResponseSchema` selects the native
+OpenAPI-subset `responseSchema` field instead. It is mutually exclusive with
+`JSONResponseSchema`, High-only and tool-free; the existing default and JSON Schema
+wire remain unchanged. The exact constructor copy accepts uppercase OBJECT,
+ARRAY, STRING, BOOLEAN, INTEGER and NUMBER types; properties/required/items,
+nullable and bounded unique string enums. Arrays require canonical decimal-string
+`maxItems` in1–128, with optional compatible `minItems`. Depth8,256 nodes,32
+properties per object,64 enum values and16KiB schema bounds apply. References,
+annotations, defaults, unions and unknown fields are refused before authentication.
+This subset has no `additionalProperties` constraint: the trusted caller's strict
+JSON/field/source/semantic checker still rejects extra fields and incorrect answers.
+Transport preserves the original output, including invalid Markdown wrappers.
+
+The [Google GenerationConfig reference](https://cloud.google.com/vertex-ai/generative-ai/docs/reference/rest/v1beta1/GenerationConfig)
+documents the mutually exclusive OpenAPI and JSON Schema fields with JSON MIME.
+The [Gemini API reference](https://ai.google.dev/api/generate-content#GenerationConfig)
+currently labels its public `responseSchema` field deprecated. These public
+references describe serialization. The separately frozen four-entry High
+diagnostic established compatibility of the private daily Cloud Code endpoint
+for two exact native extraction originals, with all four original replies/costs
+independently matched to PostgreSQL. Both legacy originals also passed; this
+proves neither causal superiority nor the cause of a prior model answer.
+High/thinking/allowances, request guards, raw-final retention and refusal to retry,
+repair or fall back are unchanged. See the [actual diagnostic audit](../../../docs/ai/scenario-schema-dialect-actual-audit-20261013.md).
+The separate full V5 benchmark subsequently passed independent original-byte/PG
+audit of236 quality and16 comparison requests on frozen3c4089 source; see the
+[actual V5 audit](../../../docs/ai/scenario-cloud-v5-independent-audit-20261013.md).
+Old failed quality windows stay closed. This observational PASS does not grant
+tool/deployment permission or establish the still-required real High release chain.
+
+Trusted request-local `transport.WithProviderStageObserver` can distinguish
+authentication, serialization, HTTP round trip and SSE reading for future
+diagnosis. Only fixed phase names leave the adapter; credential/request/response
+bodies and endpoint details never reach the callback. It changes no timeout,
+retry or execution behavior. A recorded phase alone does not prove inference
+dispatch or retrospectively explain an earlier timeout.
+
+Private `transport.WithInputByteLimit` bounds the exact complete
 serialized request, including private retained history, schemas and tool results,
 before HTTP write; unset callers use a fixed 8MiB cap. Operator subscription cost
 basis is separately required by production execution budgets. Neither this quote

@@ -207,6 +207,7 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	}
 
 	transportCtx := transport.WithSessionKey(runCtx, event.SessionKey)
+	transportCtx = converterContinuationProposalContext(transportCtx, prepared)
 	transportCtx = withAnswerState(transportCtx, "final")
 	stream, err := s.provider.StartRun(transportCtx, transport.StartRunRequest{
 		Context: transport.TransportRunContext{
@@ -224,6 +225,9 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 		StreamingEnabled: true,
 	})
 	if err != nil {
+		if s.scheduleModelRetry(transportCtx, current, err) {
+			return nil, ErrModelRetryPending
+		}
 		if _, stopped := budgetStopReason(err); stopped {
 			return s.stopBudget(ctx, current, err)
 		}
@@ -232,6 +236,9 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 
 	finalMessage, current, err := s.consumeModelStream(transportCtx, runLog, current, event.SessionKey, lease.LeaseID, stream)
 	if err != nil {
+		if s.scheduleModelRetry(transportCtx, current, err) {
+			return nil, ErrModelRetryPending
+		}
 		if _, stopped := budgetStopReason(err); stopped {
 			return s.stopBudget(ctx, current, err)
 		}
@@ -372,10 +379,17 @@ func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, c
 					finalMessage = resumedFinal
 				}
 			case transport.EventTypeTransportError:
+				if transportEvent.TransportError != nil && transportEvent.TransportError.Type == "model_turn_timeout" {
+					return "", current, s.modelTimeoutFromCheckpoint(ctx, current.GetRunId())
+				}
 				if transportEvent.TransportError != nil && (transportEvent.TransportError.Type == skillInvalidReason || transportEvent.TransportError.Type == "execution_budget_deadline" || transportEvent.TransportError.Type == "execution_budget_tokens" || transportEvent.TransportError.Type == transport.ErrorTypeInputBytesExceeded) {
 					return "", current, &budget.LoopError{Reason: string(transportEvent.TransportError.Type)}
 				}
 				return "", current, transportError(transportEvent.TransportError)
+			case transport.EventTypeRunTimedOut:
+				return "", current, &transport.Error{Type: transport.ErrorTypeProviderTimeout, Message: "provider_timeout"}
+			case transport.EventTypeRunCancelled:
+				return "", current, context.Canceled
 			case transport.EventTypeTransportWarning:
 				runLog.Warn("transport warning", slog.String("payload", transportEvent.PayloadJSON))
 			}

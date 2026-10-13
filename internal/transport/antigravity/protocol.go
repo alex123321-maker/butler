@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -41,8 +42,11 @@ type generateRequest struct {
 	GenerationConfig  generationConfig `json:"generationConfig"`
 }
 type generationConfig struct {
-	MaxOutputTokens int             `json:"maxOutputTokens"`
-	ThinkingConfig  *thinkingConfig `json:"thinkingConfig,omitempty"`
+	MaxOutputTokens    int             `json:"maxOutputTokens"`
+	ThinkingConfig     *thinkingConfig `json:"thinkingConfig,omitempty"`
+	ResponseMIMEType   string          `json:"responseMimeType,omitempty"`
+	ResponseJSONSchema json.RawMessage `json:"responseJsonSchema,omitempty"`
+	ResponseSchema     json.RawMessage `json:"responseSchema,omitempty"`
 }
 type thinkingConfig struct {
 	ThinkingBudget int `json:"thinkingBudget"`
@@ -78,7 +82,10 @@ type modelAnswer struct {
 	Text         string
 	FinishReason string
 	Usage        *transport.Usage
+	ModelVersion *string
 }
+
+var nativeModelVersion = regexp.MustCompile(`^gemini-[a-zA-Z0-9][a-zA-Z0-9._-]{0,110}$`)
 
 type nativeUsage struct {
 	PromptTokenCount, CandidatesTokenCount, TotalTokenCount *int
@@ -121,6 +128,7 @@ func (p *Provider) invoke(ctx context.Context, model, sessionID string, body gen
 		}
 		resolve = source.ResolveAntigravityCloudCode
 	}
+	transport.ObserveProviderStage(ctx, transport.ProviderStageAuthentication)
 	auth, err := resolve(ctx)
 	if err != nil {
 		return modelAnswer{}, providerError(transport.ErrorTypeProviderUnavailable, "Antigravity authentication is unavailable; reconnect through the private control plane")
@@ -143,6 +151,7 @@ func (p *Provider) invoke(ctx context.Context, model, sessionID string, body gen
 		envelope = cloudRequestEnvelope{Model: model, Project: auth.ProjectID, Request: body, RequestID: requestID, RequestType: "agent", UserAgent: "antigravity"}
 		url, userAgent = cloudEndpoint, "antigravity/2.22.0 butler/0.1"
 	}
+	transport.ObserveProviderStage(ctx, transport.ProviderStageSerialization)
 	encoded, err := json.Marshal(envelope)
 	if err != nil {
 		return modelAnswer{}, protocolError("invalid model request")
@@ -158,6 +167,7 @@ func (p *Provider) invoke(ctx context.Context, model, sessionID string, body gen
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "text/event-stream")
 	req.Header.Set("User-Agent", userAgent)
+	transport.ObserveProviderStage(ctx, transport.ProviderStageHTTP)
 	resp, err := p.client.Do(req)
 	if err != nil {
 		if ctx.Err() != nil {
@@ -172,6 +182,7 @@ func (p *Provider) invoke(ctx context.Context, model, sessionID string, body gen
 	if !strings.HasPrefix(strings.ToLower(resp.Header.Get("Content-Type")), "text/event-stream") {
 		return modelAnswer{}, protocolError("Antigravity returned a non-SSE response")
 	}
+	transport.ObserveProviderStage(ctx, transport.ProviderStageStream)
 	return readStreamProtocol(resp.Body, onText, cloud)
 }
 
@@ -254,8 +265,10 @@ func readStreamProtocol(reader io.Reader, onText func(string) bool, cloud bool) 
 		if object, ok := decoded.(map[string]any); ok {
 			usageAlias := func(fields map[string]any) bool {
 				for key := range fields {
-					if key != "usageMetadata" && strings.EqualFold(key, "usageMetadata") {
-						return true
+					for _, canonical := range []string{"usageMetadata", "modelVersion"} {
+						if key != canonical && strings.EqualFold(key, canonical) {
+							return true
+						}
 					}
 				}
 				return false
@@ -295,6 +308,13 @@ func readStreamProtocol(reader io.Reader, onText func(string) bool, cloud bool) 
 		}
 		if len(response.AutomaticFunctionCallingHistory) > 0 {
 			return protocolError("provider attempted automatic function execution")
+		}
+		if response.ModelVersion != "" {
+			if !nativeModelVersion.MatchString(response.ModelVersion) || answer.ModelVersion != nil && *answer.ModelVersion != response.ModelVersion {
+				return protocolError("invalid or conflicting observed model version")
+			}
+			version := response.ModelVersion
+			answer.ModelVersion = &version
 		}
 		if len(response.Candidates) > 1 {
 			return protocolError("multiple candidates are unsupported")
@@ -373,7 +393,10 @@ func readStreamProtocol(reader io.Reader, onText func(string) bool, cloud bool) 
 			var part map[string]json.RawMessage
 			_ = json.Unmarshal(raw, &part)
 			if _, ok := part["functionCall"]; ok {
-				return modelAnswer{}, protocolError("truncated function proposal")
+				// EOF and every candidate/trailer/metadata check have completed.
+				// Rejection does not erase this request's measured cost, but its
+				// model body must never accompany the failed outcome.
+				return modelAnswer{Usage: answer.Usage, ModelVersion: answer.ModelVersion}, protocolError("truncated function proposal")
 			}
 		}
 	}

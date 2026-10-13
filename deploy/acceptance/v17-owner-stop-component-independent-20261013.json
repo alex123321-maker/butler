@@ -1,0 +1,63 @@
+{
+  "additional_pre_provider_quote_usage_null_preserved": true,
+  "additional_pre_provider_stop_quotes": 2,
+  "all_eight_budget_dimensions_recomputed": true,
+  "all_release_cases_passed": false,
+  "current_owner_stop_payload_sha256": "f0986da67f88f1ca3e7ceb03f8046b591ed3ca07b70075506bbcb76ef6cc1ea4",
+  "final_results_or_notices": 0,
+  "initial_owner_stop_payload_sha256": "c9f28f7668937bdd52b297b27c9c65da860e7d2ced92e125373270b4da7d3d42",
+  "issue33_ready": false,
+  "limits": [
+    "This verifies only the original closed owner_stop component, with original PG hashes, named packets, current source identity and fixed shared critical Stop/budget/action predicates. Overall V17 remains NO_GO; no other scenario is declared PASS.",
+    "Two conservative kernel admissions stopped before native entry remain NULL observed usage and counted as reservations; they are not invented native requests or zero-spend model calls.",
+    "Confirmed prior project mutations and native658 NULL cancellation belong to the separate explicit_absence scenario and remain NO_GO."
+  ],
+  "live_leases_or_outbox_or_channel_sends": 0,
+  "native_auth_or_model_calls_by_auditor": 0,
+  "native_code_commit": "1a22b7af2f87f56c82a45b53ca7abaa64eaa2980",
+  "native_measured_cost": {
+    "input_tokens": 16960,
+    "output_tokens": 569,
+    "total_tokens": 20550,
+    "unknown": 0
+  },
+  "native_requests": [
+    637,
+    638
+  ],
+  "original_measurements_changed": false,
+  "original_pg_initial_sha256": "7a77a1ffc8703f38b7eb77192e88f7d5b287706ea6c70a5ed58a040597e518a0",
+  "original_pg_ledger_sha256": "9334bf7c1a73477b5c3f7cdff17f73e812bf51c4661ba4bc08af558a331dea17",
+  "original_pg_product_sha256": "a2ce3a1e92b3e4fb8566bc7da789e12014c88bb941960f4029c0ff9fe21667e1",
+  "original_two_named_packets": [
+    {
+      "actual_core_arguments_hash_matches_original": true,
+      "ordinal": 637,
+      "private_metadata_sha256": "a82e3e3ca643586cb4bba728fc448a5616295880db3780061bf978ce43799ebf",
+      "private_proposal_sha256": "2fa11351568d0b1c8da5a5cd9d25203030b1a5a45fcfb43f5e510862d4424d01",
+      "qualified_action_authorization_dispatch_confirmed": true,
+      "tool_name": "converters.discover"
+    },
+    {
+      "actual_core_arguments_hash_matches_original": true,
+      "ordinal": 638,
+      "private_metadata_sha256": "d0ce18e353faba32b9cc2877c46e2316d1402bd8559a86914009b018cf7efa39",
+      "private_proposal_sha256": "e1d7631fb9c1163bd797fca5aad65f2d23133fab527112820c5af387eb7e5c3f",
+      "qualified_action_authorization_dispatch_confirmed": true,
+      "tool_name": "task.delegate_converter"
+    }
+  ],
+  "overall_chain_status": "NO_GO",
+  "root_and_child_cancelled": true,
+  "source_observer_failure_is_post_stop_lease_revocation_not_provider_failure": true,
+  "source_tree_sha256": "bf54ecd28bdd8753469ce2bc406a34db87726c4a305356d4e81bd8dc89f65a16",
+  "status": "OWNER_STOP_COMPONENT_PASS",
+  "stop_source_and_broker_denials": true,
+  "stopped_descendant_actions": 0,
+  "stopped_descendant_native_entries": 0,
+  "two_measured_kernel_operations_correlated": true,
+  "verified_scenarios": [
+    "owner_stop"
+  ],
+  "version": "butler-independent-v17-owner-stop-component-audit-v1"
+}

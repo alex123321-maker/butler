@@ -184,7 +184,7 @@ func (p *Promoter) Promote(ctx context.Context, id, ownerID string) (Candidate, 
 	if !now.UTC().Truncate(24 * time.Hour).Equal(day) {
 		return finish("deferred", "admission_day_changed", now)
 	}
-	record, err := p.Tasks.CreateTx(ctx, tx, task.CreateRequest{Authority: &a, InitialExecutionPolicy: source.ExecutionPolicy, SessionKey: source.SessionKey, OwnerID: ownerID, Goal: source.TaskGoal, Source: map[string]any{"type": "initiative", "initiative_id": c.ID, "observation_ref": c.ObservationRef, "project_ref": source.ProjectRef, "project_revision": source.ProjectRevision}, CompletionCriteria: source.CompletionCriteria})
+	record, err := p.Tasks.CreateTx(ctx, tx, task.CreateRequest{Authority: &a, ResultDelivery: source.ResultDelivery, InitialExecutionPolicy: source.ExecutionPolicy, SessionKey: source.SessionKey, OwnerID: ownerID, Goal: source.TaskGoal, Source: map[string]any{"type": "initiative", "initiative_id": c.ID, "observation_ref": c.ObservationRef, "project_ref": source.ProjectRef, "project_revision": source.ProjectRevision}, CompletionCriteria: source.CompletionCriteria})
 	if err != nil {
 		return c, err
 	}

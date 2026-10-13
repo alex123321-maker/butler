@@ -1,16 +1,63 @@
 # Lab acceptance evidence
 
+Prospective cloud V3 adds an independent API/scorer with fresh corpus/review
+pending. Trusted native schemas contain every original map key, including
+distractors; selection/quote/value/authority checks remain programmatic. Full
+model-input hashes include the exact per-case enum. This is namespace-assisted
+output, not unconstrained source skill or execution. New default review hashes
+require the newly signed exact public artifact bytes; V1/V2 reports/digests/NO_GO
+verdicts and all248 spent attempts stay unchanged. The fresh dataset/criteria
+signature grants no native admission or quality result.
+[Protocol proposal](../../docs/ai/scenario-cloud-prospective-v3-design-20261012.md).
+
+Additive V3 window audit and pure SQL correlation bind every new ordinal,
+canonical context/nullable parent, input/output digest, nullable measured spend
+and exact old248 history. Partial/failed collectors remain NO_GO; correlation
+equality alone never establishes inference/quality. Safe output omits model/source
+content and credentials. Both old auditors/correlation helpers stay unchanged.
+
 This package and `cmd/acceptance` run and inspect fixed, programmatic product
 contracts. They do not run an agent, change PostgreSQL authority, execute a
 model-selected command, or approve deployment. The standard library is sufficient
 for fixed Go test events, bounded JSON observations, digests and Ed25519 review;
 no evaluation framework or new dependency is added.
 
+The additive `butler-mandatory-faults-v3` gate selects the current eight required
+product fault groups through `FullFaultGroups`/`FullFaultScenarios`. Use
+`fault-lab.ps1 -Profile FullFaults -LocalModelLoadOOM <sealed-private-proof>`.
+It reruns exact current PostgreSQL, Chromium, subprocess, Broker, source deletion
+and actual dump/restore checks. A pre-test source/schema/criteria/hardware pin
+must match report mode. Every named test and subtest must pass exactly once;
+missing or skipped evidence fails. See [the current plan](../../docs/ai/scenario-full-faults-acceptance-20261012.md).
+
+The separately bounded cached Qwen3 CPU load experiment records one physical
+Docker OOM (137 plus `OOMKilled`) before inference, verified weight/image/manifest
+bytes and actual runtime isolation. A graceful error, synthetic worker error,
+GPU/cloud inference, changed runner or repeated load cannot satisfy this gate.
+The independently reviewed vocabulary witness-v2 additionally accepts only the
+fixed original failed artifact/log/global-start hashes and exact ordered loader
+and GGUF vocabulary markers. Original metadata_read=false/FAIL stays unchanged;
+the new scope says vocabulary metadata processing reached, with complete weights,
+inference and Butler kernel receipt all false. No signature is claimed.
+That physical process is not connected to Butler's kernel; separate owned-worker
+tests prove its failure controls. High server RAM/OOM remain unavailable.
+`mandatory_faults_passed` covers these bounded faults only; `issue_33_ready`
+remains false until independently reviewed model quality/cost and the complete
+mandate-to-one-final-notice chain, including restart/Stop/delivery faults, pass.
+V1 `Groups`/`Scenarios`/`CriteriaDigest`, signed V3 data and historical failed
+reports are preserved byte-for-byte in meaning and digest.
+
 `cmd/command-observe` separately checks supplementary typed owner-control
 proposals and original witnesses. Its [contract](../../docs/architecture/observation-evaluation-contract.md)
 and [runner instructions](../../cmd/command-observe/README.md) preserve signed V3
 data/scoring. The new 45-case fixture is candidate contract validation, not an
 independent model-quality holdout or replacement for the reviewed 240 cases.
+
+`cloud_observation.go` and `cmd/cloud-observe` add a separate explicit cloud shadow
+profile without weakening the local-weight scorer. Its [protocol and frozen policy](../../cmd/cloud-observe/README.md)
+retain unknown proprietary weights/remote resources, per-attempt total thinking
+usage, opaque inputs and complete single/multiple-context accounting. Fixture
+outputs cannot establish actual model quality or release authority.
 
 `scripts/dev/fault-lab.ps1 -Profile Full` synchronizes only an isolated agent root
 and invokes `fault-lab.sh` there. It creates its own internal Docker network,
@@ -162,3 +209,55 @@ delegated full-cost comparison, real hardware model
 pressure evaluation, skill/self-development/self-repair release and the entire
 mandate-to-one-notification chain across restart/stop/delivery failure. Adding an
 available boundary test is useful; it does not complete those product scenarios.
+The additive prospective V2 cloud contract uses explicit authored cases and a
+separate schema/policy/golden digest. `LoadCloudV2Corpus` does not expand the old
+V3 templates. `ExportCloudV2Inputs` excludes secret cases and review metadata;
+`MakeCloudV2ModelInput` pins native kind-generic JSON schema, MIME and generated
+allowance. `ScoreCloudV2`/`CompareCloudV2` check original witnesses, fixed thresholds,
+all child costs and nullable usage. The new native review constants remain
+unavailable until independent review. Mechanical inventory, lexical screens and
+synthetic signature/CLI tests are fixture validation, not semantic holdout approval
+or actual High quality. Existing V1 evidence is unchanged.
+
+The actual V3 window is closed **NO_GO** after 18 charged observations. The
+independent content-free audit and exact PostgreSQL correlation are recorded in
+`docs/ai/scenario-cloud-v3-independent-audit-20261012.md`; all failed spend and
+prior NULL measurements remain in cumulative history. The 17 correct completed
+development observations do not establish full quality or a paired comparison.
+
+The actual V4 window is sealed NO_GO after11 new admissions, for279 cumulative
+entries. Exact safe audit/PG/diagnostic exports remain pinned under
+`deploy/acceptance/cloud-fresh-v4-*-20261013.json`; correct raw/SQL correlation
+does not imply quality or readiness. New V5 APIs use fresh unsigned corpus and
+independent source/dialect/model-input identities; their native gate is closed
+until actual intervening diagnostic history and new signed review are established.
+Old data, signatures, lost266 cause and historical NULL spending remain unchanged.
+
+The historical additive V4 corpus/protocol starts from the separately verified268-call
+history and preserves all19 historical artifact pins. `CloudV4*` APIs and
+`cmd/cloud-observe` V4 modes require a fresh240-case corpus, whole-corpus review,
+external signed criteria and exact source/runtime/hardware/window pins. V4's
+nearest-rank p95 definition and exact observed version are frozen in its criteria
+digest; original V1–V3 scorers remain unchanged. Maximum252 new calls comprise236
+quality and16 paired single/child/child/synthesis entries, with cumulative520.
+Private final retention is separate from the content-free audit; the audit
+recomputes known/NULL costs before quality and refuses a failed or partial window.
+Reproduce the prospective contract and limitations from
+`docs/ai/scenario-cloud-prospective-v4-design-20261013.md`.
+
+The additive `CloudV5*` APIs use a fresh240-case/30-episode corpus with whole-group
+development/tuning/holdout splits, four blocked secret-document cases and four
+fixed comparison originals. V5 explicitly pins native OpenAPI `responseSchema`,
+all-source IDs, decimal-string array32, strict single JSON and the unchanged
+90/85/zero-critical/event/nearest-rank latency/full-new-cost rules. Pure immutable
+shape/source helpers are reused; no past data, approval or verdict is translated.
+`AuditCloudV5Window` requires independently supplied full historical JSON,
+historical known-total/unknown measurements and the compatibility artifact's
+exact last-history identity. It derives actual baseline/ceiling and checks ordered
+charges before cost/quality correlation. Failed prefixes retain every measured
+cost and NULL. `CorrelateCloudV5PGWitness` binds `native_baseline` and exact ordered
+SQL metadata; equality is not inference or quality approval. Import framing is
+8MiB without widening the8192-byte raw-final limit. Reproduce offline modes from
+`cmd/cloud-observe/README.md` and the V5 design/authorship records. Actual native
+compatibility, quality, paired comparison and release-chain acceptance remain
+separate gates.

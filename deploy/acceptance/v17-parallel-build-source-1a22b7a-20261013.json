@@ -1,0 +1,101 @@
+{
+  "actual_accepted_cases": null,
+  "all_source_inventory_bytes_recomputed": true,
+  "auditor_auth_or_model_calls": 0,
+  "build_only_original_summary": {
+    "baseline": 636,
+    "independent_acceptance_pending": true,
+    "maximum_new_attempts_design": 120,
+    "native_calls": 0,
+    "offline_tests_run": false,
+    "status": "BUILD_ONLY_IMMEDIATE_NATIVE_REQUESTED"
+  },
+  "build_proof": "/srv/storage/butler/agents/scenario-release-chain-v17-high-20261013/reports/chain-v17-high-prepare-20261013T203650Z-3344612",
+  "build_vet_diagnostics_bytes": 0,
+  "does_not_gate_native": true,
+  "hardware": {
+    "cloud_weights_sha256": null,
+    "cpu_sha256": "177d14a5788191dc50c31b0906b921147a444b23b1e4acc96e42181bbc3b6baa",
+    "fixture_cpus": 2,
+    "fixture_ram_bytes": 1610612736,
+    "go_image": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61",
+    "host_ram_kib": 15693396,
+    "kernel": "7.0.0-34-generic",
+    "postgres_image": "sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d",
+    "remote_model_ram": null,
+    "runtime_image": "sha256:ce64758a109eb420d874a118f87920e625e12d3634e03b4a5573fd9f6e5d3507"
+  },
+  "hardware_raw_sha256": "ac640d38f0ad5db871190315628543b2407a7c539ce7b3b31e85039edba61e9b",
+  "issue33_ready": false,
+  "limits": [
+    "Build-only by latest direct human instruction. No offline test-suite PASS, native result PASS or independent pre-call gate is invented.",
+    "The bundled prior-protocol chain-final-audit binary is unused for current V17 final acceptance; a separate V17 frozen auditor is required.",
+    "Current9c mandatory321fault results and addressed PG loader1/taskproof9 cover production-identical composition; the four actual current cases remain mandatory and pending.",
+    "Explicit acceptance composite retains V14 useful original work without promoting oldnormalNO_GO or fabricating its absent owner verification/notice."
+  ],
+  "pre_native_admission_performed": false,
+  "production_657_files_byte_equal_measured9c": true,
+  "public_exact_raw_pins": {
+    "release-chain-v16-carry636-independent-20261013.json": {
+      "bytes": 3261,
+      "sha256": "24fb6c34e4a68da1291ab3868b18db289251b24e0c194ab62cb001a61e01b977"
+    },
+    "release-chain-v16-history636-20261013.json": {
+      "bytes": 127999,
+      "sha256": "7599c090a8c4402f42b8f411e84d0c70a19c692c3334e8ec77fb50572fed6fb2"
+    },
+    "release-chain-v17-high-prerequisite-20261013.json": {
+      "bytes": 10348,
+      "sha256": "02bf4cb2e1666197c0641d21255e78cb0a055e0adee0a3eb0bda80782ed3f9c8"
+    },
+    "release-chain-v17-user-policy-amendment-20261013.json": {
+      "bytes": 8158,
+      "sha256": "6c7cc0c1e4262c0ca5b2da8e820ec16e0893cfaaa2219f03f76daaee77a84abb"
+    }
+  },
+  "reviewed_at_utc": "2026-10-13T20:42:44.044183+00:00",
+  "runtime_binaries": {
+    "app.test": {
+      "bytes": 55609576,
+      "mode": "0555",
+      "sha256": "3afd047fe67663138fdef479cc79f6d2a68fc202ae1003de674374f338b13cb5"
+    },
+    "chain-final-audit": {
+      "bytes": 17816066,
+      "mode": "0555",
+      "sha256": "b27e7d92021cf0774a6f1f0de0ffde85183d62ee5d39f2b28a569ab96c115d2e"
+    },
+    "extension.test": {
+      "bytes": 22526386,
+      "mode": "0555",
+      "sha256": "924476213168951493ae8ad21ef0630f1b666e63ac67d643fa79e5d5517f0a07"
+    },
+    "test2json": {
+      "bytes": 4566038,
+      "mode": "0555",
+      "sha256": "8f352c19877e12d5b0305b9eebac875aa63734fe03b73127ee01fae2c833ad68"
+    },
+    "tls-prerequisite": {
+      "bytes": 8829345,
+      "mode": "0555",
+      "sha256": "14a3bc9fc5a006ce6ae91fe10e3d4ae2ef0f78ac6c1a4c16e43d6d65f1589392"
+    },
+    "tool-broker": {
+      "bytes": 28759445,
+      "mode": "0555",
+      "sha256": "2ed16aca088b7cb90b85b643a7e9533d336ca2d43ea0af5746e44847496d9e8e"
+    },
+    "tool-converter": {
+      "bytes": 20154212,
+      "mode": "0555",
+      "sha256": "5f2dee5acef95c2f279b849d7af76003688a3b46a274e0d44456a37c40536f75"
+    }
+  },
+  "snapshot": "/srv/storage/butler/agents/scenario-release-chain-v17-high-20261013/snapshots/20261014-033559-144",
+  "source_commit": "1a22b7af2f87f56c82a45b53ca7abaa64eaa2980",
+  "source_file_count": 2434,
+  "source_manifest_sha256": "aea36418b670e8d53455c5aa593d290e63a9385d0372709e2bd43278c91afd8c",
+  "source_tree_sha256": "bf54ecd28bdd8753469ce2bc406a34db87726c4a305356d4e81bd8dc89f65a16",
+  "status": "SOURCE_RUNTIME_CORRELATED_FINAL_ACCEPTANCE_PENDING",
+  "version": "butler-independent-v17-parallel-build-source-review-v1"
+}

@@ -22,23 +22,24 @@ import (
 )
 
 type App struct {
-	config                   config.OrchestratorConfig
-	log                      *slog.Logger
-	metrics                  *metrics.Registry
-	health                   *health.Service
-	postgres                 *postgresstore.Store
-	redis                    *redisstore.Store
-	httpServer               *http.Server
-	grpcServer               *grpc.Server
-	grpcListen               net.Listener
-	telegram                 *telegramadapter.Adapter
-	toolBroker               *tools.BrokerClient
-	pipelineWorker           *pipeline.Worker
-	inputWorker              *durableinput.Service
-	outboxWorker             *deliveryoutbox.Worker
-	initiativeDeliveryWorker *deliveryoutbox.Worker
-	auxiliaryWorker          *completion.AuxiliaryWorker
-	memoryCleanup            *catalog.CleanupWorker
-	memoryIndexing           *indexing.Runtime
-	memoryIndexingClose      func()
+	config                     config.OrchestratorConfig
+	log                        *slog.Logger
+	metrics                    *metrics.Registry
+	health                     *health.Service
+	postgres                   *postgresstore.Store
+	redis                      *redisstore.Store
+	httpServer                 *http.Server
+	grpcServer                 *grpc.Server
+	grpcListen                 net.Listener
+	telegram                   *telegramadapter.Adapter
+	toolBroker                 *tools.BrokerClient
+	pipelineWorker             *pipeline.Worker
+	inputWorker                *durableinput.Service
+	outboxWorker               *deliveryoutbox.Worker
+	initiativeDeliveryWorker   *deliveryoutbox.Worker
+	verifiedTaskDeliveryWorker *deliveryoutbox.Worker
+	auxiliaryWorker            *completion.AuxiliaryWorker
+	memoryCleanup              *catalog.CleanupWorker
+	memoryIndexing             *indexing.Runtime
+	memoryIndexingClose        func()
 }

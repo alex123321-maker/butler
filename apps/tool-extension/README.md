@@ -22,6 +22,12 @@ raw/unsolicited secrets, changed receipt contracts, byte/output bounds, redirect
 and read-only readiness. Resolver/dial fixture injection exists only in test
 construction and is not selectable by environment, model args or packages.
 
+The test-only egress subprocess keeps its three-minute default. A separately
+pinned High fixture can supply a positive lifetime of at most40minutes, clamped
+to its remaining case deadline, with an explicit process timeout at most41minutes.
+The runtime lifecycle tests verify live authentication and RPC shutdown on the
+timer and cancellation. This fixture setting is absent from the production binary.
+
 See [the lifecycle spec](../../docs/architecture/reviewed-extension-lifecycle.md)
 and optional installation instructions under `deploy/extensions`.
 

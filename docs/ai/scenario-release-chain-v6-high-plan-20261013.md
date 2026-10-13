@@ -1,0 +1,164 @@
+# Sealed V6 High release-chain protocol
+
+This protocol was fixed before the once-only V6 execution on commit829d775.
+Independent admission and preparation passed. The actual run is now sealed
+NO_GO after requests538–539; it cannot be executed again. Request538 completed
+with a measured discover tool packet. Request539 timed out in the observed
+`http_round_trip` phase, with provider usage and model version still NULL.
+Core prepared its bounded retry, but this protocol's response-stream-only
+admission predicate stopped the fresh request before the native counter and
+network. The original result and all five complete scenarios remain unproved.
+The limits and predicates below describe the original fixed protocol, not a
+permission to rerun it. Cumulative history is539 attempts:301714 known input,
+11982 known output and580620 known total tokens, with48 unknown total counts.
+
+The [V5 quality/comparison audit](scenario-cloud-v5-independent-audit-20261013.md)
+retains PASS on its original measured collector3c4089f, source61c8e729 and
+executable4a70bd62. All236 quality attempts and16 comparison requests have known
+expense;235 quality answers are correct and all four paired tasks pass both
+arms. Those observations remain tied to their original code. The frozen direct
+quality request path does not use Core retry; corpus, goldens, model and request
+policy remain unchanged. Fresh production retry tests and a real chain must
+establish the behavior of the final composition independently.
+
+The [actual V5 chain](scenario-release-chain-v5-independent-audit-20261013.md)
+remains sealed NO_GO on afa50b2 after requests536–537. One discover action
+completed; no child, adapter, result or notification exists. Attempt537's
+provider usage and internal timeout substage remain UNKNOWN. The exact direct
+human reply permits unknown expense for that closed attempt only. That record
+remains unchanged. Before any V6 native request, the subsequent direct human
+instruction, “Хорошо тогда чутьчуть ослабь требования и если прям критичных
+проблем не останется тогда можно закрывать пр”, authorized the narrow prospective
+exception below. It does not change the old failed outcome or safety criteria.
+
+## Fixed history and limits
+
+The pure actual537 carry binds the prior535 quality bridge and seven exact safe
+V5 failure artifacts, original failed source/runtime, owning SQL and independent
+failure correlation. The fold is
+`7100f33980905baea6dbcffe608d546a8544457b8260bac4d725952f415578df`;
+the exact LF history file is
+`71e640379d3904570afa4057be2580ce5713a2883275673bd9d1e356c163a2e7`.
+It preserves510 known usage pairs,27 unknown pairs and all earlier artifacts.
+Known input294598/output11827/total572459 are subtotals;47 total measurements
+remain unknown. Old266's cause remains UNKNOWN.
+
+The new prospective prerequisite is exact LF SHA
+`bef93bde0afa1251c67eb60f01dbbe6f8142b4f32b5a8076c0f34d5d9b402077`.
+It binds the retained quality auditf8248d19, failed chain audit592d27ee,
+failure correlationfb8a430c, original human exception31b930ac, the byte-exact
+previous prospective protocol9ce27e6d and new human waiver44991353. The previous
+protocol is preserved separately as `release-chain-v6-high-prerequisite-v1-20261013.json`.
+The waiver is exact LF SHA
+`44991353526966ab57cfd0155c3f65af00061b87308eed37c2b735f207e75180`.
+It freezes one nominal timeout retry per input, two-second backoff, exact
+kernel-operation correlation and request-local phase observations. All
+successful entries require full measured expense and the selected version.
+The prerequisite's existence alone enables no execution.
+
+V6 permits at most78 new Start/Continue/Submit requests, ending at absolute615.
+The two spent V5 requests are never refunded. A separate immutable global
+deadline is60 minutes, each case20 minutes and each request120 seconds. Requested
+model is `gemini-3.8-flash-high`, observed version must remain
+`gemini-3.8-flash-n`, generation allowance32768 including thinking. The original
+Task24/Mandate40/Day80 ledgers and finite child4-turn/4-call limits still apply.
+Normal conservative reservations remain distinct from actual measured usage.
+
+The shared owning window has eight frozen fields: baseline, actual count,
+prior-history hash, prerequisite hash, absolute expiry, maximum new attempts,
+phase observation and kernel-operation binding. Reconstruction cannot refill
+the counter, extend expiry, disable observation or lose the operation binding.
+The new schema is `fixture_chain_v6_high`; old owning databases are untouched.
+
+## Retry and proof
+
+The [production policy](../architecture/model-retry-policy.md) admits one queued
+retry only after a trusted nominal model-turn timeout observed in HTTP/stream.
+Core uses saved input and known tool receipts, fresh ownership/current sources
+and catalog, a fresh provider session and separate budget admission. Equivalent
+confirmed non-read proposals with a new call ID are denied before Broker.
+Cancelled work, earlier authority deadlines and unknown effects cannot retry.
+The durable started marker prevents another fresh request after its crash.
+
+Every actual V6 native row stores an immutable unique `kernel_operation_id`
+from the budget wrapper's private context. The collector corroborates it with
+the exact committed owning model attempt and current input checkpoint before
+admitting the native request. Product witnesses export only safe
+`accepted_inputs.model_retry` metadata and `not_before`, never full checkpoints.
+The record binds count1, reason, prior operation, state, one database-clock
+claimed timestamp, backoff timestamp and the fresh retry operation/start stamp.
+
+The factual failed-request count is retained. A failed request is accepted only
+as the predecessor of exactly one proved same-run fresh Start retry:
+response_stream phase, provider_timeout, zero final and
+completed/cancelled events, safe terminal counts and certain observations.
+Its usage is either three valid known dimensions or three NULL dimensions;
+partial or conflicting usage is rejected. Its observed version is the selected
+version or NULL. Successful entries always have complete known usage/version.
+The failed row, record, later Start, timestamps and two distinct conservative
+reservations must agree. The final checker independently verifies this contract;
+a collector PASS alone establishes no release readiness.
+
+An unknown measurement qualifies only for that exact failed predecessor and
+the owning started retry before its next fresh Start. Every other new unknown,
+unfinished prior measurement, invalid phase or second timeout stops further paid
+admissions. A later success cannot recover the failed measurements: known totals
+are subtotals and factual unknown cost/version counts remain explicit, separately
+bound to accepted timeout exceptions. No failed request releases a tool or final.
+
+## Five cases and result boundaries
+
+The fixed order remains normal_sent, restart_sent, explicit_absence, lost_ack,
+owner_stop. Each complete case must traverse mandate, observed problem, promoted
+task, actual delegation, missing adapter, isolated finite-IR authoring,
+independent checks, authorized activation and verification of the original
+result. Normal Core and Tool Broker execute all actions with current source,
+owner and lease guards. Native High still proposes one tool call at a time.
+
+Initial owner-bound detector setup is model-free. The model selects a reviewed
+finite-IR adapter; production Go deterministically builds it. The original
+conversion and a prepared, checked, unapplied README patch are the declared
+result. Project and channel targets are loopback fixtures. No human recipient,
+deployment or arbitrary model-authored executable is part of these observations.
+
+Restart preserves identities and confirmed effects. Proved delivery absence
+retries the same semantic notice. Lost ACK remains delivery_unknown with no
+resend. Owner Stop cancels the tree, denies stopped child source/Broker proof,
+retains the two earlier confirmed parent effects and allows no descendant
+effect, successful final or notice. The ordinary complete cases emit exactly
+one verified semantic notification each, with no technical duplicate outbox.
+
+## Reproduction and remaining gates
+
+The following commands document the original preparation and one execution.
+The V6 root and native window are now sealed. Its frozen read-only auditor is
+the reproduction path; these commands must not execute or resync that root.
+Original Windows preparation command:
+
+```powershell
+pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Sync -RemoteRoot /srv/storage/butler/agents/scenario-release-chain-v6-high-20261013
+```
+
+On the lab, using the exact clean committed source:
+
+```sh
+bash ROOT/current/scripts/dev/model-retry-lab.sh ROOT EXACT_COMMIT
+bash ROOT/current/scripts/dev/scenario-release-chain-v6-high-lab.sh ROOT prepare EXACT_COMMIT
+```
+
+Preparation must pass the exact current app/Core/independent-checker manifest,
+actual disposable PostgreSQL, race/vet and final fault/broad-Go checks. An
+independent subagent then verifies source inventory, executable hashes, immutable
+image identities, host resources, all protocol predicates and the quality/history
+bridge. Once separately admitted, execute once with the same frozen source:
+
+```sh
+bash ROOT/current/scripts/dev/scenario-release-chain-v6-high-lab.sh ROOT execute EXACT_COMMIT
+```
+
+The read-only V6 auditor receives only individually named safe leaves, frozen
+source and binaries, no credential import or whole private runtime directory.
+An independently accepted real-chain result, final-code checks and issue-wide
+criterion mapping remain necessary before ready/merge/closure of PR74 and #33.
+Shared administrative host and unavailable proprietary weights/vendor billing
+records remain explicit evidence limits.

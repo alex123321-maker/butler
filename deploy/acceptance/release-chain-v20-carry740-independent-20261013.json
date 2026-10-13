@@ -1,0 +1,75 @@
+{
+  "all_new_expense_measured": true,
+  "all_prior_scopes_unchanged_and_sealed": true,
+  "auditor_native_calls": 0,
+  "canonical_go_json_available": true,
+  "carry_forward": {
+    "attempts": 740,
+    "known_input_tokens_subtotal": 2494192,
+    "known_output_tokens_subtotal": 50081,
+    "known_total_tokens_subtotal": 3088274,
+    "known_usage_pairs": 707,
+    "old_unknown_266_cause": "UNKNOWN",
+    "unknown_input_attempts": 33,
+    "unknown_output_attempts": 33,
+    "unknown_total_attempts": 53,
+    "unknown_usage_pairs": 33
+  },
+  "common_completion_evidence": "restart_sent_current_owner_result_and_single_sent_notice",
+  "current_native_cost": {
+    "attempts": 34,
+    "known_input_tokens": 396074,
+    "known_output_tokens": 7128,
+    "known_total_tokens": 438947,
+    "unknown_input_attempts": 0,
+    "unknown_output_attempts": 0,
+    "unknown_total_attempts": 0
+  },
+  "fold_sha256": "f20dbcfa1c06ed7b21f3e8f74a2cc7f8477d046e63fa8480798ead6954908561",
+  "fold_vector": [
+    "bab02f6822c2874b2dcfaa304990f980de79b0606348536e07eb5b7e543a3fb7",
+    "026b8848d9efe41caac1467f7c71f9320d404d9c54152cd0b09f514c17d1537e",
+    "b2fecc91cc25ed0dfa66f91ddadb943a1694dbf0fbc0e18fc7df5d7a9ab7ac41",
+    "0a355c4a75ee03de95c9c493178b9f44a9345992121c0006ea156ec5110bd531",
+    "25768c87e580b44df9f5625aa2aea1273fc3273a2d63782346cf8985c0c329aa",
+    "6f6ed49631d0ed895a9dcefc5c3b076e5bb9b0d90ff943ad8cac28367053884b",
+    "8f50e49ded25fe2ed08e636430a23d7f973c6043d4eac602bf07594032be434e",
+    "8d3e226336d9075ac09abd3b72511a065e28f395d51fcb8a9c5c6556f1fbb9f0",
+    "708def1e582eb8759c753c9feb6a811cd5f5702c",
+    "f997bf55998ac973cbd7a8ddea15b7bb58ad4656f7d355329ca098101e2459eb",
+    "c01b83e6985c4cdfc028479808b7a2f1ad039244bab3a697a5765674eac74357"
+  ],
+  "issue33_ready": false,
+  "new_history740": {
+    "bytes": 149385,
+    "mode": "0600",
+    "path": "/srv/storage/butler/reviews/issue33-chain-v20-20261013/release-chain-v20-history740-20261013.json",
+    "sha256": "f92acd06c76bfc42da1643f450a92cc6ba23a7454a4d222e9b5d271eb57fd4b2"
+  },
+  "new_passed_v20_artifacts": {
+    "correlation": "8d3e226336d9075ac09abd3b72511a065e28f395d51fcb8a9c5c6556f1fbb9f0",
+    "final-audit": "026b8848d9efe41caac1467f7c71f9320d404d9c54152cd0b09f514c17d1537e",
+    "high": "b2fecc91cc25ed0dfa66f91ddadb943a1694dbf0fbc0e18fc7df5d7a9ab7ac41",
+    "pg-initial": "6f6ed49631d0ed895a9dcefc5c3b076e5bb9b0d90ff943ad8cac28367053884b",
+    "pg-ledger": "0a355c4a75ee03de95c9c493178b9f44a9345992121c0006ea156ec5110bd531",
+    "pg-product": "25768c87e580b44df9f5625aa2aea1273fc3273a2d63782346cf8985c0c329aa",
+    "runtime-state": "8f50e49ded25fe2ed08e636430a23d7f973c6043d4eac602bf07594032be434e"
+  },
+  "new_unknown_expense_entries": 0,
+  "originals_or_measurements_changed": false,
+  "prior705_pool_holders": "UNKNOWN",
+  "prior706_http_subcause": "UNKNOWN",
+  "prior_fold_sha256": "bab02f6822c2874b2dcfaa304990f980de79b0606348536e07eb5b7e543a3fb7",
+  "prior_history706_sha256": "2a408c5986688618cf0afdb033216d83cc5d2b9bef456f6ab6a45b4449acc390",
+  "prospective_model_admission": false,
+  "remaining_sealed_absolute826_attempts": 86,
+  "retained_verified_scenarios": [
+    "owner_stop",
+    "explicit_absence"
+  ],
+  "status": "INDEPENDENT_SEALED740_CARRY_CURRENT34_ALL_MEASURED_COMPOSITE_CHAIN_PASS_FINAL_ISSUE_PENDING",
+  "verified_current_scenarios": [
+    "lost_ack",
+    "restart_sent"
+  ]
+}

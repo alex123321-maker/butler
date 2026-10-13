@@ -29,6 +29,13 @@ type Config struct {
 	Model      string
 	Timeout    time.Duration
 	AuthSource providerauth.AntigravityTokenSource
+	// These are trusted construction-time settings, never model transport options.
+	// The generated-token ceiling includes thinking as well as visible output.
+	MaximumOutputTokens int
+	JSONResponseSchema  json.RawMessage
+	// Explicit native OpenAPI-subset responseSchema dialect, not a fallback.
+	// Mutually exclusive with JSONResponseSchema and available only on High.
+	GoogleResponseSchema json.RawMessage
 }
 
 type Provider struct {
@@ -70,6 +77,9 @@ func NewProvider(cfg Config) (*Provider, error) {
 	if cfg.Timeout <= 0 {
 		cfg.Timeout = 5 * time.Minute
 	}
+	if err := validateGenerationConfig(&cfg); err != nil {
+		return nil, err
+	}
 	if cfg.AuthSource == nil {
 		return nil, providerError(transport.ErrorTypeProviderUnavailable, "Antigravity authentication source is required")
 	}
@@ -92,6 +102,13 @@ func (p *Provider) StartRun(ctx context.Context, req transport.StartRunRequest) 
 	}
 	if len(req.TransportOptions) > 0 || req.TransportOptionsJSON != "" {
 		return nil, protocolError("Antigravity transport options are unsupported")
+	}
+	structured := len(p.config.JSONResponseSchema) > 0 || len(p.config.GoogleResponseSchema) > 0
+	if (p.config.MaximumOutputTokens > maxOutputTokens || structured) && req.Context.ModelName != FlashHighModel {
+		return nil, protocolError("configured High generation requires the selected High model")
+	}
+	if structured && len(req.ToolDefinitions) > 0 {
+		return nil, protocolError("JSON observation cannot declare tools")
 	}
 	system, contents, err := convertInputs(req.InputItems)
 	if err != nil {
@@ -195,7 +212,14 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 	state.cancel = cancel
 	state.turn++
 	turn := state.turn
-	request := generateRequest{Contents: append([]content(nil), state.contents...), SystemInstruction: state.system, GenerationConfig: generationConfig{MaxOutputTokens: maxOutputTokens}}
+	request := generateRequest{Contents: append([]content(nil), state.contents...), SystemInstruction: state.system, GenerationConfig: generationConfig{MaxOutputTokens: p.config.MaximumOutputTokens}}
+	if len(p.config.JSONResponseSchema) > 0 {
+		request.GenerationConfig.ResponseMIMEType = "application/json"
+		request.GenerationConfig.ResponseJSONSchema = p.config.JSONResponseSchema
+	} else if len(p.config.GoogleResponseSchema) > 0 {
+		request.GenerationConfig.ResponseMIMEType = "application/json"
+		request.GenerationConfig.ResponseSchema = p.config.GoogleResponseSchema
+	}
 	if len(state.tools) > 0 {
 		request.Tools = []functionTools{{FunctionDeclarations: state.tools}}
 		request.ToolConfig = map[string]any{"functionCallingConfig": map[string]any{"mode": "AUTO"}}
@@ -231,8 +255,11 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 			p.mu.Unlock()
 			// Cancellation may already have closed runCtx. Deliver a buffered safe
 			// terminal error when possible, without blocking an abandoned consumer.
+			event := transport.NewTransportErrorEvent(runID, Name, err)
+			event.Usage = answer.Usage
+			event.ProviderModelVersion = answer.ModelVersion
 			select {
-			case out <- transport.NewTransportErrorEvent(runID, Name, err):
+			case out <- event:
 			default:
 			}
 			return
@@ -243,6 +270,7 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 			p.mu.Unlock()
 			event := transport.NewTransportErrorEvent(runID, Name, err)
 			event.Usage = answer.Usage
+			event.ProviderModelVersion = answer.ModelVersion
 			send(event)
 			return
 		}
@@ -255,6 +283,7 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 			p.mu.Unlock()
 			event := transport.NewToolCallRequestedEvent(runID, Name, proposal)
 			event.Usage = answer.Usage
+			event.ProviderModelVersion = answer.ModelVersion
 			if !send(event) {
 				p.discard(runID, state)
 			}
@@ -265,10 +294,13 @@ func (p *Provider) executeLocked(ctx context.Context, runID string, state *runSt
 		if answer.Text == "" {
 			event := transport.NewTransportErrorEvent(runID, Name, protocolError("model returned no usable text or function"))
 			event.Usage = answer.Usage
+			event.ProviderModelVersion = answer.ModelVersion
 			send(event)
 			return
 		}
-		send(transport.NewAssistantFinalEvent(runID, Name, transport.AssistantFinal{Content: answer.Text, FinishReason: answer.FinishReason, Usage: answer.Usage}))
+		final := transport.NewAssistantFinalEvent(runID, Name, transport.AssistantFinal{Content: answer.Text, FinishReason: answer.FinishReason, Usage: answer.Usage})
+		final.ProviderModelVersion = answer.ModelVersion
+		send(final)
 		send(transport.NewTerminalEvent(runID, transport.EventTypeRunCompleted, Name))
 	}()
 	return out

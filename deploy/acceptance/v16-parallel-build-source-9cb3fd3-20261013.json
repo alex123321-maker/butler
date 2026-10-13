@@ -1,0 +1,101 @@
+{
+  "actual_accepted_cases": null,
+  "all_source_inventory_bytes_recomputed": true,
+  "auditor_auth_or_model_calls": 0,
+  "build_only_original_summary": {
+    "baseline": 616,
+    "independent_acceptance_pending": true,
+    "maximum_new_attempts_design": 120,
+    "native_calls": 0,
+    "offline_tests_run": false,
+    "status": "BUILD_ONLY_IMMEDIATE_NATIVE_REQUESTED"
+  },
+  "build_proof": "/srv/storage/butler/agents/scenario-release-chain-v16-high-20261013/reports/chain-v16-high-prepare-20261013T200528Z-3246682",
+  "build_vet_diagnostics_bytes": 0,
+  "does_not_gate_native": true,
+  "hardware": {
+    "cloud_weights_sha256": null,
+    "cpu_sha256": "177d14a5788191dc50c31b0906b921147a444b23b1e4acc96e42181bbc3b6baa",
+    "fixture_cpus": 2,
+    "fixture_ram_bytes": 1610612736,
+    "go_image": "sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61",
+    "host_ram_kib": 15693396,
+    "kernel": "7.0.0-34-generic",
+    "postgres_image": "sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d",
+    "remote_model_ram": null,
+    "runtime_image": "sha256:ce64758a109eb420d874a118f87920e625e12d3634e03b4a5573fd9f6e5d3507"
+  },
+  "hardware_raw_sha256": "ac640d38f0ad5db871190315628543b2407a7c539ce7b3b31e85039edba61e9b",
+  "issue33_ready": false,
+  "limits": [
+    "Build-only by latest direct human instruction. No offline test-suite PASS, native result PASS or independent pre-call gate is invented.",
+    "The bundled prior-protocol chain-final-audit binary is unused for current V16 final acceptance; a separate V16 frozen auditor is required.",
+    "Current9c mandatory321fault results and addressed PG loader1/taskproof9 cover production-identical composition; the four actual current cases remain mandatory and pending.",
+    "Explicit acceptance composite retains V14 useful original work without promoting oldnormalNO_GO or fabricating its absent owner verification/notice."
+  ],
+  "pre_native_admission_performed": false,
+  "production_657_files_byte_equal_measured9c": true,
+  "public_exact_raw_pins": {
+    "release-chain-v15-carry616-independent-20261013.json": {
+      "bytes": 3251,
+      "sha256": "629949179247a74b90750491d4bca850270bf70bb78c2868f6aa2c66e947188b"
+    },
+    "release-chain-v15-history616-20261013.json": {
+      "bytes": 123839,
+      "sha256": "d728ed54a57409cf0d86d656bb0953c934688acd6ee796b3ea018a120fcc5030"
+    },
+    "release-chain-v16-high-prerequisite-20261013.json": {
+      "bytes": 9100,
+      "sha256": "36c69a1b39dfc97fb161eecabafd6e303b06c8cf1795af967c7e528d428f0f7a"
+    },
+    "release-chain-v16-user-policy-amendment-20261013.json": {
+      "bytes": 7475,
+      "sha256": "6cea8e8c96c238c789beb40a16d87f696da42fb00a2926fe1ce28437bdde3965"
+    }
+  },
+  "reviewed_at_utc": "2026-10-13T20:11:45.332842+00:00",
+  "runtime_binaries": {
+    "app.test": {
+      "bytes": 55566080,
+      "mode": "0555",
+      "sha256": "bd14b271a987b3c7bd600d320a4feb9c50d1fe5442df57d3c263ad7b6beff51d"
+    },
+    "chain-final-audit": {
+      "bytes": 17816066,
+      "mode": "0555",
+      "sha256": "b27e7d92021cf0774a6f1f0de0ffde85183d62ee5d39f2b28a569ab96c115d2e"
+    },
+    "extension.test": {
+      "bytes": 22526386,
+      "mode": "0555",
+      "sha256": "924476213168951493ae8ad21ef0630f1b666e63ac67d643fa79e5d5517f0a07"
+    },
+    "test2json": {
+      "bytes": 4566038,
+      "mode": "0555",
+      "sha256": "8f352c19877e12d5b0305b9eebac875aa63734fe03b73127ee01fae2c833ad68"
+    },
+    "tls-prerequisite": {
+      "bytes": 8829345,
+      "mode": "0555",
+      "sha256": "14a3bc9fc5a006ce6ae91fe10e3d4ae2ef0f78ac6c1a4c16e43d6d65f1589392"
+    },
+    "tool-broker": {
+      "bytes": 28759445,
+      "mode": "0555",
+      "sha256": "2ed16aca088b7cb90b85b643a7e9533d336ca2d43ea0af5746e44847496d9e8e"
+    },
+    "tool-converter": {
+      "bytes": 20154212,
+      "mode": "0555",
+      "sha256": "5f2dee5acef95c2f279b849d7af76003688a3b46a274e0d44456a37c40536f75"
+    }
+  },
+  "snapshot": "/srv/storage/butler/agents/scenario-release-chain-v16-high-20261013/snapshots/20261014-030446-179",
+  "source_commit": "9cb3fd34e05aaf03f53c5254f44acc0cda03cddd",
+  "source_file_count": 2415,
+  "source_manifest_sha256": "ced49e122d9fd78274113e5176ed649a06c20ace66387fb522c8d029cecb7676",
+  "source_tree_sha256": "44c18494b635af783e0273da4982b393f46e7e032f50927d9eb32b20c6b2c2a4",
+  "status": "SOURCE_RUNTIME_CORRELATED_FINAL_ACCEPTANCE_PENDING",
+  "version": "butler-independent-v16-parallel-build-source-review-v1"
+}

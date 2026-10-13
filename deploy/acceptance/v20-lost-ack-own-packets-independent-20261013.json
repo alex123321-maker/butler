@@ -1,0 +1,175 @@
+{
+  "all13_action_and_effect_and_fingerprint_ids_distinct": true,
+  "all13_actual_qualified_grants_dispatches": true,
+  "all13_named_original_packets": [
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 707,
+      "original_arguments_sha256": "1fb97ac9234720f899e4a72cf20b38d483bd2d04db58733329259a9461343635",
+      "private_metadata_sha256": "caa9bbc449dd8d44c27ec98df62f92f3b94926d73626f838e0e394d1a9b60b40",
+      "private_proposal_sha256": "aa58ea41907a1bb11b2ad7c48f7b48314786f1020d323ee293c3c882e87fd0fb",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converters.discover"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 708,
+      "original_arguments_sha256": "fb5063a7041761a7c787a851a3e3399790a5d3ab6a9db04ff0f50d1e1cde30ed",
+      "private_metadata_sha256": "49a698ed44692e6584c2bbea8e57e879202400979d3423e04a7acc9efa235db9",
+      "private_proposal_sha256": "0b358bdcf1298219894665a6f138f4f9fe0105f330b24afab7caf6ffc33a9143",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "task.delegate_converter"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 710,
+      "original_arguments_sha256": "80db7be90004b4dee9ae48490d756d6b0137ee75b52f6b0dac3269f2cf22d537",
+      "private_metadata_sha256": "78d328a9f5a8e6974192c1b7564f887416e0c4057c093cdc1ff5dba306ad861d",
+      "private_proposal_sha256": "05956c70546aa9d4e7a614659b283fe47bc04e16aec4b20bc6ad8eb3a7e6eb46",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converters.discover"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 711,
+      "original_arguments_sha256": "ca8dc27a9e4105d6878730863905bed5dccef3bfa429a5dfc0f7bc10845d8a55",
+      "private_metadata_sha256": "8125bc2484aa59024875b6dc7819cc08fdcc3407f46a69c8fe5493eb6083533f",
+      "private_proposal_sha256": "a8548ba37964526f37cef6d135faeca85a9768e955348b2e506bf95ae09c0fd2",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converters.develop"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 712,
+      "original_arguments_sha256": "70758d7534005747f623e70887b53e8239a8bb2fc66031b8702eae3a78cacde7",
+      "private_metadata_sha256": "b9e5e3ffcfa9ad13b8ca30324ed1d8885c44a65b87b78f993f3112d0e054f425",
+      "private_proposal_sha256": "56870c2d24d929fb57b0472ada67330241e2183d7e1a6af07edbe1c4031cec1d",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converters.test"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 714,
+      "original_arguments_sha256": "21abb70a93468fe4283c538beb5c6a03b977ace17bbca056811210ce5a0b96fe",
+      "private_metadata_sha256": "239121f5b89254658d2ad20e7aca399191e03407358b16b6914c5796e22fc9d7",
+      "private_proposal_sha256": "bfed5095013bea601770b20ad5bd64843747c03c6399b061580f75d71f7a4918",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converters.collect"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 715,
+      "original_arguments_sha256": "70758d7534005747f623e70887b53e8239a8bb2fc66031b8702eae3a78cacde7",
+      "private_metadata_sha256": "43e91eb38eec35fc7330c7fbb233eb1cc1e681f0af2fde2448e6934a1a30251d",
+      "private_proposal_sha256": "776b2542d5e88e5bcc1445fd8f39fd9ea6c252b7810573c76195a35bd4f28675",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converters.test"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 716,
+      "original_arguments_sha256": "e1b54a14bc5a61dad7182fc273422d6885e04f7bc6cd267e7eb351484902d8d1",
+      "private_metadata_sha256": "ad6436cc112c8c8904a91c44107531a6996f8bb2177929eab4a9eef22cb104c9",
+      "private_proposal_sha256": "44497a5137e76cae65a054a844bab52acca0c0e355541300fbaea450a2929fb4",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converters.trial"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 717,
+      "original_arguments_sha256": "77b098d3b696af4a11a7d97e11acdf5cdbe3edec57e65e1a158df9f030a9b17b",
+      "private_metadata_sha256": "41aac55ce89706856742eb8a3e6cfb8465cccda085cf35ebc0ddf3c90f2a79e4",
+      "private_proposal_sha256": "dd4fad003ad60f09c30bb209fe5c9fa0bec9c3b55dc4dbcc42d732c044bd50d6",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converters.activate"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 718,
+      "original_arguments_sha256": "73c3c126c59b1e589c7313447226b6f06241b6f71f88569f9f045ff36776f1ec",
+      "private_metadata_sha256": "ee2702e85786354d63c235c432c259ce1d82909c535d3e7007fd258b7dac3123",
+      "private_proposal_sha256": "f894c1aa04c27a293314a58d0117720228dadf3b318ef0d6e2ace9929a6241ae",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "extension.project.inspect"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 719,
+      "original_arguments_sha256": "b27afc2825be4743a7cedf1149d0bafbd22e01a1a95177b2c20677a9d0cf696f",
+      "private_metadata_sha256": "036181e793e1b0d8c78e743d253b771cbc61194e9ad923d47cbd6b0bcc037bf4",
+      "private_proposal_sha256": "6744a9a7452bdb7844f706a77e19a739b20199709ccd88a499584003dab77933",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "extension.project.prepare-patch"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 720,
+      "original_arguments_sha256": "09853270d275cc0f2eae20c46ede10551361bb3b6cda8ea592d803da853aa9af",
+      "private_metadata_sha256": "757e7f701ec51042a63848e012b7b4f588be2bca6c5120a532cefc2ac6627b7b",
+      "private_proposal_sha256": "92c81fb00456b83d97c649f8ddd03f7f9e607c26d6f7c7b1e9b0a82bdbef1500",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "extension.project.check"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 722,
+      "original_arguments_sha256": "a3e414facb3ab06871c0ae8af88a6ea29a90a5613eae27420b32577bc8ee993c",
+      "private_metadata_sha256": "ec8dcaf48ebc7b3229944dee883cb695597b04c0155ddfc4625b6a3008ade94c",
+      "private_proposal_sha256": "97c716cca57ead227ea9df834ed0642ea5f48f255863b5447bd9744215f2c022",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converter.developer-inventory.convert"
+    }
+  ],
+  "all17_measured_cost": {
+    "input_tokens": 191413,
+    "output_tokens": 3403,
+    "total_tokens": 210663,
+    "unknown": 0
+  },
+  "all_release_cases_passed": false,
+  "canonical_go_final_audit": false,
+  "current_case_payload_sha256": "d9e0f33c0b3e60dd9ecc369600c167f967ed622a9ff39317098c668bb0e68af4",
+  "initial_case_payload_sha256": "77d345adc0320bff676560ca41d6c6c4dd8a8bb47876e20f6ee41d1a37c57914",
+  "issue33_ready": false,
+  "limits": [
+    "This verifies the completed first case while the separately owned restart case is still executing; no global20PASS or normalalias is invented.",
+    "A separate readonly Go peer probe recomputes the shared full safe product/source/kernel/budget/result/receipt/delivery predicates; final frozen checker and wholecomposition review still required.",
+    "All13 named UID10001:0600 ownpacket+metadata imports are individually read-only/network-none. Original ArgsJSON/base64/lexical numeric canonicalization and unchanged Core authorization hash are checked; no authentication or hidden provider stream is read.",
+    "UNKNOWN delivery is an actual saved receipt state with one acceptedloopback send and one claim attempt; no real human Telegram recipient or remote provider weights/costinvoice is claimed."
+  ],
+  "lost_confirmation_no_automatic_resend": true,
+  "native_auth_or_model_calls_by_auditor": 0,
+  "native_source_commit": "708def1e582eb8759c753c9feb6a811cd5f5702c",
+  "notice_unknown_not_sent_or_failed": true,
+  "one_prepare_one_immutable_checked_unapplied_patch": true,
+  "one_recipient_request_one_acceptance": true,
+  "original_measurements_changed": false,
+  "overall_chain_status": "PENDING_RESTART_AND_FROZEN_FINAL_AUDIT",
+  "owning_safe_sql_sha256": "e4f0c6a3526b53e296b78eaa176ac6fd35964e1aa7362418253dee8ef21c4736",
+  "requests": [
+    707,
+    708,
+    709,
+    710,
+    711,
+    712,
+    713,
+    714,
+    715,
+    716,
+    717,
+    718,
+    719,
+    720,
+    721,
+    722,
+    723
+  ],
+  "source_failure_observations": 0,
+  "source_tree_sha256": "f997bf55998ac973cbd7a8ddea15b7bb58ad4656f7d355329ca098101e2459eb",
+  "status": "LOST_ACK_ORIGINAL_PACKETS_ACTIONS_COST_AND_UNKNOWN_NOTICE_PASS",
+  "verified_scenarios": [
+    "lost_ack"
+  ],
+  "version": "butler-independent-v20-lost-ack-own-packet-review-v1"
+}

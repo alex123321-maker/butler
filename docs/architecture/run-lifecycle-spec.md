@@ -1,5 +1,13 @@
 # Butler — Run Lifecycle Specification
 
+The prospective V4 lab acceptance keeps separate completed-model, original-task
+verification, action-effect and notice-delivery evidence. Its native chain cannot
+open from an assumed baseline: exact independently reviewed full quality and
+paired-cost PostgreSQL evidence must establish the actual520-call prerequisite.
+Restart, tree Stop, explicit delivery absence and lost ACK retain owning product
+rows in immutable content-free witnesses before fixture cleanup. See
+[V4 chain protocol](../ai/scenario-release-chain-v4-high-plan-20261013.md).
+
 Complete model-turn usage is independent of run/task completion, tool success
 and notification delivery. The budget wrapper saves one optional complete
 observation per admitted inference request before releasing its tool/final event;
@@ -761,9 +769,12 @@ renewal worker, включая незавершённый `RenewLease`, зате
 
 ### 22.1 Resume
 
-В Butler V1 resume реализуется как создание нового run, а не продолжение старого run с тем же `run_id`.
+Для terminal run resume создаёт новый run со ссылкой на исходный. Production
+durable ingress также восстанавливает безопасные сохранённые границы ещё
+nonterminal run под новым ownership fence; это сохраняет исходный `run_id` и
+не меняет terminal history. См. [durable execution](durable-execution-spec.md).
 
-Resumed run:
+При продолжении после terminal run новый run:
 - получает новый `run_id`;
 - ссылается на предыдущий run через `resumes_run_id`;
 - использует уже сохранённый session/transcript state;
@@ -797,6 +808,10 @@ Retry допускается не для всего run, а на уровне о
 - async memory pipeline retry.
 
 Политики retry должны быть вынесены в отдельные subspec/contract documents.
+Production Core допускает один отложенный повтор модели на accepted input после
+номинального model-turn timeout. Новый запрос имеет отдельное списание бюджета;
+подтверждённые действия не переисполняются. Отмена, истёкшие полномочия и
+неизвестный эффект запрещают повтор. См. [model retry policy](model-retry-policy.md).
 
 ---
 
@@ -1012,3 +1027,10 @@ budget and private input claim/fence remain mandatory. Opaque readiness is DATA;
 no synthetic owner message or semantic acceptance is created. Recovery, Broker
 and atomic final repeat the guard. See
 [owned converter continuations](converter-continuations.md).
+
+Owner-configured verified-task delivery retains all ordinary attempts/finals and
+current execution/lease/source checks, while suppressing outward technical drafts
+and progress before channel-delivery observation. Only current independent owner
+verification of original criteria and the Task completion transaction create the
+one root notice. Source-only historical completion/send checks cannot borrow a
+completed run's execution authority. Approval/intervention delivery is preserved.

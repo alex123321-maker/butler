@@ -5,6 +5,13 @@ for normal HTTP, gRPC and Telegram ingress. PostgreSQL owns acceptance, ordering
 execution checkpoints, expiring ownership and decisions. Redis and provider
 session references do not authorize dispatch or reconstruct an unknown result.
 
+The input worker has a ten-minute default execution bound. A declared runtime
+profile may use the explicit startup constructor `NewServiceWithExecutionTimeout`
+with a positive bound no greater than forty minutes. This configures a new
+service before workers start. Earlier caller, accepted input, task, mandate,
+claim, ownership and source deadlines remain authoritative; retries never extend
+them and existing services receive no timeout mutation.
+
 ## Acceptance and ordering
 
 `POST /api/v1/events` returns HTTP 202 with `accepted`, `input_id`,
@@ -99,6 +106,11 @@ blocked and never starts autonomous model retries. A saved finalizing response
 can finish persistence without asking the provider again. Existing assistant
 transcript content is checked before appending, preventing a duplicate final row.
 Interrupted model execution with no safe boundary is conservatively blocked.
+The [bounded model retry](model-retry-policy.md) adds one durable queued recovery
+after a trusted nominal model-turn timeout. It obtains fresh ownership, sources,
+catalog and model admission, preserves all spent reservations, and denies replay
+of equivalent confirmed non-read proposals. Its stored started marker prevents
+another request after a crash during the retry.
 
 Final result persistence, required artifacts, run completion, notification outbox
 and auxiliary jobs commit atomically under the current PostgreSQL ownership

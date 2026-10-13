@@ -1,0 +1,47 @@
+{
+  "all_preexisting_production_files_identical": true,
+  "all_source_inventory_bytes_recomputed": true,
+  "exact_named_passes": [
+    "TestReleaseChainV15TaskProofLegacyOptIn",
+    "TestReleaseChainV15TaskScopedOriginalProofIntegration",
+    "TestReleaseChainV15TaskScopedOriginalProofIntegration/foreign_owner_binding",
+    "TestReleaseChainV15TaskScopedOriginalProofIntegration/previous_phase_qualified_calls",
+    "TestReleaseChainV15TaskScopedOriginalProofIntegration/stale_current_task",
+    "TestReleaseChainV15TaskScopedOriginalProofIntegration/stale_run_revision",
+    "TestReleaseChainV15TaskScopedOriginalProofIntegration/unconfirmed_dispatch",
+    "TestReleaseChainV15TaskScopedOriginalProofIntegration/unfinished_phase",
+    "TestReleaseChainV15TaskScopedOriginalProofIntegration/unknown_effect"
+  ],
+  "issue33_ready": false,
+  "limitations": [
+    "Explicit synthetic journal storage plus actual loopback responses; no fabricated ordinary Broker/native dispatch or owner acceptance claim.",
+    "First real PG test setup23505 failure remains retained; only distinct normalized call-ID fixture setup changed, no production/helper/proof predicate changed."
+  ],
+  "named_failures": 0,
+  "named_pass_count": 9,
+  "named_skips": 0,
+  "native_calls": 0,
+  "owning_native_roots_modified": false,
+  "prior_measured_commit": "5662b7398f8345872aedff2cec253787a3946abe",
+  "proof": "/srv/storage/butler/agents/scenario-release-chain-v15-task-proof-pg-20261013/reports/context-pg-20261013T194715Z-3191094",
+  "race_execution": true,
+  "snapshot": "/srv/storage/butler/agents/scenario-release-chain-v15-task-proof-pg-20261013/snapshots/20261014-024659-107",
+  "source_added": {},
+  "source_changed": {
+    "apps/orchestrator/internal/app/release_chain_v15_original_proof_checks_test.go": "ad88abaafd2023111104ce03accd50a6390debabe2d77fb19943c767143214fb"
+  },
+  "source_file_count": 2398,
+  "source_manifest_sha256": "81c0fff49df7c56adef983f73bb606704db1b3bb75d694beeb13c70102c9c242",
+  "source_removed": [],
+  "source_review_predicates": [
+    "TaskScopedOriginalProof remains explicit false for the legacy profile.",
+    "Exact actual loopback HTTP GET/patch receipt parsing with explicitly synthetic PG journal confirms qualified patch/check calls in distinct completed runs of the same current root task.",
+    "Stale phase revision, foreign owner binding, unconfirmed dispatch, unknown effect, unfinished phase and changed current constraints each deny."
+  ],
+  "source_tree_sha256": "09a3e0eac3a52a69a777a293fc8b8dd13de0e725b60d3e92e7c55a299a5a06d3",
+  "status": "PASS",
+  "tests_jsonl_bytes": 10218,
+  "tests_jsonl_sha256": "e15e8d393bfb7d14f27727e1668ab1a917cf1c9e6734ad7666981c7d4b275ba9",
+  "version": "butler-independent-current-pg-source-review-v1",
+  "vet_diagnostics_bytes": 0
+}

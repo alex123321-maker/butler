@@ -1,0 +1,174 @@
+{
+  "actual_original_csv_output_sha256": "aaef570d99a38a2ed8f028f8ee339b04883ec198cfdecbd95eb0a4057e4c3ade",
+  "all13_original_named_packets": [
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 659,
+      "original_arguments_sha256": "80db7be90004b4dee9ae48490d756d6b0137ee75b52f6b0dac3269f2cf22d537",
+      "private_proposal_sha256": "e94556406eac2372c60c32412b78295b058a51600261f204336ff8ad0783f6c6",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converters.discover"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 660,
+      "original_arguments_sha256": "6e4b9c6329de15736199163741d7b01a6f9718c7d9744283d5111deb023cc3c8",
+      "private_proposal_sha256": "ac9d14c0864a02a90458b113ce9dc646e0b8e5c0d667b6de6d1805dfbba57cf4",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "task.delegate_converter"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 662,
+      "original_arguments_sha256": "3f78b2ac2faa96d8a46ebbedfc2d1d558e73b2cd4167180c01fc215d40cf0932",
+      "private_proposal_sha256": "1e32f3566c915a848ff5d7ab7501a1c74ee174ae10682cc648c7b28fffd009fa",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converters.discover"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 663,
+      "original_arguments_sha256": "2121dbb1164a45c273cef54896b74ab995f6608e5df8ac37ae0a7c043094daab",
+      "private_proposal_sha256": "4efb6548e973e3efd02d126ae7c063390b421e36eac558221e54520daa17a096",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converters.develop"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 664,
+      "original_arguments_sha256": "70758d7534005747f623e70887b53e8239a8bb2fc66031b8702eae3a78cacde7",
+      "private_proposal_sha256": "617ea59ba7c5d9f8b6b918bb5604ab6e27c120fd74b64068644ee9b86d03ed6b",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converters.test"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 666,
+      "original_arguments_sha256": "c17de5b64563787e0d43939df512febb89fc5d1252ff1181f8287e01a2772909",
+      "private_proposal_sha256": "cecffc3efc3ecbbe706d542ec2f41aa3c45d0a18813fe247d402d0013b0c0c67",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converters.collect"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 667,
+      "original_arguments_sha256": "70758d7534005747f623e70887b53e8239a8bb2fc66031b8702eae3a78cacde7",
+      "private_proposal_sha256": "d246a7716f6300d7aae15a5a915185a94e68724a144983175b6a0c5db6b95451",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converters.test"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 668,
+      "original_arguments_sha256": "e75a8f0aac962942588f69c8ac7097fcd43a537d454c081c3ddf9c013d8c4c7e",
+      "private_proposal_sha256": "d5636c316bd3797e8979413d0aab39cc961fb67c71ed0c8bebf84f4c617c4f56",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converters.trial"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 669,
+      "original_arguments_sha256": "d42fb47b95a768cde1314d69aaba26d3484e968174843d6cfcf025a18b6aa546",
+      "private_proposal_sha256": "3287b1256199121d599e2f36e93bbd6560298d792ece6976ecc72a04c3e8a6fc",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converters.activate"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 670,
+      "original_arguments_sha256": "73c3c126c59b1e589c7313447226b6f06241b6f71f88569f9f045ff36776f1ec",
+      "private_proposal_sha256": "743fd96474cbddd8d6e1dcba9d62af47403884436ea9ba6efdc7bb2be7371f4a",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "extension.project.inspect"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 671,
+      "original_arguments_sha256": "cb0822f716d56767bd72703f74aed4a847fbad9f74d1d047593ac59f71b23307",
+      "private_proposal_sha256": "c999cd964767b992ae31d6325105fc61106d7a25b21e00d921c713c54ca5e3ad",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "extension.project.prepare-patch"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 672,
+      "original_arguments_sha256": "2cb23d8966492f55ad32b6888865a2d963593c4a675af430ba2c4593c88fd514",
+      "private_proposal_sha256": "3d5a68b97da699dd77a5675e8234d5dbfd03bcab49bf819ea9aa0c38b62f11c7",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "extension.project.check"
+    },
+    {
+      "actual_core_authorization_arguments_hash_matches": true,
+      "ordinal": 674,
+      "original_arguments_sha256": "251cbdc42d593c56bb536064dec1b512d586a54882983494c1724eb636fd16e0",
+      "private_proposal_sha256": "2047bf4eae671f325f3ae85cd6fa1d3b67086e56a26de02ac942791eb7a14aeb",
+      "qualified_current_grant_and_confirmed_dispatch": true,
+      "tool_name": "converter.developer-inventory.convert"
+    }
+  ],
+  "all13_qualified_current_grants_and_dispatches_confirmed": true,
+  "all17_measured_kernel_operations_correlated": true,
+  "all_eight_budget_dimensions_recomputed": true,
+  "all_release_cases_passed": false,
+  "child_and_independent_parent_adapter_validation": true,
+  "cleanup_cancel_observation_occurs_after_completed_run": true,
+  "current_case_payload_sha256": "d80c6f2d06a41eb9dad4947fd5de1dd1bffedbb78d604c658e1c0d703cc35e51",
+  "derived_trial_and_usage_catalog_revision_digests_independently_recomputed": [
+    "41c808f49b61a7901eba3f74904d67fa88bbf57b8db5b19c5b3737b70dd9921a",
+    "481571adfb9741ccfb2ccc61a6c25efda6763cd76b694165d35ab53538169363"
+  ],
+  "duplicate_external_mutations": 0,
+  "initial_case_payload_sha256": "9827ce5a6f4d0e48687e0b4b15e843dcf22ae34ce11abac931be1749242cd9d3",
+  "issue33_ready": false,
+  "limits": [
+    "This is a separate original closed explicit_absence component acceptance. OverallV18 remains NO_GO; lost_ack and restart_sent were not accepted.",
+    "Source-contract alignment retains actual requiresApprovalfalse read authorization and catalog revision envelope digests; raw CSV and converted outputbody hashes are distinct and independently verified. No source/authority/effect/result criterion is waived.",
+    "Packet/ArgsJSON/base64/auth fingerprints use individually named original own-packet readonly0600 imports only; no wholeprivate/auth/SSE mount.",
+    "Actual Broker safe receipts retain their result_sha256 and known semantic checks; raw HTTP/SSE result bytes are not imported or claimed independently recovered."
+  ],
+  "native_auth_or_model_calls_by_auditor": 0,
+  "native_code_commit": "67133e17b58acd825b2988a281079e1253da7af8",
+  "native_measured_cost": {
+    "input_tokens": 187902,
+    "output_tokens": 3658,
+    "total_tokens": 207141
+  },
+  "native_requests": [
+    659,
+    660,
+    661,
+    662,
+    663,
+    664,
+    665,
+    666,
+    667,
+    668,
+    669,
+    670,
+    671,
+    672,
+    673,
+    674,
+    675
+  ],
+  "one_confirmed_notice_after_definite_absence_two_attempts_one_acceptance": true,
+  "one_prepare_one_immutable_unapplied_patch_actual_check_true": true,
+  "original_measurements_changed": false,
+  "original_safe_leaf_sha256": {
+    "pg-initial-witness.json": "d381eb350f0a8932d0c09a2469c2328ec297782ed69a7bfbf4208c25c061bffe",
+    "pg-ledger-witness.json": "7a2418b1293788d6ffbbc1468142fd4a1886370d735166447268fe116711dce2",
+    "pg-product-witness.json": "81edce9ab9b272757a6dff16ab32f0535bfd0c47fe9e449748fd29bf6adec9ef",
+    "scope.json": "7281eebacaad634555f22c3a07c8a72d700fa9c86cb4df686a7860f5dbb55492"
+  },
+  "overall_chain_status": "NO_GO",
+  "owner_verified_same_original_task_result": true,
+  "root_and_child_correct_final_states": true,
+  "source_tree_sha256": "b917ec423adcfdffbdf0713785cf962b619ceeee03bf4885e2d189fd6c0d5ca3",
+  "status": "EXPLICIT_ABSENCE_CRITICAL_COMPONENT_PASS",
+  "unchanged_old_canonical_checker_pass_claimed": false,
+  "verified_scenarios": [
+    "explicit_absence"
+  ],
+  "version": "butler-independent-v18-explicit-absence-component-audit-v1"
+}

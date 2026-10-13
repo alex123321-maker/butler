@@ -53,6 +53,17 @@ func NewService(store *Store, sessions SessionWriter, executor Executor, runs Ru
 	return &Service{store: store, sessions: sessions, executor: executor, runs: runs, log: log, workers: 2, claimTTL: 60 * time.Second, executionTimeout: 10 * time.Minute}
 }
 
+// NewServiceWithExecutionTimeout sets a finite startup profile. Earlier caller
+// and durable authority deadlines still apply; existing services are unchanged.
+func NewServiceWithExecutionTimeout(store *Store, sessions SessionWriter, executor Executor, runs RunReader, log *slog.Logger, timeout time.Duration) (*Service, error) {
+	if timeout <= 0 || timeout > 40*time.Minute {
+		return nil, fmt.Errorf("input execution timeout must be positive and at most forty minutes")
+	}
+	s := NewService(store, sessions, executor, runs, log)
+	s.executionTimeout = timeout
+	return s, nil
+}
+
 // Execute is ingress acceptance, never execution. Its context is used only to
 // commit the receipt. The application's worker context owns subsequent work.
 func (s *Service) Execute(ctx context.Context, event ingress.InputEvent) (*flow.ExecutionResult, error) {
@@ -297,6 +308,10 @@ func (s *Service) process(parent context.Context, r Record) {
 		return
 	}
 	if err != nil {
+		if errors.Is(err, flow.ErrModelRetryPending) && r.Attempts < r.MaxAttempts && time.Now().Before(r.ExpiresAt) {
+			s.finish(parent, r, "queued", "model_retry_pending", "one bounded model retry awaits durable backoff", 0)
+			return
+		}
 		if errors.Is(err, flow.ErrResultPersistencePending) && r.Attempts < r.MaxAttempts && time.Now().Before(r.ExpiresAt) {
 			s.finish(parent, r, "queued", "result_persistence_pending", "saved final answer awaits durable persistence", time.Duration(1<<min(r.Attempts, 6))*time.Second)
 			return
