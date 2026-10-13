@@ -30,8 +30,8 @@ func TestReleaseChainV15TaskScopedOriginalProofIntegration(t *testing.T) {
 			if _, err := f.f.pool.Exec(f.f.ctx, `UPDATE runs SET status='completed',current_state='completed',finished_at=clock_timestamp() WHERE run_id=$1`, f.parentRun); err != nil {
 				t.Fatal(err)
 			}
-			// A separate run of the same root legitimately reuses a call ID. No
-			// global tool-call uniqueness rule is introduced by owner verification.
+			// Ordinary storage uses distinct normalized call IDs across runs.
+			// Owner verification still qualifies each receipt by its actual run.
 			checkRun := "later-original-phase"
 			if _, err := f.f.pool.Exec(f.f.ctx, `INSERT INTO runs(run_id,session_key,input_event_id,status,current_state,autonomy_mode,model_provider,started_at,updated_at,finished_at,task_id,task_revision) VALUES($1,$2,'synthetic-original-phase','completed','completed','mode_2','fixture',clock_timestamp(),clock_timestamp(),clock_timestamp(),$3,$4)`, checkRun, f.f.parent.SessionKey, f.f.parent.TaskID, f.f.parent.Revision); err != nil {
 				t.Fatal(err)
@@ -73,12 +73,12 @@ func TestReleaseChainV15TaskScopedOriginalProofIntegration(t *testing.T) {
 			}
 			proposal := projectfixture.Proposal{ProjectRevision: projectfixture.Revision(), Changes: []projectfixture.Change{{Path: "README.md", Before: projectfixture.Original, After: projectfixture.Prepared}}}
 			prepareArgs, _ := json.Marshal(map[string]any{"url": egresstest.Origin + "/project/patches", "body": proposal})
-			store(f.parentRun, "shared-id", "extension.project.prepare-patch", prepareArgs, prepare)
+			store(f.parentRun, "prepared-phase-call", "extension.project.prepare-patch", prepareArgs, prepare)
 			inspectArgs, _ := json.Marshal(map[string]string{"url": egresstest.Origin + "/project"})
 			store(f.parentRun, "inspect", "extension.project.inspect", inspectArgs, get("/project"))
 			path := "/project/patches/" + artifact + "/checks"
 			checkArgs, _ := json.Marshal(map[string]string{"url": egresstest.Origin + path})
-			store(checkRun, "shared-id", "extension.project.check", checkArgs, get(path))
+			store(checkRun, "checked-phase-call", "extension.project.check", checkArgs, get(path))
 			current := f.f.parent
 			switch kind {
 			case "stale_run_revision":
@@ -94,7 +94,7 @@ func TestReleaseChainV15TaskScopedOriginalProofIntegration(t *testing.T) {
 			}
 			a, pr, pc, cr, cc, err := releaseChainV15OriginalProof(f.f.ctx, f, current)
 			if kind == "previous_phase_qualified_calls" {
-				if err != nil || a != artifact || pr != f.parentRun || cr != checkRun || pc != "shared-id" || cc != "shared-id" {
+				if err != nil || a != artifact || pr != f.parentRun || cr != checkRun || pc != "prepared-phase-call" || cc != "checked-phase-call" {
 					t.Fatal("confirmed previous phase/current task proof rejected", err)
 				}
 			} else if err == nil {

@@ -182,6 +182,10 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 	if os.Getenv(entry.AcceptanceEnv) != "1" {
 		t.Skip("separately frozen actual High scope required")
 	}
+	selectedScenarios, declarationErr := releaseChainHighDeclaredScenarios(entry)
+	if declarationErr != nil {
+		t.Fatal("fixed reviewed scenario declaration required")
+	}
 	if _, e := entry.ReadQuality(); e != nil {
 		t.Fatal("independent V5 PASS prerequisite unavailable")
 	}
@@ -197,7 +201,11 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 	var snapshot json.RawMessage
 	defer func() {
 		status := "failed"
-		if len(results) == 5 && results["normal_sent"] && results["restart_sent"] && results["explicit_absence"] && results["lost_ack"] && results["owner_stop"] && !t.Failed() {
+		complete := len(results) == len(selectedScenarios) && !t.Failed()
+		for _, scenario := range selectedScenarios {
+			complete = complete && results[scenario]
+		}
+		if complete {
 			status = "passed"
 		}
 		var proposals []map[string]any
@@ -242,7 +250,7 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 			t.Error("native scope artifact not synced")
 		}
 	}()
-	for _, scenario := range releaseChainV5Scenarios() {
+	for _, scenario := range selectedScenarios {
 		t.Run(scenario, func(t *testing.T) {
 			var f *developerFixture
 			var fault *releaseChainV5Fault
@@ -258,6 +266,9 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 				cfg.Policy.Day.ModelTurns = int64(entry.Maximum)
 				cfg.Policy.Day.Tokens = int64(entry.Maximum) * (cfg.InputTokens + cfg.OutputTokens)
 				cfg.Policy.Day.ActiveMillis = int64(entry.Maximum) * cfg.Policy.ModelMillis
+			}
+			if err := releaseChainHighApplyInputAllowance(entry, &cfg); err != nil {
+				t.Fatal("fixed reviewed provider input allowance required")
 			}
 			cfg.Factory = func(ctx context.Context, pool *pgxpool.Pool, root string) (transport.ModelProvider, error) {
 				prerequisite, e := entry.ReadQuality()

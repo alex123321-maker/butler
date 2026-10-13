@@ -22,6 +22,8 @@ type releaseChainHighEntry struct {
 	ObserveSourceChecks                  bool
 	AllowRepeatedPatchChecks             bool
 	TaskScopedOriginalProof              bool
+	ScenarioNames                        []string
+	ProviderInputBytes                   int64
 	Policy                               releaseChainHighWindowPolicy
 	ReadQuality                          func() (releaseChainV5Prerequisite, error)
 	NewWindow                            func(context.Context, *pgxpool.Pool) (*releaseChainV5Window, error)

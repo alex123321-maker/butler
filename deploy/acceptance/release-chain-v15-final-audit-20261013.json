@@ -1,0 +1,46 @@
+{
+  "canonical_go_json_available": false,
+  "canonical_go_not_available_reason": "V15-specific final auditor was not frozen at this completed run; no wrong-protocol or fabricated JSON is used",
+  "chain_audit": {
+    "accepted_model_retry_failures": 0,
+    "accepted_unknown_timeout_cost_entries": 0,
+    "accepted_unknown_timeout_version_entries": 0,
+    "accepted_unmeasured_timeout_entries": 0,
+    "all_new_expense_measured": false,
+    "all_new_measured_cost": {
+      "attempts": 5,
+      "known_input_tokens": 31686,
+      "known_output_tokens": 830,
+      "known_total_tokens": 66271,
+      "unknown_input_attempts": 1,
+      "unknown_output_attempts": 1,
+      "unknown_total_attempts": 1
+    },
+    "auditor_native_calls": 0,
+    "carry_forward_attempts": 616,
+    "issue33_ready": false,
+    "no_go_reasons": [
+      "ordinary_child_blocked_by_provider_input_bytes_exceeded",
+      "new_native_attempt616_actual_expense_and_version_unknown",
+      "four_fault_variants_unattempted"
+    ],
+    "status": "NO_GO",
+    "verified_scenarios": []
+  },
+  "evidence_bindings": {
+    "app_sha256": "d8c9cf67c817072105f6e495921a8a4c3f8cb2bd27d807155febc92ba6a99e39",
+    "code_commit": "5662b7398f8345872aedff2cec253787a3946abe",
+    "human_policy_sha256": "1ef90ad0872a249633173e41a8ede60fb588c98ccf4bd9ee33b5bb6169cfb65c",
+    "prerequisite_sha256": "85affdbb6ad88bb64012b580317ac03e051064a74eef86fd6e390697d4922166",
+    "source_manifest_sha256": "90d742925342572b0bd31d1a6ed3934b754eb3d3cc626aad6382f363a5b15a59",
+    "source_sha256": "276e6b17133aa8a68ca81a1eae5d2bcd3cff330371e69886e2fa9cc03f598cc1"
+  },
+  "limits": [
+    "Supplemental independent NO_GO record; no V15 frozen Go JSON or overall scenario PASS is fabricated.",
+    "All three individual original tool packets matched actual run/call/action authorization digests; no raw args, SSE, authentication or hidden model output is exported.",
+    "Attempt616 remains NULL actual usage/version despite the observed serialization failure. Provider input-size gate is not a nominal timeout or accepted retry. Exact serialized size and underlying old541/544/556/557 causes are not recovered.",
+    "Model attempt615 completed with known usage after207712ms; the overall297-second process duration is not a timeout classification. All four fault cases remain unattempted."
+  ],
+  "report_origin": "independent_read_only_completed_native_pg_original_packets",
+  "version": "butler-independent-v15-failure-supplemental-v1"
+}

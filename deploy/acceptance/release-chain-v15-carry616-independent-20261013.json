@@ -1,0 +1,69 @@
+{
+  "actual_native_cost": {
+    "attempts": 5,
+    "known_input_tokens": 31686,
+    "known_output_tokens": 830,
+    "known_total_tokens": 66271,
+    "unknown_input_attempts": 1,
+    "unknown_output_attempts": 1,
+    "unknown_total_attempts": 1
+  },
+  "all_new_expense_measured": false,
+  "all_prior_scopes_unchanged_and_sealed": true,
+  "all_three_qualified_original_packets_match": true,
+  "auditor_native_calls": 0,
+  "canonical_go_json_available": false,
+  "carry_forward": {
+    "attempts": 616,
+    "known_input_tokens_subtotal": 1135037,
+    "known_output_tokens_subtotal": 26407,
+    "known_total_tokens_subtotal": 1578335,
+    "known_usage_pairs": 586,
+    "old_unknown_266_cause": "UNKNOWN",
+    "unknown_input_attempts": 30,
+    "unknown_output_attempts": 30,
+    "unknown_total_attempts": 50,
+    "unknown_usage_pairs": 30
+  },
+  "fold_sha256": "aa561f243f5d36c3c676ef442f42a83a4514faf8abd927e31da0c2a78ccaa975",
+  "fold_vector": [
+    "46dccfc5040075940c810baae10b6340517fe5edfee57a9537b62d7906cd6cea",
+    "dede808835fbb71b004b226221a6083b6518e745e20a59ebf670947c9e7eec10",
+    "998ae4eb78eb090ac6e4aa743fa4a7b128c3549f085cfc749cf3cd2fcabbad29",
+    "eb7c25e4b19ebd81e75e3c2203f1f21543066040589a39175ac98a07acf2fd21",
+    "9d4249cd4f0534ec8d554ee4cdc4e6f154c996dd62a8788c9ab5732e4715918c",
+    "f77c8cb70b1a068daaa29ed1e40f9de52550e306a316762fb3eae83acfaa4621",
+    "7fe2a4ab33abfe05952a9b553682533cb7d33ddb54246fe032d418be654b01d0",
+    "38e697893d0e1cade7e1668e53818abd9f49bd3865532720b0a66dcec9cb21c5",
+    "5662b7398f8345872aedff2cec253787a3946abe",
+    "276e6b17133aa8a68ca81a1eae5d2bcd3cff330371e69886e2fa9cc03f598cc1",
+    "d8c9cf67c817072105f6e495921a8a4c3f8cb2bd27d807155febc92ba6a99e39"
+  ],
+  "issue33_ready": false,
+  "new_failed_v15_artifacts": {
+    "failure-correlation": "38e697893d0e1cade7e1668e53818abd9f49bd3865532720b0a66dcec9cb21c5",
+    "final-audit": "dede808835fbb71b004b226221a6083b6518e745e20a59ebf670947c9e7eec10",
+    "high": "998ae4eb78eb090ac6e4aa743fa4a7b128c3549f085cfc749cf3cd2fcabbad29",
+    "pg-initial": "f77c8cb70b1a068daaa29ed1e40f9de52550e306a316762fb3eae83acfaa4621",
+    "pg-ledger": "eb7c25e4b19ebd81e75e3c2203f1f21543066040589a39175ac98a07acf2fd21",
+    "pg-product": "9d4249cd4f0534ec8d554ee4cdc4e6f154c996dd62a8788c9ab5732e4715918c",
+    "runtime-state": "7fe2a4ab33abfe05952a9b553682533cb7d33ddb54246fe032d418be654b01d0"
+  },
+  "new_history616": {
+    "bytes": 123839,
+    "mode": "0600",
+    "path": "/srv/storage/butler/reviews/issue33-chain-v15-20261013/release-chain-v15-history616-20261013.json",
+    "sha256": "d728ed54a57409cf0d86d656bb0953c934688acd6ee796b3ea018a120fcc5030"
+  },
+  "new_unknown_expense_entries": 1,
+  "new_unknown_expense_ordinal": 616,
+  "old_originals_or_measurements_changed": false,
+  "original_metadata_preserved": true,
+  "prior_fold_sha256": "46dccfc5040075940c810baae10b6340517fe5edfee57a9537b62d7906cd6cea",
+  "prior_history611_sha256": "bcb0716067930c1cd65cbbce869ae5bcda9056ce0e6bb0b034c3c845644fef28",
+  "prospective_model_admission": false,
+  "remaining_original_absolute731_attempts": 115,
+  "status": "INDEPENDENT_SEALED616_CARRY_BRIDGE",
+  "supplemental_final_report_explicitly_independent_not_go_output": true,
+  "unknown_model_version_entries": 1
+}
