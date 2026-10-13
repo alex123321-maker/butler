@@ -711,7 +711,7 @@ func TestReleaseChainV5ContextFailureAfterCompleteFinalAndNilStreamIntegration(t
 				wantOutcome, wantCode, wantStage = "transport_error", "provider_protocol_error", "entry"
 			}
 			if outcome != wantOutcome || code != wantCode || stage != wantStage || terminals != 0 || spy.calls.Load() != 1 {
-				t.Fatal("context/nil-stream outcome or actual counts differ")
+				t.Fatal("context/nil-stream outcome or actual counts differ", outcome, code, stage, terminals, spy.calls.Load())
 			}
 			if spy.nilStream {
 				if input != nil || output != nil || total != nil || observedVersion != nil || finals != 0 || stop != 0 {

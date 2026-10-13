@@ -187,6 +187,13 @@ func (p *releaseChainV5Provider) entry(ctx context.Context, kind, run string, in
 				return
 			case event, ok := <-stream:
 				if !ok {
+					// EOF can race the provider closing its stream after this
+					// request's context ended. Retain the actual context cause
+					// rather than replacing it with the default protocol error.
+					if err := call.Err(); err != nil {
+						outcome = releaseChainV5FailureOutcome(err)
+						failure = transport.NormalizeError(err, p.Name())
+					}
 					return
 				}
 				observations.observe(event)
