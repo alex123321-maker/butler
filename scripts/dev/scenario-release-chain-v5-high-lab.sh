@@ -3,12 +3,27 @@
 # providers; unknown V5 review bytes deny execution before auth/network/markers.
 set -euo pipefail
 root=${1:?isolated root required}; phase=${2:-prepare}; release=${3:?exact clean release required}
-[[ "$root" == /srv/storage/butler/agents/scenario-release-chain-v5-high-20261013 && "$phase" =~ ^(prepare|execute)$ && "$release" =~ ^[a-f0-9]{40}$ ]] || exit 2
+protocol=${4:-v5}
+[[ "$phase" =~ ^(prepare|execute)$ && "$release" =~ ^[a-f0-9]{40}$ ]] || exit 2
+if [[ "$protocol" == v6 ]]; then
+  [[ "$root" == /srv/storage/butler/agents/scenario-release-chain-v6-high-20261013 ]] || exit 2
+  chain_baseline=537; chain_cap=78; chain_env=BUTLER_SCENARIO_CHAIN_V6_HIGH
+  gate_test=TestReleaseChainV6OperationalGate; window_id=issue33-high-release-chain-v6-20261013-baseline537
+  audit_package=./scripts/dev/release-chain-v6-final-audit
+  # Independently reviewed exact manifest; runtime/source admission remains a
+  # separate gate after zero-inference preparation and final composition checks.
+  expected_audit_passes=154
+else
+  [[ "$protocol" == v5 && "$root" == /srv/storage/butler/agents/scenario-release-chain-v5-high-20261013 ]] || exit 2
+  chain_baseline=535; chain_cap=80; chain_env=BUTLER_SCENARIO_CHAIN_V5_HIGH
+  gate_test=TestReleaseChainV5OperationalGate; window_id=issue33-high-release-chain-v5-20261013-baseline535
+  audit_package=./scripts/dev/release-chain-v5-final-audit; expected_audit_passes=67
+fi
 source_dir=$(readlink -f "$root/current")
 [[ "$source_dir" == "$root/snapshots/"* ]] || exit 2
 umask 077
 export DOCKER_CONFIG="$root/.cache/docker"
-proof="$root/reports/chain-v5-high-$phase-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+proof="$root/reports/chain-$protocol-high-$phase-$(date -u +%Y%m%dT%H%M%SZ)-$$"
 mkdir -p "$proof/bin" "$proof/postgres" /srv/storage/butler/.cache/go-tmp
 printf '%s\n' "$release" > "$proof/source-commit.txt"
 manifest() { (cd "$source_dir"; [[ -z "$(find . ! -type f ! -type d -print -quit)" ]]; find . -type f -print0 | sort -z | xargs -0 sha256sum); }
@@ -26,15 +41,15 @@ if [[ "$phase" == execute ]]; then
   manifest | cmp -s "$root/prepared-source.sha256" -
   sha256sum -c "$root/prepared-runtime.sha256" >/dev/null
   prepared=$(cat "$root/prepared-proof")
-  [[ "$prepared" == "$root/reports/chain-v5-high-prepare-"* ]]
+  [[ "$prepared" == "$root/reports/chain-$protocol-high-prepare-"* ]]
   cmp "$proof/hardware.json" "$prepared/hardware.json"
   # Deliberately first: no provider import, TLS, backend network, persistent
   # native scope or old-window read/write can precede this frozen source gate.
   docker run --rm --runtime runc --pull never --network none --read-only --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true \
     --memory 512m --pids-limit 64 --volume "$source_dir:/src:ro" --volume "$prepared/bin:/bin-proof:ro" --workdir /src \
-    --env BUTLER_SCENARIO_CHAIN_V5_HIGH_GATE=1 "$go_image" \
-    /bin-proof/app.test -test.v -test.timeout=30s -test.run='^TestReleaseChainV5OperationalGate$' > "$proof/prerequisite-gate.txt" 2>&1
-  window=/srv/storage/butler/native-acceptance-windows/issue33-high-release-chain-v5-20261013-baseline535
+    --env "${chain_env}_GATE=1" "$go_image" \
+    /bin-proof/app.test -test.v -test.timeout=30s -test.run="^$gate_test$" > "$proof/prerequisite-gate.txt" 2>&1
+  window="/srv/storage/butler/native-acceptance-windows/$window_id"
   [[ ! -e "$window" && ! -L "$window" ]] || { printf 'Denied: sealed separate native window.\n' >&2; exit 2; }
   [[ "$(docker inspect --format '{{.State.Running}}' butler-lab-antigravity-proxy-1)" == true ]]
   docker run --rm --runtime runc --pull never --network butler-lab_backend --read-only --user 10001:10001 --cap-drop ALL --security-opt no-new-privileges:true --memory 64m --pids-limit 16 \
@@ -47,16 +62,16 @@ if [[ "$phase" == execute ]]; then
   printf '%s\n' "$source_dir" > "$window/source-ref"
   printf '%s\n' "$proof" > "$window/preflight-proof-ref"
   date -u -d '+60 minutes' +%Y-%m-%dT%H:%M:%SZ > "$window/deadline"
-  export BUTLER_SCENARIO_CHAIN_V5_HIGH_SEALED_ENTRY=1
-  exec bash "$source_dir/scripts/dev/scenario-release-chain-v5-process-lab.sh" "$root" high_v5 "$release"
+  export "${chain_env}_SEALED_ENTRY=1"
+  exec bash "$source_dir/scripts/dev/scenario-release-chain-v5-process-lab.sh" "$root" "high_$protocol" "$release"
 fi
-name="butler-chain-v5-high-prepare-$(date -u +%Y%m%dT%H%M%SZ)-$$"; network="$name-net"; pg="$name-pg"
+name="butler-chain-$protocol-high-prepare-$(date -u +%Y%m%dT%H%M%SZ)-$$"; network="$name-net"; pg="$name-pg"
 created_network=false; created_pg=false
 cleanup() { $created_pg && docker rm -f "$pg" >/dev/null 2>&1 || true; $created_network && docker network rm "$network" >/dev/null 2>&1 || true; }
 trap cleanup EXIT INT TERM
 build=(docker run --rm --runtime runc --pull never --network none --user "$(id -u):$(id -g)" --memory 1536m --pids-limit 160 --cpus 2 --security-opt no-new-privileges:true
   --volume "$source_dir:/src:ro" --volume "$proof/bin:/bin-proof" --volume /srv/storage/butler/.cache:/cache --workdir /src
-  --env GOPROXY=off --env GOSUMDB=off --env GOMAXPROCS=2 --env GOFLAGS=-p=2 --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp)
+  --env GOPROXY=off --env GOSUMDB=off --env GOMAXPROCS=2 --env GOFLAGS=-p=2 --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp --env "CHAIN_AUDIT_PACKAGE=$audit_package")
 "${build[@]}" "$go_image" bash -eu -c '
 go test -c -race -o /bin-proof/app.test ./apps/orchestrator/internal/app
 go build -o /bin-proof/test2json cmd/test2json
@@ -64,10 +79,10 @@ CGO_ENABLED=0 go build -trimpath -o /bin-proof/tool-broker ./apps/tool-broker
 CGO_ENABLED=0 go build -trimpath -o /bin-proof/tool-converter ./apps/tool-converter
 go test -c -o /bin-proof/extension.test ./apps/tool-extension/internal/runtime
 go build -o /bin-proof/tls-prerequisite ./scripts/dev/delegation-final-tls
-CGO_ENABLED=0 go build -trimpath -o /bin-proof/chain-final-audit ./scripts/dev/release-chain-v5-final-audit
-go test -race -json -count=1 ./scripts/dev/release-chain-v5-final-audit > /bin-proof/chain-audit-unit.jsonl
+CGO_ENABLED=0 go build -trimpath -o /bin-proof/chain-final-audit "$CHAIN_AUDIT_PACKAGE"
+go test -race -json -count=1 "$CHAIN_AUDIT_PACKAGE" > /bin-proof/chain-audit-unit.jsonl
 go test -race -json -count=1 -run "^TestToolAuthorizationFailsClosed$" ./apps/orchestrator/internal/orchestrator > /bin-proof/core-batch-policy.jsonl
-go vet ./apps/orchestrator/internal/app ./apps/orchestrator/internal/orchestrator ./scripts/dev/release-chain-v5-final-audit
+go vet ./apps/orchestrator/internal/app ./apps/orchestrator/internal/orchestrator "$CHAIN_AUDIT_PACKAGE"
 chmod 555 /bin-proof/*
 ' > "$proof/build-vet.log" 2>&1
 docker network create --internal "$network" >/dev/null; created_network=true
@@ -76,15 +91,25 @@ docker run -d --runtime runc --name "$pg" --network "$network" --network-alias c
   --volume "$proof/postgres:/var/lib/postgresql/data" \
   "$pg_image" -c shared_buffers=32MB -c max_connections=32 -c max_wal_size=64MB >/dev/null; created_pg=true
 for attempt in $(seq 1 60); do docker exec "$pg" pg_isready -U fixture -d butler_chain_prepare_test >/dev/null 2>&1 && break; [[ "$attempt" != 60 ]] || exit 1; sleep 1; done
+app_pattern='^Test(ReleaseChainV5(Window|AllFailedEntries|TerminalMetadata|MeasurementWriteFailure|WholeEntryDeadline|OperationalPrerequisite|Bridge|ProductEvidence|InitialWitness|ProspectiveHealthy|CancelledTimedOut|ContextDeadlineAndCancel|ContextFailureAfterCompleteFinal|ProviderObservationFacts|FailureOutcome|OriginalResult)|ConverterWorkerStructuralDiagnostics)'
+if [[ "$protocol" == v6 ]]; then app_pattern='^Test(ReleaseChainV5(Window|AllFailedEntries|TerminalMetadata|MeasurementWriteFailure|WholeEntryDeadline|OperationalPrerequisite|Bridge|ProductEvidence|InitialWitness|ProspectiveHealthy|CancelledTimedOut|ContextDeadlineAndCancel|ContextFailureAfterCompleteFinal|ProviderObservationFacts|FailureOutcome|OriginalResult)|ReleaseChainV6(OperationalPrerequisiteClosed|ActualHistory|ActualBridge|HumanExpenseException|PrerequisiteTamper|ProviderStage|Window|Kernel|MeasuredRetry)|ConverterWorkerStructuralDiagnostics)'; fi
 docker run --rm --runtime runc --pull never --network "$network" --read-only --user "$(id -u):$(id -g)" --cap-drop ALL --security-opt no-new-privileges:true --memory 1536m --pids-limit 160 --cpus 2 \
   --tmpfs /tmp:rw,nosuid,nodev,size=64m --volume "$source_dir:/src:ro" --volume "$proof/bin:/bin-proof:ro" --workdir /src \
   --env 'BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://fixture:chain-prepare-fixture@chain-prepare-postgres:5432/butler_chain_prepare_test?sslmode=disable' \
   --entrypoint /bin-proof/test2json "$go_image" -t -p github.com/butler/butler/apps/orchestrator/internal/app \
-  /bin-proof/app.test -test.v=test2json -test.timeout=3m '-test.run=^Test(ReleaseChainV5(Window|AllFailedEntries|TerminalMetadata|MeasurementWriteFailure|WholeEntryDeadline|OperationalPrerequisite|Bridge|ProductEvidence|InitialWitness|ProspectiveHealthy|CancelledTimedOut|ContextDeadlineAndCancel|ContextFailureAfterCompleteFinal|ProviderObservationFacts|FailureOutcome|OriginalResult)|ConverterWorkerStructuralDiagnostics)' > "$proof/tests.jsonl"
+  /bin-proof/app.test -test.v=test2json -test.timeout=3m "-test.run=$app_pattern" > "$proof/tests.jsonl"
 ! grep -Eq '"Action":"(skip|fail)"' "$proof/tests.jsonl"
 ! grep -Eq '"Action":"(skip|fail)"' "$proof/bin/core-batch-policy.jsonl"
 ! grep -Eq '"Action":"(skip|fail)"' "$proof/bin/chain-audit-unit.jsonl"
-[[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/bin/chain-audit-unit.jsonl")" == 67 ]]
+[[ "$expected_audit_passes" -gt 0 && "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/bin/chain-audit-unit.jsonl")" == "$expected_audit_passes" ]]
+if [[ "$protocol" == v6 ]]; then
+  mapfile -t checker_required < "$source_dir/scripts/dev/release-chain-v6-final-audit/required-tests.txt"
+  [[ "${#checker_required[@]}" == 154 ]]
+  for test_name in "${checker_required[@]}"; do
+    [[ "$test_name" =~ ^Test[A-Za-z0-9_/-]+$ ]]
+    [[ "$(awk -v needle="\"Test\":\"$test_name\"" 'index($0,"\"Action\":\"pass\"") && index($0,needle) { n++ } END { print n+0 }' "$proof/bin/chain-audit-unit.jsonl")" == 1 ]]
+  done
+fi
 [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":\"TestToolAuthorizationFailsClosed\"") { n++ } END { print n+0 }' "$proof/bin/core-batch-policy.jsonl")" == 1 ]]
 required=(TestReleaseChainV5OperationalPrerequisiteIsNotApproved TestReleaseChainV5WindowSharedCeilingRestartAndExpiryIntegration TestReleaseChainV5WindowChecksDeadlineAfterCounterWaitIntegration TestReleaseChainV5WindowSharesCounterAcrossPrivateTaskSchemasIntegration TestReleaseChainV5AllFailedEntriesSpentButSourceDenialZeroIntegration TestReleaseChainV5TerminalMetadataRetainedAndReleaseGatedIntegration TestConverterWorkerStructuralDiagnosticsExcludePrivatePayloadIntegration)
 required+=(TestReleaseChainV5BridgeUnknownActualHistoryDeniesBeforeProvider TestReleaseChainV5ProductEvidenceRetainedBeforeCleanupIntegration)
@@ -105,6 +130,12 @@ for case_name in completed_final truncated_final conflicting_finish_reasons priv
 for case_name in own_deadline own_cancel provider_error; do required+=("TestReleaseChainV5FailureOutcome/$case_name"); done
 required+=(TestReleaseChainV5WholeEntryDeadlineIncludesProviderPreflightIntegration TestReleaseChainV5WholeEntryDeadlineIncludesProviderPreflightIntegration/global_deadline_earlier TestReleaseChainV5WholeEntryDeadlineIncludesProviderPreflightIntegration/entry_maximum120seconds)
 for case_name in failed_terminal_known untrusted_diagnostic_type known_batch_cost_retained_for_ordinary_core empty_batch_denied batch_after_final_denied conflicting_complete_usage true_zero_triple missing_total_legacy_pair missing_metadata missing_version provisional_version missing_terminal_known duplicate_final_known truncated_final_known terminal_without_final_known generation_bound_known input_bound_known output_bound_known conflicting_finish_reasons_known completed_final foreign_metadata_never_supplies_cost_or_version own_complete_cost_survives_foreign_terminal; do required+=("TestReleaseChainV5TerminalMetadataRetainedAndReleaseGatedIntegration/$case_name"); done
+if [[ "$protocol" == v6 ]]; then
+  source "$source_dir/scripts/dev/scenario-release-chain-v6-required-tests.sh"
+  required+=("${release_chain_v6_required[@]}")
+  [[ "${#required[@]}" == 231 ]]
+  [[ "$(awk 'index($0,"\"Action\":\"pass\"") && index($0,"\"Test\":") { n++ } END { print n+0 }' "$proof/tests.jsonl")" == 231 ]]
+fi
 for test_name in "${required[@]}"; do
   [[ "$(awk -v needle="\"Test\":\"$test_name\"" 'index($0,"\"Action\":\"pass\"") && index($0,needle) { n++ } END { print n+0 }' "$proof/tests.jsonl")" == 1 ]]
 done
@@ -115,5 +146,5 @@ printf '%s\n' "$source_dir" > "$root/prepared-source"
 printf '%s\n' "$proof" > "$root/prepared-proof"
 printf '%s\n' "$release" > "$root/prepared-release"
 sha256sum "$proof/tests.jsonl" "$proof/source.sha256" > "$proof/evidence.sha256"
-printf '{"status":"offline_preparation_passed","native_calls":0,"baseline":535,"baseline_status":"independent_actual_V5_PASS_pending_fresh_chain_review","maximum_new_attempts_design":80,"execution_enabled":false}\n' > "$proof/summary.json"
+printf '{"status":"offline_preparation_passed","native_calls":0,"baseline":%s,"baseline_status":"actual_history_pending_fresh_chain_review","maximum_new_attempts_design":%s,"execution_enabled":false}\n' "$chain_baseline" "$chain_cap" > "$proof/summary.json"
 printf 'PASS: offline prospective cap/current proof tests; native execution remains denied.\n'

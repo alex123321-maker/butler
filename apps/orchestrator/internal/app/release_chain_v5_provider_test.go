@@ -29,6 +29,7 @@ type releaseChainV5Observations struct {
 	finishReason                                                       *string
 	finishUncertain                                                    bool
 	usageUncertain, versionUncertain                                   bool
+	providerStage                                                      *transport.ProviderStage
 }
 
 func (o *releaseChainV5Observations) observe(e transport.TransportEvent) {
@@ -122,20 +123,29 @@ func (p *releaseChainV5Provider) entry(ctx context.Context, kind, run string, in
 		deadline = attemptDeadline
 	}
 	call, cancel := context.WithDeadline(ctx, deadline)
+	var stages *releaseChainHighStageTrace
+	if p.window.providerStages {
+		stages = &releaseChainHighStageTrace{}
+		parentCall := call
+		call = transport.WithProviderStageObserver(call, func(stage transport.ProviderStage) {
+			stages.observe(stage)
+			transport.ObserveProviderStage(parentCall, stage)
+		})
+	}
 	if call.Err() != nil {
-		p.finish(ordinal, releaseChainV5FailureOutcome(call.Err()), nil, nil, "entry", transport.NormalizeError(call.Err(), p.Name()), &releaseChainV5Observations{})
+		p.finish(ordinal, releaseChainV5FailureOutcome(call.Err()), nil, nil, "entry", transport.NormalizeError(call.Err(), p.Name()), &releaseChainV5Observations{providerStage: stages.seal()})
 		cancel()
 		return nil, call.Err()
 	}
 	stream, err := invoke(call)
 	if err != nil {
-		p.finish(ordinal, releaseChainV5FailureOutcome(err), nil, nil, "entry", transport.NormalizeError(err, p.Name()), &releaseChainV5Observations{})
+		p.finish(ordinal, releaseChainV5FailureOutcome(err), nil, nil, "entry", transport.NormalizeError(err, p.Name()), &releaseChainV5Observations{providerStage: stages.seal()})
 		cancel()
 		return nil, err
 	}
 	if stream == nil {
 		failure := &transport.Error{Type: transport.ErrorTypeProviderProtocolError}
-		_ = p.finish(ordinal, "transport_error", nil, nil, "entry", failure, &releaseChainV5Observations{})
+		_ = p.finish(ordinal, "transport_error", nil, nil, "entry", failure, &releaseChainV5Observations{providerStage: stages.seal()})
 		cancel()
 		return nil, failure
 	}
@@ -155,6 +165,7 @@ func (p *releaseChainV5Provider) entry(ctx context.Context, kind, run string, in
 		finish := func() error {
 			finishAttempted = true
 			observations.usageUncertain, observations.versionUncertain = usageUncertain, versionUncertain
+			observations.providerStage = stages.seal()
 			if !observedComplete || usageUncertain {
 				observed = nil
 			}
@@ -241,6 +252,14 @@ func (p *releaseChainV5Provider) entry(ctx context.Context, kind, run string, in
 				withinLimits := observed != nil && observed.InputTokens <= 1048576 && observed.OutputTokens <= 32768 && observed.TotalTokens <= observed.InputTokens+32768
 				if actionable && (usageUncertain || versionUncertain || !fullTotal || version == nil || !withinLimits) {
 					event = transport.NewTransportErrorEvent(run, p.Name(), &transport.Error{Type: transport.ErrorTypeProviderProtocolError})
+				}
+				// A V6 packet cannot be released from an absent or earlier phase.
+				// The phase is diagnostic evidence, never a substitute for cost.
+				if p.window.providerStages && (actionable || event.EventType == transport.EventTypeRunCompleted) {
+					stage := stages.current()
+					if stage == nil || *stage != transport.ProviderStageStream {
+						event = transport.NewTransportErrorEvent(run, p.Name(), &transport.Error{Type: transport.ErrorTypeProviderProtocolError})
+					}
 				}
 				if event.EventType == transport.EventTypeAssistantFinal && (pendingFinal != nil || event.AssistantFinal == nil || event.AssistantFinal.FinishReason != "STOP") ||
 					event.EventType == transport.EventTypeRunCompleted && pendingFinal == nil ||
@@ -353,13 +372,15 @@ func (p *releaseChainV5Provider) finish(ordinal int, outcome string, usage *tran
 	var finals, terminals, completed, cancelled, timedOut, transportErrors, stopFinals, maxTokensFinals *int
 	var finishReason *string
 	var usageUncertain, versionUncertain, finishUncertain *bool
+	var providerStage *transport.ProviderStage
 	if observations != nil {
 		finals, terminals, completed, cancelled, timedOut, transportErrors = &observations.finals, &observations.terminals, &observations.completed, &observations.cancelled, &observations.timedOut, &observations.transportErrors
 		finishReason = observations.finishReason
 		usageUncertain, versionUncertain = &observations.usageUncertain, &observations.versionUncertain
 		stopFinals, maxTokensFinals, finishUncertain = &observations.stopFinals, &observations.maxTokensFinals, &observations.finishUncertain
+		providerStage = observations.providerStage
 	}
-	tag, err := p.window.pool.Exec(ctx, `WITH finished AS MATERIALIZED (SELECT clock_timestamp() AS at) UPDATE `+p.window.table("fixture_chain_v5_high_requests")+` SET outcome=$2,input_tokens=$3,output_tokens=$4,total_tokens=$5,model_version=$6,finished_at=finished.at,elapsed_ms=GREATEST(0,floor(extract(epoch FROM finished.at-admitted_at)*1000)::bigint),failure_stage=$7,diagnostic_code=$8,final_count=$9,terminal_count=$10,completed_count=$11,cancelled_count=$12,timed_out_count=$13,transport_error_count=$14,finish_reason=$15,usage_observation_uncertain=$16,version_observation_uncertain=$17,stop_final_count=$18,max_tokens_final_count=$19,finish_observation_uncertain=$20 FROM finished WHERE ordinal=$1 AND outcome='unavailable'`, ordinal, outcome, in, out, total, version, failureStage, code, finals, terminals, completed, cancelled, timedOut, transportErrors, finishReason, usageUncertain, versionUncertain, stopFinals, maxTokensFinals, finishUncertain)
+	tag, err := p.window.pool.Exec(ctx, `WITH finished AS MATERIALIZED (SELECT clock_timestamp() AS at) UPDATE `+p.window.table("fixture_chain_v5_high_requests")+` SET outcome=$2,input_tokens=$3,output_tokens=$4,total_tokens=$5,model_version=$6,finished_at=finished.at,elapsed_ms=GREATEST(0,floor(extract(epoch FROM finished.at-admitted_at)*1000)::bigint),failure_stage=$7,diagnostic_code=$8,final_count=$9,terminal_count=$10,completed_count=$11,cancelled_count=$12,timed_out_count=$13,transport_error_count=$14,finish_reason=$15,usage_observation_uncertain=$16,version_observation_uncertain=$17,stop_final_count=$18,max_tokens_final_count=$19,finish_observation_uncertain=$20,provider_operation_stage=$21 FROM finished WHERE ordinal=$1 AND outcome='unavailable'`, ordinal, outcome, in, out, total, version, failureStage, code, finals, terminals, completed, cancelled, timedOut, transportErrors, finishReason, usageUncertain, versionUncertain, stopFinals, maxTokensFinals, finishUncertain, providerStage)
 	if err != nil || tag.RowsAffected() != 1 {
 		return errNativeFixtureDenied
 	}

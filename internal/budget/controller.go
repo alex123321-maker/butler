@@ -200,10 +200,13 @@ func (c *Controller) ReserveChildTx(ctx context.Context, tx pgx.Tx, parentID, ma
 }
 
 type ModelAdmission struct {
-	OperationID   string
-	Deadline      time.Time
-	OutputTokens  int64
-	ReservationID string
+	OperationID string
+	Deadline    time.Time
+	// True only when no scope or assigned authority bound is earlier or equal.
+	// A parent context may restrict this further at the trusted caller.
+	ModelTurnLimited bool
+	OutputTokens     int64
+	ReservationID    string
 }
 
 // Each invocation represents a new actual inference attempt, even after a
@@ -275,19 +278,22 @@ func (c *Controller) AdmitModel(ctx context.Context, runID, mandateID, provider,
 		return ModelAdmission{}, err
 	}
 	deadline := r.CreatedAt.Add(time.Duration(c.Policy.ModelMillis) * time.Millisecond)
-	if !authorityDeadline.IsZero() && authorityDeadline.Before(deadline) {
+	modelTurnLimited := true
+	if !authorityDeadline.IsZero() && !authorityDeadline.After(deadline) {
 		deadline = authorityDeadline
+		modelTurnLimited = false
 	}
 	for _, id := range ids {
 		scope, err := c.Ledger.Get(ctx, id)
 		if err != nil {
 			return ModelAdmission{}, err
 		}
-		if scope.Deadline.Before(deadline) {
+		if !scope.Deadline.After(deadline) {
 			deadline = scope.Deadline
+			modelTurnLimited = false
 		}
 	}
-	return ModelAdmission{OperationID: op, ReservationID: r.ID, Deadline: deadline, OutputTokens: c.Policy.OutputTokens}, nil
+	return ModelAdmission{OperationID: op, ReservationID: r.ID, Deadline: deadline, ModelTurnLimited: modelTurnLimited, OutputTokens: c.Policy.OutputTokens}, nil
 }
 
 type modelAdmissionKey struct{}

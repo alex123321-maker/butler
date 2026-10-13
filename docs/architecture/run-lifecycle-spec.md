@@ -769,9 +769,12 @@ renewal worker, включая незавершённый `RenewLease`, зате
 
 ### 22.1 Resume
 
-В Butler V1 resume реализуется как создание нового run, а не продолжение старого run с тем же `run_id`.
+Для terminal run resume создаёт новый run со ссылкой на исходный. Production
+durable ingress также восстанавливает безопасные сохранённые границы ещё
+nonterminal run под новым ownership fence; это сохраняет исходный `run_id` и
+не меняет terminal history. См. [durable execution](durable-execution-spec.md).
 
-Resumed run:
+При продолжении после terminal run новый run:
 - получает новый `run_id`;
 - ссылается на предыдущий run через `resumes_run_id`;
 - использует уже сохранённый session/transcript state;
@@ -805,6 +808,10 @@ Retry допускается не для всего run, а на уровне о
 - async memory pipeline retry.
 
 Политики retry должны быть вынесены в отдельные subspec/contract documents.
+Production Core допускает один отложенный повтор модели на accepted input после
+номинального model-turn timeout. Новый запрос имеет отдельное списание бюджета;
+подтверждённые действия не переисполняются. Отмена, истёкшие полномочия и
+неизвестный эффект запрещают повтор. См. [model retry policy](model-retry-policy.md).
 
 ---
 

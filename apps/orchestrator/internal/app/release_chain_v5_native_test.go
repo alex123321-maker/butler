@@ -150,18 +150,18 @@ func (h *releaseChainV5Fault) before(ctx context.Context, kind, run string) erro
 	return h.err
 }
 
-func TestScenarioReleaseChainActualV5HighE2E(t *testing.T) {
-	if os.Getenv("BUTLER_SCENARIO_CHAIN_V5_HIGH_ACCEPTANCE") != "1" {
+func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
+	if os.Getenv(entry.AcceptanceEnv) != "1" {
 		t.Skip("separately frozen actual High scope required")
 	}
-	if _, e := readReleaseChainV5Prerequisite(); e != nil {
+	if _, e := entry.ReadQuality(); e != nil {
 		t.Fatal("independent V5 PASS prerequisite unavailable")
 	}
 	// This declared scenario policy enters through ordinary Core's operator
 	// PromptManager, not a transport wrapper or a hidden provider instruction.
 	t.Setenv(prompt.SettingKeyBasePrompt, releaseChainV5BasePrompt())
 	t.Setenv(prompt.SettingKeyBasePromptEnabled, "true")
-	private := os.Getenv("BUTLER_SCENARIO_CHAIN_V5_HIGH_PRIVATE")
+	private := os.Getenv(entry.PrivateEnv)
 	if private != "/private" {
 		t.Fatal("fixed private artifact mount required")
 	}
@@ -172,7 +172,7 @@ func TestScenarioReleaseChainActualV5HighE2E(t *testing.T) {
 		if len(results) == 5 && results["normal_sent"] && results["restart_sent"] && results["explicit_absence"] && results["lost_ack"] && results["owner_stop"] && !t.Failed() {
 			status = "passed"
 		}
-		body, _ := json.Marshal(map[string]any{"status": status, "window_id": releaseChainV5WindowID, "baseline_attempts": releaseChainV5Baseline, "maximum_total_attempts": releaseChainV5Ceiling, "maximum_new_attempts": releaseChainV5NewCap, "scenarios": results, "scope": snapshot, "planning": "actual_native_High", "human_messages": 0, "issue33_ready": false})
+		body, _ := json.Marshal(map[string]any{"status": status, "window_id": entry.WindowID, "baseline_attempts": entry.Baseline, "maximum_total_attempts": entry.Baseline + entry.Maximum, "maximum_new_attempts": entry.Maximum, "scenarios": results, "scope": snapshot, "planning": "actual_native_High", "human_messages": 0, "issue33_ready": false})
 		if len(body) > releaseChainV5SafeArtifactOutputMax {
 			t.Error("bounded safe scope artifact unavailable")
 			return
@@ -197,11 +197,11 @@ func TestScenarioReleaseChainActualV5HighE2E(t *testing.T) {
 			var caseWindow *releaseChainV5Window
 			cfg := releaseChainV5Configuration()
 			cfg.Factory = func(ctx context.Context, pool *pgxpool.Pool, root string) (transport.ModelProvider, error) {
-				prerequisite, e := readReleaseChainV5Prerequisite()
+				prerequisite, e := entry.ReadQuality()
 				if e != nil {
 					return nil, e
 				}
-				w, e := newReleaseChainV5Window(ctx, pool)
+				w, e := entry.NewWindow(ctx, pool)
 				if e != nil {
 					return nil, e
 				}
@@ -209,7 +209,7 @@ func TestScenarioReleaseChainActualV5HighE2E(t *testing.T) {
 				if e := recordReleaseChainV5InitialEvidence(ctx, w, f, scenario); e != nil {
 					return nil, e
 				}
-				native, e := newReleaseChainV5NativeProvider(ctx, pool, os.Getenv("BUTLER_SCENARIO_CHAIN_V5_HIGH_IMPORT_FILE"), filepath.Join(private, "encrypted-settings-key"))
+				native, e := newReleaseChainV5NativeProvider(ctx, pool, os.Getenv(entry.ImportEnv), filepath.Join(private, "encrypted-settings-key"))
 				if e != nil {
 					return nil, e
 				}
@@ -280,12 +280,12 @@ func TestScenarioReleaseChainActualV5HighE2E(t *testing.T) {
 					}
 					var attempts, unknown, failed, overlong int
 					var window json.RawMessage
-					e := f.f.pool.QueryRow(context.Background(), `SELECT (SELECT attempts FROM `+caseWindow.table("fixture_chain_v5_high_window")+`),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE total_tokens IS NULL OR model_version IS NULL),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE outcome<>'completed'),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE elapsed_ms IS NULL OR elapsed_ms>120000),(SELECT json_build_object('native_baseline',native_baseline,'attempts',attempts,'prior_history_hash',prior_history_hash,'prerequisite_hash',prerequisite_hash,'expires_at',expires_at) FROM `+caseWindow.table("fixture_chain_v5_high_window")+`)`).Scan(&attempts, &unknown, &failed, &overlong, &window)
+					e := f.f.pool.QueryRow(context.Background(), `SELECT (SELECT attempts FROM `+caseWindow.table("fixture_chain_v5_high_window")+`),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE input_tokens IS NULL OR output_tokens IS NULL OR total_tokens IS NULL OR model_version IS NULL),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE outcome<>'completed' OR provider_operation_stage IS DISTINCT FROM 'response_stream'),(SELECT count(*) FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` WHERE elapsed_ms IS NULL OR elapsed_ms>120000),(SELECT json_build_object('native_baseline',native_baseline,'attempts',attempts,'prior_history_hash',prior_history_hash,'prerequisite_hash',prerequisite_hash,'expires_at',expires_at,'maximum_new_attempts',maximum_new_attempts,'provider_stage_observation',provider_stage_observation,'kernel_operation_binding',kernel_operation_binding) FROM `+caseWindow.table("fixture_chain_v5_high_window")+`)`).Scan(&attempts, &unknown, &failed, &overlong, &window)
 					if e != nil {
 						t.Error("durable native scope unavailable")
 						return
 					}
-					rows, e := f.f.pool.Query(context.Background(), `SELECT ordinal,scenario,kind,root_task_id,run_id,is_parent,input_hash,admitted_at,outcome,input_tokens,output_tokens,total_tokens,model_version,finished_at,elapsed_ms,failure_stage,diagnostic_code,final_count,terminal_count,completed_count,cancelled_count,timed_out_count,transport_error_count,finish_reason,usage_observation_uncertain,version_observation_uncertain,stop_final_count,max_tokens_final_count,finish_observation_uncertain FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` ORDER BY ordinal`)
+					rows, e := f.f.pool.Query(context.Background(), `SELECT ordinal,scenario,kind,root_task_id,run_id,is_parent,input_hash,admitted_at,outcome,input_tokens,output_tokens,total_tokens,model_version,finished_at,elapsed_ms,failure_stage,diagnostic_code,final_count,terminal_count,completed_count,cancelled_count,timed_out_count,transport_error_count,finish_reason,usage_observation_uncertain,version_observation_uncertain,stop_final_count,max_tokens_final_count,finish_observation_uncertain,provider_operation_stage,kernel_operation_id FROM `+caseWindow.table("fixture_chain_v5_high_requests")+` ORDER BY ordinal`)
 					if e != nil {
 						t.Error("safe native request evidence unavailable")
 						return
@@ -305,10 +305,11 @@ func TestScenarioReleaseChainActualV5HighE2E(t *testing.T) {
 						var finishReason *string
 						var usageUncertain, versionUncertain, finishUncertain *bool
 						var stopFinals, maxTokensFinals *int
-						if e = rows.Scan(&ordinal, &scenario, &kind, &root, &run, &parent, &hash, &at, &outcome, &input, &output, &total, &version, &finished, &elapsed, &stage, &code, &finals, &terminals, &completed, &cancelled, &timedOut, &transportErrors, &finishReason, &usageUncertain, &versionUncertain, &stopFinals, &maxTokensFinals, &finishUncertain); e != nil {
+						var providerStage, kernelOperation *string
+						if e = rows.Scan(&ordinal, &scenario, &kind, &root, &run, &parent, &hash, &at, &outcome, &input, &output, &total, &version, &finished, &elapsed, &stage, &code, &finals, &terminals, &completed, &cancelled, &timedOut, &transportErrors, &finishReason, &usageUncertain, &versionUncertain, &stopFinals, &maxTokensFinals, &finishUncertain, &providerStage, &kernelOperation); e != nil {
 							break
 						}
-						items = append(items, map[string]any{"ordinal": ordinal, "scenario": scenario, "kind": kind, "root_task_id": root, "run_id": run, "is_parent": parent, "input_sha256": hash, "admitted_at_utc": at, "finished_at_utc": finished, "elapsed_ms": elapsed, "outcome": outcome, "failure_stage": stage, "diagnostic_code": code, "actual_input_tokens": input, "actual_output_tokens": output, "actual_total_tokens": total, "model_version": version, "final_count": finals, "terminal_count": terminals, "completed_count": completed, "cancelled_count": cancelled, "timed_out_count": timedOut, "transport_error_count": transportErrors, "finish_reason": finishReason, "usage_observation_uncertain": usageUncertain, "version_observation_uncertain": versionUncertain, "stop_final_count": stopFinals, "max_tokens_final_count": maxTokensFinals, "finish_observation_uncertain": finishUncertain})
+						items = append(items, map[string]any{"ordinal": ordinal, "scenario": scenario, "kind": kind, "root_task_id": root, "run_id": run, "is_parent": parent, "input_sha256": hash, "admitted_at_utc": at, "finished_at_utc": finished, "elapsed_ms": elapsed, "outcome": outcome, "failure_stage": stage, "diagnostic_code": code, "actual_input_tokens": input, "actual_output_tokens": output, "actual_total_tokens": total, "model_version": version, "final_count": finals, "terminal_count": terminals, "completed_count": completed, "cancelled_count": cancelled, "timed_out_count": timedOut, "transport_error_count": transportErrors, "finish_reason": finishReason, "usage_observation_uncertain": usageUncertain, "version_observation_uncertain": versionUncertain, "stop_final_count": stopFinals, "max_tokens_final_count": maxTokensFinals, "finish_observation_uncertain": finishUncertain, "provider_operation_stage": providerStage, "kernel_operation_id": kernelOperation})
 					}
 					if e != nil || rows.Err() != nil {
 						rows.Close()
@@ -316,8 +317,13 @@ func TestScenarioReleaseChainActualV5HighE2E(t *testing.T) {
 						return
 					}
 					rows.Close()
-					snapshot, _ = json.Marshal(map[string]any{"window": window, "total_attempts": attempts, "new_attempts": attempts - releaseChainV5Baseline, "unknown_full_token_cost": unknown, "failed_provider_entries": failed, "overlong_provider_entries": overlong, "requests": items})
-					if unknown != 0 || failed != 0 || overlong != 0 {
+					acceptedRetries := 0
+					var retryError error
+					if caseWindow.kernelOperations {
+						acceptedRetries, retryError = releaseChainV6AcceptedRetryFailures(context.Background(), caseWindow)
+					}
+					snapshot, _ = json.Marshal(map[string]any{"window": window, "total_attempts": attempts, "new_attempts": attempts - entry.Baseline, "unknown_full_token_cost": unknown, "failed_provider_entries": failed, "accepted_model_retry_failures": acceptedRetries, "overlong_provider_entries": overlong, "requests": items})
+					if unknown != 0 || failed != acceptedRetries || overlong != 0 || retryError != nil {
 						results[scenario] = false
 						t.Error("complete observed cost/version/provider outcomes or request deadline unavailable")
 					}

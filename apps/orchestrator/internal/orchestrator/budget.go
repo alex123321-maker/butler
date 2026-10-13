@@ -50,7 +50,17 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 	if err != nil {
 		return nil, err
 	}
-	if err = s.checkpoint(ctx, runID, "model_budget_reserved", map[string]any{"operation_id": a.OperationID, "reservation_id": a.ReservationID, "deadline": a.Deadline}); err != nil {
+	modelTurnLimited := modelTurnRetryBound(ctx, a)
+	origin := "scope_or_authority"
+	if modelTurnLimited {
+		origin = "model_turn"
+	}
+	if retryStore, ok := s.config.Checkpoints.(modelRetryStore); ok && ctx.Value(modelRetryRecoveryKey{}) == true {
+		if err = retryStore.MarkModelRetryStarted(ctx, runID, a.OperationID); err != nil {
+			return nil, err
+		}
+	}
+	if err = s.checkpoint(ctx, runID, "model_budget_reserved", map[string]any{"operation_id": a.OperationID, "reservation_id": a.ReservationID, "deadline": a.Deadline, "deadline_origin": origin}); err != nil {
 		return nil, err
 	}
 	turn, cancel := context.WithDeadline(ctx, a.Deadline)
@@ -59,8 +69,13 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 		return nil, &budget.LoopError{Reason: "owner_authority_deadline"}
 	}
 	turn = transport.WithInputByteLimit(turn, s.config.Budgets.Policy.ModelInputBytes)
+	turn = budget.WithModelOperation(turn, a.OperationID)
+	turn, phases := withModelRetryStages(turn)
 	stream, err := call(turn)
 	if err != nil {
+		if modelTurnLimited && phases.inferencePhase() && ctx.Err() == nil && (errors.Is(err, context.DeadlineExceeded) || transport.DiagnosticCode(err) == string(transport.ErrorTypeProviderTimeout)) {
+			err = &modelTurnTimeout{operationID: a.OperationID}
+		}
 		cancel()
 		return nil, err
 	}
@@ -72,6 +87,11 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 			if ctx.Err() == nil {
 				event := transport.NewTransportErrorEvent(runID, p.Name(), fmt.Errorf("execution budget deadline"))
 				event.TransportError.Type = "execution_budget_deadline"
+				if modelTurnLimited && phases.inferencePhase() {
+					event.TransportError.Type = "model_turn_timeout"
+				} else if modelTurnLimited {
+					event.TransportError = &transport.Error{Type: transport.ErrorTypeProviderTimeout, Message: "provider_timeout"}
+				}
 				select {
 				case out <- event:
 				case <-ctx.Done():
@@ -90,6 +110,11 @@ func (p *budgetedProvider) admit(ctx context.Context, runID string, call func(co
 						deadlineEvent()
 					}
 					return
+				}
+				// Only this trusted admission wrapper emits retry eligibility.
+				// Provider codes/messages cannot identify an owning operation.
+				if event.EventType == transport.EventTypeRunTimedOut || event.EventType == transport.EventTypeTransportError && event.TransportError != nil && (event.TransportError.Type == transport.ErrorTypeProviderTimeout || event.TransportError.Type == "model_turn_timeout") {
+					event = modelRetryTimeoutEvent(event, modelTurnLimited && event.RunID == runID && phases.inferencePhase(), ctx.Err() == nil)
 				}
 				usage, usageErr := modelTurnUsage(event)
 				stopTurn := false

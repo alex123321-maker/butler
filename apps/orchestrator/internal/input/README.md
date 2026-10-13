@@ -38,6 +38,14 @@ Busy-session retries and approved continuations do not consume recovery attempts
 Waiting/blocked session heads deliberately block later execution. PostgreSQL is
 authoritative; no Redis queue or live approval channel is needed for recovery.
 
+One trusted nominal model-turn timeout may queue a durable model retry with a
+two-second pause. It consumes a recovery claim and a fresh model reservation,
+keeps the original deadline and retains count one across checkpoint replacement
+and restart. A started retry cannot be admitted again after a crash. Current
+ownership, task, sources, catalog and known effect checks precede recovery;
+equivalent confirmed non-read proposals are denied before Broker preparation.
+See [model retry policy](../../../../docs/architecture/model-retry-policy.md).
+
 Independent claim expiries can be staggered after worker loss: the first ready
 session may finish before another claim expires. Two available worker slots do
 not synchronize those deadlines. The app's zero-inference

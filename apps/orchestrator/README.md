@@ -1,5 +1,14 @@
 # Orchestrator
 
+Core supports one durable model retry per accepted input after a trusted nominal
+model-turn timeout. The input worker queues a two-second pause, then obtains fresh
+ownership and a separately budgeted provider session from saved Butler input and
+known tool results. Confirmed non-read proposals cannot execute again with a new
+call ID; owner Stop, changed sources, earlier authority deadlines and unknown
+effects deny recovery. Missing provider usage stays NULL. See the
+[model retry policy](../../docs/architecture/model-retry-policy.md) and the
+zero-inference `scripts/dev/model-retry-lab.sh` runner.
+
 Current actual history advanced to537 after the sealed V5 native chain NO_GO:
 536 completed one discover packet;537 timed out without usage/version. Cumulative
 294598 input/11827 output/572459 total are known subtotals, with27 unknown visible

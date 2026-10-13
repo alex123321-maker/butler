@@ -37,11 +37,21 @@ func releaseChainV5ScenarioKnown(scenario string) bool {
 }
 
 type releaseChainV5Window struct {
-	pool     *pgxpool.Pool
-	pin      string
-	schema   string
-	baseline int
-	history  string
+	pool             *pgxpool.Pool
+	pin              string
+	schema           string
+	baseline         int
+	history          string
+	maximum          int
+	providerStages   bool
+	kernelOperations bool
+}
+
+func (w *releaseChainV5Window) maximumNew() int {
+	if w.maximum == 0 {
+		return releaseChainV5NewCap
+	}
+	return w.maximum
 }
 
 func (w *releaseChainV5Window) table(name string) string {
@@ -81,16 +91,24 @@ func createReleaseChainV5WindowInSchema(ctx context.Context, pool *pgxpool.Pool,
 }
 
 func createReleaseChainV5WindowInSchemaAt(ctx context.Context, pool *pgxpool.Pool, pin, history string, baseline int, schema string, deadline time.Time) (*releaseChainV5Window, error) {
+	return createReleaseChainHighWindowInSchemaAt(ctx, pool, pin, history, baseline, schema, deadline, releaseChainV5NewCap, false)
+}
+
+// Explicit per-window configuration; V5 compatibility defaults cannot enlarge
+// or disable diagnostics on a previously created stricter shared V6 scope.
+func createReleaseChainHighWindowInSchemaAt(ctx context.Context, pool *pgxpool.Pool, pin, history string, baseline int, schema string, deadline time.Time, maximum int, providerStages bool, kernelBinding ...bool) (*releaseChainV5Window, error) {
 	remaining := time.Until(deadline)
-	if pool == nil || !nativeAuditHash.MatchString(pin) || !nativeAuditHash.MatchString(history) || baseline <= 0 || baseline > 10000 || remaining <= 0 || remaining > 60*time.Minute {
+	if pool == nil || !nativeAuditHash.MatchString(pin) || !nativeAuditHash.MatchString(history) || baseline <= 0 || baseline > 10000 || maximum <= 0 || maximum > 80 || remaining <= 0 || remaining > 60*time.Minute || len(kernelBinding) > 1 || len(kernelBinding) == 1 && kernelBinding[0] && !providerStages {
 		return nil, errNativeFixtureDenied
 	}
 	if schema == "" || len(schema) > 63 {
 		return nil, errNativeFixtureDenied
 	}
-	w := &releaseChainV5Window{pool: pool, pin: pin, schema: schema, baseline: baseline, history: history}
+	w := &releaseChainV5Window{pool: pool, pin: pin, schema: schema, baseline: baseline, history: history, maximum: maximum, providerStages: providerStages, kernelOperations: len(kernelBinding) == 1 && kernelBinding[0]}
 	const ddl = `CREATE TABLE IF NOT EXISTS fixture_chain_v5_high_window(
- singleton boolean PRIMARY KEY CHECK(singleton), native_baseline integer NOT NULL CHECK(native_baseline>0), attempts integer NOT NULL CHECK(attempts BETWEEN native_baseline AND native_baseline+80),
+ singleton boolean PRIMARY KEY CHECK(singleton), native_baseline integer NOT NULL CHECK(native_baseline>0), attempts integer NOT NULL,
+ maximum_new_attempts integer NOT NULL DEFAULT 80 CHECK(maximum_new_attempts BETWEEN 1 AND 80),provider_stage_observation boolean NOT NULL DEFAULT FALSE,kernel_operation_binding boolean NOT NULL DEFAULT FALSE,
+ CHECK(attempts BETWEEN native_baseline AND native_baseline+maximum_new_attempts),
  prior_history_hash text NOT NULL CHECK(length(prior_history_hash)=64),
  prerequisite_hash text NOT NULL CHECK(length(prerequisite_hash)=64), expires_at timestamptz NOT NULL);
 CREATE TABLE IF NOT EXISTS fixture_chain_v5_high_requests(
@@ -103,6 +121,8 @@ CREATE TABLE IF NOT EXISTS fixture_chain_v5_high_requests(
  final_count integer CHECK(final_count>=0),terminal_count integer CHECK(terminal_count>=0),completed_count integer CHECK(completed_count>=0),cancelled_count integer CHECK(cancelled_count>=0),timed_out_count integer CHECK(timed_out_count>=0),transport_error_count integer CHECK(transport_error_count>=0),
  finish_reason text CHECK(finish_reason IN('STOP','MAX_TOKENS')),usage_observation_uncertain boolean,version_observation_uncertain boolean,
  stop_final_count integer CHECK(stop_final_count>=0),max_tokens_final_count integer CHECK(max_tokens_final_count>=0),finish_observation_uncertain boolean,
+ provider_operation_stage text CHECK(provider_operation_stage IN('authentication','request_serialization','http_round_trip','response_stream')),
+ kernel_operation_id text UNIQUE CHECK(length(kernel_operation_id)>0),
  CHECK(terminal_count=completed_count+cancelled_count+timed_out_count+transport_error_count),CHECK(stop_final_count+max_tokens_final_count<=final_count));
 CREATE TABLE IF NOT EXISTS fixture_chain_v5_high_case_evidence(
  scenario text PRIMARY KEY CHECK(scenario IN('normal_sent','restart_sent','explicit_absence','lost_ack','owner_stop')),
@@ -115,11 +135,11 @@ CREATE TABLE IF NOT EXISTS fixture_chain_v5_high_case_initial(
 CREATE OR REPLACE FUNCTION fixture_chain_v5_high_case_evidence_immutable() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
  RAISE EXCEPTION 'sealed chain v5 product witness'; END $$;
 CREATE OR REPLACE FUNCTION fixture_chain_v5_high_window_immutable() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
- IF TG_OP='DELETE' OR NEW.singleton IS DISTINCT FROM OLD.singleton OR NEW.native_baseline IS DISTINCT FROM OLD.native_baseline OR NEW.prior_history_hash IS DISTINCT FROM OLD.prior_history_hash OR NEW.prerequisite_hash IS DISTINCT FROM OLD.prerequisite_hash OR
+ IF TG_OP='DELETE' OR NEW.singleton IS DISTINCT FROM OLD.singleton OR NEW.native_baseline IS DISTINCT FROM OLD.native_baseline OR NEW.maximum_new_attempts IS DISTINCT FROM OLD.maximum_new_attempts OR NEW.provider_stage_observation IS DISTINCT FROM OLD.provider_stage_observation OR NEW.kernel_operation_binding IS DISTINCT FROM OLD.kernel_operation_binding OR NEW.prior_history_hash IS DISTINCT FROM OLD.prior_history_hash OR NEW.prerequisite_hash IS DISTINCT FROM OLD.prerequisite_hash OR
  NEW.expires_at IS DISTINCT FROM OLD.expires_at OR NEW.attempts<>OLD.attempts+1 THEN RAISE EXCEPTION 'sealed chain high scope'; END IF; RETURN NEW; END $$;
 CREATE OR REPLACE FUNCTION fixture_chain_v5_high_request_immutable() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
  IF TG_OP='DELETE' OR NEW.ordinal IS DISTINCT FROM OLD.ordinal OR NEW.scenario IS DISTINCT FROM OLD.scenario OR NEW.kind IS DISTINCT FROM OLD.kind OR
- NEW.root_task_id IS DISTINCT FROM OLD.root_task_id OR NEW.run_id IS DISTINCT FROM OLD.run_id OR NEW.is_parent IS DISTINCT FROM OLD.is_parent OR NEW.input_hash IS DISTINCT FROM OLD.input_hash OR NEW.admitted_at IS DISTINCT FROM OLD.admitted_at OR
+ NEW.root_task_id IS DISTINCT FROM OLD.root_task_id OR NEW.run_id IS DISTINCT FROM OLD.run_id OR NEW.is_parent IS DISTINCT FROM OLD.is_parent OR NEW.input_hash IS DISTINCT FROM OLD.input_hash OR NEW.admitted_at IS DISTINCT FROM OLD.admitted_at OR NEW.kernel_operation_id IS DISTINCT FROM OLD.kernel_operation_id OR
  OLD.outcome<>'unavailable' OR NEW.outcome='unavailable' THEN RAISE EXCEPTION 'sealed chain high request'; END IF; RETURN NEW; END $$;
 DO $$ BEGIN
  IF NOT EXISTS(SELECT 1 FROM pg_trigger WHERE tgname='fixture_chain_v5_high_case_initial_guard' AND tgrelid='fixture_chain_v5_high_case_initial'::regclass) THEN
@@ -138,11 +158,11 @@ END $$;`
 	if _, err := pool.Exec(ctx, qualified); err != nil {
 		return nil, errNativeFixtureDenied
 	}
-	if _, err := pool.Exec(ctx, `INSERT INTO `+w.table("fixture_chain_v5_high_window")+` VALUES(TRUE,$1,$1,$2,$3,$4) ON CONFLICT DO NOTHING`, baseline, history, pin, deadline); err != nil {
+	if _, err := pool.Exec(ctx, `INSERT INTO `+w.table("fixture_chain_v5_high_window")+`(singleton,native_baseline,attempts,prior_history_hash,prerequisite_hash,expires_at,maximum_new_attempts,provider_stage_observation,kernel_operation_binding) VALUES(TRUE,$1,$1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING`, baseline, history, pin, deadline, maximum, providerStages, w.kernelOperations); err != nil {
 		return nil, errNativeFixtureDenied
 	}
 	var compatible bool
-	if pool.QueryRow(ctx, `SELECT prerequisite_hash=$1 AND native_baseline=$2 AND prior_history_hash=$3 FROM `+w.table("fixture_chain_v5_high_window")+` WHERE singleton`, pin, baseline, history).Scan(&compatible) != nil || !compatible {
+	if pool.QueryRow(ctx, `SELECT prerequisite_hash=$1 AND native_baseline=$2 AND prior_history_hash=$3 AND maximum_new_attempts=$4 AND provider_stage_observation=$5 AND kernel_operation_binding=$6 FROM `+w.table("fixture_chain_v5_high_window")+` WHERE singleton`, pin, baseline, history, maximum, providerStages, w.kernelOperations).Scan(&compatible) != nil || !compatible {
 		return nil, errNativeFixtureDenied
 	}
 	return w, nil
@@ -166,9 +186,23 @@ func (w *releaseChainV5Window) reserve(ctx context.Context, scenario, kind, root
 	if err != nil {
 		return 0, time.Time{}, errNativeFixtureDenied
 	}
+	var kernelOperation *string
+	if w.kernelOperations {
+		var recoverable bool
+		if tx.QueryRow(ctx, `SELECT NOT EXISTS(SELECT 1 FROM `+w.table("fixture_chain_v5_high_requests")+` WHERE outcome='unavailable' OR input_tokens IS NULL OR output_tokens IS NULL OR total_tokens IS NULL OR model_version IS NULL OR provider_operation_stage IS DISTINCT FROM 'response_stream')`).Scan(&recoverable) != nil || !recoverable {
+			// Acceptance-only stop: another successful request cannot recover
+			// an earlier new UNKNOWN. Generic Core retry policy is unchanged.
+			return 0, time.Time{}, errNativeFixtureDenied
+		}
+		id, bindingErr := releaseChainV6KernelOperation(ctx, tx, run)
+		if bindingErr != nil {
+			return 0, time.Time{}, bindingErr
+		}
+		kernelOperation = &id
+	}
 	var ordinal int
 	var deadline time.Time
-	if tx.QueryRow(ctx, `UPDATE `+w.table("fixture_chain_v5_high_window")+` SET attempts=attempts+1 WHERE singleton AND prerequisite_hash=$1 AND prior_history_hash=$2 AND native_baseline=$3 AND attempts<native_baseline+80 AND expires_at>clock_timestamp() RETURNING attempts,expires_at`, w.pin, w.history, w.baseline).Scan(&ordinal, &deadline) != nil {
+	if tx.QueryRow(ctx, `UPDATE `+w.table("fixture_chain_v5_high_window")+` SET attempts=attempts+1 WHERE singleton AND prerequisite_hash=$1 AND prior_history_hash=$2 AND native_baseline=$3 AND maximum_new_attempts=$4 AND provider_stage_observation=$5 AND kernel_operation_binding=$6 AND attempts<native_baseline+maximum_new_attempts AND expires_at>clock_timestamp() RETURNING attempts,expires_at`, w.pin, w.history, w.baseline, w.maximumNew(), w.providerStages, w.kernelOperations).Scan(&ordinal, &deadline) != nil {
 		return 0, time.Time{}, errNativeFixtureDenied
 	}
 	currentParent, err := guard(ctx, tx, run)
@@ -180,7 +214,7 @@ func (w *releaseChainV5Window) reserve(ctx context.Context, scenario, kind, root
 		return 0, time.Time{}, errNativeFixtureDenied
 	}
 	var admitted time.Time
-	if err = tx.QueryRow(ctx, `INSERT INTO `+w.table("fixture_chain_v5_high_requests")+`(ordinal,scenario,kind,root_task_id,run_id,is_parent,input_hash) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING admitted_at`, ordinal, scenario, kind, root, run, parent, hex.EncodeToString(hash[:])).Scan(&admitted); err != nil || tx.Commit(ctx) != nil {
+	if err = tx.QueryRow(ctx, `INSERT INTO `+w.table("fixture_chain_v5_high_requests")+`(ordinal,scenario,kind,root_task_id,run_id,is_parent,input_hash,kernel_operation_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING admitted_at`, ordinal, scenario, kind, root, run, parent, hex.EncodeToString(hash[:]), kernelOperation).Scan(&admitted); err != nil || tx.Commit(ctx) != nil {
 		return 0, time.Time{}, errNativeFixtureDenied
 	}
 	if maximum := admitted.Add(120 * time.Second); maximum.Before(deadline) {

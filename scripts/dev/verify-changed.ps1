@@ -26,6 +26,24 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(docs/architecture/model-retry-policy[.]md$|scripts/dev/model-retry-lab[.]sh$|apps/orchestrator/internal/(input|orchestrator)/model_retry.*[.]go$|internal/budget/model_retry.*[.]go$)" {
+      [void]$specs.Add("docs/architecture/model-retry-policy.md")
+      [void]$specs.Add("docs/architecture/durable-execution-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$tests.Add("SSH laba: model-retry-lab.sh FRESH_ISOLATED_ROOT EXACT_COMMIT. Disposable PostgreSQL, nominal versus authority deadline, single durable retry, current Stop/source checks, known-result fresh session, equivalent confirmed-write denial, full separate reservations/NULL retention, race/vet; zero inference.")
+      continue
+    }
+    "^(apps/orchestrator/internal/app/(release_chain_v6_|release_chain_high_)|scripts/dev/(scenario-release-chain-v6-|release-chain-v6-final-audit[-/])|deploy/acceptance/release-chain-v6-)" {
+      [void]$specs.Add("docs/architecture/model-retry-policy.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$specs.Add("docs/architecture/execution-budget-contract.md")
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$tests.Add("SSH laba: scenario-release-chain-v6-high-lab.sh FRESH_V6_ROOT prepare EXACT_CLEAN_COMMIT. Actual537 carry, retained V5 quality and failed chain, single human537 expense exception, eight-field78/615 window and request-local stage/kernel-operation binding, disposable PostgreSQL, exact independent checker/Core gates; zero inference before independent source/runtime admission.")
+      [void]$tests.Add("Fresh final production retry regression and full mandatory fault matrix before once-only V6 native chain. Every new failure/retry needs full measured cost. All old native windows stay sealed.")
+      continue
+    }
     "^(apps/orchestrator/internal/app/release_chain_v5_|scripts/dev/(scenario-release-chain-v5-|release-chain-v5-final-audit[-/]))" {
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")
@@ -33,8 +51,8 @@ foreach ($file in $files) {
       [void]$specs.Add("docs/architecture/owner-goals-mandates-spec.md")
       [void]$specs.Add("docs/architecture/atomic-result-delivery.md")
       [void]$specs.Add("docs/architecture/generated-converters.md")
-      [void]$tests.Add("SSH laba: scenario-release-chain-v5-high-lab.sh /srv/storage/butler/agents/scenario-release-chain-v5-high-20261013 prepare EXACT_CLEAN_COMMIT. Actual535 history/quality bridge,137 required app cases and67 independent checker cases, disposable PostgreSQL, source/current ownership, complete native-cost/error accounting, original patch/receipt projection, race/vet; zero inference before independent frozen-source review.")
-      [void]$tests.Add("Independent final checker and full mandatory fault matrix on the same final composition. Native execute is once-only after separate source/runtime/resource review; old sealed roots cannot be reopened.")
+      [void]$tests.Add("Shared future V6 helper: scenario-release-chain-v6-high-lab.sh FRESH_V6_ROOT prepare EXACT_CLEAN_COMMIT after model-retry integration; exact current app/checker manifest, disposable PostgreSQL, original result/cost/authority gates and race/vet. V5 native root is sealed failed; use its frozen read-only audit reproduction only.")
+      [void]$tests.Add("Independent V6 checker and full mandatory fault matrix on the same final composition. New native execute is once-only after separate source/runtime/resource review; old sealed roots cannot be reopened.")
       continue
     }
     "^(deploy/acceptance/(cloud-shadow-v5-|release-chain-v5-)|scripts/dev/cloud-v5-final-audit-reproduce[.]sh$)" {

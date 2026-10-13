@@ -77,6 +77,10 @@ children, and fresh committed random ID for every actual model attempt. Replayin
 a quote is idempotent; changing scope or charge conflicts. Reservation replay is
 not dispatch permission: the effect journal independently rejects spent/unknown
 effects. Crashes, timeouts and unknown outcomes do not refund allowance.
+The [bounded model retry](model-retry-policy.md) spends a fresh reservation and
+operation. Admission exposes the effective deadline's trusted origin so a nominal
+model-turn timeout can be distinguished from an earlier scope or authority limit.
+Earlier attempts and NULL measurements remain immutable across recovery.
 
 Loops normalize root, pinned task/constraints revisions, exact tool/contract and
 canonical arguments across restart. Equivalent numbers/object order compare

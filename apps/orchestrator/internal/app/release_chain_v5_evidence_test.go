@@ -234,7 +234,11 @@ func recordReleaseChainV5ProductEvidence(parent context.Context, w *releaseChain
  'digest_outbox_rows',(SELECT count(*) FROM initiative_digest_outbox),
  'technical_sent_rows',(SELECT count(*) FROM channel_delivery_events WHERE state='sent'),
  'initiatives',COALESCE((SELECT json_agg(row_to_json(i) ORDER BY initiative_id) FROM (SELECT initiative_id,task_id,status,reason FROM initiatives WHERE task_id=$1) i),'[]'::json))`
-	if f.f.pool.QueryRow(ctx, query, f.f.parent.TaskID).Scan(&raw) != nil {
+	productQuery := query
+	if w.kernelOperations {
+		productQuery = strings.Replace(productQuery, "updated_at,expires_at,error_code FROM accepted_inputs", "updated_at,expires_at,error_code,not_before,checkpoint_json->'model_retry' AS model_retry FROM accepted_inputs", 1)
+	}
+	if f.f.pool.QueryRow(ctx, productQuery, f.f.parent.TaskID).Scan(&raw) != nil {
 		return errNativeFixtureDenied
 	}
 	var faultEvidence map[string]any
