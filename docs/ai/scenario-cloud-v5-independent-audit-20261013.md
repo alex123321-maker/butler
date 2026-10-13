@@ -59,8 +59,8 @@ Observed client RSS is not remote model memory or causal child attribution.
 | Original private collector |a5d4c7991143c2c75d2fc7663187d82acedb7092e6cec91eb67d246db016b830|
 | Owning PostgreSQL |cf1a2479041a972b4fe1f6b9097c058880d28da2328e806b0bac993389a8e1f8|
 | Independent diagnostics |18c62eb81c6e3595189586a4ad4593e55a9dbe8469f7a34d607d3b44cda28f1a|
-| Derived window audit |32e8e96e4e3c4def3d38fc373f0c8991b21d2f5528e0f97a91a0e44bee0eb82f|
-| Derived PostgreSQL correlation |5fb176f91a3d7aaf4f6b887f57fb97cdc1bf89fffa391f0a6fc4207d8ccefd8b|
+| Derived window audit |0344daef8123db481eb4c34519bf02fad72f7a358cfa2168a469293938b47cec|
+| Derived PostgreSQL correlation |72237045aaac9ccfa6dfaf02d50d08f19f986fba2fedcf80cea8956273cd1c87|
 | Separately repaired auditor |8f3c4b28ad656c71a584ba739362f3f612cddbd65dff4047180259891f01f937|
 
 The original frozen193fea auditor incorrectly denied legitimate historical
@@ -96,7 +96,7 @@ total tokens, with all46 old unknown totals preserved. Original266's reason
 remains UNKNOWN. The new chain prerequisite binds actual283 quality-start history
 and all252 audited requests; its535 baseline is measured, not the old480/500/520
 projection. Its provenance fold is
-`463a27b78e4353833b342fb922c486d5ac2bfb1fb8370d955102bcb9d49c2f6d`.
+`2539239ea8905a677cb14b0256a9744c3354e365754cae127bc517c54c35d5af`.
 The quality-start283 reader stays immutable; the separate chain bridge appends
 actual rows without rewriting historical failure evidence.
 
