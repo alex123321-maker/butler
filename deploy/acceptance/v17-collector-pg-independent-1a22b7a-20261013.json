@@ -1,0 +1,33 @@
+{
+  "auditor_native_calls": 0,
+  "exact_named_passes": [
+    "TestReleaseChainV17CaseFailureContinuation",
+    "TestReleaseChainV17InvalidOriginalStillRetainsOwningEvidenceIntegration",
+    "TestReleaseChainV17InvalidOriginalStillRetainsOwningEvidenceIntegration/future_retained",
+    "TestReleaseChainV17InvalidOriginalStillRetainsOwningEvidenceIntegration/legacy_denied",
+    "TestReleaseChainV17PendingFaultOrder"
+  ],
+  "fail": 0,
+  "issue33_ready": false,
+  "limits": [
+    "Model-free PG boundary with explicitly synthetic fixture state; no actual releasePASS or retrospective lostV16receipt reconstruction.",
+    "The current completed owner_stop nativecase still needs post-completion originalpacket/kernel/source/Stop proof; this report certifies the addressed source/PG checks only."
+  ],
+  "native_commit": "1a22b7af2f87f56c82a45b53ca7abaa64eaa2980",
+  "native_source_all_bytes_independent_review_sha256": "6c9c2d5a7504eb1fdca6b4fab08c5d34916091d4e1c9475b27ddd99ab516b76f",
+  "peer_proof": "/srv/storage/butler/reviews/issue33-v17-collector-pg-20261013/reports/context-pg-20261013T203746Z-3348942",
+  "predicates": [
+    "Prospective exact order owner_stop,explicit_absence,lost_ack,restart_sent; legacy5 and oldV16 order unchanged.",
+    "Real unusable stored artifact makes futurecollector retain actual owning SQL and NULLoriginal_result with test_failedtrue/invalid_or_incomplete while returning typeddenial; legacycollector denial retains its original no-row behavior.",
+    "Independent next-case continuation is prospectiveonly and never clears overallNO_GO or gives a failed case PASS."
+  ],
+  "race": true,
+  "skip": 0,
+  "source_equal_measured_native_snapshot": true,
+  "source_manifest_sha256": "aea36418b670e8d53455c5aa593d290e63a9385d0372709e2bd43278c91afd8c",
+  "status": "PASS_CURRENT_SOURCE_FIVE_TARGETED_NAMES",
+  "tests_bytes": 5864,
+  "tests_sha256": "29987e4ef4df8913311ff0afa2fd83feb902f410cde64c29601f36b6a4a5a082",
+  "version": "butler-independent-v17-current-collector-pg-review-v1",
+  "vet_diagnostics_bytes": 0
+}

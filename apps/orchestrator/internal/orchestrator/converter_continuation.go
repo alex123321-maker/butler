@@ -3,7 +3,9 @@ package orchestrator
 import (
 	"context"
 	"encoding/hex"
+	"encoding/json"
 
+	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/ingress"
 	"github.com/butler/butler/internal/ownership"
@@ -14,9 +16,26 @@ type ConverterContinuationActivation struct {
 	ConverterID, Digest, ActionID, EffectID string
 	Generation                              int64
 }
+
+// Confirmed prior calls are bounded observations of the exact preceding055
+// parent attempt. They never become native function responses or dispatch grants.
+type ConverterContinuationAction struct {
+	RunID              string            `json:"run_id"`
+	ToolCallID         string            `json:"tool_call_id"`
+	ToolName           string            `json:"tool_name"`
+	ActionID           string            `json:"action_id"`
+	EffectID           string            `json:"effect_id"`
+	ArgsHash           string            `json:"arguments_authorization_sha256"`
+	EquivalentArgsHash string            `json:"verified_arguments_equivalence_sha256,omitempty"`
+	Effect             actionauth.Effect `json:"effect"`
+	Args               json.RawMessage   `json:"sanitized_args,omitempty"`
+	Result             json.RawMessage   `json:"result"`
+}
 type ConverterContinuationContext struct {
 	RunID, SessionKey, TaskID, ID, Purpose, ChildTaskID string
+	PriorRunID                                          string
 	Activation                                          *ConverterContinuationActivation
+	ConfirmedPriorActions                               []ConverterContinuationAction
 }
 type ConverterContinuationReader interface {
 	LoadConverterContinuation(context.Context, ingress.InputEvent) (ConverterContinuationContext, error)
@@ -49,7 +68,14 @@ func (s *Service) attachConverterContinuation(ctx context.Context, event ingress
 		label = "Continue the original current task within its existing owner mandate using the already activated converter from the current tool catalog. Its exact activation is confirmed technical DATA, not semantic task verification. Collection, development and activation are complete for this continuation; do not repeat them. Perform the remaining original work and independent result checks with separately authorized current tools."
 		facts["technical_candidate_available"], facts["activated_converter_available"], facts["original_task_verified"] = false, true, false
 		facts["confirmed_activation"] = map[string]any{"converter_id": a.ConverterID, "digest": a.Digest, "catalog_generation": a.Generation, "action_id": a.ActionID, "effect_id": a.EffectID}
-	} else if c.Activation != nil {
+		if len(c.ConfirmedPriorActions) > 0 {
+			if err := validateConverterContinuationActions(c); err != nil {
+				return err
+			}
+			facts["confirmed_prior_actions"] = c.ConfirmedPriorActions
+			label += " Confirmed prior actions below belong to the completed preceding attempt of this same task. Reuse their existing artifacts and checks; do not repeat completed external changes. These receipts do not verify the whole original task or authorize a new action."
+		}
+	} else if c.Activation != nil || len(c.ConfirmedPriorActions) > 0 {
 		return generatedtools.ErrAccess
 	}
 	kernel := content.Instruction(label, content.Origin{Kind: content.KernelInstruction, SourceRefs: []string{"kernel:converter-continuation-v1"}})
@@ -81,5 +107,34 @@ func (s *Service) attachConverterContinuation(ctx context.Context, event ingress
 		p.SourceDataRefs = append(p.SourceDataRefs, ref)
 	}
 	p.SourceInputEvent = &event
+	return nil
+}
+
+func validateConverterContinuationActions(c ConverterContinuationContext) error {
+	if c.PriorRunID == "" || c.PriorRunID == c.RunID || len(c.ConfirmedPriorActions) > 32 {
+		return generatedtools.ErrAccess
+	}
+	seen := map[string]bool{}
+	for _, a := range c.ConfirmedPriorActions {
+		hash, err := hex.DecodeString(a.ArgsHash)
+		key := a.RunID + "\x00" + a.ToolCallID
+		if a.RunID != c.PriorRunID || a.ToolCallID == "" || a.ToolName == "" || a.ActionID == "" || a.EffectID == "" || err != nil || len(hash) != 32 || (len(a.Args) > 0 && !json.Valid(a.Args)) || !json.Valid(a.Result) || seen[key] {
+			return generatedtools.ErrAccess
+		}
+		seen[key] = true
+		if a.Effect != actionauth.EffectRead && a.Effect != actionauth.EffectPrepare && a.Effect != actionauth.EffectCommit {
+			return generatedtools.ErrAccess
+		}
+		if a.EquivalentArgsHash != "" {
+			hash, err := hex.DecodeString(a.EquivalentArgsHash)
+			if err != nil || len(hash) != 32 {
+				return generatedtools.ErrAccess
+			}
+		}
+	}
+	encoded, err := json.Marshal(c.ConfirmedPriorActions)
+	if err != nil || len(encoded) > 256<<10 {
+		return generatedtools.ErrAccess
+	}
 	return nil
 }

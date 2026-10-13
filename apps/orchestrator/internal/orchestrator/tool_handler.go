@@ -42,6 +42,9 @@ func (s *Service) handleActionToolCall(ctx context.Context, runLog *slog.Logger,
 	if requested == nil {
 		return nil, current, fmt.Errorf("tool call request is required")
 	}
+	if err := s.guardConverterContinuationProposal(ctx, current, requested); err != nil {
+		return nil, current, err
+	}
 	if err := s.guardModelRetryProposal(ctx, current, requested); err != nil {
 		return nil, current, err
 	}

@@ -352,7 +352,10 @@ func newReleaseChainV17Window(ctx context.Context, pool *pgxpool.Pool) (*release
 	return createReleaseChainHighWindow120WithPolicy(ctx, pool, releaseChainV17ReviewedPrerequisiteSHA, p.ChainHistorySHA, 636, "fixture_chain_v17_high", deadline, true, releaseChainV9Policy(), true)
 }
 func TestScenarioReleaseChainActualV17HighE2E(t *testing.T) {
-	testReleaseChainHighNative(t, releaseChainHighEntry{WindowID: releaseChainV17WindowID, AcceptanceEnv: "BUTLER_SCENARIO_CHAIN_V17_HIGH_ACCEPTANCE", PrivateEnv: "BUTLER_SCENARIO_CHAIN_V17_HIGH_PRIVATE", ImportEnv: "BUTLER_SCENARIO_CHAIN_V17_HIGH_IMPORT_FILE", Baseline: 636, Maximum: 120, ProviderStages: true, RetainProposals: true, ProposalMetadata120: true, TaskScopedOriginalProof: true, PreserveInvalidOriginalEvidence: true, ContinueAfterCaseFailure: true, ScenarioNames: []string{"owner_stop", "explicit_absence", "lost_ack", "restart_sent"}, ProviderInputBytes: 4 << 20, Policy: releaseChainV9Policy(), ExtensionHarnessLifetime: 40 * time.Minute, ObserveSourceChecks: true, AllowRepeatedPatchChecks: true, ReadQuality: readReleaseChainV17Prerequisite, NewWindow: newReleaseChainV17Window})
+	if os.Getenv("BUTLER_SCENARIO_CHAIN_V17_HIGH_ACCEPTANCE") == "1" {
+		t.Fatal("V17 native scope is sealed failed; no new entry from current source")
+	}
+	t.Skip("V17 native scope is sealed failed")
 }
 func TestReleaseChainV17OperationalGate(t *testing.T) {
 	if os.Getenv("BUTLER_SCENARIO_CHAIN_V17_HIGH_GATE") != "1" {

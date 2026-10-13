@@ -15,6 +15,12 @@ func releaseChainHighDeclaredScenarios(entry releaseChainHighEntry) ([]string, e
 		// complete restart/result/notification chain remains mandatory last.
 		fixed = []string{"owner_stop", "explicit_absence", "lost_ack", "restart_sent"}
 	}
+	if entry.SkipVerifiedOwnerStop {
+		if !entry.PreserveInvalidOriginalEvidence || !entry.ContinueAfterCaseFailure {
+			return nil, errNativeFixtureDenied
+		}
+		fixed = []string{"explicit_absence", "lost_ack", "restart_sent"}
+	}
 	if !reflect.DeepEqual(entry.ScenarioNames, fixed) {
 		return nil, errNativeFixtureDenied
 	}

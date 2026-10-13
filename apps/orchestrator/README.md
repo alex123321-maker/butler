@@ -761,3 +761,29 @@ ordinary technical finals remain immutable, while one fixed-content Task-owned
 notice is queued atomically only after current owner verification/completion.
 The separate dispatcher is installed only with the actual069 schema/guards.
 Existing Sources and attempt notification behavior stay compatible.
+
+Activated055 preparations reload bounded confirmed tool observations from the
+exact completed preceding ROOT attempt. Each qualified run/call must have a
+matching owner/task/constraints and goal/mandate binding, confirmed effect,
+completed authorization/dispatch and retained canonical runtime-result evidence.
+Missing, unfinished or uncertain journal/transcript rows deny. Child reports and
+unrelated session/task histories are never selected. Original sources and the
+private claim/current owner proof are checked again after the reads.
+
+Observations remain private sanitized DATA, not native function responses,
+semantic owner verification or execution grants. Results retain actual artifact
+and check receipts. Original authorization hashes stay exact; sanitized arguments
+and equivalence hashes are included only when stored JSONB arguments match that
+exact hash. Otherwise arguments are omitted, without reconstructing numeric
+lexemes. Context is bounded to32 observations/256KiB. Recovered preparations
+discard and reload the projection under current guards.
+
+Only a private automatic055 continuation blocks equivalent confirmed non-read
+proposals before slot admission or Broker preparation. Object-key order, numeric
+spelling and a fresh call ID cannot repeat a verified prior mutation. Unavailable
+prior equivalence makes a non-read proposal for the same tool fail closed. Repeat reads require both the
+prior read effect and a current active trusted read-only catalog contract.
+Ordinary owner inputs retain distinct intentional action slots. There is no
+fabricated ToolResult, prior-effect replay, refund or permission bypass. Current
+task/source/lease, Stop, budget, final and Broker guards still apply. Private proof
+reloads before proposals use a two-second maximum clamped by the live caller.

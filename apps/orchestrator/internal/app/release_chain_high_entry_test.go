@@ -24,6 +24,8 @@ type releaseChainHighEntry struct {
 	TaskScopedOriginalProof              bool
 	PreserveInvalidOriginalEvidence      bool
 	ContinueAfterCaseFailure             bool
+	SkipVerifiedOwnerStop                bool
+	FailFastTerminalContinuation         bool
 	ScenarioNames                        []string
 	ProviderInputBytes                   int64
 	Policy                               releaseChainHighWindowPolicy

@@ -55,6 +55,7 @@ type releaseChainModelConfig struct {
 	AllowRepeatedPatchChecks        bool
 	TaskScopedOriginalProof         bool
 	PreserveInvalidOriginalEvidence bool
+	FailFastTerminalContinuation    bool
 	Factory                         func(context.Context, *pgxpool.Pool, string) (transport.ModelProvider, error)
 }
 

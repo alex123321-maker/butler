@@ -260,6 +260,7 @@ func testReleaseChainHighNative(t *testing.T, entry releaseChainHighEntry) {
 			cfg.AllowRepeatedPatchChecks = entry.AllowRepeatedPatchChecks
 			cfg.TaskScopedOriginalProof = entry.TaskScopedOriginalProof
 			cfg.PreserveInvalidOriginalEvidence = entry.PreserveInvalidOriginalEvidence
+			cfg.FailFastTerminalContinuation = entry.FailFastTerminalContinuation
 			if entry.ObserveSourceChecks {
 				cfg.SourceObserver = &releaseChainSourceObserver{}
 			}

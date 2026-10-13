@@ -207,6 +207,7 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	}
 
 	transportCtx := transport.WithSessionKey(runCtx, event.SessionKey)
+	transportCtx = converterContinuationProposalContext(transportCtx, prepared)
 	transportCtx = withAnswerState(transportCtx, "final")
 	stream, err := s.provider.StartRun(transportCtx, transport.StartRunRequest{
 		Context: transport.TransportRunContext{

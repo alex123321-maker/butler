@@ -1,0 +1,159 @@
+{
+  "native_ledger": {
+    "latest_ordinal": 658,
+    "requests": 22,
+    "unfinished": 0
+  },
+  "native_or_provider_calls": 0,
+  "overall_pass_claim": false,
+  "owning_fixture_schemas": [
+    {
+      "inputs": [
+        {
+          "attempts": 1,
+          "checkpoint": "finalizing",
+          "checkpoint_reason": null,
+          "checkpoint_stage": null,
+          "error_code": "",
+          "retry": null,
+          "run_id": "run-1791923982378526934-e30f6406f166c548",
+          "source": "initiative",
+          "status": "completed",
+          "task_id": "task_3a9e1be70e353bc12616ef84f52a635a"
+        },
+        {
+          "attempts": 1,
+          "checkpoint": "finalizing",
+          "checkpoint_reason": null,
+          "checkpoint_stage": null,
+          "error_code": "",
+          "retry": null,
+          "run_id": "run-1791924016128051249-2a11b62ab0cee179",
+          "source": "delegation",
+          "status": "completed",
+          "task_id": "task_e67b281eca6772adc45f6ce1bf231fe5"
+        },
+        {
+          "attempts": 1,
+          "checkpoint": "finalizing",
+          "checkpoint_reason": null,
+          "checkpoint_stage": null,
+          "error_code": "",
+          "retry": null,
+          "run_id": "run-1791924093381375840-f6634d24ee439707",
+          "source": "converter-return",
+          "status": "completed",
+          "task_id": "task_3a9e1be70e353bc12616ef84f52a635a"
+        },
+        {
+          "attempts": 1,
+          "checkpoint": "model_budget_reserved",
+          "checkpoint_reason": null,
+          "checkpoint_stage": null,
+          "error_code": "execution_stopped",
+          "retry": null,
+          "run_id": "run-1791924220882327040-2a8117b911ac171f",
+          "source": "converter-return",
+          "status": "blocked",
+          "task_id": "task_3a9e1be70e353bc12616ef84f52a635a"
+        }
+      ],
+      "notices": [],
+      "runs": [
+        {
+          "current_state": "completed",
+          "error_type": null,
+          "finished_at": "2026-10-13T20:39:03.455771+00:00",
+          "run_id": "run-1791923943174762364-d32949907eaf7751",
+          "status": "completed",
+          "task_id": "task_ba6f94753f85ac7a2357f5993a3cd2f7"
+        },
+        {
+          "current_state": "completed",
+          "error_type": null,
+          "finished_at": "2026-10-13T20:39:03.630431+00:00",
+          "run_id": "run-1791923943501148164-1d9ddec8d97932af",
+          "status": "completed",
+          "task_id": "task_3e4959a782aca1fad42f332ba8e62b3c"
+        },
+        {
+          "current_state": "completed",
+          "error_type": null,
+          "finished_at": "2026-10-13T20:39:03.809676+00:00",
+          "run_id": "run-1791923943679801952-bd319a41609d6996",
+          "status": "completed",
+          "task_id": "task_46c1be7bb15d7310c0b4d6d776a1eecc"
+        },
+        {
+          "current_state": "completed",
+          "error_type": null,
+          "finished_at": "2026-10-13T20:40:24.925552+00:00",
+          "run_id": "run-1791923982378526934-e30f6406f166c548",
+          "status": "completed",
+          "task_id": "task_3a9e1be70e353bc12616ef84f52a635a"
+        },
+        {
+          "current_state": "completed",
+          "error_type": null,
+          "finished_at": "2026-10-13T20:41:31.400665+00:00",
+          "run_id": "run-1791924016128051249-2a11b62ab0cee179",
+          "status": "completed",
+          "task_id": "task_e67b281eca6772adc45f6ce1bf231fe5"
+        },
+        {
+          "current_state": "completed",
+          "error_type": null,
+          "finished_at": "2026-10-13T20:43:38.581105+00:00",
+          "run_id": "run-1791924093381375840-f6634d24ee439707",
+          "status": "completed",
+          "task_id": "task_3a9e1be70e353bc12616ef84f52a635a"
+        },
+        {
+          "current_state": "model_running",
+          "error_type": null,
+          "finished_at": null,
+          "run_id": "run-1791924220882327040-2a8117b911ac171f",
+          "status": "model_running",
+          "task_id": "task_3a9e1be70e353bc12616ef84f52a635a"
+        }
+      ],
+      "schema": "broker_proof_1791923942641346304",
+      "tasks": [
+        {
+          "constraints_revision": 1,
+          "revision": 1,
+          "status": "active",
+          "task_id": "task_3a9e1be70e353bc12616ef84f52a635a"
+        },
+        {
+          "constraints_revision": 1,
+          "revision": 1,
+          "status": "active",
+          "task_id": "task_3e4959a782aca1fad42f332ba8e62b3c"
+        },
+        {
+          "constraints_revision": 1,
+          "revision": 1,
+          "status": "active",
+          "task_id": "task_46c1be7bb15d7310c0b4d6d776a1eecc"
+        },
+        {
+          "constraints_revision": 1,
+          "revision": 1,
+          "status": "active",
+          "task_id": "task_ba6f94753f85ac7a2357f5993a3cd2f7"
+        },
+        {
+          "constraints_revision": 1,
+          "revision": 1,
+          "status": "active",
+          "task_id": "task_e67b281eca6772adc45f6ce1bf231fe5"
+        }
+      ]
+    }
+  ],
+  "postgres_read_only": true,
+  "raw_args_messages_results_or_credentials_exported": false,
+  "read_at_utc": "2026-10-13T20:51:33.154013+00:00",
+  "version": "butler-v17-live-terminal-stall-metadata-v1"
+}

@@ -125,6 +125,7 @@ func (s *Service) Resume(ctx context.Context, runID string, event ingress.InputE
 	if err = s.rehydrateSourcePreparation(ctx, &checkpoint.Prepared); err != nil {
 		return nil, err
 	}
+	ctx = converterContinuationProposalContext(ctx, checkpoint.Prepared)
 	if continuation.Prepared.SourceInputEvent != nil || checkpoint.Prepared.DelegatedTaskID != "" {
 		continuation.Prepared = checkpoint.Prepared
 	}

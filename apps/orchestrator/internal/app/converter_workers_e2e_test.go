@@ -716,6 +716,15 @@ func testConverterDeveloperWorkersObserved(t *testing.T, automatic bool, hooks *
 			return provider.output != nil
 		}, "same-task automatic parent collection and fresh catalog conversion")
 		wait(func() bool {
+			if f.modelConfig != nil && f.modelConfig.FailFastTerminalContinuation {
+				terminal, err := releaseChainTerminalContinuation(f.f.ctx, f.f.pool, f.f.parent.TaskID)
+				if err != nil {
+					t.Fatal("terminal continuation state unavailable")
+				}
+				if terminal {
+					t.Fatal("terminal parent continuation cannot complete")
+				}
+			}
 			var done int
 			_ = f.f.pool.QueryRow(f.f.ctx, `SELECT count(*) FROM accepted_inputs WHERE source='converter-return' AND status='completed'`).Scan(&done)
 			return done == 2
