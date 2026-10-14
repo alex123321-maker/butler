@@ -51,7 +51,14 @@ func MemoryNativeReservedUnits(i MemoryInput) int64 {
 }
 
 func LoadMemoryPrior(s MemorySuite, directory string, pins MemoryPriorPins) (MemoryPrior, error) {
+	return loadMemoryPrior(s, directory, pins, 0)
+}
+
+func loadMemoryPrior(s MemorySuite, directory string, pins MemoryPriorPins, depth int) (MemoryPrior, error) {
 	var p MemoryPrior
+	if depth >= 3 {
+		return p, errors.New("bounded parent lineage differs")
+	}
 	read := func(name, hash string, out any) error {
 		raw, err := ReadPrivateFile(filepath.Join(directory, name), 32<<20)
 		if err != nil || !validSHA(hash) || hashWindowBytes(raw) != hash {
@@ -70,12 +77,12 @@ func LoadMemoryPrior(s MemorySuite, directory string, pins MemoryPriorPins) (Mem
 		return p, err
 	}
 	if pins.Parent != nil {
-		// Only the separately retained second failed prefix is supported. A
+		// Only the separately retained three failed prefixes are supported. A
 		// recursive snapshot cannot silently create an unbounded retry chain.
-		if pins.Parent.Parent != nil || p.Frozen.Plan.SourceSHA256 != pins.SourceSHA || p.Frozen.Plan.CodeCommit != pins.CodeCommit {
+		if p.Frozen.Plan.SourceSHA256 != pins.SourceSHA || p.Frozen.Plan.CodeCommit != pins.CodeCommit {
 			return p, errors.New("bounded parent lineage differs")
 		}
-		parent, err := LoadMemoryPrior(s, filepath.Join(directory, "prior"), *pins.Parent)
+		parent, err := loadMemoryPrior(s, filepath.Join(directory, "prior"), *pins.Parent, depth+1)
 		if err != nil {
 			return p, err
 		}

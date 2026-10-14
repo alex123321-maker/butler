@@ -8,6 +8,7 @@ import (
 // Operator metadata is mounted read-only, outside the candidate's output tree.
 // Actual collection checks every identity before opening provider credentials.
 type MemoryRuntimePins struct {
+	ProxyRequired  bool             `json:"proxy_required,omitempty"`
 	Prior          *MemoryPriorPins `json:"prior,omitempty"`
 	WindowID       string           `json:"window_id"`
 	Release        string           `json:"release"`
@@ -27,23 +28,28 @@ type MemoryRuntimePins struct {
 }
 
 type MemoryExecutionProof struct {
-	ID             string
-	Image          string
-	Path           string
-	Args           []string
-	User           string
-	Memory         int64
-	NanoCpus       int64
-	PidsLimit      int
-	ReadonlyRootfs bool
-	Networks       []string
-	Mounts         []struct {
+	ProxyConfigured bool
+	LocalBypass     bool
+	ID              string
+	Image           string
+	Path            string
+	Args            []string
+	User            string
+	Memory          int64
+	NanoCpus        int64
+	PidsLimit       int
+	ReadonlyRootfs  bool
+	Networks        []string
+	Mounts          []struct {
 		Destination string
 		RW          bool
 	}
 }
 
 func ValidateMemoryExecution(e MemoryExecutionProof, pins MemoryRuntimePins, image string) error {
+	if pins.ProxyRequired && (!e.ProxyConfigured || !e.LocalBypass) {
+		return errors.New("required native proxy or local bypass absent")
+	}
 	if e.Image != image || e.Path != "/runtime/collector.test" || MemoryDigest(e.Args) != MemoryDigest([]string{"-test.run", "^TestMemoryEvalActualCollection$", "-test.v", "-test.timeout", "185m"}) || e.User != "10001:10001" || e.Memory != pins.MemoryBytes || e.NanoCpus != int64(pins.CPUs)*1000000000 || e.PidsLimit != pins.PIDs || !e.ReadonlyRootfs || len(e.Networks) != 3 || !regexp.MustCompile(`^memory-eval-v2-[a-zA-Z0-9_-]+$`).MatchString(pins.WindowID) {
 		return errors.New("actual runner resources/command differ")
 	}

@@ -7,7 +7,7 @@ action=${3:?prepare execute or audit}
 release=${4:?exact candidate commit}
 prior_root=${5:-}
 [[ "$source_root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ && "$root" =~ ^/srv/storage/butler/agents/memory-eval-v2-[a-zA-Z0-9_-]+$ && "$release" =~ ^[a-f0-9]{40}$ && "$root" != "$source_root" ]] || exit 2
-[[ -z "$prior_root" || ( "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-native-20261015 || "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-pending-20261015 ) && "$root" != "$prior_root" ]] || exit 2
+[[ -z "$prior_root" || ( "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-native-20261015 || "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-pending-20261015 || "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-residual-20261015 ) && "$root" != "$prior_root" ]] || exit 2
 umask 077
 # SSH operator UID need not own the confined runtime UID's files. Helpers have
 # no network, no credential mount, and only the new experiment's named outputs.
@@ -22,7 +22,7 @@ read_output() {
   --mount "type=bind,src=$root/$1,dst=/output,readonly" "$image_id" cat /output
 }
 hash_output() {
- case "$1" in build/collector.test|build/memory-eval|metadata/pins.json|review/approval.json|review/public-key.hex) ;; *) exit 2;; esac
+ case "$1" in build/collector.test|build/memory-eval|build/model-metadata|metadata/pins.json|review/approval.json|review/public-key.hex) ;; *) exit 2;; esac
  docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
   --mount "type=bind,src=$root/$1,dst=/output,readonly" "$image_id" sha256sum /output | cut -d' ' -f1
 }
@@ -47,13 +47,14 @@ go test -c -p 1 -o /build/collector.test ./apps/orchestrator/internal/app
 go build -p 1 -o /build/memory-eval ./cmd/memory-eval
 go build -p 1 -o /build/review-seal ./scripts/dev/memory-eval-review
 go build -p 1 -o /build/prior-pin ./scripts/dev/memory-eval-prior
+go build -p 1 -o /build/model-metadata ./scripts/dev/memory-eval-model-metadata
 ' > "$root/build.log" 2> "$root/build-diagnostics.log"
  docker run --rm --network none --read-only --cap-drop ALL --cap-add CHOWN --cap-add FOWNER --cap-add DAC_OVERRIDE --security-opt no-new-privileges:true \
   --mount "type=bind,src=$root/build,dst=/build" --mount "type=bind,src=$root/private,dst=/private" \
   --mount "type=bind,src=$root/metadata,dst=/metadata" --mount "type=bind,src=$root/review,dst=/review" --mount "type=bind,src=$root/prior,dst=/prior" "$image_id" sh -eu -c '
 chown -R 10001:10001 /build /private /review /prior
 chown 10001:10001 /metadata/hardware.json
-chmod 700 /build/collector.test /build/memory-eval /build/review-seal /build/prior-pin /private /review /prior
+chmod 700 /build/collector.test /build/memory-eval /build/review-seal /build/prior-pin /build/model-metadata /private /review /prior
 chmod 711 /metadata
 '
  # Ancestor is traversable to the confined UID; no private file becomes public.
@@ -62,14 +63,14 @@ chmod 711 /metadata
   -v "$source_dir:/src:ro" -v "$root/build:/build" -v "$root/metadata:/metadata:ro" -w /src "$image_id" \
   /build/memory-eval -mode fixture -suite testdata/acceptance/ru-memory-v2.json -root /src -hardware /metadata/hardware.json -code-commit "$release" -window-id pre-native-fixture -output-dir /build/pin-fixture > "$root/pin-fixture.log"
  read_output build/pin-fixture/frozen.json | jq --arg bin "$(hash_output build/collector.test)" --arg window "$(basename "$root")" \
-  '.plan|{window_id:$window,release:.code_commit,source_sha256:.source_sha256,binary_sha256:$bin,hardware_sha256:.hardware_sha256,suite_sha256:.suite_sha256,criteria_sha256:.criteria_sha256,maximum_calls:280,maximum_conservative_units:4000000,cpus:2,memory_bytes:1610612736,pids:128,window_seconds:10800,maximum_events_per_entry:4096,maximum_report_bytes:134217728}' > "$root/metadata/pins.json"
+  '.plan|{proxy_required:true,window_id:$window,release:.code_commit,source_sha256:.source_sha256,binary_sha256:$bin,hardware_sha256:.hardware_sha256,suite_sha256:.suite_sha256,criteria_sha256:.criteria_sha256,maximum_calls:280,maximum_conservative_units:4000000,cpus:2,memory_bytes:1610612736,pids:128,window_seconds:10800,maximum_events_per_entry:4096,maximum_report_bytes:134217728}' > "$root/metadata/pins.json"
  own_metadata pins.json
  if [[ -n "$prior_root" ]]; then
   [[ -f "$prior_root/entered/exit-status" && "$(cat "$prior_root/entered/exit-status")" != 0 ]] || exit 2
   prior_source=$(cat "$prior_root/source-path")
   [[ "$prior_source" == "$source_root/snapshots/"* ]] || exit 2
   old_prior_mount=()
-  if [[ "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-pending-20261015 ]]; then old_prior_mount=(--mount "type=bind,src=$prior_root/prior,dst=/old-prior,readonly"); fi
+  if [[ "$prior_root" != /srv/storage/butler/agents/memory-eval-v2-native-20261015 ]]; then old_prior_mount=(--mount "type=bind,src=$prior_root/prior,dst=/old-prior,readonly"); fi
   docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true --cpus 2 --memory 1536m --pids-limit 128 \
    --mount "type=bind,src=$source_dir,dst=/src,readonly" --mount "type=bind,src=$root/build,dst=/build,readonly" \
    --mount "type=bind,src=$prior_root/private,dst=/old,readonly" --mount "type=bind,src=$prior_root/metadata,dst=/old-meta,readonly" \
@@ -86,7 +87,7 @@ chmod 711 /metadata
   -v "$source_dir:/src:ro" -v "$root/build:/build:ro" -v "$root/review:/review" "$image_id" \
   /build/review-seal -declaration-sha256 b533980ec505bc0797092d86945dd68032d39fb04a71efb9bb054e9adbcb9337 \
   -document-sha256 39ff6b07131243044f7e5bc52433ac98489e5e72f2182614dd01a4bccbb3d153 > "$root/review-seal.log"
- for file in build/collector.test build/memory-eval metadata/pins.json review/approval.json review/public-key.hex; do
+ for file in build/collector.test build/memory-eval build/model-metadata metadata/pins.json review/approval.json review/public-key.hex; do
   printf '%s  %s\n' "$(hash_output "$file")" "$root/$file"
  done > "$root/prepared.sha256"
  printf 'Prepared fresh bounded window: %s\n' "$root"
@@ -108,6 +109,7 @@ prior_mount=()
 if read_output metadata/pins.json | jq -e '.prior!=null' >/dev/null; then prior_mount=(--mount "type=bind,src=$root/prior,dst=/prior,readonly"); fi
 if [[ "$action" == execute ]]; then
  [[ ! -e "$root/entered" ]] || { echo 'One-use model window already entered; preserve it'; exit 2; }
+ [[ $(docker inspect --format '{{.State.Running}}' butler-lab-antigravity-proxy-1) == true ]] || exit 2
  token=/srv/storage/butler/agents/local-models/private/token
  native_import=/srv/storage/butler/agents/antigravity-provider/profile/.gemini/antigravity-cli/butler-native-import.json
  # Metadata-only readability check as the actual UID, before the one-use entry.
@@ -116,6 +118,11 @@ if [[ "$action" == execute ]]; then
   --mount "type=bind,src=$token,dst=/auth/local-token,readonly" \
   --mount "type=bind,src=$native_import,dst=/auth/native-import.json,readonly" "$image_id" sh -eu -c \
   'test -f /auth/local-token && test -r /auth/local-token && test -f /auth/native-import.json && test -r /auth/native-import.json'
+ docker run --rm --user 10001:10001 --network butler-lab_backend --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+  --cpus 1 --memory 128m --pids-limit 32 --mount "type=bind,src=$root/build,dst=/runtime,readonly" \
+  --mount "type=bind,src=$native_import,dst=/auth/native-import.json,readonly" \
+  -e BUTLER_MEMORY_EVAL_MODEL_METADATA=1 -e HTTPS_PROXY=http://antigravity-proxy:18080 -e HTTP_PROXY=http://antigravity-proxy:18080 \
+  -e NO_PROXY=localhost,127.0.0.1,memory-eval-postgres,local-models "$image_id" /runtime/model-metadata > "$root/native-metadata-preflight.json"
  # Authenticate only Describe on the actual local-inference network. This
  # compiled entry forbids Infer and has neither native import nor DB mounts.
  docker run --rm --user 10001:10001 --network butler-lab_local-inference --read-only --cap-drop ALL --security-opt no-new-privileges:true \
@@ -138,10 +145,11 @@ if [[ "$action" == execute ]]; then
   -e BUTLER_TEST_MEMORY_POSTGRES_URL='postgresql://butler@memory-eval-postgres:5432/memory_eval_test?sslmode=disable' \
   -e BUTLER_MEMORY_EVAL_ACTUAL=1 -e BUTLER_MEMORY_EVAL_RELEASE="$release" -e BUTLER_MEMORY_EVAL_PRIVATE=/private \
   -e BUTLER_MEMORY_EVAL_LOCAL_TOKEN_FILE=/auth/local-token -e BUTLER_MEMORY_EVAL_IMPORT_FILE=/auth/native-import.json \
+  -e HTTPS_PROXY=http://antigravity-proxy:18080 -e HTTP_PROXY=http://antigravity-proxy:18080 -e NO_PROXY=localhost,127.0.0.1,memory-eval-postgres,local-models \
   "$image_id" /runtime/collector.test -test.run '^TestMemoryEvalActualCollection$' -test.v -test.timeout 185m > "$root/entered/runner-id"
  docker network connect butler-lab_backend "$tag-runner"
  docker network connect butler-lab_local-inference "$tag-runner"
- docker inspect "$tag-runner" | jq '.[0]|{Id,Image,Path,Args,User:.Config.User,Memory:.HostConfig.Memory,NanoCpus:.HostConfig.NanoCpus,PidsLimit:.HostConfig.PidsLimit,ReadonlyRootfs:.HostConfig.ReadonlyRootfs,Networks:(.NetworkSettings.Networks|keys),Mounts:[.Mounts[]|{Destination,RW}]}' > "$root/metadata/execution.json"
+ docker inspect "$tag-runner" | jq '.[0]|{Id,Image,Path,Args,User:.Config.User,Memory:.HostConfig.Memory,NanoCpus:.HostConfig.NanoCpus,PidsLimit:.HostConfig.PidsLimit,ReadonlyRootfs:.HostConfig.ReadonlyRootfs,ProxyConfigured:((.Config.Env|index("HTTPS_PROXY=http://antigravity-proxy:18080")!=null) and (.Config.Env|index("HTTP_PROXY=http://antigravity-proxy:18080")!=null)),LocalBypass:(.Config.Env|index("NO_PROXY=localhost,127.0.0.1,memory-eval-postgres,local-models")!=null),Networks:(.NetworkSettings.Networks|keys),Mounts:[.Mounts[]|{Destination,RW}]}' > "$root/metadata/execution.json"
  own_metadata execution.json
  set +e
  timeout 11100 docker start -a "$tag-runner" > "$root/runner.log" 2> "$root/runner-diagnostics.log"

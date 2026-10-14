@@ -30,13 +30,26 @@ func main() {
 		panic("suite invalid")
 	}
 	allowed := regexp.MustCompile(`^(ledger|measurements|frozen-before-native|captures|plan|collection-status|comparison-frozen|comparison-measurements)\.json$|^(aux|bundle|search|bindings|input|events|result|deletion)-[a-zA-Z0-9_-]+\.json$|^final-[a-zA-Z0-9_-]+\.txt$`)
-	copySafe := func(from, to string) error {
+	var copySafe func(string, string, int) error
+	copySafe = func(from, to string, depth int) error {
+		if depth >= 3 {
+			return fmt.Errorf("bounded parent snapshot denied")
+		}
 		entries, err := os.ReadDir(from)
 		if err != nil {
 			return err
 		}
 		for _, entry := range entries {
-			if entry.IsDir() || !allowed.MatchString(entry.Name()) {
+			if entry.IsDir() {
+				if entry.Name() != "prior" || os.Mkdir(filepath.Join(to, "prior"), 0700) != nil {
+					return fmt.Errorf("unknown snapshot directory")
+				}
+				if err := copySafe(filepath.Join(from, "prior"), filepath.Join(to, "prior"), depth+1); err != nil {
+					return err
+				}
+				continue
+			}
+			if !allowed.MatchString(entry.Name()) {
 				continue
 			}
 			raw, err := acceptance.ReadPrivateFile(filepath.Join(from, entry.Name()), 32<<20)
@@ -55,7 +68,7 @@ func main() {
 		}
 		return nil
 	}
-	if err := copySafe(*old, *dest); err != nil {
+	if err := copySafe(*old, *dest, 0); err != nil {
 		panic("bounded exclusive snapshot failed")
 	}
 	var runtime acceptance.MemoryRuntimePins
@@ -80,7 +93,7 @@ func main() {
 	}
 	var pins acceptance.MemoryPriorPins
 	if runtime.Prior != nil {
-		if runtime.Prior.Parent != nil || os.Mkdir(filepath.Join(*dest, "prior"), 0700) != nil || copySafe("/old-prior", filepath.Join(*dest, "prior")) != nil {
+		if (runtime.Prior.Parent != nil && runtime.Prior.Parent.Parent != nil) || os.Mkdir(filepath.Join(*dest, "prior"), 0700) != nil || copySafe("/old-prior", filepath.Join(*dest, "prior"), 1) != nil {
 			panic("bounded safe parent snapshot denied")
 		}
 		pins.Parent = runtime.Prior

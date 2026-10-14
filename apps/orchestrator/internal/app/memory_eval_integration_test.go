@@ -280,6 +280,9 @@ func memoryCollectorFixtureWithPrior(t *testing.T, prior *acceptance.MemoryPrior
 		if len(prior.PaidInputs) == 2 {
 			c.plan.WindowID = "fixture-residual-components"
 		}
+		if len(prior.PaidInputs) == 3 {
+			c.plan.WindowID = "fixture-proxy-components"
+		}
 		c.started = prior.Expires.Add(-3 * time.Hour)
 	}
 	if err = c.init(context.Background()); err != nil {

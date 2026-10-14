@@ -203,11 +203,74 @@ func TestMemoryEvalCollectorPendingCrossRootCorrelationIntegration(t *testing.T)
 	if err != nil || len(prior.PaidInputs) != 2 || len(prior.Measurements.Observations) != 2 || prior.Audit.NativeCalls != 2 || prior.Audit.AuxiliaryCalls != 53 {
 		t.Fatal("two-prefix lineage", err)
 	}
-	for _, kind := range []string{"third_parent", "refunded_counter", "reset_deadline"} {
+	last := memoryCollectorFixtureWithPrior(t, &prior, &pins, mid.private)
+	last.backend = &memoryFixtureBackend{fail: true}
+	for _, cse := range last.suite.Cases {
+		if err = last.capture(ctx, cse); err != nil {
+			t.Fatal(err)
+		}
+	}
+	last.frozen, err = acceptance.MemoryPendingSchedule(prior, last.plan)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = last.writeEvidence("frozen-before-native.json", last.frozen); err != nil {
+		t.Fatal(err)
+	}
+	last.factory = func(json.RawMessage) (transport.ModelProvider, error) { return &memoryFailureEventProvider{}, nil }
+	lastObs, lastErr := last.sample(ctx, last.suite.Cases[0], last.frozen.Inputs[0])
+	if lastErr == nil {
+		t.Fatal("third failure missing")
+	}
+	last.measurements.Observations = append(last.measurements.Observations, lastObs)
+	last.measurements.FrozenSHA256 = last.frozen.SHA256
+	if err = last.fillUnused(ctx, last.frozen.Inputs[0]); err != nil {
+		t.Fatal(err)
+	}
+	lastCombined, err := acceptance.CombineMemoryMeasurements(prior, last.measurements)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, item := range []struct {
+		name  string
+		value any
+	}{{"measurements.json", last.measurements}, {"comparison-frozen.json", prior.Frozen}, {"comparison-measurements.json", lastCombined}} {
+		if err = last.writeEvidence(item.name, item.value); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err = last.pool.Exec(ctx, `UPDATE fixture_memory_eval_window SET closed=TRUE`); err != nil {
+		t.Fatal(err)
+	}
+	if err = last.exportLedger(ctx); err != nil {
+		t.Fatal(err)
+	}
+	prevPins := pins
+	pins = acceptance.MemoryPriorPins{Parent: &prevPins, SourceSHA: last.plan.SourceSHA256, CodeCommit: last.plan.CodeCommit, BinarySHA: strings.Repeat("5", 64), ExpiresUTC: prevPins.ExpiresUTC}
+	if err = last.pool.QueryRow(ctx, `SELECT calls,reserved_units FROM fixture_memory_eval_window`).Scan(&pins.Calls, &pins.ReservedUnits); err != nil {
+		t.Fatal(err)
+	}
+	for _, item := range []struct {
+		name string
+		out  *string
+	}{{"ledger.json", &pins.LedgerSHA}, {"frozen-before-native.json", &pins.FrozenFileSHA}, {"measurements.json", &pins.MeasurementsSHA}} {
+		*item.out, err = acceptance.FileHash(filepath.Join(last.private, item.name))
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	copyMemoryFixtureTree(t, mid.private, filepath.Join(last.private, "prior"))
+	prior, err = acceptance.LoadMemoryPrior(last.suite, last.private, pins)
+	if err != nil || len(prior.PaidInputs) != 3 || len(prior.Measurements.Expenses) != 236 || prior.Audit.NativeCalls != 3 {
+		t.Fatal("three retained prefixes", err)
+	}
+	mid = last // The following forgery probes clone the immediate retained prefix.
+	for _, kind := range []string{"fourth_parent", "refunded_counter", "reset_deadline"} {
 		bad := pins
 		switch kind {
-		case "third_parent":
-			parent, grandparent := *pins.Parent, *pins.Parent
+		case "fourth_parent":
+			parent, grandparent, greatgrandparent := *pins.Parent, *pins.Parent.Parent, *pins.Parent.Parent
+			grandparent.Parent = &greatgrandparent
 			parent.Parent, bad.Parent = &grandparent, &parent
 		case "refunded_counter":
 			bad.Calls, bad.ReservedUnits = parentPins.Calls, parentPins.ReservedUnits
@@ -222,7 +285,7 @@ func TestMemoryEvalCollectorPendingCrossRootCorrelationIntegration(t *testing.T)
 	// altered comparison cannot replace a paid failure or drop an old cost.
 	for _, kind := range []string{"dropped_expense", "replaced_failure"} {
 		forged := t.TempDir()
-		for _, rel := range []string{"", "prior"} {
+		for _, rel := range []string{"", "prior", "prior/prior"} {
 			if rel != "" {
 				if err = os.Mkdir(filepath.Join(forged, rel), 0700); err != nil {
 					t.Fatal(err)
@@ -323,7 +386,7 @@ func TestMemoryEvalCollectorPendingCrossRootCorrelationIntegration(t *testing.T)
 		t.Fatal(err)
 	}
 	audit, err := acceptance.AuditMemoryContinuation(current.suite, prior, current.frozen, current.measurements, current.private, strings.Repeat("5", 64), pins)
-	if err != nil || audit.NativeCalls != 64 || audit.AuxiliaryCalls != 53 || audit.QuestionResults != 62 {
+	if err != nil || audit.NativeCalls != 64 || audit.AuxiliaryCalls != 53 || audit.QuestionResults != 61 {
 		t.Fatal("pending correlation", audit, err)
 	}
 	combined, err := acceptance.CombineMemoryMeasurements(prior, current.measurements)
@@ -331,7 +394,7 @@ func TestMemoryEvalCollectorPendingCrossRootCorrelationIntegration(t *testing.T)
 		t.Fatal("failed denominator lost", err)
 	}
 	score, err := acceptance.ScoreMemory(current.suite, prior.Frozen, combined, acceptance.GoldenApproval{}, nil)
-	if err != nil || len(score.Cases) != 72 || score.Arms["no_ltm"].Cases != 24 || score.Arms["no_ltm"].Cost.FailedSamples != 1 || score.Arms["full_context"].Cost.FailedSamples != 1 {
+	if err != nil || len(score.Cases) != 72 || score.Arms["no_ltm"].Cases != 24 || score.Arms["no_ltm"].Cost.FailedSamples != 1 || score.Arms["full_context"].Cost.FailedSamples != 1 || score.Arms["retrieval"].Cost.FailedSamples != 1 {
 		t.Fatal("composite denominator lost", err)
 	}
 	for _, reason := range score.Reasons {
@@ -347,6 +410,10 @@ func TestMemoryEvalCollectorPendingCrossRootCorrelationIntegration(t *testing.T)
 	retried.Observations[len(retried.Observations)-1] = midObs
 	if _, err = acceptance.CombineMemoryMeasurements(prior, retried); err == nil {
 		t.Fatal("second spent entry resampled")
+	}
+	retried.Observations[len(retried.Observations)-1] = lastObs
+	if _, err = acceptance.CombineMemoryMeasurements(prior, retried); err == nil {
+		t.Fatal("third spent entry resampled")
 	}
 	changed := current.frozen
 	changed.Inputs = append(append([]acceptance.MemoryInput(nil), changed.Inputs...), prior.PaidInput)
@@ -391,6 +458,30 @@ func TestMemoryEvalCollectorPendingCrossRootCorrelationIntegration(t *testing.T)
 	}
 	if _, err = acceptance.AuditMemoryContinuation(current.suite, prior, current.frozen, current.measurements, forgedDir, strings.Repeat("5", 64), pins); err == nil || !strings.Contains(err.Error(), "accumulated conservative charge") {
 		t.Fatal("current conservative reservations dropped", err)
+	}
+}
+
+func copyMemoryFixtureTree(t *testing.T, from, to string) {
+	t.Helper()
+	if err := os.Mkdir(to, 0700); err != nil {
+		t.Fatal(err)
+	}
+	entries, err := os.ReadDir(from)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			copyMemoryFixtureTree(t, filepath.Join(from, entry.Name()), filepath.Join(to, entry.Name()))
+			continue
+		}
+		raw, err := os.ReadFile(filepath.Join(from, entry.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err = os.WriteFile(filepath.Join(to, entry.Name()), raw, 0600); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 

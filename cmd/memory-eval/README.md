@@ -149,3 +149,11 @@ snapshot is limited to two failed prefixes; a deeper chain is rejected. It uses
 the original pending root as the fifth argument and a new residual root, with
 window-scoped setup expense IDs. HTTP rejection diagnostics may retain numeric
 status and fixed protocol reason only. No earlier unknown is inferred from them.
+
+After the retained third failure, a separate prospective route correction is in
+`docs/ai/memory-eval-v2-proxy-correction-protocol-20261015.md`. It follows the
+established native laba proxy route, requires safe runtime proxy/bypass proof and
+a compiled metadata-only paid/profile check. It carries56/660396, all236expenses
+and3failedslots into a three-level parent snapshot, admits only61unpaid entries,
+and retains the original expiry. Fourth-depth lineage is rejected. This needs
+new independent source/runtime review; old gates do not grant this entry.

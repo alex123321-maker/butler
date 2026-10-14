@@ -56,6 +56,14 @@ other invalid argument). `DiagnosticReason` rejects all other strings. Provider
 messages, field paths/details and raw bytes remain unexported; a class records an
 upstream claim, not proof of the precise cause. Earlier unknowns stay unknown.
 
+Native memory-eval on laba follows the established private antigravity-proxy route
+and bypasses loopback/own PostgreSQL/local-models. New operator pins require this
+route; actual Docker environment is reduced to proxy/bypass booleans checked
+before provider auth. Historical roots retain their original direct-route proof.
+An isolated metadata-only Manager can use transient process-private state to
+check paid discovery/frozen profile without opening any durable native database
+or constructing a provider. Availability does not prove generation or allow retry.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Model Transport Contract

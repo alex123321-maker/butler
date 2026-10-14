@@ -14,6 +14,18 @@ func TestMemoryV2ExecutionNetworkProof(t *testing.T) {
 	if err := ValidateMemoryExecution(e, pins, e.Image); err != nil {
 		t.Fatal(err)
 	}
+	pins.ProxyRequired = true
+	if ValidateMemoryExecution(e, pins, e.Image) == nil {
+		t.Fatal("missing required proxy accepted")
+	}
+	e.ProxyConfigured = true
+	if ValidateMemoryExecution(e, pins, e.Image) == nil {
+		t.Fatal("missing local bypass accepted")
+	}
+	e.LocalBypass = true
+	if err := ValidateMemoryExecution(e, pins, e.Image); err != nil {
+		t.Fatal(err)
+	}
 	for _, networks := range [][]string{
 		{pins.WindowID, "butler-lab_backend"},
 		{pins.WindowID, "butler-lab_backend", "different-local-network"},
