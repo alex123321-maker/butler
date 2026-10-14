@@ -1,0 +1,4 @@
+=== RUN   TestActualEmbeddingCPUWorkload
+    embedding_workload_test.go:67: CPU embedding workload failed rpc error: code = InvalidArgument desc = invalid_input
+--- FAIL: TestActualEmbeddingCPUWorkload (2.33s)
+FAIL

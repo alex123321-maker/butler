@@ -1,0 +1,21 @@
+=== RUN   TestActualRussianDecisionTaxonomyV2
+    taxonomy_test.go:181: Qwen dev-001: missing single-token score
+    taxonomy_test.go:181: Qwen dev-002: missing single-token score
+    taxonomy_test.go:181: Qwen dev-004: missing single-token score
+    taxonomy_test.go:181: Qwen dev-005: missing single-token score
+    taxonomy_test.go:181: Qwen dev-006: missing single-token score
+    taxonomy_test.go:181: Qwen dev-007: missing single-token score
+    taxonomy_test.go:181: Qwen dev-008: missing single-token score
+    taxonomy_test.go:181: Qwen dev-009: missing single-token score
+    taxonomy_test.go:181: Qwen dev-010: missing single-token score
+    taxonomy_test.go:181: Qwen dev-011: missing single-token score
+    taxonomy_test.go:181: Qwen dev-012: missing single-token score
+    taxonomy_test.go:181: Qwen dev-013: missing single-token score
+    taxonomy_test.go:181: Qwen dev-014: missing single-token score
+    taxonomy_test.go:181: Qwen dev-015: missing single-token score
+    taxonomy_test.go:181: Qwen dev-016: missing single-token score
+    taxonomy_test.go:181: Qwen dev-017: missing single-token score
+    taxonomy_test.go:181: Qwen dev-018: missing single-token score
+    taxonomy_test.go:185: Qwen accuracy=1.000 observed=1 unavailable=17
+--- PASS: TestActualRussianDecisionTaxonomyV2 (10.25s)
+PASS

@@ -16,7 +16,7 @@ def stop(_signum, _frame):
 
 signal.signal(signal.SIGTERM, stop)
 started = time.monotonic()
-container = sys.argv[1] if len(sys.argv) == 2 else 'butler-lab-local-models-1'
+container = sys.argv[1] if len(sys.argv) >= 2 else 'butler-lab-local-models-1'
 while running and time.monotonic() - started < 600:
     sample = {"at": datetime.datetime.now(datetime.timezone.utc).isoformat()}
     try:
@@ -25,6 +25,9 @@ while running and time.monotonic() - started < 600:
             stderr=subprocess.DEVNULL, timeout=8,
         ).decode("ascii").strip()
         sample["worker_cpu_percent"] = float(value.rstrip("%"))
+        if len(sys.argv) >= 3:
+            qwen = subprocess.check_output(['docker','stats','--no-stream','--format','{{.CPUPerc}}',sys.argv[2]],stderr=subprocess.DEVNULL,timeout=8).decode('ascii').strip()
+            sample['qwen_cpu_percent'] = float(qwen.rstrip('%'))
     except (subprocess.SubprocessError, ValueError, UnicodeError):
         sample["measurement_unavailable"] = True
     print(json.dumps(sample), flush=True)

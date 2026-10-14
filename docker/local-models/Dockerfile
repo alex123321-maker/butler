@@ -9,6 +9,7 @@ RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache
 FROM python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
 COPY --from=builder /out/local-models /usr/local/bin/local-models
 COPY apps/local-models/model-worker.py /app/model-worker.py
+COPY internal/localmodels/decision-schema-v2.json /app/decision-schema-v2.json
 COPY apps/local-models/voice-worker.py /app/voice-worker.py
 USER 10001:10001
 ENTRYPOINT ["/usr/local/bin/local-models"]

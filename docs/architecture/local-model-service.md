@@ -1,5 +1,14 @@
 # Auxiliary local model service
 
+Decision taxonomy v2 is an additive, operator-only preprocessing identity for
+the existing CPU GLiNER and reviewed d1 workers. A bundled hash-pinned JSON asset
+contains definitions and precedence; no caller-supplied prompt, code or schema
+is accepted. New profiles declare 2048 context tokens and return all alternatives.
+Original profiles and the deployed catalog retain their own identity. Qwen3.5-4B
+is currently a test-only isolated Ollama comparison, not an implemented runtime
+in this service or a production controller route. See
+[decision evaluation](local-decision-signals.md).
+
 This opt-in subsystem implements the shared auxiliary resource service for #24.
 It is separate from Model Transport (the run's generative provider), Tool Broker,
 Session Service, durable task ownership and the four memory stores. Auxiliary

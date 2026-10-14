@@ -1,0 +1,5 @@
+=== RUN   TestActualRussianDecisionTaxonomyV2
+    taxonomy_test.go:181: Qwen dev-001: context deadline exceeded
+    taxonomy_test.go:181: embedding could not remain usable with Qwen resident embedding left GPU or fell back
+--- FAIL: TestActualRussianDecisionTaxonomyV2 (80.19s)
+FAIL

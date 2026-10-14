@@ -1,0 +1,629 @@
+{
+  "actual_attempts": 18,
+  "actual_controller_calls_saved": 0,
+  "cases": [
+    {
+      "case": "dev-001",
+      "split": "dev",
+      "gold": "остановка",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.743279313806382,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.5001733923424501,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_4cc06947c3908331372ea45599d9d6fc72033bb7f2505f648a8cacdcd6d607b9",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "2fbd5b0babdd0519f3b81de35cfec700d6fe653f381dff8b47324a4a551e511d"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 327
+    },
+    {
+      "case": "dev-002",
+      "split": "dev",
+      "gold": "остановка",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.8642468741306569,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.7398884011374358,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_e9ea044b29a7b969bef01792209b23e13e92f30e978d4228216910549570add0",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "58d1a35a17d10bd27fd56fc6289e6fe8854190f23e99170185a9c339ca6e3cca"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 230
+    },
+    {
+      "case": "dev-003",
+      "split": "dev",
+      "gold": "изменение условий",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.3246254457940559,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.1112983898083178,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_3e9795e14d8198a1ac5f45db404cc4a9229595cc26003b012c36cf511a8a067d",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "fa7fb960c89eb778888f91cb6bdb6a06c129d662410f13860ee1547400bce147"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 230
+    },
+    {
+      "case": "dev-004",
+      "split": "dev",
+      "gold": "изменение условий",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "изменение условий",
+        "uncalibrated_score": 0.4006764394699171,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.16829566373147314,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_8977c2d9b933be00366826b450b3b591649997754760dd0f5d020d94d254da95",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "bb602be8b9112860f887716c1f349b6997e9ef81d2ee29332dc2dcfb45a9f0b5"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 233
+    },
+    {
+      "case": "dev-005",
+      "split": "dev",
+      "gold": "уточнение",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.4000248313940279,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.2045608078198334,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_94658e188191afc87b98bb705301a34bff230d80575195e5d83020ceb98dbde3",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "724c97d6cbaf5f7bfccfaae1a41ab63c53e49763e58bee22832d0053a23a6fde"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 239
+    },
+    {
+      "case": "dev-006",
+      "split": "dev",
+      "gold": "уточнение",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "уточнение",
+        "uncalibrated_score": 0.8202229518496429,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.6638689461716627,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_0c04e6f932a6e0ac0ec2338f9c360633dbe9afae632b7fc5196d95d8abcd45e2",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "402ca6d2bdc4e4ed02ffe4a172f0a2c63b08d4e48c1e082dac635a5ac5c6a0c2"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 229
+    },
+    {
+      "case": "dev-007",
+      "split": "dev",
+      "gold": "новое поручение",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "новое поручение",
+        "uncalibrated_score": 0.6191161973324303,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.448727820452562,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_90908b626ebb3399e0757c8c2067d02ece8101a7c91dfe6ad289f197ca396775",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "1bd3f9a5f91db17b7bf3b5bb29edd45e6ece3af9bea6bb1e6563073587440df9"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 231
+    },
+    {
+      "case": "dev-008",
+      "split": "dev",
+      "gold": "новое поручение",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "новое поручение",
+        "uncalibrated_score": 0.711829215836727,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.547156276192281,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_70d0f25ec12883111695be887ee402543d20ec3074d7f1f228255b42c4bf26fc",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "f4cc92f5fb5db61884ba13f7d3d886c2735f0167a524709b71b179dfccdbf846"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 231
+    },
+    {
+      "case": "dev-009",
+      "split": "dev",
+      "gold": "важное событие",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "важное событие",
+        "uncalibrated_score": 0.8603429129293375,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.728403048678701,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_c3151ddad1da76959b186748b18d67d9ae411b516dcca43078d2662990d019c6",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "0cc544165b7877e0c430e3a222d6bf49e2393d7ff00497ba023da0ba13cf348f"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 242
+    },
+    {
+      "case": "dev-010",
+      "split": "dev",
+      "gold": "важное событие",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.366954301369045,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.031316524754785524,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_a2b33396a1af161e5351e86329689af420c845f2d80e5bfeabded154e9975ed1",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "2d00e88bff806dc2bd1d651f131e3d8389ce59718ddd66da0b11c4621213fb81"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 231
+    },
+    {
+      "case": "dev-011",
+      "split": "dev",
+      "gold": "чужая инструкция",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.2954143525556278,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.016376001418839214,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_61406e356747d27896d09d0d6e918ec9b04794abc69089c761b10027e4ea244e",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "b6c4c9c83a6cfe5aabff3f5da13c8b365bed4c2c28a92bf8de346ef48b22cea6"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 230
+    },
+    {
+      "case": "dev-012",
+      "split": "dev",
+      "gold": "чужая инструкция",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.47549933283847157,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.19678437415650896,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_a92e05ef01761f5ff1becb4ada53f491290ee5f930395ccb1f58213d337c73c1",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "f31dd21e389d26f8af88d0b0b2edfec0689aedb085fd93fc73362c8f7d721f30"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 231
+    },
+    {
+      "case": "dev-013",
+      "split": "dev",
+      "gold": "недостаточно данных",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.5291636968967657,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.3895870141311648,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_4eb225c65337281837c86ae45f1ab71b8b8edc4c204e17af8a2d77969a5514c5",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "0faa80f21bba21eb61e9aab20fe3f2c9df95ab2665cf41f9d8aa764b56162e99"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 240
+    },
+    {
+      "case": "dev-014",
+      "split": "dev",
+      "gold": "недостаточно данных",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.794242933915833,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.6688995845217025,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_a60ed416a96ebc1e19d35212192e73ffd92d349f7b53284f69e694ac8f323e95",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "532304183cd0916360c04a624c94990aa66f8d94ef21a2d240d972fdf6798e45"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 233
+    },
+    {
+      "case": "dev-015",
+      "split": "dev",
+      "gold": "проверка результата",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.4437282421791042,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.15008692665003265,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_7974a1c7e1ca34ecbf87f5c3da81c20a089b1017b08bc7eb64db3f8e6160171f",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "4ec60782955194cb69a0bbadd6180ef9cd97c40c9b75955cf592792ca278bde8"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 229
+    },
+    {
+      "case": "dev-016",
+      "split": "dev",
+      "gold": "проверка результата",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.5753935110292466,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.349594228199975,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_ec79ce251a431267f739424d5851898870f586265c75afa476e58e376bd5e47a",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "ba87e87fb8afdd7b309977b4990f215b9d95a4fab75efb2b1963f62790a68c7e"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 230
+    },
+    {
+      "case": "dev-017",
+      "split": "dev",
+      "gold": "подтверждённый успех",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.9987837205989673,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.9982630298038762,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_0ba17d4fec8bdb0c0b18c36e48e961d6f5e5e8923cb9e9abef3a57db77e27627",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "3bea33633cca2f3eb16a1d4623e94a1441dc897e7989dae7862bbdc591cffed9"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 231
+    },
+    {
+      "case": "dev-018",
+      "split": "dev",
+      "gold": "подтверждённый успех",
+      "profile": "qwen3.5-4b-q4-taxonomy-v2-gpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.9985176961500153,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.9978162997836456,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_1c2e774ab110718818d15a0039253cbdc1d4298df51566722169bf73de768e14",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "8b1a5e18da4fa80d591b07c99ae200422b0db6cbf8735368ef93d610f3bb969f"
+        },
+        "model_revision": "709d8b7a32ff583e9fb98c8c680986a5346024332c038f2aae9aea31d9d6060b",
+        "queue_ms": 0,
+        "execution_ms": 0,
+        "peak_ram_mib": 0,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 239
+    }
+  ],
+  "corpus_sha256": "121004b8c5ab5dc343fbb35265fc99b430f2499cc666368fd8c53c215cfc6799",
+  "limitations": [
+    "new synthetic events authored and frozen before any model predictions; no human review or production-distribution claim",
+    "source role and proof metadata are fixtures, not live authenticated authority",
+    "controller cost baseline remains unmeasured"
+  ],
+  "phase": "dev",
+  "production_enabled": false,
+  "profiles": null,
+  "qwen_co_residency_requested": true,
+  "qwen_resource_metrics": "external whole-device sampler and pinned /api/ps; observation zero means unmeasured",
+  "report_version": "decision-taxonomy-v2",
+  "schema_sha256": "ae9eeab71dfbeb835a28a8fa59806e75a4f13090225350b8b818a93a2c61763e",
+  "thresholds_tuned_on_test": false,
+  "totals": {
+    "qwen3.5-4b-q4-taxonomy-v2-gpu": {
+      "count": 18,
+      "observed": 18,
+      "correct": 11,
+      "errors": 0,
+      "error_counts": null,
+      "unavailable_important_events": 0,
+      "important_misses": 1,
+      "explicit_stop_misses": 0,
+      "false_initiative": 0,
+      "false_success": 4,
+      "escalations": 11,
+      "non_escalated": 7,
+      "non_escalated_errors": 0,
+      "accuracy": 0.6111111111111112,
+      "availability": 1,
+      "class_tp_fp_fn": {
+        "важное событие": [
+          1,
+          0,
+          1
+        ],
+        "изменение условий": [
+          1,
+          0,
+          1
+        ],
+        "недостаточно данных": [
+          2,
+          3,
+          0
+        ],
+        "новое поручение": [
+          2,
+          0,
+          0
+        ],
+        "остановка": [
+          2,
+          0,
+          0
+        ],
+        "подтверждённый успех": [
+          2,
+          4,
+          0
+        ],
+        "проверка результата": [
+          0,
+          0,
+          2
+        ],
+        "уточнение": [
+          1,
+          0,
+          1
+        ],
+        "чужая инструкция": [
+          0,
+          0,
+          2
+        ]
+      },
+      "confusion": {
+        "важное событие": {
+          "важное событие": 1,
+          "недостаточно данных": 1
+        },
+        "изменение условий": {
+          "изменение условий": 1,
+          "недостаточно данных": 1
+        },
+        "недостаточно данных": {
+          "недостаточно данных": 2
+        },
+        "новое поручение": {
+          "новое поручение": 2
+        },
+        "остановка": {
+          "остановка": 2
+        },
+        "подтверждённый успех": {
+          "подтверждённый успех": 2
+        },
+        "проверка результата": {
+          "подтверждённый успех": 2
+        },
+        "уточнение": {
+          "подтверждённый успех": 1,
+          "уточнение": 1
+        },
+        "чужая инструкция": {
+          "недостаточно данных": 1,
+          "подтверждённый успех": 1
+        }
+      },
+      "warm_wall_p50_ms": 231,
+      "warm_wall_p95_ms": 240,
+      "profile_first_attempt_wall_ms": 327,
+      "total_wall_ms": 4286,
+      "peak_ram_mib": 0,
+      "peak_gpu_mib": 0
+    }
+  }
+}

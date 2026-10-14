@@ -1,5 +1,19 @@
 # Local decision observations
 
+`TaxonomyProfiles()` adds described experimental schemas for the same three
+CPU checkpoints. A newly frozen 18-dev/90-test synthetic corpus supplies event
+JSON with text/context/source-role/evidence state, excluding answer annotations.
+The test-only Qwen adapter pins Q4_K_M weights, Ollama and tokenizer input counts,
+and refuses truncation, malformed enum output and fabricated score margins.
+Observation scores remain auxiliary data. `Observe` reserves the smaller of
+60 seconds and its caller's surviving deadline; the exact bound also reaches IPC.
+
+The comparison establishes one finite planned-turn fixture budget, keeps partial
+checkpoints and distinguishes unavailable inference from incorrect predictions.
+The CPU embedding experiment measures the accepted checkpoint alongside resident
+GPU Qwen. These catalogs, the test adapter and the benchmark budget are research
+fixtures. See [results and limitations](../../deploy/local-models/decision-taxonomy-20261014/README.md).
+
 Optional Go caller for source-bound shadow annotations. It exposes no tool,
 task-control, resource-grant or completion-verdict interface. Every event is
 preserved; owner/controller policy remains authoritative even when a model

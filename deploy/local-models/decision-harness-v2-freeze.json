@@ -1,0 +1,9 @@
+{
+  "frozen_at_utc": "2026-10-14T06:58:40.3475478Z",
+  "corpus_sha256": "121004b8c5ab5dc343fbb35265fc99b430f2499cc666368fd8c53c215cfc6799",
+  "schema_sha256": "ae9eeab71dfbeb835a28a8fa59806e75a4f13090225350b8b818a93a2c61763e",
+  "dev": 18,
+  "test": 90,
+  "predictions_observed_at_freeze": 0,
+  "test_tuning_allowed": false
+}

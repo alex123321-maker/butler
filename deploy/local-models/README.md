@@ -313,3 +313,14 @@ The official processor requires Pillow/torchvision even when vision/audio model
 encoders are omitted. They are pinned; neither multimodal capability nor audio
 quality is claimed. The runtime never resolves cloud models or follows network
 fallbacks. Automatic generation-model loading is outside this service.
+## Decision taxonomy v2 evaluation
+
+For the described CPU classifiers and test-only Qwen3.5-4B comparison, use
+[the frozen experiment and reproduction](decision-taxonomy-20261014/README.md).
+`prepare-qwen-decision-evaluation.sh` creates only an isolated internal research
+container/model namespace; `verify-decisions-isolated-lab.sh` supports taxonomy
+replay/dev, Qwen with explicit CPU embedding placement, and contract checks.
+The ordinary deployment/catalog is unchanged. Cleanup the owned Qwen preparation
+container/network after the experiment. New synthetic holdout quality remains
+below selection gates; CPU EmbeddingGemma2 placement is a measured compromise,
+with cold-load/lane integration and the live controller baseline still pending.

@@ -1,5 +1,14 @@
 # Local auxiliary models
 
+The research-only taxonomy v2 catalogs pin explicit decision definitions and
+priority rules with a 2048-token complete input cap. The worker verifies the
+bundled `decision-schema-v2.json` hash before using it. Place that reviewed asset
+beside `model-worker.py`; the Dockerfile and isolated runner do this explicitly.
+Original profiles keep their original schemas. The v2 Qwen comparison uses a
+separate pinned Ollama container through a test-only Go adapter, without a new
+production route. GPU co-residency and explicit FP32 CPU EmbeddingGemma2 placement
+are measured separately; see [the v2 experiment](../../deploy/local-models/decision-taxonomy-20261014/README.md).
+
 Two text-only decision profiles are present but disabled in the default catalog.
 The separate operator evaluation catalog enables pinned GLiNER Decide and d1
 CPU FP32 solely for shadow comparison. Reviewed d1 code/config hashes are checked

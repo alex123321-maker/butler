@@ -4,6 +4,18 @@ Measured experiments are separate from production readiness. A failed model
 gate is not passed by literal source-preserving rules or by a runner that
 successfully records a report. Extraction scheduling/controller shortcuts stay off.
 
+The [described v2 experiment](decision-taxonomy-20261014/README.md) completes
+a new frozen 18-dev/90-test synthetic comparison and research-only Qwen3.5-4B
+Q4_K_M evaluation. All 360 final calls succeed. Qwen scores 52/90 and has three
+wrong non-escalated success signals; all models remain NO-GO. Accepted GPU
+embedding admission does not fit alongside Qwen at unchanged peak/reserve policy.
+Explicit FP32 CPU EmbeddingGemma2 placement works with resident GPU Qwen:
+short-input p50/p95 78/86 ms and roughly 2.3 GiB service RSS. Longer/batched
+measurements and retained infrastructure failures are in the report. This
+research placement does not implement a production Qwen backend or prove
+combined cold-load/RAM admission, a live controller baseline or human-reviewed
+real-world quality.
+
 ## Structured extraction (issue 27)
 
 | Criterion | Status / evidence |

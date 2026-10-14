@@ -1,0 +1,7 @@
+=== RUN   TestActualRussianDecisionTaxonomyV2
+    taxonomy_test.go:200: gliner2.5-multi-taxonomy-v2-cpu accuracy=0.344 observed=90 unavailable=0
+    taxonomy_test.go:200: gliner2.5-decide-taxonomy-v2-cpu accuracy=0.389 observed=90 unavailable=0
+    taxonomy_test.go:200: d1-omni-taxonomy-v2-cpu accuracy=0.400 observed=90 unavailable=0
+    taxonomy_test.go:212: Qwen accuracy=0.578 observed=90 unavailable=0
+--- PASS: TestActualRussianDecisionTaxonomyV2 (334.27s)
+PASS

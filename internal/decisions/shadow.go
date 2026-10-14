@@ -57,6 +57,18 @@ func FullScoreProfiles() []Profile {
 	return profiles
 }
 
+// TaxonomyProfiles pins an independently described evaluation taxonomy. The
+// old profiles remain reproducible and the ordinary catalog stays unchanged.
+func TaxonomyProfiles() []Profile {
+	profiles := FullScoreProfiles()
+	for i := range profiles {
+		profiles[i].ID = []string{"gliner2.5-multi-taxonomy-v2-cpu", "gliner2.5-decide-taxonomy-v2-cpu", "d1-omni-taxonomy-v2-cpu"}[i]
+		profiles[i].Preprocessing = localmodels.DecisionSchemaV2
+		profiles[i].Tokens = 2048
+	}
+	return profiles
+}
+
 type Observation struct {
 	Label          string            `json:"label"`
 	Score          float64           `json:"uncalibrated_score"`
@@ -85,7 +97,7 @@ func New(c *catalog.Store, j *jobs.Store, b Backend, target budget.LocalTarget, 
 	if c == nil || j == nil || b == nil || target.Endpoint() != "local-models:9090" || target.Identity() == "" || price.Basis != "local_no_billing" || price.InputMicrosPerToken != 0 || price.OutputMicrosPerToken != 0 {
 		return nil, ErrDenied
 	}
-	for _, p := range append(Profiles(), FullScoreProfiles()...) {
+	for _, p := range append(append(Profiles(), FullScoreProfiles()...), TaxonomyProfiles()...) {
 		if p.ID == profileID {
 			return &Observer{c, j, b, target, p}, nil
 		}
@@ -187,9 +199,19 @@ func (s *Observer) Observe(ctx context.Context, j jobs.Job, ref catalog.SourceRe
 	if e != nil {
 		return Observation{}, ErrDenied
 	}
-	request := &pb.InferRequest{RequestId: id, ProfileId: s.profile.ID, CallerId: "decision-shadow", TimeoutMs: 60000, CpuOnly: true, Input: &pb.InferRequest_Classify{Classify: &pb.ClassifyInput{Text: source.Body, Labels: Categories()}}}
+	timeout := time.Minute
+	if deadline, ok := ctx.Deadline(); ok && time.Until(deadline) < timeout {
+		timeout = time.Until(deadline)
+	}
+	// Admission and IPC must quote the same finite bound as the caller. Reserve
+	// whole milliseconds; never quote more time than the surviving context.
+	timeout = timeout.Truncate(time.Millisecond)
+	if timeout < time.Millisecond {
+		return Observation{}, ErrDenied
+	}
+	request := &pb.InferRequest{RequestId: id, ProfileId: s.profile.ID, CallerId: "decision-shadow", TimeoutMs: uint32(timeout.Milliseconds()), CpuOnly: true, Input: &pb.InferRequest_Classify{Classify: &pb.ClassifyInput{Text: source.Body, Labels: Categories()}}}
 	raw, _ := json.Marshal(request)
-	bounded, release, e := s.jobs.Admit(ctx, j, jobs.Operation{ID: id, Kind: j.Kind, Endpoint: s.target.Endpoint(), ServiceIdentity: s.target.Identity(), InputBytes: int64(len(raw)), Tokens: s.profile.Tokens, Timeout: time.Minute, Origin: source.Origin})
+	bounded, release, e := s.jobs.Admit(ctx, j, jobs.Operation{ID: id, Kind: j.Kind, Endpoint: s.target.Endpoint(), ServiceIdentity: s.target.Identity(), InputBytes: int64(len(raw)), Tokens: s.profile.Tokens, Timeout: timeout, Origin: source.Origin})
 	if e != nil {
 		return Observation{}, ErrDenied
 	}

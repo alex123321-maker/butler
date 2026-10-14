@@ -8,8 +8,12 @@ full_scores=0
 case "$mode" in
  selected) catalog=models.decisions-evaluation.json ;;
  full) catalog=models.decisions-fullscores-evaluation.json; full_scores=1 ;;
+ taxonomy) catalog=models.decisions-taxonomy-v2.json ;;
+ qwen) catalog=models.decisions-taxonomy-v2-qwen.json ;;
+ qwen-cpuembed) catalog=models.decisions-taxonomy-v2-cpuembedding.json ;;
+ qwen-workload) catalog=models.decisions-taxonomy-v2-cpuembedding.json ;;
  contracts) catalog=models.decisions-evaluation.json ;;
- *) printf '%s\n' 'mode must be selected, full or contracts' >&2; exit 1 ;;
+ *) printf '%s\n' 'mode must be selected, full, taxonomy or contracts' >&2; exit 1 ;;
 esac
 for path in "$root" "$models"; do
  if [[ ! "$path" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9/_-]+$ ]] || [[ "$path" == *..* ]]; then
@@ -25,6 +29,9 @@ id="decision-replay-$(date -u +%Y%m%dT%H%M%SZ)-$$"
 work="$root/.cache/$id"
 report="$root/reports/$id"
 mkdir -p "$work/private" "$report/output"
+mkdir -p "$work/worker"
+cp -a "$src/apps/local-models/." "$work/worker/"
+cp "$src/internal/localmodels/decision-schema-v2.json" "$work/worker/decision-schema-v2.json"
 # Prevent duplicate executions of this runner against the same source root.
 exec 9>"$root/.cache/decision-replay.lock"
 flock -n 9 || { printf '%s\n' 'decision replay already running' >&2; exit 1; }
@@ -46,13 +53,21 @@ docker run --rm --network none --user 0:0 \
 containers=()
 network=''
 sampler=''
+gpu_sampler=''
+qwen_connected=false
 cleanup() {
  if [[ -n "$sampler" ]]; then kill "$sampler" 2>/dev/null || true; wait "$sampler" || true; fi
+ if [[ -n "$gpu_sampler" ]]; then kill "$gpu_sampler" 2>/dev/null || true; wait "$gpu_sampler" || true; fi
  for container in "${containers[@]}"; do docker rm -f "$container" >/dev/null 2>&1 || true; done
+ if $qwen_connected; then docker network disconnect "$network" butler-decision-qwen-v2 >/dev/null 2>&1 || true; fi
  if [[ -n "$network" ]]; then docker network rm "$network" >/dev/null 2>&1 || true; fi
 }
 trap cleanup EXIT
 network=$(docker network create --internal "$id")
+if [[ "$mode" == qwen* ]]; then
+ docker network connect --alias decision-qwen "$network" butler-decision-qwen-v2
+ qwen_connected=true
+fi
 pg=$(docker create --name "$id-pg" --network "$network" --network-alias decision-postgres \
  --env POSTGRES_USER=butler --env POSTGRES_DB=decisions_test --env POSTGRES_HOST_AUTH_METHOD=trust \
  --tmpfs /var/lib/postgresql/data:rw,size=512m --memory 1g --memory-swap 1g "$postgres_image")
@@ -82,7 +97,7 @@ service=$(docker create --name "$id-models" --network "$network" --network-alias
  --cap-drop ALL --security-opt no-new-privileges:true --gpus all \
  --tmpfs /tmp:rw,nosuid,nodev,size=256m,uid=10001,gid=10001 \
  --volume "$models/data:/data:ro" --volume "$work/private:/private:ro" \
- --volume "$work/local-models:/runner:ro" --volume "$src/apps/local-models:/worker:ro" \
+ --volume "$work/local-models:/runner:ro" --volume "$work/worker:/worker:ro" \
  --volume "$src/deploy/local-models/$catalog:/catalog.json:ro" \
  --env BUTLER_LOCAL_MODELS_TOKEN_FILE=/private/token --env BUTLER_LOCAL_MODELS_CATALOG=/catalog.json \
  --env BUTLER_LOCAL_MODELS_WORKER=/worker/model-worker.py \
@@ -113,16 +128,48 @@ $ready || { printf '%s\n' 'isolated model service did not become ready' >&2; exi
 run_test() {
  local pattern="$1"
  shift
+ local extra=()
+ if [[ "$mode" == qwen* ]]; then extra+=(--volume "$root/models:/qwen-data:ro"); fi
  docker run --rm --user 10001:10001 --network "$network" \
   --read-only --tmpfs /tmp:size=256m,mode=1777 \
   --volume "$src:/src:ro" --volume "$work/decisions.test:/runner:ro" \
   --volume "$work/private:/private:ro" --volume "$report/output:/reports" \
   --volume "$report:/samples:ro" --workdir /src/internal/decisions \
   --env BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://butler@decision-postgres:5432/decisions_test?sslmode=disable \
-  "$@" --entrypoint /runner "$builder" -test.v -test.run "$pattern" -test.timeout 10m
+  "${extra[@]}" "$@" --entrypoint /runner "$builder" -test.v -test.run "$pattern" -test.timeout 15m
 }
 # First prove the caller contracts against actual isolated PG with no tensor calls.
 run_test '^Test' > "$report/contracts.log" 2>&1
+if [[ "$mode" == taxonomy || "$mode" == qwen* ]]; then
+ phase="${4:-replay}"
+ [[ "$phase" == replay || "$phase" == dev || "$phase" == test ]] || exit 1
+ (cd "$src"; sha256sum deploy/local-models/russian-decisions-independent-v2.json internal/localmodels/decision-schema-v2.json) > "$report/taxonomy-freeze.sha256"
+ sample_extra=(); if [[ "$mode" == qwen* ]]; then sample_extra+=(butler-decision-qwen-v2); fi
+ python3 "$src/deploy/local-models/sample-decisions.py" "$service" "${sample_extra[@]}" > "$report/$phase-cpu.jsonl" &
+ sampler=$!
+ extra=()
+ if [[ "$mode" == qwen* ]]; then
+  python3 "$src/deploy/local-models/sample-decision-residency.py" > "$report/$phase-gpu.jsonl" &
+  gpu_sampler=$!
+  extra+=(--env BUTLER_TEST_QWEN_EVALUATION=1 --env BUTLER_TEST_QWEN_TOKEN_COUNTS=/qwen-data/token-counts.json --env BUTLER_TEST_QWEN_PINS=/qwen-data/qwen-pins.json)
+  if [[ "${5:-co-resident}" == co-resident ]]; then extra+=(--env BUTLER_TEST_QWEN_CORESIDENT=1); fi
+  if [[ "$mode" == qwen-cpuembed ]]; then extra+=(--env BUTLER_TEST_QWEN_EMBEDDING_CPU=1); fi
+  if [[ "$phase" == dev ]]; then extra+=(--env BUTLER_TEST_DECISION_ONLY_QWEN=1); fi
+ fi
+ pattern='^TestActualRussianDecisionTaxonomyV2$'
+ if [[ "$mode" == qwen-workload ]]; then pattern='^TestActualEmbeddingCPUWorkload$'; fi
+ run_test "$pattern" --env BUTLER_TEST_LOCAL_MODELS_TOKEN_FILE=/private/token \
+  --env BUTLER_TEST_DECISION_PHASE="$phase" --env BUTLER_TEST_DECISION_REPORT="/reports/$phase.json" "${extra[@]}" \
+  > "$report/$phase.log" 2>&1
+ if [[ "$mode" == qwen-cpuembed && "$phase" == test ]]; then
+  run_test '^TestActualEmbeddingCPUWorkload$' --env BUTLER_TEST_LOCAL_MODELS_TOKEN_FILE=/private/token --env BUTLER_TEST_DECISION_REPORT=/reports/embedding-workload.json > "$report/embedding-workload.log" 2>&1
+ fi
+ kill "$sampler" 2>/dev/null || true; wait "$sampler" || true; sampler=''
+ if [[ -n "$gpu_sampler" ]]; then kill "$gpu_sampler" 2>/dev/null || true; wait "$gpu_sampler" || true; gpu_sampler=''; fi
+ docker logs "$service" > "$report/service.log" 2>&1
+ printf 'Taxonomy evidence: %s\n' "$report"
+ exit 0
+fi
 for phase in first repeat; do
  printf 'Starting %s fixed 120-attempt CPU comparison\n' "$phase"
  python3 "$src/deploy/local-models/sample-decisions.py" "$service" > "$report/$phase-cpu.jsonl" &

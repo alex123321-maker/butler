@@ -406,13 +406,14 @@ foreach ($file in $files) {
       [void]$tests.Add("ssh laba: scripts/dev/lab-extensions.sh with own read-only snapshot and test database")
       continue
     }
-    "^(internal/decisions/|internal/localmodels/classification|deploy/local-models/(russian-decisions[.]json|verification-decisions|decision-replay-[0-9]{8}/|models[.]decisions-fullscores-evaluation[.]json|verify-decisions(?:-isolated)?-lab[.]sh|sample-decisions[.]py))" {
+    "^(internal/decisions/|internal/localmodels/(classification|decision-schema)|deploy/local-models/(russian-decisions.*[.]json|verification-decisions|decision-(replay|taxonomy)-[0-9]{8}/|decision-harness-v2-freeze[.]json|models[.]decisions.*[.]json|prepare-qwen-decision-evaluation[.](py|sh)|verify-decisions(?:-isolated)?-lab[.]sh|sample-decision.*[.]py))" {
       [void]$specs.Add("docs/architecture/local-decision-signals.md")
       [void]$specs.Add("docs/architecture/local-model-service.md")
       [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
       [void]$tests.Add("Targeted Go race tests: ./internal/decisions with isolated BUTLER_TEST_MEMORY_POSTGRES_URL on laba")
       [void]$tests.Add("After isolated Sync: ssh laba 'bash /srv/storage/butler/agents/decision-replay/current/deploy/local-models/verify-decisions-isolated-lab.sh /srv/storage/butler/agents/decision-replay /srv/storage/butler/agents/local-models contracts' (actual PG/race/vet, zero inference)")
       [void]$tests.Add("For a changed model/adapter experiment, the same isolated runner accepts selected or full and retains two fixed CPU passes on one temporary service; defaults and deployed catalogs stay unchanged")
+      [void]$tests.Add("Taxonomy v2: freeze new corpus/schema before predictions; taxonomy replay/dev, then qwen-cpuembed test co-resident on the frozen independent split. Exact tokenizer preflight, whole-device GPU sampling, complete correlated scores and finite predeclared fixture budget. Retain interrupted attempts; do not tune labels/thresholds on test outputs.")
       continue
     }
     "^(internal/memory/extraction/|internal/memory/catalog/extraction|migrations/043_memory_extraction_dedup[.]|deploy/local-models/(russian-extraction[.]json|verification-structured-extraction|verify-extraction-lab[.]sh))" {

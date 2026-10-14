@@ -1,0 +1,7 @@
+=== RUN   TestActualRussianDecisionTaxonomyV2
+    taxonomy_test.go:173: gliner2.5-multi-taxonomy-v2-cpu accuracy=0.344 observed=90 unavailable=0
+    taxonomy_test.go:173: gliner2.5-decide-taxonomy-v2-cpu accuracy=0.389 observed=90 unavailable=0
+    taxonomy_test.go:173: d1-omni-taxonomy-v2-cpu accuracy=0.233 observed=60 unavailable=30
+    taxonomy_test.go:181: execution budget exhausted: active_millis (owner_day)
+--- FAIL: TestActualRussianDecisionTaxonomyV2 (270.76s)
+FAIL

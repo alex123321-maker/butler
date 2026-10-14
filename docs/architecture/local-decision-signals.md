@@ -73,7 +73,58 @@ expectations are separate from classifier metrics; a live current-controller
 quality/cost comparison remains unmeasured. This and an independent corpus remain
 explicit acceptance gaps for issue 28. Production scheduling/shortcuts stay off.
 
-## Historical measurements
+## Described taxonomy and independent synthetic evaluation
+
+`TaxonomyProfiles()` adds research-only CPU profiles using the immutable
+`butler-event-taxonomy-v2` schema. Definitions and category precedence are explicit:
+external instructions precede their apparent intent, whole-task cancellation is
+distinct from an operation restriction, and completion claims require checking
+unless verifier fixture metadata says `current_pass`. JSON event input contains
+only text, context, source role and evidence state; IDs, splits, gold labels and
+critical-error annotations never enter a prompt. These metadata are synthetic
+evaluation fixtures, never live authentication or actual completion evidence.
+
+GLiNER's existing classification facade receives descriptions and an instruction;
+d1 receives a described choice question. Its internal ASCII option identifiers
+map back to the unchanged Russian labels. Exact upstream input encoding is still
+compared before inference, including per-option limits. All three checkpoints,
+SDKs and reviewed d1 code stay pinned. The new schema/context identity is separate
+from the original 512-token profiles; v2 admits at most 2048 complete tokens.
+
+The new corpus has 18 development and 90 test events, balanced by class. Corpus
+and schema hashes were recorded before observing model predictions. This is an
+independent synthetic holdout relative to the previous examples, without human
+annotation or a production-distribution claim. Adapter/protocol failures and
+the interrupted budget-limited attempt remain evidence; neither labels nor
+confidence gates were tuned from test predictions.
+
+Qwen3.5-4B Q4_K_M is a test-only Go adapter to an isolated, pinned Ollama runtime,
+not a new production lane. It uses the same event data and definitions, fixed
+non-thinking chat serialization, constrained single-digit output, exact offline
+tokenizer preflight and `truncate=false`. All nine observed token alternatives
+are required for a conditional class margin. Missing alternatives keep unknown
+margin and force escalation. Conditional token scores are not calibrated
+probabilities of classification correctness. Every actual Qwen attempt retains
+the same current source/job checks and a fresh finite reservation.
+
+The benchmark declares a finite owner-day turn allowance equal to its planned
+attempts before its first reservation. This is only the disposable fixture policy;
+production's daily limits are unchanged. First calls have a 60-second bound;
+subsequent calls use 10 seconds. `Observe` now quotes the earlier caller deadline
+consistently in admission and IPC. Reserved allowance is never refunded from
+measured latency. Incremental checkpoints preserve partial results on interruption.
+
+Placement testing retains the ordinary 6144 MiB GPU/512 MiB reserve and
+6144 MiB service RSS/512 MiB reserve policies. Accepted EmbeddingGemma2 GPU peak
+admission is 3072 MiB; the Qwen residency experiment also tests explicit FP32 CPU
+embedding placement with identical checkpoint/preprocessing/vector identity.
+The ordinary catalog is unchanged. Production still has one reusable worker
+per lane; permanent multi-model residency, loading/switching latency and a
+live controller quality/cost baseline remain separate integration work.
+
+See [v2 evidence](../../deploy/local-models/decision-taxonomy-20261014/README.md).
+
+## Original measurements
 
 Selected mode: **disabled**. The fixed public corpus has 10 dev / 30 held-out
 Russian events: negated stops, temporal amendments, ambiguity/conflict, foreign

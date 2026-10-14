@@ -1,0 +1,22 @@
+=== RUN   TestActualRussianDecisionTaxonomyV2
+    taxonomy_test.go:181: Qwen dev-001: qwen inference unavailable
+    taxonomy_test.go:181: Qwen dev-002: qwen inference unavailable
+    taxonomy_test.go:181: Qwen dev-003: qwen inference unavailable
+    taxonomy_test.go:181: Qwen dev-004: qwen inference unavailable
+    taxonomy_test.go:181: Qwen dev-005: qwen inference unavailable
+    taxonomy_test.go:181: Qwen dev-006: qwen inference unavailable
+    taxonomy_test.go:181: Qwen dev-007: qwen inference unavailable
+    taxonomy_test.go:181: Qwen dev-008: qwen inference unavailable
+    taxonomy_test.go:181: Qwen dev-009: qwen inference unavailable
+    taxonomy_test.go:181: Qwen dev-010: qwen inference unavailable
+    taxonomy_test.go:181: Qwen dev-011: qwen inference unavailable
+    taxonomy_test.go:181: Qwen dev-012: qwen inference unavailable
+    taxonomy_test.go:181: Qwen dev-013: qwen inference unavailable
+    taxonomy_test.go:181: Qwen dev-014: qwen inference unavailable
+    taxonomy_test.go:181: Qwen dev-015: qwen inference unavailable
+    taxonomy_test.go:181: Qwen dev-016: qwen inference unavailable
+    taxonomy_test.go:181: Qwen dev-017: qwen inference unavailable
+    taxonomy_test.go:181: Qwen dev-018: qwen inference unavailable
+    taxonomy_test.go:185: Qwen accuracy=0.000 observed=0 unavailable=18
+--- PASS: TestActualRussianDecisionTaxonomyV2 (12.86s)
+PASS

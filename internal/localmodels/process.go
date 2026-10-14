@@ -334,7 +334,7 @@ func (b *Process) rank(ctx context.Context, p *pb.ModelProfile, input *pb.Rerank
 func validScore(s float64) bool { return !math.IsNaN(s) && !math.IsInf(s, 0) && s >= 0 && s <= 1 }
 func (b *Process) extract(ctx context.Context, p *pb.ModelProfile, r *pb.InferRequest, device string) (*pb.InferResponse, error) {
 	supported := p.Model == "fastino/gliner2.5-multi-v1" && p.PreprocessingVersion == "gliner2.5-schema-v1" || p.Model == "fastino/GLiNER2.5-multi-Decide" && p.PreprocessingVersion == "gliner2.5-decision-v1" || p.Model == "LiquidAI/d1-omni-600M" && p.PreprocessingVersion == "d1-text-choice-v1"
-	fullScores := fullScoreProfile(p)
+	fullScores := fullScoreProfile(p) || p.Model == "LiquidAI/d1-omni-600M" && p.PreprocessingVersion == DecisionSchemaV2
 	if !supported && !fullScores || device != "cpu" || r.GetExtract() != nil && (p.Model != "fastino/gliner2.5-multi-v1" || fullScores) {
 		return nil, fault(Unavailable)
 	}

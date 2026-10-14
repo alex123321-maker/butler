@@ -87,13 +87,15 @@ D1_REVIEW = {
  'tokenizer_config.json':'03efc74b752b899b6292ff7e607738be59e6f206fec9aca32bbc05e9184090fc',
 }
 
-def d1_exact_input(model, text, labels, limit):
+def d1_exact_input(model, text, labels, limit, taxonomy=None):
     # Verify that the upstream encoder would serialize ALL state/options. Its
     # default per-option/right truncation is not an allowed Butler fallback.
     import importlib
     prompt = importlib.import_module(type(model).__module__.rsplit('.', 1)[0]+'.prompt')
-    q = prompt.as_question({'type':'choice','instructions':'Classify the event.',
-                            'criteria':{label:'' for label in labels}})
+    criteria = ({chr(65+i): taxonomy['labels'][label] for i,label in enumerate(labels)}
+                if taxonomy else {label:'' for label in labels})
+    q = prompt.as_question({'type':'choice','instructions':taxonomy['instructions'] if taxonomy else 'Classify the event.',
+                            'criteria':criteria})
     tok = model.tokenizer
     enc = lambda s: tok(prompt.escape(s), add_special_tokens=False)['input_ids']
     ids = [tok.bos_token_id, tok.convert_tokens_to_ids(prompt.DELIM['state'])]
@@ -113,6 +115,12 @@ try:
     if init.get('op') != 'init':
         raise ValueError('invalid init')
     profile = init['profile']
+    taxonomy = None
+    if profile['preprocessing_version'] == 'butler-event-taxonomy-v2':
+        raw = pathlib.Path(__file__).with_name('decision-schema-v2.json').read_bytes()
+        if hashlib.sha256(raw).hexdigest() != 'ae9eeab71dfbeb835a28a8fa59806e75a4f13090225350b8b818a93a2c61763e':
+            raise ValueError('taxonomy identity mismatch')
+        taxonomy = json.loads(raw)
     runtimes = {
         'google/embeddinggemma-2': 'torch2.10.0+cu128/transformers5.19.0/sentence-transformers6.1.0',
         'Qwen/Qwen3-Reranker-0.6B': 'torch2.10.0+cu128/transformers5.19.0',
@@ -184,7 +192,7 @@ try:
             from gliner2 import AutoExtractor
             model = AutoExtractor.from_pretrained(str(path), map_location='cpu', quantize=False, local_files_only=True, token=False)
             tokenizer = transformers.AutoTokenizer.from_pretrained(str(path), local_files_only=True, trust_remote_code=False)
-            if profile['preprocessing_version'] == 'gliner2.5-classification-softmax-v1':
+            if profile['preprocessing_version'] in ('gliner2.5-classification-softmax-v1','butler-event-taxonomy-v2'):
                 from gliner2.classification import Classifier, ClassificationSchema, ClassificationConfig
                 # Reuse the already admitted model; never load a second checkpoint.
                 classifier = Classifier(model).eval()
@@ -229,9 +237,11 @@ try:
                     output = {'kind': 'scores', 'scores': torch.softmax(logits, dim=1)[:, 1].cpu().tolist()}
                 elif op == 'classify' and name == 'LiquidAI/d1-omni-600M':
                     text, labels = request['text'],request['labels']
-                    questions = d1_exact_input(model,text,labels,int(profile['context_tokens']))
+                    if taxonomy and set(labels) != set(taxonomy['labels']):
+                        raise ValueError('taxonomy labels mismatch')
+                    questions = d1_exact_input(model,text,labels,int(profile['context_tokens']),taxonomy)
                     result = model.system_one(text,questions)['answers']['category']['probabilities']
-                    output = {'kind':'classes','labels':labels,'scores':[result[label] for label in labels]}
+                    output = {'kind':'classes','labels':labels,'scores':[result[chr(65+i) if taxonomy else label] for i,label in enumerate(labels)]}
                 elif op in ('extract', 'classify') and name in ('fastino/gliner2.5-multi-v1','fastino/GLiNER2.5-multi-Decide'):
                     text, labels = request['text'], request.get('labels') or []
                     bounded_tokens(text + ' ' + ' '.join(labels))
@@ -260,9 +270,12 @@ try:
                                     spans.append({'type': label, 'text': item['text'], 'start': item['start'], 'end': item['end'], 'confidence': item['confidence']})
                             output = {'kind': 'spans', 'spans': spans}
                     else:
-                        if profile['preprocessing_version'] == 'gliner2.5-classification-softmax-v1':
+                        if profile['preprocessing_version'] in ('gliner2.5-classification-softmax-v1','butler-event-taxonomy-v2'):
+                            if taxonomy and set(labels) != set(taxonomy['labels']):
+                                raise ValueError('taxonomy labels mismatch')
                             compiled = classifier.compile_schema(
-                                ClassificationSchema().single('category', labels, activation='softmax'))
+                                ClassificationSchema().single('category', taxonomy['labels'] if taxonomy else labels,
+                                    activation='softmax', instruction=taxonomy['instructions'] if taxonomy else None))
                             prepared = model.processor.collate_fn_inference(
                                 [(text, compiled.build())], max_len=None,
                                 error_policy='raise', architecture='boundary')

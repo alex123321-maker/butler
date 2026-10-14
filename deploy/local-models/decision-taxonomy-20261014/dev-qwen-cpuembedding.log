@@ -1,0 +1,4 @@
+=== RUN   TestActualRussianDecisionTaxonomyV2
+    taxonomy_test.go:185: Qwen accuracy=0.611 observed=18 unavailable=0
+--- PASS: TestActualRussianDecisionTaxonomyV2 (13.98s)
+PASS

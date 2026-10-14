@@ -60,10 +60,11 @@ func (f *fixture) job(t *testing.T, id, body string) (jobs.Job, catalog.SourceRe
 }
 
 type fakeBackend struct {
-	calls   atomic.Int64
-	before  func()
-	output  *pb.ClassifyOutput
-	profile *Profile
+	calls     atomic.Int64
+	before    func()
+	output    *pb.ClassifyOutput
+	profile   *Profile
+	timeoutMS uint32
 }
 
 func (b *fakeBackend) Describe(context.Context, *pb.Empty) (*pb.Catalog, error) {
@@ -74,6 +75,7 @@ func (b *fakeBackend) Describe(context.Context, *pb.Empty) (*pb.Catalog, error) 
 	return &pb.Catalog{Models: []*pb.ModelProfile{{Id: p.ID, Model: p.Model, Revision: p.Revision, RuntimeVersion: p.Runtime, PreprocessingVersion: p.Preprocessing, ContextTokens: uint32(p.Tokens), Precision: "FP32", PreferredDevice: "cpu", Enabled: true}}}, nil
 }
 func (b *fakeBackend) Infer(ctx context.Context, r *pb.InferRequest) (*pb.InferResponse, error) {
+	b.timeoutMS = r.TimeoutMs
 	b.calls.Add(1)
 	if b.before != nil {
 		b.before()
@@ -83,6 +85,25 @@ func (b *fakeBackend) Infer(ctx context.Context, r *pb.InferRequest) (*pb.InferR
 		p = *b.profile
 	}
 	return &pb.InferResponse{RequestId: r.RequestId, ProfileId: r.ProfileId, Revision: p.Revision, Device: "cpu", Output: &pb.InferResponse_Classify{Classify: b.output}}, nil
+}
+
+func TestShadowQuotesEarlierCallerDeadlineIntegration(t *testing.T) {
+	f := newFixture(t)
+	j, ref := f.job(t, "earlier-deadline", "Проверь текущую задачу.")
+	b := &fakeBackend{output: &pb.ClassifyOutput{Scores: completeScores("проверка результата", .9, "уточнение", .1)}}
+	s, e := New(f.catalog, f.jobs, b, f.target, Profiles()[0].ID, budget.ModelPrice{Basis: "local_no_billing"})
+	if e != nil {
+		t.Fatal(e)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if _, e = s.Observe(ctx, j, ref); e != nil {
+		t.Fatal(e)
+	}
+	ledger, e := f.budgets.Ledger.Get(context.Background(), budget.ScopeID("auxiliary", "owner", j.ID))
+	if e != nil || ledger.Used.ActiveMillis < 1 || ledger.Used.ActiveMillis > 10000 || int64(b.timeoutMS) != ledger.Used.ActiveMillis {
+		t.Fatal("caller deadline and conservative quote differ", e, b.timeoutMS, ledger)
+	}
 }
 
 func TestFullScoreProfilePinsPreprocessingAndRequiresAllLabelsIntegration(t *testing.T) {

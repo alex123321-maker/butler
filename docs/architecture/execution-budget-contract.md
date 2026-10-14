@@ -1,5 +1,12 @@
 # Execution budget contract
 
+The local decision observer quotes the earlier of its 60-second ceiling and the
+surviving caller deadline in both its reservation and IPC request. Whole positive
+milliseconds are used and an expired/sub-millisecond caller is denied before
+inference. This is conservative pre-admission, not a refund based on observed
+execution speed. Research comparison fixtures declare an explicit finite planned
+turn limit before their first SQL reservation; production policy is unchanged.
+
 Budget Service owns migration037's immutable scope policies, spent reservations,
 model attempt IDs and normalized loop observations. PostgreSQL is authoritative.
 Orchestrator requests conservative admission before each Start/Continue/Submit
