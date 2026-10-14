@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# Prepare once, execute once, then read-only audit. Never reopens old windows.
+set -euo pipefail
+source_root=${1:?isolated synchronized source root}
+root=${2:?new model experiment root}
+action=${3:?prepare execute or audit}
+release=${4:?exact candidate commit}
+[[ "$source_root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ && "$root" =~ ^/srv/storage/butler/agents/memory-eval-v2-[a-zA-Z0-9_-]+$ && "$release" =~ ^[a-f0-9]{40}$ && "$root" != "$source_root" ]] || exit 2
+umask 077
+if [[ "$action" == prepare ]]; then
+ [[ ! -e "$root" ]] || { echo 'Existing experiment root denied'; exit 2; }
+ mkdir -m 700 "$root"
+ source_dir=$(readlink -f "$source_root/current")
+ [[ "$source_dir" == "$source_root/snapshots/"* ]] || exit 2
+ printf '%s\n' "$source_dir" > "$root/source-path"
+ mkdir -p "$root/build" "$root/metadata" "$root/review" "$root/private" "$root/postgres" "$root/.cache/go-build" "$root/.cache/go-tmp" "$root/.cache/docker"
+ export DOCKER_CONFIG="$root/.cache/docker"
+ image_id=$(docker image inspect golang:1.27.2-bookworm --format '{{.Id}}')
+ pg_id=$(docker image inspect pgvector/pgvector:pg17 --format '{{.Id}}')
+ jq -n --arg release "$release" --arg kernel "$(uname -r)" --arg image "$image_id" --arg pg "$pg_id" \
+  --argjson cpus "$(getconf _NPROCESSORS_ONLN)" --argjson memory "$(awk '/^MemTotal:/ {print $2}' /proc/meminfo)" \
+  '{release:$release,kernel:$kernel,go_image:$image,postgres_image:$pg,host_cpu_count:$cpus,host_memory_kib:$memory,runner:{cpus:2,memory_bytes:1610612736,pids:128,uid:10001,source:"read_only",window_seconds:10800},worker:"existing single authenticated local-models:9090",native_model:"gemini-3.8-flash-high",observed_version_required:"gemini-3.8-flash-n",maximum_calls:280,maximum_conservative_units:4000000,maximum_new_native_calls:66,maximum_events_per_entry:4096,maximum_report_bytes:134217728,retries:0,fallback:false,tokenizer:"cloud byte upper bound; local actual token count unavailable",invoice:"subscription unknown; local no billing",ordering:"case order then no_ltm/full_context/retrieval; fixed not randomized"}' > "$root/metadata/hardware.json"
+ docker run --rm --network none --cpus 2 --memory 1536m --pids-limit 128 -v "$source_dir:/src:ro" -v "$root/.cache:/cache" \
+  -v /srv/storage/butler/.cache/go-mod:/gomod:ro -v "$root/build:/build" -w /src \
+  -e GOCACHE=/cache/go-build -e GOMODCACHE=/gomod -e GOTMPDIR=/cache/go-tmp "$image_id" bash -eu -c '
+go test -c -p 1 -o /build/collector.test ./apps/orchestrator/internal/app
+go build -p 1 -o /build/memory-eval ./cmd/memory-eval
+go build -p 1 -o /build/review-seal ./scripts/dev/memory-eval-review
+' > "$root/build.log" 2> "$root/build-diagnostics.log"
+ chown -R 10001:10001 "$root/build" "$root/private" "$root/metadata" "$root/review"
+ chmod 700 "$root/build/collector.test" "$root/build/memory-eval" "$root/build/review-seal" "$root/private" "$root/metadata" "$root/review"
+ # Ancestor is traversable to the confined UID; no private file becomes public.
+ chmod 711 "$root"
+ docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true --cpus 2 --memory 1536m --pids-limit 128 \
+  -v "$source_dir:/src:ro" -v "$root/build:/build" -v "$root/metadata:/metadata:ro" -w /src "$image_id" \
+  /build/memory-eval -mode fixture -suite testdata/acceptance/ru-memory-v2.json -root /src -hardware /metadata/hardware.json -code-commit "$release" -window-id pre-native-fixture -output-dir /build/pin-fixture > "$root/pin-fixture.log"
+ jq --arg bin "$(sha256sum "$root/build/collector.test" | cut -d' ' -f1)" \
+  '.plan|{release:.code_commit,source_sha256:.source_sha256,binary_sha256:$bin,hardware_sha256:.hardware_sha256,suite_sha256:.suite_sha256,criteria_sha256:.criteria_sha256,maximum_calls:280,maximum_conservative_units:4000000,cpus:2,memory_bytes:1610612736,pids:128,window_seconds:10800,maximum_events_per_entry:4096,maximum_report_bytes:134217728}' "$root/build/pin-fixture/frozen.json" > "$root/metadata/pins.json"
+ chown 10001:10001 "$root/metadata/pins.json"
+ docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+  -v "$source_dir:/src:ro" -v "$root/build:/build:ro" -v "$root/review:/review" "$image_id" \
+  /build/review-seal -declaration-sha256 b533980ec505bc0797092d86945dd68032d39fb04a71efb9bb054e9adbcb9337 \
+  -document-sha256 39ff6b07131243044f7e5bc52433ac98489e5e72f2182614dd01a4bccbb3d153 > "$root/review-seal.log"
+ sha256sum "$root/build/collector.test" "$root/build/memory-eval" "$root/metadata/pins.json" "$root/review/approval.json" "$root/review/public-key.hex" > "$root/prepared.sha256"
+ printf 'Prepared fresh bounded window: %s\n' "$root"
+ exit 0
+fi
+[[ -f "$root/prepared.sha256" ]] || exit 2
+sha256sum --status -c "$root/prepared.sha256"
+source_dir=$(cat "$root/source-path")
+[[ "$source_dir" == "$source_root/snapshots/"* && "$(jq -r .release "$root/metadata/pins.json")" == "$release" ]] || exit 2
+export DOCKER_CONFIG="$root/.cache/docker"
+image_id=$(jq -r .go_image "$root/metadata/hardware.json")
+pg_id=$(jq -r .postgres_image "$root/metadata/hardware.json")
+tag=$(basename "$root")
+if [[ "$action" == execute ]]; then
+ # Atomic durable entry marker precedes all new native/auxiliary work.
+ mkdir -m 700 "$root/entered" || { echo 'One-use model window already entered; preserve it'; exit 2; }
+ docker network create --internal "$tag" > "$root/entered/network-id"
+ docker run -d --name "$tag-pg" --network "$tag" --network-alias memory-eval-postgres --cpus 1 --memory 512m --pids-limit 128 \
+  --security-opt no-new-privileges:true -v "$root/postgres:/var/lib/postgresql/data" \
+  -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_USER=butler -e POSTGRES_DB=memory_eval_test "$pg_id" > "$root/entered/postgres-id"
+ for _ in $(seq 1 30); do if docker exec "$tag-pg" pg_isready -U butler -d memory_eval_test >/dev/null; then break; fi; sleep 1; done
+ token=/srv/storage/butler/agents/local-models/private/token
+ native_import=/srv/storage/butler/agents/antigravity-provider/profile/.gemini/antigravity-cli/butler-native-import.json
+ [[ -f "$token" && -f "$native_import" ]] || exit 2
+ docker create --name "$tag-runner" --user 10001:10001 --network "$tag" --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+  --cpus 2 --memory 1536m --pids-limit 128 --tmpfs /tmp:rw,noexec,nosuid,size=67108864 \
+  -v "$source_dir:/src:ro" -v "$root/build:/runtime:ro" -v "$root/metadata:/metadata:ro" -v "$root/review:/review:ro" -v "$root/private:/private" \
+  -v "$token:/auth/local-token:ro" -v "$native_import:/auth/native-import.json:ro" -w /src \
+  -e BUTLER_TEST_MEMORY_POSTGRES_URL='postgresql://butler@memory-eval-postgres:5432/memory_eval_test?sslmode=disable' \
+  -e BUTLER_MEMORY_EVAL_ACTUAL=1 -e BUTLER_MEMORY_EVAL_RELEASE="$release" -e BUTLER_MEMORY_EVAL_PRIVATE=/private \
+  -e BUTLER_MEMORY_EVAL_LOCAL_TOKEN_FILE=/auth/local-token -e BUTLER_MEMORY_EVAL_IMPORT_FILE=/auth/native-import.json \
+  "$image_id" /runtime/collector.test -test.run '^TestMemoryEvalActualCollection$' -test.v -test.timeout 185m > "$root/entered/runner-id"
+ docker network connect butler-lab_backend "$tag-runner"
+ docker inspect "$tag-runner" | jq '.[0]|{Id,Image,Path,Args,User:.Config.User,Memory:.HostConfig.Memory,NanoCpus:.HostConfig.NanoCpus,PidsLimit:.HostConfig.PidsLimit,ReadonlyRootfs:.HostConfig.ReadonlyRootfs,Networks:(.NetworkSettings.Networks|keys),Mounts:[.Mounts[]|{Destination,RW}]}' > "$root/metadata/execution.json"
+ chown 10001:10001 "$root/metadata/execution.json"
+ set +e
+ timeout 11100 docker start -a "$tag-runner" > "$root/runner.log" 2> "$root/runner-diagnostics.log"
+ status=$?
+ set -e
+ if [[ "$status" != 0 ]]; then docker stop --time 10 "$tag-runner" >/dev/null || true; fi
+ printf '%s\n' "$status" > "$root/entered/exit-status"
+ docker inspect "$tag-runner" | jq '.[0].State|{Status,ExitCode,OOMKilled,StartedAt,FinishedAt}' > "$root/entered/final-state.json"
+ # PostgreSQL data and all containers remain recoverable; no reset/removal.
+ printf 'Model window sealed, exit %s: %s\n' "$status" "$root"
+ exit "$status"
+elif [[ "$action" == audit ]]; then
+ [[ -f "$root/entered/exit-status" && "$(cat "$root/entered/exit-status")" == 0 && ! -e "$root/audit" ]] || exit 2
+ mkdir -m 700 "$root/audit";chown 10001:10001 "$root/audit"
+ frozen=$(jq -r .sha256 "$root/private/frozen.json")
+ docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true --cpus 2 --memory 1536m --pids-limit 128 \
+  -v "$source_dir:/src:ro" -v "$root/build:/runtime:ro" -v "$root/metadata:/metadata:ro" -v "$root/review:/review:ro" -v "$root/private:/original:ro" -v "$root/audit:/audit" "$image_id" \
+  /runtime/memory-eval -mode audit -root /src -suite testdata/acceptance/ru-memory-v2.json -code-commit "$release" -hardware /metadata/hardware.json \
+  -frozen /original/frozen.json -frozen-sha256 "$frozen" -measurements /original/measurements.json -runner-directory /original \
+  -runner-binary /runtime/collector.test -runtime-pins /metadata/pins.json -golden-approval /review/approval.json -golden-public-key /review/public-key.hex \
+  -output-dir /audit/report > "$root/audit.log" 2> "$root/audit-diagnostics.log"
+ jq '{status,model_quality_evidence,promotion_allowed,baseline_comparable,arms,reasons}' "$root/audit/report/report.json"
+ exit 0
+fi
+exit 2

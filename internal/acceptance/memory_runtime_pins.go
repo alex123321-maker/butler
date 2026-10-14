@@ -1,0 +1,62 @@
+package acceptance
+
+import "errors"
+
+// Operator metadata is mounted read-only, outside the candidate's output tree.
+// Actual collection checks every identity before opening provider credentials.
+type MemoryRuntimePins struct {
+	Release        string `json:"release"`
+	Source         string `json:"source_sha256"`
+	Binary         string `json:"binary_sha256"`
+	Hardware       string `json:"hardware_sha256"`
+	Suite          string `json:"suite_sha256"`
+	Criteria       string `json:"criteria_sha256"`
+	MaxCalls       int64  `json:"maximum_calls"`
+	MaxUnits       int64  `json:"maximum_conservative_units"`
+	CPUs           int    `json:"cpus"`
+	MemoryBytes    int64  `json:"memory_bytes"`
+	PIDs           int    `json:"pids"`
+	Seconds        int    `json:"window_seconds"`
+	MaxEvents      int    `json:"maximum_events_per_entry"`
+	MaxReportBytes int64  `json:"maximum_report_bytes"`
+}
+
+type MemoryExecutionProof struct {
+	ID             string
+	Image          string
+	Path           string
+	Args           []string
+	User           string
+	Memory         int64
+	NanoCpus       int64
+	PidsLimit      int
+	ReadonlyRootfs bool
+	Networks       []string
+	Mounts         []struct {
+		Destination string
+		RW          bool
+	}
+}
+
+func ValidateMemoryExecution(e MemoryExecutionProof, pins MemoryRuntimePins, image string) error {
+	if e.Image != image || e.Path != "/runtime/collector.test" || MemoryDigest(e.Args) != MemoryDigest([]string{"-test.run", "^TestMemoryEvalActualCollection$", "-test.v", "-test.timeout", "185m"}) || e.User != "10001:10001" || e.Memory != pins.MemoryBytes || e.NanoCpus != int64(pins.CPUs)*1000000000 || e.PidsLimit != pins.PIDs || !e.ReadonlyRootfs || len(e.Networks) != 2 {
+		return errors.New("actual runner resources/command differ")
+	}
+	seen := map[string]bool{}
+	for _, m := range e.Mounts {
+		if m.Destination == "/private" {
+			if !m.RW {
+				return errors.New("private output unavailable")
+			}
+		} else if m.RW {
+			return errors.New("writable input mount")
+		}
+		seen[m.Destination] = true
+	}
+	for _, required := range []string{"/src", "/runtime", "/metadata", "/review", "/private", "/auth/local-token", "/auth/native-import.json"} {
+		if !seen[required] {
+			return errors.New("required read-only input absent")
+		}
+	}
+	return nil
+}

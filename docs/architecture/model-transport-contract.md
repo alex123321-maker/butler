@@ -1,5 +1,12 @@
 # Butler — Model Transport Contract
 
+Trusted composition may install request-local `WithInferenceAuthority` checks.
+Native Antigravity checks this callback before authentication and immediately
+before HTTP dispatch, alongside caller-owned budgets and in-flight/final guards.
+It is never serialized or model-selected and grants no authority. Unhooked calls
+preserve their contract; cancellation and current-source stale/timeout diagnostics
+remain distinct. No retry or fallback follows from the callback.
+
 The lab-only V4 observation collector preserves bounded filtered final bytes
 after owning SQL spend persistence and separately records immutable encoding,
 retention and lifecycle facts. It forwards the original events unchanged and

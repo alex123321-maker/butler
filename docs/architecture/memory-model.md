@@ -1,5 +1,13 @@
 # Butler — Memory Model Specification
 
+Issue78's [memory-eval protocol](../../cmd/memory-eval/README.md) measures truth,
+actual-context evidence, calibrated refusal, current instruction consistency and
+separate user outcomes. Its independent public V2 controls and owned-source/index/
+native collector extend issue33 without another memory service. Missing retrieval
+may justify refusal but cannot count as recovered usefulness. Unknown tokenizer,
+invoice, physical-storage and effects remain unknown and deny promotion; synthetic
+QA grants no owner confirmation or execution authority.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Memory Model

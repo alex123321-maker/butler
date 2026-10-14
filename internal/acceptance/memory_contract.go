@@ -65,17 +65,19 @@ func (t *MemoryTask) UnmarshalJSON(raw []byte) error {
 }
 
 type MemoryCase struct {
-	ID           string         `json:"id"`
-	Group        string         `json:"group"`
-	Family       string         `json:"family"`
-	Split        string         `json:"split"`
-	Coverage     []string       `json:"coverage"`
-	BehaviorRefs []string       `json:"behavior_refs"`
-	Question     string         `json:"question"`
-	AsOfUTC      string         `json:"as_of_utc"`
-	Task         MemoryTask     `json:"task"`
-	History      []MemorySource `json:"history"`
-	Expected     MemoryAnswer   `json:"expected"`
+	ID              string               `json:"id"`
+	Group           string               `json:"group"`
+	Family          string               `json:"family"`
+	Split           string               `json:"split"`
+	Coverage        []string             `json:"coverage"`
+	BehaviorRefs    []string             `json:"behavior_refs"`
+	Question        string               `json:"question"`
+	AsOfUTC         string               `json:"as_of_utc"`
+	Task            MemoryTask           `json:"task"`
+	History         []MemorySource       `json:"history"`
+	Expected        MemoryAnswer         `json:"expected"`
+	AcceptedAnswers []string             `json:"accepted_answers,omitempty"`
+	CitationRules   []MemoryCitationRule `json:"citation_rules,omitempty"`
 }
 type MemoryAnswer struct {
 	Answer       string           `json:"answer"`
@@ -116,7 +118,7 @@ func (c MemoryCase) Blocked() bool {
 }
 
 func ValidateMemorySuite(s MemorySuite) error {
-	if s.Version != MemoryEvalVersion || len(s.Cases) == 0 || len(s.Cases) > 80 || s.Annotation.Author == "" || s.Annotation.Source == "" || s.Annotation.Review == "" || (s.Annotation.Kind != "synthetic" && s.Annotation.Kind != "human_checked_real") {
+	if s.Version != MemoryEvalVersion && s.Version != MemoryEvalV2 || len(s.Cases) == 0 || len(s.Cases) > 80 || s.Annotation.Author == "" || s.Annotation.Source == "" || s.Annotation.Review == "" || (s.Annotation.Kind != "synthetic" && s.Annotation.Kind != "human_checked_real") {
 		return errors.New("versioned annotated memory suite required")
 	}
 	ids, groups, families := map[string]bool{}, map[string]string{}, map[string]string{}
@@ -177,6 +179,22 @@ func ValidateMemorySuite(s MemorySuite) error {
 				return errors.New("blocked case needs privacy coverage")
 			}
 			continue
+		}
+		if s.Version == MemoryEvalV2 {
+			if !c.Expected.Abstain && len(c.AcceptedAnswers) == 0 || c.Expected.Abstain && len(c.AcceptedAnswers) != 0 || len(c.CitationRules) != len(c.Expected.Citations) {
+				return errors.New("reviewed V2 answer/citation rubric required")
+			}
+			for _, rule := range c.CitationRules {
+				found := false
+				for _, h := range c.History {
+					if rule.SourceID == h.ID && rule.Revision == h.Revision && rule.Span != "" && strings.Contains(h.Body, rule.Span) && h.Status != "deleted" && h.Sensitivity == "public" {
+						found = true
+					}
+				}
+				if !found {
+					return errors.New("V2 entailing citation span unavailable")
+				}
+			}
 		}
 		if err := verifyMemoryAnswer(c, c.History, c.Expected); err != nil || c.Expected.TaskRevision != c.Task.Revision || c.Expected.NextAction == "" {
 			return errors.New("invalid memory golden witness/task")
@@ -249,7 +267,7 @@ func (p *MemoryPlan) UnmarshalJSON(raw []byte) error {
 }
 
 func ValidateMemoryPlan(s MemorySuite, p MemoryPlan) error {
-	if p.Version != MemoryEvalVersion || p.WindowID == "" || !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(p.CodeCommit) || !validSHA(p.SourceSHA256) || !validSHA(p.HardwareSHA256) || !validSHA(p.MemoryConfigSHA256) || p.SuiteSHA256 != MemorySuiteDigest(s) || p.CriteriaSHA256 != MemoryCriteriaDigest() || p.Runtime == "" || p.PricingBasis == "" || !containsMemory([]string{"development", "holdout", "all"}, p.Split) {
+	if p.Version != s.Version || p.WindowID == "" || !regexp.MustCompile(`^[a-f0-9]{40}$`).MatchString(p.CodeCommit) || !validSHA(p.SourceSHA256) || !validSHA(p.HardwareSHA256) || !validSHA(p.MemoryConfigSHA256) || p.SuiteSHA256 != MemorySuiteDigest(s) || p.CriteriaSHA256 != MemoryVersionCriteriaDigest(s) || p.Runtime == "" || p.PricingBasis == "" || !containsMemory([]string{"development", "holdout", "all"}, p.Split) {
 		return errors.New("exact memory experiment pins required")
 	}
 	if p.EvidenceKind == "fixture_validation" {
@@ -337,7 +355,7 @@ func FreezeMemory(s MemorySuite, p MemoryPlan, captures []MemoryCapture) (Memory
 			continue
 		}
 		for _, arm := range MemoryEvalArms() {
-			i := MemoryInput{CaseID: memoryCaseID(c), Arm: arm, Instructions: MemoryInstructions, Question: c.Question, AsOfUTC: c.AsOfUTC, Task: c.Task, Memory: []MemorySource{}}
+			i := MemoryInput{CaseID: memoryCaseID(c), Arm: arm, Instructions: memoryInstructions(s), Question: c.Question, AsOfUTC: c.AsOfUTC, Task: c.Task, Memory: []MemorySource{}}
 			if c.Blocked() {
 				i.Question = ""
 				i.Task = MemoryTask{}
@@ -397,7 +415,7 @@ func FreezeMemory(s MemorySuite, p MemoryPlan, captures []MemoryCapture) (Memory
 }
 
 func VerifyMemoryGolden(s MemorySuite, a GoldenApproval, key []byte) error {
-	if len(key) != ed25519.PublicKeySize || a.Digest != MemorySuiteDigest(s) || a.CriteriaDigest != MemoryCriteriaDigest() || a.Rules != MemoryEvalVersion || a.Reviewer == "" || a.CandidateAuthor == "" || a.Reviewer == a.CandidateAuthor {
+	if len(key) != ed25519.PublicKeySize || a.Digest != MemorySuiteDigest(s) || a.CriteriaDigest != MemoryVersionCriteriaDigest(s) || a.Rules != s.Version || a.Reviewer == "" || a.CandidateAuthor == "" || a.Reviewer == a.CandidateAuthor {
 		return errors.New("independent memory golden review required")
 	}
 	sig, err := hex.DecodeString(a.Signature)
@@ -413,7 +431,7 @@ func VerifyMemoryGolden(s MemorySuite, a GoldenApproval, key []byte) error {
 }
 
 func verifyMemoryAnswer(c MemoryCase, provided []MemorySource, a MemoryAnswer) error {
-	if a.Confidence < 0 || a.Confidence > 1 || a.Citations == nil || !containsMemory([]string{"none", "wait_for_check", "continue_analysis", "prepare_text", "verify_file", "prepare_invitations", "continue_catalogue", "prepare_ingredients", "check_inventory", "clarify"}, a.NextAction) || a.TaskRevision < 0 || a.Abstain && (a.Answer != "" || a.Confidence != 0 || len(a.Citations) != 0) || !a.Abstain && a.Answer == "" {
+	if !memoryAnswerStructureValid(a) {
 		return errors.New("invalid answer/abstention")
 	}
 	seen := map[string]bool{}

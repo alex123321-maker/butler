@@ -37,6 +37,7 @@ test-memory:
 
 test-memory-eval:
 	go test -count=1 -run '^TestMemory' ./internal/acceptance ./cmd/memory-eval
+	go test -count=1 -run '^TestMemoryEvalCollectorNativeSchemasValidateWithoutAuthentication$$' ./apps/orchestrator/internal/app
 
 test-transport:
 	go test ./internal/transport/...

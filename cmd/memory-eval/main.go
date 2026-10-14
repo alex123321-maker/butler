@@ -24,7 +24,7 @@ func main() {
 func run(args []string, stdout io.Writer) error {
 	flags := flag.NewFlagSet("memory-eval", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
-	mode := flags.String("mode", "fixture", "fixture, freeze, or score (offline only)")
+	mode := flags.String("mode", "fixture", "fixture, freeze, score, or audit (offline only)")
 	root := flags.String("root", ".", "source snapshot")
 	suitePath := flags.String("suite", "testdata/acceptance/ru-memory-v1.json", "versioned suite relative to root")
 	commit := flags.String("code-commit", "", "exact source commit")
@@ -39,13 +39,16 @@ func run(args []string, stdout io.Writer) error {
 	outputDir := flags.String("output-dir", "", "new private artifact directory")
 	split := flags.String("split", "all", "development, holdout, or all (fixture only)")
 	window := flags.String("window-id", "", "new unique experiment identity")
+	runnerDirectory := flags.String("runner-directory", "", "operator-pinned original private runner directory (audit)")
+	runnerBinary := flags.String("runner-binary", "", "original separately compiled runner binary (audit)")
+	runtimePins := flags.String("runtime-pins", "", "original operator read-only metadata (audit)")
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
 	if flags.NArg() != 0 {
 		return errors.New("unexpected arguments")
 	}
-	if *mode != "fixture" && *mode != "freeze" && *mode != "score" {
+	if *mode != "fixture" && *mode != "freeze" && *mode != "score" && *mode != "audit" {
 		return errors.New("unknown memory-eval mode")
 	}
 	f, err := os.Open(filepath.Join(*root, *suitePath))
@@ -76,8 +79,9 @@ func run(args []string, stdout io.Writer) error {
 	var measurements acceptance.MemoryMeasurements
 	var report acceptance.MemoryReport
 	var originalMeasurements []byte
+	var audit *acceptance.MemoryRunnerAudit
 	if *mode == "fixture" {
-		plan := acceptance.MemoryPlan{Version: acceptance.MemoryEvalVersion, WindowID: *window, EvidenceKind: "fixture_validation", CodeCommit: *commit, SourceSHA256: sourceHash, HardwareSHA256: hex.EncodeToString(hardwareHash[:]), Model: "none", ModelVersion: "none", Runtime: "go-current-bundle-fixture", MemoryConfigSHA256: acceptance.MemoryFixtureConfigDigest(), PricingBasis: "offline_no_inference", SuiteSHA256: acceptance.MemorySuiteDigest(suite), CriteriaSHA256: acceptance.MemoryCriteriaDigest(), Split: *split}
+		plan := acceptance.MemoryPlan{Version: suite.Version, WindowID: *window, EvidenceKind: "fixture_validation", CodeCommit: *commit, SourceSHA256: sourceHash, HardwareSHA256: hex.EncodeToString(hardwareHash[:]), Model: "none", ModelVersion: "none", Runtime: "go-current-bundle-fixture", MemoryConfigSHA256: acceptance.MemoryFixtureConfigDigest(), PricingBasis: "offline_no_inference", SuiteSHA256: acceptance.MemorySuiteDigest(suite), CriteriaSHA256: acceptance.MemoryVersionCriteriaDigest(suite), Split: *split}
 		captures, e := acceptance.MemoryFixtureCaptures(suite, plan)
 		if e != nil {
 			return e
@@ -143,6 +147,44 @@ func run(args []string, stdout io.Writer) error {
 			}
 		}
 		report, err = acceptance.ScoreMemory(suite, frozen, measurements, approval, key)
+		if err == nil && *mode == "audit" {
+			if err = acceptance.VerifyMemoryGolden(suite, approval, key); err != nil {
+				return err
+			}
+			var pins acceptance.MemoryRuntimePins
+			if err = readJSON(*runtimePins, &pins); err != nil {
+				return err
+			}
+			binarySHA, e := acceptance.FileHash(*runnerBinary)
+			if e != nil || binarySHA != pins.Binary || pins.Source != sourceHash || pins.Release != *commit || pins.Hardware != hex.EncodeToString(hardwareHash[:]) || pins.Suite != acceptance.MemorySuiteDigest(suite) || pins.Criteria != acceptance.MemoryVersionCriteriaDigest(suite) {
+				return errors.New("original runtime pins differ")
+			}
+			var execution acceptance.MemoryExecutionProof
+			if err = readJSON(filepath.Join(filepath.Dir(*runtimePins), "execution.json"), &execution); err != nil {
+				return err
+			}
+			var hardwareImage struct {
+				GoImage string `json:"go_image"`
+			}
+			_ = json.Unmarshal(hw, &hardwareImage)
+			if err = acceptance.ValidateMemoryExecution(execution, pins, hardwareImage.GoImage); err != nil {
+				return err
+			}
+			v, e := acceptance.AuditMemoryRunner(suite, frozen, measurements, *runnerDirectory, binarySHA)
+			if e != nil {
+				return e
+			}
+			audit = &v
+			report.ModelQualityEvidence = true
+			reasons := []string{}
+			for _, reason := range report.Reasons {
+				if reason != "independent_runner_correlation_required" {
+					reasons = append(reasons, reason)
+				}
+			}
+			report.Reasons = reasons
+			report.PromotionAllowed = false // Unknown actual effects/invoice deny promotion.
+		}
 	}
 	scoreErr := err
 	if err != nil && *mode != "score" {
@@ -169,6 +211,12 @@ func run(args []string, stdout io.Writer) error {
 			name  string
 			value any
 		}{"report.json", report})
+	}
+	if audit != nil {
+		artifacts = append(artifacts, struct {
+			name  string
+			value any
+		}{"runner-audit.json", audit})
 	}
 	for _, artifact := range artifacts {
 		if err = writeJSON(filepath.Join(*outputDir, artifact.name), artifact.value); err != nil {

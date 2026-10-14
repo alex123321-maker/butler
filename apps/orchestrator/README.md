@@ -1,3 +1,11 @@
+The opt-in memory-eval collector runs only in an isolated fresh test database.
+It composes current source/catalog/index/bundle/budget/provider code, retains all
+paid failures and original traces, and checks source/task/lease before dispatch
+and final acceptance. Normal tests authenticate/infer nothing. Its independently
+reviewed synthetic QA/proposed actions do not claim broader user-task completion;
+unknown invoice/tokenizer/effect data deny promotion. See
+[reproduction and limits](../../cmd/memory-eval/README.md).
+
 Converter continuations distinguish returned candidates from already activated
 catalog entries. Current activation facts are reloaded as private DATA under the
 existing lease/source/authority checks, including recovery. Activated entries

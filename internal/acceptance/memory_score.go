@@ -65,22 +65,35 @@ func (o *MemoryOutcome) UnmarshalJSON(raw []byte) error {
 }
 
 type MemoryObservation struct {
-	CaseID       string          `json:"case_id"`
-	Arm          string          `json:"arm"`
-	Model        string          `json:"model"`
-	ModelVersion string          `json:"model_version"`
-	Runtime      string          `json:"runtime"`
-	InputSHA256  string          `json:"input_sha256"`
-	Status       string          `json:"status"`
-	Reason       string          `json:"reason"`
-	Output       json.RawMessage `json:"output"`
-	Milliseconds *int64          `json:"milliseconds"`
-	Outcome      MemoryOutcome   `json:"outcome"`
+	CaseID               string          `json:"case_id"`
+	Arm                  string          `json:"arm"`
+	Model                string          `json:"model"`
+	ModelVersion         string          `json:"model_version"`
+	Runtime              string          `json:"runtime"`
+	InputSHA256          string          `json:"input_sha256"`
+	Status               string          `json:"status"`
+	Reason               string          `json:"reason"`
+	Output               json.RawMessage `json:"output"`
+	OutputEncoding       string          `json:"output_encoding,omitempty"`
+	PipelineMilliseconds *int64          `json:"pipeline_milliseconds,omitempty"`
+	Milliseconds         *int64          `json:"milliseconds"`
+	Outcome              MemoryOutcome   `json:"outcome"`
 }
 
 func (o *MemoryObservation) UnmarshalJSON(raw []byte) error {
 	type plain MemoryObservation
-	return memoryDecodeNullable(raw, (*plain)(o), []string{"milliseconds"}, "case_id", "arm", "model", "model_version", "runtime", "input_sha256", "status", "reason", "output", "milliseconds", "outcome")
+	values, err := measurementFields(raw)
+	if err != nil {
+		return err
+	}
+	if _, ok := values["output_encoding"]; !ok {
+		values["output_encoding"] = []byte(`""`)
+	}
+	if _, ok := values["pipeline_milliseconds"]; !ok {
+		values["pipeline_milliseconds"] = []byte(`null`)
+	}
+	normalized, _ := json.Marshal(values)
+	return memoryDecodeNullable(normalized, (*plain)(o), []string{"milliseconds", "pipeline_milliseconds"}, "case_id", "arm", "model", "model_version", "runtime", "input_sha256", "status", "reason", "output", "output_encoding", "pipeline_milliseconds", "milliseconds", "outcome")
 }
 
 type MemoryMeasurements struct {
@@ -107,42 +120,51 @@ type MemoryCost struct {
 	Complete            bool  `json:"complete"`
 }
 type MemoryCaseResult struct {
-	CaseID             string   `json:"case_id"`
-	Arm                string   `json:"arm"`
-	Status             string   `json:"status"`
-	Reasons            []string `json:"reasons"`
-	InputSHA256        string   `json:"input_sha256"`
-	OutputSHA256       string   `json:"output_sha256"`
-	AnswerCorrect      bool     `json:"answer_correct"`
-	CitationExact      bool     `json:"citation_exact"`
-	CurrentFactCorrect bool     `json:"current_fact_correct"`
-	InstructionCorrect bool     `json:"instruction_correct"`
-	TaskSuccess        *bool    `json:"task_success"`
-	BehaviorRefs       []string `json:"behavior_refs"`
+	CaseID              string   `json:"case_id"`
+	Arm                 string   `json:"arm"`
+	Status              string   `json:"status"`
+	Reasons             []string `json:"reasons"`
+	InputSHA256         string   `json:"input_sha256"`
+	OutputSHA256        string   `json:"output_sha256"`
+	AnswerCorrect       bool     `json:"answer_correct"`
+	CitationExact       bool     `json:"citation_exact"`
+	CurrentFactCorrect  bool     `json:"current_fact_correct"`
+	InstructionCorrect  bool     `json:"instruction_correct"`
+	TaskSuccess         *bool    `json:"task_success"`
+	TruthCorrect        bool     `json:"truth_answer_correct"`
+	EvidenceAvailable   bool     `json:"evidence_available"`
+	JustifiedAbstention bool     `json:"justified_abstention"`
+	TaskCodeCorrect     bool     `json:"task_code_correct"`
+	BehaviorRefs        []string `json:"behavior_refs"`
 }
 type MemoryArmMetrics struct {
-	Cases                int        `json:"cases"`
-	Completed            int        `json:"completed"`
-	Skipped              int        `json:"skipped"`
-	AnswerCorrect        int        `json:"answer_correct"`
-	CurrentFactCorrect   int        `json:"current_fact_correct"`
-	CitationExact        int        `json:"citation_exact"`
-	CitationErrors       int        `json:"citation_errors"`
-	InstructionCorrect   int        `json:"instruction_correct"`
-	TaskSuccess          int        `json:"task_success"`
-	UnknownTaskOutcomes  int        `json:"unknown_task_outcomes"`
-	FalsePositiveAnswers int        `json:"false_positive_answers"`
-	FalseAbstentions     int        `json:"false_abstentions"`
-	BrierScoreSum        float64    `json:"brier_score_sum"`
-	CalibrationSamples   int        `json:"calibration_samples"`
-	RecallSum            float64    `json:"retrieval_recall_sum"`
-	ReciprocalRankSum    float64    `json:"retrieval_reciprocal_rank_sum"`
-	RetrievalSamples     int        `json:"retrieval_samples"`
-	P50Milliseconds      *int64     `json:"p50_milliseconds"`
-	P95Milliseconds      *int64     `json:"p95_milliseconds"`
-	UnknownLatency       int        `json:"unknown_latency"`
-	CriticalViolations   int        `json:"critical_violations"`
-	Cost                 MemoryCost `json:"cost"`
+	Cases                   int        `json:"cases"`
+	Completed               int        `json:"completed"`
+	Skipped                 int        `json:"skipped"`
+	AnswerCorrect           int        `json:"answer_correct"`
+	TruthCorrect            int        `json:"truth_answer_correct"`
+	MalformedOutputs        int        `json:"malformed_outputs"`
+	JustifiedAbstentions    int        `json:"justified_abstentions"`
+	CurrentFactCorrect      int        `json:"current_fact_correct"`
+	CitationExact           int        `json:"citation_exact"`
+	CitationErrors          int        `json:"citation_errors"`
+	InstructionCorrect      int        `json:"instruction_correct"`
+	TaskSuccess             int        `json:"task_success"`
+	UnknownTaskOutcomes     int        `json:"unknown_task_outcomes"`
+	FalsePositiveAnswers    int        `json:"false_positive_answers"`
+	FalseAbstentions        int        `json:"false_abstentions"`
+	BrierScoreSum           float64    `json:"brier_score_sum"`
+	CalibrationSamples      int        `json:"calibration_samples"`
+	RecallSum               float64    `json:"retrieval_recall_sum"`
+	ReciprocalRankSum       float64    `json:"retrieval_reciprocal_rank_sum"`
+	RetrievalSamples        int        `json:"retrieval_samples"`
+	P50Milliseconds         *int64     `json:"p50_milliseconds"`
+	P95Milliseconds         *int64     `json:"p95_milliseconds"`
+	PipelineP50Milliseconds *int64     `json:"pipeline_p50_milliseconds"`
+	PipelineP95Milliseconds *int64     `json:"pipeline_p95_milliseconds"`
+	UnknownLatency          int        `json:"unknown_latency"`
+	CriticalViolations      int        `json:"critical_violations"`
+	Cost                    MemoryCost `json:"cost"`
 }
 type MemoryReport struct {
 	Version                   string                       `json:"version"`
@@ -163,7 +185,7 @@ type MemoryReport struct {
 // ScoreMemory consumes independent observations. Model prose cannot establish
 // a kernel outcome. Approval checks data/rules only, never execution authority.
 func ScoreMemory(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, a GoldenApproval, key []byte) (MemoryReport, error) {
-	r := MemoryReport{Version: MemoryEvalVersion, Status: "NO_GO", BaselineComparable: true, FrozenSHA256: f.SHA256, Plan: f.Plan, Arms: map[string]*MemoryArmMetrics{}, Cases: []MemoryCaseResult{}, Reasons: []string{}, Limits: []string{"Public synthetic holdout is group-separated, not blind or statistically sufficient.", "Retrieval diagnostics, structured answers and independently captured task effects are separate evidence.", "Byte budget overflow does not establish the model tokenizer's actual context limit.", "Known expense is a subtotal; missing stages and nullable measurements deny complete cost.", "Golden review and imported hashes require a separately pinned operator checker and original runner/ledger correlation.", "This report never admits native calls, executes tools or authorizes deployment."}}
+	r := MemoryReport{Version: s.Version, Status: "NO_GO", BaselineComparable: true, FrozenSHA256: f.SHA256, Plan: f.Plan, Arms: map[string]*MemoryArmMetrics{}, Cases: []MemoryCaseResult{}, Reasons: []string{}, Limits: []string{"Public synthetic holdout is group-separated, not blind or statistically sufficient.", "Retrieval diagnostics, structured answers and independently captured task effects are separate evidence.", "Byte budget overflow does not establish the model tokenizer's actual context limit.", "Known expense is a subtotal; missing stages and nullable measurements deny complete cost.", "Golden review and imported hashes require a separately pinned operator checker and original runner/ledger correlation.", "This report never admits native calls, executes tools or authorizes deployment."}}
 	if err := ValidateMemoryPlan(s, f.Plan); err != nil {
 		return r, err
 	}
@@ -273,7 +295,7 @@ func ScoreMemory(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, a GoldenAp
 	for _, o := range m.Observations {
 		id := o.CaseID + "/" + o.Arm
 		i, ok := inputs[id]
-		if !ok || obs[id].CaseID != "" || o.InputSHA256 != MemoryInputDigest(i) || !containsMemory([]string{"completed", "failed", "skipped"}, o.Status) || len(o.Output) > FrozenMemoryPolicy().MaxOutputBytes || o.Milliseconds != nil && *o.Milliseconds < 0 || !validSHA(o.Outcome.EvidenceSHA256) {
+		if !ok || obs[id].CaseID != "" || o.InputSHA256 != MemoryInputDigest(i) || !containsMemory([]string{"completed", "failed", "skipped"}, o.Status) || !containsMemory([]string{"", "raw_utf8_json_string"}, o.OutputEncoding) || len(MemoryObservationOriginal(o)) > FrozenMemoryPolicy().MaxOutputBytes || o.Milliseconds != nil && *o.Milliseconds < 0 || !validSHA(o.Outcome.EvidenceSHA256) {
 			return r, errors.New("invalid/duplicate/foreign observation")
 		}
 		if o.Status != "completed" && o.Reason == "" {
@@ -291,6 +313,7 @@ func ScoreMemory(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, a GoldenAp
 		obs[id] = o
 	}
 	latencies := map[string][]int64{}
+	pipelineTimes := map[string][]int64{}
 	for _, i := range f.Inputs {
 		id := i.CaseID + "/" + i.Arm
 		c := cases[i.CaseID]
@@ -315,7 +338,13 @@ func ScoreMemory(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, a GoldenAp
 			metrics.Cost.Complete = false
 		} else {
 			result.Status = o.Status
-			result.OutputSHA256 = hashWindowBytes(o.Output)
+			result.OutputSHA256 = hashWindowBytes(MemoryObservationOriginal(o))
+			if o.PipelineMilliseconds != nil {
+				if *o.PipelineMilliseconds < 0 {
+					return r, errors.New("negative pipeline latency")
+				}
+				pipelineTimes[i.Arm] = append(pipelineTimes[i.Arm], *o.PipelineMilliseconds)
+			}
 			result.TaskSuccess = o.Outcome.Success
 			if o.Status == "skipped" {
 				metrics.Skipped++
@@ -348,8 +377,9 @@ func ScoreMemory(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, a GoldenAp
 				}
 				metrics.Completed++
 				var answer MemoryAnswer
-				decodeErr := json.Unmarshal(o.Output, &answer)
-				_, canonicalErr := canonicalJSON(o.Output)
+				original := MemoryObservationOriginal(o)
+				decodeErr := json.Unmarshal(original, &answer)
+				_, canonicalErr := canonicalJSON(original)
 				if decodeErr != nil || canonicalErr != nil || verifyMemoryObservedAnswer(c, i, answer) != nil {
 					metrics.CitationErrors++
 					result.Reasons = append(result.Reasons, "answer_or_citation_contract_error")
@@ -359,6 +389,32 @@ func ScoreMemory(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, a GoldenAp
 				result.CitationExact = valid && cloudDigest(answer.Citations) == cloudDigest(c.Expected.Citations)
 				result.CurrentFactCorrect = result.AnswerCorrect && result.CitationExact
 				result.InstructionCorrect = valid && answer.TaskRevision == c.Expected.TaskRevision && answer.NextAction == c.Expected.NextAction
+				falsePositive := c.Expected.Abstain && !answer.Abstain
+				falseAbstention := !c.Expected.Abstain && answer.Abstain
+				calibratedValid := valid
+				if s.Version == MemoryEvalV2 {
+					x := AssessMemoryV2(c, i, answer, decodeErr == nil && canonicalErr == nil)
+					result.AnswerCorrect = x.AnswerCorrect
+					result.CitationExact = x.CitationCorrect
+					result.CurrentFactCorrect = x.ApplicableEvidence
+					result.InstructionCorrect = x.InstructionCorrect
+					result.TruthCorrect = x.TruthCorrect
+					result.EvidenceAvailable = x.EvidenceAvailable
+					result.JustifiedAbstention = x.JustifiedAbstention
+					result.TaskCodeCorrect = x.TaskCodeCorrect
+					falsePositive = x.FalsePositive
+					falseAbstention = x.FalseAbstention
+					calibratedValid = x.SchemaValid
+					if x.TruthCorrect {
+						metrics.TruthCorrect++
+					}
+					if x.JustifiedAbstention {
+						metrics.JustifiedAbstentions++
+					}
+					if !x.SchemaValid {
+						metrics.MalformedOutputs++
+					}
+				}
 				if result.AnswerCorrect {
 					metrics.AnswerCorrect++
 				} else {
@@ -377,13 +433,13 @@ func ScoreMemory(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, a GoldenAp
 				} else {
 					result.Reasons = append(result.Reasons, "current_instruction_mismatch")
 				}
-				if c.Expected.Abstain && !answer.Abstain {
+				if falsePositive {
 					metrics.FalsePositiveAnswers++
 				}
-				if !c.Expected.Abstain && answer.Abstain {
+				if falseAbstention {
 					metrics.FalseAbstentions++
 				}
-				if valid {
+				if calibratedValid {
 					target := 0.0
 					if result.AnswerCorrect && !answer.Abstain {
 						target = 1
@@ -427,7 +483,7 @@ func ScoreMemory(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, a GoldenAp
 		}
 		r.Cases = append(r.Cases, result)
 	}
-	policy := FrozenMemoryPolicy()
+	policy := MemorySuitePolicy(s)
 	calls, tokens, cost := int64(0), int64(0), int64(0)
 	for _, arm := range MemoryEvalArms() {
 		v := r.Arms[arm]
@@ -437,6 +493,13 @@ func ScoreMemory(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, a GoldenAp
 			p50, p95 := times[(len(times)+1)/2-1], times[(len(times)*95+99)/100-1]
 			v.P50Milliseconds = &p50
 			v.P95Milliseconds = &p95
+		}
+		pipeline := pipelineTimes[arm]
+		sort.Slice(pipeline, func(i, j int) bool { return pipeline[i] < pipeline[j] })
+		if len(pipeline) > 0 {
+			p50, p95 := pipeline[(len(pipeline)+1)/2-1], pipeline[(len(pipeline)*95+99)/100-1]
+			v.PipelineP50Milliseconds = &p50
+			v.PipelineP95Milliseconds = &p95
 		}
 		for n, value := range []int64{v.Cost.Calls, v.Cost.KnownTotalTokens, v.Cost.KnownMicrounits} {
 			total := []*int64{&calls, &tokens, &cost}[n]

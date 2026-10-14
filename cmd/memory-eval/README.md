@@ -1,150 +1,126 @@
 # Memory evaluation
 
-`memory-eval` extends `internal/acceptance`, the existing issue33 evaluation
-contour. It is a local offline command, not a new service, provider wrapper or
-tool executor. The initial issue78 delivery provides versioned data, pre-run
-freezing, input export, strict measurement import and programmatic scoring.
+`memory-eval` extends issue33's `internal/acceptance` contour. The command freezes,
+scores and audits offline. The opt-in orchestrator test collector composes current
+Catalog, structured Parser, owned Index Runtime, HybridReader, BuildBundle,
+ownership, PostgreSQL budgets and native transport. It adds no service or executor.
 
-## Reproduce the mandatory offline checks on laba
+## Independent data review
 
-From an isolated checkout on Windows:
+V1 remains an immutable offline fixture with independent NO_GO: its controls
+mirrored development templates. Two rejected pre-observation V2 proposals remain
+in `testdata/acceptance/reviews`. Accepted V2 has24 synthetic cases,12 development
+and12 controls,60 globally distinct originals. A separate user-authorized reviewer
+inspected all originals, clocks, alternatives and citation spans and independently
+reproduced suite/criteria digests. This is shared-host role independence, public
+controls and a conservative lexical rubric, not blind/statistical readiness.
+Do not tune/select against these controls; subsequent selection requires a fresh
+control version and review. Real cases require separate human-checked annotation.
+`behavior_refs` link issue76 categories instead of creating another error catalog.
+
+## Zero-inference checks
+
+`make test-memory-eval` is the small mandatory contract/CLI set. On laba:
 
 ```powershell
 pwsh -NoProfile -File scripts/dev/lab.ps1 -Action Sync `
   -RemoteRoot /srv/storage/butler/agents/memory-eval-78-20261014
-ssh laba 'bash /srv/storage/butler/agents/memory-eval-78-20261014/current/scripts/dev/memory-eval-lab.sh /srv/storage/butler/agents/memory-eval-78-20261014 <exact-40-character-candidate-commit>'
+ssh laba 'bash /srv/storage/butler/agents/memory-eval-78-20261014/current/scripts/dev/memory-eval-verify-lab.sh /srv/storage/butler/agents/memory-eval-78-20261014'
 ```
 
-The script first runs the narrow `TestMemory` checks, then vet and the existing
-acceptance package regressions under race detection. It uses Go1.27.2, two CPUs,
-1536MiB,128PIDs, network none, a read-only source snapshot and repo-local caches.
-It mounts no credentials, PostgreSQL, Redis or model worker. It creates a new
-private report directory and never changes the main deployment's `current`.
+The isolated PG/race script uses fake inference for complete three-arm collection,
+actual parser/index/bundle/budgets, malformed originals, supported refusal versus
+guessing, failed spend, task/lease/source races and original ledger correlation.
+It mounts no credentials and sends no local/native inference requests.
 
-`fixture` exercises the current `memory/service.BuildBundle` with explicitly
-fixed synthetic store responses. It does **not** implement a competing search
-algorithm or call embeddings. Its answers are constructed from the rubric to
-exercise the scorer. Historical-only citations, missing-memory abstentions,
-secret exclusions and oversized full-context inputs remain visible negatives.
-These results cannot measure an agent's answer quality or task success.
+## One-use model comparison
 
-Saved artifacts include hardware, exact source/data/config/prompt/criteria pins,
-each frozen input, permitted originals, controlled observations, every expense
-stage, per-case results and artifact hashes. Existing directories/files cannot
-be overwritten. All artifacts remain private; public summaries omit bodies.
-
-## Bounded model experiment preparation and import
-
-There is deliberately no `native` mode. Actual requests must be collected through
-the existing Butler provider/ownership/privacy/budget admission contour with a
-fresh independent review, finite window and original charged ledger. Existing
-sealed windows and their spent attempts are never reused by this command.
-
-Before collection, provide a `MemoryPlan` JSON with exact source commit/tree,
-hardware, requested model and observed/version identity, runtime, pricing basis,
-memory configuration, suite and criteria SHA256, fresh window ID and selected
-split. Use `evidence_kind=model_observation`; cloud weights are not fabricated.
-The shared plan fixes identical model/limits for all three arms. Policy constants
-are frozen at90% answer/current-evidence and90% current-instruction accuracy,
-zero false-positive unsupported answers and critical violations,60s nearest-rank
-p95,240 total recorded calls,1,000,000 total tokens,3,000,000 monetary microunits,
-32KiB input and8KiB output. They are initial experiment bounds, not a readiness
-SLO established by this fixture. Changes require a new criteria digest/review.
-
-Supply captures from the **actual current retrieval path**, containing the opaque
-case ID, memory configuration digest, immutable original evidence digest, ordered
-original IDs and exact bundle prompt. Empty legitimate search results are empty
-captures. Missing captures produce explicit skips, never full-context fallback.
-The collector must include every source backing profile/episodic/summary/chunk
-context; unavailable legacy provenance must be reported instead of invented.
+Human authorization of a fresh window and final independent runner review are
+required. Prepare pins a clean source commit, binary, exact image IDs, hardware,
+data/criteria, runtime and resources. An external operator seal accepts only
+independently approved bytes and discards its temporary signing key. Then:
 
 ```sh
-memory-eval -mode freeze -root /src -code-commit <commit> \
-  -hardware /private/hardware.json -plan /private/plan.json \
-  -captures /private/current-retrieval.json -output-dir /private/new-freeze
-
-memory-eval -mode score -root /src -code-commit <same-commit> \
-  -hardware /private/hardware.json -frozen /private/new-freeze/frozen.json \
-  -frozen-sha256 <independently-pinned-frozen-sha256> \
-  -measurements /private/original-measurements.json \
-  -golden-public-key /review/public-key.hex \
-  -golden-approval /review/approval.json -output-dir /private/new-score
+SRC=/srv/storage/butler/agents/memory-eval-78-20261014
+RUN=/srv/storage/butler/agents/memory-eval-v2-native-20261014
+# COMMIT is the exact clean40-character candidate commit; RUN must be new.
+bash "$SRC/current/scripts/dev/memory-eval-model-lab.sh" "$SRC" "$RUN" prepare COMMIT
+bash "$SRC/current/scripts/dev/memory-eval-model-lab.sh" "$SRC" "$RUN" execute COMMIT
+bash "$SRC/current/scripts/dev/memory-eval-model-lab.sh" "$SRC" "$RUN" audit COMMIT
 ```
 
-Exported inputs contain no expected answers, categories, behavior labels or review
-rubrics. Current goal/instruction/revision are identical across arms. `no_ltm`
-contains no historical memory; `full_context` contains all permitted undeleted
-history, including superseded originals needed for temporal questions; `retrieval`
-retains the exact captured current bundle and source metadata. It does not append
-full original bodies to the retrieval prompt. The scorer checks quotes against
-both the provided prompt and pinned original in the verifier's suite. No deleted
-body is exported. Secret-bearing cases are blocked before input. If full history
-exceeds the fixed byte budget, it is skipped in full with a reason. Byte bounds
-are a conservative export limit, not a claim about a provider's token capacity;
-the live collector must also enforce its actual tokenizer/context limit.
+An atomic entry marker, fresh PG and monotonic closed-window row deny reopening.
+Actual command/UID/read-only mounts/CPU/memory/PID/image pins are checked before
+credentials. Secrets remain mounted private references resolved by existing
+credential code. Main database, deployment pointers and credential files stay
+outside this experiment. Timeout stops the runner, preserving its DB/artifacts.
 
-Measurements contain the frozen SHA, one observation per case/arm, exact input
-SHA, the actual model/version/runtime for every completed observation,
-completed/failed/skipped status, a safe reason, original JSON output,
-nullable latency and independent effect outcomes with an original evidence SHA.
-Answer/citation and current-instruction checks do not establish kernel effects.
-Task success and permission/privacy/stop/deletion violations come from separate
-runner records, never from model assertions. Use JSON `null` for unknown values.
+Frozen limits: High `gemini-3.8-flash-high`, required observed version
+`gemini-3.8-flash-n`;280 new inference admissions;4,000,000 conservative shared
+units; at most66 native samples before planned skips;3 hours;2 CPUs,1536MiB,
+128PIDs;4096 safe events per entry and128MiB reports. Every arm has32KiB complete
+serialized input cap,32768 generated tokens including thinking,8KiB final bytes.
+Reservation covers JSON escaping/schema/framing and is enforced by the same
+provider payload cap. Actual usage exceeding allowance fails closed. No retry,
+resampling, repair, schema fallback or continuation. Failure preserves the prefix.
 
-For each admitted case/arm explicitly account for `read`, `write`, `embedding`,
-`extraction`, `summary`, `consolidation`, `generation`, `retry`, `background`.
-Keep every failed/repeated sample and source evidence identity. Measurements
-include calls, input/output/total tokens (including hidden billed tokens), latency,
-monetary microunits and storage bytes. `not_used` means explicit measured zeros;
-unknown or missing measurements/stages deny complete cost. Shared preparation
-expenses must use a declared attribution rule so they are counted once per arm,
-never silently omitted or counted as free. Storage is cumulative observed bytes
-in the supplied stage records, not an inferred database footprint.
+Order is fixed case then no_ltm/full_context/retrieval, not randomized. All current
+retrieval captures freeze before native entry. no_ltm receives question/current
+task only; full_context includes every allowed undeleted original, including
+superseded historical DATA, or is explicitly skipped in full when oversized.
+Secret cases block all arms before export. Retrieval receives the exact captured
+prompt/source metadata without appended complete original bodies.
 
-Frozen `verifier_captures` retain original retrieval captures even when an input
-exceeds the budget; they belong to the verifier, not model input. The collector
-must use only the `inputs` array. Already spent capture/read/background costs of
-skipped cases remain in accounting. Every case/arm, including a blocked or skipped
-one, needs explicit stage coverage; a skipped generation charge is a violation.
+The bounded configuration uses current user-scoped semantic chunks, Gemma2,
+structured-go-v1 fragments, chunk limit2, bundle budget12 and HybridReader's6144
+byte context boundary. Profile/episodic/working/summary stores are not configured;
+reranking/extraction/summary/consolidation are off. This is current local retrieval
+composition, not full production bundle coverage. Future classes must retain
+every backing source/revision/claim; retrieval DATA grants no owner authority.
 
-The score command additionally retains the exact original imported measurement
-file, including whitespace and malformed raw model answers. A structurally valid
-envelope rejected by scoring produces a negative report and retained original;
-malformed envelope JSON is rejected before scoring and remains at its input path.
+## Original evidence, expenses and scoring
 
-The same `GoldenApproval` Ed25519 format as issue33 signs suite digest, criteria,
-version, reviewer and different candidate author. The private signing key and
-independent checker stay outside candidate code. This command does not sign.
-The new dataset is presently **unreviewed**. Candidate-host imports and hashes
-alone do not prove native inference, runner/ledger correlation or independence;
-promotion and execution remain false even after successful offline scoring.
+Each sample retains exact input/instructions/native schema, raw UTF-8 final with
+explicit encoding tag, ordered safe events, actual version/input/output/total
+usage, unique native/auxiliary reservations and current dispatch/final receipts.
+Valid JSON strings and malformed outputs remain distinct negative originals.
+Current source/task/lease checks run before authentication/HTTP, during inference
+and before acceptance. Spend persists before retention/source errors. A safe SQL
+allowlist excludes settings; raw HTTP, reasoning, auth and provider error bodies
+never enter reports. The offline auditor checks originals, freeze, all owning
+rows, source/alias/owner bindings, revisions/constraints/leases and runtime pins.
 
-## Dataset and #76
+All nine stages are measured, unknown or not_used, including failed prefixes.
+Source write/index/read setup is attributed once to that case's retrieval arm;
+native input reading and artifact retention belong to each arm. Session/task/
+guard/ledger overhead not separately observed is unknown, not not_used. Off
+workers and zero retries are explicit not_used. Generation total includes hidden
+thinking tokens. The worker's actual embedding tokenizer counts and subscription
+invoice remain null; a zero admission quote is not a measured zero invoice.
+Local invoice has explicit no-billing basis. Host energy and physical PG/WAL/
+backup footprint are unknown. Known storage is a scoped source/chunk/index-row
+and artifact-byte subtotal. Unknown measurements deny complete-cost claims.
 
-`testdata/acceptance/ru-memory-v1.json` contains30 explicitly synthetic cases,
-15 development and15 holdout cases, each with timestamps, session identity,
-source status/revision, task instruction, literal answer and witnesses. No real
-user memory or public benchmark data were imported. Source/topic and declared
-template groups do not cross parts; normalized exact duplicate originals fail.
-This structural screen is not semantic independence. Independent whole-content
-review must check paraphrases/template similarity and answer ambiguity before
-model trials. Holdout must never drive tuning; a candidate selected using these
-holdout results needs a fresh control dataset and separate review. Future real
-cases require human-checked provenance and separate dataset/version annotation.
+Per-sample p50/p95 cover owned input/admission through native completion; the60s
+gate applies there. Diagnostic pipeline p50/p95 add one-time write/index/query
+capture only to retrieval, without hypothetical amortization. Stage intervals
+can overlap and must not be summed as elapsed or billable duration.
 
-Case `behavior_refs` point into the common issue76 behavior categories. Reports
-link these references to input/output evidence hashes and per-case discrepancies;
-they do not create another catalog, invent a causal diagnosis, or complete #76.
-Answer/current-fact correctness, exact citations, false positive answers, false
-abstentions, confidence Brier components, retrieval recall/MRR, current task
-instructions and independent task outcomes are separate metrics. A model judge
-is not used. Literal answer equality is a transparent initial rubric, not a
-general semantic answer judge; human-reviewed alternative answer sets can be
-added only as a new frozen version.
+Alternatives normalize lowercase/whitespace only, frozen before outputs. Exact
+quotes must anchor both original and actual prompt and include reviewed entailing
+spans; larger quotes/order are accepted, with the reviewed minimum source set.
+This is a conservative finite rubric, not a general semantic paraphrase judge.
+Truth and context-supported correctness are separate. Unsupported exact guesses
+are false assertions. Safe missing-context refusal is correct but cannot recover
+an answerable fact; an empty retriever cannot pass90% actual-fact usefulness.
+Task prose and action code must agree with current instructions. Malformed output,
+calibrated confidence/Brier, false refusal and recall/MRR are separate metrics.
 
-## Remaining issue78 acceptance
-
-Actual admission/ledger-backed collection for all three arms, full current-memory
-write/index/background expense instrumentation, independently reviewed control
-data and one bounded model comparison remain required. Offline fixture success
-does not close issue78, change memory policy or imply production readiness.
+Frozen policy:90% answer/current-fact and90% instruction, zero unsupported
+assertions/critical violations,60s p95,280 calls,4,000,000 units and3,000,000
+monetary microunits. Unknown invoice/effects deny promotion. QA/proposed actions
+do not prove file/repair/delivery or long-lived task completion; actual outcomes
+remain null without independent genuine effect evidence. Negative observations
+are preserved. Harness acceptance, model-quality pass, complete cost, actual user
+outcome and promotion are distinct. Offline scoring cannot prove native execution;
+read-only audit can certify correlated observations but cannot execute or promote.

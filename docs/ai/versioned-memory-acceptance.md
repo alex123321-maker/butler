@@ -2,6 +2,22 @@
 
 ## Memory quality measurement, issue78
 
+V2 adds an opt-in collector over current Catalog/structured parsing, owned index
+jobs, HybridReader/BuildBundle, budgets and native transport, plus offline original
+runner correlation. A separate authorized reviewer approved all24 public synthetic
+cases/60 originals and independently reproduced data/criteria digests; V1 and
+rejected V2 proposals remain immutable negatives. Golden and final runner approval
+are separate. Controls must not drive tuning. The bounded user-scoped chunk
+configuration declares other memory classes nonconfigured and optional workers off.
+
+Safe refusal is distinct from successful recovery/application of an answerable
+fact. Exact unsupported guesses are false assertions; current task prose must
+agree with the action code. QA observations, kernel guards, genuine external user
+outcomes and complete cost are separate: invoice, local tokenizer and unsupported
+effects stay null. Failed spend persists before later writes/source checks. A
+negative correlated comparison can accept the harness while denying promotion.
+See [bounded reproduction and scope](../../cmd/memory-eval/README.md).
+
 The additive [memory-eval protocol](../../cmd/memory-eval/README.md) supplies
 versioned synthetic originals, pre-run frozen three-arm inputs and strict
 per-case/cost scoring in the existing issue33 contour. The offline mandatory

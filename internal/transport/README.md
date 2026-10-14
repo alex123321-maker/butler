@@ -1,5 +1,10 @@
 # Logical model transport
 
+Optional trusted `WithInferenceAuthority` context checks are evaluated by
+Antigravity before authentication and HTTP. They are private current-source/
+ownership callbacks, not model options or credentials; callers retain budget,
+in-flight cancellation and final-acceptance responsibilities.
+
 The transport proposes functions and emits normalized provider events; Butler
 owns sessions, orchestration, policy, tools, durable transcript and completion.
 Optional event `Usage` is one complete inference-request observation independent

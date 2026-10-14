@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -119,6 +120,9 @@ func (u *nativeUsage) UnmarshalJSON(data []byte) error {
 }
 
 func (p *Provider) invoke(ctx context.Context, model, sessionID string, body generateRequest, onText func(string) bool) (modelAnswer, error) {
+	if err := checkInferenceAuthority(ctx); err != nil {
+		return modelAnswer{}, err
+	}
 	cloud := model == FlashHighModel
 	resolve := p.config.AuthSource.ResolveAntigravity
 	if cloud {
@@ -168,6 +172,9 @@ func (p *Provider) invoke(ctx context.Context, model, sessionID string, body gen
 	req.Header.Set("Accept", "text/event-stream")
 	req.Header.Set("User-Agent", userAgent)
 	transport.ObserveProviderStage(ctx, transport.ProviderStageHTTP)
+	if err := checkInferenceAuthority(ctx); err != nil {
+		return modelAnswer{}, err
+	}
 	resp, err := p.client.Do(req)
 	if err != nil {
 		if ctx.Err() != nil {
@@ -184,6 +191,22 @@ func (p *Provider) invoke(ctx context.Context, model, sessionID string, body gen
 	}
 	transport.ObserveProviderStage(ctx, transport.ProviderStageStream)
 	return readStreamProtocol(resp.Body, onText, cloud)
+}
+
+func checkInferenceAuthority(ctx context.Context) error {
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+	if err := transport.CheckInferenceAuthority(ctx); err != nil {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		if errors.Is(err, context.DeadlineExceeded) {
+			return providerError(transport.ErrorTypeMemorySourceTimeout, "memory_source_check_timeout")
+		}
+		return providerError(transport.ErrorTypeMemorySourceStale, "memory_source_stale")
+	}
+	return nil
 }
 
 func statusError(status int, body io.Reader) error {
