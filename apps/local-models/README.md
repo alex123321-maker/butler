@@ -1,5 +1,11 @@
 # Local auxiliary models
 
+Issues 27/28 local semantic research is deferred as of 2026-10-14. EmbeddingGemma2
+and Gemini 3.8 Flash High remain the selected configuration; the deployment,
+embedding placement and ordinary catalog are unchanged. Research adapters and
+evidence below remain available, without production promotion or new planned
+inference. See [the owner decision](../../docs/ai/model-selection-20261014.md).
+
 The opt-in interpretation v3 catalog reuses these same pinned CPU checkpoints
 with GLiNER native independent intent scores and separate modality/target choices. Install the
 SHA-checked `interpretation-schema-v3.json` beside the worker. d1's seven rows

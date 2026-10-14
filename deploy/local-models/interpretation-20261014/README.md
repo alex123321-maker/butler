@@ -1,5 +1,14 @@
 # Multi-intent interpretation comparison, 2026-10-14
 
+## Archived research status, 2026-10-14
+
+The owner deferred experiments in issues 27/28 and selected EmbeddingGemma2
+with Gemini 3.8 Flash High as the current configuration. No tested local semantic
+candidate is promoted. This status note preserves all original predictions,
+thresholds, metrics, failed runs and raw-response archives below. Further model
+selection/inference is not scheduled. See
+[the decision and resumption conditions](../../../docs/ai/model-selection-20261014.md).
+
 Issues 27/28 now share `butler-event-interpretation-v3`: five independent intent
 flags, modality and target, attached to exact source quotes. Trust/actor identity
 and result verification are program state. Models return shadow observations;

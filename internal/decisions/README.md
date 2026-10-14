@@ -1,6 +1,12 @@
 # Local decision observations
 
-Interpretation v3 replaces the next experiment's single nine-way label with
+Research in issues 27/28 is deferred by owner decision on 2026-10-14. The selected
+configuration remains EmbeddingGemma2 and Gemini 3.8 Flash High. The callers,
+fixtures and failed quality results below are retained for future reproduction;
+no additional inference or production integration is scheduled. See
+[the decision](../../docs/ai/model-selection-20261014.md).
+
+The retained interpretation v3 experiment replaces the single nine-way label with
 five independent intention flags, modality and target. The Go common adapter
 creates exact Unicode source windows and validates complete 16-ID score groups;
 `Interpret` retains current job/source admission and seven-row token allowance.

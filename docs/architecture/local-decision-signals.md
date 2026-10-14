@@ -1,7 +1,12 @@
 # Local decision signals
 
+Issues 27/28 are deferred by owner decision on 2026-10-14. EmbeddingGemma2 and
+Gemini 3.8 Flash High remain the selected configuration. Model selection,
+additional inference and production shortcut integration are not scheduled;
+[results and resumption conditions](../ai/model-selection-20261014.md) are retained.
+
 The new [event interpretation contract](event-interpretation.md) supersedes the
-nine-way taxonomy for the next research stage of issues 27/28. It compares five
+nine-way taxonomy in the retained research of issues 27/28. It compares five
 independent intentions, modality and target on source-bound windows. Trust and
 verification are code-owned state, not classes. Historical experiments below
 keep their own immutable schemas and results.

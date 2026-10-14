@@ -1,6 +1,13 @@
 # Reproducible lab model runtime
 
-The next issues 27/28 experiment uses the
+Issues 27/28 experiments are deferred by owner decision on 2026-10-14; the
+selected configuration remains EmbeddingGemma2 and Gemini 3.8 Flash High. The
+following commands are retained reproduction instructions, not scheduled work.
+Do not repeat the completed held-out inference as a new independent evaluation.
+See [the decision and conditions for resumption](../../docs/ai/model-selection-20261014.md)
+and [the preserved v3 comparison](interpretation-20261014/README.md).
+
+The retained issues 27/28 experiment uses the
 [source-bound interpretation contract](../../docs/architecture/event-interpretation.md),
 [annotation rules](interpretation-annotation-v3.md) and frozen v3 corpus.
 The final file is `russian-interpretation-heldout-v3.json`; the original

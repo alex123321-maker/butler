@@ -1,5 +1,11 @@
 # Auxiliary local model service
 
+As of 2026-10-14, the owner-selected configuration remains EmbeddingGemma2 and
+Gemini 3.8 Flash High. Issues 27/28 local semantic research is deferred, with
+all measured results retained and no production promotion. This decision changes
+neither the deployed catalog nor embedding device/vector identity. See
+[the model decision](../ai/model-selection-20261014.md).
+
 Research preprocessing `butler-event-interpretation-v3` adds a bundled,
 SHA-checked schema for independent intent questions and modality/target choices.
 GLiNER's existing SDK uses native multi-label sigmoid; reviewed d1 uses native

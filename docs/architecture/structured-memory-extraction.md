@@ -1,6 +1,11 @@
 # Structured extraction of candidate memory
 
-Issue 27's next scope follows [event interpretation](event-interpretation.md):
+Local extraction experiments in issue 27 are deferred with issue 28 as of
+2026-10-14. EmbeddingGemma2 and Gemini 3.8 Flash High remain the selected model
+configuration; no local candidate is promoted. See
+[the owner decision and preserved evidence](../ai/model-selection-20261014.md).
+
+Issue 27's retained future scope follows [event interpretation](event-interpretation.md):
 candidate semantic units can carry multiple intentions, modality, target and
 exact quotes. Initial v3 comparison uses deterministic source windows and
 shadow observations; learned minimal spans, optional action/resource/deadline

@@ -1,7 +1,10 @@
 # Source-bound event interpretation: issues 27 and 28
 
-Version: `butler-event-interpretation-v3`. Status: research contract, production
-consumer disabled. Historical nine-way experiments remain reproducible.
+Version: `butler-event-interpretation-v3`. Status: deferred research as of
+2026-10-14 by owner decision; production consumer disabled. The selected model
+configuration remains EmbeddingGemma2 and Gemini 3.8 Flash High. See
+[the decision and resumption conditions](../ai/model-selection-20261014.md).
+This contract is retained for future work; historical experiments remain reproducible.
 
 Issue 27 owns candidate representation and validation: exact Unicode quotes,
 source/revision/access/hash, interpretation version, model or rule identity,

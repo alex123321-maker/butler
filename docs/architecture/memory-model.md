@@ -820,6 +820,12 @@ results are durably complete, retries preserve IDs, and publication rechecks the
 source graph. The measured Russian quality gate fails, so production scheduling
 remains off despite the separate source-preservation acceptance test.
 
+By owner decision on 2026-10-14, local extraction/interpretation experiments
+in issues 27/28 are deferred. EmbeddingGemma2 remains the selected semantic
+retrieval model and Gemini 3.8 Flash High the main generative provider. This does
+not enable new extraction scheduling, accept candidate beliefs or alter existing
+source/job guards. See [the model decision and retained results](../ai/model-selection-20261014.md).
+
 Optional [voice data](russian-voice.md) uses the same catalog original assets and
 transitive immutable derivatives. ASR text is a preview, not a confirmed fact or
 permission. Owner-reviewed ordinary input is queued by opaque binding and resolved
