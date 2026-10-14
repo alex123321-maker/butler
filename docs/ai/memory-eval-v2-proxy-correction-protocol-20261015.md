@@ -20,7 +20,7 @@ before OAuth because the original import was expired. Neither probe proves nativ
 generation capability. Native auth/refresh now remains exclusively in the existing
 runtime's encrypted PostgreSQL SecretStore after the durable entry marker.
 
-A separately reviewed new root memory-eval-v2-proxy-safe-20261015 may admit only61
+A separately reviewed new root memory-eval-v2-proxy-safe-final-20261015 may admit only61
 unpaid entries. Original72-input denominator, all3paid failures, original22
 captures and all236expenses remain intact. Source/body/chunk/alias/tombstone
 rebasing and original material checks are mandatory. Three-level parent lineage
