@@ -277,6 +277,9 @@ func memoryCollectorFixtureWithPrior(t *testing.T, prior *acceptance.MemoryPrior
 	if prior != nil {
 		c.prior, c.priorPins, c.priorDirectory = prior, pins, directory
 		c.plan.WindowID = "fixture-pending-components"
+		if len(prior.PaidInputs) == 2 {
+			c.plan.WindowID = "fixture-residual-components"
+		}
 		c.started = prior.Expires.Add(-3 * time.Hour)
 	}
 	if err = c.init(context.Background()); err != nil {

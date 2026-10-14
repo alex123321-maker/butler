@@ -141,3 +141,11 @@ root. It reuses original captures without inference, carries spent counters
 and the original absolute expiry, and audits with `pending-audit`. The original
 failed slot remains in the scoring denominator. Never repeat an eligible paid
 slot or treat its unknown usage/cause as zero.
+
+That pending root also retained a failed full_context admission. A prospective
+residual62 is finite, separately reviewed and preserves both eligible failures,
+all183existing expenses,55/614740 and the original expiry. Its filtered parent
+snapshot is limited to two failed prefixes; a deeper chain is rejected. It uses
+the original pending root as the fifth argument and a new residual root, with
+window-scoped setup expense IDs. HTTP rejection diagnostics may retain numeric
+status and fixed protocol reason only. No earlier unknown is inferred from them.

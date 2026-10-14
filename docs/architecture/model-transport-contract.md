@@ -44,6 +44,18 @@ are discarded before execution logging, run persistence and input-worker return.
 An owning source-check timeout is distinct from a provider timeout; both deny
 release. These diagnostics do not grant a retry or relax any source deadline.
 
+Antigravity HTTP rejection errors retain only the numeric HTTP status as typed
+metadata. `DiagnosticHTTPStatus` exports the finite300–599 range, otherwise0;
+response bodies/headers remain excluded. Memory-eval also projects six exact
+transport-owned protocol literals onto fixed reason codes, never substring
+matches or arbitrary error text. Earlier lost statuses/reasons remain unknown.
+These fields observe a failed admission and grant no retry or continuation.
+For400/422, a64KiB private INVALID_ARGUMENT envelope can be projected onto four
+fixed diagnostic classes (unknown minItems/maxItems, response-schema rejection,
+other invalid argument). `DiagnosticReason` rejects all other strings. Provider
+messages, field paths/details and raw bytes remain unexported; a class records an
+upstream claim, not proof of the precise cause. Earlier unknowns stay unknown.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Model Transport Contract

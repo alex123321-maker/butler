@@ -29,27 +29,34 @@ func main() {
 	if err != nil {
 		panic("suite invalid")
 	}
-	allowed := regexp.MustCompile(`^(ledger|measurements|frozen-before-native|captures|plan|collection-status)\.json$|^(aux|bundle|search|bindings|input|events|result|deletion)-[a-zA-Z0-9_-]+\.json$|^final-[a-zA-Z0-9_-]+\.txt$`)
-	entries, err := os.ReadDir(*old)
-	if err != nil {
-		panic("original directory unavailable")
+	allowed := regexp.MustCompile(`^(ledger|measurements|frozen-before-native|captures|plan|collection-status|comparison-frozen|comparison-measurements)\.json$|^(aux|bundle|search|bindings|input|events|result|deletion)-[a-zA-Z0-9_-]+\.json$|^final-[a-zA-Z0-9_-]+\.txt$`)
+	copySafe := func(from, to string) error {
+		entries, err := os.ReadDir(from)
+		if err != nil {
+			return err
+		}
+		for _, entry := range entries {
+			if entry.IsDir() || !allowed.MatchString(entry.Name()) {
+				continue
+			}
+			raw, err := acceptance.ReadPrivateFile(filepath.Join(from, entry.Name()), 32<<20)
+			if err != nil {
+				return err
+			}
+			out, err := os.OpenFile(filepath.Join(to, entry.Name()), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+			if err != nil {
+				return err
+			}
+			_, writeErr := out.Write(raw)
+			syncErr, closeErr := out.Sync(), out.Close()
+			if writeErr != nil || syncErr != nil || closeErr != nil {
+				return fmt.Errorf("snapshot write failed")
+			}
+		}
+		return nil
 	}
-	for _, e := range entries {
-		if e.IsDir() || !allowed.MatchString(e.Name()) {
-			continue
-		}
-		raw, err := acceptance.ReadPrivateFile(filepath.Join(*old, e.Name()), 32<<20)
-		if err != nil {
-			panic("bounded original unavailable")
-		}
-		out, err := os.OpenFile(filepath.Join(*dest, e.Name()), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
-		if err != nil {
-			panic("exclusive snapshot denied")
-		}
-		_, err = out.Write(raw)
-		if err != nil || out.Sync() != nil || out.Close() != nil {
-			panic("snapshot write failed")
-		}
+	if err := copySafe(*old, *dest); err != nil {
+		panic("bounded exclusive snapshot failed")
 	}
 	var runtime acceptance.MemoryRuntimePins
 	raw, err := acceptance.ReadPrivateFile(filepath.Join(*meta, "pins.json"), 1<<20)
@@ -72,6 +79,12 @@ func main() {
 		panic("original source/execution/hardware differs")
 	}
 	var pins acceptance.MemoryPriorPins
+	if runtime.Prior != nil {
+		if runtime.Prior.Parent != nil || os.Mkdir(filepath.Join(*dest, "prior"), 0700) != nil || copySafe("/old-prior", filepath.Join(*dest, "prior")) != nil {
+			panic("bounded safe parent snapshot denied")
+		}
+		pins.Parent = runtime.Prior
+	}
 	pins.SourceSHA, pins.BinarySHA, pins.CodeCommit = runtime.Source, runtime.Binary, runtime.Release
 	for _, x := range []struct {
 		name string

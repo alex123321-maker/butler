@@ -10,15 +10,16 @@ import (
 // Operator-owned pins describe the retained first failed native entry and its
 // already measured retrieval. They are not model input or authority to retry.
 type MemoryPriorPins struct {
-	LedgerSHA       string `json:"ledger_sha256"`
-	FrozenFileSHA   string `json:"frozen_file_sha256"`
-	MeasurementsSHA string `json:"measurements_sha256"`
-	SourceSHA       string `json:"source_sha256"`
-	BinarySHA       string `json:"binary_sha256"`
-	CodeCommit      string `json:"code_commit"`
-	Calls           int64  `json:"calls"`
-	ReservedUnits   int64  `json:"reserved_units"`
-	ExpiresUTC      string `json:"expires_utc"`
+	Parent          *MemoryPriorPins `json:"parent,omitempty"`
+	LedgerSHA       string           `json:"ledger_sha256"`
+	FrozenFileSHA   string           `json:"frozen_file_sha256"`
+	MeasurementsSHA string           `json:"measurements_sha256"`
+	SourceSHA       string           `json:"source_sha256"`
+	BinarySHA       string           `json:"binary_sha256"`
+	CodeCommit      string           `json:"code_commit"`
+	Calls           int64            `json:"calls"`
+	ReservedUnits   int64            `json:"reserved_units"`
+	ExpiresUTC      string           `json:"expires_utc"`
 }
 
 type MemoryPrior struct {
@@ -27,6 +28,7 @@ type MemoryPrior struct {
 	Audit        MemoryRunnerAudit
 	Expires      time.Time
 	PaidInput    MemoryInput
+	PaidInputs   []MemoryInput
 }
 
 func MemoryFrozenDigest(f MemoryFrozen) string {
@@ -67,6 +69,46 @@ func LoadMemoryPrior(s MemorySuite, directory string, pins MemoryPriorPins) (Mem
 	if err := read("measurements.json", pins.MeasurementsSHA, &p.Measurements); err != nil {
 		return p, err
 	}
+	if pins.Parent != nil {
+		// Only the separately retained second failed prefix is supported. A
+		// recursive snapshot cannot silently create an unbounded retry chain.
+		if pins.Parent.Parent != nil || p.Frozen.Plan.SourceSHA256 != pins.SourceSHA || p.Frozen.Plan.CodeCommit != pins.CodeCommit {
+			return p, errors.New("bounded parent lineage differs")
+		}
+		parent, err := LoadMemoryPrior(s, filepath.Join(directory, "prior"), *pins.Parent)
+		if err != nil {
+			return p, err
+		}
+		audit, err := AuditMemoryContinuationPrefix(s, parent, p.Frozen, p.Measurements, directory, pins.BinarySHA, *pins.Parent)
+		if err != nil {
+			return p, err
+		}
+		combined, err := CombineMemoryMeasurements(parent, p.Measurements)
+		if err != nil {
+			return p, err
+		}
+		var scored MemoryFrozen
+		var retained MemoryMeasurements
+		raw, e1 := ReadPrivateFile(filepath.Join(directory, "comparison-frozen.json"), 32<<20)
+		rawM, e2 := ReadPrivateFile(filepath.Join(directory, "comparison-measurements.json"), 32<<20)
+		if e1 != nil || e2 != nil || json.Unmarshal(raw, &scored) != nil || json.Unmarshal(rawM, &retained) != nil || MemoryDigest(scored) != MemoryDigest(parent.Frozen) || MemoryDigest(retained) != MemoryDigest(combined) {
+			return p, errors.New("retained composite denominator or expenses differ")
+		}
+		paid := p.Frozen.Inputs[0]
+		p = parent
+		p.Measurements, p.Audit = combined, audit
+		p.PaidInputs = append(append([]MemoryInput(nil), parent.PaidInputs...), paid)
+		var windows []struct {
+			Calls   int64     `json:"calls"`
+			Units   int64     `json:"reserved_units"`
+			Expires time.Time `json:"expires_at"`
+		}
+		expiry, err := time.Parse(time.RFC3339Nano, pins.ExpiresUTC)
+		if err != nil || json.Unmarshal(ledger["fixture_memory_eval_window"], &windows) != nil || len(windows) != 1 || windows[0].Calls != pins.Calls || windows[0].Units != pins.ReservedUnits || !windows[0].Expires.Equal(expiry) || !expiry.Equal(parent.Expires) {
+			return p, errors.New("second retained counter or deadline differs")
+		}
+		return p, nil
+	}
 	canonical, err := FreezeMemory(s, p.Frozen.Plan, p.Frozen.Captures)
 	if err != nil || canonical.SHA256 != p.Frozen.SHA256 || MemoryDigest(canonical) != MemoryDigest(p.Frozen) || p.Frozen.Plan.SourceSHA256 != pins.SourceSHA || p.Frozen.Plan.CodeCommit != pins.CodeCommit || len(p.Measurements.Observations) != 1 || len(p.Frozen.Captures) != 22 {
 		return p, errors.New("prior full comparison freeze differs")
@@ -97,6 +139,7 @@ func LoadMemoryPrior(s MemorySuite, directory string, pins MemoryPriorPins) (Mem
 	if err != nil || p.Audit.NativeCalls != 1 || p.Audit.AuxiliaryCalls != 53 || pins.Calls != 54 || pins.ReservedUnits <= 0 {
 		return p, errors.New("prior charged prefix cannot be correlated")
 	}
+	p.PaidInputs = []MemoryInput{p.PaidInput}
 	return p, nil
 }
 
@@ -109,7 +152,7 @@ func MemoryPendingSchedule(p MemoryPrior, plan MemoryPlan) (MemoryFrozen, error)
 		return f, errors.New("pending schedule cannot change the experiment")
 	}
 	for _, i := range p.Frozen.Inputs {
-		if i.CaseID == p.PaidInput.CaseID && i.Arm == p.PaidInput.Arm {
+		if memoryPriorPaid(p, i.CaseID, i.Arm) {
 			continue
 		}
 		f.Inputs = append(f.Inputs, i)
@@ -132,12 +175,42 @@ func CombineMemoryMeasurements(p MemoryPrior, current MemoryMeasurements) (Memor
 		m.Expenses = append(m.Expenses, e)
 	}
 	for _, o := range current.Observations {
-		if o.CaseID == p.PaidInput.CaseID && o.Arm == p.PaidInput.Arm {
+		if memoryPriorPaid(p, o.CaseID, o.Arm) {
 			return m, errors.New("spent observation was retried")
 		}
 		m.Observations = append(m.Observations, o)
 	}
 	return m, nil
+}
+
+func memoryPriorPaid(p MemoryPrior, caseID, arm string) bool {
+	for _, i := range p.PaidInputs {
+		if i.CaseID == caseID && i.Arm == arm {
+			return true
+		}
+	}
+	return p.PaidInput.CaseID == caseID && p.PaidInput.Arm == arm
+}
+
+// Read-only correlation of the retained second failed entry; it cannot admit a
+// third entry or label an incomplete comparison as model-quality evidence.
+func AuditMemoryContinuationPrefix(s MemorySuite, p MemoryPrior, f MemoryFrozen, m MemoryMeasurements, directory, binarySHA string, pins MemoryPriorPins) (MemoryRunnerAudit, error) {
+	expected, err := MemoryPendingSchedule(p, f.Plan)
+	if err != nil || MemoryDigest(expected) != MemoryDigest(f) || len(m.Observations) != 1 || len(f.Inputs) == 0 || f.Inputs[0].SkipReason != "" || m.Observations[0].CaseID != f.Inputs[0].CaseID || m.Observations[0].Arm != f.Inputs[0].Arm || m.Observations[0].Status != "failed" {
+		return MemoryRunnerAudit{}, errors.New("second retained failed prefix differs")
+	}
+	a, err := auditMemoryRunner(s, f, m, directory, binarySHA, true, pins.Calls, pins.ReservedUnits)
+	if err != nil || a.NativeCalls != 1 || a.AuxiliaryCalls != 0 || a.QuestionResults != 0 {
+		return a, errors.New("second prefix admission cannot be correlated")
+	}
+	if err = memoryContinuationWindow(p, directory, pins.ReservedUnits+MemoryNativeReservedUnits(f.Inputs[0])); err != nil {
+		return a, err
+	}
+	a.NativeCalls += p.Audit.NativeCalls
+	a.AuxiliaryCalls += p.Audit.AuxiliaryCalls
+	a.UnknownBroaderTaskResults += p.Audit.UnknownBroaderTaskResults
+	a.Status = "PASS_CORRELATED_RETAINED_FAILURES_ONLY"
+	return a, nil
 }
 
 func AuditMemoryContinuation(s MemorySuite, p MemoryPrior, currentFrozen MemoryFrozen, current MemoryMeasurements, directory, binarySHA string, pins MemoryPriorPins) (MemoryRunnerAudit, error) {
@@ -149,17 +222,9 @@ func AuditMemoryContinuation(s MemorySuite, p MemoryPrior, currentFrozen MemoryF
 	if err != nil {
 		return a, err
 	}
-	if a.NativeCalls != 63 || a.AuxiliaryCalls != 0 || a.QuestionResults != 63 {
+	remaining := int64(64 - len(p.PaidInputs))
+	if a.NativeCalls != remaining || a.AuxiliaryCalls != 0 || int64(a.QuestionResults) != remaining {
 		return a, errors.New("pending matrix incomplete or auxiliary inference repeated")
-	}
-	var ledger map[string]json.RawMessage
-	raw, err := ReadPrivateFile(filepath.Join(directory, "ledger.json"), 32<<20)
-	if err != nil || json.Unmarshal(raw, &ledger) != nil {
-		return a, errors.New("pending ledger absent")
-	}
-	var windows []struct {
-		Expires time.Time `json:"expires_at"`
-		Units   int64     `json:"reserved_units"`
 	}
 	expectedUnits := pins.ReservedUnits
 	for _, i := range currentFrozen.Inputs {
@@ -167,13 +232,29 @@ func AuditMemoryContinuation(s MemorySuite, p MemoryPrior, currentFrozen MemoryF
 			expectedUnits += MemoryNativeReservedUnits(i)
 		}
 	}
-	if json.Unmarshal(ledger["fixture_memory_eval_window"], &windows) != nil || len(windows) != 1 || !windows[0].Expires.Equal(p.Expires) || windows[0].Units != expectedUnits {
-		return a, errors.New("original absolute deadline or accumulated conservative charge differs")
+	if err = memoryContinuationWindow(p, directory, expectedUnits); err != nil {
+		return a, err
 	}
 	a.Status = "PASS_CORRELATED_ATTEMPT_MATRIX_WITH_RETAINED_FAILURE"
 	a.NativeCalls += p.Audit.NativeCalls
 	a.AuxiliaryCalls += p.Audit.AuxiliaryCalls
 	a.UnknownBroaderTaskResults += p.Audit.UnknownBroaderTaskResults
-	a.Limits = append(a.Limits, "The original first eligible native entry failed with unknown usage/cause; it remains in the scored denominator.", "22 retrieval captures and53 auxiliary calls are original observations, reused without inference; current catalog authority was rebased separately.", "Full original retrieval pipeline latency was not retained and remains unknown for reused captures.")
+	a.Limits = append(a.Limits, "Every original paid failure remains eligible in the scored denominator; unknown usage/cause stays unknown.", "22 retrieval captures and53 auxiliary calls are original observations, reused without inference; current catalog authority was rebased separately.", "Full original retrieval pipeline latency was not retained and remains unknown for reused captures.")
 	return a, nil
+}
+
+func memoryContinuationWindow(p MemoryPrior, directory string, expectedUnits int64) error {
+	var ledger map[string]json.RawMessage
+	raw, err := ReadPrivateFile(filepath.Join(directory, "ledger.json"), 32<<20)
+	if err != nil || json.Unmarshal(raw, &ledger) != nil {
+		return errors.New("pending ledger absent")
+	}
+	var windows []struct {
+		Expires time.Time `json:"expires_at"`
+		Units   int64     `json:"reserved_units"`
+	}
+	if json.Unmarshal(ledger["fixture_memory_eval_window"], &windows) != nil || len(windows) != 1 || !windows[0].Expires.Equal(p.Expires) || windows[0].Units != expectedUnits {
+		return errors.New("original absolute deadline or accumulated conservative charge differs")
+	}
+	return nil
 }

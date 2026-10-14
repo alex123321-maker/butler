@@ -48,3 +48,37 @@ never error message/code/details. The earlier lost diagnostic stays unknown.
 Future write-stage outcomes describe actual retention, not inherited native
 failure. New source/binary/metadata must receive independent finite review and
 zero-inference regression before this prospective schedule can dispatch.
+
+## Retained second failure and prospective residual62
+
+The once-entered4958/52fa pending window failed on the first full_context slot.
+Its native error class is provider_protocol_error; HTTP status and precise
+protocol cause were not retained and stay unknown. It added one admission,
+45805conservative units and54expenses; both old failures remain eligible and all
+183expenses remain original evidence. No new auxiliary inference occurred.
+The independent prefix review denies complete comparison.
+
+A separately reviewed prospective residual62 can use exactly those two closed
+prefixes, an unchanged original72-input scoring matrix and the same22captures.
+The safe snapshot contains a bounded parent node: current71-input freeze,
+owning ledger/failed observation, the retained72-input comparison and a filtered
+copy of the original90ed prefix. Source/binary/runtime and every byte hash are
+checked independently at each node. Deeper chains are rejected. Both paid slots
+are removed only from admission; neither can be relabelled, retried or refunded.
+Window-scoped rebase/read IDs retain each setup cost without expense collisions.
+
+This prospective root is memory-eval-v2-residual-20261015. It begins55/614740;
+62remaining allowances total2827687, making the same final117/3442427 ceiling.
+Original expiry20:16:58.345536Z and all resource/model/input/schema/criteria
+pins remain unchanged. No new auxiliary calls, retries, repairs, fallback or
+automatic further continuation are authorized. Independent source/runtime review
+and offline two-prefix tests must pass before any new native entry. A current
+failure seals this last bounded residual; no deeper chain is implemented.
+
+Future safe events can retain actual numeric HTTP rejection status and a small
+exact-literal reason vocabulary. No response body, header, raw provider error,
+credential or new semantic answer observation enters diagnosis. New metadata
+cannot establish the precise cause/status of either older failure retroactively.
+For a future400/422 only, bounded INVALID_ARGUMENT bodies can be projected onto
+four fixed classes; this records a provider diagnostic claim without exporting
+message/path/raw bytes and cannot by itself prove a schema or policy diagnosis.

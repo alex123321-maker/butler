@@ -210,6 +210,14 @@ func checkInferenceAuthority(ctx context.Context) error {
 }
 
 func statusError(status int, body io.Reader) error {
+	err := statusErrorKind(status, body)
+	if failure, ok := err.(*transport.Error); ok {
+		failure.HTTPStatus = status
+	}
+	return err
+}
+
+func statusErrorKind(status int, body io.Reader) error {
 	switch status {
 	case http.StatusTooManyRequests:
 		// Only a fixed reason changes the safe diagnostic. Raw error messages,
@@ -226,7 +234,42 @@ func statusError(status int, body io.Reader) error {
 		if status >= 500 {
 			return providerError(transport.ErrorTypeProviderUnavailable, "Antigravity backend is unavailable")
 		}
-		return protocolError("Antigravity rejected the model request")
+		failure := protocolError("Antigravity rejected the model request").(*transport.Error)
+		if status == http.StatusBadRequest || status == http.StatusUnprocessableEntity {
+			failure.SafeReason = invalidArgumentReason(body)
+		}
+		return failure
+	}
+}
+
+// Like HIGH_DEMAND, this reads a bounded private envelope and exports only a
+// fixed class. It never returns provider text, a field path or account metadata.
+// This is an upstream diagnostic claim, not independent proof of its cause.
+func invalidArgumentReason(body io.Reader) string {
+	const limit = 64 * 1024
+	data, err := io.ReadAll(io.LimitReader(body, limit+1))
+	if err != nil || len(data) > limit {
+		return ""
+	}
+	var envelope struct {
+		Error struct {
+			Status  string `json:"status"`
+			Message string `json:"message"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(data, &envelope) != nil || envelope.Error.Status != "INVALID_ARGUMENT" {
+		return ""
+	}
+	message := envelope.Error.Message
+	switch {
+	case strings.Contains(message, `Unknown name "minItems"`):
+		return "unsupported_schema_min_items"
+	case strings.Contains(message, `Unknown name "maxItems"`):
+		return "unsupported_schema_max_items"
+	case strings.Contains(message, "responseSchema") || strings.Contains(message, "response_schema"):
+		return "response_schema_rejected"
+	default:
+		return "upstream_invalid_argument"
 	}
 }
 

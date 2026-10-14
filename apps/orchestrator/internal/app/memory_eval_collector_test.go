@@ -333,7 +333,7 @@ func (c *memoryEvalCollector) capture(ctx context.Context, cse acceptance.Memory
 	}
 	writeID := id + "/write"
 	if c.prior != nil {
-		writeID = id + "/rebase-write"
+		writeID = id + "/rebase-write/" + c.plan.WindowID
 	}
 	if err := c.recordExpense(ctx, acceptance.MemoryExpense{ID: writeID, CaseID: id, Arm: "retrieval", Stage: "write", Status: "measured", Outcome: "success", EvidenceSHA256: acceptance.MemoryDigest(allRefs), Calls: 1, InputTokens: &zero, OutputTokens: &zero, TotalTokens: &zero, Milliseconds: &writeMS, Microunits: &zero, StorageBytes: &storage}); err != nil {
 		return err

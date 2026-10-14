@@ -7,7 +7,7 @@ action=${3:?prepare execute or audit}
 release=${4:?exact candidate commit}
 prior_root=${5:-}
 [[ "$source_root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ && "$root" =~ ^/srv/storage/butler/agents/memory-eval-v2-[a-zA-Z0-9_-]+$ && "$release" =~ ^[a-f0-9]{40}$ && "$root" != "$source_root" ]] || exit 2
-[[ -z "$prior_root" || "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-native-20261015 && "$root" != "$prior_root" ]] || exit 2
+[[ -z "$prior_root" || ( "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-native-20261015 || "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-pending-20261015 ) && "$root" != "$prior_root" ]] || exit 2
 umask 077
 # SSH operator UID need not own the confined runtime UID's files. Helpers have
 # no network, no credential mount, and only the new experiment's named outputs.
@@ -68,11 +68,13 @@ chmod 711 /metadata
   [[ -f "$prior_root/entered/exit-status" && "$(cat "$prior_root/entered/exit-status")" != 0 ]] || exit 2
   prior_source=$(cat "$prior_root/source-path")
   [[ "$prior_source" == "$source_root/snapshots/"* ]] || exit 2
+  old_prior_mount=()
+  if [[ "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-pending-20261015 ]]; then old_prior_mount=(--mount "type=bind,src=$prior_root/prior,dst=/old-prior,readonly"); fi
   docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true --cpus 2 --memory 1536m --pids-limit 128 \
    --mount "type=bind,src=$source_dir,dst=/src,readonly" --mount "type=bind,src=$root/build,dst=/build,readonly" \
    --mount "type=bind,src=$prior_root/private,dst=/old,readonly" --mount "type=bind,src=$prior_root/metadata,dst=/old-meta,readonly" \
    --mount "type=bind,src=$prior_root/build,dst=/old-bin,readonly" --mount "type=bind,src=$prior_source,dst=/old-src,readonly" \
-   --mount "type=bind,src=$root/prior,dst=/snapshot" "$image_id" /build/prior-pin > "$root/metadata/prior.json"
+   --mount "type=bind,src=$root/prior,dst=/snapshot" "${old_prior_mount[@]}" "$image_id" /build/prior-pin > "$root/metadata/prior.json"
   # pins.json still belongs to UID10001; replace exclusively with the augmented
   # operator metadata before prepared.sha256 is sealed.
   read_output metadata/pins.json | jq --slurpfile prior "$root/metadata/prior.json" '.+{prior:$prior[0]}' > "$root/metadata/pins-augmented.json"
