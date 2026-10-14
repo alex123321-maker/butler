@@ -156,7 +156,7 @@ func run(args []string, stdout io.Writer) error {
 				return err
 			}
 			binarySHA, e := acceptance.FileHash(*runnerBinary)
-			if e != nil || binarySHA != pins.Binary || pins.Source != sourceHash || pins.Release != *commit || pins.Hardware != hex.EncodeToString(hardwareHash[:]) || pins.Suite != acceptance.MemorySuiteDigest(suite) || pins.Criteria != acceptance.MemoryVersionCriteriaDigest(suite) {
+			if e != nil || pins.WindowID != frozen.Plan.WindowID || binarySHA != pins.Binary || pins.Source != sourceHash || pins.Release != *commit || pins.Hardware != hex.EncodeToString(hardwareHash[:]) || pins.Suite != acceptance.MemorySuiteDigest(suite) || pins.Criteria != acceptance.MemoryVersionCriteriaDigest(suite) {
 				return errors.New("original runtime pins differ")
 			}
 			var execution acceptance.MemoryExecutionProof

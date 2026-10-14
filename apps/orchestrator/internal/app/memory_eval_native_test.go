@@ -459,7 +459,7 @@ func TestMemoryEvalActualCollection(t *testing.T) {
 	var pins acceptance.MemoryRuntimePins
 	executable, exeErr := os.Executable()
 	binarySHA, binErr := acceptance.FileHash(executable)
-	if err != nil || json.Unmarshal(pinsRaw, &pins) != nil || exeErr != nil || binErr != nil || pins.Release != release || pins.Source != sourceHash || pins.Binary != binarySHA || pins.Hardware != hashMemoryBytes(hardware) || pins.Suite != acceptance.MemorySuiteDigest(suite) || pins.Criteria != acceptance.MemoryVersionCriteriaDigest(suite) || pins.MaxCalls != 280 || pins.MaxUnits != 4000000 || pins.CPUs != 2 || pins.MemoryBytes != 1610612736 || pins.PIDs != 128 || pins.Seconds != 10800 || pins.MaxEvents != 4096 || pins.MaxReportBytes != 128<<20 {
+	if err != nil || json.Unmarshal(pinsRaw, &pins) != nil || exeErr != nil || binErr != nil || pins.WindowID == "" || pins.Release != release || pins.Source != sourceHash || pins.Binary != binarySHA || pins.Hardware != hashMemoryBytes(hardware) || pins.Suite != acceptance.MemorySuiteDigest(suite) || pins.Criteria != acceptance.MemoryVersionCriteriaDigest(suite) || pins.MaxCalls != 280 || pins.MaxUnits != 4000000 || pins.CPUs != 2 || pins.MemoryBytes != 1610612736 || pins.PIDs != 128 || pins.Seconds != 10800 || pins.MaxEvents != 4096 || pins.MaxReportBytes != 128<<20 {
 		t.Fatal("operator-pinned source/binary/resources differ")
 	}
 	var execution acceptance.MemoryExecutionProof
@@ -471,7 +471,7 @@ func TestMemoryEvalActualCollection(t *testing.T) {
 	if err != nil || json.Unmarshal(executionRaw, &execution) != nil || acceptance.ValidateMemoryExecution(execution, pins, hardwareImage.GoImage) != nil {
 		t.Fatal("actual container proof denied before credentials")
 	}
-	plan := acceptance.MemoryPlan{Version: acceptance.MemoryEvalV2, WindowID: "issue78-memory-v2-20261014", EvidenceKind: "model_observation", CodeCommit: release, SourceSHA256: sourceHash, HardwareSHA256: hashMemoryBytes(hardware), Model: antigravity.FlashHighModel, ModelVersion: "gemini-3.8-flash-n", Runtime: "go1.27.2/current-budget+catalog+owned-index+hybrid+bundle/native-openapi", MemoryConfigSHA256: memoryEvalConfigDigest(), PricingBasis: "subscription_invoice_unavailable;local_no_billing", SuiteSHA256: acceptance.MemorySuiteDigest(suite), CriteriaSHA256: acceptance.MemoryVersionCriteriaDigest(suite), Split: "all"}
+	plan := acceptance.MemoryPlan{Version: acceptance.MemoryEvalV2, WindowID: pins.WindowID, EvidenceKind: "model_observation", CodeCommit: release, SourceSHA256: sourceHash, HardwareSHA256: hashMemoryBytes(hardware), Model: antigravity.FlashHighModel, ModelVersion: "gemini-3.8-flash-n", Runtime: "go1.27.2/current-budget+catalog+owned-index+hybrid+bundle/native-openapi", MemoryConfigSHA256: memoryEvalConfigDigest(), PricingBasis: "subscription_invoice_unavailable;local_no_billing", SuiteSHA256: acceptance.MemorySuiteDigest(suite), CriteriaSHA256: acceptance.MemoryVersionCriteriaDigest(suite), Split: "all"}
 	if acceptance.ValidateMemoryPlan(suite, plan) != nil {
 		t.Fatal("frozen collector plan denied")
 	}

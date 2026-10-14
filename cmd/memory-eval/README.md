@@ -42,7 +42,7 @@ independently approved bytes and discards its temporary signing key. Then:
 
 ```sh
 SRC=/srv/storage/butler/agents/memory-eval-78-20261014
-RUN=/srv/storage/butler/agents/memory-eval-v2-native-20261014
+RUN=/srv/storage/butler/agents/memory-eval-v2-native-20261015
 # COMMIT is the exact clean40-character candidate commit; RUN must be new.
 bash "$SRC/current/scripts/dev/memory-eval-model-lab.sh" "$SRC" "$RUN" prepare COMMIT
 bash "$SRC/current/scripts/dev/memory-eval-model-lab.sh" "$SRC" "$RUN" execute COMMIT
@@ -57,6 +57,11 @@ outside this experiment. Timeout stops the runner, preserving its DB/artifacts.
 The SSH operator may remain UID1000 without sudo. Named output hashes/readback
 and initial permissions use confined network-free Docker helpers; credential
 readability is checked by UID10001 without reading credential contents.
+Before the entry marker, a compiled metadata-only entry authenticates Describe
+on `butler-lab_local-inference` and checks the exact frozen profile; Infer is
+disabled. The actual runner joins the fresh PG network, `butler-lab_backend`
+for native transport, and `butler-lab_local-inference` for the local worker.
+All three exact network names and the fresh root-derived window ID are audited.
 
 Frozen limits: High `gemini-3.8-flash-high`, required observed version
 `gemini-3.8-flash-n`;280 new inference admissions;4,000,000 conservative shared

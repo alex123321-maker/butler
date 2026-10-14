@@ -58,8 +58,8 @@ chmod 711 /metadata
  docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true --cpus 2 --memory 1536m --pids-limit 128 \
   -v "$source_dir:/src:ro" -v "$root/build:/build" -v "$root/metadata:/metadata:ro" -w /src "$image_id" \
   /build/memory-eval -mode fixture -suite testdata/acceptance/ru-memory-v2.json -root /src -hardware /metadata/hardware.json -code-commit "$release" -window-id pre-native-fixture -output-dir /build/pin-fixture > "$root/pin-fixture.log"
- read_output build/pin-fixture/frozen.json | jq --arg bin "$(hash_output build/collector.test)" \
-  '.plan|{release:.code_commit,source_sha256:.source_sha256,binary_sha256:$bin,hardware_sha256:.hardware_sha256,suite_sha256:.suite_sha256,criteria_sha256:.criteria_sha256,maximum_calls:280,maximum_conservative_units:4000000,cpus:2,memory_bytes:1610612736,pids:128,window_seconds:10800,maximum_events_per_entry:4096,maximum_report_bytes:134217728}' > "$root/metadata/pins.json"
+ read_output build/pin-fixture/frozen.json | jq --arg bin "$(hash_output build/collector.test)" --arg window "$(basename "$root")" \
+  '.plan|{window_id:$window,release:.code_commit,source_sha256:.source_sha256,binary_sha256:$bin,hardware_sha256:.hardware_sha256,suite_sha256:.suite_sha256,criteria_sha256:.criteria_sha256,maximum_calls:280,maximum_conservative_units:4000000,cpus:2,memory_bytes:1610612736,pids:128,window_seconds:10800,maximum_events_per_entry:4096,maximum_report_bytes:134217728}' > "$root/metadata/pins.json"
  own_metadata pins.json
  docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
   -v "$source_dir:/src:ro" -v "$root/build:/build:ro" -v "$root/review:/review" "$image_id" \
@@ -92,6 +92,13 @@ if [[ "$action" == execute ]]; then
   --mount "type=bind,src=$token,dst=/auth/local-token,readonly" \
   --mount "type=bind,src=$native_import,dst=/auth/native-import.json,readonly" "$image_id" sh -eu -c \
   'test -f /auth/local-token && test -r /auth/local-token && test -f /auth/native-import.json && test -r /auth/native-import.json'
+ # Authenticate only Describe on the actual local-inference network. This
+ # compiled entry forbids Infer and has neither native import nor DB mounts.
+ docker run --rm --user 10001:10001 --network butler-lab_local-inference --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+  --cpus 2 --memory 1536m --pids-limit 128 --mount "type=bind,src=$root/build,dst=/runtime,readonly" \
+  --mount "type=bind,src=$token,dst=/auth/local-token,readonly" \
+  -e BUTLER_MEMORY_EVAL_LOCAL_PREFLIGHT=1 -e BUTLER_MEMORY_EVAL_LOCAL_TOKEN_FILE=/auth/local-token \
+  "$image_id" /runtime/collector.test -test.run '^TestMemoryEvalLocalMetadataPreflight$' -test.v -test.timeout 20s > "$root/local-metadata-preflight.log"
  # Atomic durable entry marker precedes all new native/auxiliary work.
  mkdir -m 700 "$root/entered" || { echo 'One-use model window already entered; preserve it'; exit 2; }
  docker network create --internal "$tag" > "$root/entered/network-id"
@@ -108,6 +115,7 @@ if [[ "$action" == execute ]]; then
   -e BUTLER_MEMORY_EVAL_LOCAL_TOKEN_FILE=/auth/local-token -e BUTLER_MEMORY_EVAL_IMPORT_FILE=/auth/native-import.json \
   "$image_id" /runtime/collector.test -test.run '^TestMemoryEvalActualCollection$' -test.v -test.timeout 185m > "$root/entered/runner-id"
  docker network connect butler-lab_backend "$tag-runner"
+ docker network connect butler-lab_local-inference "$tag-runner"
  docker inspect "$tag-runner" | jq '.[0]|{Id,Image,Path,Args,User:.Config.User,Memory:.HostConfig.Memory,NanoCpus:.HostConfig.NanoCpus,PidsLimit:.HostConfig.PidsLimit,ReadonlyRootfs:.HostConfig.ReadonlyRootfs,Networks:(.NetworkSettings.Networks|keys),Mounts:[.Mounts[]|{Destination,RW}]}' > "$root/metadata/execution.json"
  own_metadata execution.json
  set +e
