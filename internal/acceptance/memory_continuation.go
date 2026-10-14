@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// Operator-owned pins describe the retained first failed native entry and its
+// Operator-owned pins describe retained closed native prefixes and their
 // already measured retrieval. They are not model input or authority to retry.
 type MemoryPriorPins struct {
 	Parent          *MemoryPriorPins `json:"parent,omitempty"`
@@ -56,7 +56,7 @@ func LoadMemoryPrior(s MemorySuite, directory string, pins MemoryPriorPins) (Mem
 
 func loadMemoryPrior(s MemorySuite, directory string, pins MemoryPriorPins, depth int) (MemoryPrior, error) {
 	var p MemoryPrior
-	if depth >= 3 {
+	if depth >= 4 {
 		return p, errors.New("bounded parent lineage differs")
 	}
 	read := func(name, hash string, out any) error {
@@ -77,7 +77,7 @@ func loadMemoryPrior(s MemorySuite, directory string, pins MemoryPriorPins, dept
 		return p, err
 	}
 	if pins.Parent != nil {
-		// Only the separately retained three failed prefixes are supported. A
+		// Only four separately retained closed prefixes are supported. A
 		// recursive snapshot cannot silently create an unbounded retry chain.
 		if p.Frozen.Plan.SourceSHA256 != pins.SourceSHA || p.Frozen.Plan.CodeCommit != pins.CodeCommit {
 			return p, errors.New("bounded parent lineage differs")
@@ -101,10 +101,13 @@ func loadMemoryPrior(s MemorySuite, directory string, pins MemoryPriorPins, dept
 		if e1 != nil || e2 != nil || json.Unmarshal(raw, &scored) != nil || json.Unmarshal(rawM, &retained) != nil || MemoryDigest(scored) != MemoryDigest(parent.Frozen) || MemoryDigest(retained) != MemoryDigest(combined) {
 			return p, errors.New("retained composite denominator or expenses differ")
 		}
-		paid := p.Frozen.Inputs[0]
+		paid, err := memoryCompletedPrefix(p.Frozen, p.Measurements)
+		if err != nil {
+			return p, err
+		}
 		p = parent
 		p.Measurements, p.Audit = combined, audit
-		p.PaidInputs = append(append([]MemoryInput(nil), parent.PaidInputs...), paid)
+		p.PaidInputs = append(append([]MemoryInput(nil), parent.PaidInputs...), paid...)
 		var windows []struct {
 			Calls   int64     `json:"calls"`
 			Units   int64     `json:"reserved_units"`
@@ -150,7 +153,7 @@ func loadMemoryPrior(s MemorySuite, directory string, pins MemoryPriorPins, dept
 	return p, nil
 }
 
-// The execution schedule omits a spent entry. The scored original72-input
+// The execution schedule omits every retained observation. The scored original72-input
 // matrix remains intact; the failed entry is never relabelled as a planned skip.
 func MemoryPendingSchedule(p MemoryPrior, plan MemoryPlan) (MemoryFrozen, error) {
 	f := MemoryFrozen{Plan: plan, Captures: append([]MemoryCapture(nil), p.Frozen.Captures...)}
@@ -159,7 +162,7 @@ func MemoryPendingSchedule(p MemoryPrior, plan MemoryPlan) (MemoryFrozen, error)
 		return f, errors.New("pending schedule cannot change the experiment")
 	}
 	for _, i := range p.Frozen.Inputs {
-		if memoryPriorPaid(p, i.CaseID, i.Arm) {
+		if memoryPriorObserved(p, i.CaseID, i.Arm) {
 			continue
 		}
 		f.Inputs = append(f.Inputs, i)
@@ -182,12 +185,54 @@ func CombineMemoryMeasurements(p MemoryPrior, current MemoryMeasurements) (Memor
 		m.Expenses = append(m.Expenses, e)
 	}
 	for _, o := range current.Observations {
-		if memoryPriorPaid(p, o.CaseID, o.Arm) {
+		if memoryPriorObserved(p, o.CaseID, o.Arm) {
 			return m, errors.New("spent observation was retried")
 		}
 		m.Observations = append(m.Observations, o)
 	}
 	return m, nil
+}
+
+func memoryPriorObserved(p MemoryPrior, caseID, arm string) bool {
+	if memoryPriorPaid(p, caseID, arm) {
+		return true
+	}
+	for _, o := range p.Measurements.Observations {
+		if o.CaseID == caseID && o.Arm == arm {
+			return true
+		}
+	}
+	return false
+}
+
+// A sealed prefix retains every preceding completed observation and planned
+// skip, ending at exactly one failed paid entry. It grants no paid retry.
+func memoryCompletedPrefix(f MemoryFrozen, m MemoryMeasurements) ([]MemoryInput, error) {
+	if len(m.Observations) == 0 || len(m.Observations) > len(f.Inputs) {
+		return nil, errors.New("retained prefix length differs")
+	}
+	paid := []MemoryInput{}
+	for n, o := range m.Observations {
+		i := f.Inputs[n]
+		if i.CaseID != o.CaseID || i.Arm != o.Arm || MemoryInputDigest(i) != o.InputSHA256 {
+			return nil, errors.New("retained prefix order or input differs")
+		}
+		if i.SkipReason != "" {
+			if o.Status != "skipped" || o.Reason != i.SkipReason || n == len(m.Observations)-1 {
+				return nil, errors.New("retained prefix planned skip differs")
+			}
+			continue
+		}
+		want := "completed"
+		if n == len(m.Observations)-1 {
+			want = "failed"
+		}
+		if o.Status != want {
+			return nil, errors.New("retained prefix terminal differs")
+		}
+		paid = append(paid, i)
+	}
+	return paid, nil
 }
 
 func memoryPriorPaid(p MemoryPrior, caseID, arm string) bool {
@@ -199,22 +244,28 @@ func memoryPriorPaid(p MemoryPrior, caseID, arm string) bool {
 	return p.PaidInput.CaseID == caseID && p.PaidInput.Arm == arm
 }
 
-// Read-only correlation of the retained second failed entry; it cannot admit a
-// third entry or label an incomplete comparison as model-quality evidence.
+// Read-only correlation of a closed completed/failed prefix; it cannot admit
+// another entry or label an incomplete comparison as model-quality evidence.
 func AuditMemoryContinuationPrefix(s MemorySuite, p MemoryPrior, f MemoryFrozen, m MemoryMeasurements, directory, binarySHA string, pins MemoryPriorPins) (MemoryRunnerAudit, error) {
 	expected, err := MemoryPendingSchedule(p, f.Plan)
-	if err != nil || MemoryDigest(expected) != MemoryDigest(f) || len(m.Observations) != 1 || len(f.Inputs) == 0 || f.Inputs[0].SkipReason != "" || m.Observations[0].CaseID != f.Inputs[0].CaseID || m.Observations[0].Arm != f.Inputs[0].Arm || m.Observations[0].Status != "failed" {
+	paid, prefixErr := memoryCompletedPrefix(f, m)
+	if err != nil || MemoryDigest(expected) != MemoryDigest(f) || prefixErr != nil || len(paid) == 0 {
 		return MemoryRunnerAudit{}, errors.New("second retained failed prefix differs")
 	}
 	a, err := auditMemoryRunner(s, f, m, directory, binarySHA, true, pins.Calls, pins.ReservedUnits)
-	if err != nil || a.NativeCalls != 1 || a.AuxiliaryCalls != 0 || a.QuestionResults != 0 {
+	if err != nil || a.NativeCalls != int64(len(paid)) || a.AuxiliaryCalls != 0 || a.QuestionResults != len(paid)-1 {
 		return a, errors.New("second prefix admission cannot be correlated")
 	}
-	if err = memoryContinuationWindow(p, directory, pins.ReservedUnits+MemoryNativeReservedUnits(f.Inputs[0])); err != nil {
+	units := pins.ReservedUnits
+	for _, i := range paid {
+		units += MemoryNativeReservedUnits(i)
+	}
+	if err = memoryContinuationWindow(p, directory, units); err != nil {
 		return a, err
 	}
 	a.NativeCalls += p.Audit.NativeCalls
 	a.AuxiliaryCalls += p.Audit.AuxiliaryCalls
+	a.QuestionResults += p.Audit.QuestionResults
 	a.UnknownBroaderTaskResults += p.Audit.UnknownBroaderTaskResults
 	a.Status = "PASS_CORRELATED_RETAINED_FAILURES_ONLY"
 	return a, nil
@@ -245,6 +296,7 @@ func AuditMemoryContinuation(s MemorySuite, p MemoryPrior, currentFrozen MemoryF
 	a.Status = "PASS_CORRELATED_ATTEMPT_MATRIX_WITH_RETAINED_FAILURE"
 	a.NativeCalls += p.Audit.NativeCalls
 	a.AuxiliaryCalls += p.Audit.AuxiliaryCalls
+	a.QuestionResults += p.Audit.QuestionResults
 	a.UnknownBroaderTaskResults += p.Audit.UnknownBroaderTaskResults
 	a.Limits = append(a.Limits, "Every original paid failure remains eligible in the scored denominator; unknown usage/cause stays unknown.", "22 retrieval captures and53 auxiliary calls are original observations, reused without inference; current catalog authority was rebased separately.", "Full original retrieval pipeline latency was not retained and remains unknown for reused captures.")
 	return a, nil

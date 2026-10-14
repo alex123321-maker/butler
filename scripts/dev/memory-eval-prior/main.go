@@ -32,7 +32,7 @@ func main() {
 	allowed := regexp.MustCompile(`^(ledger|measurements|frozen-before-native|captures|plan|collection-status|comparison-frozen|comparison-measurements)\.json$|^(aux|bundle|search|bindings|input|events|result|deletion)-[a-zA-Z0-9_-]+\.json$|^final-[a-zA-Z0-9_-]+\.txt$`)
 	var copySafe func(string, string, int) error
 	copySafe = func(from, to string, depth int) error {
-		if depth >= 3 {
+		if depth >= 4 {
 			return fmt.Errorf("bounded parent snapshot denied")
 		}
 		entries, err := os.ReadDir(from)
@@ -93,7 +93,7 @@ func main() {
 	}
 	var pins acceptance.MemoryPriorPins
 	if runtime.Prior != nil {
-		if (runtime.Prior.Parent != nil && runtime.Prior.Parent.Parent != nil) || os.Mkdir(filepath.Join(*dest, "prior"), 0700) != nil || copySafe("/old-prior", filepath.Join(*dest, "prior"), 1) != nil {
+		if (runtime.Prior.Parent != nil && runtime.Prior.Parent.Parent != nil && runtime.Prior.Parent.Parent.Parent != nil) || os.Mkdir(filepath.Join(*dest, "prior"), 0700) != nil || copySafe("/old-prior", filepath.Join(*dest, "prior"), 1) != nil {
 			panic("bounded safe parent snapshot denied")
 		}
 		pins.Parent = runtime.Prior

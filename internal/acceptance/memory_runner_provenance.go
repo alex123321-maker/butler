@@ -98,6 +98,7 @@ func memoryAuditProvenance(s MemorySuite, f MemoryFrozen, ledger map[string]json
 	var attempts []struct {
 		Run       string `json:"run_id"`
 		Operation string `json:"operation_id"`
+		Outcome   string `json:"outcome"`
 	}
 	if json.Unmarshal(ledger["fixture_memory_eval_attempts"], &attempts) != nil {
 		return errors.New("guard owning attempts missing")
@@ -247,8 +248,14 @@ func memoryAuditProvenance(s MemorySuite, f MemoryFrozen, ledger map[string]json
 		taskID := i.CaseID + ":task"
 		matchedRun, matchedTask, matchedLease, matchedSession := false, false, false, false
 		var finished time.Time
+		expectedState := "completed"
+		for _, a := range attempts {
+			if failedPrefix && a.Run == runID && a.Outcome == "transport_error" {
+				expectedState = "failed"
+			}
+		}
 		for _, r := range runs {
-			if r.ID == runID && r.Session == runID+":session" && r.Task == taskID && r.Revision == revision && (r.State == "completed" && !failedPrefix || failedPrefix && r.State == "failed") && !r.Finished.IsZero() {
+			if r.ID == runID && r.Session == runID+":session" && r.Task == taskID && r.Revision == revision && r.State == expectedState && !r.Finished.IsZero() {
 				matchedRun = true
 				finished = r.Finished
 			}

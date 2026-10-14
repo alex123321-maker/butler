@@ -158,3 +158,12 @@ metadata probe runs before entry. It carries56/660396, all236expenses
 and3failedslots into a three-level parent snapshot, admits only61unpaid entries,
 and retains the original expiry. Fourth-depth lineage is rejected. This needs
 new independent source/runtime review; old gates do not grant this entry.
+
+The closed proxy-safe root subsequently retained54complete answers and one
+120-second provider timeout. The separately reviewed final-six protocol in
+`docs/ai/memory-eval-v2-final-six-protocol-20261015.md` supersedes its parent-depth
+limit for one new6-slot root. All58paid inputs and63consumed observations,
+including5planned skips, remain immutable; only6unpaid inputs plus3remaining
+skips execute. Four closed parent levels are supported and a fifth is denied.
+Aggregate111/3167573 carries the original absolute expiry; final planned
+117/3442427 is unchanged. The separate negative cost score becomes401/280.

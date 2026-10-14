@@ -137,7 +137,7 @@ func auditMemoryRunner(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, dire
 		provenance.Inputs = nil
 		for _, i := range f.Inputs {
 			for _, o := range m.Observations {
-				if i.CaseID == o.CaseID && i.Arm == o.Arm && o.Status == "failed" {
+				if i.CaseID == o.CaseID && i.Arm == o.Arm && i.SkipReason == "" {
 					provenance.Inputs = append(provenance.Inputs, i)
 				}
 			}

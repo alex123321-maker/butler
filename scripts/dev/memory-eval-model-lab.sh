@@ -7,7 +7,7 @@ action=${3:?prepare execute or audit}
 release=${4:?exact candidate commit}
 prior_root=${5:-}
 [[ "$source_root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ && "$root" =~ ^/srv/storage/butler/agents/memory-eval-v2-[a-zA-Z0-9_-]+$ && "$release" =~ ^[a-f0-9]{40}$ && "$root" != "$source_root" ]] || exit 2
-[[ -z "$prior_root" || ( "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-native-20261015 || "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-pending-20261015 || "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-residual-20261015 ) && "$root" != "$prior_root" ]] || exit 2
+[[ -z "$prior_root" || ( "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-native-20261015 || "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-pending-20261015 || "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-residual-20261015 || "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-proxy-safe-final-20261015 ) && "$root" != "$prior_root" ]] || exit 2
 umask 077
 # SSH operator UID need not own the confined runtime UID's files. Helpers have
 # no network, no credential mount, and only the new experiment's named outputs.

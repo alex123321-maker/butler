@@ -52,15 +52,20 @@ func (c *memoryEvalCollector) reuseCapture(ctx context.Context, id string, refs 
 
 type memoryFailureEventProvider struct {
 	nativeScriptedObservationProvider
+	failureType transport.ErrorType
 }
 
-func (*memoryFailureEventProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
+func (p *memoryFailureEventProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
 	for n := 0; n < 2; n++ {
 		if err := transport.CheckInferenceAuthority(ctx); err != nil {
 			return nil, err
 		}
 	}
-	return nativeScriptedStream(transport.NewEvent(r.Context.RunID, transport.EventTypeRunStarted, antigravity.Name), transport.NewTransportErrorEvent(r.Context.RunID, antigravity.Name, &transport.Error{Type: transport.ErrorTypeProviderUnavailable, Message: "PRIVATE_NOT_EXPORTABLE"})), nil
+	kind := p.failureType
+	if kind == "" {
+		kind = transport.ErrorTypeProviderUnavailable
+	}
+	return nativeScriptedStream(transport.NewEvent(r.Context.RunID, transport.EventTypeRunStarted, antigravity.Name), transport.NewTransportErrorEvent(r.Context.RunID, antigravity.Name, &transport.Error{Type: kind, Message: "PRIVATE_NOT_EXPORTABLE"})), nil
 }
 
 func TestMemoryEvalCollectorPendingCrossRootCorrelationIntegration(t *testing.T) {
@@ -264,6 +269,177 @@ func TestMemoryEvalCollectorPendingCrossRootCorrelationIntegration(t *testing.T)
 	if err != nil || len(prior.PaidInputs) != 3 || len(prior.Measurements.Expenses) != 236 || prior.Audit.NativeCalls != 3 {
 		t.Fatal("three retained prefixes", err)
 	}
+	t.Run("completed_prefix_timeout_and_six_remaining", func(t *testing.T) {
+		many := memoryCollectorFixtureWithPrior(t, &prior, &pins, last.private)
+		many.backend = &memoryFixtureBackend{fail: true}
+		for _, cse := range many.suite.Cases {
+			if err := many.capture(ctx, cse); err != nil {
+				t.Fatal(err)
+			}
+		}
+		many.frozen, err = acceptance.MemoryPendingSchedule(prior, many.plan)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err = many.writeEvidence("frozen-before-native.json", many.frozen); err != nil {
+			t.Fatal(err)
+		}
+		paid := 0
+		for _, input := range many.frozen.Inputs {
+			var cse acceptance.MemoryCase
+			for _, candidate := range many.suite.Cases {
+				if acceptance.MemoryOpaqueCaseID(candidate) == input.CaseID {
+					cse = candidate
+				}
+			}
+			if input.SkipReason == "" {
+				paid++
+			}
+			raw, _ := json.Marshal(acceptance.MemoryAnswer{Abstain: true, Citations: []acceptance.CommandWitness{}, TaskRevision: input.Task.Revision, NextAction: cse.Expected.NextAction})
+			many.factory = func(json.RawMessage) (transport.ModelProvider, error) {
+				if paid == 55 {
+					return &memoryFailureEventProvider{failureType: transport.ErrorTypeProviderTimeout}, nil
+				}
+				return &memoryFixtureProvider{raw: string(raw)}, nil
+			}
+			o, sampleErr := many.sample(ctx, cse, input)
+			many.measurements.Observations = append(many.measurements.Observations, o)
+			if err = many.fillUnused(ctx, input); err != nil {
+				t.Fatal(err)
+			}
+			if paid == 55 {
+				if sampleErr == nil {
+					t.Fatal("timeout missing")
+				}
+				break
+			}
+			if sampleErr != nil {
+				t.Fatal(sampleErr)
+			}
+		}
+		many.measurements.FrozenSHA256 = many.frozen.SHA256
+		for _, kind := range []string{"dropped_first", "reordered", "terminal_completed", "input_replaced"} {
+			changed := many.measurements
+			changed.Observations = append([]acceptance.MemoryObservation(nil), many.measurements.Observations...)
+			switch kind {
+			case "dropped_first":
+				changed.Observations = changed.Observations[1:]
+			case "reordered":
+				changed.Observations[0], changed.Observations[1] = changed.Observations[1], changed.Observations[0]
+			case "terminal_completed":
+				changed.Observations[len(changed.Observations)-1].Status = "completed"
+			case "input_replaced":
+				changed.Observations[0].InputSHA256 = strings.Repeat("0", 64)
+			}
+			if _, err := acceptance.AuditMemoryContinuationPrefix(many.suite, prior, many.frozen, changed, many.private, strings.Repeat("5", 64), pins); err == nil || !strings.Contains(err.Error(), "retained failed prefix differs") {
+				t.Fatal("mixed-prefix order/terminal guard absent", kind, err)
+			}
+		}
+		combined, err := acceptance.CombineMemoryMeasurements(prior, many.measurements)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, item := range []struct {
+			name  string
+			value any
+		}{{"measurements.json", many.measurements}, {"comparison-frozen.json", prior.Frozen}, {"comparison-measurements.json", combined}} {
+			if err = many.writeEvidence(item.name, item.value); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if _, err = many.pool.Exec(ctx, `UPDATE fixture_memory_eval_window SET closed=TRUE`); err != nil {
+			t.Fatal(err)
+		}
+		if err = many.exportLedger(ctx); err != nil {
+			t.Fatal(err)
+		}
+		copyMemoryFixtureTree(t, last.private, filepath.Join(many.private, "prior"))
+		pins4 := acceptance.MemoryPriorPins{Parent: &pins, SourceSHA: many.plan.SourceSHA256, CodeCommit: many.plan.CodeCommit, BinarySHA: strings.Repeat("5", 64), ExpiresUTC: pins.ExpiresUTC}
+		if err = many.pool.QueryRow(ctx, `SELECT calls,reserved_units FROM fixture_memory_eval_window`).Scan(&pins4.Calls, &pins4.ReservedUnits); err != nil {
+			t.Fatal(err)
+		}
+		for _, item := range []struct {
+			name string
+			out  *string
+		}{{"ledger.json", &pins4.LedgerSHA}, {"frozen-before-native.json", &pins4.FrozenFileSHA}, {"measurements.json", &pins4.MeasurementsSHA}} {
+			*item.out, err = acceptance.FileHash(filepath.Join(many.private, item.name))
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		prior4, err := acceptance.LoadMemoryPrior(many.suite, many.private, pins4)
+		if err != nil || len(prior4.PaidInputs) != 58 || len(prior4.Measurements.Observations) != 63 || prior4.Audit.QuestionResults != 54 {
+			t.Fatal("mixed completed prefix", err)
+		}
+		bad := pins4
+		p1, p2, p3, p4 := *bad.Parent, *bad.Parent.Parent, *bad.Parent.Parent.Parent, *bad.Parent.Parent.Parent
+		p3.Parent = &p4
+		p2.Parent = &p3
+		p1.Parent = &p2
+		bad.Parent = &p1
+		if _, err = acceptance.LoadMemoryPrior(many.suite, many.private, bad); err == nil || !strings.Contains(err.Error(), "bounded parent lineage") {
+			t.Fatal("fifth parent admitted", err)
+		}
+		final := memoryCollectorFixtureWithPrior(t, &prior4, &pins4, many.private)
+		final.backend = &memoryFixtureBackend{fail: true}
+		for _, cse := range final.suite.Cases {
+			if err = final.capture(ctx, cse); err != nil {
+				t.Fatal(err)
+			}
+		}
+		final.frozen, err = acceptance.MemoryPendingSchedule(prior4, final.plan)
+		if err != nil || len(final.frozen.Inputs) != 9 {
+			t.Fatal("remaining six plus three skips", err)
+		}
+		if err = final.writeEvidence("frozen-before-native.json", final.frozen); err != nil {
+			t.Fatal(err)
+		}
+		for _, input := range final.frozen.Inputs {
+			var cse acceptance.MemoryCase
+			for _, candidate := range final.suite.Cases {
+				if acceptance.MemoryOpaqueCaseID(candidate) == input.CaseID {
+					cse = candidate
+				}
+			}
+			raw, _ := json.Marshal(acceptance.MemoryAnswer{Abstain: true, Citations: []acceptance.CommandWitness{}, TaskRevision: input.Task.Revision, NextAction: cse.Expected.NextAction})
+			final.factory = func(json.RawMessage) (transport.ModelProvider, error) {
+				return &memoryFixtureProvider{raw: string(raw)}, nil
+			}
+			o, err := final.sample(ctx, cse, input)
+			if err != nil {
+				t.Fatal(err)
+			}
+			final.measurements.Observations = append(final.measurements.Observations, o)
+			if err = final.fillUnused(ctx, input); err != nil {
+				t.Fatal(err)
+			}
+		}
+		final.measurements.FrozenSHA256 = final.frozen.SHA256
+		if err = final.writeEvidence("measurements.json", final.measurements); err != nil {
+			t.Fatal(err)
+		}
+		if _, err = final.pool.Exec(ctx, `UPDATE fixture_memory_eval_window SET closed=TRUE`); err != nil {
+			t.Fatal(err)
+		}
+		if err = final.exportLedger(ctx); err != nil {
+			t.Fatal(err)
+		}
+		a, err := acceptance.AuditMemoryContinuation(final.suite, prior4, final.frozen, final.measurements, final.private, strings.Repeat("5", 64), pins4)
+		if err != nil || a.NativeCalls != 64 || a.AuxiliaryCalls != 53 || a.QuestionResults != 60 {
+			t.Fatal("six-slot final correlation", a, err)
+		}
+		full, err := acceptance.CombineMemoryMeasurements(prior4, final.measurements)
+		if err != nil || len(full.Observations) != 72 {
+			t.Fatal("original denominator", err)
+		}
+		for _, old := range prior4.Measurements.Observations {
+			duplicate := final.measurements
+			duplicate.Observations = append(append([]acceptance.MemoryObservation(nil), duplicate.Observations...), old)
+			if _, err = acceptance.CombineMemoryMeasurements(prior4, duplicate); err == nil {
+				t.Fatal("consumed observation repeated", old.Status)
+			}
+		}
+	})
 	mid = last // The following forgery probes clone the immediate retained prefix.
 	for _, kind := range []string{"fourth_parent", "refunded_counter", "reset_deadline"} {
 		bad := pins
