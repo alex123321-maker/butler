@@ -7,6 +7,23 @@ action=${3:?prepare execute or audit}
 release=${4:?exact candidate commit}
 [[ "$source_root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ && "$root" =~ ^/srv/storage/butler/agents/memory-eval-v2-[a-zA-Z0-9_-]+$ && "$release" =~ ^[a-f0-9]{40}$ && "$root" != "$source_root" ]] || exit 2
 umask 077
+# SSH operator UID need not own the confined runtime UID's files. Helpers have
+# no network, no credential mount, and only the new experiment's named outputs.
+own_metadata() {
+ [[ "$1" == pins.json || "$1" == execution.json ]] || exit 2
+ docker run --rm --network none --read-only --cap-drop ALL --cap-add CHOWN --security-opt no-new-privileges:true \
+  --mount "type=bind,src=$root/metadata,dst=/metadata" "$image_id" chown 10001:10001 "/metadata/$1"
+}
+read_output() {
+ case "$1" in metadata/hardware.json|metadata/pins.json|build/pin-fixture/frozen.json|private/frozen.json|audit/report/report.json) ;; *) exit 2;; esac
+ docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+  --mount "type=bind,src=$root/$1,dst=/output,readonly" "$image_id" cat /output
+}
+hash_output() {
+ case "$1" in build/collector.test|build/memory-eval|metadata/pins.json|review/approval.json|review/public-key.hex) ;; *) exit 2;; esac
+ docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+  --mount "type=bind,src=$root/$1,dst=/output,readonly" "$image_id" sha256sum /output | cut -d' ' -f1
+}
 if [[ "$action" == prepare ]]; then
  [[ ! -e "$root" ]] || { echo 'Existing experiment root denied'; exit 2; }
  mkdir -m 700 "$root"
@@ -16,6 +33,7 @@ if [[ "$action" == prepare ]]; then
  mkdir -p "$root/build" "$root/metadata" "$root/review" "$root/private" "$root/postgres" "$root/.cache/go-build" "$root/.cache/go-tmp" "$root/.cache/docker"
  export DOCKER_CONFIG="$root/.cache/docker"
  image_id=$(docker image inspect golang:1.27.2-bookworm --format '{{.Id}}')
+ printf '%s\n' "$image_id" > "$root/image-id"
  pg_id=$(docker image inspect pgvector/pgvector:pg17 --format '{{.Id}}')
  jq -n --arg release "$release" --arg kernel "$(uname -r)" --arg image "$image_id" --arg pg "$pg_id" \
   --argjson cpus "$(getconf _NPROCESSORS_ONLN)" --argjson memory "$(awk '/^MemTotal:/ {print $2}' /proc/meminfo)" \
@@ -27,33 +45,53 @@ go test -c -p 1 -o /build/collector.test ./apps/orchestrator/internal/app
 go build -p 1 -o /build/memory-eval ./cmd/memory-eval
 go build -p 1 -o /build/review-seal ./scripts/dev/memory-eval-review
 ' > "$root/build.log" 2> "$root/build-diagnostics.log"
- chown -R 10001:10001 "$root/build" "$root/private" "$root/metadata" "$root/review"
- chmod 700 "$root/build/collector.test" "$root/build/memory-eval" "$root/build/review-seal" "$root/private" "$root/metadata" "$root/review"
+ docker run --rm --network none --read-only --cap-drop ALL --cap-add CHOWN --cap-add FOWNER --cap-add DAC_OVERRIDE --security-opt no-new-privileges:true \
+  --mount "type=bind,src=$root/build,dst=/build" --mount "type=bind,src=$root/private,dst=/private" \
+  --mount "type=bind,src=$root/metadata,dst=/metadata" --mount "type=bind,src=$root/review,dst=/review" "$image_id" sh -eu -c '
+chown -R 10001:10001 /build /private /review
+chown 10001:10001 /metadata/hardware.json
+chmod 700 /build/collector.test /build/memory-eval /build/review-seal /private /review
+chmod 711 /metadata
+'
  # Ancestor is traversable to the confined UID; no private file becomes public.
  chmod 711 "$root"
  docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true --cpus 2 --memory 1536m --pids-limit 128 \
   -v "$source_dir:/src:ro" -v "$root/build:/build" -v "$root/metadata:/metadata:ro" -w /src "$image_id" \
   /build/memory-eval -mode fixture -suite testdata/acceptance/ru-memory-v2.json -root /src -hardware /metadata/hardware.json -code-commit "$release" -window-id pre-native-fixture -output-dir /build/pin-fixture > "$root/pin-fixture.log"
- jq --arg bin "$(sha256sum "$root/build/collector.test" | cut -d' ' -f1)" \
-  '.plan|{release:.code_commit,source_sha256:.source_sha256,binary_sha256:$bin,hardware_sha256:.hardware_sha256,suite_sha256:.suite_sha256,criteria_sha256:.criteria_sha256,maximum_calls:280,maximum_conservative_units:4000000,cpus:2,memory_bytes:1610612736,pids:128,window_seconds:10800,maximum_events_per_entry:4096,maximum_report_bytes:134217728}' "$root/build/pin-fixture/frozen.json" > "$root/metadata/pins.json"
- chown 10001:10001 "$root/metadata/pins.json"
+ read_output build/pin-fixture/frozen.json | jq --arg bin "$(hash_output build/collector.test)" \
+  '.plan|{release:.code_commit,source_sha256:.source_sha256,binary_sha256:$bin,hardware_sha256:.hardware_sha256,suite_sha256:.suite_sha256,criteria_sha256:.criteria_sha256,maximum_calls:280,maximum_conservative_units:4000000,cpus:2,memory_bytes:1610612736,pids:128,window_seconds:10800,maximum_events_per_entry:4096,maximum_report_bytes:134217728}' > "$root/metadata/pins.json"
+ own_metadata pins.json
  docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
   -v "$source_dir:/src:ro" -v "$root/build:/build:ro" -v "$root/review:/review" "$image_id" \
   /build/review-seal -declaration-sha256 b533980ec505bc0797092d86945dd68032d39fb04a71efb9bb054e9adbcb9337 \
   -document-sha256 39ff6b07131243044f7e5bc52433ac98489e5e72f2182614dd01a4bccbb3d153 > "$root/review-seal.log"
- sha256sum "$root/build/collector.test" "$root/build/memory-eval" "$root/metadata/pins.json" "$root/review/approval.json" "$root/review/public-key.hex" > "$root/prepared.sha256"
+ for file in build/collector.test build/memory-eval metadata/pins.json review/approval.json review/public-key.hex; do
+  printf '%s  %s\n' "$(hash_output "$file")" "$root/$file"
+ done > "$root/prepared.sha256"
  printf 'Prepared fresh bounded window: %s\n' "$root"
  exit 0
 fi
 [[ -f "$root/prepared.sha256" ]] || exit 2
-sha256sum --status -c "$root/prepared.sha256"
+image_id=$(cat "$root/image-id")
+[[ "$image_id" =~ ^sha256:[a-f0-9]{64}$ ]] || exit 2
+while read -r digest path; do
+ [[ "$path" == "$root/"* && "$digest" == "$(hash_output "${path#"$root/"}")" ]] || exit 2
+done < "$root/prepared.sha256"
 source_dir=$(cat "$root/source-path")
-[[ "$source_dir" == "$source_root/snapshots/"* && "$(jq -r .release "$root/metadata/pins.json")" == "$release" ]] || exit 2
+[[ "$source_dir" == "$source_root/snapshots/"* && "$(read_output metadata/pins.json | jq -r .release)" == "$release" ]] || exit 2
 export DOCKER_CONFIG="$root/.cache/docker"
-image_id=$(jq -r .go_image "$root/metadata/hardware.json")
-pg_id=$(jq -r .postgres_image "$root/metadata/hardware.json")
+[[ "$image_id" == "$(read_output metadata/hardware.json | jq -r .go_image)" ]] || exit 2
+pg_id=$(read_output metadata/hardware.json | jq -r .postgres_image)
 tag=$(basename "$root")
 if [[ "$action" == execute ]]; then
+ token=/srv/storage/butler/agents/local-models/private/token
+ native_import=/srv/storage/butler/agents/antigravity-provider/profile/.gemini/antigravity-cli/butler-native-import.json
+ # Metadata-only readability check as the actual UID, before the one-use entry.
+ # --mount refuses a missing host file instead of creating a directory for it.
+ docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+  --mount "type=bind,src=$token,dst=/auth/local-token,readonly" \
+  --mount "type=bind,src=$native_import,dst=/auth/native-import.json,readonly" "$image_id" sh -eu -c \
+  'test -f /auth/local-token && test -r /auth/local-token && test -f /auth/native-import.json && test -r /auth/native-import.json'
  # Atomic durable entry marker precedes all new native/auxiliary work.
  mkdir -m 700 "$root/entered" || { echo 'One-use model window already entered; preserve it'; exit 2; }
  docker network create --internal "$tag" > "$root/entered/network-id"
@@ -61,9 +99,6 @@ if [[ "$action" == execute ]]; then
   --security-opt no-new-privileges:true -v "$root/postgres:/var/lib/postgresql/data" \
   -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_USER=butler -e POSTGRES_DB=memory_eval_test "$pg_id" > "$root/entered/postgres-id"
  for _ in $(seq 1 30); do if docker exec "$tag-pg" pg_isready -U butler -d memory_eval_test >/dev/null; then break; fi; sleep 1; done
- token=/srv/storage/butler/agents/local-models/private/token
- native_import=/srv/storage/butler/agents/antigravity-provider/profile/.gemini/antigravity-cli/butler-native-import.json
- [[ -f "$token" && -f "$native_import" ]] || exit 2
  docker create --name "$tag-runner" --user 10001:10001 --network "$tag" --read-only --cap-drop ALL --security-opt no-new-privileges:true \
   --cpus 2 --memory 1536m --pids-limit 128 --tmpfs /tmp:rw,noexec,nosuid,size=67108864 \
   -v "$source_dir:/src:ro" -v "$root/build:/runtime:ro" -v "$root/metadata:/metadata:ro" -v "$root/review:/review:ro" -v "$root/private:/private" \
@@ -74,7 +109,7 @@ if [[ "$action" == execute ]]; then
   "$image_id" /runtime/collector.test -test.run '^TestMemoryEvalActualCollection$' -test.v -test.timeout 185m > "$root/entered/runner-id"
  docker network connect butler-lab_backend "$tag-runner"
  docker inspect "$tag-runner" | jq '.[0]|{Id,Image,Path,Args,User:.Config.User,Memory:.HostConfig.Memory,NanoCpus:.HostConfig.NanoCpus,PidsLimit:.HostConfig.PidsLimit,ReadonlyRootfs:.HostConfig.ReadonlyRootfs,Networks:(.NetworkSettings.Networks|keys),Mounts:[.Mounts[]|{Destination,RW}]}' > "$root/metadata/execution.json"
- chown 10001:10001 "$root/metadata/execution.json"
+ own_metadata execution.json
  set +e
  timeout 11100 docker start -a "$tag-runner" > "$root/runner.log" 2> "$root/runner-diagnostics.log"
  status=$?
@@ -87,15 +122,17 @@ if [[ "$action" == execute ]]; then
  exit "$status"
 elif [[ "$action" == audit ]]; then
  [[ -f "$root/entered/exit-status" && "$(cat "$root/entered/exit-status")" == 0 && ! -e "$root/audit" ]] || exit 2
- mkdir -m 700 "$root/audit";chown 10001:10001 "$root/audit"
- frozen=$(jq -r .sha256 "$root/private/frozen.json")
+ mkdir -m 700 "$root/audit"
+ docker run --rm --network none --read-only --cap-drop ALL --cap-add CHOWN --security-opt no-new-privileges:true \
+  --mount "type=bind,src=$root/audit,dst=/audit" "$image_id" chown 10001:10001 /audit
+ frozen=$(read_output private/frozen.json | jq -r .sha256)
  docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true --cpus 2 --memory 1536m --pids-limit 128 \
   -v "$source_dir:/src:ro" -v "$root/build:/runtime:ro" -v "$root/metadata:/metadata:ro" -v "$root/review:/review:ro" -v "$root/private:/original:ro" -v "$root/audit:/audit" "$image_id" \
   /runtime/memory-eval -mode audit -root /src -suite testdata/acceptance/ru-memory-v2.json -code-commit "$release" -hardware /metadata/hardware.json \
   -frozen /original/frozen.json -frozen-sha256 "$frozen" -measurements /original/measurements.json -runner-directory /original \
   -runner-binary /runtime/collector.test -runtime-pins /metadata/pins.json -golden-approval /review/approval.json -golden-public-key /review/public-key.hex \
   -output-dir /audit/report > "$root/audit.log" 2> "$root/audit-diagnostics.log"
- jq '{status,model_quality_evidence,promotion_allowed,baseline_comparable,arms,reasons}' "$root/audit/report/report.json"
+ read_output audit/report/report.json | jq '{status,model_quality_evidence,promotion_allowed,baseline_comparable,arms,reasons}'
  exit 0
 fi
 exit 2

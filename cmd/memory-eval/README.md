@@ -54,6 +54,9 @@ Actual command/UID/read-only mounts/CPU/memory/PID/image pins are checked before
 credentials. Secrets remain mounted private references resolved by existing
 credential code. Main database, deployment pointers and credential files stay
 outside this experiment. Timeout stops the runner, preserving its DB/artifacts.
+The SSH operator may remain UID1000 without sudo. Named output hashes/readback
+and initial permissions use confined network-free Docker helpers; credential
+readability is checked by UID10001 without reading credential contents.
 
 Frozen limits: High `gemini-3.8-flash-high`, required observed version
 `gemini-3.8-flash-n`;280 new inference admissions;4,000,000 conservative shared
