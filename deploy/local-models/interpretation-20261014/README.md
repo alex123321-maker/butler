@@ -213,6 +213,12 @@ runner snapshots retain all preparation versions. The main lab services stay
 healthy; owned experiment containers/networks are removed and GPU returns to
 17MiB used. Public weights and reports remain available.
 
+Large original JSON reports are stored as `.json.gz` to keep generated evidence
+out of the code diff. `compressed-originals.json` records compressed and exact
+uncompressed SHA-256 values; every archive was decompressed and verified before
+removing its duplicate plain file. The offline auditor accepts either form.
+The readable metrics above and secondary audit remain ordinary text/JSON.
+
 ## Reproduction
 
 Use a fresh isolated root and existing reviewed weights/dependencies. Qwen

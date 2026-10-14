@@ -3,7 +3,9 @@ package decisions
 // Offline secondary analysis only. It does not resample the frozen holdout or
 // replace its original confidence report. No model/provider call is made.
 import (
+	"compress/gzip"
 	"encoding/json"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -54,7 +56,21 @@ func TestOfflineInterpretationConfidenceAudit(t *testing.T) {
 	if input == "" || output == "" {
 		t.Skip("explicit saved-output offline audit only")
 	}
-	raw, err := os.ReadFile(input)
+	file, err := os.Open(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+	var reader io.Reader = file
+	if strings.HasSuffix(input, ".gz") {
+		compressed, err := gzip.NewReader(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer compressed.Close()
+		reader = compressed
+	}
+	raw, err := io.ReadAll(io.LimitReader(reader, 64<<20))
 	if err != nil {
 		t.Fatal(err)
 	}

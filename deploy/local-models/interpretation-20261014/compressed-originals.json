@@ -1,0 +1,22 @@
+{
+  "development-binary-format.json": {
+    "uncompressed_sha256": "ba135fc60a5806eae7d255893fb0f4bcfb78c9908de347bcc60653f727212747",
+    "gzip_sha256": "f244a93476daa1978a8810c6937d764ab46d835622935be18c1d7f74cb89fe4f"
+  },
+  "development-final.json": {
+    "uncompressed_sha256": "7b18a27c08dd748855b6c8caf903af335551733f7211d30e0a23dd5fbd8816ff",
+    "gzip_sha256": "48d8800d73a0d5d5432b8bafbad24e89dfaa40032fe5dc3c4e3ad0dfdc718b96"
+  },
+  "development-native-english.json": {
+    "uncompressed_sha256": "f282f47071e9e0c1645d850ee625a5ed7481c54523d8856b4d3fac8b0bf8d5e2",
+    "gzip_sha256": "5cea4cd0234f671fb4a414131f94c5628ee9637158eb68c667f3b5f3e3ff2aa3"
+  },
+  "development-native-russian-choice-d1.json": {
+    "uncompressed_sha256": "efd252a6888b3233813e6df4f458593dc76e9afad3537ba7005689f8ae91b672",
+    "gzip_sha256": "0c9c6196aeaad6360fb9c17db2e865d0d4f44052080e7cf4f13d0dfd171ce221"
+  },
+  "independent-test.json": {
+    "uncompressed_sha256": "16ba8f3cd1984ca7552c513ba80c90d03fd7d657bb80bbe41656d622c1b807b1",
+    "gzip_sha256": "6bd26ae392f8ab24e8e76dbbb45a3fea5426de816ab2f3d2c8d75c413d1bc6a8"
+  }
+}
