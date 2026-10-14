@@ -227,6 +227,31 @@ unresolved; owner acceptance is separate. See the structured extraction contract
 
 ## Default-off decision comparison
 
+The latest [2026-10-14 replay](decision-replay-20261014/README.md) retains four
+complete 120-attempt runs. Original selected-only profiles and separately pinned
+full-score profiles both reproduce the same failed Russian classification gate.
+All repeated loads, including d1, succeed under the unchanged resource limits on
+the current implementation. Historical refusals below remain in their artifacts.
+
+For an isolated experiment, use
+`verify-decisions-isolated-lab.sh <snapshot-root> <model-storage-root> selected|full`.
+It reuses installed weights/dependencies read-only, compiles the source snapshot,
+creates one private internal service and disposable PostgreSQL, and repeats on
+that same service after idle unload. It records environment, source hashes, CPU
+samples and complete result files without replacing old reports or deployed
+catalogs. Mode `contracts` instead runs targeted race/integration tests and vet
+against its own PostgreSQL, with zero tensor calls. Full-score profiles exist
+only in `models.decisions-fullscores-evaluation.json`; scores remain uncalibrated.
+
+Report v2 separates unavailable calls from prediction mistakes, counts confidence
+gates and their errors, and excludes annotation-derived policy expectations from
+the measured controller baseline. No model passes screening; actual controller
+calls saved are zero. The fixed corpus is now a previously observed regression
+fixture. An independent evaluation and the full current-controller quality/cost
+baseline remain acceptance gaps.
+
+### Historical evaluation
+
 Run `verify-decisions-lab.sh` only after the deployment owner temporarily selects
 `models.decisions-evaluation.json` for the same persistent service. The runner
 uses the single private token file and an isolated PostgreSQL database; it does

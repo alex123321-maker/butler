@@ -30,12 +30,50 @@ important event, foreign instruction, insufficient data, result checking and
 confirmed success. The last label is a prediction, not Butler verification.
 Scores are not calibrated probabilities of correctness. Fixed gates escalate
 below 0.65 score, below 0.15 margin, unknown margin, empty output or insufficient
-data. GLiNER returns only a selected score, so every observation escalates. d1
-returns a full choice distribution, still uncalibrated. Duplicate/unknown labels,
-invalid scores, missing correlation and stale data fail closed. No executor,
+data. The original GLiNER profiles return only a selected score and always
+escalate. Separately pinned full-score profiles and d1 return every alternative;
+the complete label set is required before a score margin is usable. Two through
+eight categories cannot pretend to be a complete nine-class distribution.
+Duplicate/unknown labels, invalid scores, missing correlation, preprocessing,
+FP32/context-cap drift and stale data fail closed. No executor,
 urgency, image or audio policy is inferred from these labels.
 
-## Measured default
+## Current measured default
+
+Selected mode remains **disabled**. The 2026-10-14
+[replay report](../../deploy/local-models/decision-replay-20261014/README.md)
+records 480 successful CPU attempts: two identical passes through the original
+profiles and two through separate full-score GLiNER profiles with unchanged
+d1. Each experiment uses one persistent service and its original 8 GiB cgroup,
+6 GiB RSS policy and 512 MiB reserve. d1 repeat loading succeeds on the current
+cache-accounting implementation; older refusals remain historical evidence.
+
+The full-score path uses the existing pinned SDK's `Classifier(model).score`
+and explicit softmax activation, preprocessing
+`gliner2.5-classification-softmax-v1`. It wraps the admitted model without another
+checkpoint load. Original selected-only outputs remain reproducible. Neither
+labels, source text nor numerical thresholds changed. Top-label accuracy and
+critical errors reproduce in all four passes. Of 30 regression-test events,
+full-score GLiNER extractor/Decide/d1 produce 16/12/3 non-escalated signals,
+of which 12/5/3 are wrong. No candidate passes quality or critical-error screening.
+Full margins remove an adapter limitation but do not establish reliability.
+
+Report version `decision-comparison-v2` separates runtime availability from
+prediction accuracy and class confusion. A refused RPC always escalates and is
+excluded from class errors and successful warm latency. First-attempt timing is the first
+profile attempt, rather than the first test-split row. Screening also requires
+more correct non-escalated signals than the existing extractor and no wrong
+non-escalated signal; raw accuracy alone cannot establish fewer controller calls.
+Actual calls saved remain zero in shadow mode.
+
+The corpus has already been observed, so these passes are a regression replay,
+not fresh held-out generalization or calibration. Literal rules still score
+30/30 on this constructed fixture. The annotation-derived typed control
+expectations are separate from classifier metrics; a live current-controller
+quality/cost comparison remains unmeasured. This and an independent corpus remain
+explicit acceptance gaps for issue 28. Production scheduling/shortcuts stay off.
+
+## Historical measurements
 
 Selected mode: **disabled**. The fixed public corpus has 10 dev / 30 held-out
 Russian events: negated stops, temporal amendments, ambiguity/conflict, foreign
@@ -62,7 +100,7 @@ Literal rules score 30/30 on this deliberately synthetic corpus, not a productio
 population. The report's `current_controller` entry is a typed owner-stop/amend
 and objective-proof contract fixture, not a live cloud model benchmark or the
 production controller's classification outputs. Other events escalate there.
-Full current-controller quality/cost comparison remains unmeasured. No unbudgeted
+Full current-controller quality/cost comparison was unmeasured. No unbudgeted
 cloud calls or claimed monetary savings are introduced.
 
 ## Runtime, license and reassessment
@@ -82,7 +120,7 @@ Electricity/hardware price and exact process CPU time were not measured. CPU
 sampling uses 100%=one core and includes loading and Go supervision.
 
 Reassessment requires an independent Russian corpus, full current-controller
-baseline, held-out calibration/error analysis, reliable repeat loading within
+baseline, held-out calibration/error analysis, continued repeat loading within
 unchanged limits and a measured improvement without critical misses. Changes
 to labels, descriptions, precision or revision require new dev calibration and
 a new held-out corpus. Both profiles stay disabled in the ordinary catalog;

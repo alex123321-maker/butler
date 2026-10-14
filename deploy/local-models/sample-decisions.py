@@ -3,6 +3,7 @@ import datetime
 import json
 import signal
 import subprocess
+import sys
 import time
 
 running = True
@@ -15,11 +16,12 @@ def stop(_signum, _frame):
 
 signal.signal(signal.SIGTERM, stop)
 started = time.monotonic()
+container = sys.argv[1] if len(sys.argv) == 2 else 'butler-lab-local-models-1'
 while running and time.monotonic() - started < 600:
     sample = {"at": datetime.datetime.now(datetime.timezone.utc).isoformat()}
     try:
         value = subprocess.check_output(
-            ["docker", "stats", "--no-stream", "--format", "{{.CPUPerc}}", "butler-lab-local-models-1"],
+            ["docker", "stats", "--no-stream", "--format", "{{.CPUPerc}}", container],
             stderr=subprocess.DEVNULL, timeout=8,
         ).decode("ascii").strip()
         sample["worker_cpu_percent"] = float(value.rstrip("%"))

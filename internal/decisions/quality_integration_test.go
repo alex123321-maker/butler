@@ -61,26 +61,33 @@ type result struct {
 	WallMS      int64       `json:"wall_ms"`
 }
 type metrics struct {
-	Count           int                       `json:"count"`
-	Correct         int                       `json:"correct"`
-	Errors          int                       `json:"errors"`
-	ImportantMisses int                       `json:"important_misses"`
-	StopMisses      int                       `json:"explicit_stop_misses"`
-	FalseInitiative int                       `json:"false_initiative"`
-	FalseSuccess    int                       `json:"false_success"`
-	Escalations     int                       `json:"escalations"`
-	Accuracy        float64                   `json:"accuracy"`
-	PerClass        map[string][3]int         `json:"class_tp_fp_fn"`
-	Confusion       map[string]map[string]int `json:"confusion"`
-	P50             int64                     `json:"warm_wall_p50_ms"`
-	P95             int64                     `json:"warm_wall_p95_ms"`
-	Cold            int64                     `json:"first_wall_ms"`
-	PeakRAM         uint32                    `json:"peak_ram_mib"`
-	PeakGPU         uint32                    `json:"peak_gpu_mib"`
-	delays          []int64
+	Count                int                       `json:"count"`
+	Observed             int                       `json:"observed"`
+	Correct              int                       `json:"correct"`
+	Errors               int                       `json:"errors"`
+	ErrorCounts          map[string]int            `json:"error_counts"`
+	UnavailableImportant int                       `json:"unavailable_important_events"`
+	ImportantMisses      int                       `json:"important_misses"`
+	StopMisses           int                       `json:"explicit_stop_misses"`
+	FalseInitiative      int                       `json:"false_initiative"`
+	FalseSuccess         int                       `json:"false_success"`
+	Escalations          int                       `json:"escalations"`
+	NonEscalated         int                       `json:"non_escalated"`
+	NonEscalatedErrors   int                       `json:"non_escalated_errors"`
+	Accuracy             float64                   `json:"accuracy"`
+	Availability         float64                   `json:"availability"`
+	PerClass             map[string][3]int         `json:"class_tp_fp_fn"`
+	Confusion            map[string]map[string]int `json:"confusion"`
+	P50                  int64                     `json:"warm_wall_p50_ms"`
+	P95                  int64                     `json:"warm_wall_p95_ms"`
+	Cold                 int64                     `json:"profile_first_attempt_wall_ms,omitempty"`
+	TotalWall            int64                     `json:"total_wall_ms"`
+	PeakRAM              uint32                    `json:"peak_ram_mib"`
+	PeakGPU              uint32                    `json:"peak_gpu_mib"`
+	delays               []int64
 }
 
-func (m *metrics) add(c eventCase, label string, escalate bool, fault string, wall int64, o Observation) {
+func (m *metrics) add(c eventCase, label string, escalate bool, fault string, wall int64, o Observation, firstAttempt bool) {
 	if m.PerClass == nil {
 		m.PerClass = map[string][3]int{}
 		m.Confusion = map[string]map[string]int{}
@@ -89,11 +96,28 @@ func (m *metrics) add(c eventCase, label string, escalate bool, fault string, wa
 		}
 	}
 	m.Count++
-	if label == c.Gold && fault == "" {
-		m.Correct++
+	m.TotalWall += wall
+	if firstAttempt {
+		m.Cold = wall
 	}
 	if fault != "" {
 		m.Errors++
+		if m.ErrorCounts == nil {
+			m.ErrorCounts = map[string]int{}
+		}
+		m.ErrorCounts[fault]++
+		if c.Important {
+			m.UnavailableImportant++
+		}
+		m.Escalations++
+		m.Availability = float64(m.Observed) / float64(m.Count)
+		// Refused inference is not a prediction of "insufficient data" and
+		// contributes neither classification errors nor warm inference latency.
+		return
+	}
+	m.Observed++
+	if label == c.Gold {
+		m.Correct++
 	}
 	if c.Important && label != c.Gold {
 		m.ImportantMisses++
@@ -109,6 +133,11 @@ func (m *metrics) add(c eventCase, label string, escalate bool, fault string, wa
 	}
 	if escalate {
 		m.Escalations++
+	} else {
+		m.NonEscalated++
+		if label != c.Gold {
+			m.NonEscalatedErrors++
+		}
 	}
 	for k, a := range m.PerClass {
 		if label == k && c.Gold == k && fault == "" {
@@ -127,9 +156,7 @@ func (m *metrics) add(c eventCase, label string, escalate bool, fault string, wa
 		m.Confusion[c.Gold] = map[string]int{}
 	}
 	m.Confusion[c.Gold][label]++
-	if m.Count == 1 {
-		m.Cold = wall
-	} else {
+	if !firstAttempt {
 		m.delays = append(m.delays, wall)
 	}
 	if o.PeakRAM > m.PeakRAM {
@@ -138,7 +165,8 @@ func (m *metrics) add(c eventCase, label string, escalate bool, fault string, wa
 	if o.PeakGPU > m.PeakGPU {
 		m.PeakGPU = o.PeakGPU
 	}
-	m.Accuracy = float64(m.Correct) / float64(m.Count)
+	m.Accuracy = float64(m.Correct) / float64(m.Observed)
+	m.Availability = float64(m.Observed) / float64(m.Count)
 }
 func (m *metrics) finish() {
 	sort.Slice(m.delays, func(i, j int) bool { return m.delays[i] < m.delays[j] })
@@ -146,6 +174,31 @@ func (m *metrics) finish() {
 		m.P50 = m.delays[(len(m.delays)-1)/2]
 		m.P95 = m.delays[(len(m.delays)-1)*95/100]
 	}
+}
+
+// A signal that always escalates cannot reduce controller calls, even when its
+// raw top label is correct. This is a screening gate, not a production switch.
+func screeningFailures(m, existing *metrics, minimumAccuracy float64) []string {
+	var reasons []string
+	if m.Observed == 0 || m.Accuracy < minimumAccuracy {
+		reasons = append(reasons, "classification_quality")
+	}
+	if m.Errors != 0 {
+		reasons = append(reasons, "runtime_errors")
+	}
+	if m.ImportantMisses+m.StopMisses+m.FalseInitiative+m.FalseSuccess != 0 {
+		reasons = append(reasons, "critical_predictions")
+	}
+	if m.NonEscalated == 0 || m.NonEscalated <= existing.NonEscalated {
+		reasons = append(reasons, "no_controller_call_reduction")
+	}
+	if m.NonEscalatedErrors != 0 {
+		reasons = append(reasons, "wrong_non_escalated_signal")
+	}
+	if m.PeakGPU != 0 {
+		reasons = append(reasons, "unexpected_gpu_usage")
+	}
+	return reasons
 }
 
 // Fixed rules are deliberately literal. Origin is data, never a grant. These
@@ -182,9 +235,9 @@ func literal(c eventCase) string {
 	return "новое поручение"
 }
 
-// This is the existing controller's typed safety boundary, not a new LLM
-// baseline: owner control and objective proof remain separate from event text.
-func controller(c eventCase) string {
+// Expected policy behavior from corpus annotations. This does not execute the
+// controller and must never be counted as a measured classifier baseline.
+func expectedControlBoundary(c eventCase) string {
 	if c.Control == "stop" {
 		return "остановка"
 	}
@@ -219,27 +272,32 @@ func TestActualRussianDecisionComparison(t *testing.T) {
 	r := &recording{Backend: backend}
 	ctx, cancel := context.WithTimeout(context.Background(), 9*time.Minute)
 	defer cancel()
+	profiles := Profiles()
+	if os.Getenv("BUTLER_TEST_DECISION_FULL_SCORES") == "1" {
+		profiles = FullScoreProfiles()
+	}
 	totals := map[string]map[string]*metrics{"dev": {}, "test": {}}
 	for _, part := range totals {
-		for _, mode := range []string{"rules", "current_controller", Profiles()[0].ID, Profiles()[1].ID, Profiles()[2].ID} {
+		for _, mode := range []string{"rules", profiles[0].ID, profiles[1].ID, profiles[2].ID} {
 			part[mode] = &metrics{}
 		}
 	}
+	var controlFixture []map[string]string
 	for _, c := range s.Cases {
 		if totals[c.Split] == nil {
 			t.Fatal("split invalid")
 		}
-		totals[c.Split]["rules"].add(c, literal(c), false, "", 0, Observation{})
-		v := controller(c)
-		totals[c.Split]["current_controller"].add(c, v, v == "недостаточно данных", "", 0, Observation{})
+		totals[c.Split]["rules"].add(c, literal(c), false, "", 0, Observation{}, false)
+		v := expectedControlBoundary(c)
+		controlFixture = append(controlFixture, map[string]string{"case": c.ID, "expected_boundary": v})
 	}
 	var results []result
-	for _, p := range Profiles() {
+	for _, p := range profiles {
 		observer, e := New(f.catalog, f.jobs, r, f.target, p.ID, budget.ModelPrice{Basis: "local_no_billing"})
 		if e != nil {
 			t.Fatal(e)
 		}
-		for _, c := range s.Cases {
+		for i, c := range s.Cases {
 			j, ref := f.job(t, p.ID+":"+c.ID, "Источник: "+c.Origin+".\nСобытие: "+c.Text)
 			r.Status = ""
 			start := time.Now()
@@ -253,7 +311,7 @@ func TestActualRussianDecisionComparison(t *testing.T) {
 				}
 				o = Observation{Label: "недостаточно данных", Escalate: true, Insufficient: true, ShadowOnly: true, EventPreserved: true}
 			}
-			totals[c.Split][p.ID].add(c, o.Label, o.Escalate, fault, wall, o)
+			totals[c.Split][p.ID].add(c, o.Label, o.Escalate, fault, wall, o, i == 0)
 			results = append(results, result{c.ID, c.Split, c.Gold, p.ID, o, fault, wall})
 			code := ""
 			if fault != "" {
@@ -266,18 +324,41 @@ func TestActualRussianDecisionComparison(t *testing.T) {
 		t.Logf("profile=%s test accuracy=%.3f errors=%d important_miss=%d false_success=%d", p.ID, totals["test"][p.ID].Accuracy, totals["test"][p.ID].Errors, totals["test"][p.ID].ImportantMisses, totals["test"][p.ID].FalseSuccess)
 	}
 	gates := map[string]bool{}
+	failures := map[string][]string{}
 	for _, part := range totals {
 		for _, m := range part {
 			m.finish()
 		}
 	}
-	existing := totals["test"][Profiles()[0].ID]
-	for _, p := range Profiles() {
+	existing := totals["test"][profiles[0].ID]
+	for _, p := range profiles {
 		m := totals["test"][p.ID]
-		gates[p.ID] = m.Accuracy >= s.Accuracy && m.Errors == 0 && m.ImportantMisses == 0 && m.StopMisses == 0 && m.FalseInitiative == 0 && m.FalseSuccess == 0 && m.PeakGPU == 0 && m.Accuracy > existing.Accuracy
+		failures[p.ID] = screeningFailures(m, existing, s.Accuracy)
+		gates[p.ID] = len(failures[p.ID]) == 0
 	}
 	sum := sha256.Sum256(raw)
-	report := map[string]any{"generated_at": time.Now().UTC(), "corpus": s.Version, "corpus_sha256": hex.EncodeToString(sum[:]), "counts": map[string]int{"dev": 10, "test": 30}, "thresholds": map[string]any{"score_min": s.Score, "margin_min": s.Margin, "accuracy_min": s.Accuracy, "critical_misses_max": s.Critical, "tuned_on_test": false}, "profiles": Profiles(), "totals": totals, "cases": results, "actual_attempts": r.Attempts, "selected_mode": "disabled; shadow experiment only", "selection_gates": gates, "production_enabled": false, "event_suppression_enabled": false, "grants_from_classification": false, "completion_verified_from_classification": false, "cpu_only": true, "network": "same persistent internal-only service", "score_is_calibrated_probability": false, "cost": map[string]any{"basis": "explicit local_no_billing personal inference", "provider_billed_cost_micros": 0, "electricity_and_hardware_cost": "not measured; no invented price", "cloud_calls": 0, "conservative_active_allowance_ms_per_attempt": 60000}, "current_controller_baseline": "existing typed owner-stop/amend and objective verified-proof boundary; no live cloud classification benchmark", "limitations": []string{"40 synthetic Russian text events, not a production population", "no Russian voice/image quality claim", "no calibrated reliability or monetary cloud-saving claim", "one-class GLiNER output has unknown margin and always escalates"}}
+	report := map[string]any{
+		"report_version": "decision-comparison-v2", "generated_at": time.Now().UTC(),
+		"corpus": s.Version, "corpus_sha256": hex.EncodeToString(sum[:]),
+		"counts":     map[string]int{"dev": 10, "test": 30},
+		"thresholds": map[string]any{"score_min": s.Score, "margin_min": s.Margin, "accuracy_min": s.Accuracy, "critical_misses_max": s.Critical, "tuned_on_test": false},
+		"profiles":   profiles, "totals": totals, "cases": results, "actual_attempts": r.Attempts,
+		"selected_mode": "disabled; shadow experiment only", "screening_gates": gates, "screening_failures": failures,
+		"production_enabled": false, "event_suppression_enabled": false, "grants_from_classification": false, "completion_verified_from_classification": false,
+		"cpu_only": true, "network": "one persistent internal-only service per experiment", "score_is_calibrated_probability": false,
+		"cost": map[string]any{"basis": "explicit local_no_billing personal inference", "provider_billed_cost_micros": 0, "electricity_and_hardware_cost": "not measured; no invented price", "cloud_calls": 0, "actual_controller_calls_saved": 0, "conservative_active_allowance_ms_per_attempt": 60000},
+		"metric_definitions": map[string]string{
+			"accuracy":                      "correct / observed; undefined when observed=0 (serialized as 0)",
+			"availability":                  "observed / count; errors always escalate and are excluded from class confusion",
+			"non_escalated":                 "counterfactual signals only; shadow mode actually preserves all controller work",
+			"warm_wall":                     "successful attempts except the first attempt of each profile; never reset at the dev/test boundary",
+			"profile_first_attempt_wall_ms": "first attempt wall time, not proof of a cold model load",
+			"screening_gates":               "quality, availability, critical errors and more correct non-escalated signals than the existing extractor; passing still requires a full controller quality/cost benchmark before selection",
+		},
+		"typed_control_fixture":       controlFixture,
+		"current_controller_baseline": "unmeasured; typed_control_fixture is expected policy behavior derived from annotations, not actual controller execution or comparable model predictions",
+		"limitations":                 []string{"40 previously observed synthetic Russian text events; replay regression, not fresh held-out generalization", "no Russian voice/image/executor/urgency quality claim", "no calibrated reliability or monetary cloud-saving claim", "one-class GLiNER output has unknown margin and always escalates"},
+	}
 	if path := os.Getenv("BUTLER_TEST_DECISION_CPU_SAMPLES"); path != "" {
 		file, err := os.Open(path)
 		if err == nil {

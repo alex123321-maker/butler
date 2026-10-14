@@ -172,9 +172,23 @@ model record grouping fails, with action polarity and exception scope explicitly
 unresolved. Model field metrics exclude that protection layer. See
 [structured candidate extraction](structured-memory-extraction.md).
 
-The default-off decision caller now records real source/job-admitted CPU signals
-from all three pinned models on a frozen Russian corpus. None passes selection;
-the exact repeat also records conservative d1 RAM admission refusals. Signals
+An operator-only evaluation catalog additionally selects
+`gliner2.5-classification-softmax-v1` for the two pinned CPU FP32 GLiNER checkpoints.
+The upstream `Classifier` facade wraps the already admitted resident model;
+`ClassificationSchema.single` fixes softmax activation and `score` returns all
+requested alternatives. Complete text plus compiled schema is checked against
+the 512-token cap before scoring with `max_len=None`. No second checkpoint,
+dependency, remote code or model-selected decoding option is introduced. Go
+validates the complete correlated label set, finite bounded scores, revision,
+runtime and preprocessing identity. Selected-only profiles keep their original
+behavior. These scores remain uncalibrated signals. The default catalog does not
+include the new profiles; no automatic decision consumer is enabled.
+
+The default-off decision caller records real source/job-admitted CPU signals
+from all three pinned models on a frozen Russian corpus. None passes selection.
+Historical repeats retain d1 RAM admission refusals; the 2026-10-14 isolated
+replay succeeds at all repeated loads under the current accounting and unchanged
+limits, while both selected-only and full-score profiles fail quality screening. Signals
 cannot suppress events or acquire task/grant/verification authority. See
 [local decision observations](local-decision-signals.md) and the checked-in
 acceptance matrix for remaining current-controller baseline work.

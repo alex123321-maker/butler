@@ -60,26 +60,68 @@ func (f *fixture) job(t *testing.T, id, body string) (jobs.Job, catalog.SourceRe
 }
 
 type fakeBackend struct {
-	calls  atomic.Int64
-	before func()
-	output *pb.ClassifyOutput
+	calls   atomic.Int64
+	before  func()
+	output  *pb.ClassifyOutput
+	profile *Profile
 }
 
 func (b *fakeBackend) Describe(context.Context, *pb.Empty) (*pb.Catalog, error) {
 	p := Profiles()[0]
-	return &pb.Catalog{Models: []*pb.ModelProfile{{Id: p.ID, Model: p.Model, Revision: p.Revision, RuntimeVersion: p.Runtime, PreferredDevice: "cpu", Enabled: true}}}, nil
+	if b.profile != nil {
+		p = *b.profile
+	}
+	return &pb.Catalog{Models: []*pb.ModelProfile{{Id: p.ID, Model: p.Model, Revision: p.Revision, RuntimeVersion: p.Runtime, PreprocessingVersion: p.Preprocessing, ContextTokens: uint32(p.Tokens), Precision: "FP32", PreferredDevice: "cpu", Enabled: true}}}, nil
 }
 func (b *fakeBackend) Infer(ctx context.Context, r *pb.InferRequest) (*pb.InferResponse, error) {
 	b.calls.Add(1)
 	if b.before != nil {
 		b.before()
 	}
-	return &pb.InferResponse{RequestId: r.RequestId, ProfileId: r.ProfileId, Revision: Profiles()[0].Revision, Device: "cpu", Output: &pb.InferResponse_Classify{Classify: b.output}}, nil
+	p := Profiles()[0]
+	if b.profile != nil {
+		p = *b.profile
+	}
+	return &pb.InferResponse{RequestId: r.RequestId, ProfileId: r.ProfileId, Revision: p.Revision, Device: "cpu", Output: &pb.InferResponse_Classify{Classify: b.output}}, nil
+}
+
+func TestFullScoreProfilePinsPreprocessingAndRequiresAllLabelsIntegration(t *testing.T) {
+	for _, variant := range []string{"wrong_preprocessing", "wrong_context", "selected_only", "complete"} {
+		t.Run(variant, func(t *testing.T) {
+			f := newFixture(t)
+			j, ref := f.job(t, variant, "Проверь результат.")
+			p := FullScoreProfiles()[0]
+			b := &fakeBackend{profile: &p, output: &pb.ClassifyOutput{Scores: completeScores("проверка результата", .9, "уточнение", .1)}}
+			s, err := New(f.catalog, f.jobs, b, f.target, p.ID, budget.ModelPrice{Basis: "local_no_billing"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			switch variant {
+			case "wrong_preprocessing":
+				p.Preprocessing = "unreviewed"
+			case "wrong_context":
+				p.Tokens++
+			case "selected_only":
+				b.output.Scores = []*pb.Score{{Id: "проверка результата", Value: .9}}
+			}
+			o, err := s.Observe(context.Background(), j, ref)
+			if variant == "complete" {
+				if err != nil || o.Escalate || o.MarginUnknown || o.Margin < .79 || !o.ShadowOnly || !o.EventPreserved {
+					t.Fatal("full distribution lost its bounded shadow signal", o, err)
+				}
+			} else if err == nil {
+				t.Fatal("profile drift or incomplete distribution accepted")
+			}
+			if (variant == "wrong_preprocessing" || variant == "wrong_context") && b.calls.Load() != 0 {
+				t.Fatal("profile drift reached IPC")
+			}
+		})
+	}
 }
 func TestOwnedShadowSignalsCannotChangeAuthorityIntegration(t *testing.T) {
 	f := newFixture(t)
 	j, ref := f.job(t, "owned-safe", "Останови задачу.")
-	b := &fakeBackend{output: &pb.ClassifyOutput{Scores: []*pb.Score{{Id: "новое поручение", Value: 1}, {Id: "остановка", Value: 0}}}}
+	b := &fakeBackend{output: &pb.ClassifyOutput{Scores: completeScores("новое поручение", 1, "остановка", 0)}}
 	s, e := New(f.catalog, f.jobs, b, f.target, Profiles()[0].ID, budget.ModelPrice{Basis: "local_no_billing"})
 	if e != nil {
 		t.Fatal(e)
@@ -98,6 +140,23 @@ func TestOwnedShadowSignalsCannotChangeAuthorityIntegration(t *testing.T) {
 	var accepted int
 	if e = f.catalog.Pool().QueryRow(context.Background(), `SELECT count(*) FROM memory_claims`).Scan(&accepted); e != nil || accepted != 0 {
 		t.Fatal("shadow wrote memory", e)
+	}
+}
+
+func TestPartialShadowDistributionDeniesSignalIntegration(t *testing.T) {
+	f := newFixture(t)
+	j, ref := f.job(t, "partial-output", "Проверь результат.")
+	b := &fakeBackend{output: &pb.ClassifyOutput{Scores: []*pb.Score{{Id: "подтверждённый успех", Value: .99}, {Id: "проверка результата", Value: .01}}}}
+	s, err := New(f.catalog, f.jobs, b, f.target, Profiles()[0].ID, budget.ModelPrice{Basis: "local_no_billing"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.Observe(context.Background(), j, ref); err == nil || b.calls.Load() != 1 {
+		t.Fatal("partial alternatives produced a usable signal", err)
+	}
+	used, err := f.budgets.Ledger.Get(context.Background(), budget.ScopeID("auxiliary", "owner", j.ID))
+	if err != nil || used.Used.ModelTurns != 1 {
+		t.Fatal("rejected model output was not charged", err)
 	}
 }
 func TestForgedAndSecretShadowSourceCannotReachIPCIntegration(t *testing.T) {

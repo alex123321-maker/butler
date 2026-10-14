@@ -11,6 +11,7 @@ import (
 
 	"github.com/butler/butler/internal/budget"
 	pb "github.com/butler/butler/internal/gen/localmodels/v1"
+	"github.com/butler/butler/internal/localmodels"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/jobs"
 	"github.com/butler/butler/internal/memory/sanitize"
@@ -27,19 +28,33 @@ type Backend interface {
 	Infer(context.Context, *pb.InferRequest) (*pb.InferResponse, error)
 }
 type Profile struct {
-	ID       string `json:"profile"`
-	Model    string `json:"model"`
-	Revision string `json:"revision"`
-	Runtime  string `json:"runtime"`
-	Tokens   int64  `json:"context_tokens"`
+	ID            string `json:"profile"`
+	Model         string `json:"model"`
+	Revision      string `json:"revision"`
+	Runtime       string `json:"runtime"`
+	Tokens        int64  `json:"context_tokens"`
+	Preprocessing string `json:"preprocessing_version"`
+	FullScores    bool   `json:"full_scores"`
 }
 
 func Profiles() []Profile {
 	return []Profile{
-		{"gliner2.5-multi-cpu-v1", "fastino/gliner2.5-multi-v1", "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3", "torch2.10.0+cu128/transformers5.19.0/gliner2.1.0", 512},
-		{"gliner2.5-decide-cpu-v1", "fastino/GLiNER2.5-multi-Decide", "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d", "torch2.10.0+cu128/transformers5.19.0/gliner2.1.0", 512},
-		{"d1-omni-text-cpu-v1", "LiquidAI/d1-omni-600M", "02b55d7076f15129e59ab3f94783f32c4b088674", "torch2.10.0+cu128/transformers5.19.0/d1code02b55d7", 2048},
+		{"gliner2.5-multi-cpu-v1", "fastino/gliner2.5-multi-v1", "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3", "torch2.10.0+cu128/transformers5.19.0/gliner2.1.0", 512, "gliner2.5-schema-v1", false},
+		{"gliner2.5-decide-cpu-v1", "fastino/GLiNER2.5-multi-Decide", "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d", "torch2.10.0+cu128/transformers5.19.0/gliner2.1.0", 512, "gliner2.5-decision-v1", false},
+		{"d1-omni-text-cpu-v1", "LiquidAI/d1-omni-600M", "02b55d7076f15129e59ab3f94783f32c4b088674", "torch2.10.0+cu128/transformers5.19.0/d1code02b55d7", 2048, "d1-text-choice-v1", true},
 	}
+}
+
+// FullScoreProfiles tests a separately pinned preprocessing path without
+// changing the frozen selected-only experiment or the default catalog.
+func FullScoreProfiles() []Profile {
+	profiles := Profiles()
+	for i := 0; i < 2; i++ {
+		profiles[i].ID = []string{"gliner2.5-multi-fullscores-cpu-v1", "gliner2.5-decide-fullscores-cpu-v1"}[i]
+		profiles[i].Preprocessing = localmodels.GLiNERFullScores
+		profiles[i].FullScores = true
+	}
+	return profiles
 }
 
 type Observation struct {
@@ -48,6 +63,7 @@ type Observation struct {
 	Escalate       bool              `json:"escalate"`
 	Insufficient   bool              `json:"insufficient_data"`
 	MarginUnknown  bool              `json:"margin_unknown"`
+	Margin         float64           `json:"score_margin,omitempty"`
 	ShadowOnly     bool              `json:"shadow_only"`
 	EventPreserved bool              `json:"event_preserved"`
 	Source         catalog.SourceRef `json:"source"`
@@ -69,7 +85,7 @@ func New(c *catalog.Store, j *jobs.Store, b Backend, target budget.LocalTarget, 
 	if c == nil || j == nil || b == nil || target.Endpoint() != "local-models:9090" || target.Identity() == "" || price.Basis != "local_no_billing" || price.InputMicrosPerToken != 0 || price.OutputMicrosPerToken != 0 {
 		return nil, ErrDenied
 	}
-	for _, p := range Profiles() {
+	for _, p := range append(Profiles(), FullScoreProfiles()...) {
 		if p.ID == profileID {
 			return &Observer{c, j, b, target, p}, nil
 		}
@@ -79,6 +95,12 @@ func New(c *catalog.Store, j *jobs.Store, b Backend, target budget.LocalTarget, 
 func normalize(out *pb.ClassifyOutput) (Observation, error) {
 	o := Observation{ShadowOnly: true, EventPreserved: true, Escalate: true, Insufficient: true}
 	if out == nil {
+		return o, ErrDenied
+	}
+	// The selected-only GLiNER API is supported with unknown margin. A
+	// purported distribution must include every alternative: a missing label
+	// could otherwise hide the actual winner or runner-up.
+	if n := len(out.Scores); n > 1 && n != len(categories) {
 		return o, ErrDenied
 	}
 	allowed := map[string]bool{}
@@ -106,6 +128,9 @@ func normalize(out *pb.ClassifyOutput) (Observation, error) {
 	}
 	o.Score = best
 	o.MarginUnknown = second < 0
+	if !o.MarginUnknown {
+		o.Margin = best - second
+	}
 	o.Insufficient = o.Label == "недостаточно данных"
 	o.Escalate = o.Insufficient || o.MarginUnknown || best < .65 || best-second < .15
 	return o, nil
@@ -149,7 +174,9 @@ func (s *Observer) Observe(ctx context.Context, j jobs.Job, ref catalog.SourceRe
 	}
 	ready := false
 	for _, p := range cat.Models {
-		if p != nil && p.Id == s.profile.ID && p.Model == s.profile.Model && p.Revision == s.profile.Revision && p.RuntimeVersion == s.profile.Runtime && p.PreferredDevice == "cpu" && p.Enabled {
+		if p != nil && p.Id == s.profile.ID && p.Model == s.profile.Model && p.Revision == s.profile.Revision &&
+			p.RuntimeVersion == s.profile.Runtime && p.PreprocessingVersion == s.profile.Preprocessing &&
+			p.ContextTokens == uint32(s.profile.Tokens) && p.Precision == "FP32" && p.PreferredDevice == "cpu" && p.Enabled {
 			ready = true
 		}
 	}
@@ -170,6 +197,9 @@ func (s *Observer) Observe(ctx context.Context, j jobs.Job, ref catalog.SourceRe
 	callError := bounded.Err()
 	release()
 	if e != nil || callError != nil || response == nil || response.RequestId != id || response.ProfileId != s.profile.ID || response.Revision != s.profile.Revision || response.Device != "cpu" {
+		return Observation{}, ErrDenied
+	}
+	if s.profile.FullScores && (response.GetClassify() == nil || len(response.GetClassify().Scores) != len(categories)) {
 		return Observation{}, ErrDenied
 	}
 	o, e := normalize(response.GetClassify())

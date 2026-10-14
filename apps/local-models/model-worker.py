@@ -184,6 +184,10 @@ try:
             from gliner2 import AutoExtractor
             model = AutoExtractor.from_pretrained(str(path), map_location='cpu', quantize=False, local_files_only=True, token=False)
             tokenizer = transformers.AutoTokenizer.from_pretrained(str(path), local_files_only=True, trust_remote_code=False)
+            if profile['preprocessing_version'] == 'gliner2.5-classification-softmax-v1':
+                from gliner2.classification import Classifier, ClassificationSchema, ClassificationConfig
+                # Reuse the already admitted model; never load a second checkpoint.
+                classifier = Classifier(model).eval()
         model.eval()
     emit({'kind': 'ready', 'vram_mib': ((torch.cuda.memory_reserved() + 1048575) // 1048576) if device == 'gpu' else 0})
     for line in sys.stdin:
@@ -256,14 +260,28 @@ try:
                                     spans.append({'type': label, 'text': item['text'], 'start': item['start'], 'end': item['end'], 'confidence': item['confidence']})
                             output = {'kind': 'spans', 'spans': spans}
                     else:
-                        schema = model.create_schema().classification('category',labels).build()
-                        prepared = model.processor.collate_fn_inference([(text,schema)],max_len=None,
-                            error_policy='raise',architecture='boundary')
-                        if prepared.input_ids.shape[-1]>int(profile['context_tokens']):
-                            raise ValueError('classification schema plus text too long')
-                        result = model.classify_text(text, {'category': labels}, include_confidence=True,max_len=None)
-                        category = result.get('category')
-                        output = {'kind': 'classes', 'labels': [] if category is None else [category['label']], 'scores': [] if category is None else [category['confidence']]}
+                        if profile['preprocessing_version'] == 'gliner2.5-classification-softmax-v1':
+                            compiled = classifier.compile_schema(
+                                ClassificationSchema().single('category', labels, activation='softmax'))
+                            prepared = model.processor.collate_fn_inference(
+                                [(text, compiled.build())], max_len=None,
+                                error_policy='raise', architecture='boundary')
+                            if prepared.input_ids.shape[-1] > int(profile['context_tokens']):
+                                raise ValueError('classification schema plus text too long')
+                            scores = classifier.score(text, compiled, config=ClassificationConfig(max_len=None))
+                            if set(scores.tasks['category']) != set(labels):
+                                raise ValueError('incomplete classification scores')
+                            output = {'kind': 'classes', 'labels': labels,
+                                      'scores': [scores.probability('category', label) for label in labels]}
+                        else:
+                            schema = model.create_schema().classification('category',labels).build()
+                            prepared = model.processor.collate_fn_inference([(text,schema)],max_len=None,
+                                error_policy='raise',architecture='boundary')
+                            if prepared.input_ids.shape[-1]>int(profile['context_tokens']):
+                                raise ValueError('classification schema plus text too long')
+                            result = model.classify_text(text, {'category': labels}, include_confidence=True,max_len=None)
+                            category = result.get('category')
+                            output = {'kind': 'classes', 'labels': [] if category is None else [category['label']], 'scores': [] if category is None else [category['confidence']]}
                 else:
                     raise ValueError('unsupported operation')
             emit(output)
