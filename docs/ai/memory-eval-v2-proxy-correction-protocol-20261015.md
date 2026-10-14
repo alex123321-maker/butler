@@ -11,15 +11,16 @@ existing antigravity-proxy:18080 on butler-lab_backend. The proxy is running.
 This is an established launcher mismatch, not proof it caused old failures.
 No proxy restart, configuration/credential change or sealed-root mutation follows.
 
-A fresh metadata-only process imports the private typed reference through
-providerauth.Manager into an ephemeral private SecretStore and uses the standard
-proxy route. It reads only paid Cloud Code discovery and the fixed available-model
-catalog; no provider/generation or durable database is constructed. Numeric
-status/booleans are exported, never credential/project/account/catalog/raw data.
-The actual probe returned200 and confirmed the frozen High profile,0modelcalls;
-this proves metadata availability, not native generation capability.
+The historical metadata probe returned200 and confirmed the frozen High profile,
+0modelcalls. Its possible OAuth refresh/token rotation was not observed and is
+unknown. Independent review rejected its ephemeral refresh-capable store. That
+helper is removed from source and execute; its historical binary/report and the
+withheld prepared proxy root remain intact. A later no-refresh diagnostic stopped
+before OAuth because the original import was expired. Neither probe proves native
+generation capability. Native auth/refresh now remains exclusively in the existing
+runtime's encrypted PostgreSQL SecretStore after the durable entry marker.
 
-A separately reviewed new root memory-eval-v2-proxy-20261015 may admit only61
+A separately reviewed new root memory-eval-v2-proxy-safe-20261015 may admit only61
 unpaid entries. Original72-input denominator, all3paid failures, original22
 captures and all236expenses remain intact. Source/body/chunk/alias/tombstone
 rebasing and original material checks are mandatory. Three-level parent lineage
@@ -34,7 +35,9 @@ over the unchanged280score criterion. The negative cost gate is not hidden.
 Prepared pins require proxy_required. Actual Docker environment is projected onto
 only ProxyConfigured and LocalBypass booleans; both are checked before native auth.
 The exact public proxy URL contains no secret and NO_PROXY covers loopback, ownPG
-and local-models. Compiled metadata preflight must pass before entry and records
-no generation. Native source/binary/runtime/prior pins receive independent review
+and local-models. Before entry, credential mounts are checked only for readability
+without network; local Describe forbids Infer. No native credential resolution or
+OAuth is performed before the own encrypted database exists. Native
+source/binary/runtime/prior pins receive independent review
 before this one correction can enter. A failure seals it; no further continuation
 is authorized by this prospective protocol. All old NO_GOs remain unchanged.

@@ -22,7 +22,7 @@ read_output() {
   --mount "type=bind,src=$root/$1,dst=/output,readonly" "$image_id" cat /output
 }
 hash_output() {
- case "$1" in build/collector.test|build/memory-eval|build/model-metadata|metadata/pins.json|review/approval.json|review/public-key.hex) ;; *) exit 2;; esac
+ case "$1" in build/collector.test|build/memory-eval|metadata/pins.json|review/approval.json|review/public-key.hex) ;; *) exit 2;; esac
  docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
   --mount "type=bind,src=$root/$1,dst=/output,readonly" "$image_id" sha256sum /output | cut -d' ' -f1
 }
@@ -47,14 +47,13 @@ go test -c -p 1 -o /build/collector.test ./apps/orchestrator/internal/app
 go build -p 1 -o /build/memory-eval ./cmd/memory-eval
 go build -p 1 -o /build/review-seal ./scripts/dev/memory-eval-review
 go build -p 1 -o /build/prior-pin ./scripts/dev/memory-eval-prior
-go build -p 1 -o /build/model-metadata ./scripts/dev/memory-eval-model-metadata
 ' > "$root/build.log" 2> "$root/build-diagnostics.log"
  docker run --rm --network none --read-only --cap-drop ALL --cap-add CHOWN --cap-add FOWNER --cap-add DAC_OVERRIDE --security-opt no-new-privileges:true \
   --mount "type=bind,src=$root/build,dst=/build" --mount "type=bind,src=$root/private,dst=/private" \
   --mount "type=bind,src=$root/metadata,dst=/metadata" --mount "type=bind,src=$root/review,dst=/review" --mount "type=bind,src=$root/prior,dst=/prior" "$image_id" sh -eu -c '
 chown -R 10001:10001 /build /private /review /prior
 chown 10001:10001 /metadata/hardware.json
-chmod 700 /build/collector.test /build/memory-eval /build/review-seal /build/prior-pin /build/model-metadata /private /review /prior
+chmod 700 /build/collector.test /build/memory-eval /build/review-seal /build/prior-pin /private /review /prior
 chmod 711 /metadata
 '
  # Ancestor is traversable to the confined UID; no private file becomes public.
@@ -87,7 +86,7 @@ chmod 711 /metadata
   -v "$source_dir:/src:ro" -v "$root/build:/build:ro" -v "$root/review:/review" "$image_id" \
   /build/review-seal -declaration-sha256 b533980ec505bc0797092d86945dd68032d39fb04a71efb9bb054e9adbcb9337 \
   -document-sha256 39ff6b07131243044f7e5bc52433ac98489e5e72f2182614dd01a4bccbb3d153 > "$root/review-seal.log"
- for file in build/collector.test build/memory-eval build/model-metadata metadata/pins.json review/approval.json review/public-key.hex; do
+ for file in build/collector.test build/memory-eval metadata/pins.json review/approval.json review/public-key.hex; do
   printf '%s  %s\n' "$(hash_output "$file")" "$root/$file"
  done > "$root/prepared.sha256"
  printf 'Prepared fresh bounded window: %s\n' "$root"
@@ -118,11 +117,8 @@ if [[ "$action" == execute ]]; then
   --mount "type=bind,src=$token,dst=/auth/local-token,readonly" \
   --mount "type=bind,src=$native_import,dst=/auth/native-import.json,readonly" "$image_id" sh -eu -c \
   'test -f /auth/local-token && test -r /auth/local-token && test -f /auth/native-import.json && test -r /auth/native-import.json'
- docker run --rm --user 10001:10001 --network butler-lab_backend --read-only --cap-drop ALL --security-opt no-new-privileges:true \
-  --cpus 1 --memory 128m --pids-limit 32 --mount "type=bind,src=$root/build,dst=/runtime,readonly" \
-  --mount "type=bind,src=$native_import,dst=/auth/native-import.json,readonly" \
-  -e BUTLER_MEMORY_EVAL_MODEL_METADATA=1 -e HTTPS_PROXY=http://antigravity-proxy:18080 -e HTTP_PROXY=http://antigravity-proxy:18080 \
-  -e NO_PROXY=localhost,127.0.0.1,memory-eval-postgres,local-models "$image_id" /runtime/model-metadata > "$root/native-metadata-preflight.json"
+ # Native auth/refresh happens only after entry in the actual runtime's
+ # encrypted PostgreSQL SecretStore; never in a disposable metadata process.
  # Authenticate only Describe on the actual local-inference network. This
  # compiled entry forbids Infer and has neither native import nor DB mounts.
  docker run --rm --user 10001:10001 --network butler-lab_local-inference --read-only --cap-drop ALL --security-opt no-new-privileges:true \
