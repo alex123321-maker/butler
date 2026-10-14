@@ -869,3 +869,11 @@ durable completion only after actual removal; lost acknowledgement remains
 pending across restart. This component is implemented, while workspace
 Broker/runtime/model admission and cleanup scheduling remain disabled/pending.
 
+# Pending-only evaluation lineage
+
+An independently reviewed continuation can reuse original retrieval captures
+after a failed native prefix. It must preserve the complete original scored
+matrix, paid failures, all charges and original absolute expiry; only admission
+of unpaid inputs is allowed. Rebase current source/task authority through the
+Catalog, without replaying old receipts as new execution or repeating inference.
+Source/binary/original-byte lineage and composite ledger correlation are required.

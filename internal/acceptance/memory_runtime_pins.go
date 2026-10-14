@@ -8,21 +8,22 @@ import (
 // Operator metadata is mounted read-only, outside the candidate's output tree.
 // Actual collection checks every identity before opening provider credentials.
 type MemoryRuntimePins struct {
-	WindowID       string `json:"window_id"`
-	Release        string `json:"release"`
-	Source         string `json:"source_sha256"`
-	Binary         string `json:"binary_sha256"`
-	Hardware       string `json:"hardware_sha256"`
-	Suite          string `json:"suite_sha256"`
-	Criteria       string `json:"criteria_sha256"`
-	MaxCalls       int64  `json:"maximum_calls"`
-	MaxUnits       int64  `json:"maximum_conservative_units"`
-	CPUs           int    `json:"cpus"`
-	MemoryBytes    int64  `json:"memory_bytes"`
-	PIDs           int    `json:"pids"`
-	Seconds        int    `json:"window_seconds"`
-	MaxEvents      int    `json:"maximum_events_per_entry"`
-	MaxReportBytes int64  `json:"maximum_report_bytes"`
+	Prior          *MemoryPriorPins `json:"prior,omitempty"`
+	WindowID       string           `json:"window_id"`
+	Release        string           `json:"release"`
+	Source         string           `json:"source_sha256"`
+	Binary         string           `json:"binary_sha256"`
+	Hardware       string           `json:"hardware_sha256"`
+	Suite          string           `json:"suite_sha256"`
+	Criteria       string           `json:"criteria_sha256"`
+	MaxCalls       int64            `json:"maximum_calls"`
+	MaxUnits       int64            `json:"maximum_conservative_units"`
+	CPUs           int              `json:"cpus"`
+	MemoryBytes    int64            `json:"memory_bytes"`
+	PIDs           int              `json:"pids"`
+	Seconds        int              `json:"window_seconds"`
+	MaxEvents      int              `json:"maximum_events_per_entry"`
+	MaxReportBytes int64            `json:"maximum_report_bytes"`
 }
 
 type MemoryExecutionProof struct {
@@ -71,6 +72,9 @@ func ValidateMemoryExecution(e MemoryExecutionProof, pins MemoryRuntimePins, ima
 		if !seen[required] {
 			return errors.New("required read-only input absent")
 		}
+	}
+	if pins.Prior != nil && !seen["/prior"] {
+		return errors.New("read-only original prefix absent")
 	}
 	return nil
 }

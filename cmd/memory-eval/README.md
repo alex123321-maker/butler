@@ -132,3 +132,12 @@ remain null without independent genuine effect evidence. Negative observations
 are preserved. Harness acceptance, model-quality pass, complete cost, actual user
 outcome and promotion are distinct. Offline scoring cannot prove native execution;
 read-only audit can certify correlated observations but cannot execute or promote.
+
+The retained90ed model window completed53auxiliary calls and then failed its
+first native entry. Pending-only continuation is separately specified in
+`docs/ai/memory-eval-v2-pending-protocol-20261015.md`: pass the exact original root
+as the preparation script's optional fifth argument and use a different new
+root. It reuses original captures without inference, carries spent counters
+and the original absolute expiry, and audits with `pending-audit`. The original
+failed slot remains in the scoring denominator. Never repeat an eligible paid
+slot or treat its unknown usage/cause as zero.

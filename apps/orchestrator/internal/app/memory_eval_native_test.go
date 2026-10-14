@@ -177,7 +177,7 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 				stopGuard()
 				continue
 			}
-			events = append(events, memoryEvalEvent{ID: event.EventID, Run: event.RunID, Provider: event.ProviderName, Time: event.Timestamp, Type: string(event.EventType), Version: event.ProviderModelVersion, Usage: event.Usage, Final: event.AssistantFinal, ToolProposed: event.ToolCall != nil || event.ToolCallBatch != nil})
+			events = append(events, memoryEvalTrace(event))
 			if event.RunID != run || event.ProviderName != antigravity.Name || event.EventID == "" || event.Timestamp.IsZero() || terminals > 0 {
 				clean = false
 			}
@@ -230,6 +230,9 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 		pipelineMS += c.captureMilliseconds[i.CaseID]
 	}
 	o.PipelineMilliseconds = &pipelineMS
+	if c.prior != nil && i.Arm == "retrieval" {
+		o.PipelineMilliseconds = nil
+	}
 	o.ModelVersion = version
 	var input, output, total *int64
 	if usage != nil {
@@ -278,6 +281,7 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 	// Owning durable spend precedes exclusive private original retention.
 	saveStarted := time.Now()
 	bytesBefore := c.retainedBytes
+	originalWriteFailed := true
 	defer func() {
 		retain, cancel := context.WithTimeout(context.WithoutCancel(live), 10*time.Second)
 		defer cancel()
@@ -285,7 +289,7 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 		ms := time.Since(saveStarted).Milliseconds()
 		bytes := c.retainedBytes - bytesBefore
 		outcome := "success"
-		if resultErr != nil {
+		if originalWriteFailed {
 			outcome = "failed"
 		}
 		if recordErr := c.recordExpense(retain, acceptance.MemoryExpense{ID: i.CaseID + "/" + i.Arm + "/original-write", CaseID: i.CaseID, Arm: i.Arm, Stage: "write", Status: "measured", Outcome: outcome, EvidenceSHA256: acceptance.MemoryDigest([]string{admission.OperationID, outputHash, "private_artifact_bytes"}), InputTokens: &zero, OutputTokens: &zero, TotalTokens: &zero, Milliseconds: &ms, Microunits: &zero, StorageBytes: &bytes}); recordErr != nil {
@@ -298,6 +302,7 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 	if err = c.writeEvidence("events-"+strings.TrimPrefix(i.CaseID, "memory:")+"-"+i.Arm+".json", events); err != nil {
 		return o, err
 	}
+	originalWriteFailed = false
 	finishCtx = budget.WithModelOperation(finishCtx, admission.OperationID)
 	if err = c.checkSourcesPhase(finishCtx, i, "final"); err != nil {
 		o.Status = "failed"
@@ -319,6 +324,7 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 			BroaderGoalCompleted       *bool
 		}{o.InputSHA256, outputHash, "synthetic_question_answer_and_current_instruction", assessment, nil}
 		if err = c.writeEvidence("result-"+strings.TrimPrefix(i.CaseID, "memory:")+"-"+i.Arm+".json", result); err != nil {
+			originalWriteFailed = true
 			return o, err
 		}
 		_, err = c.pool.Exec(finishCtx, `INSERT INTO fixture_memory_eval_results VALUES($1,$2,$3,$4,$5,'synthetic_question_answer_and_current_instruction',$6)`, i.CaseID, i.Arm, o.InputSHA256, outputHash, assessment, i.Task.Revision)
@@ -475,6 +481,17 @@ func TestMemoryEvalActualCollection(t *testing.T) {
 	if acceptance.ValidateMemoryPlan(suite, plan) != nil {
 		t.Fatal("frozen collector plan denied")
 	}
+	var prior *acceptance.MemoryPrior
+	started := time.Now().UTC()
+	deadline := started.Add(3 * time.Hour)
+	if pins.Prior != nil {
+		p, priorErr := acceptance.LoadMemoryPrior(suite, "/prior", *pins.Prior)
+		if priorErr != nil || !p.Expires.After(time.Now()) {
+			t.Fatal("retained prior prefix or original deadline denied")
+		}
+		prior = &p
+		deadline, started = p.Expires, p.Expires.Add(-3*time.Hour)
+	}
 	pool := memoryEvalDatabase(t)
 	manifest := catalog.NewFileManifest(filepath.Join(private, "deletion-anchor"))
 	if err = manifest.Initialize(); err != nil {
@@ -496,8 +513,8 @@ func TestMemoryEvalActualCollection(t *testing.T) {
 		t.Fatal("pinned local backend unavailable")
 	}
 	defer closeBackend()
-	c := &memoryEvalCollector{pool: pool, catalog: cat, budgets: budgets, backend: backend, suite: suite, plan: plan, private: private, sourceRefs: map[string]map[string]catalog.SourceRef{}, started: time.Now().UTC()}
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Hour)
+	c := &memoryEvalCollector{pool: pool, catalog: cat, budgets: budgets, backend: backend, suite: suite, plan: plan, private: private, sourceRefs: map[string]map[string]catalog.SourceRef{}, started: started, prior: prior, priorPins: pins.Prior, priorDirectory: "/prior"}
+	ctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
 	if err = c.init(ctx); err != nil {
 		t.Fatal(err)
@@ -540,7 +557,20 @@ func TestMemoryEvalActualCollection(t *testing.T) {
 				collectionErr = retentionErr
 				t.Error("measurement retention failed")
 			}
-			report, scoreErr := acceptance.ScoreMemory(suite, c.frozen, c.measurements, approval, key)
+			scoreFrozen, scoreMeasurements := c.frozen, c.measurements
+			if prior != nil {
+				scoreFrozen = prior.Frozen
+				combined, combineErr := acceptance.CombineMemoryMeasurements(*prior, c.measurements)
+				if combineErr != nil {
+					t.Error("prior failed denominator or expense lost")
+					return
+				}
+				scoreMeasurements = combined
+				if c.writeEvidence("comparison-frozen.json", scoreFrozen) != nil || c.writeEvidence("comparison-measurements.json", scoreMeasurements) != nil {
+					t.Error("composite originals retention failed")
+				}
+			}
+			report, scoreErr := acceptance.ScoreMemory(suite, scoreFrozen, scoreMeasurements, approval, key)
 			if retentionErr := c.writeEvidence("report.json", report); retentionErr != nil {
 				collectionErr = retentionErr
 				t.Error("report retention failed")
@@ -559,7 +589,13 @@ func TestMemoryEvalActualCollection(t *testing.T) {
 			t.Fatal("current retrieval capture failed without native fallback")
 		}
 	}
-	c.frozen, err = acceptance.FreezeMemory(suite, plan, c.captures)
+	if prior == nil {
+		c.frozen, err = acceptance.FreezeMemory(suite, plan, c.captures)
+	} else {
+		if err = c.verifyRebasedChunks(ctx); err == nil {
+			c.frozen, err = acceptance.MemoryPendingSchedule(*prior, plan)
+		}
+	}
 	if err != nil {
 		collectionErr = err
 		t.Fatal(err)

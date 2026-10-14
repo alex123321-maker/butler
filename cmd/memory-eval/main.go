@@ -42,13 +42,14 @@ func run(args []string, stdout io.Writer) error {
 	runnerDirectory := flags.String("runner-directory", "", "operator-pinned original private runner directory (audit)")
 	runnerBinary := flags.String("runner-binary", "", "original separately compiled runner binary (audit)")
 	runtimePins := flags.String("runtime-pins", "", "original operator read-only metadata (audit)")
+	priorDirectory := flags.String("prior-directory", "", "read-only safe original prefix (pending-audit)")
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
 	if flags.NArg() != 0 {
 		return errors.New("unexpected arguments")
 	}
-	if *mode != "fixture" && *mode != "freeze" && *mode != "score" && *mode != "audit" {
+	if *mode != "fixture" && *mode != "freeze" && *mode != "score" && *mode != "audit" && *mode != "pending-audit" {
 		return errors.New("unknown memory-eval mode")
 	}
 	f, err := os.Open(filepath.Join(*root, *suitePath))
@@ -146,7 +147,17 @@ func run(args []string, stdout io.Writer) error {
 				return errors.New("review key denied")
 			}
 		}
-		report, err = acceptance.ScoreMemory(suite, frozen, measurements, approval, key)
+		if *mode == "pending-audit" {
+			if err = acceptance.VerifyMemoryGolden(suite, approval, key); err != nil {
+				return err
+			}
+			var a acceptance.MemoryRunnerAudit
+			frozen, measurements, report, a, err = pendingAudit(suite, frozen, measurements, *runnerDirectory, *priorDirectory, *runtimePins, *runnerBinary, *commit, sourceHash, hex.EncodeToString(hardwareHash[:]), hw, approval, key)
+			audit = &a
+			originalMeasurements, _ = json.Marshal(measurements)
+		} else {
+			report, err = acceptance.ScoreMemory(suite, frozen, measurements, approval, key)
+		}
 		if err == nil && *mode == "audit" {
 			if err = acceptance.VerifyMemoryGolden(suite, approval, key); err != nil {
 				return err

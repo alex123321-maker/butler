@@ -50,6 +50,9 @@ type memoryEvalCollector struct {
 	closed              bool
 	captureMilliseconds map[string]int64
 	retainedBytes       int64
+	prior               *acceptance.MemoryPrior
+	priorPins           *acceptance.MemoryPriorPins
+	priorDirectory      string
 }
 
 type memoryEvalBackend struct {
@@ -149,7 +152,7 @@ func memoryEvalConfigDigest() string {
 }
 
 func (c *memoryEvalCollector) init(ctx context.Context) error {
-	ddl := `CREATE TABLE fixture_memory_eval_window(singleton boolean PRIMARY KEY CHECK(singleton),plan_hash text NOT NULL,calls bigint NOT NULL DEFAULT 0,reserved_units bigint NOT NULL DEFAULT 0,max_calls bigint NOT NULL,expires_at timestamptz NOT NULL,closed boolean NOT NULL DEFAULT false);
+	ddl := `CREATE TABLE fixture_memory_eval_window(singleton boolean PRIMARY KEY CHECK(singleton),plan_hash text NOT NULL,calls bigint NOT NULL DEFAULT 0,reserved_units bigint NOT NULL DEFAULT 0,max_calls bigint NOT NULL,expires_at timestamptz NOT NULL,closed boolean NOT NULL DEFAULT false,prior_calls bigint NOT NULL DEFAULT 0,prior_reserved_units bigint NOT NULL DEFAULT 0);
 CREATE TABLE fixture_memory_eval_expenses(id text PRIMARY KEY,case_id text NOT NULL,arm text NOT NULL,stage text NOT NULL,record jsonb NOT NULL);
 CREATE TABLE fixture_memory_eval_attempts(case_id text NOT NULL,arm text NOT NULL,run_id text NOT NULL UNIQUE,input_hash text NOT NULL,operation_id text UNIQUE,output_hash text,outcome text NOT NULL DEFAULT 'reserved',input_tokens bigint,output_tokens bigint,total_tokens bigint,model_version text,milliseconds bigint,PRIMARY KEY(case_id,arm));
 CREATE TABLE fixture_memory_eval_aux(request_id text PRIMARY KEY,case_id text NOT NULL,reservation_id text UNIQUE NOT NULL,request_hash text NOT NULL,response_hash text,outcome text NOT NULL DEFAULT 'reserved');
@@ -160,13 +163,17 @@ CREATE TRIGGER memory_expenses_immutable BEFORE UPDATE OR DELETE ON fixture_memo
 CREATE TRIGGER memory_results_immutable BEFORE UPDATE OR DELETE ON fixture_memory_eval_results FOR EACH ROW EXECUTE FUNCTION fixture_memory_eval_append_only();
 CREATE TRIGGER memory_guards_immutable BEFORE UPDATE OR DELETE ON fixture_memory_eval_guards FOR EACH ROW EXECUTE FUNCTION fixture_memory_eval_append_only();
 CREATE FUNCTION fixture_memory_eval_window_guard() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
-IF OLD.closed OR NEW.plan_hash<>OLD.plan_hash OR NEW.max_calls<>OLD.max_calls OR NEW.expires_at<>OLD.expires_at OR NEW.calls<OLD.calls OR NEW.reserved_units<OLD.reserved_units THEN RAISE EXCEPTION 'sealed window'; END IF; RETURN NEW; END $$;
+IF OLD.closed OR NEW.plan_hash<>OLD.plan_hash OR NEW.max_calls<>OLD.max_calls OR NEW.expires_at<>OLD.expires_at OR NEW.prior_calls<>OLD.prior_calls OR NEW.prior_reserved_units<>OLD.prior_reserved_units OR NEW.calls<OLD.calls OR NEW.reserved_units<OLD.reserved_units THEN RAISE EXCEPTION 'sealed window'; END IF; RETURN NEW; END $$;
 CREATE TRIGGER memory_window_guard BEFORE UPDATE ON fixture_memory_eval_window FOR EACH ROW EXECUTE FUNCTION fixture_memory_eval_window_guard();
 CREATE TRIGGER memory_window_no_delete BEFORE DELETE ON fixture_memory_eval_window FOR EACH ROW EXECUTE FUNCTION fixture_memory_eval_append_only();`
 	if _, err := c.pool.Exec(ctx, ddl); err != nil {
 		return errors.New("fresh collector database required")
 	}
-	_, err := c.pool.Exec(ctx, `INSERT INTO fixture_memory_eval_window VALUES(TRUE,$1,0,0,$2,$3,FALSE)`, acceptance.MemoryDigest(c.plan), acceptance.MemorySuitePolicy(c.suite).MaxCalls, c.started.Add(3*time.Hour))
+	priorCalls, priorUnits := int64(0), int64(0)
+	if c.priorPins != nil {
+		priorCalls, priorUnits = c.priorPins.Calls, c.priorPins.ReservedUnits
+	}
+	_, err := c.pool.Exec(ctx, `INSERT INTO fixture_memory_eval_window VALUES(TRUE,$1,$4,$5,$2,$3,FALSE,$4,$5)`, acceptance.MemoryDigest(c.plan), acceptance.MemorySuitePolicy(c.suite).MaxCalls, c.started.Add(3*time.Hour), priorCalls, priorUnits)
 	return err
 }
 
@@ -324,8 +331,15 @@ func (c *memoryEvalCollector) capture(ctx context.Context, cse acceptance.Memory
 	if err := c.pool.QueryRow(ctx, `SELECT COALESCE((SELECT sum(pg_column_size(r)) FROM memory_source_revisions r JOIN memory_sources s ON s.source_id=r.source_id WHERE s.owner_id=$1),0)+COALESCE((SELECT sum(pg_column_size(c)) FROM memory_chunks c WHERE scope_type='user' AND scope_id=$1),0)`, owner).Scan(&storage); err != nil {
 		return err
 	}
-	if err := c.recordExpense(ctx, acceptance.MemoryExpense{ID: id + "/write", CaseID: id, Arm: "retrieval", Stage: "write", Status: "measured", Outcome: "success", EvidenceSHA256: acceptance.MemoryDigest(allRefs), Calls: 1, InputTokens: &zero, OutputTokens: &zero, TotalTokens: &zero, Milliseconds: &writeMS, Microunits: &zero, StorageBytes: &storage}); err != nil {
+	writeID := id + "/write"
+	if c.prior != nil {
+		writeID = id + "/rebase-write"
+	}
+	if err := c.recordExpense(ctx, acceptance.MemoryExpense{ID: writeID, CaseID: id, Arm: "retrieval", Stage: "write", Status: "measured", Outcome: "success", EvidenceSHA256: acceptance.MemoryDigest(allRefs), Calls: 1, InputTokens: &zero, OutputTokens: &zero, TotalTokens: &zero, Milliseconds: &writeMS, Microunits: &zero, StorageBytes: &storage}); err != nil {
 		return err
+	}
+	if c.prior != nil {
+		return c.reuseCapture(ctx, id, refs)
 	}
 	live, run, err := c.ownedRun(ctx, cse, "retrieval-capture")
 	if err != nil {

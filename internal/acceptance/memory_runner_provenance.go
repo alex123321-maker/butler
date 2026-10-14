@@ -26,7 +26,7 @@ func memoryAuditCompactSHA(raw []byte) string {
 	return hashWindowBytes(b.Bytes())
 }
 
-func memoryAuditProvenance(s MemorySuite, f MemoryFrozen, ledger map[string]json.RawMessage, directory string) error {
+func memoryAuditProvenance(s MemorySuite, f MemoryFrozen, ledger map[string]json.RawMessage, directory string, failedPrefix bool) error {
 	var sources []struct {
 		ID       string `json:"source_id"`
 		Owner    string `json:"owner_id"`
@@ -248,7 +248,7 @@ func memoryAuditProvenance(s MemorySuite, f MemoryFrozen, ledger map[string]json
 		matchedRun, matchedTask, matchedLease, matchedSession := false, false, false, false
 		var finished time.Time
 		for _, r := range runs {
-			if r.ID == runID && r.Session == runID+":session" && r.Task == taskID && r.Revision == revision && r.State == "completed" && !r.Finished.IsZero() {
+			if r.ID == runID && r.Session == runID+":session" && r.Task == taskID && r.Revision == revision && (r.State == "completed" && !failedPrefix || failedPrefix && r.State == "failed") && !r.Finished.IsZero() {
 				matchedRun = true
 				finished = r.Finished
 			}

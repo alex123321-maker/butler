@@ -26,8 +26,18 @@ type MemoryRunnerAudit struct {
 // raw finals, per-entry native events, durable admission, actual token dimensions,
 // and independently recomputed narrow QA assessments; no inference is possible.
 func AuditMemoryRunner(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, directory, binarySHA string) (MemoryRunnerAudit, error) {
+	return auditMemoryRunner(s, f, m, directory, binarySHA, false, 0, 0)
+}
+
+// A retained failed prefix is evidence of charges and originals, never a complete
+// comparison. No inference or retry is possible through this entry point.
+func AuditMemoryRunnerPrefix(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, directory, binarySHA string) (MemoryRunnerAudit, error) {
+	return auditMemoryRunner(s, f, m, directory, binarySHA, true, 0, 0)
+}
+
+func auditMemoryRunner(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, directory, binarySHA string, prefix bool, priorCalls, priorUnits int64) (MemoryRunnerAudit, error) {
 	a := MemoryRunnerAudit{Status: "NO_GO", SourceSHA256: f.Plan.SourceSHA256, BinarySHA256: binarySHA, Limits: []string{"Operator-pinned original directory and compiled source identity are required.", "Public synthetic QA and proposed-action observations do not prove external effects or long-lived user task completion.", "Subscription invoice, embedding tokenizer usage and host energy remain unknown; known costs are subtotals.", "This audit cannot reopen a window, execute a tool, tune controls or authorize promotion."}}
-	if !validSHA(binarySHA) || f.Plan.EvidenceKind != "model_observation" {
+	if !validSHA(binarySHA) || f.Plan.EvidenceKind != "model_observation" || m.FrozenSHA256 != f.SHA256 {
 		return a, errors.New("native binary and plan identity required")
 	}
 	load := func(name string, out any) ([]byte, error) {
@@ -57,12 +67,14 @@ func AuditMemoryRunner(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, dire
 		return a, errors.New("pre-native freeze differs")
 	}
 	var windows []struct {
-		PlanHash string `json:"plan_hash"`
-		Calls    int64  `json:"calls"`
-		Reserved int64  `json:"reserved_units"`
-		Closed   bool   `json:"closed"`
+		PlanHash   string `json:"plan_hash"`
+		Calls      int64  `json:"calls"`
+		Reserved   int64  `json:"reserved_units"`
+		Closed     bool   `json:"closed"`
+		PriorCalls int64  `json:"prior_calls"`
+		PriorUnits int64  `json:"prior_reserved_units"`
 	}
-	if json.Unmarshal(ledger["fixture_memory_eval_window"], &windows) != nil || len(windows) != 1 || !windows[0].Closed || windows[0].PlanHash != MemoryDigest(f.Plan) || windows[0].Calls > MemorySuitePolicy(s).MaxCalls || windows[0].Reserved > MemorySuitePolicy(s).MaxTotalTokens {
+	if json.Unmarshal(ledger["fixture_memory_eval_window"], &windows) != nil || len(windows) != 1 || !windows[0].Closed || windows[0].PriorCalls != priorCalls || windows[0].PriorUnits != priorUnits || windows[0].PlanHash != MemoryDigest(f.Plan) || windows[0].Calls > MemorySuitePolicy(s).MaxCalls || windows[0].Reserved > MemorySuitePolicy(s).MaxTotalTokens {
 		return a, errors.New("immutable window ledger denied")
 	}
 	var attempts []struct {
@@ -120,7 +132,18 @@ func AuditMemoryRunner(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, dire
 			return a, errors.New("original ledger schema denied")
 		}
 	}
-	if err = memoryAuditProvenance(s, f, ledger, directory); err != nil {
+	provenance := f
+	if prefix {
+		provenance.Inputs = nil
+		for _, i := range f.Inputs {
+			for _, o := range m.Observations {
+				if i.CaseID == o.CaseID && i.Arm == o.Arm && o.Status == "failed" {
+					provenance.Inputs = append(provenance.Inputs, i)
+				}
+			}
+		}
+	}
+	if err = memoryAuditProvenance(s, provenance, ledger, directory, prefix); err != nil {
 		return a, err
 	}
 	usedAdmissions, usedReservations, usedResults := map[string]bool{}, map[string]bool{}, map[string]bool{}
@@ -166,21 +189,30 @@ func AuditMemoryRunner(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, dire
 		id := i.CaseID + "/" + i.Arm
 		o, ok := observations[id]
 		if !ok {
+			if prefix {
+				if _, paid := attemptMap[id]; !paid {
+					continue
+				}
+			}
 			return a, errors.New("comparison incomplete")
 		}
 		n, hasAttempt := attemptMap[id]
+		if o.InputSHA256 != MemoryInputDigest(i) || o.Model != f.Plan.Model || o.Runtime != f.Plan.Runtime {
+			return a, errors.New("observation input or requested runtime differs")
+		}
 		if i.SkipReason != "" {
 			if hasAttempt || o.Status != "skipped" || o.Reason != i.SkipReason {
 				return a, errors.New("planned skip was admitted")
 			}
 			continue
 		}
-		if !hasAttempt || o.Status != "completed" {
+		failed := prefix && o.Status == "failed"
+		if !hasAttempt || (o.Status != "completed" && !failed) {
 			return a, errors.New("native comparison incomplete; negative prefix retained")
 		}
 		x := attempts[n]
 		a.NativeCalls++
-		if x.Outcome != "completed" || x.Input != MemoryInputDigest(i) || x.Version != f.Plan.ModelVersion || x.Output != hashWindowBytes(MemoryObservationOriginal(o)) || MemoryDigest(x.MS) != MemoryDigest(o.Milliseconds) {
+		if (!failed && (x.Outcome != "completed" || x.Version != f.Plan.ModelVersion)) || failed && (x.Outcome != "transport_error" || x.Version != "" || x.In != nil || x.Out != nil || x.Total != nil || len(MemoryObservationOriginal(o)) != 0) || x.Input != MemoryInputDigest(i) || x.Output != hashWindowBytes(MemoryObservationOriginal(o)) || MemoryDigest(x.MS) != MemoryDigest(o.Milliseconds) {
 			return a, errors.New("generation metadata differs")
 		}
 		admitted := false
@@ -257,7 +289,7 @@ func AuditMemoryRunner(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, dire
 			}
 			eventIDs[ev.ID] = true
 			previous = ev.Time
-			if ev.Tool || ev.Type == "transport_error" || ev.Type == "run_cancelled" || ev.Type == "run_timed_out" {
+			if ev.Tool || (!failed && ev.Type == "transport_error") || ev.Type == "run_cancelled" || ev.Type == "run_timed_out" {
 				return a, errors.New("unclean original native lifecycle")
 			}
 			if ev.Type == "run_completed" {
@@ -265,6 +297,12 @@ func AuditMemoryRunner(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, dire
 					return a, errors.New("terminal before final")
 				}
 				terminals++
+			}
+			if failed && ev.Type == "transport_error" {
+				terminals++
+			}
+			if failed && (ev.Final != nil || ev.Usage != nil || ev.Version != nil || ev.Type != "run_started" && ev.Type != "transport_error") {
+				return a, errors.New("failed prefix cannot acquire invented output or usage")
 			}
 			if ev.Final != nil {
 				finals++
@@ -290,6 +328,13 @@ func AuditMemoryRunner(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, dire
 			if ev.Version != nil && *ev.Version != x.Version {
 				return a, errors.New("event model version differs")
 			}
+		}
+		if failed {
+			if finals != 0 || terminals != 1 || o.Outcome.Success != nil {
+				return a, errors.New("failed prefix lifecycle differs")
+			}
+			a.UnknownBroaderTaskResults++
+			continue
 		}
 		if finals != 1 || terminals != 1 || !used || !observedVersion {
 			return a, errors.New("original usage/lifecycle incomplete")
@@ -355,7 +400,7 @@ func AuditMemoryRunner(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, dire
 	if len(usedAdmissions) != len(admissions) || len(usedReservations) != len(reservations) || len(usedResults) != len(results) || int64(len(auxiliary)) != a.AuxiliaryCalls {
 		return a, errors.New("extra/dropped owning admission, reservation or result")
 	}
-	if a.NativeCalls != int64(len(attempts)) || a.NativeCalls+a.AuxiliaryCalls != windows[0].Calls {
+	if a.NativeCalls != int64(len(attempts)) || priorCalls+a.NativeCalls+a.AuxiliaryCalls != windows[0].Calls {
 		return a, errors.New("unattributed paid call")
 	}
 	// Exactly the original count of private finals; extra/retried calls cannot hide.
@@ -364,5 +409,8 @@ func AuditMemoryRunner(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, dire
 		return a, errors.New("unexpected original final count")
 	}
 	a.Status = "PASS_CORRELATED_MODEL_OBSERVATIONS"
+	if prefix {
+		a.Status = "PASS_CORRELATED_PARTIAL_ATTEMPTS"
+	}
 	return a, nil
 }

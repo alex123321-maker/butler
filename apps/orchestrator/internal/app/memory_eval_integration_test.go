@@ -250,6 +250,10 @@ func TestMemoryEvalCollectorCurrentAuthorityRacesIntegration(t *testing.T) {
 	}
 }
 func memoryCollectorFixture(t *testing.T) *memoryEvalCollector {
+	return memoryCollectorFixtureWithPrior(t, nil, nil, "")
+}
+
+func memoryCollectorFixtureWithPrior(t *testing.T, prior *acceptance.MemoryPrior, pins *acceptance.MemoryPriorPins, directory string) *memoryEvalCollector {
 	t.Helper()
 	pool := memorytest.Database(t)
 	f, err := os.Open(filepath.Join(shadowRepoRoot(), "testdata/acceptance/ru-memory-v2.json"))
@@ -270,6 +274,11 @@ func memoryCollectorFixture(t *testing.T) *memoryEvalCollector {
 	budgets.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	c := &memoryEvalCollector{pool: pool, catalog: catalog.New(pool, manifest), budgets: budgets, backend: &memoryFixtureBackend{}, suite: suite, private: t.TempDir(), sourceRefs: map[string]map[string]catalog.SourceRef{}, started: time.Now().UTC()}
 	c.plan = acceptance.MemoryPlan{Version: suite.Version, WindowID: "fixture-current-components", EvidenceKind: "model_observation", CodeCommit: strings.Repeat("1", 40), SourceSHA256: strings.Repeat("2", 64), HardwareSHA256: strings.Repeat("3", 64), Model: antigravity.FlashHighModel, ModelVersion: "gemini-3.8-flash-n", Runtime: "fixture-only-no-native", MemoryConfigSHA256: memoryEvalConfigDigest(), PricingBasis: "fixture_no_billing", SuiteSHA256: acceptance.MemorySuiteDigest(suite), CriteriaSHA256: acceptance.MemoryVersionCriteriaDigest(suite), Split: "all"}
+	if prior != nil {
+		c.prior, c.priorPins, c.priorDirectory = prior, pins, directory
+		c.plan.WindowID = "fixture-pending-components"
+		c.started = prior.Expires.Add(-3 * time.Hour)
+	}
 	if err = c.init(context.Background()); err != nil {
 		t.Fatal(err)
 	}
@@ -387,6 +396,9 @@ func TestMemoryEvalCollectorFailuresAndSourceFenceIntegration(t *testing.T) {
 	var count int
 	if c.pool.QueryRow(ctx, `SELECT count(*) FROM fixture_memory_eval_expenses WHERE stage='generation' AND record->>'outcome'='failed' AND record->'input_tokens'='null'::jsonb`).Scan(&count) != nil || count != 1 {
 		t.Fatal("failed unknown usage dropped")
+	}
+	if c.pool.QueryRow(ctx, `SELECT count(*) FROM fixture_memory_eval_expenses WHERE id LIKE '%/original-write' AND record->>'outcome'='success'`).Scan(&count) != nil || count != 1 {
+		t.Fatal("successful original retention confused with failed inference")
 	}
 	c.backend = &memoryFixtureBackend{fail: true}
 	if c.capture(ctx, c.suite.Cases[1]) == nil {
