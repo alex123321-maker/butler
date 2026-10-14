@@ -72,26 +72,25 @@ func MemoryFixtureMeasurements(s MemorySuite, f MemoryFrozen) MemoryMeasurements
 			o.Status = "skipped"
 			o.Reason = i.SkipReason
 			o.Outcome.Success = nil
-			m.Observations = append(m.Observations, o)
-			continue
+		} else {
+			answer := c.Expected
+			if verifyMemoryObservedAnswer(c, i, answer) != nil {
+				answer.Answer = ""
+				answer.Abstain = true
+				answer.Confidence = 0
+				answer.Citations = []CommandWitness{}
+				success = false
+			}
+			o.Output, _ = json.Marshal(answer)
+			elapsed := time.Since(start).Milliseconds()
+			o.Milliseconds = &elapsed
 		}
-		answer := c.Expected
-		if verifyMemoryObservedAnswer(c, i, answer) != nil {
-			answer.Answer = ""
-			answer.Abstain = true
-			answer.Confidence = 0
-			answer.Citations = []CommandWitness{}
-			success = false
-		}
-		o.Output, _ = json.Marshal(answer)
-		elapsed := time.Since(start).Milliseconds()
-		o.Milliseconds = &elapsed
 		m.Observations = append(m.Observations, o)
 		for _, stage := range MemoryExpenseStages() {
 			zero := int64(0)
 			e := MemoryExpense{ID: i.CaseID + "/" + i.Arm + "/" + stage, CaseID: i.CaseID, Arm: i.Arm, Stage: stage, Status: "not_used", Outcome: "not_used", EvidenceSHA256: cloudDigest("fixture_stage:" + stage), InputTokens: &zero, OutputTokens: &zero, TotalTokens: &zero, Milliseconds: &zero, Microunits: &zero, StorageBytes: &zero}
 			// Bytes of the synthetic serialized source fixture, not a PG size claim.
-			if stage == "read" && i.Arm != "no_ltm" {
+			if stage == "read" && i.Arm != "no_ltm" && i.SkipReason == "" {
 				size := int64(len(i.MemoryPrompt))
 				for _, h := range i.Memory {
 					size += int64(len(h.Body))

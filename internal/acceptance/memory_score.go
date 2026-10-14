@@ -168,17 +168,7 @@ func ScoreMemory(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, a GoldenAp
 		return r, err
 	}
 	// Reconstruct the frozen inputs to reject fabricated full-context/no-memory arms.
-	captures := []MemoryCapture{}
-	for _, i := range f.Inputs {
-		if i.Arm == "retrieval" && i.CaptureSHA256 != "" {
-			ids := []string{}
-			for _, h := range i.Memory {
-				ids = append(ids, h.ID)
-			}
-			captures = append(captures, MemoryCapture{i.CaseID, f.Plan.MemoryConfigSHA256, i.CaptureSHA256, ids, i.MemoryPrompt})
-		}
-	}
-	rebuilt, err := FreezeMemory(s, f.Plan, captures)
+	rebuilt, err := FreezeMemory(s, f.Plan, f.Captures)
 	if err != nil {
 		return r, err
 	}
@@ -205,12 +195,13 @@ func ScoreMemory(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, a GoldenAp
 	}
 	// Costs are accumulated before judging answers, including failed/extra samples.
 	stages := map[string]map[string]int{}
+	unusedStages := map[string]map[string]bool{}
 	expenseIDs := map[string]bool{}
 	generationCalls := map[string]int64{}
 	for _, e := range m.Expenses {
 		id := e.CaseID + "/" + e.Arm
 		input, ok := inputs[id]
-		if !ok || input.SkipReason != "" || e.ID == "" || expenseIDs[e.ID] || !containsMemory(MemoryExpenseStages(), e.Stage) || !containsMemory([]string{"measured", "unknown", "not_used"}, e.Status) || !containsMemory([]string{"success", "failed", "not_used"}, e.Outcome) || !validSHA(e.EvidenceSHA256) || e.Calls < 0 {
+		if !ok || e.ID == "" || expenseIDs[e.ID] || !containsMemory(MemoryExpenseStages(), e.Stage) || !containsMemory([]string{"measured", "unknown", "not_used"}, e.Status) || !containsMemory([]string{"success", "failed", "not_used"}, e.Outcome) || !validSHA(e.EvidenceSHA256) || e.Calls < 0 {
 			return r, errors.New("invalid/duplicate/foreign expense")
 		}
 		expenseIDs[e.ID] = true
@@ -218,11 +209,21 @@ func ScoreMemory(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, a GoldenAp
 			stages[id] = map[string]int{}
 		}
 		stages[id][e.Stage]++
+		if unusedStages[id] == nil {
+			unusedStages[id] = map[string]bool{}
+		}
+		if e.Status == "not_used" {
+			unusedStages[id][e.Stage] = true
+		}
 		cost := &r.Arms[e.Arm].Cost
 		if e.Calls > math.MaxInt64-cost.Calls {
 			return r, errors.New("expense call overflow")
 		}
 		cost.Calls += e.Calls
+		if input.SkipReason != "" && e.Stage == "generation" && e.Calls > 0 {
+			r.Arms[e.Arm].CriticalViolations++
+			r.Reasons = append(r.Reasons, "skipped_input_was_admitted")
+		}
 		if e.Stage == "generation" {
 			if e.Calls > math.MaxInt64-generationCalls[id] {
 				return r, errors.New("generation call overflow")
@@ -260,6 +261,14 @@ func ScoreMemory(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, a GoldenAp
 			return r, errors.New("total tokens omit visible expense")
 		}
 	}
+	for id, byStage := range stages {
+		for stage, count := range byStage {
+			if count > 1 && unusedStages[id][stage] {
+				r.Arms[inputs[id].Arm].Cost.Complete = false
+				r.Reasons = append(r.Reasons, "contradictory_unused_stage")
+			}
+		}
+	}
 	obs := map[string]MemoryObservation{}
 	for _, o := range m.Observations {
 		id := o.CaseID + "/" + o.Arm
@@ -293,12 +302,10 @@ func ScoreMemory(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, a GoldenAp
 		if i.Arm == "retrieval" && i.SkipReason != "" && i.SkipReason != "secret_source_blocked" {
 			r.Reasons = append(r.Reasons, "candidate_capture_incomplete")
 		}
-		if i.SkipReason == "" {
-			for _, stage := range MemoryExpenseStages() {
-				if stages[id][stage] == 0 {
-					metrics.Cost.MissingStages++
-					metrics.Cost.Complete = false
-				}
+		for _, stage := range MemoryExpenseStages() {
+			if stages[id][stage] == 0 {
+				metrics.Cost.MissingStages++
+				metrics.Cost.Complete = false
 			}
 		}
 		result := MemoryCaseResult{CaseID: i.CaseID, Arm: i.Arm, Status: "missing", Reasons: []string{}, InputSHA256: MemoryInputDigest(i), BehaviorRefs: c.BehaviorRefs}

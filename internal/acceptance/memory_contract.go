@@ -296,14 +296,15 @@ func (i *MemoryInput) UnmarshalJSON(raw []byte) error {
 }
 
 type MemoryFrozen struct {
-	Plan   MemoryPlan    `json:"plan"`
-	Inputs []MemoryInput `json:"inputs"`
-	SHA256 string        `json:"sha256"`
+	Plan     MemoryPlan      `json:"plan"`
+	Inputs   []MemoryInput   `json:"inputs"`
+	Captures []MemoryCapture `json:"verifier_captures"`
+	SHA256   string          `json:"sha256"`
 }
 
 func (f *MemoryFrozen) UnmarshalJSON(raw []byte) error {
 	type plain MemoryFrozen
-	return DecodeStrict(raw, (*plain)(f), "plan", "inputs", "sha256")
+	return DecodeStrict(raw, (*plain)(f), "plan", "inputs", "verifier_captures", "sha256")
 }
 
 func memoryCaseID(c MemoryCase) string               { return commandOpaqueID("memory", c.ID) }
@@ -311,7 +312,7 @@ func MemoryInputDigest(i MemoryInput) string         { return cloudDigest(i) }
 func memorySelected(c MemoryCase, p MemoryPlan) bool { return p.Split == "all" || c.Split == p.Split }
 
 func FreezeMemory(s MemorySuite, p MemoryPlan, captures []MemoryCapture) (MemoryFrozen, error) {
-	f := MemoryFrozen{Plan: p, Inputs: []MemoryInput{}}
+	f := MemoryFrozen{Plan: p, Inputs: []MemoryInput{}, Captures: append([]MemoryCapture{}, captures...)}
 	if err := ValidateMemorySuite(s); err != nil {
 		return f, err
 	}
@@ -388,9 +389,10 @@ func FreezeMemory(s MemorySuite, p MemoryPlan, captures []MemoryCapture) (Memory
 		}
 	}
 	f.SHA256 = cloudDigest(struct {
-		Plan   MemoryPlan
-		Inputs []MemoryInput
-	}{f.Plan, f.Inputs})
+		Plan     MemoryPlan
+		Inputs   []MemoryInput
+		Captures []MemoryCapture
+	}{f.Plan, f.Inputs, f.Captures})
 	return f, nil
 }
 

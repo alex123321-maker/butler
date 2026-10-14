@@ -282,3 +282,40 @@ func TestMemoryStrictMeasurementsPreserveBadModelJSONAndRejectMissingMetadata(t 
 		t.Fatal("duplicate runner metadata accepted")
 	}
 }
+
+func TestMemoryBudgetSkipKeepsOriginalCaptureAndAlreadySpentReadCost(t *testing.T) {
+	s, f, _ := memoryTestFixture(t)
+	captures := append([]MemoryCapture{}, f.Captures...)
+	captures[0].Prompt = strings.Repeat("x", FrozenMemoryPolicy().MaxInputBytes-20)
+	f, err := FreezeMemory(s, f.Plan, captures)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var input MemoryInput
+	for _, i := range f.Inputs {
+		if i.CaseID == captures[0].CaseID && i.Arm == "retrieval" {
+			input = i
+		}
+	}
+	if input.SkipReason != "input_byte_budget_exceeded" || input.MemoryPrompt != "" || f.Captures[0].Prompt != captures[0].Prompt {
+		t.Fatal("budget skip discarded original capture or exposed oversized model input")
+	}
+	m := MemoryFixtureMeasurements(s, f)
+	charge := int64(73)
+	for n, e := range m.Expenses {
+		if e.CaseID == input.CaseID && e.Arm == input.Arm && e.Stage == "read" {
+			m.Expenses[n].Status = "measured"
+			m.Expenses[n].Outcome = "success"
+			m.Expenses[n].Calls = 1
+			m.Expenses[n].Microunits = &charge
+			break
+		}
+	}
+	r, err := ScoreMemory(s, f, m, GoldenApproval{}, nil)
+	if err != nil {
+		t.Fatal("valid skipped experiment rejected", err)
+	}
+	if r.Arms["retrieval"].Cost.KnownMicrounits != 73 || !containsMemory(r.Reasons, "candidate_capture_incomplete") {
+		t.Fatal("paid skip became free or complete")
+	}
+}

@@ -101,6 +101,12 @@ expenses must use a declared attribution rule so they are counted once per arm,
 never silently omitted or counted as free. Storage is cumulative observed bytes
 in the supplied stage records, not an inferred database footprint.
 
+Frozen `verifier_captures` retain original retrieval captures even when an input
+exceeds the budget; they belong to the verifier, not model input. The collector
+must use only the `inputs` array. Already spent capture/read/background costs of
+skipped cases remain in accounting. Every case/arm, including a blocked or skipped
+one, needs explicit stage coverage; a skipped generation charge is a violation.
+
 The score command additionally retains the exact original imported measurement
 file, including whitespace and malformed raw model answers. A structurally valid
 envelope rejected by scoring produces a negative report and retained original;
