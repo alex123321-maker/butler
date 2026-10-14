@@ -60,9 +60,11 @@ Native memory-eval on laba follows the established private antigravity-proxy rou
 and bypasses loopback/own PostgreSQL/local-models. New operator pins require this
 route; actual Docker environment is reduced to proxy/bypass booleans checked
 before provider auth. Historical roots retain their original direct-route proof.
-An isolated metadata-only Manager can use transient process-private state to
-check paid discovery/frozen profile without opening any durable native database
-or constructing a provider. Availability does not prove generation or allow retry.
+Native auth and possible OAuth refresh use only the runtime's strict encrypted
+PostgreSQL SecretStore after its durable one-use entry. A disposable metadata
+process must never resolve refresh-capable credentials. The rejected historical
+metadata probe proves profile availability only; its possible rotation is unknown
+and it does not prove generation capability or allow retry.
 
 ## 1. Статус документа
 
