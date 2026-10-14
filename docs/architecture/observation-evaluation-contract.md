@@ -1,5 +1,26 @@
 # Observation-only contract evaluation
 
+## Memory outcome evaluation (issue78)
+
+`cmd/memory-eval` is an additive client of the same acceptance contour. Its
+versioned30-case Russian synthetic development/holdout dataset pins sources,
+time, current task version and literal expected witnesses. Pre-run frozen inputs
+cover no LTM, permitted full context and independently captured current retrieval;
+all share the model and fixed limits. Secret cases and full-context byte overflow
+remain explicit skips. Current-bundle fixed-store fixtures are code evidence only.
+
+The programmatic scorer distinguishes answer/current-fact/citation quality,
+confidence and abstention, retrieval diagnostics, task-instruction observations
+and independently measured task success. It retains all memory expense stages,
+failed samples and NULLs. Source/deletion and stop proposals plus independent
+permission/privacy/stop/deletion outcomes gate promotion. A model verdict cannot
+provide effect proof. Case references feed the common issue76 failure evidence,
+without a second behavior catalog. Existing signed corpora and closed native
+windows stay immutable. New golden review uses the existing external Ed25519
+approval format; original runner/ledger correlation remains a separate gate.
+The initial command cannot authorize model calls, promotion or deployment.
+See [protocol, reproduction and open acceptance](../../cmd/memory-eval/README.md).
+
 The latest closed history is575. V11's18 requests all completed with measured
 expense, but its fixture stopped on14 actions instead of exactly13, before owner
 verification and delivery. Two check proposals read the same immutable artifact;

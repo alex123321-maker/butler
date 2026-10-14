@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/acceptance/memory[^/]*\.go|cmd/memory-eval/|testdata/acceptance/ru-memory-|scripts/dev/memory-eval-lab)" {
+      [void]$specs.Add("docs/architecture/memory-model.md")
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./internal/acceptance")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./cmd/memory-eval")
+      continue
+    }
     "^(apps/orchestrator/internal/app/(release_chain_v(?:14|15|16|17|18|19|20)_|release_chain_pool_checks|release_chain_pending_cases|release_chain_entry_lane)|scripts/dev/scenario-release-chain-v(?:14|15|16|17|18|19|20)-|scripts/dev/release-chain-v6-final-audit/v(?:14|15|16|17|18|19|20)|deploy/acceptance/release-chain-v(?:14|15|16|17|18|19|20))" {
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")

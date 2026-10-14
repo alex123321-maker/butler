@@ -28,6 +28,7 @@ Sprint 0 through Sprint 7 are implemented in the repository backlog and reflecte
 - `make test-web` - run Playwright end-to-end tests for the web UI.
 - `make test-orchestrator` - run orchestrator-only Go tests.
 - `make test-memory` - run memory subsystem Go tests.
+- `make test-memory-eval` - run the small mandatory offline memory-evaluation contract suite; [laba reproduction and model-trial limits](cmd/memory-eval/README.md).
 - `make test-transport` - run transport/provider Go tests.
 - `make proto` - regenerate the current gRPC bindings from `proto/`.
 - `make infra-up` - start only PostgreSQL and Redis for local `go run` workflows.

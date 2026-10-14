@@ -1,5 +1,18 @@
 # Versioned memory and structured ingestion acceptance
 
+## Memory quality measurement, issue78
+
+The additive [memory-eval protocol](../../cmd/memory-eval/README.md) supplies
+versioned synthetic originals, pre-run frozen three-arm inputs and strict
+per-case/cost scoring in the existing issue33 contour. The offline mandatory
+suite checks unknown expense, false positive answers, abstention, exact source
+revision/quotes, deletion, fresh task instructions and sealed artifact writes.
+Its fixed-store fixture invokes the current memory bundle builder without model,
+embedding or real user-memory access. It does not replace any source/privacy
+acceptance below and does not establish answer quality or user task success.
+Independent golden/control review, original live retrieval/effect capture and
+all-stage ledger-backed model comparison remain pending for issue78.
+
 This records the implementation and lab evidence for issues 22 and 23. PostgreSQL
 owns sources, immutable revisions, candidates/decisions, original assets and job
 claims. Existing transcript, working, episodic and profile stores remain separate;
