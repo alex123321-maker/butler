@@ -96,6 +96,27 @@ func TestTaxonomyInputDoesNotLeakAnswers(t *testing.T) {
 		}
 	}
 	events, _ := readTaxonomyEvents(t, "test")
+	_, corpusBytes := readTaxonomyEvents(t, "test")
+	freezeBytes, e := os.ReadFile(filepath.Join("..", "..", "deploy", "local-models", "decision-harness-v2-freeze.json"))
+	if e != nil {
+		t.Fatal(e)
+	}
+	var freeze struct {
+		CorpusSHA string `json:"corpus_sha256"`
+		SchemaSHA string `json:"schema_sha256"`
+	}
+	if json.Unmarshal(freezeBytes, &freeze) != nil {
+		t.Fatal("invalid freeze record")
+	}
+	corpusDigest := sha256.Sum256(corpusBytes)
+	schemaBytes, e := os.ReadFile(filepath.Join("..", "localmodels", "decision-schema-v2.json"))
+	if e != nil {
+		t.Fatal(e)
+	}
+	schemaDigest := sha256.Sum256(schemaBytes)
+	if hex.EncodeToString(corpusDigest[:]) != freeze.CorpusSHA || hex.EncodeToString(schemaDigest[:]) != freeze.SchemaSHA {
+		t.Fatal("frozen corpus/schema bytes changed")
+	}
 	dev, _ := readTaxonomyEvents(t, "dev")
 	if len(events) != 90 || len(dev) != 18 {
 		t.Fatal("frozen split changed")
