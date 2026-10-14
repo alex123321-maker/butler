@@ -26,8 +26,14 @@ revision/quotes, deletion, fresh task instructions and sealed artifact writes.
 Its fixed-store fixture invokes the current memory bundle builder without model,
 embedding or real user-memory access. It does not replace any source/privacy
 acceptance below and does not establish answer quality or user task success.
-Independent golden/control review, original live retrieval/effect capture and
-all-stage ledger-backed model comparison remain pending for issue78.
+V2 golden/control review and original live retrieval capture are independently
+checked. The bounded model run retained54complete answers and5failed paid slots;
+five eligible inputs remain unobserved. Full model/PR acceptance remains withheld.
+The [partial report](../../testdata/acceptance/results/ru-memory-v2-partial-20261015.json)
+preserves all72 inputs,937expense records and391stage calls against the unchanged
+280score ceiling. Its model_quality_evidence and promotion_allowed remain false.
+Canonical-rubric counts are not a complete semantic error judgment; unknown
+invoice/tokenizer/storage costs and genuine broader effects remain unknown.
 
 This records the implementation and lab evidence for issues 22 and 23. PostgreSQL
 owns sources, immutable revisions, candidates/decisions, original assets and job

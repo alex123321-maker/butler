@@ -10,11 +10,12 @@ source_dir=$(readlink -f "$root/current")
 umask 077
 tag="memory78-fixture-$(date -u +%Y%m%dT%H%M%SZ)-$$"
 proof="$root/reports/$tag"
-mkdir -p "$proof" "$root/.cache/go-race" "$root/.cache/go-tmp" "$root/.cache/docker"
+mkdir -p "$proof/postgres" "$root/.cache/go-race" "$root/.cache/go-tmp" "$root/.cache/docker"
 export DOCKER_CONFIG="$root/.cache/docker"
 docker network create --internal "$tag" > "$proof/network-id"
 docker run -d --name "$tag-pg" --network "$tag" --network-alias postgres --cpus 1 --memory 512m --pids-limit 128 \
- --security-opt no-new-privileges:true --env POSTGRES_HOST_AUTH_METHOD=trust --env POSTGRES_USER=butler --env POSTGRES_DB=memory_eval_test pgvector/pgvector:pg17 > "$proof/postgres-id"
+ --security-opt no-new-privileges:true --mount "type=bind,src=$proof/postgres,dst=/var/lib/postgresql/data" \
+ --env POSTGRES_HOST_AUTH_METHOD=trust --env POSTGRES_USER=butler --env POSTGRES_DB=memory_eval_test pgvector/pgvector:pg17 > "$proof/postgres-id"
 trap 'docker stop "$tag-pg" >/dev/null; docker network rm "$tag" >/dev/null || true' EXIT
 for _ in $(seq 1 30); do if docker exec "$tag-pg" pg_isready -U butler -d memory_eval_test >/dev/null; then break; fi; sleep 1; done
 docker run --rm --network "$tag" --cpus 2 --memory 1536m --pids-limit 128 --security-opt no-new-privileges:true \

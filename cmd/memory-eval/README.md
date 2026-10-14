@@ -32,6 +32,8 @@ The isolated PG/race script uses fake inference for complete three-arm collectio
 actual parser/index/bundle/budgets, malformed originals, supported refusal versus
 guessing, failed spend, task/lease/source races and original ledger correlation.
 It mounts no credentials and sends no local/native inference requests.
+Its PostgreSQL data is bound below the isolated proof directory on storage,
+rather than an anonymous Docker volume on the system partition.
 
 ## One-use model comparison
 
@@ -167,3 +169,12 @@ including5planned skips, remain immutable; only6unpaid inputs plus3remaining
 skips execute. Four closed parent levels are supported and a fifth is denied.
 Aggregate111/3167573 carries the original absolute expiry; final planned
 117/3442427 is unchanged. The separate negative cost score becomes401/280.
+
+The final-six window subsequently sealed after h11 no_ltm returned only
+provider_unavailable in10036ms, without observed HTTP status/cause/version/usage
+or final. Its final counter is112/3212748; no further entry is granted. The
+retained comparison has54complete answers,5paid failures,8original planned skips
+and5unobserved eligible inputs, across the original72-input matrix. All937expense
+records and391stage calls remain, including the failed admissions. The public
+[partial score](../../testdata/acceptance/results/ru-memory-v2-partial-20261015.json)
+is NO_GO/model_quality_evidence=false; it cannot establish full PR acceptance.
