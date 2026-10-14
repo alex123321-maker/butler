@@ -74,7 +74,7 @@ func auditMemoryRunner(s MemorySuite, f MemoryFrozen, m MemoryMeasurements, dire
 		PriorCalls int64  `json:"prior_calls"`
 		PriorUnits int64  `json:"prior_reserved_units"`
 	}
-	if json.Unmarshal(ledger["fixture_memory_eval_window"], &windows) != nil || len(windows) != 1 || !windows[0].Closed || windows[0].PriorCalls != priorCalls || windows[0].PriorUnits != priorUnits || windows[0].PlanHash != MemoryDigest(f.Plan) || windows[0].Calls > MemorySuitePolicy(s).MaxCalls || windows[0].Reserved > MemorySuitePolicy(s).MaxTotalTokens {
+	if json.Unmarshal(ledger["fixture_memory_eval_window"], &windows) != nil || len(windows) != 1 || !windows[0].Closed || windows[0].PriorCalls != priorCalls || windows[0].PriorUnits != priorUnits || windows[0].PlanHash != MemoryDigest(f.Plan) || windows[0].Calls < priorCalls || windows[0].Reserved < priorUnits || windows[0].Calls > MemorySuitePolicy(s).MaxCalls || windows[0].Reserved > MemorySuitePolicy(s).MaxTotalTokens {
 		return a, errors.New("immutable window ledger denied")
 	}
 	var attempts []struct {

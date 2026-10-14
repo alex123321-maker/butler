@@ -449,6 +449,18 @@ func (c *memoryEvalCollector) capture(ctx context.Context, cse acceptance.Memory
 
 func (c *memoryEvalCollector) fillUnused(ctx context.Context, i acceptance.MemoryInput) error {
 	for _, stage := range acceptance.MemoryExpenseStages() {
+		carried := false
+		if c.prior != nil {
+			for _, e := range c.prior.Measurements.Expenses {
+				if e.CaseID == i.CaseID && e.Arm == i.Arm && e.Stage == stage {
+					carried = true
+					break
+				}
+			}
+		}
+		if carried {
+			continue
+		}
 		var count int
 		if err := c.pool.QueryRow(ctx, `SELECT count(*) FROM fixture_memory_eval_expenses WHERE case_id=$1 AND arm=$2 AND stage=$3`, i.CaseID, i.Arm, stage).Scan(&count); err != nil {
 			return err

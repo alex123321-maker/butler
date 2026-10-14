@@ -37,6 +37,17 @@ func MemoryFrozenDigest(f MemoryFrozen) string {
 	}{f.Plan, f.Inputs, f.Captures})
 }
 
+// The wire framing reservation is deliberately stricter than policy tokenizer
+// estimates. Both native admission and the offline audit use this same bound.
+func MemoryNativeReservedUnits(i MemoryInput) int64 {
+	user, _ := MemoryModelProjection(i)
+	serialized, _ := json.Marshal(struct {
+		System, User string
+		Schema       json.RawMessage
+	}{i.Instructions, string(user), MemoryNativeSchema(i)})
+	return min(int64(32768), int64(len(serialized))+8192) + 32768
+}
+
 func LoadMemoryPrior(s MemorySuite, directory string, pins MemoryPriorPins) (MemoryPrior, error) {
 	var p MemoryPrior
 	read := func(name, hash string, out any) error {
@@ -148,9 +159,16 @@ func AuditMemoryContinuation(s MemorySuite, p MemoryPrior, currentFrozen MemoryF
 	}
 	var windows []struct {
 		Expires time.Time `json:"expires_at"`
+		Units   int64     `json:"reserved_units"`
 	}
-	if json.Unmarshal(ledger["fixture_memory_eval_window"], &windows) != nil || len(windows) != 1 || !windows[0].Expires.Equal(p.Expires) {
-		return a, errors.New("original absolute deadline reset")
+	expectedUnits := pins.ReservedUnits
+	for _, i := range currentFrozen.Inputs {
+		if i.SkipReason == "" {
+			expectedUnits += MemoryNativeReservedUnits(i)
+		}
+	}
+	if json.Unmarshal(ledger["fixture_memory_eval_window"], &windows) != nil || len(windows) != 1 || !windows[0].Expires.Equal(p.Expires) || windows[0].Units != expectedUnits {
+		return a, errors.New("original absolute deadline or accumulated conservative charge differs")
 	}
 	a.Status = "PASS_CORRELATED_ATTEMPT_MATRIX_WITH_RETAINED_FAILURE"
 	a.NativeCalls += p.Audit.NativeCalls

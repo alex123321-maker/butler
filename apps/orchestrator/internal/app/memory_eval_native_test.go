@@ -84,13 +84,9 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 	if err = c.recordExpense(live, acceptance.MemoryExpense{ID: i.CaseID + "/" + i.Arm + "/input-write", CaseID: i.CaseID, Arm: i.Arm, Stage: "write", Status: "measured", Outcome: "success", EvidenceSHA256: hashMemoryBytes(user), InputTokens: &zeroRead, OutputTokens: &zeroRead, TotalTokens: &zeroRead, Milliseconds: &inputWriteMS, Microunits: &zeroRead, StorageBytes: &inputWritten}); err != nil {
 		return o, err
 	}
-	serializedUpper, _ := json.Marshal(struct {
-		System, User string
-		Schema       json.RawMessage
-	}{i.Instructions, string(user), acceptance.MemoryNativeSchema(i)})
 	// Double-encoded user data/schema plus8KiB framing margin, clamped by the
 	// same complete HTTP payload cap enforced at the provider boundary.
-	inputUnits := min(int64(32768), int64(len(serializedUpper))+8192)
+	inputUnits := acceptance.MemoryNativeReservedUnits(i) - 32768
 	if err = c.reserveCall(live, inputUnits+32768); err != nil {
 		return o, err
 	}

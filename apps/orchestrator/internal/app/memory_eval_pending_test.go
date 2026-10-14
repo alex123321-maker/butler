@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -162,6 +163,14 @@ func TestMemoryEvalCollectorPendingCrossRootCorrelationIntegration(t *testing.T)
 	if err = current.writeEvidence("measurements.json", current.measurements); err != nil {
 		t.Fatal(err)
 	}
+	// Probe each immutable field while open, so closed-window rejection cannot
+	// mask a missing carry or deadline guard.
+	if _, err = current.pool.Exec(ctx, `UPDATE fixture_memory_eval_window SET prior_reserved_units=0`); err == nil {
+		t.Fatal("carried spend refunded")
+	}
+	if _, err = current.pool.Exec(ctx, `UPDATE fixture_memory_eval_window SET expires_at=expires_at+interval '1 hour'`); err == nil {
+		t.Fatal("absolute clock reset")
+	}
 	if _, err = current.pool.Exec(ctx, `UPDATE fixture_memory_eval_window SET closed=TRUE`); err != nil {
 		t.Fatal(err)
 	}
@@ -176,6 +185,15 @@ func TestMemoryEvalCollectorPendingCrossRootCorrelationIntegration(t *testing.T)
 	if err != nil || len(combined.Observations) != 72 || combined.Observations[0].Status != "failed" {
 		t.Fatal("failed denominator lost", err)
 	}
+	score, err := acceptance.ScoreMemory(current.suite, prior.Frozen, combined, acceptance.GoldenApproval{}, nil)
+	if err != nil || len(score.Cases) != 72 || score.Arms["no_ltm"].Cases != 24 || score.Arms["no_ltm"].Cost.FailedSamples != 1 {
+		t.Fatal("composite denominator lost", err)
+	}
+	for _, reason := range score.Reasons {
+		if reason == "contradictory_unused_stage" {
+			t.Fatal("carried expense contradicted by new unused marker")
+		}
+	}
 	retried := current.measurements
 	retried.Observations = append(append([]acceptance.MemoryObservation(nil), retried.Observations...), o)
 	if _, err = acceptance.CombineMemoryMeasurements(prior, retried); err == nil {
@@ -187,11 +205,43 @@ func TestMemoryEvalCollectorPendingCrossRootCorrelationIntegration(t *testing.T)
 	if _, err = acceptance.AuditMemoryContinuation(current.suite, prior, changed, current.measurements, current.private, strings.Repeat("5", 64), pins); err == nil {
 		t.Fatal("paid schedule entry accepted")
 	}
-	if _, err = current.pool.Exec(ctx, `UPDATE fixture_memory_eval_window SET prior_reserved_units=0`); err == nil {
-		t.Fatal("carried spend refunded")
+	// Exported totals must also retain every conservative reservation, even if
+	// an import keeps the correct immutable prior offset field.
+	ledgerBytes, err := acceptance.ReadPrivateFile(filepath.Join(current.private, "ledger.json"), 32<<20)
+	if err != nil {
+		t.Fatal(err)
 	}
-	if _, err = current.pool.Exec(ctx, `UPDATE fixture_memory_eval_window SET expires_at=expires_at+interval '1 hour'`); err == nil {
-		t.Fatal("absolute clock reset")
+	var ledger map[string]json.RawMessage
+	_ = json.Unmarshal(ledgerBytes, &ledger)
+	var window []map[string]any
+	_ = json.Unmarshal(ledger["fixture_memory_eval_window"], &window)
+	window[0]["reserved_units"] = pins.ReservedUnits
+	ledger["fixture_memory_eval_window"], _ = json.Marshal(window)
+	forgedDir := t.TempDir()
+	entries, err := os.ReadDir(current.private)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		raw, err := os.ReadFile(filepath.Join(current.private, entry.Name()))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if entry.Name() == "ledger.json" {
+			raw, err = json.Marshal(ledger)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		if err = os.WriteFile(filepath.Join(forgedDir, entry.Name()), raw, 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err = acceptance.AuditMemoryContinuation(current.suite, prior, current.frozen, current.measurements, forgedDir, strings.Repeat("5", 64), pins); err == nil || !strings.Contains(err.Error(), "accumulated conservative charge") {
+		t.Fatal("current conservative reservations dropped", err)
 	}
 }
 
