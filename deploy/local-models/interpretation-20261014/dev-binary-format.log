@@ -1,0 +1,17 @@
+=== RUN   TestActualInterpretationV3Comparison
+    interpretation_evaluation_test.go:323: gliner2.5-multi-interpretation-v3-cpu observed=28 unavailable=0 intent=0 joint=0 / 28
+    interpretation_evaluation_test.go:323: gliner2.5-decide-interpretation-v3-cpu observed=28 unavailable=0 intent=0 joint=0 / 28
+    interpretation_evaluation_test.go:323: d1-omni-interpretation-v3-cpu observed=0 unavailable=28 intent=0 joint=0 / 28
+    interpretation_evaluation_test.go:332: Qwen dev-001 window 0: context deadline exceeded
+    interpretation_evaluation_test.go:332: Qwen dev-004 window 0: out-of-range answer
+    interpretation_evaluation_test.go:332: Qwen dev-007 window 0: out-of-range answer
+    interpretation_evaluation_test.go:332: Qwen dev-008 window 0: out-of-range answer
+    interpretation_evaluation_test.go:332: Qwen dev-023 window 0: out-of-range answer
+    interpretation_evaluation_test.go:332: Qwen dev-023 window 1: out-of-range answer
+    interpretation_evaluation_test.go:364: FINAL qwen3.5-4b-q4-interpretation-v3-gpu intent=9/22 joint=4/22 non-escalated=0 wrong=0 screen=false
+    interpretation_evaluation_test.go:364: FINAL russian-literal-interpretation-v3 intent=25/28 joint=19/28 non-escalated=20 wrong=8 screen=false
+    interpretation_evaluation_test.go:364: FINAL gliner2.5-multi-interpretation-v3-cpu intent=0/28 joint=0/28 non-escalated=27 wrong=27 screen=false
+    interpretation_evaluation_test.go:364: FINAL gliner2.5-decide-interpretation-v3-cpu intent=0/28 joint=0/28 non-escalated=0 wrong=0 screen=false
+    interpretation_evaluation_test.go:364: FINAL d1-omni-interpretation-v3-cpu intent=0/0 joint=0/0 non-escalated=0 wrong=0 screen=false
+--- PASS: TestActualInterpretationV3Comparison (299.86s)
+PASS

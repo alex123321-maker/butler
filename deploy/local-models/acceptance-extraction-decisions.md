@@ -7,6 +7,16 @@ scope. A new experiment with deterministic source windows does not satisfy the
 remaining learned field extraction, candidate publication, real-trace review or
 current-controller benefit requirements. Both issues remain open.
 
+The [final v3 comparison](interpretation-20261014/README.md) completes304/304
+classification requests on72 new test events/76 windows, plus77 independently
+admitted CPU embedding probes. Exact intent sets: extractor7/76, Decide12/76,
+d1 1/76, Qwen44/76, literal rules18/76. Joint interpretation:0/4/0/26/7 per76.
+All candidates remain NO-GO. A separately retained offline whitespace-token
+audit reuses the same Qwen outputs:10 non-escalated observations,3 wrong;
+it changes no semantic prediction or original frozen report. Accepted CPU
+EmbeddingGemma2 remains usable with GPU Qwen (warm82/89ms p50/p95,
+GPU peak2963MiB). Source-preserving windows are not learned field extraction.
+
 Measured experiments are separate from production readiness. A failed model
 gate is not passed by literal source-preserving rules or by a runner that
 successfully records a report. Extraction scheduling/controller shortcuts stay off.

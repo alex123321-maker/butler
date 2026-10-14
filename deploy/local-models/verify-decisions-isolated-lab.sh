@@ -60,7 +60,10 @@ qwen_connected=false
 cleanup() {
  if [[ -n "$sampler" ]]; then kill "$sampler" 2>/dev/null || true; wait "$sampler" || true; fi
  if [[ -n "$gpu_sampler" ]]; then kill "$gpu_sampler" 2>/dev/null || true; wait "$gpu_sampler" || true; fi
- for container in "${containers[@]}"; do docker rm -f "$container" >/dev/null 2>&1 || true; done
+ for container in "${containers[@]}"; do
+  docker logs "$container" > "$report/container-$container.log" 2>&1 || true
+  docker rm -f "$container" >/dev/null 2>&1 || true
+ done
  if $qwen_connected; then docker network disconnect "$network" butler-decision-qwen-v2 >/dev/null 2>&1 || true; fi
  if [[ -n "$network" ]]; then docker network rm "$network" >/dev/null 2>&1 || true; fi
 }
@@ -70,9 +73,11 @@ if [[ "$mode" == qwen* || "$mode" == interpretation ]]; then
  docker network connect --alias decision-qwen "$network" butler-decision-qwen-v2
  qwen_connected=true
 fi
+pg_storage=512m; pg_memory=1g
+if [[ "$mode" == contracts ]]; then pg_storage=2g; pg_memory=2g; fi
 pg=$(docker create --name "$id-pg" --network "$network" --network-alias decision-postgres \
  --env POSTGRES_USER=butler --env POSTGRES_DB=decisions_test --env POSTGRES_HOST_AUTH_METHOD=trust \
- --tmpfs /var/lib/postgresql/data:rw,size=512m --memory 1g --memory-swap 1g "$postgres_image")
+ --tmpfs "/var/lib/postgresql/data:rw,size=$pg_storage" --memory "$pg_memory" --memory-swap "$pg_memory" "$postgres_image")
 containers+=("$pg")
 docker start "$pg" >/dev/null
 ready=false
@@ -89,7 +94,7 @@ if [[ "$mode" == contracts ]]; then
   --env GOCACHE=/cache/go-race --env GOMODCACHE=/cache/go-mod --env GOTMPDIR=/cache/go-tmp \
   --env BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://butler@decision-postgres:5432/decisions_test?sslmode=disable \
   --entrypoint sh "$builder" -c \
-  'go test -race -p 1 -count=1 -json ./internal/decisions ./internal/localmodels ./apps/local-models > /reports/contracts-race.jsonl && go vet ./internal/decisions ./internal/localmodels ./apps/local-models' \
+  'go test -race -p 1 -count=1 -json ./internal/decisions ./internal/localmodels ./apps/local-models ./internal/memory/extraction ./internal/memory/catalog ./internal/memory/jobs > /reports/contracts-race.jsonl && go vet ./internal/decisions ./internal/localmodels ./apps/local-models ./internal/memory/extraction ./internal/memory/catalog ./internal/memory/jobs' \
   > "$report/contracts-validation.log" 2>&1
  printf 'Contract validation evidence: %s\n' "$report"
  exit 0

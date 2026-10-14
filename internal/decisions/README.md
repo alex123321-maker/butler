@@ -7,6 +7,12 @@ creates exact Unicode source windows and validates complete 16-ID score groups;
 Production consumers remain disabled. See
 [the revised contract](../../docs/architecture/event-interpretation.md) and
 [annotation rules](../../deploy/local-models/interpretation-annotation-v3.md).
+The [final comparison](../../deploy/local-models/interpretation-20261014/README.md)
+retains304 successful actual calls on76 new held-out windows. Qwen has44 exact
+intent sets and26 joint interpretations; all candidates fail screening. The
+separate offline score-prefix audit requires explicit saved-input/output paths,
+makes zero new inference calls and preserves every semantic prediction and the
+original strict-scoring report. Production consumption remains disabled.
 
 `TaxonomyProfiles()` adds described experimental schemas for the same three
 CPU checkpoints. A newly frozen 18-dev/90-test synthetic corpus supplies event

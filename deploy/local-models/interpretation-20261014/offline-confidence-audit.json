@@ -1,0 +1,2682 @@
+{
+  "all_semantic_predictions_unchanged": true,
+  "cases": [
+    {
+      "case": "test-001",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action"
+        ],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.7005180431438418,
+        "minimum_margin": 0.5584939200082006,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.023611120432593155,
+          "intent/change_constraint": 0.015713305429681888,
+          "intent/provide_information": 0.006873864745506146,
+          "intent/request_action": 0.9022932529435644,
+          "intent/stop_work": 0.0009374252876633472,
+          "modality/conditional": 0.03300665741530205,
+          "modality/direct": 0.14202412313564114,
+          "modality/negated": 0.04227489825882652,
+          "modality/quoted": 0.7005180431438418,
+          "modality/tentative": 0.07331959302486563,
+          "modality/unresolved": 0.0088566850215228,
+          "target/current_operation": 0.9672187241266512,
+          "target/none": 0.00019200980963136053,
+          "target/other_task": 0.011377756998191728,
+          "target/unresolved": 0.0010392690284164322,
+          "target/whole_current_task": 0.02017224003710932
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-002",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.6233591754170877,
+        "minimum_margin": 0.4152605495969592,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.05251750172821487,
+          "intent/change_constraint": 0.020431179444385408,
+          "intent/provide_information": 0.017242905484525246,
+          "intent/request_action": 0.9711053404977515,
+          "intent/stop_work": 0.0005967313773381559,
+          "modality/conditional": 0.028157335996156267,
+          "modality/direct": 0.6233591754170877,
+          "modality/negated": 0.026102842645350437,
+          "modality/quoted": 0.20809862582012856,
+          "modality/tentative": 0.10167618050969654,
+          "modality/unresolved": 0.012605839611580464,
+          "target/current_operation": 0.7117404576922493,
+          "target/none": 0.000016539503053217157,
+          "target/other_task": 0.02649573236859356,
+          "target/unresolved": 0.00046634732214328664,
+          "target/whole_current_task": 0.26128092311396073
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-003",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.7841688978692255,
+        "minimum_margin": 0.5949244662020831,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.20253776689895847,
+          "intent/change_constraint": 0.0207365218255375,
+          "intent/provide_information": 0.029726463212866275,
+          "intent/request_action": 0.9600187815155533,
+          "intent/stop_work": 0.00035287253697841497,
+          "modality/conditional": 0.012045173273103447,
+          "modality/direct": 0.7841688978692255,
+          "modality/negated": 0.015954340374011153,
+          "modality/quoted": 0.13988730515389972,
+          "modality/tentative": 0.040163091459471535,
+          "modality/unresolved": 0.007781191870288675,
+          "target/current_operation": 0.9732593211545372,
+          "target/none": 0.00010051006175775926,
+          "target/other_task": 0.010132663951807517,
+          "target/unresolved": 0.0005435841958533937,
+          "target/whole_current_task": 0.015963920636044248
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-004",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.620594381192517,
+        "minimum_margin": 0.2436244372881446,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.004667553404039567,
+          "intent/change_constraint": 0.007763363169258178,
+          "intent/provide_information": 0.06035294333828962,
+          "intent/request_action": 0.9384158857891417,
+          "intent/stop_work": 0.0009046053984911105,
+          "modality/conditional": 0.014132011951275766,
+          "modality/direct": 0.8956037893117975,
+          "modality/negated": 0.009204877853673419,
+          "modality/quoted": 0.03242986611088827,
+          "modality/tentative": 0.043238552778142536,
+          "modality/unresolved": 0.005390901994222439,
+          "target/current_operation": 0.3769699439043724,
+          "target/none": 0.000010555289893153493,
+          "target/other_task": 0.0023119143221202,
+          "target/unresolved": 0.00011320529109721895,
+          "target/whole_current_task": 0.620594381192517
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-005",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "other_task",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.797741801815384,
+        "minimum_margin": 0.6741118725962536,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.007268006647353221,
+          "intent/change_constraint": 0.024741626583365883,
+          "intent/provide_information": 0.02042744007416267,
+          "intent/request_action": 0.9729029173220084,
+          "intent/stop_work": 0.016540378033456295,
+          "modality/conditional": 0.011698300097115297,
+          "modality/direct": 0.797741801815384,
+          "modality/negated": 0.014154971004236619,
+          "modality/quoted": 0.12362992921913046,
+          "modality/tentative": 0.044567808837814214,
+          "modality/unresolved": 0.008207189026319254,
+          "target/current_operation": 0.023530210696819702,
+          "target/none": 0.0007947493919992228,
+          "target/other_task": 0.9641954677491751,
+          "target/unresolved": 0.0019712404831619752,
+          "target/whole_current_task": 0.009508331678843983
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-006",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action"
+        ],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.7778879835886259,
+        "minimum_margin": 0.6056705375505975,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.1867749265847037,
+          "intent/change_constraint": 0.00676329956691339,
+          "intent/provide_information": 0.007758927963581487,
+          "intent/request_action": 0.8028352687752988,
+          "intent/stop_work": 0.0009722720294615026,
+          "modality/conditional": 0.020459058895725912,
+          "modality/direct": 0.1306546029344642,
+          "modality/negated": 0.030985398725900896,
+          "modality/quoted": 0.7778879835886259,
+          "modality/tentative": 0.033580038910590485,
+          "modality/unresolved": 0.0064329169446926526,
+          "target/current_operation": 0.950251259844527,
+          "target/none": 0.0001438984009685743,
+          "target/other_task": 0.0060195266649840365,
+          "target/unresolved": 0.0006687858811701825,
+          "target/whole_current_task": 0.042916529208350214
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-007",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "change_constraint",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.624871251210765,
+        "minimum_margin": 0.3879627371826744,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.015861846024381003,
+          "intent/change_constraint": 0.788483945558065,
+          "intent/provide_information": 0.7831675502358423,
+          "intent/request_action": 0.0012473475212459214,
+          "intent/stop_work": 0.0009674004149488587,
+          "modality/conditional": 0.022925847930973818,
+          "modality/direct": 0.624871251210765,
+          "modality/negated": 0.055011567292761535,
+          "modality/quoted": 0.23690851402809063,
+          "modality/tentative": 0.058738378929167445,
+          "modality/unresolved": 0.0015444406082415168,
+          "target/current_operation": 0.8362952672975141,
+          "target/none": 0.000050718727560529453,
+          "target/other_task": 0.025960727634090502,
+          "target/unresolved": 0.001532521977513073,
+          "target/whole_current_task": 0.13616076436332172
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-008",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "change_constraint"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5729663874694502,
+        "minimum_margin": 0.14593277493890044,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.002358780447990042,
+          "intent/change_constraint": 0.9953218815757712,
+          "intent/provide_information": 0.4270336125305498,
+          "intent/request_action": 0.0003477495538554449,
+          "intent/stop_work": 0.0015796985010793235,
+          "modality/conditional": 0.017467694910726004,
+          "modality/direct": 0.8830602975068401,
+          "modality/negated": 0.02873149131563501,
+          "modality/quoted": 0.03760954974748111,
+          "modality/tentative": 0.030556991416756645,
+          "modality/unresolved": 0.002573975102561016,
+          "target/current_operation": 0.34637700392641296,
+          "target/none": 0.00006990135575796009,
+          "target/other_task": 0.007571218563554566,
+          "target/unresolved": 0.0011155604522591193,
+          "target/whole_current_task": 0.6448663157020154
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-009",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "change_constraint"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5456990876516306,
+        "minimum_margin": 0.31312513163562905,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.0022444974950816517,
+          "intent/change_constraint": 0.993841778850731,
+          "intent/provide_information": 0.001746883859531728,
+          "intent/request_action": 0.0005158435106472308,
+          "intent/stop_work": 0.006839264556072346,
+          "modality/conditional": 0.0037908380960617488,
+          "modality/direct": 0.5456990876516306,
+          "modality/negated": 0.23257395601600148,
+          "modality/quoted": 0.1726329657720013,
+          "modality/tentative": 0.04444181280375412,
+          "modality/unresolved": 0.0008613396605508422,
+          "target/current_operation": 0.8509486741147106,
+          "target/none": 0.00012455242915534762,
+          "target/other_task": 0.017657814080314464,
+          "target/unresolved": 0.003003023600384969,
+          "target/whole_current_task": 0.12826593577543458
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-010",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.4526670362238489,
+        "minimum_margin": 0.06530607675593791,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.08767544693122953,
+          "intent/change_constraint": 0.06479227603096725,
+          "intent/provide_information": 0.987999322006036,
+          "intent/request_action": 0.0009708319088298557,
+          "intent/stop_work": 0.003581501102509848,
+          "modality/conditional": 0.017087566219729358,
+          "modality/direct": 0.4526670362238489,
+          "modality/negated": 0.08858392808866869,
+          "modality/quoted": 0.387360959467911,
+          "modality/tentative": 0.04805617060108176,
+          "modality/unresolved": 0.00624433939876035,
+          "target/current_operation": 0.5836963790225206,
+          "target/none": 0.00023850628300048628,
+          "target/other_task": 0.06522526581320288,
+          "target/unresolved": 0.005383671562542174,
+          "target/whole_current_task": 0.3454561773187338
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-011",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "change_constraint"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5130164622123827,
+        "minimum_margin": 0.031390854087439024,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.00226859642578501,
+          "intent/change_constraint": 0.9929877404654428,
+          "intent/provide_information": 0.2579424723029533,
+          "intent/request_action": 0.0002609329478626747,
+          "intent/stop_work": 0.0006934406150060001,
+          "modality/conditional": 0.00917188949939484,
+          "modality/direct": 0.8737824896673398,
+          "modality/negated": 0.03784293319414751,
+          "modality/quoted": 0.04696003845029929,
+          "modality/tentative": 0.03064784372660335,
+          "modality/unresolved": 0.0015948054622151923,
+          "target/current_operation": 0.4816256081249437,
+          "target/none": 0.000017487598095743274,
+          "target/other_task": 0.005099777998434315,
+          "target/unresolved": 0.00024066406614352647,
+          "target/whole_current_task": 0.5130164622123827
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-012",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "change_constraint"
+        ],
+        "modality": "negated",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.4496081690381043,
+        "minimum_margin": 0.1229966026896302,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.007387947377678852,
+          "intent/change_constraint": 0.8556024874855155,
+          "intent/provide_information": 0.1280464980533234,
+          "intent/request_action": 0.0002926712620948798,
+          "intent/stop_work": 0.0027625463953582555,
+          "modality/conditional": 0.0025559015074688193,
+          "modality/direct": 0.3266115663484741,
+          "modality/negated": 0.4496081690381043,
+          "modality/quoted": 0.1691251614695307,
+          "modality/tentative": 0.051727352977345056,
+          "modality/unresolved": 0.0003718486590770253,
+          "target/current_operation": 0.9226305474826806,
+          "target/none": 0.0012012808191375613,
+          "target/other_task": 0.033199829659553634,
+          "target/unresolved": 0.005477516196175895,
+          "target/whole_current_task": 0.037490825842452315
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-013",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "stop_work"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.45725931208665527,
+        "minimum_margin": 0.11799056651363887,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.003324563224081481,
+          "intent/change_constraint": 0.01624596908314721,
+          "intent/provide_information": 0.04482061653598783,
+          "intent/request_action": 0.008549147291092563,
+          "intent/stop_work": 0.9924789479834853,
+          "modality/conditional": 0.00785675402140003,
+          "modality/direct": 0.45725931208665527,
+          "modality/negated": 0.3392687455730164,
+          "modality/quoted": 0.14244454126937406,
+          "modality/tentative": 0.04488273244489462,
+          "modality/unresolved": 0.008287914604659616,
+          "target/current_operation": 0.08352246753963226,
+          "target/none": 0.00005364662309651532,
+          "target/other_task": 0.004073353889951077,
+          "target/unresolved": 0.0007770262803845555,
+          "target/whole_current_task": 0.9115735056669356
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-014",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action",
+          "stop_work"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.4111748923374019,
+        "minimum_margin": 0.061833521105196576,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.02792684109122939,
+          "intent/change_constraint": 0.4690832394474017,
+          "intent/provide_information": 0.004249847247979829,
+          "intent/request_action": 0.5541599374421953,
+          "intent/stop_work": 0.9639616735170816,
+          "modality/conditional": 0.005383919965247105,
+          "modality/direct": 0.4111748923374019,
+          "modality/negated": 0.2820075717430546,
+          "modality/quoted": 0.24312009723085762,
+          "modality/tentative": 0.05452500993349472,
+          "modality/unresolved": 0.0037885087899440224,
+          "target/current_operation": 0.989607451096669,
+          "target/none": 0.0001160475089477237,
+          "target/other_task": 0.00361612951221379,
+          "target/unresolved": 0.001446397277136896,
+          "target/whole_current_task": 0.005213974605032599
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-015",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action",
+          "stop_work"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5566362022520124,
+        "minimum_margin": 0.31641392298795995,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.003246862402851434,
+          "intent/change_constraint": 0.0887246259508098,
+          "intent/provide_information": 0.014986650494009886,
+          "intent/request_action": 0.900382250562617,
+          "intent/stop_work": 0.8838984330407789,
+          "modality/conditional": 0.004394306048164023,
+          "modality/direct": 0.5566362022520124,
+          "modality/negated": 0.24022227926405243,
+          "modality/quoted": 0.166112982438694,
+          "modality/tentative": 0.027460302495259735,
+          "modality/unresolved": 0.005173927501817539,
+          "target/current_operation": 0.9138621293388356,
+          "target/none": 0.0002566055697041451,
+          "target/other_task": 0.02364297934876549,
+          "target/unresolved": 0.005222041220428061,
+          "target/whole_current_task": 0.057016244522266724
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-015",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action",
+          "stop_work"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.7443080101226354,
+        "minimum_margin": 0.48861602024527073,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.004928746889420562,
+          "intent/change_constraint": 0.12940488541751566,
+          "intent/provide_information": 0.03698094782111244,
+          "intent/request_action": 0.7443080101226354,
+          "intent/stop_work": 0.7783411290084139,
+          "modality/conditional": 0.0100672432399909,
+          "modality/direct": 0.7697056590895949,
+          "modality/negated": 0.09962454384271627,
+          "modality/quoted": 0.0800548451469192,
+          "modality/tentative": 0.030942522395033065,
+          "modality/unresolved": 0.009605186285745838,
+          "target/current_operation": 0.7853794636761166,
+          "target/none": 0.00003995733819913981,
+          "target/other_task": 0.03976775714737161,
+          "target/unresolved": 0.0021571583634280873,
+          "target/whole_current_task": 0.1726556634748846
+        }
+      },
+      "window": 1
+    },
+    {
+      "case": "test-016",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action",
+          "stop_work"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5737294697380302,
+        "minimum_margin": 0.36648979304334117,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.005791807597110791,
+          "intent/change_constraint": 0.12181994326821312,
+          "intent/provide_information": 0.1492901804167758,
+          "intent/request_action": 0.7209070221329367,
+          "intent/stop_work": 0.8726024585436456,
+          "modality/conditional": 0.01173328005532589,
+          "modality/direct": 0.5737294697380302,
+          "modality/negated": 0.1347937534213977,
+          "modality/quoted": 0.207239676694689,
+          "modality/tentative": 0.0613357004822908,
+          "modality/unresolved": 0.011168119608266422,
+          "target/current_operation": 0.11140290162486342,
+          "target/none": 0.00005524227109985735,
+          "target/other_task": 0.023596626035530206,
+          "target/unresolved": 0.0016745718812497018,
+          "target/whole_current_task": 0.8632706581872567
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-017",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "stop_work"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5436032911117326,
+        "minimum_margin": 0.26391688009147657,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.004027597362636354,
+          "intent/change_constraint": 0.014982907118665206,
+          "intent/provide_information": 0.022246984578827792,
+          "intent/request_action": 0.006274828750656711,
+          "intent/stop_work": 0.9846253924827255,
+          "modality/conditional": 0.00997678265600118,
+          "modality/direct": 0.5436032911117326,
+          "modality/negated": 0.279686411020256,
+          "modality/quoted": 0.10033579699309249,
+          "modality/tentative": 0.053248619885306214,
+          "modality/unresolved": 0.013149098333611761,
+          "target/current_operation": 0.016798211916245365,
+          "target/none": 0.00007153759521958746,
+          "target/other_task": 0.0015277153172946218,
+          "target/unresolved": 0.0005192399169301087,
+          "target/whole_current_task": 0.9810832952543103
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-018",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action",
+          "stop_work"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.527425046722583,
+        "minimum_margin": 0.055753923533451155,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.0036960269578831043,
+          "intent/change_constraint": 0.03455769853695934,
+          "intent/provide_information": 0.007763409269934016,
+          "intent/request_action": 0.9756012128082119,
+          "intent/stop_work": 0.8242669569822709,
+          "modality/conditional": 0.0080947071135238,
+          "modality/direct": 0.9329196118033377,
+          "modality/negated": 0.018128629859023273,
+          "modality/quoted": 0.018895181605539543,
+          "modality/tentative": 0.01709565456445405,
+          "modality/unresolved": 0.0048662150541216335,
+          "target/current_operation": 0.4716711231891318,
+          "target/none": 0.000016563251391439587,
+          "target/other_task": 0.0007556430169148232,
+          "target/unresolved": 0.0001316238199790162,
+          "target/whole_current_task": 0.527425046722583
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-019",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "ask_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.8740617794523826,
+        "minimum_margin": 0.8107443517332658,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9575326129171556,
+          "intent/change_constraint": 0.00024389712935564685,
+          "intent/provide_information": 0.002580703311167016,
+          "intent/request_action": 0.005365135982517637,
+          "intent/stop_work": 0.0007876804324820547,
+          "modality/conditional": 0.0185033400695494,
+          "modality/direct": 0.8740617794523826,
+          "modality/negated": 0.013973925343915967,
+          "modality/quoted": 0.0633174277191169,
+          "modality/tentative": 0.023765557350849897,
+          "modality/unresolved": 0.006377970064185129,
+          "target/current_operation": 0.0666923549963544,
+          "target/none": 0.0008799636382563968,
+          "target/other_task": 0.03672383134961334,
+          "target/unresolved": 0.005184262826529147,
+          "target/whole_current_task": 0.8905195871892467
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-020",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "ask_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.6119197161754918,
+        "minimum_margin": 0.3156786625010169,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9147059282405798,
+          "intent/change_constraint": 0.00045874381050066534,
+          "intent/provide_information": 0.0023916334642911886,
+          "intent/request_action": 0.009404392750769635,
+          "intent/stop_work": 0.0004945545043307462,
+          "modality/conditional": 0.030006756104140973,
+          "modality/direct": 0.6119197161754918,
+          "modality/negated": 0.026840579575407822,
+          "modality/quoted": 0.2962410536744749,
+          "modality/tentative": 0.029378473010724857,
+          "modality/unresolved": 0.005613421459759761,
+          "target/current_operation": 0.6479124925069039,
+          "target/none": 0.038966464253168534,
+          "target/other_task": 0.0616319443280615,
+          "target/unresolved": 0.02428586404961932,
+          "target/whole_current_task": 0.2272032348622469
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-021",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "ask_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.6115973901963478,
+        "minimum_margin": 0.29716771075250564,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.8174669113995794,
+          "intent/change_constraint": 0.0008089307440405339,
+          "intent/provide_information": 0.004252954852605601,
+          "intent/request_action": 0.04773842347086172,
+          "intent/stop_work": 0.001537004942108813,
+          "modality/conditional": 0.023563099819791298,
+          "modality/direct": 0.7153553571444614,
+          "modality/negated": 0.018789299016424406,
+          "modality/quoted": 0.20220828541687572,
+          "modality/tentative": 0.03381960162083243,
+          "modality/unresolved": 0.006264356981614687,
+          "target/current_operation": 0.3144296794438422,
+          "target/none": 0.00015577044213716844,
+          "target/other_task": 0.06971402208574819,
+          "target/unresolved": 0.004103137831924581,
+          "target/whole_current_task": 0.6115973901963478
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-022",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "ask_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.6979581225178577,
+        "minimum_margin": 0.56399554493711,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9531390017967555,
+          "intent/change_constraint": 0.00028554221287323327,
+          "intent/provide_information": 0.004175968578210913,
+          "intent/request_action": 0.010332733439863935,
+          "intent/stop_work": 0.00036412190189999134,
+          "modality/conditional": 0.0232388603536106,
+          "modality/direct": 0.7647119197570935,
+          "modality/negated": 0.026096825285268882,
+          "modality/quoted": 0.15228712416381096,
+          "modality/tentative": 0.02656361009103801,
+          "modality/unresolved": 0.0071016603491781405,
+          "target/current_operation": 0.6979581225178577,
+          "target/none": 0.03961814919689627,
+          "target/other_task": 0.10381306667244138,
+          "target/unresolved": 0.02464808403205686,
+          "target/whole_current_task": 0.13396257758074767
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-023",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action"
+        ],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5629355870161428,
+        "minimum_margin": 0.24602419572790496,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.3037798049715104,
+          "intent/change_constraint": 0.05609379071073103,
+          "intent/provide_information": 0.0860068935099093,
+          "intent/request_action": 0.8952791917890482,
+          "intent/stop_work": 0.00023005101765497364,
+          "modality/conditional": 0.014394309666669294,
+          "modality/direct": 0.3169113912882378,
+          "modality/negated": 0.02955227984773817,
+          "modality/quoted": 0.5629355870161428,
+          "modality/tentative": 0.073210427610664,
+          "modality/unresolved": 0.0029960045705479735,
+          "target/current_operation": 0.9392655500272953,
+          "target/none": 0.0002150905567161143,
+          "target/other_task": 0.017038049185537186,
+          "target/unresolved": 0.0015340328633360067,
+          "target/whole_current_task": 0.041947277367115454
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-024",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "ask_information"
+        ],
+        "modality": "direct",
+        "target": "none",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5806710463265707,
+        "minimum_margin": 0.4099076880026277,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9350508286558127,
+          "intent/change_constraint": 0.000323580190216146,
+          "intent/provide_information": 0.03322605795719006,
+          "intent/request_action": 0.0019763308836355195,
+          "intent/stop_work": 0.00085663828154802,
+          "modality/conditional": 0.023595321533850036,
+          "modality/direct": 0.6805601695101406,
+          "modality/negated": 0.015225715147920588,
+          "modality/quoted": 0.25595738462261486,
+          "modality/tentative": 0.020344823024297232,
+          "modality/unresolved": 0.004316586161176515,
+          "target/current_operation": 0.08152303461094866,
+          "target/none": 0.5806710463265707,
+          "target/other_task": 0.0992119627657258,
+          "target/unresolved": 0.06783059797281184,
+          "target/whole_current_task": 0.17076335832394302
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-025",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.6454270567735637,
+        "minimum_margin": 0.3036695406579076,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.26559165165091186,
+          "intent/change_constraint": 0.0026538140114505315,
+          "intent/provide_information": 0.9652570304190181,
+          "intent/request_action": 0.000959577863738946,
+          "intent/stop_work": 0.00037895576126683813,
+          "modality/conditional": 0.004432412403709088,
+          "modality/direct": 0.9572734231805273,
+          "modality/negated": 0.0058835845586159286,
+          "modality/quoted": 0.019416492009558146,
+          "modality/tentative": 0.00918989311140694,
+          "modality/unresolved": 0.0038041947361824742,
+          "target/current_operation": 0.6454270567735637,
+          "target/none": 0.00009477115469881156,
+          "target/other_task": 0.012086105884875603,
+          "target/unresolved": 0.0006345500712057304,
+          "target/whole_current_task": 0.34175751611565613
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-026",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.4840582677689391,
+        "minimum_margin": 0.03659011973075332,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.023264236125486063,
+          "intent/change_constraint": 0.05715644914035727,
+          "intent/provide_information": 0.9673304864915561,
+          "intent/request_action": 0.0002577644069015584,
+          "intent/stop_work": 0.00012601530980582354,
+          "modality/conditional": 0.006214227997281344,
+          "modality/direct": 0.4474681480381858,
+          "modality/negated": 0.041619753555158095,
+          "modality/quoted": 0.4840582677689391,
+          "modality/tentative": 0.018867682838110272,
+          "modality/unresolved": 0.0017719198023251627,
+          "target/current_operation": 0.8745210454858077,
+          "target/none": 0.00017529038849857666,
+          "target/other_task": 0.02516660064175868,
+          "target/unresolved": 0.0036393306522592254,
+          "target/whole_current_task": 0.09649773283167586
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-027",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.507037410008098,
+        "minimum_margin": 0.08966691216218681,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.02272914182152205,
+          "intent/change_constraint": 0.4082855001139347,
+          "intent/provide_information": 0.9200577887434159,
+          "intent/request_action": 0.002016890091779468,
+          "intent/stop_work": 0.0002834406417918961,
+          "modality/conditional": 0.011534731211738302,
+          "modality/direct": 0.507037410008098,
+          "modality/negated": 0.028387738264468967,
+          "modality/quoted": 0.4173704978459112,
+          "modality/tentative": 0.030688609688245688,
+          "modality/unresolved": 0.004981012981537826,
+          "target/current_operation": 0.8576893275982912,
+          "target/none": 0.00005733700755192695,
+          "target/other_task": 0.03565926241000032,
+          "target/unresolved": 0.0011072031432710074,
+          "target/whole_current_task": 0.10548686984088558
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-028",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.8383201964000409,
+        "minimum_margin": 0.6856303528677695,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.08616443883296714,
+          "intent/change_constraint": 0.0037101353638207967,
+          "intent/provide_information": 0.9940943415377277,
+          "intent/request_action": 0.001789963103939718,
+          "intent/stop_work": 0.0006200832328988183,
+          "modality/conditional": 0.008158047454187392,
+          "modality/direct": 0.8470147732049206,
+          "modality/negated": 0.017861279775818202,
+          "modality/quoted": 0.10097411766230041,
+          "modality/tentative": 0.019941737388720168,
+          "modality/unresolved": 0.0060500445140532644,
+          "target/current_operation": 0.8383201964000409,
+          "target/none": 0.00003036919034943719,
+          "target/other_task": 0.0086505115186976,
+          "target/unresolved": 0.00030907935864064965,
+          "target/whole_current_task": 0.15268984353227133
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-029",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.792824574985615,
+        "minimum_margin": 0.6411608667519848,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.16007617490969478,
+          "intent/change_constraint": 0.004521521236149355,
+          "intent/provide_information": 0.9847766796957068,
+          "intent/request_action": 0.043487340571778776,
+          "intent/stop_work": 0.0038112447874763125,
+          "modality/conditional": 0.008067725549398953,
+          "modality/direct": 0.792824574985615,
+          "modality/negated": 0.02244014043013643,
+          "modality/quoted": 0.15166370823363023,
+          "modality/tentative": 0.0191622817116732,
+          "modality/unresolved": 0.005841569089546232,
+          "target/current_operation": 0.9349871280657637,
+          "target/none": 0.00007117672305825202,
+          "target/other_task": 0.016905793956068695,
+          "target/unresolved": 0.0006934574681155887,
+          "target/whole_current_task": 0.0473424437869938
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-030",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.49481729087045556,
+        "minimum_margin": 0.07003132359374109,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.007255367854398656,
+          "intent/change_constraint": 0.2198752227656363,
+          "intent/provide_information": 0.8732198963175566,
+          "intent/request_action": 0.001218720423106674,
+          "intent/stop_work": 0.00023502416802205104,
+          "modality/conditional": 0.013741957346673023,
+          "modality/direct": 0.2273827693292399,
+          "modality/negated": 0.021989972642921168,
+          "modality/quoted": 0.6097974625958426,
+          "modality/tentative": 0.12152108987995056,
+          "modality/unresolved": 0.005566748205372845,
+          "target/current_operation": 0.49481729087045556,
+          "target/none": 0.004483943407681634,
+          "target/other_task": 0.06108870082304202,
+          "target/unresolved": 0.014824097622106288,
+          "target/whole_current_task": 0.42478596727671447
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-031",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5544370501385115,
+        "minimum_margin": 0.14960298731947774,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.017097932739566647,
+          "intent/change_constraint": 0.03141883056181912,
+          "intent/provide_information": 0.02380262301816277,
+          "intent/request_action": 0.19694141142548505,
+          "intent/stop_work": 0.0015530527102207026,
+          "modality/conditional": 0.0029518330655593145,
+          "modality/direct": 0.017133966359128536,
+          "modality/negated": 0.016735079321792096,
+          "modality/quoted": 0.5544370501385115,
+          "modality/tentative": 0.4048340628190338,
+          "modality/unresolved": 0.003908008295974772,
+          "target/current_operation": 0.5988006605942687,
+          "target/none": 0.007488577509983118,
+          "target/other_task": 0.038659537222690214,
+          "target/unresolved": 0.08504453664531585,
+          "target/whole_current_task": 0.2700066880277421
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-032",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "stop_work"
+        ],
+        "modality": "quoted",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5900781056120549,
+        "minimum_margin": 0.18015621122410974,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.012478406632630237,
+          "intent/change_constraint": 0.20407379640817364,
+          "intent/provide_information": 0.40992189438794513,
+          "intent/request_action": 0.050906069807725204,
+          "intent/stop_work": 0.7551894294090613,
+          "modality/conditional": 0.006255434533612868,
+          "modality/direct": 0.01963916928600006,
+          "modality/negated": 0.0383271496156854,
+          "modality/quoted": 0.8729478300005384,
+          "modality/tentative": 0.054743631662691715,
+          "modality/unresolved": 0.008086784901471593,
+          "target/current_operation": 0.23058114802511934,
+          "target/none": 0.00007918959113096902,
+          "target/other_task": 0.0040088014239237505,
+          "target/unresolved": 0.0010329619597528575,
+          "target/whole_current_task": 0.764297899000073
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-033",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "change_constraint"
+        ],
+        "modality": "tentative",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.500653411029083,
+        "minimum_margin": 0.18224750615702562,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.007784048749834028,
+          "intent/change_constraint": 0.9415801271537275,
+          "intent/provide_information": 0.27840238311894805,
+          "intent/request_action": 0.0003666856966701767,
+          "intent/stop_work": 0.0008530785004649432,
+          "modality/conditional": 0.10539640733742889,
+          "modality/direct": 0.02595591466349356,
+          "modality/negated": 0.02913052145892165,
+          "modality/quoted": 0.3184059048720574,
+          "modality/tentative": 0.500653411029083,
+          "modality/unresolved": 0.02045784063901541,
+          "target/current_operation": 0.1498345654558948,
+          "target/none": 0.0006849119396110953,
+          "target/other_task": 0.022177031373798988,
+          "target/unresolved": 0.0028312511793114835,
+          "target/whole_current_task": 0.8244722400513836
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-034",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.36231752870022427,
+        "minimum_margin": 0.11384116141024903,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.007793967412646194,
+          "intent/change_constraint": 0.17926521664854225,
+          "intent/provide_information": 0.26064813874588993,
+          "intent/request_action": 0.10363109833915682,
+          "intent/stop_work": 0.001236062208028244,
+          "modality/conditional": 0.002676909330897195,
+          "modality/direct": 0.0034617275900897418,
+          "modality/negated": 0.01027668500864305,
+          "modality/quoted": 0.548160446897863,
+          "modality/tentative": 0.434319285487614,
+          "modality/unresolved": 0.0011049456848928507,
+          "target/current_operation": 0.36231752870022427,
+          "target/none": 0.03970036250140055,
+          "target/other_task": 0.23729433672066505,
+          "target/unresolved": 0.2282990761831443,
+          "target/whole_current_task": 0.1323886958945659
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-035",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "change_constraint"
+        ],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5026666155232391,
+        "minimum_margin": 0.06299253079752165,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.017997938550748452,
+          "intent/change_constraint": 0.5314962653987608,
+          "intent/provide_information": 0.008672892626513945,
+          "intent/request_action": 0.002028945977034248,
+          "intent/stop_work": 0.009744630647314697,
+          "modality/conditional": 0.07305567513126818,
+          "modality/direct": 0.013425895468403387,
+          "modality/negated": 0.02815613254475971,
+          "modality/quoted": 0.5026666155232391,
+          "modality/tentative": 0.37265416062289597,
+          "modality/unresolved": 0.010041520709433684,
+          "target/current_operation": 0.6102527401908591,
+          "target/none": 0.0008601859280031312,
+          "target/other_task": 0.1474163321130356,
+          "target/unresolved": 0.03859281320659808,
+          "target/whole_current_task": 0.20287792856150408
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-036",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.3710076808666719,
+        "minimum_margin": 0.057912801353256604,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.4710435993233717,
+          "intent/change_constraint": 0.0761157131711515,
+          "intent/provide_information": 0.029803631051405023,
+          "intent/request_action": 0.3522783761963323,
+          "intent/stop_work": 0.09954985680197845,
+          "modality/conditional": 0.01104369093131993,
+          "modality/direct": 0.03860910711240297,
+          "modality/negated": 0.03431122830630596,
+          "modality/quoted": 0.8932568554470257,
+          "modality/tentative": 0.0183122440570185,
+          "modality/unresolved": 0.004466874145926855,
+          "target/current_operation": 0.3710076808666719,
+          "target/none": 0.16806659131552595,
+          "target/other_task": 0.10585884841344681,
+          "target/unresolved": 0.06301524383914434,
+          "target/whole_current_task": 0.2920516355652111
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-037",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [],
+        "modality": "quoted",
+        "target": "none",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.22461717483289936,
+        "minimum_margin": 0.006339453092544939,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.05843507708492136,
+          "intent/change_constraint": 0.16937207256170628,
+          "intent/provide_information": 0.459304432213988,
+          "intent/request_action": 0.07484145370088859,
+          "intent/stop_work": 0.45907565416786983,
+          "modality/conditional": 0.003397851960341729,
+          "modality/direct": 0.005339325055514751,
+          "modality/negated": 0.021586334728934578,
+          "modality/quoted": 0.9650664673516235,
+          "modality/tentative": 0.002644342567790606,
+          "modality/unresolved": 0.0019656783357949337,
+          "target/current_operation": 0.2080239938976671,
+          "target/none": 0.22461717483289936,
+          "target/other_task": 0.21827772174035442,
+          "target/unresolved": 0.1523847334048743,
+          "target/whole_current_task": 0.19669637612420487
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-038",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "quoted",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.38393824431822327,
+        "minimum_margin": 0.08095930837350768,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.16880208163374835,
+          "intent/change_constraint": 0.086089536643271,
+          "intent/provide_information": 0.9227119818000018,
+          "intent/request_action": 0.007917576474683804,
+          "intent/stop_work": 0.00043046439974939486,
+          "modality/conditional": 0.004877718699142608,
+          "modality/direct": 0.014375897616300055,
+          "modality/negated": 0.028692595169810875,
+          "modality/quoted": 0.9439830581917347,
+          "modality/tentative": 0.006951623773883408,
+          "modality/unresolved": 0.0011191065491284314,
+          "target/current_operation": 0.3029789359447156,
+          "target/none": 0.13819415582739367,
+          "target/other_task": 0.12872638269912082,
+          "target/unresolved": 0.0461622812105467,
+          "target/whole_current_task": 0.38393824431822327
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-039",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "quoted",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5313244446340051,
+        "minimum_margin": 0.16060792040358313,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.0768108472797439,
+          "intent/change_constraint": 0.005257638699304524,
+          "intent/provide_information": 0.8150890786357491,
+          "intent/request_action": 0.002122478972495495,
+          "intent/stop_work": 0.003273413758927256,
+          "modality/conditional": 0.0500617339033484,
+          "modality/direct": 0.3271590873134215,
+          "modality/negated": 0.04679671809318804,
+          "modality/quoted": 0.5313244446340051,
+          "modality/tentative": 0.035801194969380015,
+          "modality/unresolved": 0.0088568210866569,
+          "target/current_operation": 0.3877174375658264,
+          "target/none": 0.005267820246418267,
+          "target/other_task": 0.044184636771123095,
+          "target/unresolved": 0.01450474744722271,
+          "target/whole_current_task": 0.5483253579694095
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-040",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.43881157436862156,
+        "minimum_margin": 0.011103173764014262,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.08084071953346879,
+          "intent/change_constraint": 0.054216726505459875,
+          "intent/provide_information": 0.027086222513244895,
+          "intent/request_action": 0.49444841311799287,
+          "intent/stop_work": 0.06680388252544926,
+          "modality/conditional": 0.015691676387938214,
+          "modality/direct": 0.02997038936791062,
+          "modality/negated": 0.04091094443321497,
+          "modality/quoted": 0.8991957358053405,
+          "modality/tentative": 0.0117988357137095,
+          "modality/unresolved": 0.002432418291886142,
+          "target/current_operation": 0.43881157436862156,
+          "target/none": 0.3195398021523012,
+          "target/other_task": 0.08670642691471825,
+          "target/unresolved": 0.04708224972896541,
+          "target/whole_current_task": 0.10785994683539339
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-041",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5802362634049627,
+        "minimum_margin": 0.18196690095799317,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.007823346522897543,
+          "intent/change_constraint": 0.06690930969396618,
+          "intent/provide_information": 0.5909834504789966,
+          "intent/request_action": 0.36295199205387246,
+          "intent/stop_work": 0.004237369978285575,
+          "modality/conditional": 0.01028389690477573,
+          "modality/direct": 0.5802362634049627,
+          "modality/negated": 0.03751612585818664,
+          "modality/quoted": 0.3180348602331787,
+          "modality/tentative": 0.048533537850809126,
+          "modality/unresolved": 0.005395315748087119,
+          "target/current_operation": 0.9279284947323947,
+          "target/none": 0.00003054075226738207,
+          "target/other_task": 0.014404297678692203,
+          "target/unresolved": 0.00030947369262426637,
+          "target/whole_current_task": 0.05732719314402142
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-042",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.35220108942441525,
+        "minimum_margin": 0.05227993814772347,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.40093581363366265,
+          "intent/change_constraint": 0.009827397328540407,
+          "intent/provide_information": 0.5315579780878895,
+          "intent/request_action": 0.009607284780125791,
+          "intent/stop_work": 0.0013081917841385035,
+          "modality/conditional": 0.0019832321222521456,
+          "modality/direct": 0.004210226482186918,
+          "modality/negated": 0.014832949246882266,
+          "modality/quoted": 0.9761468371209928,
+          "modality/tentative": 0.0021689839749873675,
+          "modality/unresolved": 0.0006577710526985222,
+          "target/current_operation": 0.35220108942441525,
+          "target/none": 0.05892328805845523,
+          "target/other_task": 0.19958676624569316,
+          "target/unresolved": 0.08936770499474446,
+          "target/whole_current_task": 0.2999211512766918
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-043",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "change_constraint"
+        ],
+        "modality": "negated",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.4226114415237685,
+        "minimum_margin": 0.13376612995685833,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.0040002529169329525,
+          "intent/change_constraint": 0.7071701348830854,
+          "intent/provide_information": 0.002205411115683934,
+          "intent/request_action": 0.0020310714615657216,
+          "intent/stop_work": 0.014509498194980663,
+          "modality/conditional": 0.0037779280018548082,
+          "modality/direct": 0.2888453115669102,
+          "modality/negated": 0.4226114415237685,
+          "modality/quoted": 0.21845647297192686,
+          "modality/tentative": 0.06499562653381288,
+          "modality/unresolved": 0.001313219401726728,
+          "target/current_operation": 0.3620087104767418,
+          "target/none": 0.0000794497155308837,
+          "target/other_task": 0.007514225620118671,
+          "target/unresolved": 0.000559304933905325,
+          "target/whole_current_task": 0.6298383092537033
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-044",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "negated",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.6415128452759266,
+        "minimum_margin": 0.3892787696318729,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.010986446004408549,
+          "intent/change_constraint": 0.019620853358107867,
+          "intent/provide_information": 0.8731573890235398,
+          "intent/request_action": 0.0009409078074542006,
+          "intent/stop_work": 0.03868597745189469,
+          "modality/conditional": 0.01659783207643127,
+          "modality/direct": 0.07885451183593643,
+          "modality/negated": 0.6537458613298583,
+          "modality/quoted": 0.1805407486798303,
+          "modality/tentative": 0.045285273082615846,
+          "modality/unresolved": 0.024975772995327904,
+          "target/current_operation": 0.25223407564405365,
+          "target/none": 0.002188320836440669,
+          "target/other_task": 0.09822804502378706,
+          "target/unresolved": 0.005836713219792154,
+          "target/whole_current_task": 0.6415128452759266
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-045",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.618077552729939,
+        "minimum_margin": 0.37176754288655656,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.09745546894441706,
+          "intent/change_constraint": 0.0019404719719139393,
+          "intent/provide_information": 0.9774738375330319,
+          "intent/request_action": 0.006439249121663821,
+          "intent/stop_work": 0.014608034098667903,
+          "modality/conditional": 0.021652151271434675,
+          "modality/direct": 0.618077552729939,
+          "modality/negated": 0.06695103118499891,
+          "modality/quoted": 0.24631000984338244,
+          "modality/tentative": 0.032044819471295234,
+          "modality/unresolved": 0.014964435498949658,
+          "target/current_operation": 0.848271103755541,
+          "target/none": 0.000042255581415503404,
+          "target/other_task": 0.01678722120148251,
+          "target/unresolved": 0.0005200076328328106,
+          "target/whole_current_task": 0.13437941182872806
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-046",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.47169583680463534,
+        "minimum_margin": 0.04113688287234285,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.32521198884378094,
+          "intent/change_constraint": 0.0058449646489435025,
+          "intent/provide_information": 0.9561278439230145,
+          "intent/request_action": 0.012277422229817744,
+          "intent/stop_work": 0.010789237202612502,
+          "modality/conditional": 0.04756763250656765,
+          "modality/direct": 0.47169583680463534,
+          "modality/negated": 0.12286276762633859,
+          "modality/quoted": 0.2689749586102676,
+          "modality/tentative": 0.049174946474826606,
+          "modality/unresolved": 0.03972385797736413,
+          "target/current_operation": 0.46333354557997475,
+          "target/none": 0.0001601202325214538,
+          "target/other_task": 0.029794556338913945,
+          "target/unresolved": 0.0022413493962723462,
+          "target/whole_current_task": 0.5044704284523176
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-047",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "quoted",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.4093699230085335,
+        "minimum_margin": 0.12257676957542724,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.06963966531495203,
+          "intent/change_constraint": 0.017112236633645615,
+          "intent/provide_information": 0.9017732934190034,
+          "intent/request_action": 0.002082114216672507,
+          "intent/stop_work": 0.0117101461206268,
+          "modality/conditional": 0.005257641829154289,
+          "modality/direct": 0.28679315343310624,
+          "modality/negated": 0.25114558193968634,
+          "modality/quoted": 0.4093699230085335,
+          "modality/tentative": 0.03947404226867964,
+          "modality/unresolved": 0.00795965752083991,
+          "target/current_operation": 0.30644582346507915,
+          "target/none": 0.03092877764465739,
+          "target/other_task": 0.08763391529582175,
+          "target/unresolved": 0.018173938194679305,
+          "target/whole_current_task": 0.5568175453997625
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-048",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [],
+        "modality": "negated",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.6440537134316564,
+        "minimum_margin": 0.2881074268633129,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.0025118405297718097,
+          "intent/change_constraint": 0.35594628656834354,
+          "intent/provide_information": 0.011763420356599358,
+          "intent/request_action": 0.0008927460655150181,
+          "intent/stop_work": 0.29857883559617526,
+          "modality/conditional": 0.004259194380242011,
+          "modality/direct": 0.0871076341984442,
+          "modality/negated": 0.7062931728855271,
+          "modality/quoted": 0.17509814790114714,
+          "modality/tentative": 0.024302354894156216,
+          "modality/unresolved": 0.0029394957404834127,
+          "target/current_operation": 0.6970432842804523,
+          "target/none": 0.08543640869752898,
+          "target/other_task": 0.026891137223597178,
+          "target/unresolved": 0.034174244751748996,
+          "target/whole_current_task": 0.1564549250466727
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-049",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "change_constraint"
+        ],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.37330954926630094,
+        "minimum_margin": 0.11699128295950217,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.0033170700910887365,
+          "intent/change_constraint": 0.9523737303888081,
+          "intent/provide_information": 0.01489374021090968,
+          "intent/request_action": 0.0005412151623766157,
+          "intent/stop_work": 0.0023135762624431682,
+          "modality/conditional": 0.25631826630679877,
+          "modality/direct": 0.10288723014893897,
+          "modality/negated": 0.1887076535643086,
+          "modality/quoted": 0.37330954926630094,
+          "modality/tentative": 0.0743921135585829,
+          "modality/unresolved": 0.004385187155069792,
+          "target/current_operation": 0.8203268655897379,
+          "target/none": 0.0005359619245777263,
+          "target/other_task": 0.019906234144130553,
+          "target/unresolved": 0.00657157003561027,
+          "target/whole_current_task": 0.1526593683059436
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-050",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action"
+        ],
+        "modality": "quoted",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.29269602739872896,
+        "minimum_margin": 0.011701151456274983,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.007203131397732227,
+          "intent/change_constraint": 0.06288221291160334,
+          "intent/provide_information": 0.009100957864503816,
+          "intent/request_action": 0.9249215308957844,
+          "intent/stop_work": 0.025647689673906675,
+          "modality/conditional": 0.280994875942454,
+          "modality/direct": 0.18297663512521847,
+          "modality/negated": 0.03500458955095651,
+          "modality/quoted": 0.29269602739872896,
+          "modality/tentative": 0.1804727471861438,
+          "modality/unresolved": 0.027855124796498248,
+          "target/current_operation": 0.34026473417120656,
+          "target/none": 0.00003612744966592752,
+          "target/other_task": 0.021213472365389254,
+          "target/unresolved": 0.0010573299170866261,
+          "target/whole_current_task": 0.6374283360966516
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-051",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "stop_work"
+        ],
+        "modality": "negated",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.4270566088585767,
+        "minimum_margin": 0.05348191107681466,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.0018580824574079113,
+          "intent/change_constraint": 0.07575060079672266,
+          "intent/provide_information": 0.0037182088935854654,
+          "intent/request_action": 0.007111751600384623,
+          "intent/stop_work": 0.9704178289128991,
+          "modality/conditional": 0.006233610009950873,
+          "modality/direct": 0.37357469778176206,
+          "modality/negated": 0.4270566088585767,
+          "modality/quoted": 0.13984464547143616,
+          "modality/tentative": 0.04919628133656333,
+          "modality/unresolved": 0.004094156541710915,
+          "target/current_operation": 0.26065028533330514,
+          "target/none": 0.00012582271995741068,
+          "target/other_task": 0.009909308310366674,
+          "target/unresolved": 0.0007498018182756156,
+          "target/whole_current_task": 0.7285647818180951
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-052",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "ask_information"
+        ],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.46876690004573485,
+        "minimum_margin": 0.18128095444317988,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9067966875223537,
+          "intent/change_constraint": 0.0015426737375586967,
+          "intent/provide_information": 0.024776214632575254,
+          "intent/request_action": 0.01641633564863716,
+          "intent/stop_work": 0.00036005753967771354,
+          "modality/conditional": 0.05729039883655517,
+          "modality/direct": 0.15364639368398839,
+          "modality/negated": 0.02447280182720371,
+          "modality/quoted": 0.46876690004573485,
+          "modality/tentative": 0.28748594560255497,
+          "modality/unresolved": 0.008337560003962916,
+          "target/current_operation": 0.689665405517644,
+          "target/none": 0.12803574114019087,
+          "target/other_task": 0.08606954207172814,
+          "target/unresolved": 0.023213823916307975,
+          "target/whole_current_task": 0.07301548735412908
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-053",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "change_constraint"
+        ],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.38534598752681587,
+        "minimum_margin": 0.0906586339085117,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.013376901613961366,
+          "intent/change_constraint": 0.8079864441976323,
+          "intent/provide_information": 0.08411698553019169,
+          "intent/request_action": 0.0003985914230512547,
+          "intent/stop_work": 0.005810466176173563,
+          "modality/conditional": 0.0026800978289762967,
+          "modality/direct": 0.29468735361830417,
+          "modality/negated": 0.2675217408148296,
+          "modality/quoted": 0.38534598752681587,
+          "modality/tentative": 0.04945409905703194,
+          "modality/unresolved": 0.0003107211540420509,
+          "target/current_operation": 0.7712568396056292,
+          "target/none": 0.00806530729678515,
+          "target/other_task": 0.03251980817545065,
+          "target/unresolved": 0.025265659121339417,
+          "target/whole_current_task": 0.1628923858007956
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-054",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5427479646298919,
+        "minimum_margin": 0.16912143723610967,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.05640604568775308,
+          "intent/change_constraint": 0.04952039030243618,
+          "intent/provide_information": 0.9694605254512567,
+          "intent/request_action": 0.00066478371872603,
+          "intent/stop_work": 0.002060929173448815,
+          "modality/conditional": 0.009626719117220068,
+          "modality/direct": 0.5427479646298919,
+          "modality/negated": 0.05154711242701106,
+          "modality/quoted": 0.37362652739378227,
+          "modality/tentative": 0.01852387797594636,
+          "modality/unresolved": 0.003927798456148413,
+          "target/current_operation": 0.6668518991840078,
+          "target/none": 0.0014004648475629395,
+          "target/other_task": 0.07316111873336706,
+          "target/unresolved": 0.015195880004489286,
+          "target/whole_current_task": 0.24339063723057294
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-055",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action"
+        ],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.707681444140276,
+        "minimum_margin": 0.5059991571843836,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.015294860520537176,
+          "intent/change_constraint": 0.023845026702943303,
+          "intent/provide_information": 0.00800594846516574,
+          "intent/request_action": 0.9437524141083069,
+          "intent/stop_work": 0.0011191976448778292,
+          "modality/conditional": 0.008830912659715001,
+          "modality/direct": 0.20168228695589246,
+          "modality/negated": 0.032558962610479324,
+          "modality/quoted": 0.707681444140276,
+          "modality/tentative": 0.04561243448013409,
+          "modality/unresolved": 0.003633959153503041,
+          "target/current_operation": 0.9290388941170339,
+          "target/none": 0.00042599543497519126,
+          "target/other_task": 0.02377854194348357,
+          "target/unresolved": 0.006333820099121402,
+          "target/whole_current_task": 0.04042274840538604
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-056",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action"
+        ],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.4721311639720387,
+        "minimum_margin": 0.045936131150840054,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.00922063750438262,
+          "intent/change_constraint": 0.16067073584710564,
+          "intent/provide_information": 0.07632777255253526,
+          "intent/request_action": 0.8429394262041995,
+          "intent/stop_work": 0.03528728158175735,
+          "modality/conditional": 0.008032620960618098,
+          "modality/direct": 0.42619503282119864,
+          "modality/negated": 0.04684076312544736,
+          "modality/quoted": 0.4721311639720387,
+          "modality/tentative": 0.04508663572826399,
+          "modality/unresolved": 0.001713783392433117,
+          "target/current_operation": 0.9082464053056043,
+          "target/none": 0.0002351241108458478,
+          "target/other_task": 0.011982761627255025,
+          "target/unresolved": 0.006981342237414427,
+          "target/whole_current_task": 0.07255436671888038
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-057",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action",
+          "stop_work"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.48444889624008525,
+        "minimum_margin": 0.026996314052935122,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.005962510326106487,
+          "intent/change_constraint": 0.005519404771790918,
+          "intent/provide_information": 0.002495440503823653,
+          "intent/request_action": 0.6034882743769429,
+          "intent/stop_work": 0.9843802540571124,
+          "modality/conditional": 0.005964341594066173,
+          "modality/direct": 0.7666852451034993,
+          "modality/negated": 0.07873535771641878,
+          "modality/quoted": 0.11407110836061508,
+          "modality/tentative": 0.029732036922167568,
+          "modality/unresolved": 0.004811910303233175,
+          "target/current_operation": 0.4574525821871501,
+          "target/none": 0.0009574315203575474,
+          "target/other_task": 0.0397465036627391,
+          "target/unresolved": 0.017394586389667926,
+          "target/whole_current_task": 0.48444889624008525
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-058",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "ask_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.430605074959862,
+        "minimum_margin": 0.195470620742739,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.93030383103862,
+          "intent/change_constraint": 0.0028213034163219017,
+          "intent/provide_information": 0.0018684021621528924,
+          "intent/request_action": 0.0047732242494750166,
+          "intent/stop_work": 0.0004170270091468237,
+          "modality/conditional": 0.036636257286897934,
+          "modality/direct": 0.8646259962133871,
+          "modality/negated": 0.012781448483680206,
+          "modality/quoted": 0.05388772115714275,
+          "modality/tentative": 0.027746641402322244,
+          "modality/unresolved": 0.004321935456569872,
+          "target/current_operation": 0.1907492041782783,
+          "target/none": 0.235134454217123,
+          "target/other_task": 0.058571353288002496,
+          "target/unresolved": 0.0849399133567342,
+          "target/whole_current_task": 0.430605074959862
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-059",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action",
+          "stop_work"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.6216487309088536,
+        "minimum_margin": 0.43771331827784116,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.00262609323647787,
+          "intent/change_constraint": 0.016822702715871045,
+          "intent/provide_information": 0.0029050033298549487,
+          "intent/request_action": 0.8394131011276532,
+          "intent/stop_work": 0.967861580449753,
+          "modality/conditional": 0.006070935197079123,
+          "modality/direct": 0.6216487309088536,
+          "modality/negated": 0.15098574359270084,
+          "modality/quoted": 0.18393541263101248,
+          "modality/tentative": 0.03281610628860829,
+          "modality/unresolved": 0.004543071381745753,
+          "target/current_operation": 0.15090311982047722,
+          "target/none": 0.0002468959089637792,
+          "target/other_task": 0.023128946058559585,
+          "target/unresolved": 0.0020666191294450844,
+          "target/whole_current_task": 0.8236544190825542
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-060",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "change_constraint",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5527744968365437,
+        "minimum_margin": 0.14415122782783002,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.02348310660042468,
+          "intent/change_constraint": 0.9197031252104623,
+          "intent/provide_information": 0.7071085088478698,
+          "intent/request_action": 0.0009528540233447734,
+          "intent/stop_work": 0.0007798890792529073,
+          "modality/conditional": 0.05817263267303762,
+          "modality/direct": 0.7748942167212892,
+          "modality/negated": 0.03120134995986799,
+          "modality/quoted": 0.07793717966691358,
+          "modality/tentative": 0.053841439298812147,
+          "modality/unresolved": 0.003953181680079471,
+          "target/current_operation": 0.40862326900871365,
+          "target/none": 0.0000971132687303166,
+          "target/other_task": 0.03421168428169402,
+          "target/unresolved": 0.0042934366043183535,
+          "target/whole_current_task": 0.5527744968365437
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-061",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.727213318735263,
+        "minimum_margin": 0.45442663747052603,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.272786681264737,
+          "intent/change_constraint": 0.003318047332219626,
+          "intent/provide_information": 0.967765505441698,
+          "intent/request_action": 0.035782253136228355,
+          "intent/stop_work": 0.0025939140005382033,
+          "modality/conditional": 0.014269835436229169,
+          "modality/direct": 0.8043624604043135,
+          "modality/negated": 0.017018469149846813,
+          "modality/quoted": 0.13303363098171825,
+          "modality/tentative": 0.024220709329390994,
+          "modality/unresolved": 0.00709489469850132,
+          "target/current_operation": 0.8176169177014888,
+          "target/none": 0.000034100975774107384,
+          "target/other_task": 0.05687430284934633,
+          "target/unresolved": 0.00351417600708963,
+          "target/whole_current_task": 0.1219605024663012
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-062",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.43625398223261425,
+        "minimum_margin": 0.07300565111743362,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.11575733471092099,
+          "intent/change_constraint": 0.04024088983082682,
+          "intent/provide_information": 0.9772588245265907,
+          "intent/request_action": 0.02468888994082382,
+          "intent/stop_work": 0.009822943323383765,
+          "modality/conditional": 0.04538753305212493,
+          "modality/direct": 0.43625398223261425,
+          "modality/negated": 0.06131979054946775,
+          "modality/quoted": 0.3632483311151806,
+          "modality/tentative": 0.06134388867644706,
+          "modality/unresolved": 0.032446474374165285,
+          "target/current_operation": 0.6191633183663332,
+          "target/none": 0.00008626552960176179,
+          "target/other_task": 0.05532079343510986,
+          "target/unresolved": 0.0025682463263216855,
+          "target/whole_current_task": 0.3228613763426334
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-063",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "other_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.6492829816305914,
+        "minimum_margin": 0.3712495806396271,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.03745691327354088,
+          "intent/change_constraint": 0.02403207070806746,
+          "intent/provide_information": 0.9841433926829922,
+          "intent/request_action": 0.0011924085828691811,
+          "intent/stop_work": 0.044147334650073915,
+          "modality/conditional": 0.008568474079724083,
+          "modality/direct": 0.7027007460853689,
+          "modality/negated": 0.07075771835140093,
+          "modality/quoted": 0.18920040704470947,
+          "modality/tentative": 0.018857741507388465,
+          "modality/unresolved": 0.009914912931408143,
+          "target/current_operation": 0.2780334009909643,
+          "target/none": 0.0006813040561448391,
+          "target/other_task": 0.6492829816305914,
+          "target/unresolved": 0.022158038829908886,
+          "target/whole_current_task": 0.04984427449239059
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-064",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "ask_information",
+          "provide_information"
+        ],
+        "modality": "quoted",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.4952777222723481,
+        "minimum_margin": 0.05329578274757141,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.6157099358427173,
+          "intent/change_constraint": 0.004693694823499687,
+          "intent/provide_information": 0.7772493408964479,
+          "intent/request_action": 0.014672146208356655,
+          "intent/stop_work": 0.004341911520670442,
+          "modality/conditional": 0.09874403045542107,
+          "modality/direct": 0.15804190755343114,
+          "modality/negated": 0.15396301221296385,
+          "modality/quoted": 0.5009492195181422,
+          "modality/tentative": 0.05830761501493815,
+          "modality/unresolved": 0.029994215245103602,
+          "target/current_operation": 0.4419819395247767,
+          "target/none": 0.0014315252054569543,
+          "target/other_task": 0.04659113483527205,
+          "target/unresolved": 0.014717678162146018,
+          "target/whole_current_task": 0.4952777222723481
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-065",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.7034993571034849,
+        "minimum_margin": 0.40699871420696976,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.04064577391722424,
+          "intent/change_constraint": 0.030507520881694013,
+          "intent/provide_information": 0.9271102899216794,
+          "intent/request_action": 0.7034993571034849,
+          "intent/stop_work": 0.006611283013378067,
+          "modality/conditional": 0.012183436030960424,
+          "modality/direct": 0.8624130158044959,
+          "modality/negated": 0.015431681214904163,
+          "modality/quoted": 0.06818498059804212,
+          "modality/tentative": 0.032848693332427986,
+          "modality/unresolved": 0.008938193019169283,
+          "target/current_operation": 0.9089547553890888,
+          "target/none": 0.000023864866787092823,
+          "target/other_task": 0.014911525636035783,
+          "target/unresolved": 0.0003726226704452241,
+          "target/whole_current_task": 0.07573723143764312
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-065",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.7821856438774708,
+        "minimum_margin": 0.6049436140396978,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.018769831342510725,
+          "intent/change_constraint": 0.015163905861012324,
+          "intent/provide_information": 0.8024718070198489,
+          "intent/request_action": 0.8788290462373888,
+          "intent/stop_work": 0.005360944264041932,
+          "modality/conditional": 0.02000734182238569,
+          "modality/direct": 0.7821856438774708,
+          "modality/negated": 0.020004828126009,
+          "modality/quoted": 0.12238556317825308,
+          "modality/tentative": 0.044721098026309594,
+          "modality/unresolved": 0.010695524969571813,
+          "target/current_operation": 0.9740099545661133,
+          "target/none": 0.00011383176829840306,
+          "target/other_task": 0.01399697492210818,
+          "target/unresolved": 0.000842333080251632,
+          "target/whole_current_task": 0.011036905663228612
+        }
+      },
+      "window": 1
+    },
+    {
+      "case": "test-066",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5607455658137035,
+        "minimum_margin": 0.14485351650805806,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.010543135168898331,
+          "intent/change_constraint": 0.0019938641215687574,
+          "intent/provide_information": 0.9730553092903039,
+          "intent/request_action": 0.0004695665248912664,
+          "intent/stop_work": 0.0006533321352338062,
+          "modality/conditional": 0.014790686863679259,
+          "modality/direct": 0.7980521834058163,
+          "modality/negated": 0.03027076310986427,
+          "modality/quoted": 0.11372867034414182,
+          "modality/tentative": 0.03196973660364593,
+          "modality/unresolved": 0.011187959672852556,
+          "target/current_operation": 0.41589204930564544,
+          "target/none": 0.00004592417665586685,
+          "target/other_task": 0.021417386089439227,
+          "target/unresolved": 0.0018990746145558857,
+          "target/whole_current_task": 0.5607455658137035
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-067",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action",
+          "stop_work"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.6042218512067563,
+        "minimum_margin": 0.2445314176342992,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.002448633979812563,
+          "intent/change_constraint": 0.11417701551469973,
+          "intent/provide_information": 0.06022706195231733,
+          "intent/request_action": 0.9029973845108942,
+          "intent/stop_work": 0.9499862262546382,
+          "modality/conditional": 0.006186706477685656,
+          "modality/direct": 0.7163092215634042,
+          "modality/negated": 0.13134892951202912,
+          "modality/quoted": 0.1123452377620478,
+          "modality/tentative": 0.02875891118403195,
+          "modality/unresolved": 0.005050993500801411,
+          "target/current_operation": 0.6042218512067563,
+          "target/none": 0.00009625925238088313,
+          "target/other_task": 0.03332229722817482,
+          "target/unresolved": 0.002669158740230772,
+          "target/whole_current_task": 0.3596904335724571
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-068",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "ask_information"
+        ],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.6147534995960243,
+        "minimum_margin": 0.42013401732425487,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.930215721804432,
+          "intent/change_constraint": 0.005170119175168726,
+          "intent/provide_information": 0.01585401958204125,
+          "intent/request_action": 0.025836206324870752,
+          "intent/stop_work": 0.0007872422037082503,
+          "modality/conditional": 0.05614445893506362,
+          "modality/direct": 0.19461948227176945,
+          "modality/negated": 0.06531444127353081,
+          "modality/quoted": 0.6147534995960243,
+          "modality/tentative": 0.06387887667684396,
+          "modality/unresolved": 0.005289241246767866,
+          "target/current_operation": 0.7173748285464139,
+          "target/none": 0.0017545709558517693,
+          "target/other_task": 0.16477119937455043,
+          "target/unresolved": 0.0219376450844214,
+          "target/whole_current_task": 0.09416175603876237
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-069",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action",
+          "change_constraint"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5345185757332631,
+        "minimum_margin": 0.3198058495564434,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.011738370536931105,
+          "intent/change_constraint": 0.842853278366088,
+          "intent/provide_information": 0.030450150631996267,
+          "intent/request_action": 0.6637532458281036,
+          "intent/stop_work": 0.017126420472505687,
+          "modality/conditional": 0.0831525772976082,
+          "modality/direct": 0.5345185757332631,
+          "modality/negated": 0.04314104588483314,
+          "modality/quoted": 0.21471272617681966,
+          "modality/tentative": 0.11844089720162584,
+          "modality/unresolved": 0.00603417770585004,
+          "target/current_operation": 0.8796857035900907,
+          "target/none": 0.0001017758788162938,
+          "target/other_task": 0.05380465361519833,
+          "target/unresolved": 0.0033824371945690287,
+          "target/whole_current_task": 0.06302542972132563
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-070",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "stop_work",
+          "ask_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.6398466966943483,
+        "minimum_margin": 0.4069522002009129,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.7091926337137018,
+          "intent/change_constraint": 0.03775048013630245,
+          "intent/provide_information": 0.097475606042408,
+          "intent/request_action": 0.24896262740597574,
+          "intent/stop_work": 0.7582166709182043,
+          "modality/conditional": 0.017655836235598993,
+          "modality/direct": 0.6398466966943483,
+          "modality/negated": 0.028139834204597113,
+          "modality/quoted": 0.23289449649343547,
+          "modality/tentative": 0.07215286255061673,
+          "modality/unresolved": 0.009310273821403477,
+          "target/current_operation": 0.8297511181563267,
+          "target/none": 0.00026223070786324996,
+          "target/other_task": 0.01684645104278256,
+          "target/unresolved": 0.003057597479564016,
+          "target/whole_current_task": 0.15008260261346343
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-070",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "change_constraint",
+          "stop_work"
+        ],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.38329469078484457,
+        "minimum_margin": 0.08377101080233867,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.40211513909156404,
+          "intent/change_constraint": 0.595016453465783,
+          "intent/provide_information": 0.07108463321978371,
+          "intent/request_action": 0.09454258897385337,
+          "intent/stop_work": 0.8475014390168573,
+          "modality/conditional": 0.004361283436669122,
+          "modality/direct": 0.2995236799825059,
+          "modality/negated": 0.21596607516450264,
+          "modality/quoted": 0.38329469078484457,
+          "modality/tentative": 0.09595215371703299,
+          "modality/unresolved": 0.0009021169144448081,
+          "target/current_operation": 0.9482849331388488,
+          "target/none": 0.00025268164305543864,
+          "target/other_task": 0.008079403307067804,
+          "target/unresolved": 0.002578090186803916,
+          "target/whole_current_task": 0.04080489172422401
+        }
+      },
+      "window": 1
+    },
+    {
+      "case": "test-070",
+      "joint_correct": true,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "ask_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5350984297101191,
+        "minimum_margin": 0.11157458011468202,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9266836688712635,
+          "intent/change_constraint": 0.009176863404738056,
+          "intent/provide_information": 0.009570692898718034,
+          "intent/request_action": 0.07320973604184812,
+          "intent/stop_work": 0.37679511880458116,
+          "modality/conditional": 0.02560700237057677,
+          "modality/direct": 0.6730894517536404,
+          "modality/negated": 0.027638543106627,
+          "modality/quoted": 0.2229414434356194,
+          "modality/tentative": 0.04395138766949339,
+          "modality/unresolved": 0.0067721716640431655,
+          "target/current_operation": 0.4235238495954371,
+          "target/none": 0.00005256043508519079,
+          "target/other_task": 0.039136674446369174,
+          "target/unresolved": 0.002188485812989445,
+          "target/whole_current_task": 0.5350984297101191
+        }
+      },
+      "window": 2
+    },
+    {
+      "case": "test-071",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5767282140130263,
+        "minimum_margin": 0.15345642802605253,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.13649818925833443,
+          "intent/change_constraint": 0.42327178598697374,
+          "intent/provide_information": 0.12931937361818985,
+          "intent/request_action": 0.9351323400055813,
+          "intent/stop_work": 0.005565428146475356,
+          "modality/conditional": 0.0372444423916597,
+          "modality/direct": 0.7622123874457752,
+          "modality/negated": 0.019785317037156178,
+          "modality/quoted": 0.10277265255920678,
+          "modality/tentative": 0.06743981496673607,
+          "modality/unresolved": 0.010545385599466032,
+          "target/current_operation": 0.8624604851174573,
+          "target/none": 0.00003144176153428857,
+          "target/other_task": 0.016714352379657408,
+          "target/unresolved": 0.00016564971199797612,
+          "target/whole_current_task": 0.12062807102935301
+        }
+      },
+      "window": 0
+    },
+    {
+      "case": "test-072",
+      "joint_correct": false,
+      "original_confidence_unknown": true,
+      "repaired_confidence": {
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "quoted",
+        "target": "current_operation",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5106817013448012,
+        "minimum_margin": 0.07660908089224716,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.009371208556111362,
+          "intent/change_constraint": 0.17194280929305916,
+          "intent/provide_information": 0.714554515793525,
+          "intent/request_action": 0.030947031634928946,
+          "intent/stop_work": 0.09103302921096547,
+          "modality/conditional": 0.02315438446759771,
+          "modality/direct": 0.07103989828075744,
+          "modality/negated": 0.10506748977065036,
+          "modality/quoted": 0.7312881611426667,
+          "modality/tentative": 0.041552757953109434,
+          "modality/unresolved": 0.02789730838521845,
+          "target/current_operation": 0.5106817013448012,
+          "target/none": 0.0002746691029068712,
+          "target/other_task": 0.04562437892948248,
+          "target/unresolved": 0.0093466301702555,
+          "target/whole_current_task": 0.434072620452554
+        }
+      },
+      "window": 0
+    }
+  ],
+  "complete_conditional_scores": 76,
+  "limitations": "conditional scores at a fixed observed whitespace prefix remain uncalibrated; this is a post-hoc protocol audit, not a new independent confidence screen",
+  "new_model_calls": 0,
+  "non_escalated": 10,
+  "non_escalated_wrong": 3,
+  "observed": 76,
+  "primary_report_unchanged": true,
+  "secondary_analysis": true,
+  "thresholds": {
+    "margin": 0.15,
+    "score": 0.65
+  },
+  "version": "interpretation-v3-offline-confidence-prefix-audit"
+}
