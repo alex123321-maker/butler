@@ -3,11 +3,14 @@
 ## Memory outcome evaluation (issue78)
 
 `cmd/memory-eval` is an additive client of the same acceptance contour. Its
-versioned30-case Russian synthetic development/holdout dataset pins sources,
+independently reviewed V2's24-case Russian synthetic development/holdout dataset pins sources,
 time, current task version and literal expected witnesses. Pre-run frozen inputs
 cover no LTM, permitted full context and independently captured current retrieval;
 all share the model and fixed limits. Secret cases and full-context byte overflow
-remain explicit skips. Current-bundle fixed-store fixtures are code evidence only.
+remain explicit skips. V1's30-case mirrored controls remain a rejected historical
+fixture. Current-bundle fixed-store fixtures are code evidence only. V2's lexical
+answer alternatives and citation anchors are frozen before observation; counts
+under this conservative rubric are not a complete semantic error judgment.
 
 The programmatic scorer distinguishes answer/current-fact/citation quality,
 confidence and abstention, retrieval diagnostics, task-instruction observations
