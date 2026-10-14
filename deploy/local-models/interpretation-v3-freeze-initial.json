@@ -1,0 +1,29 @@
+{
+  "version": "interpretation-v3-freeze",
+  "frozen_at_utc": "2026-10-14T08:42:12.6557258Z",
+  "model_predictions_observed": 0,
+  "dev_events": 24,
+  "test_events": 72,
+  "total_gold_windows": 106,
+  "thresholds": {
+    "presence": 0.5,
+    "minimum_score": 0.65,
+    "minimum_margin": 0.15,
+    "per_intent_precision": 0.9,
+    "per_intent_recall": 0.8,
+    "joint_correctness": 0.9,
+    "critical_errors": 0,
+    "wrong_non_escalated": 0
+  },
+  "sha256": {
+    "deploy/local-models/russian-interpretation-independent-v3.json": "06926f39dd4513cdaec6e9230cbe3b1ef26f47780272a791eb4aa07a1a552045",
+    "internal/localmodels/interpretation-schema-v3.json": "ca53335267efa28bf5f589f6be2202f47272e26df7e7fc9efe20ce80d80a9e56",
+    "deploy/local-models/interpretation-annotation-v3.md": "86df7e52264bada16d97dab7ac0e71f8f956e0022cceddaa58f775fa9298c923",
+    "internal/decisions/interpretation_rules.go": "9d079b5763792932396d0925d2102f3873ddcc730a3a5b8bb0be25e1510fc8b8"
+  },
+  "limitations": [
+    "One author, synthetic independently written events; no independent human review or production-distribution claim.",
+    "Code-derived quote windows are evaluated as source-preserving segmentation, not learned extraction.",
+    "No model prompts, labels, thresholds or rules tuned on held-out predictions."
+  ]
+}

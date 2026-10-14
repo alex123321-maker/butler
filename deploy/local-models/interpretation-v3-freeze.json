@@ -1,0 +1,45 @@
+{
+  "version": "interpretation-v3-freeze",
+  "frozen_at_utc": "2026-10-14T09:39:10.8957941Z",
+  "dev_events": 24,
+  "test_events": 72,
+  "total_gold_windows": 104,
+  "thresholds": {
+    "presence": 0.5,
+    "minimum_score": 0.65,
+    "minimum_margin": 0.15,
+    "per_intent_precision": 0.9,
+    "per_intent_recall": 0.8,
+    "joint_correctness": 0.9,
+    "critical_errors": 0,
+    "wrong_non_escalated": 0
+  },
+  "sha256": {
+    "deploy/local-models/russian-interpretation-independent-v3.json": "06926f39dd4513cdaec6e9230cbe3b1ef26f47780272a791eb4aa07a1a552045",
+    "internal/localmodels/interpretation-schema-v3.json": "a4e43a3c95c73c4b214ac14cfb26a144371f743bdcbd30c484f3d6763a184073",
+    "deploy/local-models/interpretation-annotation-v3.md": "86df7e52264bada16d97dab7ac0e71f8f956e0022cceddaa58f775fa9298c923",
+    "internal/decisions/interpretation_rules.go": "9d079b5763792932396d0925d2102f3873ddcc730a3a5b8bb0be25e1510fc8b8",
+    "apps/local-models/model-worker.py": "1142a9ed26eeeb410ee02f0898f8a001d5b3a56c5d5c067a7dc3b96b400c0b9a",
+    "internal/decisions/interpretation.go": "4ad00f74200306277df1ce4dce53242fd717d287ec504b4d2d4c0e23005a1a34",
+    "internal/decisions/interpretation_qwen_test.go": "ef127a3f879ff1cd5ecd2cf1cb4bd68e255bc9d3e69b26336d13d283205f0721",
+    "internal/decisions/interpretation_evaluation_test.go": "f5f37c58e84632bfdb968a16983d99a6a547925d8e41174ca72cd75e451614f7",
+    "deploy/local-models/russian-interpretation-heldout-v3.json": "ad58f2b62290eb9cdab482ba034a491839bb2752dad52c9239eb0072840e8f1b",
+    "internal/decisions/interpretation_test.go": "d30f718f9563d783de92be730887b7ef9e61b5eac3bfc8ceac30bf47a97375f0"
+  },
+  "limitations": [
+    "One author, synthetic independently written events; no independent human review or production-distribution claim.",
+    "Code-derived quote windows are evaluated as source-preserving segmentation, not learned extraction.",
+    "No model prompts, labels, thresholds or rules tuned on held-out predictions."
+  ],
+  "heldout_predictions_observed": 0,
+  "development_repairs": [
+    "Original zero-prediction freeze retained in interpretation-v3-freeze-initial.json; corpus, annotations, labels and thresholds unchanged.",
+    "Repair worker stdout/IPC after interrupted dev run.",
+    "GLiNER native multi-label sigmoid replaces strongly biased repeated absent/present tasks on dev; common policy serialized once.",
+    "d1 full option/instruction encoding must fit its reviewed encoder per-option/instruction limits; concise described options and per-intent instruction retained.",
+    "Qwen switches from positional integer array to named booleans and typed modality/target enums; generated bound 128, token reserve 2176.",
+    "GLiNER intent/modality/target descriptions use explicit Russian label names mapped to the same fixed semantic IDs.",
+    "Final held-out72 authored after fixed rules and semantic protocol to separate rule/corpus co-design; original96 retained, dev24 unchanged. No predictions on final test before this freeze.",
+    "d1 intent flags use its native reviewed noul boolean head rather than generic two-option choice; the per-row no-truncation preflight is preserved. This is a dev-only protocol choice before any final held-out inference."
+  ]
+}

@@ -26,7 +26,7 @@ var decisionCode = map[string]string{
 }
 
 func (b *Process) verifyDecisionCode(p *pb.ModelProfile) error {
-	if p.Revision != DecisionRevision || p.RuntimeVersion != "torch2.10.0+cu128/transformers5.19.0/d1code02b55d7" || p.Precision != "FP32" || p.PreferredDevice != "cpu" || p.PreprocessingVersion != "d1-text-choice-v1" {
+	if p.Revision != DecisionRevision || p.RuntimeVersion != "torch2.10.0+cu128/transformers5.19.0/d1code02b55d7" || p.Precision != "FP32" || p.PreferredDevice != "cpu" || p.PreprocessingVersion != "d1-text-choice-v1" && p.PreprocessingVersion != DecisionSchemaV2 && p.PreprocessingVersion != InterpretationSchemaV3 {
 		return fault(Unavailable)
 	}
 	for name, digest := range decisionCode {

@@ -10,3 +10,6 @@
 *.gif binary
 *.ico binary
 *.pdf binary
+
+# Preserve the exact pre-inference corpus bytes used by the frozen SHA-256.
+deploy/local-models/russian-decisions-independent-v2.json -text whitespace=cr-at-eol

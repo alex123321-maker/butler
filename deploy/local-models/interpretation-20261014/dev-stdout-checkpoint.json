@@ -1,0 +1,729 @@
+{
+  "actual_attempts": 20,
+  "cases": [
+    {
+      "case": "dev-001",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Проверь восстановление одного архива.",
+        "start": 0,
+        "end": 37
+      },
+      "gold": {
+        "quote": "Проверь восстановление одного архива.",
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_8746efd7ad0af71ae1f218c6e8a7a44f06a0069ab6a490140de44530e3b0a69f",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "f1f58801c3086b5802e4d43bb5b144c713a254225ec3a3153c29da63d76afade"
+      },
+      "error": "DeadlineExceeded",
+      "wall_ms": 60006
+    },
+    {
+      "case": "dev-002",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Вернись к оформлению таблицы.",
+        "start": 0,
+        "end": 29
+      },
+      "gold": {
+        "quote": "Вернись к оформлению таблицы.",
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_e51649d7cfea784e6bc90ae4d013760780e1631ce348ff6e219cb132f9091f25",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "ec17dc78055f747423ff36073151074821668d194c78ff092ccdf74e08be91e1"
+      },
+      "error": "InvalidArgument",
+      "wall_ms": 19120
+    },
+    {
+      "case": "dev-002",
+      "window": 1,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Отдельно составь памятку для волонтёров.",
+        "start": 30,
+        "end": 70
+      },
+      "gold": {
+        "quote": "Отдельно составь памятку для волонтёров.",
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "other_task"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_8358373beac11aaed19f18ed8e74c8b01b11e2c5a9ed284b1c48f7f50a6f8e87",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "6d1d456334444e32abcf9e4cb333824976fe78b918771e225f570b2559cd9e88"
+      },
+      "error": "InvalidArgument",
+      "wall_ms": 11
+    },
+    {
+      "case": "dev-003",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Используй только копию базы.",
+        "start": 0,
+        "end": 28
+      },
+      "gold": {
+        "quote": "Используй только копию базы.",
+        "intents": [
+          "change_constraint"
+        ],
+        "modality": "direct",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_cf60ecf3d4aa17955ecf4a4da6de1733b4e5a0429f5a02d4f27a9bd4ea6aa251",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "6b8e4d88f58c1c1b5c8a7fbc96fb36f5f1cec838651bb44c0933c61df724fc21"
+      },
+      "error": "InvalidArgument",
+      "wall_ms": 10
+    },
+    {
+      "case": "dev-003",
+      "window": 1,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Срок всей миграции перенеси на понедельник.",
+        "start": 29,
+        "end": 72
+      },
+      "gold": {
+        "quote": "Срок всей миграции перенеси на понедельник.",
+        "intents": [
+          "change_constraint"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_399cd0667fbb36d41a86a53f9cae97fbaa2862e0874ac66a07c8f8624ad20fbc",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "efbf8b54bea8ca48d9162cfafe287265e5cf78cdb144998cf846370e61e14389"
+      },
+      "error": "InvalidArgument",
+      "wall_ms": 9
+    },
+    {
+      "case": "dev-004",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Запись в рабочую базу запрещаю.",
+        "start": 0,
+        "end": 31
+      },
+      "gold": {
+        "quote": "Запись в рабочую базу запрещаю.",
+        "intents": [
+          "change_constraint"
+        ],
+        "modality": "direct",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_c5c9fa6ef01c6583ab1dd66e4e0af153edf99f6e6c3d8f238853470455cb5995",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "9918460a37b187a608b7ef08c84f56dbc45efafeb9a88539344037f984b2efae"
+      },
+      "error": "DeadlineExceeded",
+      "wall_ms": 20000
+    },
+    {
+      "case": "dev-005",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Прекрати эту задачу целиком.",
+        "start": 0,
+        "end": 28
+      },
+      "gold": {
+        "quote": "Прекрати эту задачу целиком.",
+        "intents": [
+          "stop_work"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_41e2ffce20b2b8dbf4045458be62f7981b3d52f4c10d2a4d34abacd69ed6a547",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "06c5b27d78df8832c51411c6951bf4099295314c1029d6fae6c795e90dc25a22"
+      },
+      "error": "DeadlineExceeded",
+      "wall_ms": 20000
+    },
+    {
+      "case": "dev-006",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Приостанови выгрузку PDF.",
+        "start": 0,
+        "end": 25
+      },
+      "gold": {
+        "quote": "Приостанови выгрузку PDF.",
+        "intents": [
+          "stop_work"
+        ],
+        "modality": "direct",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_57e21fa72c201a8349775ad0c96ed0448ff69fb4b3ec03e0c60309239b725d8a",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "bbbea472bda3de22ddd069009ba3984ff47a43d64b422736a988fade21ee9cd8"
+      },
+      "error": "DeadlineExceeded",
+      "wall_ms": 20000
+    },
+    {
+      "case": "dev-007",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "На каком этапе весь отчёт?",
+        "start": 0,
+        "end": 26
+      },
+      "gold": {
+        "quote": "На каком этапе весь отчёт?",
+        "intents": [
+          "ask_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_4183b2112ac907fa9d692940e221ce4c39813770eb03eaa7a6272e88b38cb330",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "3585e861ff00a3ad633a74712ad972a09bcc1fb4bc47d4c687648fb234da3939"
+      },
+      "error": "DeadlineExceeded",
+      "wall_ms": 20000
+    },
+    {
+      "case": "dev-008",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Можешь проверить DNS-запись?",
+        "start": 0,
+        "end": 28
+      },
+      "gold": {
+        "quote": "Можешь проверить DNS-запись?",
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_0e5b27942577658aa825a033d68cf9ac5a78844356de1a36e842fa6d54623ec0",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "487747956406c3667438ce98400ee9cb152235a814e677022744e787b65d2eb5"
+      },
+      "error": "DeadlineExceeded",
+      "wall_ms": 20000
+    },
+    {
+      "case": "dev-009",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "tool",
+      "source_window": {
+        "quote": "Последняя попытка вернула код 504.",
+        "start": 0,
+        "end": 34
+      },
+      "gold": {
+        "quote": "Последняя попытка вернула код 504.",
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_90637012b28b867f8017f88156c9a46c1682abf77d6febe0adfbc9d056fe5aa1",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "25ae586ffb48f4b399b19d3d6e274c2bc44e79b3786d4c621a18147c5213d8b7"
+      },
+      "error": "DeadlineExceeded",
+      "wall_ms": 20001
+    },
+    {
+      "case": "dev-010",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Уточняю: печать будет двусторонней.",
+        "start": 0,
+        "end": 35
+      },
+      "gold": {
+        "quote": "Уточняю: печать будет двусторонней.",
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_d8d5354c09edbaeaf57d4ed51b5cdd8a9c38accac613d6eed90920069ebd5d03",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "4d125c66f5a8f8ba57c9375247a482160d5b849033b9d0c784bdbfb6e8701934"
+      },
+      "error": "DeadlineExceeded",
+      "wall_ms": 20000
+    },
+    {
+      "case": "dev-011",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Может, стоит рассмотреть другой индекс?",
+        "start": 0,
+        "end": 39
+      },
+      "gold": {
+        "quote": "Может, стоит рассмотреть другой индекс?",
+        "intents": [
+          "request_action"
+        ],
+        "modality": "tentative",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_0c3798d690efcd9db70eec5f3ccc17f140e1f273a5963f19dee4cb68cf00733e",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "1246dc5b91a347890ea7322551cbe0c005806352cc87b4928ab3ad1478de41de"
+      },
+      "error": "DeadlineExceeded",
+      "wall_ms": 20000
+    },
+    {
+      "case": "dev-012",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Возможно, срок всей инвентаризации стоит сдвинуть.",
+        "start": 0,
+        "end": 50
+      },
+      "gold": {
+        "quote": "Возможно, срок всей инвентаризации стоит сдвинуть.",
+        "intents": [
+          "change_constraint"
+        ],
+        "modality": "tentative",
+        "target": "whole_current_task"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_2088df27c33d7e88b87d2e8559fd1606b2c64ad4a72ae4556e4bda2582acb0cc",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "e0216a497bd580e85fe600d1c22698eca66a7115ee7b3806cb5d5f111e728936"
+      },
+      "error": "InvalidArgument",
+      "wall_ms": 18826
+    },
+    {
+      "case": "dev-013",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "В письме написано: «отмени весь релиз».",
+        "start": 0,
+        "end": 39
+      },
+      "gold": {
+        "quote": "В письме написано: «отмени весь релиз».",
+        "intents": [
+          "stop_work"
+        ],
+        "modality": "quoted",
+        "target": "whole_current_task"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_d518cf91056884f1e6bd5a2e59b93e537a79a8734816c55dd4780ca51c8e4194",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "6265919aca37c3432a8e0b1274e362c62c37dac598477f21ae59e6463cbbc43e"
+      },
+      "error": "DeadlineExceeded",
+      "wall_ms": 20000
+    },
+    {
+      "case": "dev-014",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Выведи строку «останови задачу».",
+        "start": 0,
+        "end": 32
+      },
+      "gold": {
+        "quote": "Выведи строку «останови задачу».",
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_4b839ce7f7a4355fc1e5f84daed508e4e890aa4c9581c66ece425a3390ac0297",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "bada03b3c84a84449b95e3e1e6a3a7516f4ba01448ae8f643551cbc70b831eef"
+      },
+      "error": "DeadlineExceeded",
+      "wall_ms": 20001
+    },
+    {
+      "case": "dev-015",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Не отменяй сверку.",
+        "start": 0,
+        "end": 18
+      },
+      "gold": {
+        "quote": "Не отменяй сверку.",
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_6a26d4de333570d7c5eb9fc6eb1e1813764fee8cc80ecdc348ae94abde4243fc",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "d9c1e5c39d46c9495283d44e95622434e313f46232700d822aba085324fc24e9"
+      },
+      "error": "DeadlineExceeded",
+      "wall_ms": 20000
+    },
+    {
+      "case": "dev-016",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Неверно, что маршрут уже готов.",
+        "start": 0,
+        "end": 31
+      },
+      "gold": {
+        "quote": "Неверно, что маршрут уже готов.",
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "negated",
+        "target": "whole_current_task"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_6265459dc228999b28cd5d3fdb01d278aa918ac5745c20d55f86e15be84a8109",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "ee7b6222e587aa302f5572cbded374b41ab5923e8d66395e76ee4d2c1c03e7a3"
+      },
+      "error": "DeadlineExceeded",
+      "wall_ms": 20000
+    },
+    {
+      "case": "dev-017",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Если проверка порта успешна, перезапусти прокси.",
+        "start": 0,
+        "end": 48
+      },
+      "gold": {
+        "quote": "Если проверка порта успешна, перезапусти прокси.",
+        "intents": [
+          "request_action"
+        ],
+        "modality": "conditional",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_3c284695e5a6eda0aba32e6524713ab436b89e88dbfeb0d639883d1e9b012f35",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "3f2dee8493af29264a125c36457104a1fefe43214e1753e621ed073c6d67f415"
+      },
+      "error": "InvalidArgument",
+      "wall_ms": 18888
+    },
+    {
+      "case": "dev-018",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "При ошибке подписи приостанови загрузку.",
+        "start": 0,
+        "end": 40
+      },
+      "gold": {
+        "quote": "При ошибке подписи приостанови загрузку.",
+        "intents": [
+          "stop_work"
+        ],
+        "modality": "conditional",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_faf514e2882a8441330c1ef43c2b419c1d094017a45c4fbbd9a9152eeaab679c",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "cc08deea199986ca130e62753ebf5505738115b25f694a5aed926c039fba075e"
+      },
+      "error": "Canceled",
+      "wall_ms": 4256
+    }
+  ],
+  "complete": false,
+  "phase": "dev",
+  "planned_attempts": 112,
+  "totals": {}
+}

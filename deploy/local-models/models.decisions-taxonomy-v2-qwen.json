@@ -1,0 +1,98 @@
+{
+  "models": [
+    {
+      "id": "gliner2.5-multi-taxonomy-v2-cpu",
+      "model": "fastino/gliner2.5-multi-v1",
+      "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+      "format": "safetensors",
+      "precision": "FP32",
+      "license": "Apache-2.0",
+      "licenseUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+      "sourceUrl": "https://huggingface.co/fastino/gliner2.5-multi-v1",
+      "runtime": "torch-gliner2",
+      "runtimeVersion": "torch2.10.0+cu128/transformers5.19.0/gliner2.1.0",
+      "capabilities": [
+        "CAPABILITY_CLASSIFY"
+      ],
+      "preferredDevice": "cpu",
+      "maxBatch": 1,
+      "maxInputBytes": 4096,
+      "contextTokens": 2048,
+      "peakRamMib": 3072,
+      "cpuFallback": true,
+      "enabled": true,
+      "preprocessingVersion": "butler-event-taxonomy-v2"
+    },
+    {
+      "id": "gliner2.5-decide-taxonomy-v2-cpu",
+      "model": "fastino/GLiNER2.5-multi-Decide",
+      "revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+      "format": "safetensors",
+      "precision": "FP32",
+      "license": "Apache-2.0",
+      "licenseUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+      "sourceUrl": "https://huggingface.co/fastino/GLiNER2.5-multi-Decide",
+      "runtime": "torch-gliner2",
+      "runtimeVersion": "torch2.10.0+cu128/transformers5.19.0/gliner2.1.0",
+      "capabilities": [
+        "CAPABILITY_CLASSIFY"
+      ],
+      "preferredDevice": "cpu",
+      "maxBatch": 1,
+      "maxInputBytes": 4096,
+      "contextTokens": 2048,
+      "peakRamMib": 3072,
+      "cpuFallback": true,
+      "enabled": true,
+      "preprocessingVersion": "butler-event-taxonomy-v2"
+    },
+    {
+      "id": "d1-omni-taxonomy-v2-cpu",
+      "model": "LiquidAI/d1-omni-600M",
+      "revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+      "format": "safetensors",
+      "precision": "FP32",
+      "license": "LFM-Open-License-1.0",
+      "licenseUrl": "https://huggingface.co/LiquidAI/d1-omni-600M/blob/02b55d7076f15129e59ab3f94783f32c4b088674/LICENSE",
+      "sourceUrl": "https://huggingface.co/LiquidAI/d1-omni-600M",
+      "runtime": "torch-d1-reviewed",
+      "runtimeVersion": "torch2.10.0+cu128/transformers5.19.0/d1code02b55d7",
+      "capabilities": [
+        "CAPABILITY_CLASSIFY"
+      ],
+      "preferredDevice": "cpu",
+      "maxBatch": 1,
+      "maxInputBytes": 4096,
+      "contextTokens": 2048,
+      "peakRamMib": 4608,
+      "cpuFallback": true,
+      "enabled": true,
+      "preprocessingVersion": "butler-event-taxonomy-v2"
+    },
+    {
+      "id": "embeddinggemma2-text-bf16-v1",
+      "model": "google/embeddinggemma-2",
+      "revision": "914f7f89142e33e77833254d9c9b90c3cef7303b",
+      "format": "safetensors",
+      "precision": "BF16",
+      "license": "Apache-2.0",
+      "licenseUrl": "https://ai.google.dev/gemma/apache_2",
+      "sourceUrl": "https://huggingface.co/google/embeddinggemma-2",
+      "runtime": "torch-sentence-transformers",
+      "runtimeVersion": "torch2.10.0+cu128/transformers5.19.0/sentence-transformers6.1.0",
+      "capabilities": [
+        "CAPABILITY_EMBED"
+      ],
+      "maxBatch": 4,
+      "maxInputBytes": 8192,
+      "contextTokens": 2048,
+      "peakVramMib": 3072,
+      "peakRamMib": 2560,
+      "peakCpuRamMib": 4096,
+      "cpuFallback": true,
+      "enabled": true,
+      "preprocessingVersion": "embeddinggemma2-retrieval-v1",
+      "dimensions": 768
+    }
+  ]
+}

@@ -87,13 +87,15 @@ D1_REVIEW = {
  'tokenizer_config.json':'03efc74b752b899b6292ff7e607738be59e6f206fec9aca32bbc05e9184090fc',
 }
 
-def d1_exact_input(model, text, labels, limit):
+def d1_exact_input(model, text, labels, limit, taxonomy=None, question=None):
     # Verify that the upstream encoder would serialize ALL state/options. Its
     # default per-option/right truncation is not an allowed Butler fallback.
     import importlib
     prompt = importlib.import_module(type(model).__module__.rsplit('.', 1)[0]+'.prompt')
-    q = prompt.as_question({'type':'choice','instructions':'Classify the event.',
-                            'criteria':{label:'' for label in labels}})
+    criteria = ({chr(65+i): taxonomy['labels'][label] for i,label in enumerate(labels)}
+                if taxonomy else {label:'' for label in labels})
+    q = prompt.as_question(question or {'type':'choice','instructions':taxonomy['instructions'] if taxonomy else 'Classify the event.',
+                            'criteria':criteria})
     tok = model.tokenizer
     enc = lambda s: tok(prompt.escape(s), add_special_tokens=False)['input_ids']
     ids = [tok.bos_token_id, tok.convert_tokens_to_ids(prompt.DELIM['state'])]
@@ -106,13 +108,88 @@ def d1_exact_input(model, text, labels, limit):
     actual,_ = prompt.encode(tok,text,q,limit)
     if len(ids)>limit or ids!=actual:
         raise ValueError('decision input would be truncated')
-    return {'category':{'type':'choice','instructions':q.instructions,'criteria':q.criteria}}
+    return {'category':{'type':q.type,'instructions':q.instructions,'criteria':q.criteria}}
+
+def interpretation_scores(model, text, labels, schema, limit, classifier=None):
+    expected = ['intent/'+o['id'] for o in schema['intents']]
+    expected += [group+'/'+o['id'] for group in ('modality','target') for o in schema[group]]
+    if len(labels) != len(expected) or set(labels) != set(expected):
+        raise ValueError('interpretation labels mismatch')
+    tasks = []
+    for option in schema['intents']:
+        tasks.append((option['id'], [
+            {'id':'absent','description':'This intention is absent from focus.'},
+            {'id':'present','description':option['description']}],
+            schema['instructions']+' Is this intention present in focus: '+option['description']))
+    for group in ('modality','target'):
+        tasks.append((group, schema[group], schema['instructions']+' Select the '+group+' of focus.'))
+    probabilities = {}
+    if classifier is None:
+        questions = {}
+        for name, options, instruction in tasks:
+            if name not in ('modality','target'):
+                description = next(o['description'] for o in schema['intents'] if o['id']==name)
+                instruction = schema['d1_instructions']+' Is this intention present: '+description
+                choices = {'absent':'Absent.','present':'Present.'}
+            else:
+                instruction = schema['d1_instructions']+' Select the '+name+' of focus.'
+                choices = schema['d1_'+name]
+            definition = {'instructions':instruction,'labels':choices}
+            boolean = None
+            if name not in ('modality','target'):
+                boolean = {'type':'noul','instructions':instruction,
+                           'criteria':{'false':'No, the intention is absent.','true':'Yes, the intention is present.'}}
+            exact = d1_exact_input(model,text,[o['id'] for o in options],limit,definition,boolean)
+            questions[name] = exact['category']
+        result = model.system_one(text,questions)['answers']
+        for name, options, _ in tasks:
+            if name not in ('modality','target'):
+                probabilities[name] = {'present':result[name]['noul']}
+            else:
+                probabilities[name] = {o['id']:result[name]['probabilities'][chr(65+i)] for i,o in enumerate(options)}
+    else:
+        from gliner2.classification import ClassificationSchema, ClassificationConfig
+        # Use the SDK's native independent-label primitive. Generic repeated
+        # absent/present labels were strongly biased toward present on dev.
+        declaration = ClassificationSchema().multi('intents',
+            {schema['gliner_names'][o['id']]:o['description'] for o in schema['intents']},
+            activation='sigmoid',instruction=schema['instructions'])
+        for group in ('modality','target'):
+            declaration.single(group,{schema['gliner_names'][o['id']]:o['description'] for o in schema[group]},
+                activation='softmax',instruction='Select the '+group+' of focus using context and full text.')
+        compiled = classifier.compile_schema(declaration)
+        prepared = model.processor.collate_fn_inference([(text,compiled.build())],max_len=None,error_policy='raise',architecture='boundary')
+        if prepared.input_ids.shape[-1] > limit:
+            raise ValueError('interpretation schema plus text too long')
+        result = classifier.score(text,compiled,config=ClassificationConfig(max_len=None))
+        for group,options in [('intents',schema['intents']),('modality',schema['modality']),('target',schema['target'])]:
+            if set(result.tasks[group]) != {schema['gliner_names'][o['id']] for o in options}:
+                raise ValueError('incomplete interpretation task')
+        for o in schema['intents']:
+            probabilities[o['id']]={'present':result.probability('intents',schema['gliner_names'][o['id']])}
+        for group in ('modality','target'):
+            probabilities[group]={o['id']:result.probability(group,schema['gliner_names'][o['id']]) for o in schema[group]}
+    scores = {'intent/'+o['id']:probabilities[o['id']]['present'] for o in schema['intents']}
+    scores.update({group+'/'+o['id']:probabilities[group][o['id']] for group in ('modality','target') for o in schema[group]})
+    return {'kind':'classes','labels':labels,'scores':[scores[label] for label in labels]}
 
 try:
     init = json.loads(sys.stdin.readline(65536))
     if init.get('op') != 'init':
         raise ValueError('invalid init')
     profile = init['profile']
+    taxonomy = None
+    interpretation = None
+    if profile['preprocessing_version'] == 'butler-event-interpretation-v3':
+        raw = pathlib.Path(__file__).with_name('interpretation-schema-v3.json').read_bytes()
+        if hashlib.sha256(raw).hexdigest() != 'a4e43a3c95c73c4b214ac14cfb26a144371f743bdcbd30c484f3d6763a184073':
+            raise ValueError('interpretation identity mismatch')
+        interpretation = json.loads(raw)
+    if profile['preprocessing_version'] == 'butler-event-taxonomy-v2':
+        raw = pathlib.Path(__file__).with_name('decision-schema-v2.json').read_bytes()
+        if hashlib.sha256(raw).hexdigest() != 'ae9eeab71dfbeb835a28a8fa59806e75a4f13090225350b8b818a93a2c61763e':
+            raise ValueError('taxonomy identity mismatch')
+        taxonomy = json.loads(raw)
     runtimes = {
         'google/embeddinggemma-2': 'torch2.10.0+cu128/transformers5.19.0/sentence-transformers6.1.0',
         'Qwen/Qwen3-Reranker-0.6B': 'torch2.10.0+cu128/transformers5.19.0',
@@ -184,6 +261,10 @@ try:
             from gliner2 import AutoExtractor
             model = AutoExtractor.from_pretrained(str(path), map_location='cpu', quantize=False, local_files_only=True, token=False)
             tokenizer = transformers.AutoTokenizer.from_pretrained(str(path), local_files_only=True, trust_remote_code=False)
+            if profile['preprocessing_version'] in ('gliner2.5-classification-softmax-v1','butler-event-taxonomy-v2','butler-event-interpretation-v3'):
+                from gliner2.classification import Classifier, ClassificationSchema, ClassificationConfig
+                # Reuse the already admitted model; never load a second checkpoint.
+                classifier = Classifier(model).eval()
         model.eval()
     emit({'kind': 'ready', 'vram_mib': ((torch.cuda.memory_reserved() + 1048575) // 1048576) if device == 'gpu' else 0})
     for line in sys.stdin:
@@ -225,9 +306,14 @@ try:
                     output = {'kind': 'scores', 'scores': torch.softmax(logits, dim=1)[:, 1].cpu().tolist()}
                 elif op == 'classify' and name == 'LiquidAI/d1-omni-600M':
                     text, labels = request['text'],request['labels']
-                    questions = d1_exact_input(model,text,labels,int(profile['context_tokens']))
-                    result = model.system_one(text,questions)['answers']['category']['probabilities']
-                    output = {'kind':'classes','labels':labels,'scores':[result[label] for label in labels]}
+                    if interpretation:
+                        output = interpretation_scores(model, text, labels, interpretation, int(profile['context_tokens']))
+                    else:
+                        if taxonomy and set(labels) != set(taxonomy['labels']):
+                            raise ValueError('taxonomy labels mismatch')
+                        questions = d1_exact_input(model,text,labels,int(profile['context_tokens']),taxonomy)
+                        result = model.system_one(text,questions)['answers']['category']['probabilities']
+                        output = {'kind':'classes','labels':labels,'scores':[result[chr(65+i) if taxonomy else label] for i,label in enumerate(labels)]}
                 elif op in ('extract', 'classify') and name in ('fastino/gliner2.5-multi-v1','fastino/GLiNER2.5-multi-Decide'):
                     text, labels = request['text'], request.get('labels') or []
                     bounded_tokens(text + ' ' + ' '.join(labels))
@@ -256,14 +342,33 @@ try:
                                     spans.append({'type': label, 'text': item['text'], 'start': item['start'], 'end': item['end'], 'confidence': item['confidence']})
                             output = {'kind': 'spans', 'spans': spans}
                     else:
-                        schema = model.create_schema().classification('category',labels).build()
-                        prepared = model.processor.collate_fn_inference([(text,schema)],max_len=None,
-                            error_policy='raise',architecture='boundary')
-                        if prepared.input_ids.shape[-1]>int(profile['context_tokens']):
-                            raise ValueError('classification schema plus text too long')
-                        result = model.classify_text(text, {'category': labels}, include_confidence=True,max_len=None)
-                        category = result.get('category')
-                        output = {'kind': 'classes', 'labels': [] if category is None else [category['label']], 'scores': [] if category is None else [category['confidence']]}
+                        if interpretation:
+                            output = interpretation_scores(model, text, labels, interpretation, int(profile['context_tokens']), classifier)
+                        elif profile['preprocessing_version'] in ('gliner2.5-classification-softmax-v1','butler-event-taxonomy-v2'):
+                            if taxonomy and set(labels) != set(taxonomy['labels']):
+                                raise ValueError('taxonomy labels mismatch')
+                            compiled = classifier.compile_schema(
+                                ClassificationSchema().single('category', taxonomy['labels'] if taxonomy else labels,
+                                    activation='softmax', instruction=taxonomy['instructions'] if taxonomy else None))
+                            prepared = model.processor.collate_fn_inference(
+                                [(text, compiled.build())], max_len=None,
+                                error_policy='raise', architecture='boundary')
+                            if prepared.input_ids.shape[-1] > int(profile['context_tokens']):
+                                raise ValueError('classification schema plus text too long')
+                            scores = classifier.score(text, compiled, config=ClassificationConfig(max_len=None))
+                            if set(scores.tasks['category']) != set(labels):
+                                raise ValueError('incomplete classification scores')
+                            output = {'kind': 'classes', 'labels': labels,
+                                      'scores': [scores.probability('category', label) for label in labels]}
+                        else:
+                            schema = model.create_schema().classification('category',labels).build()
+                            prepared = model.processor.collate_fn_inference([(text,schema)],max_len=None,
+                                error_policy='raise',architecture='boundary')
+                            if prepared.input_ids.shape[-1]>int(profile['context_tokens']):
+                                raise ValueError('classification schema plus text too long')
+                            result = model.classify_text(text, {'category': labels}, include_confidence=True,max_len=None)
+                            category = result.get('category')
+                            output = {'kind': 'classes', 'labels': [] if category is None else [category['label']], 'scores': [] if category is None else [category['confidence']]}
                 else:
                     raise ValueError('unsupported operation')
             emit(output)

@@ -1,0 +1,2179 @@
+{
+  "actual_attempts": 21,
+  "cases": [
+    {
+      "case": "dev-001",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Проверь восстановление одного архива.",
+        "start": 0,
+        "end": 37
+      },
+      "gold": {
+        "quote": "Проверь восстановление одного архива.",
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": [
+          "request_action",
+          "change_constraint",
+          "stop_work",
+          "ask_information",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.6746814837629074,
+        "minimum_margin": 0.48573523012502806,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9723363177999033,
+          "intent/change_constraint": 0.9713775088625065,
+          "intent/provide_information": 0.9689113272198006,
+          "intent/request_action": 0.9775502747261925,
+          "intent/stop_work": 0.9737238052378067,
+          "modality/conditional": 0.13273563125095952,
+          "modality/direct": 0.778454259637987,
+          "modality/negated": 0.009318344280432319,
+          "modality/quoted": 0.04404571715918583,
+          "modality/tentative": 0.016936385640211042,
+          "modality/unresolved": 0.018509662031224366,
+          "target/current_operation": 0.08362414125171565,
+          "target/none": 0.023463428317308074,
+          "target/other_task": 0.18894625363787929,
+          "target/unresolved": 0.029284693030189605,
+          "target/whole_current_task": 0.6746814837629074
+        }
+      },
+      "source": {
+        "source_id": "source_8746efd7ad0af71ae1f218c6e8a7a44f06a0069ab6a490140de44530e3b0a69f",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "f1f58801c3086b5802e4d43bb5b144c713a254225ec3a3153c29da63d76afade"
+      },
+      "wall_ms": 28717,
+      "response": {
+        "request_id": "operation_87c6b37e9f02e6cfbf440af675b437a5de151f8dc728df00",
+        "profile_id": "gliner2.5-multi-interpretation-v3-cpu",
+        "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "device": "cpu",
+        "execution_ms": 28705,
+        "peak_ram_mib": 3658,
+        "Output": {
+          "Classify": {
+            "scores": [
+              {
+                "id": "intent/request_action",
+                "value": 0.9775502747261925
+              },
+              {
+                "id": "intent/change_constraint",
+                "value": 0.9713775088625065
+              },
+              {
+                "id": "intent/stop_work",
+                "value": 0.9737238052378067
+              },
+              {
+                "id": "intent/ask_information",
+                "value": 0.9723363177999033
+              },
+              {
+                "id": "intent/provide_information",
+                "value": 0.9689113272198006
+              },
+              {
+                "id": "modality/direct",
+                "value": 0.778454259637987
+              },
+              {
+                "id": "modality/tentative",
+                "value": 0.016936385640211042
+              },
+              {
+                "id": "modality/quoted",
+                "value": 0.04404571715918583
+              },
+              {
+                "id": "modality/negated",
+                "value": 0.009318344280432319
+              },
+              {
+                "id": "modality/conditional",
+                "value": 0.13273563125095952
+              },
+              {
+                "id": "modality/unresolved",
+                "value": 0.018509662031224366
+              },
+              {
+                "id": "target/whole_current_task",
+                "value": 0.6746814837629074
+              },
+              {
+                "id": "target/current_operation",
+                "value": 0.08362414125171565
+              },
+              {
+                "id": "target/other_task",
+                "value": 0.18894625363787929
+              },
+              {
+                "id": "target/unresolved",
+                "value": 0.029284693030189605
+              },
+              {
+                "id": "target/none",
+                "value": 0.023463428317308074
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "dev-002",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Вернись к оформлению таблицы.",
+        "start": 0,
+        "end": 29
+      },
+      "gold": {
+        "quote": "Вернись к оформлению таблицы.",
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_e51649d7cfea784e6bc90ae4d013760780e1631ce348ff6e219cb132f9091f25",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "ec17dc78055f747423ff36073151074821668d194c78ff092ccdf74e08be91e1"
+      },
+      "error": "InvalidArgument",
+      "wall_ms": 10
+    },
+    {
+      "case": "dev-002",
+      "window": 1,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Отдельно составь памятку для волонтёров.",
+        "start": 30,
+        "end": 70
+      },
+      "gold": {
+        "quote": "Отдельно составь памятку для волонтёров.",
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "other_task"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_8358373beac11aaed19f18ed8e74c8b01b11e2c5a9ed284b1c48f7f50a6f8e87",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "6d1d456334444e32abcf9e4cb333824976fe78b918771e225f570b2559cd9e88"
+      },
+      "error": "InvalidArgument",
+      "wall_ms": 8
+    },
+    {
+      "case": "dev-003",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Используй только копию базы.",
+        "start": 0,
+        "end": 28
+      },
+      "gold": {
+        "quote": "Используй только копию базы.",
+        "intents": [
+          "change_constraint"
+        ],
+        "modality": "direct",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_cf60ecf3d4aa17955ecf4a4da6de1733b4e5a0429f5a02d4f27a9bd4ea6aa251",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "6b8e4d88f58c1c1b5c8a7fbc96fb36f5f1cec838651bb44c0933c61df724fc21"
+      },
+      "error": "InvalidArgument",
+      "wall_ms": 9
+    },
+    {
+      "case": "dev-003",
+      "window": 1,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Срок всей миграции перенеси на понедельник.",
+        "start": 29,
+        "end": 72
+      },
+      "gold": {
+        "quote": "Срок всей миграции перенеси на понедельник.",
+        "intents": [
+          "change_constraint"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_399cd0667fbb36d41a86a53f9cae97fbaa2862e0874ac66a07c8f8624ad20fbc",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "efbf8b54bea8ca48d9162cfafe287265e5cf78cdb144998cf846370e61e14389"
+      },
+      "error": "InvalidArgument",
+      "wall_ms": 8
+    },
+    {
+      "case": "dev-004",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Запись в рабочую базу запрещаю.",
+        "start": 0,
+        "end": 31
+      },
+      "gold": {
+        "quote": "Запись в рабочую базу запрещаю.",
+        "intents": [
+          "change_constraint"
+        ],
+        "modality": "direct",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": [
+          "request_action",
+          "change_constraint",
+          "stop_work",
+          "ask_information",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.6842734386568263,
+        "minimum_margin": 0.5364132062343967,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.8618517324010981,
+          "intent/change_constraint": 0.8674472899782558,
+          "intent/provide_information": 0.851136061249012,
+          "intent/request_action": 0.8753480682450396,
+          "intent/stop_work": 0.8725838446848242,
+          "modality/conditional": 0.10826393177018909,
+          "modality/direct": 0.7212463774880568,
+          "modality/negated": 0.04750142982822518,
+          "modality/quoted": 0.08500089954906745,
+          "modality/tentative": 0.012768995877918772,
+          "modality/unresolved": 0.025218365486542816,
+          "target/current_operation": 0.07489326856824162,
+          "target/none": 0.04257969419056015,
+          "target/other_task": 0.14786023242242957,
+          "target/unresolved": 0.05039336616194241,
+          "target/whole_current_task": 0.6842734386568263
+        }
+      },
+      "source": {
+        "source_id": "source_c5c9fa6ef01c6583ab1dd66e4e0af153edf99f6e6c3d8f238853470455cb5995",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "9918460a37b187a608b7ef08c84f56dbc45efafeb9a88539344037f984b2efae"
+      },
+      "wall_ms": 9866,
+      "response": {
+        "request_id": "operation_3b65a3fbf8f7e5b00044fa61426932cf05647e828783f89d",
+        "profile_id": "gliner2.5-multi-interpretation-v3-cpu",
+        "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "device": "cpu",
+        "execution_ms": 9859,
+        "peak_ram_mib": 3680,
+        "Output": {
+          "Classify": {
+            "scores": [
+              {
+                "id": "intent/request_action",
+                "value": 0.8753480682450396
+              },
+              {
+                "id": "intent/change_constraint",
+                "value": 0.8674472899782558
+              },
+              {
+                "id": "intent/stop_work",
+                "value": 0.8725838446848242
+              },
+              {
+                "id": "intent/ask_information",
+                "value": 0.8618517324010981
+              },
+              {
+                "id": "intent/provide_information",
+                "value": 0.851136061249012
+              },
+              {
+                "id": "modality/direct",
+                "value": 0.7212463774880568
+              },
+              {
+                "id": "modality/tentative",
+                "value": 0.012768995877918772
+              },
+              {
+                "id": "modality/quoted",
+                "value": 0.08500089954906745
+              },
+              {
+                "id": "modality/negated",
+                "value": 0.04750142982822518
+              },
+              {
+                "id": "modality/conditional",
+                "value": 0.10826393177018909
+              },
+              {
+                "id": "modality/unresolved",
+                "value": 0.025218365486542816
+              },
+              {
+                "id": "target/whole_current_task",
+                "value": 0.6842734386568263
+              },
+              {
+                "id": "target/current_operation",
+                "value": 0.07489326856824162
+              },
+              {
+                "id": "target/other_task",
+                "value": 0.14786023242242957
+              },
+              {
+                "id": "target/unresolved",
+                "value": 0.05039336616194241
+              },
+              {
+                "id": "target/none",
+                "value": 0.04257969419056015
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "dev-005",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Прекрати эту задачу целиком.",
+        "start": 0,
+        "end": 28
+      },
+      "gold": {
+        "quote": "Прекрати эту задачу целиком.",
+        "intents": [
+          "stop_work"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task"
+      },
+      "observation": {
+        "intents": [
+          "request_action",
+          "change_constraint",
+          "stop_work",
+          "ask_information",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.7372715485535772,
+        "minimum_margin": 0.6069842751592328,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9453278386040701,
+          "intent/change_constraint": 0.9425490627350575,
+          "intent/provide_information": 0.9391873349404064,
+          "intent/request_action": 0.9515590123512502,
+          "intent/stop_work": 0.9556975686826862,
+          "modality/conditional": 0.12371147011760952,
+          "modality/direct": 0.7481129301269973,
+          "modality/negated": 0.02007411823265862,
+          "modality/quoted": 0.06140423526488142,
+          "modality/tentative": 0.021433936069802654,
+          "modality/unresolved": 0.02526331018805051,
+          "target/current_operation": 0.06475942319495301,
+          "target/none": 0.03520667014500893,
+          "target/other_task": 0.13028727339434445,
+          "target/unresolved": 0.03247508471211631,
+          "target/whole_current_task": 0.7372715485535772
+        }
+      },
+      "source": {
+        "source_id": "source_41e2ffce20b2b8dbf4045458be62f7981b3d52f4c10d2a4d34abacd69ed6a547",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "06c5b27d78df8832c51411c6951bf4099295314c1029d6fae6c795e90dc25a22"
+      },
+      "wall_ms": 10026,
+      "response": {
+        "request_id": "operation_3dfdb11ad609ce3d284d6a1bf31a5b891490af2c9b9dd627",
+        "profile_id": "gliner2.5-multi-interpretation-v3-cpu",
+        "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "device": "cpu",
+        "execution_ms": 10018,
+        "peak_ram_mib": 3644,
+        "Output": {
+          "Classify": {
+            "scores": [
+              {
+                "id": "intent/request_action",
+                "value": 0.9515590123512502
+              },
+              {
+                "id": "intent/change_constraint",
+                "value": 0.9425490627350575
+              },
+              {
+                "id": "intent/stop_work",
+                "value": 0.9556975686826862
+              },
+              {
+                "id": "intent/ask_information",
+                "value": 0.9453278386040701
+              },
+              {
+                "id": "intent/provide_information",
+                "value": 0.9391873349404064
+              },
+              {
+                "id": "modality/direct",
+                "value": 0.7481129301269973
+              },
+              {
+                "id": "modality/tentative",
+                "value": 0.021433936069802654
+              },
+              {
+                "id": "modality/quoted",
+                "value": 0.06140423526488142
+              },
+              {
+                "id": "modality/negated",
+                "value": 0.02007411823265862
+              },
+              {
+                "id": "modality/conditional",
+                "value": 0.12371147011760952
+              },
+              {
+                "id": "modality/unresolved",
+                "value": 0.02526331018805051
+              },
+              {
+                "id": "target/whole_current_task",
+                "value": 0.7372715485535772
+              },
+              {
+                "id": "target/current_operation",
+                "value": 0.06475942319495301
+              },
+              {
+                "id": "target/other_task",
+                "value": 0.13028727339434445
+              },
+              {
+                "id": "target/unresolved",
+                "value": 0.03247508471211631
+              },
+              {
+                "id": "target/none",
+                "value": 0.03520667014500893
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "dev-006",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Приостанови выгрузку PDF.",
+        "start": 0,
+        "end": 25
+      },
+      "gold": {
+        "quote": "Приостанови выгрузку PDF.",
+        "intents": [
+          "stop_work"
+        ],
+        "modality": "direct",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": [
+          "request_action",
+          "change_constraint",
+          "stop_work",
+          "ask_information",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": true,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.5649625238676075,
+        "minimum_margin": 0.24589183625000854,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9582338011463619,
+          "intent/change_constraint": 0.9604442839383657,
+          "intent/provide_information": 0.9560801384684522,
+          "intent/request_action": 0.9623678618070222,
+          "intent/stop_work": 0.9629223270248221,
+          "modality/conditional": 0.18833093467838175,
+          "modality/direct": 0.7111437825394918,
+          "modality/negated": 0.01168567106394418,
+          "modality/quoted": 0.017688680335890602,
+          "modality/tentative": 0.056743639115784034,
+          "modality/unresolved": 0.014407292266507657,
+          "target/current_operation": 0.31907068761759894,
+          "target/none": 0.017458671170108034,
+          "target/other_task": 0.0821582414039719,
+          "target/unresolved": 0.01634987594071377,
+          "target/whole_current_task": 0.5649625238676075
+        }
+      },
+      "source": {
+        "source_id": "source_57e21fa72c201a8349775ad0c96ed0448ff69fb4b3ec03e0c60309239b725d8a",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "bbbea472bda3de22ddd069009ba3984ff47a43d64b422736a988fade21ee9cd8"
+      },
+      "wall_ms": 10037,
+      "response": {
+        "request_id": "operation_6e5ac7885e842b71926278aadd40a2d3ce2a3dd90ec2c012",
+        "profile_id": "gliner2.5-multi-interpretation-v3-cpu",
+        "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "device": "cpu",
+        "execution_ms": 10028,
+        "peak_ram_mib": 3656,
+        "Output": {
+          "Classify": {
+            "scores": [
+              {
+                "id": "intent/request_action",
+                "value": 0.9623678618070222
+              },
+              {
+                "id": "intent/change_constraint",
+                "value": 0.9604442839383657
+              },
+              {
+                "id": "intent/stop_work",
+                "value": 0.9629223270248221
+              },
+              {
+                "id": "intent/ask_information",
+                "value": 0.9582338011463619
+              },
+              {
+                "id": "intent/provide_information",
+                "value": 0.9560801384684522
+              },
+              {
+                "id": "modality/direct",
+                "value": 0.7111437825394918
+              },
+              {
+                "id": "modality/tentative",
+                "value": 0.056743639115784034
+              },
+              {
+                "id": "modality/quoted",
+                "value": 0.017688680335890602
+              },
+              {
+                "id": "modality/negated",
+                "value": 0.01168567106394418
+              },
+              {
+                "id": "modality/conditional",
+                "value": 0.18833093467838175
+              },
+              {
+                "id": "modality/unresolved",
+                "value": 0.014407292266507657
+              },
+              {
+                "id": "target/whole_current_task",
+                "value": 0.5649625238676075
+              },
+              {
+                "id": "target/current_operation",
+                "value": 0.31907068761759894
+              },
+              {
+                "id": "target/other_task",
+                "value": 0.0821582414039719
+              },
+              {
+                "id": "target/unresolved",
+                "value": 0.01634987594071377
+              },
+              {
+                "id": "target/none",
+                "value": 0.017458671170108034
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "dev-007",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "На каком этапе весь отчёт?",
+        "start": 0,
+        "end": 26
+      },
+      "gold": {
+        "quote": "На каком этапе весь отчёт?",
+        "intents": [
+          "ask_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task"
+      },
+      "observation": {
+        "intents": [
+          "request_action",
+          "change_constraint",
+          "stop_work",
+          "ask_information",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.8038550868663217,
+        "minimum_margin": 0.6685763363434083,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9567070259509397,
+          "intent/change_constraint": 0.9537093041005091,
+          "intent/provide_information": 0.9522734991970674,
+          "intent/request_action": 0.9615844523946365,
+          "intent/stop_work": 0.958054309705591,
+          "modality/conditional": 0.13527875052291335,
+          "modality/direct": 0.8038550868663217,
+          "modality/negated": 0.007406169852342488,
+          "modality/quoted": 0.0220793477428185,
+          "modality/tentative": 0.01704247739325844,
+          "modality/unresolved": 0.014338167622345535,
+          "target/current_operation": 0.00896903106014886,
+          "target/none": 0.0031776330690921105,
+          "target/other_task": 0.011696973942261948,
+          "target/unresolved": 0.003997650254473024,
+          "target/whole_current_task": 0.972158711674024
+        }
+      },
+      "source": {
+        "source_id": "source_4183b2112ac907fa9d692940e221ce4c39813770eb03eaa7a6272e88b38cb330",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "3585e861ff00a3ad633a74712ad972a09bcc1fb4bc47d4c687648fb234da3939"
+      },
+      "wall_ms": 10048,
+      "response": {
+        "request_id": "operation_4ce3a7e3c0357b928b44dc7d478d7e1a3043d104766bf425",
+        "profile_id": "gliner2.5-multi-interpretation-v3-cpu",
+        "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "device": "cpu",
+        "execution_ms": 10040,
+        "peak_ram_mib": 3673,
+        "Output": {
+          "Classify": {
+            "scores": [
+              {
+                "id": "intent/request_action",
+                "value": 0.9615844523946365
+              },
+              {
+                "id": "intent/change_constraint",
+                "value": 0.9537093041005091
+              },
+              {
+                "id": "intent/stop_work",
+                "value": 0.958054309705591
+              },
+              {
+                "id": "intent/ask_information",
+                "value": 0.9567070259509397
+              },
+              {
+                "id": "intent/provide_information",
+                "value": 0.9522734991970674
+              },
+              {
+                "id": "modality/direct",
+                "value": 0.8038550868663217
+              },
+              {
+                "id": "modality/tentative",
+                "value": 0.01704247739325844
+              },
+              {
+                "id": "modality/quoted",
+                "value": 0.0220793477428185
+              },
+              {
+                "id": "modality/negated",
+                "value": 0.007406169852342488
+              },
+              {
+                "id": "modality/conditional",
+                "value": 0.13527875052291335
+              },
+              {
+                "id": "modality/unresolved",
+                "value": 0.014338167622345535
+              },
+              {
+                "id": "target/whole_current_task",
+                "value": 0.972158711674024
+              },
+              {
+                "id": "target/current_operation",
+                "value": 0.00896903106014886
+              },
+              {
+                "id": "target/other_task",
+                "value": 0.011696973942261948
+              },
+              {
+                "id": "target/unresolved",
+                "value": 0.003997650254473024
+              },
+              {
+                "id": "target/none",
+                "value": 0.0031776330690921105
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "dev-008",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Можешь проверить DNS-запись?",
+        "start": 0,
+        "end": 28
+      },
+      "gold": {
+        "quote": "Можешь проверить DNS-запись?",
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": [
+          "request_action",
+          "change_constraint",
+          "stop_work",
+          "ask_information",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.6863226110436665,
+        "minimum_margin": 0.5406506491905433,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9488204404690574,
+          "intent/change_constraint": 0.950270873747013,
+          "intent/provide_information": 0.942231947709996,
+          "intent/request_action": 0.9574089273349934,
+          "intent/stop_work": 0.9502242227957742,
+          "modality/conditional": 0.0986378576055587,
+          "modality/direct": 0.8294023388164763,
+          "modality/negated": 0.009201754064968527,
+          "modality/quoted": 0.02733348587639206,
+          "modality/tentative": 0.014646866635125369,
+          "modality/unresolved": 0.02077769700147901,
+          "target/current_operation": 0.07811499171141391,
+          "target/none": 0.04423899374210216,
+          "target/other_task": 0.14567196185312326,
+          "target/unresolved": 0.04565144164969417,
+          "target/whole_current_task": 0.6863226110436665
+        }
+      },
+      "source": {
+        "source_id": "source_0e5b27942577658aa825a033d68cf9ac5a78844356de1a36e842fa6d54623ec0",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "487747956406c3667438ce98400ee9cb152235a814e677022744e787b65d2eb5"
+      },
+      "wall_ms": 10147,
+      "response": {
+        "request_id": "operation_8661d0f3e86517adbf012d1bba299ef7cf837284354801b5",
+        "profile_id": "gliner2.5-multi-interpretation-v3-cpu",
+        "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "device": "cpu",
+        "execution_ms": 10138,
+        "peak_ram_mib": 3681,
+        "Output": {
+          "Classify": {
+            "scores": [
+              {
+                "id": "intent/request_action",
+                "value": 0.9574089273349934
+              },
+              {
+                "id": "intent/change_constraint",
+                "value": 0.950270873747013
+              },
+              {
+                "id": "intent/stop_work",
+                "value": 0.9502242227957742
+              },
+              {
+                "id": "intent/ask_information",
+                "value": 0.9488204404690574
+              },
+              {
+                "id": "intent/provide_information",
+                "value": 0.942231947709996
+              },
+              {
+                "id": "modality/direct",
+                "value": 0.8294023388164763
+              },
+              {
+                "id": "modality/tentative",
+                "value": 0.014646866635125369
+              },
+              {
+                "id": "modality/quoted",
+                "value": 0.02733348587639206
+              },
+              {
+                "id": "modality/negated",
+                "value": 0.009201754064968527
+              },
+              {
+                "id": "modality/conditional",
+                "value": 0.0986378576055587
+              },
+              {
+                "id": "modality/unresolved",
+                "value": 0.02077769700147901
+              },
+              {
+                "id": "target/whole_current_task",
+                "value": 0.6863226110436665
+              },
+              {
+                "id": "target/current_operation",
+                "value": 0.07811499171141391
+              },
+              {
+                "id": "target/other_task",
+                "value": 0.14567196185312326
+              },
+              {
+                "id": "target/unresolved",
+                "value": 0.04565144164969417
+              },
+              {
+                "id": "target/none",
+                "value": 0.04423899374210216
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "dev-009",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "tool",
+      "source_window": {
+        "quote": "Последняя попытка вернула код 504.",
+        "start": 0,
+        "end": 34
+      },
+      "gold": {
+        "quote": "Последняя попытка вернула код 504.",
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": [
+          "request_action",
+          "change_constraint",
+          "stop_work",
+          "ask_information",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.7670324342914119,
+        "minimum_margin": 0.6591806585180611,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9810629945921208,
+          "intent/change_constraint": 0.9794563846534313,
+          "intent/provide_information": 0.9786802655387624,
+          "intent/request_action": 0.9840554988041188,
+          "intent/stop_work": 0.9809495337123159,
+          "modality/conditional": 0.07290780900304689,
+          "modality/direct": 0.8619941907587175,
+          "modality/negated": 0.010539606262046657,
+          "modality/quoted": 0.03304144414640168,
+          "modality/tentative": 0.007503588050589732,
+          "modality/unresolved": 0.014013361779197578,
+          "target/current_operation": 0.08827215561881935,
+          "target/none": 0.015291405609022736,
+          "target/other_task": 0.10785177577335076,
+          "target/unresolved": 0.02155222870739533,
+          "target/whole_current_task": 0.7670324342914119
+        }
+      },
+      "source": {
+        "source_id": "source_90637012b28b867f8017f88156c9a46c1682abf77d6febe0adfbc9d056fe5aa1",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "25ae586ffb48f4b399b19d3d6e274c2bc44e79b3786d4c621a18147c5213d8b7"
+      },
+      "wall_ms": 9918,
+      "response": {
+        "request_id": "operation_6cae5639f8496231d07d18ce9ec001221c4afac1a2fd6610",
+        "profile_id": "gliner2.5-multi-interpretation-v3-cpu",
+        "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "device": "cpu",
+        "execution_ms": 9909,
+        "peak_ram_mib": 3729,
+        "Output": {
+          "Classify": {
+            "scores": [
+              {
+                "id": "intent/request_action",
+                "value": 0.9840554988041188
+              },
+              {
+                "id": "intent/change_constraint",
+                "value": 0.9794563846534313
+              },
+              {
+                "id": "intent/stop_work",
+                "value": 0.9809495337123159
+              },
+              {
+                "id": "intent/ask_information",
+                "value": 0.9810629945921208
+              },
+              {
+                "id": "intent/provide_information",
+                "value": 0.9786802655387624
+              },
+              {
+                "id": "modality/direct",
+                "value": 0.8619941907587175
+              },
+              {
+                "id": "modality/tentative",
+                "value": 0.007503588050589732
+              },
+              {
+                "id": "modality/quoted",
+                "value": 0.03304144414640168
+              },
+              {
+                "id": "modality/negated",
+                "value": 0.010539606262046657
+              },
+              {
+                "id": "modality/conditional",
+                "value": 0.07290780900304689
+              },
+              {
+                "id": "modality/unresolved",
+                "value": 0.014013361779197578
+              },
+              {
+                "id": "target/whole_current_task",
+                "value": 0.7670324342914119
+              },
+              {
+                "id": "target/current_operation",
+                "value": 0.08827215561881935
+              },
+              {
+                "id": "target/other_task",
+                "value": 0.10785177577335076
+              },
+              {
+                "id": "target/unresolved",
+                "value": 0.02155222870739533
+              },
+              {
+                "id": "target/none",
+                "value": 0.015291405609022736
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "dev-010",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Уточняю: печать будет двусторонней.",
+        "start": 0,
+        "end": 35
+      },
+      "gold": {
+        "quote": "Уточняю: печать будет двусторонней.",
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task"
+      },
+      "observation": {
+        "intents": [
+          "request_action",
+          "change_constraint",
+          "stop_work",
+          "ask_information",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.736698608962672,
+        "minimum_margin": 0.5813482802248439,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9793429044707683,
+          "intent/change_constraint": 0.9784305361125387,
+          "intent/provide_information": 0.9776988283877198,
+          "intent/request_action": 0.9824463333594566,
+          "intent/stop_work": 0.9796711909251015,
+          "modality/conditional": 0.12721317025425963,
+          "modality/direct": 0.7729687200241266,
+          "modality/negated": 0.008012780010236899,
+          "modality/quoted": 0.0382695766119267,
+          "modality/tentative": 0.04229861414361875,
+          "modality/unresolved": 0.011237138955831316,
+          "target/current_operation": 0.07898793223596388,
+          "target/none": 0.012756413706564437,
+          "target/other_task": 0.15535032873782817,
+          "target/unresolved": 0.01620671635697148,
+          "target/whole_current_task": 0.736698608962672
+        }
+      },
+      "source": {
+        "source_id": "source_d8d5354c09edbaeaf57d4ed51b5cdd8a9c38accac613d6eed90920069ebd5d03",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "4d125c66f5a8f8ba57c9375247a482160d5b849033b9d0c784bdbfb6e8701934"
+      },
+      "wall_ms": 9729,
+      "response": {
+        "request_id": "operation_9f547a95994f998c177cbcf1f973850d9d0721b69bf784f8",
+        "profile_id": "gliner2.5-multi-interpretation-v3-cpu",
+        "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "device": "cpu",
+        "execution_ms": 9720,
+        "peak_ram_mib": 3713,
+        "Output": {
+          "Classify": {
+            "scores": [
+              {
+                "id": "intent/request_action",
+                "value": 0.9824463333594566
+              },
+              {
+                "id": "intent/change_constraint",
+                "value": 0.9784305361125387
+              },
+              {
+                "id": "intent/stop_work",
+                "value": 0.9796711909251015
+              },
+              {
+                "id": "intent/ask_information",
+                "value": 0.9793429044707683
+              },
+              {
+                "id": "intent/provide_information",
+                "value": 0.9776988283877198
+              },
+              {
+                "id": "modality/direct",
+                "value": 0.7729687200241266
+              },
+              {
+                "id": "modality/tentative",
+                "value": 0.04229861414361875
+              },
+              {
+                "id": "modality/quoted",
+                "value": 0.0382695766119267
+              },
+              {
+                "id": "modality/negated",
+                "value": 0.008012780010236899
+              },
+              {
+                "id": "modality/conditional",
+                "value": 0.12721317025425963
+              },
+              {
+                "id": "modality/unresolved",
+                "value": 0.011237138955831316
+              },
+              {
+                "id": "target/whole_current_task",
+                "value": 0.736698608962672
+              },
+              {
+                "id": "target/current_operation",
+                "value": 0.07898793223596388
+              },
+              {
+                "id": "target/other_task",
+                "value": 0.15535032873782817
+              },
+              {
+                "id": "target/unresolved",
+                "value": 0.01620671635697148
+              },
+              {
+                "id": "target/none",
+                "value": 0.012756413706564437
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "dev-011",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Может, стоит рассмотреть другой индекс?",
+        "start": 0,
+        "end": 39
+      },
+      "gold": {
+        "quote": "Может, стоит рассмотреть другой индекс?",
+        "intents": [
+          "request_action"
+        ],
+        "modality": "tentative",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": [
+          "request_action",
+          "change_constraint",
+          "stop_work",
+          "ask_information",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.7052910053778451,
+        "minimum_margin": 0.5349687089681936,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9736042719499884,
+          "intent/change_constraint": 0.9713431192769202,
+          "intent/provide_information": 0.969824504243075,
+          "intent/request_action": 0.9777482963155539,
+          "intent/stop_work": 0.9743071734268818,
+          "modality/conditional": 0.06720933113664941,
+          "modality/direct": 0.8774750236279072,
+          "modality/negated": 0.006651338354895746,
+          "modality/quoted": 0.0229930322736157,
+          "modality/tentative": 0.010750567441219404,
+          "modality/unresolved": 0.014920707165712616,
+          "target/current_operation": 0.061783585857168685,
+          "target/none": 0.02746228399868983,
+          "target/other_task": 0.1703222964096514,
+          "target/unresolved": 0.035140828356645074,
+          "target/whole_current_task": 0.7052910053778451
+        }
+      },
+      "source": {
+        "source_id": "source_0c3798d690efcd9db70eec5f3ccc17f140e1f273a5963f19dee4cb68cf00733e",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "1246dc5b91a347890ea7322551cbe0c005806352cc87b4928ab3ad1478de41de"
+      },
+      "wall_ms": 10141,
+      "response": {
+        "request_id": "operation_b5c8964ac108658f8b50c3ad5d8a07b567746d92e0749851",
+        "profile_id": "gliner2.5-multi-interpretation-v3-cpu",
+        "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "device": "cpu",
+        "execution_ms": 10132,
+        "peak_ram_mib": 3715,
+        "Output": {
+          "Classify": {
+            "scores": [
+              {
+                "id": "intent/request_action",
+                "value": 0.9777482963155539
+              },
+              {
+                "id": "intent/change_constraint",
+                "value": 0.9713431192769202
+              },
+              {
+                "id": "intent/stop_work",
+                "value": 0.9743071734268818
+              },
+              {
+                "id": "intent/ask_information",
+                "value": 0.9736042719499884
+              },
+              {
+                "id": "intent/provide_information",
+                "value": 0.969824504243075
+              },
+              {
+                "id": "modality/direct",
+                "value": 0.8774750236279072
+              },
+              {
+                "id": "modality/tentative",
+                "value": 0.010750567441219404
+              },
+              {
+                "id": "modality/quoted",
+                "value": 0.0229930322736157
+              },
+              {
+                "id": "modality/negated",
+                "value": 0.006651338354895746
+              },
+              {
+                "id": "modality/conditional",
+                "value": 0.06720933113664941
+              },
+              {
+                "id": "modality/unresolved",
+                "value": 0.014920707165712616
+              },
+              {
+                "id": "target/whole_current_task",
+                "value": 0.7052910053778451
+              },
+              {
+                "id": "target/current_operation",
+                "value": 0.061783585857168685
+              },
+              {
+                "id": "target/other_task",
+                "value": 0.1703222964096514
+              },
+              {
+                "id": "target/unresolved",
+                "value": 0.035140828356645074
+              },
+              {
+                "id": "target/none",
+                "value": 0.02746228399868983
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "dev-012",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Возможно, срок всей инвентаризации стоит сдвинуть.",
+        "start": 0,
+        "end": 50
+      },
+      "gold": {
+        "quote": "Возможно, срок всей инвентаризации стоит сдвинуть.",
+        "intents": [
+          "change_constraint"
+        ],
+        "modality": "tentative",
+        "target": "whole_current_task"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_2088df27c33d7e88b87d2e8559fd1606b2c64ad4a72ae4556e4bda2582acb0cc",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "e0216a497bd580e85fe600d1c22698eca66a7115ee7b3806cb5d5f111e728936"
+      },
+      "error": "InvalidArgument",
+      "wall_ms": 10
+    },
+    {
+      "case": "dev-013",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "В письме написано: «отмени весь релиз».",
+        "start": 0,
+        "end": 39
+      },
+      "gold": {
+        "quote": "В письме написано: «отмени весь релиз».",
+        "intents": [
+          "stop_work"
+        ],
+        "modality": "quoted",
+        "target": "whole_current_task"
+      },
+      "observation": {
+        "intents": [
+          "request_action",
+          "change_constraint",
+          "stop_work",
+          "ask_information",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.8371573435616672,
+        "minimum_margin": 0.7782757990051685,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9076407266964566,
+          "intent/change_constraint": 0.904239695282626,
+          "intent/provide_information": 0.8979788521937394,
+          "intent/request_action": 0.918726018802756,
+          "intent/stop_work": 0.9148162806252654,
+          "modality/conditional": 0.06880768464821004,
+          "modality/direct": 0.8725925292495178,
+          "modality/negated": 0.01590626352065621,
+          "modality/quoted": 0.014695759006266618,
+          "modality/tentative": 0.008726921313783654,
+          "modality/unresolved": 0.019270842261565734,
+          "target/current_operation": 0.04466719928057713,
+          "target/none": 0.026376315293009933,
+          "target/other_task": 0.058881544556498674,
+          "target/unresolved": 0.03291759730824712,
+          "target/whole_current_task": 0.8371573435616672
+        }
+      },
+      "source": {
+        "source_id": "source_d518cf91056884f1e6bd5a2e59b93e537a79a8734816c55dd4780ca51c8e4194",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "6265919aca37c3432a8e0b1274e362c62c37dac598477f21ae59e6463cbbc43e"
+      },
+      "wall_ms": 10219,
+      "response": {
+        "request_id": "operation_4926594eb568f662d8aacfb356fc7068d038a649b0e102a6",
+        "profile_id": "gliner2.5-multi-interpretation-v3-cpu",
+        "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "device": "cpu",
+        "execution_ms": 10211,
+        "peak_ram_mib": 3727,
+        "Output": {
+          "Classify": {
+            "scores": [
+              {
+                "id": "intent/request_action",
+                "value": 0.918726018802756
+              },
+              {
+                "id": "intent/change_constraint",
+                "value": 0.904239695282626
+              },
+              {
+                "id": "intent/stop_work",
+                "value": 0.9148162806252654
+              },
+              {
+                "id": "intent/ask_information",
+                "value": 0.9076407266964566
+              },
+              {
+                "id": "intent/provide_information",
+                "value": 0.8979788521937394
+              },
+              {
+                "id": "modality/direct",
+                "value": 0.8725925292495178
+              },
+              {
+                "id": "modality/tentative",
+                "value": 0.008726921313783654
+              },
+              {
+                "id": "modality/quoted",
+                "value": 0.014695759006266618
+              },
+              {
+                "id": "modality/negated",
+                "value": 0.01590626352065621
+              },
+              {
+                "id": "modality/conditional",
+                "value": 0.06880768464821004
+              },
+              {
+                "id": "modality/unresolved",
+                "value": 0.019270842261565734
+              },
+              {
+                "id": "target/whole_current_task",
+                "value": 0.8371573435616672
+              },
+              {
+                "id": "target/current_operation",
+                "value": 0.04466719928057713
+              },
+              {
+                "id": "target/other_task",
+                "value": 0.058881544556498674
+              },
+              {
+                "id": "target/unresolved",
+                "value": 0.03291759730824712
+              },
+              {
+                "id": "target/none",
+                "value": 0.026376315293009933
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "dev-014",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Выведи строку «останови задачу».",
+        "start": 0,
+        "end": 32
+      },
+      "gold": {
+        "quote": "Выведи строку «останови задачу».",
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": [
+          "request_action",
+          "change_constraint",
+          "stop_work",
+          "ask_information",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.8068800714598529,
+        "minimum_margin": 0.7184775046032451,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9618955833833464,
+          "intent/change_constraint": 0.9592076066176348,
+          "intent/provide_information": 0.9576664227215708,
+          "intent/request_action": 0.96939076438851,
+          "intent/stop_work": 0.9655432217552172,
+          "modality/conditional": 0.11522240092437462,
+          "modality/direct": 0.8336999055276197,
+          "modality/negated": 0.008537896466803469,
+          "modality/quoted": 0.014181902404404922,
+          "modality/tentative": 0.011404929276318618,
+          "modality/unresolved": 0.016952965400478637,
+          "target/current_operation": 0.0748487881153424,
+          "target/none": 0.018072731074026432,
+          "target/other_task": 0.07724337870076216,
+          "target/unresolved": 0.02295503065001624,
+          "target/whole_current_task": 0.8068800714598529
+        }
+      },
+      "source": {
+        "source_id": "source_4b839ce7f7a4355fc1e5f84daed508e4e890aa4c9581c66ece425a3390ac0297",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "bada03b3c84a84449b95e3e1e6a3a7516f4ba01448ae8f643551cbc70b831eef"
+      },
+      "wall_ms": 10111,
+      "response": {
+        "request_id": "operation_6f238c00cd1dd34d7115782ea681ce6a0fa2bd4317966fb6",
+        "profile_id": "gliner2.5-multi-interpretation-v3-cpu",
+        "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "device": "cpu",
+        "execution_ms": 10102,
+        "peak_ram_mib": 3708,
+        "Output": {
+          "Classify": {
+            "scores": [
+              {
+                "id": "intent/request_action",
+                "value": 0.96939076438851
+              },
+              {
+                "id": "intent/change_constraint",
+                "value": 0.9592076066176348
+              },
+              {
+                "id": "intent/stop_work",
+                "value": 0.9655432217552172
+              },
+              {
+                "id": "intent/ask_information",
+                "value": 0.9618955833833464
+              },
+              {
+                "id": "intent/provide_information",
+                "value": 0.9576664227215708
+              },
+              {
+                "id": "modality/direct",
+                "value": 0.8336999055276197
+              },
+              {
+                "id": "modality/tentative",
+                "value": 0.011404929276318618
+              },
+              {
+                "id": "modality/quoted",
+                "value": 0.014181902404404922
+              },
+              {
+                "id": "modality/negated",
+                "value": 0.008537896466803469
+              },
+              {
+                "id": "modality/conditional",
+                "value": 0.11522240092437462
+              },
+              {
+                "id": "modality/unresolved",
+                "value": 0.016952965400478637
+              },
+              {
+                "id": "target/whole_current_task",
+                "value": 0.8068800714598529
+              },
+              {
+                "id": "target/current_operation",
+                "value": 0.0748487881153424
+              },
+              {
+                "id": "target/other_task",
+                "value": 0.07724337870076216
+              },
+              {
+                "id": "target/unresolved",
+                "value": 0.02295503065001624
+              },
+              {
+                "id": "target/none",
+                "value": 0.018072731074026432
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "dev-015",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Не отменяй сверку.",
+        "start": 0,
+        "end": 18
+      },
+      "gold": {
+        "quote": "Не отменяй сверку.",
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task"
+      },
+      "observation": {
+        "intents": [
+          "request_action",
+          "change_constraint",
+          "stop_work",
+          "ask_information",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.701697602200675,
+        "minimum_margin": 0.5970603749952821,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.8606699206032521,
+          "intent/change_constraint": 0.850986520303946,
+          "intent/provide_information": 0.8459291304162166,
+          "intent/request_action": 0.8777980697592325,
+          "intent/stop_work": 0.8651009751345368,
+          "modality/conditional": 0.1046372272053929,
+          "modality/direct": 0.701697602200675,
+          "modality/negated": 0.08253623246841654,
+          "modality/quoted": 0.06749988826027971,
+          "modality/tentative": 0.02119041290499555,
+          "modality/unresolved": 0.022438636960240337,
+          "target/current_operation": 0.07770778919808545,
+          "target/none": 0.02920428078400758,
+          "target/other_task": 0.0969932959938061,
+          "target/unresolved": 0.036087295447660504,
+          "target/whole_current_task": 0.7600073385764403
+        }
+      },
+      "source": {
+        "source_id": "source_6a26d4de333570d7c5eb9fc6eb1e1813764fee8cc80ecdc348ae94abde4243fc",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "d9c1e5c39d46c9495283d44e95622434e313f46232700d822aba085324fc24e9"
+      },
+      "wall_ms": 9897,
+      "response": {
+        "request_id": "operation_edd4eff787aa22ac75716a0e82421f8d339241fdefbe3df9",
+        "profile_id": "gliner2.5-multi-interpretation-v3-cpu",
+        "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "device": "cpu",
+        "execution_ms": 9888,
+        "peak_ram_mib": 3642,
+        "Output": {
+          "Classify": {
+            "scores": [
+              {
+                "id": "intent/request_action",
+                "value": 0.8777980697592325
+              },
+              {
+                "id": "intent/change_constraint",
+                "value": 0.850986520303946
+              },
+              {
+                "id": "intent/stop_work",
+                "value": 0.8651009751345368
+              },
+              {
+                "id": "intent/ask_information",
+                "value": 0.8606699206032521
+              },
+              {
+                "id": "intent/provide_information",
+                "value": 0.8459291304162166
+              },
+              {
+                "id": "modality/direct",
+                "value": 0.701697602200675
+              },
+              {
+                "id": "modality/tentative",
+                "value": 0.02119041290499555
+              },
+              {
+                "id": "modality/quoted",
+                "value": 0.06749988826027971
+              },
+              {
+                "id": "modality/negated",
+                "value": 0.08253623246841654
+              },
+              {
+                "id": "modality/conditional",
+                "value": 0.1046372272053929
+              },
+              {
+                "id": "modality/unresolved",
+                "value": 0.022438636960240337
+              },
+              {
+                "id": "target/whole_current_task",
+                "value": 0.7600073385764403
+              },
+              {
+                "id": "target/current_operation",
+                "value": 0.07770778919808545
+              },
+              {
+                "id": "target/other_task",
+                "value": 0.0969932959938061
+              },
+              {
+                "id": "target/unresolved",
+                "value": 0.036087295447660504
+              },
+              {
+                "id": "target/none",
+                "value": 0.02920428078400758
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "dev-016",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Неверно, что маршрут уже готов.",
+        "start": 0,
+        "end": 31
+      },
+      "gold": {
+        "quote": "Неверно, что маршрут уже готов.",
+        "intents": [
+          "provide_information"
+        ],
+        "modality": "negated",
+        "target": "whole_current_task"
+      },
+      "observation": {
+        "intents": [
+          "request_action",
+          "change_constraint",
+          "stop_work",
+          "ask_information",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.7734516323964883,
+        "minimum_margin": 0.6643634747538727,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9751070437693208,
+          "intent/change_constraint": 0.974040289489182,
+          "intent/provide_information": 0.9723817710537159,
+          "intent/request_action": 0.9784355344790724,
+          "intent/stop_work": 0.9749441492599551,
+          "modality/conditional": 0.10908815764261554,
+          "modality/direct": 0.7734516323964883,
+          "modality/negated": 0.012404147693371649,
+          "modality/quoted": 0.07602433767643899,
+          "modality/tentative": 0.014745546744199206,
+          "modality/unresolved": 0.014286177846886332,
+          "target/current_operation": 0.04529806277708606,
+          "target/none": 0.012444496998870364,
+          "target/other_task": 0.06809387042490411,
+          "target/unresolved": 0.015986435353879974,
+          "target/whole_current_task": 0.8581771344452594
+        }
+      },
+      "source": {
+        "source_id": "source_6265459dc228999b28cd5d3fdb01d278aa918ac5745c20d55f86e15be84a8109",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "ee7b6222e587aa302f5572cbded374b41ab5923e8d66395e76ee4d2c1c03e7a3"
+      },
+      "wall_ms": 9949,
+      "response": {
+        "request_id": "operation_debc78720b49e862582383b074fe75a84e31931e2a934862",
+        "profile_id": "gliner2.5-multi-interpretation-v3-cpu",
+        "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "device": "cpu",
+        "execution_ms": 9941,
+        "peak_ram_mib": 3650,
+        "Output": {
+          "Classify": {
+            "scores": [
+              {
+                "id": "intent/request_action",
+                "value": 0.9784355344790724
+              },
+              {
+                "id": "intent/change_constraint",
+                "value": 0.974040289489182
+              },
+              {
+                "id": "intent/stop_work",
+                "value": 0.9749441492599551
+              },
+              {
+                "id": "intent/ask_information",
+                "value": 0.9751070437693208
+              },
+              {
+                "id": "intent/provide_information",
+                "value": 0.9723817710537159
+              },
+              {
+                "id": "modality/direct",
+                "value": 0.7734516323964883
+              },
+              {
+                "id": "modality/tentative",
+                "value": 0.014745546744199206
+              },
+              {
+                "id": "modality/quoted",
+                "value": 0.07602433767643899
+              },
+              {
+                "id": "modality/negated",
+                "value": 0.012404147693371649
+              },
+              {
+                "id": "modality/conditional",
+                "value": 0.10908815764261554
+              },
+              {
+                "id": "modality/unresolved",
+                "value": 0.014286177846886332
+              },
+              {
+                "id": "target/whole_current_task",
+                "value": 0.8581771344452594
+              },
+              {
+                "id": "target/current_operation",
+                "value": 0.04529806277708606
+              },
+              {
+                "id": "target/other_task",
+                "value": 0.06809387042490411
+              },
+              {
+                "id": "target/unresolved",
+                "value": 0.015986435353879974
+              },
+              {
+                "id": "target/none",
+                "value": 0.012444496998870364
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "dev-017",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Если проверка порта успешна, перезапусти прокси.",
+        "start": 0,
+        "end": 48
+      },
+      "gold": {
+        "quote": "Если проверка порта успешна, перезапусти прокси.",
+        "intents": [
+          "request_action"
+        ],
+        "modality": "conditional",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_3c284695e5a6eda0aba32e6524713ab436b89e88dbfeb0d639883d1e9b012f35",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "3f2dee8493af29264a125c36457104a1fefe43214e1753e621ed073c6d67f415"
+      },
+      "error": "InvalidArgument",
+      "wall_ms": 10
+    },
+    {
+      "case": "dev-018",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "При ошибке подписи приостанови загрузку.",
+        "start": 0,
+        "end": 40
+      },
+      "gold": {
+        "quote": "При ошибке подписи приостанови загрузку.",
+        "intents": [
+          "stop_work"
+        ],
+        "modality": "conditional",
+        "target": "current_operation"
+      },
+      "observation": {
+        "intents": [
+          "request_action",
+          "change_constraint",
+          "stop_work",
+          "ask_information",
+          "provide_information"
+        ],
+        "modality": "direct",
+        "target": "whole_current_task",
+        "escalate": false,
+        "confidence_unknown": false,
+        "minimum_uncalibrated_score": 0.6970801772088979,
+        "minimum_margin": 0.5689379180069895,
+        "uncalibrated_scores": {
+          "intent/ask_information": 0.9500502549903218,
+          "intent/change_constraint": 0.9471175559279054,
+          "intent/provide_information": 0.9440431269606484,
+          "intent/request_action": 0.9550917154286315,
+          "intent/stop_work": 0.9527735393216593,
+          "modality/conditional": 0.11551010753415368,
+          "modality/direct": 0.7705150454765342,
+          "modality/negated": 0.01731610072890349,
+          "modality/quoted": 0.054919660239233954,
+          "modality/tentative": 0.021571794995971595,
+          "modality/unresolved": 0.02016729102520305,
+          "target/current_operation": 0.12814225920190844,
+          "target/none": 0.03237923183651682,
+          "target/other_task": 0.10809725140881002,
+          "target/unresolved": 0.03430108034386678,
+          "target/whole_current_task": 0.6970801772088979
+        }
+      },
+      "source": {
+        "source_id": "source_faf514e2882a8441330c1ef43c2b419c1d094017a45c4fbbd9a9152eeaab679c",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "cc08deea199986ca130e62753ebf5505738115b25f694a5aed926c039fba075e"
+      },
+      "wall_ms": 10089,
+      "response": {
+        "request_id": "operation_c8e25076c2ec2bfa223f84ca2260c995328fadb3943e2be8",
+        "profile_id": "gliner2.5-multi-interpretation-v3-cpu",
+        "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "device": "cpu",
+        "execution_ms": 10081,
+        "peak_ram_mib": 3736,
+        "Output": {
+          "Classify": {
+            "scores": [
+              {
+                "id": "intent/request_action",
+                "value": 0.9550917154286315
+              },
+              {
+                "id": "intent/change_constraint",
+                "value": 0.9471175559279054
+              },
+              {
+                "id": "intent/stop_work",
+                "value": 0.9527735393216593
+              },
+              {
+                "id": "intent/ask_information",
+                "value": 0.9500502549903218
+              },
+              {
+                "id": "intent/provide_information",
+                "value": 0.9440431269606484
+              },
+              {
+                "id": "modality/direct",
+                "value": 0.7705150454765342
+              },
+              {
+                "id": "modality/tentative",
+                "value": 0.021571794995971595
+              },
+              {
+                "id": "modality/quoted",
+                "value": 0.054919660239233954
+              },
+              {
+                "id": "modality/negated",
+                "value": 0.01731610072890349
+              },
+              {
+                "id": "modality/conditional",
+                "value": 0.11551010753415368
+              },
+              {
+                "id": "modality/unresolved",
+                "value": 0.02016729102520305
+              },
+              {
+                "id": "target/whole_current_task",
+                "value": 0.6970801772088979
+              },
+              {
+                "id": "target/current_operation",
+                "value": 0.12814225920190844
+              },
+              {
+                "id": "target/other_task",
+                "value": 0.10809725140881002
+              },
+              {
+                "id": "target/unresolved",
+                "value": 0.03430108034386678
+              },
+              {
+                "id": "target/none",
+                "value": 0.03237923183651682
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "dev-019",
+      "window": 0,
+      "profile": "gliner2.5-multi-interpretation-v3-cpu",
+      "source_kind_fixture": "owner",
+      "source_window": {
+        "quote": "Сделай это заново.",
+        "start": 0,
+        "end": 18
+      },
+      "gold": {
+        "quote": "Сделай это заново.",
+        "intents": [
+          "request_action"
+        ],
+        "modality": "direct",
+        "target": "unresolved"
+      },
+      "observation": {
+        "intents": null,
+        "modality": "",
+        "target": "",
+        "escalate": true,
+        "confidence_unknown": true,
+        "minimum_uncalibrated_score": 0,
+        "minimum_margin": 0
+      },
+      "source": {
+        "source_id": "source_e43456e315e84d8f83d6fc6d1a42035b8e9a94267967a5c14fa7a5a948f794fe",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "8d35dcf7b78c110e51be6f344e1a7086cbc593f0756c4ff78a40a91f8e2ff764"
+      },
+      "error": "Canceled",
+      "wall_ms": 5007
+    }
+  ],
+  "complete": false,
+  "phase": "dev",
+  "planned_attempts": 112,
+  "totals": {}
+}

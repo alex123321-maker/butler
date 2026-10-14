@@ -1,0 +1,122 @@
+[
+  {
+    "batch": 1,
+    "device": "cpu",
+    "input_unicode_chars": 41,
+    "process_ram_mib": 2236,
+    "qwen_gpu_was_kept_loaded": true,
+    "repeat": 0,
+    "wall_ms": 9689,
+    "workload": "short_query"
+  },
+  {
+    "batch": 1,
+    "device": "cpu",
+    "input_unicode_chars": 41,
+    "process_ram_mib": 2138,
+    "qwen_gpu_was_kept_loaded": true,
+    "repeat": 1,
+    "wall_ms": 71,
+    "workload": "short_query"
+  },
+  {
+    "batch": 1,
+    "device": "cpu",
+    "input_unicode_chars": 41,
+    "process_ram_mib": 2138,
+    "qwen_gpu_was_kept_loaded": true,
+    "repeat": 2,
+    "wall_ms": 70,
+    "workload": "short_query"
+  },
+  {
+    "batch": 1,
+    "device": "cpu",
+    "input_unicode_chars": 41,
+    "process_ram_mib": 2138,
+    "qwen_gpu_was_kept_loaded": true,
+    "repeat": 3,
+    "wall_ms": 70,
+    "workload": "short_query"
+  },
+  {
+    "batch": 1,
+    "device": "cpu",
+    "input_unicode_chars": 1242,
+    "process_ram_mib": 2149,
+    "qwen_gpu_was_kept_loaded": true,
+    "repeat": 0,
+    "wall_ms": 407,
+    "workload": "document"
+  },
+  {
+    "batch": 1,
+    "device": "cpu",
+    "input_unicode_chars": 1242,
+    "process_ram_mib": 2149,
+    "qwen_gpu_was_kept_loaded": true,
+    "repeat": 1,
+    "wall_ms": 412,
+    "workload": "document"
+  },
+  {
+    "batch": 1,
+    "device": "cpu",
+    "input_unicode_chars": 1242,
+    "process_ram_mib": 2150,
+    "qwen_gpu_was_kept_loaded": true,
+    "repeat": 2,
+    "wall_ms": 408,
+    "workload": "document"
+  },
+  {
+    "batch": 1,
+    "device": "cpu",
+    "input_unicode_chars": 1242,
+    "process_ram_mib": 2150,
+    "qwen_gpu_was_kept_loaded": true,
+    "repeat": 3,
+    "wall_ms": 408,
+    "workload": "document"
+  },
+  {
+    "batch": 4,
+    "device": "cpu",
+    "input_unicode_chars": 804,
+    "process_ram_mib": 2191,
+    "qwen_gpu_was_kept_loaded": true,
+    "repeat": 0,
+    "wall_ms": 1109,
+    "workload": "four_documents"
+  },
+  {
+    "batch": 4,
+    "device": "cpu",
+    "input_unicode_chars": 804,
+    "process_ram_mib": 2191,
+    "qwen_gpu_was_kept_loaded": true,
+    "repeat": 1,
+    "wall_ms": 1123,
+    "workload": "four_documents"
+  },
+  {
+    "batch": 4,
+    "device": "cpu",
+    "input_unicode_chars": 804,
+    "process_ram_mib": 2192,
+    "qwen_gpu_was_kept_loaded": true,
+    "repeat": 2,
+    "wall_ms": 1126,
+    "workload": "four_documents"
+  },
+  {
+    "batch": 4,
+    "device": "cpu",
+    "input_unicode_chars": 804,
+    "process_ram_mib": 2192,
+    "qwen_gpu_was_kept_loaded": true,
+    "repeat": 3,
+    "wall_ms": 1096,
+    "workload": "four_documents"
+  }
+]

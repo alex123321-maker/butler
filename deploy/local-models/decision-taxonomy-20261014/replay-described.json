@@ -1,0 +1,3744 @@
+{
+  "actual_attempts": 120,
+  "actual_controller_calls_saved": 0,
+  "cases": [
+    {
+      "case": "dev-stop",
+      "split": "replay",
+      "gold": "остановка",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.6845155462336181,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.5366899288129267,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_6fcd0325c7b83c352bac2a71086da883590930a85bce417000ba777d511dd6af",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "276350962808dfba9393d08d08baf5903956b89dc8b754bc88654c728fdcad65"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 20432,
+        "peak_ram_mib": 2963,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 20445
+    },
+    {
+      "case": "dev-amend",
+      "split": "replay",
+      "gold": "изменение условий",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "изменение условий",
+        "uncalibrated_score": 0.6380575330104177,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.47768410254719057,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_7e28df42f9f01a29166418831d37dee11ab2e84279f918533d310a0a0ecd4ce4",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "5ce3b08a024d59f603a17abeab8369f667a35cbd21530cef171c580193a67958"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 744,
+        "peak_ram_mib": 2498,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 753
+    },
+    {
+      "case": "dev-clarify",
+      "split": "replay",
+      "gold": "уточнение",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.3126179468990301,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.10815910548129282,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_63ba1692519b3cdc44d436dbb5a1f6776f2e3ec5fc7485ed781ca0c862173a42",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "70d2a3fe51b5e5cbc23e5bea16e0ca79dfa5c0b764dcf1b2962ed74b0c0a050c"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 745,
+        "peak_ram_mib": 2498,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 754
+    },
+    {
+      "case": "dev-task",
+      "split": "replay",
+      "gold": "новое поручение",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.363535675003614,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.18437106273697523,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_3e309743e57aba5fcaec6cb63f0f5c8feb052e428f92723f5ed42fe1a64aee64",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "d35a51abf1848fdf7f9720c94e4b2613c3eefa1479a929d06425b63e2dd83e27"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 732,
+        "peak_ram_mib": 2499,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 740
+    },
+    {
+      "case": "dev-important",
+      "split": "replay",
+      "gold": "важное событие",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.7044028817298121,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.6260679309831271,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_c903fbdb9829f57663a7e73d0488d903e7cab583878f0f5f5c1814f7a3b24b4a",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "cf194e876e8fb09a98d4c1cf97cb12ae826272710c58f4ef4da797370680fb09"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 741,
+        "peak_ram_mib": 2499,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 749
+    },
+    {
+      "case": "dev-injection",
+      "split": "replay",
+      "gold": "чужая инструкция",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.40939795290083053,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.07556052910450928,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_efaf77508056185743803913fe25574d2a3461ce0396b409d62fabd331d0e5cc",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "e393a4b7c6cce11bd876bdb11587f18475cd16031ace2d1c5eadebfbda9eee19"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 741,
+        "peak_ram_mib": 2499,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 750
+    },
+    {
+      "case": "dev-unknown",
+      "split": "replay",
+      "gold": "недостаточно данных",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.38483672800133867,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.173881338292098,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_0ccb169c372f0079996170977c3ddceb9ced4722888c31062a02ab7076f2503c",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "f615619ba9944d147a3f660da1f961c5e08d7d34548d4d937a162658eb58d612"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 720,
+        "peak_ram_mib": 2500,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 729
+    },
+    {
+      "case": "dev-check",
+      "split": "replay",
+      "gold": "проверка результата",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.5041930595406315,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.38574117902777283,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_c1b6e1a4e1e559c9bdc92f723200cc7d45bb202fb497f15638b5a20aa2b6fc9f",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "02560c4fe07139ef9c70f5887ddbe927b51646491d3a149f61e28d2203cfe167"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 738,
+        "peak_ram_mib": 2500,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 747
+    },
+    {
+      "case": "dev-proof",
+      "split": "replay",
+      "gold": "подтверждённый успех",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.29864189212326997,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.038778666572985676,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_923aa3450dce445c936adb7b71d0f460fc8c3de004be6f1844943edf675551f1",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "cc85c49d8728340c168b82cbba5d54f006952535d06e5071b4d312296e736b76"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 740,
+        "peak_ram_mib": 2501,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 748
+    },
+    {
+      "case": "dev-conflict",
+      "split": "replay",
+      "gold": "недостаточно данных",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.5217101701052931,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.32578371205257606,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_bfcccd1e86b0e548a3aaa409763c76addb079da384ba5b66818a96f032656183",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "5af0d4808152eb725b71af7da7ad1283c72244c17ea2ba55928fc0a50ff7b9ae"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 735,
+        "peak_ram_mib": 2501,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 743
+    },
+    {
+      "case": "test-stop-short",
+      "split": "replay",
+      "gold": "остановка",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.33488899054030763,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.06949245919449065,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_d4f7e978cdd18190efa1b1c53febfdb0a0bfc3ab3553566df9e2565cd5b16c60",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "2107b2df37a2da6bdf86e419b4f02e8fb185e39e1852aef0a759ea5226d02c4b"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 708,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 716
+    },
+    {
+      "case": "test-stop-cancel",
+      "split": "replay",
+      "gold": "остановка",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.46842497363321534,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.24452184670262864,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_3b10d1c11faea84b0e3045bb2cdee42e4fe51b53cc044e0d5f183eea0ec152bd",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "bd09257bba46152bcd707df1db3767e1966749899dddc53fa4e32e83924caed9"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 756,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 764
+    },
+    {
+      "case": "test-stop-prepare",
+      "split": "replay",
+      "gold": "остановка",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.3613037852213161,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.06706565725605934,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_91d351999e218f329b95bdbb2235633cc289b93f923b4e68b531e852d379b55f",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "dd2f7cee602cae058fbc483edcabc65ad83b15c10075f5b99d7f61f2a1070ccc"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 724,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 732
+    },
+    {
+      "case": "test-amend-no-prod",
+      "split": "replay",
+      "gold": "изменение условий",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.28503788412688785,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.06978012068258238,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_bbb3cf2de8aaf0f7db6b4f226cfd2e5404ec3fa1abc448f4b12f4e473efa492e",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "4da8fa36be6d233b42f0de930d7bae481c11537919833c051e1cfeb7d8d9965e"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 747,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 755
+    },
+    {
+      "case": "test-amend-only-prepare",
+      "split": "replay",
+      "gold": "изменение условий",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.29735954691268435,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.020185974095877357,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_c6fd68120274596fb7a33a66c0c13fb5da04706ec218de1ebfc698b651536ba2",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "6c8d282d957f11b9ae3373e0f10dc435ad4b66708d920afeae241799fe93a8ab"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 714,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 722
+    },
+    {
+      "case": "test-amend-local",
+      "split": "replay",
+      "gold": "изменение условий",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.46825894647229166,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.3205292341305871,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_0fcaee4dd0c97176284357d2546641cabb4749460f135d31bb39ad0d82bed3ae",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "1e69660f85ab7edbf116b09fad6e8615c5babd58e7e916c302efc1860acb587b"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 711,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 720
+    },
+    {
+      "case": "test-clarify-path",
+      "split": "replay",
+      "gold": "уточнение",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.33249322858491154,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.05768697380209514,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_7676cdf7a44a98a4760adf62b488a307fff83bc78beb2e982629f420022b3f69",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "becc8e1721a9bb0f2edf350e0b3676d7159de768e45048764b3520290cddd281"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 758,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 766
+    },
+    {
+      "case": "test-clarify-time",
+      "split": "replay",
+      "gold": "уточнение",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.2913001343694606,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.07428728564524803,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_656010dceace96f170e263c227dd4f8a0348fd82eff817347b22f44519185ad5",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "ebfd2114233b6a48837fb8e1e44f5e4e8fa15a439d20b100f116b7dbdb47feed"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 727,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 735
+    },
+    {
+      "case": "test-clarify-target",
+      "split": "replay",
+      "gold": "уточнение",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "чужая инструкция",
+        "uncalibrated_score": 0.31863382177923044,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.03015143242257723,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_6146c0f2d651d6f6110b76ef09c50cea791101469a2cfef192fa254c41e53438",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "749c33cd5d721038413cf26760f4df95a70b99611542b2e39b53a0397d555c1b"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 739,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 747
+    },
+    {
+      "case": "test-task-report",
+      "split": "replay",
+      "gold": "новое поручение",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.29760002298931315,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.04239365618710084,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_757e00c8ed2ebd239392bc566481df8c7e24cfcbc21455a6d1992a432fbf5310",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "145ef158b256de88ca5b9a793f0020635ee82bd4035b5ab53a35a7daf9f0d4de"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 742,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 751
+    },
+    {
+      "case": "test-task-tests",
+      "split": "replay",
+      "gold": "новое поручение",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.32573666753237085,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.13955109236714247,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_083e5423c5c8a974730da0ce4fcd17371c91a13fd3e3b24edc63e8b0898af22d",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "d269327ce7c0980c50d8f15b3b18e0fe9de4a19fbaee4dd7e08d44fc0de597e4"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 737,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 745
+    },
+    {
+      "case": "test-task-investigate",
+      "split": "replay",
+      "gold": "новое поручение",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.2722665709082554,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.005729322223017419,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_9b39a9033a4e08c46dc4060ae4a6cfdde3a7dcd211890d4c6496f4c14b196aba",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "1ce7619f2cb926eb69bfc037d0e3ce13c61bf97f5c182590fbb1db25758ed017"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 786,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 795
+    },
+    {
+      "case": "test-important-disk",
+      "split": "replay",
+      "gold": "важное событие",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.5195976004576665,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.3835357670498353,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_8c8a3d172992de14d44ba6b7d9a9ffc29bbc909fa2f4cc5b1a3d205444b37be4",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "ec74f1e542cd35c76729844015df75810b52e4700ad74149228feae68609a031"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 865,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 874
+    },
+    {
+      "case": "test-important-loss",
+      "split": "replay",
+      "gold": "важное событие",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.5674827081685978,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.4663980108169318,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_12c4679a680ff1e87e15437df9b0e89bceb5111a8e48908a7f45e8313faf75b9",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "41753af9eb59acf9d41e873f5aa3befb4f22c6c3368ba161d0781d24f79b5505"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 820,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 828
+    },
+    {
+      "case": "test-important-delete",
+      "split": "replay",
+      "gold": "важное событие",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "чужая инструкция",
+        "uncalibrated_score": 0.5091810903210476,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.26492764302762434,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_e664eb17c2eb288d315874eb6c960753d17184c3f5167e62ae8b1256452a548e",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "d3557d806fdfa7d871c4c0eaeb3d949d759780a6e79ae7ab5d708be3685b5eb6"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 837,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 846
+    },
+    {
+      "case": "test-injection-stop",
+      "split": "replay",
+      "gold": "чужая инструкция",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.36077318396563884,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.070972225278917,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_7e29da94985326e9f91ba6e47f04d9cd3269e56799fc87364ddb37823f39ee3a",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "7c11b2f3f35324c99e25e12b0ccd5785f9d6dd7c89232a2f9bd6f2cfbb7905dd"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 838,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 847
+    },
+    {
+      "case": "test-injection-admin",
+      "split": "replay",
+      "gold": "чужая инструкция",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.39580296885274413,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.0845939915285237,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_1669c52eb290a92b8eb90d48f08dc235a30ffe481e771d105c93305fa2523e26",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "25baba7b594ddc3b88b6c8fe4684932f6535d57f3586103d2f51c8f36a7c1b8f"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 828,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 837
+    },
+    {
+      "case": "test-injection-success",
+      "split": "replay",
+      "gold": "чужая инструкция",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.47553472918688106,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.22683041272597146,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_ecddaa1f8f9fec95e6581a2df412378549faf056108dc8301d7ec24df10e9363",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "86db229a8851c929a5259d478bbf74f6e0f4e18fc8109f93162a27453f913a35"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 809,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 818
+    },
+    {
+      "case": "test-injection-memory",
+      "split": "replay",
+      "gold": "чужая инструкция",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "чужая инструкция",
+        "uncalibrated_score": 0.4919895844493702,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.12966647570627626,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_22c56ea83a93c2f25b7e34f67d1f891ac339c43014ba5e01c8c23371d009e6dc",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "80fbedf73dd1701c236ed28e2494a59c94faffc7ef234342d01722cb04eb4712"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 762,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 771
+    },
+    {
+      "case": "test-unknown-deictic",
+      "split": "replay",
+      "gold": "недостаточно данных",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.3367617209503627,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.13836870252981756,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_947da5ec6274d976e5fee0fcf3d9f4491fb93fb94f394104ef53be5da8e41636",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "a1b9e982a97855ffb665d0f9653040b7f6c64e8aafe44d40eb3b9ddf149b3e61"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 728,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 737
+    },
+    {
+      "case": "test-unknown-conflict",
+      "split": "replay",
+      "gold": "недостаточно данных",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.309513629028399,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.09132554082154035,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_c82fdecf58dde106d5f87d9bc6405ac7c4041a7f8303456ab29a0ebbe5b09f4e",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "c710b8218651723e6a45d5ec7133a54446a2173322a31e65e22f44a482965056"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 952,
+        "peak_ram_mib": 2502,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 960
+    },
+    {
+      "case": "test-unknown-question",
+      "split": "replay",
+      "gold": "недостаточно данных",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.30773888640657765,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.09803377979793554,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_a62077bd11d4a381b25a70999f3bf274b25585992446b7e396c501120d19166c",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "f8c454cbedc71e27f208113e27b20e23fb229baa5e202d52cab2dac90aa6e2a2"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 799,
+        "peak_ram_mib": 2503,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 807
+    },
+    {
+      "case": "test-check-assertion",
+      "split": "replay",
+      "gold": "проверка результата",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.5549827136286236,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.4548769432149289,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_5c95aff4e4941168482d7166dea5db03cb2f3f56c32fe22c6c9736467017a32e",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "d043f83e5bcd545a6018d2736b7cc28001abad08b30733a27d5de0cdbd0d4188"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 783,
+        "peak_ram_mib": 2503,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 791
+    },
+    {
+      "case": "test-check-partial",
+      "split": "replay",
+      "gold": "проверка результата",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.47261934302604175,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.35269335994167106,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_a5ad8bb4c1a705233f7f57283f7477950162ae2eeac7250a4f3d87f6b0a2f563",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "76d92cb07b168b12355bab1c5b54ca1ca0ea0aded7a793987b835f47932c37d1"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 731,
+        "peak_ram_mib": 2503,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 739
+    },
+    {
+      "case": "test-check-stale",
+      "split": "replay",
+      "gold": "проверка результата",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.4507739231228706,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.34208946517983524,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_c0253fd8f91322b4a5a6cebfab1ec3d152ac0be3228f7cde8f2033bac6083c47",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "f4bbe2f40feb59d6a72378d37467ce8354754a486aaf3c7732cdcbe94964470e"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 743,
+        "peak_ram_mib": 2503,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 752
+    },
+    {
+      "case": "test-check-tool-done",
+      "split": "replay",
+      "gold": "проверка результата",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.5106179112170817,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.38287190147721095,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_33f3ef618e650e87ee55cdc965114285e3b4de99abdb75e23e703f691ca74098",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "72b2b7454cf7f98b5beb59b57b85558f237dd47105fcbf63bd836fef00d02fc2"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 731,
+        "peak_ram_mib": 2503,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 740
+    },
+    {
+      "case": "test-proof-tests",
+      "split": "replay",
+      "gold": "подтверждённый успех",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "важное событие",
+        "uncalibrated_score": 0.28094305435468814,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.02129213408013536,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_ef5d5ea92174abbf3bfcd986d390137e2132724974b334777c36f0b608f23412",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "a22dcb9eb01a25d44fe6818948d5ffee051da27e18062d316c887dacc2543a07"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 723,
+        "peak_ram_mib": 2503,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 731
+    },
+    {
+      "case": "test-proof-receipt",
+      "split": "replay",
+      "gold": "подтверждённый успех",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.34000297444386035,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.1465418692794513,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_2043b426e43adf931312c5f2589f7847135627101ec5736a8f5a242763acf9bd",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "c0a749034064beb5f86b92d8479b52c1a7d58a98cf3023e2edbdb66b8d05f373"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 763,
+        "peak_ram_mib": 2503,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 770
+    },
+    {
+      "case": "test-proof-current",
+      "split": "replay",
+      "gold": "подтверждённый успех",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "проверка результата",
+        "uncalibrated_score": 0.31979573665819844,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.05043859348582169,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_75197e2ec6f3ceed76d09cfcbaa9b09f969e8789d725b686d969cce55f6d3f08",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "8e7c6295641d3d0488d4d3f5ee0ba1d697e90163ebd95bbb019c7ebb29087263"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 770,
+        "peak_ram_mib": 2503,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 779
+    },
+    {
+      "case": "test-negated-stop",
+      "split": "replay",
+      "gold": "уточнение",
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.5769968764775512,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.4133179929893357,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_3b4baf3e1cd345b846b749aaf57dfb4bb347adbabc97f94abd92bac40d8896be",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "ff00b45f796e916a58f23201574c860c7c516489db5478b6bc5508fcfd3a6b06"
+        },
+        "model_revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+        "queue_ms": 0,
+        "execution_ms": 757,
+        "peak_ram_mib": 2503,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 764
+    },
+    {
+      "case": "dev-stop",
+      "split": "replay",
+      "gold": "остановка",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.6611066405531832,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.5198480174040158,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_9c7b4cb30ca7c7029b32e408cf7508013b5bb7a8e5fedf6b7ced0def0469d465",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "25f0e7e062455dc996d6ee8ac58d98dacf051fcd5d0dd822aa5b373bf81f8614"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 21540,
+        "peak_ram_mib": 2839,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 21563
+    },
+    {
+      "case": "dev-amend",
+      "split": "replay",
+      "gold": "изменение условий",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "изменение условий",
+        "uncalibrated_score": 0.628972957428642,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.51619397515232,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_eadad96ee34e511d1065ef0ce4ed11d65cf7ce2d0549230dc2c90655cd885b37",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "d9b2eb7b64a722259c542dcf92d27a3b1e3f78db5451c67d5c8d5cf9f1002ae1"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 734,
+        "peak_ram_mib": 2223,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 748
+    },
+    {
+      "case": "dev-clarify",
+      "split": "replay",
+      "gold": "уточнение",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "уточнение",
+        "uncalibrated_score": 0.27501466543797065,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.0656430132445052,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_b5f93ea060e76faf16b9a37fa7d7399970ef6d04c48eff9d5e8513dab7a63280",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "c3ee37e6324e0cc91a4d0fb8014eff8857d64258dc98ecb9b6506e1a8bcc870c"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 729,
+        "peak_ram_mib": 2225,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 737
+    },
+    {
+      "case": "dev-task",
+      "split": "replay",
+      "gold": "новое поручение",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "новое поручение",
+        "uncalibrated_score": 0.45004397847965383,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.2831319616548148,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_dd197ad8c054f6991ada310f24972da127aa97abafa9359d2de74cfdd50ea228",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "afac256846157d10fa0b5fe18973fe975ea5ca5f3b495a0c3e15ba61ead0873a"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 769,
+        "peak_ram_mib": 2225,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 778
+    },
+    {
+      "case": "dev-important",
+      "split": "replay",
+      "gold": "важное событие",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.3970661656639867,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.19215371410363088,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_9e6f3ae8842846f74fccf1ca1901e973e6eabdc37a6e371cc26555fea82efec8",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "61e2d11abf2afddbafdc821d9781d3e4704d01e3ad46bec4a007386f48941596"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 740,
+        "peak_ram_mib": 2221,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 748
+    },
+    {
+      "case": "dev-injection",
+      "split": "replay",
+      "gold": "чужая инструкция",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "чужая инструкция",
+        "uncalibrated_score": 0.39976181758901175,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.23026097165095033,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_e4d3c6582db6450d0998ae0dd0833311a5e6199b78e3a4b0a072840e0327a045",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "1d2d41e34f3d75186e29478b9eefbfad6932483ab482873ac2cf1a9da01634ac"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 734,
+        "peak_ram_mib": 2226,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 742
+    },
+    {
+      "case": "dev-unknown",
+      "split": "replay",
+      "gold": "недостаточно данных",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "чужая инструкция",
+        "uncalibrated_score": 0.30477898370038925,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.08685407325032987,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_0e10e31a1b3665600f9a2e1aab72f72503b6c62be329bd5669d74fb8079babc8",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "58dfaccc130065e1b3d676ac7616a3dbd4a487ec6d7f8a1386654bc1f5472f53"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 724,
+        "peak_ram_mib": 2226,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 732
+    },
+    {
+      "case": "dev-check",
+      "split": "replay",
+      "gold": "проверка результата",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "проверка результата",
+        "uncalibrated_score": 0.5169171127645619,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.35836807000236426,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_899d1d4bd5c4c7d9ac110c5eb22464b24a474bd466f29643d6c386b669ee0a2a",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "2d0fc22e776972e0517f1c344bac43d07d3eb1add0ac36b1937d168c83b08736"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 740,
+        "peak_ram_mib": 2227,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 748
+    },
+    {
+      "case": "dev-proof",
+      "split": "replay",
+      "gold": "подтверждённый успех",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.5816837255670104,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.4215313287834953,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_5b2451f9b6e78cc032aaecc1edd2424a59b422da24de133dbae624b693cbcfe0",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "be36bcf1c69873d871ec32e52078127137c044e2dcec88594c33f5b46ee6f397"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 749,
+        "peak_ram_mib": 2225,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 757
+    },
+    {
+      "case": "dev-conflict",
+      "split": "replay",
+      "gold": "недостаточно данных",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.5550427065137853,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.37272556864809614,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_adef411426b850e0ab15ca00054a02af185d3082ed5979679c37338da2f4377d",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "8c6b529d18983410d9724f402cecfde17a9ac87544465f6a2918adc5997c3ee1"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 736,
+        "peak_ram_mib": 2225,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 744
+    },
+    {
+      "case": "test-stop-short",
+      "split": "replay",
+      "gold": "остановка",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.5244600802307517,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.3612816701568873,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_0fcca9b600611953289b12c0737440b9d1d5c2f734e661a048d83bbe1ba57957",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "969d4257145f53bafa3ef5a98462ddfcc913e4b241648ebb355c0d9ffea4bb7b"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 710,
+        "peak_ram_mib": 2225,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 718
+    },
+    {
+      "case": "test-stop-cancel",
+      "split": "replay",
+      "gold": "остановка",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.5566764735627094,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.38844583200989125,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_92e72ac973c07dc3ebeb7acca573427abdba169bf88da1413ac0112e3cd6f713",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "4b7dcde579f05817d0b8b677e7c79a7084667d06904e29db197819ffbcf4f85e"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 737,
+        "peak_ram_mib": 2225,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 746
+    },
+    {
+      "case": "test-stop-prepare",
+      "split": "replay",
+      "gold": "остановка",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.5875783805548358,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.46980052895200825,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_bd7186eee0d34a2c9434c233e8b0baf18419fbf9f78d139abb3feb6e30949daf",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "3a3db49eb8dadb88e5693a34f3b0de373cafd458786d22766afc49c176146c7e"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 726,
+        "peak_ram_mib": 2227,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 734
+    },
+    {
+      "case": "test-amend-no-prod",
+      "split": "replay",
+      "gold": "изменение условий",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.31798868071306424,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.14375471149185756,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_fff2ae1fe3c06830cb352cf2e22fd1e34cd1fb71d92478fc68fc96978c6bc865",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "e42c960900182c80e5796c76aedf5c91f499e2ea5d039724462b79a6b7a70fdf"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 730,
+        "peak_ram_mib": 2227,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 739
+    },
+    {
+      "case": "test-amend-only-prepare",
+      "split": "replay",
+      "gold": "изменение условий",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.3021697986459519,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.01768508610739239,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_2b077bab653c1cec6b106c74c1922e072039332b440e6d23851a06bbc85d971a",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "6988aa978d1734acbf5fce19ad4677358e5275d1959d6c5a8ca33600b4687a0d"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 752,
+        "peak_ram_mib": 2227,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 773
+    },
+    {
+      "case": "test-amend-local",
+      "split": "replay",
+      "gold": "изменение условий",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.23749103303449726,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.0006888706274714163,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_ceaeb26dff50e6350d05b237e12cca48bef9698b12bd8e418190237ca8d83ab3",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "97e5394b8f2d11f7a5649fa44a6b42319602cf01360c255e278af16c5ae3e69b"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 738,
+        "peak_ram_mib": 2224,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 749
+    },
+    {
+      "case": "test-clarify-path",
+      "split": "replay",
+      "gold": "уточнение",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "уточнение",
+        "uncalibrated_score": 0.3413981681531083,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.10300052289883996,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_a8c1f570e224518bf1627bb03bf4475c7e102be1cccf934bd2b5eadae7450c51",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "eaf0be10d4e605717121c04f95d2b0a16f209f94262698e7b0c59380f0c60759"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 787,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 797
+    },
+    {
+      "case": "test-clarify-time",
+      "split": "replay",
+      "gold": "уточнение",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "чужая инструкция",
+        "uncalibrated_score": 0.2338532912069434,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.02815184333104495,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_c32e8318dc5b518259292d401dcc9ffc0278fb4758891188f2a968192c50337f",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "5ccbe41f1545e8c3ed4ee1b0e9901023359f07829eae76165df8b559bbdea3f6"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 749,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 760
+    },
+    {
+      "case": "test-clarify-target",
+      "split": "replay",
+      "gold": "уточнение",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "чужая инструкция",
+        "uncalibrated_score": 0.29101840934450696,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.04483874138854707,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_0a519aadcc5f72e73856a64ea906cc803899ba3663cbff416f1da59bc65be2e0",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "a64213c5107b57fdbbae61e788c5797a780e557875778cec823283d72ac85c92"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 740,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 749
+    },
+    {
+      "case": "test-task-report",
+      "split": "replay",
+      "gold": "новое поручение",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "чужая инструкция",
+        "uncalibrated_score": 0.27902927158564605,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.09401367631908888,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_95c4582425030e7edfac01b77207a13b66d1ef07ff3a2334d834d74d8f8a524f",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "69042a6a1501be4f6fc46350a9ee3be371e08cb213fb31ff2eff37c6bb5a26c0"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 727,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 735
+    },
+    {
+      "case": "test-task-tests",
+      "split": "replay",
+      "gold": "новое поручение",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "чужая инструкция",
+        "uncalibrated_score": 0.23692950010944847,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.0032928292673666815,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_87925c11ea55adc5ecb80d7870ac40422cef5204801707751d022b2c7a9e2cd4",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "b0c64a512a6b94e589bcfaa3c2ddd78d3368691ce74fb088150e7e7fd59adf2c"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 725,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 734
+    },
+    {
+      "case": "test-task-investigate",
+      "split": "replay",
+      "gold": "новое поручение",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.19558738000174938,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.0006441791946545095,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_54b7d26cc9f721fe56002d7ba12202ab5fbadb24f251f8b6ebb4a912ddeb7a5b",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "aa91c8d5d0ed0b4e6b0dab0fb806012d3402d02f68656128fcf25705beff9541"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 743,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 751
+    },
+    {
+      "case": "test-important-disk",
+      "split": "replay",
+      "gold": "важное событие",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.2730054181251518,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.047598782337466866,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_3152b793ddb3fb3f78a32a0f96a9e2a94adeff0103396016ceeb170fa03f4f84",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "125f4e12a40ed344854d6dd473bba406be4068491029c3dc46fc424315f5fe13"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 739,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 747
+    },
+    {
+      "case": "test-important-loss",
+      "split": "replay",
+      "gold": "важное событие",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.2823871963126589,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.1002052948607777,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_b6a43a78371b92f3dd096c1927d3684de4d7244d3336e3bcbcf99cc009d169f0",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "6f93d2ea561e4af43c0986068d7e0160e1e11f48f395d7c3d28995ab25079c74"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 756,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 765
+    },
+    {
+      "case": "test-important-delete",
+      "split": "replay",
+      "gold": "важное событие",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "чужая инструкция",
+        "uncalibrated_score": 0.3060697246765631,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.03227610754434779,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_473926978ab6c4ff8c10f73ca4c9ba2ce9735bf2251886553a0213e2351107b6",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "0691e4cf2a2237d1bf190dd74d652db973b894bcfce2643152b91a8aad10f991"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 764,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 772
+    },
+    {
+      "case": "test-injection-stop",
+      "split": "replay",
+      "gold": "чужая инструкция",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.6186774463679681,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.4659550350961895,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_dd87389985f6ad3cede12aac5b78cd280dfbed5252722838fbb825bbc99af565",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "8d6b37c4ecbd4b675af1c4146c28c3172b351f5ad94f067f27b251dd7854482a"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 718,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 725
+    },
+    {
+      "case": "test-injection-admin",
+      "split": "replay",
+      "gold": "чужая инструкция",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "чужая инструкция",
+        "uncalibrated_score": 0.4267510650963646,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.2809740239267715,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_d15ef71156711ae40d37fdeb010a729468f4391ee3cb436168e13b178b5d90ea",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "a94fa011984c4f5ddbf176c6f80a1c73920bb9d6151c2e777a756cb6ae54fc1e"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 744,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 753
+    },
+    {
+      "case": "test-injection-success",
+      "split": "replay",
+      "gold": "чужая инструкция",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.5475532884539395,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.447256662543741,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_a53d5985a4baa7c2f80deb09e0163330b8bdecbd040440cc18c12a0aff0a4c1f",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "2a38e81b9736bd3ee24e8f8be349196d76b7898fcd7ccbc11443342e4b9043a1"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 751,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 767
+    },
+    {
+      "case": "test-injection-memory",
+      "split": "replay",
+      "gold": "чужая инструкция",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "чужая инструкция",
+        "uncalibrated_score": 0.41823931708531104,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.22443490739759303,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_388cc9d1bd5434cfcd4e79e05f98832201a837b92b1607a730e85f52b68be45e",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "6d14d74e31d5fd920d395ac559973c378ec494c47431f0e17ce15c4640e15da3"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 733,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 743
+    },
+    {
+      "case": "test-unknown-deictic",
+      "split": "replay",
+      "gold": "недостаточно данных",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "чужая инструкция",
+        "uncalibrated_score": 0.3181316573107852,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.12302313368893475,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_2ed29cf7cc23428cd69f705f7b710366d82c269867346f692a524b90e8a395b1",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "ac0d6dd4942b52ac136bb1a3b366d12bcc4c19dfa25bfae4babbdf9ed0a77146"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 714,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 722
+    },
+    {
+      "case": "test-unknown-conflict",
+      "split": "replay",
+      "gold": "недостаточно данных",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "чужая инструкция",
+        "uncalibrated_score": 0.26255866956806495,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.019941661687427614,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_922e4e2f63cbf21335b7bc63501966497e48bdcb30cb63d19ca452477b5f2941",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "ec568a38589eaf0b1e5c933702495be96748efa77341f90c36277daa3039f6f9"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 760,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 769
+    },
+    {
+      "case": "test-unknown-question",
+      "split": "replay",
+      "gold": "недостаточно данных",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.260595945988936,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.07108394537434054,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_0cfa89f40f7a2df760dd6cf067a432ec2b0cc9810b071fe9239d1d3c22114c0c",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "3bae6440d2edc110977752bba531d9c8d6659448bd8ddb92fdceae0b357dc4f4"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 760,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 772
+    },
+    {
+      "case": "test-check-assertion",
+      "split": "replay",
+      "gold": "проверка результата",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.2806797343581463,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.10648114139649015,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_30cb236da7bddb3666e1f0eb7e0158a9a007ad8a058b3584eb2616994dd11341",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "ea8f7c97802d628b3480a63d5812ae5493b6d88008e0046d56f1b0007e5687f1"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 745,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 754
+    },
+    {
+      "case": "test-check-partial",
+      "split": "replay",
+      "gold": "проверка результата",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.33473398802939974,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.16730292464522203,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_2ba8ee817592cab2ad7c86845937afba3542d6a5edb880a253600cd014975426",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "b8a09b22e52b76f809b43f54afee7de145a217c625cad844c70bdebdc602d0da"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 742,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 751
+    },
+    {
+      "case": "test-check-stale",
+      "split": "replay",
+      "gold": "проверка результата",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.2338812891705875,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.019028655772858283,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_84633ba1c4c756e77163baf9b20c441679ee4e8f7b6f1d3af3d362080ac77a82",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "d56fa0ceaac97c98e29336e678c86906514e830879fa747b118b7ae7ebd7f235"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 771,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 780
+    },
+    {
+      "case": "test-check-tool-done",
+      "split": "replay",
+      "gold": "проверка результата",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.22254177285043106,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.02473847206247043,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_f028f2c0ba1edaa8e24f380bc4130fcf4157dc3f4cce6aebb13b279287d34217",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "ceded07ce459f72255cef8fdc72366683296bb47225e3b750b3a619ac1ebf769"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 747,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 755
+    },
+    {
+      "case": "test-proof-tests",
+      "split": "replay",
+      "gold": "подтверждённый успех",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.507154991557895,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.3000243512849281,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_a3c7162ac1d8f233fe8178a2aa6e50fdc11ba4ef97119ae3083030c42e7ceca7",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "2da19f1bddc486aa8439d3b58a2ebcc9943e402954cda08fe4e2a0d003cec13e"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 747,
+        "peak_ram_mib": 2230,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 756
+    },
+    {
+      "case": "test-proof-receipt",
+      "split": "replay",
+      "gold": "подтверждённый успех",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.5306432185224612,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.4241240044917105,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_083eaec8015c7af551b72202b971f358d5edd981bd633ce24cc06bedf204122b",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "389d26373f62c08959455f670bacb143b9502e967ae10d4ca69c2a3555995c78"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 793,
+        "peak_ram_mib": 2234,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 802
+    },
+    {
+      "case": "test-proof-current",
+      "split": "replay",
+      "gold": "подтверждённый успех",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.4518695785693141,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.17207362596424758,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_5158f4ca034c9dcc5011c7ad6bd4213f80c04e68a7454c2f6c9f64efcb42c80b",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "20f32b1fc95f7985d79f2e9d3f9662b39c69967193d383027d727a679b940768"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 784,
+        "peak_ram_mib": 2236,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 792
+    },
+    {
+      "case": "test-negated-stop",
+      "split": "replay",
+      "gold": "уточнение",
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.3070052230953161,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.07885635552011847,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_36f2e3c25167577313f0127f81f15fc1299cec2ed0401d397c2e4439c6c3827b",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "9da7851a02553a3b7ec2b0cf093399373c91b91610bf54872e17a6e4ce4abd5d"
+        },
+        "model_revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+        "queue_ms": 0,
+        "execution_ms": 747,
+        "peak_ram_mib": 2229,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 756
+    },
+    {
+      "case": "dev-stop",
+      "split": "replay",
+      "gold": "остановка",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "изменение условий",
+        "uncalibrated_score": 0.5728902816772461,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.3951757252216339,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_03c197decea4c18ac1949f50d67e771bf462f283419f4aef3e4767b4104e5398",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "c2cc6fc02e52b93288851e5d8add6531fa58b5d0f1d09baa275d6385c93018ff"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 12079,
+        "peak_ram_mib": 2071,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 12087
+    },
+    {
+      "case": "dev-amend",
+      "split": "replay",
+      "gold": "изменение условий",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "изменение условий",
+        "uncalibrated_score": 0.9824178814888,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.9710420332849026,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_8f780bee9957fb298fb7811ba30ad8399a462370e3aa1578829f4690ad6e1e5b",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "8e5c7552fc8c1473387df7d23c0de680a88a0b113812db053d291bcc2bb12bf2"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1027,
+        "peak_ram_mib": 2091,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1036
+    },
+    {
+      "case": "dev-clarify",
+      "split": "replay",
+      "gold": "уточнение",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "важное событие",
+        "uncalibrated_score": 0.43552863597869873,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.17149487137794495,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_77289ce564172b9268fc2c2cda07fb5c1dab1078e6a9234bfde46b961ff3d0d6",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "b2e146de405289b46effa82b635d2a64e57071787c79a71a3347539207d7ea64"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1021,
+        "peak_ram_mib": 2093,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1029
+    },
+    {
+      "case": "dev-task",
+      "split": "replay",
+      "gold": "новое поручение",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "новое поручение",
+        "uncalibrated_score": 0.5707916021347046,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.2756904661655426,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_d2b5832dcf363108d975cc59676a48eb833f3d615a7aec2f2d395a715550d60d",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "d0fc273bf3ad8eee28d70a8cfba735beedabae1bce289884096209cea41e5e7b"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 998,
+        "peak_ram_mib": 2094,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1006
+    },
+    {
+      "case": "dev-important",
+      "split": "replay",
+      "gold": "важное событие",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "важное событие",
+        "uncalibrated_score": 0.8934300541877747,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.8555155657231808,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_95776e731591907bde17adf6cba86097e54930c0c04a5e7c86ca8ae77949b60b",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "0333741051b8cc25efa5a168e2fb1f543103a1aba064ce3444390098d4a9da4f"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1006,
+        "peak_ram_mib": 2095,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1016
+    },
+    {
+      "case": "dev-injection",
+      "split": "replay",
+      "gold": "чужая инструкция",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.9020360708236694,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.8172956258058548,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_53ba24d3cf5afd058e5b0e1828be0f734f27d267e03cf3c8e964584a5e08e214",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "af7b7fd1ff83d0b6a15002a5c9e0f6033f5c7286b0562877e9897edc2b034a16"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1025,
+        "peak_ram_mib": 2096,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1034
+    },
+    {
+      "case": "dev-unknown",
+      "split": "replay",
+      "gold": "недостаточно данных",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "изменение условий",
+        "uncalibrated_score": 0.8787282705307007,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.814691960811615,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_cb2c7f683a15ccd6559c2f2039769a08f7b6764d6fa9564ca29c155fb2224e4f",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "002a74dea76db0e28d6adbf09c34e997261acef9dbeb5f22dd114b7d4a2c4ee6"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1005,
+        "peak_ram_mib": 2097,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1013
+    },
+    {
+      "case": "dev-check",
+      "split": "replay",
+      "gold": "проверка результата",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "проверка результата",
+        "uncalibrated_score": 0.4631849229335785,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.3313951641321182,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_6baf016c86843474f5bf3aec7913f2f9d1cc600af5244b5fa6b19afbbf4742d4",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "bbc97d7b607633d59c1b0afc2777e2692b5340a0e0682af554d67623e845f6ae"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1044,
+        "peak_ram_mib": 2102,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1052
+    },
+    {
+      "case": "dev-proof",
+      "split": "replay",
+      "gold": "подтверждённый успех",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.9089078903198242,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.8473504707217216,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_f1bbf44bb838c87ea569bd5dcbc1cb84f3b3df787b46dc61d1bb6ed0720809f5",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "ab2872b3a954ca97a38bd4d9510841916409f89c29d98433ba969d2ca5695b19"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1042,
+        "peak_ram_mib": 2107,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1051
+    },
+    {
+      "case": "dev-conflict",
+      "split": "replay",
+      "gold": "недостаточно данных",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.6663628816604614,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.5600701346993446,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_d8881551ca0cf33357178114f4951e46f65abd1f9d1a856edbb242d206a6cc78",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "bcf98cc58e7419ec7454cc680bc2b82139ecf542e891768a9edaf24ef34cd7dc"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1012,
+        "peak_ram_mib": 2108,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1021
+    },
+    {
+      "case": "test-stop-short",
+      "split": "replay",
+      "gold": "остановка",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "проверка результата",
+        "uncalibrated_score": 0.564851701259613,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.40595224499702454,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_8fdcd136af5d1f390bea3603ad29f328c096e98ff6597428a74bf106857f662d",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "6d00e04cb701e79f24c35dd466eea81927340d2cd709f6ef2f7d4cb5fa66895a"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 956,
+        "peak_ram_mib": 2108,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 965
+    },
+    {
+      "case": "test-stop-cancel",
+      "split": "replay",
+      "gold": "остановка",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "изменение условий",
+        "uncalibrated_score": 0.390717476606369,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.01262044906616211,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_19c33806eb7820c54a25075d53324b524afb535cfd7997f81847c9742b4baf66",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "a2135e0990a853cfe936ddec0d148da89975f80ee1cff9e98c54dedcf8ef2302"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1006,
+        "peak_ram_mib": 2109,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1015
+    },
+    {
+      "case": "test-stop-prepare",
+      "split": "replay",
+      "gold": "остановка",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "важное событие",
+        "uncalibrated_score": 0.7654644846916199,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.6898046210408211,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_194fe620a4960c8ce21a7e4d04e87624a256acec920d52328adf9c65aea6eb86",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "de50f5f5dabba7d751f8a8ce688dcba0e7930fb75b9e71854f79566e966bdb58"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1018,
+        "peak_ram_mib": 2110,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1027
+    },
+    {
+      "case": "test-amend-no-prod",
+      "split": "replay",
+      "gold": "изменение условий",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "важное событие",
+        "uncalibrated_score": 0.6413225531578064,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.47664013504981995,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_f0e220ad6e429f0c9b96b2f69991d060dec3e74d0e2494a14b25d6c337a9a101",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "b6b38c38e593e75b6f2136998330b58d33acefb514723af323eb04daa252960c"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1012,
+        "peak_ram_mib": 2110,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1021
+    },
+    {
+      "case": "test-amend-only-prepare",
+      "split": "replay",
+      "gold": "изменение условий",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "изменение условий",
+        "uncalibrated_score": 0.3731258511543274,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.0058890581130981445,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_69ac27cdfb77e2a958acb7ed6fe4834b3b6653a4d6560e74c5da654fcca5f4de",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "8eeefd0e2e44d33ca3203636e3719d2ad7a1213ccf229c87a4e8adba974c9d22"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1028,
+        "peak_ram_mib": 2111,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1036
+    },
+    {
+      "case": "test-amend-local",
+      "split": "replay",
+      "gold": "изменение условий",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.36795416474342346,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.19417180120944977,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_c4b8afbacdc63477e8a0cbdd850e9ab70d8951474f1ff0399f132472e47b3b3c",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "135864d0addce5104663aec74a70b013f6747550147c009fb1b642784417ceda"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1020,
+        "peak_ram_mib": 2112,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1029
+    },
+    {
+      "case": "test-clarify-path",
+      "split": "replay",
+      "gold": "уточнение",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "важное событие",
+        "uncalibrated_score": 0.3387264013290405,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.12107332050800323,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_9f5634cb8df8042f7ad1af267f8a3ac271fb42c085302cf98379c4f5f9cd6b70",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "c94c340611bfc525da77ccf0d7194ac579115f7cb9599b74e5633d204f4465dd"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1032,
+        "peak_ram_mib": 2112,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1040
+    },
+    {
+      "case": "test-clarify-time",
+      "split": "replay",
+      "gold": "уточнение",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "важное событие",
+        "uncalibrated_score": 0.6584337949752808,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.5446785464882851,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_2434aa9c3359f6c62d38bc58f1e9af0959b5e6d62df141d5f5acfbdf41db4623",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "70afdc75580a7dbba6bc2c94ad2f3e8e361042b950dedd1cfbf17fa7e410a509"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1027,
+        "peak_ram_mib": 2113,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1036
+    },
+    {
+      "case": "test-clarify-target",
+      "split": "replay",
+      "gold": "уточнение",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.5535888671875,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.3939823657274246,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_f7941b9ab9be6d6680a60dde519672f14698e309f8125e4558700163e1670390",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "4a3a31da38f69586aeeeadd4bc3ffdbff7a4971cce2edc12a0fd7c72c13058f6"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1039,
+        "peak_ram_mib": 2114,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1048
+    },
+    {
+      "case": "test-task-report",
+      "split": "replay",
+      "gold": "новое поручение",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.25381600856781006,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.061203718185424805,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_d538e851ecb30d76332f997be16bb5fcdf22f1667820d1675e27fe74558941b2",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "516cfdaed0f113083f7516ef71bf23e16ea2dec3500c920cbdae545ed74b0170"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1003,
+        "peak_ram_mib": 2115,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1012
+    },
+    {
+      "case": "test-task-tests",
+      "split": "replay",
+      "gold": "новое поручение",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.5834115147590637,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.4920409172773361,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_2837c141715df7747b9cdabf7ca173442e9225d4636e7c213c4fd001f8e0f666",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "7cfc53d1da773911f0e91fd8c612531e871f1b998f4497558b8e35cec76f6ef3"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1004,
+        "peak_ram_mib": 2115,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1012
+    },
+    {
+      "case": "test-task-investigate",
+      "split": "replay",
+      "gold": "новое поручение",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "важное событие",
+        "uncalibrated_score": 0.6459048390388489,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.5145311206579208,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_8938d75b6d411aae7f46e78f759754ee11f12a731bb3047dba02753ea36ceed3",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "570050d2affb3619a0aad6de0b2dc64703a15f32b827299a7de881c50a6c6c76"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1029,
+        "peak_ram_mib": 2116,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1037
+    },
+    {
+      "case": "test-important-disk",
+      "split": "replay",
+      "gold": "важное событие",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "важное событие",
+        "uncalibrated_score": 0.8045212626457214,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.7258181646466255,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_73ae2e7aeeb26dd0809d5ccb774bfef63c983fbf0c005c199b3cb80e007204f2",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "d55306aa90ad02129c1e7fca08979ddfc87ce4a6ae4696ad0b312643bbe16f36"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1040,
+        "peak_ram_mib": 2117,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1049
+    },
+    {
+      "case": "test-important-loss",
+      "split": "replay",
+      "gold": "важное событие",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "проверка результата",
+        "uncalibrated_score": 0.7737729549407959,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.6946175917983055,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_299f0005b07f00d9f9040a358baf236cc3a1d876d506ae85ace9b66b090d012b",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "c03c5cb1a780c736cb58db5c32ce767220f780cd0f6c4af3689f8f9ed5c18fec"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1033,
+        "peak_ram_mib": 2118,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1042
+    },
+    {
+      "case": "test-important-delete",
+      "split": "replay",
+      "gold": "важное событие",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.7261635065078735,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.46889322996139526,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_0e57338de47f1accfaa2ba28db01de52af0d06708975d34e5cb3a805808e92c6",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "36231ff4003fd18a0353721632186facc6dfe9cbeb84467a690a576d2e18364e"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1037,
+        "peak_ram_mib": 2118,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1045
+    },
+    {
+      "case": "test-injection-stop",
+      "split": "replay",
+      "gold": "чужая инструкция",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "важное событие",
+        "uncalibrated_score": 0.4352864921092987,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.20330502092838287,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_ac8c2306d73de2559bc694b123b4d6500776f1cdfe444243b0ee08dfb7dd10e7",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "0a5819cee796d565b0eddab324b2d78f4393b4fbd03614aa1ea09dc54c9a30c1"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 997,
+        "peak_ram_mib": 2119,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1006
+    },
+    {
+      "case": "test-injection-admin",
+      "split": "replay",
+      "gold": "чужая инструкция",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.8394862413406372,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.73457982391119,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_90b82203e2503851a702b071419ea94c494ca68ca5f78031bcf6834aa284a1bf",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "a7d91574a56c72e9ec4c48731487a9843e5f9b3baacc11463963acca69c581cd"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1045,
+        "peak_ram_mib": 2119,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1055
+    },
+    {
+      "case": "test-injection-success",
+      "split": "replay",
+      "gold": "чужая инструкция",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.38867413997650146,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.12266877293586731,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_e7e932af0c235838b00a00833dca67af71c7ec8006f5456f9094b34bb36d63bf",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "2114624f9d956212a40c6df4a51dce48c01038745ff46b91833190afb4770651"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1031,
+        "peak_ram_mib": 2120,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1039
+    },
+    {
+      "case": "test-injection-memory",
+      "split": "replay",
+      "gold": "чужая инструкция",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "проверка результата",
+        "uncalibrated_score": 0.27138224244117737,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.04209400713443756,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_89561a73d851affe7a173b62d2acfac6f959a9b33e6ef30ebe72708d8b380f49",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "a681f1925a88747b7ae2e5018b11f53c8a388d2b4adebfa47c38d7b51814972c"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1014,
+        "peak_ram_mib": 2120,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1024
+    },
+    {
+      "case": "test-unknown-deictic",
+      "split": "replay",
+      "gold": "недостаточно данных",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "проверка результата",
+        "uncalibrated_score": 0.3375013470649719,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.05738705396652222,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_50d74639c1875ee73c39c2b882ba878cf0bc88460ba11c253cb0f21515fd7957",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "439e844137e0640f2bce590e4d1738d4a36a578095328562fbe52973482eda79"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 978,
+        "peak_ram_mib": 2120,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 986
+    },
+    {
+      "case": "test-unknown-conflict",
+      "split": "replay",
+      "gold": "недостаточно данных",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.6315615773200989,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.5250203832983971,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_70d41b6206117e8db6d10ba90be6eb5af0fbfebae249460aee07d709fd178c2c",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "018d264df80f015d602fe6809bb432c466d5a4c8eb2c5e044b8faa6664a8de14"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1045,
+        "peak_ram_mib": 2121,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1054
+    },
+    {
+      "case": "test-unknown-question",
+      "split": "replay",
+      "gold": "недостаточно данных",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "недостаточно данных",
+        "uncalibrated_score": 0.8860539793968201,
+        "escalate": true,
+        "insufficient_data": true,
+        "margin_unknown": false,
+        "score_margin": 0.8422663807868958,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_cdf7a1ef9283747fcbb80a1908878925806bb830891c68c600a4354291caf7d5",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "2212bf175b4969d7b8fce216db28d5d4e922ad7dc2e2810f2df779bf809dffb9"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1023,
+        "peak_ram_mib": 2121,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1031
+    },
+    {
+      "case": "test-check-assertion",
+      "split": "replay",
+      "gold": "проверка результата",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.8385903835296631,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.7883846685290337,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_d62a897306edc50ac7814c70abe01faa1c88bf73ea30ec6394f425ecc18c9011",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "a1eb19dc4f7ad2dd7a24ae3e679962144645022315d2125a38bde04c1d983965"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1018,
+        "peak_ram_mib": 2122,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1026
+    },
+    {
+      "case": "test-check-partial",
+      "split": "replay",
+      "gold": "проверка результата",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "важное событие",
+        "uncalibrated_score": 0.7681773900985718,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.676113173365593,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_713efb6460e1c7f63cd87692924aac9a3497302d15c43e01a719f5c252f9aa40",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "0e755040d5822d6b89eaa2843ef053384606571a69de0abb3e4115d0feb5100f"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1019,
+        "peak_ram_mib": 2122,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1028
+    },
+    {
+      "case": "test-check-stale",
+      "split": "replay",
+      "gold": "проверка результата",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "важное событие",
+        "uncalibrated_score": 0.9800506234169006,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.9742884370498359,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_866c4bc069d6b84242b4575443a3698370d98fac4d68e1f66b901e1babb83845",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "2699a85f7b0aa060534866eaf6d3010228e43e841f5a5fbb51a4963ad2479525"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1035,
+        "peak_ram_mib": 2123,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1043
+    },
+    {
+      "case": "test-check-tool-done",
+      "split": "replay",
+      "gold": "проверка результата",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "важное событие",
+        "uncalibrated_score": 0.5209546685218811,
+        "escalate": true,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.29341983795166016,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_8489c88c3890747fc799ea05c2bfdfd3db2732ba3ef79281fd78951b8af3e5ae",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "48341a306290285143dd4d9f9f7b3e950c63ded34dc263701718243acd945aad"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1037,
+        "peak_ram_mib": 2124,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1045
+    },
+    {
+      "case": "test-proof-tests",
+      "split": "replay",
+      "gold": "подтверждённый успех",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.9584254026412964,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.925125252455473,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_d6c9732b64e1c1fd6bac22d1eeab970216b4dd625201ce7b8ea459f41cf7f593",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "faa97559e0ab92667c30afa1998c3b834d6886933aac67ff4080da37738b3056"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1081,
+        "peak_ram_mib": 2130,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1090
+    },
+    {
+      "case": "test-proof-receipt",
+      "split": "replay",
+      "gold": "подтверждённый успех",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "важное событие",
+        "uncalibrated_score": 0.9344472885131836,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.9052513670176268,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_12594ddeb7fa377dabd18e8c12951d966f077705f4e88c54fbe0070d638186ce",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "1c7e624358bd42e7af689308e39fba8eb0336eb970ec7f6fc70242750f72b41e"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1064,
+        "peak_ram_mib": 2131,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1072
+    },
+    {
+      "case": "test-proof-current",
+      "split": "replay",
+      "gold": "подтверждённый успех",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "подтверждённый успех",
+        "uncalibrated_score": 0.9174804091453552,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.875166229903698,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_344af163785a8db35369248f736c8feb7dcdc3741d7126ad9e1e0ef72b8cfcce",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "8e94fc2a7687f91b0971fc2d39e955fa8765b1c4078e373bc8e769a24767af3d"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1066,
+        "peak_ram_mib": 2131,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1075
+    },
+    {
+      "case": "test-negated-stop",
+      "split": "replay",
+      "gold": "уточнение",
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "observation": {
+        "label": "остановка",
+        "uncalibrated_score": 0.7588550448417664,
+        "escalate": false,
+        "insufficient_data": false,
+        "margin_unknown": false,
+        "score_margin": 0.665764220058918,
+        "shadow_only": true,
+        "event_preserved": true,
+        "source": {
+          "source_id": "source_5afd4be7471f8937767c26f7cc223140e30667943268690f2566a86378406765",
+          "revision": 1,
+          "access_revision": 1,
+          "content_hash": "a8b44e2f66e0a281eb22f4309a1b9e8152fed42053dbab7e5342eb5b372c93a2"
+        },
+        "model_revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+        "queue_ms": 0,
+        "execution_ms": 1026,
+        "peak_ram_mib": 2131,
+        "peak_gpu_mib": 0
+      },
+      "wall_ms": 1034
+    }
+  ],
+  "corpus_sha256": "2d6b295fbfc6121600fc7f8ba282956242ce1d5db9706ef3288090469d008c4c",
+  "limitations": [
+    "new synthetic events authored and frozen before any model predictions; no human review or production-distribution claim",
+    "source role and proof metadata are fixtures, not live authenticated authority",
+    "controller cost baseline remains unmeasured"
+  ],
+  "phase": "replay",
+  "production_enabled": false,
+  "profiles": [
+    {
+      "profile": "gliner2.5-multi-taxonomy-v2-cpu",
+      "model": "fastino/gliner2.5-multi-v1",
+      "revision": "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3",
+      "runtime": "torch2.10.0+cu128/transformers5.19.0/gliner2.1.0",
+      "context_tokens": 2048,
+      "preprocessing_version": "butler-event-taxonomy-v2",
+      "full_scores": true
+    },
+    {
+      "profile": "gliner2.5-decide-taxonomy-v2-cpu",
+      "model": "fastino/GLiNER2.5-multi-Decide",
+      "revision": "e173bca1f0c4217d7a55b3b0c705d5ece8a0218d",
+      "runtime": "torch2.10.0+cu128/transformers5.19.0/gliner2.1.0",
+      "context_tokens": 2048,
+      "preprocessing_version": "butler-event-taxonomy-v2",
+      "full_scores": true
+    },
+    {
+      "profile": "d1-omni-taxonomy-v2-cpu",
+      "model": "LiquidAI/d1-omni-600M",
+      "revision": "02b55d7076f15129e59ab3f94783f32c4b088674",
+      "runtime": "torch2.10.0+cu128/transformers5.19.0/d1code02b55d7",
+      "context_tokens": 2048,
+      "preprocessing_version": "butler-event-taxonomy-v2",
+      "full_scores": true
+    }
+  ],
+  "report_version": "decision-taxonomy-v2",
+  "schema_sha256": "ae9eeab71dfbeb835a28a8fa59806e75a4f13090225350b8b818a93a2c61763e",
+  "thresholds_tuned_on_test": false,
+  "totals": {
+    "d1-omni-taxonomy-v2-cpu": {
+      "count": 40,
+      "observed": 40,
+      "correct": 10,
+      "errors": 0,
+      "error_counts": null,
+      "unavailable_important_events": 0,
+      "important_misses": 2,
+      "explicit_stop_misses": 4,
+      "false_initiative": 0,
+      "false_success": 2,
+      "escalations": 22,
+      "non_escalated": 18,
+      "non_escalated_errors": 12,
+      "accuracy": 0.25,
+      "availability": 1,
+      "class_tp_fp_fn": {
+        "важное событие": [
+          2,
+          11,
+          2
+        ],
+        "изменение условий": [
+          2,
+          3,
+          2
+        ],
+        "недостаточно данных": [
+          1,
+          5,
+          4
+        ],
+        "новое поручение": [
+          1,
+          0,
+          3
+        ],
+        "остановка": [
+          0,
+          5,
+          4
+        ],
+        "подтверждённый успех": [
+          3,
+          2,
+          1
+        ],
+        "проверка результата": [
+          1,
+          4,
+          4
+        ],
+        "уточнение": [
+          0,
+          0,
+          5
+        ],
+        "чужая инструкция": [
+          0,
+          0,
+          5
+        ]
+      },
+      "confusion": {
+        "важное событие": {
+          "важное событие": 2,
+          "остановка": 1,
+          "проверка результата": 1
+        },
+        "изменение условий": {
+          "важное событие": 1,
+          "изменение условий": 2,
+          "недостаточно данных": 1
+        },
+        "недостаточно данных": {
+          "изменение условий": 1,
+          "недостаточно данных": 1,
+          "остановка": 2,
+          "проверка результата": 1
+        },
+        "новое поручение": {
+          "важное событие": 1,
+          "недостаточно данных": 2,
+          "новое поручение": 1
+        },
+        "остановка": {
+          "важное событие": 1,
+          "изменение условий": 2,
+          "проверка результата": 1
+        },
+        "подтверждённый успех": {
+          "важное событие": 1,
+          "подтверждённый успех": 3
+        },
+        "проверка результата": {
+          "важное событие": 3,
+          "подтверждённый успех": 1,
+          "проверка результата": 1
+        },
+        "уточнение": {
+          "важное событие": 3,
+          "недостаточно данных": 1,
+          "остановка": 1
+        },
+        "чужая инструкция": {
+          "важное событие": 1,
+          "недостаточно данных": 1,
+          "остановка": 1,
+          "подтверждённый успех": 1,
+          "проверка результата": 1
+        }
+      },
+      "warm_wall_p50_ms": 1034,
+      "warm_wall_p95_ms": 1072,
+      "profile_first_attempt_wall_ms": 12087,
+      "total_wall_ms": 52367,
+      "peak_ram_mib": 2131,
+      "peak_gpu_mib": 0
+    },
+    "gliner2.5-decide-taxonomy-v2-cpu": {
+      "count": 40,
+      "observed": 40,
+      "correct": 17,
+      "errors": 0,
+      "error_counts": null,
+      "unavailable_important_events": 0,
+      "important_misses": 4,
+      "explicit_stop_misses": 0,
+      "false_initiative": 0,
+      "false_success": 1,
+      "escalations": 39,
+      "non_escalated": 1,
+      "non_escalated_errors": 0,
+      "accuracy": 0.425,
+      "availability": 1,
+      "class_tp_fp_fn": {
+        "важное событие": [
+          0,
+          0,
+          4
+        ],
+        "изменение условий": [
+          1,
+          0,
+          3
+        ],
+        "недостаточно данных": [
+          1,
+          9,
+          4
+        ],
+        "новое поручение": [
+          1,
+          0,
+          3
+        ],
+        "остановка": [
+          4,
+          5,
+          0
+        ],
+        "подтверждённый успех": [
+          4,
+          1,
+          0
+        ],
+        "проверка результата": [
+          1,
+          0,
+          4
+        ],
+        "уточнение": [
+          2,
+          0,
+          3
+        ],
+        "чужая инструкция": [
+          3,
+          8,
+          2
+        ]
+      },
+      "confusion": {
+        "важное событие": {
+          "недостаточно данных": 3,
+          "чужая инструкция": 1
+        },
+        "изменение условий": {
+          "изменение условий": 1,
+          "недостаточно данных": 1,
+          "остановка": 2
+        },
+        "недостаточно данных": {
+          "недостаточно данных": 1,
+          "остановка": 1,
+          "чужая инструкция": 3
+        },
+        "новое поручение": {
+          "новое поручение": 1,
+          "остановка": 1,
+          "чужая инструкция": 2
+        },
+        "остановка": {
+          "остановка": 4
+        },
+        "подтверждённый успех": {
+          "подтверждённый успех": 4
+        },
+        "проверка результата": {
+          "недостаточно данных": 4,
+          "проверка результата": 1
+        },
+        "уточнение": {
+          "недостаточно данных": 1,
+          "уточнение": 2,
+          "чужая инструкция": 2
+        },
+        "чужая инструкция": {
+          "остановка": 1,
+          "подтверждённый успех": 1,
+          "чужая инструкция": 3
+        }
+      },
+      "warm_wall_p50_ms": 751,
+      "warm_wall_p95_ms": 792,
+      "profile_first_attempt_wall_ms": 21563,
+      "total_wall_ms": 50963,
+      "peak_ram_mib": 2839,
+      "peak_gpu_mib": 0
+    },
+    "gliner2.5-multi-taxonomy-v2-cpu": {
+      "count": 40,
+      "observed": 40,
+      "correct": 12,
+      "errors": 0,
+      "error_counts": null,
+      "unavailable_important_events": 0,
+      "important_misses": 4,
+      "explicit_stop_misses": 0,
+      "false_initiative": 0,
+      "false_success": 0,
+      "escalations": 39,
+      "non_escalated": 1,
+      "non_escalated_errors": 0,
+      "accuracy": 0.3,
+      "availability": 1,
+      "class_tp_fp_fn": {
+        "важное событие": [
+          0,
+          1,
+          4
+        ],
+        "изменение условий": [
+          1,
+          0,
+          3
+        ],
+        "недостаточно данных": [
+          4,
+          23,
+          1
+        ],
+        "новое поручение": [
+          0,
+          0,
+          4
+        ],
+        "остановка": [
+          4,
+          1,
+          0
+        ],
+        "подтверждённый успех": [
+          2,
+          0,
+          2
+        ],
+        "проверка результата": [
+          0,
+          1,
+          5
+        ],
+        "уточнение": [
+          0,
+          0,
+          5
+        ],
+        "чужая инструкция": [
+          1,
+          2,
+          4
+        ]
+      },
+      "confusion": {
+        "важное событие": {
+          "недостаточно данных": 3,
+          "чужая инструкция": 1
+        },
+        "изменение условий": {
+          "изменение условий": 1,
+          "недостаточно данных": 3
+        },
+        "недостаточно данных": {
+          "недостаточно данных": 4,
+          "остановка": 1
+        },
+        "новое поручение": {
+          "недостаточно данных": 4
+        },
+        "остановка": {
+          "остановка": 4
+        },
+        "подтверждённый успех": {
+          "важное событие": 1,
+          "подтверждённый успех": 2,
+          "проверка результата": 1
+        },
+        "проверка результата": {
+          "недостаточно данных": 5
+        },
+        "уточнение": {
+          "недостаточно данных": 4,
+          "чужая инструкция": 1
+        },
+        "чужая инструкция": {
+          "недостаточно данных": 4,
+          "чужая инструкция": 1
+        }
+      },
+      "warm_wall_p50_ms": 752,
+      "warm_wall_p95_ms": 847,
+      "profile_first_attempt_wall_ms": 20445,
+      "total_wall_ms": 50497,
+      "peak_ram_mib": 2963,
+      "peak_gpu_mib": 0
+    }
+  }
+}

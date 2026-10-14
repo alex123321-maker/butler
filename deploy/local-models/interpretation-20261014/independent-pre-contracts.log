@@ -1,0 +1,83 @@
+=== RUN   TestUnavailableInferenceIsNotAClassification
+--- PASS: TestUnavailableInferenceIsNotAClassification (0.00s)
+=== RUN   TestAllEscalatingModelCannotPassScreening
+--- PASS: TestAllEscalatingModelCannotPassScreening (0.00s)
+=== RUN   TestWarmLatencyIsNotResetAtHeldOutSplit
+--- PASS: TestWarmLatencyIsNotResetAtHeldOutSplit (0.00s)
+=== RUN   TestActualEmbeddingCPUWorkload
+    embedding_workload_test.go:20: isolated placement benchmark required
+--- SKIP: TestActualEmbeddingCPUWorkload (0.00s)
+=== RUN   TestShadowQuotesEarlierCallerDeadlineIntegration
+--- PASS: TestShadowQuotesEarlierCallerDeadlineIntegration (0.37s)
+=== RUN   TestFullScoreProfilePinsPreprocessingAndRequiresAllLabelsIntegration
+=== RUN   TestFullScoreProfilePinsPreprocessingAndRequiresAllLabelsIntegration/wrong_preprocessing
+=== RUN   TestFullScoreProfilePinsPreprocessingAndRequiresAllLabelsIntegration/wrong_context
+=== RUN   TestFullScoreProfilePinsPreprocessingAndRequiresAllLabelsIntegration/selected_only
+=== RUN   TestFullScoreProfilePinsPreprocessingAndRequiresAllLabelsIntegration/complete
+--- PASS: TestFullScoreProfilePinsPreprocessingAndRequiresAllLabelsIntegration (1.35s)
+    --- PASS: TestFullScoreProfilePinsPreprocessingAndRequiresAllLabelsIntegration/wrong_preprocessing (0.33s)
+    --- PASS: TestFullScoreProfilePinsPreprocessingAndRequiresAllLabelsIntegration/wrong_context (0.33s)
+    --- PASS: TestFullScoreProfilePinsPreprocessingAndRequiresAllLabelsIntegration/selected_only (0.34s)
+    --- PASS: TestFullScoreProfilePinsPreprocessingAndRequiresAllLabelsIntegration/complete (0.35s)
+=== RUN   TestOwnedShadowSignalsCannotChangeAuthorityIntegration
+--- PASS: TestOwnedShadowSignalsCannotChangeAuthorityIntegration (0.35s)
+=== RUN   TestPartialShadowDistributionDeniesSignalIntegration
+--- PASS: TestPartialShadowDistributionDeniesSignalIntegration (0.34s)
+=== RUN   TestForgedAndSecretShadowSourceCannotReachIPCIntegration
+--- PASS: TestForgedAndSecretShadowSourceCannotReachIPCIntegration (0.68s)
+=== RUN   TestShadowSourceChangedDuringCallDeniesLateSignalIntegration
+--- PASS: TestShadowSourceChangedDuringCallDeniesLateSignalIntegration (0.34s)
+=== RUN   TestCancelledShadowCallCannotReturnLateSignalIntegration
+--- PASS: TestCancelledShadowCallCannotReturnLateSignalIntegration (0.35s)
+=== RUN   TestActualInterpretationV3Comparison
+    interpretation_evaluation_test.go:247: isolated tensor service required
+--- SKIP: TestActualInterpretationV3Comparison (0.00s)
+=== RUN   TestInterpretationCurrentOwnedBoundaryIntegration
+=== RUN   TestInterpretationCurrentOwnedBoundaryIntegration/complete
+=== RUN   TestInterpretationCurrentOwnedBoundaryIntegration/wrong_profile
+=== RUN   TestInterpretationCurrentOwnedBoundaryIntegration/partial
+=== RUN   TestInterpretationCurrentOwnedBoundaryIntegration/cancelled
+=== RUN   TestInterpretationCurrentOwnedBoundaryIntegration/late_source
+=== RUN   TestInterpretationCurrentOwnedBoundaryIntegration/wrong_purpose
+=== RUN   TestInterpretationCurrentOwnedBoundaryIntegration/wrong_owner
+--- PASS: TestInterpretationCurrentOwnedBoundaryIntegration (2.40s)
+    --- PASS: TestInterpretationCurrentOwnedBoundaryIntegration/complete (0.34s)
+    --- PASS: TestInterpretationCurrentOwnedBoundaryIntegration/wrong_profile (0.34s)
+    --- PASS: TestInterpretationCurrentOwnedBoundaryIntegration/partial (0.35s)
+    --- PASS: TestInterpretationCurrentOwnedBoundaryIntegration/cancelled (0.34s)
+    --- PASS: TestInterpretationCurrentOwnedBoundaryIntegration/late_source (0.35s)
+    --- PASS: TestInterpretationCurrentOwnedBoundaryIntegration/wrong_purpose (0.34s)
+    --- PASS: TestInterpretationCurrentOwnedBoundaryIntegration/wrong_owner (0.34s)
+=== RUN   TestWriteInterpretationQwenPreflight
+    interpretation_qwen_test.go:443: offline export only
+--- SKIP: TestWriteInterpretationQwenPreflight (0.00s)
+=== RUN   TestInterpretationQwenPartialConfidence
+--- PASS: TestInterpretationQwenPartialConfidence (0.00s)
+=== RUN   TestInterpretationQwenScoresFollowNamedFieldOrder
+--- PASS: TestInterpretationQwenScoresFollowNamedFieldOrder (0.00s)
+=== RUN   TestInterpretationMultipleIntentAndUncertainty
+--- PASS: TestInterpretationMultipleIntentAndUncertainty (0.00s)
+=== RUN   TestInterpretationQuoteSegmentationAndIntegrity
+--- PASS: TestInterpretationQuoteSegmentationAndIntegrity (0.00s)
+=== RUN   TestInterpretationCorpusFreezeAndNoAnswerLeak
+--- PASS: TestInterpretationCorpusFreezeAndNoAnswerLeak (0.01s)
+=== RUN   TestActualRussianDecisionComparison
+    quality_integration_test.go:255: same persistent private composed service required
+--- SKIP: TestActualRussianDecisionComparison (0.00s)
+=== RUN   TestQwenDistributionDoesNotInventConfidence
+--- PASS: TestQwenDistributionDoesNotInventConfidence (0.00s)
+=== RUN   TestWriteQwenTokenPreflightPrompts
+    qwen_harness_test.go:323: offline tokenizer preflight export only
+--- SKIP: TestWriteQwenTokenPreflightPrompts (0.00s)
+=== RUN   TestFrozenRuleBaselineV2
+--- PASS: TestFrozenRuleBaselineV2 (0.00s)
+=== RUN   TestSignalsRemainShadowAndEscalateAmbiguity
+--- PASS: TestSignalsRemainShadowAndEscalateAmbiguity (0.00s)
+=== RUN   TestMarginRequiresEveryAlternativeScore
+--- PASS: TestMarginRequiresEveryAlternativeScore (0.00s)
+=== RUN   TestTaxonomyInputDoesNotLeakAnswers
+--- PASS: TestTaxonomyInputDoesNotLeakAnswers (0.00s)
+=== RUN   TestActualRussianDecisionTaxonomyV2
+    taxonomy_test.go:144: isolated tensor service required
+--- SKIP: TestActualRussianDecisionTaxonomyV2 (0.00s)
+PASS

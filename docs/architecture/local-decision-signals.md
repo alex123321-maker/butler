@@ -1,5 +1,16 @@
 # Local decision signals
 
+Issues 27/28 are deferred by owner decision on 2026-10-14. EmbeddingGemma2 and
+Gemini 3.8 Flash High remain the selected configuration. Model selection,
+additional inference and production shortcut integration are not scheduled;
+[results and resumption conditions](../ai/model-selection-20261014.md) are retained.
+
+The new [event interpretation contract](event-interpretation.md) supersedes the
+nine-way taxonomy in the retained research of issues 27/28. It compares five
+independent intentions, modality and target on source-bound windows. Trust and
+verification are code-owned state, not classes. Historical experiments below
+keep their own immutable schemas and results.
+
 Decision models are optional observations. They never suppress accepted input,
 undo an owner stop, grant a resource, create a task, bypass approval or mark a
 result verified. Durable owner control, action authorization and objective
@@ -30,12 +41,101 @@ important event, foreign instruction, insufficient data, result checking and
 confirmed success. The last label is a prediction, not Butler verification.
 Scores are not calibrated probabilities of correctness. Fixed gates escalate
 below 0.65 score, below 0.15 margin, unknown margin, empty output or insufficient
-data. GLiNER returns only a selected score, so every observation escalates. d1
-returns a full choice distribution, still uncalibrated. Duplicate/unknown labels,
-invalid scores, missing correlation and stale data fail closed. No executor,
+data. The original GLiNER profiles return only a selected score and always
+escalate. Separately pinned full-score profiles and d1 return every alternative;
+the complete label set is required before a score margin is usable. Two through
+eight categories cannot pretend to be a complete nine-class distribution.
+Duplicate/unknown labels, invalid scores, missing correlation, preprocessing,
+FP32/context-cap drift and stale data fail closed. No executor,
 urgency, image or audio policy is inferred from these labels.
 
-## Measured default
+## Current measured default
+
+Selected mode remains **disabled**. The 2026-10-14
+[replay report](../../deploy/local-models/decision-replay-20261014/README.md)
+records 480 successful CPU attempts: two identical passes through the original
+profiles and two through separate full-score GLiNER profiles with unchanged
+d1. Each experiment uses one persistent service and its original 8 GiB cgroup,
+6 GiB RSS policy and 512 MiB reserve. d1 repeat loading succeeds on the current
+cache-accounting implementation; older refusals remain historical evidence.
+
+The full-score path uses the existing pinned SDK's `Classifier(model).score`
+and explicit softmax activation, preprocessing
+`gliner2.5-classification-softmax-v1`. It wraps the admitted model without another
+checkpoint load. Original selected-only outputs remain reproducible. Neither
+labels, source text nor numerical thresholds changed. Top-label accuracy and
+critical errors reproduce in all four passes. Of 30 regression-test events,
+full-score GLiNER extractor/Decide/d1 produce 16/12/3 non-escalated signals,
+of which 12/5/3 are wrong. No candidate passes quality or critical-error screening.
+Full margins remove an adapter limitation but do not establish reliability.
+
+Report version `decision-comparison-v2` separates runtime availability from
+prediction accuracy and class confusion. A refused RPC always escalates and is
+excluded from class errors and successful warm latency. First-attempt timing is the first
+profile attempt, rather than the first test-split row. Screening also requires
+more correct non-escalated signals than the existing extractor and no wrong
+non-escalated signal; raw accuracy alone cannot establish fewer controller calls.
+Actual calls saved remain zero in shadow mode.
+
+The corpus has already been observed, so these passes are a regression replay,
+not fresh held-out generalization or calibration. Literal rules still score
+30/30 on this constructed fixture. The annotation-derived typed control
+expectations are separate from classifier metrics; a live current-controller
+quality/cost comparison remains unmeasured. This and an independent corpus remain
+explicit acceptance gaps for issue 28. Production scheduling/shortcuts stay off.
+
+## Described taxonomy and independent synthetic evaluation
+
+`TaxonomyProfiles()` adds research-only CPU profiles using the immutable
+`butler-event-taxonomy-v2` schema. Definitions and category precedence are explicit:
+external instructions precede their apparent intent, whole-task cancellation is
+distinct from an operation restriction, and completion claims require checking
+unless verifier fixture metadata says `current_pass`. JSON event input contains
+only text, context, source role and evidence state; IDs, splits, gold labels and
+critical-error annotations never enter a prompt. These metadata are synthetic
+evaluation fixtures, never live authentication or actual completion evidence.
+
+GLiNER's existing classification facade receives descriptions and an instruction;
+d1 receives a described choice question. Its internal ASCII option identifiers
+map back to the unchanged Russian labels. Exact upstream input encoding is still
+compared before inference, including per-option limits. All three checkpoints,
+SDKs and reviewed d1 code stay pinned. The new schema/context identity is separate
+from the original 512-token profiles; v2 admits at most 2048 complete tokens.
+
+The new corpus has 18 development and 90 test events, balanced by class. Corpus
+and schema hashes were recorded before observing model predictions. This is an
+independent synthetic holdout relative to the previous examples, without human
+annotation or a production-distribution claim. Adapter/protocol failures and
+the interrupted budget-limited attempt remain evidence; neither labels nor
+confidence gates were tuned from test predictions.
+
+Qwen3.5-4B Q4_K_M is a test-only Go adapter to an isolated, pinned Ollama runtime,
+not a new production lane. It uses the same event data and definitions, fixed
+non-thinking chat serialization, constrained single-digit output, exact offline
+tokenizer preflight and `truncate=false`. All nine observed token alternatives
+are required for a conditional class margin. Missing alternatives keep unknown
+margin and force escalation. Conditional token scores are not calibrated
+probabilities of classification correctness. Every actual Qwen attempt retains
+the same current source/job checks and a fresh finite reservation.
+
+The benchmark declares a finite owner-day turn allowance equal to its planned
+attempts before its first reservation. This is only the disposable fixture policy;
+production's daily limits are unchanged. First calls have a 60-second bound;
+subsequent calls use 10 seconds. `Observe` now quotes the earlier caller deadline
+consistently in admission and IPC. Reserved allowance is never refunded from
+measured latency. Incremental checkpoints preserve partial results on interruption.
+
+Placement testing retains the ordinary 6144 MiB GPU/512 MiB reserve and
+6144 MiB service RSS/512 MiB reserve policies. Accepted EmbeddingGemma2 GPU peak
+admission is 3072 MiB; the Qwen residency experiment also tests explicit FP32 CPU
+embedding placement with identical checkpoint/preprocessing/vector identity.
+The ordinary catalog is unchanged. Production still has one reusable worker
+per lane; permanent multi-model residency, loading/switching latency and a
+live controller quality/cost baseline remain separate integration work.
+
+See [v2 evidence](../../deploy/local-models/decision-taxonomy-20261014/README.md).
+
+## Original measurements
 
 Selected mode: **disabled**. The fixed public corpus has 10 dev / 30 held-out
 Russian events: negated stops, temporal amendments, ambiguity/conflict, foreign
@@ -62,7 +162,7 @@ Literal rules score 30/30 on this deliberately synthetic corpus, not a productio
 population. The report's `current_controller` entry is a typed owner-stop/amend
 and objective-proof contract fixture, not a live cloud model benchmark or the
 production controller's classification outputs. Other events escalate there.
-Full current-controller quality/cost comparison remains unmeasured. No unbudgeted
+Full current-controller quality/cost comparison was unmeasured. No unbudgeted
 cloud calls or claimed monetary savings are introduced.
 
 ## Runtime, license and reassessment
@@ -82,7 +182,7 @@ Electricity/hardware price and exact process CPU time were not measured. CPU
 sampling uses 100%=one core and includes loading and Go supervision.
 
 Reassessment requires an independent Russian corpus, full current-controller
-baseline, held-out calibration/error analysis, reliable repeat loading within
+baseline, held-out calibration/error analysis, continued repeat loading within
 unchanged limits and a measured improvement without critical misses. Changes
 to labels, descriptions, precision or revision require new dev calibration and
 a new held-out corpus. Both profiles stay disabled in the ordinary catalog;

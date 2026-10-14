@@ -1,5 +1,30 @@
 # Local auxiliary models
 
+Issues 27/28 local semantic research is deferred as of 2026-10-14. EmbeddingGemma2
+and Gemini 3.8 Flash High remain the selected configuration; the deployment,
+embedding placement and ordinary catalog are unchanged. Research adapters and
+evidence below remain available, without production promotion or new planned
+inference. See [the owner decision](../../docs/ai/model-selection-20261014.md).
+
+The opt-in interpretation v3 catalog reuses these same pinned CPU checkpoints
+with GLiNER native independent intent scores and separate modality/target choices. Install the
+SHA-checked `interpretation-schema-v3.json` beside the worker. d1's seven rows
+use its reviewed native boolean head for intent, and are individually checked
+against its real encoder including its per-option and
+instruction caps; GLiNER's complete compiled
+schema plus source input is checked before scoring. Go retains source ownership,
+resource policy, scores/quote validation and finite reservations. The v3 Qwen
+adapter is test-only; [contract](../../docs/architecture/event-interpretation.md).
+
+The research-only taxonomy v2 catalogs pin explicit decision definitions and
+priority rules with a 2048-token complete input cap. The worker verifies the
+bundled `decision-schema-v2.json` hash before using it. Place that reviewed asset
+beside `model-worker.py`; the Dockerfile and isolated runner do this explicitly.
+Original profiles keep their original schemas. The v2 Qwen comparison uses a
+separate pinned Ollama container through a test-only Go adapter, without a new
+production route. GPU co-residency and explicit FP32 CPU EmbeddingGemma2 placement
+are measured separately; see [the v2 experiment](../../deploy/local-models/decision-taxonomy-20261014/README.md).
+
 Two text-only decision profiles are present but disabled in the default catalog.
 The separate operator evaluation catalog enables pinned GLiNER Decide and d1
 CPU FP32 solely for shadow comparison. Reviewed d1 code/config hashes are checked
@@ -8,9 +33,18 @@ truncation. There are no decision-driven task/tool/verification hooks. See
 `deploy/local-models/decision-code-review.md`; runtime support alone is not
 Russian quality acceptance or a production model selection. The owned Go
 shadow caller now has a fixed Russian comparison and complete actual CPU
-artifacts; no model passes selection and d1 also refuses repeat loading under
-the conservative RAM policy. Ordinary profiles remain disabled. See
+artifacts; no model passes selection. An older replay also refused d1 repeat
+loading under the then-current RAM accounting. Ordinary profiles remain disabled. See
 [the caller contract](../../docs/architecture/local-decision-signals.md).
+
+The separate full-score evaluation catalog adds CPU-only GLiNER profiles with
+preprocessing `gliner2.5-classification-softmax-v1`. The pinned SDK's classification
+scorer wraps the already loaded model and returns every requested label score.
+Go rejects missing/duplicate/foreign alternatives and preserves the selected-only
+profiles. This changes neither the ordinary catalog nor memory extraction. The
+2026-10-14 isolated replay succeeds at repeat loading under the same limits,
+including d1; historical resource refusals remain in the original artifacts.
+Full scores still fail Russian quality/critical-error screening.
 
 The optional versioned memory adapter is in `internal/memory/semantic`; it uses
 this shared service with explicit query/document/code modes and 768/256d identity.

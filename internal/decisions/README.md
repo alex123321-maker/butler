@@ -1,5 +1,39 @@
 # Local decision observations
 
+Research in issues 27/28 is deferred by owner decision on 2026-10-14. The selected
+configuration remains EmbeddingGemma2 and Gemini 3.8 Flash High. The callers,
+fixtures and failed quality results below are retained for future reproduction;
+no additional inference or production integration is scheduled. See
+[the decision](../../docs/ai/model-selection-20261014.md).
+
+The retained interpretation v3 experiment replaces the single nine-way label with
+five independent intention flags, modality and target. The Go common adapter
+creates exact Unicode source windows and validates complete 16-ID score groups;
+`Interpret` retains current job/source admission and seven-row token allowance.
+Production consumers remain disabled. See
+[the revised contract](../../docs/architecture/event-interpretation.md) and
+[annotation rules](../../deploy/local-models/interpretation-annotation-v3.md).
+The [final comparison](../../deploy/local-models/interpretation-20261014/README.md)
+retains304 successful actual calls on76 new held-out windows. Qwen has44 exact
+intent sets and26 joint interpretations; all candidates fail screening. The
+separate offline score-prefix audit requires explicit saved-input/output paths,
+makes zero new inference calls and preserves every semantic prediction and the
+original strict-scoring report. Production consumption remains disabled.
+
+`TaxonomyProfiles()` adds described experimental schemas for the same three
+CPU checkpoints. A newly frozen 18-dev/90-test synthetic corpus supplies event
+JSON with text/context/source-role/evidence state, excluding answer annotations.
+The test-only Qwen adapter pins Q4_K_M weights, Ollama and tokenizer input counts,
+and refuses truncation, malformed enum output and fabricated score margins.
+Observation scores remain auxiliary data. `Observe` reserves the smaller of
+60 seconds and its caller's surviving deadline; the exact bound also reaches IPC.
+
+The comparison establishes one finite planned-turn fixture budget, keeps partial
+checkpoints and distinguishes unavailable inference from incorrect predictions.
+The CPU embedding experiment measures the accepted checkpoint alongside resident
+GPU Qwen. These catalogs, the test adapter and the benchmark budget are research
+fixtures. See [results and limitations](../../deploy/local-models/decision-taxonomy-20261014/README.md).
+
 Optional Go caller for source-bound shadow annotations. It exposes no tool,
 task-control, resource-grant or completion-verdict interface. Every event is
 preserved; owner/controller policy remains authoritative even when a model
@@ -16,8 +50,17 @@ partial or stale responses fail closed.
 
 The nine-label taxonomy is fixed. Scores are uncalibrated. Score below 0.65,
 unknown margin, margin below 0.15, empty output or insufficient data escalates.
-The pinned GLiNER single-label API returns only the selected score, so its
-unknown margin always escalates. Butler invents no alternative scores.
+Selected-only GLiNER profiles return one score and always escalate. A claimed
+distribution must contain every category; partial alternatives fail closed.
+The caller also pins preprocessing, FP32 precision and the reserved context cap,
+and rejects selected-only replies from a
+full-score profile. Reported score margins never grant execution authority.
+
+`FullScoreProfiles()` selects separately versioned experimental GLiNER profiles
+using the existing SDK's `Classifier(model).score` on the same resident weights.
+All softmax scores are returned without another checkpoint load. The existing
+profiles retain their selected-only output for exact comparison. These new
+profiles are present only in `models.decisions-fullscores-evaluation.json`.
 
 There is no automatic production consumer/scheduler. The separate decision
 profiles remain disabled in the ordinary catalog. The explicit public lab
@@ -33,3 +76,15 @@ persistent service and operator evaluation catalog. Actual PostgreSQL/race tests
 cover ambiguity, malformed scores, Secret/forged jobs, finite reservations,
 late source changes and cancellation. A passing quality runner means a complete
 experiment was recorded, not that any selection gate passed.
+
+`verify-decisions-isolated-lab.sh <snapshot-root> <model-storage-root> selected|full`
+instead creates one temporary internal service and PostgreSQL fixture for two
+passes, using existing pinned dependencies/weights read-only. Its 8 GiB cgroup,
+6 GiB RSS policy and reserve match the ordinary service. Both passes share that
+service across idle unload, retaining cache pressure; deployed catalogs/services
+are untouched. It preserves reports and removes only its owned containers/network.
+The 2026-10-14 replay records all 480 attempts in
+`deploy/local-models/decision-replay-20261014/`. No model passes screening. The
+previously observed corpus is a regression fixture, not fresh held-out evidence.
+Unavailable calls are counted as availability failures rather than class errors;
+zero useful non-escalated signals cannot qualify as controller-call savings.

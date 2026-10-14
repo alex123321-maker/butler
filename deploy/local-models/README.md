@@ -1,5 +1,24 @@
 # Reproducible lab model runtime
 
+Issues 27/28 experiments are deferred by owner decision on 2026-10-14; the
+selected configuration remains EmbeddingGemma2 and Gemini 3.8 Flash High. The
+following commands are retained reproduction instructions, not scheduled work.
+Do not repeat the completed held-out inference as a new independent evaluation.
+See [the decision and conditions for resumption](../../docs/ai/model-selection-20261014.md)
+and [the preserved v3 comparison](interpretation-20261014/README.md).
+
+The retained issues 27/28 experiment uses the
+[source-bound interpretation contract](../../docs/architecture/event-interpretation.md),
+[annotation rules](interpretation-annotation-v3.md) and frozen v3 corpus.
+The final file is `russian-interpretation-heldout-v3.json`; the original
+`russian-interpretation-independent-v3.json` remains a design fixture.
+Use a fresh isolated root, Qwen preparation kind `interpretation`, then runner
+`interpretation dev co-resident` and `interpretation test co-resident`.
+All candidates share deterministic quote windows; GLiNER/d1 expose 16 scores
+over five independent intents and modality/target groups. Qwen stays GPU with
+accepted FP32 CPU EmbeddingGemma2. This is research; actual controller savings,
+learned minimal-span extraction and production Qwen transport remain unmeasured.
+
 All operations run on `ssh laba`, in a private source snapshot and
 `/srv/storage/butler/agents/local-models`. Do not change the shared lab source
 pointer or start the shared Compose stack from this directory.
@@ -227,6 +246,31 @@ unresolved; owner acceptance is separate. See the structured extraction contract
 
 ## Default-off decision comparison
 
+The latest [2026-10-14 replay](decision-replay-20261014/README.md) retains four
+complete 120-attempt runs. Original selected-only profiles and separately pinned
+full-score profiles both reproduce the same failed Russian classification gate.
+All repeated loads, including d1, succeed under the unchanged resource limits on
+the current implementation. Historical refusals below remain in their artifacts.
+
+For an isolated experiment, use
+`verify-decisions-isolated-lab.sh <snapshot-root> <model-storage-root> selected|full`.
+It reuses installed weights/dependencies read-only, compiles the source snapshot,
+creates one private internal service and disposable PostgreSQL, and repeats on
+that same service after idle unload. It records environment, source hashes, CPU
+samples and complete result files without replacing old reports or deployed
+catalogs. Mode `contracts` instead runs targeted race/integration tests and vet
+against its own PostgreSQL, with zero tensor calls. Full-score profiles exist
+only in `models.decisions-fullscores-evaluation.json`; scores remain uncalibrated.
+
+Report v2 separates unavailable calls from prediction mistakes, counts confidence
+gates and their errors, and excludes annotation-derived policy expectations from
+the measured controller baseline. No model passes screening; actual controller
+calls saved are zero. The fixed corpus is now a previously observed regression
+fixture. An independent evaluation and the full current-controller quality/cost
+baseline remain acceptance gaps.
+
+### Historical evaluation
+
 Run `verify-decisions-lab.sh` only after the deployment owner temporarily selects
 `models.decisions-evaluation.json` for the same persistent service. The runner
 uses the single private token file and an isolated PostgreSQL database; it does
@@ -288,3 +332,14 @@ The official processor requires Pillow/torchvision even when vision/audio model
 encoders are omitted. They are pinned; neither multimodal capability nor audio
 quality is claimed. The runtime never resolves cloud models or follows network
 fallbacks. Automatic generation-model loading is outside this service.
+## Decision taxonomy v2 evaluation
+
+For the described CPU classifiers and test-only Qwen3.5-4B comparison, use
+[the frozen experiment and reproduction](decision-taxonomy-20261014/README.md).
+`prepare-qwen-decision-evaluation.sh` creates only an isolated internal research
+container/model namespace; `verify-decisions-isolated-lab.sh` supports taxonomy
+replay/dev, Qwen with explicit CPU embedding placement, and contract checks.
+The ordinary deployment/catalog is unchanged. Cleanup the owned Qwen preparation
+container/network after the experiment. New synthetic holdout quality remains
+below selection gates; CPU EmbeddingGemma2 placement is a measured compromise,
+with cold-load/lane integration and the live controller baseline still pending.

@@ -97,7 +97,10 @@ func (b *Process) Verify(_ context.Context, p *pb.ModelProfile) error {
 	if p.Model == "LiquidAI/d1-omni-600M" {
 		return b.verifyDecisionCode(p)
 	}
-	if p.Model == "fastino/GLiNER2.5-multi-Decide" && (p.Revision != DecideRevision || p.RuntimeVersion != "torch2.10.0+cu128/transformers5.19.0/gliner2.1.0" || p.Precision != "FP32" || p.PreferredDevice != "cpu" || p.PreprocessingVersion != "gliner2.5-decision-v1") {
+	if fullScoreProfile(p) && (p.RuntimeVersion != "torch2.10.0+cu128/transformers5.19.0/gliner2.1.0" || p.Precision != "FP32" || p.PreferredDevice != "cpu" || p.Model == "fastino/gliner2.5-multi-v1" && p.Revision != "cf5593a5d45e3bbf204b9df621b13b1c0cf25ee3") {
+		return fault(Unavailable)
+	}
+	if p.Model == "fastino/GLiNER2.5-multi-Decide" && (p.Revision != DecideRevision || p.RuntimeVersion != "torch2.10.0+cu128/transformers5.19.0/gliner2.1.0" || p.Precision != "FP32" || p.PreferredDevice != "cpu" || p.PreprocessingVersion != "gliner2.5-decision-v1" && !fullScoreProfile(p)) {
 		return fault(Unavailable)
 	}
 	return nil
@@ -331,7 +334,14 @@ func (b *Process) rank(ctx context.Context, p *pb.ModelProfile, input *pb.Rerank
 func validScore(s float64) bool { return !math.IsNaN(s) && !math.IsInf(s, 0) && s >= 0 && s <= 1 }
 func (b *Process) extract(ctx context.Context, p *pb.ModelProfile, r *pb.InferRequest, device string) (*pb.InferResponse, error) {
 	supported := p.Model == "fastino/gliner2.5-multi-v1" && p.PreprocessingVersion == "gliner2.5-schema-v1" || p.Model == "fastino/GLiNER2.5-multi-Decide" && p.PreprocessingVersion == "gliner2.5-decision-v1" || p.Model == "LiquidAI/d1-omni-600M" && p.PreprocessingVersion == "d1-text-choice-v1"
-	if !supported || device != "cpu" || r.GetExtract() != nil && p.Model != "fastino/gliner2.5-multi-v1" {
+	fullScores := fullScoreProfile(p) || p.Model == "LiquidAI/d1-omni-600M" && (p.PreprocessingVersion == DecisionSchemaV2 || p.PreprocessingVersion == InterpretationSchemaV3)
+	if p.PreprocessingVersion == InterpretationSchemaV3 {
+		input := r.GetClassify()
+		if input == nil || !sameInterpretationLabels(input.Labels) {
+			return nil, fault(Invalid)
+		}
+	}
+	if !supported && !fullScores || device != "cpu" || r.GetExtract() != nil && (p.Model != "fastino/gliner2.5-multi-v1" || fullScores) {
 		return nil, fault(Unavailable)
 	}
 	if err := b.ensure(ctx, p, device); err != nil {
@@ -369,7 +379,7 @@ func (b *Process) extract(ctx context.Context, p *pb.ModelProfile, r *pb.InferRe
 	if err != nil {
 		return nil, err
 	}
-	if response.Kind != "classes" || len(response.Scores) != len(response.Labels) {
+	if response.Kind != "classes" || len(response.Scores) != len(response.Labels) || fullScores && len(response.Labels) != len(input.Labels) {
 		return nil, fault(Protocol)
 	}
 	labels := map[string]bool{}

@@ -1,0 +1,11 @@
+=== RUN   TestActualInterpretationV3Comparison
+    interpretation_evaluation_test.go:323: gliner2.5-multi-interpretation-v3-cpu observed=76 unavailable=0 intent=7 joint=0 / 76
+    interpretation_evaluation_test.go:323: gliner2.5-decide-interpretation-v3-cpu observed=76 unavailable=0 intent=12 joint=4 / 76
+    interpretation_evaluation_test.go:323: d1-omni-interpretation-v3-cpu observed=76 unavailable=0 intent=1 joint=0 / 76
+    interpretation_evaluation_test.go:373: FINAL qwen3.5-4b-q4-interpretation-v3-gpu intent=44/76 joint=26/76 non-escalated=0 wrong=0 screen=false
+    interpretation_evaluation_test.go:373: FINAL russian-literal-interpretation-v3 intent=18/76 joint=7/76 non-escalated=75 wrong=68 screen=false
+    interpretation_evaluation_test.go:373: FINAL gliner2.5-multi-interpretation-v3-cpu intent=7/76 joint=0/76 non-escalated=5 wrong=5 screen=false
+    interpretation_evaluation_test.go:373: FINAL gliner2.5-decide-interpretation-v3-cpu intent=12/76 joint=4/76 non-escalated=0 wrong=0 screen=false
+    interpretation_evaluation_test.go:373: FINAL d1-omni-interpretation-v3-cpu intent=1/76 joint=0/76 non-escalated=0 wrong=0 screen=false
+--- PASS: TestActualInterpretationV3Comparison (878.26s)
+PASS

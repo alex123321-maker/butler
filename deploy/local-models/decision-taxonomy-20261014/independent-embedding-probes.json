@@ -1,0 +1,548 @@
+[
+  {
+    "device": "cpu",
+    "process_ram_mib": 2303,
+    "wall_ms": 9451,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2136,
+    "wall_ms": 82,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2136,
+    "wall_ms": 84,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2136,
+    "wall_ms": 81,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2136,
+    "wall_ms": 79,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2136,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2136,
+    "wall_ms": 76,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2136,
+    "wall_ms": 79,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2137,
+    "wall_ms": 76,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2137,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2137,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2137,
+    "wall_ms": 80,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2137,
+    "wall_ms": 77,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2137,
+    "wall_ms": 77,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2137,
+    "wall_ms": 83,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2137,
+    "wall_ms": 84,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2138,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2138,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2138,
+    "wall_ms": 85,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2138,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2138,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2138,
+    "wall_ms": 80,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2139,
+    "wall_ms": 76,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2139,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2139,
+    "wall_ms": 81,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2139,
+    "wall_ms": 83,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2139,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2139,
+    "wall_ms": 79,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 76,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 76,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 76,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 80,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 84,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 81,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 77,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 82,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 76,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 84,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 75,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 80,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 85,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 82,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 80,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 77,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 77,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 76,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 79,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 79,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 76,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 76,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 85,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 91,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 77,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 81,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 76,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 77,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 77,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 83,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 80,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 79,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 82,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2140,
+    "wall_ms": 87,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 84,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 89,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 77,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 80,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 86,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 84,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 84,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 83,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 77,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 77,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 79,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 77,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 77,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 77,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 79,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 81,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 86,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 86,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 78,
+    "whole_device_peak_mib": 0
+  },
+  {
+    "device": "cpu",
+    "process_ram_mib": 2141,
+    "wall_ms": 76,
+    "whole_device_peak_mib": 0
+  }
+]

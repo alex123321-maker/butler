@@ -1,5 +1,28 @@
 # Auxiliary local model service
 
+As of 2026-10-14, the owner-selected configuration remains EmbeddingGemma2 and
+Gemini 3.8 Flash High. Issues 27/28 local semantic research is deferred, with
+all measured results retained and no production promotion. This decision changes
+neither the deployed catalog nor embedding device/vector identity. See
+[the model decision](../ai/model-selection-20261014.md).
+
+Research preprocessing `butler-event-interpretation-v3` adds a bundled,
+SHA-checked schema for independent intent questions and modality/target choices.
+GLiNER's existing SDK uses native multi-label sigmoid; reviewed d1 uses native
+boolean intent heads and batches seven independently
+preflighted rows. The existing classification RPC returns exactly 16 pinned
+score IDs. Complete groups are validated by the Go observer. See
+[event interpretation](event-interpretation.md); ordinary profiles stay intact.
+
+Decision taxonomy v2 is an additive, operator-only preprocessing identity for
+the existing CPU GLiNER and reviewed d1 workers. A bundled hash-pinned JSON asset
+contains definitions and precedence; no caller-supplied prompt, code or schema
+is accepted. New profiles declare 2048 context tokens and return all alternatives.
+Original profiles and the deployed catalog retain their own identity. Qwen3.5-4B
+is currently a test-only isolated Ollama comparison, not an implemented runtime
+in this service or a production controller route. See
+[decision evaluation](local-decision-signals.md).
+
 This opt-in subsystem implements the shared auxiliary resource service for #24.
 It is separate from Model Transport (the run's generative provider), Tool Broker,
 Session Service, durable task ownership and the four memory stores. Auxiliary
@@ -172,9 +195,23 @@ model record grouping fails, with action polarity and exception scope explicitly
 unresolved. Model field metrics exclude that protection layer. See
 [structured candidate extraction](structured-memory-extraction.md).
 
-The default-off decision caller now records real source/job-admitted CPU signals
-from all three pinned models on a frozen Russian corpus. None passes selection;
-the exact repeat also records conservative d1 RAM admission refusals. Signals
+An operator-only evaluation catalog additionally selects
+`gliner2.5-classification-softmax-v1` for the two pinned CPU FP32 GLiNER checkpoints.
+The upstream `Classifier` facade wraps the already admitted resident model;
+`ClassificationSchema.single` fixes softmax activation and `score` returns all
+requested alternatives. Complete text plus compiled schema is checked against
+the 512-token cap before scoring with `max_len=None`. No second checkpoint,
+dependency, remote code or model-selected decoding option is introduced. Go
+validates the complete correlated label set, finite bounded scores, revision,
+runtime and preprocessing identity. Selected-only profiles keep their original
+behavior. These scores remain uncalibrated signals. The default catalog does not
+include the new profiles; no automatic decision consumer is enabled.
+
+The default-off decision caller records real source/job-admitted CPU signals
+from all three pinned models on a frozen Russian corpus. None passes selection.
+Historical repeats retain d1 RAM admission refusals; the 2026-10-14 isolated
+replay succeeds at all repeated loads under the current accounting and unchanged
+limits, while both selected-only and full-score profiles fail quality screening. Signals
 cannot suppress events or acquire task/grant/verification authority. See
 [local decision observations](local-decision-signals.md) and the checked-in
 acceptance matrix for remaining current-controller baseline work.
