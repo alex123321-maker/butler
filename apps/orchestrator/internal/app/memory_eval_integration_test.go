@@ -133,6 +133,69 @@ func TestMemoryEvalCollectorFullCorrelationIntegration(t *testing.T) {
 	if _, err = acceptance.AuditMemoryRunner(c.suite, f, bad, c.private, strings.Repeat("4", 64)); err == nil {
 		t.Fatal("paid original hidden by import")
 	}
+	for _, kind := range []string{"guard_operation", "guard_sources", "capture_digest", "capture_sources"} {
+		t.Run(kind, func(t *testing.T) {
+			// Corrupt a separate copy; keep the successfully correlated originals.
+			dir := t.TempDir()
+			entries, err := os.ReadDir(c.private)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, entry := range entries {
+				raw, err := os.ReadFile(filepath.Join(c.private, entry.Name()))
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err = os.WriteFile(filepath.Join(dir, entry.Name()), raw, 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			write := func(name string, value any) {
+				raw, err := json.Marshal(value)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err = os.WriteFile(filepath.Join(dir, name), raw, 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			forged := f
+			want := "guard operation/current source refs differ"
+			if strings.HasPrefix(kind, "guard_") {
+				raw, err := os.ReadFile(filepath.Join(dir, "ledger.json"))
+				if err != nil {
+					t.Fatal(err)
+				}
+				var ledger map[string]json.RawMessage
+				if err = json.Unmarshal(raw, &ledger); err != nil {
+					t.Fatal(err)
+				}
+				var guards []map[string]any
+				if err = json.Unmarshal(ledger["fixture_memory_eval_guards"], &guards); err != nil || len(guards) == 0 {
+					t.Fatal("guard originals missing", err)
+				}
+				if kind == "guard_operation" {
+					guards[0]["operation_id"] = "different-operation"
+				} else {
+					guards[0]["sources"] = []map[string]any{{"source_id": "different-source", "revision": 1, "access_revision": 1, "content_hash": strings.Repeat("a", 64)}}
+				}
+				ledger["fixture_memory_eval_guards"], _ = json.Marshal(guards)
+				write("ledger.json", ledger)
+			} else {
+				forged.Captures = append([]acceptance.MemoryCapture(nil), f.Captures...)
+				if kind == "capture_digest" {
+					forged.Captures[0].EvidenceSHA256 = strings.Repeat("a", 64)
+				} else {
+					forged.Captures[0].SourceIDs = []string{"different-source"}
+				}
+				write("frozen-before-native.json", forged)
+				want = "actual bundle prompt/digest/source selection differs"
+			}
+			if _, err := acceptance.AuditMemoryRunner(c.suite, forged, c.measurements, dir, strings.Repeat("4", 64)); err == nil || !strings.Contains(err.Error(), want) {
+				t.Fatal("tampered provenance must fail at its binding", err)
+			}
+		})
+	}
 }
 
 func TestMemoryEvalCollectorCurrentAuthorityRacesIntegration(t *testing.T) {

@@ -4,11 +4,19 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	memoryservice "github.com/butler/butler/internal/memory/service"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 )
+
+type memoryAuditSourceRef struct {
+	ID       string `json:"source_id"`
+	Revision int64  `json:"revision"`
+	Access   int64  `json:"access_revision"`
+	Hash     string `json:"content_hash"`
+}
 
 func memoryAuditCompactSHA(raw []byte) string {
 	var b bytes.Buffer
@@ -87,6 +95,20 @@ func memoryAuditProvenance(s MemorySuite, f MemoryFrozen, ledger map[string]json
 	if json.Unmarshal(ledger["fixture_memory_eval_guards"], &guards) != nil {
 		return errors.New("immutable owning guard receipts absent")
 	}
+	var attempts []struct {
+		Run       string `json:"run_id"`
+		Operation string `json:"operation_id"`
+	}
+	if json.Unmarshal(ledger["fixture_memory_eval_attempts"], &attempts) != nil {
+		return errors.New("guard owning attempts missing")
+	}
+	operations := map[string]string{}
+	for _, a := range attempts {
+		if a.Operation == "" || operations[a.Run] != "" {
+			return errors.New("guard operation identity missing/duplicate")
+		}
+		operations[a.Run] = a.Operation
+	}
 	for _, x := range []struct {
 		key string
 		out any
@@ -108,12 +130,7 @@ func memoryAuditProvenance(s MemorySuite, f MemoryFrozen, ledger map[string]json
 		}
 		id := MemoryOpaqueCaseID(c)
 		owner := "memory-eval-owner:" + id
-		var refs map[string]struct {
-			ID       string `json:"source_id"`
-			Revision int64  `json:"revision"`
-			Access   int64  `json:"access_revision"`
-			Hash     string `json:"content_hash"`
-		}
+		var refs map[string]memoryAuditSourceRef
 		if load("bindings-"+strings.TrimPrefix(id, "memory:")+".json", &refs) != nil {
 			return errors.New("original catalog aliases missing")
 		}
@@ -145,18 +162,17 @@ func memoryAuditProvenance(s MemorySuite, f MemoryFrozen, ledger map[string]json
 				return errors.New("catalog original/revision/hash/owner differs")
 			}
 		}
-		var bundle struct {
-			Items  map[string]json.RawMessage
-			Prompt string
-		}
-		if load("bundle-"+strings.TrimPrefix(id, "memory:")+".json", &bundle) != nil {
+		var bundle memoryservice.Bundle
+		bundleRaw, bundleErr := ReadPrivateFile(filepath.Join(directory, "bundle-"+strings.TrimPrefix(id, "memory:")+".json"), 16<<20)
+		if bundleErr != nil || json.Unmarshal(bundleRaw, &bundle) != nil {
 			return errors.New("original current bundle missing")
 		}
 		var chunks []struct {
 			Ref      string `json:"source_ref"`
 			Revision string `json:"source_revision"`
 		}
-		if json.Unmarshal(bundle.Items["chunks"], &chunks) != nil {
+		chunkRaw, _ := json.Marshal(bundle.Items["chunks"])
+		if json.Unmarshal(chunkRaw, &chunks) != nil {
 			return errors.New("bundle chunks absent")
 		}
 		var search struct {
@@ -189,10 +205,31 @@ func memoryAuditProvenance(s MemorySuite, f MemoryFrozen, ledger map[string]json
 				return errors.New("retrieved chunk original provenance differs")
 			}
 		}
-		for _, cap := range f.Captures {
-			if cap.CaseID == id && cap.Prompt != bundle.Prompt {
-				return errors.New("actual bundle prompt differs")
+		selected := []string{}
+		for _, ch := range chunks {
+			seen := false
+			for _, old := range selected {
+				if old == ch.Ref {
+					seen = true
+				}
 			}
+			if !seen {
+				selected = append(selected, ch.Ref)
+			}
+		}
+		matchedCapture := false
+		for _, cap := range f.Captures {
+			if cap.CaseID == id {
+				// Compact the original serialization: decoding Items into any can
+				// reorder nested struct fields and change an otherwise identical hash.
+				if cap.Prompt != bundle.Prompt || cap.EvidenceSHA256 != memoryAuditCompactSHA(bundleRaw) || MemoryDigest(cap.SourceIDs) != MemoryDigest(selected) {
+					return errors.New("actual bundle prompt/digest/source selection differs")
+				}
+				matchedCapture = true
+			}
+		}
+		if !matchedCapture {
+			return errors.New("original capture absent")
 		}
 	}
 	cases := map[string]MemoryCase{}
@@ -239,8 +276,24 @@ func memoryAuditProvenance(s MemorySuite, f MemoryFrozen, ledger map[string]json
 			return errors.New("owning run/task/current constraints/lease proof differs")
 		}
 		dispatch, final := 0, 0
+		var refs map[string]memoryAuditSourceRef
+		if load("bindings-"+strings.TrimPrefix(i.CaseID, "memory:")+".json", &refs) != nil {
+			return errors.New("guard source aliases absent")
+		}
+		expectedRefs := []memoryAuditSourceRef{}
+		for _, h := range i.Memory {
+			ref, ok := refs[h.ID]
+			if !ok {
+				return errors.New("guard frozen source unavailable")
+			}
+			expectedRefs = append(expectedRefs, ref)
+		}
 		for _, g := range guards {
 			if g.Run == runID {
+				var actualRefs []memoryAuditSourceRef
+				if json.Unmarshal(g.Sources, &actualRefs) != nil || g.Operation != operations[runID] || MemoryDigest(actualRefs) != MemoryDigest(expectedRefs) {
+					return errors.New("guard operation/current source refs differ")
+				}
 				if g.Case != i.CaseID || g.Arm != i.Arm || g.Revision != revision || g.Constraints != revision || g.Lease != runID || !g.Expires.After(g.Checked) || g.Checked.After(finished) {
 					return errors.New("owning guard time/revision differs")
 				}
