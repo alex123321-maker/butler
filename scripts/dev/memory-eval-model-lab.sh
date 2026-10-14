@@ -84,6 +84,7 @@ export DOCKER_CONFIG="$root/.cache/docker"
 pg_id=$(read_output metadata/hardware.json | jq -r .postgres_image)
 tag=$(basename "$root")
 if [[ "$action" == execute ]]; then
+ [[ ! -e "$root/entered" ]] || { echo 'One-use model window already entered; preserve it'; exit 2; }
  token=/srv/storage/butler/agents/local-models/private/token
  native_import=/srv/storage/butler/agents/antigravity-provider/profile/.gemini/antigravity-cli/butler-native-import.json
  # Metadata-only readability check as the actual UID, before the one-use entry.
