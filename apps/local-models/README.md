@@ -1,5 +1,15 @@
 # Local auxiliary models
 
+The opt-in interpretation v3 catalog reuses these same pinned CPU checkpoints
+with GLiNER native independent intent scores and separate modality/target choices. Install the
+SHA-checked `interpretation-schema-v3.json` beside the worker. d1's seven rows
+use its reviewed native boolean head for intent, and are individually checked
+against its real encoder including its per-option and
+instruction caps; GLiNER's complete compiled
+schema plus source input is checked before scoring. Go retains source ownership,
+resource policy, scores/quote validation and finite reservations. The v3 Qwen
+adapter is test-only; [contract](../../docs/architecture/event-interpretation.md).
+
 The research-only taxonomy v2 catalogs pin explicit decision definitions and
 priority rules with a 2048-token complete input cap. The worker verifies the
 bundled `decision-schema-v2.json` hash before using it. Place that reviewed asset

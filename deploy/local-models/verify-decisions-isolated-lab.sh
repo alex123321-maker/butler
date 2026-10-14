@@ -12,6 +12,7 @@ case "$mode" in
  qwen) catalog=models.decisions-taxonomy-v2-qwen.json ;;
  qwen-cpuembed) catalog=models.decisions-taxonomy-v2-cpuembedding.json ;;
  qwen-workload) catalog=models.decisions-taxonomy-v2-cpuembedding.json ;;
+ interpretation) catalog=models.interpretation-v3-cpuembedding.json ;;
  contracts) catalog=models.decisions-evaluation.json ;;
  *) printf '%s\n' 'mode must be selected, full, taxonomy or contracts' >&2; exit 1 ;;
 esac
@@ -32,6 +33,7 @@ mkdir -p "$work/private" "$report/output"
 mkdir -p "$work/worker"
 cp -a "$src/apps/local-models/." "$work/worker/"
 cp "$src/internal/localmodels/decision-schema-v2.json" "$work/worker/decision-schema-v2.json"
+cp "$src/internal/localmodels/interpretation-schema-v3.json" "$work/worker/interpretation-schema-v3.json"
 # Prevent duplicate executions of this runner against the same source root.
 exec 9>"$root/.cache/decision-replay.lock"
 flock -n 9 || { printf '%s\n' 'decision replay already running' >&2; exit 1; }
@@ -64,7 +66,7 @@ cleanup() {
 }
 trap cleanup EXIT
 network=$(docker network create --internal "$id")
-if [[ "$mode" == qwen* ]]; then
+if [[ "$mode" == qwen* || "$mode" == interpretation ]]; then
  docker network connect --alias decision-qwen "$network" butler-decision-qwen-v2
  qwen_connected=true
 fi
@@ -129,26 +131,26 @@ run_test() {
  local pattern="$1"
  shift
  local extra=()
- if [[ "$mode" == qwen* ]]; then extra+=(--volume "$root/models:/qwen-data:ro"); fi
+ if [[ "$mode" == qwen* || "$mode" == interpretation ]]; then extra+=(--volume "$root/models:/qwen-data:ro"); fi
  docker run --rm --user 10001:10001 --network "$network" \
   --read-only --tmpfs /tmp:size=256m,mode=1777 \
   --volume "$src:/src:ro" --volume "$work/decisions.test:/runner:ro" \
   --volume "$work/private:/private:ro" --volume "$report/output:/reports" \
   --volume "$report:/samples:ro" --workdir /src/internal/decisions \
   --env BUTLER_TEST_MEMORY_POSTGRES_URL=postgres://butler@decision-postgres:5432/decisions_test?sslmode=disable \
-  "${extra[@]}" "$@" --entrypoint /runner "$builder" -test.v -test.run "$pattern" -test.timeout 15m
+  "${extra[@]}" "$@" --entrypoint /runner "$builder" -test.v -test.run "$pattern" -test.timeout 45m
 }
 # First prove the caller contracts against actual isolated PG with no tensor calls.
 run_test '^Test' > "$report/contracts.log" 2>&1
-if [[ "$mode" == taxonomy || "$mode" == qwen* ]]; then
+if [[ "$mode" == taxonomy || "$mode" == qwen* || "$mode" == interpretation ]]; then
  phase="${4:-replay}"
  [[ "$phase" == replay || "$phase" == dev || "$phase" == test ]] || exit 1
  (cd "$src"; sha256sum deploy/local-models/russian-decisions-independent-v2.json internal/localmodels/decision-schema-v2.json) > "$report/taxonomy-freeze.sha256"
- sample_extra=(); if [[ "$mode" == qwen* ]]; then sample_extra+=(butler-decision-qwen-v2); fi
+ sample_extra=(); if [[ "$mode" == qwen* || "$mode" == interpretation ]]; then sample_extra+=(butler-decision-qwen-v2); fi
  python3 "$src/deploy/local-models/sample-decisions.py" "$service" "${sample_extra[@]}" > "$report/$phase-cpu.jsonl" &
  sampler=$!
  extra=()
- if [[ "$mode" == qwen* ]]; then
+ if [[ "$mode" == qwen* || "$mode" == interpretation ]]; then
   python3 "$src/deploy/local-models/sample-decision-residency.py" > "$report/$phase-gpu.jsonl" &
   gpu_sampler=$!
   extra+=(--env BUTLER_TEST_QWEN_EVALUATION=1 --env BUTLER_TEST_QWEN_TOKEN_COUNTS=/qwen-data/token-counts.json --env BUTLER_TEST_QWEN_PINS=/qwen-data/qwen-pins.json)
@@ -157,6 +159,11 @@ if [[ "$mode" == taxonomy || "$mode" == qwen* ]]; then
   if [[ "$phase" == dev ]]; then extra+=(--env BUTLER_TEST_DECISION_ONLY_QWEN=1); fi
  fi
  pattern='^TestActualRussianDecisionTaxonomyV2$'
+ if [[ "$mode" == interpretation ]]; then
+  [[ "$phase" == dev || "$phase" == test ]] || exit 1
+  pattern='^TestActualInterpretationV3Comparison$'
+  (cd "$src"; sha256sum deploy/local-models/russian-interpretation-heldout-v3.json deploy/local-models/interpretation-v3-freeze.json deploy/local-models/interpretation-annotation-v3.md internal/localmodels/interpretation-schema-v3.json internal/decisions/interpretation*.go) > "$report/interpretation-source.sha256"
+ fi
  if [[ "$mode" == qwen-workload ]]; then pattern='^TestActualEmbeddingCPUWorkload$'; fi
  run_test "$pattern" --env BUTLER_TEST_LOCAL_MODELS_TOKEN_FILE=/private/token \
   --env BUTLER_TEST_DECISION_PHASE="$phase" --env BUTLER_TEST_DECISION_REPORT="/reports/$phase.json" "${extra[@]}" \

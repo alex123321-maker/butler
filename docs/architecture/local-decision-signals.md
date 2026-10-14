@@ -1,5 +1,11 @@
 # Local decision signals
 
+The new [event interpretation contract](event-interpretation.md) supersedes the
+nine-way taxonomy for the next research stage of issues 27/28. It compares five
+independent intentions, modality and target on source-bound windows. Trust and
+verification are code-owned state, not classes. Historical experiments below
+keep their own immutable schemas and results.
+
 Decision models are optional observations. They never suppress accepted input,
 undo an owner stop, grant a resource, create a task, bypass approval or mark a
 result verified. Durable owner control, action authorization and objective

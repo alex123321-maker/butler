@@ -1,5 +1,12 @@
 # Extraction and decision acceptance matrix
 
+Issues 27/28 now use [event interpretation v3](../../docs/architecture/event-interpretation.md)
+for their next stage: multiple independent intentions, modality, target and
+source-bound quotes. Historical tables below retain their original measurement
+scope. A new experiment with deterministic source windows does not satisfy the
+remaining learned field extraction, candidate publication, real-trace review or
+current-controller benefit requirements. Both issues remain open.
+
 Measured experiments are separate from production readiness. A failed model
 gate is not passed by literal source-preserving rules or by a runner that
 successfully records a report. Extraction scheduling/controller shortcuts stay off.

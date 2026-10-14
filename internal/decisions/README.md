@@ -1,5 +1,13 @@
 # Local decision observations
 
+Interpretation v3 replaces the next experiment's single nine-way label with
+five independent intention flags, modality and target. The Go common adapter
+creates exact Unicode source windows and validates complete 16-ID score groups;
+`Interpret` retains current job/source admission and seven-row token allowance.
+Production consumers remain disabled. See
+[the revised contract](../../docs/architecture/event-interpretation.md) and
+[annotation rules](../../deploy/local-models/interpretation-annotation-v3.md).
+
 `TaxonomyProfiles()` adds described experimental schemas for the same three
 CPU checkpoints. A newly frozen 18-dev/90-test synthetic corpus supplies event
 JSON with text/context/source-role/evidence state, excluding answer annotations.

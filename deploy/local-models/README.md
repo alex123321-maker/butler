@@ -1,5 +1,17 @@
 # Reproducible lab model runtime
 
+The next issues 27/28 experiment uses the
+[source-bound interpretation contract](../../docs/architecture/event-interpretation.md),
+[annotation rules](interpretation-annotation-v3.md) and frozen v3 corpus.
+The final file is `russian-interpretation-heldout-v3.json`; the original
+`russian-interpretation-independent-v3.json` remains a design fixture.
+Use a fresh isolated root, Qwen preparation kind `interpretation`, then runner
+`interpretation dev co-resident` and `interpretation test co-resident`.
+All candidates share deterministic quote windows; GLiNER/d1 expose 16 scores
+over five independent intents and modality/target groups. Qwen stays GPU with
+accepted FP32 CPU EmbeddingGemma2. This is research; actual controller savings,
+learned minimal-span extraction and production Qwen transport remain unmeasured.
+
 All operations run on `ssh laba`, in a private source snapshot and
 `/srv/storage/butler/agents/local-models`. Do not change the shared lab source
 pointer or start the shared Compose stack from this directory.

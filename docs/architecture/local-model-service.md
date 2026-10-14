@@ -1,5 +1,13 @@
 # Auxiliary local model service
 
+Research preprocessing `butler-event-interpretation-v3` adds a bundled,
+SHA-checked schema for independent intent questions and modality/target choices.
+GLiNER's existing SDK uses native multi-label sigmoid; reviewed d1 uses native
+boolean intent heads and batches seven independently
+preflighted rows. The existing classification RPC returns exactly 16 pinned
+score IDs. Complete groups are validated by the Go observer. See
+[event interpretation](event-interpretation.md); ordinary profiles stay intact.
+
 Decision taxonomy v2 is an additive, operator-only preprocessing identity for
 the existing CPU GLiNER and reviewed d1 workers. A bundled hash-pinned JSON asset
 contains definitions and precedence; no caller-supplied prompt, code or schema

@@ -7,6 +7,7 @@ from the quantized checkpoint. No new Python dependency is introduced.
 import hashlib
 import json
 import pathlib
+import os
 import urllib.request
 from tokenizers import Tokenizer
 
@@ -20,7 +21,7 @@ for digest, prompt in json.loads((root / 'preflight-prompts.json').read_text()).
     if hashlib.sha256(prompt.encode()).hexdigest() != digest:
         raise ValueError('prompt identity mismatch')
     count = len(tokenizer.encode(prompt, add_special_tokens=False).ids)
-    if count < 1 or count > 2032:
+    if count < 1 or count > (1920 if os.environ.get('BUTLER_QWEN_PREFLIGHT_KIND')=='interpretation' else 2032):
         raise ValueError('complete prompt exceeds context')
     counts[digest] = count
 (root / 'token-counts.json').write_text(json.dumps(counts, indent=2))
@@ -41,6 +42,7 @@ pins = {
     'runtime_image': 'sha256:b86366bb528bbf7f1424435d165028497a5b69bf6ddb4fa5a87102e2b79f44fb',
     'runtime_binary_sha256': '8ff456e3f8c08b7fb211857c634d4df8e1a84cacaaf5b9e7b6bbf89e0f9ae8e0',
     'context_tokens': 2048,
+    'preprocessing': 'butler-event-interpretation-v3' if os.environ.get('BUTLER_QWEN_PREFLIGHT_KIND')=='interpretation' else 'butler-event-taxonomy-v2',
     'preflight_count': len(counts),
     'preflight_min_tokens': min(counts.values()),
     'preflight_max_tokens': max(counts.values()),

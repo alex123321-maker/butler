@@ -1,5 +1,13 @@
 # Structured extraction of candidate memory
 
+Issue 27's next scope follows [event interpretation](event-interpretation.md):
+candidate semantic units can carry multiple intentions, modality, target and
+exact quotes. Initial v3 comparison uses deterministic source windows and
+shadow observations; learned minimal spans, optional action/resource/deadline
+fields and publication through the existing candidate store remain separately
+measured implementation work. Historical learned-extraction quality below is
+not passed by a valid code-derived quote.
+
 The local service computes tensors. The Go caller owns source/job admission,
 normalization and atomic candidate publication; the catalog owns current access
 and separate owner decisions. Extraction cannot change orchestration, accepted
