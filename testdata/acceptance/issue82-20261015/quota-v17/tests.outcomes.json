@@ -1,0 +1,28 @@
+{
+  "pass": 3,
+  "fail": 0,
+  "test_skips": [],
+  "packages_without_tests": [],
+  "outcomes": [
+    {
+      "package": "github.com/butler/butler/cmd/provider-auth",
+      "test": "TestInspectionOnlyExportsConnectionAndExpiry",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/cmd/provider-auth",
+      "test": "TestOperatorSmokeRejectsPartialAnswer",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/cmd/provider-auth",
+      "test": "TestQuotaUnknownIsNotZeroAndPrivateFieldsExcluded",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/cmd/provider-auth",
+      "test": null,
+      "action": "pass"
+    }
+  ]
+}

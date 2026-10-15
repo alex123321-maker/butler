@@ -1,0 +1,28 @@
+{
+  "policy_id": "issue82-native-v5",
+  "handler": "source-quote-v1",
+  "trigger": "source_changed",
+  "interval_seconds": 60,
+  "max_jobs": 1,
+  "privacy": "cloud_allowed",
+  "job": {
+    "task_id": "",
+    "original_run_id": "",
+    "sources": [
+      {
+        "source_id": "source_f87d5f775e71e6cef3020133735f61a78beff9220c0eb80f5a4809492659a0b1",
+        "revision": 1,
+        "access_revision": 1,
+        "content_hash": "684ec275d5cf587089f43596fb36352715e4cc89e04aadccca36eda1abefdba3"
+      }
+    ],
+    "allowance": {
+      "model_turns": 1,
+      "tokens": 1056768,
+      "cost_micros": 0,
+      "active_millis": 90000,
+      "provider_input_bytes": 8388608
+    },
+    "deadline": "2026-10-15T17:16:40Z"
+  }
+}

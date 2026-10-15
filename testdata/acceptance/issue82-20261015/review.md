@@ -1,7 +1,48 @@
 # Independent review record
 
+## Follow-up independent review — native bounded PASS
+
+The same separate read-only reviewer examined final production diagnostics
+through4fb6913, the removed compatibility experiment, dc7a441 window and9b25bfa
+same-deadline remainder. No new material P1/P2 findings remain. The documented
+scope is existing Antigravity High/proxy, not repaired AICode access or consumer
+quality. Production queue/budget/authority code remains the previously tested
+implementation; diagnostic projections do not grant authority or retries.
+
+Independently recounted original gzip logs: release-v27 **338 PASS/0 FAIL/0 test
+SKIP** (providerfactory has no tests); diagnosis-v30 **196 PASS/0 FAIL/0 SKIP**.
+These overlap. Access projection preserves missing consent/onboarding as null,
+exports only booleans/fixed enum classes and never accepts terms. All1647 source
+manifest entries match the worktree; final production code matches the accepted
+binary7c328536...9b2ec. A pattern scan of321 collected files, including gzip logs,
+found no credential strings; this is not a guarantee for arbitrary secret formats.
+
+Original native-v10 deadline17:27:57Z was preserved. The first BG publication
+has usage297/85/777; repeated event/restart retains one job/attempt/result. Initial
+foreground input stops before inference because gRPC used HTTPS_PROXY for Broker.
+NO_PROXY repair and actual ListTools39 prove service reachability with no model
+or tool execution. That blocked input is retained; owner control resumes the same
+task and admits only the two remaining requests, with no deadline extension.
+
+Foreground returns exact marker with usage6264/9. Owner-verified task completion
+at17:17:46Z precedes BG2 admission17:17:47Z and publication17:17:53Z, usage297/85/644.
+Both derivatives quote the current source exactly. Remainder final assertions
+PASS at17:17:54Z. Nine old attempt/reservation fingerprints and the first successful
+attempt are unchanged; final12 reservations, root2/2 and owner/day12 turns /
+12,681,216 reserved tokens /1,080,000ms /100,663,296 bytes. Old9 usage remains NULL.
+No active input/run/lease; local-only attempts0; control disabled, service exited.
+
+Main image/path are unchanged. Explicitly requested OAuth renewal did write its
+encrypted auth row; it must not be described as no main DB writes. Successful
+renewal/positive quota do not explain old403; direct High prerequisite and earlier
+unknown errors remain distinct. The new native proof plus controlled crash,
+revocation, concurrency and budget tests support #82's general mechanism.
+Activation, useful handler quality and primary deployment remain separate.
+
 Reviewer: separate `review82` agent, read-only implementation/evidence audit on
 2026-10-15. No independent inference or changes to main deployment.
+
+## Initial review before native recovery
 
 Reviewed production commits `d99f5b7`, `6f7c897`; window scripts through
 `a094a68`. Compared nine critical local/remote file hashes and read original

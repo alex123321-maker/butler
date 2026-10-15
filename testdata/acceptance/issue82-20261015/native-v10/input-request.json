@@ -1,0 +1,12 @@
+{
+  "event_id": "issue82-foreground-v10",
+  "idempotency_key": "issue82-foreground-v10",
+  "event_type": "USER_MESSAGE",
+  "session_key": "web:issue82-owner",
+  "source": "web",
+  "payload": {
+    "text": "Ответь ровно ISSUE82_FOREGROUND_READY. Инструменты не нужны.",
+    "user": "issue82-owner",
+    "task_id": "task_7e68c5bb4b12a6a37485dd21308827c7"
+  }
+}

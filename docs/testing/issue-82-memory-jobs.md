@@ -1,9 +1,16 @@
 # Issue #82: durable background memory execution
 
-Implementation is ready for review. **Native success acceptance is blocked**:
-the deployment's configured Antigravity `gemini-3.8-flash-tiered` returned HTTP 403
-in the new isolated stand. No native result was published. This is not acceptance
-of model quality or production enablement. References: #82, #77 and #81.
+**Bounded native acceptance passed on laba**, using the existing Antigravity
+Gemini Flash High subscription profile through the isolated proxy. Three new
+calls produced two verified atomic background publications and one foreground
+completion while local-only work waited. Nine earlier charged attempts remain
+unchanged. This proves the general execution mechanism, not consumer/model
+quality or production enablement. References: #82, #77 and #81.
+
+The old AICode/tiered path still returned403 after OAuth renewal and on both
+network lanes. Expiry was not established as its cause. High was explicitly
+selected before the successful window; no automatic provider/model fallback
+was added, and the primary deployment's model/configuration was not switched.
 
 ## Version and isolation
 
@@ -21,13 +28,20 @@ of model quality or production enablement. References: #82, #77 and #81.
   networks `10.253.82.0/28` and `10.253.83.0/28`, loopback HTTP 18282.
 - Three separate databases: `memory_jobs_storage_test` with schema-per-test,
   `memory_jobs_legacy_test` for legacy public-schema fixtures, `memory_jobs_test`
-  for native service execution. No main database writes or service switch.
+  for native service execution. No main application data/schema or service switch. The later
+  owner-requested auth repair renewed only the encrypted main provider-auth row;
+  its encrypted backup remains private. No credential material is published.
 - Production mechanism and main regression baseline: `d99f5b7`. Native-v1:
-  `d1df2be` (only prospective window deadline changed). Final production code:
+  `d1df2be` (only prospective window deadline changed). Initial diagnostic production code:
   `6f7c897` (safe failure diagnostics added). Native-v2: `a094a68` (only window
   script changed). Test-only `3b530db` adds the actual-wire crash scenario; `f5939e7` strengthens
   observed signal exit and reservation/scope assertions. Later
-  commits add this report/evidence without production code changes.
+  commits initially added this report/evidence. Follow-up core diagnostics:
+  `a6c8529`, `c4e5efb`, `4fb6913`; accepted binary SHA256
+  `7c32853646ccc48adc0e4930f8c68d3d0814b9a70df8f49d848ad1588019b2ec`.
+  Successful prefix script: `dc7a441`; same-window remainder and Broker/proxy
+  configuration repair: `9b25bfa`. The experimental tiered Cloud Code option
+  was removed in `eb3c0f8`; it is not part of the resulting transport contract.
 - Both full source manifests were checked byte-for-byte on laba. Source manifests,
   binaries, logs and receipts are in the [evidence directory][evidence]. No binary,
   private credential file, encrypted auth row or database dump is published there.
@@ -78,6 +92,11 @@ are not added together.
 | `crash-v14` |5 PASS,0 FAIL,0 SKIP|All four crash cases and parent; forced child signal exit and two distinct reservations / three charged scopes explicitly asserted. No cloud call.|
 | `native-v1` |FAILED|One reserved attempt, no usage/result; the first version only stored `provider_failed`, so exact cause remains unknown.|
 | `native-v2` |FAILED|One additional attempt, `provider_unavailable_http_403`, no usage/result. Same durable DB and owner/day spend retained.|
+| `recovery-v20` |303 PASS,0 FAIL,1 SKIP|Auth/quota/fixed401/403 diagnostics and jobs/native transport regressions; missing provider-auth PG opt-in was a skip, not a pass.|
+| `authpg-v21` |1 PASS,0 FAIL,0 SKIP|The skipped encrypted-PG import/reconnect test explicitly enabled and passed against isolated PostgreSQL.|
+| `release-v27` |338 PASS,0 FAIL,0 test SKIP|Resulting jobs, config, provider auth, native transport, private CLI; race/vet/build. providerfactory has no test files, reported separately as package skip.|
+| `diagnosis-v30` |196 PASS,0 FAIL,0 SKIP|Final transport/rejection-envelope/private CLI tests after safe FAILED_PRECONDITION and access projections; race/vet and both service/operator builds.|
+| `native-v10` + remainder |PASS, bounded scenario|Three actual High/proxy calls; exact quote publications, repeated event/restart, foreground marker, completed-task background authority, retained old spend; SQL ledger assertions pass.|
 
 The v13 wire test did not yet assert the Kill/Wait result; it is retained as
 historical wire/recovery evidence. The stronger v14 run proves forced signal
@@ -100,47 +119,92 @@ distinguished from native model access.
 | --- | --- | --- |
 |Durable create, claim, crashes around dispatch and commit|`TestModelActualProcessCrashRecoveryIntegration` terminates a separate Go worker before/after the durable dispatch marker and kills it before commit against PG; the added `after_http_send` case proves SIGKILL after the parent HTTP server receives complete request bytes but before any response; `TestModelCrashRecoveryAndLostPublicationACKIntegration` retains each reservation and rejects old-fence publication.|Controlled transport; test alone accelerates the 2-minute expired claim.|
 |Competing workers and expired claim|`TestModelConcurrentWorkersAndBudgetIntegration`; `TestModelDifferentJobsShareFinalBudgetUnitIntegration` races independent jobs for the last owner/day, root-task and mandate unit; `TestModelClaimExpiryAfterBudgetWaitIntegration` rejects expiry after lock wait.|Real transactional PG; no native concurrency spend.|
-|Repeat events, lost publication ACK, one derivative|Crash/ACK test plus `TestModelBoundedTriggersQueueAndExpiredPendingIntegration`; same committed publication receipt is returned and one-result unique/CAS guards are exercised.|Native repetition/restart step was not reached because inference failed.|
+|Repeat events, lost publication ACK, one derivative|Crash/ACK test plus `TestModelBoundedTriggersQueueAndExpiredPendingIntegration`; same committed publication receipt is returned and one-result unique/CAS guards are exercised.|Native-v10 repeat/restart retains exactly one job, attempt and result; lost-ACK failure injection remains controlled.|
 |Budget exhaustion, unavailable provider, finite retry|Concurrent budget tests; `TestModelLocalOnlyUnavailableAndRetryBoundIntegration/unavailable` stops after 4 attempts; unknown usage remains NULL; `TestModelActualUsageOverrunRetainedIntegration` retains reported over-limit usage and denies publication; the original reservation remains charged.|Native HTTP 403 is non-retryable and was not automatically retried.|
 |Pause/disable/cancel, worker shutdown recovery|`TestModelRevocationDuringCallIntegration`; `TestModelPolicyPauseKeepsJobsAndAttemptsIntegration`; `TestModelWorkerShutdownNormalizedTransportErrorIntegration` recovers from normalized native cancellation with both reservations intact.|Controlled in-flight transport.|
 |Correction, deletion, source access revoke, task/mandate changes during call|Revocation test plus `TestModelMandateAndSourceRevocationDuringCallIntegration` and `TestModelSessionPrivacyRecheckedAtPublicationIntegration` reject every late output.|Real catalog/authority transactions with controlled callbacks.|
-|Current background authority after terminal original run/task|`TestModelCompletedRunAndTaskPolicyIntegration`: original run/task completed, no lease, exact source → attempt/usage → atomic catalog publication; task remains completed.|Real PG, controlled inference; native completed-run success not established.|
-|Interactive priority and independent user completion|`TestModelPriorityAtDispatchAndDuringInferenceIntegration`; `TestAuxiliaryMemoryFailureDoesNotUndoResultIntegration` passes with completion PG and Redis enabled.|Native foreground step was not reached; no successful native user run is claimed.|
+|Current background authority after terminal original run/task|`TestModelCompletedRunAndTaskPolicyIntegration`: original run/task completed, no lease, exact source → attempt/usage → atomic catalog publication; task remains completed.|Native-v10 remainder admits after owner-verified task completion, without a lease; task stays completed.|
+|Interactive priority and independent user completion|`TestModelPriorityAtDispatchAndDuringInferenceIntegration`; `TestAuxiliaryMemoryFailureDoesNotUndoResultIntegration` passes with completion PG and Redis enabled.|Native foreground exact marker and observed usage complete while the local-only job remains pending with zero attempts.|
 |Local-only, no hidden fallback or raw credential release|Local-only tests make 0 provider calls; `TestModelTaskSourceCannotDropLocalOnlyBindingIntegration`; `TestModelCredentialSourceNeverReachesProviderIntegration`; safe diagnostic test excludes raw provider Message/Code/Details.|No local model selected. Recognizable-secret detection is an existing defense, not a proof of detecting every arbitrary secret.|
 |Atomic rollback, transient persistence and retry|`TestModelTransientPublicationRollbackRecoveryIntegration` injects one SQL40001 after catalog insertion; final state has two charged attempts and one result. `TestMemoryJobActualNativeAdapterHTTPIntegration` uses actual native adapter/HTTP server and proves no HTTP on transient authority failure, then recovery.|Actual HTTP and PG; server responses controlled, not generative-model quality.|
 |Own current admission, handler gates, bounded triggers/backpressure|Completed-run, consumer-gate, policy deadline, active-hour/privacy and queue tests; bounded source_changed/session_completed/session_inactive/schedule events.|Useful extraction/summary/consolidation handlers remain separately gated tasks.|
 |Migration and safe rollback|`TestModelMigrationRollbackRetainsHistoryIntegration`: unused 071 down/up succeeds, occupied 071 down refuses and retains policy history.|Application rollback keeps additive 071 and all budget/attempt history.|
 
-## New native windows and blocker
+## Fresh native recovery and preserved accounting
 
-The prospective caps were written **before** calls. Both windows used the active
-deployment provider/model and new neutral diagnostic sources. No historical
-acceptance window, model answer, quota counter or success record was reused.
-Native-v1 allowed at most 3 attempts / 90s each in 20min; its one unknown reservation
-was retained. Native-v2 allowed at most 2 additional attempts in a fresh 20min
-window, with initial-history count 1 and the **same owner/day cap 3**. The process
-watchdog and EXIT cleanup disabled/stopped only the isolated Orchestrator.
+All windows wrote prospective caps before inference, used the same isolated DB
+and owner, stopped on failure, and retained all reservations. No historical
+acceptance answer or closed window is reused as current proof.
 
-At final read-only audit: 2 attempts, 2 failed, 0 published derivatives,
-0 foreground attempts; both `usage=NULL`. Owner/day retains 2 turns,
-2,113,536 reserved tokens, 180,000ms and 16,777,216 input bytes. Monetary quote 0
-uses the explicit `subscription_no_overage` policy; subscription never proves
-locality or zero token usage. The second attempt is durably classified cloud,
-`provider_unavailable_http_403`. No third attempt, hidden fallback or model
-switch was made. Control is disabled and isolated Orchestrator is exited.
+| Window | Model / lane | New admitted attempts | Observed result |
+| --- | --- | --- | --- |
+| v1/v2 | tiered / proxy |1 each|Unknown first failure; then HTTP403. Both usage NULL.|
+| v3 | tiered / proxy, renewed OAuth |1|HTTP403 PERMISSION_DENIED despite unexpired renewed auth.|
+| v4 | experimental tiered Cloud Code / proxy |1|Paid discovery timed out before generation; reservation conservatively retained.|
+| v5 | experimental tiered Cloud Code / direct |1|HTTP400; compatibility option rejected and later removed.|
+| v6 | original tiered AICode / direct |1|Same HTTP403 PERMISSION_DENIED; proxy alone does not explain it.|
+| v7/v8 | existing High / direct |1 each|HTTP400; exact earlier causes remain unknown.|
+| v9 | existing High / direct, improved diagnostics |1|HTTP400 with canonical FAILED_PRECONDITION. Does not establish which prerequisite failed.|
+| v10 prefix + remainder | existing High / isolated proxy |3 total|Two BG publications and one FG answer, all with observed usage; original bounds and old history retained.|
 
-Credential resolution succeeded, and the main provider API reports connected.
-Those observations do **not** override the actual 403 or prove account entitlement.
-The exact external cause of that rejection is not established. Restoring access
-for the currently configured provider requires operator/upstream resolution;
-changing credentials, account, provider or model is outside this implementation.
+The actual main auth record was expired. Normal Manager.Resolve renewed it with
+OAuth HTTP200 and persisted encrypted rotation, then copied that encrypted record
+privately into the stand. The earlier isolated403 occurred before its own expiry,
+and v3 still returned403 with renewed auth. Paid discovery and model metadata
+returned200, but never substituted for a generation result. Read-only access
+metadata confirmed paid tier/project presence; absent consent/onboarding fields
+remain null. No terms were accepted and no account/provider/credits were changed.
 
-Consequently the full **real generative provider → validated response → atomic
-publication + observed spend** success path and native foreground-while-background
-scenario remain unconfirmed. Their deterministic mechanisms passed the real-PG
-and actual-native-adapter/HTTP tests above. This PR must remain unaccepted for
-native promotion until a newly authorized bounded window establishes success.
-No summary/extraction/consolidation quality claim is made.
+The artificial stand-only owner/day cap3 was removed at the owner's explicit
+request by restoring the existing default Day allowance on that same fixture row.
+The before/after receipt in budget-reconfiguration-v19 proves the same scope ID,
+used2 and original reservations. No runtime top-up/reset mechanism was added;
+normal immutable shared budgets and finite per-window/policy/root limits remain.
+
+Native-v10 was frozen before calls to High/proxy, at most3 new calls,90s each,
+15min total and cumulative12 including old9. Prefix admission started17:12:58Z;
+original expiry17:27:57Z. It published the exact quote, then reposted the event
+and restarted the service: one job/attempt/result persisted. Local-only policy
+waited with zero attempts.
+
+The first foreground input stopped before model admission because gRPC sent
+internal tool-broker traffic through HTTPS_PROXY: NO_PROXY omitted that hostname.
+The correction adds internal service names; actual ListTools then succeeds in the
+service's exact environment, with zero tool/model execution. The old blocked input
+is preserved. The owner resume surface created a continuation for that same task;
+no SQL task/run status was fabricated. Remainder permits only the two unspent
+calls and reads the original deadline, without extension/refund/replaying BG1.
+It completed at17:17:54Z. Prefix remains an interrupted receipt; the combined
+bounded scenario and remainder have an explicit PASS.
+
+| Actual call | Saved usage | Verified effect |
+| --- | --- | --- |
+| BG1 |297 input,85 output,777 total|Exact source quote; current source parent/revision, one atomic derivative.|
+| Foreground |6264 input,9 output|Exact ISSUE82_FOREGROUND_READY; owner verification/completion through real task controls.|
+| BG2 after task completion |297 input,85 output,644 total|Task completed17:17:46Z, new admission17:17:47Z, publication17:17:53Z; no active original lease.|
+
+Final ledger:11 BG attempts plus1 foreground,12 distinct reservations,2 published
+sources,9 old unknown usage records unchanged (row/reservation digests match).
+Observed input/output subtotal is6858/179; unknown usage is not included as zero.
+Foreground total is not recorded by its owning attempt table and is not invented.
+Owner/day conservatively retains12 turns,12,681,216 quoted tokens,1,080,000ms and
+100,663,296 input bytes. Shared task root uses2/2 (FG+BG2). No refund was applied.
+Cost quote0 uses explicit subscription_no_overage; all generation is cloud, and
+membership never proves local execution or zero actual token consumption.
+
+Same-profile/proxy quota observations:0.99958575 before and0.9992839 after,
+reset2026-10-15T21:19:22Z. These are server model metadata, not per-request
+billing attribution or proof that all account activity was ours. The final auth
+expiry remained17:31:10Z. Main image/path are unchanged; only its explicitly
+requested encrypted auth renewal wrote to main. Native worker control is disabled,
+service exited; final audit has no active input/run/lease and local attempts0.
+
+High/proxy is the newly proved operational configuration for this account.
+The old AICode403 and direct High prerequisite are not declared repaired or
+causally explained by token expiry. Production activation must explicitly select
+the proved profile and matching budget price basis; no fallback is installed.
+The exact-source diagnostic probe is the only admitted handler; extraction,
+summary/consolidation quality and broader model behavior remain separate gates.
 
 ## Review, migration and deployment
 
@@ -149,8 +213,8 @@ receipts without performing inference. Fixed material findings: repeatable nativ
 authority checks needed a separate single dispatch marker; normalized transport
 errors must retain private transient SQL causes; worker shutdown could race with
 a buffered native cancellation error. Corresponding regressions passed.
-The reviewer separately checked v10/v11 outcomes and the native accounting.
-See [review record][review] for remaining native acceptance limitations.
+The reviewer separately checked original v10/v11 outcomes, final v27/v30 tests and native-v10/remainder accounting.
+See [review record][review] for independent observations and the High/proxy/diagnostic-handler limits.
 
 Apply 071 with the normal migrator. For application rollback: disable global
 model control, stop worker, retain 071/history, run prior binary; old kind-specific
@@ -158,7 +222,7 @@ workers ignore model jobs. Down is supported only for an unused schema. Do not
 delete reservations/history or enable the legacy pipeline to force rollback.
 See the [full contract and controls](../architecture/background-memory-jobs.md).
 
-Reproduction scripts are under `scripts/dev/memory-jobs-*.sh`. Native-v1/v2 labels
+Reproduction scripts are under `scripts/dev/memory-jobs-*.sh`. Native-v1–v10 labels
 are consumed and must not be replayed or used to replenish spend. Main deployment
 was not switched; PR merge and automatic issue closure are not part of this task.
 

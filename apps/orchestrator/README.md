@@ -8,6 +8,13 @@ consumer. Private `/api/v4/memory/model-*` controls expose policies, cancellatio
 waiting reasons, attempts and accounting. The legacy pipeline stays disabled.
 See [contracts, setup and rollback](../../docs/architecture/background-memory-jobs.md).
 
+The new [bounded native acceptance](../../docs/testing/issue-82-memory-jobs.md)
+passes on the existing Antigravity Flash High subscription profile through the
+isolated proxy, retaining all prior expenses. The tiered/AICode403 is not proved
+fixed by OAuth renewal. Select the proved model and matching budget price basis
+explicitly for activation; never switch after rejection. Include internal HTTP
+and gRPC names (especially tool-broker) in NO_PROXY when HTTPS_PROXY is enabled.
+
 The memory-eval collector composes current source/catalog/index/bundle/budget/provider code, retains all
 paid failures and original traces, and checks source/task/lease before dispatch
 and final acceptance. Normal tests authenticate/infer nothing. Its independently

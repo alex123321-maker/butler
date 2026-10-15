@@ -1,0 +1,1775 @@
+{
+  "pass": 347,
+  "fail": 0,
+  "test_skips": [],
+  "packages_without_tests": [
+    "github.com/butler/butler/internal/providerfactory"
+  ],
+  "outcomes": [
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestAuthRejectionOnlyProjectsExactSafeReasons",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestCurrentInferenceAuthorityDeniesImmediatelyBeforeHTTP",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestNativeSerializedBudgetIncludesHistoryBeforeNetwork",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestFlashHighCloudCodeToolContinuation",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestTieredCloudCodeToolContinuation",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestFlashHighAuthAndWholeEnvelopeLimitsDenyBeforeGeneration/no-discovery",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestFlashHighAuthAndWholeEnvelopeLimitsDenyBeforeGeneration/discovery-error",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestFlashHighAuthAndWholeEnvelopeLimitsDenyBeforeGeneration/invalid-project",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestFlashHighAuthAndWholeEnvelopeLimitsDenyBeforeGeneration/byte-limit",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestFlashHighAuthAndWholeEnvelopeLimitsDenyBeforeGeneration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestCloudCodeSSERejectsWrongEnvelopeAndPartialTools",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/known",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/true_zero",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/missing_usage",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/partial_usage",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/missing_version",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/aliased_metadata",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/aliased_count",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/negative_count",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/invalid_version",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/incomplete_frame",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/incomplete_candidate",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/reader_failure_after_terminal",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/conflicting_usage",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/conflicting_version",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/provisional_only",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/known",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/true_zero",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/missing_usage",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/partial_usage",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/missing_version",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/aliased_metadata",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/aliased_count",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/negative_count",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/invalid_version",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/incomplete_frame",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/incomplete_candidate",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/reader_failure_after_terminal",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/conflicting_usage",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/conflicting_version",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/provisional_only",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageTruncatedFunctionFailureParserReturnsNoModelBody",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestDeveloperArgsSchemaDecoderCompatibility/plain_integer",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestDeveloperArgsSchemaDecoderCompatibility/decimal_integer",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestDeveloperArgsSchemaDecoderCompatibility/exponent_integer",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestDeveloperArgsSchemaDecoderCompatibility/timezone_required_beyond_schema_string",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestDeveloperArgsSchemaDecoderCompatibility",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHTTPInvalidArgumentReasonIsBoundedMaskedAndNeverRetries",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestProviderDiagnosticStageSeparatesAuthHTTPAndStreamFailure/tiered/authentication",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestProviderDiagnosticStageSeparatesAuthHTTPAndStreamFailure/tiered/round_trip",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestProviderDiagnosticStageSeparatesAuthHTTPAndStreamFailure/tiered/response_stream",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestProviderDiagnosticStageSeparatesAuthHTTPAndStreamFailure/high/authentication",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestProviderDiagnosticStageSeparatesAuthHTTPAndStreamFailure/high/round_trip",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestProviderDiagnosticStageSeparatesAuthHTTPAndStreamFailure/high/response_stream",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestProviderDiagnosticStageSeparatesAuthHTTPAndStreamFailure",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHighGoogleResponseSchemaUsesExclusiveFrozenNativeDialect/tools",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHighGoogleResponseSchemaUsesExclusiveFrozenNativeDialect/map_override",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHighGoogleResponseSchemaUsesExclusiveFrozenNativeDialect/json_override",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHighGoogleResponseSchemaUsesExclusiveFrozenNativeDialect/foreign_model",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHighGoogleResponseSchemaUsesExclusiveFrozenNativeDialect",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/deep",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/lowercase_type",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/annotation",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/duplicate_enum",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/oversized_array_bound",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/oversized_schema",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/duplicate_key",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/wrong_root",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/too_many_nodes",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/empty_properties",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/foreign_required",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/invalid_nullable",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/numeric_enum",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/missing_array_bound",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/noncanonical_array_bound",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/extra_keyword",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/duplicate_required",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/reference",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/union",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/numeric_array_bound",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/contradictory_array_bound",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/foreign_model",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/mixed_dialects",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaDoesNotRetryFallbackOrRepair/Bad_Request",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaDoesNotRetryFallbackOrRepair/OK",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestGoogleResponseSchemaDoesNotRetryFallbackOrRepair",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHighStructuredGenerationUsesFrozenAllowance/foreign_model",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHighStructuredGenerationUsesFrozenAllowance/tool_authority",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHighStructuredGenerationUsesFrozenAllowance/map_override",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHighStructuredGenerationUsesFrozenAllowance/json_override",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHighStructuredGenerationUsesFrozenAllowance",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestConfiguredGenerationRejectsUnsupportedSchema/tiered_ceiling",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestConfiguredGenerationRejectsUnsupportedSchema/tiered_schema",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestConfiguredGenerationRejectsUnsupportedSchema/duplicate",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestConfiguredGenerationRejectsUnsupportedSchema/external_reference",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestConfiguredGenerationRejectsUnsupportedSchema/negative",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestConfiguredGenerationRejectsUnsupportedSchema/array",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestConfiguredGenerationRejectsUnsupportedSchema/local_reference",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestConfiguredGenerationRejectsUnsupportedSchema/too_large",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestConfiguredGenerationRejectsUnsupportedSchema/oversized",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestConfiguredGenerationRejectsUnsupportedSchema",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHighStructuredRejectionDoesNotRetryOrFallback",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestMemoryJobActualNativeAdapterHTTPIntegration/auto",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestMemoryJobActualNativeAdapterHTTPIntegration/cloudcode",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestMemoryJobActualNativeAdapterHTTPIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/tiered/missing",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/tiered/reported",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/tiered/conflicting_trailer",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/tiered/invalid",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/tiered/aliased",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/high/missing",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/high/reported",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/high/conflicting_trailer",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/high/invalid",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/high/aliased",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestDurableRecoveryStartsFreshObservationsThenKeepsLiveSignatures",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestNativeFunctionContinuationKeepsExactSignatureAndOnlyButlerTools",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestTruncatedTextRetainsNativeFinishReason",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/foreign_function",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/duplicate_key",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/parallel_calls",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/unterminated_frame",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/truncated",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/old_wrapped_response",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/bad_schema",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/extra_argument",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/server_execution",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/incomplete",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/automatic_history",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/multiple_candidates",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestUnsafeOrIncompleteResponsesNeverProposeTools",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHTTPFailuresMaskedNoRetryOrAuthRedirect/302",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHTTPFailuresMaskedNoRetryOrAuthRedirect/400",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHTTPFailuresMaskedNoRetryOrAuthRedirect/401",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHTTPFailuresMaskedNoRetryOrAuthRedirect/403",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHTTPFailuresMaskedNoRetryOrAuthRedirect/404",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHTTPFailuresMaskedNoRetryOrAuthRedirect/429",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHTTPFailuresMaskedNoRetryOrAuthRedirect/500",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestHTTPFailuresMaskedNoRetryOrAuthRedirect",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry/capacity",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry/quota",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry/malformed",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry/oversized",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestCancellationClosesHTTPAndIsolatedRuns",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestCatalogSchemasAreSupported",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestCancellationClosesRealSSEConnection",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestFlashHighSequentialAdmissionReceiptsKeepExactEnvelopeAndFinal",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestExplicitTieredCloudCodeProfile",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestTieredCloudCodeRequiresDiscoveryAndFiniteEnvelope/no-discovery",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestTieredCloudCodeRequiresDiscoveryAndFiniteEnvelope/invalid-project",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestTieredCloudCodeRequiresDiscoveryAndFiniteEnvelope/byte-limit",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestTieredCloudCodeRequiresDiscoveryAndFiniteEnvelope",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestCancelledIncompleteProviderTurnHasNoObservedUsage",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageSurvivesTieredAndHighContinuation/tiered",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageSurvivesTieredAndHighContinuation/high",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageSurvivesTieredAndHighContinuation",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/missing",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/partial",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/provisional_then_terminal_without_usage",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/aliased_count",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/aliased_metadata",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/negative",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/overflow_decode",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/overflow_sum",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/inconsistent",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/incomplete",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestCompleteInvalidToolProposalRetainsUsageWithoutGrantingExecution",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageOnlyTrailerPreservesOneConsistentCompleteObservation/tiered/identical",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageOnlyTrailerPreservesOneConsistentCompleteObservation/tiered/conflicting",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageOnlyTrailerPreservesOneConsistentCompleteObservation/tiered/late_complete",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageOnlyTrailerPreservesOneConsistentCompleteObservation/high/identical",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageOnlyTrailerPreservesOneConsistentCompleteObservation/high/conflicting",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageOnlyTrailerPreservesOneConsistentCompleteObservation/high/late_complete",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageOnlyTrailerPreservesOneConsistentCompleteObservation",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageHighWrapperAliasesCannotReplaceCompleteResponse/Response",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageHighWrapperAliasesCannotReplaceCompleteResponse/re\\u017fponse",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": "TestToolTurnUsageHighWrapperAliasesCannotReplaceCompleteResponse",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/transport/antigravity",
+      "test": null,
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestAntigravityNativeConfigurationHasNoExecutableOrProfile",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestAntigravityProtocolSelection",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestExecutionBudgetPolicyIsValidatedForBothServices",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLoadOrchestratorFromEnvUsesDefaultsAndEnvOverrides",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLoadOrchestratorFromEnvValidatesRequiredFields",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLoadToolBrokerValidatesAllowedValues",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLoadOrchestratorRequiresAllowedChatsWhenTelegramEnabled",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLoadOrchestratorFromEnvTreatsBlankEnvironmentValuesAsUnset",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestSnapshotListKeysReturnsCopy",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLoadToolBrowserFromEnvUsesSharedDefaults",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLoadToolBrowserLocalFromEnvUsesDefaultsAndOverrides",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLoadToolWebFetchFromEnvUsesDefaultsAndOverrides",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLoadBrowserBridgeFromEnvUsesDefaultsAndOverrides",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLoadRestartHelperFromEnvUsesAllowlistConfig",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLoadToolDoctorParsesContainerTargets",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestPrivateControlEndpointIsFixed",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestGeneratedConverterOperatorOnlyFixedRoutes",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestConverterDelegationCompositionIsOperatorOnly",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestEncryptDecryptRoundTrip",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestDecryptRejectsTamperedCiphertext",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestEncryptRequiresEnvironmentKey",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestDecryptRejectsAssociatedDataMismatch",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestDelegationTopologyIsOperatorOnlyAndBounded",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLayeredExtensionControlUsesOperatorEndpoint",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestGuardedTabRuntimeRequiresOwningComposition",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestGuardedTabOwnerTopologyRequiresOperatorAndPrivateDestination",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestGuardedTabRequestTopologyIsSeparateAndOperatorOnly",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestHotConfigLoadsAndSwapsHotValues",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestHotConfigMarksColdSettingsAsRestartRequired",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestHotConfigConcurrentReadsStaySafeDuringSwap",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLoadOrchestratorLayeredPrefersEnvironmentOverDatabase",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLoadOrchestratorLayeredValidatesDatabaseValues",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLayeredResolverAllowsDatabaseBlankOverrides",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLoadOrchestratorLayeredTreatsBlankEnvironmentValuesAsUnset",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLoadOrchestratorLayeredMemoryPipelineDefaultsToTrue",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLoadOrchestratorLayeredIncludesRestartHelperURL",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestLoadOrchestratorLayeredIncludesExtensionRelaySettings",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestMaskForDisplayReturnsEmptyForUnsetValues",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestMaskForDisplayFullyMasksPasswordsAndConnectionStrings",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestMaskForDisplayShowsLastFourForAPIKeys",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestMaskForDisplayShowsTelegramPrefixAndSuffix",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestMemoryCandidateTopologyIsOperatorOnly",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestBrokerNetworkCapIsOperatorOnlyAndValidated",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestSettingsHelpKeepsExistingCatalog",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestOwnerControlCannotBeAssignedByDatabaseSettings",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestSkillControlOnlyUsesFixedOperatorRoute",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestPostgresSettingsStoreSetEncryptsSecretValues",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestPostgresSettingsStoreGetDecryptsSecretValues",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestPostgresSettingsStoreDeleteReturnsNotFound",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestPostgresSettingsStoreListAllReturnsDecodedSettings",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestWorkspaceTopologyIsOperatorOnlyAndPrivate",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": "TestPostgresSettingsStoreIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/config",
+      "test": null,
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestCloudCodeSubscriptionDiscoveryUsesSameTokenAndIgnoresLegacyProject",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestCloudCodeDiscoveryFailsClosedWithoutPaidTierOrValidProject",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/oauth_refresh/invalid_json",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/oauth_refresh/invalid_semantics",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/oauth_refresh/client_timeout",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/oauth_refresh/http_rejected",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/oauth_refresh/success",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/paid_discovery/invalid_json",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/paid_discovery/invalid_semantics",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/paid_discovery/client_timeout",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/paid_discovery/http_rejected",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/paid_discovery/success",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsPersistRotationBeforeDiscoveryAndDenyUncertainRefresh",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportEncryptedPostgresAndReconnect",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly/match_expired",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly/access_rotated",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly/refresh_rotated",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly/application_credential_changed",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly/disconnected",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly/malformed",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly/duplicate",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly/oversized",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityEncryptedImportResolveRefreshAndSafeState",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityResolveNeedsNoSubscriptionProjectOrDiscovery/#00",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityResolveNeedsNoSubscriptionProjectOrDiscovery/legacy-project",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityResolveNeedsNoSubscriptionProjectOrDiscovery",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportRejectsMalformedOrUntrustedRecords/0",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportRejectsMalformedOrUntrustedRecords/1",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportRejectsMalformedOrUntrustedRecords/2",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportRejectsMalformedOrUntrustedRecords/3",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportRejectsMalformedOrUntrustedRecords/4",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportRejectsMalformedOrUntrustedRecords/5",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportRejectsMalformedOrUntrustedRecords",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityControlPlaneDeniesRedirectAndMasksFailures/302",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityControlPlaneDeniesRedirectAndMasksFailures/400",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityControlPlaneDeniesRedirectAndMasksFailures/401",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityControlPlaneDeniesRedirectAndMasksFailures/429",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityControlPlaneDeniesRedirectAndMasksFailures/500",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityControlPlaneDeniesRedirectAndMasksFailures",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestOpenAICodexFlowCompletesAndResolves",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestGitHubCopilotFlowPollsAndResolves",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": null,
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerfactory",
+      "test": null,
+      "action": "skip"
+    },
+    {
+      "package": "github.com/butler/butler/cmd/provider-auth",
+      "test": "TestInspectionOnlyExportsConnectionAndExpiry",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/cmd/provider-auth",
+      "test": "TestOperatorSmokeRejectsPartialAnswer",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/cmd/provider-auth",
+      "test": "TestQuotaUnknownIsNotZeroAndPrivateFieldsExcluded",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/cmd/provider-auth",
+      "test": null,
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestExactOwnerClaimCannotStealOtherOwnerKindOrPurposeIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestExtractionJobExpiresDuringExactRetryWaitIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestOwnedAuxiliaryAfterRunAndClaimTakeoverIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestEachActualAuxiliaryAttemptChargedAndBoundedIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestSourceAmendDeleteAndLocalityDenyAuxiliaryIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestTaskAmendmentImmediatelyDeniesPostRunAuxiliaryIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/claim_deadline",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/original_run",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/extra_source",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/rewritten_fingerprint",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/allowance",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/deadline",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestAuxiliaryManifestPinsOriginalAncestorsIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelCrashProcessHelper",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelActualProcessCrashRecoveryIntegration/before_dispatch",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelActualProcessCrashRecoveryIntegration/after_dispatch",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelActualProcessCrashRecoveryIntegration/after_http_send",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelActualProcessCrashRecoveryIntegration/before_commit",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelActualProcessCrashRecoveryIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelFailureDiagnosticExcludesProviderMaterialIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelCredentialSourceNeverReachesProviderIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelCompletedRunAndTaskPolicyIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelCrashRecoveryAndLostPublicationACKIntegration/before_dispatch",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelCrashRecoveryAndLostPublicationACKIntegration/after_dispatch",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelCrashRecoveryAndLostPublicationACKIntegration/before_commit",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelCrashRecoveryAndLostPublicationACKIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelConcurrentWorkersAndBudgetIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelRevocationDuringCallIntegration/correct",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelRevocationDuringCallIntegration/delete",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelRevocationDuringCallIntegration/revoke",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelRevocationDuringCallIntegration/cancel",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelRevocationDuringCallIntegration/pause",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelRevocationDuringCallIntegration/disable",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelRevocationDuringCallIntegration/task_amend",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelRevocationDuringCallIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelLocalOnlyUnavailableAndRetryBoundIntegration/local_only",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelLocalOnlyUnavailableAndRetryBoundIntegration/unavailable",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelLocalOnlyUnavailableAndRetryBoundIntegration/unknown_usage",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelLocalOnlyUnavailableAndRetryBoundIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelPriorityPauseDeadlineAndConsumerGateIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestQuoteProbeRejectsUnverifiableModelOutput",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelDifferentJobsShareFinalBudgetUnitIntegration/owner_day",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelDifferentJobsShareFinalBudgetUnitIntegration/task",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelDifferentJobsShareFinalBudgetUnitIntegration/mandate",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelDifferentJobsShareFinalBudgetUnitIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelMandateAndSourceRevocationDuringCallIntegration/mandate_revoke",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelMandateAndSourceRevocationDuringCallIntegration/mandate_revision",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelMandateAndSourceRevocationDuringCallIntegration/goal_revision",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelMandateAndSourceRevocationDuringCallIntegration/source_revoke",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelMandateAndSourceRevocationDuringCallIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelTaskSourceCannotDropLocalOnlyBindingIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelPolicyPauseKeepsJobsAndAttemptsIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelBoundedTriggersQueueAndExpiredPendingIntegration/schedule",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelBoundedTriggersQueueAndExpiredPendingIntegration/session_inactive",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelBoundedTriggersQueueAndExpiredPendingIntegration/queue_backpressure",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelBoundedTriggersQueueAndExpiredPendingIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelActualUsageOverrunRetainedIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelPriorityAtDispatchAndDuringInferenceIntegration/before_dispatch",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelPriorityAtDispatchAndDuringInferenceIntegration/during_call",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelPriorityAtDispatchAndDuringInferenceIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelSessionPrivacyRecheckedAtPublicationIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelClaimExpiryAfterBudgetWaitIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelTransientPublicationRollbackRecoveryIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelLocalWaitAndPolicyDeadlineIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelWorkerShutdownNormalizedTransportErrorIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": "TestModelMigrationRollbackRetainsHistoryIntegration",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/memory/jobs",
+      "test": null,
+      "action": "pass"
+    }
+  ]
+}

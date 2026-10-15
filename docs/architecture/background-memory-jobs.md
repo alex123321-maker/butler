@@ -143,9 +143,15 @@ Real PostgreSQL tests create separate schemas with MaxConns=2. Process-crash tes
 kill an independent Go worker inside publication and accelerate only the test
 claim expiry. Controlled transport failures are distinct from native inference.
 The optional `native.compose.yml` uses separate Orchestrator/Broker/Redis/PG/proxy
-processes and one fresh bounded diagnostic window. Private encrypted provider
+processes, the explicitly selected existing High profile and matching declared
+subscription cost basis. Internal service names belong in NO_PROXY: gRPC also
+uses HTTPS_PROXY. Use the read-only Broker readiness probe before inference.
+Each fresh diagnostic window needs prospective finite limits and immutable
+history; consumed window/remainder scripts must never be replayed. Private encrypted provider
 credentials and owner/service tokens are not published with evidence.
 
 The [per-criterion acceptance report](../testing/issue-82-memory-jobs.md) records
-the passing controlled tests, failed native windows, retained costs and remaining
-quality boundaries. Historical windows cannot establish this version.
+the passing controlled tests, retained failed windows and costs, and the newly
+passed native High/proxy window with the same-deadline remainder. It does not
+claim repair of old AICode access or quality of future consumers. Historical
+windows cannot establish this version.
