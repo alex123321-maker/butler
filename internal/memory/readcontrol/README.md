@@ -3,7 +3,11 @@
 `memory.search`, `memory.open` and `memory.neighbors` are fixed owned revision1
 contracts. They are registered programmatically by Broker only when the operator
 enables `BUTLER_MEMORY_READ_ENABLED` in both services. The private Broker URL must
-end in `/internal/memory-read` and use the existing action service token. Database
+end in `/internal/memory-read` and use the existing action service token. The
+optional `deploy/docker-compose.memory-read.yml` supplies the fixed private
+`http://orchestrator:8080` route; both gates still default false. Other remote
+hosts require HTTPS, while local development may use a loopback IP. Requests
+never use an egress proxy or follow redirects. Database
 settings cannot enable this topology. No credentials are supported in arguments.
 
 Search uses the existing PostgreSQL source/fragment catalog, with same-owner
