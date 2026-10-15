@@ -703,9 +703,11 @@ func runAdaptiveNativeCase(t *testing.T, ctx context.Context, pool *pgxpool.Pool
 	}
 	if arm == "retrieval_adaptive" {
 		fc.AdaptiveRetrieval = plan
-		fc.Tools = broker
-		fc.ToolCatalog = broker
-		fc.ActionAuthorizer = broker
+		if broker != nil {
+			fc.Tools = broker
+			fc.ToolCatalog = broker
+			fc.ActionAuthorizer = broker
+		}
 	}
 	base := flow.NewService(repo, session.NewPostgresLeaseManager(pool), runs, transcript.NewStore(pool), provider, fc, log)
 	x := &adaptiveNativeExecutor{base: base, done: make(chan adaptiveNativeExecution, 1)}
