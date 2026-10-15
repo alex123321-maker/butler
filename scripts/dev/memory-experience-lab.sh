@@ -4,7 +4,7 @@ set -euo pipefail
 base=${1:?isolated issue90 root}
 label=${2:?fresh proof label}
 mode=${3:-full}
-[[ "$mode" == full || "$mode" == heads || "$mode" == ancestry ]] || exit 2
+[[ "$mode" == full || "$mode" == heads || "$mode" == ancestry || "$mode" == window ]] || exit 2
 [[ "$base" =~ ^/srv/storage/butler/agents/issue90-[a-zA-Z0-9_-]+$ && "$label" =~ ^[a-zA-Z0-9_-]+$ ]] || exit 2
 src=$(readlink -f "$base/current")
 [[ "$src" == "$base/snapshots/"* ]] || exit 2
@@ -40,7 +40,10 @@ runner=(docker run --rm --pull never --network "$network" --cpus 1 --memory 2g -
  -e BUTLER_BROKER_E2E_BINARY=/cache/tool-broker-experience -e BUTLER_EXTENSION_E2E_BINARY=/cache/extension-experience.test -e BUTLER_EXPERIENCE_HTTP_BINARY=/cache/http-experience.test -e BUTLER_EXPERIENCE_RECIPIENT_BROKER=1
  golang:1.27.2-bookworm)
 "${runner[@]}" bash -eu -c 'go test -c -o /cache/broker-experience.test ./apps/tool-broker/internal/broker; go build -o /cache/tool-broker-experience ./apps/tool-broker; go test -c -o /cache/extension-experience.test ./apps/tool-extension/internal/runtime; go test -c -o /cache/http-experience.test ./apps/tool-http/internal/runtime; sha256sum /cache/broker-experience.test /cache/tool-broker-experience /cache/extension-experience.test /cache/http-experience.test > /proof/binaries.sha256' > "$proof/build.log" 2>&1
-if [[ "$mode" == ancestry ]];then
+if [[ "$mode" == window ]];then
+ "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 3m -run "^TestExperienceNative" ./apps/orchestrator/internal/app > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1
+ required=$src/scripts/dev/memory-experience-window-required-tests.txt
+elif [[ "$mode" == ancestry ]];then
  "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 3m -run "TestExperience(AllDerived|TrustedSubset|ReviewedSkill)" ./internal/memory/experience > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1
  required=$src/scripts/dev/memory-experience-ancestry-required-tests.txt
 elif [[ "$mode" == heads ]];then
