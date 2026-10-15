@@ -29,9 +29,11 @@ func (s *Store) ReviewDerivedTx(ctx context.Context, tx pgx.Tx, ref SourceRef, o
 		return Source{}, ErrStale
 	}
 	ids := make([]string, 0, len(graph)+len(otherDerivedIDs))
+	proofIDs := make([]string, 0, len(graph))
 	seen := map[string]bool{}
 	for _, r := range graph {
 		ids = append(ids, r.ID)
+		proofIDs = append(proofIDs, r.ID)
 		seen[r.ID] = true
 	}
 	for _, id := range otherDerivedIDs {
@@ -93,10 +95,10 @@ func (s *Store) ReviewDerivedTx(ctx context.Context, tx pgx.Tx, ref SourceRef, o
 	if root.Revision != ref.Revision || root.Hash != ref.Hash || ref.AccessRevision != 0 && root.AccessRevision != ref.AccessRevision {
 		return Source{}, ErrStale
 	}
-	if err = checkSummarySourcesTx(ctx, tx, ids); err != nil {
+	if err = checkSummarySourcesTx(ctx, tx, proofIDs); err != nil {
 		return Source{}, err
 	}
-	if err = checkTemporalSourcesTx(ctx, tx, ids); err != nil {
+	if err = checkTemporalSourcesTx(ctx, tx, proofIDs); err != nil {
 		return Source{}, err
 	}
 	return root, nil
