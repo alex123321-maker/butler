@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/butler/butler/internal/transport"
 )
@@ -29,5 +30,17 @@ func TestNativeSerializedBudgetIncludesHistoryBeforeNetwork(t *testing.T) {
 	input, output := p.InferenceLimits()
 	if input != 1048576 || output != 8192 {
 		t.Fatal("unverified declared native allowance", input, output)
+	}
+}
+
+func TestNativeInferenceTimeoutReportsNormalizedConstruction(t *testing.T) {
+	for _, tc := range []struct{ configured, want time.Duration }{{0, 5 * time.Minute}, {60 * time.Second, 60 * time.Second}, {300 * time.Second, 300 * time.Second}} {
+		p, err := NewProvider(Config{Model: FlashHighModel, AuthSource: authSource{}, Timeout: tc.configured})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if p.InferenceTimeout() != tc.want {
+			t.Fatal("normalized native timeout lost", tc, p.InferenceTimeout())
+		}
 	}
 }

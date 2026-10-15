@@ -8,6 +8,7 @@ import (
 	"github.com/butler/butler/internal/providerfactory"
 	"github.com/butler/butler/internal/transport/antigravity"
 	"os"
+	"time"
 )
 
 func configureModelJobs(c *catalog.Store, b *budget.Controller, p providerfactory.Result, contextBudgets ...int) (*jobs.Store, *jobs.ModelWorker) {
@@ -39,7 +40,8 @@ func summaryProfileReady(p providerfactory.Result, b *budget.Controller) bool {
 		return false
 	}
 	_, output := limits.InferenceLimits()
-	return output >= 32768 && output <= 65536 && b.Policy.OutputTokens >= output
+	timed, ok := p.Provider.(interface{ InferenceTimeout() time.Duration })
+	return ok && timed.InferenceTimeout() >= 300*time.Second && b.Policy.ModelMillis >= 300000 && output >= 32768 && output <= 65536 && b.Policy.OutputTokens >= output
 }
 
 func summaryConsumerConfigured(w *jobs.ModelWorker) bool {
