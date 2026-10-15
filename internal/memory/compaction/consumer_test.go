@@ -13,8 +13,8 @@ func modelSelection(d Document) string {
 		snippets := []string{}
 		if e.Role == "user" {
 			snippets = []string{e.Text}
-		} else if len(e.Text) > 30 {
-			snippets = []string{e.Text[:30]}
+		} else if len([]rune(e.Text)) > 30 {
+			snippets = []string{string([]rune(e.Text)[:30])}
 		}
 		v.Events = append(v.Events, Selection{ID: e.ID, Excerpts: snippets})
 	}
