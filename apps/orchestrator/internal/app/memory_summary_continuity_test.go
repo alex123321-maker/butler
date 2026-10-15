@@ -34,7 +34,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const continuityQuestion = `Верни только JSON со строковыми полями goal,stopped,continuing,owner_done,new_condition,effect,next. Определи состояние поручения из текущего typed task и исторических данных. Значения: goal=report_and_draft; stopped=email_only|all_work; continuing=collect_and_verify|nothing; owner_done=export_done_no_repeat|export_needed; new_condition=exclude_september|exclude_september_october|july_only|all_months; effect=unknown_no_retry_without_check|sent_success; next=show_draft_before_send|send_now. Инструменты не вызывай.`
+const continuityQuestion = `Верни только JSON со строковыми полями goal,stopped,continuing,owner_done,new_condition,effect,next. Определи состояние поручения из текущего typed task и исторических данных. Значения: goal=report_and_draft; stopped=email_only|all_work; continuing=collect_and_verify|nothing; owner_done=export_done_no_repeat|export_needed; new_condition=exclude_september|exclude_september_october|september_only|all_months; effect=unknown_no_retry_without_check|sent_success; next=show_draft_before_send|send_now. Инструменты не вызывай.`
 
 type continuityProvider struct {
 	transport.ModelProvider
@@ -125,8 +125,8 @@ func (p *continuityProvider) StartRun(ctx context.Context, r transport.StartRunR
 	// Controlled transport mirrors the changing filter; native runs delegate
 	// directly to the real provider above and must infer this independently.
 	input, _ := json.Marshal(r.InputItems)
-	if strings.Contains(string(input), "только июль") {
-		answer = strings.Replace(answer, "exclude_september", "july_only", 1)
+	if strings.Contains(string(input), "только сентябрь") {
+		answer = strings.Replace(answer, "exclude_september", "september_only", 1)
 	} else if strings.Contains(string(input), "исключить сентябрь и октябрь") {
 		answer = strings.Replace(answer, "exclude_september", "exclude_september_october", 1)
 	}
@@ -216,11 +216,11 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 	}
 	lastRun := "seed"
 	for round := 0; round < rounds; round++ {
-		condition := []string{"exclude_september", "exclude_september_october", "july_only"}[round]
+		condition := []string{"exclude_september", "exclude_september_october", "september_only"}[round]
 		if round > 0 {
 			filter := "Текущий фильтр отчёта: исключить сентябрь и октябрь"
 			if round == 2 {
-				filter = "Текущий фильтр отчёта: только июль; прежние месячные фильтры отменены"
+				filter = "Текущий фильтр отчёта: только сентябрь; прежние месячные фильтры отменены"
 			}
 			if _, err := pool.Exec(ctx, `UPDATE tasks SET revision=revision+1,constraints_revision=constraints_revision+1,constraints_json=jsonb_build_array($1::text,'Сначала показать черновик; не отправлять','Сбор и проверку продолжать; экспорт выполнен хозяином') WHERE task_id IN ('continuity-task','continuity-baseline-task')`, filter); err != nil {
 				t.Fatal(err)
