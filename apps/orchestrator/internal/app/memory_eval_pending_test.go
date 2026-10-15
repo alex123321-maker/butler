@@ -410,12 +410,13 @@ func TestMemoryEvalCollectorPendingCrossRootCorrelationIntegration(t *testing.T)
 				}
 			}
 			raw, _ := json.Marshal(acceptance.MemoryAnswer{Abstain: true, Citations: []acceptance.CommandWitness{}, TaskRevision: input.Task.Revision, NextAction: cse.Expected.NextAction})
+			var fixtureStartErr error
 			final.factory = func(json.RawMessage) (transport.ModelProvider, error) {
-				return &memoryFixtureProvider{raw: string(raw)}, nil
+				return &memoryFixtureProvider{raw: string(raw), observeStart: func(err error) { fixtureStartErr = err }}, nil
 			}
 			o, err := final.sample(ctx, cse, input)
 			if err != nil {
-				t.Fatal(err)
+				t.Fatal("legacy fixture lifecycle", input.CaseID, input.Arm, o.Status, o.Reason, o.ModelVersion, o.Milliseconds, transport.DiagnosticCode(fixtureStartErr), fixtureStartErr != nil, err)
 			}
 			final.measurements.Observations = append(final.measurements.Observations, o)
 			if err = final.fillUnused(ctx, input); err != nil {

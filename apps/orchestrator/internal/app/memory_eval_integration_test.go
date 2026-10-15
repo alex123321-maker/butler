@@ -42,12 +42,18 @@ func (b *memoryFixtureBackend) Infer(_ context.Context, r *pb.InferRequest) (*pb
 
 type memoryFixtureProvider struct {
 	nativeScriptedObservationProvider
-	raw   string
-	fail  bool
-	after func()
+	raw          string
+	fail         bool
+	after        func()
+	observeStart func(error)
 }
 
-func (p *memoryFixtureProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
+func (p *memoryFixtureProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (stream transport.EventStream, startErr error) {
+	defer func() {
+		if p.observeStart != nil {
+			p.observeStart(startErr)
+		}
+	}()
 	if err := transport.CheckInferenceAuthority(ctx); err != nil {
 		return nil, err
 	}
