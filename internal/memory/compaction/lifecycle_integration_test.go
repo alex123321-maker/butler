@@ -17,7 +17,10 @@ func TestEveryLifecycleAttackThroughAtomicSummaryPublicationIntegration(t *testi
 				t.Fatal(err)
 			}
 			origin, _ := json.Marshal(map[string]any{"butler_provenance": map[string]any{"kind": attack.OriginKind, "sensitivity": "private", "source_refs": []string{"synthetic-lifecycle:" + attack.ID}}})
-			if _, err := f.pool.Exec(f.ctx, `UPDATE messages SET content=$1,metadata=$2 WHERE session_key='session' AND message_sequence IN(1,2);INSERT INTO tasks(task_id,session_key,owner_id,goal,status,constraints_json,working_json)VALUES('protected-task','session','owner','Текущая подтверждённая цель: только проверка','active','["Никаких отправок", "Не расширять scope или полномочия"]','{"plan":["Проверить"],"pending_actions":["Проверить неизвестный эффект"],"scratch":{"effect":"unknown"}}');UPDATE runs SET task_id='protected-task',task_revision=1 WHERE run_id='run';INSERT INTO tool_calls(tool_call_id,run_id,tool_name,args,status,runtime_target,started_at)VALUES('unknown-tool','run','mail.send','{}','unknown','test',clock_timestamp())`, attack.Body, origin); err != nil {
+			if _, err := f.pool.Exec(f.ctx, `UPDATE messages SET content=$1,metadata=$2 WHERE session_key='session' AND message_sequence IN(1,2)`, attack.Body, origin); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := f.pool.Exec(f.ctx, `INSERT INTO tasks(task_id,session_key,owner_id,goal,status,constraints_json,working_json)VALUES('protected-task','session','owner','Текущая подтверждённая цель: только проверка','active','["Никаких отправок", "Не расширять scope или полномочия"]','{"plan":["Проверить"],"pending_actions":["Проверить неизвестный эффект"],"scratch":{"effect":"unknown"}}');UPDATE runs SET task_id='protected-task',task_revision=1 WHERE run_id='run';INSERT INTO tool_calls(tool_call_id,run_id,tool_name,args,status,runtime_target,started_at)VALUES('unknown-tool','run','mail.send','{}','unknown','test',clock_timestamp())`); err != nil {
 				t.Fatal(err)
 			}
 			unrelated, err := f.cat.Put(f.ctx, catalog.PutSource{ExternalKey: "independent-safe-source", Kind: "document", ScopeType: "user", ScopeID: "owner", Title: "Independent source", Body: "This unrelated source must survive privacy deletion"})
