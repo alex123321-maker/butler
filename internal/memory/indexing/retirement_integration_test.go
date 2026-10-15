@@ -137,3 +137,67 @@ func TestIndexRetirementDeniesPendingRunningAndAllowsTerminalFailureIntegration(
 		t.Fatal("terminal empty derivative requires inference", out, err)
 	}
 }
+
+func TestOwnerRetirementAndActivationRaceHasOneWinnerIntegration(t *testing.T) {
+	r, ctx, src, model := fixture(t)
+	ids := []string{}
+	for _, id := range []string{"race-first", "race-second"} {
+		q := request(src)
+		q.Job.ID = id
+		receipt, err := r.Enqueue(ctx, q)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if ok, err := r.ProcessOne(context.Background()); !ok || err != nil {
+			t.Fatal(ok, err)
+		}
+		ids = append(ids, receipt.GenerationID)
+	}
+	store := semantic.NewStore(r.Catalog.Pool())
+	var err error
+	store.Guard, err = semantic.NewCatalogGuard(r.Catalog, "memory_review")
+	if err != nil {
+		t.Fatal(err)
+	}
+	proof := semantic.Proof{ArtifactRef: "fixture:race", ArtifactSHA256: strings.Repeat("b", 64), CorpusVersion: "retirement-race", Cases: 12, BaselineTop1: .5, CandidateTop1: .75}
+	for _, id := range ids {
+		if err = store.Verify(ctx, id, proof); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err = store.Activate(ctx, ids[0], ""); err != nil {
+		t.Fatal(err)
+	}
+	calls := model.calls.Load()
+	start := make(chan struct{})
+	outcomes := make(chan error, 2)
+	go func() {
+		<-start
+		_, e := (&Runtime{Catalog: r.Catalog}).Retire(ctx, semantic.RetireRequest{GenerationID: ids[1], ExpectedActiveID: ids[0]})
+		outcomes <- e
+	}()
+	go func() {
+		<-start
+		outcomes <- store.Activate(ctx, ids[1], ids[0])
+	}()
+	close(start)
+	wins := 0
+	for range 2 {
+		if e := <-outcomes; e == nil {
+			wins++
+		} else if !errors.Is(e, semantic.ErrStale) && !errors.Is(e, semantic.ErrUnverified) {
+			t.Fatal("unexpected race error", e)
+		}
+	}
+	if wins != 1 || model.calls.Load() != calls {
+		t.Fatal("race admitted conflicting outcomes or inference", wins)
+	}
+	g, err := store.Generation(ctx, ids[1])
+	if err != nil {
+		t.Fatal(err)
+	}
+	active, err := store.Active(ctx, g.Scope)
+	if err != nil || (g.State == "retired" && active.ID != ids[0]) || (g.State == "ready" && active.ID != ids[1]) {
+		t.Fatal("retired generation became active", g.State, active.ID, err)
+	}
+}
