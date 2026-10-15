@@ -69,14 +69,15 @@ func (p *summaryProvider) StartRun(ctx context.Context, r transport.StartRunRequ
 }
 
 type consumerFixture struct {
-	pool     *pgxpool.Pool
-	cat      *catalog.Store
-	js       *jobs.Store
-	ctx      context.Context
-	worker   *jobs.ModelWorker
-	policy   jobs.ModelPolicy
-	provider *summaryProvider
-	counter  int
+	pool         *pgxpool.Pool
+	cat          *catalog.Store
+	js           *jobs.Store
+	ctx          context.Context
+	worker       *jobs.ModelWorker
+	policy       jobs.ModelPolicy
+	provider     *summaryProvider
+	counter      int
+	manifestPath string
 }
 
 func newConsumerFixture(t *testing.T, pools ...*pgxpool.Pool) *consumerFixture {
@@ -87,10 +88,11 @@ func newConsumerFixture(t *testing.T, pools ...*pgxpool.Pool) *consumerFixture {
 	} else {
 		pool = memorytest.Database(t)
 	}
-	m := catalog.NewFileManifest(filepath.Join(t.TempDir(), "anchor"))
+	manifestPath := filepath.Join(t.TempDir(), "anchor")
 	if len(pools) > 0 {
-		m = catalog.NewFileManifest(os.Getenv("BUTLER_SUMMARY_NATIVE_MANIFEST"))
+		manifestPath = os.Getenv("BUTLER_SUMMARY_NATIVE_MANIFEST")
 	}
+	m := catalog.NewFileManifest(manifestPath)
 	if err := m.Initialize(); err != nil {
 		t.Fatal(err)
 	}
@@ -106,7 +108,7 @@ func newConsumerFixture(t *testing.T, pools ...*pgxpool.Pool) *consumerFixture {
 		t.Fatal(err)
 	}
 	p := &summaryProvider{}
-	f := &consumerFixture{pool: pool, cat: cat, js: js, ctx: ctx, provider: p}
+	f := &consumerFixture{pool: pool, cat: cat, js: js, ctx: ctx, provider: p, manifestPath: manifestPath}
 	f.worker = &jobs.ModelWorker{Jobs: js, Provider: p, Model: "fixture", Handlers: map[string]jobs.ModelHandler{HandlerName: Consumer{ContextBudget: 4096}}}
 	f.append(t, 12)
 	q := jobs.ModelPolicyRequest{ID: "summary-policy-test", Handler: HandlerName, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 4, Privacy: "cloud_allowed", Job: jobs.Request{OriginalRunID: "run", Allowance: budget.Units{ModelTurns: 4, Tokens: 200000, ActiveMillis: 10000, ProviderInputBytes: 64 * 1024 * 1024}, Deadline: time.Now().Add(time.Hour)}}
