@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/butler/butler/internal/memory/catalog"
@@ -35,6 +36,12 @@ func (s *MemoryReads) readTemporalFactsTx(ctx context.Context, tx pgx.Tx, a fact
 	}
 	page, err := s.sources.ReadAcceptedFactsForSourcesTx(ctx, tx, refs, q)
 	if err != nil {
+		if errors.Is(err, catalog.ErrStale) {
+			return readcontrol.Empty("stale"), nil
+		}
+		if errors.Is(err, catalog.ErrDenied) || errors.Is(err, catalog.ErrDeleted) || errors.Is(err, catalog.ErrRestore) {
+			return readcontrol.Empty("denied"), nil
+		}
 		return out, err
 	}
 	out.UnknownValidity = page.UnknownValidity
@@ -69,7 +76,11 @@ func (s *MemoryReads) readTemporalFactsTx(ctx context.Context, tx pgx.Tx, a fact
 			out.Truncated = true
 			continue
 		}
-		out.Items = append(out.Items, readcontrol.Item{Source: readcontrol.SourceRef{ID: f.Pin.Source.ID, Revision: f.Pin.Source.Revision, AccessRevision: f.Pin.Source.AccessRevision, Hash: f.Pin.Source.Hash}, Kind: "accepted_fact_snapshot", ScopeType: f.Claim.ScopeType, Title: "Owner-accepted temporal DATA", Text: string(raw), Locator: json.RawMessage(`{}`), Freshness: "current_revision_unverified_fact", Temporal: []readcontrol.TemporalEvidence{temporalEvidence(f)}})
+		item := readcontrol.Item{Source: readcontrol.SourceRef{ID: f.Pin.Source.ID, Revision: f.Pin.Source.Revision, AccessRevision: f.Pin.Source.AccessRevision, Hash: f.Pin.Source.Hash}, Kind: "accepted_fact_snapshot", ScopeType: f.Claim.ScopeType, Title: "Owner-accepted temporal DATA", Text: string(raw), Locator: json.RawMessage(`{}`), Freshness: "current_revision_unverified_fact", Conflict: f.Conflict, Temporal: []readcontrol.TemporalEvidence{temporalEvidence(f)}}
+		if f.Claim.EventTime != nil {
+			item.EventTime = f.Claim.EventTime.UTC().Format(time.RFC3339Nano)
+		}
+		out.Items = append(out.Items, item)
 	}
 	if len(out.Items) > 0 {
 		out.Status = "ok"

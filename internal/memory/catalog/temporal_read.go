@@ -1,6 +1,7 @@
 package catalog
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -151,6 +152,16 @@ func (s *Store) ReadAcceptedFactsTx(ctx context.Context, tx pgx.Tx, claimIDs []s
 		}
 		pin := AcceptedFactPin{ClaimID: c.ID, HeadRevision: head, ActiveID: active, TemporalRevision: temporalHead, Source: SourceRef{src.ID, src.Revision, src.AccessRevision, src.Hash}, MetadataHash: metadataHash, FreshnessStatus: fresh.Status, CurrentUsable: fresh.CurrentUsable}
 		out.Items = append(out.Items, AcceptedFact{Claim: c, Temporal: m, Freshness: fresh, Pin: pin, Historical: q.ValidAt != nil || q.KnownAt != nil})
+	}
+	// Report overlapping, different selected accepted values without choosing a
+	// winner by upload time or mutating the existing owner's current decision.
+	for i := range out.Items {
+		for j := range out.Items {
+			a, b := out.Items[i].Claim, out.Items[j].Claim
+			if i != j && a.OwnerID == b.OwnerID && a.ScopeType == b.ScopeType && a.ScopeID == b.ScopeID && a.Key == b.Key && !bytes.Equal(a.Value, b.Value) {
+				out.Items[i].Conflict = true
+			}
+		}
 	}
 	if err = bindTemporalRunTx(ctx, tx, out.Items, q); err != nil {
 		return AcceptedFactPage{}, err

@@ -79,6 +79,7 @@ type AcceptedFact struct {
 	Freshness  Freshness        `json:"freshness"`
 	Pin        AcceptedFactPin  `json:"pin"`
 	Historical bool             `json:"historical"`
+	Conflict   bool             `json:"conflict"`
 }
 
 // AcceptedFactPage reports unknown exclusions explicitly. A dated query does not
