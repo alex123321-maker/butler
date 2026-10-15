@@ -1,5 +1,13 @@
 # Memory bundle service
 
+The production composition passes the existing metrics registry. Additive
+operation/duration/item/limitation metrics distinguish search from selection and
+finish each started stage once, including errors and cancellation. Reasons use
+fixed vocabularies; queries/content/scope identities never become labels. The
+older selected-class hit/miss counters retain their meaning. Zero document hits
+do not establish an empty corpus. See the
+[operator runbook](../../../docs/operations/memory-observability.md).
+
 The service assembles current summary/working state and optional Profile,
 Episodic and document evidence. PostgreSQL remains authoritative; source access
 is enforced by the composed catalog adapters/reader and provider release guards.

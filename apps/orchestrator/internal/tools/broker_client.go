@@ -18,6 +18,17 @@ type BrokerClient struct {
 	client toolbrokerv1.ToolBrokerServiceClient
 }
 
+// ActionError retains a bounded diagnostic identity across orchestration without
+// copying provider, RPC or policy bodies into operator reports or error logs.
+type ActionError struct {
+	Code  string
+	Cause error
+}
+
+func (e *ActionError) Error() string          { return "tool broker action unavailable: " + e.Code }
+func (e *ActionError) Unwrap() error          { return e.Cause }
+func (e *ActionError) DiagnosticCode() string { return e.Code }
+
 func (c *BrokerClient) ListToolsForRun(ctx context.Context, runID string) ([]*toolbrokerv1.ToolContract, error) {
 	if strings.TrimSpace(runID) == "" {
 		return c.ListTools(ctx)
@@ -32,10 +43,10 @@ func (c *BrokerClient) ListToolsForRun(ctx context.Context, runID string) ([]*to
 func (c *BrokerClient) PrepareAction(ctx context.Context, call *toolbrokerv1.ToolCall) (actionauth.PreparedAction, error) {
 	response, err := c.client.PrepareToolCall(ctx, &toolbrokerv1.PrepareToolCallRequest{ToolCall: call, LogicalActionRef: actionauth.LogicalReference(ctx)})
 	if err != nil {
-		return actionauth.PreparedAction{}, err
+		return actionauth.PreparedAction{}, &ActionError{Code: "broker_transport", Cause: err}
 	}
 	if response.GetError() != nil {
-		return actionauth.PreparedAction{}, fmt.Errorf("action preparation denied: %s", response.GetError().GetMessage())
+		return actionauth.PreparedAction{}, &ActionError{Code: "preparation_denied"}
 	}
 	a := response.GetAction()
 	if a == nil {
@@ -57,10 +68,10 @@ func (c *BrokerClient) PrepareAction(ctx context.Context, call *toolbrokerv1.Too
 func (c *BrokerClient) AuthorizeAction(ctx context.Context, call *toolbrokerv1.ToolCall, actionID, approvalID, mandateID string) (string, error) {
 	response, err := c.client.AuthorizeToolCall(ctx, &toolbrokerv1.AuthorizeToolCallRequest{ToolCall: call, ActionId: actionID, ApprovalId: approvalID, MandateId: mandateID})
 	if err != nil {
-		return "", err
+		return "", &ActionError{Code: "broker_transport", Cause: err}
 	}
 	if response.GetError() != nil {
-		return "", fmt.Errorf("action authorization denied: %s", response.GetError().GetMessage())
+		return "", &ActionError{Code: "authorization_denied"}
 	}
 	if response.GetAuthorizationId() == "" {
 		return "", fmt.Errorf("tool broker omitted dispatch authorization")

@@ -20,6 +20,16 @@ or authorize replaying activation. Candidate collection/checking remains its
 separate earlier phase.
 # Orchestrator
 
+Memory context construction shares the service metrics registry. `/doctor`
+requires the owner-control token for new checks and history. A check admits a
+real durable task/input and runs the fixed Broker command without model calls;
+mode 1 waits in the normal Approvals flow and survives worker restart. Poll its
+`input_id` to read the result. Partial memory/runtime failures stay visible.
+Bounded PostgreSQL scrape observations restore job/index gauges after restart;
+legacy Redis pipeline, semantic composition and quality evidence remain separate.
+See [memory observations and Doctor](../../docs/operations/memory-observability.md)
+for contracts, metric interpretation and isolated acceptance.
+
 Memory search now separates permitted local queries from external data release.
 Assigned local-only tasks retain PostgreSQL exact/full-text and proven pinned
 local semantic retrieval; unproven/offline inference has explicit diagnostics.

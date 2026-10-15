@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/sanitize"
 	"github.com/butler/butler/internal/security/content"
 	"github.com/jackc/pgx/v5"
@@ -25,6 +26,15 @@ type Store struct {
 }
 
 func NewStore(pool *pgxpool.Pool) *Store { return &Store{pool: pool} }
+func accessObservation(err error) error {
+	// Preserve only typed, content-free reasons across the guard boundary.
+	for _, reason := range []error{catalog.ErrStale, catalog.ErrDeleted, catalog.ErrRestore} {
+		if errors.Is(err, reason) {
+			return errors.Join(ErrAccess, reason)
+		}
+	}
+	return ErrAccess
+}
 func (s *Store) check(ctx context.Context, sources []Source) error {
 	if s.Guard == nil {
 		return ErrAccess
@@ -33,7 +43,7 @@ func (s *Store) check(ctx context.Context, sources []Source) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-		return ErrAccess
+		return accessObservation(err)
 	}
 	return nil
 }
@@ -45,7 +55,7 @@ func (s *Store) checkTx(ctx context.Context, tx pgx.Tx, sources []Source) error 
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-		return ErrAccess
+		return accessObservation(err)
 	}
 	return nil
 }

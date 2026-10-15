@@ -76,6 +76,9 @@ func (s *Service) suspendApproval(ctx context.Context, current *sessionv1.RunRec
 // Replay saved Butler context and the known result into a new provider session;
 // the action itself is never re-dispatched by this helper.
 func (s *Service) resumeProviderWithToolResult(ctx context.Context, current *sessionv1.RunRecord, toolCallID, resultJSON string) (transport.EventStream, error) {
+	if operatorDoctor(ctx) {
+		return doctorResultStream(current.GetRunId(), resultJSON), nil
+	}
 	continuation, ok := ctx.Value(recoveredApprovalKey{}).(approvalContinuation)
 	if !ok || continuation.ToolCall == nil || continuation.ToolCall.ToolCallRef != toolCallID {
 		return s.provider.SubmitToolResult(ctx, transport.SubmitToolResultRequest{RunID: current.GetRunId(), ProviderSessionRef: providerSessionRefFromRun(current), ToolCallRef: toolCallID, ToolResultJSON: resultJSON})
@@ -125,6 +128,9 @@ func (s *Service) resumeProviderWithToolResult(ctx context.Context, current *ses
 }
 
 func (s *Service) discardProviderContext(ctx context.Context, runID string) error {
+	if operatorDoctor(ctx) {
+		return nil
+	}
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	ctx, release, err := ownership.Begin(ctx)

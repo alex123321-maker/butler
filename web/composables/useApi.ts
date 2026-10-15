@@ -243,6 +243,17 @@ export interface DoctorReportData {
   checked_at: string
   checks: DoctorCheckResult[]
   config?: Array<{ key: string; effective_value: string; source: string; validation_status: string }>
+	input_id?: string
+	execution?: { status: string; run_id?: string; task_id?: string }
+	check_error?: string
+	memory?: {
+		status: string; checked_at: string
+		components: Record<string, { configured: boolean; effective: boolean; status: string; reason?: string; checked_at: string }>
+		legacy_queue: { status: string; depth?: number; reason?: string }
+		jobs: { status: string; observation?: { pending: number; running: number; completed: number; failed: number; retries: number; oldest_pending_seconds: number | null; reasons: Record<string, number> } }
+		indexes: { status: string; truncated?: boolean; generations?: Array<{ generation_id: string; scope_type: string; scope_id: string; space_id: string; state: string; active: boolean; verified_at: string | null; generation_proof?: unknown }> }
+		answer_quality: { status: string; reason: string; configuration: string }
+	}
 }
 
 export interface DoctorReport {
@@ -250,30 +261,6 @@ export interface DoctorReport {
   status: string
   checked_at: string
   report: DoctorReportData
-}
-
-// --- Doctor ---
-
-export function useDoctorReports() {
-  const { get } = useApiClient()
-
-  return useAsyncData<DoctorReport[]>('doctor-reports', async () => {
-    const resp = await get<{ reports: DoctorReport[] }>('/api/v1/doctor/reports')
-    return resp.reports
-  }, {
-    server: false,
-    default: () => [],
-  })
-}
-
-export function useDoctorCheck() {
-  const { post } = useApiClient()
-
-  async function runCheck(): Promise<DoctorReport> {
-    return await post<DoctorReport>('/api/v1/doctor/check')
-  }
-
-  return { runCheck }
 }
 
 export function useMemoryScope(scopeType: Ref<string> | string, scopeID: Ref<string> | string) {

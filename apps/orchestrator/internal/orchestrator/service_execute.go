@@ -209,21 +209,26 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	transportCtx := transport.WithSessionKey(runCtx, event.SessionKey)
 	transportCtx = converterContinuationProposalContext(transportCtx, prepared)
 	transportCtx = withAnswerState(transportCtx, "final")
-	stream, err := s.provider.StartRun(transportCtx, transport.StartRunRequest{
-		Context: transport.TransportRunContext{
-			RunID:                  current.GetRunId(),
-			SessionKey:             event.SessionKey,
-			ProviderName:           s.config.ProviderName,
-			ModelName:              s.config.ModelName,
-			ProviderSessionRef:     existingProviderSessionRef,
-			SupportsStreaming:      true,
-			SupportsToolCalls:      true,
-			SupportsStatefulResume: true,
-		},
-		InputItems:       prepared.InputItems,
-		ToolDefinitions:  prepared.ToolDefs,
-		StreamingEnabled: true,
-	})
+	var stream transport.EventStream
+	if operatorDoctor(ctx) {
+		stream = doctorCommandStream(current.GetRunId())
+	} else {
+		stream, err = s.provider.StartRun(transportCtx, transport.StartRunRequest{
+			Context: transport.TransportRunContext{
+				RunID:                  current.GetRunId(),
+				SessionKey:             event.SessionKey,
+				ProviderName:           s.config.ProviderName,
+				ModelName:              s.config.ModelName,
+				ProviderSessionRef:     existingProviderSessionRef,
+				SupportsStreaming:      true,
+				SupportsToolCalls:      true,
+				SupportsStatefulResume: true,
+			},
+			InputItems:       prepared.InputItems,
+			ToolDefinitions:  prepared.ToolDefs,
+			StreamingEnabled: true,
+		})
+	}
 	if err != nil {
 		if s.scheduleModelRetry(transportCtx, current, err) {
 			return nil, ErrModelRetryPending

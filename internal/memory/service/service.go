@@ -3,13 +3,16 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"reflect"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/butler/butler/internal/logger"
+	memorydiag "github.com/butler/butler/internal/memory/diagnostics"
 	"github.com/butler/butler/internal/memory/embeddings"
 	"github.com/butler/butler/internal/memory/sanitize"
 	"github.com/butler/butler/internal/metrics"
@@ -58,6 +61,8 @@ type QueryPolicy struct{ Local, External bool }
 type SearchResult struct {
 	Hits        []SemanticHit
 	Diagnostics []string
+	// Corpus is empty/present only when established by an authorized read.
+	Corpus string
 }
 type PolicySemanticReader interface {
 	SearchWithPolicy(context.Context, []Scope, string, int, QueryPolicy) (SearchResult, error)
@@ -91,6 +96,8 @@ type WorkingSnapshot struct {
 	ScratchJSON      string
 	Status           string
 }
+
+var ErrWorkingNotFound = errors.New("working memory snapshot not found")
 
 type Chunk interface {
 	ChunkTitle() string
@@ -190,7 +197,19 @@ func New(cfg Config) *Service {
 	return &Service{config: cfg, log: logger.WithComponent(log, "memory-bundle")}
 }
 
-func (s *Service) BuildBundle(ctx context.Context, req BundleRequest) (Bundle, error) {
+func (s *Service) BuildBundle(ctx context.Context, req BundleRequest) (bundle Bundle, buildErr error) {
+	observations := []OperationObservation{}
+	ctx = context.WithValue(ctx, observationKey{}, &observations)
+	defer func() { bundle.Diagnostics.Operations = append([]OperationObservation(nil), observations...) }()
+	started := time.Now()
+	defer func() { s.observeOperation(ctx, "bundle", started, buildErr, "success", nil) }()
+	searchStarted := time.Now()
+	searchFinished := false
+	defer func() {
+		if !searchFinished {
+			s.observeOperation(ctx, "search", searchStarted, buildErr, "unknown", nil)
+		}
+	}()
 	req.UserMessage = sanitize.Text(req.UserMessage)
 	scopes := s.scopes(req.SessionKey, req.UserID)
 	if s.config.ScopeResolver != nil {
@@ -235,12 +254,18 @@ func (s *Service) BuildBundle(ctx context.Context, req BundleRequest) (Bundle, e
 		return Bundle{}, err
 	}
 	summary := s.loadSummary(ctx, req.SessionKey)
+	found := len(profileEntries) + filteredProfiles + len(episodes) + len(chunks)
+	s.observeOperation(ctx, "search", searchStarted, nil, memorydiag.SearchOutcome(found, "unknown", diagnostics), diagnostics)
+	searchFinished = true
+	selectionStarted := time.Now()
 	items, promptProfile, promptEpisodes, promptChunks, selection, err := s.selectContext(summary, working, profileEntries, episodes, chunks)
+	s.observeOperation(ctx, "context", selectionStarted, err, "success", nil)
 	if err != nil {
 		return Bundle{}, err
 	}
 	selection.Retrieval = diagnostics
 	selection.Omitted["profile_relevance_or_limit"] = filteredProfiles
+	s.observeSelection(found, selection)
 	s.recordRetrievalMetric("profile", len(promptProfile) > 0)
 	s.recordRetrievalMetric("episodic", len(promptEpisodes) > 0)
 	s.recordRetrievalMetric("chunk", len(promptChunks) > 0)
@@ -268,8 +293,28 @@ func (s *Service) scopes(sessionKey, userID string) []Scope {
 	return result
 }
 
-func (s *Service) loadProfile(ctx context.Context, scopes []Scope, query string) ([]map[string]any, int, error) {
+func (s *Service) loadProfile(ctx context.Context, scopes []Scope, query string) (items []map[string]any, omitted int, loadErr error) {
+	started := time.Now()
+	outcome := "empty"
+	restricted := false
+	if len(scopes) == 0 {
+		outcome = "unknown"
+	}
+	defer func() {
+		var reasons []string
+		if len(items)+omitted > 0 {
+			outcome = "success"
+		}
+		if restricted {
+			reasons = []string{"access"}
+			if outcome == "empty" {
+				outcome = "unknown"
+			}
+		}
+		s.observeOperation(ctx, "profile_load", started, loadErr, outcome, reasons)
+	}()
 	if s.config.ProfileStore == nil || s.config.ProfileLimit <= 0 {
+		outcome = "disabled"
 		return nil, 0, nil
 	}
 	result := make([]map[string]any, 0, s.config.ProfileLimit)
@@ -281,6 +326,7 @@ func (s *Service) loadProfile(ctx context.Context, scopes []Scope, query string)
 		for _, entry := range entries {
 			origin := memoryOrigin(entry)
 			if origin.Sensitivity == content.Secret {
+				restricted = true
 				continue
 			}
 			result = append(result, map[string]any{"key": entry.ProfileKey(), "summary": entry.ProfileSummary(), "scope_type": scope.Type, "scope_id": scope.ID, "origin": origin, "source_refs": origin.SourceRefs})
@@ -290,12 +336,18 @@ func (s *Service) loadProfile(ctx context.Context, scopes []Scope, query string)
 	return selected, len(result) - len(selected), nil
 }
 
-func (s *Service) loadPolicyChunks(ctx context.Context, scopes []Scope, query string, policy QueryPolicy) ([]map[string]any, []string, error) {
+func (s *Service) loadPolicyChunks(ctx context.Context, scopes []Scope, query string, policy QueryPolicy) (items []map[string]any, reasons []string, searchErr error) {
+	started := time.Now()
+	corpus := "unknown"
+	defer func() {
+		s.observeOperation(ctx, "document_search", started, searchErr, memorydiag.SearchOutcome(len(items), corpus, reasons), reasons)
+	}()
 	if strings.TrimSpace(query) == "" || !policy.Local && !policy.External {
 		return nil, []string{"query_search_disabled"}, nil
 	}
 	if reader, ok := s.config.Semantic.(PolicySemanticReader); ok && policy.Local {
 		result, err := reader.SearchWithPolicy(ctx, scopes, query, min(4, s.config.ChunkLimit), policy)
+		corpus = result.Corpus
 		if err != nil {
 			return nil, nil, fmt.Errorf("memory retrieval failed: %w", err)
 		}
@@ -319,20 +371,41 @@ func semanticItems(hits []SemanticHit) []map[string]any {
 	return items
 }
 
-func (s *Service) loadEpisodes(ctx context.Context, scopes []Scope, userMessage string, includeQuery bool) ([]map[string]any, error) {
+func (s *Service) loadEpisodes(ctx context.Context, scopes []Scope, userMessage string, includeQuery bool) (resultItems []map[string]any, loadErr error) {
+	started := time.Now()
+	outcome := "unknown"
+	var observedErr error
+	var reasons []string
+	defer func() {
+		if len(resultItems) > 0 {
+			outcome = "success"
+		}
+		if loadErr != nil {
+			observedErr = loadErr
+		}
+		s.observeOperation(ctx, "episodic_search", started, observedErr, outcome, reasons)
+	}()
 	if !includeQuery || s.config.EpisodeStore == nil || s.config.EpisodeLimit <= 0 || strings.TrimSpace(userMessage) == "" {
+		outcome = "disabled"
+		if !includeQuery {
+			reasons = []string{"query_search_disabled"}
+		}
 		return nil, nil
 	}
 	if isNilEmbeddingProvider(s.config.Embeddings) {
+		outcome = "disabled"
+		reasons = []string{"embedding_unavailable"}
 		s.log.Info("episodic retrieval skipped; embedding provider is not configured")
 		return nil, nil
 	}
 	queryEmbedding, err := s.config.Embeddings.EmbedQuery(ctx, userMessage)
 	if err != nil {
+		observedErr = err
 		s.log.Warn("episodic retrieval skipped; embedding query failed", slog.String("error_class", fmt.Sprintf("%T", err)))
 		return nil, nil
 	}
 	if len(queryEmbedding) != embeddings.VectorDimensions() {
+		observedErr = errors.New("invalid embedding dimensions")
 		s.log.Warn("episodic retrieval skipped; embedding dimensions are invalid", slog.Int("dimensions", len(queryEmbedding)))
 		return nil, nil
 	}
@@ -357,6 +430,7 @@ func (s *Service) loadEpisodes(ctx context.Context, scopes []Scope, userMessage 
 		}
 		keywordMatches, keywordErr := s.loadKeywordEpisodes(ctx, scope, userMessage)
 		if keywordErr != nil {
+			reasons = append(reasons, "backend")
 			s.log.Warn("episodic keyword retrieval skipped", slog.String("scope_type", scope.Type), slog.String("error_class", fmt.Sprintf("%T", keywordErr)))
 			continue
 		}
@@ -420,13 +494,21 @@ func (s *Service) loadKeywordEpisodes(ctx context.Context, scope Scope, userMess
 }
 
 func (s *Service) loadWorking(ctx context.Context, sessionKey string) (WorkingContext, error) {
+	started := time.Now()
 	if s.config.WorkingStore == nil {
+		s.observeOperation(ctx, "working_load", started, nil, "disabled", nil)
 		return WorkingContext{Status: "idle"}, nil
 	}
 	snapshot, err := s.config.WorkingStore.Get(ctx, sessionKey)
 	if err != nil {
+		if errors.Is(err, ErrWorkingNotFound) {
+			s.observeOperation(ctx, "working_load", started, nil, "empty", nil)
+		} else {
+			s.observeOperation(ctx, "working_load", started, err, "unknown", nil)
+		}
 		return WorkingContext{Status: "idle"}, nil
 	}
+	s.observeOperation(ctx, "working_load", started, nil, "success", nil)
 	return WorkingContext{
 		Goal:           strings.TrimSpace(snapshot.Goal),
 		Status:         normalizeWorkingStatus(snapshot.Status),
@@ -509,14 +591,22 @@ func (s *Service) loadChunks(ctx context.Context, scopes []Scope, userMessage st
 }
 
 func (s *Service) loadSummary(ctx context.Context, sessionKey string) string {
+	started := time.Now()
 	if s.config.SummaryReader == nil {
+		s.observeOperation(ctx, "summary_load", started, nil, "disabled", nil)
 		return ""
 	}
 	summary, err := s.config.SummaryReader.GetSummary(ctx, sessionKey)
 	if err != nil {
+		s.observeOperation(ctx, "summary_load", started, err, "unknown", nil)
 		s.log.Warn("session summary retrieval failed", slog.String("session_key", sessionKey), slog.String("error_class", fmt.Sprintf("%T", err)))
 		return ""
 	}
+	outcome := "success"
+	if strings.TrimSpace(summary) == "" {
+		outcome = "empty"
+	}
+	s.observeOperation(ctx, "summary_load", started, nil, outcome, nil)
 	return strings.TrimSpace(summary)
 }
 

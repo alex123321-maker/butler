@@ -345,6 +345,13 @@ Butler может поддерживать отдельную tool family `singl
 
 ## 8.4 Doctor / Self-Inspection Tools
 
+The fixed operator `doctor.check_system` contract declares read-only retry safety
+and `read_result` evidence. This describes its config/health observation, not
+assistant quality or an external mutation. The authenticated Doctor UI admits it
+through the normal durable input and exact-action Broker path, including owner
+confirmation required by autonomy policy. ToolResult status/error and missing
+or stale reports remain distinct from RPC/HTTP success; no legacy bypass exists.
+
 ### Назначение
 
 Диагностика самого Butler, его конфигурации и зависимостей.

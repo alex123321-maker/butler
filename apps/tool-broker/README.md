@@ -1,5 +1,11 @@
 # Tool Broker
 
+Operator Doctor checks use the ordinary exact-action preparation, authorization
+and one-use grant path with a real durable task/run/session lease. There is no
+operator bypass. `doctor.check_system` revision 2 declares a read-only check with
+`read_result` evidence; this does not establish memory answer quality. See the
+[memory/Doctor runbook](../../docs/operations/memory-observability.md).
+
 The owned converter catalog advertises `converters.collect` only after the
 current Store verifies an actual immutable tested child return. A queued
 developer receipt ends the current parent attempt; collection resumes through

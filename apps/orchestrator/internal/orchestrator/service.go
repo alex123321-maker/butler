@@ -25,6 +25,7 @@ import (
 	"github.com/butler/butler/internal/logger"
 	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/transcript"
+	"github.com/butler/butler/internal/metrics"
 	"github.com/butler/butler/internal/security/content"
 	"github.com/butler/butler/internal/transport"
 )
@@ -118,7 +119,7 @@ type WorkingMemoryPolicy struct {
 	OnTimedOut  string
 }
 
-var ErrWorkingMemoryNotFound = errors.New("working memory snapshot not found")
+var ErrWorkingMemoryNotFound = memoryservice.ErrWorkingNotFound
 
 var ErrTransientWorkingStateNotFound = errors.New("transient working state not found")
 
@@ -143,6 +144,7 @@ type GuardedTabRequests interface {
 }
 
 type Config struct {
+	Metrics *metrics.Registry
 	// Trusted composition resolves opaque source-bound inputs only after live
 	// ownership. The adapter loads durable bindings, not caller-selected refs.
 	InputSourcePreparation   func(context.Context, ingress.InputEvent) (ingress.InputEvent, error)
@@ -337,7 +339,7 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 			ScopeOrder:          cfg.MemoryScopes,
 			ScopeResolver:       cfg.MemoryScopeResolver,
 			Log:                 log,
-			Metrics:             nil,
+			Metrics:             cfg.Metrics,
 		})
 	}
 	if cfg.PromptManager == nil {

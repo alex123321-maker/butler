@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/butler/butler/internal/memory/diagnostics"
 	"sort"
 	"strings"
 	"unicode"
@@ -14,15 +15,16 @@ import (
 const SelectionVersion = "memory-context-v3"
 
 type SelectionDiagnostics struct {
-	Version           string         `json:"version"`
-	Estimator         string         `json:"estimator"`
-	Allowance         int            `json:"allowance"`
-	Estimated         int            `json:"estimated"`
-	OptionalAllowance int            `json:"optional_allowance"`
-	OptionalEstimated int            `json:"optional_estimated"`
-	Selected          map[string]int `json:"selected"`
-	Omitted           map[string]int `json:"omitted"`
-	Retrieval         []string       `json:"retrieval,omitempty"`
+	Operations        []OperationObservation `json:"operations,omitempty"`
+	Version           string                 `json:"version"`
+	Estimator         string                 `json:"estimator"`
+	Allowance         int                    `json:"allowance"`
+	Estimated         int                    `json:"estimated"`
+	OptionalAllowance int                    `json:"optional_allowance"`
+	OptionalEstimated int                    `json:"optional_estimated"`
+	Selected          map[string]int         `json:"selected"`
+	Omitted           map[string]int         `json:"omitted"`
+	Retrieval         []string               `json:"retrieval,omitempty"`
 }
 
 func encodedUnits(v any) int {
@@ -159,7 +161,7 @@ func (s *Service) selectContext(summary string, working WorkingContext, profile,
 	}
 	used := encodedUnits(items) + 128
 	if used > d.Allowance {
-		return nil, nil, nil, nil, d, fmt.Errorf("mandatory memory context exceeds allowance: %d > %d", used, d.Allowance)
+		return nil, nil, nil, nil, d, fmt.Errorf("%w: %d > %d", diagnostics.ErrContextBudget, used, d.Allowance)
 	}
 	classes := []string{"chunks", "profile", "episodes"}
 	candidates := map[string][]map[string]any{"chunks": chunks, "profile": profile, "episodes": episodes}
