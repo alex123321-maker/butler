@@ -24,6 +24,10 @@ and dispatch, and publication retain the complete `AccessTx` proof. A failed or
 timed-out supervisor still cancels the provider; unknown paid usage stays reserved.
 After the provider stream closes, the worker stops and joins this observer before
 local observation/publication, whose full proof owns the policy/session locks.
+Within a job, full pre-HTTP authority/dispatch proofs serialize with periodic
+observation. A tick yields only while that same mandatory full proof is running;
+the provider cannot send until it succeeds, and the call deadline remains active.
+This avoids self-contention while auth resolution repeats authority before HTTP.
 Rejected consumer output records the fixed `consumer_output_invalid` reason;
 validator/model text is never copied into a public diagnostic or authority error.
 

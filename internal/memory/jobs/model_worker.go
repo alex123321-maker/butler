@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -496,6 +497,10 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 	}
 	callCtx, cancel := context.WithDeadline(s.Context(ctx, j), a.Deadline)
 	supervisorCtx, stopSupervisor := context.WithCancel(callCtx)
+	// A mandatory full pre-HTTP proof supersedes the periodic observation.
+	// Serializing only these owning proofs avoids their competing session locks;
+	// the provider cannot send before its complete proof succeeds.
+	var proofMu sync.Mutex
 	done := make(chan struct{})
 	go func(supervisorCtx context.Context) {
 		defer close(done)
@@ -506,6 +511,9 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 			case <-supervisorCtx.Done():
 				return
 			case <-t.C:
+				if !proofMu.TryLock() {
+					continue
+				}
 				check, stop := context.WithTimeout(supervisorCtx, 200*time.Millisecond)
 				started := time.Now()
 				stage := "model_supervisor"
@@ -513,6 +521,7 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 				if e == nil {
 					stage = "model_supervisor"
 				}
+				proofMu.Unlock()
 				if w.ObserveProbe != nil {
 					diagnostic := ""
 					if e != nil {
@@ -555,6 +564,11 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 	callCtx = budget.WithModelOperation(callCtx, a.OperationID)
 	callCtx = transport.WithInputByteLimit(callCtx, a.Quote.ProviderInputBytes)
 	callCtx = transport.WithInferenceAuthority(callCtx, func(c context.Context) error {
+		proofMu.Lock()
+		defer proofMu.Unlock()
+		if c.Err() != nil {
+			return c.Err()
+		}
 		e := s.checkModelRelease(c, j, a)
 		if errors.Is(e, ErrWaiting) {
 			waiting.Store(true)
@@ -565,6 +579,11 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 		return e
 	})
 	callCtx = transport.WithInferenceDispatch(callCtx, func(c context.Context) error {
+		proofMu.Lock()
+		defer proofMu.Unlock()
+		if c.Err() != nil {
+			return c.Err()
+		}
 		e := s.dispatchModel(c, j, a)
 		if transientPersistence(e) {
 			persistenceFailure.Store(&e)

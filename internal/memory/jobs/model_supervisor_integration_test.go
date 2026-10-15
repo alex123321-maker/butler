@@ -3,10 +3,12 @@ package jobs
 import (
 	"context"
 	"errors"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/transport"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -90,6 +92,99 @@ func TestModelSupervisorCurrentPinnedSourceAndAuthorityIntegration(t *testing.T)
 			}
 			if e := w.Jobs.checkModelSupervisor(context.Background(), j); e == nil {
 				t.Fatal("stale supervisor accepted", change)
+			}
+		})
+	}
+}
+
+type modelSecondAuthorityProof struct {
+	modelFixtureProvider
+	store  *Store
+	change string
+	stop   context.CancelFunc
+	http   atomic.Int32
+}
+
+func (p *modelSecondAuthorityProof) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
+	if err := transport.CheckInferenceAuthority(ctx); err != nil {
+		return nil, err
+	}
+	blocker, err := p.store.pool.Begin(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	if _, err = blocker.Exec(context.Background(), `SELECT session_key FROM sessions WHERE session_key='proof-session' FOR UPDATE`); err != nil {
+		blocker.Rollback(context.Background())
+		return nil, err
+	}
+	released := make(chan error, 1)
+	go func() {
+		time.Sleep(600 * time.Millisecond)
+		var err error
+		switch p.change {
+		case "policy_revoke":
+			_, err = blocker.Exec(context.Background(), `UPDATE memory_model_policies SET state='revoked'`)
+		case "worker_disable":
+			_, err = blocker.Exec(context.Background(), `UPDATE memory_model_control SET state='disabled' WHERE singleton`)
+		case "source_change":
+			_, err = blocker.Exec(context.Background(), `UPDATE memory_sources SET access_revision=access_revision+1 WHERE source_id=$1`, p.source.ID)
+		}
+		if err == nil {
+			err = blocker.Commit(context.Background())
+		} else {
+			blocker.Rollback(context.Background())
+		}
+		if p.change == "stop" {
+			p.stop()
+		}
+		released <- err
+	}()
+	// Native transport repeats authority after auth resolution and immediately
+	// before HTTP. This full proof must not race its own periodic session lock.
+	err = transport.CheckInferenceAuthority(ctx)
+	if releaseErr := <-released; releaseErr != nil {
+		return nil, releaseErr
+	}
+	if err != nil {
+		return nil, err
+	}
+	if err = transport.CheckInferenceDispatch(ctx); err != nil {
+		return nil, err
+	}
+	p.http.Add(1)
+	ch := make(chan transport.TransportEvent, 1)
+	ch <- transport.NewAssistantFinalEvent(r.Context.RunID, p.Name(), transport.AssistantFinal{Content: string(jsonBytes(map[string]string{"source_id": p.source.ID, "quote": p.source.Body})), Usage: &transport.Usage{InputTokens: 20, OutputTokens: 12, TotalTokens: 32}})
+	close(ch)
+	return ch, nil
+}
+
+func TestModelSupervisorYieldsOnlyToOwningFullHTTPProofIntegration(t *testing.T) {
+	for _, change := range []string{"unchanged", "stop", "policy_revoke", "worker_disable", "source_change"} {
+		t.Run(change, func(t *testing.T) {
+			w, owner, _ := modelFixture(t)
+			w.Jobs.budgets.Policy.ModelMillis = 3000
+			_, err := w.Jobs.pool.Exec(owner, `INSERT INTO sessions(session_key,user_id,channel) VALUES('proof-session','owner','web'); INSERT INTO runs(run_id,session_key,input_event_id,status,autonomy_mode,current_state,model_provider,started_at,updated_at) VALUES('proof-run','proof-session','i','completed','mode_1','completed','fixture',clock_timestamp(),clock_timestamp())`)
+			if err != nil {
+				t.Fatal(err)
+			}
+			src, err := w.Jobs.catalog.Put(owner, catalog.PutSource{ExternalKey: "proof-source", Kind: "document", ScopeType: "session", ScopeID: "proof-session", Body: "source", Title: "source"})
+			if err != nil {
+				t.Fatal(err)
+			}
+			ctx, stop := context.WithCancel(context.Background())
+			defer stop()
+			p := &modelSecondAuthorityProof{modelFixtureProvider: modelFixtureProvider{source: src}, store: w.Jobs, change: change, stop: stop}
+			w.Provider = p
+			q := policyRequest(src)
+			q.Job.OriginalRunID = "proof-run"
+			j := schedule(t, w, owner, q)
+			err = w.execute(ctx, j, QuoteProbe{})
+			if change == "unchanged" {
+				if err != nil || p.http.Load() != 1 {
+					t.Fatal("mandatory current full proof was self-cancelled", err, p.http.Load())
+				}
+			} else if err == nil || p.http.Load() != 0 {
+				t.Fatal("changed authority sent HTTP despite full proof", change, err, p.http.Load())
 			}
 		})
 	}
