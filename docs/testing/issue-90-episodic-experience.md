@@ -62,8 +62,8 @@ unrelated accepted lesson/episode, and unchanged complete attempt/reservation
 accounting hashes. Private dump/anchor/receipt and primary database stay on the
 isolated server.
 
-An independent existing privacy gap was found: original `tool_calls.result`
-can still retain the raw text returned by an earlier Catalog `memory.open` after
+At that earlier isolated snapshot a privacy gap remained: original
+`tool_calls.result` could retain text returned by an earlier `memory.open` after
 the Catalog source and derived copies are deleted. The backup fixture does not
 claim primary tool payload erasure. Owning Catalog/Transcript/cache/provider
 privacy repair and its actual read/delete/restore proof are required in 77/92
@@ -122,3 +122,13 @@ logs and the unexplained v5 source-check timeout remain preserved.
 Owning privacy repair is being composed separately in 92. These receipts still
 do not claim primary tool-payload erasure or post-079 combined acceptance.
 Prospective A/B/C collection remains unrun and cannot enable the production gate.
+
+The later issue92 composition includes migration079 and the owning cache repair.
+privacy-v1 proves actual Broker raw/view reads followed by erasure with
+unchanged complete effect/evidence/spending digests. payload-backup-v1 restores
+a pre-delete custom dump under the latest external anchor and proves cache
+erasure plus unrelated/UNKNOWN preservation. Combined ancestry-facts-v2 passed
+19events with no failures/skips and race/vet; composition-v2 passed178events
+with no failures/skips and vet. These are independent later receipts, not a
+retroactive upgrade of the earlier90 backup or native experience quality.
+See [current composition evidence](issue-92-composition-progress.md).
