@@ -300,6 +300,7 @@ func WithAccessChecker(ctx context.Context, c AccessChecker) context.Context {
 	return context.WithValue(ctx, checkerKey{}, c)
 }
 func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpose string) ([]Source, error) {
+	runSourcePhase(ctx, "access_restore")
 	if e := s.CheckRestoreTx(ctx, tx); e != nil {
 		return nil, e
 	}
@@ -316,29 +317,35 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 	} else if tok, ok := ownership.TokenFromContext(ctx); ok {
 		liveRun = tok.RunID
 		var valid bool
+		runSourcePhase(ctx, "access_lease")
 		if tx.QueryRow(ctx, `SELECT TRUE FROM session_ownership WHERE session_key=$1 AND run_id=$2 AND lease_id=$3 AND fence_epoch=$4 AND expires_at>clock_timestamp() FOR SHARE`, tok.SessionKey, tok.RunID, tok.LeaseID, tok.FenceEpoch).Scan(&valid) != nil {
 			return nil, ErrDenied
 		}
 		var state string
 		var revision int64
+		runSourcePhase(ctx, "access_run")
 		if tx.QueryRow(ctx, `SELECT COALESCE(task_id,''),COALESCE(task_revision,0),session_key,current_state FROM runs WHERE run_id=$1 FOR SHARE`, tok.RunID).Scan(&taskID, &revision, &session, &state) != nil || state == "completed" || state == "failed" || state == "cancelled" || state == "timed_out" {
 			return nil, ErrDenied
 		}
+		runSourcePhase(ctx, "access_session")
 		if tx.QueryRow(ctx, `SELECT user_id FROM sessions WHERE session_key=$1`, session).Scan(&own) != nil {
 			return nil, ErrDenied
 		}
 		if taskID != "" {
 			var current int64
 			var status string
+			runSourcePhase(ctx, "access_task")
 			if tx.QueryRow(ctx, `SELECT revision,status FROM tasks WHERE task_id=$1 AND owner_id=$2 FOR SHARE`, taskID, own).Scan(&current, &status) != nil || current != revision || status != "active" {
 				return nil, ErrDenied
 			}
 			var now time.Time
 			_ = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now)
+			runSourcePhase(ctx, "access_task_authority")
 			if _, e := actionauth.CheckTaskAuthorityTx(ctx, tx, taskID, own, nil, now); e != nil {
 				return nil, e
 			}
 			var e error
+			runSourcePhase(ctx, "access_delegation")
 			bounded, e = delegation.LoadTx(ctx, tx, taskID)
 			if e != nil {
 				return nil, e
@@ -367,6 +374,7 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 	}
 	var graphErr error
 	graphRoots := append([]SourceRef(nil), ordered...)
+	runSourcePhase(ctx, "access_graph")
 	ordered, graphErr = s.CanonicalSourcesTx(ctx, tx, ordered)
 	if graphErr != nil {
 		return nil, graphErr
@@ -375,11 +383,13 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 	for _, ref := range ordered {
 		summaryIDs = append(summaryIDs, ref.ID)
 	}
+	runSourcePhase(ctx, "access_summary_originals")
 	if e := checkSummarySourcesTx(ctx, tx, summaryIDs); e != nil {
 		return nil, e
 	}
 	result := make([]Source, 0, len(ordered))
 	for _, ref := range ordered {
+		runSourcePhase(ctx, "access_source")
 		write, _ := ctx.Value(writeSourcesKey{}).(bool)
 		src, e := getSourceTx(ctx, tx, ref.ID, write)
 		if e != nil {
@@ -445,6 +455,7 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 			}
 		}
 	}
+	runSourcePhase(ctx, "access_graph_recheck")
 	currentGraph, e := s.CanonicalSourcesTx(ctx, tx, graphRoots)
 	if e != nil {
 		return nil, e
@@ -457,9 +468,11 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 			return nil, ErrStale
 		}
 	}
+	runSourcePhase(ctx, "access_temporal")
 	if e := checkTemporalSourcesTx(ctx, tx, summaryIDs); e != nil {
 		return nil, e
 	}
+	runSourcePhase(ctx, "access_finalize")
 	if e := s.finalizeAccessTx(ctx, tx, refs, purpose); e != nil {
 		return nil, e
 	}

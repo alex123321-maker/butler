@@ -3,8 +3,10 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	promptmgmt "github.com/butler/butler/apps/orchestrator/internal/prompt"
 	"github.com/butler/butler/internal/actionauth"
@@ -12,6 +14,8 @@ import (
 	"github.com/butler/butler/internal/config"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/memorytest"
+	"github.com/butler/butler/internal/transport"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestTemporalProspectiveV3CapacityArithmetic(t *testing.T) {
@@ -33,9 +37,39 @@ func TestTemporalProspectiveV3CapacityArithmetic(t *testing.T) {
 // a typed facts read, followed by the final answer. It never changes the model
 // prompt, semantic rubric, production tool declarations or authority rules.
 func TestTemporalCollectorFactsThenBothOriginalsIntegration(t *testing.T) {
-	pool := memorytest.Database(t)
+	for _, delay := range []time.Duration{0, 5 * time.Second} {
+		t.Run(delay.String(), func(t *testing.T) { temporalControlledOriginalStrategy(t, delay) })
+	}
+}
+
+func temporalControlledOriginalStrategy(t *testing.T, delay time.Duration) {
+	t.Helper()
+	seed := memorytest.Database(t)
 	ctx := context.Background()
 	proof := t.TempDir()
+	if base := os.Getenv("BUTLER_TEMPORAL_DIAGNOSTIC_PROOF"); base != "" {
+		proof = filepath.Join(base, "controlled-"+delay.String())
+		if os.Mkdir(proof, 0700) != nil {
+			t.Fatal("fresh diagnostic directory required")
+		}
+	}
+	trace := &temporalSourceTrace{}
+	cfg := seed.Config()
+	cfg.ConnConfig.Tracer = trace
+	pool, err := pgxpool.NewWithConfig(ctx, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer pool.Close()
+	trace.pool = pool
+	defer func() {
+		if trace.export(proof) != nil {
+			t.Error("controlled source diagnostic export failed")
+		}
+	}()
+	monitorStop := trace.monitor(t, cfg)
+	defer monitorStop()
+	ctx = catalog.WithRunSourceObserver(ctx, trace.probe)
 	manifest := filepath.Join(proof, "deletion-anchor")
 	m := catalog.NewFileManifest(manifest)
 	if m.Initialize() != nil {
@@ -59,7 +93,8 @@ func TestTemporalCollectorFactsThenBothOriginalsIntegration(t *testing.T) {
 	if _, err := pm.Update(ctx, promptmgmt.UpdateRequest{BasePrompt: temporalNativeInstruction, Enabled: &on, UpdatedBy: "controlled-capacity-v3"}); err != nil {
 		t.Fatal(err)
 	}
-	p := &temporalNativeProvider{ModelProvider: &temporalControlledProvider{pool: pool, openOriginals: true}, pool: pool, proof: proof}
+	base := &temporalControlledProvider{pool: pool, openOriginals: true}
+	p := &temporalNativeProvider{ModelProvider: &temporalDelayedControlledProvider{temporalControlledProvider: base, delay: delay}, pool: pool, proof: proof}
 	ob := temporalRunOriginal(t, ctx, pool, cat, p, b, broker, pm, cases[0])
 	var completed, opened int
 	if err := pool.QueryRow(ctx, `SELECT count(*)FILTER(WHERE status='completed'),count(*)FILTER(WHERE status='completed' AND tool_name='memory.open') FROM tool_calls WHERE run_id=$1`, ob.RunID).Scan(&completed, &opened); err != nil {
@@ -68,4 +103,42 @@ func TestTemporalCollectorFactsThenBothOriginalsIntegration(t *testing.T) {
 	if ob.Status != "completed" || ob.NativeEntries != 4 || ob.KnownUsage != 4 || ob.FactsReads != 1 || completed != 3 || opened != 2 {
 		t.Fatal("legitimate facts/open/open/final strategy stopped", ob, completed, opened)
 	}
+}
+
+type temporalDelayedControlledProvider struct {
+	*temporalControlledProvider
+	delay time.Duration
+}
+
+func (p *temporalDelayedControlledProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
+	in, err := p.temporalControlledProvider.StartRun(ctx, r)
+	return p.delayed(ctx, in, err)
+}
+func (p *temporalDelayedControlledProvider) SubmitToolResult(ctx context.Context, r transport.SubmitToolResultRequest) (transport.EventStream, error) {
+	in, err := p.temporalControlledProvider.SubmitToolResult(ctx, r)
+	return p.delayed(ctx, in, err)
+}
+func (p *temporalDelayedControlledProvider) delayed(ctx context.Context, in transport.EventStream, err error) (transport.EventStream, error) {
+	if err != nil || p.delay == 0 {
+		return in, err
+	}
+	out := make(chan transport.TransportEvent)
+	go func() {
+		defer close(out)
+		timer := time.NewTimer(p.delay)
+		defer timer.Stop()
+		select {
+		case <-ctx.Done():
+			return
+		case <-timer.C:
+		}
+		for event := range in {
+			select {
+			case out <- event:
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+	return out, nil
 }

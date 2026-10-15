@@ -426,11 +426,22 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 	}
 	cfg.MaxConns = 4
 	cfg.ConnConfig.RuntimeParams["search_path"] = "memory_temporal_native_v3,public"
+	trace := &temporalSourceTrace{}
+	cfg.ConnConfig.Tracer = trace
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer pool.Close()
+	trace.pool = pool
+	ctx = catalog.WithRunSourceObserver(ctx, trace.probe)
+	defer func() {
+		if trace.export(proof) != nil {
+			t.Error("source diagnostic export unavailable")
+		}
+	}()
+	monitorStop := trace.monitor(t, cfg)
+	defer monitorStop()
 	paths, _ := filepath.Glob("../../../../migrations/*.up.sql")
 	sort.Strings(paths)
 	for _, path := range paths {
