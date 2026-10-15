@@ -175,6 +175,52 @@ type adaptiveImportControls struct {
 	} `json:"cases"`
 }
 
+type adaptiveNativePins struct {
+	Release       string `json:"release"`
+	SourceSHA     string `json:"source_sha256"`
+	BinarySHA     string `json:"binary_sha256"`
+	BrokerSHA     string `json:"broker_sha256"`
+	CorpusSHA     string `json:"corpus_sha256"`
+	ControlsSHA   string `json:"controls_sha256"`
+	MethodSHA     string `json:"method_sha256"`
+	MaxPaid       int    `json:"max_paid_entries"`
+	Model         string `json:"model"`
+	OutputTokens  int64  `json:"output_tokens"`
+	TimeoutMillis int64  `json:"timeout_millis"`
+	Order         string `json:"arm_order"`
+}
+
+func checkAdaptiveNativePins(proof string) error {
+	raw, err := os.ReadFile(filepath.Join(proof, "frozen-pins.json"))
+	var p adaptiveNativePins
+	if err != nil || json.Unmarshal(raw, &p) != nil || len(p.Release) != 40 || p.MaxPaid != 352 || p.Model != "gemini-3.8-flash-high" || p.OutputTokens != 32768 || p.TimeoutMillis != 300000 || p.Order != "case_order_then_rotating_no_ltm_static_adaptive_v1" {
+		return errors.New("frozen native profile pins differ")
+	}
+	source, err := acceptance.TreeHash("/src", nil)
+	if err != nil || source != p.SourceSHA {
+		return errors.New("source pin differs")
+	}
+	exe, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	binary, err := acceptance.FileHash(exe)
+	if err != nil || binary != p.BinarySHA {
+		return errors.New("collector binary pin differs")
+	}
+	broker, err := acceptance.FileHash(os.Getenv("BUTLER_MEMORY_READ_APP_BINARY"))
+	if err != nil || broker != p.BrokerSHA {
+		return errors.New("Broker binary pin differs")
+	}
+	for path, want := range map[string]string{"/src/deploy/memory-adaptive/holdout-v1/corpus.json": p.CorpusSHA, "/src/deploy/memory-adaptive/holdout-v1/controls.json": p.ControlsSHA, "/src/docs/ai/memory-eval-semantic-methodology.md": p.MethodSHA} {
+		raw, err := os.ReadFile(path)
+		if err != nil || acceptance.MemoryBytesSHA256(raw) != want {
+			return errors.New("corpus/control/method pin differs")
+		}
+	}
+	return nil
+}
+
 type adaptiveNativeExecutor struct {
 	base *flow.Service
 	done chan adaptiveNativeExecution
@@ -295,6 +341,9 @@ func TestMemoryAdaptiveNativeComparison(t *testing.T) {
 	proof := os.Getenv("BUTLER_ADAPTIVE_NATIVE_PROOF")
 	if !filepath.IsAbs(proof) {
 		t.Fatal("absolute private evidence root required")
+	}
+	if checkAdaptiveNativePins(proof) != nil {
+		t.Fatal("source/binary/profile pins denied before native credentials")
 	}
 	db, err := pgxpool.ParseConfig(os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
 	if err != nil || !strings.HasSuffix(db.ConnConfig.Database, "_test") {
