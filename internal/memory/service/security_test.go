@@ -36,15 +36,15 @@ func TestMemoryBundleExcludesSecretDerivativesAndKeepsPrivateDataProvenance(t *t
 	marker := "synthetic forbidden secret source"
 	profiles := []ProfileEntry{
 		sourcedProfile{stubProfile{"secret", marker}, secret},
-		sourcedProfile{stubProfile{"private", "Retain as data"}, private},
+		sourcedProfile{stubProfile{"private", "Retain source profile as data"}, private},
 	}
 	episodes := []Episode{
 		sourcedEpisode{stubEpisode{marker, 0.01}, secret},
-		sourcedEpisode{stubEpisode{"Retain as data", 0.02}, private},
+		sourcedEpisode{stubEpisode{"Retain source episode as data", 0.02}, private},
 	}
 	chunks := []Chunk{
 		sourcedChunk{stubChunk{"secret", marker, 0.01}, secret},
-		sourcedChunk{stubChunk{"private", "Retain as data", 0.02}, private},
+		sourcedChunk{stubChunk{"private", "Retain source document as data", 0.02}, private},
 	}
 	svc := New(Config{
 		ProfileStore: stubProfileStore{entriesByScope: map[string][]ProfileEntry{"session:session": profiles}},

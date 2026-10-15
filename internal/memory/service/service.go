@@ -48,6 +48,20 @@ type EmbeddingProvider interface {
 type SemanticReader interface {
 	Search(context.Context, []Scope, string, int) ([]SemanticHit, error)
 }
+
+// QueryPolicy governs use of the query, independently of provider data release.
+// Local allows PostgreSQL and a proven internal inference backend. External
+// permits the legacy configured embedding path; source/run release guards still
+// govern every result and generation request.
+type QueryPolicy struct{ Local, External bool }
+
+type SearchResult struct {
+	Hits        []SemanticHit
+	Diagnostics []string
+}
+type PolicySemanticReader interface {
+	SearchWithPolicy(context.Context, []Scope, string, int, QueryPolicy) (SearchResult, error)
+}
 type SemanticHit struct {
 	Title, Summary                                                   string
 	Distance                                                         float64
@@ -85,19 +99,20 @@ type Chunk interface {
 }
 
 type Config struct {
-	ProfileStore  ProfileStore
-	EpisodeStore  EpisodeStore
-	ChunkStore    ChunkStore
-	WorkingStore  WorkingStore
-	SummaryReader SummaryReader
-	Embeddings    EmbeddingProvider
-	Semantic      SemanticReader
-	ProfileLimit  int
-	EpisodeLimit  int
-	ChunkLimit    int
-	BundleBudget  int
-	KeywordLimit  int
-	ScopeOrder    []string
+	ProfileStore        ProfileStore
+	EpisodeStore        EpisodeStore
+	ChunkStore          ChunkStore
+	WorkingStore        WorkingStore
+	SummaryReader       SummaryReader
+	Embeddings          EmbeddingProvider
+	Semantic            SemanticReader
+	ProfileLimit        int
+	EpisodeLimit        int
+	ChunkLimit          int
+	BundleBudget        int
+	ContextBudgetTokens int
+	KeywordLimit        int
+	ScopeOrder          []string
 	// ScopeResolver is trusted composition derived from current task ownership
 	// and exact owner grants; request/model text cannot populate extra scopes.
 	ScopeResolver func(context.Context) ([]Scope, error)
@@ -115,12 +130,15 @@ type BundleRequest struct {
 	UserID       string
 	UserMessage  string
 	IncludeQuery bool
+	// QueryPolicy supersedes IncludeQuery. Nil preserves explicit legacy callers.
+	QueryPolicy *QueryPolicy
 }
 
 type Bundle struct {
-	Items   map[string]any
-	Prompt  string
-	Working WorkingContext
+	Items       map[string]any
+	Prompt      string
+	Working     WorkingContext
+	Diagnostics SelectionDiagnostics
 }
 
 type Scope struct {
@@ -154,7 +172,10 @@ func New(cfg Config) *Service {
 		cfg.BundleBudget = 12
 	}
 	if cfg.ChunkLimit <= 0 {
-		cfg.ChunkLimit = 2
+		cfg.ChunkLimit = 4
+	}
+	if cfg.ContextBudgetTokens <= 0 {
+		cfg.ContextBudgetTokens = 65536
 	}
 	if cfg.KeywordLimit <= 0 {
 		cfg.KeywordLimit = 2
@@ -190,29 +211,41 @@ func (s *Service) BuildBundle(ctx context.Context, req BundleRequest) (Bundle, e
 		}
 		scopes = combined
 	}
-	profileEntries, err := s.loadProfile(ctx, scopes)
-	if err != nil {
-		return Bundle{}, err
+	policy := QueryPolicy{Local: req.IncludeQuery, External: req.IncludeQuery}
+	if req.QueryPolicy != nil {
+		policy = *req.QueryPolicy
 	}
 	working, err := s.loadWorking(ctx, req.SessionKey)
 	if err != nil {
 		return Bundle{}, err
 	}
-	episodes, err := s.loadEpisodes(ctx, scopes, req.UserMessage, req.IncludeQuery)
+	// Legacy query embeddings have no locality proof. Local-only requests use
+	// the policy-aware reader and never fall through to this backend.
+	episodes, err := s.loadEpisodes(ctx, scopes, req.UserMessage, policy.External)
 	if err != nil {
 		return Bundle{}, err
 	}
-	chunks, err := s.loadChunks(ctx, scopes, req.UserMessage, req.IncludeQuery)
+	chunks, diagnostics, err := s.loadPolicyChunks(ctx, scopes, req.UserMessage, policy)
+	if err != nil {
+		return Bundle{}, err
+	}
+	// Read profile eligibility after potentially slow retrieval, not before it.
+	profileEntries, filteredProfiles, err := s.loadProfile(ctx, scopes, req.UserMessage)
 	if err != nil {
 		return Bundle{}, err
 	}
 	summary := s.loadSummary(ctx, req.SessionKey)
-	items, promptSummary, promptWorking, promptProfile, promptEpisodes, promptChunks := s.applyBudget(summary, working, profileEntries, episodes, chunks)
+	items, promptProfile, promptEpisodes, promptChunks, selection, err := s.selectContext(summary, working, profileEntries, episodes, chunks)
+	if err != nil {
+		return Bundle{}, err
+	}
+	selection.Retrieval = diagnostics
+	selection.Omitted["profile_relevance_or_limit"] = filteredProfiles
 	s.recordRetrievalMetric("profile", len(promptProfile) > 0)
 	s.recordRetrievalMetric("episodic", len(promptEpisodes) > 0)
 	s.recordRetrievalMetric("chunk", len(promptChunks) > 0)
 
-	return Bundle{Items: items, Prompt: FormatPrompt(promptWorking, promptProfile, promptEpisodes, promptChunks, promptSummary), Working: working}, nil
+	return Bundle{Items: items, Prompt: FormatPrompt(working, promptProfile, promptEpisodes, promptChunks, summary), Working: working, Diagnostics: selection}, nil
 }
 
 func (s *Service) scopes(sessionKey, userID string) []Scope {
@@ -235,28 +268,55 @@ func (s *Service) scopes(sessionKey, userID string) []Scope {
 	return result
 }
 
-func (s *Service) loadProfile(ctx context.Context, scopes []Scope) ([]map[string]any, error) {
+func (s *Service) loadProfile(ctx context.Context, scopes []Scope, query string) ([]map[string]any, int, error) {
 	if s.config.ProfileStore == nil || s.config.ProfileLimit <= 0 {
-		return nil, nil
+		return nil, 0, nil
 	}
 	result := make([]map[string]any, 0, s.config.ProfileLimit)
 	for _, scope := range scopes {
 		entries, err := s.config.ProfileStore.GetByScope(ctx, scope.Type, scope.ID)
 		if err != nil {
-			return nil, fmt.Errorf("load profile memory: %w", err)
+			return nil, 0, fmt.Errorf("load profile memory: %w", err)
 		}
 		for _, entry := range entries {
 			origin := memoryOrigin(entry)
 			if origin.Sensitivity == content.Secret {
 				continue
 			}
-			result = append(result, map[string]any{"key": entry.ProfileKey(), "summary": entry.ProfileSummary(), "scope_type": scope.Type, "scope_id": scope.ID, "origin": origin})
-			if len(result) >= s.config.ProfileLimit {
-				return result, nil
-			}
+			result = append(result, map[string]any{"key": entry.ProfileKey(), "summary": entry.ProfileSummary(), "scope_type": scope.Type, "scope_id": scope.ID, "origin": origin, "source_refs": origin.SourceRefs})
 		}
 	}
-	return result, nil
+	selected := relevantProfiles(result, query, s.config.ProfileLimit)
+	return selected, len(result) - len(selected), nil
+}
+
+func (s *Service) loadPolicyChunks(ctx context.Context, scopes []Scope, query string, policy QueryPolicy) ([]map[string]any, []string, error) {
+	if strings.TrimSpace(query) == "" || !policy.Local && !policy.External {
+		return nil, []string{"query_search_disabled"}, nil
+	}
+	if reader, ok := s.config.Semantic.(PolicySemanticReader); ok && policy.Local {
+		result, err := reader.SearchWithPolicy(ctx, scopes, query, min(4, s.config.ChunkLimit), policy)
+		if err != nil {
+			return nil, nil, fmt.Errorf("memory retrieval failed: %w", err)
+		}
+		return semanticItems(result.Hits), result.Diagnostics, nil
+	}
+	if !policy.External {
+		return nil, []string{"local_query_backend_unavailable"}, nil
+	}
+	items, err := s.loadChunks(ctx, scopes, query, true)
+	return items, nil, err
+}
+
+func semanticItems(hits []SemanticHit) []map[string]any {
+	items := make([]map[string]any, 0, len(hits))
+	for _, h := range hits {
+		if h.MemoryOrigin().Sensitivity == content.Secret {
+			continue
+		}
+		items = append(items, map[string]any{"title": h.Title, "summary": h.Summary, "distance": h.Distance, "source": "local_semantic", "source_ref": h.SourceRef, "origin_type": h.OriginType, "origin_id": h.OriginID, "source_revision": h.Revision, "index_generation": h.GenerationID, "index_space": h.SpaceID, "origin": h.MemoryOrigin(), "excerpt_clipped": h.ExcerptClipped})
+	}
+	return items
 }
 
 func (s *Service) loadEpisodes(ctx context.Context, scopes []Scope, userMessage string, includeQuery bool) ([]map[string]any, error) {
@@ -380,8 +440,7 @@ func (s *Service) loadChunks(ctx context.Context, scopes []Scope, userMessage st
 	if s.config.Semantic != nil && includeQuery && strings.TrimSpace(userMessage) != "" {
 		hits, err := s.config.Semantic.Search(ctx, scopes, userMessage, min(4, s.config.ChunkLimit))
 		if err != nil {
-			s.log.Warn("local semantic retrieval unavailable")
-			return nil, nil
+			return nil, fmt.Errorf("local semantic retrieval unavailable: %w", err)
 		}
 		items := make([]map[string]any, 0, len(hits))
 		for _, h := range hits {
@@ -489,7 +548,11 @@ func FormatPrompt(working WorkingContext, profileEntries, episodes, chunks []map
 	if len(profileEntries) > 0 {
 		lines := make([]string, 0, len(profileEntries))
 		for _, entry := range profileEntries {
-			lines = append(lines, fmt.Sprintf("- %s: %s", entry["key"], entry["summary"]))
+			line := fmt.Sprintf("- %s: %s", entry["key"], entry["summary"])
+			if refs, ok := entry["source_refs"].([]string); ok && len(refs) > 0 {
+				line += " (sources " + strings.Join(refs, ", ") + "; stored evidence)"
+			}
+			lines = append(lines, line)
 		}
 		sections = append(sections, "Profile memory:\n"+strings.Join(lines, "\n"))
 	}
@@ -532,44 +595,6 @@ func formatWorkingMemoryLines(working WorkingContext) []string {
 		lines = append(lines, "- Status: "+status)
 	}
 	return lines
-}
-
-func (s *Service) applyBudget(summary string, working WorkingContext, profileEntries, episodes, chunks []map[string]any) (map[string]any, string, WorkingContext, []map[string]any, []map[string]any, []map[string]any) {
-	remaining := s.config.BundleBudget
-	items := map[string]any{}
-	selectedSummary := ""
-	selectedWorking := WorkingContext{Status: "idle"}
-	selectedProfile := []map[string]any{}
-	selectedEpisodes := []map[string]any{}
-	selectedChunks := []map[string]any{}
-	if strings.TrimSpace(summary) != "" && remaining > 0 {
-		selectedSummary = summary
-		items["session_summary"] = summary
-		remaining--
-	}
-	if !working.IsEmpty() && remaining > 0 {
-		selectedWorking = working
-		items["working"] = working.BundleMap()
-		remaining--
-	}
-	if remaining > 0 && len(profileEntries) > 0 {
-		count := min(remaining, len(profileEntries))
-		selectedProfile = append(selectedProfile, profileEntries[:count]...)
-		items["profile"] = selectedProfile
-		remaining -= count
-	}
-	if remaining > 0 && len(episodes) > 0 {
-		count := min(remaining, len(episodes))
-		selectedEpisodes = append(selectedEpisodes, episodes[:count]...)
-		items["episodes"] = selectedEpisodes
-		remaining -= count
-	}
-	if remaining > 0 && len(chunks) > 0 {
-		count := min(remaining, len(chunks))
-		selectedChunks = append(selectedChunks, chunks[:count]...)
-		items["chunks"] = selectedChunks
-	}
-	return items, selectedSummary, selectedWorking, selectedProfile, selectedEpisodes, selectedChunks
 }
 
 func keywordTerms(input string) []string {

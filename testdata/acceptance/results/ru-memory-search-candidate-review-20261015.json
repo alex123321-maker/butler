@@ -1,0 +1,1028 @@
+{
+  "version": "butler-memory-semantic-review-v1",
+  "kind": "prospective",
+  "reviewer": "independent model agent /root/memory_independent_review",
+  "candidate_author": "root",
+  "corpus_sha256": "9c78b9469bb6e61c143020324fe7af8b75e9344e6dd0a2154775f370ddeb964f",
+  "measurements_sha256": "d01e421fd4180917af721627e84748c35f99718bc78c62ed3263ee60349a40f9",
+  "rubric_sha256": "ab41d8ec5040804d9060cdcf58762d3ef342329a9d2174533535141c42c75132",
+  "original_root": "/srv/storage/butler/agents/memory-semantic-trial-search-candidate-20261015",
+  "variant": "candidate",
+  "executed_release": "0da5128f0c6743a764de30bc3688923961e4ee70",
+  "bindings": {
+    "inputs_sha256": "2775d1e175a9b33ff2eeb77e689cb210544b1f65c7447331e79bd8dc4dcd66ee",
+    "captures_sha256": "f374a7a78616887f74bfd4e10a82f1000e2c405e90780d01fb54111f833be133",
+    "ledger_sha256": "1c4c6f461c039a9cd5cfcab082c4fe02b4357627a1536c78a2f0e8e995806519",
+    "safe_manifest_sha256": "e229ce9aedf493d56ce2696ec2fe696227456f981eae922b41a90a4dcafe10ef"
+  },
+  "interpretation": "Независимая смысловая оценка всех22 completed originals. Два failed no_ltm (g01/g08) остаются availability failures в полном24-слотном denominator; им не назначается выдуманный семантический verdict. Все поля truth/grounding/completeness относятся к фиксированной методике и проверенным реально доступным источникам.",
+  "summary": {
+    "scheduled": 24,
+    "eligible": 24,
+    "completed": 22,
+    "failed": 2,
+    "skipped": 0,
+    "unobserved": 0,
+    "correct": 17,
+    "partial": 5,
+    "incorrect": 0,
+    "unresolved": 0,
+    "context_correct": 22,
+    "grounded": 22,
+    "complete": 17,
+    "unsupported_assertions": 0,
+    "baseline_incomplete_safe_responses": 5,
+    "retrieval_misses": 0,
+    "reviewed_model_citations": 22,
+    "authentic_model_citations": 22,
+    "visible_model_citations": 22,
+    "semantically_entailing_model_citations": 22,
+    "arms": {
+      "no_ltm": {
+        "scheduled": 8,
+        "completed": 6,
+        "failed": 2,
+        "skipped": 0,
+        "correct": 1,
+        "partial": 5,
+        "incorrect": 0,
+        "unresolved": 0,
+        "context_correct": 6,
+        "grounded": 6,
+        "complete": 1,
+        "evidence_available": 1,
+        "retrieval_misses": 0
+      },
+      "oracle": {
+        "scheduled": 8,
+        "completed": 8,
+        "failed": 0,
+        "skipped": 0,
+        "correct": 8,
+        "partial": 0,
+        "incorrect": 0,
+        "unresolved": 0,
+        "context_correct": 8,
+        "grounded": 8,
+        "complete": 8,
+        "evidence_available": 8,
+        "retrieval_misses": 0
+      },
+      "retrieval": {
+        "scheduled": 8,
+        "completed": 8,
+        "failed": 0,
+        "skipped": 0,
+        "correct": 8,
+        "partial": 0,
+        "incorrect": 0,
+        "unresolved": 0,
+        "context_correct": 8,
+        "grounded": 8,
+        "complete": 8,
+        "evidence_available": 8,
+        "retrieval_misses": 0
+      }
+    }
+  },
+  "items": [
+    {
+      "case_name": "search-g01",
+      "case_id": "memory:e53db248b23889fac74554ba3f3383f1",
+      "arm": "oracle",
+      "input_sha256": "1bcce9ad70954631926148adf50ae4450d128a64137647ecf2a198964bda0b30",
+      "output_sha256": "49c49c71010d3d1916000ace9dd93c86631e46aa2ea2de0f4803ae18bff4cf15",
+      "citation_checks": [
+        {
+          "source_id": "g01s1",
+          "revision": 1,
+          "quote": "Заказ «Ольха-592» выдаётся по адресу: улица Строителей, дом 24.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "g01s2",
+          "revision": 1,
+          "quote": "Код получения заказа «Ольха-592»: OL-3746.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "g01s3",
+          "revision": 1,
+          "quote": "Выдача заказа «Ольха-592» работает с 10:15 до 18:45.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ],
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Все три необходимых факта видны: адрес из g01s1, OL-3746 из g01s2, часы из g01s3. Ответ точно сообщает их и не переносит пункт/часы другого заказа Ольха-593.",
+      "evidence": [
+        {
+          "source_id": "g01s1",
+          "revision": 1,
+          "quote": "Заказ «Ольха-592» выдаётся по адресу: улица Строителей, дом 24.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "g01s2",
+          "revision": 1,
+          "quote": "Код получения заказа «Ольха-592»: OL-3746.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "g01s3",
+          "revision": 1,
+          "quote": "Выдача заказа «Ольха-592» работает с 10:15 до 18:45.",
+          "availability": "provided"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g01",
+      "case_id": "memory:e53db248b23889fac74554ba3f3383f1",
+      "arm": "retrieval",
+      "input_sha256": "2f8e5f1356c1755b6af74d9cbfc5fd6498ade135a238d648fbcc3d45e8430f5c",
+      "output_sha256": "ab4fb9c5dac05a833f344f135888f5bbe19421c4d1984bc72adafe1becb6399b",
+      "citation_checks": [
+        {
+          "source_id": "g01s1",
+          "revision": 1,
+          "quote": "Заказ «Ольха-592» выдаётся по адресу: улица Строителей, дом 24.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "g01s2",
+          "revision": 1,
+          "quote": "Код получения заказа «Ольха-592»: OL-3746.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "g01s3",
+          "revision": 1,
+          "quote": "Выдача заказа «Ольха-592» работает с 10:15 до 18:45.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ],
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Все три необходимых факта видны: адрес из g01s1, OL-3746 из g01s2, часы из g01s3. Ответ точно сообщает их и не переносит пункт/часы другого заказа Ольха-593.",
+      "evidence": [
+        {
+          "source_id": "g01s1",
+          "revision": 1,
+          "quote": "Заказ «Ольха-592» выдаётся по адресу: улица Строителей, дом 24.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "g01s2",
+          "revision": 1,
+          "quote": "Код получения заказа «Ольха-592»: OL-3746.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "g01s3",
+          "revision": 1,
+          "quote": "Выдача заказа «Ольха-592» работает с 10:15 до 18:45.",
+          "availability": "provided"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g02",
+      "case_id": "memory:9a36e860e590b13c8fceca777235c312",
+      "arm": "no_ltm",
+      "input_sha256": "8574de269c367382f5e76e8a2d96cf4fde4b6eeb2a8f202c2c89c9b31ef35422",
+      "output_sha256": "e8bb3300e496480ffe18459d98971a96038022504fe7209458aac287bd06bf37",
+      "citation_checks": [],
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Без долговременной памяти модель не получает требуемых фактов и корректно ограничивает отказ предоставленными источниками; достаточные факты есть в полном корпусе. Это безопасный неполный baseline, а не ошибка модели или embedding.",
+      "evidence": [
+        {
+          "source_id": "g02s1",
+          "revision": 1,
+          "quote": "Выдача пропуска «Ясень-73»: кабинет 418, четвёртый этаж административного корпуса.",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g02",
+      "case_id": "memory:9a36e860e590b13c8fceca777235c312",
+      "arm": "oracle",
+      "input_sha256": "1a6c13ce00b69b385e6622c565099c884e6957fd3b6487381ae980257d15a405",
+      "output_sha256": "272172b4bc1fea70ffdb65d1df299deff4603dedbc295e12851c09dbd4ecb189",
+      "citation_checks": [
+        {
+          "source_id": "g02s1",
+          "revision": 1,
+          "quote": "Выдача пропуска «Ясень-73»: кабинет 418, четвёртый этаж административного корпуса.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ],
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Видимый g02s1 прямо устанавливает кабинет 418 и четвёртый этаж административного корпуса; ответ полностью воспроизводит смысл обоих требуемых полей.",
+      "evidence": [
+        {
+          "source_id": "g02s1",
+          "revision": 1,
+          "quote": "Выдача пропуска «Ясень-73»: кабинет 418, четвёртый этаж административного корпуса.",
+          "availability": "provided"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g02",
+      "case_id": "memory:9a36e860e590b13c8fceca777235c312",
+      "arm": "retrieval",
+      "input_sha256": "6609fdd1a84f2814fb4194da8506e51185440c5d62fadabd7991a3740e607d58",
+      "output_sha256": "272172b4bc1fea70ffdb65d1df299deff4603dedbc295e12851c09dbd4ecb189",
+      "citation_checks": [
+        {
+          "source_id": "g02s1",
+          "revision": 1,
+          "quote": "Выдача пропуска «Ясень-73»: кабинет 418, четвёртый этаж административного корпуса.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ],
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Видимый g02s1 прямо устанавливает кабинет 418 и четвёртый этаж административного корпуса; ответ полностью воспроизводит смысл обоих требуемых полей.",
+      "evidence": [
+        {
+          "source_id": "g02s1",
+          "revision": 1,
+          "quote": "Выдача пропуска «Ясень-73»: кабинет 418, четвёртый этаж административного корпуса.",
+          "availability": "provided"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g03",
+      "case_id": "memory:77e599d35e6812c8d411cb68125a33eb",
+      "arm": "no_ltm",
+      "input_sha256": "0cc275d963ed32a6dc6c0d156de56d80544a663ce94b9b1cdb8c7f5817db5548",
+      "output_sha256": "22b1dcfd3b2495766a36b4b19679a33b66e82c0573755a3af9671757ca5555da",
+      "citation_checks": [],
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Без долговременной памяти модель не получает требуемых фактов и корректно ограничивает отказ предоставленными источниками; достаточные факты есть в полном корпусе. Это безопасный неполный baseline, а не ошибка модели или embedding.",
+      "evidence": [
+        {
+          "source_id": "g03p26",
+          "revision": 1,
+          "quote": "Хозяин: для поездок проекта «Иней-64» я предпочитаю поезд; это постоянное предпочтение именно этого проекта.",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g03",
+      "case_id": "memory:77e599d35e6812c8d411cb68125a33eb",
+      "arm": "oracle",
+      "input_sha256": "be9d1222820d2067dff8c9865dbc9ab9f54c468f0f79b3a6bf02a936e2c51e5f",
+      "output_sha256": "a42e94b38a92a29099fb9d276df6746a7445071400fc0486c1e9c706bcb917a0",
+      "citation_checks": [
+        {
+          "source_id": "g03p26",
+          "revision": 1,
+          "quote": "для поездок проекта «Иней-64» я предпочитаю поезд; это постоянное предпочтение именно этого проекта.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ],
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Предоставленный оригинал g03p26 устанавливает поезд именно для Иней-64. Ответ сохраняет транспорт и проектную область, не объявляет предпочтение универсальным.",
+      "evidence": [
+        {
+          "source_id": "g03p26",
+          "revision": 1,
+          "quote": "Хозяин: для поездок проекта «Иней-64» я предпочитаю поезд; это постоянное предпочтение именно этого проекта.",
+          "availability": "provided"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g03",
+      "case_id": "memory:77e599d35e6812c8d411cb68125a33eb",
+      "arm": "retrieval",
+      "input_sha256": "559f716196ac5fa3e19e0ce87fac9a10d285caef009dc58ece1c59b758c7fea8",
+      "output_sha256": "2d32f736170421574f5641e75221bab1df4355e0770d76dc8e3bf9d0669efde8",
+      "citation_checks": [],
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Фактический prompt содержит предпочтение g03p26 через accepted Profile memory:profile:51; документ g03s1 способ поездок не задаёт. Модель верно сообщает поезд именно для Иней-64, опираясь на профиль, и не делает универсального обобщения.",
+      "evidence": [
+        {
+          "source_id": "g03p26",
+          "revision": 1,
+          "quote": "Хозяин: для поездок проекта «Иней-64» я предпочитаю поезд; это постоянное предпочтение именно этого проекта.",
+          "availability": "provided"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g04",
+      "case_id": "memory:0881f695534a00c0ce44c67c3670aef2",
+      "arm": "no_ltm",
+      "input_sha256": "388bda793d9fafc430ad3dbffb3a563879a07473d933f35377c127fdc7c8154e",
+      "output_sha256": "11acc8abce979c506877bec5ec1d115101a667de8dc03bf010c0f85df5044fd7",
+      "citation_checks": [],
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": true,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Текущий task revision 7 сам содержит достаточную инструкцию. Ответ верно требует только замечания, исключает новый полный отчёт и сохраняет остановку отправки. Оговорка об отсутствии деталей текста отчёта соответствует пустой истории; успех не требует retrieval.",
+      "evidence": [],
+      "task_evidence": {
+        "revision": 7,
+        "quote": "Сейчас подготовь только короткий список замечаний. Полный отчёт заново не создавай. Отправку участникам я приостановил."
+      }
+    },
+    {
+      "case_name": "search-g04",
+      "case_id": "memory:0881f695534a00c0ce44c67c3670aef2",
+      "arm": "oracle",
+      "input_sha256": "d4591ef08bb6035362216e16c5b986e98a5355ce5709194bbefdf2725667ddb0",
+      "output_sha256": "28821b105253a8b74df16d517b81fc22f2f785461ebe3d4b76e77e5e99b110ae",
+      "citation_checks": [
+        {
+          "source_id": "g04p1",
+          "revision": 1,
+          "quote": "обычно по проекту «Клён-28» готовим полный отчёт и отправляем его участникам.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ],
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": true,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Ответ следует текущему task revision 7: короткий список замечаний, без нового полного отчёта и при приостановленной отправке. Упоминание обычной практики подтверждено g04p1 и явно не превращается в разрешение на действие.",
+      "evidence": [
+        {
+          "source_id": "g04p1",
+          "revision": 1,
+          "quote": "Хозяин: обычно по проекту «Клён-28» готовим полный отчёт и отправляем его участникам.",
+          "availability": "provided"
+        }
+      ],
+      "task_evidence": {
+        "revision": 7,
+        "quote": "Сейчас подготовь только короткий список замечаний. Полный отчёт заново не создавай. Отправку участникам я приостановил."
+      }
+    },
+    {
+      "case_name": "search-g04",
+      "case_id": "memory:0881f695534a00c0ce44c67c3670aef2",
+      "arm": "retrieval",
+      "input_sha256": "cde2ff0e1da8676edd84778eefba44517ed0ea52893aa33bd94268b6696ef2b7",
+      "output_sha256": "ffe40a676297f8c557324c26aa2ea6f6a7602ac83329062284ad8e8a3264388a",
+      "citation_checks": [],
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": true,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Ответ следует текущему task revision 7: короткий список замечаний, без нового полного отчёта и при приостановленной отправке. Упоминание обычной практики подтверждено g04p1 и явно не превращается в разрешение на действие.",
+      "evidence": [
+        {
+          "source_id": "g04p1",
+          "revision": 1,
+          "quote": "Хозяин: обычно по проекту «Клён-28» готовим полный отчёт и отправляем его участникам.",
+          "availability": "provided"
+        }
+      ],
+      "task_evidence": {
+        "revision": 7,
+        "quote": "Сейчас подготовь только короткий список замечаний. Полный отчёт заново не создавай. Отправку участникам я приостановил."
+      }
+    },
+    {
+      "case_name": "search-g05",
+      "case_id": "memory:296fc7f415ec8f6ff78b5fa2fae74728",
+      "arm": "no_ltm",
+      "input_sha256": "447a38f0fbc479a8fd237a2ff6c09f3b73367e8b883b9c31dcb691064d85ba87",
+      "output_sha256": "8d7255b3f24c9dadabb886db1cb46bc930c70d1c5863ae6de3c246e4be921f94",
+      "citation_checks": [],
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Без долговременной памяти модель не получает требуемых фактов и корректно ограничивает отказ предоставленными источниками; достаточные факты есть в полном корпусе. Это безопасный неполный baseline, а не ошибка модели или embedding.",
+      "evidence": [
+        {
+          "source_id": "g05s1",
+          "revision": 1,
+          "quote": "Встреча команды «Липа-306» пройдёт 16 октября в 13:40 в переговорной «Озеро».",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g05",
+      "case_id": "memory:296fc7f415ec8f6ff78b5fa2fae74728",
+      "arm": "oracle",
+      "input_sha256": "094ba1a2e731ae242121c529aca54027baa15a45da2bd6aff07ac570c359d441",
+      "output_sha256": "c45b6809bf5583c1202ed17f9980b21214252c2d1121829b35fff2af6cb76a3b",
+      "citation_checks": [
+        {
+          "source_id": "g05s1",
+          "revision": 1,
+          "quote": "Встреча команды «Липа-306» пройдёт 16 октября в 13:40 в переговорной «Озеро».",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ],
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Видимый g05s1 подтверждает все три поля: 16 октября, 13:40, переговорная Озеро. Ответ полон и не использует нерелевантные профильные правила.",
+      "evidence": [
+        {
+          "source_id": "g05s1",
+          "revision": 1,
+          "quote": "Встреча команды «Липа-306» пройдёт 16 октября в 13:40 в переговорной «Озеро».",
+          "availability": "provided"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g05",
+      "case_id": "memory:296fc7f415ec8f6ff78b5fa2fae74728",
+      "arm": "retrieval",
+      "input_sha256": "c135c6f59338317e4ca391965e2d5dce700cf98dd0b364df3260780a4694af4e",
+      "output_sha256": "c45b6809bf5583c1202ed17f9980b21214252c2d1121829b35fff2af6cb76a3b",
+      "citation_checks": [
+        {
+          "source_id": "g05s1",
+          "revision": 1,
+          "quote": "Встреча команды «Липа-306» пройдёт 16 октября в 13:40 в переговорной «Озеро».",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ],
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Видимый g05s1 подтверждает все три поля: 16 октября, 13:40, переговорная Озеро. Ответ полон и не использует нерелевантные профильные правила.",
+      "evidence": [
+        {
+          "source_id": "g05s1",
+          "revision": 1,
+          "quote": "Встреча команды «Липа-306» пройдёт 16 октября в 13:40 в переговорной «Озеро».",
+          "availability": "provided"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g06",
+      "case_id": "memory:c3c6f6b480f2a0d109a623fb8eea453f",
+      "arm": "no_ltm",
+      "input_sha256": "62873971776f08b31404d10a68d5c5337db78fd451f594cb04349fc84a0d785d",
+      "output_sha256": "43fbe38d1ec9ca7305ffe3960de2c6c5b47f406115e5156ff341db8e4edd9efb",
+      "citation_checks": [],
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Без долговременной памяти модель не получает требуемых фактов и корректно ограничивает отказ предоставленными источниками; достаточные факты есть в полном корпусе. Это безопасный неполный baseline, а не ошибка модели или embedding.",
+      "evidence": [
+        {
+          "source_id": "g06s2",
+          "revision": 1,
+          "quote": "Исправление хозяина: груз «Ель-85» перевезли на склад «Южный», прежний «Северный» отменён.",
+          "availability": "corpus_only"
+        },
+        {
+          "source_id": "g06s3",
+          "revision": 1,
+          "quote": "Груз «Ель-85» размещён в секции Д-12.",
+          "availability": "corpus_only"
+        },
+        {
+          "source_id": "g06s4",
+          "revision": 1,
+          "quote": "За грузом «Ель-85» можно приезжать после 16:30.",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g06",
+      "case_id": "memory:c3c6f6b480f2a0d109a623fb8eea453f",
+      "arm": "oracle",
+      "input_sha256": "151dd40f69f6099bb8962708694318d3bbb3d5211b7cf366599e63e38ce426d3",
+      "output_sha256": "9a24529b98055e533226ec753205f0feb98f19e5915c2df64ccf5f5b8554dcd9",
+      "citation_checks": [
+        {
+          "source_id": "g06s2",
+          "revision": 1,
+          "quote": "Исправление хозяина: груз «Ель-85» перевезли на склад «Южный», прежний «Северный» отменён.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "g06s3",
+          "revision": 1,
+          "quote": "Груз «Ель-85» размещён в секции Д-12.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "g06s4",
+          "revision": 1,
+          "quote": "За грузом «Ель-85» можно приезжать после 16:30.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ],
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "g06s2/s3/s4 явно устанавливают Южный вместо отменённого Северного, секцию Д-12 и прибытие после 16:30. Ответ сохраняет все три факта и временную границу.",
+      "evidence": [
+        {
+          "source_id": "g06s2",
+          "revision": 1,
+          "quote": "Исправление хозяина: груз «Ель-85» перевезли на склад «Южный», прежний «Северный» отменён.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "g06s3",
+          "revision": 1,
+          "quote": "Груз «Ель-85» размещён в секции Д-12.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "g06s4",
+          "revision": 1,
+          "quote": "За грузом «Ель-85» можно приезжать после 16:30.",
+          "availability": "provided"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g06",
+      "case_id": "memory:c3c6f6b480f2a0d109a623fb8eea453f",
+      "arm": "retrieval",
+      "input_sha256": "ccf899a1fd10602341214e5e5c65e702700ae1caef7ba8585fd899f0ac02c8ae",
+      "output_sha256": "18447bf5bce850b24c42232ccd51ec3c37ca4e5200bfd0c99afbd2784ca1d146",
+      "citation_checks": [
+        {
+          "source_id": "g06s2",
+          "revision": 1,
+          "quote": "груз «Ель-85» перевезли на склад «Южный», прежний «Северный» отменён.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "g06s3",
+          "revision": 1,
+          "quote": "Груз «Ель-85» размещён в секции Д-12.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "g06s4",
+          "revision": 1,
+          "quote": "За грузом «Ель-85» можно приезжать после 16:30.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ],
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "g06s2/s3/s4 явно устанавливают Южный вместо отменённого Северного, секцию Д-12 и прибытие после 16:30. Ответ сохраняет все три факта и временную границу.",
+      "evidence": [
+        {
+          "source_id": "g06s2",
+          "revision": 1,
+          "quote": "Исправление хозяина: груз «Ель-85» перевезли на склад «Южный», прежний «Северный» отменён.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "g06s3",
+          "revision": 1,
+          "quote": "Груз «Ель-85» размещён в секции Д-12.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "g06s4",
+          "revision": 1,
+          "quote": "За грузом «Ель-85» можно приезжать после 16:30.",
+          "availability": "provided"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g07",
+      "case_id": "memory:3d42a06358d1e72f84a1040fe54c2b0d",
+      "arm": "no_ltm",
+      "input_sha256": "0b3effd88b29e60efff078d77d144ca306ed68728e31ef6ae8652ab69109cd8b",
+      "output_sha256": "c292e56fcaaae9eba28110fa71f4c970ecc4acc80a1e3235c27dcd155fd6c4b5",
+      "citation_checks": [],
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Без долговременной памяти модель не получает требуемых фактов и корректно ограничивает отказ предоставленными источниками; достаточные факты есть в полном корпусе. Это безопасный неполный baseline, а не ошибка модели или embedding.",
+      "evidence": [
+        {
+          "source_id": "g07s2",
+          "revision": 1,
+          "quote": "Для каталога «Берег-120» синий переплёт не согласован; утверждён только зелёный.",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g07",
+      "case_id": "memory:3d42a06358d1e72f84a1040fe54c2b0d",
+      "arm": "oracle",
+      "input_sha256": "1f6ec8b3414a6ba4d01c0b956fcffea600c2b357bd3f76c861b053df25a1c9bd",
+      "output_sha256": "f3535499e9d23ef7d21bbad66d0f95726f7eff85a1edf807ec0fd75b65eefdf7",
+      "citation_checks": [
+        {
+          "source_id": "g07s2",
+          "revision": 1,
+          "quote": "Для каталога «Берег-120» синий переплёт не согласован; утверждён только зелёный.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ],
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Ответ верно выбирает только зелёный для Берег-120 и сохраняет отсутствие согласования синего из g07s2, не переносит чужое разрешение и не подчиняет исключение общему предпочтению.",
+      "evidence": [
+        {
+          "source_id": "g07s2",
+          "revision": 1,
+          "quote": "Для каталога «Берег-120» синий переплёт не согласован; утверждён только зелёный.",
+          "availability": "provided"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g07",
+      "case_id": "memory:3d42a06358d1e72f84a1040fe54c2b0d",
+      "arm": "retrieval",
+      "input_sha256": "ec9e61b4ad71146e68f9759f60d99d7e87604360a1b66aa2698b4cac8a421909",
+      "output_sha256": "64bcbbddc9866b530d819889f7fe75ff7320301987f8c73d3a20ff386604659f",
+      "citation_checks": [
+        {
+          "source_id": "g07s2",
+          "revision": 1,
+          "quote": "Для каталога «Берег-120» синий переплёт не согласован; утверждён только зелёный.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ],
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Ответ верно выбирает только зелёный для Берег-120 и сохраняет отсутствие согласования синего из g07s2, не переносит чужое разрешение и не подчиняет исключение общему предпочтению.",
+      "evidence": [
+        {
+          "source_id": "g07s2",
+          "revision": 1,
+          "quote": "Для каталога «Берег-120» синий переплёт не согласован; утверждён только зелёный.",
+          "availability": "provided"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g08",
+      "case_id": "memory:7d884b22f7eea029aab94c05238c297e",
+      "arm": "oracle",
+      "input_sha256": "d07c2770428651c261ec590936c85c5571f613986384bb6d1be9a745bc29c327",
+      "output_sha256": "83dbc4086cc86aecab8560c11efe630694092155cba2d7dc95bad81b10fdb49c",
+      "citation_checks": [
+        {
+          "source_id": "g08s1",
+          "revision": 1,
+          "quote": "Для проекта «Туман-57» обсуждали встречу в среду или пятницу. Хозяин пока не подтвердил ни день, ни время.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ],
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": false,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "g08s1 прямо подтверждает отсутствие утверждённого дня и времени. Ответ корректно отличает обсуждавшиеся среду/пятницу от подтверждённой встречи.",
+      "evidence": [
+        {
+          "source_id": "g08s1",
+          "revision": 1,
+          "quote": "Для проекта «Туман-57» обсуждали встречу в среду или пятницу. Хозяин пока не подтвердил ни день, ни время.",
+          "availability": "provided"
+        }
+      ]
+    },
+    {
+      "case_name": "search-g08",
+      "case_id": "memory:7d884b22f7eea029aab94c05238c297e",
+      "arm": "retrieval",
+      "input_sha256": "bb5033082383a86c0eb5c3cd7677486764d3389893f90d1d39a336458b5716e3",
+      "output_sha256": "ef4ae57f73b6b59223d7dc1da3a2097711f6484b6b18084367f3ffd2373777fb",
+      "citation_checks": [
+        {
+          "source_id": "g08s1",
+          "revision": 1,
+          "quote": "Для проекта «Туман-57» обсуждали встречу в среду или пятницу. Хозяин пока не подтвердил ни день, ни время.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ],
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": false,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "g08s1 прямо подтверждает отсутствие утверждённого дня и времени. Ответ корректно отличает обсуждавшиеся среду/пятницу от подтверждённой встречи. Дополнительная фраза о Туман-58/среде15:00 также подтверждена реально видимым g08s2 и не переносит подтверждение на Туман-57.",
+      "evidence": [
+        {
+          "source_id": "g08s1",
+          "revision": 1,
+          "quote": "Для проекта «Туман-57» обсуждали встречу в среду или пятницу. Хозяин пока не подтвердил ни день, ни время.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "g08s2",
+          "revision": 1,
+          "quote": "Для другого проекта «Туман-58» встреча подтверждена на среду в 15:00.",
+          "availability": "provided"
+        }
+      ]
+    }
+  ],
+  "excluded_observations": [
+    {
+      "case_name": "search-g01",
+      "case_id": "memory:e53db248b23889fac74554ba3f3383f1",
+      "arm": "no_ltm",
+      "input_sha256": "4e5503fa29e75b7c2bc0515f548ff16de039489837d266b747737618e99f0496",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "failed",
+      "reason": "transport_lifecycle_or_metadata_incomplete",
+      "model_version": "",
+      "excluded_from_semantic_judgment": true,
+      "retained_in_scheduled_denominator": true,
+      "output_bytes": 0,
+      "provider_usage_known": false,
+      "interpretation": "Сохранённый transport lifecycle/metadata failure. Пустой финал/версия не доказывают смысловую ошибку или конкретную причину отказа; retry не выполнялся."
+    },
+    {
+      "case_name": "search-g08",
+      "case_id": "memory:7d884b22f7eea029aab94c05238c297e",
+      "arm": "no_ltm",
+      "input_sha256": "330d8f5aa779723109058eb522f5d4baea243fb0f3aef9c21747d6de4c1b4381",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "failed",
+      "reason": "transport_lifecycle_or_metadata_incomplete",
+      "model_version": "",
+      "excluded_from_semantic_judgment": true,
+      "retained_in_scheduled_denominator": true,
+      "output_bytes": 0,
+      "provider_usage_known": false,
+      "interpretation": "Сохранённый transport lifecycle/metadata failure. Пустой финал/версия не доказывают смысловую ошибку или конкретную причину отказа; retry не выполнялся."
+    }
+  ],
+  "limitations": [
+    "Маленький автору известный публичный regression-набор; независимый модельный рецензент может ошибаться, это не человеческая истина.",
+    "Совместное сравнение #79/#80 не изолирует вклад каждого изменения; privacy local-only и production admission оцениваются отдельными компонентными доказательствами.",
+    "Два failed не вычитаются из end-to-end denominator, не становятся правильными отказами и не заменяются повторными попытками.",
+    "No-LTM partial означает отсутствие нужного контекста; oracle/retrieval correct и согласованный текст не доказывают внешнего действия, завершения реальной задачи или общего production promotion.",
+    "Raw traces/SQL/resources и до/после evidence attribution коррелируются отдельно в сравнительном MD; оригиналы и старые результаты не изменялись."
+  ]
+}

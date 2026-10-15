@@ -20,12 +20,15 @@ type profileStoreAdapter struct {
 }
 
 func (a profileStoreAdapter) GetByScope(ctx context.Context, scopeType, scopeID string) ([]memoryservice.ProfileEntry, error) {
-	entries, err := a.store.GetByScope(ctx, scopeType, scopeID)
+	entries, err := a.store.GetByScopeEffective(ctx, scopeType, scopeID)
 	if err != nil {
 		return nil, err
 	}
 	result := make([]memoryservice.ProfileEntry, 0, len(entries))
 	for _, entry := range entries {
+		if entry.Status != profile.StatusActive || entry.EffectiveFrom != nil && entry.EffectiveFrom.After(time.Now()) || entry.EffectiveTo != nil && !entry.EffectiveTo.After(time.Now()) {
+			continue
+		}
 		allowed, e := memoryObjectAllowed(ctx, a.sources, "profile", entry.ID)
 		if e != nil {
 			return nil, e

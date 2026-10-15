@@ -117,36 +117,31 @@ func (s *Service) attachMemoryContext(ctx context.Context, sessionKey, userID, u
 	if prepared == nil {
 		return nil
 	}
-	includeQuery := true
-	if s.config.OwnerGoals != nil && s.config.Tasks != nil {
-		if id := firstString(prepared.InputPayload, "task_id"); id != "" {
-			record, err := s.config.Tasks.Get(ctx, id)
-			if err != nil || record.SessionKey != sessionKey || record.OwnerID != userID || record.Status != "active" {
-				return fmt.Errorf("current memory task authority is required")
-			}
-			a, m, _, err := s.config.OwnerGoals.ReadTaskAuthority(ctx, id)
-			if err != nil {
-				return fmt.Errorf("memory data-release authority is unavailable")
-			}
-			if a.TaskID != "" && m.Privacy != "cloud_allowed" {
-				includeQuery = false
-			}
-		}
+	policy, authority, err := s.memoryQueryPolicy(ctx, sessionKey, userID, prepared)
+	if err != nil {
+		return err
 	}
 	bundle, err := s.config.MemoryBundles.BuildBundle(ctx, memoryservice.BundleRequest{
 		SessionKey:   sessionKey,
 		UserID:       userID,
 		UserMessage:  userMessage,
-		IncludeQuery: includeQuery,
+		IncludeQuery: policy.External, // compatibility only; QueryPolicy is authoritative
+		QueryPolicy:  &policy,
 	})
 	if err != nil {
 		return err
 	}
+	_, current, err := s.memoryQueryPolicy(ctx, sessionKey, userID, prepared)
+	if err != nil || current != authority {
+		return fmt.Errorf("memory task authority changed during retrieval")
+	}
+	if s.config.MemorySources != nil && prepared.CurrentRunID != "" {
+		if err = s.config.MemorySources.CheckRunSources(ctx, prepared.CurrentRunID); err != nil {
+			return err
+		}
+	}
 	workingMemory := workingMemoryFromBundle(bundle.Working, s.config.WorkingPolicy)
 	prepared.WorkingMemory = workingMemory
-	if len(bundle.Items) == 0 && workingMemoryIsEmpty(workingMemory) && strings.TrimSpace(bundle.Prompt) == "" {
-		return nil
-	}
 	for key, value := range bundle.Items {
 		prepared.MemoryBundle[key] = value
 	}
@@ -156,12 +151,45 @@ func (s *Service) attachMemoryContext(ctx context.Context, sessionKey, userID, u
 		bundleKeys = append(bundleKeys, key)
 	}
 	prepared.observabilityMemory = map[string]any{
-		"bundle_keys":  bundleKeys,
-		"has_working":  !workingMemoryIsEmpty(workingMemory),
-		"has_prompt":   strings.TrimSpace(bundle.Prompt) != "",
-		"bundle_count": len(bundle.Items),
+		"bundle_keys":            bundleKeys,
+		"has_working":            !workingMemoryIsEmpty(workingMemory),
+		"has_prompt":             strings.TrimSpace(bundle.Prompt) != "",
+		"bundle_count":           len(bundle.Items),
+		"query_local_allowed":    policy.Local,
+		"query_external_allowed": policy.External,
+		"context_selection":      bundle.Diagnostics,
 	}
 	return nil
+}
+
+func (s *Service) memoryQueryPolicy(ctx context.Context, sessionKey, userID string, prepared *preparedRun) (memoryservice.QueryPolicy, string, error) {
+	policy := memoryservice.QueryPolicy{Local: true, External: true}
+	if s.config.OwnerGoals == nil || s.config.Tasks == nil {
+		return policy, "", nil
+	}
+	id := firstString(prepared.InputPayload, "task_id")
+	if id == "" {
+		return policy, "", nil
+	}
+	record, err := s.config.Tasks.Get(ctx, id)
+	if err != nil || record.SessionKey != sessionKey || record.OwnerID != userID || record.Status != "active" {
+		return policy, "", fmt.Errorf("current memory task authority is required")
+	}
+	a, m, _, err := s.config.OwnerGoals.ReadTaskAuthority(ctx, id)
+	if err != nil {
+		return policy, "", fmt.Errorf("memory data-release authority is unavailable")
+	}
+	if a.TaskID != "" && m.Privacy != "cloud_allowed" {
+		policy.External = false
+	}
+	stamp, _ := json.Marshal(struct {
+		TaskRevision, ConstraintsRevision int64
+		Assignment                        any
+		MandateID                         string
+		MandateRevision                   int64
+		Privacy                           string
+	}{record.Revision, record.ConstraintsRevision, a, m.ID, m.Revision, m.Privacy})
+	return policy, string(stamp), nil
 }
 
 func (s *Service) attachToolContext(ctx context.Context, prepared *preparedRun) error {
@@ -317,21 +345,23 @@ func (s *Service) attachPromptContext(ctx context.Context, prepared *preparedRun
 		return append(items, prepared.InputItems...)
 	}
 	removed := []string{}
+	// Reserve conservative allowance units for answer and tool continuation.
+	// Small explicit input allowances retain proportional headroom.
+	reserve := min(4096, s.config.ContextBudgetTokens/8)
+	allowance := s.config.ContextBudgetTokens - reserve
 	// Retrieved material is optional. Preserve the complete transcript tail,
 	// covered summary, current message and separately attached task constraints.
-	for _, key := range []string{"chunks", "episodes", "profile", "tool_summary"} {
-		if estimateContextTokens(modelItems(), prepared.ToolDefs, "") <= s.config.ContextBudgetTokens {
+	for estimateContextTokens(modelItems(), prepared.ToolDefs, "") > allowance {
+		key, ok := removeOptionalMemoryItem(prepared.MemoryBundle)
+		if !ok {
 			break
 		}
-		if _, ok := prepared.MemoryBundle[key]; ok {
-			delete(prepared.MemoryBundle, key)
-			removed = append(removed, key)
-			prepared.Prompt = assemble()
-		}
+		removed = append(removed, key)
+		prepared.Prompt = assemble()
 	}
 	estimate := estimateContextTokens(modelItems(), prepared.ToolDefs, "")
-	if estimate > s.config.ContextBudgetTokens {
-		return fmt.Errorf("context budget exceeded: conservative estimate %d, allowance %d; mandatory history and constraints retained", estimate, s.config.ContextBudgetTokens)
+	if estimate > allowance {
+		return fmt.Errorf("context budget exceeded: conservative estimate %d, allowance %d; mandatory history and constraints retained", estimate, allowance)
 	}
 	prepared.InputItems = modelItems()
 
@@ -342,15 +372,33 @@ func (s *Service) attachPromptContext(ctx context.Context, prepared *preparedRun
 		}
 	}
 	prepared.observabilityPrompt = map[string]any{
-		"has_system_prompt":         strings.TrimSpace(prepared.Prompt.FinalPrompt) != "",
-		"memory_sections":           memorySections,
-		"prompt_length":             len(prepared.Prompt.FinalPrompt),
-		"context_token_estimate":    estimate,
-		"context_token_budget":      s.config.ContextBudgetTokens,
-		"context_estimator":         "utf8_json_bytes_plus_protocol_allowance",
-		"optional_sections_removed": removed,
+		"has_system_prompt":          strings.TrimSpace(prepared.Prompt.FinalPrompt) != "",
+		"memory_sections":            memorySections,
+		"prompt_length":              len(prepared.Prompt.FinalPrompt),
+		"context_token_estimate":     estimate,
+		"context_token_budget":       s.config.ContextBudgetTokens,
+		"continuation_reserve_units": reserve,
+		"context_estimator":          "utf8_json_bytes_plus_protocol_allowance",
+		"optional_sections_removed":  removed,
 	}
 	return nil
+}
+
+func removeOptionalMemoryItem(bundle map[string]any) (string, bool) {
+	for _, key := range []string{"tool_summary", "profile", "episodes", "chunks"} {
+		value, ok := bundle[key]
+		if !ok {
+			continue
+		}
+		entries, ok := value.([]map[string]any)
+		if !ok || len(entries) <= 1 {
+			delete(bundle, key)
+		} else {
+			bundle[key] = entries[:len(entries)-1]
+		}
+		return key, true
+	}
+	return "", false
 }
 
 func transcriptInputItems(messages []transcript.Message) []transport.InputItem {

@@ -215,7 +215,8 @@ func TestContextBudgetDropsOptionalMaterialBeforeMandatoryConstraints(t *testing
 	if err := service.attachPromptContext(context.Background(), &baseline); err != nil {
 		t.Fatal(err)
 	}
-	service.config.ContextBudgetTokens = baseline.observabilityPrompt["context_token_estimate"].(int) + 16
+	// Leave explicit continuation headroom in addition to mandatory input.
+	service.config.ContextBudgetTokens = baseline.observabilityPrompt["context_token_estimate"].(int) + 4096
 	if err := service.attachPromptContext(context.Background(), &prepared); err != nil {
 		t.Fatal(err)
 	}

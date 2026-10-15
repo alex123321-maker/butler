@@ -20,6 +20,22 @@ or authorize replaying activation. Candidate collection/checking remains its
 separate earlier phase.
 # Orchestrator
 
+Memory search now separates permitted local queries from external data release.
+Assigned local-only tasks retain PostgreSQL exact/full-text and proven pinned
+local semantic retrieval; unproven/offline inference has explicit diagnostics.
+Current task/assignment/privacy and source proof are rechecked after retrieval,
+and ordinary provider release guards remain required. `memory-context-v3` selects
+eligible confirmed profiles by query applicability, preserves mandatory context,
+admits document/profile/episode evidence by conservative size and class quotas,
+and defaults to four bounded document hits. Complete prompt admission removes
+optional items individually and reserves continuation headroom.
+Hybrid queries above 2048 UTF-8 bytes skip optional
+lookup while the complete owner message proceeds through normal preparation.
+Zero-overlap profiles remain lower-priority candidates within their quota, and
+deduplication preserves different profile keys and document sources. See
+[bundle policy](../../../internal/memory/service/README.md) and
+[fresh comparison protocol](../../../docs/ai/memory-search-comparison-methodology-20261015.md).
+
 Core supports one durable model retry per accepted input after a trusted nominal
 model-turn timeout. The input worker queues a two-second pause, then obtains fresh
 ownership and a separately budgeted provider session from saved Butler input and

@@ -1,5 +1,16 @@
 # Butler — Run Lifecycle Specification
 
+Memory preparation separates local query permission from external data release.
+It re-reads the task/assignment/privacy stamp and current source proof after
+retrieval; amendment/revocation blocks stale publication. `memory-context-v3`
+keeps mandatory task/history/working context, bounds optional evidence by size
+and class quotas, and reports selection counts/reason codes without source text.
+Complete-context admission trims optional items individually and reserves
+`min(4096, configured allowance/8)` conservative units for answer/tool
+continuation; mandatory overflow remains an explicit preparation failure.
+An oversized hybrid query skips optional lookup with `query_input_limit`; the
+complete owner message and ordinary authority/source checks remain in preparation.
+
 The prospective V4 lab acceptance keeps separate completed-model, original-task
 verification, action-effect and notice-delivery evidence. Its native chain cannot
 open from an assumed baseline: exact independently reviewed full quality and
