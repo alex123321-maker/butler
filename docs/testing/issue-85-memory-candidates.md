@@ -228,7 +228,9 @@ The later native and explicit real backup procedures above supply their own proo
 `candidateProfileReady` binds release eligibility to the actual subscription
 Antigravity High provider with `InferenceLimits` output exactly 32768 and budget
 OutputTokens at least 32768/ModelMillis at least 300000. Both model-jobs and
-candidate environment flags must also be true. Default 8192, unmeasured 65536,
+candidate environment flags must also be true. The actual provider's normalized
+`InferenceTimeout()` must permit at least300s, independently of the budget;
+factory default120s and a missing timeout attestation fail closed. Default 8192, unmeasured 65536,
 another provider/model, absent limits and under-reserved budget all fail closed.
 The code-owned qualification constant is still false pending a separate reviewed
 release decision; the frozen screen accurately records that historical state.

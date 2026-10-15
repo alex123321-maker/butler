@@ -2,6 +2,7 @@ package app
 
 import (
 	"os"
+	"time"
 
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/memory/candidates"
@@ -33,5 +34,6 @@ func candidateProfileReady(p providerfactory.Result, b *budget.Controller) bool 
 		return false
 	}
 	_, output := limits.InferenceLimits()
-	return output == 32768 && b.Policy.OutputTokens >= output && b.Policy.ModelMillis >= 300000
+	timed, ok := p.Provider.(interface{ InferenceTimeout() time.Duration })
+	return ok && timed.InferenceTimeout() >= 300*time.Second && output == 32768 && b.Policy.OutputTokens >= output && b.Policy.ModelMillis >= 300000
 }

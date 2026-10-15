@@ -46,7 +46,8 @@ gate, and the measured native profile. That release gate currently remains
 **false**, pending final source review of the completed native/lifecycle evidence.
 The profile must be the actual subscription Antigravity High provider reporting
 an output limit of exactly32768, with budget OutputTokens at least32768 and
-ModelMillis at least300000. The worker caps each call at300s. Default8192,
+ModelMillis at least300000; its actual `InferenceTimeout()` must allow at least
+300s. The worker caps each call at300s. Default8192, the factory120s timeout,
 larger unmeasured ceilings, another model/provider and an insufficient reservation
 do not inherit qualification. Environment flags alone cannot promote the release.
 Local-only policies remain visibly `local_backend_unavailable`, with no cloud
