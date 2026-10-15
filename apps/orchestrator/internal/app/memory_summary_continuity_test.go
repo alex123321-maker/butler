@@ -38,14 +38,16 @@ const continuityQuestion = `Верни только JSON со строковым
 
 type continuityProvider struct {
 	transport.ModelProvider
-	base     transport.ModelProvider
-	requests []transport.StartRunRequest
-	mu       sync.Mutex
-	usages   map[string]transport.Usage
-	elapsed  map[string]int64
-	probes   []jobs.ModelProbe
-	finals   map[string]transport.AssistantFinal
-	failures map[string]map[string]any
+	base      transport.ModelProvider
+	requests  []transport.StartRunRequest
+	mu        sync.Mutex
+	usages    map[string]transport.Usage
+	elapsed   map[string]int64
+	probes    []jobs.ModelProbe
+	finals    map[string]transport.AssistantFinal
+	failures  map[string]map[string]any
+	stages    map[string][]map[string]any
+	terminals map[string]string
 }
 
 func (p *continuityProvider) observeFailure(id string, err error) {
@@ -90,6 +92,18 @@ func (p *continuityProvider) StartRun(ctx context.Context, r transport.StartRunR
 	p.requests = append(p.requests, r)
 	if p.base != nil {
 		started := time.Now()
+		originalCtx := ctx
+		ctx = transport.WithProviderStageObserver(ctx, func(stage transport.ProviderStage) {
+			transport.ObserveProviderStage(originalCtx, stage)
+			p.mu.Lock()
+			defer p.mu.Unlock()
+			if p.stages == nil {
+				p.stages = map[string][]map[string]any{}
+			}
+			if len(p.stages[r.Context.RunID]) < 16 {
+				p.stages[r.Context.RunID] = append(p.stages[r.Context.RunID], map[string]any{"stage": stage, "millis": time.Since(started).Milliseconds()})
+			}
+		})
 		stream, err := p.base.StartRun(ctx, r)
 		if err != nil {
 			p.observeFailure(r.Context.RunID, err)
@@ -132,6 +146,15 @@ func (p *continuityProvider) StartRun(ctx context.Context, r transport.StartRunR
 					}
 					if event.TransportError != nil {
 						p.observeFailure(r.Context.RunID, event.TransportError)
+					}
+					switch event.EventType {
+					case transport.EventTypeRunCompleted, transport.EventTypeRunTimedOut, transport.EventTypeRunCancelled, transport.EventTypeTransportError:
+						p.mu.Lock()
+						if p.terminals == nil {
+							p.terminals = map[string]string{}
+						}
+						p.terminals[r.Context.RunID] = string(event.EventType)
+						p.mu.Unlock()
 					}
 					select {
 					case wrapped <- event:
