@@ -3,6 +3,7 @@ package readcontrol
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -18,6 +19,16 @@ func TestStrictReadBoundsAndIdentity(t *testing.T) {
 	valid := `{"source_id":"source_` + strings.Repeat("a", 64) + `","source_revision":1,"access_revision":1,"content_hash":"` + strings.Repeat("b", 64) + `"}`
 	if _, e := DecodeArgs(Open, valid); e != nil {
 		t.Fatal(e)
+	}
+	for _, offset := range []int{1048577, MaxOffset} {
+		if _, e := DecodeArgs(Open, strings.TrimSuffix(valid, "}")+fmt.Sprintf(`,"offset":%d}`, offset)); e != nil {
+			t.Fatal("valid original tail unreachable", offset, e)
+		}
+	}
+	for _, offset := range []int{-1, MaxOffset + 1} {
+		if _, e := DecodeArgs(Open, strings.TrimSuffix(valid, "}")+fmt.Sprintf(`,"offset":%d}`, offset)); e == nil {
+			t.Fatal("offset beyond catalog bound", offset)
+		}
 	}
 	for _, bad := range []string{strings.Replace(valid, `"source_revision":1`, `"source_revision":2.5`, 1), strings.Replace(valid, `"access_revision":1`, `"access_revision":null`, 1), strings.Replace(valid, `"source_id":"source_`, `"source_id":" source_`, 1), strings.TrimSuffix(valid, "}") + `,"max_chars":8193}`, strings.TrimSuffix(valid, "}") + `,"url":"https://example.invalid"}`} {
 		if _, e := DecodeArgs(Open, bad); e == nil {

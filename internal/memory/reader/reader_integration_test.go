@@ -143,8 +143,19 @@ func TestSearchOpenNeighborsCurrentSourceIntegration(t *testing.T) {
 	for i := 0; i < 100000; i++ {
 		fmt.Fprintf(&huge, "token%06dxxxxxxxxxxxxxxxxxxxxxxxx ", i)
 	}
-	if _, e = s.Put(own, catalog.PutSource{ExternalKey: "huge", Kind: "document", ScopeType: "user", ScopeID: "owner", Title: "Большой источник", Body: huge.String()}); e != nil {
+	tailOffset := huge.Len() // ASCII prefix; offset is deliberately over 1Mi characters.
+	huge.WriteString("ПроверяемыйХвостБольшогоОригинала")
+	hugeSource, e := s.Put(own, catalog.PutSource{ExternalKey: "huge", Kind: "document", ScopeType: "user", ScopeID: "owner", Title: "Большой источник", Body: huge.String()})
+	if e != nil {
 		t.Fatal(e)
+	}
+	rawTail, _ := json.Marshal(readcontrol.Args{SourceID: hugeSource.ID, Revision: hugeSource.Revision, AccessRevision: hugeSource.AccessRevision, Hash: hugeSource.Hash, Offset: tailOffset, MaxChars: 64})
+	tailArgs, e := readcontrol.DecodeArgs(readcontrol.Open, string(rawTail))
+	if e != nil {
+		t.Fatal("contract cannot reach accepted large original tail", e)
+	}
+	if out := read(readcontrol.Open, tailArgs); out.Status != "ok" || len(out.Items) != 1 || out.Items[0].Text != "ПроверяемыйХвостБольшогоОригинала" || out.Items[0].Truncated {
+		t.Fatal("large original tail not readable in bounded response", out)
 	}
 	if out := read(readcontrol.Search, readcontrol.Args{Query: "калибровка", Limit: 5}); out.Status != "ok" || !out.Truncated {
 		t.Fatal("large original poisoned search or hid incomplete scan", out)
