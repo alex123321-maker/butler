@@ -31,6 +31,12 @@ func cloudFrame(part, finish string) string {
 	return "data: {\"response\":" + strings.TrimSpace(strings.TrimPrefix(frame(part, finish), "data: ")) + "}\n\n"
 }
 func TestFlashHighCloudCodeToolContinuation(t *testing.T) {
+	testCloudCodeToolContinuation(t, FlashHighModel, "auto")
+}
+func TestTieredCloudCodeToolContinuation(t *testing.T) {
+	testCloudCodeToolContinuation(t, DefaultModel, "cloudcode")
+}
+func testCloudCodeToolContinuation(t *testing.T, model, protocol string) {
 	var calls atomic.Int32
 	var session string
 	var previousRequestID string
@@ -43,7 +49,7 @@ func TestFlashHighCloudCodeToolContinuation(t *testing.T) {
 			t.Error("invalid wire JSON")
 			return nil, fmt.Errorf("invalid fixture JSON")
 		}
-		if wire.Model != FlashHighModel || wire.Project != "discovered-project" || wire.UserAgent != "antigravity" || wire.RequestType != "agent" || !strings.HasPrefix(wire.RequestID, "agent-") || wire.RequestID == previousRequestID {
+		if wire.Model != model || wire.Project != "discovered-project" || wire.UserAgent != "antigravity" || wire.RequestType != "agent" || !strings.HasPrefix(wire.RequestID, "agent-") || wire.RequestID == previousRequestID {
 			t.Error("wrong Cloud Code envelope")
 		}
 		previousRequestID = wire.RequestID
@@ -79,8 +85,9 @@ func TestFlashHighCloudCodeToolContinuation(t *testing.T) {
 		return response(cloudFrame(`{"text":"High complete"}`, "STOP")), nil
 	})
 	p.config.AuthSource = cloudAuthSource{project: "discovered-project"}
+	p.config.Protocol, p.config.Model = protocol, model
 	req := request("high-tools")
-	req.Context.ModelName = FlashHighModel
+	req.Context.ModelName = model
 	stream, err := p.StartRun(context.Background(), req)
 	if err != nil {
 		t.Fatal(err)

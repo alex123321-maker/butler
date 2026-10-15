@@ -1,5 +1,10 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Antigravity transport may be explicitly pinned with
+`BUTLER_ANTIGRAVITY_PROTOCOL=cloudcode` for the configured tiered subscription
+model. `auto` preserves historical routing. Restart is required; the model,
+account, budgets and privacy do not change, and rejection never triggers fallback.
+
 Orchestrator also owns the default-off durable generative memory worker:
 `BUTLER_MEMORY_MODEL_JOBS_ENABLED=true` composes it; owner controls separately
 enable its persisted execution state. The handler registry defaults empty.

@@ -1,5 +1,13 @@
 # Antigravity native transport
 
+Set `BUTLER_ANTIGRAVITY_PROTOCOL=cloudcode` to select the explicit Cloud Code
+profile for the same tiered model, with discovered same-account subscription
+project, wrapped SSE and thinkingBudget=-1. It retains output8192, current
+authority and full request limits. `auto` preserves the historical per-model
+route. Selection is fixed at provider construction, requires restart and never
+retries another route after rejection. This is compatibility, not evidence
+that an old403 was caused by expiry or a promise of access for every account.
+
 Optional trusted current-source callbacks run before authentication and actual
 HTTP dispatch. They cannot select credentials/models/schema, authorize tools or
 retry. Unhooked cancellation behavior and safe source-timeout/stale diagnostics

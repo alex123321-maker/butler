@@ -123,12 +123,12 @@ func (p *Provider) invoke(ctx context.Context, model, sessionID string, body gen
 	if err := checkInferenceAuthority(ctx); err != nil {
 		return modelAnswer{}, err
 	}
-	cloud := model == FlashHighModel
+	cloud := model == FlashHighModel || p.config.Protocol == "cloudcode"
 	resolve := p.config.AuthSource.ResolveAntigravity
 	if cloud {
 		source, ok := p.config.AuthSource.(providerauth.AntigravityCloudCodeTokenSource)
 		if !ok {
-			return modelAnswer{}, providerError(transport.ErrorTypeProviderUnavailable, "Antigravity subscription discovery is required for Flash High")
+			return modelAnswer{}, providerError(transport.ErrorTypeProviderUnavailable, "Antigravity subscription discovery is required for Cloud Code")
 		}
 		resolve = source.ResolveAntigravityCloudCode
 	}

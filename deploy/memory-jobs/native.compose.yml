@@ -26,6 +26,7 @@ services:
       BUTLER_MODEL_PROVIDER: antigravity
       BUTLER_TOOL_BROKER_ADDR: tool-broker:9090
       BUTLER_ANTIGRAVITY_MODEL: gemini-3.8-flash-tiered
+      BUTLER_ANTIGRAVITY_PROTOCOL: cloudcode
       BUTLER_OPENAI_TIMEOUT_SECONDS: '90'
       BUTLER_TELEGRAM_BOT_TOKEN: ''
       HTTPS_PROXY: http://issue82-proxy:18080

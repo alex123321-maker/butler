@@ -20,3 +20,17 @@ func TestAntigravityNativeConfigurationHasNoExecutableOrProfile(t *testing.T) {
 		t.Fatal("OAuth record exposed through settings")
 	}
 }
+
+func TestAntigravityProtocolSelection(t *testing.T) {
+	for _, value := range []string{"auto", "cloudcode", "fallback"} {
+		values := envMap(map[string]string{"BUTLER_POSTGRES_URL": "postgres://butler@localhost/butler", "BUTLER_REDIS_URL": "redis://localhost:6379/0", "BUTLER_ANTIGRAVITY_PROTOCOL": value})
+		cfg, _, err := loadOrchestrator(values)
+		if value == "fallback" {
+			if err == nil {
+				t.Fatal("unknown protocol accepted")
+			}
+		} else if err != nil || cfg.AntigravityProtocol != value {
+			t.Fatal("explicit protocol lost", err)
+		}
+	}
+}
