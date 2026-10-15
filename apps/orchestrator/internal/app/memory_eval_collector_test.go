@@ -47,6 +47,8 @@ type memoryEvalCollector struct {
 	captures            []acceptance.MemoryCapture
 	sourceRefs          map[string]map[string]catalog.SourceRef
 	started             time.Time
+	deadline            time.Time
+	renewed             bool
 	closed              bool
 	captureMilliseconds map[string]int64
 	retainedBytes       int64
@@ -157,9 +159,11 @@ CREATE TABLE fixture_memory_eval_expenses(id text PRIMARY KEY,case_id text NOT N
 CREATE TABLE fixture_memory_eval_attempts(case_id text NOT NULL,arm text NOT NULL,run_id text NOT NULL UNIQUE,input_hash text NOT NULL,operation_id text UNIQUE,output_hash text,outcome text NOT NULL DEFAULT 'reserved',input_tokens bigint,output_tokens bigint,total_tokens bigint,model_version text,milliseconds bigint,PRIMARY KEY(case_id,arm));
 CREATE TABLE fixture_memory_eval_aux(request_id text PRIMARY KEY,case_id text NOT NULL,reservation_id text UNIQUE NOT NULL,request_hash text NOT NULL,response_hash text,outcome text NOT NULL DEFAULT 'reserved');
 CREATE TABLE fixture_memory_eval_guards(id bigserial PRIMARY KEY,run_id text NOT NULL,case_id text NOT NULL,arm text NOT NULL,operation_id text NOT NULL,phase text NOT NULL,checked_at timestamptz NOT NULL,task_revision bigint NOT NULL,constraints_revision bigint NOT NULL,lease_id text NOT NULL,lease_expires timestamptz NOT NULL,sources jsonb NOT NULL);
+CREATE TABLE fixture_memory_eval_auth(run_id text PRIMARY KEY,input_hash text NOT NULL,trace_hash text NOT NULL);
 CREATE TABLE fixture_memory_eval_results(case_id text NOT NULL,arm text NOT NULL,input_hash text NOT NULL,output_hash text NOT NULL,assessment jsonb NOT NULL,task_scope text NOT NULL,task_revision bigint NOT NULL,PRIMARY KEY(case_id,arm));`
 	ddl += `CREATE FUNCTION fixture_memory_eval_append_only() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'immutable original evidence'; END $$;
 CREATE TRIGGER memory_expenses_immutable BEFORE UPDATE OR DELETE ON fixture_memory_eval_expenses FOR EACH ROW EXECUTE FUNCTION fixture_memory_eval_append_only();
+CREATE TRIGGER memory_auth_immutable BEFORE UPDATE OR DELETE ON fixture_memory_eval_auth FOR EACH ROW EXECUTE FUNCTION fixture_memory_eval_append_only();
 CREATE TRIGGER memory_results_immutable BEFORE UPDATE OR DELETE ON fixture_memory_eval_results FOR EACH ROW EXECUTE FUNCTION fixture_memory_eval_append_only();
 CREATE TRIGGER memory_guards_immutable BEFORE UPDATE OR DELETE ON fixture_memory_eval_guards FOR EACH ROW EXECUTE FUNCTION fixture_memory_eval_append_only();
 CREATE FUNCTION fixture_memory_eval_window_guard() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
@@ -173,7 +177,11 @@ CREATE TRIGGER memory_window_no_delete BEFORE DELETE ON fixture_memory_eval_wind
 	if c.priorPins != nil {
 		priorCalls, priorUnits = c.priorPins.Calls, c.priorPins.ReservedUnits
 	}
-	_, err := c.pool.Exec(ctx, `INSERT INTO fixture_memory_eval_window VALUES(TRUE,$1,$4,$5,$2,$3,FALSE,$4,$5)`, acceptance.MemoryDigest(c.plan), acceptance.MemorySuitePolicy(c.suite).MaxCalls, c.started.Add(3*time.Hour), priorCalls, priorUnits)
+	maxCalls := acceptance.MemorySuitePolicy(c.suite).MaxCalls
+	if c.renewed {
+		maxCalls = priorCalls + 5
+	}
+	_, err := c.pool.Exec(ctx, `INSERT INTO fixture_memory_eval_window VALUES(TRUE,$1,$4,$5,$2,$3,FALSE,$4,$5)`, acceptance.MemoryDigest(c.plan), maxCalls, c.expiresAt(), priorCalls, priorUnits)
 	return err
 }
 
@@ -251,7 +259,7 @@ func (c *memoryEvalCollector) ownedRun(ctx context.Context, cse acceptance.Memor
 	if err != nil {
 		return nil, "", err
 	}
-	_, err = c.pool.Exec(ctx, `INSERT INTO session_ownership(session_key,run_id,lease_id,fence_epoch,expires_at) VALUES($1,$2,$2,1,$3)`, session, run, c.started.Add(3*time.Hour))
+	_, err = c.pool.Exec(ctx, `INSERT INTO session_ownership(session_key,run_id,lease_id,fence_epoch,expires_at) VALUES($1,$2,$2,1,$3)`, session, run, c.expiresAt())
 	if err != nil {
 		return nil, "", err
 	}
@@ -361,7 +369,7 @@ func (c *memoryEvalCollector) capture(ctx context.Context, cse acceptance.Memory
 		js := jobs.New(c.pool, c.catalog, c.budgets, &jobs.LocalTarget{Endpoint: target.Endpoint(), Identity: target.Identity()})
 		runtime := &indexing.Runtime{Catalog: c.catalog, Jobs: js, Backend: traced, Target: target, Space: memoryEvalSpace(), Price: budget.ModelPrice{Basis: "local_no_billing"}}
 		begin := time.Now()
-		receipt, err := runtime.Enqueue(actor, indexing.Request{Job: jobs.Request{ID: "memory-index:" + id, Kind: "index", Purpose: memoryEvalPurpose, TaskID: id + ":task", OriginalRunID: run, Sources: allRefs, Allowance: budget.Units{ModelTurns: 64, Tokens: 1000000, ActiveMillis: 600000, ProviderInputBytes: 2000000}, Deadline: c.started.Add(3 * time.Hour)}, ScopeType: "user", ScopeID: owner, MaxChunks: 128})
+		receipt, err := runtime.Enqueue(actor, indexing.Request{Job: jobs.Request{ID: "memory-index:" + id, Kind: "index", Purpose: memoryEvalPurpose, TaskID: id + ":task", OriginalRunID: run, Sources: allRefs, Allowance: budget.Units{ModelTurns: 64, Tokens: 1000000, ActiveMillis: 600000, ProviderInputBytes: 2000000}, Deadline: c.expiresAt()}, ScopeType: "user", ScopeID: owner, MaxChunks: 128})
 		if err != nil {
 			return err
 		}
@@ -475,4 +483,11 @@ func (c *memoryEvalCollector) fillUnused(ctx context.Context, i acceptance.Memor
 		}
 	}
 	return nil
+}
+
+func (c *memoryEvalCollector) expiresAt() time.Time {
+	if !c.deadline.IsZero() {
+		return c.deadline
+	}
+	return c.started.Add(3 * time.Hour)
 }

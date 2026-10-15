@@ -30,7 +30,15 @@ func pendingAudit(s acceptance.MemorySuite, frozen acceptance.MemoryFrozen, m ac
 	if err != nil {
 		return frozen, m, report, audit, err
 	}
-	audit, err = acceptance.AuditMemoryContinuation(s, prior, frozen, m, directory, sha, *pins.Prior)
+	if pins.Renewal != nil {
+		var authExecution acceptance.MemoryExecutionProof
+		if readJSON(filepath.Join(filepath.Dir(runtimePins), "auth-execution.json"), &authExecution) != nil || acceptance.ValidateMemoryAuthExecution(authExecution, pins, image.GoImage) != nil {
+			return frozen, m, report, audit, errors.New("auth actual execution proof differs")
+		}
+		audit, err = acceptance.AuditMemoryRenewedContinuation(s, prior, frozen, m, directory, sha, pins)
+	} else {
+		audit, err = acceptance.AuditMemoryContinuation(s, prior, frozen, m, directory, sha, *pins.Prior)
+	}
 	if err != nil {
 		return frozen, m, report, audit, err
 	}

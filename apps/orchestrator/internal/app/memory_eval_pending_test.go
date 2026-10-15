@@ -53,10 +53,15 @@ func (c *memoryEvalCollector) reuseCapture(ctx context.Context, id string, refs 
 type memoryFailureEventProvider struct {
 	nativeScriptedObservationProvider
 	failureType transport.ErrorType
+	preHTTP     bool
 }
 
 func (p *memoryFailureEventProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
-	for n := 0; n < 2; n++ {
+	checks := 2
+	if p.preHTTP {
+		checks = 1
+	}
+	for n := 0; n < checks; n++ {
 		if err := transport.CheckInferenceAuthority(ctx); err != nil {
 			return nil, err
 		}
@@ -373,13 +378,16 @@ func TestMemoryEvalCollectorPendingCrossRootCorrelationIntegration(t *testing.T)
 		}
 		bad := pins4
 		p1, p2, p3, p4 := *bad.Parent, *bad.Parent.Parent, *bad.Parent.Parent.Parent, *bad.Parent.Parent.Parent
+		p5 := p4
+		p4.Parent = &p5
 		p3.Parent = &p4
 		p2.Parent = &p3
 		p1.Parent = &p2
 		bad.Parent = &p1
 		if _, err = acceptance.LoadMemoryPrior(many.suite, many.private, bad); err == nil || !strings.Contains(err.Error(), "bounded parent lineage") {
-			t.Fatal("fifth parent admitted", err)
+			t.Fatal("sixth parent admitted", err)
 		}
+		t.Run("new_five_window", func(t *testing.T) { memoryRenewedFiveFixture(t, prior4, pins4, many.private) })
 		final := memoryCollectorFixtureWithPrior(t, &prior4, &pins4, many.private)
 		final.backend = &memoryFixtureBackend{fail: true}
 		for _, cse := range final.suite.Cases {

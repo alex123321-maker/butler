@@ -254,6 +254,10 @@ func memoryCollectorFixture(t *testing.T) *memoryEvalCollector {
 }
 
 func memoryCollectorFixtureWithPrior(t *testing.T, prior *acceptance.MemoryPrior, pins *acceptance.MemoryPriorPins, directory string) *memoryEvalCollector {
+	return memoryCollectorFixtureWithRenewal(t, prior, pins, directory, nil)
+}
+
+func memoryCollectorFixtureWithRenewal(t *testing.T, prior *acceptance.MemoryPrior, pins *acceptance.MemoryPriorPins, directory string, renewal *acceptance.MemoryRenewal) *memoryEvalCollector {
 	t.Helper()
 	pool := memorytest.Database(t)
 	f, err := os.Open(filepath.Join(shadowRepoRoot(), "testdata/acceptance/ru-memory-v2.json"))
@@ -287,6 +291,13 @@ func memoryCollectorFixtureWithPrior(t *testing.T, prior *acceptance.MemoryPrior
 			c.plan.WindowID = "fixture-final-six-components"
 		}
 		c.started = prior.Expires.Add(-3 * time.Hour)
+		if len(prior.PaidInputs) == 59 {
+			c.plan.WindowID = "fixture-renewed-five-components"
+		}
+	}
+	if renewal != nil {
+		c.deadline, _ = time.Parse(time.RFC3339Nano, renewal.ExpiresUTC)
+		c.renewed = true
 	}
 	if err = c.init(context.Background()); err != nil {
 		t.Fatal(err)

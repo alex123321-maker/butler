@@ -19,6 +19,7 @@ import (
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/semantic"
 	"github.com/butler/butler/internal/ownership"
+	"github.com/butler/butler/internal/providerauth"
 	"github.com/butler/butler/internal/transport"
 	"github.com/butler/butler/internal/transport/antigravity"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -137,6 +138,8 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 	if err = check(entry); err != nil {
 		return o, err
 	}
+	var authDiagnostics []providerauth.AntigravityDiagnostic
+	entry = providerauth.WithAntigravityDiagnostics(entry, func(d providerauth.AntigravityDiagnostic) { authDiagnostics = append(authDiagnostics, d) })
 	done := make(chan struct{})
 	defer func() { stopGuard(); <-done }()
 	go func() {
@@ -298,6 +301,20 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 	if err = c.writeEvidence("events-"+strings.TrimPrefix(i.CaseID, "memory:")+"-"+i.Arm+".json", events); err != nil {
 		return o, err
 	}
+	if c.renewed {
+		authName := "auth-" + strings.TrimPrefix(i.CaseID, "memory:") + "-" + i.Arm + ".json"
+		trace := memoryNativeAuthTrace{RunID: run, InputSHA: o.InputSHA256, Events: authDiagnostics}
+		if err = c.writeEvidence(authName, trace); err != nil {
+			return o, err
+		}
+		sha, hashErr := acceptance.FileHash(filepath.Join(c.private, authName))
+		if hashErr != nil {
+			return o, hashErr
+		}
+		if _, err = c.pool.Exec(finishCtx, `INSERT INTO fixture_memory_eval_auth VALUES($1,$2,$3)`, run, o.InputSHA256, sha); err != nil {
+			return o, err
+		}
+	}
 	originalWriteFailed = false
 	finishCtx = budget.WithModelOperation(finishCtx, admission.OperationID)
 	if err = c.checkSourcesPhase(finishCtx, i, "final"); err != nil {
@@ -341,6 +358,9 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 		return o, err
 	}
 	if status != "completed" {
+		if c.renewed && !providerauth.UnsafeAntigravityRefresh(authDiagnostics) && memoryCleanAvailability(events, original, version, usage, startErr) {
+			return o, errMemoryAvailability
+		}
 		return o, errors.New("model entry failed; fresh window sealed without retry")
 	}
 	return o, nil
@@ -383,7 +403,12 @@ func (c *memoryEvalCollector) checkSourcesPhase(ctx context.Context, i acceptanc
 
 func memoryEvalDatabase(t *testing.T) *pgxpool.Pool {
 	t.Helper()
-	cfg, err := pgxpool.ParseConfig(os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
+	return memoryEvalDatabaseURL(t, os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
+}
+
+func memoryEvalDatabaseURL(t *testing.T, dsn string) *pgxpool.Pool {
+	t.Helper()
+	cfg, err := pgxpool.ParseConfig(dsn)
 	if err != nil || !strings.HasSuffix(cfg.ConnConfig.Database, "_test") {
 		t.Fatal("fresh memory eval test database required")
 	}
@@ -482,11 +507,25 @@ func TestMemoryEvalActualCollection(t *testing.T) {
 	deadline := started.Add(3 * time.Hour)
 	if pins.Prior != nil {
 		p, priorErr := acceptance.LoadMemoryPrior(suite, "/prior", *pins.Prior)
-		if priorErr != nil || !p.Expires.After(time.Now()) {
+		if priorErr != nil {
 			t.Fatal("retained prior prefix or original deadline denied")
 		}
 		prior = &p
-		deadline, started = p.Expires, p.Expires.Add(-3*time.Hour)
+		if pins.Renewal != nil {
+			schedule, scheduleErr := acceptance.MemoryPendingSchedule(p, plan)
+			if scheduleErr != nil {
+				t.Fatal("renewed schedule denied")
+			}
+			deadline, err = acceptance.ValidateMemoryRenewal(p, pins, schedule, time.Now())
+			if err != nil {
+				t.Fatal(err)
+			}
+		} else {
+			if !p.Expires.After(time.Now()) {
+				t.Fatal("original deadline denied")
+			}
+			deadline, started = p.Expires, p.Expires.Add(-3*time.Hour)
+		}
 	}
 	pool := memoryEvalDatabase(t)
 	manifest := catalog.NewFileManifest(filepath.Join(private, "deletion-anchor"))
@@ -509,7 +548,7 @@ func TestMemoryEvalActualCollection(t *testing.T) {
 		t.Fatal("pinned local backend unavailable")
 	}
 	defer closeBackend()
-	c := &memoryEvalCollector{pool: pool, catalog: cat, budgets: budgets, backend: backend, suite: suite, plan: plan, private: private, sourceRefs: map[string]map[string]catalog.SourceRef{}, started: started, prior: prior, priorPins: pins.Prior, priorDirectory: "/prior"}
+	c := &memoryEvalCollector{pool: pool, catalog: cat, budgets: budgets, backend: backend, suite: suite, plan: plan, private: private, sourceRefs: map[string]map[string]catalog.SourceRef{}, started: started, deadline: deadline, renewed: pins.Renewal != nil, prior: prior, priorPins: pins.Prior, priorDirectory: "/prior"}
 	ctx, cancel := context.WithDeadline(context.Background(), deadline)
 	defer cancel()
 	if err = c.init(ctx); err != nil {
@@ -600,7 +639,15 @@ func TestMemoryEvalActualCollection(t *testing.T) {
 		collectionErr = err
 		t.Fatal(err)
 	}
-	c.factory, err = newSchemaDialectNativeFactory(ctx, pool, os.Getenv("BUTLER_MEMORY_EVAL_IMPORT_FILE"), filepath.Join(private, "settings.key"), schemaDialectGoogle)
+	authPool := pool
+	if c.renewed {
+		authPool = memoryEvalRenewedAuthPool(t)
+		if err = c.retainAuthPreflight(ctx); err != nil {
+			collectionErr = err
+			t.Fatal("auth preflight evidence denied")
+		}
+	}
+	c.factory, err = newSchemaDialectNativeFactory(ctx, authPool, os.Getenv("BUTLER_MEMORY_EVAL_IMPORT_FILE"), filepath.Join(private, "settings.key"), schemaDialectGoogle)
 	if err != nil {
 		collectionErr = err
 		t.Fatal("private provider initialization failed")
@@ -619,10 +666,24 @@ func TestMemoryEvalActualCollection(t *testing.T) {
 			collectionErr = err
 			t.Fatal("expense retention failed")
 		}
-		if sampleErr != nil {
+		if sampleErr != nil && !(c.renewed && errors.Is(sampleErr, errMemoryAvailability)) {
 			collectionErr = sampleErr
 			t.Fatal("model comparison stopped; every spent entry retained")
 		}
 	}
 	t.Log("memory collector complete; question results, broader-goal unknowns and all expenses retained; no promotion claimed")
+}
+
+var errMemoryAvailability = errors.New("clean retained provider failure; no retry")
+
+func memoryCleanAvailability(events []memoryEvalEvent, raw []byte, version string, usage *transport.Usage, startErr error) bool {
+	if startErr != nil || len(raw) != 0 || version != "" || usage != nil || len(events) != 2 || events[0].Type != "run_started" || events[1].Type != "transport_error" {
+		return false
+	}
+	for _, e := range events {
+		if e.ToolProposed || e.Final != nil || e.Usage != nil || e.Version != nil {
+			return false
+		}
+	}
+	return acceptance.MemoryAvailabilityCode(events[1].ErrorCode)
 }

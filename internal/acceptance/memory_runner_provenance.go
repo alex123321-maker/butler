@@ -312,9 +312,38 @@ func memoryAuditProvenance(s MemorySuite, f MemoryFrozen, ledger map[string]json
 				}
 			}
 		}
-		if dispatch != 2 || final != 1 {
+		preHTTP := failedPrefix && expectedState == "failed" && dispatch == 1 && memoryPreHTTPUnavailable(directory, i, runID)
+		if (dispatch != 2 && !preHTTP) || final != 1 {
 			return errors.New("dispatch/final guard receipt coverage differs")
 		}
 	}
 	return nil
+}
+
+// The first authority check precedes authentication. An empty unavailable
+// response can finish there, before the second exact inference-HTTP guard.
+// This is retained negative evidence, never proof that inference was sent.
+func memoryPreHTTPUnavailable(directory string, i MemoryInput, run string) bool {
+	name := strings.TrimPrefix(i.CaseID, "memory:") + "-" + i.Arm
+	raw, err := ReadPrivateFile(filepath.Join(directory, "events-"+name+".json"), 1<<20)
+	var events []struct {
+		Run     string `json:"run_id"`
+		Type    string `json:"type"`
+		Code    string `json:"error_code"`
+		HTTP    int    `json:"http_status"`
+		Final   any    `json:"final"`
+		Usage   any    `json:"usage"`
+		Version any    `json:"version"`
+		Tool    bool   `json:"tool_proposed"`
+	}
+	if err != nil || json.Unmarshal(raw, &events) != nil || len(events) != 2 || events[0].Type != "run_started" || events[1].Type != "transport_error" || events[1].Code != "provider_unavailable" || events[1].HTTP != 0 {
+		return false
+	}
+	for _, e := range events {
+		if e.Run != run || e.Final != nil || e.Usage != nil || e.Version != nil || e.Tool {
+			return false
+		}
+	}
+	final, err := ReadPrivateFile(filepath.Join(directory, "final-"+name+".txt"), 1<<20)
+	return err == nil && len(final) == 0
 }

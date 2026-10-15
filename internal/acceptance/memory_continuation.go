@@ -51,12 +51,19 @@ func MemoryNativeReservedUnits(i MemoryInput) int64 {
 }
 
 func LoadMemoryPrior(s MemorySuite, directory string, pins MemoryPriorPins) (MemoryPrior, error) {
+	count := 0
+	for item := &pins; item != nil; item = item.Parent {
+		count++
+		if count > 5 {
+			return MemoryPrior{}, errors.New("bounded parent lineage differs")
+		}
+	}
 	return loadMemoryPrior(s, directory, pins, 0)
 }
 
 func loadMemoryPrior(s MemorySuite, directory string, pins MemoryPriorPins, depth int) (MemoryPrior, error) {
 	var p MemoryPrior
-	if depth >= 4 {
+	if depth >= 5 {
 		return p, errors.New("bounded parent lineage differs")
 	}
 	read := func(name, hash string, out any) error {
@@ -77,7 +84,7 @@ func loadMemoryPrior(s MemorySuite, directory string, pins MemoryPriorPins, dept
 		return p, err
 	}
 	if pins.Parent != nil {
-		// Only four separately retained closed prefixes are supported. A
+		// Only five separately retained closed prefixes are supported. A
 		// recursive snapshot cannot silently create an unbounded retry chain.
 		if p.Frozen.Plan.SourceSHA256 != pins.SourceSHA || p.Frozen.Plan.CodeCommit != pins.CodeCommit {
 			return p, errors.New("bounded parent lineage differs")

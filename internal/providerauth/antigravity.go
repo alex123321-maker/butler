@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -102,8 +103,10 @@ func (m *Manager) ResolveAntigravity(ctx context.Context) (AntigravityAuth, erro
 		// Persist rotation before another request can fail. Reusing an old refresh
 		// token after a successful rotation can strand the operator's account.
 		if err := saveSecretJSON(ctx, m.store, modelprovider.ProviderAntigravity, "provider-auth-refresh", creds); err != nil {
+			observeAntigravity(ctx, "refresh_persistence", "store_failed", 0)
 			return AntigravityAuth{}, fmt.Errorf("Antigravity encrypted credential persistence failed")
 		}
+		observeAntigravity(ctx, "refresh_persistence", "completed", 0)
 	}
 	// AICode subscription inference needs only a Bearer token. A legacy imported
 	// project remains encrypted at rest for compatibility but is never discovered
@@ -128,40 +131,60 @@ func (m *Manager) refreshAntigravity(ctx context.Context, creds antigravityCrede
 		return antigravityCredentials{}, err
 	}
 	if token.AccessToken == "" || strings.ContainsAny(token.AccessToken, "\r\n") || token.ExpiresIn <= 0 || token.ExpiresIn > 86400 || !strings.EqualFold(token.TokenType, "Bearer") {
+		observeAntigravity(ctx, "oauth_refresh", "invalid_response", 200)
 		return antigravityCredentials{}, fmt.Errorf("Antigravity refresh response is invalid")
 	}
 	creds.AccessToken = token.AccessToken
 	creds.ExpiresAt = m.now().Add(time.Duration(token.ExpiresIn) * time.Second)
 	if token.RefreshToken != "" {
 		if strings.ContainsAny(token.RefreshToken, "\r\n") {
+			observeAntigravity(ctx, "oauth_refresh", "invalid_response", 200)
 			return antigravityCredentials{}, fmt.Errorf("Antigravity refresh response is invalid")
 		}
 		creds.RefreshToken = token.RefreshToken
 	}
+	observeAntigravity(ctx, "oauth_refresh", "completed", 200)
 	return creds, nil
 }
 
 // All responses/errors are bounded and masked; refresh material must not leak
 // through the provider settings API, transport error or telemetry.
 func (m *Manager) antigravityJSON(req *http.Request, target any) error {
+	stage := ""
+	switch req.URL.String() {
+	case antigravityTokenURL:
+		stage = "oauth_refresh"
+	case antigravityCloudCodeDiscovery:
+		stage = "paid_discovery"
+	}
+	observeAntigravity(req.Context(), stage, "started", 0)
 	client := *m.client
 	client.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
 	resp, err := client.Do(req)
 	if err != nil {
+		outcome := "request_failed"
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(req.Context().Err(), context.DeadlineExceeded) {
+			outcome = "deadline"
+		}
+		observeAntigravity(req.Context(), stage, outcome, 0)
 		return fmt.Errorf("Antigravity control-plane request failed")
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
+		observeAntigravity(req.Context(), stage, "http_rejected", resp.StatusCode)
 		return fmt.Errorf("Antigravity control-plane access was rejected (HTTP %d)", resp.StatusCode)
 	}
 	data, err := io.ReadAll(io.LimitReader(resp.Body, 1024*1024+1))
 	if err != nil || len(data) > 1024*1024 {
+		observeAntigravity(req.Context(), stage, "invalid_response", resp.StatusCode)
 		return fmt.Errorf("Antigravity control-plane response is invalid")
 	}
 	defer clear(data)
 	if json.Unmarshal(data, target) != nil {
+		observeAntigravity(req.Context(), stage, "invalid_response", resp.StatusCode)
 		return fmt.Errorf("Antigravity control-plane response is invalid")
 	}
+	observeAntigravity(req.Context(), stage, "response_decoded", resp.StatusCode)
 	return nil
 }
 

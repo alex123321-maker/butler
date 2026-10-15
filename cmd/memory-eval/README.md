@@ -178,3 +178,17 @@ and5unobserved eligible inputs, across the original72-input matrix. All937expens
 records and391stage calls remain, including the failed admissions. The public
 [partial score](../../testdata/acceptance/results/ru-memory-v2-partial-20261015.json)
 is NO_GO/model_quality_evidence=false; it cannot establish full PR acceptance.
+
+
+## Renewed five-input window
+
+The explicit owner-authorized renewal binds a new30-minute deadline, exact five
+unpaid inputs, parent pins and accumulated spend. See
+[the prospective protocol](../../docs/ai/memory-eval-v2-renewed-five-plan-20261015.md).
+After prepare and independent source/prepared review, auth-preflight performs
+zero model calls in a separate fresh encrypted PG auth database on the new
+window server. Execute reuses its persisted refresh rotation. Its latency/probe
+counts are included as background expense with unknown monetary cost. Execute
+is one-use and never resamples a spent input. Offline pending-audit requires all
+five attempts, including safely retained provider failures; numeric NO_GO and
+promotion refusal remain possible after complete harness acceptance.

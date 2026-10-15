@@ -19,7 +19,12 @@ func main() {
 	bin := flag.String("binary", "/old-bin/collector.test", "original binary")
 	source := flag.String("source", "/old-src", "original source snapshot")
 	dest := flag.String("snapshot", "/snapshot", "new safe evidence snapshot")
+	renew := flag.String("renew-runtime", "", "new operator runtime pins, after original safe copy")
 	flag.Parse()
+	if *renew != "" {
+		renewPins(*renew)
+		return
+	}
 	f, err := os.Open("/src/testdata/acceptance/ru-memory-v2.json")
 	if err != nil {
 		panic("suite unavailable")
@@ -32,7 +37,7 @@ func main() {
 	allowed := regexp.MustCompile(`^(ledger|measurements|frozen-before-native|captures|plan|collection-status|comparison-frozen|comparison-measurements)\.json$|^(aux|bundle|search|bindings|input|events|result|deletion)-[a-zA-Z0-9_-]+\.json$|^final-[a-zA-Z0-9_-]+\.txt$`)
 	var copySafe func(string, string, int) error
 	copySafe = func(from, to string, depth int) error {
-		if depth >= 4 {
+		if depth >= 5 {
 			return fmt.Errorf("bounded parent snapshot denied")
 		}
 		entries, err := os.ReadDir(from)
@@ -93,7 +98,7 @@ func main() {
 	}
 	var pins acceptance.MemoryPriorPins
 	if runtime.Prior != nil {
-		if (runtime.Prior.Parent != nil && runtime.Prior.Parent.Parent != nil && runtime.Prior.Parent.Parent.Parent != nil) || os.Mkdir(filepath.Join(*dest, "prior"), 0700) != nil || copySafe("/old-prior", filepath.Join(*dest, "prior"), 1) != nil {
+		if (runtime.Prior.Parent != nil && runtime.Prior.Parent.Parent != nil && runtime.Prior.Parent.Parent.Parent != nil && runtime.Prior.Parent.Parent.Parent.Parent != nil) || os.Mkdir(filepath.Join(*dest, "prior"), 0700) != nil || copySafe("/old-prior", filepath.Join(*dest, "prior"), 1) != nil {
 			panic("bounded safe parent snapshot denied")
 		}
 		pins.Parent = runtime.Prior
@@ -128,5 +133,44 @@ func main() {
 	}
 	if err = json.NewEncoder(os.Stdout).Encode(pins); err != nil {
 		panic("pin encoding failed")
+	}
+}
+
+func renewPins(path string) {
+	raw, err := acceptance.ReadPrivateFile(path, 1<<20)
+	var pins acceptance.MemoryRuntimePins
+	if err != nil || json.Unmarshal(raw, &pins) != nil || pins.Prior == nil || pins.Renewal != nil {
+		panic("new pins denied")
+	}
+	f, err := os.Open("/src/testdata/acceptance/ru-memory-v2.json")
+	if err != nil {
+		panic("suite unavailable")
+	}
+	defer f.Close()
+	suite, err := acceptance.LoadMemorySuite(f)
+	if err != nil {
+		panic("suite denied")
+	}
+	prior, err := acceptance.LoadMemoryPrior(suite, "/prior", *pins.Prior)
+	if err != nil {
+		panic("prior denied")
+	}
+	plan := prior.Frozen.Plan
+	plan.WindowID, plan.SourceSHA256, plan.CodeCommit, plan.HardwareSHA256 = pins.WindowID, pins.Source, pins.Release, pins.Hardware
+	schedule, err := acceptance.MemoryPendingSchedule(prior, plan)
+	if err != nil {
+		panic("schedule denied")
+	}
+	now := time.Now().UTC()
+	r := acceptance.MemoryRenewal{AuthorizedUTC: now.Format(time.RFC3339Nano), ExpiresUTC: now.Add(30 * time.Minute).Format(time.RFC3339Nano), PriorSHA: acceptance.MemoryDigest(*pins.Prior), InputsSHA: acceptance.MemoryDigest(schedule.Inputs), WindowID: pins.WindowID, SourceSHA: pins.Source, BinarySHA: pins.Binary, MaxNativeCalls: 5}
+	for _, i := range schedule.Inputs {
+		r.MaxUnits += acceptance.MemoryNativeReservedUnits(i)
+	}
+	pins.Renewal = &r
+	if _, err = acceptance.ValidateMemoryRenewal(prior, pins, schedule, now); err != nil {
+		panic("new five-input grant denied")
+	}
+	if json.NewEncoder(os.Stdout).Encode(pins) != nil {
+		panic("new pins output failed")
 	}
 }

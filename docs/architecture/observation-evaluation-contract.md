@@ -24,6 +24,14 @@ approval format; original runner/ledger correlation remains a separate gate.
 The initial command cannot authorize model calls, promotion or deployment.
 See [protocol, reproduction and open acceptance](../../cmd/memory-eval/README.md).
 
+The renewed five-input memory window uses an independently checked prospective
+MemoryRenewal instead of extending an expired mandate. Its complete-attempt
+auditor requires exactly every authorized input, preserves all old failures and
+costs, and correlates any clean empty provider failure as an actual failed
+attempt. It cannot award answer success, usage or promotion to that failure.
+An encrypted-auth control-plane preflight makes zero model calls and contributes
+separate measured latency/logical probe counts and unknown monetary expense.
+
 The latest closed history is575. V11's18 requests all completed with measured
 expense, but its fixture stopped on14 actions instead of exactly13, before owner
 verification and delivery. Two check proposals read the same immutable artifact;

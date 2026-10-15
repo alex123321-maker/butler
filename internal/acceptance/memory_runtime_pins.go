@@ -8,6 +8,7 @@ import (
 // Operator metadata is mounted read-only, outside the candidate's output tree.
 // Actual collection checks every identity before opening provider credentials.
 type MemoryRuntimePins struct {
+	Renewal        *MemoryRenewal   `json:"renewal,omitempty"`
 	ProxyRequired  bool             `json:"proxy_required,omitempty"`
 	Prior          *MemoryPriorPins `json:"prior,omitempty"`
 	WindowID       string           `json:"window_id"`
@@ -81,6 +82,23 @@ func ValidateMemoryExecution(e MemoryExecutionProof, pins MemoryRuntimePins, ima
 	}
 	if pins.Prior != nil && !seen["/prior"] {
 		return errors.New("read-only original prefix absent")
+	}
+	return nil
+}
+
+func ValidateMemoryAuthExecution(e MemoryExecutionProof, pins MemoryRuntimePins, image string) error {
+	if pins.Renewal == nil || !e.ProxyConfigured || !e.LocalBypass || e.Image != image || e.Path != "/runtime/collector.test" || MemoryDigest(e.Args) != MemoryDigest([]string{"-test.run", "^TestMemoryEvalNativeAuthPreflight$", "-test.v", "-test.timeout", "100s"}) || e.User != "10001:10001" || e.Memory != 536870912 || e.NanoCpus != 1000000000 || e.PidsLimit != 64 || !e.ReadonlyRootfs || MemoryDigest(e.Networks) != MemoryDigest([]string{"butler-lab_backend", pins.WindowID}) {
+		return errors.New("auth preflight runtime proof differs")
+	}
+	want := map[string]bool{"/src": true, "/runtime": true, "/metadata": true, "/prior": true, "/private": true, "/auth/native-import.json": true}
+	for _, m := range e.Mounts {
+		if !want[m.Destination] || m.RW != (m.Destination == "/private") {
+			return errors.New("auth preflight mount proof differs")
+		}
+		delete(want, m.Destination)
+	}
+	if len(want) != 0 {
+		return errors.New("auth preflight mount missing")
 	}
 	return nil
 }

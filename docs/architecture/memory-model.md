@@ -877,3 +877,12 @@ matrix, paid failures, all charges and original absolute expiry; only admission
 of unpaid inputs is allowed. Rebase current source/task authority through the
 Catalog, without replaying old receipts as new execution or repeating inference.
 Source/binary/original-byte lineage and composite ledger correlation are required.
+
+A separate explicit owner mandate may authorize a new prospective window after
+expiry. MemoryRenewal binds the new source/binary/window, exact ordered unpaid
+input digest, original parent pins and accumulated spend. The current renewal is
+limited to five remaining inputs and at most30minutes. It neither edits old
+expiries nor retries any consumed observation. Current leases/source guards are
+new receipts. Clean retained provider failures remain in the unchanged scored
+denominator; they do not block admission of the next distinct authorized input.
+Authority, protocol or retention failures still seal collection immediately.

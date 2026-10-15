@@ -38,6 +38,7 @@ func (m *Manager) ResolveAntigravityCloudCode(ctx context.Context) (AntigravityA
 		return AntigravityAuth{}, err
 	}
 	if result.PaidTier.ID != "g1-pro-tier" && result.PaidTier.ID != "g1-ultra-tier" {
+		observeAntigravity(ctx, "paid_discovery", "invalid_response", 200)
 		return AntigravityAuth{}, fmt.Errorf("Antigravity paid subscription was not confirmed")
 	}
 	var project string
@@ -46,13 +47,16 @@ func (m *Manager) ResolveAntigravityCloudCode(ctx context.Context) (AntigravityA
 			ID string `json:"id"`
 		}
 		if json.Unmarshal(result.Project, &object) != nil {
+			observeAntigravity(ctx, "paid_discovery", "invalid_response", 200)
 			return AntigravityAuth{}, fmt.Errorf("Antigravity subscription project is unavailable")
 		}
 		project = object.ID
 	}
 	if !ValidAntigravityProject(project) {
+		observeAntigravity(ctx, "paid_discovery", "invalid_response", 200)
 		return AntigravityAuth{}, fmt.Errorf("Antigravity subscription project is unavailable")
 	}
+	observeAntigravity(ctx, "paid_discovery", "completed", 200)
 	auth.ProjectID = project
 	return auth, nil
 }

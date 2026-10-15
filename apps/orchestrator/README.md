@@ -795,3 +795,10 @@ Ordinary owner inputs retain distinct intentional action slots. There is no
 fabricated ToolResult, prior-effect replay, refund or permission bypass. Current
 task/source/lease, Stop, budget, final and Broker guards still apply. Private proof
 reloads before proposals use a two-second maximum clamped by the live caller.
+
+
+The opt-in memory-eval renewed window uses a separately pinned five-input mandate
+and fresh encrypted PostgreSQL auth preflight. It preserves all historical paid
+failures, expenses and expiries. Only clean retained availability errors permit
+the next distinct authorized input; source/lease/retention errors seal collection.
+See [the bounded protocol](../../docs/ai/memory-eval-v2-renewed-five-plan-20261015.md).

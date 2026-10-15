@@ -3,21 +3,21 @@
 set -euo pipefail
 source_root=${1:?isolated synchronized source root}
 root=${2:?new model experiment root}
-action=${3:?prepare execute or audit}
+action=${3:?prepare auth-preflight execute or audit}
 release=${4:?exact candidate commit}
 prior_root=${5:-}
 [[ "$source_root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ && "$root" =~ ^/srv/storage/butler/agents/memory-eval-v2-[a-zA-Z0-9_-]+$ && "$release" =~ ^[a-f0-9]{40}$ && "$root" != "$source_root" ]] || exit 2
-[[ -z "$prior_root" || ( "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-native-20261015 || "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-pending-20261015 || "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-residual-20261015 || "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-proxy-safe-final-20261015 ) && "$root" != "$prior_root" ]] || exit 2
+[[ -z "$prior_root" || ( "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-native-20261015 || "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-pending-20261015 || "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-residual-20261015 || "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-proxy-safe-final-20261015 || "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-final-six-20261015 ) && "$root" != "$prior_root" ]] || exit 2
 umask 077
 # SSH operator UID need not own the confined runtime UID's files. Helpers have
 # no network, no credential mount, and only the new experiment's named outputs.
 own_metadata() {
- [[ "$1" == pins.json || "$1" == execution.json || "$1" == prior.json ]] || exit 2
+ [[ "$1" == pins.json || "$1" == execution.json || "$1" == prior.json || "$1" == auth-execution.json ]] || exit 2
  docker run --rm --network none --read-only --cap-drop ALL --cap-add CHOWN --security-opt no-new-privileges:true \
   --mount "type=bind,src=$root/metadata,dst=/metadata" "$image_id" chown 10001:10001 "/metadata/$1"
 }
 read_output() {
- case "$1" in metadata/hardware.json|metadata/pins.json|build/pin-fixture/frozen.json|private/frozen.json|audit/report/report.json) ;; *) exit 2;; esac
+ case "$1" in metadata/hardware.json|metadata/pins.json|build/pin-fixture/frozen.json|private/frozen.json|private/auth-preflight.json|audit/report/report.json) ;; *) exit 2;; esac
  docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
   --mount "type=bind,src=$root/$1,dst=/output,readonly" "$image_id" cat /output
 }
@@ -40,7 +40,9 @@ if [[ "$action" == prepare ]]; then
  jq -n --arg release "$release" --arg kernel "$(uname -r)" --arg image "$image_id" --arg pg "$pg_id" \
   --argjson cpus "$(getconf _NPROCESSORS_ONLN)" --argjson memory "$(awk '/^MemTotal:/ {print $2}' /proc/meminfo)" \
   '{release:$release,kernel:$kernel,go_image:$image,postgres_image:$pg,host_cpu_count:$cpus,host_memory_kib:$memory,runner:{cpus:2,memory_bytes:1610612736,pids:128,uid:10001,source:"read_only",window_seconds:10800},worker:"existing single authenticated local-models:9090",native_model:"gemini-3.8-flash-high",observed_version_required:"gemini-3.8-flash-n",maximum_calls:280,maximum_conservative_units:4000000,maximum_new_native_calls:66,maximum_events_per_entry:4096,maximum_report_bytes:134217728,retries:0,fallback:false,tokenizer:"cloud byte upper bound; local actual token count unavailable",invoice:"subscription unknown; local no billing",ordering:"case order then no_ltm/full_context/retrieval; fixed not randomized"}' > "$root/metadata/hardware.json"
- docker run --rm --network none --cpus 2 --memory 1536m --pids-limit 128 -v "$source_dir:/src:ro" -v "$root/.cache:/cache" \
+ cache_dir="$root/.cache"
+ if [[ "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-final-six-20261015 ]]; then cache_dir="$prior_root/.cache"; fi
+ docker run --rm --network none --cpus 2 --memory 1536m --pids-limit 128 -v "$source_dir:/src:ro" -v "$cache_dir:/cache" \
   -v /srv/storage/butler/.cache/go-mod:/gomod:ro -v "$root/build:/build" -w /src \
   -e GOCACHE=/cache/go-build -e GOMODCACHE=/gomod -e GOTMPDIR=/cache/go-tmp "$image_id" bash -eu -c '
 go test -c -p 1 -o /build/collector.test ./apps/orchestrator/internal/app
@@ -81,6 +83,13 @@ chmod 711 /metadata
   mv "$root/metadata/pins-augmented.json" "$root/metadata/pins.json"
   own_metadata pins.json
   own_metadata prior.json
+  if [[ "$prior_root" == /srv/storage/butler/agents/memory-eval-v2-final-six-20261015 ]]; then
+   docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+    -v "$source_dir:/src:ro" -v "$root/build:/build:ro" -v "$root/metadata:/metadata:ro" -v "$root/prior:/prior:ro" \
+    "$image_id" /build/prior-pin -renew-runtime /metadata/pins.json > "$root/metadata/pins-renewed.json"
+   mv "$root/metadata/pins-renewed.json" "$root/metadata/pins.json"
+   own_metadata pins.json
+  fi
  fi
  docker run --rm --user 10001:10001 --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
   -v "$source_dir:/src:ro" -v "$root/build:/build:ro" -v "$root/review:/review" "$image_id" \
@@ -106,6 +115,37 @@ pg_id=$(read_output metadata/hardware.json | jq -r .postgres_image)
 tag=$(basename "$root")
 prior_mount=()
 if read_output metadata/pins.json | jq -e '.prior!=null' >/dev/null; then prior_mount=(--mount "type=bind,src=$root/prior,dst=/prior,readonly"); fi
+if [[ "$action" == auth-preflight ]]; then
+ [[ ! -e "$root/auth-entered" && ! -e "$root/entered" ]] || exit 2
+ read_output metadata/pins.json | jq -e '.renewal.maximum_new_native_calls==5' >/dev/null
+ [[ $(docker inspect --format '{{.State.Running}}' butler-lab-antigravity-proxy-1) == true ]] || exit 2
+ mkdir -m 700 "$root/auth-entered"
+ docker network create --internal "$tag" > "$root/auth-entered/network-id"
+ docker run -d --name "$tag-pg" --network "$tag" --network-alias memory-eval-postgres --cpus 1 --memory 512m --pids-limit 128 \
+  --security-opt no-new-privileges:true -v "$root/postgres:/var/lib/postgresql/data" \
+  -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_USER=butler -e POSTGRES_DB=memory_eval_test "$pg_id" > "$root/auth-entered/postgres-id"
+ for _ in $(seq 1 30); do if docker exec "$tag-pg" pg_isready -U butler -d memory_eval_test >/dev/null; then break; fi; sleep 1; done
+ docker exec "$tag-pg" createdb -U butler memory_auth_test
+ native_import=/srv/storage/butler/agents/antigravity-provider/profile/.gemini/antigravity-cli/butler-native-import.json
+ docker create --name "$tag-auth" --user 10001:10001 --network "$tag" --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+  --cpus 1 --memory 512m --pids-limit 64 --tmpfs /tmp:rw,noexec,nosuid,size=16777216 \
+  -v "$source_dir:/src:ro" -v "$root/build:/runtime:ro" -v "$root/metadata:/metadata:ro" -v "$root/prior:/prior:ro" -v "$root/private:/private" \
+  --mount "type=bind,src=$native_import,dst=/auth/native-import.json,readonly" \
+  -w /src -e BUTLER_MEMORY_EVAL_AUTH_PREFLIGHT=1 -e BUTLER_MEMORY_EVAL_PRIVATE=/private -e BUTLER_MEMORY_EVAL_IMPORT_FILE=/auth/native-import.json \
+  -e HTTPS_PROXY=http://antigravity-proxy:18080 -e HTTP_PROXY=http://antigravity-proxy:18080 -e NO_PROXY=localhost,127.0.0.1,memory-eval-postgres \
+  "$image_id" /runtime/collector.test -test.run '^TestMemoryEvalNativeAuthPreflight$' -test.v -test.timeout 100s > "$root/auth-entered/container-id"
+ docker network connect butler-lab_backend "$tag-auth"
+ docker inspect "$tag-auth" | jq '.[0]|{Id,Image,Path,Args,User:.Config.User,Memory:.HostConfig.Memory,NanoCpus:.HostConfig.NanoCpus,PidsLimit:.HostConfig.PidsLimit,ReadonlyRootfs:.HostConfig.ReadonlyRootfs,ProxyConfigured:((.Config.Env|index("HTTPS_PROXY=http://antigravity-proxy:18080")!=null) and (.Config.Env|index("HTTP_PROXY=http://antigravity-proxy:18080")!=null)),LocalBypass:(.Config.Env|index("NO_PROXY=localhost,127.0.0.1,memory-eval-postgres")!=null),Networks:(.NetworkSettings.Networks|keys),Mounts:[.Mounts[]|{Destination,RW}]}' > "$root/metadata/auth-execution.json"
+ own_metadata auth-execution.json
+ set +e
+ timeout 110 docker start -a "$tag-auth" > "$root/auth-preflight.log" 2> "$root/auth-preflight-diagnostics.log"
+ status=$?
+ set -e
+ printf '%s\n' "$status" > "$root/auth-entered/exit-status"
+ if [[ "$status" != 0 ]]; then docker stop --time 5 "$tag-auth" >/dev/null || true; fi
+ read_output private/auth-preflight.json | jq '{model_calls,probes}'
+ exit "$status"
+fi
 if [[ "$action" == execute ]]; then
  [[ ! -e "$root/entered" ]] || { echo 'One-use model window already entered; preserve it'; exit 2; }
  [[ $(docker inspect --format '{{.State.Running}}' butler-lab-antigravity-proxy-1) == true ]] || exit 2
@@ -128,11 +168,16 @@ if [[ "$action" == execute ]]; then
   "$image_id" /runtime/collector.test -test.run '^TestMemoryEvalLocalMetadataPreflight$' -test.v -test.timeout 20s > "$root/local-metadata-preflight.log"
  # Atomic durable entry marker precedes all new native/auxiliary work.
  mkdir -m 700 "$root/entered" || { echo 'One-use model window already entered; preserve it'; exit 2; }
+ if read_output metadata/pins.json | jq -e '.renewal!=null' >/dev/null; then
+  [[ -f "$root/auth-entered/exit-status" && "$(cat "$root/auth-entered/exit-status")" == 0 && "$(docker inspect --format '{{.State.Running}}' "$tag-pg")" == true ]] || exit 2
+  read_output private/auth-preflight.json | jq -e '.model_calls==0 and .probes[-1].passed==true' >/dev/null
+ else
  docker network create --internal "$tag" > "$root/entered/network-id"
  docker run -d --name "$tag-pg" --network "$tag" --network-alias memory-eval-postgres --cpus 1 --memory 512m --pids-limit 128 \
   --security-opt no-new-privileges:true -v "$root/postgres:/var/lib/postgresql/data" \
   -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_USER=butler -e POSTGRES_DB=memory_eval_test "$pg_id" > "$root/entered/postgres-id"
  for _ in $(seq 1 30); do if docker exec "$tag-pg" pg_isready -U butler -d memory_eval_test >/dev/null; then break; fi; sleep 1; done
+ fi
  docker create --name "$tag-runner" --user 10001:10001 --network "$tag" --read-only --cap-drop ALL --security-opt no-new-privileges:true \
   --cpus 2 --memory 1536m --pids-limit 128 --tmpfs /tmp:rw,noexec,nosuid,size=67108864 \
   -v "$source_dir:/src:ro" -v "$root/build:/runtime:ro" -v "$root/metadata:/metadata:ro" -v "$root/review:/review:ro" -v "$root/private:/private" \
@@ -148,7 +193,13 @@ if [[ "$action" == execute ]]; then
  docker inspect "$tag-runner" | jq '.[0]|{Id,Image,Path,Args,User:.Config.User,Memory:.HostConfig.Memory,NanoCpus:.HostConfig.NanoCpus,PidsLimit:.HostConfig.PidsLimit,ReadonlyRootfs:.HostConfig.ReadonlyRootfs,ProxyConfigured:((.Config.Env|index("HTTPS_PROXY=http://antigravity-proxy:18080")!=null) and (.Config.Env|index("HTTP_PROXY=http://antigravity-proxy:18080")!=null)),LocalBypass:(.Config.Env|index("NO_PROXY=localhost,127.0.0.1,memory-eval-postgres,local-models")!=null),Networks:(.NetworkSettings.Networks|keys),Mounts:[.Mounts[]|{Destination,RW}]}' > "$root/metadata/execution.json"
  own_metadata execution.json
  set +e
- timeout 11100 docker start -a "$tag-runner" > "$root/runner.log" 2> "$root/runner-diagnostics.log"
+ run_seconds=11100
+ if read_output metadata/pins.json | jq -e '.renewal!=null' >/dev/null; then
+  expiry=$(read_output metadata/pins.json | jq -r .renewal.expires_utc)
+  run_seconds=$(( $(date -u -d "$expiry" +%s) - $(date -u +%s) + 30 ))
+  [[ "$run_seconds" -gt 30 && "$run_seconds" -le 1830 ]] || exit 2
+ fi
+ timeout "$run_seconds" docker start -a "$tag-runner" > "$root/runner.log" 2> "$root/runner-diagnostics.log"
  status=$?
  set -e
  if [[ "$status" != 0 ]]; then docker stop --time 10 "$tag-runner" >/dev/null || true; fi
