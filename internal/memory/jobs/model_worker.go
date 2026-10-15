@@ -127,9 +127,9 @@ func (w *ModelWorker) quote() (budget.Units, error) {
 		return budget.Units{}, ErrClaim
 	}
 	p.OutputTokens = output
-	if p.ModelMillis > 90000 {
-		p.ModelMillis = 90000
-	} // Leave publication time inside 2m claim.
+	if p.ModelMillis > 300000 {
+		p.ModelMillis = 300000
+	} // A full five-minute call fits inside the model-only six-minute claim.
 	return p.ModelQuote(w.Provider.Name(), w.Model, input)
 }
 func (w *ModelWorker) Admit(ctx context.Context, j Job, handlers ...ModelHandler) (ModelAttempt, []catalog.Source, error) {

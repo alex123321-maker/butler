@@ -44,7 +44,9 @@ Secret-class data and recognizable raw credentials deny processing.
 ## Attempts, transport and publication
 
 1. Claim the existing `memory_aux_jobs` row with its monotonically increasing
-   epoch and at most two-minute claim. Four actual failure/crash claims are allowed.
+   epoch and at most six-minute claim for model jobs (two minutes for other kinds).
+   Four actual failure/crash claims are allowed. An abandoned model claim can thus
+   take six minutes to recover; no heartbeat extends it.
 2. Check current task/assignment, global control, policy and full catalog manifest.
    Lock order is sessions → tasks/authority → control/policy → sorted sources →
    job → sorted budget scopes. No transaction remains open during provider HTTP.
@@ -55,6 +57,9 @@ Secret-class data and recognizable raw credentials deny processing.
    model and independently known locality before calling transport.
 4. Recheck DB time and all authority after budget waits. Clamp the call to every
    scope deadline, policy, claim and current goal/mandate active-hours window.
+   The configured model duration is additionally capped at five minutes. With a
+   full model claim this leaves a nominal minute for publication; earlier hard
+   deadlines still win and can shorten that margin. The supervisor stays 250ms/200ms.
    A fresh transport correlation ID is neither a user run nor a lease.
 5. Use the configured native provider with no tools, fresh provider session,
    typed DATA provenance, complete serialized input-byte ceiling and

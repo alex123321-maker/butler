@@ -7,6 +7,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/memory/catalog"
@@ -97,6 +98,46 @@ func schedule(t *testing.T, w *ModelWorker, ctx context.Context, q ModelPolicyRe
 		t.Fatal(ok, e)
 	}
 	return j
+}
+
+func TestModelClaimAndEarlierDeadlineIntegration(t *testing.T) {
+	for _, short := range []bool{false, true} {
+		t.Run(map[bool]string{false: "full_call", true: "earlier_policy"}[short], func(t *testing.T) {
+			w, ctx, src := modelFixture(t)
+			w.Jobs.budgets.Policy.ModelMillis = 300000
+			q := policyRequest(src)
+			q.Job.Allowance.ActiveMillis = 600000
+			if short {
+				q.Job.Deadline = time.Now().Add(30 * time.Second)
+			}
+			j := schedule(t, w, ctx, q)
+			var seconds float64
+			if err := w.Jobs.pool.QueryRow(ctx, `SELECT EXTRACT(epoch FROM claim_until-updated_at) FROM memory_aux_jobs WHERE job_id=$1`, j.ID).Scan(&seconds); err != nil {
+				t.Fatal(err)
+			}
+			if !short && (seconds < 359 || seconds > 361) {
+				t.Fatalf("model claim duration %f", seconds)
+			}
+			if short && (seconds <= 0 || seconds > 30 || !j.ClaimUntil.Equal(j.Deadline)) {
+				t.Fatalf("policy deadline lost: claim=%v policy=%v seconds=%f", j.ClaimUntil, q.Job.Deadline, seconds)
+			}
+			a, _, err := w.Admit(ctx, j)
+			if err != nil || a.Quote.ActiveMillis != 300000 || a.Deadline.After(*j.ClaimUntil) || a.Deadline.After(j.Deadline) || a.Deadline.After(time.Now().Add(300*time.Second)) {
+				t.Fatalf("admission escaped finite bounds: %+v err=%v", a, err)
+			}
+		})
+	}
+	t.Run("local_claim_unchanged", func(t *testing.T) {
+		s, _, ctx, src := fixture(t)
+		if _, err := s.Enqueue(ctx, request(src)); err != nil {
+			t.Fatal(err)
+		}
+		j := claim(t, s)
+		var seconds float64
+		if err := s.pool.QueryRow(ctx, `SELECT EXTRACT(epoch FROM claim_until-updated_at) FROM memory_aux_jobs WHERE job_id=$1`, j.ID).Scan(&seconds); err != nil || seconds < 119 || seconds > 121 {
+			t.Fatal(seconds, err)
+		}
+	})
 }
 func TestModelFailureDiagnosticExcludesProviderMaterialIntegration(t *testing.T) {
 	w, ctx, src := modelFixture(t)

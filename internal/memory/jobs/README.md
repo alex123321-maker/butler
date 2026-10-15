@@ -45,6 +45,10 @@ not confer source access or replace per-attempt admission.
 owner/purpose, original task/run/goal/mandate references, task/constraint versions,
 exact source hashes/access revisions, finite local allowance/deadline and current
 claim ID/epoch. A completed run's session lease never grants job permission.
+Model claims last at most six minutes, with operator-configured calls capped at
+five minutes; other kinds keep two-minute claims. Earlier policy, budget, claim
+and authority deadlines remain hard bounds. Crash recovery waits for that fixed
+claim expiry; there is no renewing heartbeat.
 Expired claims are reclaimed with a new epoch; late publication/finish is denied.
 
 An authenticated owner creates the finite job policy, including unassigned jobs.
