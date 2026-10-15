@@ -3,6 +3,7 @@ package catalog
 import (
 	"context"
 	"github.com/butler/butler/internal/delegation"
+	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
 
 	"github.com/jackc/pgx/v5"
@@ -29,6 +30,20 @@ func (s *Store) CheckRunSources(ctx context.Context, runID string) (err error) {
 	if e = s.CheckRunSourcesTx(ctx, tx, runID); e != nil {
 		return e
 	}
+	// The ordinary token-only observation passes no selected refs or auxiliary
+	// checker, so AccessTx cannot bind memory_run_sources and all remaining
+	// helpers are current SELECT/row-lock proofs. There is no business mutation
+	// to make durable. Bounded rollback releases the same locks without adding
+	// an observer COMMIT/WAL-sync requirement. HTTP dispatch and publication
+	// callers of CheckRunSourcesTx retain their owning transaction commits.
+	_, ownerActor := owneridentity.FromContext(ctx)
+	_, auxiliary := ctx.Value(checkerKey{}).(AccessChecker)
+	if !ownerActor && !auxiliary {
+		runSourcePhase(ctx, "observer_rollback")
+		return tx.Rollback(ctx)
+	}
+	// Preserve the existing commit semantics for trusted compound contexts;
+	// their independently supplied checker is outside the token-only audit.
 	runSourcePhase(ctx, "observer_commit")
 	return tx.Commit(ctx)
 }

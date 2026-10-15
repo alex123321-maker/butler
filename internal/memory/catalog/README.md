@@ -12,6 +12,14 @@ Actual read permission remains current after a historical lookup. A tool result
 is a primary Transcript cache, not a second permission to keep deleted source
 bytes. Existing release guards also protect late tool Transcript inserts.
 
+Ordinary token-only standalone source observations hold the complete current
+lease/task/source/temporal proof through bounded rollback. They select no new
+source and need no durable observer commit; the200ms deadline remains intact.
+Compound owner/checker contexts and owning dispatch/publication transactions keep
+their existing commit semantics. Fixed phase/pool diagnostics contain no source
+text, SQL parameters, raw errors or credential material. See the
+[audit and retained failure](../../../docs/testing/issue-88-sourceguard-diagnosis.md).
+
 [Temporal memory](../../../docs/architecture/memory-temporal.md) versions owner
 validity interpretation separately from source EventTime/ingestion and existing
 head decisions. Typed accepted-fact reads cap a whole page at64, count unknown
