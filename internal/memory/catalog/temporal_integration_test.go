@@ -65,22 +65,42 @@ func TestTemporalFreshDerivativeBindingDoesNotMintChildReadAuthorityIntegration(
 	pins := []AcceptedFactPin{facts.Items[0].Pin}
 	parents := []SourceRef{ref(src)}
 	ctx := WithAccessChecker(context.Background(), temporalPinnedChecker{parents})
-	for _, status := range []string{"active", "quarantined"} {
-		t.Run(status, func(t *testing.T) {
+	for _, mode := range []struct {
+		status    string
+		savepoint bool
+	}{{"active", false}, {"quarantined", false}, {"active", true}, {"quarantined", true}} {
+		name := mode.status
+		if mode.savepoint {
+			name += "_savepoint"
+		}
+		t.Run(name, func(t *testing.T) {
 			tx, err := s.pool.Begin(ctx)
 			if err != nil {
 				t.Fatal(err)
 			}
 			defer tx.Rollback(ctx)
-			derived, err := s.CreateDerivedTx(ctx, tx, parents, "memory_read", "view", "Exact candidate DATA", json.RawMessage(`{}`))
+			creationTx := tx
+			if mode.savepoint {
+				creationTx, err = tx.Begin(ctx)
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer creationTx.Rollback(ctx)
+			}
+			derived, err := s.CreateDerivedTx(ctx, creationTx, parents, "memory_read", "view", "Exact candidate DATA", json.RawMessage(`{}`))
 			if err != nil {
 				t.Fatal(err)
 			}
-			if status == "quarantined" {
-				if _, err = tx.Exec(ctx, `UPDATE memory_sources SET status='quarantined' WHERE source_id=$1`, derived.ID); err != nil {
+			if mode.status == "quarantined" {
+				if _, err = creationTx.Exec(ctx, `UPDATE memory_sources SET status='quarantined' WHERE source_id=$1`, derived.ID); err != nil {
 					t.Fatal(err)
 				}
-				derived.Status = status
+				derived.Status = mode.status
+			}
+			if mode.savepoint {
+				if err = creationTx.Commit(ctx); err != nil {
+					t.Fatal(err)
+				}
 			}
 			if err = s.BindAcceptedFactPinsTx(ctx, tx, derived.ID, pins, TemporalQuery{}); !errors.Is(err, ErrDenied) {
 				t.Fatal("strict path expanded job manifest", err)
@@ -89,6 +109,17 @@ func TestTemporalFreshDerivativeBindingDoesNotMintChildReadAuthorityIntegration(
 			forged.Hash = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 			if err = s.BindNewAcceptedFactPinsTx(ctx, tx, forged, parents, pins, TemporalQuery{}); !errors.Is(err, ErrDenied) {
 				t.Fatal("forged fresh source hash bound", err)
+			}
+			serialized, err := json.Marshal(derived)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var modelCopy Source
+			if err = json.Unmarshal(serialized, &modelCopy); err != nil {
+				t.Fatal(err)
+			}
+			if err = s.BindNewAcceptedFactPinsTx(ctx, tx, modelCopy, parents, pins, TemporalQuery{}); !errors.Is(err, ErrDenied) {
+				t.Fatal("serialized source forged constructor receipt", err)
 			}
 			if err = s.BindNewAcceptedFactPinsTx(ctx, tx, derived, parents, pins, TemporalQuery{}); err != nil {
 				t.Fatal(err)
@@ -108,6 +139,62 @@ func TestTemporalFreshDerivativeBindingDoesNotMintChildReadAuthorityIntegration(
 				t.Fatal("existing source reused fresh-row proof", err)
 			}
 		})
+	}
+}
+
+func TestTemporalBoundDerivativeInvalidatesAfterMetadataAndPrivacyIntegration(t *testing.T) {
+	s, ctx := fixture(t)
+	src := put(t, s, ctx, "rule", "Пиши по-русски.")
+	c := propose(t, s, ctx, src, `"ru"`)
+	c, err := s.Decide(ctx, Decision{ClaimID: c.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = s.SetTemporal(ctx, TemporalUpdate{ClaimID: c.ID, ExpectedHeadRevision: 1, Validity: ValidityUnknown, Class: FreshnessStablePreference})
+	if err != nil {
+		t.Fatal(err)
+	}
+	facts := temporalRead(t, s, ctx, []string{c.ID}, TemporalQuery{})
+	pins := []AcceptedFactPin{facts.Items[0].Pin}
+	parents := []SourceRef{ref(src)}
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(ctx)
+	derived, err := s.CreateDerivedTx(ctx, tx, parents, "memory_read", "view", "Retained quoted DATA", json.RawMessage(`{}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = s.BindNewAcceptedFactPinsTx(ctx, tx, derived, parents, pins, TemporalQuery{}); err != nil {
+		t.Fatal(err)
+	}
+	if err = tx.Commit(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.Get(ctx, derived.ID); err != nil {
+		t.Fatal(err)
+	}
+	past := time.Now().Add(-time.Hour).UTC()
+	if _, err = s.SetTemporal(ctx, TemporalUpdate{ClaimID: c.ID, ExpectedRevision: 1, ExpectedHeadRevision: 1, Validity: ValidityInterval, ValidTo: &past, Class: FreshnessStablePreference}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.Get(ctx, derived.ID); !errors.Is(err, ErrStale) {
+		t.Fatal("stale temporal view released unchanged source bytes", err)
+	}
+	current, err := s.Get(ctx, src.ID)
+	if err != nil || current.Hash != src.Hash || current.Body != src.Body {
+		t.Fatal("logical expiry redacted original history", err)
+	}
+	if _, err = s.Delete(ctx, src.ID, "delete", src.Revision); err != nil {
+		t.Fatal(err)
+	}
+	var metadata int
+	if err = s.pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM memory_claim_temporal_revisions)+(SELECT count(*) FROM memory_temporal_source_pins)+(SELECT count(*) FROM memory_claim_temporal_heads)`).Scan(&metadata); err != nil || metadata != 0 {
+		t.Fatal("privacy deletion retained semantic temporal metadata", metadata, err)
+	}
+	if _, err = s.Get(ctx, derived.ID); err == nil {
+		t.Fatal("privacy-deleted history returned")
 	}
 }
 func temporalUpdate(t *testing.T, s *Store, ctx context.Context, c Claim, head int64, from, to *time.Time, class FreshnessClass) TemporalMetadata {

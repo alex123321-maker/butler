@@ -12,11 +12,24 @@ import (
 
 const MaxTemporalFacts = 64
 
+type derivedCreation struct {
+	xid                       string
+	source                    SourceRef
+	owner, scopeType, scopeID string
+}
+
 func loadTemporalMetadataTx(ctx context.Context, tx pgx.Tx, c Claim, q TemporalQuery) (TemporalMetadata, int64, error) {
 	m := TemporalMetadata{ClaimID: c.ID, Validity: ValidityUnknown, Class: FreshnessUnknown, VerificationBasis: "unknown"}
 	var head int64
 	if err := tx.QueryRow(ctx, `SELECT v.extracted_at,c.accepted_at,COALESCE(h.revision,0) FROM memory_claims c JOIN memory_source_revisions v ON v.source_id=c.source_id AND v.revision=c.source_revision LEFT JOIN memory_claim_temporal_heads h ON h.claim_id=c.claim_id WHERE c.claim_id=$1`, c.ID).Scan(&m.SourceRecordedAt, &m.AcceptedAt, &head); err != nil {
 		return m, 0, err
+	}
+	var maximum int64
+	if err := tx.QueryRow(ctx, `SELECT COALESCE(MAX(revision),0) FROM memory_claim_temporal_revisions WHERE claim_id=$1`, c.ID).Scan(&maximum); err != nil {
+		return m, 0, err
+	}
+	if maximum != head {
+		return m, 0, ErrStale
 	}
 	err := tx.QueryRow(ctx, `SELECT revision,validity,valid_from,valid_to,recorded_at,freshness_class,verified_at,verification_basis FROM memory_claim_temporal_revisions WHERE claim_id=$1 AND ($2::timestamptz IS NULL OR recorded_at<=$2) ORDER BY revision DESC LIMIT 1`, c.ID, q.KnownAt).Scan(&m.Revision, &m.Validity, &m.ValidFrom, &m.ValidTo, &m.RecordedAt, &m.Class, &m.VerifiedAt, &m.VerificationBasis)
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -168,10 +181,21 @@ func (s *Store) BindAcceptedFactPinsTx(ctx context.Context, tx pgx.Tx, derivedSo
 	if !bounded(derivedSourceID, 1024) || len(pins) == 0 {
 		return ErrInvalid
 	}
-	if err := s.CheckAcceptedFactPinsTx(ctx, tx, pins, q); err != nil {
-		return err
+	// Route every pin through the child's complete declared source graph before
+	// taking any accepted-fact head locks. No later read may add another source.
+	for _, p := range pins {
+		var parent bool
+		if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_source_dependencies WHERE child_source_id=$1 AND parent_source_id=$2 AND parent_revision=$3)`, derivedSourceID, p.Source.ID, p.Source.Revision).Scan(&parent); err != nil {
+			return err
+		}
+		if !parent {
+			return ErrStale
+		}
 	}
 	if _, err := s.AccessTx(ctx, tx, []SourceRef{{ID: derivedSourceID}}, "memory_read"); err != nil {
+		return err
+	}
+	if err := s.CheckAcceptedFactPinsTx(ctx, tx, pins, q); err != nil {
 		return err
 	}
 	return bindTemporalPinsTx(ctx, tx, derivedSourceID, pins, q)
@@ -190,6 +214,21 @@ func (s *Store) BindNewAcceptedFactPinsTx(ctx context.Context, tx pgx.Tx, derive
 			return ErrInvalid
 		}
 	}
+	if derived.creation == nil || derived.creation.source != (SourceRef{derived.ID, derived.Revision, derived.AccessRevision, derived.Hash}) || derived.creation.owner != derived.OwnerID || derived.creation.scopeType != derived.ScopeType || derived.creation.scopeID != derived.ScopeID {
+		return ErrDenied
+	}
+	for _, p := range pins {
+		found := false
+		for _, parent := range parents {
+			if parent == p.Source {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return ErrStale
+		}
+	}
 	current, err := s.AccessTx(ctx, tx, parents, "memory_read")
 	if err != nil {
 		return err
@@ -205,10 +244,10 @@ func (s *Store) BindNewAcceptedFactPinsTx(ctx context.Context, tx pgx.Tx, derive
 	if err = s.CheckAcceptedFactPinsTx(ctx, tx, pins, q); err != nil {
 		return err
 	}
-	// Both rows must have been created in this transaction, not just updated.
-	// xmin is 32-bit while pg_current_xact_id includes the wraparound epoch.
+	// A constructor-issued receipt binds the top transaction across savepoints.
+	// Comparing row xmin to a top xid would reject legitimate subtransactions.
 	var fresh bool
-	err = tx.QueryRow(ctx, `SELECT s.xmin::text::numeric=mod(pg_current_xact_id()::text::numeric,4294967296) AND v.xmin::text::numeric=mod(pg_current_xact_id()::text::numeric,4294967296) AND s.created_at>=transaction_timestamp() AND v.extracted_at>=transaction_timestamp() AND s.source_kind='model_candidate' AND s.external_key='derived:'||s.source_id AND s.head_revision=1 AND s.access_revision=1 AND s.status=$2 AND s.owner_id=$3 AND s.scope_type=$4 AND s.scope_id=$5 AND v.content_hash=$6 FROM memory_sources s JOIN memory_source_revisions v ON v.source_id=s.source_id AND v.revision=1 WHERE s.source_id=$1`, derived.ID, derived.Status, derived.OwnerID, derived.ScopeType, derived.ScopeID, derived.Hash).Scan(&fresh)
+	err = tx.QueryRow(ctx, `SELECT pg_current_xact_id()::text=$7 AND s.created_at>=transaction_timestamp() AND v.extracted_at>=transaction_timestamp() AND s.source_kind='model_candidate' AND s.external_key='derived:'||s.source_id AND s.head_revision=1 AND s.access_revision=1 AND s.status=$2 AND s.owner_id=$3 AND s.scope_type=$4 AND s.scope_id=$5 AND v.content_hash=$6 FROM memory_sources s JOIN memory_source_revisions v ON v.source_id=s.source_id AND v.revision=1 WHERE s.source_id=$1`, derived.ID, derived.Status, derived.OwnerID, derived.ScopeType, derived.ScopeID, derived.Hash, derived.creation.xid).Scan(&fresh)
 	if err != nil {
 		return err
 	}
