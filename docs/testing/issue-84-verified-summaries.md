@@ -43,7 +43,9 @@ erased to obtain a cleaner result.
 `TestNativeOrdinaryTaskSummaryContinuityIntegration` is an independent one-use
 persistent window. It runs the same actual foreground/service composition for
 three rounds, with three summary jobs, three full-history baseline runs and three
-compacted foreground runs. The prospective finite owner-day allowance is 16 calls;
+compacted foreground runs. Baseline and candidate use independent session/task
+identities and identical primary input blocks, so neither can read the other
+arm's answers. The prospective finite owner-day allowance is 16 calls;
 the planned workload is 9. There is no automatic retry/fallback. It retains v1's
 three attempts separately, exports complete foreground/background ledger rows,
 separate raw native usage totals, scope reservations, schema physical bytes,
@@ -60,6 +62,36 @@ contention or expensive full guards remain hypotheses until independent offline
 diagnosis; no timeout or security check was relaxed. Across v1/v2, two native
 totals are known and two attempts have unknown usage. Production qualification
 remains false, and the paired native acceptance criterion remains open.
+
+The unchanged full supervisor also failed the independent synthetic cold/warm
+comparison (`reports/warm-pool-diagnostic-fixed.txt`): both modes published round0
+and hit the200/201ms authority deadline in round1. Merely warming two connections
+was insufficient. The generic worker now uses a metadata supervisor and joins it
+before local publication, retaining full per-HTTP/publication proofs. On that
+source the ordinary three-compaction/six-Execute PG/race scenario passed9.487s,
+and the complete consumer PG/race suite passed34.808s
+(`reports/v3-preflight.txt`, `reports/v3-guard-fixed.txt`). The persistence/CAS
+fixture's one-second model deadline was separately replaced with a finite10s
+per-call /40s four-call allowance; its security supervisor remains200ms. The
+prior1s timeout report is retained as `reports/v3-guard.txt`.
+
+The new independent one-use `summary_native_v3` window on frozen c1b1aa90 stopped
+at its first summary after33.00s with `storage_unavailable`, NULL usage, and no
+foreground request. Its metadata probes were4–10ms until the last31ms/201ms
+deadline (Acquired1/Idle0/Total1). The full quote remains reserved. This is a
+separate failure from the earlier full-guard diagnostic; the exact failed SQL
+or pool phase was not captured and its cause is not yet proven. Follow-up bounded
+SQL-hash/class and acquire/connect tracing has been added for diagnosis, without
+recording SQL, arguments, credentials or raw errors. The consumed v3 window must
+not be replayed. Its report is `reports/native-v3/{comparison,full-ledger,
+native-usage,native-probes,retained-v1-v2-ledger,caps}.json`.
+
+Across all three native windows there are five attempts: two known native totals
+(12979tokens combined) and three unknown-usage attempts with complete conservative
+quotes retained. These are different prospective budgets in one persistent
+isolated database; a new schema does not reset historical expense. No paired
+native quality or full-cost benefit has been established. `ReleaseQualified`
+remains false.
 
 ## Consumer-specific lifecycle gate
 
