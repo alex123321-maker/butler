@@ -50,3 +50,26 @@ separate raw native usage totals, scope reservations, schema physical bytes,
 answers and serialized context sizes. Subscription no-overage pricing is declared;
 provider invoice cost remains unknown. Qualify this section only from its actual
 report; creating the harness is not proof of a passing native window.
+
+The frozen 28fd521e v2 execution stopped at its first summary after 8.83 seconds.
+No ordinary foreground call ran. The attempt retains `storage_unavailable`, NULL
+observed usage and its full conservative quote. The content-free authority probe
+trace ends with a 201ms `catalog_guard` deadline and pool Acquired 1 / Idle 0 / Total 1
+(MaxConns 2). Earlier probes were mostly 9–15ms, then 116/166/104ms. Connection
+contention or expensive full guards remain hypotheses until independent offline
+diagnosis; no timeout or security check was relaxed. Across v1/v2, two native
+totals are known and two attempts have unknown usage. Production qualification
+remains false, and the paired native acceptance criterion remains open.
+
+## Consumer-specific lifecycle gate
+
+`reports/lifecycle-eight-fixed.txt` passes all eight shared
+`memorytest.LifecycleAttacks` cases through the real PostgreSQL source preparation,
+model worker and atomic summary/result publication under `-race`. Both hostile
+user/assistant history remain DATA. Current typed task goal/constraints/status/
+working state stay byte-identical, unknown tool state stays unknown, and no memory
+claim is accepted. Each case also corrects and deletes its original message,
+rejects root/derivative retrieval, erases copied source generations, reconstructs
+the Catalog reader and verifies that an unrelated source survives. This adds
+consumer-specific proof to the generic lifecycle gate; it does not turn the
+failed native window into a pass.
