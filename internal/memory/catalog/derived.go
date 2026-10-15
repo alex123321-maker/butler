@@ -72,5 +72,14 @@ func (s *Store) CreateDerivedTx(ctx context.Context, tx pgx.Tx, parents []Source
 	if _, e = s.AccessTx(ctx, tx, parents, purpose); e != nil {
 		return Source{}, e
 	}
-	return getSourceTx(ctx, tx, id, false)
+	src, e := getSourceTx(ctx, tx, id, false)
+	if e != nil {
+		return Source{}, e
+	}
+	var xid string
+	if e = tx.QueryRow(ctx, `SELECT pg_current_xact_id()::text`).Scan(&xid); e != nil {
+		return Source{}, e
+	}
+	src.creation = &derivedCreation{xid: xid, source: SourceRef{src.ID, src.Revision, src.AccessRevision, src.Hash}, owner: src.OwnerID, scopeType: src.ScopeType, scopeID: src.ScopeID}
+	return src, nil
 }

@@ -21,6 +21,8 @@ var (
 )
 
 type Source struct {
+	// Constructor-only receipt; serialized/reloaded sources cannot acquire it.
+	creation       *derivedCreation
 	ID             string          `json:"source_id"`
 	OwnerID        string          `json:"owner_id"`
 	Kind           string          `json:"source_kind"`

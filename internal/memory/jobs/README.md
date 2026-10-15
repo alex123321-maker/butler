@@ -1,5 +1,14 @@
 # Owned memory auxiliary jobs
 
+An atomic trusted publication hook can propose neutral DATA anchored to its
+exact freshly constructed derivative. A private constructor receipt binds the
+source/hash/owner/scope and current top transaction (including savepoints).
+Serialized/reloaded sources and another transaction cannot acquire this proof.
+The temporary publication checker forwards every original Check/Finalize/Pinned
+proof; no owner identity or additional external source permission is created.
+The ordinary current job/source/budget/result CAS remains mandatory. This
+context exists only while invoking the trusted versioned publication hook.
+
 Migration071 adds `ModelWorker` to this same queue, using the configured native
 generative transport, independent finite owner policies, per-attempt shared
 reservations/usage and atomic catalog DATA publication. It supports completed

@@ -98,6 +98,15 @@ Subscription pricing declares monetary overage policy, never locality or usage.
 
 ## Controls, composition and observability
 
+A trusted atomic publication hook may create a neutral claim against the exact
+new result source. Its temporary Catalog checker requires the constructor-only
+creation receipt, same current top transaction, exact original parent graph and
+unchanged owner/scope/hash. A serialized or reloaded Source is insufficient.
+Every original job Check/Finalize/Pinned proof remains current; the seam grants
+no owner identity, unrelated read, acceptance or action authority. The context
+is restricted to the trusted publication callback and does not survive the
+ordinary result/job CAS or create a durable capability.
+
 `BUTLER_MEMORY_MODEL_JOBS_ENABLED=true` composes the worker. It defaults false.
 The PostgreSQL global control separately starts `disabled`; an owner-proved
 `POST /api/v4/memory/model-worker-control` selects `enabled`, `paused` or `disabled`.

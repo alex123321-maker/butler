@@ -363,7 +363,11 @@ func (s *Store) publishModel(ctx context.Context, j Job, a ModelAttempt, body st
 	}
 	if len(handlers) == 1 {
 		if h, ok := handlers[0].(ModelPublicationHandler); ok {
-			if e = h.PublishTx(ctx, tx, s.catalog, j, a, sources, src, body); e != nil {
+			publication, e := s.catalog.WithFreshPublicationSourceTx(ctx, tx, src, j.Sources, j.Purpose)
+			if e != nil {
+				return "", e
+			}
+			if e = h.PublishTx(publication, tx, s.catalog, j, a, sources, src, body); e != nil {
 				return "", e
 			}
 		}
