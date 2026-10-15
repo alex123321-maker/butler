@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -87,6 +88,9 @@ func newConsumerFixture(t *testing.T, pools ...*pgxpool.Pool) *consumerFixture {
 		pool = memorytest.Database(t)
 	}
 	m := catalog.NewFileManifest(filepath.Join(t.TempDir(), "anchor"))
+	if len(pools) > 0 {
+		m = catalog.NewFileManifest(os.Getenv("BUTLER_SUMMARY_NATIVE_MANIFEST"))
+	}
 	if err := m.Initialize(); err != nil {
 		t.Fatal(err)
 	}
