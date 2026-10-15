@@ -774,8 +774,6 @@ func TestAdaptiveCollectorOwningFlowAndScopeIntegration(t *testing.T) {
 		controls.Cases[0].CaseID, controls.Cases[0].Sources[0].SourceID = c.ID, c.History[0].ID
 		_, ob, _ := runAdaptiveNativeCase(t, ctx, pool, cat, index, plan, p, b, broker, pm, c, controls, 0, "retrieval_adaptive", log)
 		if ob.Status != "completed" {
-			raw, _ := json.Marshal(p.snapshot())
-			t.Logf("controlled fixture transport: %s", raw)
 			t.Fatal("actual Broker collector read failed", ob.Status, ob.Reason)
 		}
 		var reads, opened int
@@ -849,13 +847,18 @@ func (p *adaptiveCollectorReadProvider) SubmitToolResult(ctx context.Context, r 
 		Status string             `json:"status"`
 		Result readcontrol.Result `json:"result"`
 	}
-	if json.Unmarshal([]byte(r.ToolResultJSON), &envelope) != nil || envelope.Status != "completed" || len(envelope.Result.Items) != 1 {
+	if json.Unmarshal([]byte(r.ToolResultJSON), &envelope) != nil || envelope.Status != "completed" || len(envelope.Result.Items) == 0 {
 		return nil, errors.New("controlled actual read failed")
 	}
-	x := envelope.Result.Items[0]
 	if strings.HasSuffix(r.ToolCallRef, "-collector-search") {
-		return p.tool(r.RunID, "-collector-open", readcontrol.Open, readcontrol.Args{SourceID: x.Source.ID, Revision: x.Source.Revision, AccessRevision: x.Source.AccessRevision, Hash: x.Source.Hash, FragmentKey: x.FragmentKey, MaxChars: 4096}), nil
+		for _, x := range envelope.Result.Items {
+			if x.Kind == "document" && x.FragmentKey != "" {
+				return p.tool(r.RunID, "-collector-open", readcontrol.Open, readcontrol.Args{SourceID: x.Source.ID, Revision: x.Source.Revision, AccessRevision: x.Source.AccessRevision, Hash: x.Source.Hash, FragmentKey: x.FragmentKey, MaxChars: 4096}), nil
+			}
+		}
+		return nil, errors.New("controlled document fragment absent")
 	}
+	x := envelope.Result.Items[0]
 	if !strings.HasSuffix(r.ToolCallRef, "-collector-open") || x.ReadRef == "" {
 		return nil, errors.New("controlled opened receipt absent")
 	}
