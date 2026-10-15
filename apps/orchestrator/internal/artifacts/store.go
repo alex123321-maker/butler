@@ -3,6 +3,7 @@ package artifacts
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/butler/butler/internal/ownership"
@@ -85,6 +86,10 @@ func (r *PostgresRepository) CreateArtifact(ctx context.Context, params CreatePa
 	if params.CreatedAt.IsZero() {
 		params.CreatedAt = time.Now().UTC()
 	}
+	params.Title = sanitizeDBText(params.Title)
+	params.Summary = sanitizeDBText(params.Summary)
+	params.ContentText = sanitizeDBText(params.ContentText)
+	params.ContentJSON = sanitizeDBText(params.ContentJSON)
 	if params.ContentJSON == "" {
 		params.ContentJSON = "{}"
 	}
@@ -221,4 +226,11 @@ func (r *PostgresRepository) ListArtifacts(ctx context.Context, params ListParam
 
 func (r *PostgresRepository) ListArtifactsByRun(ctx context.Context, runID string, limit int) ([]Record, error) {
 	return r.ListArtifacts(ctx, ListParams{RunID: runID, Limit: limit, Offset: 0})
+}
+
+func sanitizeDBText(value string) string {
+	if value == "" {
+		return ""
+	}
+	return strings.ToValidUTF8(value, "\uFFFD")
 }

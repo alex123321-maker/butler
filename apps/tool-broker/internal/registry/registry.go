@@ -12,13 +12,15 @@ import (
 
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/security/egress"
 	"google.golang.org/protobuf/proto"
 )
 
 type Registry struct {
-	toolsByName map[string]*toolbrokerv1.ToolContract
-	extensions  ExtensionSource
-	converters  ExtensionSource
+	toolsByName         map[string]*toolbrokerv1.ToolContract
+	classAllowedDomains map[string][]string
+	extensions          ExtensionSource
+	converters          ExtensionSource
 }
 type ExtensionSource interface {
 	GetContract(context.Context, string) (*toolbrokerv1.ToolContract, error)
@@ -67,6 +69,12 @@ type toolConfig struct {
 }
 
 func Load(path string, defaultTarget string) (*Registry, error) {
+	return LoadWithOptions(path, defaultTarget, LoadOptions{})
+}
+
+type LoadOptions struct{ ClassAllowedDomains map[string][]string }
+
+func LoadWithOptions(path string, defaultTarget string, options LoadOptions) (*Registry, error) {
 	path = filepath.Clean(strings.TrimSpace(path))
 	if path == "" {
 		return nil, fmt.Errorf("tool registry path is required")
@@ -80,6 +88,18 @@ func Load(path string, defaultTarget string) (*Registry, error) {
 		return nil, fmt.Errorf("decode tool registry: %w", err)
 	}
 	registry := &Registry{toolsByName: make(map[string]*toolbrokerv1.ToolContract, len(cfg.Tools))}
+	// Clone and validate startup policy. Never replace AllowedDomains: that
+	// declaration is hashed release authority, not a place to store a cap.
+	if options.ClassAllowedDomains != nil {
+		encoded, err := json.Marshal(options.ClassAllowedDomains)
+		if err != nil {
+			return nil, fmt.Errorf("invalid network allowlists")
+		}
+		registry.classAllowedDomains, err = egress.ParseClassAllowlists(string(encoded))
+		if err != nil {
+			return nil, err
+		}
+	}
 	for _, item := range cfg.Tools {
 		name := strings.TrimSpace(item.ToolName)
 		if name == "" {
@@ -189,6 +209,9 @@ func (r *Registry) ValidateContext(ctx context.Context, call *toolbrokerv1.ToolC
 	}
 	if err := ValidateArgs(contract.GetInputSchemaJson(), call.GetArgsJson()); err != nil {
 		return false, contract, validationError(err.Error())
+	}
+	if err := r.validateNetworkCap(call, contract); err != nil {
+		return false, contract, err
 	}
 	return true, contract, nil
 }

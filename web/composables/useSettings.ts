@@ -10,6 +10,8 @@ export interface SettingItem {
   is_secret: boolean
   requires_restart: boolean
   allowed_values?: string[]
+  description?: string
+  value_hint?: string
   validation_status: string
   validation_error?: string
 }

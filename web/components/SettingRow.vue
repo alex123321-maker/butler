@@ -10,6 +10,7 @@
         </div>
       </div>
 
+      <p v-if="setting.description" class="setting-description">{{ setting.description }}</p>
       <div v-if="editing" class="editor">
         <select v-if="hasAllowedValues" v-model="draft" class="setting-input">
           <option v-for="value in setting.allowed_values" :key="value" :value="value">{{ value }}</option>
@@ -26,6 +27,10 @@
         </button>
       </div>
       <p v-else class="setting-value">{{ setting.value || '—' }}</p>
+      <p v-if="setting.allowed_values?.length" class="setting-hint">
+        Допустимые значения: {{ setting.allowed_values.join(', ') }}
+      </p>
+      <p v-if="setting.value_hint" class="setting-hint">{{ setting.value_hint }}</p>
 
       <p v-if="setting.validation_error" class="setting-error">{{ setting.validation_error }}</p>
     </div>
@@ -141,6 +146,17 @@ watch(() => props.saving, (saving) => {
   margin: var(--space-4) 0 0;
   color: var(--color-text-secondary);
   word-break: break-word;
+}
+
+.setting-description {
+  margin: var(--space-3) 0 0;
+  color: var(--color-text-primary);
+}
+
+.setting-hint {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
 }
 
 .editor {

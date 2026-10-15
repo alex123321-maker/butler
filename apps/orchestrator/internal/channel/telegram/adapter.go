@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"hash/fnv"
 	"log/slog"
 	"strconv"
 	"strings"
@@ -52,23 +51,8 @@ type Adapter struct {
 	nextOffset        int64
 	now               func() time.Time
 	mu                sync.Mutex
-	streamingMessages map[string]streamingMessage
 	authPrompts       map[int64]pendingAuthPrompt
 }
-
-type streamingMessage struct {
-	ChatID        int64
-	DraftID       int64
-	Content       string
-	SentLen       int
-	LastSentAt    time.Time
-	NextAllowedAt time.Time
-}
-
-const (
-	minDraftFlushInterval = 900 * time.Millisecond
-	minDraftFlushChars    = 48
-)
 
 func NewAdapter(cfg Config, client *Client, approvalGate *flow.ApprovalGate, log *slog.Logger) (*Adapter, error) {
 	if client == nil {
@@ -94,7 +78,6 @@ func NewAdapter(cfg Config, client *Client, approvalGate *flow.ApprovalGate, log
 		approvalGate:      approvalGate,
 		log:               logger.WithComponent(log, "telegram-adapter"),
 		now:               time.Now,
-		streamingMessages: make(map[string]streamingMessage),
 		authPrompts:       make(map[int64]pendingAuthPrompt),
 	}, nil
 }
@@ -241,65 +224,9 @@ func (a *Adapter) sendExecutionFailureMessage(ctx context.Context, chatID int64,
 }
 
 func (a *Adapter) DeliverAssistantDelta(ctx context.Context, event flow.DeliveryEvent) error {
-	if event.Content == "" {
-		return nil
-	}
-	chatID, ok := ChatIDFromSessionKey(event.SessionKey)
-	if !ok || !a.isAllowedChatID(chatID) {
-		return nil
-	}
-
-	a.mu.Lock()
-	state, exists := a.streamingMessages[event.RunID]
-	if !exists {
-		state = streamingMessage{
-			ChatID:  chatID,
-			DraftID: draftIDFromRunID(event.RunID),
-		}
-	}
-	state.Content += event.Content
-	now := a.now().UTC()
-	shouldFlush := state.SentLen == 0 || len(state.Content)-state.SentLen >= minDraftFlushChars || now.Sub(state.LastSentAt) >= minDraftFlushInterval
-	if now.Before(state.NextAllowedAt) || !shouldFlush {
-		a.streamingMessages[event.RunID] = state
-		a.mu.Unlock()
-		return nil
-	}
-	a.streamingMessages[event.RunID] = state
-	accumulated := state.Content
-	draftID := state.DraftID
-	a.mu.Unlock()
-
-	// Telegram messages are limited to 4096 characters. During streaming we
-	// send in-place drafts, so we truncate to the tail of the accumulated
-	// content to keep the user seeing the most recent output. The full
-	// content will be delivered properly in DeliverAssistantFinal.
-	draftText := accumulated
-	if len(draftText) > telegramMaxMessageLen {
-		draftText = "…" + draftText[len(draftText)-telegramMaxMessageLen+len("…"):]
-	}
-
-	if err := a.client.SendMessageDraft(ctx, chatID, draftID, draftText); err != nil {
-		var apiErr *apiError
-		if errors.As(err, &apiErr) && apiErr.StatusCode == 429 {
-			backoff := nextAllowedAt(now, apiErr.RetryAfter)
-			a.mu.Lock()
-			state := a.streamingMessages[event.RunID]
-			state.NextAllowedAt = backoff
-			a.streamingMessages[event.RunID] = state
-			a.mu.Unlock()
-			a.log.Warn("telegram draft rate limited", slog.String("run_id", event.RunID), slog.String("session_key", event.SessionKey), slog.Duration("retry_after", backoff.Sub(now)))
-			return nil
-		}
-		return fmt.Errorf("send telegram message draft: %w", err)
-	}
-	a.mu.Lock()
-	state = a.streamingMessages[event.RunID]
-	state.SentLen = len(accumulated)
-	state.LastSentAt = now
-	state.NextAllowedAt = time.Time{}
-	a.streamingMessages[event.RunID] = state
-	a.mu.Unlock()
+	// Telegram draft replacement is visually noisy in this product flow:
+	// users see partial fragments being edited in place and then a final full
+	// response. Prefer one stable final assistant message plus chat actions.
 	return nil
 }
 
@@ -313,16 +240,11 @@ func (a *Adapter) DeliverAssistantFinal(ctx context.Context, event flow.Delivery
 		return fmt.Errorf("send telegram final message: %w", err)
 	}
 
-	a.mu.Lock()
-	delete(a.streamingMessages, event.RunID)
-	a.mu.Unlock()
-
 	a.log.Info("telegram final response delivered", slog.String("run_id", event.RunID), slog.String("session_key", event.SessionKey))
 	return nil
 }
 
-// DeliverToolCallEvent sends a short notification about tool call lifecycle
-// and shows a chat action indicator so the user knows the bot is working.
+// DeliverToolCallEvent shows a chat action without creating per-tool messages.
 func (a *Adapter) DeliverToolCallEvent(ctx context.Context, event flow.ToolCallEvent) error {
 	chatID, ok := ChatIDFromSessionKey(event.SessionKey)
 	if !ok || !a.isAllowedChatID(chatID) {
@@ -330,19 +252,12 @@ func (a *Adapter) DeliverToolCallEvent(ctx context.Context, event flow.ToolCallE
 	}
 	switch event.Status {
 	case "started":
-		// Show "upload_document" action to indicate tool work in progress.
+		// Keep the user informed that work continues, but avoid noisy
+		// per-tool chat messages in Telegram.
 		if err := a.client.SendChatAction(ctx, chatID, ChatActionUploadDocument); err != nil {
 			a.log.Warn("send chat action failed", slog.String("action", ChatActionUploadDocument), slog.String("error", err.Error()))
 		}
-		text := formatToolCallStarted(event.ToolName)
-		if _, err := a.client.SendMessage(ctx, chatID, text); err != nil {
-			a.log.Warn("send tool call started message failed", slog.String("tool_name", event.ToolName), slog.String("error", err.Error()))
-		}
 	case "completed", "failed":
-		text := formatToolCallFinished(event.ToolName, event.Status, event.DurationMs)
-		if _, err := a.client.SendMessage(ctx, chatID, text); err != nil {
-			a.log.Warn("send tool call completed message failed", slog.String("tool_name", event.ToolName), slog.String("error", err.Error()))
-		}
 		// Resume "typing" indicator since the model will continue generating.
 		if err := a.client.SendChatAction(ctx, chatID, ChatActionTyping); err != nil {
 			a.log.Warn("send chat action failed", slog.String("action", ChatActionTyping), slog.String("error", err.Error()))
@@ -399,24 +314,6 @@ func (a *Adapter) sendSingleMessage(ctx context.Context, chatID int64, text stri
 	}
 	_, err = a.client.SendMessage(ctx, chatID, text)
 	return err
-}
-
-func nextAllowedAt(now time.Time, retryAfter time.Duration) time.Time {
-	if retryAfter <= 0 {
-		retryAfter = time.Second
-	}
-	return now.Add(retryAfter)
-}
-
-// draftIDFromRunID derives a stable non-zero draft ID from the run ID string.
-func draftIDFromRunID(runID string) int64 {
-	h := fnv.New64a()
-	h.Write([]byte(runID))
-	id := int64(h.Sum64() >> 1) // shift to keep positive
-	if id == 0 {
-		id = 1
-	}
-	return id
 }
 
 func NormalizeUpdate(update Update) (ingress.InputEvent, error) {

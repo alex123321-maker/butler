@@ -54,6 +54,17 @@ never delivered before its result transaction commits.
 
 ## Outbox
 
+Telegram suppresses model draft fragments and per-tool chat messages. Chat
+actions can still indicate work; stored final chunks continue through the same
+acknowledged outbox with unchanged retry/unknown-delivery rules.
+
+Artifact payload text is normalized to valid UTF-8 without rewriting identity
+fields; summary truncation respects rune boundaries. Migration070 admits the
+existing browser_capture/image_data_url shape. It changes storage validation,
+not browser selection, execution authority or permission to send an image to a
+model. The down migration retains captures and fails atomically while such
+records make the older constraints incompatible.
+
 `delivery_outbox` stores immutable notification content with IDs
 `result:<run_id>:<channel>:<chunk_index>`. A worker claims one stored chunk for
 30 seconds, makes one channel attempt with a 20-second timeout, and CAS-records

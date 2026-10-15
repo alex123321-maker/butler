@@ -1,5 +1,22 @@
 # Butler — Tooling and Execution Specification
 
+## Optional operator destination cap
+
+Broker startup may read `BUTLER_NETWORK_ALLOWLISTS_JSON` for `http`, `browser`
+and `web` classes. Omitted classes preserve existing policy; an explicit empty
+array denies every supplied destination. URL/expected-URL/batch URL arguments
+must satisfy both the configured class cap and the original nonempty contract
+domain declaration. Exact domains and `*.domain` patterns use the shared egress
+policy. Independent checks retain deny-all intersections without translating
+them into an unrestricted empty slice. Invalid configuration prevents startup.
+The cap is not mutable through model/UI/database settings and does not replace
+the contract's hashed release declaration or any current action, credential,
+resource, public DNS, redirect or runtime guard. Catalog and runtime execution
+retain their existing authority boundaries.
+
+Tool metadata reads use GetToolContract, without validating synthetic arguments.
+Missing metadata is an error and cannot become execution permission.
+
 Installed declarative capability admission is specified in
 [reviewed extension lifecycle](reviewed-extension-lifecycle.md). Immutable
 version/review state and current task permission are checked before credential

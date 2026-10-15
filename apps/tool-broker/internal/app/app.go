@@ -56,7 +56,7 @@ func New(ctx context.Context) (*App, error) {
 	log := logger.New(logger.Options{Service: cfg.Shared.ServiceName, Component: "bootstrap", Level: parseLogLevel(cfg.Shared.LogLevel), Writer: os.Stdout})
 	log.Info("loaded tool broker config", slog.String("config_summary", configSummary(snapshot)))
 
-	registryStore, err := registry.Load(cfg.RegistryPath, cfg.DefaultTarget)
+	registryStore, err := registry.LoadWithOptions(cfg.RegistryPath, cfg.DefaultTarget, registry.LoadOptions{ClassAllowedDomains: cfg.NetworkAllowlists})
 	if err != nil {
 		return nil, err
 	}

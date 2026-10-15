@@ -63,6 +63,13 @@ Rules:
 
 ## Safety rules
 
+The built-in fallback describes an internal plan/act/observe/replan cycle,
+bounded public updates, tool-backed verification and completion criteria.
+Failure handling remains subject to durable retry and unknown-effect policy.
+Negation, restrictions and quoted action names must remain intact; Core must not
+translate message keywords into a different structured tool or bundled action.
+This guidance does not grant authority or replace typed provenance for context.
+
 - operator prompt updates are rejected when they contain secret-like material such as tokens, passwords, cookies, or credential-bearing DSNs
 - runtime sections must be sourced from already safe memory bundle outputs
 - prompt assembly must never resolve `credential_ref` values or expose provider auth material

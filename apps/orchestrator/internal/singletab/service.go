@@ -16,6 +16,7 @@ import (
 
 type approvalStore interface {
 	GetApprovalByID(ctx context.Context, approvalID string) (approvals.Record, error)
+	GetApprovalByToolCallID(ctx context.Context, toolCallID string) (approvals.Record, error)
 	GetApprovalByCandidateToken(ctx context.Context, candidateToken string) (approvals.Record, error)
 	ListTabCandidates(ctx context.Context, approvalID string) ([]approvals.TabCandidate, error)
 	GetTabCandidateByToken(ctx context.Context, candidateToken string) (approvals.TabCandidate, error)
@@ -70,15 +71,16 @@ type BindCandidateInput struct {
 }
 
 type CreateBindRequestParams struct {
-	RunID         string
-	SessionKey    string
-	ToolCallID    string
-	RequestedVia  string
-	Candidates    []BindCandidateInput
-	RequestedAt   time.Time
-	ExpiresAt     *time.Time
-	BrowserHint   string
-	RequestSource string
+	RunID             string
+	SessionKey        string
+	ToolCallID        string
+	RequestedVia      string
+	Candidates        []BindCandidateInput
+	RequestedAt       time.Time
+	ExpiresAt         *time.Time
+	BrowserHint       string
+	BrowserInstanceID string
+	RequestSource     string
 }
 
 type CreateBindRequestResult struct {
@@ -113,14 +115,29 @@ func (s *Service) CreateBindRequest(ctx context.Context, params CreateBindReques
 	toolCallID := strings.TrimSpace(params.ToolCallID)
 	if toolCallID == "" {
 		toolCallID = newBindToolCallID()
+	} else if existing, err := s.approvals.GetApprovalByToolCallID(ctx, toolCallID); err == nil {
+		if existing.RunID != params.RunID || existing.SessionKey != params.SessionKey || existing.ApprovalType != approvals.ApprovalTypeBrowserTabSelection ||
+			existing.Status != approvals.StatusPending || (existing.ExpiresAt != nil && !params.RequestedAt.Before(*existing.ExpiresAt)) {
+			return CreateBindRequestResult{}, fmt.Errorf("existing bind approval is not current for this run and session")
+		}
+		{
+			candidates, listErr := s.approvals.ListTabCandidates(ctx, existing.ApprovalID)
+			if listErr != nil {
+				return CreateBindRequestResult{}, listErr
+			}
+			return CreateBindRequestResult{Approval: existing, Candidates: candidates}, nil
+		}
+	} else if err != approvals.ErrApprovalNotFound {
+		return CreateBindRequestResult{}, err
 	}
 
 	payloadJSON, err := json.Marshal(map[string]any{
-		"kind":            "browser_tab_selection",
-		"selection_mode":  "single",
-		"candidate_count": len(params.Candidates),
-		"request_source":  strings.TrimSpace(params.RequestSource),
-		"browser_hint":    strings.TrimSpace(params.BrowserHint),
+		"kind":                "browser_tab_selection",
+		"selection_mode":      "single",
+		"candidate_count":     len(params.Candidates),
+		"request_source":      strings.TrimSpace(params.RequestSource),
+		"browser_hint":        strings.TrimSpace(params.BrowserHint),
+		"browser_instance_id": strings.TrimSpace(params.BrowserInstanceID),
 	})
 	if err != nil {
 		return CreateBindRequestResult{}, fmt.Errorf("marshal bind payload: %w", err)
@@ -450,6 +467,10 @@ func (s *Service) ActivateFromApproval(ctx context.Context, params ActivateFromA
 		}
 	}
 
+	browserInstanceID := firstNonEmpty(
+		params.BrowserInstanceID,
+		browserInstanceIDFromApprovalPayload(approvalRecord.PayloadJSON),
+	)
 	sessionRecord, err := s.sessions.CreateSession(ctx, CreateParams{
 		SingleTabSessionID: newSingleTabSessionID(),
 		SessionKey:         approvalRecord.SessionKey,
@@ -457,7 +478,7 @@ func (s *Service) ActivateFromApproval(ctx context.Context, params ActivateFromA
 		ApprovalID:         approvalRecord.ApprovalID,
 		Status:             StatusActive,
 		BoundTabRef:        selectedCandidate.InternalTabRef,
-		BrowserInstanceID:  firstNonEmpty(params.BrowserInstanceID, approvalRecord.ToolCallID),
+		BrowserInstanceID:  browserInstanceID,
 		HostID:             params.HostID,
 		SelectedVia:        params.ResolvedVia,
 		SelectedBy:         params.ResolvedBy,
@@ -543,6 +564,19 @@ func newSingleTabSessionID() string {
 		return fmt.Sprintf("single-tab-%d", time.Now().UTC().UnixNano())
 	}
 	return fmt.Sprintf("single-tab-%d-%s", time.Now().UTC().UnixNano(), hex.EncodeToString(raw[:]))
+}
+
+func browserInstanceIDFromApprovalPayload(payloadJSON string) string {
+	payloadJSON = strings.TrimSpace(payloadJSON)
+	if payloadJSON == "" {
+		return ""
+	}
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(payloadJSON), &payload); err != nil {
+		return ""
+	}
+	value, _ := payload["browser_instance_id"].(string)
+	return strings.TrimSpace(value)
 }
 
 func newBindToolCallID() string {

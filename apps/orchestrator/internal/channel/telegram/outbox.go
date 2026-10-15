@@ -18,13 +18,7 @@ func (a *Adapter) SendStored(ctx context.Context, m deliveryoutbox.Message) deli
 	if !ok || !a.isAllowedChatID(chatID) || m.Channel != "telegram" {
 		return deliveryoutbox.Outcome{Status: "absent", ErrorCode: "telegram_chat_not_allowed"}
 	}
-	outcome := a.client.sendStoredPlain(ctx, chatID, m.Content)
-	if outcome.Status == "sent" {
-		a.mu.Lock()
-		delete(a.streamingMessages, m.RunID)
-		a.mu.Unlock()
-	}
-	return outcome
+	return a.client.sendStoredPlain(ctx, chatID, m.Content)
 }
 
 func (c *Client) sendStoredPlain(ctx context.Context, chatID int64, text string) deliveryoutbox.Outcome {

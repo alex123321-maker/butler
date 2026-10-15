@@ -422,3 +422,68 @@ func TestSingleTabRelayDispatchMarksHostDisconnectedWhenHeartbeatStale(t *testin
 		t.Fatalf("unexpected status reason: %s", coordinator.lastUpdate.StatusReason)
 	}
 }
+
+func TestSingleTabRelayDispatchAllowsFreshlyActivatedSessionWithoutHeartbeat(t *testing.T) {
+	t.Parallel()
+
+	activatedAt := time.Now().UTC().Add(-5 * time.Second)
+	coordinator := &fakeSingleTabCoordinator{
+		session: singletab.Record{
+			SingleTabSessionID: "single-tab-relay-fresh-1",
+			SessionKey:         "telegram:chat:relay-fresh-1",
+			Status:             singletab.StatusActive,
+			BoundTabRef:        "51",
+			BrowserInstanceID:  "browser-fresh-1",
+			CurrentURL:         "https://example.com/fresh",
+			CurrentTitle:       "Fresh",
+			CreatedAt:          activatedAt,
+			ActivatedAt:        &activatedAt,
+		},
+	}
+	server := NewSingleTabServer(coordinator)
+	server.SetRelayHeartbeatTTL(45 * time.Second)
+
+	dispatchBody := bytes.NewBufferString(`{"single_tab_session_id":"single-tab-relay-fresh-1","bound_tab_ref":"51","action_type":"status"}`)
+	dispatchReq := httptest.NewRequest(http.MethodPost, "/api/v2/single-tab/actions/dispatch", dispatchBody)
+	dispatchDone := make(chan *httptest.ResponseRecorder, 1)
+	go func() {
+		res := httptest.NewRecorder()
+		server.HandleRelayDispatchAction().ServeHTTP(res, dispatchReq)
+		dispatchDone <- res
+	}()
+
+	pollReq := httptest.NewRequest(http.MethodGet, "/api/v2/extension/single-tab/actions/next?session_key=telegram:chat:relay-fresh-1&timeout_ms=5000&browser_instance_id=browser-fresh-1", nil)
+	pollRes := httptest.NewRecorder()
+	server.HandleExtensionPollNextAction().ServeHTTP(pollRes, pollReq)
+	if pollRes.Code != http.StatusOK {
+		t.Fatalf("expected 200 poll next action, got %d", pollRes.Code)
+	}
+
+	var pollPayload map[string]any
+	if err := json.Unmarshal(pollRes.Body.Bytes(), &pollPayload); err != nil {
+		t.Fatalf("decode poll payload: %v", err)
+	}
+	dispatch := pollPayload["dispatch"].(map[string]any)
+	dispatchID := dispatch["dispatch_id"].(string)
+
+	resolveBody := bytes.NewBufferString(`{"ok":true,"result":{"single_tab_session_id":"single-tab-relay-fresh-1","session_status":"ACTIVE","result_json":"{\"ok\":true}"}}`)
+	resolveReq := httptest.NewRequest(http.MethodPost, "/api/v2/extension/single-tab/actions/"+dispatchID+"/result?browser_instance_id=browser-fresh-1", resolveBody)
+	resolveRes := httptest.NewRecorder()
+	server.HandleExtensionResolveAction("/api/v2/extension/single-tab/actions/").ServeHTTP(resolveRes, resolveReq)
+	if resolveRes.Code != http.StatusOK {
+		t.Fatalf("expected 200 resolve action, got %d", resolveRes.Code)
+	}
+
+	select {
+	case dispatchRes := <-dispatchDone:
+		if dispatchRes.Code != http.StatusOK {
+			t.Fatalf("expected 200 relay dispatch, got %d", dispatchRes.Code)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for relay dispatch completion")
+	}
+
+	if coordinator.lastUpdate != nil && coordinator.lastUpdate.Status == singletab.StatusHostDisconnected {
+		t.Fatalf("did not expect freshly activated session to be marked host disconnected")
+	}
+}

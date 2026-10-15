@@ -3,10 +3,12 @@ package artifacts
 import (
 	"context"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 type Service struct {
@@ -18,7 +20,7 @@ func NewService(repo Repository) *Service {
 }
 
 func (s *Service) SaveAssistantFinal(ctx context.Context, runID, sessionKey, content string, createdAt time.Time) (Record, error) {
-	trimmed := strings.TrimSpace(content)
+	trimmed := cleanArtifactString(strings.TrimSpace(content))
 	if trimmed == "" {
 		return Record{}, nil
 	}
@@ -50,8 +52,11 @@ func (s *Service) SaveToolResult(ctx context.Context, runID, sessionKey, toolCal
 	if createdAt.IsZero() {
 		createdAt = time.Now().UTC()
 	}
-	title := fmt.Sprintf("Tool result: %s", strings.TrimSpace(toolName))
-	summary := summarize(strings.TrimSpace(resultJSON), 180)
+	toolName = cleanArtifactString(strings.TrimSpace(toolName))
+	status = cleanArtifactString(strings.TrimSpace(status))
+	resultJSON = cleanArtifactString(strings.TrimSpace(resultJSON))
+	title := fmt.Sprintf("Tool result: %s", toolName)
+	summary := summarize(resultJSON, 180)
 	return s.repo.CreateArtifact(ctx, CreateParams{
 		ArtifactID:    artifactID("tool", toolCallID),
 		RunID:         runID,
@@ -59,7 +64,7 @@ func (s *Service) SaveToolResult(ctx context.Context, runID, sessionKey, toolCal
 		ArtifactType:  TypeToolResult,
 		Title:         title,
 		Summary:       summary,
-		ContentText:   strings.TrimSpace(resultJSON),
+		ContentText:   resultJSON,
 		ContentJSON:   fmt.Sprintf(`{"tool_call_id":%q,"tool_name":%q,"status":%q}`, toolCallID, toolName, status),
 		ContentFormat: "json",
 		SourceType:    "tool_call",
@@ -69,14 +74,16 @@ func (s *Service) SaveToolResult(ctx context.Context, runID, sessionKey, toolCal
 }
 
 func (s *Service) SaveDoctorReport(ctx context.Context, runID, sessionKey, status, reportJSON string, createdAt time.Time) (Record, error) {
-	if strings.TrimSpace(reportJSON) == "" {
+	reportJSON = cleanArtifactString(strings.TrimSpace(reportJSON))
+	status = cleanArtifactString(strings.TrimSpace(status))
+	if reportJSON == "" {
 		return Record{}, nil
 	}
 	if createdAt.IsZero() {
 		createdAt = time.Now().UTC()
 	}
-	title := fmt.Sprintf("Doctor report (%s)", strings.TrimSpace(status))
-	summary := summarize(strings.TrimSpace(reportJSON), 180)
+	title := fmt.Sprintf("Doctor report (%s)", status)
+	summary := summarize(reportJSON, 180)
 	return s.repo.CreateArtifact(ctx, CreateParams{
 		ArtifactID:    artifactID("doctor", runID+status+createdAt.Format(time.RFC3339Nano)),
 		RunID:         runID,
@@ -84,7 +91,7 @@ func (s *Service) SaveDoctorReport(ctx context.Context, runID, sessionKey, statu
 		ArtifactType:  TypeDoctorReport,
 		Title:         title,
 		Summary:       summary,
-		ContentText:   strings.TrimSpace(reportJSON),
+		ContentText:   reportJSON,
 		ContentJSON:   fmt.Sprintf(`{"status":%q}`, status),
 		ContentFormat: "json",
 		SourceType:    "doctor",
@@ -94,7 +101,12 @@ func (s *Service) SaveDoctorReport(ctx context.Context, runID, sessionKey, statu
 }
 
 func (s *Service) SaveBrowserCapture(ctx context.Context, runID, sessionKey, toolCallID, singleTabSessionID, currentURL, currentTitle, imageDataURL string, createdAt time.Time) (Record, error) {
-	if strings.TrimSpace(imageDataURL) == "" {
+	singleTabSessionID = cleanArtifactString(strings.TrimSpace(singleTabSessionID))
+	currentURL = cleanArtifactString(strings.TrimSpace(currentURL))
+	currentTitle = cleanArtifactString(strings.TrimSpace(currentTitle))
+	imageDataURL = cleanArtifactString(strings.TrimSpace(imageDataURL))
+	imageDataURL = normalizeImageDataURL(imageDataURL)
+	if imageDataURL == "" {
 		return Record{}, nil
 	}
 	if createdAt.IsZero() {
@@ -145,18 +157,60 @@ func safeSeed(seed string) string {
 }
 
 func summarize(value string, max int) string {
-	trimmed := strings.TrimSpace(value)
+	trimmed := cleanArtifactString(strings.TrimSpace(value))
 	if len(trimmed) <= max {
 		return trimmed
+	}
+	for max > 0 && !utf8.RuneStart(trimmed[max]) {
+		max--
 	}
 	return trimmed[:max]
 }
 
 func firstNonEmpty(values ...string) string {
 	for _, value := range values {
-		if strings.TrimSpace(value) != "" {
-			return value
+		if trimmed := cleanArtifactString(strings.TrimSpace(value)); trimmed != "" {
+			return trimmed
 		}
 	}
 	return ""
+}
+
+func cleanArtifactString(value string) string {
+	if value == "" {
+		return ""
+	}
+	return strings.ToValidUTF8(value, "\uFFFD")
+}
+
+func normalizeImageDataURL(value string) string {
+	value = strings.TrimSpace(cleanArtifactString(value))
+	if value == "" || !strings.HasPrefix(strings.ToLower(value), "data:image/") {
+		return value
+	}
+	parts := strings.SplitN(value, ",", 2)
+	if len(parts) != 2 {
+		return value
+	}
+	meta := strings.TrimSpace(parts[0])
+	payload := strings.TrimSpace(parts[1])
+	if !strings.Contains(strings.ToLower(meta), ";base64") {
+		return value
+	}
+	payload = strings.Map(func(r rune) rune {
+		switch r {
+		case '\r', '\n', '\t', ' ':
+			return -1
+		default:
+			return r
+		}
+	}, payload)
+	decoded, err := base64.StdEncoding.DecodeString(payload)
+	if err != nil {
+		decoded, err = base64.RawStdEncoding.DecodeString(payload)
+		if err != nil {
+			return value
+		}
+	}
+	return meta + "," + base64.StdEncoding.EncodeToString(decoded)
 }

@@ -20,6 +20,17 @@ or authorize replaying activation. Candidate collection/checking remains its
 separate earlier phase.
 # Orchestrator
 
+The default prompt includes an internal execution/completion protocol and keeps
+negation, source authority and durable retry/effect policy explicit. Core never
+rewrites a structured status proposal into capture from message keywords.
+Settings expose optional code-owned `description` and `value_hint` metadata.
+Telegram suppresses transient drafts and per-tool chat messages, retaining chat
+actions and the durable final-result outbox. Migration070 enables the existing
+browser-capture artifact type without changing applied migrations or enabling
+guarded browser capabilities. Artifact text is valid UTF-8 and summaries respect
+rune boundaries. Legacy relay activation has a heartbeat grace period; duplicate
+bind requests reuse only a current pending approval for the same run/session.
+
 Memory context construction shares the service metrics registry. `/doctor`
 requires the owner-control token for new checks and history. A check admits a
 real durable task/input and runs the fixed Broker command without model calls;

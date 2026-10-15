@@ -2,6 +2,7 @@ package singletab
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -17,6 +18,13 @@ type memoryApprovalStore struct {
 
 func (m *memoryApprovalStore) GetApprovalByID(_ context.Context, approvalID string) (approvals.Record, error) {
 	if m.record.ApprovalID != approvalID {
+		return approvals.Record{}, approvals.ErrApprovalNotFound
+	}
+	return m.record, nil
+}
+
+func (m *memoryApprovalStore) GetApprovalByToolCallID(_ context.Context, toolCallID string) (approvals.Record, error) {
+	if m.record.ToolCallID != toolCallID {
 		return approvals.Record{}, approvals.ErrApprovalNotFound
 	}
 	return m.record, nil
@@ -224,6 +232,7 @@ func TestActivateFromApprovalCreatesActiveSessionAndResolvesGate(t *testing.T) {
 			Status:       approvals.StatusPending,
 			RequestedVia: approvals.RequestedViaBoth,
 			ToolName:     "single_tab.bind",
+			PayloadJSON:  `{"browser_instance_id":"browser-telegram-1"}`,
 			RequestedAt:  now,
 			UpdatedAt:    now,
 		},
@@ -262,6 +271,9 @@ func TestActivateFromApprovalCreatesActiveSessionAndResolvesGate(t *testing.T) {
 	}
 	if result.Session.BoundTabRef != "browser-a:42" {
 		t.Fatalf("unexpected bound_tab_ref %q", result.Session.BoundTabRef)
+	}
+	if result.Session.BrowserInstanceID != "browser-telegram-1" {
+		t.Fatalf("expected browser_instance_id from approval payload, got %q", result.Session.BrowserInstanceID)
 	}
 	if !gate.resolved["tool-bind-1"] {
 		t.Fatal("expected gate to be resolved for the bind tool call")
@@ -308,9 +320,10 @@ func TestCreateBindRequestCreatesTypedApprovalAndDeliversCandidates(t *testing.T
 	svc.SetDeliverySink(delivery)
 
 	result, err := svc.CreateBindRequest(context.Background(), CreateBindRequestParams{
-		RunID:        "run-2",
-		SessionKey:   "telegram:chat:2",
-		RequestedVia: approvals.RequestedViaBoth,
+		RunID:             "run-2",
+		SessionKey:        "telegram:chat:2",
+		RequestedVia:      approvals.RequestedViaBoth,
+		BrowserInstanceID: "browser-relay-1",
 		Candidates: []BindCandidateInput{{
 			InternalTabRef: "browser-a:17",
 			Title:          "Inbox",
@@ -335,11 +348,80 @@ func TestCreateBindRequestCreatesTypedApprovalAndDeliversCandidates(t *testing.T
 	if len(delivery.requests) != 1 {
 		t.Fatalf("expected one approval delivery, got %d", len(delivery.requests))
 	}
+	var payload map[string]any
+	if err := json.Unmarshal([]byte(creator.record.PayloadJSON), &payload); err != nil {
+		t.Fatalf("decode approval payload: %v", err)
+	}
+	if payload["browser_instance_id"] != "browser-relay-1" {
+		t.Fatalf("expected browser_instance_id in approval payload, got %+v", payload)
+	}
 	if delivery.requests[0].ApprovalType != approvals.ApprovalTypeBrowserTabSelection {
 		t.Fatalf("expected delivered approval type %q, got %q", approvals.ApprovalTypeBrowserTabSelection, delivery.requests[0].ApprovalType)
 	}
 	if len(delivery.requests[0].TabCandidates) != 1 {
 		t.Fatalf("expected one delivered tab candidate, got %d", len(delivery.requests[0].TabCandidates))
+	}
+}
+
+func TestCreateBindRequestReusesExistingPendingApprovalByToolCallID(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2026, 3, 22, 13, 5, 0, 0, time.UTC)
+	approvalStore := &memoryApprovalStore{
+		record: approvals.Record{
+			ApprovalID:   "approval-bind-existing-1",
+			RunID:        "run-2",
+			SessionKey:   "telegram:chat:2",
+			ToolCallID:   "single-tab-bind-existing",
+			ApprovalType: approvals.ApprovalTypeBrowserTabSelection,
+			Status:       approvals.StatusPending,
+			RequestedVia: approvals.RequestedViaBoth,
+			ToolName:     "single_tab.bind",
+			RequestedAt:  now,
+			UpdatedAt:    now,
+		},
+		candidates: []approvals.TabCandidate{{
+			ApprovalID:     "approval-bind-existing-1",
+			CandidateToken: "tabtok-existing",
+			InternalTabRef: "browser-a:17",
+			Title:          "Inbox",
+			Domain:         "mail.example.com",
+			CurrentURL:     "https://mail.example.com/inbox",
+			DisplayLabel:   "Inbox - mail.example.com",
+			Status:         "available",
+			CreatedAt:      now,
+		}},
+	}
+	sessionRepo := newMemorySessionRepo()
+	creator := &fakeApprovalCreator{}
+	delivery := &fakeDeliverySink{}
+	svc := NewService(approvalStore, sessionRepo, &fakeGate{})
+	svc.SetApprovalCreator(creator)
+	svc.SetDeliverySink(delivery)
+
+	result, err := svc.CreateBindRequest(context.Background(), CreateBindRequestParams{
+		RunID:      "run-2",
+		SessionKey: "telegram:chat:2",
+		ToolCallID: "single-tab-bind-existing",
+		Candidates: []BindCandidateInput{{
+			InternalTabRef: "browser-a:17",
+			Title:          "Inbox",
+			Domain:         "mail.example.com",
+			CurrentURL:     "https://mail.example.com/inbox",
+		}},
+		RequestedAt: now,
+	})
+	if err != nil {
+		t.Fatalf("CreateBindRequest returned error: %v", err)
+	}
+	if result.Approval.ApprovalID != "approval-bind-existing-1" {
+		t.Fatalf("expected existing approval to be reused, got %q", result.Approval.ApprovalID)
+	}
+	if len(creator.candidates) != 0 {
+		t.Fatalf("expected no new approval creation, got %d candidates", len(creator.candidates))
+	}
+	if len(delivery.requests) != 0 {
+		t.Fatalf("expected no duplicate approval delivery, got %d", len(delivery.requests))
 	}
 }
 
