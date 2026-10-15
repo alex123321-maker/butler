@@ -457,10 +457,16 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 			return nil, ErrStale
 		}
 	}
+	if e := checkTemporalSourcesTx(ctx, tx, summaryIDs); e != nil {
+		return nil, e
+	}
 	if e := s.finalizeAccessTx(ctx, tx, refs, purpose); e != nil {
 		return nil, e
 	}
 	if e := checkSummarySourcesTx(ctx, tx, summaryIDs); e != nil {
+		return nil, e
+	}
+	if e := checkTemporalSourcesTx(ctx, tx, summaryIDs); e != nil {
 		return nil, e
 	}
 	return result, nil
