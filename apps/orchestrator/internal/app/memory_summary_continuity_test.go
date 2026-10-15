@@ -247,7 +247,12 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 		if err := js.SetModelControl(ctx, "enabled"); err != nil {
 			t.Fatal(err)
 		}
-		q := jobs.ModelPolicyRequest{ID: fmt.Sprintf("continuity-summary-%d", round), Handler: compaction.HandlerName, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 1, Privacy: "cloud_allowed", Job: jobs.Request{OriginalRunID: lastRun, TaskID: "continuity-task", Allowance: budget.Units{ModelTurns: 4, Tokens: 4 * 1056768, ActiveMillis: 360000, ProviderInputBytes: 4 * 8388608}, Deadline: time.Now().Add(20 * time.Minute)}}
+		inputLimit, _ := provider.InferenceLimits()
+		quote, err := b.Policy.ModelQuote(provider.Name(), model, inputLimit)
+		if err != nil {
+			t.Fatal("prospective model allowance", err)
+		}
+		q := jobs.ModelPolicyRequest{ID: fmt.Sprintf("continuity-summary-%d", round), Handler: compaction.HandlerName, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 1, Privacy: "cloud_allowed", Job: jobs.Request{OriginalRunID: lastRun, TaskID: "continuity-task", Allowance: budget.Units{ModelTurns: 4, Tokens: 4 * quote.Tokens, ActiveMillis: 4 * quote.ActiveMillis, ProviderInputBytes: 4 * quote.ProviderInputBytes, CostMicros: 4 * quote.CostMicros}, Deadline: time.Now().Add(20 * time.Minute)}}
 		if _, err := (&compaction.Policies{Catalog: cat, Jobs: js}).Create(ctx, compaction.PolicyRequest{SessionKey: "continuity", Policy: q}); err != nil {
 			t.Fatal("create summary policy", err)
 		}
