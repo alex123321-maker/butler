@@ -65,3 +65,9 @@ instructions into B. Report B-A and C-B separately, actual task/effect outcomes,
 mistake repetition, wrong application, owner interventions and complete creation,
 write/search/use/skill preparation/test/load cost. Unknowns, no gain and
 regressions remain valid outcomes; #76 behavioral error catalog stays separate.
+
+The owning memory.facts path applies the same current lesson-ancestor and exact
+trusted exposure checks before reading accepted snapshots. Owner acceptance of
+a derived episodic/profile value does not remove the lesson's environment, tool
+contract or negative-feedback conditions. Legacy facts with no lesson ancestry
+retain their ordinary authority checks.

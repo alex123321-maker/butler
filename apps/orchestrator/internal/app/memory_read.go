@@ -226,7 +226,7 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 	}
 	var result readcontrol.Result
 	if facts != nil {
-		result, err = s.readTemporalFactsTx(owned, tx, *facts)
+		result, err = s.readTemporalFactsTx(owned, tx, *facts, lessonEnvironment)
 	} else {
 		result, err = (reader.Reader{Sources: s.sources, SemanticCandidates: candidates, SourceSubset: s.sourceSubset, SourceEligibility: func(ctx context.Context, tx pgx.Tx, src catalog.Source) (bool, error) {
 			return s.experience.EligibleTx(ctx, tx, src, lessonEnvironment, true)

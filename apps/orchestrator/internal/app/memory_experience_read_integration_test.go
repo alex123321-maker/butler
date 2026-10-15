@@ -9,6 +9,7 @@ import (
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/experience"
+	"github.com/butler/butler/internal/memory/factcontrol"
 	"github.com/butler/butler/internal/memory/jobs"
 	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/memory/transcript"
@@ -149,11 +150,50 @@ func TestExperienceActualBrokerReadAndNegativeReleaseIntegration(t *testing.T) {
 	if err = store.CheckPinned(f.owned, f.call.RunId); err != nil {
 		t.Fatal(err)
 	}
+	// The separate accepted-facts path must apply the same ancestor and exact
+	// exposure restrictions. This is a real accepted episodic projection from
+	// the lesson, not a manually supplied temporal result.
+	factRead := func(current *experience.Store, subset []catalog.SourceRef) readcontrol.Result {
+		t.Helper()
+		service := &MemoryReads{sources: f.f.sources, experience: current, sourceSubset: subset}
+		var environment experience.Prepared
+		if current != nil {
+			var err error
+			environment, err = current.Prepare(f.owned, f.call.RunId)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		tx, err := f.f.pool.Begin(f.owned)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer tx.Rollback(f.owned)
+		out, err := service.readTemporalFactsTx(f.owned, tx, factcontrol.Args{Sources: []readcontrol.SourceRef{{ID: derived.ID, Revision: derived.Revision, AccessRevision: derived.AccessRevision, Hash: derived.Hash}}, Limit: 4}, environment)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return out
+	}
+	if out := factRead(store, nil); out.Status != "ok" || len(out.Items) != 1 {
+		t.Fatal("applicable accepted derivative not readable", out)
+	}
+	for _, current := range []*experience.Store{nil, changed} {
+		if out := factRead(current, nil); out.Status != "denied" || len(out.Items) != 0 {
+			t.Fatal("accepted facts lost ancestor environment restriction", out)
+		}
+	}
+	if out := factRead(store, []catalog.SourceRef{}); out.Status != "denied" || len(out.Items) != 0 {
+		t.Fatal("accepted facts bypassed empty exposure cohort", out)
+	}
 	if err = store.Feedback(f.f.owner, result.ID, f.call.RunId, "misapplied"); err != nil {
 		t.Fatal(err)
 	}
 	if allowed, err := experienceObjectAllowed(f.owned, f.f.sources, store, episode); err != nil || allowed {
 		t.Fatal("derived episode ignored negative ancestor feedback", err)
+	}
+	if out := factRead(store, nil); out.Status != "denied" || len(out.Items) != 0 {
+		t.Fatal("accepted facts ignored negative ancestor feedback", out)
 	}
 	if store.CheckPinned(f.owned, f.call.RunId) == nil {
 		t.Fatal("current negative feedback failed release guard")

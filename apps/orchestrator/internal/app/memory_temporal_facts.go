@@ -8,13 +8,14 @@ import (
 	"time"
 
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/experience"
 	"github.com/butler/butler/internal/memory/factcontrol"
 	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/memory/sanitize"
 	"github.com/jackc/pgx/v5"
 )
 
-func (s *MemoryReads) readTemporalFactsTx(ctx context.Context, tx pgx.Tx, a factcontrol.Args) (readcontrol.Result, error) {
+func (s *MemoryReads) readTemporalFactsTx(ctx context.Context, tx pgx.Tx, a factcontrol.Args, environment experience.Prepared) (readcontrol.Result, error) {
 	out := readcontrol.Empty("empty")
 	q := catalog.TemporalQuery{}
 	for _, entry := range []struct {
@@ -33,6 +34,42 @@ func (s *MemoryReads) readTemporalFactsTx(ctx context.Context, tx pgx.Tx, a fact
 	refs := make([]catalog.SourceRef, len(a.Sources))
 	for i, r := range a.Sources {
 		refs[i] = catalog.SourceRef{ID: r.ID, Revision: r.Revision, AccessRevision: r.AccessRevision, Hash: r.Hash}
+		// This is an additional exposure restriction, never read authority.
+		// Reject before reading any body, including a granted parent of a note.
+		if s.sourceSubset != nil {
+			selected := false
+			for _, permitted := range s.sourceSubset {
+				if permitted == refs[i] {
+					selected = true
+					break
+				}
+			}
+			if !selected {
+				return readcontrol.Empty("denied"), nil
+			}
+		}
+	}
+	// Temporal accepted snapshots carry the applicability of every original
+	// lesson ancestor just like open/search. Preparing current tool contracts
+	// happened outside this transaction in the owning dispatch boundary.
+	sources, err := s.sources.AccessTx(ctx, tx, refs, "memory_read")
+	if err != nil {
+		if errors.Is(err, catalog.ErrStale) {
+			return readcontrol.Empty("stale"), nil
+		}
+		if errors.Is(err, catalog.ErrDenied) || errors.Is(err, catalog.ErrDeleted) || errors.Is(err, catalog.ErrRestore) {
+			return readcontrol.Empty("denied"), nil
+		}
+		return out, err
+	}
+	for _, src := range sources {
+		allowed, err := s.experience.EligibleTx(ctx, tx, src, environment, true)
+		if err != nil {
+			return readcontrol.Empty("denied"), err
+		}
+		if !allowed {
+			return readcontrol.Empty("denied"), nil
+		}
 	}
 	page, err := s.sources.ReadAcceptedFactsForSourcesTx(ctx, tx, refs, q)
 	if err != nil {
