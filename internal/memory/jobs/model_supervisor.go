@@ -19,7 +19,7 @@ func (s *Store) checkModelSupervisor(ctx context.Context, j Job) error {
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback(context.Background())
+	defer tx.Rollback(ctx)
 	if err = s.catalog.CheckRestoreTx(ctx, tx); err != nil {
 		return err
 	}
