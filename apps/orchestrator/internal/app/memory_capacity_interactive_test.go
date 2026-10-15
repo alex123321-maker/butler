@@ -166,6 +166,9 @@ func TestMemoryCapacityActualForegroundDuringOwnedIndex(t *testing.T) {
 		t.Fatal("background index failed during foreground", bg.err)
 	}
 	input, _ := json.Marshal(p.last.InputItems)
+	observation["actual_foreground_input"] = json.RawMessage(input)
+	observation["foreground_has_source"] = strings.Contains(string(input), "Synthetic indexed observation")
+	observation["foreground_has_typed_unknown"] = strings.Contains(string(input), "tool_effect") && strings.Contains(string(input), "unknown")
 	if !strings.Contains(string(input), "Synthetic indexed observation") || !strings.Contains(string(input), "tool_effect") || !strings.Contains(string(input), "unknown") {
 		t.Fatal("actual local evidence or typed current state absent from foreground")
 	}
