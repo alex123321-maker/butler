@@ -69,3 +69,6 @@ invented wider range. Plain URLs in public output must exactly match a URL token
 in declared opened quotes; Markdown links are unsupported, numeric [n] requires
 a declared citation, and physical handles must belong to verified opened refs.
 These syntax checks do not claim entailment or permit navigation.
+Verified source/fragment identity metadata is rendered as a quoted literal in
+a code span with a delimiter longer than any interior backtick run. A source
+key cannot inject an additional Markdown citation or control-character line.

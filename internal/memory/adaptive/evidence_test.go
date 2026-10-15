@@ -86,3 +86,15 @@ func TestAdaptivePublicReferenceSyntaxCannotInventCitations(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestAdaptiveFooterIdentityIsLiteralEvenWithMarkdownAndControlCharacters(t *testing.T) {
+	for _, tc := range []struct{ value, want string }{
+		{"fragment", "`\"fragment\"`"},
+		{"`[link](https://example.invalid)`", "``\"`[link](https://example.invalid)`\"``"},
+		{"line\nnext", "`\"line\\nnext\"`"},
+	} {
+		if got := inlineLiteral(tc.value); got != tc.want {
+			t.Fatalf("%q => %q", tc.value, got)
+		}
+	}
+}

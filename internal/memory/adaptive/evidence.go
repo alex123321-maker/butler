@@ -259,9 +259,9 @@ func (s *Store) Validate(ctx context.Context, runID, raw string) (string, error)
 	}
 	display := a.Answer
 	for i, link := range links {
-		display += fmt.Sprintf("\n[%d] %s → %s, revision %d; scope %s", i+1, a.Citations[i].Claim, link.Source.ID, link.Source.Revision, link.ScopeType)
+		display += fmt.Sprintf("\n[%d] %s → %s, revision %d; scope %s", i+1, a.Citations[i].Claim, inlineLiteral(link.Source.ID), link.Source.Revision, link.ScopeType)
 		if link.FragmentKey != "" {
-			display += fmt.Sprintf("; fragment %q", link.FragmentKey)
+			display += "; fragment " + inlineLiteral(link.FragmentKey)
 		}
 		if link.EventTime != "" {
 			display += "; reported event " + link.EventTime
@@ -276,4 +276,24 @@ func (s *Store) Validate(ctx context.Context, runID, raw string) (string, error)
 		display += "\n" + strings.Join(a.Unknowns, "; ")
 	}
 	return display, nil
+}
+
+// Identity metadata can contain Markdown punctuation. Go quotes preserve its
+// literal control characters; an enclosing code-span delimiter longer than
+// every interior backtick run prevents it from becoming another UI citation.
+func inlineLiteral(value string) string {
+	quoted := strconv.Quote(value)
+	longest, run := 0, 0
+	for _, r := range quoted {
+		if r == '`' {
+			run++
+			if run > longest {
+				longest = run
+			}
+		} else {
+			run = 0
+		}
+	}
+	delim := strings.Repeat("`", longest+1)
+	return delim + quoted + delim
 }

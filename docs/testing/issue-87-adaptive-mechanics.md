@@ -70,3 +70,16 @@ its receipts remain metadata and require current Catalog/restore proof. Existing
 actual old-backup/newest-anchor catalog and index lifecycle gates stay mandatory.
 Independent three-arm native comparison and adoption/NO_GO are tracked separately
 against the frozen holdout; this controlled receipt cannot qualify those stages.
+
+## Additive footer boundary
+
+A subsequent pure formatter correction renders verified source/fragment metadata
+as literal code spans, including arbitrary interior backticks and quoted control
+characters. It changes presentation only, without changing exact DB references,
+authority, loops or receipt matching. The narrow race unit
+`TestAdaptiveFooterIdentityIsLiteralEvenWithMarkdownAndControlCharacters` passed
+once with zero failure/skip in `reports/footer-v8`, source `snapshots/v8`.
+Its original JSONL SHA256 is
+`55be496c11e297aa15ce55fc741bde4f94109fd1323092cc02af3b728b4f8118`.
+This delta is separate from the original50-test v7 receipt. The future combined
+driver now requires this additional name (30 required names overall).
