@@ -490,6 +490,7 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 		return err
 	}
 	callCtx, cancel := context.WithDeadline(s.Context(ctx, j), a.Deadline)
+	supervisorCtx, stopSupervisor := context.WithCancel(callCtx)
 	done := make(chan struct{})
 	go func(supervisorCtx context.Context) {
 		defer close(done)
@@ -502,16 +503,8 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 			case <-t.C:
 				check, stop := context.WithTimeout(supervisorCtx, 200*time.Millisecond)
 				started := time.Now()
-				stage := "catalog_guard"
-				e := s.catalog.CheckObjects(check, nil, j.Purpose)
-				if e == nil {
-					stage = "interactive_priority"
-					var busy bool
-					e = s.pool.QueryRow(check, `SELECT EXISTS(SELECT 1 FROM session_ownership WHERE expires_at>clock_timestamp())`).Scan(&busy)
-					if e == nil && busy {
-						e = ErrWaiting
-					}
-				}
+				stage := "model_supervisor"
+				e := s.checkModelSupervisor(check, j)
 				if w.ObserveProbe != nil {
 					diagnostic := ""
 					if e != nil {
@@ -531,6 +524,9 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 					w.ObserveProbe(ModelProbe{Stage: stage, Millis: time.Since(started).Milliseconds(), Diagnostic: diagnostic, Acquired: stat.AcquiredConns(), Idle: stat.IdleConns(), Total: stat.TotalConns()})
 				}
 				stop()
+				if supervisorCtx.Err() != nil {
+					return
+				}
 				if e != nil {
 					if errors.Is(e, context.DeadlineExceeded) && supervisorCtx.Err() == nil {
 						e = errStorageProbeWait
@@ -546,8 +542,8 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 				}
 			}
 		}
-	}(callCtx)
-	defer func() { cancel(); <-done }()
+	}(supervisorCtx)
+	defer func() { stopSupervisor(); cancel(); <-done }()
 	callCtx = budget.WithModelOperation(callCtx, a.OperationID)
 	callCtx = transport.WithInputByteLimit(callCtx, a.Quote.ProviderInputBytes)
 	callCtx = transport.WithInferenceAuthority(callCtx, func(c context.Context) error {
@@ -664,6 +660,11 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 		}
 	}
 observed:
+	// No provider work remains. Join its periodic observer before durable local
+	// publication takes the same policy/session locks. callCtx remains current;
+	// full AccessTx publication proof still serializes correction/revocation.
+	stopSupervisor()
+	<-done
 	// Usage survives revocation and failed publication; missing observations are
 	// NULL. The conservative reservation is never refunded, including before send.
 	observeCtx, stop := context.WithTimeout(context.WithoutCancel(ctx), 3*time.Second)

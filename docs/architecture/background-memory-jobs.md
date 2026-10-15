@@ -129,6 +129,16 @@ Exact Unicode evidence, typed owner-only projection, coalescing and the delibera
 closed production release gate are specified in the
 [candidate consumer README](../../internal/memory/candidates/README.md).
 
+The generative supervisor's 250ms ticker and 200ms proof deadline check current
+authority and immutable metadata in one transaction. This proof covers complete
+claim/policy state, source revisions/hash/access/scope and parent graph, copied
+summary original-source metadata, restore identity and interactive priority. It
+does not reread source bodies or acquire the job's publication lock. Repeating
+the complete publication proof here can wait behind the same worker's publisher
+and cancel an otherwise valid provider result. Full admission, per-HTTP release,
+dispatch and publication checks remain mandatory; an unavailable metadata proof
+still cancels, and does not erase or refund an admitted attempt.
+
 ## Migration and rollback
 
 ### Verified summary consumer (#84)

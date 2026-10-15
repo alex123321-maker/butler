@@ -15,6 +15,15 @@ New consumers also require the [memory lifecycle security gate](../../../docs/ai
 The shared corpus currently runs through diagnostic quote publication, repeated
 job/ACK handling and forgetting, with existing in-flight withdrawal/crash tests.
 These kernel checks grant no summary/extraction/consolidation quality approval.
+The model supervisor runs every 250ms with a 200ms proof deadline. It checks
+the deletion manifest, current typed policy/assignment, complete claim snapshot,
+source heads/access/hashes/scopes/parent pins, summary original-source predicate
+(migration 072), and interactive priority in one owning transaction. It reads no
+source bodies and takes no publication job lock. Admission, each network release
+and dispatch, and publication retain the complete `AccessTx` proof. A failed or
+timed-out supervisor still cancels the provider; unknown paid usage stays reserved.
+After the provider stream closes, the worker stops and joins this observer before
+local observation/publication, whose full proof owns the policy/session locks.
 
 `ClaimPurpose(kind, purpose)` additionally separates workers in the same kind.
 It uses the existing bounded claim/fence/deadline path; selecting a queue does
