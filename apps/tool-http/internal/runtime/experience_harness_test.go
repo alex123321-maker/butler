@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"testing"
 	"time"
 
@@ -20,6 +21,10 @@ import (
 func TestExperienceHTTPRuntimeHarness(t *testing.T) {
 	if os.Getenv("BUTLER_EXPERIENCE_HTTP_HARNESS") != "1" {
 		t.Skip("isolated test-only HTTP runtime process")
+	}
+	lifetime, err := experienceHTTPHarnessLifetime(os.Getenv("BUTLER_EXPERIENCE_HTTP_HARNESS_LIFETIME_MS"))
+	if err != nil {
+		t.Fatal("finite fixture process lifetime required")
 	}
 	endpoint, err := url.Parse(os.Getenv("BUTLER_EXPERIENCE_RECIPIENT_ENDPOINT"))
 	if err != nil || endpoint.Scheme != "http" || endpoint.Hostname() != "127.0.0.1" || endpoint.Port() == "" || endpoint.Path != "" || endpoint.User != nil || endpoint.RawQuery != "" || endpoint.Fragment != "" {
@@ -42,7 +47,7 @@ func TestExperienceHTTPRuntimeHarness(t *testing.T) {
 	runtimev1.RegisterToolRuntimeServiceServer(rpc, NewServer(egress.NewClient(policy, 10*time.Second), nil))
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
-	timer := time.NewTimer(3 * time.Minute)
+	timer := time.NewTimer(lifetime)
 	defer timer.Stop()
 	done := make(chan error, 1)
 	go func() { done <- rpc.Serve(listener) }()
@@ -58,5 +63,32 @@ func TestExperienceHTTPRuntimeHarness(t *testing.T) {
 		rpc.Stop()
 		<-done
 		t.Fatal("bounded experience HTTP fixture expired")
+	}
+}
+
+func experienceHTTPHarnessLifetime(raw string) (time.Duration, error) {
+	if raw == "" {
+		return 3 * time.Minute, nil
+	}
+	millis, err := strconv.ParseInt(raw, 10, 64)
+	if err != nil || len(raw) > 7 || raw[0] == '0' || strconv.FormatInt(millis, 10) != raw || millis < 1 || millis > int64((40*time.Minute)/time.Millisecond) {
+		return 0, strconv.ErrRange
+	}
+	return time.Duration(millis) * time.Millisecond, nil
+}
+
+func TestExperienceHTTPHarnessLifetimeIsFiniteAndLegacyDefaultUnchanged(t *testing.T) {
+	for _, tc := range []struct {
+		raw  string
+		want time.Duration
+	}{{"", 3 * time.Minute}, {"1", time.Millisecond}, {"180000", 3 * time.Minute}, {"2400000", 40 * time.Minute}} {
+		if got, err := experienceHTTPHarnessLifetime(tc.raw); err != nil || got != tc.want {
+			t.Fatal(tc.raw, got, err)
+		}
+	}
+	for _, raw := range []string{"0", "01", "-1", "+1", " 1", "1 ", "1.0", "2400001", "99999999999999999999999"} {
+		if _, err := experienceHTTPHarnessLifetime(raw); err == nil {
+			t.Fatal("unbounded or ambiguous fixture lifetime", raw)
+		}
 	}
 }
