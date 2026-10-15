@@ -3,6 +3,7 @@ package jobs
 import (
 	"context"
 	"errors"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -97,6 +98,37 @@ func schedule(t *testing.T, w *ModelWorker, ctx context.Context, q ModelPolicyRe
 	}
 	return j
 }
+func TestModelFailureDiagnosticExcludesProviderMaterialIntegration(t *testing.T) {
+	w, ctx, src := modelFixture(t)
+	j := schedule(t, w, ctx, policyRequest(src))
+	w.Provider.(*modelFixtureProvider).terminalError = &transport.Error{Type: transport.ErrorTypeProviderProtocolError, HTTPStatus: 400, Message: "PRIVATE_PROVIDER_BODY", ProviderCode: "PRIVATE_ACCOUNT", ProviderDetails: map[string]any{"token": "PRIVATE_MATERIAL"}}
+	if e := w.execute(ctx, j, QuoteProbe{}); e == nil {
+		t.Fatal("provider failure not observed")
+	}
+	var reason string
+	if e := w.Jobs.pool.QueryRow(ctx, `SELECT reason FROM memory_model_attempts WHERE job_id=$1`, j.ID).Scan(&reason); e != nil || reason != "provider_protocol_error_http_400" {
+		t.Fatal(reason, e)
+	}
+	view, e := w.Jobs.ModelView(ctx)
+	if e != nil || strings.Contains(string(jsonBytes(view)), "PRIVATE_") {
+		t.Fatal("private provider material leaked into observations")
+	}
+}
+
+func TestModelCredentialSourceNeverReachesProviderIntegration(t *testing.T) {
+	w, ctx, _ := modelFixture(t)
+	src, e := w.Jobs.catalog.Put(ctx, catalog.PutSource{ExternalKey: "private-fixture", Kind: "document", ScopeType: "user", ScopeID: "owner", Title: "source", Body: "password=ONLY_SYNTHETIC_PRIVATE_FIXTURE"})
+	if e != nil {
+		t.Fatal(e)
+	}
+	if _, e = w.Jobs.CreateModelPolicy(ctx, policyRequest(src)); e == nil {
+		t.Fatal("credential source admitted")
+	}
+	if w.Provider.(*modelFixtureProvider).calls.Load() != 0 {
+		t.Fatal("credential source reached provider")
+	}
+}
+
 func TestModelCompletedRunAndTaskPolicyIntegration(t *testing.T) {
 	w, ctx, src := modelFixture(t)
 	_, e := w.Jobs.pool.Exec(ctx, `INSERT INTO sessions(session_key,user_id,channel) VALUES('s','owner','web'); INSERT INTO tasks(task_id,session_key,owner_id,goal,status) VALUES('t','s','owner','finished task','completed'); INSERT INTO runs(run_id,session_key,task_id,task_revision,input_event_id,status,autonomy_mode,current_state,model_provider,started_at,updated_at) VALUES('r','s','t',1,'i','completed','mode_1','completed','fixture',clock_timestamp(),clock_timestamp())`)

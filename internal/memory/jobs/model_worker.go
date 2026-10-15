@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"io"
 	"sort"
 	"sync/atomic"
@@ -418,7 +419,14 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 			retry = true
 		}
 		if a.OperationID != "" {
-			_, _ = s.pool.Exec(finish, `UPDATE memory_model_attempts SET state='failed',reason=$2 WHERE operation_id=$1 AND state<>'published'`, a.OperationID, code)
+			attemptCode := code
+			if code == "provider_failed" {
+				attemptCode = transport.DiagnosticCode(err)
+				if status := transport.DiagnosticHTTPStatus(err); status != 0 {
+					attemptCode += fmt.Sprintf("_http_%d", status)
+				}
+			}
+			_, _ = s.pool.Exec(finish, `UPDATE memory_model_attempts SET state='failed',reason=$2 WHERE operation_id=$1 AND state<>'published'`, a.OperationID, attemptCode)
 		}
 		if errors.Is(err, ErrWaiting) && !dispatched.Load() {
 			// No new network dispatch was authorized. Keep the already reserved
