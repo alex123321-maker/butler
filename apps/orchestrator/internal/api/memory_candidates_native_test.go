@@ -86,13 +86,15 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 		t.Fatal("fixed native corpus unavailable")
 	}
 	var caps struct {
-		CasesSHA256 string    `json:"cases_sha256"`
-		MaxCalls    int       `json:"max_calls"`
-		ExpiresAt   time.Time `json:"expires_at"`
-		Revision    string    `json:"revision"`
+		CasesSHA256   string    `json:"cases_sha256"`
+		MaxCalls      int       `json:"max_calls"`
+		ExpiresAt     time.Time `json:"expires_at"`
+		Revision      string    `json:"revision"`
+		StartCase     int       `json:"start_case"`
+		PriorAttempts int       `json:"prior_attempts"`
 	}
 	b, e := os.ReadFile(filepath.Join(proof, "caps.json"))
-	if e != nil || json.Unmarshal(b, &caps) != nil || caps.CasesSHA256 != candidateHash(raw) || caps.MaxCalls != len(suite.Cases) || len(caps.Revision) != 40 || !time.Now().Before(caps.ExpiresAt) {
+	if e != nil || json.Unmarshal(b, &caps) != nil || caps.CasesSHA256 != candidateHash(raw) || caps.StartCase != 0 && caps.StartCase != 3 || caps.PriorAttempts != caps.StartCase || caps.MaxCalls != len(suite.Cases)-caps.StartCase || len(caps.Revision) != 40 || !time.Now().Before(caps.ExpiresAt) {
 		t.Fatal("fresh reviewed fixed native caps required")
 	}
 	if os.Getenv("HTTPS_PROXY") != "http://127.0.0.1:18080" || os.Getenv("HTTP_PROXY") != "" || os.Getenv("ALL_PROXY") != "" {
@@ -103,18 +105,27 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 		t.Fatal("isolated persistent native test database required")
 	}
 	cfg.MaxConns = 2
+	trace := &candidatePGTrace{}
+	cfg.ConnConfig.Tracer = trace
 	pool, e := pgxpool.NewWithConfig(context.Background(), cfg)
 	if e != nil {
 		t.Fatal(e)
 	}
 	defer pool.Close()
+	trace.pool = pool
 	var count int
-	if e = pool.QueryRow(context.Background(), `SELECT count(*) FROM memory_model_attempts`).Scan(&count); e != nil || count != 0 {
+	if e = pool.QueryRow(context.Background(), `SELECT count(*) FROM memory_model_attempts`).Scan(&count); e != nil || count != caps.PriorAttempts {
 		t.Fatal("native window already consumed", count, e)
 	}
-	m := catalog.NewFileManifest(filepath.Join(proof, "deletions.log"))
-	if e = m.Initialize(); e != nil {
-		t.Fatal(e)
+	manifestPath := filepath.Join(proof, "deletions.log")
+	if caps.StartCase > 0 {
+		manifestPath = filepath.Join(filepath.Dir(proof), "native-v2", "deletions.log")
+	}
+	m := catalog.NewFileManifest(manifestPath)
+	if caps.StartCase == 0 {
+		if e = m.Initialize(); e != nil {
+			t.Fatal(e)
+		}
 	}
 	c := catalog.New(pool, m)
 	policy := budget.DefaultPolicy()
@@ -128,10 +139,13 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 		t.Fatal("native provider unavailable")
 	}
 	capture := &candidateCaptureProvider{ModelProvider: p}
-	w := &jobs.ModelWorker{Jobs: j, Provider: capture, Model: antigravity.FlashHighModel, Handlers: map[string]jobs.ModelHandler{candidates.Version: candidates.Handler{}}}
+	w := &jobs.ModelWorker{Jobs: j, Provider: capture, Model: antigravity.FlashHighModel, Handlers: map[string]jobs.ModelHandler{candidates.Version: candidates.Handler{}}, ObserveProbe: trace.probe}
 	srv := httptest.NewServer((&MemoryCatalogServer{Store: c, Auth: NewOwnerControlAuth(strings.Repeat("c", 40), "owner"), ModelJobs: j, ModelWorkerConfigured: true}).Handle())
 	defer srv.Close()
 	f := &candidateFixture{t: t, pool: pool, catalog: c, jobs: j, worker: w, server: srv}
+	for _, prior := range suite.Cases[:caps.StartCase] {
+		f.request("/api/v4/memory/model-policy-control", "POST", map[string]string{"policy_id": "native-candidate:" + prior.ID, "state": "revoked"}, 200, nil)
+	}
 	f.enable()
 	defer j.SetModelControl(context.Background(), "disabled")
 	type observation struct {
@@ -161,6 +175,7 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 		}
 	}
 	defer func() {
+		write("pg-observations.json", trace.snapshot())
 		var ledger json.RawMessage
 		var check struct {
 			Confirmed int `json:"confirmed_claims"`
@@ -177,14 +192,14 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 			}
 		}
 		authorityWrites := check.Confirmed + check.Tasks + check.Mandates
-		passed := err == nil && authorityWrites == 0 && len(results) == len(suite.Cases) && float64(semantic)/float64(len(suite.Cases)) >= 0.95 && quotes == len(suite.Cases) && unsafe == 0 && unknown == 0
+		passed := caps.StartCase == 0 && err == nil && authorityWrites == 0 && len(results) == len(suite.Cases) && float64(semantic)/float64(len(suite.Cases)) >= 0.95 && quotes == len(suite.Cases) && unsafe == 0 && unknown == 0
 		write("observations.json", results)
 		write("quality.json", map[string]any{"revision": caps.Revision, "corpus": suite.Version, "corpus_sha256": candidateHash(raw), "instruction_sha256": candidateHash([]byte((candidates.Handler{}).Instruction())), "criteria": suite.Criteria, "cases": len(results), "semantic_matches": semantic, "exact_citation_cases": quotes, "unsafe_promotions": unsafe, "authority_writes": authorityWrites, "unknown_usage": unknown, "quality_gate_passed": passed, "automatic_acceptance": false, "pricing_basis": "subscription_no_overage", "production_release_qualified": false, "background_and_foreground_reservation_ledger": "ledger.json", "unmeasured_costs": []string{"OAuth refresh network bytes", "actual HTTP egress bytes", "CPU and storage amortization", "subscription allocation"}})
 		if !passed {
 			t.Error("predefined native quality gate failed; production stays disabled")
 		}
 	}()
-	for _, tc := range suite.Cases {
+	for _, tc := range suite.Cases[caps.StartCase:] {
 		if !time.Now().Before(caps.ExpiresAt) {
 			t.Error("native window expired")
 			break

@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync/atomic"
@@ -72,6 +73,7 @@ type candidateFixture struct {
 	pool    *pgxpool.Pool
 	catalog *catalog.Store
 	jobs    *jobs.Store
+	budgets *budget.Controller
 	worker  *jobs.ModelWorker
 	server  *httptest.Server
 	owner   context.Context
@@ -94,7 +96,7 @@ func newCandidateFixture(t *testing.T) *candidateFixture {
 	w := &jobs.ModelWorker{Jobs: j, Provider: &candidateProvider{}, Model: "fixture", Handlers: map[string]jobs.ModelHandler{candidates.Version: candidates.Handler{}}}
 	s := httptest.NewServer((&MemoryCatalogServer{Store: c, Auth: NewOwnerControlAuth(strings.Repeat("c", 40), "owner"), ModelJobs: j, ModelWorkerConfigured: true}).Handle())
 	t.Cleanup(s.Close)
-	return &candidateFixture{t: t, pool: pool, catalog: c, jobs: j, worker: w, server: s, owner: owneridentity.WithActor(context.Background(), owneridentity.Actor{OwnerID: "owner", Channel: "web", DeliveryID: "fixture-owner"})}
+	return &candidateFixture{t: t, pool: pool, catalog: c, jobs: j, budgets: b, worker: w, server: s, owner: owneridentity.WithActor(context.Background(), owneridentity.Actor{OwnerID: "owner", Channel: "web", DeliveryID: "fixture-owner"})}
 }
 func (f *candidateFixture) request(path, method string, value any, status int, out any) {
 	f.t.Helper()
@@ -188,6 +190,32 @@ func TestCandidateTranscriptAndParsedSourcePreserveAncestorPrivacyIntegration(t 
 				t.Fatal("ancestor correction failed to invalidate accepted claim")
 			}
 		})
+	}
+}
+
+func TestCandidateNoModelSupervisorTimelineIntegration(t *testing.T) {
+	if os.Getenv("BUTLER_CANDIDATE_SUPERVISOR_DIAG") != "true" {
+		t.Skip("explicit bounded no-model supervisor diagnosis")
+	}
+	f := newCandidateFixture(t)
+	f.budgets.Policy.ModelMillis = 90000
+	f.enable()
+	p := f.worker.Provider.(*candidateProvider)
+	for i, delay := range []time.Duration{11 * time.Second, 16 * time.Second, 10 * time.Second} {
+		src := f.source(fmt.Sprintf("supervisor-%d", i), "Предпочитаю ответы на русском языке.")
+		p.source = src
+		p.callback = func() { time.Sleep(delay) }
+		q := jobs.ModelPolicyRequest{ID: fmt.Sprintf("candidate-supervisor-policy-%d", i), Handler: candidates.Version, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 1, Privacy: "cloud_allowed", Job: jobs.Request{Sources: []catalog.SourceRef{{ID: src.ID, Revision: src.Revision, AccessRevision: src.AccessRevision, Hash: src.Hash}}, Allowance: budget.Units{ModelTurns: 1, Tokens: 10000, ActiveMillis: 90000, ProviderInputBytes: 8388608}, Deadline: time.Now().Add(time.Hour)}}
+		f.request("/api/v4/memory/model-policies", "POST", q, 201, nil)
+		// Match the native90s quote while keeping this a controlled provider with
+		// zero internet calls and an independently bounded persistent job.
+		start := time.Now()
+		e := f.process()
+		stats := f.pool.Stat()
+		t.Logf("probe timeline i=%d elapsed_ms=%d error_type=%T acquired=%d idle=%d total=%d", i, time.Since(start).Milliseconds(), e, stats.AcquiredConns(), stats.IdleConns(), stats.TotalConns())
+		if e != nil {
+			t.Fatal("no-model supervisor rejected a current source")
+		}
 	}
 }
 func (f *candidateFixture) process() error {

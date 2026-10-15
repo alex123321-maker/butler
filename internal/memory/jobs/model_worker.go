@@ -48,6 +48,15 @@ type ModelWorker struct {
 	Provider transport.ModelProvider
 	Model    string
 	Handlers map[string]ModelHandler
+	// Optional trusted, content-free diagnostic sink. It does not alter admission,
+	// retry or cancellation. Source text, SQL/args and raw errors are excluded.
+	ObserveProbe func(ModelProbe)
+}
+type ModelProbe struct {
+	Stage                 string `json:"stage"`
+	Millis                int64  `json:"millis"`
+	Diagnostic            string `json:"diagnostic"`
+	Acquired, Idle, Total int32
 }
 type ModelAttempt struct {
 	OperationID   string
@@ -492,13 +501,34 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 				return
 			case <-t.C:
 				check, stop := context.WithTimeout(supervisorCtx, 200*time.Millisecond)
+				started := time.Now()
+				stage := "catalog_guard"
 				e := s.catalog.CheckObjects(check, nil, j.Purpose)
 				if e == nil {
+					stage = "interactive_priority"
 					var busy bool
 					e = s.pool.QueryRow(check, `SELECT EXISTS(SELECT 1 FROM session_ownership WHERE expires_at>clock_timestamp())`).Scan(&busy)
 					if e == nil && busy {
 						e = ErrWaiting
 					}
+				}
+				if w.ObserveProbe != nil {
+					diagnostic := ""
+					if e != nil {
+						var pg *pgconn.PgError
+						switch {
+						case errors.As(e, &pg):
+							diagnostic = "pg_" + pg.Code
+						case errors.Is(e, context.DeadlineExceeded):
+							diagnostic = "deadline_exceeded"
+						case errors.Is(e, context.Canceled):
+							diagnostic = "cancelled"
+						default:
+							diagnostic = "authority_or_storage_error"
+						}
+					}
+					stat := s.pool.Stat()
+					w.ObserveProbe(ModelProbe{Stage: stage, Millis: time.Since(started).Milliseconds(), Diagnostic: diagnostic, Acquired: stat.AcquiredConns(), Idle: stat.IdleConns(), Total: stat.TotalConns()})
 				}
 				stop()
 				if e != nil {
