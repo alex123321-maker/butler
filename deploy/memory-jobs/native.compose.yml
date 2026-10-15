@@ -26,7 +26,7 @@ services:
       BUTLER_MODEL_PROVIDER: antigravity
       BUTLER_TOOL_BROKER_ADDR: tool-broker:9090
       BUTLER_ANTIGRAVITY_MODEL: gemini-3.8-flash-tiered
-      BUTLER_ANTIGRAVITY_PROTOCOL: cloudcode
+      BUTLER_ANTIGRAVITY_PROTOCOL: auto
       BUTLER_OPENAI_TIMEOUT_SECONDS: '90'
       BUTLER_TELEGRAM_BOT_TOKEN: ''
       # Explicit direct lane for this window; no fallback after a network error.
