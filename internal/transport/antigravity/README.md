@@ -1,6 +1,7 @@
 # Antigravity native transport
 
-Canonical tool schemas may contain `minLength`, `maxLength`, `minimum` and
+Canonical tool schemas may contain `minLength`, `maxLength`, `minimum`,
+`minItems`, `maxItems` and
 `maximum`. The adapter checks these annotation types, removes only these known
 bounds from Gemini wire declarations, and retains the complete original logical
 schema in its tool-definition map. Broker contracts/hashes and owning typed
@@ -9,6 +10,14 @@ validation and unknown-schema-keyword denial remain intact. Nested property
 names equal to a keyword are preserved. Structured generation response schemas
 are unchanged. `TestMemoryReadCanonicalNativeSchemaCompatibility` covers all
 three canonical memory-read contracts without auth/HTTP.
+
+Temporal facts keep the original `sources` array contract (1..8 exact refs).
+Its two array annotations are omitted only from the provider-facing declaration;
+the local argument decoder enforces them before emitting a tool proposal and the
+Broker independently validates its unchanged canonical contract. Invalid bounds
+or non-array shapes fail closed before authentication/HTTP. The exact failed v1
+request can be replayed through offline conversion with
+`BUTLER_TEMPORAL_FAILED_V1_REQUEST`; this never resolves auth or sends HTTP.
 
 Optional trusted current-source callbacks run before authentication and actual
 HTTP dispatch. They cannot select credentials/models/schema, authorize tools or

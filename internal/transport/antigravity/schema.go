@@ -77,7 +77,7 @@ func inspectSchemaMode(value any, depth int, allowToolBounds bool) error {
 			if items, ok := value.([]any); !ok || len(items) == 0 {
 				return fmt.Errorf("invalid enum")
 			}
-		case "minLength", "maxLength":
+		case "minLength", "maxLength", "minItems", "maxItems":
 			if !allowToolBounds {
 				return fmt.Errorf("unsupported schema keyword")
 			}
@@ -109,10 +109,24 @@ func inspectSchemaMode(value any, depth int, allowToolBounds bool) error {
 			return fmt.Errorf("unsupported schema keyword")
 		}
 	}
+	minItems, hasMinItems := schema["minItems"]
+	maxItems, hasMaxItems := schema["maxItems"]
+	if hasMinItems || hasMaxItems {
+		if schema["type"] != "array" {
+			return fmt.Errorf("array length annotation requires array type")
+		}
+		if hasMinItems && hasMaxItems {
+			minimum, _ := minItems.(json.Number).Int64()
+			maximum, _ := maxItems.(json.Number).Int64()
+			if minimum > maximum {
+				return fmt.Errorf("invalid array length interval")
+			}
+		}
+	}
 	return nil
 }
 
-// nativeToolSchema lowers only the four known bound annotations for Gemini's
+// nativeToolSchema lowers only the six known bound annotations for Gemini's
 // declaration dialect. The original ToolDefinition/schema/hash stays intact;
 // Tool Broker and the owning typed decoder enforce the actual bounds before
 // execution. Unknown keywords still fail closed in inspectSchema. This does not
@@ -130,7 +144,7 @@ func nativeToolSchema(text string) (json.RawMessage, error) {
 }
 
 func lowerToolBounds(schema map[string]any) {
-	for _, key := range []string{"minLength", "maxLength", "minimum", "maximum"} {
+	for _, key := range []string{"minLength", "maxLength", "minimum", "maximum", "minItems", "maxItems"} {
 		delete(schema, key)
 	}
 	if properties, ok := schema["properties"].(map[string]any); ok {
@@ -229,6 +243,23 @@ func validateValue(value any, schema map[string]any) error {
 		items, ok := value.([]any)
 		if !ok {
 			return fmt.Errorf("expected array")
+		}
+		// Keep the exact original array cardinality contract at the local
+		// proposal boundary even though the provider declaration omits it.
+		for _, key := range []string{"minItems", "maxItems"} {
+			if raw, exists := schema[key]; exists {
+				bound, ok := raw.(json.Number)
+				if !ok {
+					return fmt.Errorf("invalid array length annotation")
+				}
+				n, err := bound.Int64()
+				if err != nil || n < 0 {
+					return fmt.Errorf("invalid array length annotation")
+				}
+				if key == "minItems" && int64(len(items)) < n || key == "maxItems" && int64(len(items)) > n {
+					return fmt.Errorf("array length outside supplied schema")
+				}
+			}
 		}
 		if itemSchema, ok := schema["items"].(map[string]any); ok {
 			for _, item := range items {
