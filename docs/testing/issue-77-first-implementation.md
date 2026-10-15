@@ -12,19 +12,22 @@ are outside this block.
 | Issue | Implemented behavior | Evidence and remaining gate |
 | --- | --- | --- |
 | 83 | Shared eight-case poisoning/withdrawal/deletion corpus; current source and ancestry checks across jobs, publication, caches, retrieval and restore | Real PG/race, actual Broker and Redis; actual old `pg_dump` restore with newest independent deletion anchor. [Kernel evidence](issue-83-memory-lifecycle.md). |
-| 84 | Versioned extractive task compaction, primary-event coverage CAS, fresh tail, typed current constraints/tool outcomes, finite explicit owner policies, copied-source privacy and restore | Controlled ordinary Orchestrator continuation and repeated restart pass; [actual copied-summary restore](issue-84-summary-backup.md) passes. Native repeated-continuation/cost gate is separate; code-owned qualification remains false pending it. [Native evidence](issue-84-verified-summaries.md). |
-| 85 | Native-provider candidate consumer with exact Unicode citations, scoped/temporal unknowns, atomic publication, owner acceptance, typed episode projection, dedup and correction/revoke | Real HTTP/PG extraction, owner decisions and Catalog eligibility pass. Ordinary scoped-context use and actual episodic backup/restore have separate required checks. Fixed Russian core and independent metadata holdout must complete with their original criteria before code-owned qualification. [Consumer contract](../../internal/memory/candidates/README.md). |
+| 84 | Versioned extractive task compaction, primary-event coverage CAS, fresh tail, typed current constraints/tool outcomes, finite explicit owner policies, copied-source privacy and restore | Three native compactions and six ordinary continuations pass, including changing/revoked current constraints. [Copied-summary restore](issue-84-summary-backup.md) passes. Full candidate cost116929 vs46416 baseline tokens: no savings claim. [Native evidence](issue-84-verified-summaries.md). |
+| 85 | Native-provider candidate consumer with exact Unicode citations, scoped/temporal unknowns, atomic publication, owner acceptance, typed episode projection, dedup and correction/revoke | Native core23/24 and independent holdout8/8 semantic,32/32 exact citations; owner lifecycle passes. Ordinary scoped foreground context and [actual accepted-episode restore](issue-85-episode-backup.md) pass. [Native evidence and cost](issue-85-memory-candidates.md). |
 | 86 | Optional `memory.search`, `memory.open`, `memory.neighbors` through the actual Tool Broker and private reader; immutable input checkpoint, current lease/task/grants/budget/source proofs | Actual production Broker and native High foreground question pass, with original-source answer verification. This is a bounded native example, not broad answer-quality acceptance. [Native evidence](issue-86-memory-read-native.md). |
 
-All process flags remain false by default. Summary and candidate consumers also
-require code-owned qualification; environment flags cannot bypass an unpassed
-gate. Read tools remain DATA, create no task/mandate and retain Broker policy,
+All process flags remain false by default. Summary and candidate code-owned
+qualification is now true only for their measured native Flash High32768 profile,
+actual transport timeout at least300s and matching output/time budget. Other
+profiles remain unqualified; flags cannot bypass that check. Neither consumer is
+activated on main. Read tools remain DATA, create no task/mandate and retain Broker policy,
 grant, journal and budget enforcement. Owner acceptance is an explicit separate
 action. PostgreSQL remains durable truth, Redis transient, pgvector derived.
 
 The native adapter now accepts trusted operator output-ceiling configuration.
 Default0 preserves8192 generated tokens; the summary qualification profile needs
-High32768 and matching foreground/background output reservations. Thinking and
+High32768, actual transport timeout at least300s, model budget at least300000ms
+and matching foreground/background output reservations. Thinking and
 visible output share that ceiling. Model jobs use a fixed maximum six-minute
 claim and configurable call duration capped at five minutes; earlier authority,
 policy and budget deadlines win. Other job kinds keep two-minute claims. The
@@ -42,7 +45,7 @@ validation; absent usage stays SQL NULL and charged reservations survive failure
 
 Work is isolated under `/srv/storage/butler/agents/` on `ssh laba`, using immutable
 source snapshots and storage-backed PostgreSQL binds. The dirty primary Windows
-checkout and main deployed configuration are preserved. The main Orchestrator,
+checkout, main images and feature flags are preserved. The main Orchestrator,
 PostgreSQL and Redis remained healthy during these runs. Main health does not
 qualify any new consumer or prove provider readiness.
 
@@ -51,6 +54,13 @@ server proxy at `127.0.0.1:18080`. Offline checks use cached Go/PG/Redis images,
 `--pull never`, `GOPROXY=off` and `GOSUMDB=off`; no local internet fetch is needed.
 Encrypted auth moves only through private server files; neither credential
 material nor provider response errors are included in public observations.
+After the native windows, the latest rotated encrypted auth was returned to main
+using a compare-and-swap against the original encrypted value, with active main
+sessions blocking the update. Exactly one row changed. The actual main auth and
+paid subscription discovery then passed through its configured HTTPS proxy
+(`resolved=true`, `unsafe_refresh=false`, not expired, discovery HTTP200).
+This maintenance update does not activate the new memory consumers. Private
+receipts are retained under issue77 `reports/auth-main-v7-v2`.
 
 The root drivers are `scripts/dev/memory-consumers-lab.sh` and
 `scripts/dev/memory-lifecycle-lab.sh`. The additional copied-summary backup driver
@@ -82,6 +92,7 @@ implementations, reader metadata/redaction and large-original tail fixes.
 | issue77 `combined-final-v5` | 296 PASS, 0 FAIL, 5 optional SKIP | Consumer packages/composition, actual production Broker and vet |
 | issue83-combined77 `combined-final-v5` | 232 PASS, 0 FAIL, 4 optional SKIP | Lifecycle kernel, Redis, Broker and actual catalog dump/restore |
 | issue83-summary-restore `attempt-v2` | 6 PASS, 0 FAIL, 0 SKIP | Actual copied-summary dump/restore, separate message/ancestor cases |
+| issue83-episode-restore `attempt-v2` | 11 PASS, 0 FAIL, 0 SKIP | Three actual accepted-episode dump/restore phases and eight candidate fixture regressions; complete paid ledger and unrelated accepted episode unchanged |
 | issue77 `model-duration-v2` | 103 PASS, 0 FAIL, 1 optional SKIP | Source `a39944d8`: real `ProcessOne` provider deadline, earlier caller, authority supervisor, config/factory and vet |
 | issue77 `utc-window` | PASS | Source `cf5bc323`: same deadline proof also honors actual UTC-day scope expiry |
 | issue77 `scoped-context-v2` | 4 PASS, 0 FAIL, 0 SKIP | Source `5253a233`: owner-confirmed extracted preference in ordinary scoped foreground context; independent transcript-redaction/source-deletion regressions and vet |
