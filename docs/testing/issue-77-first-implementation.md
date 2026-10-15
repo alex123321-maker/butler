@@ -70,3 +70,37 @@ Exact final combined and native totals are recorded with their source manifests
 in the issue-specific reports. Partial native windows and optional skips do not
 qualify missing acceptance criteria. No main consumer activation or umbrella77
 acceptance follows from this implementation branch.
+
+## Combined validation receipts
+
+The consumer and kernel `combined-final-v5` snapshots are source `701d225a`.
+They include the six-minute claim/five-minute quote and the complete consumer
+implementations, reader metadata/redaction and large-original tail fixes.
+
+| Isolated run | Result | Scope |
+| --- | --- | --- |
+| issue77 `combined-final-v5` | 296 PASS, 0 FAIL, 5 optional SKIP | Consumer packages/composition, actual production Broker and vet |
+| issue83-combined77 `combined-final-v5` | 232 PASS, 0 FAIL, 4 optional SKIP | Lifecycle kernel, Redis, Broker and actual catalog dump/restore |
+| issue83-summary-restore `attempt-v2` | 6 PASS, 0 FAIL, 0 SKIP | Actual copied-summary dump/restore, separate message/ancestor cases |
+| issue77 `model-duration-v2` | 103 PASS, 0 FAIL, 1 optional SKIP | Source `a39944d8`: real `ProcessOne` provider deadline, earlier caller, authority supervisor, config/factory and vet |
+| issue77 `utc-window` | PASS | Source `cf5bc323`: same deadline proof also honors actual UTC-day scope expiry |
+| issue77 `scoped-context-v2` | 4 PASS, 0 FAIL, 0 SKIP | Source `5253a233`: owner-confirmed extracted preference in ordinary scoped foreground context; independent transcript-redaction/source-deletion regressions and vet |
+
+These are test/subtest events, not independent task-success samples; overlapping
+checks must not be added together as unique tests. Optional native, legacy and
+external backup procedures are explicit skips, with their applicable gates
+checked separately. Native semantic quality/cost remains separately measured.
+
+The additional broad composition run (`composition-v1`, source `a39944d8`)
+finished with1050 passing events,140 skips and16 failed test names. One failure
+exposed an old converter test expecting a deleted tool event to leave the old
+transcript pin usable. The fixture now requires the unchanged runtime fence to
+deny that stale run; source deletion is tested in an independent current fixture.
+Both corrected branches passed in `scoped-context-v2`.
+
+The other15 failures are closed release-chain history/bootstrap checks. The exact
+same15 names fail on unchanged main `cc751b2c` in the same isolated environment
+(`baseline-history`,0 PASS/15 FAIL/0 SKIP). Their predicates/artifacts were not
+changed or waived. This comparison separates them from the new memory regression;
+it does not claim the whole repository suite is green or establish those older
+release acceptances. The raw failed broad run and baseline remain retained.

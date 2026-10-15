@@ -57,6 +57,13 @@ package. They cross real HTTP owner controls, durable policies/claims, worker,
 controlled transport, reservations, catalog decisions and real PostgreSQL with
 MaxConns2. The native opt-in `TestCandidateNativeRussianQuality` uses the same
 consumer and HTTP path with actual High transport and the pinned server proxy.
+`TestCandidateAcceptedPreferenceScopedOrdinaryContextIntegration` additionally
+crosses owner HTTP extraction/acceptance and the ordinary Orchestrator `Execute`
+path with real leases, preparation and the production Profile adapter. The exact
+quote is absent before acceptance, appears only in its source session after
+acceptance, and disappears from fresh contexts after correction/revoke. Its
+controlled provider records actual prepared inputs without echoing the preference
+into transcript. This proves scoped context composition, not native answer quality.
 It retains all attempts/reservations in a separate persistent test database.
 The fixed24-case Russian corpus and95% semantic/100% citation/zero unsafe, authority
 or unknown-usage criteria are frozen before inference. Failures do not lower them.
