@@ -36,7 +36,9 @@ import (
 	"github.com/butler/butler/internal/memory/consolidation"
 	"github.com/butler/butler/internal/memory/jobs"
 	"github.com/butler/butler/internal/memory/memorytest"
+	"github.com/butler/butler/internal/memory/profile"
 	"github.com/butler/butler/internal/memory/readcontrol"
+	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/transport"
@@ -64,6 +66,7 @@ type consolidationControlRun struct {
 
 func (*consolidationReadControl) Name() string                    { return "antigravity" }
 func (*consolidationReadControl) InferenceLimits() (int64, int64) { return 60000, 8000 }
+func (*consolidationReadControl) InferenceTimeout() time.Duration { return 300 * time.Second }
 func (*consolidationReadControl) Capabilities(context.Context, transport.TransportRunContext) (transport.CapabilitySnapshot, error) {
 	return transport.CapabilitySnapshot{SupportsStreaming: true, SupportsToolCalls: true, SupportsCancel: true, SupportsUsageMetadata: true}, nil
 }
@@ -284,7 +287,7 @@ func consolidationOrdinaryBroker(t *testing.T, pool *pgxpool.Pool, cat *catalog.
 	return client
 }
 
-func runConsolidationOrdinaryQuestion(t *testing.T, ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, b *budget.Controller, p transport.ModelProvider, broker *tools.BrokerClient, key, question string) string {
+func runConsolidationOrdinaryQuestion(t *testing.T, ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, b *budget.Controller, p transport.ModelProvider, broker *tools.BrokerClient, key, question string, model ...string) string {
 	t.Helper()
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	repo := session.NewPostgresRepository(pool)
@@ -292,7 +295,24 @@ func runConsolidationOrdinaryQuestion(t *testing.T, ctx context.Context, pool *p
 	inputs := durableinput.NewStore(pool)
 	finals := completion.New(pool)
 	finals.DataGuard = cat.CheckRunSourcesTx
-	fc := flow.Config{ProviderName: p.Name(), ModelName: "fixture", OwnerID: "consolidation-worker", LeaseTTL: 120, Tasks: task.NewStore(pool), Budgets: b, MemorySources: cat, Completion: finals, Checkpoints: inputs, ContextBudgetTokens: 65536, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_0, Tools: broker, ToolCatalog: broker, ActionAuthorizer: broker}
+	selectedModel := "fixture"
+	if len(model) == 1 {
+		selectedModel = model[0]
+	}
+	fc := flow.Config{ProviderName: p.Name(), ModelName: selectedModel, OwnerID: "consolidation-worker", LeaseTTL: 120, Tasks: task.NewStore(pool), Budgets: b, MemorySources: cat, Completion: finals, Checkpoints: inputs, ContextBudgetTokens: 65536, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_0, Tools: broker, ToolCatalog: broker, ActionAuthorizer: broker,
+		ProfileStore: profileStoreAdapter{store: profile.NewStore(pool), sources: cat, temporal: true},
+		MemoryScopeResolver: func(c context.Context) ([]memoryservice.Scope, error) {
+			scopes, err := cat.ExtraScopes(c, "memory_read")
+			if err != nil {
+				return nil, err
+			}
+			out := make([]memoryservice.Scope, len(scopes))
+			for i, scope := range scopes {
+				out[i] = memoryservice.Scope{Type: scope.Type, ID: scope.ID}
+			}
+			return out, nil
+		},
+	}
 	x := &consolidationOrdinaryExecutor{base: flow.NewService(repo, session.NewPostgresLeaseManager(pool), runs, transcript.NewStore(pool), p, fc, logger), done: make(chan consolidationOrdinaryExecution, 1)}
 	worker, err := durableinput.NewServiceWithExecutionTimeout(inputs, repo, x, runs, logger, 10*time.Minute)
 	if err != nil {
@@ -331,7 +351,7 @@ func runConsolidationOrdinaryQuestion(t *testing.T, ctx context.Context, pool *p
 	stop()
 	<-done
 	if !sealed || execution.err != nil || execution.result == nil {
-		t.Fatal("ordinary owning flow failed", sealed, execution.err)
+		t.Fatal("ordinary owning flow failed", sealed, transport.DiagnosticCode(execution.err))
 	}
 	var output string
 	if err = pool.QueryRow(ctx, `SELECT content FROM run_final_results WHERE run_id=$1`, execution.result.RunID).Scan(&output); err != nil {

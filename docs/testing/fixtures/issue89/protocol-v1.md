@@ -41,6 +41,25 @@ it does not silently enlarge allowances or treat unexecuted questions as passes.
 This ceiling is a proposed admission/window bound, not expected consumption.
 Root must freeze the actual matching finite durable policy before any call.
 
+The collector seals all nine opaque logical identities in an exclusive,
+fsynced initial schedule before PostgreSQL/auth setup. A begun failure stays
+failed and all later slots stay not_executed; no failed slot is backfilled.
+Every actual StartRun and tool-result continuation is audited recursively,
+including nested serialized DATA, for oracle/treatment labels and foreign-case
+source IDs/text before delegating to the unchanged transport. A durable one-use
+window reserves every entry before invocation, with one-entry background and
+sixteen-entry foreground limits inside the total99. Audit rejection sends no
+provider request and never consumes an invented paid entry.
+
+The prospective collector profile uses a60-minute whole-window deadline,
+10-minute ordinary input execution bound,300-second model admission and exact
+32768 native output ceiling. The exact budget policy/profile, source archive,
+compiled Broker and initial schedule are separately hashed before inference.
+All current earlier owner/source/budget/lease deadlines remain authoritative.
+An observation-only wrapper records actual requests, proposals, final output,
+usage, safe stage/status/reason and terminal observation; no raw credential or
+provider error body enters those records. It does not retry a provider session.
+
 Use the existing subscription Gemini Flash High transport, exact32768 output
 ceiling, actual normalized inference timeout at least300s, matching finite quote
 and earlier deadlines. No new model/provider, injected grouping or lower-output
