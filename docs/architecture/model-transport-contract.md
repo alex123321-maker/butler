@@ -80,6 +80,14 @@ process must never resolve refresh-capable credentials. The rejected historical
 metadata probe proves profile availability only; its possible rotation is unknown
 and it does not prove generation capability or allow retry.
 
+## Планируемое отделение transport output от публикации
+
+В целевом [explicit communication profile](user-communication-spec.md) события
+assistant_delta/assistant_final сохраняют transport-смысл, но не служат командой
+отправки пользователю. communication tools используют обычный tool-call контракт.
+Transport не выбирает канал, получателя, widget state или продолжение задачи.
+Это дополнение не объявляет новый профиль включённым в текущем baseline.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Model Transport Contract

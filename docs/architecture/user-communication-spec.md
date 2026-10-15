@@ -1,0 +1,582 @@
+# Butler — общение агента с пользователем
+
+Версия 0.1, 2026-10-15. **Статус: согласованный продуктовый контракт,
+целевая архитектура; реализация планируется.** Этот документ не объявляет
+доступными описанные tools, API или миграции.
+
+Основа анализа — `origin/main` на `b20206d`. Старый локальный checkout
+`d343485` и его незакоммиченные изменения не использовались как baseline
+реализации. Production deployment в рамках подготовки документа не проверялся.
+
+Связанные контракты: [постоянный помощник](persistent-assistant-spec.md),
+[durable execution](durable-execution-spec.md), [atomic result/delivery](atomic-result-delivery.md),
+[run lifecycle](run-lifecycle-spec.md), [tools](tool-runtime-adr.md),
+[action authorization](action-authorization-contract.md),
+[owner controls](task-owner-controls-spec.md), [бюджеты](execution-budget-contract.md),
+[план реализации](../planning/user-communication-roadmap.md).
+
+## 1. Продуктовые решения
+
+Владелец подтвердил следующие требования в обсуждении 2026-10-15:
+
+1. Агент явно вызывает инструмент общения, когда есть что сообщить.
+   Завершение модели не является командой публикации.
+2. Четыре функции: короткое сообщение, фотография с сообщением, большой
+   отчёт с изображениями/файлами, интерактивный вопрос.
+3. Одна публикация доставляется во все подключённые и включённые каналы
+   этого владельца: в первой версии Web и Telegram.
+4. Telegram-отчёт — нативный article / Rich Message. Web показывает полный отчёт.
+5. Виджеты V1: выбор одного варианта, нескольких вариантов, текстовый ответ.
+   Составные формы из нескольких полей отложены.
+6. Виджет ждёт до ответа или отмены задачи; конкретный вопрос может иметь срок.
+   Ожидание переживает перезапуск.
+7. Первый действительный отправленный ответ фиксируется для всех каналов.
+   Изменение решения — отдельное уточнение агенту.
+8. Прямой запрос результата создаёт обязательство ответить. Если модель
+   завершилась без публикации результата, Butler продолжает работу в пределах
+   бюджета. При исчерпании сообщает системный сбой, сохраняя незавершённость.
+   Автоматической публикации финального текста модели как fallback нет.
+
+Инженерные решения ниже конкретизируют эти требования. Ключевые слова MUST /
+должен обозначают требования целевого режима, а не состояние текущего main.
+
+## 2. Что уже есть и что расширяется
+
+| Механизм baseline | Использование в этой работе |
+| --- | --- |
+| PostgreSQL tasks, task revisions, owner controls (#4, #9) | Привязка коммуникаций к задаче, отмена, изменение условий |
+| Durable ingress и approval continuation (#5, #6) | Сохраняемое ожидание и новый вход после ответа |
+| Exact authorization, effect journal, budgets (#7, #11, #13) | Обычный Broker-путь и ограниченное продолжение |
+| Completion coordinator и delivery outbox (#12) | Публикации с собственной идентичностью и доставкой по каналам |
+| Artifacts и source/privacy catalog | Изображения, документы, provenance, проверка доступа |
+| Owner-configured `verified_task` delivery | Существующее более строгое ограничение публикаций |
+| DeliverySink и observability Hub | Точки интеграции и live-обновления; Hub не является durable bus |
+
+Outbox уже отделяет сохранение результата от Telegram-send, учитывает UNKNOWN,
+а Web-readiness не выдаёт за прочтение. Не нужно создавать второй независимый
+доставщик с более слабыми гарантиями. Текущие rows ориентированы на run result;
+их контракт требуется расширить на публикацию во время исполнения, media,
+rich blocks, взаимодействия и несколько адресатов одного владельца.
+
+В baseline обычный финал по-прежнему связан с формированием уведомления;
+исключение `verified_task` не является универсальным инструментом общения.
+Универсальных communication tools и widget lifecycle из этого документа пока нет.
+
+## 3. Границы ответственности
+
+| Подсистема | Ответственность |
+| --- | --- |
+| Модель | Выбор момента, формата, текста и вопроса в рамках разрешённого каталога |
+| Orchestrator / Task | Выполнение, ответные обязательства, pause/resume, task revisions, бюджеты |
+| Session Service | Каноническая сессия, identity, порядок и live ownership |
+| Tool Broker | Схема, точное разрешение, эффекты, маршрутизация, credential mediation |
+| Communication module | Канонические публикации, взаимодействия, транзакции, события |
+| Channel delivery | Долговечные попытки, адресаты, ACK, retry, UNKNOWN |
+| Channel adapter | Отображение payload и нормализация подтверждённого пользовательского ввода |
+| Artifacts / Catalog | Сохранённое содержимое, происхождение, privacy и разрешённое чтение |
+| Model Transport | Нормализованные события модели; он не решает, что публиковать |
+
+Communication — Go-модуль внутри существующего orchestrator. Broker вызывает
+его через фиксированный аутентифицированный internal control endpoint по
+существующему паттерну owning tools. Новый контейнер и внешняя event-платформа
+для V1 не требуются. Это явное расширение списка owning control tools,
+не разрешение вызывать канал мимо Broker.
+
+Направление публикации:
+`Model -> Orchestrator -> Tool Broker -> Communication -> PostgreSQL outbox -> adapters`.
+
+Направление ответа:
+`Adapter -> authenticated interaction ingress -> PostgreSQL decision + continuation
+-> Session Service -> Orchestrator -> Model`.
+
+Доставщик не имеет интерфейсов provider/tool execution. Ответ виджета не
+исполняет browser action прямо из callback handler.
+
+## 4. Модель данных
+
+Имена таблиц ниже целевые; номер миграции выбирается при реализации по текущему
+main. Каждый модуль сохраняет владение своими записями.
+
+| Сущность | Обязательные поля и смысл |
+| --- | --- |
+| Publication | ID, schema version, owner, canonical session, optional task + revisions, origin run/tool/effect, kind, purpose, immutable payload/hash, artifact/source refs, created_at, publication sequence |
+| Delivery target | Publication, channel binding ID/version, pinned recipient, representation version/hash, part index, state, attempts, deadline, claim, ACK |
+| Interaction | ID, publication ID, owner/session/task/input binding, question schema/version, status, optional expiry, reply policy, continuation ref |
+| Interaction draft | Owner + interaction + revision, временный выбор до Submit; durable там, где нужен межканальный sync |
+| Interaction response | ID, actor proof metadata, channel/delivery identity, schema version, typed answer, accepted_at |
+| Reply obligation | Accepted input или task/revision, required/quiet classification, state, response publication refs, continuation count, budget scope |
+| Communication event | Event ID, aggregate ID/version, owner/session scope, type, time, opaque refs |
+| Channel binding | Owner, adapter, recipient, verified identity, enabled state, version, capability/profile refs |
+
+IDs, owner, session, task versions, lease, execution mode и адресаты определяются
+системой. Модель не задаёт их как полномочия в аргументах.
+
+Публикация неизменна после commit. Исправление — новая связанная публикация;
+системное изменение состояния виджета обновляет его projection/version, сохраняя
+исходный вопрос и принятое решение. Редактирование текста сообщений агентом и
+произвольное удаление отправленного содержимого не входят в V1.
+
+Один publication transcript event сохраняется на одну публикацию. Web и Telegram
+delivery receipts не превращаются в два assistant-сообщения. Входящий ответ также
+записывается один раз. Технический model final хранится отдельно как внутренний
+результат попытки и не выглядит в обычной ленте как уже отправленное сообщение.
+Скрытые reasoning traces в этот контракт не входят.
+
+## 5. Контракт инструмента
+
+Одна логическая tool family `communication` имеет четыре типизированные функции:
+
+- `communication.message`
+- `communication.photo`
+- `communication.report`
+- `communication.widget`
+
+Раздельные имена функций позволяют иметь строгие схемы без большого union
+необязательных полей. Для пользователя это один инструмент общения.
+
+Общие модельные поля: `schema_version=1`, `purpose`, содержимое функции,
+необязательные `reply_to_publication_ref`, `source_refs`.
+Допустимые purpose для первых трёх функций: `progress|result|blocked`.
+Widget всегда `question`. Purpose — заявленный смысл, не доказательство
+выполнения задачи. Система сохраняет собственные verification/effect states.
+
+### 5.1 Message и photo
+
+`message` принимает непустой `text`. Короткий ответ тоже может быть result.
+`photo` принимает непустой `text` и `images[]` с `artifact_ref`, `alt`
+и необязательной подписью. Ссылки должны разрешаться в готовые image artifacts.
+Несколько изображений имеют явный порядок.
+
+Payload не содержит base64, локальных путей, bot token, chat_id, произвольного
+URL для серверного скачивания или учётных данных. Получение внешней картинки —
+отдельное авторизованное действие; после него инструмент получает artifact ref.
+
+### 5.2 Report
+
+Поля: `title`, краткий `summary`, `blocks[]`, необязательные `attachments[]`.
+Канонический документ хранится в Butler и не зависит от Telegram HTML.
+
+Блоки V1: paragraph, heading, list, quote, code, table, divider, image,
+document. Текст поддерживает ограниченные inline spans: plain, emphasis, strong,
+code и безопасная ссылка. Image/document содержат artifact ref; tables — явные
+строки/колонки. Raw HTML/JavaScript не являются исполняемым содержимым.
+Неизвестные типы и превышение лимитов дают ошибку до commit, без тихой обрезки.
+
+Report artifact имеет версию, hash и ссылки на все составляющие. Summary не
+заменяет документ и не скрывает отсутствующее вложение. Артефакты должны быть
+полностью сохранены и разрешены до публикации; сбой обязательного вложения не
+даёт успешного ACK публикации.
+
+### 5.3 Widget
+
+Пример условного payload; названия/цены в реальном вопросе берутся из наблюдения:
+
+```json
+{
+  "schema_version": 1,
+  "question": "Какую пиццу желаете?",
+  "input": {
+    "type": "single_choice",
+    "options": [
+      {"id": "margherita", "label": "Маргарита"},
+      {"id": "pepperoni", "label": "Пепперони"}
+    ],
+    "allow_text_answer": true
+  },
+  "wait_for_response": true
+}
+```
+
+`single_choice`: непустые options с уникальными IDs, label, optional description
+и image artifact ref. Ответ — один option ID либо текст, если он разрешён.
+
+`multi_choice`: те же options плюс min/max selections. Выбор галочек остаётся
+черновиком; только явный Submit фиксирует набор. Повторное нажатие toggle не
+является отдельным пользовательским решением.
+
+`text`: prompt, min/max length, optional placeholder. Пользовательский текст
+проходит обычную классификацию доверия; поле ответа не меняет правила ядра.
+
+`expires_at` необязателен. Его отсутствие означает отсутствие срока именно у
+вопроса, но не бессрочную execution/mandate authority. `wait_for_response`
+по умолчанию true. При false агент может выполнить независимую работу; принятие
+ответа всё равно проходит упорядоченный ingress и version checks.
+
+Составные формы, произвольные UI-компоненты и исполняемый frontend-код от модели
+отложены. System approval может использовать тот же renderer, сохраняя отдельные
+типизированные action-binding и проверку разрешения.
+
+### 5.4 Результат вызова
+
+```json
+{
+  "status": "accepted",
+  "publication_ref": "publication:...",
+  "interaction_ref": null,
+  "delivery": [
+    {"channel": "web", "state": "available"},
+    {"channel": "telegram", "state": "pending"}
+  ]
+}
+```
+
+У widget возвращается interaction ref. Точные получатели, секретные URLs, proof,
+claim IDs и grants не выдаются модели.
+
+`accepted` означает durable commit. Это не `sent`, не прочтение и не
+подтверждение semantic completion. Ошибки: invalid_payload, artifact_not_ready,
+source_unavailable, policy_denied, stale_context, capability_unavailable,
+quota_exceeded, persistence_unavailable. Ошибки имеют безопасные коды.
+
+Повтор того же Broker effect/tool identity и payload возвращает сохранённый
+результат. Другой payload под тем же identity конфликтует. Новый tool call не
+считается повтором автоматически; content hash сам по себе не определяет intent.
+При неопределённом ответе internal endpoint Broker сначала разрешает outcome по
+durable operation ID, а не запускает новую публикацию.
+
+## 6. Публикация, политика и транзакция
+
+Обычный Broker prepare/authorize/claim сохраняется. Создание публикации —
+локальный durable effect `prepare`; фактический channel send — отдельный
+внешний эффект delivery worker. Prepare здесь не даёт права отправлять: точное
+разрешение публикации заранее включает закреплённые destinations и media scope.
+
+Мандат owner-communication разрешает обычные обращения к самому владельцу без
+approval на каждый текст, если действующие policy это допускают. Его конфигурация
+не создаётся моделью. Ни public URLs, ни source instructions не добавляют
+получателей. Child agents по умолчанию возвращают результат родителю; прямые
+публикации требуют явно выделенной capability в делегировании и общего бюджета.
+
+Неопределённый эффект прежнего внешнего действия не должен лишать владельца
+сообщения о препятствии или уточняющего вопроса. Broker получает узкое typed
+исключение для разрешённой owner communication при unknown-effect stop.
+Оно связано с фиксированным recipient scope, текущими источниками и finite
+communication allowance; не объявляет публикацию read и не разблокирует покупку,
+HTTP mutation, произвольный адресат или другой non-read инструмент.
+
+Под текущим ownership/task/source guard одна транзакция фиксирует:
+publication + canonical transcript event + response obligation linkage +
+interaction/continuation при необходимости + destinations/outbox + event.
+Никаких внешних сетевых send внутри транзакции.
+
+Доставщик после commit заново проверяет владельца, binding, актуальность
+source/privacy и правила публикации. Он не заимствует execution lease уже
+завершённого run. Короткая read authority для delivery не разрешает новые tools.
+
+При owner amendment старые непосланные progress/questions становятся
+superseded; неактуальные result требуют новой проверки. Исторический
+подтверждённый эффект остаётся фактом. Отмена не стирает уже отправленное.
+
+## 7. Шина событий и адаптеры
+
+PostgreSQL — журнал принятых публикаций/ответов и источник восстановления.
+In-process events / Redis wakeups могут ускорять доставку; потеря такого сигнала
+не теряет публикацию. Общий журнал наблюдаемости не заменяет transactional outbox.
+
+Типы событий V1: publication.created, delivery.changed, interaction.created,
+interaction.draft_changed, interaction.resolved, interaction.expired,
+interaction.cancelled, publication.redacted. Event envelope содержит opaque refs
+и версии; body загружается только через проверку доступа.
+
+Fan-out создаёт delivery targets для всех enabled bindings владельца в момент
+commit. Повторная отправка не расширяет этот snapshot. Новый канал видит историю
+в UI, но не получает автоматически весь backlog. Отключение binding останавливает
+его pending deliveries; rebind на другого адресата не перенаправляет их.
+
+Адаптер регистрирует versioned capabilities: message/photo/report/widget,
+ограничения payload, media types, rendering version, supported reply controls.
+Отсутствующая возможность отображается как unsupported; данные не отбрасываются.
+V1 supported profile требует оба полноценные адаптера. Перед запуском Doctor
+показывает несовместимую конфигурацию.
+
+Внутри канала сохраняется порядок publication sequence и частей сообщения.
+UNKNOWN блокирует дальнейшие зависимые части, а не все задачи и каналы владельца.
+System stop/error notification имеет отдельную ограниченную control lane.
+
+REST feed с cursor является восстанавливаемым источником для Web. SSE доставляет
+новые события, поддерживает reconnect/replay по event ID либо resync из feed.
+Web availability, открытие страницы и человеческое прочтение не смешиваются.
+
+## 8. Доставка и неопределённость
+
+Состояния target: pending, sending, sent, available (Web), failed,
+delivery_unknown, suppressed, superseded. Состояния payload/задачи отдельны.
+
+Стабильный ключ включает publication, binding version, representation version,
+part index. Rendered payload/hash и manifest фиксируются до сетевой попытки.
+Каждая часть имеет собственный ACK. Агрегат показывает все каналы: Web available
+не маскирует Telegram failed/unknown.
+
+Используется существующая политика bounded claims/retries:
+подтверждённое отсутствие отправки допускает retry; timeout, потерянный ACK или
+истёкший sending claim переходят в UNKNOWN. В Telegram нет обещания exactly-once.
+UNKNOWN нельзя автоматически исправлять повторным вызовом tool или модели.
+Ручная повторная доставка требует owner control с явным предупреждением о
+возможном дубле и сохраняет связь с исходной попыткой.
+
+Изменение projection известного message ID тоже является отдельной операцией.
+Ошибка редактирования закрытого widget не открывает interaction заново.
+При поздней доставке исходного widget адаптер обязан показать его текущий
+terminal state, а callback handler повторно проверить серверный статус.
+
+## 9. Telegram article / Rich Message
+
+Требование владельца: отчёты доставляются нативным Rich Message через
+`sendRichMessage`. Реализация ориентируется на Bot API 10.3 или совместимый
+endpoint с нужными media/document blocks. Обычная ссылка на Web или PDF не
+считается выполнением этого требования.
+
+Адаптер преобразует Butler report blocks в `InputRichMessage.blocks`; изображения
+и документы становятся соответствующими media blocks. Подтверждение — Message
+с корректными chat/message ID. Draft API не является durable delivery.
+
+На дату проверки официальные ограничения rich message: 32 768 символов,
+500 блоков, 16 уровней вложенности, 50 media, 20 колонок таблицы.
+Валидация конкретного Telegram payload учитывает форматный счётчик API.
+Большой отчёт делится по границам блоков на нумерованные Rich Messages с общим
+publication ID. Непомещающийся неделимый блок даёт явную ошибку представления;
+весь документ остаётся доступен в Web. Ничего не обрезается молча.
+
+Private artifacts передаются сервером разрешённым способом upload/file reuse;
+для доставки не нужно публиковать общедоступный artifact URL. Bot-scoped file
+IDs хранятся вне model payload; текущие права проверяются и при reuse.
+
+Документация Telegram проверена 2026-10-15:
+[sendRichMessage](https://core.telegram.org/bots/api#sendrichmessage),
+[InputRichMessage](https://core.telegram.org/bots/api#inputrichmessage),
+[Rich Message limits](https://core.telegram.org/bots/api#rich-message-limits),
+[InputRichBlockPhoto](https://core.telegram.org/bots/api#inputrichblockphoto),
+[InputRichBlockDocument](https://core.telegram.org/bots/api#inputrichblockdocument).
+При реализации нужна повторная проверка фактического endpoint и реальных клиентов.
+
+## 10. Widget lifecycle и обратный путь
+
+Состояния: open -> resolved | expired | cancelled | superseded.
+Waiting execution — отдельное состояние Task/Input, не удерживаемая goroutine.
+
+Создание вопроса и continuation коммитится **до** появления кнопок в каналах.
+При wait=true worker сохраняет checkpoint и освобождает lease; provider context
+может быть закрыт. Продолжение содержит данные и refs, не Go stack и не секреты.
+
+Ответ принимается через отдельный authenticated interaction control path,
+который не стоит за собственным ожидающим input в FIFO. Он атомарно:
+проверяет actor/owner и binding; блокирует interaction; сверяет schema/revision,
+task state и expiry по DB clock; CAS open->resolved; записывает ответ/транскрипт;
+ставит единственное продолжение в durable ingress; создаёт события обновления.
+
+Уникальность accepted response по interaction ID плюс channel delivery identity
+исключает два продолжения. Повтор идентичного submit возвращает прежний receipt.
+Конкурирующий другой ответ получает already_resolved; его содержимое не заменяет
+принятое. Только полная отправка multi-choice фиксирует результат.
+
+Текст привязывается к widget по явному reply/interaction reference. Если привязка
+неоднозначна, система просит выбрать вопрос, не угадывает по последнему сообщению.
+Отдельное обычное сообщение остаётся самостоятельным owner input/control.
+
+Новый worker получает текущие lease, task/constraint/authority versions, catalog,
+источники и бюджет. Старый provider session не является authority. Записанные
+tool results не исполняются повторно. Перед покупкой проверяются актуальные
+цены/наличие и необходимые разрешения.
+
+No-expiry interaction не наследует 24-часовой timeout обычного accepted input.
+Для waiting_for_user требуется явное расширение durable input lifetime:
+время без исполнителя не расходует active execution timeout; spent budgets не
+обнуляются. После ответа continuation получает новый ограниченный execution
+window по текущей policy. Истёкший mandate блокирует действие, но не теряет ответ.
+Это изменение должно быть реализовано в owning Input/Task, не обходом timestamp.
+
+Owner pause сохраняет ожидание; ответ может сохраниться, но не запускает работу
+до resume. Cancel закрывает вопрос и запрещает продолжение. Amendment делает
+вопрос старой revision superseded; новый вопрос создаёт агент после проверки.
+Expiry сохраняет состояние и один управляющий event; повторного опроса по таймеру
+и циклических напоминаний без отдельной policy нет.
+
+Для V1 допускается один открытый blocking widget на execution branch.
+Неблокирующие вопросы ограничены конфигурацией. Ответы сериализует Session
+Service; отвечать из Web на Telegram-вопрос разрешает подтверждённая owner
+identity, но не совпадение отображаемого имени.
+
+Выбор пиццы — preference DATA. Он не подтверждает оплату. Approval продолжает
+проверять exact action, args hash, resource, revisions и authority. Нажатие кнопки
+в ordinary widget не создаёт grant.
+
+## 11. Обязательство ответить и завершение
+
+`communication_mode=explicit` закрепляется системой при admission; модель его
+не переключает. В нём assistant_delta/final остаются внутренними transport
+событиями. Model final сохраняется как результат попытки, без implicit outbox.
+
+Завершение попытки, состояние obligation и постановка нужного исправляющего
+continuation фиксируются согласованно в owning completion/input transaction.
+Повтор сохранения frozen final не вызывает модель и не создаёт второй continuation.
+Пустой финальный текст допустим при корректном terminal transport event, когда
+результат уже явно опубликован или запуск имеет quiet policy. Тогда сохраняются
+typed terminal metadata и ссылки на публикации, без выдуманного публичного текста.
+Неожиданное закрытие stream не становится успешным завершением. Старое требование
+обязательного непустого final изменяется только для нового admission profile.
+
+При прямом conversational input по умолчанию создаётся reply obligation, даже
+если Task отсутствует. Для длительной задачи обязательство связано с task/input
+и переживает отдельные runs. Quiet background trigger имеет явную owner policy;
+не всякий внутренний wakeup создаёт новое обязательство.
+
+Состояния obligation: open, waiting_for_user, response_committed,
+closed_with_failure, cancelled. Delivery state хранится отдельно.
+Progress ничего не закрывает. Widget переводит обязательство в ожидание.
+Result либо содержательное blocked-сообщение связывает ответ с обязательством.
+Постановка доставки закрывает необходимость повторно генерировать ответ, но
+недоставленные targets остаются операционной проблемой.
+
+Если модель завершилась при open obligation без blocker/widget/result, ядро
+создаёт идемпотентное bounded continuation с указанием недостающего ответа.
+В V1 максимум **одно исправляющее продолжение на obligation revision**;
+оно расходует обычные turn/token/time budgets. Сброс run, рестарт или смена
+канала не обновляют allowance. Правильный результат нового действия не должен
+дублировать уже подтверждённый внешний эффект.
+
+Если исправление невозможно или снова не дало ответа, task/input остаётся
+blocked с communication_result_missing; система публикует один безопасный
+failure notice. В нём нет raw model/provider errors. Неисправность самой
+доставки видна в owner UI/Doctor; гарантировать уведомление по сломанному каналу
+невозможно.
+
+Purpose=result не подтверждает критерии Task. Семантическая проверка результата,
+effect evidence и owner-confirmed completion сохраняются. «Сейчас сделаю» с
+ложной меткой result может обойти простую структурную проверку: это отдельный
+behavioral acceptance failure, а не доказательство готовности. Eval обязан
+проверять соответствие текста фактическому выполнению.
+
+Режим `verified_task` сохраняет более строгую owner policy: tools не могут
+обойти запрет progress/unverified result. Разрешённые вопросы/blocked interventions
+доступны по policy; запрещённая публикация даёт явный policy_denied. Для него
+не запускается бессмысленное исправление с требованием запрещённого сообщения.
+После owner verification системная verified-notice транзакция использует общий
+publication/delivery механизм, сохраняя прежний смысл и once-only identity.
+
+## 12. Identity, privacy, storage и API
+
+Binding создаёт/изменяет аутентифицированный владелец. Telegram требует numeric
+From.ID + разрешённый chat, Web — существующее owner proof. Display name, model
+args и заголовок с actor ID не являются доказательством. Секреты остаются на
+сервере в существующей credential/config подсистеме.
+
+Все read/send/reply пути проверяют owner, current source/privacy и artifact
+scope. Fan-out не расширяет разрешённый export: если источник нельзя передать
+в Telegram, этот target получает suppressed с причиной policy_denied.
+Владелец видит, почему каналы расходятся. Модель не снимает ограничение.
+
+Бинарные данные хранятся через artifact layer на self-hosted managed storage;
+PostgreSQL владеет metadata, hashes, references и жизненным циклом. Atomic publish
+ссылается только на готовые объекты; orphan staging убирается отдельно.
+Переезд на внешний object storage не является обязательным условием.
+
+Удаление/отзыв источника инвалидирует pending send, report access и exports.
+Для уже доставленного содержимого нельзя обещать отзыв с устройства получателя;
+best-effort delete/edit сохраняется отдельным результатом. Model resume и память
+используют канонические source refs и не восстанавливают отозванный текст из ACK.
+
+Предлагаемые owner-authenticated API:
+
+| Endpoint | Контракт |
+| --- | --- |
+| GET /api/v3/communications | Cursor feed по owned session/task |
+| GET /api/v3/communications/{id} | Payload, разрешённые artifacts, состояние по каналам |
+| GET /api/v3/communications/events | Scoped SSE; reconnect/resync |
+| GET /api/v3/interactions/{id} | Вопрос, schema, draft и terminal state |
+| POST /api/v3/interactions/{id}/draft | Expected revision; не submit |
+| POST /api/v3/interactions/{id}/responses | Typed answer, expected version, stable delivery ID |
+| GET/POST /api/v3/channel-bindings | Owner-only управление разрешёнными bindings |
+
+Adapters нормализуют Telegram callbacks/replies в тот же service API.
+HTTP 202 publication acceptance не означает delivery ACK. Invalid schema — 400,
+нет доступа — 403/404 без утечки existence, stale/resolved conflict — 409,
+bounded quota — 429. Дубли идентичного запроса возвращают сохранённый receipt.
+
+## 13. Лимиты и наблюдаемость
+
+Owner config задаёт конечные лимиты публикаций, байтов, media и open interactions.
+Разумные стартовые V1 defaults для fixtures: message 4 000 Unicode characters;
+photo до 10 images; report до 200 000 characters, 2 000 blocks, nesting 8,
+20 table columns, 100 media; widget до 20 options, text answer до 4 000 characters;
+не более 20 agent publications на accepted request и 4 open nonblocking widgets.
+Это Butler limits, не заявления о лимитах каналов. Media byte limits наследуются
+из artifact policy и пересекаются с текущими adapter limits.
+
+Превышение возвращается модели до частичного commit. Канальные ограничения
+проверяются при построении manifest; большой report может дать несколько rich
+частей. Неограниченная генерация сообщений из повторного wakeup запрещена.
+
+Метрики: accepted publications, delivery latency/backlog, failed/unknown по
+каналам, retry counts, interaction age, response conflicts, resume latency,
+missing-result continuations, blocked obligations, rendered payload limits.
+Labels не содержат owner text, secret, arbitrary URL или безграничные IDs.
+Audit хранит stable refs и версии; payload читается только по разрешению.
+
+Doctor показывает migration/tool/adapter readiness, bindings, Rich Message
+совместимость и недоставленные результаты. Наличие подключённого адаптера не
+равно успешной реальной доставке или визуальной корректности.
+
+## 14. Миграция и совместимость
+
+Внедрение поэтапное и additive. Исторические results, transcripts и outbox IDs
+сохраняются; их не переписывают в новые публикации с повторной отправкой.
+Mapping legacy delivery остаётся читаемым.
+
+Новый `explicit` admission profile включается только после готовности tools,
+каналов, interactions и obligation control. Он ортогонален Task
+`result_delivery=attempt|verified_task`. Legacy admissions продолжают прежний
+путь; для одной попытки никогда не работают два автоматических финальных send.
+
+На mixed-version deployment старый worker не должен брать explicit checkpoint.
+Capability/schema epoch и admission flag обеспечивают это. Rollback выключает
+новые admissions, но оставляет совместимый drain/resume worker для принятых
+публикаций и вопросов. Down migration отказывает при живых данных; no-expiry
+вопросы нельзя молча удалить ради downgrade.
+
+Prompt instructs: публиковать только полезные updates; применять правильный
+формат; не повторять опубликованный результат в конце; ждать явного ответа;
+не утверждать доставку по accepted; не объявлять успех по ACK tool.
+Prompt не заменяет enforcement и не раскрывает внутренние summaries в канал.
+
+## 15. Приёмка
+
+| ID | Сценарий и проверяемый результат |
+| --- | --- |
+| AC01 | Progress опубликован, затем агент продолжает tools; final не даёт второго сообщения |
+| AC02 | Photo + caption из сохранённого artifact видны в обоих каналах |
+| AC03 | Report с текстом, таблицей, картинкой и файлом открыт в Web и в нативном Telegram Rich Message |
+| AC04 | Большой report разбит по блокам без потери текста/media, ACK каждой части сохранён |
+| AC05 | Telegram недоступен: Web доступен, task/effect не повторяется, retry только delivery |
+| AC06 | Crash после publication commit и до ACK: восстановление без повторной генерации; UNKNOWN не resend |
+| AC07 | Widget показан в двух каналах; конкурентные ответы дают одно решение и одно продолжение |
+| AC08 | Multi-choice toggles — draft; только Submit фиксирует набор; text reply привязан к нужному вопросу |
+| AC09 | Restart и ожидание более 24 часов не теряют no-expiry вопрос; execution budgets не обновляются |
+| AC10 | Ответ пришёл до окончания доставки: он сохранён, поздняя копия widget закрыта |
+| AC11 | Cancel/amend/expiry/pause и stale authority не запускают устаревшее действие |
+| AC12 | Модель завершилась без ответа: одно bounded исправление; затем explicit failure без успеха task |
+| AC13 | Quiet background run без новости даёт ноль публикаций и ноль исправляющих циклов |
+| AC14 | Повтор tool/response identity идемпотентен; другой payload конфликтует |
+| AC15 | Отзыв binding/source/artifact запрещает pending send, export и stale replay |
+| AC16 | verified_task, child scope и approval сохраняют authority; выбор пиццы не разрешает покупку |
+| AC17 | Уже опубликованный результат + final-save failure не создаёт вторую публикацию |
+| AC18 | Mixed version/rollback сохраняет старые receipts и принятые interactions |
+
+Unit tests проверяют схемы, rendering и state transitions. PostgreSQL integration
+проверяет транзакции, CAS, restart, fencing и outbox. API/adapter tests проверяют
+typed wire и authorization. Behavioral harness проверяет правильный момент
+публикации, фактическую завершённость и отсутствие спама.
+
+Нужен отдельный live acceptance на тестовом владельце в Telegram и Web с
+зафиксированными версиями клиентов и доказательствами отображения/ответа.
+Синтетический Bot API ACK не доказывает живую доставку; screenshot сам по себе
+не доказывает успешное продолжение задачи. Реальный заказ/оплата для pizza
+acceptance не нужны: разрешённый fixture проверяет остановку перед commit.
+Пропуски и недоступные проверки фиксируются отдельно от passes.
+
+## 16. Не входит в V1
+
+Составные формы, arbitrary executable widgets, сообщения посторонним адресатам,
+голосовые ответы, пользовательский HTML runtime, автоматическая публичная
+публикация отчётов, автоматическая покупка по preference-кнопке и бесконечные
+напоминания. Новые каналы подключаются через тот же versioned adapter contract.
+

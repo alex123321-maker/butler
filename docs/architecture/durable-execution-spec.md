@@ -12,6 +12,16 @@ service before workers start. Earlier caller, accepted input, task, mandate,
 claim, ownership and source deadlines remain authoritative; retries never extend
 them and existing services receive no timeout mutation.
 
+## Planned interaction continuation extension
+
+[User Communication](user-communication-spec.md) specifies durable non-approval
+widgets and authenticated cross-channel replies. Its future waiting_for_user
+lifetime may be unbounded until answer/cancel, independently of the ordinary
+24-hour input acceptance bound below. Implement this through owning Input/Task
+transitions and preserved budgets, not by changing old deadlines during replay.
+First accepted submit and one continuation commit atomically; preference replies
+never authorize actions. Existing exact approvals remain separately enforced.
+
 ## Acceptance and ordering
 
 `POST /api/v1/events` returns HTTP 202 with `accepted`, `input_id`,

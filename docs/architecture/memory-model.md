@@ -8,6 +8,15 @@ may justify refusal but cannot count as recovered usefulness. Unknown tokenizer,
 invoice, physical-storage and effects remain unknown and deny promotion; synthetic
 QA grants no owner confirmation or execution authority.
 
+## Планируемое происхождение коммуникаций
+
+[User Communication](user-communication-spec.md) сохраняет одну каноническую
+publication/response в Transcript независимо от числа каналов. Delivery receipts
+и внутренний model final отличаются от опубликованного текста; ответы виджетов
+сохраняют actor/source provenance. Это целевое дополнение не вводит новый класс
+памяти, не превращает ответы в policy и не разрешает повторное извлечение
+отозванных sources из delivery history.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Memory Model

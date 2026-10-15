@@ -81,6 +81,15 @@ to an answer from before that action. A fresh final's own finish reason determin
 durable when a later model turn fails to provide a final. Streaming commentary
 does not become final content or a task-completion verdict.
 
+## Планируемый explicit communication profile
+
+[User Communication](user-communication-spec.md) задаёт будущий admission profile:
+публикации выполняются через Broker-tool; model final сохраняется как внутренний
+результат попытки без implicit send. Ожидание widget сохраняется без живого worker,
+а недостающий ответ получает bounded continuation. Описанный ниже текущий
+final-result/outbox путь остаётся baseline для legacy admissions до миграции.
+Task completion, execution, reply obligation и delivery не объединяются.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Run Lifecycle  
