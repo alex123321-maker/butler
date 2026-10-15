@@ -27,8 +27,10 @@ it reads original source text or that exact current catalog fragment. Offset and
 max_chars count Unicode characters. At most8192 characters are returned. Neighbors
 requires a fragment key and reads at most the two adjacent ordinals within the
 same source and revision; its combined text is at most8192 characters. A result
-marks truncation and next offset. Recognized credential patterns are redacted,
-with `redacted=true`; offsets still refer to original text. Locators never become
+marks truncation and next offset. Recognized credential spans are masked on the
+complete source/fragment before pagination, with `redacted=true`. One asterisk
+replaces each original Unicode character, so page boundaries cannot reveal token
+suffixes and offsets still refer to original text. Locators never become
 paths, SQL or URL fetches. Whole responses are bounded to128KiB.
 
 The owning boundary reconstructs the actual dispatched action, input claim,

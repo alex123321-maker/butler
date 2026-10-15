@@ -70,6 +70,12 @@ func TestSearchOpenNeighborsCurrentSourceIntegration(t *testing.T) {
 	if neighbors.Status != "ok" || len(neighbors.Items) != 2 || utf8.RuneCountInString(neighbors.Items[0].Text)+utf8.RuneCountInString(neighbors.Items[1].Text) > 32 {
 		t.Fatal(neighbors)
 	}
+	a.MaxChars = 1
+	neighbors = read(readcontrol.Neighbors, a)
+	if neighbors.Status != "ok" || len(neighbors.Items) != 1 || utf8.RuneCountInString(neighbors.Items[0].Text) != 1 || !neighbors.Truncated {
+		t.Fatal("minimum combined neighbor allowance exceeded", neighbors)
+	}
+	a.MaxChars = 32
 	a.FragmentKey = "missing"
 	if out := read(readcontrol.Open, a); out.Status != "not_found" {
 		t.Fatal(out)
@@ -109,6 +115,27 @@ func TestSearchOpenNeighborsCurrentSourceIntegration(t *testing.T) {
 	}
 	if !strings.HasPrefix(derived.ID, "source_") {
 		t.Log("generated opaque ID", derived.ID)
+	}
+	// Fragments are a separate catalog projection. A token may span a search
+	// snippet boundary or begin before an open offset; detect it on full text.
+	prefix := "маркерредакции " + strings.Repeat("я", 215) + " "
+	credential := "Bearer SYNTHETIC_TOKEN_" + strings.Repeat("Z", 64)
+	if _, e = s.PublishFragments(own, ref, []catalog.Fragment{
+		{Key: "before", Text: "Перед настройкой отключите питание", Locator: json.RawMessage(`{"paragraph":1}`)},
+		{Key: "target", Title: "калибровка", Text: text, Locator: json.RawMessage(`{"paragraph":2}`)},
+		{Key: "after", Text: "После настройки проверьте журнал", Locator: json.RawMessage(`{"paragraph":3}`)},
+		{Key: "masked", Title: "Синтетическая проверка", Text: prefix + credential + " конец", Locator: json.RawMessage(`{}`)},
+	}); e != nil {
+		t.Fatal(e)
+	}
+	maskedSearch := read(readcontrol.Search, readcontrol.Args{Query: "маркерредакции", Limit: 5})
+	if maskedSearch.Status != "ok" || len(maskedSearch.Items) != 1 || !maskedSearch.Items[0].Redacted || strings.Contains(maskedSearch.Items[0].Text, "Bearer") || strings.Contains(maskedSearch.Items[0].Text, "SYNTHETIC") {
+		t.Fatal("credential crossed snippet boundary", maskedSearch)
+	}
+	maskOffset := utf8.RuneCountInString(prefix) + 10
+	maskedOpen := read(readcontrol.Open, readcontrol.Args{SourceID: src.ID, Revision: src.Revision, AccessRevision: src.AccessRevision, Hash: src.Hash, FragmentKey: "masked", Offset: maskOffset, MaxChars: 20})
+	if maskedOpen.Status != "ok" || len(maskedOpen.Items) != 1 || !maskedOpen.Items[0].Redacted || maskedOpen.Items[0].Text != strings.Repeat("*", 20) || maskedOpen.Items[0].NextOffset != maskOffset+20 {
+		t.Fatal("credential suffix escaped pagination", maskedOpen)
 	}
 	// An accepted large source must not make tsvector exceed PostgreSQL's1MiB
 	// limit and poison otherwise unrelated results. Original scanning is bounded.

@@ -29,8 +29,7 @@ func status(e error) string {
 	}
 }
 func clip(s string, offset, limit int) (string, bool, int) {
-	// PostgreSQL substring already bounded the selected content. This helper
-	// preserves UTF-8 and expresses continuation in Unicode characters.
+	// Keep continuation positions in Unicode characters, including masked spans.
 	r := []rune(s)
 	if offset > len(r) {
 		offset = len(r)
@@ -45,10 +44,11 @@ func item(src catalog.Source, key, title, text string, loc json.RawMessage, max 
 	if len(loc) > 2048 || !json.Valid(loc) || sanitize.JSON(string(loc)) != string(loc) {
 		loc = json.RawMessage(`{}`)
 	}
-	title, _, _ = clip(sanitize.Text(title), 0, 160)
-	text, truncated, next := clip(text, 0, max)
-	safeText := sanitize.Text(text)
-	out := readcontrol.Item{Source: readcontrol.SourceRef{ID: src.ID, Revision: src.Revision, AccessRevision: src.AccessRevision, Hash: src.Hash}, Kind: src.Kind, ScopeType: src.ScopeType, Title: title, Text: safeText, FragmentKey: key, Locator: loc, Freshness: "current_revision_unverified_fact", Truncated: truncated, Redacted: safeText != text, NextOffset: next}
+	title, _, _ = clip(sanitize.MaskCredentials(title), 0, 160)
+	safeText := sanitize.MaskCredentials(text)
+	redacted := safeText != text
+	safeText, truncated, next := clip(safeText, 0, max)
+	out := readcontrol.Item{Source: readcontrol.SourceRef{ID: src.ID, Revision: src.Revision, AccessRevision: src.AccessRevision, Hash: src.Hash}, Kind: src.Kind, ScopeType: src.ScopeType, Title: title, Text: safeText, FragmentKey: key, Locator: loc, Freshness: "current_revision_unverified_fact", Truncated: truncated, Redacted: redacted, NextOffset: next}
 	if src.EventTime != nil {
 		out.EventTime = src.EventTime.UTC().Format(time.RFC3339Nano)
 	}
@@ -80,11 +80,11 @@ func (r Reader) ReadTx(ctx context.Context, tx pgx.Tx, tool string, a readcontro
 	var title, text string
 	var loc json.RawMessage
 	if a.FragmentKey == "" {
-		// Body may be large; substring avoids bringing the whole document into
-		// model output. AccessTx itself retains the authoritative source snapshot.
-		e = tx.QueryRow(ctx, `SELECT title,substring(body FROM $2::integer FOR $3::integer),locator FROM memory_source_revisions WHERE source_id=$1 AND revision=$4`, src.ID, a.Offset+1, a.MaxChars+1, src.Revision).Scan(&title, &text, &loc)
+		// AccessTx already loaded and authorized this complete source. Detect
+		// credential spans before slicing, including across page boundaries.
+		title, text, loc = src.Title, src.Body, src.Locator
 	} else {
-		e = tx.QueryRow(ctx, `SELECT c.title,substring(c.content FROM $3::integer FOR $4::integer),o.locator FROM memory_object_sources o JOIN memory_chunks c ON c.id=o.object_id WHERE o.memory_type='chunk' AND o.source_id=$1 AND o.source_revision=$2 AND o.fragment_key=$5 ORDER BY o.object_id LIMIT 1`, src.ID, src.Revision, a.Offset+1, a.MaxChars+1, a.FragmentKey).Scan(&title, &text, &loc)
+		e = tx.QueryRow(ctx, `SELECT c.title,c.content,o.locator FROM memory_object_sources o JOIN memory_chunks c ON c.id=o.object_id WHERE o.memory_type='chunk' AND o.source_id=$1 AND o.source_revision=$2 AND o.fragment_key=$3 ORDER BY o.object_id LIMIT 1`, src.ID, src.Revision, a.FragmentKey).Scan(&title, &text, &loc)
 	}
 	if errors.Is(e, pgx.ErrNoRows) {
 		return readcontrol.Empty("not_found"), nil
@@ -93,7 +93,10 @@ func (r Reader) ReadTx(ctx context.Context, tx pgx.Tx, tool string, a readcontro
 		return readcontrol.Empty("backend_error"), e
 	}
 	out := readcontrol.Empty("ok")
-	v := item(src, a.FragmentKey, title, text, loc, a.MaxChars)
+	masked := sanitize.MaskCredentials(text)
+	page, _, _ := clip(masked, a.Offset, a.MaxChars+1)
+	v := item(src, a.FragmentKey, title, page, loc, a.MaxChars)
+	v.Redacted = masked != text
 	v.NextOffset += a.Offset
 	out.Items = append(out.Items, v)
 	out.Truncated = v.Truncated
@@ -120,9 +123,9 @@ func (r Reader) search(ctx context.Context, tx pgx.Tx, a readcontrol.Args) (read
 		return readcontrol.Empty("backend_error"), e
 	}
 	rows, e := tx.Query(ctx, permitted+`, matches AS (
- SELECT p.source_id,p.head_revision,p.access_revision,p.content_hash,''::text AS fragment_key,p.title,substring(p.body FROM 1 FOR 241) AS snippet,'{}'::jsonb AS locator,0 AS preference
+	 SELECT p.source_id,p.head_revision,p.access_revision,p.content_hash,''::text AS fragment_key,p.title,p.body AS snippet,'{}'::jsonb AS locator,0 AS preference
  FROM permitted p WHERE to_tsvector('simple',p.title||' '||substring(p.body FROM 1 FOR 65536)) @@ plainto_tsquery('simple',$2)
- UNION ALL SELECT p.source_id,p.head_revision,p.access_revision,p.content_hash,o.fragment_key,c.title,substring(c.content FROM 1 FOR 241),o.locator,1
+	 UNION ALL SELECT p.source_id,p.head_revision,p.access_revision,p.content_hash,o.fragment_key,c.title,c.content,o.locator,1
  FROM permitted p JOIN memory_object_sources o ON o.source_id=p.source_id AND o.source_revision=p.head_revision AND o.memory_type='chunk' JOIN memory_chunks c ON c.id=o.object_id
  WHERE to_tsvector('simple',c.title||' '||c.content) @@ plainto_tsquery('simple',$2))
  SELECT source_id,head_revision,access_revision,content_hash,fragment_key,title,snippet,locator FROM matches ORDER BY preference DESC,source_id,fragment_key LIMIT $3 OFFSET $4`, token.RunID, a.Query, a.Limit+1, a.Page*a.Limit)
@@ -196,11 +199,12 @@ func (r Reader) neighbors(ctx context.Context, tx pgx.Tx, src catalog.Source, a 
 	if max < 1 {
 		max = 1
 	}
-	rows, e := tx.Query(ctx, `SELECT o.fragment_key,c.title,substring(c.content FROM 1 FOR $4::integer),o.locator FROM memory_object_sources o JOIN memory_chunks c ON c.id=o.object_id WHERE o.memory_type='chunk' AND o.source_id=$1 AND o.source_revision=$2 AND o.fragment_ordinal IN ($3-1,$3+1) ORDER BY o.fragment_ordinal,o.object_id LIMIT 2`, src.ID, src.Revision, ordinal, max+1)
+	rows, e := tx.Query(ctx, `SELECT o.fragment_key,c.title,c.content,o.locator FROM memory_object_sources o JOIN memory_chunks c ON c.id=o.object_id WHERE o.memory_type='chunk' AND o.source_id=$1 AND o.source_revision=$2 AND o.fragment_ordinal IN ($3-1,$3+1) ORDER BY o.fragment_ordinal,o.object_id LIMIT 2`, src.ID, src.Revision, ordinal)
 	if e != nil {
 		return readcontrol.Empty("backend_error"), e
 	}
 	out := readcontrol.Empty("empty")
+	remaining := a.MaxChars
 	for rows.Next() {
 		var key, title, text string
 		var loc json.RawMessage
@@ -208,7 +212,15 @@ func (r Reader) neighbors(ctx context.Context, tx pgx.Tx, src catalog.Source, a 
 			rows.Close()
 			return readcontrol.Empty("backend_error"), e
 		}
+		if remaining == 0 {
+			out.Truncated = true
+			continue
+		}
+		if max > remaining {
+			max = remaining
+		}
 		v := item(src, key, title, text, loc, max)
+		remaining -= utf8.RuneCountInString(v.Text)
 		out.Items = append(out.Items, v)
 		out.Truncated = out.Truncated || v.Truncated
 	}
