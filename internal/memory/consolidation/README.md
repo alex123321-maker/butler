@@ -24,6 +24,8 @@ Owner workflow, under the existing bearer owner authentication and a unique
    and trigger are fixed by code. Input and policy commit atomically. Retrying
    identical policy identity returns the original receipt; changed input requires
    a new policy ID. Every selected original must pass current scope/privacy proof.
+   Supported scopes are owner-user and the exact pinned sessions/root tasks;
+   project-scoped inputs are rejected pending an explicit project privacy contract.
 2. The ordinary durable worker schedules the prepared generation after its quiet
    window. Model output supplies grouping IDs only. A valid result is quarantined.
 3. `GET /api/v4/memory/consolidation` lists bounded content-free receipts;

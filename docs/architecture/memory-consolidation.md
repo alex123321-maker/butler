@@ -26,6 +26,11 @@ nor a source may add a context. Delegated tasks, another task in the same sessio
 non-cloud task privacy, an active session/run, and an insufficient quiet window
 fail closed. Completed task identity/revision are retained. No old lease is used.
 
+This first manifest supports exact owner-user sources and session/root-task
+sources matching those pins. Project-scoped sources and arbitrary cross-project
+grants are explicitly rejected; a project label is not a session privacy proof.
+No model-generated scope or old source grant expands the prepared context set.
+
 The complete immutable context manifest is copied into each model job. Its
 fingerprint covers both exact source manifest and context pins. Empty contexts
 preserve the exact legacy source-only fingerprint and omitted policy fields, so

@@ -20,6 +20,7 @@ their own containers/networks. Commands are under `scripts/dev/`.
 | `runtime-v4` | `f9c7f21b` | PG/race consumer25.757s plus private owner API/closed registry; all-eight actual publish/select/read/retry/correct/forget/reconstruct, current accepted/temporal changes, head CAS/ABA, retention and honest cleanup failure/retry |
 | `backup-v1` | `f9c7f21b` | Six mandatory phases,0 failures/0 skips: real custom dump before deletion, separate fresh restore, newest independent anchor and idempotent replay for direct source and original→candidate ancestor |
 | `ordinary-v1` | `d8cfd3d9` |24 pass events,0 failures/0 skips. Actual Broker binary/private context+reader, authenticated durable input→ordinary Flow→owning worker→sealed result, independent raw/consolidated tasks. App read control2.610s, complete app target3.656s |
+| `concurrent-v2` | `5a1fa1bc` | PG/race15.504s, four mandatory tests: actual concurrent head CAS, owner choice during model call, stale prepared source before scan→fresh policy, concurrent final owner retention slot32 and retirement during provider with retained known spend |
 
 Server root: `/srv/storage/butler/agents/issue89-20261016`. Reports are immutable
 under `reports/<label>`, with source manifests and hashes. Backup and ordinary
