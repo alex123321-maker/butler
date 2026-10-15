@@ -72,7 +72,7 @@ func TestFeatureDigestUsesStableActualComposition(t *testing.T) {
 
 func TestFeaturePoliciesObserveOwnerAndLiveControlsIntegration(t *testing.T) {
 	pool := memorytest.Database(t)
-	ctx := owneridentity.WithActor(context.Background(), owneridentity.Actor{OwnerID: "doctor-owner", Channel: "web"})
+	ctx := owneridentity.WithActor(context.Background(), owneridentity.Actor{OwnerID: "doctor-owner", Channel: "web", DeliveryID: "doctor-read"})
 	_, err := pool.Exec(ctx, `INSERT INTO memory_model_policies(policy_id,owner_id,policy,state,jobs_created) VALUES
 	('private-active','doctor-owner','{"handler":"task-summary-v1","max_jobs":2,"job":{"deadline":"2099-01-01T00:00:00Z"}}','active',0),
 	('private-expired','doctor-owner','{"handler":"task-summary-v1","max_jobs":1,"job":{"deadline":"2000-01-01T00:00:00Z"}}','paused',1),
