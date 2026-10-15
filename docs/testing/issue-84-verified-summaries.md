@@ -153,6 +153,29 @@ The new scenario requires three different current conditions, including revoking
 the original exclusion and selecting only September. These prepared mechanisms
 are not a passing v6 result; qualification remains false pending actual evidence.
 
+## Retained native window v6
+
+Frozen 8043475c used the existing native High ceiling 32768 with matching finite
+budget and passed current config/factory/profile/ordinary-continuation/quote
+PG/race preflight. The first summary published with 7974 observed native total
+tokens. The first ordinary baseline then failed after 2.3s with the fixed
+`provider_unavailable` code and NULL usage. There were no slow/failed SQL or
+authority probes. HTTP status/reason/retryability were not retained by that frozen
+wrapper; a follow-up captures only those allowlisted fields, never raw provider
+errors or credentials. The consumed v6 window cannot prove its upstream cause.
+
+The nominal 300s per-call setting was also found to remain capped by the existing
+outer `ProcessOne` 110s deadline, independently of the 2.3s foreground failure.
+Therefore this window does not establish an effective 300s background call limit.
+The root implementation is correcting that separate deadline before another
+prospective window. No configuration is silently reinterpreted as proof.
+
+V6 retains two attempts (one known, one unknown); cumulative history now contains
+fifteen attempts, ten observed totals (86850 native tokens) and five unknown
+expenses. The complete quotes and all prior windows remain. Its first summary
+finish/output metadata and synthetic raw output are retained separately in the
+isolated evidence/private directories. Production qualification remains false.
+
 ## Consumer-specific lifecycle gate
 
 `reports/lifecycle-eight-fixed.txt` passes all eight shared
