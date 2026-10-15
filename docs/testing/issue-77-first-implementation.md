@@ -83,12 +83,15 @@ acceptance follows from this implementation branch.
 
 ## Combined validation receipts
 
-The consumer and kernel `combined-final-v5` snapshots are source `701d225a`.
-They include the six-minute claim/five-minute quote and the complete consumer
-implementations, reader metadata/redaction and large-original tail fixes.
+The final consumer and kernel `qualified-final` snapshots are source `3a769265`.
+They include both qualified profile gates, accepted-episode restore, ordinary
+scoped candidate context and the converter fixture correction, in addition to
+the six-minute claim/five-minute quote and the complete reader/consumer changes.
 
 | Isolated run | Result | Scope |
 | --- | --- | --- |
+| issue77 `qualified-final` | 320 PASS, 0 FAIL, 5 optional SKIP | Final consumer packages/composition, actual production Broker, race and vet |
+| issue83-combined77 `qualified-final` | 235 PASS, 0 FAIL, 4 optional SKIP | Final lifecycle kernel, Redis, Broker and actual catalog dump/restore |
 | issue77 `combined-final-v5` | 296 PASS, 0 FAIL, 5 optional SKIP | Consumer packages/composition, actual production Broker and vet |
 | issue83-combined77 `combined-final-v5` | 232 PASS, 0 FAIL, 4 optional SKIP | Lifecycle kernel, Redis, Broker and actual catalog dump/restore |
 | issue83-summary-restore `attempt-v2` | 6 PASS, 0 FAIL, 0 SKIP | Actual copied-summary dump/restore, separate message/ancestor cases |
@@ -120,6 +123,8 @@ Content hashes of the exact retained receipts:
 
 | Receipt | SHA-256 |
 | --- | --- |
+| Consumer `qualified-final/evidence.sha256` | `f50d6ba07b2619cd3b86a56cfc198ae3b0ebd192388e31605010efc5661f7e42` |
+| Kernel `qualified-final/evidence.sha256` | `d4e1af3ed2e6ad1fcd3290f6b78882c04519c80db8d8826db606b755d4cab9a9` |
 | Consumer `combined-final-v5/evidence.sha256` | `af677241f5862f939fe1d0e524af90950f01914cc52399cee0e85e9e05d43902` |
 | Kernel `combined-final-v5/evidence.sha256` | `b61b09b492c95d23cd4c0e8824bde776cb971d5743882a6bdd997b03c87eccf9` |
 | `model-duration-v2/tests.jsonl` | `b6b747a9fcae3d3853c9f8eed43e5983a776384761a1a0f54d18732a54873a9b` |
