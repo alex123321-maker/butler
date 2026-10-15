@@ -37,6 +37,8 @@ for part in seed delete restore; do
  ! grep -q '"Action":"skip"\|"Action":"fail"\|"Action":"build-fail"' "$proof/$part.jsonl"
  jq -s -e 'any(.[];.Action=="pass" and .Test=="TestActualPostgresDumpRestoreDeletionIntegration")' "$proof/$part.jsonl" >/dev/null
 done
-sha256sum "$proof/source.sha256" "$proof/before-deletion.dump" "$proof/deletion-anchor" "$proof/seed.jsonl" "$proof/delete.jsonl" "$proof/restore.jsonl" > "$proof/evidence.sha256"
+# The Go capsule intentionally creates the private anchor as root:0600. Hash it
+# in a read-only offline capsule; never weaken its permissions for collection.
+docker run --rm --pull never --network none -v "$proof:/proof:ro" -w /proof golang:1.27.2-bookworm sha256sum source.sha256 before-deletion.dump deletion-anchor seed.jsonl delete.jsonl restore.jsonl > "$proof/evidence.sha256"
 printf 'PASS\n' > "$proof/complete"
 printf '3 phases passed; no native calls\n'
