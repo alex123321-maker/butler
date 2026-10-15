@@ -49,7 +49,7 @@ func (s *Store) Correct(ctx context.Context, p Correction) (Source, error) {
 		return Source{}, e
 	}
 	var snapshot bool
-	if e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_summary_sources WHERE source_id=$1)`, p.SourceID).Scan(&snapshot); e != nil {
+	if e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_summary_sources WHERE source_id=$1) OR EXISTS(SELECT 1 FROM memory_consolidation_inputs WHERE source_id=$1) OR EXISTS(SELECT 1 FROM memory_consolidation_generations WHERE source_id=$1)`, p.SourceID).Scan(&snapshot); e != nil {
 		return Source{}, e
 	}
 	if snapshot {

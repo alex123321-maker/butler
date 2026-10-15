@@ -35,6 +35,18 @@ type Unit struct {
 	ScopeID   string            `json:"scope_id"`
 	EventTime *time.Time        `json:"event_time"`
 	Text      string            `json:"text"`
+	Accepted  *FactEvidence     `json:"accepted_fact,omitempty"`
+}
+
+// FactEvidence is copied only from catalog's typed accepted temporal read. The
+// source graph and these exact pins are checked separately from model grouping.
+type FactEvidence struct {
+	Key        string                   `json:"key"`
+	MemoryType string                   `json:"memory_type"`
+	Pin        catalog.AcceptedFactPin  `json:"pin"`
+	Temporal   catalog.TemporalMetadata `json:"temporal"`
+	Freshness  catalog.Freshness        `json:"freshness"`
+	Historical bool                     `json:"historical"`
 }
 
 type Envelope struct {
@@ -57,6 +69,7 @@ type Evidence struct {
 	ScopeType string            `json:"scope_type"`
 	ScopeID   string            `json:"scope_id"`
 	EventTime *time.Time        `json:"event_time"`
+	Accepted  *FactEvidence     `json:"accepted_fact,omitempty"`
 }
 type Variant struct {
 	Text     string     `json:"text"`
@@ -199,7 +212,7 @@ func (Handler) Validate(sources []catalog.Source, raw string) (string, error) {
 				return "", jobs.ErrClaim
 			}
 			seen[id] = true
-			variants[u.Text] = append(variants[u.Text], Evidence{u.ID, u.Source, u.ScopeType, u.ScopeID, u.EventTime})
+			variants[u.Text] = append(variants[u.Text], Evidence{u.ID, u.Source, u.ScopeType, u.ScopeID, u.EventTime, u.Accepted})
 		}
 		switch selection.Relation {
 		case "single":
