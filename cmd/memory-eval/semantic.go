@@ -121,9 +121,6 @@ func runSemantic(args []string, stdout io.Writer) error {
 	if err = json.Unmarshal(inputRaw, &frozen); err != nil {
 		return err
 	}
-	if err = acceptance.ValidateMemorySemanticSchedule(frozen.Inputs, schedule); err != nil {
-		return err
-	}
 	measurementsRaw, err := read(*measurementsPath)
 	if err != nil {
 		return err
@@ -138,6 +135,23 @@ func runSemantic(args []string, stdout io.Writer) error {
 	}
 	var review acceptance.MemorySemanticReview
 	if err = json.Unmarshal(reviewRaw, &review); err != nil {
+		return err
+	}
+	// The separately declared search baseline collects retrieval only. Its
+	// independent review carries the variant; observed inputs cannot select it.
+	if review.Variant == "baseline" {
+		if header.Version != acceptance.MemorySemanticVersion {
+			return errors.New("retrieval-only baseline requires semantic corpus")
+		}
+		baseline := []acceptance.MemorySemanticSlot{}
+		for _, slot := range schedule {
+			if slot.Arm == "retrieval" || slot.Arm == "retrieval_repeat" {
+				baseline = append(baseline, slot)
+			}
+		}
+		schedule = baseline
+	}
+	if err = acceptance.ValidateMemorySemanticSchedule(frozen.Inputs, schedule); err != nil {
 		return err
 	}
 	rubric, err := read(*rubricPath)

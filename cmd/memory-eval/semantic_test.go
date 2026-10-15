@@ -77,6 +77,25 @@ func TestMemorySemanticCLIOriginalReplayAndExclusiveOutput(t *testing.T) {
 	write("inputs.json", struct {
 		Inputs []acceptance.MemoryInput `json:"inputs"`
 	}{inputs})
+	baseline := r
+	baseline.Variant = "baseline"
+	baseline.Items = r.Items[2:]
+	baselineMeasurements := m
+	baselineMeasurements.Observations = m.Observations[2:]
+	baseline.MeasurementsSHA256 = acceptance.MemoryBytesSHA256(write("measurements.json", baselineMeasurements))
+	write("review.json", baseline)
+	write("inputs.json", struct {
+		Inputs []acceptance.MemoryInput `json:"inputs"`
+	}{inputs[2:]})
+	args[len(args)-1] = filepath.Join(dir, "declared-baseline-result")
+	if err := run(args, &bytes.Buffer{}); err != nil {
+		t.Fatal("independently declared retrieval-only baseline rejected", err)
+	}
+	write("measurements.json", m)
+	write("review.json", r)
+	write("inputs.json", struct {
+		Inputs []acceptance.MemoryInput `json:"inputs"`
+	}{inputs})
 	r.Items[0].OutputSHA256 = acceptance.MemoryBytesSHA256([]byte("changed-answer"))
 	write("review.json", r)
 	args[len(args)-1] = filepath.Join(dir, "tampered-result")

@@ -40,7 +40,10 @@ fallibility; this is not human annotation.
 
 Offline replay requires the complete corpus-derived case/arm matrix, including
 predeclared repeats and explicit failed/skipped observations. Trimming inputs and
-observations together cannot redefine that matrix. The generic scorer also
+observations together cannot redefine that matrix. The independently reviewed
+`variant=baseline` search comparison uses retrieval-only slots for every corpus
+case; the scorer never infers this variant from missing observed arms. It records
+the variant in the report. The generic scorer also
 rejects empty inputs and omitted corpus cases. Every parseable original model
 citation must have exactly one matching review check, including duplicates and
 incorrect citations. `citations_checked`, `citation_errors` and
