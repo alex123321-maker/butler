@@ -14,6 +14,17 @@ them and existing services receive no timeout mutation.
 
 ## Acceptance and ordering
 
+Authenticated operator Doctor admission uses the same task/session/input stores
+and worker. The fixed command is selected only by `operator_operation` in the
+private accepted-input checkpoint, atomically installed by `AcceptDoctorTx`.
+Ordinary input payloads cannot set it. It survives preparation and approved
+restart without changing the original action or minting ownership. The existing
+model-loop states also drive this fixed operator command, but no provider is
+called: its local event stream proposes only `doctor.check_system` with `{}` and
+retains the actual Broker observation. All exact-action policy, budgets,
+approvals, fencing and uncertain-outcome rules still apply. See the
+[memory/Doctor runbook](../operations/memory-observability.md).
+
 `POST /api/v1/events` returns HTTP 202 with `accepted`, `input_id`,
 `receipt_status`, `session_key` and optional `task_id`/`run_id`. `Location` points
 to `/api/v3/inputs/{input_id}`. gRPC `SubmitEventResponse` has the same additive

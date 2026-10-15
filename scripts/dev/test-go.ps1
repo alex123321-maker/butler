@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
   [string[]]$Packages = @("./apps/...", "./internal/...", "./scripts/..."),
+	[string]$Run = "",
   [switch]$Count1
 )
 
@@ -10,6 +11,7 @@ $state = Initialize-ButlerAgentEnvironment
 Assert-CommandAvailable -Name go
 
 $args = @("test")
+if ($Run) { $args += @("-run", $Run) }
 if ($Count1) {
   $args += "-count=1"
 }

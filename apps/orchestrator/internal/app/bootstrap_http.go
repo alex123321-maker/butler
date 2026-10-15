@@ -1,8 +1,6 @@
 package app
 
 import (
-	"context"
-	"fmt"
 	"github.com/butler/butler/internal/budget"
 	"log/slog"
 	"net/http"
@@ -30,7 +28,6 @@ import (
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/config"
 	"github.com/butler/butler/internal/extensions"
-	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/generatedtools"
 	"github.com/butler/butler/internal/health"
 	"github.com/butler/butler/internal/logger"
@@ -115,23 +112,11 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	apiServer.SetOwnerControlAuth(deps.ownerAuth)
 	inputServer := apiservice.NewInputServer(deps.inputStore)
 	viewServer := apiservice.NewViewServer(deps.sessionRepo, deps.runRepo, deps.transcriptStore, logger.WithComponent(deps.log, "view-api"))
-	doctorChecker := apiservice.NewToolBrokerDoctorChecker(func(ctx context.Context, toolName, argsJSON string) (string, error) {
-		result, err := deps.toolBrokerClient.ExecuteToolCall(ctx, &toolbrokerv1.ToolCall{
-			ToolCallId: fmt.Sprintf("doctor-%d", time.Now().UnixNano()),
-			ToolName:   toolName,
-			ArgsJson:   argsJSON,
-			Status:     "pending",
-			StartedAt:  time.Now().UTC().Format(time.RFC3339Nano),
-		})
-		if err != nil {
-			return "", err
-		}
-		return result.GetResultJson(), nil
-	})
+	doctorChecker := &operatorDoctorChecker{deps: deps}
 	memoryDoctor := memorydoctor.NewReporter(deps.pipelineQueue, deps.postgres)
-	memoryDoctor.SetPipelineEnabled(deps.pipelineWorker != nil)
-	memoryDoctor.SetEmbeddingConfigured(deps.embeddingProvider != nil)
+	memoryDoctor.Configure(memorydoctor.Options{PipelineConfigured: deps.cfg.MemoryPipelineEnabled, PipelineEffective: deps.pipelineWorker != nil, SemanticConfigured: strings.TrimSpace(os.Getenv("BUTLER_MEMORY_SEMANTIC_ENABLED")) == "true", SemanticEffective: deps.memoryIndexing != nil, EmbeddingConfigured: deps.embeddingProvider != nil, Catalog: deps.sourceCatalog, Metrics: deps.metrics, Configuration: map[string]any{"provider": deps.providerResult.ProviderName, "model": deps.providerResult.ModelName, "profile_limit": deps.cfg.MemoryProfileLimit, "episode_limit": deps.cfg.MemoryEpisodicLimit, "context_budget": deps.cfg.ContextBudgetTokens}})
 	doctorServer := apiservice.NewDoctorServer(deps.postgres.Pool(), doctorChecker, memoryDoctor, deps.artifactsService, logger.WithComponent(deps.log, "doctor-api"))
+	doctorServer.SetOwnerControlAuth(deps.ownerAuth)
 	settingsService := config.NewSettingsService(deps.settingsStore, deps.hotConfig)
 	settingsServer := apiservice.NewSettingsServer(settingsService, restarthelper.NewClient(deps.cfg.RestartHelperURL))
 	promptServer := apiservice.NewPromptServer(deps.executor)

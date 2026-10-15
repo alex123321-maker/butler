@@ -61,6 +61,10 @@ func (r *Registry) Handler() http.Handler {
 	return promhttp.HandlerFor(r.registry, promhttp.HandlerOpts{})
 }
 
+// RegisterCollector attaches bounded, read-only observations collected at scrape
+// time. Durable gauges must not depend on a worker or Doctor having run first.
+func (r *Registry) RegisterCollector(c prometheus.Collector) error { return r.registry.Register(c) }
+
 func (r *Registry) IncrCounter(name string, labels map[string]string) error {
 	vec, keys, err := r.counter(name, labels)
 	if err != nil {

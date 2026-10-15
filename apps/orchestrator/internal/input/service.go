@@ -261,6 +261,9 @@ func (s *Service) process(parent context.Context, r Record) {
 		}
 	}
 	ctx, cancel := context.WithTimeout(WithClaim(parent, r), s.executionTimeout)
+	if doctorAdmission(r.CheckpointJSON) {
+		ctx = flow.WithOperatorDoctor(ctx)
+	}
 	defer cancel()
 	heartbeatDone := make(chan struct{})
 	go func() {
@@ -317,10 +320,23 @@ func (s *Service) process(parent context.Context, r Record) {
 			return
 		}
 		code := "execution_stopped"
+		if doctorAdmission(r.CheckpointJSON) {
+			var diagnostic interface{ DiagnosticCode() string }
+			if errors.As(err, &diagnostic) {
+				switch diagnostic.DiagnosticCode() {
+				case "broker_transport", "preparation_denied", "authorization_denied":
+					code = diagnostic.DiagnosticCode()
+				}
+			}
+		}
 		if errors.Is(err, context.DeadlineExceeded) {
 			code = "execution_deadline_exceeded"
 		}
-		s.finish(parent, r, "blocked", code, err.Error(), 0)
+		message := err.Error()
+		if doctorAdmission(r.CheckpointJSON) {
+			message = "diagnostic execution stopped; inspect bounded error code"
+		}
+		s.finish(parent, r, "blocked", code, message, 0)
 		return
 	}
 	if result != nil && result.ReceiptStatus == "blocked" {

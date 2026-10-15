@@ -42,6 +42,7 @@ import (
 	"github.com/butler/butler/internal/memory/candidatecontrol"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/chunks"
+	memorydoctor "github.com/butler/butler/internal/memory/doctor"
 	"github.com/butler/butler/internal/memory/embeddings"
 	"github.com/butler/butler/internal/memory/episodic"
 	"github.com/butler/butler/internal/memory/pipeline"
@@ -114,6 +115,11 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	m := metrics.New()
+	if err := memorydoctor.RegisterMetrics(m, postgres.Pool()); err != nil {
+		redis.Close()
+		postgres.Close()
+		return nil, err
+	}
 	h := health.New(
 		cfg.Shared.ServiceName,
 		health.FuncChecker{CheckName: "postgres", Fn: postgres.HealthCheck},
@@ -437,6 +443,7 @@ func New(ctx context.Context) (*App, error) {
 		transcriptStore,
 		providerResult.Provider,
 		flow.Config{
+			Metrics: m,
 			MemoryScopeResolver: func(ctx context.Context) ([]memoryservice.Scope, error) {
 				scopes, e := sourceCatalog.ExtraScopes(ctx, "memory_read")
 				if e != nil {

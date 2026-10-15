@@ -63,6 +63,15 @@ func (s *Service) prepareRun(ctx context.Context, event ingress.InputEvent) (pre
 	if token, ok := ownership.TokenFromContext(ctx); ok {
 		prepared.CurrentRunID = token.RunID
 	}
+	if operatorDoctor(ctx) {
+		if firstString(payload, "task_id") == "" {
+			return preparedRun{}, fmt.Errorf("operator diagnostic task required")
+		}
+		if err := s.attachTaskContext(ctx, event.SessionKey, &prepared); err != nil {
+			return preparedRun{}, err
+		}
+		return prepared, nil
+	}
 	// Pin a validated explicit task before Catalog chooses a delegated context.
 	// Later task attachment also prepares working state and authenticated policy.
 	if id := firstString(payload, "task_id"); id != "" && prepared.CurrentRunID != "" {

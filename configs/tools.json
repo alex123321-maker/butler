@@ -501,8 +501,8 @@
     },
     {
       "tool_name": "doctor.check_system",
-      "contract_revision": "1",
-      "effect_contract": { "retry_safety": "unsafe", "verification_method": "none" },
+      "contract_revision": "2",
+      "effect_contract": { "retry_safety": "read_only", "verification_method": "read_result" },
       "description": "Inspect config validation and connectivity for Butler dependencies.",
       "tool_class": "doctor",
       "input_schema_json": "{\"type\":\"object\",\"additionalProperties\":false}",

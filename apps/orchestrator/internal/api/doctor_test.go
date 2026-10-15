@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+	"time"
 )
 
 type mockDoctorChecker struct {
@@ -40,11 +42,13 @@ func TestDoctorHandleRunCheck_MethodNotAllowed(t *testing.T) {
 func TestDoctorHandleRunCheck_CheckerError(t *testing.T) {
 	checker := &mockDoctorChecker{err: errTestFail}
 	srv := NewDoctorServer(nil, checker, nil, nil, nil)
+	srv.SetOwnerControlAuth(NewOwnerControlAuth(strings.Repeat("t", 32), "owner"))
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/doctor/check", nil)
+	req.Header.Set("Authorization", "Bearer "+strings.Repeat("t", 32))
 	srv.HandleRunCheck().ServeHTTP(rec, req)
-	if rec.Code != http.StatusInternalServerError {
-		t.Fatalf("expected 500, got %d", rec.Code)
+	if rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), "execution_unavailable") {
+		t.Fatalf("partial diagnostic missing: %d %s", rec.Code, rec.Body.String())
 	}
 }
 
@@ -52,9 +56,11 @@ func TestDoctorHandleRunCheck_Success_NoPool(t *testing.T) {
 	// When pool is nil, the store fails but we still return the report
 	report := json.RawMessage(`{"status":"healthy","checks":[]}`)
 	checker := &mockDoctorChecker{status: "healthy", reportJSON: report}
-	srv := NewDoctorServer(nil, checker, &mockMemoryReporter{report: map[string]any{"queue": map[string]any{"healthy": true, "depth": float64(0)}}}, nil, nil)
+	srv := NewDoctorServer(nil, checker, &mockMemoryReporter{report: map[string]any{"status": "healthy", "queue": map[string]any{"healthy": true, "depth": float64(0)}}}, nil, nil)
+	srv.SetOwnerControlAuth(NewOwnerControlAuth(strings.Repeat("t", 32), "owner"))
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/doctor/check", nil)
+	req.Header.Set("Authorization", "Bearer "+strings.Repeat("t", 32))
 	srv.HandleRunCheck().ServeHTTP(rec, req)
 	if rec.Code != http.StatusOK {
 		t.Fatalf("expected 200, got %d", rec.Code)
@@ -88,8 +94,10 @@ func TestDoctorHandleListReports_MethodNotAllowed(t *testing.T) {
 
 func TestDoctorHandleListReports_NoPool(t *testing.T) {
 	srv := NewDoctorServer(nil, &mockDoctorChecker{}, nil, nil, nil)
+	srv.SetOwnerControlAuth(NewOwnerControlAuth(strings.Repeat("t", 32), "owner"))
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/doctor/reports", nil)
+	req.Header.Set("Authorization", "Bearer "+strings.Repeat("t", 32))
 	srv.HandleListReports().ServeHTTP(rec, req)
 	// With nil pool, we return empty list
 	if rec.Code != http.StatusOK {
@@ -109,12 +117,12 @@ func TestDoctorHandleListReports_NoPool(t *testing.T) {
 }
 
 func TestToolBrokerDoctorChecker_Success(t *testing.T) {
-	resultJSON := `{"status":"healthy","checks":[{"name":"config","status":"healthy"}]}`
+	resultJSON := `{"status":"healthy","checked_at":"` + time.Now().UTC().Format(time.RFC3339Nano) + `","checks":[{"name":"config","status":"healthy"}]}`
 	checker := NewToolBrokerDoctorChecker(func(_ context.Context, toolName, _ string) (string, error) {
 		if toolName != "doctor.check_system" {
 			t.Errorf("unexpected tool name: %s", toolName)
 		}
-		return resultJSON, nil
+		return `{"status":"completed","result":` + resultJSON + `}`, nil
 	})
 
 	status, report, err := checker.RunCheck(context.Background())
@@ -124,8 +132,8 @@ func TestToolBrokerDoctorChecker_Success(t *testing.T) {
 	if status != "healthy" {
 		t.Errorf("expected healthy, got %s", status)
 	}
-	if string(report) != resultJSON {
-		t.Errorf("report mismatch: %s", string(report))
+	if !json.Valid(report) {
+		t.Errorf("invalid report: %s", string(report))
 	}
 }
 
@@ -138,8 +146,8 @@ func TestToolBrokerDoctorChecker_Error(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error")
 	}
-	if status != "unhealthy" {
-		t.Errorf("expected unhealthy on error, got %s", status)
+	if status != "unknown" {
+		t.Errorf("expected unknown on transport error, got %s", status)
 	}
 }
 

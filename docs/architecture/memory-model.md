@@ -912,6 +912,23 @@ Broker/runtime/model admission and cleanup scheduling remain disabled/pending.
 
 # Pending-only evaluation lineage
 
+Memory observations use the additive `memory-observations-v1` contract described
+in [the operator runbook](../operations/memory-observability.md). Component
+configuration/connection, timestamped checks, request outcomes and quality proof
+are separate. The production bundle service shares the `/metrics` registry;
+search and context selection have independent completion/latency/count/reason
+metrics with fixed label vocabularies. Legacy hit/miss semantics remain intact.
+Source guards preserve content-free stale/deletion reasons. Zero document hits
+remain unknown unless the permitted corpus is positively established empty or
+present. SQL fallback preserves results and semantic limitations independently.
+
+Read-only, bounded PostgreSQL observations recover auxiliary job backlog and
+build/verified/active index states after restart. Owner Doctor reports scope-check
+generation metadata and retain existing generation evidence separately from
+unverified assistant quality. They neither run inference nor enable legacy
+workers. Configured pipelines/readers cannot advertise unobserved liveness as
+healthy. Missing/expired checks and failed necessary stores affect aggregation.
+
 An independently reviewed continuation can reuse original retrieval captures
 after a failed native prefix. It must preserve the complete original scored
 matrix, paid failures, all charges and original absolute expiry; only admission

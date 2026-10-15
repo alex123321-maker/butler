@@ -6,21 +6,23 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/security/content"
 )
 
 var (
 	ErrInvalid     = errors.New("invalid semantic index input")
 	ErrUnavailable = errors.New("semantic retrieval unavailable")
-	ErrStale       = errors.New("semantic source or activation changed")
+	ErrStale       = fmt.Errorf("semantic source or activation changed: %w", catalog.ErrStale)
 	ErrUnverified  = errors.New("semantic generation not verified")
 	ErrAdmission   = errors.New("semantic inference admission required")
-	ErrAccess      = errors.New("semantic source access denied")
+	ErrAccess      = fmt.Errorf("semantic source access denied: %w", catalog.ErrDenied)
 )
 
 // Space is immutable. Its digest distinguishes incompatible vectors even when

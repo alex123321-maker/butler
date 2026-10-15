@@ -2,6 +2,13 @@
 
 Doctor runtime service for Butler diagnostics and self-inspection.
 
+Operator launches now use Orchestrator's authenticated durable input and exact
+Broker authorization path; the runtime receives a real run context. Its
+`doctor.check_system` registry contract is a read-only observation with
+`read_result` evidence. A completed tool response is distinct from the diagnostic
+status inside its report. Provider configuration checks still do not prove live
+inference quality. See the [runbook](../../docs/operations/memory-observability.md).
+
 Current state:
 - runtime exposes the internal `ToolRuntimeService` gRPC contract
 - `doctor.check_system` returns a secret-safe report with config validation plus database checks

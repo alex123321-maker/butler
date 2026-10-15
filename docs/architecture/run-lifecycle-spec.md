@@ -666,6 +666,14 @@ Session summary обновляется post-run через memory pipeline worke
 
 ### 17.4 Operator visibility baseline
 
+Operator Doctor uses a real authenticated owner task, accepted input, run and
+Session Service lease. Its fixed local command drives the existing execution
+states without a model request. Broker prepare/authorize/execute and durable
+approval/recovery remain unchanged. POST `/api/v1/doctor/check` returns a pending
+receipt (202); polling its `input_id` reads that exact operation. Runtime and
+memory reporting failures remain independent results and cannot become a
+healthy report because HTTP delivery succeeded. Historical JSON remains readable.
+
 Текущий baseline дополнительно предусматривает read-only operator visibility для memory state вне критического run path:
 
 - orchestrator exposes `GET /api/v1/memory` для scope-based просмотра durable memory records;
