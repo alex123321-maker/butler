@@ -138,6 +138,10 @@ the complete publication proof here can wait behind the same worker's publisher
 and cancel an otherwise valid provider result. Full admission, per-HTTP release,
 dispatch and publication checks remain mandatory; an unavailable metadata proof
 still cancels, and does not erase or refund an admitted attempt.
+This observation transaction finishes with bounded rollback because its verified
+helper chain has no durable mutation. Tuple locks can generate WAL; an unnecessary
+commit can wait for durability within the short observation deadline. Network
+release/dispatch and publication retain their normal durable commit boundaries.
 
 ## Migration and rollback
 

@@ -28,6 +28,12 @@ Within a job, full pre-HTTP authority/dispatch proofs serialize with periodic
 observation. A tick yields only while that same mandatory full proof is running;
 the provider cannot send until it succeeds, and the call deadline remains active.
 This avoids self-contention while auth resolution repeats authority before HTTP.
+Observation ends with bounded `Rollback(ctx)`, not a durable commit. Its helper
+chain (`CheckRestoreTx`, `checkModelPolicyTx`/`checkPolicyTaskTx`,
+`CheckTaskAuthorityTx`/`CheckAssignmentTx`, `butler_task_check_delegation`, claim
+snapshot and source/summary metadata predicates) only reads/checks/locks; it has
+no durable business/audit update to publish. Rollback errors still deny/cancel.
+Full network and publication transactions retain their existing commits.
 Rejected consumer output records the fixed `consumer_output_invalid` reason;
 validator/model text is never copied into a public diagnostic or authority error.
 

@@ -80,6 +80,9 @@ SELECT butler_memory_summary_sources_current($5) AND NOT EXISTS (
 	if busy {
 		return ErrWaiting
 	}
-	phase("supervisor_commit")
-	return tx.Commit(ctx)
+	// Observation creates no durable state. Release its verification locks with
+	// rollback, avoiding a synchronous WAL commit for tuple-lock records. Full
+	// network/publication transactions keep their mandatory durable commits.
+	phase("supervisor_rollback")
+	return tx.Rollback(ctx)
 }

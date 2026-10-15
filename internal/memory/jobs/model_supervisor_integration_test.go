@@ -3,6 +3,7 @@ package jobs
 import (
 	"context"
 	"errors"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/transport"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func TestModelSupervisorCurrentPinnedSourceAndAuthorityIntegration(t *testing.T) {
@@ -94,6 +96,71 @@ func TestModelSupervisorCurrentPinnedSourceAndAuthorityIntegration(t *testing.T)
 				t.Fatal("stale supervisor accepted", change)
 			}
 		})
+	}
+}
+
+type modelObserverCommitDelay struct{ commits, rollbacks atomic.Int32 }
+
+func (p *modelObserverCommitDelay) TraceQueryStart(ctx context.Context, _ *pgx.Conn, d pgx.TraceQueryStartData) context.Context {
+	switch strings.ToLower(strings.TrimSpace(d.SQL)) {
+	case "commit":
+		p.commits.Add(1)
+		timer := time.NewTimer(300 * time.Millisecond)
+		defer timer.Stop()
+		select {
+		case <-ctx.Done():
+		case <-timer.C:
+		}
+	case "rollback":
+		p.rollbacks.Add(1)
+	}
+	return ctx
+}
+func (*modelObserverCommitDelay) TraceQueryEnd(context.Context, *pgx.Conn, pgx.TraceQueryEndData) {}
+
+func TestModelSupervisorObservationRollsBackWithoutBusinessMutationIntegration(t *testing.T) {
+	w, owner, src := modelFixture(t)
+	j := schedule(t, w, owner, policyRequest(src))
+	if _, _, err := w.Admit(context.Background(), j); err != nil {
+		t.Fatal(err)
+	}
+	trace := &modelObserverCommitDelay{}
+	cfg := w.Jobs.pool.Config()
+	cfg.ConnConfig.Tracer = trace
+	pool, err := pgxpool.NewWithConfig(context.Background(), cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer pool.Close()
+	w.Jobs.pool = pool
+	state := func() string {
+		t.Helper()
+		var sum string
+		err := pool.QueryRow(context.Background(), `SELECT md5(jsonb_build_object(
+'job',(SELECT to_jsonb(j) FROM memory_aux_jobs j WHERE job_id=$1),
+'policy',(SELECT to_jsonb(p) FROM memory_model_policies p WHERE policy_id=$2),
+'control',(SELECT to_jsonb(c) FROM memory_model_control c),
+'attempts',(SELECT jsonb_agg(to_jsonb(a) ORDER BY operation_id) FROM memory_model_attempts a),
+'sources',(SELECT jsonb_agg(to_jsonb(s) ORDER BY source_id) FROM memory_sources s),
+'source_revisions',(SELECT jsonb_agg(to_jsonb(r) ORDER BY source_id,revision) FROM memory_source_revisions r),
+'tasks',(SELECT jsonb_agg(to_jsonb(t) ORDER BY task_id) FROM tasks t),
+'goals',(SELECT jsonb_agg(to_jsonb(g) ORDER BY goal_id) FROM owner_goals g),
+'mandates',(SELECT jsonb_agg(to_jsonb(m) ORDER BY mandate_id) FROM action_mandates m),
+'reservations',(SELECT jsonb_agg(to_jsonb(r) ORDER BY reservation_id) FROM execution_budget_reservations r)
+)::text)`, j.ID, j.PolicyID).Scan(&sum)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return sum
+	}
+	before := state()
+	ctx, stop := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	defer stop()
+	if err = w.Jobs.checkModelSupervisor(ctx, j); err != nil {
+		t.Fatal("read-only observer waited for a commit it did not need", err)
+	}
+	if trace.commits.Load() != 0 || trace.rollbacks.Load() != 1 || state() != before {
+		t.Fatal("observer committed or mutated business/attempt state", trace.commits.Load(), trace.rollbacks.Load())
 	}
 }
 
