@@ -123,6 +123,36 @@ and four unknown expenses. Reports are under `reports/native-v4`, including boun
 SQL/pool phase tracing and exact previous-window rows. No full three-round paired
 quality/cost acceptance is claimed and the release qualification stays false.
 
+## Retained native window v5
+
+The independent v5 window includes the observation rollback fix and completed the
+first summary plus both ordinary continuations. Its second summary returned
+`consumer_output_invalid` with observed usage; no slow/failed SQL or authority
+probe was recorded. Thus this attempt reached the consumer quality boundary.
+The second answer used input 12213 / output 324 / total 20401 tokens: non-input usage
+8188 is near the adapter's default 8192 generated-token ceiling, which includes
+thinking. Exhaustion leaving an incomplete visible answer is a hypothesis; this
+frozen window did not retain its finish reason/rejected text and cannot prove
+`MAX_TOKENS`. Strict validation remains unchanged and the result was not published.
+
+All four v5 attempts have observed usage (42448 native total tokens). Across all
+five windows, thirteen attempts remain: nine observed totals (78876 tokens) and
+four unknown expenses with full conservative quotes. Partial completed answers
+and context sizes survive a later failure in the new harness. No old window is
+replayed, relabeled or deducted from cumulative expense.
+
+The next prospective v6 uses the existing trusted High ceiling 32768 through the
+same operator config/provider factory path as production, matching finite budget
+output reservation, and finite 300s model calls. Production summary registration
+and its policy endpoint require that declared ceiling and matching budget;
+default 0 still produces 8192 and remains insufficient for this consumer. Broader
+foreground construction also rejects an explicitly expanded native ceiling with
+an undersized budget. The synthetic acceptance wrapper now exports finish reason
+and output size, while rejected raw output is restricted to private evidence.
+The new scenario requires three different current conditions, including revoking
+the original exclusion and selecting only September. These prepared mechanisms
+are not a passing v6 result; qualification remains false pending actual evidence.
+
 ## Consumer-specific lifecycle gate
 
 `reports/lifecycle-eight-fixed.txt` passes all eight shared
