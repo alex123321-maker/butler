@@ -1063,7 +1063,7 @@ configuration and provider factory. Zero retains the existing 8192 default; the
 native constructor validates High-only ceilings up to 32768. The full generated
 ceiling includes thinking and visible output and must fit the independently
 declared finite execution policy `output_tokens`. The summary consumer requires
-at least 32768 on both boundaries before its separately qualified/default-off
+exactly 32768 on the adapter and at least that much budget before its separately qualified/default-off
 registration or policy endpoint is available. This setting cannot be widened by
 source text, model transport options or a summary policy.
 The adapter's `InferenceTimeout()` attests its actual normalized construction

@@ -41,7 +41,7 @@ func summaryProfileReady(p providerfactory.Result, b *budget.Controller) bool {
 	}
 	_, output := limits.InferenceLimits()
 	timed, ok := p.Provider.(interface{ InferenceTimeout() time.Duration })
-	return ok && timed.InferenceTimeout() >= 300*time.Second && b.Policy.ModelMillis >= 300000 && output >= 32768 && output <= 65536 && b.Policy.OutputTokens >= output
+	return ok && timed.InferenceTimeout() >= 300*time.Second && b.Policy.ModelMillis >= 300000 && output == 32768 && b.Policy.OutputTokens >= output
 }
 
 func summaryConsumerConfigured(w *jobs.ModelWorker) bool {

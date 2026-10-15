@@ -227,7 +227,7 @@ was used to manufacture the pass. The prior v5 `MAX_TOKENS` hypothesis remains
 unproven, while successful v7 background non-input totals exceed 8192 and establish
 the qualified larger profile.
 
-Qualification is limited to native Flash High, generated ceiling at least 32768,
+Qualification is limited to native Flash High, generated ceiling exactly 32768,
 actual normalized transport timeout at least 300s and finite budget
 `output_tokens>=32768`, `model_millis>=300000`. Shorter hard owner/task deadlines
 still win and may produce the documented safe fallback. The small post-window
