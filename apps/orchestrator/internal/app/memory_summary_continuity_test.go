@@ -156,7 +156,7 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 		}
 		// A fresh process composition reads only durable PG state each round.
 		js := jobs.New(pool, cat, b, nil)
-		handler := compaction.Consumer{ContextBudget: 50000}
+		handler := compaction.Consumer{ContextBudget: 65536}
 		worker := &jobs.ModelWorker{Jobs: js, Provider: provider, Model: model, Handlers: map[string]jobs.ModelHandler{compaction.HandlerName: handler}}
 		if err := js.SetModelControl(ctx, "enabled"); err != nil {
 			t.Fatal(err)
@@ -181,7 +181,7 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 			limit := 300000
 			if arm == "compacted" {
 				reader = summary.NewStore(pool)
-				limit = 50000
+				limit = 65536
 			}
 			executor := flow.NewService(session.NewPostgresRepository(pool), session.NewPostgresLeaseManager(pool), runservice.NewService(runservice.NewPostgresRepository(pool), nil), ts, provider, flow.Config{ProviderName: "antigravity", ModelName: model, OwnerID: "owner", LeaseTTL: 120, Tasks: task.NewStore(pool), SummaryReader: reader, ContextBudgetTokens: limit, Budgets: b, MemorySources: cat, Completion: completion.New(pool)}, slog.New(slog.NewTextHandler(io.Discard, nil)))
 			id := fmt.Sprintf("continuity-%d-%s", round, arm)
@@ -195,7 +195,7 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 				t.Fatal(err)
 			}
 			var answer map[string]string
-			if json.Unmarshal([]byte(strings.TrimSpace(output)), &answer) != nil || len(answer) != 7 || answer["stopped"] != "email_only" || answer["continuing"] != "collect_and_verify" || answer["owner_done"] != "export_done_no_repeat" || answer["new_condition"] != "exclude_september" || answer["effect"] != "unknown_no_retry_without_check" || answer["next"] != "show_draft_before_send" {
+			if json.Unmarshal([]byte(strings.TrimSpace(output)), &answer) != nil || len(answer) != 7 || answer["goal"] != "report_and_draft" || answer["stopped"] != "email_only" || answer["continuing"] != "collect_and_verify" || answer["owner_done"] != "export_done_no_repeat" || answer["new_condition"] != "exclude_september" || answer["effect"] != "unknown_no_retry_without_check" || answer["next"] != "show_draft_before_send" {
 				t.Fatalf("continuation quality failed %s: %s", arm, output)
 			}
 			report.Answers = append(report.Answers, json.RawMessage(output))
