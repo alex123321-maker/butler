@@ -28,6 +28,14 @@ type ModelHandler interface {
 	Instruction() string
 	Validate([]catalog.Source, string) (string, error)
 }
+
+// ModelPublicationHandler optionally materializes a validated DATA result inside
+// the existing publication transaction. Implementations are trusted versioned
+// code and cannot accept memory claims or grant task/action authority. Returning
+// an error rolls back both materialization and the job/result checkpoint.
+type ModelPublicationHandler interface {
+	PublishTx(context.Context, pgx.Tx, *catalog.Store, Job, ModelAttempt, []catalog.Source, catalog.Source, string) error
+}
 type ModelWorker struct {
 	Jobs     *Store
 	Provider transport.ModelProvider
@@ -275,7 +283,10 @@ func (s *Store) observeModel(ctx context.Context, a ModelAttempt, usage *transpo
 	}
 	return nil
 }
-func (s *Store) publishModel(ctx context.Context, j Job, a ModelAttempt, body string) (string, error) {
+func (s *Store) publishModel(ctx context.Context, j Job, a ModelAttempt, body string, handlers ...ModelHandler) (string, error) {
+	if len(handlers) > 1 {
+		return "", ErrClaim
+	}
 	if len(body) == 0 || len(body) > 32768 || sanitize.Text(body) != body {
 		return "", ErrClaim
 	}
@@ -318,6 +329,13 @@ func (s *Store) publishModel(ctx context.Context, j Job, a ModelAttempt, body st
 	src, e := s.catalog.CreateDerivedTx(ctx, tx, j.Sources, j.Purpose, "Background memory candidate", body, jsonBytes(map[string]string{"job_id": j.ID, "operation_id": a.OperationID, "handler": j.Purpose}))
 	if e != nil {
 		return "", e
+	}
+	if len(handlers) == 1 {
+		if h, ok := handlers[0].(ModelPublicationHandler); ok {
+			if e = h.PublishTx(ctx, tx, s.catalog, j, a, sources, src, body); e != nil {
+				return "", e
+			}
+		}
 	}
 	tag, e := tx.Exec(ctx, `UPDATE memory_aux_jobs SET status='done',claim_id='',claim_until=NULL,error_code='',updated_at=clock_timestamp() WHERE job_id=$1 AND claim_id=$2 AND claim_epoch=$3 AND status='running' AND claim_until>clock_timestamp() AND deadline>clock_timestamp()`, j.ID, j.ClaimID, j.ClaimEpoch)
 	if e != nil {
@@ -613,7 +631,7 @@ observed:
 	if callCtx.Err() != nil {
 		return callCtx.Err()
 	}
-	_, err = s.publishModel(callCtx, j, a, body)
+	_, err = s.publishModel(callCtx, j, a, body, h)
 	return err
 }
 
