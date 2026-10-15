@@ -218,3 +218,19 @@ remain under the sealed renewed-five root's audit/report directory. Do not rerun
 prepare/auth-preflight/execute/audit against that existing root; audit outputs
 already exist. New offline verification must use a fresh output directory and
 the retained original inputs, without inference or reopening any window.
+
+## Five-minute model timeout for future trials
+
+The owner's subsequent request sets new memory-eval model turns to300 seconds
+in both budget admission and the native provider. Earlier task/window/ownership
+deadlines still take precedence. The shared schema-dialect factory keeps its
+two-minute wrapper for older diagnostic callers; memory-eval explicitly selects
+five minutes. No completed or failed observation from the sealed comparison is
+rerun or rescored by this configuration change. The frozen60-second p95 scoring
+criterion is separate from the execution timeout and remains historical.
+
+The deployed Orchestrator passes BUTLER_OPENAI_TIMEOUT_SECONDS to its selected
+provider, including Antigravity despite the setting's legacy name. Set it to300
+and set model_millis to300000 in BUTLER_EXECUTION_BUDGET_POLICY_JSON; a shorter
+budget would otherwise cancel the transport before its five-minute limit.
+See the [worked failed-case analysis](../../docs/ai/memory-eval-v2-h11-case-analysis-20261015.md).

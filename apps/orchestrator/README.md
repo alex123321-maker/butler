@@ -6,6 +6,12 @@ reviewed synthetic QA/proposed actions do not claim broader user-task completion
 unknown invoice/tokenizer/effect data deny promotion. See
 [reproduction and limits](../../cmd/memory-eval/README.md).
 
+New memory-eval model turns use a five-minute provider and model-admission
+deadline. For live Gemini turns set BUTLER_OPENAI_TIMEOUT_SECONDS=300 (the legacy
+setting feeds every selected provider) and budget model_millis=300000 together.
+Earlier task/mandate/cancellation bounds still apply. Historical experiments keep
+their original timeout, observations and score; no retry is implied.
+
 Converter continuations distinguish returned candidates from already activated
 catalog entries. Current activation facts are reloaded as private DATA under the
 existing lease/source/authority checks, including recovery. Activated entries

@@ -647,7 +647,7 @@ func TestMemoryEvalActualCollection(t *testing.T) {
 			t.Fatal("auth preflight evidence denied")
 		}
 	}
-	c.factory, err = newSchemaDialectNativeFactory(ctx, authPool, os.Getenv("BUTLER_MEMORY_EVAL_IMPORT_FILE"), filepath.Join(private, "settings.key"), schemaDialectGoogle)
+	c.factory, err = newSchemaDialectNativeFactoryWithTimeout(ctx, authPool, os.Getenv("BUTLER_MEMORY_EVAL_IMPORT_FILE"), filepath.Join(private, "settings.key"), schemaDialectGoogle, memoryEvalModelTimeout)
 	if err != nil {
 		collectionErr = err
 		t.Fatal("private provider initialization failed")

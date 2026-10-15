@@ -204,6 +204,22 @@ func TestMemoryEvalCollectorFullCorrelationIntegration(t *testing.T) {
 	}
 }
 
+func TestMemoryEvalCollectorFiveMinuteModelAdmissionIntegration(t *testing.T) {
+	c := memoryCollectorFixture(t)
+	ctx, run, err := c.ownedRun(context.Background(), c.suite.Cases[0], "no_ltm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	admission, err := c.budgets.AdmitModel(ctx, run, "", antigravity.Name, antigravity.FlashHighModel, 1024)
+	if err != nil {
+		t.Fatal(err)
+	}
+	remaining := time.Until(admission.Deadline)
+	if !admission.ModelTurnLimited || remaining < 295*time.Second || remaining > 300*time.Second {
+		t.Fatalf("effective model deadline still clips the five-minute provider allowance: %v, nominal=%v", remaining, admission.ModelTurnLimited)
+	}
+}
+
 func TestMemoryEvalCollectorCurrentAuthorityRacesIntegration(t *testing.T) {
 	for _, kind := range []string{"task_amendment", "lease_expiry", "source_deletion", "retention_failure"} {
 		t.Run(kind, func(t *testing.T) {

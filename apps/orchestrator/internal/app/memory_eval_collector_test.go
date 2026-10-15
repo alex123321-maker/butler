@@ -222,8 +222,11 @@ func (c *memoryEvalCollector) owner(cse acceptance.MemoryCase) (string, context.
 	return owner, owneridentity.WithActor(context.Background(), owneridentity.Actor{OwnerID: owner, Channel: "web", DeliveryID: "memory-eval-explicit-owner"})
 }
 
+const memoryEvalModelTimeout = 5 * time.Minute
+
 func memoryEvalPolicy() budget.Policy {
 	p := budget.DefaultPolicy()
+	p.ModelMillis = memoryEvalModelTimeout.Milliseconds()
 	p.Task.ModelTurns = 128
 	p.Day.ModelTurns = 280
 	p.Task.Tokens = 4000000
