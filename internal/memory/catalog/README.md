@@ -35,6 +35,12 @@ times, reported author, origin, scope/access revision and current source status.
 Profile/episodic/chunk stores remain the four-class memory model's class stores.
 The catalog links their object IDs to source revisions; vectors are derived.
 
+Fragment publication limits titles to2048 bytes and rejects recognized
+credentials in exact fragment keys. A failed publication leaves the original
+ingestion asset available for owner review without publishing unsafe handles.
+Agent reads independently suppress old unsafe keys and mark incomplete results;
+they never turn a masked key into an apparently usable fragment reference.
+
 Owner decisions use `owneridentity.Actor`. Extracted claims are candidates even
 with high confidence. `Decide` locks an exact scope/key head and requires the
 current accepted claim ID; only that owner decision supersedes a prior value.

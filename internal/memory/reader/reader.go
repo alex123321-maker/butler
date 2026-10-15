@@ -44,9 +44,10 @@ func item(src catalog.Source, key, title, text string, loc json.RawMessage, max 
 	if len(loc) > 2048 || !json.Valid(loc) || sanitize.JSON(string(loc)) != string(loc) {
 		loc = json.RawMessage(`{}`)
 	}
-	title, _, _ = clip(sanitize.MaskCredentials(title), 0, 160)
+	safeTitle := sanitize.MaskCredentials(title)
 	safeText := sanitize.MaskCredentials(text)
-	redacted := safeText != text
+	redacted := safeTitle != title || safeText != text
+	title, _, _ = clip(safeTitle, 0, 160)
 	safeText, truncated, next := clip(safeText, 0, max)
 	out := readcontrol.Item{Source: readcontrol.SourceRef{ID: src.ID, Revision: src.Revision, AccessRevision: src.AccessRevision, Hash: src.Hash}, Kind: src.Kind, ScopeType: src.ScopeType, Title: title, Text: safeText, FragmentKey: key, Locator: loc, Freshness: "current_revision_unverified_fact", Truncated: truncated, Redacted: redacted, NextOffset: next}
 	if src.EventTime != nil {
@@ -63,6 +64,11 @@ func (r Reader) ReadTx(ctx context.Context, tx pgx.Tx, tool string, a readcontro
 	}
 	if tool == readcontrol.Search {
 		return r.search(ctx, tx, a)
+	}
+	// Fragment keys are exact catalog handles. A masked replacement would no
+	// longer address the stored fragment; never release or accept a dirty key.
+	if sanitize.Text(a.FragmentKey) != a.FragmentKey {
+		return readcontrol.Empty("denied"), nil
 	}
 	// This read is safe even when the ID was acquired from a previous run: a
 	// source reference is evidence, never a capability. AccessTx pins ancestors.
@@ -96,7 +102,7 @@ func (r Reader) ReadTx(ctx context.Context, tx pgx.Tx, tool string, a readcontro
 	masked := sanitize.MaskCredentials(text)
 	page, _, _ := clip(masked, a.Offset, a.MaxChars+1)
 	v := item(src, a.FragmentKey, title, page, loc, a.MaxChars)
-	v.Redacted = masked != text
+	v.Redacted = v.Redacted || masked != text
 	v.NextOffset += a.Offset
 	out.Items = append(out.Items, v)
 	out.Truncated = v.Truncated
@@ -138,11 +144,16 @@ func (r Reader) search(ctx context.Context, tx pgx.Tx, a readcontrol.Args) (read
 		loc              json.RawMessage
 	}
 	var hits []hit
+	var unsafeFragment bool
 	for rows.Next() {
 		var h hit
 		if e = rows.Scan(&h.ref.ID, &h.ref.Revision, &h.ref.AccessRevision, &h.ref.Hash, &h.key, &h.title, &h.text, &h.loc); e != nil {
 			rows.Close()
 			return readcontrol.Empty("backend_error"), e
+		}
+		if sanitize.Text(h.key) != h.key {
+			unsafeFragment = true
+			continue
 		}
 		hits = append(hits, h)
 	}
@@ -152,11 +163,11 @@ func (r Reader) search(ctx context.Context, tx pgx.Tx, a readcontrol.Args) (read
 		return readcontrol.Empty("backend_error"), e
 	}
 	out := readcontrol.Empty("empty")
-	out.Truncated = sourceTruncated
+	out.Truncated = sourceTruncated || unsafeFragment
 	if len(hits) == 0 {
 		return out, nil
 	}
-	out.Truncated = sourceTruncated || len(hits) > a.Limit
+	out.Truncated = out.Truncated || len(hits) > a.Limit
 	if len(hits) > a.Limit {
 		hits = hits[:a.Limit]
 	}
@@ -211,6 +222,10 @@ func (r Reader) neighbors(ctx context.Context, tx pgx.Tx, src catalog.Source, a 
 		if e = rows.Scan(&key, &title, &text, &loc); e != nil {
 			rows.Close()
 			return readcontrol.Empty("backend_error"), e
+		}
+		if sanitize.Text(key) != key {
+			out.Truncated = true
+			continue
 		}
 		if remaining == 0 {
 			out.Truncated = true

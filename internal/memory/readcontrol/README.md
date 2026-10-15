@@ -33,6 +33,12 @@ replaces each original Unicode character, so page boundaries cannot reveal token
 suffixes and offsets still refer to original text. Locators never become
 paths, SQL or URL fetches. Whole responses are bounded to128KiB.
 
+Fragment titles are limited to2048 bytes at publication. Credential-bearing
+fragment keys are rejected rather than replaced with unusable masked handles.
+Older unsafe keys are suppressed from search/neighbors with `truncated=true`;
+open/neighbor requests carrying such keys are denied. The redaction flag covers
+recognized spans in either title or text.
+
 The owning boundary reconstructs the actual dispatched action, input claim,
 Session lease/fence and typed task from PostgreSQL. Each call uses the ordinary
 Broker grant, action journal and shared budget reservation. Catalog authorization

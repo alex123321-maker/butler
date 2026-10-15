@@ -28,7 +28,7 @@ runner=(docker run --pull never --rm --network "$network" --cpus 2 --memory 3g
  golang:1.27.2-bookworm)
 "${runner[@]}" go test -c -o /cache/broker.test ./apps/tool-broker/internal/broker > "$root/reports/read-build.log" 2>&1
 "${runner[@]}" go build -o /cache/tool-broker ./apps/tool-broker >> "$root/reports/read-build.log" 2>&1
-"${runner[@]}" go test -json -p 1 -count=1 -run 'TestStrictRead|TestPrivateRead|TestSearchOpen|TestMemoryRead|TestMemoryCandidateDispatched|TestDelegationAdmissionTokenIsNotAuthority' \
+"${runner[@]}" go test -json -p 1 -count=1 -run 'TestStrictRead|TestPrivateRead|TestSearchOpen|TestCredentialFragmentMetadata|TestMemoryRead|TestMemoryCandidateDispatched|TestDelegationAdmissionTokenIsNotAuthority' \
  ./internal/memory/readcontrol ./internal/memory/reader ./internal/actionauth ./internal/config ./apps/tool-broker/internal/broker ./apps/orchestrator/internal/app > "$root/reports/read-acceptance.jsonl" 2>&1
 if grep -q '"Action":"skip"\|"Action":"fail"\|"Action":"build-fail"' "$root/reports/read-acceptance.jsonl"; then
  printf 'Required read checks skipped or failed\n' >&2; exit 1

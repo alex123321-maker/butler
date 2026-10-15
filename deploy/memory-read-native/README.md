@@ -31,8 +31,9 @@ for a fresh evidence label. It resumes the same blocked task through the actual
 owner control API, preserving its root allowance, old attempts and sources. New
 serialized auth is installed only with CAS against the last isolated export.
 The final audit requires every old attempt row to remain identical and all new
-run attempts to have complete observed usage. A failed turn is never erased,
-refunded or reinterpreted as zero.
+run attempts to have observed durable input/output counts. Provider total,
+thinking and monetary invoice cost are not captured by this foreground ledger.
+A failed turn is never erased, refunded or reinterpreted as zero.
 
 All native internet uses the existing proxy configuration. Build/migration runs
 use only cached modules/images on the private network. The main Compose stack is

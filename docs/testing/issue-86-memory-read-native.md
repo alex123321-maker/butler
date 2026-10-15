@@ -29,10 +29,12 @@ durable evidence references and source pins. Results remained `DATA` with
 `current_revision_unverified_fact`; the final result verdict remained
 `unverified`. Successful retrieval did not promote the document to authority.
 
-Five new model turns recorded complete observed usage: **29,328 input tokens and
-340 output tokens**. The ordinary task and owner-day allowances admitted the
-calls. No provider fallback, test-specific three-call cap or reservation refund
-was used.
+All five new model turns have observed durable input/output counts: **29,328
+input tokens and 340 output tokens**. This foreground ledger does not capture
+provider total or thinking counts, and its monetary invoice cost is unknown on
+the subscription basis. These counts are not a full Google token/cost total.
+The ordinary task and owner-day allowances admitted the calls. No provider
+fallback, test-specific three-call cap or reservation refund was used.
 
 ## Retained failure and conservation
 
@@ -88,3 +90,23 @@ in [the lifecycle acceptance](issue-83-memory-lifecycle.md).
 This is one controlled native read acceptance plus the exact offline lifecycle
 tests. It establishes neither general answer quality nor acceptance of the
 other memory consumers.
+
+## Subsequent metadata boundary review
+
+After the native window, an independent review found a reachable metadata path:
+ordinary `messages` ingestion leaves an imported message ID out of normalized
+text but uses it in its exact fragment key. Credential-bearing IDs could thus
+bypass text masking. Publication now rejects these keys and titles over2048
+bytes. Reads suppress pre-existing unsafe keys with `truncated=true`, deny
+incoming unsafe handles and retain exact usable ordinary handles. The redaction
+flag now includes recognized title-only credentials in search/open/neighbors.
+
+The full ordinary ingestion/PG regression fails on the preceding code and
+passes after the fix; direct legacy SQL rows exercise read defenses separately.
+Retained `reports/metadata-baseline.jsonl` is the expected negative control;
+`metadata-narrow.jsonl` passes. The complete catalog/reader/ingestion/sanitize
+suite with `-race` passed65 test/subtest events, zero failures, with one separate
+actual backup/restore test skipped because its phased fixture was not configured
+in this runner. That restore scenario has its own earlier lifecycle acceptance.
+`metadata-vet.log` is clean. This follow-up used no provider calls; the earlier
+native window remains tied to its exact original source/binary manifest.

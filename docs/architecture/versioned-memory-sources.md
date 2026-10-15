@@ -133,6 +133,12 @@ provider release checks protect all returned evidence. See
 [read contract](../../internal/memory/readcontrol/README.md) for bounds, distinct
 statuses and the initial PostgreSQL full-text strategy.
 
+Catalog fragment publication limits titles to2048 bytes and rejects recognized
+credentials in exact fragment keys. Agent reads also suppress old unsafe keys
+with an explicit incomplete-result flag and deny requests carrying such keys;
+masking never creates a replacement handle. Recognized title/text credentials
+are masked before clipping, with original Unicode positions and redaction flags.
+
 Default-false operator composition `BUTLER_MEMORY_CANDIDATE_ENABLED` joins the
 fixed local `memory.propose_candidate` contract to the catalog candidate queue.
 Broker requires current owning readiness/task policy, exact preparation/authorization,
