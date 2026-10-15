@@ -153,9 +153,12 @@ comments before any source work. The recipient preserves each comment during
 the ready-only patch. Original01's exact comment and artifact provenance are
 deletion canaries; they are not a required note field or a lesson-writing hint.
 Original02 has a different comment and may independently support shared words.
-Control recipients use new instance content with none of the four original
-comments, identically across arms; their exact seed hashes must be frozen before
-original work. Canaries cannot be invented after viewing note output or control
+Fresh control recipients use the declared templates and seed90 hash formula,
+identically across arms, with none of the four original comments. Control04 is
+the explicit exception: its real original04 recipient snapshot/comment is
+legitimate current state identically in every arm; it grants no transcript or
+episode access. Freeze every exact seed/file hash before original work. Canaries
+cannot be invented after viewing note output or control
 answers. Source content, canary and opaque instance IDs change current revision
 and source hashes, not the compiled environment compatibility fingerprint. That
 fingerprint still includes actual recipient/runtime contracts and readiness

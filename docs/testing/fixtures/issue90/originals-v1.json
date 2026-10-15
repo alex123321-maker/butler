@@ -7,6 +7,11 @@
   "tool_surface": ["extension.project.inspect", "extension.project.prepare-patch", "extension.project.check", "http.request"],
   "origin_binding": "operator-supplied fixture_origin; never an internet destination or credential",
   "recipient_seed_contract": {
+    "original_readme_template": "Butler reviewed fixture\nready=false\n{exact_declared_canary}\n",
+    "fresh_control_readme_template_v1": "Butler reviewed fixture\nready=false\n<!-- provenance: {sha256_control_seed} -->\n",
+    "fresh_control_readme_template_v2": "Butler reviewed fixture v2\nready=pending\n<!-- provenance: {sha256_control_seed} -->\n",
+    "sha256_control_seed": "lowercase hexadecimal SHA256 of UTF-8 butler-experience90-control-seed-v1 followed by NUL, case id (control-01..control-08), NUL, repetition decimal (1 or 2); excludes arm, therefore identical all arms",
+    "control04_seed_exception": "exact actual persisted original04 recipient snapshot and its original04 comment; this is identical current live state in every arm, not original transcript/history access",
     "canary_placement": "one exact HTML comment line in the initial README, preserved by the requested ready-only change; fixed before original work, not an instruction or lesson",
     "canaries": {
       "original-01": "<!-- provenance: 90-a9e714cf-6f10-42d5-b808-d1c862439a31 -->",
