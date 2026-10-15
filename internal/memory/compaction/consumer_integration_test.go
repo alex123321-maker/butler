@@ -1,4 +1,4 @@
-package summary
+package compaction
 
 import (
 	"context"
@@ -14,6 +14,7 @@ import (
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/jobs"
 	"github.com/butler/butler/internal/memory/memorytest"
+	"github.com/butler/butler/internal/memory/summary"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/transport"
@@ -143,7 +144,7 @@ func TestSummaryConsumerRepeatedCompactionRestartAndFailureIntegration(t *testin
 	if err != nil || !did {
 		t.Fatal(did, err)
 	}
-	ss := NewStore(f.pool)
+	ss := summary.NewStore(f.pool)
 	first, err := ss.GetSummarySnapshot(f.ctx, "session")
 	if err != nil || first.ThroughSequence != 8 {
 		t.Fatal(first, err)
@@ -158,7 +159,7 @@ func TestSummaryConsumerRepeatedCompactionRestartAndFailureIntegration(t *testin
 	}
 	latest, err := ss.GetSummarySnapshot(f.ctx, "session")
 	history, he := transcript.NewStore(f.pool).GetTranscript(f.ctx, "session")
-	tail, valid := Tail(history, latest)
+	tail, valid := summary.Tail(history, latest)
 	if err != nil || he != nil || !valid || len(tail) != 4 || latest.ThroughSequence <= first.ThroughSequence || !strings.Contains(latest.Summary, "Условие 1") || !strings.Contains(latest.Summary, "Условие 22") {
 		t.Fatal(latest, valid, len(tail), err, he)
 	}
@@ -211,7 +212,7 @@ func TestSummaryLateCorrectionDeletionAndUnknownToolIntegration(t *testing.T) {
 			if _, err := f.worker.ProcessOne(f.ctx); err == nil {
 				t.Fatal("late result accepted")
 			}
-			s, _ := NewStore(f.pool).GetSummarySnapshot(f.ctx, "session")
+			s, _ := summary.NewStore(f.pool).GetSummarySnapshot(f.ctx, "session")
 			if s.Summary != "" {
 				t.Fatal("stale summary hides history")
 			}

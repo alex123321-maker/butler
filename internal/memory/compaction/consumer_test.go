@@ -1,4 +1,4 @@
-package summary
+package compaction
 
 import (
 	"encoding/json"

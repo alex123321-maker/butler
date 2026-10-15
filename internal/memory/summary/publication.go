@@ -5,7 +5,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func saveCoveredSummaryTx(ctx context.Context, tx pgx.Tx, s Snapshot, result string) (bool, error) {
+func SaveCoveredSummaryTx(ctx context.Context, tx pgx.Tx, s Snapshot, result string) (bool, error) {
 	tag, err := tx.Exec(ctx, `WITH boundary AS MATERIALIZED (
  SELECT m.session_key,m.message_id,m.message_sequence FROM messages m WHERE m.session_key=$1 AND m.message_id=$3 AND m.message_sequence=$4 FOR KEY SHARE
 ),head AS (SELECT h.source_revision FROM transcript_heads h JOIN boundary b USING(session_key) FOR UPDATE OF h)

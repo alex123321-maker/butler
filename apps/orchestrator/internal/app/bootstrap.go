@@ -310,7 +310,7 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	memoryRuntimeConfig := cfg
-	memoryModelStore, memoryModelWorker := configureModelJobs(sourceCatalog, budgetController, providerResult)
+	memoryModelStore, memoryModelWorker := configureModelJobs(sourceCatalog, budgetController, providerResult, cfg.ContextBudgetTokens)
 	if memoryRuntimeConfig.MemoryPipelineEnabled {
 		// Completed-run jobs need their own durable admission; they cannot
 		// borrow a historical live lease. The legacy cloud path has none yet.

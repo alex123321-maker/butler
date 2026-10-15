@@ -1,4 +1,4 @@
-package summary
+package compaction
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/jobs"
 	"github.com/butler/butler/internal/memory/sanitize"
+	"github.com/butler/butler/internal/memory/summary"
 	"github.com/butler/butler/internal/security/content"
 	"github.com/jackc/pgx/v5"
 )
@@ -167,7 +168,7 @@ func (c Consumer) PublishTx(ctx context.Context, tx pgx.Tx, cat *catalog.Store, 
 	if string(a) != string(b) {
 		return jobs.ErrClaim
 	}
-	saved, err := saveCoveredSummaryTx(ctx, tx, Snapshot{SessionKey: d.SessionKey, Summary: body, ThroughMessageID: d.ThroughMessageID, ThroughSequence: d.ThroughSequence, SourceRevision: d.SourceRevision, FormatVersion: 1}, result.ID)
+	saved, err := summary.SaveCoveredSummaryTx(ctx, tx, summary.Snapshot{SessionKey: d.SessionKey, Summary: body, ThroughMessageID: d.ThroughMessageID, ThroughSequence: d.ThroughSequence, SourceRevision: d.SourceRevision, FormatVersion: 1}, result.ID)
 	if err != nil {
 		return err
 	}

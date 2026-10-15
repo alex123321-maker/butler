@@ -34,6 +34,7 @@ import (
 	"github.com/butler/butler/internal/memory/candidatecontrol"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/chunks"
+	"github.com/butler/butler/internal/memory/compaction"
 	memorydoctor "github.com/butler/butler/internal/memory/doctor"
 	"github.com/butler/butler/internal/memory/episodic"
 	"github.com/butler/butler/internal/memory/indexing"
@@ -43,7 +44,6 @@ import (
 	"github.com/butler/butler/internal/memory/profile"
 	"github.com/butler/butler/internal/memory/provenance"
 	"github.com/butler/butler/internal/memory/readcontrol"
-	"github.com/butler/butler/internal/memory/summary"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/memory/working"
 	"github.com/butler/butler/internal/metrics"
@@ -135,7 +135,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	}
 	memoryCatalogServer := &apiservice.MemoryCatalogServer{Store: deps.sourceCatalog, Auth: deps.ownerAuth, Ingestion: &ingestion.Store{Catalog: deps.sourceCatalog, Parser: parser}, Indexing: deps.memoryIndexing, ModelJobs: deps.memoryModelStore, ModelWorkerConfigured: deps.memoryModelConfigured}
 	if deps.memoryModelConfigured && os.Getenv("BUTLER_MEMORY_SUMMARY_CONSUMER_ENABLED") == "true" {
-		memoryCatalogServer.SummaryPolicies = &summary.Policies{Catalog: deps.sourceCatalog, Jobs: deps.memoryModelStore}
+		memoryCatalogServer.SummaryPolicies = &compaction.Policies{Catalog: deps.sourceCatalog, Jobs: deps.memoryModelStore}
 	}
 	providerServer := apiservice.NewProviderServer(deps.authManager, deps.providerResult.ProviderName, map[string]string{
 		modelprovider.ProviderOpenAI:        deps.cfg.OpenAIModel,
