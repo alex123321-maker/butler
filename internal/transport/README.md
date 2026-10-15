@@ -14,3 +14,8 @@ observations, not permission, prices, budget refunds or cumulative run totals.
 The direct Go Core budget wrapper validates this logical field and records it
 once per admitted operation. No new RPC/protobuf mapping is introduced. See
 `docs/architecture/model-transport-contract.md` and the native Antigravity README.
+`WithInferenceDispatch` is an optional trusted one-attempt marker, distinct from
+repeatable `WithInferenceAuthority` checks. Native Antigravity evaluates authority
+before authentication and again before HTTP, then marks dispatch exactly once
+immediately before its HTTP request. The generative memory worker uses this
+boundary for its durable possibly-sent attempt journal; neither hook is serialized.

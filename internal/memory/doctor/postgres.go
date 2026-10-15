@@ -11,14 +11,19 @@ import (
 
 type postgresReader struct{ pool *pgxpool.Pool }
 type JobObservation struct {
-	Pending              int64            `json:"pending"`
-	Running              int64            `json:"running"`
-	Completed            int64            `json:"completed"`
-	Failed               int64            `json:"failed"`
-	Cancelled            int64            `json:"cancelled"`
-	Retries              int64            `json:"retries"`
-	OldestPendingSeconds *float64         `json:"oldest_pending_seconds"`
-	Reasons              map[string]int64 `json:"reasons"`
+	Pending                 int64            `json:"pending"`
+	Running                 int64            `json:"running"`
+	Completed               int64            `json:"completed"`
+	Failed                  int64            `json:"failed"`
+	Cancelled               int64            `json:"cancelled"`
+	Retries                 int64            `json:"retries"`
+	OldestPendingSeconds    *float64         `json:"oldest_pending_seconds"`
+	Reasons                 map[string]int64 `json:"reasons"`
+	ModelControl            string           `json:"model_control"`
+	ModelAttempts           int64            `json:"model_attempts"`
+	ModelUnknownUsage       int64            `json:"model_unknown_usage"`
+	ModelReservedTokens     int64            `json:"model_reserved_tokens"`
+	ModelReservedCostMicros int64            `json:"model_reserved_cost_micros"`
 }
 type IndexObservation struct {
 	ID         string          `json:"generation_id"`
@@ -75,7 +80,11 @@ func (p *postgresReader) Jobs(ctx context.Context, owner string) (JobObservation
 	if err != nil {
 		return j, err
 	}
-	rows, err := p.pool.Query(ctx, `SELECT CASE WHEN error_code IN ('claim_expired','index_rejected','local_model_unavailable','source_stale','budget_exhausted') THEN error_code WHEN error_code='' THEN 'none' ELSE 'other' END,count(*) FROM memory_aux_jobs WHERE owner_id=$1 GROUP BY 1`, owner)
+	err = p.pool.QueryRow(ctx, `SELECT (SELECT state FROM memory_model_control WHERE singleton),count(*),count(*) FILTER(WHERE a.usage IS NULL),COALESCE(sum((a.quote->>'tokens')::bigint),0),COALESCE(sum((a.quote->>'cost_micros')::bigint),0) FROM memory_model_attempts a JOIN memory_aux_jobs j USING(job_id) WHERE ($1='' OR j.owner_id=$1)`, owner).Scan(&j.ModelControl, &j.ModelAttempts, &j.ModelUnknownUsage, &j.ModelReservedTokens, &j.ModelReservedCostMicros)
+	if err != nil {
+		return j, err
+	}
+	rows, err := p.pool.Query(ctx, `SELECT CASE WHEN error_code IN ('claim_expired','index_rejected','local_model_unavailable','source_stale','budget_exhausted','cost_unknown','authority_or_source_denied','provider_failed','provider_timeout','cancelled','owner_cancelled','policy_revoked','claim_or_deadline_expired','admission_wait','interactive_priority','worker_disabled','worker_paused','deadline','local_backend_unavailable','storage_unavailable','worker_stopped') THEN error_code WHEN error_code='' THEN 'none' ELSE 'other' END,count(*) FROM memory_aux_jobs WHERE ($1='' OR owner_id=$1) GROUP BY 1`, owner)
 	if err != nil {
 		return j, err
 	}

@@ -14,6 +14,7 @@ import (
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/indexing"
 	"github.com/butler/butler/internal/memory/ingestion"
+	"github.com/butler/butler/internal/memory/jobs"
 	"github.com/butler/butler/internal/memory/semantic"
 	"github.com/butler/butler/internal/owneridentity"
 )
@@ -21,10 +22,12 @@ import (
 // Catalog APIs are private owner controls, including reads and exports. A caller
 // cannot choose an owner ID, authority origin, source parents or model approval.
 type MemoryCatalogServer struct {
-	Store     *catalog.Store
-	Auth      *OwnerControlAuth
-	Ingestion *ingestion.Store
-	Indexing  *indexing.Runtime
+	Store                 *catalog.Store
+	Auth                  *OwnerControlAuth
+	Ingestion             *ingestion.Store
+	Indexing              *indexing.Runtime
+	ModelJobs             *jobs.Store
+	ModelWorkerConfigured bool
 }
 
 func (s *MemoryCatalogServer) Handle() http.Handler {
@@ -41,6 +44,9 @@ func (s *MemoryCatalogServer) Handle() http.Handler {
 		ctx, cancel := context.WithTimeout(owneridentity.WithActor(r.Context(), a), 30*time.Second)
 		defer cancel()
 		w.Header().Set("Cache-Control", "no-store")
+		if s.handleModelJobs(ctx, w, r) {
+			return
+		}
 		if r.Method == http.MethodGet {
 			switch r.URL.Path {
 			case "/api/v4/memory/original":

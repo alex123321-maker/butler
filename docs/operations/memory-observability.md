@@ -1,5 +1,12 @@
 # Memory observations and Doctor
 
+Generative background jobs add owner-proved `/api/v4/memory/model-jobs` observations
+and policy/job/worker controls. Doctor includes persisted model control, attempt
+count, unknown usage and reserved tokens/cost; corresponding `butler_memory_durable_model_*`
+gauges have no new personal identifiers or text labels. They report accounting,
+not inference quality or worker liveness. See [background jobs](../architecture/background-memory-jobs.md)
+for locality waiting, active-hours pauses, queue limits, cancellation and rollback.
+
 Doctor distinguishes configuration, connected implementation, a timestamped
 observation, request outcome and quality evidence. A configured object is not a
 successful backend probe. PostgreSQL owns durable memory, auxiliary jobs and

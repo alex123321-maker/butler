@@ -21,6 +21,7 @@ import (
 var ErrClaim = errors.New("auxiliary job claim or source authority unavailable")
 
 type Job struct {
+	PolicyID            string                `json:"policy_id,omitempty"`
 	ID                  string                `json:"job_id"`
 	OwnerID             string                `json:"owner_id"`
 	Kind                string                `json:"kind"`
@@ -196,6 +197,7 @@ func load(ctx context.Context, q interface {
 		if json.Unmarshal(refs, &j.Sources) != nil || json.Unmarshal(authority, &j.Authority) != nil || json.Unmarshal(allowance, &j.Allowance) != nil {
 			return j, ErrClaim
 		}
+		e = q.QueryRow(ctx, `SELECT COALESCE(policy_id,'') FROM memory_aux_jobs WHERE job_id=$1`, id).Scan(&j.PolicyID)
 	}
 	return j, e
 }
@@ -213,7 +215,7 @@ func (s *Store) claimSelected(ctx context.Context, kind, purpose string) (Job, b
 }
 func (s *Store) claimSelectedOwner(ctx context.Context, kind, purpose, jobID, ownerID string) (Job, bool, error) {
 	switch kind {
-	case "", "index", "extract", "summary", "ingest":
+	case "", "index", "extract", "summary", "ingest", "model":
 	default:
 		return Job{}, false, ErrClaim
 	}
@@ -229,12 +231,16 @@ func (s *Store) claimSelectedOwner(ctx context.Context, kind, purpose, jobID, ow
 		return Job{}, false, e
 	}
 	defer tx.Rollback(ctx)
+	// Expired pending jobs must become terminal even while workers are paused.
+	if _, e = tx.Exec(ctx, `UPDATE memory_aux_jobs SET status='failed',error_code='deadline',updated_at=clock_timestamp() WHERE status='pending' AND (deadline<=clock_timestamp() OR attempts>=max_attempts)`); e != nil {
+		return Job{}, false, e
+	}
 	_, e = tx.Exec(ctx, `UPDATE memory_aux_jobs SET status=CASE WHEN attempts>=max_attempts OR deadline<=clock_timestamp() THEN 'failed' ELSE 'pending' END,claim_id='',claim_until=NULL,error_code='claim_expired',updated_at=clock_timestamp() WHERE status='running' AND claim_until<=clock_timestamp()`)
 	if e != nil {
 		return Job{}, false, e
 	}
 	var jid string
-	e = tx.QueryRow(ctx, `UPDATE memory_aux_jobs SET status='running',claim_id=$1,claim_epoch=claim_epoch+1,claim_until=LEAST(deadline,clock_timestamp()+INTERVAL '2 minutes'),attempts=attempts+1,updated_at=clock_timestamp() WHERE job_id=(SELECT job_id FROM memory_aux_jobs WHERE status='pending' AND ($2='' OR kind=$2) AND ($3='' OR purpose=$3) AND ($4='' OR job_id=$4) AND ($5='' OR owner_id=$5) AND next_attempt_at<=clock_timestamp() AND deadline>clock_timestamp() AND attempts<max_attempts ORDER BY next_attempt_at,job_id FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING job_id`, id, kind, purpose, jobID, ownerID).Scan(&jid)
+	e = tx.QueryRow(ctx, `UPDATE memory_aux_jobs SET status='running',claim_id=$1,claim_epoch=claim_epoch+1,claim_until=LEAST(deadline,clock_timestamp()+INTERVAL '2 minutes'),attempts=attempts+1,updated_at=clock_timestamp() WHERE job_id=(SELECT job_id FROM memory_aux_jobs WHERE status='pending' AND (policy_id IS NULL OR EXISTS(SELECT 1 FROM memory_model_policies p WHERE p.policy_id=memory_aux_jobs.policy_id AND p.state='active')) AND ($2='' OR kind=$2) AND ($3='' OR purpose=$3) AND ($4='' OR job_id=$4) AND ($5='' OR owner_id=$5) AND next_attempt_at<=clock_timestamp() AND deadline>clock_timestamp() AND attempts<max_attempts ORDER BY next_attempt_at,job_id FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING job_id`, id, kind, purpose, jobID, ownerID).Scan(&jid)
 	if e == pgx.ErrNoRows {
 		return Job{}, false, tx.Commit(ctx)
 	}
@@ -295,11 +301,20 @@ func (c *claimChecker) checkSnapshot(ctx context.Context, tx pgx.Tx, lock bool) 
 	}
 	live, e := load(ctx, tx, j.ID, lock)
 	if e != nil {
+		if errors.Is(e, pgx.ErrNoRows) {
+			return Job{}, ErrClaim
+		}
+		return Job{}, e
+	}
+	if live.PolicyID != j.PolicyID {
 		return Job{}, ErrClaim
 	}
 	_, liveSum, e := canonical(live.Sources)
 	var now time.Time
-	if e != nil || tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now) != nil || liveSum != live.Fingerprint || live.Status != "running" || live.ClaimID != j.ClaimID || live.ClaimEpoch != j.ClaimEpoch || live.ClaimUntil == nil || j.ClaimUntil == nil || !live.ClaimUntil.Equal(*j.ClaimUntil) || !live.ClaimUntil.After(now) || !live.Deadline.After(now) || !live.Deadline.Equal(j.Deadline) || live.Fingerprint != j.Fingerprint || live.OwnerID != j.OwnerID || live.TaskID != j.TaskID || live.Authority != j.Authority || live.TaskRevision != j.TaskRevision || live.ConstraintsRevision != j.ConstraintsRevision || live.Purpose != j.Purpose || live.Kind != j.Kind || live.Allowance != j.Allowance || live.OriginalRunID != j.OriginalRunID {
+	if sqlErr := tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now); sqlErr != nil {
+		return Job{}, sqlErr
+	}
+	if e != nil || liveSum != live.Fingerprint || live.Status != "running" || live.ClaimID != j.ClaimID || live.ClaimEpoch != j.ClaimEpoch || live.ClaimUntil == nil || j.ClaimUntil == nil || !live.ClaimUntil.Equal(*j.ClaimUntil) || !live.ClaimUntil.After(now) || !live.Deadline.After(now) || !live.Deadline.Equal(j.Deadline) || live.Fingerprint != j.Fingerprint || live.OwnerID != j.OwnerID || live.TaskID != j.TaskID || live.Authority != j.Authority || live.TaskRevision != j.TaskRevision || live.ConstraintsRevision != j.ConstraintsRevision || live.Purpose != j.Purpose || live.Kind != j.Kind || live.Allowance != j.Allowance || live.OriginalRunID != j.OriginalRunID {
 		return Job{}, ErrClaim
 	}
 	return live, nil
@@ -312,7 +327,11 @@ func (c *claimChecker) CheckMemoryAccessTx(ctx context.Context, tx pgx.Tx, refs 
 	if _, e := c.checkSnapshot(ctx, tx, false); e != nil {
 		return "", e
 	}
-	if j.TaskID != "" {
+	if j.PolicyID != "" {
+		if _, e := c.s.checkModelPolicyTx(ctx, tx, j); e != nil {
+			return "", e
+		}
+	} else if j.TaskID != "" {
 		var own, status string
 		var revision, constraints int64
 		if tx.QueryRow(ctx, `SELECT owner_id,status,revision,constraints_revision FROM tasks WHERE task_id=$1 FOR SHARE`, j.TaskID).Scan(&own, &status, &revision, &constraints) != nil || own != j.OwnerID || status != "active" || revision != j.TaskRevision || constraints != j.ConstraintsRevision {
@@ -337,6 +356,13 @@ func (c *claimChecker) CheckMemoryAccessTx(ctx context.Context, tx pgx.Tx, refs 
 	return j.OwnerID, nil
 }
 func (c *claimChecker) FinalizeMemoryAccessTx(ctx context.Context, tx pgx.Tx, refs []catalog.SourceRef, purpose string) error {
+	// Policy/task rows were locked before the source graph. Repeat deadlines
+	// after waits; this never obtains new authority or borrows a connection.
+	if c.j.PolicyID != "" {
+		if _, e := c.s.checkModelPolicyTx(ctx, tx, c.j); e != nil {
+			return e
+		}
+	}
 	live, e := c.checkSnapshot(ctx, tx, true)
 	if e != nil {
 		return e
@@ -346,7 +372,13 @@ func (c *claimChecker) FinalizeMemoryAccessTx(ctx context.Context, tx pgx.Tx, re
 	for _, r := range live.Sources {
 		var rev, access int64
 		var sum, status string
-		if tx.QueryRow(ctx, `SELECT s.head_revision,s.access_revision,s.status,r.content_hash FROM memory_sources s JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision WHERE s.source_id=$1`, r.ID).Scan(&rev, &access, &status, &sum) != nil || rev != r.Revision || access != r.AccessRevision || sum != r.Hash || status != "active" {
+		if e := tx.QueryRow(ctx, `SELECT s.head_revision,s.access_revision,s.status,r.content_hash FROM memory_sources s JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision WHERE s.source_id=$1`, r.ID).Scan(&rev, &access, &status, &sum); e != nil {
+			if errors.Is(e, pgx.ErrNoRows) {
+				return ErrClaim
+			}
+			return e
+		}
+		if rev != r.Revision || access != r.AccessRevision || sum != r.Hash || status != "active" {
 			return ErrClaim
 		}
 	}

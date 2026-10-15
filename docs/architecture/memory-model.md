@@ -912,6 +912,12 @@ Broker/runtime/model admission and cleanup scheduling remain disabled/pending.
 
 # Pending-only evaluation lineage
 
+The separately authorized [background model job path](background-memory-jobs.md)
+extends the durable auxiliary queue with finite policies, current task/source
+proof, shared per-attempt accounting and atomic immutable catalog DATA results.
+It does not enable legacy extraction or confirm memory claims. Consumers require
+their own quality/security gates; the optional exact-quote probe proves plumbing.
+
 Memory observations use the additive `memory-observations-v1` contract described
 in [the operator runbook](../operations/memory-observability.md). Component
 configuration/connection, timestamped checks, request outcomes and quality proof

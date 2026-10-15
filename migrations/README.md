@@ -77,3 +77,11 @@ Use `make migrate-up` to apply all migrations and `make migrate-down` to roll th
 - `063_single_tab_resource_binding` adds private approved user-tab identity and frozen observation refs to one-use resource dispatches, plus immutable finite owner requests and atomically selected mappings. Legacy activation cannot satisfy the guarded marker. It stores no browser document/field content or service token. Down refuses populated bindings, requests or selections. Optional guarded status/click production composition and released-lease user-channel acceptance remain separate.
 - `066_workspace_source_provenance` binds immutable cumulative code-copy contexts to actual task DATA, physical-observation digests and resource leases. Transitive Catalog deletion atomically blocks copies and queues exact fixed-root physical erasure; failures remain pending. It stores no source/code body or credential and grants no model tool or recovery permission. Down refuses retained provenance/deletion history. Workspace Broker/shared budget/runtime bootstrap remains pending.
 - `067_workspace_dispatches` binds immutable exact prepared workspace operation/path/body digest/file CAS, original input/source context and actual shared budget/resource claim to a finite one-use private dispatch ticket. Independent physical observations are immutable and commit with source/file/resource completion. No raw body/root/credential or reusable token is stored. Down refuses retained history; production application bootstrap and owner reconciliation remain pending.
+# Migration071: bounded background generative memory
+
+Run the normal migrator before the new Orchestrator. The existing auxiliary queue
+gets a `model` kind and immutable policy binding; attempts reference the existing
+execution reservations and catalog DATA sources. Global execution starts disabled.
+Application rollback keeps this additive schema and all accounting history after
+disabling workers. Down refuses policy/job/attempt history; do not erase spending
+to force it. See [the contract](../docs/architecture/background-memory-jobs.md).

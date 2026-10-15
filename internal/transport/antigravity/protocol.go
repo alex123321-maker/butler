@@ -175,6 +175,12 @@ func (p *Provider) invoke(ctx context.Context, model, sessionID string, body gen
 	if err := checkInferenceAuthority(ctx); err != nil {
 		return modelAnswer{}, err
 	}
+	if err := transport.CheckInferenceDispatch(ctx); err != nil {
+		if ctx.Err() != nil {
+			return modelAnswer{}, ctx.Err()
+		}
+		return modelAnswer{}, providerError(transport.ErrorTypeMemorySourceStale, "memory_source_stale")
+	}
 	resp, err := p.client.Do(req)
 	if err != nil {
 		if ctx.Err() != nil {

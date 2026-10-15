@@ -1,5 +1,14 @@
 # Durable execution budgets
 
+Generative memory jobs reuse `ReserveAuxiliaryTx` with a trusted `ModelQuote` and
+an additional finite policy scope. Job/policy/root/mandate/owner-day counters are
+initialized and locked together in canonical order. The job owner validates
+current authority/locality, persists each attempt linked to the reservation and
+clamps dispatch to every scope/claim/authority deadline. The existing no-refund
+contract remains: actual usage and conservative reserved capacity are distinct;
+missing usage is unknown. No second budget ledger is introduced. See
+[background memory jobs](../../docs/architecture/background-memory-jobs.md).
+
 This Go package owns migration037's PostgreSQL policies, conservative reservations,
 model attempts and normalized loop observations. Production Orchestrator, Broker
 and Task Store bootstraps install its controller.

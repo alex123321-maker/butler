@@ -16,6 +16,12 @@ type AuxiliaryIdentity struct {
 	Limits                                         Units
 	Deadline                                       time.Time
 	InputBytes, Tokens, ActiveMillis               int64
+	// Quote is supplied by the trusted generative adapter after ModelQuote.
+	// Nil preserves the existing local auxiliary contract.
+	Quote          *Units
+	PolicyID       string
+	PolicyLimits   Units
+	PolicyDeadline time.Time
 }
 
 func (c *Controller) ReserveAuxiliaryTx(ctx context.Context, tx pgx.Tx, i AuxiliaryIdentity) (ModelAdmission, error) {
@@ -27,30 +33,43 @@ func (c *Controller) ReserveAuxiliaryTx(ctx context.Context, tx pgx.Tx, i Auxili
 		return ModelAdmission{}, e
 	}
 	var ids []string
+	var specs []ScopeSpec
 	if i.TaskID != "" {
-		own, shared, e := c.scopesTx(ctx, tx, "", i.TaskID, i.MandateID)
+		own, shared, e := c.scopeSpecsTx(ctx, tx, "", i.TaskID, i.MandateID)
 		if e != nil {
 			return ModelAdmission{}, e
 		}
 		if own != i.OwnerID {
 			return ModelAdmission{}, ErrConflict
 		}
-		ids = shared
+		specs = shared
 	} else {
 		day := now.UTC().Truncate(24 * time.Hour)
-		s, e := c.Ledger.EnsureTx(ctx, tx, ScopeSpec{Kind: "owner_day", OwnerID: i.OwnerID, SubjectID: day.Format("2006-01-02"), Limits: c.Policy.Day, Deadline: day.Add(24 * time.Hour)})
+		specs = append(specs, ScopeSpec{Kind: "owner_day", OwnerID: i.OwnerID, SubjectID: day.Format("2006-01-02"), Limits: c.Policy.Day, Deadline: day.Add(24 * time.Hour)})
+	}
+	specs = append(specs, ScopeSpec{Kind: "auxiliary", OwnerID: i.OwnerID, SubjectID: i.JobID, Limits: i.Limits, Deadline: i.Deadline})
+	if i.PolicyID != "" {
+		specs = append(specs, ScopeSpec{Kind: "auxiliary", OwnerID: i.OwnerID, SubjectID: "policy:" + i.PolicyID, Limits: i.PolicyLimits, Deadline: i.PolicyDeadline})
+	}
+	sort.Slice(specs, func(a, b int) bool {
+		return ScopeID(specs[a].Kind, i.OwnerID, specs[a].SubjectID) < ScopeID(specs[b].Kind, i.OwnerID, specs[b].SubjectID)
+	})
+	for _, spec := range specs {
+		s, e := c.Ledger.EnsureTx(ctx, tx, spec)
 		if e != nil {
 			return ModelAdmission{}, e
 		}
 		ids = append(ids, s.ID)
 	}
-	scope, e := c.Ledger.EnsureTx(ctx, tx, ScopeSpec{Kind: "auxiliary", OwnerID: i.OwnerID, SubjectID: i.JobID, Limits: i.Limits, Deadline: i.Deadline})
-	if e != nil {
-		return ModelAdmission{}, e
-	}
-	ids = append(ids, scope.ID)
 	sort.Strings(ids)
-	r, _, e := c.Ledger.ReserveTx(ctx, tx, Request{OwnerID: i.OwnerID, OperationID: i.OperationID, ScopeIDs: ids, Charge: Units{ModelTurns: 1, Tokens: i.Tokens, ActiveMillis: i.ActiveMillis, ProviderInputBytes: i.InputBytes}, CostKnown: true})
+	charge := Units{ModelTurns: 1, Tokens: i.Tokens, ActiveMillis: i.ActiveMillis, ProviderInputBytes: i.InputBytes}
+	if i.Quote != nil {
+		charge = *i.Quote
+		if charge.validate() != nil || charge.ModelTurns != 1 || charge.Tokens != i.Tokens || charge.ActiveMillis != i.ActiveMillis || charge.ProviderInputBytes != i.InputBytes {
+			return ModelAdmission{}, ErrInvalid
+		}
+	}
+	r, _, e := c.Ledger.ReserveTx(ctx, tx, Request{OwnerID: i.OwnerID, OperationID: i.OperationID, ScopeIDs: ids, Charge: charge, CostKnown: true})
 	if e != nil {
 		return ModelAdmission{}, e
 	}

@@ -1,5 +1,14 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
-It composes current source/catalog/index/bundle/budget/provider code, retains all
+
+Orchestrator also owns the default-off durable generative memory worker:
+`BUTLER_MEMORY_MODEL_JOBS_ENABLED=true` composes it; owner controls separately
+enable its persisted execution state. The handler registry defaults empty.
+`BUTLER_MEMORY_MODEL_QUOTE_PROBE_ENABLED=true` adds only the exact-source diagnostic
+consumer. Private `/api/v4/memory/model-*` controls expose policies, cancellation,
+waiting reasons, attempts and accounting. The legacy pipeline stays disabled.
+See [contracts, setup and rollback](../../docs/architecture/background-memory-jobs.md).
+
+The memory-eval collector composes current source/catalog/index/bundle/budget/provider code, retains all
 paid failures and original traces, and checks source/task/lease before dispatch
 and final acceptance. Normal tests authenticate/infer nothing. Its independently
 reviewed synthetic QA/proposed actions do not claim broader user-task completion;

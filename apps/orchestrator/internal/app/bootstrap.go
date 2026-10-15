@@ -309,10 +309,11 @@ func New(ctx context.Context) (*App, error) {
 	}
 
 	memoryRuntimeConfig := cfg
+	memoryModelStore, memoryModelWorker := configureModelJobs(sourceCatalog, budgetController, providerResult)
 	if memoryRuntimeConfig.MemoryPipelineEnabled {
 		// Completed-run jobs need their own durable admission; they cannot
 		// borrow a historical live lease. The legacy cloud path has none yet.
-		log.Warn("memory model calls denied: durable auxiliary budget admission is unavailable")
+		log.Warn("legacy memory pipeline denied: use independently authorized background model jobs and gated consumers")
 		memoryRuntimeConfig.MemoryPipelineEnabled = false
 	}
 	embeddingProvider, pipelineWorker := configureMemoryPipeline(log, memoryRuntimeConfig, authManager, m, pipelineQueue, transcriptStore, summaryStore, profileStore, episodicStore, chunkStore)
@@ -632,6 +633,8 @@ func New(ctx context.Context) (*App, error) {
 		delegationHandler:          delegationHandler,
 		converterDelegationHandler: converterDelegationHandler,
 		memoryIndexing:             ownedSemantic,
+		memoryModelStore:           memoryModelStore,
+		memoryModelConfigured:      memoryModelWorker != nil,
 		sourceCatalog:              sourceCatalog,
 		cfg:                        cfg,
 		finalResults:               finalResults,
@@ -718,6 +721,7 @@ func New(ctx context.Context) (*App, error) {
 		memoryCleanup:              &catalog.CleanupWorker{Store: sourceCatalog, Cleaner: privacyCacheCleaner{store: working.NewTransientStore(redis.Client())}},
 		memoryIndexing:             ownedSemantic,
 		memoryIndexingClose:        closeOwnedSemantic,
+		memoryModelJobs:            memoryModelWorker,
 	}, nil
 }
 

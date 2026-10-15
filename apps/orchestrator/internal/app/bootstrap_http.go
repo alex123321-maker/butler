@@ -38,6 +38,7 @@ import (
 	"github.com/butler/butler/internal/memory/episodic"
 	"github.com/butler/butler/internal/memory/indexing"
 	"github.com/butler/butler/internal/memory/ingestion"
+	"github.com/butler/butler/internal/memory/jobs"
 	"github.com/butler/butler/internal/memory/pipeline"
 	"github.com/butler/butler/internal/memory/profile"
 	"github.com/butler/butler/internal/memory/provenance"
@@ -59,6 +60,8 @@ type httpServerDeps struct {
 	delegationDecisions        apiservice.DelegationDecisions
 	initiativeStore            *initiative.Store
 	memoryIndexing             *indexing.Runtime
+	memoryModelStore           *jobs.Store
+	memoryModelConfigured      bool
 	sourceCatalog              *catalog.Store
 	ownerGoals                 *goal.Manager
 	finalResults               *completion.Coordinator
@@ -127,7 +130,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	if strings.TrimSpace(os.Getenv("BUTLER_MEMORY_PDF_PARSER_ENABLED")) == "true" {
 		parser.Pages = ingestion.NewPDFClient()
 	}
-	memoryCatalogServer := &apiservice.MemoryCatalogServer{Store: deps.sourceCatalog, Auth: deps.ownerAuth, Ingestion: &ingestion.Store{Catalog: deps.sourceCatalog, Parser: parser}, Indexing: deps.memoryIndexing}
+	memoryCatalogServer := &apiservice.MemoryCatalogServer{Store: deps.sourceCatalog, Auth: deps.ownerAuth, Ingestion: &ingestion.Store{Catalog: deps.sourceCatalog, Parser: parser}, Indexing: deps.memoryIndexing, ModelJobs: deps.memoryModelStore, ModelWorkerConfigured: deps.memoryModelConfigured}
 	providerServer := apiservice.NewProviderServer(deps.authManager, deps.providerResult.ProviderName, map[string]string{
 		modelprovider.ProviderOpenAI:        deps.cfg.OpenAIModel,
 		modelprovider.ProviderOpenAICodex:   deps.cfg.OpenAICodexModel,

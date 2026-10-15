@@ -1021,6 +1021,13 @@ Model Transport Layer в Butler — это provider-normalizing execution channe
 
 ## Security and admitted serialization
 
+The trusted `WithInferenceAuthority` hook is repeatable, including before native
+authentication and immediately before HTTP. The separate optional
+`WithInferenceDispatch` marker runs exactly once at native inference HTTP, after
+authority/serialization checks. Background jobs use it for a durable possibly-sent
+receipt; a marker commit followed by process failure still has unknown outcome.
+Both callbacks stay private to the kernel and are absent from provider/model data.
+
 OpenAI Responses and Realtime retain the same run's supplied system instructions
 through tool-result and continuation turns. Responses uses the `instructions`
 field; Realtime updates session instructions explicitly, including empty policy
@@ -1060,7 +1067,7 @@ quality superiority, general model correctness or a cause of earlier failures.
 See [actual compatibility evidence](../ai/scenario-schema-dialect-actual-audit-20261013.md).
 No fallback/repair/retry is added.
 
-Only typed code-owned instructions carry system role; external/context/derived observations carry provenance as data. Secret-class inputs fail before serialization. Budget037 passes a private input byte cap and the native provider checks its complete actual request, including prior function calls, thought signatures and tool results, before HTTP. Other adapters have serialization guards but need verified capacity/cost declarations before budgeted production inference. HTTP error status is retained without untrusted body/code/details; no raw network error or response content enters durable error events. Production auxiliary model/embed adapters have no durable job-owned admission and remain disabled. See [agent security boundaries](agent-security-boundaries.md).
+Only typed code-owned instructions carry system role; external/context/derived observations carry provenance as data. Secret-class inputs fail before serialization. Budget037 passes a private input byte cap and the native provider checks its complete actual request, including prior function calls, thought signatures and tool results, before HTTP. Other adapters have serialization guards but need verified capacity/cost declarations before budgeted production inference. HTTP error status is retained without untrusted body/code/details; no raw network error or response content enters durable error events. Legacy auxiliary model/embed adapters remain disabled. The separately authorized [generative memory job path](background-memory-jobs.md) uses the configured native transport, complete declared limits, serialization/HTTP authority checks and durable per-attempt reservations; unsupported adapters fail closed. See [agent security boundaries](agent-security-boundaries.md).
 
 Trusted callers may install a request-local `WithProviderStageObserver` for
 content-free diagnosis. Antigravity reports only authentication, request
