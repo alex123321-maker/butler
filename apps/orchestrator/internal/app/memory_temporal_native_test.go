@@ -35,12 +35,12 @@ import (
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	"github.com/butler/butler/internal/ingress"
-	"github.com/butler/butler/internal/memory/adaptive"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/factcontrol"
 	"github.com/butler/butler/internal/memory/memorytest"
 	"github.com/butler/butler/internal/memory/profile"
 	"github.com/butler/butler/internal/memory/readcontrol"
+	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/providerauth"
@@ -58,7 +58,7 @@ func temporalNativePolicy(carry budget.Units) budget.Policy {
 	return p
 }
 
-func temporalCollectorBroker(t *testing.T, pool *pgxpool.Pool, cat *catalog.Store, plan *adaptive.Store, manifest, proof string, policy budget.Policy) *tools.BrokerClient {
+func temporalCollectorBroker(t *testing.T, pool *pgxpool.Pool, cat *catalog.Store, manifest, proof string, policy budget.Policy) *tools.BrokerClient {
 	t.Helper()
 	binary := os.Getenv("BUTLER_GUARDED_REQUEST_BROKER_BINARY")
 	if binary == "" {
@@ -81,7 +81,7 @@ func temporalCollectorBroker(t *testing.T, pool *pgxpool.Pool, cat *catalog.Stor
 	leases := session.NewPostgresLeaseManager(pool)
 	runs := runservice.NewService(runservice.NewPostgresRepository(pool), nil)
 	contexts := &actionContextReader{runs: runs, sessions: sessions, leases: leases, tasks: task.NewStore(pool), pool: pool, memoryReadReady: true, memoryTemporalReady: true}
-	reads, err := NewMemoryReads(pool, cat, AdaptiveReadOptions{Store: plan})
+	reads, err := NewMemoryReads(pool, cat)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -184,7 +184,7 @@ type temporalCaseObservation struct {
 	FactsReads    int    `json:"actual_facts_reads"`
 }
 
-func temporalRunOriginal(t *testing.T, ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, plan *adaptive.Store, p *temporalNativeProvider, b *budget.Controller, broker *tools.BrokerClient, pm *promptmgmt.Manager, prepared temporalPreparedCase) temporalCaseObservation {
+func temporalRunOriginal(t *testing.T, ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, p *temporalNativeProvider, b *budget.Controller, broker *tools.BrokerClient, pm *promptmgmt.Manager, prepared temporalPreparedCase) temporalCaseObservation {
 	t.Helper()
 	ob := temporalCaseObservation{CaseID: prepared.ID, Status: "failed", Reason: "ordinary_execution_failed"}
 	var unsealed int
@@ -197,14 +197,21 @@ func temporalRunOriginal(t *testing.T, ctx context.Context, pool *pgxpool.Pool, 
 	finals := completion.New(pool)
 	finals.DataGuard = cat.CheckRunSourcesTx
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
-	base := flow.NewService(repo, session.NewPostgresLeaseManager(pool), runs, transcript.NewStore(pool), p, flow.Config{ProviderName: "antigravity", ModelName: "gemini-3.8-flash-high", OwnerID: "temporal-native-worker", LeaseTTL: 120, Tasks: task.NewStore(pool), Budgets: b, MemorySources: cat, Completion: finals, Checkpoints: inputs, Tools: broker, ToolCatalog: broker, ActionAuthorizer: broker, PromptManager: pm, PromptAssembler: promptmgmt.NewAssembler(), ContextBudgetTokens: 65536, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_0, AdaptiveRetrieval: plan, ProfileStore: profileStoreAdapter{store: profile.NewStore(pool), sources: cat, temporal: true}}, log)
+	base := flow.NewService(repo, session.NewPostgresLeaseManager(pool), runs, transcript.NewStore(pool), p, flow.Config{ProviderName: "antigravity", ModelName: "gemini-3.8-flash-high", OwnerID: "temporal-native-worker", LeaseTTL: 120, Tasks: task.NewStore(pool), Budgets: b, MemorySources: cat, Completion: finals, Checkpoints: inputs, Tools: broker, ToolCatalog: broker, ActionAuthorizer: broker, PromptManager: pm, PromptAssembler: promptmgmt.NewAssembler(), ContextBudgetTokens: 65536, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_0, ProfileStore: profileStoreAdapter{store: profile.NewStore(pool), sources: cat, temporal: true}, MemoryScopeResolver: func(ctx context.Context) ([]memoryservice.Scope, error) {
+		extra, err := cat.ExtraScopes(ctx, "memory_read")
+		var out []memoryservice.Scope
+		for _, scope := range extra {
+			out = append(out, memoryservice.Scope{Type: scope.Type, ID: scope.ID})
+		}
+		return out, err
+	}}, log)
 	x := &temporalExecutor{base: base, done: make(chan temporalExecution, 1)}
 	worker, err := durableinput.NewServiceWithExecutionTimeout(inputs, repo, x, runs, log, 20*time.Minute)
 	if err != nil {
 		t.Fatal(err)
 	}
 	payload, _ := json.Marshal(map[string]string{"text": prepared.Question, "user_id": temporalNativeOwner, "task_id": prepared.Task, "intent": "conversation"})
-	event := ingress.InputEvent{EventID: prepared.ID, IdempotencyKey: prepared.ID, SessionKey: prepared.Session, Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: string(payload), CreatedAt: time.Now()}
+	event := ingress.InputEvent{EventID: prepared.Session + ":original", IdempotencyKey: prepared.Session + ":original", SessionKey: prepared.Session, Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: string(payload), CreatedAt: time.Now()}
 	owner := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: temporalNativeOwner, Channel: "web", SessionKey: prepared.Session, DeliveryID: prepared.ID})
 	receipt, err := worker.Execute(owner, event)
 	if err != nil {
@@ -267,7 +274,7 @@ func temporalRunOriginal(t *testing.T, ctx context.Context, pool *pgxpool.Pool, 
 	if sealErr != nil {
 		t.Fatal(sealErr)
 	}
-	if pool.QueryRow(ctx, `SELECT count(*) FROM memory_retrieval_operations WHERE run_id=$1 AND tool_name='memory.facts' AND state='observed'`, ob.RunID).Scan(&ob.FactsReads) != nil {
+	if pool.QueryRow(ctx, `SELECT count(*) FROM tool_calls c WHERE c.run_id=$1 AND c.tool_name='memory.facts' AND c.status='completed' AND EXISTS(SELECT 1 FROM action_intents i JOIN action_effects e ON e.action_id=i.effect_id WHERE i.binding->>'run_id'=c.run_id AND i.binding->>'tool_call_id'=c.tool_call_id AND e.state='effect_confirmed')`, ob.RunID).Scan(&ob.FactsReads) != nil {
 		t.Fatal("actual fact reads not observable")
 	}
 	if ob.NativeEntries < 1 || ob.NativeEntries > 3 || ob.KnownUsage != ob.NativeEntries || ob.FactsReads < 1 {
@@ -316,20 +323,16 @@ func temporalCollect(t *testing.T, ctx context.Context, pool *pgxpool.Pool, cat 
 	if _, err := pool.Exec(ctx, `UPDATE temporal_native_window SET sealed=TRUE,input_hash=$1 WHERE singleton AND NOT sealed`, acceptance.MemoryBytesSHA256(raw)); err != nil {
 		t.Fatal("durable input seal failed")
 	}
-	plan, err := adaptive.NewStore(pool, cat)
-	if err != nil {
-		t.Fatal(err)
-	}
-	broker := temporalCollectorBroker(t, pool, cat, plan, manifest, proof, policy)
+	broker := temporalCollectorBroker(t, pool, cat, manifest, proof, policy)
 	b := budget.NewController(pool, policy)
 	b.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	pm := promptmgmt.NewManager(config.NewPostgresSettingsStore(pool))
 	on := true
-	if _, err = pm.Update(ctx, promptmgmt.UpdateRequest{BasePrompt: temporalNativeInstruction, Enabled: &on, UpdatedBy: "frozen-temporal-explicit-v1"}); err != nil {
+	if _, err := pm.Update(ctx, promptmgmt.UpdateRequest{BasePrompt: temporalNativeInstruction, Enabled: &on, UpdatedBy: "frozen-temporal-explicit-v1"}); err != nil {
 		t.Fatal(err)
 	}
 	for _, c := range cases {
-		ob := temporalRunOriginal(t, ctx, pool, cat, plan, p, b, broker, pm, c)
+		ob := temporalRunOriginal(t, ctx, pool, cat, p, b, broker, pm, c)
 		observations = append(observations, ob)
 		raw, _ := json.Marshal(ob)
 		if temporalWriteExclusive(filepath.Join(proof, c.ID+".json"), raw) != nil {
@@ -375,17 +378,20 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 	if os.Getenv("BUTLER_TEMPORAL_NATIVE_V1") != "1" {
 		t.Skip("explicit one-use native temporal window required")
 	}
+	proof := os.Getenv("BUTLER_TEMPORAL_NATIVE_PROOF")
+	stage := "before_pins_pg_auth"
+	defer temporalEarlySchedule(t, proof, &stage)()
 	if os.Getenv("HTTPS_PROXY") != "http://127.0.0.1:18080" {
 		t.Fatal("server proxy pin required")
 	}
 	// Source/binary/profile/budget pins are checked before reading ciphertext or
 	// resolving the real provider. No env flag weakens the deployment readiness.
-	proof := os.Getenv("BUTLER_TEMPORAL_NATIVE_PROOF")
 	if err := temporalCheckNativePins(proof); err != nil {
 		t.Fatal(err)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 150*time.Minute)
 	defer cancel()
+	stage = "isolated_pg_setup"
 	cfg, err := pgxpool.ParseConfig(os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
 	if err != nil || cfg.ConnConfig.Database != "issue85_native_test" {
 		t.Fatal("retained isolated DB required")
@@ -416,6 +422,7 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 			t.Fatal("migration failed", filepath.Base(path))
 		}
 	}
+	stage = "opaque_auth_import"
 	auth, err := os.ReadFile("/native-private/auth-input.value")
 	if err != nil {
 		t.Fatal("opaque fresh auth input unavailable")
@@ -432,6 +439,7 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 		}
 	}()
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
+	stage = "provider_constructor"
 	built, err := providerfactory.New(providerauth.NewManager(config.NewPostgresSettingsStore(pool)), log).Build(ctx, providerfactory.BuildConfig{ActiveProvider: "antigravity", AntigravityModel: "gemini-3.8-flash-high", AntigravityMaximumOutputTokens: 32768, Timeout: 300 * time.Second})
 	if err != nil {
 		t.Fatal("native provider setup failed")
@@ -447,7 +455,55 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 	if m.Initialize() != nil {
 		t.Fatal("external deletion anchor unavailable")
 	}
+	stage = "actual_ordinary_collection"
 	temporalCollect(t, ctx, pool, catalog.New(pool, m), p, proof, manifest, policy)
+	stage = "completed_all_originals"
+}
+
+// Registered at the native entry before any PG, auth, one-use schema or provider
+// construction. A setup failure still exports the full prospective denominator.
+func temporalEarlySchedule(t *testing.T, proof string, stage *string) func() {
+	t.Helper()
+	corpus := temporalLoadCorpus(t)
+	raw, _ := json.Marshal(temporalFillSchedule(corpus, nil))
+	if temporalWriteExclusive(filepath.Join(proof, "scheduled-before-setup.json"), raw) != nil {
+		t.Fatal("early entire schedule seal required")
+	}
+	return func() {
+		path := filepath.Join(proof, "all-original-outcomes.json")
+		current, err := os.ReadFile(path)
+		if errors.Is(err, os.ErrNotExist) {
+			if temporalWriteExclusive(path, raw) != nil {
+				t.Error("early abort denominator export failed")
+			}
+		} else {
+			var out []temporalCaseObservation
+			if err != nil || json.Unmarshal(current, &out) != nil || len(out) != 12 {
+				t.Error("final denominator corrupt")
+			}
+		}
+		state, _ := json.Marshal(map[string]any{"last_stage": *stage, "scheduled_originals": 12, "no_original_replayed": true})
+		if temporalWriteExclusive(filepath.Join(proof, "setup-outcome.json"), state) != nil {
+			t.Error("setup outcome export failed")
+		}
+	}
+}
+
+func TestTemporalCollectorEarlySetupFailureExportsAllOriginals(t *testing.T) {
+	proof := t.TempDir()
+	stage := "before_pg_auth"
+	finish := temporalEarlySchedule(t, proof, &stage)
+	finish()
+	raw, err := os.ReadFile(filepath.Join(proof, "all-original-outcomes.json"))
+	var out []temporalCaseObservation
+	if err != nil || json.Unmarshal(raw, &out) != nil || len(out) != 12 {
+		t.Fatal("early failure erased denominator")
+	}
+	for _, ob := range out {
+		if ob.Status != "not_executed" || ob.NativeEntries != 0 {
+			t.Fatal("unexecuted original fabricated")
+		}
+	}
 }
 
 // A real owning durable worker, Core and separate Broker process; controlled

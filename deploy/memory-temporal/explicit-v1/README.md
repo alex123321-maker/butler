@@ -20,6 +20,16 @@ run creation, and current privacy proof wins over historical queries. Owner
 acceptance/temporal controls are real trusted controls; the explicitly documented
 25hour prior-verification synthetic seed is not evidence of Broker admission.
 
+The owning Flow uses no adaptive87 planner, retrieval plan or opened-citation
+answer protocol in this explicit-only screen. Ordinary task budgets enforce two
+tool calls and the durable model window enforces three native entries per case.
+Actual `tool_calls`, confirmed Broker read effects and temporal/source pins supply
+the lookup witnesses. All case facts are session-isolated with opaque identities;
+the genuine user-level Russian preference is common to all cases, and every task
+has the identical independently accepted current preference. Auditing actual
+Start requests requires that task preference and rejects foreign case source IDs,
+unique DATA markers, private case labels, hidden rubrics and erased old values.
+
 Use actual High32768 and at least300s HTTP/model bounds, matched conservative
 quotes, at most3 native turns and2 tool calls per original (maximum36 model and24
 tool quotes). Shared persisted task/day/authority budgets and their earlier

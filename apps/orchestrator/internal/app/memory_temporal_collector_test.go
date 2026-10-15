@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -48,6 +49,9 @@ func (p *temporalNativeProvider) InferenceTimeout() time.Duration {
 	return p.ModelProvider.(interface{ InferenceTimeout() time.Duration }).InferenceTimeout()
 }
 func (p *temporalNativeProvider) reserve(ctx context.Context, run, kind string, request any) (*temporalNativeEntry, error) {
+	if err := p.auditVisible(ctx, run, request); err != nil {
+		return nil, err
+	}
 	raw, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -86,6 +90,68 @@ func (p *temporalNativeProvider) reserve(ctx context.Context, run, kind string, 
 	p.entries = append(p.entries, c)
 	p.mu.Unlock()
 	return c, nil
+}
+
+func (p *temporalNativeProvider) auditVisible(ctx context.Context, run string, request any) error {
+	raw, err := json.Marshal(request)
+	if err != nil {
+		return err
+	}
+	visible := string(raw)
+	var selectedRaw []byte
+	if p.pool.QueryRow(ctx, `SELECT c.prepared_json FROM temporal_native_cases c JOIN runs r ON r.session_key=c.session_key WHERE r.run_id=$1`, run).Scan(&selectedRaw) != nil {
+		return errors.New("actual context lacks sealed original binding")
+	}
+	var selected temporalPreparedCase
+	if json.Unmarshal(selectedRaw, &selected) != nil {
+		return errors.New("sealed context binding invalid")
+	}
+	allowed := map[string]bool{}
+	for _, id := range selected.ContextSources {
+		allowed[id] = true
+	}
+	if r, ok := request.(transport.StartRunRequest); ok {
+		var input strings.Builder
+		for _, item := range r.InputItems {
+			input.WriteString(item.Content)
+			input.WriteByte('\n')
+		}
+		if !strings.Contains(input.String(), temporalNativePreference) || !strings.Contains(input.String(), selected.ContextMarker) {
+			return errors.New("mandatory current scoped preference omitted")
+		}
+	}
+	rows, err := p.pool.Query(ctx, `SELECT prepared_json FROM temporal_native_cases ORDER BY position`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var raw []byte
+		var c temporalPreparedCase
+		if rows.Scan(&raw) != nil || json.Unmarshal(raw, &c) != nil {
+			return errors.New("context audit bindings unavailable")
+		}
+		if strings.Contains(visible, c.ID) {
+			return errors.New("private corpus class label entered model context")
+		}
+		if c.ID != selected.ID && strings.Contains(visible, c.ContextMarker) {
+			return errors.New("foreign case primary context entered model context")
+		}
+		for _, id := range c.ContextSources {
+			if !allowed[id] && strings.Contains(visible, id) {
+				return errors.New("foreign case source entered model context")
+			}
+		}
+	}
+	if rows.Err() != nil {
+		return errors.New("context audit incomplete")
+	}
+	for _, hidden := range []string{"Сирень-17", "Туя-61", "expected_typed_query", "recorded_anchors", "prospective_draft", "temporal.case."} {
+		if strings.Contains(visible, hidden) {
+			return errors.New("hidden rubric or revoked content entered model context")
+		}
+	}
+	return nil
 }
 func (p *temporalNativeProvider) call(ctx context.Context, c *temporalNativeEntry, invoke func(context.Context) (transport.EventStream, error)) (transport.EventStream, error) {
 	started := time.Now()

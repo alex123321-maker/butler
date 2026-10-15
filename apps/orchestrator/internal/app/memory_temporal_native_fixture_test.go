@@ -36,13 +36,15 @@ type temporalCase struct {
 	Expected    string `json:"expected"`
 }
 type temporalPreparedCase struct {
-	ID       string               `json:"id"`
-	Session  string               `json:"session_key"`
-	Task     string               `json:"task_id"`
-	Question string               `json:"question"`
-	Args     factcontrol.Args     `json:"expected_typed_query"`
-	Anchors  map[string]time.Time `json:"recorded_anchors"`
-	Claims   []string             `json:"claim_ids"`
+	ID             string               `json:"id"`
+	Session        string               `json:"session_key"`
+	Task           string               `json:"task_id"`
+	Question       string               `json:"question"`
+	Args           factcontrol.Args     `json:"expected_typed_query"`
+	Anchors        map[string]time.Time `json:"recorded_anchors"`
+	Claims         []string             `json:"claim_ids"`
+	ContextSources []string             `json:"permitted_context_source_ids"`
+	ContextMarker  string               `json:"context_isolation_marker"`
 }
 
 func temporalLoadCorpus(t *testing.T) temporalCorpus {
@@ -52,7 +54,7 @@ func temporalLoadCorpus(t *testing.T) temporalCorpus {
 	if err != nil || acceptance.MemoryBytesSHA256(raw) != "4c245d15d9dfb57d42649d7e560f961e24251869c5eb8cbfed278fc90adfb512" || json.Unmarshal(raw, &c) != nil || c.Version != "temporal-explicit-v1" || len(c.Cases) != 12 {
 		t.Fatal("prospective temporal corpus differs")
 	}
-	for _, file := range []struct{ name, hash string }{{"controls.json", "e571f03067d999495e287bc999ac185ef20d0cef985463e6f6e20d6d3efdc761"}, {"README.md", "75d99af138a0d286b40e9eaa1378333df76c13f1490f204874344afa30895590"}} {
+	for _, file := range []struct{ name, hash string }{{"controls.json", "73e3210462a31111b3e704b737d209bd849f306e671107650e34d7321c5d076b"}, {"README.md", "9e2a58f1b6d6a62b37842b87d80237b3ff1800cfa2b0c0c6941a2ac5a98a88d1"}} {
 		raw, e := os.ReadFile("../../../../deploy/memory-temporal/explicit-v1/" + file.name)
 		if e != nil || acceptance.MemoryBytesSHA256(raw) != file.hash {
 			t.Fatal("prospective controls/method differs")
@@ -77,8 +79,10 @@ func temporalPrepareCases(t *testing.T, ctx context.Context, pool *pgxpool.Pool,
 	feb := time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC)
 	mar := feb.AddDate(0, 1, 0)
 	var out []temporalPreparedCase
+	var commonSources []string
 	for i, tc := range c.Cases {
-		p := temporalPreparedCase{ID: tc.ID, Session: "temporal-native:" + tc.ID, Task: "temporal-task:" + tc.ID, Anchors: map[string]time.Time{}, Args: factcontrol.Args{ValidAt: tc.ValidAt, Limit: 8}}
+		opaque := acceptance.MemoryBytesSHA256([]byte("temporal-explicit-v1-private-binding:" + tc.ID))
+		p := temporalPreparedCase{ID: tc.ID, Session: "temporal:" + opaque[:24], Task: "task:" + opaque[24:48], ContextMarker: "метка-" + opaque[48:], Anchors: map[string]time.Time{}, Args: factcontrol.Args{ValidAt: tc.ValidAt, Limit: 8}}
 		if _, err := pool.Exec(ctx, `INSERT INTO sessions(session_key,user_id,channel)VALUES($1,$2,'web')`, p.Session, temporalNativeOwner); err != nil {
 			t.Fatal(err)
 		}
@@ -87,7 +91,12 @@ func temporalPrepareCases(t *testing.T, ctx context.Context, pool *pgxpool.Pool,
 		}
 		put := func(suffix, key, value, body, active, scope, id, memory string, event *time.Time) (catalog.Source, catalog.Claim) {
 			t.Helper()
-			src, err := cat.Put(owner, catalog.PutSource{ExternalKey: tc.ID + ":" + suffix, Kind: "owner_statement", ScopeType: scope, ScopeID: id, Body: body, EventTime: event, Origin: content.Origin{Kind: content.OwnerInput, Sensitivity: content.Private}})
+			// Every source/key identity is opaque. A unique ordinary DATA marker
+			// lets the collector detect foreign-case primary context byte leaks.
+			if scope != "user" {
+				body += "\nЗнак записи: " + p.ContextMarker
+			}
+			src, err := cat.Put(owner, catalog.PutSource{ExternalKey: opaque + ":" + suffix, Kind: "owner_statement", ScopeType: scope, ScopeID: id, Body: body, EventTime: event, Origin: content.Origin{Kind: content.OwnerInput, Sensitivity: content.Private}})
 			if err != nil {
 				t.Fatal("source fixture", err)
 			}
@@ -118,6 +127,10 @@ func temporalPrepareCases(t *testing.T, ctx context.Context, pool *pgxpool.Pool,
 				t.Fatal("owner acceptance", err)
 			}
 			p.Claims = append(p.Claims, claim.ID)
+			p.ContextSources = append(p.ContextSources, src.ID)
+			if scope == "user" {
+				commonSources = append(commonSources, src.ID)
+			}
 			return src, claim
 		}
 		meta := func(claim catalog.Claim, head int64, validity catalog.Validity, from, to *time.Time, class catalog.FreshnessClass) {
@@ -129,29 +142,29 @@ func temporalPrepareCases(t *testing.T, ctx context.Context, pool *pgxpool.Pool,
 		ref := func(src catalog.Source) {
 			p.Args.Sources = append(p.Args.Sources, readcontrol.SourceRef{ID: src.ID, Revision: src.Revision, AccessRevision: src.AccessRevision, Hash: src.Hash})
 		}
-		key := "temporal.case." + tc.ID
+		key := "fact." + opaque
 		switch tc.Fixture {
 		case "february_then_march":
 			p.Anchors["before_upload"] = clock()
-			a, ca := put("a", key, "узел Кедр", "В феврале сервер — узел Кедр.", "", "user", temporalNativeOwner, "profile", nil)
+			a, ca := put("a", key, "узел Кедр", "В феврале сервер — узел Кедр.", "", "session", p.Session, "profile", nil)
 			meta(ca, 1, catalog.ValidityInterval, &feb, &mar, catalog.FreshnessTechnicalFact)
 			p.Anchors["after_a_before_b"] = clock()
-			b, cb := put("b", key, "узел Пихта", "С марта сервер — узел Пихта.", ca.ID, "user", temporalNativeOwner, "profile", nil)
+			b, cb := put("b", key, "узел Пихта", "С марта сервер — узел Пихта.", ca.ID, "session", p.Session, "profile", nil)
 			meta(cb, 2, catalog.ValidityInterval, &mar, nil, catalog.FreshnessTechnicalFact)
 			ref(a)
 			ref(b)
 		case "explicit_open_and_unknown_relative":
-			a, ca := put("open", key+".open", "режим Лён", "Правило: режим Лён, явно открытый интервал действия.", "", "user", temporalNativeOwner, "profile", nil)
+			a, ca := put("open", key+".open", "режим Лён", "Правило: режим Лён, явно открытый интервал действия.", "", "session", p.Session, "profile", nil)
 			meta(ca, 1, catalog.ValidityInterval, nil, nil, catalog.FreshnessStablePreference)
-			b, cb := put("unknown", key+".unknown", "завтра утром", "Отдельное правило: завтра утром. Часовой пояс не указан.", "", "user", temporalNativeOwner, "profile", nil)
+			b, cb := put("unknown", key+".unknown", "завтра утром", "Отдельное правило: завтра утром. Часовой пояс не указан.", "", "session", p.Session, "profile", nil)
 			meta(cb, 1, catalog.ValidityUnknown, nil, nil, catalog.FreshnessUnknown)
 			ref(a)
 			ref(b)
 		case "accepted_overlapping_values":
-			a, ca := put("a", key, "янтарный", "Цвет режима — янтарный.", "", "user", temporalNativeOwner, "profile", nil)
+			a, ca := put("a", key, "янтарный", "Цвет режима — янтарный.", "", "session", p.Session, "profile", nil)
 			meta(ca, 1, catalog.ValidityInterval, &feb, &mar, catalog.FreshnessStablePreference)
 			start, end := feb.AddDate(0, 0, 9), mar.AddDate(0, 0, 9)
-			b, cb := put("b", key, "бирюзовый", "Цвет режима — бирюзовый.", ca.ID, "user", temporalNativeOwner, "profile", nil)
+			b, cb := put("b", key, "бирюзовый", "Цвет режима — бирюзовый.", ca.ID, "session", p.Session, "profile", nil)
 			meta(cb, 2, catalog.ValidityInterval, &start, &end, catalog.FreshnessStablePreference)
 			ref(a)
 			ref(b)
@@ -164,7 +177,7 @@ func temporalPrepareCases(t *testing.T, ctx context.Context, pool *pgxpool.Pool,
 			ref(a)
 			ref(b)
 		case "technical_verification_25h_old":
-			a, ca := put("tech", key, "4.2", "Последняя принятая версия технического сервиса — 4.2.", "", "user", temporalNativeOwner, "profile", nil)
+			a, ca := put("tech", key, "4.2", "Последняя принятая версия технического сервиса — 4.2.", "", "session", p.Session, "profile", nil)
 			meta(ca, 1, catalog.ValidityInterval, nil, nil, catalog.FreshnessTechnicalFact)
 			if _, err := pool.Exec(owner, `INSERT INTO memory_claim_temporal_revisions(claim_id,revision,validity,freshness_class,verified_at,verification_basis,recorded_by)VALUES($1,2,'interval','technical_fact',clock_timestamp()-interval '25 hours','owner_statement',$2)`, ca.ID, temporalNativeOwner); err != nil {
 				t.Fatal("declared historical verification seed", err)
@@ -172,11 +185,11 @@ func temporalPrepareCases(t *testing.T, ctx context.Context, pool *pgxpool.Pool,
 			ref(a)
 		case "reported_event_distinct_from_validity":
 			event := time.Date(2025, 9, 13, 8, 0, 0, 0, time.UTC)
-			a, ca := put("event", key, "узел Ива", "Узел Ива действует с 1 февраля 2026 UTC. Сообщённая дата события документа: 13 сентября 2025 08:00 UTC.", "", "user", temporalNativeOwner, "profile", &event)
+			a, ca := put("event", key, "узел Ива", "Узел Ива действует с 1 февраля 2026 UTC. Сообщённая дата события документа: 13 сентября 2025 08:00 UTC.", "", "session", p.Session, "profile", &event)
 			meta(ca, 1, catalog.ValidityInterval, &feb, nil, catalog.FreshnessTechnicalFact)
 			ref(a)
 		case "corrected_original_old_ref":
-			a, ca := put("corrected", key, "Сирень-17", "Прежнее значение: Сирень-17.", "", "user", temporalNativeOwner, "profile", nil)
+			a, ca := put("corrected", key, "Сирень-17", "Прежнее значение: Сирень-17.", "", "session", p.Session, "profile", nil)
 			meta(ca, 1, catalog.ValidityInterval, nil, nil, catalog.FreshnessTechnicalFact)
 			ref(a)
 			p.Anchors["before_correction"] = clock()
@@ -184,7 +197,7 @@ func temporalPrepareCases(t *testing.T, ctx context.Context, pool *pgxpool.Pool,
 				t.Fatal("current source correction", err)
 			}
 		case "revoked_original_old_ref":
-			a, ca := put("revoked", key, "Туя-61", "Прежнее значение: Туя-61.", "", "user", temporalNativeOwner, "profile", nil)
+			a, ca := put("revoked", key, "Туя-61", "Прежнее значение: Туя-61.", "", "session", p.Session, "profile", nil)
 			meta(ca, 1, catalog.ValidityInterval, nil, nil, catalog.FreshnessTechnicalFact)
 			ref(a)
 			p.Anchors["before_revocation"] = clock()
@@ -192,7 +205,7 @@ func temporalPrepareCases(t *testing.T, ctx context.Context, pool *pgxpool.Pool,
 				t.Fatal("current source revocation", err)
 			}
 		case "completed_accepted_episode":
-			a, ca := put("episode", key, "Перенос архива Ольха завершён", "Исторический отчёт: перенос архива «Ольха» завершён. Это сообщение о результате, независимая проверка эффекта не приложена.", "", "user", temporalNativeOwner, "episodic", nil)
+			a, ca := put("episode", key, "Перенос архива Ольха завершён", "Исторический отчёт: перенос архива «Ольха» завершён. Это сообщение о результате, независимая проверка эффекта не приложена.", "", "session", p.Session, "episodic", nil)
 			meta(ca, 1, catalog.ValidityInterval, nil, nil, catalog.FreshnessCompletedEpisode)
 			ref(a)
 		default:
@@ -223,6 +236,13 @@ func temporalPrepareCases(t *testing.T, ctx context.Context, pool *pgxpool.Pool,
 			t.Fatal("case seal row", err)
 		}
 		out = append(out, p)
+	}
+	for i := range out {
+		out[i].ContextSources = append(out[i].ContextSources, commonSources...)
+		raw, _ := json.Marshal(out[i])
+		if _, err := pool.Exec(ctx, `UPDATE temporal_native_cases SET prepared_json=$2 WHERE case_id=$1`, out[i].ID, raw); err != nil {
+			t.Fatal("common owner preference binding", err)
+		}
 	}
 	return out
 }
