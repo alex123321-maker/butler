@@ -154,3 +154,8 @@ that scope. The complete selected parent graph remains current and deletion-link
 the method uses a savepoint on the caller transaction and grants no parent-task
 read access. Reviewed developer delegation can use it for a child candidate without
 making the original parent/project scope ambient child context.
+
+Migration079 down is allowed only before any irreversible run payload marker
+exists. Once deletion has fenced a run, schema downgrade refuses to remove its
+privacy fence. Roll back optional consumers/images while retaining migrations
+and the independently held deletion anchor; never drop live deletion metadata.

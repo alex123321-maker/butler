@@ -69,3 +69,8 @@ examples for independent human review and compare quality, current instruction
 adherence, actual effect verdicts and full cost against this version's pilot.
 Degradation blocks promotion or rolls back the affected optional function; a
 mean quality score cannot compensate for a privacy/authority/currentness failure.
+
+Migration079 down is allowed only before any irreversible run payload marker
+exists. Once deletion has fenced a run, schema downgrade refuses to remove its
+privacy fence. Roll back optional consumers/images while retaining migrations
+and the independently held deletion anchor; never drop live deletion metadata.

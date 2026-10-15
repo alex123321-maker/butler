@@ -1,3 +1,14 @@
+-- Disabling a consumer or rolling back an image must retain an existing
+-- privacy fence. Empty development schemas can still reverse this migration.
+DO $$
+DECLARE used BOOLEAN;
+BEGIN
+ IF to_regclass('memory_run_payload_redactions') IS NOT NULL THEN
+  EXECUTE 'SELECT EXISTS(SELECT 1 FROM memory_run_payload_redactions)' INTO used;
+  IF used THEN RAISE EXCEPTION 'cannot remove a durable run payload privacy fence'; END IF;
+ END IF;
+END $$;
+
 DROP TRIGGER IF EXISTS experience_tool_publication_fence ON tool_calls;
 DROP TRIGGER IF EXISTS temporal_tool_publication_fence ON tool_calls;
 DROP TRIGGER IF EXISTS summary_tool_publication_fence ON tool_calls;

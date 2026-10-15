@@ -75,6 +75,16 @@ func TestDeletionErasesPinnedToolAndApprovalPayloadsWithoutChangingOutcomesInteg
 	if err = New(s.pool, s.manifest).Reconcile(owner); err != nil {
 		t.Fatal(err)
 	}
+	down, err := os.ReadFile("../../../migrations/079_memory_tool_payload_redaction.down.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.pool.Exec(owner, string(down)); err == nil {
+		t.Fatal("rollback removed an existing irreversible privacy fence")
+	}
+	if _, err = s.pool.Exec(owner, `UPDATE tool_calls SET result='"late private copy"' WHERE tool_call_id='private-read'`); err == nil {
+		t.Fatal("denied downgrade did not preserve the payload fence")
+	}
 }
 
 func TestToolPayloadMigrationErasesAlreadyWithdrawnRunCacheIntegration(t *testing.T) {
