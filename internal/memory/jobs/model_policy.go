@@ -267,7 +267,7 @@ func (s *Store) checkModelPolicyTx(ctx context.Context, tx pgx.Tx, j Job) (Model
 
 // PollModelPolicies is a bounded scan in the existing worker loop. It neither
 // creates another scheduler nor participates in user-run completion.
-func (s *Store) PollModelPolicies(ctx context.Context, enabled func(string) bool) error {
+func (s *Store) PollModelPolicies(ctx context.Context, enabled func(string) bool, preparers ...map[string]ModelScheduleHandler) error {
 	if e := s.reapModels(ctx); e != nil {
 		return e
 	}
@@ -295,13 +295,17 @@ func (s *Store) PollModelPolicies(ctx context.Context, enabled func(string) bool
 			_, _ = s.pool.Exec(ctx, `UPDATE memory_model_policies SET reason='consumer_disabled',next_event_at=clock_timestamp()+INTERVAL '10 seconds' WHERE policy_id=$1`, i.id)
 			continue
 		}
-		if e = s.scheduleModelPolicy(ctx, i.id); e != nil {
+		var prepare ModelScheduleHandler
+		if len(preparers) > 0 {
+			prepare = preparers[0][i.handler]
+		}
+		if e = s.scheduleModelPolicy(ctx, i.id, prepare); e != nil {
 			return e
 		}
 	}
 	return nil
 }
-func (s *Store) scheduleModelPolicy(ctx context.Context, id string) error {
+func (s *Store) scheduleModelPolicy(ctx context.Context, id string, preparers ...ModelScheduleHandler) error {
 	tx, e := s.pool.Begin(ctx)
 	if e != nil {
 		return e
@@ -370,6 +374,17 @@ func (s *Store) scheduleModelPolicy(ctx context.Context, id string) error {
 	}
 	// Owner policy permits these exact stable IDs, with unchanged access rights.
 	ownerCtx := catalog.WithAccessChecker(owneridentity.WithActor(ctx, owneridentity.Actor{}), &policyChecker{s: s, p: p})
+	if len(preparers) > 0 {
+		if refresher, ok := preparers[0].(ModelPolicyRefreshHandler); ok {
+			reason, err := refresher.RefreshPolicySourcesTx(ownerCtx, tx, s.catalog, p)
+			if err != nil {
+				return err
+			}
+			if reason != "" {
+				return wait(reason)
+			}
+		}
+	}
 	refs := make([]catalog.SourceRef, len(p.Job.Sources))
 	for i, r := range p.Job.Sources {
 		refs[i] = catalog.SourceRef{ID: r.ID, AccessRevision: r.AccessRevision}
@@ -380,6 +395,24 @@ func (s *Store) scheduleModelPolicy(ctx context.Context, id string) error {
 	}
 	if e = sourcePolicyPrivacyTx(ctx, tx, p, sources); e != nil {
 		return wait("source_privacy")
+	}
+	if len(preparers) > 0 && preparers[0] != nil {
+		prepared, reason, err := preparers[0].PrepareSourcesTx(ownerCtx, tx, s.catalog, p, sources)
+		if err != nil {
+			return err
+		}
+		if reason != "" {
+			return wait(reason)
+		}
+		if len(prepared) != len(sources) {
+			return ErrClaim
+		}
+		for i, source := range prepared {
+			if source.ID != sources[i].ID || source.AccessRevision != sources[i].AccessRevision || source.OwnerID != p.OwnerID {
+				return ErrClaim
+			}
+		}
+		sources = prepared
 	}
 	current := make([]catalog.SourceRef, 0, len(sources))
 	for _, src := range sources {

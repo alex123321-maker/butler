@@ -22,17 +22,18 @@ type Factory struct {
 }
 
 type BuildConfig struct {
-	ActiveProvider      string
-	OpenAIAPIKey        string
-	OpenAIModel         string
-	OpenAIBaseURL       string
-	OpenAIRealtimeURL   string
-	OpenAITransportMode string
-	OpenAICodexModel    string
-	OpenAICodexBaseURL  string
-	GitHubCopilotModel  string
-	AntigravityModel    string
-	Timeout             time.Duration
+	ActiveProvider                 string
+	OpenAIAPIKey                   string
+	OpenAIModel                    string
+	OpenAIBaseURL                  string
+	OpenAIRealtimeURL              string
+	OpenAITransportMode            string
+	OpenAICodexModel               string
+	OpenAICodexBaseURL             string
+	GitHubCopilotModel             string
+	AntigravityModel               string
+	AntigravityMaximumOutputTokens int
+	Timeout                        time.Duration
 }
 
 type Result struct {
@@ -58,7 +59,7 @@ func (f *Factory) Build(_ context.Context, cfg BuildConfig) (Result, error) {
 		if f.auth == nil {
 			return Result{}, fmt.Errorf("antigravity requires the provider auth manager")
 		}
-		instance, err := antigravity.NewProvider(antigravity.Config{Model: cfg.AntigravityModel, AuthSource: f.auth, Timeout: cfg.Timeout})
+		instance, err := antigravity.NewProvider(antigravity.Config{Model: cfg.AntigravityModel, MaximumOutputTokens: cfg.AntigravityMaximumOutputTokens, AuthSource: f.auth, Timeout: cfg.Timeout})
 		if err != nil {
 			return Result{}, err
 		}

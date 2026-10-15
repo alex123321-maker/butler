@@ -28,6 +28,7 @@ import (
 	"github.com/butler/butler/internal/logger"
 	"github.com/butler/butler/internal/memory/candidatecontrol"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/resourceexec"
 	"github.com/butler/butler/internal/singletabcontrol"
 	"github.com/butler/butler/internal/skills"
@@ -90,6 +91,12 @@ func New(ctx context.Context) (*App, error) {
 		return nil, fmt.Errorf("converter delegation requires enabled converters, ordinary delegation and a fixed private developer endpoint")
 	}
 	router := runtimeclient.New(log)
+	if cfg.MemoryReadEnabled && (postgres == nil || cfg.ActionAuthorityTokenFile == "" || cfg.MemoryReadControlURL == "") {
+		if postgres != nil {
+			postgres.Close()
+		}
+		return nil, fmt.Errorf("memory reads require PostgreSQL and a fixed authenticated private endpoint")
+	}
 	if cfg.MemoryCandidateEnabled && (postgres == nil || cfg.ActionAuthorityTokenFile == "" || cfg.MemoryCandidateControlURL == "") {
 		if postgres != nil {
 			postgres.Close()
@@ -333,6 +340,7 @@ func New(ctx context.Context) (*App, error) {
 			server.SetResourceAdmission(admissions)
 		}
 		if cfg.MemoryCandidateEnabled {
+			// Candidate publication remains a separate optional capability.
 			client, clientErr := candidatecontrol.NewClient(cfg.MemoryCandidateControlURL, token)
 			if clientErr != nil {
 				postgres.Close()
@@ -343,6 +351,19 @@ func New(ctx context.Context) (*App, error) {
 				return nil, err
 			}
 			executor = &broker.MemoryCandidateExecutor{Candidates: client, Next: executor}
+			server.SetCatalogExecutor(executor)
+		}
+		if cfg.MemoryReadEnabled {
+			client, clientErr := readcontrol.NewClient(cfg.MemoryReadControlURL, token)
+			if clientErr != nil {
+				postgres.Close()
+				return nil, clientErr
+			}
+			if err = registryStore.RegisterOwned(readcontrol.Contracts()); err != nil {
+				postgres.Close()
+				return nil, err
+			}
+			executor = &broker.MemoryReadExecutor{Reads: client, Next: executor}
 			server.SetCatalogExecutor(executor)
 		}
 		if cfg.GuardedTabRequestEnabled {

@@ -1,5 +1,15 @@
 # Butler — Memory Model Specification
 
+The gated [verified task compaction consumer](../../internal/memory/compaction/README.md)
+uses durable independent model jobs and exact prefix coverage. Every user event
+remains verbatim; assistant/tool excerpts must match primary bytes and tool states
+are attached by code. Newest four events stay raw. Summaries are historical DATA:
+current typed goals/constraints, approvals and effect journal remain authoritative.
+Repeated compaction regenerates primary events, avoiding recursive fact drift.
+Failure never hides history; finite input/output limits can require an explicit
+context-budget failure. Migration072 links copied session inputs to privacy
+deletion and invalidates coverage on tool state changes as well as message edits.
+
 Issue78's [memory-eval protocol](../../cmd/memory-eval/README.md) measures truth,
 actual-context evidence, calibrated refusal, current instruction consistency and
 separate user outcomes. Its independent public V2 controls and owned-source/index/
@@ -826,6 +836,17 @@ The memory doctor (`/api/v1/doctor/check`) now reports:
 ---
 
 ## 23. Итоговый тезис
+
+### Инструментальное чтение по потребности
+
+Optional operator composition exposes bounded `memory.search/open/neighbors`
+through Tool Broker, in addition to the prepared memory bundle. The catalog and
+PostgreSQL remain authoritative; version1 full-text search has no external model
+call and does not depend on a semantic generation. Source references remain DATA;
+current source/ancestor/access/privacy and owning task/run/input guards apply to
+every read and subsequent provider release. This does not enable write consumers
+or accept profile/episodic claims. Contract:
+[memory read control](../../internal/memory/readcontrol/README.md).
 
 ### Проверка полезности памяти
 

@@ -11,6 +11,32 @@ without cloud fallback. See [the full contract](../../../docs/architecture/backg
 The `Admit`/`LocalTarget` description below remains the existing local path;
 `ModelWorker.Admit` is the separately checked generative path.
 
+New consumers also require the [memory lifecycle security gate](../../../docs/ai/memory-lifecycle-acceptance.md).
+The shared corpus currently runs through diagnostic quote publication, repeated
+job/ACK handling and forgetting, with existing in-flight withdrawal/crash tests.
+These kernel checks grant no summary/extraction/consolidation quality approval.
+The model supervisor runs every 250ms with a 200ms proof deadline. It checks
+the deletion manifest, current typed policy/assignment, complete claim snapshot,
+source heads/access/hashes/scopes/parent pins, summary original-source predicate
+(migration 072), and interactive priority in one owning transaction. It reads no
+source bodies and takes no publication job lock. Admission, each network release
+and dispatch, and publication retain the complete `AccessTx` proof. A failed or
+timed-out supervisor still cancels the provider; unknown paid usage stays reserved.
+After the provider stream closes, the worker stops and joins this observer before
+local observation/publication, whose full proof owns the policy/session locks.
+Within a job, full pre-HTTP authority/dispatch proofs serialize with periodic
+observation. A tick yields only while that same mandatory full proof is running;
+the provider cannot send until it succeeds, and the call deadline remains active.
+This avoids self-contention while auth resolution repeats authority before HTTP.
+Observation ends with bounded `Rollback(ctx)`, not a durable commit. Its helper
+chain (`CheckRestoreTx`, `checkModelPolicyTx`/`checkPolicyTaskTx`,
+`CheckTaskAuthorityTx`/`CheckAssignmentTx`, `butler_task_check_delegation`, claim
+snapshot and source/summary metadata predicates) only reads/checks/locks; it has
+no durable business/audit update to publish. Rollback errors still deny/cancel.
+Full network and publication transactions retain their existing commits.
+Rejected consumer output records the fixed `consumer_output_invalid` reason;
+validator/model text is never copied into a public diagnostic or authority error.
+
 `ClaimPurpose(kind, purpose)` additionally separates workers in the same kind.
 It uses the existing bounded claim/fence/deadline path; selecting a queue does
 not confer source access or replace per-attempt admission.
@@ -19,6 +45,10 @@ not confer source access or replace per-attempt admission.
 owner/purpose, original task/run/goal/mandate references, task/constraint versions,
 exact source hashes/access revisions, finite local allowance/deadline and current
 claim ID/epoch. A completed run's session lease never grants job permission.
+Model claims last at most six minutes, with operator-configured calls capped at
+five minutes; other kinds keep two-minute claims. Earlier policy, budget, claim
+and authority deadlines remain hard bounds. Crash recovery waits for that fixed
+claim expiry; there is no renewing heartbeat.
 Expired claims are reclaimed with a new epoch; late publication/finish is denied.
 
 An authenticated owner creates the finite job policy, including unassigned jobs.

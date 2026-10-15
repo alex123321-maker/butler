@@ -968,3 +968,26 @@ Receipt подтверждает завершение локального lane,
 неопределённость остаётся в journal и не разрешает replay. Конструкторы не
 включены в production bootstrap/Compose; legacy `single_tab` не покрыт.
 Полный контракт: [resource-lease-contract.md](resource-lease-contract.md).
+
+## 32. Чтение источников памяти через Broker
+
+Опциональные фиксированные `memory.search`, `memory.open`, `memory.neighbors`
+регистрируются через `RegisterOwned` при operator-only флаге
+`BUTLER_MEMORY_READ_ENABLED` в обоих сервисах. Их runtime target —
+`broker://memory-reader-v1`; owning endpoint Orchestrator —
+`/internal/memory-read`, с существующей приватной service authentication.
+Это read-only DATA-контракты без credential refs и без изменения accepted memory.
+
+Каждый вызов проходит обычные current task/goal/mandate checks, exact
+Prepare/Authorize, permanent dispatch, shared budgets и tool trace. Owning service
+восстанавливает актуальные input claim и lease/fence из durable binding; модель
+не выбирает owner/scope/job authority. Каталог проверяет полный граф источников
+после ожиданий и перед возвратом; subsequent provider/final guards сохраняются.
+
+Поиск возвращает краткие ссылки; открытие требует exact revision/access/hash и
+stable fragment key. Neighbors читает только соседние catalog ordinals. Offset и
+лимиты выражены в Unicode characters; max8192 на вызов, search10/page, pages0–9,
+response128KiB. Общие run/tool/context budgets ограничивают повторные чтения.
+Version1 — bounded PostgreSQL exact/full-text catalog search без внешних запросов;
+адаптивный hybrid retrieval и нагрузочная квалификация остаются отдельными gates.
+Полный контракт и диагностика: [memory read control](../../internal/memory/readcontrol/README.md).

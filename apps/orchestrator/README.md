@@ -36,6 +36,26 @@ or authorize replaying activation. Candidate collection/checking remains its
 separate earlier phase.
 # Orchestrator
 
+Optional `BUTLER_MEMORY_READ_ENABLED=true` mounts the authenticated private
+`/internal/memory-read` control for fixed Broker search/open/neighbors contracts.
+It reconstructs current actual dispatch/input/Session ownership, uses catalog
+source guards and returns bounded DATA. The flag is operator-only and defaults
+false; the Broker requires matching opt-in and fixed control URL. Details and
+isolated validation: [read contract](../../internal/memory/readcontrol/README.md).
+The optional #85 `source-candidates-v1` durable consumer is implemented behind
+`BUTLER_MEMORY_MODEL_CANDIDATES_ENABLED` and a code-owned release gate that remains
+closed until independent native semantic and lifecycle acceptance passes. The
+[candidate README](../../internal/memory/candidates/README.md) describes exact
+evidence, typed owner acceptance, finite transport accounting and migration073.
+Optional verified long-task compaction uses the existing durable model worker and
+the separately default-off `BUTLER_MEMORY_SUMMARY_CONSUMER_ENABLED` gate. It also
+requires model jobs enabled, current explicit owner summary policy and PostgreSQL
+worker control enabled. `POST /api/v4/memory/model-summary-policies` snapshots the
+actual owner session; policy/job controls and observations remain the existing
+memory model-job APIs. [Consumer contract](../../internal/memory/compaction/README.md)
+documents protected user statements, exact excerpts, typed tool state, 60% budget
+trigger, coverage CAS, privacy deletion, finite fallback and migration072.
+
 The default prompt includes an internal execution/completion protocol and keeps
 negation, source authority and durable retry/effect policy explicit. Core never
 rewrites a structured status proposal into capture from message keywords.

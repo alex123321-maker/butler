@@ -1,0 +1,5518 @@
+{
+  "tasks": 0,
+  "scopes": [
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "owner_day",
+      "used": {
+        "tokens": 87441408,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 82,
+        "egress_bytes": 0,
+        "active_millis": 14100000,
+        "external_calls": 0,
+        "provider_input_bytes": 687865856
+      },
+      "limits": {
+        "tokens": 268435456,
+        "children": 32,
+        "cost_micros": 0,
+        "model_turns": 256,
+        "egress_bytes": 536870912,
+        "active_millis": 14400000,
+        "external_calls": 512,
+        "provider_input_bytes": 1073741824
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    }
+  ],
+  "attempts": [
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 838,
+        "TotalTokens": 1196,
+        "OutputTokens": 79
+      },
+      "job_id": "model_7d625ad290462db90b6b8489aca8e10c27634e00643fa1d71d39d760eca74d81",
+      "reason": "",
+      "result_source_id": "source_0844f30166e407f589cb8df8e9c227e2225e2676"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 627,
+        "TotalTokens": 1447,
+        "OutputTokens": 123
+      },
+      "job_id": "model_defb8fc1f10dd016278df3f5f7f89e965f34da9faec0c477afc5579dd72d852e",
+      "reason": "",
+      "result_source_id": "source_e0c22db98b2500672f6ecdc26711359ac7e49714"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 646,
+        "TotalTokens": 1673,
+        "OutputTokens": 144
+      },
+      "job_id": "model_a33834f8c77637268726c1d8d0ea649258de49ee6fc41c485391c13573a27625",
+      "reason": "",
+      "result_source_id": "source_14810a90672314e14eed5d114165b2e37d56ba4d"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 847,
+        "TotalTokens": 1342,
+        "OutputTokens": 82
+      },
+      "job_id": "model_1cb43ab6d06c8ce50d9b00ee6f6a64d7441abb8f817d09dde6ac3df1b9154c53",
+      "reason": "",
+      "result_source_id": "source_85e6f7c7eca9babe6580b00721903a49f2f054e9"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 628,
+        "TotalTokens": 2432,
+        "OutputTokens": 127
+      },
+      "job_id": "model_61e015a86abd7d2ef81ec47f2050448a23e7aea70376b584a34446a9521cbe71",
+      "reason": "",
+      "result_source_id": "source_ac6175ce349a951d9e6fea9a2b8f423a08796583"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 646,
+        "TotalTokens": 8584,
+        "OutputTokens": 78
+      },
+      "job_id": "model_f5e655fa08f070eb52b49fe1e617bfd7229fe7d9a72a1afa7b2b534add4427d9",
+      "reason": "",
+      "result_source_id": "source_fb51508b7cb0a802f012969bbabd419a3018572e"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 854,
+        "TotalTokens": 3066,
+        "OutputTokens": 138
+      },
+      "job_id": "model_895b09eadc62a63f41ed686833b45b0cefe4023d9716d0834f2dae2e4f46f193",
+      "reason": "",
+      "result_source_id": "source_cfb6089ece164dd1b317c51951b5509740be6d37"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 864,
+        "TotalTokens": 4725,
+        "OutputTokens": 78
+      },
+      "job_id": "model_94fa83242e952dd8a1ba1aeea500b951f34d1f16da5923438a6cc0fcc5d1c30c",
+      "reason": "",
+      "result_source_id": "source_a421f134930be731b534cf993e1eb2d4db0eeb9f"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "failed",
+      "usage": null,
+      "job_id": "model_d9abb9c6b74589b87aff134bd665e94ed14d7030beb26c1a7eb4019f8033df2e",
+      "reason": "storage_unavailable",
+      "result_source_id": null
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 851,
+        "TotalTokens": 1825,
+        "OutputTokens": 137
+      },
+      "job_id": "model_d80b3e19bf1eab4c06013db36cfed5c2ddeb6eb36b3d8e66e0f10ce323e09ee9",
+      "reason": "",
+      "result_source_id": "source_13dac1c83edc2a193e369d023cef825df84c41fd"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 648,
+        "TotalTokens": 1801,
+        "OutputTokens": 142
+      },
+      "job_id": "model_591e800782adfc8091fa48a5c284c0e5bb48e897713d3122465af0401a91d189",
+      "reason": "",
+      "result_source_id": "source_3c5501d07f865eea1473337e4be79877af873b35"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 653,
+        "TotalTokens": 1137,
+        "OutputTokens": 82
+      },
+      "job_id": "model_9fe0d30c5e2e0317e012291daa03b389ccb7e629b1f86c15bfb722ce17e981a8",
+      "reason": "",
+      "result_source_id": "source_0594320acf7abe23fb803222cd975dcd2fe7b9be"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 870,
+        "TotalTokens": 8875,
+        "OutputTokens": 141
+      },
+      "job_id": "model_b4b39e76b3d80d269df0e51b708bdc08c65d269eeff850436bffe1f5b0c86551",
+      "reason": "",
+      "result_source_id": "source_e478403aaabaab84ae329dcba2a2684e283fb817"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 619,
+        "TotalTokens": 1393,
+        "OutputTokens": 115
+      },
+      "job_id": "model_6a761a7bde3dabeba1cf60b44e978242b70600cd149470b1485dc2cd3067c8de",
+      "reason": "",
+      "result_source_id": "source_84f64bea565f482f41322c8fc40ddd2d5a176504"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 628,
+        "TotalTokens": 1358,
+        "OutputTokens": 73
+      },
+      "job_id": "model_b6be6471eabb4f285f886d6b7453afe6284f82e6953ed8eef810e2dd3dc53918",
+      "reason": "",
+      "result_source_id": "source_ae8d816b294671feaecf032fba10a5ae38801231"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 651,
+        "TotalTokens": 1660,
+        "OutputTokens": 80
+      },
+      "job_id": "model_289e072038dc69a638f757cb5f2e20bf97db5f340e7ea2cbd3ed0bc6ea129f54",
+      "reason": "",
+      "result_source_id": "source_f25b50e484f00648c3e5acf8fcdff91a2c7e6503"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 646,
+        "TotalTokens": 6132,
+        "OutputTokens": 136
+      },
+      "job_id": "model_f1bd28d054ac11bdf0d8e344b5c7852ee4d9b4b0292a28a33c144d77e51ff9c3",
+      "reason": "",
+      "result_source_id": "source_e9724e53e9b473b63e0a317b2f161bcc88252ff7"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 860,
+        "TotalTokens": 1572,
+        "OutputTokens": 128
+      },
+      "job_id": "model_8e99a1c4c06538467cc8737503230d7a8c60b26a1846a2c746d2365b12807b25",
+      "reason": "",
+      "result_source_id": "source_fa57532f2c90f89060404a4ed3ca504e36ac330c"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 864,
+        "TotalTokens": 1392,
+        "OutputTokens": 78
+      },
+      "job_id": "model_a65b601956a1398fb16b8bd491ee337b76ac34cc5f3fea8bd432840fcfecbe62",
+      "reason": "",
+      "result_source_id": "source_07e6b36c930797aad5b5086017ee66ae0437873c"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 654,
+        "TotalTokens": 2095,
+        "OutputTokens": 149
+      },
+      "job_id": "model_09e12269bdd2a8349f3516b7e53802385c07fd7572ee4d5f144cab0ab8321943",
+      "reason": "",
+      "result_source_id": "source_8899e2ac66a01398bbc451addf911a4f6d864caf"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 852,
+        "TotalTokens": 1651,
+        "OutputTokens": 129
+      },
+      "job_id": "model_c984b64259d41f51300f022cdfbaf21293613bc937d1f0875af1f60b00640dc4",
+      "reason": "",
+      "result_source_id": "source_3c765986e69e64633844385665646e12a0a56176"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 841,
+        "TotalTokens": 1488,
+        "OutputTokens": 72
+      },
+      "job_id": "model_b6875a9db111702520775535c03dd4915dbf88d6c57ff2fd52f9b73e920be8a4",
+      "reason": "",
+      "result_source_id": "source_3d01d90dc114d2f0161afd6de1e62a02c8b6f941"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 864,
+        "TotalTokens": 1602,
+        "OutputTokens": 79
+      },
+      "job_id": "model_fefee6e4051c6353e4533ae4efde5601402d764fada81d3b6df73442d65b626a",
+      "reason": "",
+      "result_source_id": "source_a709dbf9fe75f0dd5edabcf6d017c43479e073db"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 833,
+        "TotalTokens": 1684,
+        "OutputTokens": 68
+      },
+      "job_id": "model_b3f971e78a8c4a29141cffa6f495778f76afc6dd4e9315676448c0328432cc97",
+      "reason": "",
+      "result_source_id": "source_d5d52dc514f074172f7b7ebcafc164106ac527c2"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 631,
+        "TotalTokens": 2376,
+        "OutputTokens": 133
+      },
+      "job_id": "model_c16c0e26a33ed536bdda293660b9380514dcb5b83376cd9d636ff5df85fc4d00",
+      "reason": "",
+      "result_source_id": "source_777da7764311b96240175ef14ad56d05012ccb29"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 861,
+        "TotalTokens": 2090,
+        "OutputTokens": 136
+      },
+      "job_id": "model_8372f9b823a425f9a3def0a04eea0218abe2ac25c9dbdb79f3cc0e068d8935e6",
+      "reason": "",
+      "result_source_id": "source_92bfe52f80d98930f049432520a3440d6bffb983"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 855,
+        "TotalTokens": 2030,
+        "OutputTokens": 138
+      },
+      "job_id": "model_4d8572304e0bc7acf69363f97a26f42bbb6ff47ef8ed06cc84f9cdbd1efd4fab",
+      "reason": "",
+      "result_source_id": "source_59225cee8dc0648e8aca0e5baa821521cd8e7067"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 640,
+        "TotalTokens": 1235,
+        "OutputTokens": 82
+      },
+      "job_id": "model_44026b685f827b3924dddeec8e7daee28d04917a7b70070209a86e0c76e8488f",
+      "reason": "",
+      "result_source_id": "source_69a7629300f67718fbb3f33a138e13275f79b7a0"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 857,
+        "TotalTokens": 2194,
+        "OutputTokens": 142
+      },
+      "job_id": "model_02caca2f13e440850d323cb81612cfd48aff75d251ba5bcedbb246c8ba366d45",
+      "reason": "",
+      "result_source_id": "source_050388985e7ae911bc60c60344a1c7ae4addcd2d"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 861,
+        "TotalTokens": 1605,
+        "OutputTokens": 83
+      },
+      "job_id": "model_665cdf0c0bfb4263771546a46330a69f7194f4287cb131185b006deebc80560a",
+      "reason": "",
+      "result_source_id": "source_c40741f66c00ed0c1ebe7f2d137468b706a99302"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 865,
+        "TotalTokens": 1620,
+        "OutputTokens": 83
+      },
+      "job_id": "model_3d868d95017d5f4fd2c4e99bce26b4e60f6b398f0ec6b38713a97f01bd0413a3",
+      "reason": "",
+      "result_source_id": "source_6d65d8a9b18297b7e3dd0758974704b6528c38d3"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 841,
+        "TotalTokens": 1302,
+        "OutputTokens": 72
+      },
+      "job_id": "model_a6724cbf9d10fecedaabcd482ae8dc9e756dcd570b058340bf4678d9b1245f1f",
+      "reason": "",
+      "result_source_id": "source_b48157977f3f22386cb3f7e653602b0145c24d92"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 843,
+        "TotalTokens": 2512,
+        "OutputTokens": 132
+      },
+      "job_id": "model_72f2d347f02e4a3ac13c6a95283aea56b550b431010ce612f59b3c8ea8342661",
+      "reason": "",
+      "result_source_id": "source_6408abf96dcf587ebd453a578b37d592cb0d003a"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 875,
+        "TotalTokens": 2114,
+        "OutputTokens": 145
+      },
+      "job_id": "model_b9bdfcc9809dce83d030a6c33e4085856794c5a60f2f5d84256dac3a2057ed47",
+      "reason": "",
+      "result_source_id": "source_ae2b02ca96b2ef2911dbe968ccbb8e296d043469"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 641,
+        "TotalTokens": 1274,
+        "OutputTokens": 81
+      },
+      "job_id": "model_76b2c1866a3425883c09d2d45ac9bc84844fcee95be88194abdb313acfabbcf4",
+      "reason": "",
+      "result_source_id": "source_d66598a42254f15ed6be2b03a46c08dc80510c3a"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 853,
+        "TotalTokens": 2148,
+        "OutputTokens": 132
+      },
+      "job_id": "model_7627c93c3c5fc6bc6dfe6212341fbb5418004fba356c3b9d0fd5863695ae3ea9",
+      "reason": "",
+      "result_source_id": "source_f650991b422bdb15c0893e8aba2902a4f5648fec"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 852,
+        "TotalTokens": 1460,
+        "OutputTokens": 120
+      },
+      "job_id": "model_d92cbc7e3407a374e1b9c5bc46c092925084855b3e503c523c03270184f6fe2f",
+      "reason": "",
+      "result_source_id": "source_1fff4b9e31be7850996b8ec25e9a7c77d9b3dd67"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 641,
+        "TotalTokens": 1159,
+        "OutputTokens": 78
+      },
+      "job_id": "model_e141be34ed06139f105efdbdb1cf9696c304d22613da7b5c0f3c4ac8d9f644b6",
+      "reason": "",
+      "result_source_id": "source_4a97c2dbf7aa4bda26b186e7072a7e3b2f82841d"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 858,
+        "TotalTokens": 5814,
+        "OutputTokens": 143
+      },
+      "job_id": "model_6508f7c67e8bcca10d1af26e321c8365b00826e17bd7d8952a3584c243850c5e",
+      "reason": "",
+      "result_source_id": "source_d6b0634260a5da63d709b0fbeab81b97d621e608"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 871,
+        "TotalTokens": 1709,
+        "OutputTokens": 77
+      },
+      "job_id": "model_e1952344d3595650a7a1c5f02ae03385d1450ef9d2e7cd84abad9ab491882970",
+      "reason": "",
+      "result_source_id": "source_eedd1f37bba1819494198a10308802dc8bcf1573"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 855,
+        "TotalTokens": 1427,
+        "OutputTokens": 75
+      },
+      "job_id": "model_f2e11eb769bd20720ed42280444655fd848a63f1243acc03ff9b64f274596d88",
+      "reason": "",
+      "result_source_id": "source_567fb22be83df68ee7be3487c559da618ce0f971"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "failed",
+      "usage": null,
+      "job_id": "model_83c6b41aa7784222fc8f75caef1cca0c18431e832d35ba8e90583ff5a452e8c9",
+      "reason": "provider_unavailable",
+      "result_source_id": null
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 626,
+        "TotalTokens": 1902,
+        "OutputTokens": 129
+      },
+      "job_id": "model_36749214f8f932d18a3588647f5d97ec1aa0c0bd114d79619cb2bb5bc62af3a3",
+      "reason": "",
+      "result_source_id": "source_4f2f39844c3a98b7fd9b55d410fc7b66fa395a71"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 838,
+        "TotalTokens": 1694,
+        "OutputTokens": 116
+      },
+      "job_id": "model_82c985bc95b4d4bcf7f4d91b6309c6e572a3f20fbc3baa3f9e51ed96596f0ffc",
+      "reason": "",
+      "result_source_id": "source_98101b97e3263c33a20b6273a54c3aee6fb440a2"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 880,
+        "TotalTokens": 1800,
+        "OutputTokens": 84
+      },
+      "job_id": "model_5473f0793ce4c766465fce9d0e6e951ec65bbafe48ae3abd31d7b0932de25a60",
+      "reason": "",
+      "result_source_id": "source_6ea97d678db524844f5c16f9c07fd12369795be4"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 626,
+        "TotalTokens": 2406,
+        "OutputTokens": 118
+      },
+      "job_id": "model_d3d3d3fa1748cf8a8c06299c61f40117d392dc95fb2a997b78067a31dbf2df8f",
+      "reason": "",
+      "result_source_id": "source_f0a4058f8a782f5781b214bbff6127f670669a1b"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 853,
+        "TotalTokens": 2801,
+        "OutputTokens": 129
+      },
+      "job_id": "model_dfd9e36b2599f43c835b8997319436cab6807ed9c165bcd39817330677acc565",
+      "reason": "",
+      "result_source_id": "source_e8c7dcf1610dd8f93278512e652edd0681a48371"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 851,
+        "TotalTokens": 1282,
+        "OutputTokens": 77
+      },
+      "job_id": "model_b8d9c18cc9b18ad63adb27e3cc5353a12334965eb670061d11bb90b93ad95541",
+      "reason": "",
+      "result_source_id": "source_1ee613c8b5571f6df9f13c8a2c620fdc7e8fe058"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 861,
+        "TotalTokens": 1418,
+        "OutputTokens": 77
+      },
+      "job_id": "model_0a3a7e924fe823233e54433528978f6e5ccdf2c5bf82075b0005323c445e5ef5",
+      "reason": "",
+      "result_source_id": "source_f32b18b73ab2a73d4728bf3f1609d80281ad9d89"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 632,
+        "TotalTokens": 1839,
+        "OutputTokens": 128
+      },
+      "job_id": "model_aed281d46335e826ed04dc49cc090e56fef103fe202a98b0c3daf6980eb2332a",
+      "reason": "",
+      "result_source_id": "source_c2c4eb14432c4a4df319ec6570865986efc1c85c"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 848,
+        "TotalTokens": 1310,
+        "OutputTokens": 76
+      },
+      "job_id": "model_b24f29467577caaa00c2cffd2cd7070da6711a21251a69fa19051b5035e44e31",
+      "reason": "",
+      "result_source_id": "source_22e023ed05135a4cc6130fac77e68ece6174d3ee"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 653,
+        "TotalTokens": 1324,
+        "OutputTokens": 81
+      },
+      "job_id": "model_558d7f45b6a259a4ac126c57e143051706c59220a21915363ce58aaafbcaf1cf",
+      "reason": "",
+      "result_source_id": "source_69ae2a046d50adcc007a30f9c45cac42b5ccc318"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 863,
+        "TotalTokens": 1864,
+        "OutputTokens": 129
+      },
+      "job_id": "model_17ddd629147070db8379970e20eb8e44b2de4ce9c692531b1c403b2ce0576b58",
+      "reason": "",
+      "result_source_id": "source_2db0cfbbd2c1603f0cb88b4a4a77a24358525575"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 855,
+        "TotalTokens": 2570,
+        "OutputTokens": 130
+      },
+      "job_id": "model_e3ae63664121548d6ca1226af60bafe49d7f20da5c0813eef7dc006ac383b85e",
+      "reason": "",
+      "result_source_id": "source_88f83ca42bb7ce7b18614bb5af3a8a0a8ded41d0"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 852,
+        "TotalTokens": 1429,
+        "OutputTokens": 74
+      },
+      "job_id": "model_132415abfde2e0befdd6f2ee8c1f3fcae599e6d3fffb0b4466404d8ccd3b9a93",
+      "reason": "",
+      "result_source_id": "source_64d3a9316957c5c2e9265a3792613589d252b537"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 853,
+        "TotalTokens": 1283,
+        "OutputTokens": 76
+      },
+      "job_id": "model_341202e5897cdf91eab51dbfe78fb24a2b29282508389ca888b4509d4fffc501",
+      "reason": "",
+      "result_source_id": "source_5d69a58ae191aa8471ef0f9db7a941ce3681878b"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 861,
+        "TotalTokens": 5802,
+        "OutputTokens": 77
+      },
+      "job_id": "model_eac592888fa349251f78a9fd915a59b8346499fdc769fb45b594ba907b815589",
+      "reason": "",
+      "result_source_id": "source_fee29b2bca1d38066398ec94bb5564272a2ac3e8"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 627,
+        "TotalTokens": 1159,
+        "OutputTokens": 75
+      },
+      "job_id": "model_ca0eff9ba339b3f352a844bbd62b36993dba080a22608e289bb6c61471a6efb0",
+      "reason": "",
+      "result_source_id": "source_5208fe399c7899aef67589cf9fba0143219c019b"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 855,
+        "TotalTokens": 1434,
+        "OutputTokens": 76
+      },
+      "job_id": "model_f5f1a6c0a63a7fe7118fb31b60d4555c0faa050b288954bd3274d70386e62721",
+      "reason": "",
+      "result_source_id": "source_8e1bc85f48648d764ed1e9fe404d66cb60cddc54"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 864,
+        "TotalTokens": 2542,
+        "OutputTokens": 137
+      },
+      "job_id": "model_ebde543df006d278bdfec6f8454ac441d15de0874e31ee6db3ac219041d75b25",
+      "reason": "",
+      "result_source_id": "source_42c1de2bb3e5eaa5796aaa7b92223574d8e3f73f"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 640,
+        "TotalTokens": 1175,
+        "OutputTokens": 76
+      },
+      "job_id": "model_7f324b6f12b749a88295a897254bf69d68c9b3836a6d1df9073238778b9140e3",
+      "reason": "",
+      "result_source_id": "source_8873552ae94bee6b4ff02a9477bacc0d9381eb73"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 857,
+        "TotalTokens": 1941,
+        "OutputTokens": 76
+      },
+      "job_id": "model_0d8a0670d0cbe8720a585356dd4d4ef6c9f65d4d3ad5d5325513f125f7450aa7",
+      "reason": "",
+      "result_source_id": "source_13a7180d525bacf2644a8000e3f5b72e792ca6dc"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 848,
+        "TotalTokens": 3434,
+        "OutputTokens": 139
+      },
+      "job_id": "model_4460583277e5f73d44bf7e47b27c4bd6e65b1d8c9bf37859a498614e6f7a0919",
+      "reason": "",
+      "result_source_id": "source_0f3beebbc0a0f915643170057a29248f42213d45"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 858,
+        "TotalTokens": 2143,
+        "OutputTokens": 139
+      },
+      "job_id": "model_810aba1d850311aa308516a10c4012b9b5feef1015003afe0f7aa8ed9e97c568",
+      "reason": "",
+      "result_source_id": "source_9031ef8a30c67247839188d92f3c5476e2a82ab8"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 636,
+        "TotalTokens": 2321,
+        "OutputTokens": 138
+      },
+      "job_id": "model_db751d6bae3776ba65250f3f22f05f561547bca428ce285cf45bf4158df233fc",
+      "reason": "",
+      "result_source_id": "source_3b39bd735e747d2acb15e84394e7790bce7ca831"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 623,
+        "TotalTokens": 1041,
+        "OutputTokens": 80
+      },
+      "job_id": "model_22690578e302dca0bae71e35f7aa36321bbe78db62c4b7fa7910829cddf21011",
+      "reason": "",
+      "result_source_id": "source_391d3a7965817d07933e7a13afa32ffe977d63a6"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 849,
+        "TotalTokens": 1516,
+        "OutputTokens": 79
+      },
+      "job_id": "model_61cd50dbfa771d474c035d06e3373ce491b4509488245d1db23e8a8c89e9a1b7",
+      "reason": "",
+      "result_source_id": "source_41c975a28e5782eb041f3018cc10b6891e8c1d48"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 856,
+        "TotalTokens": 1485,
+        "OutputTokens": 77
+      },
+      "job_id": "model_ed8c7466d356bbcc15bd6c97463812a42504d205c1cfca5e8f765d32769d6c22",
+      "reason": "",
+      "result_source_id": "source_e60b4af48920b420eee621b19c9d46477d0c6b7a"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 859,
+        "TotalTokens": 1417,
+        "OutputTokens": 81
+      },
+      "job_id": "model_e28631201704446b70a7fae61082cd5a263f3af8637b202181a672710ad0dba6",
+      "reason": "",
+      "result_source_id": "source_f0fa1115c70ef594e7e71b620cee5ba5325ce59a"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 862,
+        "TotalTokens": 1754,
+        "OutputTokens": 135
+      },
+      "job_id": "model_2fc5868f65bdd47b5c1ebacdb01c764172a33d75520a9d1cdfc56536862b6751",
+      "reason": "",
+      "result_source_id": "source_282f58cc4fa5c0143b1018bc9658c7b44c2a2b45"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 838,
+        "TotalTokens": 1579,
+        "OutputTokens": 116
+      },
+      "job_id": "model_e156a40c0df4e7197dfad68067979aea996f2939884587b3a1fe545f682eeb6b",
+      "reason": "",
+      "result_source_id": "source_c8d05849e6359f7c658259a35931c488df4e3e84"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 856,
+        "TotalTokens": 1916,
+        "OutputTokens": 130
+      },
+      "job_id": "model_0a04e7a952031619098c3e6e04012ab2b5ed1d2fbbf1d363d94f57c89712ebcc",
+      "reason": "",
+      "result_source_id": "source_9d99b5ca258bc59c2db6df542c68b922089fc7a7"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 854,
+        "TotalTokens": 2029,
+        "OutputTokens": 138
+      },
+      "job_id": "model_4e48927863d3cf702e4f65f8cca5629d88beaa64e72184ece2bd9d0ae6bfd8e1",
+      "reason": "",
+      "result_source_id": "source_4201ba6fc87b26adfdb1d9909682ac8be501a6ee"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 846,
+        "TotalTokens": 1419,
+        "OutputTokens": 118
+      },
+      "job_id": "model_fa3a6c9f66fd41f6b42e6c01dd6c701090d1010022907e0fb951a4e28cfdfc58",
+      "reason": "",
+      "result_source_id": "source_dafb2762a212c1135ead9a06aab2cd735c56c856"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 852,
+        "TotalTokens": 3187,
+        "OutputTokens": 141
+      },
+      "job_id": "model_f5f5083080949a3e98232ab67a2297096137ec72ba384cdf7e7ea68477946d78",
+      "reason": "",
+      "result_source_id": "source_5ea37401468baf22a73ad4e52864f91b7ec419e2"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 843,
+        "TotalTokens": 5873,
+        "OutputTokens": 128
+      },
+      "job_id": "model_e34830999788ad9085bf724eddc13da2239ef1fa4212d537c7e4ccb09ad5cc91",
+      "reason": "",
+      "result_source_id": "source_f7acc1a5690863ee444b1925b0a2f7aa670eb34f"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 874,
+        "TotalTokens": 1582,
+        "OutputTokens": 79
+      },
+      "job_id": "model_1238c76fe9a67cba8804b792ea6d5034a1179263434a8233023d25d4f432c30e",
+      "reason": "",
+      "result_source_id": "source_6f13b4563ce377a6213341ff2013ee92746237cb"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 877,
+        "TotalTokens": 3787,
+        "OutputTokens": 147
+      },
+      "job_id": "model_391c05e241611d70ff67212cf01ff4cbdff6485bfd34649b2b0ab71f6b451fd1",
+      "reason": "",
+      "result_source_id": "source_1f4e1c85f10cc7748ea4c0c1d4ef1a4b8c7460bd"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 859,
+        "TotalTokens": 1906,
+        "OutputTokens": 144
+      },
+      "job_id": "model_c81fab9b7422633e9fb6b77cdc373d585527074deb0f5c5b3739f9809ea3635b",
+      "reason": "",
+      "result_source_id": "source_c3353f6fff5da45815126130411c3037a8fece4b"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 868,
+        "TotalTokens": 1438,
+        "OutputTokens": 77
+      },
+      "job_id": "model_59b8b8e94bb743b102a7bb0fe0257127a79c812429e2b518fdd052a90b224fb9",
+      "reason": "",
+      "result_source_id": "source_fba34d8e68fb6b617cac73d5c1fc24a15d297b2a"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 852,
+        "TotalTokens": 1647,
+        "OutputTokens": 122
+      },
+      "job_id": "model_73cbc736a5cf5a456a086222002656b86ff50cf8c84cec9b0341891ad8a0b81d",
+      "reason": "",
+      "result_source_id": "source_b8498c155f925f347fb2c8281ff3591236cf42b8"
+    },
+    {
+      "quote": {
+        "tokens": 1081344,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 300000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 856,
+        "TotalTokens": 1905,
+        "OutputTokens": 139
+      },
+      "job_id": "model_d769ed6a7e79edc3bc3037f73f2e1468c7b44ad9c6f18994bc48a5b5d637b367",
+      "reason": "",
+      "result_source_id": "source_b59514b179ed85f0b09cc25d39fa13e6710286a2"
+    }
+  ],
+  "mandates": 0,
+  "confirmed_claims": 0
+}

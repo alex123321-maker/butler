@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -28,11 +29,35 @@ type ModelHandler interface {
 	Instruction() string
 	Validate([]catalog.Source, string) (string, error)
 }
+
+// ModelPublicationHandler optionally materializes a validated DATA result inside
+// the existing publication transaction. Implementations are trusted versioned
+// code and cannot accept memory claims or grant task/action authority. Returning
+// an error rolls back both materialization and the job/result checkpoint.
+type ModelPublicationHandler interface {
+	PublishTx(context.Context, pgx.Tx, *catalog.Store, Job, ModelAttempt, []catalog.Source, catalog.Source, string) error
+}
+
+// ModelInputSelector narrows model-visible bodies without weakening the complete
+// durable source manifest used by admission, supervision and publication. It runs
+// in the existing admission transaction after every source is locked/checked.
+type ModelInputSelector interface {
+	InputSourcesTx(context.Context, pgx.Tx, *catalog.Store, Job, []catalog.Source) ([]catalog.Source, error)
+}
 type ModelWorker struct {
 	Jobs     *Store
 	Provider transport.ModelProvider
 	Model    string
 	Handlers map[string]ModelHandler
+	// Optional trusted, content-free diagnostic sink. It does not alter admission,
+	// retry or cancellation. Source text, SQL/args and raw errors are excluded.
+	ObserveProbe func(ModelProbe)
+}
+type ModelProbe struct {
+	Stage                 string `json:"stage"`
+	Millis                int64  `json:"millis"`
+	Diagnostic            string `json:"diagnostic"`
+	Acquired, Idle, Total int32
 }
 type ModelAttempt struct {
 	OperationID   string
@@ -42,6 +67,9 @@ type ModelAttempt struct {
 }
 
 var errStorageProbeWait = errors.New("background storage authority probe timed out")
+
+// ErrConsumerOutputInvalid is a fixed diagnostic, never raw consumer/model text.
+var ErrConsumerOutputInvalid = errors.New("background consumer output invalid")
 
 func (s *Store) SetModelControl(ctx context.Context, state string) error {
 	// The composition root/operator owns this method; it is not a model tool.
@@ -99,12 +127,15 @@ func (w *ModelWorker) quote() (budget.Units, error) {
 		return budget.Units{}, ErrClaim
 	}
 	p.OutputTokens = output
-	if p.ModelMillis > 90000 {
-		p.ModelMillis = 90000
-	} // Leave publication time inside 2m claim.
+	if p.ModelMillis > 300000 {
+		p.ModelMillis = 300000
+	} // A full five-minute call fits inside the model-only six-minute claim.
 	return p.ModelQuote(w.Provider.Name(), w.Model, input)
 }
-func (w *ModelWorker) Admit(ctx context.Context, j Job) (ModelAttempt, []catalog.Source, error) {
+func (w *ModelWorker) Admit(ctx context.Context, j Job, handlers ...ModelHandler) (ModelAttempt, []catalog.Source, error) {
+	if len(handlers) > 1 {
+		return ModelAttempt{}, nil, ErrClaim
+	}
 	var a ModelAttempt
 	quote, e := w.quote()
 	if e != nil {
@@ -194,6 +225,14 @@ func (w *ModelWorker) Admit(ctx context.Context, j Job) (ModelAttempt, []catalog
 		return a, nil, e
 	}
 	a = ModelAttempt{op, admission.ReservationID, deadline, quote}
+	if len(handlers) == 1 {
+		if h, ok := handlers[0].(ModelInputSelector); ok {
+			sources, e = h.InputSourcesTx(ctx, tx, s.catalog, j, sources)
+			if e != nil {
+				return a, nil, e
+			}
+		}
+	}
 	return a, sources, tx.Commit(ctx)
 }
 
@@ -275,7 +314,10 @@ func (s *Store) observeModel(ctx context.Context, a ModelAttempt, usage *transpo
 	}
 	return nil
 }
-func (s *Store) publishModel(ctx context.Context, j Job, a ModelAttempt, body string) (string, error) {
+func (s *Store) publishModel(ctx context.Context, j Job, a ModelAttempt, body string, handlers ...ModelHandler) (string, error) {
+	if len(handlers) > 1 {
+		return "", ErrClaim
+	}
 	if len(body) == 0 || len(body) > 32768 || sanitize.Text(body) != body {
 		return "", ErrClaim
 	}
@@ -319,6 +361,13 @@ func (s *Store) publishModel(ctx context.Context, j Job, a ModelAttempt, body st
 	if e != nil {
 		return "", e
 	}
+	if len(handlers) == 1 {
+		if h, ok := handlers[0].(ModelPublicationHandler); ok {
+			if e = h.PublishTx(ctx, tx, s.catalog, j, a, sources, src, body); e != nil {
+				return "", e
+			}
+		}
+	}
 	tag, e := tx.Exec(ctx, `UPDATE memory_aux_jobs SET status='done',claim_id='',claim_until=NULL,error_code='',updated_at=clock_timestamp() WHERE job_id=$1 AND claim_id=$2 AND claim_epoch=$3 AND status='running' AND claim_until>clock_timestamp() AND deadline>clock_timestamp()`, j.ID, j.ClaimID, j.ClaimEpoch)
 	if e != nil {
 		return "", e
@@ -333,7 +382,9 @@ func (s *Store) publishModel(ctx context.Context, j Job, a ModelAttempt, body st
 	return src.ID, tx.Commit(ctx)
 }
 func (w *ModelWorker) ProcessOne(ctx context.Context) (bool, error) {
-	ctx, stop := context.WithTimeout(ctx, 110*time.Second)
+	// Bound the whole claim attempt while allowing its configured five-minute
+	// model call. Earlier caller, admission, source and authority deadlines win.
+	ctx, stop := context.WithTimeout(ctx, 6*time.Minute)
 	defer stop()
 	ready, e := w.Jobs.modelReady(ctx)
 	if e != nil || !ready {
@@ -395,6 +446,8 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 			code = "budget_exhausted"
 		case errors.Is(err, budget.ErrUnknownCost):
 			code = "cost_unknown"
+		case errors.Is(err, ErrConsumerOutputInvalid):
+			code = "consumer_output_invalid"
 		case errors.Is(err, ErrWaiting):
 			code = "admission_wait"
 			var why *waitReason
@@ -440,11 +493,16 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 		_ = s.Finish(finish, j, code, retry)
 	}()
 	var sources []catalog.Source
-	a, sources, err = w.Admit(ctx, j)
+	a, sources, err = w.Admit(ctx, j, h)
 	if err != nil {
 		return err
 	}
 	callCtx, cancel := context.WithDeadline(s.Context(ctx, j), a.Deadline)
+	supervisorCtx, stopSupervisor := context.WithCancel(callCtx)
+	// A mandatory full pre-HTTP proof supersedes the periodic observation.
+	// Serializing only these owning proofs avoids their competing session locks;
+	// the provider cannot send before its complete proof succeeds.
+	var proofMu sync.Mutex
 	done := make(chan struct{})
 	go func(supervisorCtx context.Context) {
 		defer close(done)
@@ -455,16 +513,39 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 			case <-supervisorCtx.Done():
 				return
 			case <-t.C:
+				if !proofMu.TryLock() {
+					continue
+				}
 				check, stop := context.WithTimeout(supervisorCtx, 200*time.Millisecond)
-				e := s.catalog.CheckObjects(check, nil, j.Purpose)
+				started := time.Now()
+				stage := "model_supervisor"
+				e := s.checkModelSupervisor(check, j, func(phase string) { stage = phase })
 				if e == nil {
-					var busy bool
-					e = s.pool.QueryRow(check, `SELECT EXISTS(SELECT 1 FROM session_ownership WHERE expires_at>clock_timestamp())`).Scan(&busy)
-					if e == nil && busy {
-						e = ErrWaiting
+					stage = "model_supervisor"
+				}
+				proofMu.Unlock()
+				if w.ObserveProbe != nil {
+					diagnostic := ""
+					if e != nil {
+						var pg *pgconn.PgError
+						switch {
+						case errors.As(e, &pg):
+							diagnostic = "pg_" + pg.Code
+						case errors.Is(e, context.DeadlineExceeded):
+							diagnostic = "deadline_exceeded"
+						case errors.Is(e, context.Canceled):
+							diagnostic = "cancelled"
+						default:
+							diagnostic = "authority_or_storage_error"
+						}
 					}
+					stat := s.pool.Stat()
+					w.ObserveProbe(ModelProbe{Stage: stage, Millis: time.Since(started).Milliseconds(), Diagnostic: diagnostic, Acquired: stat.AcquiredConns(), Idle: stat.IdleConns(), Total: stat.TotalConns()})
 				}
 				stop()
+				if supervisorCtx.Err() != nil {
+					return
+				}
 				if e != nil {
 					if errors.Is(e, context.DeadlineExceeded) && supervisorCtx.Err() == nil {
 						e = errStorageProbeWait
@@ -480,11 +561,16 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 				}
 			}
 		}
-	}(callCtx)
-	defer func() { cancel(); <-done }()
+	}(supervisorCtx)
+	defer func() { stopSupervisor(); cancel(); <-done }()
 	callCtx = budget.WithModelOperation(callCtx, a.OperationID)
 	callCtx = transport.WithInputByteLimit(callCtx, a.Quote.ProviderInputBytes)
 	callCtx = transport.WithInferenceAuthority(callCtx, func(c context.Context) error {
+		proofMu.Lock()
+		defer proofMu.Unlock()
+		if c.Err() != nil {
+			return c.Err()
+		}
 		e := s.checkModelRelease(c, j, a)
 		if errors.Is(e, ErrWaiting) {
 			waiting.Store(true)
@@ -495,6 +581,11 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 		return e
 	})
 	callCtx = transport.WithInferenceDispatch(callCtx, func(c context.Context) error {
+		proofMu.Lock()
+		defer proofMu.Unlock()
+		if c.Err() != nil {
+			return c.Err()
+		}
 		e := s.dispatchModel(c, j, a)
 		if transientPersistence(e) {
 			persistenceFailure.Store(&e)
@@ -598,6 +689,11 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 		}
 	}
 observed:
+	// No provider work remains. Join its periodic observer before durable local
+	// publication takes the same policy/session locks. callCtx remains current;
+	// full AccessTx publication proof still serializes correction/revocation.
+	stopSupervisor()
+	<-done
 	// Usage survives revocation and failed publication; missing observations are
 	// NULL. The conservative reservation is never refunded, including before send.
 	observeCtx, stop := context.WithTimeout(context.WithoutCancel(ctx), 3*time.Second)
@@ -608,12 +704,12 @@ observed:
 	}
 	body, e := h.Validate(sources, output)
 	if e != nil {
-		return ErrClaim
+		return ErrConsumerOutputInvalid
 	}
 	if callCtx.Err() != nil {
 		return callCtx.Err()
 	}
-	_, err = s.publishModel(callCtx, j, a, body)
+	_, err = s.publishModel(callCtx, j, a, body, h)
 	return err
 }
 
@@ -633,7 +729,13 @@ func (w *ModelWorker) Run(ctx context.Context) error {
 	defer ticker.Stop()
 	for {
 		poll, stop := context.WithTimeout(ctx, 5*time.Second)
-		e := w.Jobs.PollModelPolicies(poll, func(name string) bool { return w.Handlers[name] != nil })
+		preparers := map[string]ModelScheduleHandler{}
+		for name, handler := range w.Handlers {
+			if p, ok := handler.(ModelScheduleHandler); ok {
+				preparers[name] = p
+			}
+		}
+		e := w.Jobs.PollModelPolicies(poll, func(name string) bool { return w.Handlers[name] != nil }, preparers)
 		stop()
 		if e == nil {
 			_, _ = w.ProcessOne(ctx)

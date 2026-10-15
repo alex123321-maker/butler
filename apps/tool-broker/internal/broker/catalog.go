@@ -13,6 +13,7 @@ import (
 	"github.com/butler/butler/internal/extensions"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/generatedtools"
+	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/workspaceexec"
 )
 
@@ -95,6 +96,9 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 			continue
 		}
 		if contract.GetToolName() == "memory.propose_candidate" && (a.TaskID == "" || !a.MemoryCandidateReady) {
+			continue
+		}
+		if readcontrol.IsTool(contract.GetToolName()) && (a.TaskID == "" || !a.MemoryReadReady) {
 			continue
 		}
 		if contract.GetToolName() == "single_tab.bind.guarded" && (a.TaskID == "" || !a.GuardedTabRequestReady) {

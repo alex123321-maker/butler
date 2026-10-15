@@ -1,0 +1,84 @@
+{
+  "counts": {
+    "execution_budget": 481,
+    "memory_aux_jobs": 4114,
+    "memory_deletions": 1800,
+    "memory_model_attempts": 225,
+    "memory_model_control": 2341,
+    "memory_model_policies": 5133,
+    "memory_restore_state": 1768,
+    "memory_source_dependencies": 2489,
+    "memory_source_revisions": 758,
+    "memory_sources": 2628,
+    "other": 8430,
+    "pool_acquire": 2381,
+    "pool_connect": 2,
+    "session_ownership": 192,
+    "system_settings": 32
+  },
+  "slow_or_failed": [
+    {
+      "shape": "other",
+      "statement_sha256": "9505cacb7c710ed17125fcc6cb3669e8ddca6c8cd8af6a31f6b3cd64604c3098",
+      "millis": 359,
+      "diagnostic": "",
+      "Acquired": 1,
+      "Idle": 0,
+      "Total": 1
+    },
+    {
+      "shape": "other",
+      "statement_sha256": "9505cacb7c710ed17125fcc6cb3669e8ddca6c8cd8af6a31f6b3cd64604c3098",
+      "millis": 484,
+      "diagnostic": "",
+      "Acquired": 1,
+      "Idle": 0,
+      "Total": 1
+    },
+    {
+      "shape": "other",
+      "statement_sha256": "9505cacb7c710ed17125fcc6cb3669e8ddca6c8cd8af6a31f6b3cd64604c3098",
+      "millis": 1028,
+      "diagnostic": "",
+      "Acquired": 1,
+      "Idle": 0,
+      "Total": 1
+    },
+    {
+      "shape": "pool_acquire",
+      "statement_sha256": "",
+      "millis": 57,
+      "diagnostic": "cancelled",
+      "Acquired": 0,
+      "Idle": 1,
+      "Total": 2
+    },
+    {
+      "shape": "memory_model_policies",
+      "statement_sha256": "2f301f61fe73377c111a50ad6f745861c02c423966069bc5959ac3ba97b00fee",
+      "millis": 0,
+      "diagnostic": "cancelled",
+      "Acquired": 1,
+      "Idle": 1,
+      "Total": 2
+    }
+  ],
+  "slow_or_failed_probes": [
+    {
+      "stage": "supervisor_begin",
+      "millis": 57,
+      "diagnostic": "cancelled",
+      "Acquired": 0,
+      "Idle": 1,
+      "Total": 2
+    },
+    {
+      "stage": "supervisor_policy",
+      "millis": 2,
+      "diagnostic": "cancelled",
+      "Acquired": 1,
+      "Idle": 1,
+      "Total": 2
+    }
+  ]
+}

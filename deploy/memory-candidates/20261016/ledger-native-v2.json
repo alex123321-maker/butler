@@ -1,0 +1,229 @@
+{
+  "tasks": 0,
+  "scopes": [
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "owner_day",
+      "used": {
+        "tokens": 3170304,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 3,
+        "egress_bytes": 0,
+        "active_millis": 270000,
+        "external_calls": 0,
+        "provider_input_bytes": 25165824
+      },
+      "limits": {
+        "tokens": 268435456,
+        "children": 32,
+        "cost_micros": 0,
+        "model_turns": 256,
+        "egress_bytes": 536870912,
+        "active_millis": 14400000,
+        "external_calls": 512,
+        "provider_input_bytes": 1073741824
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    },
+    {
+      "kind": "auxiliary",
+      "used": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "limits": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      }
+    }
+  ],
+  "attempts": [
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 627,
+        "TotalTokens": 1447,
+        "OutputTokens": 123
+      },
+      "job_id": "model_defb8fc1f10dd016278df3f5f7f89e965f34da9faec0c477afc5579dd72d852e",
+      "reason": "",
+      "result_source_id": "source_e0c22db98b2500672f6ecdc26711359ac7e49714"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "published",
+      "usage": {
+        "InputTokens": 628,
+        "TotalTokens": 2432,
+        "OutputTokens": 127
+      },
+      "job_id": "model_61e015a86abd7d2ef81ec47f2050448a23e7aea70376b584a34446a9521cbe71",
+      "reason": "",
+      "result_source_id": "source_ac6175ce349a951d9e6fea9a2b8f423a08796583"
+    },
+    {
+      "quote": {
+        "tokens": 1056768,
+        "children": 0,
+        "cost_micros": 0,
+        "model_turns": 1,
+        "egress_bytes": 0,
+        "active_millis": 90000,
+        "external_calls": 0,
+        "provider_input_bytes": 8388608
+      },
+      "state": "failed",
+      "usage": null,
+      "job_id": "model_d9abb9c6b74589b87aff134bd665e94ed14d7030beb26c1a7eb4019f8033df2e",
+      "reason": "storage_unavailable",
+      "result_source_id": null
+    }
+  ],
+  "mandates": 0,
+  "confirmed_claims": 0
+}

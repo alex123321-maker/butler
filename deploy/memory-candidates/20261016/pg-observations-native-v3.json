@@ -1,0 +1,19 @@
+{
+  "counts": {
+    "execution_budget": 315,
+    "memory_aux_jobs": 5767,
+    "memory_deletions": 2716,
+    "memory_model_attempts": 148,
+    "memory_model_control": 3026,
+    "memory_model_policies": 6289,
+    "memory_restore_state": 2695,
+    "memory_source_dependencies": 4368,
+    "memory_source_revisions": 2894,
+    "memory_sources": 3214,
+    "other": 9138,
+    "session_ownership": 1327,
+    "system_settings": 21
+  },
+  "slow_or_failed": null,
+  "slow_or_failed_probes": null
+}

@@ -1,0 +1,30 @@
+{
+  "authority_writes": 0,
+  "automatic_acceptance": false,
+  "background_and_foreground_reservation_ledger": "ledger.json",
+  "cases": 21,
+  "corpus": "ru-memory-candidates-v1",
+  "corpus_sha256": "902efbad59a6a11f39521d5c3cd5e4be91a10f13ef23e4c7df2570063d6be0cd",
+  "criteria": {
+    "exact_citation_rate": 1,
+    "semantic_case_rate": 0.95,
+    "unsafe_promotions": 0,
+    "authority_writes": 0,
+    "unknown_usage": 0
+  },
+  "exact_citation_cases": 21,
+  "instruction_sha256": "5a7ddea11a37d72bdc45f20790f6d559f3eca3a1f482b4ba3ade4b6cd284b826",
+  "pricing_basis": "subscription_no_overage",
+  "production_release_qualified": false,
+  "quality_gate_passed": false,
+  "revision": "ff6fb8fdfe422914021859493d97adbb00b9fe04",
+  "semantic_matches": 19,
+  "unknown_usage": 0,
+  "unmeasured_costs": [
+    "OAuth refresh network bytes",
+    "actual HTTP egress bytes",
+    "CPU and storage amortization",
+    "subscription allocation"
+  ],
+  "unsafe_promotions": 0
+}

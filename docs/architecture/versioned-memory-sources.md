@@ -123,6 +123,22 @@ and erasure procedure; no application can retract an offline copy it does not ow
 
 ## Agent candidate proposals
 
+Agent reads use separately gated fixed Broker `memory.search`, `memory.open` and
+`memory.neighbors` contracts. Search returns bounded DATA citations; exact
+source/revision/access/hash and catalog fragment keys are required for opening.
+Each actual dispatch reconstructs current input/lease/task/goal/mandate proof;
+catalog authorization pins complete ancestors. The returned ID never grants
+future access. Correction/deletion/access changes deny old handles and ordinary
+provider release checks protect all returned evidence. See
+[read contract](../../internal/memory/readcontrol/README.md) for bounds, distinct
+statuses and the initial PostgreSQL full-text strategy.
+
+Catalog fragment publication limits titles to2048 bytes and rejects recognized
+credentials in exact fragment keys. Agent reads also suppress old unsafe keys
+with an explicit incomplete-result flag and deny requests carrying such keys;
+masking never creates a replacement handle. Recognized title/text credentials
+are masked before clipping, with original Unicode positions and redaction flags.
+
 Default-false operator composition `BUTLER_MEMORY_CANDIDATE_ENABLED` joins the
 fixed local `memory.propose_candidate` contract to the catalog candidate queue.
 Broker requires current owning readiness/task policy, exact preparation/authorization,
@@ -147,6 +163,14 @@ does not settle an unknown Broker effect or authorize replay. This composition
 does not run a model, enable legacy cloud extraction or establish semantic quality.
 
 ## Owned auxiliary work
+
+The #85 generative candidate consumer preserves exact source quotation/rune spans,
+revision/hash, unknown time and original scope. Its claims remain candidates and
+reuse existing owner acceptance/correction/revoke controls. Migration073 adds a
+trusted projection class: outcome episodes become Episodic Memory only on owner
+acceptance; preferences/facts become Profile Memory. An accepted exact episode may
+have no vector until separately admitted indexing. See the
+[candidate contract and release gate](../../internal/memory/candidates/README.md).
 
 `memory_aux_jobs` records immutable owner, purpose, original run/task and assignment,
 task/constraint versions, complete source hashes/access, finite allowance/deadline,
@@ -191,6 +215,14 @@ was added. See [structured ingestion](../../internal/memory/ingestion/README.md)
 and [parser isolation](../../apps/memory-parser/README.md) for format/size limits.
 
 ## Verification
+
+Every new consumer must extend the [mandatory lifecycle security gate](../ai/memory-lifecycle-acceptance.md)
+with its own applicable publication/read/provider/retry/deletion/restore evidence.
+Retained model or document instructions, quoted owner policy and even a correct
+historical success stay DATA; they cannot grant Tool Broker authority or widen a
+current task. Selective derivative deletion must preserve independent valid
+sources and current typed owner permissions. Existing corpus tests use synthetic
+markers only and do not certify model quality or future consumers.
 
 Actual PostgreSQL tests use isolated schemas and MaxConns2. Catalog/job/API,
 idle-provider cancellation, Controller/Coordinator boundaries, immutable privacy,

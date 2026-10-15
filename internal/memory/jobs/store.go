@@ -240,7 +240,7 @@ func (s *Store) claimSelectedOwner(ctx context.Context, kind, purpose, jobID, ow
 		return Job{}, false, e
 	}
 	var jid string
-	e = tx.QueryRow(ctx, `UPDATE memory_aux_jobs SET status='running',claim_id=$1,claim_epoch=claim_epoch+1,claim_until=LEAST(deadline,clock_timestamp()+INTERVAL '2 minutes'),attempts=attempts+1,updated_at=clock_timestamp() WHERE job_id=(SELECT job_id FROM memory_aux_jobs WHERE status='pending' AND (policy_id IS NULL OR EXISTS(SELECT 1 FROM memory_model_policies p WHERE p.policy_id=memory_aux_jobs.policy_id AND p.state='active')) AND ($2='' OR kind=$2) AND ($3='' OR purpose=$3) AND ($4='' OR job_id=$4) AND ($5='' OR owner_id=$5) AND next_attempt_at<=clock_timestamp() AND deadline>clock_timestamp() AND attempts<max_attempts ORDER BY next_attempt_at,job_id FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING job_id`, id, kind, purpose, jobID, ownerID).Scan(&jid)
+	e = tx.QueryRow(ctx, `UPDATE memory_aux_jobs SET status='running',claim_id=$1,claim_epoch=claim_epoch+1,claim_until=LEAST(deadline,clock_timestamp()+CASE WHEN kind='model' THEN INTERVAL '6 minutes' ELSE INTERVAL '2 minutes' END),attempts=attempts+1,updated_at=clock_timestamp() WHERE job_id=(SELECT job_id FROM memory_aux_jobs WHERE status='pending' AND (policy_id IS NULL OR EXISTS(SELECT 1 FROM memory_model_policies p WHERE p.policy_id=memory_aux_jobs.policy_id AND p.state='active')) AND ($2='' OR kind=$2) AND ($3='' OR purpose=$3) AND ($4='' OR job_id=$4) AND ($5='' OR owner_id=$5) AND next_attempt_at<=clock_timestamp() AND deadline>clock_timestamp() AND attempts<max_attempts ORDER BY next_attempt_at,job_id FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING job_id`, id, kind, purpose, jobID, ownerID).Scan(&jid)
 	if e == pgx.ErrNoRows {
 		return Job{}, false, tx.Commit(ctx)
 	}

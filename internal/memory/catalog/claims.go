@@ -13,6 +13,9 @@ import (
 // Propose records extraction confidence separately from acceptance. Even an
 // authenticated owner upload containing a rule starts as a candidate.
 func (s *Store) Propose(ctx context.Context, p ClaimRequest) (Claim, error) {
+	if p.MemoryType != "" && p.MemoryType != "profile" {
+		return Claim{}, ErrInvalid
+	}
 	if !bounded(p.Key, 512) || !json.Valid(p.Value) || len(p.Value) > 32*1024 || len(p.Summary) > 8192 || p.Confidence < 0 || p.Confidence > 1 {
 		return Claim{}, ErrInvalid
 	}
@@ -33,8 +36,8 @@ func (s *Store) Propose(ctx context.Context, p ClaimRequest) (Claim, error) {
 	if e != nil {
 		return Claim{}, e
 	}
-	c := Claim{ID: id, OwnerID: src.OwnerID, ScopeType: src.ScopeType, ScopeID: src.ScopeID, Key: p.Key, SourceID: src.ID, SourceRevision: src.Revision, Value: p.Value, Summary: p.Summary, Status: "candidate", Confidence: p.Confidence, EventTime: src.EventTime}
-	if _, e = tx.Exec(ctx, `INSERT INTO memory_claims(claim_id,owner_id,scope_type,scope_id,fact_key,source_id,source_revision,value_json,summary,extraction_confidence,event_time) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`, c.ID, c.OwnerID, c.ScopeType, c.ScopeID, c.Key, c.SourceID, c.SourceRevision, c.Value, c.Summary, c.Confidence, c.EventTime); e != nil {
+	c := Claim{MemoryType: "profile", ID: id, OwnerID: src.OwnerID, ScopeType: src.ScopeType, ScopeID: src.ScopeID, Key: p.Key, SourceID: src.ID, SourceRevision: src.Revision, Value: p.Value, Summary: p.Summary, Status: "candidate", Confidence: p.Confidence, EventTime: src.EventTime}
+	if e = tx.QueryRow(ctx, `INSERT INTO memory_claims(claim_id,owner_id,scope_type,scope_id,fact_key,source_id,source_revision,value_json,summary,extraction_confidence,event_time) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING created_at`, c.ID, c.OwnerID, c.ScopeType, c.ScopeID, c.Key, c.SourceID, c.SourceRevision, c.Value, c.Summary, c.Confidence, c.EventTime).Scan(&c.ExtractedAt); e != nil {
 		return Claim{}, e
 	}
 	return c, tx.Commit(ctx)
@@ -87,8 +90,8 @@ func (s *Store) Decide(ctx context.Context, d Decision) (Claim, error) {
 	}
 	var previous *int64
 	if active != "" {
-		var profileID *int64
-		if e = tx.QueryRow(ctx, `UPDATE memory_claims SET status='superseded' WHERE claim_id=$1 AND status='confirmed' RETURNING profile_id`, active).Scan(&profileID); e != nil {
+		var profileID, episodeID *int64
+		if e = tx.QueryRow(ctx, `UPDATE memory_claims SET status='superseded' WHERE claim_id=$1 AND status='confirmed' RETURNING profile_id,episode_id`, active).Scan(&profileID, &episodeID); e != nil {
 			return Claim{}, ErrStale
 		}
 		previous = profileID
@@ -97,13 +100,26 @@ func (s *Store) Decide(ctx context.Context, d Decision) (Claim, error) {
 				return Claim{}, e
 			}
 		}
+		if episodeID != nil {
+			if _, e = tx.Exec(ctx, `UPDATE memory_episodes SET status='inactive',effective_status='inactive',updated_at=clock_timestamp() WHERE id=$1`, *episodeID); e != nil {
+				return Claim{}, e
+			}
+		}
 	}
 	var profileID int64
 	provenance := mustJSON(map[string]any{"kind": "memory_derived", "sensitivity": "private", "source_refs": []string{c.SourceID}, "catalog": map[string]any{"source_id": c.SourceID, "revision": c.SourceRevision}, "claim_id": c.ID})
-	if e = tx.QueryRow(ctx, `INSERT INTO memory_profile(memory_type,scope_type,scope_id,key,value_json,summary,source_type,source_id,provenance,confidence,status,effective_from,supersedes_id,confirmation_state,effective_status,edited_by,edited_at) VALUES('profile',$1,$2,$3,$4,$5,'catalog',$6,$7,$8,'active',clock_timestamp(),$9,'confirmed','active',$10,clock_timestamp()) RETURNING id`, c.ScopeType, c.ScopeID, c.Key, c.Value, c.Summary, c.SourceID, provenance, c.Confidence, previous, own).Scan(&profileID); e != nil {
-		return Claim{}, e
+	if c.MemoryType == "episodic" {
+		if e = tx.QueryRow(ctx, `INSERT INTO memory_episodes(memory_type,scope_type,scope_id,summary,content,source_type,source_id,provenance,confidence,status,tags,confirmation_state,effective_status,edited_by,edited_at) VALUES('episodic',$1,$2,$3,$4,'catalog',$5,$6,$7,'active','[]','confirmed','active',$8,clock_timestamp()) RETURNING id`, c.ScopeType, c.ScopeID, c.Summary, string(c.Value), c.SourceID, provenance, c.Confidence, own).Scan(&profileID); e != nil {
+			return Claim{}, e
+		}
+		_, e = tx.Exec(ctx, `UPDATE memory_claims SET status='confirmed',episode_id=$2,supersedes_id=$3,accepted_by=$4,accepted_at=clock_timestamp() WHERE claim_id=$1`, c.ID, profileID, active, own)
+	} else {
+		if e = tx.QueryRow(ctx, `INSERT INTO memory_profile(memory_type,scope_type,scope_id,key,value_json,summary,source_type,source_id,provenance,confidence,status,effective_from,supersedes_id,confirmation_state,effective_status,edited_by,edited_at) VALUES('profile',$1,$2,$3,$4,$5,'catalog',$6,$7,$8,'active',clock_timestamp(),$9,'confirmed','active',$10,clock_timestamp()) RETURNING id`, c.ScopeType, c.ScopeID, c.Key, c.Value, c.Summary, c.SourceID, provenance, c.Confidence, previous, own).Scan(&profileID); e != nil {
+			return Claim{}, e
+		}
+		_, e = tx.Exec(ctx, `UPDATE memory_claims SET status='confirmed',profile_id=$2,supersedes_id=$3,accepted_by=$4,accepted_at=clock_timestamp() WHERE claim_id=$1`, c.ID, profileID, active, own)
 	}
-	if _, e = tx.Exec(ctx, `UPDATE memory_claims SET status='confirmed',profile_id=$2,supersedes_id=$3,accepted_by=$4,accepted_at=clock_timestamp() WHERE claim_id=$1`, c.ID, profileID, active, own); e != nil {
+	if e != nil {
 		return Claim{}, e
 	}
 	if _, e = tx.Exec(ctx, `UPDATE memory_fact_heads SET active_claim_id=$5,revision=revision+1 WHERE owner_id=$1 AND scope_type=$2 AND scope_id=$3 AND fact_key=$4`, own, c.ScopeType, c.ScopeID, c.Key, c.ID); e != nil {
@@ -121,7 +137,7 @@ func getClaim(ctx context.Context, q interface {
 	if lock {
 		clause = " FOR UPDATE"
 	}
-	e := q.QueryRow(ctx, `SELECT claim_id,owner_id,scope_type,scope_id,fact_key,source_id,source_revision,value_json,summary,status,extraction_confidence,supersedes_id,accepted_by,event_time FROM memory_claims WHERE claim_id=$1`+clause, id).Scan(&c.ID, &c.OwnerID, &c.ScopeType, &c.ScopeID, &c.Key, &c.SourceID, &c.SourceRevision, &c.Value, &c.Summary, &c.Status, &c.Confidence, &c.SupersedesID, &c.AcceptedBy, &c.EventTime)
+	e := q.QueryRow(ctx, `SELECT claim_id,owner_id,scope_type,scope_id,fact_key,source_id,source_revision,value_json,summary,status,extraction_confidence,supersedes_id,accepted_by,event_time,created_at,memory_type FROM memory_claims WHERE claim_id=$1`+clause, id).Scan(&c.ID, &c.OwnerID, &c.ScopeType, &c.ScopeID, &c.Key, &c.SourceID, &c.SourceRevision, &c.Value, &c.Summary, &c.Status, &c.Confidence, &c.SupersedesID, &c.AcceptedBy, &c.EventTime, &c.ExtractedAt, &c.MemoryType)
 	return c, e
 }
 func (s *Store) Claims(ctx context.Context) ([]Claim, error) {

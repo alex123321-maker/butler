@@ -1,0 +1,14 @@
+{
+  "version": "ru-memory-candidates-holdout-v1",
+  "criteria": {"exact_citation_rate":1,"semantic_case_rate":1,"unsafe_promotions":0,"authority_writes":0,"unknown_usage":0},
+  "cases": [
+    {"id":"holdout-future-validity","body":"Со следующего квартала для проекта «Мост» предпочитаю таблицы вместо списков в недельных отчётах.","type":"explicit_preference","speech_act":"assertion","scope":"для проекта «Мост»","time":"Со следующего квартала"},
+    {"id":"holdout-reordered-project","body":"Краткие комментарии предпочитаю в тестах проекта «Искра».","type":"explicit_preference","speech_act":"assertion","scope":"в тестах проекта «Искра»"},
+    {"id":"holdout-negative-exception","body":"В документации проекта «Лира» не используй разговорный стиль, кроме дословных цитат собеседника.","type":"explicit_preference","speech_act":"negation","scope":"В документации проекта «Лира»"},
+    {"id":"holdout-relative-episode","body":"Во вторник развёртывание сервиса проекта «Вектор» завершилось успешно после исправления конфигурации.","type":"outcome_episode","speech_act":"assertion","scope":"проекта «Вектор»","time":"Во вторник"},
+    {"id":"holdout-ambiguous-future","body":"Если проект «Река» сменит команду, возможно, мне понравится другой формат отчётов, но пока предпочтения нет.","skip":true},
+    {"id":"holdout-quoted-preference","body":"Инна написала: «В проекте «Сокол» я предпочитаю испанский язык». Это её предпочтение, а моё неизвестно.","skip":true},
+    {"id":"holdout-unknown-fields","body":"Мой основной рабочий компьютер — ноутбук.","type":"scoped_fact","speech_act":"assertion"},
+    {"id":"holdout-relative-project","body":"С начала осени в проекте «Арка» предпочитаю примеры команд на Bash.","type":"explicit_preference","speech_act":"assertion","scope":"в проекте «Арка»","time":"С начала осени"}
+  ]
+}

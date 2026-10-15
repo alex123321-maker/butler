@@ -1,5 +1,7 @@
 package antigravity
 
+import "time"
+
 // InferenceLimits declares the fixed native request allowance. Butler reserves
 // the entire context limit rather than guessing hidden provider tokenization.
 // Default AICode and Cloud Code requests retain8192. An explicitly configured
@@ -8,3 +10,7 @@ package antigravity
 func (p *Provider) InferenceLimits() (int64, int64) {
 	return 1048576, int64(p.config.MaximumOutputTokens)
 }
+
+// InferenceTimeout attests the normalized construction-time run timeout used
+// by executeLocked. It cannot be widened by model request options.
+func (p *Provider) InferenceTimeout() time.Duration { return p.config.Timeout }

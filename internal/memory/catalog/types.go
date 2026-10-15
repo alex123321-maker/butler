@@ -61,6 +61,7 @@ type SourceRef struct {
 	Hash           string `json:"content_hash"`
 }
 type Claim struct {
+	MemoryType     string          `json:"memory_type"`
 	ID             string          `json:"claim_id"`
 	OwnerID        string          `json:"owner_id"`
 	ScopeType      string          `json:"scope_type"`
@@ -75,8 +76,11 @@ type Claim struct {
 	SupersedesID   string          `json:"supersedes_id"`
 	AcceptedBy     string          `json:"accepted_by"`
 	EventTime      *time.Time      `json:"event_time"`
+	ExtractedAt    time.Time       `json:"extracted_at"`
 }
 type ClaimRequest struct {
+	// Trusted consumer projection; never chosen by a model or HTTP claim body.
+	MemoryType     string          `json:"-"`
 	SourceID       string          `json:"source_id"`
 	SourceRevision int64           `json:"source_revision"`
 	Key            string          `json:"key"`
