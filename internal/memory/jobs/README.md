@@ -11,6 +11,11 @@ without cloud fallback. See [the full contract](../../../docs/architecture/backg
 The `Admit`/`LocalTarget` description below remains the existing local path;
 `ModelWorker.Admit` is the separately checked generative path.
 
+New consumers also require the [memory lifecycle security gate](../../../docs/ai/memory-lifecycle-acceptance.md).
+The shared corpus currently runs through diagnostic quote publication, repeated
+job/ACK handling and forgetting, with existing in-flight withdrawal/crash tests.
+These kernel checks grant no summary/extraction/consolidation quality approval.
+
 `ClaimPurpose(kind, purpose)` additionally separates workers in the same kind.
 It uses the existing bounded claim/fence/deadline path; selecting a queue does
 not confer source access or replace per-attempt admission.

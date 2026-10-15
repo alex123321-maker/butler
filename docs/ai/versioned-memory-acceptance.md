@@ -1,5 +1,14 @@
 # Versioned memory and structured ingestion acceptance
 
+## Mandatory lifecycle gate, issue83
+
+The [memory lifecycle security gate](memory-lifecycle-acceptance.md) supplies a
+shared public synthetic attack corpus and exact executable scenarios for the
+existing catalog, retained DATA chains, semantic generations/contexts and durable
+model jobs. Every new consumer must extend its applicable publication, revocation,
+retry and restore cases before enablement. Baseline kernel evidence and consumer
+model-quality acceptance remain separate.
+
 ## Memory quality measurement, issue78
 
 V2 adds an opt-in collector over current Catalog/structured parsing, owned index

@@ -202,6 +202,14 @@ and [parser isolation](../../apps/memory-parser/README.md) for format/size limit
 
 ## Verification
 
+Every new consumer must extend the [mandatory lifecycle security gate](../ai/memory-lifecycle-acceptance.md)
+with its own applicable publication/read/provider/retry/deletion/restore evidence.
+Retained model or document instructions, quoted owner policy and even a correct
+historical success stay DATA; they cannot grant Tool Broker authority or widen a
+current task. Selective derivative deletion must preserve independent valid
+sources and current typed owner permissions. Existing corpus tests use synthetic
+markers only and do not certify model quality or future consumers.
+
 Actual PostgreSQL tests use isolated schemas and MaxConns2. Catalog/job/API,
 idle-provider cancellation, Controller/Coordinator boundaries, immutable privacy,
 backup replay, wrong history, cache restart and stale publication run under race.

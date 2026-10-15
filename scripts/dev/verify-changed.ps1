@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/memory/(memorytest/lifecycle[.]go|memorytest/testdata/lifecycle-|[^/]+/lifecycle_integration_test[.]go)|apps/tool-broker/internal/broker/memory_lifecycle_integration_test[.]go|apps/orchestrator/internal/app/memory_lifecycle_cache_integration_test[.]go|scripts/dev/memory-lifecycle-|docs/ai/memory-lifecycle-acceptance[.]md)" {
+      [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
+      [void]$specs.Add("docs/architecture/background-memory-jobs.md")
+      [void]$specs.Add("docs/ai/memory-lifecycle-acceptance.md")
+      [void]$tests.Add("SSH laba: scripts/dev/memory-lifecycle-lab.sh isolated issue83 root fresh-label; actual PG/race, Broker zero-dispatch, provider withdrawal, old generations, custom dump/restore and mandatory no-skip gate. Zero inference/network; new consumers extend applicable scenarios.")
+      continue
+    }
     "^(internal/memory/jobs/|internal/budget/auxiliary[.]go$|apps/orchestrator/internal/(app/memory_model_jobs|api/memory_model_jobs)|migrations/071_|deploy/memory-jobs/|scripts/dev/memory-jobs-)" {
       [void]$specs.Add("docs/architecture/background-memory-jobs.md")
       [void]$specs.Add("docs/architecture/versioned-memory-sources.md")

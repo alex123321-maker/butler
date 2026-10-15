@@ -76,6 +76,11 @@ this same catalog. Inspect retains original revisions/fragments/adjacent context
 export includes original assets without list caps. See [the contract](../../../docs/architecture/versioned-memory-sources.md)
 for the required private persistent anchor setup before deployment.
 
+The [mandatory lifecycle gate](../../../docs/ai/memory-lifecycle-acceptance.md)
+adds the shared eight-case attack corpus, selective derivative removal, corrected
+ancestor fencing and independent valid-memory preservation after restart/actual
+backup replay. New consumers must extend the same applicable boundaries.
+
 `ProposeTx` supports trusted structured extraction checkpoints and exact retry
 keys in the caller transaction. It rechecks current owner/job/source access,
 publishes only candidates and rejects a changed body under an existing key.

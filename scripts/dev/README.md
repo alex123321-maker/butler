@@ -49,6 +49,7 @@ Available scripts:
 - `run-orchestrator.ps1` - run the orchestrator locally against the Docker-side dependencies
 - `test-go.ps1` - run Go tests with repo-local cache isolation
 - `verify-changed.ps1` - map changed paths to the relevant specs and targeted verification commands
+- `memory-lifecycle-lab.sh <isolated-issue83-root> <fresh-label>` - shared synthetic poisoning corpus, actual PG/race/Broker and old-backup deletion-anchor restore; exact mandatory tests cannot skip. See [the consumer lifecycle gate](../../docs/ai/memory-lifecycle-acceptance.md).
 - `task-observations-lab.sh <isolated-agent-root>` - disposable PostgreSQL and Go race/vet proof for authenticated owner observations, shared root usage and truthful effect/result distinctions; no inference or shared deployment changes.
 - `task-view-lab.sh <isolated-agent-root>` - Vue type/lint/build and actual Chromium task/control/observation fixtures with repo-local lab caches.
 - `optional-models-integration-lab.sh <isolated-agent-root>` - actual disposable PG/race/vet checks for the combined voice/function proposal, input-source and task/API code; actual model quality probes remain explicit opt-ins and skips are audited separately.

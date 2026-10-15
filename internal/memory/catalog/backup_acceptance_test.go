@@ -72,6 +72,17 @@ func TestActualPostgresDumpRestoreDeletionIntegration(t *testing.T) {
 		if _, err = c.Propose(ctx, catalog.ClaimRequest{SourceID: child.ID, SourceRevision: child.Revision, Key: "claim", Value: []byte(`"candidate"`), Confidence: 1}); err != nil {
 			t.Fatal(err)
 		}
+		valid, err := (&ingestion.Store{Catalog: c}).Ingest(ctx, ingestion.Upload{ExternalKey: "backup-unrelated", ScopeType: "user", ScopeID: "backup-proof-owner", Format: "markdown", Path: "valid.md", Raw: []byte("# Independent\nUnrelated valid preference: Russian.\n")})
+		if err != nil || valid.Status != "ready" {
+			t.Fatal(valid, err)
+		}
+		claim, err := c.Propose(ctx, catalog.ClaimRequest{SourceID: valid.Source.ID, SourceRevision: valid.Source.Revision, Key: "language", Value: []byte(`"ru"`), Summary: "Unrelated valid preference", Confidence: 1})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err = c.Decide(ctx, catalog.Decision{ClaimID: claim.ID}); err != nil {
+			t.Fatal(err)
+		}
 		return
 	}
 	var id string
@@ -101,15 +112,28 @@ func TestActualPostgresDumpRestoreDeletionIntegration(t *testing.T) {
 			t.Fatal("restored deleted source served", err)
 		}
 		var body string
-		if err = pool.QueryRow(ctx, `SELECT string_agg(body,'') FROM memory_source_revisions`).Scan(&body); err != nil || strings.TrimSpace(body) != "" {
+		if err = pool.QueryRow(ctx, `SELECT coalesce(string_agg(body,''),'') FROM memory_source_revisions JOIN memory_sources USING(source_id) WHERE status IN ('deleted','revoked')`).Scan(&body); err != nil || strings.TrimSpace(body) != "" {
 			t.Fatal("restored source/child text remained", err)
 		}
 		var remaining int
-		if err = pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM memory_source_assets WHERE original_bytes IS NOT NULL)+(SELECT count(*) FROM memory_chunks)+(SELECT count(*) FROM memory_claims WHERE summary<>'' OR value_json<> '{}'::jsonb)`).Scan(&remaining); err != nil || remaining != 0 {
+		if err = pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM memory_source_assets a JOIN memory_sources s USING(source_id) WHERE s.status IN ('deleted','revoked') AND original_bytes IS NOT NULL)+(SELECT count(*) FROM memory_chunks c JOIN memory_sources s ON s.source_id=c.source_id WHERE s.status IN ('deleted','revoked'))+(SELECT count(*) FROM memory_claims c JOIN memory_sources s USING(source_id) WHERE s.status IN ('deleted','revoked') AND (summary<>'' OR value_json<> '{}'::jsonb))`).Scan(&remaining); err != nil || remaining != 0 {
 			t.Fatal("restored original/derived data remained", remaining, err)
 		}
 		if _, err = c.Put(ctx, catalog.PutSource{ExternalKey: "backup-original", Kind: "document", ScopeType: "user", ScopeID: "backup-proof-owner", Body: "reindex"}); !errors.Is(err, catalog.ErrDeleted) {
 			t.Fatal("reindex resurrected restored source", err)
+		}
+		var validID string
+		if err = pool.QueryRow(ctx, `SELECT source_id FROM memory_sources WHERE external_key='backup-unrelated'`).Scan(&validID); err != nil {
+			t.Fatal(err)
+		}
+		if valid, err := c.Get(ctx, validID); err != nil || !strings.Contains(valid.Body, "Unrelated valid preference") {
+			t.Fatal("restore replay erased unrelated memory", err)
+		}
+		if raw, _, err := (&ingestion.Store{Catalog: c}).Original(ctx, validID, 1); err != nil || !strings.Contains(string(raw), "Unrelated valid preference") {
+			t.Fatal("restore replay erased unrelated original", err)
+		}
+		if err = pool.QueryRow(ctx, `SELECT count(*) FROM memory_claims WHERE source_id=$1 AND status='confirmed' AND value_json='"ru"'::jsonb`, validID).Scan(&remaining); err != nil || remaining != 1 {
+			t.Fatal("restore replay changed unrelated accepted claim", remaining, err)
 		}
 	default:
 		t.Fatal("unknown backup acceptance phase")
