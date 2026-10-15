@@ -1,0 +1,20 @@
+{
+  "status": "PASS_CORRELATED_COMPLETE_ATTEMPT_MATRIX_WITH_RETAINED_FAILURES",
+  "native_calls": 64,
+  "auxiliary_calls": 53,
+  "question_results": 58,
+  "unknown_broader_task_results": 64,
+  "original_ledger_sha256": "56c28f2d4db6f7d7406b91d45a4e3ab24aac8c7c074970177c7d2cdcbcd8730a",
+  "original_measurements_sha256": "e6b78ae8b1f246549610db980cb89e4ffe94b5af2af441661fceca60db3c0cb0",
+  "source_sha256": "d9824a33875f194085673f46aede24eea593f46ef990b8b9ea0a0855091d22f7",
+  "binary_sha256": "6bf79d67bf279dee49230538676cbbdd53595bd4f651bd973b94df9936f75980",
+  "limits": [
+    "Operator-pinned original directory and compiled source identity are required.",
+    "Public synthetic QA and proposed-action observations do not prove external effects or long-lived user task completion.",
+    "Subscription invoice, embedding tokenizer usage and host energy remain unknown; known costs are subtotals.",
+    "This audit cannot reopen a window, execute a tool, tune controls or authorize promotion.",
+    "New owner-authorized five-input window has its own deadline; all old expiries, paid failures and expenses remain unchanged.",
+    "Clean provider failures remain eligible in the original denominator; unavailable usage and invoice remain unknown.",
+    "Reused retrieval pipeline latency and broader user task effects remain unknown."
+  ]
+}

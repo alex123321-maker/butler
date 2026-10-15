@@ -104,8 +104,9 @@ All nine stages are measured, unknown or not_used, including failed prefixes.
 Source write/index/read setup is attributed once to that case's retrieval arm;
 native input reading and artifact retention belong to each arm. Session/task/
 guard/ledger overhead not separately observed is unknown, not not_used. Off
-workers and zero retries are explicit not_used. Generation total includes hidden
-thinking tokens. The worker's actual embedding tokenizer counts and subscription
+workers and zero retries are explicit not_used. Generation total can include
+provider token dimensions beyond visible output; no unreported breakdown is inferred.
+The worker's actual embedding tokenizer counts and subscription
 invoice remain null; a zero admission quote is not a measured zero invoice.
 Local invoice has explicit no-billing basis. Host energy and physical PG/WAL/
 backup footprint are unknown. Known storage is a scoped source/chunk/index-row
@@ -192,3 +193,28 @@ counts are included as background expense with unknown monetary cost. Execute
 is one-use and never resamples a spent input. Offline pending-audit requires all
 five attempts, including safely retained provider failures; numeric NO_GO and
 promotion refusal remain possible after complete harness acceptance.
+
+The retained renewal is now sealed: all five inputs were attempted once, four
+completed and h11/retrieval timed out after120018ms. The original72-input matrix
+has58 completed answers,6 retained failed admissions and8 planned skips, with
+no remaining inputs. Aggregate64native+53auxiliary admissions is117/3442427;
+all1030 expense rows survive and all nine stages are represented. Their446
+logical I/O+model/control-plane calls exceed the unchanged280 score threshold.
+The separate auth probe used zero Infer and its single2818ms Resolve is included
+as background expense. Invoice, failed usage, physical host cost and broader
+task effects remain unknown. Current refresh/persistence/paid discovery passed;
+the older provider_unavailable cause is still unknown from its original trace.
+
+[Full report](../../testdata/acceptance/results/ru-memory-v2-complete-20261015.json)
+has model_quality_evidence=true and statusNO_GO, promotion_allowed=false.
+[Runner audit](../../testdata/acceptance/results/ru-memory-v2-complete-runner-audit-20261015.json)
+passes the complete attempt matrix with retained failures. The old partial report
+above remains historical. See [current status](../../docs/ai/memory-eval-v2-model-status-20261015.md)
+and [independent final review](../../docs/ai/memory-eval-v2-renewed-five-final-independent-review-20261015.md).
+Exact executed release a3d66736dcc5e7ebf94a8b1d614b0e538f387eb8,
+source d9824a33875f194085673f46aede24eea593f46ef990b8b9ea0a0855091d22f7;
+later documentation commits are not claimed as executed source. Raw reports
+remain under the sealed renewed-five root's audit/report directory. Do not rerun
+prepare/auth-preflight/execute/audit against that existing root; audit outputs
+already exist. New offline verification must use a fresh output directory and
+the retained original inputs, without inference or reopening any window.

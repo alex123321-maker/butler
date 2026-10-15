@@ -27,11 +27,24 @@ Its fixed-store fixture invokes the current memory bundle builder without model,
 embedding or real user-memory access. It does not replace any source/privacy
 acceptance below and does not establish answer quality or user task success.
 V2 golden/control review and original live retrieval capture are independently
-checked. The bounded model run retained54complete answers and5failed paid slots;
-five eligible inputs remain unobserved. Full model/PR acceptance remains withheld.
-The [partial report](../../testdata/acceptance/results/ru-memory-v2-partial-20261015.json)
-preserves all72 inputs,937expense records and391stage calls against the unchanged
-280score ceiling. Its model_quality_evidence and promotion_allowed remain false.
+checked. The closed bounded comparison now retains58complete answers,6failed
+paid slots and8planned skips across all72 original inputs; no eligible input
+remains unobserved and no spent input was retried. Its
+[complete runner audit](../../testdata/acceptance/results/ru-memory-v2-complete-runner-audit-20261015.json)
+passes the full attempt matrix, separately from the model's numeric NO_GO.
+The [full report](../../testdata/acceptance/results/ru-memory-v2-complete-20261015.json)
+preserves1030expense rows and446logical stage/control-plane calls against the
+unchanged280score ceiling; model_quality_evidence=true, promotion_allowed=false.
+All nine stages are represented; unknown dimensions remain null. Aggregate
+64native+53auxiliary admissions is117/3442427. The separate owner-authorized
+five-input grant leaves all historical deadlines and failures unchanged.
+Its zero-Infer auth preflight preserves refresh rotation in the same encrypted
+store later used by native. See the
+[independent final review](memory-eval-v2-renewed-five-final-independent-review-20261015.md)
+and [current status](memory-eval-v2-model-status-20261015.md) for source/runtime
+attribution and all six issue78 acceptance criteria. The older
+[partial report](../../testdata/acceptance/results/ru-memory-v2-partial-20261015.json)
+remains a historical incomplete NO_GO, without retrospective relabeling.
 Canonical-rubric counts are not a complete semantic error judgment; unknown
 invoice/tokenizer/storage costs and genuine broader effects remain unknown.
 
