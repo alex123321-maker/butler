@@ -95,7 +95,7 @@ func TestMemoryCapacityActualForegroundDuringOwnedIndex(t *testing.T) {
 		ref := catalog.SourceRef{ID: source.ID, Revision: source.Revision, AccessRevision: source.AccessRevision, Hash: source.Hash}
 		fragments := make([]catalog.Fragment, 100)
 		for i := range fragments {
-			fragments[i] = catalog.Fragment{Key: time.Unix(int64(i), 0).UTC().Format(time.RFC3339), Text: "Synthetic indexed observation for local concurrency; no user fact or authority."}
+			fragments[i] = catalog.Fragment{Key: time.Unix(int64(i), 0).UTC().Format(time.RFC3339), Text: "Synthetic indexed observation for local concurrency; no user fact or authority.", Locator: json.RawMessage(`{}`)}
 		}
 		if _, err = cat.PublishFragments(owner, ref, fragments); err != nil {
 			t.Fatal(err)
