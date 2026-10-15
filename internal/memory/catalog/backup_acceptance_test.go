@@ -83,6 +83,16 @@ func TestActualPostgresDumpRestoreDeletionIntegration(t *testing.T) {
 		if _, err = c.Decide(ctx, catalog.Decision{ClaimID: claim.ID}); err != nil {
 			t.Fatal(err)
 		}
+		// Explicit synthetic primary tool-cache fixtures. Actual Broker capture is
+		// independently covered by the owning ordinary-read composition test.
+		if _, err = pool.Exec(ctx, `INSERT INTO sessions(session_key,user_id,channel)VALUES('backup-cache','backup-proof-owner','web');INSERT INTO runs(run_id,session_key,input_event_id,status,autonomy_mode,current_state,model_provider,started_at,updated_at) VALUES('backup-private-run','backup-cache','private','completed','mode_0','completed','fixture',clock_timestamp(),clock_timestamp()),('backup-valid-run','backup-cache','valid','completed','mode_0','completed','fixture',clock_timestamp(),clock_timestamp());INSERT INTO tool_calls(tool_call_id,run_id,tool_name,args,status,runtime_target,started_at,result)VALUES('backup-private-tool','backup-private-run','memory.open','{}','unknown','memory',clock_timestamp(),'"private cached tool payload79"'),('backup-valid-tool','backup-valid-run','memory.open','{}','completed','memory',clock_timestamp(),'"unrelated cached tool payload79"')`); err != nil {
+			t.Fatal(err)
+		}
+		for _, pair := range []struct{ run, source string }{{"backup-private-run", a.Source.ID}, {"backup-valid-run", valid.Source.ID}} {
+			if _, err = pool.Exec(ctx, `INSERT INTO memory_run_sources(run_id,source_id,source_revision,access_revision,content_hash) SELECT $1,s.source_id,s.head_revision,s.access_revision,r.content_hash FROM memory_sources s JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision WHERE s.source_id=$2`, pair.run, pair.source); err != nil {
+				t.Fatal(err)
+			}
+		}
 		return
 	}
 	var id string
@@ -137,5 +147,12 @@ func TestActualPostgresDumpRestoreDeletionIntegration(t *testing.T) {
 		}
 	default:
 		t.Fatal("unknown backup acceptance phase")
+	}
+	var private, unrelated, actualState string
+	if err = pool.QueryRow(ctx, `SELECT (SELECT result::text FROM tool_calls WHERE tool_call_id='backup-private-tool'),(SELECT result::text FROM tool_calls WHERE tool_call_id='backup-valid-tool'),(SELECT status FROM tool_calls WHERE tool_call_id='backup-private-tool')`).Scan(&private, &unrelated, &actualState); err != nil || strings.Contains(private, "private cached tool payload79") || !strings.Contains(private, "privacy_redacted") || !strings.Contains(unrelated, "unrelated cached tool payload79") || actualState != "unknown" {
+		t.Fatal("tool cache privacy/retained unknown/unrelated cache failed", err)
+	}
+	if err = c.Reconcile(ctx); err != nil {
+		t.Fatal("idempotent cache privacy reconciliation", err)
 	}
 }
