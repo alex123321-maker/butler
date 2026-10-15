@@ -20,7 +20,7 @@ import (
 )
 
 func main() {
-	action := flag.String("action", "state", "Antigravity operator action: import, resolve, inspect, diagnose-auth, diagnose-cloudcode, quota, state, audit-origin, disconnect, smoke")
+	action := flag.String("action", "state", "Antigravity operator action: import, resolve, inspect, diagnose-auth, diagnose-cloudcode, quota, access, state, audit-origin, disconnect, smoke")
 	flag.Parse()
 	if err := execute(*action); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -76,6 +76,12 @@ func execute(action string) error {
 			return err
 		}
 		return json.NewEncoder(os.Stdout).Encode(quota)
+	case "access":
+		access, err := observeAccess(ctx, m)
+		if err != nil {
+			return err
+		}
+		return json.NewEncoder(os.Stdout).Encode(access)
 	case "diagnose-auth", "diagnose-cloudcode":
 		before, err := m.State(ctx, modelprovider.ProviderAntigravity)
 		if err != nil {

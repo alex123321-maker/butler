@@ -7,7 +7,7 @@ services:
   orchestrator:
     image: golang:1.27.2-bookworm
     working_dir: /src
-    command: [/proof/orchestrator-rejection]
+    command: [/proof/orchestrator-diagnosis]
     env_file: ["${ISSUE82_ROOT:?}/private/native.env"]
     environment:
       BUTLER_POSTGRES_URL: postgres://butler@postgres:5432/memory_jobs_test?sslmode=disable

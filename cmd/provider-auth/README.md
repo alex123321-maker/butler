@@ -16,6 +16,12 @@ provider JSON or key material as arguments or publish its environment.
 - `-action quota`: fixed Cloud Code subscription discovery/model metadata read,
   using the same account and current Antigravity model. Prints only model,
   advertised flag, numeric HTTP status, optional remaining fraction/reset time.
+- `-action access`: read-only LoadCodeAssist metadata projection: paid-tier and
+  project-presence booleans, optional consent/onboarding booleans and allowlisted
+  ineligibility classes. Missing fields remain null, never assumed accepted.
+  Identity, project, URLs, credit amounts and messages remain private. This follows
+  [Google CLI's public contract](https://github.com/google-gemini/gemini-cli/blob/main/packages/core/src/code_assist/types.ts)
+  and does not grant access or accept terms.
   Unknown is null, never zero; this meter does not attribute individual AICode
   requests or establish inference access. No generation, onboarding, credits or
   model/endpoint fallback occurs. Routine Resolve can refresh first.

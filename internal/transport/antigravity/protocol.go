@@ -340,7 +340,13 @@ func invalidArgumentReason(body io.Reader) string {
 			Message string `json:"message"`
 		} `json:"error"`
 	}
-	if json.Unmarshal(data, &envelope) != nil || envelope.Error.Status != "INVALID_ARGUMENT" {
+	if json.Unmarshal(data, &envelope) != nil {
+		return ""
+	}
+	if envelope.Error.Status == "FAILED_PRECONDITION" {
+		return "upstream_failed_precondition"
+	}
+	if envelope.Error.Status != "INVALID_ARGUMENT" {
 		return ""
 	}
 	message := envelope.Error.Message

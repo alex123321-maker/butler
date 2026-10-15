@@ -74,6 +74,8 @@ single SSE data envelope) may project fixed schema/model/thinking/output/system
 argument classes. Non-JSON rejection is a separate fixed class; duplicate JSON
 keys and ambiguous arrays do not yield an argument diagnosis. These are upstream
 claims and never echo a message, field path or private identifier.
+The canonical FAILED_PRECONDITION status may be retained as its own fixed class;
+it does not establish which account/project/request precondition failed.
 `DiagnosticReason` rejects all other strings. Provider
 messages, field paths/details and raw bytes remain unexported; a class records an
 upstream claim, not proof of the precise cause. Earlier unknowns stay unknown.
