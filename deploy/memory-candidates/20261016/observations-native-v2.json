@@ -1,0 +1,37 @@
+[
+  {
+    "id": "explicit-detail",
+    "output": "{\"units\":[{\"source_id\":\"source_c4038db9ffbf16423e162d9a2822a9c368ced844520482e03bd3013bb25bd500\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.technical_explanations\",\"quote\":\"Предпочитаю подробные объяснения технических решений.\",\"scope_quote\":null,\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 627,
+      "OutputTokens": 123,
+      "TotalTokens": 1447
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 11066
+  },
+  {
+    "id": "prohibition-exception",
+    "output": "{\"units\":[{\"source_id\":\"source_25d335c05e74cea5d60da518834b8603de9f74edfd5179163ed6c6213ce3ca1c\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"negation\",\"key\":\"preference.technical_explanations\",\"quote\":\"Не сокращай технические объяснения, кроме кратких статусов.\",\"scope_quote\":null,\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 628,
+      "OutputTokens": 127,
+      "TotalTokens": 2432
+    },
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 16485
+  },
+  {
+    "id": "condition",
+    "output": "",
+    "usage": null,
+    "accepted_citation": false,
+    "semantic_match": false,
+    "reason": "worker_rejected",
+    "millis": 6540
+  }
+]

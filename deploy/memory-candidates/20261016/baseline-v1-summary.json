@@ -1,0 +1,23 @@
+{
+  "version": "source-candidates-v1",
+  "attempts": 24,
+  "completed_known": 23,
+  "unknown_usage": 1,
+  "exact_citation_cases": 23,
+  "semantic_matches": 21,
+  "core_cases": 24,
+  "unsafe_promotions": 0,
+  "authority_writes": 0,
+  "reserved_tokens": 25362432,
+  "reserved_millis": 2160000,
+  "reserved_input_bytes": 201326592,
+  "known_input_tokens": 14662,
+  "known_output_tokens": 2448,
+  "known_total_tokens": 48923,
+  "usage_unknown_is_not_zero": true,
+  "overage_cost_micros": 0,
+  "pricing_basis": "subscription_no_overage",
+  "quality_gate_passed": false,
+  "original_core_sha256": "902efbad59a6a11f39521d5c3cd5e4be91a10f13ef23e4c7df2570063d6be0cd",
+  "prior_unknown_preserved": true
+}
