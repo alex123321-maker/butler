@@ -143,6 +143,14 @@ after note/skill freeze to each isolated clone, uses the newest external anchor,
 then reconstructs readers. Original02's unrelated lesson may survive, but no
 deleted source/dependent skill may be silently recreated or reaccepted.
 
+Leakage checks follow exact provenance, successful read/use pins, original
+observation/task/run identities and unique original artifact/canary payloads.
+Common independently supported wording (README.md, alpha, ready=true and the
+same procedure semantics) is not proof of leakage: original02 and current live
+tools legitimately repeat it. Content-free denial/audit history is not deleted
+source text. Any per-source canary must be declared and pinned before original
+work; it cannot be invented after viewing note output or control answers.
+
 The model must use fresh logical provider contexts; no provider session/history,
 retrieved result, answer, turn checkpoint, Working Memory or semantic answer cache
 is shared between arms. Ordinary Working Memory of the *current* task is retained
