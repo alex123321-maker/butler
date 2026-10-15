@@ -64,5 +64,8 @@ func TestSummaryProfileRequiresQualifiedNativeCeilingAndBudget(t *testing.T) {
 		if got := summaryProfileReady(p, b); got != tc.want {
 			t.Fatal("summary native profile gate", tc, got)
 		}
+		if err := validateExpandedNativeOutputBudget(p, b.Policy); (tc.output > 8192 && tc.budget < tc.output) != (err != nil) {
+			t.Fatal("expanded foreground ceiling under-reserved", tc, err)
+		}
 	}
 }

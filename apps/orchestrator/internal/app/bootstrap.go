@@ -151,6 +151,9 @@ func New(ctx context.Context) (*App, error) {
 	taskStore := task.NewStore(postgres.Pool())
 	ownerGoals := goal.New(postgres.Pool(), taskStore, nil)
 	budgetPolicy, policyErr := budget.ParsePolicy(cfg.ExecutionBudgetPolicyJSON)
+	if policyErr == nil {
+		policyErr = validateExpandedNativeOutputBudget(providerResult, budgetPolicy)
+	}
 	if policyErr != nil {
 		redis.Close()
 		postgres.Close()
