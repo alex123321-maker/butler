@@ -9,6 +9,7 @@ import (
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/chunks"
 	"github.com/butler/butler/internal/memory/episodic"
+	"github.com/butler/butler/internal/memory/experience"
 	"github.com/butler/butler/internal/memory/profile"
 	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/working"
@@ -56,9 +57,10 @@ func (a profileStoreAdapter) GetByScope(ctx context.Context, scopeType, scopeID 
 }
 
 type episodicStoreAdapter struct {
-	store    *episodic.Store
-	sources  *catalog.Store
-	temporal bool
+	store      *episodic.Store
+	sources    *catalog.Store
+	temporal   bool
+	experience *experience.Store
 }
 
 type memoryEpisodeExactMatch struct{ episodic.Episode }
@@ -78,6 +80,13 @@ func (a episodicStoreAdapter) Search(ctx context.Context, scopeType, scopeID str
 			return nil, e
 		}
 		if !allowed || entry.ConfirmationState != "confirmed" && entry.ConfirmationState != "auto_confirmed" {
+			continue
+		}
+		eligible, e := experienceObjectAllowed(ctx, a.sources, a.experience, entry.ID)
+		if e != nil {
+			return nil, e
+		}
+		if !eligible {
 			continue
 		}
 		if a.temporal {
@@ -110,6 +119,13 @@ func (a episodicStoreAdapter) FindBySummary(ctx context.Context, scopeType, scop
 			return nil, e
 		}
 		if !allowed || entry.ConfirmationState != "confirmed" && entry.ConfirmationState != "auto_confirmed" {
+			continue
+		}
+		eligible, e := experienceObjectAllowed(ctx, a.sources, a.experience, entry.ID)
+		if e != nil {
+			return nil, e
+		}
+		if !eligible {
 			continue
 		}
 		if a.temporal {

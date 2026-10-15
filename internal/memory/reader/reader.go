@@ -25,6 +25,16 @@ type SemanticCandidate struct {
 type Reader struct {
 	Sources            *catalog.Store
 	SemanticCandidates []SemanticCandidate
+	// Concrete typed-lesson applicability proof, provided by the owning app.
+	// It runs after Catalog access in this same transaction, without IPC.
+	SourceEligibility func(context.Context, pgx.Tx, catalog.Source) (bool, error)
+}
+
+func (r Reader) eligible(ctx context.Context, tx pgx.Tx, src catalog.Source) (bool, error) {
+	if r.SourceEligibility == nil {
+		return true, nil
+	}
+	return r.SourceEligibility(ctx, tx, src)
 }
 
 const permittedSources = `WITH actor AS (SELECT s.user_id AS owner,r.session_key,r.task_id FROM runs r JOIN sessions s USING(session_key) WHERE r.run_id=$1), permitted AS (
@@ -96,6 +106,13 @@ func (r Reader) ReadTx(ctx context.Context, tx pgx.Tx, tool string, a readcontro
 		return readcontrol.Empty("denied"), nil
 	}
 	src := sources[0]
+	allowed, eligibilityErr := r.eligible(ctx, tx, src)
+	if eligibilityErr != nil {
+		return readcontrol.Empty("backend_error"), eligibilityErr
+	}
+	if !allowed {
+		return readcontrol.Empty("denied"), nil
+	}
 	if tool == readcontrol.Neighbors {
 		return r.neighbors(ctx, tx, src, a)
 	}
@@ -206,7 +223,18 @@ func (r Reader) search(ctx context.Context, tx pgx.Tx, a readcontrol.Args) (read
 	}
 	out.Status = "ok"
 	for _, h := range hits {
+		allowed, err := r.eligible(ctx, tx, byID[h.ref.ID])
+		if err != nil {
+			return readcontrol.Empty("backend_error"), err
+		}
+		if !allowed {
+			out.Truncated = true
+			continue
+		}
 		out.Items = append(out.Items, item(byID[h.ref.ID], h.key, h.title, h.text, h.loc, 240))
+	}
+	if len(out.Items) == 0 {
+		out.Status = "empty"
 	}
 	if e = r.conflicts(ctx, tx, &out); e != nil {
 		return readcontrol.Empty("backend_error"), e
@@ -268,6 +296,14 @@ func (r Reader) semanticSearch(ctx context.Context, tx pgx.Tx, a readcontrol.Arg
 		byID[src.ID] = src
 	}
 	for _, h := range hits {
+		allowed, err := r.eligible(ctx, tx, byID[h.ref.ID])
+		if err != nil {
+			return readcontrol.Empty("backend_error"), err
+		}
+		if !allowed {
+			out.Truncated = true
+			continue
+		}
 		out.Items = append(out.Items, item(byID[h.ref.ID], h.key, h.title, h.text, h.loc, 240))
 	}
 	if len(out.Items) > 0 {

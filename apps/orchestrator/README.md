@@ -930,3 +930,13 @@ profile remain separate. Its fresh owner policy counts and durable worker contro
 are operational observations, not job admission or answer quality. Missing or
 failed observations never manufacture zero allowance, zero usage or an eligible
 policy. See [Memory Doctor](../../internal/memory/doctor/README.md).
+
+Typed episodic experience (#90) uses owned task/final/effect/transcript/usage
+evidence, the existing finite background worker and owner-only memory decisions.
+`BUTLER_MEMORY_EXPERIENCE_ENABLED` defaults off and cannot bypass the closed
+quality gate. A runtime environment fingerprint and exact current Broker tool
+contracts bound reuse; negative/unknown feedback is retained. Experience-derived
+skill promotion uses the existing reviewed lifecycle with repeated independent
+task evidence. Migration077 is required; body text remains only in the ordinary
+deletion-aware Catalog/Episodic graph. See
+[the contract](../../docs/architecture/episodic-experience.md).

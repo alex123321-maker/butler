@@ -14,6 +14,7 @@ import (
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/compaction"
 	"github.com/butler/butler/internal/memory/consolidation"
+	"github.com/butler/butler/internal/memory/experience"
 	"github.com/butler/butler/internal/memory/indexing"
 	"github.com/butler/butler/internal/memory/ingestion"
 	"github.com/butler/butler/internal/memory/jobs"
@@ -34,6 +35,8 @@ type MemoryCatalogServer struct {
 	TemporalEnabled       bool
 	Consolidation         *consolidation.Store
 	ConsolidationReady    bool
+	ExperiencePolicies    experience.PolicyCreator
+	Experience            *experience.Store
 }
 
 func (s *MemoryCatalogServer) Handle() http.Handler {

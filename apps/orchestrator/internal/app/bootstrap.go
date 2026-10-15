@@ -316,6 +316,12 @@ func New(ctx context.Context) (*App, error) {
 
 	memoryRuntimeConfig := cfg
 	memoryModelStore, memoryModelWorker := configureModelJobs(sourceCatalog, budgetController, providerResult, cfg.ContextBudgetTokens)
+	experienceMemory, err := configureExperience(sourceCatalog, toolBrokerClient)
+	if err != nil {
+		redis.Close()
+		postgres.Close()
+		return nil, err
+	}
 	if memoryRuntimeConfig.MemoryPipelineEnabled {
 		// Completed-run jobs need their own durable admission; they cannot
 		// borrow a historical live lease. The legacy cloud path has none yet.
@@ -378,6 +384,15 @@ func New(ctx context.Context) (*App, error) {
 		}
 		memorySources = converterSources{Store: sourceCatalog, pool: postgres.Pool()}
 	}
+	previousExperienceGuard := finalResults.DataGuard
+	finalResults.DataGuard = func(ctx context.Context, tx pgx.Tx, run string) error {
+		if err := previousExperienceGuard(ctx, tx, run); err != nil {
+			return err
+		}
+		return experienceMemory.CheckPinnedTx(ctx, tx, run)
+	}
+	taskStore.SetVerifiedResultSourceGuard(finalResults.DataGuard)
+	memorySources = experienceRunSources{sources: memorySources, catalog: sourceCatalog, store: experienceMemory}
 	outboxWorker := &deliveryoutbox.Worker{Store: finalResults.Outbox}
 	var verifiedTaskDeliveryWorker *deliveryoutbox.Worker
 	verifiedDeliveryReady, err := taskStore.VerifiedDeliveryReady(ctx)
@@ -437,13 +452,14 @@ func New(ctx context.Context) (*App, error) {
 			return nil, readcontrol.ErrDenied
 		}
 		var adaptiveOptions []AdaptiveReadOptions
+		option := AdaptiveReadOptions{Experience: experienceMemory}
 		if adaptiveRetrieval != nil {
-			option := AdaptiveReadOptions{Store: adaptiveRetrieval}
+			option.Store = adaptiveRetrieval
 			if policyReader, ok := semanticReader.(memoryservice.PolicySemanticReader); ok {
 				option.Semantic = policyReader
 			}
-			adaptiveOptions = append(adaptiveOptions, option)
 		}
+		adaptiveOptions = append(adaptiveOptions, option)
 		memoryReads, err = NewMemoryReads(postgres.Pool(), sourceCatalog, adaptiveOptions...)
 		if err == nil {
 			memoryReads.temporal = temporalConfigured(cfg.MemoryTemporalEnabled)
@@ -533,7 +549,7 @@ func New(ctx context.Context) (*App, error) {
 			TransientStore:           transientWorkingStoreAdapter{store: working.NewTransientStore(redis.Client()), sources: sourceCatalog},
 			TransientTTL:             time.Duration(cfg.MemoryWorkingTransientTTLSeconds) * time.Second,
 			ProfileStore:             profileStoreAdapter{store: profileStore, sources: sourceCatalog, temporal: temporalConfigured(cfg.MemoryTemporalEnabled)},
-			EpisodeStore:             episodicStoreAdapter{store: episodicStore, sources: sourceCatalog, temporal: temporalConfigured(cfg.MemoryTemporalEnabled)},
+			EpisodeStore:             episodicStoreAdapter{store: episodicStore, sources: sourceCatalog, temporal: temporalConfigured(cfg.MemoryTemporalEnabled), experience: experienceMemory},
 			ChunkStore:               chunkStoreAdapter{store: chunkStore, sources: sourceCatalog},
 			Embeddings:               memoryEmbeddings,
 			PipelineEnqueuer:         pipelineEnqueuer,
@@ -669,8 +685,8 @@ func New(ctx context.Context) (*App, error) {
 				return nil, err
 			}
 		}
-		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, guardedTabRequestReady: guardedRequests != nil, guardedTabRuntimeReady: cfg.GuardedTabRuntimeEnabled && guardedRequests != nil, memoryCandidateReady: memoryCandidates != nil, memoryReadReady: memoryReads != nil, memoryTemporalReady: memoryReads != nil && memoryReads.temporal, workspaceReady: workspaceReady, converterDelegationReady: converterDeveloper != nil && converterClient != nil})
-		skillEvidenceHandler = skills.NewEvidenceHandler(token, &skillEvidence{tasks: taskStore, journal: actionauth.NewPostgresStore(postgres.Pool()), transcript: transcriptStore, budgets: budget.NewLedger(postgres.Pool()), results: finalResults, sources: sourceCatalog})
+		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, guardedTabRequestReady: guardedRequests != nil, guardedTabRuntimeReady: cfg.GuardedTabRuntimeEnabled && guardedRequests != nil, memoryCandidateReady: memoryCandidates != nil, memoryReadReady: memoryReads != nil, memoryTemporalReady: memoryReads != nil && memoryReads.temporal, workspaceReady: workspaceReady, converterDelegationReady: converterDeveloper != nil && converterClient != nil, lessons: experienceMemory})
+		skillEvidenceHandler = skills.NewEvidenceHandler(token, &skillEvidence{tasks: taskStore, journal: actionauth.NewPostgresStore(postgres.Pool()), transcript: transcriptStore, budgets: budget.NewLedger(postgres.Pool()), results: finalResults, sources: sourceCatalog, lessons: experienceMemory})
 	} else {
 		log.Warn("private action authority unavailable; Tool Broker will deny execution")
 	}
@@ -686,6 +702,8 @@ func New(ctx context.Context) (*App, error) {
 		delegationDecisions = childLifecycle
 	}
 	httpServer := newHTTPServer(httpServerDeps{
+		experiencePolicies:         configureExperiencePolicies(experienceMemory, memoryModelStore, taskStore, transcriptStore, finalResults, sourceCatalog),
+		experienceStore:            experienceMemory,
 		guardedTabOwner:            guardedTabOwner,
 		guardedRequestHandler:      guardedRequestHandler,
 		memoryCandidateHandler:     memoryCandidateHandler,

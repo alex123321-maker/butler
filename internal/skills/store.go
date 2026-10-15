@@ -138,6 +138,15 @@ func (s *Store) stage(ctx context.Context, p Package, source any) (Record, error
 			parents = append(parents, ref)
 		}
 	}
+	for _, r := range report.LessonParents {
+		if old, ok := seen[r.ID]; ok && old != r {
+			return Record{}, ErrEvidence
+		}
+		if _, ok := seen[r.ID]; !ok {
+			seen[r.ID] = r
+			parents = append(parents, r)
+		}
+	}
 	if ref, ok := ctx.Value(proposalSourceKey{}).(catalog.SourceRef); ok {
 		if old, exists := seen[ref.ID]; exists && old != ref {
 			return Record{}, ErrEvidence

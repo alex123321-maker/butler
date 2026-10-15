@@ -16,6 +16,13 @@ func lockSummarySourcesTx(ctx context.Context, tx pgx.Tx, ids []string) error {
 	if err != nil {
 		return err
 	}
+	// Exact copied tool rows belong to experience observations, including when a
+	// descendant is read. Lock only the immutable captured set; ordinary future
+	// calls and global transcript watermarks do not revoke unrelated experience.
+	_, err = tx.Exec(ctx, `WITH RECURSIVE roots AS(SELECT unnest($1::text[]) AS id UNION SELECT d.parent_source_id FROM memory_source_dependencies d JOIN roots r ON r.id=d.child_source_id)SELECT t.tool_call_id FROM tool_calls t JOIN memory_experience_tool_pins p USING(tool_call_id) JOIN roots r ON r.id=p.observation_source_id ORDER BY t.tool_call_id FOR SHARE OF t`, ids)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -27,7 +34,7 @@ func checkSummarySourcesTx(ctx context.Context, tx pgx.Tx, ids []string) error {
 		return err
 	}
 	var current bool
-	if err := tx.QueryRow(ctx, `SELECT butler_memory_summary_sources_current($1)`, ids).Scan(&current); err != nil {
+	if err := tx.QueryRow(ctx, `SELECT butler_memory_summary_sources_current($1) AND butler_memory_experience_sources_current($1)`, ids).Scan(&current); err != nil {
 		return err
 	}
 	if !current {

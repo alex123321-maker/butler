@@ -37,6 +37,7 @@ import (
 	"github.com/butler/butler/internal/memory/compaction"
 	memorydoctor "github.com/butler/butler/internal/memory/doctor"
 	"github.com/butler/butler/internal/memory/episodic"
+	"github.com/butler/butler/internal/memory/experience"
 	"github.com/butler/butler/internal/memory/factcontrol"
 	"github.com/butler/butler/internal/memory/indexing"
 	"github.com/butler/butler/internal/memory/ingestion"
@@ -57,6 +58,8 @@ import (
 )
 
 type httpServerDeps struct {
+	experiencePolicies         experience.PolicyCreator
+	experienceStore            *experience.Store
 	guardedTabOwner            apiservice.GuardedTabDecisions
 	guardedRequestHandler      http.Handler
 	memoryCandidateHandler     http.Handler
@@ -141,6 +144,8 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	memoryCatalogServer := &apiservice.MemoryCatalogServer{Store: deps.sourceCatalog, Auth: deps.ownerAuth, Ingestion: &ingestion.Store{Catalog: deps.sourceCatalog, Parser: parser}, Indexing: deps.memoryIndexing, ModelJobs: deps.memoryModelStore, ModelWorkerConfigured: deps.memoryModelConfigured}
 	memoryCatalogServer.TemporalEnabled = temporalConfigured(deps.cfg.MemoryTemporalEnabled)
 	configureConsolidationOwnerAPI(memoryCatalogServer, deps.consolidationConfigured)
+	memoryCatalogServer.ExperiencePolicies = deps.experiencePolicies
+	memoryCatalogServer.Experience = deps.experienceStore
 	if deps.memorySummaryConfigured {
 		memoryCatalogServer.SummaryPolicies = &compaction.Policies{Catalog: deps.sourceCatalog, Jobs: deps.memoryModelStore}
 	}

@@ -11,7 +11,9 @@ import (
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/experience"
 	"github.com/butler/butler/internal/memory/transcript"
+	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/skills"
 )
 
@@ -24,6 +26,49 @@ type skillEvidence struct {
 	budgets    *budget.Ledger
 	results    *completion.Coordinator
 	sources    *catalog.Store
+	lessons    *experience.Store
+}
+
+func (v *skillEvidence) VerifyLessonLineage(ctx context.Context, owner string, q skills.LessonRequest) ([]catalog.SourceRef, error) {
+	if v == nil || v.sources == nil || owner == "" || len(q.Roots) > 64 || len(q.Lessons) > 8 || len(q.Proofs) > 8 {
+		return nil, skills.ErrEvidence
+	}
+	// The private service authenticates Broker. Neither a manifest nor its
+	// supplied proof object is accepted as independent task evidence.
+	refs := []skills.EvidenceRef{}
+	for _, p := range q.Proofs {
+		refs = append(refs, p.EvidenceRef)
+	}
+	proofs, err := v.VerifySkillSources(ctx, owner, refs)
+	if err != nil {
+		return nil, err
+	}
+	roots := append([]catalog.SourceRef{}, q.Roots...)
+	for _, p := range proofs {
+		roots = append(roots, p.ContentParents...)
+	}
+	ctx = owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: owner, Channel: "web", DeliveryID: "private-skill-lineage"})
+	reader := &experience.Store{Sources: v.sources}
+	required, err := reader.Ancestors(ctx, roots)
+	if err != nil {
+		return nil, err
+	}
+	if len(required) == 0 && len(q.Lessons) == 0 {
+		return []catalog.SourceRef{}, nil
+	}
+	if v.lessons == nil {
+		return nil, skills.ErrEvidence
+	}
+	claimed := map[string]catalog.SourceRef{}
+	for _, r := range q.Lessons {
+		claimed[r.ID] = r
+	}
+	for _, r := range required {
+		if claimed[r.ID] != r {
+			return nil, skills.ErrEvidence
+		}
+	}
+	return v.lessons.VerifyPromotion(ctx, owner, q.Lessons, proofs, q.Dependencies)
 }
 
 func skillCatalogIfEnabled(client *skills.Client) interface {

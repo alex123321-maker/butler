@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/butler/butler/internal/actionauth"
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
+	"github.com/butler/butler/internal/memory/catalog"
 )
 
 func Validate(ctx context.Context, p Package, owner string, verifier EvidenceVerifier, reader ContractReader) (Validation, error) {
@@ -41,9 +42,43 @@ func Validate(ctx context.Context, p Package, owner string, verifier EvidenceVer
 			return report, ErrManifest
 		}
 	}
+	roots := []catalog.SourceRef{}
+	for _, proof := range proofs {
+		roots = append(roots, proof.ContentParents...)
+	}
+	if r, ok := ctx.Value(proposalSourceKey{}).(catalog.SourceRef); ok {
+		roots = append(roots, r)
+	}
+	if lineage, ok := verifier.(LessonVerifier); ok {
+		report.LessonParents, err = lineage.VerifyLessonLineage(ctx, owner, LessonRequest{Roots: roots, Lessons: p.Manifest.LessonSources, Proofs: proofs, Dependencies: p.Manifest.Dependencies})
+		if err != nil {
+			return report, ErrEvidence
+		}
+		if len(report.LessonParents) != len(p.Manifest.LessonSources) || len(report.LessonParents) == 1 {
+			return report, ErrEvidence
+		}
+		claimed := map[catalog.SourceRef]bool{}
+		for _, r := range p.Manifest.LessonSources {
+			claimed[r] = true
+		}
+		for _, r := range report.LessonParents {
+			if !claimed[r] {
+				return report, ErrEvidence
+			}
+			delete(claimed, r)
+		}
+		if len(claimed) != 0 {
+			return report, ErrEvidence
+		}
+	} else if len(p.Manifest.LessonSources) > 0 {
+		return report, ErrEvidence
+	}
 	// These independent fixed checks, not caller-reported pass flags, form the
 	// v1 validation class. Full procedure trials supply the verified task proof.
 	report.Checks = []string{"owner_verified_task_and_recipient_evidence", "exact_tool_contracts", "stop_on_failure_and_unknown_effect", "reject_changed_interface", "no_instruction_authority_or_new_capability"}
+	if len(report.LessonParents) > 0 {
+		report.Checks = append(report.Checks, "repeated_independent_current_experience")
+	}
 	report.Sources = proofs
 	report.Passed = true
 	return report, nil

@@ -12,6 +12,7 @@ import (
 	"github.com/butler/butler/internal/actionauth"
 	"github.com/butler/butler/internal/delegation"
 	commonv1 "github.com/butler/butler/internal/gen/common/v1"
+	"github.com/butler/butler/internal/memory/experience"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -34,6 +35,7 @@ type actionContextReader struct {
 	memoryTemporalReady      bool
 	workspaceReady           bool
 	converterDelegationReady bool
+	lessons                  *experience.Store
 }
 
 func (r *actionContextReader) GetActionContext(ctx context.Context, runID string) (actionauth.ContextSnapshot, error) {
@@ -109,6 +111,9 @@ func (r *actionContextReader) GetActionContext(ctx context.Context, runID string
 		}
 		c.Delegation, err = delegation.LoadTx(ctx, tx, record.TaskID)
 		if err != nil {
+			return c, err
+		}
+		if err = r.lessons.CheckPinnedTx(ctx, tx, runID); err != nil {
 			return c, err
 		}
 		if a.TaskID != "" {

@@ -53,3 +53,14 @@ Inference is scripted proposals; this tests control flow, not model planning
 quality. PG tests cover concurrent pins, incompatible updates, rollback,
 descriptive correction/revocation, physical source deletion and backup restore.
 See the [acceptance matrix](../../docs/architecture/reviewed-skills-acceptance.md).
+
+Experience-derived proposals (#90) optionally declare exact `lesson_sources`.
+The private owning verifier also inspects complete parent graphs when that field
+is omitted. Any experience lineage requires at least two distinct independently
+owner-verified task/run originals and current accepted compatible lessons, with
+no failed/unknown action qualifying as a successful recipe. Lesson/original
+parents join the existing deletion-aware manifest graph. Legacy evidence without
+experience lineage retains its existing validation; stage/test/owner review/CAS,
+rollback, approval and tool authority remain unchanged. The experience consumer
+and quality gate remain off; see
+[the contract](../memory/experience/README.md).
