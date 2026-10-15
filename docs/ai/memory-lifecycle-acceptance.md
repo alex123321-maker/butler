@@ -5,6 +5,8 @@ be enabled. The baseline gate covers the existing source catalog, manually
 retained DATA dependency chains, semantic generations/bundles and durable model
 jobs (`source-quote-v1`). Passing the baseline does not accept a future summary,
 lesson or consolidation implementation. A skipped test is not a pass.
+The [per-criterion lab report](../testing/issue-83-memory-lifecycle.md) records
+the exact accepted kernel snapshot, original evidence, costs and explicit skips.
 
 ## Fixed public attack corpus
 
