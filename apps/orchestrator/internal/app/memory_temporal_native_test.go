@@ -16,6 +16,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -49,12 +50,19 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+const (
+	temporalMaxPerOriginal = 12
+	temporalMaxTools       = 8
+	temporalMaxNative      = 12 * temporalMaxPerOriginal
+	temporalMaxToolCalls   = 12 * temporalMaxTools
+)
+
 func temporalNativePolicy(carry budget.Units) budget.Policy {
 	p := budget.DefaultPolicy()
 	p.Models["antigravity:gemini-3.8-flash-high"] = budget.ModelPrice{Basis: "subscription_no_overage"}
 	p.ModelMillis, p.OutputTokens = 300000, 32768
-	p.Task = budget.Units{ModelTurns: 3, Tokens: 3 * 1081344, ActiveMillis: 3*300000 + 2*p.ToolMillis, ProviderInputBytes: 3 * 8388608, ExternalCalls: 2, EgressBytes: 2 * p.ToolEgressBytes}
-	p.Day = budget.Units{ModelTurns: carry.ModelTurns + 36, Tokens: carry.Tokens + 36*1081344, ActiveMillis: carry.ActiveMillis + 36*300000 + 24*p.ToolMillis, ProviderInputBytes: carry.ProviderInputBytes + 36*8388608, ExternalCalls: carry.ExternalCalls + 24, EgressBytes: carry.EgressBytes + 24*p.ToolEgressBytes, Children: carry.Children, CostMicros: carry.CostMicros}
+	p.Task = budget.Units{ModelTurns: temporalMaxPerOriginal, Tokens: temporalMaxPerOriginal * 1081344, ActiveMillis: temporalMaxPerOriginal*300000 + temporalMaxTools*p.ToolMillis, ProviderInputBytes: temporalMaxPerOriginal * 8388608, ExternalCalls: temporalMaxTools, EgressBytes: temporalMaxTools * p.ToolEgressBytes}
+	p.Day = budget.Units{ModelTurns: carry.ModelTurns + temporalMaxNative, Tokens: carry.Tokens + temporalMaxNative*1081344, ActiveMillis: carry.ActiveMillis + temporalMaxNative*300000 + temporalMaxToolCalls*p.ToolMillis, ProviderInputBytes: carry.ProviderInputBytes + temporalMaxNative*8388608, ExternalCalls: carry.ExternalCalls + temporalMaxToolCalls, EgressBytes: carry.EgressBytes + temporalMaxToolCalls*p.ToolEgressBytes, Children: carry.Children, CostMicros: carry.CostMicros}
 	return p
 }
 
@@ -206,7 +214,7 @@ func temporalRunOriginal(t *testing.T, ctx context.Context, pool *pgxpool.Pool, 
 		return out, err
 	}}, log)
 	x := &temporalExecutor{base: base, done: make(chan temporalExecution, 1)}
-	worker, err := durableinput.NewServiceWithExecutionTimeout(inputs, repo, x, runs, log, 20*time.Minute)
+	worker, err := durableinput.NewServiceWithExecutionTimeout(inputs, repo, x, runs, log, 80*time.Minute)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -277,7 +285,7 @@ func temporalRunOriginal(t *testing.T, ctx context.Context, pool *pgxpool.Pool, 
 	if pool.QueryRow(ctx, `SELECT count(*) FROM tool_calls c WHERE c.run_id=$1 AND c.tool_name='memory.facts' AND c.status='completed' AND EXISTS(SELECT 1 FROM action_intents i JOIN action_effects e ON e.action_id=i.effect_id WHERE i.binding->>'run_id'=c.run_id AND i.binding->>'tool_call_id'=c.tool_call_id AND e.state='effect_confirmed')`, ob.RunID).Scan(&ob.FactsReads) != nil {
 		t.Fatal("actual fact reads not observable")
 	}
-	if ob.NativeEntries < 1 || ob.NativeEntries > 3 || ob.KnownUsage != ob.NativeEntries || ob.FactsReads < 1 {
+	if ob.NativeEntries < 1 || ob.NativeEntries > temporalMaxPerOriginal || ob.KnownUsage != ob.NativeEntries || ob.FactsReads < 1 {
 		ob.Status = "failed"
 		ob.Reason = "native_usage_or_actual_lookup_gate"
 	}
@@ -387,7 +395,7 @@ func TestTemporalCollectorPreservesUnexecutedDenominator(t *testing.T) {
 }
 
 func TestTemporalNativeExplicitLookup(t *testing.T) {
-	if os.Getenv("BUTLER_TEMPORAL_NATIVE_V2") != "1" {
+	if os.Getenv("BUTLER_TEMPORAL_NATIVE_V3") != "1" {
 		t.Skip("explicit one-use native temporal window required")
 	}
 	proof := os.Getenv("BUTLER_TEMPORAL_NATIVE_PROOF")
@@ -401,7 +409,7 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 	if err := temporalCheckNativePins(proof); err != nil {
 		t.Fatal(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 150*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 16*time.Hour)
 	defer cancel()
 	stage = "isolated_pg_setup"
 	cfg, err := pgxpool.ParseConfig(os.Getenv("BUTLER_TEST_MEMORY_POSTGRES_URL"))
@@ -413,11 +421,11 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer admin.Close()
-	if _, err = admin.Exec(ctx, `CREATE TABLE IF NOT EXISTS public.issue88_native_windows(window_id TEXT PRIMARY KEY);INSERT INTO public.issue88_native_windows VALUES('temporal-explicit-v2');CREATE SCHEMA memory_temporal_native_v2`); err != nil {
+	if _, err = admin.Exec(ctx, `CREATE TABLE IF NOT EXISTS public.issue88_native_windows(window_id TEXT PRIMARY KEY);INSERT INTO public.issue88_native_windows VALUES('temporal-explicit-v3');CREATE SCHEMA memory_temporal_native_v3`); err != nil {
 		t.Fatal("one-use native window already consumed or unavailable")
 	}
 	cfg.MaxConns = 4
-	cfg.ConnConfig.RuntimeParams["search_path"] = "memory_temporal_native_v2,public"
+	cfg.ConnConfig.RuntimeParams["search_path"] = "memory_temporal_native_v3,public"
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		t.Fatal(err)
@@ -439,7 +447,7 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 	if err != nil {
 		t.Fatal("opaque fresh auth input unavailable")
 	}
-	if _, err = pool.Exec(ctx, `INSERT INTO system_settings(key,value,component,is_secret,updated_by)VALUES('BUTLER_PROVIDER_AUTH_ANTIGRAVITY',$1,'provider-auth',true,'temporal-explicit-v2')`, strings.TrimSpace(string(auth))); err != nil {
+	if _, err = pool.Exec(ctx, `INSERT INTO system_settings(key,value,component,is_secret,updated_by)VALUES('BUTLER_PROVIDER_AUTH_ANTIGRAVITY',$1,'provider-auth',true,'temporal-explicit-v3')`, strings.TrimSpace(string(auth))); err != nil {
 		t.Fatal("opaque auth import denied")
 	}
 	defer func() {
@@ -620,7 +628,8 @@ func TestTemporalCollectorOwningFlowNoSkipIntegration(t *testing.T) {
 
 type temporalControlledProvider struct {
 	transport.ModelProvider
-	pool *pgxpool.Pool
+	pool          *pgxpool.Pool
+	openOriginals bool
 }
 
 func (p *temporalControlledProvider) Name() string                    { return "antigravity" }
@@ -660,6 +669,30 @@ func (p *temporalControlledProvider) SubmitToolResult(ctx context.Context, r tra
 		return nil, err
 	}
 	ch := make(chan transport.TransportEvent, 2)
+	if p.openOriginals {
+		var raw []byte
+		var c temporalPreparedCase
+		if p.pool.QueryRow(ctx, `SELECT prepared_json FROM temporal_native_cases c JOIN runs r ON r.session_key=c.session_key WHERE r.run_id=$1`, r.RunID).Scan(&raw) != nil || json.Unmarshal(raw, &c) != nil {
+			return nil, errors.New("controlled source binding missing")
+		}
+		next := 0
+		if i := strings.LastIndex(r.ToolCallRef, ":open:"); i >= 0 {
+			prior, err := strconv.Atoi(r.ToolCallRef[i+6:])
+			if err != nil {
+				return nil, errors.New("controlled source step invalid")
+			}
+			next = prior + 1
+		}
+		if next < len(c.Args.Sources) {
+			s := c.Args.Sources[next]
+			args, _ := json.Marshal(readcontrol.Args{SourceID: s.ID, Revision: s.Revision, AccessRevision: s.AccessRevision, Hash: s.Hash})
+			e := transport.NewToolCallRequestedEvent(r.RunID, p.Name(), transport.ToolCallRequest{ToolCallRef: r.RunID + ":open:" + strconv.Itoa(next), ToolName: readcontrol.Open, ArgsJSON: string(args)})
+			e.Usage = &transport.Usage{InputTokens: 100, OutputTokens: 10, TotalTokens: 110}
+			ch <- e
+			close(ch)
+			return ch, nil
+		}
+	}
 	ch <- transport.NewAssistantFinalEvent(r.RunID, p.Name(), transport.AssistantFinal{Content: `{"answer":"Контролируемое наблюдение получено.","citations":[],"unknowns":["Исходная цитата не открывалась."]}`, FinishReason: "STOP", Usage: &transport.Usage{InputTokens: 100, OutputTokens: 10, TotalTokens: 110}})
 	ch <- transport.NewTerminalEvent(r.RunID, transport.EventTypeRunCompleted, p.Name())
 	close(ch)

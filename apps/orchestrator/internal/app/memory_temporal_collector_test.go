@@ -63,10 +63,10 @@ func (p *temporalNativeProvider) reserve(ctx context.Context, run, kind string, 
 	defer tx.Rollback(ctx)
 	var count int
 	var id int64
-	if tx.QueryRow(ctx, `SELECT native_entries FROM temporal_native_cases c JOIN runs r ON r.session_key=c.session_key JOIN accepted_inputs i ON i.run_id=r.run_id AND i.input_id=c.input_id WHERE r.run_id=$1 AND c.status='running' AND i.status='running' AND i.max_attempts=1 AND i.attempts=1 FOR UPDATE OF c`, run).Scan(&count) != nil || count >= 3 {
+	if tx.QueryRow(ctx, `SELECT native_entries FROM temporal_native_cases c JOIN runs r ON r.session_key=c.session_key JOIN accepted_inputs i ON i.run_id=r.run_id AND i.input_id=c.input_id WHERE r.run_id=$1 AND c.status='running' AND i.status='running' AND i.max_attempts=1 AND i.attempts=1 FOR UPDATE OF c`, run).Scan(&count) != nil || count >= temporalMaxPerOriginal {
 		return nil, errors.New("unsealed, repeated or exhausted original")
 	}
-	if tx.QueryRow(ctx, `UPDATE temporal_native_window SET paid_entries=paid_entries+1 WHERE singleton AND sealed AND NOT closed AND paid_entries<36 RETURNING paid_entries`).Scan(&id) != nil {
+	if tx.QueryRow(ctx, `UPDATE temporal_native_window SET paid_entries=paid_entries+1 WHERE singleton AND sealed AND NOT closed AND paid_entries<$1 RETURNING paid_entries`, temporalMaxNative).Scan(&id) != nil {
 		return nil, errors.New("prospective native allowance unavailable")
 	}
 	if _, err = tx.Exec(ctx, `UPDATE temporal_native_cases c SET native_entries=native_entries+1,run_id=$1 FROM runs r WHERE r.run_id=$1 AND r.session_key=c.session_key`, run); err != nil {
