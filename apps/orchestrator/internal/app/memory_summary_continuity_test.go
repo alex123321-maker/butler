@@ -42,6 +42,7 @@ type continuityProvider struct {
 	requests []transport.StartRunRequest
 	mu       sync.Mutex
 	usages   map[string]transport.Usage
+	elapsed  map[string]int64
 	probes   []jobs.ModelProbe
 }
 
@@ -72,6 +73,7 @@ func (p *continuityProvider) CancelRun(ctx context.Context, r transport.CancelRu
 func (p *continuityProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
 	p.requests = append(p.requests, r)
 	if p.base != nil {
+		started := time.Now()
 		stream, err := p.base.StartRun(ctx, r)
 		if err != nil {
 			return nil, err
@@ -79,6 +81,14 @@ func (p *continuityProvider) StartRun(ctx context.Context, r transport.StartRunR
 		wrapped := make(chan transport.TransportEvent, 32)
 		go func() {
 			defer close(wrapped)
+			defer func() {
+				p.mu.Lock()
+				defer p.mu.Unlock()
+				if p.elapsed == nil {
+					p.elapsed = map[string]int64{}
+				}
+				p.elapsed[r.Context.RunID] = time.Since(started).Milliseconds()
+			}()
 			for {
 				select {
 				case <-ctx.Done():
@@ -153,6 +163,9 @@ type continuityReport struct {
 	Answers         []json.RawMessage `json:"continuation_answers"`
 	ForegroundCalls int               `json:"foreground_calls"`
 	BackgroundCalls int               `json:"background_calls"`
+	BaselineRunIDs  []string          `json:"baseline_run_ids"`
+	CompactedRunIDs []string          `json:"compacted_run_ids"`
+	BackgroundIDs   []string          `json:"background_operation_ids"`
 }
 
 func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuityProvider, manifestPath string, rounds int, model string, b *budget.Controller) continuityReport {
@@ -166,6 +179,11 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 	if _, err := pool.Exec(ctx, `INSERT INTO sessions(session_key,user_id,channel)VALUES('continuity','owner','web');INSERT INTO tasks(task_id,session_key,owner_id,goal,status,constraints_json,working_json)VALUES('continuity-task','continuity','owner','Подготовить отчёт и черновик письма','active','["Исключить сентябрь", "Сначала показать черновик; не отправлять"]','{"plan":["Собрать и проверить данные"],"pending_actions":["Проверить неизвестный эффект отправки"],"scratch":{"tool_effect":"unknown","owner_export":"artifact:owner-export-v2"}}');INSERT INTO runs(run_id,session_key,task_id,task_revision,input_event_id,status,autonomy_mode,current_state,model_provider,started_at,updated_at)VALUES('seed','continuity','continuity-task',1,'seed','completed','mode_1','completed','antigravity',clock_timestamp(),clock_timestamp());INSERT INTO tool_calls(tool_call_id,run_id,tool_name,args,status,runtime_target,started_at)VALUES('mail-unknown','seed','mail.send','{}','unknown','test',clock_timestamp())`); err != nil {
 		t.Fatal(err)
 	}
+	// The baseline has independent transcript/task/run identities. Neither arm
+	// can read the other arm's model answers as evidence for its own answer.
+	if _, err := pool.Exec(ctx, `INSERT INTO sessions(session_key,user_id,channel)VALUES('continuity-baseline','owner','web');INSERT INTO tasks(task_id,session_key,owner_id,goal,status,constraints_json,working_json) SELECT 'continuity-baseline-task','continuity-baseline',owner_id,goal,status,constraints_json,working_json FROM tasks WHERE task_id='continuity-task';INSERT INTO runs(run_id,session_key,task_id,task_revision,input_event_id,status,autonomy_mode,current_state,model_provider,started_at,updated_at)VALUES('seed-baseline','continuity-baseline','continuity-baseline-task',1,'seed-baseline','completed','mode_1','completed','antigravity',clock_timestamp(),clock_timestamp());INSERT INTO tool_calls(tool_call_id,run_id,tool_name,args,status,runtime_target,started_at)VALUES('mail-unknown-baseline','seed-baseline','mail.send','{}','unknown','test',clock_timestamp())`); err != nil {
+		t.Fatal(err)
+	}
 	ts := transcript.NewStore(pool)
 	counter := 0
 	appendBlock := func(statements []string) {
@@ -176,8 +194,10 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 				role = "user"
 				text = statements[(i/3)%len(statements)]
 			}
-			if _, err := ts.AppendMessage(ctx, transcript.Message{SessionKey: "continuity", RunID: "seed", Role: role, Content: text}); err != nil {
-				t.Fatal(err)
+			for _, original := range []struct{ session, run string }{{"continuity", "seed"}, {"continuity-baseline", "seed-baseline"}} {
+				if _, err := ts.AppendMessage(ctx, transcript.Message{SessionKey: original.session, RunID: original.run, Role: role, Content: text}); err != nil {
+					t.Fatal(err)
+				}
 			}
 		}
 	}
@@ -186,7 +206,7 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 	lastRun := "seed"
 	for round := 0; round < rounds; round++ {
 		if round > 0 {
-			if _, err := pool.Exec(ctx, `UPDATE tasks SET revision=revision+1,constraints_revision=constraints_revision+1,constraints_json=constraints_json||jsonb_build_array($1::text) WHERE task_id='continuity-task'`, fmt.Sprintf("Уточнение %d: сбор не останавливать; экспорт хозяином выполнен; сентябрь исключить", round)); err != nil {
+			if _, err := pool.Exec(ctx, `UPDATE tasks SET revision=revision+1,constraints_revision=constraints_revision+1,constraints_json=constraints_json||jsonb_build_array($1::text) WHERE task_id IN ('continuity-task','continuity-baseline-task')`, fmt.Sprintf("Уточнение %d: сбор не останавливать; экспорт хозяином выполнен; сентябрь исключить", round)); err != nil {
 				t.Fatal(err)
 			}
 			appendBlock([]string{fmt.Sprintf("Уточнение %d: остановлена только отправка. Сбор не останавливай; экспорт я выполнил сам. Сентябрь исключить; сперва черновик; эффект неизвестен.", round)})
@@ -220,14 +240,16 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 		for _, arm := range []string{"baseline", "compacted"} {
 			var reader flow.SessionSummaryReader
 			limit := 300000
+			sessionKey, taskID := "continuity-baseline", "continuity-baseline-task"
 			if arm == "compacted" {
 				reader = summary.NewStore(pool)
 				limit = 65536
+				sessionKey, taskID = "continuity", "continuity-task"
 			}
 			executor := flow.NewService(session.NewPostgresRepository(pool), session.NewPostgresLeaseManager(pool), runservice.NewService(runservice.NewPostgresRepository(pool), nil), ts, provider, flow.Config{ProviderName: "antigravity", ModelName: model, OwnerID: "owner", LeaseTTL: 120, Tasks: task.NewStore(pool), SummaryReader: reader, ContextBudgetTokens: limit, Budgets: b, MemorySources: cat, Completion: completion.New(pool)}, slog.New(slog.NewTextHandler(io.Discard, nil)))
 			id := fmt.Sprintf("continuity-%d-%s", round, arm)
-			payload, _ := json.Marshal(map[string]string{"text": continuityQuestion, "user_id": "owner", "task_id": "continuity-task"})
-			result, err := executor.Execute(ctx, ingress.InputEvent{EventID: id, IdempotencyKey: id, SessionKey: "continuity", Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: string(payload), CreatedAt: time.Now()})
+			payload, _ := json.Marshal(map[string]string{"text": continuityQuestion, "user_id": "owner", "task_id": taskID})
+			result, err := executor.Execute(ctx, ingress.InputEvent{EventID: id, IdempotencyKey: id, SessionKey: sessionKey, Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: string(payload), CreatedAt: time.Now()})
 			if err != nil {
 				t.Fatal("ordinary continuation", round, arm, continuityDiagnostic(provider, err))
 			}
@@ -240,10 +262,15 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 				t.Fatalf("continuation quality failed %s: %s", arm, output)
 			}
 			report.Answers = append(report.Answers, json.RawMessage(output))
-			lastRun = result.RunID
+			if arm == "compacted" {
+				lastRun = result.RunID
+				report.CompactedRunIDs = append(report.CompactedRunIDs, result.RunID)
+			} else {
+				report.BaselineRunIDs = append(report.BaselineRunIDs, result.RunID)
+			}
 			req := provider.requests[len(provider.requests)-1]
 			input, _ := json.Marshal(req.InputItems)
-			if !strings.Contains(string(input), "continuity-task") || !strings.Contains(string(input), "authenticated durable owner state") || !strings.Contains(string(input), "tool_effect") || !strings.Contains(string(input), "unknown") {
+			if !strings.Contains(string(input), taskID) || !strings.Contains(string(input), "authenticated durable owner state") || !strings.Contains(string(input), "tool_effect") || !strings.Contains(string(input), "unknown") {
 				t.Fatal("typed state missing from actual model context")
 			}
 			if arm == "baseline" {
@@ -262,6 +289,21 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 	}
 	if err := pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM execution_model_attempts),(SELECT count(*) FROM memory_model_attempts)`).Scan(&report.ForegroundCalls, &report.BackgroundCalls); err != nil || report.ForegroundCalls != 2*rounds || report.BackgroundCalls != rounds {
 		t.Fatal("full ledger mismatch", report, err)
+	}
+	rows, err := pool.Query(ctx, `SELECT operation_id FROM memory_model_attempts ORDER BY created_at,operation_id`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			t.Fatal(err)
+		}
+		report.BackgroundIDs = append(report.BackgroundIDs, id)
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatal(err)
 	}
 	return report
 }
