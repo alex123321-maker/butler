@@ -47,6 +47,23 @@ func TestOwnerRetiresOnlyInactiveTerminalGenerationPreservingSpendIntegration(t 
 	if _, err := maintenance.Retire(ctx, semantic.RetireRequest{GenerationID: second.GenerationID, ExpectedActiveID: second.GenerationID}); !errors.Is(err, semantic.ErrStale) {
 		t.Fatal("active generation erased", err)
 	}
+	// Constructor-owned projection is not a separate SQL immutability guarantee.
+	// Malformed administrative metadata must not authorize cross-scope erasure.
+	for _, mismatch := range []struct{ typ, id string }{{"session", "owner"}, {"user", "foreign-owner"}} {
+		if _, err := r.Catalog.Pool().Exec(ctx, `UPDATE memory_index_jobs SET scope_type=$2,scope_id=$3 WHERE job_id=$1`, first.JobID, mismatch.typ, mismatch.id); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := maintenance.Retire(ctx, q); !errors.Is(err, catalog.ErrDenied) {
+			t.Fatal("projection scope mismatch erased vectors", mismatch, err)
+		}
+		var vectors int
+		if err := r.Catalog.Pool().QueryRow(ctx, `SELECT count(*) FROM semantic_index_entries WHERE generation_id=$1`, first.GenerationID).Scan(&vectors); err != nil || vectors != 5 {
+			t.Fatal("denied projection changed derivative", vectors, err)
+		}
+	}
+	if _, err := r.Catalog.Pool().Exec(ctx, `UPDATE memory_index_jobs SET scope_type='user',scope_id='owner' WHERE job_id=$1`, first.JobID); err != nil {
+		t.Fatal(err)
+	}
 	// A terminal source snapshot can become obsolete without preventing erasure.
 	changed, err := r.Catalog.Correct(ctx, catalog.Correction{SourceID: src.ID, ExpectedRevision: src.Revision, Body: "Новое независимое содержимое; старый индекс недействителен."})
 	if err != nil {

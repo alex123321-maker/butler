@@ -38,15 +38,15 @@ func (s *Store) RetireTx(ctx context.Context, tx pgx.Tx, q RetireRequest) (Retir
 	}
 	// A generation has one owning index projection in the runtime. Fail closed
 	// if corrupted/ambiguous metadata associates a second job, even if terminal.
-	rows, err := tx.Query(ctx, `SELECT j.job_id,j.owner_id,j.kind,j.status FROM memory_aux_jobs j JOIN memory_index_jobs i USING(job_id) WHERE i.generation_id=$1 ORDER BY j.job_id LIMIT 2 FOR UPDATE OF j`, q.GenerationID)
+	rows, err := tx.Query(ctx, `SELECT j.job_id,j.owner_id,j.kind,j.status,i.scope_type,i.scope_id FROM memory_aux_jobs j JOIN memory_index_jobs i USING(job_id) WHERE i.generation_id=$1 ORDER BY j.job_id LIMIT 2 FOR UPDATE OF j`, q.GenerationID)
 	if err != nil {
 		return out, err
 	}
-	var owner, kind, status string
+	var owner, kind, status, scopeType, scopeID string
 	count := 0
 	for rows.Next() {
 		count++
-		if err = rows.Scan(&out.JobID, &owner, &kind, &status); err != nil {
+		if err = rows.Scan(&out.JobID, &owner, &kind, &status, &scopeType, &scopeID); err != nil {
 			rows.Close()
 			return out, err
 		}
@@ -65,6 +65,9 @@ func (s *Store) RetireTx(ctx context.Context, tx pgx.Tx, q RetireRequest) (Retir
 	g, err := readGeneration(ctx, tx, q.GenerationID, true)
 	if err != nil {
 		return Retirement{}, err
+	}
+	if g.Scope.Type != scopeType || g.Scope.ID != scopeID {
+		return Retirement{}, ErrAccess
 	}
 	var active string
 	err = tx.QueryRow(ctx, `SELECT generation_id FROM semantic_index_active WHERE scope_type=$1 AND scope_id=$2 FOR UPDATE`, g.Scope.Type, g.Scope.ID).Scan(&active)

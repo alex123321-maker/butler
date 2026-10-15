@@ -48,7 +48,9 @@ An authenticated owner may POST `/api/v4/memory/index-retire` with exactly one
 `generation_id` and the scope's exact `expected_active_id` (empty only when no
 pointer exists). This bounded maintenance path also works while local models and
 the indexing runtime are disabled. It needs no backend or inference allowance.
-The immutable index-job projection proves the owner; only a terminal
+The constructor-owned index-job projection and immutable job identity prove the
+owner; projection scope must exactly match the locked generation. The projection
+has no separate SQL immutability guarantee or public mutation API. Only a terminal
 `done`/`failed`/`cancelled` job is eligible. Pending/running, foreign, ambiguous,
 active or stale-CAS generations are rejected. Locks are job, generation, active
 pointer. Current source privacy/revisions do not prevent derivative erasure.

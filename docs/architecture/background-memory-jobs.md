@@ -238,9 +238,11 @@ broaden existing quote/candidate/summary handler authority or accept model rules
 
 Owner maintenance may retire one inactive semantic generation with the exact
 current active pointer as CAS precondition. It resolves the owning index job
-through its immutable projection and requires the authenticated owner and a
+through its constructor-owned projection and requires the authenticated owner and a
 terminal job (`done`, `failed` or `cancelled`). Ambiguous, pending, running,
-foreign, active or stale selections fail closed. The same transaction locks
+foreign, active or stale selections fail closed. The same transaction checks
+the exact projection scope against the locked generation; the projection has no
+separate SQL immutability guarantee or public mutation API. Lock order is
 job→generation→active pointer, removes only that generation's vector entries and
 records immutable retirement metadata; no source read or model/backend is used.
 Current source correction/privacy withdrawal must not block this erasure.
