@@ -49,6 +49,12 @@ An unchanged title/content hash can reuse a vector from the exact same space int
 a new generation after a citation/path change. This refreshes revision-bound
 citations without another model call; changed content never matches that hash.
 
+Exceeding the caller's finite source count returns `ErrSourceLimit` (also
+`errors.Is(ErrInvalid)` for compatibility). Owned indexing reports the explicit
+`scope_chunk_limit` outcome before inference instead of silently indexing a
+partial prefix. The Store ceiling100000 is separate from the owned runtime's
+maximum10000 chunks per generation; neither is a measured production SLO.
+
 Staged `Preview` evaluates without activation. `Verify` requires complete current
 coverage and a trusted reviewed quality artifact showing an improvement. `Activate`
 uses the expected previous ID; the same primitive rolls back to a still-current

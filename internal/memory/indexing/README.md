@@ -7,6 +7,13 @@ scope/limits/authority/source revisions must match. No orphan generation remains
 after a failed admission/projection. MaxConns2 is supported without nested pool
 borrowing. The worker claims only `index` jobs, retaining original run/task refs.
 
+An owner job admits at most10000 chunks per generation. More current chunks than
+its declared `max_chunks` fail before inference with `scope_chunk_limit`; no
+partial generation activates and no automatic limit increase or retry is made.
+The existing active pointer is unchanged. This is distinct from transport
+unavailability. The synthetic capacity screen and runbook describe measured
+Store limits separately from native indexing throughput and full user latency.
+
 Each IPC reserves exact declared local pricing under current claim/source/task,
 assigned goal/mandate and shared owner-day budgets. Its bounded context is used
 for actual inference. The job context wraps every Rebuild read/publication.

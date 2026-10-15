@@ -140,7 +140,7 @@ func readSources(ctx context.Context, db rowReader, scope Scope, limit int, lock
 		return nil, err
 	}
 	if count > limit {
-		return nil, ErrInvalid
+		return nil, ErrSourceLimit
 	}
 	return sources, nil
 }
