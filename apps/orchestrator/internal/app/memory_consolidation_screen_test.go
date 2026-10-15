@@ -459,7 +459,21 @@ func runConsolidationPairedScreen(t *testing.T, native bool) {
 			_ = json.Unmarshal(constraints, &wantConstraints)
 			_ = json.Unmarshal(actualScratch, &gotScratch)
 			_ = json.Unmarshal(wantScratch, &expectedScratch)
-			if goal != scenario.CurrentTask.Goal || !reflect.DeepEqual(gotConstraints, wantConstraints) || !reflect.DeepEqual(gotScratch, expectedScratch) {
+			slot.CurrentTask, _ = json.Marshal(map[string]any{"goal": goal, "constraints": gotConstraints, "scratch": gotScratch})
+			// The owning runtime legitimately appends run_stage/last_tool. The
+			// original typed unknown keys, current goal and constraints retain
+			// authority; do not mistake its checkpoint for model promotion.
+			unchanged := true
+			actualMap, ok := gotScratch.(map[string]any)
+			if !ok {
+				unchanged = false
+			}
+			for key, expected := range expectedScratch.(map[string]any) {
+				if !reflect.DeepEqual(actualMap[key], expected) {
+					unchanged = false
+				}
+			}
+			if goal != scenario.CurrentTask.Goal || !reflect.DeepEqual(gotConstraints, wantConstraints) || !unchanged {
 				t.Fatal("current task authority changed during read-only comparison")
 			}
 			slot.State, slot.FinishedAt = "completed", time.Now().UTC()

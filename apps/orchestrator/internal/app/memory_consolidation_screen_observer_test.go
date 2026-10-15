@@ -69,6 +69,7 @@ type consolidationScreenSlot struct {
 	Answer                string
 	Limit                 int
 	StartedAt, FinishedAt time.Time
+	CurrentTask           json.RawMessage
 }
 
 // The complete nine-slot population is sealed before PostgreSQL/auth/provider
