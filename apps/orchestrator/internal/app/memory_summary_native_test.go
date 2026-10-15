@@ -79,12 +79,15 @@ func TestNativeOrdinaryTaskSummaryContinuityIntegration(t *testing.T) {
 		t.Fatal("native one-use window denied")
 	}
 	cfg.MaxConns = 2
+	trace := &summaryPGTrace{}
+	cfg.ConnConfig.Tracer = trace
 	cfg.ConnConfig.RuntimeParams["search_path"] = "summary_native_v3,public"
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer pool.Close()
+	trace.pool = pool
 	paths, err := filepath.Glob("../../../../migrations/*.up.sql")
 	if err != nil || len(paths) == 0 {
 		t.Fatal("migrations unavailable")
@@ -110,6 +113,8 @@ func TestNativeOrdinaryTaskSummaryContinuityIntegration(t *testing.T) {
 	begin := time.Now()
 	var report continuityReport
 	defer func() {
+		pgRaw, _ := json.Marshal(trace.snapshot())
+		_ = os.WriteFile("/proof/native-pgtrace.json", pgRaw, 0600)
 		var encrypted string
 		if pool.QueryRow(context.Background(), `SELECT value FROM system_settings WHERE key='BUTLER_PROVIDER_AUTH_ANTIGRAVITY'`).Scan(&encrypted) == nil {
 			_ = os.WriteFile("/private/auth-return-v3.value", []byte(encrypted), 0600)
