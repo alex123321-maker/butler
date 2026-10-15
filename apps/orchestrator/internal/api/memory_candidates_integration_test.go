@@ -32,6 +32,7 @@ type candidateProvider struct {
 	source   catalog.Source
 	callback func()
 	output   string
+	inputs   []transport.InputItem
 }
 
 func (*candidateProvider) Name() string                    { return "antigravity" }
@@ -40,6 +41,7 @@ func (*candidateProvider) CancelRun(context.Context, transport.CancelRunRequest)
 	return nil, nil
 }
 func (p *candidateProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
+	p.inputs = r.InputItems
 	if e := transport.CheckInferenceAuthority(ctx); e != nil {
 		return nil, e
 	}
@@ -126,9 +128,67 @@ func (f *candidateFixture) source(key, body string) catalog.Source {
 	return s
 }
 func (f *candidateFixture) policy(id string, s catalog.Source, privacy string) jobs.ModelPolicyRequest {
+	return f.policyWithRun(id, s, privacy, "")
+}
+func (f *candidateFixture) policyWithRun(id string, s catalog.Source, privacy, run string) jobs.ModelPolicyRequest {
 	q := jobs.ModelPolicyRequest{ID: id, Handler: candidates.Version, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 2, Privacy: privacy, Job: jobs.Request{Sources: []catalog.SourceRef{{ID: s.ID, Revision: s.Revision, AccessRevision: s.AccessRevision, Hash: s.Hash}}, Allowance: budget.Units{ModelTurns: 4, Tokens: 10000, ActiveMillis: 10000, ProviderInputBytes: 4 * 8388608}, Deadline: time.Now().Add(time.Hour).UTC().Truncate(time.Microsecond)}}
+	q.Job.OriginalRunID = run
 	f.request("/api/v4/memory/model-policies", "POST", q, 201, nil)
 	return q
+}
+
+func TestCandidateTranscriptAndParsedSourcePreserveAncestorPrivacyIntegration(t *testing.T) {
+	for _, kind := range []string{"transcript", "parsed_document"} {
+		t.Run(kind, func(t *testing.T) {
+			f := newCandidateFixture(t)
+			ctx := context.Background()
+			_, err := f.pool.Exec(ctx, `INSERT INTO sessions(session_key,user_id,channel) VALUES('candidate-session','owner','web'); INSERT INTO runs(run_id,session_key,input_event_id,status,autonomy_mode,current_state,model_provider,started_at,updated_at) VALUES('candidate-run','candidate-session','event','completed','mode_1','completed','fixture',clock_timestamp(),clock_timestamp()); INSERT INTO messages(message_id,session_key,run_id,role,content) VALUES('earlier-user','candidate-session','candidate-run','user','EARLIER_PRIVATE_INPUT'),('earlier-answer','candidate-session','candidate-run','assistant','EARLIER_PRIVATE_ANSWER'),('preference-user','candidate-session','candidate-run','user','Предпочитаю ответы на русском языке.')`)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// Older migrated transcript sources legitimately retain previous-event
+			// privacy parents. Keep that graph rather than treating it as model input.
+			_, err = f.pool.Exec(ctx, `INSERT INTO memory_source_dependencies(child_source_id,parent_source_id,parent_revision) VALUES('message:preference-user','message:earlier-answer',1)`)
+			if err != nil {
+				t.Fatal(err)
+			}
+			src, err := f.catalog.Get(f.owner, "message:preference-user")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if kind == "parsed_document" {
+				src, err = f.catalog.Put(f.owner, catalog.PutSource{ExternalKey: "parsed-original", Kind: "document", ScopeType: "session", ScopeID: "candidate-session", Body: src.Body, Parents: []catalog.SourceRef{{ID: src.ID, Revision: src.Revision, AccessRevision: src.AccessRevision, Hash: src.Hash}}})
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			p := f.worker.Provider.(*candidateProvider)
+			p.source = src
+			f.policyWithRun("candidate-transcript-policy", src, "cloud_allowed", "candidate-run")
+			f.enable()
+			if err = f.process(); err != nil {
+				t.Fatal(err)
+			}
+			cs := f.claims()
+			if len(cs) != 1 || cs[0].SourceID != src.ID || cs[0].ScopeType != "session" || cs[0].ScopeID != "candidate-session" {
+				t.Fatal(cs)
+			}
+			if len(p.inputs) != 2 || strings.Contains(p.inputs[1].Content, "EARLIER_PRIVATE") {
+				t.Fatal("ancestor text was released as extraction input", p.inputs)
+			}
+			var dependencies int
+			if err = f.pool.QueryRow(ctx, `SELECT count(*) FROM memory_source_dependencies WHERE child_source_id=(SELECT result_source_id FROM memory_model_attempts WHERE state='published')`).Scan(&dependencies); err != nil || dependencies < 3 {
+				t.Fatal("privacy manifest lost", dependencies, err)
+			}
+			f.request("/api/v4/memory/decisions", "POST", catalog.Decision{ClaimID: cs[0].ID}, 200, nil)
+			var profileID int64
+			_ = f.pool.QueryRow(ctx, `SELECT profile_id FROM memory_claims WHERE claim_id=$1`, cs[0].ID).Scan(&profileID)
+			f.request("/api/v4/memory/correct", "POST", catalog.Correction{SourceID: "message:earlier-user", ExpectedRevision: 1, Body: "EARLIER_CORRECTED"}, 200, nil)
+			if err = f.catalog.CheckObjects(f.owner, []catalog.ObjectRef{{Type: "profile", ID: profileID}}, "memory_read"); err == nil {
+				t.Fatal("ancestor correction failed to invalidate accepted claim")
+			}
+		})
+	}
 }
 func (f *candidateFixture) process() error {
 	f.t.Helper()

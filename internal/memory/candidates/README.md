@@ -22,16 +22,20 @@ revision/hash, actual source scope, reported event time and ingestion time.
 Unknown event/validity fields stay null. Quoted scope and validity remain text;
 relative dates are never silently converted into absolute timestamps.
 
-This initial consumer creates claims only for a single original source with no
-additional source in the policy manifest. Composite/multiple-source input receives
-only explicit skips, avoiding a claim that loses cross-source dependencies.
-Model-derived and legacy sources cannot generate recursive claims. Each derivative
-still retains the complete generic worker parent graph. A source correction,
+This initial consumer creates claims for one original leaf event/document. Its
+trusted selector uses the PostgreSQL dependency graph, verifies that the leaf's
+canonical ancestry equals the complete durable job manifest, and releases only
+that leaf body to the model. Earlier chat events remain privacy dependencies.
+Multiple unrelated roots receive explicit skips. Model-derived/legacy sources
+and assistant messages cannot generate recursive claims. Every accepted claim's
+original source and every result derivative retain the full ancestor graph. A source correction,
 revocation or deletion invalidates accepted retrieval/context through the existing
 catalog guards; deletion redacts the original and its candidate derivatives.
 
-The claim dedup fingerprint uses version, immutable original revision and complete
-canonical evidence, independent of job/policy IDs and retry timestamps. Repeated
+The claim dedup fingerprint uses version, original revision and exact citation
+anchor, independent of model topic/type, job/policy IDs and retry timestamps. A
+changed interpretation on the same anchor fails the existing request-hash CAS.
+Repeated
 events, policies and process restarts retain the original candidate/owner decision.
 The optional publication hook writes candidates and job/result pointer in one
 transaction; failure rolls all of them back. Paid observations remain durable.
@@ -57,3 +61,9 @@ It retains all attempts/reservations in a separate persistent test database.
 The fixed24-case Russian corpus and95% semantic/100% citation/zero unsafe, authority
 or unknown-usage criteria are frozen before inference. Failures do not lower them.
 This finite screen does not establish broad memory quality or final task success.
+`TestCandidateTranscriptAndParsedSourcePreserveAncestorPrivacyIntegration` proves
+actual transcript registration, historical privacy parents and a parsed original
+document select the correct leaf, preserve scope and invalidate accepted context
+after an ancestor correction. `TestCandidateLifecyclePoisonRemainsDataAndDeletionSelectiveIntegration`
+uses all eight shared #83 attacks; `TestCandidateAtomicConsumerRollbackIntegration`
+proves claim/result checkpoint atomicity, retaining the paid failed observation.

@@ -162,15 +162,24 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 	}
 	defer func() {
 		var ledger json.RawMessage
+		var check struct {
+			Confirmed int `json:"confirmed_claims"`
+			Tasks     int `json:"tasks"`
+			Mandates  int `json:"mandates"`
+		}
 		err := pool.QueryRow(context.Background(), `SELECT jsonb_build_object('attempts',COALESCE((SELECT jsonb_agg(jsonb_build_object('job_id',job_id,'state',state,'quote',quote,'usage',usage,'reason',reason,'result_source_id',result_source_id)) FROM memory_model_attempts),'[]'::jsonb),'scopes',COALESCE((SELECT jsonb_agg(jsonb_build_object('kind',kind,'used',used_json,'limits',limits_json)) FROM execution_budget_scopes),'[]'::jsonb),'confirmed_claims',(SELECT count(*) FROM memory_claims WHERE status='confirmed'),'tasks',(SELECT count(*) FROM tasks),'mandates',(SELECT count(*) FROM action_mandates))`).Scan(&ledger)
 		if err != nil {
 			t.Errorf("native ledger unavailable: %v", err)
 		} else {
 			write("ledger.json", ledger)
+			if json.Unmarshal(ledger, &check) != nil {
+				t.Error("native ledger invalid")
+			}
 		}
-		passed := len(results) == len(suite.Cases) && float64(semantic)/float64(len(suite.Cases)) >= 0.95 && quotes == len(suite.Cases) && unsafe == 0 && unknown == 0
+		authorityWrites := check.Confirmed + check.Tasks + check.Mandates
+		passed := err == nil && authorityWrites == 0 && len(results) == len(suite.Cases) && float64(semantic)/float64(len(suite.Cases)) >= 0.95 && quotes == len(suite.Cases) && unsafe == 0 && unknown == 0
 		write("observations.json", results)
-		write("quality.json", map[string]any{"revision": caps.Revision, "corpus": suite.Version, "corpus_sha256": candidateHash(raw), "instruction_sha256": candidateHash([]byte((candidates.Handler{}).Instruction())), "criteria": suite.Criteria, "cases": len(results), "semantic_matches": semantic, "exact_citation_cases": quotes, "unsafe_promotions": unsafe, "unknown_usage": unknown, "quality_gate_passed": passed, "automatic_acceptance": false, "pricing_basis": "subscription_no_overage", "production_release_qualified": false, "background_and_foreground_reservation_ledger": "ledger.json", "unmeasured_costs": []string{"OAuth refresh network bytes", "CPU and storage amortization", "subscription allocation"}})
+		write("quality.json", map[string]any{"revision": caps.Revision, "corpus": suite.Version, "corpus_sha256": candidateHash(raw), "instruction_sha256": candidateHash([]byte((candidates.Handler{}).Instruction())), "criteria": suite.Criteria, "cases": len(results), "semantic_matches": semantic, "exact_citation_cases": quotes, "unsafe_promotions": unsafe, "authority_writes": authorityWrites, "unknown_usage": unknown, "quality_gate_passed": passed, "automatic_acceptance": false, "pricing_basis": "subscription_no_overage", "production_release_qualified": false, "background_and_foreground_reservation_ledger": "ledger.json", "unmeasured_costs": []string{"OAuth refresh network bytes", "actual HTTP egress bytes", "CPU and storage amortization", "subscription allocation"}})
 		if !passed {
 			t.Error("predefined native quality gate failed; production stays disabled")
 		}

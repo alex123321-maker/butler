@@ -36,6 +36,13 @@ type ModelHandler interface {
 type ModelPublicationHandler interface {
 	PublishTx(context.Context, pgx.Tx, *catalog.Store, Job, ModelAttempt, []catalog.Source, catalog.Source, string) error
 }
+
+// ModelInputSelector narrows model-visible bodies without weakening the complete
+// durable source manifest used by admission, supervision and publication. It runs
+// in the existing admission transaction after every source is locked/checked.
+type ModelInputSelector interface {
+	InputSourcesTx(context.Context, pgx.Tx, *catalog.Store, Job, []catalog.Source) ([]catalog.Source, error)
+}
 type ModelWorker struct {
 	Jobs     *Store
 	Provider transport.ModelProvider
@@ -112,7 +119,10 @@ func (w *ModelWorker) quote() (budget.Units, error) {
 	} // Leave publication time inside 2m claim.
 	return p.ModelQuote(w.Provider.Name(), w.Model, input)
 }
-func (w *ModelWorker) Admit(ctx context.Context, j Job) (ModelAttempt, []catalog.Source, error) {
+func (w *ModelWorker) Admit(ctx context.Context, j Job, handlers ...ModelHandler) (ModelAttempt, []catalog.Source, error) {
+	if len(handlers) > 1 {
+		return ModelAttempt{}, nil, ErrClaim
+	}
 	var a ModelAttempt
 	quote, e := w.quote()
 	if e != nil {
@@ -202,6 +212,14 @@ func (w *ModelWorker) Admit(ctx context.Context, j Job) (ModelAttempt, []catalog
 		return a, nil, e
 	}
 	a = ModelAttempt{op, admission.ReservationID, deadline, quote}
+	if len(handlers) == 1 {
+		if h, ok := handlers[0].(ModelInputSelector); ok {
+			sources, e = h.InputSourcesTx(ctx, tx, s.catalog, j, sources)
+			if e != nil {
+				return a, nil, e
+			}
+		}
+	}
 	return a, sources, tx.Commit(ctx)
 }
 
@@ -458,7 +476,7 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 		_ = s.Finish(finish, j, code, retry)
 	}()
 	var sources []catalog.Source
-	a, sources, err = w.Admit(ctx, j)
+	a, sources, err = w.Admit(ctx, j, h)
 	if err != nil {
 		return err
 	}
