@@ -99,7 +99,10 @@ func newConsumerFixture(t *testing.T, pools ...*pgxpool.Pool) *consumerFixture {
 	cat := catalog.New(pool, m)
 	bp := budget.DefaultPolicy()
 	bp.Models["antigravity:fixture"] = budget.ModelPrice{Basis: "subscription_no_overage"}
-	bp.ModelMillis = 1000
+	// This fixture verifies durable coverage, not a one-second latency target.
+	// The same finite allowance covers full pre-HTTP and publication proofs under
+	// race instrumentation; the independent authority supervisor stays at200ms.
+	bp.ModelMillis = 10000
 	b := budget.NewController(pool, bp)
 	b.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	js := jobs.New(pool, cat, b, nil)
@@ -111,7 +114,7 @@ func newConsumerFixture(t *testing.T, pools ...*pgxpool.Pool) *consumerFixture {
 	f := &consumerFixture{pool: pool, cat: cat, js: js, ctx: ctx, provider: p, manifestPath: manifestPath}
 	f.worker = &jobs.ModelWorker{Jobs: js, Provider: p, Model: "fixture", Handlers: map[string]jobs.ModelHandler{HandlerName: Consumer{ContextBudget: 4096}}}
 	f.append(t, 12)
-	q := jobs.ModelPolicyRequest{ID: "summary-policy-test", Handler: HandlerName, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 4, Privacy: "cloud_allowed", Job: jobs.Request{OriginalRunID: "run", Allowance: budget.Units{ModelTurns: 4, Tokens: 200000, ActiveMillis: 10000, ProviderInputBytes: 64 * 1024 * 1024}, Deadline: time.Now().Add(time.Hour)}}
+	q := jobs.ModelPolicyRequest{ID: "summary-policy-test", Handler: HandlerName, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 4, Privacy: "cloud_allowed", Job: jobs.Request{OriginalRunID: "run", Allowance: budget.Units{ModelTurns: 4, Tokens: 200000, ActiveMillis: 40000, ProviderInputBytes: 64 * 1024 * 1024}, Deadline: time.Now().Add(time.Hour)}}
 	var err error
 	f.policy, err = (&Policies{Catalog: cat, Jobs: js}).Create(ctx, PolicyRequest{SessionKey: "session", Policy: q})
 	if err != nil {
@@ -216,7 +219,7 @@ func TestSummaryThresholdAndEqualEventCoalescingIntegration(t *testing.T) {
 func (f *consumerFixture) jsBudget() *budget.Controller {
 	bp := budget.DefaultPolicy()
 	bp.Models["antigravity:fixture"] = budget.ModelPrice{Basis: "subscription_no_overage"}
-	bp.ModelMillis = 1000
+	bp.ModelMillis = 10000
 	b := budget.NewController(f.pool, bp)
 	b.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	return b
