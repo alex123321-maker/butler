@@ -425,6 +425,9 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 				if status := transport.DiagnosticHTTPStatus(err); status != 0 {
 					attemptCode += fmt.Sprintf("_http_%d", status)
 				}
+				if reason := transport.DiagnosticReason(err); reason != "" {
+					attemptCode += ":" + reason
+				}
 			}
 			_, _ = s.pool.Exec(finish, `UPDATE memory_model_attempts SET state='failed',reason=$2 WHERE operation_id=$1 AND state<>'published'`, a.OperationID, attemptCode)
 		}

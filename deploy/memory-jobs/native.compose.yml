@@ -30,7 +30,7 @@ services:
       BUTLER_TELEGRAM_BOT_TOKEN: ''
       HTTPS_PROXY: http://issue82-proxy:18080
       NO_PROXY: localhost,127.0.0.1,postgres,redis
-      BUTLER_EXECUTION_BUDGET_POLICY_JSON: '{"model_millis":90000,"day":{"model_turns":3,"tokens":3170304,"active_millis":270000,"provider_input_bytes":25165824},"models":{"antigravity:gemini-3.8-flash-tiered":{"basis":"subscription_no_overage"}}}'
+      BUTLER_EXECUTION_BUDGET_POLICY_JSON: '{"model_millis":90000,"task":{"model_turns":2,"tokens":2113536,"active_millis":180000,"provider_input_bytes":16777216},"conversation":{"model_turns":1,"tokens":1056768,"active_millis":90000,"provider_input_bytes":8388608},"models":{"antigravity:gemini-3.8-flash-tiered":{"basis":"subscription_no_overage"}}}'
     volumes:
       - ${ISSUE82_ROOT:?}/current:/src:ro
       - ${ISSUE82_ROOT:?}/reports:/proof:ro

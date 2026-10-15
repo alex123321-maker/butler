@@ -20,7 +20,7 @@ import (
 )
 
 func main() {
-	action := flag.String("action", "state", "Antigravity operator action: import, resolve, state, audit-origin, disconnect, smoke")
+	action := flag.String("action", "state", "Antigravity operator action: import, resolve, inspect, diagnose-auth, quota, state, audit-origin, disconnect, smoke")
 	flag.Parse()
 	if err := execute(*action); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -57,6 +57,48 @@ func execute(action string) error {
 			return err
 		}
 		fmt.Println("Antigravity access token resolved.")
+	case "inspect":
+		status, err := m.State(ctx, modelprovider.ProviderAntigravity)
+		if err != nil {
+			return err
+		}
+		return json.NewEncoder(os.Stdout).Encode(inspectAuth(status, time.Now()))
+	case "quota":
+		model := os.Getenv("BUTLER_ANTIGRAVITY_MODEL")
+		if model == "" {
+			model = antigravity.DefaultModel
+		}
+		if model != antigravity.DefaultModel && model != antigravity.FlashHighModel {
+			return fmt.Errorf("unsupported quota model")
+		}
+		quota, err := observeQuota(ctx, m, model)
+		if err != nil {
+			return err
+		}
+		return json.NewEncoder(os.Stdout).Encode(quota)
+	case "diagnose-auth":
+		before, err := m.State(ctx, modelprovider.ProviderAntigravity)
+		if err != nil {
+			return err
+		}
+		var trace []providerauth.AntigravityDiagnostic
+		beforeState := inspectAuth(before, time.Now())
+		call := providerauth.WithAntigravityDiagnostics(ctx, func(d providerauth.AntigravityDiagnostic) { trace = append(trace, d) })
+		_, resolveErr := m.ResolveAntigravity(call)
+		after, stateErr := m.State(ctx, modelprovider.ProviderAntigravity)
+		if err := json.NewEncoder(os.Stdout).Encode(struct {
+			Before        any                                  `json:"before"`
+			After         any                                  `json:"after"`
+			Resolved      bool                                 `json:"resolved"`
+			UnsafeRefresh bool                                 `json:"unsafe_refresh"`
+			Trace         []providerauth.AntigravityDiagnostic `json:"trace"`
+		}{beforeState, inspectAuth(after, time.Now()), resolveErr == nil && stateErr == nil, providerauth.UnsafeAntigravityRefresh(trace), trace}); err != nil {
+			return err
+		}
+		if resolveErr != nil || stateErr != nil {
+			return fmt.Errorf("Antigravity auth diagnosis failed; inspect the fixed diagnostic trace")
+		}
+		return nil
 	case "audit-origin":
 		report, err := m.AuditAntigravityOrigin(ctx, os.Stdin)
 		if err != nil {

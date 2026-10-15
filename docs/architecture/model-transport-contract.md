@@ -64,6 +64,11 @@ response bodies/headers remain excluded. Memory-eval also projects six exact
 transport-owned protocol literals onto fixed reason codes, never substring
 matches or arbitrary error text. Earlier lost statuses/reasons remain unknown.
 These fields observe a failed admission and grant no retry or continuation.
+For401/403, a bounded private ErrorInfo/status envelope may additionally project
+exact token-expiry, scope, service/billing, IAM/location or generic auth-denial
+classes onto an allowlist. It never copies messages or metadata and never
+triggers automatic refresh/retry/inference. A class is an upstream claim;
+connected state, a renewed token and a positive quota meter are separate facts.
 For400/422, a64KiB private INVALID_ARGUMENT envelope can be projected onto four
 fixed diagnostic classes (unknown minItems/maxItems, response-schema rejection,
 other invalid argument). `DiagnosticReason` rejects all other strings. Provider

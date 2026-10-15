@@ -233,7 +233,9 @@ func statusErrorKind(status int, body io.Reader) error {
 		}
 		return providerError(transport.ErrorTypeRateLimited, "Antigravity upstream rejected the request (HTTP 429)")
 	case http.StatusUnauthorized, http.StatusForbidden:
-		return providerError(transport.ErrorTypeProviderUnavailable, "Antigravity account access was rejected; reconnect through the private control plane")
+		failure := providerError(transport.ErrorTypeProviderUnavailable, "Antigravity account access was rejected; inspect private control-plane diagnostics").(*transport.Error)
+		failure.SafeReason = authRejectionReason(body)
+		return failure
 	case http.StatusRequestTimeout, http.StatusGatewayTimeout:
 		return providerError(transport.ErrorTypeProviderTimeout, "Antigravity request timed out")
 	default:
@@ -246,6 +248,57 @@ func statusErrorKind(status int, body io.Reader) error {
 		}
 		return failure
 	}
+}
+
+// Only exact upstream classifications cross the boundary. No message, project,
+// account, metadata, field path or response bytes survive this projection.
+func authRejectionReason(body io.Reader) string {
+	data, err := io.ReadAll(io.LimitReader(body, 64*1024+1))
+	defer clear(data)
+	if err != nil || len(data) > 64*1024 {
+		return ""
+	}
+	if _, err = strictJSON(data); err != nil {
+		return ""
+	}
+	var envelope struct {
+		Error struct {
+			Status  string `json:"status"`
+			Details []struct {
+				Type   string `json:"@type"`
+				Reason string `json:"reason"`
+			} `json:"details"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(data, &envelope) != nil {
+		return ""
+	}
+	for _, d := range envelope.Error.Details {
+		if d.Type != "type.googleapis.com/google.rpc.ErrorInfo" {
+			continue
+		}
+		switch d.Reason {
+		case "ACCESS_TOKEN_EXPIRED":
+			return "upstream_access_token_expired"
+		case "ACCESS_TOKEN_SCOPE_INSUFFICIENT":
+			return "upstream_scope_insufficient"
+		case "SERVICE_DISABLED":
+			return "upstream_service_disabled"
+		case "BILLING_DISABLED":
+			return "upstream_billing_disabled"
+		case "IAM_PERMISSION_DENIED":
+			return "upstream_iam_denied"
+		case "LOCATION_POLICY_VIOLATED":
+			return "upstream_location_policy"
+		}
+	}
+	if envelope.Error.Status == "UNAUTHENTICATED" {
+		return "upstream_unauthenticated"
+	}
+	if envelope.Error.Status == "PERMISSION_DENIED" {
+		return "upstream_permission_denied"
+	}
+	return ""
 }
 
 // Like HIGH_DEMAND, this reads a bounded private envelope and exports only a
