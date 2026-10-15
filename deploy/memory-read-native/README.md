@@ -40,3 +40,7 @@ untouched. JSONL-less full product evidence is retained in PG and `ledger.json`,
 including every attempt's observed usage or honest SQL NULL. A failed window is
 retained and cannot be relabeled successful. Exact code/evidence acceptance is
 separate from general memory/model quality and original task verification.
+
+The retained full-product native run, conservative usage audit and scoped
+transport preflight are recorded in
+[`issue-86-memory-read-native.md`](../../docs/testing/issue-86-memory-read-native.md).
