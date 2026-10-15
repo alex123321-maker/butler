@@ -38,6 +38,14 @@ func (f *fixture) ReadDispatched(context.Context, Envelope) (Result, error) {
 func TestPrivateReadHTTPDoesNotFollowRedirectOrProxy(t *testing.T) {
 	f := &fixture{}
 	token := strings.Repeat("synthetic-private-", 3)
+	if _, e := NewClient("http://orchestrator:8080"+Path, token); e != nil {
+		t.Fatal("canonical Compose owner rejected", e)
+	}
+	for _, endpoint := range []string{"http://other:8080" + Path, "http://orchestrator:9090" + Path, "http://orchestrator.example:8080" + Path, "http://user:secret@orchestrator:8080" + Path} {
+		if _, e := NewClient(endpoint, token); e == nil {
+			t.Fatal("unpinned private topology admitted", endpoint)
+		}
+	}
 	h, e := NewHandler(token, f)
 	if e != nil {
 		t.Fatal(e)

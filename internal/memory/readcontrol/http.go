@@ -24,7 +24,15 @@ type Client struct {
 
 func NewClient(endpoint, token string) (*Client, error) {
 	u, err := url.Parse(endpoint)
-	if err != nil || u.Hostname() == "" || u.User != nil || u.RawQuery != "" || u.ForceQuery || u.Opaque != "" || u.Fragment != "" || u.Path != Path || u.RawPath != "" || !validToken(token) || u.Scheme != "https" && (u.Scheme != "http" || net.ParseIP(u.Hostname()) == nil || !net.ParseIP(u.Hostname()).IsLoopback()) {
+	if err != nil {
+		return nil, ErrDenied
+	}
+	// The only plain-HTTP service hostname is the fixed Docker Compose owning
+	// service. Endpoint selection is operator-only, never model-selected. Other
+	// remote hosts require TLS; loopback IPs support local/hybrid development.
+	ip := net.ParseIP(u.Hostname())
+	privateHTTP := u.Scheme == "http" && (u.Host == "orchestrator:8080" || ip != nil && ip.IsLoopback())
+	if u.Hostname() == "" || u.User != nil || u.RawQuery != "" || u.ForceQuery || u.Opaque != "" || u.Fragment != "" || u.Path != Path || u.RawPath != "" || !validToken(token) || u.Scheme != "https" && !privateHTTP {
 		return nil, ErrDenied
 	}
 	t := http.DefaultTransport.(*http.Transport).Clone()

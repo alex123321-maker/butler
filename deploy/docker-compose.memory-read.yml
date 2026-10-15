@@ -1,0 +1,9 @@
+# Optional fixed memory DATA read composition. Both gates default false.
+services:
+  orchestrator:
+    environment:
+      BUTLER_MEMORY_READ_ENABLED: ${BUTLER_MEMORY_READ_ENABLED:-false}
+  tool-broker:
+    environment:
+      BUTLER_MEMORY_READ_ENABLED: ${BUTLER_MEMORY_READ_ENABLED:-false}
+      BUTLER_MEMORY_READ_CONTROL_URL: http://orchestrator:8080/internal/memory-read
