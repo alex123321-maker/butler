@@ -13,6 +13,14 @@ ambiguities before execution. The runner never sends expected facts, source
 selection rules, split names or review labels to the answering model. Oracle mode
 intentionally supplies only the declared sufficient original sources.
 
+Self-contained current questions may explicitly declare `evidence_basis=question`.
+They are answerable without an oracle history source; the corpus must not invent
+one to satisfy a history-only loader. The independent grounded review supplies
+`question_evidence.quote` copied exactly from the actual current input. Original
+case/input binding and quote authenticity remain checked, while whether an answer
+follows from that question remains a fallible semantic annotation. Older cases
+default to history evidence and retain their original oracle requirement and bytes.
+
 An ordinary language explanation of missing information is acceptable. A missing
 fact is not a negated fact. An uncertain or partial answer must not silently become
 a positive claim. Plausible but unsupported assertions fail grounding even if they

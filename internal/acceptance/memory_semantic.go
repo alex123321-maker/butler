@@ -33,10 +33,11 @@ type MemorySemanticCase struct {
 	ForbiddenClaims []string       `json:"forbidden_claims"`
 	OracleSourceIDs []string       `json:"oracle_source_ids"`
 	RepeatRetrieval bool           `json:"repeat_retrieval"`
+	EvidenceBasis   string         `json:"evidence_basis,omitempty"`
 }
 
 func (c MemorySemanticCase) MemoryCase() MemoryCase {
-	return MemoryCase{ID: c.ID, Question: c.Question, AsOfUTC: c.AsOfUTC, Task: c.Task, History: c.History, Coverage: c.Coverage}
+	return MemoryCase{ID: c.ID, Question: c.Question, AsOfUTC: c.AsOfUTC, Task: c.Task, History: c.History, Coverage: c.Coverage, EvidenceBasis: c.EvidenceBasis}
 }
 
 type MemorySemanticSuite struct {
@@ -52,6 +53,12 @@ func (s MemorySemanticSuite) Validate() error {
 	}
 	ids := map[string]bool{}
 	for _, c := range s.Cases {
+		if c.EvidenceBasis != "" && c.EvidenceBasis != "history" && c.EvidenceBasis != "question" {
+			return errors.New("declared history or question evidence basis required")
+		}
+		if c.EvidenceBasis == "question" && (!c.Answerable || len(c.OracleSourceIDs) != 0) {
+			return errors.New("self-contained question cannot use a fabricated history oracle")
+		}
 		if ids[c.ID] || c.ID == "" || c.Question == "" || c.Task.Instruction == "" || len(c.RequiredFacts) == 0 || len(c.History) > 64 {
 			return errors.New("unique question, task and factual rubric required")
 		}
@@ -78,7 +85,7 @@ func (s MemorySemanticSuite) Validate() error {
 				}
 			}
 		}
-		if c.Answerable && len(c.OracleSourceIDs) == 0 {
+		if c.Answerable && c.EvidenceBasis != "question" && len(c.OracleSourceIDs) == 0 {
 			return errors.New("answerable oracle evidence required")
 		}
 	}
@@ -94,26 +101,27 @@ type MemorySemanticEvidence struct {
 	Availability string `json:"availability"`
 }
 type MemorySemanticItem struct {
-	CaseID                  string                      `json:"case_id"`
-	Arm                     string                      `json:"arm"`
-	InputSHA256             string                      `json:"input_sha256"`
-	OutputSHA256            string                      `json:"output_sha256"`
-	Verdict                 string                      `json:"verdict"`
-	ContextVerdict          string                      `json:"context_verdict"`
-	CorpusVerdict           string                      `json:"corpus_verdict"`
-	Grounded                *bool                       `json:"grounded"`
-	Complete                *bool                       `json:"complete"`
-	EvidenceAvailable       *bool                       `json:"evidence_available"`
-	GloballyAnswerable      bool                        `json:"globally_answerable"`
-	UncertaintyCorrect      *bool                       `json:"uncertainty_correct"`
-	ActionCorrect           *bool                       `json:"action_correct"`
-	RetrievalMiss           bool                        `json:"retrieval_miss"`
-	FormatCanonicalMismatch bool                        `json:"format_canonical_mismatch"`
-	FailureOrigin           string                      `json:"failure_origin"`
-	Rationale               string                      `json:"rationale"`
-	Evidence                []MemorySemanticEvidence    `json:"evidence"`
-	CitationChecks          []MemorySemanticCitation    `json:"citation_checks,omitempty"`
-	TaskEvidence            *MemorySemanticTaskEvidence `json:"task_evidence,omitempty"`
+	CaseID                  string                          `json:"case_id"`
+	Arm                     string                          `json:"arm"`
+	InputSHA256             string                          `json:"input_sha256"`
+	OutputSHA256            string                          `json:"output_sha256"`
+	Verdict                 string                          `json:"verdict"`
+	ContextVerdict          string                          `json:"context_verdict"`
+	CorpusVerdict           string                          `json:"corpus_verdict"`
+	Grounded                *bool                           `json:"grounded"`
+	Complete                *bool                           `json:"complete"`
+	EvidenceAvailable       *bool                           `json:"evidence_available"`
+	GloballyAnswerable      bool                            `json:"globally_answerable"`
+	UncertaintyCorrect      *bool                           `json:"uncertainty_correct"`
+	ActionCorrect           *bool                           `json:"action_correct"`
+	RetrievalMiss           bool                            `json:"retrieval_miss"`
+	FormatCanonicalMismatch bool                            `json:"format_canonical_mismatch"`
+	FailureOrigin           string                          `json:"failure_origin"`
+	Rationale               string                          `json:"rationale"`
+	Evidence                []MemorySemanticEvidence        `json:"evidence"`
+	CitationChecks          []MemorySemanticCitation        `json:"citation_checks,omitempty"`
+	TaskEvidence            *MemorySemanticTaskEvidence     `json:"task_evidence,omitempty"`
+	QuestionEvidence        *MemorySemanticQuestionEvidence `json:"question_evidence,omitempty"`
 }
 type MemorySemanticCitation struct {
 	SourceID           string `json:"source_id"`
@@ -126,6 +134,12 @@ type MemorySemanticCitation struct {
 type MemorySemanticTaskEvidence struct {
 	Revision int64  `json:"revision"`
 	Quote    string `json:"quote"`
+}
+
+// Question evidence is an exact witness in the current user input, not a
+// fabricated long-term source or a saved reasoning trace.
+type MemorySemanticQuestionEvidence struct {
+	Quote string `json:"quote"`
 }
 type MemorySemanticReview struct {
 	Version            string               `json:"version"`
@@ -289,6 +303,12 @@ func ScoreMemorySemantic(cases []MemoryCase, inputs []MemoryInput, measurements 
 			return r, errors.New("retrieval miss requires answerable missing actual evidence")
 		}
 		c := cs[o.CaseID]
+		if e := item.QuestionEvidence; e != nil && (e.Quote == "" || len(e.Quote) > 4096 || i.Question != c.Question || !strings.Contains(i.Question, e.Quote)) {
+			return r, errors.New("question witness differs from actual current input")
+		}
+		if c.EvidenceBasis == "question" && item.Grounded != nil && *item.Grounded && item.QuestionEvidence == nil {
+			return r, errors.New("self-contained grounded answer requires exact question witness")
+		}
 		for _, e := range item.Evidence {
 			if !semanticOriginal(c, e.SourceID, e.Revision, e.Quote) || !containsMemory([]string{"provided", "corpus_only"}, e.Availability) || (e.Availability == "provided") != semanticVisible(i, e.SourceID, e.Quote) {
 				return r, fmt.Errorf("review source witness unavailable: %s/%s", key, e.SourceID)
