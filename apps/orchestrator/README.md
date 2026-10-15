@@ -52,7 +52,7 @@ the separately default-off `BUTLER_MEMORY_SUMMARY_CONSUMER_ENABLED` gate. It als
 requires model jobs enabled, current explicit owner summary policy and PostgreSQL
 worker control enabled. `POST /api/v4/memory/model-summary-policies` snapshots the
 actual owner session; policy/job controls and observations remain the existing
-memory model-job APIs. [Consumer contract](../../../internal/memory/compaction/README.md)
+memory model-job APIs. [Consumer contract](../../internal/memory/compaction/README.md)
 documents protected user statements, exact excerpts, typed tool state, 60% budget
 trigger, coverage CAS, privacy deletion, finite fallback and migration072.
 

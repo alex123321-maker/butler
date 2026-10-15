@@ -33,6 +33,28 @@ foreach ($file in $files) {
       [void]$tests.Add("SSH laba: scripts/dev/memory-lifecycle-lab.sh isolated issue83 root fresh-label; actual PG/race, Broker zero-dispatch, provider withdrawal, old generations, custom dump/restore and mandatory no-skip gate. Zero inference/network; new consumers extend applicable scenarios.")
       continue
     }
+    "^(internal/memory/(reader|readcontrol)/|internal/actionauth/memory_read|internal/config/memory_read|apps/orchestrator/internal/app/memory_read|apps/tool-broker/internal/broker/memory_read|deploy/(docker-compose[.]memory-read|memory-read-native/)|scripts/dev/memory-read-)" {
+      [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
+      [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$tests.Add("SSH laba: scripts/dev/memory-read-lab.sh isolated issue77 root; real PostgreSQL, production Broker binary, mode0 read-only dispatch and exact current source/privacy checks. Mandatory checks cannot skip; native acceptance is a separate retained one-use window.")
+      continue
+    }
+    "^(internal/memory/compaction/|apps/orchestrator/internal/app/memory_summary|migrations/072_)" {
+      [void]$specs.Add("docs/architecture/memory-model.md")
+      [void]$specs.Add("docs/architecture/background-memory-jobs.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/ai/memory-lifecycle-acceptance.md")
+      [void]$tests.Add("SSH laba: real isolated PostgreSQL/race ./internal/memory/compaction and TestOrdinaryTaskContinuationAcrossRepeatedCompactionIntegration in ./apps/orchestrator/internal/app; exact primary coverage, all-eight lifecycle corpus, original-ancestor privacy and repeated ordinary foreground continuation. Native quality/cost comparison remains a separate gate.")
+      continue
+    }
+    "^(internal/memory/candidates/|apps/orchestrator/internal/(api/memory_candidates|app/memory_candidates)|migrations/073_|scripts/dev/memory-candidates-)" {
+      [void]$specs.Add("docs/architecture/background-memory-jobs.md")
+      [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
+      [void]$specs.Add("docs/ai/memory-lifecycle-acceptance.md")
+      [void]$tests.Add("SSH laba: real isolated PostgreSQL/race ./internal/memory/candidates and TestCandidate in ./apps/orchestrator/internal/api; actual owner HTTP decision, exact quote validation, complete ancestor privacy and all-eight lifecycle corpus. Native Russian semantic release qualification is independent; never reset historical spend.")
+      continue
+    }
     "^(internal/memory/jobs/|internal/budget/auxiliary[.]go$|apps/orchestrator/internal/(app/memory_model_jobs|api/memory_model_jobs)|migrations/071_|deploy/memory-jobs/|scripts/dev/memory-jobs-)" {
       [void]$specs.Add("docs/architecture/background-memory-jobs.md")
       [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
