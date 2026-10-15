@@ -335,3 +335,31 @@ func TestModelCrossContextEarliestIndependentAssignmentDeadlineIntegration(t *te
 		t.Fatal("second context deadline lost", admitted.Deadline, expiry, err)
 	}
 }
+
+func TestModelNilContextLegacyPolicyRetryAndActivePublicationIntegration(t *testing.T) {
+	w, ctx, src := modelFixture(t)
+	q := policyRequest(src)
+	first, err := w.Jobs.CreateModelPolicy(ctx, q)
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := w.Jobs.CreateModelPolicy(ctx, q)
+	if err != nil || string(jsonBytes(first)) != string(jsonBytes(second)) {
+		t.Fatal("legacy immutable policy retry changed", err)
+	}
+	j := schedule(t, w, ctx, q)
+	if j.Contexts != nil {
+		t.Fatal("legacy context manifest not nil")
+	}
+	if err = w.execute(ctx, j, QuoteProbe{}); err != nil {
+		t.Fatal(err)
+	}
+	var resultID string
+	if err = w.Jobs.pool.QueryRow(ctx, `SELECT result_source_id FROM memory_model_attempts WHERE job_id=$1`, j.ID).Scan(&resultID); err != nil {
+		t.Fatal(err)
+	}
+	result, err := w.Jobs.catalog.Get(ctx, resultID)
+	if err != nil || result.Status != "active" {
+		t.Fatal("legacy result unexpectedly staged", err)
+	}
+}
