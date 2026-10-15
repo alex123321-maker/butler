@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -37,6 +38,8 @@ type continuityProvider struct {
 	transport.ModelProvider
 	base     transport.ModelProvider
 	requests []transport.StartRunRequest
+	mu       sync.Mutex
+	usages   map[string]transport.Usage
 }
 
 func (p *continuityProvider) Name() string {
@@ -66,7 +69,38 @@ func (p *continuityProvider) CancelRun(ctx context.Context, r transport.CancelRu
 func (p *continuityProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
 	p.requests = append(p.requests, r)
 	if p.base != nil {
-		return p.base.StartRun(ctx, r)
+		stream, err := p.base.StartRun(ctx, r)
+		if err != nil {
+			return nil, err
+		}
+		wrapped := make(chan transport.TransportEvent, 32)
+		go func() {
+			defer close(wrapped)
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case event, ok := <-stream:
+					if !ok {
+						return
+					}
+					if event.Usage != nil && event.Usage.Validate() == nil {
+						p.mu.Lock()
+						if p.usages == nil {
+							p.usages = map[string]transport.Usage{}
+						}
+						p.usages[r.Context.RunID] = *event.Usage
+						p.mu.Unlock()
+					}
+					select {
+					case wrapped <- event:
+					case <-ctx.Done():
+						return
+					}
+				}
+			}
+		}()
+		return wrapped, nil
 	}
 	if err := transport.CheckInferenceAuthority(ctx); err != nil {
 		return nil, err
