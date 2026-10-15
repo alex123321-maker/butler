@@ -26,9 +26,21 @@ import (
 	"github.com/butler/butler/internal/memory/jobs"
 	"github.com/butler/butler/internal/memory/memorytest"
 	"github.com/butler/butler/internal/memory/semantic"
+	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/owneridentity"
 )
+
+type capacityQueryReader struct {
+	*semantic.HybridReader
+	Last memoryservice.SearchResult
+}
+
+func (r *capacityQueryReader) SearchWithPolicy(ctx context.Context, scopes []memoryservice.Scope, query string, limit int, policy memoryservice.QueryPolicy) (memoryservice.SearchResult, error) {
+	result, err := r.HybridReader.SearchWithPolicy(ctx, scopes, query, limit, policy)
+	r.Last = result
+	return result, err
+}
 
 // One prospective contention slice, not a p95/quality/native-model claim. The
 // first generation uses100 real embeddings, the second reuses those100 and
@@ -144,9 +156,10 @@ func TestMemoryCapacityActualForegroundDuringOwnedIndex(t *testing.T) {
 		t.Fatal("background IPC not entered")
 	}
 	p := &scopedCandidateProvider{}
+	queryReader := &capacityQueryReader{HybridReader: index.Reader}
 	finals := completion.New(pool)
 	finals.DataGuard = cat.CheckRunSourcesTx
-	executor := flow.NewService(session.NewPostgresRepository(pool), session.NewPostgresLeaseManager(pool), runservice.NewService(runservice.NewPostgresRepository(pool), nil), transcript.NewStore(pool), p, flow.Config{ProviderName: p.Name(), ModelName: "capacity-control", OwnerID: "capacity-worker", LeaseTTL: 120, Tasks: task.NewStore(pool), Budgets: b, MemorySources: cat, SemanticMemory: index.Reader, Completion: finals, ContextBudgetTokens: 65536}, log)
+	executor := flow.NewService(session.NewPostgresRepository(pool), session.NewPostgresLeaseManager(pool), runservice.NewService(runservice.NewPostgresRepository(pool), nil), transcript.NewStore(pool), p, flow.Config{ProviderName: p.Name(), ModelName: "capacity-control", OwnerID: "capacity-worker", LeaseTTL: 120, Tasks: task.NewStore(pool), Budgets: b, MemorySources: cat, SemanticMemory: queryReader, Completion: finals, ContextBudgetTokens: 65536}, log)
 	payload, _ := json.Marshal(map[string]string{"text": "Какие наблюдения доступны в памяти?", "user_id": "capacity-owner", "task_id": "capacity-task"})
 	started := time.Now()
 	observation["phase"] = "foreground_with_background_index"
@@ -159,6 +172,7 @@ func TestMemoryCapacityActualForegroundDuringOwnedIndex(t *testing.T) {
 	observation["foreground_millis"] = foregroundMillis
 	observation["foreground_completed"] = foregroundErr == nil
 	observation["background_completed"] = bg.worked && bg.err == nil
+	observation["actual_retrieval"] = queryReader.Last
 	if foregroundErr != nil || result == nil || foregroundMillis > 5000 {
 		t.Fatal("foreground contention gate failed", foregroundMillis, foregroundErr)
 	}
