@@ -77,6 +77,9 @@ while IFS= read -r name;do
 done < "$src/scripts/dev/memory-lifecycle-required-tests.txt"
 jq -s '{passed:map(select(.Action=="pass" and .Test!=null))|length,failures:map(select(.Action=="fail"))|length,skipped:map(select(.Action=="skip")|{package:.Package,test:.Test,reason:"see raw Output events"})}' "$proof/"*.jsonl > "$proof/summary.json"
 jq -e '.failures==0' "$proof/summary.json" >/dev/null
-sha256sum "$proof/source.sha256" "$src/internal/memory/memorytest/testdata/lifecycle-v1.json" "$proof/"*.jsonl "$proof/before-deletion.dump" "$proof/deletion-anchor" > "$proof/evidence.sha256"
+sha256sum "$proof/source.sha256" "$src/internal/memory/memorytest/testdata/lifecycle-v1.json" "$proof/"*.jsonl "$proof/before-deletion.dump" > "$proof/evidence.sha256"
+# The manifest is deliberately mode600 and owned by the test process. Hash it
+# as that same container user; never relax its private host-file permissions.
+docker run --rm --pull never --network none -v "$proof:/proof:ro" golang:1.27.2-bookworm sha256sum /proof/deletion-anchor >> "$proof/evidence.sha256"
 printf 'PASS\n' > "$proof/complete"
 cat "$proof/summary.json"
