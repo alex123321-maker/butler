@@ -1,5 +1,13 @@
 # Butler Dev Scripts
 
+`memory-consumers-lab.sh ROOT FRESH_LABEL` verifies the issue77 summary,
+candidate and Broker-read composition on an isolated `laba` snapshot. It uses
+cached images/modules with no external inference, records mandatory named
+passes, preserves optional native skips, and runs race/vet checks. Run the
+separate `memory-lifecycle-lab.sh` for the actual custom dump/restore and Redis
+withdrawal gate. Native consumer quality windows and staged activation remain
+independent of these controlled checks.
+
 Issue33 V4 is now sealed NO_GO after11 new entries, for279 cumulative attempts.
 Never Sync or execute its root again. `cloud-v4-final-audit-reproduce.sh` runs
 the frozen independent auditor read-only/network-none against named retained
