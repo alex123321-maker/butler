@@ -33,8 +33,10 @@ func (s *Store) GetSummary(ctx context.Context, sessionKey string) (string, erro
 
 func (s *Store) GetSummarySnapshot(ctx context.Context, sessionKey string) (Snapshot, error) {
 	var snapshot Snapshot
-	err := s.pool.QueryRow(ctx, `SELECT session_key, summary, through_message_id, through_sequence,
-        source_revision, format_version, updated_at FROM session_summaries WHERE session_key=$1`, sessionKey).
+	err := s.pool.QueryRow(ctx, `SELECT s.session_key, s.summary, s.through_message_id, s.through_sequence,
+        s.source_revision, s.format_version, s.updated_at FROM session_summaries s WHERE s.session_key=$1
+        AND (s.result_source_id IS NULL OR EXISTS(SELECT 1 FROM memory_sources r WHERE r.source_id=s.result_source_id AND r.status='active'
+        AND NOT EXISTS(SELECT 1 FROM memory_source_dependencies d JOIN memory_sources p ON p.source_id=d.parent_source_id WHERE d.child_source_id=r.source_id AND p.status<>'active')))`, sessionKey).
 		Scan(&snapshot.SessionKey, &snapshot.Summary, &snapshot.ThroughMessageID, &snapshot.ThroughSequence,
 			&snapshot.SourceRevision, &snapshot.FormatVersion, &snapshot.UpdatedAt)
 	if err == pgx.ErrNoRows {

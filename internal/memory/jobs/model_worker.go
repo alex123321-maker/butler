@@ -669,7 +669,13 @@ func (w *ModelWorker) Run(ctx context.Context) error {
 	defer ticker.Stop()
 	for {
 		poll, stop := context.WithTimeout(ctx, 5*time.Second)
-		e := w.Jobs.PollModelPolicies(poll, func(name string) bool { return w.Handlers[name] != nil })
+		preparers := map[string]ModelScheduleHandler{}
+		for name, handler := range w.Handlers {
+			if p, ok := handler.(ModelScheduleHandler); ok {
+				preparers[name] = p
+			}
+		}
+		e := w.Jobs.PollModelPolicies(poll, func(name string) bool { return w.Handlers[name] != nil }, preparers)
 		stop()
 		if e == nil {
 			_, _ = w.ProcessOne(ctx)

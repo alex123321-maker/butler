@@ -16,6 +16,7 @@ import (
 	"github.com/butler/butler/internal/memory/ingestion"
 	"github.com/butler/butler/internal/memory/jobs"
 	"github.com/butler/butler/internal/memory/semantic"
+	"github.com/butler/butler/internal/memory/summary"
 	"github.com/butler/butler/internal/owneridentity"
 )
 
@@ -28,6 +29,7 @@ type MemoryCatalogServer struct {
 	Indexing              *indexing.Runtime
 	ModelJobs             *jobs.Store
 	ModelWorkerConfigured bool
+	SummaryPolicies       *summary.Policies
 }
 
 func (s *MemoryCatalogServer) Handle() http.Handler {

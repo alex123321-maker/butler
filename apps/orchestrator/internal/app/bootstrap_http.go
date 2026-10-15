@@ -43,6 +43,7 @@ import (
 	"github.com/butler/butler/internal/memory/profile"
 	"github.com/butler/butler/internal/memory/provenance"
 	"github.com/butler/butler/internal/memory/readcontrol"
+	"github.com/butler/butler/internal/memory/summary"
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/memory/working"
 	"github.com/butler/butler/internal/metrics"
@@ -133,6 +134,9 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 		parser.Pages = ingestion.NewPDFClient()
 	}
 	memoryCatalogServer := &apiservice.MemoryCatalogServer{Store: deps.sourceCatalog, Auth: deps.ownerAuth, Ingestion: &ingestion.Store{Catalog: deps.sourceCatalog, Parser: parser}, Indexing: deps.memoryIndexing, ModelJobs: deps.memoryModelStore, ModelWorkerConfigured: deps.memoryModelConfigured}
+	if deps.memoryModelConfigured && os.Getenv("BUTLER_MEMORY_SUMMARY_CONSUMER_ENABLED") == "true" {
+		memoryCatalogServer.SummaryPolicies = &summary.Policies{Catalog: deps.sourceCatalog, Jobs: deps.memoryModelStore}
+	}
 	providerServer := apiservice.NewProviderServer(deps.authManager, deps.providerResult.ProviderName, map[string]string{
 		modelprovider.ProviderOpenAI:        deps.cfg.OpenAIModel,
 		modelprovider.ProviderOpenAICodex:   deps.cfg.OpenAICodexModel,
