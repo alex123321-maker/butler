@@ -138,7 +138,6 @@ func New(ctx context.Context) (*App, error) {
 		OpenAICodexBaseURL:  cfg.OpenAICodexBaseURL,
 		GitHubCopilotModel:  cfg.GitHubCopilotModel,
 		AntigravityModel:    cfg.AntigravityModel,
-		AntigravityProtocol: cfg.AntigravityProtocol,
 		Timeout:             time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
 	})
 	if err != nil {

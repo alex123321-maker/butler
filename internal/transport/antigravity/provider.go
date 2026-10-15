@@ -26,10 +26,7 @@ const (
 )
 
 type Config struct {
-	Model string
-	// Fixed at construction. Empty/auto preserves the historical per-model
-	// protocol; cloudcode explicitly selects the subscription wrapper for tiered.
-	Protocol   string
+	Model      string
 	Timeout    time.Duration
 	AuthSource providerauth.AntigravityTokenSource
 	// These are trusted construction-time settings, never model transport options.
@@ -80,12 +77,6 @@ func NewProvider(cfg Config) (*Provider, error) {
 	if cfg.Timeout <= 0 {
 		cfg.Timeout = 5 * time.Minute
 	}
-	if cfg.Protocol != "" && cfg.Protocol != "auto" && cfg.Protocol != "cloudcode" {
-		return nil, protocolError("unsupported Antigravity protocol")
-	}
-	if cfg.Protocol == "cloudcode" && cfg.Model != DefaultModel && cfg.Model != FlashHighModel {
-		return nil, protocolError("unsupported Cloud Code model")
-	}
 	if err := validateGenerationConfig(&cfg); err != nil {
 		return nil, err
 	}
@@ -111,9 +102,6 @@ func (p *Provider) StartRun(ctx context.Context, req transport.StartRunRequest) 
 	}
 	if len(req.TransportOptions) > 0 || req.TransportOptionsJSON != "" {
 		return nil, protocolError("Antigravity transport options are unsupported")
-	}
-	if p.config.Protocol == "cloudcode" && req.Context.ModelName != p.config.Model {
-		return nil, protocolError("Cloud Code model differs from configured profile")
 	}
 	structured := len(p.config.JSONResponseSchema) > 0 || len(p.config.GoogleResponseSchema) > 0
 	if (p.config.MaximumOutputTokens > maxOutputTokens || structured) && req.Context.ModelName != FlashHighModel {

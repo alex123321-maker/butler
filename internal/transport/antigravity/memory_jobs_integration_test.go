@@ -32,18 +32,8 @@ func (a authorityFaultAuth) ResolveAntigravity(ctx context.Context) (provideraut
 	a.after()
 	return a.authSource.ResolveAntigravity(ctx)
 }
-func (a authorityFaultAuth) ResolveAntigravityCloudCode(ctx context.Context) (providerauth.AntigravityAuth, error) {
-	auth, err := a.ResolveAntigravity(ctx)
-	auth.ProjectID = "discovered-project"
-	return auth, err
-}
 
 func TestMemoryJobActualNativeAdapterHTTPIntegration(t *testing.T) {
-	for _, protocol := range []string{"auto", "cloudcode"} {
-		t.Run(protocol, func(t *testing.T) { testMemoryJobActualNativeAdapterHTTP(t, protocol) })
-	}
-}
-func testMemoryJobActualNativeAdapterHTTP(t *testing.T, protocol string) {
 	pool := memorytest.Database(t)
 	m := catalog.NewFileManifest(filepath.Join(t.TempDir(), "anchor"))
 	if e := m.Initialize(); e != nil {
@@ -60,16 +50,11 @@ func testMemoryJobActualNativeAdapterHTTP(t *testing.T, protocol string) {
 	part, _ := json.Marshal(map[string]string{"text": string(output)})
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		wire.Add(1)
-		path := "/v1:streamGenerateContent"
-		sse := frame(string(part), "STOP")
-		if protocol == "cloudcode" {
-			path, sse = "/v1internal:streamGenerateContent", cloudFrame(string(part), "STOP")
-		}
-		if r.URL.Path != path {
+		if r.URL.Path != "/v1:streamGenerateContent" {
 			t.Error("unexpected native path")
 		}
 		w.Header().Set("Content-Type", "text/event-stream")
-		fmt.Fprint(w, sse)
+		fmt.Fprint(w, frame(string(part), "STOP"))
 	}))
 	defer server.Close()
 	target, _ := url.Parse(server.URL)
@@ -81,10 +66,6 @@ func testMemoryJobActualNativeAdapterHTTP(t *testing.T, protocol string) {
 		copy.URL = &u
 		return http.DefaultTransport.RoundTrip(copy)
 	})
-	p.config.Protocol = protocol
-	if protocol == "cloudcode" {
-		p.config.AuthSource = cloudAuthSource{project: "discovered-project"}
-	}
 	policy := budget.DefaultPolicy()
 	policy.Models[Name+":"+DefaultModel] = budget.ModelPrice{Basis: "subscription_no_overage"}
 	b := budget.NewController(pool, policy)

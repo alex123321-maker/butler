@@ -1,17 +1,5 @@
 # Butler — Model Transport Contract
 
-Antigravity's construction-time `BUTLER_ANTIGRAVITY_PROTOCOL=cloudcode`
-explicitly routes the same configured `gemini-3.8-flash-tiered` through the
-subscription project/request wrapper and wrapped SSE already used by High.
-It requires current same-account paid discovery; legacy imported project IDs
-cannot route it. Output remains8192, the input allowance1048576 and complete
-serialized byte cap remain enforced; thinkingBudget=-1 is part of this profile.
-The default `auto` preserves historical tiered AICode / High Cloud Code behavior.
-Protocol changes require service restart, cannot be selected by model options,
-and never occur in response to401/403/429. There is one route per admitted attempt,
-no inference retry/fallback and no model/account substitution. Invalid protocol
-or a cloudcode request for a different configured model fails closed.
-
 Memory query locality is independent of provider release. A local-only task can
 use authorized PostgreSQL evidence and the pinned internal inference service;
 the resulting query/snippets remain subject to current task privacy, source

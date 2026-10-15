@@ -7,7 +7,7 @@ services:
   orchestrator:
     image: golang:1.27.2-bookworm
     working_dir: /src
-    command: [/proof/orchestrator-cloudcode]
+    command: [/proof/orchestrator-final]
     env_file: ["${ISSUE82_ROOT:?}/private/native.env"]
     environment:
       BUTLER_POSTGRES_URL: postgres://butler@postgres:5432/memory_jobs_test?sslmode=disable
@@ -25,8 +25,7 @@ services:
       BUTLER_MEMORY_SEMANTIC_ENABLED: 'false'
       BUTLER_MODEL_PROVIDER: antigravity
       BUTLER_TOOL_BROKER_ADDR: tool-broker:9090
-      BUTLER_ANTIGRAVITY_MODEL: gemini-3.8-flash-tiered
-      BUTLER_ANTIGRAVITY_PROTOCOL: auto
+      BUTLER_ANTIGRAVITY_MODEL: gemini-3.8-flash-high
       BUTLER_OPENAI_TIMEOUT_SECONDS: '90'
       BUTLER_TELEGRAM_BOT_TOKEN: ''
       # Explicit direct lane for this window; no fallback after a network error.
@@ -34,7 +33,7 @@ services:
       HTTP_PROXY: ''
       ALL_PROXY: ''
       NO_PROXY: localhost,127.0.0.1,postgres,redis
-      BUTLER_EXECUTION_BUDGET_POLICY_JSON: '{"model_millis":90000,"task":{"model_turns":2,"tokens":2113536,"active_millis":180000,"provider_input_bytes":16777216},"conversation":{"model_turns":1,"tokens":1056768,"active_millis":90000,"provider_input_bytes":8388608},"models":{"antigravity:gemini-3.8-flash-tiered":{"basis":"subscription_no_overage"}}}'
+      BUTLER_EXECUTION_BUDGET_POLICY_JSON: '{"model_millis":90000,"task":{"model_turns":2,"tokens":2113536,"active_millis":180000,"provider_input_bytes":16777216},"conversation":{"model_turns":1,"tokens":1056768,"active_millis":90000,"provider_input_bytes":8388608},"models":{"antigravity:gemini-3.8-flash-tiered":{"basis":"subscription_no_overage"},"antigravity:gemini-3.8-flash-high":{"basis":"subscription_no_overage"}}}'
     volumes:
       - ${ISSUE82_ROOT:?}/current:/src:ro
       - ${ISSUE82_ROOT:?}/reports:/proof:ro
