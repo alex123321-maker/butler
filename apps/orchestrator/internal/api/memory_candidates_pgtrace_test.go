@@ -18,6 +18,8 @@ type candidateQueryStart struct {
 	shape, hash string
 }
 type candidateQueryKey struct{}
+type candidateAcquireKey struct{}
+type candidateConnectKey struct{}
 type candidateQueryObservation struct {
 	Shape                 string `json:"shape"`
 	Hash                  string `json:"statement_sha256"`
@@ -62,15 +64,34 @@ func (t *candidatePGTrace) TraceQueryEnd(ctx context.Context, _ *pgx.Conn, d pgx
 	if !ok {
 		return
 	}
+	t.record(s, d.Err)
+}
+func (t *candidatePGTrace) TraceAcquireStart(ctx context.Context, _ *pgxpool.Pool, _ pgxpool.TraceAcquireStartData) context.Context {
+	return context.WithValue(ctx, candidateAcquireKey{}, time.Now())
+}
+func (t *candidatePGTrace) TraceAcquireEnd(ctx context.Context, _ *pgxpool.Pool, d pgxpool.TraceAcquireEndData) {
+	if at, ok := ctx.Value(candidateAcquireKey{}).(time.Time); ok {
+		t.record(candidateQueryStart{at: at, shape: "pool_acquire"}, d.Err)
+	}
+}
+func (t *candidatePGTrace) TraceConnectStart(ctx context.Context, _ pgx.TraceConnectStartData) context.Context {
+	return context.WithValue(ctx, candidateConnectKey{}, time.Now())
+}
+func (t *candidatePGTrace) TraceConnectEnd(ctx context.Context, d pgx.TraceConnectEndData) {
+	if at, ok := ctx.Value(candidateConnectKey{}).(time.Time); ok {
+		t.record(candidateQueryStart{at: at, shape: "pool_connect"}, d.Err)
+	}
+}
+func (t *candidatePGTrace) record(s candidateQueryStart, err error) {
 	o := candidateQueryObservation{Shape: s.shape, Hash: s.hash, Millis: time.Since(s.at).Milliseconds()}
-	if d.Err != nil {
+	if err != nil {
 		var p *pgconn.PgError
 		switch {
-		case errors.As(d.Err, &p):
+		case errors.As(err, &p):
 			o.Diagnostic = "pg_" + p.Code
-		case errors.Is(d.Err, context.DeadlineExceeded):
+		case errors.Is(err, context.DeadlineExceeded):
 			o.Diagnostic = "deadline_exceeded"
-		case errors.Is(d.Err, context.Canceled):
+		case errors.Is(err, context.Canceled):
 			o.Diagnostic = "cancelled"
 		default:
 			o.Diagnostic = "storage_error"
@@ -82,7 +103,7 @@ func (t *candidatePGTrace) TraceQueryEnd(ctx context.Context, _ *pgx.Conn, d pgx
 		t.counts = map[string]int{}
 	}
 	t.counts[s.shape]++
-	if o.Millis >= 100 || d.Err != nil {
+	if o.Millis >= 100 || err != nil {
 		if t.pool != nil {
 			p := t.pool.Stat()
 			o.Acquired = p.AcquiredConns()
