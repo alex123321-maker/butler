@@ -18,6 +18,7 @@ import (
 	"github.com/butler/butler/internal/memory/candidates"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/jobs"
+	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/providerauth"
 	"github.com/butler/butler/internal/transport"
 	"github.com/butler/butler/internal/transport/antigravity"
@@ -28,6 +29,95 @@ type candidateCaptureProvider struct {
 	transport.ModelProvider
 	output string
 	usage  *transport.Usage
+}
+
+// This separate owner-controlled stage consumes an actual native result only
+// after the extraction screen has finished. It makes no model/provider request.
+func TestCandidateNativeOwnerLifecycle(t *testing.T) {
+	proof := os.Getenv("BUTLER_CANDIDATE_NATIVE_EVIDENCE")
+	if proof == "" {
+		t.Skip("completed native quality window required")
+	}
+	var quality struct {
+		Passed bool `json:"quality_gate_passed"`
+	}
+	raw, err := os.ReadFile(filepath.Join(proof, "quality.json"))
+	if err != nil || json.Unmarshal(raw, &quality) != nil || !quality.Passed {
+		t.Fatal("native owner stage requires completed quality PASS")
+	}
+	started, err := os.OpenFile(filepath.Join(proof, "owner-lifecycle.started"), os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if err != nil {
+		t.Fatal("one-use owner lifecycle stage required")
+	}
+	started.Close()
+	cfg, err := pgxpool.ParseConfig(os.Getenv("BUTLER_CANDIDATE_NATIVE_POSTGRES_URL"))
+	if err != nil || !strings.HasSuffix(cfg.ConnConfig.Database, "_test") {
+		t.Fatal("separate persistent native database required")
+	}
+	cfg.MaxConns = 2
+	pool, err := pgxpool.NewWithConfig(context.Background(), cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer pool.Close()
+	c := catalog.New(pool, catalog.NewFileManifest(filepath.Join(filepath.Dir(proof), "native-v2", "deletions.log")))
+	srv := httptest.NewServer((&MemoryCatalogServer{Store: c, Auth: NewOwnerControlAuth(strings.Repeat("c", 40), "owner")}).Handle())
+	defer srv.Close()
+	ctx := owneridentity.WithActor(context.Background(), owneridentity.Actor{OwnerID: "owner", Channel: "web", DeliveryID: "native-owner-proof"})
+	f := &candidateFixture{t: t, pool: pool, catalog: c, server: srv, owner: ctx}
+	var sourceID string
+	if err = pool.QueryRow(ctx, `SELECT source_id FROM memory_sources WHERE external_key=$1 AND owner_id='owner' AND status='active'`, filepath.Base(proof)+":explicit-detail").Scan(&sourceID); err != nil {
+		t.Fatal(err)
+	}
+	src, err := c.Get(ctx, sourceID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var claim catalog.Claim
+	for _, got := range f.claims() {
+		if got.SourceID == src.ID && got.Status == "candidate" {
+			claim = got
+		}
+	}
+	if claim.ID == "" {
+		t.Fatal("actual native candidate unavailable")
+	}
+	evidence := candidateOwnerLifecycle(t, f, src, claim)
+	data, err := json.MarshalIndent(evidence, "", "  ")
+	if err != nil || os.WriteFile(filepath.Join(proof, "owner-lifecycle.json"), data, 0600) != nil {
+		t.Fatal("owner lifecycle evidence unavailable")
+	}
+}
+
+func candidateOwnerLifecycle(t *testing.T, f *candidateFixture, src catalog.Source, claim catalog.Claim) map[string]any {
+	t.Helper()
+	ctx := context.Background()
+	var before, after int
+	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM memory_model_attempts`).Scan(&before); err != nil {
+		t.Fatal(err)
+	}
+	f.request("/api/v4/memory/decisions", "POST", catalog.Decision{ClaimID: claim.ID}, 200, &claim)
+	if claim.Status != "confirmed" {
+		t.Fatal("owner acceptance did not confirm native candidate")
+	}
+	var profileID int64
+	if err := f.pool.QueryRow(ctx, `SELECT profile_id FROM memory_claims WHERE claim_id=$1`, claim.ID).Scan(&profileID); err != nil {
+		t.Fatal(err)
+	}
+	refs := []catalog.ObjectRef{{Type: "profile", ID: profileID}}
+	if err := f.catalog.CheckObjects(f.owner, refs, "memory_read"); err != nil {
+		t.Fatal("owner-confirmed native evidence unavailable", err)
+	}
+	var corrected catalog.Source
+	f.request("/api/v4/memory/correct", "POST", catalog.Correction{SourceID: src.ID, ExpectedRevision: src.Revision, Body: "Исправление владельца: прежнее предпочтение отменено."}, 200, &corrected)
+	if err := f.catalog.CheckObjects(f.owner, refs, "memory_read"); err == nil {
+		t.Fatal("corrected native evidence still eligible")
+	}
+	f.request("/api/v4/memory/delete", "POST", map[string]any{"source_id": src.ID, "action": "revoke", "expected_revision": corrected.Revision}, 200, nil)
+	if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM memory_model_attempts`).Scan(&after); err != nil || after != before {
+		t.Fatal("owner lifecycle changed paid history", before, after, err)
+	}
+	return map[string]any{"native_claim_id": claim.ID, "source_id": src.ID, "explicit_owner_acceptance": true, "accepted_memory_eligible": true, "correction_blocks_old_memory": true, "explicit_owner_source_revocation": true, "additional_model_calls": 0, "paid_attempts_before": before, "paid_attempts_after": after, "automatic_acceptance": false}
 }
 
 func (p *candidateCaptureProvider) InferenceLimits() (int64, int64) {

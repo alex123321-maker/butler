@@ -312,6 +312,22 @@ func TestCandidateHTTPWorkerOwnerDecisionCorrectionIntegration(t *testing.T) {
 		t.Fatal(observed, reserved, e)
 	}
 }
+
+func TestCandidateSeparateOwnerLifecycleStageIntegration(t *testing.T) {
+	f := newCandidateFixture(t)
+	src := f.source("owner-lifecycle", "Предпочитаю подробные объяснения технических решений.")
+	f.worker.Provider.(*candidateProvider).source = src
+	f.policy("owner-lifecycle-policy", src, "cloud_allowed")
+	f.enable()
+	if err := f.process(); err != nil {
+		t.Fatal(err)
+	}
+	claims := f.claims()
+	if len(claims) != 1 {
+		t.Fatal(claims)
+	}
+	candidateOwnerLifecycle(t, f, src, claims[0])
+}
 func TestCandidateLateSourceChangeAndLocalOnlyIntegration(t *testing.T) {
 	for _, change := range []string{"correct", "delete", "local_only", "invented", "incomplete"} {
 		t.Run(change, func(t *testing.T) {

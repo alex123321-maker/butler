@@ -1,6 +1,6 @@
 # Source candidate consumer (#85)
 
-`source-candidates-v1` is a code-owned handler for the existing durable generative
+`source-candidates-v2` is a code-owned handler for the existing durable generative
 memory worker. It uses its configured subscription transport, finite owner policy,
 admission, reservation, current source/access/task checks and atomic publication.
 It never calls the legacy extraction callers or local research models.
@@ -60,6 +60,14 @@ consumer and HTTP path with actual High transport and the pinned server proxy.
 It retains all attempts/reservations in a separate persistent test database.
 The fixed24-case Russian corpus and95% semantic/100% citation/zero unsafe, authority
 or unknown-usage criteria are frozen before inference. Failures do not lower them.
+Version2 clarifies quoted applicability and validity metadata using general rules.
+Its fresh window retains the original24 cases and adds an independently frozen
+eight-case temporal/project/ambiguity holdout requiring100% semantic matches.
+All older attempts, unknown usage and conservative reservations remain durable.
+After a passing screen, a separate zero-model-call native owner stage accepts one
+actual extracted candidate through HTTP, verifies catalog eligibility, corrects
+the source and verifies invalidation, then explicitly revokes that synthetic
+source. These intentional owner writes are separate from the extraction screen.
 This finite screen does not establish broad memory quality or final task success.
 `TestCandidateTranscriptAndParsedSourcePreserveAncestorPrivacyIntegration` proves
 actual transcript registration, historical privacy parents and a parsed original
