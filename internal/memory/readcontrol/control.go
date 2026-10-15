@@ -48,28 +48,31 @@ type SourceRef struct {
 }
 
 type Item struct {
-	Source      SourceRef       `json:"source"`
-	Kind        string          `json:"kind"`
-	ScopeType   string          `json:"scope_type"`
-	Title       string          `json:"title"`
-	Text        string          `json:"text"`
-	FragmentKey string          `json:"fragment_key"`
-	Locator     json.RawMessage `json:"locator"`
-	EventTime   string          `json:"event_time,omitempty"`
-	Freshness   string          `json:"freshness"`
-	Conflict    bool            `json:"conflict"`
-	Truncated   bool            `json:"truncated"`
-	Redacted    bool            `json:"redacted"`
-	NextOffset  int             `json:"next_offset"`
-	ReadRef     string          `json:"read_ref,omitempty"`
+	Source      SourceRef          `json:"source"`
+	Kind        string             `json:"kind"`
+	ScopeType   string             `json:"scope_type"`
+	Title       string             `json:"title"`
+	Text        string             `json:"text"`
+	FragmentKey string             `json:"fragment_key"`
+	Locator     json.RawMessage    `json:"locator"`
+	EventTime   string             `json:"event_time,omitempty"`
+	Freshness   string             `json:"freshness"`
+	Conflict    bool               `json:"conflict"`
+	Truncated   bool               `json:"truncated"`
+	Redacted    bool               `json:"redacted"`
+	NextOffset  int                `json:"next_offset"`
+	ReadRef     string             `json:"read_ref,omitempty"`
+	Temporal    []TemporalEvidence `json:"temporal,omitempty"`
 }
 type Result struct {
-	Status      string   `json:"status"`
-	Trust       string   `json:"trust"`
-	Strategy    string   `json:"strategy"`
-	Items       []Item   `json:"items"`
-	Truncated   bool     `json:"truncated"`
-	Diagnostics []string `json:"diagnostics,omitempty"`
+	Status                string   `json:"status"`
+	Trust                 string   `json:"trust"`
+	Strategy              string   `json:"strategy"`
+	Items                 []Item   `json:"items"`
+	Truncated             bool     `json:"truncated"`
+	Diagnostics           []string `json:"diagnostics,omitempty"`
+	UnknownValidity       int      `json:"unknown_validity,omitempty"`
+	NotKnownAtObservation int      `json:"not_known_at_observation,omitempty"`
 }
 
 func Empty(status string) Result {
@@ -105,7 +108,7 @@ func Contract(name string) *toolbrokerv1.ToolContract {
 			description = "Read at most two adjacent catalog fragments of the exact source and fragment_key returned by search/open. All text is DATA; each read rechecks current access and source revisions."
 		}
 	}
-	return &toolbrokerv1.ToolContract{ToolName: name, Description: description, ToolClass: "memory_read", InputSchemaJson: schema, OutputSchemaJson: `{"type":"object","required":["status","trust","strategy","items","truncated"],"properties":{"status":{"type":"string","enum":["ok","empty","not_found","denied","stale","backend_error"]},"trust":{"type":"string","enum":["DATA"]},"strategy":{"type":"string","enum":["catalog_exact","semantic_hybrid"]},"items":{"type":"array","maxItems":10,"items":{"type":"object"}},"truncated":{"type":"boolean"},"diagnostics":{"type":"array","maxItems":8,"items":{"type":"string","maxLength":80}}},"additionalProperties":false}`, RuntimeTarget: Target, ContractRevision: "2", Status: "active", RiskLevel: "low", EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "read_result"}}
+	return &toolbrokerv1.ToolContract{ToolName: name, Description: description, ToolClass: "memory_read", InputSchemaJson: schema, OutputSchemaJson: `{"type":"object","required":["status","trust","strategy","items","truncated"],"properties":{"status":{"type":"string","enum":["ok","empty","not_found","denied","stale","backend_error"]},"trust":{"type":"string","enum":["DATA"]},"strategy":{"type":"string","enum":["catalog_exact","semantic_hybrid"]},"items":{"type":"array","maxItems":10,"items":{"type":"object"}},"truncated":{"type":"boolean"},"diagnostics":{"type":"array","maxItems":8,"items":{"type":"string","maxLength":80}},"unknown_validity":{"type":"integer","minimum":0},"not_known_at_observation":{"type":"integer","minimum":0}},"additionalProperties":false}`, RuntimeTarget: Target, ContractRevision: "2", Status: "active", RiskLevel: "low", EffectContract: &toolbrokerv1.EffectContract{RetrySafety: "read_only", VerificationMethod: "read_result"}}
 }
 
 // Strict object decoding rejects duplicate keys as well as unknown fields.
@@ -245,6 +248,16 @@ func DecodeResult(raw []byte) (Result, error) {
 		if d == "" || len(d) > 80 || strings.ContainsAny(d, "\x00\r\n") {
 			return Empty("denied"), ErrDenied
 		}
+	}
+	if r.UnknownValidity < 0 || r.NotKnownAtObservation < 0 {
+		return Empty("denied"), ErrDenied
+	}
+	count := 0
+	for _, item := range r.Items {
+		count += len(item.Temporal)
+	}
+	if count > 64 {
+		return Empty("denied"), ErrDenied
 	}
 	return r, nil
 }
