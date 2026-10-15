@@ -114,3 +114,13 @@ failed/not-executed observations after an interrupted window. A stopped original
 is never reclaimed as a later case. Full native usage includes every continuation;
 absent usage stays unknown alongside its charged reservation. The 200-minute
 collection deadline is an additional finite wall-time cap, not a latency SLO.
+
+The frozen allowance is shared byte-for-byte by Core, local admission and the
+actual Broker process. Its policy digest is part of the offline pins. It permits
+at most352 native entries,1536 local query entries,768 indexing entries and256
+read-tool reservations across the window. Each task permits at most45 combined
+model entries and8 read-tool reservations. Tokens, provider input bytes, active
+milliseconds and tool egress are finite independently; earlier product limits
+still win. These are conservative admission capacities, not measured usage or
+permission to replay an original. The controlled collector must pass a real
+Broker search/open/final cycle before importing native credentials.

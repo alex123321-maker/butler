@@ -167,6 +167,15 @@ func (p *adaptiveNativeProvider) ContinueRun(context.Context, transport.Continue
 	return nil, errors.New("comparison does not replay or resume provider state")
 }
 
+func (p *adaptiveNativeProvider) snapshot() []*adaptiveNativeCall {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	raw, _ := json.Marshal(p.calls)
+	var calls []*adaptiveNativeCall
+	_ = json.Unmarshal(raw, &calls)
+	return calls
+}
+
 type adaptiveImportControls struct {
 	Version string `json:"version"`
 	Cases   []struct {
@@ -194,6 +203,7 @@ type adaptiveNativePins struct {
 	Order                string `json:"arm_order"`
 	MaxLocalQueries      int64  `json:"max_local_queries"`
 	MaxLocalIndexEntries int64  `json:"max_local_index_entries"`
+	BudgetPolicySHA      string `json:"budget_policy_sha256"`
 }
 
 func checkAdaptiveNativePins(proof string) error {
@@ -201,6 +211,10 @@ func checkAdaptiveNativePins(proof string) error {
 	var p adaptiveNativePins
 	if err != nil || json.Unmarshal(raw, &p) != nil || len(p.Release) != 40 || p.MaxPaid != 352 || p.Model != "gemini-3.8-flash-high" || p.OutputTokens != 32768 || p.TimeoutMillis != 300000 || p.Order != "case_order_then_rotating_no_ltm_static_adaptive_v1" || p.MaxLocalQueries != 1536 || p.MaxLocalIndexEntries != 768 {
 		return errors.New("frozen native profile pins differ")
+	}
+	policy, _ := json.Marshal(adaptiveNativeBudgetPolicy())
+	if p.BudgetPolicySHA != acceptance.MemoryBytesSHA256(policy) {
+		return errors.New("shared finite budget policy differs")
 	}
 	source, err := acceptance.TreeHash("/src", nil)
 	if err != nil || source != p.SourceSHA {
@@ -259,6 +273,11 @@ func TestMemoryAdaptiveWritePins(t *testing.T) {
 	p.CorpusSHA = readHash("/src/deploy/memory-adaptive/holdout-v1/corpus.json")
 	p.ControlsSHA = readHash("/src/deploy/memory-adaptive/holdout-v1/controls.json")
 	p.MethodSHA = readHash("/src/docs/ai/memory-eval-semantic-methodology.md")
+	policy, err := json.Marshal(adaptiveNativeBudgetPolicy())
+	if err != nil {
+		t.Fatal("finite shared budget encoding failed")
+	}
+	p.BudgetPolicySHA = acceptance.MemoryBytesSHA256(policy)
 	raw, err := json.MarshalIndent(p, "", "  ")
 	if err != nil {
 		t.Fatal(err)
@@ -295,7 +314,7 @@ func (x *adaptiveNativeExecutor) Execute(ctx context.Context, e ingress.InputEve
 // Uses the real Broker application with the exact same private endpoints as
 // production. The only extra injection is the still-unqualified adaptive Store
 // in this isolated ordinary Flow; no environment flag bypasses its release gate.
-func adaptiveNativeBroker(t *testing.T, pool *pgxpool.Pool, cat *catalog.Store, plan *adaptive.Store, sem memoryservice.PolicySemanticReader, manifest, proof string) *tools.BrokerClient {
+func adaptiveNativeBroker(t *testing.T, pool *pgxpool.Pool, cat *catalog.Store, plan *adaptive.Store, sem memoryservice.PolicySemanticReader, manifest, proof string, policy budget.Policy) *tools.BrokerClient {
 	t.Helper()
 	binary := os.Getenv("BUTLER_MEMORY_READ_APP_BINARY")
 	if binary == "" {
@@ -338,6 +357,14 @@ func adaptiveNativeBroker(t *testing.T, pool *pgxpool.Pool, cat *catalog.Store, 
 	address := freeAddress(t)
 	cmd := exec.Command(binary)
 	cmd.Env = append(os.Environ(), "BUTLER_POSTGRES_URL="+dsn.String(), "BUTLER_POSTGRES_MAX_CONNS=3", "BUTLER_POSTGRES_MIN_CONNS=0", "BUTLER_TOOL_REGISTRY_PATH="+registryPath, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+tokenPath, "BUTLER_ACTION_CONTEXT_URL="+server.URL+"/context", "BUTLER_MEMORY_READ_ENABLED=true", "BUTLER_MEMORY_READ_CONTROL_URL="+server.URL+readcontrol.Path, "BUTLER_HTTP_ADDR=127.0.0.1:0", "BUTLER_GRPC_ADDR="+address, "BUTLER_MEMORY_DELETION_MANIFEST_FILE="+manifest)
+	policyJSON, err := json.Marshal(policy)
+	if err != nil {
+		t.Fatal("shared budget policy encoding failed")
+	}
+	if _, err = budget.ParsePolicy(string(policyJSON)); err != nil {
+		t.Fatal("shared policy rejected")
+	}
+	cmd.Env = append(cmd.Env, "BUTLER_EXECUTION_BUDGET_POLICY_JSON="+string(policyJSON))
 	log, err := os.OpenFile(filepath.Join(private, "broker.log"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
 	if err != nil {
 		t.Fatal(err)
@@ -381,6 +408,20 @@ func adaptiveNativeBroker(t *testing.T, pool *pgxpool.Pool, cat *catalog.Store, 
 	}
 	t.Cleanup(func() { _ = client.Close() })
 	return client
+}
+
+func adaptiveNativeBudgetPolicy() budget.Policy {
+	p := budget.DefaultPolicy()
+	p.Models["antigravity:gemini-3.8-flash-high"] = budget.ModelPrice{Basis: "subscription_no_overage"}
+	p.Models["local:google/embeddinggemma-2"] = budget.ModelPrice{Basis: "local_no_billing"}
+	p.ModelMillis = 300000
+	p.OutputTokens = 32768
+	p.Day = budget.Units{ModelTurns: 2656, Tokens: 352*1081344 + 2304*10240, ActiveMillis: 352*300000 + 2304*60000 + 256*p.ToolMillis, ProviderInputBytes: 352*8388608 + 2304*8192, ExternalCalls: 256, EgressBytes: 256 * p.ToolEgressBytes}
+	p.Task.ModelTurns = 45
+	p.Task.ActiveMillis = 9*300000 + 36*60000 + 8*p.ToolMillis
+	p.Task.ExternalCalls = 8
+	p.Task.EgressBytes = 8 * p.ToolEgressBytes
+	return p
 }
 
 // This test never runs in an ordinary suite. Native entry also requires a
@@ -555,23 +596,17 @@ func TestMemoryAdaptiveNativeComparison(t *testing.T) {
 		t.Fatal("private encrypted import failed")
 	}
 	authImported = true
+	setupStage = "provider_setup"
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
 	built, err := providerfactory.New(providerauth.NewManager(settings), log).Build(ctx, providerfactory.BuildConfig{ActiveProvider: "antigravity", AntigravityModel: "gemini-3.8-flash-high", Timeout: 300 * time.Second, AntigravityMaximumOutputTokens: 32768})
 	if err != nil {
 		t.Fatal("native profile unavailable")
 	}
 	provider = &adaptiveNativeProvider{ModelProvider: built.Provider, pool: pool}
-	b := budget.NewController(pool, budget.DefaultPolicy())
-	b.Policy.Models["antigravity:gemini-3.8-flash-high"] = budget.ModelPrice{Basis: "subscription_no_overage"}
-	b.Policy.Models["local:google/embeddinggemma-2"] = budget.ModelPrice{Basis: "local_no_billing"}
-	b.Policy.ModelMillis = 300000
-	b.Policy.OutputTokens = 32768
+	b := budget.NewController(pool, adaptiveNativeBudgetPolicy())
 	// The shared allowance includes352 cloud entries,1536 possible local query
 	// entries (static12 + adaptive3*12 per case), and96*8 index entries. All
 	// individual scopes and the fixed200-minute collection expiry still win.
-	b.Policy.Day = budget.Units{ModelTurns: 2656, Tokens: 352*1081344 + 2304*10240, ActiveMillis: 352*300000 + 2304*60000, ProviderInputBytes: 352*8388608 + 2304*8192}
-	b.Policy.Task.ModelTurns = 45
-	b.Policy.Task.ActiveMillis = 9*300000 + 36*60000
 	b.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	manifestPath := "/private/adaptive-deletion-anchor"
 	manifest := catalog.NewFileManifest(manifestPath)
@@ -579,6 +614,7 @@ func TestMemoryAdaptiveNativeComparison(t *testing.T) {
 		t.Fatal("privacy anchor unavailable")
 	}
 	cat = catalog.New(pool, manifest)
+	setupStage = "local_semantic_setup"
 	index, closeIndex := configureOwnedSemantic(log, cat, b)
 	if index == nil {
 		t.Fatal("actual qualified local semantic composition required")
@@ -588,7 +624,9 @@ func TestMemoryAdaptiveNativeComparison(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	broker := adaptiveNativeBroker(t, pool, cat, plan, index.Reader, manifestPath, proof)
+	setupStage = "broker_setup"
+	broker := adaptiveNativeBroker(t, pool, cat, plan, index.Reader, manifestPath, proof, b.Policy)
+	setupStage = "prompt_setup"
 	pm := promptmgmt.NewManager(settings)
 	on := true
 	if _, err = pm.Update(ctx, promptmgmt.UpdateRequest{BasePrompt: adaptiveNativeInstruction, Enabled: &on, UpdatedBy: "adaptive-native-frozen"}); err != nil {
@@ -673,16 +711,13 @@ func TestAdaptiveCollectorOwningFlowAndScopeIntegration(t *testing.T) {
 	if _, err := pool.Exec(ctx, `CREATE TABLE adaptive_native_window(singleton BOOLEAN PRIMARY KEY DEFAULT TRUE,paid_entries INTEGER NOT NULL DEFAULT 0,closed BOOLEAN NOT NULL DEFAULT FALSE);INSERT INTO adaptive_native_window(singleton)VALUES(TRUE);CREATE TABLE adaptive_native_imports(source_id TEXT PRIMARY KEY REFERENCES memory_sources(source_id),session_key TEXT NOT NULL REFERENCES sessions(session_key),case_id TEXT NOT NULL,arm TEXT NOT NULL,logical_source_id TEXT NOT NULL)`); err != nil {
 		t.Fatal(err)
 	}
-	manifest := catalog.NewFileManifest(filepath.Join(t.TempDir(), "anchor"))
+	manifestPath := filepath.Join(t.TempDir(), "anchor")
+	manifest := catalog.NewFileManifest(manifestPath)
 	if manifest.Initialize() != nil {
 		t.Fatal("anchor unavailable")
 	}
 	cat := catalog.New(pool, manifest)
-	b := budget.NewController(pool, budget.DefaultPolicy())
-	b.Policy.OutputTokens = 32768
-	b.Policy.ModelMillis = 300000
-	b.Policy.Models["antigravity:gemini-3.8-flash-high"] = budget.ModelPrice{Basis: "subscription_no_overage"}
-	b.Policy.Models["local:google/embeddinggemma-2"] = budget.ModelPrice{Basis: "local_no_billing"}
+	b := budget.NewController(pool, adaptiveNativeBudgetPolicy())
 	b.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	target, err := budget.NewLocalTarget("local-models:9090", "operator-pinned-service")
 	if err != nil {
@@ -728,6 +763,104 @@ func TestAdaptiveCollectorOwningFlowAndScopeIntegration(t *testing.T) {
 	if err = pool.QueryRow(ctx, `SELECT (SELECT count(*)FROM execution_model_attempts),(SELECT count(*)FROM accepted_inputs),(SELECT count(*)FROM accepted_inputs WHERE status IN('running','queued'))`).Scan(&attempts, &inputs, &unsealed); err != nil || attempts != 3 || inputs != 3 || unsealed != 0 {
 		t.Fatal("original was replayed or left claimable", attempts, inputs, unsealed, err)
 	}
+	t.Run("actual_broker", func(t *testing.T) {
+		if os.Getenv("BUTLER_MEMORY_READ_APP_BINARY") == "" {
+			t.Skip("actual Broker binary required for collector read composition")
+		}
+		broker := adaptiveNativeBroker(t, pool, cat, plan, reader, manifestPath, t.TempDir(), b.Policy)
+		p := &adaptiveNativeProvider{pool: pool, ModelProvider: &adaptiveCollectorReadProvider{}}
+		c.ID, c.Question = "collector-read-fixture", "Вспомни запись из документа КН-123."
+		c.History[0].ID, c.History[0].Body = "collector-read-original", "КН-123. Выбран синий цвет."
+		controls.Cases[0].CaseID, controls.Cases[0].Sources[0].SourceID = c.ID, c.History[0].ID
+		_, ob, _ := runAdaptiveNativeCase(t, ctx, pool, cat, index, plan, p, b, broker, pm, c, controls, 0, "retrieval_adaptive", log)
+		if ob.Status != "completed" {
+			t.Fatal("actual Broker collector read failed", ob.Status, ob.Reason)
+		}
+		var reads, opened int
+		if err := pool.QueryRow(ctx, `SELECT (SELECT count(*)FROM memory_retrieval_operations WHERE state='observed'),(SELECT count(*)FROM memory_retrieval_opened)`).Scan(&reads, &opened); err != nil || reads != 2 || opened != 1 {
+			t.Fatal("missing actual Broker read receipts", reads, opened, err)
+		}
+		calls := p.snapshot()
+		audit := auditAdaptiveNativeCitations(ctx, pool, cat, calls).(map[string]any)
+		observations := audit["observations"].([]adaptiveCitationObservation)
+		if audit["structural_citation_failures"] != 0 || len(observations) != 1 || !observations[0].CommittedFinal || !observations[0].ConfirmedReceipt {
+			t.Fatal("actual Broker citation correlation failed")
+		}
+		// Alter only the independent audit's captured text. The real persisted
+		// Broker receipt must not confirm the forged observation.
+		for _, call := range calls {
+			if call.Continuation == nil {
+				continue
+			}
+			var envelope struct {
+				Status string             `json:"status"`
+				Result readcontrol.Result `json:"result"`
+			}
+			if json.Unmarshal([]byte(call.Continuation.ToolResultJSON), &envelope) != nil {
+				t.Fatal("controlled capture invalid")
+			}
+			for i := range envelope.Result.Items {
+				if envelope.Result.Items[i].ReadRef != "" {
+					envelope.Result.Items[i].Text += " forged"
+				}
+			}
+			raw, _ := json.Marshal(envelope)
+			call.Continuation.ToolResultJSON = string(raw)
+		}
+		audit = auditAdaptiveNativeCitations(ctx, pool, cat, calls).(map[string]any)
+		observations = audit["observations"].([]adaptiveCitationObservation)
+		if len(observations) != 1 || observations[0].ConfirmedReceipt || audit["structural_citation_failures"] != 1 {
+			t.Fatal("audit accepted text not bound to actual receipt")
+		}
+		if err := pool.QueryRow(ctx, `SELECT (SELECT count(*)FROM execution_model_attempts),(SELECT count(*)FROM accepted_inputs),(SELECT count(*)FROM accepted_inputs WHERE status IN('running','queued'))`).Scan(&attempts, &inputs, &unsealed); err != nil || attempts != 6 || inputs != 4 || unsealed != 0 {
+			t.Fatal("read loop replayed or unsealed original", attempts, inputs, unsealed, err)
+		}
+	})
+}
+
+// Deterministic control for the collector, using only actual returned source
+// identities and opened text. This provider never participates in native scoring.
+type adaptiveCollectorReadProvider struct{ memoryFixtureProvider }
+
+func (*adaptiveCollectorReadProvider) InferenceLimits() (int64, int64) { return 1048576, 32768 }
+func (*adaptiveCollectorReadProvider) InferenceTimeout() time.Duration { return 300 * time.Second }
+func (p *adaptiveCollectorReadProvider) tool(run, suffix, name string, args readcontrol.Args) transport.EventStream {
+	raw, _ := json.Marshal(args)
+	e := transport.NewToolCallRequestedEvent(run, p.Name(), transport.ToolCallRequest{ToolCallRef: run + suffix, ToolName: name, ArgsJSON: string(raw)})
+	e.Usage = &transport.Usage{InputTokens: 120, OutputTokens: 30, TotalTokens: 170}
+	return nativeScriptedStream(e)
+}
+func (p *adaptiveCollectorReadProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
+	if err := transport.CheckInferenceAuthority(ctx); err != nil {
+		return nil, err
+	}
+	if len(r.ToolDefinitions) != 3 {
+		return nil, errors.New("controlled read tools unavailable")
+	}
+	return p.tool(r.Context.RunID, "-collector-search", readcontrol.Search, readcontrol.Args{Query: "КН-123", Strategy: "catalog_exact", Limit: 4}), nil
+}
+func (p *adaptiveCollectorReadProvider) SubmitToolResult(ctx context.Context, r transport.SubmitToolResultRequest) (transport.EventStream, error) {
+	if err := transport.CheckInferenceAuthority(ctx); err != nil {
+		return nil, err
+	}
+	var envelope struct {
+		Status string             `json:"status"`
+		Result readcontrol.Result `json:"result"`
+	}
+	if json.Unmarshal([]byte(r.ToolResultJSON), &envelope) != nil || envelope.Status != "completed" || len(envelope.Result.Items) != 1 {
+		return nil, errors.New("controlled actual read failed")
+	}
+	x := envelope.Result.Items[0]
+	if strings.HasSuffix(r.ToolCallRef, "-collector-search") {
+		return p.tool(r.RunID, "-collector-open", readcontrol.Open, readcontrol.Args{SourceID: x.Source.ID, Revision: x.Source.Revision, AccessRevision: x.Source.AccessRevision, Hash: x.Source.Hash, FragmentKey: x.FragmentKey, MaxChars: 4096}), nil
+	}
+	if !strings.HasSuffix(r.ToolCallRef, "-collector-open") || x.ReadRef == "" {
+		return nil, errors.New("controlled opened receipt absent")
+	}
+	a := adaptive.Answer{Answer: "Цвет синий.", Citations: []adaptive.Citation{{Claim: "Контрольный цвет синий.", ReadRef: x.ReadRef, Quote: x.Text, QuoteOffset: 0}}, Unknowns: []string{}}
+	raw, _ := json.Marshal(a)
+	e := transport.NewAssistantFinalEvent(r.RunID, p.Name(), transport.AssistantFinal{Content: string(raw), FinishReason: "STOP", Usage: &transport.Usage{InputTokens: 120, OutputTokens: 30, TotalTokens: 170}})
+	return nativeScriptedStream(e, transport.NewTerminalEvent(r.RunID, transport.EventTypeRunCompleted, p.Name())), nil
 }
 
 func runAdaptiveNativeCase(t *testing.T, ctx context.Context, pool *pgxpool.Pool, cat *catalog.Store, index *indexing.Runtime, plan *adaptive.Store, provider *adaptiveNativeProvider, b *budget.Controller, broker *tools.BrokerClient, pm *promptmgmt.Manager, c acceptance.MemorySemanticCase, controls adaptiveImportControls, ci int, arm string, log *slog.Logger) (acceptance.MemoryInput, acceptance.MemoryObservation, map[string]catalog.SourceRef) {
@@ -1036,7 +1169,7 @@ func auditAdaptiveNativeCitations(ctx context.Context, pool *pgxpool.Pool, cat *
 				current, e := cat.Get(owner, item.Source.ID)
 				o.CurrentSource = e == nil && current.Revision == item.Source.Revision && current.AccessRevision == item.Source.AccessRevision && current.Hash == item.Source.Hash
 			}
-			_ = pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_retrieval_opened x JOIN memory_retrieval_operations o USING(effect_id) JOIN action_intents i ON i.effect_id=o.effect_id AND i.run_id=o.run_id AND i.tool_call_id=o.tool_call_id JOIN action_effects e ON e.action_id=i.effect_id JOIN action_effect_evidence v ON v.action_id=e.action_id WHERE x.read_ref=$1 AND o.run_id=$2 AND o.state='observed' AND o.tool_name IN('memory.open','memory.neighbors') AND e.state='effect_confirmed' AND v.evidence->>'source'='runtime_response' AND v.evidence->>'verdict'='effect_confirmed' AND v.evidence->>'source_action_id'=i.action_id AND v.evidence->>'source_run_id'=o.run_id AND v.evidence->>'source_tool_call_id'=o.tool_call_id AND v.evidence->>'result_digest'=o.result_hash AND x.source_id=$3 AND x.source_revision=$4 AND x.access_revision=$5 AND x.content_hash=$6)`, citation.ReadRef, run, item.Source.ID, item.Source.Revision, item.Source.AccessRevision, item.Source.Hash).Scan(&o.ConfirmedReceipt)
+			_ = pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_retrieval_opened x JOIN memory_retrieval_operations o USING(effect_id) JOIN action_intents i ON i.effect_id=o.effect_id AND i.run_id=o.run_id AND i.tool_call_id=o.tool_call_id JOIN action_effects e ON e.action_id=i.effect_id JOIN action_effect_evidence v ON v.action_id=e.action_id WHERE x.read_ref=$1 AND o.run_id=$2 AND o.state='observed' AND o.tool_name IN('memory.open','memory.neighbors') AND e.state='effect_confirmed' AND v.evidence->>'source'='runtime_response' AND v.evidence->>'verdict'='effect_confirmed' AND v.evidence->>'source_action_id'=i.action_id AND v.evidence->>'source_run_id'=o.run_id AND v.evidence->>'source_tool_call_id'=o.tool_call_id AND v.evidence->>'result_digest'=o.result_hash AND x.source_id=$3 AND x.source_revision=$4 AND x.access_revision=$5 AND x.content_hash=$6 AND x.fragment_key=$7 AND x.text_hash=$8 AND x.char_count=$9)`, citation.ReadRef, run, item.Source.ID, item.Source.Revision, item.Source.AccessRevision, item.Source.Hash, item.FragmentKey, adaptive.Digest([]byte(item.Text)), utf8.RuneCountInString(item.Text)).Scan(&o.ConfirmedReceipt)
 			if !o.ActuallyProvided || !o.ExactQuote || !o.CurrentSource || !o.ConfirmedReceipt {
 				structuralFailures++
 				if committed {
