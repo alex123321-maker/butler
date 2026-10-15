@@ -148,8 +148,18 @@ observation/task/run identities and unique original artifact/canary payloads.
 Common independently supported wording (README.md, alpha, ready=true and the
 same procedure semantics) is not proof of leakage: original02 and current live
 tools legitimately repeat it. Content-free denial/audit history is not deleted
-source text. Any per-source canary must be declared and pinned before original
-work; it cannot be invented after viewing note output or control answers.
+source text. `originals-v1.json` declares four exact per-original README canary
+comments before any source work. The recipient preserves each comment during
+the ready-only patch. Original01's exact comment and artifact provenance are
+deletion canaries; they are not a required note field or a lesson-writing hint.
+Original02 has a different comment and may independently support shared words.
+Control recipients use new instance content with none of the four original
+comments, identically across arms; their exact seed hashes must be frozen before
+original work. Canaries cannot be invented after viewing note output or control
+answers. Source content, canary and opaque instance IDs change current revision
+and source hashes, not the compiled environment compatibility fingerprint. That
+fingerprint still includes actual recipient/runtime contracts and readiness
+semantics; v2 drift must change it while v1 alpha/beta keep it identical.
 
 The model must use fresh logical provider contexts; no provider session/history,
 retrieved result, answer, turn checkpoint, Working Memory or semantic answer cache
