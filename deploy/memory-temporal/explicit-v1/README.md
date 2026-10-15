@@ -73,6 +73,8 @@ successful quality observation. Larger finite capacity accommodates source
 verification without tuning the answer or rubric. The old85+v1+v2 cumulative used
 vector is carried once, including all three earlier NULL usages; it is not added
 to its own predecessor vectors. Conservative reservations remain distinct from
-observed tokens and unknown invoice cost. Each owning execution is bounded80min,
+observed tokens and unknown invoice cost. Each owning execution is bounded40min,
 the entire collector16hours and frozen profile18hours. Current policy/claim/day
-deadlines and revocation/privacy controls can still terminate work sooner.
+deadlines and revocation/privacy controls can still terminate work sooner. This
+existing owning-service ceiling can terminate a slow strategy before all twelve
+300second model admissions are used; the native test does not relax it.

@@ -54,7 +54,7 @@ func temporalLoadCorpus(t *testing.T) temporalCorpus {
 	if err != nil || acceptance.MemoryBytesSHA256(raw) != "4c245d15d9dfb57d42649d7e560f961e24251869c5eb8cbfed278fc90adfb512" || json.Unmarshal(raw, &c) != nil || c.Version != "temporal-explicit-v1" || len(c.Cases) != 12 {
 		t.Fatal("prospective temporal corpus differs")
 	}
-	for _, file := range []struct{ name, hash string }{{"controls.json", "7c69c1c89b046cfccf9eb5a564a845d3debbed0a98257c89fc9cd979657f36a0"}, {"README.md", "00cbfb199e85a51c34eb74c10d6035feaa9eb114400a2b34b1e8f509328d7fa6"}} {
+	for _, file := range []struct{ name, hash string }{{"controls.json", "c291363ba7a79c22cc9c2aaa86ce7dacbf18147f90855c3d4c52b06d401e05a9"}, {"README.md", "cbff069be8557f28d3d9cc56d35ad44b2cad4923b3c315bae5f1568ef5e5a9a5"}} {
 		raw, e := os.ReadFile("../../../../deploy/memory-temporal/explicit-v1/" + file.name)
 		if e != nil || acceptance.MemoryBytesSHA256(raw) != file.hash {
 			t.Fatal("prospective controls/method differs")

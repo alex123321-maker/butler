@@ -214,7 +214,7 @@ func temporalRunOriginal(t *testing.T, ctx context.Context, pool *pgxpool.Pool, 
 		return out, err
 	}}, log)
 	x := &temporalExecutor{base: base, done: make(chan temporalExecution, 1)}
-	worker, err := durableinput.NewServiceWithExecutionTimeout(inputs, repo, x, runs, log, 80*time.Minute)
+	worker, err := durableinput.NewServiceWithExecutionTimeout(inputs, repo, x, runs, log, 40*time.Minute)
 	if err != nil {
 		t.Fatal(err)
 	}
