@@ -29,7 +29,8 @@ stop(){
  "${compose[@]}" stop --timeout 2 orchestrator > "$proof/service-stop.log" 2>&1 || true
 }
 trap stop EXIT
-[[ "$(docker exec butler-issue82-postgres-1 psql -U butler -d memory_jobs_test -Atc 'SELECT (SELECT count(*) FROM memory_model_attempts)+(SELECT count(*) FROM execution_model_attempts)')" == 2 ]]
+bash "$base/current/scripts/dev/memory-jobs-native-ledger-lab.sh" "$base" > "$proof/ledger-before.json"
+jq -e '.control=="disabled" and .background_attempts==2 and .foreground_attempts==0 and .reservations==2 and .old_attempts==2 and .old_unknown_usage==2 and .active_policies==0 and .active_jobs==0 and .active_inputs==0 and .active_runs==0 and .active_leases==0' "$proof/ledger-before.json" >/dev/null
 request http://127.0.0.1:18282/api/v4/memory/model-jobs > "$proof/before.json"
 request -d '{"external_key":"issue82-native-v3-source","source_kind":"document","scope_type":"user","scope_id":"issue82-owner","title":"Bounded diagnostic source","body":"ISSUE82_BACKGROUND_SOURCE_20261015"}' http://127.0.0.1:18282/api/v4/memory/sources > "$proof/source.json"
 policy(){
@@ -48,6 +49,8 @@ wait_job(){
 }
 policy issue82-native-v3 cloud_allowed source_changed '' '' > "$proof/policy-request.json"
 request -d @"$proof/policy-request.json" http://127.0.0.1:18282/api/v4/memory/model-policies > "$proof/policy.json"
+bash "$base/current/scripts/dev/memory-jobs-native-ledger-lab.sh" "$base" > "$proof/ledger-admission.json"
+jq -e '.foreign_policies==0 and .active_policies==1 and .active_jobs==0 and .active_inputs==0 and .active_runs==0 and .active_leases==0 and .reservations==2' "$proof/ledger-admission.json" >/dev/null
 request -d '{"state":"enabled"}' http://127.0.0.1:18282/api/v4/memory/model-worker-control > "$proof/start.json"
 wait_job issue82-native-v3
 result=$(jq -r '.policies[]|select(.policy_id=="issue82-native-v3")|.jobs[0].result_source_id' "$proof/issue82-native-v3-jobs.json")
@@ -99,9 +102,27 @@ request -d @"$proof/task-complete-request.json" "http://127.0.0.1:18282/api/v3/t
 policy issue82-completed-v3 cloud_allowed session_completed "$task" "$run" > "$proof/completed-request.json"
 request -d @"$proof/completed-request.json" http://127.0.0.1:18282/api/v4/memory/model-policies > "$proof/completed-policy.json"
 wait_job issue82-completed-v3
+completed_result=$(jq -r '.policies[]|select(.policy_id=="issue82-completed-v3")|.jobs[0].result_source_id' "$proof/issue82-completed-v3-jobs.json")
+request "http://127.0.0.1:18282/api/v4/memory/source?source_id=$completed_result" > "$proof/completed-result.json"
 request "http://127.0.0.1:18282/api/v3/tasks/$task" > "$proof/task-final.json"
 jq -e '.task.status=="completed"' "$proof/task-final.json" >/dev/null
 request http://127.0.0.1:18282/api/v4/memory/model-jobs > "$proof/jobs-final.json"
 jq -e '.policies[]|select(.policy_id=="issue82-local-v3")|.jobs[0]|.status=="pending"' "$proof/jobs-final.json" >/dev/null
 curl -fsS http://127.0.0.1:18282/metrics > "$proof/metrics.txt"
+bash "$base/current/scripts/dev/memory-jobs-native-ledger-lab.sh" "$base" "$task" > "$proof/ledger-final.json"
+jq -e --slurpfile before "$proof/ledger-before.json" '
+ .background_attempts==4 and .foreground_attempts==1 and .reservations==5 and
+ .old_attempts==2 and .old_unknown_usage==2 and
+ .old_attempts_digest==$before[0].old_attempts_digest and
+ .old_reservations_digest==$before[0].old_reservations_digest and
+ .foreign_policies==0 and .active_inputs==0 and .active_runs==0 and .active_leases==0 and
+ .local_attempts==0 and .root.used.model_turns==2 and .root.limits.model_turns==2 and
+ (.foreground|length==1 and .[0].actual_input_tokens!=null and .[0].actual_output_tokens!=null) and
+ (.publications|length==2 and (map(.source_id)|unique|length)==2 and
+  all(.job_status=="done" and .attempt_state=="published" and .source_status=="active" and
+      .usage!=null and .parent_status=="active" and .parent_revision==.parent_current_revision)) and
+ ([.scopes[]|select(.kind=="owner_day" and .owner_id=="issue82-owner")]|length==1 and
+  .[0].used_json.model_turns==5 and .[0].used_json.tokens==5283840 and
+  .[0].used_json.active_millis==450000 and .[0].used_json.provider_input_bytes==41943040)
+' "$proof/ledger-final.json" >/dev/null
 printf 'PASS\n' > "$proof/complete"
