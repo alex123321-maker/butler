@@ -1,0 +1,12 @@
+{
+  "task_revision": 3,
+  "run_id": "run-1792084659371567219-5a10a74594b1310d",
+  "summary": "Verified synthetic foreground marker",
+  "evidence_refs": [
+    "run:run-1792084659371567219-5a10a74594b1310d"
+  ],
+  "verified_criteria": [
+    "exact foreground marker"
+  ],
+  "owner_confirmed": true
+}

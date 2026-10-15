@@ -1,0 +1,12 @@
+{
+  "original_revision": "dc7a44155270b0c878336f7dbdc186aeda8ea1e8",
+  "original_expires_at": "2026-10-15T17:27:57Z",
+  "remaining_model_turns": 2,
+  "cumulative_max_attempts": 12,
+  "prefix_published_attempts": 1,
+  "provider": "antigravity",
+  "model": "gemini-3.8-flash-high",
+  "network_route": "isolated_proxy",
+  "no_window_extension": true,
+  "no_refund": true
+}

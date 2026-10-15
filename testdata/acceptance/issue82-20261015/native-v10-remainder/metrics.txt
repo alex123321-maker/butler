@@ -1,0 +1,405 @@
+# HELP butler_memory_durable_active_generations Read-only PostgreSQL memory observation: active_generations
+# TYPE butler_memory_durable_active_generations gauge
+butler_memory_durable_active_generations 0
+# HELP butler_memory_durable_building_generations Read-only PostgreSQL memory observation: building_generations
+# TYPE butler_memory_durable_building_generations gauge
+butler_memory_durable_building_generations 0
+# HELP butler_memory_durable_completed Read-only PostgreSQL memory observation: completed
+# TYPE butler_memory_durable_completed gauge
+butler_memory_durable_completed 2
+# HELP butler_memory_durable_failed Read-only PostgreSQL memory observation: failed
+# TYPE butler_memory_durable_failed gauge
+butler_memory_durable_failed 9
+# HELP butler_memory_durable_model_attempts Read-only PostgreSQL memory observation: model_attempts
+# TYPE butler_memory_durable_model_attempts gauge
+butler_memory_durable_model_attempts 11
+# HELP butler_memory_durable_model_reserved_cost_micros Read-only PostgreSQL memory observation: model_reserved_cost_micros
+# TYPE butler_memory_durable_model_reserved_cost_micros gauge
+butler_memory_durable_model_reserved_cost_micros 0
+# HELP butler_memory_durable_model_reserved_tokens Read-only PostgreSQL memory observation: model_reserved_tokens
+# TYPE butler_memory_durable_model_reserved_tokens gauge
+butler_memory_durable_model_reserved_tokens 1.1624448e+07
+# HELP butler_memory_durable_model_unknown_usage Read-only PostgreSQL memory observation: model_unknown_usage
+# TYPE butler_memory_durable_model_unknown_usage gauge
+butler_memory_durable_model_unknown_usage 9
+# HELP butler_memory_durable_observation_success Read-only PostgreSQL memory observation: observation_success
+# TYPE butler_memory_durable_observation_success gauge
+butler_memory_durable_observation_success 1
+# HELP butler_memory_durable_observed_at_seconds Read-only PostgreSQL memory observation: observed_at_seconds
+# TYPE butler_memory_durable_observed_at_seconds gauge
+butler_memory_durable_observed_at_seconds 1.792084674e+09
+# HELP butler_memory_durable_oldest_pending_seconds Read-only PostgreSQL memory observation: oldest_pending_seconds
+# TYPE butler_memory_durable_oldest_pending_seconds gauge
+butler_memory_durable_oldest_pending_seconds 286.229914
+# HELP butler_memory_durable_pending Read-only PostgreSQL memory observation: pending
+# TYPE butler_memory_durable_pending gauge
+butler_memory_durable_pending 1
+# HELP butler_memory_durable_retries Read-only PostgreSQL memory observation: retries
+# TYPE butler_memory_durable_retries gauge
+butler_memory_durable_retries 0
+# HELP butler_memory_durable_running Read-only PostgreSQL memory observation: running
+# TYPE butler_memory_durable_running gauge
+butler_memory_durable_running 0
+# HELP butler_memory_durable_verified_generations Read-only PostgreSQL memory observation: verified_generations
+# TYPE butler_memory_durable_verified_generations gauge
+butler_memory_durable_verified_generations 0
+# HELP butler_memory_items Butler metric butler_memory_items.
+# TYPE butler_memory_items histogram
+butler_memory_items_bucket{disposition="excluded",le="0.005"} 1
+butler_memory_items_bucket{disposition="excluded",le="0.01"} 1
+butler_memory_items_bucket{disposition="excluded",le="0.025"} 1
+butler_memory_items_bucket{disposition="excluded",le="0.05"} 1
+butler_memory_items_bucket{disposition="excluded",le="0.1"} 1
+butler_memory_items_bucket{disposition="excluded",le="0.25"} 1
+butler_memory_items_bucket{disposition="excluded",le="0.5"} 1
+butler_memory_items_bucket{disposition="excluded",le="1"} 1
+butler_memory_items_bucket{disposition="excluded",le="2.5"} 1
+butler_memory_items_bucket{disposition="excluded",le="5"} 1
+butler_memory_items_bucket{disposition="excluded",le="10"} 1
+butler_memory_items_bucket{disposition="excluded",le="+Inf"} 1
+butler_memory_items_sum{disposition="excluded"} 0
+butler_memory_items_count{disposition="excluded"} 1
+butler_memory_items_bucket{disposition="found",le="0.005"} 1
+butler_memory_items_bucket{disposition="found",le="0.01"} 1
+butler_memory_items_bucket{disposition="found",le="0.025"} 1
+butler_memory_items_bucket{disposition="found",le="0.05"} 1
+butler_memory_items_bucket{disposition="found",le="0.1"} 1
+butler_memory_items_bucket{disposition="found",le="0.25"} 1
+butler_memory_items_bucket{disposition="found",le="0.5"} 1
+butler_memory_items_bucket{disposition="found",le="1"} 1
+butler_memory_items_bucket{disposition="found",le="2.5"} 1
+butler_memory_items_bucket{disposition="found",le="5"} 1
+butler_memory_items_bucket{disposition="found",le="10"} 1
+butler_memory_items_bucket{disposition="found",le="+Inf"} 1
+butler_memory_items_sum{disposition="found"} 0
+butler_memory_items_count{disposition="found"} 1
+butler_memory_items_bucket{disposition="selected",le="0.005"} 1
+butler_memory_items_bucket{disposition="selected",le="0.01"} 1
+butler_memory_items_bucket{disposition="selected",le="0.025"} 1
+butler_memory_items_bucket{disposition="selected",le="0.05"} 1
+butler_memory_items_bucket{disposition="selected",le="0.1"} 1
+butler_memory_items_bucket{disposition="selected",le="0.25"} 1
+butler_memory_items_bucket{disposition="selected",le="0.5"} 1
+butler_memory_items_bucket{disposition="selected",le="1"} 1
+butler_memory_items_bucket{disposition="selected",le="2.5"} 1
+butler_memory_items_bucket{disposition="selected",le="5"} 1
+butler_memory_items_bucket{disposition="selected",le="10"} 1
+butler_memory_items_bucket{disposition="selected",le="+Inf"} 1
+butler_memory_items_sum{disposition="selected"} 0
+butler_memory_items_count{disposition="selected"} 1
+# HELP butler_memory_limitations_total Butler metric butler_memory_limitations_total.
+# TYPE butler_memory_limitations_total counter
+butler_memory_limitations_total{reason="embedding_unavailable",stage="episodic_search"} 1
+# HELP butler_memory_operation_duration_seconds Butler metric butler_memory_operation_duration_seconds.
+# TYPE butler_memory_operation_duration_seconds histogram
+butler_memory_operation_duration_seconds_bucket{stage="bundle",le="0.005"} 0
+butler_memory_operation_duration_seconds_bucket{stage="bundle",le="0.01"} 1
+butler_memory_operation_duration_seconds_bucket{stage="bundle",le="0.025"} 1
+butler_memory_operation_duration_seconds_bucket{stage="bundle",le="0.05"} 1
+butler_memory_operation_duration_seconds_bucket{stage="bundle",le="0.1"} 1
+butler_memory_operation_duration_seconds_bucket{stage="bundle",le="0.25"} 1
+butler_memory_operation_duration_seconds_bucket{stage="bundle",le="0.5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="bundle",le="1"} 1
+butler_memory_operation_duration_seconds_bucket{stage="bundle",le="2.5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="bundle",le="5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="bundle",le="10"} 1
+butler_memory_operation_duration_seconds_bucket{stage="bundle",le="+Inf"} 1
+butler_memory_operation_duration_seconds_sum{stage="bundle"} 0.008497269
+butler_memory_operation_duration_seconds_count{stage="bundle"} 1
+butler_memory_operation_duration_seconds_bucket{stage="context",le="0.005"} 1
+butler_memory_operation_duration_seconds_bucket{stage="context",le="0.01"} 1
+butler_memory_operation_duration_seconds_bucket{stage="context",le="0.025"} 1
+butler_memory_operation_duration_seconds_bucket{stage="context",le="0.05"} 1
+butler_memory_operation_duration_seconds_bucket{stage="context",le="0.1"} 1
+butler_memory_operation_duration_seconds_bucket{stage="context",le="0.25"} 1
+butler_memory_operation_duration_seconds_bucket{stage="context",le="0.5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="context",le="1"} 1
+butler_memory_operation_duration_seconds_bucket{stage="context",le="2.5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="context",le="5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="context",le="10"} 1
+butler_memory_operation_duration_seconds_bucket{stage="context",le="+Inf"} 1
+butler_memory_operation_duration_seconds_sum{stage="context"} 9.987e-06
+butler_memory_operation_duration_seconds_count{stage="context"} 1
+butler_memory_operation_duration_seconds_bucket{stage="document_search",le="0.005"} 1
+butler_memory_operation_duration_seconds_bucket{stage="document_search",le="0.01"} 1
+butler_memory_operation_duration_seconds_bucket{stage="document_search",le="0.025"} 1
+butler_memory_operation_duration_seconds_bucket{stage="document_search",le="0.05"} 1
+butler_memory_operation_duration_seconds_bucket{stage="document_search",le="0.1"} 1
+butler_memory_operation_duration_seconds_bucket{stage="document_search",le="0.25"} 1
+butler_memory_operation_duration_seconds_bucket{stage="document_search",le="0.5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="document_search",le="1"} 1
+butler_memory_operation_duration_seconds_bucket{stage="document_search",le="2.5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="document_search",le="5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="document_search",le="10"} 1
+butler_memory_operation_duration_seconds_bucket{stage="document_search",le="+Inf"} 1
+butler_memory_operation_duration_seconds_sum{stage="document_search"} 7.473e-06
+butler_memory_operation_duration_seconds_count{stage="document_search"} 1
+butler_memory_operation_duration_seconds_bucket{stage="episodic_search",le="0.005"} 1
+butler_memory_operation_duration_seconds_bucket{stage="episodic_search",le="0.01"} 1
+butler_memory_operation_duration_seconds_bucket{stage="episodic_search",le="0.025"} 1
+butler_memory_operation_duration_seconds_bucket{stage="episodic_search",le="0.05"} 1
+butler_memory_operation_duration_seconds_bucket{stage="episodic_search",le="0.1"} 1
+butler_memory_operation_duration_seconds_bucket{stage="episodic_search",le="0.25"} 1
+butler_memory_operation_duration_seconds_bucket{stage="episodic_search",le="0.5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="episodic_search",le="1"} 1
+butler_memory_operation_duration_seconds_bucket{stage="episodic_search",le="2.5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="episodic_search",le="5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="episodic_search",le="10"} 1
+butler_memory_operation_duration_seconds_bucket{stage="episodic_search",le="+Inf"} 1
+butler_memory_operation_duration_seconds_sum{stage="episodic_search"} 2.5423e-05
+butler_memory_operation_duration_seconds_count{stage="episodic_search"} 1
+butler_memory_operation_duration_seconds_bucket{stage="profile_load",le="0.005"} 1
+butler_memory_operation_duration_seconds_bucket{stage="profile_load",le="0.01"} 1
+butler_memory_operation_duration_seconds_bucket{stage="profile_load",le="0.025"} 1
+butler_memory_operation_duration_seconds_bucket{stage="profile_load",le="0.05"} 1
+butler_memory_operation_duration_seconds_bucket{stage="profile_load",le="0.1"} 1
+butler_memory_operation_duration_seconds_bucket{stage="profile_load",le="0.25"} 1
+butler_memory_operation_duration_seconds_bucket{stage="profile_load",le="0.5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="profile_load",le="1"} 1
+butler_memory_operation_duration_seconds_bucket{stage="profile_load",le="2.5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="profile_load",le="5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="profile_load",le="10"} 1
+butler_memory_operation_duration_seconds_bucket{stage="profile_load",le="+Inf"} 1
+butler_memory_operation_duration_seconds_sum{stage="profile_load"} 0.001605727
+butler_memory_operation_duration_seconds_count{stage="profile_load"} 1
+butler_memory_operation_duration_seconds_bucket{stage="search",le="0.005"} 0
+butler_memory_operation_duration_seconds_bucket{stage="search",le="0.01"} 1
+butler_memory_operation_duration_seconds_bucket{stage="search",le="0.025"} 1
+butler_memory_operation_duration_seconds_bucket{stage="search",le="0.05"} 1
+butler_memory_operation_duration_seconds_bucket{stage="search",le="0.1"} 1
+butler_memory_operation_duration_seconds_bucket{stage="search",le="0.25"} 1
+butler_memory_operation_duration_seconds_bucket{stage="search",le="0.5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="search",le="1"} 1
+butler_memory_operation_duration_seconds_bucket{stage="search",le="2.5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="search",le="5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="search",le="10"} 1
+butler_memory_operation_duration_seconds_bucket{stage="search",le="+Inf"} 1
+butler_memory_operation_duration_seconds_sum{stage="search"} 0.008431968
+butler_memory_operation_duration_seconds_count{stage="search"} 1
+butler_memory_operation_duration_seconds_bucket{stage="summary_load",le="0.005"} 1
+butler_memory_operation_duration_seconds_bucket{stage="summary_load",le="0.01"} 1
+butler_memory_operation_duration_seconds_bucket{stage="summary_load",le="0.025"} 1
+butler_memory_operation_duration_seconds_bucket{stage="summary_load",le="0.05"} 1
+butler_memory_operation_duration_seconds_bucket{stage="summary_load",le="0.1"} 1
+butler_memory_operation_duration_seconds_bucket{stage="summary_load",le="0.25"} 1
+butler_memory_operation_duration_seconds_bucket{stage="summary_load",le="0.5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="summary_load",le="1"} 1
+butler_memory_operation_duration_seconds_bucket{stage="summary_load",le="2.5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="summary_load",le="5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="summary_load",le="10"} 1
+butler_memory_operation_duration_seconds_bucket{stage="summary_load",le="+Inf"} 1
+butler_memory_operation_duration_seconds_sum{stage="summary_load"} 0.000305277
+butler_memory_operation_duration_seconds_count{stage="summary_load"} 1
+butler_memory_operation_duration_seconds_bucket{stage="working_load",le="0.005"} 1
+butler_memory_operation_duration_seconds_bucket{stage="working_load",le="0.01"} 1
+butler_memory_operation_duration_seconds_bucket{stage="working_load",le="0.025"} 1
+butler_memory_operation_duration_seconds_bucket{stage="working_load",le="0.05"} 1
+butler_memory_operation_duration_seconds_bucket{stage="working_load",le="0.1"} 1
+butler_memory_operation_duration_seconds_bucket{stage="working_load",le="0.25"} 1
+butler_memory_operation_duration_seconds_bucket{stage="working_load",le="0.5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="working_load",le="1"} 1
+butler_memory_operation_duration_seconds_bucket{stage="working_load",le="2.5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="working_load",le="5"} 1
+butler_memory_operation_duration_seconds_bucket{stage="working_load",le="10"} 1
+butler_memory_operation_duration_seconds_bucket{stage="working_load",le="+Inf"} 1
+butler_memory_operation_duration_seconds_sum{stage="working_load"} 2.6609e-05
+butler_memory_operation_duration_seconds_count{stage="working_load"} 1
+# HELP butler_memory_operations_total Butler metric butler_memory_operations_total.
+# TYPE butler_memory_operations_total counter
+butler_memory_operations_total{outcome="disabled",stage="episodic_search"} 1
+butler_memory_operations_total{outcome="disabled",stage="working_load"} 1
+butler_memory_operations_total{outcome="empty",stage="profile_load"} 1
+butler_memory_operations_total{outcome="empty",stage="summary_load"} 1
+butler_memory_operations_total{outcome="success",stage="bundle"} 1
+butler_memory_operations_total{outcome="success",stage="context"} 1
+butler_memory_operations_total{outcome="unknown",stage="document_search"} 1
+butler_memory_operations_total{outcome="unknown",stage="search"} 1
+# HELP butler_memory_retrievals_total Total number of Butler memory retrieval operations.
+# TYPE butler_memory_retrievals_total counter
+butler_memory_retrievals_total{memory_type="chunk",service="memory-service",status="miss"} 1
+butler_memory_retrievals_total{memory_type="episodic",service="memory-service",status="miss"} 1
+butler_memory_retrievals_total{memory_type="profile",service="memory-service",status="miss"} 1
+# HELP butler_request_duration_seconds Latency of Butler request handling in seconds.
+# TYPE butler_request_duration_seconds histogram
+butler_request_duration_seconds_bucket{operation="GET /api/v2/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="0.005"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v2/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="0.01"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v2/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="0.025"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v2/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="0.05"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v2/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="0.1"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v2/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="0.25"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v2/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="0.5"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v2/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="1"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v2/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="2.5"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v2/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="5"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v2/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="10"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v2/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="+Inf"} 1
+butler_request_duration_seconds_sum{operation="GET /api/v2/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator"} 0.003618001
+butler_request_duration_seconds_count{operation="GET /api/v2/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v3/inputs/input-6a7a1c8442e7d7ecfe90249974205752",service="orchestrator",le="0.005"} 8
+butler_request_duration_seconds_bucket{operation="GET /api/v3/inputs/input-6a7a1c8442e7d7ecfe90249974205752",service="orchestrator",le="0.01"} 8
+butler_request_duration_seconds_bucket{operation="GET /api/v3/inputs/input-6a7a1c8442e7d7ecfe90249974205752",service="orchestrator",le="0.025"} 8
+butler_request_duration_seconds_bucket{operation="GET /api/v3/inputs/input-6a7a1c8442e7d7ecfe90249974205752",service="orchestrator",le="0.05"} 8
+butler_request_duration_seconds_bucket{operation="GET /api/v3/inputs/input-6a7a1c8442e7d7ecfe90249974205752",service="orchestrator",le="0.1"} 8
+butler_request_duration_seconds_bucket{operation="GET /api/v3/inputs/input-6a7a1c8442e7d7ecfe90249974205752",service="orchestrator",le="0.25"} 8
+butler_request_duration_seconds_bucket{operation="GET /api/v3/inputs/input-6a7a1c8442e7d7ecfe90249974205752",service="orchestrator",le="0.5"} 8
+butler_request_duration_seconds_bucket{operation="GET /api/v3/inputs/input-6a7a1c8442e7d7ecfe90249974205752",service="orchestrator",le="1"} 8
+butler_request_duration_seconds_bucket{operation="GET /api/v3/inputs/input-6a7a1c8442e7d7ecfe90249974205752",service="orchestrator",le="2.5"} 8
+butler_request_duration_seconds_bucket{operation="GET /api/v3/inputs/input-6a7a1c8442e7d7ecfe90249974205752",service="orchestrator",le="5"} 8
+butler_request_duration_seconds_bucket{operation="GET /api/v3/inputs/input-6a7a1c8442e7d7ecfe90249974205752",service="orchestrator",le="10"} 8
+butler_request_duration_seconds_bucket{operation="GET /api/v3/inputs/input-6a7a1c8442e7d7ecfe90249974205752",service="orchestrator",le="+Inf"} 8
+butler_request_duration_seconds_sum{operation="GET /api/v3/inputs/input-6a7a1c8442e7d7ecfe90249974205752",service="orchestrator"} 0.01051073
+butler_request_duration_seconds_count{operation="GET /api/v3/inputs/input-6a7a1c8442e7d7ecfe90249974205752",service="orchestrator"} 8
+butler_request_duration_seconds_bucket{operation="GET /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="0.005"} 3
+butler_request_duration_seconds_bucket{operation="GET /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="0.01"} 3
+butler_request_duration_seconds_bucket{operation="GET /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="0.025"} 3
+butler_request_duration_seconds_bucket{operation="GET /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="0.05"} 3
+butler_request_duration_seconds_bucket{operation="GET /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="0.1"} 3
+butler_request_duration_seconds_bucket{operation="GET /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="0.25"} 3
+butler_request_duration_seconds_bucket{operation="GET /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="0.5"} 3
+butler_request_duration_seconds_bucket{operation="GET /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="1"} 3
+butler_request_duration_seconds_bucket{operation="GET /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="2.5"} 3
+butler_request_duration_seconds_bucket{operation="GET /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="5"} 3
+butler_request_duration_seconds_bucket{operation="GET /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="10"} 3
+butler_request_duration_seconds_bucket{operation="GET /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",le="+Inf"} 3
+butler_request_duration_seconds_sum{operation="GET /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator"} 0.003262786
+butler_request_duration_seconds_count{operation="GET /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator"} 3
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/model-jobs",service="orchestrator",le="0.005"} 10
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/model-jobs",service="orchestrator",le="0.01"} 10
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/model-jobs",service="orchestrator",le="0.025"} 10
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/model-jobs",service="orchestrator",le="0.05"} 10
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/model-jobs",service="orchestrator",le="0.1"} 10
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/model-jobs",service="orchestrator",le="0.25"} 10
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/model-jobs",service="orchestrator",le="0.5"} 10
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/model-jobs",service="orchestrator",le="1"} 10
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/model-jobs",service="orchestrator",le="2.5"} 10
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/model-jobs",service="orchestrator",le="5"} 10
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/model-jobs",service="orchestrator",le="10"} 10
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/model-jobs",service="orchestrator",le="+Inf"} 10
+butler_request_duration_seconds_sum{operation="GET /api/v4/memory/model-jobs",service="orchestrator"} 0.016403051
+butler_request_duration_seconds_count{operation="GET /api/v4/memory/model-jobs",service="orchestrator"} 10
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/source",service="orchestrator",le="0.005"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/source",service="orchestrator",le="0.01"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/source",service="orchestrator",le="0.025"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/source",service="orchestrator",le="0.05"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/source",service="orchestrator",le="0.1"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/source",service="orchestrator",le="0.25"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/source",service="orchestrator",le="0.5"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/source",service="orchestrator",le="1"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/source",service="orchestrator",le="2.5"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/source",service="orchestrator",le="5"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/source",service="orchestrator",le="10"} 1
+butler_request_duration_seconds_bucket{operation="GET /api/v4/memory/source",service="orchestrator",le="+Inf"} 1
+butler_request_duration_seconds_sum{operation="GET /api/v4/memory/source",service="orchestrator"} 0.003526159
+butler_request_duration_seconds_count{operation="GET /api/v4/memory/source",service="orchestrator"} 1
+butler_request_duration_seconds_bucket{operation="GET /health",service="orchestrator",le="0.005"} 1
+butler_request_duration_seconds_bucket{operation="GET /health",service="orchestrator",le="0.01"} 1
+butler_request_duration_seconds_bucket{operation="GET /health",service="orchestrator",le="0.025"} 1
+butler_request_duration_seconds_bucket{operation="GET /health",service="orchestrator",le="0.05"} 1
+butler_request_duration_seconds_bucket{operation="GET /health",service="orchestrator",le="0.1"} 1
+butler_request_duration_seconds_bucket{operation="GET /health",service="orchestrator",le="0.25"} 1
+butler_request_duration_seconds_bucket{operation="GET /health",service="orchestrator",le="0.5"} 1
+butler_request_duration_seconds_bucket{operation="GET /health",service="orchestrator",le="1"} 1
+butler_request_duration_seconds_bucket{operation="GET /health",service="orchestrator",le="2.5"} 1
+butler_request_duration_seconds_bucket{operation="GET /health",service="orchestrator",le="5"} 1
+butler_request_duration_seconds_bucket{operation="GET /health",service="orchestrator",le="10"} 1
+butler_request_duration_seconds_bucket{operation="GET /health",service="orchestrator",le="+Inf"} 1
+butler_request_duration_seconds_sum{operation="GET /health",service="orchestrator"} 0.000548675
+butler_request_duration_seconds_count{operation="GET /health",service="orchestrator"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/control",service="orchestrator",le="0.005"} 0
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/control",service="orchestrator",le="0.01"} 0
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/control",service="orchestrator",le="0.025"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/control",service="orchestrator",le="0.05"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/control",service="orchestrator",le="0.1"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/control",service="orchestrator",le="0.25"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/control",service="orchestrator",le="0.5"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/control",service="orchestrator",le="1"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/control",service="orchestrator",le="2.5"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/control",service="orchestrator",le="5"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/control",service="orchestrator",le="10"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/control",service="orchestrator",le="+Inf"} 1
+butler_request_duration_seconds_sum{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/control",service="orchestrator"} 0.016981828
+butler_request_duration_seconds_count{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/control",service="orchestrator"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/results",service="orchestrator",le="0.005"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/results",service="orchestrator",le="0.01"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/results",service="orchestrator",le="0.025"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/results",service="orchestrator",le="0.05"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/results",service="orchestrator",le="0.1"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/results",service="orchestrator",le="0.25"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/results",service="orchestrator",le="0.5"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/results",service="orchestrator",le="1"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/results",service="orchestrator",le="2.5"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/results",service="orchestrator",le="5"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/results",service="orchestrator",le="10"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/results",service="orchestrator",le="+Inf"} 1
+butler_request_duration_seconds_sum{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/results",service="orchestrator"} 0.002488314
+butler_request_duration_seconds_count{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/results",service="orchestrator"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/status",service="orchestrator",le="0.005"} 0
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/status",service="orchestrator",le="0.01"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/status",service="orchestrator",le="0.025"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/status",service="orchestrator",le="0.05"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/status",service="orchestrator",le="0.1"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/status",service="orchestrator",le="0.25"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/status",service="orchestrator",le="0.5"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/status",service="orchestrator",le="1"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/status",service="orchestrator",le="2.5"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/status",service="orchestrator",le="5"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/status",service="orchestrator",le="10"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/status",service="orchestrator",le="+Inf"} 1
+butler_request_duration_seconds_sum{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/status",service="orchestrator"} 0.007976042
+butler_request_duration_seconds_count{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/status",service="orchestrator"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-policies",service="orchestrator",le="0.005"} 0
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-policies",service="orchestrator",le="0.01"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-policies",service="orchestrator",le="0.025"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-policies",service="orchestrator",le="0.05"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-policies",service="orchestrator",le="0.1"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-policies",service="orchestrator",le="0.25"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-policies",service="orchestrator",le="0.5"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-policies",service="orchestrator",le="1"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-policies",service="orchestrator",le="2.5"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-policies",service="orchestrator",le="5"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-policies",service="orchestrator",le="10"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-policies",service="orchestrator",le="+Inf"} 1
+butler_request_duration_seconds_sum{operation="POST /api/v4/memory/model-policies",service="orchestrator"} 0.006435687
+butler_request_duration_seconds_count{operation="POST /api/v4/memory/model-policies",service="orchestrator"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-worker-control",service="orchestrator",le="0.005"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-worker-control",service="orchestrator",le="0.01"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-worker-control",service="orchestrator",le="0.025"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-worker-control",service="orchestrator",le="0.05"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-worker-control",service="orchestrator",le="0.1"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-worker-control",service="orchestrator",le="0.25"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-worker-control",service="orchestrator",le="0.5"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-worker-control",service="orchestrator",le="1"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-worker-control",service="orchestrator",le="2.5"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-worker-control",service="orchestrator",le="5"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-worker-control",service="orchestrator",le="10"} 1
+butler_request_duration_seconds_bucket{operation="POST /api/v4/memory/model-worker-control",service="orchestrator",le="+Inf"} 1
+butler_request_duration_seconds_sum{operation="POST /api/v4/memory/model-worker-control",service="orchestrator"} 0.001495796
+butler_request_duration_seconds_count{operation="POST /api/v4/memory/model-worker-control",service="orchestrator"} 1
+butler_request_duration_seconds_bucket{operation="POST /internal/action-context",service="orchestrator",le="0.005"} 1
+butler_request_duration_seconds_bucket{operation="POST /internal/action-context",service="orchestrator",le="0.01"} 1
+butler_request_duration_seconds_bucket{operation="POST /internal/action-context",service="orchestrator",le="0.025"} 1
+butler_request_duration_seconds_bucket{operation="POST /internal/action-context",service="orchestrator",le="0.05"} 1
+butler_request_duration_seconds_bucket{operation="POST /internal/action-context",service="orchestrator",le="0.1"} 1
+butler_request_duration_seconds_bucket{operation="POST /internal/action-context",service="orchestrator",le="0.25"} 1
+butler_request_duration_seconds_bucket{operation="POST /internal/action-context",service="orchestrator",le="0.5"} 1
+butler_request_duration_seconds_bucket{operation="POST /internal/action-context",service="orchestrator",le="1"} 1
+butler_request_duration_seconds_bucket{operation="POST /internal/action-context",service="orchestrator",le="2.5"} 1
+butler_request_duration_seconds_bucket{operation="POST /internal/action-context",service="orchestrator",le="5"} 1
+butler_request_duration_seconds_bucket{operation="POST /internal/action-context",service="orchestrator",le="10"} 1
+butler_request_duration_seconds_bucket{operation="POST /internal/action-context",service="orchestrator",le="+Inf"} 1
+butler_request_duration_seconds_sum{operation="POST /internal/action-context",service="orchestrator"} 0.002381177
+butler_request_duration_seconds_count{operation="POST /internal/action-context",service="orchestrator"} 1
+# HELP butler_requests_total Total number of Butler requests.
+# TYPE butler_requests_total counter
+butler_requests_total{operation="GET /api/v2/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",status="ok"} 1
+butler_requests_total{operation="GET /api/v3/inputs/input-6a7a1c8442e7d7ecfe90249974205752",service="orchestrator",status="ok"} 8
+butler_requests_total{operation="GET /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7",service="orchestrator",status="ok"} 3
+butler_requests_total{operation="GET /api/v4/memory/model-jobs",service="orchestrator",status="ok"} 10
+butler_requests_total{operation="GET /api/v4/memory/source",service="orchestrator",status="ok"} 1
+butler_requests_total{operation="GET /health",service="orchestrator",status="ok"} 1
+butler_requests_total{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/control",service="orchestrator",status="ok"} 1
+butler_requests_total{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/results",service="orchestrator",status="ok"} 1
+butler_requests_total{operation="POST /api/v3/tasks/task_7e68c5bb4b12a6a37485dd21308827c7/status",service="orchestrator",status="ok"} 1
+butler_requests_total{operation="POST /api/v4/memory/model-policies",service="orchestrator",status="ok"} 1
+butler_requests_total{operation="POST /api/v4/memory/model-worker-control",service="orchestrator",status="ok"} 1
+butler_requests_total{operation="POST /internal/action-context",service="orchestrator",status="ok"} 1

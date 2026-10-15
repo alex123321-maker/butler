@@ -1,5 +1,16 @@
 # Owned memory auxiliary jobs
 
+Migration071 adds `ModelWorker` to this same queue, using the configured native
+generative transport, independent finite owner policies, per-attempt shared
+reservations/usage and atomic catalog DATA publication. It supports completed
+root tasks under current revisions, source/session/schedule events, coalescing,
+queue bounds, interactive priority, pause/revoke/cancel and crash takeover.
+The registry defaults empty; the explicitly enabled `source-quote-v1` diagnostic
+does not enable summary/extraction/consolidation consumers. Local-only waits
+without cloud fallback. See [the full contract](../../../docs/architecture/background-memory-jobs.md).
+The `Admit`/`LocalTarget` description below remains the existing local path;
+`ModelWorker.Admit` is the separately checked generative path.
+
 `ClaimPurpose(kind, purpose)` additionally separates workers in the same kind.
 It uses the existing bounded claim/fence/deadline path; selecting a queue does
 not confer source access or replace per-attempt admission.

@@ -1,0 +1,20 @@
+{
+  "revision": "d1df2be175fbb0fbcb6f0320e5ce16801dc22dcd",
+  "expires_at": "2026-10-15T15:45:05Z",
+  "provider": "antigravity",
+  "model": "gemini-3.8-flash-tiered",
+  "max_model_turns": 3,
+  "maximum_attempt_millis": 90000,
+  "maximum_reserved_tokens": 3170304,
+  "maximum_provider_input_bytes": 25165824,
+  "cost_basis": "subscription_no_overage",
+  "monetary_overage_allowed": false,
+  "retry_or_fallback_outside_window": false,
+  "stop_on": [
+    "authority_failure",
+    "privacy_failure",
+    "accounting_failure",
+    "hard_deadline",
+    "finite_allowance"
+  ]
+}

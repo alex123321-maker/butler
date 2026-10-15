@@ -23,6 +23,10 @@ func (a *App) Run(ctx context.Context) error {
 		defer close(completionDone)
 		done := make(chan struct{}, 4)
 		workers := 0
+		if a.memoryModelJobs != nil {
+			workers++
+			go func() { _ = a.memoryModelJobs.Run(runCtx); done <- struct{}{} }()
+		}
 		if a.outboxWorker != nil {
 			workers++
 			go func() { _ = a.outboxWorker.Run(runCtx); done <- struct{}{} }()

@@ -157,14 +157,22 @@ and finish. Every actual attempt reserves job/root-task/mandate/owner-day allowa
 then rechecks the database clock after budget waits. Admission returns a bounded
 context which the actual IPC must use; late callbacks cannot publish.
 
-Only the operator-pinned internal local model service identity/endpoint can be
-used. `local_no_billing` is a price declaration, not proof of locality. Secret or
-cloud auxiliary processing fails closed. Task jobs retain original assignment and
+The original local auxiliary admission accepts only the operator-pinned internal
+service identity/endpoint. `local_no_billing` is a price declaration, not proof of
+locality. Secret inputs fail closed. Its task jobs retain original assignment and
 require an active current task; a completed task needs a separate explicit owner
 policy, not dropped task IDs or a revived lease. Legacy model extraction and
 summary workers remain disabled. Owned local indexing is separately opt-in and
 uses current job-owned authority for all reads/inference/publication; live query
 uses current run ownership. See the indexing Runtime README for exact composition.
+
+Migration071 extends this queue with finite independent owner policies and the
+configured generative transport. Exact current source/task/mandate/privacy proof,
+per-attempt shared budget reservations and atomic catalog DATA publication are
+required. Completed root tasks keep their current revision and identity; local-only
+data waits without cloud fallback. Production consumers remain separately gated.
+See [background memory jobs](background-memory-jobs.md) for triggers, controls,
+failure accounting, lock order and rollback.
 
 ## Structured ingestion and owner UI
 

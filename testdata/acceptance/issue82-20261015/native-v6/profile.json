@@ -1,0 +1,4 @@
+{
+  "model": "BUTLER_ANTIGRAVITY_MODEL=gemini-3.8-flash-tiered",
+  "protocol": "BUTLER_ANTIGRAVITY_PROTOCOL=auto"
+}

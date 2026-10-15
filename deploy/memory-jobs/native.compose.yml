@@ -1,0 +1,83 @@
+services:
+  redis:
+    image: redis:7.4-alpine
+    networks: [private]
+    mem_limit: 128m
+    cpus: 0.5
+  orchestrator:
+    image: golang:1.27.2-bookworm
+    working_dir: /src
+    command: [/proof/orchestrator-diagnosis]
+    env_file: ["${ISSUE82_ROOT:?}/private/native.env"]
+    environment:
+      BUTLER_POSTGRES_URL: postgres://butler@postgres:5432/memory_jobs_test?sslmode=disable
+      BUTLER_REDIS_URL: redis://redis:6379/0
+      BUTLER_POSTGRES_MIGRATIONS_DIR: /src/migrations
+      BUTLER_POSTGRES_MAX_CONNS: '4'
+      BUTLER_POSTGRES_MIN_CONNS: '2'
+      BUTLER_OWNER_CONTROL_TOKEN_FILE: /private/owner.token
+      BUTLER_OWNER_CONTROL_OWNER_ID: issue82-owner
+      BUTLER_ACTION_AUTHORITY_TOKEN_FILE: /private/action.token
+      BUTLER_MEMORY_DELETION_MANIFEST_FILE: /private/deletions.log
+      BUTLER_MEMORY_MODEL_JOBS_ENABLED: 'true'
+      BUTLER_MEMORY_MODEL_QUOTE_PROBE_ENABLED: 'true'
+      BUTLER_MEMORY_PIPELINE_ENABLED: 'false'
+      BUTLER_MEMORY_SEMANTIC_ENABLED: 'false'
+      BUTLER_MODEL_PROVIDER: antigravity
+      BUTLER_TOOL_BROKER_ADDR: tool-broker:9090
+      BUTLER_ANTIGRAVITY_MODEL: gemini-3.8-flash-high
+      BUTLER_OPENAI_TIMEOUT_SECONDS: '90'
+      BUTLER_TELEGRAM_BOT_TOKEN: ''
+      # Explicit proxy lane for this window; no fallback after a network error.
+      HTTPS_PROXY: http://issue82-proxy:18080
+      HTTP_PROXY: ''
+      ALL_PROXY: ''
+      NO_PROXY: localhost,127.0.0.1,postgres,redis,tool-broker,orchestrator
+      BUTLER_EXECUTION_BUDGET_POLICY_JSON: '{"model_millis":90000,"task":{"model_turns":2,"tokens":2113536,"active_millis":180000,"provider_input_bytes":16777216},"conversation":{"model_turns":1,"tokens":1056768,"active_millis":90000,"provider_input_bytes":8388608},"models":{"antigravity:gemini-3.8-flash-tiered":{"basis":"subscription_no_overage"},"antigravity:gemini-3.8-flash-high":{"basis":"subscription_no_overage"}}}'
+    volumes:
+      - ${ISSUE82_ROOT:?}/current:/src:ro
+      - ${ISSUE82_ROOT:?}/reports:/proof:ro
+      - ${ISSUE82_ROOT:?}/private:/private
+    networks: [private, native-egress]
+    ports: [127.0.0.1:18282:8080]
+    mem_limit: 768m
+    cpus: 1
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_started}
+      issue82-proxy: {condition: service_started}
+      tool-broker: {condition: service_started}
+  tool-broker:
+    image: golang:1.27.2-bookworm
+    working_dir: /src
+    command: [/proof/tool-broker]
+    environment:
+      BUTLER_POSTGRES_URL: postgres://butler@postgres:5432/memory_jobs_test?sslmode=disable
+      BUTLER_TOOL_REGISTRY_PATH: /src/configs/tools.json
+      BUTLER_ACTION_CONTEXT_URL: http://orchestrator:8080/internal/action-context
+      BUTLER_ACTION_AUTHORITY_TOKEN_FILE: /private/action.token
+      BUTLER_MEMORY_DELETION_MANIFEST_FILE: /private/deletions.log
+    volumes:
+      - ${ISSUE82_ROOT:?}/current:/src:ro
+      - ${ISSUE82_ROOT:?}/reports:/proof:ro
+      - ${ISSUE82_ROOT:?}/private:/private:ro
+    networks: [private]
+    mem_limit: 512m
+    cpus: 1
+  issue82-proxy:
+    image: alpine:3.21
+    user: '10001:10001'
+    entrypoint: [/usr/local/bin/xray, run, -config, /private/xray.json]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - /home/laba/proxy/xray:/usr/local/bin/xray:ro
+      - /srv/storage/butler/private-proxy/container-xray.json:/private/xray.json:ro
+    networks: [private, native-egress]
+    mem_limit: 128m
+    cpus: 0.5
+networks:
+  native-egress:
+    ipam:
+      config: [{subnet: 10.253.83.0/28}]

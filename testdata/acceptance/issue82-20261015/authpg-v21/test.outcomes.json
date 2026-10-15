@@ -1,0 +1,18 @@
+{
+  "pass": 1,
+  "fail": 0,
+  "test_skips": [],
+  "packages_without_tests": [],
+  "outcomes": [
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportEncryptedPostgresAndReconnect",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": null,
+      "action": "pass"
+    }
+  ]
+}

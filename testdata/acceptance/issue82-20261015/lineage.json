@@ -1,0 +1,72 @@
+{
+  "base_commit": "d98c93fcece405af672288a89bfe9d5b9ed303a1",
+  "core_commit": "d99f5b76fe5a3ccdf4cef289b8dc08167de35d00",
+  "diagnostics_commit": "6f7c897490a9f2424f262f9d3f144c1aec4d0114",
+  "native_v1_commit": "d1df2be175fbb0fbcb6f0320e5ce16801dc22dcd",
+  "native_v2_commit": "a094a6839594c11dd34a0ceebd3e94f75a6b3b52",
+  "validation_v10": {
+    "skip": 2,
+    "code_commit": "d99f5b76fe5a3ccdf4cef289b8dc08167de35d00",
+    "pass": 854,
+    "fail": 0
+  },
+  "diagnostics_v11": {
+    "skip": 0,
+    "code_commit": "6f7c897490a9f2424f262f9d3f144c1aec4d0114",
+    "pass": 239,
+    "fail": 0
+  },
+  "native_acceptance": "PASS_BOUNDED_HIGH_PROXY",
+  "unknown_usage_attempts": 9,
+  "published_results": 2,
+  "foreground_attempts": 1,
+  "model_quality": "EXACT_SOURCE_PROBE_ONLY",
+  "source_parity": "All Go, SQL, module and config entries verified on laba",
+  "main_deployment": "unchanged",
+  "isolated_orchestrator": "exited",
+  "notes": "Overlapping tests are not summed. Conservative reservations are not upstream executions or exact invoices. AICode403 and direct High FAILED_PRECONDITION remain unexplained; no automatic fallback.",
+  "wire_crash_test_commit": "3b530db11279fdf4c089bccd2d25d5534e38fb87",
+  "forced_crash_test_commit": "f5939e7ad922d94b211d4e0cdc63af24e935b602",
+  "initial_native_acceptance": {
+    "status": "BLOCKED_HTTP_403",
+    "foreground_attempts": 0,
+    "published_results": 0,
+    "unknown_usage_attempts": 2
+  },
+  "admitted_attempts": 12,
+  "reservations": 12,
+  "main_provider_auth": "Owner-requested encrypted OAuth renewal; no raw material published",
+  "accepted_native": {
+    "observed_output_tokens": 179,
+    "deadline_extended": false,
+    "shared_root_limit": 2,
+    "completed_at": "2026-10-15T17:17:54Z",
+    "lane": "isolated_proxy",
+    "binary_sha256": "7c32853646ccc48adc0e4930f8c68d3d0814b9a70df8f49d848ad1588019b2ec",
+    "model": "gemini-3.8-flash-high",
+    "refunded": false,
+    "new_calls": 3,
+    "local_only_attempts": 0,
+    "observed_input_tokens": 6858,
+    "shared_root_used": 2,
+    "retained_previous_attempts": 9,
+    "original_revision": "dc7a44155270b0c878336f7dbdc186aeda8ea1e8",
+    "production_revision": "4fb6913b2722b72735352cf823c5580ed2930c50",
+    "old_attempts_digest": "21950ce008719aee62df77b1118d339d",
+    "remainder_revision": "9b25bfaadeca58eb9061006fe0bb7153ecdd3aa7",
+    "old_reservations_digest": "0b3351272d2ccc8106308c1ccc70256b",
+    "provider": "antigravity",
+    "expires_at": "2026-10-15T17:27:57Z"
+  },
+  "release_v27": {
+    "pass": 338,
+    "fail": 0,
+    "test_skip": 0,
+    "package_without_tests": "internal/providerfactory"
+  },
+  "diagnosis_v30": {
+    "pass": 196,
+    "fail": 0,
+    "skip": 0
+  }
+}

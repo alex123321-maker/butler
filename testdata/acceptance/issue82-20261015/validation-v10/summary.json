@@ -1,0 +1,14 @@
+{
+  "pass": 854,
+  "fail": 0,
+  "skipped": [
+    {
+      "package": "github.com/butler/butler/internal/memory/catalog",
+      "test": "TestActualPostgresDumpRestoreDeletionIntegration"
+    },
+    {
+      "package": "github.com/butler/butler/apps/orchestrator/internal/api",
+      "test": "TestBrowserOwnerStateFixtureServer"
+    }
+  ]
+}

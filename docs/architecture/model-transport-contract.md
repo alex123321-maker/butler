@@ -64,9 +64,19 @@ response bodies/headers remain excluded. Memory-eval also projects six exact
 transport-owned protocol literals onto fixed reason codes, never substring
 matches or arbitrary error text. Earlier lost statuses/reasons remain unknown.
 These fields observe a failed admission and grant no retry or continuation.
-For400/422, a64KiB private INVALID_ARGUMENT envelope can be projected onto four
-fixed diagnostic classes (unknown minItems/maxItems, response-schema rejection,
-other invalid argument). `DiagnosticReason` rejects all other strings. Provider
+For401/403, a bounded private ErrorInfo/status envelope may additionally project
+exact token-expiry, scope, service/billing, IAM/location or generic auth-denial
+classes onto an allowlist. It never copies messages or metadata and never
+triggers automatic refresh/retry/inference. A class is an upstream claim;
+connected state, a renewed token and a positive quota meter are separate facts.
+For400/422, a64KiB private INVALID_ARGUMENT envelope (object, singleton array or
+single SSE data envelope) may project fixed schema/model/thinking/output/system
+argument classes. Non-JSON rejection is a separate fixed class; duplicate JSON
+keys and ambiguous arrays do not yield an argument diagnosis. These are upstream
+claims and never echo a message, field path or private identifier.
+The canonical FAILED_PRECONDITION status may be retained as its own fixed class;
+it does not establish which account/project/request precondition failed.
+`DiagnosticReason` rejects all other strings. Provider
 messages, field paths/details and raw bytes remain unexported; a class records an
 upstream claim, not proof of the precise cause. Earlier unknowns stay unknown.
 
@@ -1021,6 +1031,13 @@ Model Transport Layer в Butler — это provider-normalizing execution channe
 
 ## Security and admitted serialization
 
+The trusted `WithInferenceAuthority` hook is repeatable, including before native
+authentication and immediately before HTTP. The separate optional
+`WithInferenceDispatch` marker runs exactly once at native inference HTTP, after
+authority/serialization checks. Background jobs use it for a durable possibly-sent
+receipt; a marker commit followed by process failure still has unknown outcome.
+Both callbacks stay private to the kernel and are absent from provider/model data.
+
 OpenAI Responses and Realtime retain the same run's supplied system instructions
 through tool-result and continuation turns. Responses uses the `instructions`
 field; Realtime updates session instructions explicitly, including empty policy
@@ -1060,7 +1077,7 @@ quality superiority, general model correctness or a cause of earlier failures.
 See [actual compatibility evidence](../ai/scenario-schema-dialect-actual-audit-20261013.md).
 No fallback/repair/retry is added.
 
-Only typed code-owned instructions carry system role; external/context/derived observations carry provenance as data. Secret-class inputs fail before serialization. Budget037 passes a private input byte cap and the native provider checks its complete actual request, including prior function calls, thought signatures and tool results, before HTTP. Other adapters have serialization guards but need verified capacity/cost declarations before budgeted production inference. HTTP error status is retained without untrusted body/code/details; no raw network error or response content enters durable error events. Production auxiliary model/embed adapters have no durable job-owned admission and remain disabled. See [agent security boundaries](agent-security-boundaries.md).
+Only typed code-owned instructions carry system role; external/context/derived observations carry provenance as data. Secret-class inputs fail before serialization. Budget037 passes a private input byte cap and the native provider checks its complete actual request, including prior function calls, thought signatures and tool results, before HTTP. Other adapters have serialization guards but need verified capacity/cost declarations before budgeted production inference. HTTP error status is retained without untrusted body/code/details; no raw network error or response content enters durable error events. Legacy auxiliary model/embed adapters remain disabled. The separately authorized [generative memory job path](background-memory-jobs.md) uses the configured native transport, complete declared limits, serialization/HTTP authority checks and durable per-attempt reservations; unsupported adapters fail closed. See [agent security boundaries](agent-security-boundaries.md).
 
 Trusted callers may install a request-local `WithProviderStageObserver` for
 content-free diagnosis. Antigravity reports only authentication, request

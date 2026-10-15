@@ -175,6 +175,12 @@ func (p *Provider) invoke(ctx context.Context, model, sessionID string, body gen
 	if err := checkInferenceAuthority(ctx); err != nil {
 		return modelAnswer{}, err
 	}
+	if err := transport.CheckInferenceDispatch(ctx); err != nil {
+		if ctx.Err() != nil {
+			return modelAnswer{}, ctx.Err()
+		}
+		return modelAnswer{}, providerError(transport.ErrorTypeMemorySourceStale, "memory_source_stale")
+	}
 	resp, err := p.client.Do(req)
 	if err != nil {
 		if ctx.Err() != nil {
@@ -227,7 +233,9 @@ func statusErrorKind(status int, body io.Reader) error {
 		}
 		return providerError(transport.ErrorTypeRateLimited, "Antigravity upstream rejected the request (HTTP 429)")
 	case http.StatusUnauthorized, http.StatusForbidden:
-		return providerError(transport.ErrorTypeProviderUnavailable, "Antigravity account access was rejected; reconnect through the private control plane")
+		failure := providerError(transport.ErrorTypeProviderUnavailable, "Antigravity account access was rejected; inspect private control-plane diagnostics").(*transport.Error)
+		failure.SafeReason = authRejectionReason(body)
+		return failure
 	case http.StatusRequestTimeout, http.StatusGatewayTimeout:
 		return providerError(transport.ErrorTypeProviderTimeout, "Antigravity request timed out")
 	default:
@@ -242,14 +250,89 @@ func statusErrorKind(status int, body io.Reader) error {
 	}
 }
 
+// Only exact upstream classifications cross the boundary. No message, project,
+// account, metadata, field path or response bytes survive this projection.
+func authRejectionReason(body io.Reader) string {
+	data, err := io.ReadAll(io.LimitReader(body, 64*1024+1))
+	defer clear(data)
+	if err != nil || len(data) > 64*1024 {
+		return ""
+	}
+	if _, err = strictJSON(data); err != nil {
+		return ""
+	}
+	var envelope struct {
+		Error struct {
+			Status  string `json:"status"`
+			Details []struct {
+				Type   string `json:"@type"`
+				Reason string `json:"reason"`
+			} `json:"details"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(data, &envelope) != nil {
+		return ""
+	}
+	for _, d := range envelope.Error.Details {
+		if d.Type != "type.googleapis.com/google.rpc.ErrorInfo" {
+			continue
+		}
+		switch d.Reason {
+		case "ACCESS_TOKEN_EXPIRED":
+			return "upstream_access_token_expired"
+		case "ACCESS_TOKEN_SCOPE_INSUFFICIENT":
+			return "upstream_scope_insufficient"
+		case "SERVICE_DISABLED":
+			return "upstream_service_disabled"
+		case "BILLING_DISABLED":
+			return "upstream_billing_disabled"
+		case "IAM_PERMISSION_DENIED":
+			return "upstream_iam_denied"
+		case "LOCATION_POLICY_VIOLATED":
+			return "upstream_location_policy"
+		}
+	}
+	if envelope.Error.Status == "UNAUTHENTICATED" {
+		return "upstream_unauthenticated"
+	}
+	if envelope.Error.Status == "PERMISSION_DENIED" {
+		return "upstream_permission_denied"
+	}
+	return ""
+}
+
 // Like HIGH_DEMAND, this reads a bounded private envelope and exports only a
 // fixed class. It never returns provider text, a field path or account metadata.
 // This is an upstream diagnostic claim, not independent proof of its cause.
 func invalidArgumentReason(body io.Reader) string {
 	const limit = 64 * 1024
 	data, err := io.ReadAll(io.LimitReader(body, limit+1))
+	defer clear(data)
 	if err != nil || len(data) > limit {
 		return ""
+	}
+	data = bytes.TrimSpace(data)
+	if bytes.HasPrefix(data, []byte("data:")) {
+		data = bytes.TrimSpace(bytes.TrimPrefix(data, []byte("data:")))
+	}
+	decoded, err := strictJSON(data)
+	if err != nil {
+		if json.Valid(data) {
+			return ""
+		}
+		return "upstream_bad_request_non_json"
+	}
+	// Some Google SSE error responses use a singleton JSON array even when
+	// the HTTP status is already400. Never export that private envelope.
+	if list, ok := decoded.([]any); ok {
+		if len(list) != 1 {
+			return ""
+		}
+		data, err = json.Marshal(list[0])
+		defer clear(data)
+		if err != nil {
+			return ""
+		}
 	}
 	var envelope struct {
 		Error struct {
@@ -257,11 +340,25 @@ func invalidArgumentReason(body io.Reader) string {
 			Message string `json:"message"`
 		} `json:"error"`
 	}
-	if json.Unmarshal(data, &envelope) != nil || envelope.Error.Status != "INVALID_ARGUMENT" {
+	if json.Unmarshal(data, &envelope) != nil {
+		return ""
+	}
+	if envelope.Error.Status == "FAILED_PRECONDITION" {
+		return "upstream_failed_precondition"
+	}
+	if envelope.Error.Status != "INVALID_ARGUMENT" {
 		return ""
 	}
 	message := envelope.Error.Message
 	switch {
+	case strings.Contains(strings.ToLower(message), "model") && (strings.Contains(strings.ToLower(message), "not found") || strings.Contains(strings.ToLower(message), "not supported") || strings.Contains(strings.ToLower(message), "invalid model")):
+		return "upstream_model_rejected"
+	case strings.Contains(message, "thinkingBudget") || strings.Contains(message, "thinking_budget"):
+		return "upstream_thinking_rejected"
+	case strings.Contains(message, "maxOutputTokens") || strings.Contains(message, "max_output_tokens"):
+		return "upstream_output_limit_rejected"
+	case strings.Contains(message, "systemInstruction") || strings.Contains(message, "system_instruction"):
+		return "upstream_system_instruction_rejected"
 	case strings.Contains(message, `Unknown name "minItems"`):
 		return "unsupported_schema_min_items"
 	case strings.Contains(message, `Unknown name "maxItems"`):

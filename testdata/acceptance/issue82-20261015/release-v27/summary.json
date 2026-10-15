@@ -1,0 +1,10 @@
+{
+  "pass": 338,
+  "fail": 0,
+  "skipped": [
+    {
+      "package": "github.com/butler/butler/internal/providerfactory",
+      "test": null
+    }
+  ]
+}

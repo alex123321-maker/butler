@@ -26,6 +26,15 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/memory/jobs/|internal/budget/auxiliary[.]go$|apps/orchestrator/internal/(app/memory_model_jobs|api/memory_model_jobs)|migrations/071_|deploy/memory-jobs/|scripts/dev/memory-jobs-)" {
+      [void]$specs.Add("docs/architecture/background-memory-jobs.md")
+      [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
+      [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
+      [void]$specs.Add("docs/architecture/model-transport-contract.md")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./internal/memory/jobs")
+      [void]$tests.Add("SSH laba: scripts/dev/memory-jobs-verify-lab.sh isolated root; PostgreSQL/race, separate test DB, actual process crash and service checks. Native script is a fresh bounded one-use window; never replay a consumed window.")
+      continue
+    }
     "^(internal/acceptance/memory[^/]*\.go|cmd/memory-eval/|apps/orchestrator/internal/app/memory_eval_|testdata/acceptance/(ru-memory-|reviews/ru-memory-)|scripts/dev/memory-eval-)" {
       [void]$specs.Add("docs/architecture/memory-model.md")
       [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")

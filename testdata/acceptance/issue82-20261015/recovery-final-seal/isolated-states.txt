@@ -1,0 +1,5 @@
+/butler-issue82-orchestrator-1 exited
+/butler-issue82-tool-broker-1 exited
+/butler-issue82-issue82-proxy-1 exited
+/butler-issue82-redis-1 exited
+/butler-issue82-postgres-1 exited

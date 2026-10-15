@@ -1,0 +1,248 @@
+{
+  "pass": 44,
+  "fail": 0,
+  "test_skips": [
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportEncryptedPostgresAndReconnect"
+    }
+  ],
+  "packages_without_tests": [],
+  "outcomes": [
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestCloudCodeSubscriptionDiscoveryUsesSameTokenAndIgnoresLegacyProject",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestCloudCodeDiscoveryFailsClosedWithoutPaidTierOrValidProject",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/oauth_refresh/invalid_json",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/oauth_refresh/invalid_semantics",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/oauth_refresh/client_timeout",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/oauth_refresh/http_rejected",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/oauth_refresh/success",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/paid_discovery/invalid_json",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/paid_discovery/invalid_semantics",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/paid_discovery/client_timeout",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/paid_discovery/http_rejected",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy/paid_discovery/success",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsSemanticValidationTimeoutAndPrivacy",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityDiagnosticsPersistRotationBeforeDiscoveryAndDenyUncertainRefresh",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportEncryptedPostgresAndReconnect",
+      "action": "skip"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly/match_expired",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly/access_rotated",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly/refresh_rotated",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly/application_credential_changed",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly/disconnected",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly/malformed",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly/duplicate",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly/oversized",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityOriginAuditIsPrivateAndReadOnly",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityEncryptedImportResolveRefreshAndSafeState",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityResolveNeedsNoSubscriptionProjectOrDiscovery/#00",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityResolveNeedsNoSubscriptionProjectOrDiscovery/legacy-project",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityResolveNeedsNoSubscriptionProjectOrDiscovery",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportRejectsMalformedOrUntrustedRecords/0",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportRejectsMalformedOrUntrustedRecords/1",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportRejectsMalformedOrUntrustedRecords/2",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportRejectsMalformedOrUntrustedRecords/3",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportRejectsMalformedOrUntrustedRecords/4",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportRejectsMalformedOrUntrustedRecords/5",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityImportRejectsMalformedOrUntrustedRecords",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityControlPlaneDeniesRedirectAndMasksFailures/302",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityControlPlaneDeniesRedirectAndMasksFailures/400",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityControlPlaneDeniesRedirectAndMasksFailures/401",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityControlPlaneDeniesRedirectAndMasksFailures/429",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityControlPlaneDeniesRedirectAndMasksFailures/500",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestAntigravityControlPlaneDeniesRedirectAndMasksFailures",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestOpenAICodexFlowCompletesAndResolves",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": "TestGitHubCopilotFlowPollsAndResolves",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/internal/providerauth",
+      "test": null,
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/cmd/provider-auth",
+      "test": "TestInspectionOnlyExportsConnectionAndExpiry",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/cmd/provider-auth",
+      "test": "TestOperatorSmokeRejectsPartialAnswer",
+      "action": "pass"
+    },
+    {
+      "package": "github.com/butler/butler/cmd/provider-auth",
+      "test": null,
+      "action": "pass"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "active_provider": "antigravity",
+  "providers": [
+    {
+      "name": "openai",
+      "model": "gpt-4o-mini",
+      "active": false,
+      "connected": false
+    },
+    {
+      "name": "github-copilot",
+      "model": "gpt-4o",
+      "active": false,
+      "connected": false
+    },
+    {
+      "name": "openai-codex",
+      "model": "gpt-5.1-codex",
+      "active": false,
+      "connected": false
+    },
+    {
+      "name": "antigravity",
+      "model": "gemini-3.8-flash-tiered",
+      "active": true,
+      "connected": true
+    }
+  ]
+}

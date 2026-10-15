@@ -74,6 +74,11 @@ transport retry or model fallback is introduced.
 The following AICode details and earlier investigations describe the retained
 default tiered profile and their historical evidence.
 
+401/403 diagnostics now project only exact allowlisted ErrorInfo/status classes.
+Raw provider messages/metadata remain private; there is no automatic retry or
+provider switch. Operator expiry/refresh and quota checks are documented in the
+[private utility](../../../cmd/provider-auth/README.md).
+
 The retained tiered profile uses production AICode v1 SSE with the requested experience
 `gemini-3.8-flash-tiered`. The flat request uses `aicode.experience`, ordered
 contents, optional system instructions/Butler function declarations and an

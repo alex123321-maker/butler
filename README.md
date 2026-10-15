@@ -2,6 +2,12 @@
 
 Self-hosted personal long-lived agent platform.
 
+Durable background memory jobs now have a bounded native execution path through
+the existing queue, shared budgets and model transport. The independently reviewed
+[laba acceptance](docs/testing/issue-82-memory-jobs.md) proves the diagnostic path
+on Antigravity Gemini Flash High/proxy; real consumers remain default-off and
+require their own quality/security gates.
+
 ## Status
 
 Sprint 0 through Sprint 7 are implemented in the repository backlog and reflected in the current codebase. The stack now includes the monorepo foundation, shared infra packages, contracts, migrations, Session Service, Redis leases, run lifecycle persistence, transcript storage, normalized ingress helpers, the OpenAI transport with Realtime WebSocket preference and SSE fallback, additional OpenAI Codex and GitHub Copilot provider integrations with orchestrator-managed auth flows, synchronous orchestrator ingestion APIs, Telegram delivery and approval UX, the full tool-enabled Docker Compose stack, Tool Broker validation and routing, credential metadata and deferred secret resolution, working/profile/episodic memory stores, the async memory extraction pipeline, session summaries, the doctor runtime, and the Nuxt web UI shell with sessions and doctor views.

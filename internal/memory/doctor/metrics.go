@@ -16,7 +16,7 @@ type durableCollector struct {
 
 func RegisterMetrics(registry *metrics.Registry, pool *pgxpool.Pool) error {
 	c := &durableCollector{pool: pool, desc: map[string]*prometheus.Desc{}}
-	for _, name := range []string{"observation_success", "observed_at_seconds", "pending", "running", "completed", "failed", "retries", "oldest_pending_seconds", "active_generations", "verified_generations", "building_generations"} {
+	for _, name := range []string{"observation_success", "observed_at_seconds", "pending", "running", "completed", "failed", "retries", "oldest_pending_seconds", "active_generations", "verified_generations", "building_generations", "model_attempts", "model_unknown_usage", "model_reserved_tokens", "model_reserved_cost_micros"} {
 		c.desc[name] = prometheus.NewDesc("butler_memory_durable_"+name, "Read-only PostgreSQL memory observation: "+name, nil, nil)
 	}
 	return registry.RegisterCollector(c)
@@ -48,6 +48,10 @@ func (c *durableCollector) Collect(ch chan<- prometheus.Metric) {
 	emit("completed", float64(j.Completed))
 	emit("failed", float64(j.Failed))
 	emit("retries", float64(j.Retries))
+	emit("model_attempts", float64(j.ModelAttempts))
+	emit("model_unknown_usage", float64(j.ModelUnknownUsage))
+	emit("model_reserved_tokens", float64(j.ModelReservedTokens))
+	emit("model_reserved_cost_micros", float64(j.ModelReservedCostMicros))
 	if j.OldestPendingSeconds != nil {
 		emit("oldest_pending_seconds", *j.OldestPendingSeconds)
 	} else {

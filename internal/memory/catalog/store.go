@@ -375,7 +375,13 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 	for _, ref := range ordered {
 		write, _ := ctx.Value(writeSourcesKey{}).(bool)
 		src, e := getSourceTx(ctx, tx, ref.ID, write)
-		if e != nil || src.OwnerID != own || src.Status != "active" {
+		if e != nil {
+			if errors.Is(e, pgx.ErrNoRows) {
+				return nil, ErrDenied
+			}
+			return nil, e
+		}
+		if src.OwnerID != own || src.Status != "active" {
 			return nil, ErrDenied
 		}
 		if ref.Revision != 0 && ref.Revision != src.Revision || ref.AccessRevision != 0 && ref.AccessRevision != src.AccessRevision || ref.Hash != "" && ref.Hash != src.Hash {
@@ -407,7 +413,10 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 		}
 		// A source derived from a stale/deleted parent is not current evidence.
 		var stale bool
-		if e = tx.QueryRow(ctx, `WITH RECURSIVE parents AS(SELECT parent_source_id,parent_revision FROM memory_source_dependencies WHERE child_source_id=$1 UNION SELECT d.parent_source_id,d.parent_revision FROM memory_source_dependencies d JOIN parents p ON d.child_source_id=p.parent_source_id) SELECT EXISTS(SELECT 1 FROM parents p JOIN memory_sources s ON s.source_id=p.parent_source_id WHERE s.status<>'active' OR s.head_revision<>p.parent_revision)`, src.ID).Scan(&stale); e != nil || stale {
+		if e = tx.QueryRow(ctx, `WITH RECURSIVE parents AS(SELECT parent_source_id,parent_revision FROM memory_source_dependencies WHERE child_source_id=$1 UNION SELECT d.parent_source_id,d.parent_revision FROM memory_source_dependencies d JOIN parents p ON d.child_source_id=p.parent_source_id) SELECT EXISTS(SELECT 1 FROM parents p JOIN memory_sources s ON s.source_id=p.parent_source_id WHERE s.status<>'active' OR s.head_revision<>p.parent_revision)`, src.ID).Scan(&stale); e != nil {
+			return nil, e
+		}
+		if stale {
 			return nil, ErrStale
 		}
 		if src.Origin.Sensitivity == content.Secret {
@@ -430,7 +439,10 @@ func (s *Store) AccessTx(ctx context.Context, tx pgx.Tx, refs []SourceRef, purpo
 		}
 	}
 	currentGraph, e := s.CanonicalSourcesTx(ctx, tx, graphRoots)
-	if e != nil || len(currentGraph) != len(ordered) {
+	if e != nil {
+		return nil, e
+	}
+	if len(currentGraph) != len(ordered) {
 		return nil, ErrStale
 	}
 	for i, r := range currentGraph {

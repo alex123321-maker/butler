@@ -614,6 +614,15 @@ origin equality does not establish inference quota accounting. This operator
 capability has no model, channel, settings API or runtime route.
 See the [native Antigravity operator guide](../../deploy/antigravity/README.md).
 
+The [private operator utility](../../cmd/provider-auth/README.md) projects existing
+State connection/expiry without account or pending-login fields. Its explicit
+auth diagnosis uses normal Resolve and fixed refresh/persistence traces; it
+never generates. Quota observation uses fixed subscription discovery and model
+metadata endpoints, returns optional fraction/reset only, and never exports the
+private project/bearer or treats a meter as per-request spend or access proof.
+Only the owning runtime/serialized operator may refresh a credential; a separate
+metadata/monitor process must not race an active worker's refresh.
+
 An optional lab network proxy keeps its subscription and full configuration in a
 private operator directory outside synced source and model workspaces. Only the
 proxy container reads the selected config file; the Orchestrator receives a

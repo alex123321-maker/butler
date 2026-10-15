@@ -1,5 +1,12 @@
 # Butler — Run Lifecycle Specification
 
+Optional [background model jobs](background-memory-jobs.md) have their own durable
+owner policy and claim after user-run completion. Their scanner/transport failures
+cannot delay or undo user finalization. Completed task identity/revision remain
+intact; no historical lease grants new dispatch permission. Attempt spending,
+source freshness, cancellation and atomic derivative publication are independent
+of user-run success and are observable through the existing memory job controls.
+
 Memory preparation separates local query permission from external data release.
 It re-reads the task/assignment/privacy stamp and current source proof after
 retrieval; amendment/revocation blocks stale publication. `memory-context-v3`

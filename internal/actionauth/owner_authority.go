@@ -65,7 +65,10 @@ func CheckAssignmentTx(ctx context.Context, tx pgx.Tx, a Assignment, at time.Tim
 	var revoked *time.Time
 	err := tx.QueryRow(ctx, `SELECT owner_id,revision,mandate_data,status,scope_kind,COALESCE(goal_id,''),goal_revision,expires_at,revoked_at FROM action_mandates WHERE mandate_id=$1 FOR SHARE`, a.MandateID).Scan(&owner, &rev, &data, &status, &scope, &goalID, &goalRev, &expiry, &revoked)
 	if err != nil {
-		return m, g, ErrOwnerAuthority
+		if errors.Is(err, pgx.ErrNoRows) {
+			return m, g, ErrOwnerAuthority
+		}
+		return m, g, err
 	}
 	if json.Unmarshal(data, &m) != nil {
 		return m, g, ErrOwnerAuthority
@@ -79,7 +82,13 @@ func CheckAssignmentTx(ctx context.Context, tx pgx.Tx, a Assignment, at time.Tim
 	var currentRevision int64
 	var goalExpiry time.Time
 	err = tx.QueryRow(ctx, `SELECT owner_id,kind,status,revision,expires_at,goal_data FROM owner_goals WHERE goal_id=$1 FOR SHARE`, a.GoalID).Scan(&owner, &kind, &goalStatus, &currentRevision, &goalExpiry, &data)
-	if err != nil || json.Unmarshal(data, &g) != nil {
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return m, g, ErrOwnerAuthority
+		}
+		return m, g, err
+	}
+	if json.Unmarshal(data, &g) != nil {
 		return m, g, ErrOwnerAuthority
 	}
 	// Durable row columns, rather than JSON alone, are authoritative.
@@ -93,7 +102,13 @@ func CheckAssignmentTx(ctx context.Context, tx pgx.Tx, a Assignment, at time.Tim
 		return m, g, ErrOwnerAuthority
 	}
 	var policyRevision int64
-	if err = tx.QueryRow(ctx, `SELECT revision FROM owner_purpose_policies WHERE owner_id=$1 AND purpose=$2 FOR SHARE`, a.OwnerID, a.Purpose).Scan(&policyRevision); err != nil || policyRevision != a.PolicyRevision {
+	if err = tx.QueryRow(ctx, `SELECT revision FROM owner_purpose_policies WHERE owner_id=$1 AND purpose=$2 FOR SHARE`, a.OwnerID, a.Purpose).Scan(&policyRevision); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return m, g, ErrOwnerAuthority
+		}
+		return m, g, err
+	}
+	if policyRevision != a.PolicyRevision {
 		return m, g, ErrOwnerAuthority
 	}
 	rows, err := tx.Query(ctx, `SELECT goal_id,kind,revision,expires_at,goal_data FROM owner_goals WHERE owner_id=$1 AND goal_data->>'purpose'=$2 AND kind IN ('preference','constraint') AND status='active' ORDER BY goal_id`, a.OwnerID, a.Purpose)
