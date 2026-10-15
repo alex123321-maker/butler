@@ -7,6 +7,14 @@ private service authentication, exact owner approval and repeated current
 task/ownership checks govern execution and secret release. Unknown effects
 cannot acquire read authority from tool names or model descriptions.
 
+## Целевая система общения с владельцем
+
+[User Communication](user-communication-spec.md) определяет явные инструменты
+message/photo/report/widget, fan-out в включённые каналы и durable ответы.
+Это согласованный целевой контракт, ещё не реализованная возможность.
+[План](../planning/user-communication-roadmap.md) расширяет существующие механизмы
+без изменения их текущего статуса готовности.
+
 ## 1. Статус документа
 
 **Тип документа:** PRD + Architecture (продукт + архитектура)  

@@ -4,6 +4,17 @@ This contract separates an external effect, a durable attempt result, task
 verification, and channel delivery. A provider final event or a runtime
 `completed` status proves none of the other three. PostgreSQL is authoritative.
 
+## Planned explicit-publication profile
+
+[User Communication](user-communication-spec.md) specifies a future admission
+profile that preserves immutable attempt results and verification while removing
+implicit notifications from model finalization. Explicit publications receive
+independent identities and transactional multi-channel outbox entries, including
+mid-run progress and widgets. Existing legacy and verified_task semantics below
+remain authoritative until the documented migration; communication tools cannot
+bypass the owner-configured verified_task gate. Reuse the existing UNKNOWN,
+channel-only dispatch and frozen-result recovery contracts.
+
 ## Finalization transaction
 
 Orchestrator saves a frozen finalizing checkpoint before calling

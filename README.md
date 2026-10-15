@@ -58,6 +58,8 @@ Sprint 0 through Sprint 7 are implemented in the repository backlog and reflecte
 - [Credential Management](docs/architecture/credential-management.md)
 - [Run Lifecycle Specification](docs/architecture/run-lifecycle-spec.md)
 - [Model Transport Contract](docs/architecture/model-transport-contract.md)
+- [User Communication: messages, photos, reports and widgets (target)](docs/architecture/user-communication-spec.md)
+- [User Communication Implementation Plan](docs/planning/user-communication-roadmap.md)
 - [AI Repo Map](docs/ai/repo-map.md)
 - [Implementation Roadmap](docs/planning/butler-implementation-roadmap.md)
 - [Sprint Backlog](docs/planning/butler-backlog.yaml)

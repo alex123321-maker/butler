@@ -5,6 +5,15 @@
 - Type: Architecture Subspec / Prompt Management
 - Status: Draft baseline
 
+## Planned communication protocol
+
+[User Communication](user-communication-spec.md) defines the target explicit
+publication protocol for message/photo/report/widget. In that admitted profile,
+model final text is internal attempt output. Prompt instructions must distinguish
+published content, pending interactions and reply obligations; tool acceptance
+must not be described as delivery or task verification. This is a planned profile,
+not a change to the currently installed prompt or delivery mode.
+
 ## Purpose
 
 This document defines how Butler assembles the effective system prompt for a run.
