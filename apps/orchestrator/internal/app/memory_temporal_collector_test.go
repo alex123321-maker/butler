@@ -1,0 +1,208 @@
+package app
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"os"
+	"path/filepath"
+	"sync"
+	"time"
+
+	"github.com/butler/butler/internal/transport"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+type temporalNativeEntry struct {
+	ID            int64                              `json:"id"`
+	RunID         string                             `json:"run_id"`
+	Kind          string                             `json:"kind"`
+	Start         *transport.StartRunRequest         `json:"start,omitempty"`
+	Continuation  *transport.SubmitToolResultRequest `json:"continuation,omitempty"`
+	Events        []transport.TransportEvent         `json:"events"`
+	Usage         *transport.Usage                   `json:"usage"`
+	Millis        int64                              `json:"millis"`
+	InputBytes    int                                `json:"serialized_input_bytes"`
+	FailureCode   string                             `json:"failure_code,omitempty"`
+	HTTPStatus    int                                `json:"http_status,omitempty"`
+	FailureReason string                             `json:"failure_reason,omitempty"`
+	Stages        []transport.ProviderStage          `json:"stages"`
+}
+
+// No answering logic, retries or repair. Every start/tool continuation is one
+// durable admission with its own full native usage (including thinking).
+type temporalNativeProvider struct {
+	transport.ModelProvider
+	pool    *pgxpool.Pool
+	proof   string
+	mu      sync.Mutex
+	entries []*temporalNativeEntry
+	active  sync.WaitGroup
+	sealErr error
+}
+
+func (p *temporalNativeProvider) InferenceLimits() (int64, int64) {
+	return p.ModelProvider.(interface{ InferenceLimits() (int64, int64) }).InferenceLimits()
+}
+func (p *temporalNativeProvider) InferenceTimeout() time.Duration {
+	return p.ModelProvider.(interface{ InferenceTimeout() time.Duration }).InferenceTimeout()
+}
+func (p *temporalNativeProvider) reserve(ctx context.Context, run, kind string, request any) (*temporalNativeEntry, error) {
+	raw, err := json.Marshal(request)
+	if err != nil {
+		return nil, err
+	}
+	tx, err := p.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+	var count int
+	var id int64
+	if tx.QueryRow(ctx, `SELECT native_entries FROM temporal_native_cases c JOIN runs r ON r.session_key=c.session_key JOIN accepted_inputs i ON i.run_id=r.run_id AND i.input_id=c.input_id WHERE r.run_id=$1 AND c.status='running' AND i.status='running' AND i.max_attempts=1 AND i.attempts=1 FOR UPDATE OF c`, run).Scan(&count) != nil || count >= 3 {
+		return nil, errors.New("unsealed, repeated or exhausted original")
+	}
+	if tx.QueryRow(ctx, `UPDATE temporal_native_window SET paid_entries=paid_entries+1 WHERE singleton AND sealed AND NOT closed AND paid_entries<36 RETURNING paid_entries`).Scan(&id) != nil {
+		return nil, errors.New("prospective native allowance unavailable")
+	}
+	if _, err = tx.Exec(ctx, `UPDATE temporal_native_cases c SET native_entries=native_entries+1,run_id=$1 FROM runs r WHERE r.run_id=$1 AND r.session_key=c.session_key`, run); err != nil {
+		return nil, err
+	}
+	if _, err = tx.Exec(ctx, `INSERT INTO temporal_native_entries(id,run_id,kind,request_json,input_bytes)VALUES($1,$2,$3,$4,$5)`, id, run, kind, raw, len(raw)); err != nil {
+		return nil, err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	c := &temporalNativeEntry{ID: id, RunID: run, Kind: kind, InputBytes: len(raw), Events: []transport.TransportEvent{}, Stages: []transport.ProviderStage{}}
+	if kind == "start" {
+		v := request.(transport.StartRunRequest)
+		c.Start = &v
+	} else {
+		v := request.(transport.SubmitToolResultRequest)
+		c.Continuation = &v
+	}
+	p.mu.Lock()
+	p.entries = append(p.entries, c)
+	p.mu.Unlock()
+	return c, nil
+}
+func (p *temporalNativeProvider) call(ctx context.Context, c *temporalNativeEntry, invoke func(context.Context) (transport.EventStream, error)) (transport.EventStream, error) {
+	started := time.Now()
+	ctx = transport.WithProviderStageObserver(ctx, func(stage transport.ProviderStage) {
+		p.mu.Lock()
+		if len(c.Stages) < 32 {
+			c.Stages = append(c.Stages, stage)
+		}
+		p.mu.Unlock()
+	})
+	finish := func() {
+		p.mu.Lock()
+		c.Millis = time.Since(started).Milliseconds()
+		raw, _ := json.Marshal(c)
+		p.mu.Unlock()
+		bound, stop := context.WithTimeout(context.Background(), 5*time.Second)
+		defer stop()
+		_, dbErr := p.pool.Exec(bound, `UPDATE temporal_native_entries SET observation_json=$2,finished_at=clock_timestamp() WHERE id=$1`, c.ID, raw)
+		// Full per-entry output is immutable before the next original runs.
+		fileErr := temporalWriteExclusive(filepath.Join(p.proof, "entry-"+temporalNumber(c.ID)+".json"), raw)
+		if dbErr != nil || fileErr != nil {
+			p.mu.Lock()
+			p.sealErr = errors.New("native observation failed to seal")
+			p.mu.Unlock()
+		}
+	}
+	stream, err := invoke(ctx)
+	if err != nil {
+		p.mu.Lock()
+		c.FailureCode = transport.DiagnosticCode(err)
+		c.HTTPStatus = transport.DiagnosticHTTPStatus(err)
+		c.FailureReason = transport.DiagnosticReason(err)
+		p.mu.Unlock()
+		finish()
+		return nil, err
+	}
+	out := make(chan transport.TransportEvent, 32)
+	p.active.Add(1)
+	go func() {
+		defer p.active.Done()
+		defer close(out)
+		defer finish()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case e, ok := <-stream:
+				if !ok {
+					return
+				}
+				p.mu.Lock()
+				// Raw transport errors may contain internals; the export retains
+				// only fixed diagnostics. Model/source text is synthetic evidence.
+				copy := e
+				if e.TransportError != nil {
+					c.FailureCode = transport.DiagnosticCode(e.TransportError)
+					c.HTTPStatus = transport.DiagnosticHTTPStatus(e.TransportError)
+					c.FailureReason = transport.DiagnosticReason(e.TransportError)
+					copy.TransportError = nil
+					copy.PayloadJSON = ""
+				}
+				if e.EventType == transport.EventTypeTransportWarning {
+					copy.PayloadJSON = ""
+				}
+				if e.Usage != nil && e.Usage.Validate() == nil {
+					u := *e.Usage
+					c.Usage = &u
+				}
+				c.Events = append(c.Events, copy)
+				p.mu.Unlock()
+				select {
+				case out <- e:
+				case <-ctx.Done():
+					return
+				}
+			}
+		}
+	}()
+	return out, nil
+}
+func (p *temporalNativeProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
+	c, e := p.reserve(ctx, r.Context.RunID, "start", r)
+	if e != nil {
+		return nil, e
+	}
+	return p.call(ctx, c, func(ctx context.Context) (transport.EventStream, error) { return p.ModelProvider.StartRun(ctx, r) })
+}
+func (p *temporalNativeProvider) SubmitToolResult(ctx context.Context, r transport.SubmitToolResultRequest) (transport.EventStream, error) {
+	c, e := p.reserve(ctx, r.RunID, "tool_result", r)
+	if e != nil {
+		return nil, e
+	}
+	return p.call(ctx, c, func(ctx context.Context) (transport.EventStream, error) {
+		return p.ModelProvider.SubmitToolResult(ctx, r)
+	})
+}
+func (p *temporalNativeProvider) ContinueRun(context.Context, transport.ContinueRunRequest) (transport.EventStream, error) {
+	return nil, errors.New("native screen never resumes or replays an original")
+}
+func temporalNumber(id int64) string {
+	const digits = "0123456789"
+	if id < 10 {
+		return "00" + string(digits[id])
+	}
+	return "0" + string(digits[id/10]) + string(digits[id%10])
+}
+func temporalWriteExclusive(path string, raw []byte) error {
+	f, e := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+	if e != nil {
+		return e
+	}
+	if _, e = f.Write(append(raw, '\n')); e == nil {
+		e = f.Sync()
+	}
+	closeErr := f.Close()
+	if e == nil {
+		e = closeErr
+	}
+	return e
+}
