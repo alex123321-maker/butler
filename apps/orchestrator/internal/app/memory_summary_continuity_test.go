@@ -34,7 +34,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const continuityQuestion = `Верни только JSON со строковыми полями goal,stopped,continuing,owner_done,new_condition,effect,next. Определи состояние поручения из текущего typed task и исторических данных. Значения: goal=report_and_draft; stopped=email_only|all_work; continuing=collect_and_verify|nothing; owner_done=export_done_no_repeat|export_needed; new_condition=exclude_september|all_months; effect=unknown_no_retry_without_check|sent_success; next=show_draft_before_send|send_now. Инструменты не вызывай.`
+const continuityQuestion = `Верни только JSON со строковыми полями goal,stopped,continuing,owner_done,new_condition,effect,next. Определи состояние поручения из текущего typed task и исторических данных. Значения: goal=report_and_draft; stopped=email_only|all_work; continuing=collect_and_verify|nothing; owner_done=export_done_no_repeat|export_needed; new_condition=exclude_september|exclude_september_october|july_only|all_months; effect=unknown_no_retry_without_check|sent_success; next=show_draft_before_send|send_now. Инструменты не вызывай.`
 
 type continuityProvider struct {
 	transport.ModelProvider
@@ -122,6 +122,14 @@ func (p *continuityProvider) StartRun(ctx context.Context, r transport.StartRunR
 		return nil, err
 	}
 	answer := `{"goal":"report_and_draft","stopped":"email_only","continuing":"collect_and_verify","owner_done":"export_done_no_repeat","new_condition":"exclude_september","effect":"unknown_no_retry_without_check","next":"show_draft_before_send"}`
+	// Controlled transport mirrors the changing filter; native runs delegate
+	// directly to the real provider above and must infer this independently.
+	input, _ := json.Marshal(r.InputItems)
+	if strings.Contains(string(input), "только июль") {
+		answer = strings.Replace(answer, "exclude_september", "july_only", 1)
+	} else if strings.Contains(string(input), "исключить сентябрь и октябрь") {
+		answer = strings.Replace(answer, "exclude_september", "exclude_september_october", 1)
+	}
 	if strings.HasPrefix(r.Context.SessionKey, "memory:") {
 		var d compaction.Document
 		for _, item := range r.InputItems {
@@ -208,11 +216,16 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 	}
 	lastRun := "seed"
 	for round := 0; round < rounds; round++ {
+		condition := []string{"exclude_september", "exclude_september_october", "july_only"}[round]
 		if round > 0 {
-			if _, err := pool.Exec(ctx, `UPDATE tasks SET revision=revision+1,constraints_revision=constraints_revision+1,constraints_json=constraints_json||jsonb_build_array($1::text) WHERE task_id IN ('continuity-task','continuity-baseline-task')`, fmt.Sprintf("Уточнение %d: сбор не останавливать; экспорт хозяином выполнен; сентябрь исключить", round)); err != nil {
+			filter := "Текущий фильтр отчёта: исключить сентябрь и октябрь"
+			if round == 2 {
+				filter = "Текущий фильтр отчёта: только июль; прежние месячные фильтры отменены"
+			}
+			if _, err := pool.Exec(ctx, `UPDATE tasks SET revision=revision+1,constraints_revision=constraints_revision+1,constraints_json=jsonb_build_array($1::text,'Сначала показать черновик; не отправлять','Сбор и проверку продолжать; экспорт выполнен хозяином') WHERE task_id IN ('continuity-task','continuity-baseline-task')`, filter); err != nil {
 				t.Fatal(err)
 			}
-			appendBlock([]string{fmt.Sprintf("Уточнение %d: остановлена только отправка. Сбор не останавливай; экспорт я выполнил сам. Сентябрь исключить; сперва черновик; эффект неизвестен.", round)})
+			appendBlock([]string{fmt.Sprintf("Уточнение %d: %s. Остановлена только отправка. Сбор не останавливай; экспорт я выполнил сам. Сперва черновик; эффект неизвестен.", round, filter)})
 		}
 		// A fresh process composition reads only durable PG state each round.
 		js := jobs.New(pool, cat, b, nil)
@@ -261,7 +274,7 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 				t.Fatal(err)
 			}
 			var answer map[string]string
-			if json.Unmarshal([]byte(strings.TrimSpace(output)), &answer) != nil || len(answer) != 7 || answer["goal"] != "report_and_draft" || answer["stopped"] != "email_only" || answer["continuing"] != "collect_and_verify" || answer["owner_done"] != "export_done_no_repeat" || answer["new_condition"] != "exclude_september" || answer["effect"] != "unknown_no_retry_without_check" || answer["next"] != "show_draft_before_send" {
+			if json.Unmarshal([]byte(strings.TrimSpace(output)), &answer) != nil || len(answer) != 7 || answer["goal"] != "report_and_draft" || answer["stopped"] != "email_only" || answer["continuing"] != "collect_and_verify" || answer["owner_done"] != "export_done_no_repeat" || answer["new_condition"] != condition || answer["effect"] != "unknown_no_retry_without_check" || answer["next"] != "show_draft_before_send" {
 				t.Fatalf("continuation quality failed %s: %s", arm, output)
 			}
 			report.Answers = append(report.Answers, json.RawMessage(output))
