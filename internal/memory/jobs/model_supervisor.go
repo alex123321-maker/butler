@@ -10,19 +10,27 @@ import (
 // source bodies or taking the job's publication lock. The complete immutable
 // manifest remains current. Full access/release/publication still use AccessTx.
 // A storage timeout still cancels: the 200ms proof deadline is not relaxed.
-func (s *Store) checkModelSupervisor(ctx context.Context, j Job) error {
+func (s *Store) checkModelSupervisor(ctx context.Context, j Job, observePhase ...func(string)) error {
 	if s == nil || s.catalog == nil {
 		return ErrClaim
 	}
 	ctx = s.Context(ctx, j)
+	phase := func(name string) {
+		if len(observePhase) == 1 && observePhase[0] != nil {
+			observePhase[0](name)
+		}
+	}
+	phase("supervisor_begin")
 	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback(ctx)
+	phase("supervisor_restore")
 	if err = s.catalog.CheckRestoreTx(ctx, tx); err != nil {
 		return err
 	}
+	phase("supervisor_policy")
 	p, err := s.checkModelPolicyTx(ctx, tx, j)
 	if err != nil {
 		return err
@@ -30,6 +38,7 @@ func (s *Store) checkModelSupervisor(ctx context.Context, j Job) error {
 	if p.Privacy != "cloud_allowed" {
 		return ErrClaim
 	}
+	phase("supervisor_claim")
 	if _, err = (&claimChecker{s, j}).checkSnapshot(ctx, tx, false); err != nil {
 		return err
 	}
@@ -40,6 +49,7 @@ func (s *Store) checkModelSupervisor(ctx context.Context, j Job) error {
 		ids[i] = pin.ID
 	}
 	var current, busy bool
+	phase("supervisor_sources")
 	err = tx.QueryRow(ctx, `WITH pins AS MATERIALIZED (
  SELECT * FROM jsonb_to_recordset($1::jsonb) AS p(source_id text,revision bigint,access_revision bigint,content_hash text)
 )
@@ -70,5 +80,6 @@ SELECT butler_memory_summary_sources_current($5) AND NOT EXISTS (
 	if busy {
 		return ErrWaiting
 	}
+	phase("supervisor_commit")
 	return tx.Commit(ctx)
 }

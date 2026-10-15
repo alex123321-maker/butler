@@ -166,6 +166,38 @@ func TestModelSupervisorJoinsBeforeSlowSessionPublicationIntegration(t *testing.
 	}
 }
 
+func TestModelSupervisorReportsPolicySessionLockDeadlineIntegration(t *testing.T) {
+	w, owner, _ := modelFixture(t)
+	_, err := w.Jobs.pool.Exec(owner, `INSERT INTO sessions(session_key,user_id,channel) VALUES('locked-session','owner','web'); INSERT INTO runs(run_id,session_key,input_event_id,status,autonomy_mode,current_state,model_provider,started_at,updated_at) VALUES('locked-run','locked-session','i','completed','mode_1','completed','fixture',clock_timestamp(),clock_timestamp())`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	src, err := w.Jobs.catalog.Put(owner, catalog.PutSource{ExternalKey: "locked-session-source", Kind: "document", ScopeType: "session", ScopeID: "locked-session", Body: "source", Title: "source"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	q := policyRequest(src)
+	q.Job.OriginalRunID = "locked-run"
+	j := schedule(t, w, owner, q)
+	if _, _, err = w.Admit(context.Background(), j); err != nil {
+		t.Fatal(err)
+	}
+	tx, err := w.Jobs.pool.Begin(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback(context.Background())
+	if _, err = tx.Exec(context.Background(), `SELECT session_key FROM sessions WHERE session_key='locked-session' FOR UPDATE`); err != nil {
+		t.Fatal(err)
+	}
+	ctx, stop := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	defer stop()
+	phase := ""
+	if err = w.Jobs.checkModelSupervisor(ctx, j, func(p string) { phase = p }); !errors.Is(err, context.DeadlineExceeded) || phase != "supervisor_policy" {
+		t.Fatal("precise policy-lock deadline not diagnosed", phase, err)
+	}
+}
+
 type modelInvalidOutput struct{ QuoteProbe }
 
 func (modelInvalidOutput) Validate([]catalog.Source, string) (string, error) {

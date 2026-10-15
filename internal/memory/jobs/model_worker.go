@@ -509,7 +509,10 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 				check, stop := context.WithTimeout(supervisorCtx, 200*time.Millisecond)
 				started := time.Now()
 				stage := "model_supervisor"
-				e := s.checkModelSupervisor(check, j)
+				e := s.checkModelSupervisor(check, j, func(phase string) { stage = phase })
+				if e == nil {
+					stage = "model_supervisor"
+				}
 				if w.ObserveProbe != nil {
 					diagnostic := ""
 					if e != nil {
