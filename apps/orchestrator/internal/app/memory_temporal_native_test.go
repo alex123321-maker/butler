@@ -297,6 +297,17 @@ func temporalCollect(t *testing.T, ctx context.Context, pool *pgxpool.Pool, cat 
 		t.Fatal("fresh full schedule seal required")
 	}
 	defer func() {
+		retained, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		// A fatal inside the ordinary execution may precede its returned
+		// observation. Keep that begun original failed, with its durable IDs and
+		// actual entries, rather than relabelling paid work as unexecuted.
+		for i := range observations {
+			if observations[i].Reason != "original_aborted_before_outcome" {
+				continue
+			}
+			_ = pool.QueryRow(retained, `SELECT input_id,run_id,native_entries FROM temporal_native_cases WHERE case_id=$1`, observations[i].CaseID).Scan(&observations[i].InputID, &observations[i].RunID, &observations[i].NativeEntries)
+		}
 		raw, _ := json.Marshal(temporalFillSchedule(corpus, observations))
 		if temporalWriteExclusive(filepath.Join(proof, "all-original-outcomes.json"), raw) != nil {
 			t.Error("full original denominator export failed")
@@ -332,8 +343,9 @@ func temporalCollect(t *testing.T, ctx context.Context, pool *pgxpool.Pool, cat 
 		t.Fatal(err)
 	}
 	for _, c := range cases {
+		observations = append(observations, temporalCaseObservation{CaseID: c.ID, Status: "failed", Reason: "original_aborted_before_outcome"})
 		ob := temporalRunOriginal(t, ctx, pool, cat, p, b, broker, pm, c)
-		observations = append(observations, ob)
+		observations[len(observations)-1] = ob
 		raw, _ := json.Marshal(ob)
 		if temporalWriteExclusive(filepath.Join(proof, c.ID+".json"), raw) != nil {
 			t.Fatal("immutable original export failed")

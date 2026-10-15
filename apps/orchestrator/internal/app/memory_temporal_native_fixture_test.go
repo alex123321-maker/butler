@@ -179,7 +179,7 @@ func temporalPrepareCases(t *testing.T, ctx context.Context, pool *pgxpool.Pool,
 		case "technical_verification_25h_old":
 			a, ca := put("tech", key, "4.2", "Последняя принятая версия технического сервиса — 4.2.", "", "session", p.Session, "profile", nil)
 			meta(ca, 1, catalog.ValidityInterval, nil, nil, catalog.FreshnessTechnicalFact)
-			if _, err := pool.Exec(owner, `INSERT INTO memory_claim_temporal_revisions(claim_id,revision,validity,freshness_class,verified_at,verification_basis,recorded_by)VALUES($1,2,'interval','technical_fact',clock_timestamp()-interval '25 hours','owner_statement',$2)`, ca.ID, temporalNativeOwner); err != nil {
+			if _, err := pool.Exec(owner, `WITH appended AS(INSERT INTO memory_claim_temporal_revisions(claim_id,revision,validity,freshness_class,verified_at,verification_basis,recorded_by)VALUES($1,2,'interval','technical_fact',clock_timestamp()-interval '25 hours','owner_statement',$2) RETURNING claim_id,revision) UPDATE memory_claim_temporal_heads h SET revision=a.revision FROM appended a WHERE h.claim_id=a.claim_id AND h.revision=1`, ca.ID, temporalNativeOwner); err != nil {
 				t.Fatal("declared historical verification seed", err)
 			}
 			ref(a)
