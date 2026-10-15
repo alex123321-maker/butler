@@ -952,8 +952,10 @@ final prompt formatter uses a neutral Document label; an absent title must not
 silently discard an already authorized, selected fragment. Empty evidence text
 is still omitted. Source provenance and currentness checks remain mandatory.
 
-Temporal model consumers require their code qualification and process flag plus
+The model-directed temporal facts reader requires qualification and flag plus
 the measured Gemini Flash High profile: exact32768 output tokens, actual timeout
 at least300s and a matching durable budget quote. Doctor reports that profile
 prerequisite separately. Typed owner metadata operations do not perform inference
-and retain their independent owner/feature authorization.
+and retain their independent owner/feature authorization. Deterministic temporal
+filtering of accepted profile/episode context keeps its feature gate independently
+of provider readiness; changing the model cannot revive an expired exception.
