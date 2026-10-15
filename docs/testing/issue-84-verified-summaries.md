@@ -93,6 +93,36 @@ isolated database; a new schema does not reset historical expense. No paired
 native quality or full-cost benefit has been established. `ReleaseQualified`
 remains false.
 
+## Retained native window v4
+
+The independent v4 window used frozen 996ea0b2 after the per-job full-proof /
+periodic-supervisor mutex passed causal old-code-negative and current-code-positive
+offline controls plus independent review. Current-source repeated compaction and
+ordinary-flow PG/race preflights passed in 6.502s and 8.342s. It completed one
+summary and both independent ordinary continuations, preserving all seven required
+goal/constraint/stop/owner-done/UNKNOWN/next-action fields. The second summary
+stopped after 101.45s total with `storage_unavailable` and NULL usage.
+
+This failure has exact phase evidence: `supervisor_commit` took 201ms, and the
+only slow/failed SQL hash identifies literal `commit` (196ms, deadline exceeded,
+pool Acquired 1 / Idle 1 / Total 2). No pool acquire or metadata query was recorded
+as slow/failing. The precise COMMIT failure is established; its underlying storage
+latency cause is not. Before v4, the host root filesystem had recovered from full
+to 821MB free; this isolated PostgreSQL uses a bind directory on the separate
+storage filesystem. No deadline or source/security predicate was relaxed.
+
+For the completed first round, native baseline total was 8703 tokens versus 5503
+compacted foreground plus 9243 summary tokens: the full candidate cost was 14746,
+which exceeds baseline despite its smaller foreground context. The second summary
+adds an unknown expense with its complete quote retained. Subscription no-overage
+is the declared price basis; provider invoice cost remains unknown.
+
+The current v4 window retains four attempts (three observed, one unknown). All
+windows together retain nine attempts, five observed native totals (36428 tokens),
+and four unknown expenses. Reports are under `reports/native-v4`, including bounded
+SQL/pool phase tracing and exact previous-window rows. No full three-round paired
+quality/cost acceptance is claimed and the release qualification stays false.
+
 ## Consumer-specific lifecycle gate
 
 `reports/lifecycle-eight-fixed.txt` passes all eight shared
