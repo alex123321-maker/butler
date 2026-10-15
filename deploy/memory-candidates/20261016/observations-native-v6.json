@@ -1,0 +1,1154 @@
+[
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_80a45b5466a646e2c4c812c2900180733a5a7af6040e546a70ec0d89e7b451e1\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.technical_explanations\",\"quote\":\"Предпочитаю подробные объяснения технических решений.\",\"scope_quote\":null,\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 863,
+      "OutputTokens": 129,
+      "TotalTokens": 1864
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "explicit-detail",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 11793
+  },
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_f08bf5592f02397848cebd2002f1843581fcaa875b617d78415351db458c0255\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"negation\",\"key\":\"preference.technical_explanations\",\"quote\":\"Не сокращай технические объяснения, кроме кратких статусов.\",\"scope_quote\":null,\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 855,
+      "OutputTokens": 130,
+      "TotalTokens": 2570
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "prohibition-exception",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 13374
+  },
+  {
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_d13fcf8dd2bf930dde8f323df344c952829e84d4c917d45d2ee872eff20a29b8\",\"reason\":\"conditional\"}]}",
+    "usage": {
+      "InputTokens": 852,
+      "OutputTokens": 74,
+      "TotalTokens": 1429
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "condition",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 6466
+  },
+  {
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_486d3f2f14e97be956312fa09eaa399bc8f11e5cefd54786b7c603b1a3ca9a4f\",\"reason\":\"quotation\"}]}",
+    "usage": {
+      "InputTokens": 853,
+      "OutputTokens": 76,
+      "TotalTokens": 1283
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "third-party-quote",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 5941
+  },
+  {
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_e1787d09910ccac1f9155966bb9143ae72220ad3649e6e1b2bd00598f2ac47e3\",\"reason\":\"hypothesis\"}]}",
+    "usage": {
+      "InputTokens": 855,
+      "OutputTokens": 76,
+      "TotalTokens": 1434
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "hypothesis",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 6235
+  },
+  {
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_0dfe5e9dd5ad5b271d223c548d5a9a631fceb3f98e7177b19f3490308387eea6\",\"reason\":\"temporary\"}]}",
+    "usage": {
+      "InputTokens": 857,
+      "OutputTokens": 76,
+      "TotalTokens": 1941
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "one-off",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 9762
+  },
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_87b0130d542fd3801c8c2fd8db94c472cbdd2b6945592506978b9515fe4323d3\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.explanations\",\"quote\":\"Раньше мне нравились короткие объяснения, а теперь предпочитаю подробные, кроме ежедневных статусов.\",\"scope_quote\":null,\"valid_time_quote\":\"теперь\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 864,
+      "OutputTokens": 137,
+      "TotalTokens": 2542
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "before-now",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 11066
+  },
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_f12ab9ae6a18ffb855713faa07153aa0d652a9f6824077312dca0a0ac6865ade\",\"unit_type\":\"scoped_fact\",\"speech_act\":\"assertion\",\"key\":\"fact.service_language\",\"quote\":\"В проекте Атлас с сентября 2026 года основной язык сервиса — Go.\",\"scope_quote\":\"В проекте Атлас\",\"valid_time_quote\":\"с сентября 2026 года\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 848,
+      "OutputTokens": 139,
+      "TotalTokens": 3434
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "scoped-fact",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 17498
+  },
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_59737843ee01db39226c37b079c7486d18d5ea5ff0c98a0fe1ea4167b3714beb\",\"unit_type\":\"outcome_episode\",\"speech_act\":\"assertion\",\"key\":\"episode.atlas_build\",\"quote\":\"После переноса кэша на отдельный диск сборка проекта Атлас 12 октября завершилась успешно.\",\"scope_quote\":\"проекта Атлас\",\"valid_time_quote\":\"12 октября\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 858,
+      "OutputTokens": 139,
+      "TotalTokens": 2143
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "episode-success",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 9992
+  },
+  {
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_f0d1cca4a54312e03a57bac034bae86280d62cb3501d6fa64b871b942fa9f0a0\",\"reason\":\"no_durable_unit\"}]}",
+    "usage": {
+      "InputTokens": 849,
+      "OutputTokens": 79,
+      "TotalTokens": 1516
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "behavior-only",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 7176
+  },
+  {
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_d05a068edcefb699f4ea529b953664b2ce25c48d7b5e3cd20a0e7eb33382d2f5\",\"reason\":\"no_durable_unit\"}]}",
+    "usage": {
+      "InputTokens": 859,
+      "OutputTokens": 81,
+      "TotalTokens": 1417
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "silence",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 5625
+  },
+  {
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_b89615b1692845de300c9c1970da1816fa9fd546a77b1c5489427f94eaa5a554\",\"reason\":\"temporary\"}]}",
+    "usage": {
+      "InputTokens": 856,
+      "OutputTokens": 77,
+      "TotalTokens": 1485
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "temporary-task",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 5903
+  },
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_2b6d0255b23af364cf05b921f387f4e4788c79661c82bfa3a614dc226f06df78\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.comment_language\",\"quote\":\"Для проекта Сфера предпочитаю русский язык в комментариях, кроме имён публичных API.\",\"scope_quote\":\"Для проекта Сфера\",\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 862,
+      "OutputTokens": 135,
+      "TotalTokens": 1754
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "scoped-preference",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 7216
+  },
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_a5991875d8acf6da8528cae2bed8172cab1116fdb65d3d1769b8551376628ac2\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.editor\",\"quote\":\"Мой основной редактор — Neovim.\",\"scope_quote\":null,\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 838,
+      "OutputTokens": 116,
+      "TotalTokens": 1579
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "unknown-time",
+    "accepted_citation": true,
+    "semantic_match": false,
+    "reason": "",
+    "millis": 7768
+  },
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_f054459b2a3b1e86421079adb1e50e926eac9f7d7108e502a8b2a8ad3b7e7dc9\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"negation\",\"key\":\"preference.emoji\",\"quote\":\"Не используй эмодзи в моих рабочих отчётах.\",\"scope_quote\":\"в моих рабочих отчётах\",\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 856,
+      "OutputTokens": 130,
+      "TotalTokens": 1916
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "negative-preference",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 9567
+  },
+  {
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_41666ea48daf3a98801758d6086d6edea687069e7179aff996b6c5179d9c4c2e\",\"reason\":\"quotation\"}]}",
+    "usage": {
+      "InputTokens": 871,
+      "OutputTokens": 77,
+      "TotalTokens": 1709
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "quoted-injection",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 7217
+  },
+  {
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_7485b9f0aa2e9458d3f974d2aeeb37d686ae12d6382355694e91ba804b469fa2\",\"reason\":\"temporary\"}]}",
+    "usage": {
+      "InputTokens": 851,
+      "OutputTokens": 77,
+      "TotalTokens": 1282
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "current-request",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 5880
+  },
+  {
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_99def4a8eabf6f9a7bdcc7b8aa56f6fd037a987e4c8f4f0d56d5d9b60bf7dd4c\",\"reason\":\"ambiguous\"}]}",
+    "usage": {
+      "InputTokens": 855,
+      "OutputTokens": 75,
+      "TotalTokens": 1427
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "contradiction",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 6079
+  },
+  {
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_af3c0abdf02358d3069daf760c38c0bb0b79d534e229b92bb98758f1dc3ed217\",\"reason\":\"no_durable_unit\"}]}",
+    "usage": {
+      "InputTokens": 838,
+      "OutputTokens": 79,
+      "TotalTokens": 1196
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "noise",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 4410
+  },
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_bf75b5157b66b7a59af8ea094fd18b38df6fba7f5116665b04becd27770e797c\",\"unit_type\":\"scoped_fact\",\"speech_act\":\"assertion\",\"key\":\"fact.test_server_location\",\"quote\":\"В этой лаборатории с прошлой недели тестовый сервер находится в комнате 204.\",\"scope_quote\":\"В этой лаборатории\",\"valid_time_quote\":\"с прошлой недели\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 854,
+      "OutputTokens": 138,
+      "TotalTokens": 3066
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "relative-fact",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 15692
+  },
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_8d6b4ab885645947f016fabee3adefde7db275d9ceede00f938a3f05ef2c3097\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.notation\",\"quote\":\"В отчётах по проекту Ёж предпочитаю обозначение «м³» и символ 🧪.\",\"scope_quote\":\"В отчётах по проекту Ёж\",\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 843,
+      "OutputTokens": 132,
+      "TotalTokens": 2512
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "unicode",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 12042
+  },
+  {
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_44b6af9e5e6b008b451671b66f7cf7fd2382c9d3b5f5ca8f15c448e49dfb89ec\",\"reason\":\"hypothesis\"}]}",
+    "usage": {
+      "InputTokens": 861,
+      "OutputTokens": 77,
+      "TotalTokens": 5802
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "hypothetical-mandate",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 31718
+  },
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_ef0351a27c73719fde4f32058d0a825a9e1e7ffa0906febedd2095cc38110da5\",\"unit_type\":\"outcome_episode\",\"speech_act\":\"assertion\",\"key\":\"episode.test_server_update\",\"quote\":\"Обновление тестового сервера 15 октября закончилось ошибкой миграции, после отката сервис снова заработал.\",\"scope_quote\":null,\"valid_time_quote\":\"15 октября\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 854,
+      "OutputTokens": 138,
+      "TotalTokens": 2029
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "episode-failure",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 9258
+  },
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_58cd6357c8f55a8bda0428e742e92811b02dedf38fe3a2d625edba24f3b51152\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.language\",\"quote\":\"Предпочитаю ответы на русском языке.\",\"scope_quote\":null,\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 846,
+      "OutputTokens": 118,
+      "TotalTokens": 1419
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "explicit-language",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 6013
+  },
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_19116257b754ec7cd8011fbce697a3e2890c00655144ceddeb555aa8895bde6b\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.report_format\",\"quote\":\"Со следующего квартала для проекта «Мост» предпочитаю таблицы вместо списков в недельных отчётах.\",\"scope_quote\":\"для проекта «Мост»\",\"valid_time_quote\":\"Со следующего квартала\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 852,
+      "OutputTokens": 141,
+      "TotalTokens": 3187
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "holdout-future-validity",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 15040
+  },
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_c9345abb4a46d634e17afa314a0ed5ce661e5444e5bf5b0e01e9b363af3eebca\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.comments\",\"quote\":\"Краткие комментарии предпочитаю в тестах проекта «Искра».\",\"scope_quote\":\"в тестах проекта «Искра»\",\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 843,
+      "OutputTokens": 128,
+      "TotalTokens": 5873
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "holdout-reordered-project",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 33485
+  },
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_4c61281d73b773174903e696180d6ed294e147849a5b0399792e31788acb447a\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"negation\",\"key\":\"preference.style\",\"quote\":\"В документации проекта «Лира» не используй разговорный стиль, кроме дословных цитат собеседника.\",\"scope_quote\":\"В документации проекта «Лира»\",\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 877,
+      "OutputTokens": 147,
+      "TotalTokens": 3787
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "holdout-negative-exception",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 18550
+  },
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_d6209db9338933f84c87df84a66c25007609bdd57e2b6bb637deaa90503543dc\",\"unit_type\":\"outcome_episode\",\"speech_act\":\"assertion\",\"key\":\"episode.vektor_deployment\",\"quote\":\"Во вторник развёртывание сервиса проекта «Вектор» завершилось успешно после исправления конфигурации.\",\"scope_quote\":\"проекта «Вектор»\",\"valid_time_quote\":\"Во вторник\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 859,
+      "OutputTokens": 144,
+      "TotalTokens": 1906
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "holdout-relative-episode",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 7240
+  },
+  {
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_e8f0d7493803ae3291ed55a38b34630419472728d8a7a1c762edf6e6c075f624\",\"reason\":\"conditional\"}]}",
+    "usage": {
+      "InputTokens": 874,
+      "OutputTokens": 79,
+      "TotalTokens": 1582
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "holdout-ambiguous-future",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 8126
+  },
+  {
+    "output": "{\"units\":[],\"skips\":[{\"source_id\":\"source_337aa5301671e568e12b25ff160510b25a868cad6e9b015a37fdc84a2e3ba8ec\",\"reason\":\"quotation\"}]}",
+    "usage": {
+      "InputTokens": 868,
+      "OutputTokens": 77,
+      "TotalTokens": 1438
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "holdout-quoted-preference",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 6641
+  },
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_932000b0d74a82d078120602957a80249d185acb0bb9b3db53060bde9baf4c7c\",\"unit_type\":\"scoped_fact\",\"speech_act\":\"assertion\",\"key\":\"fact.work_computer\",\"quote\":\"Мой основной рабочий компьютер — ноутбук.\",\"scope_quote\":null,\"valid_time_quote\":null}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 852,
+      "OutputTokens": 122,
+      "TotalTokens": 1647
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "holdout-unknown-fields",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 7192
+  },
+  {
+    "output": "{\"units\":[{\"source_id\":\"source_29c2c0d2d7b0259889fb295ff4ea784d5154b9b1f44ec5b1c5758cefed8a161f\",\"unit_type\":\"explicit_preference\",\"speech_act\":\"assertion\",\"key\":\"preference.command_examples\",\"quote\":\"С начала осени в проекте «Арка» предпочитаю примеры команд на Bash.\",\"scope_quote\":\"в проекте «Арка»\",\"valid_time_quote\":\"С начала осени\"}],\"skips\":[]}",
+    "usage": {
+      "InputTokens": 856,
+      "OutputTokens": 139,
+      "TotalTokens": 1905
+    },
+    "provider_stages": [
+      "authentication",
+      "request_serialization",
+      "http_round_trip",
+      "response_stream"
+    ],
+    "auth_diagnostics": [
+      {
+        "stage": "paid_discovery",
+        "outcome": "started"
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "response_decoded",
+        "http_status": 200
+      },
+      {
+        "stage": "paid_discovery",
+        "outcome": "completed",
+        "http_status": 200
+      }
+    ],
+    "finish_reason": "STOP",
+    "id": "holdout-relative-project",
+    "accepted_citation": true,
+    "semantic_match": true,
+    "reason": "",
+    "millis": 8427
+  }
+]

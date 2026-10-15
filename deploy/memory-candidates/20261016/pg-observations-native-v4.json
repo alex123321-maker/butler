@@ -1,0 +1,74 @@
+{
+  "counts": {
+    "execution_budget": 390,
+    "memory_aux_jobs": 4255,
+    "memory_deletions": 1925,
+    "memory_model_attempts": 178,
+    "memory_model_control": 2347,
+    "memory_model_policies": 5030,
+    "memory_restore_state": 1899,
+    "memory_source_dependencies": 2470,
+    "memory_source_revisions": 599,
+    "memory_sources": 2579,
+    "other": 8662,
+    "pool_acquire": 2373,
+    "pool_connect": 3,
+    "session_ownership": 154,
+    "system_settings": 26
+  },
+  "slow_or_failed": [
+    {
+      "shape": "pool_acquire",
+      "statement_sha256": "",
+      "millis": 0,
+      "diagnostic": "cancelled",
+      "Acquired": 0,
+      "Idle": 1,
+      "Total": 2
+    },
+    {
+      "shape": "memory_aux_jobs",
+      "statement_sha256": "b739f6d7cfd5cb8b0a6b6c0bb252e7856a628b0ce33d5ced4a9e05da3e79afeb",
+      "millis": 0,
+      "diagnostic": "cancelled",
+      "Acquired": 1,
+      "Idle": 1,
+      "Total": 2
+    },
+    {
+      "shape": "pool_acquire",
+      "statement_sha256": "",
+      "millis": 0,
+      "diagnostic": "cancelled",
+      "Acquired": 0,
+      "Idle": 1,
+      "Total": 2
+    }
+  ],
+  "slow_or_failed_probes": [
+    {
+      "stage": "supervisor_begin",
+      "millis": 0,
+      "diagnostic": "cancelled",
+      "Acquired": 0,
+      "Idle": 1,
+      "Total": 2
+    },
+    {
+      "stage": "supervisor_claim",
+      "millis": 1,
+      "diagnostic": "cancelled",
+      "Acquired": 1,
+      "Idle": 1,
+      "Total": 2
+    },
+    {
+      "stage": "supervisor_begin",
+      "millis": 0,
+      "diagnostic": "cancelled",
+      "Acquired": 0,
+      "Idle": 1,
+      "Total": 2
+    }
+  ]
+}

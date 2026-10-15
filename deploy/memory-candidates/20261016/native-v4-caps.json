@@ -1,0 +1,26 @@
+{
+  "revision": "4e521b06e613bcc2b080c43028d9d5d8e5ca5ab6",
+  "expires_at": "2026-10-15T19:57:55Z",
+  "cases_sha256": "902efbad59a6a11f39521d5c3cd5e4be91a10f13ef23e4c7df2570063d6be0cd",
+  "holdout_sha256": "ac46c92c1f1c628203dd420069d8647021ca02da97d62bf2334547d01b6d2201",
+  "handler": "source-candidates-v2",
+  "max_calls": 32,
+  "start_case": 0,
+  "prior_attempts": 24,
+  "maximum_reserved_tokens": 33816576,
+  "maximum_reserved_millis": 2880000,
+  "maximum_provider_input_bytes": 268435456,
+  "cost_basis": "subscription_no_overage",
+  "fallback": false,
+  "automatic_acceptance": false,
+  "owner_lifecycle_after_quality_pass": true,
+  "owner_lifecycle_model_calls": 0,
+  "criteria": {
+    "exact_citation_rate": 1,
+    "semantic_case_rate": 0.95,
+    "holdout_semantic_case_rate": 1,
+    "unsafe_promotions": 0,
+    "authority_writes": 0,
+    "unknown_usage": 0
+  }
+}

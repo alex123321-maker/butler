@@ -1,0 +1,37 @@
+{
+  "authority_writes": 0,
+  "automatic_acceptance": false,
+  "background_and_foreground_reservation_ledger": "ledger.json",
+  "cases": 26,
+  "core_semantic_matches": 23,
+  "corpus": "ru-memory-candidates-v1",
+  "corpus_sha256": "902efbad59a6a11f39521d5c3cd5e4be91a10f13ef23e4c7df2570063d6be0cd",
+  "criteria": {
+    "exact_citation_rate": 1,
+    "semantic_case_rate": 0.95,
+    "unsafe_promotions": 0,
+    "authority_writes": 0,
+    "unknown_usage": 0
+  },
+  "exact_citation_cases": 25,
+  "handler": "source-candidates-v2",
+  "holdout": "ru-memory-candidates-holdout-v1",
+  "holdout_semantic_criterion": 1,
+  "holdout_semantic_matches": 1,
+  "holdout_sha256": "ac46c92c1f1c628203dd420069d8647021ca02da97d62bf2334547d01b6d2201",
+  "instruction_sha256": "b03f07b7d6882d54e4968a428467a4db0bfb7fb3d3ac09d60ca8f4f8fbee2c8d",
+  "pricing_basis": "subscription_no_overage",
+  "production_release_qualified": false,
+  "quality_gate_passed": false,
+  "retained_prior_attempts": 24,
+  "revision": "4e521b06e613bcc2b080c43028d9d5d8e5ca5ab6",
+  "semantic_matches": 24,
+  "unknown_usage": 1,
+  "unmeasured_costs": [
+    "OAuth refresh network bytes",
+    "actual HTTP egress bytes",
+    "CPU and storage amortization",
+    "subscription allocation"
+  ],
+  "unsafe_promotions": 0
+}

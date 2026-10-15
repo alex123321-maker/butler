@@ -1,0 +1,19 @@
+{
+  "attempts": 82,
+  "known_attempts": 80,
+  "unknown_usage": 2,
+  "reserved_tokens": 87441408,
+  "reserved_millis": 14100000,
+  "reserved_input_bytes": 687865856,
+  "known_input_tokens": 63445,
+  "known_output_tokens": 8598,
+  "known_total_tokens": 176553,
+  "window_known_input_tokens": 27379,
+  "window_known_output_tokens": 3482,
+  "window_known_total_tokens": 70074,
+  "declared_overage_micros": 0,
+  "pricing_basis": "subscription_no_overage",
+  "unknown_is_not_zero": true,
+  "day_limit_active_millis": 14400000,
+  "day_remaining_reserved_active_millis": 300000
+}
