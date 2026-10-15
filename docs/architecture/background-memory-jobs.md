@@ -58,8 +58,10 @@ Secret-class data and recognizable raw credentials deny processing.
 4. Recheck DB time and all authority after budget waits. Clamp the call to every
    scope deadline, policy, claim and current goal/mandate active-hours window.
    The configured model duration is additionally capped at five minutes. With a
-   full model claim this leaves a nominal minute for publication; earlier hard
-   deadlines still win and can shorten that margin. The supervisor stays 250ms/200ms.
+   full model claim this leaves a nominal minute of claim headroom. Publication
+   must still finish within the admitted call deadline; there is no guaranteed
+   post-call grace period. Earlier hard deadlines can shorten either bound.
+   The supervisor stays 250ms/200ms.
    `ProcessOne` also bounds the complete attempt at six minutes, preserving an
    earlier caller deadline rather than imposing a shorter hidden model timeout.
    A fresh transport correlation ID is neither a user run nor a lease.
