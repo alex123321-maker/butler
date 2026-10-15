@@ -212,7 +212,7 @@ func (Handler) Validate(sources []catalog.Source, raw string) (string, error) {
 				return "", jobs.ErrClaim
 			}
 		}
-		identity := u.SourceID + "\x00" + u.Key + "\x00" + u.Quote
+		identity := u.SourceID + "\x00" + u.Quote
 		if seen[identity] {
 			return "", jobs.ErrClaim
 		}
@@ -273,7 +273,11 @@ func (Handler) PublishTx(ctx context.Context, tx pgx.Tx, c *catalog.Store, j job
 		if err != nil {
 			return err
 		}
-		sum := sha256.Sum256(value)
+		// Retry identity is anchored to evidence, independently of the model's
+		// chosen topic/type. An inconsistent reinterpretation fails the catalog's
+		// request-hash CAS instead of creating another candidate/resetting a vote.
+		anchor, _ := json.Marshal([]any{Version, e.SourceID, e.SourceRevision, e.Start, e.End, e.Quote})
+		sum := sha256.Sum256(anchor)
 		memoryType := "profile"
 		if e.Type == "outcome_episode" {
 			memoryType = "episodic"

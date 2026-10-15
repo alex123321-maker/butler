@@ -204,12 +204,23 @@ func TestCandidateHTTPWorkerOwnerDecisionCorrectionIntegration(t *testing.T) {
 	if got := f.claims(); len(got) != 1 || got[0].ID != c.ID || got[0].Status != "confirmed" {
 		t.Fatal(got)
 	}
+	// Model wording/topic variation on the exact same evidence also cannot mint
+	// another candidate or reset the already accepted owner decision.
+	b, _ := json.Marshal(candidates.Output{Units: []candidates.Unit{{SourceID: s.ID, Type: "explicit_preference", SpeechAct: "assertion", Key: "preference.response_language", Quote: s.Body}}, Skips: []candidates.Skip{}})
+	p.output = string(b)
+	f.policy("candidate-key-change-policy", s, "cloud_allowed")
+	if e := f.process(); e == nil {
+		t.Fatal("changed exact-evidence retry accepted")
+	}
+	if got := f.claims(); len(got) != 1 || got[0].ID != c.ID || got[0].Status != "confirmed" {
+		t.Fatal(got)
+	}
 	f.request("/api/v4/memory/correct", "POST", catalog.Correction{SourceID: s.ID, ExpectedRevision: s.Revision, Body: "Предпочитаю ответы на английском языке."}, 200, nil)
 	if e := f.catalog.CheckObjects(f.owner, []catalog.ObjectRef{{Type: "profile", ID: profileID}}, "memory_read"); e == nil {
 		t.Fatal("corrected source remains context eligible")
 	}
 	var observed, reserved int
-	if e := f.pool.QueryRow(context.Background(), `SELECT count(*) FILTER(WHERE usage IS NOT NULL),(SELECT count(*) FROM execution_budget_reservations) FROM memory_model_attempts`).Scan(&observed, &reserved); e != nil || observed != 2 || reserved != 2 {
+	if e := f.pool.QueryRow(context.Background(), `SELECT count(*) FILTER(WHERE usage IS NOT NULL),(SELECT count(*) FROM execution_budget_reservations) FROM memory_model_attempts`).Scan(&observed, &reserved); e != nil || observed != 3 || reserved != 3 {
 		t.Fatal(observed, reserved, e)
 	}
 }
