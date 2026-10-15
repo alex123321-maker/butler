@@ -227,3 +227,9 @@ the passing controlled tests, retained failed windows and costs, and the newly
 passed native High/proxy window with the same-deadline remainder. It does not
 claim repair of old AICode access or quality of future consumers. Historical
 windows cannot establish this version.
+
+The separately gated [owner-reviewed consolidation consumer](memory-consolidation.md)
+uses this worker with immutable one-use prepared evidence and exact typed context
+pins. It reserves all actual root/mandate/day scopes atomically, publishes staged
+DATA, and exposes owner diff/head-revision CAS/retirement controls. It does not
+broaden existing quote/candidate/summary handler authority or accept model rules.
