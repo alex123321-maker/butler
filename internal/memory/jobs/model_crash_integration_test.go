@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -69,6 +70,9 @@ func TestModelCrashProcessHelper(t *testing.T) {
 	c := catalog.New(pool, catalog.NewFileManifest(os.Getenv("BUTLER_ISSUE82_CRASH_ANCHOR")))
 	b := budget.NewController(pool, budget.DefaultPolicy())
 	b.Policy.ModelMillis = 1000
+	if phase == "after_http_send" {
+		b.Policy.ModelMillis = 5000
+	}
 	b.Policy.Models["antigravity:fixture"] = budget.ModelPrice{Basis: "subscription_no_overage"}
 	s := New(pool, c, b, nil)
 	w := &ModelWorker{Jobs: s, Provider: &modelFixtureProvider{}, Model: "fixture"}
@@ -154,6 +158,18 @@ func TestModelActualProcessCrashRecoveryIntegration(t *testing.T) {
 			if e := child.Start(); e != nil {
 				t.Fatal(e)
 			}
+			killChild := func() {
+				t.Helper()
+				if e := child.Process.Kill(); e != nil {
+					t.Fatal("child was not killed", e)
+				}
+				e := child.Wait()
+				exit, ok := e.(*exec.ExitError)
+				if !ok || runtime.GOOS != "windows" && exit.ProcessState.ExitCode() != -1 {
+					t.Fatal("child did not terminate by signal", e)
+				}
+				t.Log("observed forced child exit", exit.ProcessState.String())
+			}
 			if phase == "after_http_send" {
 				sent := false
 				select {
@@ -161,8 +177,7 @@ func TestModelActualProcessCrashRecoveryIntegration(t *testing.T) {
 					sent = true
 				case <-time.After(10 * time.Second):
 				}
-				_ = child.Process.Kill()
-				_ = child.Wait()
+				killChild()
 				if !sent {
 					t.Fatal("child never sent complete HTTP request")
 				}
@@ -178,8 +193,7 @@ func TestModelActualProcessCrashRecoveryIntegration(t *testing.T) {
 					}
 					time.Sleep(25 * time.Millisecond)
 				}
-				_ = child.Process.Kill()
-				_ = child.Wait()
+				killChild()
 				if !found {
 					t.Fatal("child never entered atomic publication fault")
 				}
@@ -201,9 +215,9 @@ func TestModelActualProcessCrashRecoveryIntegration(t *testing.T) {
 			if e != nil || !worked {
 				t.Fatal(worked, e)
 			}
-			var attempts, unknown, outputs int
-			if e = w.Jobs.pool.QueryRow(ctx, `SELECT count(*),count(*) FILTER(WHERE usage IS NULL),(SELECT count(*) FROM memory_sources WHERE source_kind='model_candidate') FROM memory_model_attempts`).Scan(&attempts, &unknown, &outputs); e != nil || attempts != 2 || unknown != 1 || outputs != 1 {
-				t.Fatal(attempts, unknown, outputs, e)
+			var attempts, reservations, unknown, outputs, chargedScopes int
+			if e = w.Jobs.pool.QueryRow(ctx, `SELECT count(*),count(DISTINCT reservation_id),count(*) FILTER(WHERE usage IS NULL),(SELECT count(*) FROM memory_sources WHERE source_kind='model_candidate'),(SELECT count(*) FROM execution_budget_scopes WHERE kind IN ('owner_day','auxiliary') AND (used_json->>'model_turns')::bigint=2) FROM memory_model_attempts`).Scan(&attempts, &reservations, &unknown, &outputs, &chargedScopes); e != nil || attempts != 2 || reservations != 2 || unknown != 1 || outputs != 1 || chargedScopes != 3 {
+				t.Fatal(attempts, reservations, unknown, outputs, chargedScopes, e)
 			}
 			t.Log("killed independent worker", phase, "; persisted reservation retained; one derived output after takeover")
 		})
