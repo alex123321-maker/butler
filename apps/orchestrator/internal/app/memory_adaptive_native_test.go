@@ -177,24 +177,26 @@ type adaptiveImportControls struct {
 }
 
 type adaptiveNativePins struct {
-	Release       string `json:"release"`
-	SourceSHA     string `json:"source_sha256"`
-	BinarySHA     string `json:"binary_sha256"`
-	BrokerSHA     string `json:"broker_sha256"`
-	CorpusSHA     string `json:"corpus_sha256"`
-	ControlsSHA   string `json:"controls_sha256"`
-	MethodSHA     string `json:"method_sha256"`
-	MaxPaid       int    `json:"max_paid_entries"`
-	Model         string `json:"model"`
-	OutputTokens  int64  `json:"output_tokens"`
-	TimeoutMillis int64  `json:"timeout_millis"`
-	Order         string `json:"arm_order"`
+	Release              string `json:"release"`
+	SourceSHA            string `json:"source_sha256"`
+	BinarySHA            string `json:"binary_sha256"`
+	BrokerSHA            string `json:"broker_sha256"`
+	CorpusSHA            string `json:"corpus_sha256"`
+	ControlsSHA          string `json:"controls_sha256"`
+	MethodSHA            string `json:"method_sha256"`
+	MaxPaid              int    `json:"max_paid_entries"`
+	Model                string `json:"model"`
+	OutputTokens         int64  `json:"output_tokens"`
+	TimeoutMillis        int64  `json:"timeout_millis"`
+	Order                string `json:"arm_order"`
+	MaxLocalQueries      int64  `json:"max_local_queries"`
+	MaxLocalIndexEntries int64  `json:"max_local_index_entries"`
 }
 
 func checkAdaptiveNativePins(proof string) error {
 	raw, err := os.ReadFile(filepath.Join(proof, "frozen-pins.json"))
 	var p adaptiveNativePins
-	if err != nil || json.Unmarshal(raw, &p) != nil || len(p.Release) != 40 || p.MaxPaid != 352 || p.Model != "gemini-3.8-flash-high" || p.OutputTokens != 32768 || p.TimeoutMillis != 300000 || p.Order != "case_order_then_rotating_no_ltm_static_adaptive_v1" {
+	if err != nil || json.Unmarshal(raw, &p) != nil || len(p.Release) != 40 || p.MaxPaid != 352 || p.Model != "gemini-3.8-flash-high" || p.OutputTokens != 32768 || p.TimeoutMillis != 300000 || p.Order != "case_order_then_rotating_no_ltm_static_adaptive_v1" || p.MaxLocalQueries != 1536 || p.MaxLocalIndexEntries != 768 {
 		return errors.New("frozen native profile pins differ")
 	}
 	source, err := acceptance.TreeHash("/src", nil)
@@ -220,6 +222,56 @@ func checkAdaptiveNativePins(proof string) error {
 		}
 	}
 	return nil
+}
+
+func TestMemoryAdaptiveWritePins(t *testing.T) {
+	if os.Getenv("BUTLER_ADAPTIVE_WRITE_PINS") != "1" {
+		t.Skip("explicit offline freeze required")
+	}
+	p := adaptiveNativePins{Release: os.Getenv("BUTLER_ADAPTIVE_RELEASE"), MaxPaid: 352, Model: "gemini-3.8-flash-high", OutputTokens: 32768, TimeoutMillis: 300000, Order: "case_order_then_rotating_no_ltm_static_adaptive_v1", MaxLocalQueries: 1536, MaxLocalIndexEntries: 768}
+	if len(p.Release) != 40 {
+		t.Fatal("exact release required")
+	}
+	var err error
+	if p.SourceSHA, err = acceptance.TreeHash("/src", nil); err != nil {
+		t.Fatal("source hash failed")
+	}
+	exe, err := os.Executable()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if p.BinarySHA, err = acceptance.FileHash(exe); err != nil {
+		t.Fatal("binary hash failed")
+	}
+	if p.BrokerSHA, err = acceptance.FileHash(os.Getenv("BUTLER_MEMORY_READ_APP_BINARY")); err != nil {
+		t.Fatal("Broker hash failed")
+	}
+	readHash := func(path string) string {
+		raw, e := os.ReadFile(path)
+		if e != nil {
+			t.Fatal("fixture/method unreadable")
+		}
+		return acceptance.MemoryBytesSHA256(raw)
+	}
+	p.CorpusSHA = readHash("/src/deploy/memory-adaptive/holdout-v1/corpus.json")
+	p.ControlsSHA = readHash("/src/deploy/memory-adaptive/holdout-v1/controls.json")
+	p.MethodSHA = readHash("/src/docs/ai/memory-eval-semantic-methodology.md")
+	raw, err := json.MarshalIndent(p, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	proof := os.Getenv("BUTLER_ADAPTIVE_NATIVE_PROOF")
+	f, err := os.OpenFile(filepath.Join(proof, "frozen-pins.json"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+	if err != nil {
+		t.Fatal("freeze cannot overwrite an existing window")
+	}
+	defer f.Close()
+	if _, err = f.Write(append(raw, '\n')); err != nil {
+		t.Fatal("pin export failed")
+	}
+	if err = checkAdaptiveNativePins(proof); err != nil {
+		t.Fatal(err)
+	}
 }
 
 type adaptiveNativeExecutor struct {
@@ -355,6 +407,9 @@ func TestMemoryAdaptiveNativeComparison(t *testing.T) {
 		t.Fatal("PG unavailable")
 	}
 	defer admin.Close()
+	if _, err = admin.Exec(ctx, `CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public`); err != nil {
+		t.Fatal("public vector extension unavailable")
+	}
 	if _, err = admin.Exec(ctx, `CREATE TABLE IF NOT EXISTS public.issue87_native_windows(window_id TEXT PRIMARY KEY);INSERT INTO public.issue87_native_windows VALUES('adaptive-native-v1');CREATE SCHEMA adaptive_native_v1`); err != nil {
 		t.Fatal("one-use native window already used or unavailable")
 	}
@@ -412,9 +467,12 @@ func TestMemoryAdaptiveNativeComparison(t *testing.T) {
 	b.Policy.Models["local:google/embeddinggemma-2"] = budget.ModelPrice{Basis: "local_no_billing"}
 	b.Policy.ModelMillis = 300000
 	b.Policy.OutputTokens = 32768
-	// One finite shared owner/day includes all352 possible cloud turns plus
-	// bounded local indexing/query work. Actual requests keep their own scopes.
-	b.Policy.Day = budget.Units{ModelTurns: 1024, Tokens: 1 << 32, ActiveMillis: 352*300000 + 672*60000, ProviderInputBytes: 352*8388608 + 672*8192}
+	// The shared allowance includes352 cloud entries,1536 possible local query
+	// entries (static12 + adaptive3*12 per case), and96*8 index entries. All
+	// individual scopes and the fixed200-minute collection expiry still win.
+	b.Policy.Day = budget.Units{ModelTurns: 2656, Tokens: 352*1081344 + 2304*10240, ActiveMillis: 352*300000 + 2304*60000, ProviderInputBytes: 352*8388608 + 2304*8192}
+	b.Policy.Task.ModelTurns = 45
+	b.Policy.Task.ActiveMillis = 9*300000 + 36*60000
 	b.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	manifestPath := "/private/adaptive-deletion-anchor"
 	manifest := catalog.NewFileManifest(manifestPath)
