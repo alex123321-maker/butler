@@ -11,7 +11,7 @@ import (
 // One allowance unit per encoded UTF-8 byte, plus item/section overhead. These
 // conservative units are not the provider tokenizer or invoice. This optional
 // memory allowance is inside the orchestrator's complete-context admission.
-const SelectionVersion = "memory-context-v2"
+const SelectionVersion = "memory-context-v3"
 
 type SelectionDiagnostics struct {
 	Version           string         `json:"version"`
@@ -86,9 +86,9 @@ func relevantProfiles(entries []map[string]any, query string, limit int) []map[s
 		if strings.TrimSpace(query) == "" || generalProfileKey(key) {
 			score++
 		}
-		if score > 0 {
-			rankedEntries = append(rankedEntries, ranked{item, score, scopes[scope], key})
-		}
+		// No lexical overlap is not proof of inapplicability. Keep these
+		// already authorized entries behind matches, within the profile quota.
+		rankedEntries = append(rankedEntries, ranked{item, score, scopes[scope], key})
 	}
 	sort.SliceStable(rankedEntries, func(i, j int) bool {
 		a, b := rankedEntries[i], rankedEntries[j]
@@ -119,6 +119,29 @@ func generalProfileKey(key string) bool {
 		return true
 	}
 	return false
+}
+
+func contextItemIdentity(class string, item map[string]any) string {
+	var identity any
+	switch class {
+	case "profile":
+		identity = []any{class, item["scope_type"], item["scope_id"], item["key"], item["summary"], item["origin"]}
+	case "chunks":
+		ref, _ := item["source_ref"].(string)
+		if ref == "" {
+			return "" // Text alone cannot establish document identity.
+		}
+		identity = []any{class, ref, item["source_revision"], item["title"], item["summary"], item["origin"]}
+	default:
+		// Episode retrieval already deduplicates its results. A summary alone
+		// cannot prove that entries from different memory classes are copies.
+		return ""
+	}
+	b, err := json.Marshal(identity)
+	if err != nil {
+		return ""
+	}
+	return string(b)
 }
 
 func (s *Service) selectContext(summary string, working WorkingContext, profile, episodes, chunks []map[string]any) (map[string]any, []map[string]any, []map[string]any, []map[string]any, SelectionDiagnostics, error) {
@@ -152,8 +175,8 @@ func (s *Service) selectContext(summary string, working WorkingContext, profile,
 			more = true
 			item := candidates[class][0]
 			candidates[class] = candidates[class][1:]
-			text := strings.Join(strings.Fields(fmt.Sprint(item["summary"])), " ")
-			if seen[text] && text != "" {
+			identity := contextItemIdentity(class, item)
+			if identity != "" && seen[identity] {
 				d.Omitted["duplicate"]++
 				continue
 			}
@@ -175,7 +198,9 @@ func (s *Service) selectContext(summary string, working WorkingContext, profile,
 			used += units
 			d.OptionalEstimated += units
 			count++
-			seen[text] = true
+			if identity != "" {
+				seen[identity] = true
+			}
 		}
 	}
 	for _, class := range classes {

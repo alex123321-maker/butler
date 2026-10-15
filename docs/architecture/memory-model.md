@@ -426,14 +426,17 @@ Current bundle assembly now combines:
 * session summary and working memory as highest-priority bundle items;
 * vector episodic retrieval when embeddings are available;
 * lightweight keyword summary matching as an optional fallback / complement when supported by the store;
-* `memory-context-v2`: mandatory summary/working state, then deterministic
+* `memory-context-v3`: mandatory summary/working state, then deterministic
   document/profile/episode round-robin, an optional conservative UTF-8 JSON byte
   allowance (8192 by default) inside the complete context allowance, per-class
   quotas and a secondary item cap. Mandatory history is not rejected by the
   smaller optional quota. With documents present, profile and episodes each
   consume at most one third of the optional allowance.
-  The product default is four bounded document results. Duplicate content keeps
-  case/punctuation; oversized optional records are omitted whole. Mandatory
+  The product default is four bounded document results. Zero lexical overlap
+  leaves authorized profiles as lower-priority candidates within their quota.
+  Deduplication uses profile scope/key/value/provenance or document source/
+  revision/title/excerpt/provenance, preserving independent equal-valued facts.
+  Oversized optional records are omitted whole. Mandatory
   overflow is explicit. Safe diagnostics contain version/counts/reason codes.
 
 `QueryPolicy` separately permits local query use and external query release.
@@ -444,6 +447,11 @@ run/source/task guards remain authoritative before/after search and on provider
 release. Profile eligibility is re-read after slow retrieval; selection never
 fills a quota using withdrawn/foreign records. See the
 [bundle service contract](../../internal/memory/service/README.md).
+
+Hybrid queries above 2048 UTF-8 bytes skip optional lookup with `query_input_limit`
+and no SQL/inference, preserving the full owner message for ordinary preparation.
+Access/Secret/configuration failures and current authority/source release checks
+remain blocking. Historical v2 comparison artifacts retain their executed pins.
 
 The Transcript Store assigns a durable per-session `message_sequence` using the
 locked `transcript_heads` row; ordering does not depend on client timestamps or
@@ -812,7 +820,7 @@ The memory doctor (`/api/v1/doctor/check`) now reports:
 2. ~~Политика дедупликации episodic memory.~~ — **Решено:** near-duplicate эпизоды подавляются, materially different варианты сохраняются как variants по canonical summary policy.
 3. ~~Политика сохранения doctor outputs.~~ — **Решено:** doctor/tool-derived long-form data допускается только через явную allowlist-style ingestion policy с предварительной sanitization и записью в chunk memory.
 4. Session summary uses versioned verified transcript coverage and source/deletion fences. Legacy model summary workers remain disabled until independently owned admission; summaries never replace current authority.
-5. Приоритет retrieval версионирован в `memory-context-v2`: обязательные summary/working и отбор document/profile/episode по применимости, размеру и квотам; прежний порядок profile-before-documents сохранён только в историческом сравнении.
+5. Приоритет retrieval версионирован в `memory-context-v3`: обязательные summary/working и отбор document/profile/episode по применимости, размеру и квотам; прежние версии сохранены в историческом сравнении.
 6. Использовать ли отдельный reranking layer (слой переранжирования) в будущем.
 
 ---

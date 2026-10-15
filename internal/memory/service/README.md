@@ -11,10 +11,11 @@ provider. Unproven/unavailable local inference is an explicit diagnostic; genuin
 source/authority failures are errors. A nil policy preserves old explicit
 `IncludeQuery` callers. Query permission does not grant generation/data release.
 
-`memory-context-v2` ranks eligible confirmed profiles by lexical query overlap,
+`memory-context-v3` ranks eligible confirmed profiles by lexical query overlap,
 then scope order/key/text. Stable presentation/identity keys remain applicable
 without literal query overlap. Eligibility and current access are decided before
-ranking; rejected sources cannot fill a quota. Profile selection happens after
+ranking; zero-overlap authorized entries remain lower-priority candidates inside
+the same profile count/size quota. Rejected sources cannot fill a quota. Profile selection happens after
 potentially slow document retrieval. The product default is four document hits,
 within the existing bounded hybrid reader, rather than two.
 
@@ -26,8 +27,10 @@ allowance. These units are not a native tokenizer or billed tokens. Oversized
 mandatory state fails explicitly.
 Optional documents/profile/episodes are admitted in deterministic round-robin
 order; when documents exist, each other class can consume at most one third of
-the optional allowance. Oversized optional records are omitted whole, duplicate text is
-removed without changing case/punctuation, and unspent space remains available.
+the optional allowance. Oversized optional records are omitted whole. Deduplication
+uses profile scope/key/value/provenance or document source/revision/title/excerpt/
+provenance; equal values across different keys, sources or classes are retained.
+Unknown document identity is not deduplicated by text. Unspent space remains available.
 `BundleBudget` is a secondary count cap, never a substitute for size accounting.
 Profile source handles and document revisions stay with selected evidence.
 

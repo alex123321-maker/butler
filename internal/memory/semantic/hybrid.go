@@ -30,7 +30,10 @@ const (
 	ExactOnly              Diagnostic = "exact_identifier_only"
 	ContextLimited         Diagnostic = "retrieval_context_limited"
 	LocalBackendUnverified Diagnostic = "local_query_backend_unverified"
+	QueryInputLimit        Diagnostic = "query_input_limit"
 )
+
+const MaxQueryBytes = 2048
 
 // SearchReport contains retrieval evidence, never a verified answer. Byte units
 // conservatively bound the retrieved JSON; they are not measured model usage.
@@ -100,7 +103,7 @@ func (r *HybridReader) SearchDetailed(ctx context.Context, scopes []memoryservic
 	if r == nil || r.Store == nil || r.Store.Guard == nil {
 		return report, ErrAccess
 	}
-	if strings.TrimSpace(query) == "" || len(query) > 2048 || len(scopes) == 0 || len(scopes) > 12 || limit < 1 || limit > 4 {
+	if strings.TrimSpace(query) == "" || len(scopes) == 0 || len(scopes) > 12 || limit < 1 || limit > 4 {
 		return report, ErrInvalid
 	}
 	if operationOrigin(ctx).Sensitivity == content.Secret {
@@ -113,14 +116,24 @@ func (r *HybridReader) SearchDetailed(ctx context.Context, scopes []memoryservic
 	if budget < 128 || budget > 8192 {
 		return report, ErrInvalid
 	}
-	var exact, text, vector []Hit
 	seenScopes := map[Scope]bool{}
 	for _, scope := range scopes {
 		s := Scope{scope.Type, scope.ID}
-		if seenScopes[s] {
+		if !s.valid() || seenScopes[s] {
 			return report, ErrInvalid
 		}
 		seenScopes[s] = true
+	}
+	// The owner message is still complete in the orchestrator's model input.
+	// Search size is an optional-retrieval limit, not a run failure or a reason
+	// to silently truncate the question and change which evidence is sought.
+	if len(query) > MaxQueryBytes {
+		report.Diagnostics = []Diagnostic{QueryInputLimit}
+		return report, nil
+	}
+	var exact, text, vector []Hit
+	for _, scope := range scopes {
+		s := Scope{scope.Type, scope.ID}
 		lex, err := r.Store.Lexical(ctx, s, query)
 		if err != nil {
 			return report, err

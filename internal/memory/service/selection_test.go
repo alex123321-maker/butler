@@ -75,7 +75,7 @@ func TestContextSelectionPreservesFourDocumentsUnderLargeRelevantProfile(t *test
 }
 
 func TestContextSelectionBoundsLongUnicodeAndRejectsOversizedMandatoryState(t *testing.T) {
-	r := &policyReaderFixture{hits: []SemanticHit{{Title: "Документ", Summary: "Полезный факт", SourceRef: "source:1"}, {Title: "Копия", Summary: "Полезный факт", SourceRef: "source:2"}}}
+	r := &policyReaderFixture{hits: []SemanticHit{{Title: "Документ", Summary: "Полезный факт", SourceRef: "source:1"}, {Title: "Документ", Summary: "Полезный факт", SourceRef: "source:1"}}}
 	s := New(Config{Semantic: r, ContextBudgetTokens: 1200, ScopeOrder: []string{"session"}, ProfileStore: stubProfileStore{entriesByScope: map[string][]ProfileEntry{"session:s": {stubProfile{"language", strings.Repeat("японский 日本語 ", 1000)}}}}})
 	b, err := s.BuildBundle(context.Background(), BundleRequest{SessionKey: "s", UserMessage: "факт", IncludeQuery: true})
 	if err != nil || !utf8.ValidString(b.Prompt) || b.Diagnostics.Selected["chunks"] != 1 || b.Diagnostics.Omitted["duplicate"] != 1 || b.Diagnostics.Omitted["class_quota"] != 1 || b.Diagnostics.Estimated > 1200 {
@@ -91,5 +91,46 @@ func TestContextSelectionBoundsLongUnicodeAndRejectsOversizedMandatoryState(t *t
 	b, err = s.BuildBundle(context.Background(), BundleRequest{SessionKey: "s"})
 	if err != nil || b.Items["session_summary"] == nil || b.Diagnostics.OptionalEstimated != 0 {
 		t.Fatal("optional quota blocked mandatory history", err, b.Diagnostics)
+	}
+}
+
+func TestContextSelectionPreservesIndependentFactsWithEqualValues(t *testing.T) {
+	r := &policyReaderFixture{hits: []SemanticHit{
+		{Title: "Завтрак", Summary: "09:00", SourceRef: "source:breakfast"},
+		{Title: "Обед", Summary: "09:00", SourceRef: "source:lunch"},
+		{Title: "Обед", Summary: "09:00", SourceRef: "source:lunch"},
+	}}
+	s := New(Config{Semantic: r, ScopeOrder: []string{"session"}, ProfileStore: stubProfileStore{entriesByScope: map[string][]ProfileEntry{
+		"session:s": {stubProfile{"завтрак", "09:00"}, stubProfile{"обед", "09:00"}},
+	}}})
+	b, err := s.BuildBundle(context.Background(), BundleRequest{SessionKey: "s", UserMessage: "Во сколько завтрак и обед?", IncludeQuery: true})
+	if err != nil || b.Diagnostics.Selected["profile"] != 2 || b.Diagnostics.Selected["chunks"] != 2 || b.Diagnostics.Omitted["duplicate"] != 1 {
+		t.Fatal("distinct keys/sources/classes collapsed or exact duplicate retained", err, b.Diagnostics)
+	}
+	for _, key := range []string{"завтрак: 09:00", "обед: 09:00"} {
+		if !strings.Contains(b.Prompt, key) {
+			t.Fatal("independent profile fact lost", b.Prompt)
+		}
+	}
+}
+
+func TestContextSelectionKeepsZeroOverlapProfileBehindMatches(t *testing.T) {
+	entries := []map[string]any{
+		{"key": "dietary_restrictions", "summary": "Не употребляет арахис.", "scope_type": "user", "scope_id": "owner"},
+		{"key": "ужин", "summary": "В 19:00", "scope_type": "user", "scope_id": "owner"},
+	}
+	selected := relevantProfiles(entries, "Предложи ужин.", 20)
+	if len(selected) != 2 || selected[0]["key"] != "ужин" || selected[1]["key"] != "dietary_restrictions" {
+		t.Fatal("zero lexical overlap became ineligibility or outranked a match", selected)
+	}
+	if limited := relevantProfiles(entries, "Предложи ужин.", 1); len(limited) != 1 || limited[0]["key"] != "ужин" {
+		t.Fatal("fallback consumed matched profile allowance", limited)
+	}
+	s := New(Config{ScopeOrder: []string{"session"}, ProfileStore: stubProfileStore{entriesByScope: map[string][]ProfileEntry{
+		"session:s": {stubProfile{"dietary_restrictions", "Не употребляет арахис."}},
+	}}})
+	b, err := s.BuildBundle(context.Background(), BundleRequest{SessionKey: "s", UserMessage: "Предложи ужин."})
+	if err != nil || !strings.Contains(b.Prompt, "арахис") {
+		t.Fatal("unmatched eligible profile lost despite free quota", b.Diagnostics, err)
 	}
 }

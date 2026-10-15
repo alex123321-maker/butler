@@ -8,6 +8,12 @@ receive query text or reranker snippets; lexical evidence may still be returned
 with an explicit degraded diagnostic. Genuine source/run failures propagate.
 Neither local lookup nor zero incremental billing grants cloud generation.
 
+Queries above `MaxQueryBytes` (2048 UTF-8 bytes) skip optional hybrid retrieval
+with `query_input_limit`, without SQL, inference or silent truncation. The complete
+owner message remains in the normal model input. Missing access guards, Secret
+classification and invalid configuration still fail; orchestrator task/source
+rechecks and provider release checks remain required after a skipped lookup.
+
 `Adapter` calls the shared authenticated local-model service, never loads weights
 or calls a cloud endpoint. The composition root must provide the internal local
 connection and a trusted `Admission`; its absence blocks every inference. Each
