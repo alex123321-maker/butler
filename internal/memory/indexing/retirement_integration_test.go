@@ -23,7 +23,7 @@ func TestOwnerRetiresOnlyInactiveTerminalGenerationPreservingSpendIntegration(t 
 			t.Fatal(err)
 		}
 		if ok, err := r.ProcessOne(context.Background()); !ok || err != nil {
-			t.Fatal(ok, err)
+			t.Fatal(id, ok, "actual local entries", model.calls.Load(), err)
 		}
 		return receipt
 	}
