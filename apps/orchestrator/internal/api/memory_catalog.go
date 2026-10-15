@@ -50,6 +50,9 @@ func (s *MemoryCatalogServer) Handle() http.Handler {
 		ctx, cancel := context.WithTimeout(owneridentity.WithActor(r.Context(), a), 30*time.Second)
 		defer cancel()
 		w.Header().Set("Cache-Control", "no-store")
+		if s.handleIndexRetirement(ctx, w, r) {
+			return
+		}
 		if s.handleModelJobs(ctx, w, r) {
 			return
 		}

@@ -54,7 +54,7 @@ func database(t *testing.T) (context.Context, *Store, *chunks.Store) {
 		t.Fatal(err)
 	}
 	for _, path := range paths {
-		if filepath.Base(path) >= "046" {
+		if filepath.Base(path) >= "046" && filepath.Base(path) != "078_semantic_generation_retirement.up.sql" {
 			continue
 		}
 		raw, e := os.ReadFile(path)

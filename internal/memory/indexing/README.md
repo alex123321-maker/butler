@@ -43,3 +43,21 @@ Live retrieval uses the same catalog and Controller with the actual current run
 token; post-run indexing uses independent job claims. Ranking is off because the
 measured Qwen corpus did not improve the embedding baseline. Legacy cloud
 extraction/summary workers remain disabled and are unrelated to this runtime.
+
+An authenticated owner may POST `/api/v4/memory/index-retire` with exactly one
+`generation_id` and the scope's exact `expected_active_id` (empty only when no
+pointer exists). This bounded maintenance path also works while local models and
+the indexing runtime are disabled. It needs no backend or inference allowance.
+The immutable index-job projection proves the owner; only a terminal
+`done`/`failed`/`cancelled` job is eligible. Pending/running, foreign, ambiguous,
+active or stale-CAS generations are rejected. Locks are job, generation, active
+pointer. Current source privacy/revisions do not prevent derivative erasure.
+
+One transaction removes only that generation's vectors and records irreversible
+`retired_at`/`retired_by`. Generation, index-job, quality and spend history plus
+original sources survive. Repeating the request returns the same retirement
+timestamp and zero further removals. Retired generations cannot be rebuilt,
+previewed, verified or selected for rollback. No automatic pruning, source
+deletion, owner-scope widening or budget refund occurs. Retirement is derivative
+maintenance in PostgreSQL; use ordinary Catalog deletion and its external anchor
+for privacy erasure, including reconciliation of older restored backups.

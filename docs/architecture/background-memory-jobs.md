@@ -233,3 +233,22 @@ uses this worker with immutable one-use prepared evidence and exact typed contex
 pins. It reserves all actual root/mandate/day scopes atomically, publishes staged
 DATA, and exposes owner diff/head-revision CAS/retirement controls. It does not
 broaden existing quote/candidate/summary handler authority or accept model rules.
+
+## Explicit semantic-generation retirement
+
+Owner maintenance may retire one inactive semantic generation with the exact
+current active pointer as CAS precondition. It resolves the owning index job
+through its immutable projection and requires the authenticated owner and a
+terminal job (`done`, `failed` or `cancelled`). Ambiguous, pending, running,
+foreign, active or stale selections fail closed. The same transaction locks
+job→generation→active pointer, removes only that generation's vector entries and
+records immutable retirement metadata; no source read or model/backend is used.
+Current source correction/privacy withdrawal must not block this erasure.
+
+Originals, index/job/quality records, attempts, reservations and charged budgets
+remain unchanged. Go generation reads expose `retired` and all use/publication,
+preview, verification and activation paths reject it, including rollback. This
+is an explicit bounded owner action, never automatic retention or a budget reset.
+It remains available at the private owner API while optional local models are
+disabled. Ordinary privacy deletion still uses the Catalog external anchor;
+retiring a retrieval derivative is not a substitute for deleting source data.

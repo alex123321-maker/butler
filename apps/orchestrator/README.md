@@ -719,6 +719,13 @@ See the [indexing composition](../../internal/memory/indexing/README.md) and
 identity or declared local price disables only that owned semantic path; legacy
 cloud memory model jobs remain denied.
 
+POST `/api/v4/memory/index-retire` is available to the authenticated owner even
+with local indexing disabled. Send `generation_id` and `expected_active_id`;
+only one inactive terminal owner-job generation is eligible. It atomically
+removes that generation's vectors and marks it irreversibly retired, preserving
+originals, jobs, quality and spend history. Active/busy/foreign/stale choices are
+rejected; retired rollback is denied. No inference or automatic pruning occurs.
+
 ## Delegation foundation
 
 The internal delegation contract, tree admission/owner-control barrier, executor
