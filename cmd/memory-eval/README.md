@@ -234,3 +234,5 @@ provider, including Antigravity despite the setting's legacy name. Set it to300
 and set model_millis to300000 in BUTLER_EXECUTION_BUDGET_POLICY_JSON; a shorter
 budget would otherwise cancel the transport before its five-minute limit.
 See the [worked failed-case analysis](../../docs/ai/memory-eval-v2-h11-case-analysis-20261015.md).
+The [laba setting and zero-inference proof](../../docs/ai/memory-eval-five-minute-timeout-20261015.md)
+record the applied configuration and32 passing targeted race checks.
