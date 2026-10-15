@@ -1,0 +1,29 @@
+{
+  "base_commit": "d98c93fcece405af672288a89bfe9d5b9ed303a1",
+  "core_commit": "d99f5b76fe5a3ccdf4cef289b8dc08167de35d00",
+  "diagnostics_commit": "6f7c897490a9f2424f262f9d3f144c1aec4d0114",
+  "native_v1_commit": "d1df2be175fbb0fbcb6f0320e5ce16801dc22dcd",
+  "native_v2_commit": "a094a6839594c11dd34a0ceebd3e94f75a6b3b52",
+  "validation_v10": {
+    "skip": 2,
+    "code_commit": "d99f5b76fe5a3ccdf4cef289b8dc08167de35d00",
+    "pass": 854,
+    "fail": 0
+  },
+  "diagnostics_v11": {
+    "skip": 0,
+    "code_commit": "6f7c897490a9f2424f262f9d3f144c1aec4d0114",
+    "pass": 239,
+    "fail": 0
+  },
+  "native_acceptance": "BLOCKED_HTTP_403",
+  "unknown_usage_attempts": 2,
+  "published_results": 0,
+  "foreground_attempts": 0,
+  "model_quality": "NOT_PROVEN",
+  "source_parity": "All Go, SQL, module and config entries verified on laba",
+  "main_deployment": "unchanged",
+  "isolated_orchestrator": "exited",
+  "notes": "Overlapping test runs are not summed. Two reservations do not prove two upstream executions.",
+  "wire_crash_test_commit": "3b530db11279fdf4c089bccd2d25d5534e38fb87"
+}

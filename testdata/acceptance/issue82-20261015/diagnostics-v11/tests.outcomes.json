@@ -1,0 +1,1675 @@
+[
+  {
+    "Time": "2026-10-15T15:27:49.065835467Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestExactOwnerClaimCannotStealOtherOwnerKindOrPurposeIntegration",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T15:27:51.551962559Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestExtractionJobExpiresDuringExactRetryWaitIntegration",
+    "Action": "pass",
+    "Elapsed": 2.49
+  },
+  {
+    "Time": "2026-10-15T15:27:52.128999777Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestOwnedAuxiliaryAfterRunAndClaimTakeoverIntegration",
+    "Action": "pass",
+    "Elapsed": 0.58
+  },
+  {
+    "Time": "2026-10-15T15:27:52.652498504Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestEachActualAuxiliaryAttemptChargedAndBoundedIntegration",
+    "Action": "pass",
+    "Elapsed": 0.52
+  },
+  {
+    "Time": "2026-10-15T15:27:53.162839784Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestSourceAmendDeleteAndLocalityDenyAuxiliaryIntegration",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T15:27:53.67407329Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestTaskAmendmentImmediatelyDeniesPostRunAuxiliaryIntegration",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T15:27:54.103019575Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/extra_source",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:27:54.106006488Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/rewritten_fingerprint",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:27:54.109032163Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/allowance",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:27:54.111864446Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/deadline",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:27:54.114738216Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/claim_deadline",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:27:54.117450372Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/original_run",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:27:54.274441421Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration",
+    "Action": "pass",
+    "Elapsed": 0.6
+  },
+  {
+    "Time": "2026-10-15T15:27:54.774121112Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestAuxiliaryManifestPinsOriginalAncestorsIntegration",
+    "Action": "pass",
+    "Elapsed": 0.5
+  },
+  {
+    "Time": "2026-10-15T15:27:54.774208414Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelCrashProcessHelper",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:27:55.540112426Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelActualProcessCrashRecoveryIntegration/before_dispatch",
+    "Action": "pass",
+    "Elapsed": 0.77
+  },
+  {
+    "Time": "2026-10-15T15:27:56.621487556Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelActualProcessCrashRecoveryIntegration/after_dispatch",
+    "Action": "pass",
+    "Elapsed": 1.08
+  },
+  {
+    "Time": "2026-10-15T15:28:27.226900062Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelActualProcessCrashRecoveryIntegration/before_commit",
+    "Action": "pass",
+    "Elapsed": 30.61
+  },
+  {
+    "Time": "2026-10-15T15:28:27.226937427Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelActualProcessCrashRecoveryIntegration",
+    "Action": "pass",
+    "Elapsed": 32.45
+  },
+  {
+    "Time": "2026-10-15T15:28:27.756976533Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelFailureDiagnosticExcludesProviderMaterialIntegration",
+    "Action": "pass",
+    "Elapsed": 0.53
+  },
+  {
+    "Time": "2026-10-15T15:28:28.208685011Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelCredentialSourceNeverReachesProviderIntegration",
+    "Action": "pass",
+    "Elapsed": 0.45
+  },
+  {
+    "Time": "2026-10-15T15:28:28.757248326Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelCompletedRunAndTaskPolicyIntegration",
+    "Action": "pass",
+    "Elapsed": 0.55
+  },
+  {
+    "Time": "2026-10-15T15:28:29.304149692Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelCrashRecoveryAndLostPublicationACKIntegration/before_dispatch",
+    "Action": "pass",
+    "Elapsed": 0.55
+  },
+  {
+    "Time": "2026-10-15T15:28:29.901089582Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelCrashRecoveryAndLostPublicationACKIntegration/after_dispatch",
+    "Action": "pass",
+    "Elapsed": 0.6
+  },
+  {
+    "Time": "2026-10-15T15:28:30.447129033Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelCrashRecoveryAndLostPublicationACKIntegration/before_commit",
+    "Action": "pass",
+    "Elapsed": 0.55
+  },
+  {
+    "Time": "2026-10-15T15:28:30.447151871Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelCrashRecoveryAndLostPublicationACKIntegration",
+    "Action": "pass",
+    "Elapsed": 1.69
+  },
+  {
+    "Time": "2026-10-15T15:28:31.011458515Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelConcurrentWorkersAndBudgetIntegration",
+    "Action": "pass",
+    "Elapsed": 0.56
+  },
+  {
+    "Time": "2026-10-15T15:28:31.519958424Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelRevocationDuringCallIntegration/correct",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T15:28:32.036725474Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelRevocationDuringCallIntegration/delete",
+    "Action": "pass",
+    "Elapsed": 0.52
+  },
+  {
+    "Time": "2026-10-15T15:28:32.546300314Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelRevocationDuringCallIntegration/revoke",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T15:28:33.04966687Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelRevocationDuringCallIntegration/cancel",
+    "Action": "pass",
+    "Elapsed": 0.5
+  },
+  {
+    "Time": "2026-10-15T15:28:33.602069863Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelRevocationDuringCallIntegration/pause",
+    "Action": "pass",
+    "Elapsed": 0.55
+  },
+  {
+    "Time": "2026-10-15T15:28:34.121423006Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelRevocationDuringCallIntegration/disable",
+    "Action": "pass",
+    "Elapsed": 0.52
+  },
+  {
+    "Time": "2026-10-15T15:28:34.650323626Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelRevocationDuringCallIntegration/task_amend",
+    "Action": "pass",
+    "Elapsed": 0.53
+  },
+  {
+    "Time": "2026-10-15T15:28:34.650350445Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelRevocationDuringCallIntegration",
+    "Action": "pass",
+    "Elapsed": 3.64
+  },
+  {
+    "Time": "2026-10-15T15:28:35.127438217Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelLocalOnlyUnavailableAndRetryBoundIntegration/local_only",
+    "Action": "pass",
+    "Elapsed": 0.48
+  },
+  {
+    "Time": "2026-10-15T15:28:35.763130587Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelLocalOnlyUnavailableAndRetryBoundIntegration/unavailable",
+    "Action": "pass",
+    "Elapsed": 0.64
+  },
+  {
+    "Time": "2026-10-15T15:28:36.284349477Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelLocalOnlyUnavailableAndRetryBoundIntegration/unknown_usage",
+    "Action": "pass",
+    "Elapsed": 0.52
+  },
+  {
+    "Time": "2026-10-15T15:28:36.284369521Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelLocalOnlyUnavailableAndRetryBoundIntegration",
+    "Action": "pass",
+    "Elapsed": 1.63
+  },
+  {
+    "Time": "2026-10-15T15:28:36.757409628Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelPriorityPauseDeadlineAndConsumerGateIntegration",
+    "Action": "pass",
+    "Elapsed": 0.47
+  },
+  {
+    "Time": "2026-10-15T15:28:36.757821763Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestQuoteProbeRejectsUnverifiableModelOutput",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:37.304160206Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelDifferentJobsShareFinalBudgetUnitIntegration/owner_day",
+    "Action": "pass",
+    "Elapsed": 0.55
+  },
+  {
+    "Time": "2026-10-15T15:28:37.899941354Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelDifferentJobsShareFinalBudgetUnitIntegration/task",
+    "Action": "pass",
+    "Elapsed": 0.6
+  },
+  {
+    "Time": "2026-10-15T15:28:38.514148654Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelDifferentJobsShareFinalBudgetUnitIntegration/mandate",
+    "Action": "pass",
+    "Elapsed": 0.61
+  },
+  {
+    "Time": "2026-10-15T15:28:38.514169676Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelDifferentJobsShareFinalBudgetUnitIntegration",
+    "Action": "pass",
+    "Elapsed": 1.76
+  },
+  {
+    "Time": "2026-10-15T15:28:39.08372079Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelMandateAndSourceRevocationDuringCallIntegration/mandate_revoke",
+    "Action": "pass",
+    "Elapsed": 0.57
+  },
+  {
+    "Time": "2026-10-15T15:28:39.662921909Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelMandateAndSourceRevocationDuringCallIntegration/mandate_revision",
+    "Action": "pass",
+    "Elapsed": 0.58
+  },
+  {
+    "Time": "2026-10-15T15:28:40.274673021Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelMandateAndSourceRevocationDuringCallIntegration/goal_revision",
+    "Action": "pass",
+    "Elapsed": 0.61
+  },
+  {
+    "Time": "2026-10-15T15:28:40.874034526Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelMandateAndSourceRevocationDuringCallIntegration/source_revoke",
+    "Action": "pass",
+    "Elapsed": 0.6
+  },
+  {
+    "Time": "2026-10-15T15:28:40.874057434Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelMandateAndSourceRevocationDuringCallIntegration",
+    "Action": "pass",
+    "Elapsed": 2.36
+  },
+  {
+    "Time": "2026-10-15T15:28:41.368391525Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelTaskSourceCannotDropLocalOnlyBindingIntegration",
+    "Action": "pass",
+    "Elapsed": 0.49
+  },
+  {
+    "Time": "2026-10-15T15:28:41.924506106Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelPolicyPauseKeepsJobsAndAttemptsIntegration",
+    "Action": "pass",
+    "Elapsed": 0.56
+  },
+  {
+    "Time": "2026-10-15T15:28:42.393823729Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelBoundedTriggersQueueAndExpiredPendingIntegration/schedule",
+    "Action": "pass",
+    "Elapsed": 0.47
+  },
+  {
+    "Time": "2026-10-15T15:28:42.867440866Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelBoundedTriggersQueueAndExpiredPendingIntegration/session_inactive",
+    "Action": "pass",
+    "Elapsed": 0.47
+  },
+  {
+    "Time": "2026-10-15T15:28:43.353443142Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelBoundedTriggersQueueAndExpiredPendingIntegration/queue_backpressure",
+    "Action": "pass",
+    "Elapsed": 0.49
+  },
+  {
+    "Time": "2026-10-15T15:28:43.353471218Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelBoundedTriggersQueueAndExpiredPendingIntegration",
+    "Action": "pass",
+    "Elapsed": 1.43
+  },
+  {
+    "Time": "2026-10-15T15:28:43.868393335Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelActualUsageOverrunRetainedIntegration",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T15:28:44.457603373Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelPriorityAtDispatchAndDuringInferenceIntegration/before_dispatch",
+    "Action": "pass",
+    "Elapsed": 0.59
+  },
+  {
+    "Time": "2026-10-15T15:28:45.488058231Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelPriorityAtDispatchAndDuringInferenceIntegration/during_call",
+    "Action": "pass",
+    "Elapsed": 1.03
+  },
+  {
+    "Time": "2026-10-15T15:28:45.488091545Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelPriorityAtDispatchAndDuringInferenceIntegration",
+    "Action": "pass",
+    "Elapsed": 1.62
+  },
+  {
+    "Time": "2026-10-15T15:28:46.063233613Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelSessionPrivacyRecheckedAtPublicationIntegration",
+    "Action": "pass",
+    "Elapsed": 0.58
+  },
+  {
+    "Time": "2026-10-15T15:28:47.000601864Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelClaimExpiryAfterBudgetWaitIntegration",
+    "Action": "pass",
+    "Elapsed": 0.94
+  },
+  {
+    "Time": "2026-10-15T15:28:47.590611378Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelTransientPublicationRollbackRecoveryIntegration",
+    "Action": "pass",
+    "Elapsed": 0.59
+  },
+  {
+    "Time": "2026-10-15T15:28:48.775025464Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelLocalWaitAndPolicyDeadlineIntegration",
+    "Action": "pass",
+    "Elapsed": 1.18
+  },
+  {
+    "Time": "2026-10-15T15:28:49.358439074Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelWorkerShutdownNormalizedTransportErrorIntegration",
+    "Action": "pass",
+    "Elapsed": 0.58
+  },
+  {
+    "Time": "2026-10-15T15:28:49.834904978Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelMigrationRollbackRetainsHistoryIntegration",
+    "Action": "pass",
+    "Elapsed": 0.48
+  },
+  {
+    "Time": "2026-10-15T15:28:52.786592148Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestCurrentInferenceAuthorityDeniesImmediatelyBeforeHTTP",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.787471174Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestNativeSerializedBudgetIncludesHistoryBeforeNetwork",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.790291165Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestFlashHighCloudCodeToolContinuation",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.79102045Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestFlashHighAuthAndWholeEnvelopeLimitsDenyBeforeGeneration/no-discovery",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.791467296Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestFlashHighAuthAndWholeEnvelopeLimitsDenyBeforeGeneration/discovery-error",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.791833545Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestFlashHighAuthAndWholeEnvelopeLimitsDenyBeforeGeneration/invalid-project",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.792290588Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestFlashHighAuthAndWholeEnvelopeLimitsDenyBeforeGeneration/byte-limit",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.792309306Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestFlashHighAuthAndWholeEnvelopeLimitsDenyBeforeGeneration",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.793123868Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestCloudCodeSSERejectsWrongEnvelopeAndPartialTools",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.793961896Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/known",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.794655213Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/true_zero",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.795286371Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/missing_usage",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.795984228Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/partial_usage",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.796703945Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/missing_version",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.797294036Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/aliased_metadata",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.798032191Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/aliased_count",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.798777819Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/negative_count",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.79945172Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/invalid_version",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.799921055Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/incomplete_frame",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.800688264Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/incomplete_candidate",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.80144835Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/reader_failure_after_terminal",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.80195931Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/conflicting_usage",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.802360689Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/conflicting_version",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.802920888Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/tiered/provisional_only",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.803819889Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/known",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.80460379Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/true_zero",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.805516409Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/missing_usage",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.806314279Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/partial_usage",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.807140015Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/missing_version",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.807751967Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/aliased_metadata",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.808559335Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/aliased_count",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.809347985Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/negative_count",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.810141455Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/invalid_version",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.810645501Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/incomplete_frame",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.811481714Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/incomplete_candidate",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.812264568Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/reader_failure_after_terminal",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.812875541Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/conflicting_usage",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.813330978Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/conflicting_version",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.813905355Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements/high/provisional_only",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.813948098Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureRetainsOnlyCompleteMeasurements",
+    "Action": "pass",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-15T15:28:52.814328315Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageTruncatedFunctionFailureParserReturnsNoModelBody",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.816159769Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestDeveloperArgsSchemaDecoderCompatibility/plain_integer",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.817354828Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestDeveloperArgsSchemaDecoderCompatibility/decimal_integer",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.818582293Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestDeveloperArgsSchemaDecoderCompatibility/exponent_integer",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.819387845Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestDeveloperArgsSchemaDecoderCompatibility/timezone_required_beyond_schema_string",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.819412639Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestDeveloperArgsSchemaDecoderCompatibility",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:28:52.826282252Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHTTPInvalidArgumentReasonIsBoundedMaskedAndNeverRetries",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:28:52.826699904Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestProviderDiagnosticStageSeparatesAuthHTTPAndStreamFailure/tiered/authentication",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.827115042Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestProviderDiagnosticStageSeparatesAuthHTTPAndStreamFailure/tiered/round_trip",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.827527386Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestProviderDiagnosticStageSeparatesAuthHTTPAndStreamFailure/tiered/response_stream",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.827848937Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestProviderDiagnosticStageSeparatesAuthHTTPAndStreamFailure/high/authentication",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.828278183Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestProviderDiagnosticStageSeparatesAuthHTTPAndStreamFailure/high/round_trip",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.828679073Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestProviderDiagnosticStageSeparatesAuthHTTPAndStreamFailure/high/response_stream",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.828712178Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestProviderDiagnosticStageSeparatesAuthHTTPAndStreamFailure",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.829774887Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHighGoogleResponseSchemaUsesExclusiveFrozenNativeDialect/map_override",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.829860722Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHighGoogleResponseSchemaUsesExclusiveFrozenNativeDialect/json_override",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.829936081Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHighGoogleResponseSchemaUsesExclusiveFrozenNativeDialect/foreign_model",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.830004386Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHighGoogleResponseSchemaUsesExclusiveFrozenNativeDialect/tools",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.830027294Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHighGoogleResponseSchemaUsesExclusiveFrozenNativeDialect",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.830872796Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/extra_keyword",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.830982587Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/lowercase_type",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.831080923Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/annotation",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.83294241Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/too_many_nodes",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.83303495Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/wrong_root",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.833126093Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/empty_properties",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.833245243Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/foreign_required",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.833345465Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/duplicate_required",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.833486266Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/reference",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.833586349Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/invalid_nullable",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.833702146Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/duplicate_enum",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.8338104Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/numeric_enum",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.833900147Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/duplicate_key",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.834012661Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/union",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.834115259Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/missing_array_bound",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.834221418Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/noncanonical_array_bound",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.834322269Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/oversized_array_bound",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.834431012Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/contradictory_array_bound",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.834515171Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/oversized_schema",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.834745718Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/deep",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.834849223Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/numeric_array_bound",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.834910684Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/foreign_model",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.83496977Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction/mixed_dialects",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.834987649Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaRejectsUnsupportedConstruction",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.835515511Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaDoesNotRetryFallbackOrRepair/Bad_Request",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.836276784Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaDoesNotRetryFallbackOrRepair/OK",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.836294594Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestGoogleResponseSchemaDoesNotRetryFallbackOrRepair",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.837172153Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHighStructuredGenerationUsesFrozenAllowance/foreign_model",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.83723934Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHighStructuredGenerationUsesFrozenAllowance/tool_authority",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.837298426Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHighStructuredGenerationUsesFrozenAllowance/map_override",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.837366591Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHighStructuredGenerationUsesFrozenAllowance/json_override",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.837383284Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHighStructuredGenerationUsesFrozenAllowance",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.83749936Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestConfiguredGenerationRejectsUnsupportedSchema/negative",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.837560891Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestConfiguredGenerationRejectsUnsupportedSchema/oversized",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.837625145Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestConfiguredGenerationRejectsUnsupportedSchema/tiered_ceiling",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.837687374Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestConfiguredGenerationRejectsUnsupportedSchema/tiered_schema",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.837750371Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestConfiguredGenerationRejectsUnsupportedSchema/duplicate",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.837817558Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestConfiguredGenerationRejectsUnsupportedSchema/array",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.837903463Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestConfiguredGenerationRejectsUnsupportedSchema/external_reference",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.837969114Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestConfiguredGenerationRejectsUnsupportedSchema/local_reference",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.838023032Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestConfiguredGenerationRejectsUnsupportedSchema/too_large",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.838044822Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestConfiguredGenerationRejectsUnsupportedSchema",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:52.83840709Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHighStructuredRejectionDoesNotRetryOrFallback",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.518866205Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestMemoryJobActualNativeAdapterHTTPIntegration",
+    "Action": "pass",
+    "Elapsed": 0.68
+  },
+  {
+    "Time": "2026-10-15T15:28:53.51973699Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/tiered/missing",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.520358719Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/tiered/reported",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.521000143Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/tiered/conflicting_trailer",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.521520882Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/tiered/invalid",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.521998947Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/tiered/aliased",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.522631781Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/high/missing",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.523313295Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/high/reported",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.523996764Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/high/conflicting_trailer",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.524573236Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/high/invalid",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.525059962Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased/high/aliased",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.525089365Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestObservedModelVersionRemainsOptionalConsistentAndUnaliased",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:28:53.528355853Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestDurableRecoveryStartsFreshObservationsThenKeepsLiveSignatures",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.530363728Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestNativeFunctionContinuationKeepsExactSignatureAndOnlyButlerTools",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.530977635Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestTruncatedTextRetainsNativeFinishReason",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.531582532Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/truncated",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.531995994Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/multiple_candidates",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.53254411Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/foreign_function",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.533174989Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/bad_schema",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.533767175Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/extra_argument",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.534294409Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/server_execution",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.534828906Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/incomplete",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.535210311Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/automatic_history",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.53563809Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/old_wrapped_response",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.536052041Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/duplicate_key",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.536688996Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/parallel_calls",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.537051264Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestUnsafeOrIncompleteResponsesNeverProposeTools/unterminated_frame",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.537077035Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestUnsafeOrIncompleteResponsesNeverProposeTools",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:28:53.537473945Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHTTPFailuresMaskedNoRetryOrAuthRedirect/302",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.537824619Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHTTPFailuresMaskedNoRetryOrAuthRedirect/400",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.538175433Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHTTPFailuresMaskedNoRetryOrAuthRedirect/401",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.538514723Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHTTPFailuresMaskedNoRetryOrAuthRedirect/403",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.538918337Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHTTPFailuresMaskedNoRetryOrAuthRedirect/404",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.53940625Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHTTPFailuresMaskedNoRetryOrAuthRedirect/429",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.539951503Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHTTPFailuresMaskedNoRetryOrAuthRedirect/500",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.539995783Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestHTTPFailuresMaskedNoRetryOrAuthRedirect",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.540623937Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry/capacity",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.541061355Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry/quota",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.541439337Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry/malformed",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.542396166Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry/oversized",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.542436744Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestCapacityFailureKeepsPrivateDiagnosticsBoundedAndDoesNotRetry",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.543147242Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestCancellationClosesHTTPAndIsolatedRuns",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.548676386Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestCatalogSchemasAreSupported",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:28:53.549815362Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestCancellationClosesRealSSEConnection",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.555454437Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestFlashHighSequentialAdmissionReceiptsKeepExactEnvelopeAndFinal",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:28:53.555823969Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestCancelledIncompleteProviderTurnHasNoObservedUsage",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.557275485Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageSurvivesTieredAndHighContinuation/tiered",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.558581103Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageSurvivesTieredAndHighContinuation/high",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.558601287Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageSurvivesTieredAndHighContinuation",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.559227835Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/missing",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.559796974Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/partial",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.56052584Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/provisional_then_terminal_without_usage",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.561067321Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/aliased_count",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.561478199Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/aliased_metadata",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.562059141Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/negative",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.562606559Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/overflow_decode",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.563165361Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/overflow_sum",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.563713268Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/inconsistent",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.56431153Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved/incomplete",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.564342959Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageMissingIncompleteAndInvalidRemainUnobserved",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:28:53.565080416Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestCompleteInvalidToolProposalRetainsUsageWithoutGrantingExecution",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.565893022Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageOnlyTrailerPreservesOneConsistentCompleteObservation/tiered/identical",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.566542409Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageOnlyTrailerPreservesOneConsistentCompleteObservation/tiered/conflicting",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.567209605Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageOnlyTrailerPreservesOneConsistentCompleteObservation/tiered/late_complete",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.568040928Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageOnlyTrailerPreservesOneConsistentCompleteObservation/high/identical",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.568813515Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageOnlyTrailerPreservesOneConsistentCompleteObservation/high/conflicting",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.569811341Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageOnlyTrailerPreservesOneConsistentCompleteObservation/high/late_complete",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.569837602Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageOnlyTrailerPreservesOneConsistentCompleteObservation",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.570403248Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageHighWrapperAliasesCannotReplaceCompleteResponse/Response",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.570899263Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageHighWrapperAliasesCannotReplaceCompleteResponse/re\\u017fponse",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:28:53.570921263Z",
+    "Package": "github.com/butler/butler/internal/transport/antigravity",
+    "Test": "TestToolTurnUsageHighWrapperAliasesCannotReplaceCompleteResponse",
+    "Action": "pass",
+    "Elapsed": 0
+  }
+]

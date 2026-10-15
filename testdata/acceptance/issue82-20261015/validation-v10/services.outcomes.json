@@ -1,0 +1,3320 @@
+[
+  {
+    "Time": "2026-10-15T15:23:03.171286782Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestExtractionLeaseExpiresDuringDedupWaitIntegration/first_publication",
+    "Action": "pass",
+    "Elapsed": 2.51
+  },
+  {
+    "Time": "2026-10-15T15:23:05.719566246Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestExtractionLeaseExpiresDuringDedupWaitIntegration/exact_retry",
+    "Action": "pass",
+    "Elapsed": 2.55
+  },
+  {
+    "Time": "2026-10-15T15:23:05.719599631Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestExtractionLeaseExpiresDuringDedupWaitIntegration",
+    "Action": "pass",
+    "Elapsed": 5.06
+  },
+  {
+    "Time": "2026-10-15T15:23:08.194556104Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestExtractionLeaseExpiresDuringSourceWaitIntegration",
+    "Action": "pass",
+    "Elapsed": 2.47
+  },
+  {
+    "Time": "2026-10-15T15:23:08.722195171Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestReadDelegatedRunDerivesOnlySelectedCurrentWorkerContextIntegration",
+    "Action": "pass",
+    "Elapsed": 0.53
+  },
+  {
+    "Time": "2026-10-15T15:23:09.440575367Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestReadDelegatedRunBoundsBodiesAndDeniesStoppedWorkerIntegration/size",
+    "Action": "pass",
+    "Elapsed": 0.72
+  },
+  {
+    "Time": "2026-10-15T15:23:09.990438567Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestReadDelegatedRunBoundsBodiesAndDeniesStoppedWorkerIntegration/completed",
+    "Action": "pass",
+    "Elapsed": 0.55
+  },
+  {
+    "Time": "2026-10-15T15:23:10.485665787Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestReadDelegatedRunBoundsBodiesAndDeniesStoppedWorkerIntegration/failed",
+    "Action": "pass",
+    "Elapsed": 0.5
+  },
+  {
+    "Time": "2026-10-15T15:23:10.991647135Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestReadDelegatedRunBoundsBodiesAndDeniesStoppedWorkerIntegration/cancelled",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T15:23:11.500585224Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestReadDelegatedRunBoundsBodiesAndDeniesStoppedWorkerIntegration/timed_out",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T15:23:12.058456943Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestReadDelegatedRunBoundsBodiesAndDeniesStoppedWorkerIntegration/finalizing",
+    "Action": "pass",
+    "Elapsed": 0.56
+  },
+  {
+    "Time": "2026-10-15T15:23:12.058492144Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestReadDelegatedRunBoundsBodiesAndDeniesStoppedWorkerIntegration",
+    "Action": "pass",
+    "Elapsed": 3.34
+  },
+  {
+    "Time": "2026-10-15T15:23:12.700451458Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestDelegatedContextSelectsBodiesWithoutAmbientProfileOrHiddenAncestorIntegration",
+    "Action": "pass",
+    "Elapsed": 0.64
+  },
+  {
+    "Time": "2026-10-15T15:23:13.202788336Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestDelegationProposalChecksParentGrantEvenWithOwnerBodyAccessIntegration",
+    "Action": "pass",
+    "Elapsed": 0.5
+  },
+  {
+    "Time": "2026-10-15T15:23:13.806785007Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestDelegatedSourceGrantRevocationAndImmutablePinsIntegration",
+    "Action": "pass",
+    "Elapsed": 0.6
+  },
+  {
+    "Time": "2026-10-15T15:23:14.298131901Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestExtractionDedupKeyBodyMismatchAndDowngradeIntegration",
+    "Action": "pass",
+    "Elapsed": 0.49
+  },
+  {
+    "Time": "2026-10-15T15:23:14.986567331Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestSourceDuplicateAndConflictingPreferencesIntegration",
+    "Action": "pass",
+    "Elapsed": 0.69
+  },
+  {
+    "Time": "2026-10-15T15:23:15.582776532Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestConcurrentExplicitSupersessionIntegration",
+    "Action": "pass",
+    "Elapsed": 0.6
+  },
+  {
+    "Time": "2026-10-15T15:23:16.784192061Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestTransitiveDeletionAndBackupRestoreIntegration",
+    "Action": "pass",
+    "Elapsed": 1.2
+  },
+  {
+    "Time": "2026-10-15T15:23:17.298358347Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestSourceChangeAndRevocationFenceFragmentsIntegration",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T15:23:17.855592134Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestMissingManifestFailsClosedIntegration",
+    "Action": "pass",
+    "Elapsed": 0.56
+  },
+  {
+    "Time": "2026-10-15T15:23:18.430625872Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestMatchingWatermarkCannotHideWrongDeletionHistoryIntegration",
+    "Action": "pass",
+    "Elapsed": 0.57
+  },
+  {
+    "Time": "2026-10-15T15:23:18.435105648Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestDeletionAnchorRejectsSymlinkReplacement",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:18.994358832Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestCorrectionExportAndOriginalParentPinsIntegration",
+    "Action": "pass",
+    "Elapsed": 0.56
+  },
+  {
+    "Time": "2026-10-15T15:23:19.550359357Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestDeleteErasesPinnedPreparationBeforeAnyMessageIntegration",
+    "Action": "pass",
+    "Elapsed": 0.56
+  },
+  {
+    "Time": "2026-10-15T15:23:20.170030493Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestPrivacyCleanupRestartAndStaleSummaryWorkingPublicationIntegration",
+    "Action": "pass",
+    "Elapsed": 0.62
+  },
+  {
+    "Time": "2026-10-15T15:23:20.970933973Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestDeletionRedactsImmutableFinalWithoutInventingUndoIntegration",
+    "Action": "pass",
+    "Elapsed": 0.8
+  },
+  {
+    "Time": "2026-10-15T15:23:22.317196294Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestLiveSourceAndTranscriptPinsRejectLatePublicationIntegration",
+    "Action": "pass",
+    "Elapsed": 1.35
+  },
+  {
+    "Time": "2026-10-15T15:23:22.824975503Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestTaskDerivedScopeAndCompleteDeletionEdgesIntegration",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T15:23:23.284446793Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestTaskDerivedRejectsShortcutsAndStaleOwnedProofIntegration",
+    "Action": "pass",
+    "Elapsed": 0.46
+  },
+  {
+    "Time": "2026-10-15T15:23:23.760774685Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestTaskDerivedLateExpiryRollsBackItsOwnPublicationIntegration",
+    "Action": "pass",
+    "Elapsed": 0.48
+  },
+  {
+    "Time": "2026-10-15T15:23:24.295900764Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestExtractionConcurrentWorkerCandidatesNeedOwnerHeadCASIntegration",
+    "Action": "pass",
+    "Elapsed": 0.54
+  },
+  {
+    "Time": "2026-10-15T15:23:24.295969069Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestActualPostgresDumpRestoreDeletionIntegration",
+    "Action": "skip",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:24.785653734Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestOwnedDerivedDataPublicationAndDeleteIntegration",
+    "Action": "pass",
+    "Elapsed": 0.49
+  },
+  {
+    "Time": "2026-10-15T15:23:25.784206019Z",
+    "Package": "github.com/butler/butler/internal/memory/catalog",
+    "Test": "TestOwnedDerivedCrossScopeCurrentParentsAndRestoreIntegration",
+    "Action": "pass",
+    "Elapsed": 1
+  },
+  {
+    "Time": "2026-10-15T15:23:32.452634405Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestBudgetReadCannotSelectOwnerWithoutProof",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.455116922Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestGeneratedConverterRelayRequiresOwnerProofAndRejectsRawCode",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.455472765Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDelegationOwnerDecisionRejectsAuthorityAndAmbiguousBodies/anonymous",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.455624531Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDelegationOwnerDecisionRejectsAuthorityAndAmbiguousBodies/duplicate_auth",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.455791312Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDelegationOwnerDecisionRejectsAuthorityAndAmbiguousBodies/query",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.456357797Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDelegationOwnerDecisionRejectsAuthorityAndAmbiguousBodies/unknown_authority",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.456537848Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDelegationOwnerDecisionRejectsAuthorityAndAmbiguousBodies/duplicate_kind",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.456957456Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDelegationOwnerDecisionRejectsAuthorityAndAmbiguousBodies/case_alias",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.457402347Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDelegationOwnerDecisionRejectsAuthorityAndAmbiguousBodies/null_source",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.457878596Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDelegationOwnerDecisionRejectsAuthorityAndAmbiguousBodies/source_alias",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.458370839Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDelegationOwnerDecisionRejectsAuthorityAndAmbiguousBodies/unverified_accept",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.458897933Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDelegationOwnerDecisionRejectsAuthorityAndAmbiguousBodies/reject_with_result",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.459236944Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDelegationOwnerDecisionRejectsAuthorityAndAmbiguousBodies/oversize",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.459732958Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDelegationOwnerDecisionRejectsAuthorityAndAmbiguousBodies/valid_reject",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.459774863Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDelegationOwnerDecisionRejectsAuthorityAndAmbiguousBodies",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.460038375Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDoctorToolEnvelopeCannotHideErrors/tool_failed{\"status\":\"completed\",\"result\":{\"status\":\"healthy\"},\"error\":{\"message\":\"PRIVATE_SECRET\"}}",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.460203132Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDoctorToolEnvelopeCannotHideErrors/tool_failed{\"status\":\"failed\",\"result\":{\"status\":\"healthy\"}}",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.460374942Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDoctorToolEnvelopeCannotHideErrors/authorization_denied{\"status\":\"denied\",\"result\":{\"status\":\"healthy\"}}",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.460495139Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDoctorToolEnvelopeCannotHideErrors/missing_result{\"status\":\"completed\"}",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.460578041Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDoctorToolEnvelopeCannotHideErrors/tool_statusnull",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.460708994Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDoctorToolEnvelopeCannotHideErrors/missing_result{\"status\":\"completed\",\"result\":null}",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.460762842Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDoctorToolEnvelopeCannotHideErrors",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.461199631Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDoctorMemoryReporterFailurePreservesToolReport",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.461353212Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDoctorOwnerProofRequiredBeforeExecution",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.461569861Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDoctorOldObservationCannotBecomeCurrentHealthy",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:32.922968078Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDoctorStorageKeepsHistoryScopedAndOneReportPerRequest",
+    "Action": "pass",
+    "Elapsed": 0.46
+  },
+  {
+    "Time": "2026-10-15T15:23:33.424848541Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDoctorPendingReportSurvivesApprovalNavigation",
+    "Action": "pass",
+    "Elapsed": 0.5
+  },
+  {
+    "Time": "2026-10-15T15:23:33.425123926Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDoctorHandleRunCheck_MethodNotAllowed",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:33.425644595Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDoctorHandleRunCheck_CheckerError",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:33.426318147Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDoctorHandleRunCheck_Success_NoPool",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:33.426446725Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDoctorHandleListReports_MethodNotAllowed",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:33.426708212Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDoctorHandleListReports_NoPool",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:33.427051762Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestToolBrokerDoctorChecker_Success",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:33.427160017Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestToolBrokerDoctorChecker_Error",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:33.427260169Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestToolBrokerDoctorChecker_InvalidJSON",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:33.430750989Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestExtensionOwnerBoundaryNeverForwardsChannelToken",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:33.43186091Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestGuardedTabOwnerHTTPRejectsBodyAuthorityAndMasksDenial",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:33.511506654Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHTTPAcceptedInputSurvivesClientDisconnectIntegration",
+    "Action": "pass",
+    "Elapsed": 0.08
+  },
+  {
+    "Time": "2026-10-15T15:23:33.511808788Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestInitiativeAPIRequiresSeparateOwnerProof",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:33.512011329Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestOwnerMaintenanceCannotBeInvokedByModelResourceOrForgedIdentity",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:34.041086338Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestMemoryOwnerAPIPrivateCorrectionAndDeleteIntegration",
+    "Action": "pass",
+    "Elapsed": 0.53
+  },
+  {
+    "Time": "2026-10-15T15:23:34.605048168Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestStructuredUploadPrivateOriginalAndFragmentInspectionIntegration",
+    "Action": "pass",
+    "Elapsed": 0.56
+  },
+  {
+    "Time": "2026-10-15T15:23:34.606643558Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestOwnerApprovalHTTPProjectionOmitsPrivateStoredMaterial",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:34.606782683Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestOwnerControlAuthRejectsClaimedIdentity",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:34.606993395Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestApprovalEndpointRequiresOwnerProof",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:34.607084049Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestBrowserOwnerStateFixtureServer",
+    "Action": "skip",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.151119323Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestOwnerTaskEvidenceHTTPKeepsResultsEffectsDeliveryAndReplayDistinctIntegration",
+    "Action": "pass",
+    "Elapsed": 0.54
+  },
+  {
+    "Time": "2026-10-15T15:23:35.151344003Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestPromptAuthorityCannotBeForgedByDocumentOrHeader",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.151739446Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestTaskDeliveryUsesDurableOutboxUnknownOverPartialStatus",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.152089911Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestAcceptedHTTPAndGRPCReceipt",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.152149485Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSettingDTOIncludesCodeOwnedHelp",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.193073688Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSettingsFlowIntegration",
+    "Action": "pass",
+    "Elapsed": 0.04
+  },
+  {
+    "Time": "2026-10-15T15:23:35.19365463Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSettingsServerHandleListGroupsAndMasksSecrets",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.193859336Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSettingsServerHandleUpdateReturnsValidationErrors",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.194146315Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSettingsServerHandleUpdateReturnsRestartMetadata",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.194299756Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSettingsServerHandleDeleteReturnsResolvedSetting",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.19468165Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSettingsServerHandleRestartReturnsPendingComponents",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.194794234Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSettingsServerHandleRestartDoesNotClearPendingOnApplierError",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.195605863Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestOwnerTaskObservationsAuthenticateBeforeRead",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.195669977Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestTaskRiskDoesNotFollowRunFailureOrActivity",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.196458768Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestDurableTaskDetailKeepsTaskWaitingWhenAttemptCompleted",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.196577009Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestTaskCompletionEndpointRequiresExplicitOwnerVerdict",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.255760023Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestVoiceAPIDisabledAuthLimitsAndFixedErrorBoundary",
+    "Action": "pass",
+    "Elapsed": 0.06
+  },
+  {
+    "Time": "2026-10-15T15:23:35.257205882Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestOwnerWorkspaceRecoveryHTTPRejectsCallerAuthorityAndPreservesUnknown",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.257417432Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestOwnerWorkspaceRecoveryDiscoveryRequiresOwnerAndUsesBoundedTaskProjection",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.25782377Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSingleTabGetSessionAndRelease",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.258544046Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestArtifactsEndpoints_ListGetAndTaskArtifacts",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.258674231Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSingleTabGetActiveSession",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.258743933Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSingleTabCreateBindRequestViaExtensionDiscoveryRelay",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.258928035Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHTTPHandler",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.259188474Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSingleTabCreateBindRequest",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.259326341Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestAntigravityProviderReportsStoredCredentialsAndRejectsWebImport",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.259398418Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSubmitEvent",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.259433338Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestProviderServerStartsOAuthFlow",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.259671009Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestProviderServerListsConfiguredProviders",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.259866146Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestPromptServerHandleConfigRejectsInvalidPrompt",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.260160947Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestPromptServerHandlePreviewReturnsAssembledPrompt",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.260303494Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleGetOverview_PartialDegradation",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.260611565Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestPromptServerHandleConfigReturnsPromptState",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.260683711Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestMemoryHandleListPropagatesUnexpectedStoreErrors",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.261552889Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleGetOverview_AggregatesSectionsAndCounts",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.261676299Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestPrettyJSONFallbacks",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.261852579Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestMemoryHandleListReturnsEmptyScopeView",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.261910548Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestMemoryHandleListRequiresScope",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.262115044Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestExtensionRelayResolveRejectsWrongBrowserInstance",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.262144936Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestMemoryHandleListReturnsMethodNotAllowed",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.262606588Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestMemoryHandleListReturnsAllMemoryClasses",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.262749833Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestExtensionRelayDispatchResolveSuccess",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.262777071Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestExtensionRelayResolveErrorForUnknownDispatch",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.262961942Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestExtensionBindRelayDispatchAndResolve_GlobalQueue",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.363273794Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestExtensionRelayDispatchTimesOutWithoutPoller",
+    "Action": "pass",
+    "Elapsed": 0.1
+  },
+  {
+    "Time": "2026-10-15T15:23:35.363414176Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestExtensionAuthMiddlewareAcceptsBearerToken",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.363765269Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestExtensionAuthMiddlewareDisabledWhenNoTokens",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.364020959Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestExtensionAuthMiddlewareRejectsMissingAuthorization",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.364373449Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestWriteSSEEvent_EmptyPayload",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.364413888Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestToTransitionDTO_FieldMapping",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.364879172Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestWriteSSEEvent_FormatsCorrectly",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.365012639Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleListTransitions_MissingRunID",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.365221814Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleListTransitions_NoTransitionRepository",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.36532064Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleListTransitions_MethodNotAllowed",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.365427079Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleListTransitions_RunNotFound",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.365594768Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleListTransitions_TransitionErrorReturnsInternalError",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.368087692Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleSSE_MultipleSubscribersReceiveEvents",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.3802478Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleSSE_CatchUpReplayWithLiveTransition",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:23:35.380267915Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleListTransitions_ReturnsTransitions",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.431725338Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleSSE_ClientDisconnectUnsubscribes",
+    "Action": "pass",
+    "Elapsed": 0.05
+  },
+  {
+    "Time": "2026-10-15T15:23:35.434008388Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleSSE_LiveStreamingPublishAndTerminalClose",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.43404247Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleSSE_NoHubReturnsStreamEnd",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.434852702Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleSSE_TerminalRunReturnsReplayAndStreamEnd",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.434956836Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleSSE_MissingRunID",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.435114677Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleSSE_MethodNotAllowed",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.43634752Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleSSE_CleanupRunClosesSSEStream",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.437201612Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestContract_GetOverview_ContainsUXCriticalFields",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.437280533Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleSSE_RunNotFound",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.438415388Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestContract_GetTaskDetail_ContainsTelegramDeliveryStateContract",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.439122603Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestContract_ListTasks_ContainsRequiredFields",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.439619666Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestArtifactsEndpoint_CreateBrowserCapture",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.440493523Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestApprovalsSelectTabCreatesSingleTabSession",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.44179942Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestApprovalsApproveRejectConflictHandling",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.441830429Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestApprovalsListAndGet",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.442143319Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestActivityServerList",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.442250037Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleListTasks_ValidatesQueryTypes",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.442368279Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestViewEndpointsRejectNonGet",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.442503353Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleGetRunTranscriptRunNotFound",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.443309952Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleGetRunTranscript",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.443565153Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleGetRun",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.443682836Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleGetSessionNotFound",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.444259169Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleGetSession",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.44443929Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleListSessionsEmpty",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.444788009Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleListSessions",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.444903038Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleGetRunNotFound",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.445007101Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleGetTaskDetail_NotFound",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.445072403Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestTaskPresentationMapping_TimedOutAndWebApproval",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.446231563Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleGetTaskDetail_WaitingForTelegramAndDebugRefs",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.446809921Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSystemServer_DegradedAndHealthyStates",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.447168068Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestHandleListTasks_ParsesFiltersAndReturnsPayload",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.447966916Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestParseExtensionInstanceStateFilter",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.44798703Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestTaskDebugServer_ReturnsRawRunAndTranscript",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.448041995Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestNormalizeExtensionInstanceLimit",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.44857314Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSystemServer_ListExtensionInstancesWithoutDatabase",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.448781198Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSystemServer_ListExtensionInstancesRejectsInvalidStateFilter",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.449570617Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSingleTabRelayDispatchAllowsFreshlyActivatedSessionWithoutHeartbeat",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.492479437Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestStreamServer_InitialSnapshotAndFallback",
+    "Action": "pass",
+    "Elapsed": 0.04
+  },
+  {
+    "Time": "2026-10-15T15:23:35.493629378Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSingleTabUpdateSessionState",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.494490873Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSingleTabRelayDispatchFlow",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.494765769Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestSingleTabRelayDispatchMarksHostDisconnectedWhenHeartbeatStale",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.494865433Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestParseBearerAuthorization/invalid_scheme",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.494885338Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestParseBearerAuthorization/invalid_format",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.494997224Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestParseBearerAuthorization/empty",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.495039967Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestParseBearerAuthorization/valid",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.495057218Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestParseBearerAuthorization",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.495104291Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestClassifyExtensionInstanceState/unknown_without_heartbeat",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.495183631Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestClassifyExtensionInstanceState/disconnected_without_active_sessions",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.495229657Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestClassifyExtensionInstanceState/default_ttl_fallback",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.495348876Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestClassifyExtensionInstanceState/stale_with_old_heartbeat",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.495409918Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestClassifyExtensionInstanceState/online_with_fresh_heartbeat",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.863531979Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestClassifyExtensionInstanceState",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:35.863589807Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/api",
+    "Test": "TestExtensionBindRelayTargetedBrowserQueue",
+    "Action": "pass",
+    "Elapsed": 0.6
+  },
+  {
+    "Time": "2026-10-15T15:23:37.770284238Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestRegisteredApprovalKeepsFastDecisionAndRejectsDuplicates",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:37.770452765Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestApprovalCancellationWinsOverBufferedDecision",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:37.770631001Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestApprovalGateConcurrentDecisionsAcceptsExactlyOne",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:38.261127085Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/known_tool_before_tool_failure_or_cancel",
+    "Action": "pass",
+    "Elapsed": 0.49
+  },
+  {
+    "Time": "2026-10-15T15:23:38.795163217Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/batch_is_one_inference_not_per_tool",
+    "Action": "pass",
+    "Elapsed": 0.53
+  },
+  {
+    "Time": "2026-10-15T15:23:39.261486101Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/missing_tool_usage",
+    "Action": "pass",
+    "Elapsed": 0.47
+  },
+  {
+    "Time": "2026-10-15T15:23:39.73145541Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/complete_terminal_error",
+    "Action": "pass",
+    "Elapsed": 0.47
+  },
+  {
+    "Time": "2026-10-15T15:23:40.213504092Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/legacy_final_and_duplicate_complete_usage",
+    "Action": "pass",
+    "Elapsed": 0.48
+  },
+  {
+    "Time": "2026-10-15T15:23:40.679663686Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/negative",
+    "Action": "pass",
+    "Elapsed": 0.47
+  },
+  {
+    "Time": "2026-10-15T15:23:41.175922674Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/sum_overflow",
+    "Action": "pass",
+    "Elapsed": 0.5
+  },
+  {
+    "Time": "2026-10-15T15:23:41.646069102Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/inconsistent_total",
+    "Action": "pass",
+    "Elapsed": 0.47
+  },
+  {
+    "Time": "2026-10-15T15:23:42.114984992Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/ambiguous_legacy_and_turn_fields",
+    "Action": "pass",
+    "Elapsed": 0.47
+  },
+  {
+    "Time": "2026-10-15T15:23:42.586598231Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/conflicting_duplicate_keeps_first_observation",
+    "Action": "pass",
+    "Elapsed": 0.47
+  },
+  {
+    "Time": "2026-10-15T15:23:43.092148867Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/unfinished_delta_is_not_usage",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T15:23:43.560207801Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/stream_without_terminal_has_NULL",
+    "Action": "pass",
+    "Elapsed": 0.47
+  },
+  {
+    "Time": "2026-10-15T15:23:44.024767396Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/cancel_before_usage_has_NULL",
+    "Action": "pass",
+    "Elapsed": 0.46
+  },
+  {
+    "Time": "2026-10-15T15:23:44.50184322Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/revoked_source_before_tool_release",
+    "Action": "pass",
+    "Elapsed": 0.48
+  },
+  {
+    "Time": "2026-10-15T15:23:45.029732041Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/High_tool_candidates_plus_thinking_under_generation_bound",
+    "Action": "pass",
+    "Elapsed": 0.53
+  },
+  {
+    "Time": "2026-10-15T15:23:45.493805887Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/High_tool_thinking_exceeds_generation_bound",
+    "Action": "pass",
+    "Elapsed": 0.46
+  },
+  {
+    "Time": "2026-10-15T15:23:45.956605265Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/High_final_thinking_exceeds_generation_bound",
+    "Action": "pass",
+    "Elapsed": 0.46
+  },
+  {
+    "Time": "2026-10-15T15:23:46.439361512Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration/generic_total_does_not_reclassify_cached_dimensions",
+    "Action": "pass",
+    "Elapsed": 0.48
+  },
+  {
+    "Time": "2026-10-15T15:23:46.439382673Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegration",
+    "Action": "pass",
+    "Elapsed": 8.67
+  },
+  {
+    "Time": "2026-10-15T15:23:46.440088003Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestRecoveredCatalogCannotResurrectDisabledPackage",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:46.440286004Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestPackageSchemaDescriptionsRemainData",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:46.441884676Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestPartialChannelFailureDoesNotInterruptAndTruncationRemainsExplicit/MAX_TOKENS",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:46.443057036Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestPartialChannelFailureDoesNotInterruptAndTruncationRemainsExplicit/length",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:46.444209422Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestPartialChannelFailureDoesNotInterruptAndTruncationRemainsExplicit/incomplete",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:46.445327445Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestPartialChannelFailureDoesNotInterruptAndTruncationRemainsExplicit/content_filter",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:46.446459786Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestPartialChannelFailureDoesNotInterruptAndTruncationRemainsExplicit/cancelled",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:46.446501621Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestPartialChannelFailureDoesNotInterruptAndTruncationRemainsExplicit",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:23:46.44839691Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestAtomicCompletionDependencyFailsClosed",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:46.465942848Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSummaryCannotHideRecentOwnerCorrection/openai/",
+    "Action": "pass",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-15T15:23:46.484263958Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSummaryCannotHideRecentOwnerCorrection/openai/Можно_отправлять_автоматически.",
+    "Action": "pass",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-15T15:23:46.50213417Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSummaryCannotHideRecentOwnerCorrection/openai/Теперь_только_черновики.",
+    "Action": "pass",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-15T15:23:46.52050375Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSummaryCannotHideRecentOwnerCorrection/github_copilot/",
+    "Action": "pass",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-15T15:23:46.539686704Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSummaryCannotHideRecentOwnerCorrection/github_copilot/Можно_отправлять_автоматически.",
+    "Action": "pass",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-15T15:23:46.559354428Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSummaryCannotHideRecentOwnerCorrection/github_copilot/Теперь_только_черновики.",
+    "Action": "pass",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-15T15:23:46.559376358Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSummaryCannotHideRecentOwnerCorrection",
+    "Action": "pass",
+    "Elapsed": 0.11
+  },
+  {
+    "Time": "2026-10-15T15:23:46.69116921Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestCoveredSummaryReplaysOnlyCompleteUncompressedTail/openai/empty",
+    "Action": "pass",
+    "Elapsed": 0.13
+  },
+  {
+    "Time": "2026-10-15T15:23:46.821454672Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestCoveredSummaryReplaysOnlyCompleteUncompressedTail/openai/old",
+    "Action": "pass",
+    "Elapsed": 0.13
+  },
+  {
+    "Time": "2026-10-15T15:23:46.844932321Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestCoveredSummaryReplaysOnlyCompleteUncompressedTail/openai/current",
+    "Action": "pass",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-15T15:23:46.978068435Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestCoveredSummaryReplaysOnlyCompleteUncompressedTail/openai/future",
+    "Action": "pass",
+    "Elapsed": 0.13
+  },
+  {
+    "Time": "2026-10-15T15:23:47.10792542Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestCoveredSummaryReplaysOnlyCompleteUncompressedTail/openai/edited",
+    "Action": "pass",
+    "Elapsed": 0.13
+  },
+  {
+    "Time": "2026-10-15T15:23:47.228774384Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestCoveredSummaryReplaysOnlyCompleteUncompressedTail/github_copilot/empty",
+    "Action": "pass",
+    "Elapsed": 0.12
+  },
+  {
+    "Time": "2026-10-15T15:23:47.357977791Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestCoveredSummaryReplaysOnlyCompleteUncompressedTail/github_copilot/old",
+    "Action": "pass",
+    "Elapsed": 0.13
+  },
+  {
+    "Time": "2026-10-15T15:23:47.381813099Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestCoveredSummaryReplaysOnlyCompleteUncompressedTail/github_copilot/current",
+    "Action": "pass",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-15T15:23:47.511974313Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestCoveredSummaryReplaysOnlyCompleteUncompressedTail/github_copilot/future",
+    "Action": "pass",
+    "Elapsed": 0.13
+  },
+  {
+    "Time": "2026-10-15T15:23:47.644275961Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestCoveredSummaryReplaysOnlyCompleteUncompressedTail/github_copilot/edited",
+    "Action": "pass",
+    "Elapsed": 0.13
+  },
+  {
+    "Time": "2026-10-15T15:23:47.644333929Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestCoveredSummaryReplaysOnlyCompleteUncompressedTail",
+    "Action": "pass",
+    "Elapsed": 1.08
+  },
+  {
+    "Time": "2026-10-15T15:23:47.644782242Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSummaryCoverageReadFailureBlocksModel",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.649706419Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestPreparationRecoveryKeepsVerifiedFullTailAndCurrentInputOnce/false",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.653918631Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestPreparationRecoveryKeepsVerifiedFullTailAndCurrentInputOnce/true",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.653961444Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestPreparationRecoveryKeepsVerifiedFullTailAndCurrentInputOnce",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:23:47.657123729Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestContextBudgetDropsOptionalMaterialBeforeMandatoryConstraints",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.658153961Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestHistoryReadFailureBlocksModel",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.669406549Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestTranscriptReplayPreservesCompleteUnicodeTail",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:23:47.669955783Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestCoveredSummaryCannotRemoveSecretLabelOrPromoteHistoricalAuthority",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.671895981Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestForeignDocumentMemoryAndToolDescriptionNeverBecomeInstructions",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.673326824Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationConfirmedPriorActionsDataAndReload",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.673669048Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationConfirmedPriorActionsMalformedDenied/foreign_run",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.674001214Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationConfirmedPriorActionsMalformedDenied/missing_effect",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.674430809Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationConfirmedPriorActionsMalformedDenied/bad_args_hash",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.674863687Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationConfirmedPriorActionsMalformedDenied/malformed_result",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.675180209Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationConfirmedPriorActionsMalformedDenied/duplicate_call",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.675500432Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationConfirmedPriorActionsMalformedDenied/too_many",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.688365591Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationConfirmedPriorActionsMalformedDenied/oversized",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:23:47.688713262Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationConfirmedPriorActionsMalformedDenied/candidate_phase",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.688810552Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationConfirmedPriorActionsMalformedDenied",
+    "Action": "pass",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-15T15:23:47.690072239Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationActivatedCatalogTruthAndRecovery",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.690505675Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationActivatedMalformedProofDenied/missing_activation",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.690903074Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationActivatedMalformedProofDenied/bad_digest",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.691198853Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationActivatedMalformedProofDenied/zero_generation",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.691487438Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationActivatedMalformedProofDenied/missing_receipt",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.691779306Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationActivatedMalformedProofDenied/candidate_activation",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.691798512Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationActivatedMalformedProofDenied",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.693142961Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationEquivalentEffectGuard/new_call_id",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.694953603Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationEquivalentEffectGuard/numeric_equivalent",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.695386621Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationEquivalentEffectGuard/intentional_owner_repeat",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.696320891Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationEquivalentEffectGuard/different_intent",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.697172748Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationEquivalentEffectGuard/current_read",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.698025234Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationEquivalentEffectGuard/unknown_read_arguments",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.698948469Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationEquivalentEffectGuard/untrusted_read",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.700133959Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationEquivalentEffectGuard/unknown_arguments",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.700930851Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationEquivalentEffectGuard/revoked_private_proof",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.701997331Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationEquivalentEffectGuard/foreign_prior",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.703019462Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationEquivalentEffectGuard/wrong_current_run",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.703970005Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationEquivalentEffectGuard/duplicate_keys",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.703991376Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationEquivalentEffectGuard",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:23:47.704644884Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationProposalRoutingSurvivesDurableReload",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.705592633Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestConverterContinuationRecoveryKeepsDataAndRequiresCurrentProof",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.709248628Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationFailedAttemptContextPreparationAndRecovery",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.709448514Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationFailedAttemptContextRecoveryFailureDropsCachedReport",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.709624724Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationFailedAttemptContextRejectsWrongParentAndRun/wrong-parent",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.709709931Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationFailedAttemptContextRejectsWrongParentAndRun/wrong-run",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.709767131Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationFailedAttemptContextRejectsWrongParentAndRun/too-many",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.709828662Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationFailedAttemptContextRejectsWrongParentAndRun/invalid-source",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.709845773Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationFailedAttemptContextRejectsWrongParentAndRun",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.714704229Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationPreparationPinsTaskBeforeSelectionAndExcludesAmbientMemory",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.715880081Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationRecoveryRechecksSelectionAndPreservesUnknownEffect",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.718836682Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationAcceptedInputKeyRetainsCheckpointIdentityOnRecovery",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.719049489Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationContextRejectsUnboundInstructionsSecretsAndPayloadProse/owner_policy",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.719156277Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationContextRejectsUnboundInstructionsSecretsAndPayloadProse/owner_input",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.719261319Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationContextRejectsUnboundInstructionsSecretsAndPayloadProse/tool_output",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.719430894Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationContextRejectsUnboundInstructionsSecretsAndPayloadProse",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.723811983Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationNumericContextFixedInstructionAndRecovery",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.724510748Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationNumericContextRejectsUnboundTypedFormat/unselected_witness",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.72519275Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationNumericContextRejectsUnboundTypedFormat/changed_revision",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.725859807Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationNumericContextRejectsUnboundTypedFormat/changed_access",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.726501651Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationNumericContextRejectsUnboundTypedFormat/changed_hash",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.72686776Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationNumericContextRejectsUnboundTypedFormat/contract_as_witness",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.727434384Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationNumericContextRejectsUnboundTypedFormat/different_marker",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.728157104Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationNumericContextRejectsUnboundTypedFormat/unicode_marker",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.728761513Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationNumericContextRejectsUnboundTypedFormat/malformed_marker",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.729550722Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationNumericContextRejectsUnboundTypedFormat/missing_metadata",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.729583478Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDelegationNumericContextRejectsUnboundTypedFormat",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:23:47.72985565Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestFailedRunPersistsSafeTransportSubtype/provider_timeout",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.729986603Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestFailedRunPersistsSafeTransportSubtype/rate_limited",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.730115321Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestFailedRunPersistsSafeTransportSubtype/model_capacity_unavailable",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.730239918Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestFailedRunPersistsSafeTransportSubtype/memory_source_check_timeout",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.730360186Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestFailedRunPersistsSafeTransportSubtype/PRIVATE_DIAGNOSTIC_MARKER",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.730386167Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestFailedRunPersistsSafeTransportSubtype",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.732872944Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteFinalBelongsToLastModelTurn/fresh_final",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.734541179Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteFinalBelongsToLastModelTurn/fresh_partial_final",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.736156893Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteFinalBelongsToLastModelTurn/missing_final",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.737683489Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteFinalBelongsToLastModelTurn/nil_final",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.737729724Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteFinalBelongsToLastModelTurn",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:23:47.738771899Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestRecoveryDelegationReceiptsKeepExactIDsAsData",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.741591751Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestGuardedTabRequestCoreSuspendsBeforeGenericResult/completed_ack",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.743823817Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestGuardedTabRequestCoreSuspendsBeforeGenericResult/lost_ack",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.745960548Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestGuardedTabRequestCoreSuspendsBeforeGenericResult/disabled",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.745984364Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestGuardedTabRequestCoreSuspendsBeforeGenericResult",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:23:47.848499996Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteIntegrationPersistsRunAndTranscript",
+    "Action": "pass",
+    "Elapsed": 0.1
+  },
+  {
+    "Time": "2026-10-15T15:23:47.8523549Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestOrdinaryRunUsesCompositionMemoryRegistry",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.852722545Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestAssignedLocalOnlyTaskRetainsLocalQueryAndRechecksAuthority/local_only",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.852920127Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestAssignedLocalOnlyTaskRetainsLocalQueryAndRechecksAuthority/private",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.85313929Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestAssignedLocalOnlyTaskRetainsLocalQueryAndRechecksAuthority/cloud_allowed",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.853175817Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestAssignedLocalOnlyTaskRetainsLocalQueryAndRechecksAuthority",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.853360338Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestOptionalContextTrimsOneItemAndPreservesDocument",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.853627412Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSourceGuardDiagnosticsAtEveryProviderEntry/start/stale",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.853718486Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSourceGuardDiagnosticsAtEveryProviderEntry/start/timeout",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.853893927Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSourceGuardDiagnosticsAtEveryProviderEntry/continue/stale",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.854151084Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSourceGuardDiagnosticsAtEveryProviderEntry/continue/timeout",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.854220856Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSourceGuardDiagnosticsAtEveryProviderEntry/tool_result/stale",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.854452171Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSourceGuardDiagnosticsAtEveryProviderEntry/tool_result/timeout",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.854493098Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSourceGuardDiagnosticsAtEveryProviderEntry",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:47.854658483Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSourceGuardDiagnosesLateTimeoutWithoutPublishingFinal",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.00192301Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestOwningSourceVerificationBoundSlowCurrentAndRevocationIntegration",
+    "Action": "pass",
+    "Elapsed": 1.15
+  },
+  {
+    "Time": "2026-10-15T15:23:49.825164604Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestIdleProviderCannotPublishAfterSourceDeletionIntegration",
+    "Action": "pass",
+    "Elapsed": 0.82
+  },
+  {
+    "Time": "2026-10-15T15:23:49.825279703Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryDeadlineOrigin/nominal_model_turn",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.825373221Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryDeadlineOrigin/scope_or_authority",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.825452282Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryDeadlineOrigin/parent_global_deadline",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.825516885Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryDeadlineOrigin/parent_cancel",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.825535952Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryDeadlineOrigin",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.826360501Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEquivalentEffectGuard/new_call_id",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.826804483Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEquivalentEffectGuard/numeric_exponent",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.826875233Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEquivalentEffectGuard/normal_explicit_repeat",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.827103615Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEquivalentEffectGuard/distinct_arguments",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.827290022Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEquivalentEffectGuard/current_read_only",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.827531394Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEquivalentEffectGuard/untrusted_read_name",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.827880462Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEquivalentEffectGuard/http_write_under_read_metadata",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.828083841Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEquivalentEffectGuard/disabled_read",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.828238819Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEquivalentEffectGuard/unknown_effect",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.828345048Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEquivalentEffectGuard/duplicate_nested_key",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.828430115Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEquivalentEffectGuard/extra_json_value",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.828466782Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEquivalentEffectGuard",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.828818853Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryReplayDataAndUnknownDenial/inflight",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.828893304Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryReplayDataAndUnknownDenial/unknown",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.828964472Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryReplayDataAndUnknownDenial/absent_result",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.828990663Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryReplayDataAndUnknownDenial",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.829152905Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEligibilityRequiresTrustedTimeout/raw_timeout_text",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.829226169Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEligibilityRequiresTrustedTimeout/provider_retryable_bit",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.829288118Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEligibilityRequiresTrustedTimeout/auth_unavailable",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.829376398Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEligibilityRequiresTrustedTimeout/schema",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.829437928Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEligibilityRequiresTrustedTimeout/source",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.829495547Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEligibilityRequiresTrustedTimeout/cancel",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.829557078Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEligibilityRequiresTrustedTimeout/parent_deadline",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.829612881Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEligibilityRequiresTrustedTimeout/unknown_effect",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.829665053Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryEligibilityRequiresTrustedTimeout",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.829920743Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryStageEligibilityAndObserverComposition/absent",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.830122934Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryStageEligibilityAndObserverComposition/authentication",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.830233563Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryStageEligibilityAndObserverComposition/serialization",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.830378903Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryStageEligibilityAndObserverComposition/http",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.83066658Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryStageEligibilityAndObserverComposition/stream",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.830764708Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryStageEligibilityAndObserverComposition/unknown",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.830813038Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryStageEligibilityAndObserverComposition",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.830939451Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryProviderTimeoutClassification/provider_timeout",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.831029407Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryProviderTimeoutClassification/provider_scope_bound",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.831110353Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryProviderTimeoutClassification/parent_cancel",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.831189414Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryProviderTimeoutClassification/terminal_timeout",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.831274272Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryProviderTimeoutClassification/terminal_scope_deadline",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.831351865Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryProviderTimeoutClassification/forged_private_timeout",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.831430647Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryProviderTimeoutClassification/cancel_never_retry",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.831461656Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelRetryProviderTimeoutClassification",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.851877383Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestModelStreamReadHonorsExecutionDeadline",
+    "Action": "pass",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-15T15:23:49.852637538Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestRecoveryReplaysEveryKnownActionAndThenUsesLiveTransport",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.852840288Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestRecordedRecoveryPreservesFailedToolEvidence",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:49.85632133Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestRecoveredSkillsReloadDataAndRejectRevocation",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.107556747Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSkillRevocationStopsLiveProviderBeforeFinal",
+    "Action": "pass",
+    "Elapsed": 0.25
+  },
+  {
+    "Time": "2026-10-15T15:23:50.109116238Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestSkillProseHasOnlyCurrentContextAndSourceCopies",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.110398389Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestOpaqueSourceInputRequiresTrustedHookAndKeepsIdentity",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.110456078Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestOpaqueSourceInputRecoveryRejectsMissingOrReplacedBinding",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.111524584Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestOpaqueSourceDataProjectionRetainsInstructionsAndEffectMetadata",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.357389676Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestDurableTaskExecutionIntegration",
+    "Action": "pass",
+    "Elapsed": 0.25
+  },
+  {
+    "Time": "2026-10-15T15:23:50.3596311Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestToolApprovalUsesDurableDecision/rejected",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.361522618Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestToolApprovalUsesDurableDecision/expired",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.363826481Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestToolApprovalUsesDurableDecision/failed",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.363866011Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestToolApprovalUsesDurableDecision",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:23:50.366844612Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestToolAuthorizationFailsClosed/missing_policy",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.36964421Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestToolAuthorizationFailsClosed/failed_policy",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.371977965Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestToolAuthorizationFailsClosed/missing_approval_gate",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.372004505Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestToolAuthorizationFailsClosed",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:23:50.374542406Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestOwnerTextCannotRewriteStatusIntoCapture/Не_делай_скриншот,_только_проверь_статус_вкладки.",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.376456972Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestOwnerTextCannotRewriteStatusIntoCapture/Что_означает_screenshot?_Проверь_статус.",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.378030921Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestOwnerTextCannotRewriteStatusIntoCapture/Проверь_статус_вкладки",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.378059416Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestOwnerTextCannotRewriteStatusIntoCapture",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:23:50.381598636Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteSanitizesWorkingMemoryToolPayloads",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.383553011Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteLoadsAndClearsWorkingMemoryOnCompletion",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.385823629Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteRetainsWorkingMemoryOnFailure",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.387735401Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteIncludesToolSummaryAndStructuredToolDefinitions",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.388510014Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestApprovalGateWaitAndResolveRejected",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:23:50.389448265Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteUsesConfiguredMemoryBundleService",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.390392941Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteToolWithApprovalRejected",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.392634296Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteToolCallWithEmptyRefPropagatesFallbackToSubmit",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.392832576Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteIncludesMemoryAwareContext",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.394253013Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteRunsSequentialToolLoop",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.394374258Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteToolWithApprovalApproved",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.395590129Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteRunsHappyPath",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.40592018Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestObservedDeliverySinkRecordsEvenOnError",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.426321799Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestApprovalGateCleanupAfterWait",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:23:50.426398275Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestApprovalGateWaitContextCancelled",
+    "Action": "pass",
+    "Elapsed": 0.02
+  },
+  {
+    "Time": "2026-10-15T15:23:50.426438923Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestApprovalGateResolveWithoutPending",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:50.437117204Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestApprovalGateResolveWithChannel",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:23:50.447235286Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestApprovalGateWaitAndResolveApproved",
+    "Action": "pass",
+    "Elapsed": 0.01
+  },
+  {
+    "Time": "2026-10-15T15:23:50.448660193Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteFailsRunOnTransportError",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.396476797Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteStopsInFlightRenewalBeforeReleasingLease",
+    "Action": "pass",
+    "Elapsed": 1
+  },
+  {
+    "Time": "2026-10-15T15:23:51.398836184Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteFailsRunWhenModelRunningTransitionFails",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.399104794Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteFailsRunWhenQueueTransitionFails",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.400645847Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteKeepsFinalizingWhenResultPersistenceFails",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.400886661Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteKeepsBusySessionQueued",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.401012515Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestFormatMemoryPromptWithSummary/summary_with_working_memory",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.401123354Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestFormatMemoryPromptWithSummary/summary_only",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.401197735Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestFormatMemoryPromptWithSummary/summary_with_profile",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.401272535Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestFormatMemoryPromptWithSummary/no_summary",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.401342237Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestFormatMemoryPromptWithSummary/empty_summary_string",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.401381977Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestFormatMemoryPromptWithSummary",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.403010612Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteSummaryReaderErrorDoesNotBlockRun",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.406407285Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteSkipsInvalidPreviousProviderSessionRef",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.406428586Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteSkipsSummaryWhenEmpty",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.409799488Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteReplaysRecentTranscriptWhenSummaryUnavailable",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.412781861Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteSessionSummaryWithProfileAndEpisodes",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.414599556Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteIncludesSessionSummaryInContext",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.41708354Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteStartsFreshProviderSessionAcrossRuns",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:51.418917998Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteStoresTransientWorkingStateDuringToolLifecycle",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:52.050854913Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteUsesEmbeddingProviderForEpisodicRetrieval",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:23:52.050915396Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/orchestrator",
+    "Test": "TestExecuteRenewsLeaseDuringLongRun",
+    "Action": "pass",
+    "Elapsed": 1.6
+  },
+  {
+    "Time": "2026-10-15T15:23:53.82777128Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestEmptyJournalCannotConfirmLegacyToolCompletionIntegration/legacy_tool_false",
+    "Action": "pass",
+    "Elapsed": 0.07
+  },
+  {
+    "Time": "2026-10-15T15:23:53.887070021Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestEmptyJournalCannotConfirmLegacyToolCompletionIntegration/legacy_tool_true",
+    "Action": "pass",
+    "Elapsed": 0.06
+  },
+  {
+    "Time": "2026-10-15T15:23:53.887091602Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestEmptyJournalCannotConfirmLegacyToolCompletionIntegration",
+    "Action": "pass",
+    "Elapsed": 0.13
+  },
+  {
+    "Time": "2026-10-15T15:23:53.957355324Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestAtomicResultAndRestartIntegration",
+    "Action": "pass",
+    "Elapsed": 0.07
+  },
+  {
+    "Time": "2026-10-15T15:23:54.023184527Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestAtomicRollbackAndPersistenceOnlyRecoveryIntegration/artifact",
+    "Action": "pass",
+    "Elapsed": 0.07
+  },
+  {
+    "Time": "2026-10-15T15:23:54.090762912Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestAtomicRollbackAndPersistenceOnlyRecoveryIntegration/after_run_completed",
+    "Action": "pass",
+    "Elapsed": 0.07
+  },
+  {
+    "Time": "2026-10-15T15:23:54.090835966Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestAtomicRollbackAndPersistenceOnlyRecoveryIntegration",
+    "Action": "pass",
+    "Elapsed": 0.13
+  },
+  {
+    "Time": "2026-10-15T15:23:54.131629635Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestCompletionRejectsRevokedAuthorityIntegration/epoch",
+    "Action": "pass",
+    "Elapsed": 0.04
+  },
+  {
+    "Time": "2026-10-15T15:23:54.171826788Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestCompletionRejectsRevokedAuthorityIntegration/expired",
+    "Action": "pass",
+    "Elapsed": 0.04
+  },
+  {
+    "Time": "2026-10-15T15:23:54.215039209Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestCompletionRejectsRevokedAuthorityIntegration/task_revision",
+    "Action": "pass",
+    "Elapsed": 0.04
+  },
+  {
+    "Time": "2026-10-15T15:23:54.258975328Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestCompletionRejectsRevokedAuthorityIntegration/constraints_revision",
+    "Action": "pass",
+    "Elapsed": 0.04
+  },
+  {
+    "Time": "2026-10-15T15:23:54.30131466Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestCompletionRejectsRevokedAuthorityIntegration/cancelled",
+    "Action": "pass",
+    "Elapsed": 0.04
+  },
+  {
+    "Time": "2026-10-15T15:23:54.301361454Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestCompletionRejectsRevokedAuthorityIntegration",
+    "Action": "pass",
+    "Elapsed": 0.21
+  },
+  {
+    "Time": "2026-10-15T15:23:54.380611545Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestOutboxRetryBoundAndImmutablePayloadIntegration",
+    "Action": "pass",
+    "Elapsed": 0.08
+  },
+  {
+    "Time": "2026-10-15T15:23:54.44870117Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestUpgradeFinalizingReusesSavedTranscriptIntegration",
+    "Action": "pass",
+    "Elapsed": 0.07
+  },
+  {
+    "Time": "2026-10-15T15:23:54.524989143Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestOutboxChunksAndUnknownSendIntegration",
+    "Action": "pass",
+    "Elapsed": 0.08
+  },
+  {
+    "Time": "2026-10-15T15:23:54.587469794Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestOutboxConcurrentClaimAndCrashIntegration",
+    "Action": "pass",
+    "Elapsed": 0.06
+  },
+  {
+    "Time": "2026-10-15T15:23:54.660262896Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestAuxiliaryMemoryFailureDoesNotUndoResultIntegration",
+    "Action": "pass",
+    "Elapsed": 0.07
+  },
+  {
+    "Time": "2026-10-15T15:23:55.172559386Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestSourceDeletionVersusAtomicResultAndDispatchIntegration/delete_first",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T15:23:55.756416484Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestSourceDeletionVersusAtomicResultAndDispatchIntegration/result_first",
+    "Action": "pass",
+    "Elapsed": 0.58
+  },
+  {
+    "Time": "2026-10-15T15:23:56.255373451Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestSourceDeletionVersusAtomicResultAndDispatchIntegration/simultaneous",
+    "Action": "pass",
+    "Elapsed": 0.5
+  },
+  {
+    "Time": "2026-10-15T15:23:56.255399711Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestSourceDeletionVersusAtomicResultAndDispatchIntegration",
+    "Action": "pass",
+    "Elapsed": 1.6
+  },
+  {
+    "Time": "2026-10-15T15:23:56.814784617Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestSourceDeletionVersusLiveDispatchClaimIntegration/delete_first",
+    "Action": "pass",
+    "Elapsed": 0.56
+  },
+  {
+    "Time": "2026-10-15T15:23:57.312161977Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestSourceDeletionVersusLiveDispatchClaimIntegration/claim_first",
+    "Action": "pass",
+    "Elapsed": 0.5
+  },
+  {
+    "Time": "2026-10-15T15:23:57.874748978Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestSourceDeletionVersusLiveDispatchClaimIntegration/simultaneous",
+    "Action": "pass",
+    "Elapsed": 0.56
+  },
+  {
+    "Time": "2026-10-15T15:23:57.874780476Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/completion",
+    "Test": "TestSourceDeletionVersusLiveDispatchClaimIntegration",
+    "Action": "pass",
+    "Elapsed": 1.62
+  }
+]

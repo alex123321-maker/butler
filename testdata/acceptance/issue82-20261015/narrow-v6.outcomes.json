@@ -1,0 +1,604 @@
+[
+  {
+    "Time": "2026-10-15T14:59:14.289560127Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestExactOwnerClaimCannotStealOtherOwnerKindOrPurposeIntegration",
+    "Action": "pass",
+    "Elapsed": 0.52
+  },
+  {
+    "Time": "2026-10-15T14:59:16.801155704Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestExtractionJobExpiresDuringExactRetryWaitIntegration",
+    "Action": "pass",
+    "Elapsed": 2.51
+  },
+  {
+    "Time": "2026-10-15T14:59:17.315685382Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestOwnedAuxiliaryAfterRunAndClaimTakeoverIntegration",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T14:59:17.829169462Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestEachActualAuxiliaryAttemptChargedAndBoundedIntegration",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T14:59:18.31948096Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestSourceAmendDeleteAndLocalityDenyAuxiliaryIntegration",
+    "Action": "pass",
+    "Elapsed": 0.49
+  },
+  {
+    "Time": "2026-10-15T14:59:18.835948811Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestTaskAmendmentImmediatelyDeniesPostRunAuxiliaryIntegration",
+    "Action": "pass",
+    "Elapsed": 0.52
+  },
+  {
+    "Time": "2026-10-15T14:59:19.177325271Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/original_run",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T14:59:19.179052382Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/extra_source",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T14:59:19.18164057Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/rewritten_fingerprint",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T14:59:19.184304256Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/allowance",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T14:59:19.186660709Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/deadline",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T14:59:19.188964292Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration/claim_deadline",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T14:59:19.319964863Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestForgedAuxiliarySnapshotsCannotExpandAccessOrAllowanceIntegration",
+    "Action": "pass",
+    "Elapsed": 0.48
+  },
+  {
+    "Time": "2026-10-15T14:59:19.806907416Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestAuxiliaryManifestPinsOriginalAncestorsIntegration",
+    "Action": "pass",
+    "Elapsed": 0.49
+  },
+  {
+    "Time": "2026-10-15T14:59:19.80697614Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelCrashProcessHelper",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T14:59:20.402856674Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelActualProcessCrashRecoveryIntegration/before_dispatch",
+    "Action": "pass",
+    "Elapsed": 0.6
+  },
+  {
+    "Time": "2026-10-15T14:59:21.026804702Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelActualProcessCrashRecoveryIntegration/after_dispatch",
+    "Action": "pass",
+    "Elapsed": 0.62
+  },
+  {
+    "Time": "2026-10-15T14:59:51.639454575Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelActualProcessCrashRecoveryIntegration/before_commit",
+    "Action": "pass",
+    "Elapsed": 30.61
+  },
+  {
+    "Time": "2026-10-15T14:59:51.639479927Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelActualProcessCrashRecoveryIntegration",
+    "Action": "pass",
+    "Elapsed": 31.83
+  },
+  {
+    "Time": "2026-10-15T14:59:52.221986646Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelCompletedRunAndTaskPolicyIntegration",
+    "Action": "pass",
+    "Elapsed": 0.58
+  },
+  {
+    "Time": "2026-10-15T14:59:52.794608832Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelCrashRecoveryAndLostPublicationACKIntegration/before_dispatch",
+    "Action": "pass",
+    "Elapsed": 0.57
+  },
+  {
+    "Time": "2026-10-15T14:59:53.365097011Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelCrashRecoveryAndLostPublicationACKIntegration/after_dispatch",
+    "Action": "pass",
+    "Elapsed": 0.57
+  },
+  {
+    "Time": "2026-10-15T14:59:53.945423207Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelCrashRecoveryAndLostPublicationACKIntegration/before_commit",
+    "Action": "pass",
+    "Elapsed": 0.58
+  },
+  {
+    "Time": "2026-10-15T14:59:53.945449398Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelCrashRecoveryAndLostPublicationACKIntegration",
+    "Action": "pass",
+    "Elapsed": 1.72
+  },
+  {
+    "Time": "2026-10-15T14:59:54.53953682Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelConcurrentWorkersAndBudgetIntegration",
+    "Action": "pass",
+    "Elapsed": 0.59
+  },
+  {
+    "Time": "2026-10-15T14:59:55.074990671Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelRevocationDuringCallIntegration/correct",
+    "Action": "pass",
+    "Elapsed": 0.54
+  },
+  {
+    "Time": "2026-10-15T14:59:55.592487985Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelRevocationDuringCallIntegration/delete",
+    "Action": "pass",
+    "Elapsed": 0.52
+  },
+  {
+    "Time": "2026-10-15T14:59:56.105686204Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelRevocationDuringCallIntegration/revoke",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T14:59:56.670787156Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelRevocationDuringCallIntegration/cancel",
+    "Action": "pass",
+    "Elapsed": 0.56
+  },
+  {
+    "Time": "2026-10-15T14:59:57.225812629Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelRevocationDuringCallIntegration/pause",
+    "Action": "pass",
+    "Elapsed": 0.56
+  },
+  {
+    "Time": "2026-10-15T14:59:57.798453464Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelRevocationDuringCallIntegration/disable",
+    "Action": "pass",
+    "Elapsed": 0.57
+  },
+  {
+    "Time": "2026-10-15T14:59:58.353479426Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelRevocationDuringCallIntegration/task_amend",
+    "Action": "pass",
+    "Elapsed": 0.56
+  },
+  {
+    "Time": "2026-10-15T14:59:58.353506594Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelRevocationDuringCallIntegration",
+    "Action": "pass",
+    "Elapsed": 3.81
+  },
+  {
+    "Time": "2026-10-15T14:59:58.86580239Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelLocalOnlyUnavailableAndRetryBoundIntegration/local_only",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T14:59:59.466743572Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelLocalOnlyUnavailableAndRetryBoundIntegration/unavailable",
+    "Action": "pass",
+    "Elapsed": 0.6
+  },
+  {
+    "Time": "2026-10-15T15:00:00.010965608Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelLocalOnlyUnavailableAndRetryBoundIntegration/unknown_usage",
+    "Action": "pass",
+    "Elapsed": 0.54
+  },
+  {
+    "Time": "2026-10-15T15:00:00.011015894Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelLocalOnlyUnavailableAndRetryBoundIntegration",
+    "Action": "pass",
+    "Elapsed": 1.66
+  },
+  {
+    "Time": "2026-10-15T15:00:00.552146464Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelPriorityPauseDeadlineAndConsumerGateIntegration",
+    "Action": "pass",
+    "Elapsed": 0.54
+  },
+  {
+    "Time": "2026-10-15T15:00:00.552429881Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestQuoteProbeRejectsUnverifiableModelOutput",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:00:01.108271662Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelDifferentJobsShareFinalBudgetUnitIntegration/owner_day",
+    "Action": "pass",
+    "Elapsed": 0.56
+  },
+  {
+    "Time": "2026-10-15T15:00:01.658941957Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelDifferentJobsShareFinalBudgetUnitIntegration/task",
+    "Action": "pass",
+    "Elapsed": 0.55
+  },
+  {
+    "Time": "2026-10-15T15:00:02.259081707Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelDifferentJobsShareFinalBudgetUnitIntegration/mandate",
+    "Action": "pass",
+    "Elapsed": 0.6
+  },
+  {
+    "Time": "2026-10-15T15:00:02.259108945Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelDifferentJobsShareFinalBudgetUnitIntegration",
+    "Action": "pass",
+    "Elapsed": 1.71
+  },
+  {
+    "Time": "2026-10-15T15:00:02.870642572Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelMandateAndSourceRevocationDuringCallIntegration/mandate_revoke",
+    "Action": "pass",
+    "Elapsed": 0.61
+  },
+  {
+    "Time": "2026-10-15T15:00:03.415950364Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelMandateAndSourceRevocationDuringCallIntegration/mandate_revision",
+    "Action": "pass",
+    "Elapsed": 0.55
+  },
+  {
+    "Time": "2026-10-15T15:00:03.997141688Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelMandateAndSourceRevocationDuringCallIntegration/goal_revision",
+    "Action": "pass",
+    "Elapsed": 0.58
+  },
+  {
+    "Time": "2026-10-15T15:00:04.556531838Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelMandateAndSourceRevocationDuringCallIntegration/source_revoke",
+    "Action": "pass",
+    "Elapsed": 0.56
+  },
+  {
+    "Time": "2026-10-15T15:00:04.556560054Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelMandateAndSourceRevocationDuringCallIntegration",
+    "Action": "pass",
+    "Elapsed": 2.3
+  },
+  {
+    "Time": "2026-10-15T15:00:05.09996229Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelTaskSourceCannotDropLocalOnlyBindingIntegration",
+    "Action": "pass",
+    "Elapsed": 0.54
+  },
+  {
+    "Time": "2026-10-15T15:00:05.645950129Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelPolicyPauseKeepsJobsAndAttemptsIntegration",
+    "Action": "pass",
+    "Elapsed": 0.55
+  },
+  {
+    "Time": "2026-10-15T15:00:06.134084947Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelBoundedTriggersQueueAndExpiredPendingIntegration/schedule",
+    "Action": "pass",
+    "Elapsed": 0.49
+  },
+  {
+    "Time": "2026-10-15T15:00:06.66536842Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelBoundedTriggersQueueAndExpiredPendingIntegration/session_inactive",
+    "Action": "pass",
+    "Elapsed": 0.53
+  },
+  {
+    "Time": "2026-10-15T15:00:07.171365419Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelBoundedTriggersQueueAndExpiredPendingIntegration/queue_backpressure",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T15:00:07.171393006Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelBoundedTriggersQueueAndExpiredPendingIntegration",
+    "Action": "pass",
+    "Elapsed": 1.53
+  },
+  {
+    "Time": "2026-10-15T15:00:07.708479613Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelActualUsageOverrunRetainedIntegration",
+    "Action": "pass",
+    "Elapsed": 0.54
+  },
+  {
+    "Time": "2026-10-15T15:00:08.260272959Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelPriorityAtDispatchAndDuringInferenceIntegration/before_dispatch",
+    "Action": "pass",
+    "Elapsed": 0.55
+  },
+  {
+    "Time": "2026-10-15T15:00:09.275358072Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelPriorityAtDispatchAndDuringInferenceIntegration/during_call",
+    "Action": "pass",
+    "Elapsed": 1.02
+  },
+  {
+    "Time": "2026-10-15T15:00:09.275384333Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelPriorityAtDispatchAndDuringInferenceIntegration",
+    "Action": "pass",
+    "Elapsed": 1.57
+  },
+  {
+    "Time": "2026-10-15T15:00:09.825081456Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelSessionPrivacyRecheckedAtPublicationIntegration",
+    "Action": "pass",
+    "Elapsed": 0.55
+  },
+  {
+    "Time": "2026-10-15T15:00:10.760074328Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelClaimExpiryAfterBudgetWaitIntegration",
+    "Action": "pass",
+    "Elapsed": 0.93
+  },
+  {
+    "Time": "2026-10-15T15:00:11.406318217Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelTransientPublicationRollbackRecoveryIntegration",
+    "Action": "pass",
+    "Elapsed": 0.65
+  },
+  {
+    "Time": "2026-10-15T15:00:12.615914925Z",
+    "Package": "github.com/butler/butler/internal/memory/jobs",
+    "Test": "TestModelLocalWaitAndPolicyDeadlineIntegration",
+    "Action": "pass",
+    "Elapsed": 1.21
+  },
+  {
+    "Time": "2026-10-15T15:00:14.272926045Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestRuntimeAdmissionSurvivesNewRunAndChildWithoutResetIntegration",
+    "Action": "pass",
+    "Elapsed": 0.08
+  },
+  {
+    "Time": "2026-10-15T15:00:14.383122571Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestChildAndToolReservationsShareAtomicParentLimitsIntegration",
+    "Action": "pass",
+    "Elapsed": 0.11
+  },
+  {
+    "Time": "2026-10-15T15:00:14.450283304Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestRuntimeAdmissionRejectsFinishedRunAndAggregateBytesIntegration",
+    "Action": "pass",
+    "Elapsed": 0.07
+  },
+  {
+    "Time": "2026-10-15T15:00:14.508241577Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestBudgetRollbackRefusesUnspentImmutablePolicyIntegration",
+    "Action": "pass",
+    "Elapsed": 0.06
+  },
+  {
+    "Time": "2026-10-15T15:00:14.57063388Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestBudgetRootPreflightDoesNotChargeOrResetAdmissionIntegration",
+    "Action": "pass",
+    "Elapsed": 0.06
+  },
+  {
+    "Time": "2026-10-15T15:00:14.646644303Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestNormalizedLoopPersistsAcrossRestartAndTypedErrorsIntegration",
+    "Action": "pass",
+    "Elapsed": 0.08
+  },
+  {
+    "Time": "2026-10-15T15:00:14.94995238Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestParallelScopeAndReservationInitializationIntegration",
+    "Action": "pass",
+    "Elapsed": 0.3
+  },
+  {
+    "Time": "2026-10-15T15:00:15.041533064Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestSharedReservationsSurviveRestartAndRejectParallelOverspendIntegration",
+    "Action": "pass",
+    "Elapsed": 0.09
+  },
+  {
+    "Time": "2026-10-15T15:00:15.041617433Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestLocalTargetIsIndependentOfDeclaredZeroPrice",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:00:15.577768652Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestModelAdmissionDeadlineOriginIntegration/nominal_model_turn",
+    "Action": "pass",
+    "Elapsed": 0.54
+  },
+  {
+    "Time": "2026-10-15T15:00:16.050794232Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestModelAdmissionDeadlineOriginIntegration/earlier_task_scope",
+    "Action": "pass",
+    "Elapsed": 0.47
+  },
+  {
+    "Time": "2026-10-15T15:00:16.556419603Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestModelAdmissionDeadlineOriginIntegration/earlier_assigned_authority",
+    "Action": "pass",
+    "Elapsed": 0.51
+  },
+  {
+    "Time": "2026-10-15T15:00:16.556441464Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestModelAdmissionDeadlineOriginIntegration",
+    "Action": "pass",
+    "Elapsed": 1.51
+  },
+  {
+    "Time": "2026-10-15T15:00:16.556482251Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestModelRetryOperationWitnessIsRequestLocal",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:00:16.556521782Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestCostBasisAndFixedNativeReservation",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:00:16.557127936Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestNormalizeProgressIgnoresVolatileMetadata",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:00:16.557496071Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestCanonicalLoopArgumentsAreEquivalentWithoutNumberRounding",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:00:16.557570243Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestAdmissionDoesNotOverflowOrAcceptUnknownCost",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:00:16.557709507Z",
+    "Package": "github.com/butler/butler/internal/budget",
+    "Test": "TestDeadlineAndZeroLimitsAreHardBounds",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:00:18.338880429Z",
+    "Package": "github.com/butler/butler/internal/memory/doctor",
+    "Test": "TestQueueFailurePreservesIndependentComponents",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:00:18.3391137Z",
+    "Package": "github.com/butler/butler/internal/memory/doctor",
+    "Test": "TestRequestedUnavailableSemanticAndConfigurationQuality",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:00:18.834855028Z",
+    "Package": "github.com/butler/butler/internal/memory/doctor",
+    "Test": "TestDurableMemoryObservationsRecoverAndFailWithoutZeros",
+    "Action": "fail",
+    "Elapsed": 0.5
+  },
+  {
+    "Time": "2026-10-15T15:00:18.835099334Z",
+    "Package": "github.com/butler/butler/internal/memory/doctor",
+    "Test": "TestReporterWithPipelineAndEmbeddingEnabled",
+    "Action": "pass",
+    "Elapsed": 0
+  },
+  {
+    "Time": "2026-10-15T15:00:18.835154579Z",
+    "Package": "github.com/butler/butler/internal/memory/doctor",
+    "Test": "TestReporterWithoutDeps",
+    "Action": "pass",
+    "Elapsed": 0
+  }
+]

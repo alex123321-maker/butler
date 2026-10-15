@@ -101,6 +101,9 @@ interrupted dispatch still counts; its reservation remains charged.
 
 `GET /api/v4/memory/model-jobs` returns owner-scoped policies/jobs, current reasons,
 attempt states, conservative quotes, optional actual usage and result references.
+Failed provider attempts retain only the transport's allowlisted diagnostic code
+and optional numeric HTTP status. Raw messages, codes and provider details never
+enter this observation; `provider_failed` remains the job's bounded reason.
 All mutations require the existing owner bearer and delivery identity; these are
 not model tools. Doctor's durable job observation adds global control, attempts,
 unknown-usage count and reserved tokens/cost. The existing content-free collector
@@ -143,5 +146,6 @@ The optional `native.compose.yml` uses separate Orchestrator/Broker/Redis/PG/pro
 processes and one fresh bounded diagnostic window. Private encrypted provider
 credentials and owner/service tokens are not published with evidence.
 
-The final per-criterion evidence and remaining quality boundaries are recorded
-in the issue82 acceptance report. Historical windows cannot establish this version.
+The [per-criterion acceptance report](../testing/issue-82-memory-jobs.md) records
+the passing controlled tests, failed native windows, retained costs and remaining
+quality boundaries. Historical windows cannot establish this version.

@@ -1,0 +1,23 @@
+[
+  {
+    "Time": "2026-10-15T15:24:14.287121365Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/app",
+    "Test": "TestOperatorDoctorActualBrokerIntegration/AUTONOMY_MODE_2",
+    "Action": "pass",
+    "Elapsed": 1.14
+  },
+  {
+    "Time": "2026-10-15T15:24:15.296282857Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/app",
+    "Test": "TestOperatorDoctorActualBrokerIntegration/AUTONOMY_MODE_1",
+    "Action": "pass",
+    "Elapsed": 1.01
+  },
+  {
+    "Time": "2026-10-15T15:24:15.296306534Z",
+    "Package": "github.com/butler/butler/apps/orchestrator/internal/app",
+    "Test": "TestOperatorDoctorActualBrokerIntegration",
+    "Action": "pass",
+    "Elapsed": 2.15
+  }
+]
