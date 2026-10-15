@@ -77,7 +77,7 @@ func runMemoryCapacity(t *testing.T, root string, n, scopes int) {
 	defer cancel()
 	owner := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: "capacity-owner", Channel: "web", DeliveryID: "synthetic-capacity"})
 	dir := filepath.Join(root, fmt.Sprintf("chunks%d_scopes%d", n, scopes))
-	if os.Mkdir(dir, 0700) != nil {
+	if os.Mkdir(dir, 0755) != nil {
 		t.Fatal("fresh report required")
 	}
 	write := func(name string, v any) {
