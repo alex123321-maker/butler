@@ -9,6 +9,7 @@ import (
 	"github.com/butler/butler/internal/memory/compaction"
 	"github.com/butler/butler/internal/memory/consolidation"
 	memorydoctor "github.com/butler/butler/internal/memory/doctor"
+	"github.com/butler/butler/internal/memory/experience"
 	"github.com/butler/butler/internal/memory/jobs"
 	"github.com/butler/butler/internal/providerfactory"
 )
@@ -25,6 +26,7 @@ func memoryFeatureConfigurations(cfg config.OrchestratorConfig, p providerfactor
 		{Name: "task_compaction", Requested: jobsRequested && os.Getenv("BUTLER_MEMORY_SUMMARY_CONSUMER_ENABLED") == "true", Wired: modelHandlerConfigured(w, compaction.HandlerName), Qualified: compaction.ReleaseQualified, ProfileReady: summaryProfileReady(p, b), Handler: compaction.HandlerName},
 		{Name: "temporal_facts", Requested: cfg.MemoryTemporalEnabled, Wired: reads && temporalConfigured(cfg.MemoryTemporalEnabled), Qualified: temporalReleaseQualified, ProfileReady: true},
 		{Name: "consolidation", Requested: jobsRequested && os.Getenv("BUTLER_MEMORY_CONSOLIDATION_CONSUMER_ENABLED") == "true", Wired: modelHandlerConfigured(w, consolidation.Version), Qualified: consolidation.ReleaseQualified, ProfileReady: summaryProfileReady(p, b), Handler: consolidation.Version},
+		{Name: "experience", Requested: jobsRequested && os.Getenv("BUTLER_MEMORY_EXPERIENCE_ENABLED") == "true", Wired: modelHandlerConfigured(w, experience.Version), Qualified: experience.ReleaseQualified, ProfileReady: candidateProfileReady(p, b), Handler: experience.Version},
 	}
 }
 
