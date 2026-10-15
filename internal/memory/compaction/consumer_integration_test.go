@@ -101,7 +101,7 @@ func newConsumerFixture(t *testing.T, pools ...*pgxpool.Pool) *consumerFixture {
 	bp.Models["antigravity:fixture"] = budget.ModelPrice{Basis: "subscription_no_overage"}
 	// This fixture verifies durable coverage, not a one-second latency target.
 	// The same finite allowance covers full pre-HTTP and publication proofs under
-	// race instrumentation; the independent authority supervisor stays at200ms.
+	// race instrumentation; the independent authority supervisor stays at 200ms.
 	bp.ModelMillis = 10000
 	b := budget.NewController(pool, bp)
 	b.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
