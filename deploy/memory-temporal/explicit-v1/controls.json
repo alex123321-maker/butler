@@ -20,7 +20,7 @@
     "reported_event_distinct_from_validity": "Accepted «узел Ива» with source EventTime=2025-09-13T08:00:00Z and explicit owner validity [2026-02-01T00:00:00Z,open), technical fact verified now. EventTime and validity remain separate typed fields.",
     "corrected_original_old_ref": "Owner accepts old «Сирень-17», captures real before_correction DB anchor, then corrects source via current owner API before foreground run creation. Question receives only pre-correction content-free old ref, no old value/body. Current proof must reject that revision even for KnownAt.",
     "revoked_original_old_ref": "Owner accepts «Туя-61», captures real before_revocation DB anchor, then revokes original using current owner API before foreground run creation. New run pins newest independent deletion anchor. Question receives old content-free ref only; no deleted body in mandatory context or tool output.",
-    "completed_accepted_episode": "Trusted candidate projection creates an episodic candidate for completed archive transfer «Ольха»; owner explicitly accepts via existing decision lifecycle and classifies completed_episode. No current task/mandate permits another transfer. Ordinary profile/working/transcript/task safeguards remain intact."
+    "completed_accepted_episode": "Trusted candidate projection creates an episodic candidate reporting completed archive transfer «Ольха»; owner explicitly accepts via existing decision lifecycle and classifies completed_episode. This is an accepted historical report, not an independently verified external effect. No current task/mandate permits another transfer. Ordinary profile/working/transcript/task safeguards remain intact."
   },
   "gates": {
     "all_scheduled_reported": true,
