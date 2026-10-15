@@ -191,6 +191,7 @@ func TestNativeOrdinaryTaskSummaryContinuityIntegration(t *testing.T) {
 		usageRaw, _ := json.Marshal(p.usages)
 		probeRaw, _ := json.Marshal(p.probes)
 		finalRaw, _ := json.Marshal(p.finals)
+		failureRaw, _ := json.Marshal(p.failures)
 		metadata := map[string]any{}
 		for id, f := range p.finals {
 			metadata[id] = map[string]any{"finish_reason": f.FinishReason, "output_bytes": len(f.Content)}
@@ -233,6 +234,7 @@ func TestNativeOrdinaryTaskSummaryContinuityIntegration(t *testing.T) {
 		writeProof("/proof/native-usage.json", usageRaw)
 		writeProof("/proof/native-probes.json", probeRaw)
 		writeProof("/proof/native-final-metadata.json", metadataRaw)
+		writeProof("/proof/native-failure-metadata.json", failureRaw)
 		// Fixed synthetic acceptance data only. Raw unvalidated output stays in the
 		// isolated private evidence directory, never the catalog or public report.
 		writeProof("/private/summary-native-v6-final-output.json", finalRaw)

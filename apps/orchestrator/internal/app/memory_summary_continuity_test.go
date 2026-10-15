@@ -45,6 +45,21 @@ type continuityProvider struct {
 	elapsed  map[string]int64
 	probes   []jobs.ModelProbe
 	finals   map[string]transport.AssistantFinal
+	failures map[string]map[string]any
+}
+
+func (p *continuityProvider) observeFailure(id string, err error) {
+	if err == nil {
+		return
+	}
+	var failure *transport.Error
+	retryable := errors.As(err, &failure) && failure.Retryable
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.failures == nil {
+		p.failures = map[string]map[string]any{}
+	}
+	p.failures[id] = map[string]any{"code": transport.DiagnosticCode(err), "http_status": transport.DiagnosticHTTPStatus(err), "reason": transport.DiagnosticReason(err), "retryable": retryable}
 }
 
 func (p *continuityProvider) Name() string {
@@ -77,6 +92,7 @@ func (p *continuityProvider) StartRun(ctx context.Context, r transport.StartRunR
 		started := time.Now()
 		stream, err := p.base.StartRun(ctx, r)
 		if err != nil {
+			p.observeFailure(r.Context.RunID, err)
 			return nil, err
 		}
 		wrapped := make(chan transport.TransportEvent, 32)
@@ -113,6 +129,9 @@ func (p *continuityProvider) StartRun(ctx context.Context, r transport.StartRunR
 						}
 						p.finals[r.Context.RunID] = *event.AssistantFinal
 						p.mu.Unlock()
+					}
+					if event.TransportError != nil {
+						p.observeFailure(r.Context.RunID, event.TransportError)
 					}
 					select {
 					case wrapped <- event:
@@ -347,7 +366,9 @@ func continuityDiagnostic(p *continuityProvider, err error) error {
 	if errors.As(err, &pg) {
 		code = pg.Code
 	}
-	return fmt.Errorf("native transport=%s sqlstate=%s type=%T", transport.DiagnosticCode(err), code, err)
+	var failure *transport.Error
+	retryable := errors.As(err, &failure) && failure.Retryable
+	return fmt.Errorf("native transport=%s http=%d reason=%s retryable=%t sqlstate=%s type=%T", transport.DiagnosticCode(err), transport.DiagnosticHTTPStatus(err), transport.DiagnosticReason(err), retryable, code, err)
 }
 
 func TestOrdinaryTaskContinuationAcrossRepeatedCompactionIntegration(t *testing.T) {
