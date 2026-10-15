@@ -47,6 +47,7 @@ import (
 	"github.com/butler/butler/internal/memory/episodic"
 	"github.com/butler/butler/internal/memory/pipeline"
 	"github.com/butler/butler/internal/memory/profile"
+	"github.com/butler/butler/internal/memory/readcontrol"
 	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/summary"
 	"github.com/butler/butler/internal/memory/transcript"
@@ -417,6 +418,23 @@ func New(ctx context.Context) (*App, error) {
 		return nil, err
 	}
 	var memoryCandidates *MemoryCandidates
+	var memoryReads *MemoryReads
+	if cfg.MemoryReadEnabled {
+		if cfg.ActionAuthorityTokenFile == "" {
+			redis.Close()
+			postgres.Close()
+			return nil, readcontrol.ErrDenied
+		}
+		memoryReads, err = NewMemoryReads(postgres.Pool(), sourceCatalog)
+		if err == nil {
+			err = memoryReads.CheckReady(ctx)
+		}
+		if err != nil {
+			redis.Close()
+			postgres.Close()
+			return nil, err
+		}
+	}
 	if cfg.MemoryCandidateEnabled {
 		if cfg.ActionAuthorityTokenFile == "" {
 			redis.Close()
@@ -553,6 +571,7 @@ func New(ctx context.Context) (*App, error) {
 	var delegationHandler http.Handler
 	var guardedRequestHandler http.Handler
 	var memoryCandidateHandler http.Handler
+	var memoryReadHandler http.Handler
 	var converterDelegationHandler http.Handler
 	workspaceReady := false
 	if cfg.WorkspaceEnabled {
@@ -586,7 +605,16 @@ func New(ctx context.Context) (*App, error) {
 			}
 		}
 		if memoryCandidates != nil {
+			// Publication has an independent gate from read-only access.
 			memoryCandidateHandler, err = candidatecontrol.NewHandler(token, memoryCandidates)
+			if err != nil {
+				redis.Close()
+				postgres.Close()
+				return nil, err
+			}
+		}
+		if memoryReads != nil {
+			memoryReadHandler, err = readcontrol.NewHandler(token, memoryReads)
 			if err != nil {
 				redis.Close()
 				postgres.Close()
@@ -609,7 +637,7 @@ func New(ctx context.Context) (*App, error) {
 				return nil, err
 			}
 		}
-		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, guardedTabRequestReady: guardedRequests != nil, guardedTabRuntimeReady: cfg.GuardedTabRuntimeEnabled && guardedRequests != nil, memoryCandidateReady: memoryCandidates != nil, workspaceReady: workspaceReady, converterDelegationReady: converterDeveloper != nil && converterClient != nil})
+		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, guardedTabRequestReady: guardedRequests != nil, guardedTabRuntimeReady: cfg.GuardedTabRuntimeEnabled && guardedRequests != nil, memoryCandidateReady: memoryCandidates != nil, memoryReadReady: memoryReads != nil, workspaceReady: workspaceReady, converterDelegationReady: converterDeveloper != nil && converterClient != nil})
 		skillEvidenceHandler = skills.NewEvidenceHandler(token, &skillEvidence{tasks: taskStore, journal: actionauth.NewPostgresStore(postgres.Pool()), transcript: transcriptStore, budgets: budget.NewLedger(postgres.Pool()), results: finalResults, sources: sourceCatalog})
 	} else {
 		log.Warn("private action authority unavailable; Tool Broker will deny execution")
@@ -629,6 +657,7 @@ func New(ctx context.Context) (*App, error) {
 		guardedTabOwner:            guardedTabOwner,
 		guardedRequestHandler:      guardedRequestHandler,
 		memoryCandidateHandler:     memoryCandidateHandler,
+		memoryReadHandler:          memoryReadHandler,
 		delegationDecisions:        delegationDecisions,
 		delegationHandler:          delegationHandler,
 		converterDelegationHandler: converterDelegationHandler,

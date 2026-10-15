@@ -1,0 +1,238 @@
+// Package reader serves bounded catalog DATA after fresh source authorization.
+package reader
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"sort"
+	"time"
+	"unicode/utf8"
+
+	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/readcontrol"
+	"github.com/butler/butler/internal/memory/sanitize"
+	"github.com/butler/butler/internal/ownership"
+	"github.com/jackc/pgx/v5"
+)
+
+type Reader struct{ Sources *catalog.Store }
+
+func status(e error) string {
+	switch {
+	case errors.Is(e, catalog.ErrStale):
+		return "stale"
+	case errors.Is(e, catalog.ErrDenied), errors.Is(e, catalog.ErrDeleted), errors.Is(e, catalog.ErrRestore):
+		return "denied"
+	default:
+		return "backend_error"
+	}
+}
+func clip(s string, offset, limit int) (string, bool, int) {
+	// PostgreSQL substring already bounded the selected content. This helper
+	// preserves UTF-8 and expresses continuation in Unicode characters.
+	r := []rune(s)
+	if offset > len(r) {
+		offset = len(r)
+	}
+	end := offset + limit
+	if end > len(r) {
+		end = len(r)
+	}
+	return string(r[offset:end]), end < len(r), end
+}
+func item(src catalog.Source, key, title, text string, loc json.RawMessage, max int) readcontrol.Item {
+	if len(loc) > 2048 || !json.Valid(loc) || sanitize.JSON(string(loc)) != string(loc) {
+		loc = json.RawMessage(`{}`)
+	}
+	title, _, _ = clip(sanitize.Text(title), 0, 160)
+	text, truncated, next := clip(text, 0, max)
+	safeText := sanitize.Text(text)
+	out := readcontrol.Item{Source: readcontrol.SourceRef{ID: src.ID, Revision: src.Revision, AccessRevision: src.AccessRevision, Hash: src.Hash}, Kind: src.Kind, ScopeType: src.ScopeType, Title: title, Text: safeText, FragmentKey: key, Locator: loc, Freshness: "current_revision_unverified_fact", Truncated: truncated, Redacted: safeText != text, NextOffset: next}
+	if src.EventTime != nil {
+		out.EventTime = src.EventTime.UTC().Format(time.RFC3339Nano)
+	}
+	return out
+}
+
+// ReadTx never accepts owner, scope, paths or SQL from the model. The caller
+// owns the actual dispatch transaction and rechecks it before commit/release.
+func (r Reader) ReadTx(ctx context.Context, tx pgx.Tx, tool string, a readcontrol.Args) (readcontrol.Result, error) {
+	if r.Sources == nil || tx == nil {
+		return readcontrol.Empty("denied"), readcontrol.ErrDenied
+	}
+	if tool == readcontrol.Search {
+		return r.search(ctx, tx, a)
+	}
+	// This read is safe even when the ID was acquired from a previous run: a
+	// source reference is evidence, never a capability. AccessTx pins ancestors.
+	sources, e := r.Sources.AccessTx(ctx, tx, []catalog.SourceRef{{ID: a.SourceID, Revision: a.Revision, AccessRevision: a.AccessRevision, Hash: a.Hash}}, "memory_read")
+	if e != nil {
+		return readcontrol.Empty(status(e)), nil
+	}
+	if len(sources) != 1 {
+		return readcontrol.Empty("denied"), nil
+	}
+	src := sources[0]
+	if tool == readcontrol.Neighbors {
+		return r.neighbors(ctx, tx, src, a)
+	}
+	var title, text string
+	var loc json.RawMessage
+	if a.FragmentKey == "" {
+		// Body may be large; substring avoids bringing the whole document into
+		// model output. AccessTx itself retains the authoritative source snapshot.
+		e = tx.QueryRow(ctx, `SELECT title,substring(body FROM $2::integer FOR $3::integer),locator FROM memory_source_revisions WHERE source_id=$1 AND revision=$4`, src.ID, a.Offset+1, a.MaxChars+1, src.Revision).Scan(&title, &text, &loc)
+	} else {
+		e = tx.QueryRow(ctx, `SELECT c.title,substring(c.content FROM $3::integer FOR $4::integer),o.locator FROM memory_object_sources o JOIN memory_chunks c ON c.id=o.object_id WHERE o.memory_type='chunk' AND o.source_id=$1 AND o.source_revision=$2 AND o.fragment_key=$5 ORDER BY o.object_id LIMIT 1`, src.ID, src.Revision, a.Offset+1, a.MaxChars+1, a.FragmentKey).Scan(&title, &text, &loc)
+	}
+	if errors.Is(e, pgx.ErrNoRows) {
+		return readcontrol.Empty("not_found"), nil
+	}
+	if e != nil {
+		return readcontrol.Empty("backend_error"), e
+	}
+	out := readcontrol.Empty("ok")
+	v := item(src, a.FragmentKey, title, text, loc, a.MaxChars)
+	v.NextOffset += a.Offset
+	out.Items = append(out.Items, v)
+	out.Truncated = v.Truncated
+	if e = r.conflicts(ctx, tx, &out); e != nil {
+		return readcontrol.Empty("backend_error"), e
+	}
+	return out, nil
+}
+func (r Reader) search(ctx context.Context, tx pgx.Tx, a readcontrol.Args) (readcontrol.Result, error) {
+	token, ok := ownership.TokenFromContext(ctx)
+	if !ok {
+		return readcontrol.Empty("denied"), nil
+	}
+	if _, e := r.Sources.AccessTx(ctx, tx, nil, "memory_read"); e != nil {
+		return readcontrol.Empty(status(e)), nil
+	}
+	// Search only same-owner current scopes or individually granted sources.
+	// The catalog repeats complete current ancestor/privacy proof afterwards.
+	const permitted = `WITH actor AS (SELECT s.user_id AS owner,r.session_key,r.task_id FROM runs r JOIN sessions s USING(session_key) WHERE r.run_id=$1), permitted AS (
+ SELECT s.source_id,s.head_revision,s.access_revision,r.content_hash,r.title,r.body FROM memory_sources s JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision CROSS JOIN actor a
+ WHERE s.owner_id=a.owner AND s.status='active' AND (s.scope_type='user' AND s.scope_id=a.owner OR s.scope_type='session' AND s.scope_id=a.session_key OR s.scope_type='task' AND s.scope_id=a.task_id OR EXISTS(SELECT 1 FROM memory_scope_grants g JOIN tasks t USING(task_id) WHERE g.source_id=s.source_id AND g.task_id=a.task_id AND g.owner_id=a.owner AND g.task_revision=t.revision AND g.access_revision=s.access_revision AND g.purpose='memory_read')))`
+	var sourceTruncated bool
+	if e := tx.QueryRow(ctx, permitted+` SELECT EXISTS(SELECT 1 FROM permitted WHERE char_length(body)>65536)`, token.RunID).Scan(&sourceTruncated); e != nil {
+		return readcontrol.Empty("backend_error"), e
+	}
+	rows, e := tx.Query(ctx, permitted+`, matches AS (
+ SELECT p.source_id,p.head_revision,p.access_revision,p.content_hash,''::text AS fragment_key,p.title,substring(p.body FROM 1 FOR 241) AS snippet,'{}'::jsonb AS locator,0 AS preference
+ FROM permitted p WHERE to_tsvector('simple',p.title||' '||substring(p.body FROM 1 FOR 65536)) @@ plainto_tsquery('simple',$2)
+ UNION ALL SELECT p.source_id,p.head_revision,p.access_revision,p.content_hash,o.fragment_key,c.title,substring(c.content FROM 1 FOR 241),o.locator,1
+ FROM permitted p JOIN memory_object_sources o ON o.source_id=p.source_id AND o.source_revision=p.head_revision AND o.memory_type='chunk' JOIN memory_chunks c ON c.id=o.object_id
+ WHERE to_tsvector('simple',c.title||' '||c.content) @@ plainto_tsquery('simple',$2))
+ SELECT source_id,head_revision,access_revision,content_hash,fragment_key,title,snippet,locator FROM matches ORDER BY preference DESC,source_id,fragment_key LIMIT $3 OFFSET $4`, token.RunID, a.Query, a.Limit+1, a.Page*a.Limit)
+	if e != nil {
+		return readcontrol.Empty("backend_error"), e
+	}
+	type hit struct {
+		ref              catalog.SourceRef
+		key, title, text string
+		loc              json.RawMessage
+	}
+	var hits []hit
+	for rows.Next() {
+		var h hit
+		if e = rows.Scan(&h.ref.ID, &h.ref.Revision, &h.ref.AccessRevision, &h.ref.Hash, &h.key, &h.title, &h.text, &h.loc); e != nil {
+			rows.Close()
+			return readcontrol.Empty("backend_error"), e
+		}
+		hits = append(hits, h)
+	}
+	e = rows.Err()
+	rows.Close()
+	if e != nil {
+		return readcontrol.Empty("backend_error"), e
+	}
+	out := readcontrol.Empty("empty")
+	out.Truncated = sourceTruncated
+	if len(hits) == 0 {
+		return out, nil
+	}
+	out.Truncated = sourceTruncated || len(hits) > a.Limit
+	if len(hits) > a.Limit {
+		hits = hits[:a.Limit]
+	}
+	refs := []catalog.SourceRef{}
+	seen := map[string]bool{}
+	for _, h := range hits {
+		if !seen[h.ref.ID] {
+			refs = append(refs, h.ref)
+			seen[h.ref.ID] = true
+		}
+	}
+	sort.Slice(refs, func(i, j int) bool { return refs[i].ID < refs[j].ID })
+	sources, e := r.Sources.AccessTx(ctx, tx, refs, "memory_read")
+	if e != nil {
+		return readcontrol.Empty(status(e)), nil
+	}
+	byID := map[string]catalog.Source{}
+	for _, s := range sources {
+		byID[s.ID] = s
+	}
+	out.Status = "ok"
+	for _, h := range hits {
+		out.Items = append(out.Items, item(byID[h.ref.ID], h.key, h.title, h.text, h.loc, 240))
+	}
+	if e = r.conflicts(ctx, tx, &out); e != nil {
+		return readcontrol.Empty("backend_error"), e
+	}
+	return out, nil
+}
+func (r Reader) neighbors(ctx context.Context, tx pgx.Tx, src catalog.Source, a readcontrol.Args) (readcontrol.Result, error) {
+	var ordinal int
+	e := tx.QueryRow(ctx, `SELECT fragment_ordinal FROM memory_object_sources WHERE memory_type='chunk' AND source_id=$1 AND source_revision=$2 AND fragment_key=$3 ORDER BY object_id LIMIT 1`, src.ID, src.Revision, a.FragmentKey).Scan(&ordinal)
+	if errors.Is(e, pgx.ErrNoRows) {
+		return readcontrol.Empty("not_found"), nil
+	}
+	if e != nil {
+		return readcontrol.Empty("backend_error"), e
+	}
+	max := a.MaxChars / 2
+	if max < 1 {
+		max = 1
+	}
+	rows, e := tx.Query(ctx, `SELECT o.fragment_key,c.title,substring(c.content FROM 1 FOR $4::integer),o.locator FROM memory_object_sources o JOIN memory_chunks c ON c.id=o.object_id WHERE o.memory_type='chunk' AND o.source_id=$1 AND o.source_revision=$2 AND o.fragment_ordinal IN ($3-1,$3+1) ORDER BY o.fragment_ordinal,o.object_id LIMIT 2`, src.ID, src.Revision, ordinal, max+1)
+	if e != nil {
+		return readcontrol.Empty("backend_error"), e
+	}
+	out := readcontrol.Empty("empty")
+	for rows.Next() {
+		var key, title, text string
+		var loc json.RawMessage
+		if e = rows.Scan(&key, &title, &text, &loc); e != nil {
+			rows.Close()
+			return readcontrol.Empty("backend_error"), e
+		}
+		v := item(src, key, title, text, loc, max)
+		out.Items = append(out.Items, v)
+		out.Truncated = out.Truncated || v.Truncated
+	}
+	e = rows.Err()
+	rows.Close()
+	if e != nil {
+		return readcontrol.Empty("backend_error"), e
+	}
+	if len(out.Items) > 0 {
+		out.Status = "ok"
+	}
+	if e = r.conflicts(ctx, tx, &out); e != nil {
+		return readcontrol.Empty("backend_error"), e
+	}
+	return out, nil
+}
+func (r Reader) conflicts(ctx context.Context, tx pgx.Tx, out *readcontrol.Result) error {
+	for i := range out.Items {
+		if e := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_claims c JOIN memory_claims other ON other.owner_id=c.owner_id AND other.scope_type=c.scope_type AND other.scope_id=c.scope_id AND other.fact_key=c.fact_key WHERE c.source_id=$1 AND c.status='confirmed' AND other.status='candidate' AND other.claim_id<>c.claim_id)`, out.Items[i].Source.ID).Scan(&out.Items[i].Conflict); e != nil {
+			return e
+		}
+		if !utf8.ValidString(out.Items[i].Text) {
+			return readcontrol.ErrDenied
+		}
+	}
+	return nil
+}

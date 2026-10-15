@@ -68,6 +68,18 @@ func controlBrokerProcess(t *testing.T, f *dispatchAdmissionFixture, h http.Hand
 		cmd = exec.Command(actual)
 		cmd.Env = append(os.Environ(), "BUTLER_POSTGRES_URL="+dsn.String(), "BUTLER_POSTGRES_MAX_CONNS=2", "BUTLER_POSTGRES_MIN_CONNS=0", "BUTLER_TOOL_REGISTRY_PATH="+registryPath, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+tokenPath, "BUTLER_ACTION_CONTEXT_URL="+control.URL+"/context", "BUTLER_MEMORY_CANDIDATE_ENABLED=true", "BUTLER_MEMORY_CANDIDATE_CONTROL_URL="+control.URL+path, "BUTLER_HTTP_ADDR=127.0.0.1:0", "BUTLER_GRPC_ADDR="+address, "BUTLER_MEMORY_DELETION_MANIFEST_FILE="+f.manifestPath)
 	}
+	if strings.HasPrefix(harness, "BUTLER_MEMORY_READ_HARNESS=") {
+		actual := os.Getenv("BUTLER_MEMORY_READ_APP_BINARY")
+		if actual == "" {
+			t.Skip("compiled actual Broker application required")
+		}
+		registryPath := filepath.Join(t.TempDir(), "tools.json")
+		if os.WriteFile(registryPath, []byte(`{"tools":[]}`), 0600) != nil {
+			t.Fatal("empty fixture registry unavailable")
+		}
+		cmd = exec.Command(actual)
+		cmd.Env = append(os.Environ(), "BUTLER_POSTGRES_URL="+dsn.String(), "BUTLER_POSTGRES_MAX_CONNS=2", "BUTLER_POSTGRES_MIN_CONNS=0", "BUTLER_TOOL_REGISTRY_PATH="+registryPath, "BUTLER_ACTION_AUTHORITY_TOKEN_FILE="+tokenPath, "BUTLER_ACTION_CONTEXT_URL="+control.URL+"/context", "BUTLER_MEMORY_READ_ENABLED=true", "BUTLER_MEMORY_READ_CONTROL_URL="+control.URL+path, "BUTLER_HTTP_ADDR=127.0.0.1:0", "BUTLER_GRPC_ADDR="+address, "BUTLER_MEMORY_DELETION_MANIFEST_FILE="+f.manifestPath)
+	}
 	log, err := os.OpenFile(filepath.Join(t.TempDir(), "broker.log"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
 	if err != nil {
 		t.Fatal(err)

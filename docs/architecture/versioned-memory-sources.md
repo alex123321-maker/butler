@@ -123,6 +123,16 @@ and erasure procedure; no application can retract an offline copy it does not ow
 
 ## Agent candidate proposals
 
+Agent reads use separately gated fixed Broker `memory.search`, `memory.open` and
+`memory.neighbors` contracts. Search returns bounded DATA citations; exact
+source/revision/access/hash and catalog fragment keys are required for opening.
+Each actual dispatch reconstructs current input/lease/task/goal/mandate proof;
+catalog authorization pins complete ancestors. The returned ID never grants
+future access. Correction/deletion/access changes deny old handles and ordinary
+provider release checks protect all returned evidence. See
+[read contract](../../internal/memory/readcontrol/README.md) for bounds, distinct
+statuses and the initial PostgreSQL full-text strategy.
+
 Default-false operator composition `BUTLER_MEMORY_CANDIDATE_ENABLED` joins the
 fixed local `memory.propose_candidate` contract to the catalog candidate queue.
 Broker requires current owning readiness/task policy, exact preparation/authorization,

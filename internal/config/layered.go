@@ -57,6 +57,11 @@ func loadOrchestratorLayered(get envGetter, settings []Setting) (OrchestratorCon
 		return cfg, snapshot, candidateErr
 	}
 	workspaceSnapshot, workspaceErr := loadSpecs(get, workspaceOrchestratorSpecs(&cfg))
+	readSnapshot, readErr := loadSpecs(get, memoryReadOrchestratorSpecs(&cfg))
+	snapshot.keys = append(snapshot.keys, readSnapshot.keys...)
+	if readErr != nil {
+		return cfg, snapshot, readErr
+	}
 	snapshot.keys = append(snapshot.keys, workspaceSnapshot.keys...)
 	if workspaceErr != nil {
 		return cfg, snapshot, workspaceErr

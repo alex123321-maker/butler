@@ -19,6 +19,7 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/memory/candidatecontrol"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/singletabcontrol"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
@@ -105,7 +106,14 @@ func TestDelegationBrokerHarness(t *testing.T) {
 	}
 	var executor RuntimeExecutor
 	contract := delegation.AdmissionContract()
-	if os.Getenv("BUTLER_MEMORY_CANDIDATE_HARNESS") == "1" {
+	if tool := os.Getenv("BUTLER_MEMORY_READ_HARNESS"); readcontrol.IsTool(tool) {
+		client, err := readcontrol.NewClient(os.Getenv("BUTLER_DELEGATION_ADMISSION_URL"), token)
+		if err != nil {
+			t.Fatal(err)
+		}
+		executor = &MemoryReadExecutor{Reads: client}
+		contract = readcontrol.Contract(tool)
+	} else if os.Getenv("BUTLER_MEMORY_CANDIDATE_HARNESS") == "1" {
 		client, err := candidatecontrol.NewClient(os.Getenv("BUTLER_DELEGATION_ADMISSION_URL"), token)
 		if err != nil {
 			t.Fatal(err)

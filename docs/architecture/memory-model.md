@@ -827,6 +827,17 @@ The memory doctor (`/api/v1/doctor/check`) now reports:
 
 ## 23. Итоговый тезис
 
+### Инструментальное чтение по потребности
+
+Optional operator composition exposes bounded `memory.search/open/neighbors`
+through Tool Broker, in addition to the prepared memory bundle. The catalog and
+PostgreSQL remain authoritative; version1 full-text search has no external model
+call and does not depend on a semantic generation. Source references remain DATA;
+current source/ancestor/access/privacy and owning task/run/input guards apply to
+every read and subsequent provider release. This does not enable write consumers
+or accept profile/episodic claims. Contract:
+[memory read control](../../internal/memory/readcontrol/README.md).
+
 ### Проверка полезности памяти
 
 Текущая [смысловая методика](../ai/memory-eval-semantic-methodology.md)

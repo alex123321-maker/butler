@@ -96,6 +96,7 @@ type ContextSnapshot struct {
 	GuardedTabRequestReady   bool                 `json:"guarded_tab_request_ready,omitempty"`
 	GuardedTabRuntimeReady   bool                 `json:"guarded_tab_runtime_ready,omitempty"`
 	MemoryCandidateReady     bool                 `json:"memory_candidate_ready,omitempty"`
+	MemoryReadReady          bool                 `json:"memory_read_ready,omitempty"`
 	WorkspaceReady           bool                 `json:"workspace_ready,omitempty"`
 	InputClaimHash           string               `json:"input_claim_hash,omitempty"`
 	ConverterDelegationReady bool                 `json:"converter_delegation_ready,omitempty"`

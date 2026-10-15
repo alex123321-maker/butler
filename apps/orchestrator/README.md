@@ -36,6 +36,13 @@ or authorize replaying activation. Candidate collection/checking remains its
 separate earlier phase.
 # Orchestrator
 
+Optional `BUTLER_MEMORY_READ_ENABLED=true` mounts the authenticated private
+`/internal/memory-read` control for fixed Broker search/open/neighbors contracts.
+It reconstructs current actual dispatch/input/Session ownership, uses catalog
+source guards and returns bounded DATA. The flag is operator-only and defaults
+false; the Broker requires matching opt-in and fixed control URL. Details and
+isolated validation: [read contract](../../internal/memory/readcontrol/README.md).
+
 The default prompt includes an internal execution/completion protocol and keeps
 negation, source authority and durable retry/effect policy explicit. Core never
 rewrites a structured status proposal into capture from message keywords.
