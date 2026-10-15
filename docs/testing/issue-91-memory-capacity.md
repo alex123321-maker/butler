@@ -105,3 +105,28 @@ model queue contention, maintenance composition and end-to-end foreground SLO
 remain additional gates. The Store screen and serial local index slice cannot
 close issue91. Capacity does not establish complete memory retrieval, truthful
 answers, zero cost or readiness to activate new memory consumers.
+
+## Actual interactive query during an owned index
+
+Source7bac6cda, isolated issue92 `interactive-v5`, actual PostgreSQL and pinned
+local EmbeddingGemma2, client1CPU/2GiB, race detector:1PASS,0FAIL,0SKIP.
+The first100-fragment generation was embedded and owner-reviewed. A second job
+reused its100 existing vectors and embedded100 new fragments. The ordinary
+foreground Flow query overlapped one actual index IPC request and completed in
+370ms (prospective single-query ceiling5000ms). Its actual model input contained
+retrieved document bytes and the unchanged typed UNKNOWN. There were50 actual
+index batches and one actual query, zero cloud calls. This is one contention
+slice with a controlled foreground provider, not native QA, general queue
+throughput, repeated p95, or the complete summaries/consolidation mixed workload.
+
+The initial window rejected a fixture lacking a mandatory JSON fragment locator.
+Later diagnostic windows retained successful retrieval but failed the model-input
+evidence gate: the production prompt formatter silently discarded untitled
+chunks. The implementation now preserves their text under a neutral Document
+label, with a focused regression. No title was inserted into the fixture to
+avoid this defect. All failed windows remain separate under the issue92 reports.
+The report preserves actual IPC intervals, queue/execution times, resource peaks,
+full jobs/reservations/scopes and the explicitly synthetic foreground request.
+`memory-capacity-interactive-lab.sh` reproduces this slice with an isolated PG,
+private operator-pinned local service and existing private token; no downloads or
+cloud authentication are used.
