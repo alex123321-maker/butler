@@ -91,8 +91,12 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	envelope := delegation.AdmissionEnvelope{RunID: e.RunID, ToolCallID: e.ToolCallID, EffectID: e.EffectID, ArgsJSON: e.ArgsJSON, ContractHash: e.ContractHash}
+	contract := readcontrol.Contract(e.Tool)
+	if facts != nil {
+		contract = factcontrol.Contract()
+	}
 	read := func(ctx context.Context, q admissionQuery, lock bool) (actionauth.Grant, error) {
-		return readAdmissionDispatchRevision(ctx, q, envelope, e.Tool, s.hashes[e.Tool], readcontrol.Contract(e.Tool).GetContractRevision(), actionauth.EffectRead, lock)
+		return readAdmissionDispatchRevision(ctx, q, envelope, e.Tool, s.hashes[e.Tool], contract.GetContractRevision(), actionauth.EffectRead, lock)
 	}
 	grant, err := read(ctx, s.pool, false)
 	if err != nil {

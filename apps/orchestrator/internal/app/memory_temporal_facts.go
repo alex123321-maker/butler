@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"time"
@@ -54,7 +55,17 @@ func (s *MemoryReads) readTemporalFactsTx(ctx context.Context, tx pgx.Tx, a fact
 		if err != nil {
 			return out, err
 		}
-		if len(raw) > 4096 || sanitize.JSON(string(raw)) != string(raw) {
+		var canonical any
+		decoder := json.NewDecoder(bytes.NewReader(raw))
+		decoder.UseNumber()
+		if err = decoder.Decode(&canonical); err != nil {
+			return out, err
+		}
+		raw, err = json.Marshal(canonical)
+		if err != nil {
+			return out, err
+		}
+		if len(raw) > 4096 || !temporalFactValueSafe(canonical) {
 			out.Truncated = true
 			continue
 		}
@@ -64,4 +75,30 @@ func (s *MemoryReads) readTemporalFactsTx(ctx context.Context, tx pgx.Tx, a fact
 		out.Status = "ok"
 	}
 	return out, nil
+}
+
+// Check strings/keys without passing precise accepted JSON numbers through a
+// float64 sanitizer. Omitted credential-bearing records stay explicitly partial.
+func temporalFactValueSafe(value any) bool {
+	switch v := value.(type) {
+	case string:
+		return sanitize.Text(v) == v
+	case map[string]any:
+		for key, child := range v {
+			if sanitize.Text(key) != key {
+				return false
+			}
+			probe, _ := json.Marshal(map[string]string{key: "temporal_value_probe"})
+			if sanitize.JSON(string(probe)) != string(probe) || !temporalFactValueSafe(child) {
+				return false
+			}
+		}
+	case []any:
+		for _, child := range v {
+			if !temporalFactValueSafe(child) {
+				return false
+			}
+		}
+	}
+	return true
 }
