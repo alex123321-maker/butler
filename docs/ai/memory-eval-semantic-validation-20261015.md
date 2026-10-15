@@ -44,3 +44,11 @@ the author's key. All40 grounding/completeness/context/corpus dimensions matched
 the [key](../../testdata/acceptance/reviews/ru-memory-semantic-calibration-key-v1.json)
 was published after review. This small calibration establishes agreement on these
 examples, not a statistical guarantee of reviewer accuracy.
+
+The initial offline prepare at `memory-semantic-trial-20261015a` compiled both
+binaries but could not execute the pinning CLI: a capability-free root process
+could not traverse the operator-owned0700 build directory. No model, embedding,
+authentication or database operation was reached. Its build/logs are retained.
+The pin-only helper now runs as the owning operator UID; the native runtime UID,
+read-only source, capabilities and model settings are unchanged. A new fresh root
+is used for subsequent preparation; the failed root is not reopened.

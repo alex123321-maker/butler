@@ -23,7 +23,7 @@ if [[ "$action" == prepare ]]; then
 go test -c -p 1 -o /build/collector.test ./apps/orchestrator/internal/app
 go build -p 1 -o /build/memory-eval ./cmd/memory-eval
 ' > "$root/build.log" 2> "$root/build-diagnostics.log"
- docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+ docker run --rm --user "$(id -u):$(id -g)" --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
   -v "$src:/src:ro" -v "$root/build:/build:ro" "$image" /build/memory-eval -mode semantic-score -pins-only \
   -root /src -binary /build/collector.test -code-commit "$release" \
   -suite /src/testdata/acceptance/ru-memory-semantic-v1.json -rubric /src/docs/ai/memory-eval-semantic-methodology.md | \
