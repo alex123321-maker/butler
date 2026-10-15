@@ -129,17 +129,18 @@ func New(ctx context.Context) (*App, error) {
 
 	providerBuilder := providerfactory.New(authManager, log)
 	providerResult, err := providerBuilder.Build(ctx, providerfactory.BuildConfig{
-		ActiveProvider:      cfg.ModelProvider,
-		OpenAIAPIKey:        cfg.OpenAIAPIKey,
-		OpenAIModel:         cfg.OpenAIModel,
-		OpenAIBaseURL:       cfg.OpenAIBaseURL,
-		OpenAIRealtimeURL:   cfg.OpenAIRealtimeURL,
-		OpenAITransportMode: cfg.OpenAITransportMode,
-		OpenAICodexModel:    cfg.OpenAICodexModel,
-		OpenAICodexBaseURL:  cfg.OpenAICodexBaseURL,
-		GitHubCopilotModel:  cfg.GitHubCopilotModel,
-		AntigravityModel:    cfg.AntigravityModel,
-		Timeout:             time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
+		ActiveProvider:                 cfg.ModelProvider,
+		OpenAIAPIKey:                   cfg.OpenAIAPIKey,
+		OpenAIModel:                    cfg.OpenAIModel,
+		OpenAIBaseURL:                  cfg.OpenAIBaseURL,
+		OpenAIRealtimeURL:              cfg.OpenAIRealtimeURL,
+		OpenAITransportMode:            cfg.OpenAITransportMode,
+		OpenAICodexModel:               cfg.OpenAICodexModel,
+		OpenAICodexBaseURL:             cfg.OpenAICodexBaseURL,
+		GitHubCopilotModel:             cfg.GitHubCopilotModel,
+		AntigravityModel:               cfg.AntigravityModel,
+		AntigravityMaximumOutputTokens: cfg.AntigravityMaximumOutputTokens,
+		Timeout:                        time.Duration(cfg.OpenAITimeoutSeconds) * time.Second,
 	})
 	if err != nil {
 		redis.Close()
@@ -664,6 +665,7 @@ func New(ctx context.Context) (*App, error) {
 		memoryIndexing:             ownedSemantic,
 		memoryModelStore:           memoryModelStore,
 		memoryModelConfigured:      memoryModelWorker != nil,
+		memorySummaryConfigured:    summaryConsumerConfigured(memoryModelWorker),
 		sourceCatalog:              sourceCatalog,
 		cfg:                        cfg,
 		finalResults:               finalResults,

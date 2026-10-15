@@ -1058,6 +1058,16 @@ existing instruction continuity is retained. No identity prompt, hidden retry,
 option stripping or output-limit removal is introduced by this normalization.
 
 Trusted Antigravity construction may freeze an explicit Cloud Code High generated
+ceiling through `BUTLER_ANTIGRAVITY_MAXIMUM_OUTPUT_TOKENS` in the resolved operator
+configuration and provider factory. Zero retains the existing 8192 default; the
+native constructor validates High-only ceilings up to 32768. The full generated
+ceiling includes thinking and visible output and must fit the independently
+declared finite execution policy `output_tokens`. The summary consumer requires
+at least 32768 on both boundaries before its separately qualified/default-off
+registration or policy endpoint is available. This setting cannot be widened by
+source text, model transport options or a summary policy.
+
+Trusted Antigravity construction may freeze an explicit Cloud Code High generated
 token ceiling up to32768 and an object JSON response schema for tool-free
 observations. Defaults retain8192 and ordinary tool semantics. `InferenceLimits`
 quotes the actual complete ceiling, including thinking; private serialization

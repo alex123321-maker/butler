@@ -22,6 +22,12 @@ Handler/trigger are code selected. The ordinary policy controls and jobs view
 apply. `BUTLER_MEMORY_MODEL_JOBS_ENABLED=true` and the separately default-false
 `BUTLER_MEMORY_SUMMARY_CONSUMER_ENABLED=true` are both necessary, as is enabled
 PostgreSQL model-worker control. Owner policy remains necessary for inference.
+Production registration and the owner policy endpoint additionally require the
+existing native Flash High adapter with a declared generated-token ceiling of at
+least 32768 and a matching finite execution budget `output_tokens` allowance. Set
+`BUTLER_ANTIGRAVITY_MAXIMUM_OUTPUT_TOKENS=32768`; the default 0 keeps the previous
+8192 transport ceiling and does not qualify this consumer. This construction-time
+setting includes thinking plus visible output and never becomes a model option.
 Changed task/constraints/assignment authority requires a new explicit policy;
 the consumer does not silently rebase permission onto a newer task version.
 
