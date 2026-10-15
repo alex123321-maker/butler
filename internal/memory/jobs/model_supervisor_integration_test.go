@@ -129,13 +129,13 @@ func (p *modelSecondAuthorityProof) StartRun(ctx context.Context, r transport.St
 		case "source_change":
 			_, err = blocker.Exec(context.Background(), `UPDATE memory_sources SET access_revision=access_revision+1 WHERE source_id=$1`, p.source.ID)
 		}
+		if p.change == "stop" {
+			p.stop()
+		}
 		if err == nil {
 			err = blocker.Commit(context.Background())
 		} else {
 			blocker.Rollback(context.Background())
-		}
-		if p.change == "stop" {
-			p.stop()
 		}
 		released <- err
 	}()
