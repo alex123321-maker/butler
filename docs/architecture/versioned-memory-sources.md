@@ -158,6 +158,14 @@ does not run a model, enable legacy cloud extraction or establish semantic quali
 
 ## Owned auxiliary work
 
+The #85 generative candidate consumer preserves exact source quotation/rune spans,
+revision/hash, unknown time and original scope. Its claims remain candidates and
+reuse existing owner acceptance/correction/revoke controls. Migration073 adds a
+trusted projection class: outcome episodes become Episodic Memory only on owner
+acceptance; preferences/facts become Profile Memory. An accepted exact episode may
+have no vector until separately admitted indexing. See the
+[candidate contract and release gate](../../internal/memory/candidates/README.md).
+
 `memory_aux_jobs` records immutable owner, purpose, original run/task and assignment,
 task/constraint versions, complete source hashes/access, finite allowance/deadline,
 and current claim ID/epoch. Current job snapshots must match every saved policy

@@ -122,6 +122,13 @@ It proves transport/plumbing with bounded neutral DATA and establishes no summar
 extraction, consolidation or answer quality. Consumers from #84/#85/#89/#90 need
 their own quality/security gates; none is silently enabled by #82.
 
+#85 adds the separately gated `source-candidates-v1` consumer and an optional
+trusted transactional publication hook. It materializes neutral catalog claims
+against one original source alongside the existing DATA derivative/job checkpoint.
+Exact Unicode evidence, typed owner-only projection, coalescing and the deliberately
+closed production release gate are specified in the
+[candidate consumer README](../../internal/memory/candidates/README.md).
+
 ## Migration and rollback
 
 Apply migration 071 before starting the new binary, using the normal migrator.
