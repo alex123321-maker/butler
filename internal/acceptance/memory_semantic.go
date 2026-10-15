@@ -130,6 +130,7 @@ type MemorySemanticTaskEvidence struct {
 type MemorySemanticReview struct {
 	Version            string               `json:"version"`
 	Kind               string               `json:"kind"`
+	Variant            string               `json:"variant,omitempty"`
 	Reviewer           string               `json:"reviewer"`
 	CandidateAuthor    string               `json:"candidate_author"`
 	CorpusSHA256       string               `json:"corpus_sha256"`
@@ -164,6 +165,7 @@ type MemorySemanticMetrics struct {
 type MemorySemanticReport struct {
 	Version            string                            `json:"version"`
 	Kind               string                            `json:"evidence_kind"`
+	Variant            string                            `json:"variant,omitempty"`
 	Reviewer           string                            `json:"reviewer"`
 	CorpusSHA256       string                            `json:"corpus_sha256"`
 	MeasurementsSHA256 string                            `json:"measurements_sha256"`
@@ -195,7 +197,7 @@ func semanticOriginal(c MemoryCase, source string, revision int64, quote string)
 // ScoreMemorySemantic verifies exhaustive original-byte correlation and computes
 // independent dimensions. It never guesses meaning using strings or similarity.
 func ScoreMemorySemantic(cases []MemoryCase, inputs []MemoryInput, measurements MemoryMeasurements, review MemorySemanticReview, corpusSHA, measurementsSHA, rubricSHA string) (MemorySemanticReport, error) {
-	r := MemorySemanticReport{Version: MemorySemanticVersion, Kind: "independent_semantic_review", Reviewer: review.Reviewer, CorpusSHA256: corpusSHA, MeasurementsSHA256: measurementsSHA, RubricSHA256: rubricSHA, Arms: map[string]*MemorySemanticMetrics{}, Items: review.Items,
+	r := MemorySemanticReport{Version: MemorySemanticVersion, Kind: "independent_semantic_review", Variant: review.Variant, Reviewer: review.Reviewer, CorpusSHA256: corpusSHA, MeasurementsSHA256: measurementsSHA, RubricSHA256: rubricSHA, Arms: map[string]*MemorySemanticMetrics{}, Items: review.Items,
 		Limitations: []string{"Semantic labels are fallible independent annotations, not mechanically proved entailment.", "Counts retain unavailable entries; no universal promotion gate or broader-task success is inferred.", "Incremental model billing is zero under the owner's stated subscription/local conditions; host costs are separate."}}
 	if review.Version != "butler-memory-semantic-review-v1" || !containsMemory([]string{"retrospective", "prospective"}, review.Kind) || review.Reviewer == "" || review.CandidateAuthor == "" || review.Reviewer == review.CandidateAuthor || !validSHA(corpusSHA) || !validSHA(measurementsSHA) || !validSHA(rubricSHA) || review.CorpusSHA256 != corpusSHA || review.MeasurementsSHA256 != measurementsSHA || review.RubricSHA256 != rubricSHA {
 		return r, errors.New("independent review identity or original hashes differ")
