@@ -394,6 +394,11 @@ func TestMemoryAdaptiveNativeComparison(t *testing.T) {
 		retained, stop := context.WithTimeout(context.Background(), 15*time.Second)
 		defer stop()
 		_, _ = pool.Exec(retained, `UPDATE adaptive_native_window SET closed=TRUE`)
+		var fillErr error
+		inputs, measurements.Observations, fillErr = fillAdaptiveNativeSchedule(suite, inputs, measurements.Observations)
+		if fillErr != nil {
+			t.Error("original schedule correlation failed")
+		}
 		write := func(name string, v any) {
 			raw, e := json.MarshalIndent(v, "", "  ")
 			if e != nil || os.WriteFile(filepath.Join(proof, name), append(raw, '\n'), 0600) != nil {
@@ -428,6 +433,60 @@ func TestMemoryAdaptiveNativeComparison(t *testing.T) {
 			bindings[c.ID+"/"+arm] = refs
 			t.Logf("original %s/%s: %s", c.ID, arm, ob.Status)
 		}
+	}
+}
+
+func fillAdaptiveNativeSchedule(suite acceptance.MemorySemanticSuite, inputs []acceptance.MemoryInput, observations []acceptance.MemoryObservation) ([]acceptance.MemoryInput, []acceptance.MemoryObservation, error) {
+	if len(inputs) != len(observations) {
+		return inputs, observations, errors.New("input/observation counts differ")
+	}
+	seen := map[string]bool{}
+	want := map[string]bool{}
+	for _, c := range suite.Cases {
+		for _, arm := range []string{"no_ltm", "retrieval_static", "retrieval_adaptive"} {
+			want[acceptance.MemoryOpaqueCaseID(c.MemoryCase())+"/"+arm] = true
+		}
+	}
+	for j, in := range inputs {
+		key := in.CaseID + "/" + in.Arm
+		ob := observations[j]
+		if seen[key] || !want[key] || ob.CaseID != in.CaseID || ob.Arm != in.Arm || ob.InputSHA256 != acceptance.MemoryInputDigest(in) {
+			return inputs, observations, errors.New("original slot correlation differs")
+		}
+		seen[key] = true
+	}
+	for _, c := range suite.Cases {
+		for _, arm := range []string{"no_ltm", "retrieval_static", "retrieval_adaptive"} {
+			id := acceptance.MemoryOpaqueCaseID(c.MemoryCase())
+			if seen[id+"/"+arm] {
+				continue
+			}
+			in := acceptance.MemoryInput{CaseID: id, Arm: arm, Question: c.Question, AsOfUTC: c.AsOfUTC, Task: c.Task, Instructions: adaptiveNativeInstruction, Memory: []acceptance.MemorySource{}}
+			inputs = append(inputs, in)
+			observations = append(observations, acceptance.MemoryObservation{CaseID: id, Arm: arm, Model: "gemini-3.8-flash-high", Runtime: "actual-ordinary-flow/production-broker", InputSHA256: acceptance.MemoryInputDigest(in), Status: "failed", Reason: "not_executed_window_stopped", Output: json.RawMessage(`null`)})
+		}
+	}
+	return inputs, observations, nil
+}
+
+func TestAdaptiveCollectorRetainsOriginalDenominator(t *testing.T) {
+	c := acceptance.MemorySemanticCase{ID: "independent-fixture", Question: "Сколько букв в слове ёж?", Task: acceptance.MemoryTask{Instruction: "Не выполнять внешних действий."}, EvidenceBasis: "question"}
+	s := acceptance.MemorySemanticSuite{Cases: []acceptance.MemorySemanticCase{c}}
+	ins, obs, err := fillAdaptiveNativeSchedule(s, nil, nil)
+	if err != nil || len(ins) != 3 || len(obs) != 3 {
+		t.Fatal("missing originals dropped", err)
+	}
+	for _, o := range obs {
+		if o.Status != "failed" || o.Reason != "not_executed_window_stopped" || o.Milliseconds != nil {
+			t.Fatal("unexecuted original acquired invented measurement")
+		}
+	}
+	if _, _, err = fillAdaptiveNativeSchedule(s, append(ins, ins[0]), append(obs, obs[0])); err == nil {
+		t.Fatal("duplicate original accepted")
+	}
+	obs[0].InputSHA256 = strings.Repeat("a", 64)
+	if _, _, err = fillAdaptiveNativeSchedule(s, ins, obs); err == nil {
+		t.Fatal("changed observation binding accepted")
 	}
 }
 
@@ -504,7 +563,9 @@ func runAdaptiveNativeCase(t *testing.T, ctx context.Context, pool *pgxpool.Pool
 	repo := session.NewPostgresRepository(pool)
 	runs := runservice.NewService(runservice.NewPostgresRepository(pool), nil)
 	inputsStore := durableinput.NewStore(pool)
-	fc := flow.Config{ProviderName: "antigravity", ModelName: "gemini-3.8-flash-high", OwnerID: "adaptive-native-worker", LeaseTTL: 120, Tasks: task.NewStore(pool), Budgets: b, MemorySources: cat, Completion: completion.New(pool), Checkpoints: inputsStore, PromptManager: pm, PromptAssembler: promptmgmt.NewAssembler(), ContextBudgetTokens: 65536, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_0}
+	finals := completion.New(pool)
+	finals.DataGuard = cat.CheckRunSourcesTx
+	fc := flow.Config{ProviderName: "antigravity", ModelName: "gemini-3.8-flash-high", OwnerID: "adaptive-native-worker", LeaseTTL: 120, Tasks: task.NewStore(pool), Budgets: b, MemorySources: cat, Completion: finals, Checkpoints: inputsStore, PromptManager: pm, PromptAssembler: promptmgmt.NewAssembler(), ContextBudgetTokens: 65536, AutonomyMode: commonv1.AutonomyMode_AUTONOMY_MODE_0}
 	if arm == "retrieval_static" {
 		fc.SemanticMemory = index.Reader
 		fc.MemoryScopeResolver = func(ctx context.Context) ([]memoryservice.Scope, error) {
@@ -549,8 +610,23 @@ func runAdaptiveNativeCase(t *testing.T, ctx context.Context, pool *pgxpool.Pool
 		<-done
 		t.Fatal("native comparison expired")
 	}
+	// Wait for the owning input worker to seal its original receipt before
+	// stopping it. An abandoned running claim could otherwise be reclaimed by
+	// the next case's worker and silently replay an earlier paid question.
+	sealed := false
+	for end := time.Now().Add(8 * time.Second); time.Now().Before(end); {
+		var status string
+		if pool.QueryRow(ctx, `SELECT status FROM accepted_inputs WHERE input_id=$1`, receipt.InputID).Scan(&status) == nil && status != "running" && status != "queued" {
+			sealed = true
+			break
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
 	stop()
 	<-done
+	if !sealed {
+		t.Fatal("original input receipt was not sealed; no later case may reclaim it")
+	}
 	in := acceptance.MemoryInput{CaseID: acceptance.MemoryOpaqueCaseID(c.MemoryCase()), Arm: arm, Question: c.Question, AsOfUTC: c.AsOfUTC, Task: c.Task, Instructions: adaptiveNativeInstruction, Memory: []acceptance.MemorySource{}}
 	// This is an observation of the evolving actual model input, not a replay
 	// prompt constructed from oracle sources. Immutable full call bytes are kept.
@@ -570,6 +646,11 @@ func runAdaptiveNativeCase(t *testing.T, ctx context.Context, pool *pgxpool.Pool
 	}
 	callRaw, _ := json.Marshal(calls)
 	provider.mu.Unlock()
+	// Independent observation copy; transport EOF bookkeeping can still finish
+	// after the final event has reached the ordinary Flow.
+	if json.Unmarshal(callRaw, &calls) != nil {
+		t.Fatal("actual native call capture failed")
+	}
 	in.CaptureSHA256 = acceptance.MemoryBytesSHA256(callRaw)
 	var visible strings.Builder
 	for _, call := range calls {
