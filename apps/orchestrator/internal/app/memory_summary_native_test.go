@@ -87,8 +87,10 @@ func TestNativeOrdinaryTaskSummaryContinuityIntegration(t *testing.T) {
 		}
 		p.mu.Lock()
 		usageRaw, _ := json.Marshal(p.usages)
+		probeRaw, _ := json.Marshal(p.probes)
 		p.mu.Unlock()
 		_ = os.WriteFile("/proof/native-usage.json", usageRaw, 0600)
+		_ = os.WriteFile("/proof/native-probes.json", probeRaw, 0600)
 		_ = os.WriteFile("/proof/retained-v1-ledger.json", prior, 0600)
 	}()
 	manager := providerauth.NewManager(config.NewPostgresSettingsStore(pool))

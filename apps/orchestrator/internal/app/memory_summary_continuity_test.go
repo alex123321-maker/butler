@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -29,6 +30,7 @@ import (
 	"github.com/butler/butler/internal/memory/transcript"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/transport"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -40,6 +42,7 @@ type continuityProvider struct {
 	requests []transport.StartRunRequest
 	mu       sync.Mutex
 	usages   map[string]transport.Usage
+	probes   []jobs.ModelProbe
 }
 
 func (p *continuityProvider) Name() string {
@@ -191,7 +194,11 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 		// A fresh process composition reads only durable PG state each round.
 		js := jobs.New(pool, cat, b, nil)
 		handler := compaction.Consumer{ContextBudget: 65536}
-		worker := &jobs.ModelWorker{Jobs: js, Provider: provider, Model: model, Handlers: map[string]jobs.ModelHandler{compaction.HandlerName: handler}}
+		worker := &jobs.ModelWorker{Jobs: js, Provider: provider, Model: model, Handlers: map[string]jobs.ModelHandler{compaction.HandlerName: handler}, ObserveProbe: func(v jobs.ModelProbe) {
+			provider.mu.Lock()
+			provider.probes = append(provider.probes, v)
+			provider.mu.Unlock()
+		}}
 		if err := js.SetModelControl(ctx, "enabled"); err != nil {
 			t.Fatal(err)
 		}
@@ -203,7 +210,7 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 			t.Fatal(err)
 		}
 		if did, err := worker.ProcessOne(ctx); err != nil || !did {
-			t.Fatal("compact", did, err)
+			t.Fatal("compact", did, continuityDiagnostic(provider, err))
 		}
 		snapshot, err := summary.NewStore(pool).GetSummarySnapshot(ctx, "continuity")
 		if err != nil || snapshot.Summary == "" {
@@ -222,7 +229,7 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 			payload, _ := json.Marshal(map[string]string{"text": continuityQuestion, "user_id": "owner", "task_id": "continuity-task"})
 			result, err := executor.Execute(ctx, ingress.InputEvent{EventID: id, IdempotencyKey: id, SessionKey: "continuity", Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: string(payload), CreatedAt: time.Now()})
 			if err != nil {
-				t.Fatal("ordinary continuation", round, arm, err)
+				t.Fatal("ordinary continuation", round, arm, continuityDiagnostic(provider, err))
 			}
 			var output string
 			if err = pool.QueryRow(ctx, `SELECT content FROM run_final_results WHERE run_id=$1`, result.RunID).Scan(&output); err != nil {
@@ -257,6 +264,18 @@ func runSummaryContinuity(t *testing.T, pool *pgxpool.Pool, provider *continuity
 		t.Fatal("full ledger mismatch", report, err)
 	}
 	return report
+}
+
+func continuityDiagnostic(p *continuityProvider, err error) error {
+	if err == nil || p.base == nil {
+		return err
+	}
+	var pg *pgconn.PgError
+	code := ""
+	if errors.As(err, &pg) {
+		code = pg.Code
+	}
+	return fmt.Errorf("native transport=%s sqlstate=%s type=%T", transport.DiagnosticCode(err), code, err)
 }
 
 func TestOrdinaryTaskContinuationAcrossRepeatedCompactionIntegration(t *testing.T) {
