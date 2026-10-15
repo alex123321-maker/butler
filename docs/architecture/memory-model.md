@@ -1,5 +1,15 @@
 # Butler — Memory Model Specification
 
+The gated [verified task compaction consumer](../../internal/memory/compaction/README.md)
+uses durable independent model jobs and exact prefix coverage. Every user event
+remains verbatim; assistant/tool excerpts must match primary bytes and tool states
+are attached by code. Newest four events stay raw. Summaries are historical DATA:
+current typed goals/constraints, approvals and effect journal remain authoritative.
+Repeated compaction regenerates primary events, avoiding recursive fact drift.
+Failure never hides history; finite input/output limits can require an explicit
+context-budget failure. Migration072 links copied session inputs to privacy
+deletion and invalidates coverage on tool state changes as well as message edits.
+
 Issue78's [memory-eval protocol](../../cmd/memory-eval/README.md) measures truth,
 actual-context evidence, calibrated refusal, current instruction consistency and
 separate user outcomes. Its independent public V2 controls and owned-source/index/

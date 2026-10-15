@@ -3,6 +3,7 @@ package compaction
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -17,7 +18,9 @@ import (
 )
 
 const HandlerName = "task-summary-v1"
-const maxSourceBytes = 1024 * 1024
+const maxSourceBytes = 256 * 1024
+
+var errSourceTooLarge = errors.New("summary primary source exceeds finite allowance")
 
 // Consumer uses extractive summaries: every user statement stays verbatim;
 // assistant/tool text can be shortened only to exact primary-source excerpts.
@@ -180,14 +183,15 @@ func (c Consumer) PublishTx(ctx context.Context, tx pgx.Tx, cat *catalog.Store, 
 
 func readDocumentTx(ctx context.Context, tx pgx.Tx, session string, tail int) (Document, int, error) {
 	d := Document{Version: 1, SessionKey: session, Tools: []ToolState{}}
-	if err := tx.QueryRow(ctx, `SELECT source_revision FROM transcript_heads WHERE session_key=$1 FOR SHARE`, session).Scan(&d.SourceRevision); err != nil {
+	if err := tx.QueryRow(ctx, `SELECT source_revision FROM transcript_heads WHERE session_key=$1`, session).Scan(&d.SourceRevision); err != nil {
 		return d, 0, err
 	}
-	rows, err := tx.Query(ctx, `SELECT message_id,message_sequence,role,content,COALESCE(tool_call_id,''),metadata::text FROM messages WHERE session_key=$1 ORDER BY message_sequence`, session)
+	rows, err := tx.Query(ctx, `SELECT message_id,message_sequence,role,content,COALESCE(tool_call_id,''),metadata::text FROM messages WHERE session_key=$1 ORDER BY message_sequence LIMIT 4097`, session)
 	if err != nil {
 		return d, 0, err
 	}
 	var all []Event
+	sourceBytes := 0
 	for rows.Next() {
 		var e Event
 		var metadata string
@@ -200,6 +204,11 @@ func readDocumentTx(ctx context.Context, tx pgx.Tx, session string, tail int) (D
 			return d, 0, content.ErrSecret
 		}
 		all = append(all, e)
+		sourceBytes += len(e.Text) + len(metadata) + 192
+		if len(all) > 4096 || sourceBytes > maxSourceBytes {
+			rows.Close()
+			return d, 0, errSourceTooLarge
+		}
 	}
 	err = rows.Err()
 	rows.Close()
@@ -214,7 +223,7 @@ func readDocumentTx(ctx context.Context, tx pgx.Tx, session string, tail int) (D
 	last := d.Events[len(d.Events)-1]
 	d.ThroughSequence = last.Sequence
 	d.ThroughMessageID = last.ID
-	rows, err = tx.Query(ctx, `SELECT tc.tool_call_id,tc.tool_name,tc.status FROM tool_calls tc JOIN runs r USING(run_id) WHERE r.session_key=$1 ORDER BY tc.tool_call_id`, session)
+	rows, err = tx.Query(ctx, `SELECT tc.tool_call_id,tc.tool_name,tc.status FROM tool_calls tc JOIN runs r USING(run_id) WHERE r.session_key=$1 ORDER BY tc.tool_call_id LIMIT 4097`, session)
 	if err != nil {
 		return d, 0, err
 	}
@@ -225,6 +234,10 @@ func readDocumentTx(ctx context.Context, tx pgx.Tx, session string, tail int) (D
 			return d, 0, err
 		}
 		d.Tools = append(d.Tools, tool)
+		if len(d.Tools) > 4096 {
+			rows.Close()
+			return d, 0, errSourceTooLarge
+		}
 	}
 	err = rows.Err()
 	rows.Close()
@@ -245,6 +258,9 @@ func (c Consumer) PrepareSourcesTx(ctx context.Context, tx pgx.Tx, cat *catalog.
 	}
 	d, fullBytes, err := readDocumentTx(ctx, tx, session, 4)
 	if err != nil {
+		if errors.Is(err, errSourceTooLarge) {
+			return nil, "summary_source_too_large", nil
+		}
 		if err == content.ErrSecret {
 			return nil, "summary_source_denied", nil
 		}

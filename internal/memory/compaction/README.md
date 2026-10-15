@@ -1,0 +1,48 @@
+# Verified task compaction
+
+`task-summary-v1` is a separately gated consumer of the existing durable model
+worker. It compacts a primary transcript prefix and leaves four newest messages
+in the foreground tail. The scanner waits until effective serialized history
+reaches 60% of the actual configured context allowance; small conversations do
+not invoke a model. Existing explicit owner policy, privacy, task/assignment
+revisions, claims, accounting, interactive priority and cancellation still apply.
+
+The model selects exact excerpts from assistant/tool events. Every user event is
+preserved verbatim and every primary message has one ordered record. Trusted code
+attaches observed tool IDs/names/statuses independently. Historical JSON never
+changes the current typed task goal, constraints, approvals or effect journal.
+In particular `unknown` does not become `success`. This is deliberately an
+extractive continuity representation; accepted Profile facts remain separate.
+
+An authenticated owner submits `POST /api/v4/memory/model-summary-policies` with
+`session_key` and `policy` (the existing finite ModelPolicyRequest, with an empty
+`job.sources` and matching `job.original_run_id`/optional `job.task_id`). Trusted
+code snapshots the actual owner transcript and binds its stable session anchor.
+Handler/trigger are code selected. The ordinary policy controls and jobs view
+apply. `BUTLER_MEMORY_MODEL_JOBS_ENABLED=true` and the separately default-false
+`BUTLER_MEMORY_SUMMARY_CONSUMER_ENABLED=true` are both necessary, as is enabled
+PostgreSQL model-worker control. Owner policy remains necessary for inference.
+Changed task/constraints/assignment authority requires a new explicit policy;
+the consumer does not silently rebase permission onto a newer task version.
+
+Each compaction rereads primary events instead of summarizing earlier summaries.
+Publication compares every covered primary byte, ordered identity, transcript
+revision and observed tool state, then atomically commits coverage CAS, immutable
+catalog derivative and the model-job result. Raw message corrections/deletions
+and tool status updates invalidate stored coverage. Catalog privacy deletion
+also traverses session snapshot anchors and erases all copied input revisions and
+their derivatives, including work not yet published. A failed or stale result
+never suppresses primary history. The immutable original event IDs survive.
+
+Source input is finite: at most 256 KiB and 4096 primary events. Output is at most
+32 KiB and must reduce source size. Oversized/secret input, failed generation,
+invalid excerpts, changed authority or stale coverage retain complete history.
+The policy/job view explains bounded wait/failure reasons. If protected history
+still exceeds the foreground allowance, existing preparation returns a visible
+context-budget error rather than silently truncating user constraints or
+manufacturing successful tool effects. No unlimited-lifetime guarantee follows
+from these finite bounds.
+
+Real PostgreSQL acceptance: `go test -race -count=1 ./internal/memory/compaction
+./internal/memory/summary ./internal/memory/jobs ./internal/memory/catalog`.
+The controlled provider is a transport fixture, not native Gemini quality proof.

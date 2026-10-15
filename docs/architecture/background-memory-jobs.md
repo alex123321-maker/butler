@@ -131,6 +131,30 @@ closed production release gate are specified in the
 
 ## Migration and rollback
 
+### Verified summary consumer (#84)
+
+The separately default-off `BUTLER_MEMORY_SUMMARY_CONSUMER_ENABLED` composes
+`task-summary-v1`; [its exact contract](../../internal/memory/compaction/README.md)
+preserves complete user statements and selects only primary-source excerpts for
+assistant/tool history. A new owner-proved `model-summary-policies` endpoint binds
+one actual session snapshot and the matching original run/task, using the same
+finite model policy and allowance. The scanner's trusted preparation callback
+refreshes only that stable source under the current independent policy; it cannot
+expand owner/scope/access or the source graph. Multiple task privacy in one session
+continues to fail closed. The current configured context allowance triggers work
+at 60%, leaving a protected four-message tail. No foreground lease is borrowed.
+
+The optional atomic ModelPublicationHandler runs inside generic derivative/job
+publication. Summary coverage CAS compares current primary bytes and tool states;
+source correction, privacy deletion, a later coverage winner or changed current
+task/constraints/mandate rejects the complete transaction. Migration072 tracks
+session snapshot anchors for privacy erasure of copied input revisions and adds
+tool-state invalidation. Every compaction reads primary events, never a chain of
+model retellings. Failure leaves existing history and typed state intact; waiting
+reasons include `summary_below_threshold`, `summary_tail_protected`,
+`summary_source_too_large` and `summary_source_denied`. Consumer quality promotion
+is separate from the generic #82 and lifecycle #83 gates.
+
 Apply migration 071 before starting the new binary, using the normal migrator.
 It extends the existing auxiliary queue and references the existing reservation
 ledger/catalog. No dependency or extra durable service is introduced.

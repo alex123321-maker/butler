@@ -27,7 +27,7 @@ func (s *Store) RefreshOriginalTx(ctx context.Context, tx pgx.Tx, ref SourceRef,
 	if parents || src.Kind != "document" {
 		return Source{}, ErrInvalid
 	}
-	if src.Body == body && string(src.Locator) == string(locator) {
+	if src.Body == body && hash(src.Locator) == hash(locator) {
 		return src, nil
 	}
 	sum := hash([]any{src.Title, body, locator, src.Author, src.EventTime, src.Origin})

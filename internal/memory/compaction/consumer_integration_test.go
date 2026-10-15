@@ -78,9 +78,14 @@ type consumerFixture struct {
 	counter  int
 }
 
-func newConsumerFixture(t *testing.T) *consumerFixture {
+func newConsumerFixture(t *testing.T, pools ...*pgxpool.Pool) *consumerFixture {
 	t.Helper()
-	pool := memorytest.Database(t)
+	var pool *pgxpool.Pool
+	if len(pools) > 0 {
+		pool = pools[0]
+	} else {
+		pool = memorytest.Database(t)
+	}
 	m := catalog.NewFileManifest(filepath.Join(t.TempDir(), "anchor"))
 	if err := m.Initialize(); err != nil {
 		t.Fatal(err)
@@ -175,8 +180,31 @@ func TestSummaryConsumerRepeatedCompactionRestartAndFailureIntegration(t *testin
 	}
 	var attempts int
 	var tokens int64
-	if err = f.pool.QueryRow(f.ctx, `SELECT count(*),sum((usage->>'total_tokens')::bigint) FROM memory_model_attempts`).Scan(&attempts, &tokens); err != nil || attempts != 4 || tokens != 10000 {
+	if err = f.pool.QueryRow(f.ctx, `SELECT count(*),sum((usage->>'TotalTokens')::bigint) FROM memory_model_attempts`).Scan(&attempts, &tokens); err != nil || attempts != 4 || tokens != 10000 {
 		t.Fatal(attempts, tokens, err)
+	}
+}
+
+func TestSummaryThresholdAndEqualEventCoalescingIntegration(t *testing.T) {
+	f := newConsumerFixture(t)
+	if err := f.js.PollModelPolicies(f.ctx, func(string) bool { return true }, map[string]jobs.ModelScheduleHandler{HandlerName: Consumer{ContextBudget: 1000000}}); err != nil {
+		t.Fatal(err)
+	}
+	var count int
+	var reason string
+	if err := f.pool.QueryRow(f.ctx, `SELECT jobs_created,reason FROM memory_model_policies WHERE policy_id=$1`, f.policy.ID).Scan(&count, &reason); err != nil || count != 0 || reason != "summary_below_threshold" {
+		t.Fatal(count, reason, err)
+	}
+	f.poll(t)
+	if _, err := f.worker.ProcessOne(f.ctx); err != nil {
+		t.Fatal(err)
+	}
+	f.poll(t)
+	if err := f.pool.QueryRow(f.ctx, `SELECT jobs_created,reason FROM memory_model_policies WHERE policy_id=$1`, f.policy.ID).Scan(&count, &reason); err != nil || count != 1 || reason != "coalesced" {
+		t.Fatal(count, reason, err)
+	}
+	if f.provider.calls != 1 {
+		t.Fatal("redundant inference", f.provider.calls)
 	}
 }
 func (f *consumerFixture) jsBudget() *budget.Controller {
