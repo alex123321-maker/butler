@@ -16,3 +16,9 @@ exact run/source pins. Correction denies old handles, deletion denies/purges the
 after Store reconstruction, and reads create no claims or action permissions.
 The read-only consumer publishes no durable memory, cache or index generation;
 those publication/restore boundaries remain catalog/jobs/semantic gate cases.
+
+The prospective #87 consumer extends discovery with a reported-EventTime UTC
+filter and server-derived semantic candidates. EventTime is not historical
+validity. Candidate source/current-chunk refs are reauthorized through Catalog
+in the owning read transaction; semantic IPC is outside it. Search remains
+discovery and receives no opened read_ref. Production qualification remains off.

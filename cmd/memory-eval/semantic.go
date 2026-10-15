@@ -151,6 +151,17 @@ func runSemantic(args []string, stdout io.Writer) error {
 		}
 		schedule = baseline
 	}
+	if review.Variant == "adaptive-v1" {
+		if header.Version != acceptance.MemorySemanticVersion {
+			return errors.New("adaptive comparison requires semantic corpus")
+		}
+		schedule = nil
+		for _, c := range cases {
+			for _, arm := range []string{"no_ltm", "retrieval_static", "retrieval_adaptive"} {
+				schedule = append(schedule, acceptance.MemorySemanticSlot{CaseID: acceptance.MemoryOpaqueCaseID(c), Arm: arm})
+			}
+		}
+	}
 	if err = acceptance.ValidateMemorySemanticSchedule(frozen.Inputs, schedule); err != nil {
 		return err
 	}

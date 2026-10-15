@@ -10,6 +10,13 @@ import (
 
 func (s *Service) refreshRecoveredToolContext(ctx context.Context, runID string, inputs []transport.InputItem, oldDefs []transport.ToolDefinition) (preparedRun, error) {
 	p := preparedRun{CurrentRunID: runID, MemoryBundle: map[string]any{}}
+	if s.config.AdaptiveRetrieval != nil {
+		plan, err := s.config.AdaptiveRetrieval.Plan(ctx, runID)
+		if err != nil {
+			return preparedRun{}, err
+		}
+		p.AdaptivePlan = &plan
+	}
 	for _, item := range inputs {
 		packageData := false
 		for _, ref := range content.ItemOrigin(item).SourceRefs {

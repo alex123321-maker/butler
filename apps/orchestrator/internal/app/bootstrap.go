@@ -423,13 +423,27 @@ func New(ctx context.Context) (*App, error) {
 	}
 	var memoryCandidates *MemoryCandidates
 	var memoryReads *MemoryReads
+	adaptiveRetrieval, err := configureAdaptiveRetrieval(cfg, sourceCatalog)
+	if err != nil {
+		redis.Close()
+		postgres.Close()
+		return nil, err
+	}
 	if cfg.MemoryReadEnabled {
 		if cfg.ActionAuthorityTokenFile == "" {
 			redis.Close()
 			postgres.Close()
 			return nil, readcontrol.ErrDenied
 		}
-		memoryReads, err = NewMemoryReads(postgres.Pool(), sourceCatalog)
+		var adaptiveOptions []AdaptiveReadOptions
+		if adaptiveRetrieval != nil {
+			option := AdaptiveReadOptions{Store: adaptiveRetrieval}
+			if policyReader, ok := semanticReader.(memoryservice.PolicySemanticReader); ok {
+				option.Semantic = policyReader
+			}
+			adaptiveOptions = append(adaptiveOptions, option)
+		}
+		memoryReads, err = NewMemoryReads(postgres.Pool(), sourceCatalog, adaptiveOptions...)
 		if err == nil {
 			err = memoryReads.CheckReady(ctx)
 		}
@@ -479,6 +493,7 @@ func New(ctx context.Context) (*App, error) {
 				return out, nil
 			},
 			SemanticMemory:           semanticReader,
+			AdaptiveRetrieval:        adaptiveRetrieval,
 			MemorySources:            memorySources,
 			DelegationContexts:       childContexts,
 			FailedDelegationAttempts: failedAttempts,

@@ -26,6 +26,13 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/memory/adaptive/|internal/memory/reader/adaptive_|apps/orchestrator/internal/(app/memory_adaptive|orchestrator/adaptive_retrieval)|migrations/074_|scripts/dev/memory-adaptive-|docs/architecture/adaptive-memory-retrieval[.]md$)" {
+      [void]$specs.Add("docs/architecture/adaptive-memory-retrieval.md")
+      [void]$specs.Add("docs/architecture/tool-runtime-adr.md")
+      [void]$specs.Add("docs/ai/memory-lifecycle-acceptance.md")
+      [void]$tests.Add("SSH laba: scripts/dev/memory-adaptive-lab.sh isolated issue87 root fresh-label; actual PG/race and production Broker, immutable opened citations, all-eight lifecycle attacks, late privacy/task/Stop, bounded reconstruction, semantic IPC outside owning transaction and scoped accepted preferences. No required skips; no native calls. Independent frozen three-arm native comparison remains separate and cannot bypass code-owned qualification.")
+      continue
+    }
     "^(internal/memory/(memorytest/lifecycle[.]go|memorytest/testdata/lifecycle-|[^/]+/lifecycle_integration_test[.]go)|apps/tool-broker/internal/broker/memory_lifecycle_integration_test[.]go|apps/orchestrator/internal/app/memory_lifecycle_cache_integration_test[.]go|scripts/dev/memory-lifecycle-|docs/ai/memory-lifecycle-acceptance[.]md)" {
       [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
       [void]$specs.Add("docs/architecture/background-memory-jobs.md")

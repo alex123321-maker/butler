@@ -23,6 +23,7 @@ import (
 	"github.com/butler/butler/internal/budget"
 	runv1 "github.com/butler/butler/internal/gen/run/v1"
 	"github.com/butler/butler/internal/ingress"
+	"github.com/butler/butler/internal/memory/adaptive"
 	"github.com/butler/butler/internal/memory/candidates"
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/jobs"
@@ -69,12 +70,26 @@ func (p *scopedCandidateProvider) StartRun(ctx context.Context, r transport.Star
 }
 
 func TestCandidateAcceptedPreferenceScopedOrdinaryContextIntegration(t *testing.T) {
+	for _, enabled := range []bool{false, true} {
+		t.Run(fmt.Sprintf("adaptive_%t", enabled), func(t *testing.T) { testCandidateAcceptedPreferenceScopedOrdinaryContext(t, enabled) })
+	}
+}
+
+func testCandidateAcceptedPreferenceScopedOrdinaryContext(t *testing.T, adaptiveEnabled bool) {
 	pool := memorytest.Database(t)
 	anchor := catalog.NewFileManifest(filepath.Join(t.TempDir(), "anchor"))
 	if err := anchor.Initialize(); err != nil {
 		t.Fatal(err)
 	}
 	c := catalog.New(pool, anchor)
+	var adaptiveStore *adaptive.Store
+	if adaptiveEnabled {
+		var err error
+		adaptiveStore, err = adaptive.NewStore(pool, c)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
 	ctx := owneridentity.WithActor(context.Background(), owneridentity.Actor{OwnerID: "owner", Channel: "web", DeliveryID: "scoped-owner"})
 	if _, err := pool.Exec(ctx, `INSERT INTO sessions(session_key,user_id,channel) VALUES('scope-a','owner','web'),('scope-b','owner','web');INSERT INTO runs(run_id,session_key,input_event_id,status,autonomy_mode,current_state,model_provider,started_at,updated_at) VALUES('scope-seed','scope-a','seed','completed','mode_1','completed','fixture',clock_timestamp(),clock_timestamp())`); err != nil {
 		t.Fatal(err)
@@ -133,7 +148,7 @@ func TestCandidateAcceptedPreferenceScopedOrdinaryContextIntegration(t *testing.
 		t.Helper()
 		serial++
 		id := fmt.Sprintf("scoped-foreground-%d", serial)
-		executor := flow.NewService(session.NewPostgresRepository(pool), session.NewPostgresLeaseManager(pool), runservice.NewService(runservice.NewPostgresRepository(pool), nil), transcript.NewStore(pool), p, flow.Config{ProviderName: p.Name(), ModelName: "scope-fixture", OwnerID: "owner", LeaseTTL: 120, Budgets: b, MemorySources: c, ProfileStore: profileStoreAdapter{store: profile.NewStore(pool), sources: c}, Completion: completion.New(pool)}, slog.New(slog.NewTextHandler(io.Discard, nil)))
+		executor := flow.NewService(session.NewPostgresRepository(pool), session.NewPostgresLeaseManager(pool), runservice.NewService(runservice.NewPostgresRepository(pool), nil), transcript.NewStore(pool), p, flow.Config{AdaptiveRetrieval: adaptiveStore, ProviderName: p.Name(), ModelName: "scope-fixture", OwnerID: "owner", LeaseTTL: 120, Budgets: b, MemorySources: c, ProfileStore: profileStoreAdapter{store: profile.NewStore(pool), sources: c}, Completion: completion.New(pool)}, slog.New(slog.NewTextHandler(io.Discard, nil)))
 		payload, _ := json.Marshal(map[string]string{"text": "Продолжи работу с учётом принятых предпочтений.", "user_id": "owner"})
 		if _, err := executor.Execute(ctx, ingress.InputEvent{EventID: id, IdempotencyKey: id, SessionKey: scope, Source: "web", EventType: runv1.InputEventType_INPUT_EVENT_TYPE_USER_MESSAGE, PayloadJSON: string(payload), CreatedAt: time.Now()}); err != nil {
 			t.Fatal("ordinary continuation", err)

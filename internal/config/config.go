@@ -71,6 +71,7 @@ type OrchestratorConfig struct {
 	GuardedTabRuntimeEnabled          bool
 	MemoryCandidateEnabled            bool
 	MemoryReadEnabled                 bool
+	MemoryAdaptiveRetrievalEnabled    bool
 	WorkspaceEnabled                  bool
 	GuardedTabHost                    string
 	GuardedTabMetadataURL             string

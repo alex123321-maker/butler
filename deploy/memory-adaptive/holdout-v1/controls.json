@@ -1,0 +1,1161 @@
+{
+  "version": "butler-memory-adaptive-controls-v1",
+  "kind": "synthetic",
+  "authority": "Fixture import controls, never model input or authorization inferred from source text.",
+  "cases": [
+    {
+      "case_id": "s01",
+      "group": "self_contained",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-s01",
+      "granted_projects": [
+        "allowed-s01"
+      ],
+      "sources": [
+        {
+          "source_id": "s01-noise-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-s01",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "s01-noise-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-s01",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "s01-noise-a",
+        "s01-noise-b"
+      ]
+    },
+    {
+      "case_id": "s02",
+      "group": "self_contained",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-s02",
+      "granted_projects": [
+        "allowed-s02"
+      ],
+      "sources": [
+        {
+          "source_id": "s02-noise-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-s02",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "s02-noise-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-s02",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "s02-noise-a",
+        "s02-noise-b"
+      ]
+    },
+    {
+      "case_id": "s03",
+      "group": "self_contained",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-s03",
+      "granted_projects": [
+        "allowed-s03"
+      ],
+      "sources": [
+        {
+          "source_id": "s03-noise-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-s03",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "s03-noise-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-s03",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "s03-noise-a",
+        "s03-noise-b"
+      ]
+    },
+    {
+      "case_id": "s04",
+      "group": "self_contained",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-s04",
+      "granted_projects": [
+        "allowed-s04"
+      ],
+      "sources": [
+        {
+          "source_id": "s04-noise-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-s04",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "s04-noise-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-s04",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "s04-noise-a",
+        "s04-noise-b"
+      ]
+    },
+    {
+      "case_id": "s05",
+      "group": "self_contained",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-s05",
+      "granted_projects": [
+        "allowed-s05"
+      ],
+      "sources": [
+        {
+          "source_id": "s05-noise-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-s05",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "s05-noise-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-s05",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "s05-noise-a",
+        "s05-noise-b"
+      ]
+    },
+    {
+      "case_id": "s06",
+      "group": "self_contained",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-s06",
+      "granted_projects": [
+        "allowed-s06"
+      ],
+      "sources": [
+        {
+          "source_id": "s06-noise-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-s06",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "s06-noise-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-s06",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "s06-noise-a",
+        "s06-noise-b"
+      ]
+    },
+    {
+      "case_id": "s07",
+      "group": "self_contained",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-s07",
+      "granted_projects": [
+        "allowed-s07"
+      ],
+      "sources": [
+        {
+          "source_id": "s07-noise-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-s07",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "s07-noise-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-s07",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "s07-noise-a",
+        "s07-noise-b"
+      ]
+    },
+    {
+      "case_id": "s08",
+      "group": "self_contained",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-s08",
+      "granted_projects": [
+        "allowed-s08"
+      ],
+      "sources": [
+        {
+          "source_id": "s08-noise-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-s08",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "s08-noise-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-s08",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "s08-noise-a",
+        "s08-noise-b"
+      ]
+    },
+    {
+      "case_id": "e01",
+      "group": "exact_id",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-e01",
+      "granted_projects": [
+        "allowed-e01"
+      ],
+      "sources": [
+        {
+          "source_id": "e01-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-e01",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "e01-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-e01",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "e01-a",
+        "e01-b"
+      ]
+    },
+    {
+      "case_id": "e02",
+      "group": "exact_id",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-e02",
+      "granted_projects": [
+        "allowed-e02"
+      ],
+      "sources": [
+        {
+          "source_id": "e02-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-e02",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "e02-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-e02",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "e02-a",
+        "e02-b"
+      ]
+    },
+    {
+      "case_id": "e03",
+      "group": "exact_id",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-e03",
+      "granted_projects": [
+        "allowed-e03"
+      ],
+      "sources": [
+        {
+          "source_id": "e03-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-e03",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "e03-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-e03",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "e03-a",
+        "e03-b"
+      ]
+    },
+    {
+      "case_id": "e04",
+      "group": "exact_id",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-e04",
+      "granted_projects": [
+        "allowed-e04"
+      ],
+      "sources": [
+        {
+          "source_id": "e04-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-e04",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "e04-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-e04",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "e04-a",
+        "e04-b"
+      ]
+    },
+    {
+      "case_id": "t01",
+      "group": "event_time",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-t01",
+      "granted_projects": [
+        "allowed-t01"
+      ],
+      "sources": [
+        {
+          "source_id": "t01-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-t01",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-03T09:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "t01-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-t01",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-27T09:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "t01-a",
+        "t01-b"
+      ]
+    },
+    {
+      "case_id": "t02",
+      "group": "event_time",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-t02",
+      "granted_projects": [
+        "allowed-t02"
+      ],
+      "sources": [
+        {
+          "source_id": "t02-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-t02",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-20T00:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "t02-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-t02",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-21T23:59:59Z",
+          "accessible": true
+        },
+        {
+          "source_id": "t02-c",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-t02",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-22T00:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "t02-a",
+        "t02-b",
+        "t02-c"
+      ]
+    },
+    {
+      "case_id": "t03",
+      "group": "event_time",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-t03",
+      "granted_projects": [
+        "allowed-t03"
+      ],
+      "sources": [
+        {
+          "source_id": "t03-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-t03",
+          "source_session": "prior-a",
+          "import_event_time": "2026-02-28T15:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "t03-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-t03",
+          "source_session": "prior-a",
+          "import_event_time": "2026-03-01T00:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "t03-a",
+        "t03-b"
+      ]
+    },
+    {
+      "case_id": "t04",
+      "group": "event_time",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-t04",
+      "granted_projects": [
+        "allowed-t04"
+      ],
+      "sources": [
+        {
+          "source_id": "t04-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-t04",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-10T00:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "t04-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-t04",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-12T23:59:59Z",
+          "accessible": true
+        },
+        {
+          "source_id": "t04-c",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-t04",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-13T00:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "t04-a",
+        "t04-b",
+        "t04-c"
+      ]
+    },
+    {
+      "case_id": "c01",
+      "group": "cross_session",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-c01",
+      "granted_projects": [
+        "allowed-c01"
+      ],
+      "sources": [
+        {
+          "source_id": "c01-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-c01",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "c01-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-c01",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "c01-c",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-c01",
+          "source_session": "prior-c",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "c01-a",
+        "c01-b",
+        "c01-c"
+      ]
+    },
+    {
+      "case_id": "c02",
+      "group": "cross_session",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-c02",
+      "granted_projects": [
+        "allowed-c02"
+      ],
+      "sources": [
+        {
+          "source_id": "c02-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-c02",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "c02-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-c02",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "c02-c",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-c02",
+          "source_session": "prior-c",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "c02-a",
+        "c02-b",
+        "c02-c"
+      ]
+    },
+    {
+      "case_id": "c03",
+      "group": "cross_session",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-c03",
+      "granted_projects": [
+        "allowed-c03"
+      ],
+      "sources": [
+        {
+          "source_id": "c03-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-c03",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "c03-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-c03",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "c03-c",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-c03",
+          "source_session": "prior-c",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "c03-a",
+        "c03-b",
+        "c03-c"
+      ]
+    },
+    {
+      "case_id": "c04",
+      "group": "cross_session",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-c04",
+      "granted_projects": [
+        "allowed-c04"
+      ],
+      "sources": [
+        {
+          "source_id": "c04-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-c04",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "c04-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-c04",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "c04-c",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-c04",
+          "source_session": "prior-c",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "c04-a",
+        "c04-b",
+        "c04-c"
+      ]
+    },
+    {
+      "case_id": "m01",
+      "group": "multi_hop",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-m01",
+      "granted_projects": [
+        "allowed-m01"
+      ],
+      "sources": [
+        {
+          "source_id": "m01-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-m01",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "m01-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-m01",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "m01-c",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-m01",
+          "source_session": "prior-c",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "m01-d",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-m01",
+          "source_session": "prior-d",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "m01-a",
+        "m01-b",
+        "m01-c",
+        "m01-d"
+      ]
+    },
+    {
+      "case_id": "m02",
+      "group": "multi_hop",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-m02",
+      "granted_projects": [
+        "allowed-m02"
+      ],
+      "sources": [
+        {
+          "source_id": "m02-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-m02",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "m02-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-m02",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "m02-c",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-m02",
+          "source_session": "prior-c",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "m02-d",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-m02",
+          "source_session": "prior-d",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "m02-a",
+        "m02-b",
+        "m02-c",
+        "m02-d"
+      ]
+    },
+    {
+      "case_id": "m03",
+      "group": "multi_hop",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-m03",
+      "granted_projects": [
+        "allowed-m03"
+      ],
+      "sources": [
+        {
+          "source_id": "m03-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-m03",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "m03-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-m03",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "m03-c",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-m03",
+          "source_session": "prior-c",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "m03-a",
+        "m03-b",
+        "m03-c"
+      ]
+    },
+    {
+      "case_id": "m04",
+      "group": "multi_hop",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-m04",
+      "granted_projects": [
+        "allowed-m04"
+      ],
+      "sources": [
+        {
+          "source_id": "m04-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-m04",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "m04-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-m04",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "m04-c",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-m04",
+          "source_session": "prior-c",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "m04-d",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-m04",
+          "source_session": "prior-d",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "m04-a",
+        "m04-b",
+        "m04-c",
+        "m04-d"
+      ]
+    },
+    {
+      "case_id": "u01",
+      "group": "missing",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-u01",
+      "granted_projects": [
+        "allowed-u01"
+      ],
+      "sources": [
+        {
+          "source_id": "u01-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-u01",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "u01-a"
+      ]
+    },
+    {
+      "case_id": "u02",
+      "group": "false_premise",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-u02",
+      "granted_projects": [
+        "allowed-u02"
+      ],
+      "sources": [
+        {
+          "source_id": "u02-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-u02",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "u02-a"
+      ]
+    },
+    {
+      "case_id": "u03",
+      "group": "conflict",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-u03",
+      "granted_projects": [
+        "allowed-u03"
+      ],
+      "sources": [
+        {
+          "source_id": "u03-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-u03",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "u03-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-u03",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "u03-a",
+        "u03-b"
+      ]
+    },
+    {
+      "case_id": "u04",
+      "group": "missing_bridge",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-u04",
+      "granted_projects": [
+        "allowed-u04"
+      ],
+      "sources": [
+        {
+          "source_id": "u04-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-u04",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "u04-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-u04",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "u04-a",
+        "u04-b"
+      ]
+    },
+    {
+      "case_id": "u05",
+      "group": "deleted",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-u05",
+      "granted_projects": [
+        "allowed-u05"
+      ],
+      "sources": [
+        {
+          "source_id": "u05-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-u05",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "u05-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-u05",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "u05-b"
+      ]
+    },
+    {
+      "case_id": "u06",
+      "group": "ungranted_scope",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-u06",
+      "granted_projects": [
+        "allowed-u06"
+      ],
+      "sources": [
+        {
+          "source_id": "u06-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "ungranted-u06",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": false
+        },
+        {
+          "source_id": "u06-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-u06",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "u06-b"
+      ]
+    },
+    {
+      "case_id": "u07",
+      "group": "topical_not_sufficient",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-u07",
+      "granted_projects": [
+        "allowed-u07"
+      ],
+      "sources": [
+        {
+          "source_id": "u07-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-u07",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "u07-a"
+      ]
+    },
+    {
+      "case_id": "u08",
+      "group": "ambiguous_entity",
+      "current_session": "current",
+      "current_task_id": "synthetic-task-u08",
+      "granted_projects": [
+        "allowed-u08"
+      ],
+      "sources": [
+        {
+          "source_id": "u08-a",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-u08",
+          "source_session": "prior-a",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        },
+        {
+          "source_id": "u08-b",
+          "kind": "document",
+          "scope": "project",
+          "project_id": "allowed-u08",
+          "source_session": "prior-b",
+          "import_event_time": "2026-09-11T12:00:00Z",
+          "accessible": true
+        }
+      ],
+      "permitted_source_ids": [
+        "u08-a",
+        "u08-b"
+      ]
+    }
+  ]
+}
