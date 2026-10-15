@@ -165,3 +165,25 @@ func TestModelSupervisorJoinsBeforeSlowSessionPublicationIntegration(t *testing.
 		t.Fatal("own periodic observer cancelled slow publication", err)
 	}
 }
+
+type modelInvalidOutput struct{ QuoteProbe }
+
+func (modelInvalidOutput) Validate([]catalog.Source, string) (string, error) {
+	return "", errors.New("PRIVATE_CONSUMER_DETAIL")
+}
+
+func TestModelInvalidConsumerOutputHasFixedDurableDiagnosticIntegration(t *testing.T) {
+	w, owner, src := modelFixture(t)
+	j := schedule(t, w, owner, policyRequest(src))
+	if err := w.execute(context.Background(), j, modelInvalidOutput{}); !errors.Is(err, ErrConsumerOutputInvalid) || err.Error() != ErrConsumerOutputInvalid.Error() {
+		t.Fatal("consumer detail leaked or authority diagnostic substituted", err)
+	}
+	var jobCode, reason string
+	var known, published bool
+	if err := w.Jobs.pool.QueryRow(owner, `SELECT j.error_code,a.reason,a.usage IS NOT NULL,a.state='published' FROM memory_aux_jobs j JOIN memory_model_attempts a USING(job_id) WHERE j.job_id=$1`, j.ID).Scan(&jobCode, &reason, &known, &published); err != nil {
+		t.Fatal(err)
+	}
+	if jobCode != "consumer_output_invalid" || reason != jobCode || !known || published {
+		t.Fatal(jobCode, reason, known, published)
+	}
+}

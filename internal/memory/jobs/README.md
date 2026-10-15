@@ -24,6 +24,8 @@ and dispatch, and publication retain the complete `AccessTx` proof. A failed or
 timed-out supervisor still cancels the provider; unknown paid usage stays reserved.
 After the provider stream closes, the worker stops and joins this observer before
 local observation/publication, whose full proof owns the policy/session locks.
+Rejected consumer output records the fixed `consumer_output_invalid` reason;
+validator/model text is never copied into a public diagnostic or authority error.
 
 `ClaimPurpose(kind, purpose)` additionally separates workers in the same kind.
 It uses the existing bounded claim/fence/deadline path; selecting a queue does

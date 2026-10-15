@@ -67,6 +67,9 @@ type ModelAttempt struct {
 
 var errStorageProbeWait = errors.New("background storage authority probe timed out")
 
+// ErrConsumerOutputInvalid is a fixed diagnostic, never raw consumer/model text.
+var ErrConsumerOutputInvalid = errors.New("background consumer output invalid")
+
 func (s *Store) SetModelControl(ctx context.Context, state string) error {
 	// The composition root/operator owns this method; it is not a model tool.
 	if state != "enabled" && state != "disabled" && state != "paused" {
@@ -440,6 +443,8 @@ func (w *ModelWorker) execute(ctx context.Context, j Job, h ModelHandler) (err e
 			code = "budget_exhausted"
 		case errors.Is(err, budget.ErrUnknownCost):
 			code = "cost_unknown"
+		case errors.Is(err, ErrConsumerOutputInvalid):
+			code = "consumer_output_invalid"
 		case errors.Is(err, ErrWaiting):
 			code = "admission_wait"
 			var why *waitReason
@@ -675,7 +680,7 @@ observed:
 	}
 	body, e := h.Validate(sources, output)
 	if e != nil {
-		return ErrClaim
+		return ErrConsumerOutputInvalid
 	}
 	if callCtx.Err() != nil {
 		return callCtx.Err()
