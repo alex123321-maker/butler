@@ -44,6 +44,7 @@ type continuityProvider struct {
 	usages   map[string]transport.Usage
 	elapsed  map[string]int64
 	probes   []jobs.ModelProbe
+	finals   map[string]transport.AssistantFinal
 }
 
 func (p *continuityProvider) Name() string {
@@ -103,6 +104,14 @@ func (p *continuityProvider) StartRun(ctx context.Context, r transport.StartRunR
 							p.usages = map[string]transport.Usage{}
 						}
 						p.usages[r.Context.RunID] = *event.Usage
+						p.mu.Unlock()
+					}
+					if event.AssistantFinal != nil {
+						p.mu.Lock()
+						if p.finals == nil {
+							p.finals = map[string]transport.AssistantFinal{}
+						}
+						p.finals[r.Context.RunID] = *event.AssistantFinal
 						p.mu.Unlock()
 					}
 					select {

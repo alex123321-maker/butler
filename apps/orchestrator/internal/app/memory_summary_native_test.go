@@ -167,6 +167,12 @@ func TestNativeOrdinaryTaskSummaryContinuityIntegration(t *testing.T) {
 		p.mu.Lock()
 		usageRaw, _ := json.Marshal(p.usages)
 		probeRaw, _ := json.Marshal(p.probes)
+		finalRaw, _ := json.Marshal(p.finals)
+		metadata := map[string]any{}
+		for id, f := range p.finals {
+			metadata[id] = map[string]any{"finish_reason": f.FinishReason, "output_bytes": len(f.Content)}
+		}
+		metadataRaw, _ := json.Marshal(metadata)
 		costs := map[string]*nativeSummaryCosts{"baseline": {}, "compacted_foreground": {}, "summary_background": {}}
 		for _, r := range p.requests {
 			arm := "compacted_foreground"
@@ -203,6 +209,10 @@ func TestNativeOrdinaryTaskSummaryContinuityIntegration(t *testing.T) {
 		writeProof("/proof/comparison.json", encoded)
 		writeProof("/proof/native-usage.json", usageRaw)
 		writeProof("/proof/native-probes.json", probeRaw)
+		writeProof("/proof/native-final-metadata.json", metadataRaw)
+		// Fixed synthetic acceptance data only. Raw unvalidated output stays in the
+		// isolated private evidence directory, never the catalog or public report.
+		writeProof("/private/summary-native-v5-final-output.json", finalRaw)
 		writeProof("/proof/retained-v1-v2-v3-ledger.json", prior)
 		writeProof("/proof/retained-v4-ledger.json", v4Ledger)
 		writeProof("/proof/retained-v4-native-usage.json", v4Native)
