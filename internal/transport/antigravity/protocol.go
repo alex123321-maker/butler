@@ -307,8 +307,32 @@ func authRejectionReason(body io.Reader) string {
 func invalidArgumentReason(body io.Reader) string {
 	const limit = 64 * 1024
 	data, err := io.ReadAll(io.LimitReader(body, limit+1))
+	defer clear(data)
 	if err != nil || len(data) > limit {
 		return ""
+	}
+	data = bytes.TrimSpace(data)
+	if bytes.HasPrefix(data, []byte("data:")) {
+		data = bytes.TrimSpace(bytes.TrimPrefix(data, []byte("data:")))
+	}
+	decoded, err := strictJSON(data)
+	if err != nil {
+		if json.Valid(data) {
+			return ""
+		}
+		return "upstream_bad_request_non_json"
+	}
+	// Some Google SSE error responses use a singleton JSON array even when
+	// the HTTP status is already400. Never export that private envelope.
+	if list, ok := decoded.([]any); ok {
+		if len(list) != 1 {
+			return ""
+		}
+		data, err = json.Marshal(list[0])
+		defer clear(data)
+		if err != nil {
+			return ""
+		}
 	}
 	var envelope struct {
 		Error struct {
@@ -321,6 +345,14 @@ func invalidArgumentReason(body io.Reader) string {
 	}
 	message := envelope.Error.Message
 	switch {
+	case strings.Contains(strings.ToLower(message), "model") && (strings.Contains(strings.ToLower(message), "not found") || strings.Contains(strings.ToLower(message), "not supported") || strings.Contains(strings.ToLower(message), "invalid model")):
+		return "upstream_model_rejected"
+	case strings.Contains(message, "thinkingBudget") || strings.Contains(message, "thinking_budget"):
+		return "upstream_thinking_rejected"
+	case strings.Contains(message, "maxOutputTokens") || strings.Contains(message, "max_output_tokens"):
+		return "upstream_output_limit_rejected"
+	case strings.Contains(message, "systemInstruction") || strings.Contains(message, "system_instruction"):
+		return "upstream_system_instruction_rejected"
 	case strings.Contains(message, `Unknown name "minItems"`):
 		return "unsupported_schema_min_items"
 	case strings.Contains(message, `Unknown name "maxItems"`):

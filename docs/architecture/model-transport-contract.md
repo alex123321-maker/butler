@@ -69,9 +69,12 @@ exact token-expiry, scope, service/billing, IAM/location or generic auth-denial
 classes onto an allowlist. It never copies messages or metadata and never
 triggers automatic refresh/retry/inference. A class is an upstream claim;
 connected state, a renewed token and a positive quota meter are separate facts.
-For400/422, a64KiB private INVALID_ARGUMENT envelope can be projected onto four
-fixed diagnostic classes (unknown minItems/maxItems, response-schema rejection,
-other invalid argument). `DiagnosticReason` rejects all other strings. Provider
+For400/422, a64KiB private INVALID_ARGUMENT envelope (object, singleton array or
+single SSE data envelope) may project fixed schema/model/thinking/output/system
+argument classes. Non-JSON rejection is a separate fixed class; duplicate JSON
+keys and ambiguous arrays do not yield an argument diagnosis. These are upstream
+claims and never echo a message, field path or private identifier.
+`DiagnosticReason` rejects all other strings. Provider
 messages, field paths/details and raw bytes remain unexported; a class records an
 upstream claim, not proof of the precise cause. Earlier unknowns stay unknown.
 

@@ -66,6 +66,7 @@ func DiagnosticReason(err error) string {
 	}
 	switch failure.SafeReason {
 	case "unsupported_schema_min_items", "unsupported_schema_max_items", "response_schema_rejected", "upstream_invalid_argument",
+		"upstream_bad_request_non_json", "upstream_model_rejected", "upstream_thinking_rejected", "upstream_output_limit_rejected", "upstream_system_instruction_rejected",
 		"upstream_access_token_expired", "upstream_scope_insufficient", "upstream_service_disabled", "upstream_billing_disabled", "upstream_iam_denied", "upstream_location_policy", "upstream_unauthenticated", "upstream_permission_denied":
 		return failure.SafeReason
 	default:
