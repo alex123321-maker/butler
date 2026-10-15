@@ -84,3 +84,17 @@ func TestNativeToolBoundAnnotationsAndUnknownKeywordsFailClosed(t *testing.T) {
 		}
 	}
 }
+
+func TestToolBoundsDoNotChangeGeneralOrResponseSchemaDialects(t *testing.T) {
+	schema := json.RawMessage(`{"type":"object","properties":{"value":{"type":"string","maxLength":32}},"required":["value"],"additionalProperties":false}`)
+	if validateSchema(string(schema)) == nil {
+		t.Fatal("general schema validator gained tool-only annotations")
+	}
+	provider, err := NewProvider(Config{Model: FlashHighModel, AuthSource: authSource{}, JSONResponseSchema: schema})
+	if err != nil || string(provider.config.JSONResponseSchema) != string(schema) {
+		t.Fatal("configured JSON response schema changed", err)
+	}
+	if _, err = NewProvider(Config{Model: FlashHighModel, AuthSource: authSource{}, GoogleResponseSchema: json.RawMessage(`{"type":"OBJECT","properties":{"value":{"type":"STRING","maxLength":32}},"required":["value"]}`)}); err == nil {
+		t.Fatal("native Google response dialect gained tool-only annotation")
+	}
+}

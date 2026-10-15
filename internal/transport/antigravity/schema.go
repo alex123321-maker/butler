@@ -20,6 +20,10 @@ func validateSchema(text string) error {
 	return inspectSchema(value, 0)
 }
 func inspectSchema(value any, depth int) error {
+	return inspectSchemaMode(value, depth, false)
+}
+
+func inspectSchemaMode(value any, depth int, allowToolBounds bool) error {
 	schema, ok := value.(map[string]any)
 	if !ok || depth > 32 {
 		return fmt.Errorf("invalid schema")
@@ -37,7 +41,7 @@ func inspectSchema(value any, depth int) error {
 				return fmt.Errorf("invalid properties")
 			}
 			for _, property := range props {
-				if err := inspectSchema(property, depth+1); err != nil {
+				if err := inspectSchemaMode(property, depth+1, allowToolBounds); err != nil {
 					return err
 				}
 			}
@@ -52,7 +56,7 @@ func inspectSchema(value any, depth int) error {
 				}
 			}
 		case "items":
-			if err := inspectSchema(value, depth+1); err != nil {
+			if err := inspectSchemaMode(value, depth+1, allowToolBounds); err != nil {
 				return err
 			}
 		case "oneOf", "anyOf":
@@ -61,7 +65,7 @@ func inspectSchema(value any, depth int) error {
 				return fmt.Errorf("invalid union")
 			}
 			for _, item := range items {
-				if err := inspectSchema(item, depth+1); err != nil {
+				if err := inspectSchemaMode(item, depth+1, allowToolBounds); err != nil {
 					return err
 				}
 			}
@@ -74,6 +78,9 @@ func inspectSchema(value any, depth int) error {
 				return fmt.Errorf("invalid enum")
 			}
 		case "minLength", "maxLength":
+			if !allowToolBounds {
+				return fmt.Errorf("unsupported schema keyword")
+			}
 			number, ok := value.(json.Number)
 			if !ok {
 				return fmt.Errorf("invalid length annotation")
@@ -83,6 +90,9 @@ func inspectSchema(value any, depth int) error {
 				return fmt.Errorf("invalid length annotation")
 			}
 		case "minimum", "maximum":
+			if !allowToolBounds {
+				return fmt.Errorf("unsupported schema keyword")
+			}
 			number, ok := value.(json.Number)
 			if !ok {
 				return fmt.Errorf("invalid numeric annotation")
@@ -112,7 +122,7 @@ func nativeToolSchema(text string) (json.RawMessage, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err = inspectSchema(value, 0); err != nil {
+	if err = inspectSchemaMode(value, 0, true); err != nil {
 		return nil, err
 	}
 	lowerToolBounds(value.(map[string]any))
