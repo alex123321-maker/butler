@@ -28,8 +28,8 @@ type capacityLocalObservation struct {
 	Millis          int64  `json:"millis"`
 	QueueMillis     uint64 `json:"queue_millis"`
 	ExecutionMillis uint64 `json:"execution_millis"`
-	PeakRAMMiB      uint64 `json:"peak_ram_mib"`
-	PeakDeviceMiB   uint64 `json:"peak_device_mib"`
+	PeakRAMMiB      uint32 `json:"peak_ram_mib"`
+	PeakDeviceMiB   uint32 `json:"peak_device_mib"`
 	Completed       bool   `json:"completed"`
 }
 type capacityLocalBackend struct {
