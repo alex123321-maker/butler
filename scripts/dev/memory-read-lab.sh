@@ -2,17 +2,19 @@
 # Isolated PostgreSQL + actual Broker acceptance. Existing images/modules only.
 set -euo pipefail
 root=${1:-/srv/storage/butler/agents/issue77-20261016}
-[[ "$root" == /srv/storage/butler/agents/issue77-* ]] || exit 2
+[[ "$root" =~ ^/srv/storage/butler/agents/issue77-[a-zA-Z0-9_-]+$ ]] || exit 2
 [[ -f "$root/current/go.mod" && -d /srv/storage/butler/.cache/go-mod ]] || exit 2
-mkdir -p "$root/reports" "$root/.cache/go-build" "$root/.cache/go-tmp"
+mkdir -p "$root/reports" "$root/.cache/go-build" "$root/.cache/go-tmp" "$root/postgres-read"
 network=issue86-20261016
 pg=issue86-20261016-pg
 if ! docker network inspect "$network" >/dev/null 2>&1; then
  docker network create --internal --subnet 10.237.86.0/24 "$network" >/dev/null
 fi
 if ! docker inspect "$pg" >/dev/null 2>&1; then
- docker run --pull never -d --name "$pg" --network "$network" \
-  -e POSTGRES_USER=butler -e POSTGRES_PASSWORD=synthetic-test -e POSTGRES_DB=memory_read_test pgvector/pgvector:pg17 >/dev/null
+ docker run --pull never -d --name "$pg" --network "$network" --cpus 1 --memory 512m --pids-limit 128 \
+  -v "$root/postgres-read:/var/lib/postgresql/data" \
+  -e POSTGRES_USER=butler -e POSTGRES_PASSWORD=synthetic-test -e POSTGRES_DB=memory_read_test pgvector/pgvector:pg17 \
+  -c shared_buffers=32MB -c max_connections=32 -c max_wal_size=64MB >/dev/null
 fi
 for i in {1..30}; do
  docker exec "$pg" pg_isready -U butler -d memory_read_test >/dev/null && break

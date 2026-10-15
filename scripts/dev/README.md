@@ -8,6 +8,11 @@ separate `memory-lifecycle-lab.sh` for the actual custom dump/restore and Redis
 withdrawal gate. Native consumer quality windows and staged activation remain
 independent of these controlled checks.
 
+The read/consumer lab binds PostgreSQL data beneath its task root on
+`/srv/storage`; it must not use an anonymous volume on Docker's root filesystem.
+PG and Go containers have explicit memory/CPU bounds. A failed infrastructure
+run remains retained evidence and cannot satisfy a required test gate.
+
 Issue33 V4 is now sealed NO_GO after11 new entries, for279 cumulative attempts.
 Never Sync or execute its root again. `cloud-v4-final-audit-reproduce.sh` runs
 the frozen independent auditor read-only/network-none against named retained
