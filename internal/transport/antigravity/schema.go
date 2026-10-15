@@ -73,6 +73,23 @@ func inspectSchema(value any, depth int) error {
 			if items, ok := value.([]any); !ok || len(items) == 0 {
 				return fmt.Errorf("invalid enum")
 			}
+		case "minLength", "maxLength":
+			number, ok := value.(json.Number)
+			if !ok {
+				return fmt.Errorf("invalid length annotation")
+			}
+			bound, err := number.Int64()
+			if err != nil || bound < 0 {
+				return fmt.Errorf("invalid length annotation")
+			}
+		case "minimum", "maximum":
+			number, ok := value.(json.Number)
+			if !ok {
+				return fmt.Errorf("invalid numeric annotation")
+			}
+			if _, err := number.Float64(); err != nil {
+				return fmt.Errorf("invalid numeric annotation")
+			}
 		case "description", "title", "$schema":
 			if _, ok := value.(string); !ok {
 				return fmt.Errorf("invalid annotation")
@@ -83,6 +100,46 @@ func inspectSchema(value any, depth int) error {
 		}
 	}
 	return nil
+}
+
+// nativeToolSchema lowers only the four known bound annotations for Gemini's
+// declaration dialect. The original ToolDefinition/schema/hash stays intact;
+// Tool Broker and the owning typed decoder enforce the actual bounds before
+// execution. Unknown keywords still fail closed in inspectSchema. This does not
+// change structured generation response schemas or widen argument authority.
+func nativeToolSchema(text string) (json.RawMessage, error) {
+	value, err := strictJSON([]byte(text))
+	if err != nil {
+		return nil, err
+	}
+	if err = inspectSchema(value, 0); err != nil {
+		return nil, err
+	}
+	lowerToolBounds(value.(map[string]any))
+	return json.Marshal(value)
+}
+
+func lowerToolBounds(schema map[string]any) {
+	for _, key := range []string{"minLength", "maxLength", "minimum", "maximum"} {
+		delete(schema, key)
+	}
+	if properties, ok := schema["properties"].(map[string]any); ok {
+		// Property names may themselves be "minimum" or "maxLength". Recurse
+		// into their schemas, never treat the property map as a schema node.
+		for _, property := range properties {
+			lowerToolBounds(property.(map[string]any))
+		}
+	}
+	if items, ok := schema["items"].(map[string]any); ok {
+		lowerToolBounds(items)
+	}
+	for _, key := range []string{"oneOf", "anyOf"} {
+		if variants, ok := schema[key].([]any); ok {
+			for _, variant := range variants {
+				lowerToolBounds(variant.(map[string]any))
+			}
+		}
+	}
 }
 func validateArguments(schemaJSON string, raw json.RawMessage) error {
 	value, err := strictJSON(raw)

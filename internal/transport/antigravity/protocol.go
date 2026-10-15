@@ -673,12 +673,13 @@ func convertTools(tools []transport.ToolDefinition) ([]functionDeclaration, map[
 			return nil, nil, protocolError("duplicate or empty Butler tool name")
 		}
 		names[tool.Name] = true
-		if err := validateSchema(tool.SchemaJSON); err != nil {
+		schema, err := nativeToolSchema(tool.SchemaJSON)
+		if err != nil {
 			return nil, nil, protocolError("unsupported Butler tool schema")
 		}
 		alias := fmt.Sprintf("butler_tool_%d", i)
 		definitions[alias] = tool
-		declarations = append(declarations, functionDeclaration{Name: alias, Description: tool.Name + ": " + tool.Description, Parameters: json.RawMessage(tool.SchemaJSON)})
+		declarations = append(declarations, functionDeclaration{Name: alias, Description: tool.Name + ": " + tool.Description, Parameters: schema})
 	}
 	return declarations, definitions, nil
 }

@@ -1,5 +1,15 @@
 # Butler — Model Transport Contract
 
+Native Gemini tool declarations lower the known `minLength`, `maxLength`,
+`minimum` and `maximum` validation annotations out of the provider-facing schema.
+The original logical ToolDefinition, canonical Broker schema and action contract
+hash remain unchanged; Tool Broker and owning typed argument decoders enforce
+the bounds before execution. Native argument shape/type/required/unknown-field
+checks remain in place, and unknown schema keywords fail closed. This narrow
+dialect conversion does not change configured structured response schemas,
+authorization, budgets or model selection. Canonical memory search/open/neighbors
+contracts must pass the offline native declaration regression before inference.
+
 Memory query locality is independent of provider release. A local-only task can
 use authorized PostgreSQL evidence and the pinned internal inference service;
 the resulting query/snippets remain subject to current task privacy, source
