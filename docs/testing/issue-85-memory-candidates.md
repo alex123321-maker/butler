@@ -232,6 +232,11 @@ candidate environment flags must also be true. The actual provider's normalized
 `InferenceTimeout()` must permit at least300s, independently of the budget;
 factory default120s and a missing timeout attestation fail closed. Default 8192, unmeasured 65536,
 another provider/model, absent limits and under-reserved budget all fail closed.
+The actual adapter60/120/299s negative controls and300/301s positive controls,
+both process flags, missing attestations and full quote/deadline admission passed
+on the server under race:20 profile,3 realPG admission/policy-control and2 adapter
+pass events,0 fail/skip, with vet. No model/auth request ran and all82 native
+attempts remained. `profile-readiness-v1.json` records the exact source/dependency.
 The code-owned qualification constant is still false pending a separate reviewed
 release decision; the frozen screen accurately records that historical state.
 Production flags and the main deployment were not changed during these tests.
