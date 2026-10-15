@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"os"
@@ -118,7 +119,7 @@ func runMemoryCapacity(t *testing.T, root string, n, scopes int) {
 			body.WriteByte('\n')
 			_, _ = corpus.Write([]byte(text + "\n"))
 		}
-		src, e := cat.Put(owner, catalog.PutSource{ExternalKey: fmt.Sprintf("capacity:%d", start), Kind: "document", ScopeType: "user", ScopeID: fmt.Sprintf("capacity-scope%d", scope), Title: "Synthetic capacity source", Body: body.String(), Origin: content.Origin{Kind: content.Document, Sensitivity: content.Public}})
+		src, e := cat.Put(owner, catalog.PutSource{ExternalKey: fmt.Sprintf("capacity:%d", start), Kind: "document", ScopeType: "project", ScopeID: fmt.Sprintf("capacity-scope%d", scope), Title: "Synthetic capacity source", Body: body.String(), Origin: content.Origin{Kind: content.Document, Sensitivity: content.Public}})
 		if e != nil {
 			t.Fatal("catalog seed", e)
 		}
@@ -132,7 +133,7 @@ func runMemoryCapacity(t *testing.T, root string, n, scopes int) {
 	// Bulk vectors avoid100000 per-row inference calls. The ordinary exact
 	// Verify/Activate routines still check every real current chunk and parent.
 	for scope := 0; scope < scopes; scope++ {
-		g, e := store.Create(owner, space, semantic.Scope{Type: "user", ID: fmt.Sprintf("capacity-scope%d", scope)})
+		g, e := store.Create(owner, space, semantic.Scope{Type: "project", ID: fmt.Sprintf("capacity-scope%d", scope)})
 		if e != nil {
 			t.Fatal(e)
 		}
@@ -213,21 +214,16 @@ func runMemoryCapacity(t *testing.T, root string, n, scopes int) {
 	}
 	verifyMS := time.Since(started).Milliseconds()
 	write("preparation.json", map[string]any{"chunks": n, "scopes": scopes, "source_sha256": hex.EncodeToString(corpus.Sum(nil)), "catalog_ingest_ms": ingestMS, "synthetic_vector_load_ms": vectorMS, "verify_activate_ms": verifyMS})
-	// The same exact scan/order/filter shape as Store.Search, retained with
-	// buffers and actual rows. Current Catalog proof is measured by Search below.
-	var explain json.RawMessage
-	g := generations[0]
-	if err := pool.QueryRow(ctx, `EXPLAIN(ANALYZE,BUFFERS,FORMAT JSON) SELECT c.id,c.scope_type,c.scope_id,c.title,c.content,c.summary,c.source_type,c.source_id,c.provenance::text,c.updated_at,e.source_hash,e.embedding <=> $2::vector FROM semantic_index_entries e JOIN memory_chunks c ON c.id=e.chunk_id WHERE e.generation_id=$1 AND e.dimensions=$3 AND c.scope_type=$4 AND c.scope_id=$5 AND c.updated_at=e.source_revision AND c.status='active' AND effective_status='active' AND NOT suppressed AND confirmation_state IN ('confirmed','auto_confirmed') AND (expires_at IS NULL OR expires_at>clock_timestamp()) ORDER BY e.embedding <=> $2::vector,c.id LIMIT $6`, g.ID, capacityVectorLiteral(capacityVector(91)), 768, g.Scope.Type, g.Scope.ID, 16).Scan(&explain); err != nil {
-		t.Fatal("exact query plan", err)
-	}
-	write("exact-plan.json", explain)
 	type sample struct {
-		Index  int     `json:"index"`
-		Millis float64 `json:"millis"`
-		Failed bool    `json:"failed"`
-		Hits   int     `json:"hits"`
+		Index   int     `json:"index"`
+		Millis  float64 `json:"millis"`
+		Failed  bool    `json:"failed"`
+		Hits    int     `json:"hits"`
+		Reason  string  `json:"reason,omitempty"`
+		StartNS int64   `json:"start_ns"`
+		EndNS   int64   `json:"end_ns"`
 	}
-	measure := func(count, parallel int) []sample {
+	measure := func(count, parallel int, firstRead chan<- struct{}) []sample {
 		out := make([]sample, count)
 		var wg sync.WaitGroup
 		for worker := 0; worker < parallel; worker++ {
@@ -238,8 +234,22 @@ func runMemoryCapacity(t *testing.T, root string, n, scopes int) {
 					g := generations[j%len(generations)]
 					q, stop := context.WithTimeout(owner, 2*time.Second)
 					start := time.Now()
+					if j == 0 && firstRead != nil {
+						firstRead <- struct{}{}
+					}
 					hits, err := store.Search(q, g, capacityVector(91+j), 4)
-					out[j] = sample{j, float64(time.Since(start).Microseconds()) / 1000, err != nil, len(hits)}
+					reason := ""
+					switch {
+					case errors.Is(err, context.DeadlineExceeded):
+						reason = "deadline"
+					case errors.Is(err, catalog.ErrStale):
+						reason = "stale"
+					case errors.Is(err, catalog.ErrDenied):
+						reason = "denied"
+					case err != nil:
+						reason = "unexpected_backend_failure"
+					}
+					out[j] = sample{Index: j, Millis: float64(time.Since(start).Microseconds()) / 1000, Failed: err != nil, Hits: len(hits), Reason: reason, StartNS: start.UnixNano(), EndNS: time.Now().UnixNano()}
 					stop()
 				}
 			}(worker)
@@ -247,28 +257,69 @@ func runMemoryCapacity(t *testing.T, root string, n, scopes int) {
 		wg.Wait()
 		return out
 	}
-	first := measure(1, 1)
-	warmup := measure(20, 1)
-	warm := measure(100, 2)
+	first := measure(1, 1, nil)
+	warmup := measure(20, 1, nil)
+	warm := measure(100, 2, nil)
+	var explain json.RawMessage
+	g := generations[0]
+	if err := pool.QueryRow(ctx, `EXPLAIN(ANALYZE,BUFFERS,FORMAT JSON) SELECT c.id,c.scope_type,c.scope_id,c.title,c.content,c.summary,c.source_type,c.source_id,c.provenance::text,c.updated_at,e.source_hash,e.embedding <=> $2::vector FROM semantic_index_entries e JOIN memory_chunks c ON c.id=e.chunk_id WHERE e.generation_id=$1 AND e.dimensions=$3 AND c.scope_type=$4 AND c.scope_id=$5 AND c.updated_at=e.source_revision AND c.status='active' AND effective_status='active' AND NOT suppressed AND confirmation_state IN ('confirmed','auto_confirmed') AND (expires_at IS NULL OR expires_at>clock_timestamp()) ORDER BY e.embedding <=> $2::vector,c.id LIMIT $6`, g.ID, capacityVectorLiteral(capacityVector(91)), 768, g.Scope.Type, g.Scope.ID, 16).Scan(&explain); err != nil {
+		t.Fatal("exact query plan", err)
+	}
+	write("exact-plan.json", explain)
+	// Exact controls use the nearest vector of known live originals. A generic
+	// empty result or a database error cannot substitute for authorization proof.
+	controlIDs := make([]int64, 5)
+	for i, src := range append(append([]catalog.Source{}, sources[:4]...), sources[len(sources)-1]) {
+		if err := pool.QueryRow(ctx, `SELECT min(id) FROM memory_chunks WHERE source_id=$1`, src.ID).Scan(&controlIDs[i]); err != nil {
+			t.Fatal(err)
+		}
+	}
+	q := capacityVector(int(controlIDs[4]))
+	healthyScope := semantic.Scope{Type: sources[len(sources)-1].ScopeType, ID: sources[len(sources)-1].ScopeID}
+	healthy, e := store.Active(owner, healthyScope)
+	if e != nil {
+		t.Fatal(e)
+	}
+	hits, e := store.Search(owner, healthy, q, 1)
+	if e != nil || len(hits) != 1 || hits[0].Source.ID != controlIDs[4] {
+		t.Fatal("owner-positive query control failed", e)
+	}
+	foreign := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: "capacity-foreign", Channel: "web", DeliveryID: "denied-capacity"})
+	if hits, err := store.Search(foreign, healthy, q, 1); !errors.Is(err, catalog.ErrDenied) || len(hits) != 0 {
+		t.Fatal("foreign-deny control failed", err)
+	}
 	// Separate mixed catalog writers. Corrections/deletions may deliberately
 	// produce an explicit stale result; they may never return withdrawn text.
 	writerDone := make(chan error, 1)
+	firstRead := make(chan struct{})
+	type operation struct{ StartNS, EndNS int64 }
+	var operations []operation
+	operationStart := func() func() {
+		start := time.Now().UnixNano()
+		return func() { operations = append(operations, operation{start, time.Now().UnixNano()}) }
+	}
 	go func() {
+		<-firstRead
 		for i := 0; i < 2; i++ {
 			src := sources[i%len(sources)]
+			finish := operationStart()
 			if _, err := cat.Delete(owner, src.ID, "delete", src.Revision); err != nil {
 				writerDone <- err
 				return
 			}
+			finish()
 		}
 		for i := 2; i < 4; i++ {
 			src := sources[i]
+			finish := operationStart()
 			if _, err := cat.Put(owner, catalog.PutSource{ExternalKey: src.ExternalKey, ExpectedRevision: src.Revision, Kind: src.Kind, ScopeType: src.ScopeType, ScopeID: src.ScopeID, Title: src.Title, Body: src.Body + "\nCorrection: this source is withdrawn from the old generation.", Origin: src.Origin}); err != nil {
 				writerDone <- err
 				return
 			}
+			finish()
 		}
-		fresh, err := cat.Put(owner, catalog.PutSource{ExternalKey: "mixed-ingestion", Kind: "document", ScopeType: "user", ScopeID: "capacity-scope0", Title: "New mixed source", Body: "Synthetic new observation.", Origin: content.Origin{Kind: content.Document, Sensitivity: content.Public}})
+		finish := operationStart()
+		fresh, err := cat.Put(owner, catalog.PutSource{ExternalKey: "mixed-ingestion", Kind: "document", ScopeType: "project", ScopeID: "capacity-scope0", Title: "New mixed source", Body: "Synthetic new observation.", Origin: content.Origin{Kind: content.Document, Sensitivity: content.Public}})
 		if err != nil {
 			writerDone <- err
 			return
@@ -278,31 +329,32 @@ func runMemoryCapacity(t *testing.T, root string, n, scopes int) {
 			writerDone <- err
 			return
 		}
+		finish()
 		writerDone <- nil
 	}()
-	mixed := measure(100, 2)
+	mixed := measure(100, 2, firstRead)
 	if err := <-writerDone; err != nil {
 		t.Fatal("mixed catalog mutation", err)
 	}
-	// Check exact denied identities after the writer has completed, rather than
-	// pretending a Store call alone owns final release across concurrent writes.
-	for _, g := range generations {
-		hits, err := store.Search(owner, g, capacityVector(91), 4)
-		if err != nil {
-			continue
+	for _, id := range controlIDs[:4] {
+		if _, err := cat.Citation(owner, id); !errors.Is(err, catalog.ErrDenied) && !errors.Is(err, catalog.ErrStale) && !errors.Is(err, catalog.ErrDeleted) {
+			t.Fatal("exact withdrawn citation was not denied", err)
 		}
-		for _, h := range hits {
-			for _, old := range sources[:4] {
-				if h.Source.CatalogSourceID == old.ID {
-					t.Fatal("withdrawn source returned after mutation")
-				}
+	}
+	hits, e = store.Search(owner, healthy, q, 1)
+	if e != nil || len(hits) != 1 || hits[0].Source.ID != controlIDs[4] {
+		t.Fatal("healthy control lost after mutations", e)
+	}
+	overlap := 0
+	for _, r := range mixed {
+		for _, op := range operations {
+			if r.StartNS < op.EndNS && r.EndNS > op.StartNS {
+				overlap++
+				break
 			}
 		}
 	}
-	foreign := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: "capacity-foreign", Channel: "web", DeliveryID: "denied-capacity"})
-	if hits, err := store.Search(foreign, generations[0], capacityVector(91), 4); err == nil && len(hits) > 0 {
-		t.Fatal("foreign source disclosure")
-	}
+	write("writer-operations.json", map[string]any{"operations": operations, "overlapping_reads": overlap})
 	p95 := func(v []sample) float64 {
 		a := make([]float64, len(v))
 		for i, s := range v {
@@ -331,4 +383,18 @@ func runMemoryCapacity(t *testing.T, root string, n, scopes int) {
 	write("relation-bytes.json", relations)
 	write("results.json", map[string]any{"chunks": n, "scopes": scopes, "seed": 91, "source_sha256": hex.EncodeToString(corpus.Sum(nil)), "catalog_ingest_ms": ingestMS, "synthetic_vector_load_ms": vectorMS, "verify_activate_ms": verifyMS, "database_bytes_shared_fixture_db": bytes, "first_query": first, "warmup": warmup, "warm": warm, "mixed_catalog": mixed, "warm_p95_ms": p95(warm), "mixed_p95_ms": p95(mixed), "target_warm_p95_ms": 300, "target_profile": n == 10000 && scopes == 1, "store_warm_slo_pass": p95(warm) <= 300 && countFailures(warm) == 0, "warm_fail_or_empty": countFailures(warm), "collection_complete": true, "synthetic_quality_proof": true, "native_calls": 0, "model_queue": "not_measured", "cold_os_cache": "unknown", "mixed_independent_workers": "pending_composed_gate"})
 	t.Logf("capacity n=%d scopes=%d warm p95=%.3fms mixed p95=%.3fms", n, scopes, p95(warm), p95(mixed))
+	if n == 10000 && scopes == 1 {
+		if p95(warm) > 300 || countFailures(warm) != 0 {
+			t.Error("declared warm Store SLO failed")
+		}
+		if p95(mixed) > 300 || overlap < 10 {
+			t.Error("declared mixed Store SLO or minimum overlap failed")
+		}
+		for _, r := range append(append([]sample{}, warm...), mixed...) {
+			if r.Millis > 2100 || r.Reason == "unexpected_backend_failure" || r.Reason == "deadline" {
+				t.Error("explicit2s deadline or expected mixed limitation violated")
+				break
+			}
+		}
+	}
 }

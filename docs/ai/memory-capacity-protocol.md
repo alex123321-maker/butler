@@ -5,7 +5,13 @@ quality. The initial supported target is10000 live768-dimensional chunks in one
 scope, two concurrent readers, one background catalog writer, PostgreSQL limited
 to one CPU/1GiB, and a client limited to one CPU/2GiB. Warm current-source-guarded
 Store.Search p95 must be≤300ms, no unbounded queueing or disclosure, and every
-request must finish or explicitly fail within2s. Twenty warm-up queries precede
+request must finish or explicitly fail within2s (100ms observer/scheduler
+tolerance). The warm phase has readers only. The mixed phase has100 reads with
+two deletions, two corrections and one new source/fragment ingestion; a barrier
+starts the writer with the first read and saved operation/read intervals must
+prove at least10 overlapping reads. Mixed p95 must also be≤300ms; typed currentness
+denials are explicit limitations, unexpected backend errors/deadlines fail the
+target. Twenty warm-up queries precede
 100 measured queries. The first query is reported separately; it is process-first
 with an unknown OS cache state, never described as a machine-cold measurement.
 
