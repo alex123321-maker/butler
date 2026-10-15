@@ -16,7 +16,20 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type Reader struct{ Sources *catalog.Store }
+// SemanticCandidate is server-derived from the existing guarded hybrid reader,
+// never from model arguments. Revision is the exact current chunk timestamp.
+type SemanticCandidate struct {
+	ID       int64
+	Revision time.Time
+}
+type Reader struct {
+	Sources            *catalog.Store
+	SemanticCandidates []SemanticCandidate
+}
+
+const permittedSources = `WITH actor AS (SELECT s.user_id AS owner,r.session_key,r.task_id FROM runs r JOIN sessions s USING(session_key) WHERE r.run_id=$1), permitted AS (
+ SELECT s.source_id,s.head_revision,s.access_revision,r.content_hash,r.title,r.body,r.event_time FROM memory_sources s JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision CROSS JOIN actor a
+ WHERE s.owner_id=a.owner AND s.status='active' AND (s.scope_type='user' AND s.scope_id=a.owner OR s.scope_type='session' AND s.scope_id=a.session_key OR s.scope_type='task' AND s.scope_id=a.task_id OR EXISTS(SELECT 1 FROM memory_scope_grants g JOIN tasks t USING(task_id) WHERE g.source_id=s.source_id AND g.task_id=a.task_id AND g.owner_id=a.owner AND g.task_revision=t.revision AND g.access_revision=s.access_revision AND g.purpose='memory_read')))`
 
 func status(e error) string {
 	switch {
@@ -63,6 +76,9 @@ func (r Reader) ReadTx(ctx context.Context, tx pgx.Tx, tool string, a readcontro
 		return readcontrol.Empty("denied"), readcontrol.ErrDenied
 	}
 	if tool == readcontrol.Search {
+		if a.Strategy == "semantic_hybrid" {
+			return r.semanticSearch(ctx, tx, a)
+		}
 		return r.search(ctx, tx, a)
 	}
 	// Fragment keys are exact catalog handles. A masked replacement would no
@@ -121,20 +137,17 @@ func (r Reader) search(ctx context.Context, tx pgx.Tx, a readcontrol.Args) (read
 	}
 	// Search only same-owner current scopes or individually granted sources.
 	// The catalog repeats complete current ancestor/privacy proof afterwards.
-	const permitted = `WITH actor AS (SELECT s.user_id AS owner,r.session_key,r.task_id FROM runs r JOIN sessions s USING(session_key) WHERE r.run_id=$1), permitted AS (
- SELECT s.source_id,s.head_revision,s.access_revision,r.content_hash,r.title,r.body FROM memory_sources s JOIN memory_source_revisions r ON r.source_id=s.source_id AND r.revision=s.head_revision CROSS JOIN actor a
- WHERE s.owner_id=a.owner AND s.status='active' AND (s.scope_type='user' AND s.scope_id=a.owner OR s.scope_type='session' AND s.scope_id=a.session_key OR s.scope_type='task' AND s.scope_id=a.task_id OR EXISTS(SELECT 1 FROM memory_scope_grants g JOIN tasks t USING(task_id) WHERE g.source_id=s.source_id AND g.task_id=a.task_id AND g.owner_id=a.owner AND g.task_revision=t.revision AND g.access_revision=s.access_revision AND g.purpose='memory_read')))`
 	var sourceTruncated bool
-	if e := tx.QueryRow(ctx, permitted+` SELECT EXISTS(SELECT 1 FROM permitted WHERE char_length(body)>65536)`, token.RunID).Scan(&sourceTruncated); e != nil {
+	if e := tx.QueryRow(ctx, permittedSources+` SELECT EXISTS(SELECT 1 FROM permitted WHERE char_length(body)>65536)`, token.RunID).Scan(&sourceTruncated); e != nil {
 		return readcontrol.Empty("backend_error"), e
 	}
-	rows, e := tx.Query(ctx, permitted+`, matches AS (
+	rows, e := tx.Query(ctx, permittedSources+`, matches AS (
 	 SELECT p.source_id,p.head_revision,p.access_revision,p.content_hash,''::text AS fragment_key,p.title,p.body AS snippet,'{}'::jsonb AS locator,0 AS preference
- FROM permitted p WHERE to_tsvector('simple',p.title||' '||substring(p.body FROM 1 FOR 65536)) @@ plainto_tsquery('simple',$2)
+ FROM permitted p WHERE ($5='' OR p.event_time>=NULLIF($5,'')::timestamptz) AND ($6='' OR p.event_time<NULLIF($6,'')::timestamptz) AND (p.source_id=$2 OR to_tsvector('simple',p.title||' '||substring(p.body FROM 1 FOR 65536)) @@ plainto_tsquery('simple',$2))
 	 UNION ALL SELECT p.source_id,p.head_revision,p.access_revision,p.content_hash,o.fragment_key,c.title,c.content,o.locator,1
  FROM permitted p JOIN memory_object_sources o ON o.source_id=p.source_id AND o.source_revision=p.head_revision AND o.memory_type='chunk' JOIN memory_chunks c ON c.id=o.object_id
- WHERE to_tsvector('simple',c.title||' '||c.content) @@ plainto_tsquery('simple',$2))
- SELECT source_id,head_revision,access_revision,content_hash,fragment_key,title,snippet,locator FROM matches ORDER BY preference DESC,source_id,fragment_key LIMIT $3 OFFSET $4`, token.RunID, a.Query, a.Limit+1, a.Page*a.Limit)
+ WHERE ($5='' OR p.event_time>=NULLIF($5,'')::timestamptz) AND ($6='' OR p.event_time<NULLIF($6,'')::timestamptz) AND to_tsvector('simple',c.title||' '||c.content) @@ plainto_tsquery('simple',$2))
+ SELECT source_id,head_revision,access_revision,content_hash,fragment_key,title,snippet,locator FROM matches ORDER BY preference DESC,source_id,fragment_key LIMIT $3 OFFSET $4`, token.RunID, a.Query, a.Limit+1, a.Page*a.Limit, a.EventFrom, a.EventUntil)
 	if e != nil {
 		return readcontrol.Empty("backend_error"), e
 	}
@@ -163,6 +176,9 @@ func (r Reader) search(ctx context.Context, tx pgx.Tx, a readcontrol.Args) (read
 		return readcontrol.Empty("backend_error"), e
 	}
 	out := readcontrol.Empty("empty")
+	if a.EventFrom != "" || a.EventUntil != "" {
+		out.Diagnostics = []string{"reported_event_time_only", "unknown_event_times_excluded"}
+	}
 	out.Truncated = sourceTruncated || unsafeFragment
 	if len(hits) == 0 {
 		return out, nil
@@ -194,6 +210,74 @@ func (r Reader) search(ctx context.Context, tx pgx.Tx, a readcontrol.Args) (read
 	}
 	if e = r.conflicts(ctx, tx, &out); e != nil {
 		return readcontrol.Empty("backend_error"), e
+	}
+	return out, nil
+}
+
+func (r Reader) semanticSearch(ctx context.Context, tx pgx.Tx, a readcontrol.Args) (readcontrol.Result, error) {
+	out := readcontrol.Empty("empty")
+	out.Strategy = "semantic_hybrid"
+	token, ok := ownership.TokenFromContext(ctx)
+	if !ok {
+		return readcontrol.Empty("denied"), nil
+	}
+	if len(r.SemanticCandidates) > 4 {
+		return readcontrol.Empty("denied"), readcontrol.ErrDenied
+	}
+	if _, err := r.Sources.AccessTx(ctx, tx, nil, "memory_read"); err != nil {
+		return readcontrol.Empty(status(err)), nil
+	}
+	type hit struct {
+		ref              catalog.SourceRef
+		key, title, text string
+		loc              json.RawMessage
+	}
+	hits := []hit{}
+	refs := []catalog.SourceRef{}
+	seen := map[string]bool{}
+	for _, candidate := range r.SemanticCandidates {
+		if candidate.ID < 1 || candidate.Revision.IsZero() {
+			return readcontrol.Empty("denied"), readcontrol.ErrDenied
+		}
+		var h hit
+		err := tx.QueryRow(ctx, permittedSources+` SELECT p.source_id,p.head_revision,p.access_revision,p.content_hash,o.fragment_key,c.title,c.content,o.locator FROM permitted p JOIN memory_object_sources o ON o.source_id=p.source_id AND o.source_revision=p.head_revision AND o.memory_type='chunk' JOIN memory_chunks c ON c.id=o.object_id WHERE c.id=$2 AND c.updated_at=$3 AND ($4='' OR p.event_time>=NULLIF($4,'')::timestamptz) AND ($5='' OR p.event_time<NULLIF($5,'')::timestamptz)`, token.RunID, candidate.ID, candidate.Revision, a.EventFrom, a.EventUntil).Scan(&h.ref.ID, &h.ref.Revision, &h.ref.AccessRevision, &h.ref.Hash, &h.key, &h.title, &h.text, &h.loc)
+		if errors.Is(err, pgx.ErrNoRows) {
+			out.Truncated = true
+			continue
+		}
+		if err != nil {
+			return readcontrol.Empty("backend_error"), err
+		}
+		if sanitize.Text(h.key) != h.key {
+			out.Truncated = true
+			continue
+		}
+		hits = append(hits, h)
+		if !seen[h.ref.ID] {
+			refs = append(refs, h.ref)
+			seen[h.ref.ID] = true
+		}
+	}
+	sort.Slice(refs, func(i, j int) bool { return refs[i].ID < refs[j].ID })
+	sources, err := r.Sources.AccessTx(ctx, tx, refs, "memory_read")
+	if err != nil {
+		return readcontrol.Empty(status(err)), nil
+	}
+	byID := map[string]catalog.Source{}
+	for _, src := range sources {
+		byID[src.ID] = src
+	}
+	for _, h := range hits {
+		out.Items = append(out.Items, item(byID[h.ref.ID], h.key, h.title, h.text, h.loc, 240))
+	}
+	if len(out.Items) > 0 {
+		out.Status = "ok"
+	}
+	if a.EventFrom != "" || a.EventUntil != "" {
+		out.Diagnostics = []string{"reported_event_time_only", "unknown_event_times_excluded"}
+	}
+	if err = r.conflicts(ctx, tx, &out); err != nil {
+		return readcontrol.Empty("backend_error"), err
 	}
 	return out, nil
 }

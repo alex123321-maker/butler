@@ -971,3 +971,11 @@ expiries nor retries any consumed observation. Current leases/source guards are
 new receipts. Clean retained provider failures remain in the unchanged scored
 denominator; they do not block admission of the next distinct authorized input.
 Authority, protocol or retention failures still seal collection immediately.
+
+## Prospective adaptive consumer (#87)
+
+The default-off bounded read plan, metadata-only opened receipts, current source
+guards and independent adoption/NO_GO protocol are specified in
+[adaptive memory retrieval](adaptive-memory-retrieval.md). This does not qualify
+the consumer or activate main; current scoped accepted preferences remain loaded.
+

@@ -207,6 +207,7 @@ func (s *Service) executeRun(ctx context.Context, runLog *slog.Logger, runRecord
 	}
 
 	transportCtx := transport.WithSessionKey(runCtx, event.SessionKey)
+	transportCtx = adaptiveContext(transportCtx, prepared)
 	transportCtx = converterContinuationProposalContext(transportCtx, prepared)
 	transportCtx = withAnswerState(transportCtx, "final")
 	var stream transport.EventStream
@@ -277,6 +278,18 @@ func (s *Service) blockTaskRun(ctx context.Context, runID, reason string) {
 func (s *Service) finalizeExecution(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, event ingress.InputEvent, prepared preparedRun, leaseID, finalMessage string) (*ExecutionResult, error) {
 	var next *sessionv1.RunRecord
 	var err error
+	// All normal, tool-continuation, approval and model-retry paths converge
+	// here. A finalizing checkpoint already contains the validated display;
+	// ordinary final-result guards recheck all pinned sources on every retry.
+	if current.GetCurrentState() != commonv1.RunState_RUN_STATE_FINALIZING && prepared.AdaptivePlan != nil && prepared.AdaptivePlan.SearchEnabled() {
+		if s.config.AdaptiveRetrieval == nil {
+			return nil, fmt.Errorf("adaptive retrieval store unavailable")
+		}
+		finalMessage, err = s.config.AdaptiveRetrieval.Validate(ctx, current.GetRunId(), finalMessage)
+		if err != nil {
+			return nil, s.failRun(ctx, current, leaseID, runLog, fmt.Errorf("memory evidence validation failed"))
+		}
+	}
 	if strings.TrimSpace(finalMessage) == "" {
 		return nil, s.failRun(ctx, current, leaseID, runLog, fmt.Errorf("model run completed without assistant_final event"))
 	}
@@ -323,7 +336,8 @@ func (s *Service) finalizeExecution(ctx context.Context, runLog *slog.Logger, cu
 func (s *Service) consumeModelStream(ctx context.Context, runLog *slog.Logger, current *sessionv1.RunRecord, sessionKey, leaseID string, initialStream transport.EventStream) (string, *sessionv1.RunRecord, error) {
 	var finalMessage string
 	stream := initialStream
-	partialDelivery := true
+	needsEvidence, _ := ctx.Value(adaptivePlanKey{}).(bool)
+	partialDelivery := !needsEvidence
 
 	for stream != nil {
 		var nextStream transport.EventStream
