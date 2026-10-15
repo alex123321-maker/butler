@@ -65,6 +65,15 @@ memory model-job APIs. [Consumer contract](../../internal/memory/compaction/READ
 documents protected user statements, exact excerpts, typed tool state, 60% budget
 trigger, coverage CAS, privacy deletion, finite fallback and migration072.
 
+Long-term owner-reviewed consolidation is separately default off under
+`BUTLER_MEMORY_CONSOLIDATION_CONSUMER_ENABLED`. It uses the same durable model
+worker, immutable source/accepted-temporal snapshots, staged DATA generations,
+deterministic diff and owner head/revision CAS. Its code-owned qualification is
+closed pending consumer acceptance. Private `/api/v4/memory/consolidation/*`
+controls preserve current source/context/temporal proof for selection/rollback;
+retirement deletes derivatives through the existing catalog anchor. See the
+[owner workflow and retention limits](../../internal/memory/consolidation/README.md).
+
 The default prompt includes an internal execution/completion protocol and keeps
 negation, source authority and durable retry/effect policy explicit. Core never
 rewrites a structured status proposal into capture from message keywords.

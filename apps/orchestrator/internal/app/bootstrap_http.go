@@ -69,6 +69,7 @@ type httpServerDeps struct {
 	memoryModelConfigured      bool
 	memorySummaryConfigured    bool
 	memoryFeatureStates        []memorydoctor.FeatureConfiguration
+	consolidationConfigured    bool
 	sourceCatalog              *catalog.Store
 	ownerGoals                 *goal.Manager
 	finalResults               *completion.Coordinator
@@ -139,6 +140,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	}
 	memoryCatalogServer := &apiservice.MemoryCatalogServer{Store: deps.sourceCatalog, Auth: deps.ownerAuth, Ingestion: &ingestion.Store{Catalog: deps.sourceCatalog, Parser: parser}, Indexing: deps.memoryIndexing, ModelJobs: deps.memoryModelStore, ModelWorkerConfigured: deps.memoryModelConfigured}
 	memoryCatalogServer.TemporalEnabled = temporalConfigured(deps.cfg.MemoryTemporalEnabled)
+	configureConsolidationOwnerAPI(memoryCatalogServer, deps.consolidationConfigured)
 	if deps.memorySummaryConfigured {
 		memoryCatalogServer.SummaryPolicies = &compaction.Policies{Catalog: deps.sourceCatalog, Jobs: deps.memoryModelStore}
 	}

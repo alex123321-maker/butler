@@ -18,6 +18,7 @@ func configureModelJobs(c *catalog.Store, b *budget.Controller, p providerfactor
 	}
 	handlers := map[string]jobs.ModelHandler{}
 	configureCandidateHandler(handlers, p, b)
+	configureConsolidationHandler(handlers, p, b)
 	if os.Getenv("BUTLER_MEMORY_MODEL_QUOTE_PROBE_ENABLED") == "true" {
 		handlers["source-quote-v1"] = jobs.QuoteProbe{}
 	}

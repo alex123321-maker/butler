@@ -13,6 +13,7 @@ import (
 
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/compaction"
+	"github.com/butler/butler/internal/memory/consolidation"
 	"github.com/butler/butler/internal/memory/indexing"
 	"github.com/butler/butler/internal/memory/ingestion"
 	"github.com/butler/butler/internal/memory/jobs"
@@ -31,6 +32,8 @@ type MemoryCatalogServer struct {
 	ModelWorkerConfigured bool
 	SummaryPolicies       *compaction.Policies
 	TemporalEnabled       bool
+	Consolidation         *consolidation.Store
+	ConsolidationReady    bool
 }
 
 func (s *MemoryCatalogServer) Handle() http.Handler {
@@ -51,6 +54,9 @@ func (s *MemoryCatalogServer) Handle() http.Handler {
 			return
 		}
 		if s.handleTemporal(ctx, w, r) {
+			return
+		}
+		if s.handleConsolidation(ctx, w, r) {
 			return
 		}
 		if r.Method == http.MethodGet {

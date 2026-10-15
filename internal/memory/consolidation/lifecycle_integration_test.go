@@ -23,7 +23,7 @@ func TestConsolidationLifecycleAllEightThroughAtomicPublicationAndForgetIntegrat
 	for _, attack := range memorytest.LifecycleAttacks(t) {
 		t.Run(attack.ID, func(t *testing.T) {
 			f := newWorkflow(t, attack.Body, attack.Body, "Независимый контроль: чтение источника не разрешает изменение сервиса.")
-			if _, err := f.pool.Exec(f.ctx, `INSERT INTO tasks(task_id,session_key,owner_id,goal,status,constraints_json) VALUES('other-task','other-session','owner','Только чтение; результат прежнего внешнего действия UNKNOWN','active','["никаких изменений"]'); INSERT INTO action_effects(action_id,fingerprint,initial_binding,policy,state) VALUES('unknown-action','unknown-fingerprint','{}','{"retry_safety":"unsafe","verification_method":"none"}','effect_unknown')`); err != nil {
+			if _, err := f.pool.Exec(f.ctx, `INSERT INTO sessions(session_key,user_id,channel) VALUES('other-session','owner','web'); INSERT INTO tasks(task_id,session_key,owner_id,goal,status,constraints_json) VALUES('other-task','other-session','owner','Только чтение; результат прежнего внешнего действия UNKNOWN','active','["никаких изменений"]'); INSERT INTO action_effects(action_id,fingerprint,initial_binding,policy,state) VALUES('unknown-action','unknown-fingerprint','{}','{"retry_safety":"unsafe","verification_method":"none"}','effect_unknown')`); err != nil {
 				t.Fatal(err)
 			}
 			before := authoritySnapshot(t, f)

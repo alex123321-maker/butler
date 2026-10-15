@@ -57,9 +57,12 @@ func (Handler) InputSourcesTx(ctx context.Context, tx pgx.Tx, c *catalog.Store, 
 // fresh owner preparation, never a hidden rebase to new facts or permission.
 func (Handler) PrepareSourcesTx(ctx context.Context, tx pgx.Tx, c *catalog.Store, p jobs.ModelPolicy, sources []catalog.Source) ([]catalog.Source, string, error) {
 	if p.MaxJobs != 1 || p.Handler != Version {
-		return nil, "", jobs.ErrClaim
+		return nil, "consolidation_snapshot_required", nil
 	}
 	in, err := readInput(ctx, tx, p.ID)
+	if err == pgx.ErrNoRows {
+		return nil, "consolidation_snapshot_required", nil
+	}
 	if err != nil || in.OwnerID != p.OwnerID || in.Retired {
 		return nil, "", jobs.ErrClaim
 	}

@@ -97,11 +97,23 @@ external anti-rollback manifest. No cached bytes can resurrect a discarded view.
 
 The existing worker bounds remain:32 policies per scan,128 unexpired policies,
 64 pending/running jobs globally, at most32 jobs per finite owner policy. The
-consumer additionally limits retained content-bearing versions to eight per
-owner view. Scheduling waits with a fixed reason before paid work at that cap;
-publication rechecks it. Owner discard/prune removes only inactive derivatives
+consumer additionally limits retained content-bearing preparations to eight per
+owner view and32 per owner, including failed jobs and pending cleanup. Preparation
+waits before any paid work at that cap; a unique input-to-result constraint admits
+at most one immutable generation per preparation. Owner discard/prune removes only inactive derivatives
 through catalog deletion, preserving original sources and content-free
 cost/identity receipts. Active or changed-current choices require explicit CAS.
+
+The [owner API workflow](../../internal/memory/consolidation/README.md) exposes
+prepare/list/preview/activate/deactivate/retire. Activation CAS includes both the
+expected ID and monotonic head revision, preventing ABA. Reviewing a quarantined
+target is owner-only and proves its current full graph; an old selected root may
+be locked as metadata without re-reading its obsolete parents. Its source cannot
+be activated through that exception. Retire first records an irreversible fence
+and quarantines the input/result, commits, then calls ordinary catalog deletion
+without holding the phase-one transaction. Anchor/deletion failure returns
+`cleanup_complete:false`; it never claims physical erasure or permits activation.
+Pending work remains counted until normal deletion/reconciliation completes.
 
 ## Qualification
 
