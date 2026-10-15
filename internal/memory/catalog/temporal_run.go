@@ -2,6 +2,7 @@ package catalog
 
 import (
 	"context"
+	"time"
 
 	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
@@ -19,14 +20,21 @@ func bindTemporalRunTx(ctx context.Context, tx pgx.Tx, facts []AcceptedFact, q T
 		return err
 	}
 	defer batch.Rollback(ctx)
+	instants := []string{"", ""}
+	for i, t := range []*time.Time{q.ValidAt, q.KnownAt} {
+		if t != nil {
+			instants[i] = t.UTC().Format(time.RFC3339Nano)
+		}
+	}
+	queryKey := hash(instants)
 	for _, f := range facts {
 		p := f.Pin
-		_, err = batch.Exec(ctx, `INSERT INTO memory_temporal_run_pins(run_id,claim_id,head_revision,active_id,temporal_revision,original_source_id,source_revision,access_revision,content_hash,metadata_hash,freshness_status,current_usable,valid_at,known_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) ON CONFLICT DO NOTHING`, token.RunID, p.ClaimID, p.HeadRevision, p.ActiveID, p.TemporalRevision, p.Source.ID, p.Source.Revision, p.Source.AccessRevision, p.Source.Hash, p.MetadataHash, p.FreshnessStatus, p.CurrentUsable, q.ValidAt, q.KnownAt)
+		_, err = batch.Exec(ctx, `INSERT INTO memory_temporal_run_pins(run_id,claim_id,head_revision,active_id,temporal_revision,original_source_id,source_revision,access_revision,content_hash,metadata_hash,freshness_status,current_usable,valid_at,known_at,query_key) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) ON CONFLICT DO NOTHING`, token.RunID, p.ClaimID, p.HeadRevision, p.ActiveID, p.TemporalRevision, p.Source.ID, p.Source.Revision, p.Source.AccessRevision, p.Source.Hash, p.MetadataHash, p.FreshnessStatus, p.CurrentUsable, q.ValidAt, q.KnownAt, queryKey)
 		if err != nil {
 			return err
 		}
 		var same bool
-		err = batch.QueryRow(ctx, `SELECT head_revision=$3 AND active_id=$4 AND temporal_revision=$5 AND original_source_id=$6 AND source_revision=$7 AND access_revision=$8 AND content_hash=$9 AND metadata_hash=$10 AND freshness_status=$11 AND current_usable=$12 AND valid_at IS NOT DISTINCT FROM $13::timestamptz AND known_at IS NOT DISTINCT FROM $14::timestamptz FROM memory_temporal_run_pins WHERE run_id=$1 AND claim_id=$2`, token.RunID, p.ClaimID, p.HeadRevision, p.ActiveID, p.TemporalRevision, p.Source.ID, p.Source.Revision, p.Source.AccessRevision, p.Source.Hash, p.MetadataHash, p.FreshnessStatus, p.CurrentUsable, q.ValidAt, q.KnownAt).Scan(&same)
+		err = batch.QueryRow(ctx, `SELECT head_revision=$3 AND active_id=$4 AND temporal_revision=$5 AND original_source_id=$6 AND source_revision=$7 AND access_revision=$8 AND content_hash=$9 AND metadata_hash=$10 AND freshness_status=$11 AND current_usable=$12 AND valid_at IS NOT DISTINCT FROM $13::timestamptz AND known_at IS NOT DISTINCT FROM $14::timestamptz FROM memory_temporal_run_pins WHERE run_id=$1 AND claim_id=$2 AND query_key=$15`, token.RunID, p.ClaimID, p.HeadRevision, p.ActiveID, p.TemporalRevision, p.Source.ID, p.Source.Revision, p.Source.AccessRevision, p.Source.Hash, p.MetadataHash, p.FreshnessStatus, p.CurrentUsable, q.ValidAt, q.KnownAt, queryKey).Scan(&same)
 		if err != nil {
 			return err
 		}

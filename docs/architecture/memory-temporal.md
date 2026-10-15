@@ -114,3 +114,22 @@ profile/episode adapters can attach explicit temporal/freshness DATA and exclude
 only explicitly expired/not-yet-valid current entries; stale/unknown verification
 remains labeled evidence. Already bound privacy/decision guards remain mandatory
 even when the feature flag is off. No main deployment is activated by these tests.
+
+Agent dated lookup uses the separate canonical `memory.facts` read contract1;
+the three existing87 contracts remain byte-identical. It accepts at most8 exact
+source references, optional explicit `valid_at`/`known_at`, and returns at most10
+bounded accepted fact snapshots with temporal DATA/provenance. It does not return
+source bodies from records excluded by a knowledge cutoff. Current privacy,
+scope and correction proof remains mandatory. Snapshots receive no `read_ref` and
+cannot pretend to be verbatim opened source quotations. Source verification uses
+the existing actual `memory.open` protocol independently.
+
+This tool uses the actual Broker/action/input-claim path and common durable tool
+budget. When adaptive retrieval is composed it also consumes the same finite
+plan call/time/byte counters; it cannot bypass that loop bound and cannot mint
+opened-citation receipts. Distinct temporal queries can pin the same claim in one
+run, using a UTC-normalized query key, while the64-observation total cap and each
+immutable query's stale check survive restart. A changed head/metadata/freshness
+invalidates the whole prepared run. Operator endpoint selection is private and
+credential-free; both services require temporal readiness independently of read
+readiness and the code-owned qualification remains false.

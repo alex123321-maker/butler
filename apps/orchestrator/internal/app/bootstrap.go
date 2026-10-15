@@ -45,6 +45,7 @@ import (
 	memorydoctor "github.com/butler/butler/internal/memory/doctor"
 	"github.com/butler/butler/internal/memory/embeddings"
 	"github.com/butler/butler/internal/memory/episodic"
+	"github.com/butler/butler/internal/memory/factcontrol"
 	"github.com/butler/butler/internal/memory/pipeline"
 	"github.com/butler/butler/internal/memory/profile"
 	"github.com/butler/butler/internal/memory/readcontrol"
@@ -594,6 +595,7 @@ func New(ctx context.Context) (*App, error) {
 	var guardedRequestHandler http.Handler
 	var memoryCandidateHandler http.Handler
 	var memoryReadHandler http.Handler
+	var memoryFactHandler http.Handler
 	var converterDelegationHandler http.Handler
 	workspaceReady := false
 	if cfg.WorkspaceEnabled {
@@ -642,6 +644,14 @@ func New(ctx context.Context) (*App, error) {
 				postgres.Close()
 				return nil, err
 			}
+			if memoryReads.temporal {
+				memoryFactHandler, err = factcontrol.NewHandler(token, memoryReads)
+				if err != nil {
+					redis.Close()
+					postgres.Close()
+					return nil, err
+				}
+			}
 		}
 		if guardedRequests != nil {
 			guardedRequestHandler, err = singletabcontrol.NewRequestHandler(token, guardedRequests)
@@ -659,7 +669,7 @@ func New(ctx context.Context) (*App, error) {
 				return nil, err
 			}
 		}
-		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, guardedTabRequestReady: guardedRequests != nil, guardedTabRuntimeReady: cfg.GuardedTabRuntimeEnabled && guardedRequests != nil, memoryCandidateReady: memoryCandidates != nil, memoryReadReady: memoryReads != nil, workspaceReady: workspaceReady, converterDelegationReady: converterDeveloper != nil && converterClient != nil})
+		actionAuthorityHandler = actionauth.NewContextHandler(token, &actionContextReader{runs: runManager, sessions: sessionRepo, leases: sessionLeaseManager, tasks: taskStore, approvals: approvalService, pool: postgres.Pool(), mandateID: cfg.ActionMandateID, converterLifecycleReady: converterClient != nil, delegationReady: childAdmission != nil, guardedTabRequestReady: guardedRequests != nil, guardedTabRuntimeReady: cfg.GuardedTabRuntimeEnabled && guardedRequests != nil, memoryCandidateReady: memoryCandidates != nil, memoryReadReady: memoryReads != nil, memoryTemporalReady: memoryReads != nil && memoryReads.temporal, workspaceReady: workspaceReady, converterDelegationReady: converterDeveloper != nil && converterClient != nil})
 		skillEvidenceHandler = skills.NewEvidenceHandler(token, &skillEvidence{tasks: taskStore, journal: actionauth.NewPostgresStore(postgres.Pool()), transcript: transcriptStore, budgets: budget.NewLedger(postgres.Pool()), results: finalResults, sources: sourceCatalog})
 	} else {
 		log.Warn("private action authority unavailable; Tool Broker will deny execution")
@@ -680,6 +690,7 @@ func New(ctx context.Context) (*App, error) {
 		guardedRequestHandler:      guardedRequestHandler,
 		memoryCandidateHandler:     memoryCandidateHandler,
 		memoryReadHandler:          memoryReadHandler,
+		memoryFactHandler:          memoryFactHandler,
 		delegationDecisions:        delegationDecisions,
 		delegationHandler:          delegationHandler,
 		converterDelegationHandler: converterDelegationHandler,

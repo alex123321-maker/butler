@@ -5,12 +5,13 @@ import (
 
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/episodic"
+	"github.com/butler/butler/internal/memory/factcontrol"
 	"github.com/butler/butler/internal/memory/profile"
 )
 
 // Code-owned release qualification is independent of the operator flag. The
 // temporal read/revalidation/restore gate has not yet been measured end to end.
-const temporalReleaseQualified = false
+const temporalReleaseQualified = factcontrol.ReleaseQualified
 
 func temporalConfigured(enabled bool) bool { return enabled && temporalReleaseQualified }
 func temporalExcluded(f catalog.AcceptedFact) bool {

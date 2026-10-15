@@ -143,6 +143,8 @@ type ToolBrokerConfig struct {
 	MemoryCandidateEnabled        bool
 	MemoryReadEnabled             bool
 	MemoryReadControlURL          string
+	MemoryTemporalEnabled         bool
+	MemoryFactControlURL          string
 	MemoryCandidateControlURL     string
 	WorkspaceEnabled              bool
 	WorkspaceProfileID            string
@@ -411,6 +413,7 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 	specs = append(specs, guardedTabBrokerSpecs(&cfg)...)
 	specs = append(specs, memoryCandidateBrokerSpecs(&cfg)...)
 	specs = append(specs, memoryReadBrokerSpecs(&cfg)...)
+	specs = append(specs, memoryTemporalBrokerSpecs(&cfg)...)
 	specs = append(specs, workspaceBrokerSpecs(&cfg)...)
 	snapshot, err := loadSpecs(get, specs)
 	return cfg, snapshot, err

@@ -95,6 +95,7 @@ CREATE INDEX memory_temporal_source_original ON memory_temporal_source_pins(orig
 CREATE TABLE memory_temporal_run_pins (
  run_id TEXT NOT NULL REFERENCES runs(run_id),
  claim_id TEXT NOT NULL REFERENCES memory_claims(claim_id),
+ query_key TEXT NOT NULL CHECK(length(query_key)=64),
  head_revision BIGINT NOT NULL CHECK(head_revision>0), active_id TEXT NOT NULL,
  temporal_revision BIGINT NOT NULL CHECK(temporal_revision>=0),
  original_source_id TEXT NOT NULL REFERENCES memory_sources(source_id), source_revision BIGINT NOT NULL,
@@ -102,7 +103,7 @@ CREATE TABLE memory_temporal_run_pins (
  metadata_hash TEXT NOT NULL CHECK(length(metadata_hash)=64), freshness_status TEXT NOT NULL, current_usable BOOLEAN NOT NULL,
  valid_at TIMESTAMPTZ, known_at TIMESTAMPTZ,
  observed_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
- PRIMARY KEY(run_id,claim_id)
+ PRIMARY KEY(run_id,claim_id,query_key)
 );
 
 CREATE FUNCTION butler_memory_temporal_pins_current(pins JSONB) RETURNS BOOLEAN STABLE LANGUAGE SQL AS $$

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/butler/butler/internal/budget"
 	"github.com/butler/butler/internal/memory/adaptive"
+	"github.com/butler/butler/internal/memory/factcontrol"
 	"github.com/butler/butler/internal/memory/readcontrol"
 )
 
@@ -15,7 +16,7 @@ func adaptiveContext(ctx context.Context, p preparedRun) context.Context {
 }
 
 func (s *Service) guardAdaptiveProposal(ctx context.Context, runID, tool, raw string) error {
-	if s.config.AdaptiveRetrieval == nil || !readcontrol.IsTool(tool) {
+	if s.config.AdaptiveRetrieval == nil || !readcontrol.IsTool(tool) && tool != factcontrol.Tool {
 		return nil
 	}
 	err := s.config.AdaptiveRetrieval.CheckProposal(ctx, runID, tool, raw)

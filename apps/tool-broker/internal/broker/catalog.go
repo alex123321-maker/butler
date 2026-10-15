@@ -101,6 +101,9 @@ func (c *TaskCatalog) ListForRun(ctx context.Context, run, query string, limit i
 		if readcontrol.IsTool(contract.GetToolName()) && (a.TaskID == "" || !a.MemoryReadReady) {
 			continue
 		}
+		if contract.GetToolName() == "memory.facts" && (a.TaskID == "" || !a.MemoryReadReady || !a.MemoryTemporalReady) {
+			continue
+		}
 		if contract.GetToolName() == "single_tab.bind.guarded" && (a.TaskID == "" || !a.GuardedTabRequestReady) {
 			continue
 		}

@@ -50,6 +50,9 @@ func TestTemporalReadSerializesOwnerMetadataAndSupersessionIntegration(t *testin
 			// Observe a real PG lock waiter, rather than relying on an arbitrary sleep.
 			for {
 				var waiting bool
+				if _, err = tx.Exec(ctx, `SELECT pg_stat_clear_snapshot()`); err != nil {
+					t.Fatal(err)
+				}
 				if err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid() AND wait_event_type='Lock' AND query LIKE '%memory_%')`).Scan(&waiting); err != nil {
 					t.Fatal(err)
 				}

@@ -7,6 +7,8 @@ import (
 	"sort"
 	"time"
 
+	"github.com/butler/butler/internal/owneridentity"
+	"github.com/butler/butler/internal/ownership"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -39,6 +41,12 @@ func loadTemporalMetadataTx(ctx context.Context, tx pgx.Tx, c Claim, q TemporalQ
 }
 
 func (s *Store) ReadAcceptedFactsTx(ctx context.Context, tx pgx.Tx, claimIDs []string, q TemporalQuery) (AcceptedFactPage, error) {
+	// A foreground run can originate from an authenticated owner request. Once
+	// owned, its reads must use the run's current scope/fence and persist source
+	// pins; an ambient owner actor cannot replace that narrower execution proof.
+	if _, owned := ownership.TokenFromContext(ctx); owned {
+		ctx = owneridentity.WithActor(ctx, owneridentity.Actor{})
+	}
 	out := AcceptedFactPage{Items: []AcceptedFact{}}
 	if tx == nil || len(claimIDs) > MaxTemporalFacts || q.ValidAt != nil && q.ValidAt.IsZero() || q.KnownAt != nil && q.KnownAt.IsZero() {
 		return out, ErrInvalid

@@ -12,6 +12,7 @@ import (
 	"github.com/butler/butler/internal/delegation"
 	"github.com/butler/butler/internal/memory/adaptive"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/factcontrol"
 	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/memory/reader"
 	memoryservice "github.com/butler/butler/internal/memory/service"
@@ -55,7 +56,7 @@ func NewMemoryReads(pool *pgxpool.Pool, sources *catalog.Store, options ...Adapt
 		s.adaptive = options[0].Store
 		s.semantic = options[0].Semantic
 	}
-	for _, c := range readcontrol.Contracts() {
+	for _, c := range append(readcontrol.Contracts(), factcontrol.Contract()) {
 		h, e := actionauth.ContractHash(c)
 		if e != nil {
 			return nil, e
@@ -72,6 +73,12 @@ func (s *MemoryReads) CheckReady(ctx context.Context) error {
 }
 func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope) (readcontrol.Result, error) {
 	a, err := readcontrol.DecodeArgs(e.Tool, e.ArgsJSON)
+	var facts *factcontrol.Args
+	if e.Tool == factcontrol.Tool && s != nil && s.temporal {
+		value, decodeErr := factcontrol.DecodeArgs(e.ArgsJSON)
+		facts = &value
+		err = decodeErr
+	}
 	if s == nil || err != nil || e.RunID == "" || e.ToolCallID == "" || e.EffectID == "" || e.ContractHash != s.hashes[e.Tool] {
 		return readcontrol.Empty("denied"), readcontrol.ErrDenied
 	}
@@ -187,14 +194,19 @@ func (s *MemoryReads) ReadDispatched(ctx context.Context, e readcontrol.Envelope
 	if check(tx) != nil {
 		return readcontrol.Empty("denied"), readcontrol.ErrDenied
 	}
-	result, err := (reader.Reader{Sources: s.sources, SemanticCandidates: candidates}).ReadTx(owned, tx, e.Tool, a)
+	var result readcontrol.Result
+	if facts != nil {
+		result, err = s.readTemporalFactsTx(owned, tx, *facts)
+	} else {
+		result, err = (reader.Reader{Sources: s.sources, SemanticCandidates: candidates}).ReadTx(owned, tx, e.Tool, a)
+	}
 	if err != nil {
 		return readcontrol.Empty("backend_error"), err
 	}
 	// Repeat after all source/fragment lock waits; a result cannot outlive its
 	// exact task, input, lease, source ancestor or deletion watermark.
 	result.Diagnostics = append(result.Diagnostics, diagnostics...)
-	if s.temporal {
+	if s.temporal && facts == nil {
 		if err = s.enrichTemporalReadTx(owned, tx, &result); err != nil {
 			return readcontrol.Empty("denied"), err
 		}

@@ -10,6 +10,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/factcontrol"
 	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/owneridentity"
 	"github.com/butler/butler/internal/ownership"
@@ -120,10 +121,13 @@ func (s *Store) Plan(ctx context.Context, runID string) (Plan, error) {
 }
 
 func (s *Store) CheckProposal(ctx context.Context, runID, tool, raw string) error {
-	if !readcontrol.IsTool(tool) {
+	if !readcontrol.IsTool(tool) && tool != factcontrol.Tool {
 		return nil
 	}
 	a, err := readcontrol.DecodeArgs(tool, raw)
+	if tool == factcontrol.Tool {
+		_, err = factcontrol.DecodeArgs(raw)
+	}
 	if err != nil {
 		return ErrDenied
 	}
@@ -225,7 +229,7 @@ func (s *Store) ObserveTx(ctx context.Context, tx pgx.Tx, e readcontrol.Envelope
 	if deadline.IsZero() || !now.Before(deadline) {
 		return ErrBound
 	}
-	if e.Tool != readcontrol.Search && out.Status == "ok" {
+	if e.Tool != readcontrol.Search && e.Tool != factcontrol.Tool && out.Status == "ok" {
 		for i := range out.Items {
 			item := &out.Items[i]
 			n := utf8.RuneCountInString(item.Text)

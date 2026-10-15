@@ -27,6 +27,11 @@ func (s *Store) ReadAcceptedFactsForSourcesTx(ctx context.Context, tx pgx.Tx, re
 	if len(refs) > MaxTemporalFacts {
 		return AcceptedFactPage{}, ErrInvalid
 	}
+	for _, ref := range refs {
+		if !bounded(ref.ID, 1024) || ref.Revision < 1 || ref.AccessRevision < 1 || len(ref.Hash) != 64 {
+			return AcceptedFactPage{}, ErrInvalid
+		}
+	}
 	if _, err := s.AccessTx(ctx, tx, refs, "memory_read"); err != nil {
 		return AcceptedFactPage{}, err
 	}

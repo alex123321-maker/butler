@@ -31,6 +31,7 @@ type actionContextReader struct {
 	guardedTabRuntimeReady   bool
 	memoryCandidateReady     bool
 	memoryReadReady          bool
+	memoryTemporalReady      bool
 	workspaceReady           bool
 	converterDelegationReady bool
 }
@@ -63,6 +64,7 @@ func (r *actionContextReader) GetActionContext(ctx context.Context, runID string
 	c.GuardedTabRuntimeReady = r.guardedTabRuntimeReady
 	c.MemoryCandidateReady = r.memoryCandidateReady
 	c.MemoryReadReady = r.memoryReadReady
+	c.MemoryTemporalReady = r.memoryTemporalReady
 	c.WorkspaceReady = r.workspaceReady
 	if r.guardedTabRequestReady || r.memoryCandidateReady || r.memoryReadReady || r.workspaceReady {
 		var inputID, claimID string

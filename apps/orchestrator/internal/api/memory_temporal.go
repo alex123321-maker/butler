@@ -19,6 +19,12 @@ func (s *MemoryCatalogServer) handleTemporal(ctx context.Context, w http.Respons
 		return true
 	}
 	if r.URL.Path == "/api/v4/memory/facts" && r.Method == http.MethodGet {
+		for key, values := range r.URL.Query() {
+			if key != "claim_id" && key != "valid_at" && key != "known_at" || key != "claim_id" && len(values) != 1 {
+				writeMemoryError(w, catalog.ErrInvalid)
+				return true
+			}
+		}
 		q := catalog.TemporalQuery{}
 		for key, target := range map[string]**time.Time{"valid_at": &q.ValidAt, "known_at": &q.KnownAt} {
 			raw := r.URL.Query().Get(key)
