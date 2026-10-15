@@ -20,14 +20,14 @@ func TestOwnerRetiresOnlyInactiveTerminalGenerationPreservingSpendIntegration(t 
 		q.Job.ID = id
 		receipt, err := r.Enqueue(ctx, q)
 		if err != nil {
-			t.Fatal(err)
+			t.Fatal(id, "owner admission", err)
 		}
 		if ok, err := r.ProcessOne(context.Background()); !ok || err != nil {
 			t.Fatal(id, ok, "actual local entries", model.calls.Load(), err)
 		}
 		return receipt
 	}
-	first, second := build("first"), build("second")
+	first, second := build("retire-first"), build("retire-second")
 	proof := semantic.Proof{ArtifactRef: "fixture:reviewed", ArtifactSHA256: strings.Repeat("a", 64), CorpusVersion: "retirement-control", Cases: 12, BaselineTop1: .5, CandidateTop1: .75}
 	if err := r.Review(ctx, first.GenerationID, "", proof); err != nil {
 		t.Fatal(err)
@@ -69,7 +69,7 @@ func TestOwnerRetiresOnlyInactiveTerminalGenerationPreservingSpendIntegration(t 
 	}
 	before, calls := digest(), model.calls.Load()
 	out, err := maintenance.Retire(ctx, q)
-	if err != nil || out.GenerationID != q.GenerationID || out.JobID != "first" || out.RemovedVectors != 5 || out.AlreadyRetired || out.RetiredAt.IsZero() {
+	if err != nil || out.GenerationID != q.GenerationID || out.JobID != "retire-first" || out.RemovedVectors != 5 || out.AlreadyRetired || out.RetiredAt.IsZero() {
 		t.Fatal("one inactive generation not retired", out, err)
 	}
 	if digest() != before || model.calls.Load() != calls {
