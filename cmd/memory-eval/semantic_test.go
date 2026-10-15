@@ -26,9 +26,15 @@ func TestMemorySemanticCLIOriginalReplayAndExclusiveOutput(t *testing.T) {
 	c := acceptance.MemorySemanticCase{ID: "cli", Question: "Какой цвет?", AsOfUTC: "2026-10-15T09:00:00Z", Task: acceptance.MemoryTask{Instruction: "Сообщи известное"}, History: []acceptance.MemorySource{{ID: "s1", Revision: 1, Session: "old-session", EventUTC: "2026-09-01T00:00:00Z", Status: "active", Sensitivity: "public", Body: "Цвет белый."}}, Answerable: true, RequiredFacts: []string{"белый"}, OracleSourceIDs: []string{"s1"}}
 	corpus := write("corpus.json", acceptance.MemorySemanticSuite{Version: acceptance.MemorySemanticVersion, Author: "author", Kind: "synthetic", Cases: []acceptance.MemorySemanticCase{c}})
 	i := acceptance.MemoryInput{CaseID: acceptance.MemoryOpaqueCaseID(c.MemoryCase()), Arm: "oracle", Task: c.Task, Question: c.Question, Memory: c.History}
+	inputs := []acceptance.MemoryInput{i}
+	for _, arm := range []string{"no_ltm", "retrieval"} {
+		input := i
+		input.Arm = arm
+		inputs = append(inputs, input)
+	}
 	write("inputs.json", struct {
 		Inputs []acceptance.MemoryInput `json:"inputs"`
-	}{[]acceptance.MemoryInput{i}})
+	}{inputs})
 	raw := json.RawMessage(`{"answer":"Выбран белый цвет."}`)
 	m := acceptance.MemoryMeasurements{Observations: []acceptance.MemoryObservation{{CaseID: i.CaseID, Arm: i.Arm, InputSHA256: acceptance.MemoryInputDigest(i), Status: "completed", Output: raw}}, Expenses: []acceptance.MemoryExpense{}}
 	measured := write("measurements.json", m)
@@ -38,6 +44,15 @@ func TestMemorySemanticCLIOriginalReplayAndExclusiveOutput(t *testing.T) {
 	}
 	yes := true
 	r := acceptance.MemorySemanticReview{Version: "butler-memory-semantic-review-v1", Kind: "prospective", Reviewer: "independent", CandidateAuthor: "author", CorpusSHA256: acceptance.MemoryBytesSHA256(corpus), MeasurementsSHA256: acceptance.MemoryBytesSHA256(measured), RubricSHA256: acceptance.MemoryBytesSHA256(method), Items: []acceptance.MemorySemanticItem{{CaseID: i.CaseID, Arm: i.Arm, InputSHA256: acceptance.MemoryInputDigest(i), OutputSHA256: acceptance.MemoryBytesSHA256(raw), Verdict: "correct", ContextVerdict: "correct", CorpusVerdict: "correct", Grounded: &yes, Complete: &yes, FailureOrigin: "none", Rationale: "Original source establishes the color."}}}
+	for _, input := range inputs[1:] {
+		o := m.Observations[0]
+		o.Arm, o.InputSHA256 = input.Arm, acceptance.MemoryInputDigest(input)
+		m.Observations = append(m.Observations, o)
+		item := r.Items[0]
+		item.Arm, item.InputSHA256 = o.Arm, o.InputSHA256
+		r.Items = append(r.Items, item)
+	}
+	r.MeasurementsSHA256 = acceptance.MemoryBytesSHA256(write("measurements.json", m))
 	write("review.json", r)
 	args := []string{"-mode", "semantic-score", "-suite", filepath.Join(dir, "corpus.json"), "-inputs", filepath.Join(dir, "inputs.json"), "-measurements", filepath.Join(dir, "measurements.json"), "-review", filepath.Join(dir, "review.json"), "-rubric", filepath.Join(dir, "method.md"), "-output-dir", filepath.Join(dir, "result")}
 	if err := run(args, &bytes.Buffer{}); err != nil {
@@ -46,6 +61,22 @@ func TestMemorySemanticCLIOriginalReplayAndExclusiveOutput(t *testing.T) {
 	if err := run(args, &bytes.Buffer{}); err == nil {
 		t.Fatal("replay overwrote evidence")
 	}
+	// Trimming inputs and observations together must not redefine the matrix.
+	for _, subset := range [][]acceptance.MemoryInput{nil, inputs[:1]} {
+		write("inputs.json", struct {
+			Inputs []acceptance.MemoryInput `json:"inputs"`
+		}{subset})
+		args[len(args)-1] = filepath.Join(dir, "incomplete-result")
+		if err := run(args, &bytes.Buffer{}); err == nil {
+			t.Fatal("incomplete corpus matrix accepted")
+		}
+		if _, err := os.Stat(args[len(args)-1]); !os.IsNotExist(err) {
+			t.Fatal("incomplete matrix created report")
+		}
+	}
+	write("inputs.json", struct {
+		Inputs []acceptance.MemoryInput `json:"inputs"`
+	}{inputs})
 	r.Items[0].OutputSHA256 = acceptance.MemoryBytesSHA256([]byte("changed-answer"))
 	write("review.json", r)
 	args[len(args)-1] = filepath.Join(dir, "tampered-result")

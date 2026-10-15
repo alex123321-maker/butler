@@ -155,6 +155,9 @@ type MemorySemanticMetrics struct {
 	CorrectCanonicalRejections int    `json:"correct_canonical_rejections"`
 	ActionCorrect              int    `json:"action_correct"`
 	ActionIncorrect            int    `json:"action_incorrect"`
+	CitationsChecked           int    `json:"citations_checked"`
+	CitationErrors             int    `json:"citation_errors"`
+	UnknownCitationOutputs     int    `json:"unknown_citation_outputs"`
 	ModelP50Milliseconds       *int64 `json:"model_p50_ms"`
 	ModelP95Milliseconds       *int64 `json:"model_p95_ms"`
 }
@@ -198,6 +201,9 @@ func ScoreMemorySemantic(cases []MemoryCase, inputs []MemoryInput, measurements 
 		return r, errors.New("independent review identity or original hashes differ")
 	}
 	cs := map[string]MemoryCase{}
+	if len(cases) == 0 || len(inputs) == 0 {
+		return r, errors.New("nonempty corpus and semantic inputs required")
+	}
 	for _, c := range cases {
 		id := MemoryOpaqueCaseID(c)
 		if _, ok := cs[id]; ok {
@@ -206,6 +212,7 @@ func ScoreMemorySemantic(cases []MemoryCase, inputs []MemoryInput, measurements 
 		cs[id] = c
 	}
 	is := map[string]MemoryInput{}
+	covered := map[string]bool{}
 	for _, i := range inputs {
 		key := i.CaseID + "/" + i.Arm
 		if _, ok := is[key]; ok {
@@ -215,6 +222,10 @@ func ScoreMemorySemantic(cases []MemoryCase, inputs []MemoryInput, measurements 
 			return r, errors.New("input corpus binding missing")
 		}
 		is[key] = i
+		covered[i.CaseID] = true
+	}
+	if len(covered) != len(cs) {
+		return r, errors.New("semantic inputs omit a corpus case")
 	}
 	items := map[string]MemorySemanticItem{}
 	for _, item := range review.Items {
@@ -281,9 +292,20 @@ func ScoreMemorySemantic(cases []MemoryCase, inputs []MemoryInput, measurements 
 				return r, fmt.Errorf("review source witness unavailable: %s/%s", key, e.SourceID)
 			}
 		}
+		assessable, err := validateSemanticCitationCoverage(MemoryObservationOriginal(o), item.CitationChecks)
+		if err != nil {
+			return r, err
+		}
+		if !assessable {
+			m.UnknownCitationOutputs++
+		}
 		for _, e := range item.CitationChecks {
 			if e.AnchoredInOriginal != semanticOriginal(c, e.SourceID, e.Revision, e.Quote) || e.VisibleInInput != semanticVisible(i, e.SourceID, e.Quote) {
 				return r, errors.New("citation authenticity/visibility annotation differs")
+			}
+			m.CitationsChecked++
+			if !e.AnchoredInOriginal || !e.VisibleInInput || e.EntailsClaim != nil && !*e.EntailsClaim {
+				m.CitationErrors++
 			}
 		}
 		if e := item.TaskEvidence; e != nil && (e.Revision != i.Task.Revision || e.Quote == "" || !strings.Contains(i.Task.Instruction, e.Quote)) {

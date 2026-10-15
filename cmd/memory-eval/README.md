@@ -38,6 +38,16 @@ GO/NO_GO, no inherited 280-call/60-second promotion rule and no invented externa
 task success. Meaning is reviewed by a separate model agent, with explicit
 fallibility; this is not human annotation.
 
+Offline replay requires the complete corpus-derived case/arm matrix, including
+predeclared repeats and explicit failed/skipped observations. Trimming inputs and
+observations together cannot redefine that matrix. The generic scorer also
+rejects empty inputs and omitted corpus cases. Every parseable original model
+citation must have exactly one matching review check, including duplicates and
+incorrect citations. `citations_checked`, `citation_errors` and
+`unknown_citation_outputs` are separate from answer correctness; malformed model
+syntax remains an observation with unknown citation assessment. These additional
+structural checks do not rewrite sealed corpora, reviews or historical reports.
+
 The new `ru-memory-semantic-v1.json` fixes twelve fresh synthetic cases and38
 entries: no-memory, sufficient-evidence oracle, ordinary retrieval, plus two
 predeclared retrieval repeats with identical visible inputs. Calibration tests

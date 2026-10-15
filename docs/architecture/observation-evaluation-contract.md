@@ -17,6 +17,14 @@ predeclared repeats use fresh frozen cases; retrospective rescoring is diagnosti
 on exposed data. Document-memory process/PG restart evidence does not establish
 all memory-layer or external-effect acceptance. Historical V2 protocol follows.
 
+Semantic CLI replay derives the complete case/arm/repeat matrix from the corpus
+and rejects missing, duplicate or foreign input slots. Failed/skipped entries
+still require observations; an empty or jointly trimmed input/observation set
+cannot establish complete coverage. Model citations must have an exhaustive
+multiset of original-bound checks. Citation errors remain separate from factual
+answer verdicts, and malformed citation output is explicitly unassessed. These
+structural checks preserve historical evidence bytes and do not authorize runs.
+
 `cmd/memory-eval` is an additive client of the same acceptance contour. Its
 independently reviewed V2's24-case Russian synthetic development/holdout dataset pins sources,
 time, current task version and literal expected witnesses. Pre-run frozen inputs

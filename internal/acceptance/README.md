@@ -1,5 +1,10 @@
 # Lab acceptance evidence
 
+Semantic memory replay checks the complete corpus-derived matrix and requires
+one original-bound review check per model citation. Citation errors and unknown
+syntax are reported separately from answer correctness. See the current
+[CLI contract](../../cmd/memory-eval/README.md); historical evidence stays sealed.
+
 The additive versioned `memory-eval` contract extends this same evaluation package for
 issue78. `cmd/memory-eval` freezes identical model/resource/data/configuration
 pins across no-long-term-memory, permitted full-history and captured-current-
