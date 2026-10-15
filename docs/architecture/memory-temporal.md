@@ -1,0 +1,77 @@
+# Memory validity, observation and freshness (#88)
+
+This document fixes the implementation contract for issue88. The temporal runtime
+is under implementation and remains default-off/unqualified until its acceptance
+gates pass. PostgreSQL, existing catalog sources/claims and owner fact heads remain
+authoritative. A freshness policy never accepts, rejects or supersedes a claim.
+
+## Time fields
+
+| Field | Meaning |
+|---|---|
+| Source `EventTime` | Reported source event instant; independent of fact validity |
+| Source revision `extracted_at` | Core-recorded ingestion of that immutable revision |
+| Claim `created_at` / `ExtractedAt` | Core-recorded candidate extraction |
+| Claim `accepted_at` | Authenticated owner decision recording time |
+| Temporal revision `recorded_at` | Core-recorded owner metadata or verification update |
+| Temporal `valid_from`, `valid_to` | Explicit claimed validity `[from,to)` |
+| Temporal `verified_at` | Explicit owner verification or proven Broker read observation |
+
+Existing profile `effective_from/to` describe projection/owner decision lifecycle;
+they do not become valid time. Unknown validity has null bounds. An explicitly
+declared interval can have an open bound; its null bound does not mean an inferred
+date. Raw relative dates, dates without zones and source `valid_time_quote` stay
+raw/unknown. Typed controls accept complete RFC3339 instants with an explicit zone.
+Later ingestion cannot make a document more true or replace an owner preference.
+
+## Typed read and pin contract
+
+The catalog owns these transaction-scoped methods. The first implementation will
+provide them with the exported types in `catalog/temporal_types.go`:
+
+```go
+ReadAcceptedFactsTx(ctx context.Context, tx pgx.Tx, claimIDs []string, q TemporalQuery) (AcceptedFactPage, error)
+CheckAcceptedFactPinsTx(ctx context.Context, tx pgx.Tx, pins []AcceptedFactPin, q TemporalQuery) error
+BindAcceptedFactPinsTx(ctx context.Context, tx pgx.Tx, derivedSourceID string, pins []AcceptedFactPin, q TemporalQuery) error
+```
+
+IDs are a finite caller-selected set, never an owner/scope grant. Every read
+rechecks restore state, the owning run/job/owner proof, all original source
+ancestors and current scope. The ordinary source EventTime filter belongs to87;
+it does not silently become `ValidAt`. Nil/nil selects the current owner head.
+`ValidAt` selects explicit accepted validity at that instant using current
+knowledge. `KnownAt` limits source/extraction/decision/metadata knowledge to what
+was actually recorded by that instant. Both can be supplied together. Unknown
+validity cannot satisfy a dated validity filter and is counted explicitly.
+
+Historical accepted claims can be superseded today, but current privacy,
+correction and scope proofs still apply. Logical freshness expiration preserves
+that history; privacy deletion denies it. No old source revision or restored
+database bypasses the newest independent deletion anchor.
+
+An `AcceptedFactPin` names the exact source revision/hash/access, current owner
+head revision/active ID, current temporal metadata revision and the selected
+metadata hash plus time-sensitive freshness. A historical metadata revision can
+be older than the current head pinned for invalidation. Derived snapshots bind
+these pins and the exact query atomically. The075 relational metadata predicate
+must cover publication, full pre-HTTP proof, periodic observation and later
+reads; retaining only a source-content pin is insufficient. Revisions/time
+changes cannot silently refresh an old generated view.
+
+## Freshness and authority
+
+Owner controls classify `stable_preference`, `work_status`, `technical_fact`,
+`completed_episode` or `unknown`. Mutable work/status facts require short
+revalidation; mutable technical facts use a longer independent policy. Stable
+owner preferences do not expire merely from age, and completed episodes remain
+historical evidence. Unknown verification stays unknown. Explicit validity of
+a one-off task/session exception can end without changing the separate broader
+owner preference. An expiry changes current retrieval suitability, not history,
+confirmation, task authority or privacy-deletion state.
+
+The metadata update is authenticated owner CAS on claim/head/temporal revision.
+The model cannot supply accepted status, revisions, recording time or a freshness
+receipt. External revalidation uses an already authorized, budgeted read through
+the Tool Broker with a durable observation/result provenance pin. A failed or
+unavailable read leaves the fact visibly unverified. It cannot write a new truth,
+change a mandate, replay an uncertain effect or remove old spending.
