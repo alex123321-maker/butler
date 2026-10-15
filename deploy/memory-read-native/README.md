@@ -26,6 +26,14 @@ attempts. Product admission keeps its normal finite 64-turn task defaults and
 five-minute native call bound; the one task has a twenty-minute wall-clock test
 deadline. No provider fallback or budget refund is introduced.
 
+After a diagnosed failure and reviewed code fix, `recover` replaces `execute`
+for a fresh evidence label. It resumes the same blocked task through the actual
+owner control API, preserving its root allowance, old attempts and sources. New
+serialized auth is installed only with CAS against the last isolated export.
+The final audit requires every old attempt row to remain identical and all new
+run attempts to have complete observed usage. A failed turn is never erased,
+refunded or reinterpreted as zero.
+
 All native internet uses the existing proxy configuration. Build/migration runs
 use only cached modules/images on the private network. The main Compose stack is
 untouched. JSONL-less full product evidence is retained in PG and `ledger.json`,
