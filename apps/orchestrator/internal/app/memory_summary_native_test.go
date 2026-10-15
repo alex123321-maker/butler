@@ -27,12 +27,12 @@ type nativeSummaryCosts struct {
 	SerializedInputBytes, TransportMillis  int64
 }
 
-// v6 is a new independent prospective budget in the same isolated database.
-// v1/v2/v3/v4/v5 reservations, including all four unknown expenses, are immutable history.
+// v7 is a new independent prospective budget in the same isolated database.
+// v1/v2/v3/v4/v5/v6 reservations, including all five unknown expenses, are immutable history.
 // A persistent admission identity prevents repeating any paid window.
 func TestNativeOrdinaryTaskSummaryContinuityIntegration(t *testing.T) {
-	if os.Getenv("BUTLER_SUMMARY_NATIVE_V6") != "1" {
-		t.Skip("explicit independent native summary continuity v6 window required")
+	if os.Getenv("BUTLER_SUMMARY_NATIVE_V7") != "1" {
+		t.Skip("explicit independent native summary continuity v7 window required")
 	}
 	if os.Getenv("HTTPS_PROXY") != "http://127.0.0.1:18080" {
 		t.Fatal("server proxy pin required")
@@ -125,13 +125,36 @@ func TestNativeOrdinaryTaskSummaryContinuityIntegration(t *testing.T) {
 	historicalAttempts += v5Attempts
 	historicalTokens += v5Tokens
 	unknown += v5Unknown
-	if _, err = admin.Exec(ctx, `INSERT INTO issue84_native_windows(id)VALUES('summary-native-v6');CREATE SCHEMA summary_native_v6`); err != nil {
+	v6Ledger, err := os.ReadFile("/history/native-v6/full-ledger.json")
+	if err != nil || !json.Valid(v6Ledger) {
+		t.Fatal("retained v6 ledger unavailable")
+	}
+	v6Native, err := os.ReadFile("/history/native-v6/native-usage.json")
+	var v6Usage map[string]transport.Usage
+	if err != nil || json.Unmarshal(v6Native, &v6Usage) != nil || len(v6Usage) != 1 {
+		t.Fatal("retained complete v6 native usage unavailable")
+	}
+	v6Tokens := 0
+	for _, u := range v6Usage {
+		if u.Validate() != nil {
+			t.Fatal("invalid retained native usage")
+		}
+		v6Tokens += u.TotalTokens
+	}
+	var v6Attempts, v6Unknown int
+	if err := admin.QueryRow(ctx, `SELECT (SELECT count(*) FROM summary_native_v6.memory_model_attempts)+(SELECT count(*) FROM summary_native_v6.execution_model_attempts),(SELECT count(*) FROM summary_native_v6.memory_model_attempts WHERE usage IS NULL)+(SELECT count(*) FROM summary_native_v6.execution_model_attempts WHERE observed_at IS NULL)`).Scan(&v6Attempts, &v6Unknown); err != nil || v6Attempts != 2 || v6Unknown != 1 || v6Tokens != 7974 {
+		t.Fatal("retained v6 expenses changed")
+	}
+	historicalAttempts += v6Attempts
+	historicalTokens += v6Tokens
+	unknown += v6Unknown
+	if _, err = admin.Exec(ctx, `INSERT INTO issue84_native_windows(id)VALUES('summary-native-v7');CREATE SCHEMA summary_native_v7`); err != nil {
 		t.Fatal("native one-use window denied")
 	}
 	cfg.MaxConns = 2
 	trace := &summaryPGTrace{}
 	cfg.ConnConfig.Tracer = trace
-	cfg.ConnConfig.RuntimeParams["search_path"] = "summary_native_v6,public"
+	cfg.ConnConfig.RuntimeParams["search_path"] = "summary_native_v7,public"
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		t.Fatal(err)
@@ -152,11 +175,11 @@ func TestNativeOrdinaryTaskSummaryContinuityIntegration(t *testing.T) {
 			t.Fatal("migration failed", filepath.Base(path))
 		}
 	}
-	auth, err := os.ReadFile("/private/auth-v6.value")
+	auth, err := os.ReadFile("/private/auth-v7.value")
 	if err != nil {
 		t.Fatal("encrypted auth unavailable")
 	}
-	if _, err = pool.Exec(ctx, `INSERT INTO system_settings(key,value,component,is_secret,updated_by)VALUES('BUTLER_PROVIDER_AUTH_ANTIGRAVITY',$1,'provider-auth',true,'isolated-summary-native-v6')`, strings.TrimSpace(string(auth))); err != nil {
+	if _, err = pool.Exec(ctx, `INSERT INTO system_settings(key,value,component,is_secret,updated_by)VALUES('BUTLER_PROVIDER_AUTH_ANTIGRAVITY',$1,'provider-auth',true,'isolated-summary-native-v7')`, strings.TrimSpace(string(auth))); err != nil {
 		t.Fatal("encrypted import denied")
 	}
 	p := &continuityProvider{}
@@ -172,13 +195,13 @@ func TestNativeOrdinaryTaskSummaryContinuityIntegration(t *testing.T) {
 		writeProof("/proof/native-pgtrace.json", pgRaw)
 		var encrypted string
 		if pool.QueryRow(context.Background(), `SELECT value FROM system_settings WHERE key='BUTLER_PROVIDER_AUTH_ANTIGRAVITY'`).Scan(&encrypted) == nil {
-			writeProof("/private/auth-return-v6.value", []byte(encrypted))
+			writeProof("/private/auth-return-v7.value", []byte(encrypted))
 		} else {
 			t.Error("encrypted native auth export unavailable")
 		}
 		_, _ = pool.Exec(context.Background(), `UPDATE memory_model_control SET state='disabled' WHERE singleton`)
 		var ledger json.RawMessage
-		if pool.QueryRow(context.Background(), `SELECT jsonb_build_object('background',(SELECT jsonb_agg(to_jsonb(a)) FROM memory_model_attempts a),'foreground',(SELECT jsonb_agg(to_jsonb(a)) FROM execution_model_attempts a),'scopes',(SELECT jsonb_agg(jsonb_build_object('kind',kind,'used',used_json,'limits',limits_json)) FROM execution_budget_scopes),'schema_physical_bytes',(SELECT sum(pg_total_relation_size(c.oid))FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='summary_native_v6' AND c.relkind='r'))`).Scan(&ledger) == nil {
+		if pool.QueryRow(context.Background(), `SELECT jsonb_build_object('background',(SELECT jsonb_agg(to_jsonb(a)) FROM memory_model_attempts a),'foreground',(SELECT jsonb_agg(to_jsonb(a)) FROM execution_model_attempts a),'scopes',(SELECT jsonb_agg(jsonb_build_object('kind',kind,'used',used_json,'limits',limits_json)) FROM execution_budget_scopes),'schema_physical_bytes',(SELECT sum(pg_total_relation_size(c.oid))FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='summary_native_v7' AND c.relkind='r'))`).Scan(&ledger) == nil {
 			writeProof("/proof/full-ledger.json", ledger)
 		} else {
 			t.Error("native ledger export unavailable")
@@ -230,7 +253,7 @@ func TestNativeOrdinaryTaskSummaryContinuityIntegration(t *testing.T) {
 		if newUnknown < 0 {
 			t.Error("native observation exceeds admitted attempts")
 		}
-		encoded, _ := json.Marshal(map[string]any{"window": "summary-native-v6", "new_independent_budget": true, "report": report, "quality_pass": !t.Failed(), "elapsed_millis": time.Since(begin).Milliseconds(), "costs": costs, "provider": "antigravity", "model": "gemini-3.8-flash-high", "route": "server_proxy_18080", "reserved_scope_calls": 16, "actual_planned_calls": 9, "retained_v1_attempts": 3, "retained_v1_unknown_usage": 1, "retained_v2_attempts": 1, "retained_v2_unknown_usage": 1, "retained_v3_attempts": 1, "retained_v3_unknown_usage": 1, "retained_v4_attempts": v4Attempts, "retained_v4_unknown_usage": v4Unknown, "retained_v5_attempts": v5Attempts, "retained_v5_unknown_usage": v5Unknown, "native_generated_ceiling": 32768, "per_call_millis": 300000, "cumulative_attempts": attempts, "cumulative_known_native_total_tokens": knownTokens, "cumulative_unknown_usage_attempts": unknown + newUnknown, "monetary_basis": "subscription_no_overage", "invoice_cost": "unknown", "comparison": "independent sessions with identical primary inputs/current typed state; baseline3 full-history foreground; candidate3 primary compactions+3 ordinary foreground; no answer sharing or automatic replay; all background costs included"})
+		encoded, _ := json.Marshal(map[string]any{"window": "summary-native-v7", "new_independent_budget": true, "report": report, "quality_pass": !t.Failed(), "elapsed_millis": time.Since(begin).Milliseconds(), "costs": costs, "provider": "antigravity", "model": "gemini-3.8-flash-high", "route": "server_proxy_18080", "reserved_scope_calls": 16, "actual_planned_calls": 9, "retained_v1_attempts": 3, "retained_v1_unknown_usage": 1, "retained_v2_attempts": 1, "retained_v2_unknown_usage": 1, "retained_v3_attempts": 1, "retained_v3_unknown_usage": 1, "retained_v4_attempts": v4Attempts, "retained_v4_unknown_usage": v4Unknown, "retained_v5_attempts": v5Attempts, "retained_v5_unknown_usage": v5Unknown, "retained_v6_attempts": v6Attempts, "retained_v6_unknown_usage": v6Unknown, "native_generated_ceiling": 32768, "per_call_millis": 300000, "cumulative_attempts": attempts, "cumulative_known_native_total_tokens": knownTokens, "cumulative_unknown_usage_attempts": unknown + newUnknown, "monetary_basis": "subscription_no_overage", "invoice_cost": "unknown", "comparison": "independent sessions with identical primary inputs/current typed state; baseline3 full-history foreground; candidate3 primary compactions+3 ordinary foreground; no answer sharing or automatic replay; all background costs included"})
 		writeProof("/proof/comparison.json", encoded)
 		writeProof("/proof/native-usage.json", usageRaw)
 		writeProof("/proof/native-probes.json", probeRaw)
@@ -239,12 +262,14 @@ func TestNativeOrdinaryTaskSummaryContinuityIntegration(t *testing.T) {
 		writeProof("/proof/native-stage-metadata.json", stageRaw)
 		// Fixed synthetic acceptance data only. Raw unvalidated output stays in the
 		// isolated private evidence directory, never the catalog or public report.
-		writeProof("/private/summary-native-v6-final-output.json", finalRaw)
+		writeProof("/private/summary-native-v7-final-output.json", finalRaw)
 		writeProof("/proof/retained-v1-v2-v3-ledger.json", prior)
 		writeProof("/proof/retained-v4-ledger.json", v4Ledger)
 		writeProof("/proof/retained-v4-native-usage.json", v4Native)
 		writeProof("/proof/retained-v5-ledger.json", v5Ledger)
 		writeProof("/proof/retained-v5-native-usage.json", v5Native)
+		writeProof("/proof/retained-v6-ledger.json", v6Ledger)
+		writeProof("/proof/retained-v6-native-usage.json", v6Native)
 	}()
 	manager := providerauth.NewManager(config.NewPostgresSettingsStore(pool))
 	result, err := providerfactory.New(manager, slog.New(slog.NewTextHandler(io.Discard, nil))).Build(ctx, providerfactory.BuildConfig{ActiveProvider: "antigravity", AntigravityModel: "gemini-3.8-flash-high", Timeout: 300 * time.Second, AntigravityMaximumOutputTokens: 32768})
@@ -261,7 +286,7 @@ func TestNativeOrdinaryTaskSummaryContinuityIntegration(t *testing.T) {
 	if !summaryProfileReady(result, b) {
 		t.Fatal("native profile does not match production summary prerequisites")
 	}
-	report = runSummaryContinuity(t, pool, p, "/private/native-v6-deletions.log", 3, result.ModelName, b, &report)
+	report = runSummaryContinuity(t, pool, p, "/private/native-v7-deletions.log", 3, result.ModelName, b, &report)
 	p.mu.Lock()
 	known := len(p.usages)
 	p.mu.Unlock()
