@@ -37,7 +37,11 @@ executor, model adapter, managed service or synthetic success oracle.
 - That is52 original/control input slots plus4 note generations and1 skill
   generation,57 logical slots. Each source/control input has at most12 actual
   model transport entries including tool-result and approval continuations;
-  each note/skill-generation slot has at most1. Prospective maximum629 entries,
+  each note-generation slot has at most1. Skill preparation is an ordinary
+  foreground Flow/Broker input with at most12 actual entries: the model receives
+  exact references to the two confirmed lessons as DATA and may open/page them
+  before returning its strict unmodified Manifest for Stage. Prospective maximum
+  is640 entries (52×12 +4×1 +1×12),
   single foreground run at a time, one actual attempt per durable input. Normal
   tool-result continuations are counted, not called retries or excluded.
 - Proposed model/profile: existing Antigravity Flash High, exact32768 generated
