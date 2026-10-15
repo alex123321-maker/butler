@@ -54,6 +54,30 @@ type Error struct {
 	ProviderName    string
 	ProviderCode    string
 	ProviderDetails map[string]any
+	// Fixed numeric response metadata; headers and response bodies are excluded.
+	HTTPStatus int
+	SafeReason string
+}
+
+func DiagnosticReason(err error) string {
+	var failure *Error
+	if !errors.As(err, &failure) || failure == nil {
+		return ""
+	}
+	switch failure.SafeReason {
+	case "unsupported_schema_min_items", "unsupported_schema_max_items", "response_schema_rejected", "upstream_invalid_argument":
+		return failure.SafeReason
+	default:
+		return ""
+	}
+}
+
+func DiagnosticHTTPStatus(err error) int {
+	var failure *Error
+	if !errors.As(err, &failure) || failure == nil || failure.HTTPStatus < 300 || failure.HTTPStatus > 599 {
+		return 0
+	}
+	return failure.HTTPStatus
 }
 
 func (e *Error) Error() string {

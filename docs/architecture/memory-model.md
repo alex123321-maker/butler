@@ -1,5 +1,13 @@
 # Butler — Memory Model Specification
 
+Issue78's [memory-eval protocol](../../cmd/memory-eval/README.md) measures truth,
+actual-context evidence, calibrated refusal, current instruction consistency and
+separate user outcomes. Its independent public V2 controls and owned-source/index/
+native collector extend issue33 without another memory service. Missing retrieval
+may justify refusal but cannot count as recovered usefulness. Unknown tokenizer,
+invoice, physical-storage and effects remain unknown and deny promotion; synthetic
+QA grants no owner confirmation or execution authority.
+
 ## 1. Статус документа
 
 **Тип документа:** Architecture Subspec / Memory Model
@@ -792,6 +800,43 @@ The memory doctor (`/api/v1/doctor/check`) now reports:
 
 ## 23. Итоговый тезис
 
+### Проверка полезности памяти
+
+Текущая [смысловая методика](../ai/memory-eval-semantic-methodology.md)
+проверяет обоснованность утверждений, полноту, актуальность, неопределённость
+и согласованность с поручением отдельно от машинного формата. Независимая
+рецензия привязана к точным корпусу/методике/input/output; код проверяет
+подлинность цитат и полноту матрицы, не выдавая это за доказанное смысловое
+следование. Ошибка старого lexical scorer, отсутствие факта в retrieval,
+ошибка ответа при видимых доказательствах и provider failure различаются.
+Режим oracle предоставляет заранее проверенные достаточные источники;
+он не получает эталон ответа. Свежая проверка использует обычный Catalog,
+owned index и сборщик bundle, отдельный процесс чтения после перезапуска
+PostgreSQL. Это проверка document memory, не всех слоёв памяти платформы.
+Исторические strict scores ниже сохраняются со своими версиями; их общий
+NO_GO не заменяет смысловую оценку. Времена и ресурсы — отдельные измерения.
+
+Issue78 добавляет `cmd/memory-eval` поверх существующего `internal/acceptance`
+(issue33). До модельного сравнения фиксируются версия набора и разметки,
+контрольная часть, исходники, код, модель, промпт, конфигурация памяти и конечные
+лимиты. Режимы без долговременной памяти, полного допустимого контекста и
+актуального retrieval используют одинаковое текущее поручение и модель.
+Непоместившийся baseline явно пропускается; усечённая история не считается
+полным контекстом. Удалённые тела и секретные случаи не входят в model input.
+
+Качество поиска, корректность ответа и цитирования, применение актуального факта,
+соблюдение поручения и независимо подтверждённый результат действия — разные
+измерения. Все расходы чтения/записи, embedding, извлечения, сводок,
+консолидации, повторов, ошибок и фона включаются с явными неизвестными.
+Критические нарушения полномочий, приватности, остановки и удаления запрещают
+продвижение. Модель-судья не заменяет проверки исходников и реальных эффектов.
+
+Первый набор синтетический; fixture проверяет стенд и текущий сборщик bundle
+с фиксированными ответами тестового хранилища. Это не доказательство качества
+модели или production readiness. Независимая разметка/контроль и исходные
+runner/ledger доказательства остаются обязательны. Память и её полномочия этот
+offline контур не меняет. См. [методику и ограничения](../../cmd/memory-eval/README.md).
+
 Память Butler должна быть **многослойной, структурированной и управляемой**.
 Она не равна ни чату, ни RAG, ни векторной базе.
 
@@ -838,3 +883,20 @@ durable completion only after actual removal; lost acknowledgement remains
 pending across restart. This component is implemented, while workspace
 Broker/runtime/model admission and cleanup scheduling remain disabled/pending.
 
+# Pending-only evaluation lineage
+
+An independently reviewed continuation can reuse original retrieval captures
+after a failed native prefix. It must preserve the complete original scored
+matrix, paid failures, all charges and original absolute expiry; only admission
+of unpaid inputs is allowed. Rebase current source/task authority through the
+Catalog, without replaying old receipts as new execution or repeating inference.
+Source/binary/original-byte lineage and composite ledger correlation are required.
+
+A separate explicit owner mandate may authorize a new prospective window after
+expiry. MemoryRenewal binds the new source/binary/window, exact ordered unpaid
+input digest, original parent pins and accumulated spend. The current renewal is
+limited to five remaining inputs and at most30minutes. It neither edits old
+expiries nor retries any consumed observation. Current leases/source guards are
+new receipts. Clean retained provider failures remain in the unchanged scored
+denominator; they do not block admission of the next distinct authorized input.
+Authority, protocol or retention failures still seal collection immediately.

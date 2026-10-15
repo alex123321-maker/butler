@@ -303,7 +303,7 @@ func TestUnsafeOrIncompleteResponsesNeverProposeTools(t *testing.T) {
 }
 
 func TestHTTPFailuresMaskedNoRetryOrAuthRedirect(t *testing.T) {
-	for _, status := range []int{302, 401, 403, 429, 500} {
+	for _, status := range []int{302, 400, 401, 403, 404, 429, 500} {
 		t.Run(fmt.Sprint(status), func(t *testing.T) {
 			var calls atomic.Int32
 			p := newFixture(t, func(*http.Request) (*http.Response, error) {
@@ -317,6 +317,9 @@ func TestHTTPFailuresMaskedNoRetryOrAuthRedirect(t *testing.T) {
 			errorEvent := findError(collect(t, stream))
 			if errorEvent == nil || strings.Contains(errorEvent.Message, "private-access") || strings.Contains(errorEvent.Message, "email") || errorEvent.Retryable || calls.Load() != 1 {
 				t.Fatal("error leaked or retried")
+			}
+			if transport.DiagnosticHTTPStatus(errorEvent) != status {
+				t.Fatal("safe actual HTTP status lost")
 			}
 			if status == 429 && errorEvent.Type != transport.ErrorTypeRateLimited {
 				t.Fatal("quota not normalized")

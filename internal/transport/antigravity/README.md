@@ -1,5 +1,10 @@
 # Antigravity native transport
 
+Optional trusted current-source callbacks run before authentication and actual
+HTTP dispatch. They cannot select credentials/models/schema, authorize tools or
+retry. Unhooked cancellation behavior and safe source-timeout/stale diagnostics
+remain separate; budgets and final acceptance stay with the owning caller.
+
 Complete logical tool/final outcomes optionally retain the provider's observed
 `modelVersion`. Missing version stays unavailable; the requested profile never
 fills it in. Bounded Gemini identifiers, exact JSON keys and cross-frame version

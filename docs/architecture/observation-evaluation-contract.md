@@ -1,5 +1,62 @@
 # Observation-only contract evaluation
 
+## Memory outcome evaluation (issue78)
+
+Current semantic diagnostics follow the separately versioned
+[semantic methodology](../ai/memory-eval-semantic-methodology.md). Exact
+wording, canonical abstention formatting and citation count cannot stand in for
+factual correctness. Independent annotations separately cover grounding,
+completeness, uncertainty, sufficient visible evidence, corpus truth and action
+proposals. The deterministic offline scorer checks immutable-byte correlation
+and original witnesses, not semantic entailment. A model reviewer is fallible
+and not a human annotator. Partial safe refusals do not count as complete
+question successes. Failed entries retain their end-to-end denominator without
+fabricated semantic labels. Pricing/latency/resource dimensions do not inherit
+the legacy promotion gate. Prospective no-memory/oracle/retrieval trials and
+predeclared repeats use fresh frozen cases; retrospective rescoring is diagnostic
+on exposed data. Document-memory process/PG restart evidence does not establish
+all memory-layer or external-effect acceptance. Historical V2 protocol follows.
+
+Semantic CLI replay derives the complete case/arm/repeat matrix from the corpus
+and rejects missing, duplicate or foreign input slots. Failed/skipped entries
+still require observations; an empty or jointly trimmed input/observation set
+cannot establish complete coverage. An independently declared baseline variant
+uses retrieval-only slots for every corpus case and is explicit in the report.
+Model citations must have an exhaustive
+multiset of original-bound checks. Citation errors remain separate from factual
+answer verdicts, and malformed citation output is explicitly unassessed. These
+structural checks preserve historical evidence bytes and do not authorize runs.
+
+`cmd/memory-eval` is an additive client of the same acceptance contour. Its
+independently reviewed V2's24-case Russian synthetic development/holdout dataset pins sources,
+time, current task version and literal expected witnesses. Pre-run frozen inputs
+cover no LTM, permitted full context and independently captured current retrieval;
+all share the model and fixed limits. Secret cases and full-context byte overflow
+remain explicit skips. V1's30-case mirrored controls remain a rejected historical
+fixture. Current-bundle fixed-store fixtures are code evidence only. V2's lexical
+answer alternatives and citation anchors are frozen before observation; counts
+under this conservative rubric are not a complete semantic error judgment.
+
+The programmatic scorer distinguishes answer/current-fact/citation quality,
+confidence and abstention, retrieval diagnostics, task-instruction observations
+and independently measured task success. It retains all memory expense stages,
+failed samples and NULLs. Source/deletion and stop proposals plus independent
+permission/privacy/stop/deletion outcomes gate promotion. A model verdict cannot
+provide effect proof. Case references feed the common issue76 failure evidence,
+without a second behavior catalog. Existing signed corpora and closed native
+windows stay immutable. New golden review uses the existing external Ed25519
+approval format; original runner/ledger correlation remains a separate gate.
+The initial command cannot authorize model calls, promotion or deployment.
+See [protocol, reproduction and open acceptance](../../cmd/memory-eval/README.md).
+
+The renewed five-input memory window uses an independently checked prospective
+MemoryRenewal instead of extending an expired mandate. Its complete-attempt
+auditor requires exactly every authorized input, preserves all old failures and
+costs, and correlates any clean empty provider failure as an actual failed
+attempt. It cannot award answer success, usage or promotion to that failure.
+An encrypted-auth control-plane preflight makes zero model calls and contributes
+separate measured latency/logical probe counts and unknown monetary expense.
+
 The latest closed history is575. V11's18 requests all completed with measured
 expense, but its fixture stopped on14 actions instead of exactly13, before owner
 verification and delivery. Two check proposals read the same immutable artifact;

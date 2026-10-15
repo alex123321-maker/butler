@@ -1,5 +1,23 @@
 # Lab acceptance evidence
 
+Semantic memory replay checks the complete corpus-derived matrix and requires
+one original-bound review check per model citation. Citation errors and unknown
+syntax are reported separately from answer correctness. See the current
+[CLI contract](../../cmd/memory-eval/README.md); historical evidence stays sealed.
+
+The additive versioned `memory-eval` contract extends this same evaluation package for
+issue78. `cmd/memory-eval` freezes identical model/resource/data/configuration
+pins across no-long-term-memory, permitted full-history and captured-current-
+retrieval arms. It separates literal answers/current evidence/citations,
+instruction observations, independent task effects, confidence and retrieval
+diagnostics; every memory expense stage and unknown/failed sample is retained.
+V1's30-case dataset remains an independently rejected fixture. V2 has24 reviewed
+synthetic cases and60 distinct originals, with frozen public controls. Code-only
+fixtures do not establish model quality. Independent golden review and original
+runner/ledger correlation are separate gates; a correlated negative comparison
+can accept the harness while denying promotion. Existing issue33 corpora, scorers,
+signatures and sealed windows are unchanged. See [memory-eval](../../cmd/memory-eval/README.md).
+
 Prospective cloud V3 adds an independent API/scorer with fresh corpus/review
 pending. Trusted native schemas contain every original map key, including
 distractors; selection/quote/value/authority checks remain programmatic. Full

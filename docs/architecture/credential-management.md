@@ -656,3 +656,14 @@ source/authority/budget Claim. The no-network runtime has only its distinct RPC
 token and operator profile; developer tests receive no working document. Known
 credential patterns are denied additionally before workspace/IPC, without granting
 authority from pattern classification. See [generated converters](generated-converters.md).
+
+
+## Request-local Antigravity control-plane diagnostics
+
+Trusted operator callers may observe fixed oauth_refresh, refresh_persistence and
+paid_discovery stages with fixed outcomes and numeric HTTP status. response_decoded
+means only valid JSON; completed follows semantic token/subscription validation.
+No URL, project/account, body, raw error or credential is emitted. A client or
+context deadline is classified without printing the error. The memory evaluation
+preflight uses its own fresh encrypted PG auth database and retains refresh
+rotation for subsequent native requests; it never uses an ephemeral secret store.

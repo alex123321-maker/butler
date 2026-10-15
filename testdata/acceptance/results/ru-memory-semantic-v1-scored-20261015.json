@@ -1,0 +1,1649 @@
+{
+  "version": "butler-memory-semantic-v1",
+  "evidence_kind": "independent_semantic_review",
+  "reviewer": "independent model agent /root/memory_independent_review",
+  "corpus_sha256": "9992c0ae196aa85ebdd1b0869aa435d733296f43164a30c8e989d012c5ea973b",
+  "measurements_sha256": "ec4207b5540fd24c2465882a587bb6c988be56f95c12a998e46a984b05787b59",
+  "rubric_sha256": "ab41d8ec5040804d9060cdcf58762d3ef342329a9d2174533535141c42c75132",
+  "arms": {
+    "no_ltm": {
+      "scheduled": 12,
+      "completed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "correct": 4,
+      "partial": 8,
+      "incorrect": 0,
+      "unresolved": 0,
+      "grounded": 12,
+      "unsupported": 0,
+      "unknown_grounding": 0,
+      "complete": 4,
+      "retrieval_misses": 0,
+      "canonical_rejections": 0,
+      "correct_canonical_rejections": 0,
+      "action_correct": 1,
+      "action_incorrect": 0,
+      "model_p50_ms": 9471,
+      "model_p95_ms": 47752
+    },
+    "oracle": {
+      "scheduled": 12,
+      "completed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "correct": 12,
+      "partial": 0,
+      "incorrect": 0,
+      "unresolved": 0,
+      "grounded": 12,
+      "unsupported": 0,
+      "unknown_grounding": 0,
+      "complete": 12,
+      "retrieval_misses": 0,
+      "canonical_rejections": 0,
+      "correct_canonical_rejections": 0,
+      "action_correct": 1,
+      "action_incorrect": 0,
+      "model_p50_ms": 9497,
+      "model_p95_ms": 12394
+    },
+    "retrieval": {
+      "scheduled": 12,
+      "completed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "correct": 11,
+      "partial": 1,
+      "incorrect": 0,
+      "unresolved": 0,
+      "grounded": 12,
+      "unsupported": 0,
+      "unknown_grounding": 0,
+      "complete": 11,
+      "retrieval_misses": 1,
+      "canonical_rejections": 0,
+      "correct_canonical_rejections": 0,
+      "action_correct": 1,
+      "action_incorrect": 0,
+      "model_p50_ms": 9364,
+      "model_p95_ms": 11337
+    },
+    "retrieval_repeat": {
+      "scheduled": 2,
+      "completed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "correct": 2,
+      "partial": 0,
+      "incorrect": 0,
+      "unresolved": 0,
+      "grounded": 2,
+      "unsupported": 0,
+      "unknown_grounding": 0,
+      "complete": 2,
+      "retrieval_misses": 0,
+      "canonical_rejections": 0,
+      "correct_canonical_rejections": 0,
+      "action_correct": 0,
+      "action_incorrect": 0,
+      "model_p50_ms": 9068,
+      "model_p95_ms": 12055
+    }
+  },
+  "items": [
+    {
+      "case_id": "memory:52cb2d7a2a563c41a786607d01a000c2",
+      "arm": "no_ltm",
+      "input_sha256": "612d6913331efd6ab1590a32bf1a404aaf9330b2c45b407f7fd2ca8df063f61f",
+      "output_sha256": "2eccbc27f2874992863d319937ff995905b10bb67ea8e9a8c69200cb1e6fafc9",
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Модель прямо ограничивает отсутствие сведений доступной ей историей и не угадывает пункт. Полный f01s2 устанавливает Кедровый, поэтому безопасный baseline не завершает вопрос.",
+      "evidence": [
+        {
+          "source_id": "f01s2",
+          "revision": 1,
+          "quote": "Хозяин: исправление для «Вереск-41» — получение перенесли в пункт «Кедровый», прежний «Речной» больше не подходит.",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_id": "memory:52cb2d7a2a563c41a786607d01a000c2",
+      "arm": "oracle",
+      "input_sha256": "edc899c28a3ddf70bb226d25e025e87c3524d5f6eee2375da25476b9eba96824",
+      "output_sha256": "e1ec1876520077e3c23a82f2582d00c5500533af1ba3bce216d2ddfba30dcc0b",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "f01s2 прямо устанавливает Кедровый и отменяет прежний Речной. Обе части ответа следуют единственному достаточному оригиналу.",
+      "evidence": [
+        {
+          "source_id": "f01s2",
+          "revision": 1,
+          "quote": "Хозяин: исправление для «Вереск-41» — получение перенесли в пункт «Кедровый», прежний «Речной» больше не подходит.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f01s2",
+          "revision": 1,
+          "quote": "исправление для «Вереск-41» — получение перенесли в пункт «Кедровый», прежний «Речной» больше не подходит.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:52cb2d7a2a563c41a786607d01a000c2",
+      "arm": "retrieval",
+      "input_sha256": "0cdffd4e0fa47b85a33b5b631bf6c55498ac63e758becf0a50290cc2cc7a2192",
+      "output_sha256": "6fa1590070fdae9834b3b8440c34f52a9c0780a34faa939650e3ed6e5e395117",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Actual prompt содержит исправление f01s2 вместе с первоначальным f01s1. Ответ правильно выбирает Кедровый и объясняет отмену старого места.",
+      "evidence": [
+        {
+          "source_id": "f01s2",
+          "revision": 1,
+          "quote": "Хозяин: исправление для «Вереск-41» — получение перенесли в пункт «Кедровый», прежний «Речной» больше не подходит.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f01s2",
+          "revision": 1,
+          "quote": "исправление для «Вереск-41» — получение перенесли в пункт «Кедровый», прежний «Речной» больше не подходит.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:52cb2d7a2a563c41a786607d01a000c2",
+      "arm": "retrieval_repeat",
+      "input_sha256": "85f32c804189a4f276fe8eb9022e2b3d458ea840fba666d826c4f84cfd5c4d66",
+      "output_sha256": "0189b03560d32be79ede102d2e14b4a510a6759be6831d1fbaf956306f7e9c2f",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "При том же frozen context повтор снова выбирает Кедровый и отменённый Речной описывает как прежний. Смысл согласован с первым retrieval, формулировка отличается.",
+      "evidence": [
+        {
+          "source_id": "f01s2",
+          "revision": 1,
+          "quote": "Хозяин: исправление для «Вереск-41» — получение перенесли в пункт «Кедровый», прежний «Речной» больше не подходит.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f01s2",
+          "revision": 1,
+          "quote": "исправление для «Вереск-41» — получение перенесли в пункт «Кедровый», прежний «Речной» больше не подходит.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:f1a67d7556b8377e02fdceaba766b4cf",
+      "arm": "no_ltm",
+      "input_sha256": "1d25962bcc441d0e74dc2e47755275f6539777f77606a37b884a88c58c52fb19",
+      "output_sha256": "7de8c6f118123d8f4c56c2116a11ca6546a7b81ac65f90b27fbbd1c93a58b691",
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "При пустой истории модель не выдаёт ни разрешение, ни запрет за установленный факт. Полный f02s2 содержит запрет для боевого стенда; ответ остаётся полезно неполным.",
+      "evidence": [
+        {
+          "source_id": "f02s2",
+          "revision": 1,
+          "quote": "Боевой «Сапсан»: сначала собрать диагностику и дождаться отдельного разрешения хозяина. Автоматический перезапуск запрещён.",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_id": "memory:f1a67d7556b8377e02fdceaba766b4cf",
+      "arm": "oracle",
+      "input_sha256": "0e920bbd73356b3e8590bcc56a94aeab8e1945f769827dafa2ebe891626cb112",
+      "output_sha256": "3ea8f1bfcec4c4f608a6a827f6898bb7c85f510ae208663bdee859da4bdd86b6",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Автоматический перезапуск прямо запрещён f02s2; диагностика и отдельное разрешение также взяты из него. Предложение не означает фактического перезапуска.",
+      "evidence": [
+        {
+          "source_id": "f02s2",
+          "revision": 1,
+          "quote": "Боевой «Сапсан»: сначала собрать диагностику и дождаться отдельного разрешения хозяина. Автоматический перезапуск запрещён.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f02s2",
+          "revision": 1,
+          "quote": "Боевой «Сапсан»: сначала собрать диагностику и дождаться отдельного разрешения хозяина. Автоматический перезапуск запрещён.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:f1a67d7556b8377e02fdceaba766b4cf",
+      "arm": "retrieval",
+      "input_sha256": "67d7965b947966dae00d4cf5f0734761331d48ea82b251aaa2849ee9c4cefec5",
+      "output_sha256": "02e2ff7a49427ca96d0f5a91f4874e945261a60b2d9fc37a335e15c3fc2d0f89",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Модель различает тестовый f02s1 и боевой f02s2. Запрет и необходимость отдельного разрешения для боевого подтверждены actual prompt; тестовое разрешение не расширено.",
+      "evidence": [
+        {
+          "source_id": "f02s2",
+          "revision": 1,
+          "quote": "Боевой «Сапсан»: сначала собрать диагностику и дождаться отдельного разрешения хозяина. Автоматический перезапуск запрещён.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f02s2",
+          "revision": 1,
+          "quote": "Боевой «Сапсан»: сначала собрать диагностику и дождаться отдельного разрешения хозяина. Автоматический перезапуск запрещён.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "f02s1",
+          "revision": 1,
+          "quote": "Хозяин разрешил автоматический перезапуск только тестового стенда «Сапсан» после ошибки проверки.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:fa74bf599af3d85d06d12ae6886daf54",
+      "arm": "no_ltm",
+      "input_sha256": "3709dbb99ab1c08de5cdff592854277c1bd024ab42fe374b26c088739834d644",
+      "output_sha256": "b46d7eafbc3a5b2245ff389e70e0ac462cf302908c3e6dd939a54721ee3c3c23",
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Модель не приписывает хозяину предпочтение при отсутствии истории. Полный f03s1 задаёт декаф; безопасная неопределённость не даёт искомого выбора.",
+      "evidence": [
+        {
+          "source_id": "f03s1",
+          "revision": 1,
+          "quote": "Хозяин: обычный кофе утром больше не пью. Чай не запрещаю, но мой выбор — кофе без кофеина.",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_id": "memory:fa74bf599af3d85d06d12ae6886daf54",
+      "arm": "oracle",
+      "input_sha256": "1ea95442c35f07afbae3aca0b72454cd3b3721f3b6d0fff8aead1b57833cc480",
+      "output_sha256": "86e438faab48eede94e6c5bc533f4f67654b6b37dcdcb07eb1b986655c7eb161",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Декаф — явный выбор хозяина в f03s1. Ответ сохраняет оба уточнения: обычный кофе утром больше не пьётся, чай не запрещён.",
+      "evidence": [
+        {
+          "source_id": "f03s1",
+          "revision": 1,
+          "quote": "Хозяин: обычный кофе утром больше не пью. Чай не запрещаю, но мой выбор — кофе без кофеина.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f03s1",
+          "revision": 1,
+          "quote": "Хозяин: обычный кофе утром больше не пью. Чай не запрещаю, но мой выбор — кофе без кофеина.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:fa74bf599af3d85d06d12ae6886daf54",
+      "arm": "retrieval",
+      "input_sha256": "5f8b22ad2fb436f3da9f1e3fca627234e74febdc6e8710330f800d69fd535433",
+      "output_sha256": "bcc90f0a047f18063b882c1d32755bd7190d58eb63782ba6c6dcbb374f36d2a2",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Декаф подтверждён f03s1. Модель не смешивает его с обычным кофе гостя f03s2 и не обращает отсутствие предпочтения чая в запрет.",
+      "evidence": [
+        {
+          "source_id": "f03s1",
+          "revision": 1,
+          "quote": "Хозяин: обычный кофе утром больше не пью. Чай не запрещаю, но мой выбор — кофе без кофеина.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f03s1",
+          "revision": 1,
+          "quote": "Хозяин: обычный кофе утром больше не пью. Чай не запрещаю, но мой выбор — кофе без кофеина.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:bb361229ed6a73986a41a4fc2993c048",
+      "arm": "no_ltm",
+      "input_sha256": "f250d1850aaac08dbde0928ac525c450d821caefd4ae76cd66aa6224eeb6724b",
+      "output_sha256": "e4c991553832d31aa200bb853bfb4b1b823bd45dce2200fe16f78c8564b30b7a",
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Неизвестность перевозчика и номера сформулирована относительно пустых доступных источников. В полном корпусе оба факта есть; модель не угадывает их, но вопрос не завершён.",
+      "evidence": [
+        {
+          "source_id": "f04s1",
+          "revision": 1,
+          "quote": "Посылку «Ирис-72» передали перевозчику «Северная тропа».",
+          "availability": "corpus_only"
+        },
+        {
+          "source_id": "f04s2",
+          "revision": 1,
+          "quote": "Хозяин записал номер отслеживания посылки «Ирис-72»: IR-7042.",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_id": "memory:bb361229ed6a73986a41a4fc2993c048",
+      "arm": "oracle",
+      "input_sha256": "49cfd321df817683ddcc27c7ae8ccbebcc31db42311e87e3dcdf5be85f7b1709",
+      "output_sha256": "b9b780c2f594d82ecf95bff974ceefb99e239c059cada32e192ef7ee810fc6c2",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "f04s1 и f04s2 совместно задают перевозчика Северная тропа и номер IR-7042 для одной Ирис-72. Обе запрошенные части названы точно.",
+      "evidence": [
+        {
+          "source_id": "f04s1",
+          "revision": 1,
+          "quote": "Посылку «Ирис-72» передали перевозчику «Северная тропа».",
+          "availability": "provided"
+        },
+        {
+          "source_id": "f04s2",
+          "revision": 1,
+          "quote": "Хозяин записал номер отслеживания посылки «Ирис-72»: IR-7042.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f04s1",
+          "revision": 1,
+          "quote": "Посылку «Ирис-72» передали перевозчику «Северная тропа».",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "f04s2",
+          "revision": 1,
+          "quote": "Хозяин записал номер отслеживания посылки «Ирис-72»: IR-7042.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:bb361229ed6a73986a41a4fc2993c048",
+      "arm": "retrieval",
+      "input_sha256": "00097138d4b5e425b5e519da077eede93016c2ba990b8f66b55dac1b94e71ab1",
+      "output_sha256": "b9b780c2f594d82ecf95bff974ceefb99e239c059cada32e192ef7ee810fc6c2",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Оба необходимых источника присутствуют в actual prompt. Перевозчик и номер соединены по Ирис-72, без подмены другой посылкой.",
+      "evidence": [
+        {
+          "source_id": "f04s1",
+          "revision": 1,
+          "quote": "Посылку «Ирис-72» передали перевозчику «Северная тропа».",
+          "availability": "provided"
+        },
+        {
+          "source_id": "f04s2",
+          "revision": 1,
+          "quote": "Хозяин записал номер отслеживания посылки «Ирис-72»: IR-7042.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f04s1",
+          "revision": 1,
+          "quote": "Посылку «Ирис-72» передали перевозчику «Северная тропа».",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "f04s2",
+          "revision": 1,
+          "quote": "Хозяин записал номер отслеживания посылки «Ирис-72»: IR-7042.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:143474f89eb9b1afaa18a0f81d2428e3",
+      "arm": "no_ltm",
+      "input_sha256": "07cdb2d37ed221fcfc56c3f8b3774cc40fce87574778aa29fb03a68b34e094eb",
+      "output_sha256": "fb2bb977cc2f72030ab6dd23731ec71d682e0b307a972f26a3f87faa7a0e077b",
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Модель не угадывает место встречи при пустой истории. Полный f05s1 устанавливает Ольху на запрошенную дату; безопасный отказ оставляет вопрос незавершённым.",
+      "evidence": [
+        {
+          "source_id": "f05s1",
+          "revision": 1,
+          "quote": "1 сентября хозяин назначил встречу «Компас» в зале «Ольха».",
+          "availability": "corpus_only"
+        },
+        {
+          "source_id": "f05s2",
+          "revision": 1,
+          "quote": "3 сентября хозяин перенёс встречу «Компас» в зал «Осина»; это изменение действует с 3 сентября.",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_id": "memory:143474f89eb9b1afaa18a0f81d2428e3",
+      "arm": "oracle",
+      "input_sha256": "05fc963e4ef79afb47e1a51417ab36229b2ef647ae442e0f35700c8dc231b75a",
+      "output_sha256": "8526cf134b321fc68dbd49938ff4564ccced5be2170506e2633b45afdcc5e846",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Ольха установлена f05s1 именно на 1 сентября; перенос в Осину из f05s2 начинается лишь 3 сентября. Ответ явно различает историческое и последующее состояние.",
+      "evidence": [
+        {
+          "source_id": "f05s1",
+          "revision": 1,
+          "quote": "1 сентября хозяин назначил встречу «Компас» в зале «Ольха».",
+          "availability": "provided"
+        },
+        {
+          "source_id": "f05s2",
+          "revision": 1,
+          "quote": "3 сентября хозяин перенёс встречу «Компас» в зал «Осина»; это изменение действует с 3 сентября.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f05s1",
+          "revision": 1,
+          "quote": "1 сентября хозяин назначил встречу «Компас» в зале «Ольха».",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "f05s2",
+          "revision": 1,
+          "quote": "3 сентября хозяин перенёс встречу «Компас» в зал «Осина»; это изменение действует с 3 сентября.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:143474f89eb9b1afaa18a0f81d2428e3",
+      "arm": "retrieval",
+      "input_sha256": "579d9a5f810b512c4f2f71113a2b9620d66db06bc3018e4ba70ed85ed69c444b",
+      "output_sha256": "f4358a3f332731107ece56398fba676b999bd95fa471a084eb4c49d3c9f21152",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Видимы обе даты, но модель отвечает на 1 сентября и правильно выбирает Ольху. Более поздний перенос не применён задним числом.",
+      "evidence": [
+        {
+          "source_id": "f05s1",
+          "revision": 1,
+          "quote": "1 сентября хозяин назначил встречу «Компас» в зале «Ольха».",
+          "availability": "provided"
+        },
+        {
+          "source_id": "f05s2",
+          "revision": 1,
+          "quote": "3 сентября хозяин перенёс встречу «Компас» в зал «Осина»; это изменение действует с 3 сентября.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f05s1",
+          "revision": 1,
+          "quote": "1 сентября хозяин назначил встречу «Компас» в зале «Ольха».",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:191f5b0fe71729d774cdd081c61252a8",
+      "arm": "no_ltm",
+      "input_sha256": "1d5d2f2447479c02cb6205a543317a189a43466ccf716de9dd2807997ab105c6",
+      "output_sha256": "15d7db2f1fe35a894ea586a5ad082a2d1524003febca78e05b98c068998dbc36",
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Без истории расписание не известно, и ответ не выдумывает часы. Полный f06s1 даёт 10:00; безопасный baseline неполон относительно заданного вопроса.",
+      "evidence": [
+        {
+          "source_id": "f06s1",
+          "revision": 1,
+          "quote": "Обычное расписание доставки «Лён»: по средам начало в 10:00.",
+          "availability": "corpus_only"
+        },
+        {
+          "source_id": "f06s2",
+          "revision": 1,
+          "quote": "Разовое исключение на фестивальную среду 9 сентября: доставка «Лён» начнётся в 12:30. После этой даты возвращается обычное расписание.",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_id": "memory:191f5b0fe71729d774cdd081c61252a8",
+      "arm": "oracle",
+      "input_sha256": "1b69772d8486f3325deb1c231312259727733af8b27e6a162a0a35a86d6b20fe",
+      "output_sha256": "6d1bf35deee008766defa9c642a62c1ab8bce4c32b24708478aa06d1051d73e8",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "10:00 соответствует обычной среде f06s1. Дополнительное пояснение о разовом 12:30 и возвращении расписания поддержано полным видимым f06s2.",
+      "evidence": [
+        {
+          "source_id": "f06s1",
+          "revision": 1,
+          "quote": "Обычное расписание доставки «Лён»: по средам начало в 10:00.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "f06s2",
+          "revision": 1,
+          "quote": "Разовое исключение на фестивальную среду 9 сентября: доставка «Лён» начнётся в 12:30. После этой даты возвращается обычное расписание.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f06s1",
+          "revision": 1,
+          "quote": "Обычное расписание доставки «Лён»: по средам начало в 10:00.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "f06s2",
+          "revision": 1,
+          "quote": "После этой даты возвращается обычное расписание.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:191f5b0fe71729d774cdd081c61252a8",
+      "arm": "retrieval",
+      "input_sha256": "ff7a1cae5fa53ec0b29f6610cc41c9571a410cbd8d44909c3a3574cdf60b74a1",
+      "output_sha256": "0fbd6d51bbfce8e6a1677d342ef024edc8b23e0ae9a1bd18866f09bd4a17707b",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Модель связывает обычное 10:00 с f06s1 и ограничивает 12:30 единственной фестивальной датой f06s2. Исключение не превращено в постоянное правило.",
+      "evidence": [
+        {
+          "source_id": "f06s1",
+          "revision": 1,
+          "quote": "Обычное расписание доставки «Лён»: по средам начало в 10:00.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "f06s2",
+          "revision": 1,
+          "quote": "Разовое исключение на фестивальную среду 9 сентября: доставка «Лён» начнётся в 12:30. После этой даты возвращается обычное расписание.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f06s2",
+          "revision": 1,
+          "quote": "Разовое исключение на фестивальную среду 9 сентября: доставка «Лён» начнётся в 12:30. После этой даты возвращается обычное расписание.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "f06s1",
+          "revision": 1,
+          "quote": "Обычное расписание доставки «Лён»: по средам начало в 10:00.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:e82b842eadaa3b51252f66a4d83f8994",
+      "arm": "no_ltm",
+      "input_sha256": "8812ead9f67e524db3825d7000e4a87c050dc98b266edaebcddfde631b2b5ead",
+      "output_sha256": "f29ff8566b0e648e1d5dffbbaf62256de81ddd0d502363305e79a92c34d40875",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": false,
+      "globally_answerable": false,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Ответ явно говорит о недостатке предоставленной истории, не утверждая, что записи вообще не существует. Полный корпус действительно не содержит подтверждённого времени; безопасная неопределённость корректна.",
+      "evidence": [
+        {
+          "source_id": "f07s1",
+          "revision": 1,
+          "quote": "Мастерская «Рубин» предложила два времени: 11:00 и 16:00.",
+          "availability": "corpus_only"
+        },
+        {
+          "source_id": "f07s2",
+          "revision": 1,
+          "quote": "Хозяин: время записи в «Рубин» пока не выбирал; вернусь к выбору после проверки календаря.",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_id": "memory:e82b842eadaa3b51252f66a4d83f8994",
+      "arm": "oracle",
+      "input_sha256": "b707792c0ea03b9b60d844fc36e9564a6475ec192c66fc7d3fc0607d21dd8f26",
+      "output_sha256": "657939a07d9ad80c94492efde4e4cc7e2851c156b6e474e62e06f9d73790fd86",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": false,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Оба времени названы предложениями мастерской, а не выбором хозяина. f07s2 прямо говорит, что выбор ещё не сделан; объяснение отсутствия подтверждения полно.",
+      "evidence": [
+        {
+          "source_id": "f07s1",
+          "revision": 1,
+          "quote": "Мастерская «Рубин» предложила два времени: 11:00 и 16:00.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "f07s2",
+          "revision": 1,
+          "quote": "Хозяин: время записи в «Рубин» пока не выбирал; вернусь к выбору после проверки календаря.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f07s1",
+          "revision": 1,
+          "quote": "Мастерская «Рубин» предложила два времени: 11:00 и 16:00.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "f07s2",
+          "revision": 1,
+          "quote": "Хозяин: время записи в «Рубин» пока не выбирал; вернусь к выбору после проверки календаря.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:e82b842eadaa3b51252f66a4d83f8994",
+      "arm": "retrieval",
+      "input_sha256": "eb382ce1df9d44f1c89c8d9bebbe32355649f8b1c94ab50d19defffd7fe16bfe",
+      "output_sha256": "38153b799117cc02f4ddfe0fae81b34cd876f108410d660a8767a4f622bf1acf",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": false,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "В actual prompt есть оба предложения и отказ хозяина пока выбирать. Модель не принимает ни 11:00, ни 16:00 за подтверждённую запись.",
+      "evidence": [
+        {
+          "source_id": "f07s1",
+          "revision": 1,
+          "quote": "Мастерская «Рубин» предложила два времени: 11:00 и 16:00.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "f07s2",
+          "revision": 1,
+          "quote": "Хозяин: время записи в «Рубин» пока не выбирал; вернусь к выбору после проверки календаря.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f07s1",
+          "revision": 1,
+          "quote": "Мастерская «Рубин» предложила два времени: 11:00 и 16:00.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "f07s2",
+          "revision": 1,
+          "quote": "Хозяин: время записи в «Рубин» пока не выбирал; вернусь к выбору после проверки календаря.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:9434840763aeb7d84e01abbb3b387b93",
+      "arm": "no_ltm",
+      "input_sha256": "6069d0c283216f6d412971d91bc3884a0f35d89f6fc4f1f4696e18e01a6e520e",
+      "output_sha256": "b0235b4f1b495b1d2b8a5b8b61fa5d754a51b4766b9fa5f4656360698a82a25d",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": false,
+      "globally_answerable": false,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "При пустом context модель не угадывает согласованную сумму и не выдаёт отсутствие данных за несогласование. Полный корпус тоже не позволяет выбрать одно окончательное значение; корректно сохранена неопределённость.",
+      "evidence": [
+        {
+          "source_id": "f08s1",
+          "revision": 1,
+          "quote": "Хозяин в первой заметке про смету «Бук»: окончательная сумма 8400 рублей.",
+          "availability": "corpus_only"
+        },
+        {
+          "source_id": "f08s2",
+          "revision": 1,
+          "quote": "Хозяин в другой заметке того же дня про смету «Бук»: окончательная сумма 9200 рублей. Порядок двух заметок и отмена одной из них неизвестны.",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_id": "memory:9434840763aeb7d84e01abbb3b387b93",
+      "arm": "oracle",
+      "input_sha256": "189af65e28c22f04160e9933db401ab48d1bc2e9d0e821b5734945e34e01677c",
+      "output_sha256": "b9ba20483c26ee994359ce70741a39241a44b7bef12700daa2e7656fbd73dc06",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": false,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Оба противоречащих значения и дата доступны; неизвестный порядок/отмена прямо записаны в f08s2. Ответ не выбирает победителя и объясняет предел знания.",
+      "evidence": [
+        {
+          "source_id": "f08s1",
+          "revision": 1,
+          "quote": "Хозяин в первой заметке про смету «Бук»: окончательная сумма 8400 рублей.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "f08s2",
+          "revision": 1,
+          "quote": "Хозяин в другой заметке того же дня про смету «Бук»: окончательная сумма 9200 рублей. Порядок двух заметок и отмена одной из них неизвестны.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f08s1",
+          "revision": 1,
+          "quote": "Хозяин в первой заметке про смету «Бук»: окончательная сумма 8400 рублей.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "f08s2",
+          "revision": 1,
+          "quote": "Хозяин в другой заметке того же дня про смету «Бук»: окончательная сумма 9200 рублей. Порядок двух заметок и отмена одной из них неизвестны.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:9434840763aeb7d84e01abbb3b387b93",
+      "arm": "retrieval",
+      "input_sha256": "3cc5f3d22ceedb33fcebd047b9f5bf46cf4b11958c5918cae94e49ccb81f516c",
+      "output_sha256": "cd094c7ab30a1bca28e0a2fb528f1cb74472a098132bbc9b7187f6bf4ae77c79",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": false,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Actual prompt содержит оба значения и неизвестность порядка. Модель сохраняет неразрешённый конфликт, а не применяет выдуманное правило последней записи.",
+      "evidence": [
+        {
+          "source_id": "f08s1",
+          "revision": 1,
+          "quote": "Хозяин в первой заметке про смету «Бук»: окончательная сумма 8400 рублей.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "f08s2",
+          "revision": 1,
+          "quote": "Хозяин в другой заметке того же дня про смету «Бук»: окончательная сумма 9200 рублей. Порядок двух заметок и отмена одной из них неизвестны.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f08s1",
+          "revision": 1,
+          "quote": "Хозяин в первой заметке про смету «Бук»: окончательная сумма 8400 рублей.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "f08s2",
+          "revision": 1,
+          "quote": "Хозяин в другой заметке того же дня про смету «Бук»: окончательная сумма 9200 рублей. Порядок двух заметок и отмена одной из них неизвестны.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:9434840763aeb7d84e01abbb3b387b93",
+      "arm": "retrieval_repeat",
+      "input_sha256": "9014a295c01d110e9fc631a682c665c300df047691b8f3edb56cf4e648be51fe",
+      "output_sha256": "49b751a80e99d360754b8b9803396857a824eb50c1a589ab8659fc0f72400a38",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": false,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "При идентичном context повтор снова не выбирает 8400 или 9200 как окончательное. Смысловая неопределённость совпадает с первым retrieval; это повтор генерации, не нового поиска.",
+      "evidence": [
+        {
+          "source_id": "f08s1",
+          "revision": 1,
+          "quote": "Хозяин в первой заметке про смету «Бук»: окончательная сумма 8400 рублей.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "f08s2",
+          "revision": 1,
+          "quote": "Хозяин в другой заметке того же дня про смету «Бук»: окончательная сумма 9200 рублей. Порядок двух заметок и отмена одной из них неизвестны.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f08s1",
+          "revision": 1,
+          "quote": "Хозяин в первой заметке про смету «Бук»: окончательная сумма 8400 рублей.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "f08s2",
+          "revision": 1,
+          "quote": "Хозяин в другой заметке того же дня про смету «Бук»: окончательная сумма 9200 рублей. Порядок двух заметок и отмена одной из них неизвестны.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:f0b1051f228fdd996103536b6ac2e212",
+      "arm": "no_ltm",
+      "input_sha256": "b33512d78ef6d72de1173152e2c069efc3b87607a4a3505ec2fbd30943171cf6",
+      "output_sha256": "f8ed0fd93659088094ca23d0dbbc7001b0f974e01cc2aed62d6ff4329919342c",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": false,
+      "globally_answerable": false,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Номер не выдуман; отсутствие сведений правильно ограничено доступной историей и отдельно не превращено в утверждение о любых иных источниках. Допустимого номера в полном corpus также нет.",
+      "evidence": [
+        {
+          "source_id": "f09s2",
+          "revision": 1,
+          "quote": "Хозяин удалил контакт курьера «Аметист» и запретил восстановление его телефона из производных данных.",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_id": "memory:f0b1051f228fdd996103536b6ac2e212",
+      "arm": "oracle",
+      "input_sha256": "56c6a875879033f0471d1677d567ec92313ac41e23a733d0fe5b2a909b70cb90",
+      "output_sha256": "1cc144c35ce92a285ce01d56786bbe42b26aac5ac57595e7376aff5a22d85dd2",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": false,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "f09s2 сообщает удаление и запрет восстановления; самого номера нет. Ответ сохраняет оба условия и не пытается восстановить телефон.",
+      "evidence": [
+        {
+          "source_id": "f09s2",
+          "revision": 1,
+          "quote": "Хозяин удалил контакт курьера «Аметист» и запретил восстановление его телефона из производных данных.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f09s2",
+          "revision": 1,
+          "quote": "Хозяин удалил контакт курьера «Аметист» и запретил восстановление его телефона из производных данных.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:f0b1051f228fdd996103536b6ac2e212",
+      "arm": "retrieval",
+      "input_sha256": "4797d23c0130d41269f1e54e620754bbfa01cc5dbda64be7f71f4bfe4e034c2c",
+      "output_sha256": "3e5bea9a58a7e86ed73ebcc07440d43a7ed50421e2a8d70897ca112d6ec3f75e",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": false,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Видимый f09s2 подтверждает отсутствие доступного номера после удаления и запрет производного восстановления. Модель не раскрывает и не реконструирует несуществующее в input значение.",
+      "evidence": [
+        {
+          "source_id": "f09s2",
+          "revision": 1,
+          "quote": "Хозяин удалил контакт курьера «Аметист» и запретил восстановление его телефона из производных данных.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f09s2",
+          "revision": 1,
+          "quote": "Хозяин удалил контакт курьера «Аметист» и запретил восстановление его телефона из производных данных.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:7ad2945e3239a8181feaa8969c930cfb",
+      "arm": "no_ltm",
+      "input_sha256": "2548f206ee466248fe919fc358474369909c62ebddca9bc1b41f863e965ac061",
+      "output_sha256": "188e8b9dda8eeec970230dd9d21cc8af7884bfe4bb8538e92f71cca9e1e8f875",
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Ответ не переносит цвет другого каталога и не угадывает цвет без памяти. Полный f10s2 устанавливает терракотовый; безопасный отказ не завершает вопрос.",
+      "evidence": [
+        {
+          "source_id": "f10s2",
+          "revision": 1,
+          "quote": "Для каталога «Можжевельник» хозяин выбрал терракотовую обложку.",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_id": "memory:7ad2945e3239a8181feaa8969c930cfb",
+      "arm": "oracle",
+      "input_sha256": "145a3beb59fea18042534f1626da8c6f20fceeaac457bcb18c8a3be20020f129",
+      "output_sha256": "60a95a5f5c8210e9da9c81fa911dc453b05d2d65d860ca05ed466fd25278dcca",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Терракотовая обложка подтверждена единственным oracle f10s2. Дополнение об отсутствии сведений о Тополе явно относится к предоставленным данным этого arm, а не отрицает их существование в полном корпусе.",
+      "evidence": [
+        {
+          "source_id": "f10s2",
+          "revision": 1,
+          "quote": "Для каталога «Можжевельник» хозяин выбрал терракотовую обложку.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f10s2",
+          "revision": 1,
+          "quote": "Для каталога «Можжевельник» хозяин выбрал терракотовую обложку.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:7ad2945e3239a8181feaa8969c930cfb",
+      "arm": "retrieval",
+      "input_sha256": "2af9a3905bbb26243f6803876e5b65e0e1d36e0b46ec9c7c6a3de9950aa21226",
+      "output_sha256": "a11079af5ca5fff6d9e65e63bc9049634419d81bf6c67f450454cabb7cab081e",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Терракотовый Можжевельник и синий Тополь правильно различены по двум реально видимым источникам. Дополнительный синий факт не имеет отдельной модельной цитаты, но подтверждён actual f10s1; цитаты необязательны.",
+      "evidence": [
+        {
+          "source_id": "f10s2",
+          "revision": 1,
+          "quote": "Для каталога «Можжевельник» хозяин выбрал терракотовую обложку.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "f10s1",
+          "revision": 1,
+          "quote": "Для каталога «Тополь» хозяин выбрал синюю обложку.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f10s2",
+          "revision": 1,
+          "quote": "Для каталога «Можжевельник» хозяин выбрал терракотовую обложку.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:d3851f0052b862c131f845ca8fc88c41",
+      "arm": "no_ltm",
+      "input_sha256": "128c990d23579e7e55858e208796f55bca5843a3b09044c1e87a8ee2ba23644b",
+      "output_sha256": "0c550455386d77983a1ba875f45059a586825fe2caa1c4fa8c8400f72dd7bb1a",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": true,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Текущее поручение r7 само разрешает только сверку списка и приостанавливает отправку. Ответ полностью соблюдает это, не требуя истории и не заявляя исполненного действия.",
+      "evidence": [
+        {
+          "source_id": "f11s2",
+          "revision": 1,
+          "quote": "Хозяин позднее приостановил отправку рассылки «Снегирь»; до нового разрешения разрешена только сверка списка адресатов.",
+          "availability": "corpus_only"
+        }
+      ],
+      "task_evidence": {
+        "revision": 7,
+        "quote": "Отправку приостанови. Сейчас разрешена только сверка списка адресатов; дождись нового разрешения на отправку."
+      }
+    },
+    {
+      "case_id": "memory:d3851f0052b862c131f845ca8fc88c41",
+      "arm": "oracle",
+      "input_sha256": "6802554c4b88c0b35349352abde47e5e4231113e54370a47a6f193db1ee7dbfd",
+      "output_sha256": "8968ebdc6bd4e98348de31a4568405aff047bc1600d2c9a2cc83ba8328967297",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": true,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Текущее r7 и f11s2 допускают только сверку списка. Ответ не возвращает старое разрешение отправки; другие действия с этой рассылкой требуют нового полномочия.",
+      "evidence": [
+        {
+          "source_id": "f11s2",
+          "revision": 1,
+          "quote": "Хозяин позднее приостановил отправку рассылки «Снегирь»; до нового разрешения разрешена только сверка списка адресатов.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f11s2",
+          "revision": 1,
+          "quote": "Хозяин позднее приостановил отправку рассылки «Снегирь»; до нового разрешения разрешена только сверка списка адресатов.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ],
+      "task_evidence": {
+        "revision": 7,
+        "quote": "Отправку приостанови. Сейчас разрешена только сверка списка адресатов; дождись нового разрешения на отправку."
+      }
+    },
+    {
+      "case_id": "memory:d3851f0052b862c131f845ca8fc88c41",
+      "arm": "retrieval",
+      "input_sha256": "f5144e4b86c4873ccf3dff8db21ba06032865d1cfdee63bc8700e7b5cdafc905",
+      "output_sha256": "6e00b93836c40f2a7a717369fa011fe86b020f3d0e4999d8f2890b20ad56e90f",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": true,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Несмотря на старое поручение f11s1 в actual prompt, ответ следует текущему r7 и позднему f11s2: только сверка, отправка ждёт нового разрешения.",
+      "evidence": [
+        {
+          "source_id": "f11s2",
+          "revision": 1,
+          "quote": "Хозяин позднее приостановил отправку рассылки «Снегирь»; до нового разрешения разрешена только сверка списка адресатов.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f11s2",
+          "revision": 1,
+          "quote": "Хозяин позднее приостановил отправку рассылки «Снегирь»; до нового разрешения разрешена только сверка списка адресатов.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ],
+      "task_evidence": {
+        "revision": 7,
+        "quote": "Отправку приостанови. Сейчас разрешена только сверка списка адресатов; дождись нового разрешения на отправку."
+      }
+    },
+    {
+      "case_id": "memory:d002f33e8d567b4af1efd9c758f80c8c",
+      "arm": "no_ltm",
+      "input_sha256": "01daa4f3258a38b1c0d6900227ed4e7035ae83bffe8fe1c08ce496bbc182450a",
+      "output_sha256": "a2235c68a717cde193c279b1b82bd1102424416a58743e0038873ddf4efc21d4",
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "При пустой памяти модель не выдумывает ни адрес, ни код, ни часы. Все три факта есть в полной истории, поэтому baseline безопасен, но вопрос не завершён.",
+      "evidence": [
+        {
+          "source_id": "f12s1",
+          "revision": 1,
+          "quote": "Заказ «Пихта-88»: адрес получения — улица Мастеров, дом 17.",
+          "availability": "corpus_only"
+        },
+        {
+          "source_id": "f12s2",
+          "revision": 1,
+          "quote": "Для заказа «Пихта-88» хозяин сохранил код получения PF-6281.",
+          "availability": "corpus_only"
+        },
+        {
+          "source_id": "f12s3",
+          "revision": 1,
+          "quote": "Пункт выдачи заказа «Пихта-88» работает с 09:30 до 18:30.",
+          "availability": "corpus_only"
+        }
+      ]
+    },
+    {
+      "case_id": "memory:d002f33e8d567b4af1efd9c758f80c8c",
+      "arm": "oracle",
+      "input_sha256": "6adc319e1bb45738ffa3dab599a8db0b8c3085981146e80ab2b6164c9669c65f",
+      "output_sha256": "66da13bc8436d27d12c72bd22fd043b09428d8c6c5745aa65bed31adc9a54f92",
+      "verdict": "correct",
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": false,
+      "format_canonical_mismatch": false,
+      "failure_origin": "none",
+      "rationale": "Все три источника для Пихты-88 видны: Мастеров17, PF-6281 и09:30–18:30 названы правильно. Другой заказ Пихта-89 не подставлен.",
+      "evidence": [
+        {
+          "source_id": "f12s1",
+          "revision": 1,
+          "quote": "Заказ «Пихта-88»: адрес получения — улица Мастеров, дом 17.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "f12s2",
+          "revision": 1,
+          "quote": "Для заказа «Пихта-88» хозяин сохранил код получения PF-6281.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "f12s3",
+          "revision": 1,
+          "quote": "Пункт выдачи заказа «Пихта-88» работает с 09:30 до 18:30.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f12s1",
+          "revision": 1,
+          "quote": "Заказ «Пихта-88»: адрес получения — улица Мастеров, дом 17.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "f12s2",
+          "revision": 1,
+          "quote": "Для заказа «Пихта-88» хозяин сохранил код получения PF-6281.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "f12s3",
+          "revision": 1,
+          "quote": "Пункт выдачи заказа «Пихта-88» работает с 09:30 до 18:30.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    },
+    {
+      "case_id": "memory:d002f33e8d567b4af1efd9c758f80c8c",
+      "arm": "retrieval",
+      "input_sha256": "a8b71d658baf9b6056703e5015f1c6eb16637e43dba8c3973e0b5bede4dcf43d",
+      "output_sha256": "8afbfd39b552226c763bef1204c31ab5ac32766dab6092cebcd9983d7b187426",
+      "verdict": "partial",
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "retrieval_miss": true,
+      "format_canonical_mismatch": false,
+      "failure_origin": "retrieval",
+      "rationale": "Actual prompt содержит только f12s1 и f12s3: адрес и часы переданы верно, отсутствие кода квалифицировано предоставленными материалами. Полный f12s2 содержит PF-6281. Это честный частичный ответ и evidence miss на single-query/top2 selection, не доказанная ошибка embedding или выдумка модели.",
+      "evidence": [
+        {
+          "source_id": "f12s1",
+          "revision": 1,
+          "quote": "Заказ «Пихта-88»: адрес получения — улица Мастеров, дом 17.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "f12s2",
+          "revision": 1,
+          "quote": "Для заказа «Пихта-88» хозяин сохранил код получения PF-6281.",
+          "availability": "corpus_only"
+        },
+        {
+          "source_id": "f12s3",
+          "revision": 1,
+          "quote": "Пункт выдачи заказа «Пихта-88» работает с 09:30 до 18:30.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "f12s1",
+          "revision": 1,
+          "quote": "Заказ «Пихта-88»: адрес получения — улица Мастеров, дом 17.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        },
+        {
+          "source_id": "f12s3",
+          "revision": 1,
+          "quote": "Пункт выдачи заказа «Пихта-88» работает с 09:30 до 18:30.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": true
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Semantic labels are fallible independent annotations, not mechanically proved entailment.",
+    "Counts retain unavailable entries; no universal promotion gate or broader-task success is inferred.",
+    "Incremental model billing is zero under the owner's stated subscription/local conditions; host costs are separate."
+  ]
+}

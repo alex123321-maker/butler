@@ -1,4 +1,4 @@
-.PHONY: build build-go build-web test test-go test-web lint lint-go lint-web test-orchestrator test-memory test-transport proto infra-up infra-down migrate-up migrate-down up down logs
+.PHONY: build build-go build-web test test-go test-web lint lint-go lint-web test-orchestrator test-memory test-memory-eval test-transport proto infra-up infra-down migrate-up migrate-down up down logs
 
 GO_PACKAGES=./apps/... ./internal/... ./scripts/...
 
@@ -34,6 +34,10 @@ test-orchestrator:
 
 test-memory:
 	go test ./internal/memory/...
+
+test-memory-eval:
+	go test -count=1 -run '^TestMemory' ./internal/acceptance ./cmd/memory-eval
+	go test -count=1 -run '^(TestMemoryEvalCollectorNativeSchemasValidateWithoutAuthentication|TestMemorySemanticProjectionAndRepeatIsolation)$$' ./apps/orchestrator/internal/app
 
 test-transport:
 	go test ./internal/transport/...

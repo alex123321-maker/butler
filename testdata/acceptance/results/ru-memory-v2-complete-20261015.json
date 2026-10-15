@@ -1,0 +1,1785 @@
+{
+  "version": "butler-memory-eval-v2",
+  "status": "NO_GO",
+  "frozen_sha256": "93dc4e25a835caeca81c7098aa5f23144ee21489eca3b2729da33aa0d11e1e9f",
+  "plan": {
+    "version": "butler-memory-eval-v2",
+    "window_id": "memory-eval-v2-native-20261015",
+    "evidence_kind": "model_observation",
+    "code_commit": "90ed0f0b081dedff7f8d951db6457ee97bc2eb5f",
+    "source_sha256": "2a6a6c00f4d70c3e027a2c837f441771eba4f606aa0ec339e5cbef86048deeb3",
+    "hardware_sha256": "695f43959492d165436b41a36f745319780cf53695c05222529f3d547963a138",
+    "model": "gemini-3.8-flash-high",
+    "model_version": "gemini-3.8-flash-n",
+    "runtime": "go1.27.2/current-budget+catalog+owned-index+hybrid+bundle/native-openapi",
+    "memory_config_sha256": "d97b43d68ede430f917eac7db58c555934ff70bd7f7aa8d9bf021c58e4679795",
+    "pricing_basis": "subscription_invoice_unavailable;local_no_billing",
+    "suite_sha256": "7c74abe1234987883bd252126a8cade19b51ffb4e89d1b0df6bbc25447be413d",
+    "criteria_sha256": "9be3b4b51b5832bffc6349915cb61db4761e4b54ee95097b43677a28b9997e68",
+    "split": "all"
+  },
+  "arms": {
+    "full_context": {
+      "cases": 24,
+      "completed": 19,
+      "skipped": 4,
+      "answer_correct": 7,
+      "truth_answer_correct": 7,
+      "malformed_outputs": 0,
+      "justified_abstentions": 1,
+      "current_fact_correct": 7,
+      "citation_exact": 13,
+      "citation_errors": 0,
+      "instruction_correct": 15,
+      "task_success": 0,
+      "unknown_task_outcomes": 20,
+      "false_positive_answers": 12,
+      "false_abstentions": 0,
+      "brier_score_sum": 12,
+      "calibration_samples": 19,
+      "retrieval_recall_sum": 0,
+      "retrieval_reciprocal_rank_sum": 0,
+      "retrieval_samples": 0,
+      "p50_milliseconds": 15162,
+      "p95_milliseconds": 83575,
+      "pipeline_p50_milliseconds": 15162,
+      "pipeline_p95_milliseconds": 83575,
+      "unknown_latency": 0,
+      "critical_violations": 1,
+      "cost": {
+        "known_input_tokens": 13071,
+        "known_output_tokens": 1424,
+        "known_total_tokens": 82049,
+        "known_cost_microunits": 0,
+        "known_storage_bytes": 190065,
+        "unknown_measurements": 65,
+        "missing_stages": 0,
+        "calls": 41,
+        "failed_samples": 1,
+        "complete": false
+      }
+    },
+    "no_ltm": {
+      "cases": 24,
+      "completed": 20,
+      "skipped": 2,
+      "answer_correct": 16,
+      "truth_answer_correct": 5,
+      "malformed_outputs": 0,
+      "justified_abstentions": 15,
+      "current_fact_correct": 5,
+      "citation_exact": 20,
+      "citation_errors": 0,
+      "instruction_correct": 16,
+      "task_success": 0,
+      "unknown_task_outcomes": 22,
+      "false_positive_answers": 4,
+      "false_abstentions": 0,
+      "brier_score_sum": 4,
+      "calibration_samples": 20,
+      "retrieval_recall_sum": 0,
+      "retrieval_reciprocal_rank_sum": 0,
+      "retrieval_samples": 0,
+      "p50_milliseconds": 8178,
+      "p95_milliseconds": 19620,
+      "pipeline_p50_milliseconds": 8178,
+      "pipeline_p95_milliseconds": 19620,
+      "unknown_latency": 0,
+      "critical_violations": 2,
+      "cost": {
+        "known_input_tokens": 10542,
+        "known_output_tokens": 635,
+        "known_total_tokens": 41814,
+        "known_cost_microunits": 0,
+        "known_storage_bytes": 168432,
+        "unknown_measurements": 72,
+        "missing_stages": 0,
+        "calls": 44,
+        "failed_samples": 3,
+        "complete": false
+      }
+    },
+    "retrieval": {
+      "cases": 24,
+      "completed": 19,
+      "skipped": 2,
+      "answer_correct": 8,
+      "truth_answer_correct": 7,
+      "malformed_outputs": 0,
+      "justified_abstentions": 2,
+      "current_fact_correct": 7,
+      "citation_exact": 14,
+      "citation_errors": 0,
+      "instruction_correct": 15,
+      "task_success": 0,
+      "unknown_task_outcomes": 22,
+      "false_positive_answers": 11,
+      "false_abstentions": 0,
+      "brier_score_sum": 11,
+      "calibration_samples": 19,
+      "retrieval_recall_sum": 11.5,
+      "retrieval_reciprocal_rank_sum": 11,
+      "retrieval_samples": 12,
+      "p50_milliseconds": 12989,
+      "p95_milliseconds": 120014,
+      "pipeline_p50_milliseconds": null,
+      "pipeline_p95_milliseconds": null,
+      "unknown_latency": 0,
+      "critical_violations": 2,
+      "cost": {
+        "known_input_tokens": 13374,
+        "known_output_tokens": 1332,
+        "known_total_tokens": 67075,
+        "known_cost_microunits": 0,
+        "known_storage_bytes": 1578988,
+        "unknown_measurements": 181,
+        "missing_stages": 0,
+        "calls": 361,
+        "failed_samples": 3,
+        "complete": false
+      }
+    }
+  },
+  "cases": [
+    {
+      "case_id": "memory:b19116fc74b63e9cae77cc8658d2cb87",
+      "arm": "no_ltm",
+      "status": "failed",
+      "reasons": [
+        "transport_lifecycle_or_metadata_incomplete"
+      ],
+      "input_sha256": "38a1ac84eb86db9b315a79d15559c5ee5a9749260ef30cb209adabab566f13d6",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": false,
+      "behavior_refs": [
+        "issue76:cross_session"
+      ]
+    },
+    {
+      "case_id": "memory:b19116fc74b63e9cae77cc8658d2cb87",
+      "arm": "full_context",
+      "status": "failed",
+      "reasons": [
+        "transport_lifecycle_or_metadata_incomplete"
+      ],
+      "input_sha256": "bd59c3fad1440d7bd5d1c632a0d1982711a13b62015a3e25ba49ec89888b0ff8",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": false,
+      "behavior_refs": [
+        "issue76:cross_session"
+      ]
+    },
+    {
+      "case_id": "memory:b19116fc74b63e9cae77cc8658d2cb87",
+      "arm": "retrieval",
+      "status": "failed",
+      "reasons": [
+        "transport_lifecycle_or_metadata_incomplete"
+      ],
+      "input_sha256": "c86d05619a3426003e2b3845c0f69a00ead78621ebbe945a7ad9b7711a46ec95",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": false,
+      "behavior_refs": [
+        "issue76:cross_session"
+      ]
+    },
+    {
+      "case_id": "memory:81922c77df3049ea6867f329875ff433",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "1ae36aad5175ded0f897c16d3d5a7b09004ada60d5832973be1aa3b2916ea9cf",
+      "output_sha256": "58ea037a04e12140287d4982c9f2661980c216b7fb896807c11a19f3db19263a",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:supersession",
+        "issue76:exception"
+      ]
+    },
+    {
+      "case_id": "memory:81922c77df3049ea6867f329875ff433",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch"
+      ],
+      "input_sha256": "c8843c02c7b13060883714e3399c73c3d6936da4cdb9b5d70c1f191d95d8b2db",
+      "output_sha256": "08a62061674e5e9052f56fbdeb77bdf0bd05da709aea2a9deebf6f7c09c7bc34",
+      "answer_correct": false,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:supersession",
+        "issue76:exception"
+      ]
+    },
+    {
+      "case_id": "memory:81922c77df3049ea6867f329875ff433",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "86bb34ccfc3e6177144cbee6137ea455547af4b20fa4d17a6d70d48823ac23b8",
+      "output_sha256": "b816ea240754e959615d576b104a9c4d4222c0b9b8c1d4f2c8601b2c6f61986d",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:supersession",
+        "issue76:exception"
+      ]
+    },
+    {
+      "case_id": "memory:4698396de77e4f10958b2b741542e694",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "86bf84d5047aab38ccb6b9e950c969aa9018e47fd5210e5cde0c5fab0cad0d43",
+      "output_sha256": "58ea037a04e12140287d4982c9f2661980c216b7fb896807c11a19f3db19263a",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:contradiction",
+        "issue76:absent"
+      ]
+    },
+    {
+      "case_id": "memory:4698396de77e4f10958b2b741542e694",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "citation_mismatch"
+      ],
+      "input_sha256": "c4a54b6cfb0fbf9ccfa1d399a8a6962b09a3d7024951e23b49285ca5e3648968",
+      "output_sha256": "ccb4acfea817ff71fce4440665d978bab55ebc992c1ac63bef33f7f6c7a26df3",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:contradiction",
+        "issue76:absent"
+      ]
+    },
+    {
+      "case_id": "memory:4698396de77e4f10958b2b741542e694",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "citation_mismatch"
+      ],
+      "input_sha256": "0f4db4c33ad78a46b43d9af4b442e821b2e8a521a708082f14d907b38cf8c5d3",
+      "output_sha256": "ba9f3b9ae9d0a0910c96d11deb8ed2315d175a600912e7f8e980801ccb40e176",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:contradiction",
+        "issue76:absent"
+      ]
+    },
+    {
+      "case_id": "memory:c2b4ef5237c7a9c5b15df21a9d63e671",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "c36da4a444bf8905676f7b36c481de72214f4df65ded5441dd605a0c9d2e3625",
+      "output_sha256": "58ea037a04e12140287d4982c9f2661980c216b7fb896807c11a19f3db19263a",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:temporal"
+      ]
+    },
+    {
+      "case_id": "memory:c2b4ef5237c7a9c5b15df21a9d63e671",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "0154a4a5474af8f038b80b4df2750bc5521f7f5c0e7549aeffcb8579aea31df4",
+      "output_sha256": "b9370e403017ad12f3db99d52003bb4a69b7946ef6f9797726d9a81b8901e488",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:temporal"
+      ]
+    },
+    {
+      "case_id": "memory:c2b4ef5237c7a9c5b15df21a9d63e671",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "16df67ba1b741c15cc206327a7fcecbcc852dc0878a500950d7441cd5e384d20",
+      "output_sha256": "1f71a90794133c3b7a51d9afd21b2970dd47c3ecab23ef2ca6e9591cda1448a0",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:temporal"
+      ]
+    },
+    {
+      "case_id": "memory:6a9ed1382b1086a909b30d45e4d58312",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "current_instruction_mismatch"
+      ],
+      "input_sha256": "996a0b3505232ce9f8f63eb42cb83b19ce7d3df3d8270d52f5900967447d4083",
+      "output_sha256": "962d60ed2a7a19e974aae931526a95641e5067f2dbee24838fb9204b229fea11",
+      "answer_correct": false,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:russian_negation",
+        "issue76:condition",
+        "issue76:one_off"
+      ]
+    },
+    {
+      "case_id": "memory:6a9ed1382b1086a909b30d45e4d58312",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "citation_mismatch",
+        "current_instruction_mismatch"
+      ],
+      "input_sha256": "84ad7c7efe03de9b73e3cb2d5f6dd035982653a83da14d2bbfd4b480a3a42ff7",
+      "output_sha256": "245e07e8410c2c3abde7a3424a3f06403a8e6e7ec904944eb3e635a307d315de",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:russian_negation",
+        "issue76:condition",
+        "issue76:one_off"
+      ]
+    },
+    {
+      "case_id": "memory:6a9ed1382b1086a909b30d45e4d58312",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "citation_mismatch",
+        "current_instruction_mismatch"
+      ],
+      "input_sha256": "df0785db32203f4577b7b7678f9a2902d0de0f434f36f97827399a6b377ba458",
+      "output_sha256": "245e07e8410c2c3abde7a3424a3f06403a8e6e7ec904944eb3e635a307d315de",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:russian_negation",
+        "issue76:condition",
+        "issue76:one_off"
+      ]
+    },
+    {
+      "case_id": "memory:42f9ba641fd08a0369b9aa04dbd10900",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "ae7fa755fd6843b934d7b1555c2ee37fdba575267892f692fcc15632efc5c3cd",
+      "output_sha256": "44e1c0ef04b5ffb4eb3f33fd593f975ee99395c99572b94ca06c870f2776246e",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:exception",
+        "issue76:one_off"
+      ]
+    },
+    {
+      "case_id": "memory:42f9ba641fd08a0369b9aa04dbd10900",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "f2e22a03e263ea79507529c45e9e74d3fa94e251500984329a7088b7c4cce4fb",
+      "output_sha256": "44e1c0ef04b5ffb4eb3f33fd593f975ee99395c99572b94ca06c870f2776246e",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:exception",
+        "issue76:one_off"
+      ]
+    },
+    {
+      "case_id": "memory:42f9ba641fd08a0369b9aa04dbd10900",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "4e1736de0d235db646043b31908569c7eb0cef8ed15336265e92bacbce389376",
+      "output_sha256": "44e1c0ef04b5ffb4eb3f33fd593f975ee99395c99572b94ca06c870f2776246e",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:exception",
+        "issue76:one_off"
+      ]
+    },
+    {
+      "case_id": "memory:a7dd326b1f98b9945732151013ee6a31",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "9b0dadbfaab35d47f1152751bd44e3c77053ed8d42243ec24f60c70e0a39d472",
+      "output_sha256": "58ea037a04e12140287d4982c9f2661980c216b7fb896807c11a19f3db19263a",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:deleted",
+        "issue76:absent"
+      ]
+    },
+    {
+      "case_id": "memory:a7dd326b1f98b9945732151013ee6a31",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "40a3ab985e6dac29429686f0c600c4fa924d9eca144b62b468131150d269132a",
+      "output_sha256": "58ea037a04e12140287d4982c9f2661980c216b7fb896807c11a19f3db19263a",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:deleted",
+        "issue76:absent"
+      ]
+    },
+    {
+      "case_id": "memory:a7dd326b1f98b9945732151013ee6a31",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "381d4a1304c9c7c0a58d738a9d4c9964aa409d7595cef6e56360dcb827c06f32",
+      "output_sha256": "58ea037a04e12140287d4982c9f2661980c216b7fb896807c11a19f3db19263a",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:deleted",
+        "issue76:absent"
+      ]
+    },
+    {
+      "case_id": "memory:898b9aeebb277f7cd32c1ca4ee232f23",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "current_instruction_mismatch",
+        "stop_proposal_violation"
+      ],
+      "input_sha256": "f38b8f9c1f185faec099adf0f557bbf81833e4279d1f4028415382620df101fd",
+      "output_sha256": "65e9ffdb0606d536ad47b8504c9ca916234508c82beb1a2e601b47dbc3618347",
+      "answer_correct": false,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:long_task",
+        "issue76:stop"
+      ]
+    },
+    {
+      "case_id": "memory:898b9aeebb277f7cd32c1ca4ee232f23",
+      "arm": "full_context",
+      "status": "skipped",
+      "reasons": [
+        "input_byte_budget_exceeded"
+      ],
+      "input_sha256": "638b67bdf0139f326150be7effb2e77c43731b2e1702f57c42ac2a545fd63bd1",
+      "output_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": false,
+      "behavior_refs": [
+        "issue76:long_task",
+        "issue76:stop"
+      ]
+    },
+    {
+      "case_id": "memory:898b9aeebb277f7cd32c1ca4ee232f23",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "current_instruction_mismatch",
+        "stop_proposal_violation"
+      ],
+      "input_sha256": "03da376618945a06a26f0ec00a9a89429fae40ba643ae090362da7195390384b",
+      "output_sha256": "bf0a023be1b210b7ef3dafc1d8464583d31d83d868190328a507c1e4c8232c31",
+      "answer_correct": false,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:long_task",
+        "issue76:stop"
+      ]
+    },
+    {
+      "case_id": "memory:8921340e1555e7f10c7e201e885b15ee",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "a2872103eef38bf0ad7a378b36e17b2dfb2fae394811447cd2254a84cb0d2cfb",
+      "output_sha256": "58ea037a04e12140287d4982c9f2661980c216b7fb896807c11a19f3db19263a",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:experience",
+        "issue76:condition"
+      ]
+    },
+    {
+      "case_id": "memory:8921340e1555e7f10c7e201e885b15ee",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "7a2490bdfe5fdb8856c8587f31182c02d462b1fb10e18f2fb70a5c79f4cd83b3",
+      "output_sha256": "6478d3b262c14ab447035d358b111a84bc55fb9c56946341d5f4d456cfb45327",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:experience",
+        "issue76:condition"
+      ]
+    },
+    {
+      "case_id": "memory:8921340e1555e7f10c7e201e885b15ee",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "169a3b979e7186a6995910da50b80687064d93e297be8243196f12ca55da4859",
+      "output_sha256": "2fed724a9148a734303fc13e9ba436c401d62b21c8d6be8775d99e964c271937",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:experience",
+        "issue76:condition"
+      ]
+    },
+    {
+      "case_id": "memory:52152acc12cad786fa99cee9151a8b69",
+      "arm": "no_ltm",
+      "status": "skipped",
+      "reasons": [
+        "secret_source_blocked"
+      ],
+      "input_sha256": "8dc87be3da672ef69b57b2137baa2760432afedd4149ed159f312213b40cad88",
+      "output_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": false,
+      "behavior_refs": [
+        "issue76:privacy"
+      ]
+    },
+    {
+      "case_id": "memory:52152acc12cad786fa99cee9151a8b69",
+      "arm": "full_context",
+      "status": "skipped",
+      "reasons": [
+        "secret_source_blocked"
+      ],
+      "input_sha256": "fd48b65cc2a802d67822d531fcac5c90add9b55ed8cc60497b08076fb08540f4",
+      "output_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": false,
+      "behavior_refs": [
+        "issue76:privacy"
+      ]
+    },
+    {
+      "case_id": "memory:52152acc12cad786fa99cee9151a8b69",
+      "arm": "retrieval",
+      "status": "skipped",
+      "reasons": [
+        "secret_source_blocked"
+      ],
+      "input_sha256": "16a5f5dbfd54292b959833537e8b7ec41dff67fb7bc47cb213aeac36fa5bb9a5",
+      "output_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": false,
+      "behavior_refs": [
+        "issue76:privacy"
+      ]
+    },
+    {
+      "case_id": "memory:5f6d0478fde98264f7fb19b9f4001ac7",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "5a83eb6647f8c240a81cd650c75e6b95d82468a1fd4afd579f4503057239edb2",
+      "output_sha256": "58ea037a04e12140287d4982c9f2661980c216b7fb896807c11a19f3db19263a",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:russian_negation"
+      ]
+    },
+    {
+      "case_id": "memory:5f6d0478fde98264f7fb19b9f4001ac7",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch"
+      ],
+      "input_sha256": "25bccdd58526220eb7ed065b63ea6cf6434ba30bffc4aaf3edc39811bfd6c17d",
+      "output_sha256": "a4169647cae16a5e79c19843b54d89748117c03a18fce05322ca0b642bbe5beb",
+      "answer_correct": false,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:russian_negation"
+      ]
+    },
+    {
+      "case_id": "memory:5f6d0478fde98264f7fb19b9f4001ac7",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch"
+      ],
+      "input_sha256": "cf8d077c509858cd3863ba70f79adfe14e25ecbd4823f6d2d45e2e33ea17f471",
+      "output_sha256": "615bcefdf7241a818c4f7c9617c00dcba07c75298f9916e6743dd55c69f6fb7c",
+      "answer_correct": false,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:russian_negation"
+      ]
+    },
+    {
+      "case_id": "memory:a2a1d8656eaf2934811c77f73e75eb07",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "771618dc997b463aa685846e8b5d7f486074cc229d202f58eda7455cb12560d1",
+      "output_sha256": "58ea037a04e12140287d4982c9f2661980c216b7fb896807c11a19f3db19263a",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:absent"
+      ]
+    },
+    {
+      "case_id": "memory:a2a1d8656eaf2934811c77f73e75eb07",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "citation_mismatch"
+      ],
+      "input_sha256": "96ef39588f69e4bca3c23cf7c518d2722cdb5041b49104bbc124df825ef59c5a",
+      "output_sha256": "d7b0423207ae8de46657741bba20ae155d2695f2fea9d3247a80b77a35d45b3b",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:absent"
+      ]
+    },
+    {
+      "case_id": "memory:a2a1d8656eaf2934811c77f73e75eb07",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "citation_mismatch"
+      ],
+      "input_sha256": "28446866ef66be2717b39e076d89a18ec97eaa8a0be1215d277780f164d809d5",
+      "output_sha256": "d7b0423207ae8de46657741bba20ae155d2695f2fea9d3247a80b77a35d45b3b",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:absent"
+      ]
+    },
+    {
+      "case_id": "memory:fbf022bbab9263fb7e88cc5fa87117d6",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "e686106acd3a781fde2a13e5c02bb52ac0fabcf41661aa679a3ad8a797fbe279",
+      "output_sha256": "58ea037a04e12140287d4982c9f2661980c216b7fb896807c11a19f3db19263a",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:cross_session"
+      ]
+    },
+    {
+      "case_id": "memory:fbf022bbab9263fb7e88cc5fa87117d6",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch"
+      ],
+      "input_sha256": "f797cefc0f8bbf1615091af4343486583b69bd8001c76fd01aa120934b197b21",
+      "output_sha256": "138d53b85ff7ce74d7b22b0cd40cdeeeef85908daf003497ed326881081818e5",
+      "answer_correct": false,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:cross_session"
+      ]
+    },
+    {
+      "case_id": "memory:fbf022bbab9263fb7e88cc5fa87117d6",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "fcc94e15abc157581679ba3761b27efed7346499332c0844e7da1743f90fa733",
+      "output_sha256": "58ea037a04e12140287d4982c9f2661980c216b7fb896807c11a19f3db19263a",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:cross_session"
+      ]
+    },
+    {
+      "case_id": "memory:7293d7da64697b5b41895680cf29ced5",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "current_instruction_mismatch",
+        "stop_proposal_violation"
+      ],
+      "input_sha256": "e685c943f40accd7c567c79b02750999a8998e79f7db2b3061eb66a9770055c0",
+      "output_sha256": "7e02c9a739c02dab06efb2e2c9d964dd371c346675746fe93bdfdfdef3ccdda3",
+      "answer_correct": false,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:stop",
+        "issue76:russian_negation",
+        "issue76:condition"
+      ]
+    },
+    {
+      "case_id": "memory:7293d7da64697b5b41895680cf29ced5",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "current_instruction_mismatch",
+        "stop_proposal_violation"
+      ],
+      "input_sha256": "86dac7b6e3a28feba315b6b61134ba4e16ce17bea3252ad9835eb2dbdbd150e2",
+      "output_sha256": "79e032d64abe7916caaa0f41984735b793a8ed940b157103e31a988c491580f6",
+      "answer_correct": false,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:stop",
+        "issue76:russian_negation",
+        "issue76:condition"
+      ]
+    },
+    {
+      "case_id": "memory:7293d7da64697b5b41895680cf29ced5",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "current_instruction_mismatch",
+        "stop_proposal_violation"
+      ],
+      "input_sha256": "f8c8fb574d615e9fa1d94e4bb7329b0377bc2214081f673706e3c6bb4aac7e75",
+      "output_sha256": "b8a10530664d23314ea28f28c734ffebd44dee16e21db65626f3c48159edbc47",
+      "answer_correct": false,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:stop",
+        "issue76:russian_negation",
+        "issue76:condition"
+      ]
+    },
+    {
+      "case_id": "memory:e7613a071bfb4ac6592ad93626d2fd08",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "53dddaa372069612d209d22d69cceae004c968b75294cb08216e20a38548a741",
+      "output_sha256": "58ea037a04e12140287d4982c9f2661980c216b7fb896807c11a19f3db19263a",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:temporal",
+        "issue76:exception"
+      ]
+    },
+    {
+      "case_id": "memory:e7613a071bfb4ac6592ad93626d2fd08",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "dd0178a81f321095155019e5fa5653bfcac9f91e066f6db7ab341ee5c2dffd8c",
+      "output_sha256": "393f8d0f6215e35b063c24beec94743f6983939958cfde80e5b54c058b3e3b5c",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:temporal",
+        "issue76:exception"
+      ]
+    },
+    {
+      "case_id": "memory:e7613a071bfb4ac6592ad93626d2fd08",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "c368254b9d5fd8af78966a97550194dbeac558c60ca59aa103a2d9bb27c472a9",
+      "output_sha256": "393f8d0f6215e35b063c24beec94743f6983939958cfde80e5b54c058b3e3b5c",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:temporal",
+        "issue76:exception"
+      ]
+    },
+    {
+      "case_id": "memory:0d401caca0c46a469807c2523fb54acd",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "125e4c1c81f49ec88a0f9851036d54b108d66eb33272b8b0acbf3f91b466c9e4",
+      "output_sha256": "58ea037a04e12140287d4982c9f2661980c216b7fb896807c11a19f3db19263a",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:deleted",
+        "issue76:contradiction",
+        "issue76:absent"
+      ]
+    },
+    {
+      "case_id": "memory:0d401caca0c46a469807c2523fb54acd",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "citation_mismatch"
+      ],
+      "input_sha256": "d3babbace65c0bbb241622d66b3ff8e099349438c03a2c01ce314b6f3e75e305",
+      "output_sha256": "bc5adc28ede7e0131394c77bc1e13614c7392229570f3de31bd5be44872339ae",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:deleted",
+        "issue76:contradiction",
+        "issue76:absent"
+      ]
+    },
+    {
+      "case_id": "memory:0d401caca0c46a469807c2523fb54acd",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "citation_mismatch"
+      ],
+      "input_sha256": "eeb523f17daadc0de775a3739d415446ef04ae2767f90292adbe557c6e76eadb",
+      "output_sha256": "0a37cc9d476e360805ab93347f8efec872cf1bf073c33f517c6e6feed0323b1d",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:deleted",
+        "issue76:contradiction",
+        "issue76:absent"
+      ]
+    },
+    {
+      "case_id": "memory:47c1bf85bd52ed9e47f44100f46454f0",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "ca4e8567587f3aed21ea1346a154f5e1b3d1b52edb52e77e59abd6bf04503743",
+      "output_sha256": "58ea037a04e12140287d4982c9f2661980c216b7fb896807c11a19f3db19263a",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:russian_negation",
+        "issue76:condition"
+      ]
+    },
+    {
+      "case_id": "memory:47c1bf85bd52ed9e47f44100f46454f0",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch"
+      ],
+      "input_sha256": "f958559d7b12fff20279224f34b360ccdbc86f030584efabb12460a246231ea3",
+      "output_sha256": "48b2e320798ab8237b1b0725d443e75375e7cdc62fc8a0185763caeff2fe2161",
+      "answer_correct": false,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:russian_negation",
+        "issue76:condition"
+      ]
+    },
+    {
+      "case_id": "memory:47c1bf85bd52ed9e47f44100f46454f0",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch"
+      ],
+      "input_sha256": "354116f830d6b40a753b7460555b91e9ab7431ed21416a32718e9e0a388d3a18",
+      "output_sha256": "42799546c11360a9c977302e9dc352ce2d95fd98ddfd542b92db2f54013a7507",
+      "answer_correct": false,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:russian_negation",
+        "issue76:condition"
+      ]
+    },
+    {
+      "case_id": "memory:85ee65baeb04249e312ef9c4612638ee",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "175305c5cdf7671137985739dcc2aaf0ec6cf9995d52f5ec389ee5fde86073f9",
+      "output_sha256": "58ea037a04e12140287d4982c9f2661980c216b7fb896807c11a19f3db19263a",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:experience",
+        "issue76:privacy"
+      ]
+    },
+    {
+      "case_id": "memory:85ee65baeb04249e312ef9c4612638ee",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "citation_mismatch"
+      ],
+      "input_sha256": "ab135fbb11f14f07b477cbf3f02c2097c2c5491984298e55a9e69f36fbf6e2f2",
+      "output_sha256": "a224bdbbf1cc2433e4c8d2b7a8e6cb5084b07b445b15e3e7e493ffe3fd678d75",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:experience",
+        "issue76:privacy"
+      ]
+    },
+    {
+      "case_id": "memory:85ee65baeb04249e312ef9c4612638ee",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "citation_mismatch"
+      ],
+      "input_sha256": "4a513c77e7365dfbfeb4f8d59c3f764b675222cbbc355e8c295d1d5b5ffa72a2",
+      "output_sha256": "20255c24a7946c1946c927b08b3924b521f3346d03f9a10fa48e8c1ee2a84e5c",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:experience",
+        "issue76:privacy"
+      ]
+    },
+    {
+      "case_id": "memory:584f9d6f669e5562b84ce076f4e1fbb0",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "8ba323a24e16c2621c705ec7bc826a3e0d7b05327d71a035580ad9864eb433e3",
+      "output_sha256": "58ea037a04e12140287d4982c9f2661980c216b7fb896807c11a19f3db19263a",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:supersession",
+        "issue76:one_off"
+      ]
+    },
+    {
+      "case_id": "memory:584f9d6f669e5562b84ce076f4e1fbb0",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "5bb8894ec35deeb168e14536d666338c4e09358a137c528e4b55c5c3b7e2f8d1",
+      "output_sha256": "0043de86cf4d0e2cd1858a19d726e03956a5f1fc13de0b3d2d08a7bba49114fb",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:supersession",
+        "issue76:one_off"
+      ]
+    },
+    {
+      "case_id": "memory:584f9d6f669e5562b84ce076f4e1fbb0",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch"
+      ],
+      "input_sha256": "be77067e81eceeb63c41d81922e321e726d80efd0623a66b69ae3b31df117080",
+      "output_sha256": "d22c8d6e99ec47ccb82ae55e4d7028fe5277f857f75993bc05355b5596d0660e",
+      "answer_correct": false,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:supersession",
+        "issue76:one_off"
+      ]
+    },
+    {
+      "case_id": "memory:fb35a35bb693c7f2960d57a391880828",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "current_instruction_mismatch"
+      ],
+      "input_sha256": "ce2839ecd351a381e9e83388082604b270c7820e9a5baa414d28df65e2e1381c",
+      "output_sha256": "88f96201ed80ef8284c410527a33732e559d8267d6476021dc681c851bd9df48",
+      "answer_correct": false,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": false,
+      "behavior_refs": [
+        "issue76:one_off",
+        "issue76:exception"
+      ]
+    },
+    {
+      "case_id": "memory:fb35a35bb693c7f2960d57a391880828",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "current_instruction_mismatch"
+      ],
+      "input_sha256": "de34de47d81247407b49e5515870bc2de2482699bbb86a67fd787d4ff4794b80",
+      "output_sha256": "88f96201ed80ef8284c410527a33732e559d8267d6476021dc681c851bd9df48",
+      "answer_correct": false,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": false,
+      "behavior_refs": [
+        "issue76:one_off",
+        "issue76:exception"
+      ]
+    },
+    {
+      "case_id": "memory:fb35a35bb693c7f2960d57a391880828",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "current_instruction_mismatch"
+      ],
+      "input_sha256": "084fe0764096a75a5c37700c7385dd86019d7d0c3fe823fab0df3c06351d8232",
+      "output_sha256": "88f96201ed80ef8284c410527a33732e559d8267d6476021dc681c851bd9df48",
+      "answer_correct": false,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": false,
+      "behavior_refs": [
+        "issue76:one_off",
+        "issue76:exception"
+      ]
+    },
+    {
+      "case_id": "memory:32f7f5b380825072177b869a45041f6e",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "95c568c1f4bb60879ef9f18bc0555b849dec0302c927712e67fdc18920860e0f",
+      "output_sha256": "0e7254f97ada0b66df75ba0d6fa68142c3956f788cc08e0d85a46e66d25de085",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:long_task",
+        "issue76:cross_session"
+      ]
+    },
+    {
+      "case_id": "memory:32f7f5b380825072177b869a45041f6e",
+      "arm": "full_context",
+      "status": "skipped",
+      "reasons": [
+        "input_byte_budget_exceeded"
+      ],
+      "input_sha256": "814808af08897e75d4642ee120b56002bccd90db383d8321cbf60d2d7e415ff5",
+      "output_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": false,
+      "behavior_refs": [
+        "issue76:long_task",
+        "issue76:cross_session"
+      ]
+    },
+    {
+      "case_id": "memory:32f7f5b380825072177b869a45041f6e",
+      "arm": "retrieval",
+      "status": "failed",
+      "reasons": [
+        "transport_lifecycle_or_metadata_incomplete"
+      ],
+      "input_sha256": "d07dfcd8b4a064ddf86250647c89f72249b07825ff9e30665bbdf1f638febed8",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": false,
+      "behavior_refs": [
+        "issue76:long_task",
+        "issue76:cross_session"
+      ]
+    },
+    {
+      "case_id": "memory:98919c57285e711383b1632ed6a94531",
+      "arm": "no_ltm",
+      "status": "skipped",
+      "reasons": [
+        "secret_source_blocked"
+      ],
+      "input_sha256": "03fc93179265340869c63cef84b23bd81cab7285fb6d9242dd9d0c7d5bc920d8",
+      "output_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": false,
+      "behavior_refs": [
+        "issue76:privacy"
+      ]
+    },
+    {
+      "case_id": "memory:98919c57285e711383b1632ed6a94531",
+      "arm": "full_context",
+      "status": "skipped",
+      "reasons": [
+        "secret_source_blocked"
+      ],
+      "input_sha256": "eaa9a00390ad2a74f5d051aeccdec18660dadd1b1f973aef038fc68c2692a965",
+      "output_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": false,
+      "behavior_refs": [
+        "issue76:privacy"
+      ]
+    },
+    {
+      "case_id": "memory:98919c57285e711383b1632ed6a94531",
+      "arm": "retrieval",
+      "status": "skipped",
+      "reasons": [
+        "secret_source_blocked"
+      ],
+      "input_sha256": "15a082284357ca97029a378424b5d1ddea94e7843459128f3aa6b05f4f5f44c4",
+      "output_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": false,
+      "behavior_refs": [
+        "issue76:privacy"
+      ]
+    },
+    {
+      "case_id": "memory:fee2f9b9966acf2354a73d8b958edbd3",
+      "arm": "no_ltm",
+      "status": "failed",
+      "reasons": [
+        "transport_lifecycle_or_metadata_incomplete"
+      ],
+      "input_sha256": "4a64dfdd8e1b5dfbbf4d745cdef1a8da311c4acad69ab2b7cf8e32ce06ed3d14",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": false,
+      "behavior_refs": [
+        "issue76:condition",
+        "issue76:absent",
+        "issue76:contradiction"
+      ]
+    },
+    {
+      "case_id": "memory:fee2f9b9966acf2354a73d8b958edbd3",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [
+        "answer_mismatch",
+        "citation_mismatch",
+        "current_instruction_mismatch"
+      ],
+      "input_sha256": "b922d0828b874711297f08a234fa1e21c3ddf1725ae12a56a3ba804f440a7791",
+      "output_sha256": "694b84f563d356ddb993f4829003b8fe230d1576e823c81d3f25d545f2bcad74",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:condition",
+        "issue76:absent",
+        "issue76:contradiction"
+      ]
+    },
+    {
+      "case_id": "memory:fee2f9b9966acf2354a73d8b958edbd3",
+      "arm": "retrieval",
+      "status": "failed",
+      "reasons": [
+        "transport_lifecycle_or_metadata_incomplete"
+      ],
+      "input_sha256": "282a455e05aadc8e2f3f7a4964e3f2ba0ea18c019bbdad56c565f30847d47906",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "answer_correct": false,
+      "citation_exact": false,
+      "current_fact_correct": false,
+      "instruction_correct": false,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": false,
+      "task_code_correct": false,
+      "behavior_refs": [
+        "issue76:condition",
+        "issue76:absent",
+        "issue76:contradiction"
+      ]
+    },
+    {
+      "case_id": "memory:36a8e82938e7fcc01fcc8d59a9c56900",
+      "arm": "no_ltm",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "8897b3f839ad461893e4d9581ebf1dd57bb0f1cc9a82af697c14137fefa70553",
+      "output_sha256": "25ca3a5bd92fc8a25ad5acf83dd81985974cac6c46f82bbd199b159a90de56de",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": false,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": false,
+      "evidence_available": false,
+      "justified_abstention": true,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:exception",
+        "issue76:one_off"
+      ]
+    },
+    {
+      "case_id": "memory:36a8e82938e7fcc01fcc8d59a9c56900",
+      "arm": "full_context",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "a172f43e6d4ec1e53b0babaf6b8766fe1a95dcc570053a4930a4a3c70480b126",
+      "output_sha256": "fdf2231ac58b94b628e6a71fe3b121de0de3ce07787d9882ca2df2b13480431e",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:exception",
+        "issue76:one_off"
+      ]
+    },
+    {
+      "case_id": "memory:36a8e82938e7fcc01fcc8d59a9c56900",
+      "arm": "retrieval",
+      "status": "completed",
+      "reasons": [],
+      "input_sha256": "18af34ad4c54e597d289cfcd08c3129944e695d3534735a8d82c6a8edd4c0c38",
+      "output_sha256": "cb1401b3d2bf1b84f000aa778e6c40f67a4671e9688418f7daaeeef52afef707",
+      "answer_correct": true,
+      "citation_exact": true,
+      "current_fact_correct": true,
+      "instruction_correct": true,
+      "task_success": null,
+      "truth_answer_correct": true,
+      "evidence_available": true,
+      "justified_abstention": false,
+      "task_code_correct": true,
+      "behavior_refs": [
+        "issue76:exception",
+        "issue76:one_off"
+      ]
+    }
+  ],
+  "reasons": [
+    "arm_gate_failed:no_ltm",
+    "arm_gate_failed:full_context",
+    "arm_gate_failed:retrieval",
+    "candidate_quality_gate_failed",
+    "frozen_budget_exceeded"
+  ],
+  "model_quality_evidence": true,
+  "candidate_thresholds_passed": false,
+  "baseline_comparable": false,
+  "promotion_allowed": false,
+  "execution_authorized": false,
+  "limits": [
+    "Public synthetic holdout is group-separated, not blind or statistically sufficient.",
+    "Retrieval diagnostics, structured answers and independently captured task effects are separate evidence.",
+    "Byte budget overflow does not establish the model tokenizer's actual context limit.",
+    "Known expense is a subtotal; missing stages and nullable measurements deny complete cost.",
+    "Golden review and imported hashes require a separately pinned operator checker and original runner/ledger correlation.",
+    "This report never admits native calls, executes tools or authorizes deployment.",
+    "Operator-pinned original directory and compiled source identity are required.",
+    "Public synthetic QA and proposed-action observations do not prove external effects or long-lived user task completion.",
+    "Subscription invoice, embedding tokenizer usage and host energy remain unknown; known costs are subtotals.",
+    "This audit cannot reopen a window, execute a tool, tune controls or authorize promotion.",
+    "New owner-authorized five-input window has its own deadline; all old expiries, paid failures and expenses remain unchanged.",
+    "Clean provider failures remain eligible in the original denominator; unavailable usage and invoice remain unknown.",
+    "Reused retrieval pipeline latency and broader user task effects remain unknown."
+  ]
+}

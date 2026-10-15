@@ -1,5 +1,20 @@
 # Butler — Model Transport Contract
 
+Trusted composition may install request-local `WithInferenceAuthority` checks.
+Native Antigravity checks this callback before authentication and immediately
+before HTTP dispatch, alongside caller-owned budgets and in-flight/final guards.
+It is never serialized or model-selected and grants no authority. Unhooked calls
+preserve their contract; cancellation and current-source stale/timeout diagnostics
+remain distinct. No retry or fallback follows from the callback.
+
+Provider timeout and owning model-budget deadline are independent bounds; the
+earliest task, mandate, lease or caller deadline still wins. The Orchestrator's
+legacy BUTLER_OPENAI_TIMEOUT_SECONDS setting supplies the selected provider's
+timeout, including Antigravity. A five-minute Gemini setting therefore requires
+300 transport seconds and model_millis300000 in the operator budget policy.
+New memory-eval trials explicitly use both five-minute bounds; sealed historical
+two-minute observations and scoring thresholds are not rewritten.
+
 The lab-only V4 observation collector preserves bounded filtered final bytes
 after owning SQL spend persistence and separately records immutable encoding,
 retention and lifecycle facts. It forwards the original events unchanged and
@@ -36,6 +51,28 @@ declared transport codes, including `memory_source_stale` and
 are discarded before execution logging, run persistence and input-worker return.
 An owning source-check timeout is distinct from a provider timeout; both deny
 release. These diagnostics do not grant a retry or relax any source deadline.
+
+Antigravity HTTP rejection errors retain only the numeric HTTP status as typed
+metadata. `DiagnosticHTTPStatus` exports the finite300–599 range, otherwise0;
+response bodies/headers remain excluded. Memory-eval also projects six exact
+transport-owned protocol literals onto fixed reason codes, never substring
+matches or arbitrary error text. Earlier lost statuses/reasons remain unknown.
+These fields observe a failed admission and grant no retry or continuation.
+For400/422, a64KiB private INVALID_ARGUMENT envelope can be projected onto four
+fixed diagnostic classes (unknown minItems/maxItems, response-schema rejection,
+other invalid argument). `DiagnosticReason` rejects all other strings. Provider
+messages, field paths/details and raw bytes remain unexported; a class records an
+upstream claim, not proof of the precise cause. Earlier unknowns stay unknown.
+
+Native memory-eval on laba follows the established private antigravity-proxy route
+and bypasses loopback/own PostgreSQL/local-models. New operator pins require this
+route; actual Docker environment is reduced to proxy/bypass booleans checked
+before provider auth. Historical roots retain their original direct-route proof.
+Native auth and possible OAuth refresh use only the runtime's strict encrypted
+PostgreSQL SecretStore after its durable one-use entry. A disposable metadata
+process must never resolve refresh-capable credentials. The rejected historical
+metadata probe proves profile availability only; its possible rotation is unknown
+and it does not prove generation capability or allow retry.
 
 ## 1. Статус документа
 

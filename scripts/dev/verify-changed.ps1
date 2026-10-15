@@ -26,6 +26,14 @@ $tests = New-Object System.Collections.Generic.HashSet[string]
 
 foreach ($file in $files) {
   switch -Regex ($file) {
+    "^(internal/acceptance/memory[^/]*\.go|cmd/memory-eval/|apps/orchestrator/internal/app/memory_eval_|testdata/acceptance/(ru-memory-|reviews/ru-memory-)|scripts/dev/memory-eval-)" {
+      [void]$specs.Add("docs/architecture/memory-model.md")
+      [void]$specs.Add("docs/architecture/observation-evaluation-contract.md")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./internal/acceptance")
+      [void]$tests.Add("pwsh -NoProfile -File scripts/dev/test-go.ps1 -Packages ./cmd/memory-eval")
+      [void]$tests.Add("SSH laba: memory-eval-verify-lab.sh isolated root; real PostgreSQL/race collector and offline transport regression, zero inference. Native execution requires separate reviewed clean commit, fresh one-use model root and read-only audit; never reopen older windows.")
+      continue
+    }
     "^(apps/orchestrator/internal/app/(release_chain_v(?:14|15|16|17|18|19|20)_|release_chain_pool_checks|release_chain_pending_cases|release_chain_entry_lane)|scripts/dev/scenario-release-chain-v(?:14|15|16|17|18|19|20)-|scripts/dev/release-chain-v6-final-audit/v(?:14|15|16|17|18|19|20)|deploy/acceptance/release-chain-v(?:14|15|16|17|18|19|20))" {
       [void]$specs.Add("docs/architecture/run-lifecycle-spec.md")
       [void]$specs.Add("docs/architecture/model-transport-contract.md")

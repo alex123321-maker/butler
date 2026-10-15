@@ -1,3 +1,17 @@
+The opt-in memory-eval collector runs only in an isolated fresh test database.
+It composes current source/catalog/index/bundle/budget/provider code, retains all
+paid failures and original traces, and checks source/task/lease before dispatch
+and final acceptance. Normal tests authenticate/infer nothing. Its independently
+reviewed synthetic QA/proposed actions do not claim broader user-task completion;
+unknown invoice/tokenizer/effect data deny promotion. See
+[reproduction and limits](../../cmd/memory-eval/README.md).
+
+New memory-eval model turns use a five-minute provider and model-admission
+deadline. For live Gemini turns set BUTLER_OPENAI_TIMEOUT_SECONDS=300 (the legacy
+setting feeds every selected provider) and budget model_millis=300000 together.
+Earlier task/mandate/cancellation bounds still apply. Historical experiments keep
+their original timeout, observations and score; no retry is implied.
+
 Converter continuations distinguish returned candidates from already activated
 catalog entries. Current activation facts are reloaded as private DATA under the
 existing lease/source/authority checks, including recovery. Activated entries
@@ -787,3 +801,21 @@ Ordinary owner inputs retain distinct intentional action slots. There is no
 fabricated ToolResult, prior-effect replay, refund or permission bypass. Current
 task/source/lease, Stop, budget, final and Broker guards still apply. Private proof
 reloads before proposals use a two-second maximum clamped by the live caller.
+
+
+The opt-in memory-eval renewed window uses a separately pinned five-input mandate
+and fresh encrypted PostgreSQL auth preflight. It preserves all historical paid
+failures, expenses and expiries. Only clean retained availability errors permit
+the next distinct authorized input; source/lease/retention errors seal collection.
+See [the bounded protocol](../../docs/ai/memory-eval-v2-renewed-five-plan-20261015.md).
+
+The prospective semantic memory trial is a separate opt-in test entry, not a
+service. It accepts a free answer envelope and defers meaning to independent
+original-bound review; historical V2 machine scores remain unchanged. It reuses
+the Catalog/parser/owned indexing/local embedding/HybridReader/bundle and native
+budget/transport collectors. Its writer exits and PostgreSQL restarts before a
+new reader process constructs question inputs. Oracle/no-memory/retrieval arms
+and predeclared repeats share the five-minute provider/model admission timeout.
+There are no external tools or implicit retries. See the
+[semantic evaluation protocol](../../docs/ai/memory-eval-semantic-methodology.md)
+and [runner instructions](../../cmd/memory-eval/README.md).

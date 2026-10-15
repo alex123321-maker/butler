@@ -10,3 +10,7 @@
 *.gif binary
 *.ico binary
 *.pdf binary
+
+# Reviewed memory fixtures retain exact signed bytes across host checkouts.
+/testdata/acceptance/ru-memory-v*.json -text
+/testdata/acceptance/reviews/ru-memory-v*-rejected-proposal*.json -text

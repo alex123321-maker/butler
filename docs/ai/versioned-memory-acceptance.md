@@ -1,5 +1,53 @@
 # Versioned memory and structured ingestion acceptance
 
+## Memory quality measurement, issue78
+
+V2 adds an opt-in collector over current Catalog/structured parsing, owned index
+jobs, HybridReader/BuildBundle, budgets and native transport, plus offline original
+runner correlation. A separate authorized reviewer approved all24 public synthetic
+cases/60 originals and independently reproduced data/criteria digests; V1 and
+rejected V2 proposals remain immutable negatives. Golden and final runner approval
+are separate. Controls must not drive tuning. The bounded user-scoped chunk
+configuration declares other memory classes nonconfigured and optional workers off.
+
+Safe refusal is distinct from successful recovery/application of an answerable
+fact. Exact unsupported guesses are false assertions; current task prose must
+agree with the action code. QA observations, kernel guards, genuine external user
+outcomes and complete cost are separate: invoice, local tokenizer and unsupported
+effects stay null. Failed spend persists before later writes/source checks. A
+negative correlated comparison can accept the harness while denying promotion.
+See [bounded reproduction and scope](../../cmd/memory-eval/README.md).
+
+The additive [memory-eval protocol](../../cmd/memory-eval/README.md) supplies
+versioned synthetic originals, pre-run frozen three-arm inputs and strict
+per-case/cost scoring in the existing issue33 contour. The offline mandatory
+suite checks unknown expense, false positive answers, abstention, exact source
+revision/quotes, deletion, fresh task instructions and sealed artifact writes.
+Its fixed-store fixture invokes the current memory bundle builder without model,
+embedding or real user-memory access. It does not replace any source/privacy
+acceptance below and does not establish answer quality or user task success.
+V2 golden/control review and original live retrieval capture are independently
+checked. The closed bounded comparison now retains58complete answers,6failed
+paid slots and8planned skips across all72 original inputs; no eligible input
+remains unobserved and no spent input was retried. Its
+[complete runner audit](../../testdata/acceptance/results/ru-memory-v2-complete-runner-audit-20261015.json)
+passes the full attempt matrix, separately from the model's numeric NO_GO.
+The [full report](../../testdata/acceptance/results/ru-memory-v2-complete-20261015.json)
+preserves1030expense rows and446logical stage/control-plane calls against the
+unchanged280score ceiling; model_quality_evidence=true, promotion_allowed=false.
+All nine stages are represented; unknown dimensions remain null. Aggregate
+64native+53auxiliary admissions is117/3442427. The separate owner-authorized
+five-input grant leaves all historical deadlines and failures unchanged.
+Its zero-Infer auth preflight preserves refresh rotation in the same encrypted
+store later used by native. See the
+[independent final review](memory-eval-v2-renewed-five-final-independent-review-20261015.md)
+and [current status](memory-eval-v2-model-status-20261015.md) for source/runtime
+attribution and all six issue78 acceptance criteria. The older
+[partial report](../../testdata/acceptance/results/ru-memory-v2-partial-20261015.json)
+remains a historical incomplete NO_GO, without retrospective relabeling.
+Canonical-rubric counts are not a complete semantic error judgment; unknown
+invoice/tokenizer/storage costs and genuine broader effects remain unknown.
+
 This records the implementation and lab evidence for issues 22 and 23. PostgreSQL
 owns sources, immutable revisions, candidates/decisions, original assets and job
 claims. Existing transcript, working, episodic and profile stores remain separate;
