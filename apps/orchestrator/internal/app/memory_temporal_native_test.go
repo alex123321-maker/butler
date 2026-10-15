@@ -541,6 +541,81 @@ func TestTemporalCollectorOwningFlowNoSkipIntegration(t *testing.T) {
 	if pool.QueryRow(ctx, `SELECT count(*),count(*)FILTER(WHERE status='completed')FROM temporal_native_cases`).Scan(&total, &completed) != nil || total != 12 || completed != 12 {
 		t.Fatal("whole original denominator not completed", total, completed)
 	}
+	rows, err := pool.Query(ctx, `SELECT x.case_id,c.result FROM temporal_native_cases x JOIN tool_calls c ON c.run_id=x.run_id WHERE c.tool_name='memory.facts' ORDER BY x.position`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rows.Close()
+	seen := 0
+	for rows.Next() {
+		var id string
+		var raw []byte
+		if rows.Scan(&id, &raw) != nil {
+			t.Fatal("actual Broker result missing")
+		}
+		out, err := readcontrol.DecodeResult(raw)
+		if err != nil {
+			t.Fatal("actual Broker DATA invalid", id, err)
+		}
+		text := string(raw)
+		switch id {
+		case "t01_valid_february", "t03_known_before_second":
+			if len(out.Items) != 1 || !strings.Contains(out.Items[0].Text, "узел Кедр") {
+				t.Fatal("historical fixture wrong", id)
+			}
+		case "t02_current_head":
+			if len(out.Items) != 1 || !strings.Contains(out.Items[0].Text, "узел Пихта") {
+				t.Fatal("current fixture wrong")
+			}
+		case "t04_not_yet_recorded":
+			if len(out.Items) != 0 || out.NotKnownAtObservation != 2 {
+				t.Fatal("recorded cutoff fixture wrong")
+			}
+		case "t05_open_and_unknown":
+			if len(out.Items) != 1 || out.UnknownValidity != 1 {
+				t.Fatal("unknown/open interval fixture wrong")
+			}
+		case "t06_overlapping_periods":
+			if len(out.Items) != 2 || !out.Items[0].Conflict || !out.Items[1].Conflict {
+				t.Fatal("conflict fixture wrong")
+			}
+		case "t07_exception_expired":
+			if len(out.Items) != 1 || !strings.Contains(out.Items[0].Text, "русский") || strings.Contains(text, "английский") {
+				t.Fatal("scoped expiry fixture wrong")
+			}
+		case "t08_stale_technical":
+			if len(out.Items) != 1 || len(out.Items[0].Temporal) != 1 || out.Items[0].Temporal[0].Freshness.Status != "needs_revalidation" || out.Items[0].Temporal[0].Freshness.CurrentUsable {
+				t.Fatal("prior verification fixture wrong")
+			}
+		case "t09_event_time_disjoint":
+			if len(out.Items) != 1 || out.Items[0].EventTime != "2025-09-13T08:00:00Z" || !strings.Contains(out.Items[0].Text, "узел Ива") {
+				t.Fatal("event/validity fixture wrong")
+			}
+		case "t10_current_correction_denies_old":
+			if out.Status != "stale" || strings.Contains(text, "Сирень-17") {
+				t.Fatal("old corrected data fixture wrong")
+			}
+		case "t11_revoked_original":
+			if out.Status != "denied" || strings.Contains(text, "Туя-61") {
+				t.Fatal("revoked data fixture wrong")
+			}
+		case "t12_completed_episode":
+			if len(out.Items) != 1 || len(out.Items[0].Temporal) != 1 || out.Items[0].Temporal[0].Freshness.Status != "historical" {
+				t.Fatal("accepted report fixture wrong")
+			}
+		default:
+			t.Fatal("unplanned original result")
+		}
+		for _, item := range out.Items {
+			if item.ReadRef != "" {
+				t.Fatal("fact snapshot minted source-open citation")
+			}
+		}
+		seen++
+	}
+	if rows.Err() != nil || seen != 12 {
+		t.Fatal("actual fixture witness population incomplete")
+	}
 }
 
 type temporalControlledProvider struct {
