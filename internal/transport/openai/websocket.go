@@ -60,7 +60,12 @@ const pingInterval = 30 * time.Second
 // connection is considered dead.
 const pongDeadline = 10 * time.Second
 
-func (p *Provider) executeRunRequest(ctx context.Context, runID, modelName string, sseBody []byte, realtimeMessages func(context.Context) ([]map[string]any, error)) (transport.EventStream, error) {
+func (p *Provider) executeRunRequest(ctx context.Context, runID, modelName string, sseBody []byte, realtimeMessages func(context.Context) ([]map[string]any, error)) (result transport.EventStream, resultErr error) {
+	defer func() {
+		if resultErr != nil {
+			p.clearInstructions(runID)
+		}
+	}()
 	if !p.prefersWebSocket() {
 		return p.executeStreamingRequest(ctx, runID, http.MethodPost, p.endpoint("/responses"), sseBody)
 	}
@@ -515,6 +520,7 @@ func (p *Provider) CloseSession(sessionKey string) {
 // Intended for provider shutdown.
 func (p *Provider) CloseAllSessions() {
 	p.mu.Lock()
+	clear(p.instructions)
 	sessions := make([]*realtimeSession, 0, len(p.sessions))
 	for key, session := range p.sessions {
 		sessions = append(sessions, session)
@@ -541,10 +547,17 @@ func (p *Provider) CloseAllSessions() {
 // own event-driven protocol.
 func (p *Provider) startRunRealtimeMessages(req transport.StartRunRequest) ([]map[string]any, error) {
 	var events []map[string]any
+	instructions, inputItems := splitInstructionItems(req.InputItems)
+	if instructions != "" {
+		p.setInstructions(req.Context.RunID, instructions)
+	} else {
+		p.clearInstructions(req.Context.RunID)
+	}
 
 	// 1. session.update — configure model and tools.
 	sessionConfig := map[string]any{
-		"modalities": []string{"text"},
+		"modalities":   []string{"text"},
+		"instructions": instructions,
 	}
 	if len(req.ToolDefinitions) > 0 {
 		sessionConfig["tools"] = encodeRealtimeTools(req.ToolDefinitions)
@@ -557,11 +570,7 @@ func (p *Provider) startRunRealtimeMessages(req transport.StartRunRequest) ([]ma
 
 	// 2. conversation.item.create — one per input item (skipping system messages
 	// which are folded into session.update as instructions if present).
-	for _, item := range req.InputItems {
-		if strings.EqualFold(item.Role, "system") {
-			sessionConfig["instructions"] = item.Content
-			continue
-		}
+	for _, item := range inputItems {
 		events = append(events, map[string]any{
 			"type": "conversation.item.create",
 			"item": map[string]any{
@@ -584,8 +593,15 @@ func (p *Provider) startRunRealtimeMessages(req transport.StartRunRequest) ([]ma
 // events: inject input items then request a new response.
 func (p *Provider) continueRunRealtimeMessages(req transport.ContinueRunRequest) ([]map[string]any, error) {
 	var events []map[string]any
+	instructions, inputItems := splitInstructionItems(req.InputItems)
+	if instructions == "" {
+		instructions = p.instructionsFor(req.RunID)
+	} else {
+		p.setInstructions(req.RunID, instructions)
+	}
+	events = append(events, map[string]any{"type": "session.update", "session": map[string]any{"instructions": instructions}})
 
-	for _, item := range req.InputItems {
+	for _, item := range inputItems {
 		events = append(events, map[string]any{
 			"type": "conversation.item.create",
 			"item": map[string]any{
@@ -612,9 +628,25 @@ func (p *Provider) submitToolResultRealtimeMessages(req transport.SubmitToolResu
 		"output":  req.ToolResultJSON,
 	}
 	return []map[string]any{
+		{"type": "session.update", "session": map[string]any{"instructions": p.instructionsFor(req.RunID)}},
 		{"type": "conversation.item.create", "item": item},
 		{"type": "response.create"},
 	}, nil
+}
+
+func splitInstructionItems(items []transport.InputItem) (string, []transport.InputItem) {
+	var instructions []string
+	var input []transport.InputItem
+	for _, item := range items {
+		if strings.EqualFold(strings.TrimSpace(item.Role), "system") {
+			if value := strings.TrimSpace(item.Content); value != "" {
+				instructions = append(instructions, value)
+			}
+		} else {
+			input = append(input, item)
+		}
+	}
+	return strings.Join(instructions, "\n\n"), input
 }
 
 // encodeRealtimeTools converts ToolDefinitions to the Realtime API tool format.

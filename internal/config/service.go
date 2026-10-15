@@ -23,6 +23,8 @@ type SettingState struct {
 	IsSecret         bool
 	RequiresRestart  bool
 	AllowedValues    []string
+	Description      string
+	ValueHint        string
 	ValidationStatus ValidationStatus
 	ValidationError  string
 }
@@ -160,6 +162,8 @@ func (s *SettingsService) resolveStates(settings []Setting, includeHidden bool) 
 			IsSecret:         item.IsSecret,
 			RequiresRestart:  item.RequiresRestart,
 			AllowedValues:    append([]string(nil), spec.Spec.allowedValues...),
+			Description:      spec.Spec.description,
+			ValueHint:        spec.Spec.valueHint,
 			ValidationStatus: item.ValidationStatus,
 			ValidationError:  item.ValidationError,
 		}

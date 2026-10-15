@@ -52,6 +52,7 @@ type Provider struct {
 	mu           sync.Mutex
 	activeWS     map[string]*realtimeSession // runID → active session
 	sessions     map[string]*realtimeSession // sessionKey → persistent session
+	instructions map[string]string           // runID -> instruction continuity within this run
 }
 
 func NewProvider(cfg Config, client *http.Client) (*Provider, error) {
@@ -81,11 +82,12 @@ func NewProvider(cfg Config, client *http.Client) (*Provider, error) {
 		log = slog.Default()
 	}
 	return &Provider{
-		config:     cfg,
-		httpClient: client,
-		log:        logger.WithComponent(log, "transport-openai"),
-		activeWS:   make(map[string]*realtimeSession),
-		sessions:   make(map[string]*realtimeSession),
+		config:       cfg,
+		httpClient:   client,
+		log:          logger.WithComponent(log, "transport-openai"),
+		activeWS:     make(map[string]*realtimeSession),
+		sessions:     make(map[string]*realtimeSession),
+		instructions: make(map[string]string),
 		capabilities: transport.CapabilitySnapshot{
 			SupportsStreaming:        true,
 			SupportsToolCalls:        true,
@@ -160,6 +162,7 @@ func (p *Provider) CancelRun(ctx context.Context, req transport.CancelRunRequest
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
+	defer p.clearInstructions(req.RunID)
 	p.log.Info("cancelling openai run", slog.String("run_id", req.RunID))
 	if active := p.activeRealtimeSession(req.RunID); active != nil {
 		if err := active.sendJSON(map[string]any{"type": "response.cancel"}); err != nil {
@@ -327,6 +330,7 @@ func (p *Provider) normalizePayload(runID, eventType string, payload map[string]
 		if stringValue(item["type"]) != "function_call" {
 			return nil, false, nil
 		}
+		state.toolRequested = true
 		callID := stringValue(item["call_id"])
 		if callID == "" {
 			callID = stringValue(item["id"])
@@ -338,6 +342,7 @@ func (p *Provider) normalizePayload(runID, eventType string, payload map[string]
 			SequenceNo:  intValue(payload["sequence_number"]),
 		})}, false, nil
 	case "response.function_call_arguments.done":
+		state.toolRequested = true
 		return []transport.TransportEvent{transport.NewToolCallRequestedEvent(runID, providerName, transport.ToolCallRequest{
 			ToolCallRef: stringValue(payload["call_id"]),
 			ToolName:    stringValue(payload["name"]),
@@ -365,6 +370,9 @@ func (p *Provider) normalizePayload(runID, eventType string, payload map[string]
 		if state.providerSession != nil {
 			completed.ProviderSessionRef = state.providerSession
 		}
+		if !state.toolRequested {
+			p.clearInstructions(runID)
+		}
 		return []transport.TransportEvent{finalEvent, completed}, true, nil
 	case "response.done":
 		response, _ := payload["response"].(map[string]any)
@@ -375,6 +383,7 @@ func (p *Provider) normalizePayload(runID, eventType string, payload map[string]
 			if state.providerSession != nil {
 				errorEvent.ProviderSessionRef = state.providerSession
 			}
+			p.clearInstructions(runID)
 			return []transport.TransportEvent{errorEvent}, true, nil
 		}
 		if ref := providerSessionFromPayload(payload); ref != nil {
@@ -396,6 +405,9 @@ func (p *Provider) normalizePayload(runID, eventType string, payload map[string]
 		if state.providerSession != nil {
 			completed.ProviderSessionRef = state.providerSession
 		}
+		if !state.toolRequested {
+			p.clearInstructions(runID)
+		}
 		return []transport.TransportEvent{finalEvent, completed}, true, nil
 	case "response.failed", "error":
 		providerErr := errorFromPayload(payload)
@@ -403,6 +415,7 @@ func (p *Provider) normalizePayload(runID, eventType string, payload map[string]
 		if state.providerSession != nil {
 			errorEvent.ProviderSessionRef = state.providerSession
 		}
+		p.clearInstructions(runID)
 		return []transport.TransportEvent{errorEvent}, true, nil
 	default:
 		warning := transport.NewTransportWarningEvent(runID, providerName, "unhandled openai stream event", map[string]any{"event_type": eventType})
@@ -414,10 +427,17 @@ func (p *Provider) normalizePayload(runID, eventType string, payload map[string]
 }
 
 func (p *Provider) startRunBody(req transport.StartRunRequest) ([]byte, error) {
+	instructions, input := splitInstructions(req.InputItems)
 	payload := map[string]any{
 		"model":  req.Context.ModelName,
-		"input":  encodeInputItems(req.InputItems),
+		"input":  input,
 		"stream": req.StreamingEnabled,
+	}
+	if instructions != "" {
+		payload["instructions"] = instructions
+		p.setInstructions(req.Context.RunID, instructions)
+	} else {
+		p.clearInstructions(req.Context.RunID)
 	}
 	if req.Context.ProviderSessionRef != nil && req.Context.ProviderSessionRef.ResponseRef != "" {
 		payload["previous_response_id"] = req.Context.ProviderSessionRef.ResponseRef
@@ -434,10 +454,19 @@ func (p *Provider) startRunBody(req transport.StartRunRequest) ([]byte, error) {
 }
 
 func (p *Provider) continueRunBody(req transport.ContinueRunRequest) ([]byte, error) {
+	instructions, input := splitInstructions(req.InputItems)
 	payload := map[string]any{
 		"model":  p.config.Model,
-		"input":  encodeInputItems(req.InputItems),
+		"input":  input,
 		"stream": true,
+	}
+	if instructions == "" {
+		instructions = p.instructionsFor(req.RunID)
+	} else {
+		p.setInstructions(req.RunID, instructions)
+	}
+	if instructions != "" {
+		payload["instructions"] = instructions
 	}
 	if req.ProviderSessionRef != nil && req.ProviderSessionRef.ResponseRef != "" {
 		payload["previous_response_id"] = req.ProviderSessionRef.ResponseRef
@@ -451,14 +480,18 @@ func (p *Provider) continueRunBody(req transport.ContinueRunRequest) ([]byte, er
 }
 
 func (p *Provider) submitToolResultBody(req transport.SubmitToolResultRequest) ([]byte, error) {
+	input := []map[string]any{{
+		"type":    "function_call_output",
+		"call_id": req.ToolCallRef,
+		"output":  json.RawMessage(req.ToolResultJSON),
+	}}
 	payload := map[string]any{
 		"model":  p.config.Model,
 		"stream": true,
-		"input": []map[string]any{{
-			"type":    "function_call_output",
-			"call_id": req.ToolCallRef,
-			"output":  json.RawMessage(req.ToolResultJSON),
-		}},
+		"input":  input,
+	}
+	if instructions := p.instructionsFor(req.RunID); instructions != "" {
+		payload["instructions"] = instructions
 	}
 	if req.ProviderSessionRef != nil && req.ProviderSessionRef.ResponseRef != "" {
 		payload["previous_response_id"] = req.ProviderSessionRef.ResponseRef
@@ -536,6 +569,7 @@ func (d *sseDecoder) Next(ctx context.Context) (sseMessage, error) {
 }
 
 type streamState struct {
+	toolRequested   bool
 	providerSession *transport.ProviderSessionRef
 	finalText       strings.Builder
 }
@@ -708,4 +742,44 @@ func coalesceJSONString(value any, fallback string) string {
 		return fallback
 	}
 	return string(encoded)
+}
+
+func splitInstructions(items []transport.InputItem) (string, []map[string]any) {
+	instructions, input := splitInstructionItems(items)
+	return instructions, encodeInputItems(input)
+}
+
+func (p *Provider) setInstructions(runID, instructions string) {
+	runID = strings.TrimSpace(runID)
+	if runID == "" {
+		return
+	}
+	trimmed := strings.TrimSpace(instructions)
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if trimmed == "" {
+		delete(p.instructions, runID)
+		return
+	}
+	p.instructions[runID] = trimmed
+}
+
+func (p *Provider) instructionsFor(runID string) string {
+	runID = strings.TrimSpace(runID)
+	if runID == "" {
+		return ""
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.instructions[runID]
+}
+
+func (p *Provider) clearInstructions(runID string) {
+	runID = strings.TrimSpace(runID)
+	if runID == "" {
+		return
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	delete(p.instructions, runID)
 }

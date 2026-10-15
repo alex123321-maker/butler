@@ -1,5 +1,17 @@
 # Tool Broker
 
+`BUTLER_NETWORK_ALLOWLISTS_JSON` is an optional, startup-only destination cap
+for `http`, `browser` and `web` tool classes. For example,
+`{"http":["api.example.com"],"browser":["*.example.com"]}` restricts supplied
+`url`, `expected_url` and every `urls` entry before preparation, authorization
+and dispatch. An omitted class has no additional cap; an explicit `[]` denies
+all supplied destinations. Domains are exact unless prefixed with `*.`.
+Invalid policy prevents startup. The class cap and the original contract
+declaration are checked independently, including disjoint and wildcard lists.
+The cap never replaces `AllowedDomains`, grants release permission or bypasses
+exact action/credential/resource authority. Session-bound operations retain their
+existing current-resource guards and runtime network restrictions.
+
 Operator Doctor checks use the ordinary exact-action preparation, authorization
 and one-use grant path with a real durable task/run/session lease. There is no
 operator bypass. `doctor.check_system` revision 2 declares a read-only check with

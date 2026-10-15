@@ -139,19 +139,26 @@ func (c *BrokerClient) ListTools(ctx context.Context) ([]*toolbrokerv1.ToolContr
 	return resp.GetTools(), nil
 }
 
-// RequiresApproval checks whether a tool requires approval before execution
-// by calling ValidateToolCall and inspecting the returned contract.
-func (c *BrokerClient) RequiresApproval(ctx context.Context, toolName string) (bool, error) {
-	resp, err := c.client.ValidateToolCall(ctx, &toolbrokerv1.ValidateToolCallRequest{
-		ToolCall: &toolbrokerv1.ToolCall{ToolName: toolName, ArgsJson: "{}"},
-	})
+func (c *BrokerClient) GetToolContract(ctx context.Context, toolName string) (*toolbrokerv1.ToolContract, error) {
+	resp, err := c.client.GetToolContract(ctx, &toolbrokerv1.GetToolContractRequest{ToolName: strings.TrimSpace(toolName)})
 	if err != nil {
-		return false, fmt.Errorf("validate tool call for approval check: %w", err)
+		return nil, fmt.Errorf("get tool contract: %w", err)
 	}
-	if resp.GetContract() == nil {
-		return false, nil
+	return resp.GetContract(), nil
+}
+
+// RequiresApproval checks whether a tool requires approval before execution.
+// This path intentionally reads tool metadata directly instead of validating
+// a synthetic call with placeholder args.
+func (c *BrokerClient) RequiresApproval(ctx context.Context, toolName string) (bool, error) {
+	contract, err := c.GetToolContract(ctx, toolName)
+	if err != nil {
+		return false, fmt.Errorf("get tool contract for approval check: %w", err)
 	}
-	return resp.GetContract().GetRequiresApproval(), nil
+	if contract == nil {
+		return false, fmt.Errorf("tool contract is unavailable")
+	}
+	return contract.GetRequiresApproval(), nil
 }
 
 func (c *BrokerClient) Close() error {

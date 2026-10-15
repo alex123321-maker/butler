@@ -2,8 +2,10 @@ package artifacts
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
+	"unicode/utf8"
 )
 
 type memoryRepo struct {
@@ -101,5 +103,55 @@ func TestArtifactsServiceSavesUsefulResults(t *testing.T) {
 
 	if len(repo.items) != 4 {
 		t.Fatalf("expected 4 artifacts persisted, got %d", len(repo.items))
+	}
+}
+
+func TestArtifactsServiceSanitizesInvalidUTF8(t *testing.T) {
+	t.Parallel()
+
+	repo := newMemoryRepo()
+	svc := NewService(repo)
+	now := time.Now().UTC()
+
+	assistant, err := svc.SaveAssistantFinal(context.Background(), "run-utf8", "telegram:chat:1", "bad:\xd1text", now)
+	if err != nil {
+		t.Fatalf("SaveAssistantFinal returned error: %v", err)
+	}
+	if !utf8.ValidString(assistant.ContentText) || assistant.ContentText != "bad:\uFFFDtext" {
+		t.Fatalf("expected invalid utf8 byte to be sanitized, got %q", assistant.ContentText)
+	}
+
+	capture, err := svc.SaveBrowserCapture(context.Background(), "run-utf8", "telegram:chat:1", "tool-utf8", "single-tab-utf8", "http://localhost/\xd1", "Title \xd1", "data:image/png;base64,abc", now)
+	if err != nil {
+		t.Fatalf("SaveBrowserCapture returned error: %v", err)
+	}
+	if !utf8.ValidString(capture.ContentJSON) {
+		t.Fatalf("expected browser capture json to be sanitized, got %q", capture.ContentJSON)
+	}
+}
+
+func TestArtifactSummaryDoesNotSplitUTF8(t *testing.T) {
+	value := strings.Repeat("я", 100)
+	for _, limit := range []int{1, 3, 179} {
+		got := summarize(value, limit)
+		if !utf8.ValidString(got) || len(got) > limit {
+			t.Fatalf("invalid bounded summary: %q", got)
+		}
+	}
+}
+
+func TestArtifactsServiceNormalizesImageDataURLPayload(t *testing.T) {
+	t.Parallel()
+
+	repo := newMemoryRepo()
+	svc := NewService(repo)
+	now := time.Now().UTC()
+
+	capture, err := svc.SaveBrowserCapture(context.Background(), "run-image", "telegram:chat:1", "tool-image", "single-tab-image", "http://localhost", "Example", "data:image/png;base64,YWJj\n", now)
+	if err != nil {
+		t.Fatalf("SaveBrowserCapture returned error: %v", err)
+	}
+	if !strings.Contains(capture.ContentJSON, "data:image/png;base64,YWJj") {
+		t.Fatalf("expected normalized base64 payload, got %q", capture.ContentJSON)
 	}
 }

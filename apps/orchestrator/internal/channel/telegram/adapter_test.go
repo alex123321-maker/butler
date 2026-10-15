@@ -581,7 +581,7 @@ func TestHandleCallbackQueryIgnoresDisallowedChat(t *testing.T) {
 	}
 }
 
-func TestDeliverAssistantStreamingUsesSendMessageDraft(t *testing.T) {
+func TestDeliverAssistantStreamingUsesOnlyFinalMessage(t *testing.T) {
 	t.Parallel()
 
 	client := &Client{}
@@ -612,21 +612,15 @@ func TestDeliverAssistantStreamingUsesSendMessageDraft(t *testing.T) {
 		t.Fatalf("DeliverAssistantFinal returned error: %v", err)
 	}
 
-	// Expect buffered draft delivery to avoid sending every tiny delta.
-	if len(drafts) != 1 || drafts[0] != "Hel" {
-		t.Fatalf("unexpected drafts: %+v", drafts)
+	if len(drafts) != 0 {
+		t.Fatalf("expected no drafts, got %+v", drafts)
 	}
-	// Expect one final sendMessage call.
 	if len(finalMessages) != 1 || finalMessages[0] != "Hello world" {
 		t.Fatalf("unexpected final messages: %+v", finalMessages)
 	}
-	// Streaming state should be cleared.
-	if _, ok := adapter.streamingMessages["run-1"]; ok {
-		t.Fatal("expected final delivery to clear streaming state")
-	}
 }
 
-func TestDeliverAssistantStreamingPreservesWhitespaceDeltas(t *testing.T) {
+func TestDeliverAssistantStreamingPreservesWhitespaceInFinalMessage(t *testing.T) {
 	t.Parallel()
 
 	client := &Client{}
@@ -640,8 +634,11 @@ func TestDeliverAssistantStreamingPreservesWhitespaceDeltas(t *testing.T) {
 		drafts = append(drafts, text)
 		return nil
 	}
-	now := time.Unix(100, 0)
-	adapter.now = func() time.Time { return now }
+	var finalMessages []string
+	client.sendMessage = func(_ context.Context, _ int64, text string) (Message, error) {
+		finalMessages = append(finalMessages, text)
+		return Message{MessageID: 10}, nil
+	}
 
 	if err := adapter.DeliverAssistantDelta(context.Background(), flow.DeliveryEvent{RunID: "run-2", SessionKey: "telegram:chat:777", Content: "Hello", SequenceNo: 1}); err != nil {
 		t.Fatalf("DeliverAssistantDelta returned error: %v", err)
@@ -649,17 +646,22 @@ func TestDeliverAssistantStreamingPreservesWhitespaceDeltas(t *testing.T) {
 	if err := adapter.DeliverAssistantDelta(context.Background(), flow.DeliveryEvent{RunID: "run-2", SessionKey: "telegram:chat:777", Content: " ", SequenceNo: 2}); err != nil {
 		t.Fatalf("DeliverAssistantDelta whitespace returned error: %v", err)
 	}
-	now = now.Add(minDraftFlushInterval + 10*time.Millisecond)
 	if err := adapter.DeliverAssistantDelta(context.Background(), flow.DeliveryEvent{RunID: "run-2", SessionKey: "telegram:chat:777", Content: "world", SequenceNo: 3}); err != nil {
 		t.Fatalf("DeliverAssistantDelta third returned error: %v", err)
 	}
+	if err := adapter.DeliverAssistantFinal(context.Background(), flow.DeliveryEvent{RunID: "run-2", SessionKey: "telegram:chat:777", Content: "Hello world", Final: true}); err != nil {
+		t.Fatalf("DeliverAssistantFinal returned error: %v", err)
+	}
 
-	if len(drafts) != 2 || drafts[0] != "Hello" || drafts[1] != "Hello world" {
-		t.Fatalf("unexpected drafts: %+v", drafts)
+	if len(drafts) != 0 {
+		t.Fatalf("expected no drafts, got %+v", drafts)
+	}
+	if len(finalMessages) != 1 || finalMessages[0] != "Hello world" {
+		t.Fatalf("unexpected final messages: %+v", finalMessages)
 	}
 }
 
-func TestDeliverAssistantDraftIDIsStablePerRun(t *testing.T) {
+func TestDeliverAssistantDeltaDoesNotUseDraftIDs(t *testing.T) {
 	t.Parallel()
 
 	client := &Client{}
@@ -673,29 +675,20 @@ func TestDeliverAssistantDraftIDIsStablePerRun(t *testing.T) {
 		draftIDs = append(draftIDs, draftID)
 		return nil
 	}
-	now := time.Unix(200, 0)
-	adapter.now = func() time.Time { return now }
 
 	if err := adapter.DeliverAssistantDelta(context.Background(), flow.DeliveryEvent{RunID: "run-3", SessionKey: "telegram:chat:777", Content: "A", SequenceNo: 1}); err != nil {
 		t.Fatalf("DeliverAssistantDelta returned error: %v", err)
 	}
-	now = now.Add(minDraftFlushInterval + 10*time.Millisecond)
 	if err := adapter.DeliverAssistantDelta(context.Background(), flow.DeliveryEvent{RunID: "run-3", SessionKey: "telegram:chat:777", Content: "B", SequenceNo: 2}); err != nil {
 		t.Fatalf("DeliverAssistantDelta second returned error: %v", err)
 	}
 
-	if len(draftIDs) != 2 {
-		t.Fatalf("expected 2 draft calls, got %d", len(draftIDs))
-	}
-	if draftIDs[0] != draftIDs[1] {
-		t.Fatalf("expected stable draft_id across deltas, got %d and %d", draftIDs[0], draftIDs[1])
-	}
-	if draftIDs[0] == 0 {
-		t.Fatal("draft_id must be non-zero")
+	if len(draftIDs) != 0 {
+		t.Fatalf("expected no draft calls, got %d", len(draftIDs))
 	}
 }
 
-func TestDeliverAssistantDeltaRateLimitBacksOffWithoutFailingRun(t *testing.T) {
+func TestDeliverAssistantDeltaIgnoresDraftRateLimitBecauseDraftsAreDisabled(t *testing.T) {
 	t.Parallel()
 
 	client := &Client{}
@@ -704,17 +697,10 @@ func TestDeliverAssistantDeltaRateLimitBacksOffWithoutFailingRun(t *testing.T) {
 		t.Fatalf("NewAdapter returned error: %v", err)
 	}
 
-	now := time.Unix(300, 0)
-	adapter.now = func() time.Time { return now }
 	callCount := 0
-	var drafts []string
 	client.sendMessageDraft = func(_ context.Context, _ int64, _ int64, text string) error {
 		callCount++
-		drafts = append(drafts, text)
-		if callCount == 1 {
-			return &apiError{StatusCode: 429, Description: "Too Many Requests: retry after 3", Retryable: true, RetryAfter: 3 * time.Second}
-		}
-		return nil
+		return &apiError{StatusCode: 429, Description: "Too Many Requests: retry after 3", Retryable: true, RetryAfter: 3 * time.Second}
 	}
 
 	if err := adapter.DeliverAssistantDelta(context.Background(), flow.DeliveryEvent{RunID: "run-4", SessionKey: "telegram:chat:777", Content: "Hello", SequenceNo: 1}); err != nil {
@@ -723,16 +709,12 @@ func TestDeliverAssistantDeltaRateLimitBacksOffWithoutFailingRun(t *testing.T) {
 	if err := adapter.DeliverAssistantDelta(context.Background(), flow.DeliveryEvent{RunID: "run-4", SessionKey: "telegram:chat:777", Content: " world", SequenceNo: 2}); err != nil {
 		t.Fatalf("DeliverAssistantDelta during backoff returned error: %v", err)
 	}
-	now = now.Add(4 * time.Second)
 	if err := adapter.DeliverAssistantDelta(context.Background(), flow.DeliveryEvent{RunID: "run-4", SessionKey: "telegram:chat:777", Content: "!", SequenceNo: 3}); err != nil {
 		t.Fatalf("DeliverAssistantDelta after backoff returned error: %v", err)
 	}
 
-	if callCount != 2 {
-		t.Fatalf("expected 2 draft attempts, got %d", callCount)
-	}
-	if len(drafts) != 2 || drafts[0] != "Hello" || drafts[1] != "Hello world!" {
-		t.Fatalf("unexpected drafts: %+v", drafts)
+	if callCount != 0 {
+		t.Fatalf("expected no draft attempts, got %d", callCount)
 	}
 }
 
@@ -912,7 +894,7 @@ func TestHandlePendingAuthInputCompletesOpenAICodexFlow(t *testing.T) {
 	}
 }
 
-func TestDeliverAssistantDeltaTruncatesLongContent(t *testing.T) {
+func TestDeliverAssistantDeltaDoesNotSendDraftForLongContent(t *testing.T) {
 	t.Parallel()
 
 	client := &Client{}
@@ -938,15 +920,8 @@ func TestDeliverAssistantDeltaTruncatesLongContent(t *testing.T) {
 		t.Fatalf("DeliverAssistantDelta returned error: %v", err)
 	}
 
-	if len(drafts) != 1 {
-		t.Fatalf("expected 1 draft, got %d", len(drafts))
-	}
-	if len(drafts[0]) > telegramMaxMessageLen {
-		t.Fatalf("draft exceeds limit: len=%d, limit=%d", len(drafts[0]), telegramMaxMessageLen)
-	}
-	// Truncated draft should start with the ellipsis prefix.
-	if !strings.HasPrefix(drafts[0], "…") {
-		t.Fatalf("expected truncated draft to start with '…', got prefix %q", drafts[0][:10])
+	if len(drafts) != 0 {
+		t.Fatalf("expected no drafts, got %d", len(drafts))
 	}
 }
 
@@ -1055,14 +1030,9 @@ func TestDeliverToolCallEventSendsStartedMessage(t *testing.T) {
 
 	client := &Client{}
 	var actionsSent []string
-	var messagesSent []string
 	client.sendChatAction = func(_ context.Context, _ int64, action string) error {
 		actionsSent = append(actionsSent, action)
 		return nil
-	}
-	client.sendMessage = func(_ context.Context, _ int64, text string) (Message, error) {
-		messagesSent = append(messagesSent, text)
-		return Message{MessageID: 1}, nil
 	}
 	adapter, err := NewAdapter(Config{AllowedChatIDs: []string{"777"}, PollTimeout: time.Second}, client, nil, nil)
 	if err != nil {
@@ -1082,12 +1052,6 @@ func TestDeliverToolCallEventSendsStartedMessage(t *testing.T) {
 	if len(actionsSent) != 1 || actionsSent[0] != ChatActionUploadDocument {
 		t.Fatalf("expected upload_document action, got %v", actionsSent)
 	}
-	if len(messagesSent) != 1 {
-		t.Fatalf("expected one message, got %d", len(messagesSent))
-	}
-	if !strings.Contains(messagesSent[0], "web search") {
-		t.Fatalf("expected tool name in message, got %q", messagesSent[0])
-	}
 }
 
 func TestDeliverToolCallEventSendsCompletedMessage(t *testing.T) {
@@ -1095,14 +1059,9 @@ func TestDeliverToolCallEventSendsCompletedMessage(t *testing.T) {
 
 	client := &Client{}
 	var actionsSent []string
-	var messagesSent []string
 	client.sendChatAction = func(_ context.Context, _ int64, action string) error {
 		actionsSent = append(actionsSent, action)
 		return nil
-	}
-	client.sendMessage = func(_ context.Context, _ int64, text string) (Message, error) {
-		messagesSent = append(messagesSent, text)
-		return Message{MessageID: 1}, nil
 	}
 	adapter, err := NewAdapter(Config{AllowedChatIDs: []string{"777"}, PollTimeout: time.Second}, client, nil, nil)
 	if err != nil {
@@ -1124,26 +1083,16 @@ func TestDeliverToolCallEventSendsCompletedMessage(t *testing.T) {
 	if len(actionsSent) != 1 || actionsSent[0] != ChatActionTyping {
 		t.Fatalf("expected typing action after completion, got %v", actionsSent)
 	}
-	if len(messagesSent) != 1 {
-		t.Fatalf("expected one message, got %d", len(messagesSent))
-	}
-	if !strings.Contains(messagesSent[0], "file read") {
-		t.Fatalf("expected tool name in message, got %q", messagesSent[0])
-	}
-	if !strings.Contains(messagesSent[0], "1.5s") {
-		t.Fatalf("expected duration in message, got %q", messagesSent[0])
-	}
 }
 
 func TestDeliverToolCallEventSendsFailedMessage(t *testing.T) {
 	t.Parallel()
 
 	client := &Client{}
-	var messagesSent []string
-	client.sendChatAction = func(_ context.Context, _ int64, _ string) error { return nil }
-	client.sendMessage = func(_ context.Context, _ int64, text string) (Message, error) {
-		messagesSent = append(messagesSent, text)
-		return Message{MessageID: 1}, nil
+	var actionsSent []string
+	client.sendChatAction = func(_ context.Context, _ int64, action string) error {
+		actionsSent = append(actionsSent, action)
+		return nil
 	}
 	adapter, err := NewAdapter(Config{AllowedChatIDs: []string{"777"}, PollTimeout: time.Second}, client, nil, nil)
 	if err != nil {
@@ -1161,11 +1110,8 @@ func TestDeliverToolCallEventSendsFailedMessage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeliverToolCallEvent returned error: %v", err)
 	}
-	if len(messagesSent) != 1 {
-		t.Fatalf("expected one message, got %d", len(messagesSent))
-	}
-	if !strings.Contains(messagesSent[0], "failed") {
-		t.Fatalf("expected 'failed' in message, got %q", messagesSent[0])
+	if len(actionsSent) != 1 || actionsSent[0] != ChatActionTyping {
+		t.Fatalf("expected typing action after failure, got %v", actionsSent)
 	}
 }
 

@@ -119,6 +119,7 @@ type OrchestratorConfig struct {
 }
 
 type ToolBrokerConfig struct {
+	NetworkAllowlists             map[string][]string
 	ExecutionBudgetPolicyJSON     string
 	Shared                        SharedConfig
 	Postgres                      PostgresConfig
@@ -239,6 +240,8 @@ type fieldSpec struct {
 	isSecret        bool
 	requiresRestart bool
 	allowedValues   []string
+	description     string
+	valueHint       string
 	validate        func(string) error
 	assign          func(string)
 }
@@ -395,6 +398,7 @@ func loadToolBroker(get envGetter) (ToolBrokerConfig, Snapshot, error) {
 	)
 
 	specs = append(specs, delegationBrokerSpecs(&cfg)...)
+	specs = append(specs, networkAllowlistBrokerSpecs(&cfg)...)
 	specs = append(specs, guardedTabBrokerSpecs(&cfg)...)
 	specs = append(specs, memoryCandidateBrokerSpecs(&cfg)...)
 	specs = append(specs, workspaceBrokerSpecs(&cfg)...)

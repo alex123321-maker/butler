@@ -1021,6 +1021,15 @@ Model Transport Layer в Butler — это provider-normalizing execution channe
 
 ## Security and admitted serialization
 
+OpenAI Responses and Realtime retain the same run's supplied system instructions
+through tool-result and continuation turns. Responses uses the `instructions`
+field; Realtime updates session instructions explicitly, including empty policy
+for a fresh instruction-free run. A tool response's terminal event does not clear
+the still-active run's instructions. Final/error/cancel/shutdown clears the
+transient cache; fresh durable recovery reconstructs context from Butler. Codex's
+existing instruction continuity is retained. No identity prompt, hidden retry,
+option stripping or output-limit removal is introduced by this normalization.
+
 Trusted Antigravity construction may freeze an explicit Cloud Code High generated
 token ceiling up to32768 and an object JSON response schema for tool-free
 observations. Defaults retain8192 and ordinary tool semantics. `InferenceLimits`

@@ -96,13 +96,14 @@ func (s *SingleTabServer) HandleCreateBindRequest() http.Handler {
 		}
 
 		result, err := s.coordinator.CreateBindRequest(r.Context(), singletab.CreateBindRequestParams{
-			RunID:         request.RunID,
-			SessionKey:    request.SessionKey,
-			ToolCallID:    request.ToolCallID,
-			RequestedVia:  request.RequestedVia,
-			Candidates:    candidates,
-			BrowserHint:   request.BrowserHint,
-			RequestSource: request.RequestSource,
+			RunID:             request.RunID,
+			SessionKey:        request.SessionKey,
+			ToolCallID:        request.ToolCallID,
+			RequestedVia:      request.RequestedVia,
+			Candidates:        candidates,
+			BrowserHint:       request.BrowserHint,
+			BrowserInstanceID: request.BrowserInstanceID,
+			RequestSource:     request.RequestSource,
 		})
 		if err != nil {
 			switch err {
@@ -786,7 +787,10 @@ func (s *SingleTabServer) isRelayHeartbeatStale(record singletab.Record, now tim
 		return false
 	}
 	if record.LastSeenAt == nil {
-		return true
+		if record.ActivatedAt != nil {
+			return now.Sub(record.ActivatedAt.UTC()) > s.relayHeartbeatTTL
+		}
+		return now.Sub(record.CreatedAt.UTC()) > s.relayHeartbeatTTL
 	}
 	heartbeatAge := now.Sub(record.LastSeenAt.UTC())
 	return heartbeatAge > s.relayHeartbeatTTL

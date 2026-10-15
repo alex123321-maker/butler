@@ -138,6 +138,8 @@ type settingDTO struct {
 	IsSecret         bool     `json:"is_secret"`
 	RequiresRestart  bool     `json:"requires_restart"`
 	AllowedValues    []string `json:"allowed_values,omitempty"`
+	Description      string   `json:"description,omitempty"`
+	ValueHint        string   `json:"value_hint,omitempty"`
 	ValidationStatus string   `json:"validation_status"`
 	ValidationError  string   `json:"validation_error,omitempty"`
 }
@@ -174,6 +176,8 @@ func toSettingDTO(setting config.SettingState) settingDTO {
 		IsSecret:         setting.IsSecret,
 		RequiresRestart:  setting.RequiresRestart,
 		AllowedValues:    append([]string(nil), setting.AllowedValues...),
+		Description:      setting.Description,
+		ValueHint:        setting.ValueHint,
 		ValidationStatus: string(setting.ValidationStatus),
 		ValidationError:  setting.ValidationError,
 	}
