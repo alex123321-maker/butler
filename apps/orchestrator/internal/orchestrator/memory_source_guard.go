@@ -80,6 +80,9 @@ func (p *sourceGuardedProvider) guard(ctx context.Context, runID string, call fu
 			// cancellation so a ticker/proposal selection race cannot drop it.
 			var usage *transport.Usage
 			observe := func(event transport.TransportEvent) {
+				if event.RunID != runID {
+					return
+				}
 				if usage == nil {
 					if u, e := modelTurnUsage(event); e == nil && u != nil {
 						copy := *u
