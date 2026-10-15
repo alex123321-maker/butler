@@ -263,7 +263,7 @@ func TestConsolidationPreparedWorkflowCASCorrectionAndRetirementIntegration(t *t
 }
 
 func TestConsolidationTemporalDecisionAndLatePublicationIntegration(t *testing.T) {
-	for _, change := range []string{"metadata", "withdraw", "delete", "source_correction"} {
+	for _, change := range []string{"metadata", "supersede", "revoke", "delete", "source_correction"} {
 		t.Run(change, func(t *testing.T) {
 			f := newWorkflow(t, "Я предпочитаю русский язык.")
 			claim, err := f.store.Catalog.Propose(f.ctx, catalog.ClaimRequest{SourceID: f.sources[0].ID, SourceRevision: 1, Key: "preferred_language", Value: json.RawMessage(`"ru"`), Summary: "Русский язык", Confidence: 1})
@@ -287,8 +287,14 @@ func TestConsolidationTemporalDecisionAndLatePublicationIntegration(t *testing.T
 				switch change {
 				case "metadata":
 					_, e = f.store.Catalog.SetTemporal(f.ctx, catalog.TemporalUpdate{ClaimID: claim.ID, ExpectedHeadRevision: 1, ExpectedRevision: 1, Validity: catalog.ValidityUnknown, Class: catalog.FreshnessStablePreference, OwnerVerifiedNow: true})
-				case "withdraw":
-					_, e = f.store.Catalog.Decide(f.ctx, catalog.Decision{ClaimID: claim.ID, ExpectedActiveID: claim.ID, Reject: true})
+				case "supersede":
+					var next catalog.Claim
+					next, e = f.store.Catalog.Propose(f.ctx, catalog.ClaimRequest{SourceID: f.sources[0].ID, SourceRevision: 1, Key: claim.Key, Value: json.RawMessage(`"ru-except-source-code"`), Summary: "Уточнение", Confidence: 1})
+					if e == nil {
+						_, e = f.store.Catalog.Decide(f.ctx, catalog.Decision{ClaimID: next.ID, ExpectedActiveID: claim.ID})
+					}
+				case "revoke":
+					_, e = f.store.Catalog.Delete(f.ctx, f.sources[0].ID, "revoke", 1)
 				case "delete":
 					_, e = f.store.Catalog.Delete(f.ctx, f.sources[0].ID, "delete", 1)
 				case "source_correction":
