@@ -127,8 +127,10 @@ func experienceNativeBudgetPolicy() budget.Policy {
 	p.Models["antigravity:gemini-3.8-flash-high"] = budget.ModelPrice{Basis: "subscription_no_overage"}
 	p.ModelMillis, p.OutputTokens = 300000, 32768
 	p.ToolMillis = 120000
-	// Both foreground and preparation reserve the full declared profile. No
-	// owner/day reset is allowed between arms or at the UTC-day boundary.
+	// Both foreground and preparation reserve the full declared profile. This
+	// is the experiment's total partition ceiling, not a shared production-day
+	// authority proof across disposable clones. The independent global journal
+	// carries every earlier entry across clone and UTC-day boundaries.
 	p.Task = budget.Units{ModelTurns: 12, Tokens: 12 * 1081344, ActiveMillis: 12*300000 + 11*p.ToolMillis, ProviderInputBytes: 12 * p.ModelInputBytes, ExternalCalls: 11, EgressBytes: 11 * p.ToolEgressBytes}
 	p.Mandate, p.Conversation = p.Task, p.Task
 	p.Day = budget.Units{ModelTurns: experienceNativeMaximum, Tokens: experienceNativeMaximum * 1081344, ActiveMillis: experienceNativeMaximum*300000 + 53*11*p.ToolMillis, ProviderInputBytes: experienceNativeMaximum * p.ModelInputBytes, ExternalCalls: 53 * 11, EgressBytes: 53 * 11 * p.ToolEgressBytes}
@@ -136,17 +138,18 @@ func experienceNativeBudgetPolicy() budget.Policy {
 }
 
 type experienceNativeEntry struct {
-	Sequence int               `json:"sequence"`
-	Slot     string            `json:"slot"`
-	RunID    string            `json:"run_id"`
-	Kind     string            `json:"kind"`
-	Request  json.RawMessage   `json:"request"`
-	Events   []json.RawMessage `json:"events"`
-	Usage    *transport.Usage  `json:"usage"`
-	Millis   *int64            `json:"milliseconds"`
-	Failure  string            `json:"failure"`
-	Canceled string            `json:"context_end"`
-	Finished bool              `json:"finished"`
+	Sequence  int               `json:"sequence"`
+	Slot      string            `json:"slot"`
+	RunID     string            `json:"run_id"`
+	Operation string            `json:"operation_id"`
+	Kind      string            `json:"kind"`
+	Request   json.RawMessage   `json:"request"`
+	Events    []json.RawMessage `json:"events"`
+	Usage     *transport.Usage  `json:"usage"`
+	Millis    *int64            `json:"milliseconds"`
+	Failure   string            `json:"failure"`
+	Canceled  string            `json:"context_end"`
+	Finished  bool              `json:"finished"`
 }
 
 // This is a capture/admission wrapper, never answering logic. A durable private
@@ -154,16 +157,18 @@ type experienceNativeEntry struct {
 // reserved method entry reached HTTP. Missing provider usage remains null.
 type experienceNativeProvider struct {
 	transport.ModelProvider
-	mu      sync.Mutex
-	proof   string
-	slots   []experienceNativeSlot
-	active  int
-	entries []*experienceNativeEntry
-	failed  error
-	ongoing bool
-	ended   chan struct{}
-	global  *pgxpool.Pool
-	window  string
+	mu         sync.Mutex
+	proof      string
+	slots      []experienceNativeSlot
+	active     int
+	entries    []*experienceNativeEntry
+	failed     error
+	ongoing    bool
+	ended      chan struct{}
+	global     *pgxpool.Pool
+	window     string
+	casePool   *pgxpool.Pool
+	controlled bool
 }
 
 func newExperienceNativeProvider(proof string, slots []experienceNativeSlot) (*experienceNativeProvider, error) {
@@ -297,6 +302,22 @@ func (p *experienceNativeProvider) reserve(ctx context.Context, run, kind string
 		return nil, errors.New("prospective provider window closed")
 	}
 	slot, used := p.slots[p.active], 0
+	op, admitted := budget.ModelOperationFromContext(ctx)
+	if !p.controlled {
+		if p.global == nil || p.casePool == nil || !admitted || op == "" {
+			return nil, errors.New("native entry lacks independent journal or owning admitted operation")
+		}
+		var actual bool
+		var err error
+		if slot.Kind == "note" {
+			err = p.casePool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM memory_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) WHERE a.operation_id=$1 AND a.operation_id=$2 AND a.state='reserved' AND a.provider='antigravity' AND a.model='gemini-3.8-flash-high')`, op, run).Scan(&actual)
+		} else {
+			err = p.casePool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM execution_model_attempts a JOIN execution_budget_reservations r USING(reservation_id) WHERE a.operation_id=$1 AND a.run_id=$2 AND a.provider='antigravity' AND a.model='gemini-3.8-flash-high')`, op, run).Scan(&actual)
+		}
+		if err != nil || !actual {
+			return nil, errors.New("current owning model reservation not corroborated")
+		}
+	}
 	for _, entry := range p.entries {
 		if entry.Slot == slot.ID {
 			used++
@@ -309,7 +330,7 @@ func (p *experienceNativeProvider) reserve(ctx context.Context, run, kind string
 	if err != nil || len(raw) > 8388608 {
 		return nil, errors.New("bounded original request capture rejected")
 	}
-	e := &experienceNativeEntry{Sequence: len(p.entries) + 1, Slot: slot.ID, RunID: run, Kind: kind, Request: raw, Events: []json.RawMessage{}}
+	e := &experienceNativeEntry{Sequence: len(p.entries) + 1, Slot: slot.ID, RunID: run, Operation: op, Kind: kind, Request: raw, Events: []json.RawMessage{}}
 	if err = p.reserveGlobal(ctx, e); err != nil {
 		p.failed = err
 		return nil, err
@@ -321,6 +342,50 @@ func (p *experienceNativeProvider) reserve(ctx context.Context, run, kind string
 	p.entries, p.ongoing = append(p.entries, e), true
 	p.ended = make(chan struct{})
 	return e, nil
+}
+
+type experienceNativeEvent struct {
+	EventType      transport.EventType        `json:"event_type"`
+	RunID          string                     `json:"run_id"`
+	AssistantDelta *transport.AssistantDelta  `json:"assistant_delta,omitempty"`
+	AssistantFinal *transport.AssistantFinal  `json:"assistant_final,omitempty"`
+	ToolCall       *transport.ToolCallRequest `json:"tool_call,omitempty"`
+	ToolCallBatch  *transport.ToolCallBatch   `json:"tool_call_batch,omitempty"`
+	Usage          *transport.Usage           `json:"usage"`
+	ModelVersion   *string                    `json:"model_version,omitempty"`
+	ErrorCode      string                     `json:"error_code,omitempty"`
+	ErrorReason    string                     `json:"error_reason,omitempty"`
+	HTTPStatus     int                        `json:"http_status,omitempty"`
+}
+
+func experienceNativeSafeEvent(e transport.TransportEvent) experienceNativeEvent {
+	r := experienceNativeEvent{EventType: e.EventType, RunID: e.RunID}
+	// Only declared model output, proposals and measured usage are evidence.
+	// Provider error details, arbitrary PayloadJSON and session/auth metadata
+	// are never copied, even when attached to an otherwise ordinary event.
+	switch e.EventType {
+	case transport.EventTypeAssistantDelta:
+		r.AssistantDelta = e.AssistantDelta
+	case transport.EventTypeAssistantFinal:
+		r.AssistantFinal = e.AssistantFinal
+	case transport.EventTypeToolCallRequested:
+		r.ToolCall = e.ToolCall
+	case transport.EventTypeToolCallBatchRequested:
+		r.ToolCallBatch = e.ToolCallBatch
+	}
+	if e.Usage != nil && e.Usage.Validate() == nil {
+		r.Usage = e.Usage
+	}
+	if r.Usage == nil && r.AssistantFinal != nil && r.AssistantFinal.Usage != nil && r.AssistantFinal.Usage.Validate() == nil {
+		r.Usage = r.AssistantFinal.Usage
+	}
+	r.ModelVersion = e.ProviderModelVersion
+	if e.TransportError != nil {
+		r.ErrorCode = transport.DiagnosticCode(e.TransportError)
+		r.ErrorReason = transport.DiagnosticReason(e.TransportError)
+		r.HTTPStatus = transport.DiagnosticHTTPStatus(e.TransportError)
+	}
+	return r
 }
 
 func (p *experienceNativeProvider) observe(ctx context.Context, e *experienceNativeEntry, started time.Time, in transport.EventStream, providerErr error) (transport.EventStream, error) {
@@ -376,7 +441,8 @@ func (p *experienceNativeProvider) observe(ctx context.Context, e *experienceNat
 				if !ok {
 					return
 				}
-				raw, err := json.Marshal(event)
+				safe := experienceNativeSafeEvent(event)
+				raw, err := json.Marshal(safe)
 				captured += len(raw)
 				if err != nil || len(raw) > 8*1024*1024 || captured > 32*1024*1024 {
 					failure = "provider_event_capture_rejected"
@@ -384,8 +450,8 @@ func (p *experienceNativeProvider) observe(ctx context.Context, e *experienceNat
 				}
 				p.mu.Lock()
 				e.Events = append(e.Events, raw)
-				if event.Usage != nil && event.Usage.Validate() == nil {
-					u := *event.Usage
+				if safe.Usage != nil {
+					u := *safe.Usage
 					e.Usage = &u
 				}
 				if event.TransportError != nil {
@@ -444,6 +510,14 @@ func (p *experienceNativeProvider) export() error {
 	defer p.mu.Unlock()
 	// Snapshot JSON owns every byte; a later transport EOF cannot mutate the
 	// recorded original request or result. A failed slot is never replaced.
+	for i := range p.slots {
+		if p.slots[i].Status == "running" {
+			p.slots[i].Status, p.slots[i].Blocker = "failed", "collector_aborted_before_slot_sealed"
+		}
+		if p.slots[i].Status == "not_executed" {
+			p.slots[i].Blocker = "window_closed_before_execution"
+		}
+	}
 	err := p.writeNew("window-final.json", map[string]any{"slots": p.slots, "entries": p.entries, "maximum_entries": experienceNativeMaximum, "capture_error": p.failed != nil, "active_slot": p.active})
 	if p.global != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -494,7 +568,7 @@ func TestExperienceNativeScheduleKeepsDenominatorAndFiniteQuotes(t *testing.T) {
 		t.Fatal(err)
 	}
 	raw, _ := os.ReadFile(filepath.Join(p.proof, "window-final.json"))
-	if bytes.Count(raw, []byte(`"status": "not_executed"`)) != 57 || bytes.Count(raw, []byte(`"preparation_not_completed"`)) != 57 {
+	if bytes.Count(raw, []byte(`"status": "not_executed"`)) != 57 || bytes.Count(raw, []byte(`"window_closed_before_execution"`)) != 57 {
 		t.Fatal("setup abort hid unexecuted denominator")
 	}
 	policy := experienceNativeBudgetPolicy()
@@ -516,6 +590,7 @@ func TestExperienceNativeCaptureRetainsUnknownAndExhaustion(t *testing.T) {
 		t.Fatal(err)
 	}
 	p.ModelProvider = &experienceWindowFailureProvider{}
+	p.controlled = true
 	if p.begin(4) != nil { // note slot: one actual entry, even if usage unknown
 		t.Fatal("note slot rejected")
 	}
@@ -549,6 +624,7 @@ func TestExperienceNativePersistentPartitionsDoNotResetIntegration(t *testing.T)
 		t.Fatal(err)
 	}
 	p.ModelProvider = &experienceWindowFailureProvider{}
+	p.controlled = true
 	window := strings.Repeat("a", 64)
 	if p.installGlobal(ctx, pool, window) != nil || p.begin(4) != nil {
 		t.Fatal("persistent one-use preparation denied")
@@ -570,5 +646,88 @@ func TestExperienceNativePersistentPartitionsDoNotResetIntegration(t *testing.T)
 	}
 	if pool.QueryRow(ctx, `SELECT count(*) FROM experience_native_entries WHERE window_id=$1 AND usage_json IS NULL`, window).Scan(&count) != nil || count != 1 {
 		t.Fatal("closed window erased unknown original")
+	}
+}
+
+type experienceWindowEventProvider struct {
+	transport.ModelProvider
+	events []transport.TransportEvent
+}
+
+func (*experienceWindowEventProvider) Name() string { return "controlled-no-network" }
+func (p *experienceWindowEventProvider) StartRun(context.Context, transport.StartRunRequest) (transport.EventStream, error) {
+	ch := make(chan transport.TransportEvent, len(p.events))
+	for _, event := range p.events {
+		ch <- event
+	}
+	close(ch)
+	return ch, nil
+}
+
+func TestExperienceNativeErrorCaptureOmitsProviderSecretsAndRetainsFinalUsage(t *testing.T) {
+	p, err := newExperienceNativeProvider(t.TempDir(), experienceNativeSchedule(experienceWindowFixture()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	const canary = "fake-provider-private-credential-canary-never-export"
+	p.controlled = true
+	failure := transport.NewTransportErrorEvent("run", "controlled", &transport.Error{Type: transport.ErrorTypeProviderUnavailable, Message: canary, ProviderCode: canary, ProviderDetails: map[string]any{"access_token": canary}, HTTPStatus: 503})
+	final := transport.NewAssistantFinalEvent("run", "controlled", transport.AssistantFinal{Content: "Observed current data", Usage: &transport.Usage{InputTokens: 8, OutputTokens: 3, TotalTokens: 19}})
+	final.Usage = nil // valid legacy final-only usage must still be captured
+	p.ModelProvider = &experienceWindowEventProvider{events: []transport.TransportEvent{failure, final}}
+	if p.begin(0) != nil {
+		t.Fatal("slot rejected")
+	}
+	stream, err := p.StartRun(context.Background(), transport.StartRunRequest{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for range stream {
+	}
+	if p.end("failed", "controlled_provider_error") != nil || p.export() != nil {
+		t.Fatal("capture export denied")
+	}
+	files, _ := filepath.Glob(filepath.Join(p.proof, "*.json"))
+	for _, path := range files {
+		raw, _ := os.ReadFile(path)
+		if bytes.Contains(raw, []byte(canary)) || bytes.Contains(raw, []byte("ProviderDetails")) || bytes.Contains(raw, []byte("PayloadJSON")) {
+			t.Fatal("raw provider credential/error exported", filepath.Base(path))
+		}
+	}
+	if p.entries[0].Usage == nil || p.entries[0].Usage.TotalTokens != 19 || p.entries[0].Failure != string(transport.ErrorTypeProviderUnavailable) {
+		t.Fatal("complete observed usage/error vocabulary lost")
+	}
+}
+
+func TestExperienceNativeRequiresOwningReservationBeforeGlobalEntryIntegration(t *testing.T) {
+	f := newDispatchAdmissionFixture(t)
+	global := memorytest.Database(t)
+	p, err := newExperienceNativeProvider(t.TempDir(), experienceNativeSchedule(experienceWindowFixture()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.ModelProvider = &experienceWindowFailureProvider{}
+	p.casePool = f.f.pool
+	if p.installGlobal(f.f.ctx, global, strings.Repeat("b", 64)) != nil || p.begin(0) != nil {
+		t.Fatal("window rejected")
+	}
+	if _, err = p.StartRun(f.owned, transport.StartRunRequest{Context: transport.TransportRunContext{RunID: f.call.RunId}}); err == nil || len(p.entries) != 0 {
+		t.Fatal("unadmitted model method entered global window")
+	}
+	f.f.budgets.Policy.Models["antigravity:gemini-3.8-flash-high"] = budget.ModelPrice{Basis: "subscription_no_overage"}
+	f.f.budgets.Policy.OutputTokens = 32768
+	admitted, err := f.f.budgets.AdmitModel(f.owned, f.call.RunId, "", "antigravity", "gemini-3.8-flash-high", 1048576)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := budget.WithModelOperation(f.owned, admitted.OperationID)
+	if _, err = p.StartRun(ctx, transport.StartRunRequest{Context: transport.TransportRunContext{RunID: "different-run"}}); err == nil || len(p.entries) != 0 {
+		t.Fatal("foreign reservation entered global window")
+	}
+	if _, err = p.StartRun(ctx, transport.StartRunRequest{Context: transport.TransportRunContext{RunID: f.call.RunId}}); err == nil || len(p.entries) != 1 || p.entries[0].Operation != admitted.OperationID {
+		t.Fatal("actual admitted operation not captured")
+	}
+	if p.export() != nil || p.slots[0].Status != "failed" || p.slots[1].Status != "not_executed" {
+		t.Fatal("fatal omitted unfinished original")
 	}
 }
