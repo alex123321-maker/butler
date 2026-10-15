@@ -6,6 +6,9 @@ Source checkout: `D:/Repository/butler`, HEAD
 `4dc7fa8bc9138b025550a0160c29ee0fb18fd4c2`. The original checkout is retained.
 The destination's ignored `.cache/local-port/` contains the original binary
 patch, all 70 source files and a raw SHA-256 preservation manifest.
+The [per-file ledger](local-changes-port-files-20261015.json) accounts for every
+source path. The original two defects remain reproducible in that preserved
+checkout; their corrected behavior belongs to this isolated branch.
 
 ## Implementation decisions
 
@@ -28,7 +31,49 @@ patch, all 70 source files and a raw SHA-256 preservation manifest.
 
 ## Verification
 
-Validation results and remaining limits are recorded here after execution.
+Executed product commit: `90821f3c388e541b31cd5a05299a74053aa5451d`.
+Source archives of that commit and the exact main baseline were unpacked with
+Git modes into `/srv/storage/butler/agents/local-port-20261015-90821f3/`.
+Only dedicated disposable test containers/networks/databases were used. The
+production snapshot remains `20261014-main-3e26cd8`.
+
+- Original checkout: eight selected package tests passed during initial
+  inspection. Two additional overlay regressions reproduced disjoint-allowlist
+  acceptance and status-to-capture rewriting. Original HEAD, status and all 70
+  raw file hashes matched the preservation manifest after the port.
+- Candidate: the first Linux race run passed **596 test/subtest events across
+  11 packages**, with **88 explicit skips** and no failures. Separate actual-PG
+  artifact execution passed **7 tests, no skips**, and migration070 was recorded.
+  The omitted integration connection variables were identified before a second
+  matched foundation run; the first run's skips are retained, not relabeled.
+- Matched foundation run: exact main passed **793 test/subtest events** and
+  candidate passed **812**, with **zero failures** and the same **9 explicit
+  skips**. Both requested the same 13 packages with race detection, separate
+  disposable `*_test` databases and all three PostgreSQL fixture variables.
+  Main's tools package had no tests; candidate's metadata tests also ran.
+  Actual SQL checks cover durable budgets, exact action/effect authority,
+  guarded selection/recovery, Doctor history, current task/source guards and
+  ordinary API/core paths. The nine skips are the fixture UI server, combined
+  Redis ingress, browser/native-host opt-ins, private delegation harnesses and
+  live OpenAI integrations. No missing SQL connection is counted as a pass.
+- Registry baseline comparison: main has **7 passing tests and one failure**;
+  candidate has **17 passing tests and the identical one failure**,
+  `TestFunctionCandidatePassesOrdinaryBrokerSchemaOnly` (`function proposal
+  unavailable`). This is an existing frozen FunctionGemma/catalog mismatch,
+  not introduced by the port. All new network-cap cases pass. No FunctionGemma
+  experiment was resumed or candidate promoted.
+- Targeted Linux and Windows `go vet` passed. Both application bootstrap packages
+  compile. Web typecheck and targeted SettingRow stylelint passed; two Playwright
+  tests passed after a fresh Nuxt build. Their controlled API responses cover
+  help rendering/escaping and existing owner-proof handling. The rendered help
+  screenshot was inspected.
+
+Primary original logs, statuses and scripts are under the isolated lab root;
+local copies are in `.cache/local-port/lab-reports/`. Model/browser-native and
+external-account opt-ins remain separate.
+`foundation-summary.json` and `source-preservation-final.json` in the same
+local audit directory retain compact counts and the final preservation check.
+Test containers and networks were removed; source, logs and fixture data remain.
 Tests with controlled providers/Telegram/HTTP responses do not establish native
 model quality, a real user-tab workflow, Telegram account delivery or production
 readiness. No deployment or model inference is part of this port.

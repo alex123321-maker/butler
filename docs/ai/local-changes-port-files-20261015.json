@@ -1,0 +1,356 @@
+{
+  "source_head": "d343485f550ce74cd1f46b3e02215169ba4cf295",
+  "base_head": "4dc7fa8bc9138b025550a0160c29ee0fb18fd4c2",
+  "source_files": [
+    {
+      "path": ".env.codex-windows.example",
+      "sha256": "F724B99538CEDAE3CFAC828CE9832CB511B2577F77EC0E198BEC4CFACC8E3A62",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": ".env.example",
+      "sha256": "4BB3B7B6158F087426AECECA80AC6BA780B260AB9CEDA95DC1C11BF0694AA042",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": ".opencode/package-lock.json",
+      "sha256": "3A8C21992EA77BC21F81495B5E95B94CB7D26819ACC1BD7BA8B8958D1107108B",
+      "decision": "exclude-generated"
+    },
+    {
+      "path": "apps/orchestrator/cmd/eval-harness/main.go",
+      "sha256": "80BDEA634B68768F0C3C04745AF0A35929E89DB99A1AE1AAACDE34B7AC81F0D6",
+      "decision": "retain-current-contract"
+    },
+    {
+      "path": "apps/orchestrator/internal/api/settings_test.go",
+      "sha256": "CB88CBE0C51EEE4240A92864EE115432E7E9A81161CAF87BDE5396E7A015B59C",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/orchestrator/internal/api/settings.go",
+      "sha256": "8AD0FE8A86D75C087A197270FD766D2BDBFA77A5BE2BE3CC2A3C490956C7605F",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/orchestrator/internal/api/single_tab_v2_test.go",
+      "sha256": "59E96644200564995C30200CDD0AA5EC24CA272FEFCB6DD68146237DE3C79A45",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/orchestrator/internal/api/single_tab_v2.go",
+      "sha256": "20D8B82B26FA21522AB7D5746912D6BEE62E2D00C821BA9CCCED6D9DCEDEED72",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/orchestrator/internal/api/system_v2_test.go",
+      "sha256": "B750557E0D532D2051E2C624C22B9FF5926D5F8A3FE86B117A156776CD78B25D",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/bootstrap.go",
+      "sha256": "62E379908B36C7D38955A8B24B4B7182107422BAE2610285546F4868AAEC8AA0",
+      "decision": "retain-current-contract-selectively"
+    },
+    {
+      "path": "apps/orchestrator/internal/app/policy_config.go",
+      "sha256": "E616A7D4F5BE216B20D21D16E6D6479C205BCFBBDFE56FDCB8188D3ABD19C920",
+      "decision": "retain-current-contract"
+    },
+    {
+      "path": "apps/orchestrator/internal/artifacts/service_test.go",
+      "sha256": "75C768032FE5A7237B59CDBD9F01B603C7F124BBC9BA1E65D67635ACA248F232",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/orchestrator/internal/artifacts/service.go",
+      "sha256": "62CF207F3955AEF1927DC674D4B37FB3BA77506B719D8D505418EBB8B23CE8B8",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/orchestrator/internal/artifacts/store_integration_test.go",
+      "sha256": "45D1D03B621C428FC59E6A34B628057880D5DF9469397CD85E28280813AACE10",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/orchestrator/internal/artifacts/store.go",
+      "sha256": "302C995CD84F17291B9454D8483CF2E227F8BBCB0A5859FC9B4663CEAA97ADFD",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/orchestrator/internal/channel/telegram/adapter_test.go",
+      "sha256": "293C44E75AB9BCEEA5B55038F9ADC6C124C2C1B12EBD8C0AB629282FD6FA792F",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/orchestrator/internal/channel/telegram/adapter.go",
+      "sha256": "7E7800B4EA6B279C92243A13294E9900E69DF87FA514A336C8D4F66F7D0F531C",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/orchestrator/internal/eval/harness_test.go",
+      "sha256": "7EF730E4CC1FBFBAD4D8A724CFE70C07F875A024195AFA9A56476129CB7978B5",
+      "decision": "retain-current-contract"
+    },
+    {
+      "path": "apps/orchestrator/internal/eval/harness.go",
+      "sha256": "66A7207AFC428DF055E1680A1E5E7DF1DD023CEE0331F99955FA6CCCEBEEC8AF",
+      "decision": "retain-current-contract"
+    },
+    {
+      "path": "apps/orchestrator/internal/observability/event.go",
+      "sha256": "73D01E41D0AFE561EAD2B3AE75A36855FE16ADD9DB7BFBE6B48880A7D6F6BD82",
+      "decision": "retain-current-contract-selectively"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/autonomy_policy_test.go",
+      "sha256": "A99CF35B2D75A06C985A57088624A613503F8294859B35F370ABC19B2533EE45",
+      "decision": "retain-current-contract"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/autonomy_policy.go",
+      "sha256": "F7EF17065BB13503E6FE2EB3964C5FB6AA7A12511B8D4ECCCBA883FF8AEA3008",
+      "decision": "retain-current-contract"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/helpers.go",
+      "sha256": "B08F7944F9EA38860BC31AAF260B8820D1001A14F98BAF06BD9B42C1FBA84972",
+      "decision": "retain-current-contract-selectively"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/service_execute.go",
+      "sha256": "A8DD9C54E9F936D5F5F46694C1E9608DEBEB2C26DAE6971C57631E8DFD93F0E1",
+      "decision": "retain-current-contract-selectively"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/service_prepare.go",
+      "sha256": "27F8BABD1B81A5B265D039B765A4BE421DD309F75FEED7CBAD4DE5B6F9D91A39",
+      "decision": "retain-current-contract-selectively"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/service_test.go",
+      "sha256": "171ACE2503FFBDFB005EF750D0DE24A9145FB5100C268646B322C2337E267359",
+      "decision": "retain-current-contract-selectively"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/service.go",
+      "sha256": "F94D4B848B0F4797B400C664D4F2D95AE9E0B39F380984F9CF253F6CE96DCAC9",
+      "decision": "retain-current-contract-selectively"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/tool_handler_intent_test.go",
+      "sha256": "7F03C9BDF063AF77E8BF5A03A3A415A86A0DAF90C9AAAA626931774D304BDA4D",
+      "decision": "retain-current-contract-selectively"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/tool_handler.go",
+      "sha256": "0D6A29DA5DF42CF25C3EBB91C49444D04336E2466A3A7C88B6F8ADAA697EB909",
+      "decision": "retain-current-contract-selectively"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/tool_policy_test.go",
+      "sha256": "6993D45E17EC7EBC681D6A7DBEF3AE64939871F8A6C205A5DD8003A624B8BF14",
+      "decision": "retain-current-contract"
+    },
+    {
+      "path": "apps/orchestrator/internal/orchestrator/tool_policy.go",
+      "sha256": "8FA3A464BCF51BC8EB5178C38971D939B1229B3297E341351C92FF76FC90C8FB",
+      "decision": "retain-current-contract"
+    },
+    {
+      "path": "apps/orchestrator/internal/prompt/browser_strategy.go",
+      "sha256": "81FAB0BAD5E25CDB641BCB13BD40174231D2F07491C6B1033D52FA9CFDA609D4",
+      "decision": "retain-current-contract"
+    },
+    {
+      "path": "apps/orchestrator/internal/prompt/manager_test.go",
+      "sha256": "AB513C344CE5350E651E09A3011AFF40D50DAC4CB96D3F85C6CA1579A2D2FCC8",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/orchestrator/internal/prompt/manager.go",
+      "sha256": "1F55584D81C5CF0B24E7E7A29D887AEC519B06CF89E89B6DE8663CD339F43D34",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/orchestrator/internal/prompt/testdata/default_base_prompt.snap",
+      "sha256": "E0A11DE89306C25F59EE9DA610B538C7462FE68450AEE2F7969FA61887520CA5",
+      "decision": "retain-current-contract"
+    },
+    {
+      "path": "apps/orchestrator/internal/singletab/service_test.go",
+      "sha256": "332EF33655063CB17EEB9F65E95E9E6C6ADA4E0204821D3F78AEA9A435CF4051",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/orchestrator/internal/singletab/service.go",
+      "sha256": "C8F51CDFB044D080810170C3A691E85F74A09CE9004FF507A31CAE213C43C302",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/orchestrator/internal/tools/broker_client_test.go",
+      "sha256": "4B7A8C35B9AE52EE381AF49CD6509B76E7E43957F8F002A4A4A685F5073DD588",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/orchestrator/internal/tools/broker_client.go",
+      "sha256": "B6A0892DDD46B1EC5FA53FA421CDCEDE866D1D248DB1559E67F475FE8EC95D40",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/orchestrator/README.md",
+      "sha256": "A7DBCF365110769EECF99CC12E9FA595D9E736228BB6224858847EEB0391762C",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/tool-broker/internal/app/app.go",
+      "sha256": "975F06F9C702D14A4ABF5069DDC57CF45164C6991EE2E5E8AF94ACA59A677A7B",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/tool-broker/internal/registry/registry_test.go",
+      "sha256": "E1155002F612393F108F7CF4D1321CCF24BB8757645B9099A49E0FA99D4755B5",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/tool-broker/internal/registry/registry.go",
+      "sha256": "5BE7EA880E9C1E3C342A4A5FE5454053693BF927E1B05E2C2109CC6531F404B5",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/tool-broker/README.md",
+      "sha256": "6A15AB6B3EACB025DFB7A96BAC35CF0DDE82C3AFC41ED9E924917BA70AF4546E",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "apps/tool-browser-local/internal/runtime/server_test.go",
+      "sha256": "08675787B3AADCDAA70557038921AD2005143A423B658C88BFA15FF4DB0CDD65",
+      "decision": "retain-current-contract-selectively"
+    },
+    {
+      "path": "apps/tool-browser-local/internal/runtime/server.go",
+      "sha256": "061EC70980FBF7D500F8A54A0E02A1496067E668B25CD964ACD9B88BED60C2C0",
+      "decision": "retain-current-contract-selectively"
+    },
+    {
+      "path": "apps/tool-browser-local/README.md",
+      "sha256": "B8BD722CF30B362C9D094CE9FEAA580D0F73DAA8C43CD6F90867C2227F41D2B0",
+      "decision": "retain-current-contract-selectively"
+    },
+    {
+      "path": "configs/tools.json",
+      "sha256": "90D790116E48D5F64D82004DB0AC6554CF5372423C0326679F8ACB797190FBBD",
+      "decision": "retain-current-contract"
+    },
+    {
+      "path": "docs/architecture/config-layering.md",
+      "sha256": "52302D7267D2BAFB996206C81DE33F9309A16B0CA7FA62D21CF79C01BA2CCE97",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "docs/architecture/credential-management.md",
+      "sha256": "9EB7431343DA00D18011AD6AD3A9BCE98EDCA4D6E76CF7EF219B19633778453C",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "docs/architecture/model-transport-contract.md",
+      "sha256": "600C945303E32B6E82506C7B736407D84CC276793B97ACB275972AFEBFB76559",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "docs/architecture/prompt-management.md",
+      "sha256": "F40D2510EAC7074A74CC40B06ABFC3E54F134F416A601D6F260592DBB22E2FCD",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "docs/architecture/run-lifecycle-spec.md",
+      "sha256": "9993AE20B10A14EA940003BDABB1A44D21EBEED899C6EF55D6CE1315A2EC2243",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "docs/architecture/tool-runtime-adr.md",
+      "sha256": "E54AC86817B081A4338DC2A6021EFF8B448C780BB15873B3FE96597A76DF5C9D",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "docs/testing/agent-autonomy-eval.md",
+      "sha256": "0F80A7264F1C589BA587ECF7A685FE32B56D900E7E900E884D690ABA47ED2761",
+      "decision": "retain-current-contract"
+    },
+    {
+      "path": "internal/config/config.go",
+      "sha256": "2F5C884D794D63542634DFE4952B301C5335F8C537850A8F6DC3DA69C897E395",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "internal/config/layered.go",
+      "sha256": "0C54081533C68268FB8FBB1CDF54AAD5711E3055659C8D82BAA4BCEC9299B07E",
+      "decision": "retain-current-contract-selectively"
+    },
+    {
+      "path": "internal/config/service.go",
+      "sha256": "C68DE1EF397D1AD7BF2086DBC5CFB2D151F9337A44BA8441D738A6ADC8FCB347",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "internal/config/settings_catalog.go",
+      "sha256": "4F2EC3453EE5CDF0BD45EAD1EBBE1D1AF5FDA7190372561F3D15B003A30FB53E",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "internal/transport/openai/provider_test.go",
+      "sha256": "D2A87A46F663902740AA47BA0CF3E9399656E74B154A248E841AAABDD814D86C",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "internal/transport/openai/provider.go",
+      "sha256": "59BD80944F57B93C6CF8C3C4D18FDE172AB9D27D96BA5AE5A4A3ED98464D95F3",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "internal/transport/openai/websocket.go",
+      "sha256": "E89264E56958A06C2BE1C172BE2AF9129AA6851AAF848EAB5A77372F58BBA15E",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "internal/transport/openaicodex/provider_test.go",
+      "sha256": "6AA93D18E0332241E8B5A2C6B48E1A0F83507975C6880495A7E1EB844FC02A9B",
+      "decision": "retain-current-contract-selectively"
+    },
+    {
+      "path": "internal/transport/openaicodex/provider.go",
+      "sha256": "1C70606CAE935F508BB6B8AA914298F651262530549C0109C459FE7FF93077F4",
+      "decision": "retain-current-contract-selectively"
+    },
+    {
+      "path": "internal/transport/types.go",
+      "sha256": "C046DA8E9FC00EC0FC309137AA7BF5CE7A68CC1236B84E8FA75373D60B9E0201",
+      "decision": "retain-current-contract-selectively"
+    },
+    {
+      "path": "migrations/023_artifacts.up.sql",
+      "sha256": "C0625F8B199940A2F271CB3515E467E5BD16EF11216FF00F3653E475137FCF59",
+      "decision": "replace-with-migration070"
+    },
+    {
+      "path": "migrations/029_artifacts_browser_capture_constraints.down.sql",
+      "sha256": "18507EAD0B649F81193DF5ADB4F2FABDC47270EC44D2DAB1ED799D6D28D58705",
+      "decision": "replace-with-migration070"
+    },
+    {
+      "path": "migrations/029_artifacts_browser_capture_constraints.up.sql",
+      "sha256": "C4C95C9E9156B8A12B5A1D636A20FA8FFF68C2D36EE47D046DC5AEDAA3150F5B",
+      "decision": "replace-with-migration070"
+    },
+    {
+      "path": "web/components/SettingRow.vue",
+      "sha256": "35358B8741F778E4EE046BE6EBB94FC97583609FF35DF996AD0680542F49BDA2",
+      "decision": "port-compatible-parts"
+    },
+    {
+      "path": "web/composables/useSettings.ts",
+      "sha256": "C4F9CEA5E544D7167EB3E9804B228FFD78BAE4D1199E4495556E8D893497AD27",
+      "decision": "port-compatible-parts"
+    }
+  ]
+}

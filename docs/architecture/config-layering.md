@@ -80,6 +80,7 @@ execution policy. It uses that policy's conservative quote without claiming to
 lower a provider request cap. The opaque continuation reader is absent when the
 flag is off. Broker/final source guards still recognize retained055 inputs,
 which cannot acquire ordinary owner authority by disabling new admission.
+
 # Settings help and operator network cap
 
 Settings responses may expose code-owned `description` and `value_hint` fields.

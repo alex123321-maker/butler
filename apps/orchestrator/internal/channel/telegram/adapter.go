@@ -226,8 +226,7 @@ func (a *Adapter) sendExecutionFailureMessage(ctx context.Context, chatID int64,
 func (a *Adapter) DeliverAssistantDelta(ctx context.Context, event flow.DeliveryEvent) error {
 	// Telegram draft replacement is visually noisy in this product flow:
 	// users see partial fragments being edited in place and then a final full
-	// response. Prefer one stable final assistant message plus explicit tool
-	// lifecycle notifications.
+	// response. Prefer one stable final assistant message plus chat actions.
 	return nil
 }
 
@@ -245,8 +244,7 @@ func (a *Adapter) DeliverAssistantFinal(ctx context.Context, event flow.Delivery
 	return nil
 }
 
-// DeliverToolCallEvent sends a short notification about tool call lifecycle
-// and shows a chat action indicator so the user knows the bot is working.
+// DeliverToolCallEvent shows a chat action without creating per-tool messages.
 func (a *Adapter) DeliverToolCallEvent(ctx context.Context, event flow.ToolCallEvent) error {
 	chatID, ok := ChatIDFromSessionKey(event.SessionKey)
 	if !ok || !a.isAllowedChatID(chatID) {
