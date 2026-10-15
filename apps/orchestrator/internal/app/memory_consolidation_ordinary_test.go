@@ -52,12 +52,14 @@ type consolidationReadControl struct {
 	routes  map[string][]catalog.SourceRef
 	runs    map[string]*consolidationControlRun
 	entries int
+	claimID string
 }
 type consolidationControlRun struct {
 	refs         []catalog.SourceRef
 	index        int
 	text         strings.Builder
 	typedUnknown bool
+	temporalSeen bool
 }
 
 func (*consolidationReadControl) Name() string                    { return "antigravity" }
@@ -149,6 +151,11 @@ func (p *consolidationReadControl) SubmitToolResult(ctx context.Context, r trans
 	if item.Source.ID != run.refs[run.index].ID {
 		return nil, errors.New("controlled source identity changed")
 	}
+	for _, fact := range item.Temporal {
+		if fact.ClaimID == p.claimID && fact.TemporalRevision == 1 && fact.Freshness.CurrentUsable && !fact.Historical {
+			run.temporalSeen = true
+		}
+	}
 	run.text.WriteString(item.Text)
 	if item.Truncated {
 		return p.open(r.RunID, run, item.NextOffset), nil
@@ -158,7 +165,7 @@ func (p *consolidationReadControl) SubmitToolResult(ctx context.Context, r trans
 		return p.open(r.RunID, run, 0), nil
 	}
 	text := run.text.String()
-	answer := map[string]any{"evidence_received": strings.Contains(text, "Исключение Б") && strings.Contains(text, "проверка неуспешна"), "authority": "data", "effect": "unknown_no_retry_without_check"}
+	answer := map[string]any{"evidence_received": strings.Contains(text, "Исключение Б") && strings.Contains(text, "проверка неуспешна"), "authority": "data", "effect": "unknown_no_retry_without_check", "accepted_metadata": p.claimID == "" || run.temporalSeen}
 	if !run.typedUnknown {
 		answer["effect"] = "typed_state_missing"
 	}
@@ -198,6 +205,9 @@ func consolidationOrdinaryBroker(t *testing.T, pool *pgxpool.Pool, cat *catalog.
 	if err != nil {
 		t.Fatal(err)
 	}
+	// This isolated composed acceptance exercises the real temporal hook while
+	// its independent production release qualification remains disabled.
+	reads.temporal = true
 	handler, err := readcontrol.NewHandler(token, reads)
 	if err != nil {
 		t.Fatal(err)
@@ -360,12 +370,24 @@ func TestConsolidationOrdinaryTaskReadsActivatedDATAIntegration(t *testing.T) {
 		refs = append(refs, catalog.SourceRef{ID: src.ID, Revision: src.Revision, AccessRevision: src.AccessRevision, Hash: src.Hash})
 	}
 	p := &consolidationReadControl{routes: map[string][]catalog.SourceRef{}, runs: map[string]*consolidationControlRun{}}
+	claim, err := cat.Propose(owner, catalog.ClaimRequest{SourceID: refs[0].ID, SourceRevision: refs[0].Revision, Key: "ordinary.current", Value: json.RawMessage(`"owner-current-value"`), Summary: "Explicit current owner fact"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	claim, err = cat.Decide(owner, catalog.Decision{ClaimID: claim.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = cat.SetTemporal(owner, catalog.TemporalUpdate{ClaimID: claim.ID, ExpectedHeadRevision: 1, Validity: catalog.ValidityUnknown, Class: catalog.FreshnessStablePreference}); err != nil {
+		t.Fatal(err)
+	}
+	p.claimID = claim.ID
 	js := jobs.New(pool, cat, b, nil)
 	store := &consolidation.Store{Catalog: cat, Jobs: js}
 	if err := js.SetModelControl(owner, "enabled"); err != nil {
 		t.Fatal(err)
 	}
-	q := consolidation.PrepareRequest{ViewKey: "ordinary", Sources: refs, Policy: jobs.ModelPolicyRequest{ID: "ordinary-prepared", Handler: consolidation.Version, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 1, Privacy: "cloud_allowed", Contexts: []jobs.ModelContextRef{{SessionKey: "source1", OriginalRunID: "past1"}, {SessionKey: "source2", OriginalRunID: "past2"}}, Job: jobs.Request{Allowance: budget.Units{ModelTurns: 1, Tokens: 200000, ActiveMillis: 20000, ProviderInputBytes: 8388608}, Deadline: time.Now().Add(time.Hour)}}}
+	q := consolidation.PrepareRequest{ViewKey: "ordinary", Sources: refs, ClaimIDs: []string{claim.ID}, Policy: jobs.ModelPolicyRequest{ID: "ordinary-prepared", Handler: consolidation.Version, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 1, Privacy: "cloud_allowed", Contexts: []jobs.ModelContextRef{{SessionKey: "source1", OriginalRunID: "past1"}, {SessionKey: "source2", OriginalRunID: "past2"}}, Job: jobs.Request{Allowance: budget.Units{ModelTurns: 1, Tokens: 200000, ActiveMillis: 20000, ProviderInputBytes: 8388608}, Deadline: time.Now().Add(time.Hour)}}}
 	if _, err := store.Prepare(owner, q); err != nil {
 		t.Fatal(err)
 	}
@@ -410,8 +432,22 @@ func TestConsolidationOrdinaryTaskReadsActivatedDATAIntegration(t *testing.T) {
 	for _, key := range []string{"baseline", "consolidated"} {
 		output := runConsolidationOrdinaryQuestion(t, ctx, pool, cat, b, p, broker, key, "Сверь допустимые исторические наблюдения. Повтор гипотезы не доказывает истину; сохрани исключения и неудачи, текущий UNKNOWN не разрешает повтор внешнего действия.")
 		var answer map[string]any
-		if json.Unmarshal([]byte(output), &answer) != nil || answer["evidence_received"] != true || answer["authority"] != "data" || answer["effect"] != "unknown_no_retry_without_check" {
+		if json.Unmarshal([]byte(output), &answer) != nil || answer["evidence_received"] != true || answer["authority"] != "data" || answer["effect"] != "unknown_no_retry_without_check" || answer["accepted_metadata"] != true {
 			t.Fatal("actual read/typed task not retained", key, output)
+		}
+	}
+	// A metadata-only owner correction invalidates both source and derivative
+	// run pins. Reconstructed services must not retain an older typed view.
+	if _, err = cat.SetTemporal(owner, catalog.TemporalUpdate{ClaimID: claim.ID, ExpectedRevision: 1, ExpectedHeadRevision: 1, Validity: catalog.ValidityUnknown, Class: catalog.FreshnessStablePreference, OwnerVerifiedNow: true}); err != nil {
+		t.Fatal(err)
+	}
+	for _, key := range []string{"baseline", "consolidated"} {
+		var runID string
+		if err = pool.QueryRow(ctx, `SELECT run_id FROM accepted_inputs WHERE session_key=$1`, key).Scan(&runID); err != nil {
+			t.Fatal(err)
+		}
+		if err = catalog.New(pool, m).CheckRunSources(owner, runID); err == nil {
+			t.Fatal("changed accepted fact retained an ordinary run pin", key)
 		}
 	}
 	var background, foreground, pins int
