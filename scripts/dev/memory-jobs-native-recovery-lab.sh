@@ -31,7 +31,7 @@ stop(){
 trap stop EXIT
 docker inspect butler-issue82-orchestrator-1 --format '{{json .Config.Env}}' | jq '{model:map(select(startswith("BUTLER_ANTIGRAVITY_MODEL=")))|.[0],protocol:map(select(startswith("BUTLER_ANTIGRAVITY_PROTOCOL=")))|.[0]}' > "$proof/profile.json"
 jq -e '.model=="BUTLER_ANTIGRAVITY_MODEL=gemini-3.8-flash-high"' "$proof/profile.json" >/dev/null
-docker inspect butler-issue82-orchestrator-1 --format '{{json .Config.Env}}' | jq '[.[]|select(test("^(HTTPS_PROXY|HTTP_PROXY|ALL_PROXY)="))|split("=")[1]|length>0]|any' > "$proof/proxy-enabled.json"
+docker inspect butler-issue82-orchestrator-1 --format '{{json .Config.Env}}' | jq '[.[]|select(test("^(HTTPS_PROXY|HTTP_PROXY|ALL_PROXY|https_proxy|http_proxy|all_proxy)="))|split("=")[1]|length>0]|any' > "$proof/proxy-enabled.json"
 jq -e '.==false' "$proof/proxy-enabled.json" >/dev/null
 request -d '{"policy_id":"issue82-native-v6","state":"revoked"}' http://127.0.0.1:18282/api/v4/memory/model-policy-control > "$proof/prior-policy-revoked.json"
 bash "$base/current/scripts/dev/memory-jobs-native-ledger-lab.sh" "$base" > "$proof/ledger-before.json"
