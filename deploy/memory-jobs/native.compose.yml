@@ -28,8 +28,8 @@ services:
       BUTLER_ANTIGRAVITY_MODEL: gemini-3.8-flash-high
       BUTLER_OPENAI_TIMEOUT_SECONDS: '90'
       BUTLER_TELEGRAM_BOT_TOKEN: ''
-      # Explicit direct lane for this window; no fallback after a network error.
-      HTTPS_PROXY: ''
+      # Explicit proxy lane for this window; no fallback after a network error.
+      HTTPS_PROXY: http://issue82-proxy:18080
       HTTP_PROXY: ''
       ALL_PROXY: ''
       NO_PROXY: localhost,127.0.0.1,postgres,redis
