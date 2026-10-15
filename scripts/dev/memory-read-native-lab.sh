@@ -99,10 +99,12 @@ collect
 jq -e --slurpfile source "$proof/source.json" '
  (.attempts|length)>=3 and all(.attempts[];.actual_input_tokens!=null and .actual_output_tokens!=null and .observed_at!=null) and
  ([.tools[]|select(.tool_name=="memory.search" and .status=="completed")]|length)>=1 and
- ([.tools[]|select(.tool_name=="memory.open" and .status=="completed" and .args.source_id==$source[0].source_id)]|length)>=1 and
+ all(.tools[]|select(.tool_name=="memory.search");(.result|tostring|contains("МАЯК-742/33")|not)) and
+ ([.tools[]|select(.tool_name=="memory.open" and .status=="completed" and .args.source_id==$source[0].source_id and .args.source_revision==$source[0].revision and .args.access_revision==$source[0].access_revision and .args.content_hash==$source[0].content_hash and (.result|tostring|contains("МАЯК-742/33")))]|length)>=1 and
  ([.results[]|select(.content|contains("МАЯК-742/33"))]|length)==1 and
  ([.run_sources[]|select(.source_id==$source[0].source_id and .source_revision==$source[0].revision)]|length)>=1 and
- all(.tools[];.tool_name=="memory.search" or .tool_name=="memory.open" or .tool_name=="memory.neighbors")
+ all(.tools[];.tool_name=="memory.search" or .tool_name=="memory.open" or .tool_name=="memory.neighbors") and
+ all(.effects[];.binding.effect=="read" and .state=="effect_confirmed")
 ' "$proof/ledger.json" >/dev/null
 sha256sum "$proof/source.sha256" "$proof/protocol.json" "$proof/profile.json" "$proof/input-request.json" "$proof/ledger.json" "$base/reports/binaries.sha256" > "$proof/evidence.sha256"
 printf 'PASS\n' > "$proof/complete"
