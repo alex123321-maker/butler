@@ -55,6 +55,16 @@ func TestConsolidationScreenAllSlotsSealedBeforeStorage(t *testing.T) {
 			t.Fatal("unexecuted slot lost prospective identity")
 		}
 	}
+	t.Setenv("BUTLER_CONSOLIDATION_SCREEN_USE_SEALED_SCHEDULE", "1")
+	_, sealed, _ := consolidationScreenSchedule(t, proof)
+	for i := range slots {
+		if sealed[i].ID != slots[i].ID {
+			t.Fatal("pre-auth schedule identities regenerated")
+		}
+	}
+	if err := screenWriteExclusive(filepath.Join(proof, "window-begun.json"), []byte(`{}`)); err == nil {
+		t.Fatal("one-use execution marker replayed")
+	}
 }
 
 func TestConsolidationScreenCostsPreserveUnknownAndBackground(t *testing.T) {

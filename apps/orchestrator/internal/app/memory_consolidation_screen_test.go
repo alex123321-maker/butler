@@ -148,6 +148,7 @@ func runConsolidationPairedScreen(t *testing.T, native bool) {
 	var observed *consolidationScreenProvider
 	var evidence []consolidationScreenEvidence
 	var policyRaw []byte
+	var history *consolidationScreenHistory
 	started := time.Now()
 	defer func() {
 		blocker := "screen_complete"
@@ -208,15 +209,26 @@ func runConsolidationPairedScreen(t *testing.T, native bool) {
 			_ = json.Unmarshal(raw, &calls)
 			observed.mu.Unlock()
 		}
-		report, _ := json.MarshalIndent(map[string]any{"native": native, "mechanics_pass": !t.Failed(), "native_quality": "independent fixed-rubric review required; syntax/mechanics is insufficient", "slots": slots, "calls": calls, "costs": consolidationScreenCosts(slots, calls), "policy_sha256": experienceDigest(string(policyRaw)), "evidence": evidence, "maximum_actual_entries": 99, "elapsed_millis": time.Since(started).Milliseconds(), "monetary_basis": "subscription_no_overage", "invoice_cost": "unknown", "total_usage_rule": "any UnknownUsage means full total unknown; UnreportedTotal means reported total is a lower bound", "request_bytes_rule": "JSON of actual transport requests; backend HTTP wire framing not observed"}, "", "  ")
+		report, _ := json.MarshalIndent(map[string]any{"native": native, "mechanics_pass": !t.Failed(), "native_quality": "independent fixed-rubric review required; syntax/mechanics is insufficient", "slots": slots, "calls": calls, "costs": consolidationScreenCosts(slots, calls), "historical_owner_day": history, "historical_carry_is_new_spend": false, "historical_carry_is_observed_usage": false, "policy_sha256": experienceDigest(string(policyRaw)), "evidence": evidence, "maximum_actual_entries": 99, "elapsed_millis": time.Since(started).Milliseconds(), "monetary_basis": "subscription_no_overage", "invoice_cost": "unknown", "total_usage_rule": "any UnknownUsage means full total unknown; UnreportedTotal means reported total is a lower bound; native-entry observations and nullable product rows remain separate", "request_bytes_rule": "JSON of actual transport requests; backend HTTP wire framing not observed"}, "", "  ")
 		_ = os.WriteFile(filepath.Join(proof, "screen.json"), report, 0600)
 		if native && pool != nil {
 			pool.Close()
 		}
 	}()
+	if native {
+		var err error
+		history, err = loadConsolidationScreenHistory(os.Getenv("BUTLER_CONSOLIDATION_NATIVE_HISTORY"), os.Getenv("BUTLER_CONSOLIDATION_NATIVE_HISTORY_SHA256"))
+		if err != nil {
+			t.Fatal("complete frozen historical carry unavailable")
+		}
+	}
 	pool = consolidationScreenPool(t, native)
 	createConsolidationScreenTables(t, pool, slots, corpusRaw)
-	ctx, stop := context.WithTimeout(context.Background(), 60*time.Minute)
+	deadline := started.Add(60 * time.Minute)
+	if history != nil && history.Deadline.Before(deadline) {
+		deadline = history.Deadline
+	}
+	ctx, stop := context.WithDeadline(context.Background(), deadline)
 	defer stop()
 	owner := owneridentity.WithActor(ctx, owneridentity.Actor{OwnerID: "owner", Channel: "web", DeliveryID: consolidationScreenOpaque(t)})
 	manifest := catalog.NewFileManifest(filepath.Join(proof, "deletions.anchor"))
@@ -224,12 +236,34 @@ func runConsolidationPairedScreen(t *testing.T, native bool) {
 		t.Fatal("fresh deletion anchor unavailable")
 	}
 	cat := catalog.New(pool, manifest)
-	policy := budget.DefaultPolicy()
-	policy.ModelMillis, policy.OutputTokens = 300000, 32768
-	policy.Task.ModelTurns, policy.Conversation.ModelTurns = 16, 16
-	policy.Task.ActiveMillis, policy.Conversation.ActiveMillis = 8000000, 8000000
-	policy.Day.ModelTurns, policy.Day.ActiveMillis = 99, 50000000
 	model := "fixture"
+	carry := budget.Units{}
+	if native {
+		model = "gemini-3.8-flash-high"
+		carry = history.Carry
+	}
+	policy := consolidationScreenPolicy("antigravity", model, carry)
+	policyRaw, _ = json.MarshalIndent(policy, "", "  ")
+	if native {
+		expected, err := os.ReadFile(os.Getenv("BUTLER_CONSOLIDATION_NATIVE_EXPECTED_POLICY"))
+		if err != nil || !bytes.Equal(expected, policyRaw) {
+			t.Fatal("actual native budget differs from pre-auth frozen policy")
+		}
+		if err = consolidationCarryHistory(ctx, pool, history, policy); err != nil {
+			t.Fatal("historical conservative carry denied")
+		}
+		raw, _ := json.Marshal(history)
+		frozen, err := os.ReadFile(os.Getenv("BUTLER_CONSOLIDATION_NATIVE_HISTORY"))
+		if err != nil {
+			t.Fatal("frozen historical cohort unavailable")
+		}
+		if _, err = pool.Exec(ctx, `CREATE TABLE consolidation_screen_history(singleton boolean PRIMARY KEY CHECK(singleton),history_hash text NOT NULL,metadata jsonb NOT NULL,frozen_history jsonb NOT NULL)`); err != nil {
+			t.Fatal(err)
+		}
+		if _, err = pool.Exec(ctx, `INSERT INTO consolidation_screen_history VALUES(true,$1,$2,$3)`, history.Hash, raw, frozen); err != nil {
+			t.Fatal(err)
+		}
+	}
 	controlled := &consolidationReadControl{routes: map[string][]catalog.SourceRef{}, runs: map[string]*consolidationControlRun{}}
 	var provider transport.ModelProvider = controlled
 	if native {
@@ -252,13 +286,14 @@ func runConsolidationPairedScreen(t *testing.T, native bool) {
 		if err != nil {
 			t.Fatal("native provider construction rejected")
 		}
-		provider, model = result.Provider, result.ModelName
-		policy.Models[provider.Name()+":"+model] = budget.ModelPrice{Basis: "subscription_no_overage"}
+		provider = result.Provider
+		if provider.Name() != "antigravity" || result.ModelName != model {
+			t.Fatal("provider construction differs from frozen model")
+		}
 		if !summaryProfileReady(result, budget.NewController(pool, policy)) {
 			t.Fatal("native profile does not meet measured construction prerequisites")
 		}
 	}
-	policy.Models[provider.Name()+":"+model] = budget.ModelPrice{Basis: "subscription_no_overage"}
 	if policy.Validate() != nil {
 		t.Fatal("finite screen policy invalid")
 	}
@@ -324,6 +359,9 @@ func runConsolidationPairedScreen(t *testing.T, native bool) {
 		foreignIDs, foreignText := []string{}, []string{}
 		for _, other := range sets {
 			if other.ID != set.ID {
+				foreignIDs = append(foreignIDs, other.View, other.Claim.ID)
+				foreignIDs = append(foreignIDs, other.Sessions...)
+				foreignIDs = append(foreignIDs, other.Runs...)
 				for _, r := range other.Refs {
 					foreignIDs = append(foreignIDs, r.ID)
 				}
@@ -366,7 +404,7 @@ func runConsolidationPairedScreen(t *testing.T, native bool) {
 			contexts = append(contexts, jobs.ModelContextRef{SessionKey: key, OriginalRunID: set.Runs[i]})
 		}
 		policyID := consolidationScreenOpaque(t)
-		q := consolidation.PrepareRequest{ViewKey: set.View, Sources: set.Refs, ClaimIDs: []string{set.Claim.ID}, Policy: jobs.ModelPolicyRequest{ID: policyID, Handler: consolidation.Version, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 1, Privacy: "cloud_allowed", Contexts: contexts, Job: jobs.Request{Allowance: budget.Units{ModelTurns: 1, Tokens: 2000000, ActiveMillis: 300000, ProviderInputBytes: 8388608}, Deadline: started.Add(60 * time.Minute)}}}
+		q := consolidation.PrepareRequest{ViewKey: set.View, Sources: set.Refs, ClaimIDs: []string{set.Claim.ID}, Policy: jobs.ModelPolicyRequest{ID: policyID, Handler: consolidation.Version, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 1, Privacy: "cloud_allowed", Contexts: contexts, Job: jobs.Request{Allowance: budget.Units{ModelTurns: 1, Tokens: 2000000, ActiveMillis: 300000, ProviderInputBytes: 8388608}, Deadline: deadline}}}
 		var prepared jobs.ModelPolicy
 		screenOwnerAPI(t, server.URL, token, http.MethodPost, "/api/v4/memory/consolidation/prepare", q, &prepared)
 		handler := consolidation.Handler{}

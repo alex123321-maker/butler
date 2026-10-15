@@ -96,20 +96,51 @@ func consolidationScreenSchedule(t *testing.T, proof string) (*consolidationScre
 	if err = os.MkdirAll(proof, 0700); err != nil {
 		t.Fatal(err)
 	}
+	if os.Getenv("BUTLER_CONSOLIDATION_SCREEN_USE_SEALED_SCHEDULE") == "1" {
+		var sealed struct {
+			Format  string                     `json:"format"`
+			Hash    string                     `json:"corpus_sha256"`
+			Slots   []*consolidationScreenSlot `json:"slots"`
+			Maximum int                        `json:"maximum_actual_entries"`
+		}
+		data, e := os.ReadFile(filepath.Join(proof, "initial-schedule.json"))
+		if e != nil || json.Unmarshal(data, &sealed) != nil || sealed.Format != "consolidation-nine-logical-slots-v1" || sealed.Hash != experienceDigest(string(raw)) || sealed.Maximum != 99 || len(sealed.Slots) != len(slots) {
+			t.Fatal("complete pre-auth sealed schedule differs")
+		}
+		ids := map[string]bool{}
+		for i, slot := range sealed.Slots {
+			id, e := hex.DecodeString(slot.ID)
+			if e != nil || len(id) != 16 || ids[slot.ID] || slot.CaseID != slots[i].CaseID || slot.Kind != slots[i].Kind || slot.Arm != slots[i].Arm || slot.Limit != slots[i].Limit || slot.State != "not_executed" || slot.Blocker != "earlier_stage_not_completed" || slot.RunID != "" || slot.Answer != "" || slot.Session != "" || !slot.StartedAt.IsZero() || !slot.FinishedAt.IsZero() || len(slot.CurrentTask) > 0 && string(slot.CurrentTask) != "null" {
+				t.Fatal("pre-auth slot identity/state differs")
+			}
+			ids[slot.ID] = true
+		}
+		if e = screenWriteExclusive(filepath.Join(proof, "window-begun.json"), []byte(`{"one_use_execution":true}`)); e != nil {
+			t.Fatal("sealed native window already consumed")
+		}
+		return &corpus, sealed.Slots, raw
+	}
 	sealed, _ := json.MarshalIndent(map[string]any{"format": "consolidation-nine-logical-slots-v1", "corpus_sha256": experienceDigest(string(raw)), "slots": slots, "maximum_actual_entries": 99}, "", "  ")
-	file, err := os.OpenFile(filepath.Join(proof, "initial-schedule.json"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
-	if err != nil {
+	if err = screenWriteExclusive(filepath.Join(proof, "initial-schedule.json"), sealed); err != nil {
 		t.Fatal("one-use complete schedule already consumed or unavailable")
 	}
-	_, writeErr := file.Write(sealed)
+	return &corpus, slots, raw
+}
+
+func screenWriteExclusive(path string, raw []byte) error {
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+	_, writeErr := file.Write(raw)
 	if writeErr == nil {
 		writeErr = file.Sync()
 	}
 	closeErr := file.Close()
 	if writeErr != nil || closeErr != nil {
-		t.Fatal("complete schedule could not be sealed")
+		return errors.New("complete schedule could not be sealed")
 	}
-	return &corpus, slots, raw
+	return nil
 }
 
 type consolidationScreenCall struct {

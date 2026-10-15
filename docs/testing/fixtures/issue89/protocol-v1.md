@@ -41,6 +41,29 @@ it does not silently enlarge allowances or treat unexecuted questions as passes.
 This ceiling is a proposed admission/window bound, not expected consumption.
 Root must freeze the actual matching finite durable policy before any call.
 
+The same authenticated owner/day admission includes its historical reservations,
+without refund. The read-only frozen history cohort identifies24 original84
+admissions and92 in the inclusive85/88v3 leaf (the latter already includes its
+82/83/86-turn predecessor vectors). Validate original reservation identities and
+charges against every included owner/day scope, hash the original artifacts and
+count the inclusive leaf once. The resulting conservative carry is116 turns,
+123887616 tokens,22290000 active milliseconds,973078528 provider input bytes,
+6 external calls and25165824 egress bytes; cost/children are0. This is a labelled
+carry reservation, not116 new requests or measured token usage. Add only the
+prospective99 model entries and at most96 real read-tool reservations (16 per
+foreground input) to that immutable carried usage. New owner/day cap is215 model
+turns. Earlier UTC deadline wins; crossing the frozen2026-10-15 day requires a
+new prospective freeze, never a silent rollover/reset.
+
+Historical native observations contain108 known/8 unknown usages and478823
+known native tokens as a lower bound. Product durable attempt rows separately
+contain107 observed/9 NULL:88v3's last transport usage is independently known,
+while its later guard rejection left the product row NULL. Keep both statuses,
+do not overwrite the NULL or count its separate observation twice. Preserve
+issue86-owner and adaptive-prospective-owner-v1 costs in separate roadmap records;
+their authority is not the prospective authenticated owner. The stopped82 stand
+has its distinct issue82-owner and is not restarted to manufacture a carry.
+
 The collector seals all nine opaque logical identities in an exclusive,
 fsynced initial schedule before PostgreSQL/auth setup. A begun failure stays
 failed and all later slots stay not_executed; no failed slot is backfilled.
