@@ -67,6 +67,7 @@ func TestSummaryProfileRequiresQualifiedNativeCeilingAndBudget(t *testing.T) {
 		{32768, 32768, antigravity.FlashHighModel, false, 300 * time.Second, 120000},
 		{32768, 32768, antigravity.FlashHighModel, false, 299 * time.Second, 300000},
 		{32768, 32768, antigravity.FlashHighModel, false, 300 * time.Second, 299999},
+		{65536, 65536, antigravity.FlashHighModel, false, 300 * time.Second, 300000},
 	} {
 		b := budget.NewController(nil, budget.DefaultPolicy())
 		b.Policy.OutputTokens = tc.budget

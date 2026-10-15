@@ -11,10 +11,11 @@ import (
 	"github.com/butler/butler/internal/transport/antigravity"
 )
 
-// Qualification is a reviewed code-owned decision, separate from operator flags
-// and the measured profile check. Test/shadow harnesses instantiate the same
-// handler explicitly while that release decision is pending.
-const memoryCandidateReleaseQualified = false
+// The measured High32768/300s profile passed the fixed native extraction screen,
+// owner lifecycle and independent privacy/restore/scoped-context gates. This
+// code-owned qualification still requires both operator flags and the actual
+// measured profile below; it does not activate the deployment.
+const memoryCandidateReleaseQualified = true
 
 func configureCandidateHandler(handlers map[string]jobs.ModelHandler, p providerfactory.Result, b *budget.Controller) {
 	if memoryCandidateReleaseQualified && os.Getenv("BUTLER_MEMORY_MODEL_JOBS_ENABLED") == "true" && os.Getenv("BUTLER_MEMORY_MODEL_CANDIDATES_ENABLED") == "true" && candidateProfileReady(p, b) {

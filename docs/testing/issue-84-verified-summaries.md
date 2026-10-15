@@ -1,8 +1,11 @@
 # Issue84 verified task summaries
 
 Current native v7 evidence passes the complete three-round continuation gate on
-the specific High 32768 / 300s profile described below. Default process flags stay
-false. The earlier failed windows below are retained history, not current passes
+the specific High 32768 / 300s profile described below. The code-owned
+`ReleaseQualified` gate is now true after the controlled lifecycle and actual
+dump/restore gates and independent profile review. Default process flags stay
+false; PostgreSQL model control was disabled after the native window. The earlier
+failed windows below are retained history, not current passes
 and not deductions from cumulative expense.
 
 The consumer is implemented behind a separate default-false process gate. No
@@ -227,7 +230,7 @@ was used to manufacture the pass. The prior v5 `MAX_TOKENS` hypothesis remains
 unproven, while successful v7 background non-input totals exceed 8192 and establish
 the qualified larger profile.
 
-Qualification is limited to native Flash High, generated ceiling at least 32768,
+Qualification is limited to native Flash High, generated ceiling exactly 32768,
 actual normalized transport timeout at least 300s and finite budget
 `output_tokens>=32768`, `model_millis>=300000`. Shorter hard owner/task deadlines
 still win and may produce the documented safe fallback. The small post-window
@@ -246,5 +249,5 @@ working state stay byte-identical, unknown tool state stays unknown, and no memo
 claim is accepted. Each case also corrects and deletes its original message,
 rejects root/derivative retrieval, erases copied source generations, reconstructs
 the Catalog reader and verifies that an unrelated source survives. This adds
-consumer-specific proof to the generic lifecycle gate; it does not turn the
-failed native window into a pass.
+consumer-specific proof to the generic lifecycle gate. Earlier failed native
+windows retain their own failed verdicts and expenses.

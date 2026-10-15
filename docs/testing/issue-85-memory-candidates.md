@@ -2,9 +2,10 @@
 
 The complete version2 native screen passed its prospectively fixed criteria on
 the actual High subscription transport. The code-owned production release gate
-remains false pending final source/profile review; operator flags alone cannot
-activate it. This report distinguishes controlled composition, native extraction
-quality, and owner-controlled acceptance of a native result.
+is qualified only for the measured native profile after independent source/profile/
+lifecycle review; both process flags remain false by default and the main
+deployment is not activated. This report distinguishes controlled composition,
+native extraction quality, and owner-controlled acceptance of a native result.
 
 ## Mechanism
 
@@ -232,9 +233,16 @@ candidate environment flags must also be true. The actual provider's normalized
 `InferenceTimeout()` must permit at least300s, independently of the budget;
 factory default120s and a missing timeout attestation fail closed. Default 8192, unmeasured 65536,
 another provider/model, absent limits and under-reserved budget all fail closed.
-The code-owned qualification constant is still false pending a separate reviewed
-release decision; the frozen screen accurately records that historical state.
-Production flags and the main deployment were not changed during these tests.
+The actual adapter60/120/299s negative controls and300/301s positive controls,
+both process flags, missing attestations and full quote/deadline admission passed
+on the server under race:20 profile,3 realPG admission/policy-control and2 adapter
+pass events,0 fail/skip, with vet. No model/auth request ran and all82 native
+attempts remained. `profile-readiness-v1.json` records the exact source/dependency.
+The reviewed release decision qualifies only this profile. The frozen native
+screen and initial profile receipt accurately retain their then-false code gate;
+`release-qualification-v1.json` records the subsequent decision separately.
+Production flags remain false by default and the main deployment was not
+activated. A code-owned qualification is not an owner mandate or a grant.
 
 This finite screen establishes the stated extraction criteria for this profile
 and synthetic Russian corpus, not broad extraction or native answer quality.
