@@ -305,3 +305,21 @@ func (c Consumer) PrepareSourcesTx(ctx context.Context, tx pgx.Tx, cat *catalog.
 	}
 	return []catalog.Source{updated}, "", nil
 }
+
+func (c Consumer) RefreshPolicySourcesTx(ctx context.Context, tx pgx.Tx, cat *catalog.Store, p jobs.ModelPolicy) (string, error) {
+	if p.Handler != HandlerName || len(p.Job.Sources) != 1 {
+		return "summary_binding_invalid", nil
+	}
+	src, stale, err := cat.SnapshotForRefreshTx(ctx, tx, p.Job.Sources[0])
+	if err != nil {
+		if errors.Is(err, catalog.ErrDenied) || errors.Is(err, catalog.ErrStale) {
+			return "summary_original_source_denied", nil
+		}
+		return "", err
+	}
+	if !stale {
+		return "", nil
+	}
+	_, reason, err := c.PrepareSourcesTx(ctx, tx, cat, p, []catalog.Source{src})
+	return reason, err
+}

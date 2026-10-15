@@ -374,6 +374,17 @@ func (s *Store) scheduleModelPolicy(ctx context.Context, id string, preparers ..
 	}
 	// Owner policy permits these exact stable IDs, with unchanged access rights.
 	ownerCtx := catalog.WithAccessChecker(owneridentity.WithActor(ctx, owneridentity.Actor{}), &policyChecker{s: s, p: p})
+	if len(preparers) > 0 {
+		if refresher, ok := preparers[0].(ModelPolicyRefreshHandler); ok {
+			reason, err := refresher.RefreshPolicySourcesTx(ownerCtx, tx, s.catalog, p)
+			if err != nil {
+				return err
+			}
+			if reason != "" {
+				return wait(reason)
+			}
+		}
+	}
 	refs := make([]catalog.SourceRef, len(p.Job.Sources))
 	for i, r := range p.Job.Sources {
 		refs[i] = catalog.SourceRef{ID: r.ID, AccessRevision: r.AccessRevision}
