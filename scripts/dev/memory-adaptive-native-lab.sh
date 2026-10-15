@@ -36,10 +36,11 @@ test -s "$auth_value"
 test -s /srv/storage/butler/agents/local-models/private/token
 # Copy opaque private bytes without printing or placing material in arguments.
 cp -- "$auth_value" "$base/private/auth-input.value"
+docker run --rm --pull never --network none -v /srv/storage/butler/agents/local-models/private/token:/from:ro golang:1.27.2-bookworm cat /from > "$base/private/local-token"
 sed -n '/^BUTLER_SETTINGS_ENCRYPTION_KEY=/p' "$auth_env" > "$base/private/native.env"
 test "$(wc -l < "$base/private/native.env")" = 1
 printf '%s\n' 'HTTPS_PROXY=http://127.0.0.1:18080' 'HTTP_PROXY=http://127.0.0.1:18080' 'ALL_PROXY=http://127.0.0.1:18080' 'NO_PROXY=localhost,127.0.0.1,local-models,172.28.0.2,10.237.188.2' >> "$base/private/native.env"
-chmod 600 "$base/private/auth-input.value" "$base/private/native.env"
+chmod 600 "$base/private/auth-input.value" "$base/private/native.env" "$base/private/local-token"
 network=butler-issue87-native-v1-net
 pg=butler-issue87-native-v1-pg
 docker network create --internal --subnet 10.237.188.0/24 "$network" > "$proof/network-id"
@@ -58,11 +59,11 @@ trap collect EXIT
 # The only non-proxy connections are the isolated PG/Broker and pinned local model.
 docker run --rm --pull never --network host --user "$(id -u):$(id -g)" --add-host local-models:172.28.0.2 --cpus 2 --memory 2g --pids-limit 128 --security-opt no-new-privileges \
  -v "$src:/src:ro" -v "$base/runtime:/runtime:ro" -v "$proof:/proof" -v "$base/private:/private" \
- -v /srv/storage/butler/agents/local-models/private/token:/local-token:ro -w /src/apps/orchestrator/internal/app \
+ -w /src/apps/orchestrator/internal/app \
  --env-file "$base/private/native.env" -e BUTLER_ADAPTIVE_NATIVE_V1=1 -e BUTLER_ADAPTIVE_NATIVE_PROOF=/proof \
  -e BUTLER_TEST_MEMORY_POSTGRES_URL='postgres://butler@10.237.188.2:5432/memory_adaptive_test?sslmode=disable' \
  -e BUTLER_MEMORY_READ_APP_BINARY=/runtime/tool-broker -e BUTLER_MEMORY_SEMANTIC_ENABLED=true \
- -e BUTLER_MEMORY_LOCAL_SERVICE_ID=operator-pinned-service -e BUTLER_MEMORY_LOCAL_TOKEN_FILE=/local-token \
+ -e BUTLER_MEMORY_LOCAL_SERVICE_ID=operator-pinned-service -e BUTLER_MEMORY_LOCAL_TOKEN_FILE=/private/local-token \
  golang:1.27.2-bookworm /runtime/collector.test -test.run '^TestMemoryAdaptiveNativeComparison$' -test.timeout 210m -test.v > "$proof/collector.log" 2>&1
 date -u +%Y-%m-%dT%H:%M:%SZ > "$proof/collector-exited"
 # The database stays stopped on disk for inspection; no ledger is cleared.
