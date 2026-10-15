@@ -10,6 +10,16 @@ determine semantic correctness. See the fixed
 [58-original reassessment](../../docs/ai/memory-eval-v2-semantic-reassessment-20261015.md).
 Historical V1/V2 files and strict scores below remain reproducible history.
 
+Current independently reviewed fresh results: no-memory 4/12 complete answers,
+oracle 12/12, ordinary retrieval 11/12, and two successful predeclared repeated
+answers with identical context. All 38 native attempts completed. The one
+retrieval shortfall is a missing third source under the current two-chunk read
+limit, with a supported partial answer. See the
+[fresh run](../../docs/ai/memory-eval-semantic-fresh-results-20261015.md),
+[independent annotations](../../testdata/acceptance/results/ru-memory-semantic-v1-review-20261015.json)
+and [original-bound Go score](../../testdata/acceptance/results/ru-memory-semantic-v1-scored-20261015.json).
+These small synthetic counts are diagnostic, not a statistical production claim.
+
 Offline replay requires exact originals and an exhaustive independent review:
 
 ```sh

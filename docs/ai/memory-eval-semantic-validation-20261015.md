@@ -52,3 +52,20 @@ authentication or database operation was reached. Its build/logs are retained.
 The pin-only helper now runs as the owning operator UID; the native runtime UID,
 read-only source, capabilities and model settings are unchanged. A new fresh root
 is used for subsequent preparation; the failed root is not reopened.
+
+The mandatory complete memory contract/CLI/schema target also passed on the
+executed Linux source `c8193fa7` with39 passes,0fail,0skip, network none:
+`/srv/storage/butler/agents/memory-eval-semantic-20261015/reports/semantic-contract-20261015T095051Z-2102875`.
+Local Windows acceptance tests passed; two unchanged legacy CLI fixtures failed
+the POSIX private-file mode guard. The deployed Linux target passed those same
+CLI tests. Windows private-file portability is not inferred from this lab run.
+
+The fresh 38-answer run was replayed offline with the independent review and the
+original frozen inputs/measurements. Exact bindings and source witnesses passed;
+the derived Go report reproduced 29 correct and 9 partial answers, with no failed
+or skipped entries. The per-arm complete counts are 4/12 no-memory, 12/12 oracle,
+11/12 ordinary retrieval and 2/2 repeated generation. Replay made no model,
+embedding or authentication calls. See the
+[independent review](../../testdata/acceptance/results/ru-memory-semantic-v1-review-20261015.json),
+[Go report](../../testdata/acceptance/results/ru-memory-semantic-v1-scored-20261015.json)
+and [original evidence audit](memory-eval-semantic-fresh-results-20261015.md).
