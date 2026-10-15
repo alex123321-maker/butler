@@ -178,6 +178,15 @@ reasons include `summary_below_threshold`, `summary_tail_protected`,
 `summary_source_too_large` and `summary_source_denied`. Consumer quality promotion
 is separate from the generic #82 and lifecycle #83 gates.
 
+The code-owned summary quality gate passed the complete three-compaction/six-run
+native comparison plus lifecycle and actual restore checks. Registration remains
+limited to native Flash High with exactly 32768 generated tokens, actual transport
+timeout at least 300s and matching finite output/model-time budget. Process flags
+remain default-off, and current owner policy and enabled PostgreSQL control remain
+necessary. Full foreground plus background cost exceeded the full-history
+baseline in this measured window; qualification is a continuity result, not a
+cost-reduction claim. See the [complete evidence](../testing/issue-84-verified-summaries.md).
+
 Apply migration 071 before starting the new binary, using the normal migrator.
 It extends the existing auxiliary queue and references the existing reservation
 ledger/catalog. No dependency or extra durable service is introduced.

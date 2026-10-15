@@ -66,8 +66,8 @@ owner policy. A removed session retains an unreadable snapshot guard rather than
 turning an orphan copy into current evidence.
 
 Production registration additionally requires the code-owned `ReleaseQualified`
-gate. The native three-compaction/six-continuation quality and complete-cost
-evidence is recorded in the [acceptance report](../../../docs/testing/issue-84-verified-summaries.md).
+gate, now passed for the exact profile above. The native three-compaction/six-continuation
+quality and complete-cost evidence is recorded in the [acceptance report](../../../docs/testing/issue-84-verified-summaries.md).
 Environment flags cannot bypass qualification or its actual provider/budget profile.
 
 Real PostgreSQL acceptance: `go test -race -count=1 ./internal/memory/compaction
