@@ -11,6 +11,9 @@ import (
 // authoritative for those runs too; deletion must erase their cached bodies
 // without waiting for a message edge. Identity and external-effect rows stay.
 func redactPinnedRunsTx(ctx context.Context, tx pgx.Tx, sources []string, deletionID string) error {
+	if err := redactRunToolPayloadsTx(ctx, tx, sources, deletionID); err != nil {
+		return err
+	}
 	queries := []string{
 		`UPDATE accepted_inputs SET event_json=jsonb_build_object('privacy_redacted',TRUE,'deletion_id',$2::TEXT,'event_id',event_id,'task_id',task_id),checkpoint_json=jsonb_build_object('privacy_redacted',TRUE),status=CASE WHEN status IN ('completed','failed','cancelled','expired') THEN status ELSE 'cancelled' END,claim_id='',claim_expires_at=NULL,error_code='privacy_redacted',error_message='',updated_at=clock_timestamp() WHERE run_id IN(SELECT run_id FROM memory_run_sources WHERE source_id=ANY($1))`,
 		`UPDATE runs SET metadata_json=jsonb_build_object('privacy_redacted',TRUE,'deletion_id',$2::TEXT) WHERE run_id IN(SELECT run_id FROM memory_run_sources WHERE source_id=ANY($1))`,

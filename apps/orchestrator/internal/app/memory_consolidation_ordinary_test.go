@@ -454,4 +454,25 @@ func TestConsolidationOrdinaryTaskReadsActivatedDATAIntegration(t *testing.T) {
 	if err = pool.QueryRow(ctx, `SELECT (SELECT count(*) FROM memory_model_attempts WHERE usage IS NOT NULL),(SELECT count(*) FROM execution_model_attempts WHERE observed_at IS NOT NULL),(SELECT count(*) FROM memory_run_sources)`).Scan(&background, &foreground, &pins); err != nil || background != 1 || foreground < 4 || pins < 6 {
 		t.Fatal("composed full ledger/source proof missing", background, foreground, pins, err)
 	}
+	// Actual Broker memory.open bytes have a primary Transcript tool copy too.
+	// Source privacy must erase that cache without falsifying confirmed effects,
+	// exact action identities or any already observed/unknown expenditure.
+	journalDigest := func() string {
+		var digest string
+		if err := pool.QueryRow(ctx, `SELECT encode(sha256(convert_to(jsonb_build_object('effects',(SELECT jsonb_agg(to_jsonb(e) ORDER BY action_id) FROM action_effects e),'evidence',(SELECT jsonb_agg(to_jsonb(e) ORDER BY evidence_id) FROM action_effect_evidence e),'foreground',(SELECT jsonb_agg(to_jsonb(e) ORDER BY operation_id) FROM execution_model_attempts e),'background',(SELECT jsonb_agg(to_jsonb(e) ORDER BY operation_id) FROM memory_model_attempts e),'reservations',(SELECT jsonb_agg(to_jsonb(r) ORDER BY reservation_id) FROM execution_budget_reservations r),'scopes',(SELECT jsonb_agg(to_jsonb(s) ORDER BY scope_id) FROM execution_budget_scopes s))::text,'UTF8')),'hex')`).Scan(&digest); err != nil {
+			t.Fatal(err)
+		}
+		return digest
+	}
+	before := journalDigest()
+	var copied int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM tool_calls WHERE result::text LIKE '%Исключение Б%'`).Scan(&copied); err != nil || copied == 0 {
+		t.Fatal("actual Broker tool copy absent before privacy control", copied, err)
+	}
+	if _, err := cat.Delete(owner, refs[0].ID, "delete", refs[0].Revision); err != nil {
+		t.Fatal("delete original after actual raw/view Broker reads", err)
+	}
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM tool_calls WHERE result::text LIKE '%Исключение Б%'`).Scan(&copied); err != nil || copied != 0 || before != journalDigest() {
+		t.Fatal("actual tool payload survived or journal/spending changed", copied, err)
+	}
 }

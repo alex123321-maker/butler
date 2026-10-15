@@ -1,5 +1,17 @@
 # Memory source catalog
 
+Migration079 closes cached tool/approval payloads under exact affected run pins.
+Delete/revoke and external-anchor reconciliation erase their args/results/errors
+and copied approval prose while preserving tool identity/status, confirmed or
+unknown effects, digests and charged attempts. A content-free irreversible run
+marker prevents late payload resurrection. Unrelated runs remain intact. The
+migration also sweeps already withdrawn/redacted runs of the same recorded owner;
+it neither renumbers the external deletion anchor nor reopens an old window.
+
+Actual read permission remains current after a historical lookup. A tool result
+is a primary Transcript cache, not a second permission to keep deleted source
+bytes. Existing release guards also protect late tool Transcript inserts.
+
 [Temporal memory](../../../docs/architecture/memory-temporal.md) versions owner
 validity interpretation separately from source EventTime/ingestion and existing
 head decisions. Typed accepted-fact reads cap a whole page at64, count unknown
