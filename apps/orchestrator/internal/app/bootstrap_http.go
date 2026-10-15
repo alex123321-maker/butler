@@ -134,7 +134,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 		parser.Pages = ingestion.NewPDFClient()
 	}
 	memoryCatalogServer := &apiservice.MemoryCatalogServer{Store: deps.sourceCatalog, Auth: deps.ownerAuth, Ingestion: &ingestion.Store{Catalog: deps.sourceCatalog, Parser: parser}, Indexing: deps.memoryIndexing, ModelJobs: deps.memoryModelStore, ModelWorkerConfigured: deps.memoryModelConfigured}
-	if deps.memoryModelConfigured && os.Getenv("BUTLER_MEMORY_SUMMARY_CONSUMER_ENABLED") == "true" {
+	if deps.memoryModelConfigured && os.Getenv("BUTLER_MEMORY_SUMMARY_CONSUMER_ENABLED") == "true" && compaction.ReleaseQualified {
 		memoryCatalogServer.SummaryPolicies = &compaction.Policies{Catalog: deps.sourceCatalog, Jobs: deps.memoryModelStore}
 	}
 	providerServer := apiservice.NewProviderServer(deps.authManager, deps.providerResult.ProviderName, map[string]string{

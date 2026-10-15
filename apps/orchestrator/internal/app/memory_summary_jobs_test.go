@@ -14,7 +14,7 @@ func TestSummaryConsumerRequiresBothExplicitGates(t *testing.T) {
 	for _, tc := range []struct {
 		worker, summary string
 		want            bool
-	}{{"false", "false", false}, {"true", "false", false}, {"false", "true", false}, {"true", "true", true}} {
+	}{{"false", "false", false}, {"true", "false", false}, {"false", "true", false}, {"true", "true", compaction.ReleaseQualified}} {
 		t.Run(tc.worker+"/"+tc.summary, func(t *testing.T) {
 			t.Setenv("BUTLER_MEMORY_MODEL_JOBS_ENABLED", tc.worker)
 			t.Setenv("BUTLER_MEMORY_SUMMARY_CONSUMER_ENABLED", tc.summary)

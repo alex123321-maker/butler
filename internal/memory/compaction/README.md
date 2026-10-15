@@ -55,6 +55,10 @@ access/privacy/graph changes and typed task/constraint revisions require fresh
 owner policy. A removed session retains an unreadable snapshot guard rather than
 turning an orphan copy into current evidence.
 
+Production registration additionally requires the code-owned `ReleaseQualified`
+gate. It currently remains false until native ordinary-task continuation and full
+cost evidence qualify the consumer; environment flags cannot bypass this gate.
+
 Real PostgreSQL acceptance: `go test -race -count=1 ./internal/memory/compaction
 ./internal/memory/summary ./internal/memory/jobs ./internal/memory/catalog`.
 The controlled provider is a transport fixture, not native Gemini quality proof.

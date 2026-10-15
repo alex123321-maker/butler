@@ -19,7 +19,7 @@ func configureModelJobs(c *catalog.Store, b *budget.Controller, p providerfactor
 	if os.Getenv("BUTLER_MEMORY_MODEL_QUOTE_PROBE_ENABLED") == "true" {
 		handlers["source-quote-v1"] = jobs.QuoteProbe{}
 	}
-	if os.Getenv("BUTLER_MEMORY_SUMMARY_CONSUMER_ENABLED") == "true" {
+	if os.Getenv("BUTLER_MEMORY_SUMMARY_CONSUMER_ENABLED") == "true" && compaction.ReleaseQualified {
 		contextBudget := 65536
 		if len(contextBudgets) > 0 {
 			contextBudget = contextBudgets[0]
