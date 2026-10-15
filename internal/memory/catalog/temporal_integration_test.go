@@ -134,8 +134,11 @@ func TestTemporalFreshnessExpiryPreservesHistoryAndOwnerDecisionIntegration(t *t
 	}
 	// Seed an actual previously recorded verification without a wall-clock wait.
 	// This fixture-only insert does not claim to prove Broker receipt admission.
-	_, err = s.pool.Exec(ctx, `INSERT INTO memory_claim_temporal_revisions(claim_id,revision,validity,freshness_class,verified_at,verification_basis,recorded_by) VALUES($1,2,'interval','technical_fact',clock_timestamp()-interval '25 hours','owner_statement','owner');UPDATE memory_claim_temporal_heads SET revision=2 WHERE claim_id=$1`, c.ID)
+	_, err = s.pool.Exec(ctx, `INSERT INTO memory_claim_temporal_revisions(claim_id,revision,validity,freshness_class,verified_at,verification_basis,recorded_by) VALUES($1,2,'interval','technical_fact',clock_timestamp()-interval '25 hours','owner_statement','owner')`, c.ID)
 	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.pool.Exec(ctx, `UPDATE memory_claim_temporal_heads SET revision=2 WHERE claim_id=$1`, c.ID); err != nil {
 		t.Fatal(err)
 	}
 	page = temporalRead(t, s, ctx, []string{c.ID}, TemporalQuery{})

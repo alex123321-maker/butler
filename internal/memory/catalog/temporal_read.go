@@ -174,9 +174,69 @@ func (s *Store) BindAcceptedFactPinsTx(ctx context.Context, tx pgx.Tx, derivedSo
 	if _, err := s.AccessTx(ctx, tx, []SourceRef{{ID: derivedSourceID}}, "memory_read"); err != nil {
 		return err
 	}
+	return bindTemporalPinsTx(ctx, tx, derivedSourceID, pins, q)
+}
+
+// BindNewAcceptedFactPinsTx handles only a freshly created immutable derivative
+// in this exact transaction. It proves the original parents using the existing
+// caller/job authority; the new child never becomes a caller-selectable read or
+// owner identity. Quarantine remains enforced by ordinary access until activation.
+func (s *Store) BindNewAcceptedFactPinsTx(ctx context.Context, tx pgx.Tx, derived Source, parents []SourceRef, pins []AcceptedFactPin, q TemporalQuery) error {
+	if tx == nil || len(parents) == 0 || len(parents) > 64 || len(pins) == 0 || derived.Kind != "model_candidate" || derived.Revision != 1 || derived.AccessRevision != 1 || (derived.Status != "active" && derived.Status != "quarantined") {
+		return ErrInvalid
+	}
+	for _, p := range parents {
+		if p.ID == "" || p.Revision < 1 || p.AccessRevision < 1 || len(p.Hash) != 64 {
+			return ErrInvalid
+		}
+	}
+	current, err := s.AccessTx(ctx, tx, parents, "memory_read")
+	if err != nil {
+		return err
+	}
+	byID := map[string]Source{}
+	for _, src := range current {
+		byID[src.ID] = src
+	}
+	anchor, ok := byID[parents[0].ID]
+	if !ok || derived.OwnerID != anchor.OwnerID || derived.ScopeType != anchor.ScopeType || derived.ScopeID != anchor.ScopeID {
+		return ErrDenied
+	}
+	if err = s.CheckAcceptedFactPinsTx(ctx, tx, pins, q); err != nil {
+		return err
+	}
+	// Both rows must have been created in this transaction, not just updated.
+	// xmin is 32-bit while pg_current_xact_id includes the wraparound epoch.
+	var fresh bool
+	err = tx.QueryRow(ctx, `SELECT s.xmin::text::numeric=mod(pg_current_xact_id()::text::numeric,4294967296) AND v.xmin::text::numeric=mod(pg_current_xact_id()::text::numeric,4294967296) AND s.created_at>=transaction_timestamp() AND v.extracted_at>=transaction_timestamp() AND s.source_kind='model_candidate' AND s.external_key='derived:'||s.source_id AND s.head_revision=1 AND s.access_revision=1 AND s.status=$2 AND s.owner_id=$3 AND s.scope_type=$4 AND s.scope_id=$5 AND v.content_hash=$6 FROM memory_sources s JOIN memory_source_revisions v ON v.source_id=s.source_id AND v.revision=1 WHERE s.source_id=$1`, derived.ID, derived.Status, derived.OwnerID, derived.ScopeType, derived.ScopeID, derived.Hash).Scan(&fresh)
+	if err != nil {
+		return err
+	}
+	if !fresh {
+		return ErrDenied
+	}
+	var exact bool
+	err = tx.QueryRow(ctx, `WITH p AS(SELECT * FROM jsonb_to_recordset($2::jsonb) AS x(source_id text,revision bigint,access_revision bigint,content_hash text)),d AS(SELECT parent_source_id,parent_revision FROM memory_source_dependencies WHERE child_source_id=$1) SELECT (SELECT count(*) FROM d)=(SELECT count(*) FROM p) AND NOT EXISTS(SELECT 1 FROM d LEFT JOIN p ON p.source_id=d.parent_source_id AND p.revision=d.parent_revision WHERE p.source_id IS NULL)`, derived.ID, mustJSON(parents)).Scan(&exact)
+	if err != nil {
+		return err
+	}
+	if !exact {
+		return ErrStale
+	}
+	return bindTemporalPinsTx(ctx, tx, derived.ID, pins, q)
+}
+
+func bindTemporalPinsTx(ctx context.Context, tx pgx.Tx, derivedSourceID string, pins []AcceptedFactPin, q TemporalQuery) error {
 	for _, p := range pins {
 		if _, err := tx.Exec(ctx, `INSERT INTO memory_temporal_source_pins(derived_source_id,claim_id,head_revision,active_id,temporal_revision,original_source_id,source_revision,access_revision,content_hash,metadata_hash,freshness_status,current_usable,valid_at,known_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) ON CONFLICT DO NOTHING`, derivedSourceID, p.ClaimID, p.HeadRevision, p.ActiveID, p.TemporalRevision, p.Source.ID, p.Source.Revision, p.Source.AccessRevision, p.Source.Hash, p.MetadataHash, p.FreshnessStatus, p.CurrentUsable, q.ValidAt, q.KnownAt); err != nil {
 			return err
+		}
+		var same bool
+		if err := tx.QueryRow(ctx, `SELECT head_revision=$3 AND active_id=$4 AND temporal_revision=$5 AND original_source_id=$6 AND source_revision=$7 AND access_revision=$8 AND content_hash=$9 AND metadata_hash=$10 AND freshness_status=$11 AND current_usable=$12 AND valid_at IS NOT DISTINCT FROM $13::timestamptz AND known_at IS NOT DISTINCT FROM $14::timestamptz FROM memory_temporal_source_pins WHERE derived_source_id=$1 AND claim_id=$2`, derivedSourceID, p.ClaimID, p.HeadRevision, p.ActiveID, p.TemporalRevision, p.Source.ID, p.Source.Revision, p.Source.AccessRevision, p.Source.Hash, p.MetadataHash, p.FreshnessStatus, p.CurrentUsable, q.ValidAt, q.KnownAt).Scan(&same); err != nil {
+			return err
+		}
+		if !same {
+			return ErrStale
 		}
 	}
 	var current bool
