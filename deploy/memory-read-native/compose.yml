@@ -1,0 +1,145 @@
+name: butler-issue86-native
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    pull_policy: never
+    environment:
+      POSTGRES_USER: butler
+      POSTGRES_DB: memory_read_native_test
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes: ["${ISSUE86_ROOT:?}/postgres:/var/lib/postgresql/data"]
+    networks: [private]
+    mem_limit: 512m
+    cpus: 1
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U butler -d memory_read_native_test"]
+      interval: 2s
+      retries: 30
+  redis:
+    image: redis:7.4-alpine
+    pull_policy: never
+    networks: [private]
+    mem_limit: 128m
+    cpus: 0.5
+  build:
+    image: golang:1.27.2-bookworm
+    pull_policy: never
+    working_dir: /src
+    environment:
+      GOCACHE: /cache/go-build
+      GOTMPDIR: /cache/go-tmp
+      GOMODCACHE: /gomod
+      GOPROXY: 'off'
+      GOSUMDB: 'off'
+      GOTOOLCHAIN: local
+    volumes:
+      - ${ISSUE86_ROOT:?}/current:/src:ro
+      - ${ISSUE86_ROOT:?}/.cache:/cache
+      - /srv/storage/butler/.cache/go-mod:/gomod:ro
+      - ${ISSUE86_ROOT:?}/bin:/bin-output
+    networks: [private]
+    mem_limit: 2g
+    cpus: 2
+  migrate:
+    image: golang:1.27.2-bookworm
+    pull_policy: never
+    entrypoint: [/bin-output/migrator]
+    environment:
+      BUTLER_POSTGRES_URL: postgres://butler@postgres:5432/memory_read_native_test?sslmode=disable
+      BUTLER_POSTGRES_MIGRATIONS_DIR: /src/migrations
+    volumes:
+      - ${ISSUE86_ROOT:?}/current:/src:ro
+      - ${ISSUE86_ROOT:?}/bin:/bin-output:ro
+    networks: [private]
+    depends_on:
+      postgres: {condition: service_healthy}
+  orchestrator:
+    image: golang:1.27.2-bookworm
+    pull_policy: never
+    working_dir: /src
+    entrypoint: [/bin-output/orchestrator]
+    env_file: ["${ISSUE86_ROOT:?}/private/native.env"]
+    environment:
+      BUTLER_POSTGRES_URL: postgres://butler@postgres:5432/memory_read_native_test?sslmode=disable
+      BUTLER_POSTGRES_MIGRATIONS_DIR: /src/migrations
+      BUTLER_POSTGRES_MAX_CONNS: '4'
+      BUTLER_POSTGRES_MIN_CONNS: '2'
+      BUTLER_REDIS_URL: redis://redis:6379/0
+      BUTLER_OWNER_CONTROL_TOKEN_FILE: /private/owner.token
+      BUTLER_OWNER_CONTROL_OWNER_ID: issue86-owner
+      BUTLER_ACTION_AUTHORITY_TOKEN_FILE: /private/action.token
+      BUTLER_MEMORY_DELETION_MANIFEST_FILE: /private/deletions.log
+      BUTLER_MEMORY_READ_ENABLED: 'true'
+      BUTLER_MEMORY_PIPELINE_ENABLED: 'false'
+      BUTLER_MEMORY_MODEL_JOBS_ENABLED: 'false'
+      BUTLER_MEMORY_SEMANTIC_ENABLED: 'false'
+      BUTLER_MODEL_PROVIDER: antigravity
+      BUTLER_ANTIGRAVITY_MODEL: gemini-3.8-flash-high
+      BUTLER_OPENAI_TIMEOUT_SECONDS: '300'
+      BUTLER_AUTONOMY_MODE: mode_0
+      BUTLER_TOOL_BROKER_ADDR: tool-broker:9090
+      BUTLER_TELEGRAM_BOT_TOKEN: ''
+      HTTPS_PROXY: http://native-proxy:18080
+      HTTP_PROXY: ''
+      ALL_PROXY: ''
+      NO_PROXY: localhost,127.0.0.1,postgres,redis,tool-broker,orchestrator
+      # Normal finite product defaults (64 task turns); no small lab call cap.
+      BUTLER_EXECUTION_BUDGET_POLICY_JSON: '{"model_millis":300000,"models":{"antigravity:gemini-3.8-flash-high":{"basis":"subscription_no_overage"}}}'
+    volumes:
+      - ${ISSUE86_ROOT:?}/current:/src:ro
+      - ${ISSUE86_ROOT:?}/bin:/bin-output:ro
+      - ${ISSUE86_ROOT:?}/private:/private
+    networks: [private, proxy-egress]
+    ports: [127.0.0.1:18686:8080]
+    mem_limit: 768m
+    cpus: 1
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_started}
+      tool-broker: {condition: service_started}
+      native-proxy: {condition: service_started}
+  tool-broker:
+    image: golang:1.27.2-bookworm
+    pull_policy: never
+    working_dir: /src
+    entrypoint: [/bin-output/tool-broker]
+    environment:
+      BUTLER_POSTGRES_URL: postgres://butler@postgres:5432/memory_read_native_test?sslmode=disable
+      BUTLER_TOOL_REGISTRY_PATH: /src/configs/tools.json
+      BUTLER_ACTION_CONTEXT_URL: http://orchestrator:8080/internal/action-context
+      BUTLER_ACTION_AUTHORITY_TOKEN_FILE: /private/action.token
+      BUTLER_MEMORY_DELETION_MANIFEST_FILE: /private/deletions.log
+      BUTLER_MEMORY_READ_ENABLED: 'true'
+      BUTLER_MEMORY_READ_CONTROL_URL: http://orchestrator:8080/internal/memory-read
+      BUTLER_EXECUTION_BUDGET_POLICY_JSON: '{"model_millis":300000,"models":{"antigravity:gemini-3.8-flash-high":{"basis":"subscription_no_overage"}}}'
+    volumes:
+      - ${ISSUE86_ROOT:?}/current:/src:ro
+      - ${ISSUE86_ROOT:?}/bin:/bin-output:ro
+      - ${ISSUE86_ROOT:?}/private:/private:ro
+    networks: [private]
+    mem_limit: 512m
+    cpus: 1
+    depends_on:
+      postgres: {condition: service_healthy}
+  native-proxy:
+    image: alpine:3.21
+    pull_policy: never
+    user: '10001:10001'
+    entrypoint: [/usr/local/bin/xray, run, -config, /private/xray.json]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - /home/laba/proxy/xray:/usr/local/bin/xray:ro
+      - /srv/storage/butler/private-proxy/container-xray.json:/private/xray.json:ro
+    networks: [private, proxy-egress]
+    mem_limit: 128m
+    cpus: 0.5
+networks:
+  private:
+    internal: true
+    ipam:
+      config: [{subnet: 10.237.186.0/28}]
+  proxy-egress:
+    ipam:
+      config: [{subnet: 10.237.187.0/28}]
