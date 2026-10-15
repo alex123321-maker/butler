@@ -14,7 +14,7 @@ mkdir -p "$proof"
 pg=butler-issue85-postgres
 # createdb refuses existing identities; never reset historical/native budgets.
 for database in butler_temporal_backup_test butler_temporal_restore_test; do
- docker exec "$pg" createdb -U butler "$database"
+ docker exec "$pg" createdb -h 127.0.0.1 -p 18585 -U butler "$database"
 done
 find "$src" -type f -print0 | sort -z | xargs -0 sha256sum > "$proof/source.sha256"
 run_phase() {
@@ -31,10 +31,10 @@ run_phase() {
   -run '^TestActualPostgresTemporalDumpRestoreDeletionIntegration$' ./internal/memory/catalog > "$proof/$phase.jsonl" 2>&1
 }
 run_phase seed butler_temporal_backup_test
-docker exec "$pg" pg_dump -U butler -Fc butler_temporal_backup_test > "$proof/before-deletion.dump"
+docker exec "$pg" pg_dump -h 127.0.0.1 -p 18585 -U butler -Fc butler_temporal_backup_test > "$proof/before-deletion.dump"
 test -s "$proof/before-deletion.dump"
 run_phase delete butler_temporal_backup_test
-docker exec -i "$pg" pg_restore -U butler --exit-on-error -d butler_temporal_restore_test < "$proof/before-deletion.dump"
+docker exec -i "$pg" pg_restore -h 127.0.0.1 -p 18585 -U butler --exit-on-error -d butler_temporal_restore_test < "$proof/before-deletion.dump"
 run_phase restore butler_temporal_restore_test
 for phase in seed delete restore; do
  jq -s -e 'any(.[];.Action=="pass" and .Test=="TestActualPostgresTemporalDumpRestoreDeletionIntegration") and all(.[];.Action!="fail" and .Action!="build-fail" and .Action!="skip")' "$proof/$phase.jsonl" >/dev/null
