@@ -87,6 +87,14 @@ func newCandidateFixture(t *testing.T) *candidateFixture {
 	if e := m.Initialize(); e != nil {
 		t.Fatal(e)
 	}
+	return newCandidateFixtureWithPool(t, pool, m)
+}
+
+// The phased backup test supplies its own dedicated database and the same
+// independent manifest before and after pg_restore. Never initialize/reconcile
+// a caller-owned anchor here: old restored state must first fail closed.
+func newCandidateFixtureWithPool(t *testing.T, pool *pgxpool.Pool, m catalog.Manifest) *candidateFixture {
+	t.Helper()
 	c := catalog.New(pool, m)
 	b := budget.NewController(pool, budget.DefaultPolicy())
 	b.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)

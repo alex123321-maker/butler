@@ -82,3 +82,12 @@ document select the correct leaf, preserve scope and invalidate accepted context
 after an ancestor correction. `TestCandidateLifecyclePoisonRemainsDataAndDeletionSelectiveIntegration`
 uses all eight shared #83 attacks; `TestCandidateAtomicConsumerRollbackIntegration`
 proves claim/result checkpoint atomicity, retaining the paid failed observation.
+
+The new accepted episodic projection additionally requires the actual phased
+[`candidate episode backup/restore gate`](../../../docs/testing/issue-85-episode-backup.md).
+It seeds real controlled candidate-worker output and owner HTTP acceptance,
+backs up before deletion, restores into a fresh database and replays the newest
+private independent deletion anchor. The episode/claim/result must be erased or
+denied while an unrelated accepted episode and every paid observation survive.
+An ordinary package skip and the older profile-only restore fixture do not
+satisfy this gate. This storage proof does not qualify native extraction quality.

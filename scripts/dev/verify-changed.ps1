@@ -55,6 +55,13 @@ foreach ($file in $files) {
       [void]$tests.Add("SSH laba: real isolated PostgreSQL/race ./internal/memory/compaction and TestOrdinaryTaskContinuationAcrossRepeatedCompactionIntegration in ./apps/orchestrator/internal/app; exact primary coverage, all-eight lifecycle corpus, original-ancestor privacy and repeated ordinary foreground continuation. Native quality/cost comparison remains a separate gate.")
       continue
     }
+    "^(apps/orchestrator/internal/api/memory_candidates_backup_integration_test[.]go$|scripts/dev/memory-candidate-backup-lab[.]sh$)" {
+      [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
+      [void]$specs.Add("docs/architecture/background-memory-jobs.md")
+      [void]$specs.Add("docs/ai/memory-lifecycle-acceptance.md")
+      [void]$tests.Add("SSH laba: scripts/dev/memory-candidate-backup-lab.sh isolated issue83 root fresh-label; real three-phase PG/race custom dump BEFORE deletion, fresh restore/newest anchor double replay, actual candidate ModelWorker+owner HTTP accepted episodes, physical erasure/denial with unrelated decision and observed paid attempts retained. No native calls or skips.")
+      continue
+    }
     "^(internal/memory/candidates/|apps/orchestrator/internal/(api/memory_candidates|app/memory_candidates)|migrations/073_|scripts/dev/memory-candidates-)" {
       [void]$specs.Add("docs/architecture/background-memory-jobs.md")
       [void]$specs.Add("docs/architecture/versioned-memory-sources.md")
