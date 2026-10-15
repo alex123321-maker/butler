@@ -27,3 +27,15 @@ The policy and evaluation protocol are being implemented; this README is not a
 passing production/native quality or cost receipt. Activation on main remains
 separate #92 work. Independent quality/cost comparison and the applicable #83
 lifecycle gate must pass before reviewed code can qualify this consumer.
+
+The optional consumer creates no accepted fact, copied source/snapshot text,
+summary, cache or index generation. Its only new durable rows hold bounded
+metadata, hashes and exact source/range refs. Those receipts are not read
+capabilities: a reconstructed verifier must re-open Catalog under current
+source/parent/privacy/restore authority and actual immutable Broker evidence.
+The existing actual old-backup/newest-anchor Catalog gate remains mandatory;
+there is no new unparented text projection requiring a separate erasure path.
+Provider/task/source release guards, approved source scopes and the existing
+background index lifecycle remain authoritative. Run the controlled actual
+PG/Broker consumer gate with scripts/dev/memory-adaptive-lab.sh; passing it is
+not the independently measured adoption/NO_GO result.

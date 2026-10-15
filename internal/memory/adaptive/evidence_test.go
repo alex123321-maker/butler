@@ -44,3 +44,45 @@ func TestPlanRejectsCorruptOrExpandedStoredBounds(t *testing.T) {
 		}
 	}
 }
+
+func TestAdaptiveBrokerResultDigestPreservesEveryFieldAndNumber(t *testing.T) {
+	a, err := brokerResultDigest([]byte(`{"text":"α","count":9007199254740993,"locator":{"timestamp":"T"}}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := brokerResultDigest([]byte(`{"locator":{"timestamp":"T"},"count":9007199254740993,"text":"α"}`))
+	if err != nil || a != b {
+		t.Fatal("key-order changed proof", err)
+	}
+	for _, raw := range []string{`{"text":"α","count":9007199254740992,"locator":{"timestamp":"T"}}`, `{"text":"α","count":9007199254740993,"locator":{"timestamp":"U"}}`} {
+		c, err := brokerResultDigest([]byte(raw))
+		if err != nil || c == a {
+			t.Fatal("result evidence removed", err)
+		}
+	}
+}
+
+func TestAdaptivePublicReferenceSyntaxCannotInventCitations(t *testing.T) {
+	a := Answer{Answer: "Supported [1]. URL https://example.test/path.", Citations: []Citation{{Claim: "One", Quote: "URL https://example.test/path"}}}
+	if err := checkReferenceSyntax(a); err != nil {
+		t.Fatal(err)
+	}
+	for _, text := range []string{"Invented [2]", "Invented [0]", "Invented [1,2]", "[label](https://example.test/path)", "[label] (https://example.test/path)", "URL https://example.test/else", "URL https://example.test/path.evil"} {
+		bad := a
+		bad.Answer = text
+		if checkReferenceSyntax(bad) == nil {
+			t.Fatalf("accepted %s", text)
+		}
+	}
+	for _, text := range []string{"source_unopened", "read_unopened", "message:unopened"} {
+		bad := a
+		bad.Answer = text
+		if checkPublicHandles(bad, map[string]bool{}) == nil {
+			t.Fatal("undeclared handle", text)
+		}
+	}
+	a.Answer = "source_opened read_opened message:opened"
+	if err := checkPublicHandles(a, map[string]bool{"source_opened": true, "read_opened": true, "message:opened": true}); err != nil {
+		t.Fatal(err)
+	}
+}

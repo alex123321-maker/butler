@@ -21,3 +21,19 @@ func TestTransparentIntentAndReportedTimeNeverCreatesHistoricalValidity(t *testi
 		}
 	}
 }
+
+func TestReportedWindowRejectsPartialOrExclusiveDateSemantics(t *testing.T) {
+	for _, q := range []string{"Вспомни записи с 5 по 10 сентября 2025", "Вспомни записи до сентября 2025", "Вспомни записи после 2025-09-01", "Вспомни записи в начале сентября 2025", "Вспомни записи 2025-09-01T14:25:00Z", "Вспомни записи с сентября 2025", "Вспомни записи с 2025-09-01 до 2025-09-10", "Вспомни записи между 2025-09-01 и 2025-09-10"} {
+		p := Classify(q)
+		if p.EventFrom != "" || p.EventUntil != "" {
+			t.Fatalf("widened partial date %q: %+v", q, p)
+		}
+		found := false
+		for _, r := range p.Reasons {
+			found = found || r == "time_needs_clarification"
+		}
+		if !found {
+			t.Fatalf("missing explicit uncertainty %q: %+v", q, p)
+		}
+	}
+}

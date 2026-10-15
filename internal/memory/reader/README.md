@@ -22,4 +22,3 @@ filter and server-derived semantic candidates. EventTime is not historical
 validity. Candidate source/current-chunk refs are reauthorized through Catalog
 in the owning read transaction; semantic IPC is outside it. Search remains
 discovery and receives no opened read_ref. Production qualification remains off.
-

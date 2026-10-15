@@ -136,7 +136,12 @@ func (s *Store) CheckProposal(ctx context.Context, runID, tool, raw string) erro
 	if err != nil {
 		return err
 	}
-	if !p.SearchEnabled() || !deadline.IsZero() && !time.Now().Before(deadline) {
+	var calls, searches, returned int
+	var now time.Time
+	if err = tx.QueryRow(ctx, `SELECT calls,searches,returned_bytes,clock_timestamp() FROM memory_retrieval_plans WHERE run_id=$1`, runID).Scan(&calls, &searches, &returned, &now); err != nil {
+		return err
+	}
+	if !p.SearchEnabled() || calls >= p.MaxCalls || tool == readcontrol.Search && searches >= p.MaxSearches || returned >= p.MaxResponseBytes || !deadline.IsZero() && !now.Before(deadline) {
 		return ErrBound
 	}
 	if tool == readcontrol.Search && !p.accepts(a) {
@@ -243,6 +248,14 @@ func (s *Store) ObserveTx(ctx context.Context, tx pgx.Tx, e readcontrol.Envelope
 	if err != nil {
 		return err
 	}
+	// The permanent Broker's credential boundary decodes/re-encodes JSON maps
+	// even for secret-free memory reads. Bind the exact representation it will
+	// confirm, rather than the owning struct's declaration-key order. No field
+	// is removed and numbers retain their spelling.
+	confirmedHash, err := brokerResultDigest(raw)
+	if err != nil {
+		return err
+	}
 	var used int
 	if err = tx.QueryRow(ctx, `SELECT returned_bytes FROM memory_retrieval_plans WHERE run_id=$1`, e.RunID).Scan(&used); err != nil {
 		return err
@@ -250,7 +263,7 @@ func (s *Store) ObserveTx(ctx context.Context, tx pgx.Tx, e readcontrol.Envelope
 	if used+len(raw) > p.MaxResponseBytes {
 		return ErrBound
 	}
-	tag, err := tx.Exec(ctx, `UPDATE memory_retrieval_operations SET state='observed',result_status=$2,returned_bytes=$3,result_hash=$4 WHERE effect_id=$1 AND run_id=$5 AND tool_call_id=$6 AND args_hash=$7 AND state='reserved'`, e.EffectID, out.Status, len(raw), Digest(raw), e.RunID, e.ToolCallID, Digest([]byte(e.ArgsJSON)))
+	tag, err := tx.Exec(ctx, `UPDATE memory_retrieval_operations SET state='observed',result_status=$2,returned_bytes=$3,result_hash=$4 WHERE effect_id=$1 AND run_id=$5 AND tool_call_id=$6 AND args_hash=$7 AND state='reserved'`, e.EffectID, out.Status, len(raw), confirmedHash, e.RunID, e.ToolCallID, Digest([]byte(e.ArgsJSON)))
 	if err != nil {
 		return err
 	}
@@ -259,4 +272,18 @@ func (s *Store) ObserveTx(ctx context.Context, tx pgx.Tx, e readcontrol.Envelope
 	}
 	_, err = tx.Exec(ctx, `UPDATE memory_retrieval_plans SET returned_bytes=returned_bytes+$2 WHERE run_id=$1`, e.RunID, len(raw))
 	return err
+}
+
+func brokerResultDigest(raw []byte) (string, error) {
+	var value any
+	d := json.NewDecoder(bytes.NewReader(raw))
+	d.UseNumber()
+	if err := d.Decode(&value); err != nil {
+		return "", err
+	}
+	canonical, err := json.Marshal(value)
+	if err != nil {
+		return "", err
+	}
+	return Digest(canonical), nil
 }

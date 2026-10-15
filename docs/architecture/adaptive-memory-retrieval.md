@@ -58,3 +58,14 @@ requires memory reads. Isolated tests explicitly compose the production Store,
 ordinary Flow and actual Broker while qualification remains false. The native
 freeze must bind source/binary/corpus/control hashes and finite prospective
 capacity for every original arm; failed originals and unknown spend are retained.
+
+The lexical intent gate is deliberately incomplete: an implicit recall question
+without a recognized history/document/identifier cue can be classified as
+independent. This limitation is measured on the independently authored frozen
+holdout; it is not repaired using observed holdout answers. Whole-day/month
+filters are conservative: partial day ranges, clock times, exclusive bounds and
+ambiguous named-month prose carry an explicit clarification reason with no
+invented wider range. Plain URLs in public output must exactly match a URL token
+in declared opened quotes; Markdown links are unsupported, numeric [n] requires
+a declared citation, and physical handles must belong to verified opened refs.
+These syntax checks do not claim entailment or permit navigation.

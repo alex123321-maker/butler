@@ -1,6 +1,6 @@
 # Broker memory reads
 
-`memory.search`, `memory.open` and `memory.neighbors` are fixed owned revision1
+`memory.search`, `memory.open` and `memory.neighbors` are fixed owned revision2
 contracts. They are registered programmatically by Broker only when the operator
 enables `BUTLER_MEMORY_READ_ENABLED` in both services. The private Broker URL must
 end in `/internal/memory-read` and use the existing action service token. The
@@ -11,7 +11,7 @@ never use an egress proxy or follow redirects. Database
 settings cannot enable this topology. No credentials are supported in arguments.
 
 Search uses the existing PostgreSQL source/fragment catalog, with same-owner
-current session/user/task scopes and exact current source grants. Version1 uses
+current session/user/task scopes and exact current source grants. The default path uses
 `simple` full-text lookup (`strategy=catalog_exact`), independent of vector index
 availability. It has no automatic cloud query, embedding call or external fetch.
 Original source scanning is limited to the first65,536 Unicode characters; current bounded fragments remain searchable. Large originals set truncated=true even with an empty result, so an incomplete scan cannot claim evidence absence. Semantic/adaptive ranking and scale qualification remain separate milestones.
@@ -59,3 +59,12 @@ Run `bash scripts/dev/memory-read-lab.sh` on laba after copying the current sour
 snapshot to the task's isolated `current` directory. It uses existing images and
 cached modules offline, disposable PostgreSQL, actual Broker executable and
 mandatory no-skip gates. Historical native windows are not evidence for this code.
+
+Revision2 adds strategy=semantic_hybrid only through the explicitly composed
+adaptive consumer, plus reported event_from/event_until UTC bounds. Legacy
+composition denies these opt-in arguments. The existing guarded local semantic
+reader runs outside the owning read transaction; every returned chunk ID and
+revision is reauthorized again. Only an actual successful open/neighbors receives
+a read_ref in adaptive composition; search snippets never do. Optional temporal
+accepted-claim observations from #88 are separate from source EventTime/current
+revision and are capped at64 per response. See ../adaptive/README.md.

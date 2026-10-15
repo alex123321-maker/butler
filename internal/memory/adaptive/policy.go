@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode"
 )
 
 const Version = "adaptive-retrieval-v1"
@@ -35,7 +36,8 @@ func Digest(raw []byte) string {
 }
 
 var identifier = regexp.MustCompile(`(?:source_[0-9a-f]{64}|message:[^\s"']{1,160}|[\pL][\pL\pN]*[._/#:-][\pL\pN._/#:-]*[\pL\pN]|[A-ZА-Я]{1,12}[0-9][A-ZА-Я0-9_-]{0,80})`)
-var dates = regexp.MustCompile(`\b[0-9]{4}-[0-9]{2}-[0-9]{2}\b`)
+var dates = regexp.MustCompile(`[0-9]{4}-[0-9]{2}-[0-9]{2}`)
+var dateClock = regexp.MustCompile(`[0-9]{4}-[0-9]{2}-[0-9]{2}[tT ]+[0-9]{1,2}`)
 var year = regexp.MustCompile(`\b(?:19|20)[0-9]{2}\b`)
 
 func hasAny(s string, words ...string) bool {
@@ -91,7 +93,15 @@ func Classify(message string) Plan {
 func reportedWindow(q string) (string, string, bool, bool) {
 	values := dates.FindAllString(q, 3)
 	if len(values) > 0 {
-		if len(values) > 2 {
+		// This policy understands complete UTC days, not partial-day clocks,
+		// exclusive boundaries, relative periods or arbitrary date prose.
+		if len(values) > 2 || partialPeriod(q) || strings.Contains(q, ":") || dateClock.MatchString(q) {
+			return "", "", true, false
+		}
+		if len(values) == 2 && !(strings.Contains(q, "с "+values[0]+" по "+values[1]) || strings.Contains(q, "from "+values[0]+" through "+values[1])) {
+			return "", "", true, false
+		}
+		if len(values) == 1 && (strings.Contains(q, "с "+values[0]) || strings.Contains(q, "from "+values[0])) {
 			return "", "", true, false
 		}
 		from, err := time.Parse("2006-01-02", values[0])
@@ -109,12 +119,24 @@ func reportedWindow(q string) (string, string, bool, bool) {
 		return from.Format(time.RFC3339), until.Format(time.RFC3339), true, true
 	}
 	months := []string{"январ", "феврал", "март", "апрел", "мае", "июн", "июл", "август", "сентябр", "октябр", "ноябр", "декабр"}
+	monthCount := 0
+	for _, month := range months {
+		if strings.Contains(q, month) {
+			monthCount++
+		}
+	}
 	for i, month := range months {
 		if !strings.Contains(q, month) {
 			continue
 		}
 		y := year.FindAllString(q, 2)
-		if len(y) != 1 {
+		if len(y) != 1 || monthCount != 1 || partialPeriod(q) || strings.Contains(q, "с "+month) {
+			return "", "", true, false
+		}
+		// Any additional digit can be a day/day-range/time. Do not silently
+		// widen it into the entire named month. Ambiguity remains explicit.
+		withoutYear := strings.Replace(q, y[0], "", 1)
+		if strings.IndexFunc(withoutYear, unicode.IsDigit) >= 0 {
 			return "", "", true, false
 		}
 		from, err := time.Parse("2006-01-02", y[0]+"-01-01")
@@ -125,6 +147,10 @@ func reportedWindow(q string) (string, string, bool, bool) {
 		return from.Format(time.RFC3339), from.AddDate(0, 1, 0).Format(time.RFC3339), true, true
 	}
 	return "", "", false, false
+}
+
+func partialPeriod(q string) bool {
+	return hasAny(q, "до ", "после ", "раньше ", "позже ", "начиная ", "включ", "исключ", "половин", "начале ", "конце ", "середин", "недел", "before ", "after ", "since ", "until ", "except ")
 }
 
 func (p Plan) SearchEnabled() bool { return p.Strategy != "none" }

@@ -978,4 +978,3 @@ The default-off bounded read plan, metadata-only opened receipts, current source
 guards and independent adoption/NO_GO protocol are specified in
 [adaptive memory retrieval](adaptive-memory-retrieval.md). This does not qualify
 the consumer or activate main; current scoped accepted preferences remain loaded.
-

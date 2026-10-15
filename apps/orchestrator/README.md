@@ -898,4 +898,3 @@ BUTLER_MEMORY_ADAPTIVE_RETRIEVAL_ENABLED defaults false; flags cannot bypass the
 qualification constant. Explicit isolated composition uses the existing ordinary
 Flow and Broker, preserves scoped accepted preferences and verifies actual opened
 current evidence before release. See docs/architecture/adaptive-memory-retrieval.md.
-
