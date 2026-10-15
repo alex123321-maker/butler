@@ -37,3 +37,18 @@ func TestReportedWindowRejectsPartialOrExclusiveDateSemantics(t *testing.T) {
 		}
 	}
 }
+
+func TestReportedMonthRequiresCalendarWordNotTechnicalName(t *testing.T) {
+	for _, q := range []string{"Вспомни наш смарт-контракт 2025", "Вспомни записи проекта Мартин за 2025"} {
+		p := Classify(q)
+		if p.Intent == "reported_time" || p.EventFrom != "" || p.EventUntil != "" {
+			t.Fatalf("invented calendar from technical name %q: %+v", q, p)
+		}
+	}
+	for _, q := range []string{"Вспомни записи в мае 2025", "Вспомни записи за май 2025"} {
+		p := Classify(q)
+		if p.EventFrom != "2025-05-01T00:00:00Z" || p.EventUntil != "2025-06-01T00:00:00Z" {
+			t.Fatalf("month inflection %q: %+v", q, p)
+		}
+	}
+}

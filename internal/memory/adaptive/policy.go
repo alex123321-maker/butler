@@ -118,19 +118,11 @@ func reportedWindow(q string) (string, string, bool, bool) {
 		}
 		return from.Format(time.RFC3339), until.Format(time.RFC3339), true, true
 	}
-	months := []string{"январ", "феврал", "март", "апрел", "мае", "июн", "июл", "август", "сентябр", "октябр", "ноябр", "декабр"}
-	monthCount := 0
-	for _, month := range months {
-		if strings.Contains(q, month) {
-			monthCount++
-		}
-	}
-	for i, month := range months {
-		if !strings.Contains(q, month) {
-			continue
-		}
+	months := []string{"январ", "феврал", "март", "апрел", "ма", "июн", "июл", "август", "сентябр", "октябр", "ноябр", "декабр"}
+	indices := namedMonths(q)
+	for i := range indices {
 		y := year.FindAllString(q, 2)
-		if len(y) != 1 || monthCount != 1 || partialPeriod(q) || strings.Contains(q, "с "+month) {
+		if len(y) != 1 || len(indices) != 1 || partialPeriod(q) || strings.Contains(q, "с "+months[i]) {
 			return "", "", true, false
 		}
 		// Any additional digit can be a day/day-range/time. Do not silently
@@ -147,6 +139,36 @@ func reportedWindow(q string) (string, string, bool, bool) {
 		return from.Format(time.RFC3339), from.AddDate(0, 1, 0).Format(time.RFC3339), true, true
 	}
 	return "", "", false, false
+}
+
+// Only complete calendar words count. Substring stems would misclassify
+// technical names such as смарт-контракт or a person named Мартин as March.
+func namedMonths(q string) map[int]bool {
+	forms := []string{
+		"январь января январе январю январём январем",
+		"февраль февраля феврале февралю февралём февралем",
+		"март марта марте марту мартом",
+		"апрель апреля апреле апрелю апрелем",
+		"май мая мае маю маем",
+		"июнь июня июне июню июнем",
+		"июль июля июле июлю июлем",
+		"август августа августе августу августом",
+		"сентябрь сентября сентябре сентябрю сентябрём сентябрем",
+		"октябрь октября октябре октябрю октябрём октябрем",
+		"ноябрь ноября ноябре ноябрю ноябрём ноябрем",
+		"декабрь декабря декабре декабрю декабрём декабрем",
+	}
+	indices := map[int]bool{}
+	for _, word := range strings.FieldsFunc(q, func(r rune) bool { return !unicode.IsLetter(r) }) {
+		for i, group := range forms {
+			for _, form := range strings.Fields(group) {
+				if word == form {
+					indices[i] = true
+				}
+			}
+		}
+	}
+	return indices
 }
 
 func partialPeriod(q string) bool {

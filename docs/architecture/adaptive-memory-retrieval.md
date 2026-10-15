@@ -72,3 +72,7 @@ These syntax checks do not claim entailment or permit navigation.
 Verified source/fragment identity metadata is rendered as a quoted literal in
 a code span with a delimiter longer than any interior backtick run. A source
 key cannot inject an additional Markdown citation or control-character line.
+Named months require a whole calendar word with an explicit supported inflection;
+technical names such as a smart-contract label cannot manufacture a March filter.
+This first policy's calendar bounds use UTC. It does not implement owner-local
+timezone or relative-period interpretation; those need explicit clarification.

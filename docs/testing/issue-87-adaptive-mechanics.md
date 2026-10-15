@@ -83,3 +83,11 @@ Its original JSONL SHA256 is
 `55be496c11e297aa15ce55fc741bde4f94109fd1323092cc02af3b728b4f8118`.
 This delta is separate from the original50-test v7 receipt. The future combined
 driver now requires this additional name (30 required names overall).
+
+An independent parser review then found that a substring month stem could turn
+a technical smart-contract label into March. Whole calendar-word recognition
+replaces that substring match, retaining supported inflections. The three narrow
+reported-date/intent race tests passed in `reports/month-v9`, JSONL SHA256
+`3d3cc3e1748cab35724eff27a803d5cd678b4210138ae4cf5fc7973831feed29`.
+The additive new negative-name test is also mandatory (31 names overall).
+No holdout answer or inference result informed this correction.
