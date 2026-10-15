@@ -15,12 +15,6 @@ import (
 
 const MaxTemporalFacts = 64
 
-type derivedCreation struct {
-	xid                       string
-	source                    SourceRef
-	owner, scopeType, scopeID string
-}
-
 func loadTemporalMetadataTx(ctx context.Context, tx pgx.Tx, c Claim, q TemporalQuery) (TemporalMetadata, int64, error) {
 	m := TemporalMetadata{ClaimID: c.ID, Validity: ValidityUnknown, Class: FreshnessUnknown, VerificationBasis: "unknown"}
 	var head int64
@@ -233,21 +227,13 @@ func (s *Store) BindAcceptedFactPinsTx(ctx context.Context, tx pgx.Tx, derivedSo
 // caller/job authority; the new child never becomes a caller-selectable read or
 // owner identity. Quarantine remains enforced by ordinary access until activation.
 func (s *Store) BindNewAcceptedFactPinsTx(ctx context.Context, tx pgx.Tx, derived Source, parents []SourceRef, pins []AcceptedFactPin, q TemporalQuery) error {
-	if tx == nil || len(parents) == 0 || len(parents) > 64 || len(pins) == 0 || derived.Kind != "model_candidate" || derived.Revision != 1 || derived.AccessRevision != 1 || (derived.Status != "active" && derived.Status != "quarantined") {
+	if tx == nil || len(pins) == 0 {
 		return ErrInvalid
 	}
-	for _, p := range parents {
-		if p.ID == "" || p.Revision < 1 || p.AccessRevision < 1 || len(p.Hash) != 64 {
-			return ErrInvalid
-		}
-	}
-	if derived.creation == nil || derived.creation.source != (SourceRef{derived.ID, derived.Revision, derived.AccessRevision, derived.Hash}) || derived.creation.owner != derived.OwnerID || derived.creation.scopeType != derived.ScopeType || derived.creation.scopeID != derived.ScopeID {
-		return ErrDenied
-	}
-	for _, p := range pins {
+	for _, pin := range pins {
 		found := false
 		for _, parent := range parents {
-			if parent == p.Source {
+			if parent == pin.Source {
 				found = true
 				break
 			}
@@ -256,42 +242,14 @@ func (s *Store) BindNewAcceptedFactPinsTx(ctx context.Context, tx pgx.Tx, derive
 			return ErrStale
 		}
 	}
-	current, err := s.AccessTx(ctx, tx, parents, "memory_read")
-	if err != nil {
+	if err := s.validateNewDerivedTx(ctx, tx, derived, parents, "memory_read"); err != nil {
 		return err
 	}
-	byID := map[string]Source{}
-	for _, src := range current {
-		byID[src.ID] = src
-	}
-	anchor, ok := byID[parents[0].ID]
-	if !ok || derived.OwnerID != anchor.OwnerID || derived.ScopeType != anchor.ScopeType || derived.ScopeID != anchor.ScopeID {
-		return ErrDenied
-	}
-	if err = s.CheckAcceptedFactPinsTx(ctx, tx, pins, q); err != nil {
+	if err := s.CheckAcceptedFactPinsTx(ctx, tx, pins, q); err != nil {
 		return err
-	}
-	// A constructor-issued receipt binds the top transaction across savepoints.
-	// Comparing row xmin to a top xid would reject legitimate subtransactions.
-	var fresh bool
-	err = tx.QueryRow(ctx, `SELECT pg_current_xact_id()::text=$7 AND s.created_at>=transaction_timestamp() AND v.extracted_at>=transaction_timestamp() AND s.source_kind='model_candidate' AND s.external_key='derived:'||s.source_id AND s.head_revision=1 AND s.access_revision=1 AND s.status=$2 AND s.owner_id=$3 AND s.scope_type=$4 AND s.scope_id=$5 AND v.content_hash=$6 FROM memory_sources s JOIN memory_source_revisions v ON v.source_id=s.source_id AND v.revision=1 WHERE s.source_id=$1`, derived.ID, derived.Status, derived.OwnerID, derived.ScopeType, derived.ScopeID, derived.Hash, derived.creation.xid).Scan(&fresh)
-	if err != nil {
-		return err
-	}
-	if !fresh {
-		return ErrDenied
-	}
-	var exact bool
-	err = tx.QueryRow(ctx, `WITH p AS(SELECT * FROM jsonb_to_recordset($2::jsonb) AS x(source_id text,revision bigint,access_revision bigint,content_hash text)),d AS(SELECT parent_source_id,parent_revision FROM memory_source_dependencies WHERE child_source_id=$1) SELECT (SELECT count(*) FROM d)=(SELECT count(*) FROM p) AND NOT EXISTS(SELECT 1 FROM d LEFT JOIN p ON p.source_id=d.parent_source_id AND p.revision=d.parent_revision WHERE p.source_id IS NULL)`, derived.ID, mustJSON(parents)).Scan(&exact)
-	if err != nil {
-		return err
-	}
-	if !exact {
-		return ErrStale
 	}
 	return bindTemporalPinsTx(ctx, tx, derived.ID, pins, q)
 }
-
 func bindTemporalPinsTx(ctx context.Context, tx pgx.Tx, derivedSourceID string, pins []AcceptedFactPin, q TemporalQuery) error {
 	// A rejected later pin must not leave a partially protected derivative when
 	// the caller handles the error and commits its outer transaction.

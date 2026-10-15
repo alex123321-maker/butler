@@ -265,7 +265,7 @@ func temporalRunOriginal(t *testing.T, ctx context.Context, pool *pgxpool.Pool, 
 	for _, entry := range p.entries {
 		if entry.RunID == ob.RunID {
 			ob.NativeEntries++
-			if entry.Usage != nil {
+			if entry.Usage != nil && entry.Usage.TotalTokens > 0 {
 				ob.KnownUsage++
 			}
 		}
@@ -455,6 +455,11 @@ func TestTemporalNativeExplicitLookup(t *testing.T) {
 	built, err := providerfactory.New(providerauth.NewManager(config.NewPostgresSettingsStore(pool)), log).Build(ctx, providerfactory.BuildConfig{ActiveProvider: "antigravity", AntigravityModel: "gemini-3.8-flash-high", AntigravityMaximumOutputTokens: 32768, Timeout: 300 * time.Second})
 	if err != nil {
 		t.Fatal("native provider setup failed")
+	}
+	_, maximumOutput := built.Provider.(interface{ InferenceLimits() (int64, int64) }).InferenceLimits()
+	actualTimeout := built.Provider.(interface{ InferenceTimeout() time.Duration }).InferenceTimeout()
+	if built.ProviderName != "antigravity" || built.ModelName != "gemini-3.8-flash-high" || maximumOutput != 32768 || actualTimeout < 300*time.Second {
+		t.Fatal("actual native profile differs from prospective pins")
 	}
 	carry, err := temporalCarryNativeHistory(ctx, pool, proof)
 	if err != nil {

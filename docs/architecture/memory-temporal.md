@@ -46,6 +46,12 @@ knowledge. `KnownAt` limits source/extraction/decision/metadata knowledge to wha
 was actually recorded by that instant. Both can be supplied together. Unknown
 validity cannot satisfy a dated validity filter and is counted explicitly.
 
+The Broker `memory.facts` contract accepts exact references already supplied in
+the current authorized context or discovered by `memory.search`. Discovery is
+not a prerequisite that mints access; current Catalog scope and original-source
+proof remain mandatory for either route. This explicit lookup has no dependency
+on87 natural-language classification or its final opened-citation envelope.
+
 Historical accepted claims can be superseded today, but current privacy,
 correction and scope proofs still apply. Logical freshness expiration preserves
 that history; privacy deletion denies it. No old source revision or restored
