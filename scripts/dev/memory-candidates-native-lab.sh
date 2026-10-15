@@ -3,9 +3,9 @@
 set -euo pipefail
 base=${1:?isolated root}
 revision=${2:?reviewed commit}
-label=${3:-native-v4}
+label=${3:-native-v5}
 prior=${4:?exact retained paid attempt count}
-[[ "$prior" =~ ^[0-9]+$ && "$prior" -ge 24 && "$prior" -le 128 ]] || exit 2
+[[ "$prior" =~ ^[0-9]+$ && "$prior" -ge 50 && "$prior" -le 128 ]] || exit 2
 remaining=32
 [[ "$base" == /srv/storage/butler/agents/issue85-20261016 && "$revision" =~ ^[a-f0-9]{40}$ ]] || exit 2
 [[ "$label" =~ ^native-v[1-9][0-9]*$ ]] || exit 2
@@ -16,10 +16,10 @@ test -s "$base/private/native.env"
 test -s "$base/private/auth-setting.csv"
 umask 077
 mkdir "$proof"
-expires=$(date -u -d '+45 minutes' +%Y-%m-%dT%H:%M:%SZ)
+expires=$(date -u -d '+3 hours' +%Y-%m-%dT%H:%M:%SZ)
 corpus=$(sha256sum "$base/current/testdata/acceptance/ru-memory-candidates-v1.json" | cut -d' ' -f1)
 holdout=$(sha256sum "$base/current/testdata/acceptance/ru-memory-candidates-holdout-v1.json" | cut -d' ' -f1)
-jq -n --arg revision "$revision" --arg expires "$expires" --arg corpus "$corpus" --arg holdout "$holdout" --argjson prior "$prior" --argjson remaining "$remaining" '{revision:$revision,expires_at:$expires,cases_sha256:$corpus,holdout_sha256:$holdout,handler:"source-candidates-v2",max_calls:$remaining,start_case:0,prior_attempts:$prior,maximum_reserved_tokens:(1056768*$remaining),maximum_reserved_millis:(90000*$remaining),maximum_provider_input_bytes:(8388608*$remaining),cost_basis:"subscription_no_overage",fallback:false,automatic_acceptance:false,owner_lifecycle_after_quality_pass:true,owner_lifecycle_model_calls:0,criteria:{exact_citation_rate:1,semantic_case_rate:0.95,holdout_semantic_case_rate:1,unsafe_promotions:0,authority_writes:0,unknown_usage:0}}' > "$proof/caps.json"
+jq -n --arg revision "$revision" --arg expires "$expires" --arg corpus "$corpus" --arg holdout "$holdout" --argjson prior "$prior" --argjson remaining "$remaining" '{revision:$revision,expires_at:$expires,cases_sha256:$corpus,holdout_sha256:$holdout,handler:"source-candidates-v2",max_calls:$remaining,start_case:0,prior_attempts:$prior,maximum_output_tokens:32768,model_timeout_millis:300000,maximum_reserved_tokens:(1081344*$remaining),maximum_reserved_millis:(300000*$remaining),maximum_provider_input_bytes:(8388608*$remaining),cost_basis:"subscription_no_overage",fallback:false,automatic_acceptance:false,owner_lifecycle_after_quality_pass:true,owner_lifecycle_model_calls:0,criteria:{exact_citation_rate:1,semantic_case_rate:0.95,holdout_semantic_case_rate:1,unsafe_promotions:0,authority_writes:0,unknown_usage:0}}' > "$proof/caps.json"
 runner=(docker run --rm --network host --name butler-issue85-native --env-file "$base/private/native.env"
  -e GOPROXY=off -e GOCACHE=/cache/go-build -e GOTMPDIR=/cache/go-tmp -e GOMODCACHE=/gomod
  -e HTTPS_PROXY=http://127.0.0.1:18080 -e HTTP_PROXY= -e ALL_PROXY= -e NO_PROXY=localhost,127.0.0.1
@@ -35,5 +35,5 @@ runner=(docker run --rm --network host --name butler-issue85-native --env-file "
 "${runner[@]}" golang:1.27.2-bookworm go test -c -o "/proof/$label/candidate-api.test" ./apps/orchestrator/internal/api > "$proof/build.log" 2>&1
 sha256sum "$proof/candidate-api.test" > "$proof/binary.sha256"
 sha256sum "$base/current/internal/memory/candidates/handler.go" "$base/current/internal/memory/jobs/model_worker.go" "$base/current/internal/memory/jobs/model_supervisor.go" "$base/current/internal/memory/jobs/model_policy.go" "$base/current/migrations/072_verified_summary_consumer.up.sql" "$base/current/apps/orchestrator/internal/api/memory_candidates_native_test.go" "$base/current/testdata/acceptance/ru-memory-candidates-v1.json" "$base/current/testdata/acceptance/ru-memory-candidates-holdout-v1.json" > "$proof/sources.sha256"
-"${runner[@]}" -w /src/apps/orchestrator/internal/api -e "BUTLER_CANDIDATE_NATIVE_EVIDENCE=/proof/$label" -e 'BUTLER_CANDIDATE_NATIVE_POSTGRES_URL=postgres://butler@127.0.0.1:18585/issue85_native_test?sslmode=disable' golang:1.27.2-bookworm go tool test2json -p github.com/butler/butler/apps/orchestrator/internal/api "/proof/$label/candidate-api.test" -test.v -test.timeout=43m -test.run='^TestCandidateNativeRussianQuality$' > "$proof/runner.jsonl" 2>&1
+"${runner[@]}" -w /src/apps/orchestrator/internal/api -e "BUTLER_CANDIDATE_NATIVE_EVIDENCE=/proof/$label" -e 'BUTLER_CANDIDATE_NATIVE_POSTGRES_URL=postgres://butler@127.0.0.1:18585/issue85_native_test?sslmode=disable' golang:1.27.2-bookworm go tool test2json -p github.com/butler/butler/apps/orchestrator/internal/api "/proof/$label/candidate-api.test" -test.v -test.timeout=175m -test.run='^TestCandidateNativeRussianQuality$' > "$proof/runner.jsonl" 2>&1
 "${runner[@]}" -w /src/apps/orchestrator/internal/api -e "BUTLER_CANDIDATE_NATIVE_EVIDENCE=/proof/$label" -e 'BUTLER_CANDIDATE_NATIVE_POSTGRES_URL=postgres://butler@127.0.0.1:18585/issue85_native_test?sslmode=disable' golang:1.27.2-bookworm go tool test2json -p github.com/butler/butler/apps/orchestrator/internal/api "/proof/$label/candidate-api.test" -test.v -test.timeout=2m -test.run='^TestCandidateNativeOwnerLifecycle$' > "$proof/owner-runner.jsonl" 2>&1

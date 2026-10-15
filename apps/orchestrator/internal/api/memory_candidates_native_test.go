@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -27,8 +28,32 @@ import (
 
 type candidateCaptureProvider struct {
 	transport.ModelProvider
-	output string
-	usage  *transport.Usage
+	mu   sync.Mutex
+	last candidateNativeTransport
+}
+
+type candidateNativeTransport struct {
+	Output       string                               `json:"output"`
+	Usage        *transport.Usage                     `json:"usage"`
+	Stages       []transport.ProviderStage            `json:"provider_stages"`
+	Auth         []providerauth.AntigravityDiagnostic `json:"auth_diagnostics"`
+	ErrorCode    string                               `json:"provider_error_code,omitempty"`
+	HTTPStatus   int                                  `json:"provider_http_status,omitempty"`
+	SafeReason   string                               `json:"provider_safe_reason,omitempty"`
+	FinishReason string                               `json:"finish_reason,omitempty"`
+}
+
+func (p *candidateCaptureProvider) snapshot() candidateNativeTransport {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	r := p.last
+	r.Stages = append([]transport.ProviderStage(nil), r.Stages...)
+	r.Auth = append([]providerauth.AntigravityDiagnostic(nil), r.Auth...)
+	if r.Usage != nil {
+		u := *r.Usage
+		r.Usage = &u
+	}
+	return r
 }
 
 // This separate owner-controlled stage consumes an actual native result only
@@ -124,23 +149,57 @@ func (p *candidateCaptureProvider) InferenceLimits() (int64, int64) {
 	return p.ModelProvider.(interface{ InferenceLimits() (int64, int64) }).InferenceLimits()
 }
 func (p *candidateCaptureProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
-	p.output = ""
-	p.usage = nil
+	p.mu.Lock()
+	p.last = candidateNativeTransport{}
+	p.mu.Unlock()
+	ctx = transport.WithProviderStageObserver(ctx, func(stage transport.ProviderStage) {
+		p.mu.Lock()
+		defer p.mu.Unlock()
+		if len(p.last.Stages) < 32 {
+			p.last.Stages = append(p.last.Stages, stage)
+		}
+	})
+	ctx = providerauth.WithAntigravityDiagnostics(ctx, func(d providerauth.AntigravityDiagnostic) {
+		p.mu.Lock()
+		defer p.mu.Unlock()
+		if len(p.last.Auth) < 32 {
+			p.last.Auth = append(p.last.Auth, d)
+		}
+	})
+	recordError := func(err error) {
+		p.last.ErrorCode = transport.DiagnosticCode(err)
+		p.last.HTTPStatus = transport.DiagnosticHTTPStatus(err)
+		p.last.SafeReason = transport.DiagnosticReason(err)
+	}
 	s, e := p.ModelProvider.StartRun(ctx, r)
 	if e != nil {
+		p.mu.Lock()
+		recordError(e)
+		p.mu.Unlock()
 		return nil, e
 	}
 	ch := make(chan transport.TransportEvent)
 	go func() {
 		defer close(ch)
 		for event := range s {
+			p.mu.Lock()
 			if event.AssistantFinal != nil {
-				p.output = event.AssistantFinal.Content
+				p.last.Output = event.AssistantFinal.Content
+				switch reason := strings.ToUpper(event.AssistantFinal.FinishReason); reason {
+				case "STOP", "MAX_TOKENS", "SAFETY", "RECITATION", "OTHER":
+					p.last.FinishReason = reason
+				default:
+					p.last.FinishReason = "unknown"
+				}
 			}
 			if event.Usage != nil {
 				copy := *event.Usage
-				p.usage = &copy
+				p.last.Usage = &copy
 			}
+			if event.TransportError != nil {
+				recordError(event.TransportError)
+			}
+			p.mu.Unlock()
 			select {
 			case ch <- event:
 			case <-ctx.Done():
@@ -151,6 +210,72 @@ func (p *candidateCaptureProvider) StartRun(ctx context.Context, r transport.Sta
 	return ch, nil
 }
 func candidateHash(b []byte) string { s := sha256.Sum256(b); return hex.EncodeToString(s[:]) }
+
+type candidateDiagnosticProvider struct {
+	transport.ModelProvider
+	final bool
+}
+
+func (p candidateDiagnosticProvider) StartRun(ctx context.Context, r transport.StartRunRequest) (transport.EventStream, error) {
+	transport.ObserveProviderStage(ctx, transport.ProviderStage("PRIVATE_STAGE"))
+	transport.ObserveProviderStage(ctx, transport.ProviderStageAuthentication)
+	ch := make(chan transport.TransportEvent, 1)
+	if p.final {
+		ch <- transport.NewAssistantFinalEvent(r.Context.RunID, "antigravity", transport.AssistantFinal{Content: "{}", FinishReason: "PRIVATE_FINISH", Usage: &transport.Usage{InputTokens: 1, OutputTokens: 1, TotalTokens: 2}})
+	} else {
+		ch <- transport.NewTransportErrorEvent(r.Context.RunID, "antigravity", &transport.Error{Type: transport.ErrorTypeProviderUnavailable, HTTPStatus: 403, Message: "PRIVATE_MESSAGE", ProviderCode: "PRIVATE_CODE", SafeReason: "PRIVATE_REASON", ProviderDetails: map[string]any{"token": "PRIVATE_TOKEN"}})
+	}
+	close(ch)
+	return ch, nil
+}
+
+func TestCandidateNativeDiagnosticCaptureExcludesPrivateProviderDetails(t *testing.T) {
+	for _, final := range []bool{false, true} {
+		p := &candidateCaptureProvider{ModelProvider: candidateDiagnosticProvider{final: final}}
+		stream, err := p.StartRun(context.Background(), transport.StartRunRequest{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		for range stream {
+		}
+		snapshot := p.snapshot()
+		b, err := json.Marshal(snapshot)
+		if err != nil || strings.Contains(string(b), "PRIVATE") || len(snapshot.Stages) != 1 || snapshot.Stages[0] != transport.ProviderStageAuthentication {
+			t.Fatal("private diagnostic detail escaped", err)
+		}
+		if final && snapshot.FinishReason != "unknown" || !final && (snapshot.ErrorCode != "provider_unavailable" || snapshot.HTTPStatus != 403 || snapshot.SafeReason != "") {
+			t.Fatal("fixed diagnostic projection unavailable")
+		}
+	}
+}
+
+func TestCandidateHigh32768ProfileReservesCompleteFiniteQuoteIntegration(t *testing.T) {
+	f := newCandidateFixture(t)
+	f.budgets.Policy.ModelMillis = 300000
+	f.budgets.Policy.OutputTokens = 32768
+	f.budgets.Policy.Models["antigravity:"+antigravity.FlashHighModel] = budget.ModelPrice{Basis: "subscription_no_overage"}
+	p, err := antigravity.NewProvider(antigravity.Config{Model: antigravity.FlashHighModel, MaximumOutputTokens: 32768, Timeout: 300 * time.Second, AuthSource: providerauth.NewManager(config.NewPostgresSettingsStore(f.pool))})
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.worker.Provider, f.worker.Model = p, antigravity.FlashHighModel
+	src := f.source("high-profile-preflight", "Предпочитаю ответы на русском языке.")
+	q := jobs.ModelPolicyRequest{ID: "high-profile-preflight", Handler: candidates.Version, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 1, Privacy: "cloud_allowed", Job: jobs.Request{Sources: []catalog.SourceRef{{ID: src.ID, Revision: src.Revision, AccessRevision: src.AccessRevision, Hash: src.Hash}}, Allowance: budget.Units{ModelTurns: 1, Tokens: 1081344, ActiveMillis: 300000, ProviderInputBytes: 8388608}, Deadline: time.Now().Add(time.Hour)}}
+	f.request("/api/v4/memory/model-policies", "POST", q, 201, nil)
+	f.enable()
+	if err = f.jobs.PollModelPolicies(context.Background(), func(string) bool { return true }); err != nil {
+		t.Fatal(err)
+	}
+	j, ok, err := f.jobs.ClaimPurpose(context.Background(), "model", candidates.Version)
+	if err != nil || !ok {
+		t.Fatal(ok, err)
+	}
+	a, _, err := f.worker.Admit(context.Background(), j, candidates.Handler{})
+	if err != nil || a.Quote.Tokens != 1081344 || a.Quote.ActiveMillis != 300000 || a.Quote.ProviderInputBytes != 8388608 || time.Until(a.Deadline) < 290*time.Second || time.Until(*j.ClaimUntil) < 350*time.Second {
+		t.Fatal("native profile does not fit its durable quote/deadline", a, err)
+	}
+	// This is admission only. No StartRun, auth resolution or HTTP is executed.
+}
 
 type candidateNativeCase struct {
 	ID, Body, Type, Scope, Time string
@@ -198,9 +323,11 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 		PriorAttempts int       `json:"prior_attempts"`
 		HoldoutSHA256 string    `json:"holdout_sha256"`
 		Handler       string    `json:"handler"`
+		OutputTokens  int64     `json:"maximum_output_tokens"`
+		ModelMillis   int64     `json:"model_timeout_millis"`
 	}
 	b, e := os.ReadFile(filepath.Join(proof, "caps.json"))
-	if e != nil || json.Unmarshal(b, &caps) != nil || caps.CasesSHA256 != candidateHash(raw) || caps.HoldoutSHA256 != candidateHash(holdoutRaw) || caps.Handler != candidates.Version || caps.StartCase != 0 || caps.PriorAttempts < 24 || caps.PriorAttempts > 128 || caps.MaxCalls != len(cases) || len(caps.Revision) != 40 || !time.Now().Before(caps.ExpiresAt) {
+	if e != nil || json.Unmarshal(b, &caps) != nil || caps.CasesSHA256 != candidateHash(raw) || caps.HoldoutSHA256 != candidateHash(holdoutRaw) || caps.Handler != candidates.Version || caps.StartCase != 0 || caps.PriorAttempts < 50 || caps.PriorAttempts > 128 || caps.MaxCalls != len(cases) || caps.OutputTokens != 32768 || caps.ModelMillis != 300000 || len(caps.Revision) != 40 || !time.Now().Before(caps.ExpiresAt) {
 		t.Fatal("fresh reviewed fixed native caps required")
 	}
 	if os.Getenv("HTTPS_PROXY") != "http://127.0.0.1:18080" || os.Getenv("HTTP_PROXY") != "" || os.Getenv("ALL_PROXY") != "" {
@@ -223,16 +350,27 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 	if e = pool.QueryRow(context.Background(), `SELECT count(*) FROM memory_model_attempts`).Scan(&count); e != nil || count != caps.PriorAttempts {
 		t.Fatal("native window already consumed", count, e)
 	}
+	var room bool
+	e = pool.QueryRow(context.Background(), `SELECT deadline>$1
+ AND (limits_json->>'model_turns')::bigint-(used_json->>'model_turns')::bigint >= $2
+ AND (limits_json->>'tokens')::bigint-(used_json->>'tokens')::bigint >= $2*(1048576+$3::bigint)
+ AND (limits_json->>'active_millis')::bigint-(used_json->>'active_millis')::bigint >= $2*$4::bigint
+ AND (limits_json->>'provider_input_bytes')::bigint-(used_json->>'provider_input_bytes')::bigint >= $2*8388608::bigint
+ FROM execution_budget_scopes WHERE kind='owner_day' AND owner_id='owner' AND subject_id=to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD')`, caps.ExpiresAt, int64(caps.MaxCalls), caps.OutputTokens, caps.ModelMillis).Scan(&room)
+	if e != nil || !room {
+		t.Fatal("prospective full window does not fit retained owner-day allowance")
+	}
 	manifestPath := filepath.Join(filepath.Dir(proof), "native-v2", "deletions.log")
 	m := catalog.NewFileManifest(manifestPath)
 	c := catalog.New(pool, m)
 	policy := budget.DefaultPolicy()
-	policy.ModelMillis = 90000
+	policy.ModelMillis = caps.ModelMillis
+	policy.OutputTokens = caps.OutputTokens
 	policy.Models["antigravity:"+antigravity.FlashHighModel] = budget.ModelPrice{Basis: "subscription_no_overage"}
 	bctl := budget.NewController(pool, policy)
 	bctl.SetAuthorityResolver(actionauth.ResolveBudgetAuthority)
 	j := jobs.New(pool, c, bctl, nil)
-	p, e := antigravity.NewProvider(antigravity.Config{Model: antigravity.FlashHighModel, AuthSource: providerauth.NewManager(config.NewPostgresSettingsStore(pool)), Timeout: 90 * time.Second})
+	p, e := antigravity.NewProvider(antigravity.Config{Model: antigravity.FlashHighModel, AuthSource: providerauth.NewManager(config.NewPostgresSettingsStore(pool)), Timeout: time.Duration(caps.ModelMillis) * time.Millisecond, MaximumOutputTokens: int(caps.OutputTokens)})
 	if e != nil {
 		t.Fatal("native provider unavailable")
 	}
@@ -241,16 +379,38 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 	srv := httptest.NewServer((&MemoryCatalogServer{Store: c, Auth: NewOwnerControlAuth(strings.Repeat("c", 40), "owner"), ModelJobs: j, ModelWorkerConfigured: true}).Handle())
 	defer srv.Close()
 	f := &candidateFixture{t: t, pool: pool, catalog: c, jobs: j, worker: w, server: srv}
+	// Past identities are never automatically retried by a later window. Use the
+	// existing owner controls; their original spend/attempts stay untouched.
+	rows, err := pool.Query(context.Background(), `SELECT policy_id FROM memory_model_policies WHERE state<>'revoked' ORDER BY policy_id LIMIT 256`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var oldPolicies []string
+	for rows.Next() {
+		var id string
+		if err = rows.Scan(&id); err != nil {
+			rows.Close()
+			t.Fatal(err)
+		}
+		oldPolicies = append(oldPolicies, id)
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, id := range oldPolicies {
+		f.request("/api/v4/memory/model-policy-control", "POST", map[string]string{"id": id, "state": "revoked"}, 200, nil)
+	}
 	f.enable()
 	defer j.SetModelControl(context.Background(), "disabled")
 	type observation struct {
-		ID               string           `json:"id"`
-		Output           string           `json:"output"`
-		Usage            *transport.Usage `json:"usage"`
-		AcceptedCitation bool             `json:"accepted_citation"`
-		SemanticMatch    bool             `json:"semantic_match"`
-		Reason           string           `json:"reason"`
-		Millis           int64            `json:"millis"`
+		candidateNativeTransport
+		ID               string `json:"id"`
+		AcceptedCitation bool   `json:"accepted_citation"`
+		SemanticMatch    bool   `json:"semantic_match"`
+		Reason           string `json:"reason"`
+		Millis           int64  `json:"millis"`
 	}
 	results := []observation{}
 	semantic, unsafe, quotes, unknown := 0, 0, 0, 0
@@ -302,15 +462,15 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 		}
 		window := filepath.Base(proof)
 		src := f.source(window+":"+tc.ID, tc.Body)
-		q := jobs.ModelPolicyRequest{ID: window + ":" + tc.ID, Handler: candidates.Version, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 1, Privacy: "cloud_allowed", Job: jobs.Request{Sources: []catalog.SourceRef{{ID: src.ID, Revision: src.Revision, AccessRevision: src.AccessRevision, Hash: src.Hash}}, Allowance: budget.Units{ModelTurns: 1, Tokens: 1056768, ActiveMillis: 90000, ProviderInputBytes: 8388608}, Deadline: caps.ExpiresAt}}
+		q := jobs.ModelPolicyRequest{ID: window + ":" + tc.ID, Handler: candidates.Version, Trigger: "source_changed", IntervalSeconds: 60, MaxJobs: 1, Privacy: "cloud_allowed", Job: jobs.Request{Sources: []catalog.SourceRef{{ID: src.ID, Revision: src.Revision, AccessRevision: src.AccessRevision, Hash: src.Hash}}, Allowance: budget.Units{ModelTurns: 1, Tokens: 1048576 + caps.OutputTokens, ActiveMillis: caps.ModelMillis, ProviderInputBytes: 8388608}, Deadline: caps.ExpiresAt}}
 		f.request("/api/v4/memory/model-policies", "POST", q, 201, nil)
 		start := time.Now()
 		err := f.process()
-		o := observation{ID: tc.ID, Output: capture.output, Usage: capture.usage, Millis: time.Since(start).Milliseconds()}
+		o := observation{candidateNativeTransport: capture.snapshot(), ID: tc.ID, Millis: time.Since(start).Milliseconds()}
 		if o.Usage == nil {
 			unknown++
 		}
-		canonical, valid := (candidates.Handler{}).Validate([]catalog.Source{src}, capture.output)
+		canonical, valid := (candidates.Handler{}).Validate([]catalog.Source{src}, o.Output)
 		if valid == nil {
 			quotes++
 			o.AcceptedCitation = true
@@ -339,7 +499,7 @@ func TestCandidateNativeRussianQuality(t *testing.T) {
 		}
 		results = append(results, o)
 		t.Logf("native candidate %s citation=%t semantic=%t elapsed_ms=%d", tc.ID, o.AcceptedCitation, o.SemanticMatch, o.Millis)
-		if err != nil && capture.output == "" {
+		if err != nil && o.Output == "" || providerauth.UnsafeAntigravityRefresh(o.Auth) {
 			t.Error("native provider failed; remaining cases deferred")
 			break
 		}
