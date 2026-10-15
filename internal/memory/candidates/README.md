@@ -40,10 +40,15 @@ events, policies and process restarts retain the original candidate/owner decisi
 The optional publication hook writes candidates and job/result pointer in one
 transaction; failure rolls all of them back. Paid observations remain durable.
 
-Production registry needs `BUTLER_MEMORY_MODEL_CANDIDATES_ENABLED=true` plus the
-code-owned qualified release gate. That gate currently remains **false**. The
-native quality report and combined #83 lifecycle gate must pass before a reviewed
-release changes it; an environment flag cannot promote this unqualified version.
+Production registry needs both `BUTLER_MEMORY_MODEL_JOBS_ENABLED=true` and
+`BUTLER_MEMORY_MODEL_CANDIDATES_ENABLED=true`, the code-owned qualified release
+gate, and the measured native profile. That release gate currently remains
+**false**, pending final source review of the completed native/lifecycle evidence.
+The profile must be the actual subscription Antigravity High provider reporting
+an output limit of exactly32768, with budget OutputTokens at least32768 and
+ModelMillis at least300000. The worker caps each call at300s. Default8192,
+larger unmeasured ceilings, another model/provider and an insufficient reservation
+do not inherit qualification. Environment flags alone cannot promote the release.
 Local-only policies remain visibly `local_backend_unavailable`, with no cloud
 attempt/reservation or fallback. Existing `memory.propose_candidate` is separate.
 
