@@ -104,6 +104,7 @@ jq -e --slurpfile source "$proof/source.json" '
  ([.results[]|select(.content|contains("МАЯК-742/33"))]|length)==1 and
  ([.run_sources[]|select(.source_id==$source[0].source_id and .source_revision==$source[0].revision)]|length)>=1 and
  all(.tools[];.tool_name=="memory.search" or .tool_name=="memory.open" or .tool_name=="memory.neighbors") and
+ (.effects|length)>=(.tools|length) and
  all(.effects[];.binding.effect=="read" and .state=="effect_confirmed")
 ' "$proof/ledger.json" >/dev/null
 sha256sum "$proof/source.sha256" "$proof/protocol.json" "$proof/profile.json" "$proof/input-request.json" "$proof/ledger.json" "$base/reports/binaries.sha256" > "$proof/evidence.sha256"
