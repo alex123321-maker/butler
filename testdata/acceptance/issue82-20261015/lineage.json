@@ -25,5 +25,6 @@
   "main_deployment": "unchanged",
   "isolated_orchestrator": "exited",
   "notes": "Overlapping test runs are not summed. Two reservations do not prove two upstream executions.",
-  "wire_crash_test_commit": "3b530db11279fdf4c089bccd2d25d5534e38fb87"
+  "wire_crash_test_commit": "3b530db11279fdf4c089bccd2d25d5534e38fb87",
+  "forced_crash_test_commit": "f5939e7ad922d94b211d4e0cdc63af24e935b602"
 }

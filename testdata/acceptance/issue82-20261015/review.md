@@ -23,6 +23,15 @@ Independently counted `validation-v10`: **854 PASS, 0 FAIL, 2 SKIP**;
 `diagnostics-v11`: **239 PASS, 0 FAIL, 0 SKIP**. Runs overlap and cannot be summed.
 Both final chains completed. Skips remain skips, not passing evidence.
 
+Subsequently reviewed test-only `f5939e7` and the original `crash-v14` log:
+**5 PASS, 0 FAIL, 0 SKIP** (four cases plus parent). Complete HTTP request bytes
+are received before response; Kill/Wait explicitly confirm `signal: killed` on
+Linux. Publication crash also confirms signal exit. SQL asserts two distinct
+reservations, one unknown usage, one derivative and three charged scopes with
+two turns each. Source SHA256 matches. The earlier v13 lacked the Kill/Wait
+assertion and remains weaker historical wire/recovery evidence. No production
+code changed, no cloud inference was added, and no new material finding remains.
+
 Independently read native-v2 receipts/final-audit and queried the isolated PG:
 two admitted attempts, two linked reservations, zero known usage, zero published
 derivatives; owner/day used 2/3 turns, 2,113,536/3,170,304 reserved tokens,

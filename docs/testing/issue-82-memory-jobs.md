@@ -25,7 +25,8 @@ of model quality or production enablement. References: #82, #77 and #81.
 - Production mechanism and main regression baseline: `d99f5b7`. Native-v1:
   `d1df2be` (only prospective window deadline changed). Final production code:
   `6f7c897` (safe failure diagnostics added). Native-v2: `a094a68` (only window
-  script changed). Test-only `3b530db` adds the actual-wire crash scenario; later
+  script changed). Test-only `3b530db` adds the actual-wire crash scenario; `f5939e7` strengthens
+  observed signal exit and reservation/scope assertions. Later
   commits add this report/evidence without production code changes.
 - Both full source manifests were checked byte-for-byte on laba. Source manifests,
   binaries, logs and receipts are in the [evidence directory][evidence]. No binary,
@@ -74,8 +75,13 @@ are not added together.
 | `validation-v10` |854 PASS,0 FAIL,2 SKIP|Jobs, budget, actionauth, Doctor, native adapter, catalog, owner API, orchestration, completion; separate actual Doctor/Broker test; vet and service builds completed.|
 | `diagnostics-v11` |239 PASS,0 FAIL,0 SKIP|Final jobs/native-adapter regressions after safe diagnostics, including secret source and private provider error exclusion; vet and final Orchestrator build completed.|
 | `wire-crash-v13` |2 PASS,0 FAIL,0 SKIP|Additional actual-HTTP crash subtest and its parent pass, using final production code plus the new test only; no cloud call.|
+| `crash-v14` |5 PASS,0 FAIL,0 SKIP|All four crash cases and parent; forced child signal exit and two distinct reservations / three charged scopes explicitly asserted. No cloud call.|
 | `native-v1` |FAILED|One reserved attempt, no usage/result; the first version only stored `provider_failed`, so exact cause remains unknown.|
 | `native-v2` |FAILED|One additional attempt, `provider_unavailable_http_403`, no usage/result. Same durable DB and owner/day spend retained.|
+
+The v13 wire test did not yet assert the Kill/Wait result; it is retained as
+historical wire/recovery evidence. The stronger v14 run proves forced signal
+termination and retained reservations/scopes explicitly.
 
 The two skips are `TestActualPostgresDumpRestoreDeletionIntegration` (external
 pg_dump/restore opt-in unavailable in this Go runner) and
