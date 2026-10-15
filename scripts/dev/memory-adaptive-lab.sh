@@ -37,6 +37,10 @@ runner=(docker run --rm --pull never --network "$network" --cpus 1 --memory 2g -
 "${runner[@]}" bash -eu -c 'go test -c -o /cache/broker-adaptive.test ./apps/tool-broker/internal/broker; go build -o /cache/tool-broker-adaptive ./apps/tool-broker; sha256sum /cache/broker-adaptive.test /cache/tool-broker-adaptive > /proof/binaries.sha256' > "$proof/build.log" 2>&1
 "${runner[@]}" bash -eu -c 'go test -json -race -p 1 -count=1 -timeout 8m -run "TestAdaptive|TestReportedWindow|TestTransparent|TestDecodeAnswer|TestPlanRejects|TestBuildBundleAdaptive|TestMemoryRead|TestSearchOpen|TestCandidateAcceptedPreferenceScopedOrdinaryContext" ./internal/memory/adaptive ./internal/memory/readcontrol ./internal/memory/reader ./internal/memory/service ./internal/config ./apps/orchestrator/internal/app > /proof/mechanics.jsonl' > "$proof/runner.log" 2>&1
 if grep -q '"Action":"skip"\|"Action":"fail"\|"Action":"build-fail"' "$proof/mechanics.jsonl";then exit 1;fi
+while IFS= read -r name;do
+ [[ -z "$name" || "$name" == \#* ]] && continue
+ jq -s -e --arg name "$name" 'any(.[];.Action=="pass" and .Test==$name) and all(.[];.Test!=$name or (.Action!="fail" and .Action!="skip"))' "$proof/mechanics.jsonl" >/dev/null
+done < "$src/scripts/dev/memory-adaptive-required-tests.txt"
 "${runner[@]}" go vet ./internal/memory/adaptive ./internal/memory/readcontrol ./internal/memory/reader ./internal/memory/service ./internal/config ./apps/orchestrator/internal/orchestrator ./apps/orchestrator/internal/app > "$proof/vet.log" 2>&1
 jq -s '{passed:map(select(.Action=="pass" and .Test!=null))|length,failed:map(select(.Action=="fail"))|length,skipped:map(select(.Action=="skip"))|length}' "$proof/mechanics.jsonl" > "$proof/summary.json"
 sha256sum "$proof/source.sha256" "$proof/binaries.sha256" "$proof/mechanics.jsonl" "$proof/vet.log" > "$proof/evidence.sha256"
