@@ -19,6 +19,7 @@ import (
 type AuthenticatedBackend struct {
 	client pb.LocalModelsServiceClient
 	token  string
+	target budget.LocalTarget
 }
 
 func NewAuthenticatedBackend(conn grpc.ClientConnInterface, tokenFile string) (*AuthenticatedBackend, error) {
@@ -56,8 +57,10 @@ func NewPinnedBackend(target budget.LocalTarget, tokenFile string) (*Authenticat
 		_ = conn.Close()
 		return nil, nil, err
 	}
+	backend.target = target
 	return backend, func() { _ = conn.Close() }, nil
 }
+func (b *AuthenticatedBackend) localTarget() budget.LocalTarget { return b.target }
 func (b *AuthenticatedBackend) ctx(ctx context.Context) context.Context {
 	md, _ := metadata.FromOutgoingContext(ctx)
 	md = md.Copy()

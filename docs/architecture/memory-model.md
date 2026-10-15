@@ -421,13 +421,29 @@ At the current implementation stage:
 
 Current bundle assembly now combines:
 
-* structured profile lookup by ordered scope;
+* current confirmed/effective profile lookup by authorized scope, ranked by
+  lexical query applicability and then stable scope/key/text ordering;
 * session summary and working memory as highest-priority bundle items;
 * vector episodic retrieval when embeddings are available;
 * lightweight keyword summary matching as an optional fallback / complement when supported by the store;
-* explicit bundle-budget ordering across summary, working, profile, and episodic sections.
+* `memory-context-v2`: mandatory summary/working state, then deterministic
+  document/profile/episode round-robin, an optional conservative UTF-8 JSON byte
+  allowance (8192 by default) inside the complete context allowance, per-class
+  quotas and a secondary item cap. Mandatory history is not rejected by the
+  smaller optional quota. With documents present, profile and episodes each
+  consume at most one third of the optional allowance.
+  The product default is four bounded document results. Duplicate content keeps
+  case/punctuation; oversized optional records are omitted whole. Mandatory
+  overflow is explicit. Safe diagnostics contain version/counts/reason codes.
 
-When embeddings or optional keyword matches are unavailable, bundle assembly degrades gracefully and still returns deterministic summary / working / profile context within budget.
+`QueryPolicy` separately permits local query use and external query release.
+Assigned local-only tasks retain local SQL and proven pinned local inference;
+unproven inference is skipped with an explicit limitation, without external
+fallback. A local search does not permit cloud generation. Existing current
+run/source/task guards remain authoritative before/after search and on provider
+release. Profile eligibility is re-read after slow retrieval; selection never
+fills a quota using withdrawn/foreign records. See the
+[bundle service contract](../../internal/memory/service/README.md).
 
 The Transcript Store assigns a durable per-session `message_sequence` using the
 locked `transcript_heads` row; ordering does not depend on client timestamps or
@@ -466,7 +482,10 @@ token unit per encoded UTF-8 byte, a 1024-unit protocol allowance and per-item/t
 overhead. Observability records estimator, estimate, allowance and removed optional
 sections. This is an admission estimate, not a provider-native token count or bill;
 operators must account for provider-specific wrappers and model/output capacity.
-Retrieved chunks, episodes, profile and tool descriptions are removed first. If
+Complete input admission leaves `min(4096, allowance/8)` additional conservative
+units for answer/tool continuation. Optional tool summary and then profile,
+episodes and documents are removed one item at a time, preserving remaining
+document evidence rather than discarding an entire class. If
 mandatory history, covered summary, task constraints and base context cannot fit,
 the run fails with an explicit budget error rather than losing a prohibition.
 Optional prompt shortening and pipeline logging remain Unicode-safe. Amendment
@@ -793,7 +812,7 @@ The memory doctor (`/api/v1/doctor/check`) now reports:
 2. ~~Политика дедупликации episodic memory.~~ — **Решено:** near-duplicate эпизоды подавляются, materially different варианты сохраняются как variants по canonical summary policy.
 3. ~~Политика сохранения doctor outputs.~~ — **Решено:** doctor/tool-derived long-form data допускается только через явную allowlist-style ingestion policy с предварительной sanitization и записью в chunk memory.
 4. Session summary uses versioned verified transcript coverage and source/deletion fences. Legacy model summary workers remain disabled until independently owned admission; summaries never replace current authority.
-5. ~~Приоритет retrieval между profile, episodic и document memory.~~ — **Решено:** bundle assembly применяет явный порядок summary → working → profile → episodic → chunks в пределах budget policy.
+5. Приоритет retrieval версионирован в `memory-context-v2`: обязательные summary/working и отбор document/profile/episode по применимости, размеру и квотам; прежний порядок profile-before-documents сохранён только в историческом сравнении.
 6. Использовать ли отдельный reranking layer (слой переранжирования) в будущем.
 
 ---

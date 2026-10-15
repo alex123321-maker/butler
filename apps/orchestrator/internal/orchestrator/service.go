@@ -323,20 +323,21 @@ func NewService(sessions SessionRepository, leases session.LeaseManager, runs Ru
 			bundleWorkingStore = memoryBundleWorkingStore{store: cfg.WorkingStore}
 		}
 		cfg.MemoryBundles = memoryservice.New(memoryservice.Config{
-			ProfileStore:  cfg.ProfileStore,
-			EpisodeStore:  cfg.EpisodeStore,
-			ChunkStore:    cfg.ChunkStore,
-			WorkingStore:  bundleWorkingStore,
-			SummaryReader: cfg.SummaryReader,
-			Embeddings:    cfg.Embeddings,
-			Semantic:      cfg.SemanticMemory,
-			ProfileLimit:  cfg.ProfileLimit,
-			EpisodeLimit:  cfg.EpisodeLimit,
-			ChunkLimit:    2,
-			ScopeOrder:    cfg.MemoryScopes,
-			ScopeResolver: cfg.MemoryScopeResolver,
-			Log:           log,
-			Metrics:       nil,
+			ProfileStore:        cfg.ProfileStore,
+			EpisodeStore:        cfg.EpisodeStore,
+			ChunkStore:          cfg.ChunkStore,
+			WorkingStore:        bundleWorkingStore,
+			SummaryReader:       cfg.SummaryReader,
+			Embeddings:          cfg.Embeddings,
+			Semantic:            cfg.SemanticMemory,
+			ProfileLimit:        cfg.ProfileLimit,
+			EpisodeLimit:        cfg.EpisodeLimit,
+			ChunkLimit:          4,
+			ContextBudgetTokens: cfg.ContextBudgetTokens,
+			ScopeOrder:          cfg.MemoryScopes,
+			ScopeResolver:       cfg.MemoryScopeResolver,
+			Log:                 log,
+			Metrics:             nil,
 		})
 	}
 	if cfg.PromptManager == nil {

@@ -19,6 +19,7 @@ import (
 	"github.com/butler/butler/internal/memory/indexing"
 	"github.com/butler/butler/internal/memory/ingestion"
 	"github.com/butler/butler/internal/memory/jobs"
+	"github.com/butler/butler/internal/memory/profile"
 	"github.com/butler/butler/internal/memory/semantic"
 	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/owneridentity"
@@ -57,6 +58,8 @@ type memoryEvalCollector struct {
 	priorDirectory      string
 	freeAnswer          bool // prospective semantic trials; legacy originals keep their schema
 	readSuffix          string
+	searchVariant       string
+	profileFixtures     map[string][]memorySearchProfile
 }
 
 type memoryEvalBackend struct {
@@ -148,6 +151,9 @@ func memoryEvalSpace() semantic.Space {
 	return semantic.Space{ProfileID: "embeddinggemma2-text-bf16-v1", Model: "google/embeddinggemma-2", Revision: "914f7f89142e33e77833254d9c9b90c3cef7303b", Preprocessing: "embeddinggemma2-retrieval-v1", RuntimeVersion: "torch2.10.0+cu128/transformers5.19.0/sentence-transformers6.1.0", ChunkVersion: "structured-go-v1", Dimensions: 768}
 }
 func memoryEvalConfigDigest() string {
+	if variant := os.Getenv("BUTLER_MEMORY_SEARCH_VARIANT"); variant != "" {
+		return acceptance.MemoryDigest(map[string]any{"variant": variant, "profile": "owner-accepted-source-bound", "chunk_limit": "product-default", "bundle_item_cap": 12, "source": "pinned-tree"})
+	}
 	return acceptance.MemoryDigest(struct {
 		Space                                 semantic.Space
 		ChunkLimit, BundleBudget              int
@@ -326,6 +332,9 @@ func (c *memoryEvalCollector) capture(ctx context.Context, cse acceptance.Memory
 		refs[h.ID] = ref
 		logical[src.ID] = h
 		allRefs = append(allRefs, ref)
+		if c.searchProfileOriginal(cse.ID, h.ID) {
+			continue
+		}
 		parsed, err := (ingestion.Parser{}).Parse(ctx, ingestion.Input{Format: "text", Path: h.ID + ".txt", Raw: []byte(h.Body)})
 		if err != nil {
 			return err
@@ -440,7 +449,17 @@ func (c *memoryEvalCollector) captureRead(ctx context.Context, cse acceptance.Me
 	}
 	rows.Close()
 	bridge := &memoryEvalReader{c, reader, id, originals}
-	builder := memoryservice.New(memoryservice.Config{Semantic: bridge, ChunkLimit: 2, BundleBudget: 12, ScopeOrder: []string{"user"}, Log: slog.New(slog.NewTextHandler(io.Discard, nil))})
+	config := memoryservice.Config{Semantic: bridge, ChunkLimit: 2, BundleBudget: 12, ScopeOrder: []string{"user"}, Log: slog.New(slog.NewTextHandler(io.Discard, nil))}
+	if c.searchVariant != "" {
+		if c.readSuffix == "" {
+			if err = c.seedSearchProfiles(ctx, cse); err != nil {
+				return err
+			}
+		}
+		config.ChunkLimit = 0 // compare the actual product defaults, not a test override
+		config.ProfileStore = profileStoreAdapter{store: profile.NewStore(c.pool), sources: c.catalog}
+	}
+	builder := memoryservice.New(config)
 	begin := time.Now()
 	bundle, err := builder.BuildBundle(live, memoryservice.BundleRequest{SessionKey: run + ":session", UserID: owner, UserMessage: cse.Question, IncludeQuery: true})
 	if err != nil {
@@ -458,6 +477,15 @@ func (c *memoryEvalCollector) captureRead(ctx context.Context, cse acceptance.Me
 			}
 			if !seen {
 				ids = append(ids, ref)
+			}
+		}
+	}
+	if entries, ok := bundle.Items["profile"].([]map[string]any); ok {
+		for _, entry := range entries {
+			for _, fixture := range c.profileFixtures[cse.ID] {
+				if entry["key"] == fixture.Key {
+					ids = append(ids, fixture.SourceID)
+				}
 			}
 		}
 	}

@@ -1,5 +1,11 @@
 # Butler — Model Transport Contract
 
+Memory query locality is independent of provider release. A local-only task can
+use authorized PostgreSQL evidence and the pinned internal inference service;
+the resulting query/snippets remain subject to current task privacy, source
+revision/access and complete-request guards before cloud transport. Local query
+permission and zero incremental billing do not authorize external generation.
+
 Trusted composition may install request-local `WithInferenceAuthority` checks.
 Native Antigravity checks this callback before authentication and immediately
 before HTTP dispatch, alongside caller-owned budgets and in-flight/final guards.

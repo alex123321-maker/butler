@@ -49,6 +49,15 @@ These checks use already-held authority/source locks in the same transaction;
 they neither borrow another pool connection nor reacquire authority after new
 source locks in a separate transaction. Confidence never makes a claim accepted.
 
+Query locality and external release are separate decisions. Assigned privacy
+other than cloud_allowed preserves permitted local search; only the exact pinned
+internal backend plus matching current LiveAdmission may receive its query or
+reranker snippets. PostgreSQL exact/full-text lookup can still operate without
+that inference backend, with explicit degraded diagnostics. It never falls back
+to an unproven legacy embedding provider. The task/assignment/privacy stamp and
+current pinned sources are checked again after retrieval, and ordinary provider
+release admission still applies to the query, snippets and complete request.
+
 Preparing model context pins transcript source revision and deletion watermark.
 Retrieval additionally pins every source ancestor. Each provider release and its
 event stream rechecks current source proof; a 250 ms supervisor cancels idle calls.

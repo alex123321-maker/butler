@@ -26,7 +26,7 @@ type memorySemanticState struct {
 	Measurements acceptance.MemoryMeasurements
 }
 
-type memorySemanticPins struct{ Release, CorpusSHA256, RubricSHA256, SourceSHA256, BinarySHA256, Image, TrialID, SourceDir, TrialRoot string }
+type memorySemanticPins struct{ Release, CorpusSHA256, RubricSHA256, SourceSHA256, BinarySHA256, Image, TrialID, SourceDir, TrialRoot, Variant string }
 type memorySemanticMount struct {
 	Destination, Type, Source string
 	RW                        bool
@@ -119,6 +119,9 @@ func semanticFreshInputs(s acceptance.MemorySemanticSuite, captures []acceptance
 			return nil, errors.New("current durable retrieval capture missing")
 		}
 		arms := []string{"no_ltm", "oracle", "retrieval"}
+		if os.Getenv("BUTLER_MEMORY_SEARCH_VARIANT") == "baseline" {
+			arms = []string{"retrieval"}
+		}
 		if c.RepeatRetrieval {
 			arms = append(arms, "retrieval_repeat")
 		}
@@ -192,7 +195,15 @@ func TestMemorySemanticActualTrial(t *testing.T) {
 	if !filepath.IsAbs(private) || len(release) != 40 {
 		t.Fatal("private isolated root and exact commit required")
 	}
-	corpus, err := os.ReadFile(filepath.Join(shadowRepoRoot(), "testdata/acceptance/ru-memory-semantic-v1.json"))
+	corpusName := "testdata/acceptance/ru-memory-semantic-v1.json"
+	variant := os.Getenv("BUTLER_MEMORY_SEARCH_VARIANT")
+	if variant != "" {
+		if variant != "baseline" && variant != "candidate" {
+			t.Fatal("unknown search comparison variant")
+		}
+		corpusName = "testdata/acceptance/ru-memory-search-v1.json"
+	}
+	corpus, err := os.ReadFile(filepath.Join(shadowRepoRoot(), corpusName))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -215,7 +226,7 @@ func TestMemorySemanticActualTrial(t *testing.T) {
 	}
 	exe, _ := os.Executable()
 	binary, err := acceptance.FileHash(exe)
-	if err != nil || pin.Release != release || pin.CorpusSHA256 != hashMemoryBytes(corpus) || pin.RubricSHA256 != hashMemoryBytes(method) || pin.SourceSHA256 != tree || pin.BinarySHA256 != binary {
+	if err != nil || pin.Release != release || pin.Variant != variant || pin.CorpusSHA256 != hashMemoryBytes(corpus) || pin.RubricSHA256 != hashMemoryBytes(method) || pin.SourceSHA256 != tree || pin.BinarySHA256 != binary {
 		t.Fatal("source/binary/corpus/method pins differ")
 	}
 	var actual memorySemanticExecution
@@ -267,6 +278,9 @@ func TestMemorySemanticActualTrial(t *testing.T) {
 	defer cancel()
 	plan := acceptance.MemoryPlan{Version: acceptance.MemorySemanticVersion, WindowID: "fresh-semantic-" + release[:12], CodeCommit: release, Model: antigravity.FlashHighModel, ModelVersion: "gemini-3.8-flash-n", Runtime: "current-Catalog/index/HybridReader/BuildBundle/native-5min", MemoryConfigSHA256: memoryEvalConfigDigest()}
 	c := &memoryEvalCollector{pool: pool, catalog: cat, budgets: budgets, backend: backend, suite: acceptance.MemorySuite{Version: acceptance.MemorySemanticVersion}, plan: plan, private: private, sourceRefs: state.Bindings, started: state.Started, deadline: state.Deadline, measurements: state.Measurements, freeAnswer: true, captureMilliseconds: map[string]int64{}}
+	if err = configureMemorySearchComparison(c, corpus, variant); err != nil {
+		t.Fatal(err)
+	}
 	if phase == "write" {
 		if err = c.init(ctx); err != nil {
 			t.Fatal(err)
@@ -335,6 +349,14 @@ func TestMemorySemanticActualTrial(t *testing.T) {
 	}
 	if err = c.writeEvidence("captures-before-native.json", c.captures); err != nil {
 		t.Fatal(err)
+	}
+	if variant != "" {
+		for _, input := range inputs {
+			projection, e := acceptance.MemoryModelProjection(input)
+			if e != nil || len(projection) > 24000 {
+				t.Fatal("comparison input exceeds declared data allowance before native auth", input.CaseID, input.Arm, len(projection))
+			}
+		}
 	}
 	// Auth is imported only inside the admitted fresh runtime; key bytes and raw
 	// provider diagnostics never leave the private mount/owning encrypted store.

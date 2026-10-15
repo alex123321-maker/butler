@@ -5,6 +5,14 @@ source_root=${1:?isolated source root}
 root=${2:?fresh semantic trial root}
 action=${3:?prepare or execute}
 release=${4:?exact clean commit}
+variant=${5:-}
+[[ -z "$variant" || "$variant" == baseline || "$variant" == candidate ]] || exit 2
+corpus=testdata/acceptance/ru-memory-semantic-v1.json
+review=docs/ai/memory-eval-semantic-preflight-review-20261015.md
+if [[ -n "$variant" ]]; then
+ corpus=testdata/acceptance/ru-memory-search-v1.json
+ review=docs/ai/memory-search-preflight-review-20261015.md
+fi
 [[ "$source_root" =~ ^/srv/storage/butler/agents/[a-zA-Z0-9_-]+$ && "$root" =~ ^/srv/storage/butler/agents/memory-semantic-trial-[a-zA-Z0-9_-]+$ && "$release" =~ ^[a-f0-9]{40}$ && "$source_root" != "$root" ]] || exit 2
 umask 077
 cache=/srv/storage/butler/agents/memory-eval-78-20261014/.cache
@@ -26,9 +34,9 @@ go build -p 1 -o /build/memory-eval ./cmd/memory-eval
  docker run --rm --user "$(id -u):$(id -g)" --network none --read-only --cap-drop ALL --security-opt no-new-privileges:true \
   -v "$src:/src:ro" -v "$root/build:/build:ro" "$image" /build/memory-eval -mode semantic-score -pins-only \
   -root /src -binary /build/collector.test -code-commit "$release" \
-  -suite /src/testdata/acceptance/ru-memory-semantic-v1.json -rubric /src/docs/ai/memory-eval-semantic-methodology.md | \
-  jq --arg image "$image" --arg trial "$(basename "$root")" --arg src "$src" --arg root "$root" '.+{Image:$image,TrialID:$trial,SourceDir:$src,TrialRoot:$root}' > "$root/metadata/semantic-pins.json"
- sha256sum "$src/docs/ai/memory-eval-semantic-preflight-review-20261015.md" \
+  -suite "/src/$corpus" -rubric /src/docs/ai/memory-eval-semantic-methodology.md | \
+  jq --arg variant "$variant" --arg image "$image" --arg trial "$(basename "$root")" --arg src "$src" --arg root "$root" '.+{Image:$image,TrialID:$trial,SourceDir:$src,TrialRoot:$root,Variant:$variant}' > "$root/metadata/semantic-pins.json"
+ sha256sum "$src/$review" \
   "$src/testdata/acceptance/reviews/ru-memory-semantic-calibration-review-20261015.json" > "$root/metadata/independent-review.sha256"
  docker run --rm --network none --read-only --cap-drop ALL --cap-add CHOWN --security-opt no-new-privileges:true \
   -v "$root/private:/private" "$image" chown 10001:10001 /private
@@ -40,6 +48,7 @@ go build -p 1 -o /build/memory-eval ./cmd/memory-eval
 fi
 [[ "$action" == execute && -f "$root/metadata/semantic-pins.json" && ! -e "$root/entered" ]] || exit 2
 [[ "$(cat "$root/release")" == "$release" ]] || exit 2
+[[ "$(jq -r '.Variant // ""' "$root/metadata/semantic-pins.json")" == "$variant" ]] || exit 2
 src=$(cat "$root/source-path")
 [[ "$src" == "$source_root/snapshots/"* ]] || exit 2
 sha256sum -c "$root/metadata/independent-review.sha256" > "$root/review-recheck.log"
@@ -73,7 +82,7 @@ for phase in write read; do
   --cpus 2 --memory 1536m --pids-limit 128 --tmpfs /tmp:rw,noexec,nosuid,size=16777216 \
   -v "$src:/src:ro" -v "$root/build:/runtime:ro" -v "$root/metadata:/metadata:ro" -v "$root/private:/private" \
   --mount "type=bind,src=$token,dst=/auth/local-token,readonly" "${auth_args[@]}" "${proxy_args[@]}" \
-  -w /src -e BUTLER_MEMORY_SEMANTIC_PHASE="$phase" -e BUTLER_MEMORY_EVAL_PRIVATE=/private -e BUTLER_MEMORY_EVAL_RELEASE="$release" \
+  -w /src -e BUTLER_MEMORY_SEARCH_VARIANT="$variant" -e BUTLER_MEMORY_SEMANTIC_PHASE="$phase" -e BUTLER_MEMORY_EVAL_PRIVATE=/private -e BUTLER_MEMORY_EVAL_RELEASE="$release" \
   -e BUTLER_MEMORY_EVAL_LOCAL_TOKEN_FILE=/auth/local-token -e BUTLER_TEST_MEMORY_POSTGRES_URL='postgres://butler@memory-eval-postgres:5432/memory_eval_test?sslmode=disable' \
   "$image" /runtime/collector.test -test.run '^TestMemorySemanticActualTrial$' -test.v -test.timeout 245m > "$root/entered/$phase-container-id"
  docker network connect butler-lab_local-inference "$tag-$phase"

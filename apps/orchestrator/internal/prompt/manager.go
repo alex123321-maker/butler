@@ -261,7 +261,11 @@ func formatProfileEntries(entries []map[string]any) string {
 		if key == "" || summary == "" {
 			continue
 		}
-		lines = append(lines, "- "+key+": "+summary)
+		line := "- " + key + ": " + summary
+		if refs, ok := entry["source_refs"].([]string); ok && len(refs) > 0 {
+			line += " (sources " + strings.Join(refs, ", ") + "; stored evidence)"
+		}
+		lines = append(lines, line)
 	}
 	return strings.Join(lines, "\n")
 }

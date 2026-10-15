@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"github.com/butler/butler/internal/budget"
 	"log/slog"
 	"sort"
 	"strconv"
@@ -20,14 +21,15 @@ import (
 type Diagnostic string
 
 const (
-	BaseHybrid           Diagnostic = "hybrid_base"
-	Ranked               Diagnostic = "reranked"
-	MissingIndex         Diagnostic = "semantic_index_unavailable"
-	EmbeddingUnavailable Diagnostic = "embedding_unavailable"
-	RankingUnavailable   Diagnostic = "reranker_unavailable"
-	RankingInputLimit    Diagnostic = "reranker_input_limit"
-	ExactOnly            Diagnostic = "exact_identifier_only"
-	ContextLimited       Diagnostic = "retrieval_context_limited"
+	BaseHybrid             Diagnostic = "hybrid_base"
+	Ranked                 Diagnostic = "reranked"
+	MissingIndex           Diagnostic = "semantic_index_unavailable"
+	EmbeddingUnavailable   Diagnostic = "embedding_unavailable"
+	RankingUnavailable     Diagnostic = "reranker_unavailable"
+	RankingInputLimit      Diagnostic = "reranker_input_limit"
+	ExactOnly              Diagnostic = "exact_identifier_only"
+	ContextLimited         Diagnostic = "retrieval_context_limited"
+	LocalBackendUnverified Diagnostic = "local_query_backend_unverified"
 )
 
 // SearchReport contains retrieval evidence, never a verified answer. Byte units
@@ -38,6 +40,34 @@ type SearchReport struct {
 	ContextBytes, TokenAllowanceUnits int
 	Stats                             []Stats
 	candidates, exact, vector         []Hit
+}
+
+type localQueryKey struct{}
+
+func (r *HybridReader) SearchWithPolicy(ctx context.Context, scopes []memoryservice.Scope, query string, limit int, policy memoryservice.QueryPolicy) (memoryservice.SearchResult, error) {
+	if !policy.Local {
+		return memoryservice.SearchResult{Diagnostics: []string{"query_search_disabled"}}, nil
+	}
+	ctx = context.WithValue(ctx, localQueryKey{}, !policy.External)
+	report, err := r.SearchDetailed(ctx, scopes, query, limit)
+	result := memoryservice.SearchResult{Hits: report.Hits}
+	for _, d := range report.Diagnostics {
+		result.Diagnostics = append(result.Diagnostics, string(d))
+	}
+	return result, err
+}
+
+func (r *HybridReader) localBackendProven() bool {
+	if r == nil || r.Adapter == nil {
+		return false
+	}
+	b, ok := r.Adapter.Backend.(interface{ localTarget() budget.LocalTarget })
+	a, owned := r.Adapter.Admission.(*LiveAdmission)
+	if !ok || !owned || a == nil {
+		return false
+	}
+	t := b.localTarget()
+	return t.Endpoint() == "local-models:9090" && t.Identity() != "" && t.Endpoint() == a.target.Endpoint() && t.Identity() == a.target.Identity()
 }
 
 type HybridReader struct {
@@ -113,6 +143,10 @@ func (r *HybridReader) SearchDetailed(ctx context.Context, scopes []memoryservic
 			report.Diagnostics = appendUnique(report.Diagnostics, EmbeddingUnavailable)
 			continue
 		}
+		if localOnly, _ := ctx.Value(localQueryKey{}).(bool); localOnly && !r.localBackendProven() {
+			report.Diagnostics = appendUnique(report.Diagnostics, LocalBackendUnverified)
+			continue
+		}
 		a := *r.Adapter
 		a.Space = g.Space
 		task := pb.EmbeddingTask_EMBEDDING_TASK_QUERY
@@ -139,7 +173,8 @@ func (r *HybridReader) SearchDetailed(ctx context.Context, scopes []memoryservic
 	report.candidates = candidates
 	report.exact = exact
 	report.vector = vector
-	if r.Rerank && r.Adapter != nil && len(candidates) > 1 {
+	localOnly, _ := ctx.Value(localQueryKey{}).(bool)
+	if r.Rerank && r.Adapter != nil && (!localOnly || r.localBackendProven()) && len(candidates) > 1 {
 		if err := r.rank(ctx, scopes, query, &report); err != nil {
 			return report, err
 		}
