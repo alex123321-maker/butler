@@ -13,7 +13,7 @@ import (
 	"github.com/butler/butler/internal/transport/antigravity"
 )
 
-func TestCandidateProductionReleaseCannotBeEnabledBeforeAcceptance(t *testing.T) {
+func TestCandidateProductionReleaseRequiresProfileAndBothFlags(t *testing.T) {
 	p, b := candidateQualifiedProfile()
 	for _, global := range []string{"", "true"} {
 		for _, flag := range []string{"", "true"} {
@@ -57,6 +57,8 @@ func candidateQualifiedProfile() (providerfactory.Result, *budget.Controller) {
 }
 
 func TestCandidateProfileRequiresActualMeasuredHighAndMatchingBudget(t *testing.T) {
+	t.Setenv("BUTLER_MEMORY_MODEL_JOBS_ENABLED", "true")
+	t.Setenv("BUTLER_MEMORY_MODEL_CANDIDATES_ENABLED", "true")
 	for _, change := range []string{"qualified", "nil_provider", "nil_budget", "missing_limits", "missing_timeout", "short_native_timeout", "wrong_provider", "wrong_model", "default8192", "larger_unmeasured_ceiling", "output_underbudget", "time_underbudget"} {
 		t.Run(change, func(t *testing.T) {
 			p, b := candidateQualifiedProfile()
@@ -88,11 +90,18 @@ func TestCandidateProfileRequiresActualMeasuredHighAndMatchingBudget(t *testing.
 			if candidateProfileReady(p, b) != (change == "qualified") {
 				t.Fatal("unmeasured profile or incomplete reservation accepted", change)
 			}
+			handlers := map[string]jobs.ModelHandler{}
+			configureCandidateHandler(handlers, p, b)
+			if (handlers[candidates.Version] != nil) != (memoryCandidateReleaseQualified && change == "qualified") {
+				t.Fatal("production registry bypassed the measured profile", change)
+			}
 		})
 	}
 }
 
 func TestCandidateNativeProfileUsesActualAdapterTimeout(t *testing.T) {
+	t.Setenv("BUTLER_MEMORY_MODEL_JOBS_ENABLED", "true")
+	t.Setenv("BUTLER_MEMORY_MODEL_CANDIDATES_ENABLED", "true")
 	for _, timeout := range []time.Duration{60 * time.Second, 120 * time.Second, 299 * time.Second, 300 * time.Second, 301 * time.Second} {
 		t.Run(timeout.String(), func(t *testing.T) {
 			p, b := candidateQualifiedProfile()
@@ -103,6 +112,11 @@ func TestCandidateNativeProfileUsesActualAdapterTimeout(t *testing.T) {
 			p.Provider = native
 			if candidateProfileReady(p, b) != (timeout >= 300*time.Second) {
 				t.Fatal("actual native timeout disagrees with qualification", timeout)
+			}
+			handlers := map[string]jobs.ModelHandler{}
+			configureCandidateHandler(handlers, p, b)
+			if (handlers[candidates.Version] != nil) != (memoryCandidateReleaseQualified && timeout >= 300*time.Second) {
+				t.Fatal("production registry bypassed actual native timeout", timeout)
 			}
 		})
 	}

@@ -1,0 +1,32 @@
+{
+  "handler": "source-candidates-v2",
+  "release_qualified": true,
+  "reviewed_profile_revision": "89031df4217bb91635d5b2482bd374818e1c9336",
+  "native_frozen_revision": "859523960f0c02bbf4fc7398cc9e3116f2039a95",
+  "native_window": "native-v6",
+  "profile": {
+    "actual_provider": "antigravity",
+    "model": "gemini-3.8-flash-high",
+    "maximum_output_tokens": 32768,
+    "minimum_actual_native_timeout_millis": 300000,
+    "minimum_reserved_output_tokens": 32768,
+    "minimum_reserved_model_millis": 300000
+  },
+  "native_core_semantic": "23/24",
+  "native_holdout_semantic": "8/8",
+  "native_exact_citations": "32/32",
+  "native_unsafe_promotions": 0,
+  "native_authority_writes": 0,
+  "native_window_unknown_usage": 0,
+  "native_owner_stage": "explicit_owner_acceptance_correction_revocation",
+  "controlled_lifecycle_attacks": 8,
+  "controlled_scoped_ordinary_context_revision": "5253a2339ba8ee081bda7ae047435fc0fb7fc9cf",
+  "controlled_actual_accepted_episode_backup_revision": "5bca2f875a5ae1f914af1b3e461579304301b6fb",
+  "historical_paid_attempts_retained": 82,
+  "historical_unknown_usage_retained": 2,
+  "additional_model_calls_for_release": 0,
+  "both_process_flags_required": true,
+  "process_flags_default": false,
+  "main_deployment_activated": false,
+  "general_extraction_or_native_answer_quality_claimed": false
+}
