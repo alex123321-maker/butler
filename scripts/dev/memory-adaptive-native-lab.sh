@@ -18,7 +18,7 @@ if [[ "$mode" == prepare ]];then
  mkdir -p "$proof"
  "${offline[@]}" -w /src golang:1.27.2-bookworm bash -eu -c 'go test -c -o /runtime/collector.test ./apps/orchestrator/internal/app; go build -o /runtime/tool-broker ./apps/tool-broker' > "$proof/build.log" 2>&1
  # Neither provider credentials nor any network exist during the freeze.
- "${offline[@]}" -v "$proof:/proof" -w /src/apps/orchestrator/internal/app -e BUTLER_ADAPTIVE_WRITE_PINS=1 \
+ "${offline[@]}" --user "$(id -u):$(id -g)" -v "$proof:/proof" -w /src/apps/orchestrator/internal/app -e BUTLER_ADAPTIVE_WRITE_PINS=1 \
   -e BUTLER_ADAPTIVE_RELEASE="$release" -e BUTLER_ADAPTIVE_NATIVE_PROOF=/proof -e BUTLER_MEMORY_READ_APP_BINARY=/runtime/tool-broker \
   golang:1.27.2-bookworm /runtime/collector.test -test.run '^TestMemoryAdaptiveWritePins$' -test.v > "$proof/freeze.log" 2>&1
  sha256sum "$base/runtime/collector.test" "$base/runtime/tool-broker" "$proof/frozen-pins.json" > "$proof/binaries.sha256"
@@ -56,7 +56,7 @@ collect(){
 trap collect EXIT
 # Host networking is required by the explicitly pinned local HTTPS proxy.
 # The only non-proxy connections are the isolated PG/Broker and pinned local model.
-docker run --rm --pull never --network host --add-host local-models:172.28.0.2 --cpus 2 --memory 2g --pids-limit 128 --security-opt no-new-privileges \
+docker run --rm --pull never --network host --user "$(id -u):$(id -g)" --add-host local-models:172.28.0.2 --cpus 2 --memory 2g --pids-limit 128 --security-opt no-new-privileges \
  -v "$src:/src:ro" -v "$base/runtime:/runtime:ro" -v "$proof:/proof" -v "$base/private:/private" \
  -v /srv/storage/butler/agents/local-models/private/token:/local-token:ro -w /src/apps/orchestrator/internal/app \
  --env-file "$base/private/native.env" -e BUTLER_ADAPTIVE_NATIVE_V1=1 -e BUTLER_ADAPTIVE_NATIVE_PROOF=/proof \
