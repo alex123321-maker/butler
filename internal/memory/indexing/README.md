@@ -7,6 +7,13 @@ scope/limits/authority/source revisions must match. No orphan generation remains
 after a failed admission/projection. MaxConns2 is supported without nested pool
 borrowing. The worker claims only `index` jobs, retaining original run/task refs.
 
+An owner job admits at most10000 chunks per generation. More current chunks than
+its declared `max_chunks` fail before inference with `scope_chunk_limit`; no
+partial generation activates and no automatic limit increase or retry is made.
+The existing active pointer is unchanged. This is distinct from transport
+unavailability. The synthetic capacity screen and runbook describe measured
+Store limits separately from native indexing throughput and full user latency.
+
 Each IPC reserves exact declared local pricing under current claim/source/task,
 assigned goal/mandate and shared owner-day budgets. Its bounded context is used
 for actual inference. The job context wraps every Rebuild read/publication.
@@ -36,3 +43,23 @@ Live retrieval uses the same catalog and Controller with the actual current run
 token; post-run indexing uses independent job claims. Ranking is off because the
 measured Qwen corpus did not improve the embedding baseline. Legacy cloud
 extraction/summary workers remain disabled and are unrelated to this runtime.
+
+An authenticated owner may POST `/api/v4/memory/index-retire` with exactly one
+`generation_id` and the scope's exact `expected_active_id` (empty only when no
+pointer exists). This bounded maintenance path also works while local models and
+the indexing runtime are disabled. It needs no backend or inference allowance.
+The constructor-owned index-job projection and immutable job identity prove the
+owner; projection scope must exactly match the locked generation. The projection
+has no separate SQL immutability guarantee or public mutation API. Only a terminal
+`done`/`failed`/`cancelled` job is eligible. Pending/running, foreign, ambiguous,
+active or stale-CAS generations are rejected. Locks are job, generation, active
+pointer. Current source privacy/revisions do not prevent derivative erasure.
+
+One transaction removes only that generation's vectors and records irreversible
+`retired_at`/`retired_by`. Generation, index-job, quality and spend history plus
+original sources survive. Repeating the request returns the same retirement
+timestamp and zero further removals. Retired generations cannot be rebuilt,
+previewed, verified or selected for rollback. No automatic pruning, source
+deletion, owner-scope widening or budget refund occurs. Retirement is derivative
+maintenance in PostgreSQL; use ordinary Catalog deletion and its external anchor
+for privacy erasure, including reconciliation of older restored backups.

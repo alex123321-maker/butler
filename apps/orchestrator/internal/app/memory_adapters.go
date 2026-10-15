@@ -9,14 +9,16 @@ import (
 	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/memory/chunks"
 	"github.com/butler/butler/internal/memory/episodic"
+	"github.com/butler/butler/internal/memory/experience"
 	"github.com/butler/butler/internal/memory/profile"
 	memoryservice "github.com/butler/butler/internal/memory/service"
 	"github.com/butler/butler/internal/memory/working"
 )
 
 type profileStoreAdapter struct {
-	store   *profile.Store
-	sources *catalog.Store
+	store    *profile.Store
+	sources  *catalog.Store
+	temporal bool
 }
 
 func (a profileStoreAdapter) GetByScope(ctx context.Context, scopeType, scopeID string) ([]memoryservice.ProfileEntry, error) {
@@ -36,14 +38,29 @@ func (a profileStoreAdapter) GetByScope(ctx context.Context, scopeType, scopeID 
 		if !allowed || entry.ConfirmationState != "confirmed" && entry.ConfirmationState != "auto_confirmed" {
 			continue
 		}
+		if a.temporal {
+			fact, err := a.sources.ObjectAcceptedFact(ctx, catalog.ObjectRef{Type: "profile", ID: entry.ID})
+			if err != nil {
+				return nil, err
+			}
+			if fact != nil {
+				if temporalExcluded(*fact) {
+					continue
+				}
+				result = append(result, temporalProfileEntry{Entry: entry, fact: *fact})
+				continue
+			}
+		}
 		result = append(result, entry)
 	}
 	return result, nil
 }
 
 type episodicStoreAdapter struct {
-	store   *episodic.Store
-	sources *catalog.Store
+	store      *episodic.Store
+	sources    *catalog.Store
+	temporal   bool
+	experience *experience.Store
 }
 
 type memoryEpisodeExactMatch struct{ episodic.Episode }
@@ -65,6 +82,26 @@ func (a episodicStoreAdapter) Search(ctx context.Context, scopeType, scopeID str
 		if !allowed || entry.ConfirmationState != "confirmed" && entry.ConfirmationState != "auto_confirmed" {
 			continue
 		}
+		eligible, e := experienceObjectAllowed(ctx, a.sources, a.experience, entry.ID)
+		if e != nil {
+			return nil, e
+		}
+		if !eligible {
+			continue
+		}
+		if a.temporal {
+			fact, err := a.sources.ObjectAcceptedFact(ctx, catalog.ObjectRef{Type: "episodic", ID: entry.ID})
+			if err != nil {
+				return nil, err
+			}
+			if fact != nil {
+				if temporalExcluded(*fact) {
+					continue
+				}
+				result = append(result, temporalEpisodeEntry{Episode: entry.Episode, fact: *fact, distance: entry.Distance})
+				continue
+			}
+		}
 		result = append(result, entry)
 	}
 	return result, nil
@@ -83,6 +120,26 @@ func (a episodicStoreAdapter) FindBySummary(ctx context.Context, scopeType, scop
 		}
 		if !allowed || entry.ConfirmationState != "confirmed" && entry.ConfirmationState != "auto_confirmed" {
 			continue
+		}
+		eligible, e := experienceObjectAllowed(ctx, a.sources, a.experience, entry.ID)
+		if e != nil {
+			return nil, e
+		}
+		if !eligible {
+			continue
+		}
+		if a.temporal {
+			fact, err := a.sources.ObjectAcceptedFact(ctx, catalog.ObjectRef{Type: "episodic", ID: entry.ID})
+			if err != nil {
+				return nil, err
+			}
+			if fact != nil {
+				if temporalExcluded(*fact) {
+					continue
+				}
+				result = append(result, temporalEpisodeEntry{Episode: entry, fact: *fact, distance: .25})
+				continue
+			}
 		}
 		result = append(result, memoryEpisodeExactMatch{Episode: entry})
 	}

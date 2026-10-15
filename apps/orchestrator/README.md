@@ -1,5 +1,14 @@
 The opt-in memory-eval collector runs only in an isolated fresh test database.
 
+Temporal memory owner controls (`/api/v4/memory/temporal`, `/facts`, and
+`/revalidate-read` under `/api/v4/memory`) require private owner authentication and
+`BUTLER_MEMORY_TEMPORAL_ENABLED`; the default is false and a separate code-owned
+qualification is currently false. Complete RFC3339 validity/knowledge instants
+remain separate from reported EventTime. Ordinary context can exclude expired
+one-off exceptions while retaining broader accepted preferences, with explicit
+unknown/stale annotations. Prepared runs bind the observed accepted head and
+temporal revision, including SQL publication fences independent of the flag.
+
 Orchestrator also owns the default-off durable generative memory worker:
 `BUTLER_MEMORY_MODEL_JOBS_ENABLED=true` composes it; owner controls separately
 enable its persisted execution state. The handler registry defaults empty.
@@ -36,6 +45,12 @@ or authorize replaying activation. Candidate collection/checking remains its
 separate earlier phase.
 # Orchestrator
 
+Current-source denial retains valid complete turn usage on the safe error event
+before the budget wrapper terminates the attempt. Denied tool/final text never
+passes through this accounting path. Provider cancellation and metadata drain are
+synchronous and bounded100ms/256events; an absent usage observation remains NULL
+and no conservative reservation is refunded.
+
 Optional `BUTLER_MEMORY_READ_ENABLED=true` mounts the authenticated private
 `/internal/memory-read` control for fixed Broker search/open/neighbors contracts.
 It reconstructs current actual dispatch/input/Session ownership, uses catalog
@@ -55,6 +70,15 @@ actual owner session; policy/job controls and observations remain the existing
 memory model-job APIs. [Consumer contract](../../internal/memory/compaction/README.md)
 documents protected user statements, exact excerpts, typed tool state, 60% budget
 trigger, coverage CAS, privacy deletion, finite fallback and migration072.
+
+Long-term owner-reviewed consolidation is separately default off under
+`BUTLER_MEMORY_CONSOLIDATION_CONSUMER_ENABLED`. It uses the same durable model
+worker, immutable source/accepted-temporal snapshots, staged DATA generations,
+deterministic diff and owner head/revision CAS. Its code-owned qualification is
+closed pending consumer acceptance. Private `/api/v4/memory/consolidation/*`
+controls preserve current source/context/temporal proof for selection/rollback;
+retirement deletes derivatives through the existing catalog anchor. See the
+[owner workflow and retention limits](../../internal/memory/consolidation/README.md).
 
 The default prompt includes an internal execution/completion protocol and keeps
 negation, source authority and durable retry/effect policy explicit. Core never
@@ -701,6 +725,13 @@ See the [indexing composition](../../internal/memory/indexing/README.md) and
 identity or declared local price disables only that owned semantic path; legacy
 cloud memory model jobs remain denied.
 
+POST `/api/v4/memory/index-retire` is available to the authenticated owner even
+with local indexing disabled. Send `generation_id` and `expected_active_id`;
+only one inactive terminal owner-job generation is eligible. It atomically
+removes that generation's vectors and marks it irreversibly retired, preserving
+originals, jobs, quality and spend history. Active/busy/foreign/stale choices are
+rejected; retired rollback is denied. No inference or automatic pruning occurs.
+
 ## Delegation foundation
 
 The internal delegation contract, tree admission/owner-control barrier, executor
@@ -898,3 +929,25 @@ BUTLER_MEMORY_ADAPTIVE_RETRIEVAL_ENABLED defaults false; flags cannot bypass the
 qualification constant. Explicit isolated composition uses the existing ordinary
 Flow and Broker, preserves scoped accepted preferences and verifies actual opened
 current evidence before release. See docs/architecture/adaptive-memory-retrieval.md.
+
+Memory Doctor now includes `effective_features`: requested startup flags, actual
+constructed services/handlers, code-owned release gates and supported model
+profile remain separate. Its fresh owner policy counts and durable worker control
+are operational observations, not job admission or answer quality. Missing or
+failed observations never manufacture zero allowance, zero usage or an eligible
+policy. See [Memory Doctor](../../internal/memory/doctor/README.md).
+
+Typed episodic experience (#90) uses owned task/final/effect/transcript/usage
+evidence, the existing finite background worker and owner-only memory decisions.
+`BUTLER_MEMORY_EXPERIENCE_ENABLED` defaults off and cannot bypass the closed
+quality gate. A runtime environment fingerprint and exact current Broker tool
+contracts bound reuse; negative/unknown feedback is retained. Experience-derived
+skill promotion uses the existing reviewed lifecycle with repeated independent
+task evidence. Migration077 is required; body text remains only in the ordinary
+deletion-aware Catalog/Episodic graph. See
+[the contract](../../docs/architecture/episodic-experience.md).
+
+Retrieved document text remains eligible when the source has no title. The
+final prompt formatter uses a neutral Document label; an absent title must not
+silently discard an already authorized, selected fragment. Empty evidence text
+is still omitted. Source provenance and currentness checks remain mandatory.

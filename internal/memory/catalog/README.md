@@ -1,5 +1,41 @@
 # Memory source catalog
 
+Migration079 closes cached tool/approval payloads under exact affected run pins.
+Delete/revoke and external-anchor reconciliation erase their args/results/errors
+and copied approval prose while preserving tool identity/status, confirmed or
+unknown effects, digests and charged attempts. A content-free irreversible run
+marker prevents late payload resurrection. Unrelated runs remain intact. The
+migration also sweeps already withdrawn/redacted runs of the same recorded owner;
+it neither renumbers the external deletion anchor nor reopens an old window.
+
+Actual read permission remains current after a historical lookup. A tool result
+is a primary Transcript cache, not a second permission to keep deleted source
+bytes. Existing release guards also protect late tool Transcript inserts.
+
+Ordinary token-only standalone source observations hold the complete current
+lease/task/source/temporal proof through bounded rollback. They select no new
+source and need no durable observer commit; the200ms deadline remains intact.
+Compound owner/checker contexts and owning dispatch/publication transactions keep
+their existing commit semantics. Fixed phase/pool diagnostics contain no source
+text, SQL parameters, raw errors or credential material. See the
+[audit and retained failure](../../../docs/testing/issue-88-sourceguard-diagnosis.md).
+
+[Temporal memory](../../../docs/architecture/memory-temporal.md) versions owner
+validity interpretation separately from source EventTime/ingestion and existing
+head decisions. Typed accepted-fact reads cap a whole page at64, count unknown
+validity, and pin current head/source/metadata/freshness. Derived and ordinary
+run pins survive restart and deny late publication after metadata-only changes.
+Logical expiry labels or excludes current retrieval; it does not erase history,
+supersede an owner preference or create a privacy tombstone.
+
+An owner can review an actual already budgeted Broker `http.request` read using
+`SetTemporalFromBrokerRead`. The exact successful read receipt, original prepared
+fact pin, dispatch, normalized saved result and resource hash must match. The
+verification instant is the original observed time, so replay cannot refill TTL.
+This method never performs HTTP and no receipt automatically asserts semantic
+truth. Failed/unavailable reads retain unknown/stale verification. Private owner
+API controls and normal context enrichment remain default-off and unqualified.
+
 The optional [candidate control](../candidatecontrol/README.md) publishes agent
 proposals using current run/input/dispatch and source proof. Its trusted effect
 deduplication appends neutral confidence0 candidates. Concurrent workers cannot

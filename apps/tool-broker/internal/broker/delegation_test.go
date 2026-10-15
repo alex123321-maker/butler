@@ -19,6 +19,7 @@ import (
 	toolbrokerv1 "github.com/butler/butler/internal/gen/toolbroker/v1"
 	"github.com/butler/butler/internal/memory/candidatecontrol"
 	"github.com/butler/butler/internal/memory/catalog"
+	"github.com/butler/butler/internal/memory/factcontrol"
 	"github.com/butler/butler/internal/memory/readcontrol"
 	"github.com/butler/butler/internal/singletabcontrol"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -106,7 +107,14 @@ func TestDelegationBrokerHarness(t *testing.T) {
 	}
 	var executor RuntimeExecutor
 	contract := delegation.AdmissionContract()
-	if tool := os.Getenv("BUTLER_MEMORY_READ_HARNESS"); readcontrol.IsTool(tool) {
+	if os.Getenv("BUTLER_MEMORY_FACT_HARNESS") == "1" {
+		client, err := factcontrol.NewClient(os.Getenv("BUTLER_DELEGATION_ADMISSION_URL"), token)
+		if err != nil {
+			t.Fatal(err)
+		}
+		executor = &MemoryFactExecutor{Facts: client}
+		contract = factcontrol.Contract()
+	} else if tool := os.Getenv("BUTLER_MEMORY_READ_HARNESS"); readcontrol.IsTool(tool) {
 		client, err := readcontrol.NewClient(os.Getenv("BUTLER_DELEGATION_ADMISSION_URL"), token)
 		if err != nil {
 			t.Fatal(err)

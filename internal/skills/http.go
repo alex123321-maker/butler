@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/subtle"
 	"encoding/json"
+	"github.com/butler/butler/internal/memory/catalog"
 	"github.com/butler/butler/internal/owneridentity"
 	"io"
 	"net/http"
@@ -145,13 +146,15 @@ func NewHandler(token string, s *Store) http.Handler {
 }
 
 type sourceRequest struct {
-	OwnerID string        `json:"owner_id"`
-	Sources []EvidenceRef `json:"sources"`
-	Usages  []Usage       `json:"usages,omitempty"`
+	OwnerID string         `json:"owner_id"`
+	Sources []EvidenceRef  `json:"sources"`
+	Usages  []Usage        `json:"usages,omitempty"`
+	Lineage *LessonRequest `json:"lineage,omitempty"`
 }
 type sourceResponse struct {
-	Proofs   []SourceProof `json:"proofs"`
-	Outcomes []Outcome     `json:"outcomes,omitempty"`
+	Proofs        []SourceProof       `json:"proofs"`
+	Outcomes      []Outcome           `json:"outcomes,omitempty"`
+	LessonParents []catalog.SourceRef `json:"lesson_parents,omitempty"`
 }
 
 func NewEvidenceHandler(token string, v EvidenceVerifier) http.Handler {
@@ -160,13 +163,29 @@ func NewEvidenceHandler(token string, v EvidenceVerifier) http.Handler {
 		if !privateRequest(w, r, token, &req) {
 			return
 		}
-		if v == nil || req.OwnerID == "" || len(req.Sources) > 8 || len(req.Usages) > 200 || (len(req.Sources) == 0) == (len(req.Usages) == 0) {
+		operations := 0
+		if len(req.Sources) > 0 {
+			operations++
+		}
+		if len(req.Usages) > 0 {
+			operations++
+		}
+		if req.Lineage != nil {
+			operations++
+		}
+		if v == nil || req.OwnerID == "" || len(req.Sources) > 8 || len(req.Usages) > 200 || operations != 1 {
 			http.Error(w, "source verification unavailable", http.StatusForbidden)
 			return
 		}
 		result := sourceResponse{}
 		var err error
-		if len(req.Sources) > 0 {
+		if req.Lineage != nil {
+			if reader, ok := v.(LessonVerifier); ok {
+				result.LessonParents, err = reader.VerifyLessonLineage(r.Context(), req.OwnerID, *req.Lineage)
+			} else {
+				err = ErrUnavailable
+			}
+		} else if len(req.Sources) > 0 {
 			result.Proofs, err = v.VerifySkillSources(r.Context(), req.OwnerID, req.Sources)
 		} else if reader, ok := v.(OutcomeReader); ok {
 			result.Outcomes, err = reader.ReadSkillOutcomes(r.Context(), req.OwnerID, req.Usages)
@@ -270,4 +289,10 @@ func (c *Client) ReadSkillOutcomes(ctx context.Context, owner string, usages []U
 	var r sourceResponse
 	err := c.read(ctx, sourceRequest{OwnerID: owner, Usages: usages}, &r)
 	return r.Outcomes, err
+}
+
+func (c *Client) VerifyLessonLineage(ctx context.Context, owner string, q LessonRequest) ([]catalog.SourceRef, error) {
+	var r sourceResponse
+	err := c.read(ctx, sourceRequest{OwnerID: owner, Lineage: &q}, &r)
+	return r.LessonParents, err
 }

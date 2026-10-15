@@ -101,6 +101,9 @@ func (r *Runtime) ProcessOne(ctx context.Context) (bool, error) {
 	retry := false
 	if e != nil {
 		code = "index_rejected"
+		if errors.Is(e, semantic.ErrSourceLimit) {
+			code = "scope_chunk_limit"
+		}
 		if errors.Is(e, semantic.ErrUnavailable) {
 			code = "local_model_unavailable"
 			retry = true

@@ -1,0 +1,10 @@
+DROP TRIGGER IF EXISTS experience_tool_publication_fence ON tool_calls;
+DROP TRIGGER IF EXISTS temporal_tool_publication_fence ON tool_calls;
+DROP TRIGGER IF EXISTS summary_tool_publication_fence ON tool_calls;
+DROP TRIGGER IF EXISTS memory_tool_publication_fence ON tool_calls;
+DROP TRIGGER IF EXISTS memory_approval_event_payload_fence ON approval_events;
+DROP TRIGGER IF EXISTS memory_approval_payload_fence ON approvals;
+DROP TRIGGER IF EXISTS memory_tool_payload_fence ON tool_calls;
+DROP FUNCTION IF EXISTS butler_memory_tool_payload_fence();
+DROP TABLE IF EXISTS memory_run_payload_redactions;
+DROP FUNCTION IF EXISTS butler_memory_payload_redaction_identity();

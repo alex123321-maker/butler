@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/butler/butler/internal/actionauth"
+	"github.com/butler/butler/internal/memory/catalog"
 )
 
 const MaxBytes = 40 * 1024 // private envelope / tool argument bound
@@ -60,18 +61,19 @@ type Scenario struct {
 	Expected string `json:"expected"`
 }
 type Manifest struct {
-	Format        string        `json:"format"`
-	ID            string        `json:"id"`
-	Version       string        `json:"version"`
-	Source        Source        `json:"source"`
-	Description   string        `json:"description"`
-	When          []string      `json:"when"`
-	Inputs        []string      `json:"inputs"`
-	NotApplicable []string      `json:"not_applicable"`
-	Dependencies  []Dependency  `json:"dependencies"`
-	Steps         []Step        `json:"steps"`
-	Tests         []Scenario    `json:"tests"`
-	Sources       []EvidenceRef `json:"sources"`
+	Format        string              `json:"format"`
+	ID            string              `json:"id"`
+	Version       string              `json:"version"`
+	Source        Source              `json:"source"`
+	Description   string              `json:"description"`
+	When          []string            `json:"when"`
+	Inputs        []string            `json:"inputs"`
+	NotApplicable []string            `json:"not_applicable"`
+	Dependencies  []Dependency        `json:"dependencies"`
+	Steps         []Step              `json:"steps"`
+	Tests         []Scenario          `json:"tests"`
+	Sources       []EvidenceRef       `json:"sources"`
+	LessonSources []catalog.SourceRef `json:"lesson_sources,omitempty"`
 }
 type Package struct {
 	Manifest Manifest `json:"manifest"`
@@ -116,6 +118,16 @@ func validStrings(values []string, max int) bool {
 	return true
 }
 func validate(m Manifest) error {
+	if len(m.LessonSources) > 8 {
+		return ErrManifest
+	}
+	lessonIDs := map[string]bool{}
+	for _, r := range m.LessonSources {
+		if r.ID == "" || len(r.ID) > 512 || r.Revision < 1 || r.AccessRevision < 1 || !digest.MatchString(r.Hash) || lessonIDs[r.ID] {
+			return ErrManifest
+		}
+		lessonIDs[r.ID] = true
+	}
 	u, err := url.Parse(m.Source.URI)
 	if m.Format != Format || !identifier.MatchString(m.ID) || !version.MatchString(m.Version) || err != nil || u.Scheme != "https" || u.Hostname() == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || strings.TrimSpace(m.Source.Revision) == "" || len(m.Source.Revision) > 160 || strings.TrimSpace(m.Description) == "" || len(m.Description) > 512 || !validStrings(m.When, 8) || !validStrings(m.Inputs, 16) || !validStrings(m.NotApplicable, 16) || len(m.Dependencies) == 0 || len(m.Dependencies) > 16 || len(m.Steps) == 0 || len(m.Steps) > 24 || len(m.Sources) == 0 || len(m.Sources) > 8 || len(m.Tests) != 3 {
 		return ErrManifest

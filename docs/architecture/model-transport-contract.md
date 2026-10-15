@@ -1,14 +1,18 @@
 # Butler — Model Transport Contract
 
 Native Gemini tool declarations lower the known `minLength`, `maxLength`,
-`minimum` and `maximum` validation annotations out of the provider-facing schema.
+`minimum`, `maximum`, `minItems` and `maxItems` validation annotations out of the provider-facing schema.
 The original logical ToolDefinition, canonical Broker schema and action contract
 hash remain unchanged; Tool Broker and owning typed argument decoders enforce
-the bounds before execution. Native argument shape/type/required/unknown-field
+the bounds before execution. Original array cardinalities are additionally
+enforced by the native argument decoder before emitting any action proposal.
+Negative/noninteger array bounds, inverted intervals and non-array shapes fail
+closed before authentication/HTTP. Native argument shape/type/required/unknown-field
 checks remain in place, and unknown schema keywords fail closed. This narrow
 dialect conversion does not change configured structured response schemas,
 authorization, budgets or model selection. Canonical memory search/open/neighbors
-contracts must pass the offline native declaration regression before inference.
+and exact temporal facts contracts must pass the offline native declaration
+regression before inference.
 
 Memory query locality is independent of provider release. A local-only task can
 use authorized PostgreSQL evidence and the pinned internal inference service;
@@ -101,6 +105,15 @@ metadata probe proves profile availability only; its possible rotation is unknow
 and it does not prove generation capability or allow retry.
 
 ## 1. Статус документа
+
+Complete admitted-turn usage remains accounting metadata after a current memory
+source guard denies the associated tool/final output. The guard may forward that
+validated usage on its fixed transport-error event; it must strip the denied
+payload, cancel the provider and never authorize another request. Ticker/proposal
+races drain only already-ready events plus a synchronous100ms/256-event cleanup
+bound; missing/partial usage stays unknown. The owning budget wrapper persists
+known usage before delivering the error and retains the conservative reservation.
+Neither a denial nor an observed cost grants source access or action authority.
 
 **Тип документа:** Architecture Subspec / Model Transport Contract
 **Версия:** 0.1

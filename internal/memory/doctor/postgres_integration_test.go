@@ -38,6 +38,13 @@ func TestDurableMemoryObservationsRecoverAndFailWithoutZeros(t *testing.T) {
 			t.Fatal("durable metrics missing or private")
 		}
 	}
+	if _, err = pool.Exec(ctx, `UPDATE semantic_index_generations SET retired_at=clock_timestamp(),retired_by='PRIVATE_OWNER' WHERE id='generation'`); err != nil {
+		t.Fatal(err)
+	}
+	retired, _, err := (&postgresReader{pool: pool}).Indexes(ctx, "PRIVATE_OWNER")
+	if err != nil || len(retired) != 1 || retired[0].State != "retired" || retired[0].Active {
+		t.Fatal("retired derivative misreported as reusable", retired, err)
+	}
 	if _, err = pool.Exec(ctx, `ALTER TABLE memory_aux_jobs RENAME TO temporarily_unavailable_jobs`); err != nil {
 		t.Fatal(err)
 	}

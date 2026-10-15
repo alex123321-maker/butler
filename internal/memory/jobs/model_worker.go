@@ -38,6 +38,10 @@ type ModelPublicationHandler interface {
 	PublishTx(context.Context, pgx.Tx, *catalog.Store, Job, ModelAttempt, []catalog.Source, catalog.Source, string) error
 }
 
+// ModelStagedResultHandler is trusted code-owned registration, never a model
+// field. Initial quarantine prevents ordinary open/search before owner activation.
+type ModelStagedResultHandler interface{ StagedModelResult() bool }
+
 // ModelInputSelector narrows model-visible bodies without weakening the complete
 // durable source manifest used by admission, supervision and publication. It runs
 // in the existing admission transaction after every source is locked/checked.
@@ -179,7 +183,13 @@ func (w *ModelWorker) Admit(ctx context.Context, j Job, handlers ...ModelHandler
 	if e != nil {
 		return a, nil, e
 	}
-	admission, e := s.budgets.ReserveAuxiliaryTx(ctx, tx, budget.AuxiliaryIdentity{OwnerID: j.OwnerID, TaskID: j.TaskID, MandateID: j.Authority.MandateID, JobID: j.ID, OperationID: op, Limits: j.Allowance, Deadline: j.Deadline, InputBytes: quote.ProviderInputBytes, Tokens: quote.Tokens, ActiveMillis: quote.ActiveMillis, Quote: &quote, PolicyID: p.ID, PolicyLimits: p.Job.Allowance, PolicyDeadline: p.Job.Deadline})
+	additionalTasks := make([]budget.AuxiliaryTaskIdentity, 0, len(j.Contexts))
+	for _, pin := range j.Contexts {
+		if pin.TaskID != "" {
+			additionalTasks = append(additionalTasks, budget.AuxiliaryTaskIdentity{TaskID: pin.TaskID, MandateID: pin.Authority.MandateID})
+		}
+	}
+	admission, e := s.budgets.ReserveAuxiliaryTx(ctx, tx, budget.AuxiliaryIdentity{OwnerID: j.OwnerID, TaskID: j.TaskID, MandateID: j.Authority.MandateID, JobID: j.ID, OperationID: op, Limits: j.Allowance, Deadline: j.Deadline, InputBytes: quote.ProviderInputBytes, Tokens: quote.Tokens, ActiveMillis: quote.ActiveMillis, Quote: &quote, PolicyID: p.ID, PolicyLimits: p.Job.Allowance, PolicyDeadline: p.Job.Deadline, AdditionalTasks: additionalTasks})
 	if e != nil {
 		return a, nil, e
 	}
@@ -215,6 +225,26 @@ func (w *ModelWorker) Admit(ctx context.Context, j Job, handlers ...ModelHandler
 		d, e := actionauth.AuthorityDeadline(m, g, now)
 		if e != nil {
 			return a, nil, e
+		}
+		if d.Before(deadline) {
+			deadline = d
+		}
+	}
+	for _, pin := range j.Contexts {
+		if pin.Authority.TaskID == "" {
+			continue
+		}
+		var now time.Time
+		if e = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&now); e != nil {
+			return a, nil, e
+		}
+		m, g, err := actionauth.CheckAssignmentTx(ctx, tx, pin.Authority, now)
+		if err != nil {
+			return a, nil, err
+		}
+		d, err := actionauth.AuthorityDeadline(m, g, now)
+		if err != nil {
+			return a, nil, err
 		}
 		if d.Before(deadline) {
 			deadline = d
@@ -357,13 +387,23 @@ func (s *Store) publishModel(ctx context.Context, j Job, a ModelAttempt, body st
 	if state != "observed" {
 		return "", ErrClaim
 	}
-	src, e := s.catalog.CreateDerivedTx(ctx, tx, j.Sources, j.Purpose, "Background memory candidate", body, jsonBytes(map[string]string{"job_id": j.ID, "operation_id": a.OperationID, "handler": j.Purpose}))
+	createDerived := s.catalog.CreateDerivedTx
+	if len(handlers) == 1 {
+		if h, ok := handlers[0].(ModelStagedResultHandler); ok && h.StagedModelResult() {
+			createDerived = s.catalog.CreateStagedDerivedTx
+		}
+	}
+	src, e := createDerived(ctx, tx, j.Sources, j.Purpose, "Background memory candidate", body, jsonBytes(map[string]string{"job_id": j.ID, "operation_id": a.OperationID, "handler": j.Purpose}))
 	if e != nil {
 		return "", e
 	}
 	if len(handlers) == 1 {
 		if h, ok := handlers[0].(ModelPublicationHandler); ok {
-			if e = h.PublishTx(ctx, tx, s.catalog, j, a, sources, src, body); e != nil {
+			publication, e := s.catalog.WithFreshPublicationSourceTx(ctx, tx, src, j.Sources, j.Purpose)
+			if e != nil {
+				return "", e
+			}
+			if e = h.PublishTx(publication, tx, s.catalog, j, a, sources, src, body); e != nil {
 				return "", e
 			}
 		}

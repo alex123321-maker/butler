@@ -1,5 +1,13 @@
 # Versioned memory sources and privacy
 
+Migration079 extends source/run privacy to primary Transcript tool caches and
+copied approval payloads. An irreversible content-free run marker is committed
+with erasure; late tool publication and payload rewrites cannot resurrect it.
+Exact effects, action/receipt hashes, tool outcomes, attempts and usage survive.
+Unrelated runs are retained. Previously withdrawn source pins and redacted
+messages receive the same cache erasure during upgrade without changing external
+anchor numbering. See the [Catalog contract](../../internal/memory/catalog/README.md).
+
 PostgreSQL remains authoritative for Transcript, Working, Episodic and Profile
 Memory. Migrations 046–049 add a catalog of stable source IDs, immutable content
 revisions, reported author/event time, extraction time, scope, inherited private

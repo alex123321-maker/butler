@@ -59,10 +59,14 @@ func (s *Store) checkRunTx(ctx context.Context, tx pgx.Tx, c actionauth.ContextS
 	_, err := actionauth.CheckTaskAuthorityTx(ctx, tx, c.TaskID, c.OwnerID, c.Authority, at)
 	return err
 }
+
+type experienceEnvironmentKey struct{}
+
 func runContext(ctx context.Context, c actionauth.ContextSnapshot) context.Context {
 	// Even an owner control call routed to a run must use current run authority,
 	// not accidentally inherit the actor's unrestricted owner memory view.
 	ctx = owneridentity.WithActor(ctx, owneridentity.Actor{})
+	ctx = context.WithValue(ctx, experienceEnvironmentKey{}, c.ExperienceEnvironmentHash)
 	return ownership.WithToken(ctx, nil, ownership.Token{SessionKey: c.SessionKey, RunID: c.RunID, LeaseID: c.LeaseID, FenceEpoch: c.LeaseEpoch})
 }
 func dependenciesMatch(p Package, contracts []*toolbrokerv1.ToolContract) bool {
@@ -121,6 +125,10 @@ func (s *Store) Index(ctx context.Context, run, query string, limit int) ([]Desc
 	result := []Descriptor{}
 	terms := strings.Fields(strings.ToLower(query))
 	for _, hash := range ids {
+		metadata, e := s.metadata(ctx, s.pool, hash)
+		if e != nil || !dependenciesMatch(Package{Manifest: Manifest{Dependencies: metadata.dependencies}}, contracts) {
+			continue
+		}
 		r, e := s.Get(ctx, hash)
 		if e != nil || !r.Active || r.Status != "active" || !dependenciesMatch(r.Package, contracts) {
 			continue
@@ -152,6 +160,10 @@ func (s *Store) Load(ctx context.Context, run, hash string, maxBytes int) (Packa
 	ctx = runContext(ctx, c)
 	contracts, err := s.environment.ContractsForRun(ctx, run)
 	if err != nil {
+		return Package{}, ErrConflict
+	}
+	metadata, err := s.metadata(ctx, s.pool, hash)
+	if err != nil || !dependenciesMatch(Package{Manifest: Manifest{Dependencies: metadata.dependencies}}, contracts) {
 		return Package{}, ErrConflict
 	}
 	if maxBytes <= 0 {

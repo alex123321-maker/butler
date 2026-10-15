@@ -49,6 +49,12 @@ An unchanged title/content hash can reuse a vector from the exact same space int
 a new generation after a citation/path change. This refreshes revision-bound
 citations without another model call; changed content never matches that hash.
 
+Exceeding the caller's finite source count returns `ErrSourceLimit` (also
+`errors.Is(ErrInvalid)` for compatibility). Owned indexing reports the explicit
+`scope_chunk_limit` outcome before inference instead of silently indexing a
+partial prefix. The Store ceiling100000 is separate from the owned runtime's
+maximum10000 chunks per generation; neither is a measured production SLO.
+
 Staged `Preview` evaluates without activation. `Verify` requires complete current
 coverage and a trusted reviewed quality artifact showing an improvement. `Activate`
 uses the expected previous ID; the same primitive rolls back to a still-current
@@ -56,6 +62,16 @@ ready generation. An edited source makes old generations unsuitable for rollback
 Ready generations cannot be mutated, and downgrade refuses retained history.
 The artifact reference/hash is a review record, not an automatic external proof
 reader or a declaration that similarity establishes factual truth.
+
+Migration078 adds irreversible retirement metadata without changing the retained
+building/ready audit state. `Generation` reports `State="retired"` when present;
+Put, Rebuild, Search, Preview, Verify and Activate reject that state. Owner
+indexing maintenance removes one inactive terminal-job generation's vectors in
+the same transaction, keeping original chunks, generation/job/quality/spend
+history. No model, backend, current source grant or automatic pruning is needed.
+The exact current active pointer is a CAS precondition. The authenticated owner
+path performs the Catalog restore proof and terminal-job owner check before
+generation/pointer locks; direct retrieval never grants retirement authority.
 
 `Reader` optionally plugs into the memory bundle with source refs/revisions and
 typed private origin. `LiveAdmission` now reserves current run-owned local query

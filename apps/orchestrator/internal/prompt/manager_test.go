@@ -10,6 +10,24 @@ import (
 	memoryservice "github.com/butler/butler/internal/memory/service"
 )
 
+func TestAssemblerRetainsUntitledRetrievedDocument(t *testing.T) {
+	t.Parallel()
+	assembly := NewAssembler().Assemble(defaultConfigState(), Context{Chunks: []map[string]any{
+		{"title": "", "summary": "Actual retrieved evidence without a title", "source_ref": "memory_chunk:1"},
+		{"title": "Named", "summary": "Other evidence"},
+		{"title": "Empty body", "summary": ""},
+	}})
+	for _, section := range assembly.Sections {
+		if section.Name == "document_chunks" {
+			if section.Omitted || !strings.Contains(section.Content, "Actual retrieved evidence without a title") || !strings.Contains(section.Content, "Named: Other evidence") || strings.Contains(section.Content, "Empty body") {
+				t.Fatal("retrieved text was lost or empty evidence invented", section)
+			}
+			return
+		}
+	}
+	t.Fatal("document evidence section missing")
+}
+
 func TestManagerGetFallsBackToDefaultPrompt(t *testing.T) {
 	t.Parallel()
 

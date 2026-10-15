@@ -37,10 +37,16 @@ func (p *usageProvider) StartRun(_ context.Context, _ transport.StartRunRequest)
 	return out, nil
 }
 
-type deniedUsageSources struct{ checks atomic.Int32 }
+type deniedUsageSources struct {
+	checks  atomic.Int32
+	timeout bool
+}
 
 func (s *deniedUsageSources) CheckRunSources(context.Context, string) error {
 	if s.checks.Add(1) > 1 {
+		if s.timeout {
+			return context.DeadlineExceeded
+		}
 		return errors.New("current source authority revoked")
 	}
 	return nil
@@ -79,6 +85,7 @@ func TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegrati
 		events                              []transport.TransportEvent
 		known, failed, cancel, sourceDenied bool
 		high, noRelease                     bool
+		sourceTimeout                       bool
 	}{
 		{name: "known_tool_before_tool_failure_or_cancel", events: []transport.TransportEvent{tool(&valid)}, known: true, cancel: true},
 		{name: "batch_is_one_inference_not_per_tool", events: []transport.TransportEvent{batch}, known: true},
@@ -93,7 +100,9 @@ func TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegrati
 		{name: "unfinished_delta_is_not_usage", events: []transport.TransportEvent{partial}, failed: true},
 		{name: "stream_without_terminal_has_NULL", events: []transport.TransportEvent{transport.NewEvent("run", transport.EventTypeRunStarted, "fixture")}},
 		{name: "cancel_before_usage_has_NULL", cancel: true},
-		{name: "revoked_source_before_tool_release", events: []transport.TransportEvent{tool(&valid)}, sourceDenied: true, failed: true},
+		{name: "revoked_source_before_tool_release", events: []transport.TransportEvent{tool(&valid)}, sourceDenied: true, failed: true, known: true},
+		{name: "source_check_timeout_preserves_known_proposal_usage", events: []transport.TransportEvent{tool(&valid)}, sourceDenied: true, sourceTimeout: true, failed: true, known: true},
+		{name: "source_check_timeout_preserves_known_final_usage", events: []transport.TransportEvent{final(&valid)}, sourceDenied: true, sourceTimeout: true, failed: true, known: true, noRelease: true},
 		{name: "High_tool_candidates_plus_thinking_under_generation_bound", events: []transport.TransportEvent{tool(&underGeneration)}, known: true, high: true},
 		{name: "High_tool_thinking_exceeds_generation_bound", events: []transport.TransportEvent{tool(&overGeneration)}, known: true, high: true, failed: true, noRelease: true},
 		{name: "High_final_thinking_exceeds_generation_bound", events: []transport.TransportEvent{final(&overGeneration)}, known: true, high: true, failed: true, noRelease: true},
@@ -129,7 +138,7 @@ func TestModelTurnUsageOwnsOnePGObservationAcrossToolsFinalsAndFailuresIntegrati
 			provider := &usageProvider{events: c.events, hold: c.cancel && !c.known}
 			var raw transport.ModelProvider = provider
 			if c.sourceDenied {
-				raw = &sourceGuardedProvider{ModelProvider: provider, sources: &deniedUsageSources{}}
+				raw = &sourceGuardedProvider{ModelProvider: provider, sources: &deniedUsageSources{timeout: c.sourceTimeout}}
 			}
 			service := &Service{config: Config{Budgets: controller, ProviderName: providerName, ModelName: modelName}, log: slog.New(slog.NewTextHandler(io.Discard, nil))}
 			wrapper := &budgetedProvider{ModelProvider: raw, service: service}

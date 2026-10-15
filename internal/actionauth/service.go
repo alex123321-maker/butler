@@ -105,6 +105,9 @@ func (s *Service) binding(ctx context.Context, call *toolbrokerv1.ToolCall, cont
 	if isMemoryRead(call.GetToolName()) && (c.TaskID == "" || !c.MemoryReadReady) {
 		return b, false, fmt.Errorf("memory read composition is unavailable")
 	}
+	if call.GetToolName() == "memory.facts" && !c.MemoryTemporalReady {
+		return b, false, fmt.Errorf("temporal fact composition is unavailable")
+	}
 	if strings.HasPrefix(call.GetToolName(), "workspace.") && (c.TaskID == "" || !c.WorkspaceReady) {
 		return b, false, fmt.Errorf("workspace execution composition is unavailable")
 	}

@@ -1,5 +1,14 @@
 # Owned memory auxiliary jobs
 
+An atomic trusted publication hook can propose neutral DATA anchored to its
+exact freshly constructed derivative. A private constructor receipt binds the
+source/hash/owner/scope and current top transaction (including savepoints).
+Serialized/reloaded sources and another transaction cannot acquire this proof.
+The temporary publication checker forwards every original Check/Finalize/Pinned
+proof; no owner identity or additional external source permission is created.
+The ordinary current job/source/budget/result CAS remains mandatory. This
+context exists only while invoking the trusted versioned publication hook.
+
 Migration071 adds `ModelWorker` to this same queue, using the configured native
 generative transport, independent finite owner policies, per-attempt shared
 reservations/usage and atomic catalog DATA publication. It supports completed
@@ -10,6 +19,21 @@ does not enable summary/extraction/consolidation consumers. Local-only waits
 without cloud fallback. See [the full contract](../../../docs/architecture/background-memory-jobs.md).
 The `Admit`/`LocalTarget` description below remains the existing local path;
 `ModelWorker.Admit` is the separately checked generative path.
+
+Migration076 adds exact owner-approved context manifests only for
+`memory-consolidation-v1`. At most eight quiet sessions retain their terminal run,
+root task/constraints/assignment/privacy pins. Top-level task/run bindings remain
+empty for this mode. Every claim read/finalization and current policy/HTTP/provider
+publication boundary rechecks the complete manifest; no old lease is borrowed.
+The fingerprint includes every pin, while nil contexts preserve legacy policy
+bytes and source fingerprints. Shared reservation charges all distinct actual
+root/mandate scopes atomically. This contract does not qualify the consumer;
+see [bounded consolidation](../../../docs/architecture/memory-consolidation.md).
+Trusted owner preparation can use `CreateModelPolicyTx` after acquiring its exact
+domain locks with `PrepareConsolidationContextsTx`; source/pins/policy then commit
+together. Optional trusted `ModelStagedResultHandler` requests initial quarantine
+for its immutable result. The normal current parent proof and job/cost atomic
+publication remain identical; existing handlers do not change staging behavior.
 
 New consumers also require the [memory lifecycle security gate](../../../docs/ai/memory-lifecycle-acceptance.md).
 The shared corpus currently runs through diagnostic quote publication, repeated

@@ -1,5 +1,12 @@
 # Butler — Memory Model Specification
 
+[Memory Doctor](../../internal/memory/doctor/README.md) reports actual constructed
+feature composition separately from operator requests, code-owned qualification,
+supported provider profile and current durable worker/owner-policy controls. None
+of these observations proves answer quality or grants source/job/action authority.
+Configuration identities include the effective composition; current source and
+deletion-anchor guards survive disabling new admission or retiring a derivative.
+
 The gated [verified task compaction consumer](../../internal/memory/compaction/README.md)
 uses durable independent model jobs and exact prefix coverage. Every user event
 remains verbatim; assistant/tool excerpts must match primary bytes and tool states
@@ -165,6 +172,11 @@ Durable layer отвечает на вопрос "где мы остановил
 ---
 
 ### 6.3 Episodic Memory
+
+Типизированные уроки выполнения #90 остаются внутри этого класса: наблюдения
+действий/эффектов, отдельное подтверждение владельца, версии среды и инструментов,
+ошибки и неизвестные исходы. См. [контракт опыта](episodic-experience.md).
+Модельная заметка не является подтверждением успеха или разрешением действия.
 
 #### Назначение
 
@@ -978,3 +990,16 @@ The default-off bounded read plan, metadata-only opened receipts, current source
 guards and independent adoption/NO_GO protocol are specified in
 [adaptive memory retrieval](adaptive-memory-retrieval.md). This does not qualify
 the consumer or activate main; current scoped accepted preferences remain loaded.
+
+Retrieved document text remains eligible when the source has no title. The
+final prompt formatter uses a neutral Document label; an absent title must not
+silently discard an already authorized, selected fragment. Empty evidence text
+is still omitted. Source provenance and currentness checks remain mandatory.
+
+Standalone ordinary run source observations select no additional roots and bind
+no new data. The token-only current authority/source/temporal proof retains its
+row locks until explicit bounded rollback; there is no observer mutation to
+commit. The existing200ms proof deadline and full pre-HTTP/publication owning
+transactions remain unchanged. Trusted compound owner/auxiliary-checker contexts
+retain their existing commit semantics. Optional fixed phase/pool diagnostics
+must omit source text, SQL parameters, raw errors and credential material.

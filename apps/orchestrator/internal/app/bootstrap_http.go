@@ -37,6 +37,8 @@ import (
 	"github.com/butler/butler/internal/memory/compaction"
 	memorydoctor "github.com/butler/butler/internal/memory/doctor"
 	"github.com/butler/butler/internal/memory/episodic"
+	"github.com/butler/butler/internal/memory/experience"
+	"github.com/butler/butler/internal/memory/factcontrol"
 	"github.com/butler/butler/internal/memory/indexing"
 	"github.com/butler/butler/internal/memory/ingestion"
 	"github.com/butler/butler/internal/memory/jobs"
@@ -56,16 +58,21 @@ import (
 )
 
 type httpServerDeps struct {
+	experiencePolicies         experience.PolicyCreator
+	experienceStore            *experience.Store
 	guardedTabOwner            apiservice.GuardedTabDecisions
 	guardedRequestHandler      http.Handler
 	memoryCandidateHandler     http.Handler
 	memoryReadHandler          http.Handler
+	memoryFactHandler          http.Handler
 	delegationDecisions        apiservice.DelegationDecisions
 	initiativeStore            *initiative.Store
 	memoryIndexing             *indexing.Runtime
 	memoryModelStore           *jobs.Store
 	memoryModelConfigured      bool
 	memorySummaryConfigured    bool
+	memoryFeatureStates        []memorydoctor.FeatureConfiguration
+	consolidationConfigured    bool
 	sourceCatalog              *catalog.Store
 	ownerGoals                 *goal.Manager
 	finalResults               *completion.Coordinator
@@ -121,7 +128,7 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	viewServer := apiservice.NewViewServer(deps.sessionRepo, deps.runRepo, deps.transcriptStore, logger.WithComponent(deps.log, "view-api"))
 	doctorChecker := &operatorDoctorChecker{deps: deps}
 	memoryDoctor := memorydoctor.NewReporter(deps.pipelineQueue, deps.postgres)
-	memoryDoctor.Configure(memorydoctor.Options{PipelineConfigured: deps.cfg.MemoryPipelineEnabled, PipelineEffective: deps.pipelineWorker != nil, SemanticConfigured: strings.TrimSpace(os.Getenv("BUTLER_MEMORY_SEMANTIC_ENABLED")) == "true", SemanticEffective: deps.memoryIndexing != nil, EmbeddingConfigured: deps.embeddingProvider != nil, Catalog: deps.sourceCatalog, Metrics: deps.metrics, Configuration: map[string]any{"provider": deps.providerResult.ProviderName, "model": deps.providerResult.ModelName, "profile_limit": deps.cfg.MemoryProfileLimit, "episode_limit": deps.cfg.MemoryEpisodicLimit, "context_budget": deps.cfg.ContextBudgetTokens}})
+	memoryDoctor.Configure(memorydoctor.Options{PipelineConfigured: deps.cfg.MemoryPipelineEnabled, PipelineEffective: deps.pipelineWorker != nil, SemanticConfigured: strings.TrimSpace(os.Getenv("BUTLER_MEMORY_SEMANTIC_ENABLED")) == "true", SemanticEffective: deps.memoryIndexing != nil, EmbeddingConfigured: deps.embeddingProvider != nil, Catalog: deps.sourceCatalog, Metrics: deps.metrics, Features: deps.memoryFeatureStates, Configuration: map[string]any{"provider": deps.providerResult.ProviderName, "model": deps.providerResult.ModelName, "profile_limit": deps.cfg.MemoryProfileLimit, "episode_limit": deps.cfg.MemoryEpisodicLimit, "context_budget": deps.cfg.ContextBudgetTokens}})
 	doctorServer := apiservice.NewDoctorServer(deps.postgres.Pool(), doctorChecker, memoryDoctor, deps.artifactsService, logger.WithComponent(deps.log, "doctor-api"))
 	doctorServer.SetOwnerControlAuth(deps.ownerAuth)
 	settingsService := config.NewSettingsService(deps.settingsStore, deps.hotConfig)
@@ -135,6 +142,10 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 		parser.Pages = ingestion.NewPDFClient()
 	}
 	memoryCatalogServer := &apiservice.MemoryCatalogServer{Store: deps.sourceCatalog, Auth: deps.ownerAuth, Ingestion: &ingestion.Store{Catalog: deps.sourceCatalog, Parser: parser}, Indexing: deps.memoryIndexing, ModelJobs: deps.memoryModelStore, ModelWorkerConfigured: deps.memoryModelConfigured}
+	memoryCatalogServer.TemporalEnabled = temporalConfigured(deps.cfg.MemoryTemporalEnabled)
+	configureConsolidationOwnerAPI(memoryCatalogServer, deps.consolidationConfigured)
+	memoryCatalogServer.ExperiencePolicies = deps.experiencePolicies
+	memoryCatalogServer.Experience = deps.experienceStore
 	if deps.memorySummaryConfigured {
 		memoryCatalogServer.SummaryPolicies = &compaction.Policies{Catalog: deps.sourceCatalog, Jobs: deps.memoryModelStore}
 	}
@@ -221,6 +232,9 @@ func newHTTPServer(deps httpServerDeps) *http.Server {
 	}
 	if deps.memoryReadHandler != nil {
 		mux.Handle(readcontrol.Path, deps.memoryReadHandler)
+	}
+	if deps.memoryFactHandler != nil {
+		mux.Handle(factcontrol.Path, deps.memoryFactHandler)
 	}
 	mux.Handle("/api/v3/delegation-decisions/", apiservice.DelegationOwnerDecisions(deps.ownerAuth, deps.delegationDecisions))
 	if deps.skillEvidenceHandler != nil {
