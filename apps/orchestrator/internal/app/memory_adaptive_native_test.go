@@ -774,6 +774,8 @@ func TestAdaptiveCollectorOwningFlowAndScopeIntegration(t *testing.T) {
 		controls.Cases[0].CaseID, controls.Cases[0].Sources[0].SourceID = c.ID, c.History[0].ID
 		_, ob, _ := runAdaptiveNativeCase(t, ctx, pool, cat, index, plan, p, b, broker, pm, c, controls, 0, "retrieval_adaptive", log)
 		if ob.Status != "completed" {
+			raw, _ := json.Marshal(p.snapshot())
+			t.Logf("controlled fixture transport: %s", raw)
 			t.Fatal("actual Broker collector read failed", ob.Status, ob.Reason)
 		}
 		var reads, opened int
