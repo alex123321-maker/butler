@@ -1066,6 +1066,10 @@ declared finite execution policy `output_tokens`. The summary consumer requires
 at least 32768 on both boundaries before its separately qualified/default-off
 registration or policy endpoint is available. This setting cannot be widened by
 source text, model transport options or a summary policy.
+The adapter's `InferenceTimeout()` attests its actual normalized construction
+timeout. Qualified summary registration additionally requires at least 300s and a
+finite execution policy `model_millis>=300000`; a smaller current owner/task hard
+deadline still wins. This read-only trait cannot change transport behavior.
 
 Trusted Antigravity construction may freeze an explicit Cloud Code High generated
 token ceiling up to32768 and an object JSON response schema for tool-free

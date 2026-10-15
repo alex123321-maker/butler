@@ -28,6 +28,10 @@ least 32768 and a matching finite execution budget `output_tokens` allowance. Se
 `BUTLER_ANTIGRAVITY_MAXIMUM_OUTPUT_TOKENS=32768`; the default 0 keeps the previous
 8192 transport ceiling and does not qualify this consumer. This construction-time
 setting includes thinking plus visible output and never becomes a model option.
+The qualified profile also requires the adapter's actual normalized timeout of
+at least 300s (`BUTLER_OPENAI_TIMEOUT_SECONDS=300` in the current shared provider
+config) and finite budget `model_millis>=300000`. Shorter owner/task deadlines
+remain authoritative. Smaller output/time profiles have no native qualification.
 Changed task/constraints/assignment authority requires a new explicit policy;
 the consumer does not silently rebase permission onto a newer task version.
 
@@ -62,8 +66,9 @@ owner policy. A removed session retains an unreadable snapshot guard rather than
 turning an orphan copy into current evidence.
 
 Production registration additionally requires the code-owned `ReleaseQualified`
-gate. It currently remains false until native ordinary-task continuation and full
-cost evidence qualify the consumer; environment flags cannot bypass this gate.
+gate. The native three-compaction/six-continuation quality and complete-cost
+evidence is recorded in the [acceptance report](../../../docs/testing/issue-84-verified-summaries.md).
+Environment flags cannot bypass qualification or its actual provider/budget profile.
 
 Real PostgreSQL acceptance: `go test -race -count=1 ./internal/memory/compaction
 ./internal/memory/summary ./internal/memory/jobs ./internal/memory/catalog`.

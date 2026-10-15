@@ -1,5 +1,10 @@
 # Issue84 verified task summaries
 
+Current native v7 evidence passes the complete three-round continuation gate on
+the specific High 32768 / 300s profile described below. Default process flags stay
+false. The earlier failed windows below are retained history, not current passes
+and not deductions from cumulative expense.
+
 The consumer is implemented behind a separate default-false process gate. No
 primary deployment flags or architecture were changed for this evidence. The
 main dirty checkout was preserved; tests use a managed branch and an isolated
@@ -175,6 +180,61 @@ fifteen attempts, ten observed totals (86850 native tokens) and five unknown
 expenses. The complete quotes and all prior windows remain. Its first summary
 finish/output metadata and synthetic raw output are retained separately in the
 isolated evidence/private directories. Production qualification remains false.
+
+## Native v7 complete paired acceptance
+
+Frozen `2dc255f97eef257df998bf6027804e6d8fcff070`, archive SHA256
+`6477229f051baae1576f2e6e5f2c7ac3103503932e0bdf9ef7103dfa5d692d24`,
+completed all 9 planned calls in 356.529s with 9 measured usages and 9 `STOP` finishes.
+The same persistent isolated database retained every prior attempt. Manifest,
+comparison, raw native totals, full durable ledgers, original-window copies,
+stage/terminal metadata and PG traces are under `reports/native-v7`.
+
+Three exact primary compactions advanced coverage 8→22→36. Three reconstructed
+ordinary services per arm continued from PostgreSQL state. Both independent arms
+preserved goal, scoped email stop, negated global stop, completed owner export,
+UNKNOWN send effect and next draft-before-send action. Current conditions changed
+from exclude September, to exclude September+October, to only September with the
+previous exclusion explicitly revoked. The final typed constraints replaced the
+older filter; historical text remained DATA. Candidate foreground input-item
+sizes 38027/43678/49377 bytes all fit the production default 65536 allowance, versus
+baseline 80764/155880/231045 with its larger full-history allowance.
+
+| Measured cost | Baseline foreground | Candidate foreground | Summary background |
+| --- | ---: | ---: | ---: |
+| Calls / measured usages |3 /3 |3 /3 |3 /3 |
+| Native total tokens, including returned thinking dimensions |46416 |21733 |95196 |
+| Input / visible output tokens |43461 /294 |17504 /294 |36690 /4948 |
+| Serialized request-item bytes |467689 |131082 |362902 |
+| Observed provider-stream milliseconds |25140 |29414 |299868 |
+
+Full candidate native token cost is 116929 (foreground plus background), about
+2.52× baseline 46416; full provider time is 329282ms versus 25140ms baseline. Smaller
+foreground context does not imply lower full cost. Current-window native total
+is 163345. Cumulative history retains 24 attempts, 19 observed totals (250195 native
+tokens), and 5 unknown expenses with complete conservative quotes. Subscription
+no-overage is the declared price basis; actual invoice cost remains unknown.
+Physical schema bytes in the ledger cover both arms together and are not a
+per-arm storage allocation. Request-item bytes are not claimed as exact wire bytes.
+
+The native provider used the existing trusted construction path and actual
+per-HTTP authority/dispatch callbacks; ordinary continuation used `Execute` and
+the normal source/completion/budget boundaries. Model control was disabled after
+the window and encrypted auth returned privately. No slow authority or SQL proof
+failure occurred; the trace's only cancellation is a zero-ms rollback during
+normal observer cleanup. No dropped/replayed model call or automatic fallback
+was used to manufacture the pass. The prior v5 `MAX_TOKENS` hypothesis remains
+unproven, while successful v7 background non-input totals exceed 8192 and establish
+the qualified larger profile.
+
+Qualification is limited to native Flash High, generated ceiling at least 32768,
+actual normalized transport timeout at least 300s and finite budget
+`output_tokens>=32768`, `model_millis>=300000`. Shorter hard owner/task deadlines
+still win and may produce the documented safe fallback. The small post-window
+profile gate only rejects unqualified configurations; it does not widen runtime
+authority, constructor defaults or deadlines. The separate controlled lifecycle
+and actual dump/restore gates remain required; see the summary backup and memory
+lifecycle acceptance reports in the integrated branch.
 
 ## Consumer-specific lifecycle gate
 
