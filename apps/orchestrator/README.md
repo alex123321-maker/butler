@@ -940,3 +940,8 @@ skill promotion uses the existing reviewed lifecycle with repeated independent
 task evidence. Migration077 is required; body text remains only in the ordinary
 deletion-aware Catalog/Episodic graph. See
 [the contract](../../docs/architecture/episodic-experience.md).
+
+Retrieved document text remains eligible when the source has no title. The
+final prompt formatter uses a neutral Document label; an absent title must not
+silently discard an already authorized, selected fragment. Empty evidence text
+is still omitted. Source provenance and currentness checks remain mandatory.

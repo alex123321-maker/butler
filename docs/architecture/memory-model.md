@@ -990,3 +990,8 @@ The default-off bounded read plan, metadata-only opened receipts, current source
 guards and independent adoption/NO_GO protocol are specified in
 [adaptive memory retrieval](adaptive-memory-retrieval.md). This does not qualify
 the consumer or activate main; current scoped accepted preferences remain loaded.
+
+Retrieved document text remains eligible when the source has no title. The
+final prompt formatter uses a neutral Document label; an absent title must not
+silently discard an already authorized, selected fragment. Empty evidence text
+is still omitted. Source provenance and currentness checks remain mandatory.
