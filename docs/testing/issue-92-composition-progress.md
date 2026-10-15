@@ -13,6 +13,8 @@ The original versioned windows and their failures remain retained separately.
 |0861c67d / composition-v1|100 test/subtest events passed,0 failed,0 skipped; vet passed|Includes88/89/91 and shared constructor receipt, before90 integration and079; not a final current-version pass|
 |10ebb429 / privacy-v1|4 mandatory tests passed,0 failed/skipped; vet passed|Actual ordinary Broker raw/view reads followed by deletion, cached tool/approval erasure, unchanged full action/evidence/spending digest; current-schema upgrade fixture; ordered077/079 migration test|
 |3b24b6eb / payload-backup-v1|All3 mandatory phases passed: actual custom pg_dump before deletion, deletion, fresh pg_restore plus newest independent anchor|Synthetic tool-cache pins are explicitly seeded; actual Broker capture is proved in privacy-v1. Unrelated original/accepted fact/tool cache and actual UNKNOWN status survive; repeated reconciliation is idempotent|
+|2f8a9d22 / ancestry-facts-v2|19 test/subtest events passed,0 failed/skipped; race/vet passed|Current077 ancestry plus079; actual Broker reads, accepted temporal snapshot restrictions, unknown/mismatched environment and negative feedback, exact exposure subset, reviewed skill lineage and untitled prompt regression|
+|7bac6cda / interactive-v5|Ordinary Flow completed370ms with one actual local query/index IPC overlap;1PASS,0FAIL,0SKIP with race|100 original vectors plus100 new fragments; controlled foreground provider, zero cloud calls; not p95 or full mixed-model workload|
 |8ed0770f / disk-v1|Actual ENOSPC, test0.68s, passed without skips|Dedicated8KiB tmpfs, one synthetic schema; unchanged PG deletion state on failed append. Observed partial anchor becomes unavailable and explicitly denies reads/reconciliation; no automatic reset or claimed deletion|
 
 Private reports: `/srv/storage/butler/agents/issue92-20261016/reports/`.
@@ -21,6 +23,9 @@ Private reports: `/srv/storage/butler/agents/issue92-20261016/reports/`.
 | --- | --- |
 |composition-v1/tests.jsonl|3fe029067e3c4d0945f232e02e165f55385cccf5b01c525b103274942a1133ff|
 |privacy-v1/tests.jsonl|be23ddd37569b4a677a962f2540d7db2fce322b16cf8bba93a4fd706f2d3aac1|
+|ancestry-facts-v2/tests.jsonl|547b876a6f90a5f47b166ce4edab17fc9b278a10ef331bddd09aa3534102f4a9|
+|interactive-v5/tests.jsonl|9899054feab7b7bf98057ae718489ae7feb3b511b1fc8a28193971df7a9a573c|
+|interactive-v5/actual-interactive-index.json|48c7a2d1ab02743675aecf5f5720f6b5380a77970311031997348e4c815886e7|
 |disk-v1/tests.jsonl|ce26512472b82312376476bf2ec77f5f4dcfd808c4c795fa60f85af26479c057|
 |payload-backup-v1/evidence.sha256|afd956a22e140e23b1e17588dae0d20a4772446d8ec5861ddc4b05d5c04a0910|
 
@@ -54,3 +59,12 @@ composition, including explicit model/database/budget/disk failure behavior.
 
 Historical release/bootstrap failures reproduced on unchanged baseline remain
 separate; these new component receipts neither waive nor repair those gates.
+
+The first ancestry-facts runner omitted the compiled guarded Broker process;
+17events passed and2mandatory integration cases skipped. That window was
+rejected. The v2 driver supplied the actual current Broker test binary and
+passed all19 events. A model-input failure in interactive-v2/v3/v4 revealed
+a confirmed production formatter defect: untitled selected documents were
+discarded after successful actual retrieval. The implementation now retains
+them under a neutral label; v5 fixes the formatter rather than changing input
+titles or the latency gate. All original failed/diagnostic windows remain.
