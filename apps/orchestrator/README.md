@@ -808,3 +808,14 @@ and fresh encrypted PostgreSQL auth preflight. It preserves all historical paid
 failures, expenses and expiries. Only clean retained availability errors permit
 the next distinct authorized input; source/lease/retention errors seal collection.
 See [the bounded protocol](../../docs/ai/memory-eval-v2-renewed-five-plan-20261015.md).
+
+The prospective semantic memory trial is a separate opt-in test entry, not a
+service. It accepts a free answer envelope and defers meaning to independent
+original-bound review; historical V2 machine scores remain unchanged. It reuses
+the Catalog/parser/owned indexing/local embedding/HybridReader/bundle and native
+budget/transport collectors. Its writer exits and PostgreSQL restarts before a
+new reader process constructs question inputs. Oracle/no-memory/retrieval arms
+and predeclared repeats share the five-minute provider/model admission timeout.
+There are no external tools or implicit retries. See the
+[semantic evaluation protocol](../../docs/ai/memory-eval-semantic-methodology.md)
+and [runner instructions](../../cmd/memory-eval/README.md).

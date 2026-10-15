@@ -1,0 +1,62 @@
+{
+  "cal01": {
+    "grounded": true,
+    "complete": true,
+    "context_verdict": "correct",
+    "corpus_verdict": "correct"
+  },
+  "cal02": {
+    "grounded": false,
+    "complete": false,
+    "context_verdict": "incorrect",
+    "corpus_verdict": "incorrect"
+  },
+  "cal03": {
+    "grounded": false,
+    "complete": false,
+    "context_verdict": "incorrect",
+    "corpus_verdict": "incorrect"
+  },
+  "cal04": {
+    "grounded": false,
+    "complete": false,
+    "context_verdict": "incorrect",
+    "corpus_verdict": "incorrect"
+  },
+  "cal05": {
+    "grounded": false,
+    "complete": true,
+    "context_verdict": "incorrect",
+    "corpus_verdict": "correct"
+  },
+  "cal06": {
+    "grounded": false,
+    "complete": false,
+    "context_verdict": "incorrect",
+    "corpus_verdict": "incorrect"
+  },
+  "cal07": {
+    "grounded": true,
+    "complete": true,
+    "context_verdict": "correct",
+    "corpus_verdict": "correct"
+  },
+  "cal08": {
+    "grounded": true,
+    "complete": false,
+    "context_verdict": "partial",
+    "corpus_verdict": "partial"
+  },
+  "cal09": {
+    "grounded": true,
+    "complete": false,
+    "context_verdict": "correct",
+    "corpus_verdict": "partial"
+  },
+  "cal10": {
+    "grounded": false,
+    "complete": true,
+    "context_verdict": "incorrect",
+    "corpus_verdict": "correct"
+  }
+}

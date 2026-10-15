@@ -43,6 +43,10 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 		}
 	}()
 	falseValue := false
+	schema := acceptance.MemoryNativeSchema(i)
+	if c.freeAnswer {
+		schema = acceptance.MemorySemanticSchema()
+	}
 	o = acceptance.MemoryObservation{CaseID: i.CaseID, Arm: i.Arm, Model: c.plan.Model, ModelVersion: "", Runtime: c.plan.Runtime, InputSHA256: acceptance.MemoryInputDigest(i), Status: "failed", Reason: "not_admitted", Output: json.RawMessage("null"), Outcome: acceptance.MemoryOutcome{EvidenceSHA256: acceptance.MemoryDigest([]string{i.CaseID, i.Arm, "no_external_tool_definitions"}), PermissionViolation: &falseValue, PrivacyViolation: &falseValue, StopViolation: &falseValue, DeletionViolation: &falseValue}}
 	if i.SkipReason != "" {
 		o.Status = "skipped"
@@ -77,7 +81,7 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 		Input        string
 		Instructions string
 		Schema       json.RawMessage
-	}{string(user), i.Instructions, acceptance.MemoryNativeSchema(i)}); err != nil {
+	}{string(user), i.Instructions, schema}); err != nil {
 		return o, err
 	}
 	inputWriteMS := time.Since(inputWriteStarted).Milliseconds()
@@ -115,7 +119,7 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 	if _, err = c.pool.Exec(live, `UPDATE fixture_memory_eval_attempts SET operation_id=$3 WHERE case_id=$1 AND arm=$2`, i.CaseID, i.Arm, admission.OperationID); err != nil {
 		return o, err
 	}
-	provider, err := c.factory(acceptance.MemoryNativeSchema(i))
+	provider, err := c.factory(schema)
 	if err != nil {
 		return o, err
 	}
@@ -225,7 +229,7 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 	o.OutputEncoding = "raw_utf8_json_string"
 	o.Milliseconds = &elapsed
 	pipelineMS := elapsed
-	if i.Arm == "retrieval" {
+	if i.Arm == "retrieval" || c.freeAnswer && strings.HasPrefix(i.Arm, "retrieval") {
 		pipelineMS += c.captureMilliseconds[i.CaseID]
 	}
 	o.PipelineMilliseconds = &pipelineMS
@@ -301,7 +305,7 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 	if err = c.writeEvidence("events-"+strings.TrimPrefix(i.CaseID, "memory:")+"-"+i.Arm+".json", events); err != nil {
 		return o, err
 	}
-	if c.renewed {
+	if c.renewed || c.freeAnswer {
 		authName := "auth-" + strings.TrimPrefix(i.CaseID, "memory:") + "-" + i.Arm + ".json"
 		trace := memoryNativeAuthTrace{RunID: run, InputSHA: o.InputSHA256, Events: authDiagnostics}
 		if err = c.writeEvidence(authName, trace); err != nil {
@@ -327,20 +331,25 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 	if status == "completed" {
 		var answer acceptance.MemoryAnswer
 		parseErr := json.Unmarshal(original, &answer)
-		assessment := acceptance.AssessMemoryV2(cse, i, answer, parseErr == nil)
+		var assessment any = acceptance.AssessMemoryV2(cse, i, answer, parseErr == nil)
+		scope := "synthetic_question_answer_and_current_instruction"
+		if c.freeAnswer {
+			assessment = map[string]string{"semantic_review": "pending_independent_original_review"}
+			scope = "free_answer_semantics_pending_independent_review"
+		}
 		// Narrow synthetic QUESTION result, independently persisted and checked.
 		// The enclosing long-lived task remains active; no external effect or
 		// completion of that broader goal is claimed from next_action prose.
 		result := struct {
 			InputSHA, OutputSHA, Scope string
-			Assessment                 acceptance.MemoryAssessment
+			Assessment                 any
 			BroaderGoalCompleted       *bool
-		}{o.InputSHA256, outputHash, "synthetic_question_answer_and_current_instruction", assessment, nil}
+		}{o.InputSHA256, outputHash, scope, assessment, nil}
 		if err = c.writeEvidence("result-"+strings.TrimPrefix(i.CaseID, "memory:")+"-"+i.Arm+".json", result); err != nil {
 			originalWriteFailed = true
 			return o, err
 		}
-		_, err = c.pool.Exec(finishCtx, `INSERT INTO fixture_memory_eval_results VALUES($1,$2,$3,$4,$5,'synthetic_question_answer_and_current_instruction',$6)`, i.CaseID, i.Arm, o.InputSHA256, outputHash, assessment, i.Task.Revision)
+		_, err = c.pool.Exec(finishCtx, `INSERT INTO fixture_memory_eval_results VALUES($1,$2,$3,$4,$5,$6,$7)`, i.CaseID, i.Arm, o.InputSHA256, outputHash, assessment, scope, i.Task.Revision)
 		if err != nil {
 			return o, err
 		}
@@ -358,7 +367,7 @@ func (c *memoryEvalCollector) sample(ctx context.Context, cse acceptance.MemoryC
 		return o, err
 	}
 	if status != "completed" {
-		if c.renewed && !providerauth.UnsafeAntigravityRefresh(authDiagnostics) && memoryCleanAvailability(events, original, version, usage, startErr) {
+		if (c.renewed || c.freeAnswer) && !providerauth.UnsafeAntigravityRefresh(authDiagnostics) && memoryCleanAvailability(events, original, version, usage, startErr) {
 			return o, errMemoryAvailability
 		}
 		return o, errors.New("model entry failed; fresh window sealed without retry")

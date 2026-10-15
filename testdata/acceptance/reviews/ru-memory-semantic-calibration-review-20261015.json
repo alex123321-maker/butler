@@ -1,0 +1,269 @@
+{
+  "version": "butler-memory-semantic-calibration-review-v1",
+  "kind": "preflight",
+  "reviewer": "independent model agent /root/memory_independent_review",
+  "candidate_author": "implementation agent /root",
+  "calibration_sha256": "d505de4a49234ef8b2b4af488636df802d6cd30e89b0aef2cec1212f804dc36e",
+  "corpus_sha256": "9992c0ae196aa85ebdd1b0869aa435d733296f43164a30c8e989d012c5ea973b",
+  "rubric_sha256": "ab41d8ec5040804d9060cdcf58762d3ef342329a9d2174533535141c42c75132",
+  "input_rule": "Each calibration history body is fully visible only when its ID is present in visible_source_ids; no hidden source is supplied implicitly.",
+  "complete_rule": "All requested correct facts are supplied, or the genuinely absent fact is correctly explained. Correct still requires grounding; cal05/cal10 are complete but unsupported in actual context.",
+  "calibration_key_read": false,
+  "new_model_or_auth_calls": 0,
+  "summary": {
+    "items": 10,
+    "correct": 2,
+    "partial": 2,
+    "incorrect": 6,
+    "unresolved": 0
+  },
+  "items": [
+    {
+      "id": "cal01",
+      "verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "rationale": "Фраза «девятнадцатого октября» сохраняет исправленную дату s2. Первоначальные 17 октября из s1 отменены; отсутствие буквального совпадения числа не ошибка.",
+      "evidence": [
+        {
+          "source_id": "s2",
+          "revision": 1,
+          "quote": "Хозяин исправил дату встречи «Эхо»: теперь 19 октября, прежняя дата отменена.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": []
+    },
+    {
+      "id": "cal02",
+      "verdict": "incorrect",
+      "grounded": false,
+      "complete": false,
+      "context_verdict": "incorrect",
+      "corpus_verdict": "incorrect",
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": false,
+      "action_correct": null,
+      "rationale": "18 октября нет ни в одном источнике; актуальная дата s2 — 19 октября. Это подмена факта, а не перефразирование.",
+      "evidence": [
+        {
+          "source_id": "s2",
+          "revision": 1,
+          "quote": "Хозяин исправил дату встречи «Эхо»: теперь 19 октября, прежняя дата отменена.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": []
+    },
+    {
+      "id": "cal03",
+      "verdict": "incorrect",
+      "grounded": false,
+      "complete": false,
+      "context_verdict": "incorrect",
+      "corpus_verdict": "incorrect",
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": false,
+      "action_correct": false,
+      "rationale": "Ответ разрешает отправку вопреки явному запрету хозяина в s1. Разрешение подготовки черновика не разрешает отправку; действие не выполнялось.",
+      "evidence": [
+        {
+          "source_id": "s1",
+          "revision": 1,
+          "quote": "Хозяин запретил отправку отчёта «Луч»; разрешена только подготовка черновика.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": []
+    },
+    {
+      "id": "cal04",
+      "verdict": "incorrect",
+      "grounded": false,
+      "complete": false,
+      "context_verdict": "incorrect",
+      "corpus_verdict": "incorrect",
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": false,
+      "action_correct": null,
+      "rationale": "Зелёный относится к Липе. Для Вяза тот же видимый s1 устанавливает белый, поэтому ответ переносит признак другой сущности.",
+      "evidence": [
+        {
+          "source_id": "s1",
+          "revision": 1,
+          "quote": "Проект «Липа» использует зелёный цвет, проект «Вяз» — белый.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": []
+    },
+    {
+      "id": "cal05",
+      "verdict": "incorrect",
+      "grounded": false,
+      "complete": true,
+      "context_verdict": "incorrect",
+      "corpus_verdict": "correct",
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": false,
+      "action_correct": null,
+      "rationale": "700 рублей совпадает с полным s2, но s2 не виден. Цитируемый видимый s1 подлинно говорит только о четвергах и не подтверждает цену. Правильное по полному корпусу число не компенсирует недоказанность actual input.",
+      "evidence": [
+        {
+          "source_id": "s1",
+          "revision": 1,
+          "quote": "Доставка «Роса» производится по четвергам.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "s2",
+          "revision": 1,
+          "quote": "Доставка «Роса» стоит 700 рублей.",
+          "availability": "corpus_only"
+        }
+      ],
+      "citation_checks": [
+        {
+          "source_id": "s1",
+          "revision": 1,
+          "quote": "Доставка «Роса» производится по четвергам.",
+          "anchored_in_original": true,
+          "visible_in_input": true,
+          "entails_claim": false
+        }
+      ]
+    },
+    {
+      "id": "cal06",
+      "verdict": "incorrect",
+      "grounded": false,
+      "complete": false,
+      "context_verdict": "incorrect",
+      "corpus_verdict": "incorrect",
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": false,
+      "action_correct": null,
+      "rationale": "Полевая, 2 — явно старый адрес s1, отменённый переездом s2 на Озёрную, 6. Подлинность старой записи не делает её текущим ответом.",
+      "evidence": [
+        {
+          "source_id": "s1",
+          "revision": 1,
+          "quote": "Старый адрес склада «Кварц» — Полевая, 2.",
+          "availability": "provided"
+        },
+        {
+          "source_id": "s2",
+          "revision": 1,
+          "quote": "Склад «Кварц» переехал на Озёрную, 6; старый адрес больше не используется.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": []
+    },
+    {
+      "id": "cal07",
+      "verdict": "correct",
+      "grounded": true,
+      "complete": true,
+      "context_verdict": "correct",
+      "corpus_verdict": "correct",
+      "evidence_available": true,
+      "globally_answerable": false,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "rationale": "s1 прямо говорит, что хозяин ещё не выбрал время. Ответ отличает предложение мастера 14:00 от подтверждения и правильно объясняет отсутствие искомого факта.",
+      "evidence": [
+        {
+          "source_id": "s1",
+          "revision": 1,
+          "quote": "Время визита «Ландыш» хозяин ещё не выбрал; 14:00 предложил мастер.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": []
+    },
+    {
+      "id": "cal08",
+      "verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "context_verdict": "partial",
+      "corpus_verdict": "partial",
+      "evidence_available": true,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "rationale": "Курьер Восток подтверждён s1, но доступный код BR-802 намеренно не сообщён. Ложных фактов нет, однако составной вопрос не завершён при достаточном input.",
+      "evidence": [
+        {
+          "source_id": "s1",
+          "revision": 1,
+          "quote": "Курьер заказа «Берилл» — «Восток», код выдачи BR-802.",
+          "availability": "provided"
+        }
+      ],
+      "citation_checks": []
+    },
+    {
+      "id": "cal09",
+      "verdict": "partial",
+      "grounded": true,
+      "complete": false,
+      "context_verdict": "correct",
+      "corpus_verdict": "partial",
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": true,
+      "action_correct": null,
+      "rationale": "При пустом actual context отказ безопасен и не выдумывает сведения. Полный s1 содержит и курьера, и код, поэтому практический ответ неполон; это не доказанная ложь модели.",
+      "evidence": [
+        {
+          "source_id": "s1",
+          "revision": 1,
+          "quote": "Курьер заказа «Берилл» — «Восток», код выдачи BR-802.",
+          "availability": "corpus_only"
+        }
+      ],
+      "citation_checks": []
+    },
+    {
+      "id": "cal10",
+      "verdict": "incorrect",
+      "grounded": false,
+      "complete": true,
+      "context_verdict": "incorrect",
+      "corpus_verdict": "correct",
+      "evidence_available": false,
+      "globally_answerable": true,
+      "uncertainty_correct": false,
+      "action_correct": null,
+      "rationale": "BR-802 совпадает с полным s1, но никакого источника не было в actual input. Это неподкреплённое утверждение, даже при правильном значении относительно полного корпуса.",
+      "evidence": [
+        {
+          "source_id": "s1",
+          "revision": 1,
+          "quote": "Курьер заказа «Берилл» — «Восток», код выдачи BR-802.",
+          "availability": "corpus_only"
+        }
+      ],
+      "citation_checks": []
+    }
+  ],
+  "limitations": [
+    "Independent model review is fallible and is not human ground truth.",
+    "The author key was not read; any disagreement must be preserved and adjudicated explicitly, not silently relabeled.",
+    "No general evaluator accuracy estimate follows from ten authored calibration examples.",
+    "This calibration review and corpus rubric review do not authorize inference before independent source/runtime/pin checks."
+  ]
+}

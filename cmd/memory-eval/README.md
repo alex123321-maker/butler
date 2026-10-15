@@ -1,5 +1,57 @@
 # Memory evaluation
 
+## Semantic evaluation (current methodology)
+
+The current diagnostic method evaluates factual grounding, completeness,
+uncertainty, actual retrieved evidence and action proposals independently.
+Canonical wording, empty abstain, citation cardinality, costs and latency do not
+determine semantic correctness. See the fixed
+[methodology](../../docs/ai/memory-eval-semantic-methodology.md) and the separate
+[58-original reassessment](../../docs/ai/memory-eval-v2-semantic-reassessment-20261015.md).
+Historical V1/V2 files and strict scores below remain reproducible history.
+
+Offline replay requires exact originals and an exhaustive independent review:
+
+```sh
+memory-eval -mode semantic-score -suite testdata/acceptance/ru-memory-v2.json \
+  -inputs /original/comparison-frozen.json \
+  -measurements /original/comparison-measurements.json \
+  -review testdata/acceptance/results/ru-memory-v2-semantic-review-20261015.json \
+  -rubric docs/ai/memory-eval-semantic-methodology.md -output-dir /new/reassessment
+```
+
+The scorer validates corpus/method/input/output hashes, exhaustive unique
+observations, source/revision/quote authenticity and input visibility. It does
+not claim deterministic semantic entailment. It preserves partial answers,
+unknown labels and failed/skipped denominators. Its report has no universal
+GO/NO_GO, no inherited 280-call/60-second promotion rule and no invented external
+task success. Meaning is reviewed by a separate model agent, with explicit
+fallibility; this is not human annotation.
+
+The new `ru-memory-semantic-v1.json` fixes twelve fresh synthetic cases and38
+entries: no-memory, sufficient-evidence oracle, ordinary retrieval, plus two
+predeclared retrieval repeats with identical visible inputs. Calibration tests
+include paraphrases, wrong dates/entities/negation, obsolete facts, irrelevant
+citations, supported uncertainty and incomplete refusals. Rubrics/calibration
+receive independent review before inference. They never enter answering inputs.
+
+After explicit owner authorization, `memory-eval-semantic-lab.sh SOURCE_ROOT
+FRESH_TRIAL_ROOT prepare|execute EXACT_COMMIT` runs the fixed prospective sample
+on ssh laba. Prepare builds/pins without inference. Execute owns a fresh isolated
+PostgreSQL database and performs real Catalog/parser/owned indexing/local
+embedding/HybridReader/bundle operations. The writer exits, PostgreSQL restarts,
+and a separate process reads again before the native questions. There are no
+automatic retries, fallback, external tools or production deployment changes.
+Every native turn has a five-minute timeout. The source/binary/corpus/method
+remain pinned and the trial root can be entered once. The historical roots below
+are not reused. This contour covers document memory, not all profile/transcript
+extraction and consolidation paths.
+
+Incremental model billing is zero under the owner's stated local/subscription
+conditions. Calls, tokens, latency, availability and host resources remain
+separate operational measurements; missing invoice data cannot itself reject
+an otherwise correct answer.
+
 `memory-eval` extends issue33's `internal/acceptance` contour. The command freezes,
 scores and audits offline. The opt-in orchestrator test collector composes current
 Catalog, structured Parser, owned Index Runtime, HybridReader, BuildBundle,

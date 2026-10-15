@@ -22,6 +22,11 @@ func main() {
 	}
 }
 func run(args []string, stdout io.Writer) error {
+	for n, arg := range args {
+		if arg == "-mode=semantic-score" || (arg == "-mode" && n+1 < len(args) && args[n+1] == "semantic-score") {
+			return runSemantic(args, stdout)
+		}
+	}
 	flags := flag.NewFlagSet("memory-eval", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
 	mode := flags.String("mode", "fixture", "fixture, freeze, score, or audit (offline only)")

@@ -55,6 +55,8 @@ type memoryEvalCollector struct {
 	prior               *acceptance.MemoryPrior
 	priorPins           *acceptance.MemoryPriorPins
 	priorDirectory      string
+	freeAnswer          bool // prospective semantic trials; legacy originals keep their schema
+	readSuffix          string
 }
 
 type memoryEvalBackend struct {
@@ -360,12 +362,6 @@ func (c *memoryEvalCollector) capture(ctx context.Context, cse acceptance.Memory
 	if err != nil {
 		return err
 	}
-	guard, err := semantic.NewCatalogGuard(c.catalog, memoryEvalPurpose)
-	if err != nil {
-		return err
-	}
-	s := semantic.NewStore(c.pool)
-	s.Guard = guard
 	traced := &memoryEvalBackend{c, c.backend, id}
 	if len(allRefs) > 0 {
 		stage = "background"
@@ -396,6 +392,27 @@ func (c *memoryEvalCollector) capture(ctx context.Context, cse acceptance.Memory
 			return err
 		}
 	}
+	stage = "read"
+	return c.captureRead(ctx, cse, allRefs, logical, live, run)
+}
+
+// Kept separately so the semantic trial can reconnect after writer process exit
+// and read from durable Catalog/index state instead of process-held captures.
+func (c *memoryEvalCollector) captureRead(ctx context.Context, cse acceptance.MemoryCase, allRefs []catalog.SourceRef, logical map[string]acceptance.MemorySource, live context.Context, run string) error {
+	owner, _ := c.owner(cse)
+	id := acceptance.MemoryOpaqueCaseID(cse)
+	zero := int64(0)
+	target, err := budget.NewLocalTarget("local-models:9090", "operator-pinned-service")
+	if err != nil {
+		return err
+	}
+	guard, err := semantic.NewCatalogGuard(c.catalog, memoryEvalPurpose)
+	if err != nil {
+		return err
+	}
+	s := semantic.NewStore(c.pool)
+	s.Guard = guard
+	traced := &memoryEvalBackend{c, c.backend, id}
 	gate, err := semantic.NewLiveAdmission(c.budgets, guard, target)
 	if err != nil {
 		return err
@@ -425,7 +442,6 @@ func (c *memoryEvalCollector) capture(ctx context.Context, cse acceptance.Memory
 	bridge := &memoryEvalReader{c, reader, id, originals}
 	builder := memoryservice.New(memoryservice.Config{Semantic: bridge, ChunkLimit: 2, BundleBudget: 12, ScopeOrder: []string{"user"}, Log: slog.New(slog.NewTextHandler(io.Discard, nil))})
 	begin := time.Now()
-	stage = "read"
 	bundle, err := builder.BuildBundle(live, memoryservice.BundleRequest{SessionKey: run + ":session", UserID: owner, UserMessage: cse.Question, IncludeQuery: true})
 	if err != nil {
 		return err
@@ -451,7 +467,7 @@ func (c *memoryEvalCollector) capture(ctx context.Context, cse acceptance.Memory
 	}
 	c.captures = append(c.captures, cap)
 	elapsed := time.Since(begin).Milliseconds()
-	if err = c.recordExpense(ctx, acceptance.MemoryExpense{ID: id + "/read", CaseID: id, Arm: "retrieval", Stage: "read", Status: "measured", Outcome: "success", EvidenceSHA256: cap.EvidenceSHA256, Calls: 1, InputTokens: &zero, OutputTokens: &zero, TotalTokens: &zero, Milliseconds: &elapsed, Microunits: &zero, StorageBytes: &zero}); err != nil {
+	if err = c.recordExpense(ctx, acceptance.MemoryExpense{ID: id + "/read" + c.readSuffix, CaseID: id, Arm: "retrieval", Stage: "read", Status: "measured", Outcome: "success", EvidenceSHA256: cap.EvidenceSHA256, Calls: 1, InputTokens: &zero, OutputTokens: &zero, TotalTokens: &zero, Milliseconds: &elapsed, Microunits: &zero, StorageBytes: &zero}); err != nil {
 		return err
 	}
 	_, err = c.pool.Exec(ctx, `UPDATE runs SET current_state='completed',status='completed',finished_at=clock_timestamp() WHERE run_id=$1`, run)

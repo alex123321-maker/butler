@@ -2,6 +2,21 @@
 
 ## Memory outcome evaluation (issue78)
 
+Current semantic diagnostics follow the separately versioned
+[semantic methodology](../ai/memory-eval-semantic-methodology.md). Exact
+wording, canonical abstention formatting and citation count cannot stand in for
+factual correctness. Independent annotations separately cover grounding,
+completeness, uncertainty, sufficient visible evidence, corpus truth and action
+proposals. The deterministic offline scorer checks immutable-byte correlation
+and original witnesses, not semantic entailment. A model reviewer is fallible
+and not a human annotator. Partial safe refusals do not count as complete
+question successes. Failed entries retain their end-to-end denominator without
+fabricated semantic labels. Pricing/latency/resource dimensions do not inherit
+the legacy promotion gate. Prospective no-memory/oracle/retrieval trials and
+predeclared repeats use fresh frozen cases; retrospective rescoring is diagnostic
+on exposed data. Document-memory process/PG restart evidence does not establish
+all memory-layer or external-effect acceptance. Historical V2 protocol follows.
+
 `cmd/memory-eval` is an additive client of the same acceptance contour. Its
 independently reviewed V2's24-case Russian synthetic development/holdout dataset pins sources,
 time, current task version and literal expected witnesses. Pre-run frozen inputs
